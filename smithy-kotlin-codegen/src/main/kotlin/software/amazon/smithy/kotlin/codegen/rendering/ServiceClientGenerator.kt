@@ -101,10 +101,10 @@ class ServiceClientGenerator(private val ctx: RenderingContext<ServiceShape>) {
                     renderCompanionObject()
                 }
                 writer.write("")
-                renderServiceConfig()
-            }
-            .call {
                 renderServiceBuilder()
+
+                writer.write("")
+                renderServiceConfig()
             }
             .call {
                 operations.forEach { renderOperation(operationsIndex, it) }
@@ -134,7 +134,7 @@ class ServiceClientGenerator(private val ctx: RenderingContext<ServiceShape>) {
             context = mapOf(Sections.ServiceBuilder.RenderingContext to ctx),
         ) {
             writer.withBlock(
-                "public class Builder internal constructor(): #T<Config, Config.Builder, #T> {",
+                "public class Builder internal constructor(): #T<Config, Config.Builder, #T>() {",
                 "}",
                 RuntimeTypes.Core.Client.AbstractSdkClientBuilder,
                 serviceSymbol,

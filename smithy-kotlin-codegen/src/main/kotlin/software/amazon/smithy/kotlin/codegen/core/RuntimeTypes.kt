@@ -155,6 +155,8 @@ object RuntimeTypes {
             val SdkClientFactory = runtimeSymbol("SdkClientFactory", KotlinDependency.CORE, "client")
             val RequestInterceptorContext = runtimeSymbol("RequestInterceptorContext", KotlinDependency.CORE, "client")
             val ProtocolRequestInterceptorContext = runtimeSymbol("ProtocolRequestInterceptorContext", KotlinDependency.CORE, "client")
+            val IdempotencyTokenProvider = runtimeSymbol("IdempotencyTokenProvider", KotlinDependency.CORE, "client")
+            val IdempotencyTokenConfig = runtimeSymbol("IdempotencyTokenConfig", KotlinDependency.CORE, "client")
             val IdempotencyTokenProviderExt = runtimeSymbol("idempotencyTokenProvider", KotlinDependency.CORE, "client")
         }
     }

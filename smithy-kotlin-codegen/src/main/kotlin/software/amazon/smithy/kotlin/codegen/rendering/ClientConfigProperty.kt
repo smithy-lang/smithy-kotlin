@@ -251,15 +251,9 @@ object KotlinClientRuntimeConfigProperty {
         }
 
         IdempotencyTokenProvider = ClientConfigProperty {
-            symbol = buildSymbol {
-                name = "IdempotencyTokenProvider"
-                namespace(KotlinDependency.CORE, "config")
-            }
+            symbol = RuntimeTypes.Core.Client.IdempotencyTokenProvider
 
-            baseClass = buildSymbol {
-                name = "IdempotencyTokenConfig"
-                namespace(KotlinDependency.CORE, "config")
-            }
+            baseClass = RuntimeTypes.Core.Client.IdempotencyTokenConfig
 
             documentation = """
             Override the default idempotency token generator. SDK clients will generate tokens for members
@@ -282,16 +276,13 @@ object KotlinClientRuntimeConfigProperty {
 
         SdkLogMode = ClientConfigProperty {
             symbol = buildSymbol {
-                name = "SdkLogMode"
-                namespace(KotlinDependency.CORE, "client")
+                name = RuntimeTypes.Core.Client.SdkLogMode.name
+                namespace = RuntimeTypes.Core.Client.SdkLogMode.namespace
                 defaultValue = "SdkLogMode.Default"
                 nullable = false
             }
 
-            baseClass = buildSymbol {
-                name = "SdkClientConfig"
-                namespace(KotlinDependency.CORE, "config")
-            }
+            baseClass = RuntimeTypes.Core.Client.SdkClientConfig
 
             documentation = """
             Configure events that will be logged. By default clients will not output

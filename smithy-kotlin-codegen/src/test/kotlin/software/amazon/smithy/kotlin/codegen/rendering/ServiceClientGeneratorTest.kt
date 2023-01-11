@@ -172,7 +172,7 @@ class ServiceClientGeneratorTest {
     @Test
     fun `it renders a service client builder`() {
         val expected = """
-            public class Builder internal constructor(): AbstractSdkClientBuilder<Config, Config.Builder, TestClient> {
+            public class Builder internal constructor(): AbstractSdkClientBuilder<Config, Config.Builder, TestClient>() {
                 override val config: Config.Builder = Config.Builder()
                 override fun newClient(config: Config): TestClient = DefaultTestClient(config)
             }

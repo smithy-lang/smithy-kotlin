@@ -116,13 +116,13 @@ public class Config private constructor(builder: Builder): HttpClientConfig, Ide
         val expectedImports = listOf(
             "import ${RuntimeTypes.Http.Engine.HttpClientEngine.fullName}",
             "import ${KotlinDependency.HTTP.namespace}.config.HttpClientConfig",
-            "import ${KotlinDependency.CORE.namespace}.config.IdempotencyTokenConfig",
-            "import ${KotlinDependency.CORE.namespace}.config.IdempotencyTokenProvider",
-            "import ${KotlinDependency.CORE.namespace}.config.SdkClientConfig",
+            "import ${KotlinDependency.CORE.namespace}.client.IdempotencyTokenConfig",
+            "import ${KotlinDependency.CORE.namespace}.client.IdempotencyTokenProvider",
+            "import ${KotlinDependency.CORE.namespace}.client.SdkClientConfig",
             "import ${KotlinDependency.CORE.namespace}.client.SdkLogMode",
         )
         expectedImports.forEach {
-            contents.shouldContain(it)
+            contents.shouldContainWithDiff(it)
         }
     }
 
