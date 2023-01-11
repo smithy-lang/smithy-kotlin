@@ -33,7 +33,7 @@ public sealed interface HttpRequest {
     /**
      * The trailing headers
      */
-    public val trailingHeaders: DeferredHeaders = DeferredHeaders.Empty,
+    public val trailingHeaders: DeferredHeaders
 
     public companion object {
         public operator fun invoke(block: HttpRequestBuilder.() -> Unit): HttpRequest =
@@ -49,13 +49,15 @@ public fun HttpRequest(
     url: Url,
     headers: Headers,
     body: HttpBody,
-): HttpRequest = RealHttpRequest(method, url, headers, body)
+    trailingHeaders: DeferredHeaders = DeferredHeaders.Empty,
+): HttpRequest = RealHttpRequest(method, url, headers, body, trailingHeaders)
 
 private data class RealHttpRequest(
     override val method: HttpMethod,
     override val url: Url,
     override val headers: Headers,
     override val body: HttpBody,
+    override val trailingHeaders: DeferredHeaders,
 ) : HttpRequest
 
 /**

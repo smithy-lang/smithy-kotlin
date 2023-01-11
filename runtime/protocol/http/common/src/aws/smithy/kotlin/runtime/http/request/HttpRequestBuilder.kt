@@ -45,6 +45,7 @@ internal data class HttpRequestBuilderView(
     override val url: Url by lazy { builder.url.build() }
     override val headers: Headers by lazy { builder.headers.build() }
     override val body: HttpBody = builder.body
+    override val trailingHeaders: DeferredHeaders by lazy { builder.trailingHeaders.build() }
 }
 
 /**

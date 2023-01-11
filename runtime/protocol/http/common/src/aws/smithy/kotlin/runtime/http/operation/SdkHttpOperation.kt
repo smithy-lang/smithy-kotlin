@@ -8,8 +8,11 @@ package aws.smithy.kotlin.runtime.http.operation
 import aws.smithy.kotlin.runtime.client.ExecutionContext
 import aws.smithy.kotlin.runtime.http.HttpHandler
 import aws.smithy.kotlin.runtime.http.interceptors.HttpInterceptor
+import aws.smithy.kotlin.runtime.http.middleware.FlexibleChecksumsResponseMiddleware.Companion.ExpectedResponseChecksum
+import aws.smithy.kotlin.runtime.http.middleware.FlexibleChecksumsResponseMiddleware.Companion.ResponseChecksum
 import aws.smithy.kotlin.runtime.http.response.complete
 import aws.smithy.kotlin.runtime.util.*
+import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.job
 import kotlin.reflect.KClass
