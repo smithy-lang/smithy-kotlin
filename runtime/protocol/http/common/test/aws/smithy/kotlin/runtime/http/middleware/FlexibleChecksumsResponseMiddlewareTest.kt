@@ -19,7 +19,7 @@ import aws.smithy.kotlin.runtime.http.response.HttpResponse
 import aws.smithy.kotlin.runtime.io.SdkSource
 import aws.smithy.kotlin.runtime.io.source
 import aws.smithy.kotlin.runtime.time.Instant
-import aws.smithy.kotlin.runtime.util.asyncLazy
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.params.ParameterizedTest
@@ -70,7 +70,7 @@ class FlexibleChecksumsResponseMiddlewareTest {
         val client = getMockClient(response, responseHeaders)
 
         op.execute(client, Unit) {
-            op.context[ResponseChecksum] = asyncLazy { expectedChecksum }
+            op.context[ResponseChecksum] = CompletableDeferred(expectedChecksum)
         }
     }
 
@@ -100,7 +100,7 @@ class FlexibleChecksumsResponseMiddlewareTest {
 
         val ex = assertFailsWith<RuntimeException> {
             op.execute(client, Unit) {
-                op.context[ResponseChecksum] = asyncLazy { incorrectChecksum }
+                op.context[ResponseChecksum] = CompletableDeferred(incorrectChecksum)
             }
         }
         assertContains(ex.message!!, "$incorrectChecksum != $expectedChecksum")
@@ -124,7 +124,7 @@ class FlexibleChecksumsResponseMiddlewareTest {
 
         op.execute(client, Unit) {
             // CRC32C validation should be prioritized
-            op.context[ResponseChecksum] = asyncLazy { "wS3hug==" }
+            op.context[ResponseChecksum] = CompletableDeferred("wS3hug==")
         }
     }
 
