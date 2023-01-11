@@ -11,9 +11,12 @@ import aws.smithy.kotlin.runtime.http.HttpBody
 import aws.smithy.kotlin.runtime.http.isSuccess
 import aws.smithy.kotlin.runtime.http.operation.*
 import aws.smithy.kotlin.runtime.http.response.HttpCall
+import aws.smithy.kotlin.runtime.http.toCompletingBody
 import aws.smithy.kotlin.runtime.http.toHashingBody
 import aws.smithy.kotlin.runtime.io.*
 import aws.smithy.kotlin.runtime.util.*
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.Deferred
 import kotlin.coroutines.coroutineContext
 
 // The priority to validate response checksums, if multiple are present
@@ -37,7 +40,7 @@ internal val MULTIPART_CHECKSUM_HEADER_REGEX = Regex("x-amz-checksum-[a-zA-Z0-9]
 public class FlexibleChecksumsResponseMiddleware : ReceiveMiddleware {
 
     public companion object {
-        public val ResponseChecksum: AttributeKey<LazyAsyncValue<String>> = AttributeKey("ResponseChecksum")
+        public val ResponseChecksum: AttributeKey<Deferred<String>> = AttributeKey("ResponseChecksum")
         public val ExpectedResponseChecksum: AttributeKey<String> = AttributeKey("ExpectedResponseChecksum")
 
         public val ChecksumHeaderValidated: AttributeKey<String> = AttributeKey("ChecksumHeaderValidated")
@@ -69,18 +72,20 @@ public class FlexibleChecksumsResponseMiddleware : ReceiveMiddleware {
 
         val checksumAlgorithm = checksumHeader.removePrefix("x-amz-checksum-").toHashFunction() ?: throw ClientException("could not parse checksum algorithm from header $checksumHeader")
 
+        val deferredChecksum = CompletableDeferred<String>()
+
         // Wrap the response body in a hashing body
         logger.debug { "Setting hashing body" }
         call = call.copy(
             response = call.response.copy(
-                body = call.response.body.toHashingBody(checksumAlgorithm, call.response.body.contentLength),
+                body = call.response.body
+                    .toHashingBody(checksumAlgorithm, call.response.body.contentLength)
+                    .toCompletingBody(deferredChecksum, call.response.body.contentLength),
             ),
         )
 
         request.context[ExpectedResponseChecksum] = call.response.headers[checksumHeader]!!
-
-        val body = call.response.body
-        request.context[ResponseChecksum] = asyncLazy { body.checksum }
+        request.context[ResponseChecksum] =  deferredChecksum
 
         return call
     }

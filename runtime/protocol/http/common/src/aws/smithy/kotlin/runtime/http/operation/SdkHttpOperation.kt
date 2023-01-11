@@ -11,6 +11,7 @@ import aws.smithy.kotlin.runtime.http.middleware.FlexibleChecksumsResponseMiddle
 import aws.smithy.kotlin.runtime.http.middleware.FlexibleChecksumsResponseMiddleware.Companion.ResponseChecksum
 import aws.smithy.kotlin.runtime.http.response.complete
 import aws.smithy.kotlin.runtime.util.*
+import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.job
 
@@ -96,8 +97,8 @@ public suspend fun <I, O, R> SdkHttpOperation<I, O>.execute(
  * @throws RuntimeException if there is a checksum mismatch
  */
 internal suspend fun validateResponseChecksum(context: ExecutionContext) {
-    val lazyResponseChecksum: LazyAsyncValue<String>? = context.getOrNull(ResponseChecksum)
-    val responseChecksum = lazyResponseChecksum?.get()
+    val deferredChecksum: Deferred<String>? = context.getOrNull(ResponseChecksum)
+    val responseChecksum = deferredChecksum?.await()
 
     responseChecksum?.let {
         val expectedResponseChecksum: String = context[ExpectedResponseChecksum]
