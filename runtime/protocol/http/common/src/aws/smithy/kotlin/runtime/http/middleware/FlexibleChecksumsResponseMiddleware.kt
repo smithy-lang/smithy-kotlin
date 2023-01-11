@@ -84,7 +84,7 @@ public class FlexibleChecksumsResponseMiddleware : ReceiveMiddleware {
         )
 
         request.context[ExpectedResponseChecksum] = call.response.headers[checksumHeader]!!
-        request.context[ResponseChecksum] =  deferredChecksum
+        request.context[ResponseChecksum] = deferredChecksum
 
         return call
     }

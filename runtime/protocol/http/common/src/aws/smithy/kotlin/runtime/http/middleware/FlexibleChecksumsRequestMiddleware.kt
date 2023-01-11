@@ -68,8 +68,8 @@ public class FlexibleChecksumsRequestMiddleware(private val checksumAlgorithmNam
         } else if (req.subject.headers[headerName] == null) {
             logger.debug { "Calculating checksum" }
 
-            val checksum = req.subject.body.readAll()?.hash(checksumAlgorithm)?.encodeBase64String() ?:
-                throw RuntimeException("Failed to calculate checksum")
+            val checksum = req.subject.body.readAll()?.hash(checksumAlgorithm)?.encodeBase64String()
+                ?: throw RuntimeException("Failed to calculate checksum")
 
             req.subject.header(headerName, checksum)
         }
