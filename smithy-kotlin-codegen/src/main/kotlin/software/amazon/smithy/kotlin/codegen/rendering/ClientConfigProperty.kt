@@ -7,6 +7,7 @@ package software.amazon.smithy.kotlin.codegen.rendering
 import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.kotlin.codegen.core.*
+import software.amazon.smithy.kotlin.codegen.lang.KotlinTypes
 import software.amazon.smithy.kotlin.codegen.model.boxed
 import software.amazon.smithy.kotlin.codegen.model.buildSymbol
 import software.amazon.smithy.kotlin.codegen.model.defaultValue
@@ -226,6 +227,7 @@ private fun builtInProperty(
  */
 object KotlinClientRuntimeConfigProperty {
     val HttpClientEngine: ClientConfigProperty
+    val HttpInterceptors: ClientConfigProperty
     val IdempotencyTokenProvider: ClientConfigProperty
     val RetryStrategy: ClientConfigProperty
     val SdkLogMode: ClientConfigProperty
@@ -330,6 +332,25 @@ object KotlinClientRuntimeConfigProperty {
                     serviceName,
                 )
             }
+        }
+
+        HttpInterceptors = ClientConfigProperty {
+            name = "interceptors"
+            val defaultValue = "${KotlinTypes.Collections.mutableListOf.fullName}()"
+            val target = RuntimeTypes.Http.Interceptors.HttpInterceptor
+            symbol = KotlinTypes.Collections.mutableList(target, isNullable = false, default = defaultValue)
+
+            // built (immutable) property type changes from MutableList -> List
+            propertyType = ClientConfigPropertyType.Custom { prop, writer ->
+                val immutablePropertyType = KotlinTypes.Collections.list(target, isNullable = false)
+                writer.write("public val #1L: #2T = builder.#1L", prop.propertyName, immutablePropertyType)
+            }
+            documentation = """
+                Add an [aws.smithy.kotlin.runtime.client.Interceptor] that will have access to read and modify
+                the request and response objects as they are processed by the SDK.
+                Interceptors added using this method are executed in the order they are configured and are always 
+                later than any added automatically by the SDK.
+            """.trimIndent()
         }
     }
 }

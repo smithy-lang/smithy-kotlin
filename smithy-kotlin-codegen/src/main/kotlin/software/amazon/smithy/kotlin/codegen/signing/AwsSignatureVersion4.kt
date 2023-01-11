@@ -26,7 +26,7 @@ import software.amazon.smithy.model.traits.OptionalAuthTrait
  * See the `name` property of: https://awslabs.github.io/smithy/1.0/spec/aws/aws-auth.html#aws-auth-sigv4-trait
  */
 open class AwsSignatureVersion4(private val service: String) : ProtocolMiddleware {
-    override val name: String = RuntimeTypes.Auth.Signing.AwsSigningCommon.AwsSigningMiddleware.name
+    override val name: String = RuntimeTypes.Auth.Signing.AwsSigningCommon.AwsHttpSigner.name
     override val order: Byte = 126 // Must come before GlacierBodyChecksum
 
     init {
@@ -39,12 +39,10 @@ open class AwsSignatureVersion4(private val service: String) : ProtocolMiddlewar
     }
 
     final override fun render(ctx: ProtocolGenerator.GenerationContext, op: OperationShape, writer: KotlinWriter) {
-        writer.addImport(RuntimeTypes.Auth.Signing.AwsSigningCommon.AwsSigningMiddleware)
+        writer.addImport(RuntimeTypes.Auth.Signing.AwsSigningCommon.AwsHttpSigner)
 
-        writer.withBlock("op.install(", ")") {
-            withBlock("#T {", "}", RuntimeTypes.Auth.Signing.AwsSigningCommon.AwsSigningMiddleware) {
-                renderSigningConfig(op, writer)
-            }
+        writer.withBlock("op.execution.signer = #T {", "}", RuntimeTypes.Auth.Signing.AwsSigningCommon.AwsHttpSigner) {
+            renderSigningConfig(op, writer)
         }
     }
 

@@ -4,8 +4,8 @@
  */
 package aws.smithy.kotlin.runtime.auth.awssigning.tests
 
+import aws.smithy.kotlin.runtime.auth.awssigning.AwsHttpSigner
 import aws.smithy.kotlin.runtime.auth.awssigning.AwsSigningAttributes
-import aws.smithy.kotlin.runtime.auth.awssigning.middleware.AwsSigningMiddleware
 import aws.smithy.kotlin.runtime.client.ExecutionContext
 import aws.smithy.kotlin.runtime.http.*
 import aws.smithy.kotlin.runtime.http.content.ByteArrayContent
@@ -15,12 +15,10 @@ import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
 import aws.smithy.kotlin.runtime.http.response.HttpCall
 import aws.smithy.kotlin.runtime.http.response.HttpResponse
-import aws.smithy.kotlin.runtime.io.SdkBuffer
 import aws.smithy.kotlin.runtime.io.SdkByteReadChannel
-import aws.smithy.kotlin.runtime.io.readRemaining
+import aws.smithy.kotlin.runtime.net.Host
 import aws.smithy.kotlin.runtime.time.Instant
 import aws.smithy.kotlin.runtime.util.get
-import aws.smithy.kotlin.runtime.util.net.Host
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.TestResult
 import kotlinx.coroutines.test.runTest
@@ -30,9 +28,12 @@ import kotlin.test.assertEquals
 @Suppress("HttpUrlsUsage")
 @OptIn(ExperimentalCoroutinesApi::class)
 public abstract class MiddlewareSigningTestBase : HasSigner {
-    private fun buildOperationWithChannel(streaming: Boolean = false, replayable: Boolean = true, requestBody: String = "{\"TableName\": \"foo\"}"): Pair<SdkHttpOperation<Unit, HttpResponse>, SdkByteReadChannel?> {
-        val channel: SdkByteReadChannel? = if (streaming) SdkByteReadChannel(requestBody.encodeToByteArray()) else null
-
+    private fun buildOperation(
+        requestBody: String = "{\"TableName\": \"foo\"}",
+        streaming: Boolean = false,
+        replayable: Boolean = true,
+        unsigned: Boolean = false,
+    ): SdkHttpOperation<Unit, HttpResponse> {
         val operation: SdkHttpOperation<Unit, HttpResponse> = SdkHttpOperation.build {
             serializer = object : HttpSerialize<Unit> {
                 override suspend fun serialize(context: ExecutionContext, input: Unit): HttpRequestBuilder =
@@ -47,7 +48,7 @@ public abstract class MiddlewareSigningTestBase : HasSigner {
                             true -> {
                                 object : HttpBody.ChannelContent() {
                                     override val contentLength: Long = requestBody.length.toLong()
-                                    override fun readFrom(): SdkByteReadChannel = channel as SdkByteReadChannel
+                                    override fun readFrom(): SdkByteReadChannel = SdkByteReadChannel(requestBody.encodeToByteArray())
                                     override val isOneShot: Boolean = !replayable
                                 }
                             }
@@ -67,15 +68,18 @@ public abstract class MiddlewareSigningTestBase : HasSigner {
             }
         }
 
-        return Pair(operation, channel)
-    }
+        operation.execution.signer = AwsHttpSigner {
+            signer = this@MiddlewareSigningTestBase.signer
+            credentialsProvider = testCredentialsProvider
+            service = "demo"
+            isUnsignedPayload = unsigned
+        }
 
-    private fun buildOperation(streaming: Boolean = false, replayable: Boolean = true, requestBody: String = "{\"TableName\": \"foo\"}") =
-        buildOperationWithChannel(streaming, replayable, requestBody).first
+        return operation
+    }
 
     private suspend fun getSignedRequest(
         operation: SdkHttpOperation<Unit, HttpResponse>,
-        unsigned: Boolean = false,
     ): HttpRequest {
         val mockEngine = object : HttpClientEngineBase("test") {
             override suspend fun roundTrip(context: ExecutionContext, request: HttpRequest): HttpCall {
@@ -85,15 +89,6 @@ public abstract class MiddlewareSigningTestBase : HasSigner {
             }
         }
         val client = sdkHttpClient(mockEngine)
-
-        operation.install(
-            AwsSigningMiddleware {
-                signer = this@MiddlewareSigningTestBase.signer
-                credentialsProvider = testCredentialsProvider
-                service = "demo"
-                isUnsignedPayload = unsigned
-            },
-        )
 
         operation.roundTrip(client, Unit)
         return operation.context[HttpOperationContext.HttpCallList].last().request
@@ -114,13 +109,13 @@ public abstract class MiddlewareSigningTestBase : HasSigner {
 
     @Test
     public fun testUnsignedRequest(): TestResult = runTest {
-        val op = buildOperation()
+        val op = buildOperation(unsigned = true)
         val expectedDate = "20201016T195600Z"
         val expectedSig = "AWS4-HMAC-SHA256 Credential=AKID/20201016/us-east-1/demo/aws4_request, " +
             "SignedHeaders=content-length;host;x-amz-archive-description;x-amz-date;x-amz-security-token, " +
             "Signature=6c0cc11630692e2c98f28003c8a0349b56011361e0bab6545f1acee01d1d211e"
 
-        val signed = getSignedRequest(op, unsigned = true)
+        val signed = getSignedRequest(op)
         assertEquals(expectedDate, signed.headers["X-Amz-Date"])
         assertEquals(expectedSig, signed.headers["Authorization"])
     }
@@ -140,7 +135,7 @@ public abstract class MiddlewareSigningTestBase : HasSigner {
 
     @Test
     public fun testSignAwsChunkedStreamNonReplayable(): TestResult = runTest {
-        val op = buildOperation(streaming = true, replayable = false, requestBody = "a".repeat(AwsSigningMiddleware.AWS_CHUNKED_THRESHOLD + 1))
+        val op = buildOperation(streaming = true, replayable = false, requestBody = "a".repeat(AwsHttpSigner.AWS_CHUNKED_THRESHOLD + 1))
         val expectedDate = "20201016T195600Z"
         val expectedSig = "AWS4-HMAC-SHA256 Credential=AKID/20201016/us-east-1/demo/aws4_request, " +
             "SignedHeaders=content-encoding;content-length;host;transfer-encoding;x-amz-archive-description;x-amz-date;x-amz-decoded-content-length;x-amz-security-token, " +
@@ -153,14 +148,13 @@ public abstract class MiddlewareSigningTestBase : HasSigner {
 
     @Test
     public fun testSignAwsChunkedStreamReplayable(): TestResult = runTest {
-        val (op, channel) = buildOperationWithChannel(streaming = true, replayable = true, requestBody = "a".repeat(AwsSigningMiddleware.AWS_CHUNKED_THRESHOLD + 1))
+        val op = buildOperation(streaming = true, replayable = true, requestBody = "a".repeat(AwsHttpSigner.AWS_CHUNKED_THRESHOLD + 1))
         val expectedDate = "20201016T195600Z"
         val expectedSig = "AWS4-HMAC-SHA256 Credential=AKID/20201016/us-east-1/demo/aws4_request, " +
             "SignedHeaders=content-encoding;content-length;host;transfer-encoding;x-amz-archive-description;x-amz-date;x-amz-decoded-content-length;x-amz-security-token, " +
             "Signature=dec1a06b61f953afe430ce4a0f10ee8d5ad3d29696516c4ccda23a0aab6664d5"
 
         val signed = getSignedRequest(op)
-        channel?.readRemaining(SdkBuffer())
         assertEquals(expectedDate, signed.headers["X-Amz-Date"])
         assertEquals(expectedSig, signed.headers["Authorization"])
     }

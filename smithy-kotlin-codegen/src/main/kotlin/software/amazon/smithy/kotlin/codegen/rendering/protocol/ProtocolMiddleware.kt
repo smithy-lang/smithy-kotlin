@@ -8,6 +8,9 @@ package software.amazon.smithy.kotlin.codegen.rendering.protocol
 import software.amazon.smithy.kotlin.codegen.core.KotlinWriter
 import software.amazon.smithy.model.shapes.OperationShape
 
+// TODO - we should probably rename this, it's not restricted to middleware really since render() allows you to do
+// whatever you need/want to register and interact with an operation. This includes not being a middleware
+// at all (e.g. HttpInterceptor). OperationCustomization?
 /**
  * Interface that allows middleware to be registered and configured with the generated protocol client
  * How this interface is used is entirely protocol/generator dependent

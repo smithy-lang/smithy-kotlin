@@ -5,8 +5,8 @@
 // This package implements common standard library functions used by endpoint resolvers.
 package aws.smithy.kotlin.runtime.http.endpoints.functions
 
+import aws.smithy.kotlin.runtime.net.*
 import aws.smithy.kotlin.runtime.util.InternalApi
-import aws.smithy.kotlin.runtime.util.net.*
 import aws.smithy.kotlin.runtime.util.text.ensureSuffix
 import aws.smithy.kotlin.runtime.util.text.urlEncodeComponent
 
@@ -51,7 +51,7 @@ public fun parseUrl(value: String?): Url? =
             authority,
             path = sdkUrl.path,
             normalizedPath = sdkUrl.path.ensureSuffix("/"),
-            isIp = sdkUrl.host is Host.IPv4 || sdkUrl.host is Host.IPv6,
+            isIp = sdkUrl.host is Host.IpAddress,
         )
     }
 

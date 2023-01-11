@@ -72,7 +72,7 @@ public fun httpRequestTest(block: HttpRequestTestBuilder.() -> Unit): TestResult
                 testHeaders["Content-Length"] = contentLength.toString()
             }
 
-            actual = request.copy(headers = testHeaders.build())
+            actual = HttpRequest(method = request.method, url = request.url, headers = testHeaders.build(), body = request.body)
 
             // this control flow requires the service call (or whatever calls the mock engine) to be the last
             // statement in the operation{} block...

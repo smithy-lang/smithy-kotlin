@@ -37,6 +37,29 @@ public class HttpRequestBuilder private constructor(
     }
 }
 
+internal data class HttpRequestBuilderView(
+    internal val builder: HttpRequestBuilder,
+    internal val allowToBuilder: Boolean,
+) : HttpRequest {
+    override val method: HttpMethod = builder.method
+    override val url: Url by lazy { builder.url.build() }
+    override val headers: Headers by lazy { builder.headers.build() }
+    override val body: HttpBody = builder.body
+}
+
+/**
+ * Create a read-only view of a builder. Often, we need a read-only view of a builder that _may_ get modified.
+ * This would normally require a round trip invoking [HttpRequestBuilder.build] and then converting that back
+ * to a builder using [HttpRequest.toBuilder]. Instead, we can create an immutable view of a builder that
+ * is cheap to convert to a builder.
+ *
+ * @param allowToBuilder flag controlling how this type will behave when [HttpRequest.toBuilder] is invoked. When
+ * false an exception will be thrown, otherwise it will succeed.
+ */
+internal fun HttpRequestBuilder.immutableView(
+    allowToBuilder: Boolean = false,
+): HttpRequest = HttpRequestBuilderView(this, allowToBuilder)
+
 // convenience extensions
 
 /**

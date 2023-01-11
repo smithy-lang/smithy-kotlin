@@ -9,10 +9,10 @@ import aws.smithy.kotlin.runtime.client.ExecutionContext
 import aws.smithy.kotlin.runtime.http.*
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.io.SdkByteReadChannel
+import aws.smithy.kotlin.runtime.net.Host
 import aws.smithy.kotlin.runtime.tracing.TraceEvent
 import aws.smithy.kotlin.runtime.tracing.TraceSpan
 import aws.smithy.kotlin.runtime.tracing.TraceSpanContextElement
-import aws.smithy.kotlin.runtime.util.net.Host
 import okio.Buffer
 import org.junit.jupiter.api.Test
 import kotlin.coroutines.EmptyCoroutineContext

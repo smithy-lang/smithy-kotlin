@@ -14,7 +14,6 @@ import software.amazon.smithy.kotlin.codegen.lang.toEscapedLiteral
 import software.amazon.smithy.kotlin.codegen.model.*
 import software.amazon.smithy.kotlin.codegen.rendering.endpoints.*
 import software.amazon.smithy.kotlin.codegen.rendering.serde.*
-import software.amazon.smithy.kotlin.codegen.retries.StandardRetryMiddleware
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.knowledge.HttpBinding
 import software.amazon.smithy.model.shapes.*
@@ -65,7 +64,6 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
     protected open fun getDefaultHttpMiddleware(ctx: ProtocolGenerator.GenerationContext): List<ProtocolMiddleware> =
         listOf(
             ResolveEndpointMiddleware(),
-            StandardRetryMiddleware(),
         )
 
     /**
