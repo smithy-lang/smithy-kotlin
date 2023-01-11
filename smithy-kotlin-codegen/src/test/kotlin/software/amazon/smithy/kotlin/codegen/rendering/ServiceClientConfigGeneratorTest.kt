@@ -47,22 +47,22 @@ public class Config private constructor(builder: Builder): HttpClientConfig, Ide
         val expectedProps = """
     override val httpClientEngine: HttpClientEngine? = builder.httpClientEngine
     public val endpointProvider: EndpointProvider = requireNotNull(builder.endpointProvider) { "endpointProvider is a required configuration property" }
-    override val idempotencyTokenProvider: IdempotencyTokenProvider? = builder.idempotencyTokenProvider
-    public val interceptors: kotlin.collections.List<aws.smithy.kotlin.runtime.http.interceptors.HttpInterceptor> = builder.interceptors
-    public val retryStrategy: RetryStrategy = builder.retryStrategy ?: StandardRetryStrategy()
+    override val idempotencyTokenProvider: IdempotencyTokenProvider = builder.idempotencyTokenProvider ?: IdempotencyTokenProvider.Default
+    override val interceptors: kotlin.collections.List<aws.smithy.kotlin.runtime.http.interceptors.HttpInterceptor> = builder.interceptors
+    override val retryStrategy: RetryStrategy = builder.retryStrategy ?: StandardRetryStrategy()
     override val sdkLogMode: SdkLogMode = builder.sdkLogMode
     override val tracer: Tracer = builder.tracer ?: DefaultTracer(LoggingTraceProbe, "${TestModelDefault.SERVICE_NAME}")
 """
         contents.shouldContainWithDiff(expectedProps)
 
         val expectedBuilder = """
-    public class Builder {
+    public class Builder: HttpClientConfig.Builder, IdempotencyTokenConfig.Builder, SdkClientConfig.Builder<Config>, TracingClientConfig.Builder {
         /**
          * Override the default HTTP client engine used to make SDK requests (e.g. configure proxy behavior, timeouts, concurrency, etc).
          * NOTE: The caller is responsible for managing the lifetime of the engine when set. The SDK
          * client will not close it when the client is closed.
          */
-        public var httpClientEngine: HttpClientEngine? = null
+        override var httpClientEngine: HttpClientEngine? = null
 
         /**
          * The endpoint provider used to determine where to make service requests.
@@ -73,7 +73,7 @@ public class Config private constructor(builder: Builder): HttpClientConfig, Ide
          * Override the default idempotency token generator. SDK clients will generate tokens for members
          * that represent idempotent tokens when not explicitly set by the caller using this generator.
          */
-        public var idempotencyTokenProvider: IdempotencyTokenProvider? = null
+        override var idempotencyTokenProvider: IdempotencyTokenProvider? = null
 
         /**
          * Add an [aws.smithy.kotlin.runtime.client.Interceptor] that will have access to read and modify
@@ -81,13 +81,13 @@ public class Config private constructor(builder: Builder): HttpClientConfig, Ide
          * Interceptors added using this method are executed in the order they are configured and are always
          * later than any added automatically by the SDK.
          */
-        public var interceptors: kotlin.collections.MutableList<aws.smithy.kotlin.runtime.http.interceptors.HttpInterceptor> = kotlin.collections.mutableListOf()
+        override var interceptors: kotlin.collections.MutableList<aws.smithy.kotlin.runtime.http.interceptors.HttpInterceptor> = kotlin.collections.mutableListOf()
 
         /**
          * The [RetryStrategy] implementation to use for service calls. All API calls will be wrapped by the
          * strategy.
          */
-        public var retryStrategy: RetryStrategy? = null
+        override var retryStrategy: RetryStrategy? = null
 
         /**
          * Configure events that will be logged. By default clients will not output
@@ -99,7 +99,7 @@ public class Config private constructor(builder: Builder): HttpClientConfig, Ide
          * performance considerations when dumping the request/response body. This is primarily a tool for
          * debug purposes.
          */
-        public var sdkLogMode: SdkLogMode = SdkLogMode.Default
+        override var sdkLogMode: SdkLogMode = SdkLogMode.Default
 
         /**
          * The tracer that is responsible for creating trace spans and wiring them up to a tracing backend (e.g.,
@@ -107,10 +107,9 @@ public class Config private constructor(builder: Builder): HttpClientConfig, Ide
          * trace span and delegates to a logging trace probe (i.e.,
          * `DefaultTracer(LoggingTraceProbe, "<service-name>")`).
          */
-        public var tracer: Tracer? = null
+        override var tracer: Tracer? = null
 
-        @PublishedApi
-        internal fun build(): Config = Config(this)
+        override fun build(): Config = Config(this)
     }
 """
         contents.shouldContainWithDiff(expectedBuilder)

@@ -110,4 +110,10 @@ class ServiceClientConfigGenerator(
         allProps.addAll(integrationProps)
         super.render(ctx, allProps, writer)
     }
+
+    override fun renderBuilderBuildMethod(writer: KotlinWriter) {
+        // we should _ALWAYS_ end up with SdkClientConfig.Builder as a base class for service client config, need
+        // to override the build() method we inherit rather than use the default generated `internal` one
+        writer.write("override fun build(): #configClass.name:L = #configClass.name:L(this)")
+    }
 }

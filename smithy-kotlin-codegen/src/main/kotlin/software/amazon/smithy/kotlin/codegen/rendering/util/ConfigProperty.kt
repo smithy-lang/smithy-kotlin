@@ -7,6 +7,7 @@ package software.amazon.smithy.kotlin.codegen.rendering.util
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.kotlin.codegen.core.*
 import software.amazon.smithy.kotlin.codegen.model.boxed
+import software.amazon.smithy.kotlin.codegen.model.buildSymbol
 import software.amazon.smithy.kotlin.codegen.model.defaultValue
 
 typealias CustomPropertyRenderer = (ConfigProperty, KotlinWriter) -> Unit
@@ -185,6 +186,18 @@ class ConfigProperty private constructor(builder: Builder) {
         var additionalImports: List<Symbol> = emptyList()
 
         var order: Int = 0
+
+        /**
+         * Convenience function to set the [builderBaseClass] symbol to a `Builder` class nested in the base
+         * class interface itself (common in the runtime)
+         */
+        fun useNestedBuilderBaseClass() {
+            val base = checkNotNull(baseClass) { "must set baseClass before calling" }
+            builderBaseClass = buildSymbol {
+                name = "${base.name}.Builder"
+                namespace = base.namespace
+            }
+        }
 
         fun build(): ConfigProperty = ConfigProperty(this)
     }

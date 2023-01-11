@@ -80,7 +80,7 @@ class ServiceClientGeneratorTest {
 
     @Test
     fun `it generates config`() {
-        val expected = "public class Config: SdkClientConfig"
+        val expected = "public class Config private constructor(builder: Builder): IdempotencyTokenConfig, SdkClientConfig, TracingClientConfig"
         commonTestContents.shouldContainOnlyOnce(expected)
     }
 

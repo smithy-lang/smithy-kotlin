@@ -31,8 +31,6 @@ import software.amazon.smithy.kotlin.codegen.model.propertyTypeMutability
  */
 abstract class AbstractConfigGenerator {
 
-    // TODO - add overrides for base class names/etc
-
     open fun render(
         ctx: CodegenContext,
         props: Collection<ConfigProperty>,
@@ -117,21 +115,44 @@ abstract class AbstractConfigGenerator {
     }
 
     protected open fun renderBuilder(props: Collection<ConfigProperty>, writer: KotlinWriter) {
+        val baseClasses = props
+            .mapNotNull { it.builderBaseClass?.name }
+            .sorted()
+            .toSet()
+            .joinToString(", ")
+
+        val formattedBaseClasses = if (baseClasses.isNotEmpty()) ": $baseClasses" else ""
+
         writer.write("")
-            .withBlock("public class Builder {", "}") {
+            .withBlock("public class Builder$formattedBaseClasses {", "}") {
                 // override DSL properties
                 props
                     .filter { it.propertyType !is ConfigPropertyType.ConstantValue }
                     .forEach { prop ->
-                        prop.documentation?.let { writer.dokka(it) }
-                        val mutability = prop.builderSymbol.propertyTypeMutability ?: PropertyTypeMutability.MUTABLE
-                        write("public $mutability #L: #D", prop.propertyName, prop.builderSymbol)
-                        write("")
+
+                        if (prop.propertyType is ConfigPropertyType.Custom && prop.propertyType.renderBuilder != null) {
+                            val renderBuilderProp = checkNotNull(prop.propertyType.renderBuilder)
+                            renderBuilderProp(prop, writer)
+                        } else {
+                            val override = if (prop.builderRequiresOverride) "override" else "public"
+                            prop.documentation?.let { writer.dokka(it) }
+                            val mutability = prop.builderSymbol.propertyTypeMutability ?: PropertyTypeMutability.MUTABLE
+                            write("$override $mutability #L: #D", prop.propertyName, prop.builderSymbol)
+                            write("")
+                        }
                     }
 
-                // TODO - make this configurable
-                write("@PublishedApi")
-                write("internal fun build(): #configClass.name:L = #configClass.name:L(this)")
+                renderBuilderBuildMethod(writer)
             }
+    }
+
+    /**
+     * Render the `build()` function for the builder
+     */
+    protected open fun renderBuilderBuildMethod(writer: KotlinWriter) {
+        writer.apply {
+            write("@PublishedApi")
+            write("internal fun build(): #configClass.name:L = #configClass.name:L(this)")
+        }
     }
 }

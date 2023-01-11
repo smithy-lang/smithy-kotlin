@@ -13,9 +13,17 @@ import aws.smithy.kotlin.runtime.util.Uuid.WeakRng
 public interface IdempotencyTokenConfig {
 
     /**
-     * Allows to supply a custom function generate idempotency tokens.
+     * The [IdempotencyTokenProvider] used to generate idempotency tokens.
      */
-    public val idempotencyTokenProvider: IdempotencyTokenProvider?
+    public val idempotencyTokenProvider: IdempotencyTokenProvider
+
+    public interface Builder {
+        /**
+         * Override the default idempotency token generator. SDK clients will generate tokens for members
+         * that represent idempotent tokens when not explicitly set by the caller using this generator.
+         */
+        public var idempotencyTokenProvider: IdempotencyTokenProvider?
+    }
 }
 
 /**
