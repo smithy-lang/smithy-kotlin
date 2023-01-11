@@ -12,12 +12,14 @@ import software.amazon.smithy.kotlin.codegen.core.*
 import software.amazon.smithy.kotlin.codegen.integration.KotlinIntegration
 import software.amazon.smithy.kotlin.codegen.loadModelFromResource
 import software.amazon.smithy.kotlin.codegen.model.*
+import software.amazon.smithy.kotlin.codegen.rendering.util.ConfigProperty
+import software.amazon.smithy.kotlin.codegen.rendering.util.ConfigPropertyType
 import software.amazon.smithy.kotlin.codegen.test.*
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.ServiceShape
 import kotlin.test.Test
 
-class ClientConfigGeneratorTest {
+class ServiceClientConfigGeneratorTest {
     private fun getModel(): Model = loadModelFromResource("idempotent-token-test-model.smithy")
 
     private fun createWriter() =
@@ -32,7 +34,7 @@ class ClientConfigGeneratorTest {
         val writer = createWriter()
         val renderingCtx = testCtx.toRenderingContext(writer, serviceShape)
 
-        ClientConfigGenerator(renderingCtx).render()
+        ServiceClientConfigGenerator(serviceShape).render(renderingCtx, renderingCtx.writer)
         val contents = writer.toString()
 
         contents.assertBalancedBracesAndParens()
@@ -136,14 +138,14 @@ public class Config private constructor(builder: Builder): HttpClientConfig, Ide
         val writer = createWriter()
         val renderingCtx = testCtx.toRenderingContext(writer, serviceShape)
 
-        val customProps = arrayOf(
-            ClientConfigProperty.Int("intProp", 1, documentation = "non-null-int"),
-            ClientConfigProperty.Int("nullIntProp"),
-            ClientConfigProperty.String("stringProp"),
-            ClientConfigProperty.Boolean("boolProp"),
+        val customProps = listOf(
+            ConfigProperty.Int("intProp", 1, documentation = "non-null-int"),
+            ConfigProperty.Int("nullIntProp"),
+            ConfigProperty.String("stringProp"),
+            ConfigProperty.Boolean("boolProp"),
         )
 
-        ClientConfigGenerator(renderingCtx, detectDefaultProps = false, builderReturnType = null, *customProps).render()
+        ServiceClientConfigGenerator(serviceShape, detectDefaultProps = false).render(renderingCtx, customProps, renderingCtx.writer)
         val contents = writer.toString()
 
         // we should have no base classes when not using the default and no inheritFrom specified
@@ -184,14 +186,14 @@ public class Config private constructor(builder: Builder) {
         val writer = createWriter()
         val customIntegration = object : KotlinIntegration {
 
-            override fun additionalServiceConfigProps(ctx: CodegenContext): List<ClientConfigProperty> =
-                listOf(ClientConfigProperty.Int("customProp"))
+            override fun additionalServiceConfigProps(ctx: CodegenContext): List<ConfigProperty> =
+                listOf(ConfigProperty.Int("customProp"))
         }
 
         val renderingCtx = testCtx.toRenderingContext(writer, serviceShape)
             .copy(integrations = listOf(customIntegration))
 
-        ClientConfigGenerator(renderingCtx, detectDefaultProps = false).render()
+        ServiceClientConfigGenerator(serviceShape, detectDefaultProps = false).render(renderingCtx, renderingCtx.writer)
         val contents = writer.toString()
 
         val expectedProps = """
@@ -234,8 +236,8 @@ public class Config private constructor(builder: Builder) {
         val writer = createWriter()
         val renderingCtx = testCtx.toRenderingContext(writer, serviceShape)
 
-        val customProps = arrayOf(
-            ClientConfigProperty {
+        val customProps = listOf(
+            ConfigProperty {
                 name = "complexProp"
                 symbol = buildSymbol {
                     name = "ComplexType"
@@ -252,7 +254,7 @@ public class Config private constructor(builder: Builder) {
             },
         )
 
-        ClientConfigGenerator(renderingCtx, detectDefaultProps = false, builderReturnType = null, *customProps).render()
+        ServiceClientConfigGenerator(serviceShape, detectDefaultProps = false).render(renderingCtx, customProps, renderingCtx.writer)
         val contents = writer.toString()
 
         listOf(
@@ -273,7 +275,8 @@ public class Config private constructor(builder: Builder) {
         val writer = createWriter()
         val renderingCtx = testCtx.toRenderingContext(writer, serviceShape)
 
-        ClientConfigGenerator(renderingCtx).render()
+        ServiceClientConfigGenerator(serviceShape, detectDefaultProps = false).render(renderingCtx, renderingCtx.writer)
+
         val contents = writer.toString()
 
         contents.assertBalancedBracesAndParens()
@@ -296,38 +299,38 @@ public class Config private constructor(builder: Builder) {
         val writer = createWriter()
         val renderingCtx = testCtx.toRenderingContext(writer, serviceShape)
 
-        val customProps = arrayOf(
-            ClientConfigProperty {
+        val customProps = listOf(
+            ConfigProperty {
                 name = "nullFoo"
                 symbol = buildSymbol { name = "Foo" }
             },
-            ClientConfigProperty {
+            ConfigProperty {
                 name = "defaultFoo"
                 symbol = buildSymbol { name = "Foo"; defaultValue = "DefaultFoo"; nullable = false }
             },
-            ClientConfigProperty {
+            ConfigProperty {
                 name = "constFoo"
                 symbol = buildSymbol { name = "Foo" }
-                propertyType = ClientConfigPropertyType.ConstantValue("ConstantFoo")
+                propertyType = ConfigPropertyType.ConstantValue("ConstantFoo")
             },
-            ClientConfigProperty {
+            ConfigProperty {
                 name = "requiredFoo"
                 symbol = buildSymbol { name = "Foo" }
-                propertyType = ClientConfigPropertyType.Required()
+                propertyType = ConfigPropertyType.Required()
             },
-            ClientConfigProperty {
+            ConfigProperty {
                 name = "requiredFoo2"
                 symbol = buildSymbol { name = "Foo" }
-                propertyType = ClientConfigPropertyType.Required("override message")
+                propertyType = ConfigPropertyType.Required("override message")
             },
-            ClientConfigProperty {
+            ConfigProperty {
                 name = "requiredDefaultedFoo"
                 symbol = buildSymbol { name = "Foo" }
-                propertyType = ClientConfigPropertyType.RequiredWithDefault("DefaultedFoo()")
+                propertyType = ConfigPropertyType.RequiredWithDefault("DefaultedFoo()")
             },
         )
 
-        ClientConfigGenerator(renderingCtx, detectDefaultProps = false, builderReturnType = null, *customProps).render()
+        ServiceClientConfigGenerator(serviceShape, detectDefaultProps = false).render(renderingCtx, customProps, renderingCtx.writer)
         val contents = writer.toString()
 
         val expectedProps = """

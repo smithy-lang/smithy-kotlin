@@ -23,16 +23,6 @@ class ServiceClientGenerator(private val ctx: RenderingContext<ServiceShape>) {
     object Sections {
 
         /**
-         * SectionId used when rendering the service client interface
-         */
-        object ServiceInterface : SectionId {
-            /**
-             * The current rendering context for the service generator
-             */
-            val RenderingContext: SectionKey<RenderingContext<ServiceShape>> = SectionKey("RenderingContext")
-        }
-
-        /**
          * SectionId used when rendering the service client builder
          */
         object ServiceBuilder : SectionId {
@@ -81,10 +71,7 @@ class ServiceClientGenerator(private val ctx: RenderingContext<ServiceShape>) {
 
         writer.renderDocumentation(service)
         writer.renderAnnotations(service)
-        writer.declareSection(Sections.ServiceInterface) {
-            write("public interface ${serviceSymbol.name} : #T {", RuntimeTypes.Core.Client.SdkClient)
-        }
-            .indent()
+        writer.openBlock("public interface ${serviceSymbol.name} : #T {", RuntimeTypes.Core.Client.SdkClient)
             .call { overrideServiceName() }
             .call {
                 // allow access to client's Config
@@ -109,8 +96,7 @@ class ServiceClientGenerator(private val ctx: RenderingContext<ServiceShape>) {
             .call {
                 operations.forEach { renderOperation(operationsIndex, it) }
             }
-            .dedent()
-            .write("}")
+            .closeBlock("}")
             .write("")
 
         operations.forEach { renderOperationDslOverload(operationsIndex, it) }
@@ -121,7 +107,7 @@ class ServiceClientGenerator(private val ctx: RenderingContext<ServiceShape>) {
             Sections.ServiceConfig,
             context = mapOf(Sections.ServiceConfig.RenderingContext to ctx),
         ) {
-            ClientConfigGenerator(ctx).render()
+            ServiceClientConfigGenerator(service).render(ctx, ctx.writer)
         }
     }
 

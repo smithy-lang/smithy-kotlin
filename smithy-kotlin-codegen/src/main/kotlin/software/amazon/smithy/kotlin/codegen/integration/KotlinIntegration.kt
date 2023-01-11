@@ -9,9 +9,9 @@ import software.amazon.smithy.kotlin.codegen.*
 import software.amazon.smithy.kotlin.codegen.core.CodegenContext
 import software.amazon.smithy.kotlin.codegen.core.KotlinDelegator
 import software.amazon.smithy.kotlin.codegen.core.KotlinWriter
-import software.amazon.smithy.kotlin.codegen.rendering.ClientConfigProperty
 import software.amazon.smithy.kotlin.codegen.rendering.protocol.ProtocolGenerator
 import software.amazon.smithy.kotlin.codegen.rendering.protocol.ProtocolMiddleware
+import software.amazon.smithy.kotlin.codegen.rendering.util.ConfigProperty
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.ServiceShape
 import software.amazon.smithy.model.shapes.Shape
@@ -65,7 +65,7 @@ interface KotlinIntegration {
      * @param ctx The current codegen context. This allows integrations to filter properties
      * by things like the protocol being generated for, settings, etc.
      */
-    fun additionalServiceConfigProps(ctx: CodegenContext): List<ClientConfigProperty> = listOf()
+    fun additionalServiceConfigProps(ctx: CodegenContext): List<ConfigProperty> = listOf()
 
     /**
      * Preprocess the model before code generation.

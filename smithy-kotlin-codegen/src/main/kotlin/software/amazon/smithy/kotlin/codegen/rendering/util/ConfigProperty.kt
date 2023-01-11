@@ -2,7 +2,7 @@
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
  * SPDX-License-Identifier: Apache-2.0
  */
-package software.amazon.smithy.kotlin.codegen.rendering
+package software.amazon.smithy.kotlin.codegen.rendering.util
 
 import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.codegen.core.Symbol
@@ -13,8 +13,10 @@ import software.amazon.smithy.kotlin.codegen.model.buildSymbol
 import software.amazon.smithy.kotlin.codegen.model.defaultValue
 import software.amazon.smithy.kotlin.codegen.model.namespace
 
+typealias CustomPropertyRenderer = (ConfigProperty, KotlinWriter) -> Unit
+
 /**
- * Represents a service client config property to be added to the generated client
+ * Represents a configuration property (e.g. service client config)
  *
  * e.g.
  *
@@ -26,7 +28,12 @@ import software.amazon.smithy.kotlin.codegen.model.namespace
  * }
  * ```
  */
-class ClientConfigProperty private constructor(builder: Builder) {
+class ConfigProperty private constructor(builder: Builder) {
+    init {
+        if (builder.builderSymbol != null && builder.symbol != builder.builderSymbol) {
+            requireNotNull(builder.toBuilderExpression) { "an expression mapping the immutable property back to the mutable builder is required when the builder symbol differs" }
+        }
+    }
 
     /**
      * The symbol (type) for the property
@@ -41,6 +48,20 @@ class ClientConfigProperty private constructor(builder: Builder) {
      * ```
      */
     val symbol: Symbol = requireNotNull(builder.symbol)
+
+    /**
+     * The symbol (type) for the builder implementation. Usually this is the same as the underlying symbol.
+     * This can be used to generate a different builder symbol (e.g. `MutableList` vs `List`).
+     */
+    val builderSymbol: Symbol = builder.builderSymbol ?: symbol
+
+    /**
+     * The expression used to map immutable config back to a builder instance. This is usually not required
+     * when the symbol types are the same as a simple assignment will work.
+     *
+     * e.g. `toBuilderExpression = ".toMutableList()"`
+     */
+    val toBuilderExpression: String? = builder.toBuilderExpression
 
     /**
      * Help text to be rendered for the property
@@ -60,9 +81,16 @@ class ClientConfigProperty private constructor(builder: Builder) {
     val baseClass: Symbol? = builder.baseClass
 
     /**
+     * Additional base classes the config builder should inherit from
+     *
+     * NOTE: Adding 1 or more base classes will implicitly render the property with an `override` modifier
+     */
+    val builderBaseClass: Symbol? = builder.builderBaseClass
+
+    /**
      * The configuration property type. This controls how the property is constructed and rendered
      */
-    val propertyType: ClientConfigPropertyType = builder.propertyType
+    val propertyType: ConfigPropertyType = builder.propertyType
 
     /**
      * Additional symbols that should be imported when this property is generated. This is useful for
@@ -82,8 +110,14 @@ class ClientConfigProperty private constructor(builder: Builder) {
     internal val requiresOverride: Boolean
         get() = baseClass != null
 
+    /**
+     * Flag indicating if builder property stems from some base class and needs an override modifier when rendered
+     */
+    internal val builderRequiresOverride: Boolean
+        get() = builderBaseClass != null
+
     companion object {
-        operator fun invoke(block: Builder.() -> Unit): ClientConfigProperty =
+        operator fun invoke(block: Builder.() -> Unit): ConfigProperty =
             Builder().apply(block).build()
 
         /**
@@ -100,7 +134,7 @@ class ClientConfigProperty private constructor(builder: Builder) {
             defaultValue: Int? = null,
             documentation: String? = null,
             baseClass: Symbol? = null,
-        ): ClientConfigProperty =
+        ): ConfigProperty =
             builtInProperty(name, builtInSymbol("Int", defaultValue?.toString()), documentation, baseClass)
 
         /**
@@ -117,7 +151,7 @@ class ClientConfigProperty private constructor(builder: Builder) {
             defaultValue: Boolean? = null,
             documentation: String? = null,
             baseClass: Symbol? = null,
-        ): ClientConfigProperty =
+        ): ConfigProperty =
             builtInProperty(name, builtInSymbol("Boolean", defaultValue?.toString()), documentation, baseClass)
 
         /**
@@ -134,67 +168,30 @@ class ClientConfigProperty private constructor(builder: Builder) {
             defaultValue: String? = null,
             documentation: String? = null,
             baseClass: Symbol? = null,
-        ): ClientConfigProperty =
+        ): ConfigProperty =
             builtInProperty(name, builtInSymbol("String", defaultValue), documentation, baseClass)
     }
 
     class Builder {
         var symbol: Symbol? = null
+        var builderSymbol: Symbol? = null
+        var toBuilderExpression: String? = null
 
         // override the property name (defaults to symbol name)
         var name: String? = null
         var documentation: String? = null
 
         var baseClass: Symbol? = null
+        var builderBaseClass: Symbol? = null
 
-        var propertyType: ClientConfigPropertyType = ClientConfigPropertyType.SymbolDefault
+        var propertyType: ConfigPropertyType = ConfigPropertyType.SymbolDefault
 
         var additionalImports: List<Symbol> = emptyList()
 
         var order: Int = 0
 
-        fun build(): ClientConfigProperty = ClientConfigProperty(this)
+        fun build(): ConfigProperty = ConfigProperty(this)
     }
-}
-
-/**
- * Descriptor for how a configuration property is rendered when the configuration is built
- */
-sealed class ClientConfigPropertyType {
-    /**
-     * A property type that uses the symbol type and builder symbol directly
-     */
-    object SymbolDefault : ClientConfigPropertyType()
-
-    /**
-     * Specifies that the value should be populated with a constant value that cannot be overridden in the builder.
-     * These are effectively read-only properties that will show up in the configuration type but not the builder.
-     *
-     * @param value the value to assign to the property at construction time
-     */
-    data class ConstantValue(val value: String) : ClientConfigPropertyType()
-
-    /**
-     * A configuration property that is required to be set (i.e. not null).
-     * If the property is not provided in the builder then an IllegalArgumentException is thrown
-     *
-     * @param message The exception message to throw if the property is null, if not set a message is generated
-     * automatically based on the property name
-     */
-    data class Required(val message: String? = null) : ClientConfigPropertyType()
-
-    /**
-     * A configuration property that is required but has a default value. This has the same semantics of [Required]
-     * but instead of an exception the default value will be used when not provided in the builder.
-     *
-     * @param default the value to assign if the corresponding builder property is null
-     */
-    data class RequiredWithDefault(val default: String) : ClientConfigPropertyType()
-
-    /**
-     * A configuration property that uses [render] to manually render the actual immutable property
-     */
-    data class Custom(val render: (ClientConfigProperty, KotlinWriter) -> Unit) : ClientConfigPropertyType()
 }
 
 private fun builtInSymbol(symbolName: String, defaultValue: String?): Symbol {
@@ -214,8 +211,8 @@ private fun builtInProperty(
     symbol: Symbol,
     documentation: String?,
     baseClass: Symbol?,
-): ClientConfigProperty =
-    ClientConfigProperty {
+): ConfigProperty =
+    ConfigProperty {
         this.symbol = symbol
         this.name = name
         this.documentation = documentation
@@ -226,12 +223,12 @@ private fun builtInProperty(
  * Common client runtime related config properties
  */
 object KotlinClientRuntimeConfigProperty {
-    val HttpClientEngine: ClientConfigProperty
-    val HttpInterceptors: ClientConfigProperty
-    val IdempotencyTokenProvider: ClientConfigProperty
-    val RetryStrategy: ClientConfigProperty
-    val SdkLogMode: ClientConfigProperty
-    val Tracer: ClientConfigProperty
+    val HttpClientEngine: ConfigProperty
+    val HttpInterceptors: ConfigProperty
+    val IdempotencyTokenProvider: ConfigProperty
+    val RetryStrategy: ConfigProperty
+    val SdkLogMode: ConfigProperty
+    val Tracer: ConfigProperty
 
     init {
         val httpClientConfigSymbol = buildSymbol {
@@ -239,7 +236,7 @@ object KotlinClientRuntimeConfigProperty {
             namespace(KotlinDependency.HTTP, "config")
         }
 
-        HttpClientEngine = ClientConfigProperty {
+        HttpClientEngine = ConfigProperty {
             symbol = RuntimeTypes.Http.Engine.HttpClientEngine
             baseClass = httpClientConfigSymbol
             documentation = """
@@ -250,7 +247,7 @@ object KotlinClientRuntimeConfigProperty {
             order = -100
         }
 
-        IdempotencyTokenProvider = ClientConfigProperty {
+        IdempotencyTokenProvider = ConfigProperty {
             symbol = RuntimeTypes.Core.Client.IdempotencyTokenProvider
 
             baseClass = RuntimeTypes.Core.Client.IdempotencyTokenConfig
@@ -261,7 +258,7 @@ object KotlinClientRuntimeConfigProperty {
             """.trimIndent()
         }
 
-        RetryStrategy = ClientConfigProperty {
+        RetryStrategy = ConfigProperty {
             symbol = RuntimeTypes.Core.Retries.RetryStrategy
             name = "retryStrategy"
             documentation = """
@@ -269,12 +266,12 @@ object KotlinClientRuntimeConfigProperty {
                 strategy.
             """.trimIndent()
 
-            propertyType = ClientConfigPropertyType.RequiredWithDefault("StandardRetryStrategy()")
+            propertyType = ConfigPropertyType.RequiredWithDefault("StandardRetryStrategy()")
 
             additionalImports = listOf(RuntimeTypes.Core.Retries.StandardRetryStrategy)
         }
 
-        SdkLogMode = ClientConfigProperty {
+        SdkLogMode = ConfigProperty {
             symbol = buildSymbol {
                 name = RuntimeTypes.Core.Client.SdkLogMode.name
                 namespace = RuntimeTypes.Core.Client.SdkLogMode.namespace
@@ -303,7 +300,7 @@ object KotlinClientRuntimeConfigProperty {
 
         // TODO support a nice DSL for this so that callers don't have to be aware of `DefaultTracer` if they don't want
         // to, they can just call `SomeClient { tracer { clientName = "Foo" } }` in the simple case.
-        Tracer = ClientConfigProperty {
+        Tracer = ConfigProperty {
             symbol = RuntimeTypes.Tracing.Core.Tracer
             baseClass = tracingClientConfigSymbol
             documentation = """
@@ -312,7 +309,7 @@ object KotlinClientRuntimeConfigProperty {
                 trace span and delegates to a logging trace probe (i.e.,
                 `DefaultTracer(LoggingTraceProbe, "<service-name>")`).
             """.trimIndent()
-            propertyType = ClientConfigPropertyType.Custom { prop, writer ->
+            propertyType = ConfigPropertyType.Custom(render = { prop, writer ->
                 val serviceName = writer.getContext("service.name")?.toString()
                     ?: throw CodegenException("The service.name context must be set for client config generation")
                 writer.write(
@@ -322,20 +319,20 @@ object KotlinClientRuntimeConfigProperty {
                     RuntimeTypes.Tracing.Core.LoggingTraceProbe,
                     serviceName,
                 )
-            }
+            },)
         }
 
-        HttpInterceptors = ClientConfigProperty {
+        HttpInterceptors = ConfigProperty {
             name = "interceptors"
             val defaultValue = "${KotlinTypes.Collections.mutableListOf.fullName}()"
             val target = RuntimeTypes.Http.Interceptors.HttpInterceptor
             symbol = KotlinTypes.Collections.mutableList(target, isNullable = false, default = defaultValue)
 
             // built (immutable) property type changes from MutableList -> List
-            propertyType = ClientConfigPropertyType.Custom { prop, writer ->
+            propertyType = ConfigPropertyType.Custom(render = { prop, writer ->
                 val immutablePropertyType = KotlinTypes.Collections.list(target, isNullable = false)
                 writer.write("public val #1L: #2T = builder.#1L", prop.propertyName, immutablePropertyType)
-            }
+            },)
             documentation = """
                 Add an [aws.smithy.kotlin.runtime.client.Interceptor] that will have access to read and modify
                 the request and response objects as they are processed by the SDK.
