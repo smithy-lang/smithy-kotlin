@@ -328,12 +328,36 @@ public class Config private constructor(builder: Builder) {
                 symbol = buildSymbol { name = "Foo" }
                 propertyType = ConfigPropertyType.RequiredWithDefault("DefaultedFoo()")
             },
+            ConfigProperty {
+                name = "builderSymbolDiffers"
+                symbol = buildSymbol { name = "List<Foo>" }
+                builderSymbol = buildSymbol { name = "MutableList<Foo>" }
+                toBuilderExpression = ".toMutableList()"
+                propertyType = ConfigPropertyType.SymbolDefault
+            },
+            ConfigProperty {
+                name = "builderSymbolImmutable"
+                symbol = buildSymbol {
+                    name = "List<Foo>"
+                    nullable = false
+                }
+                builderSymbol = buildSymbol {
+                    name = "MutableList<Foo>"
+                    defaultValue = "mutableListOf()"
+                    nullable = false
+                    setProperty(SymbolProperty.PROPERTY_TYPE_MUTABILITY, PropertyTypeMutability.IMMUTABLE)
+                }
+                toBuilderExpression = ".toMutableList()"
+                propertyType = ConfigPropertyType.SymbolDefault
+            },
         )
 
         ServiceClientConfigGenerator(serviceShape, detectDefaultProps = false).render(renderingCtx, customProps, renderingCtx.writer)
         val contents = writer.toString()
 
         val expectedProps = """
+    public val builderSymbolDiffers: List<Foo>? = builder.builderSymbolDiffers
+    public val builderSymbolImmutable: List<Foo> = builder.builderSymbolImmutable
     public val constFoo: Foo = ConstantFoo
     public val defaultFoo: Foo = builder.defaultFoo
     public val nullFoo: Foo? = builder.nullFoo
@@ -344,6 +368,10 @@ public class Config private constructor(builder: Builder) {
         contents.shouldContainWithDiff(expectedProps)
 
         val expectedImplProps = """
+        public var builderSymbolDiffers: MutableList<Foo>? = null
+
+        public val builderSymbolImmutable: MutableList<Foo> = mutableListOf()
+
         public var defaultFoo: Foo = DefaultFoo
 
         public var nullFoo: Foo? = null

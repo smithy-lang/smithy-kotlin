@@ -16,7 +16,7 @@ import software.amazon.smithy.kotlin.codegen.rendering.endpoints.EndpointProvide
 import software.amazon.smithy.kotlin.codegen.rendering.util.AbstractConfigGenerator
 import software.amazon.smithy.kotlin.codegen.rendering.util.ConfigProperty
 import software.amazon.smithy.kotlin.codegen.rendering.util.ConfigPropertyType
-import software.amazon.smithy.kotlin.codegen.rendering.util.KotlinClientRuntimeConfigProperty
+import software.amazon.smithy.kotlin.codegen.rendering.util.RuntimeConfigProperty
 import software.amazon.smithy.kotlin.codegen.utils.getOrNull
 import software.amazon.smithy.kotlin.codegen.utils.toCamelCase
 import software.amazon.smithy.model.shapes.ServiceShape
@@ -40,17 +40,17 @@ class ServiceClientConfigGenerator(
      * Attempt to detect configuration properties automatically based on the model
      */
     private fun detectDefaultProps(context: CodegenContext, shape: ServiceShape): List<ConfigProperty> = buildList {
-        add(KotlinClientRuntimeConfigProperty.SdkLogMode)
+        add(RuntimeConfigProperty.SdkLogMode)
         if (context.protocolGenerator?.applicationProtocol?.isHttpProtocol == true) {
-            add(KotlinClientRuntimeConfigProperty.HttpClientEngine)
-            add(KotlinClientRuntimeConfigProperty.HttpInterceptors)
+            add(RuntimeConfigProperty.HttpClientEngine)
+            add(RuntimeConfigProperty.HttpInterceptors)
         }
         if (shape.hasIdempotentTokenMember(context.model)) {
-            add(KotlinClientRuntimeConfigProperty.IdempotencyTokenProvider)
+            add(RuntimeConfigProperty.IdempotencyTokenProvider)
         }
 
-        add(KotlinClientRuntimeConfigProperty.RetryStrategy)
-        add(KotlinClientRuntimeConfigProperty.Tracer)
+        add(RuntimeConfigProperty.RetryStrategy)
+        add(RuntimeConfigProperty.Tracer)
 
         if (shape.hasTrait<ClientContextParamsTrait>()) {
             addAll(clientContextConfigProps(shape.expectTrait()))

@@ -9,6 +9,8 @@ import software.amazon.smithy.codegen.core.SymbolReference
 import software.amazon.smithy.kotlin.codegen.core.CodegenContext
 import software.amazon.smithy.kotlin.codegen.core.KotlinWriter
 import software.amazon.smithy.kotlin.codegen.core.withBlock
+import software.amazon.smithy.kotlin.codegen.model.PropertyTypeMutability
+import software.amazon.smithy.kotlin.codegen.model.propertyTypeMutability
 
 /**
  * Re-usable base class for generating some type that only contains configuration.
@@ -122,7 +124,8 @@ abstract class AbstractConfigGenerator {
                     .filter { it.propertyType !is ConfigPropertyType.ConstantValue }
                     .forEach { prop ->
                         prop.documentation?.let { writer.dokka(it) }
-                        write("public var #L: #D", prop.propertyName, prop.symbol)
+                        val mutability = prop.builderSymbol.propertyTypeMutability ?: PropertyTypeMutability.MUTABLE
+                        write("public $mutability #L: #D", prop.propertyName, prop.builderSymbol)
                         write("")
                     }
 
