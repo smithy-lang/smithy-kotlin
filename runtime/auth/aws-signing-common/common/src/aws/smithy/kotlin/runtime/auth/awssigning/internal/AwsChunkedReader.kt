@@ -84,9 +84,7 @@ internal class AwsChunkedReader(
         nextChunk?.writeUtf8("\r\n") // terminating CRLF to signal end of chunk
 
         // transfer all segments to the working chunk
-        nextChunk?.let {
-            chunk.writeAll(it)
-        }
+        nextChunk?.let { chunk.writeAll(it) }
 
         return chunk.size > 0L
     }
