@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.14.3] - 01/12/2023
+
+### Features
+* [#122](https://github.com/awslabs/smithy-kotlin/issues/122) Add capability to intercept SDK operations
+* [#745](https://github.com/awslabs/smithy-kotlin/issues/745) Add KMP DNS resolver
+
+### Miscellaneous
+* Add design document for per-op config.
+
 ## [0.14.2] - 12/22/2022
 
 ### Fixes
