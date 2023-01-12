@@ -8,6 +8,7 @@ import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.kotlin.codegen.core.*
 import software.amazon.smithy.kotlin.codegen.integration.SectionId
 import software.amazon.smithy.kotlin.codegen.integration.SectionKey
+import software.amazon.smithy.kotlin.codegen.lang.KotlinTypes
 import software.amazon.smithy.kotlin.codegen.model.hasStreamingMember
 import software.amazon.smithy.kotlin.codegen.model.operationSignature
 import software.amazon.smithy.model.knowledge.OperationIndex
@@ -150,7 +151,7 @@ class ServiceClientGenerator(private val ctx: RenderingContext<ServiceShape>) {
             RuntimeTypes.Core.Client.SdkClientFactory,
             serviceSymbol,
         ) {
-            write("@JvmStatic")
+            write("@#T", KotlinTypes.Jvm.JvmStatic)
             write("override fun builder(): Builder = Builder()")
         }
     }
