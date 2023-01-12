@@ -30,5 +30,5 @@ public abstract class AbstractSdkClientBuilder<
     /**
      * Return a new [TClient] instance with the given [config]
      */
-    public abstract fun newClient(config: TConfig): TClient
+    protected abstract fun newClient(config: TConfig): TClient
 }
