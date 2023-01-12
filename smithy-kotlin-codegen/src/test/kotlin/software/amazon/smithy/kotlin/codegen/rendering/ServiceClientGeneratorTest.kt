@@ -63,6 +63,7 @@ class ServiceClientGeneratorTest {
     fun `it renders a companion object with default client factory if protocol generator`() {
         val expected = """
             public companion object : SdkClientFactory<Config, Config.Builder, TestClient, Builder> {
+                @JvmStatic
                 override fun builder(): Builder = Builder()
             }
         """.formatForTest()

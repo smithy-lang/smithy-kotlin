@@ -150,6 +150,7 @@ class ServiceClientGenerator(private val ctx: RenderingContext<ServiceShape>) {
             RuntimeTypes.Core.Client.SdkClientFactory,
             serviceSymbol,
         ) {
+            write("@JvmStatic")
             write("override fun builder(): Builder = Builder()")
         }
     }
