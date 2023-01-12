@@ -99,7 +99,7 @@ abstract class HttpProtocolClientGenerator(
      */
     private fun renderInit(writer: KotlinWriter) {
         writer.withBlock("init {", "}") {
-            withBlock("if (config.httpClientEngine.#T()) {", "}", RuntimeTypes.Http.Engine.isManaged) {
+            withBlock("if (config.httpClientEngine is #T) {", "}", RuntimeTypes.Http.Engine.ManagedHttpClientEngine) {
                 write("config.httpClientEngine.share()")
             }
             write("client = #T(config.httpClientEngine)", RuntimeTypes.Http.SdkHttpClientFn)
@@ -271,11 +271,22 @@ abstract class HttpProtocolClientGenerator(
         }
     }
 
+    /**
+     * Render the client close implementation, the base behavior of which is to close any managed config resources.
+     * Use [renderAdditionalClose] to add logic within this block.
+     */
     protected open fun renderClose(writer: KotlinWriter) {
         writer.withBlock("override fun close() {", "}") {
-            write("client.close()")
+            withBlock("if (config.httpClientEngine is #T) {", "}", RuntimeTypes.Http.Engine.ManagedHttpClientEngine) {
+                write("client.close()")
+            }
+
+            write("")
+            renderAdditionalClose(writer)
         }
     }
+
+    protected open fun renderAdditionalClose(writer: KotlinWriter) { }
 
     /**
      * Render any additional methods to support client operation

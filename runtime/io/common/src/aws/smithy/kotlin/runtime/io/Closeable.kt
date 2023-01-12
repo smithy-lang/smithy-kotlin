@@ -6,7 +6,8 @@
 package aws.smithy.kotlin.runtime.io
 
 import aws.smithy.kotlin.runtime.util.InternalApi
-import kotlinx.atomicfu.atomic
+import kotlinx.atomicfu.locks.SynchronizedObject
+import kotlinx.atomicfu.locks.synchronized
 
 // this really should live in the stdlib...
 // https://youtrack.jetbrains.com/issue/KT-31066
@@ -23,29 +24,36 @@ public expect interface Closeable {
 }
 
 /**
- * A [Closeable] resource that may be shared by multiple consumers.
+ * Implements share count logic to track usage of internally created [Closeable]s.
  *
  * A user invokes the [share] method to indicate that they're using the resource, and calls [close] to release like with
  * a standard [Closeable], but the entity is only truly closed once the final user has released it.
  */
-public interface SharedCloseable : Closeable {
-    public fun share()
-}
-
-/**
- * Wraps a [Closeable], implementing share count logic to expose the delegate as a [SharedCloseable].
- */
 @InternalApi
-public class SharedCloseableImpl<T : Closeable>(private val delegate: T) : SharedCloseable {
-    private val shareCount = atomic(0)
+public open class ManagedCloseable(private val closeable: Closeable) : Closeable {
+    private val state = object : SynchronizedObject() {
+        var shareCount: Int = 0
+        var isClosed: Boolean = false
+    }
 
-    public override fun share() {
-        shareCount.incrementAndGet()
+    public fun share() {
+        synchronized(state) {
+            if (state.isClosed) {
+                throw IllegalStateException("caller attempted to share() a closed object")
+            }
+            state.shareCount++
+        }
     }
 
     public override fun close() {
-        if (shareCount.decrementAndGet() <= 0) {
-            delegate.close()
+        synchronized(state) {
+            if (state.isClosed) return@synchronized
+
+            state.shareCount--
+            if (state.shareCount > 0) return@synchronized
+
+            state.isClosed = true
+            closeable.close()
         }
     }
 }

@@ -6,18 +6,20 @@ package aws.smithy.kotlin.runtime.io
 
 import kotlin.test.*
 
-class SharedCloseableTest {
+class ManagedCloseableTest {
     class MockCloseableImpl : Closeable {
         var isClosed = false
+        var closeCount = 0
         override fun close() {
             isClosed = true
+            ++closeCount
         }
     }
 
     @Test
     fun testShareCount() {
         val closeable = MockCloseableImpl()
-        val wrapped = SharedCloseableImpl(closeable)
+        val wrapped = ManagedCloseable(closeable)
 
         wrapped.share()
         wrapped.share()
@@ -28,7 +30,7 @@ class SharedCloseableTest {
     @Test
     fun testCloseNoShare() {
         val closeable = MockCloseableImpl()
-        val wrapped = SharedCloseableImpl(closeable)
+        val wrapped = ManagedCloseable(closeable)
 
         wrapped.close()
         assertTrue(closeable.isClosed)
@@ -37,10 +39,22 @@ class SharedCloseableTest {
     @Test
     fun testCloseWithShare() {
         val closeable = MockCloseableImpl()
-        val wrapped = SharedCloseableImpl(closeable)
+        val wrapped = ManagedCloseable(closeable)
 
         wrapped.share()
         wrapped.close()
         assertTrue(closeable.isClosed)
+    }
+
+    @Test
+    fun testInnerCloseIdempotent() {
+        val closeable = MockCloseableImpl()
+        val wrapped = ManagedCloseable(closeable)
+
+        wrapped.share()
+        wrapped.close()
+        wrapped.close()
+        assertTrue(closeable.isClosed)
+        assertEquals(1, closeable.closeCount)
     }
 }

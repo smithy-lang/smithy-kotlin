@@ -10,6 +10,7 @@ import io.kotest.matchers.string.shouldContain
 import software.amazon.smithy.codegen.core.SymbolReference
 import software.amazon.smithy.kotlin.codegen.core.*
 import software.amazon.smithy.kotlin.codegen.integration.KotlinIntegration
+import software.amazon.smithy.kotlin.codegen.lang.KotlinTypes
 import software.amazon.smithy.kotlin.codegen.loadModelFromResource
 import software.amazon.smithy.kotlin.codegen.model.*
 import software.amazon.smithy.kotlin.codegen.rendering.util.ConfigProperty
@@ -45,7 +46,7 @@ public class Config private constructor(builder: Builder) : HttpClientConfig, Id
         contents.shouldContainWithDiff(expectedCtor)
 
         val expectedProps = """
-    override val httpClientEngine: HttpClientEngine = builder.httpClientEngine?.borrow() ?: DefaultHttpEngine().manage()
+    override val httpClientEngine: HttpClientEngine = builder.httpClientEngine ?: DefaultHttpEngine().manage()
     public val endpointProvider: EndpointProvider = requireNotNull(builder.endpointProvider) { "endpointProvider is a required configuration property" }
     override val idempotencyTokenProvider: IdempotencyTokenProvider = builder.idempotencyTokenProvider ?: IdempotencyTokenProvider.Default
     override val interceptors: kotlin.collections.List<aws.smithy.kotlin.runtime.http.interceptors.HttpInterceptor> = builder.interceptors
@@ -382,5 +383,45 @@ public class Config private constructor(builder: Builder) {
         public var requiredFoo2: Foo? = null
 """
         contents.shouldContainWithDiff(expectedImplProps)
+    }
+
+    @Test
+    fun `it renders toBuilder impl`() {
+        val model = getModel()
+        val serviceShape = model.expectShape<ServiceShape>(TestModelDefault.SERVICE_SHAPE_ID)
+
+        val testCtx = model.newTestContext()
+        val writer = createWriter()
+        val renderingCtx = testCtx.toRenderingContext(writer, serviceShape)
+
+        val additionalProps = arrayOf(
+            // constant values should be omitted
+            ClientConfigProperty {
+                name = "testConstantBooleanField"
+                symbol = KotlinTypes.Boolean
+                propertyType = ClientConfigPropertyType.ConstantValue("true")
+            },
+            // lists should convert back to mutable list in builder
+            ClientConfigProperty {
+                name = "testListField"
+                symbol = KotlinTypes.Collections.MutableList
+            },
+        )
+
+        ClientConfigGenerator(renderingCtx, detectDefaultProps = true, builderReturnType = null, *additionalProps).render()
+        val contents = writer.toString()
+
+        val expectedProps = """
+            public fun toBuilder(): Builder = Builder().apply {
+                httpClientEngine = this@Config.httpClientEngine
+                endpointProvider = this@Config.endpointProvider
+                idempotencyTokenProvider = this@Config.idempotencyTokenProvider
+                interceptors = this@Config.interceptors.toMutableList()
+                retryStrategy = this@Config.retryStrategy
+                sdkLogMode = this@Config.sdkLogMode
+                testListField = this@Config.testListField.toMutableList()
+                tracer = this@Config.tracer
+            }""".formatForTest()
+        contents.shouldContainWithDiff(expectedProps)
     }
 }

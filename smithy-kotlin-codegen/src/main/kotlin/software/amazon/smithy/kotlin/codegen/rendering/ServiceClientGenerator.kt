@@ -188,12 +188,13 @@ class ServiceClientGenerator(private val ctx: RenderingContext<ServiceShape>) {
 
     private fun renderWithConfig() {
         writer.dokka {
-            write("Create a new subclient starting from the current one's config.")
-            write("Defaulted closeable resources are shared between clients.")
+            write("Create a new, independent client starting from the current one's config.")
+            write("Defaulted closeable resources are shared between clients, and will only be closed when ALL clients using them are closed.")
             write("This method allows the caller to perform scoped config overrides for one or more client operations.")
         }
-        writer.withBlock("public fun #1T.withConfig(block: #1T.Config.Builder.() -> Unit): #1T =", "", serviceSymbol) {
-            write("Default#L(config.toBuilder().apply(block).build())", serviceSymbol.name)
+        writer.withBlock("public fun #1T.withConfig(block: #1T.Config.Builder.() -> Unit): #1T {", "}", serviceSymbol) {
+            write("val newConfig = config.toBuilder().apply(block).build()")
+            write("return Default#L(newConfig)", serviceSymbol.name)
         }
     }
 

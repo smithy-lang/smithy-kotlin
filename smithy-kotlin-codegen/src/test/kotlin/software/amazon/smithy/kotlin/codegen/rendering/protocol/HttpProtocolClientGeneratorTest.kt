@@ -55,7 +55,7 @@ class HttpProtocolClientGeneratorTest {
         commonTestContents.shouldContainOnlyOnceWithDiff("val client: SdkHttpClient")
         val expected = """
     init {
-        if (config.httpClientEngine.isManaged()) {
+        if (config.httpClientEngine is ManagedHttpClientEngine) {
             config.httpClientEngine.share()
         }
         client = sdkHttpClient(config.httpClientEngine)
@@ -69,7 +69,10 @@ class HttpProtocolClientGeneratorTest {
     fun `it renders close`() {
         val expected = """
     override fun close() {
-        client.close()
+        if (config.httpClientEngine is ManagedHttpClientEngine) {
+            client.close()
+        }
+
     }
 """
         commonTestContents.shouldContainOnlyOnceWithDiff(expected)
