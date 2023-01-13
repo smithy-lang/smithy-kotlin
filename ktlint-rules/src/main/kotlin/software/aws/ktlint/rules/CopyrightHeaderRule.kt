@@ -3,12 +3,7 @@ package software.aws.ktlint.rules
 import com.pinterest.ktlint.core.Rule
 import org.jetbrains.kotlin.com.intellij.lang.ASTNode
 
-class CopyrightHeaderRule : Rule(
-    "copyright-header",
-    visitorModifiers = setOf(
-        VisitorModifier.RunOnRootNodeOnly
-    )
-) {
+class CopyrightHeaderRule : Rule("copyright-header") {
     companion object {
         private val header = """
             /*
@@ -17,7 +12,7 @@ class CopyrightHeaderRule : Rule(
              */
         """.trimIndent()
     }
-    override fun visit(
+    override fun beforeVisitChildNodes(
         node: ASTNode,
         autoCorrect: Boolean,
         emit: (offset: Int, errorMessage: String, canBeAutoCorrected: Boolean) -> Unit,
