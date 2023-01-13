@@ -20,5 +20,6 @@ class CopyrightHeaderRule : Rule("copyright-header") {
         if (!node.text.startsWith(header)) {
             emit(node.startOffset, "Missing or incorrect file header", false)
         }
+        this.stopTraversalOfAST() // traverse the root node only
     }
 }
