@@ -88,7 +88,7 @@ public abstract class MiddlewareSigningTestBase : HasSigner {
                 return HttpCall(request, resp, now, now)
             }
         }
-        val client = sdkHttpClient(mockEngine)
+        val client = SdkHttpClient(mockEngine)
 
         operation.roundTrip(client, Unit)
         return operation.context[HttpOperationContext.HttpCallList].last().request

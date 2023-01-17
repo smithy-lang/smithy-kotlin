@@ -36,7 +36,6 @@ class HttpProtocolClientGeneratorTest {
         commonTestContents.shouldContainOnlyOnceWithDiff("import ${TestModelDefault.NAMESPACE}.model.*")
         commonTestContents.shouldContainOnlyOnceWithDiff("import ${TestModelDefault.NAMESPACE}.transform.*")
         commonTestContents.shouldContainOnlyOnceWithDiff("import ${KotlinDependency.HTTP.namespace}.SdkHttpClient")
-        commonTestContents.shouldContainOnlyOnceWithDiff("import ${KotlinDependency.HTTP.namespace}.sdkHttpClient")
         commonTestContents.shouldContainOnlyOnceWithDiff("import ${KotlinDependency.HTTP.namespace}.operation.SdkHttpOperation")
         commonTestContents.shouldContainOnlyOnceWithDiff("import ${KotlinDependency.HTTP.namespace}.operation.context")
         commonTestContents.shouldContainOnlyOnceWithDiff("import ${KotlinDependency.HTTP.namespace}.operation.execute")
@@ -52,14 +51,11 @@ class HttpProtocolClientGeneratorTest {
 
     @Test
     fun `it renders properties and init`() {
-        commonTestContents.shouldContainOnlyOnceWithDiff("val client: SdkHttpClient")
+        commonTestContents.shouldContainOnlyOnceWithDiff("val managedResources = SdkManagedGroup()")
+        commonTestContents.shouldContainOnlyOnceWithDiff("val client = SdkHttpClient(config.httpClientEngine)")
         val expected = """
     init {
-        if (config.httpClientEngine is ManagedHttpClientEngine) {
-            config.httpClientEngine.share()
-        }
-        client = sdkHttpClient(config.httpClientEngine)
-
+        managedResources.addIfManaged(config.httpClientEngine)
     }
 """
         commonTestContents.shouldContainOnlyOnceWithDiff(expected)
@@ -69,10 +65,7 @@ class HttpProtocolClientGeneratorTest {
     fun `it renders close`() {
         val expected = """
     override fun close() {
-        if (config.httpClientEngine is ManagedHttpClientEngine) {
-            client.close()
-        }
-
+        managedResources.unshareAll()
     }
 """
         commonTestContents.shouldContainOnlyOnceWithDiff(expected)

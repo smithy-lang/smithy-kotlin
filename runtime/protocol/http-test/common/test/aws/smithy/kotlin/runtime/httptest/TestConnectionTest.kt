@@ -6,11 +6,11 @@
 package aws.smithy.kotlin.runtime.httptest
 
 import aws.smithy.kotlin.runtime.http.HttpStatusCode
+import aws.smithy.kotlin.runtime.http.SdkHttpClient
 import aws.smithy.kotlin.runtime.http.content.ByteArrayContent
 import aws.smithy.kotlin.runtime.http.readAll
 import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
 import aws.smithy.kotlin.runtime.http.response.complete
-import aws.smithy.kotlin.runtime.http.sdkHttpClient
 import aws.smithy.kotlin.runtime.net.Host
 import io.kotest.matchers.string.shouldContain
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -34,7 +34,7 @@ class TestConnectionTest {
             }
         }
 
-        val client = sdkHttpClient(engine)
+        val client = SdkHttpClient(engine)
 
         val req = HttpRequestBuilder().apply {
             url.host = Host.Domain("test.com")
@@ -61,7 +61,7 @@ class TestConnectionTest {
             }
         }
 
-        val client = sdkHttpClient(engine)
+        val client = SdkHttpClient(engine)
 
         val req = HttpRequestBuilder().apply {
             url.host = Host.Domain("test.com")
@@ -88,7 +88,7 @@ class TestConnectionTest {
             }
         }
 
-        val client = sdkHttpClient(engine)
+        val client = SdkHttpClient(engine)
 
         val req = HttpRequestBuilder().apply {
             url.host = Host.Domain("test.com")
@@ -115,7 +115,7 @@ class TestConnectionTest {
             }
         }
 
-        val client = sdkHttpClient(engine)
+        val client = SdkHttpClient(engine)
 
         val req = HttpRequestBuilder().apply {
             url.host = Host.Domain("test.com")
@@ -145,7 +145,7 @@ class TestConnectionTest {
             expect()
         }
 
-        val client = sdkHttpClient(engine)
+        val client = SdkHttpClient(engine)
 
         val req = HttpRequestBuilder().apply {
             url.host = Host.Domain("test.com")
@@ -201,7 +201,7 @@ class TestConnectionTest {
         """.trimIndent()
 
         val engine = TestConnection.fromJson(data)
-        val client = sdkHttpClient(engine)
+        val client = SdkHttpClient(engine)
 
         val req = HttpRequestBuilder().apply {
             url.host = Host.Domain("test.aws.com")

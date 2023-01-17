@@ -9,13 +9,13 @@ import aws.smithy.kotlin.runtime.client.ExecutionContext
 import aws.smithy.kotlin.runtime.http.Headers
 import aws.smithy.kotlin.runtime.http.HttpBody
 import aws.smithy.kotlin.runtime.http.HttpStatusCode
+import aws.smithy.kotlin.runtime.http.SdkHttpClient
 import aws.smithy.kotlin.runtime.http.operation.SdkHttpRequest
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
 import aws.smithy.kotlin.runtime.http.response.HttpCall
 import aws.smithy.kotlin.runtime.http.response.HttpResponse
 import aws.smithy.kotlin.runtime.http.response.complete
-import aws.smithy.kotlin.runtime.http.sdkHttpClient
 import aws.smithy.kotlin.runtime.time.Instant
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
@@ -54,7 +54,7 @@ class HttpClientEngineTest {
     }
 
     private val engine = MockEngine()
-    private val client = sdkHttpClient(engine)
+    private val client = SdkHttpClient(engine)
 
     private val HttpCall.job: Job
         get() = callContext.job
@@ -143,7 +143,7 @@ class HttpClientEngineTest {
 
         assertEquals(2, engine.inFlightJobs.size)
         assertTrue(engine.inFlightJobs.all { it.isActive })
-        client.close()
+        engine.close()
         assertTrue(engine.coroutineContext.job.isActive)
         assertFalse(engine.shutdownCalled)
 
@@ -160,7 +160,7 @@ class HttpClientEngineTest {
 
     @Test
     fun testRequestAfterClose() = runTest {
-        client.close()
+        engine.close()
         assertFailsWith(HttpClientEngineClosedException::class) {
             client.call(SdkHttpRequest(HttpRequestBuilder()))
         }

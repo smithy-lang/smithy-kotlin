@@ -144,7 +144,7 @@ open class HttpEngineBenchmarks {
         println("benchmark test server listening on: localhost:$serverPort")
         server.start(false)
         val engine = engines[httpClientName]!!.create()
-        httpClient = sdkHttpClient(engine)
+        httpClient = SdkHttpClient(engine)
     }
 
     @TearDown(Level.Trial)
@@ -152,7 +152,7 @@ open class HttpEngineBenchmarks {
         println("stopping server")
         server.stop(0, 0, TimeUnit.SECONDS)
         println("closing client")
-        httpClient.close()
+        httpClient.engine.close()
         // give time to background threads to complete asynchronous shutdown
         Thread.sleep(4000)
         println("destroy exiting")

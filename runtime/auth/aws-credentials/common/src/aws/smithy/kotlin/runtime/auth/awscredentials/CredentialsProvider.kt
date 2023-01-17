@@ -16,7 +16,7 @@ public interface CredentialsProvider : Closeable {
     public suspend fun getCredentials(): Credentials
 
     /**
-     * Close the provider, freeing any underlying resources.
+     * Shutdown and cleanup any resources
      */
-    public override fun close() { }
+    override fun close() { }
 }

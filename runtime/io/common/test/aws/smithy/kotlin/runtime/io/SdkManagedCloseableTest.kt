@@ -6,7 +6,7 @@ package aws.smithy.kotlin.runtime.io
 
 import kotlin.test.*
 
-class ManagedCloseableTest {
+class SdkManagedCloseableTest {
     class MockCloseableImpl : Closeable {
         var isClosed = false
         var closeCount = 0
@@ -19,42 +19,55 @@ class ManagedCloseableTest {
     @Test
     fun testShareCount() {
         val closeable = MockCloseableImpl()
-        val wrapped = ManagedCloseable(closeable)
+        val wrapped = SdkManagedCloseable(closeable)
 
         wrapped.share()
         wrapped.share()
-        wrapped.close()
+        wrapped.unshare()
         assertFalse(closeable.isClosed)
     }
 
     @Test
     fun testCloseNoShare() {
         val closeable = MockCloseableImpl()
-        val wrapped = ManagedCloseable(closeable)
+        val wrapped = SdkManagedCloseable(closeable)
 
-        wrapped.close()
+        wrapped.unshare()
         assertTrue(closeable.isClosed)
     }
 
     @Test
     fun testCloseWithShare() {
         val closeable = MockCloseableImpl()
-        val wrapped = ManagedCloseable(closeable)
+        val wrapped = SdkManagedCloseable(closeable)
 
         wrapped.share()
-        wrapped.close()
+        wrapped.unshare()
         assertTrue(closeable.isClosed)
     }
 
     @Test
     fun testInnerCloseIdempotent() {
         val closeable = MockCloseableImpl()
-        val wrapped = ManagedCloseable(closeable)
+        val wrapped = SdkManagedCloseable(closeable)
 
         wrapped.share()
-        wrapped.close()
-        wrapped.close()
+        wrapped.unshare()
+        wrapped.unshare()
         assertTrue(closeable.isClosed)
         assertEquals(1, closeable.closeCount)
+    }
+
+    @Test
+    fun testShareClosedResource() {
+        val closeable = MockCloseableImpl()
+        val wrapped = SdkManagedCloseable(closeable)
+
+        wrapped.share()
+        wrapped.unshare()
+        val ex = assertFailsWith<IllegalStateException> {
+            wrapped.share()
+        }
+        assertEquals("caller attempted to share() a released object", ex.message)
     }
 }

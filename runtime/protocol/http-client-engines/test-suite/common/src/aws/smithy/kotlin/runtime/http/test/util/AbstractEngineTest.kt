@@ -11,8 +11,6 @@ import aws.smithy.kotlin.runtime.http.engine.HttpClientEngine
 import aws.smithy.kotlin.runtime.http.engine.HttpClientEngineConfig
 import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
 import aws.smithy.kotlin.runtime.http.request.url
-import aws.smithy.kotlin.runtime.http.sdkHttpClient
-import aws.smithy.kotlin.runtime.io.use
 import kotlinx.coroutines.*
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
@@ -39,9 +37,8 @@ public abstract class AbstractEngineTest {
             .filter { it.name !in skipEngines }
             .forEach { engineFactory ->
                 val engine = engineFactory.create(builder.engineConfig)
-                sdkHttpClient(engine).use { client ->
-                    testWithClient(client, builder = builder)
-                }
+                testWithClient(SdkHttpClient(engine), builder = builder)
+                engine.close()
             }
     }
 }
