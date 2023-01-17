@@ -106,15 +106,15 @@ abstract class AwsChunkedTestBase(
      */
     fun getChunkSizes(bytes: String, isUnsignedChunk: Boolean = false): List<Int> =
         if (isUnsignedChunk) {
-            UNSIGNED_CHUNK_SIZE_REGEX.findAll(bytes).map {
-                    result ->
-                result.value.split("\r\n")[0].toInt(16)
-            }.toList()
+            UNSIGNED_CHUNK_SIZE_REGEX
+                .findAll(bytes)
+                .map { result -> result.value.split("\r\n")[0].toInt(16) }
+                .toList()
         } else {
-            CHUNK_SIZE_REGEX.findAll(bytes).map {
-                    result ->
-                result.value.split(";")[0].toInt(16)
-            }.toList()
+            CHUNK_SIZE_REGEX
+                .findAll(bytes)
+                .map { result -> result.value.split(";")[0].toInt(16) }
+                .toList()
         }
 
     /**
