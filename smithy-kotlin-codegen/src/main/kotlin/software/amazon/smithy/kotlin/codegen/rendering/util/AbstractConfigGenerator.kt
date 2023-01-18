@@ -13,10 +13,10 @@ import software.amazon.smithy.kotlin.codegen.model.PropertyTypeMutability
 import software.amazon.smithy.kotlin.codegen.model.propertyTypeMutability
 
 /**
- * Re-usable base class for generating some type that only contains configuration.
+ * Reusable base class for generating some type that only contains configuration.
  * e.g. roughly something shaped like below
  *
- * ```
+ * ```kotlin
  * class MyConfig internal constructor(builder: Builder) {
  *     val foo = builder.foo
  *     val bar = builder.bar ?: DefaultBar()
@@ -44,18 +44,16 @@ abstract class AbstractConfigGenerator {
         addPropertyImports(props, writer)
 
         val sortedProps = props.sortedWith(compareBy({ it.order }, { it.propertyName }))
-        val baseClasses = props
-            .mapNotNull { it.baseClass?.name }
-            .sorted()
-            .toSet()
-            .joinToString(", ")
+        val formattedBaseClasses = props.formattedBaseClasses { it.baseClass?.name }
 
-        val formattedBaseClasses = if (baseClasses.isNotEmpty()) ": $baseClasses" else ""
-        writer.openBlock("public class #configClass.name:L private constructor(builder: Builder)$formattedBaseClasses {")
-            .call { renderImmutableProperties(sortedProps, writer) }
-            .call { renderCompanionObject(writer) }
-            .call { renderBuilder(sortedProps, writer) }
-            .closeBlock("}")
+        writer.withBlock(
+            "public class #configClass.name:L private constructor(builder: Builder)$formattedBaseClasses {",
+            "}",
+        ) {
+            renderImmutableProperties(sortedProps, writer)
+            renderCompanionObject(writer)
+            renderBuilder(sortedProps, writer)
+        }
 
         writer.removeContext("configClass.name")
     }
@@ -115,13 +113,7 @@ abstract class AbstractConfigGenerator {
     }
 
     protected open fun renderBuilder(props: Collection<ConfigProperty>, writer: KotlinWriter) {
-        val baseClasses = props
-            .mapNotNull { it.builderBaseClass?.name }
-            .sorted()
-            .toSet()
-            .joinToString(", ")
-
-        val formattedBaseClasses = if (baseClasses.isNotEmpty()) ": $baseClasses" else ""
+        val formattedBaseClasses = props.formattedBaseClasses { it.builderBaseClass?.name }
 
         writer.write("")
             .withBlock("public class Builder$formattedBaseClasses {", "}") {
@@ -144,6 +136,19 @@ abstract class AbstractConfigGenerator {
 
                 renderBuilderBuildMethod(writer)
             }
+    }
+
+    /**
+     * Return the formatted base classes for the config property
+     * @param transform the selector from config property that maps the property to a base class name
+     */
+    private inline fun Collection<ConfigProperty>.formattedBaseClasses(transform: (ConfigProperty) -> String?): String {
+        val baseClasses = mapNotNull(transform)
+            .sorted()
+            .toSet()
+            .joinToString(", ")
+
+        return if (baseClasses.isNotEmpty()) " : $baseClasses" else ""
     }
 
     /**

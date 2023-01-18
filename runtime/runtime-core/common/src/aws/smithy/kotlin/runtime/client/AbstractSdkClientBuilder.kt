@@ -17,15 +17,7 @@ public abstract class AbstractSdkClientBuilder<
     out TClient : SdkClient,
     > : SdkClient.Builder<TConfig, TConfigBuilder, TClient> {
 
-    final override fun build(): TClient {
-        finalizeConfig()
-        return newClient(config.build())
-    }
-
-    /**
-     * Hook for subclasses to finalize any configuration values before build is called on the config builder.
-     */
-    protected open fun finalizeConfig() { }
+    final override fun build(): TClient = newClient(config.build())
 
     /**
      * Return a new [TClient] instance with the given [config]

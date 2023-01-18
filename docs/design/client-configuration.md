@@ -10,9 +10,9 @@ This document describes the structure and conventions used for service client co
 # Conventions
 
 This section describes general conventions and guidelines to be used for service client configuration. See the section
-below for concrete example of these conventions in practice.
+below for a concrete example of these conventions in practice.
 
-* All generated service clients inherit from `SdkClientConfig.Builder`
+* All generated service client config builders implement `SdkClientConfig.Builder`
 * Domain specific configuration (e.g. HTTP, tracing, etc) should be used as a "mixin" rather than form a hierarchy
     * e.g. `HttpClientConfig` should not inherit from `SdkClientConfig`
 * Configuration interfaces should live in a subpackage `config` of whatever root package they belong to.
@@ -43,15 +43,15 @@ public interface FooConfig {  // 2
 }
 ```
 
-1. A detailed description of what the configuration is used for and why might be found in it
-2. Configuration interface should be `public` and generally be `Xyz` with the suffix `Config` (e.g. `XyzConfig`)
+1. A detailed description of what the configuration is used for and what might be found in it.
+2. Configuration interface should be `public` and generally be `Xyz` with the suffix `Config` (e.g. `XyzConfig`).
 3. A detailed description of how the property is used, which _may_ differ from the description of how to configure it.
-    * This may delegate to the builder property docs. e.g. `Controls the how the foo does blah. See [Builder.fooConfigProp] for more details.`
-4. Configuration fields must be immutable (`val`). Their type may differ from the builder type, e.g. `List` vs `MutableList` or be non-null where the configuration field is nullable.
-    * These differences are handled in codegen by setting default values or mapping the builder type as required
-5. The configuration builder interface should be public and nested inside the configuration interface it is meant to build
+    * This may delegate to the builder property docs. e.g. `Controls the how the foo does blah. See [Builder.fooConfigProp] for more details.`.
+4. Configuration fields must be read-only (`val`) and should be immutable. Their type may differ from the builder type, e.g. `List` vs `MutableList` or be non-null where the configuration field is nullable.
+    * These differences are handled in codegen by setting default values or mapping the builder type as required.
+5. The configuration builder interface should be public and nested inside the configuration interface it is meant to build.
 6. A detailed description of how the property is configured and how it is used. 
-7. Builder fields should generally be mutable (`var`). Their type may be different from the immutable configuration property.
+7. Builder fields should generally be `var` and/or mutable. Their type may be different from the immutable configuration property.
 
 ## Example Service Client
 
@@ -106,6 +106,7 @@ public interface BazClient : SdkClient { // 1
 }
 ```
 
+NOTE: The example client interface above has intentionally left off KDoc comments for many of the fields for brevity.
 NOTE: See the Appendix for definitions of some of these inherited interfaces (e.g. `SdkClientFactory`).
 
 1. All generated service clients inherit from `SdkClient`
@@ -176,9 +177,9 @@ This comes from the companion object and is a static method (defined in [SdkClie
 configuration (builder) mixins. This type of pattern could be used to centralize configuring a service client without
 knowing the concrete type.
 
-# Appendix
+# Appendices
 
-## FAQ
+## Appendix: FAQ
 
 **Why builders**?
 
@@ -186,7 +187,7 @@ Builders are useful for dealing with evolution as well as the ability to insert 
 some entity at the time it is built. The API of most builders should be "DSL" like in nature (properties over functions).
 When possible the SDK will offer a DSL like experience for creating instances of types.
 
-**Why no hierarchy of concrete builder classes to inherit from**?
+**Why no hierarchy of config builder classes to inherit from**?
 
 The config interface (e.g. `FooConfig`) is an immutable collection of properties to be
 consumed by something else (usually a service client). The configuration builder interface (`FooConfig.Builder`)
@@ -194,7 +195,7 @@ describes how to configure the properties. The builder interfaces (e.g. `FooConf
 concrete implementation because the SDK will codegen a specific implementation by describing the configuration 
 properties (including the default values that should be used when not given). 
 
-## Runtime Types
+## Appendix: Runtime Types
 
 This section provides concrete examples of runtime types referenced in this document. These types may differ or evolve
 from when this document was written without loss of understanding of conventions and guidelines described herein. 
@@ -215,8 +216,6 @@ public interface SdkClient : Closeable {
      * The client's configuration
      */
     public val config: SdkClientConfig
-
-    override fun close() {}
 
     public interface Builder<
             TConfig : SdkClientConfig,
@@ -311,14 +310,8 @@ public abstract class AbstractSdkClientBuilder<
         > : SdkClient.Builder<TConfig, TConfigBuilder, TClient> {
 
     final override fun build(): TClient {
-        finalizeConfig()
         return newClient(config.build())
     }
-
-    /**
-     * Hook for subclasses to finalize any configuration values before build is called on the config builder.
-     */
-    protected open fun finalizeConfig() { }
 
     /**
      * Return a new [TClient] instance with the given [config]
@@ -327,7 +320,7 @@ public abstract class AbstractSdkClientBuilder<
 }
 ```
 
-## Additional References
+## Appendix: Additional References
 
 * [Kotlin Smithy SDK](kotlin-smithy-sdk.md)
 

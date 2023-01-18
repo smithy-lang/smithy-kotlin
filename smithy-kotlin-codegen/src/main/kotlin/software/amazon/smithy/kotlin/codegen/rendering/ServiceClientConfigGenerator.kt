@@ -67,7 +67,7 @@ class ServiceClientConfigGenerator(
                     ConfigPropertyType.Required()
                 }
                 documentation = """
-                        The endpoint provider used to determine where to make service requests.
+                    The endpoint provider used to determine where to make service requests.
                 """.trimIndent()
             },
         )
@@ -77,8 +77,9 @@ class ServiceClientConfigGenerator(
      * Derives client config properties from the service context params trait.
      */
     private fun clientContextConfigProps(trait: ClientContextParamsTrait): List<ConfigProperty> = buildList {
-        trait.parameters.forEach { (k, v) ->
-            add(
+        trait
+            .parameters
+            .map { (k, v) ->
                 when (v.type) {
                     ShapeType.BOOLEAN -> ConfigProperty.Boolean(
                         name = k.toCamelCase(),
@@ -91,9 +92,8 @@ class ServiceClientConfigGenerator(
                         documentation = v.documentation.getOrNull(),
                     )
                     else -> throw CodegenException("unsupported client context param type ${v.type}")
-                },
-            )
-        }
+                }
+            }
     }
 
     fun render(ctx: CodegenContext, writer: KotlinWriter) = render(ctx, emptyList(), writer)

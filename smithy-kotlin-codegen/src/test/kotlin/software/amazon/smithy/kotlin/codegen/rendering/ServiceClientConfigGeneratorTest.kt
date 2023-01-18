@@ -40,7 +40,7 @@ class ServiceClientConfigGeneratorTest {
         contents.assertBalancedBracesAndParens()
 
         val expectedCtor = """
-public class Config private constructor(builder: Builder): HttpClientConfig, IdempotencyTokenConfig, SdkClientConfig, TracingClientConfig {
+public class Config private constructor(builder: Builder) : HttpClientConfig, IdempotencyTokenConfig, SdkClientConfig, TracingClientConfig {
 """
         contents.shouldContainWithDiff(expectedCtor)
 
@@ -56,7 +56,7 @@ public class Config private constructor(builder: Builder): HttpClientConfig, Ide
         contents.shouldContainWithDiff(expectedProps)
 
         val expectedBuilder = """
-    public class Builder: HttpClientConfig.Builder, IdempotencyTokenConfig.Builder, SdkClientConfig.Builder<Config>, TracingClientConfig.Builder {
+    public class Builder : HttpClientConfig.Builder, IdempotencyTokenConfig.Builder, SdkClientConfig.Builder<Config>, TracingClientConfig.Builder {
         /**
          * Override the default HTTP client engine used to make SDK requests (e.g. configure proxy behavior, timeouts, concurrency, etc).
          * NOTE: The caller is responsible for managing the lifetime of the engine when set. The SDK

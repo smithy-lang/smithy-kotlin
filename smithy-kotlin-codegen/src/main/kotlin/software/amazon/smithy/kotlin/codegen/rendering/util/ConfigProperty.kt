@@ -17,7 +17,7 @@ typealias CustomPropertyRenderer = (ConfigProperty, KotlinWriter) -> Unit
  *
  * e.g.
  *
- * ```
+ * ```kotlin
  * val myProp = ConfigProperty {
  *     symbol = buildSymbol { ... }
  *     documentation = "my property documentation"

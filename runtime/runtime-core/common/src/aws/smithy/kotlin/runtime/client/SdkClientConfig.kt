@@ -17,12 +17,16 @@ public interface SdkClientConfig {
     public val sdkLogMode: SdkLogMode
         get() = SdkLogMode.Default
 
-    // FIXME - should we be taking RetryPolicy as well?
     /**
      * The [RetryStrategy] the client will use to retry failed operations.
      */
     public val retryStrategy: RetryStrategy
 
+    /**
+     * Configurable properties that all client configuration should expose.
+     *
+     * @param TConfig the type of configuration built by this builder
+     */
     public interface Builder<TConfig : SdkClientConfig> : Buildable<TConfig> {
         /**
          * Configure events that will be logged. By default, clients will not output
