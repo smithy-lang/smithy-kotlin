@@ -37,8 +37,11 @@ public abstract class AbstractEngineTest {
             .filter { it.name !in skipEngines }
             .forEach { engineFactory ->
                 val engine = engineFactory.create(builder.engineConfig)
-                testWithClient(SdkHttpClient(engine), builder = builder)
-                engine.close()
+                try {
+                    testWithClient(SdkHttpClient(engine), builder = builder)
+                } finally {
+                    engine.close()
+                }
             }
     }
 }

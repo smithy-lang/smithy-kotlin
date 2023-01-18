@@ -19,9 +19,9 @@ public interface SdkManaged {
     public fun share()
 
     /**
-     * Invoked when a caller releases the resource. Returns a boolean indicating whether the resource has been released
-     * with this call (i.e. no other callers are sharing it). Future calls on an already-released object would return
-     * false.
+     * Invoked when a caller releases the resource. Returns a boolean indicating whether the resource has been fully
+     * unshared with this call (i.e. the caller was the only remaining user). Future calls on a fully unshared object
+     * would return false.
      */
     public fun unshare(): Boolean
 }
@@ -30,27 +30,27 @@ public interface SdkManaged {
  * Abstract class which implements usage count tracking for [SdkManaged].
  */
 @InternalApi
-public abstract class SdkManagedImpl : SdkManaged {
+public abstract class SdkManagedBase : SdkManaged {
     private val state = object : SynchronizedObject() {
         var shareCount: Int = 0
-        var isReleased: Boolean = false
+        var isUnshared: Boolean = false
     }
 
     override fun share() {
         synchronized(state) {
-            check(!state.isReleased) { "caller attempted to share() a released object" }
+            check(!state.isUnshared) { "caller attempted to share() a fully unshared object" }
 
             state.shareCount++
         }
     }
 
     override fun unshare(): Boolean = synchronized(state) {
-        if (state.isReleased) return false
+        if (state.isUnshared) return false
 
         state.shareCount--
         if (state.shareCount > 0) return false
 
-        state.isReleased = true
+        state.isUnshared = true
         true
     }
 }

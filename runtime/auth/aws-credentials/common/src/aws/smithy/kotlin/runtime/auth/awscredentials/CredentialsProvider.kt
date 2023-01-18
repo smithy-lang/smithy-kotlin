@@ -18,5 +18,5 @@ public interface CredentialsProvider : Closeable {
     /**
      * Shutdown and cleanup any resources
      */
-    override fun close() { }
+    override fun close()
 }

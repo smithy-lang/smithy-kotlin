@@ -28,7 +28,7 @@ public interface HttpClientEngine : Closeable, CoroutineScope {
     /**
      * Shutdown and cleanup any resources
      */
-    override fun close() { /* pass */ }
+    override fun close()
 }
 
 /**

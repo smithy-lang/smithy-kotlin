@@ -420,6 +420,8 @@ private class JsonCredentialsProvider(private val jsonObject: JsonObject) : Cred
         jsonObject["secret_access_key"]!!.jsonPrimitive.content,
         jsonObject["token"]?.jsonPrimitive?.content,
     )
+
+    override fun close() { }
 }
 
 /**

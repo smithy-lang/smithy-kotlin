@@ -188,9 +188,11 @@ class ServiceClientGenerator(private val ctx: RenderingContext<ServiceShape>) {
 
     private fun renderWithConfig() {
         writer.dokka {
-            write("Create a new, independent client starting from the current one's config.")
-            write("Defaulted closeable resources are shared between clients, and will only be closed when ALL clients using them are closed.")
+            write("Create a copy of the client with one or more configuration values overridden.")
             write("This method allows the caller to perform scoped config overrides for one or more client operations.")
+            write("")
+            write("Any resources created on your behalf will be shared between clients, and will only be closed when ALL clients using them are closed.")
+            write("If you provide a resource (e.g. [HttpClientEngine]) to the SDK, you are responsible for managing the lifetime of that resource.")
         }
         writer.withBlock("public fun #1T.withConfig(block: #1T.Config.Builder.() -> Unit): #1T {", "}", serviceSymbol) {
             write("val newConfig = config.toBuilder().apply(block).build()")

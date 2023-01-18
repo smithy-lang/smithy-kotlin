@@ -68,6 +68,6 @@ class SdkManagedCloseableTest {
         val ex = assertFailsWith<IllegalStateException> {
             wrapped.share()
         }
-        assertEquals("caller attempted to share() a released object", ex.message)
+        assertEquals("caller attempted to share() a fully unshared object", ex.message)
     }
 }

@@ -11,10 +11,10 @@ import aws.smithy.kotlin.runtime.util.InternalApi
  * The final [unshare] call will trigger the closing of the resource.
  */
 @InternalApi
-public open class SdkManagedCloseable(private val closeable: Closeable) : SdkManagedImpl() {
+public open class SdkManagedCloseable(private val closeable: Closeable) : SdkManagedBase() {
     override fun unshare(): Boolean {
-        val isReleased = super.unshare()
-        if (isReleased) closeable.close()
-        return isReleased
+        val shouldClose = super.unshare()
+        if (shouldClose) closeable.close()
+        return shouldClose
     }
 }
