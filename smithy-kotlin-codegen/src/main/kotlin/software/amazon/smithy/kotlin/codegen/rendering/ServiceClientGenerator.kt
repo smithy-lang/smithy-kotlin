@@ -170,6 +170,14 @@ class ServiceClientGenerator(private val ctx: RenderingContext<ServiceShape>) {
         writer.renderAnnotations(op)
 
         val signature = opIndex.operationSignature(ctx.model, ctx.symbolProvider, op, includeOptionalDefault = true)
+        // the signature returned by OperationIndex doesn't carry any import information with it, need to ensure
+        // the input and output types are imported since the auto import machinery won't run
+        listOf(
+            ctx.symbolProvider.toSymbol(ctx.model.expectShape(op.inputShape)),
+            ctx.symbolProvider.toSymbol(ctx.model.expectShape(op.outputShape)),
+        ).forEach {
+            writer.addImport(it)
+        }
         writer.write("public #L", signature)
     }
 
