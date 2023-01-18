@@ -19,6 +19,8 @@ class TestLambdaClient : LambdaClient {
     override val config: LambdaClient.Config
         get() = error("Unneeded for test")
 
+    override fun close() { }
+
     // Number of pages to generate
     var pageCount: Int = 10
     // Number of items to generate per page

@@ -12,7 +12,14 @@ import aws.smithy.kotlin.runtime.util.Buildable
  */
 public interface SdkClientConfig {
     /**
-     * Controls the events that will be logged by the SDK, see [Builder.sdkLogMode].
+     * Configure events that will be logged. By default, clients will not output
+     * raw requests or responses. Use this setting to opt in to additional debug logging.
+     *
+     * This can be used to configure logging of requests, responses, retries, etc of SDK clients.
+     *
+     * **NOTE**: Logging of raw requests or responses may leak sensitive information! It may also have
+     * performance considerations when dumping the request/response body. This is primarily a tool for
+     * debug purposes.
      */
     public val sdkLogMode: SdkLogMode
         get() = SdkLogMode.Default
@@ -23,7 +30,7 @@ public interface SdkClientConfig {
     public val retryStrategy: RetryStrategy
 
     /**
-     * Configurable properties that all client configuration should expose.
+     * Configurable properties that all client configuration exposes.
      *
      * @param TConfig the type of configuration built by this builder
      */

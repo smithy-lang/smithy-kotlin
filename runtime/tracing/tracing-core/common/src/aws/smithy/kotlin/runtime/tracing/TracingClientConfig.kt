@@ -15,6 +15,9 @@ public interface TracingClientConfig {
      */
     public val tracer: Tracer
 
+    /**
+     * Configure the tracing capabilities of an SDK client
+     */
     public interface Builder {
         /**
          * The tracer that is responsible for creating trace spans and wiring them up to a tracing backend (e.g.,

@@ -21,8 +21,13 @@ public interface SdkClient : Closeable {
      */
     public val config: SdkClientConfig
 
-    override fun close() {}
-
+    /**
+     * Builder responsible for instantiating new [TClient] instances
+     *
+     * @param TConfig the type of client config
+     * @param TConfigBuilder the builder type responsible for creating instances of [TConfig]
+     * @param TClient the type of client created by this builder
+     */
     public interface Builder<
         TConfig : SdkClientConfig,
         TConfigBuilder : SdkClientConfig.Builder<TConfig>,

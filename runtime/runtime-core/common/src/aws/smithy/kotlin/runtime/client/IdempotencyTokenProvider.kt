@@ -17,6 +17,9 @@ public interface IdempotencyTokenConfig {
      */
     public val idempotencyTokenProvider: IdempotencyTokenProvider
 
+    /**
+     * Configure the [IdempotencyTokenProvider] used by SDK clients to generate idempotency tokens.
+     */
     public interface Builder {
         /**
          * Override the default idempotency token generator. SDK clients will generate tokens for members

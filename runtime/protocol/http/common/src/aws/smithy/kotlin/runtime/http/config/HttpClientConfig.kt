@@ -15,11 +15,18 @@ public interface HttpClientConfig {
     /**
      * Explicit HTTP engine to use when making SDK requests, when not set a default engine will be created and managed
      * on behalf of the caller.
+     *
+     * **NOTE**: The caller is responsible for managing the lifetime of the engine when set. The SDK
+     * client will not close it when the client is closed.
      */
     public val httpClientEngine: HttpClientEngine?
 
     /**
      * Interceptors that will be executed for each SDK operation.
+     * An [aws.smithy.kotlin.runtime.client.Interceptor] has access to read and modify
+     * the request and response objects as they are processed by the SDK.
+     * Interceptors are executed in the order they are configured and are always later than any added automatically by
+     * the SDK.
      */
     public val interceptors: List<HttpInterceptor>
 
