@@ -24,11 +24,6 @@ public interface HttpClientEngine : Closeable, CoroutineScope {
      * Consumers *MUST* call `HttpCall.complete()` when finished processing the response
      */
     public suspend fun roundTrip(context: ExecutionContext, request: HttpRequest): HttpCall
-
-    /**
-     * Shutdown and cleanup any resources
-     */
-    override fun close()
 }
 
 /**
