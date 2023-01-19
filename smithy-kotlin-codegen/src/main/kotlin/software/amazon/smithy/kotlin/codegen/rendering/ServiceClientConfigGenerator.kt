@@ -76,7 +76,7 @@ class ServiceClientConfigGenerator(
     /**
      * Derives client config properties from the service context params trait.
      */
-    private fun clientContextConfigProps(trait: ClientContextParamsTrait): List<ConfigProperty> = buildList {
+    private fun clientContextConfigProps(trait: ClientContextParamsTrait): List<ConfigProperty> =
         trait
             .parameters
             .map { (k, v) ->
@@ -94,7 +94,6 @@ class ServiceClientConfigGenerator(
                     else -> throw CodegenException("unsupported client context param type ${v.type}")
                 }
             }
-    }
 
     fun render(ctx: CodegenContext, writer: KotlinWriter) = render(ctx, emptyList(), writer)
 
