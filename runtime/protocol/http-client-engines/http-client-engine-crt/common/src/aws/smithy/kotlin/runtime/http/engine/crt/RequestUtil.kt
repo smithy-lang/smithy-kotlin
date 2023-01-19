@@ -38,16 +38,20 @@ internal val HttpRequest.uri: Uri
 internal fun HttpRequest.toCrtRequest(callContext: CoroutineContext): aws.sdk.kotlin.crt.http.HttpRequest {
     val body = this.body
     check(!body.isDuplex) { "CrtHttpEngine does not yet support full duplex streams" }
-    val bodyStream = if (isChunked) null else when (body) {
-        is HttpBody.Empty -> null
-        is HttpBody.Bytes -> HttpRequestBodyStream.fromByteArray(body.bytes())
-        is HttpBody.ChannelContent -> ReadChannelBodyStream(body.readFrom(), callContext)
-        is HttpBody.SourceContent -> {
-            val source = body.readFrom()
-            callContext.job.invokeOnCompletion {
-                source.close()
+    val bodyStream = if (isChunked) {
+        null
+    } else {
+        when (body) {
+            is HttpBody.Empty -> null
+            is HttpBody.Bytes -> HttpRequestBodyStream.fromByteArray(body.bytes())
+            is HttpBody.ChannelContent -> ReadChannelBodyStream(body.readFrom(), callContext)
+            is HttpBody.SourceContent -> {
+                val source = body.readFrom()
+                callContext.job.invokeOnCompletion {
+                    source.close()
+                }
+                SdkSourceBodyStream(source)
             }
-            SdkSourceBodyStream(source)
         }
     }
 

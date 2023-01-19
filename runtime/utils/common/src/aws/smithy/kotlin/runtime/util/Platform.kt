@@ -33,7 +33,8 @@ public enum class OsFamily {
     Windows,
     Android,
     Ios,
-    Unknown;
+    Unknown,
+    ;
 
     override fun toString(): String = when (this) {
         Linux -> "linux"

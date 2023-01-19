@@ -135,7 +135,7 @@ public open class ServiceException : SdkBaseException {
     public enum class ErrorType {
         Client,
         Server,
-        Unknown
+        Unknown,
     }
 
     public constructor() : super()

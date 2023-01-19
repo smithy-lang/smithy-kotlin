@@ -115,7 +115,7 @@ internal class InterceptorExecutor<I, O>(
             curr.fold({ prev }, { currEx ->
                 prev.exceptionOrNull()?.let { currEx.addSuppressed(it) }
                 Result.failure(currEx)
-            },)
+            })
         }
 
     fun readBeforeExecution(input: I): Result<Unit> {

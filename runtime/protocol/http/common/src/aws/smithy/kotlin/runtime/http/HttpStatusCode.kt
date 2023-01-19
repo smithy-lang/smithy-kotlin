@@ -15,7 +15,8 @@ public data class HttpStatusCode(public val value: Int, public val description: 
         SUCCESS(IntRange(200, 299)),
         REDIRECT(IntRange(300, 399)),
         CLIENT_ERROR(IntRange(400, 499)),
-        SERVER_ERROR(IntRange(500, 599));
+        SERVER_ERROR(IntRange(500, 599)),
+        ;
 
         public companion object {
             public fun fromCode(value: Int): Category =
