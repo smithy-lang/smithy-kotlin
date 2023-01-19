@@ -24,7 +24,7 @@ class ServiceClientGenerator(private val ctx: RenderingContext<ServiceShape>) {
     object Sections {
 
         /**
-         * SectionId used when rendering the service client builder
+         * [SectionId] used when rendering the service client builder
          */
         object ServiceBuilder : SectionId {
             /**
@@ -34,7 +34,7 @@ class ServiceClientGenerator(private val ctx: RenderingContext<ServiceShape>) {
         }
 
         /**
-         * SectionId used when rendering the service interface companion object
+         * [SectionId] used when rendering the service interface companion object
          */
         object CompanionObject : SectionId {
             /**
@@ -44,7 +44,7 @@ class ServiceClientGenerator(private val ctx: RenderingContext<ServiceShape>) {
         }
 
         /**
-         * SectionId used when rendering the service configuration object
+         * [SectionId] used when rendering the service configuration object
          */
         object ServiceConfig : SectionId {
             /**

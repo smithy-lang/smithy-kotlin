@@ -124,18 +124,18 @@ NOTE: See the Appendix for definitions of some of these inherited interfaces (e.
 ## Client Creation Patterns
 
 This section describes in more detail how service clients are created and configured using the `BazClient` described
-in [example service client](#example-service-client) section. These behaviors are a combination of runtime types and
+in the [example service client](#example-service-client) section. These behaviors are a combination of runtime types and
 codegen.
 
 ```kotlin
 // explicit using DSL syntax inherited from companion `SdkClientFactory`
 val c1 = BazClient { // this: BazClient.Config.Builder
-    sdkLogMode = SdkLogMode.LogRequests
+    sdkLogMode = SdkLogMode.LogRequest
 }
 
 // use of a builder explicitly, this could be passed around for example
 val c2 = BazClient.builder().apply { // this: BazClient.Builder
-    config.sdkLogMode = SdkLogMode.LogRequests
+    config.sdkLogMode = SdkLogMode.LogRequest
 }.build()
 
 // "vended" using common code
