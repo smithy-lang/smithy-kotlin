@@ -195,7 +195,7 @@ fun renderJvmGradleBuild(
 
 // Specifies if a given codegen operation is under a source or test scope
 private enum class Scope {
-    SOURCE, TEST;
+    SOURCE, TEST
 }
 
 private fun renderDependencies(writer: GradleWriter, scope: Scope, isKmp: Boolean, dependencies: List<KotlinDependency>) {

@@ -28,5 +28,4 @@ public enum class RetryErrorType {
      * A timeout condition such as a socket error or server-indicated request timeout.
      */
     Timeout,
-    ;
 }

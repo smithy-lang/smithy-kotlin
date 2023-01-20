@@ -12,7 +12,7 @@ import aws.smithy.kotlin.runtime.io.Handler
  */
 public interface Middleware<Request, Response> {
     public suspend fun <H> handle(request: Request, next: H): Response
-            where H : Handler<Request, Response>
+        where H : Handler<Request, Response>
 }
 
 /**

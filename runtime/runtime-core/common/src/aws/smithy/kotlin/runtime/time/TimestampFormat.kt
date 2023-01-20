@@ -36,5 +36,5 @@ public enum class TimestampFormat {
     /**
      * Unix time. Seconds elapsed since the epoch 00:00:00Z 1 January 1970
      */
-    EPOCH_SECONDS
+    EPOCH_SECONDS,
 }

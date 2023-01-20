@@ -49,7 +49,8 @@ class DeserializeUnionGenerator(
             is ListShape -> renderListMemberDeserializer(memberShape, targetShape as CollectionShape)
             is MapShape -> renderMapMemberDeserializer(memberShape, targetShape)
             is StructureShape,
-            is UnionShape, -> renderShapeDeserializer(memberShape)
+            is UnionShape,
+            -> renderShapeDeserializer(memberShape)
             is BlobShape,
             is BooleanShape,
             is StringShape,
@@ -62,7 +63,8 @@ class DeserializeUnionGenerator(
             is DoubleShape,
             is BigDecimalShape,
             is DocumentShape,
-            is BigIntegerShape, -> renderShapeDeserializer(memberShape)
+            is BigIntegerShape,
+            -> renderShapeDeserializer(memberShape)
             else -> error("Unexpected shape type: ${targetShape.type}")
         }
     }

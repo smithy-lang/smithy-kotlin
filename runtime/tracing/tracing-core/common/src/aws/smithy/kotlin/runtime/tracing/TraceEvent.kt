@@ -18,7 +18,6 @@ public enum class EventLevel {
     Info,
     Debug,
     Trace,
-    ;
 }
 
 /**

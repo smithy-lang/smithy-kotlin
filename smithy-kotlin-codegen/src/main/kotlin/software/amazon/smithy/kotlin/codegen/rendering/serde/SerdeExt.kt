@@ -257,7 +257,7 @@ internal enum class NestedIdentifierType(val prefix: String) {
     VALUE("v"), // Generated variable names for map values
     ELEMENT("el"), // Generated variable name for list elements
     COLLECTION("col"), // Generated variable name for collection types (list, set)
-    MAP("map"); // Generated variable name for map type
+    MAP("map"), // Generated variable name for map type
 }
 
 /**
@@ -276,7 +276,8 @@ internal fun Int.nestedDescriptorName(): String = "_C$this"
  */
 internal fun Shape.isContainerShape() = when (this) {
     is CollectionShape,
-    is MapShape, -> true
+    is MapShape,
+    -> true
     else -> false
 }
 

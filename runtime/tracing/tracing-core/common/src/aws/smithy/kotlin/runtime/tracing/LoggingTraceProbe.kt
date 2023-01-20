@@ -14,7 +14,8 @@ import mu.KotlinLogging
 public object LoggingTraceProbe : TraceProbe {
     private fun EventLevel.loggerMethod(): (KLogger, () -> Any?) -> Unit = when (this) {
         EventLevel.Fatal,
-        EventLevel.Error, -> KLogger::error
+        EventLevel.Error,
+        -> KLogger::error
         EventLevel.Warning -> KLogger::warn
         EventLevel.Info -> KLogger::info
         EventLevel.Debug -> KLogger::debug

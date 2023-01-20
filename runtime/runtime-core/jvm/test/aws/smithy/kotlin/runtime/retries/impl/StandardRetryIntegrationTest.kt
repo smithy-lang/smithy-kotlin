@@ -125,5 +125,4 @@ enum class TestOutcome {
 
     @SerialName("success")
     Success,
-    ;
 }

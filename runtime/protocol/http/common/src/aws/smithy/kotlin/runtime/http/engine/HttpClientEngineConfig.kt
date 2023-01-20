@@ -166,5 +166,5 @@ public enum class AlpnId(public val protocolId: String) {
     /**
      * HTTP 3
      */
-    HTTP3("h3")
+    HTTP3("h3"),
 }
