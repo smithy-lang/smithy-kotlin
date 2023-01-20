@@ -2,7 +2,7 @@
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
  * SPDX-License-Identifier: Apache-2.0
  */
-package aws.smithy.kotlin.runtime.config
+package aws.smithy.kotlin.runtime.client
 
 import io.kotest.matchers.string.shouldMatch
 import kotlin.test.Test

@@ -76,6 +76,7 @@ object KotlinTypes {
 
     object Jvm {
         val JvmName = builtInSymbol("JvmName", "kotlin.jvm")
+        val JvmStatic = builtInSymbol("JvmStatic", "kotlin.jvm")
     }
 
     object Text {
