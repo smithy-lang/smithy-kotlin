@@ -106,7 +106,7 @@ class FlexibleChecksumsRequestMiddlewareTest {
         val req = HttpRequestBuilder().apply {
             body = object : HttpBody.SourceContent() {
                 override val contentLength: Long = 1024 * 1024 * 128
-                override fun readFrom(): SdkSource = "a".repeat(1024 * 1024 * 128).toByteArray().source()
+                override fun readFrom(): SdkSource = "a".repeat(contentLength.toInt()).toByteArray().source()
                 override val isOneShot: Boolean get() = false
             }
         }
