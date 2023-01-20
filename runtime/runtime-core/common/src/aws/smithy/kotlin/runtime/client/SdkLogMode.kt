@@ -9,9 +9,9 @@ package aws.smithy.kotlin.runtime.client
  * SdkLogMode represents the logging mode of SDK clients. The mode is backed by a bit-field where each
  * bit is a flag (mode) that describes the logging behavior for one or more client components.
  *
- * Example: Setting log mode to enable logging of requests and retries
+ * Example: Setting log mode to enable logging of requests and responses
  * ```
- * val mode = LogMode.LogRequest + LogMode.LogRetries
+ * val mode = LogMode.LogRequest + LogMode.LogResponse
  * ```
  */
 public sealed class SdkLogMode(private val mask: Int) {

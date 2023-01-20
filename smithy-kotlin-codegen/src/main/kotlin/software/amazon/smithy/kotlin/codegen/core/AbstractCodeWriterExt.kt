@@ -5,6 +5,7 @@
 package software.amazon.smithy.kotlin.codegen.core
 
 import software.amazon.smithy.kotlin.codegen.integration.SectionId
+import software.amazon.smithy.kotlin.codegen.integration.SectionKey
 import software.amazon.smithy.utils.AbstractCodeWriter
 import software.amazon.smithy.utils.SimpleCodeWriter
 import java.util.function.BiFunction
@@ -119,14 +120,15 @@ fun <T : AbstractCodeWriter<T>> T.closeAndOpenBlock(
  */
 fun <T : AbstractCodeWriter<T>> T.declareSection(
     id: SectionId,
-    context: Map<String, Any?> = emptyMap(),
+    context: Map<SectionKey<*>, Any?> = emptyMap(),
     block: T.() -> Unit = { },
 ): T {
-    putContext(context)
+    val strmap = context.mapKeys { it.key.name }
+    putContext(strmap)
     pushState(id.javaClass.canonicalName)
     block(this)
     popState()
-    removeContext(context)
+    removeContext(strmap)
     return this
 }
 
@@ -141,6 +143,12 @@ inline fun <W : AbstractCodeWriter<W>, reified V> AbstractCodeWriter<W>.getConte
     checkNotNull(getContext(key) as? V) {
         "Expected `$key` in CodeWriter context"
     }
+
+/**
+ * Convenience function to get a typed value out of the context or throw if the key doesn't exist
+ * or the type is wrong
+ */
+inline fun <W : AbstractCodeWriter<W>, reified V> AbstractCodeWriter<W>.getContextValue(key: SectionKey<V>): V = getContextValue(key.name)
 
 typealias InlineCodeWriter = AbstractCodeWriter<*>.() -> Unit
 

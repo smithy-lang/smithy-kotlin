@@ -10,13 +10,12 @@ Start here for an overview:
 
 ## Detailed sub-designs
 
+* [Client Configuration](client-configuration.md)
 * [Document type](document-type.md)
 * [Domain class types in Kotlin SDK](domain-class-types-in-kotlin-sdk.md)
 * [Binary request/response streams](binary-streaming.md)
 * [Event streams](event-streams.md)
-* [Marshaling/serde](marshalling-serde.md) (coming soon)
 * [Modeled errors](modeled-errors.md)
-* [Nullable properties in SDK domain types](nullable-properties-in-sdk-domain-types.md) (coming soon)
 * [Pagination](paginators.md)
 * [Retries](retries.md)
 * [Tracing](tracing.md)

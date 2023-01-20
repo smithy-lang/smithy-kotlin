@@ -10,8 +10,21 @@ package aws.smithy.kotlin.runtime.tracing
 public interface TracingClientConfig {
     /**
      * The tracer that is responsible for creating trace spans and wiring them up to a tracing backend (e.g., a trace
-     * probe). By default, this will create a standard tracer that uses the service name for the root trace span and
-     * delegates to a logging trace probe (i.e., `DefaultTracer(LoggingTraceProbe, "<service-name>")`).
+     * probe). By default, a standard tracer that uses the service name for the root trace span and
+     * delegates to a logging trace probe (i.e., `DefaultTracer(LoggingTraceProbe, "<service-name>")`) is used.
      */
     public val tracer: Tracer
+
+    /**
+     * Configure the tracing capabilities of an SDK client
+     */
+    public interface Builder {
+        /**
+         * The tracer that is responsible for creating trace spans and wiring them up to a tracing backend (e.g.,
+         * a trace probe). By default, a standard tracer that uses the service name for the root
+         * trace span and delegates to a logging trace probe
+         * (i.e., `DefaultTracer(LoggingTraceProbe, "<service-name>")`) is used.
+         */
+        public var tracer: Tracer?
+    }
 }

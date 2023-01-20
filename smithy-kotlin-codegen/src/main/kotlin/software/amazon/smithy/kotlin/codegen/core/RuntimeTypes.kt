@@ -12,254 +12,263 @@ import software.amazon.smithy.kotlin.codegen.model.toSymbol
 
 /**
  * Commonly used runtime types. Provides a single definition of a runtime symbol such that codegen isn't littered
- * with inline symbol creation which makes refactoring of the runtime more difficult and error prone.
- *
- * NOTE: Not all symbols need be added here but it doesn't hurt to define runtime symbols once.
+ * with inline symbol creation which makes refactoring of the runtime more difficult and error-prone.
  */
 object RuntimeTypes {
-    object Http {
-        val HttpBody = runtimeSymbol("HttpBody", KotlinDependency.HTTP)
-        val HttpMethod = runtimeSymbol("HttpMethod", KotlinDependency.HTTP)
-        val SdkHttpClient = runtimeSymbol("SdkHttpClient", KotlinDependency.HTTP)
-        val SdkHttpClientFn = runtimeSymbol("sdkHttpClient", KotlinDependency.HTTP)
-        val ByteArrayContent = runtimeSymbol("ByteArrayContent", KotlinDependency.HTTP, "content")
-        val QueryParameters = runtimeSymbol("QueryParameters", KotlinDependency.HTTP)
-        val QueryParametersBuilder = runtimeSymbol("QueryParametersBuilder", KotlinDependency.HTTP)
-        val toQueryParameters = runtimeSymbol("toQueryParameters", KotlinDependency.HTTP)
-        val readAll = runtimeSymbol("readAll", KotlinDependency.HTTP)
-        val parameters = runtimeSymbol("parameters", KotlinDependency.HTTP)
-        val toByteStream = runtimeSymbol("toByteStream", KotlinDependency.HTTP)
-        val toHttpBody = runtimeSymbol("toHttpBody", KotlinDependency.HTTP)
-        val isSuccess = runtimeSymbol("isSuccess", KotlinDependency.HTTP)
-        val StatusCode = runtimeSymbol("HttpStatusCode", KotlinDependency.HTTP)
-        val toSdkByteReadChannel = runtimeSymbol("toSdkByteReadChannel", KotlinDependency.HTTP)
-        val Headers = runtimeSymbol("Headers", KotlinDependency.HTTP)
-        val Url = runtimeSymbol("Url", KotlinDependency.HTTP)
+    object Http : RuntimeTypePackage(KotlinDependency.HTTP) {
+        val HttpBody = symbol("HttpBody")
+        val HttpMethod = symbol("HttpMethod")
+        val SdkHttpClient = symbol("SdkHttpClient")
+        val SdkHttpClientFn = symbol("sdkHttpClient")
+        val ByteArrayContent = symbol("ByteArrayContent", subpackage = "content")
+        val QueryParameters = symbol("QueryParameters")
+        val QueryParametersBuilder = symbol("QueryParametersBuilder")
+        val toQueryParameters = symbol("toQueryParameters")
+        val readAll = symbol("readAll")
+        val parameters = symbol("parameters")
+        val toByteStream = symbol("toByteStream")
+        val toHttpBody = symbol("toHttpBody")
+        val isSuccess = symbol("isSuccess")
+        val StatusCode = symbol("HttpStatusCode")
+        val toSdkByteReadChannel = symbol("toSdkByteReadChannel")
+        val Headers = symbol("Headers")
+        val Url = symbol("Url")
 
-        object Util {
-            val encodeLabel = runtimeSymbol("encodeLabel", KotlinDependency.HTTP, "util")
-            val splitAsQueryParameters = runtimeSymbol("splitAsQueryParameters", KotlinDependency.HTTP, "util")
-            val quoteHeaderValue = runtimeSymbol("quoteHeaderValue", KotlinDependency.HTTP, "util")
+        object Util : RuntimeTypePackage(KotlinDependency.HTTP, "util") {
+            val encodeLabel = symbol("encodeLabel")
+            val splitAsQueryParameters = symbol("splitAsQueryParameters")
+            val quoteHeaderValue = symbol("quoteHeaderValue")
         }
 
-        object Request {
-            val HttpRequest = runtimeSymbol("HttpRequest", KotlinDependency.HTTP, "request")
-            val HttpRequestBuilder = runtimeSymbol("HttpRequestBuilder", KotlinDependency.HTTP, "request")
-            val url = runtimeSymbol("url", KotlinDependency.HTTP, "request")
-            val headers = runtimeSymbol("headers", KotlinDependency.HTTP, "request")
-            val toBuilder = runtimeSymbol("toBuilder", KotlinDependency.HTTP, "request")
+        object Request : RuntimeTypePackage(KotlinDependency.HTTP, "request") {
+            val HttpRequest = symbol("HttpRequest")
+            val HttpRequestBuilder = symbol("HttpRequestBuilder")
+            val url = symbol("url")
+            val headers = symbol("headers")
+            val toBuilder = symbol("toBuilder")
         }
 
-        object Response {
-            val HttpCall = runtimeSymbol("HttpCall", KotlinDependency.HTTP, "response")
-            val HttpResponse = runtimeSymbol("HttpResponse", KotlinDependency.HTTP, "response")
+        object Response : RuntimeTypePackage(KotlinDependency.HTTP, "response") {
+            val HttpCall = symbol("HttpCall")
+            val HttpResponse = symbol("HttpResponse")
         }
 
-        object Middlware {
-            val Md5ChecksumMiddleware = runtimeSymbol("Md5Checksum", KotlinDependency.HTTP, "middleware")
-            val MutateHeadersMiddleware = runtimeSymbol("MutateHeaders", KotlinDependency.HTTP, "middleware")
-            val RetryMiddleware = runtimeSymbol("RetryMiddleware", KotlinDependency.HTTP, "middleware")
-            val ResolveEndpoint = runtimeSymbol("ResolveEndpoint", KotlinDependency.HTTP, "middleware")
-            val FlexibleChecksumsRequestMiddleware = runtimeSymbol("FlexibleChecksumsRequestMiddleware", KotlinDependency.HTTP, "middleware")
-            val FlexibleChecksumsResponseMiddleware = runtimeSymbol("FlexibleChecksumsResponseMiddleware", KotlinDependency.HTTP, "middleware")
+        object Middlware : RuntimeTypePackage(KotlinDependency.HTTP, "middleware") {
+            val Md5ChecksumMiddleware = symbol("Md5Checksum")
+            val MutateHeadersMiddleware = symbol("MutateHeaders")
+            val RetryMiddleware = symbol("RetryMiddleware")
+            val ResolveEndpoint = symbol("ResolveEndpoint")
+            val FlexibleChecksumsRequestMiddleware = symbol("FlexibleChecksumsRequestMiddleware")
+            val FlexibleChecksumsResponseMiddleware = symbol("FlexibleChecksumsResponseMiddleware")
+
         }
 
-        object Operation {
-            val HttpDeserialize = runtimeSymbol("HttpDeserialize", KotlinDependency.HTTP, "operation")
-            val HttpSerialize = runtimeSymbol("HttpSerialize", KotlinDependency.HTTP, "operation")
-            val SdkHttpOperation = runtimeSymbol("SdkHttpOperation", KotlinDependency.HTTP, "operation")
-            val SdkHttpRequest = runtimeSymbol("SdkHttpRequest", KotlinDependency.HTTP, "operation")
-            val OperationRequest = runtimeSymbol("OperationRequest", KotlinDependency.HTTP, "operation")
-            val context = runtimeSymbol("context", KotlinDependency.HTTP, "operation")
-            val roundTrip = runtimeSymbol("roundTrip", KotlinDependency.HTTP, "operation")
-            val sdkRequestId = runtimeSymbol("sdkRequestId", KotlinDependency.HTTP, "operation")
-            val execute = runtimeSymbol("execute", KotlinDependency.HTTP, "operation")
-            val InlineMiddleware = runtimeSymbol("InlineMiddleware", KotlinDependency.HTTP, "operation")
+        object Operation : RuntimeTypePackage(KotlinDependency.HTTP, "operation") {
+            val HttpDeserialize = symbol("HttpDeserialize")
+            val HttpSerialize = symbol("HttpSerialize")
+            val SdkHttpOperation = symbol("SdkHttpOperation")
+            val SdkHttpRequest = symbol("SdkHttpRequest")
+            val OperationRequest = symbol("OperationRequest")
+            val context = symbol("context")
+            val roundTrip = symbol("roundTrip")
+            val sdkRequestId = symbol("sdkRequestId")
+            val execute = symbol("execute")
+            val InlineMiddleware = symbol("InlineMiddleware")
         }
 
-        object Endpoints {
-            val EndpointProvider = runtimeSymbol("EndpointProvider", KotlinDependency.HTTP, "endpoints")
-            val Endpoint = runtimeSymbol("Endpoint", KotlinDependency.HTTP, "endpoints")
-            val EndpointProviderException = runtimeSymbol("EndpointProviderException", KotlinDependency.HTTP, "endpoints")
-            val setResolvedEndpoint = runtimeSymbol("setResolvedEndpoint", KotlinDependency.HTTP, "endpoints")
+        object Endpoints : RuntimeTypePackage(KotlinDependency.HTTP, "endpoints") {
+            val EndpointProvider = symbol("EndpointProvider")
+            val Endpoint = symbol("Endpoint")
+            val EndpointProviderException = symbol("EndpointProviderException")
+            val setResolvedEndpoint = symbol("setResolvedEndpoint")
 
-            object Functions {
-                val substring = runtimeSymbol("substring", KotlinDependency.HTTP, "endpoints.functions")
-                val isValidHostLabel = runtimeSymbol("isValidHostLabel", KotlinDependency.HTTP, "endpoints.functions")
-                val uriEncode = runtimeSymbol("uriEncode", KotlinDependency.HTTP, "endpoints.functions")
-                val parseUrl = runtimeSymbol("parseUrl", KotlinDependency.HTTP, "endpoints.functions")
-                val Url = runtimeSymbol("Url", KotlinDependency.HTTP, "endpoints.functions")
+            object Functions : RuntimeTypePackage(KotlinDependency.HTTP, "endpoints.functions") {
+                val substring = symbol("substring")
+                val isValidHostLabel = symbol("isValidHostLabel")
+                val uriEncode = symbol("uriEncode")
+                val parseUrl = symbol("parseUrl")
+                val Url = symbol("Url")
             }
         }
 
-        object Engine {
-            val HttpClientEngine = runtimeSymbol("HttpClientEngine", KotlinDependency.HTTP, "engine")
-            val HttpClientEngineConfig = runtimeSymbol("HttpClientEngineConfig", KotlinDependency.HTTP, "engine")
+        object Config : RuntimeTypePackage(KotlinDependency.HTTP, "config") {
+            val HttpClientConfig = symbol("HttpClientConfig")
         }
-        object Interceptors {
-            val HttpInterceptor = runtimeSymbol("HttpInterceptor", KotlinDependency.HTTP, "interceptors")
+        object Engine : RuntimeTypePackage(KotlinDependency.HTTP, "engine") {
+            val HttpClientEngine = symbol("HttpClientEngine")
+        }
+        object Interceptors : RuntimeTypePackage(KotlinDependency.HTTP, "interceptors") {
+            val HttpInterceptor = symbol("HttpInterceptor")
         }
     }
 
-    object Core {
-        val IdempotencyTokenProviderExt = runtimeSymbol("idempotencyTokenProvider", KotlinDependency.CORE, "client")
-        val ExecutionContext = runtimeSymbol("ExecutionContext", KotlinDependency.CORE, "client")
-        val ErrorMetadata = runtimeSymbol("ErrorMetadata", KotlinDependency.CORE)
-        val ServiceErrorMetadata = runtimeSymbol("ServiceErrorMetadata", KotlinDependency.CORE)
-        val Instant = runtimeSymbol("Instant", KotlinDependency.CORE, "time")
-        val TimestampFormat = runtimeSymbol("TimestampFormat", KotlinDependency.CORE, "time")
-        val ClientException = runtimeSymbol("ClientException", KotlinDependency.CORE)
+    object Core : RuntimeTypePackage(KotlinDependency.CORE) {
+        val ExecutionContext = symbol("ExecutionContext", "client")
+        val ErrorMetadata = symbol("ErrorMetadata")
+        val ServiceErrorMetadata = symbol("ServiceErrorMetadata")
+        val Instant = symbol("Instant", "time")
+        val TimestampFormat = symbol("TimestampFormat", "time")
+        val ClientException = symbol("ClientException")
 
-        object Content {
-            val ByteArrayContent = runtimeSymbol("ByteArrayContent", KotlinDependency.CORE, "content")
-            val ByteStream = runtimeSymbol("ByteStream", KotlinDependency.CORE, "content")
-            val StringContent = runtimeSymbol("StringContent", KotlinDependency.CORE, "content")
-            val toByteArray = runtimeSymbol("toByteArray", KotlinDependency.CORE, "content")
-            val decodeToString = runtimeSymbol("decodeToString", KotlinDependency.CORE, "content")
+        object Content : RuntimeTypePackage(KotlinDependency.CORE, "content") {
+            val ByteArrayContent = symbol("ByteArrayContent")
+            val ByteStream = symbol("ByteStream")
+            val StringContent = symbol("StringContent")
+            val toByteArray = symbol("toByteArray")
+            val decodeToString = symbol("decodeToString")
         }
 
-        object Retries {
-            val Outcome = runtimeSymbol("Outcome", KotlinDependency.CORE, "retries")
-            val RetryStrategy = runtimeSymbol("RetryStrategy", KotlinDependency.CORE, "retries")
-            val StandardRetryStrategy = runtimeSymbol("StandardRetryStrategy", KotlinDependency.CORE, "retries")
-            val StandardRetryStrategyOptions = runtimeSymbol("StandardRetryStrategyOptions", KotlinDependency.CORE, "retries")
+        object Retries : RuntimeTypePackage(KotlinDependency.CORE, "retries") {
+            val Outcome = symbol("Outcome")
+            val RetryStrategy = symbol("RetryStrategy")
+            val StandardRetryStrategy = symbol("StandardRetryStrategy")
+            val StandardRetryStrategyOptions = symbol("StandardRetryStrategyOptions")
 
-            object Delay {
-                val ExponentialBackoffWithJitter = runtimeSymbol("ExponentialBackoffWithJitter", KotlinDependency.CORE, "retries.delay")
-                val ExponentialBackoffWithJitterOptions = runtimeSymbol("ExponentialBackoffWithJitterOptions", KotlinDependency.CORE, "retries.delay")
-                val InfiniteTokenBucket = runtimeSymbol("InfiniteTokenBucket", KotlinDependency.CORE, "retries.delay")
-                val StandardRetryTokenBucket = runtimeSymbol("StandardRetryTokenBucket", KotlinDependency.CORE, "retries.delay")
-                val StandardRetryTokenBucketOptions = runtimeSymbol("StandardRetryTokenBucketOptions", KotlinDependency.CORE, "retries.delay")
+            object Delay : RuntimeTypePackage(KotlinDependency.CORE, "retries.delay") {
+                val ExponentialBackoffWithJitter = symbol("ExponentialBackoffWithJitter")
+                val ExponentialBackoffWithJitterOptions = symbol("ExponentialBackoffWithJitterOptions")
+                val InfiniteTokenBucket = symbol("InfiniteTokenBucket")
+                val StandardRetryTokenBucket = symbol("StandardRetryTokenBucket")
+                val StandardRetryTokenBucketOptions = symbol("StandardRetryTokenBucketOptions")
             }
 
-            object Policy {
-                val Acceptor = runtimeSymbol("Acceptor", KotlinDependency.CORE, "retries.policy")
-                val AcceptorRetryPolicy = runtimeSymbol("AcceptorRetryPolicy", KotlinDependency.CORE, "retries.policy")
-                val ErrorTypeAcceptor = runtimeSymbol("ErrorTypeAcceptor", KotlinDependency.CORE, "retries.policy")
-                val InputOutputAcceptor = runtimeSymbol("InputOutputAcceptor", KotlinDependency.CORE, "retries.policy")
-                val OutputAcceptor = runtimeSymbol("OutputAcceptor", KotlinDependency.CORE, "retries.policy")
-                val RetryDirective = runtimeSymbol("RetryDirective", KotlinDependency.CORE, "retries.policy")
-                val RetryErrorType = runtimeSymbol("RetryErrorType", KotlinDependency.CORE, "retries.policy")
-                val StandardRetryPolicy = runtimeSymbol("StandardRetryPolicy", KotlinDependency.CORE, "retries.policy")
-                val SuccessAcceptor = runtimeSymbol("SuccessAcceptor", KotlinDependency.CORE, "retries.policy")
+            object Policy : RuntimeTypePackage(KotlinDependency.CORE, "retries.policy") {
+                val Acceptor = symbol("Acceptor")
+                val AcceptorRetryPolicy = symbol("AcceptorRetryPolicy")
+                val ErrorTypeAcceptor = symbol("ErrorTypeAcceptor")
+                val InputOutputAcceptor = symbol("InputOutputAcceptor")
+                val OutputAcceptor = symbol("OutputAcceptor")
+                val RetryDirective = symbol("RetryDirective")
+                val RetryErrorType = symbol("RetryErrorType")
+                val StandardRetryPolicy = symbol("StandardRetryPolicy")
+                val SuccessAcceptor = symbol("SuccessAcceptor")
             }
         }
 
-        object Smithy {
-            val Document = runtimeSymbol("Document", KotlinDependency.CORE, "smithy")
-            val buildDocument = runtimeSymbol("buildDocument", KotlinDependency.CORE, "smithy")
+        object Smithy : RuntimeTypePackage(KotlinDependency.CORE, "smithy") {
+            val Document = symbol("Document")
+            val buildDocument = symbol("buildDocument")
         }
 
-        object Client {
-            val RequestInterceptorContext = runtimeSymbol("RequestInterceptorContext", KotlinDependency.CORE, "client")
-            val ProtocolRequestInterceptorContext = runtimeSymbol("ProtocolRequestInterceptorContext", KotlinDependency.CORE, "client")
+        object Client : RuntimeTypePackage(KotlinDependency.CORE, "client") {
+            val SdkClient = symbol("SdkClient")
+            val AbstractSdkClientBuilder = symbol("AbstractSdkClientBuilder")
+            val SdkLogMode = symbol("SdkLogMode")
+            val SdkClientConfig = symbol("SdkClientConfig")
+            val SdkClientFactory = symbol("SdkClientFactory")
+            val RequestInterceptorContext = symbol("RequestInterceptorContext")
+            val ProtocolRequestInterceptorContext = symbol("ProtocolRequestInterceptorContext")
+            val IdempotencyTokenProvider = symbol("IdempotencyTokenProvider")
+            val IdempotencyTokenConfig = symbol("IdempotencyTokenConfig")
+            val IdempotencyTokenProviderExt = symbol("idempotencyTokenProvider")
         }
     }
 
-    object Hashing {
-        val Sha256 = runtimeSymbol("Sha256", KotlinDependency.HASHING)
+    object Hashing : RuntimeTypePackage(KotlinDependency.HASHING) {
+        val Sha256 = symbol("Sha256")
     }
 
-    object Utils {
-        val Attributes = runtimeSymbol("Attributes", KotlinDependency.UTILS)
-        val AttributeKey = runtimeSymbol("AttributeKey", KotlinDependency.UTILS)
-        val flattenIfPossible = runtimeSymbol("flattenIfPossible", KotlinDependency.UTILS)
-        val length = runtimeSymbol("length", KotlinDependency.UTILS)
-        val truthiness = runtimeSymbol("truthiness", KotlinDependency.UTILS)
-        val urlEncodeComponent = runtimeSymbol("urlEncodeComponent", KotlinDependency.UTILS, "text")
+    object Utils : RuntimeTypePackage(KotlinDependency.UTILS) {
+        val Attributes = symbol("Attributes")
+        val AttributeKey = symbol("AttributeKey")
+        val flattenIfPossible = symbol("flattenIfPossible")
+        val length = symbol("length")
+        val truthiness = symbol("truthiness")
+        val urlEncodeComponent = symbol("urlEncodeComponent", "text")
     }
 
-    object Serde {
-        val Serializer = runtimeSymbol("Serializer", KotlinDependency.SERDE)
-        val Deserializer = runtimeSymbol("Deserializer", KotlinDependency.SERDE)
-        val SdkFieldDescriptor = runtimeSymbol("SdkFieldDescriptor", KotlinDependency.SERDE)
-        val SdkObjectDescriptor = runtimeSymbol("SdkObjectDescriptor", KotlinDependency.SERDE)
-        val SerialKind = runtimeSymbol("SerialKind", KotlinDependency.SERDE)
-        val SerializationException = runtimeSymbol("SerializationException", KotlinDependency.SERDE)
-        val DeserializationException = runtimeSymbol("DeserializationException", KotlinDependency.SERDE)
+    object Serde : RuntimeTypePackage(KotlinDependency.SERDE) {
+        val Serializer = symbol("Serializer")
+        val Deserializer = symbol("Deserializer")
+        val SdkFieldDescriptor = symbol("SdkFieldDescriptor")
+        val SdkObjectDescriptor = symbol("SdkObjectDescriptor")
+        val SerialKind = symbol("SerialKind")
+        val SerializationException = symbol("SerializationException")
+        val DeserializationException = symbol("DeserializationException")
 
-        val serializeStruct = runtimeSymbol("serializeStruct", KotlinDependency.SERDE)
-        val serializeList = runtimeSymbol("serializeList", KotlinDependency.SERDE)
-        val serializeMap = runtimeSymbol("serializeMap", KotlinDependency.SERDE)
+        val serializeStruct = symbol("serializeStruct")
+        val serializeList = symbol("serializeList")
+        val serializeMap = symbol("serializeMap")
 
-        val deserializeStruct = runtimeSymbol("deserializeStruct", KotlinDependency.SERDE)
-        val deserializeList = runtimeSymbol("deserializeList", KotlinDependency.SERDE)
-        val deserializeMap = runtimeSymbol("deserializeMap", KotlinDependency.SERDE)
-        val asSdkSerializable = runtimeSymbol("asSdkSerializable", KotlinDependency.SERDE)
-        val field = runtimeSymbol("field", KotlinDependency.SERDE)
+        val deserializeStruct = symbol("deserializeStruct")
+        val deserializeList = symbol("deserializeList")
+        val deserializeMap = symbol("deserializeMap")
+        val asSdkSerializable = symbol("asSdkSerializable")
+        val field = symbol("field")
 
-        object SerdeJson {
-            val JsonSerialName = runtimeSymbol("JsonSerialName", KotlinDependency.SERDE_JSON)
-            val JsonSerializer = runtimeSymbol("JsonSerializer", KotlinDependency.SERDE_JSON)
-            val JsonDeserializer = runtimeSymbol("JsonDeserializer", KotlinDependency.SERDE_JSON)
+        object SerdeJson : RuntimeTypePackage(KotlinDependency.SERDE_JSON) {
+            val JsonSerialName = symbol("JsonSerialName")
+            val JsonSerializer = symbol("JsonSerializer")
+            val JsonDeserializer = symbol("JsonDeserializer")
         }
 
-        object SerdeXml {
-            val XmlSerialName = runtimeSymbol("XmlSerialName", KotlinDependency.SERDE_XML)
-            val XmlAliasName = runtimeSymbol("XmlAliasName", KotlinDependency.SERDE_XML)
-            val XmlCollectionName = runtimeSymbol("XmlCollectionName", KotlinDependency.SERDE_XML)
-            val XmlNamespace = runtimeSymbol("XmlNamespace", KotlinDependency.SERDE_XML)
-            val XmlCollectionValueNamespace = runtimeSymbol("XmlCollectionValueNamespace", KotlinDependency.SERDE_XML)
-            val XmlMapKeyNamespace = runtimeSymbol("XmlMapKeyNamespace", KotlinDependency.SERDE_XML)
-            val Flattened = runtimeSymbol("Flattened", KotlinDependency.SERDE_XML)
-            val XmlAttribute = runtimeSymbol("XmlAttribute", KotlinDependency.SERDE_XML)
-            val XmlMapName = runtimeSymbol("XmlMapName", KotlinDependency.SERDE_XML)
-            val XmlError = runtimeSymbol("XmlError", KotlinDependency.SERDE_XML)
-            val XmlSerializer = runtimeSymbol("XmlSerializer", KotlinDependency.SERDE_XML)
-            val XmlDeserializer = runtimeSymbol("XmlDeserializer", KotlinDependency.SERDE_XML)
+        object SerdeXml : RuntimeTypePackage(KotlinDependency.SERDE_XML) {
+            val XmlSerialName = symbol("XmlSerialName")
+            val XmlAliasName = symbol("XmlAliasName")
+            val XmlCollectionName = symbol("XmlCollectionName")
+            val XmlNamespace = symbol("XmlNamespace")
+            val XmlCollectionValueNamespace = symbol("XmlCollectionValueNamespace")
+            val XmlMapKeyNamespace = symbol("XmlMapKeyNamespace")
+            val Flattened = symbol("Flattened")
+            val XmlAttribute = symbol("XmlAttribute")
+            val XmlMapName = symbol("XmlMapName")
+            val XmlError = symbol("XmlError")
+            val XmlSerializer = symbol("XmlSerializer")
+            val XmlDeserializer = symbol("XmlDeserializer")
         }
 
-        object SerdeFormUrl {
-            val FormUrlSerialName = runtimeSymbol("FormUrlSerialName", KotlinDependency.SERDE_FORM_URL)
-            val FormUrlCollectionName = runtimeSymbol("FormUrlCollectionName", KotlinDependency.SERDE_FORM_URL)
-            val Flattened = runtimeSymbol("FormUrlFlattened", KotlinDependency.SERDE_FORM_URL)
-            val FormUrlMapName = runtimeSymbol("FormUrlMapName", KotlinDependency.SERDE_FORM_URL)
-            val QueryLiteral = runtimeSymbol("QueryLiteral", KotlinDependency.SERDE_FORM_URL)
-            val FormUrlSerializer = runtimeSymbol("FormUrlSerializer", KotlinDependency.SERDE_FORM_URL)
+        object SerdeFormUrl : RuntimeTypePackage(KotlinDependency.SERDE_FORM_URL) {
+            val FormUrlSerialName = symbol("FormUrlSerialName")
+            val FormUrlCollectionName = symbol("FormUrlCollectionName")
+            val Flattened = symbol("FormUrlFlattened")
+            val FormUrlMapName = symbol("FormUrlMapName")
+            val QueryLiteral = symbol("QueryLiteral")
+            val FormUrlSerializer = symbol("FormUrlSerializer")
         }
     }
 
     object Auth {
         object Credentials {
-            object AwsCredentials {
-                val Credentials = runtimeSymbol("Credentials", KotlinDependency.AWS_CREDENTIALS)
-                val CredentialsProvider = runtimeSymbol("CredentialsProvider", KotlinDependency.AWS_CREDENTIALS)
+            object AwsCredentials : RuntimeTypePackage(KotlinDependency.AWS_CREDENTIALS) {
+                val Credentials = symbol("Credentials")
+                val CredentialsProvider = symbol("CredentialsProvider")
             }
         }
 
         object Signing {
-            object AwsSigningCommon {
-                val AwsSignedBodyHeader = runtimeSymbol("AwsSignedBodyHeader", KotlinDependency.AWS_SIGNING_COMMON)
-                val AwsSigner = runtimeSymbol("AwsSigner", KotlinDependency.AWS_SIGNING_COMMON)
-                val AwsSigningAttributes = runtimeSymbol("AwsSigningAttributes", KotlinDependency.AWS_SIGNING_COMMON)
-                val AwsHttpSigner = runtimeSymbol("AwsHttpSigner", KotlinDependency.AWS_SIGNING_COMMON)
-                val HashSpecification = runtimeSymbol("HashSpecification", KotlinDependency.AWS_SIGNING_COMMON)
-                val createPresignedRequest = runtimeSymbol("createPresignedRequest", KotlinDependency.AWS_SIGNING_COMMON)
-                val PresignedRequestConfig = runtimeSymbol("PresignedRequestConfig", KotlinDependency.AWS_SIGNING_COMMON)
-                val PresigningLocation = runtimeSymbol("PresigningLocation", KotlinDependency.AWS_SIGNING_COMMON)
-                val ServicePresignConfig = runtimeSymbol("ServicePresignConfig", KotlinDependency.AWS_SIGNING_COMMON)
-                val SigningEndpointProvider = runtimeSymbol("SigningEndpointProvider", KotlinDependency.AWS_SIGNING_COMMON)
-                val SigningContextualizedEndpoint = runtimeSymbol("SigningContextualizedEndpoint", KotlinDependency.AWS_SIGNING_COMMON)
+            object AwsSigningCommon : RuntimeTypePackage(KotlinDependency.AWS_SIGNING_COMMON) {
+                val AwsSignedBodyHeader = symbol("AwsSignedBodyHeader")
+                val AwsSigner = symbol("AwsSigner")
+                val AwsSigningAttributes = symbol("AwsSigningAttributes")
+                val AwsHttpSigner = symbol("AwsHttpSigner")
+                val HashSpecification = symbol("HashSpecification")
+                val createPresignedRequest = symbol("createPresignedRequest")
+                val PresignedRequestConfig = symbol("PresignedRequestConfig")
+                val PresigningLocation = symbol("PresigningLocation")
+                val ServicePresignConfig = symbol("ServicePresignConfig")
+                val SigningEndpointProvider = symbol("SigningEndpointProvider")
+                val SigningContextualizedEndpoint = symbol("SigningContextualizedEndpoint")
             }
 
-            object AwsSigningStandard {
-                val DefaultAwsSigner = runtimeSymbol("DefaultAwsSigner", KotlinDependency.AWS_SIGNING_DEFAULT)
+            object AwsSigningStandard : RuntimeTypePackage(KotlinDependency.AWS_SIGNING_DEFAULT) {
+                val DefaultAwsSigner = symbol("DefaultAwsSigner")
             }
         }
     }
 
-    object IO {
-        val Closeable = runtimeSymbol("Closeable", KotlinDependency.IO)
+    object IO : RuntimeTypePackage(KotlinDependency.IO) {
+        val Closeable = symbol("Closeable")
     }
 
     object Tracing {
-        object Core {
-            val debug = runtimeSymbol("debug", KotlinDependency.TRACING_CORE)
-            val DefaultTracer = runtimeSymbol("DefaultTracer", KotlinDependency.TRACING_CORE)
-            val LoggingTraceProbe = runtimeSymbol("LoggingTraceProbe", KotlinDependency.TRACING_CORE)
-            val TraceProbe = runtimeSymbol("TraceProbe", KotlinDependency.TRACING_CORE)
-            val Tracer = runtimeSymbol("Tracer", KotlinDependency.TRACING_CORE)
-            val withRootTraceSpan = runtimeSymbol("withRootTraceSpan", KotlinDependency.TRACING_CORE)
+        object Core : RuntimeTypePackage(KotlinDependency.TRACING_CORE) {
+            val debug = symbol("debug")
+            val DefaultTracer = symbol("DefaultTracer")
+            val LoggingTraceProbe = symbol("LoggingTraceProbe")
+            val TraceProbe = symbol("TraceProbe")
+            val Tracer = symbol("Tracer")
+            val TracingClientConfig = symbol("TracingClientConfig")
+            val withRootTraceSpan = symbol("withRootTraceSpan")
         }
     }
 
@@ -276,7 +285,17 @@ object RuntimeTypes {
     }
 }
 
-private fun runtimeSymbol(name: String, dependency: KotlinDependency, subpackage: String = ""): Symbol = buildSymbol {
-    this.name = name
-    namespace(dependency, subpackage)
+abstract class RuntimeTypePackage(
+    val dependency: KotlinDependency,
+    val defaultSubpackage: String = "",
+) {
+    /**
+     * Create a symbol named by [name] from the [RuntimeTypePackage].
+     * @param name the name of the symbol
+     * @param subpackage the subpackage from the [dependency] namespace, defaults to [defaultSubpackage]
+     */
+    fun symbol(name: String, subpackage: String = defaultSubpackage): Symbol = buildSymbol {
+        this.name = name
+        namespace(dependency, subpackage)
+    }
 }

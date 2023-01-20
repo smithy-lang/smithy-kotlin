@@ -40,7 +40,6 @@ open class HttpProtocolUnitTestResponseGenerator protected constructor(builder: 
     override fun renderTestBody(test: HttpResponseTestCase) {
         writer.addImport(KotlinDependency.SMITHY_TEST.namespace, "*")
         writer.addImport(KotlinDependency.HTTP.namespace, "HttpStatusCode")
-        writer.addImport("${KotlinDependency.CORE.namespace}.config", "IdempotencyTokenProvider")
         writer.dependencies.addAll(KotlinDependency.SMITHY_TEST.dependencies)
         renderExpectedBlock(test)
         writer.write("")
@@ -112,7 +111,7 @@ open class HttpProtocolUnitTestResponseGenerator protected constructor(builder: 
         writer.write("httpClientEngine = mockEngine")
         if (idempotentFieldsInModel) {
             // see: https://awslabs.github.io/smithy/1.0/spec/http-protocol-compliance-tests.html#parameter-format
-            writer.write("idempotencyTokenProvider = IdempotencyTokenProvider { \"00000000-0000-4000-8000-000000000000\" }")
+            writer.write("idempotencyTokenProvider = #T { \"00000000-0000-4000-8000-000000000000\" }", RuntimeTypes.Core.Client.IdempotencyTokenProvider)
         }
     }
 

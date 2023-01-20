@@ -12,6 +12,8 @@ class DefaultWaitersTestClient(resultList: List<Result<GetEntityResponse>>) : Wa
     override val config: WaitersTestClient.Config
         get() = error("Unneeded for test")
 
+    override fun close() { }
+
     private val results = resultList.iterator()
 
     override suspend fun getEntity(input: GetEntityRequest): GetEntityResponse {

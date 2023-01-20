@@ -5,6 +5,7 @@
 package software.amazon.smithy.kotlin.codegen.rendering
 
 import io.kotest.matchers.string.shouldContainOnlyOnce
+import io.kotest.matchers.string.shouldNotContain
 import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.kotlin.codegen.KotlinCodegenPlugin
 import software.amazon.smithy.kotlin.codegen.KotlinSettings
@@ -17,19 +18,13 @@ import software.amazon.smithy.model.shapes.ServiceShape
 import software.amazon.smithy.model.shapes.ShapeId
 import kotlin.test.Test
 
-class ServiceGeneratorTest {
+class ServiceClientGeneratorTest {
     private val commonTestContents: String
     private val deprecatedTestContents: String
 
     init {
         commonTestContents = generateService("service-generator-test-operations.smithy")
         deprecatedTestContents = generateService("service-generator-deprecated.smithy")
-    }
-
-    @Test
-    fun `it imports external symbols`() {
-        commonTestContents.shouldContainOnlyOnce("import ${TestModelDefault.NAMESPACE}.model.*")
-        commonTestContents.shouldContainOnlyOnce("import $RUNTIME_ROOT_NS.SdkClient")
     }
 
     @Test
@@ -67,13 +62,9 @@ class ServiceGeneratorTest {
     @Test
     fun `it renders a companion object with default client factory if protocol generator`() {
         val expected = """
-            public companion object {
-                public operator fun invoke(block: Config.Builder.() -> Unit = {}): TestClient {
-                    val config = Config.Builder().apply(block).build()
-                    return DefaultTestClient(config)
-                }
-
-                public operator fun invoke(config: Config): TestClient = DefaultTestClient(config)
+            public companion object : SdkClientFactory<Config, Config.Builder, TestClient, Builder> {
+                @JvmStatic
+                override fun builder(): Builder = Builder()
             }
         """.formatForTest()
         val testContents = generateService("service-generator-test-operations.smithy", true)
@@ -83,15 +74,14 @@ class ServiceGeneratorTest {
     @Test
     fun `it renders a companion object without default client factory if no protocol generator`() {
         val expected = """
-            public companion object {
-            }
+            public companion object : SdkClientFactory
         """.formatForTest()
-        commonTestContents.shouldContainOnlyOnceWithDiff(expected)
+        commonTestContents.shouldNotContain(expected)
     }
 
     @Test
     fun `it generates config`() {
-        val expected = "public class Config"
+        val expected = "public class Config private constructor(builder: Builder) : IdempotencyTokenConfig, SdkClientConfig, TracingClientConfig"
         commonTestContents.shouldContainOnlyOnce(expected)
     }
 
@@ -108,13 +98,13 @@ class ServiceGeneratorTest {
         val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model)
         val writer = KotlinWriter(TestModelDefault.NAMESPACE)
         val service = model.expectShape<ServiceShape>(TestModelDefault.SERVICE_SHAPE_ID)
-        writer.registerSectionWriter(ServiceGenerator.SectionServiceCompanionObject) { codeWriter, _ ->
+        writer.registerSectionWriter(ServiceClientGenerator.Sections.CompanionObject) { codeWriter, _ ->
             codeWriter.openBlock("public companion object {")
                 .write("public fun foo(): Int = 1")
                 .closeBlock("}")
         }
 
-        writer.registerSectionWriter(ServiceGenerator.SectionServiceConfig) { codeWriter, _ ->
+        writer.registerSectionWriter(ServiceClientGenerator.Sections.ServiceConfig) { codeWriter, _ ->
             codeWriter.openBlock("public class Config {")
                 .write("public var bar: Int = 2")
                 .closeBlock("}")
@@ -122,7 +112,7 @@ class ServiceGeneratorTest {
 
         val settings = KotlinSettings(service.id, KotlinSettings.PackageSettings("test", "0.0"), sdkId = service.id.name)
         val renderingCtx = RenderingContext(writer, service, model, provider, settings)
-        val generator = ServiceGenerator(renderingCtx)
+        val generator = ServiceClientGenerator(renderingCtx)
         generator.render()
         val contents = writer.toString()
 
@@ -180,6 +170,18 @@ class ServiceGeneratorTest {
         }
     }
 
+    @Test
+    fun `it renders a service client builder`() {
+        val expected = """
+            public class Builder internal constructor(): AbstractSdkClientBuilder<Config, Config.Builder, TestClient>() {
+                override val config: Config.Builder = Config.Builder()
+                override fun newClient(config: Config): TestClient = DefaultTestClient(config)
+            }
+        """.formatForTest()
+        val testContents = generateService("service-generator-test-operations.smithy", true)
+        testContents.shouldContainOnlyOnceWithDiff(expected)
+    }
+
     // Produce the generated service code given model inputs.
     private fun generateService(modelResourceName: String, withProtocolGenerator: Boolean = false): String {
         val model = loadModelFromResource(modelResourceName)
@@ -190,7 +192,7 @@ class ServiceGeneratorTest {
         val settings = KotlinSettings(service.id, KotlinSettings.PackageSettings(TestModelDefault.NAMESPACE, TestModelDefault.MODEL_VERSION), sdkId = service.id.name)
         val protocolGenerator = if (withProtocolGenerator) MockHttpProtocolGenerator() else null
         val renderingCtx = RenderingContext(writer, service, model, provider, settings, protocolGenerator)
-        val generator = ServiceGenerator(renderingCtx)
+        val generator = ServiceClientGenerator(renderingCtx)
 
         generator.render()
 

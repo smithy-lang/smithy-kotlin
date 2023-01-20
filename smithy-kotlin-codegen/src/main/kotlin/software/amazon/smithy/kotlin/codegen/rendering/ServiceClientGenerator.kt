@@ -7,6 +7,8 @@ package software.amazon.smithy.kotlin.codegen.rendering
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.kotlin.codegen.core.*
 import software.amazon.smithy.kotlin.codegen.integration.SectionId
+import software.amazon.smithy.kotlin.codegen.integration.SectionKey
+import software.amazon.smithy.kotlin.codegen.lang.KotlinTypes
 import software.amazon.smithy.kotlin.codegen.model.hasStreamingMember
 import software.amazon.smithy.kotlin.codegen.model.operationSignature
 import software.amazon.smithy.model.knowledge.OperationIndex
@@ -14,31 +16,42 @@ import software.amazon.smithy.model.knowledge.TopDownIndex
 import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.shapes.ServiceShape
 
-// FIXME - rename file and class to ServiceClientGenerator
-
 /**
  * Renders just the service client interfaces. The actual implementation is handled by protocol generators, see
  * [software.amazon.smithy.kotlin.codegen.rendering.protocol.HttpBindingProtocolGenerator].
  */
-class ServiceGenerator(private val ctx: RenderingContext<ServiceShape>) {
-    /**
-     * SectionId used when rendering the service interface companion object
-     */
-    object SectionServiceCompanionObject : SectionId {
-        /**
-         * Context key for the service symbol
-         */
-        const val ServiceSymbol = "ServiceSymbol"
-    }
+class ServiceClientGenerator(private val ctx: RenderingContext<ServiceShape>) {
+    object Sections {
 
-    /**
-     * SectionId used when rendering the service configuration object
-     */
-    object SectionServiceConfig : SectionId {
         /**
-         * The current rendering context for the service generator
+         * [SectionId] used when rendering the service client builder
          */
-        const val RenderingContext = "RenderingContext"
+        object ServiceBuilder : SectionId {
+            /**
+             * The current rendering context for the service generator
+             */
+            val RenderingContext: SectionKey<RenderingContext<ServiceShape>> = SectionKey("RenderingContext")
+        }
+
+        /**
+         * [SectionId] used when rendering the service interface companion object
+         */
+        object CompanionObject : SectionId {
+            /**
+             * Context key for the service symbol
+             */
+            val ServiceSymbol: SectionKey<Symbol> = SectionKey("ServiceSymbol")
+        }
+
+        /**
+         * [SectionId] used when rendering the service configuration object
+         */
+        object ServiceConfig : SectionId {
+            /**
+             * The current rendering context for the service generator
+             */
+            val RenderingContext: SectionKey<RenderingContext<ServiceShape>> = SectionKey("RenderingContext")
+        }
     }
 
     init {
@@ -53,30 +66,31 @@ class ServiceGenerator(private val ctx: RenderingContext<ServiceShape>) {
     fun render() {
         writer.putContext("service.name", ctx.settings.sdkId)
 
-        importExternalSymbols()
-
         val topDownIndex = TopDownIndex.of(ctx.model)
         val operations = topDownIndex.getContainedOperations(service).sortedBy { it.defaultName() }
         val operationsIndex = OperationIndex.of(ctx.model)
 
         writer.renderDocumentation(service)
         writer.renderAnnotations(service)
-        writer.openBlock("public interface ${serviceSymbol.name} : SdkClient {")
+        writer.openBlock("public interface ${serviceSymbol.name} : #T {", RuntimeTypes.Core.Client.SdkClient)
             .call { overrideServiceName() }
             .call {
                 // allow access to client's Config
                 writer.dokka("${serviceSymbol.name}'s configuration")
-                writer.write("public val config: Config")
+                writer.write("public override val config: Config")
             }
             .call {
                 // allow integrations to add additional fields to companion object or configuration
                 writer.write("")
                 writer.declareSection(
-                    SectionServiceCompanionObject,
-                    context = mapOf(SectionServiceCompanionObject.ServiceSymbol to serviceSymbol),
+                    Sections.CompanionObject,
+                    context = mapOf(Sections.CompanionObject.ServiceSymbol to serviceSymbol),
                 ) {
                     renderCompanionObject()
                 }
+                writer.write("")
+                renderServiceBuilder()
+
                 writer.write("")
                 renderServiceConfig()
             }
@@ -91,10 +105,30 @@ class ServiceGenerator(private val ctx: RenderingContext<ServiceShape>) {
 
     private fun renderServiceConfig() {
         writer.declareSection(
-            SectionServiceConfig,
-            context = mapOf(SectionServiceConfig.RenderingContext to ctx),
+            Sections.ServiceConfig,
+            context = mapOf(Sections.ServiceConfig.RenderingContext to ctx),
         ) {
-            ClientConfigGenerator(ctx).render()
+            ServiceClientConfigGenerator(service).render(ctx, ctx.writer)
+        }
+    }
+
+    private fun renderServiceBuilder() {
+        // don't generate a builder if there is no default client to instantiate
+        if (ctx.protocolGenerator == null) return
+
+        writer.declareSection(
+            Sections.ServiceBuilder,
+            context = mapOf(Sections.ServiceBuilder.RenderingContext to ctx),
+        ) {
+            writer.withBlock(
+                "public class Builder internal constructor(): #T<Config, Config.Builder, #T>() {",
+                "}",
+                RuntimeTypes.Core.Client.AbstractSdkClientBuilder,
+                serviceSymbol,
+            ) {
+                write("override val config: Config.Builder = Config.Builder()")
+                write("override fun newClient(config: Config): #T = Default${serviceSymbol.name}(config)", serviceSymbol)
+            }
         }
     }
 
@@ -103,43 +137,23 @@ class ServiceGenerator(private val ctx: RenderingContext<ServiceShape>) {
      *
      * e.g.
      * ```
-     * companion object {
-     *     operator fun invoke(block: Config.Builder.() -> Unit = {}): LambdaClient {
-     *         val config = Config.Builder().apply(block).build()
-     *         return DefaultLambdaClient(config)
-     *     }
-     *
-     *     operator fun invoke(config: Config): LambdaClient = DefaultLambdaClient(config)
+     * companion object : SdkClientFactory<Config, Config.Builder, LambdaClient, Builder> {
+     *     override fun builder: Builder = Builder()
      * }
      * ```
      */
     private fun renderCompanionObject() {
-        writer.withBlock("public companion object {", "}") {
-            val hasProtocolGenerator = ctx.protocolGenerator != null
-            // If there is no ProtocolGenerator, do not codegen references to the non-existent default client.
-            callIf(hasProtocolGenerator) {
-                withBlock("public operator fun invoke(block: Config.Builder.() -> Unit = {}): ${serviceSymbol.name} {", "}") {
-                    write("val config = Config.Builder().apply(block).build()")
-                    write("return Default${serviceSymbol.name}(config)")
-                }
-                write("")
-                write("public operator fun invoke(config: Config): ${serviceSymbol.name} = Default${serviceSymbol.name}(config)")
-            }
+        // don't render a companion object which is used for building a service client unless we have a protocol generator
+        if (ctx.protocolGenerator == null) return
+        writer.withBlock(
+            "public companion object : #T<Config, Config.Builder, #T, Builder> {",
+            "}",
+            RuntimeTypes.Core.Client.SdkClientFactory,
+            serviceSymbol,
+        ) {
+            write("@#T", KotlinTypes.Jvm.JvmStatic)
+            write("override fun builder(): Builder = Builder()")
         }
-    }
-
-    private fun importExternalSymbols() {
-        // base client interface
-        val sdkInterfaceSymbol = Symbol.builder()
-            .name("SdkClient")
-            .namespace(RUNTIME_ROOT_NS, ".")
-            .addDependency(KotlinDependency.CORE)
-            .build()
-
-        writer.addImport(sdkInterfaceSymbol)
-
-        // import all the models generated for use in input/output shapes
-        writer.addImport("${ctx.settings.pkg.name}.model", "*")
     }
 
     private fun overrideServiceName() {
@@ -156,6 +170,14 @@ class ServiceGenerator(private val ctx: RenderingContext<ServiceShape>) {
         writer.renderAnnotations(op)
 
         val signature = opIndex.operationSignature(ctx.model, ctx.symbolProvider, op, includeOptionalDefault = true)
+        // the signature returned by OperationIndex doesn't carry any import information with it, need to ensure
+        // the input and output types are imported since the auto import machinery won't run
+        listOf(
+            ctx.symbolProvider.toSymbol(ctx.model.expectShape(op.inputShape)),
+            ctx.symbolProvider.toSymbol(ctx.model.expectShape(op.outputShape)),
+        ).forEach {
+            writer.addImport(it)
+        }
         writer.write("public #L", signature)
     }
 
