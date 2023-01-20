@@ -10,7 +10,6 @@ import aws.smithy.kotlin.runtime.hashing.*
 import aws.smithy.kotlin.runtime.http.*
 import aws.smithy.kotlin.runtime.http.operation.*
 import aws.smithy.kotlin.runtime.http.request.header
-import aws.smithy.kotlin.runtime.io.*
 import aws.smithy.kotlin.runtime.util.*
 import kotlinx.coroutines.*
 import kotlin.coroutines.coroutineContext
@@ -32,7 +31,7 @@ public class FlexibleChecksumsRequestMiddleware(private val checksumAlgorithmNam
         val logger = coroutineContext.getLogger<FlexibleChecksumsRequestMiddleware>()
 
         val headerName = "x-amz-checksum-${checksumAlgorithmName.lowercase()}"
-        logger.debug { "Resolved header name: $headerName" }
+        logger.debug { "Resolved checksum header name: $headerName" }
 
         // remove all checksum headers except for $headerName
         // this handles the case where a user inputs a precalculated checksum, but it doesn't match the input checksum algorithm
@@ -69,7 +68,7 @@ public class FlexibleChecksumsRequestMiddleware(private val checksumAlgorithmNam
             logger.debug { "Calculating checksum" }
 
             val checksum = req.subject.body.readAll()?.hash(checksumAlgorithm)?.encodeBase64String()
-                ?: throw RuntimeException("Failed to calculate checksum")
+                ?: throw ClientException("Can't calculate the checksum of an empty body")
 
             req.subject.header(headerName, checksum)
         }
@@ -88,19 +87,6 @@ public class FlexibleChecksumsRequestMiddleware(private val checksumAlgorithmNam
     private val HashFunction.isSupported: Boolean get() = when (this) {
         is Crc32, is Crc32c, is Sha256, is Sha1 -> true
         else -> false
-    }
-
-    /**
-     * Gets the Base64 encoded checksum of an HttpBody
-     * To use this, the HttpBody's underlying data source *must* be either a [HashingSource] or [HashingByteReadChannel],
-     * which means the HttpBody must also be either an [HttpBody.SourceContent] or [HttpBody.ChannelContent]. An exception
-     * will be thrown otherwise.
-     * @return the Base64 encoded checksum of an HttpBody
-     */
-    public val HttpBody.checksum: String get() = when (this) {
-        is HttpBody.SourceContent -> { (readFrom() as HashingSource).digest().encodeBase64String() }
-        is HttpBody.ChannelContent -> { (readFrom() as HashingByteReadChannel).digest().encodeBase64String() }
-        else -> throw ClientException("HttpBody type is not supported")
     }
 
     /**
