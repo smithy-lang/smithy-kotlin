@@ -7,7 +7,6 @@ package aws.smithy.kotlin.runtime.http.middleware
 
 import aws.smithy.kotlin.runtime.ClientException
 import aws.smithy.kotlin.runtime.hashing.toHashFunction
-import aws.smithy.kotlin.runtime.http.HttpBody
 import aws.smithy.kotlin.runtime.http.isSuccess
 import aws.smithy.kotlin.runtime.http.operation.*
 import aws.smithy.kotlin.runtime.http.response.HttpCall
@@ -27,8 +26,6 @@ internal val CHECKSUM_HEADER_VALIDATION_PRIORITY_LIST: List<String> = listOf(
     "x-amz-checksum-sha256",
 )
 
-internal val MULTIPART_CHECKSUM_HEADER_REGEX = Regex("x-amz-checksum-[a-zA-Z0-9]+-[0-9]+")
-
 /**
  * Validate a flexible checksums response.
  *
@@ -40,9 +37,13 @@ internal val MULTIPART_CHECKSUM_HEADER_REGEX = Regex("x-amz-checksum-[a-zA-Z0-9]
 public class FlexibleChecksumsResponseMiddleware : ReceiveMiddleware {
 
     public companion object {
-        public val ResponseChecksum: AttributeKey<Deferred<String>> = AttributeKey("ResponseChecksum")
+        // The expected response checksum from the response's headers
         public val ExpectedResponseChecksum: AttributeKey<String> = AttributeKey("ExpectedResponseChecksum")
 
+        // The actual response checksum
+        public val ResponseChecksum: AttributeKey<Deferred<String>> = AttributeKey("ResponseChecksum")
+
+        // The name of the checksum header which was validated. If `null`, validation was not performed.
         public val ChecksumHeaderValidated: AttributeKey<String> = AttributeKey("ChecksumHeaderValidated")
     }
 
@@ -61,13 +62,8 @@ public class FlexibleChecksumsResponseMiddleware : ReceiveMiddleware {
             return call
         }
 
-        if (MULTIPART_CHECKSUM_HEADER_REGEX.matches(checksumHeader)) {
-            logger.info { "Skipping validation of multipart response checksum $checksumHeader" }
-            return call
-        }
-
         // let the user know which checksum will be validated
-        logger.debug { "Validating checksum in $checksumHeader" }
+        logger.debug { "Validating checksum from $checksumHeader" }
         request.context[ChecksumHeaderValidated] = checksumHeader
 
         val checksumAlgorithm = checksumHeader.removePrefix("x-amz-checksum-").toHashFunction() ?: throw ClientException("could not parse checksum algorithm from header $checksumHeader")
@@ -87,18 +83,5 @@ public class FlexibleChecksumsResponseMiddleware : ReceiveMiddleware {
         request.context[ResponseChecksum] = deferredChecksum
 
         return call
-    }
-
-    /**
-     * Returns the Base64 encoded checksum of an HttpBody
-     * To use this, the HttpBody's underlying data source *must* be either a [HashingSource] or [HashingByteReadChannel],
-     * which means the HttpBody must also be either an [HttpBody.SourceContent] or [HttpBody.ChannelContent]. An exception
-     * will be thrown otherwise.
-     * @return the Base64 encoded checksum of the HttpBody
-     */
-    public val HttpBody.checksum: String get() = when (this) {
-        is HttpBody.SourceContent -> { (readFrom() as HashingSource).digest().encodeBase64String() }
-        is HttpBody.ChannelContent -> { (readFrom() as HashingByteReadChannel).digest().encodeBase64String() }
-        else -> throw ClientException("HttpBody type is not supported")
     }
 }
