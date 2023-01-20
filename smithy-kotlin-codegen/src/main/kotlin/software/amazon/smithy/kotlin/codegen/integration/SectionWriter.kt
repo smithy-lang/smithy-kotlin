@@ -13,6 +13,8 @@ import software.amazon.smithy.kotlin.codegen.core.KotlinWriter
  */
 interface SectionId
 
+data class SectionKey<T>(val name: String)
+
 /**
  * A [SectionWriter] integrates with Smithy Sections.  It takes in a
  * [KotlinWriter] and default codegen strings (if any).  Implementations

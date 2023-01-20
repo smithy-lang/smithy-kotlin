@@ -8,6 +8,7 @@ import software.amazon.smithy.aws.traits.HttpChecksumTrait
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.kotlin.codegen.core.*
 import software.amazon.smithy.kotlin.codegen.integration.SectionId
+import software.amazon.smithy.kotlin.codegen.integration.SectionKey
 import software.amazon.smithy.kotlin.codegen.lang.KotlinTypes
 import software.amazon.smithy.kotlin.codegen.model.*
 import software.amazon.smithy.kotlin.codegen.rendering.serde.deserializerName
@@ -30,7 +31,7 @@ abstract class HttpProtocolClientGenerator(
 
     object OperationDeserializerBinding : SectionId {
         // Context for operation being codegened at the time of section invocation
-        const val Operation = "Operation"
+        val Operation: SectionKey<OperationShape> = SectionKey("Operation")
     }
 
     /**

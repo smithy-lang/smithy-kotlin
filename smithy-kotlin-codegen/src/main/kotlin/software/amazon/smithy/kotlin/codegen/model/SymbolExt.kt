@@ -35,6 +35,9 @@ object SymbolProperty {
 
     // Pseudo dependency on a snippet of code
     const val GENERATED_DEPENDENCY: String = "generatedDependency"
+
+    // controls whether the property type is `var` vs `val` when formatted as a property
+    const val PROPERTY_TYPE_MUTABILITY: String = "propertyTypeMutability"
 }
 
 /**
@@ -53,6 +56,31 @@ val Symbol.isBoxed: Boolean
  */
 val Symbol.isNotBoxed: Boolean
     get() = !isBoxed
+
+enum class PropertyTypeMutability {
+    /**
+     * Immutable property (e.g. `val`)
+     */
+    IMMUTABLE,
+
+    /**
+     * Mutable property (e.g. `var`)
+     */
+    MUTABLE;
+
+    override fun toString(): String = when (this) {
+        IMMUTABLE -> "val"
+        MUTABLE -> "var"
+    }
+}
+
+/**
+ * Get the property type mutability of this symbol if set.
+ */
+val Symbol.propertyTypeMutability: PropertyTypeMutability?
+    get() = getProperty(SymbolProperty.PROPERTY_TYPE_MUTABILITY)
+        .map { it as PropertyTypeMutability }
+        .getOrNull()
 
 /**
  * Gets the default value for the symbol if present, else null
@@ -126,6 +154,11 @@ fun Symbol.Builder.addReference(symbol: Symbol, option: SymbolReference.ContextO
 
     return addReference(ref)
 }
+
+/**
+ * Mark a symbol property type mutability
+ */
+fun Symbol.Builder.propertyTypeMutability(mutability: PropertyTypeMutability): Symbol.Builder = apply { putProperty(SymbolProperty.PROPERTY_TYPE_MUTABILITY, mutability) }
 
 /**
  * Get the shape this symbol was created from

@@ -173,7 +173,7 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Unit>() {
 
         writers.useShapeWriter(shape) {
             val renderingCtx = baseGenerationContext.toRenderingContext(it, shape)
-            ServiceGenerator(renderingCtx).render()
+            ServiceClientGenerator(renderingCtx).render()
         }
 
         // render the service (client) base exception type

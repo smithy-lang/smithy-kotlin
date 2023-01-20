@@ -12,12 +12,14 @@ import software.amazon.smithy.kotlin.codegen.core.*
 import software.amazon.smithy.kotlin.codegen.integration.KotlinIntegration
 import software.amazon.smithy.kotlin.codegen.loadModelFromResource
 import software.amazon.smithy.kotlin.codegen.model.*
+import software.amazon.smithy.kotlin.codegen.rendering.util.ConfigProperty
+import software.amazon.smithy.kotlin.codegen.rendering.util.ConfigPropertyType
 import software.amazon.smithy.kotlin.codegen.test.*
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.ServiceShape
 import kotlin.test.Test
 
-class ClientConfigGeneratorTest {
+class ServiceClientConfigGeneratorTest {
     private fun getModel(): Model = loadModelFromResource("idempotent-token-test-model.smithy")
 
     private fun createWriter() =
@@ -32,35 +34,35 @@ class ClientConfigGeneratorTest {
         val writer = createWriter()
         val renderingCtx = testCtx.toRenderingContext(writer, serviceShape)
 
-        ClientConfigGenerator(renderingCtx).render()
+        ServiceClientConfigGenerator(serviceShape).render(renderingCtx, renderingCtx.writer)
         val contents = writer.toString()
 
         contents.assertBalancedBracesAndParens()
 
         val expectedCtor = """
-public class Config private constructor(builder: Builder): HttpClientConfig, IdempotencyTokenConfig, SdkClientConfig, TracingClientConfig {
+public class Config private constructor(builder: Builder) : HttpClientConfig, IdempotencyTokenConfig, SdkClientConfig, TracingClientConfig {
 """
         contents.shouldContainWithDiff(expectedCtor)
 
         val expectedProps = """
     override val httpClientEngine: HttpClientEngine? = builder.httpClientEngine
     public val endpointProvider: EndpointProvider = requireNotNull(builder.endpointProvider) { "endpointProvider is a required configuration property" }
-    override val idempotencyTokenProvider: IdempotencyTokenProvider? = builder.idempotencyTokenProvider
-    public val interceptors: kotlin.collections.List<aws.smithy.kotlin.runtime.http.interceptors.HttpInterceptor> = builder.interceptors
-    public val retryStrategy: RetryStrategy = builder.retryStrategy ?: StandardRetryStrategy()
+    override val idempotencyTokenProvider: IdempotencyTokenProvider = builder.idempotencyTokenProvider ?: IdempotencyTokenProvider.Default
+    override val interceptors: kotlin.collections.List<aws.smithy.kotlin.runtime.http.interceptors.HttpInterceptor> = builder.interceptors
+    override val retryStrategy: RetryStrategy = builder.retryStrategy ?: StandardRetryStrategy()
     override val sdkLogMode: SdkLogMode = builder.sdkLogMode
     override val tracer: Tracer = builder.tracer ?: DefaultTracer(LoggingTraceProbe, "${TestModelDefault.SERVICE_NAME}")
 """
         contents.shouldContainWithDiff(expectedProps)
 
         val expectedBuilder = """
-    public class Builder {
+    public class Builder : HttpClientConfig.Builder, IdempotencyTokenConfig.Builder, SdkClientConfig.Builder<Config>, TracingClientConfig.Builder {
         /**
          * Override the default HTTP client engine used to make SDK requests (e.g. configure proxy behavior, timeouts, concurrency, etc).
          * NOTE: The caller is responsible for managing the lifetime of the engine when set. The SDK
          * client will not close it when the client is closed.
          */
-        public var httpClientEngine: HttpClientEngine? = null
+        override var httpClientEngine: HttpClientEngine? = null
 
         /**
          * The endpoint provider used to determine where to make service requests.
@@ -71,7 +73,7 @@ public class Config private constructor(builder: Builder): HttpClientConfig, Ide
          * Override the default idempotency token generator. SDK clients will generate tokens for members
          * that represent idempotent tokens when not explicitly set by the caller using this generator.
          */
-        public var idempotencyTokenProvider: IdempotencyTokenProvider? = null
+        override var idempotencyTokenProvider: IdempotencyTokenProvider? = null
 
         /**
          * Add an [aws.smithy.kotlin.runtime.client.Interceptor] that will have access to read and modify
@@ -79,13 +81,13 @@ public class Config private constructor(builder: Builder): HttpClientConfig, Ide
          * Interceptors added using this method are executed in the order they are configured and are always
          * later than any added automatically by the SDK.
          */
-        public var interceptors: kotlin.collections.MutableList<aws.smithy.kotlin.runtime.http.interceptors.HttpInterceptor> = kotlin.collections.mutableListOf()
+        override var interceptors: kotlin.collections.MutableList<aws.smithy.kotlin.runtime.http.interceptors.HttpInterceptor> = kotlin.collections.mutableListOf()
 
         /**
          * The [RetryStrategy] implementation to use for service calls. All API calls will be wrapped by the
          * strategy.
          */
-        public var retryStrategy: RetryStrategy? = null
+        override var retryStrategy: RetryStrategy? = null
 
         /**
          * Configure events that will be logged. By default clients will not output
@@ -97,7 +99,7 @@ public class Config private constructor(builder: Builder): HttpClientConfig, Ide
          * performance considerations when dumping the request/response body. This is primarily a tool for
          * debug purposes.
          */
-        public var sdkLogMode: SdkLogMode = SdkLogMode.Default
+        override var sdkLogMode: SdkLogMode = SdkLogMode.Default
 
         /**
          * The tracer that is responsible for creating trace spans and wiring them up to a tracing backend (e.g.,
@@ -105,10 +107,9 @@ public class Config private constructor(builder: Builder): HttpClientConfig, Ide
          * trace span and delegates to a logging trace probe (i.e.,
          * `DefaultTracer(LoggingTraceProbe, "<service-name>")`).
          */
-        public var tracer: Tracer? = null
+        override var tracer: Tracer? = null
 
-        @PublishedApi
-        internal fun build(): Config = Config(this)
+        override fun build(): Config = Config(this)
     }
 """
         contents.shouldContainWithDiff(expectedBuilder)
@@ -116,13 +117,13 @@ public class Config private constructor(builder: Builder): HttpClientConfig, Ide
         val expectedImports = listOf(
             "import ${RuntimeTypes.Http.Engine.HttpClientEngine.fullName}",
             "import ${KotlinDependency.HTTP.namespace}.config.HttpClientConfig",
-            "import ${KotlinDependency.CORE.namespace}.config.IdempotencyTokenConfig",
-            "import ${KotlinDependency.CORE.namespace}.config.IdempotencyTokenProvider",
-            "import ${KotlinDependency.CORE.namespace}.config.SdkClientConfig",
+            "import ${KotlinDependency.CORE.namespace}.client.IdempotencyTokenConfig",
+            "import ${KotlinDependency.CORE.namespace}.client.IdempotencyTokenProvider",
+            "import ${KotlinDependency.CORE.namespace}.client.SdkClientConfig",
             "import ${KotlinDependency.CORE.namespace}.client.SdkLogMode",
         )
         expectedImports.forEach {
-            contents.shouldContain(it)
+            contents.shouldContainWithDiff(it)
         }
     }
 
@@ -136,14 +137,14 @@ public class Config private constructor(builder: Builder): HttpClientConfig, Ide
         val writer = createWriter()
         val renderingCtx = testCtx.toRenderingContext(writer, serviceShape)
 
-        val customProps = arrayOf(
-            ClientConfigProperty.Int("intProp", 1, documentation = "non-null-int"),
-            ClientConfigProperty.Int("nullIntProp"),
-            ClientConfigProperty.String("stringProp"),
-            ClientConfigProperty.Boolean("boolProp"),
+        val customProps = listOf(
+            ConfigProperty.Int("intProp", 1, documentation = "non-null-int"),
+            ConfigProperty.Int("nullIntProp"),
+            ConfigProperty.String("stringProp"),
+            ConfigProperty.Boolean("boolProp"),
         )
 
-        ClientConfigGenerator(renderingCtx, detectDefaultProps = false, builderReturnType = null, *customProps).render()
+        ServiceClientConfigGenerator(serviceShape, detectDefaultProps = false).render(renderingCtx, customProps, renderingCtx.writer)
         val contents = writer.toString()
 
         // we should have no base classes when not using the default and no inheritFrom specified
@@ -184,14 +185,14 @@ public class Config private constructor(builder: Builder) {
         val writer = createWriter()
         val customIntegration = object : KotlinIntegration {
 
-            override fun additionalServiceConfigProps(ctx: CodegenContext): List<ClientConfigProperty> =
-                listOf(ClientConfigProperty.Int("customProp"))
+            override fun additionalServiceConfigProps(ctx: CodegenContext): List<ConfigProperty> =
+                listOf(ConfigProperty.Int("customProp"))
         }
 
         val renderingCtx = testCtx.toRenderingContext(writer, serviceShape)
             .copy(integrations = listOf(customIntegration))
 
-        ClientConfigGenerator(renderingCtx, detectDefaultProps = false).render()
+        ServiceClientConfigGenerator(serviceShape, detectDefaultProps = false).render(renderingCtx, renderingCtx.writer)
         val contents = writer.toString()
 
         val expectedProps = """
@@ -234,8 +235,8 @@ public class Config private constructor(builder: Builder) {
         val writer = createWriter()
         val renderingCtx = testCtx.toRenderingContext(writer, serviceShape)
 
-        val customProps = arrayOf(
-            ClientConfigProperty {
+        val customProps = listOf(
+            ConfigProperty {
                 name = "complexProp"
                 symbol = buildSymbol {
                     name = "ComplexType"
@@ -252,7 +253,7 @@ public class Config private constructor(builder: Builder) {
             },
         )
 
-        ClientConfigGenerator(renderingCtx, detectDefaultProps = false, builderReturnType = null, *customProps).render()
+        ServiceClientConfigGenerator(serviceShape, detectDefaultProps = false).render(renderingCtx, customProps, renderingCtx.writer)
         val contents = writer.toString()
 
         listOf(
@@ -273,7 +274,8 @@ public class Config private constructor(builder: Builder) {
         val writer = createWriter()
         val renderingCtx = testCtx.toRenderingContext(writer, serviceShape)
 
-        ClientConfigGenerator(renderingCtx).render()
+        ServiceClientConfigGenerator(serviceShape, detectDefaultProps = false).render(renderingCtx, renderingCtx.writer)
+
         val contents = writer.toString()
 
         contents.assertBalancedBracesAndParens()
@@ -296,41 +298,65 @@ public class Config private constructor(builder: Builder) {
         val writer = createWriter()
         val renderingCtx = testCtx.toRenderingContext(writer, serviceShape)
 
-        val customProps = arrayOf(
-            ClientConfigProperty {
+        val customProps = listOf(
+            ConfigProperty {
                 name = "nullFoo"
                 symbol = buildSymbol { name = "Foo" }
             },
-            ClientConfigProperty {
+            ConfigProperty {
                 name = "defaultFoo"
                 symbol = buildSymbol { name = "Foo"; defaultValue = "DefaultFoo"; nullable = false }
             },
-            ClientConfigProperty {
+            ConfigProperty {
                 name = "constFoo"
                 symbol = buildSymbol { name = "Foo" }
-                propertyType = ClientConfigPropertyType.ConstantValue("ConstantFoo")
+                propertyType = ConfigPropertyType.ConstantValue("ConstantFoo")
             },
-            ClientConfigProperty {
+            ConfigProperty {
                 name = "requiredFoo"
                 symbol = buildSymbol { name = "Foo" }
-                propertyType = ClientConfigPropertyType.Required()
+                propertyType = ConfigPropertyType.Required()
             },
-            ClientConfigProperty {
+            ConfigProperty {
                 name = "requiredFoo2"
                 symbol = buildSymbol { name = "Foo" }
-                propertyType = ClientConfigPropertyType.Required("override message")
+                propertyType = ConfigPropertyType.Required("override message")
             },
-            ClientConfigProperty {
+            ConfigProperty {
                 name = "requiredDefaultedFoo"
                 symbol = buildSymbol { name = "Foo" }
-                propertyType = ClientConfigPropertyType.RequiredWithDefault("DefaultedFoo()")
+                propertyType = ConfigPropertyType.RequiredWithDefault("DefaultedFoo()")
+            },
+            ConfigProperty {
+                name = "builderSymbolDiffers"
+                symbol = buildSymbol { name = "List<Foo>" }
+                builderSymbol = buildSymbol { name = "MutableList<Foo>" }
+                toBuilderExpression = ".toMutableList()"
+                propertyType = ConfigPropertyType.SymbolDefault
+            },
+            ConfigProperty {
+                name = "builderSymbolImmutable"
+                symbol = buildSymbol {
+                    name = "List<Foo>"
+                    nullable = false
+                }
+                builderSymbol = buildSymbol {
+                    name = "MutableList<Foo>"
+                    defaultValue = "mutableListOf()"
+                    nullable = false
+                    setProperty(SymbolProperty.PROPERTY_TYPE_MUTABILITY, PropertyTypeMutability.IMMUTABLE)
+                }
+                toBuilderExpression = ".toMutableList()"
+                propertyType = ConfigPropertyType.SymbolDefault
             },
         )
 
-        ClientConfigGenerator(renderingCtx, detectDefaultProps = false, builderReturnType = null, *customProps).render()
+        ServiceClientConfigGenerator(serviceShape, detectDefaultProps = false).render(renderingCtx, customProps, renderingCtx.writer)
         val contents = writer.toString()
 
         val expectedProps = """
+    public val builderSymbolDiffers: List<Foo>? = builder.builderSymbolDiffers
+    public val builderSymbolImmutable: List<Foo> = builder.builderSymbolImmutable
     public val constFoo: Foo = ConstantFoo
     public val defaultFoo: Foo = builder.defaultFoo
     public val nullFoo: Foo? = builder.nullFoo
@@ -341,6 +367,10 @@ public class Config private constructor(builder: Builder) {
         contents.shouldContainWithDiff(expectedProps)
 
         val expectedImplProps = """
+        public var builderSymbolDiffers: MutableList<Foo>? = null
+
+        public val builderSymbolImmutable: MutableList<Foo> = mutableListOf()
+
         public var defaultFoo: Foo = DefaultFoo
 
         public var nullFoo: Foo? = null

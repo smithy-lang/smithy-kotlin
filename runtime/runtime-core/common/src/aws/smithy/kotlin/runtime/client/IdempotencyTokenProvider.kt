@@ -2,7 +2,7 @@
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
  * SPDX-License-Identifier: Apache-2.0
  */
-package aws.smithy.kotlin.runtime.config
+package aws.smithy.kotlin.runtime.client
 
 import aws.smithy.kotlin.runtime.util.Uuid
 import aws.smithy.kotlin.runtime.util.Uuid.WeakRng
@@ -13,9 +13,20 @@ import aws.smithy.kotlin.runtime.util.Uuid.WeakRng
 public interface IdempotencyTokenConfig {
 
     /**
-     * Allows to supply a custom function generate idempotency tokens.
+     * The [IdempotencyTokenProvider] used to generate idempotency tokens.
      */
-    public val idempotencyTokenProvider: IdempotencyTokenProvider?
+    public val idempotencyTokenProvider: IdempotencyTokenProvider
+
+    /**
+     * Configure the [IdempotencyTokenProvider] used by SDK clients to generate idempotency tokens.
+     */
+    public interface Builder {
+        /**
+         * Override the default idempotency token generator. SDK clients will generate tokens for members
+         * that represent idempotent tokens when not explicitly set by the caller using this generator.
+         */
+        public var idempotencyTokenProvider: IdempotencyTokenProvider?
+    }
 }
 
 /**
@@ -40,8 +51,6 @@ public fun interface IdempotencyTokenProvider {
 /**
  * This is the default function to generate a UUID for idempotency tokens if they are not specified
  * in client code.
- *
- * TODO: Implement a real function.  See https://www.pivotaltracker.com/story/show/174214013
  */
 private class DefaultIdempotencyTokenProvider : IdempotencyTokenProvider {
     @OptIn(WeakRng::class)
