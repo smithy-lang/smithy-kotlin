@@ -5,6 +5,7 @@
 
 package aws.smithy.kotlin.runtime.http.operation
 
+import aws.smithy.kotlin.runtime.ClientException
 import aws.smithy.kotlin.runtime.client.ExecutionContext
 import aws.smithy.kotlin.runtime.http.HttpHandler
 import aws.smithy.kotlin.runtime.http.interceptors.HttpInterceptor
@@ -123,7 +124,7 @@ internal suspend fun validateResponseChecksum(context: ExecutionContext) {
     responseChecksum?.let {
         val expectedResponseChecksum: String = context[ExpectedResponseChecksum]
         if (responseChecksum != expectedResponseChecksum) {
-            throw RuntimeException("Checksum mismatch: $responseChecksum != $expectedResponseChecksum")
+            throw ChecksumMismatchException("Checksum mismatch: $responseChecksum != $expectedResponseChecksum")
         }
     }
 }
@@ -161,3 +162,14 @@ private suspend fun ExecutionContext.cleanup() {
     // at this point everything associated with this single operation should be cleaned up
     coroutineContext.job.cancelAndJoin()
 }
+
+private class ChecksumMismatchException: ClientException {
+    constructor() : super()
+
+    constructor(message: String?) : super(message)
+
+    constructor(message: String?, cause: Throwable?) : super(message, cause)
+
+    constructor(cause: Throwable?) : super(cause)
+}
+
