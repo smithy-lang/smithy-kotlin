@@ -16,7 +16,7 @@ import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
 import aws.smithy.kotlin.runtime.http.response.HttpCall
 import aws.smithy.kotlin.runtime.http.response.HttpResponse
-import aws.smithy.kotlin.runtime.http.util.StringValuesMap
+import aws.smithy.kotlin.runtime.http.util.ValuesMap
 import aws.smithy.kotlin.runtime.http.util.fullUriToQueryParameters
 import aws.smithy.kotlin.runtime.time.Instant
 import aws.smithy.kotlin.runtime.util.InternalApi
@@ -265,7 +265,7 @@ public actual abstract class SigningSuiteTestBase : HasSigner {
         return operation.context[HttpOperationContext.HttpCallList].last().request
     }
 
-    private fun StringValuesMap.lowerKeys(): Set<String> = entries().map { it.key.lowercase() }.toSet()
+    private fun ValuesMap<String>.lowerKeys(): Set<String> = entries().map { it.key.lowercase() }.toSet()
 
     private fun assertRequestsEqual(expected: HttpRequest, actual: HttpRequest, message: String? = null) {
         assertEquals(expected.method, actual.method, message)

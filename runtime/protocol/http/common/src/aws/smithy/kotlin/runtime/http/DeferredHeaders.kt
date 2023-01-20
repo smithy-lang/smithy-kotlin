@@ -5,33 +5,21 @@
 package aws.smithy.kotlin.runtime.http
 
 import aws.smithy.kotlin.runtime.http.util.*
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Deferred
 
 /**
- * Immutable mapping of case insensitive HTTP header names to list of [String] values.
+ * Immutable mapping of case insensitive HTTP header names to list of [Deferred] [String] values.
  */
-public interface DeferredHeaders : DeferredValuesMap<String> {
+public interface DeferredHeaders : ValuesMap<Deferred<String>> {
     public companion object {
         public operator fun invoke(block: DeferredHeadersBuilder.() -> Unit): DeferredHeaders = DeferredHeadersBuilder()
             .apply(block).build()
 
         /**
-         * Empty [Headers] instance
+         * Empty [DeferredHeaders] instance
          */
         public val Empty: DeferredHeaders = EmptyDeferredHeaders
-
-        public suspend fun DeferredHeaders.toHeaders(): Headers = when (this) {
-            is EmptyDeferredHeaders -> Headers.Empty
-            else -> {
-                HeadersBuilder().apply {
-                    this@toHeaders.entries().forEach { (headerName, deferredValues) ->
-                        deferredValues.forEach { deferredValue ->
-                            append(headerName, deferredValue.await())
-                        }
-                    }
-                }.build()
-            }
-        }
     }
 }
 
@@ -51,9 +39,9 @@ private object EmptyDeferredHeaders : DeferredHeaders {
 internal fun Map<String, List<Deferred<String>>>.deepCopy() = mapValues { (_, v) -> v.toMutableList() }
 
 /**
- * Build an immutable HTTP header map
+ * Build an immutable HTTP deferred header map
  */
-public class DeferredHeadersBuilder : DeferredValuesMapBuilder<String>(true, 8), CanDeepCopy<DeferredHeadersBuilder> {
+public class DeferredHeadersBuilder : ValuesMapBuilder<Deferred<String>>(true, 8), CanDeepCopy<DeferredHeadersBuilder> {
     override fun toString(): String = "DeferredHeadersBuilder ${entries()} "
     override fun build(): DeferredHeaders = DeferredHeadersImpl(values)
 
@@ -61,10 +49,30 @@ public class DeferredHeadersBuilder : DeferredValuesMapBuilder<String>(true, 8),
         val originalValues = values.deepCopy()
         return DeferredHeadersBuilder().apply { values.putAll(originalValues) }
     }
+
+    public fun add(name: String, value: String) {
+        append(name, CompletableDeferred(value))
+    }
 }
 
 private class DeferredHeadersImpl(
     values: Map<String, List<Deferred<String>>>,
-) : DeferredHeaders, DeferredValuesMapImpl<String>(true, values) {
+) : DeferredHeaders, ValuesMapImpl<Deferred<String>>(true, values) {
     override fun toString(): String = "Headers ${entries()}"
+}
+
+/**
+ * Convert a [DeferredHeaders] instance to [Headers]. This will block while awaiting all [Deferred] header values.
+ */
+public suspend fun DeferredHeaders.toHeaders(): Headers = when (this) {
+    is EmptyDeferredHeaders -> Headers.Empty
+    else -> {
+        HeadersBuilder().apply {
+            this@toHeaders.entries().forEach { (headerName, deferredValues) ->
+                deferredValues.forEach { deferredValue ->
+                    append(headerName, deferredValue.await())
+                }
+            }
+        }.build()
+    }
 }
