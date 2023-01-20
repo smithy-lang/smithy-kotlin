@@ -33,26 +33,13 @@ private object EmptyDeferredHeaders : DeferredHeaders {
 }
 
 /**
- * Perform a deep copy of this map, specifically duplicating the value lists so that they're insulated from changes.
- * @return A new map instance with copied value lists.
- */
-internal fun Map<String, List<Deferred<String>>>.deepCopy() = mapValues { (_, v) -> v.toMutableList() }
-
-/**
  * Build an immutable HTTP deferred header map
  */
 public class DeferredHeadersBuilder : ValuesMapBuilder<Deferred<String>>(true, 8), CanDeepCopy<DeferredHeadersBuilder> {
     override fun toString(): String = "DeferredHeadersBuilder ${entries()} "
     override fun build(): DeferredHeaders = DeferredHeadersImpl(values)
-
-    override fun deepCopy(): DeferredHeadersBuilder {
-        val originalValues = values.deepCopy()
-        return DeferredHeadersBuilder().apply { values.putAll(originalValues) }
-    }
-
-    public fun add(name: String, value: String) {
-        append(name, CompletableDeferred(value))
-    }
+    override fun deepCopy(): DeferredHeadersBuilder = DeferredHeadersBuilder().also { it.values.putAll(values) }
+    public fun add(name: String, value: String): Unit = append(name, CompletableDeferred(value))
 }
 
 private class DeferredHeadersImpl(

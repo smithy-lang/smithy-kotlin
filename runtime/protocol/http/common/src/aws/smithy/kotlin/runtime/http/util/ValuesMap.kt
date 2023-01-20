@@ -65,9 +65,7 @@ internal open class ValuesMapImpl<T>(
     initialValues: Map<String, List<T>> = emptyMap(),
 ) : ValuesMap<T> {
     protected val values: Map<String, List<T>> = run {
-        // Make a defensive copy so modifications to the initialValues don't mutate our internal copy
-        val copiedValues = initialValues.deepCopy()
-        if (caseInsensitiveName) CaseInsensitiveMap<List<T>>().apply { putAll(copiedValues) } else copiedValues
+        if (caseInsensitiveName) CaseInsensitiveMap<List<T>>().apply { putAll(initialValues) } else initialValues
     }
 
     override fun getAll(name: String): List<T>? = values[name]
@@ -91,12 +89,6 @@ internal open class ValuesMapImpl<T>(
                     }
                     names.all { getAll(it) == other.getAll(it) }
                 }
-
-    /**
-     * Perform a deep copy of this map, specifically duplicating the value lists so that they're insulated from changes.
-     * @return A new map instance with copied value lists.
-     */
-    internal fun Map<String, List<T>>.deepCopy() = mapValues { (_, v) -> v.toMutableList() }
 }
 
 @InternalApi
@@ -174,12 +166,6 @@ public open class ValuesMapBuilder<T>(public val caseInsensitiveName: Boolean = 
 
     private fun ensureListForKey(name: String, size: Int): MutableList<T> =
         values[name] ?: ArrayList<T>(size).also { values[name] = it }
-
-    /**
-     * Perform a deep copy of this map, specifically duplicating the value lists so that they're insulated from changes.
-     * @return A new map instance with copied value lists.
-     */
-    internal fun Map<String, List<T>>.deepCopy() = mapValues { (_, v) -> v.toMutableList() }
 }
 
 

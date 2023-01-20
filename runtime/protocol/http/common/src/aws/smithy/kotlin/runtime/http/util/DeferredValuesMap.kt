@@ -66,9 +66,7 @@ internal open class DeferredValuesMapImpl<T : Any> (
     initialValues: Map<String, List<Deferred<T>>> = emptyMap(),
 ) : DeferredValuesMap<T> {
     protected val values: Map<String, List<Deferred<T>>> = run {
-        // Make a defensive copy so modifications to the initialValues don't mutate our internal copy
-        val copiedValues = initialValues.deepCopy()
-        if (caseInsensitiveName) CaseInsensitiveMap<List<Deferred<T>>>().apply { putAll(copiedValues) } else copiedValues
+        if (caseInsensitiveName) CaseInsensitiveMap<List<Deferred<T>>>().apply { putAll(initialValues) } else initialValues
     }
 
     override fun getAll(name: String): List<Deferred<T>>? = values[name]
@@ -92,12 +90,6 @@ internal open class DeferredValuesMapImpl<T : Any> (
                 }
                 names.all { getAll(it) == other.getAll(it) }
             }
-
-    /**
-     * Perform a deep copy of this map, specifically duplicating the value lists so that they're insulated from changes.
-     * @return A new map instance with copied value lists.
-     */
-    private fun Map<String, List<Deferred<T>>>.deepCopy() = mapValues { (_, v) -> v.toMutableList() }
 }
 
 @InternalApi
