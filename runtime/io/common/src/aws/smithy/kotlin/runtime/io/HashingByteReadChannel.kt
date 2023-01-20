@@ -6,7 +6,6 @@
 package aws.smithy.kotlin.runtime.io
 
 import aws.smithy.kotlin.runtime.hashing.HashFunction
-import aws.smithy.kotlin.runtime.io.internal.commonPeek
 import aws.smithy.kotlin.runtime.util.InternalApi
 
 /**
@@ -17,15 +16,8 @@ import aws.smithy.kotlin.runtime.util.InternalApi
 @InternalApi
 public class HashingByteReadChannel(private val hash: HashFunction, private val chan: SdkByteReadChannel) : SdkByteReadChannel by chan {
     public override suspend fun read(sink: SdkBuffer, limit: Long): Long {
-        val buffer = SdkBuffer()
-
-        val rc = chan.read(buffer, limit)
-        if (rc == -1L) { return rc } // got 0 bytes, no need to hash anything
-
-        val dataToHash = buffer.commonPeek().readByteArray()
-        hash.update(dataToHash)
-
-        return buffer.read(sink, rc)
+        val bufferedHashingSink = HashingSink(hash, sink).buffer()
+        return chan.read(bufferedHashingSink.buffer, limit).also { bufferedHashingSink.emit() }
     }
 
     /**
