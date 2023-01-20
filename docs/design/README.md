@@ -21,3 +21,5 @@ Start here for an overview:
 * [Tracing](tracing.md)
 * [Waiters](waiters.md)
 * [Interceptors](interceptors.md)
+* [Per Operation Config](per-op-config.md)
+* [Runtime Plugins](runtime-plugins.md)
