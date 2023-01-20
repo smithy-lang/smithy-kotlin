@@ -8,10 +8,9 @@ package aws.smithy.kotlin.runtime.auth.awssigning.tests
 import aws.smithy.kotlin.runtime.auth.awssigning.*
 import aws.smithy.kotlin.runtime.auth.awssigning.internal.CHUNK_SIZE_BYTES
 import aws.smithy.kotlin.runtime.http.DeferredHeaders
-import aws.smithy.kotlin.runtime.http.DeferredHeaders.Companion.toHeaders
+import aws.smithy.kotlin.runtime.http.toHeaders
 import aws.smithy.kotlin.runtime.io.*
 import aws.smithy.kotlin.runtime.time.Instant
-import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.TestResult
 import kotlinx.coroutines.test.runTest
@@ -394,8 +393,8 @@ abstract class AwsChunkedTestBase(
         var previousSignature: ByteArray = byteArrayOf()
 
         val trailingHeaders = DeferredHeaders {
-            append("x-amz-checksum-crc32", CompletableDeferred("AAAAAA=="))
-            append("x-amz-arbitrary-header-with-value", CompletableDeferred("UMM"))
+            add("x-amz-checksum-crc32", "AAAAAA==")
+            add("x-amz-arbitrary-header-with-value", "UMM")
         }
 
         val trailingHeadersLength = getTrailingHeadersLength(trailingHeaders)
@@ -475,8 +474,8 @@ abstract class AwsChunkedTestBase(
         val previousSignature: ByteArray = byteArrayOf()
 
         val trailingHeaders = DeferredHeaders {
-            append("x-amz-checksum-crc32", CompletableDeferred("AAAAAA=="))
-            append("x-amz-arbitrary-header-with-value", CompletableDeferred("UMM"))
+            add("x-amz-checksum-crc32", "AAAAAA==")
+            add("x-amz-arbitrary-header-with-value", "UMM")
         }
         val trailingHeadersLength = getTrailingHeadersLength(trailingHeaders, isUnsignedChunk = true)
 
