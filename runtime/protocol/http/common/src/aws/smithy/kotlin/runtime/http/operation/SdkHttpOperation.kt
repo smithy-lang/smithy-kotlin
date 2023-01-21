@@ -163,7 +163,7 @@ private suspend fun ExecutionContext.cleanup() {
     coroutineContext.job.cancelAndJoin()
 }
 
-private class ChecksumMismatchException: ClientException {
+private class ChecksumMismatchException : ClientException {
     constructor() : super()
 
     constructor(message: String?) : super(message)
@@ -172,4 +172,3 @@ private class ChecksumMismatchException: ClientException {
 
     constructor(cause: Throwable?) : super(cause)
 }
-

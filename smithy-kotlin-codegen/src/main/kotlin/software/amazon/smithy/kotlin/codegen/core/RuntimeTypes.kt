@@ -60,7 +60,6 @@ object RuntimeTypes {
             val ResolveEndpoint = symbol("ResolveEndpoint")
             val FlexibleChecksumsRequestMiddleware = symbol("FlexibleChecksumsRequestMiddleware")
             val FlexibleChecksumsResponseMiddleware = symbol("FlexibleChecksumsResponseMiddleware")
-
         }
 
         object Operation : RuntimeTypePackage(KotlinDependency.HTTP, "operation") {

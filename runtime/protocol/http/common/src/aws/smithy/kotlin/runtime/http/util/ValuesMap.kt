@@ -82,13 +82,13 @@ internal open class ValuesMapImpl<T>(
 
     override fun equals(other: Any?): Boolean =
         other is ValuesMap<*> &&
-                caseInsensitiveName == other.caseInsensitiveName &&
-                names().let { names ->
-                    if (names.size != other.names().size) {
-                        return false
-                    }
-                    names.all { getAll(it) == other.getAll(it) }
+            caseInsensitiveName == other.caseInsensitiveName &&
+            names().let { names ->
+                if (names.size != other.names().size) {
+                    return false
                 }
+                names.all { getAll(it) == other.getAll(it) }
+            }
 }
 
 @InternalApi
@@ -167,6 +167,3 @@ public open class ValuesMapBuilder<T>(public val caseInsensitiveName: Boolean = 
     private fun ensureListForKey(name: String, size: Int): MutableList<T> =
         values[name] ?: ArrayList<T>(size).also { values[name] = it }
 }
-
-
-
