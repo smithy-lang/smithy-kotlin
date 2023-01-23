@@ -10,8 +10,8 @@ import aws.smithy.kotlin.runtime.auth.awssigning.AwsSigner
 import aws.smithy.kotlin.runtime.auth.awssigning.AwsSigningConfig
 import aws.smithy.kotlin.runtime.auth.awssigning.HashSpecification
 import aws.smithy.kotlin.runtime.http.DeferredHeaders
-import aws.smithy.kotlin.runtime.http.DeferredHeaders.Companion.toHeaders
 import aws.smithy.kotlin.runtime.http.Headers
+import aws.smithy.kotlin.runtime.http.toHeaders
 import aws.smithy.kotlin.runtime.io.SdkBuffer
 
 /**
