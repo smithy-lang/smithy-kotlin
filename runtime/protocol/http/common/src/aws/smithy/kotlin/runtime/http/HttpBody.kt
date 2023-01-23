@@ -153,40 +153,21 @@ public fun SdkSource.toHttpBody(contentLength: Long? = null): HttpBody =
  * @param contentLength the total content length of the source, if known
  */
 @InternalApi
-public fun HttpBody.toHashingBody(hashFunction: HashFunction, contentLength: Long?): HttpBody = when (this) {
+public fun HttpBody.toHashingBody(hashFunction: HashFunction, contentLength: Long?, deferred: CompletableDeferred<String>? = null,
+): HttpBody = when (this) {
     is HttpBody.SourceContent ->
         HashingSource(
             hashFunction,
             readFrom(),
+            deferred,
         ).toHttpBody(contentLength)
     is HttpBody.ChannelContent -> HashingByteReadChannel(
         hashFunction,
         readFrom(),
+        deferred,
     ).toHttpBody(contentLength)
     else -> throw ClientException("HttpBody type is not supported")
 }
-
-/**
- * Convert an [HttpBody.SourceContent] with a [HashingSource] or [HttpBody.ChannelContent] with a [HashingByteReadChannel]
- * to a body which will use the digest to complete a [CompletableDeferred]
- * @param completableDeferred the [CompletableDeferred] to complete once the underlying hashing body is exhausted
- * @param contentLength the total content length of the source, if known
- */
-@InternalApi
-public fun HttpBody.toCompletingBody(completableDeferred: CompletableDeferred<String>, contentLength: Long?): HttpBody =
-    if (this is HttpBody.SourceContent && this.readFrom() is HashingSource) {
-        CompletingSource(
-            completableDeferred,
-            this.readFrom() as HashingSource,
-        ).toHttpBody(contentLength)
-    } else if (this is HttpBody.ChannelContent && this.readFrom() is HashingByteReadChannel) {
-        CompletingByteReadChannel(
-            completableDeferred,
-            this.readFrom() as HashingByteReadChannel,
-        ).toHttpBody(contentLength)
-    } else {
-        throw ClientException("HttpBody type is not supported")
-    }
 
 // FIXME - replace/move to reading to SdkBuffer instead
 /**

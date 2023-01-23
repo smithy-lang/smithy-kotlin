@@ -10,7 +10,6 @@ import aws.smithy.kotlin.runtime.hashing.toHashFunction
 import aws.smithy.kotlin.runtime.http.isSuccess
 import aws.smithy.kotlin.runtime.http.operation.*
 import aws.smithy.kotlin.runtime.http.response.HttpCall
-import aws.smithy.kotlin.runtime.http.toCompletingBody
 import aws.smithy.kotlin.runtime.http.toHashingBody
 import aws.smithy.kotlin.runtime.io.*
 import aws.smithy.kotlin.runtime.util.*
@@ -73,9 +72,7 @@ public class FlexibleChecksumsResponseMiddleware : ReceiveMiddleware {
         // Wrap the response body in a hashing body
         call = call.copy(
             response = call.response.copy(
-                body = call.response.body
-                    .toHashingBody(checksumAlgorithm, call.response.body.contentLength)
-                    .toCompletingBody(deferredChecksum, call.response.body.contentLength),
+                body = call.response.body.toHashingBody(checksumAlgorithm, call.response.body.contentLength, deferredChecksum)
             ),
         )
 

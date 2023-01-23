@@ -57,10 +57,7 @@ public class FlexibleChecksumsRequestMiddleware(private val checksumAlgorithmNam
                 deferredChecksum.complete(checksum)
             } else {
                 logger.debug { "Calculating checksum asynchronously" }
-
-                req.subject.body = req.subject.body
-                    .toHashingBody(checksumAlgorithm, req.subject.body.contentLength)
-                    .toCompletingBody(deferredChecksum, req.subject.body.contentLength)
+                req.subject.body = req.subject.body.toHashingBody(checksumAlgorithm, req.subject.body.contentLength, deferredChecksum)
             }
 
             req.subject.trailingHeaders.append(headerName, deferredChecksum)
