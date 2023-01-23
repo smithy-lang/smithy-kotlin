@@ -66,7 +66,9 @@ enum class PropertyTypeMutability {
     /**
      * Mutable property (e.g. `var`)
      */
-    MUTABLE;
+    MUTABLE,
+
+    ;
 
     override fun toString(): String = when (this) {
         IMMUTABLE -> "val"

@@ -2,11 +2,10 @@ package software.aws.ktlint.rules
 
 import com.pinterest.ktlint.core.Rule
 import com.pinterest.ktlint.core.ast.ElementType
-import com.pinterest.ktlint.core.ast.lineNumber
 import org.jetbrains.kotlin.com.intellij.lang.ASTNode
 
 class MultilineIfElseBlockRule : Rule("multiline-if-else-block") {
-    override fun visit(
+    override fun beforeVisitChildNodes(
         node: ASTNode,
         autoCorrect: Boolean,
         emit: (offset: Int, errorMessage: String, canBeAutoCorrected: Boolean) -> Unit,
@@ -34,6 +33,8 @@ class MultilineIfElseBlockRule : Rule("multiline-if-else-block") {
      * Determines if this node is on the same source file line number as its parent.
      */
     private fun ASTNode.isOnParentLine() = lineNumber() == treeParent?.lineNumber()
+
+    private fun ASTNode.lineNumber() = psi.containingFile?.viewProvider?.document?.getLineNumber(this.startOffset)
 
     /**
      * Determines if this node starts with a left brace (i.e., `{`).

@@ -34,7 +34,8 @@ internal fun parseHttpTraffic(json: String) = buildTestConnection {
 
 private enum class BodyContentType {
     UTF_8,
-    BINARY;
+    BINARY,
+    ;
     companion object {
         fun fromValue(value: String): BodyContentType = when (value.lowercase()) {
             "utf8" -> UTF_8

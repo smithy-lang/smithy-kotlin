@@ -1,13 +1,12 @@
 package software.aws.ktlint.rules
 
-import com.pinterest.ktlint.core.RuleSet
-import com.pinterest.ktlint.core.RuleSetProvider
+import com.pinterest.ktlint.core.RuleProvider
+import com.pinterest.ktlint.core.RuleSetProviderV2
 
-class CustomRuleSetProvider : RuleSetProvider {
-    override fun get() = RuleSet(
-        "custom-ktlint-rules",
-        CopyrightHeaderRule(),
-        ExpressionBodyRule(),
-        MultilineIfElseBlockRule(),
+class CustomRuleSetProvider : RuleSetProviderV2("custom-ktlint-rules", NO_ABOUT) {
+    override fun getRuleProviders() = setOf(
+        RuleProvider { CopyrightHeaderRule() },
+        RuleProvider { ExpressionBodyRule() },
+        RuleProvider { MultilineIfElseBlockRule() },
     )
 }

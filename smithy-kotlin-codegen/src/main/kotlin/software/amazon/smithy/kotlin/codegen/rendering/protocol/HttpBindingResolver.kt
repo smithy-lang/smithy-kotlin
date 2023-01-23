@@ -148,7 +148,8 @@ class HttpTraitResolver(
 
     override fun responseBindings(shape: Shape): List<HttpBindingDescriptor> = when (shape) {
         is OperationShape,
-        is StructureShape, -> bindingIndex.getResponseBindings(shape.toShapeId()).values.map { HttpBindingDescriptor(it) }
+        is StructureShape,
+        -> bindingIndex.getResponseBindings(shape.toShapeId()).values.map { HttpBindingDescriptor(it) }
         else -> error { "Unimplemented resolving bindings for ${shape.javaClass.canonicalName}" }
     }
 
