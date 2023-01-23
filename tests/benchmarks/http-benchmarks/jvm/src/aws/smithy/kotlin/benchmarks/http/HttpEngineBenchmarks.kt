@@ -6,7 +6,7 @@
 package aws.smithy.kotlin.benchmarks.http
 
 import aws.smithy.kotlin.runtime.http.*
-import aws.smithy.kotlin.runtime.http.engine.HttpClientEngine
+import aws.smithy.kotlin.runtime.http.engine.CloseableHttpClientEngine
 import aws.smithy.kotlin.runtime.http.engine.crt.CrtHttpEngine
 import aws.smithy.kotlin.runtime.http.engine.okhttp.OkHttpEngine
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
@@ -38,7 +38,7 @@ private const val OKHTTP_ENGINE = "OkHttp"
 private const val CRT_ENGINE = "CRT"
 
 fun interface BenchmarkEngineFactory {
-    fun create(): HttpClientEngine
+    fun create(): CloseableHttpClientEngine
 }
 
 private val engines = mapOf(
@@ -56,6 +56,7 @@ open class HttpEngineBenchmarks {
     @Param(OKHTTP_ENGINE, CRT_ENGINE)
     var httpClientName: String = ""
 
+    lateinit var engine: CloseableHttpClientEngine
     lateinit var httpClient: SdkHttpClient
 
     private val serverPort: Int = ServerSocket(0).use { it.localPort }
@@ -143,7 +144,7 @@ open class HttpEngineBenchmarks {
     fun create() {
         println("benchmark test server listening on: localhost:$serverPort")
         server.start(false)
-        val engine = engines[httpClientName]!!.create()
+        engine = engines[httpClientName]!!.create()
         httpClient = SdkHttpClient(engine)
     }
 
@@ -152,7 +153,7 @@ open class HttpEngineBenchmarks {
         println("stopping server")
         server.stop(0, 0, TimeUnit.SECONDS)
         println("closing client")
-        httpClient.engine.close()
+        engine.close()
         // give time to background threads to complete asynchronous shutdown
         Thread.sleep(4000)
         println("destroy exiting")

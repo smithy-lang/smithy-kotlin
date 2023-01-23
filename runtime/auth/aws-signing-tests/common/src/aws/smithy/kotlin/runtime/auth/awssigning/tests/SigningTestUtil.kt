@@ -12,6 +12,4 @@ public val testCredentialsProvider: CredentialsProvider = Credentials("AKID", "S
 
 public fun Credentials.asStaticProvider(): CredentialsProvider = object : CredentialsProvider {
     override suspend fun getCredentials(): Credentials = this@asStaticProvider
-
-    override fun close() { }
 }

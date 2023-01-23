@@ -52,6 +52,7 @@ abstract class AbstractConfigGenerator {
         ) {
             renderImmutableProperties(sortedProps, writer)
             renderCompanionObject(writer)
+            renderToBuilder(sortedProps, writer)
             renderBuilder(sortedProps, writer)
         }
 
@@ -110,6 +111,17 @@ abstract class AbstractConfigGenerator {
                 is ConfigPropertyType.Custom -> prop.propertyType.render(prop, writer)
             }
         }
+    }
+
+    protected open fun renderToBuilder(props: Collection<ConfigProperty>, writer: KotlinWriter) {
+        writer.write("")
+            .withBlock("public fun toBuilder(): Builder = Builder().apply {", "}") {
+                props
+                    .filter { it.propertyType !is ConfigPropertyType.ConstantValue }
+                    .forEach { prop ->
+                        write("#1L = this@#configClass.name:L.#1L#2L", prop.propertyName, prop.toBuilderExpression)
+                    }
+            }
     }
 
     protected open fun renderBuilder(props: Collection<ConfigProperty>, writer: KotlinWriter) {

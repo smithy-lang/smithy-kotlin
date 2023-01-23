@@ -394,33 +394,27 @@ public class Config private constructor(builder: Builder) {
         val writer = createWriter()
         val renderingCtx = testCtx.toRenderingContext(writer, serviceShape)
 
-        val additionalProps = arrayOf(
+        val additionalProps = listOf(
             // constant values should be omitted
-            ClientConfigProperty {
+            ConfigProperty {
                 name = "testConstantBooleanField"
                 symbol = KotlinTypes.Boolean
-                propertyType = ClientConfigPropertyType.ConstantValue("true")
+                propertyType = ConfigPropertyType.ConstantValue("true")
             },
-            // lists should convert back to mutable list in builder
-            ClientConfigProperty {
+            ConfigProperty {
                 name = "testListField"
-                symbol = KotlinTypes.Collections.MutableList
+                symbol = KotlinTypes.Collections.List
+                builderSymbol = KotlinTypes.Collections.MutableList
+                toBuilderExpression = ".toMutableList()"
             },
         )
 
-        ClientConfigGenerator(renderingCtx, detectDefaultProps = true, builderReturnType = null, *additionalProps).render()
+        ServiceClientConfigGenerator(serviceShape, detectDefaultProps = false).render(renderingCtx, additionalProps, renderingCtx.writer)
         val contents = writer.toString()
 
         val expectedProps = """
             public fun toBuilder(): Builder = Builder().apply {
-                httpClientEngine = this@Config.httpClientEngine
-                endpointProvider = this@Config.endpointProvider
-                idempotencyTokenProvider = this@Config.idempotencyTokenProvider
-                interceptors = this@Config.interceptors.toMutableList()
-                retryStrategy = this@Config.retryStrategy
-                sdkLogMode = this@Config.sdkLogMode
                 testListField = this@Config.testListField.toMutableList()
-                tracer = this@Config.tracer
             }""".formatForTest()
         contents.shouldContainWithDiff(expectedProps)
     }

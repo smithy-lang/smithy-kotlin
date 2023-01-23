@@ -43,3 +43,7 @@ public inline fun <C : Closeable, R> C.use(block: (C) -> R): R {
         }
     }
 }
+
+public fun Any.closeIfCloseable() {
+    if (this is Closeable) close()
+}

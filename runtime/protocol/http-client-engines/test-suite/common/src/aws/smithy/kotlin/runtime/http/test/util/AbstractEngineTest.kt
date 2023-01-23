@@ -7,6 +7,7 @@ package aws.smithy.kotlin.runtime.http.test.util
 
 import aws.smithy.kotlin.runtime.http.SdkHttpClient
 import aws.smithy.kotlin.runtime.http.Url
+import aws.smithy.kotlin.runtime.http.engine.CloseableHttpClientEngine
 import aws.smithy.kotlin.runtime.http.engine.HttpClientEngine
 import aws.smithy.kotlin.runtime.http.engine.HttpClientEngineConfig
 import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
@@ -145,7 +146,7 @@ internal data class TestEngineFactory(
     /**
      * Configure a new [HttpClientEngine] instance and return it
      */
-    val configure: (HttpClientEngineConfig.Builder.() -> Unit) -> HttpClientEngine,
+    val configure: (HttpClientEngineConfig.Builder.() -> Unit) -> CloseableHttpClientEngine,
 ) {
-    fun create(block: HttpClientEngineConfig.Builder.() -> Unit): HttpClientEngine = configure(block)
+    fun create(block: HttpClientEngineConfig.Builder.() -> Unit): CloseableHttpClientEngine = configure(block)
 }
