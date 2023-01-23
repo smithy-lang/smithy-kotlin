@@ -46,7 +46,7 @@ public class FlexibleChecksumsRequestMiddleware(private val checksumAlgorithmNam
         if (req.subject.body.isEligibleForAwsChunkedStreaming) {
             req.subject.header("x-amz-trailer", headerName)
 
-            val deferredChecksum = CompletableDeferred<String>()
+            val deferredChecksum = CompletableDeferred<String>(req.context.coroutineContext.job)
 
             if (req.subject.headers[headerName] != null) {
                 logger.debug { "User supplied a checksum, skipping asynchronous calculation" }
