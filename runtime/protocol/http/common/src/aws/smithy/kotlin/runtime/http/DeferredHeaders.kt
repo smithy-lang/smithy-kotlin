@@ -5,6 +5,7 @@
 package aws.smithy.kotlin.runtime.http
 
 import aws.smithy.kotlin.runtime.http.util.*
+import aws.smithy.kotlin.runtime.util.InternalApi
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Deferred
 
@@ -48,6 +49,7 @@ private class DeferredHeadersImpl(
 /**
  * Convert a [DeferredHeaders] instance to [Headers]. This will block while awaiting all [Deferred] header values.
  */
+@InternalApi
 public suspend fun DeferredHeaders.toHeaders(): Headers = when (this) {
     is EmptyDeferredHeaders -> Headers.Empty
     else -> {
