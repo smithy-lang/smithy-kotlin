@@ -8,7 +8,7 @@
 This document covers the design and implementation of the API for encapsulating shared
 service client configuration logic via plugins. Plugins allow configuration logic to be shared between 
 multiple service clients to set defaults or ensure that clients are configured uniformly. Plugins can be
-registered with service client builders and manipulate the resulting configuration before the client is 
+registered with a service client and manipulate the resulting configuration before the client is 
 instantiated. 
 
 # Design
@@ -22,7 +22,7 @@ for the client being built.
 /**
  * A type that modifies an SDK client's configuration object
  */
-public interface RuntimePlugin {
+public interface SdkClientPlugin {
     /**
      * Modify the provided client configuration
      */
@@ -43,7 +43,7 @@ NOTE: This is not an exhaustive list of configuration interfaces that a specific
 
 ```kotlin
 
-class FooPlugin : RuntimePlugin {
+class FooPlugin : SdkClientPlugin {
     override fun configureClient(config: SdkClientConfig.Builder<*>) {
         when (config) {
             is AwsSdkClientConfig.Builder -> {
@@ -78,7 +78,7 @@ plugins more re-usable and shareable.
 A more representative plugin is given below that sets a default AWS region if one is not set already:
 
 ```kotlin
-class DefaultRegionPlugin(private val defaultRegion: String) {
+class DefaultRegionPlugin(private val defaultRegion: String): SdkClientPlugin {
     override fun configureClient(config: SdkClientConfig.Builder<*>) {
         when (config) {
             is AwsSdkClientConfig.Builder -> {
@@ -93,7 +93,7 @@ class DefaultRegionPlugin(private val defaultRegion: String) {
 
 ### Plugin Registration
 
-Plugins are registered by the user at runtime or by the service via codegen. 
+Plugins are registered by the user (via SPI, see below) or by the service via codegen. 
 
 * **Client Plugins**: Plugins registered by the user.
 * **Default Plugins**: Plugins registered via codegen/customizations.
@@ -103,9 +103,13 @@ Plugins are registered in the following order:
 2. **Client Plugins**: in the order they are added by the user.
 
 
-Client plugins are configured using the service _client_ builder. The [AbstractSdkClientBuilder](https://github.com/awslabs/smithy-kotlin/blob/36e612cb3c75b1b15c93ef38784af157e31db33b/runtime/runtime-core/common/src/aws/smithy/kotlin/runtime/client/AbstractSdkClientBuilder.kt#L14) 
-that every service client builder inherits is updated to include a mutable list of `plugins`. Any plugin registered
-is executed just before the client is built such that any explicit configuration is visible to each plugin.
+Client plugins are automatically discovered and registered via 
+[Java Service Provider Interface (SPI)](https://docs.oracle.com/javase/tutorial/sound/SPI-intro.html). 
+The [AbstractSdkClientBuilder](https://github.com/awslabs/smithy-kotlin/blob/36e612cb3c75b1b15c93ef38784af157e31db33b/runtime/runtime-core/common/src/aws/smithy/kotlin/runtime/client/AbstractSdkClientBuilder.kt#L14)
+that every service client builder inherits is updated to include a `protected` mutable list of `plugins`. Prior
+to instantiating the client, plugins are discovered and loaded from the classpath. Any plugin discovered is executed
+just before the client is built such that any explicit configuration is visible to each plugin.
+
 
 ```kotlin
 /**
@@ -119,13 +123,31 @@ public abstract class AbstractSdkClientBuilder<
         > : SdkClient.Builder<TConfig, TConfigBuilder, TClient> {
 
     /**
-     * Add one or more instances of [RuntimePlugin] that will be executed when the
+     * Add one or more instances of [SdkClientPlugin] that will be executed when the
      * [build] method is invoked. Each plugin is passed the current [config] builder
      * instance and has an opportunity to modify the final configuration before a new
      * client is instantiated.
      */
-    public val plugins: MutableList<RuntimePlugin> = mutableListOf()
+    protected val plugins: MutableList<SdkClientPlugin> = mutableListOf()
+
+    /**
+     * The global plugin classpath that all 
+     */
+    protected open val globalPluginPath: String
+        get() = "..."
+    
+    protected abstract val serviceClientPluginPath: String
+
+    /**
+     * Auto load plugins from the classpath
+     */
+    private fun discoverPlugins(path: String): List<SdkClientPlugins> { ... }
+    
     final override fun build(): TClient {
+        if (enablePluginDiscovery()) {
+            plugins.addAll(discoverPlugins(globalPluginPath))
+            plugins.addAll(discoverPlugins(serviceClientPluginPath))
+        }
         plugins.forEach { it.configureClient(config) }
         return newClient(config.build())
     }
@@ -134,45 +156,29 @@ public abstract class AbstractSdkClientBuilder<
      * Return a new [TClient] instance with the given [config]
      */
     protected abstract fun newClient(config: TConfig): TClient
-
-    /**
-     * Set client [config] with the given [block]
-     */
-    public inline fun config(block: TConfigBuilder.() -> Unit): Unit { config.apply(block) }
 }
 ```
 
-The [SdkClientFactory](https://github.com/awslabs/smithy-kotlin/blob/36e612cb3c75b1b15c93ef38784af157e31db33b/runtime/runtime-core/common/src/aws/smithy/kotlin/runtime/client/SdkClientFactory.kt#L30)
-interface is updated to change the `operator invoke` function from using the `TConfigBuilder` to `TClientBuilder`.
+**NOTE**: The abstract class definition above is only an example to demonstrate the design/concept.
 
-This is a **breaking** change. Users that instantiate clients using the explicit operator invoke syntax such as below
-will break:
+Key points:
 
-```kotlin
-val s3 = S3Client {
-    region = "us-east-2"
-    ...
-}
-```
+* Plugin auto discovery will only work on the JVM. Other platforms will have to load and apply plugins manually during construction. 
+* The list of `plugins` is `protected` to allow codegen to inject default plugins/customizations for specific service clients.
+* Plugins are discovered using both a global default path and a service client specific path. See [plugin discovery](#plugin-discovery).
+* Plugin discovery can be disabled via a combination of environment and system properties (not shown).
+    * Default plugins (via codegen) are always executed.
 
-The updated version, including registering a plugin:
+#### Plugin Discovery
 
-```kotlin
-val s3 = S3Client {
-    plugins += FooPlugin()
-    // makes use of the new `config` DSL function on the abstract builder
-    config {
-        region = "us-east-2"
-        ...
-    }
-}
-```
+Plugins are discovered from two paths:
 
-Users will need to update how they create their clients by wrapping all existing configuration in the `config{ }` block.
+1. **Global Plugin Path**: Plugins that apply to all instantiated service clients.
+2. **Service Specific Path**: Plugins that apply to a specific service client.
 
-### JVM SPI
+Service client builders will generate a unique path for `serviceClientPluginPath` using their package name 
+(e.g. `aws/sdk/kotlin/services/s3/config/plugins`). 
 
-TODO
 
 ### Interaction with per/op config
 
@@ -191,37 +197,93 @@ s3.withConfig {
 }
 ```
 
-The `withConfig` extension method uses the client configuration builder which means it would not have access to register
-plugins that should only apply to the cloned client. 
+Plugins are only loaded once during initial client construction. They have no effect on cloned service clients.
 
-**QUESTION**: Do we want to modify how per op config works before we land it? OR define a different way in which plugins would be applied
-per/operation?  e.g.
+### Resource Ownership Issues
+
+Plugins have the opportunity to instantiate resources that require closing, e.g. configuring an `HttpClientEngine`. 
+This presents a potential risk that resources are leaked from plugins when a plugin instantiates a resource.
+
+The two plugins defined below will be used to discuss resource ownership issues:
 
 ```kotlin
-val s3Clone = s3.toBuilder().apply { plugins += ScopedPerOpPlugin() }.build()
+// first plugin loaded
+class Plugin1: SdkClientPlugin {
+  override fun configureClient(config: SdkClientConfig.Builder<*>) {
+    when (config) {
+      is HttpClientConfig.Builder -> {
+        config.httpClientEngine = CustomHttpClientEngine1()
+      }
+    }
+  }
+}
+
+// some other plugin loaded
+class Plugin2 : SdkClientPlugin {
+  override fun configureClient(config: SdkClientConfig.Builder<*>) {
+    when (config) {
+      is HttpClientConfig.Builder -> {
+        config.httpClientEngine = CustomHttpClientEngine2()
+      }
+    }
+  }
+}
 ```
+
+#### Single Plugin
+
+Assume that only `Plugin1` is loaded. In this scenario the resulting client configuration would use 
+`CustomHttpClientEngine1`. 
+
+Users are responsible for the lifetime of all resources handed to a service client (client's do not close any resource 
+that they did not instantiate themselves). The engine instantiated by `Plugin1` would be leaked.
+
+#### Multiple Plugins
+
+Assume that both plugins are registered, with `Plugin1` executing before `Plugin2`. In this scenario
+the resulting client configuration would use `CustomHttpClientEngine2` as it's HTTP engine. Both
+`CustomHttpClientEngine1` and `CustomHttpClientEngine2` would be leaked. The former because it is overridden and 
+"forgotten", the latter because it isn't managed by the SDK and will not be closed when the client is closed.
+
 
 # Appendices
 
 ## Appendix: FAQ
 
-**Why a breaking change to client instantiation**?
-
-TODO
-
 **Why plugins off the client builder and not the configuration builder**?
 
-Plugins don't make much sense off of the configuration (builder) since the configuration is the object being modified.
-Defining plugin registration off of config would allow for plugins the potential to mutate the list of plugins itself.
+Plugins apply _to_ service client configuration, they are not part _of_ it's configuration. Defining plugin registration
+off of config would allow for plugins the potential to mutate the list of plugins itself (if exposed).
 This would either need to be an error or detected and ran in a loop until no new plugins are detected. This would be
 confusing and more difficult to get right.
-
 
 **Why require type checking to get at more specific configuration**?
 
 There is no way to provide a more concrete type that would allow plugins to be shared across clients or loaded automatically via SPI.
 This mirrors how [interceptors](interceptors.md) work. To get at specific input and output types you have to type check them.
 
+**This seems specific to JVM SPI, what about other platforms**?
+
+Other KMP platforms (e.g. Native and JS) do not have an equivalent auto discovery mechanism. Plugins would need to be
+applied manually anyway. Plugins are a convenience for code that can already be written manually and shared across
+all platforms. Plugins can still be used on other platforms though by applying them during construction.
+
+e.g.
+
+```kotlin
+val client = FooClient { // this: FooClient.Config.Builder
+    FooPlugin().configureClient(this)
+    BazPlugin().configureClient(this)
+}
+```
+
+**What about per/operation default plugins or service customizations**?
+
+The design for per/operation config is not really "per operation". It could more accurately be described as a way to
+copy a service client with configuration overrides. This allows users to create "scoped" clients, whether that be
+for a single operation or many. As such there is no way for operation specific plugins to be registered via codegen
+through _this_ mechanism. Should the need arise to allow operation specific plugins `smithy-kotlin` codegen could
+be updated to deal with operation specific configuration.
 
 ## Appendix: Alternatives
 
@@ -230,7 +292,7 @@ This mirrors how [interceptors](interceptors.md) work. To get at specific input 
 An alternative interface for runtime plugin is to use the client builder instead of the client config builder:
 
 ```kotlin
-public interface RuntimePlugin {
+public interface SdkClientPlugin {
     public fun configureClient(client: SdkClient.Builder<*, *, *>)
 }
 ```
@@ -238,7 +300,7 @@ public interface RuntimePlugin {
 Plugins would work as before but have to type check the `config` property instead:
 
 ```kotlin
-class DefaultRegionPlugin(private val defaultRegion: String) {
+class DefaultRegionPlugin(private val defaultRegion: String): SdkClientPlugin {
     override fun configureClient(client: SdkClient.Builder<*, *, *>) {
         when (val config = client.config) {
             is AwsSdkClientConfig.Builder -> {
@@ -253,31 +315,7 @@ class DefaultRegionPlugin(private val defaultRegion: String) {
 ```
 
 The advantage of this approach would be that if there are properties off of `SdkClient.Builder` that a plugin should
-be allowed to modify that it would be possible. It has the same disadvantage as registering using the 
-[config builder](#plugin-registration-alt-2---service-client-config-builder) w.r.t plugin mutation via plugins though.
-
-### Plugin Registration ALT 2 - Service Client Config Builder
-
-An alternative to using the service client builder for plugin registration is to use the _configuration_ builder.
-
-e.g.
-
-```kotlin
-val S3Client {
-    region = "us-west-2"
-    plugins += FooPlugin()
-}
-```
-
-This has the advantage of not requiring a breaking change. However, modeling it this way is confusing since plugins
-modify the configuration they are being registered with. Modeling a plugin off of the client builder will also allow
-for better extensibility going forward should we have client level properties that make sense to be modifiable via
-a plugin.
-
-See also "Why plugins off the client builder and not the configuration builder" in the [FAQ](#appendix-faq).
-
-## Implementation Details
-
+be allowed to modify that it would be possible. 
 
 ## Additional References
 
