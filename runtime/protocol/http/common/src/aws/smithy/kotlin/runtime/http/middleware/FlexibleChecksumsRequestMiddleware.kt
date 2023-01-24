@@ -30,6 +30,8 @@ public class FlexibleChecksumsRequestMiddleware(private val checksumAlgorithmNam
     public override suspend fun modifyRequest(req: SdkHttpRequest): SdkHttpRequest {
         val logger = coroutineContext.getLogger<FlexibleChecksumsRequestMiddleware>()
 
+        check(req.subject.body.contentLength != null && req.subject.body.contentLength!! > 0) { "Can't calculate the checksum of an empty body" }
+
         val headerName = "x-amz-checksum-${checksumAlgorithmName.lowercase()}"
         logger.debug { "Resolved checksum header name: $headerName" }
 
@@ -64,9 +66,10 @@ public class FlexibleChecksumsRequestMiddleware(private val checksumAlgorithmNam
         } else if (req.subject.headers[headerName] == null) {
             logger.debug { "Calculating checksum" }
 
-            val checksum = req.subject.body.readAll()?.hash(checksumAlgorithm)?.encodeBase64String()
-                ?: throw ClientException("Can't calculate the checksum of an empty body")
+            val bodyBytes = req.subject.body.readAll()!!
+            req.subject.body = bodyBytes.toHttpBody() // replace the consumed body
 
+            val checksum = bodyBytes.hash(checksumAlgorithm).encodeBase64String()
             req.subject.header(headerName, checksum)
         }
 
