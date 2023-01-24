@@ -29,6 +29,7 @@ public class Md5ChecksumInterceptor<I>(
 
     override fun readAfterSerialization(context: ProtocolRequestInterceptorContext<Any, HttpRequest>) {
         shouldInjectMD5Header = block?.let {
+            @Suppress("UNCHECKED_CAST")
             val input = context.request as I
             it(input)
         } ?: true

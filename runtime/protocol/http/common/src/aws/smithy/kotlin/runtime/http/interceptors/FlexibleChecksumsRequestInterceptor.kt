@@ -35,6 +35,7 @@ public class FlexibleChecksumsRequestInterceptor<I>(
     private var checksumAlgorithmName = CompletableDeferred<String>()
 
     override fun readAfterSerialization(context: ProtocolRequestInterceptorContext<Any, HttpRequest>) {
+        @Suppress("UNCHECKED_CAST")
         val input = context.request as I
         checksumAlgorithmNameInitializer(input)?.let { checksumAlgorithmName.complete(it) }
     }
