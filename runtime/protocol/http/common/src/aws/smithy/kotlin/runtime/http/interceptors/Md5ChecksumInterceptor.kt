@@ -28,18 +28,13 @@ public class Md5ChecksumInterceptor<I>(
     private var shouldRun: Boolean = false
 
     override fun readAfterSerialization(context: ProtocolRequestInterceptorContext<Any, HttpRequest>) {
-        println("readAfterSerialization")
         shouldRun = block?.let {
             val input = context.request as I
-            val output = it(input)
-            println("block output: $output")
-            output
+            it(input)
         } ?: true
     }
 
     override suspend fun modifyBeforeRetryLoop(context: ProtocolRequestInterceptorContext<Any, HttpRequest>): HttpRequest {
-        println("modifyBeforeRetryLoop")
-
         if (!shouldRun) {
             println("should not run, skipping")
             return context.protocolRequest
