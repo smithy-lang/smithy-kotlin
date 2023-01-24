@@ -50,7 +50,8 @@ internal val AwsSigningConfig.useAwsChunkedEncoding: Boolean
     get() = when (hashSpecification) {
         is HashSpecification.StreamingAws4HmacSha256Payload,
         is HashSpecification.StreamingAws4HmacSha256PayloadWithTrailers,
-        is HashSpecification.StreamingUnsignedPayloadWithTrailers, -> true
+        is HashSpecification.StreamingUnsignedPayloadWithTrailers,
+        -> true
         else -> false
     }
 

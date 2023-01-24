@@ -20,7 +20,7 @@ import kotlinx.coroutines.CompletableDeferred
 public class HashingByteReadChannel(
     private val hash: HashFunction,
     private val chan: SdkByteReadChannel,
-    private val deferred: CompletableDeferred<String>? = null
+    private val deferred: CompletableDeferred<String>? = null,
 ) : SdkByteReadChannel by chan {
     public override suspend fun read(sink: SdkBuffer, limit: Long): Long {
         val bufferedHashingSink = HashingSink(hash, sink).buffer()

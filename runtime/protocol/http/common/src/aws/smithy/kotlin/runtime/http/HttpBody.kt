@@ -153,7 +153,10 @@ public fun SdkSource.toHttpBody(contentLength: Long? = null): HttpBody =
  * @param contentLength the total content length of the source, if known
  */
 @InternalApi
-public fun HttpBody.toHashingBody(hashFunction: HashFunction, contentLength: Long?, deferred: CompletableDeferred<String>? = null,
+public fun HttpBody.toHashingBody(
+    hashFunction: HashFunction,
+    contentLength: Long?,
+    deferred: CompletableDeferred<String>? = null,
 ): HttpBody = when (this) {
     is HttpBody.SourceContent ->
         HashingSource(

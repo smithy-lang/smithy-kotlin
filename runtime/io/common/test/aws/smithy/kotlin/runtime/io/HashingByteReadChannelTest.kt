@@ -8,7 +8,8 @@ package aws.smithy.kotlin.runtime.io
 import aws.smithy.kotlin.runtime.hashing.toHashFunction
 import aws.smithy.kotlin.runtime.util.encodeBase64String
 import kotlinx.coroutines.CompletableDeferred
-import kotlinx.coroutines.test.runTest import org.junit.jupiter.api.Test
+import kotlinx.coroutines.test.runTest
+import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.ValueSource
 import kotlin.random.Random
@@ -132,5 +133,4 @@ class HashingByteReadChannelTest {
         assertTrue(completableDeferred.isCompleted)
         assertEquals(expectedHash.digest().encodeBase64String(), completableDeferred.getCompleted())
     }
-
 }
