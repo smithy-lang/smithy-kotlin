@@ -30,7 +30,7 @@ import kotlin.coroutines.coroutineContext
  */
 @InternalApi
 public class FlexibleChecksumsRequestInterceptor<I>(
-    private val checksumAlgorithmNameInitializer: (I) -> String?
+    private val checksumAlgorithmNameInitializer: (I) -> String?,
 ) : HttpInterceptor {
     private var checksumAlgorithmName = CompletableDeferred<String>()
 

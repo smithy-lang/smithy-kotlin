@@ -56,9 +56,11 @@ class FlexibleChecksumsRequestInterceptorTest {
 
         val op = newTestOperation<Unit, Unit>(req, Unit)
 
-        op.interceptors.add(FlexibleChecksumsRequestInterceptor<Unit> {
-            checksumAlgorithmName
-        })
+        op.interceptors.add(
+            FlexibleChecksumsRequestInterceptor<Unit> {
+                checksumAlgorithmName
+            },
+        )
 
         op.roundTrip(client, Unit)
         val call = op.context.attributes[HttpOperationContext.HttpCallList].first()
@@ -78,9 +80,11 @@ class FlexibleChecksumsRequestInterceptorTest {
 
         val op = newTestOperation<Unit, Unit>(req, Unit)
 
-        op.interceptors.add(FlexibleChecksumsRequestInterceptor<Unit> {
-            checksumAlgorithmName
-        })
+        op.interceptors.add(
+            FlexibleChecksumsRequestInterceptor<Unit> {
+                checksumAlgorithmName
+            },
+        )
 
         op.roundTrip(client, Unit)
         val call = op.context.attributes[HttpOperationContext.HttpCallList].first()
@@ -98,9 +102,11 @@ class FlexibleChecksumsRequestInterceptorTest {
 
         val op = newTestOperation<Unit, Unit>(req, Unit)
 
-        op.interceptors.add(FlexibleChecksumsRequestInterceptor<Unit> {
-            unsupportedChecksumAlgorithmName
-        })
+        op.interceptors.add(
+            FlexibleChecksumsRequestInterceptor<Unit> {
+                unsupportedChecksumAlgorithmName
+            },
+        )
 
         assertFailsWith<ClientException> {
             op.roundTrip(client, Unit)
@@ -121,9 +127,11 @@ class FlexibleChecksumsRequestInterceptorTest {
 
         val op = newTestOperation<Unit, Unit>(req, Unit)
 
-        op.interceptors.add(FlexibleChecksumsRequestInterceptor<Unit> {
-            checksumAlgorithmName
-        })
+        op.interceptors.add(
+            FlexibleChecksumsRequestInterceptor<Unit> {
+                checksumAlgorithmName
+            },
+        )
 
         op.roundTrip(client, Unit)
         val call = op.context.attributes[HttpOperationContext.HttpCallList].first()
