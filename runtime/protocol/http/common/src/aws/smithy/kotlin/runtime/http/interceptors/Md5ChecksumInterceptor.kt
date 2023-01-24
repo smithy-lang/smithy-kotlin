@@ -25,18 +25,17 @@ public class Md5ChecksumInterceptor<I>(
     private val block: ((input: I) -> Boolean)? = null,
 ) : HttpInterceptor {
 
-    private var shouldRun: Boolean = false
+    private var shouldInjectMD5Header: Boolean = false
 
     override fun readAfterSerialization(context: ProtocolRequestInterceptorContext<Any, HttpRequest>) {
-        shouldRun = block?.let {
+        shouldInjectMD5Header = block?.let {
             val input = context.request as I
             it(input)
         } ?: true
     }
 
     override suspend fun modifyBeforeRetryLoop(context: ProtocolRequestInterceptorContext<Any, HttpRequest>): HttpRequest {
-        if (!shouldRun) {
-            println("should not run, skipping")
+        if (!shouldInjectMD5Header) {
             return context.protocolRequest
         }
 
