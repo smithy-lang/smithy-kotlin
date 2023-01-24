@@ -59,7 +59,6 @@ object RuntimeTypes {
             val RetryMiddleware = symbol("RetryMiddleware")
             val ResolveEndpoint = symbol("ResolveEndpoint")
             val FlexibleChecksumsRequestMiddleware = symbol("FlexibleChecksumsRequestMiddleware")
-            val FlexibleChecksumsResponseMiddleware = symbol("FlexibleChecksumsResponseMiddleware")
         }
 
         object Operation : RuntimeTypePackage(KotlinDependency.HTTP, "operation") {
@@ -98,6 +97,7 @@ object RuntimeTypes {
         }
         object Interceptors : RuntimeTypePackage(KotlinDependency.HTTP, "interceptors") {
             val HttpInterceptor = symbol("HttpInterceptor")
+            val FlexibleChecksumsResponseInterceptor = symbol("FlexibleChecksumsResponseInterceptor")
         }
     }
 

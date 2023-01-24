@@ -5,15 +5,11 @@
 
 package aws.smithy.kotlin.runtime.http.operation
 
-import aws.smithy.kotlin.runtime.ClientException
 import aws.smithy.kotlin.runtime.client.ExecutionContext
 import aws.smithy.kotlin.runtime.http.HttpHandler
 import aws.smithy.kotlin.runtime.http.interceptors.HttpInterceptor
-import aws.smithy.kotlin.runtime.http.middleware.FlexibleChecksumsResponseMiddleware.Companion.ExpectedResponseChecksum
-import aws.smithy.kotlin.runtime.http.middleware.FlexibleChecksumsResponseMiddleware.Companion.ResponseChecksum
 import aws.smithy.kotlin.runtime.http.response.complete
 import aws.smithy.kotlin.runtime.util.*
-import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.job
 import kotlin.reflect.KClass
@@ -101,7 +97,6 @@ public suspend fun <I, O, R> SdkHttpOperation<I, O>.execute(
         val output = handler.call(request)
         return block(output)
     } finally {
-        validateResponseChecksum(context)
         context.cleanup()
     }
 }
@@ -110,24 +105,6 @@ internal data class OperationTypeInfo(
     val inputType: KClass<*>,
     val outputType: KClass<*>,
 )
-
-/**
- * Validate the response checksum if flexible checksums response validation is enabled.
- * If flexible checksums is not enabled, this is a no-op.
- * @param context the execution context of the HTTP operation
- * @throws RuntimeException if there is a checksum mismatch
- */
-internal suspend fun validateResponseChecksum(context: ExecutionContext) {
-    val deferredChecksum: Deferred<String>? = context.getOrNull(ResponseChecksum)
-    val responseChecksum = deferredChecksum?.await()
-
-    responseChecksum?.let {
-        val expectedResponseChecksum: String = context[ExpectedResponseChecksum]
-        if (responseChecksum != expectedResponseChecksum) {
-            throw ChecksumMismatchException("Checksum mismatch: $responseChecksum != $expectedResponseChecksum")
-        }
-    }
-}
 
 @InternalApi
 public class SdkHttpOperationBuilder<I, O> (
@@ -161,14 +138,4 @@ private suspend fun ExecutionContext.cleanup() {
 
     // at this point everything associated with this single operation should be cleaned up
     coroutineContext.job.cancelAndJoin()
-}
-
-private class ChecksumMismatchException : ClientException {
-    constructor() : super()
-
-    constructor(message: String?) : super(message)
-
-    constructor(message: String?, cause: Throwable?) : super(message, cause)
-
-    constructor(cause: Throwable?) : super(cause)
 }
