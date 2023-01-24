@@ -78,7 +78,7 @@ class FlexibleChecksumsResponseInterceptorTest {
 
         op.interceptors.add(
             FlexibleChecksumsResponseInterceptor<TestInput> {
-                "enabled"
+                true
             },
         )
 
@@ -112,7 +112,7 @@ class FlexibleChecksumsResponseInterceptorTest {
 
         op.interceptors.add(
             FlexibleChecksumsResponseInterceptor<TestInput> {
-                "enabled"
+                true
             },
         )
 
@@ -139,7 +139,7 @@ class FlexibleChecksumsResponseInterceptorTest {
 
         op.interceptors.add(
             FlexibleChecksumsResponseInterceptor<TestInput> {
-                "enabled"
+                true
             },
         )
 
@@ -164,7 +164,7 @@ class FlexibleChecksumsResponseInterceptorTest {
 
         op.interceptors.add(
             FlexibleChecksumsResponseInterceptor<TestInput> {
-                "enabled"
+                true
             },
         )
 
@@ -193,7 +193,7 @@ class FlexibleChecksumsResponseInterceptorTest {
 
         op.interceptors.add(
             FlexibleChecksumsResponseInterceptor<TestInput> {
-                null // disabled here via input shape lambda
+                false
             },
         )
 
