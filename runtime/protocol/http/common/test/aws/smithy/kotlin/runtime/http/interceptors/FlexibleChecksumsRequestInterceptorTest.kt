@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package aws.smithy.kotlin.runtime.http.middleware
+package aws.smithy.kotlin.runtime.http.interceptors
 
 import aws.smithy.kotlin.runtime.ClientException
 import aws.smithy.kotlin.runtime.client.ExecutionContext
@@ -31,7 +31,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 
 @OptIn(ExperimentalCoroutinesApi::class)
-class FlexibleChecksumsRequestMiddlewareTest {
+class FlexibleChecksumsRequestInterceptorTest {
     private val mockEngine = object : HttpClientEngineBase("test") {
         override suspend fun roundTrip(context: ExecutionContext, request: HttpRequest): HttpCall {
             val resp = HttpResponse(HttpStatusCode.OK, Headers.Empty, HttpBody.Empty)
@@ -56,7 +56,9 @@ class FlexibleChecksumsRequestMiddlewareTest {
 
         val op = newTestOperation<Unit, Unit>(req, Unit)
 
-        op.install(FlexibleChecksumsRequestMiddleware(checksumAlgorithmName))
+        op.interceptors.add(FlexibleChecksumsRequestInterceptor<Unit> {
+            checksumAlgorithmName
+        })
 
         op.roundTrip(client, Unit)
         val call = op.context.attributes[HttpOperationContext.HttpCallList].first()
@@ -76,7 +78,9 @@ class FlexibleChecksumsRequestMiddlewareTest {
 
         val op = newTestOperation<Unit, Unit>(req, Unit)
 
-        op.install(FlexibleChecksumsRequestMiddleware(checksumAlgorithmName))
+        op.interceptors.add(FlexibleChecksumsRequestInterceptor<Unit> {
+            checksumAlgorithmName
+        })
 
         op.roundTrip(client, Unit)
         val call = op.context.attributes[HttpOperationContext.HttpCallList].first()
@@ -94,7 +98,9 @@ class FlexibleChecksumsRequestMiddlewareTest {
 
         val op = newTestOperation<Unit, Unit>(req, Unit)
 
-        op.install(FlexibleChecksumsRequestMiddleware(unsupportedChecksumAlgorithmName))
+        op.interceptors.add(FlexibleChecksumsRequestInterceptor<Unit> {
+            unsupportedChecksumAlgorithmName
+        })
 
         assertFailsWith<ClientException> {
             op.roundTrip(client, Unit)
@@ -115,7 +121,9 @@ class FlexibleChecksumsRequestMiddlewareTest {
 
         val op = newTestOperation<Unit, Unit>(req, Unit)
 
-        op.install(FlexibleChecksumsRequestMiddleware(checksumAlgorithmName))
+        op.interceptors.add(FlexibleChecksumsRequestInterceptor<Unit> {
+            checksumAlgorithmName
+        })
 
         op.roundTrip(client, Unit)
         val call = op.context.attributes[HttpOperationContext.HttpCallList].first()
