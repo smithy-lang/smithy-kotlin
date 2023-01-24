@@ -106,7 +106,7 @@ class FlexibleChecksumsResponseInterceptorTest {
             "sha256,Z7AuR1ssOIhqbjhaKBn3S0hvPhIm27zu9jqT/1SMjNY=",
         ],
     )
-    fun testResponseServiceChecksumInvalid(checksumAlgorithmName: String, expectedChecksum: String) = runTest {
+    fun testResponseServiceChecksumInvalid(checksumAlgorithmName: String) = runTest {
         val req = HttpRequestBuilder()
         val op = newTestOperation<TestInput>(req)
 
@@ -187,7 +187,7 @@ class FlexibleChecksumsResponseInterceptorTest {
             "sha256,Z7AuR1ssOIhqbjhaKBn3S0hvPhIm27zu9jqT/1SMjNY=",
         ],
     )
-    fun testSkipsValidationWhenDisabled(checksumAlgorithmName: String, expectedChecksum: String) = runTest {
+    fun testSkipsValidationWhenDisabled(checksumAlgorithmName: String) = runTest {
         val req = HttpRequestBuilder()
         val op = newTestOperation<TestInput>(req)
 
