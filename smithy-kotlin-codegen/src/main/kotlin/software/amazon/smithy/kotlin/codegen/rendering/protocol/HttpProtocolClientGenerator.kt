@@ -294,20 +294,19 @@ abstract class HttpProtocolClientGenerator(
             return
         }
 
-        val checksumAlgorithm = ctx.model.getShape(input.get()).getOrNull()
+        val requestAlgorithmMember = ctx.model.getShape(input.get()).getOrNull()
             ?.members()
             ?.firstOrNull { it.memberName == httpChecksumTrait?.requestAlgorithmMember?.getOrNull() }
 
         if (hasTrait<HttpChecksumRequiredTrait>() || httpChecksumTrait?.isRequestChecksumRequired == true) {
-            writer.addImport(RuntimeTypes.Http.Middlware.Md5ChecksumMiddleware)
+            val interceptorSymbol = RuntimeTypes.Http.Interceptors.Md5ChecksumInterceptor
+            val inputSymbol = ctx.symbolProvider.toSymbol(ctx.model.expectShape(inputShape))
 
-            checksumAlgorithm?.let {
-                writer.withBlock("if (input.#L == null) {", "}", checksumAlgorithm.defaultName()) {
-                    writer.write("op.install(#T())", RuntimeTypes.Http.Middlware.Md5ChecksumMiddleware)
+            requestAlgorithmMember?.let {
+                writer.withBlock("op.interceptors.add(#T<#T> { ", "})", interceptorSymbol, inputSymbol) {
+                    writer.write("it.#L?.value == null", requestAlgorithmMember.defaultName())
                 }
-            } ?: run {
-                writer.write("op.install(#T())", RuntimeTypes.Http.Middlware.Md5ChecksumMiddleware)
-            }
+            } ?: writer.write("op.interceptors.add(#T<#T>())", interceptorSymbol, inputSymbol)
         }
     }
 }
