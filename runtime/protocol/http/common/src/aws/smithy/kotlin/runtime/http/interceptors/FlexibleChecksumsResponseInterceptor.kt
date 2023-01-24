@@ -108,7 +108,7 @@ private class ChecksumValidatingByteReadChannel(
 private fun HttpBody.toChecksumValidatingBody(expectedChecksum: String) = when (this) {
     is HttpBody.SourceContent -> ChecksumValidatingSource(expectedChecksum, (readFrom() as HashingSource)).toHttpBody(contentLength)
     is HttpBody.ChannelContent -> ChecksumValidatingByteReadChannel(expectedChecksum, (readFrom() as HashingByteReadChannel)).toHttpBody(contentLength)
-    else -> throw ClientException("unexpected type of body")
+    else -> throw ClientException("HttpBody type is not supported")
 }
 
 /**
