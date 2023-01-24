@@ -16,6 +16,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
+@OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
 class HashingSourceTest {
     @ParameterizedTest
     @ValueSource(strings = ["crc32", "crc32c", "md5", "sha1", "sha256"])
