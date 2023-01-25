@@ -5,6 +5,8 @@
 
 package aws.smithy.kotlin.runtime.io
 
+import aws.smithy.kotlin.runtime.util.InternalApi
+
 // this really should live in the stdlib...
 // https://youtrack.jetbrains.com/issue/KT-31066
 
@@ -44,6 +46,7 @@ public inline fun <C : Closeable, R> C.use(block: (C) -> R): R {
     }
 }
 
+@InternalApi
 public fun Any.closeIfCloseable() {
     if (this is Closeable) close()
 }
