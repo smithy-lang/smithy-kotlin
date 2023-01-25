@@ -256,8 +256,8 @@ abstract class HttpProtocolClientGenerator(
                 middleware.render(ctx, op, writer)
             }
         if (op.checksumRequired()) {
-            writer.addImport(RuntimeTypes.Http.Middlware.Md5ChecksumMiddleware)
-            writer.write("op.install(#T())", RuntimeTypes.Http.Middlware.Md5ChecksumMiddleware)
+            writer.addImport(RuntimeTypes.Http.Middleware.Md5ChecksumMiddleware)
+            writer.write("op.install(#T())", RuntimeTypes.Http.Middleware.Md5ChecksumMiddleware)
         }
     }
 
