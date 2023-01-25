@@ -38,7 +38,7 @@ class FlexibleChecksumsRequestInterceptorTest {
             return HttpCall(request, resp, Instant.now(), Instant.now())
         }
     }
-    private val client = sdkHttpClient(mockEngine)
+    private val client = SdkHttpClient(mockEngine)
 
     @ParameterizedTest
     @CsvSource(

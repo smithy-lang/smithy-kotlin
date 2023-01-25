@@ -60,7 +60,7 @@ class FlexibleChecksumsResponseInterceptorTest {
                 return HttpCall(request, resp, Instant.now(), Instant.now())
             }
         }
-        return sdkHttpClient(mockEngine)
+        return SdkHttpClient(mockEngine)
     }
 
     @ParameterizedTest
