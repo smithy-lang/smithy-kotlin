@@ -53,7 +53,7 @@ object RuntimeTypes {
             val HttpResponse = symbol("HttpResponse")
         }
 
-        object Middlware : RuntimeTypePackage(KotlinDependency.HTTP, "middleware") {
+        object Middleware : RuntimeTypePackage(KotlinDependency.HTTP, "middleware") {
             val Md5ChecksumMiddleware = symbol("Md5Checksum")
             val MutateHeadersMiddleware = symbol("MutateHeaders")
             val RetryMiddleware = symbol("RetryMiddleware")
