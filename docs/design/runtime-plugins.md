@@ -93,6 +93,8 @@ class DefaultRegionPlugin(private val defaultRegion: String): SdkClientPlugin {
 
 ### Plugin Registration
 
+FIXME - reconcile with SRA which has these plugins _NOT_ being loaded via SPI. In which case we would expose this off client builder if at all.
+
 Plugins are registered by the user (via SPI, see below) or by the service via codegen. 
 
 * **Client Plugins**: Plugins registered by the user.
@@ -245,6 +247,39 @@ the resulting client configuration would use `CustomHttpClientEngine2` as it's H
 `CustomHttpClientEngine1` and `CustomHttpClientEngine2` would be leaked. The former because it is overridden and 
 "forgotten", the latter because it isn't managed by the SDK and will not be closed when the client is closed.
 
+
+
+#### Solutions
+
+TODO - flesh this out a bit more
+
+
+```kotlin
+/**
+ * A type that modifies an SDK client's configuration object
+ */
+public interface SdkClientPlugin {
+  /**
+   * Modify the provided client configuration
+   */
+  public fun configureClient(config: SdkClientConfig.Builder<*>): Unit
+
+  /**
+   * Invoked everytime a client is created 
+   */
+  public fun clientCreated(client: SdkClient): Unit { }
+
+  /**
+   * Invoked everytime a client is closed
+   */
+  public fun clientClosed(client: SdkClient): Unit { }
+}
+```
+
+One option would be to add hooks invoked everytime a client is created or closed. This would include clients
+created via `withConfig` (which should be changed to go through `client.toBuilder().apply { config.apply(block) }.build()`
+rather than directly calling `config.toBuilder()`). This would allow plugins to do appropriate bookkeeping if they
+need to.
 
 # Appendices
 
