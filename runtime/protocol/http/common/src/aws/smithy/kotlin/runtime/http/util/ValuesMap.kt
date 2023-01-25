@@ -71,7 +71,9 @@ internal open class ValuesMapImpl<T>(
     initialValues: Map<String, List<T>> = emptyMap(),
 ) : ValuesMap<T> {
     protected val values: Map<String, List<T>> = run {
-        if (caseInsensitiveName) CaseInsensitiveMap<List<T>>().apply { putAll(initialValues) } else initialValues
+        // Make a defensive copy so modifications to the initialValues don't mutate our internal copy
+        val copiedValues = initialValues.deepCopyValues()
+        if (caseInsensitiveName) CaseInsensitiveMap<List<T>>().apply { putAll(copiedValues) } else copiedValues
     }
 
     override fun getAll(name: String): List<T>? = values[name]
@@ -95,6 +97,8 @@ internal open class ValuesMapImpl<T>(
                 }
                 names.all { getAll(it) == other.getAll(it) }
             }
+
+    private fun Map<String, List<T>>.deepCopyValues(): Map<String, List<T>> = mapValues { (_, v) -> v.toList() }
 }
 
 @InternalApi
