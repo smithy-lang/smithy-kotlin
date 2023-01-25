@@ -7,10 +7,10 @@ package aws.smithy.kotlin.runtime.http.engine.crt
 
 import aws.smithy.kotlin.runtime.http.HttpMethod
 import aws.smithy.kotlin.runtime.http.Protocol
+import aws.smithy.kotlin.runtime.http.SdkHttpClient
 import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
 import aws.smithy.kotlin.runtime.http.request.url
 import aws.smithy.kotlin.runtime.http.response.complete
-import aws.smithy.kotlin.runtime.http.sdkHttpClient
 import aws.smithy.kotlin.runtime.httptest.TestWithLocalServer
 import aws.smithy.kotlin.runtime.net.Host
 import aws.smithy.kotlin.runtime.testing.IgnoreWindows
@@ -48,7 +48,7 @@ class AsyncStressTest : TestWithLocalServer() {
         // appropriately and allows requests to proceed (a stream that isn't consumed will be in a stuck state
         // if the window is full and never incremented again, this can lead to all connections being consumed
         // and the engine to no longer make further requests)
-        val client = sdkHttpClient(CrtHttpEngine())
+        val client = SdkHttpClient(CrtHttpEngine())
         val request = HttpRequestBuilder().apply {
             url {
                 scheme = Protocol.HTTP

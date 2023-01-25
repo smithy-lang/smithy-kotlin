@@ -5,30 +5,18 @@
 package aws.smithy.kotlin.runtime.http
 
 import aws.smithy.kotlin.runtime.client.ExecutionContext
-import aws.smithy.kotlin.runtime.http.engine.HttpClientEngine
-import aws.smithy.kotlin.runtime.http.engine.HttpClientEngineClosedException
+import aws.smithy.kotlin.runtime.http.engine.*
 import aws.smithy.kotlin.runtime.http.engine.SdkRequestContextElement
 import aws.smithy.kotlin.runtime.http.engine.createCallContext
 import aws.smithy.kotlin.runtime.http.operation.SdkHttpRequest
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
 import aws.smithy.kotlin.runtime.http.response.HttpCall
-import aws.smithy.kotlin.runtime.io.Closeable
 import aws.smithy.kotlin.runtime.io.Handler
-import kotlinx.atomicfu.atomic
 import kotlinx.coroutines.*
 import kotlin.coroutines.coroutineContext
 
 public typealias HttpHandler = Handler<SdkHttpRequest, HttpCall>
-
-/**
- * Create an [SdkHttpClient] with the given engine, and optionally configure it
- * This will **not** manage the engine lifetime, the caller is expected to close it.
- */
-public fun sdkHttpClient(
-    engine: HttpClientEngine,
-    manageEngine: Boolean = false,
-): SdkHttpClient = SdkHttpClient(engine, manageEngine)
 
 /**
  * An HTTP client capable of round tripping requests and responses
@@ -37,10 +25,7 @@ public fun sdkHttpClient(
  */
 public class SdkHttpClient(
     public val engine: HttpClientEngine,
-    private val manageEngine: Boolean = false,
-) : HttpHandler, Closeable {
-    private val closed = atomic(false)
-
+) : HttpHandler {
     public suspend fun call(request: HttpRequest): HttpCall = executeWithCallContext(ExecutionContext(), request)
     public suspend fun call(request: HttpRequestBuilder): HttpCall = call(request.build())
     override suspend fun call(request: SdkHttpRequest): HttpCall = executeWithCallContext(request.context, request.subject.build())
@@ -52,16 +37,6 @@ public class SdkHttpClient(
         val reqCoroutineContext = callContext + SdkRequestContextElement(callContext)
         return withContext(reqCoroutineContext) {
             engine.roundTrip(context, request)
-        }
-    }
-
-    /**
-     * Shutdown this HTTP client and close any resources. The client will no longer be capable of making requests.
-     */
-    override fun close() {
-        if (!closed.compareAndSet(false, true)) return
-        if (manageEngine) {
-            engine.close()
         }
     }
 }
