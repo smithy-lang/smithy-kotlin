@@ -4,6 +4,7 @@
  */
 package aws.smithy.kotlin.runtime.http
 
+import aws.smithy.kotlin.runtime.http.EmptyDeferredHeaders.deepCopy
 import aws.smithy.kotlin.runtime.http.util.*
 import aws.smithy.kotlin.runtime.util.InternalApi
 import kotlinx.coroutines.CompletableDeferred
@@ -38,7 +39,10 @@ private object EmptyDeferredHeaders : DeferredHeaders {
  */
 public class DeferredHeadersBuilder : ValuesMapBuilder<Deferred<String>>(true, 8), CanDeepCopy<DeferredHeadersBuilder> {
     override fun build(): DeferredHeaders = DeferredHeadersImpl(values)
-    override fun deepCopy(): DeferredHeadersBuilder = DeferredHeadersBuilder().also { it.values.putAll(values) }
+    override fun deepCopy(): DeferredHeadersBuilder {
+        val originalValues = values.deepCopy()
+        return DeferredHeadersBuilder().apply { values.putAll(originalValues) }
+    }
     public fun add(name: String, value: String): Unit = append(name, CompletableDeferred(value))
 }
 

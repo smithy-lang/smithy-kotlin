@@ -4,6 +4,7 @@
  */
 package aws.smithy.kotlin.runtime.http
 
+import aws.smithy.kotlin.runtime.http.EmptyHeaders.deepCopy
 import aws.smithy.kotlin.runtime.http.util.*
 
 /**
@@ -37,7 +38,10 @@ public class HeadersBuilder : ValuesMapBuilder<String>(true, 8), CanDeepCopy<Hea
     override fun toString(): String = "HeadersBuilder ${entries()} "
     override fun build(): Headers = HeadersImpl(values)
 
-    override fun deepCopy(): HeadersBuilder = HeadersBuilder().also { it.values.putAll(values) }
+    override fun deepCopy(): HeadersBuilder {
+        val originalValues = values.deepCopy()
+        return HeadersBuilder().apply { values.putAll(originalValues) }
+    }
 }
 
 private class HeadersImpl(

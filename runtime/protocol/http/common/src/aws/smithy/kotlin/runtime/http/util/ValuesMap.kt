@@ -57,6 +57,12 @@ public interface ValuesMap<T> {
      * Checks if this map is empty
      */
     public fun isEmpty(): Boolean
+
+    /**
+     * Perform a deep copy of this map, specifically duplicating the value lists so that they're insulated from changes.
+     * @return A new map instance with copied value lists.
+     */
+    public fun Map<String, MutableList<T>>.deepCopy(): Map<String, MutableList<T>> = mapValues { (_, v) -> v.toMutableList() }
 }
 
 @InternalApi
