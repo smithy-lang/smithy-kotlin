@@ -13,7 +13,6 @@ import aws.smithy.kotlin.runtime.http.interceptors.HttpInterceptor
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.http.response.HttpCall
 import aws.smithy.kotlin.runtime.http.response.HttpResponse
-import aws.smithy.kotlin.runtime.http.sdkHttpClient
 import aws.smithy.kotlin.runtime.time.Instant
 
 class TestException(override val message: String?) : IllegalStateException()
@@ -43,7 +42,7 @@ fun newMockHttpClient(block: MockHttpClientOptions.() -> Unit = {}): SdkHttpClie
             return HttpCall(request, resp, Instant.now(), Instant.now())
         }
     }
-    return sdkHttpClient(mockEngine)
+    return SdkHttpClient(mockEngine)
 }
 
 suspend fun <I : Any, O : Any> roundTripWithInterceptors(

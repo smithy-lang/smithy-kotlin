@@ -20,10 +20,12 @@ import kotlin.test.Test
 
 class ServiceClientGeneratorTest {
     private val commonTestContents: String
+    private val commonWithProtocolTestContents: String
     private val deprecatedTestContents: String
 
     init {
         commonTestContents = generateService("service-generator-test-operations.smithy")
+        commonWithProtocolTestContents = generateService("service-generator-test-operations.smithy", withProtocolGenerator = true)
         deprecatedTestContents = generateService("service-generator-deprecated.smithy")
     }
 
@@ -67,8 +69,7 @@ class ServiceClientGeneratorTest {
                 override fun builder(): Builder = Builder()
             }
         """.formatForTest()
-        val testContents = generateService("service-generator-test-operations.smithy", true)
-        testContents.shouldContainOnlyOnceWithDiff(expected)
+        commonWithProtocolTestContents.shouldContainOnlyOnceWithDiff(expected)
     }
 
     @Test
@@ -180,6 +181,27 @@ class ServiceClientGeneratorTest {
         """.formatForTest()
         val testContents = generateService("service-generator-test-operations.smithy", true)
         testContents.shouldContainOnlyOnceWithDiff(expected)
+    }
+
+    fun `it renders withConfig extension`() {
+        val expected = """
+            public fun TestClient.withConfig(block: TestClient.Config.Builder.() -> Unit): TestClient {
+                val newConfig = config.toBuilder().apply(block).build()
+                return DefaultTestClient(newConfig)
+            }
+        """.trimIndent()
+        commonWithProtocolTestContents.shouldContainOnlyOnceWithDiff(expected)
+    }
+
+    @Test
+    fun `it skips withConfig extension if no protocolGenerator`() {
+        val expected = """
+            public fun TestClient.withConfig(block: TestClient.Config.Builder.() -> Unit): TestClient {
+                val newConfig = config.toBuilder().apply(block).build()
+                return DefaultTestClient(newConfig)
+            }
+        """.trimIndent()
+        commonTestContents.shouldNotContainOnlyOnceWithDiff(expected)
     }
 
     // Produce the generated service code given model inputs.

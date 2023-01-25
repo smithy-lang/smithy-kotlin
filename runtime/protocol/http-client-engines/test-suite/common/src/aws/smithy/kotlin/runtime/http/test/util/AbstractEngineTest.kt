@@ -7,12 +7,11 @@ package aws.smithy.kotlin.runtime.http.test.util
 
 import aws.smithy.kotlin.runtime.http.SdkHttpClient
 import aws.smithy.kotlin.runtime.http.Url
+import aws.smithy.kotlin.runtime.http.engine.CloseableHttpClientEngine
 import aws.smithy.kotlin.runtime.http.engine.HttpClientEngine
 import aws.smithy.kotlin.runtime.http.engine.HttpClientEngineConfig
 import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
 import aws.smithy.kotlin.runtime.http.request.url
-import aws.smithy.kotlin.runtime.http.sdkHttpClient
-import aws.smithy.kotlin.runtime.io.use
 import kotlinx.coroutines.*
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
@@ -39,8 +38,10 @@ public abstract class AbstractEngineTest {
             .filter { it.name !in skipEngines }
             .forEach { engineFactory ->
                 val engine = engineFactory.create(builder.engineConfig)
-                sdkHttpClient(engine, manageEngine = true).use { client ->
-                    testWithClient(client, builder = builder)
+                try {
+                    testWithClient(SdkHttpClient(engine), builder = builder)
+                } finally {
+                    engine.close()
                 }
             }
     }
@@ -145,7 +146,7 @@ internal data class TestEngineFactory(
     /**
      * Configure a new [HttpClientEngine] instance and return it
      */
-    val configure: (HttpClientEngineConfig.Builder.() -> Unit) -> HttpClientEngine,
+    val configure: (HttpClientEngineConfig.Builder.() -> Unit) -> CloseableHttpClientEngine,
 ) {
-    fun create(block: HttpClientEngineConfig.Builder.() -> Unit): HttpClientEngine = configure(block)
+    fun create(block: HttpClientEngineConfig.Builder.() -> Unit): CloseableHttpClientEngine = configure(block)
 }

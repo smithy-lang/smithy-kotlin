@@ -25,6 +25,18 @@ object RuntimeConfigProperty {
         client will not close it when the client is closed.
         """.trimIndent()
         order = -100
+
+        propertyType = ConfigPropertyType.Custom(
+            render = { prop, writer ->
+                writer.write(
+                    "override val #1L: #2T = builder.#1L ?: #3T().#4T()",
+                    prop.propertyName,
+                    prop.symbol,
+                    RuntimeTypes.HttpClientEngines.Default.DefaultHttpEngine,
+                    RuntimeTypes.Http.Engine.manage,
+                )
+            },
+        )
     }
 
     val IdempotencyTokenProvider = ConfigProperty {

@@ -16,32 +16,31 @@ import kotlin.coroutines.CoroutineContext
 
 /**
  * Functionality a real HTTP client must provide.
- * NOTE: Implementations SHOULD inherit from [HttpClientEngineBase] rather than implementing this interface directly.
  */
-public interface HttpClientEngine : Closeable, CoroutineScope {
+public interface HttpClientEngine : CoroutineScope {
     /**
      * Execute a single HTTP request and return the response.
      * Consumers *MUST* call `HttpCall.complete()` when finished processing the response
      */
     public suspend fun roundTrip(context: ExecutionContext, request: HttpRequest): HttpCall
-
-    /**
-     * Shutdown and cleanup any resources
-     */
-    override fun close() { /* pass */ }
 }
 
 /**
- * Base class that all concrete [HttpClientEngine] should inherit from
+ * An [HttpClientEngine] with [Closeable] resources. Users SHOULD call [close] when done with the engine to ensure
+ * any held resources are properly released.
+ */
+public interface CloseableHttpClientEngine : HttpClientEngine, Closeable
+
+/**
+ * Base class that SDK [HttpClientEngine]s SHOULD inherit from rather than implementing directly.
  */
 @InternalApi
-public abstract class HttpClientEngineBase(engineName: String) : HttpClientEngine {
+public abstract class HttpClientEngineBase(engineName: String) : CloseableHttpClientEngine {
     // why SupervisorJob? because failure of individual requests should not affect other requests or the overall engine
     override val coroutineContext: CoroutineContext = SupervisorJob() + CoroutineName("http-client-engine-$engineName-context")
     private val closed = atomic(false)
 
     final override fun close() {
-        // ensure engine close is idempotent independent of SdkHttpClient
         if (!closed.compareAndSet(false, true)) return
 
         val job = coroutineContext[Job] as? CompletableJob ?: return

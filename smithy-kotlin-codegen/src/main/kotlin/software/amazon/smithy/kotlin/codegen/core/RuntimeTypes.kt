@@ -93,6 +93,7 @@ object RuntimeTypes {
         }
         object Engine : RuntimeTypePackage(KotlinDependency.HTTP, "engine") {
             val HttpClientEngine = symbol("HttpClientEngine")
+            val manage = symbol("manage", "engine.internal", isExtension = true)
         }
         object Interceptors : RuntimeTypePackage(KotlinDependency.HTTP, "interceptors") {
             val HttpInterceptor = symbol("HttpInterceptor")
@@ -258,6 +259,8 @@ object RuntimeTypes {
 
     object IO : RuntimeTypePackage(KotlinDependency.IO) {
         val Closeable = symbol("Closeable")
+        val SdkManagedGroup = symbol("SdkManagedGroup")
+        val addIfManaged = symbol("addIfManaged", isExtension = true)
     }
 
     object Tracing {
@@ -283,6 +286,12 @@ object RuntimeTypes {
             val map = "kotlinx.coroutines.flow.map".toSymbol()
         }
     }
+
+    object HttpClientEngines {
+        object Default : RuntimeTypePackage(KotlinDependency.DEFAULT_HTTP_ENGINE) {
+            val DefaultHttpEngine = symbol("DefaultHttpEngine")
+        }
+    }
 }
 
 abstract class RuntimeTypePackage(
@@ -294,8 +303,9 @@ abstract class RuntimeTypePackage(
      * @param name the name of the symbol
      * @param subpackage the subpackage from the [dependency] namespace, defaults to [defaultSubpackage]
      */
-    fun symbol(name: String, subpackage: String = defaultSubpackage): Symbol = buildSymbol {
+    fun symbol(name: String, subpackage: String = defaultSubpackage, isExtension: Boolean = false): Symbol = buildSymbol {
         this.name = name
         namespace(dependency, subpackage)
+        this.isExtension = isExtension
     }
 }

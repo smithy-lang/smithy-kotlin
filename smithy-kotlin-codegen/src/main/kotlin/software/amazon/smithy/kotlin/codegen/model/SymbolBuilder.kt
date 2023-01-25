@@ -22,6 +22,7 @@ open class SymbolBuilder {
     private val builder = Symbol.builder()
     var name: String? = null
     var nullable: Boolean = true
+    var isExtension: Boolean = false
     var namespace: String? = null
 
     var definitionFile: String? = null
@@ -78,6 +79,7 @@ open class SymbolBuilder {
         if (nullable) {
             builder.boxed()
         }
+        builder.putProperty(SymbolProperty.IS_EXTENSION, isExtension)
 
         namespace?.let { builder.namespace(namespace, ".") }
         declarationFile?.let { builder.declarationFile(it) }

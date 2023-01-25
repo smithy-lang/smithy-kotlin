@@ -4,6 +4,8 @@
  */
 package aws.smithy.kotlin.runtime.auth.awscredentials
 
+import aws.smithy.kotlin.runtime.io.Closeable
+
 /**
  * Represents a producer/source of AWS credentials
  */
@@ -13,3 +15,11 @@ public interface CredentialsProvider {
      */
     public suspend fun getCredentials(): Credentials
 }
+
+/**
+ * A [CredentialsProvider] with [Closeable] resources. Users SHOULD call [close] when done with the provider to ensure
+ * any held resources are properly released.
+ *
+ * Implementations SHOULD evict any previously-retrieved or stored credentials when the provider is closed.
+*/
+public interface CloseableCredentialsProvider : CredentialsProvider, Closeable
