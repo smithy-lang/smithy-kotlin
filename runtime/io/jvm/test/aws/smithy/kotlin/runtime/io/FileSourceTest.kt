@@ -7,24 +7,31 @@ package aws.smithy.kotlin.runtime.io
 
 import aws.smithy.kotlin.runtime.testing.RandomTempFile
 import io.kotest.matchers.string.shouldContain
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 
+@OptIn(ExperimentalCoroutinesApi::class)
 class FileSourceTest {
     @Test
-    fun testStartPositionValidation() {
+    fun testStartPositionValidation() = runTest {
         val file = RandomTempFile(1024)
+        val source = file.source(-1)
         assertFailsWith<IllegalArgumentException> {
-            file.source(-1)
+            // Files are opened lazily...IAE won't be thrown until a read is attempted
+            source.readToByteArray()
         }.message.shouldContain("start position should be >= 0, found -1")
     }
 
     @Test
-    fun testEndPositionValidation() {
+    fun testEndPositionValidation() = runTest {
         val file = RandomTempFile(1024)
+        val source = file.source(endInclusive = 1024)
         assertFailsWith<IllegalArgumentException> {
-            file.source(endInclusive = 1024)
+            // Files are opened lazily...IAE won't be thrown until a read is attempted
+            source.readToByteArray()
         }.message.shouldContain("endInclusive should be less than or equal to the length of the file, was 1024")
 
         file.source(1023).close()
