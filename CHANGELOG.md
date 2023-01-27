@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.15.0] - 01/27/2023
+
+### Features
+* Allow config override for one or more operations with an existing service client.
+
+### Fixes
+* [#781](https://github.com/awslabs/smithy-kotlin/issues/781) Lazily open random access files to prevent exhausting file handles in highly concurrent scenarios
+* [#784](https://github.com/awslabs/smithy-kotlin/issues/784) Include exceptions in logging from trace probes
+
+### Miscellaneous
+* Upgrade dependencies
+* **Breaking** Remove `Closeable` supertype from `HttpClientEngine` interface. See [this discussion post](https://github.com/awslabs/aws-sdk-kotlin/discussions/818) for more information.
+* Upgrade Kotlin version to 1.8.0
+* Refactor the way service client configuration is generated
+
 ## [0.14.3] - 01/12/2023
 
 ### Features

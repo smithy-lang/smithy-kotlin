@@ -1,5 +1,0 @@
-{
-    "id": "6d4356bb-d28e-45e9-b025-7adcfa94db68",
-    "type": "misc",
-    "description": "**Breaking** Remove `Closeable` supertype from `HttpClientEngine` interface. See [this discussion post](https://github.com/awslabs/aws-sdk-kotlin/discussions/818) for more information."
-}

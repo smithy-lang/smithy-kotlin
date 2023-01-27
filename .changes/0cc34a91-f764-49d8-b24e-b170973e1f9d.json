@@ -1,8 +1,0 @@
-{
-    "id": "0cc34a91-f764-49d8-b24e-b170973e1f9d",
-    "type": "bugfix",
-    "description": "Lazily open random access files to prevent exhausting file handles in highly concurrent scenarios",
-    "issues": [
-        "awslabs/smithy-kotlin#781"
-    ]
-}
