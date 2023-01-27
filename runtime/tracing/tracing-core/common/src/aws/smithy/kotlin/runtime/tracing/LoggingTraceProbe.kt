@@ -29,7 +29,7 @@ public object LoggingTraceProbe : TraceProbe {
             val message = event.data as TraceEventData.Message
 
             val content = message.content()
-            val exception = message.exception?.let { ": $it" }
+            val exception = message.exception?.let { ": $it" } ?: ""
 
             "$spanId: $content$exception"
         }
