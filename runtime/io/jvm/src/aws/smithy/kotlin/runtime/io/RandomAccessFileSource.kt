@@ -13,33 +13,35 @@ import java.io.RandomAccessFile
 import kotlin.jvm.Throws
 
 internal class RandomAccessFileSource(
-    file: File,
+    private val fileObject: File,
     start: Long,
     private val endInclusive: Long,
     private val timeout: Timeout = Timeout.NONE,
 ) : okio.Source {
-    private val file = RandomAccessFile(file, "r")
-
-    init {
-        require(file.exists()) { "cannot create SdkSource, file does not exist: $this" }
-        require(file.isFile) { "cannot create a SdkSource from a directory: $this" }
+    private val file by lazy {
+        require(fileObject.exists()) { "cannot create SdkSource, file does not exist: $this" }
+        require(fileObject.isFile) { "cannot create a SdkSource from a directory: $this" }
         require(start >= 0L) { "start position should be >= 0, found $start" }
-        require(endInclusive >= 0 && endInclusive <= file.length() - 1) {
+        require(endInclusive >= 0 && endInclusive <= fileObject.length() - 1) {
             "endInclusive should be less than or equal to the length of the file, was $endInclusive"
         }
-        if (start > 0) {
-            this.file.seek(start)
+
+        RandomAccessFile(fileObject, "r").also {
+            if (start > 0) {
+                it.seek(start)
+            }
         }
     }
 
     private var position = start
-    private val channel = this.file.channel
 
-    override fun toString(): String = "RandomAccessFileSource($file)"
+    override fun toString(): String = "RandomAccessFileSource($fileObject)"
     override fun timeout(): Timeout = timeout
 
     @Throws(IOException::class)
     override fun read(sink: Buffer, byteCount: Long): Long {
+        val channel = file.channel
+
         check(channel.isOpen) { "channel is closed" }
         if (position > endInclusive) return -1
 
@@ -50,7 +52,6 @@ internal class RandomAccessFileSource(
     }
 
     override fun close() {
-        channel.close()
         file.close()
     }
 }
