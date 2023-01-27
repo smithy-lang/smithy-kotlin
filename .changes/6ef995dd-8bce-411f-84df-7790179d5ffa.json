@@ -1,0 +1,8 @@
+{
+    "id": "6ef995dd-8bce-411f-84df-7790179d5ffa",
+    "type": "bugfix",
+    "description": "Include exceptions in logging from trace probes",
+    "issues": [
+        "awslabs/smithy-kotlin#784"
+    ]
+}
