@@ -26,8 +26,12 @@ public object LoggingTraceProbe : TraceProbe {
         val logger = KotlinLogging.logger(event.sourceComponent)
         val method = event.level.loggerMethod()
         method(logger) {
-            val msg = (event.data as TraceEventData.Message).content()
-            "$spanId: $msg"
+            val message = event.data as TraceEventData.Message
+
+            val content = message.content()
+            val exception = message.exception?.let { ": $it" }
+
+            "$spanId: $content$exception"
         }
     }
 
