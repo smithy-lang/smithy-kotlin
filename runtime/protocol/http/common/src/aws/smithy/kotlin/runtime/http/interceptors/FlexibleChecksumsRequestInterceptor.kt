@@ -32,18 +32,19 @@ import kotlin.coroutines.coroutineContext
 public class FlexibleChecksumsRequestInterceptor<I>(
     private val checksumAlgorithmNameInitializer: (I) -> String?,
 ) : HttpInterceptor {
-    private var checksumAlgorithmName = CompletableDeferred<String>()
+    private var checksumAlgorithmName: String? = null
 
     override fun readAfterSerialization(context: ProtocolRequestInterceptorContext<Any, HttpRequest>) {
         @Suppress("UNCHECKED_CAST")
         val input = context.request as I
-        checksumAlgorithmNameInitializer(input)?.let { checksumAlgorithmName.complete(it) }
+        checksumAlgorithmName = checksumAlgorithmNameInitializer(input)
     }
 
     @OptIn(ExperimentalCoroutinesApi::class)
     override suspend fun modifyBeforeRetryLoop(context: ProtocolRequestInterceptorContext<Any, HttpRequest>): HttpRequest {
         val logger = coroutineContext.getLogger<FlexibleChecksumsRequestInterceptor<I>>()
-        if (!checksumAlgorithmName.isCompleted) {
+
+        checksumAlgorithmName ?: run {
             logger.debug { "no checksum algorithm specified, skipping flexible checksums processing" }
             return context.protocolRequest
         }
@@ -54,14 +55,14 @@ public class FlexibleChecksumsRequestInterceptor<I>(
             "Can't calculate the checksum of an empty body"
         }
 
-        val headerName = "x-amz-checksum-${checksumAlgorithmName.getCompleted()}"
+        val headerName = "x-amz-checksum-$checksumAlgorithmName"
         logger.debug { "Resolved checksum header name: $headerName" }
 
         // remove all checksum headers except for $headerName
         // this handles the case where a user inputs a precalculated checksum, but it doesn't match the input checksum algorithm
         req.headers.removeAllChecksumHeadersExcept(headerName)
 
-        val checksumAlgorithm = checksumAlgorithmName.getCompleted().toHashFunction() ?: throw ClientException("Could not parse checksum algorithm $checksumAlgorithmName")
+        val checksumAlgorithm = checksumAlgorithmName!!.toHashFunction() ?: throw ClientException("Could not parse checksum algorithm $checksumAlgorithmName")
 
         if (!checksumAlgorithm.isSupported) {
             throw ClientException("Checksum algorithm $checksumAlgorithmName is not supported for flexible checksums")
