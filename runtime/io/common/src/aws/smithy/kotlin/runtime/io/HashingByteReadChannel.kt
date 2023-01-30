@@ -7,7 +7,6 @@ package aws.smithy.kotlin.runtime.io
 
 import aws.smithy.kotlin.runtime.hashing.HashFunction
 import aws.smithy.kotlin.runtime.util.InternalApi
-import aws.smithy.kotlin.runtime.util.encodeBase64String
 import kotlinx.coroutines.CompletableDeferred
 
 /**
@@ -20,15 +19,11 @@ import kotlinx.coroutines.CompletableDeferred
 public class HashingByteReadChannel(
     private val hash: HashFunction,
     private val chan: SdkByteReadChannel,
-    private val deferred: CompletableDeferred<String>? = null,
 ) : SdkByteReadChannel by chan {
     public override suspend fun read(sink: SdkBuffer, limit: Long): Long {
         val bufferedHashingSink = HashingSink(hash, sink).buffer()
         return chan.read(bufferedHashingSink.buffer, limit).also {
             bufferedHashingSink.emit()
-            if (it == -1L) {
-                deferred?.complete(digest().encodeBase64String())
-            }
         }
     }
 

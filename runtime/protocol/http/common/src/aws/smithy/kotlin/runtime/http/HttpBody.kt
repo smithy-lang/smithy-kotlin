@@ -10,7 +10,6 @@ import aws.smithy.kotlin.runtime.hashing.HashFunction
 import aws.smithy.kotlin.runtime.http.content.ByteArrayContent
 import aws.smithy.kotlin.runtime.io.*
 import aws.smithy.kotlin.runtime.util.InternalApi
-import kotlinx.coroutines.CompletableDeferred
 
 /**
  * HTTP payload to be sent to a peer
@@ -156,18 +155,15 @@ public fun SdkSource.toHttpBody(contentLength: Long? = null): HttpBody =
 public fun HttpBody.toHashingBody(
     hashFunction: HashFunction,
     contentLength: Long?,
-    deferred: CompletableDeferred<String>? = null,
 ): HttpBody = when (this) {
     is HttpBody.SourceContent ->
         HashingSource(
             hashFunction,
             readFrom(),
-            deferred,
         ).toHttpBody(contentLength)
     is HttpBody.ChannelContent -> HashingByteReadChannel(
         hashFunction,
         readFrom(),
-        deferred,
     ).toHttpBody(contentLength)
     else -> throw ClientException("HttpBody type is not supported")
 }

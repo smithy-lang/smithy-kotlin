@@ -8,7 +8,6 @@ package aws.smithy.kotlin.runtime.io
 import aws.smithy.kotlin.runtime.hashing.HashFunction
 import aws.smithy.kotlin.runtime.io.internal.SdkSourceObserver
 import aws.smithy.kotlin.runtime.util.InternalApi
-import aws.smithy.kotlin.runtime.util.encodeBase64String
 import kotlinx.coroutines.CompletableDeferred
 
 /**
@@ -21,15 +20,7 @@ import kotlinx.coroutines.CompletableDeferred
 public class HashingSource(
     private val hash: HashFunction,
     private val source: SdkSource,
-    private val deferred: CompletableDeferred<String>? = null,
 ) : SdkSourceObserver(source) {
-
-    override fun read(sink: SdkBuffer, limit: Long): Long = super.read(sink, limit).also {
-        if (it == -1L) {
-            deferred?.complete(digest().encodeBase64String())
-        }
-    }
-
     override fun observe(data: ByteArray, offset: Int, length: Int) {
         hash.update(data, offset, length)
     }

@@ -7,6 +7,7 @@ package aws.smithy.kotlin.runtime.http.interceptors
 
 import aws.smithy.kotlin.runtime.ClientException
 import aws.smithy.kotlin.runtime.client.ExecutionContext
+import aws.smithy.kotlin.runtime.hashing.toHashFunction
 import aws.smithy.kotlin.runtime.http.*
 import aws.smithy.kotlin.runtime.http.content.ByteArrayContent
 import aws.smithy.kotlin.runtime.http.engine.HttpClientEngineBase
@@ -18,17 +19,16 @@ import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
 import aws.smithy.kotlin.runtime.http.request.headers
 import aws.smithy.kotlin.runtime.http.response.HttpCall
 import aws.smithy.kotlin.runtime.http.response.HttpResponse
-import aws.smithy.kotlin.runtime.io.SdkSource
-import aws.smithy.kotlin.runtime.io.source
+import aws.smithy.kotlin.runtime.io.*
 import aws.smithy.kotlin.runtime.time.Instant
+import aws.smithy.kotlin.runtime.util.encodeBase64String
 import aws.smithy.kotlin.runtime.util.get
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
-import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertFailsWith
+import kotlin.test.*
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class FlexibleChecksumsRequestInterceptorTest {
@@ -137,6 +137,49 @@ class FlexibleChecksumsRequestInterceptorTest {
         val call = op.context.attributes[HttpOperationContext.HttpCallList].first()
 
         assertEquals(0, call.request.headers.getNumChecksumHeaders())
+    }
+
+    @Test
+    fun testCompletingSource() = runTest {
+        val hashFunctionName = "crc32"
+
+        val byteArray = ByteArray(19456) { 0xf }
+        val source = byteArray.source()
+        val completableDeferred = CompletableDeferred<String>()
+        val hashingSource = HashingSource(hashFunctionName.toHashFunction()!!, source)
+        val completingSource = FlexibleChecksumsRequestInterceptor.CompletingSource(completableDeferred, hashingSource)
+
+        completingSource.read(SdkBuffer(), 1L)
+        assertFalse(completableDeferred.isCompleted) // deferred value should not be completed because the source is not exhausted
+        completingSource.readToByteArray() // source is now exhausted
+
+        val expectedHash = hashFunctionName.toHashFunction()!!
+        expectedHash.update(byteArray)
+
+        assertTrue(completableDeferred.isCompleted)
+        assertEquals(expectedHash.digest().encodeBase64String(), completableDeferred.getCompleted())
+    }
+
+    @Test
+    fun testCompletingByteReadChannel() = runTest {
+        val hashFunctionName = "sha256"
+
+        val byteArray = ByteArray(2143) { 0xf }
+        val channel = SdkByteReadChannel(byteArray)
+        val completableDeferred = CompletableDeferred<String>()
+        val hashingChannel = HashingByteReadChannel(hashFunctionName.toHashFunction()!!, channel)
+        val completingChannel = FlexibleChecksumsRequestInterceptor.CompletingByteReadChannel(completableDeferred, hashingChannel)
+
+        completingChannel.read(SdkBuffer(), 1L)
+        assertFalse(completableDeferred.isCompleted)
+
+        completingChannel.readAll(SdkBuffer())
+
+        val expectedHash = hashFunctionName.toHashFunction()!!
+        expectedHash.update(byteArray)
+
+        assertTrue(completableDeferred.isCompleted)
+        assertEquals(expectedHash.digest().encodeBase64String(), completableDeferred.getCompleted())
     }
 
     private fun Headers.getNumChecksumHeaders(): Long = entries().stream()

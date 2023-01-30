@@ -13,6 +13,7 @@ import aws.smithy.kotlin.runtime.http.operation.*
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.http.request.header
 import aws.smithy.kotlin.runtime.http.request.toBuilder
+import aws.smithy.kotlin.runtime.io.*
 import aws.smithy.kotlin.runtime.util.*
 import kotlinx.coroutines.*
 import kotlin.coroutines.coroutineContext
@@ -82,7 +83,9 @@ public class FlexibleChecksumsRequestInterceptor<I>(
                 deferredChecksum.complete(checksum)
             } else {
                 logger.debug { "Calculating checksum asynchronously" }
-                req.body = req.body.toHashingBody(checksumAlgorithm, req.body.contentLength, deferredChecksum)
+                req.body = req.body
+                    .toHashingBody(checksumAlgorithm, req.body.contentLength)
+                    .toCompletingBody(deferredChecksum)
             }
 
             req.trailingHeaders.append(headerName, deferredChecksum)
@@ -122,5 +125,45 @@ public class FlexibleChecksumsRequestInterceptor<I>(
                 remove(name)
             }
         }
+    }
+
+    /**
+     * Convert an [HttpBody] with an underlying [HashingSource] or [HashingByteReadChannel]
+     * to a [CompletingSource] or [CompletingByteReadChannel], respectively.
+     */
+    internal fun HttpBody.toCompletingBody(deferred: CompletableDeferred<String>) = when (this) {
+        is HttpBody.SourceContent -> CompletingSource(deferred, (readFrom() as HashingSource)).toHttpBody(contentLength)
+        is HttpBody.ChannelContent -> CompletingByteReadChannel(deferred, (readFrom() as HashingByteReadChannel)).toHttpBody(contentLength)
+        else -> throw ClientException("HttpBody type is not supported")
+    }
+
+    /**
+     * An [SdkSource] which uses the underlying [hashingSource]'s checksum to complete a [CompletableDeferred] value.
+     */
+    internal class CompletingSource(
+        private val deferred: CompletableDeferred<String>,
+        private val hashingSource: HashingSource,
+    ) : SdkSource by hashingSource {
+        override fun read(sink: SdkBuffer, limit: Long): Long = hashingSource.read(sink, limit)
+            .also {
+                if (it == -1L) {
+                    deferred.complete(hashingSource.digest().encodeBase64String())
+                }
+            }
+    }
+
+    /**
+     * An [SdkByteReadChannel] which uses the underlying [hashingChannel]'s checksum to complete a [CompletableDeferred] value.
+     */
+    internal class CompletingByteReadChannel(
+        private val deferred: CompletableDeferred<String>,
+        private val hashingChannel: HashingByteReadChannel,
+    ) : SdkByteReadChannel by hashingChannel {
+        override suspend fun read(sink: SdkBuffer, limit: Long): Long = hashingChannel.read(sink, limit)
+            .also {
+                if (it == -1L) {
+                    deferred.complete(hashingChannel.digest().encodeBase64String())
+                }
+            }
     }
 }
