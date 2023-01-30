@@ -1,0 +1,8 @@
+{
+    "id": "b1c5ee5a-650f-4499-95ee-c891e2703657",
+    "type": "feature",
+    "description": "Add binary compatibility validator",
+    "issues": [
+        "https://github.com/awslabs/smithy-kotlin/issues/598"
+    ]
+}
