@@ -17,6 +17,7 @@ import aws.smithy.kotlin.runtime.http.toHashingBody
 import aws.smithy.kotlin.runtime.http.toHttpBody
 import aws.smithy.kotlin.runtime.io.*
 import aws.smithy.kotlin.runtime.util.AttributeKey
+import aws.smithy.kotlin.runtime.util.InternalApi
 import aws.smithy.kotlin.runtime.util.encodeBase64String
 import kotlin.coroutines.coroutineContext
 
@@ -38,6 +39,7 @@ internal val CHECKSUM_HEADER_VALIDATION_PRIORITY_LIST: List<String> = listOf(
  * @param block A function which uses the input [I] to return whether response checksum validation should occur
  */
 
+@InternalApi
 public class FlexibleChecksumsResponseInterceptor<I>(
     private val block: (input: I) -> Boolean,
 ) : HttpInterceptor {
