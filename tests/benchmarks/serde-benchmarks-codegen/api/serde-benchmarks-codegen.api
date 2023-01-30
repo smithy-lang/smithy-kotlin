@@ -1,0 +1,64 @@
+public abstract class software/amazon/smithy/kotlin/codegen/protocols/BenchmarkProtocolGenerator : software/amazon/smithy/kotlin/codegen/rendering/protocol/HttpBindingProtocolGenerator {
+	public fun <init> ()V
+	public fun generateProtocolUnitTests (Lsoftware/amazon/smithy/kotlin/codegen/rendering/protocol/ProtocolGenerator$GenerationContext;)V
+	public abstract fun getContentTypes ()Lsoftware/amazon/smithy/kotlin/codegen/rendering/protocol/ProtocolContentTypes;
+	public fun getDefaultTimestampFormat ()Lsoftware/amazon/smithy/model/traits/TimestampFormatTrait$Format;
+	public fun getHttpProtocolClientGenerator (Lsoftware/amazon/smithy/kotlin/codegen/rendering/protocol/ProtocolGenerator$GenerationContext;)Lsoftware/amazon/smithy/kotlin/codegen/rendering/protocol/HttpProtocolClientGenerator;
+	public fun getProtocolHttpBindingResolver (Lsoftware/amazon/smithy/model/Model;Lsoftware/amazon/smithy/model/shapes/ServiceShape;)Lsoftware/amazon/smithy/kotlin/codegen/rendering/protocol/HttpBindingResolver;
+	public fun operationErrorHandler (Lsoftware/amazon/smithy/kotlin/codegen/rendering/protocol/ProtocolGenerator$GenerationContext;Lsoftware/amazon/smithy/model/shapes/OperationShape;)Lsoftware/amazon/smithy/codegen/core/Symbol;
+}
+
+public final class software/amazon/smithy/kotlin/codegen/protocols/json/SerdeBenchmarkJsonProtocol : software/amazon/smithy/kotlin/codegen/integration/KotlinIntegration {
+	public static final field Companion Lsoftware/amazon/smithy/kotlin/codegen/protocols/json/SerdeBenchmarkJsonProtocol$Companion;
+	public fun <init> ()V
+	public fun additionalServiceConfigProps (Lsoftware/amazon/smithy/kotlin/codegen/core/CodegenContext;)Ljava/util/List;
+	public fun customizeMiddleware (Lsoftware/amazon/smithy/kotlin/codegen/rendering/protocol/ProtocolGenerator$GenerationContext;Ljava/util/List;)Ljava/util/List;
+	public fun decorateSymbolProvider (Lsoftware/amazon/smithy/kotlin/codegen/KotlinSettings;Lsoftware/amazon/smithy/model/Model;Lsoftware/amazon/smithy/codegen/core/SymbolProvider;)Lsoftware/amazon/smithy/codegen/core/SymbolProvider;
+	public fun enabledForService (Lsoftware/amazon/smithy/model/Model;Lsoftware/amazon/smithy/kotlin/codegen/KotlinSettings;)Z
+	public fun getOrder ()B
+	public fun getProtocolGenerators ()Ljava/util/List;
+	public fun getSectionWriters ()Ljava/util/List;
+	public fun onShapeWriterUse (Lsoftware/amazon/smithy/kotlin/codegen/KotlinSettings;Lsoftware/amazon/smithy/model/Model;Lsoftware/amazon/smithy/codegen/core/SymbolProvider;Lsoftware/amazon/smithy/kotlin/codegen/core/KotlinWriter;Lsoftware/amazon/smithy/model/shapes/Shape;)V
+	public fun preprocessModel (Lsoftware/amazon/smithy/model/Model;Lsoftware/amazon/smithy/kotlin/codegen/KotlinSettings;)Lsoftware/amazon/smithy/model/Model;
+	public fun writeAdditionalFiles (Lsoftware/amazon/smithy/kotlin/codegen/core/CodegenContext;Lsoftware/amazon/smithy/kotlin/codegen/core/KotlinDelegator;)V
+}
+
+public final class software/amazon/smithy/kotlin/codegen/protocols/json/SerdeBenchmarkJsonProtocol$Companion {
+	public final fun getID ()Lsoftware/amazon/smithy/model/shapes/ShapeId;
+}
+
+public final class software/amazon/smithy/kotlin/codegen/protocols/json/SerdeBenchmarkJsonProtocolGenerator : software/amazon/smithy/kotlin/codegen/protocols/BenchmarkProtocolGenerator {
+	public static final field INSTANCE Lsoftware/amazon/smithy/kotlin/codegen/protocols/json/SerdeBenchmarkJsonProtocolGenerator;
+	public fun getContentTypes ()Lsoftware/amazon/smithy/kotlin/codegen/rendering/protocol/ProtocolContentTypes;
+	public fun getProtocol ()Lsoftware/amazon/smithy/model/shapes/ShapeId;
+	public fun structuredDataParser (Lsoftware/amazon/smithy/kotlin/codegen/rendering/protocol/ProtocolGenerator$GenerationContext;)Lsoftware/amazon/smithy/kotlin/codegen/rendering/serde/StructuredDataParserGenerator;
+	public fun structuredDataSerializer (Lsoftware/amazon/smithy/kotlin/codegen/rendering/protocol/ProtocolGenerator$GenerationContext;)Lsoftware/amazon/smithy/kotlin/codegen/rendering/serde/StructuredDataSerializerGenerator;
+}
+
+public final class software/amazon/smithy/kotlin/codegen/protocols/xml/SerdeBenchmarkXmlProtocol : software/amazon/smithy/kotlin/codegen/integration/KotlinIntegration {
+	public static final field Companion Lsoftware/amazon/smithy/kotlin/codegen/protocols/xml/SerdeBenchmarkXmlProtocol$Companion;
+	public fun <init> ()V
+	public fun additionalServiceConfigProps (Lsoftware/amazon/smithy/kotlin/codegen/core/CodegenContext;)Ljava/util/List;
+	public fun customizeMiddleware (Lsoftware/amazon/smithy/kotlin/codegen/rendering/protocol/ProtocolGenerator$GenerationContext;Ljava/util/List;)Ljava/util/List;
+	public fun decorateSymbolProvider (Lsoftware/amazon/smithy/kotlin/codegen/KotlinSettings;Lsoftware/amazon/smithy/model/Model;Lsoftware/amazon/smithy/codegen/core/SymbolProvider;)Lsoftware/amazon/smithy/codegen/core/SymbolProvider;
+	public fun enabledForService (Lsoftware/amazon/smithy/model/Model;Lsoftware/amazon/smithy/kotlin/codegen/KotlinSettings;)Z
+	public fun getOrder ()B
+	public fun getProtocolGenerators ()Ljava/util/List;
+	public fun getSectionWriters ()Ljava/util/List;
+	public fun onShapeWriterUse (Lsoftware/amazon/smithy/kotlin/codegen/KotlinSettings;Lsoftware/amazon/smithy/model/Model;Lsoftware/amazon/smithy/codegen/core/SymbolProvider;Lsoftware/amazon/smithy/kotlin/codegen/core/KotlinWriter;Lsoftware/amazon/smithy/model/shapes/Shape;)V
+	public fun preprocessModel (Lsoftware/amazon/smithy/model/Model;Lsoftware/amazon/smithy/kotlin/codegen/KotlinSettings;)Lsoftware/amazon/smithy/model/Model;
+	public fun writeAdditionalFiles (Lsoftware/amazon/smithy/kotlin/codegen/core/CodegenContext;Lsoftware/amazon/smithy/kotlin/codegen/core/KotlinDelegator;)V
+}
+
+public final class software/amazon/smithy/kotlin/codegen/protocols/xml/SerdeBenchmarkXmlProtocol$Companion {
+	public final fun getID ()Lsoftware/amazon/smithy/model/shapes/ShapeId;
+}
+
+public final class software/amazon/smithy/kotlin/codegen/protocols/xml/SerdeBenchmarkXmlProtocolGenerator : software/amazon/smithy/kotlin/codegen/protocols/BenchmarkProtocolGenerator {
+	public static final field INSTANCE Lsoftware/amazon/smithy/kotlin/codegen/protocols/xml/SerdeBenchmarkXmlProtocolGenerator;
+	public fun getContentTypes ()Lsoftware/amazon/smithy/kotlin/codegen/rendering/protocol/ProtocolContentTypes;
+	public fun getProtocol ()Lsoftware/amazon/smithy/model/shapes/ShapeId;
+	public fun structuredDataParser (Lsoftware/amazon/smithy/kotlin/codegen/rendering/protocol/ProtocolGenerator$GenerationContext;)Lsoftware/amazon/smithy/kotlin/codegen/rendering/serde/StructuredDataParserGenerator;
+	public fun structuredDataSerializer (Lsoftware/amazon/smithy/kotlin/codegen/rendering/protocol/ProtocolGenerator$GenerationContext;)Lsoftware/amazon/smithy/kotlin/codegen/rendering/serde/StructuredDataSerializerGenerator;
+}
+

@@ -1,0 +1,152 @@
+public abstract interface class com/test/LambdaClient : aws/smithy/kotlin/runtime/client/SdkClient {
+	public abstract fun getConfig ()Lcom/test/LambdaClient$Config;
+	public abstract fun getServiceName ()Ljava/lang/String;
+	public abstract fun listFunctions (Lcom/test/model/ListFunctionsRequest;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
+public final class com/test/LambdaClient$Config : aws/smithy/kotlin/runtime/client/SdkClientConfig, aws/smithy/kotlin/runtime/tracing/TracingClientConfig {
+	public static final field Companion Lcom/test/LambdaClient$Config$Companion;
+	public synthetic fun <init> (Lcom/test/LambdaClient$Config$Builder;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun getEndpointProvider ()Laws/smithy/kotlin/runtime/http/endpoints/EndpointProvider;
+	public fun getRetryStrategy ()Laws/smithy/kotlin/runtime/retries/RetryStrategy;
+	public fun getSdkLogMode ()Laws/smithy/kotlin/runtime/client/SdkLogMode;
+	public fun getTracer ()Laws/smithy/kotlin/runtime/tracing/Tracer;
+	public final fun toBuilder ()Lcom/test/LambdaClient$Config$Builder;
+}
+
+public final class com/test/LambdaClient$Config$Builder : aws/smithy/kotlin/runtime/client/SdkClientConfig$Builder, aws/smithy/kotlin/runtime/tracing/TracingClientConfig$Builder {
+	public fun <init> ()V
+	public fun build ()Lcom/test/LambdaClient$Config;
+	public synthetic fun build ()Ljava/lang/Object;
+	public final fun getEndpointProvider ()Laws/smithy/kotlin/runtime/http/endpoints/EndpointProvider;
+	public fun getRetryStrategy ()Laws/smithy/kotlin/runtime/retries/RetryStrategy;
+	public fun getSdkLogMode ()Laws/smithy/kotlin/runtime/client/SdkLogMode;
+	public fun getTracer ()Laws/smithy/kotlin/runtime/tracing/Tracer;
+	public final fun setEndpointProvider (Laws/smithy/kotlin/runtime/http/endpoints/EndpointProvider;)V
+	public fun setRetryStrategy (Laws/smithy/kotlin/runtime/retries/RetryStrategy;)V
+	public fun setSdkLogMode (Laws/smithy/kotlin/runtime/client/SdkLogMode;)V
+	public fun setTracer (Laws/smithy/kotlin/runtime/tracing/Tracer;)V
+}
+
+public final class com/test/LambdaClient$Config$Companion {
+	public final fun invoke (Lkotlin/jvm/functions/Function1;)Lcom/test/LambdaClient$Config;
+}
+
+public final class com/test/LambdaClient$DefaultImpls {
+	public static fun getServiceName (Lcom/test/LambdaClient;)Ljava/lang/String;
+	public static synthetic fun listFunctions$default (Lcom/test/LambdaClient;Lcom/test/model/ListFunctionsRequest;Lkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
+}
+
+public final class com/test/LambdaClientKt {
+	public static final fun listFunctions (Lcom/test/LambdaClient;Lkotlin/jvm/functions/Function1;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
+public final class com/test/TestLambdaClient : com/test/LambdaClient {
+	public fun <init> ()V
+	public fun close ()V
+	public synthetic fun getConfig ()Laws/smithy/kotlin/runtime/client/SdkClientConfig;
+	public fun getConfig ()Lcom/test/LambdaClient$Config;
+	public final fun getExhaustedVal ()Ljava/lang/String;
+	public final fun getItemsPerPage ()I
+	public final fun getPageCount ()I
+	public fun getServiceName ()Ljava/lang/String;
+	public fun listFunctions (Lcom/test/model/ListFunctionsRequest;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public final fun setExhaustedVal (Ljava/lang/String;)V
+	public final fun setItemsPerPage (I)V
+	public final fun setPageCount (I)V
+}
+
+public final class com/test/model/FunctionConfiguration {
+	public static final field Companion Lcom/test/model/FunctionConfiguration$Companion;
+	public synthetic fun <init> (Lcom/test/model/FunctionConfiguration$Builder;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun copy (Lkotlin/jvm/functions/Function1;)Lcom/test/model/FunctionConfiguration;
+	public static synthetic fun copy$default (Lcom/test/model/FunctionConfiguration;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lcom/test/model/FunctionConfiguration;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getFunctionName ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class com/test/model/FunctionConfiguration$Builder {
+	public fun <init> ()V
+	public fun <init> (Lcom/test/model/FunctionConfiguration;)V
+	public final fun build ()Lcom/test/model/FunctionConfiguration;
+	public final fun getFunctionName ()Ljava/lang/String;
+	public final fun setFunctionName (Ljava/lang/String;)V
+}
+
+public final class com/test/model/FunctionConfiguration$Companion {
+	public final fun invoke (Lkotlin/jvm/functions/Function1;)Lcom/test/model/FunctionConfiguration;
+}
+
+public class com/test/model/LambdaException : aws/smithy/kotlin/runtime/ServiceException {
+	public fun <init> ()V
+	public fun <init> (Ljava/lang/String;)V
+	public fun <init> (Ljava/lang/String;Ljava/lang/Throwable;)V
+	public fun <init> (Ljava/lang/Throwable;)V
+}
+
+public final class com/test/model/ListFunctionsRequest {
+	public static final field Companion Lcom/test/model/ListFunctionsRequest$Companion;
+	public synthetic fun <init> (Lcom/test/model/ListFunctionsRequest$Builder;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun copy (Lkotlin/jvm/functions/Function1;)Lcom/test/model/ListFunctionsRequest;
+	public static synthetic fun copy$default (Lcom/test/model/ListFunctionsRequest;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lcom/test/model/ListFunctionsRequest;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getFunctionVersion ()Ljava/lang/String;
+	public final fun getMarker ()Ljava/lang/String;
+	public final fun getMasterRegion ()Ljava/lang/String;
+	public final fun getMaxItems ()Ljava/lang/Integer;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class com/test/model/ListFunctionsRequest$Builder {
+	public fun <init> ()V
+	public fun <init> (Lcom/test/model/ListFunctionsRequest;)V
+	public final fun build ()Lcom/test/model/ListFunctionsRequest;
+	public final fun getFunctionVersion ()Ljava/lang/String;
+	public final fun getMarker ()Ljava/lang/String;
+	public final fun getMasterRegion ()Ljava/lang/String;
+	public final fun getMaxItems ()Ljava/lang/Integer;
+	public final fun setFunctionVersion (Ljava/lang/String;)V
+	public final fun setMarker (Ljava/lang/String;)V
+	public final fun setMasterRegion (Ljava/lang/String;)V
+	public final fun setMaxItems (Ljava/lang/Integer;)V
+}
+
+public final class com/test/model/ListFunctionsRequest$Companion {
+	public final fun invoke (Lkotlin/jvm/functions/Function1;)Lcom/test/model/ListFunctionsRequest;
+}
+
+public final class com/test/model/ListFunctionsResponse {
+	public static final field Companion Lcom/test/model/ListFunctionsResponse$Companion;
+	public synthetic fun <init> (Lcom/test/model/ListFunctionsResponse$Builder;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun copy (Lkotlin/jvm/functions/Function1;)Lcom/test/model/ListFunctionsResponse;
+	public static synthetic fun copy$default (Lcom/test/model/ListFunctionsResponse;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lcom/test/model/ListFunctionsResponse;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getFunctions ()Ljava/util/List;
+	public final fun getNextMarker ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class com/test/model/ListFunctionsResponse$Builder {
+	public fun <init> ()V
+	public fun <init> (Lcom/test/model/ListFunctionsResponse;)V
+	public final fun build ()Lcom/test/model/ListFunctionsResponse;
+	public final fun getFunctions ()Ljava/util/List;
+	public final fun getNextMarker ()Ljava/lang/String;
+	public final fun setFunctions (Ljava/util/List;)V
+	public final fun setNextMarker (Ljava/lang/String;)V
+}
+
+public final class com/test/model/ListFunctionsResponse$Companion {
+	public final fun invoke (Lkotlin/jvm/functions/Function1;)Lcom/test/model/ListFunctionsResponse;
+}
+
+public final class com/test/paginators/PaginatorsKt {
+	public static final fun listFunctionsPaginated (Lcom/test/LambdaClient;Lcom/test/model/ListFunctionsRequest;)Lkotlinx/coroutines/flow/Flow;
+	public static final fun listFunctionsPaginated (Lcom/test/LambdaClient;Lkotlin/jvm/functions/Function1;)Lkotlinx/coroutines/flow/Flow;
+	public static final fun listFunctionsResponseFunctionConfiguration (Lkotlinx/coroutines/flow/Flow;)Lkotlinx/coroutines/flow/Flow;
+}
+

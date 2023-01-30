@@ -1,0 +1,119 @@
+public final class com/test/DefaultWaitersTestClient : com/test/WaitersTestClient {
+	public fun <init> (Ljava/util/List;)V
+	public fun close ()V
+	public synthetic fun getConfig ()Laws/smithy/kotlin/runtime/client/SdkClientConfig;
+	public fun getConfig ()Lcom/test/WaitersTestClient$Config;
+	public fun getEntity (Lcom/test/model/GetEntityRequest;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun getServiceName ()Ljava/lang/String;
+}
+
+public abstract interface class com/test/WaitersTestClient : aws/smithy/kotlin/runtime/client/SdkClient {
+	public abstract fun getConfig ()Lcom/test/WaitersTestClient$Config;
+	public abstract fun getEntity (Lcom/test/model/GetEntityRequest;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public abstract fun getServiceName ()Ljava/lang/String;
+}
+
+public final class com/test/WaitersTestClient$Config : aws/smithy/kotlin/runtime/client/SdkClientConfig, aws/smithy/kotlin/runtime/tracing/TracingClientConfig {
+	public static final field Companion Lcom/test/WaitersTestClient$Config$Companion;
+	public synthetic fun <init> (Lcom/test/WaitersTestClient$Config$Builder;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun getEndpointProvider ()Laws/smithy/kotlin/runtime/http/endpoints/EndpointProvider;
+	public fun getRetryStrategy ()Laws/smithy/kotlin/runtime/retries/RetryStrategy;
+	public fun getSdkLogMode ()Laws/smithy/kotlin/runtime/client/SdkLogMode;
+	public fun getTracer ()Laws/smithy/kotlin/runtime/tracing/Tracer;
+	public final fun toBuilder ()Lcom/test/WaitersTestClient$Config$Builder;
+}
+
+public final class com/test/WaitersTestClient$Config$Builder : aws/smithy/kotlin/runtime/client/SdkClientConfig$Builder, aws/smithy/kotlin/runtime/tracing/TracingClientConfig$Builder {
+	public fun <init> ()V
+	public fun build ()Lcom/test/WaitersTestClient$Config;
+	public synthetic fun build ()Ljava/lang/Object;
+	public final fun getEndpointProvider ()Laws/smithy/kotlin/runtime/http/endpoints/EndpointProvider;
+	public fun getRetryStrategy ()Laws/smithy/kotlin/runtime/retries/RetryStrategy;
+	public fun getSdkLogMode ()Laws/smithy/kotlin/runtime/client/SdkLogMode;
+	public fun getTracer ()Laws/smithy/kotlin/runtime/tracing/Tracer;
+	public final fun setEndpointProvider (Laws/smithy/kotlin/runtime/http/endpoints/EndpointProvider;)V
+	public fun setRetryStrategy (Laws/smithy/kotlin/runtime/retries/RetryStrategy;)V
+	public fun setSdkLogMode (Laws/smithy/kotlin/runtime/client/SdkLogMode;)V
+	public fun setTracer (Laws/smithy/kotlin/runtime/tracing/Tracer;)V
+}
+
+public final class com/test/WaitersTestClient$Config$Companion {
+	public final fun invoke (Lkotlin/jvm/functions/Function1;)Lcom/test/WaitersTestClient$Config;
+}
+
+public final class com/test/WaitersTestClient$DefaultImpls {
+	public static fun getServiceName (Lcom/test/WaitersTestClient;)Ljava/lang/String;
+}
+
+public final class com/test/WaitersTestClientKt {
+	public static final fun getEntity (Lcom/test/WaitersTestClient;Lkotlin/jvm/functions/Function1;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
+public final class com/test/model/GetEntityRequest {
+	public static final field Companion Lcom/test/model/GetEntityRequest$Companion;
+	public synthetic fun <init> (Lcom/test/model/GetEntityRequest$Builder;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun copy (Lkotlin/jvm/functions/Function1;)Lcom/test/model/GetEntityRequest;
+	public static synthetic fun copy$default (Lcom/test/model/GetEntityRequest;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lcom/test/model/GetEntityRequest;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getName ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class com/test/model/GetEntityRequest$Builder {
+	public fun <init> ()V
+	public fun <init> (Lcom/test/model/GetEntityRequest;)V
+	public final fun build ()Lcom/test/model/GetEntityRequest;
+	public final fun getName ()Ljava/lang/String;
+	public final fun setName (Ljava/lang/String;)V
+}
+
+public final class com/test/model/GetEntityRequest$Companion {
+	public final fun invoke (Lkotlin/jvm/functions/Function1;)Lcom/test/model/GetEntityRequest;
+}
+
+public final class com/test/model/GetEntityResponse {
+	public static final field Companion Lcom/test/model/GetEntityResponse$Companion;
+	public synthetic fun <init> (Lcom/test/model/GetEntityResponse$Builder;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun copy (Lkotlin/jvm/functions/Function1;)Lcom/test/model/GetEntityResponse;
+	public static synthetic fun copy$default (Lcom/test/model/GetEntityResponse;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lcom/test/model/GetEntityResponse;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getName ()Ljava/lang/String;
+	public final fun getSize ()Ljava/lang/Integer;
+	public final fun getTags ()Ljava/util/Map;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class com/test/model/GetEntityResponse$Builder {
+	public fun <init> ()V
+	public fun <init> (Lcom/test/model/GetEntityResponse;)V
+	public final fun build ()Lcom/test/model/GetEntityResponse;
+	public final fun getName ()Ljava/lang/String;
+	public final fun getSize ()Ljava/lang/Integer;
+	public final fun getTags ()Ljava/util/Map;
+	public final fun setName (Ljava/lang/String;)V
+	public final fun setSize (Ljava/lang/Integer;)V
+	public final fun setTags (Ljava/util/Map;)V
+}
+
+public final class com/test/model/GetEntityResponse$Companion {
+	public final fun invoke (Lkotlin/jvm/functions/Function1;)Lcom/test/model/GetEntityResponse;
+}
+
+public class com/test/model/WaitersTestException : aws/smithy/kotlin/runtime/ServiceException {
+	public fun <init> ()V
+	public fun <init> (Ljava/lang/String;)V
+	public fun <init> (Ljava/lang/String;Ljava/lang/Throwable;)V
+	public fun <init> (Ljava/lang/Throwable;)V
+}
+
+public final class com/test/waiters/WaitersKt {
+	public static final fun waitUntilEntityExistsBySuccess (Lcom/test/WaitersTestClient;Lcom/test/model/GetEntityRequest;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static final fun waitUntilEntityExistsBySuccess (Lcom/test/WaitersTestClient;Lkotlin/jvm/functions/Function1;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static final fun waitUntilEntityHasComparableNumericalValues (Lcom/test/WaitersTestClient;Lcom/test/model/GetEntityRequest;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static final fun waitUntilEntityHasComparableNumericalValues (Lcom/test/WaitersTestClient;Lkotlin/jvm/functions/Function1;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static final fun waitUntilEntityHasNameTagByOutput (Lcom/test/WaitersTestClient;Lcom/test/model/GetEntityRequest;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static final fun waitUntilEntityHasNameTagByOutput (Lcom/test/WaitersTestClient;Lkotlin/jvm/functions/Function1;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+

@@ -1,0 +1,41 @@
+public abstract class aws/smithy/kotlin/runtime/http/test/util/AbstractEngineTest {
+	public fun <init> ()V
+	public final fun testEngines (Ljava/util/Set;Lkotlin/jvm/functions/Function1;)V
+	public static synthetic fun testEngines$default (Laws/smithy/kotlin/runtime/http/test/util/AbstractEngineTest;Ljava/util/Set;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)V
+}
+
+public final class aws/smithy/kotlin/runtime/http/test/util/AbstractEngineTestKt {
+	public static final fun engineConfig (Laws/smithy/kotlin/runtime/http/test/util/EngineTestBuilder;Lkotlin/jvm/functions/Function1;)V
+	public static final fun test (Laws/smithy/kotlin/runtime/http/test/util/EngineTestBuilder;Lkotlin/jvm/functions/Function3;)V
+	public static final fun testSetup (Laws/smithy/kotlin/runtime/http/request/HttpRequestBuilder;Laws/smithy/kotlin/runtime/http/test/util/TestEnvironment;)V
+	public static final fun testWithClient-8Mi8wO0 (Laws/smithy/kotlin/runtime/http/SdkHttpClient;JLaws/smithy/kotlin/runtime/http/test/util/EngineTestBuilder;)V
+	public static synthetic fun testWithClient-8Mi8wO0$default (Laws/smithy/kotlin/runtime/http/SdkHttpClient;JLaws/smithy/kotlin/runtime/http/test/util/EngineTestBuilder;ILjava/lang/Object;)V
+}
+
+public final class aws/smithy/kotlin/runtime/http/test/util/EngineTestBuilder {
+	public fun <init> ()V
+	public final fun getConcurrency ()I
+	public final fun getEngineConfig ()Lkotlin/jvm/functions/Function1;
+	public final fun getRepeat ()I
+	public final fun getTest ()Lkotlin/jvm/functions/Function3;
+	public final fun setConcurrency (I)V
+	public final fun setEngineConfig (Lkotlin/jvm/functions/Function1;)V
+	public final fun setRepeat (I)V
+	public final fun setTest (Lkotlin/jvm/functions/Function3;)V
+}
+
+public final class aws/smithy/kotlin/runtime/http/test/util/TestEnvironment {
+	public fun <init> (Laws/smithy/kotlin/runtime/http/Url;II)V
+	public final fun component1 ()Laws/smithy/kotlin/runtime/http/Url;
+	public final fun component2 ()I
+	public final fun component3 ()I
+	public final fun copy (Laws/smithy/kotlin/runtime/http/Url;II)Laws/smithy/kotlin/runtime/http/test/util/TestEnvironment;
+	public static synthetic fun copy$default (Laws/smithy/kotlin/runtime/http/test/util/TestEnvironment;Laws/smithy/kotlin/runtime/http/Url;IIILjava/lang/Object;)Laws/smithy/kotlin/runtime/http/test/util/TestEnvironment;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getAttempt ()I
+	public final fun getCoroutineId ()I
+	public final fun getTestServer ()Laws/smithy/kotlin/runtime/http/Url;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+

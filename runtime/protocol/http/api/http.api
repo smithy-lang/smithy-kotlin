@@ -1,0 +1,871 @@
+public abstract interface class aws/smithy/kotlin/runtime/http/Headers : aws/smithy/kotlin/runtime/http/util/StringValuesMap {
+	public static final field Companion Laws/smithy/kotlin/runtime/http/Headers$Companion;
+}
+
+public final class aws/smithy/kotlin/runtime/http/Headers$Companion {
+	public final fun getEmpty ()Laws/smithy/kotlin/runtime/http/Headers;
+	public final fun invoke (Lkotlin/jvm/functions/Function1;)Laws/smithy/kotlin/runtime/http/Headers;
+}
+
+public final class aws/smithy/kotlin/runtime/http/Headers$DefaultImpls {
+	public static fun contains (Laws/smithy/kotlin/runtime/http/Headers;Ljava/lang/String;Ljava/lang/String;)Z
+	public static fun forEach (Laws/smithy/kotlin/runtime/http/Headers;Lkotlin/jvm/functions/Function2;)V
+	public static fun get (Laws/smithy/kotlin/runtime/http/Headers;Ljava/lang/String;)Ljava/lang/String;
+}
+
+public final class aws/smithy/kotlin/runtime/http/HeadersBuilder : aws/smithy/kotlin/runtime/http/util/StringValuesMapBuilder, aws/smithy/kotlin/runtime/http/util/CanDeepCopy {
+	public fun <init> ()V
+	public fun build ()Laws/smithy/kotlin/runtime/http/Headers;
+	public synthetic fun build ()Laws/smithy/kotlin/runtime/http/util/StringValuesMap;
+	public fun deepCopy ()Laws/smithy/kotlin/runtime/http/HeadersBuilder;
+	public synthetic fun deepCopy ()Ljava/lang/Object;
+	public fun toString ()Ljava/lang/String;
+}
+
+public abstract class aws/smithy/kotlin/runtime/http/HttpBody {
+	public static final field Companion Laws/smithy/kotlin/runtime/http/HttpBody$Companion;
+	public fun getContentLength ()Ljava/lang/Long;
+	public fun isDuplex ()Z
+	public fun isOneShot ()Z
+}
+
+public abstract class aws/smithy/kotlin/runtime/http/HttpBody$Bytes : aws/smithy/kotlin/runtime/http/HttpBody {
+	public fun <init> ()V
+	public abstract fun bytes ()[B
+	public final fun isOneShot ()Z
+}
+
+public abstract class aws/smithy/kotlin/runtime/http/HttpBody$ChannelContent : aws/smithy/kotlin/runtime/http/HttpBody {
+	public fun <init> ()V
+	public abstract fun readFrom ()Laws/smithy/kotlin/runtime/io/SdkByteReadChannel;
+}
+
+public final class aws/smithy/kotlin/runtime/http/HttpBody$Companion {
+	public final fun fromBytes ([B)Laws/smithy/kotlin/runtime/http/HttpBody;
+}
+
+public final class aws/smithy/kotlin/runtime/http/HttpBody$Empty : aws/smithy/kotlin/runtime/http/HttpBody {
+	public static final field INSTANCE Laws/smithy/kotlin/runtime/http/HttpBody$Empty;
+	public fun getContentLength ()Ljava/lang/Long;
+	public final fun isOneShot ()Z
+}
+
+public abstract class aws/smithy/kotlin/runtime/http/HttpBody$SourceContent : aws/smithy/kotlin/runtime/http/HttpBody {
+	public fun <init> ()V
+	public abstract fun readFrom ()Laws/smithy/kotlin/runtime/io/SdkSource;
+}
+
+public final class aws/smithy/kotlin/runtime/http/HttpBodyKt {
+	public static final fun readAll (Laws/smithy/kotlin/runtime/http/HttpBody;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static final fun toByteStream (Laws/smithy/kotlin/runtime/http/HttpBody;)Laws/smithy/kotlin/runtime/content/ByteStream;
+	public static final fun toHttpBody (Laws/smithy/kotlin/runtime/content/ByteStream;)Laws/smithy/kotlin/runtime/http/HttpBody;
+	public static final fun toHttpBody (Laws/smithy/kotlin/runtime/io/SdkByteReadChannel;Ljava/lang/Long;)Laws/smithy/kotlin/runtime/http/HttpBody;
+	public static final fun toHttpBody (Laws/smithy/kotlin/runtime/io/SdkSource;Ljava/lang/Long;)Laws/smithy/kotlin/runtime/http/HttpBody;
+	public static final fun toHttpBody (Ljava/lang/String;)Laws/smithy/kotlin/runtime/http/HttpBody;
+	public static final fun toHttpBody ([B)Laws/smithy/kotlin/runtime/http/HttpBody;
+	public static synthetic fun toHttpBody$default (Laws/smithy/kotlin/runtime/io/SdkByteReadChannel;Ljava/lang/Long;ILjava/lang/Object;)Laws/smithy/kotlin/runtime/http/HttpBody;
+	public static synthetic fun toHttpBody$default (Laws/smithy/kotlin/runtime/io/SdkSource;Ljava/lang/Long;ILjava/lang/Object;)Laws/smithy/kotlin/runtime/http/HttpBody;
+	public static final fun toSdkByteReadChannel (Laws/smithy/kotlin/runtime/http/HttpBody;)Laws/smithy/kotlin/runtime/io/SdkByteReadChannel;
+}
+
+public final class aws/smithy/kotlin/runtime/http/HttpMethod : java/lang/Enum {
+	public static final field Companion Laws/smithy/kotlin/runtime/http/HttpMethod$Companion;
+	public static final field DELETE Laws/smithy/kotlin/runtime/http/HttpMethod;
+	public static final field GET Laws/smithy/kotlin/runtime/http/HttpMethod;
+	public static final field HEAD Laws/smithy/kotlin/runtime/http/HttpMethod;
+	public static final field OPTIONS Laws/smithy/kotlin/runtime/http/HttpMethod;
+	public static final field PATCH Laws/smithy/kotlin/runtime/http/HttpMethod;
+	public static final field POST Laws/smithy/kotlin/runtime/http/HttpMethod;
+	public static final field PUT Laws/smithy/kotlin/runtime/http/HttpMethod;
+	public static fun valueOf (Ljava/lang/String;)Laws/smithy/kotlin/runtime/http/HttpMethod;
+	public static fun values ()[Laws/smithy/kotlin/runtime/http/HttpMethod;
+}
+
+public final class aws/smithy/kotlin/runtime/http/HttpMethod$Companion {
+	public final fun parse (Ljava/lang/String;)Laws/smithy/kotlin/runtime/http/HttpMethod;
+}
+
+public final class aws/smithy/kotlin/runtime/http/HttpStatusCode {
+	public static final field Companion Laws/smithy/kotlin/runtime/http/HttpStatusCode$Companion;
+	public fun <init> (ILjava/lang/String;)V
+	public final fun component1 ()I
+	public final fun component2 ()Ljava/lang/String;
+	public final fun copy (ILjava/lang/String;)Laws/smithy/kotlin/runtime/http/HttpStatusCode;
+	public static synthetic fun copy$default (Laws/smithy/kotlin/runtime/http/HttpStatusCode;ILjava/lang/String;ILjava/lang/Object;)Laws/smithy/kotlin/runtime/http/HttpStatusCode;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getDescription ()Ljava/lang/String;
+	public final fun getValue ()I
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class aws/smithy/kotlin/runtime/http/HttpStatusCode$Category : java/lang/Enum, java/lang/Comparable, kotlin/ranges/ClosedRange {
+	public static final field CLIENT_ERROR Laws/smithy/kotlin/runtime/http/HttpStatusCode$Category;
+	public static final field Companion Laws/smithy/kotlin/runtime/http/HttpStatusCode$Category$Companion;
+	public static final field INFORMATION Laws/smithy/kotlin/runtime/http/HttpStatusCode$Category;
+	public static final field REDIRECT Laws/smithy/kotlin/runtime/http/HttpStatusCode$Category;
+	public static final field SERVER_ERROR Laws/smithy/kotlin/runtime/http/HttpStatusCode$Category;
+	public static final field SUCCESS Laws/smithy/kotlin/runtime/http/HttpStatusCode$Category;
+	public fun contains (I)Z
+	public synthetic fun contains (Ljava/lang/Comparable;)Z
+	public synthetic fun getEndInclusive ()Ljava/lang/Comparable;
+	public fun getEndInclusive ()Ljava/lang/Integer;
+	public synthetic fun getStart ()Ljava/lang/Comparable;
+	public fun getStart ()Ljava/lang/Integer;
+	public fun isEmpty ()Z
+	public static fun valueOf (Ljava/lang/String;)Laws/smithy/kotlin/runtime/http/HttpStatusCode$Category;
+	public static fun values ()[Laws/smithy/kotlin/runtime/http/HttpStatusCode$Category;
+}
+
+public final class aws/smithy/kotlin/runtime/http/HttpStatusCode$Category$Companion {
+	public final fun fromCode (I)Laws/smithy/kotlin/runtime/http/HttpStatusCode$Category;
+}
+
+public final class aws/smithy/kotlin/runtime/http/HttpStatusCode$Companion {
+	public final fun fromValue (I)Laws/smithy/kotlin/runtime/http/HttpStatusCode;
+	public final fun getAccepted ()Laws/smithy/kotlin/runtime/http/HttpStatusCode;
+	public final fun getBadGateway ()Laws/smithy/kotlin/runtime/http/HttpStatusCode;
+	public final fun getBadRequest ()Laws/smithy/kotlin/runtime/http/HttpStatusCode;
+	public final fun getConflict ()Laws/smithy/kotlin/runtime/http/HttpStatusCode;
+	public final fun getContinue ()Laws/smithy/kotlin/runtime/http/HttpStatusCode;
+	public final fun getCreated ()Laws/smithy/kotlin/runtime/http/HttpStatusCode;
+	public final fun getExpectationFailed ()Laws/smithy/kotlin/runtime/http/HttpStatusCode;
+	public final fun getFailedDependency ()Laws/smithy/kotlin/runtime/http/HttpStatusCode;
+	public final fun getForbidden ()Laws/smithy/kotlin/runtime/http/HttpStatusCode;
+	public final fun getFound ()Laws/smithy/kotlin/runtime/http/HttpStatusCode;
+	public final fun getGatewayTimeout ()Laws/smithy/kotlin/runtime/http/HttpStatusCode;
+	public final fun getGone ()Laws/smithy/kotlin/runtime/http/HttpStatusCode;
+	public final fun getInsufficientStorage ()Laws/smithy/kotlin/runtime/http/HttpStatusCode;
+	public final fun getInternalServerError ()Laws/smithy/kotlin/runtime/http/HttpStatusCode;
+	public final fun getLengthRequired ()Laws/smithy/kotlin/runtime/http/HttpStatusCode;
+	public final fun getLocked ()Laws/smithy/kotlin/runtime/http/HttpStatusCode;
+	public final fun getLoopDetected ()Laws/smithy/kotlin/runtime/http/HttpStatusCode;
+	public final fun getMethodNotAllowed ()Laws/smithy/kotlin/runtime/http/HttpStatusCode;
+	public final fun getMovedPermanently ()Laws/smithy/kotlin/runtime/http/HttpStatusCode;
+	public final fun getMultiStatus ()Laws/smithy/kotlin/runtime/http/HttpStatusCode;
+	public final fun getMultipleChoices ()Laws/smithy/kotlin/runtime/http/HttpStatusCode;
+	public final fun getNetworkAuthenticationRequired ()Laws/smithy/kotlin/runtime/http/HttpStatusCode;
+	public final fun getNoContent ()Laws/smithy/kotlin/runtime/http/HttpStatusCode;
+	public final fun getNonAuthoritativeInformation ()Laws/smithy/kotlin/runtime/http/HttpStatusCode;
+	public final fun getNotAcceptable ()Laws/smithy/kotlin/runtime/http/HttpStatusCode;
+	public final fun getNotExtended ()Laws/smithy/kotlin/runtime/http/HttpStatusCode;
+	public final fun getNotFound ()Laws/smithy/kotlin/runtime/http/HttpStatusCode;
+	public final fun getNotImplemented ()Laws/smithy/kotlin/runtime/http/HttpStatusCode;
+	public final fun getNotModified ()Laws/smithy/kotlin/runtime/http/HttpStatusCode;
+	public final fun getOK ()Laws/smithy/kotlin/runtime/http/HttpStatusCode;
+	public final fun getPartialContent ()Laws/smithy/kotlin/runtime/http/HttpStatusCode;
+	public final fun getPayloadTooLarge ()Laws/smithy/kotlin/runtime/http/HttpStatusCode;
+	public final fun getPaymentRequired ()Laws/smithy/kotlin/runtime/http/HttpStatusCode;
+	public final fun getPermanentRedirect ()Laws/smithy/kotlin/runtime/http/HttpStatusCode;
+	public final fun getPreconditionFailed ()Laws/smithy/kotlin/runtime/http/HttpStatusCode;
+	public final fun getPreconditionRequired ()Laws/smithy/kotlin/runtime/http/HttpStatusCode;
+	public final fun getProcessing ()Laws/smithy/kotlin/runtime/http/HttpStatusCode;
+	public final fun getProxyAuthenticationRequired ()Laws/smithy/kotlin/runtime/http/HttpStatusCode;
+	public final fun getRequestHeaderFieldTooLarge ()Laws/smithy/kotlin/runtime/http/HttpStatusCode;
+	public final fun getRequestTimeout ()Laws/smithy/kotlin/runtime/http/HttpStatusCode;
+	public final fun getRequestURITooLong ()Laws/smithy/kotlin/runtime/http/HttpStatusCode;
+	public final fun getRequestedRangeNotSatisfiable ()Laws/smithy/kotlin/runtime/http/HttpStatusCode;
+	public final fun getResetContent ()Laws/smithy/kotlin/runtime/http/HttpStatusCode;
+	public final fun getSeeOther ()Laws/smithy/kotlin/runtime/http/HttpStatusCode;
+	public final fun getServiceUnavailable ()Laws/smithy/kotlin/runtime/http/HttpStatusCode;
+	public final fun getSwitchingProtocols ()Laws/smithy/kotlin/runtime/http/HttpStatusCode;
+	public final fun getTemporaryRedirect ()Laws/smithy/kotlin/runtime/http/HttpStatusCode;
+	public final fun getTooEarly ()Laws/smithy/kotlin/runtime/http/HttpStatusCode;
+	public final fun getTooManyRequests ()Laws/smithy/kotlin/runtime/http/HttpStatusCode;
+	public final fun getUnauthorized ()Laws/smithy/kotlin/runtime/http/HttpStatusCode;
+	public final fun getUnavailableForLegalReason ()Laws/smithy/kotlin/runtime/http/HttpStatusCode;
+	public final fun getUnprocessableEntity ()Laws/smithy/kotlin/runtime/http/HttpStatusCode;
+	public final fun getUnsupportedMediaType ()Laws/smithy/kotlin/runtime/http/HttpStatusCode;
+	public final fun getUpgradeRequired ()Laws/smithy/kotlin/runtime/http/HttpStatusCode;
+	public final fun getUseProxy ()Laws/smithy/kotlin/runtime/http/HttpStatusCode;
+	public final fun getVariantAlsoNegotiates ()Laws/smithy/kotlin/runtime/http/HttpStatusCode;
+	public final fun getVersionNotSupported ()Laws/smithy/kotlin/runtime/http/HttpStatusCode;
+}
+
+public final class aws/smithy/kotlin/runtime/http/HttpStatusCodeKt {
+	public static final fun category (Laws/smithy/kotlin/runtime/http/HttpStatusCode;)Laws/smithy/kotlin/runtime/http/HttpStatusCode$Category;
+	public static final fun isInformational (Laws/smithy/kotlin/runtime/http/HttpStatusCode;)Z
+	public static final fun isSuccess (Laws/smithy/kotlin/runtime/http/HttpStatusCode;)Z
+}
+
+public final class aws/smithy/kotlin/runtime/http/Protocol {
+	public static final field Companion Laws/smithy/kotlin/runtime/http/Protocol$Companion;
+	public fun <init> (Ljava/lang/String;I)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()I
+	public final fun copy (Ljava/lang/String;I)Laws/smithy/kotlin/runtime/http/Protocol;
+	public static synthetic fun copy$default (Laws/smithy/kotlin/runtime/http/Protocol;Ljava/lang/String;IILjava/lang/Object;)Laws/smithy/kotlin/runtime/http/Protocol;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getDefaultPort ()I
+	public final fun getProtocolName ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class aws/smithy/kotlin/runtime/http/Protocol$Companion {
+	public final fun getByName ()Ljava/util/Map;
+	public final fun getHTTP ()Laws/smithy/kotlin/runtime/http/Protocol;
+	public final fun getHTTPS ()Laws/smithy/kotlin/runtime/http/Protocol;
+	public final fun getWS ()Laws/smithy/kotlin/runtime/http/Protocol;
+	public final fun getWSS ()Laws/smithy/kotlin/runtime/http/Protocol;
+	public final fun parse (Ljava/lang/String;)Laws/smithy/kotlin/runtime/http/Protocol;
+}
+
+public abstract interface class aws/smithy/kotlin/runtime/http/QueryParameters : aws/smithy/kotlin/runtime/http/util/StringValuesMap {
+	public static final field Companion Laws/smithy/kotlin/runtime/http/QueryParameters$Companion;
+}
+
+public final class aws/smithy/kotlin/runtime/http/QueryParameters$Companion {
+	public final fun getEmpty ()Laws/smithy/kotlin/runtime/http/QueryParameters;
+	public final fun invoke (Lkotlin/jvm/functions/Function1;)Laws/smithy/kotlin/runtime/http/QueryParameters;
+}
+
+public final class aws/smithy/kotlin/runtime/http/QueryParameters$DefaultImpls {
+	public static fun contains (Laws/smithy/kotlin/runtime/http/QueryParameters;Ljava/lang/String;Ljava/lang/String;)Z
+	public static fun forEach (Laws/smithy/kotlin/runtime/http/QueryParameters;Lkotlin/jvm/functions/Function2;)V
+	public static fun get (Laws/smithy/kotlin/runtime/http/QueryParameters;Ljava/lang/String;)Ljava/lang/String;
+}
+
+public final class aws/smithy/kotlin/runtime/http/QueryParametersBuilder : aws/smithy/kotlin/runtime/http/util/StringValuesMapBuilder, aws/smithy/kotlin/runtime/http/util/CanDeepCopy {
+	public fun <init> ()V
+	public fun build ()Laws/smithy/kotlin/runtime/http/QueryParameters;
+	public synthetic fun build ()Laws/smithy/kotlin/runtime/http/util/StringValuesMap;
+	public fun deepCopy ()Laws/smithy/kotlin/runtime/http/QueryParametersBuilder;
+	public synthetic fun deepCopy ()Ljava/lang/Object;
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class aws/smithy/kotlin/runtime/http/QueryParametersKt {
+	public static final fun toQueryParameters (Ljava/util/Map;)Laws/smithy/kotlin/runtime/http/QueryParameters;
+	public static final fun urlEncode (Laws/smithy/kotlin/runtime/http/QueryParameters;)Ljava/lang/String;
+	public static final fun urlEncodeTo (Laws/smithy/kotlin/runtime/http/QueryParameters;Ljava/lang/Appendable;)V
+}
+
+public final class aws/smithy/kotlin/runtime/http/SdkHttpClient : aws/smithy/kotlin/runtime/io/Handler {
+	public fun <init> (Laws/smithy/kotlin/runtime/http/engine/HttpClientEngine;)V
+	public fun call (Laws/smithy/kotlin/runtime/http/operation/OperationRequest;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public final fun call (Laws/smithy/kotlin/runtime/http/request/HttpRequest;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public final fun call (Laws/smithy/kotlin/runtime/http/request/HttpRequestBuilder;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public synthetic fun call (Ljava/lang/Object;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public final fun getEngine ()Laws/smithy/kotlin/runtime/http/engine/HttpClientEngine;
+}
+
+public final class aws/smithy/kotlin/runtime/http/Url {
+	public static final field Companion Laws/smithy/kotlin/runtime/http/Url$Companion;
+	public fun <init> (Laws/smithy/kotlin/runtime/http/Protocol;Laws/smithy/kotlin/runtime/net/Host;ILjava/lang/String;Laws/smithy/kotlin/runtime/http/QueryParameters;Ljava/lang/String;Laws/smithy/kotlin/runtime/http/UserInfo;ZZ)V
+	public synthetic fun <init> (Laws/smithy/kotlin/runtime/http/Protocol;Laws/smithy/kotlin/runtime/net/Host;ILjava/lang/String;Laws/smithy/kotlin/runtime/http/QueryParameters;Ljava/lang/String;Laws/smithy/kotlin/runtime/http/UserInfo;ZZILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Laws/smithy/kotlin/runtime/http/Protocol;
+	public final fun component2 ()Laws/smithy/kotlin/runtime/net/Host;
+	public final fun component3 ()I
+	public final fun component4 ()Ljava/lang/String;
+	public final fun component5 ()Laws/smithy/kotlin/runtime/http/QueryParameters;
+	public final fun component6 ()Ljava/lang/String;
+	public final fun component7 ()Laws/smithy/kotlin/runtime/http/UserInfo;
+	public final fun component8 ()Z
+	public final fun component9 ()Z
+	public final fun copy (Laws/smithy/kotlin/runtime/http/Protocol;Laws/smithy/kotlin/runtime/net/Host;ILjava/lang/String;Laws/smithy/kotlin/runtime/http/QueryParameters;Ljava/lang/String;Laws/smithy/kotlin/runtime/http/UserInfo;ZZ)Laws/smithy/kotlin/runtime/http/Url;
+	public static synthetic fun copy$default (Laws/smithy/kotlin/runtime/http/Url;Laws/smithy/kotlin/runtime/http/Protocol;Laws/smithy/kotlin/runtime/net/Host;ILjava/lang/String;Laws/smithy/kotlin/runtime/http/QueryParameters;Ljava/lang/String;Laws/smithy/kotlin/runtime/http/UserInfo;ZZILjava/lang/Object;)Laws/smithy/kotlin/runtime/http/Url;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getEncodeParameters ()Z
+	public final fun getEncodedPath ()Ljava/lang/String;
+	public final fun getForceQuery ()Z
+	public final fun getFragment ()Ljava/lang/String;
+	public final fun getHost ()Laws/smithy/kotlin/runtime/net/Host;
+	public final fun getParameters ()Laws/smithy/kotlin/runtime/http/QueryParameters;
+	public final fun getPath ()Ljava/lang/String;
+	public final fun getPort ()I
+	public final fun getScheme ()Laws/smithy/kotlin/runtime/http/Protocol;
+	public final fun getUserInfo ()Laws/smithy/kotlin/runtime/http/UserInfo;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class aws/smithy/kotlin/runtime/http/Url$Companion {
+	public final fun parse (Ljava/lang/String;)Laws/smithy/kotlin/runtime/http/Url;
+}
+
+public final class aws/smithy/kotlin/runtime/http/UrlBuilder : aws/smithy/kotlin/runtime/http/util/CanDeepCopy {
+	public static final field Companion Laws/smithy/kotlin/runtime/http/UrlBuilder$Companion;
+	public fun <init> ()V
+	public final fun build ()Laws/smithy/kotlin/runtime/http/Url;
+	public fun deepCopy ()Laws/smithy/kotlin/runtime/http/UrlBuilder;
+	public synthetic fun deepCopy ()Ljava/lang/Object;
+	public final fun getForceQuery ()Z
+	public final fun getFragment ()Ljava/lang/String;
+	public final fun getHost ()Laws/smithy/kotlin/runtime/net/Host;
+	public final fun getParameters ()Laws/smithy/kotlin/runtime/http/QueryParametersBuilder;
+	public final fun getPath ()Ljava/lang/String;
+	public final fun getPort ()Ljava/lang/Integer;
+	public final fun getScheme ()Laws/smithy/kotlin/runtime/http/Protocol;
+	public final fun getUserInfo ()Laws/smithy/kotlin/runtime/http/UserInfo;
+	public final fun setForceQuery (Z)V
+	public final fun setFragment (Ljava/lang/String;)V
+	public final fun setHost (Laws/smithy/kotlin/runtime/net/Host;)V
+	public final fun setParameters (Laws/smithy/kotlin/runtime/http/QueryParametersBuilder;)V
+	public final fun setPath (Ljava/lang/String;)V
+	public final fun setPort (Ljava/lang/Integer;)V
+	public final fun setScheme (Laws/smithy/kotlin/runtime/http/Protocol;)V
+	public final fun setUserInfo (Laws/smithy/kotlin/runtime/http/UserInfo;)V
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class aws/smithy/kotlin/runtime/http/UrlBuilder$Companion {
+	public final fun invoke (Lkotlin/jvm/functions/Function1;)Laws/smithy/kotlin/runtime/http/Url;
+}
+
+public final class aws/smithy/kotlin/runtime/http/UrlKt {
+	public static final fun UserInfo (Ljava/lang/String;)Laws/smithy/kotlin/runtime/http/UserInfo;
+	public static final fun getEncodedPath (Laws/smithy/kotlin/runtime/http/UrlBuilder;)Ljava/lang/String;
+	public static final fun parameters (Laws/smithy/kotlin/runtime/http/UrlBuilder;Lkotlin/jvm/functions/Function1;)V
+}
+
+public final class aws/smithy/kotlin/runtime/http/UserInfo {
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()Ljava/lang/String;
+	public final fun copy (Ljava/lang/String;Ljava/lang/String;)Laws/smithy/kotlin/runtime/http/UserInfo;
+	public static synthetic fun copy$default (Laws/smithy/kotlin/runtime/http/UserInfo;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Object;)Laws/smithy/kotlin/runtime/http/UserInfo;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getPassword ()Ljava/lang/String;
+	public final fun getUsername ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public abstract interface class aws/smithy/kotlin/runtime/http/auth/HttpSigner {
+	public static final field Companion Laws/smithy/kotlin/runtime/http/auth/HttpSigner$Companion;
+	public abstract fun sign (Laws/smithy/kotlin/runtime/client/ExecutionContext;Laws/smithy/kotlin/runtime/http/request/HttpRequestBuilder;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
+public final class aws/smithy/kotlin/runtime/http/auth/HttpSigner$Companion {
+	public final fun getAnonymous ()Laws/smithy/kotlin/runtime/http/auth/HttpSigner;
+}
+
+public abstract interface class aws/smithy/kotlin/runtime/http/config/HttpClientConfig {
+	public abstract fun getHttpClientEngine ()Laws/smithy/kotlin/runtime/http/engine/HttpClientEngine;
+	public abstract fun getInterceptors ()Ljava/util/List;
+}
+
+public abstract interface class aws/smithy/kotlin/runtime/http/config/HttpClientConfig$Builder {
+	public abstract fun getHttpClientEngine ()Laws/smithy/kotlin/runtime/http/engine/HttpClientEngine;
+	public abstract fun getInterceptors ()Ljava/util/List;
+	public abstract fun setHttpClientEngine (Laws/smithy/kotlin/runtime/http/engine/HttpClientEngine;)V
+	public abstract fun setInterceptors (Ljava/util/List;)V
+}
+
+public final class aws/smithy/kotlin/runtime/http/content/ByteArrayContent : aws/smithy/kotlin/runtime/http/HttpBody$Bytes {
+	public fun <init> ([B)V
+	public fun bytes ()[B
+	public fun getContentLength ()Ljava/lang/Long;
+}
+
+public final class aws/smithy/kotlin/runtime/http/endpoints/Endpoint {
+	public fun <init> (Laws/smithy/kotlin/runtime/http/Url;Laws/smithy/kotlin/runtime/http/Headers;)V
+	public synthetic fun <init> (Laws/smithy/kotlin/runtime/http/Url;Laws/smithy/kotlin/runtime/http/Headers;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Laws/smithy/kotlin/runtime/http/Url;Laws/smithy/kotlin/runtime/http/Headers;Laws/smithy/kotlin/runtime/util/Attributes;)V
+	public synthetic fun <init> (Laws/smithy/kotlin/runtime/http/Url;Laws/smithy/kotlin/runtime/http/Headers;Laws/smithy/kotlin/runtime/util/Attributes;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Ljava/lang/String;)V
+	public final fun component1 ()Laws/smithy/kotlin/runtime/http/Url;
+	public final fun component2 ()Laws/smithy/kotlin/runtime/http/Headers;
+	public final fun component3 ()Laws/smithy/kotlin/runtime/util/Attributes;
+	public final fun copy (Laws/smithy/kotlin/runtime/http/Url;Laws/smithy/kotlin/runtime/http/Headers;Laws/smithy/kotlin/runtime/util/Attributes;)Laws/smithy/kotlin/runtime/http/endpoints/Endpoint;
+	public static synthetic fun copy$default (Laws/smithy/kotlin/runtime/http/endpoints/Endpoint;Laws/smithy/kotlin/runtime/http/Url;Laws/smithy/kotlin/runtime/http/Headers;Laws/smithy/kotlin/runtime/util/Attributes;ILjava/lang/Object;)Laws/smithy/kotlin/runtime/http/endpoints/Endpoint;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getAttributes ()Laws/smithy/kotlin/runtime/util/Attributes;
+	public final fun getHeaders ()Laws/smithy/kotlin/runtime/http/Headers;
+	public final fun getUri ()Laws/smithy/kotlin/runtime/http/Url;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class aws/smithy/kotlin/runtime/http/endpoints/EndpointKt {
+	public static final fun setResolvedEndpoint (Laws/smithy/kotlin/runtime/http/operation/OperationRequest;Laws/smithy/kotlin/runtime/http/endpoints/Endpoint;)V
+}
+
+public abstract interface class aws/smithy/kotlin/runtime/http/endpoints/EndpointProvider {
+	public abstract fun resolveEndpoint (Ljava/lang/Object;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
+public final class aws/smithy/kotlin/runtime/http/endpoints/EndpointProviderException : aws/smithy/kotlin/runtime/ClientException {
+	public fun <init> (Ljava/lang/String;)V
+}
+
+public final class aws/smithy/kotlin/runtime/http/endpoints/functions/FunctionsKt {
+	public static final fun isValidHostLabel (Ljava/lang/String;Z)Z
+	public static final fun parseUrl (Ljava/lang/String;)Laws/smithy/kotlin/runtime/http/endpoints/functions/Url;
+	public static final fun substring (Ljava/lang/String;IIZ)Ljava/lang/String;
+	public static final fun uriEncode (Ljava/lang/String;)Ljava/lang/String;
+}
+
+public final class aws/smithy/kotlin/runtime/http/endpoints/functions/Url {
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Z)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()Ljava/lang/String;
+	public final fun component3 ()Ljava/lang/String;
+	public final fun component4 ()Ljava/lang/String;
+	public final fun component5 ()Z
+	public final fun copy (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Z)Laws/smithy/kotlin/runtime/http/endpoints/functions/Url;
+	public static synthetic fun copy$default (Laws/smithy/kotlin/runtime/http/endpoints/functions/Url;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ZILjava/lang/Object;)Laws/smithy/kotlin/runtime/http/endpoints/functions/Url;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getAuthority ()Ljava/lang/String;
+	public final fun getNormalizedPath ()Ljava/lang/String;
+	public final fun getPath ()Ljava/lang/String;
+	public final fun getScheme ()Ljava/lang/String;
+	public fun hashCode ()I
+	public final fun isIp ()Z
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class aws/smithy/kotlin/runtime/http/engine/AlpnId : java/lang/Enum {
+	public static final field HTTP1_1 Laws/smithy/kotlin/runtime/http/engine/AlpnId;
+	public static final field HTTP2 Laws/smithy/kotlin/runtime/http/engine/AlpnId;
+	public static final field HTTP3 Laws/smithy/kotlin/runtime/http/engine/AlpnId;
+	public final fun getProtocolId ()Ljava/lang/String;
+	public static fun valueOf (Ljava/lang/String;)Laws/smithy/kotlin/runtime/http/engine/AlpnId;
+	public static fun values ()[Laws/smithy/kotlin/runtime/http/engine/AlpnId;
+}
+
+public abstract interface class aws/smithy/kotlin/runtime/http/engine/CloseableHttpClientEngine : aws/smithy/kotlin/runtime/http/engine/HttpClientEngine, java/io/Closeable {
+}
+
+public final class aws/smithy/kotlin/runtime/http/engine/CoroutineUtilsKt {
+	public static final fun callContext (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
+public abstract interface class aws/smithy/kotlin/runtime/http/engine/HttpClientEngine : kotlinx/coroutines/CoroutineScope {
+	public abstract fun roundTrip (Laws/smithy/kotlin/runtime/client/ExecutionContext;Laws/smithy/kotlin/runtime/http/request/HttpRequest;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
+public abstract class aws/smithy/kotlin/runtime/http/engine/HttpClientEngineBase : aws/smithy/kotlin/runtime/http/engine/CloseableHttpClientEngine {
+	public fun <init> (Ljava/lang/String;)V
+	public final fun close ()V
+	public fun getCoroutineContext ()Lkotlin/coroutines/CoroutineContext;
+	protected fun shutdown ()V
+}
+
+public final class aws/smithy/kotlin/runtime/http/engine/HttpClientEngineClosedException : aws/smithy/kotlin/runtime/ClientException {
+	public fun <init> ()V
+	public fun <init> (Ljava/lang/Throwable;)V
+	public synthetic fun <init> (Ljava/lang/Throwable;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun getCause ()Ljava/lang/Throwable;
+}
+
+public class aws/smithy/kotlin/runtime/http/engine/HttpClientEngineConfig {
+	public static final field Companion Laws/smithy/kotlin/runtime/http/engine/HttpClientEngineConfig$Companion;
+	public fun <init> ()V
+	public fun <init> (Laws/smithy/kotlin/runtime/http/engine/HttpClientEngineConfig$Builder;)V
+	public final fun getAlpn ()Ljava/util/List;
+	public final fun getConnectTimeout-UwyO8pc ()J
+	public final fun getConnectionAcquireTimeout-UwyO8pc ()J
+	public final fun getConnectionIdleTimeout-UwyO8pc ()J
+	public final fun getHostResolver ()Laws/smithy/kotlin/runtime/net/HostResolver;
+	public final fun getMaxConnections-pVg5ArA ()I
+	public final fun getProxySelector ()Laws/smithy/kotlin/runtime/http/engine/ProxySelector;
+	public final fun getSocketReadTimeout-UwyO8pc ()J
+	public final fun getSocketWriteTimeout-UwyO8pc ()J
+}
+
+public class aws/smithy/kotlin/runtime/http/engine/HttpClientEngineConfig$Builder {
+	public fun <init> ()V
+	public final fun getAlpn ()Ljava/util/List;
+	public final fun getConnectTimeout-UwyO8pc ()J
+	public final fun getConnectionAcquireTimeout-UwyO8pc ()J
+	public final fun getConnectionIdleTimeout-UwyO8pc ()J
+	public final fun getHostResolver ()Laws/smithy/kotlin/runtime/net/HostResolver;
+	public final fun getMaxConnections-pVg5ArA ()I
+	public final fun getProxySelector ()Laws/smithy/kotlin/runtime/http/engine/ProxySelector;
+	public final fun getSocketReadTimeout-UwyO8pc ()J
+	public final fun getSocketWriteTimeout-UwyO8pc ()J
+	public final fun setAlpn (Ljava/util/List;)V
+	public final fun setConnectTimeout-LRDsOJo (J)V
+	public final fun setConnectionAcquireTimeout-LRDsOJo (J)V
+	public final fun setConnectionIdleTimeout-LRDsOJo (J)V
+	public final fun setHostResolver (Laws/smithy/kotlin/runtime/net/HostResolver;)V
+	public final fun setMaxConnections-WZ4Q5Ns (I)V
+	public final fun setProxySelector (Laws/smithy/kotlin/runtime/http/engine/ProxySelector;)V
+	public final fun setSocketReadTimeout-LRDsOJo (J)V
+	public final fun setSocketWriteTimeout-LRDsOJo (J)V
+}
+
+public final class aws/smithy/kotlin/runtime/http/engine/HttpClientEngineConfig$Companion {
+	public final fun getDefault ()Laws/smithy/kotlin/runtime/http/engine/HttpClientEngineConfig;
+	public final fun invoke (Lkotlin/jvm/functions/Function1;)Laws/smithy/kotlin/runtime/http/engine/HttpClientEngineConfig;
+}
+
+public abstract class aws/smithy/kotlin/runtime/http/engine/ProxyConfig {
+}
+
+public final class aws/smithy/kotlin/runtime/http/engine/ProxyConfig$Direct : aws/smithy/kotlin/runtime/http/engine/ProxyConfig {
+	public static final field INSTANCE Laws/smithy/kotlin/runtime/http/engine/ProxyConfig$Direct;
+}
+
+public final class aws/smithy/kotlin/runtime/http/engine/ProxyConfig$Http : aws/smithy/kotlin/runtime/http/engine/ProxyConfig {
+	public fun <init> (Laws/smithy/kotlin/runtime/http/Url;)V
+	public fun <init> (Ljava/lang/String;)V
+	public final fun component1 ()Laws/smithy/kotlin/runtime/http/Url;
+	public final fun copy (Laws/smithy/kotlin/runtime/http/Url;)Laws/smithy/kotlin/runtime/http/engine/ProxyConfig$Http;
+	public static synthetic fun copy$default (Laws/smithy/kotlin/runtime/http/engine/ProxyConfig$Http;Laws/smithy/kotlin/runtime/http/Url;ILjava/lang/Object;)Laws/smithy/kotlin/runtime/http/engine/ProxyConfig$Http;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getUrl ()Laws/smithy/kotlin/runtime/http/Url;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public abstract interface class aws/smithy/kotlin/runtime/http/engine/ProxySelector {
+	public static final field Companion Laws/smithy/kotlin/runtime/http/engine/ProxySelector$Companion;
+	public abstract fun select (Laws/smithy/kotlin/runtime/http/Url;)Laws/smithy/kotlin/runtime/http/engine/ProxyConfig;
+}
+
+public final class aws/smithy/kotlin/runtime/http/engine/ProxySelector$Companion {
+	public final fun getNoProxy ()Laws/smithy/kotlin/runtime/http/engine/ProxySelector;
+}
+
+public final class aws/smithy/kotlin/runtime/http/engine/internal/ManagedHttpClientEngineKt {
+	public static final fun manage (Laws/smithy/kotlin/runtime/http/engine/CloseableHttpClientEngine;)Laws/smithy/kotlin/runtime/http/engine/HttpClientEngine;
+}
+
+public final class aws/smithy/kotlin/runtime/http/middleware/DefaultValidateResponse : aws/smithy/kotlin/runtime/http/operation/ReceiveMiddleware {
+	public fun <init> ()V
+	public fun handle (Laws/smithy/kotlin/runtime/http/operation/OperationRequest;Laws/smithy/kotlin/runtime/io/Handler;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public synthetic fun handle (Ljava/lang/Object;Laws/smithy/kotlin/runtime/io/Handler;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun install (Laws/smithy/kotlin/runtime/http/operation/SdkHttpOperation;)V
+}
+
+public final class aws/smithy/kotlin/runtime/http/middleware/HttpResponseException : aws/smithy/kotlin/runtime/SdkBaseException {
+	public fun <init> ()V
+	public fun <init> (Ljava/lang/String;)V
+	public fun <init> (Ljava/lang/String;Ljava/lang/Throwable;)V
+	public fun <init> (Ljava/lang/Throwable;)V
+	public final fun getBody ()[B
+	public final fun getHeaders ()Laws/smithy/kotlin/runtime/http/Headers;
+	public final fun getRequest ()Laws/smithy/kotlin/runtime/http/request/HttpRequest;
+	public final fun getStatusCode ()Laws/smithy/kotlin/runtime/http/HttpStatusCode;
+	public final fun setBody ([B)V
+	public final fun setHeaders (Laws/smithy/kotlin/runtime/http/Headers;)V
+	public final fun setRequest (Laws/smithy/kotlin/runtime/http/request/HttpRequest;)V
+	public final fun setStatusCode (Laws/smithy/kotlin/runtime/http/HttpStatusCode;)V
+}
+
+public final class aws/smithy/kotlin/runtime/http/middleware/Md5Checksum : aws/smithy/kotlin/runtime/http/operation/ModifyRequestMiddleware {
+	public fun <init> ()V
+	public fun install (Laws/smithy/kotlin/runtime/http/operation/SdkHttpOperation;)V
+	public fun modifyRequest (Laws/smithy/kotlin/runtime/http/operation/OperationRequest;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public synthetic fun modifyRequest (Ljava/lang/Object;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
+public final class aws/smithy/kotlin/runtime/http/middleware/MutateHeaders : aws/smithy/kotlin/runtime/http/operation/ModifyRequestMiddleware {
+	public fun <init> ()V
+	public fun <init> (Ljava/util/Map;Ljava/util/Map;Ljava/util/Map;)V
+	public synthetic fun <init> (Ljava/util/Map;Ljava/util/Map;Ljava/util/Map;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun append (Ljava/lang/String;Ljava/lang/String;)V
+	public fun install (Laws/smithy/kotlin/runtime/http/operation/SdkHttpOperation;)V
+	public fun modifyRequest (Laws/smithy/kotlin/runtime/http/operation/OperationRequest;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public synthetic fun modifyRequest (Ljava/lang/Object;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public final fun set (Ljava/lang/String;Ljava/lang/String;)V
+	public final fun setIfMissing (Ljava/lang/String;Ljava/lang/String;)V
+}
+
+public final class aws/smithy/kotlin/runtime/http/middleware/ResolveEndpoint : aws/smithy/kotlin/runtime/http/operation/ModifyRequestMiddleware {
+	public fun <init> (Laws/smithy/kotlin/runtime/http/endpoints/EndpointProvider;Ljava/lang/Object;)V
+	public fun install (Laws/smithy/kotlin/runtime/http/operation/SdkHttpOperation;)V
+	public fun modifyRequest (Laws/smithy/kotlin/runtime/http/operation/OperationRequest;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public synthetic fun modifyRequest (Ljava/lang/Object;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
+public abstract interface class aws/smithy/kotlin/runtime/http/operation/HttpDeserialize {
+	public abstract fun deserialize (Laws/smithy/kotlin/runtime/client/ExecutionContext;Laws/smithy/kotlin/runtime/http/response/HttpResponse;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
+public class aws/smithy/kotlin/runtime/http/operation/HttpOperationContext {
+	public static final field Companion Laws/smithy/kotlin/runtime/http/operation/HttpOperationContext$Companion;
+	public fun <init> ()V
+}
+
+public class aws/smithy/kotlin/runtime/http/operation/HttpOperationContext$Builder : aws/smithy/kotlin/runtime/client/ClientOptionsBuilder {
+	public fun <init> ()V
+	public final fun getExpectedHttpStatus ()Ljava/lang/Integer;
+	public final fun getHostPrefix ()Ljava/lang/String;
+	public final fun getOperationName ()Ljava/lang/String;
+	public final fun getService ()Ljava/lang/String;
+	public final fun setExpectedHttpStatus (Ljava/lang/Integer;)V
+	public final fun setHostPrefix (Ljava/lang/String;)V
+	public final fun setOperationName (Ljava/lang/String;)V
+	public final fun setService (Ljava/lang/String;)V
+}
+
+public final class aws/smithy/kotlin/runtime/http/operation/HttpOperationContext$Companion {
+	public final fun build (Lkotlin/jvm/functions/Function1;)Laws/smithy/kotlin/runtime/client/ExecutionContext;
+	public final fun getExpectedHttpStatus ()Laws/smithy/kotlin/runtime/util/AttributeKey;
+	public final fun getHostPrefix ()Laws/smithy/kotlin/runtime/util/AttributeKey;
+	public final fun getHttpCallList ()Laws/smithy/kotlin/runtime/util/AttributeKey;
+	public final fun getSdkRequestId ()Laws/smithy/kotlin/runtime/util/AttributeKey;
+}
+
+public final class aws/smithy/kotlin/runtime/http/operation/HttpOperationContextKt {
+	public static final fun getLogger (Lkotlin/coroutines/CoroutineContext;Ljava/lang/String;)Laws/smithy/kotlin/runtime/logging/Logger;
+}
+
+public abstract interface class aws/smithy/kotlin/runtime/http/operation/HttpSerialize {
+	public abstract fun serialize (Laws/smithy/kotlin/runtime/client/ExecutionContext;Ljava/lang/Object;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
+public final class aws/smithy/kotlin/runtime/http/operation/IdentityDeserializer : aws/smithy/kotlin/runtime/http/operation/HttpDeserialize {
+	public static final field INSTANCE Laws/smithy/kotlin/runtime/http/operation/IdentityDeserializer;
+	public fun deserialize (Laws/smithy/kotlin/runtime/client/ExecutionContext;Laws/smithy/kotlin/runtime/http/response/HttpResponse;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
+public abstract interface class aws/smithy/kotlin/runtime/http/operation/InitializeMiddleware : aws/smithy/kotlin/runtime/io/middleware/Middleware {
+	public abstract fun install (Laws/smithy/kotlin/runtime/http/operation/SdkHttpOperation;)V
+}
+
+public final class aws/smithy/kotlin/runtime/http/operation/InitializeMiddleware$DefaultImpls {
+	public static fun install (Laws/smithy/kotlin/runtime/http/operation/InitializeMiddleware;Laws/smithy/kotlin/runtime/http/operation/SdkHttpOperation;)V
+}
+
+public abstract interface class aws/smithy/kotlin/runtime/http/operation/InlineMiddleware {
+	public abstract fun install (Laws/smithy/kotlin/runtime/http/operation/SdkHttpOperation;)V
+}
+
+public abstract interface class aws/smithy/kotlin/runtime/http/operation/ModifyRequestMiddleware : aws/smithy/kotlin/runtime/io/middleware/ModifyRequest {
+	public abstract fun install (Laws/smithy/kotlin/runtime/http/operation/SdkHttpOperation;)V
+}
+
+public final class aws/smithy/kotlin/runtime/http/operation/ModifyRequestMiddleware$DefaultImpls {
+	public static fun install (Laws/smithy/kotlin/runtime/http/operation/ModifyRequestMiddleware;Laws/smithy/kotlin/runtime/http/operation/SdkHttpOperation;)V
+}
+
+public abstract interface class aws/smithy/kotlin/runtime/http/operation/MutateMiddleware : aws/smithy/kotlin/runtime/io/middleware/Middleware {
+	public abstract fun install (Laws/smithy/kotlin/runtime/http/operation/SdkHttpOperation;)V
+}
+
+public final class aws/smithy/kotlin/runtime/http/operation/MutateMiddleware$DefaultImpls {
+	public static fun install (Laws/smithy/kotlin/runtime/http/operation/MutateMiddleware;Laws/smithy/kotlin/runtime/http/operation/SdkHttpOperation;)V
+}
+
+public final class aws/smithy/kotlin/runtime/http/operation/OperationRequest {
+	public fun <init> (Laws/smithy/kotlin/runtime/client/ExecutionContext;Ljava/lang/Object;)V
+	public fun <init> (Ljava/lang/Object;)V
+	public final fun component1 ()Laws/smithy/kotlin/runtime/client/ExecutionContext;
+	public final fun component2 ()Ljava/lang/Object;
+	public final fun copy (Laws/smithy/kotlin/runtime/client/ExecutionContext;Ljava/lang/Object;)Laws/smithy/kotlin/runtime/http/operation/OperationRequest;
+	public static synthetic fun copy$default (Laws/smithy/kotlin/runtime/http/operation/OperationRequest;Laws/smithy/kotlin/runtime/client/ExecutionContext;Ljava/lang/Object;ILjava/lang/Object;)Laws/smithy/kotlin/runtime/http/operation/OperationRequest;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getContext ()Laws/smithy/kotlin/runtime/client/ExecutionContext;
+	public final fun getSubject ()Ljava/lang/Object;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public abstract interface class aws/smithy/kotlin/runtime/http/operation/ReceiveMiddleware : aws/smithy/kotlin/runtime/io/middleware/Middleware {
+	public abstract fun install (Laws/smithy/kotlin/runtime/http/operation/SdkHttpOperation;)V
+}
+
+public final class aws/smithy/kotlin/runtime/http/operation/ReceiveMiddleware$DefaultImpls {
+	public static fun install (Laws/smithy/kotlin/runtime/http/operation/ReceiveMiddleware;Laws/smithy/kotlin/runtime/http/operation/SdkHttpOperation;)V
+}
+
+public final class aws/smithy/kotlin/runtime/http/operation/SdkHttpOperation {
+	public static final field Companion Laws/smithy/kotlin/runtime/http/operation/SdkHttpOperation$Companion;
+	public final fun getContext ()Laws/smithy/kotlin/runtime/client/ExecutionContext;
+	public final fun getExecution ()Laws/smithy/kotlin/runtime/http/operation/SdkOperationExecution;
+	public final fun getInterceptors ()Ljava/util/List;
+	public final fun install (Laws/smithy/kotlin/runtime/http/operation/InitializeMiddleware;)V
+	public final fun install (Laws/smithy/kotlin/runtime/http/operation/InlineMiddleware;)V
+	public final fun install (Laws/smithy/kotlin/runtime/http/operation/ModifyRequestMiddleware;)V
+	public final fun install (Laws/smithy/kotlin/runtime/http/operation/MutateMiddleware;)V
+	public final fun install (Laws/smithy/kotlin/runtime/http/operation/ReceiveMiddleware;)V
+}
+
+public final class aws/smithy/kotlin/runtime/http/operation/SdkHttpOperation$Companion {
+}
+
+public final class aws/smithy/kotlin/runtime/http/operation/SdkHttpOperationBuilder {
+	public fun <init> (Lkotlin/reflect/KClass;Lkotlin/reflect/KClass;)V
+	public final fun build ()Laws/smithy/kotlin/runtime/http/operation/SdkHttpOperation;
+	public final fun getContext ()Laws/smithy/kotlin/runtime/http/operation/HttpOperationContext$Builder;
+	public final fun getDeserializer ()Laws/smithy/kotlin/runtime/http/operation/HttpDeserialize;
+	public final fun getExecution ()Laws/smithy/kotlin/runtime/http/operation/SdkOperationExecution;
+	public final fun getSerializer ()Laws/smithy/kotlin/runtime/http/operation/HttpSerialize;
+	public final fun setDeserializer (Laws/smithy/kotlin/runtime/http/operation/HttpDeserialize;)V
+	public final fun setSerializer (Laws/smithy/kotlin/runtime/http/operation/HttpSerialize;)V
+}
+
+public final class aws/smithy/kotlin/runtime/http/operation/SdkHttpOperationKt {
+	public static final fun context (Laws/smithy/kotlin/runtime/http/operation/SdkHttpOperationBuilder;Lkotlin/jvm/functions/Function1;)V
+	public static final fun execute (Laws/smithy/kotlin/runtime/http/operation/SdkHttpOperation;Laws/smithy/kotlin/runtime/io/Handler;Ljava/lang/Object;Lkotlin/jvm/functions/Function2;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static final fun getSdkRequestId (Laws/smithy/kotlin/runtime/client/ExecutionContext;)Ljava/lang/String;
+	public static final fun roundTrip (Laws/smithy/kotlin/runtime/http/operation/SdkHttpOperation;Laws/smithy/kotlin/runtime/io/Handler;Ljava/lang/Object;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
+public final class aws/smithy/kotlin/runtime/http/operation/SdkOperationExecution {
+	public fun <init> ()V
+	public final fun getInitialize ()Laws/smithy/kotlin/runtime/io/middleware/Phase;
+	public final fun getMutate ()Laws/smithy/kotlin/runtime/io/middleware/Phase;
+	public final fun getOnEachAttempt ()Laws/smithy/kotlin/runtime/io/middleware/Phase;
+	public final fun getReceive ()Laws/smithy/kotlin/runtime/io/middleware/Phase;
+	public final fun getRetryPolicy ()Laws/smithy/kotlin/runtime/retries/policy/RetryPolicy;
+	public final fun getRetryStrategy ()Laws/smithy/kotlin/runtime/retries/RetryStrategy;
+	public final fun getSigner ()Laws/smithy/kotlin/runtime/http/auth/HttpSigner;
+	public final fun setRetryPolicy (Laws/smithy/kotlin/runtime/retries/policy/RetryPolicy;)V
+	public final fun setRetryStrategy (Laws/smithy/kotlin/runtime/retries/RetryStrategy;)V
+	public final fun setSigner (Laws/smithy/kotlin/runtime/http/auth/HttpSigner;)V
+}
+
+public final class aws/smithy/kotlin/runtime/http/operation/UnitDeserializer : aws/smithy/kotlin/runtime/http/operation/HttpDeserialize {
+	public static final field INSTANCE Laws/smithy/kotlin/runtime/http/operation/UnitDeserializer;
+	public fun deserialize (Laws/smithy/kotlin/runtime/client/ExecutionContext;Laws/smithy/kotlin/runtime/http/response/HttpResponse;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
+public final class aws/smithy/kotlin/runtime/http/operation/UnitSerializer : aws/smithy/kotlin/runtime/http/operation/HttpSerialize {
+	public static final field INSTANCE Laws/smithy/kotlin/runtime/http/operation/UnitSerializer;
+	public synthetic fun serialize (Laws/smithy/kotlin/runtime/client/ExecutionContext;Ljava/lang/Object;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun serialize (Laws/smithy/kotlin/runtime/client/ExecutionContext;Lkotlin/Unit;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
+public abstract interface class aws/smithy/kotlin/runtime/http/request/HttpRequest {
+	public static final field Companion Laws/smithy/kotlin/runtime/http/request/HttpRequest$Companion;
+	public abstract fun getBody ()Laws/smithy/kotlin/runtime/http/HttpBody;
+	public abstract fun getHeaders ()Laws/smithy/kotlin/runtime/http/Headers;
+	public abstract fun getMethod ()Laws/smithy/kotlin/runtime/http/HttpMethod;
+	public abstract fun getUrl ()Laws/smithy/kotlin/runtime/http/Url;
+}
+
+public final class aws/smithy/kotlin/runtime/http/request/HttpRequest$Companion {
+	public final fun invoke (Lkotlin/jvm/functions/Function1;)Laws/smithy/kotlin/runtime/http/request/HttpRequest;
+}
+
+public final class aws/smithy/kotlin/runtime/http/request/HttpRequestBuilder : aws/smithy/kotlin/runtime/http/util/CanDeepCopy {
+	public fun <init> ()V
+	public final fun build ()Laws/smithy/kotlin/runtime/http/request/HttpRequest;
+	public fun deepCopy ()Laws/smithy/kotlin/runtime/http/request/HttpRequestBuilder;
+	public synthetic fun deepCopy ()Ljava/lang/Object;
+	public final fun getBody ()Laws/smithy/kotlin/runtime/http/HttpBody;
+	public final fun getHeaders ()Laws/smithy/kotlin/runtime/http/HeadersBuilder;
+	public final fun getMethod ()Laws/smithy/kotlin/runtime/http/HttpMethod;
+	public final fun getUrl ()Laws/smithy/kotlin/runtime/http/UrlBuilder;
+	public final fun setBody (Laws/smithy/kotlin/runtime/http/HttpBody;)V
+	public final fun setMethod (Laws/smithy/kotlin/runtime/http/HttpMethod;)V
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class aws/smithy/kotlin/runtime/http/request/HttpRequestBuilderKt {
+	public static final fun dumpRequest (Laws/smithy/kotlin/runtime/http/request/HttpRequestBuilder;ZLkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static final fun header (Laws/smithy/kotlin/runtime/http/request/HttpRequestBuilder;Ljava/lang/String;Ljava/lang/String;)V
+	public static final fun headers (Laws/smithy/kotlin/runtime/http/request/HttpRequestBuilder;Lkotlin/jvm/functions/Function1;)V
+	public static final fun url (Laws/smithy/kotlin/runtime/http/request/HttpRequestBuilder;Laws/smithy/kotlin/runtime/http/Url;)V
+	public static final fun url (Laws/smithy/kotlin/runtime/http/request/HttpRequestBuilder;Lkotlin/jvm/functions/Function1;)V
+}
+
+public final class aws/smithy/kotlin/runtime/http/request/HttpRequestKt {
+	public static final fun HttpRequest (Laws/smithy/kotlin/runtime/http/HttpMethod;Laws/smithy/kotlin/runtime/http/Url;Laws/smithy/kotlin/runtime/http/Headers;Laws/smithy/kotlin/runtime/http/HttpBody;)Laws/smithy/kotlin/runtime/http/request/HttpRequest;
+	public static final fun toBuilder (Laws/smithy/kotlin/runtime/http/request/HttpRequest;)Laws/smithy/kotlin/runtime/http/request/HttpRequestBuilder;
+}
+
+public final class aws/smithy/kotlin/runtime/http/response/HttpCall {
+	public fun <init> (Laws/smithy/kotlin/runtime/http/request/HttpRequest;Laws/smithy/kotlin/runtime/http/response/HttpResponse;Laws/smithy/kotlin/runtime/time/Instant;Laws/smithy/kotlin/runtime/time/Instant;Lkotlin/coroutines/CoroutineContext;)V
+	public synthetic fun <init> (Laws/smithy/kotlin/runtime/http/request/HttpRequest;Laws/smithy/kotlin/runtime/http/response/HttpResponse;Laws/smithy/kotlin/runtime/time/Instant;Laws/smithy/kotlin/runtime/time/Instant;Lkotlin/coroutines/CoroutineContext;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Laws/smithy/kotlin/runtime/http/request/HttpRequest;
+	public final fun component2 ()Laws/smithy/kotlin/runtime/http/response/HttpResponse;
+	public final fun component3 ()Laws/smithy/kotlin/runtime/time/Instant;
+	public final fun component4 ()Laws/smithy/kotlin/runtime/time/Instant;
+	public final fun component5 ()Lkotlin/coroutines/CoroutineContext;
+	public final fun copy (Laws/smithy/kotlin/runtime/http/request/HttpRequest;Laws/smithy/kotlin/runtime/http/response/HttpResponse;Laws/smithy/kotlin/runtime/time/Instant;Laws/smithy/kotlin/runtime/time/Instant;Lkotlin/coroutines/CoroutineContext;)Laws/smithy/kotlin/runtime/http/response/HttpCall;
+	public static synthetic fun copy$default (Laws/smithy/kotlin/runtime/http/response/HttpCall;Laws/smithy/kotlin/runtime/http/request/HttpRequest;Laws/smithy/kotlin/runtime/http/response/HttpResponse;Laws/smithy/kotlin/runtime/time/Instant;Laws/smithy/kotlin/runtime/time/Instant;Lkotlin/coroutines/CoroutineContext;ILjava/lang/Object;)Laws/smithy/kotlin/runtime/http/response/HttpCall;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getCallContext ()Lkotlin/coroutines/CoroutineContext;
+	public final fun getRequest ()Laws/smithy/kotlin/runtime/http/request/HttpRequest;
+	public final fun getRequestTime ()Laws/smithy/kotlin/runtime/time/Instant;
+	public final fun getResponse ()Laws/smithy/kotlin/runtime/http/response/HttpResponse;
+	public final fun getResponseTime ()Laws/smithy/kotlin/runtime/time/Instant;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class aws/smithy/kotlin/runtime/http/response/HttpCallKt {
+	public static final fun complete (Laws/smithy/kotlin/runtime/http/response/HttpCall;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
+public final class aws/smithy/kotlin/runtime/http/response/HttpResponse : aws/smithy/kotlin/runtime/ProtocolResponse {
+	public fun <init> (Laws/smithy/kotlin/runtime/http/HttpStatusCode;Laws/smithy/kotlin/runtime/http/Headers;Laws/smithy/kotlin/runtime/http/HttpBody;)V
+	public final fun component1 ()Laws/smithy/kotlin/runtime/http/HttpStatusCode;
+	public final fun component2 ()Laws/smithy/kotlin/runtime/http/Headers;
+	public final fun component3 ()Laws/smithy/kotlin/runtime/http/HttpBody;
+	public final fun copy (Laws/smithy/kotlin/runtime/http/HttpStatusCode;Laws/smithy/kotlin/runtime/http/Headers;Laws/smithy/kotlin/runtime/http/HttpBody;)Laws/smithy/kotlin/runtime/http/response/HttpResponse;
+	public static synthetic fun copy$default (Laws/smithy/kotlin/runtime/http/response/HttpResponse;Laws/smithy/kotlin/runtime/http/HttpStatusCode;Laws/smithy/kotlin/runtime/http/Headers;Laws/smithy/kotlin/runtime/http/HttpBody;ILjava/lang/Object;)Laws/smithy/kotlin/runtime/http/response/HttpResponse;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getBody ()Laws/smithy/kotlin/runtime/http/HttpBody;
+	public final fun getHeaders ()Laws/smithy/kotlin/runtime/http/Headers;
+	public final fun getStatus ()Laws/smithy/kotlin/runtime/http/HttpStatusCode;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class aws/smithy/kotlin/runtime/http/response/HttpResponseKt {
+	public static final fun dumpResponse (Laws/smithy/kotlin/runtime/http/response/HttpResponse;ZLkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static final fun getAllHeaders (Laws/smithy/kotlin/runtime/ProtocolResponse;Ljava/lang/String;)Ljava/util/List;
+	public static final fun header (Laws/smithy/kotlin/runtime/ProtocolResponse;Ljava/lang/String;)Ljava/lang/String;
+	public static final fun statusCode (Laws/smithy/kotlin/runtime/ProtocolResponse;)Laws/smithy/kotlin/runtime/http/HttpStatusCode;
+}
+
+public abstract interface class aws/smithy/kotlin/runtime/http/util/CanDeepCopy {
+	public abstract fun deepCopy ()Ljava/lang/Object;
+}
+
+public final class aws/smithy/kotlin/runtime/http/util/HeaderListsKt {
+	public static final fun quoteHeaderValue (Ljava/lang/String;)Ljava/lang/String;
+	public static final fun splitHeaderListValues (Ljava/lang/String;)Ljava/util/List;
+	public static final fun splitHttpDateHeaderListValues (Ljava/lang/String;)Ljava/util/List;
+}
+
+public abstract interface class aws/smithy/kotlin/runtime/http/util/StringValuesMap {
+	public abstract fun contains (Ljava/lang/String;)Z
+	public abstract fun contains (Ljava/lang/String;Ljava/lang/String;)Z
+	public abstract fun entries ()Ljava/util/Set;
+	public abstract fun forEach (Lkotlin/jvm/functions/Function2;)V
+	public abstract fun get (Ljava/lang/String;)Ljava/lang/String;
+	public abstract fun getAll (Ljava/lang/String;)Ljava/util/List;
+	public abstract fun getCaseInsensitiveName ()Z
+	public abstract fun isEmpty ()Z
+	public abstract fun names ()Ljava/util/Set;
+}
+
+public final class aws/smithy/kotlin/runtime/http/util/StringValuesMap$DefaultImpls {
+	public static fun contains (Laws/smithy/kotlin/runtime/http/util/StringValuesMap;Ljava/lang/String;Ljava/lang/String;)Z
+	public static fun forEach (Laws/smithy/kotlin/runtime/http/util/StringValuesMap;Lkotlin/jvm/functions/Function2;)V
+	public static fun get (Laws/smithy/kotlin/runtime/http/util/StringValuesMap;Ljava/lang/String;)Ljava/lang/String;
+}
+
+public class aws/smithy/kotlin/runtime/http/util/StringValuesMapBuilder {
+	public fun <init> ()V
+	public fun <init> (ZI)V
+	public synthetic fun <init> (ZIILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun append (Ljava/lang/String;Ljava/lang/String;)V
+	public final fun appendAll (Laws/smithy/kotlin/runtime/http/util/StringValuesMap;)V
+	public final fun appendAll (Ljava/lang/String;Ljava/lang/Iterable;)V
+	public final fun appendMissing (Laws/smithy/kotlin/runtime/http/util/StringValuesMap;)V
+	public final fun appendMissing (Ljava/lang/String;Ljava/lang/Iterable;)V
+	public fun build ()Laws/smithy/kotlin/runtime/http/util/StringValuesMap;
+	public final fun clear ()V
+	public final fun contains (Ljava/lang/String;)Z
+	public final fun contains (Ljava/lang/String;Ljava/lang/String;)Z
+	public final fun entries ()Ljava/util/Set;
+	public final fun get (Ljava/lang/String;)Ljava/lang/String;
+	public final fun getAll (Ljava/lang/String;)Ljava/util/List;
+	public final fun getCaseInsensitiveName ()Z
+	protected final fun getValues ()Ljava/util/Map;
+	public final fun isEmpty ()Z
+	public final fun names ()Ljava/util/Set;
+	public final fun remove (Ljava/lang/String;)Ljava/util/List;
+	public final fun remove (Ljava/lang/String;Ljava/lang/String;)Z
+	public final fun removeKeysWithNoEntries ()V
+	public final fun set (Ljava/lang/String;Ljava/lang/String;)V
+	public final fun setMissing (Ljava/lang/String;Ljava/lang/String;)V
+}
+
+public final class aws/smithy/kotlin/runtime/http/util/TextKt {
+	public static final fun encodeLabel (Ljava/lang/String;Z)Ljava/lang/String;
+	public static synthetic fun encodeLabel$default (Ljava/lang/String;ZILjava/lang/Object;)Ljava/lang/String;
+	public static final fun fullUriToQueryParameters (Ljava/lang/CharSequence;)Laws/smithy/kotlin/runtime/http/QueryParameters;
+	public static final fun splitAsQueryParameters (Ljava/lang/String;)Laws/smithy/kotlin/runtime/http/QueryParameters;
+}
+

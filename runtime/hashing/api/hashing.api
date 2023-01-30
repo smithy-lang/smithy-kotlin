@@ -1,0 +1,103 @@
+public final class aws/smithy/kotlin/runtime/hashing/Crc32 : aws/smithy/kotlin/runtime/hashing/Crc32Base {
+	public fun <init> ()V
+	public fun digestValue-pVg5ArA ()I
+	public fun reset ()V
+	public fun update ([BII)V
+}
+
+public abstract class aws/smithy/kotlin/runtime/hashing/Crc32Base : aws/smithy/kotlin/runtime/hashing/HashFunction {
+	public fun <init> ()V
+	public fun digest ()[B
+	public abstract fun digestValue-pVg5ArA ()I
+	public fun getBlockSizeBytes ()I
+	public fun getDigestSizeBytes ()I
+}
+
+public final class aws/smithy/kotlin/runtime/hashing/Crc32Kt {
+	public static final fun crc32 ([B)I
+}
+
+public final class aws/smithy/kotlin/runtime/hashing/Crc32c : aws/smithy/kotlin/runtime/hashing/Crc32Base {
+	public fun <init> ()V
+	public fun digestValue-pVg5ArA ()I
+	public fun reset ()V
+	public fun update ([BII)V
+}
+
+public final class aws/smithy/kotlin/runtime/hashing/Crc32cKt {
+	public static final fun crc32c ([B)I
+}
+
+public abstract interface class aws/smithy/kotlin/runtime/hashing/HashFunction {
+	public abstract fun digest ()[B
+	public abstract fun getBlockSizeBytes ()I
+	public abstract fun getDigestSizeBytes ()I
+	public abstract fun reset ()V
+	public abstract fun update ([BII)V
+}
+
+public final class aws/smithy/kotlin/runtime/hashing/HashFunction$DefaultImpls {
+	public static synthetic fun update$default (Laws/smithy/kotlin/runtime/hashing/HashFunction;[BIIILjava/lang/Object;)V
+}
+
+public final class aws/smithy/kotlin/runtime/hashing/HashFunctionKt {
+	public static final fun hash ([BLaws/smithy/kotlin/runtime/hashing/HashFunction;)[B
+	public static final fun hash ([BLkotlin/jvm/functions/Function0;)[B
+}
+
+public final class aws/smithy/kotlin/runtime/hashing/HmacKt {
+	public static final fun hmac ([B[BLaws/smithy/kotlin/runtime/hashing/HashFunction;)[B
+	public static final fun hmac ([B[BLkotlin/jvm/functions/Function0;)[B
+}
+
+public final class aws/smithy/kotlin/runtime/hashing/Md5 : aws/smithy/kotlin/runtime/hashing/Md5Base {
+	public fun <init> ()V
+	public fun digest ()[B
+	public fun reset ()V
+	public fun update ([BII)V
+}
+
+public abstract class aws/smithy/kotlin/runtime/hashing/Md5Base : aws/smithy/kotlin/runtime/hashing/HashFunction {
+	public fun <init> ()V
+	public fun getBlockSizeBytes ()I
+	public fun getDigestSizeBytes ()I
+}
+
+public final class aws/smithy/kotlin/runtime/hashing/Md5Kt {
+	public static final fun md5 ([B)[B
+}
+
+public final class aws/smithy/kotlin/runtime/hashing/Sha1 : aws/smithy/kotlin/runtime/hashing/Sha1Base {
+	public fun <init> ()V
+	public fun digest ()[B
+	public fun reset ()V
+	public fun update ([BII)V
+}
+
+public abstract class aws/smithy/kotlin/runtime/hashing/Sha1Base : aws/smithy/kotlin/runtime/hashing/HashFunction {
+	public fun <init> ()V
+	public fun getBlockSizeBytes ()I
+	public fun getDigestSizeBytes ()I
+}
+
+public final class aws/smithy/kotlin/runtime/hashing/Sha1Kt {
+	public static final fun sha1 ([B)[B
+}
+
+public final class aws/smithy/kotlin/runtime/hashing/Sha256 : aws/smithy/kotlin/runtime/hashing/Sha256Base {
+	public fun <init> ()V
+	public fun digest ()[B
+	public fun reset ()V
+	public fun update ([BII)V
+}
+
+public abstract class aws/smithy/kotlin/runtime/hashing/Sha256Base : aws/smithy/kotlin/runtime/hashing/HashFunction {
+	public fun <init> ()V
+	public fun getBlockSizeBytes ()I
+	public fun getDigestSizeBytes ()I
+}
+
+public final class aws/smithy/kotlin/runtime/hashing/Sha256Kt {
+	public static final fun sha256 ([B)[B
+}
+

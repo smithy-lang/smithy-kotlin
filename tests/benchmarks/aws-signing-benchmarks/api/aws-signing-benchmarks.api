@@ -1,0 +1,7 @@
+public class aws/smithy/kotlin/benchmarks/auth/signing/AwsSignerBenchmark {
+	public fun <init> ()V
+	public final fun getSignerName ()Ljava/lang/String;
+	public final fun setSignerName (Ljava/lang/String;)V
+	public final fun signingBenchmark ()Laws/smithy/kotlin/runtime/auth/awssigning/AwsSigningResult;
+}
+
