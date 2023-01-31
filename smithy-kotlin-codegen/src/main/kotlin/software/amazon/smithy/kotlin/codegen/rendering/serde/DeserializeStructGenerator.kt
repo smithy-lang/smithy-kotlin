@@ -566,7 +566,7 @@ open class DeserializeStructGenerator(
             target.type == ShapeType.DOCUMENT -> "deserializeDocument()"
 
             target.type == ShapeType.BLOB -> {
-                writer.addImport("decodeBase64Bytes", KotlinDependency.UTILS)
+                writer.addImport(RuntimeTypes.Core.Utils.decodeBase64Bytes)
                 "deserializeString().decodeBase64Bytes()"
             }
 

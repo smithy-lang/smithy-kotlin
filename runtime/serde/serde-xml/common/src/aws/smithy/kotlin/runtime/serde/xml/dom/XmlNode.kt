@@ -5,6 +5,7 @@
 
 package aws.smithy.kotlin.runtime.serde.xml.dom
 
+import aws.smithy.kotlin.runtime.InternalApi
 import aws.smithy.kotlin.runtime.serde.DeserializationException
 import aws.smithy.kotlin.runtime.serde.xml.XmlStreamReader
 import aws.smithy.kotlin.runtime.serde.xml.XmlToken

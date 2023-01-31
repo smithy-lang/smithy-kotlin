@@ -6,7 +6,6 @@
 package software.amazon.smithy.kotlin.codegen.rendering.protocol
 
 import software.amazon.smithy.codegen.core.SymbolProvider
-import software.amazon.smithy.kotlin.codegen.core.KotlinDependency
 import software.amazon.smithy.kotlin.codegen.core.KotlinWriter
 import software.amazon.smithy.kotlin.codegen.core.RuntimeTypes
 import software.amazon.smithy.kotlin.codegen.core.addImport
@@ -66,11 +65,11 @@ class HttpStringValuesMapSerializer(
                     writer.addImport(RuntimeTypes.Core.TimestampFormat)
                 }
                 is BlobShape -> {
-                    writer.addImport("encodeBase64String", KotlinDependency.UTILS)
                     writer.write(
-                        "if (input.#1L?.isNotEmpty() == true) append(\"#2L\", input.#1L.encodeBase64String())",
+                        "if (input.#1L?.isNotEmpty() == true) append(\"#2L\", input.#1L.#T())",
                         memberName,
                         paramName,
+                        RuntimeTypes.Core.Utils.encodeBase64String,
                     )
                 }
                 is StringShape -> renderStringShape(it, memberTarget, writer)
@@ -108,9 +107,7 @@ class HttpStringValuesMapSerializer(
             }
             ShapeType.STRING -> {
                 when (binding.location) {
-                    HttpBinding.Location.QUERY -> {
-                        if (collectionMemberTarget.isEnum) "it.value" else ""
-                    }
+                    HttpBinding.Location.QUERY -> if (collectionMemberTarget.isEnum) "it.value" else ""
                     else -> {
                         // collections of enums should be mapped to the raw values
                         val inner = if (collectionMemberTarget.isEnum) "it.value" else "it"
@@ -163,7 +160,7 @@ class HttpStringValuesMapSerializer(
                     ".value"
                 }
                 memberTarget.hasTrait<MediaTypeTrait>() -> {
-                    writer.addImport("encodeBase64", KotlinDependency.UTILS)
+                    writer.addImport(RuntimeTypes.Core.Utils.encodeBase64)
                     ".encodeBase64()"
                 }
                 else -> ""

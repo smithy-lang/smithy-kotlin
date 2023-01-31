@@ -27,7 +27,7 @@ class PlatformJVMTest {
 
     @Test
     fun itReadsFiles() = runBlocking {
-        val actual = Platform.readFileOrNull(tempFile.absolutePathString())
+        val actual = PlatformProvider.System.readFileOrNull(tempFile.absolutePathString())
 
         assertNotNull(actual)
         assertEquals(fileContent, actual.decodeToString())
@@ -36,7 +36,7 @@ class PlatformJVMTest {
     @Test
     fun testGetAllEnvVars() {
         val allEnvVarsFromSystem = System.getenv()
-        val allEnvVarsFromPlatform = Platform.getAllEnvVars()
+        val allEnvVarsFromPlatform = PlatformProvider.System.getAllEnvVars()
         assertEquals(allEnvVarsFromSystem, allEnvVarsFromPlatform)
     }
 
@@ -46,7 +46,7 @@ class PlatformJVMTest {
             .getProperties()
             .entries
             .associate { (key, value) -> key.toString() to value.toString() }
-        val allPropertiesFromPlatform = Platform.getAllProperties()
+        val allPropertiesFromPlatform = PlatformProvider.System.getAllProperties()
         assertEquals(allPropertiesFromSystem, allPropertiesFromPlatform)
     }
 }

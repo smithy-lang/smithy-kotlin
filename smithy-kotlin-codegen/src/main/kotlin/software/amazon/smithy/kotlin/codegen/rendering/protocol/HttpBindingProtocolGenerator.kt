@@ -726,9 +726,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                     )
                 }
                 is BlobShape -> {
-                    writer
-                        .addImport("decodeBase64", KotlinDependency.UTILS)
-                        .write("builder.#L = response.headers[#S]?.decodeBase64()", memberName, headerName)
+                    writer.write("builder.#L = response.headers[#S]?.#T()", memberName, headerName, RuntimeTypes.Core.Utils.decodeBase64)
                 }
                 is StringShape -> {
                     when {
@@ -743,9 +741,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                             )
                         }
                         memberTarget.hasTrait<MediaTypeTrait>() -> {
-                            writer
-                                .addImport("decodeBase64", KotlinDependency.UTILS)
-                                .write("builder.#L = response.headers[#S]?.decodeBase64()", memberName, headerName)
+                            writer.write("builder.#L = response.headers[#S]?.#T()", memberName, headerName, RuntimeTypes.Core.Utils.decodeBase64)
                         }
                         else -> {
                             writer.write("builder.#L = response.headers[#S]", memberName, headerName)
@@ -797,7 +793,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                                     "${enumSymbol.name}.fromValue(it)"
                                 }
                                 collectionMemberTarget.hasTrait<MediaTypeTrait>() -> {
-                                    writer.addImport("decodeBase64", KotlinDependency.UTILS)
+                                    writer.addImport(RuntimeTypes.Core.Utils.decodeBase64)
                                     "it.decodeBase64()"
                                 }
                                 else -> ""

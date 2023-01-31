@@ -37,7 +37,7 @@ kotlin {
         }
 
         all {
-            languageSettings.optIn("aws.smithy.kotlin.runtime.util.InternalApi")
+            languageSettings.optIn("aws.smithy.kotlin.runtime.InternalApi")
             // internal test suite, not published
             explicitApi = org.jetbrains.kotlin.gradle.dsl.ExplicitApiMode.Disabled
         }

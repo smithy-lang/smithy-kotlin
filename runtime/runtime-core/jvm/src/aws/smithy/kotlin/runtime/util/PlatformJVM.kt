@@ -20,11 +20,11 @@ internal actual object SystemDefaultProvider : PlatformProvider {
      */
     override fun getenv(key: String): String? = System.getenv()[key]
 
-    public actual val isJvm: Boolean = true
-    public actual val isAndroid: Boolean by lazy { isAndroid() }
-    public actual val isBrowser: Boolean = false
-    public actual val isNode: Boolean = false
-    public actual val isNative: Boolean = false
+    override val isJvm: Boolean = true
+    override val isAndroid: Boolean by lazy { isAndroid() }
+    override val isBrowser: Boolean = false
+    override val isNode: Boolean = false
+    override val isNative: Boolean = false
 
     override fun osInfo(): OperatingSystem = getOsInfo()
 

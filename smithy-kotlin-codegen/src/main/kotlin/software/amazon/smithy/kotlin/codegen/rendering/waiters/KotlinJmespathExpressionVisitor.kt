@@ -71,7 +71,7 @@ class KotlinJmespathExpressionVisitor(val writer: KotlinWriter) : ExpressionVisi
     }
 
     override fun visitAnd(expression: AndExpression): String {
-        writer.addImport(RuntimeTypes.Utils.truthiness)
+        writer.addImport(RuntimeTypes.Core.Utils.truthiness)
 
         val leftName = expression.left.accept(this)
         val leftTruthinessName = addTempVar("${leftName}Truthiness", "truthiness($leftName)")
@@ -125,7 +125,7 @@ class KotlinJmespathExpressionVisitor(val writer: KotlinWriter) : ExpressionVisi
     }
 
     override fun visitFlatten(expression: FlattenExpression): String {
-        writer.addImport(RuntimeTypes.Utils.flattenIfPossible)
+        writer.addImport(RuntimeTypes.Core.Utils.flattenIfPossible)
 
         val innerName = expression.expression.accept(this)
         return addTempVar("${innerName}OrEmpty", "$innerName?.flattenIfPossible() ?: listOf()")
@@ -146,7 +146,7 @@ class KotlinJmespathExpressionVisitor(val writer: KotlinWriter) : ExpressionVisi
 
         "length" -> {
             codegenReq(expression.arguments.size == 1) { "Unexpected number of arguments to $expression" }
-            writer.addImport(RuntimeTypes.Utils.length)
+            writer.addImport(RuntimeTypes.Core.Utils.length)
 
             val subject = expression.arguments[0]
             val subjectName = subject.accept(this)
@@ -189,7 +189,7 @@ class KotlinJmespathExpressionVisitor(val writer: KotlinWriter) : ExpressionVisi
     }
 
     override fun visitNot(expression: NotExpression): String {
-        writer.addImport(RuntimeTypes.Utils.truthiness)
+        writer.addImport(RuntimeTypes.Core.Utils.truthiness)
 
         val operandName = expression.expression.accept(this)
         val truthinessName = addTempVar("${operandName}Truthiness", "truthiness($operandName)")
@@ -204,7 +204,7 @@ class KotlinJmespathExpressionVisitor(val writer: KotlinWriter) : ExpressionVisi
     }
 
     override fun visitOr(expression: OrExpression): String {
-        writer.addImport(RuntimeTypes.Utils.truthiness)
+        writer.addImport(RuntimeTypes.Core.Utils.truthiness)
 
         val leftName = expression.left.accept(this)
         val leftTruthinessName = addTempVar("${leftName}Truthiness", "truthiness($leftName)")
