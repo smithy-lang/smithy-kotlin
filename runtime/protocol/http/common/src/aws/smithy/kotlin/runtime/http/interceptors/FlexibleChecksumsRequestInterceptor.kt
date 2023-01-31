@@ -99,7 +99,7 @@ public class FlexibleChecksumsRequestInterceptor<I>(
                     val bufferSize: Long = 8192
 
                     val channel = req.body.toSdkByteReadChannel()!!
-                    while(!channel.isClosedForRead) {
+                    while (!channel.isClosedForRead) {
                         channel.read(buffer, bufferSize)
                         checksumAlgorithm.update(buffer.readToByteArray())
                     }
