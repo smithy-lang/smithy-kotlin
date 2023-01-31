@@ -52,7 +52,7 @@ public class FlexibleChecksumsRequestInterceptor<I>(
 
         val req = context.protocolRequest.toBuilder()
 
-        check(context.protocolRequest.body.contentLength != null && context.protocolRequest.body.contentLength!! > 0) {
+        check(context.protocolRequest.body !is HttpBody.Empty) {
             "Can't calculate the checksum of an empty body"
         }
 
@@ -92,10 +92,26 @@ public class FlexibleChecksumsRequestInterceptor<I>(
         } else if (req.headers[headerName] == null) {
             logger.debug { "Calculating checksum" }
 
-            val bodyBytes = req.body.readAll()!!
-            req.body = bodyBytes.toHttpBody() // replace the consumed body
+            val checksum: String = when {
+                req.body.contentLength == null && !req.body.isOneShot -> {
+                    // calculate the checksum using a rolling hash
+                    val buffer = SdkBuffer()
+                    val bufferSize: Long = 8192
 
-            val checksum = bodyBytes.hash(checksumAlgorithm).encodeBase64String()
+                    val channel = req.body.toSdkByteReadChannel()!!
+                    while(!channel.isClosedForRead) {
+                        channel.read(buffer, bufferSize)
+                        checksumAlgorithm.update(buffer.readToByteArray())
+                    }
+                    checksumAlgorithm.digest().encodeBase64String()
+                }
+                else -> {
+                    val bodyBytes = req.body.readAll()!!
+                    req.body = bodyBytes.toHttpBody() // replace the consumed body
+                    bodyBytes.hash(checksumAlgorithm).encodeBase64String()
+                }
+            }
+
             req.header(headerName, checksum)
         }
 
