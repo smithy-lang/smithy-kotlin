@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package aws.smithy.kotlin.runtime.internal
+package aws.smithy.kotlin.runtime.util
 
 import aws.smithy.kotlin.runtime.InternalApi
 import kotlinx.coroutines.CoroutineName

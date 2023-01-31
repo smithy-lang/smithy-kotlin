@@ -6,7 +6,7 @@
 package aws.smithy.kotlin.runtime.http.engine.okhttp
 
 import aws.smithy.kotlin.runtime.http.HttpBody
-import aws.smithy.kotlin.runtime.internal.derivedName
+import aws.smithy.kotlin.runtime.util.derivedName
 import aws.smithy.kotlin.runtime.io.internal.toOkio
 import aws.smithy.kotlin.runtime.io.internal.toSdk
 import aws.smithy.kotlin.runtime.io.readAll
