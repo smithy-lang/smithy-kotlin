@@ -36,12 +36,12 @@ internal val CHECKSUM_HEADER_VALIDATION_PRIORITY_LIST: List<String> = listOf(
  * The checksum is validated after the user has consumed the entire body using a checksum validating body.
  * Users can check which checksum was validated by referencing the `ResponseChecksumValidated` execution context variable.
  *
- * @param block A function which uses the input [I] to return whether response checksum validation should occur
+ * @param shouldValidateResponseChecksumInitializer A function which uses the input [I] to return whether response checksum validation should occur
  */
 
 @InternalApi
 public class FlexibleChecksumsResponseInterceptor<I>(
-    private val block: (input: I) -> Boolean,
+    private val shouldValidateResponseChecksumInitializer: (input: I) -> Boolean,
 ) : HttpInterceptor {
 
     private var shouldValidateResponseChecksum: Boolean = false
@@ -54,7 +54,7 @@ public class FlexibleChecksumsResponseInterceptor<I>(
     override fun readBeforeSerialization(context: RequestInterceptorContext<Any>) {
         @Suppress("UNCHECKED_CAST")
         val input = context.request as I
-        shouldValidateResponseChecksum = block(input)
+        shouldValidateResponseChecksum = shouldValidateResponseChecksumInitializer(input)
     }
 
     override suspend fun modifyBeforeDeserialization(context: ProtocolResponseInterceptorContext<Any, HttpRequest, HttpResponse>): HttpResponse {
