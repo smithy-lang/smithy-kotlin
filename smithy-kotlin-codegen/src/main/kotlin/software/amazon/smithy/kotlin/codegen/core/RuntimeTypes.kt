@@ -103,8 +103,6 @@ object RuntimeTypes {
     }
 
     object Core : RuntimeTypePackage(KotlinDependency.CORE) {
-        val Attributes = symbol("Attributes")
-        val AttributeKey = symbol("AttributeKey")
         val ExecutionContext = symbol("ExecutionContext", "client")
         val ErrorMetadata = symbol("ErrorMetadata")
         val ServiceErrorMetadata = symbol("ServiceErrorMetadata")
@@ -175,6 +173,8 @@ object RuntimeTypes {
             val addIfManaged = symbol("addIfManaged", isExtension = true)
         }
         object Utils : RuntimeTypePackage(KotlinDependency.CORE, "util") {
+            val Attributes = symbol("Attributes")
+            val AttributeKey = symbol("AttributeKey")
             val flattenIfPossible = symbol("flattenIfPossible")
             val length = symbol("length")
             val truthiness = symbol("truthiness")

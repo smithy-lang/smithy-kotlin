@@ -163,7 +163,7 @@ class DefaultEndpointProviderGenerator(
                 }
 
                 if (rule.endpoint.properties.isNotEmpty()) {
-                    withBlock("attributes = #T().apply {", "},", RuntimeTypes.Core.Attributes) {
+                    withBlock("attributes = #T().apply {", "},", RuntimeTypes.Core.Utils.Attributes) {
                         rule.endpoint.properties.entries.forEach { (k, v) ->
                             val kStr = k.asString()
 
@@ -176,7 +176,7 @@ class DefaultEndpointProviderGenerator(
                             // otherwise, we just traverse the value like any other rules expression, object values will
                             // be rendered as Documents
                             withBlock("set(", ")") {
-                                write("#T(#S),", RuntimeTypes.Core.AttributeKey, kStr)
+                                write("#T(#S),", RuntimeTypes.Core.Utils.AttributeKey, kStr)
                                 renderExpression(v)
                                 write(",")
                             }
