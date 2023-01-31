@@ -40,8 +40,7 @@ kotlin {
         val jvmMain by getting {
             dependencies {
                 val ktorVersion: String by project
-                implementation(project(":runtime:io"))
-                implementation(project(":runtime:utils"))
+                implementation(project(":runtime:runtime-core"))
                 implementation("io.ktor:ktor-io:$ktorVersion")
             }
         }

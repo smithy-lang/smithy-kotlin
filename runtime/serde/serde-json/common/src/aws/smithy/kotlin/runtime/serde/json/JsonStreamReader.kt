@@ -4,8 +4,8 @@
  */
 package aws.smithy.kotlin.runtime.serde.json
 
+import aws.smithy.kotlin.runtime.InternalApi
 import aws.smithy.kotlin.runtime.serde.DeserializationException
-import aws.smithy.kotlin.runtime.util.InternalApi
 
 /**
  * Interface for deserializing JSON documents as a stream of tokens

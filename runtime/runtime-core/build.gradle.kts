@@ -3,6 +3,17 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+buildscript {
+    val atomicFuVersion: String by project
+    repositories {
+        mavenCentral()
+    }
+
+    dependencies {
+        classpath("org.jetbrains.kotlinx:atomicfu-gradle-plugin:$atomicFuVersion")
+    }
+}
+
 plugins {
     kotlin("plugin.serialization") version "1.8.0"
 }
@@ -12,16 +23,16 @@ extra["displayName"] = "Smithy :: Kotlin :: Client Runtime"
 extra["moduleName"] = "aws.smithy.kotlin.runtime"
 
 val coroutinesVersion: String by project
+val okioVersion: String by project
+val atomicFuVersion: String by project
+apply(plugin = "kotlinx-atomicfu")
 
 kotlin {
     sourceSets {
         commonMain {
             dependencies {
-                // io types are exposed as part of content/*
-                // SdkClient also implements Closeable
-                api(project(":runtime:io"))
-                // Attributes property bag is exposed as client options
-                api(project(":runtime:utils"))
+                implementation("com.squareup.okio:okio:$okioVersion")
+                implementation("org.jetbrains.kotlinx:atomicfu:$atomicFuVersion")
                 // Coroutines' locking features are used in retry token bucket implementations
                 api("org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion")
             }

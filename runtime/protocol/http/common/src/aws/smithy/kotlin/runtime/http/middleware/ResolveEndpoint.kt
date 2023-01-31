@@ -4,11 +4,11 @@
  */
 package aws.smithy.kotlin.runtime.http.middleware
 
+import aws.smithy.kotlin.runtime.InternalApi
 import aws.smithy.kotlin.runtime.http.endpoints.EndpointProvider
 import aws.smithy.kotlin.runtime.http.endpoints.setResolvedEndpoint
 import aws.smithy.kotlin.runtime.http.operation.*
 import aws.smithy.kotlin.runtime.tracing.debug
-import aws.smithy.kotlin.runtime.util.InternalApi
 import kotlin.coroutines.coroutineContext
 
 /**

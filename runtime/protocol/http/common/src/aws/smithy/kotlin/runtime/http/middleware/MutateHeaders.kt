@@ -5,9 +5,9 @@
 
 package aws.smithy.kotlin.runtime.http.middleware
 
+import aws.smithy.kotlin.runtime.InternalApi
 import aws.smithy.kotlin.runtime.http.*
 import aws.smithy.kotlin.runtime.http.operation.*
-import aws.smithy.kotlin.runtime.util.InternalApi
 
 /**
  * HTTP middleware feature that allows mutation of in-flight request headers

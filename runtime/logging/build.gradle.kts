@@ -14,7 +14,7 @@ kotlin {
     sourceSets {
         commonMain {
             dependencies {
-                api(project(":runtime:utils"))
+                api(project(":runtime:runtime-core"))
                 implementation("io.github.microutils:kotlin-logging:$kotlinLoggingVersion")
             }
         }

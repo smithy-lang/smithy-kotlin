@@ -5,7 +5,7 @@
 
 package aws.smithy.kotlin.runtime.internal
 
-import aws.smithy.kotlin.runtime.util.InternalApi
+import aws.smithy.kotlin.runtime.InternalApi
 import kotlinx.coroutines.CoroutineName
 import kotlin.coroutines.CoroutineContext
 

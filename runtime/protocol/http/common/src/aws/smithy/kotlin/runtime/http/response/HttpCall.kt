@@ -5,10 +5,10 @@
 
 package aws.smithy.kotlin.runtime.http.response
 
+import aws.smithy.kotlin.runtime.InternalApi
 import aws.smithy.kotlin.runtime.http.HttpBody
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.time.Instant
-import aws.smithy.kotlin.runtime.util.InternalApi
 import kotlinx.coroutines.CompletableJob
 import kotlinx.coroutines.Job
 import kotlin.coroutines.CoroutineContext

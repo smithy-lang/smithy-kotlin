@@ -5,7 +5,7 @@
 
 package aws.smithy.kotlin.runtime.client
 
-import aws.smithy.kotlin.runtime.util.InternalApi
+import aws.smithy.kotlin.runtime.InternalApi
 
 /**
  * Abstract base class all [SdkClient] builders should inherit from

@@ -14,9 +14,9 @@ kotlin {
     sourceSets {
         commonMain {
             dependencies {
+                implementation(project(":runtime:runtime-core"))
                 api(project(":runtime:protocol:http"))
                 implementation(project(":runtime:logging"))
-                implementation(project(":runtime:io"))
 
                 implementation("com.squareup.okhttp3:okhttp:$okHttpVersion")
                 implementation("com.squareup.okhttp3:okhttp-coroutines:$okHttpVersion")
@@ -26,7 +26,6 @@ kotlin {
         commonTest {
             dependencies {
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:$coroutinesVersion")
-                implementation(project(":runtime:hashing"))
             }
         }
 

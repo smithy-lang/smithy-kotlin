@@ -5,6 +5,7 @@
 
 package aws.smithy.kotlin.runtime.http.endpoints
 
+import aws.smithy.kotlin.runtime.InternalApi
 import aws.smithy.kotlin.runtime.http.Headers
 import aws.smithy.kotlin.runtime.http.Url
 import aws.smithy.kotlin.runtime.http.operation.HttpOperationContext
@@ -12,7 +13,6 @@ import aws.smithy.kotlin.runtime.http.operation.SdkHttpRequest
 import aws.smithy.kotlin.runtime.net.Host
 import aws.smithy.kotlin.runtime.util.AttributeKey
 import aws.smithy.kotlin.runtime.util.Attributes
-import aws.smithy.kotlin.runtime.util.InternalApi
 
 /**
  * Represents the endpoint a service client should make API operation calls to.

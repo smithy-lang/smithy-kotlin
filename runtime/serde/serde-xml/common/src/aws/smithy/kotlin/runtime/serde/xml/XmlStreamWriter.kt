@@ -5,8 +5,8 @@
 
 package aws.smithy.kotlin.runtime.serde.xml
 
+import aws.smithy.kotlin.runtime.InternalApi
 import aws.smithy.kotlin.runtime.serde.xml.serialization.BufferingXmlStreamWriter
-import aws.smithy.kotlin.runtime.util.InternalApi
 
 /**
  * Defines an interface to serialization of an XML Infoset.

@@ -6,7 +6,7 @@
 package aws.smithy.kotlin.runtime.crt
 
 import aws.sdk.kotlin.crt.io.*
-import aws.smithy.kotlin.runtime.util.InternalApi
+import aws.smithy.kotlin.runtime.InternalApi
 
 // FIXME - this should default to number of processors
 private const val DEFAULT_EVENT_LOOP_THREAD_COUNT: Int = 1

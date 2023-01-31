@@ -12,7 +12,6 @@ kotlin {
         commonMain {
             dependencies {
                 api(project(":runtime:serde"))
-                implementation(project(":runtime:io"))
             }
         }
 

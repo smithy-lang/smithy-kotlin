@@ -5,8 +5,8 @@
 package aws.smithy.kotlin.benchmarks.serde.xml
 
 import aws.smithy.kotlin.benchmarks.serde.BenchmarkBase
+import aws.smithy.kotlin.runtime.InternalApi
 import aws.smithy.kotlin.runtime.serde.xml.xmlStreamWriter
-import aws.smithy.kotlin.runtime.util.InternalApi
 import kotlinx.benchmark.*
 
 @OptIn(InternalApi::class)

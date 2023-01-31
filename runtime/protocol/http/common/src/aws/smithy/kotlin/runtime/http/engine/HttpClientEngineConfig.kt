@@ -4,8 +4,8 @@
  */
 package aws.smithy.kotlin.runtime.http.engine
 
+import aws.smithy.kotlin.runtime.InternalApi
 import aws.smithy.kotlin.runtime.net.HostResolver
-import aws.smithy.kotlin.runtime.util.InternalApi
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 

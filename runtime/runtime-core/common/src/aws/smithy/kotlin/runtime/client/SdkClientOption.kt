@@ -5,7 +5,7 @@
 
 package aws.smithy.kotlin.runtime.client
 
-import aws.smithy.kotlin.runtime.util.InternalApi
+import aws.smithy.kotlin.runtime.InternalApi
 
 /**
  * Common client execution options
