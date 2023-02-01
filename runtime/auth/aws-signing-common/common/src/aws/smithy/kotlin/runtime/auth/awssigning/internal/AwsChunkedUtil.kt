@@ -59,9 +59,9 @@ internal val AwsSigningConfig.useAwsChunkedEncoding: Boolean
  * Set the HTTP headers required for the aws-chunked content encoding
  */
 internal fun HttpRequestBuilder.setAwsChunkedHeaders() {
-    headers.setMissing("Content-Encoding", "aws-chunked")
-    headers.setMissing("Transfer-Encoding", "chunked")
-    headers.setMissing("X-Amz-Decoded-Content-Length", body.contentLength!!.toString())
+    headers.append("Content-Encoding", "aws-chunked")
+    headers["Transfer-Encoding"] = "chunked"
+    headers["X-Amz-Decoded-Content-Length"] = body.contentLength!!.toString()
 }
 
 /**
