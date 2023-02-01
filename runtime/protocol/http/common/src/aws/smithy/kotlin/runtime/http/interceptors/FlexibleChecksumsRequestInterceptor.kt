@@ -94,16 +94,8 @@ public class FlexibleChecksumsRequestInterceptor<I>(
 
             val checksum: String = when {
                 req.body.contentLength == null && !req.body.isOneShot -> {
-                    // calculate the checksum using a rolling hash
-                    val buffer = SdkBuffer()
-                    val bufferSize: Long = 8192
-
                     val channel = req.body.toSdkByteReadChannel()!!
-                    while (!channel.isClosedForRead) {
-                        channel.read(buffer, bufferSize)
-                        checksumAlgorithm.update(buffer.readToByteArray())
-                    }
-                    checksumAlgorithm.digest().encodeBase64String()
+                    channel.rollingHash(checksumAlgorithm).encodeBase64String()
                 }
                 else -> {
                     val bodyBytes = req.body.readAll()!!
@@ -181,5 +173,18 @@ public class FlexibleChecksumsRequestInterceptor<I>(
                     deferred.complete(hashingChannel.digest().encodeBase64String())
                 }
             }
+    }
+
+    /**
+     * Compute the rolling hash of an [SdkByteReadChannel] using [hashFunction], reading up-to [bufferSize] bytes into memory
+     * @return a ByteArray of the hash function's digest
+     */
+    private suspend fun SdkByteReadChannel.rollingHash(hashFunction: HashFunction, bufferSize: Long = 8192): ByteArray {
+        val buffer = SdkBuffer()
+        while (!isClosedForRead) {
+            read(buffer, bufferSize)
+            hashFunction.update(buffer.readToByteArray())
+        }
+        return hashFunction.digest()
     }
 }
