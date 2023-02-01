@@ -152,12 +152,13 @@ x-amz-trailer-signature:<trailer-signature> + \r\n
 \r\n
 ```
 
-To calculate the checksum while the payload is being written, the body will be wrapped in either a `HashingSource`
-or a `HashingByteReadChannel`, depending on its type. These are new types which are constructed with an [`SdkSource`](https://github.com/awslabs/smithy-kotlin/blob/5773afb348c779b9e4aa9689836844f21a571908/runtime/io/common/src/aws/smithy/kotlin/runtime/io/SdkSource.kt) or 
+To calculate the checksum while the payload is being written, the body will be wrapped in either a [`HashingSource`](https://github.com/awslabs/smithy-kotlin/blob/354c6cf011190bb4dff349d0c4a812c1de609d18/runtime/io/common/src/aws/smithy/kotlin/runtime/io/HashingSource.kt)
+or a [`HashingByteReadChannel`](https://github.com/awslabs/smithy-kotlin/blob/354c6cf011190bb4dff349d0c4a812c1de609d18/runtime/io/common/src/aws/smithy/kotlin/runtime/io/HashingByteReadChannel.kt), 
+depending on its type. These are new types which are constructed with an [`SdkSource`](https://github.com/awslabs/smithy-kotlin/blob/5773afb348c779b9e4aa9689836844f21a571908/runtime/io/common/src/aws/smithy/kotlin/runtime/io/SdkSource.kt) or 
 [`SdkByteReadChannel`](https://github.com/awslabs/smithy-kotlin/blob/5773afb348c779b9e4aa9689836844f21a571908/runtime/io/common/src/aws/smithy/kotlin/runtime/io/SdkByteReadChannel.kt),
 respectively, along with a `HashFunction`. These constructs will use the provided hash function to compute the checksum as the data is being read.
 
-Further down the middleware chain, this hashing body will be wrapped once more in an `aws-chunked` body. This body is used to format the 
+Later in the request's lifecycle, this hashing body will be wrapped once more in an `aws-chunked` body. This body is used to format the 
 underlying data source into `aws-chunked` content encoding. 
 
 After sending the body, the checksum needs to be sent as a trailing header. It's desirable to avoid tight coupling of the 
@@ -401,7 +402,7 @@ Ultimately, it was decided to store trailing headers in the `HttpRequest` (speci
 
 ## Synchronous Checksum Validation
 Instead of calculating the response checksum as the body is consumed by the user, a design choice was considered where
-checksum calculation would be done in a blocking manner in the middleware. This way, the response checksum would be validated
+checksum calculation would be done in a blocking manner in the interceptor. This way, the response checksum would be validated
 before passing the response on to the user.
 
 Pros:
