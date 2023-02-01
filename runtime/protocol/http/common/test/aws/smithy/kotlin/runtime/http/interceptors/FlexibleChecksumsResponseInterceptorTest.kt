@@ -20,8 +20,6 @@ import aws.smithy.kotlin.runtime.time.Instant
 import aws.smithy.kotlin.runtime.util.get
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
-import org.junit.jupiter.params.ParameterizedTest
-import org.junit.jupiter.params.provider.CsvSource
 import kotlin.test.*
 
 data class TestInput(val value: String)
@@ -46,6 +44,16 @@ inline fun <reified I> newTestOperation(serialized: HttpRequestBuilder): SdkHttp
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class FlexibleChecksumsResponseInterceptorTest {
+
+    private val response = "abc".repeat(1024).toByteArray()
+
+    private val checksums: List<Pair<String, String>> = listOf(
+        "crc32c" to "wS3hug==",
+        "crc32" to "UClbrQ==",
+        "sha1" to "vwFegy8gsWrablgsmDmpvWqf1Yw=",
+        "sha256" to "Z7AuR1ssOIhqbjhaKBn3S0hvPhIm27zu9jqT/1SMjNY=",
+    )
+
     private fun getMockClient(response: ByteArray, responseHeaders: Headers = Headers.Empty): SdkHttpClient {
         val mockEngine = object : HttpClientEngineBase("test") {
             override suspend fun roundTrip(context: ExecutionContext, request: HttpRequest): HttpCall {
@@ -63,73 +71,58 @@ class FlexibleChecksumsResponseInterceptorTest {
         return SdkHttpClient(mockEngine)
     }
 
-    @ParameterizedTest
-    @CsvSource(
-        value = [
-            "crc32c,wS3hug==",
-            "crc32,UClbrQ==",
-            "sha1,vwFegy8gsWrablgsmDmpvWqf1Yw=",
-            "sha256,Z7AuR1ssOIhqbjhaKBn3S0hvPhIm27zu9jqT/1SMjNY=",
-        ],
-    )
-    fun testResponseChecksumValid(checksumAlgorithmName: String, expectedChecksum: String) = runTest {
-        val req = HttpRequestBuilder()
-        val op = newTestOperation<TestInput>(req)
+    @Test
+    fun testResponseChecksumValid() = runTest {
+        checksums.forEach { (checksumAlgorithmName, expectedChecksum) ->
+            val req = HttpRequestBuilder()
+            val op = newTestOperation<TestInput>(req)
 
-        op.interceptors.add(
-            FlexibleChecksumsResponseInterceptor<TestInput> {
-                true
-            },
-        )
+            op.interceptors.add(
+                FlexibleChecksumsResponseInterceptor<TestInput> {
+                    true
+                },
+            )
 
-        val response = "abc".repeat(1024).toByteArray()
+            val responseChecksumHeaderName = "x-amz-checksum-$checksumAlgorithmName"
 
-        val responseChecksumHeaderName = "x-amz-checksum-$checksumAlgorithmName"
+            val responseHeaders = Headers {
+                append(responseChecksumHeaderName, expectedChecksum)
+            }
 
-        val responseHeaders = Headers {
-            append(responseChecksumHeaderName, expectedChecksum)
-        }
+            val client = getMockClient(response, responseHeaders)
 
-        val client = getMockClient(response, responseHeaders)
-
-        val output = op.roundTrip(client, TestInput("input"))
-        output.body.readAll()
-        assertEquals(responseChecksumHeaderName, op.context[ChecksumHeaderValidated])
-    }
-
-    @ParameterizedTest
-    @CsvSource(
-        value = [
-            "crc32c,wS3hug==",
-            "crc32,UClbrQ==",
-            "sha1,vwFegy8gsWrablgsmDmpvWqf1Yw=",
-            "sha256,Z7AuR1ssOIhqbjhaKBn3S0hvPhIm27zu9jqT/1SMjNY=",
-        ],
-    )
-    fun testResponseServiceChecksumInvalid(checksumAlgorithmName: String) = runTest {
-        val req = HttpRequestBuilder()
-        val op = newTestOperation<TestInput>(req)
-
-        op.interceptors.add(
-            FlexibleChecksumsResponseInterceptor<TestInput> {
-                true
-            },
-        )
-
-        val response = "abc".repeat(1024).toByteArray()
-        val responseChecksumHeaderName = "x-amz-checksum-$checksumAlgorithmName"
-
-        val responseHeaders = Headers {
-            append(responseChecksumHeaderName, "incorrect-$checksumAlgorithmName-checksum-from-service")
-        }
-        val client = getMockClient(response, responseHeaders)
-
-        assertFailsWith<ChecksumMismatchException> {
             val output = op.roundTrip(client, TestInput("input"))
             output.body.readAll()
+            assertEquals(responseChecksumHeaderName, op.context[ChecksumHeaderValidated])
         }
+    }
 
-        assertEquals(op.context[ChecksumHeaderValidated], responseChecksumHeaderName)
+    @Test
+    fun testResponseServiceChecksumInvalid() = runTest {
+        checksums.forEach { (checksumAlgorithmName, _) ->
+            val req = HttpRequestBuilder()
+            val op = newTestOperation<TestInput>(req)
+
+            op.interceptors.add(
+                FlexibleChecksumsResponseInterceptor<TestInput> {
+                    true
+                },
+            )
+
+            val responseChecksumHeaderName = "x-amz-checksum-$checksumAlgorithmName"
+
+            val responseHeaders = Headers {
+                append(responseChecksumHeaderName, "incorrect-$checksumAlgorithmName-checksum-from-service")
+            }
+            val client = getMockClient(response, responseHeaders)
+
+            assertFailsWith<ChecksumMismatchException> {
+                val output = op.roundTrip(client, TestInput("input"))
+                output.body.readAll()
+            }
+
+            assertEquals(op.context[ChecksumHeaderValidated], responseChecksumHeaderName)
+        }
     }
 
     @Test
@@ -143,7 +136,6 @@ class FlexibleChecksumsResponseInterceptorTest {
             },
         )
 
-        val response = "abc".repeat(1024).toByteArray()
         val responseHeaders = Headers {
             append("x-amz-checksum-crc32c", "wS3hug==")
             append("x-amz-checksum-sha1", "vwFegy8gsWrablgsmDmpvWqf1Yw=")
@@ -168,7 +160,6 @@ class FlexibleChecksumsResponseInterceptorTest {
             },
         )
 
-        val response = "abc".repeat(1024).toByteArray()
         val responseHeaders = Headers {
             append("x-amz-checksum-crc32c-1", "incorrect-checksum-would-throw-if-validated")
         }
@@ -178,16 +169,8 @@ class FlexibleChecksumsResponseInterceptorTest {
         op.roundTrip(client, TestInput("input"))
     }
 
-    @ParameterizedTest
-    @CsvSource(
-        value = [
-            "crc32c,wS3hug==",
-            "crc32,UClbrQ==",
-            "sha1,vwFegy8gsWrablgsmDmpvWqf1Yw=",
-            "sha256,Z7AuR1ssOIhqbjhaKBn3S0hvPhIm27zu9jqT/1SMjNY=",
-        ],
-    )
-    fun testSkipsValidationWhenDisabled(checksumAlgorithmName: String) = runTest {
+    @Test
+    fun testSkipsValidationWhenDisabled() = runTest {
         val req = HttpRequestBuilder()
         val op = newTestOperation<TestInput>(req)
 
@@ -197,8 +180,7 @@ class FlexibleChecksumsResponseInterceptorTest {
             },
         )
 
-        val response = "abc".repeat(1024).toByteArray()
-        val responseChecksumHeaderName = "x-amz-checksum-$checksumAlgorithmName"
+        val responseChecksumHeaderName = "x-amz-checksum-crc32"
 
         val responseHeaders = Headers {
             append(responseChecksumHeaderName, "incorrect-checksum-would-throw-if-validated")

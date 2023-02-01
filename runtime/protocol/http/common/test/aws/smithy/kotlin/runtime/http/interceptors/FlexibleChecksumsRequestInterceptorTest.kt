@@ -26,8 +26,6 @@ import aws.smithy.kotlin.runtime.util.get
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
-import org.junit.jupiter.params.ParameterizedTest
-import org.junit.jupiter.params.provider.CsvSource
 import kotlin.test.*
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -40,31 +38,32 @@ class FlexibleChecksumsRequestInterceptorTest {
     }
     private val client = SdkHttpClient(mockEngine)
 
-    @ParameterizedTest
-    @CsvSource(
-        value = [
-            "crc32c,6QF4+w==",
-            "crc32,WdqXHQ==",
-            "sha1,Vk45UfsxIxsZQQ3D1gAU7PsGvz4=",
-            "sha256,1dXchshIKqXiaKCqueqR7AOz1qLpiqayo7gbnaxzaQo=",
-        ],
+    private val checksums = listOf(
+        "crc32c" to "6QF4+w==",
+        "crc32" to "WdqXHQ==",
+        "sha1" to "Vk45UfsxIxsZQQ3D1gAU7PsGvz4=",
+        "sha256" to "1dXchshIKqXiaKCqueqR7AOz1qLpiqayo7gbnaxzaQo=",
     )
-    fun itSetsChecksumHeader(checksumAlgorithmName: String, expectedChecksumValue: String) = runTest {
-        val req = HttpRequestBuilder().apply {
-            body = ByteArrayContent("<Foo>bar</Foo>".encodeToByteArray())
+
+    @Test
+    fun itSetsChecksumHeader() = runTest {
+        checksums.forEach { (checksumAlgorithmName, expectedChecksumValue) ->
+            val req = HttpRequestBuilder().apply {
+                body = ByteArrayContent("<Foo>bar</Foo>".encodeToByteArray())
+            }
+
+            val op = newTestOperation<Unit, Unit>(req, Unit)
+
+            op.interceptors.add(
+                FlexibleChecksumsRequestInterceptor<Unit> {
+                    checksumAlgorithmName
+                },
+            )
+
+            op.roundTrip(client, Unit)
+            val call = op.context.attributes[HttpOperationContext.HttpCallList].first()
+            assertEquals(expectedChecksumValue, call.request.headers["x-amz-checksum-$checksumAlgorithmName"])
         }
-
-        val op = newTestOperation<Unit, Unit>(req, Unit)
-
-        op.interceptors.add(
-            FlexibleChecksumsRequestInterceptor<Unit> {
-                checksumAlgorithmName
-            },
-        )
-
-        op.roundTrip(client, Unit)
-        val call = op.context.attributes[HttpOperationContext.HttpCallList].first()
-        assertEquals(expectedChecksumValue, call.request.headers["x-amz-checksum-$checksumAlgorithmName"])
     }
 
     @Test
