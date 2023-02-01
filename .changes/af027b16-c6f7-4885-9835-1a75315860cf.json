@@ -1,0 +1,5 @@
+{
+    "id": "af027b16-c6f7-4885-9835-1a75315860cf",
+    "type": "feature",
+    "description": "Add support for unsigned `aws-chunked` requests"
+}

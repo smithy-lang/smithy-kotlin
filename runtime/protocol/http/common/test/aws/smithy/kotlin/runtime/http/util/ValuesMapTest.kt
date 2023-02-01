@@ -8,20 +8,20 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotEquals
 
-class StringValuesMapTest {
+class ValuesMapTest {
     @Test
     fun testEmptyEquality() {
-        assertEquals(StringValuesMapBuilder().build(), StringValuesMapBuilder().build())
+        assertEquals(ValuesMapBuilder<String>().build(), ValuesMapBuilder<String>().build())
     }
 
     @Test
     fun testEquality() {
         assertEquals(
-            StringValuesMapBuilder().apply {
+            ValuesMapBuilder<String>().apply {
                 append("k", "v")
                 appendAll("i", listOf("j", "k"))
             }.build(),
-            StringValuesMapBuilder().apply {
+            ValuesMapBuilder<String>().apply {
                 append("k", "v")
                 appendAll("i", listOf("j", "k"))
             }.build(),
@@ -31,27 +31,27 @@ class StringValuesMapTest {
     @Test
     fun testInequality() {
         assertNotEquals(
-            StringValuesMapBuilder().apply {
+            ValuesMapBuilder<String>().apply {
                 append("k", "v")
             }.build(),
-            StringValuesMapBuilder().apply {
+            ValuesMapBuilder<String>().apply {
                 append("k", "v")
                 appendAll("i", listOf("j", "k"))
             }.build(),
         )
         assertNotEquals(
-            StringValuesMapBuilder().apply {
+            ValuesMapBuilder<String>().apply {
                 append("k", "v")
             }.build(),
-            StringValuesMapBuilder().apply {
+            ValuesMapBuilder<String>().apply {
                 append("k", "v2")
             }.build(),
         )
         assertNotEquals(
-            StringValuesMapBuilder().apply {
+            ValuesMapBuilder<String>().apply {
                 append("k", "v")
             }.build(),
-            StringValuesMapBuilder().apply {
+            ValuesMapBuilder<String>().apply {
                 append("K", "v")
             }.build(),
         )
@@ -59,10 +59,10 @@ class StringValuesMapTest {
 
     @Test
     fun testCaseInsensitiveEquality() {
-        val i = StringValuesMapBuilder(caseInsensitiveName = true).apply {
+        val i = ValuesMapBuilder<String>(caseInsensitiveName = true).apply {
             append("k", "v")
         }.build()
-        val j = StringValuesMapBuilder(caseInsensitiveName = true).apply {
+        val j = ValuesMapBuilder<String>(caseInsensitiveName = true).apply {
             append("K", "v")
         }.build()
 
@@ -72,10 +72,10 @@ class StringValuesMapTest {
 
     @Test
     fun testCaseInsensitiveInequality() {
-        val i = StringValuesMapBuilder(caseInsensitiveName = true).apply {
+        val i = ValuesMapBuilder<String>(caseInsensitiveName = true).apply {
             append("k", "v")
         }.build()
-        val j = StringValuesMapBuilder(caseInsensitiveName = true).apply {
+        val j = ValuesMapBuilder<String>(caseInsensitiveName = true).apply {
             append("K", "v2")
         }.build()
 
@@ -85,10 +85,10 @@ class StringValuesMapTest {
 
     @Test
     fun testCrossCaseSensitiveInequality() {
-        val i = StringValuesMapBuilder(caseInsensitiveName = true).apply {
+        val i = ValuesMapBuilder<String>(caseInsensitiveName = true).apply {
             append("k", "v")
         }.build()
-        val j = StringValuesMapBuilder(caseInsensitiveName = false).apply {
+        val j = ValuesMapBuilder<String>(caseInsensitiveName = false).apply {
             append("k", "v")
         }.build()
 

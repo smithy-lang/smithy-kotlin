@@ -57,3 +57,16 @@ public typealias HashSupplier = () -> HashFunction
  */
 @InternalApi
 public fun ByteArray.hash(hashSupplier: HashSupplier): ByteArray = hash(hashSupplier(), this)
+
+@InternalApi
+/**
+ * Return the [HashFunction] which is represented by this string, or null if none match.
+ */
+public fun String.toHashFunction(): HashFunction? = when (this.lowercase()) {
+    "crc32" -> Crc32()
+    "crc32c" -> Crc32c()
+    "sha1" -> Sha1()
+    "sha256" -> Sha256()
+    "md5" -> Md5()
+    else -> null
+}

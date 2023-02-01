@@ -22,10 +22,10 @@ import software.amazon.smithy.model.traits.TimestampFormatTrait
 
 /**
  * Shared implementation to generate serialization for members bound to HTTP query parameters or headers
- * (both of which are implemented using `StringValuesMap`).
+ * (both of which are implemented using `ValuesMap<String>`).
  *
  * This is a partial generator, the entry point for rendering from this component is an open block where the current
- * value of `this` is a `StringValuesMapBuilder`.
+ * value of `this` is a `ValuesMapBuilder<String>`.
  *
  * Example output this class generates:
  * ```

@@ -4,13 +4,14 @@
  */
 package aws.smithy.kotlin.runtime.http
 
+import aws.smithy.kotlin.runtime.http.EmptyQueryParameters.deepCopy
 import aws.smithy.kotlin.runtime.http.util.*
 import aws.smithy.kotlin.runtime.util.text.urlEncodeComponent
 
 /**
  * Container for HTTP query parameters
  */
-public interface QueryParameters : StringValuesMap {
+public interface QueryParameters : ValuesMap<String> {
     public companion object {
         public operator fun invoke(block: QueryParametersBuilder.() -> Unit): QueryParameters = QueryParametersBuilder()
             .apply(block).build()
@@ -31,10 +32,9 @@ private object EmptyQueryParameters : QueryParameters {
     override fun isEmpty(): Boolean = true
 }
 
-public class QueryParametersBuilder : StringValuesMapBuilder(true, 8), CanDeepCopy<QueryParametersBuilder> {
+public class QueryParametersBuilder : ValuesMapBuilder<String>(true, 8), CanDeepCopy<QueryParametersBuilder> {
     override fun toString(): String = "QueryParametersBuilder ${entries()} "
     override fun build(): QueryParameters = QueryParametersImpl(values)
-
     override fun deepCopy(): QueryParametersBuilder {
         val originalValues = values.deepCopy()
         return QueryParametersBuilder().apply { values.putAll(originalValues) }
@@ -47,7 +47,7 @@ public fun Map<String, String>.toQueryParameters(): QueryParameters {
     return builder.build()
 }
 
-private class QueryParametersImpl(values: Map<String, List<String>> = emptyMap()) : QueryParameters, StringValuesMapImpl(true, values) {
+private class QueryParametersImpl(values: Map<String, List<String>> = emptyMap()) : QueryParameters, ValuesMapImpl<String>(true, values) {
     override fun toString(): String = "QueryParameters ${entries()}"
 
     override fun equals(other: Any?): Boolean = other is QueryParameters && entries() == other.entries()

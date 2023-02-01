@@ -54,7 +54,6 @@ object RuntimeTypes {
         }
 
         object Middleware : RuntimeTypePackage(KotlinDependency.HTTP, "middleware") {
-            val Md5ChecksumMiddleware = symbol("Md5Checksum")
             val MutateHeadersMiddleware = symbol("MutateHeaders")
             val RetryMiddleware = symbol("RetryMiddleware")
             val ResolveEndpoint = symbol("ResolveEndpoint")
@@ -97,6 +96,9 @@ object RuntimeTypes {
         }
         object Interceptors : RuntimeTypePackage(KotlinDependency.HTTP, "interceptors") {
             val HttpInterceptor = symbol("HttpInterceptor")
+            val Md5ChecksumInterceptor = symbol("Md5ChecksumInterceptor")
+            val FlexibleChecksumsRequestInterceptor = symbol("FlexibleChecksumsRequestInterceptor")
+            val FlexibleChecksumsResponseInterceptor = symbol("FlexibleChecksumsResponseInterceptor")
         }
     }
 

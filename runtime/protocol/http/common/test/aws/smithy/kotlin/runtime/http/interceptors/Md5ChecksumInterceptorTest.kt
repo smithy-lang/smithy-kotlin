@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package aws.smithy.kotlin.runtime.http.middleware
+package aws.smithy.kotlin.runtime.http.interceptors
 
 import aws.smithy.kotlin.runtime.client.ExecutionContext
 import aws.smithy.kotlin.runtime.http.Headers
@@ -29,7 +29,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNull
 
 @OptIn(ExperimentalCoroutinesApi::class)
-class Md5ChecksumTest {
+class Md5ChecksumInterceptorTest {
     private val mockEngine = object : HttpClientEngineBase("test") {
         override suspend fun roundTrip(context: ExecutionContext, request: HttpRequest): HttpCall {
             val resp = HttpResponse(HttpStatusCode.OK, Headers.Empty, HttpBody.Empty)
@@ -45,7 +45,11 @@ class Md5ChecksumTest {
         }
         val op = newTestOperation<Unit, Unit>(req, Unit)
 
-        op.install(Md5Checksum())
+        op.interceptors.add(
+            Md5ChecksumInterceptor<Unit> {
+                true
+            },
+        )
 
         val expected = "RG22oBSZFmabBbkzVGRi4w=="
         op.roundTrip(client, Unit)
@@ -62,7 +66,29 @@ class Md5ChecksumTest {
         }
         val op = newTestOperation<Unit, Unit>(req, Unit)
 
-        op.install(Md5Checksum())
+        op.interceptors.add(
+            Md5ChecksumInterceptor<Unit> {
+                true
+            },
+        )
+
+        op.roundTrip(client, Unit)
+        val call = op.context.attributes[HttpOperationContext.HttpCallList].first()
+        assertNull(call.request.headers["Content-MD5"])
+    }
+
+    @Test
+    fun itDoesNotSetContentMd5Header() = runTest {
+        val req = HttpRequestBuilder().apply {
+            body = ByteArrayContent("<Foo>bar</Foo>".encodeToByteArray())
+        }
+        val op = newTestOperation<Unit, Unit>(req, Unit)
+
+        op.interceptors.add(
+            Md5ChecksumInterceptor<Unit> {
+                false // interceptor disabled
+            },
+        )
 
         op.roundTrip(client, Unit)
         val call = op.context.attributes[HttpOperationContext.HttpCallList].first()

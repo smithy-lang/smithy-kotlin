@@ -39,7 +39,7 @@ internal class RetryMiddleware<I, O>(
             .let { request.copy(subject = it.toBuilder()) }
 
         var attempt = 1
-        val result = if (request.subject.isRetryable) {
+        val result = if (modified.subject.isRetryable) {
             // FIXME this is the wrong span because we want the fresh one from inside each attempt but there's no way to
             // wire that through without changing the `RetryPolicy` interface
             val wrappedPolicy = PolicyLogger(policy, coroutineContext.traceSpan)
@@ -51,7 +51,7 @@ internal class RetryMiddleware<I, O>(
                     }
 
                     // Deep copy the request because later middlewares (e.g., signing) mutate it
-                    val requestCopy = request.deepCopy()
+                    val requestCopy = modified.deepCopy()
 
                     val attemptResult = tryAttempt(requestCopy, next, attempt)
                     attempt++

@@ -133,15 +133,15 @@ public class AwsHttpSigner(private val config: Config) : HttpSigner {
 
             hashSpecification = when {
                 contextHashSpecification != null -> contextHashSpecification
-                config.isUnsignedPayload -> HashSpecification.UnsignedPayload
                 body is HttpBody.Empty -> HashSpecification.EmptyBody
                 body.isEligibleForAwsChunkedStreaming -> {
                     if (request.headers.contains("x-amz-trailer")) {
-                        HashSpecification.StreamingAws4HmacSha256PayloadWithTrailers
+                        if (config.isUnsignedPayload) HashSpecification.StreamingUnsignedPayloadWithTrailers else HashSpecification.StreamingAws4HmacSha256PayloadWithTrailers
                     } else {
                         HashSpecification.StreamingAws4HmacSha256Payload
                     }
                 }
+                config.isUnsignedPayload -> HashSpecification.UnsignedPayload
                 // use the payload to compute the hash
                 else -> HashSpecification.CalculateFromPayload
             }
@@ -160,7 +160,12 @@ public class AwsHttpSigner(private val config: Config) : HttpSigner {
         request.update(signedRequest)
 
         if (signingConfig.useAwsChunkedEncoding) {
-            request.setAwsChunkedBody(checkNotNull(config.signer), signingConfig, signingResult.signature)
+            request.setAwsChunkedBody(
+                checkNotNull(config.signer),
+                signingConfig,
+                signingResult.signature,
+                request.trailingHeaders.build(),
+            )
         }
     }
 }

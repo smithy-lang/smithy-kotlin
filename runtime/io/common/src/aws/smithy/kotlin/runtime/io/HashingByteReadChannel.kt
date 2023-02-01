@@ -6,21 +6,23 @@
 package aws.smithy.kotlin.runtime.io
 
 import aws.smithy.kotlin.runtime.hashing.HashFunction
-import aws.smithy.kotlin.runtime.io.internal.SdkSourceObserver
 import aws.smithy.kotlin.runtime.util.InternalApi
 
 /**
- * A source which hashes data as it is being consumed
+ * A channel which hashes data as it is being read
  * @param hash The [HashFunction] to hash data with
- * @param source the [SdkSource] to hash
+ * @param chan the [SdkByteReadChannel] to hash
  */
 @InternalApi
-public class HashingSource(
+public class HashingByteReadChannel(
     private val hash: HashFunction,
-    private val source: SdkSource,
-) : SdkSourceObserver(source) {
-    override fun observe(data: ByteArray, offset: Int, length: Int) {
-        hash.update(data, offset, length)
+    private val chan: SdkByteReadChannel,
+) : SdkByteReadChannel by chan {
+    public override suspend fun read(sink: SdkBuffer, limit: Long): Long {
+        val bufferedHashingSink = HashingSink(hash, sink).buffer()
+        return chan.read(bufferedHashingSink.buffer, limit).also {
+            bufferedHashingSink.emit()
+        }
     }
 
     /**
