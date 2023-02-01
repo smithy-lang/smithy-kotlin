@@ -252,8 +252,9 @@ This allows users to add custom interceptors which modify the validation opt-in 
 The `modifyBeforeDeserialization` hook's purpose is to validate the checksum before the response is deserialized into its output type. 
 
 First, the body will be wrapped in a `HashingSource`/`HashingByteReadChannel`. This will calculate the checksum as the body is being consumed.
-The response body will also be wrapped in a `ChecksumValidatingSource`/`ChecksumValidatingByteReadChannel`. This is a new type which takes an expected checksum and an underlying
-hashing data source. After the underlying data is fully consumed, the checksum is digested and validated.
+The response body will also be wrapped in a [`ChecksumValidatingSource`](https://github.com/awslabs/smithy-kotlin/blob/354c6cf011190bb4dff349d0c4a812c1de609d18/runtime/protocol/http/common/src/aws/smithy/kotlin/runtime/http/interceptors/FlexibleChecksumsResponseInterceptor.kt#L88-L100)
+/[`ChecksumValidatingByteReadChannel`](https://github.com/awslabs/smithy-kotlin/blob/354c6cf011190bb4dff349d0c4a812c1de609d18/runtime/protocol/http/common/src/aws/smithy/kotlin/runtime/http/interceptors/FlexibleChecksumsResponseInterceptor.kt#L102-L114). 
+This is a new type which takes an expected checksum and an underlying hashing data source. After the underlying data is fully consumed, the checksum is digested and validated.
 
 Below is the implementation of the `ChecksumValidatingSource`, which performs checksum validation after the underlying `HashingSource` is fully consumed:
 ```kotlin
