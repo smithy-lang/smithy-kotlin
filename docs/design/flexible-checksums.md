@@ -338,8 +338,8 @@ val getObjectRequest = GetObjectRequest {
 
 # Appendix: Alternative Designs Considered
 
-## CompletableFuture Deferred Headers
-Instead of `CompletableFuture`, `LazyAsyncValue` and `RunnableFuture` were evaluated for use as a deferred header value.
+## Deferred Headers
+Instead of `Deferred`, `LazyAsyncValue` and `RunnableFuture` were evaluated for use as a deferred header value.
 
 ### `LazyAsyncValue`
 
@@ -357,12 +357,11 @@ when `.get()` is called, which could happen earlier than intended
 ### `RunnableFuture`
 Pros:
 - Execution can be delayed until the result is actually needed
-  - Fixes the issue with eager execution in `CompletableFuture`
 Cons:
 - There is no concept of completion
   - Calling `.get()` on a `Future` / `RunnableFuture` will block until it's complete
 
-Ultimately, `CompletableFuture` was chosen because it provides a way to model completion and the value can be set in a non-blocking manner.
+Ultimately, `Deferred` was chosen because it provides a way to model completion (via `CompletableDeferred`) and the value can be set in a non-blocking manner.
 
 ## Storing Trailing Headers in `HttpRequest` or `HttpBody` 
 Users must be able to modify the trailing headers at any point before the request is signed.
