@@ -7,13 +7,11 @@ package aws.smithy.kotlin.runtime.io
 
 import aws.smithy.kotlin.runtime.hashing.HashFunction
 import aws.smithy.kotlin.runtime.util.InternalApi
-import kotlinx.coroutines.CompletableDeferred
 
 /**
  * A channel which hashes data as it is being read
  * @param hash The [HashFunction] to hash data with
  * @param chan the [SdkByteReadChannel] to hash
- * @param deferred the optional [CompletableDeferred] to be completed using the Base64-encoded digest of [chan] after it is exhausted
  */
 @InternalApi
 public class HashingByteReadChannel(
