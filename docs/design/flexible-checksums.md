@@ -28,20 +28,17 @@ This was computed using the MD5 algorithm and injected in the request under the 
 AWS services should use the `httpChecksum` trait's `requestChecksumRequired` property instead.
 
 The `requestChecksumRequired` property being set to `true` or the `httpChecksumRequired` trait being present on an operation
-means a checksum is required for that operation.
-
-If a checksum is required, and the user does not opt-in to using flexible checksums, the SDK will continue the legacy behavior
+means a checksum is required for that operation. If a checksum is required, and the user does not opt-in to using flexible checksums, the SDK will continue the legacy behavior
 of injecting the `Content-MD5` header.
+
 ## Checksum Algorithms
 
-The SDK needs to support the following checksum algorithms: CRC32C, CRC32, SHA-1, SHA-256.
-All of them are [already implemented for JVM](https://github.com/awslabs/smithy-kotlin/tree/5773afb348c779b9e4aa9689836844f21a571908/runtime/hashing/jvm/src/aws/smithy/kotlin/runtime/hashing).
+The SDK needs to support the following checksum algorithms: CRC32C, CRC32, SHA-1, SHA-256. All of them are [already implemented for JVM](https://github.com/awslabs/smithy-kotlin/tree/5773afb348c779b9e4aa9689836844f21a571908/runtime/hashing/jvm/src/aws/smithy/kotlin/runtime/hashing).
 
 As part of this feature, CRC32C was implemented in **smithy-kotlin** [PR#724](https://github.com/awslabs/smithy-kotlin/pull/724). 
 This algorithm is essentially the same as CRC32, but uses a different polynomial under the hood. 
 The SDK uses [`java.util.zip`'s implementation of CRC32](https://docs.oracle.com/javase/8/docs/api/java/util/zip/CRC32.html), 
-but this package only began shipping CRC32C in Java 9. The SDK requires Java 8, so this was implemented
-rather than imported as a dependency (which is also [what the Java SDK did](https://github.com/aws/aws-sdk-java-v2/blob/ecc12b43a4aedc433c39742a2ae1361bd8d17991/core/sdk-core/src/main/java/software/amazon/awssdk/core/internal/checksums/factory/SdkCrc32C.java)).
+but this package only began shipping CRC32C in Java 9. The SDK requires Java 8, so this was implemented rather than importing it as a dependency.
 
 ### Header Name
 
@@ -50,22 +47,25 @@ using SHA-256, the header containing the checksum will be `x-amz-checksum-sha256
 
 # Implementation
 
-This feature can be implemented by adding two new middleware: one for calculating checksums for requests, and one for
-validating checksums present in responses.
+This feature can be implemented by adding two new [interceptors](https://github.com/awslabs/smithy-kotlin/blob/5773afb348c779b9e4aa9689836844f21a571908/docs/design/interceptors.md):
+one for calculating checksums for requests, and one for validating checksums present in responses.
 
 ## Requests
 
 During an HTTP request, the SDK first needs to check if the user has opted-in to sending checksums. If they have not opted-in,
 but the operation has the `requestChecksumRequired` property set, the SDK will fall back to the legacy behavior of computing the MD5 checksum.
 
-### Middleware
-A new middleware is introduced at the `mutate` stage. There are many middleware which operate at this stage. 
-It is important that this new middleware come before [`AwsSigningMiddleware`](https://github.com/awslabs/smithy-kotlin/blob/5773afb348c779b9e4aa9689836844f21a571908/runtime/auth/aws-signing-common/common/src/aws/smithy/kotlin/runtime/auth/awssigning/middleware/AwsSigningMiddleware.kt#L26)
-because it is dependent on the header values set in this new middleware (specifically `x-amz-trailer`).
+### Interceptor
+A new interceptor is introduced and hooks added to the `readAfterSerialization` and `modifyBeforeRetryLoop` stages. 
 
-The SDK exposes an `order` integer parameter which is used to model dependencies between middleware.
-The `order` of `AwsSigningMiddleware` has already been set to 126, which ensures it will be executed towards the end of the mutate middleware stack,
-after this flexible checksums middleware has run.
+#### readAfterSerialization
+
+The `readAfterSerialization` hook is used to finalize the user's request and decide if the checksum computation will take place.
+By only finalizing the user's flexible checksums request at this stage, users can add custom interceptors to modify the checksum algorithm
+before the checksum computation takes place.
+
+#### modifyBeforeRetryLoop
+The `modifyBeforeRetryLoop` hook is used to mutate the request, computing and adding the checksum to the headers or calculating it asynchronously and sending it as a trailing header. 
 
 ### Normal vs. Streaming Requests
 
@@ -131,8 +131,8 @@ An exception will be thrown if the algorithm can't be parsed or if it's not supp
 Note that because users select an algorithm from a code-generated enum, accidentally selecting an unsupported algorithm is unlikely.
 
 ### Computing and Injecting Checksums
-Next the SDK will compute and inject the checksum. If the body is smaller than the `aws-chunked` threshold ([1MB today](https://github.com/awslabs/smithy-kotlin/blob/9b9297c690d9a01777447f437f0e91562e146bf9/runtime/auth/aws-signing-common/common/src/aws/smithy/kotlin/runtime/auth/awssigning/middleware/AwsSigningMiddleware.kt#L38)) 
-and replayable, the checksum will be immediately computed and injected under the appropriate header name.
+Next the SDK will compute and inject the checksum. If the body is smaller than the `aws-chunked` threshold ([1MB today](https://github.com/awslabs/smithy-kotlin/blob/9b9297c690d9a01777447f437f0e91562e146bf9/runtime/auth/aws-signing-common/common/src/aws/smithy/kotlin/runtime/auth/awssigning/middleware/AwsSigningMiddleware.kt#L38)), 
+the checksum will be immediately computed and injected under the appropriate header name.
 
 Otherwise, if the request body is large enough to be uploaded with `aws-chunked`, the SDK will append the checksum header name to the `x-amz-trailer` header.
 
@@ -196,15 +196,15 @@ new types of `Source`/`ByteReadChannel` are introduced, called `CompletingSource
 
 Below is the signature of `CompletingSource`:
 ```kotlin
-CompletingSource(
-    private val deferredChecksum: CompletableDeferred<String>,
-    private val source: HashingSource
+internal class CompletingSource(
+    private val deferred: CompletableDeferred<String>,
+    private val hashingSource: HashingSource
 )
 ```
 
 This will be used to wrap the `HashingSource`. When the source is fully exhausted, 
 the calculated checksum will be digested and used to `.complete()` the `CompletableDeferred`. 
-The same will be done for `HashingByteReadChannel` using a `CompletingByteReadChannel`.
+The same is done for `HashingByteReadChannel` using a `CompletingByteReadChannel`.
 
 #### Mutating Trailing Headers
 
@@ -231,10 +231,7 @@ After making a request, a user may want to validate the response using a checksu
 response checksums by setting a non-null value on the member represented by the `requestValidationModeMember` property.
 
 ### Checksum Validation Priority
-The service may return many checksums, but the SDK must only validate one.
-
-When multiple checksums are returned, the validation priority is: 
-
+The service may return many checksums, but the SDK must only validate one. When multiple checksums are returned, the validation priority is:
 1. CRC32C
 1. CRC32
 1. SHA-1
@@ -242,31 +239,34 @@ When multiple checksums are returned, the validation priority is:
 
 For example, if the service returns both SHA-256 and CRC32 checksums, the SDK must only validate the CRC32 checksum.
 
+### Interceptor
 
-### Middleware
+To run this validation process, a new interceptor is added with hooks to `readBeforeSerialization` and `modifyBeforeDeserialization`.
 
-To run this validation process, a new middleware is inserted at the `receive` stage. During an HTTP request lifecycle,
-this stage represents the first opportunity to access the response prior to deserialization into the operation's response type.
-
-If the request has a non-streaming response, the middleware will compute and validate the response checksum in a blocking
-manner. If there is a checksum mismatch, an exception will be thrown.
+#### readBeforeSerialization
+The `readBeforeSerialization` hook's purpose is to finalize the user's request and decide whether checksum validation should occur.
+This allows users to add custom interceptors which modify the validation opt-in status.
 
 #### Checksum Validation
-For non-streaming responses, the entire response is loaded into memory at once. The SDK will validate the checksum prior to deserializing
-the response into the modeled response object.
+The `modifyBeforeDeserialization` hook's purpose is to validate the checksum before the response is deserialized into its output type. 
 
-#### Deferred Checksum Validation for Streaming Responses
-For streaming responses, it is more efficient for the SDK to compute the checksum while the user is consuming the response body. 
+First, the body will be wrapped in a `HashingSource`/`HashingByteReadChannel`. This will calculate the checksum as the body is being consumed.
+The response body will also be wrapped in a `ChecksumValidatingSource`/`ChecksumValidatingByteReadChannel`. This is a new type which takes an expected checksum and an underlying
+hashing data source. After the underlying data is fully consumed, the checksum is digested and validated.
 
-The `receive` stage is run prior to the user consuming the body, so while in this stage, the SDK will wrap the response
-body in a hashing and completing body, in a similar manner to the request middleware. The execution context will be updated with the following keys:
-
-- `ExpectedResponseChecksum`: the checksum value from response headers
-- `ResponseChecksum`: a `Deferred` containing the calculated checksum, which will only be completed after the entire response body is consumed
-- `ChecksumHeaderValidated`: the name of the checksum header which was validated, which allows the user to see if validation 
-occurred and which checksum algorithm was used.
-
-The checksum will be validated after the response is fully consumed by the user. 
+Below is the implementation of the `ChecksumValidatingSource`, which performs checksum validation after the underlying `HashingSource` is fully consumed:
+```kotlin
+private class ChecksumValidatingSource(
+  private val expectedChecksum: String,
+  private val hashingSource: HashingSource,
+) : SdkSource by hashingSource {
+  override fun read(sink: SdkBuffer, limit: Long): Long = hashingSource.read(sink, limit).also {
+    if (it == -1L) {
+      validateAndThrow(expectedChecksum, hashingSource.digest().encodeBase64String())
+    }
+  }
+}
+```
 
 #### Notifying the User of Validation
 
@@ -276,7 +276,7 @@ and which checksum algorithm was used for the validation.
 The SDK will store the checksum header name in the execution context. Users can then check the execution context for that 
 value, and if it's present, they will know that validation occurred.
 
-Users will be able to observe the execution context using an [interceptor](https://github.com/awslabs/smithy-kotlin/blob/5773afb348c779b9e4aa9689836844f21a571908/docs/design/interceptors.md). 
+Users will be able to observe the execution context using an interceptor. 
 
 # Appendix: Request Examples
 In the following examples, the `requestAlgorithMember` property's value is `checksumAlgorithm`. The fields `checksumSha256`, `checksumCrc32`, etc. 
@@ -366,7 +366,7 @@ Ultimately, `CompletableFuture` was chosen because it provides a way to model co
 Users must be able to modify the trailing headers at any point before the request is signed.
 The accepted design choice is to store trailing headers in the `HttpRequest`.
 
-Alternatively, the trailing headers could have been stored in the `HttpBody` or `ExecutionContext`.
+Alternatively, the trailing headers could have been stored in the `ExecutionContext` or `HttpBody`.
 
 ### ExecutionContext
 The SDK uses [`ExecutionContext`](https://github.com/awslabs/smithy-kotlin/blob/a250c3e3e3e54ef35990a1609fb380a91b70cf4b/runtime/runtime-core/common/src/aws/smithy/kotlin/runtime/client/ExecutionContext.kt) 
@@ -422,3 +422,4 @@ is less of a worry than other cons such as double-reads of the response body.
 # Revision history
 - 10/24/2022 - Created
 - 12/21/2022 - Updated with references to `aws-chunked`
+- 02/01/2023 - Updated with references to interceptors
