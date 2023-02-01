@@ -5,8 +5,8 @@
 
 package aws.smithy.kotlin.runtime.io
 
+import aws.smithy.kotlin.runtime.InternalApi
 import aws.smithy.kotlin.runtime.hashing.HashFunction
-import aws.smithy.kotlin.runtime.util.InternalApi
 
 /**
  * A channel which hashes data as it is being read
