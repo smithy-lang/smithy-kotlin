@@ -166,25 +166,8 @@ public abstract interface annotation class aws/smithy/kotlin/runtime/util/Uuid$W
 }
 
 public final class aws/smithy/kotlin/runtime/util/text/TextKt {
-	public static final fun encodeUrlPath (Ljava/lang/String;)Ljava/lang/String;
-	public static final fun encodeUrlPath (Ljava/lang/String;Ljava/util/Set;Z)Ljava/lang/String;
-	public static final fun ensureSuffix (Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;
-	public static final fun getVALID_PCHAR_DELIMS ()Ljava/util/Set;
-	public static final fun normalizePathSegments (Ljava/lang/String;Lkotlin/jvm/functions/Function1;)Ljava/lang/String;
-	public static final fun percentEncodeTo (BLjava/lang/Appendable;)V
-	public static final fun splitAsQueryString (Ljava/lang/String;)Ljava/util/Map;
-	public static final fun transformPathSegments (Ljava/lang/String;Lkotlin/jvm/functions/Function1;)Ljava/lang/String;
-	public static final fun urlDecodeComponent (Ljava/lang/String;Z)Ljava/lang/String;
-	public static synthetic fun urlDecodeComponent$default (Ljava/lang/String;ZILjava/lang/Object;)Ljava/lang/String;
-	public static final fun urlEncodeComponent (Ljava/lang/String;Z)Ljava/lang/String;
-	public static synthetic fun urlEncodeComponent$default (Ljava/lang/String;ZILjava/lang/Object;)Ljava/lang/String;
-	public static final fun urlReencodeComponent (Ljava/lang/String;ZZ)Ljava/lang/String;
-	public static synthetic fun urlReencodeComponent$default (Ljava/lang/String;ZZILjava/lang/Object;)Ljava/lang/String;
 }
 
 public final class aws/smithy/kotlin/runtime/util/text/Utf8Kt {
-	public static final fun byteCountUtf8 (B)I
-	public static final fun codePointToChars (Lkotlin/jvm/internal/CharCompanionObject;I)[C
-	public static final fun isSupplementaryCodePoint (Lkotlin/jvm/internal/CharCompanionObject;I)Z
 }
 

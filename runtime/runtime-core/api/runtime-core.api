@@ -8,7 +8,6 @@ public class aws/smithy/kotlin/runtime/ClientException : aws/smithy/kotlin/runti
 public class aws/smithy/kotlin/runtime/ErrorMetadata {
 	public static final field Companion Laws/smithy/kotlin/runtime/ErrorMetadata$Companion;
 	public fun <init> ()V
-	public final fun getAttributes ()Laws/smithy/kotlin/runtime/util/Attributes;
 	public final fun isRetryable ()Z
 	public final fun isThrottling ()Z
 }
@@ -63,13 +62,6 @@ public final class aws/smithy/kotlin/runtime/ServiceException$ErrorType : java/l
 	public static fun values ()[Laws/smithy/kotlin/runtime/ServiceException$ErrorType;
 }
 
-public abstract class aws/smithy/kotlin/runtime/client/AbstractSdkClientBuilder : aws/smithy/kotlin/runtime/client/SdkClient$Builder {
-	public fun <init> ()V
-	public final fun build ()Laws/smithy/kotlin/runtime/client/SdkClient;
-	public synthetic fun build ()Ljava/lang/Object;
-	protected abstract fun newClient (Laws/smithy/kotlin/runtime/client/SdkClientConfig;)Laws/smithy/kotlin/runtime/client/SdkClient;
-}
-
 public abstract interface class aws/smithy/kotlin/runtime/client/ClientOptions {
 	public abstract fun contains (Laws/smithy/kotlin/runtime/util/AttributeKey;)Z
 	public abstract fun remove (Laws/smithy/kotlin/runtime/util/AttributeKey;)V
@@ -89,13 +81,6 @@ public abstract class aws/smithy/kotlin/runtime/client/ClientOptionsBuilder : aw
 	protected final fun option (Laws/smithy/kotlin/runtime/util/AttributeKey;)Laws/smithy/kotlin/runtime/client/DelegatedClientOption;
 	public fun remove (Laws/smithy/kotlin/runtime/util/AttributeKey;)V
 	protected final fun requiredOption (Laws/smithy/kotlin/runtime/util/AttributeKey;)Laws/smithy/kotlin/runtime/client/DelegatedClientOption;
-	public fun set (Laws/smithy/kotlin/runtime/util/AttributeKey;Ljava/lang/Object;)V
-}
-
-public final class aws/smithy/kotlin/runtime/client/ClientOptionsImpl : aws/smithy/kotlin/runtime/client/ClientOptions {
-	public fun <init> (Laws/smithy/kotlin/runtime/util/Attributes;)V
-	public fun contains (Laws/smithy/kotlin/runtime/util/AttributeKey;)Z
-	public fun remove (Laws/smithy/kotlin/runtime/util/AttributeKey;)V
 	public fun set (Laws/smithy/kotlin/runtime/util/AttributeKey;Ljava/lang/Object;)V
 }
 
@@ -252,9 +237,6 @@ public final class aws/smithy/kotlin/runtime/client/SdkClientOption {
 }
 
 public final class aws/smithy/kotlin/runtime/client/SdkClientOptionKt {
-	public static final fun getIdempotencyTokenProvider (Laws/smithy/kotlin/runtime/client/ExecutionContext;)Laws/smithy/kotlin/runtime/client/IdempotencyTokenProvider;
-	public static final fun getOperationName (Laws/smithy/kotlin/runtime/client/ExecutionContext;)Ljava/lang/String;
-	public static final fun getSdkLogMode (Laws/smithy/kotlin/runtime/client/ExecutionContext;)Laws/smithy/kotlin/runtime/client/SdkLogMode;
 }
 
 public abstract class aws/smithy/kotlin/runtime/client/SdkLogMode {
@@ -364,12 +346,9 @@ public final class aws/smithy/kotlin/runtime/content/StringContent : aws/smithy/
 }
 
 public final class aws/smithy/kotlin/runtime/internal/CoroutineUtilsKt {
-	public static final fun derivedName (Lkotlin/coroutines/CoroutineContext;Ljava/lang/String;)Lkotlinx/coroutines/CoroutineName;
 }
 
 public final class aws/smithy/kotlin/runtime/net/DefaultHostResolverJVMKt {
-	public static final fun toHostAddress (Ljava/net/InetAddress;)Laws/smithy/kotlin/runtime/net/HostAddress;
-	public static final fun toInetAddress (Laws/smithy/kotlin/runtime/net/HostAddress;)Ljava/net/InetAddress;
 }
 
 public abstract class aws/smithy/kotlin/runtime/net/Host {
@@ -419,27 +398,12 @@ public final class aws/smithy/kotlin/runtime/net/HostKt {
 	public static final fun toUrlString (Laws/smithy/kotlin/runtime/net/Host;)Ljava/lang/String;
 }
 
-public abstract interface class aws/smithy/kotlin/runtime/net/HostResolver {
-	public static final field Companion Laws/smithy/kotlin/runtime/net/HostResolver$Companion;
-	public abstract fun purgeCache (Laws/smithy/kotlin/runtime/net/HostAddress;)V
-	public abstract fun reportFailure (Laws/smithy/kotlin/runtime/net/HostAddress;)V
-	public abstract fun resolve (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-}
-
 public final class aws/smithy/kotlin/runtime/net/HostResolver$Companion {
 	public final fun getDefault ()Laws/smithy/kotlin/runtime/net/HostResolver;
 }
 
 public final class aws/smithy/kotlin/runtime/net/HostResolver$DefaultImpls {
 	public static synthetic fun purgeCache$default (Laws/smithy/kotlin/runtime/net/HostResolver;Laws/smithy/kotlin/runtime/net/HostAddress;ILjava/lang/Object;)V
-}
-
-public abstract class aws/smithy/kotlin/runtime/net/IpAddr {
-	public static final field Companion Laws/smithy/kotlin/runtime/net/IpAddr$Companion;
-	public abstract fun getAddress ()Ljava/lang/String;
-	public abstract fun getOctets ()[B
-	public abstract fun isLoopBack ()Z
-	public abstract fun isUnspecified ()Z
 }
 
 public final class aws/smithy/kotlin/runtime/net/IpAddr$Companion {
@@ -498,9 +462,6 @@ public final class aws/smithy/kotlin/runtime/net/IpV6Addr$Companion {
 }
 
 public final class aws/smithy/kotlin/runtime/net/TextKt {
-	public static final fun isIpv4 (Ljava/lang/String;)Z
-	public static final fun isIpv6 (Ljava/lang/String;)Z
-	public static final fun isValidHostname (Ljava/lang/String;)Z
 }
 
 public abstract class aws/smithy/kotlin/runtime/retries/Outcome {
@@ -1017,14 +978,6 @@ public final class aws/smithy/kotlin/runtime/time/InstantKt {
 	public static final fun fromEpochMilliseconds (Laws/smithy/kotlin/runtime/time/Instant$Companion;J)Laws/smithy/kotlin/runtime/time/Instant;
 	public static final fun getEpochMilliseconds (Laws/smithy/kotlin/runtime/time/Instant;)J
 	public static final fun toEpochDouble (Laws/smithy/kotlin/runtime/time/Instant;)D
-}
-
-public final class aws/smithy/kotlin/runtime/time/ManualClock : aws/smithy/kotlin/runtime/time/Clock {
-	public fun <init> ()V
-	public fun <init> (Laws/smithy/kotlin/runtime/time/Instant;)V
-	public synthetic fun <init> (Laws/smithy/kotlin/runtime/time/Instant;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public final fun advance-LRDsOJo (J)V
-	public fun now ()Laws/smithy/kotlin/runtime/time/Instant;
 }
 
 public abstract class aws/smithy/kotlin/runtime/time/Needed {
