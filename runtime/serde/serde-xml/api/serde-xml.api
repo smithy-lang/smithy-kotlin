@@ -190,6 +190,8 @@ public final class aws/smithy/kotlin/runtime/serde/xml/XmlStreamWriter$DefaultIm
 
 public final class aws/smithy/kotlin/runtime/serde/xml/XmlStreamWriterKt {
 	public static final fun text (Laws/smithy/kotlin/runtime/serde/xml/XmlStreamWriter;Ljava/lang/Number;)V
+	public static final fun xmlStreamWriter (Z)Laws/smithy/kotlin/runtime/serde/xml/XmlStreamWriter;
+	public static synthetic fun xmlStreamWriter$default (ZILjava/lang/Object;)Laws/smithy/kotlin/runtime/serde/xml/XmlStreamWriter;
 }
 
 public abstract class aws/smithy/kotlin/runtime/serde/xml/XmlToken {
@@ -310,6 +312,22 @@ public final class aws/smithy/kotlin/runtime/serde/xml/deserialization/XmlLexer 
 	public fun <init> (Laws/smithy/kotlin/runtime/serde/xml/deserialization/StringTextStream;)V
 	public final fun getEndOfDocument ()Z
 	public final fun parseNext ()Laws/smithy/kotlin/runtime/serde/xml/XmlToken;
+}
+
+public final class aws/smithy/kotlin/runtime/serde/xml/dom/XmlNode {
+	public static final field Companion Laws/smithy/kotlin/runtime/serde/xml/dom/XmlNode$Companion;
+	public fun <init> (Laws/smithy/kotlin/runtime/serde/xml/XmlToken$QualifiedName;)V
+	public fun <init> (Ljava/lang/String;)V
+	public final fun addChild (Laws/smithy/kotlin/runtime/serde/xml/dom/XmlNode;)V
+	public final fun getAttributes ()Ljava/util/Map;
+	public final fun getChildren ()Ljava/util/Map;
+	public final fun getName ()Laws/smithy/kotlin/runtime/serde/xml/XmlToken$QualifiedName;
+	public final fun getNamespaces ()Ljava/util/List;
+	public final fun getParent ()Laws/smithy/kotlin/runtime/serde/xml/dom/XmlNode;
+	public final fun getText ()Ljava/lang/String;
+	public final fun setParent (Laws/smithy/kotlin/runtime/serde/xml/dom/XmlNode;)V
+	public final fun setText (Ljava/lang/String;)V
+	public fun toString ()Ljava/lang/String;
 }
 
 public final class aws/smithy/kotlin/runtime/serde/xml/dom/XmlNode$Companion {

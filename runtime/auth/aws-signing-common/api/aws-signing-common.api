@@ -1,3 +1,28 @@
+public final class aws/smithy/kotlin/runtime/auth/awssigning/AwsChunkedByteReadChannel : aws/smithy/kotlin/runtime/io/SdkByteReadChannel {
+	public fun <init> (Laws/smithy/kotlin/runtime/io/SdkByteReadChannel;Laws/smithy/kotlin/runtime/auth/awssigning/AwsSigner;Laws/smithy/kotlin/runtime/auth/awssigning/AwsSigningConfig;[BLaws/smithy/kotlin/runtime/http/DeferredHeaders;)V
+	public synthetic fun <init> (Laws/smithy/kotlin/runtime/io/SdkByteReadChannel;Laws/smithy/kotlin/runtime/auth/awssigning/AwsSigner;Laws/smithy/kotlin/runtime/auth/awssigning/AwsSigningConfig;[BLaws/smithy/kotlin/runtime/http/DeferredHeaders;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun cancel (Ljava/lang/Throwable;)Z
+	public fun getAvailableForRead ()I
+	public fun getClosedCause ()Ljava/lang/Throwable;
+	public fun isClosedForRead ()Z
+	public fun isClosedForWrite ()Z
+	public fun read (Laws/smithy/kotlin/runtime/io/SdkBuffer;JLkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
+public final class aws/smithy/kotlin/runtime/auth/awssigning/AwsChunkedSource : aws/smithy/kotlin/runtime/io/SdkSource {
+	public fun <init> (Laws/smithy/kotlin/runtime/io/SdkSource;Laws/smithy/kotlin/runtime/auth/awssigning/AwsSigner;Laws/smithy/kotlin/runtime/auth/awssigning/AwsSigningConfig;[BLaws/smithy/kotlin/runtime/http/DeferredHeaders;)V
+	public synthetic fun <init> (Laws/smithy/kotlin/runtime/io/SdkSource;Laws/smithy/kotlin/runtime/auth/awssigning/AwsSigner;Laws/smithy/kotlin/runtime/auth/awssigning/AwsSigningConfig;[BLaws/smithy/kotlin/runtime/http/DeferredHeaders;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun close ()V
+	public fun read (Laws/smithy/kotlin/runtime/io/SdkBuffer;J)J
+}
+
+public final class aws/smithy/kotlin/runtime/auth/awssigning/AwsHttpSigner : aws/smithy/kotlin/runtime/http/auth/HttpSigner {
+	public static final field AWS_CHUNKED_THRESHOLD I
+	public static final field Companion Laws/smithy/kotlin/runtime/auth/awssigning/AwsHttpSigner$Companion;
+	public fun <init> (Laws/smithy/kotlin/runtime/auth/awssigning/AwsHttpSigner$Config;)V
+	public fun sign (Laws/smithy/kotlin/runtime/client/ExecutionContext;Laws/smithy/kotlin/runtime/http/request/HttpRequestBuilder;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
 public final class aws/smithy/kotlin/runtime/auth/awssigning/AwsHttpSigner$Companion {
 	public final fun invoke (Lkotlin/jvm/functions/Function1;)Laws/smithy/kotlin/runtime/auth/awssigning/AwsHttpSigner;
 }
@@ -176,6 +201,10 @@ public final class aws/smithy/kotlin/runtime/auth/awssigning/HashSpecification$S
 	public static final field INSTANCE Laws/smithy/kotlin/runtime/auth/awssigning/HashSpecification$StreamingAws4HmacSha256PayloadWithTrailers;
 }
 
+public final class aws/smithy/kotlin/runtime/auth/awssigning/HashSpecification$StreamingUnsignedPayloadWithTrailers : aws/smithy/kotlin/runtime/auth/awssigning/HashSpecification$HashLiteral {
+	public static final field INSTANCE Laws/smithy/kotlin/runtime/auth/awssigning/HashSpecification$StreamingUnsignedPayloadWithTrailers;
+}
+
 public final class aws/smithy/kotlin/runtime/auth/awssigning/HashSpecification$UnsignedPayload : aws/smithy/kotlin/runtime/auth/awssigning/HashSpecification$HashLiteral {
 	public static final field INSTANCE Laws/smithy/kotlin/runtime/auth/awssigning/HashSpecification$UnsignedPayload;
 }
@@ -205,6 +234,7 @@ public final class aws/smithy/kotlin/runtime/auth/awssigning/PresignedRequestCon
 }
 
 public final class aws/smithy/kotlin/runtime/auth/awssigning/PresignerKt {
+	public static final fun createPresignedRequest (Laws/smithy/kotlin/runtime/auth/awssigning/ServicePresignConfig;Laws/smithy/kotlin/runtime/auth/awssigning/PresignedRequestConfig;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
 public final class aws/smithy/kotlin/runtime/auth/awssigning/PresigningLocation : java/lang/Enum {

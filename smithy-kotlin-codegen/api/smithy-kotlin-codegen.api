@@ -242,9 +242,7 @@ public final class software/amazon/smithy/kotlin/codegen/core/KotlinDependency$C
 	public final fun getAWS_SIGNING_DEFAULT ()Lsoftware/amazon/smithy/kotlin/codegen/core/KotlinDependency;
 	public final fun getCORE ()Lsoftware/amazon/smithy/kotlin/codegen/core/KotlinDependency;
 	public final fun getDEFAULT_HTTP_ENGINE ()Lsoftware/amazon/smithy/kotlin/codegen/core/KotlinDependency;
-	public final fun getHASHING ()Lsoftware/amazon/smithy/kotlin/codegen/core/KotlinDependency;
 	public final fun getHTTP ()Lsoftware/amazon/smithy/kotlin/codegen/core/KotlinDependency;
-	public final fun getIO ()Lsoftware/amazon/smithy/kotlin/codegen/core/KotlinDependency;
 	public final fun getJUNIT_JUPITER_ENGINE ()Lsoftware/amazon/smithy/kotlin/codegen/core/KotlinDependency;
 	public final fun getKOTLIN_TEST ()Lsoftware/amazon/smithy/kotlin/codegen/core/KotlinDependency;
 	public final fun getKOTLIN_TEST_JUNIT5 ()Lsoftware/amazon/smithy/kotlin/codegen/core/KotlinDependency;
@@ -254,7 +252,6 @@ public final class software/amazon/smithy/kotlin/codegen/core/KotlinDependency$C
 	public final fun getSERDE_XML ()Lsoftware/amazon/smithy/kotlin/codegen/core/KotlinDependency;
 	public final fun getSMITHY_TEST ()Lsoftware/amazon/smithy/kotlin/codegen/core/KotlinDependency;
 	public final fun getTRACING_CORE ()Lsoftware/amazon/smithy/kotlin/codegen/core/KotlinDependency;
-	public final fun getUTILS ()Lsoftware/amazon/smithy/kotlin/codegen/core/KotlinDependency;
 }
 
 public final class software/amazon/smithy/kotlin/codegen/core/KotlinDependencyKt {
@@ -477,6 +474,18 @@ public final class software/amazon/smithy/kotlin/codegen/core/RuntimeTypes$Core$
 	public final fun getToByteArray ()Lsoftware/amazon/smithy/codegen/core/Symbol;
 }
 
+public final class software/amazon/smithy/kotlin/codegen/core/RuntimeTypes$Core$Hashing : software/amazon/smithy/kotlin/codegen/core/RuntimeTypePackage {
+	public static final field INSTANCE Lsoftware/amazon/smithy/kotlin/codegen/core/RuntimeTypes$Core$Hashing;
+	public final fun getSha256 ()Lsoftware/amazon/smithy/codegen/core/Symbol;
+}
+
+public final class software/amazon/smithy/kotlin/codegen/core/RuntimeTypes$Core$IO : software/amazon/smithy/kotlin/codegen/core/RuntimeTypePackage {
+	public static final field INSTANCE Lsoftware/amazon/smithy/kotlin/codegen/core/RuntimeTypes$Core$IO;
+	public final fun getAddIfManaged ()Lsoftware/amazon/smithy/codegen/core/Symbol;
+	public final fun getCloseable ()Lsoftware/amazon/smithy/codegen/core/Symbol;
+	public final fun getSdkManagedGroup ()Lsoftware/amazon/smithy/codegen/core/Symbol;
+}
+
 public final class software/amazon/smithy/kotlin/codegen/core/RuntimeTypes$Core$Retries : software/amazon/smithy/kotlin/codegen/core/RuntimeTypePackage {
 	public static final field INSTANCE Lsoftware/amazon/smithy/kotlin/codegen/core/RuntimeTypes$Core$Retries;
 	public final fun getOutcome ()Lsoftware/amazon/smithy/codegen/core/Symbol;
@@ -513,9 +522,18 @@ public final class software/amazon/smithy/kotlin/codegen/core/RuntimeTypes$Core$
 	public final fun getDocument ()Lsoftware/amazon/smithy/codegen/core/Symbol;
 }
 
-public final class software/amazon/smithy/kotlin/codegen/core/RuntimeTypes$Hashing : software/amazon/smithy/kotlin/codegen/core/RuntimeTypePackage {
-	public static final field INSTANCE Lsoftware/amazon/smithy/kotlin/codegen/core/RuntimeTypes$Hashing;
-	public final fun getSha256 ()Lsoftware/amazon/smithy/codegen/core/Symbol;
+public final class software/amazon/smithy/kotlin/codegen/core/RuntimeTypes$Core$Utils : software/amazon/smithy/kotlin/codegen/core/RuntimeTypePackage {
+	public static final field INSTANCE Lsoftware/amazon/smithy/kotlin/codegen/core/RuntimeTypes$Core$Utils;
+	public final fun getAttributeKey ()Lsoftware/amazon/smithy/codegen/core/Symbol;
+	public final fun getAttributes ()Lsoftware/amazon/smithy/codegen/core/Symbol;
+	public final fun getDecodeBase64 ()Lsoftware/amazon/smithy/codegen/core/Symbol;
+	public final fun getDecodeBase64Bytes ()Lsoftware/amazon/smithy/codegen/core/Symbol;
+	public final fun getEncodeBase64 ()Lsoftware/amazon/smithy/codegen/core/Symbol;
+	public final fun getEncodeBase64String ()Lsoftware/amazon/smithy/codegen/core/Symbol;
+	public final fun getFlattenIfPossible ()Lsoftware/amazon/smithy/codegen/core/Symbol;
+	public final fun getLength ()Lsoftware/amazon/smithy/codegen/core/Symbol;
+	public final fun getTruthiness ()Lsoftware/amazon/smithy/codegen/core/Symbol;
+	public final fun getUrlEncodeComponent ()Lsoftware/amazon/smithy/codegen/core/Symbol;
 }
 
 public final class software/amazon/smithy/kotlin/codegen/core/RuntimeTypes$Http : software/amazon/smithy/kotlin/codegen/core/RuntimeTypePackage {
@@ -569,12 +587,14 @@ public final class software/amazon/smithy/kotlin/codegen/core/RuntimeTypes$Http$
 
 public final class software/amazon/smithy/kotlin/codegen/core/RuntimeTypes$Http$Interceptors : software/amazon/smithy/kotlin/codegen/core/RuntimeTypePackage {
 	public static final field INSTANCE Lsoftware/amazon/smithy/kotlin/codegen/core/RuntimeTypes$Http$Interceptors;
+	public final fun getFlexibleChecksumsRequestInterceptor ()Lsoftware/amazon/smithy/codegen/core/Symbol;
+	public final fun getFlexibleChecksumsResponseInterceptor ()Lsoftware/amazon/smithy/codegen/core/Symbol;
 	public final fun getHttpInterceptor ()Lsoftware/amazon/smithy/codegen/core/Symbol;
+	public final fun getMd5ChecksumInterceptor ()Lsoftware/amazon/smithy/codegen/core/Symbol;
 }
 
 public final class software/amazon/smithy/kotlin/codegen/core/RuntimeTypes$Http$Middleware : software/amazon/smithy/kotlin/codegen/core/RuntimeTypePackage {
 	public static final field INSTANCE Lsoftware/amazon/smithy/kotlin/codegen/core/RuntimeTypes$Http$Middleware;
-	public final fun getMd5ChecksumMiddleware ()Lsoftware/amazon/smithy/codegen/core/Symbol;
 	public final fun getMutateHeadersMiddleware ()Lsoftware/amazon/smithy/codegen/core/Symbol;
 	public final fun getResolveEndpoint ()Lsoftware/amazon/smithy/codegen/core/Symbol;
 	public final fun getRetryMiddleware ()Lsoftware/amazon/smithy/codegen/core/Symbol;
@@ -623,13 +643,6 @@ public final class software/amazon/smithy/kotlin/codegen/core/RuntimeTypes$HttpC
 public final class software/amazon/smithy/kotlin/codegen/core/RuntimeTypes$HttpClientEngines$Default : software/amazon/smithy/kotlin/codegen/core/RuntimeTypePackage {
 	public static final field INSTANCE Lsoftware/amazon/smithy/kotlin/codegen/core/RuntimeTypes$HttpClientEngines$Default;
 	public final fun getDefaultHttpEngine ()Lsoftware/amazon/smithy/codegen/core/Symbol;
-}
-
-public final class software/amazon/smithy/kotlin/codegen/core/RuntimeTypes$IO : software/amazon/smithy/kotlin/codegen/core/RuntimeTypePackage {
-	public static final field INSTANCE Lsoftware/amazon/smithy/kotlin/codegen/core/RuntimeTypes$IO;
-	public final fun getAddIfManaged ()Lsoftware/amazon/smithy/codegen/core/Symbol;
-	public final fun getCloseable ()Lsoftware/amazon/smithy/codegen/core/Symbol;
-	public final fun getSdkManagedGroup ()Lsoftware/amazon/smithy/codegen/core/Symbol;
 }
 
 public final class software/amazon/smithy/kotlin/codegen/core/RuntimeTypes$KotlinCoroutines {
@@ -712,16 +725,6 @@ public final class software/amazon/smithy/kotlin/codegen/core/RuntimeTypes$Traci
 	public final fun getTracer ()Lsoftware/amazon/smithy/codegen/core/Symbol;
 	public final fun getTracingClientConfig ()Lsoftware/amazon/smithy/codegen/core/Symbol;
 	public final fun getWithRootTraceSpan ()Lsoftware/amazon/smithy/codegen/core/Symbol;
-}
-
-public final class software/amazon/smithy/kotlin/codegen/core/RuntimeTypes$Utils : software/amazon/smithy/kotlin/codegen/core/RuntimeTypePackage {
-	public static final field INSTANCE Lsoftware/amazon/smithy/kotlin/codegen/core/RuntimeTypes$Utils;
-	public final fun getAttributeKey ()Lsoftware/amazon/smithy/codegen/core/Symbol;
-	public final fun getAttributes ()Lsoftware/amazon/smithy/codegen/core/Symbol;
-	public final fun getFlattenIfPossible ()Lsoftware/amazon/smithy/codegen/core/Symbol;
-	public final fun getLength ()Lsoftware/amazon/smithy/codegen/core/Symbol;
-	public final fun getTruthiness ()Lsoftware/amazon/smithy/codegen/core/Symbol;
-	public final fun getUrlEncodeComponent ()Lsoftware/amazon/smithy/codegen/core/Symbol;
 }
 
 public final class software/amazon/smithy/kotlin/codegen/core/SourceSet : java/lang/Enum {
