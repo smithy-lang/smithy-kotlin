@@ -31,6 +31,11 @@ public object SdkClientOption {
      * The client logging mode (see [SdkLogMode]
      */
     public val LogMode: ClientOption<SdkLogMode> = ClientOption("LogMode")
+
+    /**
+     * Whether endpoint discovery is enabled or not. Default is true
+     */
+    public val EndpointDiscoveryEnabled: ClientOption<Boolean> = ClientOption("EndpointDiscoveryEnabled")
 }
 
 /**
