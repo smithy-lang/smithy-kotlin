@@ -1,8 +1,0 @@
-{
-    "id": "73375c7c-b802-4878-ae24-15b619c065b3",
-    "type": "feature",
-    "description": "Implement flexible checksums customization",
-    "issues": [
-        "https://github.com/awslabs/smithy-kotlin/issues/446"
-    ]
-}
