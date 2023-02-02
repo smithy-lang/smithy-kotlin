@@ -174,6 +174,13 @@ apiValidation {
         "smithy-test",
         "testing",
         "smithy-kotlin-codegen-testutils",
-        "tests",
+        "aws-signing-benchmarks",
+        "channel-benchmarks",
+        "http-benchmarks",
+        "serde-benchmarks",
+        "serde-benchmarks-codegen",
+        "paginator-tests",
+        "waiter-tests",
+        "compile"
     )
 }
