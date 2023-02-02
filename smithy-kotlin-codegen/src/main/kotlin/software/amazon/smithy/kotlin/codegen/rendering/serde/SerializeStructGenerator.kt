@@ -601,7 +601,7 @@ open class SerializeStructGenerator(
      */
     private fun idempotencyTokenPostfix(memberShape: MemberShape): String =
         if (memberShape.hasTrait<IdempotencyTokenTrait>()) {
-            writer.addImport(RuntimeTypes.Core.Client.IdempotencyTokenProviderExt)
+            writer.addImport(RuntimeTypes.SmithyClient.IdempotencyTokenProviderExt)
             " ?: field(${memberShape.descriptorName()}, context.idempotencyTokenProvider.generateToken())"
         } else {
             ""

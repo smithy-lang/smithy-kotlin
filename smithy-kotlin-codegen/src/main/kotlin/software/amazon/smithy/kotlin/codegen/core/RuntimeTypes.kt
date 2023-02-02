@@ -150,19 +150,6 @@ object RuntimeTypes {
             val buildDocument = symbol("buildDocument")
         }
 
-        object Client : RuntimeTypePackage(KotlinDependency.CORE, "client") {
-            val SdkClient = symbol("SdkClient")
-            val AbstractSdkClientBuilder = symbol("AbstractSdkClientBuilder")
-            val SdkLogMode = symbol("SdkLogMode")
-            val SdkClientConfig = symbol("SdkClientConfig")
-            val SdkClientFactory = symbol("SdkClientFactory")
-            val RequestInterceptorContext = symbol("RequestInterceptorContext")
-            val ProtocolRequestInterceptorContext = symbol("ProtocolRequestInterceptorContext")
-            val IdempotencyTokenProvider = symbol("IdempotencyTokenProvider")
-            val IdempotencyTokenConfig = symbol("IdempotencyTokenConfig")
-            val IdempotencyTokenProviderExt = symbol("idempotencyTokenProvider")
-        }
-
         object Hashing : RuntimeTypePackage(KotlinDependency.CORE, "hashing") {
             val Sha256 = symbol("Sha256")
         }
@@ -184,6 +171,19 @@ object RuntimeTypes {
             val encodeBase64 = symbol("encodeBase64")
             val encodeBase64String = symbol("encodeBase64String")
         }
+    }
+
+    object SmithyClient : RuntimeTypePackage(KotlinDependency.SMITHY_CLIENT) {
+        val SdkClient = symbol("SdkClient")
+        val AbstractSdkClientBuilder = symbol("AbstractSdkClientBuilder")
+        val SdkLogMode = symbol("SdkLogMode")
+        val SdkClientConfig = symbol("SdkClientConfig")
+        val SdkClientFactory = symbol("SdkClientFactory")
+        val RequestInterceptorContext = symbol("RequestInterceptorContext")
+        val ProtocolRequestInterceptorContext = symbol("ProtocolRequestInterceptorContext")
+        val IdempotencyTokenProvider = symbol("IdempotencyTokenProvider")
+        val IdempotencyTokenConfig = symbol("IdempotencyTokenConfig")
+        val IdempotencyTokenProviderExt = symbol("idempotencyTokenProvider")
     }
 
     object Serde : RuntimeTypePackage(KotlinDependency.SERDE) {

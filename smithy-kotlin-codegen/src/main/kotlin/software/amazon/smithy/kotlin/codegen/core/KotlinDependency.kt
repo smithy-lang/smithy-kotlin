@@ -104,6 +104,7 @@ data class KotlinDependency(
         val SERDE_JSON = KotlinDependency(GradleConfiguration.Implementation, "$RUNTIME_ROOT_NS.serde.json", RUNTIME_GROUP, "serde-json", RUNTIME_VERSION)
         val SERDE_XML = KotlinDependency(GradleConfiguration.Implementation, "$RUNTIME_ROOT_NS.serde.xml", RUNTIME_GROUP, "serde-xml", RUNTIME_VERSION)
         val SERDE_FORM_URL = KotlinDependency(GradleConfiguration.Implementation, "$RUNTIME_ROOT_NS.serde.formurl", RUNTIME_GROUP, "serde-form-url", RUNTIME_VERSION)
+        val SMITHY_CLIENT = KotlinDependency(GradleConfiguration.Api, "$RUNTIME_ROOT_NS.client", RUNTIME_GROUP, "smithy-client", RUNTIME_VERSION)
         val SMITHY_TEST = KotlinDependency(GradleConfiguration.TestImplementation, "$RUNTIME_ROOT_NS.smithy.test", RUNTIME_GROUP, "smithy-test", RUNTIME_VERSION)
         val DEFAULT_HTTP_ENGINE = KotlinDependency(GradleConfiguration.Implementation, "$RUNTIME_ROOT_NS.http.engine", RUNTIME_GROUP, "http-client-engine-default", RUNTIME_VERSION)
         val AWS_CRT_HTTP_ENGINE = KotlinDependency(GradleConfiguration.Implementation, "$RUNTIME_ROOT_NS.http.engine.crt", RUNTIME_GROUP, "http-client-engine-crt", RUNTIME_VERSION)

@@ -4,7 +4,6 @@
  */
 package aws.smithy.kotlin.runtime
 
-import aws.smithy.kotlin.runtime.client.SdkClientOption
 import aws.smithy.kotlin.runtime.util.AttributeKey
 import aws.smithy.kotlin.runtime.util.Attributes
 
@@ -81,12 +80,6 @@ public open class ServiceErrorMetadata : ErrorMetadata() {
         public val ProtocolResponse: AttributeKey<ProtocolResponse> = AttributeKey("ProtocolResponse")
         public val RequestId: AttributeKey<String> = AttributeKey("RequestId")
     }
-
-    /**
-     * The name of the service that sent this error response
-     */
-    public val serviceName: String
-        get() = attributes.getOrNull(SdkClientOption.ServiceName) ?: ""
 
     /**
      * Returns the error code associated with the response (if available).

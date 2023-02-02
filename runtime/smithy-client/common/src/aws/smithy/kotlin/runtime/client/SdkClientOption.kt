@@ -48,7 +48,7 @@ public val ExecutionContext.sdkLogMode: SdkLogMode
     get() = getOrNull(SdkClientOption.LogMode) ?: SdkLogMode.Default
 
 /**
- * Get the [OperationName] from the context.
+ * Get the name of the operation from the context.
  */
 @InternalApi
 public val ExecutionContext.operationName: String?

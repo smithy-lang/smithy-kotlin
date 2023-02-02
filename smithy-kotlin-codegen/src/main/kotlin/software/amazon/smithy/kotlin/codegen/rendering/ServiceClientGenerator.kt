@@ -72,7 +72,7 @@ class ServiceClientGenerator(private val ctx: RenderingContext<ServiceShape>) {
 
         writer.renderDocumentation(service)
         writer.renderAnnotations(service)
-        writer.openBlock("public interface ${serviceSymbol.name} : #T {", RuntimeTypes.Core.Client.SdkClient)
+        writer.openBlock("public interface ${serviceSymbol.name} : #T {", RuntimeTypes.SmithyClient.SdkClient)
             .call { overrideServiceName() }
             .call {
                 // allow access to client's Config
@@ -128,7 +128,7 @@ class ServiceClientGenerator(private val ctx: RenderingContext<ServiceShape>) {
             writer.withBlock(
                 "public class Builder internal constructor(): #T<Config, Config.Builder, #T>() {",
                 "}",
-                RuntimeTypes.Core.Client.AbstractSdkClientBuilder,
+                RuntimeTypes.SmithyClient.AbstractSdkClientBuilder,
                 serviceSymbol,
             ) {
                 write("override val config: Config.Builder = Config.Builder()")
@@ -153,7 +153,7 @@ class ServiceClientGenerator(private val ctx: RenderingContext<ServiceShape>) {
         writer.withBlock(
             "public companion object : #T<Config, Config.Builder, #T, Builder> {",
             "}",
-            RuntimeTypes.Core.Client.SdkClientFactory,
+            RuntimeTypes.SmithyClient.SdkClientFactory,
             serviceSymbol,
         ) {
             write("@#T", KotlinTypes.Jvm.JvmStatic)
