@@ -5,9 +5,9 @@
 
 package aws.smithy.kotlin.runtime.client
 
+import aws.smithy.kotlin.runtime.InternalApi
 import aws.smithy.kotlin.runtime.util.AttributeKey
 import aws.smithy.kotlin.runtime.util.Attributes
-import aws.smithy.kotlin.runtime.util.InternalApi
 
 /**
  * A (service) client option that influences how the client behaves when executing requests

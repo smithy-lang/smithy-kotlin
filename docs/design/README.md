@@ -21,3 +21,4 @@ Start here for an overview:
 * [Tracing](tracing.md)
 * [Waiters](waiters.md)
 * [Interceptors](interceptors.md)
+* [Flexible checksums](flexible-checksums.md)

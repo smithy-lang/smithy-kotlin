@@ -9,6 +9,7 @@ import aws.smithy.kotlin.runtime.auth.awssigning.AwsHttpSigner
 import aws.smithy.kotlin.runtime.auth.awssigning.AwsSigner
 import aws.smithy.kotlin.runtime.auth.awssigning.AwsSigningConfig
 import aws.smithy.kotlin.runtime.auth.awssigning.HashSpecification
+import aws.smithy.kotlin.runtime.http.DeferredHeaders
 import aws.smithy.kotlin.runtime.http.Headers
 import aws.smithy.kotlin.runtime.http.HttpBody
 import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
@@ -19,10 +20,7 @@ import aws.smithy.kotlin.runtime.io.SdkBuffer
  */
 public const val CHUNK_SIZE_BYTES: Int = 65_536
 
-internal fun SdkBuffer.writeTrailers(
-    trailers: Headers,
-    signature: String,
-) {
+internal fun SdkBuffer.writeTrailers(trailers: Headers) {
     trailers
         .entries()
         .sortedBy { entry -> entry.key.lowercase() }
@@ -32,6 +30,9 @@ internal fun SdkBuffer.writeTrailers(
             writeUtf8(entry.value.joinToString(",") { v -> v.trim() })
             writeUtf8("\r\n")
         }
+}
+
+internal fun SdkBuffer.writeTrailerSignature(signature: String) {
     writeUtf8("x-amz-trailer-signature:${signature}\r\n")
 }
 
@@ -47,7 +48,10 @@ internal val HttpBody.isEligibleForAwsChunkedStreaming: Boolean
  */
 internal val AwsSigningConfig.useAwsChunkedEncoding: Boolean
     get() = when (hashSpecification) {
-        is HashSpecification.StreamingAws4HmacSha256Payload, is HashSpecification.StreamingAws4HmacSha256PayloadWithTrailers -> true
+        is HashSpecification.StreamingAws4HmacSha256Payload,
+        is HashSpecification.StreamingAws4HmacSha256PayloadWithTrailers,
+        is HashSpecification.StreamingUnsignedPayloadWithTrailers,
+        -> true
         else -> false
     }
 
@@ -55,12 +59,17 @@ internal val AwsSigningConfig.useAwsChunkedEncoding: Boolean
  * Set the HTTP headers required for the aws-chunked content encoding
  */
 internal fun HttpRequestBuilder.setAwsChunkedHeaders() {
-    headers.setMissing("Content-Encoding", "aws-chunked")
-    headers.setMissing("Transfer-Encoding", "chunked")
-    headers.setMissing("X-Amz-Decoded-Content-Length", body.contentLength!!.toString())
+    headers.append("Content-Encoding", "aws-chunked")
+    headers["Transfer-Encoding"] = "chunked"
+    headers["X-Amz-Decoded-Content-Length"] = body.contentLength!!.toString()
 }
 
 /**
  * Update the HTTP body to use aws-chunked content encoding
  */
-internal expect fun HttpRequestBuilder.setAwsChunkedBody(signer: AwsSigner, signingConfig: AwsSigningConfig, signature: ByteArray)
+internal expect fun HttpRequestBuilder.setAwsChunkedBody(
+    signer: AwsSigner,
+    signingConfig: AwsSigningConfig,
+    signature: ByteArray,
+    trailingHeaders: DeferredHeaders,
+)

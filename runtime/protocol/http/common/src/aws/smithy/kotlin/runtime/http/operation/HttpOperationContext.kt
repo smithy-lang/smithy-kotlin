@@ -5,6 +5,7 @@
 
 package aws.smithy.kotlin.runtime.http.operation
 
+import aws.smithy.kotlin.runtime.InternalApi
 import aws.smithy.kotlin.runtime.client.ClientOptionsBuilder
 import aws.smithy.kotlin.runtime.client.ExecutionContext
 import aws.smithy.kotlin.runtime.client.SdkClientOption
@@ -13,7 +14,6 @@ import aws.smithy.kotlin.runtime.logging.Logger
 import aws.smithy.kotlin.runtime.tracing.logger
 import aws.smithy.kotlin.runtime.tracing.traceSpan
 import aws.smithy.kotlin.runtime.util.AttributeKey
-import aws.smithy.kotlin.runtime.util.InternalApi
 import kotlin.coroutines.CoroutineContext
 
 /**

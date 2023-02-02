@@ -4,6 +4,7 @@
  */
 package aws.smithy.kotlin.runtime.auth.awssigning
 
+import aws.smithy.kotlin.runtime.InternalApi
 import aws.smithy.kotlin.runtime.auth.awscredentials.CredentialsProvider
 import aws.smithy.kotlin.runtime.auth.awssigning.internal.*
 import aws.smithy.kotlin.runtime.auth.awssigning.internal.isEligibleForAwsChunkedStreaming
@@ -15,7 +16,6 @@ import aws.smithy.kotlin.runtime.http.HttpBody
 import aws.smithy.kotlin.runtime.http.auth.HttpSigner
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
-import aws.smithy.kotlin.runtime.util.InternalApi
 import aws.smithy.kotlin.runtime.util.get
 import kotlin.time.Duration
 
@@ -133,15 +133,15 @@ public class AwsHttpSigner(private val config: Config) : HttpSigner {
 
             hashSpecification = when {
                 contextHashSpecification != null -> contextHashSpecification
-                config.isUnsignedPayload -> HashSpecification.UnsignedPayload
                 body is HttpBody.Empty -> HashSpecification.EmptyBody
                 body.isEligibleForAwsChunkedStreaming -> {
                     if (request.headers.contains("x-amz-trailer")) {
-                        HashSpecification.StreamingAws4HmacSha256PayloadWithTrailers
+                        if (config.isUnsignedPayload) HashSpecification.StreamingUnsignedPayloadWithTrailers else HashSpecification.StreamingAws4HmacSha256PayloadWithTrailers
                     } else {
                         HashSpecification.StreamingAws4HmacSha256Payload
                     }
                 }
+                config.isUnsignedPayload -> HashSpecification.UnsignedPayload
                 // use the payload to compute the hash
                 else -> HashSpecification.CalculateFromPayload
             }
@@ -160,7 +160,12 @@ public class AwsHttpSigner(private val config: Config) : HttpSigner {
         request.update(signedRequest)
 
         if (signingConfig.useAwsChunkedEncoding) {
-            request.setAwsChunkedBody(checkNotNull(config.signer), signingConfig, signingResult.signature)
+            request.setAwsChunkedBody(
+                checkNotNull(config.signer),
+                signingConfig,
+                signingResult.signature,
+                request.trailingHeaders.build(),
+            )
         }
     }
 }

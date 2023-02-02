@@ -13,7 +13,6 @@ kotlin {
         commonMain {
             dependencies {
                 api(project(":runtime:auth:aws-signing-common"))
-                implementation(project(":runtime:hashing"))
                 implementation(project(":runtime:logging"))
             }
         }
@@ -26,7 +25,7 @@ kotlin {
         }
 
         all {
-            languageSettings.optIn("aws.smithy.kotlin.runtime.util.InternalApi")
+            languageSettings.optIn("aws.smithy.kotlin.runtime.InternalApi")
         }
     }
 }

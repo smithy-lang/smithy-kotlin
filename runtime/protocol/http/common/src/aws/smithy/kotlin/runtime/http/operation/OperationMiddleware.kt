@@ -5,10 +5,10 @@
 
 package aws.smithy.kotlin.runtime.http.operation
 
+import aws.smithy.kotlin.runtime.InternalApi
 import aws.smithy.kotlin.runtime.http.response.HttpCall
 import aws.smithy.kotlin.runtime.io.middleware.Middleware
 import aws.smithy.kotlin.runtime.io.middleware.ModifyRequest
-import aws.smithy.kotlin.runtime.util.InternalApi
 
 /**
  * Middleware that intercepts the [SdkOperationExecution.initialize] phase

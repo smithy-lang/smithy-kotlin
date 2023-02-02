@@ -15,7 +15,7 @@ platforms.forEach { platform ->
     apply(from = rootProject.file("gradle/${platform}.gradle"))
 }
 
-val optinAnnotations = listOf("kotlin.RequiresOptIn", "aws.smithy.kotlin.runtime.util.InternalApi")
+val optinAnnotations = listOf("kotlin.RequiresOptIn", "aws.smithy.kotlin.runtime.InternalApi")
 
 kotlin {
     sourceSets {
@@ -40,8 +40,7 @@ kotlin {
         val jvmMain by getting {
             dependencies {
                 val ktorVersion: String by project
-                implementation(project(":runtime:io"))
-                implementation(project(":runtime:utils"))
+                implementation(project(":runtime:runtime-core"))
                 implementation("io.ktor:ktor-io:$ktorVersion")
             }
         }

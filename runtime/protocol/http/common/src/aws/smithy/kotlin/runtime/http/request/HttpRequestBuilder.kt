@@ -4,11 +4,11 @@
  */
 package aws.smithy.kotlin.runtime.http.request
 
+import aws.smithy.kotlin.runtime.InternalApi
 import aws.smithy.kotlin.runtime.http.*
 import aws.smithy.kotlin.runtime.http.content.ByteArrayContent
 import aws.smithy.kotlin.runtime.http.util.CanDeepCopy
 import aws.smithy.kotlin.runtime.io.*
-import aws.smithy.kotlin.runtime.util.InternalApi
 
 /**
  * Used to construct an HTTP request
@@ -22,17 +22,18 @@ public class HttpRequestBuilder private constructor(
     public val url: UrlBuilder,
     public val headers: HeadersBuilder,
     public var body: HttpBody,
+    public val trailingHeaders: DeferredHeadersBuilder,
 ) : CanDeepCopy<HttpRequestBuilder> {
-    public constructor() : this(HttpMethod.GET, UrlBuilder(), HeadersBuilder(), HttpBody.Empty)
+    public constructor() : this(HttpMethod.GET, UrlBuilder(), HeadersBuilder(), HttpBody.Empty, DeferredHeadersBuilder())
 
     public fun build(): HttpRequest =
-        HttpRequest(method, url.build(), if (headers.isEmpty()) Headers.Empty else headers.build(), body)
+        HttpRequest(method, url.build(), if (headers.isEmpty()) Headers.Empty else headers.build(), body, if (trailingHeaders.isEmpty()) DeferredHeaders.Empty else trailingHeaders.build())
 
     override fun deepCopy(): HttpRequestBuilder =
-        HttpRequestBuilder(method, url.deepCopy(), headers.deepCopy(), body)
+        HttpRequestBuilder(method, url.deepCopy(), headers.deepCopy(), body, trailingHeaders.deepCopy())
 
     override fun toString(): String = buildString {
-        append("HttpRequestBuilder(method=$method, url=$url, headers=$headers, body=$body)")
+        append("HttpRequestBuilder(method=$method, url=$url, headers=$headers, body=$body, trailingHeaders=$trailingHeaders)")
     }
 }
 
@@ -44,6 +45,7 @@ internal data class HttpRequestBuilderView(
     override val url: Url by lazy { builder.url.build() }
     override val headers: Headers by lazy { builder.headers.build() }
     override val body: HttpBody = builder.body
+    override val trailingHeaders: DeferredHeaders by lazy { builder.trailingHeaders.build() }
 }
 
 /**

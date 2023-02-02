@@ -5,7 +5,7 @@
 package aws.smithy.kotlin.runtime.http.util
 
 import aws.smithy.kotlin.runtime.ClientException
-import aws.smithy.kotlin.runtime.util.InternalApi
+import aws.smithy.kotlin.runtime.InternalApi
 
 /**
  * Attempt to split an HTTP header [value] by commas and returns the resulting list.

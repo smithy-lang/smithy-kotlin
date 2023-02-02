@@ -14,13 +14,13 @@ kotlin {
     sourceSets {
         commonMain {
             dependencies {
-                api(project(":runtime:utils"))
+                api(project(":runtime:runtime-core"))
                 implementation("io.github.microutils:kotlin-logging:$kotlinLoggingVersion")
             }
         }
 
         all {
-            languageSettings.optIn("aws.smithy.kotlin.runtime.util.InternalApi")
+            languageSettings.optIn("aws.smithy.kotlin.runtime.InternalApi")
         }
     }
 }

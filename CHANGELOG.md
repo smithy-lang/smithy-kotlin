@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.15.1] - 02/02/2023
+
+### Features
+* [#446](https://github.com/awslabs/smithy-kotlin/issues/446) Implement flexible checksums customization
+* Add support for unsigned `aws-chunked` requests
+
+### Miscellaneous
+* Refactor: collapse io, hashing, and util modules into runtime-core module
+
 ## [0.15.0] - 01/27/2023
 
 ### Features

@@ -5,9 +5,9 @@
 
 package aws.smithy.kotlin.runtime.http.auth
 
+import aws.smithy.kotlin.runtime.InternalApi
 import aws.smithy.kotlin.runtime.client.ExecutionContext
 import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
-import aws.smithy.kotlin.runtime.util.InternalApi
 
 /**
  * Represents a component capable of signing an HTTP request

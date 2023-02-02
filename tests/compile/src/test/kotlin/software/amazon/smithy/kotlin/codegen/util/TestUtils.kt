@@ -105,7 +105,7 @@ fun compileSdkAndTest(
     // Run test against
     return KotlinCompilation().apply {
         kotlincArguments = listOf(
-            "-Xopt-in=aws.smithy.kotlin.runtime.util.InternalApi",
+            "-Xopt-in=aws.smithy.kotlin.runtime.InternalApi",
             "-Xexplicit-api=strict",
         )
         sources = sdkSources

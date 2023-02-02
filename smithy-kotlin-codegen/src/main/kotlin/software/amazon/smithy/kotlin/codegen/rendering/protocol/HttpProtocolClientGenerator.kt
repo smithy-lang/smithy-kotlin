@@ -76,7 +76,7 @@ abstract class HttpProtocolClientGenerator(
      * Render any properties this class should have.
      */
     protected open fun renderProperties(writer: KotlinWriter) {
-        writer.write("private val managedResources = #T()", RuntimeTypes.IO.SdkManagedGroup)
+        writer.write("private val managedResources = #T()", RuntimeTypes.Core.IO.SdkManagedGroup)
         writer.write("private val client = #T(config.httpClientEngine)", RuntimeTypes.Http.SdkHttpClient)
     }
 
@@ -97,7 +97,7 @@ abstract class HttpProtocolClientGenerator(
      */
     protected open fun renderInit(writer: KotlinWriter) {
         writer.withBlock("init {", "}") {
-            write("managedResources.#T(config.httpClientEngine)", RuntimeTypes.IO.addIfManaged)
+            write("managedResources.#T(config.httpClientEngine)", RuntimeTypes.Core.IO.addIfManaged)
         }
     }
 
@@ -255,10 +255,8 @@ abstract class HttpProtocolClientGenerator(
             .forEach { middleware ->
                 middleware.render(ctx, op, writer)
             }
-        if (op.checksumRequired()) {
-            writer.addImport(RuntimeTypes.Http.Middleware.Md5ChecksumMiddleware)
-            writer.write("op.install(#T())", RuntimeTypes.Http.Middleware.Md5ChecksumMiddleware)
-        }
+
+        op.renderIsMd5ChecksumRequired(writer)
     }
 
     /**
@@ -274,8 +272,32 @@ abstract class HttpProtocolClientGenerator(
      * Render any additional methods to support client operation
      */
     protected open fun renderAdditionalMethods(writer: KotlinWriter) { }
-}
 
-// TODO https://github.com/awslabs/aws-sdk-kotlin/issues/557
-private fun OperationShape.checksumRequired(): Boolean =
-    hasTrait<HttpChecksumRequiredTrait>() || getTrait<HttpChecksumTrait>()?.isRequestChecksumRequired == true
+    /**
+     * Render optionally installing Md5ChecksumMiddleware.
+     * The Md5 middleware will only be installed if the operation requires a checksum and the user has not opted-in to flexible checksums.
+     */
+    private fun OperationShape.renderIsMd5ChecksumRequired(writer: KotlinWriter) {
+        val httpChecksumTrait = getTrait<HttpChecksumTrait>()
+
+        // the checksum requirement can be modeled in either HttpChecksumTrait's `requestChecksumRequired` or the HttpChecksumRequired trait
+        if (!hasTrait<HttpChecksumRequiredTrait>() && httpChecksumTrait == null) {
+            return
+        }
+
+        val requestAlgorithmMember = ctx.model.getShape(input.get()).getOrNull()
+            ?.members()
+            ?.firstOrNull { it.memberName == httpChecksumTrait?.requestAlgorithmMember?.getOrNull() }
+
+        if (hasTrait<HttpChecksumRequiredTrait>() || httpChecksumTrait?.isRequestChecksumRequired == true) {
+            val interceptorSymbol = RuntimeTypes.Http.Interceptors.Md5ChecksumInterceptor
+            val inputSymbol = ctx.symbolProvider.toSymbol(ctx.model.expectShape(inputShape))
+
+            requestAlgorithmMember?.let {
+                writer.withBlock("op.interceptors.add(#T<#T> { ", "})", interceptorSymbol, inputSymbol) {
+                    writer.write("it.#L?.value == null", requestAlgorithmMember.defaultName())
+                }
+            } ?: writer.write("op.interceptors.add(#T<#T>())", interceptorSymbol, inputSymbol)
+        }
+    }
+}

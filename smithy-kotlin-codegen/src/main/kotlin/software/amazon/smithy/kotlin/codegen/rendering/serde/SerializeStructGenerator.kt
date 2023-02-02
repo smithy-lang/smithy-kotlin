@@ -425,12 +425,13 @@ open class SerializeStructGenerator(
      * ```
      */
     private fun renderBlobEntry(nestingLevel: Int, listMemberName: String) {
-        writer.addImport("encodeBase64String", KotlinDependency.UTILS)
-
         val containerName = if (nestingLevel == 0) "input." else ""
         val (keyName, valueName) = keyValueNames(nestingLevel)
 
-        writer.write("$containerName$listMemberName.forEach { ($keyName, $valueName) -> entry($keyName, $valueName.encodeBase64String()) }")
+        writer.write(
+            "$containerName$listMemberName.forEach { ($keyName, $valueName) -> entry($keyName, $valueName.#T()) }",
+            RuntimeTypes.Core.Utils.encodeBase64String,
+        )
     }
 
     /**
@@ -504,12 +505,11 @@ open class SerializeStructGenerator(
      * }
      */
     private fun renderBlobElement(nestingLevel: Int, listMemberName: String) {
-        writer.addImport("encodeBase64String", KotlinDependency.UTILS)
         val elementName = nestingLevel.variableNameFor(NestedIdentifierType.ELEMENT)
         val containerName = if (nestingLevel == 0) "input." else ""
 
         writer.withBlock("for ($elementName in $containerName$listMemberName) {", "}") {
-            writer.write("serializeString($elementName.encodeBase64String())")
+            writer.write("serializeString($elementName.#T())", RuntimeTypes.Core.Utils.encodeBase64String)
         }
     }
 
@@ -640,7 +640,7 @@ open class SerializeStructGenerator(
         val serializerFn = "field"
 
         val encoded = if (target.type == ShapeType.BLOB) {
-            writer.addImport("encodeBase64String", KotlinDependency.UTILS)
+            writer.addImport(RuntimeTypes.Core.Utils.encodeBase64String)
             "$defaultIdentifier.encodeBase64String()"
         } else {
             defaultIdentifier

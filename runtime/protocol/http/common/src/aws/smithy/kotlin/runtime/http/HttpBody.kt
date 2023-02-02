@@ -4,10 +4,12 @@
  */
 package aws.smithy.kotlin.runtime.http
 
+import aws.smithy.kotlin.runtime.ClientException
+import aws.smithy.kotlin.runtime.InternalApi
 import aws.smithy.kotlin.runtime.content.ByteStream
+import aws.smithy.kotlin.runtime.hashing.HashFunction
 import aws.smithy.kotlin.runtime.http.content.ByteArrayContent
 import aws.smithy.kotlin.runtime.io.*
-import aws.smithy.kotlin.runtime.util.InternalApi
 
 /**
  * HTTP payload to be sent to a peer
@@ -143,6 +145,28 @@ public fun SdkSource.toHttpBody(contentLength: Long? = null): HttpBody =
         override val isOneShot: Boolean = true
         override fun readFrom(): SdkSource = this@toHttpBody
     }
+
+/**
+ * Convert an [HttpBody.SourceContent] or [HttpBody.ChannelContent] to a body with a [HashingSource] or [HashingByteReadChannel], respectively.
+ * @param hashFunction the hash function to wrap the body with
+ * @param contentLength the total content length of the source, if known
+ */
+@InternalApi
+public fun HttpBody.toHashingBody(
+    hashFunction: HashFunction,
+    contentLength: Long?,
+): HttpBody = when (this) {
+    is HttpBody.SourceContent ->
+        HashingSource(
+            hashFunction,
+            readFrom(),
+        ).toHttpBody(contentLength)
+    is HttpBody.ChannelContent -> HashingByteReadChannel(
+        hashFunction,
+        readFrom(),
+    ).toHttpBody(contentLength)
+    else -> throw ClientException("HttpBody type is not supported")
+}
 
 // FIXME - replace/move to reading to SdkBuffer instead
 /**

@@ -4,7 +4,7 @@
  */
 package aws.smithy.kotlin.runtime.tracing
 
-import aws.smithy.kotlin.runtime.util.InternalApi
+import aws.smithy.kotlin.runtime.InternalApi
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.withContext
 import kotlin.coroutines.CoroutineContext

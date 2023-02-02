@@ -6,11 +6,11 @@
 package aws.smithy.kotlin.runtime.crt
 
 import aws.sdk.kotlin.crt.http.HttpRequestBodyStream
+import aws.smithy.kotlin.runtime.InternalApi
 import aws.smithy.kotlin.runtime.http.*
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
 import aws.smithy.kotlin.runtime.http.util.splitAsQueryParameters
-import aws.smithy.kotlin.runtime.util.InternalApi
 import kotlin.coroutines.coroutineContext
 import aws.sdk.kotlin.crt.http.Headers as HeadersCrt
 import aws.sdk.kotlin.crt.http.HttpRequest as HttpRequestCrt

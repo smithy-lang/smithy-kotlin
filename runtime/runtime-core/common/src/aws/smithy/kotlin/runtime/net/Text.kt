@@ -4,7 +4,7 @@
  */
 package aws.smithy.kotlin.runtime.net
 
-import aws.smithy.kotlin.runtime.util.InternalApi
+import aws.smithy.kotlin.runtime.InternalApi
 
 /**
  * Validates a hostname per [RFC 1123](https://www.ietf.org/rfc/rfc1123.txt).

@@ -39,6 +39,6 @@ fun <T> T.isInternalSdk() where T : WithExtraProperties<out Documentable> =
 val <T> T.internalAnnotation where T : WithExtraProperties<out Documentable>
     get() = extra[Annotations]?.let { annotations ->
         annotations.directAnnotations.values.flatten().firstOrNull {
-            it.dri.toString() == "aws.smithy.kotlin.runtime.util/InternalApi///PointingToDeclaration/"
+            it.dri.toString() == "aws.smithy.kotlin.runtime.InternalApi///PointingToDeclaration/"
         }
     }

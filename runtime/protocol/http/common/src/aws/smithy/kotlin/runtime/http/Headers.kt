@@ -4,13 +4,13 @@
  */
 package aws.smithy.kotlin.runtime.http
 
+import aws.smithy.kotlin.runtime.http.EmptyHeaders.deepCopy
 import aws.smithy.kotlin.runtime.http.util.*
-import aws.smithy.kotlin.runtime.http.util.StringValuesMapImpl
 
 /**
  * Immutable mapping of case insensitive HTTP header names to list of [String] values.
  */
-public interface Headers : StringValuesMap {
+public interface Headers : ValuesMap<String> {
     public companion object {
         public operator fun invoke(block: HeadersBuilder.() -> Unit): Headers = HeadersBuilder()
             .apply(block).build()
@@ -34,7 +34,7 @@ private object EmptyHeaders : Headers {
 /**
  * Build an immutable HTTP header map
  */
-public class HeadersBuilder : StringValuesMapBuilder(true, 8), CanDeepCopy<HeadersBuilder> {
+public class HeadersBuilder : ValuesMapBuilder<String>(true, 8), CanDeepCopy<HeadersBuilder> {
     override fun toString(): String = "HeadersBuilder ${entries()} "
     override fun build(): Headers = HeadersImpl(values)
 
@@ -46,6 +46,6 @@ public class HeadersBuilder : StringValuesMapBuilder(true, 8), CanDeepCopy<Heade
 
 private class HeadersImpl(
     values: Map<String, List<String>>,
-) : Headers, StringValuesMapImpl(true, values) {
+) : Headers, ValuesMapImpl<String>(true, values) {
     override fun toString(): String = "Headers ${entries()}"
 }

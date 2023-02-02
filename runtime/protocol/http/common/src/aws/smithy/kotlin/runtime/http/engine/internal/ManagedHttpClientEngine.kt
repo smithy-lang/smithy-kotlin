@@ -4,10 +4,10 @@
  */
 package aws.smithy.kotlin.runtime.http.engine.internal
 
+import aws.smithy.kotlin.runtime.InternalApi
 import aws.smithy.kotlin.runtime.http.engine.CloseableHttpClientEngine
 import aws.smithy.kotlin.runtime.http.engine.HttpClientEngine
 import aws.smithy.kotlin.runtime.io.SdkManagedCloseable
-import aws.smithy.kotlin.runtime.util.InternalApi
 
 private class ManagedHttpClientEngine(
     private val delegate: CloseableHttpClientEngine,
