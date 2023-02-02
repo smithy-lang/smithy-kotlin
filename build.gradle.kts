@@ -161,3 +161,19 @@ tasks.register<JavaExec>("ktlintFormat") {
     main = "com.pinterest.ktlint.Main"
     args = listOf("-F") + lintPaths
 }
+
+apiValidation {
+    nonPublicMarkers += "aws.smithy.kotlin.runtime.util.InternalApi"
+
+    ignoredProjects += setOf(
+        "dokka-smithy",
+        "ktlint-rules",
+        "aws-signing-tests",
+        "test-suite",
+        "http-test",
+        "smithy-test",
+        "testing",
+        "smithy-kotlin-codegen-testutils",
+        "tests",
+    )
+}
