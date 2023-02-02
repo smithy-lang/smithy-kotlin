@@ -4,6 +4,7 @@
  */
 package aws.smithy.kotlin.runtime.http.response
 
+import aws.smithy.kotlin.runtime.InternalApi
 import aws.smithy.kotlin.runtime.ProtocolResponse
 import aws.smithy.kotlin.runtime.http.Headers
 import aws.smithy.kotlin.runtime.http.HttpBody
@@ -11,7 +12,6 @@ import aws.smithy.kotlin.runtime.http.HttpStatusCode
 import aws.smithy.kotlin.runtime.http.content.ByteArrayContent
 import aws.smithy.kotlin.runtime.http.readAll
 import aws.smithy.kotlin.runtime.io.*
-import aws.smithy.kotlin.runtime.util.InternalApi
 
 /**
  * Immutable container for an HTTP response

@@ -7,7 +7,6 @@ package aws.smithy.kotlin.runtime
 import aws.smithy.kotlin.runtime.client.SdkClientOption
 import aws.smithy.kotlin.runtime.util.AttributeKey
 import aws.smithy.kotlin.runtime.util.Attributes
-import aws.smithy.kotlin.runtime.util.InternalApi
 
 /**
  * Additional metadata about an error

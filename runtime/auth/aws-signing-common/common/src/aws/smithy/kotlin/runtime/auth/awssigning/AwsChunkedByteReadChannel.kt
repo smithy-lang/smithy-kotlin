@@ -5,11 +5,11 @@
 
 package aws.smithy.kotlin.runtime.auth.awssigning
 
+import aws.smithy.kotlin.runtime.InternalApi
 import aws.smithy.kotlin.runtime.auth.awssigning.internal.AwsChunkedReader
 import aws.smithy.kotlin.runtime.http.DeferredHeaders
 import aws.smithy.kotlin.runtime.io.SdkBuffer
 import aws.smithy.kotlin.runtime.io.SdkByteReadChannel
-import aws.smithy.kotlin.runtime.util.InternalApi
 
 /**
  * aws-chunked content encoding. Operations on this class can not be invoked concurrently.

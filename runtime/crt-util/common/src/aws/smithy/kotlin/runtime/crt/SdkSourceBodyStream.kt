@@ -7,9 +7,9 @@ package aws.smithy.kotlin.runtime.crt
 
 import aws.sdk.kotlin.crt.http.HttpRequestBodyStream
 import aws.sdk.kotlin.crt.io.MutableBuffer
+import aws.smithy.kotlin.runtime.InternalApi
 import aws.smithy.kotlin.runtime.io.SdkSource
 import aws.smithy.kotlin.runtime.io.buffer
-import aws.smithy.kotlin.runtime.util.InternalApi
 
 /**
  * Implement's [HttpRequestBodyStream] which proxies an SDK source [SdkSource]

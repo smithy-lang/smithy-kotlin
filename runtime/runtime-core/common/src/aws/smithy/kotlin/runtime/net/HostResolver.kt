@@ -5,7 +5,7 @@
 
 package aws.smithy.kotlin.runtime.net
 
-import aws.smithy.kotlin.runtime.util.InternalApi
+import aws.smithy.kotlin.runtime.InternalApi
 
 /**
  * A resolved (hostname, address) pair

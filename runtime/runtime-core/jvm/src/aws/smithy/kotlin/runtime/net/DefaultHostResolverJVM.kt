@@ -5,7 +5,7 @@
 
 package aws.smithy.kotlin.runtime.net
 
-import aws.smithy.kotlin.runtime.util.InternalApi
+import aws.smithy.kotlin.runtime.InternalApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.net.Inet4Address

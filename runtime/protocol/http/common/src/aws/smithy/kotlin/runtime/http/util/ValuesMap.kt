@@ -4,7 +4,7 @@
  */
 package aws.smithy.kotlin.runtime.http.util
 
-import aws.smithy.kotlin.runtime.util.InternalApi
+import aws.smithy.kotlin.runtime.InternalApi
 
 /**
  * Mapping of [String] to a List of [T] values

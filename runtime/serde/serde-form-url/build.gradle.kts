@@ -12,12 +12,11 @@ kotlin {
         commonMain {
             dependencies {
                 api(project(":runtime:serde"))
-                implementation(project(":runtime:io"))
             }
         }
 
         all {
-            languageSettings.optIn("aws.smithy.kotlin.runtime.util.InternalApi")
+            languageSettings.optIn("aws.smithy.kotlin.runtime.InternalApi")
         }
     }
 }

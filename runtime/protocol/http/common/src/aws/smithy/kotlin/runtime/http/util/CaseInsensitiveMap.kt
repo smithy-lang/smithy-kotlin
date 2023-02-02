@@ -4,7 +4,7 @@
  */
 package aws.smithy.kotlin.runtime.http.util
 
-import aws.smithy.kotlin.runtime.util.InternalApi
+import aws.smithy.kotlin.runtime.InternalApi
 
 private class CaseInsensitiveString(val s: String) {
     val hash: Int = s.lowercase().hashCode()

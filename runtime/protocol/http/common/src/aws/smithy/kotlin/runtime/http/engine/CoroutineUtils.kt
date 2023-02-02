@@ -5,9 +5,9 @@
 
 package aws.smithy.kotlin.runtime.http.engine
 
+import aws.smithy.kotlin.runtime.InternalApi
 import aws.smithy.kotlin.runtime.tracing.TraceSpanContextElement
 import aws.smithy.kotlin.runtime.tracing.traceSpan
-import aws.smithy.kotlin.runtime.util.InternalApi
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.InternalCoroutinesApi

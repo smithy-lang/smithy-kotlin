@@ -14,12 +14,8 @@ kotlin {
     sourceSets {
         commonMain {
             dependencies {
+                // exposes: Attributes, middleware
                 api(project(":runtime:runtime-core"))
-                // exposes: Attributes
-                api(project(":runtime:utils"))
-                implementation(project(":runtime:hashing"))
-                // exposes: service+middleware
-                api(project(":runtime:io"))
                 implementation(project(":runtime:logging"))
                 // exposes: TracingContext.TraceSpan
                 api(project(":runtime:tracing:tracing-core"))
@@ -37,7 +33,7 @@ kotlin {
         }
 
         all {
-            languageSettings.optIn("aws.smithy.kotlin.runtime.util.InternalApi")
+            languageSettings.optIn("aws.smithy.kotlin.runtime.InternalApi")
         }
     }
 }

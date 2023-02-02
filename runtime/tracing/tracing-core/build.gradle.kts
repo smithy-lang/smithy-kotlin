@@ -14,14 +14,8 @@ kotlin {
     sourceSets {
         commonMain {
             dependencies {
-                // Necessary for Instant
+                // Necessary for Instant, InternalApi, etc
                 api(project(":runtime:runtime-core"))
-
-                // Necessary for Closeable
-                api(project(":runtime:io"))
-
-                // Necessary for InternalApi
-                api(project(":runtime:utils"))
 
                 // Necessary for Logger
                 api(project(":runtime:logging"))
@@ -37,7 +31,7 @@ kotlin {
         }
 
         all {
-            languageSettings.optIn("aws.smithy.kotlin.runtime.util.InternalApi")
+            languageSettings.optIn("aws.smithy.kotlin.runtime.InternalApi")
         }
     }
 }

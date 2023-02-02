@@ -76,7 +76,7 @@ abstract class HttpProtocolClientGenerator(
      * Render any properties this class should have.
      */
     protected open fun renderProperties(writer: KotlinWriter) {
-        writer.write("private val managedResources = #T()", RuntimeTypes.IO.SdkManagedGroup)
+        writer.write("private val managedResources = #T()", RuntimeTypes.Core.IO.SdkManagedGroup)
         writer.write("private val client = #T(config.httpClientEngine)", RuntimeTypes.Http.SdkHttpClient)
     }
 
@@ -97,7 +97,7 @@ abstract class HttpProtocolClientGenerator(
      */
     protected open fun renderInit(writer: KotlinWriter) {
         writer.withBlock("init {", "}") {
-            write("managedResources.#T(config.httpClientEngine)", RuntimeTypes.IO.addIfManaged)
+            write("managedResources.#T(config.httpClientEngine)", RuntimeTypes.Core.IO.addIfManaged)
         }
     }
 

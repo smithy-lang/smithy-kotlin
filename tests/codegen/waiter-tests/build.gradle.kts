@@ -21,7 +21,7 @@ buildscript {
 
 extra.set("skipPublish", true)
 
-val optinAnnotations = listOf("kotlin.RequiresOptIn", "aws.smithy.kotlin.runtime.util.InternalApi")
+val optinAnnotations = listOf("kotlin.RequiresOptIn", "aws.smithy.kotlin.runtime.InternalApi")
 kotlin.sourceSets.all {
     optinAnnotations.forEach { languageSettings.optIn(it) }
 }

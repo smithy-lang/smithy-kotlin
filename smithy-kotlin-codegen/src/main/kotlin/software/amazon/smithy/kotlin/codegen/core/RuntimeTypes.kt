@@ -162,19 +162,28 @@ object RuntimeTypes {
             val IdempotencyTokenConfig = symbol("IdempotencyTokenConfig")
             val IdempotencyTokenProviderExt = symbol("idempotencyTokenProvider")
         }
-    }
 
-    object Hashing : RuntimeTypePackage(KotlinDependency.HASHING) {
-        val Sha256 = symbol("Sha256")
-    }
+        object Hashing : RuntimeTypePackage(KotlinDependency.CORE, "hashing") {
+            val Sha256 = symbol("Sha256")
+        }
 
-    object Utils : RuntimeTypePackage(KotlinDependency.UTILS) {
-        val Attributes = symbol("Attributes")
-        val AttributeKey = symbol("AttributeKey")
-        val flattenIfPossible = symbol("flattenIfPossible")
-        val length = symbol("length")
-        val truthiness = symbol("truthiness")
-        val urlEncodeComponent = symbol("urlEncodeComponent", "text")
+        object IO : RuntimeTypePackage(KotlinDependency.CORE, "io") {
+            val Closeable = symbol("Closeable")
+            val SdkManagedGroup = symbol("SdkManagedGroup")
+            val addIfManaged = symbol("addIfManaged", isExtension = true)
+        }
+        object Utils : RuntimeTypePackage(KotlinDependency.CORE, "util") {
+            val Attributes = symbol("Attributes")
+            val AttributeKey = symbol("AttributeKey")
+            val flattenIfPossible = symbol("flattenIfPossible")
+            val length = symbol("length")
+            val truthiness = symbol("truthiness")
+            val urlEncodeComponent = symbol("urlEncodeComponent", "text")
+            val decodeBase64 = symbol("decodeBase64")
+            val decodeBase64Bytes = symbol("decodeBase64Bytes")
+            val encodeBase64 = symbol("encodeBase64")
+            val encodeBase64String = symbol("encodeBase64String")
+        }
     }
 
     object Serde : RuntimeTypePackage(KotlinDependency.SERDE) {
@@ -254,12 +263,6 @@ object RuntimeTypes {
                 val DefaultAwsSigner = symbol("DefaultAwsSigner")
             }
         }
-    }
-
-    object IO : RuntimeTypePackage(KotlinDependency.IO) {
-        val Closeable = symbol("Closeable")
-        val SdkManagedGroup = symbol("SdkManagedGroup")
-        val addIfManaged = symbol("addIfManaged", isExtension = true)
     }
 
     object Tracing {

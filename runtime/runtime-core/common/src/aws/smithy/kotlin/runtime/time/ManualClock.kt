@@ -5,7 +5,7 @@
 
 package aws.smithy.kotlin.runtime.time
 
-import aws.smithy.kotlin.runtime.util.InternalApi
+import aws.smithy.kotlin.runtime.InternalApi
 import kotlin.time.Duration
 
 /**

@@ -15,7 +15,7 @@ platforms.forEach { platform ->
     apply(from = rootProject.file("gradle/${platform}.gradle"))
 }
 
-val optinAnnotations = listOf("kotlin.RequiresOptIn", "aws.smithy.kotlin.runtime.util.InternalApi")
+val optinAnnotations = listOf("kotlin.RequiresOptIn", "aws.smithy.kotlin.runtime.InternalApi")
 
 kotlin {
     sourceSets {

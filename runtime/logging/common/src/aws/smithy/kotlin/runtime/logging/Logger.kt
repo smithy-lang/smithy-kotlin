@@ -5,7 +5,7 @@
 
 package aws.smithy.kotlin.runtime.logging
 
-import aws.smithy.kotlin.runtime.util.InternalApi
+import aws.smithy.kotlin.runtime.InternalApi
 
 /**
  * Internal logging facade

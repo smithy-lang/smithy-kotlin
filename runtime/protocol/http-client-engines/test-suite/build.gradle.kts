@@ -19,7 +19,6 @@ kotlin {
     sourceSets {
         commonMain {
             dependencies {
-                implementation(project(":runtime:hashing"))
                 implementation(project(":runtime:protocol:http"))
                 implementation(project(":runtime:protocol:http-test"))
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:$coroutinesVersion")
@@ -46,7 +45,7 @@ kotlin {
         }
 
         all {
-            languageSettings.optIn("aws.smithy.kotlin.runtime.util.InternalApi")
+            languageSettings.optIn("aws.smithy.kotlin.runtime.InternalApi")
         }
     }
 }

@@ -4,7 +4,7 @@
  */
 package aws.smithy.kotlin.runtime.serde.json
 
-import aws.smithy.kotlin.runtime.util.InternalApi
+import aws.smithy.kotlin.runtime.InternalApi
 
 /**
  * Interface for serialization. Specific formats should implement this interface according to their

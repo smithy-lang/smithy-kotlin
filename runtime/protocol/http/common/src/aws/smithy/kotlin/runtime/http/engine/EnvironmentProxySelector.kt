@@ -25,7 +25,7 @@ import aws.smithy.kotlin.runtime.util.*
  * - `https_proxy`, `HTTPS_PROXY`
  * - `no_proxy`, `NO_PROXY`
  */
-internal class EnvironmentProxySelector(provider: PlatformEnvironProvider = Platform) : ProxySelector {
+internal class EnvironmentProxySelector(provider: PlatformEnvironProvider = PlatformProvider.System) : ProxySelector {
     private val httpProxy =
         resolveProxyByProperty(provider, Protocol.HTTP) ?: resolveProxyByEnvironment(provider, Protocol.HTTP)
     private val httpsProxy =
