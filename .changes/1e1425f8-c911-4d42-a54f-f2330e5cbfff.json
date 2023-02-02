@@ -1,0 +1,5 @@
+{
+    "id": "1e1425f8-c911-4d42-a54f-f2330e5cbfff",
+    "type": "bugfix",
+    "description": "Stop logging \"null\" when exceptions are not present in trace events"
+}
