@@ -9,6 +9,7 @@ import aws.smithy.kotlin.runtime.InternalApi
 import aws.smithy.kotlin.runtime.net.*
 import aws.smithy.kotlin.runtime.util.text.ensureSuffix
 import aws.smithy.kotlin.runtime.util.text.urlEncodeComponent
+import kotlinx.coroutines.CancellationException
 
 @InternalApi
 public fun substring(value: String?, start: Int, stop: Int, reverse: Boolean): String? =
@@ -35,6 +36,8 @@ public fun parseUrl(value: String?): Url? =
         val sdkUrl: aws.smithy.kotlin.runtime.http.Url
         try {
             sdkUrl = aws.smithy.kotlin.runtime.http.Url.parse(value)
+        } catch (e: CancellationException) {
+            throw e
         } catch (e: Exception) {
             return null
         }

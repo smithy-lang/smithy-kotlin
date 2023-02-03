@@ -100,7 +100,12 @@ private class PolicyLogger<O>(
 ) : RetryPolicy<O> {
     override fun evaluate(result: Result<O>): RetryDirective = policy.evaluate(result).also {
         if (it is RetryDirective.TerminateAndFail) {
-            traceSpan.debug<RetryMiddleware<*, *>> { "request failed with non-retryable error" }
+            val e = result.exceptionOrNull()
+            if (e == null) {
+                traceSpan.debug<RetryMiddleware<*, *>> { "request failed with non-retryable error" }
+            } else {
+                traceSpan.debug<RetryMiddleware<*, *>>(e) { "request failed with non-retryable error" }
+            }
         }
     }
 }

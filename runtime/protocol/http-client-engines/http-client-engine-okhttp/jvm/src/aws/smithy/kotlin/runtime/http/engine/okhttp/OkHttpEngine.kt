@@ -5,6 +5,7 @@
 
 package aws.smithy.kotlin.runtime.http.engine.okhttp
 
+import aws.smithy.kotlin.runtime.TransientHttpException
 import aws.smithy.kotlin.runtime.client.ExecutionContext
 import aws.smithy.kotlin.runtime.http.engine.AlpnId
 import aws.smithy.kotlin.runtime.http.engine.HttpClientEngineBase
@@ -15,6 +16,9 @@ import aws.smithy.kotlin.runtime.time.Instant
 import aws.smithy.kotlin.runtime.time.fromEpochMilliseconds
 import kotlinx.coroutines.job
 import okhttp3.*
+import java.io.EOFException
+import java.io.IOException
+import java.net.SocketException
 import java.util.concurrent.TimeUnit
 import kotlin.time.toJavaDuration
 
@@ -39,7 +43,16 @@ public class OkHttpEngine(
 
         val engineRequest = request.toOkHttpRequest(context, callContext)
         val engineCall = client.newCall(engineRequest)
-        val engineResponse = engineCall.executeAsync()
+
+        val engineResponse = try {
+            engineCall.executeAsync()
+        } catch (ex: IOException) {
+            when {
+                ex.cause is EOFException -> throw TransientHttpException("Unexpected end of stream", ex)
+                ex is SocketException -> throw TransientHttpException("Unexpected socket problem", ex)
+                else -> throw ex
+            }
+        }
 
         callContext.job.invokeOnCompletion {
             engineResponse.body.close()
@@ -70,7 +83,7 @@ private fun OkHttpEngineConfig.buildClient(): OkHttpClient {
         followSslRedirects(false)
 
         // see: https://github.com/ktorio/ktor/issues/1708#issuecomment-609988128
-        retryOnConnectionFailure(true)
+        retryOnConnectionFailure(config.retryOnConnectionFailure)
 
         connectTimeout(config.connectTimeout.toJavaDuration())
         readTimeout(config.socketReadTimeout.toJavaDuration())
@@ -78,11 +91,19 @@ private fun OkHttpEngineConfig.buildClient(): OkHttpClient {
 
         // use our own pool configured with the settings taken from config
         val pool = ConnectionPool(
-            maxIdleConnections = config.maxConnections.toInt(),
+            // maxIdleConnections = config.maxConnections.toInt(),
+            maxIdleConnections = 5, // The default from the no-arg ConnectionPool() constructor
             keepAliveDuration = config.connectionIdleTimeout.inWholeMilliseconds,
             TimeUnit.MILLISECONDS,
         )
         connectionPool(pool)
+
+        dispatcher(
+            Dispatcher().apply {
+                maxRequests = config.maxConnections.toInt()
+                maxRequestsPerHost = config.maxConnectionsPerHost.toInt()
+            }
+        )
 
         // Log events coming from okhttp. Allocate a new listener per-call to facilitate dedicated trace spans.
         eventListenerFactory { call -> HttpEngineEventListener(pool, config.hostResolver, call) }

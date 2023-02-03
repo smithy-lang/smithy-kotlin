@@ -112,10 +112,9 @@ class StreamingRequestBodyTest {
             val buffer = Buffer()
             // see https://github.com/awslabs/aws-sdk-kotlin/issues/733 for why we expect
             // this to be an IOException
-            val ex = assertFailsWith<IOException> {
+            assertFailsWith<CancellationException> {
                 actual.writeTo(buffer)
             }
-            assertIs<CancellationException>(ex.cause)
         }
         delay(100.milliseconds)
 

@@ -95,6 +95,7 @@ public class CrtHttpEngine(public val config: CrtHttpEngineConfig) : HttpClientE
         val conn = withTimeoutOrNull(config.connectionAcquireTimeout) {
             manager.acquireConnection()
         } ?: throw ClientException("timed out waiting for an HTTP connection to be acquired from the pool")
+        logger.trace { "Acquired connection ${conn.id}" }
 
         val respHandler = SdkStreamResponseHandler(conn, callContext)
         callContext.job.invokeOnCompletion {

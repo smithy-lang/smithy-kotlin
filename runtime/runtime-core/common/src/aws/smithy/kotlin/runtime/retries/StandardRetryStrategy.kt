@@ -70,6 +70,8 @@ public class StandardRetryStrategy(
                         fromToken.scheduleRetry(evaluation.reason)
                     }
             }
+        } catch (ex: CancellationException) {
+            throw ex
         } catch (ex: RetryCapacityExceededException) {
             throwCapacityExceeded(ex, attempt, callResult)
         } catch (ex: Throwable) {

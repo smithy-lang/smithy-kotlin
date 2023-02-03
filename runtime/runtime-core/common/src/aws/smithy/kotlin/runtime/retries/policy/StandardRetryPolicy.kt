@@ -9,6 +9,7 @@ import aws.smithy.kotlin.runtime.ClientException
 import aws.smithy.kotlin.runtime.SdkBaseException
 import aws.smithy.kotlin.runtime.ServiceException
 import aws.smithy.kotlin.runtime.ServiceException.*
+import aws.smithy.kotlin.runtime.TransientHttpException
 import kotlin.reflect.KClass
 import kotlin.reflect.safeCast
 
@@ -62,10 +63,12 @@ public open class StandardRetryPolicy : RetryPolicy<Any?> {
 
     protected open fun evaluateSpecificExceptions(ex: Throwable): RetryDirective? = null
 
-    @Suppress("UNUSED_PARAMETER") // Until method is implemented
     private fun evaluateNonSdkException(ex: Throwable): RetryDirective? =
-        // TODO Write logic to find connection errors, timeouts, stream faults, etc.
-        null
+        // TODO Write _real_ logic to find connection errors, timeouts, stream faults, etc.
+        when (ex) {
+            is TransientHttpException -> RetryDirective.RetryError(RetryErrorType.ServerSide)
+            else -> null
+        }
 }
 
 private class EvaluationStrategy<T : Throwable>(val clazz: KClass<T>, private val evaluator: (T) -> RetryDirective?) {

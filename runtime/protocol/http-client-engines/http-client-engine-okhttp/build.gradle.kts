@@ -18,6 +18,8 @@ kotlin {
                 api(project(":runtime:protocol:http"))
                 implementation(project(":runtime:logging"))
 
+                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion")
+
                 implementation("com.squareup.okhttp3:okhttp:$okHttpVersion")
                 implementation("com.squareup.okhttp3:okhttp-coroutines:$okHttpVersion")
 

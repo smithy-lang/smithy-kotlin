@@ -36,6 +36,7 @@ class SdkStreamResponseHandlerTest {
         override fun close() { isClosed = true }
         override fun makeRequest(httpReq: HttpRequest, handler: HttpStreamResponseHandler): HttpStream { throw UnsupportedOperationException("not implemented for test") }
         override fun shutdown() { }
+        override val id: String = "<mock connection>"
     }
 
     private val mockConn = MockHttpClientConnection()

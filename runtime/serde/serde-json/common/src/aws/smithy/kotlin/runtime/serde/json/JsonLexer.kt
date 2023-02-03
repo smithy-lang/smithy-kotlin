@@ -7,6 +7,7 @@ package aws.smithy.kotlin.runtime.serde.json
 
 import aws.smithy.kotlin.runtime.serde.*
 import aws.smithy.kotlin.runtime.util.*
+import kotlinx.coroutines.CancellationException
 
 private val DIGITS = ('0'..'9').toSet()
 private val EXP = setOf('e', 'E')
@@ -89,10 +90,15 @@ internal class JsonLexer(
                 LexerState.ObjectNextKeyOrEnd -> stateObjectNextKeyOrEnd()
                 LexerState.ObjectFieldValue -> stateObjectFieldValue()
             }
-        } catch (ex: DeserializationException) {
-            throw ex
         } catch (ex: Exception) {
-            throw DeserializationException(cause = ex)
+            when (ex) {
+                is CancellationException, // Don't break structured concurrency
+                is DeserializationException,
+                    -> throw ex
+
+                else -> throw DeserializationException(cause = ex)
+            }
+
         }
 
     // handles the [State.ObjectFirstKeyOrEnd] state
@@ -273,6 +279,8 @@ internal class JsonLexer(
         return if (needsUnescaped) {
             try {
                 value.unescape()
+            } catch (ex: CancellationException) {
+                throw ex
             } catch (ex: Exception) {
                 // use offset of the start of the entire string (including starting quotation mark)
                 fail(ex.message ?: "Invalid escaped string", start - 1)
