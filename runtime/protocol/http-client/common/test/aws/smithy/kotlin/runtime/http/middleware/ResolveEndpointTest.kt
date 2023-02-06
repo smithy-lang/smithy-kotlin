@@ -9,9 +9,7 @@ import aws.smithy.kotlin.runtime.client.ExecutionContext
 import aws.smithy.kotlin.runtime.http.Headers
 import aws.smithy.kotlin.runtime.http.HttpBody
 import aws.smithy.kotlin.runtime.http.HttpStatusCode
-import aws.smithy.kotlin.runtime.http.Protocol
 import aws.smithy.kotlin.runtime.http.SdkHttpClient
-import aws.smithy.kotlin.runtime.http.Url
 import aws.smithy.kotlin.runtime.http.endpoints.Endpoint
 import aws.smithy.kotlin.runtime.http.endpoints.EndpointProvider
 import aws.smithy.kotlin.runtime.http.engine.HttpClientEngineBase
@@ -23,6 +21,8 @@ import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
 import aws.smithy.kotlin.runtime.http.response.HttpCall
 import aws.smithy.kotlin.runtime.http.response.HttpResponse
 import aws.smithy.kotlin.runtime.net.Host
+import aws.smithy.kotlin.runtime.net.Scheme
+import aws.smithy.kotlin.runtime.net.Url
 import aws.smithy.kotlin.runtime.time.Instant
 import aws.smithy.kotlin.runtime.util.get
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -51,7 +51,7 @@ class ResolveEndpointTest {
         val actual = op.context[HttpOperationContext.HttpCallList].first().request
 
         assertEquals(Host.Domain("api.test.com"), actual.url.host)
-        assertEquals(Protocol.HTTPS, actual.url.scheme)
+        assertEquals(Scheme.HTTPS, actual.url.scheme)
         assertEquals("api.test.com", actual.headers["Host"])
     }
 
@@ -66,7 +66,7 @@ class ResolveEndpointTest {
         val actual = op.context[HttpOperationContext.HttpCallList].first().request
 
         assertEquals(Host.Domain("api.test.com"), actual.url.host)
-        assertEquals(Protocol.HTTPS, actual.url.scheme)
+        assertEquals(Scheme.HTTPS, actual.url.scheme)
         assertEquals(8080, actual.url.port)
     }
 
@@ -81,7 +81,7 @@ class ResolveEndpointTest {
         val actual = op.context[HttpOperationContext.HttpCallList].first().request
 
         assertEquals(Host.Domain("api.test.com"), actual.url.host)
-        assertEquals(Protocol.HTTPS, actual.url.scheme)
+        assertEquals(Scheme.HTTPS, actual.url.scheme)
         assertEquals(8080, actual.url.port)
         assertEquals("/foo/bar/operation", actual.url.path)
     }
@@ -98,7 +98,7 @@ class ResolveEndpointTest {
         val actual = op.context[HttpOperationContext.HttpCallList].first().request
 
         assertEquals(Host.Domain("prefix.api.test.com"), actual.url.host)
-        assertEquals(Protocol.HTTP, actual.url.scheme)
+        assertEquals(Scheme.HTTP, actual.url.scheme)
         assertEquals("/operation", actual.url.path)
     }
 
@@ -113,7 +113,7 @@ class ResolveEndpointTest {
         val actual = op.context[HttpOperationContext.HttpCallList].first().request
 
         assertEquals(Host.Domain("api.test.com"), actual.url.host)
-        assertEquals(Protocol.HTTP, actual.url.scheme)
+        assertEquals(Scheme.HTTP, actual.url.scheme)
         assertEquals("/path/prefix/operation", actual.url.path)
     }
 
@@ -128,7 +128,7 @@ class ResolveEndpointTest {
         val actual = op.context[HttpOperationContext.HttpCallList].first().request
 
         assertEquals(Host.Domain("api.test.com"), actual.url.host)
-        assertEquals(Protocol.HTTP, actual.url.scheme)
+        assertEquals(Scheme.HTTP, actual.url.scheme)
         assertEquals("/path/prefix", actual.url.path)
     }
 
@@ -143,7 +143,7 @@ class ResolveEndpointTest {
         val actual = op.context[HttpOperationContext.HttpCallList].first().request
 
         assertEquals(Host.Domain("api.test.com"), actual.url.host)
-        assertEquals(Protocol.HTTP, actual.url.scheme)
+        assertEquals(Scheme.HTTP, actual.url.scheme)
         assertEquals("/operation", actual.url.path)
         assertEquals("bar", actual.url.parameters["foo"])
         assertEquals("qux", actual.url.parameters["baz"])

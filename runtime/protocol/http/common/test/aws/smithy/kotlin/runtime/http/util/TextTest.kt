@@ -4,7 +4,7 @@
  */
 package aws.smithy.kotlin.runtime.http.util
 
-import aws.smithy.kotlin.runtime.http.QueryParameters
+import aws.smithy.kotlin.runtime.net.QueryParameters
 import aws.smithy.kotlin.runtime.util.text.urlEncodeComponent
 import kotlin.test.*
 

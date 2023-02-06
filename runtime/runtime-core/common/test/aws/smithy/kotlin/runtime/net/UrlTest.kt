@@ -2,9 +2,8 @@
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
  * SPDX-License-Identifier: Apache-2.0
  */
-package aws.smithy.kotlin.runtime.http
+package aws.smithy.kotlin.runtime.net
 
-import aws.smithy.kotlin.runtime.net.Host
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFails
@@ -14,7 +13,7 @@ class UrlTest {
     fun basicToString() {
         val expected = "https://test.aws.com/kotlin"
         val url = Url(
-            Protocol.HTTPS,
+            Scheme.HTTPS,
             Host.Domain("test.aws.com"),
             path = "/kotlin",
         )
@@ -41,7 +40,7 @@ class UrlTest {
         }
 
         val url = Url(
-            Protocol.HTTPS,
+            Scheme.HTTPS,
             Host.Domain("test.aws.com"),
             path = "/kotlin",
             parameters = params,
@@ -53,7 +52,7 @@ class UrlTest {
     fun specificPort() {
         val expected = "https://test.aws.com:8000"
         val url = Url(
-            Protocol.HTTPS,
+            Scheme.HTTPS,
             Host.Domain("test.aws.com"),
             port = 8000,
         )
@@ -61,7 +60,7 @@ class UrlTest {
 
         val expected2 = "http://test.aws.com"
         val url2 = Url(
-            Protocol.HTTP,
+            Scheme.HTTP,
             Host.Domain("test.aws.com"),
             port = 80,
         )
@@ -74,7 +73,7 @@ class UrlTest {
             assertEquals(
                 n,
                 Url(
-                    Protocol.HTTPS,
+                    Scheme.HTTPS,
                     Host.Domain("test.aws.com"),
                     port = n,
                 ).port,
@@ -92,7 +91,7 @@ class UrlTest {
     fun userinfoNoPassword() {
         val expected = "https://user@test.aws.com"
         val url = UrlBuilder {
-            scheme = Protocol.HTTPS
+            scheme = Scheme.HTTPS
             host = Host.Domain("test.aws.com")
             userInfo = UserInfo("user", "")
         }
@@ -103,7 +102,7 @@ class UrlTest {
     fun fullUserinfo() {
         val expected = "https://user:password@test.aws.com"
         val url = UrlBuilder {
-            scheme = Protocol.HTTPS
+            scheme = Scheme.HTTPS
             host = Host.Domain("test.aws.com")
             userInfo = UserInfo("user", "password")
         }
@@ -113,13 +112,13 @@ class UrlTest {
     @Test
     fun itBuilds() {
         val builder = UrlBuilder()
-        builder.scheme = Protocol.HTTP
+        builder.scheme = Scheme.HTTP
         builder.host = Host.Domain("test.aws.com")
         builder.path = "/kotlin"
         val url = builder.build()
         val expected = "http://test.aws.com/kotlin"
         assertEquals(expected, url.toString())
-        assertEquals(Protocol.HTTP, builder.scheme)
+        assertEquals(Scheme.HTTP, builder.scheme)
         assertEquals(Host.Domain("test.aws.com"), builder.host)
         assertEquals(null, builder.port)
         assertEquals(null, builder.fragment)
@@ -129,7 +128,7 @@ class UrlTest {
     @Test
     fun itBuildsWithNonDefaultPort() {
         val url = UrlBuilder {
-            scheme = Protocol.HTTP
+            scheme = Scheme.HTTP
             host = Host.Domain("test.aws.com")
             path = "/kotlin"
             port = 3000
@@ -141,7 +140,7 @@ class UrlTest {
     @Test
     fun itBuildsWithParameters() {
         val url = UrlBuilder {
-            scheme = Protocol.HTTP
+            scheme = Scheme.HTTP
             host = Host.Domain("test.aws.com")
             path = "/kotlin"
             parameters {

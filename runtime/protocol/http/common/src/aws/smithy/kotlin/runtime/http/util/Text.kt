@@ -5,8 +5,8 @@
 package aws.smithy.kotlin.runtime.http.util
 
 import aws.smithy.kotlin.runtime.InternalApi
-import aws.smithy.kotlin.runtime.http.QueryParameters
-import aws.smithy.kotlin.runtime.http.QueryParametersBuilder
+import aws.smithy.kotlin.runtime.net.QueryParameters
+import aws.smithy.kotlin.runtime.net.QueryParametersBuilder
 import aws.smithy.kotlin.runtime.util.text.VALID_PCHAR_DELIMS
 import aws.smithy.kotlin.runtime.util.text.encodeUrlPath
 import aws.smithy.kotlin.runtime.util.text.splitAsQueryString

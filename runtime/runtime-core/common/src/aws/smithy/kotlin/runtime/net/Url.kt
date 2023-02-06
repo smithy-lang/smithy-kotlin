@@ -2,12 +2,10 @@
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
  * SPDX-License-Identifier: Apache-2.0
  */
-package aws.smithy.kotlin.runtime.http
+package aws.smithy.kotlin.runtime.net
 
 import aws.smithy.kotlin.runtime.InternalApi
-import aws.smithy.kotlin.runtime.http.util.CanDeepCopy
-import aws.smithy.kotlin.runtime.net.Host
-import aws.smithy.kotlin.runtime.net.toUrlString
+import aws.smithy.kotlin.runtime.util.CanDeepCopy
 import aws.smithy.kotlin.runtime.util.text.encodeUrlPath
 import aws.smithy.kotlin.runtime.util.text.urlDecodeComponent
 import aws.smithy.kotlin.runtime.util.text.urlEncodeComponent
@@ -17,7 +15,7 @@ import aws.smithy.kotlin.runtime.util.text.urlEncodeComponent
  *
  * @property scheme The wire protocol (e.g. http, https, ws, wss, etc)
  * @property host hostname
- * @property port port to connect to the host on, defaults to [Protocol.defaultPort]
+ * @property port port to connect to the host on, defaults to [Scheme.defaultPort]
  * @property path (raw) path without the query
  * @property parameters (raw) query parameters
  * @property fragment (raw) URL fragment
@@ -26,7 +24,7 @@ import aws.smithy.kotlin.runtime.util.text.urlEncodeComponent
  * @property encodeParameters configures if parameter values are encoded (default) or left as-is.
  */
 public data class Url(
-    public val scheme: Protocol,
+    public val scheme: Scheme,
     public val host: Host,
     public val port: Int = scheme.defaultPort,
     public val path: String = "",
@@ -85,7 +83,7 @@ private fun encodePath(
         append(path.removePrefix("/").encodeUrlPath())
     }
 
-    if ((queryParameters != null && queryParameters.isNotEmpty()) || forceQuery) {
+    if (!queryParameters.isNullOrEmpty() || forceQuery) {
         append("?")
     }
 
@@ -95,7 +93,7 @@ private fun encodePath(
         queryParameters?.let { urlEncodeQueryParametersTo(it, this, encodeFn = { param -> param }) }
     }
 
-    if (fragment != null && fragment.isNotBlank()) {
+    if (!fragment.isNullOrBlank()) {
         append("#")
         append(fragment.urlEncodeComponent())
     }
@@ -110,7 +108,7 @@ public data class UserInfo(public val username: String, public val password: Str
  * Construct a URL by its individual components
  */
 public class UrlBuilder : CanDeepCopy<UrlBuilder> {
-    public var scheme: Protocol = Protocol.HTTPS
+    public var scheme: Scheme = Scheme.HTTPS
     public var host: Host = Host.Domain("")
     public var port: Int? = null
     public var path: String = ""

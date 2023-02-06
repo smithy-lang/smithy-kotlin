@@ -9,6 +9,9 @@ import aws.smithy.kotlin.runtime.auth.awscredentials.CredentialsProvider
 import aws.smithy.kotlin.runtime.http.*
 import aws.smithy.kotlin.runtime.http.endpoints.Endpoint
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
+import aws.smithy.kotlin.runtime.net.QueryParameters
+import aws.smithy.kotlin.runtime.net.Scheme
+import aws.smithy.kotlin.runtime.net.Url
 import kotlin.time.Duration
 
 // Note: the following types are essentially smithy-kotlin local versions of the following AWS types:
@@ -134,7 +137,7 @@ public suspend fun createPresignedRequest(
     }
 
     val unsignedUrl = Url(
-        scheme = Protocol.HTTPS,
+        scheme = Scheme.HTTPS,
         host = endpoint.endpoint.uri.host,
         port = endpoint.endpoint.uri.port,
         path = requestConfig.path,
@@ -156,7 +159,7 @@ public suspend fun createPresignedRequest(
     return HttpRequest(
         method = signedRequest.method,
         url = Url(
-            scheme = Protocol.HTTPS,
+            scheme = Scheme.HTTPS,
             host = endpoint.endpoint.uri.host,
             port = endpoint.endpoint.uri.port,
             path = signedRequest.url.path,

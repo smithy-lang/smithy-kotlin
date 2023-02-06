@@ -5,9 +5,9 @@
 
 package aws.smithy.kotlin.runtime.http.engine
 
-import aws.smithy.kotlin.runtime.http.Protocol
-import aws.smithy.kotlin.runtime.http.Url
 import aws.smithy.kotlin.runtime.net.Host
+import aws.smithy.kotlin.runtime.net.Scheme
+import aws.smithy.kotlin.runtime.net.Url
 import aws.smithy.kotlin.runtime.util.*
 
 /**
@@ -27,17 +27,17 @@ import aws.smithy.kotlin.runtime.util.*
  */
 internal class EnvironmentProxySelector(provider: PlatformEnvironProvider = PlatformProvider.System) : ProxySelector {
     private val httpProxy =
-        resolveProxyByProperty(provider, Protocol.HTTP) ?: resolveProxyByEnvironment(provider, Protocol.HTTP)
+        resolveProxyByProperty(provider, Scheme.HTTP) ?: resolveProxyByEnvironment(provider, Scheme.HTTP)
     private val httpsProxy =
-        resolveProxyByProperty(provider, Protocol.HTTPS) ?: resolveProxyByEnvironment(provider, Protocol.HTTPS)
+        resolveProxyByProperty(provider, Scheme.HTTPS) ?: resolveProxyByEnvironment(provider, Scheme.HTTPS)
     private val noProxyHosts = resolveNoProxyHosts(provider)
 
     override fun select(url: Url): ProxyConfig {
         if (httpProxy == null && httpsProxy == null || noProxy(url)) return ProxyConfig.Direct
 
         val proxyConfig = when (url.scheme) {
-            Protocol.HTTP -> httpProxy
-            Protocol.HTTPS -> httpsProxy
+            Scheme.HTTP -> httpProxy
+            Scheme.HTTPS -> httpsProxy
             else -> null
         }
 
@@ -47,9 +47,9 @@ internal class EnvironmentProxySelector(provider: PlatformEnvironProvider = Plat
     private fun noProxy(url: Url): Boolean = noProxyHosts.any { it.matches(url) }
 }
 
-private fun resolveProxyByProperty(provider: PropertyProvider, protocol: Protocol): ProxyConfig? {
-    val hostPropName = "${protocol.protocolName}.proxyHost"
-    val hostPortPropName = "${protocol.protocolName}.proxyPort"
+private fun resolveProxyByProperty(provider: PropertyProvider, scheme: Scheme): ProxyConfig? {
+    val hostPropName = "${scheme.protocolName}.proxyHost"
+    val hostPortPropName = "${scheme.protocolName}.proxyPort"
 
     val proxyHostProp = provider.getProperty(hostPropName)
     val proxyPortProp = provider.getProperty(hostPortPropName)
@@ -57,15 +57,15 @@ private fun resolveProxyByProperty(provider: PropertyProvider, protocol: Protoco
     return proxyHostProp?.let { hostName ->
         // we don't support connecting to the proxy over TLS, we expect engines would support
         // tunneling https traffic via HTTP Connect to the proxy
-        val proxyProtocol = Protocol.HTTP
-        val url = Url(proxyProtocol, Host.parse(hostName), proxyPortProp?.toInt() ?: protocol.defaultPort)
+        val proxyProtocol = Scheme.HTTP
+        val url = Url(proxyProtocol, Host.parse(hostName), proxyPortProp?.toInt() ?: scheme.defaultPort)
         ProxyConfig.Http(url)
     }
 }
 
-private fun resolveProxyByEnvironment(provider: EnvironmentProvider, protocol: Protocol): ProxyConfig? =
+private fun resolveProxyByEnvironment(provider: EnvironmentProvider, scheme: Scheme): ProxyConfig? =
     // lowercase takes precedence: https://about.gitlab.com/blog/2021/01/27/we-need-to-talk-no-proxy/
-    listOf("${protocol.protocolName.lowercase()}_proxy", "${protocol.protocolName.uppercase()}_PROXY")
+    listOf("${scheme.protocolName.lowercase()}_proxy", "${scheme.protocolName.uppercase()}_PROXY")
         .mapNotNull { provider.getenv(it) }
         .map { ProxyConfig.Http(Url.parse(it)) }
         .firstOrNull()

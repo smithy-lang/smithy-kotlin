@@ -15,6 +15,9 @@ import aws.smithy.kotlin.runtime.http.request.toBuilder
 import aws.smithy.kotlin.runtime.http.request.url
 import aws.smithy.kotlin.runtime.io.SdkByteReadChannel
 import aws.smithy.kotlin.runtime.net.Host
+import aws.smithy.kotlin.runtime.net.QueryParameters
+import aws.smithy.kotlin.runtime.net.Scheme
+import aws.smithy.kotlin.runtime.net.Url
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
@@ -81,7 +84,7 @@ class HttpRequestBuilderTest {
         val req = HttpRequest(
             method = HttpMethod.POST,
             url = Url(
-                Protocol.HTTPS,
+                Scheme.HTTPS,
                 Host.Domain("test.amazon.com"),
                 path = "/debug/test",
                 parameters = QueryParameters {

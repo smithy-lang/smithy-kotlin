@@ -2,7 +2,7 @@
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
  * SPDX-License-Identifier: Apache-2.0
  */
-package aws.smithy.kotlin.runtime.http.util
+package aws.smithy.kotlin.runtime.util
 
 import aws.smithy.kotlin.runtime.InternalApi
 
@@ -57,16 +57,17 @@ public interface ValuesMap<T> {
      * Checks if this map is empty
      */
     public fun isEmpty(): Boolean
-
-    /**
-     * Perform a deep copy of this map, specifically duplicating the value lists so that they're insulated from changes.
-     * @return A new map instance with copied value lists.
-     */
-    public fun Map<String, MutableList<T>>.deepCopy(): Map<String, MutableList<T>> = mapValues { (_, v) -> v.toMutableList() }
 }
 
+/**
+ * Perform a deep copy of this map, specifically duplicating the value lists so that they're insulated from changes.
+ * @return A new map instance with copied value lists.
+ */
 @InternalApi
-internal open class ValuesMapImpl<T>(
+public fun <T> Map<String, MutableList<T>>.deepCopy(): Map<String, MutableList<T>> = mapValues { (_, v) -> v.toMutableList() }
+
+@InternalApi
+public open class ValuesMapImpl<T>(
     override val caseInsensitiveName: Boolean = false,
     initialValues: Map<String, List<T>> = emptyMap(),
 ) : ValuesMap<T> {

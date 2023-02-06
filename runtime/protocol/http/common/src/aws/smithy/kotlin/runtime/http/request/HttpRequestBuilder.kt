@@ -7,8 +7,11 @@ package aws.smithy.kotlin.runtime.http.request
 import aws.smithy.kotlin.runtime.InternalApi
 import aws.smithy.kotlin.runtime.http.*
 import aws.smithy.kotlin.runtime.http.content.ByteArrayContent
-import aws.smithy.kotlin.runtime.http.util.CanDeepCopy
 import aws.smithy.kotlin.runtime.io.*
+import aws.smithy.kotlin.runtime.net.Url
+import aws.smithy.kotlin.runtime.net.UrlBuilder
+import aws.smithy.kotlin.runtime.net.encodedPath
+import aws.smithy.kotlin.runtime.util.CanDeepCopy
 
 /**
  * Used to construct an HTTP request

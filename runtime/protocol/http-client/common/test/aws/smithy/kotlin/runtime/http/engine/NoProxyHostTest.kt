@@ -5,7 +5,7 @@
 
 package aws.smithy.kotlin.runtime.http.engine
 
-import aws.smithy.kotlin.runtime.http.Url
+import aws.smithy.kotlin.runtime.net.Url
 import kotlin.test.Test
 import kotlin.test.assertEquals
 

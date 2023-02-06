@@ -32,9 +32,9 @@ public fun uriEncode(value: String): String = value.urlEncodeComponent(formUrlEn
 @InternalApi
 public fun parseUrl(value: String?): Url? =
     value?.let {
-        val sdkUrl: aws.smithy.kotlin.runtime.http.Url
+        val sdkUrl: aws.smithy.kotlin.runtime.net.Url
         try {
-            sdkUrl = aws.smithy.kotlin.runtime.http.Url.parse(value)
+            sdkUrl = aws.smithy.kotlin.runtime.net.Url.parse(value)
         } catch (e: Exception) {
             return null
         }

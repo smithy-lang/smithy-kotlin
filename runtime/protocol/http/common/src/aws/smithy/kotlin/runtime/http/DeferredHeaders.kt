@@ -5,8 +5,7 @@
 package aws.smithy.kotlin.runtime.http
 
 import aws.smithy.kotlin.runtime.InternalApi
-import aws.smithy.kotlin.runtime.http.EmptyDeferredHeaders.deepCopy
-import aws.smithy.kotlin.runtime.http.util.*
+import aws.smithy.kotlin.runtime.util.*
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Deferred
 

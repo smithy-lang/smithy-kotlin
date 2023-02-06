@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package aws.smithy.kotlin.runtime.http.util
+package aws.smithy.kotlin.runtime.util
 
 /**
  * Indicates that an object supports a [deepCopy] operation which will return a copy that can be safely mutated without

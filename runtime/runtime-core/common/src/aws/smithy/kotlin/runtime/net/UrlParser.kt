@@ -2,10 +2,8 @@
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
  * SPDX-License-Identifier: Apache-2.0
  */
-package aws.smithy.kotlin.runtime.http
+package aws.smithy.kotlin.runtime.net
 
-import aws.smithy.kotlin.runtime.net.Host
-import aws.smithy.kotlin.runtime.net.isIpv6
 import aws.smithy.kotlin.runtime.util.text.splitAsQueryString
 import aws.smithy.kotlin.runtime.util.text.urlDecodeComponent
 
@@ -13,7 +11,7 @@ internal fun urlParseImpl(url: String): Url =
     UrlBuilder {
         var next = url
             .captureUntilAndSkip("://") {
-                scheme = Protocol.parse(it)
+                scheme = Scheme.parse(it)
             }
             .captureUntilAndSkip("@") {
                 userInfo = UserInfo(it)

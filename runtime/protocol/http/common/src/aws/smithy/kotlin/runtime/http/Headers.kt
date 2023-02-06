@@ -4,8 +4,7 @@
  */
 package aws.smithy.kotlin.runtime.http
 
-import aws.smithy.kotlin.runtime.http.EmptyHeaders.deepCopy
-import aws.smithy.kotlin.runtime.http.util.*
+import aws.smithy.kotlin.runtime.util.*
 
 /**
  * Immutable mapping of case insensitive HTTP header names to list of [String] values.

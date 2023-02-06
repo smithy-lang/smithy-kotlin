@@ -2,19 +2,18 @@
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
  * SPDX-License-Identifier: Apache-2.0
  */
-package aws.smithy.kotlin.runtime.http
+package aws.smithy.kotlin.runtime.net
 
-import aws.smithy.kotlin.runtime.net.Host
 import kotlin.test.*
 import kotlin.test.Test
 
 class UrlParserTest {
     @Test
     fun testScheme() {
-        assertEquals(Protocol.HTTP, Url.parse("http://host").scheme)
-        assertEquals(Protocol.HTTPS, Url.parse("https://host").scheme)
-        assertEquals(Protocol.WS, Url.parse("ws://host").scheme)
-        assertEquals(Protocol.WSS, Url.parse("wss://host").scheme)
+        assertEquals(Scheme.HTTP, Url.parse("http://host").scheme)
+        assertEquals(Scheme.HTTPS, Url.parse("https://host").scheme)
+        assertEquals(Scheme.WS, Url.parse("ws://host").scheme)
+        assertEquals(Scheme.WSS, Url.parse("wss://host").scheme)
     }
 
     @Test
@@ -131,10 +130,10 @@ class UrlParserTest {
 
     @Test
     fun testPort() {
-        assertEquals(Protocol.HTTP.defaultPort, Url.parse("http://host").port)
-        assertEquals(Protocol.HTTPS.defaultPort, Url.parse("https://host").port)
-        assertEquals(Protocol.WS.defaultPort, Url.parse("ws://host").port)
-        assertEquals(Protocol.WSS.defaultPort, Url.parse("wss://host").port)
+        assertEquals(Scheme.HTTP.defaultPort, Url.parse("http://host").port)
+        assertEquals(Scheme.HTTPS.defaultPort, Url.parse("https://host").port)
+        assertEquals(Scheme.WS.defaultPort, Url.parse("ws://host").port)
+        assertEquals(Scheme.WSS.defaultPort, Url.parse("wss://host").port)
 
         assertEquals(4433, Url.parse("https://host:4433").port)
         assertEquals(4433, Url.parse("https://192.168.0.1:4433").port)
@@ -232,7 +231,7 @@ class UrlParserTest {
     @Test
     fun testComplete() {
         val expected = UrlBuilder {
-            scheme = Protocol.HTTPS
+            scheme = Scheme.HTTPS
             userInfo = UserInfo("userinfo user", "userinfo pass")
             host = Host.Domain("hostname.info")
             port = 4433
