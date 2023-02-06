@@ -46,7 +46,7 @@ class ResolveEndpointMiddlewareGenerator(
     fun render() {
         writer.openBlock("internal class #L<I>(", CLASS_NAME)
         renderConstructorParams()
-        writer.closeAndOpenBlock("): #T {", RuntimeTypes.Http.Interceptors.HttpInterceptor)
+        writer.closeAndOpenBlock("): #T {", RuntimeTypes.HttpClient.Interceptors.HttpInterceptor)
         renderClassMembers()
         writer.write("")
         renderBody()
@@ -83,8 +83,8 @@ class ResolveEndpointMiddlewareGenerator(
             write("val endpoint = endpointProvider.resolveEndpoint(params)")
             write("#T.#T<$CLASS_NAME<*>>{ \"resolved endpoint: \$endpoint\" }", RuntimeTypes.KotlinCoroutines.coroutineContext, RuntimeTypes.Tracing.Core.debug)
             write("val reqBuilder = context.protocolRequest.#T()", RuntimeTypes.Http.Request.toBuilder)
-            write("val req = #T(context.executionContext, reqBuilder)", RuntimeTypes.Http.Operation.SdkHttpRequest)
-            write("#T(req, endpoint)", RuntimeTypes.Http.Endpoints.setResolvedEndpoint)
+            write("val req = #T(context.executionContext, reqBuilder)", RuntimeTypes.HttpClient.Operation.SdkHttpRequest)
+            write("#T(req, endpoint)", RuntimeTypes.HttpClient.Endpoints.setResolvedEndpoint)
             renderPostResolution()
             write("return req.subject.build()")
         }

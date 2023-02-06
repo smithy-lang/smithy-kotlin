@@ -68,7 +68,7 @@ dependencies {
     compileOnly(project(":codegen:smithy-kotlin-codegen"))
     implementation(project(":runtime:runtime-core"))
     implementation(project(":runtime:smithy-client"))
-    implementation(project(":runtime:protocol:http"))
+    implementation(project(":runtime:protocol:http-client"))
     api(project(":runtime:tracing:tracing-core"))
 
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit5:$kotlinVersion")

@@ -12,7 +12,6 @@ import software.amazon.smithy.kotlin.codegen.core.*
 import software.amazon.smithy.kotlin.codegen.lang.KotlinTypes
 import software.amazon.smithy.kotlin.codegen.lang.toEscapedLiteral
 import software.amazon.smithy.kotlin.codegen.model.*
-import software.amazon.smithy.kotlin.codegen.rendering.endpoints.*
 import software.amazon.smithy.kotlin.codegen.rendering.serde.*
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.knowledge.HttpBinding
@@ -166,7 +165,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         val operationSerializerSymbols = setOf(
             RuntimeTypes.Http.HttpBody,
             RuntimeTypes.Http.HttpMethod,
-            RuntimeTypes.Http.Operation.HttpSerialize,
+            RuntimeTypes.HttpClient.Operation.HttpSerialize,
             RuntimeTypes.Http.ByteArrayContent,
             RuntimeTypes.Http.Request.HttpRequestBuilder,
             RuntimeTypes.Http.Request.url,
@@ -178,7 +177,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             writer
                 .addImport(operationSerializerSymbols)
                 .write("")
-                .openBlock("internal class #T: #T<#T> {", serializerSymbol, RuntimeTypes.Http.Operation.HttpSerialize, inputSymbol)
+                .openBlock("internal class #T: #T<#T> {", serializerSymbol, RuntimeTypes.HttpClient.Operation.HttpSerialize, inputSymbol)
                 .call {
                     writer.openBlock("override suspend fun serialize(context: #T, input: #T): #T {", RuntimeTypes.Core.ExecutionContext, inputSymbol, RuntimeTypes.Http.Request.HttpRequestBuilder)
                         .write("val builder = #T()", RuntimeTypes.Http.Request.HttpRequestBuilder)
@@ -361,8 +360,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         if (queryBindings.isEmpty() && queryLiterals.isEmpty() && queryMapBindings.isEmpty()) return
 
         writer
-            .addImport(RuntimeTypes.Http.parameters)
-            .withBlock("#T {", "}", RuntimeTypes.Http.parameters) {
+            .withBlock("#T {", "}", RuntimeTypes.Core.Net.parameters) {
                 queryLiterals.forEach { (key, value) ->
                     writer.write("append(#S, #S)", key, value)
                 }
@@ -492,7 +490,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             reference(outputSymbol, SymbolReference.ContextOption.DECLARE)
         }
         val operationDeserializerSymbols = setOf(
-            RuntimeTypes.Http.Operation.HttpDeserialize,
+            RuntimeTypes.HttpClient.Operation.HttpDeserialize,
             RuntimeTypes.Http.Response.HttpResponse,
         )
 
@@ -508,7 +506,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                 .openBlock(
                     "internal class #T: #T<#T> {",
                     deserializerSymbol,
-                    RuntimeTypes.Http.Operation.HttpDeserialize,
+                    RuntimeTypes.HttpClient.Operation.HttpDeserialize,
                     outputSymbol,
                 )
                 .write("")
@@ -543,7 +541,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             RuntimeTypes.Serde.SerialKind,
             RuntimeTypes.Serde.deserializeStruct,
             RuntimeTypes.Http.Response.HttpResponse,
-            RuntimeTypes.Http.Operation.HttpDeserialize,
+            RuntimeTypes.HttpClient.Operation.HttpDeserialize,
         )
 
         val deserializerSymbol = buildSymbol {
@@ -560,7 +558,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             writer
                 .addImport(exceptionDeserializerSymbols)
                 .write("")
-                .openBlock("internal class #T: #T<#T> {", deserializerSymbol, RuntimeTypes.Http.Operation.HttpDeserialize, outputSymbol)
+                .openBlock("internal class #T: #T<#T> {", deserializerSymbol, RuntimeTypes.HttpClient.Operation.HttpDeserialize, outputSymbol)
                 .write("")
                 .call {
                     renderHttpDeserialize(ctx, outputSymbol, responseBindings, null, writer)

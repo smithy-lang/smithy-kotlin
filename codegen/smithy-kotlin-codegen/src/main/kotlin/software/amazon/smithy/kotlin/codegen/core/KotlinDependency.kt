@@ -100,6 +100,7 @@ data class KotlinDependency(
         // AWS managed dependencies
         val CORE = KotlinDependency(GradleConfiguration.Api, RUNTIME_ROOT_NS, RUNTIME_GROUP, "runtime-core", RUNTIME_VERSION)
         val HTTP = KotlinDependency(GradleConfiguration.Implementation, "$RUNTIME_ROOT_NS.http", RUNTIME_GROUP, "http", RUNTIME_VERSION)
+        val HTTP_CLIENT = KotlinDependency(GradleConfiguration.Api, "$RUNTIME_ROOT_NS.http", RUNTIME_GROUP, "http-client", RUNTIME_VERSION)
         val SERDE = KotlinDependency(GradleConfiguration.Implementation, "$RUNTIME_ROOT_NS.serde", RUNTIME_GROUP, "serde", RUNTIME_VERSION)
         val SERDE_JSON = KotlinDependency(GradleConfiguration.Implementation, "$RUNTIME_ROOT_NS.serde.json", RUNTIME_GROUP, "serde-json", RUNTIME_VERSION)
         val SERDE_XML = KotlinDependency(GradleConfiguration.Implementation, "$RUNTIME_ROOT_NS.serde.xml", RUNTIME_GROUP, "serde-xml", RUNTIME_VERSION)
