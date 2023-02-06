@@ -2,7 +2,7 @@
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
  * SPDX-License-Identifier: Apache-2.0
  */
-package aws.smithy.kotlin.runtime.client
+package aws.smithy.kotlin.runtime.operation
 
 import aws.smithy.kotlin.runtime.util.Attributes
 import kotlinx.coroutines.CoroutineScope

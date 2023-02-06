@@ -10,6 +10,7 @@ import aws.smithy.kotlin.runtime.http.operation.OperationTypeInfo
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.http.response.HttpCall
 import aws.smithy.kotlin.runtime.http.response.HttpResponse
+import aws.smithy.kotlin.runtime.operation.ExecutionContext
 import kotlin.reflect.KClass
 
 // Various contexts for each hook based on available information.

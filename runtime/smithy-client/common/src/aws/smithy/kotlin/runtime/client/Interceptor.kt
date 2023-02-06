@@ -5,6 +5,8 @@
 
 package aws.smithy.kotlin.runtime.client
 
+import aws.smithy.kotlin.runtime.operation.ExecutionContext
+
 /**
  * An interceptor allows injecting code into the request execution pipeline of a generated SDK client.
  *

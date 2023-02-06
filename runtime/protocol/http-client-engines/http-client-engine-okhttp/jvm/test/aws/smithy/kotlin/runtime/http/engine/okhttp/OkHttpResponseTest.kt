@@ -5,10 +5,10 @@
 
 package aws.smithy.kotlin.runtime.http.engine.okhttp
 
-import aws.smithy.kotlin.runtime.client.ExecutionContext
 import aws.smithy.kotlin.runtime.http.*
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.net.Url
+import aws.smithy.kotlin.runtime.operation.ExecutionContext
 import kotlinx.coroutines.*
 import kotlinx.coroutines.test.runTest
 import okhttp3.Protocol

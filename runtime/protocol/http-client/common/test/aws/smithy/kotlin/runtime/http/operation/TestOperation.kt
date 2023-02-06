@@ -8,9 +8,9 @@ package aws.smithy.kotlin.runtime.http.operation
 import aws.smithy.kotlin.runtime.ErrorMetadata
 import aws.smithy.kotlin.runtime.ServiceErrorMetadata
 import aws.smithy.kotlin.runtime.ServiceException
-import aws.smithy.kotlin.runtime.client.ExecutionContext
 import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
 import aws.smithy.kotlin.runtime.http.response.HttpResponse
+import aws.smithy.kotlin.runtime.operation.ExecutionContext
 
 /**
  * Create a new test operation using [serialized] as the already serialized version of the input type [I]

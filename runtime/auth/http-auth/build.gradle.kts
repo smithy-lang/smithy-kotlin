@@ -14,9 +14,6 @@ kotlin {
             dependencies {
                 api(project(":runtime:runtime-core"))
                 api(project(":runtime:protocol:http"))
-
-                // FIXME - for ExecutionContext
-                api(project(":runtime:smithy-client"))
             }
         }
     }

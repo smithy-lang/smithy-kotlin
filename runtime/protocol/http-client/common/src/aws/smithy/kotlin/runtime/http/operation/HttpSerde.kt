@@ -4,9 +4,9 @@
  */
 package aws.smithy.kotlin.runtime.http.operation
 
-import aws.smithy.kotlin.runtime.client.ExecutionContext
 import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
 import aws.smithy.kotlin.runtime.http.response.HttpResponse
+import aws.smithy.kotlin.runtime.operation.ExecutionContext
 
 // FIXME - if SAM interfaces support suspend soon we should consider updating HttpSerialize/Deserialize to use them instead
 // see: https://youtrack.jetbrains.com/issue/KT-40978

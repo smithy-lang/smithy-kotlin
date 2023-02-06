@@ -4,7 +4,6 @@
  */
 package aws.smithy.kotlin.runtime.http
 
-import aws.smithy.kotlin.runtime.client.ExecutionContext
 import aws.smithy.kotlin.runtime.http.engine.*
 import aws.smithy.kotlin.runtime.http.engine.SdkRequestContextElement
 import aws.smithy.kotlin.runtime.http.engine.createCallContext
@@ -13,6 +12,7 @@ import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
 import aws.smithy.kotlin.runtime.http.response.HttpCall
 import aws.smithy.kotlin.runtime.io.Handler
+import aws.smithy.kotlin.runtime.operation.ExecutionContext
 import kotlinx.coroutines.*
 import kotlin.coroutines.coroutineContext
 
