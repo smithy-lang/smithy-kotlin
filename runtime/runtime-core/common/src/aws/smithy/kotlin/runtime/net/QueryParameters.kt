@@ -4,7 +4,9 @@
  */
 package aws.smithy.kotlin.runtime.net
 
+import aws.smithy.kotlin.runtime.InternalApi
 import aws.smithy.kotlin.runtime.util.*
+import aws.smithy.kotlin.runtime.util.text.splitAsQueryString
 import aws.smithy.kotlin.runtime.util.text.urlEncodeComponent
 
 /**
@@ -76,4 +78,30 @@ internal fun urlEncodeQueryParametersTo(entries: Set<Map.Entry<String, List<Stri
             out.append(encodeFn(value))
         }
     }
+}
+
+/**
+ * Parse a set of [QueryParameters] out of a full URI. If the URI does not contain a `?` (or contains nothing after the
+ * `?`) then the result is null.
+ */
+@InternalApi
+public fun CharSequence.fullUriToQueryParameters(): QueryParameters? {
+    val idx = indexOf("?")
+    if (idx < 0 || idx + 1 >= length) return null
+
+    val fragmentIdx = indexOf("#", startIndex = idx)
+    val rawQueryString = if (fragmentIdx > 0) substring(idx + 1, fragmentIdx) else substring(idx + 1)
+    return rawQueryString.splitAsQueryParameters()
+}
+
+/**
+ * Split a (decoded) query string "foo=baz&bar=quux" into it's component parts
+ */
+@InternalApi
+public fun String.splitAsQueryParameters(): QueryParameters {
+    val builder = QueryParametersBuilder()
+    splitAsQueryString().entries.forEach { entry ->
+        builder.appendAll(entry.key, entry.value)
+    }
+    return builder.build()
 }

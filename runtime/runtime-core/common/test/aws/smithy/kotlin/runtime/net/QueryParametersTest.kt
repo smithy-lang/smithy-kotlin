@@ -4,10 +4,7 @@
  */
 package aws.smithy.kotlin.runtime.net
 
-import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertFalse
-import kotlin.test.assertTrue
+import kotlin.test.*
 
 class QueryParametersTest {
 
@@ -86,5 +83,70 @@ class QueryParametersTest {
 
         assertEquals(firstExpected.entries, first.entries())
         assertEquals(secondExpected.entries, second.entries())
+    }
+
+    @Test
+    fun splitQueryStringIntoParts() {
+        val query = "foo=baz&bar=quux&foo=qux&a="
+        val actual = query.splitAsQueryParameters()
+        val expected = QueryParameters {
+            append("foo", "baz")
+            append("foo", "qux")
+            append("bar", "quux")
+            append("a", "")
+        }
+
+        expected.entries().forEach { entry ->
+            entry.value.forEach { value ->
+                assertTrue(actual.contains(entry.key, value), "parsed query does not contain ${entry.key}:$value")
+            }
+        }
+
+        val queryNoEquals = "abc=cde&noequalssign"
+        val actualNoEquals = queryNoEquals.splitAsQueryParameters()
+        val expectedNoEquals = QueryParameters {
+            append("abc", "cde")
+            append("noequalssign", "")
+        }
+        expectedNoEquals.entries().forEach { entry ->
+            entry.value.forEach { value ->
+                assertTrue(actualNoEquals.contains(entry.key, value), "parsed query does not contain ${entry.key}:$value")
+            }
+        }
+    }
+
+    @Test
+    fun testFullUriToQueryParameters() {
+        val uri = "http://foo.com?a=apple&b=banana&c=cherry"
+        val params = uri.fullUriToQueryParameters()
+        assertNotNull(params)
+        assertEquals("apple", params["a"])
+        assertEquals("banana", params["b"])
+        assertEquals("cherry", params["c"])
+    }
+
+    @Test
+    fun testFullUriToQueryParameters_withFragment() {
+        val uri = "http://foo.com?a=apple&b=banana&c=cherry#d=durian"
+        val params = uri.fullUriToQueryParameters()
+        assertNotNull(params)
+        assertEquals("apple", params["a"])
+        assertEquals("banana", params["b"])
+        assertEquals("cherry", params["c"])
+        assertFalse("d" in params)
+    }
+
+    @Test
+    fun testFullUriToQueryParameters_emptyQueryString() {
+        val uri = "http://foo.com?"
+        val params = uri.fullUriToQueryParameters()
+        assertNull(params)
+    }
+
+    @Test
+    fun testFullUriToQueryParameters_noQueryString() {
+        val uri = "http://foo.com"
+        val params = uri.fullUriToQueryParameters()
+        assertNull(params)
     }
 }
