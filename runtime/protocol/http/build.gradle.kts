@@ -14,9 +14,6 @@ kotlin {
             dependencies {
                 // exposes: io/ByteStream
                 api(project(":runtime:runtime-core"))
-
-                // FIXME - temporary until we move HttpSigner
-                api(project(":runtime:smithy-client"))
             }
         }
 

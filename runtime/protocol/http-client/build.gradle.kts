@@ -27,6 +27,7 @@ kotlin {
                 api(project(":runtime:runtime-core"))
                 api(project(":runtime:smithy-client"))
                 api(project(":runtime:protocol:http"))
+                api(project(":runtime:auth:http-auth"))
 
                 implementation(project(":runtime:logging"))
                 // exposes: TracingContext.TraceSpan
