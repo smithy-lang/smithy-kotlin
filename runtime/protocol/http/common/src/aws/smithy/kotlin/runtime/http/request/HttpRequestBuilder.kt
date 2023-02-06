@@ -57,7 +57,8 @@ internal data class HttpRequestBuilderView(
  * @param allowToBuilder flag controlling how this type will behave when [HttpRequest.toBuilder] is invoked. When
  * false an exception will be thrown, otherwise it will succeed.
  */
-internal fun HttpRequestBuilder.immutableView(
+@InternalApi
+public fun HttpRequestBuilder.immutableView(
     allowToBuilder: Boolean = false,
 ): HttpRequest = HttpRequestBuilderView(this, allowToBuilder)
 

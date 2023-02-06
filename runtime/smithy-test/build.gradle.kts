@@ -15,7 +15,7 @@ kotlin {
     sourceSets {
         commonMain {
             dependencies {
-                api(project(":runtime:protocol:http"))
+                api(project(":runtime:protocol:http-client"))
 
                 implementation(project(":runtime:serde:serde-xml"))
 
