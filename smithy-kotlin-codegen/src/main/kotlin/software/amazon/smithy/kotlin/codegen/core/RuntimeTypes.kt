@@ -140,6 +140,7 @@ object RuntimeTypes {
                 val OutputAcceptor = symbol("OutputAcceptor")
                 val RetryDirective = symbol("RetryDirective")
                 val RetryErrorType = symbol("RetryErrorType")
+                val RetryPolicy = symbol("RetryPolicy")
                 val StandardRetryPolicy = symbol("StandardRetryPolicy")
                 val SuccessAcceptor = symbol("SuccessAcceptor")
             }

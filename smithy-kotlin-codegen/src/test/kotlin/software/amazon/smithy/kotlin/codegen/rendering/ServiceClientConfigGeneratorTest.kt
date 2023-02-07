@@ -50,6 +50,7 @@ public class Config private constructor(builder: Builder) : HttpClientConfig, Id
     public val endpointProvider: EndpointProvider = requireNotNull(builder.endpointProvider) { "endpointProvider is a required configuration property" }
     override val idempotencyTokenProvider: IdempotencyTokenProvider = builder.idempotencyTokenProvider ?: IdempotencyTokenProvider.Default
     override val interceptors: kotlin.collections.List<aws.smithy.kotlin.runtime.http.interceptors.HttpInterceptor> = builder.interceptors
+    override val retryPolicy: RetryPolicy<Any?> = builder.retryPolicy ?: StandardRetryPolicy.Default
     override val retryStrategy: RetryStrategy = builder.retryStrategy ?: StandardRetryStrategy()
     override val sdkLogMode: SdkLogMode = builder.sdkLogMode
     override val tracer: Tracer = builder.tracer ?: DefaultTracer(LoggingTraceProbe, "${TestModelDefault.SERVICE_NAME}")
@@ -83,6 +84,11 @@ public class Config private constructor(builder: Builder) : HttpClientConfig, Id
          * later than any added automatically by the SDK.
          */
         override var interceptors: kotlin.collections.MutableList<aws.smithy.kotlin.runtime.http.interceptors.HttpInterceptor> = kotlin.collections.mutableListOf()
+
+        /**
+         * The [RetryPolicy] implementation to use for service calls. All API calls will be retried by this policy.
+         */
+        override var retryPolicy: RetryPolicy<Any?>? = null
 
         /**
          * The [RetryStrategy] implementation to use for service calls. All API calls will be wrapped by the

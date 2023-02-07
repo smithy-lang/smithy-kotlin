@@ -99,7 +99,7 @@ public class CrtHttpEngine(public val config: CrtHttpEngineConfig) : HttpClientE
 
         val respHandler = SdkStreamResponseHandler(conn, callContext)
         callContext.job.invokeOnCompletion {
-            logger.warn { "completing handler; cause=$it" }
+            logger.trace { "completing handler; cause=$it" }
             // ensures the stream is driven to completion regardless of what the downstream consumer does
             respHandler.complete()
         }

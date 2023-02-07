@@ -169,6 +169,19 @@ class ConfigProperty private constructor(builder: Builder) {
             builtInProperty(name, builtInSymbol("String", defaultValue), documentation, baseClass)
     }
 
+    fun toBuilder(): Builder = Builder().apply {
+        symbol = this@ConfigProperty.symbol
+        builderSymbol = this@ConfigProperty.builderSymbol
+        toBuilderExpression = this@ConfigProperty.toBuilderExpression
+        name = this@ConfigProperty.propertyName
+        documentation = this@ConfigProperty.documentation
+        baseClass = this@ConfigProperty.baseClass
+        builderBaseClass = this@ConfigProperty.builderBaseClass
+        propertyType = this@ConfigProperty.propertyType
+        additionalImports = this@ConfigProperty.additionalImports
+        order = this@ConfigProperty.order
+    }
+
     class Builder {
         var symbol: Symbol? = null
         var builderSymbol: Symbol? = null

@@ -49,6 +49,7 @@ class ServiceClientConfigGenerator(
             add(RuntimeConfigProperty.IdempotencyTokenProvider)
         }
 
+        add(RuntimeConfigProperty.RetryPolicy)
         add(RuntimeConfigProperty.RetryStrategy)
         add(RuntimeConfigProperty.Tracer)
 
@@ -98,16 +99,21 @@ class ServiceClientConfigGenerator(
     fun render(ctx: CodegenContext, writer: KotlinWriter) = render(ctx, emptyList(), writer)
 
     override fun render(ctx: CodegenContext, props: Collection<ConfigProperty>, writer: KotlinWriter) {
-        val allProps = props.toMutableList()
+        val allProps = props.associateBy(ConfigProperty::propertyName).toMutableMap()
+
         if (detectDefaultProps) {
+            val defaultProps = detectDefaultProps(ctx, serviceShape).associateBy(ConfigProperty::propertyName)
             // register auto detected properties
-            allProps.addAll(detectDefaultProps(ctx, serviceShape))
+            allProps.putAll(defaultProps)
         }
 
         // register properties from integrations
-        val integrationProps = ctx.integrations.flatMap { it.additionalServiceConfigProps(ctx) }
-        allProps.addAll(integrationProps)
-        super.render(ctx, allProps, writer)
+        val integrationProps = ctx
+            .integrations
+            .map { it.additionalServiceConfigProps(ctx).associateBy(ConfigProperty::propertyName) }
+            .fold(mapOf<String, ConfigProperty>()) { acc, map -> acc + map }
+        allProps.putAll(integrationProps)
+        super.render(ctx, allProps.values, writer)
     }
 
     override fun renderBuilderBuildMethod(writer: KotlinWriter) {
