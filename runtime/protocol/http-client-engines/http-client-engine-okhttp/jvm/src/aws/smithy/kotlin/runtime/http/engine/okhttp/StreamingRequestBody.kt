@@ -40,10 +40,7 @@ internal class StreamingRequestBody(
         doWriteTo(sink)
     } catch (ex: Exception) {
         throw when (ex) {
-            is CancellationException, // Don't break structured concurrency!
-            is IOException,
-                -> ex
-
+            is IOException -> ex
             // wrap all exceptions thrown from inside `okhttp3.RequestBody#writeTo(..)` as an IOException
             // see https://github.com/awslabs/aws-sdk-kotlin/issues/733
             else -> IOException(ex)
@@ -98,8 +95,6 @@ internal class StreamingRequestBody(
 private inline fun <T> withJob(job: CompletableJob, block: () -> T): T {
     try {
         return block()
-    } catch (ex: CancellationException) {
-        throw ex
     } catch (ex: Exception) {
         job.completeExceptionally(ex)
         throw ex

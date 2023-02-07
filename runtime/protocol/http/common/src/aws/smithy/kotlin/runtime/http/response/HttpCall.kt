@@ -9,7 +9,6 @@ import aws.smithy.kotlin.runtime.InternalApi
 import aws.smithy.kotlin.runtime.http.HttpBody
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.time.Instant
-import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CompletableJob
 import kotlinx.coroutines.Job
 import kotlin.coroutines.CoroutineContext
@@ -59,8 +58,6 @@ public suspend fun HttpCall.complete() {
     try {
         // ensure the response is cancelled
         (response.body as? HttpBody.ChannelContent)?.readFrom()?.cancel(null)
-    } catch (ex: CancellationException) {
-        throw ex
     } catch (_: Throwable) {
     }
 

@@ -6,7 +6,6 @@
 package aws.smithy.kotlin.runtime.io
 
 import aws.smithy.kotlin.runtime.InternalApi
-import kotlinx.coroutines.CancellationException
 
 // this really should live in the stdlib...
 // https://youtrack.jetbrains.com/issue/KT-31066
@@ -31,14 +30,10 @@ public inline fun <C : Closeable, R> C.use(block: (C) -> R): R {
 
     return try {
         block(this)
-    } catch (ex: CancellationException) {
-        throw ex
     } catch (first: Throwable) {
         try {
             closed = true
             close()
-        } catch (ex: CancellationException) {
-            throw ex
         } catch (second: Throwable) {
             first.addSuppressed(second)
         }

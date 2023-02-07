@@ -89,21 +89,21 @@ private fun OkHttpEngineConfig.buildClient(): OkHttpClient {
         readTimeout(config.socketReadTimeout.toJavaDuration())
         writeTimeout(config.socketWriteTimeout.toJavaDuration())
 
-        // use our own pool configured with the settings taken from config
+        // use our own pool configured with the timeout settings taken from config
         val pool = ConnectionPool(
-            // maxIdleConnections = config.maxConnections.toInt(),
             maxIdleConnections = 5, // The default from the no-arg ConnectionPool() constructor
             keepAliveDuration = config.connectionIdleTimeout.inWholeMilliseconds,
             TimeUnit.MILLISECONDS,
         )
         connectionPool(pool)
 
-        dispatcher(
-            Dispatcher().apply {
-                maxRequests = config.maxConnections.toInt()
-                maxRequestsPerHost = config.maxConnectionsPerHost.toInt()
-            }
-        )
+        // Configure a dispatcher that uses maxConnections as a proxy for maxRequests. Note that this isn't strictly
+        // accurate since some protocols (e.g., HTTP2) may use a single connection for multiple requests.
+        val dispatcher = Dispatcher().apply {
+            maxRequests = config.maxConnections.toInt()
+            maxRequestsPerHost = config.maxConnectionsPerHost.toInt()
+        }
+        dispatcher(dispatcher)
 
         // Log events coming from okhttp. Allocate a new listener per-call to facilitate dedicated trace spans.
         eventListenerFactory { call -> HttpEngineEventListener(pool, config.hostResolver, call) }

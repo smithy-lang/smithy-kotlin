@@ -52,7 +52,7 @@ public interface SdkClientConfig {
 
         public var retryPolicy: RetryPolicy<Any?>?
 
-                /**
+        /**
          * Configure the [RetryStrategy] the client will use to retry failed operations.
          */
         public var retryStrategy: RetryStrategy?

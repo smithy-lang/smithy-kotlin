@@ -283,8 +283,6 @@ object RuntimeTypes {
     }
 
     object KotlinxCoroutines {
-        val CancellationException = "kotlinx.coroutines.CancellationException".toSymbol()
-
         object Flow {
             // NOTE: smithy-kotlin core has an API dependency on this already
             val Flow = "kotlinx.coroutines.flow.Flow".toSymbol()

@@ -147,6 +147,7 @@ public open class ServiceException : SdkBaseException {
 
     override val sdkErrorMetadata: ServiceErrorMetadata = ServiceErrorMetadata()
 }
+
 /**
  * Indicates that an HTTP exception has occurred which is likely transient and retryable.
  * @param message Details about the exception
