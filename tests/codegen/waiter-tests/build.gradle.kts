@@ -3,20 +3,11 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 import software.amazon.smithy.gradle.tasks.SmithyBuild
+import software.amazon.smithy.gradle.tasks.Validate as SmithyValidate
 
 plugins {
     kotlin("jvm")
     id("software.amazon.smithy")
-}
-
-buildscript {
-    dependencies {
-        val smithyVersion: String by project
-        val smithyCliConfig = configurations.maybeCreate("smithyCli")
-
-        classpath("software.amazon.smithy:smithy-cli:$smithyVersion")
-        smithyCliConfig("software.amazon.smithy:smithy-cli:$smithyVersion")
-    }
 }
 
 extra.set("skipPublish", true)
@@ -32,16 +23,22 @@ kotlin.sourceSets.getByName("main") {
 
 tasks["smithyBuildJar"].enabled = false
 
+val smithyVersion: String by project
 val codegen by configurations.creating
 dependencies {
     codegen(project(":codegen:smithy-kotlin-codegen"))
+    codegen("software.amazon.smithy:smithy-cli:$smithyVersion")
 }
 
 val generateSdk = tasks.register<SmithyBuild>("generateSdk") {
     group = "codegen"
-    classpath = configurations.getByName("codegen")
+    classpath = codegen
     inputs.file(projectDir.resolve("smithy-build.json"))
-    inputs.files(configurations.getByName("codegen"))
+    inputs.files(codegen)
+}
+
+tasks.named<SmithyValidate>("smithyValidate") {
+    classpath = codegen
 }
 
 tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>{
