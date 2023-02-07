@@ -1,0 +1,5 @@
+{
+    "id": "f71de744-44c0-4404-8d93-04ecda57650b",
+    "type": "feature",
+    "description": "Add new `maxConnectionsPerHost` configuration setting for OkHttp engines"
+}
