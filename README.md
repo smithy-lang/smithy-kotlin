@@ -24,18 +24,18 @@ Smithy code generators for Kotlin.
 
 * `runtime` - library code used by generated clients and servers to perform SDK functions
     * `auth` - authentication and signing related modules
-    * `protocol` - protocol support (including HTTP, application level protocols, test suppot, etc)
+    * `protocol` - protocol support (including HTTP, application level protocols, test support, etc)
     * `runtime-core` - contains core functionality used by all clients, servers, or other runtime modules
     * `serde` - serialization/deserialization modules
     * `smithy-client` - runtime support for generated service clients
     * `smithy-test` - runtime support for generated tests (e.g. smithy protocol tests)
-    * `testing` - internal testing utilties for the runtime
+    * `testing` - internal testing utilities for the runtime
 
 
 **What goes into `runtime-core`?**
 
 Anything universally applicable to clients and servers alike OR consumed by large portions of the runtime. This includes things like
-annotations, io, networking, time, hashing, etc. 
+annotations, I/O, networking, time, hashing, etc. 
 
 
 ## License
