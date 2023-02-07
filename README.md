@@ -11,16 +11,32 @@ Smithy code generators for Kotlin.
 
 ## Development
 
-### Modules
+### Module Structure
 
-* `client-runtime` - library code used by generated clients to perform SDK functions
-* `compile-tests` - a test module to verify that various codegen scenarios produce valid Kotlin source  
-* `smithy-kotlin-codegen` - a module that generates Kotlin code from Smithy models
+* `codegen` - module(s) for generating Kotlin code from Smithy models
+    * `smithy-kotlin-codegen` - primary codegen module
+    * `smithy-kotlin-codegen-testutils` - utilities for testing generated code (shared with `aws-sdk-kotlin`)
 
-### Where Things Go
+* `tests`   - test and benchmark module(s)
+    * `codegen` - codegen integration tests for various features (e.g. testing waiters, paginators, etc)
+    * `compile` - compile tests for generated code
+    * `benchmarks` - benchmarks for runtime
 
-* Kotlin-language specific utility functions: `software.amazon.smithy.kotlin.codegen.lang`
-* Smithy-based codegen utility functions: `smithy-kotlin-codegen/src/main/kotlin/software/amazon/smithy/kotlin/codegen/Utils.kt`
+* `runtime` - library code used by generated clients and servers to perform SDK functions
+    * `auth` - authentication and signing related modules
+    * `protocol` - protocol support (including HTTP, application level protocols, test support, etc)
+    * `runtime-core` - contains core functionality used by all clients, servers, or other runtime modules
+    * `serde` - serialization/deserialization modules
+    * `smithy-client` - runtime support for generated service clients
+    * `smithy-test` - runtime support for generated tests (e.g. smithy protocol tests)
+    * `testing` - internal testing utilities for the runtime
+
+
+**What goes into `runtime-core`?**
+
+Anything universally applicable to clients and servers alike OR consumed by large portions of the runtime. This includes things like
+annotations, I/O, networking, time, hashing, etc. 
+
 
 ## License
 

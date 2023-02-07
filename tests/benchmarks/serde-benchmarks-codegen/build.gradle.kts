@@ -9,5 +9,5 @@ plugins {
 description = "Codegen support for serde-benchmarks project"
 
 dependencies {
-    implementation(project(":smithy-kotlin-codegen"))
+    implementation(project(":codegen:smithy-kotlin-codegen"))
 }

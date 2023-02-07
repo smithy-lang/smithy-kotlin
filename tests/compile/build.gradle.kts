@@ -16,7 +16,7 @@ val junitVersion: String by project
 val kotlinCompileTestingVersion: String by project
 
 dependencies {
-    testImplementation(project(":smithy-kotlin-codegen"))
+    testImplementation(project(":codegen:smithy-kotlin-codegen"))
     testImplementation(project(":runtime"))
     testImplementation(project(":runtime:runtime-core"))
     testImplementation(project(":runtime:protocol:http"))

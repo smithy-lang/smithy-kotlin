@@ -35,7 +35,7 @@ tasks["smithyBuildJar"].enabled = false
 
 val codegen by configurations.creating
 dependencies {
-    codegen(project(":smithy-kotlin-codegen"))
+    codegen(project(":codegen:smithy-kotlin-codegen"))
 }
 
 val generateSdk = tasks.register<SmithyBuild>("generateSdk") {
@@ -63,7 +63,7 @@ dependencies {
 
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion")
 
-    compileOnly(project(":smithy-kotlin-codegen"))
+    compileOnly(project(":codegen:smithy-kotlin-codegen"))
     implementation(project(":runtime:runtime-core"))
     implementation(project(":runtime:smithy-client"))
     implementation(project(":runtime:protocol:http"))

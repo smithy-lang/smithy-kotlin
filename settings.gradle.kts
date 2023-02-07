@@ -56,8 +56,8 @@ include(":runtime:smithy-test")
 include(":runtime:testing")
 include(":runtime:tracing:tracing-core")
 
-include(":smithy-kotlin-codegen")
-include(":smithy-kotlin-codegen-testutils")
+include(":codegen:smithy-kotlin-codegen")
+include(":codegen:smithy-kotlin-codegen-testutils")
 
 include(":tests")
 include(":tests:benchmarks:aws-signing-benchmarks")
