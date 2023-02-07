@@ -16,6 +16,8 @@ kotlin {
             dependencies {
                 // exposes: Attributes, middleware
                 api(project(":runtime:runtime-core"))
+                // FIXME: temporary until we split out http-client
+                api(project(":runtime:smithy-client"))
                 implementation(project(":runtime:logging"))
                 // exposes: TracingContext.TraceSpan
                 api(project(":runtime:tracing:tracing-core"))

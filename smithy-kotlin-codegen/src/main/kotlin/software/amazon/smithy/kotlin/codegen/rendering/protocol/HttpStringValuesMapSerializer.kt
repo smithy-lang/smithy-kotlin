@@ -143,7 +143,7 @@ class HttpStringValuesMapSerializer(
         // values from serde
         if ((location == HttpBinding.Location.QUERY || location == HttpBinding.Location.HEADER) && binding.member.hasTrait<IdempotencyTokenTrait>()) {
             // Call the idempotency token function if no supplied value.
-            writer.addImport(RuntimeTypes.Core.Client.IdempotencyTokenProviderExt)
+            writer.addImport(RuntimeTypes.SmithyClient.IdempotencyTokenProviderExt)
             writer.write("append(\"#L\", (input.$memberName ?: context.idempotencyTokenProvider.generateToken()))", paramName)
         } else {
             val cond =

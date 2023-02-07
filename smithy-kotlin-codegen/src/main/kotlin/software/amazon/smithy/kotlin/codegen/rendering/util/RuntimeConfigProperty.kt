@@ -40,9 +40,9 @@ object RuntimeConfigProperty {
     }
 
     val IdempotencyTokenProvider = ConfigProperty {
-        symbol = RuntimeTypes.Core.Client.IdempotencyTokenProvider
+        symbol = RuntimeTypes.SmithyClient.IdempotencyTokenProvider
 
-        baseClass = RuntimeTypes.Core.Client.IdempotencyTokenConfig
+        baseClass = RuntimeTypes.SmithyClient.IdempotencyTokenConfig
         useNestedBuilderBaseClass()
 
         propertyType = ConfigPropertyType.RequiredWithDefault("${symbol!!.name}.Default")
@@ -62,7 +62,7 @@ object RuntimeConfigProperty {
         """.trimIndent()
 
         propertyType = ConfigPropertyType.RequiredWithDefault("StandardRetryStrategy()")
-        baseClass = RuntimeTypes.Core.Client.SdkClientConfig
+        baseClass = RuntimeTypes.SmithyClient.SdkClientConfig
         builderBaseClass = buildSymbol {
             name = "${baseClass!!.name}.Builder<Config>"
             namespace = baseClass!!.namespace
@@ -73,13 +73,13 @@ object RuntimeConfigProperty {
 
     val SdkLogMode = ConfigProperty {
         symbol = buildSymbol {
-            name = RuntimeTypes.Core.Client.SdkLogMode.name
-            namespace = RuntimeTypes.Core.Client.SdkLogMode.namespace
+            name = RuntimeTypes.SmithyClient.SdkLogMode.name
+            namespace = RuntimeTypes.SmithyClient.SdkLogMode.namespace
             defaultValue = "SdkLogMode.Default"
             nullable = false
         }
 
-        baseClass = RuntimeTypes.Core.Client.SdkClientConfig
+        baseClass = RuntimeTypes.SmithyClient.SdkClientConfig
         builderBaseClass = buildSymbol {
             name = "${baseClass!!.name}.Builder<Config>"
             namespace = baseClass!!.namespace

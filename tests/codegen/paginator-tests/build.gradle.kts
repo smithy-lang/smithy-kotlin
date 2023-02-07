@@ -65,6 +65,7 @@ dependencies {
 
     compileOnly(project(":smithy-kotlin-codegen"))
     implementation(project(":runtime:runtime-core"))
+    implementation(project(":runtime:smithy-client"))
     implementation(project(":runtime:protocol:http"))
     api(project(":runtime:tracing:tracing-core"))
 

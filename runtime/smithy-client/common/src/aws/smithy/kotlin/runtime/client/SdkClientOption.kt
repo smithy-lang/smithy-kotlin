@@ -31,6 +31,11 @@ public object SdkClientOption {
      * The client logging mode (see [SdkLogMode]
      */
     public val LogMode: ClientOption<SdkLogMode> = ClientOption("LogMode")
+
+    /**
+     * Whether endpoint discovery is enabled or not. Default is true
+     */
+    public val EndpointDiscoveryEnabled: ClientOption<Boolean> = ClientOption("EndpointDiscoveryEnabled")
 }
 
 /**
@@ -48,7 +53,7 @@ public val ExecutionContext.sdkLogMode: SdkLogMode
     get() = getOrNull(SdkClientOption.LogMode) ?: SdkLogMode.Default
 
 /**
- * Get the [OperationName] from the context.
+ * Get the name of the operation from the context.
  */
 @InternalApi
 public val ExecutionContext.operationName: String?

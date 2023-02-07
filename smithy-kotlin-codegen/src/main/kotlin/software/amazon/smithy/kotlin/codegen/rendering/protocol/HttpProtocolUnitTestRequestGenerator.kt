@@ -117,7 +117,7 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
     open fun renderConfigureServiceClient(test: HttpRequestTestCase) {
         writer.write("httpClientEngine = mockEngine")
         if (idempotentFieldsInModel) {
-            writer.write("idempotencyTokenProvider = #T { \"00000000-0000-4000-8000-000000000000\" }", RuntimeTypes.Core.Client.IdempotencyTokenProvider)
+            writer.write("idempotencyTokenProvider = #T { \"00000000-0000-4000-8000-000000000000\" }", RuntimeTypes.SmithyClient.IdempotencyTokenProvider)
         }
     }
 

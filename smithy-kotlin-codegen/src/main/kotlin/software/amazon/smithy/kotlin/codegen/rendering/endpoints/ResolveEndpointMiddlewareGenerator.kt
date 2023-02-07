@@ -66,7 +66,7 @@ class ResolveEndpointMiddlewareGenerator(
         writer.withBlock(
             "override fun readBeforeSerialization(context: #T<Any>) {",
             "}",
-            RuntimeTypes.Core.Client.RequestInterceptorContext,
+            RuntimeTypes.SmithyClient.RequestInterceptorContext,
         ) {
             write("@Suppress(#S)", "UNCHECKED_CAST")
             write("val input = context.request as I")
@@ -77,7 +77,7 @@ class ResolveEndpointMiddlewareGenerator(
         writer.withBlock(
             "override suspend fun modifyBeforeRetryLoop(context: #1T<Any, #2T>): #2T {",
             "}",
-            RuntimeTypes.Core.Client.ProtocolRequestInterceptorContext,
+            RuntimeTypes.SmithyClient.ProtocolRequestInterceptorContext,
             RuntimeTypes.Http.Request.HttpRequest,
         ) {
             write("val endpoint = endpointProvider.resolveEndpoint(params)")
