@@ -11,7 +11,7 @@ public class OkHttpEngineConfig private constructor(builder: Builder) : HttpClie
     /**
      * The maximum number of connections to open to a single host.
      */
-    public val maxConnectionsPerHost: UInt = builder.maxConnectionsPerHost
+    public val maxConnectionsPerHost: UInt = builder.maxConnectionsPerHost ?: builder.maxConnections
 
     public companion object {
         /**
@@ -25,9 +25,9 @@ public class OkHttpEngineConfig private constructor(builder: Builder) : HttpClie
 
     public class Builder : HttpClientEngineConfig.Builder() {
         /**
-         * The maximum number of connections to open to a single host. Defaults to 5.
+         * The maximum number of connections to open to a single host. Defaults to [maxConnections].
          */
-        public var maxConnectionsPerHost: UInt = 5u
+        public var maxConnectionsPerHost: UInt? = null
 
         internal fun build(): OkHttpEngineConfig = OkHttpEngineConfig(this)
     }
