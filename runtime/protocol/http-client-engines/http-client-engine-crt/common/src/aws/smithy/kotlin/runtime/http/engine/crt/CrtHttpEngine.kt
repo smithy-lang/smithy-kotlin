@@ -95,10 +95,11 @@ public class CrtHttpEngine(public val config: CrtHttpEngineConfig) : HttpClientE
         val conn = withTimeoutOrNull(config.connectionAcquireTimeout) {
             manager.acquireConnection()
         } ?: throw ClientException("timed out waiting for an HTTP connection to be acquired from the pool")
+        logger.trace { "Acquired connection ${conn.id}" }
 
         val respHandler = SdkStreamResponseHandler(conn, callContext)
         callContext.job.invokeOnCompletion {
-            logger.warn { "completing handler; cause=$it" }
+            logger.trace { "completing handler; cause=$it" }
             // ensures the stream is driven to completion regardless of what the downstream consumer does
             respHandler.complete()
         }
