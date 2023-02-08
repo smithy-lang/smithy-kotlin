@@ -27,7 +27,7 @@ kotlin {
         commonMain {
             dependencies {
                 api(project(":runtime:runtime-core"))
-                api(project(":runtime:protocol:http"))
+                api(project(":runtime:protocol:http-client"))
                 implementation(project(":runtime:logging"))
                 implementation(project(":runtime:crt-util"))
                 implementation(project(":runtime:tracing:tracing-core"))

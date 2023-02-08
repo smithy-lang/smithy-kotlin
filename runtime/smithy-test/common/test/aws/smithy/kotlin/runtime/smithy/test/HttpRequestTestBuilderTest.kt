@@ -4,12 +4,12 @@
  */
 package aws.smithy.kotlin.runtime.smithy.test
 
-import aws.smithy.kotlin.runtime.client.ExecutionContext
 import aws.smithy.kotlin.runtime.http.HttpMethod
 import aws.smithy.kotlin.runtime.http.content.ByteArrayContent
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.http.request.headers
 import aws.smithy.kotlin.runtime.net.Host
+import aws.smithy.kotlin.runtime.operation.ExecutionContext
 import io.kotest.matchers.string.shouldContain
 import kotlin.test.Test
 import kotlin.test.assertFails

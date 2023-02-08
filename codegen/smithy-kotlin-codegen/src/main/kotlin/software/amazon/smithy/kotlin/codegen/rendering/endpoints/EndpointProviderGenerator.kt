@@ -31,7 +31,7 @@ class EndpointProviderGenerator(
 
     fun render() {
         renderDocumentation()
-        writer.write("public typealias EndpointProvider = #T<#T>", RuntimeTypes.Http.Endpoints.EndpointProvider, paramsSymbol)
+        writer.write("public typealias EndpointProvider = #T<#T>", RuntimeTypes.HttpClient.Endpoints.EndpointProvider, paramsSymbol)
     }
 
     private fun renderDocumentation() {

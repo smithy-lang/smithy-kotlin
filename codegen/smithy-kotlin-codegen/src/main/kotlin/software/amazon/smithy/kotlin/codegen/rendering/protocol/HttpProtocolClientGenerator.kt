@@ -77,7 +77,7 @@ abstract class HttpProtocolClientGenerator(
      */
     protected open fun renderProperties(writer: KotlinWriter) {
         writer.write("private val managedResources = #T()", RuntimeTypes.Core.IO.SdkManagedGroup)
-        writer.write("private val client = #T(config.httpClientEngine)", RuntimeTypes.Http.SdkHttpClient)
+        writer.write("private val client = #T(config.httpClientEngine)", RuntimeTypes.HttpClient.SdkHttpClient)
     }
 
     protected open fun importSymbols(writer: KotlinWriter) {
@@ -85,8 +85,8 @@ abstract class HttpProtocolClientGenerator(
         writer.addImport("${ctx.settings.pkg.name}.transform", "*")
 
         val defaultClientSymbols = setOf(
-            RuntimeTypes.Http.Operation.SdkHttpOperation,
-            RuntimeTypes.Http.Operation.context,
+            RuntimeTypes.HttpClient.Operation.SdkHttpOperation,
+            RuntimeTypes.HttpClient.Operation.context,
         )
         writer.addImport(defaultClientSymbols)
         writer.dependencies.addAll(KotlinDependency.HTTP.dependencies)
@@ -211,7 +211,7 @@ abstract class HttpProtocolClientGenerator(
             .write(
                 """val rootSpan = config.tracer.createRootSpan("#L-${'$'}{op.context.#T}")""",
                 op.id.name,
-                RuntimeTypes.Http.Operation.sdkRequestId,
+                RuntimeTypes.HttpClient.Operation.sdkRequestId,
             )
             .withBlock(
                 "return #T.#T(rootSpan) {",
@@ -220,9 +220,9 @@ abstract class HttpProtocolClientGenerator(
                 RuntimeTypes.Tracing.Core.withRootTraceSpan,
             ) {
                 if (hasOutputStream) {
-                    write("op.#T(client, #L, block)", RuntimeTypes.Http.Operation.execute, inputVariableName)
+                    write("op.#T(client, #L, block)", RuntimeTypes.HttpClient.Operation.execute, inputVariableName)
                 } else {
-                    write("op.#T(client, #L)", RuntimeTypes.Http.Operation.roundTrip, inputVariableName)
+                    write("op.#T(client, #L)", RuntimeTypes.HttpClient.Operation.roundTrip, inputVariableName)
                 }
             }
     }
@@ -290,7 +290,7 @@ abstract class HttpProtocolClientGenerator(
             ?.firstOrNull { it.memberName == httpChecksumTrait?.requestAlgorithmMember?.getOrNull() }
 
         if (hasTrait<HttpChecksumRequiredTrait>() || httpChecksumTrait?.isRequestChecksumRequired == true) {
-            val interceptorSymbol = RuntimeTypes.Http.Interceptors.Md5ChecksumInterceptor
+            val interceptorSymbol = RuntimeTypes.HttpClient.Interceptors.Md5ChecksumInterceptor
             val inputSymbol = ctx.symbolProvider.toSymbol(ctx.model.expectShape(inputShape))
 
             requestAlgorithmMember?.let {

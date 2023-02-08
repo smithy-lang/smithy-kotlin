@@ -19,7 +19,7 @@ kotlin {
     sourceSets {
         commonMain {
             dependencies {
-                implementation(project(":runtime:protocol:http"))
+                implementation(project(":runtime:protocol:http-client"))
                 implementation(project(":runtime:protocol:http-test"))
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:$coroutinesVersion")
                 implementation(project(":runtime:testing"))

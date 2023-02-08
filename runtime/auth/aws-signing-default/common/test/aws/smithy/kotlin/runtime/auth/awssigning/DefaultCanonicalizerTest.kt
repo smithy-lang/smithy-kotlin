@@ -9,6 +9,8 @@ import aws.smithy.kotlin.runtime.auth.awssigning.tests.testCredentialsProvider
 import aws.smithy.kotlin.runtime.http.*
 import aws.smithy.kotlin.runtime.http.request.*
 import aws.smithy.kotlin.runtime.net.Host
+import aws.smithy.kotlin.runtime.net.UrlBuilder
+import aws.smithy.kotlin.runtime.net.parameters
 import aws.smithy.kotlin.runtime.time.Instant
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest

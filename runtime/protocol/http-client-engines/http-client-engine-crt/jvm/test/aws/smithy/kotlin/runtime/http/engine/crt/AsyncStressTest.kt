@@ -6,13 +6,13 @@
 package aws.smithy.kotlin.runtime.http.engine.crt
 
 import aws.smithy.kotlin.runtime.http.HttpMethod
-import aws.smithy.kotlin.runtime.http.Protocol
 import aws.smithy.kotlin.runtime.http.SdkHttpClient
 import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
 import aws.smithy.kotlin.runtime.http.request.url
 import aws.smithy.kotlin.runtime.http.response.complete
 import aws.smithy.kotlin.runtime.httptest.TestWithLocalServer
 import aws.smithy.kotlin.runtime.net.Host
+import aws.smithy.kotlin.runtime.net.Scheme
 import aws.smithy.kotlin.runtime.testing.IgnoreWindows
 import io.ktor.server.application.*
 import io.ktor.server.cio.*
@@ -51,7 +51,7 @@ class AsyncStressTest : TestWithLocalServer() {
         val client = SdkHttpClient(CrtHttpEngine())
         val request = HttpRequestBuilder().apply {
             url {
-                scheme = Protocol.HTTP
+                scheme = Scheme.HTTP
                 method = HttpMethod.GET
                 host = Host.Domain(testHost)
                 port = serverPort

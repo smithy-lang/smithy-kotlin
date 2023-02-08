@@ -17,6 +17,7 @@ import aws.smithy.kotlin.runtime.io.SdkByteReadChannel
 import aws.smithy.kotlin.runtime.io.SdkSource
 import aws.smithy.kotlin.runtime.io.source
 import aws.smithy.kotlin.runtime.net.Host
+import aws.smithy.kotlin.runtime.net.Scheme
 import io.ktor.server.application.*
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
@@ -82,7 +83,7 @@ open class HttpEngineBenchmarks {
 
     private val helloRequest = HttpRequest {
         url {
-            scheme = Protocol.HTTP
+            scheme = Scheme.HTTP
             host = Host.Domain("localhost")
             port = serverPort
             path = "/hello"
@@ -95,7 +96,7 @@ open class HttpEngineBenchmarks {
 
     private val downloadRequest = HttpRequest {
         url {
-            scheme = Protocol.HTTP
+            scheme = Scheme.HTTP
             host = Host.Domain("localhost")
             port = serverPort
             path = "/download"
@@ -108,7 +109,7 @@ open class HttpEngineBenchmarks {
 
     private val uploadRequestInMemoryBody = HttpRequest {
         url {
-            scheme = Protocol.HTTP
+            scheme = Scheme.HTTP
             method = HttpMethod.POST
             host = Host.Domain("localhost")
             port = serverPort
@@ -120,7 +121,7 @@ open class HttpEngineBenchmarks {
     // creates a new streaming body
     private fun uploadRequestStreamingBody(useSource: Boolean = false) = HttpRequest {
         url {
-            scheme = Protocol.HTTP
+            scheme = Scheme.HTTP
             method = HttpMethod.POST
             host = Host.Domain("localhost")
             port = serverPort

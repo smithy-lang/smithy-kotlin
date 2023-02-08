@@ -7,8 +7,11 @@ package aws.smithy.kotlin.runtime.http.request
 import aws.smithy.kotlin.runtime.InternalApi
 import aws.smithy.kotlin.runtime.http.*
 import aws.smithy.kotlin.runtime.http.content.ByteArrayContent
-import aws.smithy.kotlin.runtime.http.util.CanDeepCopy
 import aws.smithy.kotlin.runtime.io.*
+import aws.smithy.kotlin.runtime.net.Url
+import aws.smithy.kotlin.runtime.net.UrlBuilder
+import aws.smithy.kotlin.runtime.net.encodedPath
+import aws.smithy.kotlin.runtime.util.CanDeepCopy
 
 /**
  * Used to construct an HTTP request
@@ -57,7 +60,8 @@ internal data class HttpRequestBuilderView(
  * @param allowToBuilder flag controlling how this type will behave when [HttpRequest.toBuilder] is invoked. When
  * false an exception will be thrown, otherwise it will succeed.
  */
-internal fun HttpRequestBuilder.immutableView(
+@InternalApi
+public fun HttpRequestBuilder.immutableView(
     allowToBuilder: Boolean = false,
 ): HttpRequest = HttpRequestBuilderView(this, allowToBuilder)
 

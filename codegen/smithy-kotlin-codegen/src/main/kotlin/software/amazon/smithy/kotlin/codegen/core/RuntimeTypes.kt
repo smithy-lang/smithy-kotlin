@@ -18,25 +18,17 @@ object RuntimeTypes {
     object Http : RuntimeTypePackage(KotlinDependency.HTTP) {
         val HttpBody = symbol("HttpBody")
         val HttpMethod = symbol("HttpMethod")
-        val SdkHttpClient = symbol("SdkHttpClient")
-        val SdkHttpClientFn = symbol("sdkHttpClient")
         val ByteArrayContent = symbol("ByteArrayContent", subpackage = "content")
-        val QueryParameters = symbol("QueryParameters")
-        val QueryParametersBuilder = symbol("QueryParametersBuilder")
-        val toQueryParameters = symbol("toQueryParameters")
         val readAll = symbol("readAll")
-        val parameters = symbol("parameters")
         val toByteStream = symbol("toByteStream")
         val toHttpBody = symbol("toHttpBody")
         val isSuccess = symbol("isSuccess")
         val StatusCode = symbol("HttpStatusCode")
         val toSdkByteReadChannel = symbol("toSdkByteReadChannel")
         val Headers = symbol("Headers")
-        val Url = symbol("Url")
 
         object Util : RuntimeTypePackage(KotlinDependency.HTTP, "util") {
             val encodeLabel = symbol("encodeLabel")
-            val splitAsQueryParameters = symbol("splitAsQueryParameters")
             val quoteHeaderValue = symbol("quoteHeaderValue")
         }
 
@@ -52,6 +44,9 @@ object RuntimeTypes {
             val HttpCall = symbol("HttpCall")
             val HttpResponse = symbol("HttpResponse")
         }
+    }
+    object HttpClient : RuntimeTypePackage(KotlinDependency.HTTP_CLIENT) {
+        val SdkHttpClient = symbol("SdkHttpClient")
 
         object Middleware : RuntimeTypePackage(KotlinDependency.HTTP, "middleware") {
             val MutateHeadersMiddleware = symbol("MutateHeaders")
@@ -90,10 +85,12 @@ object RuntimeTypes {
         object Config : RuntimeTypePackage(KotlinDependency.HTTP, "config") {
             val HttpClientConfig = symbol("HttpClientConfig")
         }
+
         object Engine : RuntimeTypePackage(KotlinDependency.HTTP, "engine") {
             val HttpClientEngine = symbol("HttpClientEngine")
             val manage = symbol("manage", "engine.internal", isExtension = true)
         }
+
         object Interceptors : RuntimeTypePackage(KotlinDependency.HTTP, "interceptors") {
             val HttpInterceptor = symbol("HttpInterceptor")
             val Md5ChecksumInterceptor = symbol("Md5ChecksumInterceptor")
@@ -103,7 +100,7 @@ object RuntimeTypes {
     }
 
     object Core : RuntimeTypePackage(KotlinDependency.CORE) {
-        val ExecutionContext = symbol("ExecutionContext", "client")
+        val ExecutionContext = symbol("ExecutionContext", "operation")
         val ErrorMetadata = symbol("ErrorMetadata")
         val ServiceErrorMetadata = symbol("ServiceErrorMetadata")
         val Instant = symbol("Instant", "time")
@@ -170,6 +167,15 @@ object RuntimeTypes {
             val decodeBase64Bytes = symbol("decodeBase64Bytes")
             val encodeBase64 = symbol("encodeBase64")
             val encodeBase64String = symbol("encodeBase64String")
+        }
+
+        object Net : RuntimeTypePackage(KotlinDependency.CORE, "net") {
+            val parameters = symbol("parameters")
+            val QueryParameters = symbol("QueryParameters")
+            val QueryParametersBuilder = symbol("QueryParametersBuilder")
+            val splitAsQueryParameters = symbol("splitAsQueryParameters")
+            val toQueryParameters = symbol("toQueryParameters")
+            val Url = symbol("Url")
         }
     }
 

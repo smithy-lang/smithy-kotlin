@@ -5,18 +5,15 @@
 
 package aws.smithy.kotlin.runtime.http.engine.okhttp
 
-import aws.smithy.kotlin.runtime.client.ExecutionContext
 import aws.smithy.kotlin.runtime.http.*
 import aws.smithy.kotlin.runtime.http.engine.ProxyConfig
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.http.response.HttpResponse
-import aws.smithy.kotlin.runtime.http.util.splitAsQueryParameters
 import aws.smithy.kotlin.runtime.io.SdkSource
 import aws.smithy.kotlin.runtime.io.internal.toSdk
 import aws.smithy.kotlin.runtime.logging.Logger
-import aws.smithy.kotlin.runtime.net.Host
-import aws.smithy.kotlin.runtime.net.HostResolver
-import aws.smithy.kotlin.runtime.net.toInetAddress
+import aws.smithy.kotlin.runtime.net.*
+import aws.smithy.kotlin.runtime.operation.ExecutionContext
 import aws.smithy.kotlin.runtime.tracing.TraceSpan
 import aws.smithy.kotlin.runtime.tracing.traceSpan
 import kotlinx.coroutines.*
@@ -103,7 +100,7 @@ internal class OkHttpProxyAuthenticator(
         }
 
         val url = response.request.url.let {
-            Url(scheme = Protocol(it.scheme, it.port), host = Host.parse(it.host), port = it.port)
+            Url(scheme = Scheme(it.scheme, it.port), host = Host.parse(it.host), port = it.port)
         }
 
         // NOTE: We will end up querying the proxy selector twice. We do this to allow
@@ -162,7 +159,7 @@ internal class OkHttpProxySelector(
 private fun URI.toUrl(): Url {
     val uri = this
     return UrlBuilder {
-        scheme = Protocol.parse(uri.scheme)
+        scheme = Scheme.parse(uri.scheme)
 
         // OkHttp documentation calls out that v6 addresses will contain the []s
         host = Host.parse(if (uri.host.startsWith("[")) uri.host.substring(1 until uri.host.length - 1) else uri.host)

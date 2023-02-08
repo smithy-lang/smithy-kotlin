@@ -14,7 +14,11 @@ kotlin {
         commonMain {
             dependencies {
                 api(project(":runtime:auth:aws-credentials"))
+                api(project(":runtime:auth:http-auth"))
                 api(project(":runtime:protocol:http"))
+
+                // FIXME - this seems off, (Endpoint is consumed by presigner)
+                api(project(":runtime:protocol:http-client"))
                 implementation(project(":runtime:logging"))
             }
         }

@@ -15,7 +15,7 @@ kotlin {
     sourceSets {
         commonMain {
             dependencies {
-                api(project(":runtime:protocol:http"))
+                api(project(":runtime:protocol:http-client"))
 
                 implementation(project(":runtime:logging"))
                 implementation("org.jetbrains.kotlin:kotlin-test-common:$kotlinVersion")

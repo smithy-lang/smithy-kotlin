@@ -9,13 +9,13 @@ import aws.smithy.kotlin.runtime.hashing.HashSupplier
 import aws.smithy.kotlin.runtime.hashing.Sha256
 import aws.smithy.kotlin.runtime.hashing.hash
 import aws.smithy.kotlin.runtime.http.HttpBody
-import aws.smithy.kotlin.runtime.http.UrlBuilder
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
 import aws.smithy.kotlin.runtime.http.request.toBuilder
 import aws.smithy.kotlin.runtime.http.util.encodeLabel
 import aws.smithy.kotlin.runtime.io.*
 import aws.smithy.kotlin.runtime.io.internal.SdkDispatchers
+import aws.smithy.kotlin.runtime.net.UrlBuilder
 import aws.smithy.kotlin.runtime.time.TimestampFormat
 import aws.smithy.kotlin.runtime.util.*
 import aws.smithy.kotlin.runtime.util.text.*

@@ -11,11 +11,11 @@ import aws.smithy.kotlin.runtime.auth.awssigning.crt.CrtAwsSigner
 import aws.smithy.kotlin.runtime.auth.awssigning.tests.testCredentialsProvider
 import aws.smithy.kotlin.runtime.http.HttpBody
 import aws.smithy.kotlin.runtime.http.HttpMethod
-import aws.smithy.kotlin.runtime.http.Protocol
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.http.request.headers
 import aws.smithy.kotlin.runtime.http.request.url
 import aws.smithy.kotlin.runtime.net.Host
+import aws.smithy.kotlin.runtime.net.Scheme
 import kotlinx.benchmark.*
 import kotlinx.coroutines.runBlocking
 
@@ -32,7 +32,7 @@ private val payload = (';'..'z').joinToString("").repeat(16).encodeToByteArray()
 private val requestToSign = HttpRequest {
     method = HttpMethod.GET
     url {
-        scheme = Protocol.HTTPS
+        scheme = Scheme.HTTPS
         host = Host.Domain("foo.com")
         path = "bar/baz/../qux/"
         port = 8080

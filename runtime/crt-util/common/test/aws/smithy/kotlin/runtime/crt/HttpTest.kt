@@ -6,13 +6,13 @@
 package aws.smithy.kotlin.runtime.crt
 
 import aws.smithy.kotlin.runtime.http.HttpMethod
-import aws.smithy.kotlin.runtime.http.Protocol
-import aws.smithy.kotlin.runtime.http.encodedPath
-import aws.smithy.kotlin.runtime.http.parameters
 import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
 import aws.smithy.kotlin.runtime.http.request.headers
 import aws.smithy.kotlin.runtime.http.request.url
 import aws.smithy.kotlin.runtime.net.Host
+import aws.smithy.kotlin.runtime.net.Scheme
+import aws.smithy.kotlin.runtime.net.encodedPath
+import aws.smithy.kotlin.runtime.net.parameters
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -27,7 +27,7 @@ class HttpTest {
         val builder = HttpRequestBuilder().apply {
             method = HttpMethod.POST
             url {
-                scheme = Protocol.HTTPS
+                scheme = Scheme.HTTPS
                 host = Host.Domain("test.com")
                 port = 3000
                 path = "/foo/bar/baz"
@@ -57,7 +57,7 @@ class HttpTest {
         // HttpConnectionManager for instance
         // ensure we don't overwrite the originals
         assertEquals(Host.Domain("test.com"), builder.url.host)
-        assertEquals(Protocol.HTTPS, builder.url.scheme)
+        assertEquals(Scheme.HTTPS, builder.url.scheme)
 
         // see that the crt headers are populated in the builder
         crtHeaders.entries().forEach { entry ->
@@ -77,7 +77,7 @@ class HttpTest {
         val builder = HttpRequestBuilder().apply {
             method = HttpMethod.POST
             url {
-                scheme = Protocol.HTTPS
+                scheme = Scheme.HTTPS
                 host = Host.Domain("test.com")
                 path = "/foo"
             }
@@ -93,7 +93,7 @@ class HttpTest {
         // HttpConnectionManager for instance
         // ensure we don't overwrite the originals
         assertEquals(Host.Domain("test.com"), builder.url.host)
-        assertEquals(Protocol.HTTPS, builder.url.scheme)
+        assertEquals(Scheme.HTTPS, builder.url.scheme)
 
         assertEquals("/foo", builder.url.path)
     }
@@ -105,7 +105,7 @@ class HttpTest {
         val builder = HttpRequestBuilder().apply {
             method = HttpMethod.POST
             url {
-                scheme = Protocol.HTTPS
+                scheme = Scheme.HTTPS
                 host = Host.Domain("test.com")
                 port = 3000
                 path = "/foo/bar/baz"

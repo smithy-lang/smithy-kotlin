@@ -9,9 +9,9 @@ import aws.smithy.kotlin.runtime.auth.awssigning.tests.testCredentialsProvider
 import aws.smithy.kotlin.runtime.http.Headers
 import aws.smithy.kotlin.runtime.http.HttpBody
 import aws.smithy.kotlin.runtime.http.HttpMethod
-import aws.smithy.kotlin.runtime.http.parameters
 import aws.smithy.kotlin.runtime.http.request.*
 import aws.smithy.kotlin.runtime.net.Host
+import aws.smithy.kotlin.runtime.net.parameters
 import aws.smithy.kotlin.runtime.time.Instant
 import kotlin.test.Test
 import kotlin.test.assertEquals

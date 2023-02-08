@@ -116,7 +116,7 @@ public class Config private constructor(builder: Builder) : HttpClientConfig, Id
         contents.shouldContainWithDiff(expectedBuilder)
 
         val expectedImports = listOf(
-            "import ${RuntimeTypes.Http.Engine.HttpClientEngine.fullName}",
+            "import ${RuntimeTypes.HttpClient.Engine.HttpClientEngine.fullName}",
             "import ${KotlinDependency.HTTP.namespace}.config.HttpClientConfig",
             "import ${KotlinDependency.CORE.namespace}.client.IdempotencyTokenConfig",
             "import ${KotlinDependency.CORE.namespace}.client.IdempotencyTokenProvider",

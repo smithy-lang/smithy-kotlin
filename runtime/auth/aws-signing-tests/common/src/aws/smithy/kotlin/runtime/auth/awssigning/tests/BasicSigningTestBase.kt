@@ -7,14 +7,14 @@ package aws.smithy.kotlin.runtime.auth.awssigning.tests
 import aws.smithy.kotlin.runtime.auth.awscredentials.Credentials
 import aws.smithy.kotlin.runtime.auth.awssigning.*
 import aws.smithy.kotlin.runtime.http.HttpMethod
-import aws.smithy.kotlin.runtime.http.Protocol
-import aws.smithy.kotlin.runtime.http.Url
 import aws.smithy.kotlin.runtime.http.content.ByteArrayContent
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
 import aws.smithy.kotlin.runtime.http.request.headers
 import aws.smithy.kotlin.runtime.http.request.url
 import aws.smithy.kotlin.runtime.net.Host
+import aws.smithy.kotlin.runtime.net.Scheme
+import aws.smithy.kotlin.runtime.net.Url
 import aws.smithy.kotlin.runtime.time.Instant
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.TestResult
@@ -61,7 +61,7 @@ public abstract class BasicSigningTestBase : HasSigner {
         // sanity test
         val request = HttpRequestBuilder().apply {
             method = HttpMethod.POST
-            url.scheme = Protocol.HTTP
+            url.scheme = Scheme.HTTP
             url.host = Host.Domain("demo.us-east-1.amazonaws.com")
             url.path = "/"
             headers.append("Host", "demo.us-east-1.amazonaws.com")
@@ -89,7 +89,7 @@ public abstract class BasicSigningTestBase : HasSigner {
         // sanity test
         val request = HttpRequestBuilder().apply {
             method = HttpMethod.POST
-            url.scheme = Protocol.HTTP
+            url.scheme = Scheme.HTTP
             url.host = Host.Domain("demo.us-east-1.amazonaws.com")
             url.path = "/"
             headers.append("Host", "demo.us-east-1.amazonaws.com")
@@ -195,7 +195,7 @@ public abstract class BasicSigningTestBase : HasSigner {
         // sanity test the signer doesn't mutate the input and instead copies to a new request
         val requestBuilder = HttpRequestBuilder().apply {
             method = HttpMethod.POST
-            url.scheme = Protocol.HTTP
+            url.scheme = Scheme.HTTP
             url.host = Host.Domain("test.amazonaws.com")
             url.path = "/"
             headers.append("Host", "test.amazonaws.com")

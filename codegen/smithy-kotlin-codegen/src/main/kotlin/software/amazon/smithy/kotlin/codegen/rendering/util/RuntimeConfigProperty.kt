@@ -9,15 +9,14 @@ import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.kotlin.codegen.core.RuntimeTypes
 import software.amazon.smithy.kotlin.codegen.lang.KotlinTypes
 import software.amazon.smithy.kotlin.codegen.model.buildSymbol
-import software.amazon.smithy.kotlin.codegen.model.namespace
 
 /**
  * Common client runtime related config properties
  */
 object RuntimeConfigProperty {
     val HttpClientEngine = ConfigProperty {
-        symbol = RuntimeTypes.Http.Engine.HttpClientEngine
-        baseClass = RuntimeTypes.Http.Config.HttpClientConfig
+        symbol = RuntimeTypes.HttpClient.Engine.HttpClientEngine
+        baseClass = RuntimeTypes.HttpClient.Config.HttpClientConfig
         useNestedBuilderBaseClass()
         documentation = """
         Override the default HTTP client engine used to make SDK requests (e.g. configure proxy behavior, timeouts, concurrency, etc).
@@ -33,7 +32,7 @@ object RuntimeConfigProperty {
                     prop.propertyName,
                     prop.symbol,
                     RuntimeTypes.HttpClientEngines.Default.DefaultHttpEngine,
-                    RuntimeTypes.Http.Engine.manage,
+                    RuntimeTypes.HttpClient.Engine.manage,
                 )
             },
         )
@@ -129,12 +128,12 @@ object RuntimeConfigProperty {
     val HttpInterceptors = ConfigProperty {
         name = "interceptors"
         val defaultValue = "${KotlinTypes.Collections.mutableListOf.fullName}()"
-        val target = RuntimeTypes.Http.Interceptors.HttpInterceptor
+        val target = RuntimeTypes.HttpClient.Interceptors.HttpInterceptor
         symbol = KotlinTypes.Collections.list(target, isNullable = false)
         builderSymbol = KotlinTypes.Collections.mutableList(target, isNullable = false, default = defaultValue)
         toBuilderExpression = ".toMutableList()"
 
-        baseClass = RuntimeTypes.Http.Config.HttpClientConfig
+        baseClass = RuntimeTypes.HttpClient.Config.HttpClientConfig
         useNestedBuilderBaseClass()
 
         documentation = """
