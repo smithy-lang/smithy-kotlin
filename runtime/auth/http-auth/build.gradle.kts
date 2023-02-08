@@ -4,7 +4,7 @@
  */
 description = "HTTP auth support"
 extra["displayName"] = "Smithy :: Kotlin :: HTTP Auth"
-extra["moduleName"] = "aws.smithy.kotlin.runtime.auth"
+extra["moduleName"] = "aws.smithy.kotlin.runtime.http.auth"
 
 val coroutinesVersion: String by project
 

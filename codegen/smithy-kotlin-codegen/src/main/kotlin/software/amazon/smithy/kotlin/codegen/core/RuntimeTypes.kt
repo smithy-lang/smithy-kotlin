@@ -47,7 +47,7 @@ object RuntimeTypes {
     }
     object HttpClient : RuntimeTypePackage(KotlinDependency.HTTP_CLIENT) {
         val SdkHttpClient = symbol("SdkHttpClient")
-        val SdkHttpClientFn = symbol("sdkHttpClient")
+
         object Middleware : RuntimeTypePackage(KotlinDependency.HTTP, "middleware") {
             val MutateHeadersMiddleware = symbol("MutateHeaders")
             val RetryMiddleware = symbol("RetryMiddleware")
