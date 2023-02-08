@@ -3,12 +3,11 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package aws.sdk.kotlin.runtime.http
+package aws.smithy.kotlin.runtime.awsprotocol
 
-import aws.sdk.kotlin.runtime.AwsErrorMetadata
-import aws.sdk.kotlin.runtime.AwsServiceException
-import aws.sdk.kotlin.runtime.InternalSdkApi
+import aws.smithy.kotlin.runtime.InternalApi
 import aws.smithy.kotlin.runtime.ServiceErrorMetadata
+import aws.smithy.kotlin.runtime.ServiceException
 import aws.smithy.kotlin.runtime.http.response.HttpResponse
 import aws.smithy.kotlin.runtime.util.setIfValueNotNull
 
@@ -32,7 +31,7 @@ public interface AwsErrorDetails {
     public val requestId: String?
 }
 
-@InternalSdkApi
+@InternalApi
 public data class ErrorDetails(
     override val code: String?,
     override val message: String?,
@@ -40,13 +39,13 @@ public data class ErrorDetails(
 ) : AwsErrorDetails
 
 /**
- * Pull specific details from the response / error and set [AwsServiceException] metadata
+ * Pull specific details from the response / error and set [ServiceException] metadata
  */
-@InternalSdkApi
+@InternalApi
 public fun setAseErrorMetadata(exception: Any, response: HttpResponse, errorDetails: AwsErrorDetails?) {
-    if (exception is AwsServiceException) {
+    if (exception is ServiceException) {
         exception.sdkErrorMetadata.attributes.setIfValueNotNull(ServiceErrorMetadata.ErrorCode, errorDetails?.code)
-        exception.sdkErrorMetadata.attributes.setIfValueNotNull(AwsErrorMetadata.ErrorMessage, errorDetails?.message)
+        exception.sdkErrorMetadata.attributes.setIfValueNotNull(ServiceErrorMetadata.ErrorMessage, errorDetails?.message)
         exception.sdkErrorMetadata.attributes.setIfValueNotNull(ServiceErrorMetadata.RequestId, response.headers[X_AMZN_REQUEST_ID_HEADER])
         exception.sdkErrorMetadata.attributes[ServiceErrorMetadata.ProtocolResponse] = response
     }

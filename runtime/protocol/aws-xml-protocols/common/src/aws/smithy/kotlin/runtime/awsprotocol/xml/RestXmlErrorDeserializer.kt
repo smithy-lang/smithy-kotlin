@@ -2,10 +2,10 @@
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
  * SPDX-License-Identifier: Apache-2.0
  */
-package aws.sdk.kotlin.runtime.protocol.xml
+package aws.smithy.kotlin.runtime.awsprotocol.xml
 
-import aws.sdk.kotlin.runtime.InternalSdkApi
-import aws.sdk.kotlin.runtime.http.ErrorDetails
+import aws.smithy.kotlin.runtime.InternalApi
+import aws.smithy.kotlin.runtime.awsprotocol.ErrorDetails
 import aws.smithy.kotlin.runtime.serde.*
 import aws.smithy.kotlin.runtime.serde.xml.XmlDeserializer
 import aws.smithy.kotlin.runtime.serde.xml.XmlSerialName
@@ -43,7 +43,7 @@ internal data class XmlError(
  * NOTE: we use an explicit XML deserializer here because we rely on validating the root element name
  * for dealing with the alternate error response forms
  */
-@InternalSdkApi
+@InternalApi
 public suspend fun parseRestXmlErrorResponse(payload: ByteArray): ErrorDetails {
     val details = ErrorResponseDeserializer.deserialize(XmlDeserializer(payload, true))
         ?: XmlErrorDeserializer.deserialize(XmlDeserializer(payload, true))

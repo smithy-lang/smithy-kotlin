@@ -3,9 +3,9 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package aws.sdk.kotlin.runtime.protocol.eventstream
+package aws.smithy.kotlin.runtime.awsprotocol.eventstream
 
-import aws.sdk.kotlin.runtime.InternalSdkApi
+import aws.smithy.kotlin.runtime.InternalApi
 import aws.smithy.kotlin.runtime.hashing.Crc32
 import aws.smithy.kotlin.runtime.io.*
 import aws.smithy.kotlin.runtime.util.encodeToHex
@@ -18,7 +18,7 @@ internal const val PRELUDE_BYTE_LEN_WITH_CRC = PRELUDE_BYTE_LEN + 4
  * @param totalLen The total byte length of the message including the prelude and message CRC
  * @param headersLength The byte length of all headers
  */
-@InternalSdkApi
+@InternalApi
 public data class Prelude(val totalLen: Int, val headersLength: Int) {
     /**
      * The byte length of the message payload

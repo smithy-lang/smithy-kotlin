@@ -76,6 +76,7 @@ private object EmptyProtocolResponse : ProtocolResponse
 public open class ServiceErrorMetadata : ErrorMetadata() {
     public companion object {
         public val ErrorCode: AttributeKey<String> = AttributeKey("ErrorCode")
+        public val ErrorMessage: AttributeKey<String> = AttributeKey("ErrorMessage")
         public val ErrorType: AttributeKey<ServiceException.ErrorType> = AttributeKey("ErrorType")
         public val ProtocolResponse: AttributeKey<ProtocolResponse> = AttributeKey("ProtocolResponse")
         public val RequestId: AttributeKey<String> = AttributeKey("RequestId")
@@ -91,6 +92,15 @@ public open class ServiceErrorMetadata : ErrorMetadata() {
      */
     public val errorCode: String?
         get() = attributes.getOrNull(ErrorCode)
+
+    /**
+     * Returns the human readable error message associated with the response. This value is implementation-defined.
+     *
+     * For example AWS protocol errors with a `message` field as part of the model this will match the `message`
+     * property of the exception.
+     */
+    public val errorMessage: String?
+        get() = attributes.getOrNull(ErrorMessage)
 
     /**
      * Indicates who is responsible for this exception (caller, service, or unknown)

@@ -3,9 +3,9 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package aws.sdk.kotlin.runtime.protocol.eventstream
+package aws.smithy.kotlin.runtime.awsprotocol.eventstream
 
-import aws.sdk.kotlin.runtime.InternalSdkApi
+import aws.smithy.kotlin.runtime.InternalApi
 import aws.smithy.kotlin.runtime.http.HttpBody
 import aws.smithy.kotlin.runtime.io.SdkBuffer
 import aws.smithy.kotlin.runtime.io.SdkByteChannel
@@ -23,7 +23,7 @@ import kotlin.coroutines.coroutineContext
  * Transform the stream of messages into a stream of raw bytes. Each
  * element of the resulting flow is the encoded version of the corresponding message
  */
-@InternalSdkApi
+@InternalApi
 public fun Flow<Message>.encode(): Flow<SdkBuffer> = map {
     val buffer = SdkBuffer()
     it.encode(buffer)
@@ -34,7 +34,7 @@ public fun Flow<Message>.encode(): Flow<SdkBuffer> = map {
  * Transform a stream of encoded messages into an [HttpBody].
  * @param scope parent scope to launch a coroutine in that consumes the flow and populates a [SdkByteReadChannel]
  */
-@InternalSdkApi
+@InternalApi
 public suspend fun Flow<SdkBuffer>.asEventStreamHttpBody(scope: CoroutineScope): HttpBody {
     val encodedMessages = this
     val ch = SdkByteChannel(true)

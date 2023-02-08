@@ -3,9 +3,9 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package aws.sdk.kotlin.runtime.protocol.eventstream
+package aws.smithy.kotlin.runtime.awsprotocol.eventstream
 
-import aws.sdk.kotlin.runtime.InternalSdkApi
+import aws.smithy.kotlin.runtime.InternalApi
 import aws.smithy.kotlin.runtime.io.*
 import aws.smithy.kotlin.runtime.time.Instant
 import aws.smithy.kotlin.runtime.time.epochMilliseconds
@@ -37,7 +37,7 @@ internal enum class HeaderType(val value: Byte) {
 /**
  * Event stream frame typed header value
  */
-@InternalSdkApi
+@InternalApi
 public sealed class HeaderValue {
     public data class Bool(val value: Boolean) : HeaderValue()
     public data class Byte(val value: UByte) : HeaderValue()
@@ -57,9 +57,7 @@ public sealed class HeaderValue {
             return true
         }
 
-        override fun hashCode(): Int {
-            return value.contentHashCode()
-        }
+        override fun hashCode(): Int = value.contentHashCode()
     }
 
     public data class String(val value: kotlin.String) : HeaderValue()

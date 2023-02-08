@@ -4,33 +4,32 @@
  */
 
 description = "Support for the XML suite of AWS protocols"
-extra["displayName"] = "AWS :: SDK :: Kotlin :: XML"
-extra["moduleName"] = "aws.sdk.kotlin.runtime.protocol.xml"
+extra["displayName"] = "AWS :: Smithy :: Kotlin :: XML"
+extra["moduleName"] = "aws.smithy.kotlin.runtime.awsprotocol.xml"
 
 val coroutinesVersion: String by project
-val smithyKotlinVersion: String by project
 
 kotlin {
     sourceSets {
         commonMain {
             dependencies {
-                api("aws.smithy.kotlin:http:$smithyKotlinVersion")
-                api(project(":aws-runtime:aws-core"))
-                implementation(project(":aws-runtime:aws-http"))
-                implementation("aws.smithy.kotlin:serde:$smithyKotlinVersion")
-                implementation("aws.smithy.kotlin:serde-xml:$smithyKotlinVersion")
+                api(project(":runtime:protocol:http"))
+                api(project(":runtime:runtime-core"))
+                implementation(project(":runtime:protocol:aws-protocol-core"))
+                implementation(project(":runtime:serde"))
+                implementation(project(":runtime:serde:serde-xml"))
             }
         }
 
         commonTest {
             dependencies {
+                implementation(project(":runtime:testing"))
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:$coroutinesVersion")
-                implementation(project(":aws-runtime:testing"))
             }
         }
 
         all {
-            languageSettings.optIn("aws.sdk.kotlin.runtime.InternalSdkApi")
+            languageSettings.optIn("aws.smithy.kotlin.runtime.InternalApi")
         }
     }
 }

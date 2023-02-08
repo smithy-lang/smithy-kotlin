@@ -2,9 +2,9 @@
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
  * SPDX-License-Identifier: Apache-2.0
  */
-package aws.sdk.kotlin.runtime.http
+package aws.smithy.kotlin.runtime.awsprotocol
 
-import aws.sdk.kotlin.runtime.InternalSdkApi
+import aws.smithy.kotlin.runtime.InternalApi
 import aws.smithy.kotlin.runtime.http.HttpBody
 import aws.smithy.kotlin.runtime.http.HttpStatusCode
 import aws.smithy.kotlin.runtime.http.category
@@ -21,7 +21,7 @@ public const val X_AMZN_REQUEST_ID_HEADER: String = "x-amz-request-id"
 /**
  * Return a copy of the response with a new payload set
  */
-@InternalSdkApi
+@InternalApi
 public fun HttpResponse.withPayload(payload: ByteArray?): HttpResponse {
     val newBody = if (payload != null) {
         ByteArrayContent(payload)
@@ -33,6 +33,6 @@ public fun HttpResponse.withPayload(payload: ByteArray?): HttpResponse {
 }
 
 // Provides the policy of what constitutes a status code match in service response
-@InternalSdkApi
+@InternalApi
 public fun HttpStatusCode.matches(expected: HttpStatusCode?): Boolean =
     expected == this || (expected == null && this.isSuccess()) || expected?.category() == this.category()

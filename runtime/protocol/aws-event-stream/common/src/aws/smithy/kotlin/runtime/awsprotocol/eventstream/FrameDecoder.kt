@@ -3,10 +3,10 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package aws.sdk.kotlin.runtime.protocol.eventstream
+package aws.smithy.kotlin.runtime.awsprotocol.eventstream
 
-import aws.sdk.kotlin.runtime.ClientException
-import aws.sdk.kotlin.runtime.InternalSdkApi
+import aws.smithy.kotlin.runtime.ClientException
+import aws.smithy.kotlin.runtime.InternalApi
 import aws.smithy.kotlin.runtime.io.*
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
@@ -19,7 +19,7 @@ public class EventStreamFramingException(message: String, cause: Throwable? = nu
 /**
  * Convert the raw bytes coming off [chan] to a stream of messages
  */
-@InternalSdkApi
+@InternalApi
 public suspend fun decodeFrames(chan: SdkByteReadChannel): Flow<Message> = flow {
     while (!chan.isClosedForRead) {
         // get the prelude to figure out how much is left to read of the message

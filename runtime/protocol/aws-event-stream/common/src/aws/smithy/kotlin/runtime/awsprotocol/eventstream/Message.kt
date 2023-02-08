@@ -3,9 +3,9 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package aws.sdk.kotlin.runtime.protocol.eventstream
+package aws.smithy.kotlin.runtime.awsprotocol.eventstream
 
-import aws.sdk.kotlin.runtime.InternalSdkApi
+import aws.smithy.kotlin.runtime.InternalApi
 import aws.smithy.kotlin.runtime.hashing.Crc32
 import aws.smithy.kotlin.runtime.io.*
 import aws.smithy.kotlin.runtime.util.encodeToHex
@@ -40,7 +40,7 @@ internal const val MAX_HEADER_SIZE = 128 * 1024
 /**
  * An event stream message
  */
-@InternalSdkApi
+@InternalApi
 public data class Message(val headers: List<Header>, val payload: ByteArray) {
 
     public companion object {
@@ -138,7 +138,7 @@ private fun emptyByteArray(): ByteArray = ByteArray(0)
 /**
  * Used to constructing a single event stream [Message]
  */
-@InternalSdkApi
+@InternalApi
 public class MessageBuilder {
     public val headers: MutableList<Header> = mutableListOf()
     public var payload: ByteArray? = null
@@ -153,5 +153,5 @@ public class MessageBuilder {
  * Builds a new [Message] by populating a [MessageBuilder] using the given [block]
  * @return the constructed messsage
  */
-@InternalSdkApi
+@InternalApi
 public fun buildMessage(block: MessageBuilder.() -> Unit): Message = MessageBuilder().apply(block).build()

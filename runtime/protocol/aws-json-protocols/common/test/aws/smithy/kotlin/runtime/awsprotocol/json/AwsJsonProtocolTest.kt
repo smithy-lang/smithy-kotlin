@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package aws.sdk.kotlin.runtime.protocol.json
+package aws.smithy.kotlin.runtime.awsprotocol.json
 
 import aws.smithy.kotlin.runtime.http.*
 import aws.smithy.kotlin.runtime.http.content.ByteArrayContent

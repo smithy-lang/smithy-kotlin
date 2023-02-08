@@ -2,7 +2,7 @@
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
  * SPDX-License-Identifier: Apache-2.0
  */
-package aws.sdk.kotlin.runtime.protocol.xml
+package aws.smithy.kotlin.runtime.awsprotocol.xml
 
 import aws.smithy.kotlin.runtime.serde.DeserializationException
 import kotlinx.coroutines.ExperimentalCoroutinesApi

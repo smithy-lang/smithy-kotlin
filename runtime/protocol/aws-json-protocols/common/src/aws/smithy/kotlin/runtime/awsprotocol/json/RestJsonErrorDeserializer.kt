@@ -2,10 +2,10 @@
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
  * SPDX-License-Identifier: Apache-2.0
  */
-package aws.sdk.kotlin.runtime.protocol.json
+package aws.smithy.kotlin.runtime.awsprotocol.json
 
-import aws.sdk.kotlin.runtime.InternalSdkApi
-import aws.sdk.kotlin.runtime.http.ErrorDetails
+import aws.smithy.kotlin.runtime.InternalApi
+import aws.smithy.kotlin.runtime.awsprotocol.ErrorDetails
 import aws.smithy.kotlin.runtime.http.Headers
 import aws.smithy.kotlin.runtime.serde.*
 import aws.smithy.kotlin.runtime.serde.json.JsonDeserializer
@@ -26,7 +26,7 @@ public const val X_AMZN_EVENT_ERROR_MESSAGE_HEADER_NAME: String = ":error-messag
  *     - SDK Unmarshal Service API Errors (SEP)
  *     - x-amzn-ErrorMessage (SEP)
  */
-@InternalSdkApi
+@InternalApi
 public object RestJsonErrorDeserializer {
     // alternative field descriptors for error codes embedded in the document
     private val ERR_CODE_ALT1_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Integer, JsonSerialName("code"))

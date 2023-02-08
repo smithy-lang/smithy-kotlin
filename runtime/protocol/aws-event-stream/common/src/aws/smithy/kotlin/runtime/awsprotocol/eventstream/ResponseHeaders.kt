@@ -3,14 +3,14 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package aws.sdk.kotlin.runtime.protocol.eventstream
+package aws.smithy.kotlin.runtime.awsprotocol.eventstream
 
-import aws.sdk.kotlin.runtime.InternalSdkApi
+import aws.smithy.kotlin.runtime.InternalApi
 
 /**
  * Parse the protocol level headers into a concrete [MessageType]
  */
-@InternalSdkApi
+@InternalApi
 public fun Message.type(): MessageType {
     val headersByName = headers.associateBy { it.name }
     val messageType: String = checkNotNull(headersByName[":message-type"]) { "`:message-type` header is required to deserialize an event stream message" }.value.expectString()
@@ -40,7 +40,7 @@ public fun Message.type(): MessageType {
 /**
  * Common framework message information parsed from headers
  */
-@InternalSdkApi
+@InternalApi
 public sealed class MessageType {
     /**
      * Corresponds to the `event` message type. All events include the headers:

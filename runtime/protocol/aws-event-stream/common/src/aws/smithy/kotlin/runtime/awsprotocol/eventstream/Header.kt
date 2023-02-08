@@ -3,9 +3,9 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package aws.sdk.kotlin.runtime.protocol.eventstream
+package aws.smithy.kotlin.runtime.awsprotocol.eventstream
 
-import aws.sdk.kotlin.runtime.InternalSdkApi
+import aws.smithy.kotlin.runtime.InternalApi
 import aws.smithy.kotlin.runtime.io.*
 
 private const val MIN_HEADER_LEN = 2
@@ -28,7 +28,7 @@ private const val MAX_HEADER_NAME_LEN = 255
 /**
  * An event stream frame header
  */
-@InternalSdkApi
+@InternalApi
 public data class Header(val name: String, val value: HeaderValue) {
     public companion object {
         /**

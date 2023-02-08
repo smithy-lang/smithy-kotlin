@@ -2,9 +2,9 @@
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
  * SPDX-License-Identifier: Apache-2.0
  */
-package aws.sdk.kotlin.runtime.protocol.json
+package aws.smithy.kotlin.runtime.awsprotocol.json
 
-import aws.sdk.kotlin.runtime.InternalSdkApi
+import aws.smithy.kotlin.runtime.InternalApi
 import aws.smithy.kotlin.runtime.client.SdkClientOption
 import aws.smithy.kotlin.runtime.http.*
 import aws.smithy.kotlin.runtime.http.content.ByteArrayContent
@@ -21,7 +21,7 @@ import aws.smithy.kotlin.runtime.util.get
  *   - setting the `Content-Type` and `X-Amz-Target` headers
  *   - providing an empty json {} body when no body is serialized
  */
-@InternalSdkApi
+@InternalApi
 public class AwsJsonProtocol(
     /**
      * The original service (shape) name
