@@ -15,6 +15,7 @@ import software.amazon.smithy.kotlin.codegen.loadModelFromResource
 import software.amazon.smithy.kotlin.codegen.model.*
 import software.amazon.smithy.kotlin.codegen.rendering.util.ConfigProperty
 import software.amazon.smithy.kotlin.codegen.rendering.util.ConfigPropertyType
+import software.amazon.smithy.kotlin.codegen.rendering.util.RuntimeConfigProperty
 import software.amazon.smithy.kotlin.codegen.test.*
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.ServiceShape
@@ -50,6 +51,7 @@ public class Config private constructor(builder: Builder) : HttpClientConfig, Id
     public val endpointProvider: EndpointProvider = requireNotNull(builder.endpointProvider) { "endpointProvider is a required configuration property" }
     override val idempotencyTokenProvider: IdempotencyTokenProvider = builder.idempotencyTokenProvider ?: IdempotencyTokenProvider.Default
     override val interceptors: kotlin.collections.List<aws.smithy.kotlin.runtime.http.interceptors.HttpInterceptor> = builder.interceptors
+    override val retryPolicy: RetryPolicy<Any?> = builder.retryPolicy ?: StandardRetryPolicy.Default
     override val retryStrategy: RetryStrategy = builder.retryStrategy ?: StandardRetryStrategy()
     override val sdkLogMode: SdkLogMode = builder.sdkLogMode
     override val tracer: Tracer = builder.tracer ?: DefaultTracer(LoggingTraceProbe, "${TestModelDefault.SERVICE_NAME}")
@@ -83,6 +85,11 @@ public class Config private constructor(builder: Builder) : HttpClientConfig, Id
          * later than any added automatically by the SDK.
          */
         override var interceptors: kotlin.collections.MutableList<aws.smithy.kotlin.runtime.http.interceptors.HttpInterceptor> = kotlin.collections.mutableListOf()
+
+        /**
+         * The policy to use for evaluating operation results and determining whether/how to retry.
+         */
+        override var retryPolicy: RetryPolicy<Any?>? = null
 
         /**
          * The [RetryStrategy] implementation to use for service calls. All API calls will be wrapped by the
@@ -200,6 +207,95 @@ public class Config private constructor(builder: Builder) {
     public val customProp: Int? = builder.customProp
 """
         contents.shouldContain(expectedProps)
+    }
+
+    @Test
+    fun `it overrides props by name`() {
+        val model = getModel()
+        val serviceShape = model.expectShape<ServiceShape>(TestModelDefault.SERVICE_SHAPE_ID)
+
+        val testCtx = model.newTestContext()
+        val writer = createWriter()
+        val customIntegration = object : KotlinIntegration {
+            private val overriddenLogMode = RuntimeConfigProperty.SdkLogMode.toBuilder().apply {
+                symbol = symbol!!.toBuilder().apply {
+                    defaultValue("SdkLogMode.LogRequest") // replaces SdkLogMode.Default
+                }.build()
+            }.build()
+
+            override fun additionalServiceConfigProps(ctx: CodegenContext): List<ConfigProperty> = listOf(
+                ConfigProperty.Int("customProp"),
+                overriddenLogMode,
+            )
+        }
+
+        val renderingCtx = testCtx.toRenderingContext(writer, serviceShape)
+            .copy(integrations = listOf(customIntegration))
+
+        ServiceClientConfigGenerator(serviceShape, detectDefaultProps = true).render(renderingCtx, renderingCtx.writer)
+        val contents = writer.toString()
+
+        val expectedBuilderProps = """
+        /**
+         * Override the default HTTP client engine used to make SDK requests (e.g. configure proxy behavior, timeouts, concurrency, etc).
+         * NOTE: The caller is responsible for managing the lifetime of the engine when set. The SDK
+         * client will not close it when the client is closed.
+         */
+        override var httpClientEngine: HttpClientEngine? = null
+
+        public var customProp: Int? = null
+
+        /**
+         * The endpoint provider used to determine where to make service requests.
+         */
+        public var endpointProvider: EndpointProvider? = null
+
+        /**
+         * Override the default idempotency token generator. SDK clients will generate tokens for members
+         * that represent idempotent tokens when not explicitly set by the caller using this generator.
+         */
+        override var idempotencyTokenProvider: IdempotencyTokenProvider? = null
+
+        /**
+         * Add an [aws.smithy.kotlin.runtime.client.Interceptor] that will have access to read and modify
+         * the request and response objects as they are processed by the SDK.
+         * Interceptors added using this method are executed in the order they are configured and are always
+         * later than any added automatically by the SDK.
+         */
+        override var interceptors: kotlin.collections.MutableList<aws.smithy.kotlin.runtime.http.interceptors.HttpInterceptor> = kotlin.collections.mutableListOf()
+
+        /**
+         * The policy to use for evaluating operation results and determining whether/how to retry.
+         */
+        override var retryPolicy: RetryPolicy<Any?>? = null
+
+        /**
+         * The [RetryStrategy] implementation to use for service calls. All API calls will be wrapped by the
+         * strategy.
+         */
+        override var retryStrategy: RetryStrategy? = null
+
+        /**
+         * Configure events that will be logged. By default clients will not output
+         * raw requests or responses. Use this setting to opt-in to additional debug logging.
+         *
+         * This can be used to configure logging of requests, responses, retries, etc of SDK clients.
+         *
+         * **NOTE**: Logging of raw requests or responses may leak sensitive information! It may also have
+         * performance considerations when dumping the request/response body. This is primarily a tool for
+         * debug purposes.
+         */
+        override var sdkLogMode: SdkLogMode = SdkLogMode.LogRequest
+
+        /**
+         * The tracer that is responsible for creating trace spans and wiring them up to a tracing backend (e.g.,
+         * a trace probe). By default, this will create a standard tracer that uses the service name for the root
+         * trace span and delegates to a logging trace probe (i.e.,
+         * `DefaultTracer(LoggingTraceProbe, "<service-name>")`).
+         */
+        override var tracer: Tracer? = null
+"""
+        contents.shouldContain(expectedBuilderProps)
     }
 
     @Test
