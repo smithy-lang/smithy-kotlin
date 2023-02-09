@@ -62,4 +62,17 @@ public expect fun SdkSource.toSdkByteReadChannel(coroutineScope: CoroutineScope?
  * @throws [EOFException] when the source is exhausted before [byteCount] bytes could be read
  */
 @Throws(IOException::class)
-public expect fun SdkSource.readFully(sink: SdkBuffer, byteCount: Long)
+public fun SdkSource.readFully(sink: SdkBuffer, byteCount: Long) {
+    require(byteCount >= 0L) { "Invalid length ($byteCount) must be >= 0L" }
+
+    var totalBytesRead = 0L
+    while (totalBytesRead != byteCount) {
+        val rc = read(sink, byteCount - totalBytesRead)
+
+        if (rc == -1L) {
+            throw EOFException("Unexpected EOF: expected ${byteCount - rc} more bytes; consumed: $rc")
+        }
+
+        totalBytesRead += rc
+    }
+}

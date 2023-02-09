@@ -40,19 +40,3 @@ public actual fun SdkSource.toSdkByteReadChannel(coroutineScope: CoroutineScope?
 
     return ch
 }
-
-@InternalApi
-public actual fun SdkSource.readFully(sink: SdkBuffer, byteCount: Long) {
-    require(byteCount >= 0L) { "Invalid length ($byteCount) must be >= 0L" }
-
-    var totalBytesRead = 0L
-    while (totalBytesRead != byteCount) {
-        val rc = read(sink, byteCount - totalBytesRead)
-
-        if (rc == -1L) {
-            throw EOFException("Unexpected EOF: expected ${byteCount - rc} more bytes; consumed: $rc")
-        }
-
-        totalBytesRead += rc
-    }
-}
