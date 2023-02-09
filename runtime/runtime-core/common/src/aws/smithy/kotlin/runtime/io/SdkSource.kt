@@ -70,7 +70,7 @@ public fun SdkSource.readFully(sink: SdkBuffer, byteCount: Long) {
         val rc = read(sink, byteCount - totalBytesRead)
 
         if (rc == -1L) {
-            throw EOFException("Unexpected EOF: expected ${byteCount - rc} more bytes; consumed: $rc")
+            throw EOFException("Unexpected EOF: expected ${byteCount - totalBytesRead} more bytes; consumed: $totalBytesRead")
         }
 
         totalBytesRead += rc
