@@ -315,4 +315,34 @@ abstract class BufferedSourceTest(
             source.require(1024 * 9 + 1)
         }
     }
+
+    @Test
+    fun testReadFully() {
+        val data = "123456789".repeat(1024)
+        sink.writeUtf8(data)
+        sink.flush()
+
+        val dest = SdkBuffer()
+        source.readFully(dest, data.length.toLong())
+        assertEquals(data, dest.readUtf8())
+    }
+
+    @Test
+    fun testReadFullyIllegalArgumentException() {
+        val dest = SdkBuffer()
+        assertFailsWith<IllegalArgumentException> {
+            source.readFully(dest, -1)
+        }
+    }
+    @Test
+    fun testReadFullyEOFException() {
+        val data = "123456789".repeat(1024)
+        sink.writeUtf8(data)
+        sink.flush()
+
+        val dest = SdkBuffer()
+        assertFailsWith<EOFException> {
+            source.readFully(dest, data.length.toLong() + 1)
+        }
+    }
 }
