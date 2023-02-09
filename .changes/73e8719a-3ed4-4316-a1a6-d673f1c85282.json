@@ -1,5 +1,0 @@
-{
-    "id": "73e8719a-3ed4-4316-a1a6-d673f1c85282",
-    "type": "bugfix",
-    "description": "Correctly apply `maxConnections` configuration setting to OkHttp engines"
-}

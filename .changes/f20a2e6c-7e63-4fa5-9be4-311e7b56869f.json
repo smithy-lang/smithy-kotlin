@@ -1,5 +1,0 @@
-{
-    "id": "f20a2e6c-7e63-4fa5-9be4-311e7b56869f",
-    "type": "feature",
-    "description": "Add additional tracing events for connections in CRT engines"
-}

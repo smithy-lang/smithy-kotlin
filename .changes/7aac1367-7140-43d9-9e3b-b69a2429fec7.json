@@ -1,5 +1,0 @@
-{
-    "id": "7aac1367-7140-43d9-9e3b-b69a2429fec7",
-    "type": "misc",
-    "description": "Refactor: break out service client runtime components into own module"
-}

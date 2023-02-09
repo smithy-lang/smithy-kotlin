@@ -1,5 +1,0 @@
-{
-    "id": "ded556fb-ecfc-4270-943b-bde40685372e",
-    "type": "misc",
-    "description": "Refactor: split client side HTTP abstractions into new module. Move Url into core"
-}

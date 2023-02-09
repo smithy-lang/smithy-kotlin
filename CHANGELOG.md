@@ -1,5 +1,21 @@
 # Changelog
 
+## [0.15.2] - 02/09/2023
+
+### Features
+* Add readFully extension method to SdkSource
+* Add additional tracing events for connections in CRT engines
+* Add new `maxConnectionsPerHost` configuration setting for OkHttp engines
+* Add configuration for retry policy on clients
+
+### Fixes
+* Stop logging "null" when exceptions are not present in trace events
+* Correctly apply `maxConnections` configuration setting to OkHttp engines
+
+### Miscellaneous
+* Refactor: break out service client runtime components into own module
+* Refactor: split client side HTTP abstractions into new module. Move Url into core
+
 ## [0.15.1] - 02/02/2023
 
 ### Features
