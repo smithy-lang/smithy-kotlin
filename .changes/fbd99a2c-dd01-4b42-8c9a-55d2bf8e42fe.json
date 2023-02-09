@@ -1,0 +1,5 @@
+{
+    "id": "fbd99a2c-dd01-4b42-8c9a-55d2bf8e42fe",
+    "type": "feature",
+    "description": "Add configuration for retry policy on clients"
+}

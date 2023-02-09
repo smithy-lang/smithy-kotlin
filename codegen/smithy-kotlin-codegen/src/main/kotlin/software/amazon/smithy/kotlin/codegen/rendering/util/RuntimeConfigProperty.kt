@@ -6,6 +6,7 @@
 package software.amazon.smithy.kotlin.codegen.rendering.util
 
 import software.amazon.smithy.codegen.core.CodegenException
+import software.amazon.smithy.codegen.core.SymbolReference
 import software.amazon.smithy.kotlin.codegen.core.RuntimeTypes
 import software.amazon.smithy.kotlin.codegen.lang.KotlinTypes
 import software.amazon.smithy.kotlin.codegen.model.buildSymbol
@@ -50,6 +51,26 @@ object RuntimeConfigProperty {
         Override the default idempotency token generator. SDK clients will generate tokens for members
         that represent idempotent tokens when not explicitly set by the caller using this generator.
         """.trimIndent()
+    }
+
+    val RetryPolicy = ConfigProperty {
+        symbol = buildSymbol {
+            name = "RetryPolicy<Any?>"
+            reference(RuntimeTypes.Core.Retries.Policy.RetryPolicy, SymbolReference.ContextOption.USE)
+        }
+        name = "retryPolicy"
+        documentation = """
+            The policy to use for evaluating operation results and determining whether/how to retry.
+        """.trimIndent()
+
+        propertyType = ConfigPropertyType.RequiredWithDefault("StandardRetryPolicy.Default")
+        baseClass = RuntimeTypes.SmithyClient.SdkClientConfig
+        builderBaseClass = buildSymbol {
+            name = "${baseClass!!.name}.Builder<Config>"
+            namespace = baseClass!!.namespace
+        }
+
+        additionalImports = listOf(RuntimeTypes.Core.Retries.Policy.StandardRetryPolicy)
     }
 
     val RetryStrategy = ConfigProperty {
