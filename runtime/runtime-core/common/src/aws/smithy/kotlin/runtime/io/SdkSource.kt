@@ -53,3 +53,13 @@ public expect suspend fun SdkSource.readToByteArray(): ByteArray
  */
 @InternalApi
 public expect fun SdkSource.toSdkByteReadChannel(coroutineScope: CoroutineScope? = null): SdkByteReadChannel
+
+/**
+ * Remove exactly [byteCount] bytes from this source and appends them to [sink].
+ * @param sink The sink to append bytes to
+ * @param byteCount the number of bytes to read from the source
+ * @throws [IllegalArgumentException] when [byteCount] is less than zero
+ * @throws [EOFException] when the source is exhausted before [byteCount] bytes could be read
+ */
+@Throws(IOException::class)
+public expect fun SdkSource.readFully(sink: SdkBuffer, byteCount: Long)
