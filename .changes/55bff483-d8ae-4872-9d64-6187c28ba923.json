@@ -1,0 +1,5 @@
+{
+    "id": "55bff483-d8ae-4872-9d64-6187c28ba923",
+    "type": "feature",
+    "description": "Add readFully extension method to SdkSource"
+}

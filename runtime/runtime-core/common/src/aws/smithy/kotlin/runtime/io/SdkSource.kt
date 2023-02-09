@@ -53,3 +53,26 @@ public expect suspend fun SdkSource.readToByteArray(): ByteArray
  */
 @InternalApi
 public expect fun SdkSource.toSdkByteReadChannel(coroutineScope: CoroutineScope? = null): SdkByteReadChannel
+
+/**
+ * Remove exactly [byteCount] bytes from this source and appends them to [sink].
+ * @param sink The sink to append bytes to
+ * @param byteCount the number of bytes to read from the source
+ * @throws [IllegalArgumentException] when [byteCount] is less than zero
+ * @throws [EOFException] when the source is exhausted before [byteCount] bytes could be read
+ */
+@Throws(IOException::class)
+public fun SdkSource.readFully(sink: SdkBuffer, byteCount: Long) {
+    require(byteCount >= 0L) { "Invalid length ($byteCount) must be >= 0L" }
+
+    var totalBytesRead = 0L
+    while (totalBytesRead != byteCount) {
+        val rc = read(sink, byteCount - totalBytesRead)
+
+        if (rc == -1L) {
+            throw EOFException("Unexpected EOF: expected ${byteCount - totalBytesRead} more bytes; consumed: $totalBytesRead")
+        }
+
+        totalBytesRead += rc
+    }
+}
