@@ -4,13 +4,8 @@
  */
 
 buildscript {
-    val atomicFuVersion: String by project
     repositories {
         mavenCentral()
-    }
-
-    dependencies {
-        classpath("org.jetbrains.kotlinx:atomicfu-gradle-plugin:$atomicFuVersion")
     }
 }
 
@@ -25,7 +20,6 @@ extra["moduleName"] = "aws.smithy.kotlin.runtime"
 val coroutinesVersion: String by project
 val okioVersion: String by project
 val atomicFuVersion: String by project
-apply(plugin = "kotlinx-atomicfu")
 
 kotlin {
     sourceSets {

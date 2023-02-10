@@ -4,17 +4,10 @@
  */
 
 buildscript {
-    val atomicFuVersion: String by project
     repositories {
         mavenCentral()
     }
-
-    dependencies {
-        classpath("org.jetbrains.kotlinx:atomicfu-gradle-plugin:$atomicFuVersion")
-    }
 }
-
-apply(plugin = "kotlinx-atomicfu")
 
 description = "Utilities for working with AWS CRT Kotlin"
 extra["displayName"] = "Smithy :: Kotlin :: CRT :: Util"

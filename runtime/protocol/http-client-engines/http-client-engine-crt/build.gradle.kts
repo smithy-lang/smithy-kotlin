@@ -3,17 +3,10 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 buildscript {
-    val atomicFuVersion: String by project
     repositories {
         mavenCentral()
     }
-
-    dependencies {
-        classpath("org.jetbrains.kotlinx:atomicfu-gradle-plugin:$atomicFuVersion")
-    }
 }
-
-apply(plugin = "kotlinx-atomicfu")
 
 description = "HTTP client engine backed by CRT"
 extra["displayName"] = "AWS :: SDK :: Kotlin :: HTTP"
