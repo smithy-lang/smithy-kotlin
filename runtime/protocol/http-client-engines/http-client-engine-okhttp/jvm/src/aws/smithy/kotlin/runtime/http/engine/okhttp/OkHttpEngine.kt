@@ -71,7 +71,7 @@ private fun OkHttpEngineConfig.buildClient(): OkHttpClient {
 
         // see: https://github.com/ktorio/ktor/issues/1708#issuecomment-609988128
         // TODO disable this once better transient exception handling is in place
-        retryOnConnectionFailure(true)
+        retryOnConnectionFailure(false)
 
         connectTimeout(config.connectTimeout.toJavaDuration())
         readTimeout(config.socketReadTimeout.toJavaDuration())
