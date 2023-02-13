@@ -92,6 +92,7 @@ object RuntimeTypes {
         }
 
         object Interceptors : RuntimeTypePackage(KotlinDependency.HTTP, "interceptors") {
+            val ContinueInterceptor = symbol("ContinueInterceptor")
             val HttpInterceptor = symbol("HttpInterceptor")
             val Md5ChecksumInterceptor = symbol("Md5ChecksumInterceptor")
             val FlexibleChecksumsRequestInterceptor = symbol("FlexibleChecksumsRequestInterceptor")

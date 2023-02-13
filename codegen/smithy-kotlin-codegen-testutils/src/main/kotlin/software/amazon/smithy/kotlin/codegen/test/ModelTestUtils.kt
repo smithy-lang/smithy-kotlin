@@ -10,6 +10,7 @@ import software.amazon.smithy.kotlin.codegen.KotlinCodegenPlugin
 import software.amazon.smithy.kotlin.codegen.KotlinSettings
 import software.amazon.smithy.kotlin.codegen.core.*
 import software.amazon.smithy.kotlin.codegen.inferService
+import software.amazon.smithy.kotlin.codegen.integration.KotlinIntegration
 import software.amazon.smithy.kotlin.codegen.model.OperationNormalizer
 import software.amazon.smithy.kotlin.codegen.model.shapes
 import software.amazon.smithy.kotlin.codegen.rendering.protocol.ProtocolGenerator
@@ -116,6 +117,7 @@ fun Model.newTestContext(
     packageName: String = TestModelDefault.NAMESPACE,
     settings: KotlinSettings = this.defaultSettings(serviceName, packageName),
     generator: ProtocolGenerator = MockHttpProtocolGenerator(),
+    integrations: List<KotlinIntegration> = listOf(),
 ): TestContext {
     val manifest = MockManifest()
     val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model = this, rootNamespace = packageName, serviceName = serviceName)
@@ -127,7 +129,7 @@ fun Model.newTestContext(
         this,
         service,
         provider,
-        listOf(),
+        integrations,
         generator.protocol,
         delegator,
     )
@@ -238,7 +240,10 @@ fun String.prependNamespaceAndService(
         protocol.annotation to imports + listOf(protocol.import)
     }
 
-    val importExpr = modelImports.map { "use $it" }.joinToString(separator = "\n") { it }
+    val importExpr = modelImports
+        .map { "use $it" }
+        .plus("use aws.api#service")
+        .joinToString(separator = "\n")
 
     return (
         """
@@ -246,6 +251,7 @@ fun String.prependNamespaceAndService(
         namespace $namespace
         $importExpr
         $modelProtocol
+        @service(sdkId: "$serviceName")
         service $serviceName { 
             version: "${TestModelDefault.MODEL_VERSION}",
             operations: $operations
