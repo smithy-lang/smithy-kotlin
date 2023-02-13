@@ -5,12 +5,12 @@
 
 package aws.smithy.kotlin.runtime.http.middleware
 
+import aws.smithy.kotlin.runtime.client.endpoints.Endpoint
+import aws.smithy.kotlin.runtime.client.endpoints.EndpointProvider
 import aws.smithy.kotlin.runtime.http.Headers
 import aws.smithy.kotlin.runtime.http.HttpBody
 import aws.smithy.kotlin.runtime.http.HttpStatusCode
 import aws.smithy.kotlin.runtime.http.SdkHttpClient
-import aws.smithy.kotlin.runtime.http.endpoints.Endpoint
-import aws.smithy.kotlin.runtime.http.endpoints.EndpointProvider
 import aws.smithy.kotlin.runtime.http.engine.HttpClientEngineBase
 import aws.smithy.kotlin.runtime.http.operation.HttpOperationContext
 import aws.smithy.kotlin.runtime.http.operation.newTestOperation

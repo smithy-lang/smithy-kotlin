@@ -5,8 +5,8 @@
 
 package aws.smithy.kotlin.runtime.serde.xml
 
+import aws.smithy.kotlin.runtime.content.Document
 import aws.smithy.kotlin.runtime.serde.*
-import aws.smithy.kotlin.runtime.smithy.Document
 
 // Represents aspects of SdkFieldDescriptor that are particular to the Xml format
 internal sealed class FieldLocation {

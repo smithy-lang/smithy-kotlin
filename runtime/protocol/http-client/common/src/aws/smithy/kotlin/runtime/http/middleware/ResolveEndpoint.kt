@@ -5,9 +5,10 @@
 package aws.smithy.kotlin.runtime.http.middleware
 
 import aws.smithy.kotlin.runtime.InternalApi
-import aws.smithy.kotlin.runtime.http.endpoints.EndpointProvider
-import aws.smithy.kotlin.runtime.http.endpoints.setResolvedEndpoint
+import aws.smithy.kotlin.runtime.client.endpoints.Endpoint
+import aws.smithy.kotlin.runtime.client.endpoints.EndpointProvider
 import aws.smithy.kotlin.runtime.http.operation.*
+import aws.smithy.kotlin.runtime.net.Host
 import aws.smithy.kotlin.runtime.tracing.debug
 import kotlin.coroutines.coroutineContext
 
@@ -29,4 +30,34 @@ public class ResolveEndpoint<T>(
         coroutineContext.debug<ResolveEndpoint<T>> { "resolved endpoint: $endpoint" }
         return req
     }
+}
+
+/**
+ * Update an existing request with a resolved endpoint.
+ *
+ * Any values serialized to the HTTP path or query string are preserved (in the case of path, the existing serialized one
+ * is appended to what was resolved).
+ */
+@InternalApi
+public fun setResolvedEndpoint(req: SdkHttpRequest, endpoint: Endpoint) {
+    val hostPrefix = req.context.getOrNull(HttpOperationContext.HostPrefix) ?: ""
+    val hostname = "$hostPrefix${endpoint.uri.host}"
+    val joinedPath = buildString {
+        append(endpoint.uri.path.removeSuffix("/"))
+        if (req.subject.url.path.isNotBlank()) {
+            append("/")
+            append(req.subject.url.path.removePrefix("/"))
+        }
+    }
+
+    req.subject.url.scheme = endpoint.uri.scheme
+    req.subject.url.userInfo = endpoint.uri.userInfo
+    req.subject.url.host = Host.parse(hostname)
+    req.subject.url.port = endpoint.uri.port
+    req.subject.url.path = joinedPath
+    req.subject.url.parameters.appendAll(endpoint.uri.parameters)
+    req.subject.url.fragment = endpoint.uri.fragment
+
+    req.subject.headers["Host"] = hostname
+    endpoint.headers?.let { req.subject.headers.appendAll(it) }
 }

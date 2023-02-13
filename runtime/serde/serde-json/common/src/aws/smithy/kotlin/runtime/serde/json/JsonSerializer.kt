@@ -4,8 +4,8 @@
  */
 package aws.smithy.kotlin.runtime.serde.json
 
+import aws.smithy.kotlin.runtime.content.Document
 import aws.smithy.kotlin.runtime.serde.*
-import aws.smithy.kotlin.runtime.smithy.Document
 import aws.smithy.kotlin.runtime.time.Instant
 import aws.smithy.kotlin.runtime.time.TimestampFormat
 

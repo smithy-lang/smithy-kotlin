@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package aws.smithy.kotlin.runtime.http.endpoints
+package aws.smithy.kotlin.runtime.client.endpoints
 
 /**
  * Resolves endpoints for a given service client.

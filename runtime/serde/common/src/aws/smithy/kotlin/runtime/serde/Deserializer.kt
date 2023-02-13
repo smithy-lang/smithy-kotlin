@@ -4,7 +4,7 @@
  */
 package aws.smithy.kotlin.runtime.serde
 
-import aws.smithy.kotlin.runtime.smithy.Document
+import aws.smithy.kotlin.runtime.content.Document
 
 /**
  * Deserializer is a format agnostic deserialization interface. Specific formats (e.g. JSON, XML, etc) implement
