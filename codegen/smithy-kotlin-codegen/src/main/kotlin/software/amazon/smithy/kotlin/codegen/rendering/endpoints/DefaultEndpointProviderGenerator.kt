@@ -280,7 +280,7 @@ class ExpressionGenerator(
     }
 
     override fun visitRecord(value: MutableMap<Identifier, Literal>) {
-        writer.withInlineBlock("#T {", "}", RuntimeTypes.Core.Smithy.buildDocument) {
+        writer.withInlineBlock("#T {", "}", RuntimeTypes.Core.Content.buildDocument) {
             value.entries.forEachIndexed { index, (k, v) ->
                 writeInline("#S to ", k.asString())
                 v.accept(this@ExpressionGenerator as Literal.Vistor<Unit>)

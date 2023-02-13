@@ -111,9 +111,11 @@ object RuntimeTypes {
         object Content : RuntimeTypePackage(KotlinDependency.CORE, "content") {
             val ByteArrayContent = symbol("ByteArrayContent")
             val ByteStream = symbol("ByteStream")
+            val buildDocument = symbol("buildDocument")
+            val decodeToString = symbol("decodeToString")
+            val Document = symbol("Document")
             val StringContent = symbol("StringContent")
             val toByteArray = symbol("toByteArray")
-            val decodeToString = symbol("decodeToString")
         }
 
         object Retries : RuntimeTypePackage(KotlinDependency.CORE, "retries") {
@@ -144,10 +146,6 @@ object RuntimeTypes {
             }
         }
 
-        object Smithy : RuntimeTypePackage(KotlinDependency.CORE, "smithy") {
-            val Document = symbol("Document")
-            val buildDocument = symbol("buildDocument")
-        }
 
         object Hashing : RuntimeTypePackage(KotlinDependency.CORE, "hashing") {
             val Sha256 = symbol("Sha256")
