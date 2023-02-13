@@ -114,6 +114,11 @@ data class KotlinDependency(
         val AWS_SIGNING_DEFAULT = KotlinDependency(GradleConfiguration.Implementation, "$RUNTIME_ROOT_NS.auth.awssigning", RUNTIME_GROUP, "aws-signing-default", RUNTIME_VERSION)
         val TRACING_CORE = KotlinDependency(GradleConfiguration.Api, "$RUNTIME_ROOT_NS.tracing", RUNTIME_GROUP, "tracing-core", RUNTIME_VERSION)
 
+        val AWS_JSON_PROTOCOLS = KotlinDependency(GradleConfiguration.Implementation, "$RUNTIME_ROOT_NS.awsprotocol.json", RUNTIME_GROUP, "aws-json-protocols", RUNTIME_VERSION)
+        val AWS_EVENT_STREAM = KotlinDependency(GradleConfiguration.Implementation, "$RUNTIME_ROOT_NS.awsprotocol.eventstream", RUNTIME_GROUP, "aws-event-stream", RUNTIME_VERSION)
+        val AWS_PROTOCOL_CORE = KotlinDependency(GradleConfiguration.Implementation, "$RUNTIME_ROOT_NS.awsprotocol", RUNTIME_GROUP, "aws-protocol-core", RUNTIME_VERSION)
+        val AWS_XML_PROTOCOLS = KotlinDependency(GradleConfiguration.Implementation, "$RUNTIME_ROOT_NS.awsprotocol.xml", RUNTIME_GROUP, "aws-xml-protocols", RUNTIME_VERSION)
+
         // External third-party dependencies
         val KOTLIN_TEST = KotlinDependency(GradleConfiguration.TestImplementation, "kotlin.test", "org.jetbrains.kotlin", "kotlin-test", KOTLIN_COMPILER_VERSION)
         val KOTLIN_TEST_JUNIT5 = KotlinDependency(GradleConfiguration.TestImplementation, "kotlin.test.junit5", "org.jetbrains.kotlin", "kotlin-test-junit5", KOTLIN_COMPILER_VERSION)
