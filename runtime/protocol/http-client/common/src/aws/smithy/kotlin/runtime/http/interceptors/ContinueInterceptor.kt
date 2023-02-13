@@ -4,6 +4,7 @@
  */
 package aws.smithy.kotlin.runtime.http.interceptors
 
+import aws.smithy.kotlin.runtime.InternalApi
 import aws.smithy.kotlin.runtime.client.ProtocolRequestInterceptorContext
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.http.request.header
@@ -15,6 +16,7 @@ import aws.smithy.kotlin.runtime.http.request.toBuilder
  * @param thresholdLengthBytes The body length (in bytes) at which a continue header will be set. Bodies under this
  * length will not get a continue header.
  */
+@InternalApi
 public class ContinueInterceptor(public val thresholdLengthBytes: Long) : HttpInterceptor {
     override suspend fun modifyBeforeSigning(context: ProtocolRequestInterceptorContext<Any, HttpRequest>): HttpRequest {
         val req = context.protocolRequest
