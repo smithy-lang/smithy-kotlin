@@ -52,6 +52,7 @@ object RuntimeTypes {
             val MutateHeadersMiddleware = symbol("MutateHeaders")
             val RetryMiddleware = symbol("RetryMiddleware")
             val ResolveEndpoint = symbol("ResolveEndpoint")
+            val setResolvedEndpoint = symbol("setResolvedEndpoint")
         }
 
         object Operation : RuntimeTypePackage(KotlinDependency.HTTP, "operation") {
@@ -65,21 +66,6 @@ object RuntimeTypes {
             val sdkRequestId = symbol("sdkRequestId")
             val execute = symbol("execute")
             val InlineMiddleware = symbol("InlineMiddleware")
-        }
-
-        object Endpoints : RuntimeTypePackage(KotlinDependency.HTTP, "endpoints") {
-            val EndpointProvider = symbol("EndpointProvider")
-            val Endpoint = symbol("Endpoint")
-            val EndpointProviderException = symbol("EndpointProviderException")
-            val setResolvedEndpoint = symbol("setResolvedEndpoint")
-
-            object Functions : RuntimeTypePackage(KotlinDependency.HTTP, "endpoints.functions") {
-                val substring = symbol("substring")
-                val isValidHostLabel = symbol("isValidHostLabel")
-                val uriEncode = symbol("uriEncode")
-                val parseUrl = symbol("parseUrl")
-                val Url = symbol("Url")
-            }
         }
 
         object Config : RuntimeTypePackage(KotlinDependency.HTTP, "config") {
@@ -190,6 +176,19 @@ object RuntimeTypes {
         val IdempotencyTokenProvider = symbol("IdempotencyTokenProvider")
         val IdempotencyTokenConfig = symbol("IdempotencyTokenConfig")
         val IdempotencyTokenProviderExt = symbol("idempotencyTokenProvider")
+
+        object Endpoints : RuntimeTypePackage(KotlinDependency.SMITHY_CLIENT, "endpoints") {
+            val EndpointProvider = symbol("EndpointProvider")
+            val Endpoint = symbol("Endpoint")
+            val EndpointProviderException = symbol("EndpointProviderException")
+            object Functions : RuntimeTypePackage(KotlinDependency.SMITHY_CLIENT, "endpoints.functions") {
+                val substring = symbol("substring")
+                val isValidHostLabel = symbol("isValidHostLabel")
+                val uriEncode = symbol("uriEncode")
+                val parseUrl = symbol("parseUrl")
+                val Url = symbol("Url")
+            }
+        }
     }
 
     object Serde : RuntimeTypePackage(KotlinDependency.SERDE) {
