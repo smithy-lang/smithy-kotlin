@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.15.3] - 02/16/2023
+
+### Features
+* [#839](https://github.com/awslabs/aws-sdk-kotlin/issues/839) Add an interceptor for adding `Expect: 100-continue` headers to HTTP requests
+
+### Miscellaneous
+* Upgrade to Kotlin 1.8.10
+
 ## [0.15.2] - 02/09/2023
 
 ### Features

@@ -1,8 +1,0 @@
-{
-    "id": "8f1ff251-7fed-4543-a077-51b2fe0aa684",
-    "type": "feature",
-    "description": "Add an interceptor for adding `Expect: 100-continue` headers to HTTP requests",
-    "issues": [
-        "awslabs/aws-sdk-kotlin#839"
-    ]
-}
