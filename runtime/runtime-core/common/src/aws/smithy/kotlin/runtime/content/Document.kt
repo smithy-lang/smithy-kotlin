@@ -2,7 +2,7 @@
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
  * SPDX-License-Identifier: Apache-2.0
  */
-package aws.smithy.kotlin.runtime.smithy
+package aws.smithy.kotlin.runtime.content
 
 /**
  * A `Document` is used to store arbitrary or unstructured data.

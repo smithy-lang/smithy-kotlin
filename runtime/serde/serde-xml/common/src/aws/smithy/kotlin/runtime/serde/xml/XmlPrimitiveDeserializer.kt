@@ -5,8 +5,8 @@
 
 package aws.smithy.kotlin.runtime.serde.xml
 
+import aws.smithy.kotlin.runtime.content.Document
 import aws.smithy.kotlin.runtime.serde.*
-import aws.smithy.kotlin.runtime.smithy.Document
 
 /**
  * Deserialize primitive values for single values, lists, and maps

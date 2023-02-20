@@ -155,7 +155,7 @@ class DeserializeStructGeneratorTest {
         val actual = codegenDeserializerForShape(model, "com.test#Foo")
 
         actual.shouldContainOnlyOnceWithDiff(expected)
-        actual.shouldContainOnlyOnceWithDiff("import aws.smithy.kotlin.runtime.smithy.Document")
+        actual.shouldContainOnlyOnceWithDiff("import aws.smithy.kotlin.runtime.content.Document")
     }
 
     @Test

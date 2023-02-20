@@ -4,9 +4,9 @@
  */
 package aws.smithy.kotlin.runtime.serde.json
 
+import aws.smithy.kotlin.runtime.content.Document
+import aws.smithy.kotlin.runtime.content.buildDocument
 import aws.smithy.kotlin.runtime.serde.*
-import aws.smithy.kotlin.runtime.smithy.Document
-import aws.smithy.kotlin.runtime.smithy.buildDocument
 import kotlin.test.Test
 import kotlin.test.assertEquals
 

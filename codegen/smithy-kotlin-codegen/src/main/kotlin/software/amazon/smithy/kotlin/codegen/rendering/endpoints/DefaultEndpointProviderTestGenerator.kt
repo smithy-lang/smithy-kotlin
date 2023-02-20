@@ -94,7 +94,7 @@ class DefaultEndpointProviderTestGenerator(
 
     private fun renderTestCaseExpectation(case: EndpointTestCase) {
         if (case.expect.error.isPresent) {
-            writer.withBlock("val ex = assertFailsWith<#T> {", "}", RuntimeTypes.HttpClient.Endpoints.EndpointProviderException) {
+            writer.withBlock("val ex = assertFailsWith<#T> {", "}", RuntimeTypes.SmithyClient.Endpoints.EndpointProviderException) {
                 write("#T().resolveEndpoint(params)", providerSymbol)
             }
             writer.write("assertEquals(#S, ex.message)", case.expect.error.get())
@@ -105,7 +105,7 @@ class DefaultEndpointProviderTestGenerator(
             CodegenException("endpoint test case has neither an expected error nor endpoint")
         }
 
-        writer.withBlock("val expected = #T(", ")", RuntimeTypes.HttpClient.Endpoints.Endpoint) {
+        writer.withBlock("val expected = #T(", ")", RuntimeTypes.SmithyClient.Endpoints.Endpoint) {
             write("uri = #T.parse(#S),", RuntimeTypes.Core.Net.Url, endpoint.url)
 
             if (endpoint.headers.isNotEmpty()) {

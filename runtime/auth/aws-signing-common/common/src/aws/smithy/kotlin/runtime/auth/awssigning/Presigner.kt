@@ -6,8 +6,8 @@ package aws.smithy.kotlin.runtime.auth.awssigning
 
 import aws.smithy.kotlin.runtime.InternalApi
 import aws.smithy.kotlin.runtime.auth.awscredentials.CredentialsProvider
+import aws.smithy.kotlin.runtime.client.endpoints.Endpoint
 import aws.smithy.kotlin.runtime.http.*
-import aws.smithy.kotlin.runtime.http.endpoints.Endpoint
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.net.QueryParameters
 import aws.smithy.kotlin.runtime.net.Scheme

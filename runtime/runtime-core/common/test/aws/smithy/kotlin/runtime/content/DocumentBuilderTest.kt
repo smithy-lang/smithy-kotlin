@@ -3,10 +3,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package aws.smithy.kotlin.runtime
+package aws.smithy.kotlin.runtime.content
 
-import aws.smithy.kotlin.runtime.smithy.Document
-import aws.smithy.kotlin.runtime.smithy.buildDocument
 import kotlin.test.*
 
 class DocumentBuilderTest {

@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 // This package implements common standard library functions used by endpoint resolvers.
-package aws.smithy.kotlin.runtime.http.endpoints.functions
+package aws.smithy.kotlin.runtime.client.endpoints.functions
 
 import aws.smithy.kotlin.runtime.InternalApi
 import aws.smithy.kotlin.runtime.net.*

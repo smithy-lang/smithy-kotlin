@@ -30,10 +30,10 @@ import software.amazon.smithy.rulesengine.language.visit.TemplateVisitor
  * The core set of standard library functions available to the rules language.
  */
 internal val coreFunctions: Map<String, Symbol> = mapOf(
-    "substring" to RuntimeTypes.HttpClient.Endpoints.Functions.substring,
-    "isValidHostLabel" to RuntimeTypes.HttpClient.Endpoints.Functions.isValidHostLabel,
-    "uriEncode" to RuntimeTypes.HttpClient.Endpoints.Functions.uriEncode,
-    "parseURL" to RuntimeTypes.HttpClient.Endpoints.Functions.parseUrl,
+    "substring" to RuntimeTypes.SmithyClient.Endpoints.Functions.substring,
+    "isValidHostLabel" to RuntimeTypes.SmithyClient.Endpoints.Functions.isValidHostLabel,
+    "uriEncode" to RuntimeTypes.SmithyClient.Endpoints.Functions.uriEncode,
+    "parseURL" to RuntimeTypes.SmithyClient.Endpoints.Functions.parseUrl,
 )
 
 /**
@@ -98,11 +98,11 @@ class DefaultEndpointProviderGenerator(
             "public override suspend fun resolveEndpoint(params: #T): #T {",
             "}",
             paramsSymbol,
-            RuntimeTypes.HttpClient.Endpoints.Endpoint,
+            RuntimeTypes.SmithyClient.Endpoints.Endpoint,
         ) {
             rules.rules.forEach(::renderRule)
             write("")
-            write("throw #T(\"endpoint rules were exhausted without a match\")", RuntimeTypes.HttpClient.Endpoints.EndpointProviderException)
+            write("throw #T(\"endpoint rules were exhausted without a match\")", RuntimeTypes.SmithyClient.Endpoints.EndpointProviderException)
         }
     }
 
@@ -145,7 +145,7 @@ class DefaultEndpointProviderGenerator(
 
     private fun renderEndpointRule(rule: EndpointRule) {
         withConditions(rule.conditions) {
-            writer.withBlock("return #T(", ")", RuntimeTypes.HttpClient.Endpoints.Endpoint) {
+            writer.withBlock("return #T(", ")", RuntimeTypes.SmithyClient.Endpoints.Endpoint) {
                 writeInline("#T.parse(", RuntimeTypes.Core.Net.Url)
                 renderExpression(rule.endpoint.url)
                 write("),")
@@ -189,7 +189,7 @@ class DefaultEndpointProviderGenerator(
 
     private fun renderErrorRule(rule: ErrorRule) {
         withConditions(rule.conditions) {
-            writer.writeInline("throw #T(", RuntimeTypes.HttpClient.Endpoints.EndpointProviderException)
+            writer.writeInline("throw #T(", RuntimeTypes.SmithyClient.Endpoints.EndpointProviderException)
             renderExpression(rule.error)
             writer.write(")")
         }
@@ -280,7 +280,7 @@ class ExpressionGenerator(
     }
 
     override fun visitRecord(value: MutableMap<Identifier, Literal>) {
-        writer.withInlineBlock("#T {", "}", RuntimeTypes.Core.Smithy.buildDocument) {
+        writer.withInlineBlock("#T {", "}", RuntimeTypes.Core.Content.buildDocument) {
             value.entries.forEachIndexed { index, (k, v) ->
                 writeInline("#S to ", k.asString())
                 v.accept(this@ExpressionGenerator as Literal.Vistor<Unit>)

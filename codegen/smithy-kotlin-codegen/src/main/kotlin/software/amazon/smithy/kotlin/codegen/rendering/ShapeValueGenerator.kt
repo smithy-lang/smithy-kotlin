@@ -138,7 +138,7 @@ class ShapeValueGenerator(
         override fun objectNode(node: ObjectNode) {
             if (currShape.type == ShapeType.DOCUMENT) {
                 writer
-                    .writeInline("#T {\n", RuntimeTypes.Core.Smithy.buildDocument)
+                    .writeInline("#T {\n", RuntimeTypes.Core.Content.buildDocument)
                     .indent()
             }
 
@@ -215,7 +215,7 @@ class ShapeValueGenerator(
                     writer.writeInline("#L", "$symbolName.$symbolMember")
                 }
 
-                ShapeType.DOCUMENT -> writer.writeInline("#T(#S)", RuntimeTypes.Core.Smithy.Document, node.value)
+                ShapeType.DOCUMENT -> writer.writeInline("#T(#S)", RuntimeTypes.Core.Content.Document, node.value)
 
                 else -> writer.writeInline("#S", node.value)
             }
@@ -228,7 +228,7 @@ class ShapeValueGenerator(
         override fun arrayNode(node: ArrayNode) {
             when (currShape.type) {
                 ShapeType.DOCUMENT -> {
-                    writer.withInlineBlock("#T(", ")", RuntimeTypes.Core.Smithy.Document) {
+                    writer.withInlineBlock("#T(", ")", RuntimeTypes.Core.Content.Document) {
                         writer.withInlineBlock("listOf(", ")") {
                             node.elements.forEach {
                                 generator.writeShapeValueInline(writer, currShape, it)
@@ -275,7 +275,7 @@ class ShapeValueGenerator(
 
                 ShapeType.DOCUMENT -> writer.writeInline(
                     "#T(#L#L)",
-                    RuntimeTypes.Core.Smithy.Document,
+                    RuntimeTypes.Core.Content.Document,
                     node.value,
                     if (node.isFloatingPointNumber) "F" else "L",
                 )
@@ -286,7 +286,7 @@ class ShapeValueGenerator(
 
         override fun booleanNode(node: BooleanNode) {
             when (currShape.type) {
-                ShapeType.DOCUMENT -> writer.writeInline("#T(#L)", RuntimeTypes.Core.Smithy.Document, node.value)
+                ShapeType.DOCUMENT -> writer.writeInline("#T(#L)", RuntimeTypes.Core.Content.Document, node.value)
                 ShapeType.BOOLEAN -> writer.writeInline("#L", if (node.value) "true" else "false")
                 else -> throw CodegenException("unexpected shape type $currShape for boolean value")
             }

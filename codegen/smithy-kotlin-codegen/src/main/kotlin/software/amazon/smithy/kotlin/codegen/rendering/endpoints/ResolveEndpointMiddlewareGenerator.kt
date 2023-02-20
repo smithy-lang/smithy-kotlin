@@ -84,7 +84,7 @@ class ResolveEndpointMiddlewareGenerator(
             write("#T.#T<$CLASS_NAME<*>>{ \"resolved endpoint: \$endpoint\" }", RuntimeTypes.KotlinCoroutines.coroutineContext, RuntimeTypes.Tracing.Core.debug)
             write("val reqBuilder = context.protocolRequest.#T()", RuntimeTypes.Http.Request.toBuilder)
             write("val req = #T(context.executionContext, reqBuilder)", RuntimeTypes.HttpClient.Operation.SdkHttpRequest)
-            write("#T(req, endpoint)", RuntimeTypes.HttpClient.Endpoints.setResolvedEndpoint)
+            write("#T(req, endpoint)", RuntimeTypes.HttpClient.Middleware.setResolvedEndpoint)
             renderPostResolution()
             write("return req.subject.build()")
         }
