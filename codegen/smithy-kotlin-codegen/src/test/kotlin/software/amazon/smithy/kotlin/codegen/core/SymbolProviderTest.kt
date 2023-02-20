@@ -366,7 +366,7 @@ class SymbolProviderTest {
         assertEquals("Document", documentSymbol.name)
         assertEquals("null", documentSymbol.defaultValue())
         assertEquals(true, documentSymbol.isBoxed)
-        assertEquals("${CORE.namespace}.smithy", documentSymbol.namespace)
+        assertEquals(RuntimeTypes.Core.Content.Document.namespace, documentSymbol.namespace)
         assertEquals(1, documentSymbol.dependencies.size)
     }
 

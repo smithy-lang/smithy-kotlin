@@ -204,22 +204,19 @@ class KotlinSymbolProvider(private val model: Model, private val settings: Kotli
     }
 
     override fun blobShape(shape: BlobShape): Symbol = if (shape.hasTrait<StreamingTrait>()) {
-        val dependency = KotlinDependency.CORE
-        createSymbolBuilder(shape, "ByteStream", boxed = true)
-            .namespace("${dependency.namespace}.content", ".")
-            .addDependency(dependency)
+        val byteStreamType = RuntimeTypes.Core.Content.ByteStream
+        byteStreamType.toBuilder()
+            .boxed()
             .build()
     } else {
         createSymbolBuilder(shape, "ByteArray", boxed = true, namespace = "kotlin").build()
     }
 
-    override fun documentShape(shape: DocumentShape?): Symbol {
-        val dependency = KotlinDependency.CORE
-        return createSymbolBuilder(shape, "Document", boxed = true)
-            .namespace("${dependency.namespace}.smithy", ".")
-            .addDependency(dependency)
+    override fun documentShape(shape: DocumentShape?): Symbol =
+        RuntimeTypes.Core.Content.Document
+            .toBuilder()
+            .boxed()
             .build()
-    }
 
     override fun unionShape(shape: UnionShape): Symbol {
         val name = shape.defaultName(service)
