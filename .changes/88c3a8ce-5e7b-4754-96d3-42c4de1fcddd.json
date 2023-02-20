@@ -1,0 +1,5 @@
+{
+    "id": "88c3a8ce-5e7b-4754-96d3-42c4de1fcddd",
+    "type": "misc",
+    "description": "Refactor: move EndpointProvider out of http package into aws.smithy.kotlin.runtime.client.endpoints"
+}
