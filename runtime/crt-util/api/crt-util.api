@@ -1,0 +1,31 @@
+public final class aws/smithy/kotlin/runtime/crt/HttpKt {
+	public static final fun path (Laws/sdk/kotlin/crt/http/HttpRequest;)Ljava/lang/String;
+	public static final fun queryParameters (Laws/sdk/kotlin/crt/http/HttpRequest;)Laws/smithy/kotlin/runtime/net/QueryParameters;
+	public static final fun toCrtHeaders (Laws/smithy/kotlin/runtime/http/Headers;)Laws/sdk/kotlin/crt/http/Headers;
+	public static final fun toSdkHeaders (Laws/sdk/kotlin/crt/http/Headers;)Laws/smithy/kotlin/runtime/http/Headers;
+	public static final fun toSignableCrtRequest (Laws/smithy/kotlin/runtime/http/request/HttpRequest;ZZLkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static synthetic fun toSignableCrtRequest$default (Laws/smithy/kotlin/runtime/http/request/HttpRequest;ZZLkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
+	public static final fun update (Laws/smithy/kotlin/runtime/http/request/HttpRequestBuilder;Laws/sdk/kotlin/crt/http/HttpRequest;)V
+}
+
+public final class aws/smithy/kotlin/runtime/crt/ReadChannelBodyStream : aws/sdk/kotlin/crt/http/HttpRequestBodyStream, kotlinx/coroutines/CoroutineScope {
+	public fun <init> (Laws/smithy/kotlin/runtime/io/SdkByteReadChannel;Lkotlin/coroutines/CoroutineContext;)V
+	public fun getCoroutineContext ()Lkotlin/coroutines/CoroutineContext;
+	public fun resetPosition ()Z
+	public fun sendRequestBody (Laws/sdk/kotlin/crt/io/MutableBuffer;)Z
+}
+
+public final class aws/smithy/kotlin/runtime/crt/SdkDefaultIO {
+	public static final field INSTANCE Laws/smithy/kotlin/runtime/crt/SdkDefaultIO;
+	public final fun getClientBootstrap ()Laws/sdk/kotlin/crt/io/ClientBootstrap;
+	public final fun getEventLoop ()Laws/sdk/kotlin/crt/io/EventLoopGroup;
+	public final fun getHostResolver ()Laws/sdk/kotlin/crt/io/HostResolver;
+	public final fun getTlsContext ()Laws/sdk/kotlin/crt/io/TlsContext;
+}
+
+public final class aws/smithy/kotlin/runtime/crt/SdkSourceBodyStream : aws/sdk/kotlin/crt/http/HttpRequestBodyStream {
+	public fun <init> (Laws/smithy/kotlin/runtime/io/SdkSource;)V
+	public fun resetPosition ()Z
+	public fun sendRequestBody (Laws/sdk/kotlin/crt/io/MutableBuffer;)Z
+}
+

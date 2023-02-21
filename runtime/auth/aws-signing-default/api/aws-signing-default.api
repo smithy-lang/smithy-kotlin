@@ -1,0 +1,4 @@
+public final class aws/smithy/kotlin/runtime/auth/awssigning/DefaultAwsSignerKt {
+	public static final fun getDefaultAwsSigner ()Laws/smithy/kotlin/runtime/auth/awssigning/AwsSigner;
+}
+
