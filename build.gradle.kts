@@ -163,7 +163,7 @@ tasks.register<JavaExec>("ktlintFormat") {
 }
 
 apiValidation {
-    nonPublicMarkers += "aws.smithy.kotlin.runtime.util.InternalApi"
+    nonPublicMarkers += "aws.smithy.kotlin.runtime.InternalApi"
 
     ignoredProjects += setOf(
         "dokka-smithy",
