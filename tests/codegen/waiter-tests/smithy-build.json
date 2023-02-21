@@ -16,8 +16,8 @@
         "kotlin-codegen": {
           "service": "com.test#WaitersTestService",
           "package": {
-            "name": "com.test",
-            "version": "0.0.1"
+            "version": "0.0.1",
+            "name": "com.test"
           },
           "build": {
             "rootProject": false,
