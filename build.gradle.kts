@@ -164,9 +164,9 @@ tasks.register<JavaExec>("ktlintFormat") {
 }
 
 apiValidation {
-    nonPublicMarkers += "aws.smithy.kotlin.runtime.InternalApi"
+    nonPublicMarkers.add("aws.smithy.kotlin.runtime.InternalApi")
 
-    ignoredProjects += setOf(
+    ignoredProjects.addAll(setOf(
         "dokka-smithy",
         "ktlint-rules",
         "aws-signing-tests",
@@ -184,5 +184,5 @@ apiValidation {
         "paginator-tests",
         "waiter-tests",
         "compile"
-    )
+    ))
 }

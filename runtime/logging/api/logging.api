@@ -1,17 +1,3 @@
-public abstract interface class aws/smithy/kotlin/runtime/logging/Logger {
-	public static final field Companion Laws/smithy/kotlin/runtime/logging/Logger$Companion;
-	public abstract fun debug (Ljava/lang/Throwable;Lkotlin/jvm/functions/Function0;)V
-	public abstract fun debug (Lkotlin/jvm/functions/Function0;)V
-	public abstract fun error (Ljava/lang/Throwable;Lkotlin/jvm/functions/Function0;)V
-	public abstract fun error (Lkotlin/jvm/functions/Function0;)V
-	public abstract fun info (Ljava/lang/Throwable;Lkotlin/jvm/functions/Function0;)V
-	public abstract fun info (Lkotlin/jvm/functions/Function0;)V
-	public abstract fun trace (Ljava/lang/Throwable;Lkotlin/jvm/functions/Function0;)V
-	public abstract fun trace (Lkotlin/jvm/functions/Function0;)V
-	public abstract fun warn (Ljava/lang/Throwable;Lkotlin/jvm/functions/Function0;)V
-	public abstract fun warn (Lkotlin/jvm/functions/Function0;)V
-}
-
 public final class aws/smithy/kotlin/runtime/logging/Logger$Companion {
 	public final fun getLogger (Ljava/lang/String;)Laws/smithy/kotlin/runtime/logging/Logger;
 }

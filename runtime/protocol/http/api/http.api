@@ -23,7 +23,6 @@ public final class aws/smithy/kotlin/runtime/http/DeferredHeadersBuilder : aws/s
 }
 
 public final class aws/smithy/kotlin/runtime/http/DeferredHeadersKt {
-	public static final fun toHeaders (Laws/smithy/kotlin/runtime/http/DeferredHeaders;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
 public abstract interface class aws/smithy/kotlin/runtime/http/Headers : aws/smithy/kotlin/runtime/util/ValuesMap {
@@ -86,15 +85,8 @@ public abstract class aws/smithy/kotlin/runtime/http/HttpBody$SourceContent : aw
 public final class aws/smithy/kotlin/runtime/http/HttpBodyKt {
 	public static final fun readAll (Laws/smithy/kotlin/runtime/http/HttpBody;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public static final fun toByteStream (Laws/smithy/kotlin/runtime/http/HttpBody;)Laws/smithy/kotlin/runtime/content/ByteStream;
-	public static final fun toHashingBody (Laws/smithy/kotlin/runtime/http/HttpBody;Laws/smithy/kotlin/runtime/hashing/HashFunction;Ljava/lang/Long;)Laws/smithy/kotlin/runtime/http/HttpBody;
-	public static final fun toHttpBody (Laws/smithy/kotlin/runtime/content/ByteStream;)Laws/smithy/kotlin/runtime/http/HttpBody;
-	public static final fun toHttpBody (Laws/smithy/kotlin/runtime/io/SdkByteReadChannel;Ljava/lang/Long;)Laws/smithy/kotlin/runtime/http/HttpBody;
-	public static final fun toHttpBody (Laws/smithy/kotlin/runtime/io/SdkSource;Ljava/lang/Long;)Laws/smithy/kotlin/runtime/http/HttpBody;
 	public static final fun toHttpBody (Ljava/lang/String;)Laws/smithy/kotlin/runtime/http/HttpBody;
 	public static final fun toHttpBody ([B)Laws/smithy/kotlin/runtime/http/HttpBody;
-	public static synthetic fun toHttpBody$default (Laws/smithy/kotlin/runtime/io/SdkByteReadChannel;Ljava/lang/Long;ILjava/lang/Object;)Laws/smithy/kotlin/runtime/http/HttpBody;
-	public static synthetic fun toHttpBody$default (Laws/smithy/kotlin/runtime/io/SdkSource;Ljava/lang/Long;ILjava/lang/Object;)Laws/smithy/kotlin/runtime/http/HttpBody;
-	public static final fun toSdkByteReadChannel (Laws/smithy/kotlin/runtime/http/HttpBody;)Laws/smithy/kotlin/runtime/io/SdkByteReadChannel;
 }
 
 public final class aws/smithy/kotlin/runtime/http/HttpMethod : java/lang/Enum {
@@ -252,11 +244,8 @@ public final class aws/smithy/kotlin/runtime/http/request/HttpRequestBuilder : a
 }
 
 public final class aws/smithy/kotlin/runtime/http/request/HttpRequestBuilderKt {
-	public static final fun dumpRequest (Laws/smithy/kotlin/runtime/http/request/HttpRequestBuilder;ZLkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public static final fun header (Laws/smithy/kotlin/runtime/http/request/HttpRequestBuilder;Ljava/lang/String;Ljava/lang/String;)V
 	public static final fun headers (Laws/smithy/kotlin/runtime/http/request/HttpRequestBuilder;Lkotlin/jvm/functions/Function1;)V
-	public static final fun immutableView (Laws/smithy/kotlin/runtime/http/request/HttpRequestBuilder;Z)Laws/smithy/kotlin/runtime/http/request/HttpRequest;
-	public static synthetic fun immutableView$default (Laws/smithy/kotlin/runtime/http/request/HttpRequestBuilder;ZILjava/lang/Object;)Laws/smithy/kotlin/runtime/http/request/HttpRequest;
 	public static final fun url (Laws/smithy/kotlin/runtime/http/request/HttpRequestBuilder;Laws/smithy/kotlin/runtime/net/Url;)V
 	public static final fun url (Laws/smithy/kotlin/runtime/http/request/HttpRequestBuilder;Lkotlin/jvm/functions/Function1;)V
 }
@@ -288,7 +277,6 @@ public final class aws/smithy/kotlin/runtime/http/response/HttpCall {
 }
 
 public final class aws/smithy/kotlin/runtime/http/response/HttpCallKt {
-	public static final fun complete (Laws/smithy/kotlin/runtime/http/response/HttpCall;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
 public final class aws/smithy/kotlin/runtime/http/response/HttpResponse : aws/smithy/kotlin/runtime/ProtocolResponse {
@@ -307,20 +295,14 @@ public final class aws/smithy/kotlin/runtime/http/response/HttpResponse : aws/sm
 }
 
 public final class aws/smithy/kotlin/runtime/http/response/HttpResponseKt {
-	public static final fun dumpResponse (Laws/smithy/kotlin/runtime/http/response/HttpResponse;ZLkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public static final fun getAllHeaders (Laws/smithy/kotlin/runtime/ProtocolResponse;Ljava/lang/String;)Ljava/util/List;
 	public static final fun header (Laws/smithy/kotlin/runtime/ProtocolResponse;Ljava/lang/String;)Ljava/lang/String;
 	public static final fun statusCode (Laws/smithy/kotlin/runtime/ProtocolResponse;)Laws/smithy/kotlin/runtime/http/HttpStatusCode;
 }
 
 public final class aws/smithy/kotlin/runtime/http/util/HeaderListsKt {
-	public static final fun quoteHeaderValue (Ljava/lang/String;)Ljava/lang/String;
-	public static final fun splitHeaderListValues (Ljava/lang/String;)Ljava/util/List;
-	public static final fun splitHttpDateHeaderListValues (Ljava/lang/String;)Ljava/util/List;
 }
 
 public final class aws/smithy/kotlin/runtime/http/util/TextKt {
-	public static final fun encodeLabel (Ljava/lang/String;Z)Ljava/lang/String;
-	public static synthetic fun encodeLabel$default (Ljava/lang/String;ZILjava/lang/Object;)Ljava/lang/String;
 }
 

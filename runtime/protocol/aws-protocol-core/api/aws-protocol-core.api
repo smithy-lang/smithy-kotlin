@@ -4,28 +4,10 @@ public abstract interface class aws/smithy/kotlin/runtime/awsprotocol/AwsErrorDe
 	public abstract fun getRequestId ()Ljava/lang/String;
 }
 
-public final class aws/smithy/kotlin/runtime/awsprotocol/ErrorDetails : aws/smithy/kotlin/runtime/awsprotocol/AwsErrorDetails {
-	public fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V
-	public final fun component1 ()Ljava/lang/String;
-	public final fun component2 ()Ljava/lang/String;
-	public final fun component3 ()Ljava/lang/String;
-	public final fun copy (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Laws/smithy/kotlin/runtime/awsprotocol/ErrorDetails;
-	public static synthetic fun copy$default (Laws/smithy/kotlin/runtime/awsprotocol/ErrorDetails;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Object;)Laws/smithy/kotlin/runtime/awsprotocol/ErrorDetails;
-	public fun equals (Ljava/lang/Object;)Z
-	public fun getCode ()Ljava/lang/String;
-	public fun getMessage ()Ljava/lang/String;
-	public fun getRequestId ()Ljava/lang/String;
-	public fun hashCode ()I
-	public fun toString ()Ljava/lang/String;
-}
-
 public final class aws/smithy/kotlin/runtime/awsprotocol/ProtocolErrorsKt {
-	public static final fun setAseErrorMetadata (Ljava/lang/Object;Laws/smithy/kotlin/runtime/http/response/HttpResponse;Laws/smithy/kotlin/runtime/awsprotocol/AwsErrorDetails;)V
 }
 
 public final class aws/smithy/kotlin/runtime/awsprotocol/ResponseUtilsKt {
 	public static final field X_AMZN_REQUEST_ID_HEADER Ljava/lang/String;
-	public static final fun matches (Laws/smithy/kotlin/runtime/http/HttpStatusCode;Laws/smithy/kotlin/runtime/http/HttpStatusCode;)Z
-	public static final fun withPayload (Laws/smithy/kotlin/runtime/http/response/HttpResponse;[B)Laws/smithy/kotlin/runtime/http/response/HttpResponse;
 }
 

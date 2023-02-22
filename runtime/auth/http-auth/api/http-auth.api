@@ -1,8 +1,3 @@
-public abstract interface class aws/smithy/kotlin/runtime/http/auth/HttpSigner {
-	public static final field Companion Laws/smithy/kotlin/runtime/http/auth/HttpSigner$Companion;
-	public abstract fun sign (Laws/smithy/kotlin/runtime/operation/ExecutionContext;Laws/smithy/kotlin/runtime/http/request/HttpRequestBuilder;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-}
-
 public final class aws/smithy/kotlin/runtime/http/auth/HttpSigner$Companion {
 	public final fun getAnonymous ()Laws/smithy/kotlin/runtime/http/auth/HttpSigner;
 }

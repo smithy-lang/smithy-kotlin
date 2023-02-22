@@ -15,7 +15,6 @@ public final class aws/smithy/kotlin/runtime/tracing/CoroutineContextUtilsKt {
 	public static final fun warn (Lkotlin/coroutines/CoroutineContext;Ljava/lang/String;Ljava/lang/Throwable;Lkotlin/jvm/functions/Function0;)V
 	public static synthetic fun warn$default (Lkotlin/coroutines/CoroutineContext;Ljava/lang/String;Ljava/lang/Throwable;Lkotlin/jvm/functions/Function0;ILjava/lang/Object;)V
 	public static final fun withChildTraceSpan (Lkotlin/coroutines/CoroutineContext;Ljava/lang/String;Lkotlin/jvm/functions/Function2;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public static final fun withRootTraceSpan (Lkotlin/coroutines/CoroutineContext;Laws/smithy/kotlin/runtime/tracing/TraceSpan;Lkotlin/jvm/functions/Function2;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
 public final class aws/smithy/kotlin/runtime/tracing/DefaultTracer : aws/smithy/kotlin/runtime/tracing/Tracer {
@@ -47,7 +46,6 @@ public final class aws/smithy/kotlin/runtime/tracing/NoOpTraceProbe : aws/smithy
 }
 
 public final class aws/smithy/kotlin/runtime/tracing/NoOpTraceSpanKt {
-	public static final fun getNoOpTraceSpan ()Laws/smithy/kotlin/runtime/tracing/TraceSpan;
 }
 
 public final class aws/smithy/kotlin/runtime/tracing/TraceEvent {
@@ -176,14 +174,5 @@ public abstract interface class aws/smithy/kotlin/runtime/tracing/TracingClientC
 public abstract interface class aws/smithy/kotlin/runtime/tracing/TracingClientConfig$Builder {
 	public abstract fun getTracer ()Laws/smithy/kotlin/runtime/tracing/Tracer;
 	public abstract fun setTracer (Laws/smithy/kotlin/runtime/tracing/Tracer;)V
-}
-
-public final class aws/smithy/kotlin/runtime/tracing/WrappedRootSpan : aws/smithy/kotlin/runtime/tracing/TraceSpan {
-	public fun <init> (Laws/smithy/kotlin/runtime/tracing/TraceSpan;Laws/smithy/kotlin/runtime/tracing/TraceSpan;)V
-	public fun child (Ljava/lang/String;)Laws/smithy/kotlin/runtime/tracing/TraceSpan;
-	public fun close ()V
-	public fun getId ()Ljava/lang/String;
-	public fun getParent ()Laws/smithy/kotlin/runtime/tracing/TraceSpan;
-	public fun postEvent (Laws/smithy/kotlin/runtime/tracing/TraceEvent;)V
 }
 
