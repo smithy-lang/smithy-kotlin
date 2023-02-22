@@ -1,0 +1,4 @@
+public final class aws/smithy/kotlin/runtime/http/auth/HttpSigner$Companion {
+	public final fun getAnonymous ()Laws/smithy/kotlin/runtime/http/auth/HttpSigner;
+}
+

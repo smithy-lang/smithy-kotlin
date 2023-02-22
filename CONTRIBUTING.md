@@ -179,6 +179,18 @@ across both repos, it's best to create/use the same branch name in both location
 
 This check enforces the changelog requirements [described above](#Changelog).
 
+#### Binary Compatibility Validation
+This repository uses [Kotlin's binary compatibility validator plugin](https://github.com/Kotlin/binary-compatibility-validator)
+to help preserve backwards compatibility across releases.
+
+The plugin will automatically run during a build with no extra steps needed from the developer.
+If a backwards incompatible change is introduced, the build will fail.
+
+If the backwards incompatibility is expected, the appropriate `.api` files must be updated as part of the PR.
+The `.api` files can be updated by running `./gradlew apiDump`.
+
+The binary compatibility validator can also be run manually using `./gradlew apiCheck`.
+
 ## Finding contributions to work on
 Looking at the existing issues is a great way to find something to contribute on. As our projects, by default, use the default GitHub issue labels (enhancement/bug/duplicate/help wanted/invalid/question/wontfix), looking at any 'help wanted' issues is a great place to start.
 

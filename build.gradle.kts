@@ -20,6 +20,7 @@ plugins {
     kotlin("jvm") apply false
     id("org.jetbrains.dokka")
     id("io.github.gradle-nexus.publish-plugin") version "1.1.0"
+    id("org.jetbrains.kotlinx.binary-compatibility-validator") version "0.12.1"
 }
 
 allprojects {
@@ -160,4 +161,28 @@ tasks.register<JavaExec>("ktlintFormat") {
     classpath = configurations.getByName("ktlint")
     main = "com.pinterest.ktlint.Main"
     args = listOf("-F") + lintPaths
+}
+
+apiValidation {
+    nonPublicMarkers.add("aws.smithy.kotlin.runtime.InternalApi")
+
+    ignoredProjects.addAll(setOf(
+        "dokka-smithy",
+        "ktlint-rules",
+        "aws-signing-tests",
+        "test-suite",
+        "http-test",
+        "smithy-test",
+        "testing",
+        "smithy-kotlin-codegen",
+        "smithy-kotlin-codegen-testutils",
+        "aws-signing-benchmarks",
+        "channel-benchmarks",
+        "http-benchmarks",
+        "serde-benchmarks",
+        "serde-benchmarks-codegen",
+        "paginator-tests",
+        "waiter-tests",
+        "compile"
+    ))
 }

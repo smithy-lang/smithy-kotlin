@@ -1,0 +1,221 @@
+public abstract interface class aws/smithy/kotlin/runtime/client/ClientOptions {
+	public abstract fun contains (Laws/smithy/kotlin/runtime/util/AttributeKey;)Z
+	public abstract fun remove (Laws/smithy/kotlin/runtime/util/AttributeKey;)V
+	public abstract fun set (Laws/smithy/kotlin/runtime/util/AttributeKey;Ljava/lang/Object;)V
+}
+
+public abstract class aws/smithy/kotlin/runtime/client/ClientOptionsBuilder : aws/smithy/kotlin/runtime/util/Attributes {
+	public fun <init> ()V
+	public fun <init> (Laws/smithy/kotlin/runtime/util/Attributes;)V
+	public synthetic fun <init> (Laws/smithy/kotlin/runtime/util/Attributes;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun build ()Laws/smithy/kotlin/runtime/operation/ExecutionContext;
+	public fun computeIfAbsent (Laws/smithy/kotlin/runtime/util/AttributeKey;Lkotlin/jvm/functions/Function0;)Ljava/lang/Object;
+	public fun contains (Laws/smithy/kotlin/runtime/util/AttributeKey;)Z
+	public fun getKeys ()Ljava/util/Set;
+	protected final fun getOptions ()Laws/smithy/kotlin/runtime/util/Attributes;
+	public fun getOrNull (Laws/smithy/kotlin/runtime/util/AttributeKey;)Ljava/lang/Object;
+	protected final fun option (Laws/smithy/kotlin/runtime/util/AttributeKey;)Laws/smithy/kotlin/runtime/client/DelegatedClientOption;
+	public fun remove (Laws/smithy/kotlin/runtime/util/AttributeKey;)V
+	protected final fun requiredOption (Laws/smithy/kotlin/runtime/util/AttributeKey;)Laws/smithy/kotlin/runtime/client/DelegatedClientOption;
+	public fun set (Laws/smithy/kotlin/runtime/util/AttributeKey;Ljava/lang/Object;)V
+}
+
+public final class aws/smithy/kotlin/runtime/client/DelegatedClientOption : kotlin/properties/ReadWriteProperty {
+	public fun <init> (Laws/smithy/kotlin/runtime/util/AttributeKey;Laws/smithy/kotlin/runtime/util/Attributes;)V
+	public fun getValue (Ljava/lang/Object;Lkotlin/reflect/KProperty;)Ljava/lang/Object;
+	public fun setValue (Ljava/lang/Object;Lkotlin/reflect/KProperty;Ljava/lang/Object;)V
+}
+
+public abstract interface class aws/smithy/kotlin/runtime/client/IdempotencyTokenConfig {
+	public abstract fun getIdempotencyTokenProvider ()Laws/smithy/kotlin/runtime/client/IdempotencyTokenProvider;
+}
+
+public abstract interface class aws/smithy/kotlin/runtime/client/IdempotencyTokenConfig$Builder {
+	public abstract fun getIdempotencyTokenProvider ()Laws/smithy/kotlin/runtime/client/IdempotencyTokenProvider;
+	public abstract fun setIdempotencyTokenProvider (Laws/smithy/kotlin/runtime/client/IdempotencyTokenProvider;)V
+}
+
+public abstract interface class aws/smithy/kotlin/runtime/client/IdempotencyTokenProvider {
+	public static final field Companion Laws/smithy/kotlin/runtime/client/IdempotencyTokenProvider$Companion;
+	public abstract fun generateToken ()Ljava/lang/String;
+}
+
+public final class aws/smithy/kotlin/runtime/client/IdempotencyTokenProvider$Companion {
+	public final fun getDefault ()Laws/smithy/kotlin/runtime/client/IdempotencyTokenProvider;
+}
+
+public abstract interface class aws/smithy/kotlin/runtime/client/Interceptor {
+	public abstract fun modifyBeforeAttemptCompletion-gIAlu-s (Laws/smithy/kotlin/runtime/client/ResponseInterceptorContext;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public abstract fun modifyBeforeCompletion-gIAlu-s (Laws/smithy/kotlin/runtime/client/ResponseInterceptorContext;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public abstract fun modifyBeforeDeserialization (Laws/smithy/kotlin/runtime/client/ProtocolResponseInterceptorContext;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public abstract fun modifyBeforeRetryLoop (Laws/smithy/kotlin/runtime/client/ProtocolRequestInterceptorContext;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public abstract fun modifyBeforeSerialization (Laws/smithy/kotlin/runtime/client/RequestInterceptorContext;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public abstract fun modifyBeforeSigning (Laws/smithy/kotlin/runtime/client/ProtocolRequestInterceptorContext;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public abstract fun modifyBeforeTransmit (Laws/smithy/kotlin/runtime/client/ProtocolRequestInterceptorContext;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public abstract fun readAfterAttempt (Laws/smithy/kotlin/runtime/client/ResponseInterceptorContext;)V
+	public abstract fun readAfterDeserialization (Laws/smithy/kotlin/runtime/client/ResponseInterceptorContext;)V
+	public abstract fun readAfterExecution (Laws/smithy/kotlin/runtime/client/ResponseInterceptorContext;)V
+	public abstract fun readAfterSerialization (Laws/smithy/kotlin/runtime/client/ProtocolRequestInterceptorContext;)V
+	public abstract fun readAfterSigning (Laws/smithy/kotlin/runtime/client/ProtocolRequestInterceptorContext;)V
+	public abstract fun readAfterTransmit (Laws/smithy/kotlin/runtime/client/ProtocolResponseInterceptorContext;)V
+	public abstract fun readBeforeAttempt (Laws/smithy/kotlin/runtime/client/ProtocolRequestInterceptorContext;)V
+	public abstract fun readBeforeDeserialization (Laws/smithy/kotlin/runtime/client/ProtocolResponseInterceptorContext;)V
+	public abstract fun readBeforeExecution (Laws/smithy/kotlin/runtime/client/RequestInterceptorContext;)V
+	public abstract fun readBeforeSerialization (Laws/smithy/kotlin/runtime/client/RequestInterceptorContext;)V
+	public abstract fun readBeforeSigning (Laws/smithy/kotlin/runtime/client/ProtocolRequestInterceptorContext;)V
+	public abstract fun readBeforeTransmit (Laws/smithy/kotlin/runtime/client/ProtocolRequestInterceptorContext;)V
+}
+
+public final class aws/smithy/kotlin/runtime/client/Interceptor$DefaultImpls {
+	public static fun modifyBeforeAttemptCompletion-gIAlu-s (Laws/smithy/kotlin/runtime/client/Interceptor;Laws/smithy/kotlin/runtime/client/ResponseInterceptorContext;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static fun modifyBeforeCompletion-gIAlu-s (Laws/smithy/kotlin/runtime/client/Interceptor;Laws/smithy/kotlin/runtime/client/ResponseInterceptorContext;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static fun modifyBeforeDeserialization (Laws/smithy/kotlin/runtime/client/Interceptor;Laws/smithy/kotlin/runtime/client/ProtocolResponseInterceptorContext;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static fun modifyBeforeRetryLoop (Laws/smithy/kotlin/runtime/client/Interceptor;Laws/smithy/kotlin/runtime/client/ProtocolRequestInterceptorContext;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static fun modifyBeforeSerialization (Laws/smithy/kotlin/runtime/client/Interceptor;Laws/smithy/kotlin/runtime/client/RequestInterceptorContext;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static fun modifyBeforeSigning (Laws/smithy/kotlin/runtime/client/Interceptor;Laws/smithy/kotlin/runtime/client/ProtocolRequestInterceptorContext;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static fun modifyBeforeTransmit (Laws/smithy/kotlin/runtime/client/Interceptor;Laws/smithy/kotlin/runtime/client/ProtocolRequestInterceptorContext;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static fun readAfterAttempt (Laws/smithy/kotlin/runtime/client/Interceptor;Laws/smithy/kotlin/runtime/client/ResponseInterceptorContext;)V
+	public static fun readAfterDeserialization (Laws/smithy/kotlin/runtime/client/Interceptor;Laws/smithy/kotlin/runtime/client/ResponseInterceptorContext;)V
+	public static fun readAfterExecution (Laws/smithy/kotlin/runtime/client/Interceptor;Laws/smithy/kotlin/runtime/client/ResponseInterceptorContext;)V
+	public static fun readAfterSerialization (Laws/smithy/kotlin/runtime/client/Interceptor;Laws/smithy/kotlin/runtime/client/ProtocolRequestInterceptorContext;)V
+	public static fun readAfterSigning (Laws/smithy/kotlin/runtime/client/Interceptor;Laws/smithy/kotlin/runtime/client/ProtocolRequestInterceptorContext;)V
+	public static fun readAfterTransmit (Laws/smithy/kotlin/runtime/client/Interceptor;Laws/smithy/kotlin/runtime/client/ProtocolResponseInterceptorContext;)V
+	public static fun readBeforeAttempt (Laws/smithy/kotlin/runtime/client/Interceptor;Laws/smithy/kotlin/runtime/client/ProtocolRequestInterceptorContext;)V
+	public static fun readBeforeDeserialization (Laws/smithy/kotlin/runtime/client/Interceptor;Laws/smithy/kotlin/runtime/client/ProtocolResponseInterceptorContext;)V
+	public static fun readBeforeExecution (Laws/smithy/kotlin/runtime/client/Interceptor;Laws/smithy/kotlin/runtime/client/RequestInterceptorContext;)V
+	public static fun readBeforeSerialization (Laws/smithy/kotlin/runtime/client/Interceptor;Laws/smithy/kotlin/runtime/client/RequestInterceptorContext;)V
+	public static fun readBeforeSigning (Laws/smithy/kotlin/runtime/client/Interceptor;Laws/smithy/kotlin/runtime/client/ProtocolRequestInterceptorContext;)V
+	public static fun readBeforeTransmit (Laws/smithy/kotlin/runtime/client/Interceptor;Laws/smithy/kotlin/runtime/client/ProtocolRequestInterceptorContext;)V
+}
+
+public abstract interface class aws/smithy/kotlin/runtime/client/ProtocolRequestInterceptorContext : aws/smithy/kotlin/runtime/client/RequestInterceptorContext {
+	public abstract fun getProtocolRequest ()Ljava/lang/Object;
+}
+
+public abstract interface class aws/smithy/kotlin/runtime/client/ProtocolResponseInterceptorContext : aws/smithy/kotlin/runtime/client/ProtocolRequestInterceptorContext {
+	public abstract fun getProtocolResponse ()Ljava/lang/Object;
+}
+
+public abstract interface class aws/smithy/kotlin/runtime/client/RequestInterceptorContext {
+	public abstract fun getExecutionContext ()Laws/smithy/kotlin/runtime/operation/ExecutionContext;
+	public abstract fun getRequest ()Ljava/lang/Object;
+}
+
+public abstract interface class aws/smithy/kotlin/runtime/client/ResponseInterceptorContext : aws/smithy/kotlin/runtime/client/ProtocolResponseInterceptorContext {
+	public abstract fun getResponse-d1pmJ48 ()Ljava/lang/Object;
+}
+
+public abstract interface class aws/smithy/kotlin/runtime/client/SdkClient : java/io/Closeable {
+	public abstract fun getConfig ()Laws/smithy/kotlin/runtime/client/SdkClientConfig;
+	public abstract fun getServiceName ()Ljava/lang/String;
+}
+
+public abstract interface class aws/smithy/kotlin/runtime/client/SdkClient$Builder : aws/smithy/kotlin/runtime/util/Buildable {
+	public abstract fun getConfig ()Laws/smithy/kotlin/runtime/client/SdkClientConfig$Builder;
+}
+
+public abstract interface class aws/smithy/kotlin/runtime/client/SdkClientConfig {
+	public abstract fun getRetryPolicy ()Laws/smithy/kotlin/runtime/retries/policy/RetryPolicy;
+	public abstract fun getRetryStrategy ()Laws/smithy/kotlin/runtime/retries/RetryStrategy;
+	public abstract fun getSdkLogMode ()Laws/smithy/kotlin/runtime/client/SdkLogMode;
+}
+
+public abstract interface class aws/smithy/kotlin/runtime/client/SdkClientConfig$Builder : aws/smithy/kotlin/runtime/util/Buildable {
+	public abstract fun getRetryPolicy ()Laws/smithy/kotlin/runtime/retries/policy/RetryPolicy;
+	public abstract fun getRetryStrategy ()Laws/smithy/kotlin/runtime/retries/RetryStrategy;
+	public abstract fun getSdkLogMode ()Laws/smithy/kotlin/runtime/client/SdkLogMode;
+	public abstract fun setRetryPolicy (Laws/smithy/kotlin/runtime/retries/policy/RetryPolicy;)V
+	public abstract fun setRetryStrategy (Laws/smithy/kotlin/runtime/retries/RetryStrategy;)V
+	public abstract fun setSdkLogMode (Laws/smithy/kotlin/runtime/client/SdkLogMode;)V
+}
+
+public final class aws/smithy/kotlin/runtime/client/SdkClientConfig$DefaultImpls {
+	public static fun getSdkLogMode (Laws/smithy/kotlin/runtime/client/SdkClientConfig;)Laws/smithy/kotlin/runtime/client/SdkLogMode;
+}
+
+public abstract interface class aws/smithy/kotlin/runtime/client/SdkClientFactory {
+	public abstract fun builder ()Laws/smithy/kotlin/runtime/client/SdkClient$Builder;
+	public abstract fun invoke (Lkotlin/jvm/functions/Function1;)Laws/smithy/kotlin/runtime/client/SdkClient;
+}
+
+public final class aws/smithy/kotlin/runtime/client/SdkClientFactory$DefaultImpls {
+	public static fun invoke (Laws/smithy/kotlin/runtime/client/SdkClientFactory;Lkotlin/jvm/functions/Function1;)Laws/smithy/kotlin/runtime/client/SdkClient;
+}
+
+public final class aws/smithy/kotlin/runtime/client/SdkClientOption {
+	public static final field INSTANCE Laws/smithy/kotlin/runtime/client/SdkClientOption;
+	public final fun getEndpointDiscoveryEnabled ()Laws/smithy/kotlin/runtime/util/AttributeKey;
+	public final fun getIdempotencyTokenProvider ()Laws/smithy/kotlin/runtime/util/AttributeKey;
+	public final fun getLogMode ()Laws/smithy/kotlin/runtime/util/AttributeKey;
+	public final fun getOperationName ()Laws/smithy/kotlin/runtime/util/AttributeKey;
+	public final fun getServiceName ()Laws/smithy/kotlin/runtime/util/AttributeKey;
+}
+
+public final class aws/smithy/kotlin/runtime/client/SdkClientOptionKt {
+}
+
+public abstract class aws/smithy/kotlin/runtime/client/SdkLogMode {
+	public static final field Companion Laws/smithy/kotlin/runtime/client/SdkLogMode$Companion;
+	public synthetic fun <init> (ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun isEnabled (Laws/smithy/kotlin/runtime/client/SdkLogMode;)Z
+	public final fun minus (Laws/smithy/kotlin/runtime/client/SdkLogMode;)Laws/smithy/kotlin/runtime/client/SdkLogMode;
+	public final fun plus (Laws/smithy/kotlin/runtime/client/SdkLogMode;)Laws/smithy/kotlin/runtime/client/SdkLogMode;
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class aws/smithy/kotlin/runtime/client/SdkLogMode$Companion {
+	public final fun allModes ()Ljava/util/List;
+}
+
+public final class aws/smithy/kotlin/runtime/client/SdkLogMode$Default : aws/smithy/kotlin/runtime/client/SdkLogMode {
+	public static final field INSTANCE Laws/smithy/kotlin/runtime/client/SdkLogMode$Default;
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class aws/smithy/kotlin/runtime/client/SdkLogMode$LogRequest : aws/smithy/kotlin/runtime/client/SdkLogMode {
+	public static final field INSTANCE Laws/smithy/kotlin/runtime/client/SdkLogMode$LogRequest;
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class aws/smithy/kotlin/runtime/client/SdkLogMode$LogRequestWithBody : aws/smithy/kotlin/runtime/client/SdkLogMode {
+	public static final field INSTANCE Laws/smithy/kotlin/runtime/client/SdkLogMode$LogRequestWithBody;
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class aws/smithy/kotlin/runtime/client/SdkLogMode$LogResponse : aws/smithy/kotlin/runtime/client/SdkLogMode {
+	public static final field INSTANCE Laws/smithy/kotlin/runtime/client/SdkLogMode$LogResponse;
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class aws/smithy/kotlin/runtime/client/SdkLogMode$LogResponseWithBody : aws/smithy/kotlin/runtime/client/SdkLogMode {
+	public static final field INSTANCE Laws/smithy/kotlin/runtime/client/SdkLogMode$LogResponseWithBody;
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class aws/smithy/kotlin/runtime/client/endpoints/Endpoint {
+	public fun <init> (Laws/smithy/kotlin/runtime/net/Url;Laws/smithy/kotlin/runtime/util/ValuesMap;)V
+	public synthetic fun <init> (Laws/smithy/kotlin/runtime/net/Url;Laws/smithy/kotlin/runtime/util/ValuesMap;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Ljava/lang/String;)V
+	public final fun component1 ()Laws/smithy/kotlin/runtime/net/Url;
+	public final fun component2 ()Laws/smithy/kotlin/runtime/util/ValuesMap;
+	public final fun component3 ()Laws/smithy/kotlin/runtime/util/Attributes;
+	public final fun copy (Laws/smithy/kotlin/runtime/net/Url;Laws/smithy/kotlin/runtime/util/ValuesMap;Laws/smithy/kotlin/runtime/util/Attributes;)Laws/smithy/kotlin/runtime/client/endpoints/Endpoint;
+	public static synthetic fun copy$default (Laws/smithy/kotlin/runtime/client/endpoints/Endpoint;Laws/smithy/kotlin/runtime/net/Url;Laws/smithy/kotlin/runtime/util/ValuesMap;Laws/smithy/kotlin/runtime/util/Attributes;ILjava/lang/Object;)Laws/smithy/kotlin/runtime/client/endpoints/Endpoint;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getHeaders ()Laws/smithy/kotlin/runtime/util/ValuesMap;
+	public final fun getUri ()Laws/smithy/kotlin/runtime/net/Url;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public abstract interface class aws/smithy/kotlin/runtime/client/endpoints/EndpointProvider {
+	public abstract fun resolveEndpoint (Ljava/lang/Object;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
+public final class aws/smithy/kotlin/runtime/client/endpoints/EndpointProviderException : aws/smithy/kotlin/runtime/ClientException {
+	public fun <init> (Ljava/lang/String;)V
+}
+
+public final class aws/smithy/kotlin/runtime/client/endpoints/functions/FunctionsKt {
+}
+

@@ -1,0 +1,6 @@
+public final class aws/smithy/kotlin/runtime/awsprotocol/json/RestJsonErrorDeserializerKt {
+	public static final field X_AMZN_ERROR_MESSAGE_HEADER_NAME Ljava/lang/String;
+	public static final field X_AMZN_ERROR_TYPE_HEADER_NAME Ljava/lang/String;
+	public static final field X_AMZN_EVENT_ERROR_MESSAGE_HEADER_NAME Ljava/lang/String;
+}
+

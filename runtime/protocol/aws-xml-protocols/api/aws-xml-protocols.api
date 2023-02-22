@@ -1,0 +1,6 @@
+public final class aws/smithy/kotlin/runtime/awsprotocol/xml/Ec2QueryErrorDeserializerKt {
+}
+
+public final class aws/smithy/kotlin/runtime/awsprotocol/xml/RestXmlErrorDeserializerKt {
+}
+

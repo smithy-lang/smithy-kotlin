@@ -1,0 +1,178 @@
+public final class aws/smithy/kotlin/runtime/tracing/CoroutineContextUtilsKt {
+	public static final fun debug (Lkotlin/coroutines/CoroutineContext;Ljava/lang/String;Ljava/lang/Throwable;Lkotlin/jvm/functions/Function0;)V
+	public static synthetic fun debug$default (Lkotlin/coroutines/CoroutineContext;Ljava/lang/String;Ljava/lang/Throwable;Lkotlin/jvm/functions/Function0;ILjava/lang/Object;)V
+	public static final fun error (Lkotlin/coroutines/CoroutineContext;Ljava/lang/String;Ljava/lang/Throwable;Lkotlin/jvm/functions/Function0;)V
+	public static synthetic fun error$default (Lkotlin/coroutines/CoroutineContext;Ljava/lang/String;Ljava/lang/Throwable;Lkotlin/jvm/functions/Function0;ILjava/lang/Object;)V
+	public static final fun fatal (Lkotlin/coroutines/CoroutineContext;Ljava/lang/String;Ljava/lang/Throwable;Lkotlin/jvm/functions/Function0;)V
+	public static synthetic fun fatal$default (Lkotlin/coroutines/CoroutineContext;Ljava/lang/String;Ljava/lang/Throwable;Lkotlin/jvm/functions/Function0;ILjava/lang/Object;)V
+	public static final fun getTraceSpan (Lkotlin/coroutines/CoroutineContext;)Laws/smithy/kotlin/runtime/tracing/TraceSpan;
+	public static final fun info (Lkotlin/coroutines/CoroutineContext;Ljava/lang/String;Ljava/lang/Throwable;Lkotlin/jvm/functions/Function0;)V
+	public static synthetic fun info$default (Lkotlin/coroutines/CoroutineContext;Ljava/lang/String;Ljava/lang/Throwable;Lkotlin/jvm/functions/Function0;ILjava/lang/Object;)V
+	public static final fun log (Lkotlin/coroutines/CoroutineContext;Laws/smithy/kotlin/runtime/tracing/EventLevel;Ljava/lang/String;Ljava/lang/Throwable;Lkotlin/jvm/functions/Function0;)V
+	public static synthetic fun log$default (Lkotlin/coroutines/CoroutineContext;Laws/smithy/kotlin/runtime/tracing/EventLevel;Ljava/lang/String;Ljava/lang/Throwable;Lkotlin/jvm/functions/Function0;ILjava/lang/Object;)V
+	public static final fun trace (Lkotlin/coroutines/CoroutineContext;Ljava/lang/String;Ljava/lang/Throwable;Lkotlin/jvm/functions/Function0;)V
+	public static synthetic fun trace$default (Lkotlin/coroutines/CoroutineContext;Ljava/lang/String;Ljava/lang/Throwable;Lkotlin/jvm/functions/Function0;ILjava/lang/Object;)V
+	public static final fun warn (Lkotlin/coroutines/CoroutineContext;Ljava/lang/String;Ljava/lang/Throwable;Lkotlin/jvm/functions/Function0;)V
+	public static synthetic fun warn$default (Lkotlin/coroutines/CoroutineContext;Ljava/lang/String;Ljava/lang/Throwable;Lkotlin/jvm/functions/Function0;ILjava/lang/Object;)V
+	public static final fun withChildTraceSpan (Lkotlin/coroutines/CoroutineContext;Ljava/lang/String;Lkotlin/jvm/functions/Function2;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
+public final class aws/smithy/kotlin/runtime/tracing/DefaultTracer : aws/smithy/kotlin/runtime/tracing/Tracer {
+	public fun <init> (Laws/smithy/kotlin/runtime/tracing/TraceProbe;Ljava/lang/String;)V
+	public fun createRootSpan (Ljava/lang/String;)Laws/smithy/kotlin/runtime/tracing/TraceSpan;
+}
+
+public final class aws/smithy/kotlin/runtime/tracing/EventLevel : java/lang/Enum {
+	public static final field Debug Laws/smithy/kotlin/runtime/tracing/EventLevel;
+	public static final field Error Laws/smithy/kotlin/runtime/tracing/EventLevel;
+	public static final field Fatal Laws/smithy/kotlin/runtime/tracing/EventLevel;
+	public static final field Info Laws/smithy/kotlin/runtime/tracing/EventLevel;
+	public static final field Trace Laws/smithy/kotlin/runtime/tracing/EventLevel;
+	public static final field Warning Laws/smithy/kotlin/runtime/tracing/EventLevel;
+	public static fun valueOf (Ljava/lang/String;)Laws/smithy/kotlin/runtime/tracing/EventLevel;
+	public static fun values ()[Laws/smithy/kotlin/runtime/tracing/EventLevel;
+}
+
+public final class aws/smithy/kotlin/runtime/tracing/LoggingTraceProbe : aws/smithy/kotlin/runtime/tracing/TraceProbe {
+	public static final field INSTANCE Laws/smithy/kotlin/runtime/tracing/LoggingTraceProbe;
+	public fun postEvent (Laws/smithy/kotlin/runtime/tracing/TraceSpan;Laws/smithy/kotlin/runtime/tracing/TraceEvent;)V
+	public fun spanClosed (Laws/smithy/kotlin/runtime/tracing/TraceSpan;)V
+}
+
+public final class aws/smithy/kotlin/runtime/tracing/NoOpTraceProbe : aws/smithy/kotlin/runtime/tracing/TraceProbe {
+	public static final field INSTANCE Laws/smithy/kotlin/runtime/tracing/NoOpTraceProbe;
+	public fun postEvent (Laws/smithy/kotlin/runtime/tracing/TraceSpan;Laws/smithy/kotlin/runtime/tracing/TraceEvent;)V
+	public fun spanClosed (Laws/smithy/kotlin/runtime/tracing/TraceSpan;)V
+}
+
+public final class aws/smithy/kotlin/runtime/tracing/NoOpTraceSpanKt {
+}
+
+public final class aws/smithy/kotlin/runtime/tracing/TraceEvent {
+	public fun <init> (Laws/smithy/kotlin/runtime/tracing/EventLevel;Ljava/lang/String;Laws/smithy/kotlin/runtime/time/Instant;Ljava/lang/String;Laws/smithy/kotlin/runtime/tracing/TraceEventData;)V
+	public final fun component1 ()Laws/smithy/kotlin/runtime/tracing/EventLevel;
+	public final fun component2 ()Ljava/lang/String;
+	public final fun component3 ()Laws/smithy/kotlin/runtime/time/Instant;
+	public final fun component4 ()Ljava/lang/String;
+	public final fun component5 ()Laws/smithy/kotlin/runtime/tracing/TraceEventData;
+	public final fun copy (Laws/smithy/kotlin/runtime/tracing/EventLevel;Ljava/lang/String;Laws/smithy/kotlin/runtime/time/Instant;Ljava/lang/String;Laws/smithy/kotlin/runtime/tracing/TraceEventData;)Laws/smithy/kotlin/runtime/tracing/TraceEvent;
+	public static synthetic fun copy$default (Laws/smithy/kotlin/runtime/tracing/TraceEvent;Laws/smithy/kotlin/runtime/tracing/EventLevel;Ljava/lang/String;Laws/smithy/kotlin/runtime/time/Instant;Ljava/lang/String;Laws/smithy/kotlin/runtime/tracing/TraceEventData;ILjava/lang/Object;)Laws/smithy/kotlin/runtime/tracing/TraceEvent;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getData ()Laws/smithy/kotlin/runtime/tracing/TraceEventData;
+	public final fun getLevel ()Laws/smithy/kotlin/runtime/tracing/EventLevel;
+	public final fun getSourceComponent ()Ljava/lang/String;
+	public final fun getThreadId ()Ljava/lang/String;
+	public final fun getTimestamp ()Laws/smithy/kotlin/runtime/time/Instant;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public abstract interface class aws/smithy/kotlin/runtime/tracing/TraceEventData {
+}
+
+public final class aws/smithy/kotlin/runtime/tracing/TraceEventData$Count : aws/smithy/kotlin/runtime/tracing/TraceEventData$Metric {
+	public fun <init> (Ljava/lang/String;Lkotlin/jvm/functions/Function0;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()Lkotlin/jvm/functions/Function0;
+	public final fun copy (Ljava/lang/String;Lkotlin/jvm/functions/Function0;)Laws/smithy/kotlin/runtime/tracing/TraceEventData$Count;
+	public static synthetic fun copy$default (Laws/smithy/kotlin/runtime/tracing/TraceEventData$Count;Ljava/lang/String;Lkotlin/jvm/functions/Function0;ILjava/lang/Object;)Laws/smithy/kotlin/runtime/tracing/TraceEventData$Count;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getCount ()Lkotlin/jvm/functions/Function0;
+	public fun getMetric ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class aws/smithy/kotlin/runtime/tracing/TraceEventData$Message : aws/smithy/kotlin/runtime/tracing/TraceEventData {
+	public fun <init> (Ljava/lang/Throwable;Lkotlin/jvm/functions/Function0;)V
+	public synthetic fun <init> (Ljava/lang/Throwable;Lkotlin/jvm/functions/Function0;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Ljava/lang/Throwable;
+	public final fun component2 ()Lkotlin/jvm/functions/Function0;
+	public final fun copy (Ljava/lang/Throwable;Lkotlin/jvm/functions/Function0;)Laws/smithy/kotlin/runtime/tracing/TraceEventData$Message;
+	public static synthetic fun copy$default (Laws/smithy/kotlin/runtime/tracing/TraceEventData$Message;Ljava/lang/Throwable;Lkotlin/jvm/functions/Function0;ILjava/lang/Object;)Laws/smithy/kotlin/runtime/tracing/TraceEventData$Message;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getContent ()Lkotlin/jvm/functions/Function0;
+	public final fun getException ()Ljava/lang/Throwable;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public abstract interface class aws/smithy/kotlin/runtime/tracing/TraceEventData$Metric : aws/smithy/kotlin/runtime/tracing/TraceEventData {
+	public abstract fun getMetric ()Ljava/lang/String;
+}
+
+public final class aws/smithy/kotlin/runtime/tracing/TraceEventData$Timespan : aws/smithy/kotlin/runtime/tracing/TraceEventData$Metric {
+	public fun <init> (Ljava/lang/String;Lkotlin/jvm/functions/Function0;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()Lkotlin/jvm/functions/Function0;
+	public final fun copy (Ljava/lang/String;Lkotlin/jvm/functions/Function0;)Laws/smithy/kotlin/runtime/tracing/TraceEventData$Timespan;
+	public static synthetic fun copy$default (Laws/smithy/kotlin/runtime/tracing/TraceEventData$Timespan;Ljava/lang/String;Lkotlin/jvm/functions/Function0;ILjava/lang/Object;)Laws/smithy/kotlin/runtime/tracing/TraceEventData$Timespan;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getDuration ()Lkotlin/jvm/functions/Function0;
+	public fun getMetric ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public abstract interface class aws/smithy/kotlin/runtime/tracing/TraceProbe {
+	public abstract fun postEvent (Laws/smithy/kotlin/runtime/tracing/TraceSpan;Laws/smithy/kotlin/runtime/tracing/TraceEvent;)V
+	public abstract fun spanClosed (Laws/smithy/kotlin/runtime/tracing/TraceSpan;)V
+}
+
+public abstract interface class aws/smithy/kotlin/runtime/tracing/TraceSpan : java/io/Closeable {
+	public abstract fun child (Ljava/lang/String;)Laws/smithy/kotlin/runtime/tracing/TraceSpan;
+	public abstract fun getId ()Ljava/lang/String;
+	public abstract fun getParent ()Laws/smithy/kotlin/runtime/tracing/TraceSpan;
+	public abstract fun postEvent (Laws/smithy/kotlin/runtime/tracing/TraceEvent;)V
+}
+
+public final class aws/smithy/kotlin/runtime/tracing/TraceSpanContextElement : kotlin/coroutines/CoroutineContext$Element {
+	public static final field Companion Laws/smithy/kotlin/runtime/tracing/TraceSpanContextElement$Companion;
+	public fun <init> (Laws/smithy/kotlin/runtime/tracing/TraceSpan;)V
+	public fun fold (Ljava/lang/Object;Lkotlin/jvm/functions/Function2;)Ljava/lang/Object;
+	public fun get (Lkotlin/coroutines/CoroutineContext$Key;)Lkotlin/coroutines/CoroutineContext$Element;
+	public fun getKey ()Lkotlin/coroutines/CoroutineContext$Key;
+	public final fun getTraceSpan ()Laws/smithy/kotlin/runtime/tracing/TraceSpan;
+	public fun minusKey (Lkotlin/coroutines/CoroutineContext$Key;)Lkotlin/coroutines/CoroutineContext;
+	public fun plus (Lkotlin/coroutines/CoroutineContext;)Lkotlin/coroutines/CoroutineContext;
+}
+
+public final class aws/smithy/kotlin/runtime/tracing/TraceSpanContextElement$Companion : kotlin/coroutines/CoroutineContext$Key {
+}
+
+public final class aws/smithy/kotlin/runtime/tracing/TraceSpanExtKt {
+	public static final fun debug (Laws/smithy/kotlin/runtime/tracing/TraceSpan;Ljava/lang/String;Ljava/lang/Throwable;Lkotlin/jvm/functions/Function0;)V
+	public static synthetic fun debug$default (Laws/smithy/kotlin/runtime/tracing/TraceSpan;Ljava/lang/String;Ljava/lang/Throwable;Lkotlin/jvm/functions/Function0;ILjava/lang/Object;)V
+	public static final fun error (Laws/smithy/kotlin/runtime/tracing/TraceSpan;Ljava/lang/String;Ljava/lang/Throwable;Lkotlin/jvm/functions/Function0;)V
+	public static synthetic fun error$default (Laws/smithy/kotlin/runtime/tracing/TraceSpan;Ljava/lang/String;Ljava/lang/Throwable;Lkotlin/jvm/functions/Function0;ILjava/lang/Object;)V
+	public static final fun fatal (Laws/smithy/kotlin/runtime/tracing/TraceSpan;Ljava/lang/String;Ljava/lang/Throwable;Lkotlin/jvm/functions/Function0;)V
+	public static synthetic fun fatal$default (Laws/smithy/kotlin/runtime/tracing/TraceSpan;Ljava/lang/String;Ljava/lang/Throwable;Lkotlin/jvm/functions/Function0;ILjava/lang/Object;)V
+	public static final fun info (Laws/smithy/kotlin/runtime/tracing/TraceSpan;Ljava/lang/String;Ljava/lang/Throwable;Lkotlin/jvm/functions/Function0;)V
+	public static synthetic fun info$default (Laws/smithy/kotlin/runtime/tracing/TraceSpan;Ljava/lang/String;Ljava/lang/Throwable;Lkotlin/jvm/functions/Function0;ILjava/lang/Object;)V
+	public static final fun log (Laws/smithy/kotlin/runtime/tracing/TraceSpan;Laws/smithy/kotlin/runtime/tracing/EventLevel;Ljava/lang/String;Ljava/lang/Throwable;Lkotlin/jvm/functions/Function0;)V
+	public static synthetic fun log$default (Laws/smithy/kotlin/runtime/tracing/TraceSpan;Laws/smithy/kotlin/runtime/tracing/EventLevel;Ljava/lang/String;Ljava/lang/Throwable;Lkotlin/jvm/functions/Function0;ILjava/lang/Object;)V
+	public static final fun logger (Laws/smithy/kotlin/runtime/tracing/TraceSpan;Ljava/lang/String;)Laws/smithy/kotlin/runtime/logging/Logger;
+	public static final fun trace (Laws/smithy/kotlin/runtime/tracing/TraceSpan;Ljava/lang/String;Ljava/lang/Throwable;Lkotlin/jvm/functions/Function0;)V
+	public static synthetic fun trace$default (Laws/smithy/kotlin/runtime/tracing/TraceSpan;Ljava/lang/String;Ljava/lang/Throwable;Lkotlin/jvm/functions/Function0;ILjava/lang/Object;)V
+	public static final fun warn (Laws/smithy/kotlin/runtime/tracing/TraceSpan;Ljava/lang/String;Ljava/lang/Throwable;Lkotlin/jvm/functions/Function0;)V
+	public static synthetic fun warn$default (Laws/smithy/kotlin/runtime/tracing/TraceSpan;Ljava/lang/String;Ljava/lang/Throwable;Lkotlin/jvm/functions/Function0;ILjava/lang/Object;)V
+	public static final fun withChildSpan (Laws/smithy/kotlin/runtime/tracing/TraceSpan;Ljava/lang/String;Lkotlin/jvm/functions/Function1;)Ljava/lang/Object;
+}
+
+public abstract interface class aws/smithy/kotlin/runtime/tracing/Tracer {
+	public abstract fun createRootSpan (Ljava/lang/String;)Laws/smithy/kotlin/runtime/tracing/TraceSpan;
+}
+
+public final class aws/smithy/kotlin/runtime/tracing/TracerKt {
+	public static final fun asNestedTracer (Laws/smithy/kotlin/runtime/tracing/TraceSpan;Ljava/lang/String;)Laws/smithy/kotlin/runtime/tracing/Tracer;
+}
+
+public abstract interface class aws/smithy/kotlin/runtime/tracing/TracingClientConfig {
+	public abstract fun getTracer ()Laws/smithy/kotlin/runtime/tracing/Tracer;
+}
+
+public abstract interface class aws/smithy/kotlin/runtime/tracing/TracingClientConfig$Builder {
+	public abstract fun getTracer ()Laws/smithy/kotlin/runtime/tracing/Tracer;
+	public abstract fun setTracer (Laws/smithy/kotlin/runtime/tracing/Tracer;)V
+}
+

@@ -1,0 +1,5 @@
+public final class aws/smithy/kotlin/runtime/http/engine/DefaultHttpEngineKt {
+	public static final fun DefaultHttpEngine (Lkotlin/jvm/functions/Function1;)Laws/smithy/kotlin/runtime/http/engine/CloseableHttpClientEngine;
+	public static synthetic fun DefaultHttpEngine$default (Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Laws/smithy/kotlin/runtime/http/engine/CloseableHttpClientEngine;
+}
+

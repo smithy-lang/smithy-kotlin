@@ -1,0 +1,13 @@
+public abstract interface class aws/smithy/kotlin/runtime/awsprotocol/AwsErrorDetails {
+	public abstract fun getCode ()Ljava/lang/String;
+	public abstract fun getMessage ()Ljava/lang/String;
+	public abstract fun getRequestId ()Ljava/lang/String;
+}
+
+public final class aws/smithy/kotlin/runtime/awsprotocol/ProtocolErrorsKt {
+}
+
+public final class aws/smithy/kotlin/runtime/awsprotocol/ResponseUtilsKt {
+	public static final field X_AMZN_REQUEST_ID_HEADER Ljava/lang/String;
+}
+

@@ -1,0 +1,12 @@
+public final class aws/smithy/kotlin/runtime/logging/Logger$Companion {
+	public final fun getLogger (Ljava/lang/String;)Laws/smithy/kotlin/runtime/logging/Logger;
+}
+
+public final class aws/smithy/kotlin/runtime/logging/LoggerKt {
+	public static final fun debug (Laws/smithy/kotlin/runtime/logging/Logger;Ljava/lang/String;)V
+	public static final fun error (Laws/smithy/kotlin/runtime/logging/Logger;Ljava/lang/String;)V
+	public static final fun info (Laws/smithy/kotlin/runtime/logging/Logger;Ljava/lang/String;)V
+	public static final fun trace (Laws/smithy/kotlin/runtime/logging/Logger;Ljava/lang/String;)V
+	public static final fun warn (Laws/smithy/kotlin/runtime/logging/Logger;Ljava/lang/String;)V
+}
+
