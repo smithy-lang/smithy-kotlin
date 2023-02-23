@@ -6,30 +6,31 @@
 package aws.smithy.kotlin.runtime.retries.delay
 
 import aws.smithy.kotlin.runtime.retries.policy.RetryErrorType
-import aws.smithy.kotlin.runtime.time.Clock
-import aws.smithy.kotlin.runtime.time.epochMilliseconds
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlin.math.ceil
 import kotlin.math.floor
 import kotlin.math.min
+import kotlin.time.ExperimentalTime
+import kotlin.time.TimeSource
 
 private const val MS_PER_S = 1_000
 
 /**
  * The standard implementation of a [RetryTokenBucket].
  * @param options The configuration to use for this bucket.
- * @param clock A clock to use for time calculations.
+ * @param timeSource A monotonic time source to use for calculating the temporal token fill of the bucket.
  */
-public class StandardRetryTokenBucket(
+@OptIn(ExperimentalTime::class)
+public class StandardRetryTokenBucket constructor(
     public val options: StandardRetryTokenBucketOptions = StandardRetryTokenBucketOptions.Default,
-    private val clock: Clock = Clock.System,
+    private val timeSource: TimeSource = TimeSource.Monotonic,
 ) : RetryTokenBucket {
     internal var capacity = options.maxCapacity
         private set
 
-    private var lastTimestamp = now()
+    private var lastTimeMark = timeSource.markNow()
     private val mutex = Mutex()
 
     /**
@@ -58,13 +59,11 @@ public class StandardRetryTokenBucket(
             capacity = 0
         }
 
-        lastTimestamp = now()
+        lastTimeMark = timeSource.markNow()
     }
 
-    private fun now(): Long = clock.now().epochMilliseconds
-
     private fun refillCapacity() {
-        val refillMs = now() - lastTimestamp
+        val refillMs = lastTimeMark.elapsedNow().inWholeMilliseconds
         val refillSize = floor(options.refillUnitsPerSecond.toDouble() / MS_PER_S * refillMs).toInt()
         capacity = min(options.maxCapacity, capacity + refillSize)
     }
@@ -73,7 +72,7 @@ public class StandardRetryTokenBucket(
         refillCapacity()
 
         capacity = min(options.maxCapacity, capacity + size)
-        lastTimestamp = now()
+        lastTimeMark = timeSource.markNow()
     }
 
     /**
