@@ -1,5 +1,0 @@
-{
-    "id": "91436071-ff83-4476-aa11-35ea73e255c7",
-    "type": "misc",
-    "description": "Refactor: move `Document` type to `aws.smithy.kotlin.runtime.content` package"
-}

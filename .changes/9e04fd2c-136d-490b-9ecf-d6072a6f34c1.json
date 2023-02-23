@@ -1,8 +1,0 @@
-{
-    "id": "9e04fd2c-136d-490b-9ecf-d6072a6f34c1",
-    "type": "bugfix",
-    "description": "Fix a bug where system time jumps could cause unexpected retry behavior",
-    "issues": [
-        "awslabs/smithy-kotlin#805"
-    ]
-}

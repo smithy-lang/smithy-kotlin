@@ -1,5 +1,0 @@
-{
-    "id": "90312c67-354c-426d-bd15-b4f5901a3da5",
-    "type": "misc",
-    "description": "Refactor: relocate `CachedCredentialsProvider` and `CredentialsProviderChain` from `aws-sdk-kotlin`"
-}

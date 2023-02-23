@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.16.0] - 02/23/2023
+
+### Fixes
+* [#805](https://github.com/awslabs/smithy-kotlin/issues/805) Fix a bug where system time jumps could cause unexpected retry behavior
+
+### Miscellaneous
+* Refactor: move `EndpointProvider` out of http package into `aws.smithy.kotlin.runtime.client.endpoints`
+* Refactor: relocate `CachedCredentialsProvider` and `CredentialsProviderChain` from `aws-sdk-kotlin`
+* Refactor: move `Document` type to `aws.smithy.kotlin.runtime.content` package
+
 ## [0.15.3] - 02/16/2023
 
 ### Features
