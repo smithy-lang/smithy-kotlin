@@ -6,7 +6,6 @@
 package aws.smithy.kotlin.runtime.retries.delay
 
 import aws.smithy.kotlin.runtime.retries.policy.RetryErrorType
-import aws.smithy.kotlin.runtime.time.ManualClock
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
@@ -14,6 +13,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertIs
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.ExperimentalTime
+import kotlin.time.TestTimeSource
 
 class StandardRetryTokenBucketTest {
     companion object {
@@ -88,17 +88,17 @@ class StandardRetryTokenBucketTest {
     @OptIn(ExperimentalCoroutinesApi::class, ExperimentalTime::class)
     @Test
     fun testRefillOverTime() = runTest {
-        val clock = ManualClock()
+        val timeSource = TestTimeSource()
 
         // A bucket that costs capacity for an initial try
-        val bucket = StandardRetryTokenBucket(DefaultOptions.copy(initialTryCost = 5), clock)
+        val bucket = StandardRetryTokenBucket(DefaultOptions.copy(initialTryCost = 5), timeSource)
 
         assertEquals(10, bucket.capacity)
         assertTime(0) { bucket.acquireToken() }
         assertEquals(5, bucket.capacity)
 
         // Refill rate is 10/s == 1/100ms so after 250ms we should have 2 more tokens.
-        clock.advance(250.milliseconds)
+        timeSource += 250.milliseconds
 
         assertTime(0) { bucket.acquireToken() }
         assertEquals(2, bucket.capacity) // We had 5, 2 refilled, and then we decremented 5 more.
