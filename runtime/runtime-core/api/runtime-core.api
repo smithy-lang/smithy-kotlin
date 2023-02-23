@@ -1076,8 +1076,8 @@ public abstract interface class aws/smithy/kotlin/runtime/retries/delay/RetryTok
 
 public final class aws/smithy/kotlin/runtime/retries/delay/StandardRetryTokenBucket : aws/smithy/kotlin/runtime/retries/delay/RetryTokenBucket {
 	public fun <init> ()V
-	public fun <init> (Laws/smithy/kotlin/runtime/retries/delay/StandardRetryTokenBucketOptions;Laws/smithy/kotlin/runtime/time/Clock;)V
-	public synthetic fun <init> (Laws/smithy/kotlin/runtime/retries/delay/StandardRetryTokenBucketOptions;Laws/smithy/kotlin/runtime/time/Clock;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Laws/smithy/kotlin/runtime/retries/delay/StandardRetryTokenBucketOptions;Lkotlin/time/TimeSource;)V
+	public synthetic fun <init> (Laws/smithy/kotlin/runtime/retries/delay/StandardRetryTokenBucketOptions;Lkotlin/time/TimeSource;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public fun acquireToken (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun getOptions ()Laws/smithy/kotlin/runtime/retries/delay/StandardRetryTokenBucketOptions;
 }
