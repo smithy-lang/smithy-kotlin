@@ -97,4 +97,37 @@ class DefaultCanonicalizerTest {
 
         assertEquals("/2013-04-01/healthcheck/foo%253Cbar%253Ebaz%253C%252Fbar%253E", uri.canonicalPath(config))
     }
+
+    @Test
+    fun testUnsignedHeaders() = runTest {
+        val request = HttpRequest {
+            method = HttpMethod.GET
+            url { host = Host.Domain("bar.amazonaws.com") }
+            headers {
+                // These should be signed
+                set("Content-Type", "application/x-www-form-urlencoded; charset=utf-8")
+                set("x-amz-user-agent", "baz")
+
+                // These should not be signed
+                set("Expect", "100-continue")
+                set("X-Amzn-Trace-Id", "qux")
+            }
+            body = HttpBody.Empty
+        }
+
+        val signingDateString = "20150830T123600Z"
+        val config = AwsSigningConfig {
+            region = "foo"
+            service = "bar"
+            signingDate = Instant.fromIso8601(signingDateString)
+            credentialsProvider = testCredentialsProvider
+        }
+        val credentials = Credentials("foo", "bar") // anything without a session token set
+
+        val canonicalizer = Canonicalizer.Default
+        val actual = canonicalizer.canonicalRequest(request, config, credentials)
+
+        val expectedSignedHeaders = "content-type;host;x-amz-date;x-amz-user-agent"
+        assertEquals(expectedSignedHeaders, actual.signedHeaders)
+    }
 }
