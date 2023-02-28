@@ -20,5 +20,5 @@ public data class AuthSchemeOption(
     /**
      * Identity or signer attributes to use with this resolved authentication scheme
      */
-    public val attributes: Attributes = Attributes()
+    public val attributes: Attributes = Attributes(),
 )

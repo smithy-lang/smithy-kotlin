@@ -5,26 +5,25 @@
 
 package aws.smithy.kotlin.runtime.http.auth
 
-import aws.smithy.kotlin.runtime.InternalApi
 import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
+import aws.smithy.kotlin.runtime.identity.Identity
 import aws.smithy.kotlin.runtime.operation.ExecutionContext
 
 /**
  * Represents a component capable of signing an HTTP request
  */
-@InternalApi
 public interface HttpSigner {
-    public companion object {
-        /**
-         * A no-op signer that does nothing with the request
-         */
-        public val Anonymous: HttpSigner = object : HttpSigner {
-            override suspend fun sign(context: ExecutionContext, request: HttpRequestBuilder) { }
-        }
-    }
-
     /**
      * Sign the provided HTTP request (e.g. add AWS SigV4 headers, Bearer token header, etc)
      */
-    public suspend fun sign(context: ExecutionContext, request: HttpRequestBuilder)
+    public suspend fun sign(signingRequest: SignHttpRequest)
 }
+
+/**
+ * Container for signing request parameters/config
+ */
+public data class SignHttpRequest(
+    val context: ExecutionContext,
+    val httpRequest: HttpRequestBuilder,
+    val identity: Identity,
+)

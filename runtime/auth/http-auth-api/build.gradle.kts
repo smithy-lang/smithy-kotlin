@@ -11,6 +11,7 @@ kotlin {
         commonMain {
             dependencies {
                 api(project(":runtime:auth:identity-api"))
+                api(project(":runtime:protocol:http"))
             }
         }
     }

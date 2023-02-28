@@ -13,9 +13,9 @@ import aws.smithy.kotlin.runtime.auth.awssigning.internal.setAwsChunkedHeaders
 import aws.smithy.kotlin.runtime.auth.awssigning.internal.useAwsChunkedEncoding
 import aws.smithy.kotlin.runtime.http.HttpBody
 import aws.smithy.kotlin.runtime.http.auth.HttpSigner
+import aws.smithy.kotlin.runtime.http.auth.SignHttpRequest
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
-import aws.smithy.kotlin.runtime.operation.ExecutionContext
 import aws.smithy.kotlin.runtime.util.get
 import kotlin.time.Duration
 
@@ -105,8 +105,11 @@ public class AwsHttpSigner(private val config: Config) : HttpSigner {
         public var expiresAfter: Duration? = null
     }
 
-    override suspend fun sign(context: ExecutionContext, request: HttpRequestBuilder) {
+    override suspend fun sign(signingRequest: SignHttpRequest) {
+        val context = signingRequest.context
+        val request = signingRequest.httpRequest
         val body = request.body
+        // FIXME - update config/api to use identity from signingRequest parameters
 
         // favor attributes from the current request context
         val contextHashSpecification = context.getOrNull(AwsSigningAttributes.HashSpecification)

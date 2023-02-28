@@ -9,7 +9,7 @@ import aws.smithy.kotlin.runtime.InternalApi
 import aws.smithy.kotlin.runtime.client.SdkLogMode
 import aws.smithy.kotlin.runtime.client.sdkLogMode
 import aws.smithy.kotlin.runtime.http.HttpHandler
-import aws.smithy.kotlin.runtime.http.auth.HttpSigner
+import aws.smithy.kotlin.runtime.http.auth.*
 import aws.smithy.kotlin.runtime.http.interceptors.InterceptorExecutor
 import aws.smithy.kotlin.runtime.http.middleware.RetryMiddleware
 import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
@@ -124,7 +124,7 @@ public class SdkOperationExecution<Request, Response> {
      * The [HttpSigner] to sign the request with
      */
     // FIXME - this is temporary until we refactor identity/auth APIs
-    public var signer: HttpSigner = HttpSigner.Anonymous
+    public var signer: HttpSigner = AnonymousHttpSigner
 
     /**
      * The retry strategy to use. Defaults to [StandardRetryStrategy]
@@ -248,7 +248,8 @@ private class HttpAuthHandler<Input, Output>(
             .let { request.copy(subject = it.toBuilder()) }
 
         interceptors.readBeforeSigning(modified.subject.immutableView())
-        signer.sign(modified.context, modified.subject)
+        val signingRequest = SignHttpRequest(modified.context, modified.subject, AnonymousIdentity)
+        signer.sign(signingRequest)
         interceptors.readAfterSigning(modified.subject.immutableView())
         return inner.call(modified)
     }

@@ -17,7 +17,6 @@ public object IdentityAttributes {
     public val ProviderName: AttributeKey<String> = AttributeKey("aws.smithy.kotlin#IdentityProviderName")
 }
 
-
 /**
  * The name of the [IdentityProvider] that sourced this [Identity]
  */

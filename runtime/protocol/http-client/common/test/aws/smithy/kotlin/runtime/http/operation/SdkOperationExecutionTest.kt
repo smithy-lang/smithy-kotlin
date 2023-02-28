@@ -10,6 +10,7 @@ import aws.smithy.kotlin.runtime.http.HttpBody
 import aws.smithy.kotlin.runtime.http.HttpStatusCode
 import aws.smithy.kotlin.runtime.http.SdkHttpClient
 import aws.smithy.kotlin.runtime.http.auth.HttpSigner
+import aws.smithy.kotlin.runtime.http.auth.SignHttpRequest
 import aws.smithy.kotlin.runtime.http.engine.HttpClientEngineBase
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
@@ -44,7 +45,8 @@ class SdkOperationExecutionTest {
         }
 
         op.execution.signer = object : HttpSigner {
-            override suspend fun sign(context: ExecutionContext, request: HttpRequestBuilder) {
+            override suspend fun sign(signingRequest: SignHttpRequest) {
+                val request = signingRequest.httpRequest
                 assertFalse(request.headers.contains("test-auth"))
                 request.headers.append("test-auth", "test-signature")
 

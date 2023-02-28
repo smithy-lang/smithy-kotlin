@@ -14,6 +14,7 @@ kotlin {
             dependencies {
                 api(project(":runtime:runtime-core"))
                 api(project(":runtime:protocol:http"))
+                api(project(":runtime:auth:http-auth-api"))
             }
         }
     }
