@@ -59,9 +59,10 @@ internal interface Canonicalizer {
     ): CanonicalRequest
 }
 
-// Taken from https://github.com/awslabs/aws-c-auth/blob/31d573c0dd328db5775f7a55650d27b8c08311ba/source/aws_signing.c#L118-L151
+// Taken from https://github.com/awslabs/aws-c-auth/blob/dd505b55fd46222834f35c6e54165d8cbebbfaaa/source/aws_signing.c#L118-L156
 private val skipHeaders = setOf(
     "connection",
+    "expect", // https://github.com/awslabs/aws-sdk-kotlin/issues/862
     "sec-websocket-key",
     "sec-websocket-protocol",
     "sec-websocket-version",
