@@ -19,16 +19,10 @@ public data class Credentials(
     val secretAccessKey: String,
     val sessionToken: String? = null,
     override val expiration: Instant? = null,
+    val providerName: String? = null,
 ) : Identity {
-
     override val attributes: Attributes by lazy { Attributes() }
-    public constructor(
-        accessKeyId: String,
-        secretAccessKey: String,
-        sessionToken: String? = null,
-        expiration: Instant? = null,
-        providerName: String? = null,
-    ) : this(accessKeyId, secretAccessKey, sessionToken, expiration) {
+    init {
         providerName?.let {
             attributes[IdentityAttributes.ProviderName] = it
         }
