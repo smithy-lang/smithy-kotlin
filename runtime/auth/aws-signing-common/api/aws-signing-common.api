@@ -1,33 +1,3 @@
-public final class aws/smithy/kotlin/runtime/auth/awssigning/AwsHttpSigner$Companion {
-	public final fun invoke (Lkotlin/jvm/functions/Function1;)Laws/smithy/kotlin/runtime/auth/awssigning/AwsHttpSigner;
-}
-
-public final class aws/smithy/kotlin/runtime/auth/awssigning/AwsHttpSigner$Config {
-	public fun <init> ()V
-	public final fun getAlgorithm ()Laws/smithy/kotlin/runtime/auth/awssigning/AwsSigningAlgorithm;
-	public final fun getCredentialsProvider ()Laws/smithy/kotlin/runtime/auth/awscredentials/CredentialsProvider;
-	public final fun getExpiresAfter-FghU774 ()Lkotlin/time/Duration;
-	public final fun getNormalizeUriPath ()Z
-	public final fun getOmitSessionToken ()Z
-	public final fun getService ()Ljava/lang/String;
-	public final fun getSignatureType ()Laws/smithy/kotlin/runtime/auth/awssigning/AwsSignatureType;
-	public final fun getSignedBodyHeader ()Laws/smithy/kotlin/runtime/auth/awssigning/AwsSignedBodyHeader;
-	public final fun getSigner ()Laws/smithy/kotlin/runtime/auth/awssigning/AwsSigner;
-	public final fun getUseDoubleUriEncode ()Z
-	public final fun isUnsignedPayload ()Z
-	public final fun setAlgorithm (Laws/smithy/kotlin/runtime/auth/awssigning/AwsSigningAlgorithm;)V
-	public final fun setCredentialsProvider (Laws/smithy/kotlin/runtime/auth/awscredentials/CredentialsProvider;)V
-	public final fun setExpiresAfter-BwNAW2A (Lkotlin/time/Duration;)V
-	public final fun setNormalizeUriPath (Z)V
-	public final fun setOmitSessionToken (Z)V
-	public final fun setService (Ljava/lang/String;)V
-	public final fun setSignatureType (Laws/smithy/kotlin/runtime/auth/awssigning/AwsSignatureType;)V
-	public final fun setSignedBodyHeader (Laws/smithy/kotlin/runtime/auth/awssigning/AwsSignedBodyHeader;)V
-	public final fun setSigner (Laws/smithy/kotlin/runtime/auth/awssigning/AwsSigner;)V
-	public final fun setUnsignedPayload (Z)V
-	public final fun setUseDoubleUriEncode (Z)V
-}
-
 public final class aws/smithy/kotlin/runtime/auth/awssigning/AwsSignatureType : java/lang/Enum {
 	public static final field HTTP_REQUEST_CHUNK Laws/smithy/kotlin/runtime/auth/awssigning/AwsSignatureType;
 	public static final field HTTP_REQUEST_EVENT Laws/smithy/kotlin/runtime/auth/awssigning/AwsSignatureType;
@@ -74,7 +44,7 @@ public final class aws/smithy/kotlin/runtime/auth/awssigning/AwsSigningConfig {
 	public static final field Companion Laws/smithy/kotlin/runtime/auth/awssigning/AwsSigningConfig$Companion;
 	public fun <init> (Laws/smithy/kotlin/runtime/auth/awssigning/AwsSigningConfig$Builder;)V
 	public final fun getAlgorithm ()Laws/smithy/kotlin/runtime/auth/awssigning/AwsSigningAlgorithm;
-	public final fun getCredentialsProvider ()Laws/smithy/kotlin/runtime/auth/awscredentials/CredentialsProvider;
+	public final fun getCredentials ()Laws/smithy/kotlin/runtime/auth/awscredentials/Credentials;
 	public final fun getExpiresAfter-FghU774 ()Lkotlin/time/Duration;
 	public final fun getHashSpecification ()Laws/smithy/kotlin/runtime/auth/awssigning/HashSpecification;
 	public final fun getNormalizeUriPath ()Z
@@ -93,7 +63,7 @@ public final class aws/smithy/kotlin/runtime/auth/awssigning/AwsSigningConfig$Bu
 	public fun <init> ()V
 	public final fun build ()Laws/smithy/kotlin/runtime/auth/awssigning/AwsSigningConfig;
 	public final fun getAlgorithm ()Laws/smithy/kotlin/runtime/auth/awssigning/AwsSigningAlgorithm;
-	public final fun getCredentialsProvider ()Laws/smithy/kotlin/runtime/auth/awscredentials/CredentialsProvider;
+	public final fun getCredentials ()Laws/smithy/kotlin/runtime/auth/awscredentials/Credentials;
 	public final fun getExpiresAfter-FghU774 ()Lkotlin/time/Duration;
 	public final fun getHashSpecification ()Laws/smithy/kotlin/runtime/auth/awssigning/HashSpecification;
 	public final fun getNormalizeUriPath ()Z
@@ -106,7 +76,7 @@ public final class aws/smithy/kotlin/runtime/auth/awssigning/AwsSigningConfig$Bu
 	public final fun getSigningDate ()Laws/smithy/kotlin/runtime/time/Instant;
 	public final fun getUseDoubleUriEncode ()Z
 	public final fun setAlgorithm (Laws/smithy/kotlin/runtime/auth/awssigning/AwsSigningAlgorithm;)V
-	public final fun setCredentialsProvider (Laws/smithy/kotlin/runtime/auth/awscredentials/CredentialsProvider;)V
+	public final fun setCredentials (Laws/smithy/kotlin/runtime/auth/awscredentials/Credentials;)V
 	public final fun setExpiresAfter-BwNAW2A (Lkotlin/time/Duration;)V
 	public final fun setHashSpecification (Laws/smithy/kotlin/runtime/auth/awssigning/HashSpecification;)V
 	public final fun setNormalizeUriPath (Z)V
@@ -255,7 +225,11 @@ public final class aws/smithy/kotlin/runtime/auth/awssigning/SigningContextualiz
 	public fun toString ()Ljava/lang/String;
 }
 
+public final class aws/smithy/kotlin/runtime/auth/awssigning/internal/AwsChunkedUtilJVMKt {
+}
+
 public final class aws/smithy/kotlin/runtime/auth/awssigning/internal/AwsChunkedUtilKt {
+	public static final field AWS_CHUNKED_THRESHOLD I
 	public static final field CHUNK_SIZE_BYTES I
 }
 

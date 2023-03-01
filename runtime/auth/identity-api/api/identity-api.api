@@ -1,0 +1,67 @@
+public final class aws/smithy/kotlin/runtime/auth/AuthSchemeId {
+	public static final field Companion Laws/smithy/kotlin/runtime/auth/AuthSchemeId$Companion;
+	public static final synthetic fun box-impl (Ljava/lang/String;)Laws/smithy/kotlin/runtime/auth/AuthSchemeId;
+	public static fun constructor-impl (Ljava/lang/String;)Ljava/lang/String;
+	public fun equals (Ljava/lang/Object;)Z
+	public static fun equals-impl (Ljava/lang/String;Ljava/lang/Object;)Z
+	public static final fun equals-impl0 (Ljava/lang/String;Ljava/lang/String;)Z
+	public final fun getId ()Ljava/lang/String;
+	public fun hashCode ()I
+	public static fun hashCode-impl (Ljava/lang/String;)I
+	public fun toString ()Ljava/lang/String;
+	public static fun toString-impl (Ljava/lang/String;)Ljava/lang/String;
+	public final synthetic fun unbox-impl ()Ljava/lang/String;
+}
+
+public final class aws/smithy/kotlin/runtime/auth/AuthSchemeId$Companion {
+	public final fun getAnonymous-DepwgT4 ()Ljava/lang/String;
+	public final fun getAwsSigV4-DepwgT4 ()Ljava/lang/String;
+	public final fun getAwsSigV4Asymmetric-DepwgT4 ()Ljava/lang/String;
+	public final fun getAwsSigV4Query-DepwgT4 ()Ljava/lang/String;
+	public final fun getAwsX509-DepwgT4 ()Ljava/lang/String;
+	public final fun getHttpApiKey-DepwgT4 ()Ljava/lang/String;
+	public final fun getHttpBasic-DepwgT4 ()Ljava/lang/String;
+	public final fun getHttpBearer-DepwgT4 ()Ljava/lang/String;
+	public final fun getHttpDigest-DepwgT4 ()Ljava/lang/String;
+}
+
+public final class aws/smithy/kotlin/runtime/auth/AuthSchemeOption {
+	public synthetic fun <init> (Ljava/lang/String;Laws/smithy/kotlin/runtime/util/Attributes;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public synthetic fun <init> (Ljava/lang/String;Laws/smithy/kotlin/runtime/util/Attributes;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1-DepwgT4 ()Ljava/lang/String;
+	public final fun component2 ()Laws/smithy/kotlin/runtime/util/Attributes;
+	public final fun copy-Jh0Pmzk (Ljava/lang/String;Laws/smithy/kotlin/runtime/util/Attributes;)Laws/smithy/kotlin/runtime/auth/AuthSchemeOption;
+	public static synthetic fun copy-Jh0Pmzk$default (Laws/smithy/kotlin/runtime/auth/AuthSchemeOption;Ljava/lang/String;Laws/smithy/kotlin/runtime/util/Attributes;ILjava/lang/Object;)Laws/smithy/kotlin/runtime/auth/AuthSchemeOption;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getAttributes ()Laws/smithy/kotlin/runtime/util/Attributes;
+	public final fun getSchemeId-DepwgT4 ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public abstract interface class aws/smithy/kotlin/runtime/auth/AuthSchemeProvider {
+	public abstract fun resolveAuthScheme (Ljava/lang/Object;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
+public abstract interface class aws/smithy/kotlin/runtime/identity/Identity {
+	public abstract fun getAttributes ()Laws/smithy/kotlin/runtime/util/Attributes;
+	public abstract fun getExpiration ()Laws/smithy/kotlin/runtime/time/Instant;
+}
+
+public final class aws/smithy/kotlin/runtime/identity/IdentityAttributes {
+	public static final field INSTANCE Laws/smithy/kotlin/runtime/identity/IdentityAttributes;
+	public final fun getProviderName ()Laws/smithy/kotlin/runtime/util/AttributeKey;
+}
+
+public final class aws/smithy/kotlin/runtime/identity/IdentityAttributesKt {
+	public static final fun getProviderName (Laws/smithy/kotlin/runtime/identity/Identity;)Ljava/lang/String;
+}
+
+public abstract interface class aws/smithy/kotlin/runtime/identity/IdentityProvider {
+	public abstract fun resolveIdentity (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
+public abstract interface class aws/smithy/kotlin/runtime/identity/IdentityProviderConfig {
+	public abstract fun identityProviderForScheme-kHcdgsI (Ljava/lang/String;)Laws/smithy/kotlin/runtime/identity/IdentityProvider;
+}
+
