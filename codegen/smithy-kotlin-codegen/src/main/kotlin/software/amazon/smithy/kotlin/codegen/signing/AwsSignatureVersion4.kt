@@ -41,6 +41,8 @@ open class AwsSignatureVersion4(private val service: String) : ProtocolMiddlewar
     final override fun render(ctx: ProtocolGenerator.GenerationContext, op: OperationShape, writer: KotlinWriter) {
         writer.addImport(RuntimeTypes.Auth.HttpAuthAws.AwsHttpSigner)
 
+        // FIXME - temporary while we work out auth scheme wireup
+        writer.write("op.execution.identityProvider = config.credentialsProvider")
         writer.withBlock("op.execution.signer = #T {", "}", RuntimeTypes.Auth.HttpAuthAws.AwsHttpSigner) {
             renderSigningConfig(op, writer)
         }
@@ -48,7 +50,6 @@ open class AwsSignatureVersion4(private val service: String) : ProtocolMiddlewar
 
     protected open fun renderSigningConfig(op: OperationShape, writer: KotlinWriter) {
         writer.write("this.signer = config.signer")
-        writer.write("this.credentialsProvider = config.credentialsProvider")
         writer.write("this.service = #S", service)
 
         if (op.hasTrait<UnsignedPayloadTrait>()) {

@@ -338,7 +338,6 @@ object RuntimeTypes {
         val expectString = symbol("expectString")
 
         val sign = symbol("sign")
-        val newEventStreamSigningConfig = symbol("newEventStreamSigningConfig")
     }
 }
 

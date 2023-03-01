@@ -27,13 +27,15 @@ public object AnonymousIdentity : Identity {
     override val attributes: Attributes by lazy { Attributes() }
 }
 
+public object AnonymousIdentityProvider : IdentityProvider {
+    override suspend fun resolveIdentity(): Identity = AnonymousIdentity
+}
+
 /**
  * A no-op auth scheme
  */
 public class AnonymousAuthScheme : HttpAuthScheme {
     override val schemeId: AuthSchemeId = AuthSchemeId.Anonymous
     override val signer: HttpSigner = AnonymousHttpSigner
-    override fun identityProvider(identityProviderConfig: IdentityProviderConfig): IdentityProvider = object : IdentityProvider {
-        override suspend fun resolveIdentity(): Identity = AnonymousIdentity
-    }
+    override fun identityProvider(identityProviderConfig: IdentityProviderConfig): IdentityProvider = AnonymousIdentityProvider
 }

@@ -4,7 +4,6 @@
  */
 package aws.smithy.kotlin.runtime.auth.awssigning
 
-import aws.smithy.kotlin.runtime.auth.awscredentials.Credentials
 import aws.smithy.kotlin.runtime.hashing.*
 import aws.smithy.kotlin.runtime.time.Instant
 import aws.smithy.kotlin.runtime.time.TimestampFormat
@@ -42,10 +41,9 @@ internal interface SignatureCalculator {
     /**
      * Derives a signing key
      * @param config The signing configuration to use
-     * @param credentials Retrieved credentials to use
      * @return The signing key as a byte array
      */
-    fun signingKey(config: AwsSigningConfig, credentials: Credentials): ByteArray
+    fun signingKey(config: AwsSigningConfig): ByteArray
 
     /**
      * Constructs a string to sign for a request
@@ -94,10 +92,10 @@ internal class DefaultSignatureCalculator(private val sha256Provider: HashSuppli
             append(trailingHeaders.hash(sha256Provider).encodeToHex())
         }
 
-    override fun signingKey(config: AwsSigningConfig, credentials: Credentials): ByteArray {
+    override fun signingKey(config: AwsSigningConfig): ByteArray {
         fun hmac(key: ByteArray, message: String) = hmac(key, message.encodeToByteArray(), sha256Provider)
 
-        val initialKey = ("AWS4" + credentials.secretAccessKey).encodeToByteArray()
+        val initialKey = ("AWS4" + config.credentials.secretAccessKey).encodeToByteArray()
         val kDate = hmac(initialKey, config.signingDate.format(TimestampFormat.ISO_8601_CONDENSED_DATE))
         val kRegion = hmac(kDate, config.region)
         val kService = hmac(kRegion, config.service)

@@ -8,7 +8,8 @@ package aws.smithy.kotlin.runtime.auth.awssigning.tests
 import aws.smithy.kotlin.runtime.auth.awscredentials.Credentials
 import aws.smithy.kotlin.runtime.auth.awscredentials.CredentialsProvider
 
-public val testCredentialsProvider: CredentialsProvider = Credentials("AKID", "SECRET", "SESSION").asStaticProvider()
+public val DEFAULT_TEST_CREDENTIALS: Credentials = Credentials("AKID", "SECRET", "SESSION")
+public val DEFAULT_TEST_CREDENTIALS_PROVIDER: CredentialsProvider = DEFAULT_TEST_CREDENTIALS.asStaticProvider()
 
 public fun Credentials.asStaticProvider(): CredentialsProvider = object : CredentialsProvider {
     override suspend fun getCredentials(): Credentials = this@asStaticProvider

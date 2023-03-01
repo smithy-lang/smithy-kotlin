@@ -43,6 +43,7 @@ class CrtAwsHttpSignerTest : AwsHttpSignerTestBase(CrtAwsSigner)
 public abstract class AwsHttpSignerTestBase(
     private val signer: AwsSigner,
 ) {
+    private val testCredentials = Credentials("AKID", "SECRET", "SESSION")
 
     private fun buildOperation(
         requestBody: String = "{\"TableName\": \"foo\"}",
@@ -84,11 +85,11 @@ public abstract class AwsHttpSignerTestBase(
             }
         }
 
+        operation.execution.identityProvider = object : CredentialsProvider {
+            override suspend fun getCredentials(): Credentials = testCredentials
+        }
         operation.execution.signer = AwsHttpSigner {
             signer = this@AwsHttpSignerTestBase.signer
-            credentialsProvider = object : CredentialsProvider {
-                override suspend fun getCredentials(): Credentials = Credentials("AKID", "SECRET", "SESSION")
-            }
             service = "demo"
             isUnsignedPayload = unsigned
         }

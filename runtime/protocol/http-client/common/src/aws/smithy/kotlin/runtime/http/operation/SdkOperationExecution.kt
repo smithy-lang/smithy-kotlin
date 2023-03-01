@@ -20,6 +20,7 @@ import aws.smithy.kotlin.runtime.http.response.HttpCall
 import aws.smithy.kotlin.runtime.http.response.HttpResponse
 import aws.smithy.kotlin.runtime.http.response.complete
 import aws.smithy.kotlin.runtime.http.response.dumpResponse
+import aws.smithy.kotlin.runtime.identity.IdentityProvider
 import aws.smithy.kotlin.runtime.io.*
 import aws.smithy.kotlin.runtime.io.middleware.Middleware
 import aws.smithy.kotlin.runtime.io.middleware.Phase
@@ -127,6 +128,12 @@ public class SdkOperationExecution<Request, Response> {
     public var signer: HttpSigner = AnonymousHttpSigner
 
     /**
+     * The [IdentityProvider] to use with [signer]
+     */
+    // FIXME - this is temporary until we refactor identity/auth APIs
+    public var identityProvider: IdentityProvider = AnonymousIdentityProvider
+
+    /**
      * The retry strategy to use. Defaults to [StandardRetryStrategy]
      */
     public var retryStrategy: RetryStrategy = StandardRetryStrategy()
@@ -154,7 +161,7 @@ internal fun <Request, Response> SdkOperationExecution<Request, Response>.decora
 
     val receiveHandler = decorateHandler(handler, receive)
     val deserializeHandler = op.deserializer.decorate(receiveHandler, interceptors)
-    val authHandler = HttpAuthHandler(deserializeHandler, signer, interceptors)
+    val authHandler = HttpAuthHandler(deserializeHandler, signer, identityProvider, interceptors)
     val onEachAttemptHandler = decorateHandler(authHandler, onEachAttempt)
     val retryHandler = decorateHandler(onEachAttemptHandler, RetryMiddleware(retryStrategy, retryPolicy, interceptors))
 
@@ -241,6 +248,7 @@ private class MutateHandler<Output> (
 private class HttpAuthHandler<Input, Output>(
     private val inner: Handler<SdkHttpRequest, Output>,
     private val signer: HttpSigner,
+    private val identityProvider: IdentityProvider,
     private val interceptors: InterceptorExecutor<Input, Output>,
 ) : Handler<SdkHttpRequest, Output> {
     override suspend fun call(request: SdkHttpRequest): Output {
@@ -248,7 +256,8 @@ private class HttpAuthHandler<Input, Output>(
             .let { request.copy(subject = it.toBuilder()) }
 
         interceptors.readBeforeSigning(modified.subject.immutableView())
-        val signingRequest = SignHttpRequest(modified.context, modified.subject, AnonymousIdentity)
+        val identity = identityProvider.resolveIdentity()
+        val signingRequest = SignHttpRequest(modified.context, modified.subject, identity)
         signer.sign(signingRequest)
         interceptors.readAfterSigning(modified.subject.immutableView())
         return inner.call(modified)

@@ -4,7 +4,6 @@
  */
 package aws.smithy.kotlin.runtime.auth.awssigning
 
-import aws.smithy.kotlin.runtime.auth.awscredentials.Credentials
 import aws.smithy.kotlin.runtime.hashing.HashSupplier
 import aws.smithy.kotlin.runtime.hashing.Sha256
 import aws.smithy.kotlin.runtime.hashing.hash
@@ -50,12 +49,10 @@ internal interface Canonicalizer {
      * Canonicalize a request
      * @param request The [HttpRequest] containing the data ready for signing
      * @param config The signing parameters to use
-     * @param credentials Retrieved credentials used to canonicalize the request
      */
     suspend fun canonicalRequest(
         request: HttpRequest,
         config: AwsSigningConfig,
-        credentials: Credentials,
     ): CanonicalRequest
 }
 
@@ -74,7 +71,6 @@ internal class DefaultCanonicalizer(private val sha256Supplier: HashSupplier = :
     override suspend fun canonicalRequest(
         request: HttpRequest,
         config: AwsSigningConfig,
-        credentials: Credentials,
     ): CanonicalRequest {
         val hash = when (val hashSpec = config.hashSpecification) {
             is HashSpecification.CalculateFromPayload -> request.body.calculateHash()
@@ -83,7 +79,7 @@ internal class DefaultCanonicalizer(private val sha256Supplier: HashSupplier = :
 
         val signViaQueryParams = config.signatureType == AwsSignatureType.HTTP_REQUEST_VIA_QUERY_PARAMS
         val addHashHeader = !signViaQueryParams && config.signedBodyHeader == AwsSignedBodyHeader.X_AMZ_CONTENT_SHA256
-        val sessionToken = credentials.sessionToken?.let { if (signViaQueryParams) it.urlEncodeComponent() else it }
+        val sessionToken = config.credentials.sessionToken?.let { if (signViaQueryParams) it.urlEncodeComponent() else it }
 
         val builder = request.toBuilder()
 
@@ -98,7 +94,7 @@ internal class DefaultCanonicalizer(private val sha256Supplier: HashSupplier = :
 
         param("Host", builder.url.host.toString(), !(signViaQueryParams || "Host" in params))
         param("X-Amz-Algorithm", ALGORITHM_NAME, signViaQueryParams)
-        param("X-Amz-Credential", credentialValue(config, credentials), signViaQueryParams)
+        param("X-Amz-Credential", credentialValue(config), signViaQueryParams)
         param("X-Amz-Content-Sha256", hash, addHashHeader)
         param("X-Amz-Date", config.signingDate.format(TimestampFormat.ISO_8601_CONDENSED))
         param("X-Amz-Expires", config.expiresAfter?.inWholeSeconds?.toString(), signViaQueryParams)
