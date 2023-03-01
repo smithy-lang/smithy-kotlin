@@ -4,6 +4,7 @@
  */
 
 package aws.smithy.kotlin.runtime.auth
+import kotlin.jvm.JvmInline
 
 /**
  * Represents a unique authentication scheme ID
