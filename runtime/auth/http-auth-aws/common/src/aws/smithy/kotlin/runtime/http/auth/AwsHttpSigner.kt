@@ -2,18 +2,16 @@
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
  * SPDX-License-Identifier: Apache-2.0
  */
-package aws.smithy.kotlin.runtime.auth.awssigning
+package aws.smithy.kotlin.runtime.http.auth
 
 import aws.smithy.kotlin.runtime.InternalApi
 import aws.smithy.kotlin.runtime.auth.awscredentials.CredentialsProvider
-import aws.smithy.kotlin.runtime.auth.awssigning.internal.*
+import aws.smithy.kotlin.runtime.auth.awssigning.*
 import aws.smithy.kotlin.runtime.auth.awssigning.internal.isEligibleForAwsChunkedStreaming
 import aws.smithy.kotlin.runtime.auth.awssigning.internal.setAwsChunkedBody
 import aws.smithy.kotlin.runtime.auth.awssigning.internal.setAwsChunkedHeaders
 import aws.smithy.kotlin.runtime.auth.awssigning.internal.useAwsChunkedEncoding
 import aws.smithy.kotlin.runtime.http.HttpBody
-import aws.smithy.kotlin.runtime.http.auth.HttpSigner
-import aws.smithy.kotlin.runtime.http.auth.SignHttpRequest
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
 import aws.smithy.kotlin.runtime.util.get
@@ -32,10 +30,6 @@ public class AwsHttpSigner(private val config: Config) : HttpSigner {
             requireNotNull(config.signer) { "A signer must be specified for the middleware" }
             return AwsHttpSigner(config)
         }
-
-        @InternalApi
-        // The minimum size of a streaming body before the SDK will begin using aws-chunked content encoding.
-        public const val AWS_CHUNKED_THRESHOLD: Int = CHUNK_SIZE_BYTES * 16
     }
 
     public class Config {
