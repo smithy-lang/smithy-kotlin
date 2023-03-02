@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.16.1] - 03/02/2023
+
+### Fixes
+* [#862](https://github.com/awslabs/aws-sdk-kotlin/issues/862) Skip signing the `Expect` header in SigV4
+
 ## [0.16.0] - 02/23/2023
 
 ### Fixes

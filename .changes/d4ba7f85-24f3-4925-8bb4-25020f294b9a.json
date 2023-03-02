@@ -1,8 +1,0 @@
-{
-    "id": "d4ba7f85-24f3-4925-8bb4-25020f294b9a",
-    "type": "bugfix",
-    "description": "Skip signing the `Expect` header in SigV4",
-    "issues": [
-        "awslabs/aws-sdk-kotlin#862"
-    ]
-}
