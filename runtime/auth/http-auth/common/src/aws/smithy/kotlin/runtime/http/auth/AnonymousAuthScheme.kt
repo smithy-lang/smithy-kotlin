@@ -24,7 +24,7 @@ public object AnonymousHttpSigner : HttpSigner {
  */
 public object AnonymousIdentity : Identity {
     override val expiration: Instant? = null
-    override val attributes: Attributes by lazy { Attributes() }
+    override val attributes: Attributes = Attributes()
 }
 
 public object AnonymousIdentityProvider : IdentityProvider {
@@ -34,7 +34,7 @@ public object AnonymousIdentityProvider : IdentityProvider {
 /**
  * A no-op auth scheme
  */
-public class AnonymousAuthScheme : HttpAuthScheme {
+public object AnonymousAuthScheme : HttpAuthScheme {
     override val schemeId: AuthSchemeId = AuthSchemeId.Anonymous
     override val signer: HttpSigner = AnonymousHttpSigner
     override fun identityProvider(identityProviderConfig: IdentityProviderConfig): IdentityProvider = AnonymousIdentityProvider

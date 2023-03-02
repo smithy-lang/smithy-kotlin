@@ -94,7 +94,6 @@ private fun Instant.truncateSubsecs(): Instant = Instant.fromEpochSeconds(epochS
  * Create a new signing config for an event stream using the current context to set the operation/service specific
  * configuration (e.g. region, signing service, credentials, etc)
  */
-@InternalApi
 private fun ExecutionContext.newEventStreamSigningConfig(): AwsSigningConfig.Builder = AwsSigningConfig.Builder().apply {
     algorithm = AwsSigningAlgorithm.SIGV4
     signatureType = AwsSignatureType.HTTP_REQUEST_EVENT
