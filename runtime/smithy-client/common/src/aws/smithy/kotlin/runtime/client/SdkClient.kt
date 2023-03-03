@@ -12,7 +12,7 @@ import aws.smithy.kotlin.runtime.util.Buildable
  */
 public interface SdkClient : Closeable {
     /**
-     * The name of the service client
+     * The name of the service
      */
     public val serviceName: String
 

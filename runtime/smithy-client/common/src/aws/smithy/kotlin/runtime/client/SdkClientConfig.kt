@@ -13,6 +13,11 @@ import aws.smithy.kotlin.runtime.util.Buildable
  */
 public interface SdkClientConfig {
     /**
+     * A reader-friendly name for the client.
+     */
+    public val clientName: String
+
+    /**
      * Configure events that will be logged. By default, clients will not output
      * raw requests or responses. Use this setting to opt in to additional debug logging.
      *
@@ -41,6 +46,11 @@ public interface SdkClientConfig {
      * @param TConfig the type of configuration built by this builder
      */
     public interface Builder<TConfig : SdkClientConfig> : Buildable<TConfig> {
+        /**
+         * A reader-friendly name for the client.
+         */
+        public var clientName: String
+
         /**
          * Configure events that will be logged. By default, clients will not output
          * raw requests or responses. Use this setting to opt in to additional debug logging.

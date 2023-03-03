@@ -1,0 +1,5 @@
+{
+    "id": "2d4548fd-a1ed-4a4e-8798-18d5726aee0c",
+    "type": "feature",
+    "description": "Add configurable reader-friendly name to generated SDK clients."
+}
