@@ -86,7 +86,7 @@ public abstract class AwsHttpSignerTestBase(
         }
 
         operation.execution.identityProvider = object : CredentialsProvider {
-            override suspend fun getCredentials(): Credentials = testCredentials
+            override suspend fun resolve(): Credentials = testCredentials
         }
         operation.execution.signer = AwsHttpSigner {
             signer = this@AwsHttpSignerTestBase.signer

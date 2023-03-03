@@ -25,7 +25,7 @@ import kotlin.test.assertEquals
 class EventStreamSigningTest {
     private val testCredentials = Credentials("fake access key", "fake secret key")
     private val testCredentialsProvider = object : CredentialsProvider {
-        override suspend fun getCredentials() = testCredentials
+        override suspend fun resolve() = testCredentials
     }
 
     @Test

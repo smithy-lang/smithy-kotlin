@@ -13,5 +13,5 @@ public interface IdentityProvider {
      * Resolve the identity to authenticate requests with
      * @return an [Identity] that can be used to connect to the service
      */
-    public suspend fun resolveIdentity(): Identity
+    public suspend fun resolve(): Identity
 }

@@ -256,7 +256,7 @@ private class HttpAuthHandler<Input, Output>(
             .let { request.copy(subject = it.toBuilder()) }
 
         interceptors.readBeforeSigning(modified.subject.immutableView())
-        val identity = identityProvider.resolveIdentity()
+        val identity = identityProvider.resolve()
         val signingRequest = SignHttpRequest(modified.context, modified.subject, identity)
         signer.sign(signingRequest)
         interceptors.readAfterSigning(modified.subject.immutableView())

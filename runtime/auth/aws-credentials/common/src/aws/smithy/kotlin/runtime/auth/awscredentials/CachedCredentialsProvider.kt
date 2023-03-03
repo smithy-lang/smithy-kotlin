@@ -54,12 +54,12 @@ public class CachedCredentialsProvider(
     private val cachedCredentials = CachedValue<Credentials>(null, bufferTime = refreshBufferWindow, clock)
     private val closed = atomic(false)
 
-    override suspend fun getCredentials(): Credentials {
+    override suspend fun resolve(): Credentials {
         check(!closed.value) { "Credentials provider is closed" }
 
         return cachedCredentials.getOrLoad {
             coroutineContext.trace<CachedCredentialsProvider> { "refreshing credentials cache" }
-            val providerCreds = source.getCredentials()
+            val providerCreds = source.resolve()
             if (providerCreds.expiration != null) {
                 val expiration = minOf(providerCreds.expiration, (clock.now() + expireCredentialsAfter))
                 ExpiringValue(providerCreds, expiration)

@@ -458,7 +458,7 @@ private fun buildOperation(
     }
 
     op.execution.identityProvider = object : CredentialsProvider {
-        override suspend fun getCredentials(): Credentials = config.credentials
+        override suspend fun resolve(): Credentials = config.credentials
     }
     op.execution.signer = AwsHttpSigner {
         signer = awsSigner

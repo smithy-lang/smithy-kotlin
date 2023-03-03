@@ -49,7 +49,7 @@ public fun Flow<Message>.sign(
         message.encode(buffer)
 
         // ensure credentials are up to date
-        configBuilder.credentials = credentialsProvider.getCredentials()
+        configBuilder.credentials = credentialsProvider.resolve()
 
         // the entire message is wrapped as the payload of the signed message
         val result = signer.signPayload(configBuilder, prevSignature, buffer.readByteArray())

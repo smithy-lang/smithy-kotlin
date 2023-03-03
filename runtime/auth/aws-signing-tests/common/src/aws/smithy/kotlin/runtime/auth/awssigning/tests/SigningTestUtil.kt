@@ -12,5 +12,5 @@ public val DEFAULT_TEST_CREDENTIALS: Credentials = Credentials("AKID", "SECRET",
 public val DEFAULT_TEST_CREDENTIALS_PROVIDER: CredentialsProvider = DEFAULT_TEST_CREDENTIALS.asStaticProvider()
 
 public fun Credentials.asStaticProvider(): CredentialsProvider = object : CredentialsProvider {
-    override suspend fun getCredentials(): Credentials = this@asStaticProvider
+    override suspend fun resolve(): Credentials = this@asStaticProvider
 }

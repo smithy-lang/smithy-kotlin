@@ -4,7 +4,6 @@
  */
 package aws.smithy.kotlin.runtime.auth.awscredentials
 
-import aws.smithy.kotlin.runtime.identity.Identity
 import aws.smithy.kotlin.runtime.identity.IdentityProvider
 import aws.smithy.kotlin.runtime.io.Closeable
 
@@ -15,8 +14,7 @@ public interface CredentialsProvider : IdentityProvider {
     /**
      * Request credentials from the provider
      */
-    public suspend fun getCredentials(): Credentials
-    override suspend fun resolveIdentity(): Identity = getCredentials()
+    public override suspend fun resolve(): Credentials
 }
 
 /**

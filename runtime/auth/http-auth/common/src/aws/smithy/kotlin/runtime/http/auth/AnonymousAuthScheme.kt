@@ -28,7 +28,7 @@ public object AnonymousIdentity : Identity {
 }
 
 public object AnonymousIdentityProvider : IdentityProvider {
-    override suspend fun resolveIdentity(): Identity = AnonymousIdentity
+    override suspend fun resolve(): Identity = AnonymousIdentity
 }
 
 /**
