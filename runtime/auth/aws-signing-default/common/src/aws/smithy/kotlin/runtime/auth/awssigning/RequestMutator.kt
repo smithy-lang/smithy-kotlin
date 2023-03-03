@@ -4,7 +4,6 @@
  */
 package aws.smithy.kotlin.runtime.auth.awssigning
 
-import aws.smithy.kotlin.runtime.auth.awscredentials.Credentials
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.util.text.urlReencodeComponent
 
@@ -31,7 +30,6 @@ internal interface RequestMutator {
     fun appendAuth(
         config: AwsSigningConfig,
         canonical: CanonicalRequest,
-        credentials: Credentials,
         signatureHex: String,
     ): HttpRequest
 }
@@ -40,12 +38,11 @@ internal class DefaultRequestMutator : RequestMutator {
     override fun appendAuth(
         config: AwsSigningConfig,
         canonical: CanonicalRequest,
-        credentials: Credentials,
         signatureHex: String,
     ): HttpRequest {
         when (config.signatureType) {
             AwsSignatureType.HTTP_REQUEST_VIA_HEADERS -> {
-                val credential = "Credential=${credentialValue(config, credentials)}"
+                val credential = "Credential=${credentialValue(config)}"
                 val signedHeaders = "SignedHeaders=${canonical.signedHeaders}"
                 val signature = "Signature=$signatureHex"
                 canonical.request.headers["Authorization"] = "$ALGORITHM_NAME $credential, $signedHeaders, $signature"

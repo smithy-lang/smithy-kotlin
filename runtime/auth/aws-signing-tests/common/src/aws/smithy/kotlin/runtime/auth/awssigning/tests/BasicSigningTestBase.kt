@@ -27,8 +27,7 @@ import kotlin.test.assertTrue
 // based on: https://docs.aws.amazon.com/AmazonS3/latest/API/sigv4-streaming.html#example-signature-calculations-streaming
 private const val CHUNKED_ACCESS_KEY_ID = "AKIAIOSFODNN7EXAMPLE"
 private const val CHUNKED_SECRET_ACCESS_KEY = "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
-private val CHUNKED_TEST_CREDENTIALS_PROVIDER =
-    Credentials(CHUNKED_ACCESS_KEY_ID, CHUNKED_SECRET_ACCESS_KEY).asStaticProvider()
+private val CHUNKED_TEST_CREDENTIALS = Credentials(CHUNKED_ACCESS_KEY_ID, CHUNKED_SECRET_ACCESS_KEY)
 private const val CHUNKED_TEST_REGION = "us-east-1"
 private const val CHUNKED_TEST_SERVICE = "s3"
 private const val CHUNKED_TEST_SIGNING_TIME = "2013-05-24T00:00:00Z"
@@ -53,7 +52,7 @@ public abstract class BasicSigningTestBase : HasSigner {
         service = "demo"
         signatureType = AwsSignatureType.HTTP_REQUEST_VIA_HEADERS
         signingDate = Instant.fromIso8601("2020-10-16T19:56:00Z")
-        credentialsProvider = testCredentialsProvider
+        credentials = DEFAULT_TEST_CREDENTIALS
     }
 
     @Test
@@ -123,7 +122,7 @@ public abstract class BasicSigningTestBase : HasSigner {
         normalizeUriPath = true
         signedBodyHeader = AwsSignedBodyHeader.X_AMZ_CONTENT_SHA256
         hashSpecification = HashSpecification.StreamingAws4HmacSha256Payload
-        credentialsProvider = CHUNKED_TEST_CREDENTIALS_PROVIDER
+        credentials = CHUNKED_TEST_CREDENTIALS
     }
 
     private fun createChunkedSigningConfig(): AwsSigningConfig = AwsSigningConfig {
@@ -135,7 +134,7 @@ public abstract class BasicSigningTestBase : HasSigner {
         useDoubleUriEncode = false
         normalizeUriPath = true
         signedBodyHeader = AwsSignedBodyHeader.NONE
-        credentialsProvider = CHUNKED_TEST_CREDENTIALS_PROVIDER
+        credentials = CHUNKED_TEST_CREDENTIALS
     }
 
     private fun createChunkedTestRequest() = HttpRequest {

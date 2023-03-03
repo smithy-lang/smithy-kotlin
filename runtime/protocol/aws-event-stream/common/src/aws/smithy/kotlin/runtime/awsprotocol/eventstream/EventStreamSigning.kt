@@ -22,11 +22,12 @@ import kotlinx.coroutines.flow.flow
  * Each message's signature incorporates the signature of the previous message.
  * The very first message incorporates the signature of the initial-request for
  * both HTTP2 and WebSockets. The initial signature comes from the execution context.
+ * @param context the operation's execution context. The context is expected to carry all of the required signing
+ * config properties.
  */
 @InternalApi
 public fun Flow<Message>.sign(
     context: ExecutionContext,
-    config: AwsSigningConfig,
 ): Flow<Message> = flow {
     val messages = this@sign
 
@@ -38,12 +39,17 @@ public fun Flow<Message>.sign(
     // is built. Thus, by the time we get here the signature will exist in the context.
     var prevSignature = context.getOrNull(AwsSigningAttributes.RequestSignature) ?: error("expected initial HTTP signature to be set before message signing commences")
 
+    val credentialsProvider = context.getOrNull(AwsSigningAttributes.CredentialsProvider) ?: error("No credentials provider was found in context")
+
     // signature date is updated per event message
-    val configBuilder = config.toBuilder()
+    val configBuilder = context.newEventStreamSigningConfig()
 
     messages.collect { message ->
         val buffer = SdkBuffer()
         message.encode(buffer)
+
+        // ensure credentials are up to date
+        configBuilder.credentials = credentialsProvider.resolve()
 
         // the entire message is wrapped as the payload of the signed message
         val result = signer.signPayload(configBuilder, prevSignature, buffer.readByteArray())
@@ -88,13 +94,11 @@ private fun Instant.truncateSubsecs(): Instant = Instant.fromEpochSeconds(epochS
  * Create a new signing config for an event stream using the current context to set the operation/service specific
  * configuration (e.g. region, signing service, credentials, etc)
  */
-@InternalApi
-public fun ExecutionContext.newEventStreamSigningConfig(): AwsSigningConfig = AwsSigningConfig {
+private fun ExecutionContext.newEventStreamSigningConfig(): AwsSigningConfig.Builder = AwsSigningConfig.Builder().apply {
     algorithm = AwsSigningAlgorithm.SIGV4
     signatureType = AwsSignatureType.HTTP_REQUEST_EVENT
     region = this@newEventStreamSigningConfig[AwsSigningAttributes.SigningRegion]
     service = this@newEventStreamSigningConfig[AwsSigningAttributes.SigningService]
-    credentialsProvider = this@newEventStreamSigningConfig[AwsSigningAttributes.CredentialsProvider]
     useDoubleUriEncode = false
     normalizeUriPath = true
     signedBodyHeader = AwsSignedBodyHeader.NONE

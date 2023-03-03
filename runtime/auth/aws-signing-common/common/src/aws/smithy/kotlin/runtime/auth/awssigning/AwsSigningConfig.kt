@@ -4,7 +4,7 @@
  */
 package aws.smithy.kotlin.runtime.auth.awssigning
 
-import aws.smithy.kotlin.runtime.auth.awscredentials.CredentialsProvider
+import aws.smithy.kotlin.runtime.auth.awscredentials.Credentials
 import aws.smithy.kotlin.runtime.time.Instant
 import kotlin.time.Duration
 
@@ -150,10 +150,10 @@ public class AwsSigningConfig(builder: Builder) {
     public val signedBodyHeader: AwsSignedBodyHeader = builder.signedBodyHeader
 
     /**
-     * Indicates the AWS credentials provider from which to fetch credentials.
+     * The AWS credentials to sign with
      */
-    public val credentialsProvider: CredentialsProvider = requireNotNull(builder.credentialsProvider) {
-        "Signing config must specify a credentials provider"
+    public val credentials: Credentials = requireNotNull(builder.credentials) {
+        "Signing config must specify credentials"
     }
 
     /**
@@ -176,7 +176,7 @@ public class AwsSigningConfig(builder: Builder) {
         it.omitSessionToken = omitSessionToken
         it.hashSpecification = hashSpecification
         it.signedBodyHeader = signedBodyHeader
-        it.credentialsProvider = credentialsProvider
+        it.credentials = credentials
         it.expiresAfter = expiresAfter
     }
 
@@ -192,7 +192,7 @@ public class AwsSigningConfig(builder: Builder) {
         public var omitSessionToken: Boolean = false
         public var hashSpecification: HashSpecification? = null
         public var signedBodyHeader: AwsSignedBodyHeader = AwsSignedBodyHeader.NONE
-        public var credentialsProvider: CredentialsProvider? = null
+        public var credentials: Credentials? = null
         public var expiresAfter: Duration? = null
 
         public fun build(): AwsSigningConfig = AwsSigningConfig(this)

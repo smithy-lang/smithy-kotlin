@@ -5,7 +5,6 @@
 package aws.smithy.kotlin.runtime.auth.awssigning
 
 import aws.smithy.kotlin.runtime.auth.awscredentials.Credentials
-import aws.smithy.kotlin.runtime.auth.awssigning.tests.testCredentialsProvider
 import aws.smithy.kotlin.runtime.http.Headers
 import aws.smithy.kotlin.runtime.http.HttpBody
 import aws.smithy.kotlin.runtime.http.HttpMethod
@@ -20,18 +19,17 @@ class DefaultRequestMutatorTest {
     @Test
     fun testAppendAuthHeader() {
         val canonical = CanonicalRequest(baseRequest.toBuilder(), "", "action;host;x-amz-date", "")
-        val credentials = Credentials("", "secret key")
         val signature = "0123456789abcdef"
 
         val config = AwsSigningConfig {
             region = "us-west-2"
             service = "fooservice"
             signingDate = Instant.fromIso8601("20220427T012345Z")
-            credentialsProvider = testCredentialsProvider
+            credentials = Credentials("", "secret key")
             omitSessionToken = true
         }
 
-        val mutated = RequestMutator.Default.appendAuth(config, canonical, credentials, signature)
+        val mutated = RequestMutator.Default.appendAuth(config, canonical, signature)
 
         assertEquals(baseRequest.method, mutated.method)
         assertEquals(baseRequest.url.toString(), mutated.url.toString())
@@ -39,7 +37,7 @@ class DefaultRequestMutatorTest {
 
         val expectedCredentialScope = "20220427/us-west-2/fooservice/aws4_request"
         val expectedAuthValue =
-            "AWS4-HMAC-SHA256 Credential=${credentials.accessKeyId}/$expectedCredentialScope, " +
+            "AWS4-HMAC-SHA256 Credential=${config.credentials.accessKeyId}/$expectedCredentialScope, " +
                 "SignedHeaders=${canonical.signedHeaders}, Signature=$signature"
         val expectedHeaders = Headers {
             appendAll(baseRequest.headers)

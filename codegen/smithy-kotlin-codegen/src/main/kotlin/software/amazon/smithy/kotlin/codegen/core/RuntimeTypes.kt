@@ -255,7 +255,6 @@ object RuntimeTypes {
                 val AwsSignedBodyHeader = symbol("AwsSignedBodyHeader")
                 val AwsSigner = symbol("AwsSigner")
                 val AwsSigningAttributes = symbol("AwsSigningAttributes")
-                val AwsHttpSigner = symbol("AwsHttpSigner")
                 val HashSpecification = symbol("HashSpecification")
                 val createPresignedRequest = symbol("createPresignedRequest")
                 val PresignedRequestConfig = symbol("PresignedRequestConfig")
@@ -268,6 +267,10 @@ object RuntimeTypes {
             object AwsSigningStandard : RuntimeTypePackage(KotlinDependency.AWS_SIGNING_DEFAULT) {
                 val DefaultAwsSigner = symbol("DefaultAwsSigner")
             }
+        }
+
+        object HttpAuthAws : RuntimeTypePackage(KotlinDependency.HTTP_AUTH_AWS){
+            val AwsHttpSigner = symbol("AwsHttpSigner")
         }
     }
 
@@ -339,7 +342,6 @@ object RuntimeTypes {
         val expectString = symbol("expectString")
 
         val sign = symbol("sign")
-        val newEventStreamSigningConfig = symbol("newEventStreamSigningConfig")
     }
 }
 

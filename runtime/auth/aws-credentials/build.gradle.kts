@@ -28,6 +28,7 @@ kotlin {
             dependencies {
                 // For Instant
                 api(project(":runtime:runtime-core"))
+                api(project(":runtime:auth:identity-api"))
                 implementation(project(":runtime:tracing:tracing-core"))
                 implementation("org.jetbrains.kotlinx:atomicfu:$atomicFuVersion")
             }
