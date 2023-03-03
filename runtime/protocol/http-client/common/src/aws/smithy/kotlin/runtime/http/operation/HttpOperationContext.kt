@@ -8,7 +8,9 @@ package aws.smithy.kotlin.runtime.http.operation
 import aws.smithy.kotlin.runtime.InternalApi
 import aws.smithy.kotlin.runtime.client.ClientOptionsBuilder
 import aws.smithy.kotlin.runtime.client.SdkClientOption
+import aws.smithy.kotlin.runtime.http.auth.HttpSigner
 import aws.smithy.kotlin.runtime.http.response.HttpCall
+import aws.smithy.kotlin.runtime.identity.Identity
 import aws.smithy.kotlin.runtime.logging.Logger
 import aws.smithy.kotlin.runtime.operation.ExecutionContext
 import aws.smithy.kotlin.runtime.tracing.logger
@@ -26,25 +28,47 @@ public open class HttpOperationContext {
         /**
          * The expected HTTP status code of a successful response is stored under this key
          */
-        public val ExpectedHttpStatus: AttributeKey<Int> = AttributeKey("ExpectedHttpStatus")
+        public val ExpectedHttpStatus: AttributeKey<Int> = AttributeKey("aws.smithy.kotlin#ExpectedHttpStatus")
 
         /**
          * A prefix to prepend the resolved hostname with.
          * See [endpointTrait](https://awslabs.github.io/smithy/1.0/spec/core/endpoint-traits.html#endpoint-trait)
          */
-        public val HostPrefix: AttributeKey<String> = AttributeKey("HostPrefix")
+        public val HostPrefix: AttributeKey<String> = AttributeKey("aws.smithy.kotlin#HostPrefix")
 
         /**
          * The HTTP calls made for this operation (this may be > 1 if for example retries are involved)
          */
-        public val HttpCallList: AttributeKey<List<HttpCall>> = AttributeKey("HttpCallList")
+        public val HttpCallList: AttributeKey<List<HttpCall>> = AttributeKey("aws.smithy.kotlin#HttpCallList")
 
         /**
          * The unique request ID generated for tracking the request in-flight client side.
          *
          * NOTE: This is guaranteed to exist.
          */
-        public val SdkRequestId: AttributeKey<String> = AttributeKey("SdkRequestId")
+        public val SdkRequestId: AttributeKey<String> = AttributeKey("aws.smithy.kotlin#SdkRequestId")
+
+        /**
+         * The operation input pre-serialization.
+         *
+         * NOTE: This is guaranteed to exist after serialization.
+         */
+        public val OperationInput: AttributeKey<Any> = AttributeKey("aws.smithy.kotlin#OperationInput")
+
+        /**
+         * The resolved [Identity] for this operation that will be used for signing.
+         *
+         * NOTE: This is an ephemeral attribute and will be removed by the signing process.
+         */
+        // FIXME - I don't love shoving this into the context
+        public val ResolvedIdentity: AttributeKey<Identity> = AttributeKey("aws.smithy.kotlin#OperationIdentity")
+
+        /**
+         * The resolved [HttpSigner] to sign the request with.
+         *
+         * NOTE: This is an ephemeral attribute and will be removed by the signing process.
+         */
+        public val ResolvedSigner: AttributeKey<HttpSigner> = AttributeKey("aws.smithy.kotlin#OperationSigner")
 
         /**
          * Build this operation into an HTTP [ExecutionContext]

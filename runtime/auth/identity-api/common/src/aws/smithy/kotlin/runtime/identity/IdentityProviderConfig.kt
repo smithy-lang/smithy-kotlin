@@ -10,7 +10,7 @@ import aws.smithy.kotlin.runtime.auth.AuthSchemeId
 /**
  * Identity providers configured for the SDK.
  */
-public interface IdentityProviderConfig {
+public fun interface IdentityProviderConfig {
     /**
      * Retrieve an identity provider for the provided auth scheme ID.
      */

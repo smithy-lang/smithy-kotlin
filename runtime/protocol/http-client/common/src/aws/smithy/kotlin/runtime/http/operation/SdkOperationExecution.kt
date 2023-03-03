@@ -20,7 +20,6 @@ import aws.smithy.kotlin.runtime.http.response.HttpCall
 import aws.smithy.kotlin.runtime.http.response.HttpResponse
 import aws.smithy.kotlin.runtime.http.response.complete
 import aws.smithy.kotlin.runtime.http.response.dumpResponse
-import aws.smithy.kotlin.runtime.identity.IdentityProvider
 import aws.smithy.kotlin.runtime.io.*
 import aws.smithy.kotlin.runtime.io.middleware.Middleware
 import aws.smithy.kotlin.runtime.io.middleware.Phase
@@ -30,6 +29,7 @@ import aws.smithy.kotlin.runtime.retries.StandardRetryStrategy
 import aws.smithy.kotlin.runtime.retries.policy.RetryPolicy
 import aws.smithy.kotlin.runtime.retries.policy.StandardRetryPolicy
 import aws.smithy.kotlin.runtime.tracing.trace
+import aws.smithy.kotlin.runtime.util.take
 import kotlin.coroutines.coroutineContext
 import kotlin.time.ExperimentalTime
 import kotlin.time.measureTimedValue
@@ -81,7 +81,7 @@ public typealias SdkHttpRequest = OperationRequest<HttpRequestBuilder>
  *
  * By default, every operation is:
  * * Retried using the configured [retryStrategy] and [retryPolicy].
- * * Signed using the configured [signer]
+ * * Signed using the resolved authentication scheme
  */
 @InternalApi
 public class SdkOperationExecution<Request, Response> {
@@ -121,17 +121,13 @@ public class SdkOperationExecution<Request, Response> {
      */
     public val receive: Phase<SdkHttpRequest, HttpCall> = Phase<SdkHttpRequest, HttpCall>()
 
-    /**
-     * The [HttpSigner] to sign the request with
-     */
-    // FIXME - this is temporary until we refactor identity/auth APIs
-    public var signer: HttpSigner = AnonymousHttpSigner
+    // TODO - make endpoint resolution more explicit?
 
     /**
-     * The [IdentityProvider] to use with [signer]
+     * The authentication config to use. Defaults to [OperationAuthConfig.Anonymous] which uses
+     * anonymous authentication (no auth).
      */
-    // FIXME - this is temporary until we refactor identity/auth APIs
-    public var identityProvider: IdentityProvider = AnonymousIdentityProvider
+    public var authConfig: OperationAuthConfig = OperationAuthConfig.Anonymous
 
     /**
      * The retry strategy to use. Defaults to [StandardRetryStrategy]
@@ -143,6 +139,7 @@ public class SdkOperationExecution<Request, Response> {
      */
     public var retryPolicy: RetryPolicy<Response> = StandardRetryPolicy.Default
 }
+
 
 /**
  * Decorate the "raw" [HttpHandler] with the execution phases (middleware) of this operation and
@@ -161,7 +158,7 @@ internal fun <Request, Response> SdkOperationExecution<Request, Response>.decora
 
     val receiveHandler = decorateHandler(handler, receive)
     val deserializeHandler = op.deserializer.decorate(receiveHandler, interceptors)
-    val authHandler = HttpAuthHandler(deserializeHandler, signer, identityProvider, interceptors)
+    val authHandler = HttpAuthHandler(deserializeHandler, interceptors)
     val onEachAttemptHandler = decorateHandler(authHandler, onEachAttempt)
     val retryHandler = decorateHandler(onEachAttemptHandler, RetryMiddleware(retryStrategy, retryPolicy, interceptors))
 
@@ -231,6 +228,9 @@ private class SerializeHandler<Input, Output> (
             mapRequest(modified.context, modified.subject)
         }
 
+        // store finalized operation input for later middleware to read if needed
+        request.context[HttpOperationContext.OperationInput] = modified.subject as Any
+
         val requestBuilder = tv.value
         interceptors.readAfterSerialization(requestBuilder.immutableView())
 
@@ -247,16 +247,18 @@ private class MutateHandler<Output> (
 
 private class HttpAuthHandler<Input, Output>(
     private val inner: Handler<SdkHttpRequest, Output>,
-    private val signer: HttpSigner,
-    private val identityProvider: IdentityProvider,
     private val interceptors: InterceptorExecutor<Input, Output>,
 ) : Handler<SdkHttpRequest, Output> {
     override suspend fun call(request: SdkHttpRequest): Output {
+        // TODO - resolve endpoint here
+
         val modified = interceptors.modifyBeforeSigning(request.subject.immutableView(true))
             .let { request.copy(subject = it.toBuilder()) }
 
         interceptors.readBeforeSigning(modified.subject.immutableView())
-        val identity = identityProvider.resolve()
+        // remove identity from context at this point, any retry attempt will re-add it
+        val identity = request.context.take(HttpOperationContext.ResolvedIdentity)
+        val signer = request.context.take(HttpOperationContext.ResolvedSigner)
         val signingRequest = SignHttpRequest(modified.context, modified.subject, identity)
         signer.sign(signingRequest)
         interceptors.readAfterSigning(modified.subject.immutableView())
