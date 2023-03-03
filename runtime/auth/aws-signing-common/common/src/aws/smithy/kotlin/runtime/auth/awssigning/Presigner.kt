@@ -127,7 +127,7 @@ public suspend fun createPresignedRequest(
     val signingConfig = AwsSigningConfig {
         region = endpoint.context?.region ?: serviceConfig.region
         service = endpoint.context?.service ?: serviceConfig.signingName
-        credentialsProvider = serviceConfig.credentialsProvider
+        credentials = serviceConfig.credentialsProvider.resolve()
         this.signatureType = signatureType
         signedBodyHeader = AwsSignedBodyHeader.X_AMZ_CONTENT_SHA256
         this.hashSpecification = hashSpecification

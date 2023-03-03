@@ -5,6 +5,7 @@
 package aws.smithy.kotlin.runtime.auth.awssigning.internal
 
 import aws.smithy.kotlin.runtime.ClientException
+import aws.smithy.kotlin.runtime.InternalApi
 import aws.smithy.kotlin.runtime.auth.awssigning.AwsChunkedByteReadChannel
 import aws.smithy.kotlin.runtime.auth.awssigning.AwsChunkedSource
 import aws.smithy.kotlin.runtime.auth.awssigning.AwsSigner
@@ -12,7 +13,8 @@ import aws.smithy.kotlin.runtime.auth.awssigning.AwsSigningConfig
 import aws.smithy.kotlin.runtime.http.*
 import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
 
-internal actual fun HttpRequestBuilder.setAwsChunkedBody(signer: AwsSigner, signingConfig: AwsSigningConfig, signature: ByteArray, trailingHeaders: DeferredHeaders) {
+@InternalApi
+public actual fun HttpRequestBuilder.setAwsChunkedBody(signer: AwsSigner, signingConfig: AwsSigningConfig, signature: ByteArray, trailingHeaders: DeferredHeaders) {
     body = when (body) {
         is HttpBody.ChannelContent -> AwsChunkedByteReadChannel(
             checkNotNull(body.toSdkByteReadChannel()),

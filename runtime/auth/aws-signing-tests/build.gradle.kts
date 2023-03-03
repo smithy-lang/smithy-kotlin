@@ -19,6 +19,7 @@ kotlin {
         commonMain {
             dependencies {
                 api(project(":runtime:auth:aws-signing-common"))
+                api(project(":runtime:auth:http-auth-aws"))
                 implementation("org.jetbrains.kotlin:kotlin-test-common:$kotlinVersion")
                 implementation("org.jetbrains.kotlin:kotlin-test-annotations-common:$kotlinVersion")
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:$coroutinesVersion")

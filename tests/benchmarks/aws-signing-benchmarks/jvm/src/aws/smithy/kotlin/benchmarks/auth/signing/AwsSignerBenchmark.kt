@@ -8,7 +8,7 @@ import aws.smithy.kotlin.runtime.auth.awssigning.AwsSignedBodyHeader
 import aws.smithy.kotlin.runtime.auth.awssigning.AwsSigningConfig
 import aws.smithy.kotlin.runtime.auth.awssigning.DefaultAwsSigner
 import aws.smithy.kotlin.runtime.auth.awssigning.crt.CrtAwsSigner
-import aws.smithy.kotlin.runtime.auth.awssigning.tests.testCredentialsProvider
+import aws.smithy.kotlin.runtime.auth.awssigning.tests.DEFAULT_TEST_CREDENTIALS
 import aws.smithy.kotlin.runtime.http.HttpBody
 import aws.smithy.kotlin.runtime.http.HttpMethod
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
@@ -48,7 +48,7 @@ private val config = AwsSigningConfig {
     region = "the-moon"
     service = "fooservice"
     signedBodyHeader = AwsSignedBodyHeader.X_AMZ_CONTENT_SHA256
-    credentialsProvider = testCredentialsProvider
+    credentials = DEFAULT_TEST_CREDENTIALS
 }
 
 @BenchmarkMode(Mode.AverageTime)

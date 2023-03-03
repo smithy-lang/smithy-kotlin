@@ -26,7 +26,7 @@ import software.amazon.smithy.model.traits.OptionalAuthTrait
  * See the `name` property of: https://awslabs.github.io/smithy/1.0/spec/aws/aws-auth.html#aws-auth-sigv4-trait
  */
 open class AwsSignatureVersion4(private val service: String) : ProtocolMiddleware {
-    override val name: String = RuntimeTypes.Auth.Signing.AwsSigningCommon.AwsHttpSigner.name
+    override val name: String = RuntimeTypes.Auth.HttpAuthAws.AwsHttpSigner.name
     override val order: Byte = 126 // Must come before GlacierBodyChecksum
 
     init {
@@ -39,16 +39,17 @@ open class AwsSignatureVersion4(private val service: String) : ProtocolMiddlewar
     }
 
     final override fun render(ctx: ProtocolGenerator.GenerationContext, op: OperationShape, writer: KotlinWriter) {
-        writer.addImport(RuntimeTypes.Auth.Signing.AwsSigningCommon.AwsHttpSigner)
+        writer.addImport(RuntimeTypes.Auth.HttpAuthAws.AwsHttpSigner)
 
-        writer.withBlock("op.execution.signer = #T {", "}", RuntimeTypes.Auth.Signing.AwsSigningCommon.AwsHttpSigner) {
+        // FIXME - temporary while we work out auth scheme wireup
+        writer.write("op.execution.identityProvider = config.credentialsProvider")
+        writer.withBlock("op.execution.signer = #T {", "}", RuntimeTypes.Auth.HttpAuthAws.AwsHttpSigner) {
             renderSigningConfig(op, writer)
         }
     }
 
     protected open fun renderSigningConfig(op: OperationShape, writer: KotlinWriter) {
         writer.write("this.signer = config.signer")
-        writer.write("this.credentialsProvider = config.credentialsProvider")
         writer.write("this.service = #S", service)
 
         if (op.hasTrait<UnsignedPayloadTrait>()) {

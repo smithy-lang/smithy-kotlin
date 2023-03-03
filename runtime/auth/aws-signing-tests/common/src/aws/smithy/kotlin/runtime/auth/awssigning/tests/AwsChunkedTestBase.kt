@@ -65,7 +65,7 @@ abstract class AwsChunkedTestBase(
         region = "foo"
         service = "bar"
         signingDate = Instant.fromIso8601("20220427T012345Z")
-        credentialsProvider = testCredentialsProvider
+        credentials = DEFAULT_TEST_CREDENTIALS
         signatureType = AwsSignatureType.HTTP_REQUEST_CHUNK
         hashSpecification = HashSpecification.CalculateFromPayload
     }
@@ -74,7 +74,7 @@ abstract class AwsChunkedTestBase(
         region = "foo"
         service = "bar"
         signingDate = Instant.fromIso8601("20220427T012345Z")
-        credentialsProvider = testCredentialsProvider
+        credentials = DEFAULT_TEST_CREDENTIALS
         signatureType = AwsSignatureType.HTTP_REQUEST_TRAILING_HEADERS
         hashSpecification = HashSpecification.CalculateFromPayload
     }
@@ -83,7 +83,7 @@ abstract class AwsChunkedTestBase(
         region = "foo"
         service = "bar"
         signingDate = Instant.fromIso8601("20220427T012345Z")
-        credentialsProvider = testCredentialsProvider
+        credentials = DEFAULT_TEST_CREDENTIALS
         signatureType = AwsSignatureType.HTTP_REQUEST_CHUNK
         hashSpecification = HashSpecification.StreamingUnsignedPayloadWithTrailers
     }

@@ -2,20 +2,18 @@
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
  * SPDX-License-Identifier: Apache-2.0
  */
-package aws.smithy.kotlin.runtime.auth.awssigning
+package aws.smithy.kotlin.runtime.http.auth
 
 import aws.smithy.kotlin.runtime.InternalApi
-import aws.smithy.kotlin.runtime.auth.awscredentials.CredentialsProvider
-import aws.smithy.kotlin.runtime.auth.awssigning.internal.*
+import aws.smithy.kotlin.runtime.auth.awscredentials.Credentials
+import aws.smithy.kotlin.runtime.auth.awssigning.*
 import aws.smithy.kotlin.runtime.auth.awssigning.internal.isEligibleForAwsChunkedStreaming
 import aws.smithy.kotlin.runtime.auth.awssigning.internal.setAwsChunkedBody
 import aws.smithy.kotlin.runtime.auth.awssigning.internal.setAwsChunkedHeaders
 import aws.smithy.kotlin.runtime.auth.awssigning.internal.useAwsChunkedEncoding
 import aws.smithy.kotlin.runtime.http.HttpBody
-import aws.smithy.kotlin.runtime.http.auth.HttpSigner
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
-import aws.smithy.kotlin.runtime.operation.ExecutionContext
 import aws.smithy.kotlin.runtime.util.get
 import kotlin.time.Duration
 
@@ -27,15 +25,10 @@ public class AwsHttpSigner(private val config: Config) : HttpSigner {
     public companion object {
         public inline operator fun invoke(block: Config.() -> Unit): AwsHttpSigner {
             val config = Config().apply(block)
-            requireNotNull(config.credentialsProvider) { "A credentials provider must be specified for the middleware" }
             requireNotNull(config.service) { "A service must be specified for the middleware" }
             requireNotNull(config.signer) { "A signer must be specified for the middleware" }
             return AwsHttpSigner(config)
         }
-
-        @InternalApi
-        // The minimum size of a streaming body before the SDK will begin using aws-chunked content encoding.
-        public const val AWS_CHUNKED_THRESHOLD: Int = CHUNK_SIZE_BYTES * 16
     }
 
     public class Config {
@@ -43,11 +36,6 @@ public class AwsHttpSigner(private val config: Config) : HttpSigner {
          * The signer implementation to use for signing
          */
         public var signer: AwsSigner? = null
-
-        /**
-         * The credentials provider used to sign requests with
-         */
-        public var credentialsProvider: CredentialsProvider? = null
 
         /**
          * The credential scope service name to sign requests for
@@ -105,7 +93,10 @@ public class AwsHttpSigner(private val config: Config) : HttpSigner {
         public var expiresAfter: Duration? = null
     }
 
-    override suspend fun sign(context: ExecutionContext, request: HttpRequestBuilder) {
+    override suspend fun sign(signingRequest: SignHttpRequest) {
+        require(signingRequest.identity is Credentials) { "invalid Identity type ${signingRequest.identity::class}; expected ${Credentials::class}" }
+        val context = signingRequest.context
+        val request = signingRequest.httpRequest
         val body = request.body
 
         // favor attributes from the current request context
@@ -116,7 +107,7 @@ public class AwsHttpSigner(private val config: Config) : HttpSigner {
         val signingConfig = AwsSigningConfig {
             region = context[AwsSigningAttributes.SigningRegion]
             service = context.getOrNull(AwsSigningAttributes.SigningService) ?: checkNotNull(config.service)
-            credentialsProvider = checkNotNull(config.credentialsProvider)
+            credentials = signingRequest.identity as Credentials
             algorithm = config.algorithm
             signingDate = context.getOrNull(AwsSigningAttributes.SigningDate)
 
