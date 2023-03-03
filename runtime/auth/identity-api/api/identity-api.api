@@ -58,7 +58,7 @@ public final class aws/smithy/kotlin/runtime/identity/IdentityAttributesKt {
 }
 
 public abstract interface class aws/smithy/kotlin/runtime/identity/IdentityProvider {
-	public abstract fun resolveIdentity (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public abstract fun resolve (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
 public abstract interface class aws/smithy/kotlin/runtime/identity/IdentityProviderConfig {

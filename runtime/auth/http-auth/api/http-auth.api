@@ -1,5 +1,5 @@
 public final class aws/smithy/kotlin/runtime/http/auth/AnonymousAuthScheme : aws/smithy/kotlin/runtime/http/auth/HttpAuthScheme {
-	public fun <init> ()V
+	public static final field INSTANCE Laws/smithy/kotlin/runtime/http/auth/AnonymousAuthScheme;
 	public fun getSchemeId-DepwgT4 ()Ljava/lang/String;
 	public fun getSigner ()Laws/smithy/kotlin/runtime/http/auth/HttpSigner;
 	public fun identityProvider (Laws/smithy/kotlin/runtime/identity/IdentityProviderConfig;)Laws/smithy/kotlin/runtime/identity/IdentityProvider;
@@ -18,6 +18,6 @@ public final class aws/smithy/kotlin/runtime/http/auth/AnonymousIdentity : aws/s
 
 public final class aws/smithy/kotlin/runtime/http/auth/AnonymousIdentityProvider : aws/smithy/kotlin/runtime/identity/IdentityProvider {
 	public static final field INSTANCE Laws/smithy/kotlin/runtime/http/auth/AnonymousIdentityProvider;
-	public fun resolveIdentity (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun resolve (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
