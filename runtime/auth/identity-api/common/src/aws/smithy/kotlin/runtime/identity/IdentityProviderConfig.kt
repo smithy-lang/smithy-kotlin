@@ -5,6 +5,7 @@
 
 package aws.smithy.kotlin.runtime.identity
 
+import aws.smithy.kotlin.runtime.InternalApi
 import aws.smithy.kotlin.runtime.auth.AuthSchemeId
 
 /**
@@ -16,3 +17,9 @@ public fun interface IdentityProviderConfig {
      */
     public fun identityProviderForScheme(schemeId: AuthSchemeId): IdentityProvider
 }
+
+/**
+ * Treat a single identity provider as [IdentityProviderConfig]
+ */
+@InternalApi
+public fun IdentityProvider.asIdentityProviderConfig(): IdentityProviderConfig = IdentityProviderConfig { this }

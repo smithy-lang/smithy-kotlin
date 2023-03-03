@@ -19,6 +19,7 @@ import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
 import aws.smithy.kotlin.runtime.http.response.HttpCall
 import aws.smithy.kotlin.runtime.http.response.HttpResponse
+import aws.smithy.kotlin.runtime.identity.asIdentityProviderConfig
 import aws.smithy.kotlin.runtime.io.SdkByteReadChannel
 import aws.smithy.kotlin.runtime.net.Host
 import aws.smithy.kotlin.runtime.net.Scheme
@@ -85,14 +86,17 @@ public abstract class AwsHttpSignerTestBase(
             }
         }
 
-        operation.execution.identityProvider = object : CredentialsProvider {
+        val idp = object : CredentialsProvider {
             override suspend fun resolve(): Credentials = testCredentials
         }
-        operation.execution.signer = AwsHttpSigner {
+
+        val signerConfig = AwsHttpSigner.Config().apply {
             signer = this@AwsHttpSignerTestBase.signer
             service = "demo"
             isUnsignedPayload = unsigned
         }
+
+        operation.execution.authConfig = OperationAuthConfig.from(idp.asIdentityProviderConfig(), SigV4AuthScheme(signerConfig))
 
         return operation
     }

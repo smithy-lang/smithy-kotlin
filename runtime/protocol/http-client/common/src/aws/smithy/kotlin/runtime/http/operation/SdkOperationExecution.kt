@@ -9,7 +9,7 @@ import aws.smithy.kotlin.runtime.InternalApi
 import aws.smithy.kotlin.runtime.client.SdkLogMode
 import aws.smithy.kotlin.runtime.client.sdkLogMode
 import aws.smithy.kotlin.runtime.http.HttpHandler
-import aws.smithy.kotlin.runtime.http.auth.*
+import aws.smithy.kotlin.runtime.http.auth.SignHttpRequest
 import aws.smithy.kotlin.runtime.http.interceptors.InterceptorExecutor
 import aws.smithy.kotlin.runtime.http.middleware.RetryMiddleware
 import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
@@ -29,7 +29,6 @@ import aws.smithy.kotlin.runtime.retries.StandardRetryStrategy
 import aws.smithy.kotlin.runtime.retries.policy.RetryPolicy
 import aws.smithy.kotlin.runtime.retries.policy.StandardRetryPolicy
 import aws.smithy.kotlin.runtime.tracing.trace
-import aws.smithy.kotlin.runtime.util.take
 import kotlin.coroutines.coroutineContext
 import kotlin.time.ExperimentalTime
 import kotlin.time.measureTimedValue
@@ -140,7 +139,6 @@ public class SdkOperationExecution<Request, Response> {
     public var retryPolicy: RetryPolicy<Response> = StandardRetryPolicy.Default
 }
 
-
 /**
  * Decorate the "raw" [HttpHandler] with the execution phases (middleware) of this operation and
  * return a handler to be used specifically for the given operation.
@@ -158,7 +156,7 @@ internal fun <Request, Response> SdkOperationExecution<Request, Response>.decora
 
     val receiveHandler = decorateHandler(handler, receive)
     val deserializeHandler = op.deserializer.decorate(receiveHandler, interceptors)
-    val authHandler = HttpAuthHandler(deserializeHandler, interceptors)
+    val authHandler = HttpAuthHandler(deserializeHandler, interceptors, authConfig)
     val onEachAttemptHandler = decorateHandler(authHandler, onEachAttempt)
     val retryHandler = decorateHandler(onEachAttemptHandler, RetryMiddleware(retryStrategy, retryPolicy, interceptors))
 
@@ -245,22 +243,33 @@ private class MutateHandler<Output> (
     override suspend fun call(request: SdkHttpRequest): Output = inner.call(request)
 }
 
+// TODO - move to internal so we can test it
 private class HttpAuthHandler<Input, Output>(
     private val inner: Handler<SdkHttpRequest, Output>,
     private val interceptors: InterceptorExecutor<Input, Output>,
+    private val authConfig: OperationAuthConfig,
 ) : Handler<SdkHttpRequest, Output> {
     override suspend fun call(request: SdkHttpRequest): Output {
-        // TODO - resolve endpoint here
+        // select an auth scheme by reconciling the candidates returned from the resolver with the ones actually
+        // configured/available for the SDK
+        val candidateAuthSchemes = authConfig.authSchemeResolver.resolve(request)
+        val authOption = candidateAuthSchemes.first { it.schemeId in authConfig.configuredAuthSchemes }
+        val authScheme = authConfig.configuredAuthSchemes[authOption.schemeId] ?: error("auth scheme ${authOption.schemeId} not configured")
+
+        // resolve identity from the selected auth scheme
+        val identityProvider = authScheme.identityProvider(authConfig.identityProviderConfig)
+        val identity = identityProvider.resolve()
+
+        // FIXME - endpoint resolution should happen here, either we make it explicit or we change implementation to use modifyBeforeSigning and have to stuff identity into the context
 
         val modified = interceptors.modifyBeforeSigning(request.subject.immutableView(true))
             .let { request.copy(subject = it.toBuilder()) }
 
         interceptors.readBeforeSigning(modified.subject.immutableView())
-        // remove identity from context at this point, any retry attempt will re-add it
-        val identity = request.context.take(HttpOperationContext.ResolvedIdentity)
-        val signer = request.context.take(HttpOperationContext.ResolvedSigner)
+
         val signingRequest = SignHttpRequest(modified.context, modified.subject, identity)
-        signer.sign(signingRequest)
+        authScheme.signer.sign(signingRequest)
+
         interceptors.readAfterSigning(modified.subject.immutableView())
         return inner.call(modified)
     }

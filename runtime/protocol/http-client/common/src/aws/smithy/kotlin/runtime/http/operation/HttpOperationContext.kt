@@ -8,9 +8,7 @@ package aws.smithy.kotlin.runtime.http.operation
 import aws.smithy.kotlin.runtime.InternalApi
 import aws.smithy.kotlin.runtime.client.ClientOptionsBuilder
 import aws.smithy.kotlin.runtime.client.SdkClientOption
-import aws.smithy.kotlin.runtime.http.auth.HttpSigner
 import aws.smithy.kotlin.runtime.http.response.HttpCall
-import aws.smithy.kotlin.runtime.identity.Identity
 import aws.smithy.kotlin.runtime.logging.Logger
 import aws.smithy.kotlin.runtime.operation.ExecutionContext
 import aws.smithy.kotlin.runtime.tracing.logger
@@ -55,20 +53,20 @@ public open class HttpOperationContext {
          */
         public val OperationInput: AttributeKey<Any> = AttributeKey("aws.smithy.kotlin#OperationInput")
 
-        /**
-         * The resolved [Identity] for this operation that will be used for signing.
-         *
-         * NOTE: This is an ephemeral attribute and will be removed by the signing process.
-         */
-        // FIXME - I don't love shoving this into the context
-        public val ResolvedIdentity: AttributeKey<Identity> = AttributeKey("aws.smithy.kotlin#OperationIdentity")
-
-        /**
-         * The resolved [HttpSigner] to sign the request with.
-         *
-         * NOTE: This is an ephemeral attribute and will be removed by the signing process.
-         */
-        public val ResolvedSigner: AttributeKey<HttpSigner> = AttributeKey("aws.smithy.kotlin#OperationSigner")
+        // /**
+        //  * The resolved [Identity] for this operation that will be used for signing.
+        //  *
+        //  * NOTE: This is an ephemeral attribute and will be removed by the signing process.
+        //  */
+        // // FIXME - I don't love shoving this into the context
+        // public val ResolvedIdentity: AttributeKey<Identity> = AttributeKey("aws.smithy.kotlin#OperationIdentity")
+        //
+        // /**
+        //  * The resolved [HttpSigner] to sign the request with.
+        //  *
+        //  * NOTE: This is an ephemeral attribute and will be removed by the signing process.
+        //  */
+        // public val ResolvedSigner: AttributeKey<HttpSigner> = AttributeKey("aws.smithy.kotlin#OperationSigner")
 
         /**
          * Build this operation into an HTTP [ExecutionContext]
