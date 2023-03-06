@@ -19,6 +19,7 @@
         "{gradlew} publishToMavenLocal" 
     ],
     "test_steps": [
+        "{gradlew} apiCheck",
         "{gradlew} test allTests"
     ],
     "upstream": [
