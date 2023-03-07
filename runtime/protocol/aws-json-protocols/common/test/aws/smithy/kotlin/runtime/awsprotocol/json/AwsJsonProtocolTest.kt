@@ -38,7 +38,6 @@ class AwsJsonProtocolTest {
             serializer = UnitSerializer
             deserializer = IdentityDeserializer
             context {
-                service = "FooService"
                 operationName = "Bar"
             }
         }
@@ -69,7 +68,6 @@ class AwsJsonProtocolTest {
             serializer = UnitSerializer
             deserializer = IdentityDeserializer
             context {
-                service = "FooService"
                 operationName = "Bar"
             }
         }
@@ -103,7 +101,6 @@ class AwsJsonProtocolTest {
             }
             deserializer = IdentityDeserializer
             context {
-                service = "FooService"
                 operationName = "Bar"
             }
         }

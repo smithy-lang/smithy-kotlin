@@ -14,12 +14,10 @@ class HttpOperationContextTest {
     @Test
     fun testBuilder() {
         val op = HttpOperationContext.build {
-            service = "test"
             operationName = "operation"
             expectedHttpStatus = 418
         }
 
-        assertEquals("test", op[(SdkClientOption.ServiceName)])
         assertEquals("operation", op[SdkClientOption.OperationName])
         assertEquals(418, op[HttpOperationContext.ExpectedHttpStatus])
     }
@@ -28,7 +26,6 @@ class HttpOperationContextTest {
     fun testMissingRequiredProperties() {
         val ex = assertFailsWith<IllegalArgumentException> {
             HttpOperationContext.build {
-                service = "test"
             }
         }
 
