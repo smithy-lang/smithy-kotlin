@@ -153,6 +153,7 @@ object RuntimeTypes {
             val decodeBase64Bytes = symbol("decodeBase64Bytes")
             val encodeBase64 = symbol("encodeBase64")
             val encodeBase64String = symbol("encodeBase64String")
+            val LazyAsyncValue = symbol("LazyAsyncValue")
         }
 
         object Net : RuntimeTypePackage(KotlinDependency.CORE, "net") {
