@@ -40,6 +40,7 @@ class ServiceClientConfigGenerator(
      * Attempt to detect configuration properties automatically based on the model
      */
     private fun detectDefaultProps(context: CodegenContext, shape: ServiceShape): List<ConfigProperty> = buildList {
+        add(RuntimeConfigProperty.ClientName)
         add(RuntimeConfigProperty.SdkLogMode)
         if (context.protocolGenerator?.applicationProtocol?.isHttpProtocol == true) {
             add(RuntimeConfigProperty.HttpClientEngine)

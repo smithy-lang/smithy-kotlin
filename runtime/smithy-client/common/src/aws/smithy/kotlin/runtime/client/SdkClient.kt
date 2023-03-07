@@ -12,11 +12,6 @@ import aws.smithy.kotlin.runtime.util.Buildable
  */
 public interface SdkClient : Closeable {
     /**
-     * The name of the service client
-     */
-    public val serviceName: String
-
-    /**
      * The client's configuration
      */
     public val config: SdkClientConfig

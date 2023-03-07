@@ -169,7 +169,6 @@ abstract class HttpProtocolClientGenerator(
             writer.openBlock("context {", "}") {
                 writer.write("expectedHttpStatus = ${httpTrait.code}")
                 // property from implementing SdkClient
-                writer.write("service = serviceName")
                 writer.write("operationName = #S", op.id.name)
 
                 // optional endpoint trait

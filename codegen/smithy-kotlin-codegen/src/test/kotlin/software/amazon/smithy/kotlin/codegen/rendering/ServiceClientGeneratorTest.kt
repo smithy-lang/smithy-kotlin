@@ -35,15 +35,6 @@ class ServiceClientGeneratorTest {
     }
 
     @Test
-    fun `it overrides SdkClient serviceName`() {
-        val expected = """
-            override val serviceName: String
-                get() = "Test"
-        """.formatForTest()
-        commonTestContents.shouldContainOnlyOnce(expected)
-    }
-
-    @Test
     fun `it renders signatures correctly`() {
         val expectedSignatures = listOf(
             "public suspend fun getFoo(input: GetFooRequest): GetFooResponse",
