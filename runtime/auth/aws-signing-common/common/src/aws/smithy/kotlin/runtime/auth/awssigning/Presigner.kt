@@ -115,7 +115,7 @@ public suspend fun createPresignedRequest(
     serviceConfig: ServicePresignConfig,
     requestConfig: PresignedRequestConfig,
 ): HttpRequest {
-    val givenSigningContext = SigningContext(serviceConfig.serviceId, serviceConfig.region)
+    val givenSigningContext = SigningContext(serviceConfig.signingName, serviceConfig.region)
     val endpoint = serviceConfig.endpointProvider(givenSigningContext)
     val signatureType = when (requestConfig.presigningLocation) {
         PresigningLocation.HEADER -> AwsSignatureType.HTTP_REQUEST_VIA_HEADERS
