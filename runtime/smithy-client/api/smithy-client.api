@@ -107,7 +107,6 @@ public abstract interface class aws/smithy/kotlin/runtime/client/ResponseInterce
 
 public abstract interface class aws/smithy/kotlin/runtime/client/SdkClient : java/io/Closeable {
 	public abstract fun getConfig ()Laws/smithy/kotlin/runtime/client/SdkClientConfig;
-	public abstract fun getServiceName ()Ljava/lang/String;
 }
 
 public abstract interface class aws/smithy/kotlin/runtime/client/SdkClient$Builder : aws/smithy/kotlin/runtime/util/Buildable {
@@ -147,11 +146,11 @@ public final class aws/smithy/kotlin/runtime/client/SdkClientFactory$DefaultImpl
 
 public final class aws/smithy/kotlin/runtime/client/SdkClientOption {
 	public static final field INSTANCE Laws/smithy/kotlin/runtime/client/SdkClientOption;
+	public final fun getClientName ()Laws/smithy/kotlin/runtime/util/AttributeKey;
 	public final fun getEndpointDiscoveryEnabled ()Laws/smithy/kotlin/runtime/util/AttributeKey;
 	public final fun getIdempotencyTokenProvider ()Laws/smithy/kotlin/runtime/util/AttributeKey;
 	public final fun getLogMode ()Laws/smithy/kotlin/runtime/util/AttributeKey;
 	public final fun getOperationName ()Laws/smithy/kotlin/runtime/util/AttributeKey;
-	public final fun getServiceName ()Laws/smithy/kotlin/runtime/util/AttributeKey;
 }
 
 public final class aws/smithy/kotlin/runtime/client/SdkClientOptionKt {
