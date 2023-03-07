@@ -21,7 +21,7 @@ public object SdkClientOption {
     /**
      * The service name the operation is executed against
      */
-    public val ClientName: ClientOption<String> = ClientOption("ClientName")
+    public val ClientName: ClientOption<String> = ClientOption("aws.smithy.kotlin#ClientName")
 
     /**
      * A token generator for idempotency tokens
