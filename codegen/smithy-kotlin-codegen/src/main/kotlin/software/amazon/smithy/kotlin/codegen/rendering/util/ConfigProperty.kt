@@ -216,10 +216,15 @@ class ConfigProperty private constructor(builder: Builder) {
         /**
          * Shorthand to declare that the property has a [symbol] where the builder version is the same, but nullable.
          */
-        fun useSymbolWithNullableBuilder(symbol: Symbol) {
+        fun useSymbolWithNullableBuilder(symbol: Symbol, defaultValue: String? = null) {
             this.symbol = symbol
             this.builderSymbol = symbol.asNullable()
             this.toBuilderExpression = "" // nothing needed to convert back, T fits into T?
+            this.propertyType = if (defaultValue == null) {
+                ConfigPropertyType.Required()
+            } else {
+                ConfigPropertyType.RequiredWithDefault(defaultValue)
+            }
         }
 
         fun build(): ConfigProperty = ConfigProperty(this)
