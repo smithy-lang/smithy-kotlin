@@ -81,7 +81,6 @@ class HttpProtocolClientGeneratorTest {
             deserializer = GetFooOperationDeserializer()
             context {
                 expectedHttpStatus = 200
-                service = serviceName
                 operationName = "GetFoo"
             }
         }
@@ -101,7 +100,6 @@ class HttpProtocolClientGeneratorTest {
             deserializer = GetFooNoInputOperationDeserializer()
             context {
                 expectedHttpStatus = 200
-                service = serviceName
                 operationName = "GetFooNoInput"
             }
         }
@@ -121,7 +119,6 @@ class HttpProtocolClientGeneratorTest {
             deserializer = GetFooNoOutputOperationDeserializer()
             context {
                 expectedHttpStatus = 200
-                service = serviceName
                 operationName = "GetFooNoOutput"
             }
         }
@@ -141,7 +138,6 @@ class HttpProtocolClientGeneratorTest {
             deserializer = GetFooStreamingInputOperationDeserializer()
             context {
                 expectedHttpStatus = 200
-                service = serviceName
                 operationName = "GetFooStreamingInput"
             }
         }
@@ -161,7 +157,6 @@ class HttpProtocolClientGeneratorTest {
             deserializer = GetFooStreamingOutputOperationDeserializer()
             context {
                 expectedHttpStatus = 200
-                service = serviceName
                 operationName = "GetFooStreamingOutput"
             }
         }
@@ -181,7 +176,6 @@ class HttpProtocolClientGeneratorTest {
             deserializer = GetFooStreamingOutputNoInputOperationDeserializer()
             context {
                 expectedHttpStatus = 200
-                service = serviceName
                 operationName = "GetFooStreamingOutputNoInput"
             }
         }
@@ -201,7 +195,6 @@ class HttpProtocolClientGeneratorTest {
             deserializer = GetFooStreamingInputNoOutputOperationDeserializer()
             context {
                 expectedHttpStatus = 200
-                service = serviceName
                 operationName = "GetFooStreamingInputNoOutput"
             }
         }
@@ -221,7 +214,6 @@ class HttpProtocolClientGeneratorTest {
             deserializer = GetFooNoRequiredOperationDeserializer()
             context {
                 expectedHttpStatus = 200
-                service = serviceName
                 operationName = "GetFooNoRequired"
             }
         }
@@ -241,7 +233,6 @@ class HttpProtocolClientGeneratorTest {
             deserializer = GetFooSomeRequiredOperationDeserializer()
             context {
                 expectedHttpStatus = 200
-                service = serviceName
                 operationName = "GetFooSomeRequired"
             }
         }
@@ -317,7 +308,6 @@ class HttpProtocolClientGeneratorTest {
             deserializer = GetStatusOperationDeserializer()
             context {
                 expectedHttpStatus = 200
-                service = serviceName
                 operationName = "GetStatus"
                 hostPrefix = "$prefix"
             }

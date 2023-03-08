@@ -58,11 +58,6 @@ public open class HttpOperationContext {
     public open class Builder : ClientOptionsBuilder() {
 
         /**
-         * The service name
-         */
-        public var service: String? by requiredOption(SdkClientOption.ServiceName)
-
-        /**
          * The name of the operation
          */
         public var operationName: String? by requiredOption(SdkClientOption.OperationName)

@@ -73,7 +73,6 @@ class ServiceClientGenerator(private val ctx: RenderingContext<ServiceShape>) {
         writer.renderDocumentation(service)
         writer.renderAnnotations(service)
         writer.openBlock("public interface ${serviceSymbol.name} : #T {", RuntimeTypes.SmithyClient.SdkClient)
-            .call { overrideServiceName() }
             .call {
                 // allow access to client's Config
                 writer.dokka("${serviceSymbol.name}'s configuration")
@@ -159,14 +158,6 @@ class ServiceClientGenerator(private val ctx: RenderingContext<ServiceShape>) {
             write("@#T", KotlinTypes.Jvm.JvmStatic)
             write("override fun builder(): Builder = Builder()")
         }
-    }
-
-    private fun overrideServiceName() {
-        writer.write("")
-            .write("override val serviceName: String")
-            .indent()
-            .write("get() = #service.name:S")
-            .dedent()
     }
 
     private fun renderOperation(opIndex: OperationIndex, op: OperationShape) {
