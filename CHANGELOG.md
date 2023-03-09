@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.16.3] - 03/09/2023
+
+### Features
+* Add configurable reader-friendly name to generated SDK clients.
+
 ## [0.16.1] - 03/02/2023
 
 ### Fixes
