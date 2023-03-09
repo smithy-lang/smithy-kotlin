@@ -1,0 +1,8 @@
+{
+    "id": "85c91e25-fbc9-4416-a8bc-54991580a802",
+    "type": "bugfix",
+    "description": "Allow requests with zero content length in the CRT HTTP engine",
+    "issues": [
+        "https://github.com/awslabs/smithy-kotlin/issues/818"
+    ]
+}
