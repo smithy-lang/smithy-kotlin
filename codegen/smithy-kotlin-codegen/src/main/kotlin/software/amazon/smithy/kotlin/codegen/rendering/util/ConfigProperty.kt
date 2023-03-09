@@ -6,6 +6,7 @@ package software.amazon.smithy.kotlin.codegen.rendering.util
 
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.kotlin.codegen.core.*
+import software.amazon.smithy.kotlin.codegen.model.asNullable
 import software.amazon.smithy.kotlin.codegen.model.boxed
 import software.amazon.smithy.kotlin.codegen.model.buildSymbol
 import software.amazon.smithy.kotlin.codegen.model.defaultValue
@@ -209,6 +210,20 @@ class ConfigProperty private constructor(builder: Builder) {
             builderBaseClass = buildSymbol {
                 name = "${base.name}.Builder"
                 namespace = base.namespace
+            }
+        }
+
+        /**
+         * Shorthand to declare that the property has a [symbol] where the builder version is the same, but nullable.
+         */
+        fun useSymbolWithNullableBuilder(symbol: Symbol, defaultValue: String? = null) {
+            this.symbol = symbol
+            this.builderSymbol = symbol.asNullable()
+            this.toBuilderExpression = "" // nothing needed to convert back, T fits into T?
+            this.propertyType = if (defaultValue == null) {
+                ConfigPropertyType.Required()
+            } else {
+                ConfigPropertyType.RequiredWithDefault(defaultValue)
             }
         }
 
