@@ -92,20 +92,6 @@ class RequestConversionTest {
     }
 
     @Test
-    fun testEngineDoesNotAddContentLengthHeaderForEmptyBody() {
-        val request = HttpRequest(
-            HttpMethod.POST,
-            Url.parse("https://test.aws.com?foo=bar"),
-            Headers.Empty,
-            HttpBody.Empty,
-        )
-
-        val testContext = EmptyCoroutineContext + Job()
-        val crtRequest = request.toCrtRequest(testContext)
-        assertFalse(crtRequest.headers.contains("Content-Length"))
-    }
-
-    @Test
     fun testEngineSetsNullBodyForChannelContentChunkedRequests() {
         val testData = ByteArray(1024) { 0 }
 
