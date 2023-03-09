@@ -115,7 +115,8 @@ public suspend fun createPresignedRequest(
     serviceConfig: ServicePresignConfig,
     requestConfig: PresignedRequestConfig,
 ): HttpRequest {
-    val givenSigningContext = SigningContext(serviceConfig.serviceId, serviceConfig.region)
+    // TODO re-evaluate whether SigningContext is a necessary concept: https://github.com/awslabs/smithy-kotlin/issues/755
+    val givenSigningContext = SigningContext(serviceConfig.signingName, serviceConfig.region)
     val endpoint = serviceConfig.endpointProvider(givenSigningContext)
     val signatureType = when (requestConfig.presigningLocation) {
         PresigningLocation.HEADER -> AwsSignatureType.HTTP_REQUEST_VIA_HEADERS
