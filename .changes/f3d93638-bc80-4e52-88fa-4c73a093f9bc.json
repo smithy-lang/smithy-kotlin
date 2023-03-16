@@ -1,8 +1,0 @@
-{
-    "id": "f3d93638-bc80-4e52-88fa-4c73a093f9bc",
-    "type": "bugfix",
-    "description": "Fix a bug in presigned URL generation when using a ServicePresignConfig object",
-    "issues": [
-        "https://github.com/awslabs/aws-sdk-kotlin/issues/868"
-    ]
-}

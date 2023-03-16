@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.16.4] - 03/16/2023
+
+### Fixes
+* [#868](https://github.com/awslabs/aws-sdk-kotlin/issues/868) Fix a bug in presigned URL generation when using a ServicePresignConfig object
+
 ## [0.16.3] - 03/09/2023
 
 ### Features
