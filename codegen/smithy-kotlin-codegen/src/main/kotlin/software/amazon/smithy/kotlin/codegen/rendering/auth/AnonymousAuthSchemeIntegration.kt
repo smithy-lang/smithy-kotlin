@@ -1,0 +1,35 @@
+/*
+ * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+package software.amazon.smithy.kotlin.codegen.rendering.auth
+
+import software.amazon.smithy.kotlin.codegen.core.RuntimeTypes
+import software.amazon.smithy.kotlin.codegen.integration.AuthSchemeHandler
+import software.amazon.smithy.kotlin.codegen.integration.KotlinIntegration
+import software.amazon.smithy.kotlin.codegen.core.RenderExpr
+import software.amazon.smithy.kotlin.codegen.rendering.protocol.ProtocolGenerator
+import software.amazon.smithy.model.shapes.OperationShape
+import software.amazon.smithy.model.shapes.ShapeId
+import software.amazon.smithy.model.traits.OptionalAuthTrait
+
+// FIXME - TBD whether this stays as `smithy.api#optionalAuth` ID
+
+/**
+ * Register support for the `smithy.api#optionalAuth` auth scheme.
+ */
+class AnonymousAuthSchemeIntegration : KotlinIntegration {
+    override fun authSchemes(ctx: ProtocolGenerator.GenerationContext): List<AuthSchemeHandler> = listOf(AnonymousAuthSchemeHandler())
+}
+
+class AnonymousAuthSchemeHandler : AuthSchemeHandler {
+    override val authSchemeId: ShapeId = OptionalAuthTrait.ID
+
+    override fun identityProviderAdapterExpression(): RenderExpr = RenderExpr("#T", RuntimeTypes.Auth.HttpAuth.AnonymousIdentityProvider)
+
+    override fun authSchemeProviderInstantiateAuthOptionExpr(
+        ctx: ProtocolGenerator.GenerationContext,
+        op: OperationShape?
+    ): RenderExpr = RenderExpr("#T(#T.Anonymous)", RuntimeTypes.Auth.Identity.AuthSchemeOption, RuntimeTypes.Auth.Identity.AuthSchemeId)
+}

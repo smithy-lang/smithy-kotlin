@@ -10,6 +10,7 @@ import software.amazon.smithy.kotlin.codegen.integration.SectionId
 import software.amazon.smithy.kotlin.codegen.integration.SectionKey
 import software.amazon.smithy.kotlin.codegen.lang.KotlinTypes
 import software.amazon.smithy.kotlin.codegen.model.*
+import software.amazon.smithy.kotlin.codegen.rendering.auth.IdentityProviderConfigGenerator
 import software.amazon.smithy.kotlin.codegen.rendering.serde.deserializerName
 import software.amazon.smithy.kotlin.codegen.rendering.serde.serializerName
 import software.amazon.smithy.kotlin.codegen.utils.getOrNull
@@ -78,6 +79,8 @@ abstract class HttpProtocolClientGenerator(
     protected open fun renderProperties(writer: KotlinWriter) {
         writer.write("private val managedResources = #T()", RuntimeTypes.Core.IO.SdkManagedGroup)
         writer.write("private val client = #T(config.httpClientEngine)", RuntimeTypes.HttpClient.SdkHttpClient)
+        writer.write("private val identityProviderConfig = #T(config)", IdentityProviderConfigGenerator.getSymbol(ctx.settings))
+
     }
 
     protected open fun importSymbols(writer: KotlinWriter) {

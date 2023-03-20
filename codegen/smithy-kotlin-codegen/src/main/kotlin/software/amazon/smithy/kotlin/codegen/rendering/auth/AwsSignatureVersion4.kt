@@ -2,7 +2,7 @@
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
  * SPDX-License-Identifier: Apache-2.0
  */
-package software.amazon.smithy.kotlin.codegen.signing
+package software.amazon.smithy.kotlin.codegen.rendering.auth
 
 import software.amazon.smithy.aws.traits.auth.SigV4Trait
 import software.amazon.smithy.aws.traits.auth.UnsignedPayloadTrait
@@ -25,6 +25,7 @@ import software.amazon.smithy.model.traits.OptionalAuthTrait
  * @param service The credential scope service name to sign for
  * See the `name` property of: https://awslabs.github.io/smithy/1.0/spec/aws/aws-auth.html#aws-auth-sigv4-trait
  */
+// FIXME - remove
 open class AwsSignatureVersion4(private val service: String) : ProtocolMiddleware {
     override val name: String = RuntimeTypes.Auth.HttpAuthAws.AwsHttpSigner.name
     override val order: Byte = 126 // Must come before GlacierBodyChecksum
@@ -42,14 +43,23 @@ open class AwsSignatureVersion4(private val service: String) : ProtocolMiddlewar
         writer.addImport(RuntimeTypes.Auth.HttpAuthAws.AwsHttpSigner)
 
         // FIXME - temporary while we work out auth scheme wireup
-        writer.write("op.execution.identityProvider = config.credentialsProvider")
-        writer.withBlock("op.execution.signer = #T {", "}", RuntimeTypes.Auth.HttpAuthAws.AwsHttpSigner) {
+        writer.withBlock(
+            "val signerConfig = #T.Config().apply {",
+            "}",
+            RuntimeTypes.Auth.HttpAuthAws.AwsHttpSigner
+        ) {
             renderSigningConfig(op, writer)
         }
+
+        writer.write(
+            "op.execution.authConfig = #T.from(config.credentialsProvider, #T(signerConfig))",
+            RuntimeTypes.HttpClient.Operation.OperationAuthConfig,
+            RuntimeTypes.Auth.HttpAuthAws.SigV4AuthScheme
+        )
     }
 
     protected open fun renderSigningConfig(op: OperationShape, writer: KotlinWriter) {
-        writer.write("this.signer = config.signer")
+        writer.write("this.signer = #T", RuntimeTypes.Auth.Signing.AwsSigningStandard.DefaultAwsSigner)
         writer.write("this.service = #S", service)
 
         if (op.hasTrait<UnsignedPayloadTrait>()) {

@@ -474,7 +474,7 @@ private fun buildOperation(
         expiresAfter = config.expiresAfter
     }
 
-    op.execution.authConfig = OperationAuthConfig.from(
+    op.execution.auth = OperationAuthConfig.from(
         idp.asIdentityProviderConfig(),
         SigV4AuthScheme(signerConfig),
     )

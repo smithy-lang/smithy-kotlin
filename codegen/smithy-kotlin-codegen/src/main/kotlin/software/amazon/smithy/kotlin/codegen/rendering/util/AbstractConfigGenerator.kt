@@ -31,6 +31,11 @@ import software.amazon.smithy.kotlin.codegen.model.propertyTypeMutability
  */
 abstract class AbstractConfigGenerator {
 
+    /**
+     * The generated type visibility e.g. `public`, `internal`, `private`.
+     */
+    open val visibility: String = "public"
+
     open fun render(
         ctx: CodegenContext,
         props: Collection<ConfigProperty>,
@@ -47,7 +52,7 @@ abstract class AbstractConfigGenerator {
         val formattedBaseClasses = props.formattedBaseClasses { it.baseClass?.name }
 
         writer.withBlock(
-            "public class #configClass.name:L private constructor(builder: Builder)$formattedBaseClasses {",
+            "$visibility class #configClass.name:L private constructor(builder: Builder)$formattedBaseClasses {",
             "}",
         ) {
             renderImmutableProperties(sortedProps, writer)
@@ -60,8 +65,8 @@ abstract class AbstractConfigGenerator {
     }
 
     protected open fun renderCompanionObject(writer: KotlinWriter) {
-        writer.withBlock("public companion object {", "}") {
-            write("public inline operator fun invoke(block: Builder.() -> kotlin.Unit): #configClass.name:L = Builder().apply(block).build()")
+        writer.withBlock("$visibility companion object {", "}") {
+            write("$visibility inline operator fun invoke(block: Builder.() -> kotlin.Unit): #configClass.name:L = Builder().apply(block).build()")
         }
     }
 
@@ -115,7 +120,7 @@ abstract class AbstractConfigGenerator {
 
     protected open fun renderToBuilder(props: Collection<ConfigProperty>, writer: KotlinWriter) {
         writer.write("")
-            .withBlock("public fun toBuilder(): Builder = Builder().apply {", "}") {
+            .withBlock("$visibility fun toBuilder(): Builder = Builder().apply {", "}") {
                 props
                     .filter { it.propertyType !is ConfigPropertyType.ConstantValue }
                     .forEach { prop ->
@@ -128,7 +133,7 @@ abstract class AbstractConfigGenerator {
         val formattedBaseClasses = props.formattedBaseClasses { it.builderBaseClass?.name }
 
         writer.write("")
-            .withBlock("public class Builder$formattedBaseClasses {", "}") {
+            .withBlock("$visibility class Builder$formattedBaseClasses {", "}") {
                 // override DSL properties
                 props
                     .filter { it.propertyType !is ConfigPropertyType.ConstantValue }

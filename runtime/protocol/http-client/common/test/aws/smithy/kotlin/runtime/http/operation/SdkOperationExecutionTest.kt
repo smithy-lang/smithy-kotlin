@@ -59,7 +59,7 @@ class SdkOperationExecutionTest {
             override val signer: HttpSigner = httpSigner
         }
 
-        op.execution.authConfig = OperationAuthConfig.from(
+        op.execution.auth = OperationAuthConfig.from(
             AnonymousIdentityProvider.asIdentityProviderConfig(),
             authScheme,
         )

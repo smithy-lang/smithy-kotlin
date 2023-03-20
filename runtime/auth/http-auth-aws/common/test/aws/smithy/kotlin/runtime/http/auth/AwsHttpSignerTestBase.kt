@@ -96,7 +96,7 @@ public abstract class AwsHttpSignerTestBase(
             isUnsignedPayload = unsigned
         }
 
-        operation.execution.authConfig = OperationAuthConfig.from(idp.asIdentityProviderConfig(), SigV4AuthScheme(signerConfig))
+        operation.execution.auth = OperationAuthConfig.from(idp.asIdentityProviderConfig(), SigV4AuthScheme(signerConfig))
 
         return operation
     }

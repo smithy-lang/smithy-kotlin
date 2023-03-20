@@ -126,7 +126,7 @@ public class SdkOperationExecution<Request, Response> {
      * The authentication config to use. Defaults to [OperationAuthConfig.Anonymous] which uses
      * anonymous authentication (no auth).
      */
-    public var authConfig: OperationAuthConfig = OperationAuthConfig.Anonymous
+    public var auth: OperationAuthConfig = OperationAuthConfig.Anonymous
 
     /**
      * The retry strategy to use. Defaults to [StandardRetryStrategy]
@@ -156,7 +156,7 @@ internal fun <Request, Response> SdkOperationExecution<Request, Response>.decora
 
     val receiveHandler = decorateHandler(handler, receive)
     val deserializeHandler = op.deserializer.decorate(receiveHandler, interceptors)
-    val authHandler = HttpAuthHandler(deserializeHandler, interceptors, authConfig)
+    val authHandler = HttpAuthHandler(deserializeHandler, interceptors, auth)
     val onEachAttemptHandler = decorateHandler(authHandler, onEachAttempt)
     val retryHandler = decorateHandler(onEachAttemptHandler, RetryMiddleware(retryStrategy, retryPolicy, interceptors))
 
@@ -253,8 +253,9 @@ private class HttpAuthHandler<Input, Output>(
         // select an auth scheme by reconciling the candidates returned from the resolver with the ones actually
         // configured/available for the SDK
         val candidateAuthSchemes = authConfig.authSchemeResolver.resolve(request)
-        val authOption = candidateAuthSchemes.first { it.schemeId in authConfig.configuredAuthSchemes }
-        val authScheme = authConfig.configuredAuthSchemes[authOption.schemeId] ?: error("auth scheme ${authOption.schemeId} not configured")
+        val configuredAuthSchemes = authConfig.configuredAuthSchemes.associateBy { it.schemeId }
+        val authOption = candidateAuthSchemes.firstOrNull { it.schemeId in configuredAuthSchemes } ?: error("no auth scheme found for operation")
+        val authScheme = configuredAuthSchemes[authOption.schemeId] ?: error("auth scheme ${authOption.schemeId} not configured")
 
         // resolve identity from the selected auth scheme
         val identityProvider = authScheme.identityProvider(authConfig.identityProviderConfig)

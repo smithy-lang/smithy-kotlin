@@ -129,6 +129,9 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Unit>() {
 
             LOGGER.info("[${service.id}] Generating endpoint provider for protocol $protocol")
             generateEndpointsSources(ctx)
+
+            LOGGER.info("[${service.id}] Generating auth scheme provider for protocol $protocol")
+            generateAuthSchemeProvider(ctx)
         }
 
         writers.finalize()
@@ -207,5 +210,13 @@ private fun ProtocolGenerator.generateEndpointsSources(ctx: ProtocolGenerator.Ge
     if (rules != null) {
         generateEndpointProvider(ctx, rules)
         generateEndpointProviderTests(ctx, ctx.service.getEndpointTests(), rules)
+    }
+}
+
+private fun ProtocolGenerator.generateAuthSchemeProvider(ctx: ProtocolGenerator.GenerationContext) {
+    with(authSchemeDelegator(ctx)) {
+        identityProviderGenerator().render(ctx)
+        authSchemeParametersGenerator().render(ctx)
+        authSchemeProviderGenerator().render(ctx)
     }
 }

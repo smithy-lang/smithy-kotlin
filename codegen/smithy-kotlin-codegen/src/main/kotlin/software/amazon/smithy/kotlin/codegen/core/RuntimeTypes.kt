@@ -56,16 +56,16 @@ object RuntimeTypes {
         }
 
         object Operation : RuntimeTypePackage(KotlinDependency.HTTP, "operation") {
+            val context = symbol("context")
+            val execute = symbol("execute")
             val HttpDeserialize = symbol("HttpDeserialize")
             val HttpSerialize = symbol("HttpSerialize")
-            val SdkHttpOperation = symbol("SdkHttpOperation")
-            val SdkHttpRequest = symbol("SdkHttpRequest")
+            val OperationAuthConfig = symbol("OperationAuthConfig")
             val OperationRequest = symbol("OperationRequest")
-            val context = symbol("context")
             val roundTrip = symbol("roundTrip")
             val sdkRequestId = symbol("sdkRequestId")
-            val execute = symbol("execute")
-            val InlineMiddleware = symbol("InlineMiddleware")
+            val SdkHttpOperation = symbol("SdkHttpOperation")
+            val SdkHttpRequest = symbol("SdkHttpRequest")
         }
 
         object Config : RuntimeTypePackage(KotlinDependency.HTTP, "config") {
@@ -249,6 +249,15 @@ object RuntimeTypes {
             }
         }
 
+        object Identity : RuntimeTypePackage(KotlinDependency.IDENTITY_API){
+            val AuthSchemeId = symbol("AuthSchemeId", "auth")
+            val AuthSchemeProvider = symbol("AuthSchemeProvider", "auth")
+            val AuthSchemeOption = symbol("AuthSchemeOption", "auth")
+
+            val IdentityProvider = symbol("IdentityProvider", "identity")
+            val IdentityProviderConfig = symbol("IdentityProviderConfig", "identity")
+        }
+
         object Signing {
             object AwsSigningCommon : RuntimeTypePackage(KotlinDependency.AWS_SIGNING_COMMON) {
                 val AwsSignedBodyHeader = symbol("AwsSignedBodyHeader")
@@ -268,8 +277,13 @@ object RuntimeTypes {
             }
         }
 
+        object HttpAuth: RuntimeTypePackage(KotlinDependency.HTTP_AUTH) {
+            val AnonymousIdentityProvider = symbol("AnonymousIdentityProvider")
+        }
+
         object HttpAuthAws : RuntimeTypePackage(KotlinDependency.HTTP_AUTH_AWS){
             val AwsHttpSigner = symbol("AwsHttpSigner")
+            val SigV4AuthScheme = symbol("SigV4AuthScheme")
         }
     }
 
