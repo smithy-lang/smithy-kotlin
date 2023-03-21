@@ -6,7 +6,6 @@
 package software.amazon.smithy.kotlin.codegen.integration
 
 import software.amazon.smithy.kotlin.codegen.core.KotlinWriter
-import software.amazon.smithy.kotlin.codegen.core.RenderExpr
 import software.amazon.smithy.kotlin.codegen.rendering.protocol.ProtocolGenerator
 import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.shapes.ShapeId
@@ -42,7 +41,6 @@ interface AuthSchemeHandler {
      * Render any additional helper methods needed in the generated auth scheme provider
      */
     fun authSchemeProviderRenderAdditionalMethods(ctx: ProtocolGenerator.GenerationContext, writer: KotlinWriter) {}
-
 
     /**
      * Render code that instantiates the actual `HttpAuthScheme` for the generated service client implementation.

@@ -5,7 +5,6 @@
 
 package software.amazon.smithy.kotlin.codegen.rendering.auth
 
-import software.amazon.smithy.aws.traits.auth.UnsignedPayloadTrait
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.kotlin.codegen.KotlinSettings
 import software.amazon.smithy.kotlin.codegen.core.InlineKotlinWriter
@@ -15,13 +14,9 @@ import software.amazon.smithy.kotlin.codegen.core.withBlock
 import software.amazon.smithy.kotlin.codegen.integration.AuthSchemeHandler
 import software.amazon.smithy.kotlin.codegen.lang.KotlinTypes
 import software.amazon.smithy.kotlin.codegen.model.buildSymbol
-import software.amazon.smithy.kotlin.codegen.model.hasTrait
+import software.amazon.smithy.kotlin.codegen.model.knowledge.AuthIndex
 import software.amazon.smithy.kotlin.codegen.rendering.protocol.ProtocolGenerator
-import software.amazon.smithy.model.knowledge.ServiceIndex
-import software.amazon.smithy.model.knowledge.TopDownIndex
 import software.amazon.smithy.model.shapes.OperationShape
-import software.amazon.smithy.model.traits.AuthTrait
-import software.amazon.smithy.model.traits.OptionalAuthTrait
 
 /**
  * Generates the auth scheme resolver to use for a service (type + implementation)
@@ -70,23 +65,8 @@ open class AuthSchemeProviderGenerator {
         ) {
 
             val paramsSymbol = AuthSchemeParametersGenerator.getSymbol(ctx.settings)
-            val topDownIndex = TopDownIndex.of(ctx.model)
-            val serviceIndex = ServiceIndex.of(ctx.model)
-
-            val operations = topDownIndex.getContainedOperations(ctx.service)
-            val operationsWithOverrides = operations.filter { op ->
-                op.hasTrait<AuthTrait>() || op.hasTrait<UnsignedPayloadTrait>() || op.hasTrait<OptionalAuthTrait>()
-            }
-
-            val effectiveServiceAuthSchemes = serviceIndex.getEffectiveAuthSchemes(ctx.service)
-
-            // don't filter too early due to optional auth trait not showing up in effective auth schemes for a service
-            val authSchemeHandlers = ctx
-                .integrations
-                .flatMap { it.authSchemes(ctx) }
-                // take the first registered
-                .distinctBy(AuthSchemeHandler::authSchemeId)
-
+            val authIndex = AuthIndex()
+            val operationsWithOverrides = authIndex.operationsWithOverrides(ctx)
 
             withBlock(
                 "private val operationOverrides = mapOf<#T, List<#T>>(",
@@ -95,14 +75,7 @@ open class AuthSchemeProviderGenerator {
                 RuntimeTypes.Auth.Identity.AuthSchemeOption
             ) {
                 operationsWithOverrides.forEach { op ->
-                    // anonymous auth (optionalAuth trait) is handled as an annotation trait for some reason
-                    val opEffectiveAuthSchemes = serviceIndex.getEffectiveAuthSchemes(ctx.service, op).keys.toSet()
-                    val effectiveAuthTraitsForOperation = if (op.hasTrait<OptionalAuthTrait>() || opEffectiveAuthSchemes.isEmpty()) {
-                        setOf(OptionalAuthTrait.ID)
-                    }else {
-                        opEffectiveAuthSchemes
-                    }
-                    val authHandlersForOperation = authSchemeHandlers.filter { it.authSchemeId in effectiveAuthTraitsForOperation }
+                    val authHandlersForOperation = authIndex.effectiveAuthHandlersForOperation(ctx, op)
                     renderAuthOptionsListOverrideForOperation(ctx, "\"${op.id.name}\"", authHandlersForOperation, writer, op)
                 }
             }
@@ -112,12 +85,7 @@ open class AuthSchemeProviderGenerator {
                 ")",
                 RuntimeTypes.Auth.Identity.AuthSchemeOption
             ) {
-                val defaultHandlers = authSchemeHandlers
-                    .filter { it.authSchemeId in effectiveServiceAuthSchemes }
-                    // default to AnonymousAuth if effectiveAuth is []
-                    .ifEmpty { listOf(AnonymousAuthSchemeHandler()) }
-
-                // FIXME - sort by original order from effectiveAuthSchemes
+                val defaultHandlers = authIndex.effectiveAuthHandlersForService(ctx)
 
                 defaultHandlers.forEach {
                     val inlineWriter: InlineKotlinWriter = {
@@ -139,7 +107,8 @@ open class AuthSchemeProviderGenerator {
             }
 
             // render any helper methods
-            authSchemeHandlers.forEach { it.authSchemeProviderRenderAdditionalMethods(ctx, writer) }
+            val allAuthSchemeHandlers = authIndex.authHandlersForService(ctx)
+            allAuthSchemeHandlers.forEach { it.authSchemeProviderRenderAdditionalMethods(ctx, writer) }
         }
     }
 
