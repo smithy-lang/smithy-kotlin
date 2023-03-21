@@ -8,6 +8,7 @@ package software.amazon.smithy.kotlin.codegen.rendering.auth
 import software.amazon.smithy.aws.traits.auth.UnsignedPayloadTrait
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.kotlin.codegen.KotlinSettings
+import software.amazon.smithy.kotlin.codegen.core.InlineKotlinWriter
 import software.amazon.smithy.kotlin.codegen.core.KotlinWriter
 import software.amazon.smithy.kotlin.codegen.core.RuntimeTypes
 import software.amazon.smithy.kotlin.codegen.core.withBlock
@@ -83,6 +84,9 @@ open class AuthSchemeProviderGenerator {
             val authSchemeHandlers = ctx
                 .integrations
                 .flatMap { it.authSchemes(ctx) }
+                // take the first registered
+                .distinctBy(AuthSchemeHandler::authSchemeId)
+
 
             withBlock(
                 "private val operationOverrides = mapOf<#T, List<#T>>(",
@@ -113,11 +117,14 @@ open class AuthSchemeProviderGenerator {
                     // default to AnonymousAuth if effectiveAuth is []
                     .ifEmpty { listOf(AnonymousAuthSchemeHandler()) }
 
-                defaultHandlers
-                    .map { it.authSchemeProviderInstantiateAuthOptionExpr(ctx) }
-                    .forEach {
-                        write("${it.format},", *it.args.toTypedArray())
+                // FIXME - sort by original order from effectiveAuthSchemes
+
+                defaultHandlers.forEach {
+                    val inlineWriter: InlineKotlinWriter = {
+                        it.authSchemeProviderInstantiateAuthOptionExpr(ctx, null, this)
                     }
+                    write("#W,", inlineWriter)
+                }
             }
 
             withBlock(
@@ -144,8 +151,12 @@ open class AuthSchemeProviderGenerator {
         op: OperationShape
     ) {
         writer.withBlock("#L to listOf(", "),", case) {
-            handlers.map { it.authSchemeProviderInstantiateAuthOptionExpr(ctx, op) }
-                .forEach { writer.write("${it.format},", *it.args.toTypedArray()) }
+            handlers.forEach {
+                val inlineWriter: InlineKotlinWriter = {
+                    it.authSchemeProviderInstantiateAuthOptionExpr(ctx, op, this)
+                }
+                write("#W,", inlineWriter)
+            }
         }
     }
 

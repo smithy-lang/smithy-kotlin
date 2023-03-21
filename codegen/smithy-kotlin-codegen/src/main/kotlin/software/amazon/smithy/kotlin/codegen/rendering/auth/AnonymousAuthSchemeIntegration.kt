@@ -5,10 +5,10 @@
 
 package software.amazon.smithy.kotlin.codegen.rendering.auth
 
+import software.amazon.smithy.kotlin.codegen.core.KotlinWriter
 import software.amazon.smithy.kotlin.codegen.core.RuntimeTypes
 import software.amazon.smithy.kotlin.codegen.integration.AuthSchemeHandler
 import software.amazon.smithy.kotlin.codegen.integration.KotlinIntegration
-import software.amazon.smithy.kotlin.codegen.core.RenderExpr
 import software.amazon.smithy.kotlin.codegen.rendering.protocol.ProtocolGenerator
 import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.shapes.ShapeId
@@ -25,11 +25,19 @@ class AnonymousAuthSchemeIntegration : KotlinIntegration {
 
 class AnonymousAuthSchemeHandler : AuthSchemeHandler {
     override val authSchemeId: ShapeId = OptionalAuthTrait.ID
-
-    override fun identityProviderAdapterExpression(): RenderExpr = RenderExpr("#T", RuntimeTypes.Auth.HttpAuth.AnonymousIdentityProvider)
+    override fun identityProviderAdapterExpression(writer: KotlinWriter) {
+        writer.write("#T", RuntimeTypes.Auth.HttpAuth.AnonymousIdentityProvider)
+    }
 
     override fun authSchemeProviderInstantiateAuthOptionExpr(
         ctx: ProtocolGenerator.GenerationContext,
-        op: OperationShape?
-    ): RenderExpr = RenderExpr("#T(#T.Anonymous)", RuntimeTypes.Auth.Identity.AuthSchemeOption, RuntimeTypes.Auth.Identity.AuthSchemeId)
+        op: OperationShape?,
+        writer: KotlinWriter
+    ) {
+        writer.write("#T(#T.Anonymous)", RuntimeTypes.Auth.Identity.AuthSchemeOption, RuntimeTypes.Auth.Identity.AuthSchemeId)
+    }
+
+    override fun instantiateAuthSchemeExpr(ctx: ProtocolGenerator.GenerationContext, writer: KotlinWriter) {
+        writer.write("#T", RuntimeTypes.Auth.HttpAuth.AnonymousAuthScheme)
+    }
 }

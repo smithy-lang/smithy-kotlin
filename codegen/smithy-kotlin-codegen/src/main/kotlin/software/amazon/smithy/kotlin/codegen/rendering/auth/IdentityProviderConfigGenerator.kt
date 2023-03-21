@@ -7,6 +7,7 @@ package software.amazon.smithy.kotlin.codegen.rendering.auth
 
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.kotlin.codegen.KotlinSettings
+import software.amazon.smithy.kotlin.codegen.core.InlineKotlinWriter
 import software.amazon.smithy.kotlin.codegen.core.KotlinWriter
 import software.amazon.smithy.kotlin.codegen.core.RuntimeTypes
 import software.amazon.smithy.kotlin.codegen.core.withBlock
@@ -53,9 +54,7 @@ class IdentityProviderConfigGenerator {
         ) {
             authSchemes.forEach {
                 writeInline("#S -> ", it.authSchemeId)
-                with(it.identityProviderAdapterExpression()) {
-                    write(format, *args.toTypedArray())
-                }
+                it.identityProviderAdapterExpression(this)
             }
             write("else -> error(#S)", "auth scheme \$schemeId not configured for client")
         }

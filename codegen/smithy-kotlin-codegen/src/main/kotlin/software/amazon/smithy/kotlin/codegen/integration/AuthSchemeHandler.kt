@@ -27,7 +27,7 @@ interface AuthSchemeHandler {
      * e.g. `config.credentialsProvider`
      * @return the expression to render
      */
-    fun identityProviderAdapterExpression(): RenderExpr
+    fun identityProviderAdapterExpression(writer: KotlinWriter)
 
     /**
      * Render code that instantiates an `AuthSchemeOption` for the generated auth scheme provider.
@@ -36,11 +36,20 @@ interface AuthSchemeHandler {
      * @param op optional operation shape to customize creation for
      * @return the expression to render
      */
-    fun authSchemeProviderInstantiateAuthOptionExpr(ctx: ProtocolGenerator.GenerationContext, op: OperationShape? = null): RenderExpr
+    fun authSchemeProviderInstantiateAuthOptionExpr(ctx: ProtocolGenerator.GenerationContext, op: OperationShape? = null, writer: KotlinWriter)
 
     /**
      * Render any additional helper methods needed in the generated auth scheme provider
      */
     fun authSchemeProviderRenderAdditionalMethods(ctx: ProtocolGenerator.GenerationContext, writer: KotlinWriter) {}
+
+
+    /**
+     * Render code that instantiates the actual `HttpAuthScheme` for the generated service client implementation.
+     *
+     * @param ctx the protocol generator context
+     * @return the expression to render
+     */
+    fun instantiateAuthSchemeExpr(ctx: ProtocolGenerator.GenerationContext, writer: KotlinWriter)
 }
 

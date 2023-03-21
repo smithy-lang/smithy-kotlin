@@ -15,6 +15,7 @@ import software.amazon.smithy.kotlin.codegen.integration.AuthSchemeHandler
 import software.amazon.smithy.kotlin.codegen.integration.KotlinIntegration
 import software.amazon.smithy.kotlin.codegen.core.RenderExpr
 import software.amazon.smithy.kotlin.codegen.model.hasTrait
+import software.amazon.smithy.kotlin.codegen.model.knowledge.AwsSignatureVersion4
 import software.amazon.smithy.kotlin.codegen.rendering.protocol.ProtocolGenerator
 import software.amazon.smithy.kotlin.codegen.rendering.util.ConfigProperty
 import software.amazon.smithy.kotlin.codegen.rendering.util.ConfigPropertyType
@@ -28,14 +29,13 @@ import software.amazon.smithy.model.shapes.ShapeId
  */
 class Sigv4AuthSchemeIntegration : KotlinIntegration {
     // Allow integrations to customize the service config props, later integrations take precedence
-    override val order: Byte = -100
+    override val order: Byte = -50
 
     override fun enabledForService(model: Model, settings: KotlinSettings): Boolean =
         AwsSignatureVersion4.isSupportedAuthentication(model, settings.getService(model))
 
     override fun authSchemes(ctx: ProtocolGenerator.GenerationContext): List<AuthSchemeHandler> = listOf(SigV4AuthSchemeHandler())
 
-    // FIXME - register a base class for this
     override fun additionalServiceConfigProps(ctx: CodegenContext): List<ConfigProperty> {
         val credentialsProviderProp = ConfigProperty {
             symbol = RuntimeTypes.Auth.Credentials.AwsCredentials.CredentialsProvider
@@ -53,21 +53,24 @@ class Sigv4AuthSchemeIntegration : KotlinIntegration {
 }
 
 
-class SigV4AuthSchemeHandler : AuthSchemeHandler {
+open class SigV4AuthSchemeHandler : AuthSchemeHandler {
     override val authSchemeId: ShapeId = SigV4Trait.ID
 
-    override fun identityProviderAdapterExpression(): RenderExpr = RenderExpr("config.credentialsProvider")
+    override fun identityProviderAdapterExpression(writer: KotlinWriter) {
+        writer.write("config.credentialsProvider")
+    }
 
     override fun authSchemeProviderInstantiateAuthOptionExpr(
         ctx: ProtocolGenerator.GenerationContext,
-        op: OperationShape?
-    ): RenderExpr {
+        op: OperationShape?,
+        writer: KotlinWriter
+    ) {
         val expr = if (op?.hasTrait<UnsignedPayloadTrait>() == true) {
             "sigv4(unsignedPayload = true)"
         }else {
             "sigv4()"
         }
-        return RenderExpr(expr)
+        writer.write(expr)
     }
 
     // FIXME: Move to runtime?
@@ -86,5 +89,16 @@ class SigV4AuthSchemeHandler : AuthSchemeHandler {
             )
             writer.write("return opt")
         }
+    }
+
+    override fun instantiateAuthSchemeExpr(ctx: ProtocolGenerator.GenerationContext, writer: KotlinWriter) {
+        // TODO - allow overriding signing config
+        val signingService = AwsSignatureVersion4.signingServiceName(ctx.service)
+        writer.write("#T(#T, #S)", RuntimeTypes.Auth.HttpAuthAws.SigV4AuthScheme, RuntimeTypes.Auth.Signing.AwsSigningStandard.DefaultAwsSigner, signingService)
+        //     // AwsHttpSigner.Config().apply {
+        //     //     signer = awsSigner
+        //     //     service = serviceName
+        //     // },
+        //     return RenderExpr("#T()", RuntimeTypes.Auth.HttpAuthAws.SigV4AuthScheme)
     }
 }

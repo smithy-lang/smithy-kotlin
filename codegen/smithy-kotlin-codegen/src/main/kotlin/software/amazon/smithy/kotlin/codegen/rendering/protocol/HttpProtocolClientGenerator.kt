@@ -6,6 +6,7 @@ package software.amazon.smithy.kotlin.codegen.rendering.protocol
 
 import software.amazon.smithy.aws.traits.HttpChecksumTrait
 import software.amazon.smithy.kotlin.codegen.core.*
+import software.amazon.smithy.kotlin.codegen.integration.AuthSchemeHandler
 import software.amazon.smithy.kotlin.codegen.integration.SectionId
 import software.amazon.smithy.kotlin.codegen.integration.SectionKey
 import software.amazon.smithy.kotlin.codegen.lang.KotlinTypes
@@ -15,10 +16,12 @@ import software.amazon.smithy.kotlin.codegen.rendering.serde.deserializerName
 import software.amazon.smithy.kotlin.codegen.rendering.serde.serializerName
 import software.amazon.smithy.kotlin.codegen.utils.getOrNull
 import software.amazon.smithy.model.knowledge.OperationIndex
+import software.amazon.smithy.model.knowledge.ServiceIndex
 import software.amazon.smithy.model.knowledge.TopDownIndex
 import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.traits.EndpointTrait
 import software.amazon.smithy.model.traits.HttpChecksumRequiredTrait
+import java.util.logging.Logger
 
 /**
  * Renders an implementation of a service interface for HTTP protocol
@@ -80,6 +83,30 @@ abstract class HttpProtocolClientGenerator(
         writer.write("private val managedResources = #T()", RuntimeTypes.Core.IO.SdkManagedGroup)
         writer.write("private val client = #T(config.httpClientEngine)", RuntimeTypes.HttpClient.SdkHttpClient)
         writer.write("private val identityProviderConfig = #T(config)", IdentityProviderConfigGenerator.getSymbol(ctx.settings))
+
+        writer.withBlock(
+            "private val configuredAuthSchemes = listOf(",
+            ")",
+        ){
+            // FIXME - generate reconciliation with customer overrides from config
+            val authSchemeHandlers = ctx.integrations
+                .flatMap { it.authSchemes(ctx) }
+                .distinctBy(AuthSchemeHandler::authSchemeId)
+                .associateBy(AuthSchemeHandler::authSchemeId)
+
+            // retain the order from the auth([]) trait which is in priority order already
+            // FIXME - I don't think we want effective auth schemes - we want all possible auth schemes
+            val effectiveAuthSchemes = ServiceIndex.of(ctx.model).getEffectiveAuthSchemes(ctx.service)
+            val handlers = effectiveAuthSchemes.mapNotNull { authSchemeHandlers[it.key] }
+
+            // FIXME - if any operation has optionalAuth || any operation has auth([]) - add anonymous to set of handlers at the end
+
+            handlers.forEach {
+                // use inline writer to deal with list formatting
+                val inlineWriter: InlineKotlinWriter = { it.instantiateAuthSchemeExpr(ctx, this) }
+                writer.write("#W,", inlineWriter)
+            }
+        }
 
     }
 
