@@ -12,6 +12,7 @@ import software.amazon.smithy.kotlin.codegen.core.KotlinWriter
 import software.amazon.smithy.kotlin.codegen.core.RuntimeTypes
 import software.amazon.smithy.kotlin.codegen.core.withBlock
 import software.amazon.smithy.kotlin.codegen.model.buildSymbol
+import software.amazon.smithy.kotlin.codegen.model.knowledge.AuthIndex
 import software.amazon.smithy.kotlin.codegen.rendering.protocol.ProtocolGenerator
 
 /**
@@ -44,7 +45,8 @@ class IdentityProviderConfigGenerator {
     }
 
     private fun renderImpl(ctx: ProtocolGenerator.GenerationContext, writer: KotlinWriter) {
-        val authSchemes = ctx.integrations.flatMap{ it.authSchemes(ctx) }.distinctBy { it.authSchemeId }
+        val authIndex = AuthIndex()
+        val authSchemes = authIndex.authHandlersForService(ctx)
         writer.write("")
         .withBlock(
             "override fun identityProviderForScheme(schemeId: #T): #T = when(schemeId.id) {",

@@ -91,13 +91,7 @@ open class SigV4AuthSchemeHandler : AuthSchemeHandler {
     }
 
     override fun instantiateAuthSchemeExpr(ctx: ProtocolGenerator.GenerationContext, writer: KotlinWriter) {
-        // TODO - allow overriding signing config
         val signingService = AwsSignatureVersion4.signingServiceName(ctx.service)
         writer.write("#T(#T, #S)", RuntimeTypes.Auth.HttpAuthAws.SigV4AuthScheme, RuntimeTypes.Auth.Signing.AwsSigningStandard.DefaultAwsSigner, signingService)
-        //     // AwsHttpSigner.Config().apply {
-        //     //     signer = awsSigner
-        //     //     service = serviceName
-        //     // },
-        //     return RenderExpr("#T()", RuntimeTypes.Auth.HttpAuthAws.SigV4AuthScheme)
     }
 }
