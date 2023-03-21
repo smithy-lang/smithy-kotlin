@@ -56,6 +56,7 @@ object RuntimeTypes {
         }
 
         object Operation : RuntimeTypePackage(KotlinDependency.HTTP, "operation") {
+            val AuthSchemeResolver = symbol("AuthSchemeResolver")
             val context = symbol("context")
             val execute = symbol("execute")
             val HttpDeserialize = symbol("HttpDeserialize")
@@ -153,6 +154,7 @@ object RuntimeTypes {
             val decodeBase64Bytes = symbol("decodeBase64Bytes")
             val encodeBase64 = symbol("encodeBase64")
             val encodeBase64String = symbol("encodeBase64String")
+            val get = symbol("get")
         }
 
         object Net : RuntimeTypePackage(KotlinDependency.CORE, "net") {
@@ -171,6 +173,7 @@ object RuntimeTypes {
         val SdkLogMode = symbol("SdkLogMode")
         val SdkClientConfig = symbol("SdkClientConfig")
         val SdkClientFactory = symbol("SdkClientFactory")
+        val SdkClientOption = symbol("SdkClientOption")
         val RequestInterceptorContext = symbol("RequestInterceptorContext")
         val ProtocolRequestInterceptorContext = symbol("ProtocolRequestInterceptorContext")
         val IdempotencyTokenProvider = symbol("IdempotencyTokenProvider")

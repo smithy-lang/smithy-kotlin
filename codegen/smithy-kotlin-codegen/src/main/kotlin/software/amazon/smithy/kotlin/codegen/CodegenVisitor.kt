@@ -218,5 +218,6 @@ private fun ProtocolGenerator.generateAuthSchemeProvider(ctx: ProtocolGenerator.
         identityProviderGenerator().render(ctx)
         authSchemeParametersGenerator().render(ctx)
         authSchemeProviderGenerator().render(ctx)
+        authSchemeProviderAdapterGenerator().render(ctx)
     }
 }
