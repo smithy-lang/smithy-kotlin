@@ -8,6 +8,7 @@ package aws.smithy.kotlin.runtime.http.auth
 import aws.smithy.kotlin.runtime.auth.AuthSchemeId
 import aws.smithy.kotlin.runtime.auth.awssigning.AwsSigner
 
+// TODO - is AwsHttpSigner.Config what we want to use to configure this scheme?
 /**
  * HTTP auth scheme for AWS signature version 4
  */

@@ -29,6 +29,7 @@ import aws.smithy.kotlin.runtime.retries.StandardRetryStrategy
 import aws.smithy.kotlin.runtime.retries.policy.RetryPolicy
 import aws.smithy.kotlin.runtime.retries.policy.StandardRetryPolicy
 import aws.smithy.kotlin.runtime.tracing.trace
+import aws.smithy.kotlin.runtime.util.merge
 import kotlin.coroutines.coroutineContext
 import kotlin.time.ExperimentalTime
 import kotlin.time.measureTimedValue
@@ -243,8 +244,7 @@ private class MutateHandler<Output> (
     override suspend fun call(request: SdkHttpRequest): Output = inner.call(request)
 }
 
-// TODO - move to internal so we can test it
-private class HttpAuthHandler<Input, Output>(
+internal class HttpAuthHandler<Input, Output>(
     private val inner: Handler<SdkHttpRequest, Output>,
     private val interceptors: InterceptorExecutor<Input, Output>,
     private val authConfig: OperationAuthConfig,
@@ -254,7 +254,7 @@ private class HttpAuthHandler<Input, Output>(
         // with the ones actually configured/available for the SDK
         val candidateAuthSchemes = authConfig.authSchemeResolver.resolve(request)
         val configuredAuthSchemes = authConfig.configuredAuthSchemes.associateBy { it.schemeId }
-        val authOption = candidateAuthSchemes.firstOrNull { it.schemeId in configuredAuthSchemes } ?: error("no auth scheme found for operation")
+        val authOption = candidateAuthSchemes.firstOrNull { it.schemeId in configuredAuthSchemes } ?: error("no auth scheme found for operation; candidates: $candidateAuthSchemes")
         val authScheme = configuredAuthSchemes[authOption.schemeId] ?: error("auth scheme ${authOption.schemeId} not configured")
 
         // resolve identity from the selected auth scheme
@@ -268,7 +268,9 @@ private class HttpAuthHandler<Input, Output>(
 
         interceptors.readBeforeSigning(modified.subject.immutableView())
 
-        val signingRequest = SignHttpRequest(modified.context, modified.subject, identity)
+        // signing properties need to propagate from AuthOption to signer
+        modified.context.merge(authOption.attributes)
+        val signingRequest = SignHttpRequest(modified.subject, identity, modified.context)
         authScheme.signer.sign(signingRequest)
 
         interceptors.readAfterSigning(modified.subject.immutableView())

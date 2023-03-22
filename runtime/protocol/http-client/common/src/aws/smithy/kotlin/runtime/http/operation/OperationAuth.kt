@@ -57,6 +57,7 @@ public data class OperationAuthConfig(
 public fun interface AuthSchemeResolver {
     /**
      * Resolve the candidate authentication schemes for an operation
+     * @return a prioritized list of candidate auth schemes to use for the current operation
      */
     public suspend fun resolve(request: SdkHttpRequest): List<AuthSchemeOption>
 }

@@ -29,7 +29,7 @@ class AuthSchemeProviderAdapterGenerator {
         val symbol = getSymbol(ctx.settings)
         ctx.delegator.useSymbolWriter(symbol) { writer ->
             // TODO - auth parameters will need bound per/request as applicable (e.g. like EP2.0 or generate one per/request).
-            //        This is a simplified version while design is in flux.
+            //        This is a simplified version (using object) while design is in flux.
             writer.withBlock("internal object #T: #T {", "}", symbol, RuntimeTypes.HttpClient.Operation.AuthSchemeResolver) {
 
                 withBlock(

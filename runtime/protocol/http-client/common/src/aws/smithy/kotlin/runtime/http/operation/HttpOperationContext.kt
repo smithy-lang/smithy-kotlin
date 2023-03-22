@@ -53,21 +53,6 @@ public open class HttpOperationContext {
          */
         public val OperationInput: AttributeKey<Any> = AttributeKey("aws.smithy.kotlin#OperationInput")
 
-        // /**
-        //  * The resolved [Identity] for this operation that will be used for signing.
-        //  *
-        //  * NOTE: This is an ephemeral attribute and will be removed by the signing process.
-        //  */
-        // // FIXME - I don't love shoving this into the context
-        // public val ResolvedIdentity: AttributeKey<Identity> = AttributeKey("aws.smithy.kotlin#OperationIdentity")
-        //
-        // /**
-        //  * The resolved [HttpSigner] to sign the request with.
-        //  *
-        //  * NOTE: This is an ephemeral attribute and will be removed by the signing process.
-        //  */
-        // public val ResolvedSigner: AttributeKey<HttpSigner> = AttributeKey("aws.smithy.kotlin#OperationSigner")
-
         /**
          * Build this operation into an HTTP [ExecutionContext]
          */
