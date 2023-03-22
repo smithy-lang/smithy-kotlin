@@ -250,8 +250,8 @@ private class HttpAuthHandler<Input, Output>(
     private val authConfig: OperationAuthConfig,
 ) : Handler<SdkHttpRequest, Output> {
     override suspend fun call(request: SdkHttpRequest): Output {
-        // select an auth scheme by reconciling the candidates returned from the resolver with the ones actually
-        // configured/available for the SDK
+        // select an auth scheme by reconciling the (priority) list of candidates returned from the resolver
+        // with the ones actually configured/available for the SDK
         val candidateAuthSchemes = authConfig.authSchemeResolver.resolve(request)
         val configuredAuthSchemes = authConfig.configuredAuthSchemes.associateBy { it.schemeId }
         val authOption = candidateAuthSchemes.firstOrNull { it.schemeId in configuredAuthSchemes } ?: error("no auth scheme found for operation")

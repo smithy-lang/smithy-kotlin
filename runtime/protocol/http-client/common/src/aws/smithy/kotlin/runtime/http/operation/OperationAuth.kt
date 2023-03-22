@@ -29,7 +29,6 @@ private val AnonymousAuthConfig = OperationAuthConfig(
 @InternalApi
 public data class OperationAuthConfig(
     val authSchemeResolver: AuthSchemeResolver,
-    // FIXME - build the map in this class
     val configuredAuthSchemes: List<HttpAuthScheme>,
     val identityProviderConfig: IdentityProviderConfig,
 ) {

@@ -12,6 +12,7 @@ import software.amazon.smithy.kotlin.codegen.integration.SectionKey
 import software.amazon.smithy.kotlin.codegen.lang.KotlinTypes
 import software.amazon.smithy.kotlin.codegen.model.*
 import software.amazon.smithy.kotlin.codegen.model.knowledge.AuthIndex
+import software.amazon.smithy.kotlin.codegen.rendering.auth.AuthSchemeProviderAdapterGenerator
 import software.amazon.smithy.kotlin.codegen.rendering.auth.IdentityProviderConfigGenerator
 import software.amazon.smithy.kotlin.codegen.rendering.serde.deserializerName
 import software.amazon.smithy.kotlin.codegen.rendering.serde.serializerName
@@ -212,9 +213,15 @@ abstract class HttpProtocolClientGenerator(
                     writer.write("hostPrefix = #S", hostPrefix)
                 }
             }
-        }
 
-        writer.write("op.execution.retryStrategy = config.retryStrategy")
+            writer.write(
+                "execution.auth = #T(#T, configuredAuthSchemes, identityProviderConfig)",
+                RuntimeTypes.HttpClient.Operation.OperationAuthConfig,
+                AuthSchemeProviderAdapterGenerator.getSymbol(ctx.settings)
+            )
+
+            writer.write("execution.retryStrategy = config.retryStrategy")
+        }
     }
 
     protected open fun renderFinalizeBeforeExecute(writer: KotlinWriter, opIndex: OperationIndex, op: OperationShape) {
