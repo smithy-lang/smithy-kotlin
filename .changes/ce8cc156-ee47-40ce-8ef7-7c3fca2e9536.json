@@ -1,0 +1,5 @@
+{
+    "id": "ce8cc156-ee47-40ce-8ef7-7c3fca2e9536",
+    "type": "misc",
+    "description": "Add clarifying documentation for `endpointProvider` in client config."
+}
