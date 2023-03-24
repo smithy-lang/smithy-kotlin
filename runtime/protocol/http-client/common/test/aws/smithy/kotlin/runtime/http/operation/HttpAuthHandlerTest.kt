@@ -14,7 +14,7 @@ import aws.smithy.kotlin.runtime.identity.asIdentityProviderConfig
 import aws.smithy.kotlin.runtime.io.Handler
 import aws.smithy.kotlin.runtime.operation.ExecutionContext
 import aws.smithy.kotlin.runtime.util.AttributeKey
-import aws.smithy.kotlin.runtime.util.Attributes
+import aws.smithy.kotlin.runtime.util.attributesOf
 import aws.smithy.kotlin.runtime.util.get
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
@@ -47,8 +47,9 @@ class HttpAuthHandlerTest {
         }
 
         val resolver = AuthSchemeResolver {
-            val attrs = Attributes()
-            attrs[testAttrKey] = "testing"
+            val attrs = attributesOf {
+                testAttrKey to "testing"
+            }
             listOf(AuthSchemeOption(AuthSchemeId.Anonymous, attrs))
         }
 
