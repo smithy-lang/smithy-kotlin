@@ -259,7 +259,7 @@ internal class HttpAuthHandler<Input, Output>(
 
         // resolve identity from the selected auth scheme
         val identityProvider = authScheme.identityProvider(authConfig.identityProviderConfig)
-        val identity = identityProvider.resolve()
+        val identity = identityProvider.resolve(authOption.attributes)
 
         // FIXME - endpoint resolution should happen here, either we make it explicit or we change implementation to use modifyBeforeSigning and have to stuff identity into the context
 

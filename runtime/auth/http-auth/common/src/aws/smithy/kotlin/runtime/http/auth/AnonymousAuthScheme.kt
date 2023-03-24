@@ -29,7 +29,7 @@ public object AnonymousIdentity : Identity {
 }
 
 public object AnonymousIdentityProvider : IdentityProvider {
-    override suspend fun resolve(): Identity = AnonymousIdentity
+    override suspend fun resolve(attributes: Attributes): Identity = AnonymousIdentity
 }
 
 /**

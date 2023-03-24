@@ -145,6 +145,8 @@ object RuntimeTypes {
         }
         object Utils : RuntimeTypePackage(KotlinDependency.CORE, "util") {
             val Attributes = symbol("Attributes")
+            val MutableAttributes = symbol("MutableAttributes")
+            val attributesOf = symbol("attributesOf")
             val AttributeKey = symbol("AttributeKey")
             val flattenIfPossible = symbol("flattenIfPossible")
             val length = symbol("length")
@@ -288,6 +290,7 @@ object RuntimeTypes {
         object HttpAuthAws : RuntimeTypePackage(KotlinDependency.HTTP_AUTH_AWS){
             val AwsHttpSigner = symbol("AwsHttpSigner")
             val SigV4AuthScheme = symbol("SigV4AuthScheme")
+            val sigv4 = symbol("sigv4")
         }
     }
 

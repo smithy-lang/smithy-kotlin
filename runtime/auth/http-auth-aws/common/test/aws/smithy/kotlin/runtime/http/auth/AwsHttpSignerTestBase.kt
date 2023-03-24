@@ -25,6 +25,7 @@ import aws.smithy.kotlin.runtime.net.Host
 import aws.smithy.kotlin.runtime.net.Scheme
 import aws.smithy.kotlin.runtime.operation.ExecutionContext
 import aws.smithy.kotlin.runtime.time.Instant
+import aws.smithy.kotlin.runtime.util.Attributes
 import aws.smithy.kotlin.runtime.util.get
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.TestResult
@@ -87,7 +88,7 @@ public abstract class AwsHttpSignerTestBase(
         }
 
         val idp = object : CredentialsProvider {
-            override suspend fun resolve(): Credentials = testCredentials
+            override suspend fun resolve(attributes: Attributes): Credentials = testCredentials
         }
 
         val signerConfig = AwsHttpSigner.Config().apply {
