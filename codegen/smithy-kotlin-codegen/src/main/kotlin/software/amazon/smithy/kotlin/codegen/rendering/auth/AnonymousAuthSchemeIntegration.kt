@@ -5,10 +5,13 @@
 
 package software.amazon.smithy.kotlin.codegen.rendering.auth
 
+import software.amazon.smithy.codegen.core.Symbol
+import software.amazon.smithy.codegen.core.SymbolReference
 import software.amazon.smithy.kotlin.codegen.core.KotlinWriter
 import software.amazon.smithy.kotlin.codegen.core.RuntimeTypes
 import software.amazon.smithy.kotlin.codegen.integration.AuthSchemeHandler
 import software.amazon.smithy.kotlin.codegen.integration.KotlinIntegration
+import software.amazon.smithy.kotlin.codegen.model.buildSymbol
 import software.amazon.smithy.kotlin.codegen.rendering.protocol.ProtocolGenerator
 import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.shapes.ShapeId
@@ -25,6 +28,14 @@ class AnonymousAuthSchemeIntegration : KotlinIntegration {
 
 class AnonymousAuthSchemeHandler : AuthSchemeHandler {
     override val authSchemeId: ShapeId = OptionalAuthTrait.ID
+    override val authSchemeIdSymbol: Symbol = buildSymbol {
+        name = "AuthSchemeId.Anonymous"
+        val ref = RuntimeTypes.Auth.Identity.AuthSchemeId
+        objectRef = ref
+        namespace = ref.namespace
+        reference(ref, SymbolReference.ContextOption.USE)
+    }
+
     override fun identityProviderAdapterExpression(writer: KotlinWriter) {
         writer.write("#T", RuntimeTypes.Auth.HttpAuth.AnonymousIdentityProvider)
     }

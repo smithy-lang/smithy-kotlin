@@ -13,11 +13,11 @@ import aws.smithy.kotlin.runtime.http.auth.AnonymousAuthScheme
 import aws.smithy.kotlin.runtime.http.auth.AnonymousIdentityProvider
 import aws.smithy.kotlin.runtime.http.auth.HttpAuthScheme
 import aws.smithy.kotlin.runtime.identity.IdentityProviderConfig
+import aws.smithy.kotlin.runtime.identity.asIdentityProviderConfig
 
-private val AnonymousAuthConfig = OperationAuthConfig(
-    { listOf(AuthSchemeOption(AuthSchemeId.Anonymous)) },
-    configuredAuthSchemes = listOf(AnonymousAuthScheme),
-    { AnonymousIdentityProvider },
+private val AnonymousAuthConfig = OperationAuthConfig.from(
+    AnonymousIdentityProvider.asIdentityProviderConfig(),
+    AnonymousAuthScheme,
 )
 
 /**
@@ -29,7 +29,7 @@ private val AnonymousAuthConfig = OperationAuthConfig(
 @InternalApi
 public data class OperationAuthConfig(
     val authSchemeResolver: AuthSchemeResolver,
-    val configuredAuthSchemes: List<HttpAuthScheme>,
+    val configuredAuthSchemes: Map<AuthSchemeId, HttpAuthScheme>,
     val identityProviderConfig: IdentityProviderConfig,
 ) {
     public companion object {
@@ -44,7 +44,7 @@ public data class OperationAuthConfig(
             vararg authSchemes: HttpAuthScheme,
         ): OperationAuthConfig {
             val resolver = AuthSchemeResolver { authSchemes.map { AuthSchemeOption(it.schemeId) } }
-            return OperationAuthConfig(resolver, authSchemes.toList(), identityProviderConfig)
+            return OperationAuthConfig(resolver, authSchemes.associateBy(HttpAuthScheme::schemeId), identityProviderConfig)
         }
     }
 }

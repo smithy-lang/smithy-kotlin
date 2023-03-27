@@ -177,6 +177,7 @@ class DefaultEndpointProviderGenerator(
                             // be rendered as Documents
                             writeInline("#T(#S) to ", RuntimeTypes.Core.Utils.AttributeKey, kStr)
                             renderExpression(v)
+                            ensureNewline()
                         }
                     }
                 }

@@ -285,6 +285,7 @@ object RuntimeTypes {
         object HttpAuth: RuntimeTypePackage(KotlinDependency.HTTP_AUTH) {
             val AnonymousAuthScheme  = symbol("AnonymousAuthScheme")
             val AnonymousIdentityProvider = symbol("AnonymousIdentityProvider")
+            val HttpAuthScheme = symbol("HttpAuthScheme")
         }
 
         object HttpAuthAws : RuntimeTypePackage(KotlinDependency.HTTP_AUTH_AWS){

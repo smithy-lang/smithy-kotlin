@@ -6,13 +6,15 @@ package software.amazon.smithy.kotlin.codegen.rendering.auth
 
 import software.amazon.smithy.aws.traits.auth.SigV4Trait
 import software.amazon.smithy.aws.traits.auth.UnsignedPayloadTrait
+import software.amazon.smithy.codegen.core.Symbol
+import software.amazon.smithy.codegen.core.SymbolReference
 import software.amazon.smithy.kotlin.codegen.KotlinSettings
 import software.amazon.smithy.kotlin.codegen.core.CodegenContext
 import software.amazon.smithy.kotlin.codegen.core.KotlinWriter
 import software.amazon.smithy.kotlin.codegen.core.RuntimeTypes
-import software.amazon.smithy.kotlin.codegen.core.withBlock
 import software.amazon.smithy.kotlin.codegen.integration.AuthSchemeHandler
 import software.amazon.smithy.kotlin.codegen.integration.KotlinIntegration
+import software.amazon.smithy.kotlin.codegen.model.buildSymbol
 import software.amazon.smithy.kotlin.codegen.model.hasTrait
 import software.amazon.smithy.kotlin.codegen.model.knowledge.AwsSignatureVersion4
 import software.amazon.smithy.kotlin.codegen.rendering.protocol.ProtocolGenerator
@@ -54,6 +56,14 @@ class Sigv4AuthSchemeIntegration : KotlinIntegration {
 
 open class SigV4AuthSchemeHandler : AuthSchemeHandler {
     override val authSchemeId: ShapeId = SigV4Trait.ID
+
+    override val authSchemeIdSymbol: Symbol = buildSymbol {
+        name = "AuthSchemeId.AwsSigV4"
+        val ref = RuntimeTypes.Auth.Identity.AuthSchemeId
+        objectRef = ref
+        namespace = ref.namespace
+        reference(ref, SymbolReference.ContextOption.USE)
+    }
 
     override fun identityProviderAdapterExpression(writer: KotlinWriter) {
         writer.write("config.credentialsProvider")

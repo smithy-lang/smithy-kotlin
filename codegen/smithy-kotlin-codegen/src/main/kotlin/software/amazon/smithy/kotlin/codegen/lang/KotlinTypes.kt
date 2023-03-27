@@ -36,11 +36,12 @@ object KotlinTypes {
 
     object Collections {
         val List: Symbol = builtInSymbol("List", "kotlin.collections")
+        val listOf: Symbol = builtInSymbol("listOf", "kotlin.collections")
         val MutableList: Symbol = builtInSymbol("MutableList", "kotlin.collections")
-        val Set: Symbol = builtInSymbol("Set", "kotlin.collections")
         val Map: Symbol = builtInSymbol("Map", "kotlin.collections")
         val mutableListOf: Symbol = builtInSymbol("mutableListOf", "kotlin.collections")
         val mutableMapOf: Symbol = builtInSymbol("mutableMapOf", "kotlin.collections")
+        val Set: Symbol = builtInSymbol("Set", "kotlin.collections")
 
         private fun listType(
             listType: Symbol,

@@ -64,7 +64,8 @@ class HttpAuthHandlerTest {
             listOf(AuthSchemeOption(AuthSchemeId.Anonymous, attrs))
         }
 
-        val authConfig = OperationAuthConfig(resolver, listOf(scheme), idpConfig)
+        val schemes = listOf(scheme).associateBy(HttpAuthScheme::schemeId)
+        val authConfig = OperationAuthConfig(resolver, schemes, idpConfig)
         val op = HttpAuthHandler<Unit, Unit>(inner, interceptorExec, authConfig)
         val request = SdkHttpRequest(ctx, HttpRequestBuilder())
         op.call(request)

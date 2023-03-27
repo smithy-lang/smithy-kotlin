@@ -253,9 +253,8 @@ internal class HttpAuthHandler<Input, Output>(
         // select an auth scheme by reconciling the (priority) list of candidates returned from the resolver
         // with the ones actually configured/available for the SDK
         val candidateAuthSchemes = authConfig.authSchemeResolver.resolve(request)
-        val configuredAuthSchemes = authConfig.configuredAuthSchemes.associateBy { it.schemeId }
-        val authOption = candidateAuthSchemes.firstOrNull { it.schemeId in configuredAuthSchemes } ?: error("no auth scheme found for operation; candidates: $candidateAuthSchemes")
-        val authScheme = configuredAuthSchemes[authOption.schemeId] ?: error("auth scheme ${authOption.schemeId} not configured")
+        val authOption = candidateAuthSchemes.firstOrNull { it.schemeId in authConfig.configuredAuthSchemes } ?: error("no auth scheme found for operation; candidates: $candidateAuthSchemes")
+        val authScheme = authConfig.configuredAuthSchemes[authOption.schemeId] ?: error("auth scheme ${authOption.schemeId} not configured")
 
         // resolve identity from the selected auth scheme
         val identityProvider = authScheme.identityProvider(authConfig.identityProviderConfig)

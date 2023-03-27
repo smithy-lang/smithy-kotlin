@@ -164,4 +164,15 @@ object RuntimeConfigProperty {
             later than any added automatically by the SDK.
         """.trimIndent()
     }
+
+    val HttpAuthSchemes = ConfigProperty {
+        name = "authSchemes"
+        symbol = KotlinTypes.Collections.list(RuntimeTypes.Auth.HttpAuth.HttpAuthScheme, default = "emptyList()")
+        documentation = """
+            Register new or override default [HttpAuthScheme]'s configured for this client. By default, the set
+            of auth schemes configured comes from the service model. An auth scheme configured explicitly takes
+            precedence over the defaults and can be used to customize identity resolution and signing for specific
+            authentication schemes.
+        """.trimIndent()
+    }
 }

@@ -41,6 +41,9 @@ object SymbolProperty {
 
     // Denotes whether a symbol represents an extension function
     const val IS_EXTENSION: String = "isExtension"
+
+    // Denotes the symbol is a reference to a static member of an object (e.g. of an object or companion object)
+    const val OBJECT_REF: String = "objectRef"
 }
 
 /**
@@ -181,3 +184,15 @@ fun Symbol.asNullable(): Symbol = toBuilder().boxed().build()
  */
 val Symbol.isExtension: Boolean
     get() = getProperty(SymbolProperty.IS_EXTENSION).getOrNull() == true
+
+/**
+ * Check whether a symbol represents a static reference (member of object/companion object)
+ */
+val Symbol.isObjectRef: Boolean
+    get() = getProperty(SymbolProperty.OBJECT_REF).getOrNull() != null
+
+/**
+ * Get the parent object/companion object symbol
+ */
+val Symbol.objectRef: Symbol?
+    get() = getProperty(SymbolProperty.OBJECT_REF, Symbol::class.java).getOrNull()
