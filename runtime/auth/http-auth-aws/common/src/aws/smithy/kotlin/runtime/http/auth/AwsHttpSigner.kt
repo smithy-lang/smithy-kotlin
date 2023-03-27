@@ -145,9 +145,8 @@ public class AwsHttpSigner(private val config: Config) : HttpSigner {
         val signingResult = checkNotNull(config.signer).sign(request.build(), signingConfig)
         val signedRequest = signingResult.output
 
-        // FIXME - need a better way of propagating this back for event streams
         // Add the signature to the request context
-        // attributes[AwsSigningAttributes.RequestSignature] = signingResult.signature
+        attributes.getOrNull(AwsSigningAttributes.RequestSignature)?.complete(signingResult.signature)
 
         request.update(signedRequest)
 
