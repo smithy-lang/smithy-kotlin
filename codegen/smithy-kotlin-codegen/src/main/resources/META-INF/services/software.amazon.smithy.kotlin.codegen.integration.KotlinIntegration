@@ -3,3 +3,5 @@ software.amazon.smithy.kotlin.codegen.lang.DocumentationPreprocessor
 software.amazon.smithy.kotlin.codegen.model.SetRefactorPreprocessor
 software.amazon.smithy.kotlin.codegen.rendering.PaginatorGenerator
 software.amazon.smithy.kotlin.codegen.rendering.waiters.ServiceWaitersGenerator
+software.amazon.smithy.kotlin.codegen.rendering.auth.Sigv4AuthSchemeIntegration
+software.amazon.smithy.kotlin.codegen.rendering.auth.AnonymousAuthSchemeIntegration

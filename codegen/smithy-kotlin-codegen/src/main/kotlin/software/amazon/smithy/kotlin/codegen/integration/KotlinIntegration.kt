@@ -146,4 +146,11 @@ interface KotlinIntegration {
         ctx: ProtocolGenerator.GenerationContext,
         resolved: List<ProtocolMiddleware>,
     ): List<ProtocolMiddleware> = resolved
+
+
+    /**
+     * Get a list of auth scheme handlers this integration is responsible for
+     */
+    fun authSchemes(ctx: ProtocolGenerator.GenerationContext): List<AuthSchemeHandler> = emptyList()
 }
+

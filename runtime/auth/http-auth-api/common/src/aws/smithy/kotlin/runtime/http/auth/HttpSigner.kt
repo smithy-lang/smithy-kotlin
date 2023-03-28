@@ -7,7 +7,7 @@ package aws.smithy.kotlin.runtime.http.auth
 
 import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
 import aws.smithy.kotlin.runtime.identity.Identity
-import aws.smithy.kotlin.runtime.operation.ExecutionContext
+import aws.smithy.kotlin.runtime.util.Attributes
 
 /**
  * Represents a component capable of signing an HTTP request
@@ -21,9 +21,12 @@ public interface HttpSigner {
 
 /**
  * Container for signing request parameters/config
+ * @param httpRequest the request to sign
+ * @param identity the identity to sign with
+ * @param signingAttributes additional signing attributes that influence the signing config used to sign the request
  */
 public data class SignHttpRequest(
-    val context: ExecutionContext,
     val httpRequest: HttpRequestBuilder,
     val identity: Identity,
+    val signingAttributes: Attributes,
 )

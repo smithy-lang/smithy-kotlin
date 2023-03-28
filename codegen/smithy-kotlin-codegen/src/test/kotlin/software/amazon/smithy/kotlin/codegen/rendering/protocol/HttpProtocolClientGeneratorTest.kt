@@ -84,8 +84,9 @@ class HttpProtocolClientGeneratorTest {
                 service = serviceName
                 operationName = "GetFoo"
             }
+            execution.auth = OperationAuthConfig(AuthSchemeProviderAdapter, configuredAuthSchemes, identityProviderConfig)
+            execution.retryStrategy = config.retryStrategy
         }
-        op.execution.retryStrategy = config.retryStrategy
         op.install(MockMiddleware(configurationField1 = "testing"))
         op.interceptors.addAll(config.interceptors)
         val rootSpan = config.tracer.createRootSpan("GetFoo-${'$'}{op.context.sdkRequestId}")
@@ -104,8 +105,9 @@ class HttpProtocolClientGeneratorTest {
                 service = serviceName
                 operationName = "GetFooNoInput"
             }
+            execution.auth = OperationAuthConfig(AuthSchemeProviderAdapter, configuredAuthSchemes, identityProviderConfig)
+            execution.retryStrategy = config.retryStrategy
         }
-        op.execution.retryStrategy = config.retryStrategy
         op.install(MockMiddleware(configurationField1 = "testing"))
         op.interceptors.addAll(config.interceptors)
         val rootSpan = config.tracer.createRootSpan("GetFooNoInput-${'$'}{op.context.sdkRequestId}")
@@ -124,8 +126,9 @@ class HttpProtocolClientGeneratorTest {
                 service = serviceName
                 operationName = "GetFooNoOutput"
             }
+            execution.auth = OperationAuthConfig(AuthSchemeProviderAdapter, configuredAuthSchemes, identityProviderConfig)
+            execution.retryStrategy = config.retryStrategy
         }
-        op.execution.retryStrategy = config.retryStrategy
         op.install(MockMiddleware(configurationField1 = "testing"))
         op.interceptors.addAll(config.interceptors)
         val rootSpan = config.tracer.createRootSpan("GetFooNoOutput-${'$'}{op.context.sdkRequestId}")
@@ -144,8 +147,9 @@ class HttpProtocolClientGeneratorTest {
                 service = serviceName
                 operationName = "GetFooStreamingInput"
             }
+            execution.auth = OperationAuthConfig(AuthSchemeProviderAdapter, configuredAuthSchemes, identityProviderConfig)
+            execution.retryStrategy = config.retryStrategy
         }
-        op.execution.retryStrategy = config.retryStrategy
         op.install(MockMiddleware(configurationField1 = "testing"))
         op.interceptors.addAll(config.interceptors)
         val rootSpan = config.tracer.createRootSpan("GetFooStreamingInput-${'$'}{op.context.sdkRequestId}")
@@ -164,8 +168,9 @@ class HttpProtocolClientGeneratorTest {
                 service = serviceName
                 operationName = "GetFooStreamingOutput"
             }
+            execution.auth = OperationAuthConfig(AuthSchemeProviderAdapter, configuredAuthSchemes, identityProviderConfig)
+            execution.retryStrategy = config.retryStrategy
         }
-        op.execution.retryStrategy = config.retryStrategy
         op.install(MockMiddleware(configurationField1 = "testing"))
         op.interceptors.addAll(config.interceptors)
         val rootSpan = config.tracer.createRootSpan("GetFooStreamingOutput-${'$'}{op.context.sdkRequestId}")
@@ -184,8 +189,9 @@ class HttpProtocolClientGeneratorTest {
                 service = serviceName
                 operationName = "GetFooStreamingOutputNoInput"
             }
+            execution.auth = OperationAuthConfig(AuthSchemeProviderAdapter, configuredAuthSchemes, identityProviderConfig)
+            execution.retryStrategy = config.retryStrategy
         }
-        op.execution.retryStrategy = config.retryStrategy
         op.install(MockMiddleware(configurationField1 = "testing"))
         op.interceptors.addAll(config.interceptors)
         val rootSpan = config.tracer.createRootSpan("GetFooStreamingOutputNoInput-${'$'}{op.context.sdkRequestId}")
@@ -204,8 +210,9 @@ class HttpProtocolClientGeneratorTest {
                 service = serviceName
                 operationName = "GetFooStreamingInputNoOutput"
             }
+            execution.auth = OperationAuthConfig(AuthSchemeProviderAdapter, configuredAuthSchemes, identityProviderConfig)
+            execution.retryStrategy = config.retryStrategy
         }
-        op.execution.retryStrategy = config.retryStrategy
         op.install(MockMiddleware(configurationField1 = "testing"))
         op.interceptors.addAll(config.interceptors)
         val rootSpan = config.tracer.createRootSpan("GetFooStreamingInputNoOutput-${'$'}{op.context.sdkRequestId}")
@@ -224,8 +231,9 @@ class HttpProtocolClientGeneratorTest {
                 service = serviceName
                 operationName = "GetFooNoRequired"
             }
+            execution.auth = OperationAuthConfig(AuthSchemeProviderAdapter, configuredAuthSchemes, identityProviderConfig)
+            execution.retryStrategy = config.retryStrategy
         }
-        op.execution.retryStrategy = config.retryStrategy
         op.install(MockMiddleware(configurationField1 = "testing"))
         op.interceptors.addAll(config.interceptors)
         val rootSpan = config.tracer.createRootSpan("GetFooNoRequired-${'$'}{op.context.sdkRequestId}")
@@ -244,8 +252,9 @@ class HttpProtocolClientGeneratorTest {
                 service = serviceName
                 operationName = "GetFooSomeRequired"
             }
+            execution.auth = OperationAuthConfig(AuthSchemeProviderAdapter, configuredAuthSchemes, identityProviderConfig)
+            execution.retryStrategy = config.retryStrategy
         }
-        op.execution.retryStrategy = config.retryStrategy
         op.install(MockMiddleware(configurationField1 = "testing"))
         op.interceptors.addAll(config.interceptors)
         val rootSpan = config.tracer.createRootSpan("GetFooSomeRequired-${'$'}{op.context.sdkRequestId}")
@@ -321,6 +330,8 @@ class HttpProtocolClientGeneratorTest {
                 operationName = "GetStatus"
                 hostPrefix = "$prefix"
             }
+            execution.auth = OperationAuthConfig(AuthSchemeProviderAdapter, configuredAuthSchemes, identityProviderConfig)
+            execution.retryStrategy = config.retryStrategy
         }
         """
         contents.shouldContainOnlyOnceWithDiff(expectedFragment)
