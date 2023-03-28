@@ -95,21 +95,21 @@ public class AwsHttpSigner(private val config: Config) : HttpSigner {
 
     override suspend fun sign(signingRequest: SignHttpRequest) {
         require(signingRequest.identity is Credentials) { "invalid Identity type ${signingRequest.identity::class}; expected ${Credentials::class}" }
-        val context = signingRequest.context
+        val attributes = signingRequest.signingAttributes
         val request = signingRequest.httpRequest
         val body = request.body
 
         // favor attributes from the current request context
-        val contextHashSpecification = context.getOrNull(AwsSigningAttributes.HashSpecification)
-        val contextSignedBodyHeader = context.getOrNull(AwsSigningAttributes.SignedBodyHeader)
+        val contextHashSpecification = attributes.getOrNull(AwsSigningAttributes.HashSpecification)
+        val contextSignedBodyHeader = attributes.getOrNull(AwsSigningAttributes.SignedBodyHeader)
 
         // operation signing config is baseConfig + operation specific config/overrides
         val signingConfig = AwsSigningConfig {
-            region = context[AwsSigningAttributes.SigningRegion]
-            service = context.getOrNull(AwsSigningAttributes.SigningService) ?: checkNotNull(config.service)
+            region = attributes[AwsSigningAttributes.SigningRegion]
+            service = attributes.getOrNull(AwsSigningAttributes.SigningService) ?: checkNotNull(config.service)
             credentials = signingRequest.identity as Credentials
             algorithm = config.algorithm
-            signingDate = context.getOrNull(AwsSigningAttributes.SigningDate)
+            signingDate = attributes.getOrNull(AwsSigningAttributes.SigningDate)
 
             signatureType = config.signatureType
             omitSessionToken = config.omitSessionToken
@@ -146,7 +146,7 @@ public class AwsHttpSigner(private val config: Config) : HttpSigner {
         val signedRequest = signingResult.output
 
         // Add the signature to the request context
-        context[AwsSigningAttributes.RequestSignature] = signingResult.signature
+        attributes[AwsSigningAttributes.RequestSignature] = signingResult.signature
 
         request.update(signedRequest)
 

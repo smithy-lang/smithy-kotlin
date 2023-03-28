@@ -6,18 +6,24 @@ package software.amazon.smithy.kotlin.codegen.rendering.protocol
 
 import software.amazon.smithy.aws.traits.HttpChecksumTrait
 import software.amazon.smithy.kotlin.codegen.core.*
+import software.amazon.smithy.kotlin.codegen.integration.AuthSchemeHandler
 import software.amazon.smithy.kotlin.codegen.integration.SectionId
 import software.amazon.smithy.kotlin.codegen.integration.SectionKey
 import software.amazon.smithy.kotlin.codegen.lang.KotlinTypes
 import software.amazon.smithy.kotlin.codegen.model.*
+import software.amazon.smithy.kotlin.codegen.model.knowledge.AuthIndex
+import software.amazon.smithy.kotlin.codegen.rendering.auth.AuthSchemeProviderAdapterGenerator
+import software.amazon.smithy.kotlin.codegen.rendering.auth.IdentityProviderConfigGenerator
 import software.amazon.smithy.kotlin.codegen.rendering.serde.deserializerName
 import software.amazon.smithy.kotlin.codegen.rendering.serde.serializerName
 import software.amazon.smithy.kotlin.codegen.utils.getOrNull
 import software.amazon.smithy.model.knowledge.OperationIndex
+import software.amazon.smithy.model.knowledge.ServiceIndex
 import software.amazon.smithy.model.knowledge.TopDownIndex
 import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.traits.EndpointTrait
 import software.amazon.smithy.model.traits.HttpChecksumRequiredTrait
+import java.util.logging.Logger
 
 /**
  * Renders an implementation of a service interface for HTTP protocol
@@ -78,6 +84,25 @@ abstract class HttpProtocolClientGenerator(
     protected open fun renderProperties(writer: KotlinWriter) {
         writer.write("private val managedResources = #T()", RuntimeTypes.Core.IO.SdkManagedGroup)
         writer.write("private val client = #T(config.httpClientEngine)", RuntimeTypes.HttpClient.SdkHttpClient)
+
+        // render auth resolver related properties
+        writer.write("private val identityProviderConfig = #T(config)", IdentityProviderConfigGenerator.getSymbol(ctx.settings))
+
+        writer.withBlock(
+            "private val configuredAuthSchemes = listOf(",
+            ")",
+        ){
+            // FIXME - generate reconciliation with customer overrides from config
+            val authIndex = AuthIndex()
+            val allAuthHandlers = authIndex.authHandlersForService(ctx)
+
+            allAuthHandlers.forEach {
+                // use inline writer to deal with list formatting
+                val inlineWriter: InlineKotlinWriter = { it.instantiateAuthSchemeExpr(ctx, this) }
+                writer.write("#W,", inlineWriter)
+            }
+        }
+
     }
 
     protected open fun importSymbols(writer: KotlinWriter) {
@@ -187,9 +212,15 @@ abstract class HttpProtocolClientGenerator(
                     writer.write("hostPrefix = #S", hostPrefix)
                 }
             }
-        }
 
-        writer.write("op.execution.retryStrategy = config.retryStrategy")
+            writer.write(
+                "execution.auth = #T(#T, configuredAuthSchemes, identityProviderConfig)",
+                RuntimeTypes.HttpClient.Operation.OperationAuthConfig,
+                AuthSchemeProviderAdapterGenerator.getSymbol(ctx.settings)
+            )
+
+            writer.write("execution.retryStrategy = config.retryStrategy")
+        }
     }
 
     protected open fun renderFinalizeBeforeExecute(writer: KotlinWriter, opIndex: OperationIndex, op: OperationShape) {

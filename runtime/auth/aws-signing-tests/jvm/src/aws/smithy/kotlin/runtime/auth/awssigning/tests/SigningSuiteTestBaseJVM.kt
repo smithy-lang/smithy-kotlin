@@ -10,6 +10,7 @@ import aws.smithy.kotlin.runtime.auth.awscredentials.CredentialsProvider
 import aws.smithy.kotlin.runtime.auth.awssigning.*
 import aws.smithy.kotlin.runtime.http.*
 import aws.smithy.kotlin.runtime.http.auth.AwsHttpSigner
+import aws.smithy.kotlin.runtime.http.auth.SigV4AuthScheme
 import aws.smithy.kotlin.runtime.http.content.ByteArrayContent
 import aws.smithy.kotlin.runtime.http.engine.HttpClientEngineBase
 import aws.smithy.kotlin.runtime.http.operation.*
@@ -17,6 +18,7 @@ import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
 import aws.smithy.kotlin.runtime.http.response.HttpCall
 import aws.smithy.kotlin.runtime.http.response.HttpResponse
+import aws.smithy.kotlin.runtime.identity.asIdentityProviderConfig
 import aws.smithy.kotlin.runtime.net.fullUriToQueryParameters
 import aws.smithy.kotlin.runtime.operation.ExecutionContext
 import aws.smithy.kotlin.runtime.time.Instant
@@ -456,10 +458,11 @@ private fun buildOperation(
         }
     }
 
-    op.execution.identityProvider = object : CredentialsProvider {
+    val idp = object : CredentialsProvider {
         override suspend fun resolve(): Credentials = config.credentials
     }
-    op.execution.signer = AwsHttpSigner {
+
+    val signerConfig = AwsHttpSigner.Config().apply {
         signer = awsSigner
         service = config.service
         useDoubleUriEncode = config.useDoubleUriEncode
@@ -469,6 +472,11 @@ private fun buildOperation(
         signatureType = config.signatureType
         expiresAfter = config.expiresAfter
     }
+
+    op.execution.auth = OperationAuthConfig.from(
+        idp.asIdentityProviderConfig(),
+        SigV4AuthScheme(signerConfig),
+    )
 
     return op
 }

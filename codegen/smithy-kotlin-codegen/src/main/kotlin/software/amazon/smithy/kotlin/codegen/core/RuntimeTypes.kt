@@ -56,16 +56,17 @@ object RuntimeTypes {
         }
 
         object Operation : RuntimeTypePackage(KotlinDependency.HTTP, "operation") {
+            val AuthSchemeResolver = symbol("AuthSchemeResolver")
+            val context = symbol("context")
+            val execute = symbol("execute")
             val HttpDeserialize = symbol("HttpDeserialize")
             val HttpSerialize = symbol("HttpSerialize")
-            val SdkHttpOperation = symbol("SdkHttpOperation")
-            val SdkHttpRequest = symbol("SdkHttpRequest")
+            val OperationAuthConfig = symbol("OperationAuthConfig")
             val OperationRequest = symbol("OperationRequest")
-            val context = symbol("context")
             val roundTrip = symbol("roundTrip")
             val sdkRequestId = symbol("sdkRequestId")
-            val execute = symbol("execute")
-            val InlineMiddleware = symbol("InlineMiddleware")
+            val SdkHttpOperation = symbol("SdkHttpOperation")
+            val SdkHttpRequest = symbol("SdkHttpRequest")
         }
 
         object Config : RuntimeTypePackage(KotlinDependency.HTTP, "config") {
@@ -145,15 +146,16 @@ object RuntimeTypes {
         object Utils : RuntimeTypePackage(KotlinDependency.CORE, "util") {
             val Attributes = symbol("Attributes")
             val AttributeKey = symbol("AttributeKey")
-            val flattenIfPossible = symbol("flattenIfPossible")
-            val length = symbol("length")
-            val truthiness = symbol("truthiness")
-            val urlEncodeComponent = symbol("urlEncodeComponent", "text")
             val decodeBase64 = symbol("decodeBase64")
             val decodeBase64Bytes = symbol("decodeBase64Bytes")
             val encodeBase64 = symbol("encodeBase64")
             val encodeBase64String = symbol("encodeBase64String")
+            val flattenIfPossible = symbol("flattenIfPossible")
+            val get = symbol("get")
             val LazyAsyncValue = symbol("LazyAsyncValue")
+            val length = symbol("length")
+            val truthiness = symbol("truthiness")
+            val urlEncodeComponent = symbol("urlEncodeComponent", "text")
         }
 
         object Net : RuntimeTypePackage(KotlinDependency.CORE, "net") {
@@ -172,6 +174,7 @@ object RuntimeTypes {
         val SdkLogMode = symbol("SdkLogMode")
         val SdkClientConfig = symbol("SdkClientConfig")
         val SdkClientFactory = symbol("SdkClientFactory")
+        val SdkClientOption = symbol("SdkClientOption")
         val RequestInterceptorContext = symbol("RequestInterceptorContext")
         val ProtocolRequestInterceptorContext = symbol("ProtocolRequestInterceptorContext")
         val IdempotencyTokenProvider = symbol("IdempotencyTokenProvider")
@@ -250,6 +253,15 @@ object RuntimeTypes {
             }
         }
 
+        object Identity : RuntimeTypePackage(KotlinDependency.IDENTITY_API){
+            val AuthSchemeId = symbol("AuthSchemeId", "auth")
+            val AuthSchemeProvider = symbol("AuthSchemeProvider", "auth")
+            val AuthSchemeOption = symbol("AuthSchemeOption", "auth")
+
+            val IdentityProvider = symbol("IdentityProvider", "identity")
+            val IdentityProviderConfig = symbol("IdentityProviderConfig", "identity")
+        }
+
         object Signing {
             object AwsSigningCommon : RuntimeTypePackage(KotlinDependency.AWS_SIGNING_COMMON) {
                 val AwsSignedBodyHeader = symbol("AwsSignedBodyHeader")
@@ -269,8 +281,14 @@ object RuntimeTypes {
             }
         }
 
+        object HttpAuth: RuntimeTypePackage(KotlinDependency.HTTP_AUTH) {
+            val AnonymousAuthScheme  = symbol("AnonymousAuthScheme")
+            val AnonymousIdentityProvider = symbol("AnonymousIdentityProvider")
+        }
+
         object HttpAuthAws : RuntimeTypePackage(KotlinDependency.HTTP_AUTH_AWS){
             val AwsHttpSigner = symbol("AwsHttpSigner")
+            val SigV4AuthScheme = symbol("SigV4AuthScheme")
         }
     }
 

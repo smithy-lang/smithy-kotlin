@@ -11,6 +11,10 @@ import software.amazon.smithy.kotlin.codegen.core.*
 import software.amazon.smithy.kotlin.codegen.integration.KotlinIntegration
 import software.amazon.smithy.kotlin.codegen.model.buildSymbol
 import software.amazon.smithy.kotlin.codegen.model.namespace
+import software.amazon.smithy.kotlin.codegen.rendering.auth.AuthDelegator
+import software.amazon.smithy.kotlin.codegen.rendering.auth.AuthSchemeParametersGenerator
+import software.amazon.smithy.kotlin.codegen.rendering.auth.AuthSchemeProviderGenerator
+import software.amazon.smithy.kotlin.codegen.rendering.auth.IdentityProviderConfigGenerator
 import software.amazon.smithy.kotlin.codegen.rendering.endpoints.*
 import software.amazon.smithy.kotlin.codegen.rendering.serde.StructuredDataParserGenerator
 import software.amazon.smithy.kotlin.codegen.rendering.serde.StructuredDataSerializerGenerator
@@ -127,6 +131,12 @@ interface ProtocolGenerator {
             ResolveEndpointMiddlewareGenerator(ctx, it).render()
         }
     }
+    // FIXME - collapse endpoint functions to a similar delegator
+
+    /**
+     * Get the generator responsible for rendering an AuthSchemeProvider implementation
+     */
+    fun authSchemeDelegator(ctx: GenerationContext): AuthDelegator = AuthDelegator.Default
 
     /**
      * Get the generator responsible for rendering deserialization of the protocol specific data format
