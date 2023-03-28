@@ -21,6 +21,12 @@ class AwsQueryCompatibleErrorDetailsTest {
     }
 
     @Test
+    fun testParseEmptyType() {
+        val ex = assertFailsWith<IllegalArgumentException> { AwsQueryCompatibleErrorDetails.parse("code;") }
+        assertEquals("type is empty", ex.message)
+    }
+
+    @Test
     fun testParseErrorClient() {
         val expected = AwsQueryCompatibleErrorDetails(
             "com.test.ErrorCode",
@@ -46,7 +52,7 @@ class AwsQueryCompatibleErrorDetailsTest {
             "com.test.ErrorCode",
             ServiceException.ErrorType.Unknown,
         )
-        val actual = AwsQueryCompatibleErrorDetails.parse("com.test.ErrorCode;")
+        val actual = AwsQueryCompatibleErrorDetails.parse("com.test.ErrorCode;idk")
         assertEquals(expected, actual)
     }
 }

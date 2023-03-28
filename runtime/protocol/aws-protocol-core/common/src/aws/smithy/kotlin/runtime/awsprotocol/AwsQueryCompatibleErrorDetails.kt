@@ -44,6 +44,7 @@ private fun parseImpl(error: String): AwsQueryCompatibleErrorDetails {
     val segments = error.split(";", limit = 2)
     require(segments.size == 2) { "value is malformed" }
     require(segments[0].isNotEmpty()) { "code is empty" }
+    require(segments[1].isNotEmpty()) { "type is empty" }
 
     val code = segments[0]
     val type = when (segments[1]) { // can be empty
