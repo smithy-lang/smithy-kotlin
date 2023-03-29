@@ -11,6 +11,7 @@ import aws.smithy.kotlin.runtime.identity.IdentityProvider
 import aws.smithy.kotlin.runtime.identity.IdentityProviderConfig
 import aws.smithy.kotlin.runtime.time.Instant
 import aws.smithy.kotlin.runtime.util.Attributes
+import aws.smithy.kotlin.runtime.util.emptyAttributes
 
 /**
  * A no-op signer that does nothing with the request
@@ -24,11 +25,11 @@ public object AnonymousHttpSigner : HttpSigner {
  */
 public object AnonymousIdentity : Identity {
     override val expiration: Instant? = null
-    override val attributes: Attributes = Attributes()
+    override val attributes: Attributes = emptyAttributes()
 }
 
 public object AnonymousIdentityProvider : IdentityProvider {
-    override suspend fun resolve(): Identity = AnonymousIdentity
+    override suspend fun resolve(attributes: Attributes): Identity = AnonymousIdentity
 }
 
 /**

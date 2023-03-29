@@ -36,10 +36,12 @@ public fun Flow<Message>.sign(
     // NOTE: We need the signature of the initial HTTP request to seed the event stream signatures
     // This is a bit of a chicken and egg problem since the event stream is constructed before the request
     // is signed. The body of the stream shouldn't start being consumed though until after the entire request
-    // is built. Thus, by the time we get here the signature will exist in the context.
-    var prevSignature = context.getOrNull(AwsSigningAttributes.RequestSignature) ?: error("expected initial HTTP signature to be set before message signing commences")
-
+    // is built. The RequestSignature deferred is created by the operation serializer, the signer will complete it
+    // when the initial signature is available.
+    val initialSignature = context.getOrNull(AwsSigningAttributes.RequestSignature) ?: error("expected initial HTTP signature deferred to be set before message signing commences")
     val credentialsProvider = context.getOrNull(AwsSigningAttributes.CredentialsProvider) ?: error("No credentials provider was found in context")
+
+    var prevSignature = initialSignature.await()
 
     // signature date is updated per event message
     val configBuilder = context.newEventStreamSigningConfig()

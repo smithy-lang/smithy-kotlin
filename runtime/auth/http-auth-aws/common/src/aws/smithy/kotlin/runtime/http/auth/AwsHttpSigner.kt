@@ -146,7 +146,7 @@ public class AwsHttpSigner(private val config: Config) : HttpSigner {
         val signedRequest = signingResult.output
 
         // Add the signature to the request context
-        attributes[AwsSigningAttributes.RequestSignature] = signingResult.signature
+        attributes.getOrNull(AwsSigningAttributes.RequestSignature)?.complete(signingResult.signature)
 
         request.update(signedRequest)
 

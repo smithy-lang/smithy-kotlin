@@ -6,13 +6,15 @@ package software.amazon.smithy.kotlin.codegen.rendering.auth
 
 import software.amazon.smithy.aws.traits.auth.SigV4Trait
 import software.amazon.smithy.aws.traits.auth.UnsignedPayloadTrait
+import software.amazon.smithy.codegen.core.Symbol
+import software.amazon.smithy.codegen.core.SymbolReference
 import software.amazon.smithy.kotlin.codegen.KotlinSettings
 import software.amazon.smithy.kotlin.codegen.core.CodegenContext
 import software.amazon.smithy.kotlin.codegen.core.KotlinWriter
 import software.amazon.smithy.kotlin.codegen.core.RuntimeTypes
-import software.amazon.smithy.kotlin.codegen.core.withBlock
 import software.amazon.smithy.kotlin.codegen.integration.AuthSchemeHandler
 import software.amazon.smithy.kotlin.codegen.integration.KotlinIntegration
+import software.amazon.smithy.kotlin.codegen.model.buildSymbol
 import software.amazon.smithy.kotlin.codegen.model.hasTrait
 import software.amazon.smithy.kotlin.codegen.model.knowledge.AwsSignatureVersion4
 import software.amazon.smithy.kotlin.codegen.rendering.protocol.ProtocolGenerator
@@ -55,6 +57,14 @@ class Sigv4AuthSchemeIntegration : KotlinIntegration {
 open class SigV4AuthSchemeHandler : AuthSchemeHandler {
     override val authSchemeId: ShapeId = SigV4Trait.ID
 
+    override val authSchemeIdSymbol: Symbol = buildSymbol {
+        name = "AuthSchemeId.AwsSigV4"
+        val ref = RuntimeTypes.Auth.Identity.AuthSchemeId
+        objectRef = ref
+        namespace = ref.namespace
+        reference(ref, SymbolReference.ContextOption.USE)
+    }
+
     override fun identityProviderAdapterExpression(writer: KotlinWriter) {
         writer.write("config.credentialsProvider")
     }
@@ -65,29 +75,11 @@ open class SigV4AuthSchemeHandler : AuthSchemeHandler {
         writer: KotlinWriter
     ) {
         val expr = if (op?.hasTrait<UnsignedPayloadTrait>() == true) {
-            "sigv4(unsignedPayload = true)"
+            "#T(unsignedPayload = true)"
         }else {
-            "sigv4()"
+            "#T()"
         }
-        writer.write(expr)
-    }
-
-    // FIXME: Move to runtime?
-    override fun authSchemeProviderRenderAdditionalMethods(ctx: ProtocolGenerator.GenerationContext, writer: KotlinWriter) {
-        super.authSchemeProviderRenderAdditionalMethods(ctx, writer)
-        writer.withBlock(
-            "private fun sigv4(unsignedPayload: Boolean = false): #T {",
-            "}",
-            RuntimeTypes.Auth.Identity.AuthSchemeOption
-        ) {
-            writer.write("val opt = #T(#T.AwsSigV4)", RuntimeTypes.Auth.Identity.AuthSchemeOption, RuntimeTypes.Auth.Identity.AuthSchemeId)
-            writer.write(
-                "if (unsignedPayload) opt.attributes[#T.HashSpecification] = #T.UnsignedPayload",
-                RuntimeTypes.Auth.Signing.AwsSigningCommon.AwsSigningAttributes,
-                RuntimeTypes.Auth.Signing.AwsSigningCommon.HashSpecification
-            )
-            writer.write("return opt")
-        }
+        writer.write(expr, RuntimeTypes.Auth.HttpAuthAws.sigv4)
     }
 
     override fun instantiateAuthSchemeExpr(ctx: ProtocolGenerator.GenerationContext, writer: KotlinWriter) {

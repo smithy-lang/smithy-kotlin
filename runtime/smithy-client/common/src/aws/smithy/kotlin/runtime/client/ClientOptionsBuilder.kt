@@ -7,14 +7,15 @@ package aws.smithy.kotlin.runtime.client
 
 import aws.smithy.kotlin.runtime.operation.ExecutionContext
 import aws.smithy.kotlin.runtime.util.AttributeKey
-import aws.smithy.kotlin.runtime.util.Attributes
+import aws.smithy.kotlin.runtime.util.MutableAttributes
+import aws.smithy.kotlin.runtime.util.mutableAttributes
 import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KProperty
 
 /**
  * Base class for building client options
  */
-public abstract class ClientOptionsBuilder(protected val options: Attributes = Attributes()) : Attributes by options {
+public abstract class ClientOptionsBuilder(protected val options: MutableAttributes = mutableAttributes()) : MutableAttributes by options {
     private val requiredKeys = mutableSetOf<AttributeKey<*>>()
 
     // TODO - currently can only have nullable (T?) values delegated. Look at providing either a default/initial value
@@ -58,7 +59,7 @@ public abstract class ClientOptionsBuilder(protected val options: Attributes = A
  */
 public class DelegatedClientOption<T : Any>(
     private val key: AttributeKey<T>,
-    private val into: Attributes,
+    private val into: MutableAttributes,
 ) : ReadWriteProperty<Any?, T?> {
 
     override fun getValue(thisRef: Any?, property: KProperty<*>): T? =

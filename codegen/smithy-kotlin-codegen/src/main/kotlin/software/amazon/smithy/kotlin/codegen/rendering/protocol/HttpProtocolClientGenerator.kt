@@ -6,7 +6,6 @@ package software.amazon.smithy.kotlin.codegen.rendering.protocol
 
 import software.amazon.smithy.aws.traits.HttpChecksumTrait
 import software.amazon.smithy.kotlin.codegen.core.*
-import software.amazon.smithy.kotlin.codegen.integration.AuthSchemeHandler
 import software.amazon.smithy.kotlin.codegen.integration.SectionId
 import software.amazon.smithy.kotlin.codegen.integration.SectionKey
 import software.amazon.smithy.kotlin.codegen.lang.KotlinTypes
@@ -18,12 +17,10 @@ import software.amazon.smithy.kotlin.codegen.rendering.serde.deserializerName
 import software.amazon.smithy.kotlin.codegen.rendering.serde.serializerName
 import software.amazon.smithy.kotlin.codegen.utils.getOrNull
 import software.amazon.smithy.model.knowledge.OperationIndex
-import software.amazon.smithy.model.knowledge.ServiceIndex
 import software.amazon.smithy.model.knowledge.TopDownIndex
 import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.traits.EndpointTrait
 import software.amazon.smithy.model.traits.HttpChecksumRequiredTrait
-import java.util.logging.Logger
 
 /**
  * Renders an implementation of a service interface for HTTP protocol
@@ -89,20 +86,31 @@ abstract class HttpProtocolClientGenerator(
         writer.write("private val identityProviderConfig = #T(config)", IdentityProviderConfigGenerator.getSymbol(ctx.settings))
 
         writer.withBlock(
-            "private val configuredAuthSchemes = listOf(",
-            ")",
+            "private val configuredAuthSchemes = with(config.authSchemes.associateBy(#T::schemeId).toMutableMap()){",
+            "}",
+            RuntimeTypes.Auth.HttpAuth.HttpAuthScheme
         ){
-            // FIXME - generate reconciliation with customer overrides from config
             val authIndex = AuthIndex()
             val allAuthHandlers = authIndex.authHandlersForService(ctx)
 
             allAuthHandlers.forEach {
-                // use inline writer to deal with list formatting
-                val inlineWriter: InlineKotlinWriter = { it.instantiateAuthSchemeExpr(ctx, this) }
-                writer.write("#W,", inlineWriter)
-            }
-        }
+                val (format, args) = if (it.authSchemeIdSymbol != null) {
+                    "#T" to arrayOf(it.authSchemeIdSymbol!!)
+                }else {
+                    "#T(#S)" to arrayOf(RuntimeTypes.Auth.Identity.AuthSchemeId, it.authSchemeId)
+                }
 
+                withBlock(
+                    "getOrPut($format){",
+                    "}",
+                    *args
+                ) {
+                    it.instantiateAuthSchemeExpr(ctx, this)
+                }
+            }
+
+            write("toMap()")
+        }
     }
 
     protected open fun importSymbols(writer: KotlinWriter) {

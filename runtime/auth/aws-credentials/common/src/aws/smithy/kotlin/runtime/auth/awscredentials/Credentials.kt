@@ -7,7 +7,8 @@ package aws.smithy.kotlin.runtime.auth.awscredentials
 import aws.smithy.kotlin.runtime.identity.Identity
 import aws.smithy.kotlin.runtime.identity.IdentityAttributes
 import aws.smithy.kotlin.runtime.time.Instant
-import aws.smithy.kotlin.runtime.util.Attributes
+import aws.smithy.kotlin.runtime.util.MutableAttributes
+import aws.smithy.kotlin.runtime.util.mutableAttributes
 
 /**
  * Represents a set of AWS credentials
@@ -21,7 +22,7 @@ public data class Credentials(
     override val expiration: Instant? = null,
     val providerName: String? = null,
 ) : Identity {
-    override val attributes: Attributes by lazy { Attributes() }
+    override val attributes: MutableAttributes = mutableAttributes()
     init {
         providerName?.let {
             attributes[IdentityAttributes.ProviderName] = it

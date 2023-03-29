@@ -8,6 +8,7 @@ package aws.smithy.kotlin.runtime.client
 import aws.smithy.kotlin.runtime.InternalApi
 import aws.smithy.kotlin.runtime.util.AttributeKey
 import aws.smithy.kotlin.runtime.util.Attributes
+import aws.smithy.kotlin.runtime.util.MutableAttributes
 
 /**
  * A (service) client option that influences how the client behaves when executing requests
@@ -38,7 +39,7 @@ public interface ClientOptions {
  * Wrapper around [Attributes] that provides a [ClientOptions] implementation
  */
 @InternalApi
-public class ClientOptionsImpl(private val attributes: Attributes) : ClientOptions {
+public class ClientOptionsImpl(private val attributes: MutableAttributes) : ClientOptions {
     override fun <T : Any> set(option: ClientOption<T>, value: T) {
         attributes[option] = value
     }

@@ -10,23 +10,29 @@ import aws.smithy.kotlin.runtime.auth.AuthSchemeOption
 import aws.smithy.kotlin.runtime.http.auth.*
 import aws.smithy.kotlin.runtime.http.interceptors.InterceptorExecutor
 import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
+import aws.smithy.kotlin.runtime.identity.Identity
+import aws.smithy.kotlin.runtime.identity.IdentityProvider
+import aws.smithy.kotlin.runtime.identity.IdentityProviderConfig
 import aws.smithy.kotlin.runtime.identity.asIdentityProviderConfig
 import aws.smithy.kotlin.runtime.io.Handler
 import aws.smithy.kotlin.runtime.operation.ExecutionContext
 import aws.smithy.kotlin.runtime.util.AttributeKey
 import aws.smithy.kotlin.runtime.util.Attributes
+import aws.smithy.kotlin.runtime.util.attributesOf
 import aws.smithy.kotlin.runtime.util.get
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
+@OptIn(ExperimentalCoroutinesApi::class)
 class HttpAuthHandlerTest {
     private val testAttrKey = AttributeKey<String>("HttpAuthHandlerTest")
 
     @Test
-    fun testAuthOptionSigningPropertiesPropagation() = runTest {
-        // verify resolved auth scheme option attributes make it to the signer
+    fun testAuthOptionPropertiesPropagation() = runTest {
+        // verify resolved auth scheme option attributes make it to the signer and identity provider
         val inner = object : Handler<SdkHttpRequest, Unit> {
             override suspend fun call(request: SdkHttpRequest) = Unit
         }
@@ -38,6 +44,13 @@ class HttpAuthHandlerTest {
         val idpConfig = AnonymousIdentityProvider.asIdentityProviderConfig()
         val scheme = object : HttpAuthScheme {
             override val schemeId: AuthSchemeId = AuthSchemeId.Anonymous
+            override fun identityProvider(identityProviderConfig: IdentityProviderConfig): IdentityProvider = object : IdentityProvider {
+                override suspend fun resolve(attributes: Attributes): Identity {
+                    assertEquals("testing", attributes[testAttrKey])
+                    return AnonymousIdentity
+                }
+            }
+
             override val signer: HttpSigner = object : HttpSigner {
                 override suspend fun sign(signingRequest: SignHttpRequest) {
                     assertEquals("testing", signingRequest.signingAttributes[testAttrKey])
@@ -47,12 +60,14 @@ class HttpAuthHandlerTest {
         }
 
         val resolver = AuthSchemeResolver {
-            val attrs = Attributes()
-            attrs[testAttrKey] = "testing"
+            val attrs = attributesOf {
+                testAttrKey to "testing"
+            }
             listOf(AuthSchemeOption(AuthSchemeId.Anonymous, attrs))
         }
 
-        val authConfig = OperationAuthConfig(resolver, listOf(scheme), idpConfig)
+        val schemes = listOf(scheme).associateBy(HttpAuthScheme::schemeId)
+        val authConfig = OperationAuthConfig(resolver, schemes, idpConfig)
         val op = HttpAuthHandler<Unit, Unit>(inner, interceptorExec, authConfig)
         val request = SdkHttpRequest(ctx, HttpRequestBuilder())
         op.call(request)

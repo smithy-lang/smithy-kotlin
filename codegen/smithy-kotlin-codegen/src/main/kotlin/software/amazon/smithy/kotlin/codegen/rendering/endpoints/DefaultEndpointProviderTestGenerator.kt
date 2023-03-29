@@ -119,18 +119,16 @@ class DefaultEndpointProviderTestGenerator(
             }
 
             if (endpoint.properties.isNotEmpty()) {
-                withBlock("attributes = #T().apply {", "},", RuntimeTypes.Core.Utils.Attributes) {
+                withBlock("attributes = #T {", "},", RuntimeTypes.Core.Utils.attributesOf) {
                     endpoint.properties.entries.forEach { (k, v) ->
                         if (k in expectedPropertyRenderers) {
                             expectedPropertyRenderers[k]!!(writer, Expression.fromNode(v), this@DefaultEndpointProviderTestGenerator)
                             return@forEach
                         }
 
-                        withBlock("set(", ")") {
-                            write("#T(#S),", RuntimeTypes.Core.Utils.AttributeKey, k)
-                            renderExpression(Expression.fromNode(v))
-                            write(",")
-                        }
+                        writeInline("#T(#S) to ", RuntimeTypes.Core.Utils.AttributeKey, k)
+                        renderExpression(Expression.fromNode(v))
+                        ensureNewline()
                     }
                 }
             }
