@@ -20,11 +20,13 @@ import aws.smithy.kotlin.runtime.util.AttributeKey
 import aws.smithy.kotlin.runtime.util.Attributes
 import aws.smithy.kotlin.runtime.util.attributesOf
 import aws.smithy.kotlin.runtime.util.get
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
+@OptIn(ExperimentalCoroutinesApi::class)
 class HttpAuthHandlerTest {
     private val testAttrKey = AttributeKey<String>("HttpAuthHandlerTest")
 
