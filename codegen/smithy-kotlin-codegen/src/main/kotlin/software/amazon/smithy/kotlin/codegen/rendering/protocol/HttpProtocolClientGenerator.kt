@@ -101,7 +101,7 @@ abstract class HttpProtocolClientGenerator(
                 }
 
                 withBlock(
-                    "computeIfAbsent($format){",
+                    "getOrPut($format){",
                     "}",
                     *args
                 ) {
