@@ -40,13 +40,15 @@ class Sigv4AuthSchemeIntegration : KotlinIntegration {
     override fun additionalServiceConfigProps(ctx: CodegenContext): List<ConfigProperty> {
         val credentialsProviderProp = ConfigProperty {
             symbol = RuntimeTypes.Auth.Credentials.AwsCredentials.CredentialsProvider
+            baseClass = RuntimeTypes.Auth.Credentials.AwsCredentials.CredentialsProviderConfig
+            useNestedBuilderBaseClass()
             documentation = """
                 The AWS credentials provider to use for authenticating requests. 
                 NOTE: The caller is responsible for managing the lifetime of the provider when set. The SDK
                 client will not close it when the client is closed.
             """.trimIndent()
 
-            propertyType = ConfigPropertyType.Required("")
+            propertyType = ConfigPropertyType.Required()
         }
 
         return listOf(credentialsProviderProp)
