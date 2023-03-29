@@ -5,6 +5,7 @@
 
 package aws.smithy.kotlin.runtime.auth.awscredentials
 
+import aws.smithy.kotlin.runtime.util.Attributes
 import io.kotest.matchers.string.shouldContain
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
@@ -22,7 +23,7 @@ class CredentialsProviderChainTest {
         }
     }
     data class TestProvider(val credentials: Credentials? = null) : CredentialsProvider {
-        override suspend fun resolve(): Credentials = credentials ?: throw IllegalStateException("no credentials available")
+        override suspend fun resolve(attributes: Attributes): Credentials = credentials ?: throw IllegalStateException("no credentials available")
     }
 
     @Test

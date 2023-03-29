@@ -5,14 +5,15 @@
 package aws.smithy.kotlin.runtime
 
 import aws.smithy.kotlin.runtime.util.AttributeKey
-import aws.smithy.kotlin.runtime.util.Attributes
+import aws.smithy.kotlin.runtime.util.MutableAttributes
+import aws.smithy.kotlin.runtime.util.mutableAttributes
 
 /**
  * Additional metadata about an error
  */
 public open class ErrorMetadata {
     @InternalApi
-    public val attributes: Attributes = Attributes()
+    public val attributes: MutableAttributes = mutableAttributes()
 
     public companion object {
         /**

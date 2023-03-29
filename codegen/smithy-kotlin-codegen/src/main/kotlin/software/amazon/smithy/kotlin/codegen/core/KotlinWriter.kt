@@ -84,6 +84,11 @@ class KotlinWriter(
 
         addDepsRecursively(symbol)
 
+        // object references should import the containing object rather than the member referenced
+        if (symbol.isObjectRef) {
+            return addImport(symbol.objectRef!!)
+        }
+
         // only add imports for symbols in a different namespace
         if (symbol.namespace.isNotEmpty() && symbol.namespace != fullPackageName) {
             // Check to see if another symbol with the same name but different namespace

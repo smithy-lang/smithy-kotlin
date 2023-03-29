@@ -13,7 +13,9 @@ import aws.smithy.kotlin.runtime.io.SdkBuffer
 import aws.smithy.kotlin.runtime.operation.ExecutionContext
 import aws.smithy.kotlin.runtime.time.Instant
 import aws.smithy.kotlin.runtime.time.ManualClock
+import aws.smithy.kotlin.runtime.util.Attributes
 import aws.smithy.kotlin.runtime.util.encodeToHex
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.toList
@@ -25,7 +27,7 @@ import kotlin.test.assertEquals
 class EventStreamSigningTest {
     private val testCredentials = Credentials("fake access key", "fake secret key")
     private val testCredentialsProvider = object : CredentialsProvider {
-        override suspend fun resolve() = testCredentials
+        override suspend fun resolve(attributes: Attributes) = testCredentials
     }
 
     @Test
@@ -75,7 +77,7 @@ class EventStreamSigningTest {
 
         val context = ExecutionContext()
         context[AwsSigningAttributes.Signer] = DefaultAwsSigner
-        context[AwsSigningAttributes.RequestSignature] = HashSpecification.EmptyBody.hash.encodeToByteArray()
+        context[AwsSigningAttributes.RequestSignature] = CompletableDeferred(HashSpecification.EmptyBody.hash.encodeToByteArray())
         context[AwsSigningAttributes.SigningRegion] = "us-east-2"
         context[AwsSigningAttributes.SigningService] = "test"
         context[AwsSigningAttributes.CredentialsProvider] = testCredentialsProvider

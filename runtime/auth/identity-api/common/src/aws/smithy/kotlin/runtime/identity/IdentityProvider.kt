@@ -5,13 +5,18 @@
 
 package aws.smithy.kotlin.runtime.identity
 
+import aws.smithy.kotlin.runtime.util.Attributes
+import aws.smithy.kotlin.runtime.util.emptyAttributes
+
 /**
  * Resolves identities for a service client
  */
 public interface IdentityProvider {
     /**
      * Resolve the identity to authenticate requests with
-     * @return an [Identity] that can be used to connect to the service
+     * @param attributes Additional attributes to feed into identity resolution. Typically, metadata from
+     * selecting the authentication scheme.
+     * @return An [Identity] that can be used to connect to the service
      */
-    public suspend fun resolve(): Identity
+    public suspend fun resolve(attributes: Attributes = emptyAttributes()): Identity
 }

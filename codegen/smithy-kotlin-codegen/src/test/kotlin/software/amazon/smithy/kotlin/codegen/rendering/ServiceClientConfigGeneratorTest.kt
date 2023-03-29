@@ -49,6 +49,7 @@ public class Config private constructor(builder: Builder) : HttpClientConfig, Id
         val expectedProps = """
     override val clientName: String = builder.clientName
     override val httpClientEngine: HttpClientEngine = builder.httpClientEngine ?: DefaultHttpEngine().manage()
+    public val authSchemes: kotlin.collections.List<aws.smithy.kotlin.runtime.http.auth.HttpAuthScheme> = builder.authSchemes
     public val endpointProvider: EndpointProvider = requireNotNull(builder.endpointProvider) { "endpointProvider is a required configuration property" }
     override val idempotencyTokenProvider: IdempotencyTokenProvider = builder.idempotencyTokenProvider ?: IdempotencyTokenProvider.Default
     override val interceptors: kotlin.collections.List<aws.smithy.kotlin.runtime.http.interceptors.HttpInterceptor> = builder.interceptors
@@ -72,6 +73,14 @@ public class Config private constructor(builder: Builder) : HttpClientConfig, Id
          * client will not close it when the client is closed.
          */
         override var httpClientEngine: HttpClientEngine? = null
+
+        /**
+         * Register new or override default [HttpAuthScheme]s configured for this client. By default, the set
+         * of auth schemes configured comes from the service model. An auth scheme configured explicitly takes
+         * precedence over the defaults and can be used to customize identity resolution and signing for specific
+         * authentication schemes.
+         */
+        public var authSchemes: kotlin.collections.List<aws.smithy.kotlin.runtime.http.auth.HttpAuthScheme> = emptyList()
 
         /**
          * The endpoint provider used to determine where to make service requests. **This is an advanced config
@@ -253,6 +262,14 @@ public class Config private constructor(builder: Builder) {
          * client will not close it when the client is closed.
          */
         override var httpClientEngine: HttpClientEngine? = null
+
+        /**
+         * Register new or override default [HttpAuthScheme]s configured for this client. By default, the set
+         * of auth schemes configured comes from the service model. An auth scheme configured explicitly takes
+         * precedence over the defaults and can be used to customize identity resolution and signing for specific
+         * authentication schemes.
+         */
+        public var authSchemes: kotlin.collections.List<aws.smithy.kotlin.runtime.http.auth.HttpAuthScheme> = emptyList()
 
         public var customProp: Int? = null
 

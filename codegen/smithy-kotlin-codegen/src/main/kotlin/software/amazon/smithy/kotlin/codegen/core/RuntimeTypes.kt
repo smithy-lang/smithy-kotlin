@@ -145,6 +145,8 @@ object RuntimeTypes {
         }
         object Utils : RuntimeTypePackage(KotlinDependency.CORE, "util") {
             val Attributes = symbol("Attributes")
+            val MutableAttributes = symbol("MutableAttributes")
+            val attributesOf = symbol("attributesOf")
             val AttributeKey = symbol("AttributeKey")
             val decodeBase64 = symbol("decodeBase64")
             val decodeBase64Bytes = symbol("decodeBase64Bytes")
@@ -284,11 +286,13 @@ object RuntimeTypes {
         object HttpAuth: RuntimeTypePackage(KotlinDependency.HTTP_AUTH) {
             val AnonymousAuthScheme  = symbol("AnonymousAuthScheme")
             val AnonymousIdentityProvider = symbol("AnonymousIdentityProvider")
+            val HttpAuthScheme = symbol("HttpAuthScheme")
         }
 
         object HttpAuthAws : RuntimeTypePackage(KotlinDependency.HTTP_AUTH_AWS){
             val AwsHttpSigner = symbol("AwsHttpSigner")
             val SigV4AuthScheme = symbol("SigV4AuthScheme")
+            val sigv4 = symbol("sigv4")
         }
     }
 
@@ -308,7 +312,11 @@ object RuntimeTypes {
         val coroutineContext = "kotlin.coroutines.coroutineContext".toSymbol()
     }
 
-    object KotlinxCoroutines {
+    object KotlinxCoroutines{
+
+        val CompletableDeferred = "kotlinx.coroutines.CompletableDeferred".toSymbol()
+        val job = "kotlinx.coroutines.job".toSymbol()
+
         object Flow {
             // NOTE: smithy-kotlin core has an API dependency on this already
             val Flow = "kotlinx.coroutines.flow.Flow".toSymbol()

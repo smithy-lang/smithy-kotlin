@@ -22,6 +22,7 @@ import aws.smithy.kotlin.runtime.identity.asIdentityProviderConfig
 import aws.smithy.kotlin.runtime.net.fullUriToQueryParameters
 import aws.smithy.kotlin.runtime.operation.ExecutionContext
 import aws.smithy.kotlin.runtime.time.Instant
+import aws.smithy.kotlin.runtime.util.Attributes
 import aws.smithy.kotlin.runtime.util.ValuesMap
 import aws.smithy.kotlin.runtime.util.get
 import io.ktor.http.cio.*
@@ -459,7 +460,7 @@ private fun buildOperation(
     }
 
     val idp = object : CredentialsProvider {
-        override suspend fun resolve(): Credentials = config.credentials
+        override suspend fun resolve(attributes: Attributes): Credentials = config.credentials
     }
 
     val signerConfig = AwsHttpSigner.Config().apply {

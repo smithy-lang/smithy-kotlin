@@ -5,6 +5,7 @@
 
 package software.amazon.smithy.kotlin.codegen.integration
 
+import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.kotlin.codegen.core.KotlinWriter
 import software.amazon.smithy.kotlin.codegen.rendering.protocol.ProtocolGenerator
 import software.amazon.smithy.model.shapes.OperationShape
@@ -18,6 +19,12 @@ interface AuthSchemeHandler {
      * The auth scheme ID
      */
     val authSchemeId: ShapeId
+
+    /**
+     * Optional symbol in the runtime that this scheme ID is mapped to (e.g. `AuthSchemeId.Sigv4`)
+     */
+    val authSchemeIdSymbol: Symbol?
+        get() = null
 
     /**
      * Render the expression mapping auth scheme ID to the SDK client config. This is used to render the
@@ -50,4 +57,3 @@ interface AuthSchemeHandler {
      */
     fun instantiateAuthSchemeExpr(ctx: ProtocolGenerator.GenerationContext, writer: KotlinWriter)
 }
-

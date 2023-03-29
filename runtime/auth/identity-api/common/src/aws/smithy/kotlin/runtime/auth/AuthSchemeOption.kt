@@ -6,6 +6,7 @@
 package aws.smithy.kotlin.runtime.auth
 
 import aws.smithy.kotlin.runtime.util.Attributes
+import aws.smithy.kotlin.runtime.util.emptyAttributes
 
 /**
  * A tuple of [AuthSchemeId] and typed properties. AuthSchemeOption represents a candidate
@@ -20,5 +21,5 @@ public data class AuthSchemeOption(
     /**
      * Identity or signer attributes to use with this resolved authentication scheme
      */
-    public val attributes: Attributes = Attributes(),
+    public val attributes: Attributes = emptyAttributes(),
 )
