@@ -252,6 +252,7 @@ object RuntimeTypes {
             object AwsCredentials : RuntimeTypePackage(KotlinDependency.AWS_CREDENTIALS) {
                 val Credentials = symbol("Credentials")
                 val CredentialsProvider = symbol("CredentialsProvider")
+                val CredentialsProviderConfig = symbol("CredentialsProviderConfig")
             }
         }
 
@@ -286,6 +287,7 @@ object RuntimeTypes {
         object HttpAuth: RuntimeTypePackage(KotlinDependency.HTTP_AUTH) {
             val AnonymousAuthScheme  = symbol("AnonymousAuthScheme")
             val AnonymousIdentityProvider = symbol("AnonymousIdentityProvider")
+            val HttpAuthConfig = symbol("HttpAuthConfig")
             val HttpAuthScheme = symbol("HttpAuthScheme")
         }
 

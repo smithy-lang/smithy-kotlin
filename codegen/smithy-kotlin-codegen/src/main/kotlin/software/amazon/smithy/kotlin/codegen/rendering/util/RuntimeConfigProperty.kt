@@ -192,6 +192,8 @@ object RuntimeConfigProperty {
     val HttpAuthSchemes = ConfigProperty {
         name = "authSchemes"
         symbol = KotlinTypes.Collections.list(RuntimeTypes.Auth.HttpAuth.HttpAuthScheme, default = "emptyList()")
+        baseClass = RuntimeTypes.Auth.HttpAuth.HttpAuthConfig
+        useNestedBuilderBaseClass()
         documentation = """
             Register new or override default [HttpAuthScheme]s configured for this client. By default, the set
             of auth schemes configured comes from the service model. An auth scheme configured explicitly takes
