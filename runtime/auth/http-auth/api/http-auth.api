@@ -18,6 +18,6 @@ public final class aws/smithy/kotlin/runtime/http/auth/AnonymousIdentity : aws/s
 
 public final class aws/smithy/kotlin/runtime/http/auth/AnonymousIdentityProvider : aws/smithy/kotlin/runtime/identity/IdentityProvider {
 	public static final field INSTANCE Laws/smithy/kotlin/runtime/http/auth/AnonymousIdentityProvider;
-	public fun resolve (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun resolve (Laws/smithy/kotlin/runtime/util/Attributes;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 

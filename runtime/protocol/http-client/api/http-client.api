@@ -163,6 +163,7 @@ public final class aws/smithy/kotlin/runtime/http/operation/HttpOperationContext
 	public final fun getExpectedHttpStatus ()Laws/smithy/kotlin/runtime/util/AttributeKey;
 	public final fun getHostPrefix ()Laws/smithy/kotlin/runtime/util/AttributeKey;
 	public final fun getHttpCallList ()Laws/smithy/kotlin/runtime/util/AttributeKey;
+	public final fun getOperationInput ()Laws/smithy/kotlin/runtime/util/AttributeKey;
 	public final fun getSdkRequestId ()Laws/smithy/kotlin/runtime/util/AttributeKey;
 }
 
@@ -188,6 +189,11 @@ public final class aws/smithy/kotlin/runtime/http/operation/ModifyRequestMiddlew
 
 public final class aws/smithy/kotlin/runtime/http/operation/MutateMiddleware$DefaultImpls {
 	public static fun install (Laws/smithy/kotlin/runtime/http/operation/MutateMiddleware;Laws/smithy/kotlin/runtime/http/operation/SdkHttpOperation;)V
+}
+
+public final class aws/smithy/kotlin/runtime/http/operation/OperationAuthConfig$Companion {
+	public final fun from (Laws/smithy/kotlin/runtime/identity/IdentityProviderConfig;[Laws/smithy/kotlin/runtime/http/auth/HttpAuthScheme;)Laws/smithy/kotlin/runtime/http/operation/OperationAuthConfig;
+	public final fun getAnonymous ()Laws/smithy/kotlin/runtime/http/operation/OperationAuthConfig;
 }
 
 public final class aws/smithy/kotlin/runtime/http/operation/OperationRequest {
