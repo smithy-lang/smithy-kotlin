@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.16.5] - 03/30/2023
+
+### Features
+* Add code support for awsQuery-compatible error responses.
+
+### Miscellaneous
+* Add clarifying documentation for `endpointProvider` in client config.
+
+## [0.16.4] - 03/16/2023
+
+### Fixes
+* [#868](https://github.com/awslabs/aws-sdk-kotlin/issues/868) Fix a bug in presigned URL generation when using a ServicePresignConfig object
+
 ## [0.16.3] - 03/09/2023
 
 ### Features

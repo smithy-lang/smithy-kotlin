@@ -74,7 +74,12 @@ public class Config private constructor(builder: Builder) : HttpClientConfig, Id
         override var httpClientEngine: HttpClientEngine? = null
 
         /**
-         * The endpoint provider used to determine where to make service requests.
+         * The endpoint provider used to determine where to make service requests. **This is an advanced config
+         * option.**
+         *
+         * Endpoint resolution occurs as part of the workflow for every request made via the service client.
+         *
+         * The inputs to endpoint resolution are defined on a per-service basis (see [EndpointParameters]).
          */
         public var endpointProvider: EndpointProvider? = null
 
@@ -252,7 +257,12 @@ public class Config private constructor(builder: Builder) {
         public var customProp: Int? = null
 
         /**
-         * The endpoint provider used to determine where to make service requests.
+         * The endpoint provider used to determine where to make service requests. **This is an advanced config
+         * option.**
+         *
+         * Endpoint resolution occurs as part of the workflow for every request made via the service client.
+         *
+         * The inputs to endpoint resolution are defined on a per-service basis (see [EndpointParameters]).
          */
         public var endpointProvider: EndpointProvider? = null
 

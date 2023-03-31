@@ -12,6 +12,7 @@ import software.amazon.smithy.kotlin.codegen.model.expectTrait
 import software.amazon.smithy.kotlin.codegen.model.hasIdempotentTokenMember
 import software.amazon.smithy.kotlin.codegen.model.hasTrait
 import software.amazon.smithy.kotlin.codegen.rendering.endpoints.DefaultEndpointProviderGenerator
+import software.amazon.smithy.kotlin.codegen.rendering.endpoints.EndpointParametersGenerator
 import software.amazon.smithy.kotlin.codegen.rendering.endpoints.EndpointProviderGenerator
 import software.amazon.smithy.kotlin.codegen.rendering.util.AbstractConfigGenerator
 import software.amazon.smithy.kotlin.codegen.rendering.util.ConfigProperty
@@ -63,14 +64,24 @@ class ServiceClientConfigGenerator(
                 val hasRules = shape.hasTrait<EndpointRuleSetTrait>()
                 symbol = EndpointProviderGenerator.getSymbol(context.settings)
                 propertyType = if (hasRules) { // if there's a ruleset, we have a usable default, otherwise caller has to provide their own
-                    additionalImports = listOf(DefaultEndpointProviderGenerator.getSymbol(context.settings))
                     ConfigPropertyType.RequiredWithDefault("DefaultEndpointProvider()")
                 } else {
                     ConfigPropertyType.Required()
                 }
                 documentation = """
-                    The endpoint provider used to determine where to make service requests.
+                    The endpoint provider used to determine where to make service requests. **This is an advanced config
+                    option.**
+
+                    Endpoint resolution occurs as part of the workflow for every request made via the service client.
+
+                    The inputs to endpoint resolution are defined on a per-service basis (see [EndpointParameters]).
                 """.trimIndent()
+                additionalImports = buildList {
+                    add(EndpointParametersGenerator.getSymbol(context.settings))
+                    if (hasRules) {
+                        add(DefaultEndpointProviderGenerator.getSymbol(context.settings))
+                    }
+                }
             },
         )
     }

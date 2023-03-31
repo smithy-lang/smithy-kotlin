@@ -4,6 +4,13 @@ public abstract interface class aws/smithy/kotlin/runtime/awsprotocol/AwsErrorDe
 	public abstract fun getRequestId ()Ljava/lang/String;
 }
 
+public final class aws/smithy/kotlin/runtime/awsprotocol/AwsQueryCompatibleErrorDetails$Companion {
+	public final fun parse (Ljava/lang/String;)Laws/smithy/kotlin/runtime/awsprotocol/AwsQueryCompatibleErrorDetails;
+}
+
+public final class aws/smithy/kotlin/runtime/awsprotocol/AwsQueryCompatibleErrorDetailsKt {
+}
+
 public final class aws/smithy/kotlin/runtime/awsprotocol/ProtocolErrorsKt {
 }
 
