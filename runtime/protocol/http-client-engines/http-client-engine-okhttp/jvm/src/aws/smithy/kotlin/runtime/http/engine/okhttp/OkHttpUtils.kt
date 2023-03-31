@@ -58,7 +58,7 @@ internal fun HttpRequest.toOkHttpRequest(
             is HttpBody.Empty -> ByteArray(0).toRequestBody(null, 0, 0)
             is HttpBody.Bytes -> body.bytes().let { it.toRequestBody(null, 0, it.size) }
             is HttpBody.SourceContent, is HttpBody.ChannelContent -> {
-                val body: HttpBody = headers["Content-Length"]?.let {
+                val updatedBody: HttpBody = headers["Content-Length"]?.let {
                     if (body.contentLength == null || body.contentLength == -1L) {
                         when (body) {
                             is HttpBody.SourceContent -> body.readFrom().toHttpBody(it.toLong())
@@ -67,7 +67,7 @@ internal fun HttpRequest.toOkHttpRequest(
                         }
                     } else { null }
                 } ?: body
-                StreamingRequestBody(body, callContext)
+                StreamingRequestBody(updatedBody, callContext)
             }
         }
     } else {
