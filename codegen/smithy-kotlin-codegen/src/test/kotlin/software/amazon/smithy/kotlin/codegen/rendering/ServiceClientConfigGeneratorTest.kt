@@ -42,14 +42,14 @@ class ServiceClientConfigGeneratorTest {
         contents.assertBalancedBracesAndParens()
 
         val expectedCtor = """
-public class Config private constructor(builder: Builder) : HttpClientConfig, IdempotencyTokenConfig, SdkClientConfig, TracingClientConfig {
+public class Config private constructor(builder: Builder) : HttpAuthConfig, HttpClientConfig, IdempotencyTokenConfig, SdkClientConfig, TracingClientConfig {
 """
         contents.shouldContainWithDiff(expectedCtor)
 
         val expectedProps = """
     override val clientName: String = builder.clientName
     override val httpClientEngine: HttpClientEngine = builder.httpClientEngine ?: DefaultHttpEngine().manage()
-    public val authSchemes: kotlin.collections.List<aws.smithy.kotlin.runtime.http.auth.HttpAuthScheme> = builder.authSchemes
+    override val authSchemes: kotlin.collections.List<aws.smithy.kotlin.runtime.http.auth.HttpAuthScheme> = builder.authSchemes
     public val endpointProvider: EndpointProvider = requireNotNull(builder.endpointProvider) { "endpointProvider is a required configuration property" }
     override val idempotencyTokenProvider: IdempotencyTokenProvider = builder.idempotencyTokenProvider ?: IdempotencyTokenProvider.Default
     override val interceptors: kotlin.collections.List<aws.smithy.kotlin.runtime.http.interceptors.HttpInterceptor> = builder.interceptors
@@ -61,7 +61,7 @@ public class Config private constructor(builder: Builder) : HttpClientConfig, Id
         contents.shouldContainWithDiff(expectedProps)
 
         val expectedBuilder = """
-    public class Builder : HttpClientConfig.Builder, IdempotencyTokenConfig.Builder, SdkClientConfig.Builder<Config>, TracingClientConfig.Builder {
+    public class Builder : HttpAuthConfig.Builder, HttpClientConfig.Builder, IdempotencyTokenConfig.Builder, SdkClientConfig.Builder<Config>, TracingClientConfig.Builder {
         /**
          * A reader-friendly name for the client.
          */
@@ -80,7 +80,7 @@ public class Config private constructor(builder: Builder) : HttpClientConfig, Id
          * precedence over the defaults and can be used to customize identity resolution and signing for specific
          * authentication schemes.
          */
-        public var authSchemes: kotlin.collections.List<aws.smithy.kotlin.runtime.http.auth.HttpAuthScheme> = emptyList()
+        override var authSchemes: kotlin.collections.List<aws.smithy.kotlin.runtime.http.auth.HttpAuthScheme> = emptyList()
 
         /**
          * The endpoint provider used to determine where to make service requests. **This is an advanced config
@@ -257,6 +257,11 @@ public class Config private constructor(builder: Builder) {
 
         val expectedBuilderProps = """
         /**
+         * A reader-friendly name for the client.
+         */
+        override var clientName: String = "Test"
+
+        /**
          * Override the default HTTP client engine used to make SDK requests (e.g. configure proxy behavior, timeouts, concurrency, etc).
          * NOTE: The caller is responsible for managing the lifetime of the engine when set. The SDK
          * client will not close it when the client is closed.
@@ -269,7 +274,7 @@ public class Config private constructor(builder: Builder) {
          * precedence over the defaults and can be used to customize identity resolution and signing for specific
          * authentication schemes.
          */
-        public var authSchemes: kotlin.collections.List<aws.smithy.kotlin.runtime.http.auth.HttpAuthScheme> = emptyList()
+        override var authSchemes: kotlin.collections.List<aws.smithy.kotlin.runtime.http.auth.HttpAuthScheme> = emptyList()
 
         public var customProp: Int? = null
 
@@ -328,7 +333,7 @@ public class Config private constructor(builder: Builder) {
          */
         override var tracer: Tracer? = null
 """
-        contents.shouldContain(expectedBuilderProps)
+        contents.shouldContainWithDiff(expectedBuilderProps)
     }
 
     @Test

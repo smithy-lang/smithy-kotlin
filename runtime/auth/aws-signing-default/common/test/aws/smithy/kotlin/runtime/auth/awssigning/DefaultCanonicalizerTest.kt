@@ -119,12 +119,11 @@ class DefaultCanonicalizerTest {
             region = "foo"
             service = "bar"
             signingDate = Instant.fromIso8601(signingDateString)
-            credentialsProvider = testCredentialsProvider
+            credentials = Credentials("foo", "bar") // anything without a session token set
         }
-        val credentials = Credentials("foo", "bar") // anything without a session token set
 
         val canonicalizer = Canonicalizer.Default
-        val actual = canonicalizer.canonicalRequest(request, config, credentials)
+        val actual = canonicalizer.canonicalRequest(request, config)
 
         val expectedSignedHeaders = "content-type;host;x-amz-date;x-amz-user-agent"
         assertEquals(expectedSignedHeaders, actual.signedHeaders)
