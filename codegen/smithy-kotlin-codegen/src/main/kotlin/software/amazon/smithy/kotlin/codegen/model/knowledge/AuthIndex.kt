@@ -68,6 +68,8 @@ class AuthIndex {
         val allAuthHandlers = authHandlers(ctx)
 
         val effectiveAuthSchemes = serviceIndex.getEffectiveAuthSchemes(ctx.service)
+            .takeIf { it.isNotEmpty() } ?: listOf(AnonymousAuthSchemeHandler()).associateBy(AuthSchemeHandler::authSchemeId)
+
         return effectiveAuthSchemes.mapNotNull {
             allAuthHandlers[it.key]
         }

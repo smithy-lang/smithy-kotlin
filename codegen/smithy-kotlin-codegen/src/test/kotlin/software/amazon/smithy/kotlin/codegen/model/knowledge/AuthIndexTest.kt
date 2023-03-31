@@ -118,6 +118,18 @@ class AuthIndexTest {
     }
 
     @Test
+    fun testEffectiveServiceHandlersWithNoAuth() {
+        val model = loadModelFromResource("simple-service.smithy")
+        val testCtx = model.newTestContext(integrations = mockIntegrations)
+        val authIndex = AuthIndex()
+
+        val handlers = authIndex.effectiveAuthHandlersForService(testCtx.generationCtx)
+        val actual = handlers.map { it.authSchemeId }
+        val expected = listOf(OptionalAuthTrait.ID)
+        assertEquals(expected, actual)
+    }
+
+    @Test
     fun testServiceHandlers() {
         val model = loadModelFromResource("service-auth-test.smithy")
         val testCtx = model.newTestContext(integrations = mockIntegrations)
