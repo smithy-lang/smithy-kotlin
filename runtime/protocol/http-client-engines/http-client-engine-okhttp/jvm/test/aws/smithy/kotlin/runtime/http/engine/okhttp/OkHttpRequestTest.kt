@@ -188,5 +188,4 @@ class OkHttpRequestTest {
         actualBody.writeTo(buffer)
         assertEquals(content, buffer.readUtf8())
     }
-
 }
