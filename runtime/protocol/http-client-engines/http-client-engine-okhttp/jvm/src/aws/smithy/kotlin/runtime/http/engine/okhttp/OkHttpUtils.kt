@@ -57,7 +57,18 @@ internal fun HttpRequest.toOkHttpRequest(
         when (val body = body) {
             is HttpBody.Empty -> ByteArray(0).toRequestBody(null, 0, 0)
             is HttpBody.Bytes -> body.bytes().let { it.toRequestBody(null, 0, it.size) }
-            is HttpBody.SourceContent, is HttpBody.ChannelContent -> StreamingRequestBody(body, callContext)
+            is HttpBody.SourceContent, is HttpBody.ChannelContent -> {
+                val body: HttpBody = headers["Content-Length"]?.let {
+                    if (body.contentLength == null || body.contentLength == -1L) {
+                        when (body) {
+                            is HttpBody.SourceContent -> body.readFrom().toHttpBody(it.toLong())
+                            is HttpBody.ChannelContent -> body.readFrom().toHttpBody(it.toLong())
+                            else -> null
+                        }
+                    } else { null }
+                } ?: body
+                StreamingRequestBody(body, callContext)
+            }
         }
     } else {
         // assert we don't silently ignore a body even though one is unexpected here
