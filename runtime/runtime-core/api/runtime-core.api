@@ -1333,10 +1333,6 @@ public abstract interface class aws/smithy/kotlin/runtime/util/Attributes {
 	public abstract fun getOrNull (Laws/smithy/kotlin/runtime/util/AttributeKey;)Ljava/lang/Object;
 }
 
-public final class aws/smithy/kotlin/runtime/util/Attributes$Companion {
-	public final fun invoke ()Laws/smithy/kotlin/runtime/util/Attributes;
-}
-
 public final class aws/smithy/kotlin/runtime/util/AttributesBuilder {
 	public fun <init> ()V
 	public final fun getAttributes ()Laws/smithy/kotlin/runtime/util/MutableAttributes;
