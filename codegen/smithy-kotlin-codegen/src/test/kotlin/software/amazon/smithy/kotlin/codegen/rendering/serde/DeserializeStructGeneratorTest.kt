@@ -16,7 +16,11 @@ class DeserializeStructGeneratorTest {
             operation Foo {
                 output: FooResponse
             }        
-    """.prependNamespaceAndService(protocol = AwsProtocolModelDeclaration.REST_JSON, operations = listOf("Foo")).trimIndent()
+    """.prependNamespaceAndService(
+        version = "2",
+        protocol = AwsProtocolModelDeclaration.REST_JSON,
+        operations = listOf("Foo"),
+    ).trimIndent()
 
     // TODO ~ Support BigInteger and BigDecimal Types
     @ParameterizedTest
@@ -1555,6 +1559,38 @@ deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
                                 }
                                 map0
                             }
+                        null -> break@loop
+                        else -> skipValue()
+                    }
+                }
+            }
+        """.trimIndent()
+
+        val actual = codegenDeserializerForShape(model, "com.test#Foo")
+
+        actual.shouldContainOnlyOnceWithDiff(expected)
+    }
+
+    @Test
+    fun `it deserializes a structure containing an int enum`() {
+        val model = (
+            modelPrefix + """
+            structure FooResponse {
+                firstEnum: SimpleYesNo,
+            }
+
+            intEnum SimpleYesNo {
+                YES = 1
+                NO = 2
+            }
+        """
+        ).toSmithyModel()
+
+        val expected = """
+            deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
+                loop@while (true) {
+                    when (findNextFieldIndex()) {
+                        FIRSTENUM_DESCRIPTOR.index -> builder.firstEnum = deserializeInt().let { SimpleYesNo.fromValue(it) }
                         null -> break@loop
                         else -> skipValue()
                     }

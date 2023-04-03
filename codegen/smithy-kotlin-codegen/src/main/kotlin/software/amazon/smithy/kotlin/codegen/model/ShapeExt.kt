@@ -156,14 +156,18 @@ val Shape.isDeprecated: Boolean
     get() = hasTrait<DeprecatedTrait>()
 
 /**
- * Test if a shape represents an enumeration
- * https://awslabs.github.io/smithy/1.0/spec/core/constraint-traits.html#enum-trait
+ * Test if a shape represents either kind of enumeration
  */
 val Shape.isEnum: Boolean
-    get() =
-        isStringShape && hasTrait<@Suppress("DEPRECATION") software.amazon.smithy.model.traits.EnumTrait>() ||
-            isEnumShape ||
-            isIntEnumShape
+    get() = isStringEnumShape || isIntEnumShape
+
+/**
+ * Test if a shape is a string-based enum, which will present either as:
+ * 1. The explicit enum shape (NOT intEnum)
+ * 2. The [legacy enum trait](https://awslabs.github.io/smithy/1.0/spec/core/constraint-traits.html#enum-trait) applied to a string shape
+ */
+val Shape.isStringEnumShape: Boolean
+    get() = isEnumShape || isStringShape && hasTrait<@Suppress("DEPRECATION") software.amazon.smithy.model.traits.EnumTrait>()
 
 /**
  * Test if a shape is an error.
@@ -172,7 +176,7 @@ val Shape.isError: Boolean
     get() = hasTrait<ErrorTrait>()
 
 /**
- * Test if a shape represents an Kotlin number type
+ * Test if a shape represents a Kotlin number type
  */
 val Shape.isNumberShape: Boolean
     get() = this is NumberShape

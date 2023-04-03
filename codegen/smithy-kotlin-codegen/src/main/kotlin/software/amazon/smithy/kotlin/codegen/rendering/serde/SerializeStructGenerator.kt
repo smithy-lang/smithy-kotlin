@@ -109,9 +109,9 @@ open class SerializeStructGenerator(
             ShapeType.DOCUMENT,
             ShapeType.BIG_INTEGER,
             ShapeType.ENUM,
+            ShapeType.INT_ENUM,
             -> renderPrimitiveShapeSerializer(memberShape, ::serializerForPrimitiveShape)
 
-            ShapeType.INT_ENUM -> error("IntEnum is not supported until Smithy 2.0")
 
             else -> error("Unexpected shape type: ${targetShape.type}")
         }
@@ -181,6 +181,7 @@ open class SerializeStructGenerator(
             ShapeType.DOCUMENT,
             ShapeType.BIG_INTEGER,
             ShapeType.ENUM,
+            ShapeType.INT_ENUM,
             -> renderPrimitiveEntry(elementShape, nestingLevel, parentMemberName)
 
             ShapeType.BLOB -> renderBlobEntry(nestingLevel, parentMemberName)
@@ -193,8 +194,6 @@ open class SerializeStructGenerator(
             ShapeType.UNION,
             ShapeType.STRUCTURE,
             -> renderNestedStructureEntry(elementShape, nestingLevel, parentMemberName, isSparse)
-
-            ShapeType.INT_ENUM -> error("IntEnum is not supported until Smithy 2.0")
 
             else -> error("Unhandled type ${elementShape.type}")
         }
@@ -220,6 +219,7 @@ open class SerializeStructGenerator(
             ShapeType.DOCUMENT,
             ShapeType.BIG_INTEGER,
             ShapeType.ENUM,
+            ShapeType.INT_ENUM,
             -> renderPrimitiveElement(elementShape, nestingLevel, parentMemberName, isSparse)
 
             ShapeType.BLOB -> renderBlobElement(nestingLevel, parentMemberName)
@@ -232,8 +232,6 @@ open class SerializeStructGenerator(
             ShapeType.UNION,
             ShapeType.STRUCTURE,
             -> renderNestedStructureElement(elementShape, nestingLevel, parentMemberName)
-
-            ShapeType.INT_ENUM -> error("IntEnum is not supported until Smithy 2.0")
 
             else -> error("Unhandled type ${elementShape.type}")
         }

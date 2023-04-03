@@ -44,6 +44,12 @@ class DefaultEndpointProviderGeneratorTest {
                             "type": "endpoint",
                             "conditions": [
                                 {
+                                    "fn": "isSet",
+                                    "argv": [
+                                        {"ref": "BazName"}
+                                    ]
+                                },
+                                {
                                     "fn": "stringEquals",
                                     "argv": [
                                         {"ref": "BazName"},
@@ -68,7 +74,7 @@ class DefaultEndpointProviderGeneratorTest {
                                     "fn": "stringEquals",
                                     "argv": [
                                         {"ref": "resourceIdPrefix"},
-                                        "gov.{BazName}"
+                                        "gov.{ResourceId}"
                                     ]
                                 }
                             ],
@@ -80,6 +86,12 @@ class DefaultEndpointProviderGeneratorTest {
                             "documentation": "throw exception if bad value",
                             "type": "error",
                             "conditions": [
+                                {
+                                    "fn": "isSet",
+                                    "argv": [
+                                        {"ref": "BazName"}
+                                    ]
+                                },
                                 {
                                     "fn": "stringEquals",
                                     "argv": [
@@ -142,6 +154,7 @@ class DefaultEndpointProviderGeneratorTest {
     fun testBasicCondition() {
         val expected = """
             if (
+                params.bazName != null &&
                 params.bazName == "gov"
             ) {
                 return Endpoint(
@@ -159,7 +172,7 @@ class DefaultEndpointProviderGeneratorTest {
                 val resourceIdPrefix = substring(params.resourceId, 0, 4, false)
                 if (
                     resourceIdPrefix != null &&
-                    resourceIdPrefix == "gov.${'$'}{params.bazName}"
+                    resourceIdPrefix == "gov.${'$'}{params.resourceId}"
                 ) {
                     return Endpoint(
                         Url.parse("https://assignment.condition"),
@@ -174,6 +187,7 @@ class DefaultEndpointProviderGeneratorTest {
     fun testException() {
         val expected = """
             if (
+                params.bazName != null &&
                 params.bazName == "invalid"
             ) {
                 throw EndpointProviderException("invalid BazName value")
