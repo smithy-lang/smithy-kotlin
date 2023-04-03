@@ -14,10 +14,10 @@ import aws.smithy.kotlin.runtime.auth.awssigning.HashSpecification
 import aws.smithy.kotlin.runtime.util.attributesOf
 import aws.smithy.kotlin.runtime.util.emptyAttributes
 
-// TODO - is AwsHttpSigner.Config what we want to use to configure this scheme?
 /**
  * HTTP auth scheme for AWS signature version 4
  */
+@InternalApi
 public class SigV4AuthScheme(
     config: AwsHttpSigner.Config,
 ) : HttpAuthScheme {
