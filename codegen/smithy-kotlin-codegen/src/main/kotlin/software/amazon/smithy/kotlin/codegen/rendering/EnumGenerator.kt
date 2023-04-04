@@ -11,7 +11,7 @@ import software.amazon.smithy.kotlin.codegen.lang.KotlinTypes
 import software.amazon.smithy.kotlin.codegen.lang.isValidKotlinIdentifier
 import software.amazon.smithy.kotlin.codegen.model.expectTrait
 import software.amazon.smithy.kotlin.codegen.model.getTrait
-import software.amazon.smithy.kotlin.codegen.model.hasTrait
+import software.amazon.smithy.kotlin.codegen.model.isStringEnumShape
 import software.amazon.smithy.kotlin.codegen.utils.doubleQuote
 import software.amazon.smithy.kotlin.codegen.utils.getOrNull
 import software.amazon.smithy.model.shapes.IntEnumShape
@@ -40,27 +40,28 @@ import java.util.logging.Logger
  *
  *     object Yes: SimpleYesNo() {
  *         override val value: kotlin.String = "YES"
- *         override fun toString(): kotlin.String = value
+ *         override fun toString(): kotlin.String = "Yes"
  *     }
  *
  *     object No: SimpleYesNo() {
  *         override val value: kotlin.String = "NO"
- *         override fun toString(): kotlin.String = value
+ *         override fun toString(): kotlin.String = "No"
  *     }
  *
  *     data class SdkUnknown(override val value: kotlin.String): SimpleYesNo() {
- *         override fun toString(): kotlin.String = value
+ *         override fun toString(): kotlin.String = "SdkUnknown($value)"
  *     }
  *
  *     companion object {
- *
- *         fun fromValue(str: kotlin.String): SimpleYesNo = when(str) {
+ *         fun fromValue(value: kotlin.String): SimpleYesNo = when (value) {
  *             "YES" -> Yes
  *             "NO" -> No
- *             else -> SdkUnknown(str)
+ *             else -> SdkUnknown(value)
  *         }
  *
- *         fun values(): List<SimpleYesNo> = listOf(Yes, No)
+ *         fun values(): List<SimpleYesNo> = values
+ *
+ *         private val values: List<SimpleYesNo> = listOf(Yes, No)
  *     }
  * }
  *
@@ -69,27 +70,28 @@ import java.util.logging.Logger
  *
  *     object Yes: TypedYesNo() {
  *         override val value: kotlin.String = "Yes"
- *         override fun toString(): kotlin.String = value
+ *         override fun toString(): kotlin.String = "Yes"
  *     }
  *
  *     object No: TypedYesNo() {
  *         override val value: kotlin.String = "No"
- *         override fun toString(): kotlin.String = value
+ *         override fun toString(): kotlin.String = "No"
  *     }
  *
  *     data class SdkUnknown(override val value: kotlin.String): TypedYesNo() {
- *         override fun toString(): kotlin.String = value
+ *         override fun toString(): kotlin.String = "SdkUnknown($value)"
  *     }
  *
  *     companion object {
- *
- *         fun fromValue(str: kotlin.String): TypedYesNo = when(str) {
+ *         fun fromValue(value: kotlin.String): TypedYesNo = when (value) {
  *             "Yes" -> Yes
  *             "No" -> No
- *             else -> SdkUnknown(str)
+ *             else -> SdkUnknown(value)
  *         }
  *
- *         fun values(): List<TypedYesNo> = listOf(Yes, No)
+ *         fun values(): List<SimpleYesNo> = values
+ *
+ *         private val values: List<SimpleYesNo> = listOf(Yes, No)
  *     }
  * }
  * ```
@@ -129,7 +131,7 @@ class EnumGenerator(val shape: Shape, val symbol: Symbol, val writer: KotlinWrit
 
         writer.withBlock("public object #L : #Q() {", "}", variant.name, symbol) {
             write("override val value: #Q = #L", ktEnum.symbol, variant.valueLiteral)
-            renderToStringOverride()
+            writer.write("override fun toString(): #Q = #S", KotlinTypes.String, variant.name)
         }
     }
 
@@ -139,29 +141,27 @@ class EnumGenerator(val shape: Shape, val symbol: Symbol, val writer: KotlinWrit
         }
 
         writer.withBlock("public data class SdkUnknown(override val value: #Q) : #Q() {", "}", ktEnum.symbol, symbol) {
-            renderToStringOverride()
+            writer.write("override fun toString(): #Q = \"SdkUnknown(\$value)\"", KotlinTypes.String)
         }
     }
 
     private fun renderCompanionObject() {
         writer.withBlock("public companion object {", "}") {
-            writer.dokka("Convert a raw value to one of the sealed variants or [SdkUnknown]")
-            withBlock("public fun fromValue(v: #Q): #Q = when (v) {", "}", ktEnum.symbol, symbol) {
+            dokka("Convert a raw value to one of the sealed variants or [SdkUnknown]")
+            withBlock("public fun fromValue(value: #Q): #Q = when (value) {", "}", ktEnum.symbol, symbol) {
                 ktEnum.variants.forEach { write("#L -> #L", it.valueLiteral, it.name) }
-                write("else -> SdkUnknown(v)")
+                write("else -> SdkUnknown(value)")
             }
             write("")
 
             dokka("Get a list of all possible variants")
-            withBlock("public fun values(): #Q<#Q> = listOf(", ")", KotlinTypes.Collections.List, symbol) {
+            write("public fun values(): #Q<#Q> = values", KotlinTypes.Collections.List, symbol)
+            write("")
+
+            withBlock("private val values: #Q<#Q> = listOf(", ")", KotlinTypes.Collections.List, symbol) {
                 ktEnum.variants.forEach { write("#L,", it.name) }
             }
         }
-    }
-
-    private fun renderToStringOverride() {
-        // override to string to use the enum constant value
-        writer.write("override fun toString(): #Q = value#L", KotlinTypes.String, ktEnum.toStringExpr)
     }
 }
 
@@ -179,7 +179,7 @@ private fun Shape.asKotlinEnum(): KotlinEnum = when {
             }
         KotlinEnum(KotlinTypes.Int, variants)
     }
-    hasTrait<@Suppress("DEPRECATION") software.amazon.smithy.model.traits.EnumTrait>() -> {
+    isStringEnumShape -> {
         val variants = expectTrait<@Suppress("DEPRECATION") software.amazon.smithy.model.traits.EnumTrait>()
             .values
             .sortedBy { it.name.orElse(it.value) }
@@ -203,7 +203,7 @@ private fun Shape.asKotlinEnum(): KotlinEnum = when {
     else -> throw CodegenException("shape $this is not an enum")
 }
 
-// adaptor struct to handle different enum types
+// adapter struct to handle different enum types
 private data class KotlinEnum(
     val symbol: Symbol,
     val variants: List<Variant>,
@@ -214,13 +214,6 @@ private data class KotlinEnum(
         val documentation: String? = null,
     )
 }
-
-private val KotlinEnum.toStringExpr: String
-    get() = when (symbol) {
-        KotlinTypes.Int -> ".toString()"
-        KotlinTypes.String -> ""
-        else -> throw IllegalArgumentException("unexpected symbol $symbol")
-    }
 
 private fun String.getVariantName(): String {
     val identifierName = enumVariantName()

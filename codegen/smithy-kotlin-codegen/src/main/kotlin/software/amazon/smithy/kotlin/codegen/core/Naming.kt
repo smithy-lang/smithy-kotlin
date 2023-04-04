@@ -14,10 +14,8 @@ import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.shapes.ServiceShape
 import software.amazon.smithy.model.shapes.Shape
-import software.amazon.smithy.model.traits.EnumDefinition
 import java.security.MessageDigest
 import java.util.*
-import java.util.logging.Logger
 
 // (somewhat) centralized naming rules
 

@@ -54,32 +54,34 @@ public sealed class Baz {
      */
     public object Bar : test.model.Baz() {
         override val value: kotlin.String = "BAR"
-        override fun toString(): kotlin.String = value
+        override fun toString(): kotlin.String = "Bar"
     }
 
     public object Foo : test.model.Baz() {
         override val value: kotlin.String = "FOO"
-        override fun toString(): kotlin.String = value
+        override fun toString(): kotlin.String = "Foo"
     }
 
     public data class SdkUnknown(override val value: kotlin.String) : test.model.Baz() {
-        override fun toString(): kotlin.String = value
+        override fun toString(): kotlin.String = "SdkUnknown(${'$'}value)"
     }
 
     public companion object {
         /**
          * Convert a raw value to one of the sealed variants or [SdkUnknown]
          */
-        public fun fromValue(v: kotlin.String): test.model.Baz = when (v) {
+        public fun fromValue(value: kotlin.String): test.model.Baz = when (value) {
             "BAR" -> Bar
             "FOO" -> Foo
-            else -> SdkUnknown(v)
+            else -> SdkUnknown(value)
         }
 
         /**
          * Get a list of all possible variants
          */
-        public fun values(): kotlin.collections.List<test.model.Baz> = listOf(
+        public fun values(): kotlin.collections.List<test.model.Baz> = values
+
+        private val values: kotlin.collections.List<test.model.Baz> = listOf(
             Bar,
             Foo,
         )
@@ -136,32 +138,34 @@ public sealed class Baz {
      */
     public object T2Micro : test.model.Baz() {
         override val value: kotlin.String = "t2.micro"
-        override fun toString(): kotlin.String = value
+        override fun toString(): kotlin.String = "T2Micro"
     }
 
     public object T2Nano : test.model.Baz() {
         override val value: kotlin.String = "t2.nano"
-        override fun toString(): kotlin.String = value
+        override fun toString(): kotlin.String = "T2Nano"
     }
 
     public data class SdkUnknown(override val value: kotlin.String) : test.model.Baz() {
-        override fun toString(): kotlin.String = value
+        override fun toString(): kotlin.String = "SdkUnknown(${'$'}value)"
     }
 
     public companion object {
         /**
          * Convert a raw value to one of the sealed variants or [SdkUnknown]
          */
-        public fun fromValue(v: kotlin.String): test.model.Baz = when (v) {
+        public fun fromValue(value: kotlin.String): test.model.Baz = when (value) {
             "t2.micro" -> T2Micro
             "t2.nano" -> T2Nano
-            else -> SdkUnknown(v)
+            else -> SdkUnknown(value)
         }
 
         /**
          * Get a list of all possible variants
          */
-        public fun values(): kotlin.collections.List<test.model.Baz> = listOf(
+        public fun values(): kotlin.collections.List<test.model.Baz> = values
+
+        private val values: kotlin.collections.List<test.model.Baz> = listOf(
             T2Micro,
             T2Nano,
         )
@@ -205,38 +209,40 @@ public sealed class Baz {
      */
     public object T2Micro : test.model.Baz() {
         override val value: kotlin.Int = 1
-        override fun toString(): kotlin.String = value.toString()
+        override fun toString(): kotlin.String = "T2Micro"
     }
 
     public object T2Nano : test.model.Baz() {
         override val value: kotlin.Int = 2
-        override fun toString(): kotlin.String = value.toString()
+        override fun toString(): kotlin.String = "T2Nano"
     }
 
     public object X9Omega : test.model.Baz() {
         override val value: kotlin.Int = 9999
-        override fun toString(): kotlin.String = value.toString()
+        override fun toString(): kotlin.String = "X9Omega"
     }
 
     public data class SdkUnknown(override val value: kotlin.Int) : test.model.Baz() {
-        override fun toString(): kotlin.String = value.toString()
+        override fun toString(): kotlin.String = "SdkUnknown(${'$'}value)"
     }
 
     public companion object {
         /**
          * Convert a raw value to one of the sealed variants or [SdkUnknown]
          */
-        public fun fromValue(v: kotlin.Int): test.model.Baz = when (v) {
+        public fun fromValue(value: kotlin.Int): test.model.Baz = when (value) {
             1 -> T2Micro
             2 -> T2Nano
             9999 -> X9Omega
-            else -> SdkUnknown(v)
+            else -> SdkUnknown(value)
         }
 
         /**
          * Get a list of all possible variants
          */
-        public fun values(): kotlin.collections.List<test.model.Baz> = listOf(
+        public fun values(): kotlin.collections.List<test.model.Baz> = values
+
+        private val values: kotlin.collections.List<test.model.Baz> = listOf(
             T2Micro,
             T2Nano,
             X9Omega,
