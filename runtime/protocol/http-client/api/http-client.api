@@ -196,6 +196,9 @@ public final class aws/smithy/kotlin/runtime/http/operation/OperationAuthConfig$
 	public final fun getAnonymous ()Laws/smithy/kotlin/runtime/http/operation/OperationAuthConfig;
 }
 
+public final class aws/smithy/kotlin/runtime/http/operation/OperationEndpointKt {
+}
+
 public final class aws/smithy/kotlin/runtime/http/operation/OperationRequest {
 	public fun <init> (Laws/smithy/kotlin/runtime/operation/ExecutionContext;Ljava/lang/Object;)V
 	public fun <init> (Ljava/lang/Object;)V

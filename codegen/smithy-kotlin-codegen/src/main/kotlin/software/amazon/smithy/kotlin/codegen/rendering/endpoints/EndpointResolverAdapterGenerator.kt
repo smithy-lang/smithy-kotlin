@@ -23,18 +23,21 @@ import software.amazon.smithy.rulesengine.traits.ClientContextParamsTrait
 import software.amazon.smithy.rulesengine.traits.ContextParamTrait
 import software.amazon.smithy.rulesengine.traits.StaticContextParamsTrait
 
+// TODO Add tests for bindings and builtins
+
 /**
- * Generates resolver middleware for a specific endpoint provider signature.
+ * Generates resolver adapter for going from generic HTTP operation endpoint resolver to the generated
+ * type specific provider generated based on the rules.
  * The binding of parameter values is generated separately in [EndpointParameterBindingGenerator], and that generated
  * implementation is plugged in here.
  */
-class ResolveEndpointMiddlewareGenerator(
+class EndpointResolverAdapterGenerator(
     private val ctx: ProtocolGenerator.GenerationContext,
     private val writer: KotlinWriter,
     private val renderPostResolution: () -> Unit = {},
 ) {
     companion object {
-        const val CLASS_NAME = "ResolveEndpoint"
+        const val CLASS_NAME = "EndpointResolverAdapter"
 
         fun getSymbol(settings: KotlinSettings): Symbol =
             buildSymbol {
@@ -46,8 +49,7 @@ class ResolveEndpointMiddlewareGenerator(
     fun render() {
         writer.openBlock("internal class #L<I>(", CLASS_NAME)
         renderConstructorParams()
-        writer.closeAndOpenBlock("): #T {", RuntimeTypes.HttpClient.Interceptors.HttpInterceptor)
-        renderClassMembers()
+        writer.closeAndOpenBlock("): #T {", RuntimeTypes.HttpClient.Operation.EndpointResolver)
         writer.write("")
         renderBody()
         writer.closeBlock("}")
@@ -55,38 +57,24 @@ class ResolveEndpointMiddlewareGenerator(
 
     private fun renderConstructorParams() {
         writer.write("private val endpointProvider: #T,", EndpointProviderGenerator.getSymbol(ctx.settings))
-        writer.write("private val buildParams: #T.Builder.(input: I) -> Unit,", EndpointParametersGenerator.getSymbol(ctx.settings))
+        writer.write("private val bindParams: #T.Builder.(input: I) -> Unit,", EndpointParametersGenerator.getSymbol(ctx.settings))
     }
-
-    private fun renderClassMembers() {
-        writer.write("private lateinit var params: #T", EndpointParametersGenerator.getSymbol(ctx.settings))
-    }
-
     private fun renderBody() {
         writer.withBlock(
-            "override fun readBeforeSerialization(context: #T<Any>) {",
+            "override suspend fun resolve(request: #T): #T {",
             "}",
-            RuntimeTypes.SmithyClient.RequestInterceptorContext,
-        ) {
+            RuntimeTypes.HttpClient.Operation.ResolveEndpointRequest,
+            RuntimeTypes.SmithyClient.Endpoints.Endpoint
+        ){
+            writer.addImport(RuntimeTypes.Core.Utils.get)
             write("@Suppress(#S)", "UNCHECKED_CAST")
-            write("val input = context.request as I")
-            write("params = #T { buildParams(input) }", EndpointParametersGenerator.getSymbol(ctx.settings))
-        }
-
-        writer.write("")
-        writer.withBlock(
-            "override suspend fun modifyBeforeRetryLoop(context: #1T<Any, #2T>): #2T {",
-            "}",
-            RuntimeTypes.SmithyClient.ProtocolRequestInterceptorContext,
-            RuntimeTypes.Http.Request.HttpRequest,
-        ) {
+            write("val input = request.context[#T.OperationInput] as I", RuntimeTypes.HttpClient.Operation.HttpOperationContext)
+            withBlock("val params = #T {", "}", EndpointParametersGenerator.getSymbol(ctx.settings)) {
+                write("bindParams(input)")
+            }
             write("val endpoint = endpointProvider.resolveEndpoint(params)")
-            write("#T.#T<$CLASS_NAME<*>>{ \"resolved endpoint: \$endpoint\" }", RuntimeTypes.KotlinCoroutines.coroutineContext, RuntimeTypes.Tracing.Core.debug)
-            write("val reqBuilder = context.protocolRequest.#T()", RuntimeTypes.Http.Request.toBuilder)
-            write("val req = #T(context.executionContext, reqBuilder)", RuntimeTypes.HttpClient.Operation.SdkHttpRequest)
-            write("#T(req, endpoint)", RuntimeTypes.HttpClient.Middleware.setResolvedEndpoint)
             renderPostResolution()
-            write("return req.subject.build()")
+            write("return endpoint")
         }
     }
 }

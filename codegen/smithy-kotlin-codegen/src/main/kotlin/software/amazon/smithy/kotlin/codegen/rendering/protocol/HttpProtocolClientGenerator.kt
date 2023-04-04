@@ -13,6 +13,8 @@ import software.amazon.smithy.kotlin.codegen.model.*
 import software.amazon.smithy.kotlin.codegen.model.knowledge.AuthIndex
 import software.amazon.smithy.kotlin.codegen.rendering.auth.AuthSchemeProviderAdapterGenerator
 import software.amazon.smithy.kotlin.codegen.rendering.auth.IdentityProviderConfigGenerator
+import software.amazon.smithy.kotlin.codegen.rendering.endpoints.EndpointParameterBindingGenerator
+import software.amazon.smithy.kotlin.codegen.rendering.endpoints.EndpointResolverAdapterGenerator
 import software.amazon.smithy.kotlin.codegen.rendering.serde.deserializerName
 import software.amazon.smithy.kotlin.codegen.rendering.serde.serializerName
 import software.amazon.smithy.kotlin.codegen.utils.getOrNull
@@ -227,9 +229,28 @@ abstract class HttpProtocolClientGenerator(
                 AuthSchemeProviderAdapterGenerator.getSymbol(ctx.settings)
             )
 
+            renderEndpointResolverSetup(writer, op)
             writer.write("execution.retryStrategy = config.retryStrategy")
         }
     }
+
+    private fun renderEndpointResolverSetup(writer: KotlinWriter, op: OperationShape) {
+        val inputSymbol = ctx.symbolProvider.toSymbol(ctx.model.expectShape(op.inputShape))
+        // TODO - consider generating per/operation versions of this or being smarter about needing the trailing lambda
+        writer.withBlock(
+            "execution.endpointResolver = #T<#T>(config.endpointProvider) { ein -> ",
+            "}",
+            EndpointResolverAdapterGenerator.getSymbol(ctx.settings),
+            inputSymbol,
+        ) {
+            ctx.service.getEndpointRules()?.let { rules ->
+                // TODO - consider integrations as avenue for providing builtin bindings
+                renderBuiltinEndpointProviderBindings(writer, op)
+                EndpointParameterBindingGenerator(ctx.model, ctx.service, writer, op, rules, "ein.").render()
+            }
+        }
+    }
+    protected open fun renderBuiltinEndpointProviderBindings(writer: KotlinWriter, op: OperationShape) { }
 
     protected open fun renderFinalizeBeforeExecute(writer: KotlinWriter, opIndex: OperationIndex, op: OperationShape) {
         // add config interceptors last (after all middleware and SDK defaults have had a chance to register)
