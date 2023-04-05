@@ -288,6 +288,7 @@ object RuntimeTypes {
 
         object HttpAuth: RuntimeTypePackage(KotlinDependency.HTTP_AUTH) {
             val AnonymousAuthScheme  = symbol("AnonymousAuthScheme")
+            val AnonymousIdentity = symbol("AnonymousIdentity")
             val AnonymousIdentityProvider = symbol("AnonymousIdentityProvider")
             val HttpAuthConfig = symbol("HttpAuthConfig")
             val HttpAuthScheme = symbol("HttpAuthScheme")
