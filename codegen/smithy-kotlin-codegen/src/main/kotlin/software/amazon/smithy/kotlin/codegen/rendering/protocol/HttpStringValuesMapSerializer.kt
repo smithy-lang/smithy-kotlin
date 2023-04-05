@@ -73,6 +73,8 @@ class HttpStringValuesMapSerializer(
                     )
                 }
                 is StringShape -> renderStringShape(it, memberTarget, writer)
+                is IntEnumShape ->
+                    writer.write("if (input.#1L != null) { append(#2S, \"\${input.#1L.value}\") }", memberName, paramName)
                 else -> {
                     // encode to string
                     val encodedValue = "\"\${input.$memberName}\""
@@ -118,6 +120,7 @@ class HttpStringValuesMapSerializer(
                     }
                 }
             }
+            ShapeType.INT_ENUM -> "\"\${it.value}\""
             // default to "toString"
             else -> "\"\$it\""
         }

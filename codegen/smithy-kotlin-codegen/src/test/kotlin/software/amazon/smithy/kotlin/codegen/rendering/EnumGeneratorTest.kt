@@ -11,6 +11,7 @@ import software.amazon.smithy.kotlin.codegen.KotlinCodegenPlugin
 import software.amazon.smithy.kotlin.codegen.core.KotlinWriter
 import software.amazon.smithy.kotlin.codegen.model.expectShape
 import software.amazon.smithy.kotlin.codegen.test.*
+import software.amazon.smithy.model.shapes.IntEnumShape
 import software.amazon.smithy.model.shapes.StringShape
 import kotlin.test.Test
 import kotlin.test.assertFailsWith
@@ -18,7 +19,7 @@ import kotlin.test.assertFailsWith
 class EnumGeneratorTest {
 
     @Test
-    fun `it generates unnamed enums`() {
+    fun `it generates unnamed string enums`() {
         val model = """
             @enum([
                 {
@@ -46,7 +47,6 @@ class EnumGeneratorTest {
  * Documentation for this enum
  */
 public sealed class Baz {
-
     public abstract val value: kotlin.String
 
     /**
@@ -54,34 +54,36 @@ public sealed class Baz {
      */
     public object Bar : test.model.Baz() {
         override val value: kotlin.String = "BAR"
-        override fun toString(): kotlin.String = value
+        override fun toString(): kotlin.String = "Bar"
     }
 
     public object Foo : test.model.Baz() {
         override val value: kotlin.String = "FOO"
-        override fun toString(): kotlin.String = value
+        override fun toString(): kotlin.String = "Foo"
     }
 
     public data class SdkUnknown(override val value: kotlin.String) : test.model.Baz() {
-        override fun toString(): kotlin.String = value
+        override fun toString(): kotlin.String = "SdkUnknown(${'$'}value)"
     }
 
     public companion object {
         /**
          * Convert a raw value to one of the sealed variants or [SdkUnknown]
          */
-        public fun fromValue(str: kotlin.String): test.model.Baz = when(str) {
+        public fun fromValue(value: kotlin.String): test.model.Baz = when (value) {
             "BAR" -> Bar
             "FOO" -> Foo
-            else -> SdkUnknown(str)
+            else -> SdkUnknown(value)
         }
 
         /**
          * Get a list of all possible variants
          */
-        public fun values(): kotlin.collections.List<test.model.Baz> = listOf(
+        public fun values(): kotlin.collections.List<test.model.Baz> = values
+
+        private val values: kotlin.collections.List<test.model.Baz> = listOf(
             Bar,
-            Foo
+            Foo,
         )
     }
 }
@@ -91,7 +93,7 @@ public sealed class Baz {
     }
 
     @Test
-    fun `it generates named enums`() {
+    fun `it generates named string enums`() {
         val t2MicroDoc = "T2 instances are Burstable Performance\n" +
             "Instances that provide a baseline level of CPU\n" +
             "performance with the ability to burst above the\n" +
@@ -126,7 +128,6 @@ public sealed class Baz {
  * Documentation for this enum
  */
 public sealed class Baz {
-
     public abstract val value: kotlin.String
 
     /**
@@ -137,34 +138,114 @@ public sealed class Baz {
      */
     public object T2Micro : test.model.Baz() {
         override val value: kotlin.String = "t2.micro"
-        override fun toString(): kotlin.String = value
+        override fun toString(): kotlin.String = "T2Micro"
     }
 
     public object T2Nano : test.model.Baz() {
         override val value: kotlin.String = "t2.nano"
-        override fun toString(): kotlin.String = value
+        override fun toString(): kotlin.String = "T2Nano"
     }
 
     public data class SdkUnknown(override val value: kotlin.String) : test.model.Baz() {
-        override fun toString(): kotlin.String = value
+        override fun toString(): kotlin.String = "SdkUnknown(${'$'}value)"
     }
 
     public companion object {
         /**
          * Convert a raw value to one of the sealed variants or [SdkUnknown]
          */
-        public fun fromValue(str: kotlin.String): test.model.Baz = when(str) {
+        public fun fromValue(value: kotlin.String): test.model.Baz = when (value) {
             "t2.micro" -> T2Micro
             "t2.nano" -> T2Nano
-            else -> SdkUnknown(str)
+            else -> SdkUnknown(value)
         }
 
         /**
          * Get a list of all possible variants
          */
-        public fun values(): kotlin.collections.List<test.model.Baz> = listOf(
+        public fun values(): kotlin.collections.List<test.model.Baz> = values
+
+        private val values: kotlin.collections.List<test.model.Baz> = listOf(
             T2Micro,
-            T2Nano
+            T2Nano,
+        )
+    }
+}
+"""
+        contents.shouldContainOnlyOnceWithDiff(expectedEnumDecl)
+    }
+
+    @Test
+    fun `it generates int enums`() {
+        val model = """
+            @documentation("Documentation for this enum")
+            intEnum Baz {
+                T2_NANO = 2
+
+                X9_OMEGA = 9999
+
+                @documentation("Documentation for this value")
+                T2_MICRO = 1
+            }
+        """.prependNamespaceAndService(version = "2", namespace = "test")
+            .toSmithyModel()
+
+        val provider = KotlinCodegenPlugin.createSymbolProvider(model, rootNamespace = "test")
+        val shape = model.expectShape<IntEnumShape>("test#Baz")
+        val symbol = provider.toSymbol(shape)
+        val writer = KotlinWriter(TestModelDefault.NAMESPACE)
+        EnumGenerator(shape, symbol, writer).render()
+        val contents = writer.toString()
+
+        val expectedEnumDecl = """
+/**
+ * Documentation for this enum
+ */
+public sealed class Baz {
+    public abstract val value: kotlin.Int
+
+    /**
+     * Documentation for this value
+     */
+    public object T2Micro : test.model.Baz() {
+        override val value: kotlin.Int = 1
+        override fun toString(): kotlin.String = "T2Micro"
+    }
+
+    public object T2Nano : test.model.Baz() {
+        override val value: kotlin.Int = 2
+        override fun toString(): kotlin.String = "T2Nano"
+    }
+
+    public object X9Omega : test.model.Baz() {
+        override val value: kotlin.Int = 9999
+        override fun toString(): kotlin.String = "X9Omega"
+    }
+
+    public data class SdkUnknown(override val value: kotlin.Int) : test.model.Baz() {
+        override fun toString(): kotlin.String = "SdkUnknown(${'$'}value)"
+    }
+
+    public companion object {
+        /**
+         * Convert a raw value to one of the sealed variants or [SdkUnknown]
+         */
+        public fun fromValue(value: kotlin.Int): test.model.Baz = when (value) {
+            1 -> T2Micro
+            2 -> T2Nano
+            9999 -> X9Omega
+            else -> SdkUnknown(value)
+        }
+
+        /**
+         * Get a list of all possible variants
+         */
+        public fun values(): kotlin.collections.List<test.model.Baz> = values
+
+        private val values: kotlin.collections.List<test.model.Baz> = listOf(
+            T2Micro,
+            T2Nano,
+            X9Omega,
         )
     }
 }

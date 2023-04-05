@@ -91,6 +91,7 @@ object RuntimeTypes {
         val ErrorMetadata = symbol("ErrorMetadata")
         val ServiceErrorMetadata = symbol("ServiceErrorMetadata")
         val Instant = symbol("Instant", "time")
+        val fromEpochMilliseconds = symbol("fromEpochMilliseconds", "time")
         val TimestampFormat = symbol("TimestampFormat", "time")
         val ClientException = symbol("ClientException")
 

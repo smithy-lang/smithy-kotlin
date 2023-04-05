@@ -104,9 +104,8 @@ open class DeserializeStructGenerator(
             ShapeType.BIG_DECIMAL,
             ShapeType.BIG_INTEGER,
             ShapeType.ENUM,
+            ShapeType.INT_ENUM,
             -> renderShapeDeserializer(memberShape)
-
-            ShapeType.INT_ENUM -> error("IntEnum is not supported until Smithy 2.0")
 
             else -> error("Unexpected shape type: ${targetShape.type}")
         }
@@ -187,6 +186,7 @@ open class DeserializeStructGenerator(
             ShapeType.DOCUMENT,
             ShapeType.TIMESTAMP,
             ShapeType.ENUM,
+            ShapeType.INT_ENUM,
             -> renderEntry(elementShape, nestingLevel, isSparse, parentMemberName)
 
             ShapeType.SET,
@@ -197,8 +197,6 @@ open class DeserializeStructGenerator(
             ShapeType.UNION,
             ShapeType.STRUCTURE,
             -> renderNestedStructureEntry(elementShape, nestingLevel, isSparse, parentMemberName)
-
-            ShapeType.INT_ENUM -> error("IntEnum is not supported until Smithy 2.0")
 
             else -> error("Unhandled type ${elementShape.type}")
         }
@@ -413,6 +411,7 @@ open class DeserializeStructGenerator(
             ShapeType.DOCUMENT,
             ShapeType.TIMESTAMP,
             ShapeType.ENUM,
+            ShapeType.INT_ENUM,
             -> renderElement(elementShape, nestingLevel, isSparse, parentMemberName)
 
             ShapeType.LIST,
@@ -423,8 +422,6 @@ open class DeserializeStructGenerator(
             ShapeType.UNION,
             ShapeType.STRUCTURE,
             -> renderNestedStructureElement(elementShape, nestingLevel, isSparse, parentMemberName)
-
-            ShapeType.INT_ENUM -> error("IntEnum is not supported until Smithy 2.0")
 
             else -> error("Unhandled type ${elementShape.type}")
         }
@@ -583,10 +580,15 @@ open class DeserializeStructGenerator(
                 }
             }
 
-            target.isEnum -> {
+            target.isStringEnumShape -> {
                 val enumSymbol = ctx.symbolProvider.toSymbol(target)
                 writer.addImport(enumSymbol)
                 "deserializeString().let { ${enumSymbol.name}.fromValue(it) }"
+            }
+            target.isIntEnumShape -> {
+                val enumSymbol = ctx.symbolProvider.toSymbol(target)
+                writer.addImport(enumSymbol)
+                "deserializeInt().let { ${enumSymbol.name}.fromValue(it) }"
             }
 
             target.type == ShapeType.STRING -> "deserializeString()"

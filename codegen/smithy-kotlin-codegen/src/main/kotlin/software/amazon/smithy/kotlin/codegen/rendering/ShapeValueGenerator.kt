@@ -14,6 +14,7 @@ import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.node.*
 import software.amazon.smithy.model.shapes.*
 import software.amazon.smithy.model.traits.StreamingTrait
+import kotlin.math.round
 
 /**
  * Generates a shape type declaration based on the parameters provided.
@@ -79,9 +80,13 @@ class ShapeValueGenerator(
         writer.pushState()
         writer.trimTrailingSpaces(false)
 
-        val collectionGeneratorFunction = symbolProvider.toSymbol(shape).expectProperty(SymbolProperty.IMMUTABLE_COLLECTION_FUNCTION)
+        val collectionSymbol = symbolProvider.toSymbol(shape)
+        val generatorFn = collectionSymbol.expectProperty(SymbolProperty.IMMUTABLE_COLLECTION_FUNCTION)
 
-        writer.writeInline("$collectionGeneratorFunction(\n")
+        collectionSymbol.references.forEach {
+            writer.addImport(it.symbol)
+        }
+        writer.writeInline("$generatorFn(\n")
             .indent()
             .call { block() }
             .dedent()
@@ -256,11 +261,19 @@ class ShapeValueGenerator(
             when (currShape.type) {
                 ShapeType.TIMESTAMP -> {
                     writer.addImport("${KotlinDependency.CORE.namespace}.time", "Instant")
-                    writer.writeInline("Instant.fromEpochSeconds(#L, 0)", node.value)
+
+                    // the value is in seconds and CAN be fractional
+                    if (node.isFloatingPointNumber) {
+                        val value = node.value as Double
+                        val ms = round(value*1e3).toLong()
+                        writer.writeInline("Instant.#T(#L)", RuntimeTypes.Core.fromEpochMilliseconds, ms)
+                    } else {
+                        writer.writeInline("Instant.fromEpochSeconds(#L, 0)", node.value)
+                    }
                 }
 
                 ShapeType.BYTE, ShapeType.SHORT, ShapeType.INTEGER,
-                ShapeType.LONG,
+                ShapeType.LONG, ShapeType.INT_ENUM,
                 -> writer.writeInline("#L", node.value)
 
                 // ensure float/doubles that are represented as integers in the params get converted
