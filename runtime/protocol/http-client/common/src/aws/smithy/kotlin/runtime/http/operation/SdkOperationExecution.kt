@@ -54,21 +54,27 @@ public typealias SdkHttpRequest = OperationRequest<HttpRequestBuilder>
  *                                  <Retry>
  *                                     |
  *                                     v
- *                              +----------------+
- *                              |  OnEachAttempt |
- *                              |      |         |
- *                              |      v         |
- *                              |   <Signing>    |
- *                              |      |         |
- *                              |      v         |
- *                              | <Deserialize>  |
- *                              |      |         |
- *                              |      v         |
- *                              |   Receive      |
- *                              |      |         |
- *                              |      v         |
- *                              |  <HttpClient>  |
- *                              +----------------+
+ *                              +---------------------+
+ *                              |    OnEachAttempt    |
+ *                              |        |            |
+ *                              |        v            |
+ *                              |  <ResolveIdentity>  |
+ *                              |        |            |
+ *                              |        v            |
+ *                              |  <ResolveEndpoint>  |
+ *                              |        |            |
+ *                              |        v            |
+ *                              |    <Signing>        |
+ *                              |        |            |
+ *                              |        v            |
+ *                              |   <Deserialize>     |
+ *                              |        |            |
+ *                              |        v            |
+ *                              |     Receive         |
+ *                              |        |            |
+ *                              |        v            |
+ *                              |    <HttpClient>     |
+ *                              +---------------------+
  * ```
  *
  * In the above diagram the phase relationships and sequencing are shown. Requests start at [initialize] and proceed
@@ -161,7 +167,8 @@ internal fun <Request, Response> SdkOperationExecution<Request, Response>.decora
 
     val receiveHandler = decorateHandler(handler, receive)
     val deserializeHandler = op.deserializer.decorate(receiveHandler, interceptors)
-    val authHandler = HttpAuthHandler(deserializeHandler, interceptors, auth, endpointResolver)
+
+    val authHandler = AuthHandler(deserializeHandler, interceptors, auth, endpointResolver)
     val onEachAttemptHandler = decorateHandler(authHandler, onEachAttempt)
     val retryHandler = decorateHandler(onEachAttemptHandler, RetryMiddleware(retryStrategy, retryPolicy, interceptors))
 
@@ -248,8 +255,7 @@ private class MutateHandler<Output> (
     override suspend fun call(request: SdkHttpRequest): Output = inner.call(request)
 }
 
-// FIXME - rename?
-internal class HttpAuthHandler<Input, Output>(
+internal class AuthHandler<Input, Output>(
     private val inner: Handler<SdkHttpRequest, Output>,
     private val interceptors: InterceptorExecutor<Input, Output>,
     private val authConfig: OperationAuthConfig,
@@ -269,7 +275,7 @@ internal class HttpAuthHandler<Input, Output>(
         val resolveEndpointReq = ResolveEndpointRequest(request.context, request.subject.immutableView(), identity)
         val endpoint = endpointResolver?.resolve(resolveEndpointReq)
         if (endpoint != null) {
-            coroutineContext.debug<HttpAuthHandler<*, *>> { "resolved endpoint: $endpoint" }
+            coroutineContext.debug<AuthHandler<*, *>> { "resolved endpoint: $endpoint" }
             setResolvedEndpoint(request, endpoint)
         }
 
