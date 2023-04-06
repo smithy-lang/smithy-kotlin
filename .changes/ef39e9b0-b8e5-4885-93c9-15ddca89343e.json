@@ -1,8 +1,0 @@
-{
-    "id": "ef39e9b0-b8e5-4885-93c9-15ddca89343e",
-    "type": "feature",
-    "description": "Add intEnum support.",
-    "issues": [
-        "awslabs/smithy-kotlin#752"
-    ]
-}
