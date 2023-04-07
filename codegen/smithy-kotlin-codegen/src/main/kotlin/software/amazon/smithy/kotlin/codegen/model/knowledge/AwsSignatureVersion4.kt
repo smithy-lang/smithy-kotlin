@@ -14,11 +14,11 @@ import software.amazon.smithy.model.shapes.ServiceShape
 import software.amazon.smithy.model.traits.OptionalAuthTrait
 
 /**
- * AWS Signature Version 4 Signing utils
+ * AWS Signature Version 4 signing utils
  */
 object AwsSignatureVersion4 {
     /**
-     * Returns if the SigV4Trait is a auth scheme supported by the service.
+     * Returns if the SigV4Trait is an auth scheme supported by the service.
      *
      * @param model        model definition
      * @param serviceShape service shape for the API
