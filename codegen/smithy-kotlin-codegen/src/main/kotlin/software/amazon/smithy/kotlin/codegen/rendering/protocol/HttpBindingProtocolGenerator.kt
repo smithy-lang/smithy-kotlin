@@ -451,8 +451,13 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                     memberName,
                     KotlinTypes.Text.encodeToByteArray,
                 )
-
-            ShapeType.INT_ENUM -> throw CodegenException("IntEnum is not supported until Smithy 2.0")
+            ShapeType.INT_ENUM ->
+                writer.write(
+                    "builder.body = #T(input.#L.value.toString().#T())",
+                    RuntimeTypes.Http.ByteArrayContent,
+                    memberName,
+                    KotlinTypes.Text.encodeToByteArray,
+                )
 
             ShapeType.STRUCTURE, ShapeType.UNION, ShapeType.DOCUMENT -> {
                 val sdg = structuredDataSerializer(ctx)
@@ -709,12 +714,23 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
 
             when (memberTarget) {
                 is NumberShape -> {
-                    writer.write(
-                        "builder.#L = response.headers[#S]?.#L$defaultValuePostfix",
-                        memberName,
-                        headerName,
-                        stringToNumber(memberTarget),
-                    )
+                    if (memberTarget is IntEnumShape) {
+                        val enumSymbol = ctx.symbolProvider.toSymbol(memberTarget)
+                        writer.addImport(enumSymbol)
+                        writer.write(
+                            "builder.#L = response.headers[#S]?.let { #T.fromValue(it.toInt()) }",
+                            memberName,
+                            headerName,
+                            enumSymbol,
+                        )
+                    } else {
+                        writer.write(
+                            "builder.#L = response.headers[#S]?.#L$defaultValuePostfix",
+                            memberName,
+                            headerName,
+                            stringToNumber(memberTarget),
+                        )
+                    }
                 }
                 is BooleanShape -> {
                     writer.write(
@@ -728,7 +744,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                 }
                 is StringShape -> {
                     when {
-                        memberTarget.isEnum -> {
+                        memberTarget.isStringEnumShape -> {
                             val enumSymbol = ctx.symbolProvider.toSymbol(memberTarget)
                             writer.addImport(enumSymbol)
                             writer.write(
@@ -770,7 +786,15 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                     var splitFn = "splitHeaderListValues"
                     val conversion = when (val collectionMemberTarget = ctx.model.expectShape(memberTarget.member.target)) {
                         is BooleanShape -> "it.toBoolean()"
-                        is NumberShape -> "it." + stringToNumber(collectionMemberTarget)
+                        is NumberShape -> {
+                            if (collectionMemberTarget is IntEnumShape) {
+                                val enumSymbol = ctx.symbolProvider.toSymbol(collectionMemberTarget)
+                                writer.addImport(enumSymbol)
+                                "${enumSymbol.name}.fromValue(it.toInt())"
+                            } else {
+                                "it." + stringToNumber(collectionMemberTarget)
+                            }
+                        }
                         is TimestampShape -> {
                             val tsFormat = resolver.determineTimestampFormat(
                                 hdrBinding.member,
@@ -785,7 +809,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                         }
                         is StringShape -> {
                             when {
-                                collectionMemberTarget.isEnum -> {
+                                collectionMemberTarget.isStringEnumShape -> {
                                     val enumSymbol = ctx.symbolProvider.toSymbol(collectionMemberTarget)
                                     writer.addImport(enumSymbol)
                                     "${enumSymbol.name}.fromValue(it)"
@@ -889,7 +913,10 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                 writer.write("builder.#L = contents?.let { #T.fromValue(it) }", memberName, targetSymbol)
             }
 
-            ShapeType.INT_ENUM -> throw CodegenException("IntEnum is not supported until Smithy 2.0")
+            ShapeType.INT_ENUM -> {
+                writer.write("val contents = response.body.#T()?.decodeToString()", RuntimeTypes.Http.readAll)
+                writer.write("builder.#L = contents?.let { #T.fromValue(it.toInt()) }", memberName, targetSymbol)
+            }
 
             ShapeType.BLOB -> {
                 val isBinaryStream = target.hasTrait<StreamingTrait>()

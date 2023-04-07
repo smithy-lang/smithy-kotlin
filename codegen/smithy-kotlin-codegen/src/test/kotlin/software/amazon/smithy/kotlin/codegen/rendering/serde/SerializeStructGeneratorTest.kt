@@ -16,7 +16,11 @@ class SerializeStructGeneratorTest {
             operation Foo {
                 input: FooRequest
             }        
-    """.prependNamespaceAndService(protocol = AwsProtocolModelDeclaration.REST_JSON, operations = listOf("Foo")).trimIndent()
+    """.prependNamespaceAndService(
+        version = "2",
+        protocol = AwsProtocolModelDeclaration.REST_JSON,
+        operations = listOf("Foo"),
+    ).trimIndent()
 
     // TODO ~ Support BigInteger and BigDecimal Types - https://github.com/awslabs/smithy-kotlin/issues/213
     @ParameterizedTest
@@ -43,18 +47,19 @@ class SerializeStructGeneratorTest {
 
     @ParameterizedTest(name = "{index} ==> ''{0}''")
     @CsvSource(
-        "PrimitiveInteger, 0",
-        "PrimitiveShort, 0",
-        "PrimitiveLong, 0L",
-        "PrimitiveByte, 0",
-        "PrimitiveFloat, 0.0f",
-        "PrimitiveDouble, 0.0",
-        "PrimitiveBoolean, false",
+        "PrimitiveInteger, 0, 0",
+        "PrimitiveShort, 0, 0",
+        "PrimitiveLong, 0L, 0",
+        "PrimitiveByte, 0, 0",
+        "PrimitiveFloat, 0.0f, 0",
+        "PrimitiveDouble, 0.0, 0",
+        "PrimitiveBoolean, false, false",
     )
-    fun `it serializes a structure with primitive fields`(memberType: String, defaultValue: String) {
+    fun `it serializes a structure with primitive fields`(memberType: String, defaultValue: String, smithyDefaultValue: String) {
         val model = (
             modelPrefix + """            
             structure FooRequest { 
+                @default($smithyDefaultValue)
                 payload: $memberType
             }
         """
@@ -77,6 +82,7 @@ class SerializeStructGeneratorTest {
             modelPrefix + """            
             structure FooRequest { 
                 @required
+                @default(0)
                 payload: PrimitiveInteger
             }
         """
@@ -1293,6 +1299,32 @@ class SerializeStructGeneratorTest {
                         input.payload.forEach { (key, value) -> entry(key, value.value) }
                     }
                 }
+            }
+        """.trimIndent()
+
+        val actual = codegenSerializerForShape(model, "com.test#Foo").stripCodegenPrefix()
+
+        actual.shouldContainOnlyOnceWithDiff(expected)
+    }
+
+    @Test
+    fun `it serializes a structure containing an int enum`() {
+        val model = (
+            modelPrefix + """
+            structure FooRequest {
+                firstEnum: SimpleYesNo,
+            }
+
+            intEnum SimpleYesNo {
+                YES = 1
+                NO = 2
+            }
+        """
+                ).toSmithyModel()
+
+        val expected = """
+            serializer.serializeStruct(OBJ_DESCRIPTOR) {
+                input.firstEnum?.let { field(FIRSTENUM_DESCRIPTOR, it.value) }
             }
         """.trimIndent()
 

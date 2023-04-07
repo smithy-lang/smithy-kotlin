@@ -14,10 +14,8 @@ import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.shapes.ServiceShape
 import software.amazon.smithy.model.shapes.Shape
-import software.amazon.smithy.model.traits.EnumDefinition
 import java.security.MessageDigest
 import java.util.*
-import java.util.logging.Logger
 
 // (somewhat) centralized naming rules
 
@@ -59,17 +57,12 @@ private fun String.sanitizeClientName(): String =
 fun clientName(raw: String): String = raw.sanitizeClientName().toPascalCase()
 
 /**
- * Get the (un-validated) name of an enum variant from the trait definition
+ * Get the (un-validated) name of an enum variant.
+ *
+ * This value can come from an enum definition trait, or it could be a member name from an explicit enum shape.
  */
-fun EnumDefinition.variantName(): String {
-    val identifier = name.orElseGet {
-        // we don't want to be doing this...name your enums people
-        Logger.getLogger("NamingUtils").also {
-            it.warning("Using EnumDefinition.value to derive generated identifier name: $value")
-        }
-        value
-    }
-        .splitOnWordBoundaries()
+fun String.enumVariantName(): String {
+    val identifier = splitOnWordBoundaries()
         .fold(StringBuilder()) { acc, x ->
             val curr = x.lowercase().replaceFirstChar { c -> c.uppercaseChar() }
             if (acc.isNotEmpty() && acc.last().isDigit() && x.first().isDigit()) {

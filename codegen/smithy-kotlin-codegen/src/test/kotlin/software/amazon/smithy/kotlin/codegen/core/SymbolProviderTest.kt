@@ -315,6 +315,26 @@ class SymbolProviderTest {
     }
 
     @Test
+    fun `creates int enums`() {
+        val model = """
+            intEnum Baz {
+                FOO = 1
+                BAR = 2
+            }
+        """.prependNamespaceAndService(version = "2", namespace = "foo.bar").toSmithyModel()
+
+        val provider = KotlinCodegenPlugin.createSymbolProvider(model, rootNamespace = "foo.bar")
+        val shape = model.expectShape<IntEnumShape>("foo.bar#Baz")
+        val symbol = provider.toSymbol(shape)
+
+        assertEquals("foo.bar.model", symbol.namespace)
+        assertEquals("null", symbol.defaultValue())
+        assertEquals(true, symbol.isBoxed)
+        assertEquals("Baz", symbol.name)
+        assertEquals("Baz.kt", symbol.definitionFile)
+    }
+
+    @Test
     fun `creates unions`() {
         val model = """
             union MyUnion {

@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.16.6] - 04/06/2023
+
+### Features
+* [#752](https://github.com/awslabs/smithy-kotlin/issues/752) Add intEnum support.
+
 ## [0.16.5] - 03/30/2023
 
 ### Features

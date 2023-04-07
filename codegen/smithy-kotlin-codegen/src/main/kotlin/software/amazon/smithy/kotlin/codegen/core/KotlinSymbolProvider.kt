@@ -69,6 +69,8 @@ class KotlinSymbolProvider(private val model: Model, private val settings: Kotli
 
     override fun integerShape(shape: IntegerShape): Symbol = numberShape(shape, "Int")
 
+    override fun intEnumShape(shape: IntEnumShape): Symbol = createEnumSymbol(shape)
+
     override fun shortShape(shape: ShortShape): Symbol = numberShape(shape, "Short")
 
     override fun longShape(shape: LongShape): Symbol = numberShape(shape, "Long", "0L")
@@ -95,7 +97,7 @@ class KotlinSymbolProvider(private val model: Model, private val settings: Kotli
         createSymbolBuilder(shape, "String", boxed = true, namespace = "kotlin").build()
     }
 
-    private fun createEnumSymbol(shape: StringShape): Symbol {
+    private fun createEnumSymbol(shape: Shape): Symbol {
         val namespace = "$rootNamespace.model"
         return createSymbolBuilder(shape, shape.defaultName(service), namespace, boxed = true)
             .definitionFile("${shape.defaultName(service)}.kt")

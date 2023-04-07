@@ -159,9 +159,14 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Unit>() {
     }
 
     override fun stringShape(shape: StringShape) {
+        // smithy will present both strings with legacy enum trait AND explicit (non-int) enum shapes in this manner
         if (shape.hasTrait<@Suppress("DEPRECATION") software.amazon.smithy.model.traits.EnumTrait>()) {
             writers.useShapeWriter(shape) { EnumGenerator(shape, symbolProvider.toSymbol(shape), it).render() }
         }
+    }
+
+    override fun intEnumShape(shape: IntEnumShape) {
+        writers.useShapeWriter(shape) { EnumGenerator(shape, symbolProvider.toSymbol(shape), it).render() }
     }
 
     override fun unionShape(shape: UnionShape) {
