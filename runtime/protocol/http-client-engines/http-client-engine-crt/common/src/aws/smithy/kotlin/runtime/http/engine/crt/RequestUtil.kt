@@ -5,6 +5,8 @@
 
 package aws.smithy.kotlin.runtime.http.engine.crt
 
+import aws.sdk.kotlin.crt.CRT
+import aws.sdk.kotlin.crt.CrtRuntimeException
 import aws.sdk.kotlin.crt.http.HeadersBuilder
 import aws.sdk.kotlin.crt.http.HttpRequestBodyStream
 import aws.sdk.kotlin.crt.http.HttpStream
@@ -14,6 +16,8 @@ import aws.sdk.kotlin.crt.io.UserInfo
 import aws.smithy.kotlin.runtime.crt.ReadChannelBodyStream
 import aws.smithy.kotlin.runtime.crt.SdkSourceBodyStream
 import aws.smithy.kotlin.runtime.http.HttpBody
+import aws.smithy.kotlin.runtime.http.HttpErrorCode
+import aws.smithy.kotlin.runtime.http.HttpException
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.io.SdkBuffer
 import aws.smithy.kotlin.runtime.io.buffer
@@ -109,3 +113,39 @@ internal suspend fun HttpStream.sendChunkedBody(body: HttpBody) {
         else -> error("sendChunkedBody should not be called for non-chunked body types")
     }
 }
+
+internal inline fun <T> mapCrtException(block: () -> T): T =
+    try {
+        block()
+    } catch (ex: CrtRuntimeException) {
+        throw HttpException(ex.message ?: ex.errorDescription, ex, errorCode = mapCrtErrorCode(ex.errorCode))
+    }
+
+// do this by name rather than error code as it's difficult to map error codes on JVM side and would be prone to breaking
+// if new errors are added to the various aws-c-* lib enum blocks.
+//
+// See:
+// IO Errors: https://github.com/awslabs/aws-c-io/blob/v0.13.19/include/aws/io/io.h#L89
+// HTTP Errors: https://github.com/awslabs/aws-c-http/blob/v0.7.6/include/aws/http/http.h#L15
+internal fun mapCrtErrorCode(code: Int): HttpErrorCode = when (CRT.errorName(code)) {
+    "AWS_IO_SOCKET_TIMEOUT" -> HttpErrorCode.SOCKET_TIMEOUT
+    "AWS_ERROR_HTTP_UNSUPPORTED_PROTOCOL" -> HttpErrorCode.PROTOCOL_NEGOTIATION_ERROR
+    "AWS_IO_SOCKET_NOT_CONNECTED" -> HttpErrorCode.CONNECT_TIMEOUT
+    "AWS_IO_TLS_NEGOTIATION_TIMEOUT" -> HttpErrorCode.TLS_NEGOTIATION_TIMEOUT
+    in tlsNegotiationErrors -> HttpErrorCode.TLS_NEGOTIATION_ERROR
+    in connectionClosedErrors -> HttpErrorCode.CONNECTION_CLOSED
+    else -> HttpErrorCode.SDK_UNKNOWN
+}
+
+private val tlsNegotiationErrors = setOf(
+    "AWS_IO_TLS_ERROR_NEGOTIATION_FAILURE",
+    "AWS_IO_TLS_ERROR_NOT_NEGOTIATED",
+    "AWS_IO_TLS_DIGEST_ALGORITHM_UNSUPPORTED",
+    "AWS_IO_TLS_SIGNATURE_ALGORITHM_UNSUPPORTED",
+)
+
+private val connectionClosedErrors = setOf(
+    "AWS_ERROR_HTTP_CONNECTION_CLOSED",
+    "AWS_IO_BROKEN_PIPE",
+    "AWS_IO_SOCKET_CLOSED",
+)

@@ -10,6 +10,7 @@ import aws.sdk.kotlin.crt.http.*
 import aws.sdk.kotlin.crt.io.Buffer
 import aws.smithy.kotlin.runtime.http.*
 import aws.smithy.kotlin.runtime.http.HeadersBuilder
+import aws.smithy.kotlin.runtime.http.HttpException
 import aws.smithy.kotlin.runtime.http.response.HttpResponse
 import aws.smithy.kotlin.runtime.io.SdkBuffer
 import aws.smithy.kotlin.runtime.io.SdkByteChannel
@@ -85,15 +86,17 @@ internal class SdkStreamResponseHandler(
         val ch = SdkByteChannel(true)
         val writerContext = callContext + callContext.derivedName("response-body-writer")
         val job = GlobalScope.launch(writerContext) {
-            for (buffer in bodyChan) {
-                val wc = buffer.size.toInt()
-                ch.write(buffer)
-                // increment window
-                onDataConsumed(wc)
+            val result = runCatching {
+                for (buffer in bodyChan) {
+                    val wc = buffer.size.toInt()
+                    ch.write(buffer)
+                    // increment window
+                    onDataConsumed(wc)
+                }
             }
 
             // immediately close when done to signal end of body stream
-            ch.close()
+            ch.close(result.exceptionOrNull())
         }
 
         job.invokeOnCompletion { cause ->
@@ -172,9 +175,10 @@ internal class SdkStreamResponseHandler(
         // close the body channel
         if (errorCode != 0) {
             val errorDescription = CRT.errorString(errorCode)
-            val ex = CancellationException("CrtHttpEngine::response failed: ec=$errorCode; description=$errorDescription")
+            val errName = CRT.errorName(errorCode)
+            val ex = HttpException("$errName: $errorDescription; ec=$errorCode", errorCode = mapCrtErrorCode(errorCode))
             responseReady.close(ex)
-            bodyChan.cancel(ex)
+            bodyChan.close(ex)
         } else {
             // closing the channel to indicate no more data will be sent
             bodyChan.close()

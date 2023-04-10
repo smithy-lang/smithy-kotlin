@@ -89,6 +89,27 @@ public final class aws/smithy/kotlin/runtime/http/HttpBodyKt {
 	public static final fun toHttpBody ([B)Laws/smithy/kotlin/runtime/http/HttpBody;
 }
 
+public final class aws/smithy/kotlin/runtime/http/HttpErrorCode : java/lang/Enum {
+	public static final field CONNECTION_ACQUIRE_TIMEOUT Laws/smithy/kotlin/runtime/http/HttpErrorCode;
+	public static final field CONNECTION_CLOSED Laws/smithy/kotlin/runtime/http/HttpErrorCode;
+	public static final field CONNECT_TIMEOUT Laws/smithy/kotlin/runtime/http/HttpErrorCode;
+	public static final field PROTOCOL_NEGOTIATION_ERROR Laws/smithy/kotlin/runtime/http/HttpErrorCode;
+	public static final field SDK_UNKNOWN Laws/smithy/kotlin/runtime/http/HttpErrorCode;
+	public static final field SOCKET_TIMEOUT Laws/smithy/kotlin/runtime/http/HttpErrorCode;
+	public static final field TLS_NEGOTIATION_ERROR Laws/smithy/kotlin/runtime/http/HttpErrorCode;
+	public static final field TLS_NEGOTIATION_TIMEOUT Laws/smithy/kotlin/runtime/http/HttpErrorCode;
+	public static fun valueOf (Ljava/lang/String;)Laws/smithy/kotlin/runtime/http/HttpErrorCode;
+	public static fun values ()[Laws/smithy/kotlin/runtime/http/HttpErrorCode;
+}
+
+public final class aws/smithy/kotlin/runtime/http/HttpException : aws/smithy/kotlin/runtime/SdkBaseException {
+	public fun <init> ()V
+	public fun <init> (Ljava/lang/String;Ljava/lang/Throwable;Laws/smithy/kotlin/runtime/http/HttpErrorCode;Z)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/Throwable;Laws/smithy/kotlin/runtime/http/HttpErrorCode;ZILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun getErrorCode ()Laws/smithy/kotlin/runtime/http/HttpErrorCode;
+	public fun toString ()Ljava/lang/String;
+}
+
 public final class aws/smithy/kotlin/runtime/http/HttpMethod : java/lang/Enum {
 	public static final field Companion Laws/smithy/kotlin/runtime/http/HttpMethod$Companion;
 	public static final field DELETE Laws/smithy/kotlin/runtime/http/HttpMethod;

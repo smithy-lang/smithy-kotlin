@@ -8,12 +8,13 @@ package aws.smithy.kotlin.runtime.http.engine.crt
 import aws.sdk.kotlin.crt.http.*
 import aws.sdk.kotlin.crt.io.byteArrayBuffer
 import aws.smithy.kotlin.runtime.http.HttpBody
+import aws.smithy.kotlin.runtime.http.HttpErrorCode
+import aws.smithy.kotlin.runtime.http.HttpException
 import aws.smithy.kotlin.runtime.http.HttpStatusCode
 import aws.smithy.kotlin.runtime.io.SdkSink
 import aws.smithy.kotlin.runtime.io.readAll
 import aws.smithy.kotlin.runtime.io.readToBuffer
 import io.kotest.matchers.string.shouldContain
-import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.runTest
@@ -170,9 +171,11 @@ class SdkStreamResponseHandlerTest {
         assertEquals(data.length.toLong(), resp.body.contentLength)
         val respChan = (resp.body as HttpBody.ChannelContent).readFrom()
 
-        assertTrue(respChan.isClosedForWrite)
-        assertFailsWith<CancellationException> {
+        val ex = assertFailsWith<HttpException> {
             respChan.readAll(SdkSink.blackhole())
-        }.message.shouldContain("CrtHttpEngine::response failed: ec=$socketClosedEc")
+        }
+
+        ex.message.shouldContain("socket is closed.; ec=$socketClosedEc")
+        assertEquals(HttpErrorCode.CONNECTION_CLOSED, ex.errorCode)
     }
 }

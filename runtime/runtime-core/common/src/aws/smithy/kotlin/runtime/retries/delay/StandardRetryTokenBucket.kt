@@ -100,7 +100,7 @@ public class StandardRetryTokenBucket constructor(
          */
         override suspend fun scheduleRetry(reason: RetryErrorType): RetryToken {
             val size = when (reason) {
-                RetryErrorType.Timeout, RetryErrorType.Throttling -> options.timeoutRetryCost
+                RetryErrorType.Transient, RetryErrorType.Throttling -> options.timeoutRetryCost
                 else -> options.retryCost
             }
             checkoutCapacity(size)

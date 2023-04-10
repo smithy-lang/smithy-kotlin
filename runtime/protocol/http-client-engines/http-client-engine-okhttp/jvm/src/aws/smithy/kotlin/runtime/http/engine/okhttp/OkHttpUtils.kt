@@ -25,6 +25,7 @@ import okhttp3.Route
 import okhttp3.internal.http.HttpMethod
 import java.io.IOException
 import java.net.*
+import javax.net.ssl.SSLHandshakeException
 import kotlin.coroutines.CoroutineContext
 import aws.smithy.kotlin.runtime.http.engine.ProxySelector as SdkProxySelector
 import okhttp3.Request as OkHttpRequest
@@ -188,4 +189,28 @@ private fun URI.toUrl(): Url {
 
         fragment = uri.fragment?.takeIf { it.isNotBlank() }
     }
+}
+
+internal inline fun<T> mapOkHttpExceptions(block: () -> T): T =
+    try {
+        block()
+    } catch (ex: IOException) {
+        throw HttpException(ex.message, ex, ex.errCode(), ex.isRetryable())
+    }
+
+private fun Exception.isRetryable(): Boolean = isCauseOrSuppressed<ConnectException>()
+private fun Exception.errCode(): HttpErrorCode = when {
+    isConnectTimeoutException() -> HttpErrorCode.CONNECT_TIMEOUT
+    isCauseOrSuppressed<SocketTimeoutException>() -> HttpErrorCode.SOCKET_TIMEOUT
+    isCauseOrSuppressed<SSLHandshakeException>() -> HttpErrorCode.TLS_NEGOTIATION_ERROR
+    else -> HttpErrorCode.SDK_UNKNOWN
+}
+
+private fun Exception.isConnectTimeoutException(): Boolean =
+    findCauseOrSuppressed<SocketTimeoutException>()?.message?.contains("connect", ignoreCase = true) == true
+private inline fun <reified T> Exception.isCauseOrSuppressed(): Boolean = findCauseOrSuppressed<T>() != null
+private inline fun <reified T> Exception.findCauseOrSuppressed(): T? {
+    if (this is T) return this
+    if (cause is T) return cause as T
+    return suppressedExceptions.firstOrNull { it is T } as? T
 }
