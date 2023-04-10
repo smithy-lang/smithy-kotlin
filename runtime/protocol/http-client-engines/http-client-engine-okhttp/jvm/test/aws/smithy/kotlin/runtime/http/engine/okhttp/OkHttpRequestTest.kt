@@ -135,4 +135,57 @@ class OkHttpRequestTest {
         actualBody.writeTo(buffer)
         assertEquals(content, buffer.readUtf8())
     }
+
+    @Test
+    fun itUsesContentLengthHeaderWhenContentLengthIsUnknown() {
+        val url = Url.parse("https://aws.amazon.com")
+        val content = "Hello OkHttp from HttpBody.Streaming".repeat(1024)
+        val contentBytes = content.encodeToByteArray()
+        val chan = SdkByteReadChannel(contentBytes)
+        val body = object : HttpBody.ChannelContent() {
+            override val contentLength: Long = -1
+            override fun readFrom(): SdkByteReadChannel = chan
+        }
+        val expectedContentLength = "5"
+        val headers = HeadersBuilder().apply {
+            append("Content-Length", expectedContentLength)
+        }.build()
+
+        val request = HttpRequest(HttpMethod.POST, url, headers, body)
+        val execContext = ExecutionContext()
+        val actual = request.toOkHttpRequest(execContext, EmptyCoroutineContext)
+
+        val actualBody = assertNotNull(actual.body)
+        assertEquals(expectedContentLength.toLong(), actualBody.contentLength())
+
+        val buffer = Buffer()
+        actualBody.writeTo(buffer)
+        assertEquals(content, buffer.readUtf8())
+    }
+
+    @Test
+    fun itDoesNotUseContentLengthHeaderWhenContentLengthIsDefined() {
+        val url = Url.parse("https://aws.amazon.com")
+        val content = "Hello OkHttp from HttpBody.Streaming".repeat(1024)
+        val contentBytes = content.encodeToByteArray()
+        val chan = SdkByteReadChannel(contentBytes)
+        val body = object : HttpBody.ChannelContent() {
+            override val contentLength: Long = contentBytes.size.toLong()
+            override fun readFrom(): SdkByteReadChannel = chan
+        }
+        val headers = HeadersBuilder().apply {
+            append("Content-Length", "9")
+        }.build()
+
+        val request = HttpRequest(HttpMethod.POST, url, headers, body)
+        val execContext = ExecutionContext()
+        val actual = request.toOkHttpRequest(execContext, EmptyCoroutineContext)
+
+        val actualBody = assertNotNull(actual.body)
+        assertEquals(request.body.contentLength, actualBody.contentLength())
+
+        val buffer = Buffer()
+        actualBody.writeTo(buffer)
+        assertEquals(content, buffer.readUtf8())
+    }
 }

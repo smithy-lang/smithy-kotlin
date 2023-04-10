@@ -92,7 +92,7 @@ class RequestConversionTest {
     }
 
     @Test
-    fun testEngineDoesNotAddContentLengthHeaderForEmptyBody() {
+    fun testEngineAddsContentLengthHeaderForEmptyBody() {
         val request = HttpRequest(
             HttpMethod.POST,
             Url.parse("https://test.aws.com?foo=bar"),
@@ -102,7 +102,7 @@ class RequestConversionTest {
 
         val testContext = EmptyCoroutineContext + Job()
         val crtRequest = request.toCrtRequest(testContext)
-        assertFalse(crtRequest.headers.contains("Content-Length"))
+        assertEquals("0", crtRequest.headers["Content-Length"])
     }
 
     @Test
