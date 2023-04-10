@@ -9,6 +9,8 @@ import aws.smithy.kotlin.runtime.auth.awscredentials.Credentials
 import aws.smithy.kotlin.runtime.auth.awscredentials.CredentialsProvider
 import aws.smithy.kotlin.runtime.auth.awssigning.*
 import aws.smithy.kotlin.runtime.http.*
+import aws.smithy.kotlin.runtime.http.auth.AwsHttpSigner
+import aws.smithy.kotlin.runtime.http.auth.SigV4AuthScheme
 import aws.smithy.kotlin.runtime.http.content.ByteArrayContent
 import aws.smithy.kotlin.runtime.http.engine.HttpClientEngineBase
 import aws.smithy.kotlin.runtime.http.operation.*
@@ -16,9 +18,11 @@ import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
 import aws.smithy.kotlin.runtime.http.response.HttpCall
 import aws.smithy.kotlin.runtime.http.response.HttpResponse
+import aws.smithy.kotlin.runtime.identity.asIdentityProviderConfig
 import aws.smithy.kotlin.runtime.net.fullUriToQueryParameters
 import aws.smithy.kotlin.runtime.operation.ExecutionContext
 import aws.smithy.kotlin.runtime.time.Instant
+import aws.smithy.kotlin.runtime.util.Attributes
 import aws.smithy.kotlin.runtime.util.ValuesMap
 import aws.smithy.kotlin.runtime.util.get
 import io.ktor.http.cio.*
@@ -48,12 +52,11 @@ import kotlin.time.Duration.Companion.seconds
 
 private const val DEFAULT_SIGNING_ISO_DATE = "2015-08-30T12:36:00Z"
 
-private val defaultTestCredentialsProvider =
-    Credentials("AKIDEXAMPLE", "wJalrXUtnFEMI/K7MDENG+bPxRfiCYEXAMPLEKEY").asStaticProvider()
+private val defaultTestCredentials = Credentials("AKIDEXAMPLE", "wJalrXUtnFEMI/K7MDENG+bPxRfiCYEXAMPLEKEY")
 
 private val defaultTestSigningConfig = AwsSigningConfig.Builder().apply {
     algorithm = AwsSigningAlgorithm.SIGV4
-    credentialsProvider = defaultTestCredentialsProvider
+    credentials = defaultTestCredentials
     signingDate = Instant.fromIso8601(DEFAULT_SIGNING_ISO_DATE)
     region = "us-east-1"
     service = "service"
@@ -310,7 +313,7 @@ public actual abstract class SigningSuiteTestBase : HasSigner {
         val json = Json.parseToJsonElement(file.readText()).jsonObject
         val creds = json["credentials"]!!.jsonObject
         val config = AwsSigningConfig.Builder()
-        config.credentialsProvider = JsonCredentialsProvider(creds)
+        config.credentials = jsonCredentials(creds)
         config.region = json["region"]!!.jsonPrimitive.content
         config.service = json["service"]!!.jsonPrimitive.content
 
@@ -414,13 +417,11 @@ public actual abstract class SigningSuiteTestBase : HasSigner {
     }
 }
 
-private class JsonCredentialsProvider(private val jsonObject: JsonObject) : CredentialsProvider {
-    override suspend fun getCredentials(): Credentials = Credentials(
-        jsonObject["access_key_id"]!!.jsonPrimitive.content,
-        jsonObject["secret_access_key"]!!.jsonPrimitive.content,
-        jsonObject["token"]?.jsonPrimitive?.content,
-    )
-}
+private fun jsonCredentials(jsonObject: JsonObject): Credentials = Credentials(
+    jsonObject["access_key_id"]!!.jsonPrimitive.content,
+    jsonObject["secret_access_key"]!!.jsonPrimitive.content,
+    jsonObject["token"]?.jsonPrimitive?.content,
+)
 
 /**
  * parse path from ktor request uri
@@ -458,9 +459,12 @@ private fun buildOperation(
         }
     }
 
-    op.execution.signer = AwsHttpSigner {
+    val idp = object : CredentialsProvider {
+        override suspend fun resolve(attributes: Attributes): Credentials = config.credentials
+    }
+
+    val signerConfig = AwsHttpSigner.Config().apply {
         signer = awsSigner
-        credentialsProvider = config.credentialsProvider
         service = config.service
         useDoubleUriEncode = config.useDoubleUriEncode
         normalizeUriPath = config.normalizeUriPath
@@ -469,6 +473,11 @@ private fun buildOperation(
         signatureType = config.signatureType
         expiresAfter = config.expiresAfter
     }
+
+    op.execution.auth = OperationAuthConfig.from(
+        idp.asIdentityProviderConfig(),
+        SigV4AuthScheme(signerConfig),
+    )
 
     return op
 }

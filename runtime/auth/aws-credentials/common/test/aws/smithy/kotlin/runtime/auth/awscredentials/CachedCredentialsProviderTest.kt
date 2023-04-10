@@ -7,6 +7,7 @@ package aws.smithy.kotlin.runtime.auth.awscredentials
 
 import aws.smithy.kotlin.runtime.time.Instant
 import aws.smithy.kotlin.runtime.time.ManualClock
+import aws.smithy.kotlin.runtime.util.Attributes
 import io.kotest.matchers.string.shouldContain
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
@@ -27,7 +28,7 @@ class CachedCredentialsProviderTest {
     ) : CredentialsProvider {
         var callCount = 0
 
-        override suspend fun getCredentials(): Credentials {
+        override suspend fun resolve(attributes: Attributes): Credentials {
             callCount++
             return Credentials(
                 "AKID",
@@ -42,12 +43,12 @@ class CachedCredentialsProviderTest {
         // explicit expiration
         val source = TestCredentialsProvider(expiration = testExpiration)
         val provider = CachedCredentialsProvider(source, clock = testClock)
-        val creds = provider.getCredentials()
+        val creds = provider.resolve()
         val expected = Credentials("AKID", "secret", expiration = testExpiration)
         assertEquals(expected, creds)
         assertEquals(1, source.callCount)
 
-        provider.getCredentials()
+        provider.resolve()
         assertEquals(1, source.callCount)
     }
 
@@ -56,7 +57,7 @@ class CachedCredentialsProviderTest {
         // expiration should come from the cached provider
         val source = TestCredentialsProvider()
         val provider = CachedCredentialsProvider(source, clock = testClock)
-        val creds = provider.getCredentials()
+        val creds = provider.resolve()
         val expectedExpiration = epoch + 15.minutes
         val expected = Credentials("AKID", "secret", expiration = expectedExpiration)
         assertEquals(expected, creds)
@@ -67,14 +68,14 @@ class CachedCredentialsProviderTest {
     fun testReloadExpiredCredentials() = runTest {
         val source = TestCredentialsProvider(expiration = testExpiration)
         val provider = CachedCredentialsProvider(source, clock = testClock)
-        val creds = provider.getCredentials()
+        val creds = provider.resolve()
         val expected = Credentials("AKID", "secret", expiration = testExpiration)
         assertEquals(expected, creds)
         assertEquals(1, source.callCount)
 
         // 1 min past expiration
         testClock.advance(31.minutes)
-        provider.getCredentials()
+        provider.resolve()
         assertEquals(2, source.callCount)
     }
 
@@ -82,20 +83,20 @@ class CachedCredentialsProviderTest {
     fun testRefreshBufferWindow() = runTest {
         val source = TestCredentialsProvider(expiration = testExpiration)
         val provider = CachedCredentialsProvider(source, clock = testClock, expireCredentialsAfter = 60.minutes)
-        val creds = provider.getCredentials()
+        val creds = provider.resolve()
         val expected = Credentials("AKID", "secret", expiration = testExpiration)
         assertEquals(expected, creds)
         assertEquals(1, source.callCount)
 
         // default buffer window is 10 seconds, advance 29 minutes, 49 seconds
         testClock.advance((29 * 60 + 49).seconds)
-        provider.getCredentials()
+        provider.resolve()
         // not within window yet
         assertEquals(1, source.callCount)
 
         // now we should be within 10 sec window
         testClock.advance(1.seconds)
-        provider.getCredentials()
+        provider.resolve()
         assertEquals(2, source.callCount)
     }
 
@@ -103,7 +104,7 @@ class CachedCredentialsProviderTest {
     fun testLoadFailed() = runTest {
         val source = object : CredentialsProvider {
             private var count = 0
-            override suspend fun getCredentials(): Credentials {
+            override suspend fun resolve(attributes: Attributes): Credentials {
                 if (count <= 0) {
                     count++
                     throw RuntimeException("test error")
@@ -114,18 +115,18 @@ class CachedCredentialsProviderTest {
         val provider = CachedCredentialsProvider(source, clock = testClock)
 
         assertFailsWith<RuntimeException> {
-            provider.getCredentials()
+            provider.resolve()
         }.message.shouldContain("test error")
 
         // future successful invocations should continue to work
-        provider.getCredentials()
+        provider.resolve()
     }
 
     @Test
     fun testItThrowsOnGetCredentialsAfterClose() = runTest {
         val source = TestCredentialsProvider(expiration = testExpiration)
         val provider = CachedCredentialsProvider(source, clock = testClock)
-        val creds = provider.getCredentials()
+        val creds = provider.resolve()
         val expected = Credentials("AKID", "secret", expiration = testExpiration)
         assertEquals(expected, creds)
         assertEquals(1, source.callCount)
@@ -133,7 +134,7 @@ class CachedCredentialsProviderTest {
         provider.close()
 
         assertFailsWith<IllegalStateException> {
-            provider.getCredentials()
+            provider.resolve()
         }
         assertEquals(1, source.callCount)
     }

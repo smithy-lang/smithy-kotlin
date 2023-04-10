@@ -5,7 +5,6 @@
 
 package software.amazon.smithy.kotlin.codegen.model.knowledge
 
-import software.amazon.smithy.kotlin.codegen.model.expectShape
 import software.amazon.smithy.kotlin.codegen.test.toSmithyModel
 import software.amazon.smithy.model.shapes.ShapeId
 import kotlin.test.Test

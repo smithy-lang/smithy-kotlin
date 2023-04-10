@@ -9,7 +9,7 @@ import aws.smithy.kotlin.runtime.InternalApi
 import aws.smithy.kotlin.runtime.client.SdkLogMode
 import aws.smithy.kotlin.runtime.client.sdkLogMode
 import aws.smithy.kotlin.runtime.http.HttpHandler
-import aws.smithy.kotlin.runtime.http.auth.HttpSigner
+import aws.smithy.kotlin.runtime.http.auth.SignHttpRequest
 import aws.smithy.kotlin.runtime.http.interceptors.InterceptorExecutor
 import aws.smithy.kotlin.runtime.http.middleware.RetryMiddleware
 import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
@@ -29,6 +29,7 @@ import aws.smithy.kotlin.runtime.retries.StandardRetryStrategy
 import aws.smithy.kotlin.runtime.retries.policy.RetryPolicy
 import aws.smithy.kotlin.runtime.retries.policy.StandardRetryPolicy
 import aws.smithy.kotlin.runtime.tracing.trace
+import aws.smithy.kotlin.runtime.util.merge
 import kotlin.coroutines.coroutineContext
 import kotlin.time.ExperimentalTime
 import kotlin.time.measureTimedValue
@@ -80,7 +81,7 @@ public typealias SdkHttpRequest = OperationRequest<HttpRequestBuilder>
  *
  * By default, every operation is:
  * * Retried using the configured [retryStrategy] and [retryPolicy].
- * * Signed using the configured [signer]
+ * * Signed using the resolved authentication scheme
  */
 @InternalApi
 public class SdkOperationExecution<Request, Response> {
@@ -120,11 +121,13 @@ public class SdkOperationExecution<Request, Response> {
      */
     public val receive: Phase<SdkHttpRequest, HttpCall> = Phase<SdkHttpRequest, HttpCall>()
 
+    // TODO - make endpoint resolution more explicit?
+
     /**
-     * The [HttpSigner] to sign the request with
+     * The authentication config to use. Defaults to [OperationAuthConfig.Anonymous] which uses
+     * anonymous authentication (no auth).
      */
-    // FIXME - this is temporary until we refactor identity/auth APIs
-    public var signer: HttpSigner = HttpSigner.Anonymous
+    public var auth: OperationAuthConfig = OperationAuthConfig.Anonymous
 
     /**
      * The retry strategy to use. Defaults to [StandardRetryStrategy]
@@ -154,7 +157,7 @@ internal fun <Request, Response> SdkOperationExecution<Request, Response>.decora
 
     val receiveHandler = decorateHandler(handler, receive)
     val deserializeHandler = op.deserializer.decorate(receiveHandler, interceptors)
-    val authHandler = HttpAuthHandler(deserializeHandler, signer, interceptors)
+    val authHandler = HttpAuthHandler(deserializeHandler, interceptors, auth)
     val onEachAttemptHandler = decorateHandler(authHandler, onEachAttempt)
     val retryHandler = decorateHandler(onEachAttemptHandler, RetryMiddleware(retryStrategy, retryPolicy, interceptors))
 
@@ -224,6 +227,9 @@ private class SerializeHandler<Input, Output> (
             mapRequest(modified.context, modified.subject)
         }
 
+        // store finalized operation input for later middleware to read if needed
+        request.context[HttpOperationContext.OperationInput] = modified.subject as Any
+
         val requestBuilder = tv.value
         interceptors.readAfterSerialization(requestBuilder.immutableView())
 
@@ -238,17 +244,34 @@ private class MutateHandler<Output> (
     override suspend fun call(request: SdkHttpRequest): Output = inner.call(request)
 }
 
-private class HttpAuthHandler<Input, Output>(
+internal class HttpAuthHandler<Input, Output>(
     private val inner: Handler<SdkHttpRequest, Output>,
-    private val signer: HttpSigner,
     private val interceptors: InterceptorExecutor<Input, Output>,
+    private val authConfig: OperationAuthConfig,
 ) : Handler<SdkHttpRequest, Output> {
     override suspend fun call(request: SdkHttpRequest): Output {
+        // select an auth scheme by reconciling the (priority) list of candidates returned from the resolver
+        // with the ones actually configured/available for the SDK
+        val candidateAuthSchemes = authConfig.authSchemeResolver.resolve(request)
+        val authOption = candidateAuthSchemes.firstOrNull { it.schemeId in authConfig.configuredAuthSchemes } ?: error("no auth scheme found for operation; candidates: $candidateAuthSchemes")
+        val authScheme = authConfig.configuredAuthSchemes[authOption.schemeId] ?: error("auth scheme ${authOption.schemeId} not configured")
+
+        // resolve identity from the selected auth scheme
+        val identityProvider = authScheme.identityProvider(authConfig.identityProviderConfig)
+        val identity = identityProvider.resolve(authOption.attributes)
+
+        // FIXME - endpoint resolution should happen here, either we make it explicit or we change implementation to use modifyBeforeSigning and have to stuff identity into the context
+
         val modified = interceptors.modifyBeforeSigning(request.subject.immutableView(true))
             .let { request.copy(subject = it.toBuilder()) }
 
         interceptors.readBeforeSigning(modified.subject.immutableView())
-        signer.sign(modified.context, modified.subject)
+
+        // signing properties need to propagate from AuthOption to signer
+        modified.context.merge(authOption.attributes)
+        val signingRequest = SignHttpRequest(modified.subject, identity, modified.context)
+        authScheme.signer.sign(signingRequest)
+
         interceptors.readAfterSigning(modified.subject.immutableView())
         return inner.call(modified)
     }

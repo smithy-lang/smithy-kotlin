@@ -2,10 +2,15 @@
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
  * SPDX-License-Identifier: Apache-2.0
  */
-package aws.smithy.kotlin.runtime.auth.awssigning.tests
+package aws.smithy.kotlin.runtime.http.auth
 
-import aws.smithy.kotlin.runtime.auth.awssigning.AwsHttpSigner
+import aws.smithy.kotlin.runtime.auth.awscredentials.Credentials
+import aws.smithy.kotlin.runtime.auth.awscredentials.CredentialsProvider
+import aws.smithy.kotlin.runtime.auth.awssigning.AwsSigner
 import aws.smithy.kotlin.runtime.auth.awssigning.AwsSigningAttributes
+import aws.smithy.kotlin.runtime.auth.awssigning.DefaultAwsSigner
+import aws.smithy.kotlin.runtime.auth.awssigning.crt.CrtAwsSigner
+import aws.smithy.kotlin.runtime.auth.awssigning.internal.AWS_CHUNKED_THRESHOLD
 import aws.smithy.kotlin.runtime.http.*
 import aws.smithy.kotlin.runtime.http.content.ByteArrayContent
 import aws.smithy.kotlin.runtime.http.engine.HttpClientEngineBase
@@ -14,11 +19,13 @@ import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
 import aws.smithy.kotlin.runtime.http.response.HttpCall
 import aws.smithy.kotlin.runtime.http.response.HttpResponse
+import aws.smithy.kotlin.runtime.identity.asIdentityProviderConfig
 import aws.smithy.kotlin.runtime.io.SdkByteReadChannel
 import aws.smithy.kotlin.runtime.net.Host
 import aws.smithy.kotlin.runtime.net.Scheme
 import aws.smithy.kotlin.runtime.operation.ExecutionContext
 import aws.smithy.kotlin.runtime.time.Instant
+import aws.smithy.kotlin.runtime.util.Attributes
 import aws.smithy.kotlin.runtime.util.get
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.TestResult
@@ -26,9 +33,20 @@ import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
+class DefaultAwsHttpSignerTest : AwsHttpSignerTestBase(DefaultAwsSigner)
+class CrtAwsHttpSignerTest : AwsHttpSignerTestBase(CrtAwsSigner)
+
+/**
+ * Basic sanity tests. Signing (including `AwsHttpSigner`) is covered by the more exhaustive
+ * test suite in the `aws-signing-tests` module.
+ */
 @Suppress("HttpUrlsUsage")
 @OptIn(ExperimentalCoroutinesApi::class)
-public abstract class MiddlewareSigningTestBase : HasSigner {
+public abstract class AwsHttpSignerTestBase(
+    private val signer: AwsSigner,
+) {
+    private val testCredentials = Credentials("AKID", "SECRET", "SESSION")
+
     private fun buildOperation(
         requestBody: String = "{\"TableName\": \"foo\"}",
         streaming: Boolean = false,
@@ -68,12 +86,17 @@ public abstract class MiddlewareSigningTestBase : HasSigner {
             }
         }
 
-        operation.execution.signer = AwsHttpSigner {
-            signer = this@MiddlewareSigningTestBase.signer
-            credentialsProvider = testCredentialsProvider
+        val idp = object : CredentialsProvider {
+            override suspend fun resolve(attributes: Attributes): Credentials = testCredentials
+        }
+
+        val signerConfig = AwsHttpSigner.Config().apply {
+            signer = this@AwsHttpSignerTestBase.signer
             service = "demo"
             isUnsignedPayload = unsigned
         }
+
+        operation.execution.auth = OperationAuthConfig.from(idp.asIdentityProviderConfig(), SigV4AuthScheme(signerConfig))
 
         return operation
     }
@@ -135,7 +158,7 @@ public abstract class MiddlewareSigningTestBase : HasSigner {
 
     @Test
     public fun testSignAwsChunkedStreamNonReplayable(): TestResult = runTest {
-        val op = buildOperation(streaming = true, replayable = false, requestBody = "a".repeat(AwsHttpSigner.AWS_CHUNKED_THRESHOLD + 1))
+        val op = buildOperation(streaming = true, replayable = false, requestBody = "a".repeat(AWS_CHUNKED_THRESHOLD + 1))
         val expectedDate = "20201016T195600Z"
         val expectedSig = "AWS4-HMAC-SHA256 Credential=AKID/20201016/us-east-1/demo/aws4_request, " +
             "SignedHeaders=content-encoding;content-length;host;transfer-encoding;x-amz-archive-description;x-amz-date;x-amz-decoded-content-length;x-amz-security-token, " +
@@ -148,7 +171,7 @@ public abstract class MiddlewareSigningTestBase : HasSigner {
 
     @Test
     public fun testSignAwsChunkedStreamReplayable(): TestResult = runTest {
-        val op = buildOperation(streaming = true, replayable = true, requestBody = "a".repeat(AwsHttpSigner.AWS_CHUNKED_THRESHOLD + 1))
+        val op = buildOperation(streaming = true, replayable = true, requestBody = "a".repeat(AWS_CHUNKED_THRESHOLD + 1))
         val expectedDate = "20201016T195600Z"
         val expectedSig = "AWS4-HMAC-SHA256 Credential=AKID/20201016/us-east-1/demo/aws4_request, " +
             "SignedHeaders=content-encoding;content-length;host;transfer-encoding;x-amz-archive-description;x-amz-date;x-amz-decoded-content-length;x-amz-security-token, " +

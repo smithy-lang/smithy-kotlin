@@ -1,0 +1,38 @@
+public abstract interface class aws/smithy/kotlin/runtime/http/auth/HttpAuthConfig {
+	public abstract fun getAuthSchemes ()Ljava/util/List;
+}
+
+public abstract interface class aws/smithy/kotlin/runtime/http/auth/HttpAuthConfig$Builder {
+	public abstract fun getAuthSchemes ()Ljava/util/List;
+	public abstract fun setAuthSchemes (Ljava/util/List;)V
+}
+
+public abstract interface class aws/smithy/kotlin/runtime/http/auth/HttpAuthScheme {
+	public abstract fun getSchemeId-DepwgT4 ()Ljava/lang/String;
+	public abstract fun getSigner ()Laws/smithy/kotlin/runtime/http/auth/HttpSigner;
+	public abstract fun identityProvider (Laws/smithy/kotlin/runtime/identity/IdentityProviderConfig;)Laws/smithy/kotlin/runtime/identity/IdentityProvider;
+}
+
+public final class aws/smithy/kotlin/runtime/http/auth/HttpAuthScheme$DefaultImpls {
+	public static fun identityProvider (Laws/smithy/kotlin/runtime/http/auth/HttpAuthScheme;Laws/smithy/kotlin/runtime/identity/IdentityProviderConfig;)Laws/smithy/kotlin/runtime/identity/IdentityProvider;
+}
+
+public abstract interface class aws/smithy/kotlin/runtime/http/auth/HttpSigner {
+	public abstract fun sign (Laws/smithy/kotlin/runtime/http/auth/SignHttpRequest;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
+public final class aws/smithy/kotlin/runtime/http/auth/SignHttpRequest {
+	public fun <init> (Laws/smithy/kotlin/runtime/http/request/HttpRequestBuilder;Laws/smithy/kotlin/runtime/identity/Identity;Laws/smithy/kotlin/runtime/util/Attributes;)V
+	public final fun component1 ()Laws/smithy/kotlin/runtime/http/request/HttpRequestBuilder;
+	public final fun component2 ()Laws/smithy/kotlin/runtime/identity/Identity;
+	public final fun component3 ()Laws/smithy/kotlin/runtime/util/Attributes;
+	public final fun copy (Laws/smithy/kotlin/runtime/http/request/HttpRequestBuilder;Laws/smithy/kotlin/runtime/identity/Identity;Laws/smithy/kotlin/runtime/util/Attributes;)Laws/smithy/kotlin/runtime/http/auth/SignHttpRequest;
+	public static synthetic fun copy$default (Laws/smithy/kotlin/runtime/http/auth/SignHttpRequest;Laws/smithy/kotlin/runtime/http/request/HttpRequestBuilder;Laws/smithy/kotlin/runtime/identity/Identity;Laws/smithy/kotlin/runtime/util/Attributes;ILjava/lang/Object;)Laws/smithy/kotlin/runtime/http/auth/SignHttpRequest;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getHttpRequest ()Laws/smithy/kotlin/runtime/http/request/HttpRequestBuilder;
+	public final fun getIdentity ()Laws/smithy/kotlin/runtime/identity/Identity;
+	public final fun getSigningAttributes ()Laws/smithy/kotlin/runtime/util/Attributes;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+

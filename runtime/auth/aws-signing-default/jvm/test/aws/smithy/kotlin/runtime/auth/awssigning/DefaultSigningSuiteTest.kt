@@ -11,22 +11,19 @@ class DefaultSigningSuiteTest : SigningSuiteTestBase() {
     override val signer: AwsSigner = DefaultAwsSigner
 
     override val canonicalRequestProvider: SigningStateProvider = { request, config ->
-        val credentials = config.credentialsProvider.getCredentials()
-        val result = Canonicalizer.Default.canonicalRequest(request, config, credentials)
+        val result = Canonicalizer.Default.canonicalRequest(request, config)
         result.requestString
     }
 
     override val signatureProvider: SigningStateProvider = { request, config ->
-        val credentials = config.credentialsProvider.getCredentials()
-        val canonical = Canonicalizer.Default.canonicalRequest(request, config, credentials)
+        val canonical = Canonicalizer.Default.canonicalRequest(request, config)
         val stringToSign = SignatureCalculator.Default.stringToSign(canonical.requestString, config)
-        val signingKey = SignatureCalculator.Default.signingKey(config, credentials)
+        val signingKey = SignatureCalculator.Default.signingKey(config)
         SignatureCalculator.Default.calculate(signingKey, stringToSign)
     }
 
     override val stringToSignProvider: SigningStateProvider = { request, config ->
-        val credentials = config.credentialsProvider.getCredentials()
-        val canonical = Canonicalizer.Default.canonicalRequest(request, config, credentials)
+        val canonical = Canonicalizer.Default.canonicalRequest(request, config)
         SignatureCalculator.Default.stringToSign(canonical.requestString, config)
     }
 }

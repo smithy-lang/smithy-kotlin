@@ -4,15 +4,15 @@ public abstract interface class aws/smithy/kotlin/runtime/client/ClientOptions {
 	public abstract fun set (Laws/smithy/kotlin/runtime/util/AttributeKey;Ljava/lang/Object;)V
 }
 
-public abstract class aws/smithy/kotlin/runtime/client/ClientOptionsBuilder : aws/smithy/kotlin/runtime/util/Attributes {
+public abstract class aws/smithy/kotlin/runtime/client/ClientOptionsBuilder : aws/smithy/kotlin/runtime/util/MutableAttributes {
 	public fun <init> ()V
-	public fun <init> (Laws/smithy/kotlin/runtime/util/Attributes;)V
-	public synthetic fun <init> (Laws/smithy/kotlin/runtime/util/Attributes;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Laws/smithy/kotlin/runtime/util/MutableAttributes;)V
+	public synthetic fun <init> (Laws/smithy/kotlin/runtime/util/MutableAttributes;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun build ()Laws/smithy/kotlin/runtime/operation/ExecutionContext;
 	public fun computeIfAbsent (Laws/smithy/kotlin/runtime/util/AttributeKey;Lkotlin/jvm/functions/Function0;)Ljava/lang/Object;
 	public fun contains (Laws/smithy/kotlin/runtime/util/AttributeKey;)Z
 	public fun getKeys ()Ljava/util/Set;
-	protected final fun getOptions ()Laws/smithy/kotlin/runtime/util/Attributes;
+	protected final fun getOptions ()Laws/smithy/kotlin/runtime/util/MutableAttributes;
 	public fun getOrNull (Laws/smithy/kotlin/runtime/util/AttributeKey;)Ljava/lang/Object;
 	protected final fun option (Laws/smithy/kotlin/runtime/util/AttributeKey;)Laws/smithy/kotlin/runtime/client/DelegatedClientOption;
 	public fun remove (Laws/smithy/kotlin/runtime/util/AttributeKey;)V
@@ -21,7 +21,7 @@ public abstract class aws/smithy/kotlin/runtime/client/ClientOptionsBuilder : aw
 }
 
 public final class aws/smithy/kotlin/runtime/client/DelegatedClientOption : kotlin/properties/ReadWriteProperty {
-	public fun <init> (Laws/smithy/kotlin/runtime/util/AttributeKey;Laws/smithy/kotlin/runtime/util/Attributes;)V
+	public fun <init> (Laws/smithy/kotlin/runtime/util/AttributeKey;Laws/smithy/kotlin/runtime/util/MutableAttributes;)V
 	public fun getValue (Ljava/lang/Object;Lkotlin/reflect/KProperty;)Ljava/lang/Object;
 	public fun setValue (Ljava/lang/Object;Lkotlin/reflect/KProperty;Ljava/lang/Object;)V
 }

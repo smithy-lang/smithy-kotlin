@@ -10,6 +10,9 @@ import software.amazon.smithy.kotlin.codegen.integration.SectionId
 import software.amazon.smithy.kotlin.codegen.integration.SectionKey
 import software.amazon.smithy.kotlin.codegen.lang.KotlinTypes
 import software.amazon.smithy.kotlin.codegen.model.*
+import software.amazon.smithy.kotlin.codegen.model.knowledge.AuthIndex
+import software.amazon.smithy.kotlin.codegen.rendering.auth.AuthSchemeProviderAdapterGenerator
+import software.amazon.smithy.kotlin.codegen.rendering.auth.IdentityProviderConfigGenerator
 import software.amazon.smithy.kotlin.codegen.rendering.serde.deserializerName
 import software.amazon.smithy.kotlin.codegen.rendering.serde.serializerName
 import software.amazon.smithy.kotlin.codegen.utils.getOrNull
@@ -78,6 +81,36 @@ abstract class HttpProtocolClientGenerator(
     protected open fun renderProperties(writer: KotlinWriter) {
         writer.write("private val managedResources = #T()", RuntimeTypes.Core.IO.SdkManagedGroup)
         writer.write("private val client = #T(config.httpClientEngine)", RuntimeTypes.HttpClient.SdkHttpClient)
+
+        // render auth resolver related properties
+        writer.write("private val identityProviderConfig = #T(config)", IdentityProviderConfigGenerator.getSymbol(ctx.settings))
+
+        writer.withBlock(
+            "private val configuredAuthSchemes = with(config.authSchemes.associateBy(#T::schemeId).toMutableMap()){",
+            "}",
+            RuntimeTypes.Auth.HttpAuth.HttpAuthScheme
+        ){
+            val authIndex = AuthIndex()
+            val allAuthHandlers = authIndex.authHandlersForService(ctx)
+
+            allAuthHandlers.forEach {
+                val (format, args) = if (it.authSchemeIdSymbol != null) {
+                    "#T" to arrayOf(it.authSchemeIdSymbol!!)
+                }else {
+                    "#T(#S)" to arrayOf(RuntimeTypes.Auth.Identity.AuthSchemeId, it.authSchemeId)
+                }
+
+                withBlock(
+                    "getOrPut($format){",
+                    "}",
+                    *args
+                ) {
+                    it.instantiateAuthSchemeExpr(ctx, this)
+                }
+            }
+
+            write("toMap()")
+        }
     }
 
     protected open fun importSymbols(writer: KotlinWriter) {
@@ -187,9 +220,15 @@ abstract class HttpProtocolClientGenerator(
                     writer.write("hostPrefix = #S", hostPrefix)
                 }
             }
-        }
 
-        writer.write("op.execution.retryStrategy = config.retryStrategy")
+            writer.write(
+                "execution.auth = #T(#T, configuredAuthSchemes, identityProviderConfig)",
+                RuntimeTypes.HttpClient.Operation.OperationAuthConfig,
+                AuthSchemeProviderAdapterGenerator.getSymbol(ctx.settings)
+            )
+
+            writer.write("execution.retryStrategy = config.retryStrategy")
+        }
     }
 
     protected open fun renderFinalizeBeforeExecute(writer: KotlinWriter, opIndex: OperationIndex, op: OperationShape) {

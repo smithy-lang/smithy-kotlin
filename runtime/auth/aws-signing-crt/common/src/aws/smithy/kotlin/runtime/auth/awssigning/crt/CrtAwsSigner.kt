@@ -84,7 +84,6 @@ private fun AwsSigningAlgorithm.toCrtSigningAlgorithm() = when (this) {
 
 private suspend fun AwsSigningConfig.toCrtSigningConfig(): CrtSigningConfig {
     val src = this
-    val srcCredentials = src.credentialsProvider.getCredentials()
     return CrtSigningConfig.build {
         region = src.region
         service = src.service
@@ -97,7 +96,7 @@ private suspend fun AwsSigningConfig.toCrtSigningConfig(): CrtSigningConfig {
         omitSessionToken = src.omitSessionToken
         signedBodyValue = src.hashSpecification.toCrtSignedBodyValue()
         signedBodyHeader = src.signedBodyHeader.toCrtSignedBodyHeaderType()
-        credentials = srcCredentials.toCrtCredentials()
+        credentials = src.credentials.toCrtCredentials()
         expirationInSeconds = src.expiresAfter?.inWholeSeconds ?: 0
     }
 }

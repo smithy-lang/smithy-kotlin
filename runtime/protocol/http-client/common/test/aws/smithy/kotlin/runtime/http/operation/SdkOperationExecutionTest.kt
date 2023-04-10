@@ -5,16 +5,18 @@
 
 package aws.smithy.kotlin.runtime.http.operation
 
+import aws.smithy.kotlin.runtime.auth.AuthSchemeId
 import aws.smithy.kotlin.runtime.http.Headers
 import aws.smithy.kotlin.runtime.http.HttpBody
 import aws.smithy.kotlin.runtime.http.HttpStatusCode
 import aws.smithy.kotlin.runtime.http.SdkHttpClient
-import aws.smithy.kotlin.runtime.http.auth.HttpSigner
+import aws.smithy.kotlin.runtime.http.auth.*
 import aws.smithy.kotlin.runtime.http.engine.HttpClientEngineBase
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
 import aws.smithy.kotlin.runtime.http.response.HttpCall
 import aws.smithy.kotlin.runtime.http.response.HttpResponse
+import aws.smithy.kotlin.runtime.identity.asIdentityProviderConfig
 import aws.smithy.kotlin.runtime.operation.ExecutionContext
 import aws.smithy.kotlin.runtime.time.Instant
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -43,14 +45,24 @@ class SdkOperationExecutionTest {
             }
         }
 
-        op.execution.signer = object : HttpSigner {
-            override suspend fun sign(context: ExecutionContext, request: HttpRequestBuilder) {
+        val httpSigner = object : HttpSigner {
+            override suspend fun sign(signingRequest: SignHttpRequest) {
+                val request = signingRequest.httpRequest
                 assertFalse(request.headers.contains("test-auth"))
                 request.headers.append("test-auth", "test-signature")
 
                 assertFalse(request.headers.contains("receive-header"))
             }
         }
+        val authScheme = object : HttpAuthScheme {
+            override val schemeId: AuthSchemeId = AuthSchemeId.Anonymous
+            override val signer: HttpSigner = httpSigner
+        }
+
+        op.execution.auth = OperationAuthConfig.from(
+            AnonymousIdentityProvider.asIdentityProviderConfig(),
+            authScheme,
+        )
 
         val actualOrder = mutableListOf<String>()
 

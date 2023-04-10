@@ -12,7 +12,7 @@ class AttributesTest {
     fun testPropertyBag() {
         val strKey = AttributeKey<String>("string")
         val intKey = AttributeKey<Int>("int")
-        val attributes = Attributes()
+        val attributes = mutableAttributes()
 
         attributes[strKey] = "foo"
         assertTrue(attributes.contains(strKey))
@@ -29,7 +29,7 @@ class AttributesTest {
 
     @Test
     fun testPutIfAbsent() {
-        val attributes = Attributes()
+        val attributes = mutableAttributes()
         val strKey = AttributeKey<String>("string")
         attributes[strKey] = "foo"
         attributes.putIfAbsent(strKey, "bar")
@@ -41,7 +41,7 @@ class AttributesTest {
 
     @Test
     fun testMerge() {
-        val attr1 = Attributes()
+        val attr1 = mutableAttributes()
         val key1 = AttributeKey<String>("k1")
         val key2 = AttributeKey<String>("k2")
         val key3 = AttributeKey<String>("k3")
@@ -49,7 +49,7 @@ class AttributesTest {
         attr1[key1] = "Foo"
         attr1[key2] = "Bar"
 
-        val attr2 = Attributes()
+        val attr2 = mutableAttributes()
         attr2[key2] = "Baz"
         attr2[key3] = "Quux"
 
@@ -62,12 +62,46 @@ class AttributesTest {
 
     @Test
     fun testSetIfNotNull() {
-        val attributes = Attributes()
+        val attributes = mutableAttributes()
         val strKey = AttributeKey<String>("string")
         attributes.setIfValueNotNull(strKey, null)
         assertFalse(attributes.contains(strKey))
 
         attributes.setIfValueNotNull(strKey, "foo")
         assertEquals("foo", attributes[strKey])
+    }
+
+    @Test
+    fun testMutableAttributesOf() {
+        val attr1 = AttributeKey<String>("string")
+        val attr2 = AttributeKey<Int>("int")
+        val attributes = mutableAttributesOf {
+            attr1 to "foo"
+            attr2 to 57
+        }
+
+        assertEquals("foo", attributes[attr1])
+        assertEquals(57, attributes[attr2])
+    }
+
+    @Test
+    fun testToMutableAttributes() {
+        val attr1 = AttributeKey<String>("string")
+        val attr2 = AttributeKey<Int>("int")
+        val attrs = attributesOf {
+            attr1 to "foo"
+            attr2 to 57
+        }
+
+        val mutAttrs = attrs.toMutableAttributes()
+
+        assertEquals("foo", mutAttrs[attr1])
+        assertEquals(57, mutAttrs[attr2])
+
+        mutAttrs.remove(attr2)
+        assertFalse(attr2 in mutAttrs)
+
+        assertEquals("foo", attrs[attr1])
+        assertEquals(57, attrs[attr2])
     }
 }

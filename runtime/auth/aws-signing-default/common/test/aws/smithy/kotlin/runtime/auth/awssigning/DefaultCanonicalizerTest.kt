@@ -5,7 +5,7 @@
 package aws.smithy.kotlin.runtime.auth.awssigning
 
 import aws.smithy.kotlin.runtime.auth.awscredentials.Credentials
-import aws.smithy.kotlin.runtime.auth.awssigning.tests.testCredentialsProvider
+import aws.smithy.kotlin.runtime.auth.awssigning.tests.DEFAULT_TEST_CREDENTIALS
 import aws.smithy.kotlin.runtime.http.*
 import aws.smithy.kotlin.runtime.http.request.*
 import aws.smithy.kotlin.runtime.net.Host
@@ -43,12 +43,11 @@ class DefaultCanonicalizerTest {
             region = "foo"
             service = "bar"
             signingDate = Instant.fromIso8601(signingDateString)
-            credentialsProvider = testCredentialsProvider
+            credentials = Credentials("foo", "bar") // anything without a session token set
         }
-        val credentials = Credentials("foo", "bar") // anything without a session token set
 
         val canonicalizer = Canonicalizer.Default
-        val actual = canonicalizer.canonicalRequest(request, config, credentials)
+        val actual = canonicalizer.canonicalRequest(request, config)
 
         val expectedHash = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
         assertEquals(expectedHash, actual.hash)
@@ -92,7 +91,7 @@ class DefaultCanonicalizerTest {
             useDoubleUriEncode = true
             region = "the-moon"
             service = "landing-pad"
-            credentialsProvider = testCredentialsProvider
+            credentials = DEFAULT_TEST_CREDENTIALS
         }
 
         assertEquals("/2013-04-01/healthcheck/foo%253Cbar%253Ebaz%253C%252Fbar%253E", uri.canonicalPath(config))
@@ -120,12 +119,11 @@ class DefaultCanonicalizerTest {
             region = "foo"
             service = "bar"
             signingDate = Instant.fromIso8601(signingDateString)
-            credentialsProvider = testCredentialsProvider
+            credentials = Credentials("foo", "bar") // anything without a session token set
         }
-        val credentials = Credentials("foo", "bar") // anything without a session token set
 
         val canonicalizer = Canonicalizer.Default
-        val actual = canonicalizer.canonicalRequest(request, config, credentials)
+        val actual = canonicalizer.canonicalRequest(request, config)
 
         val expectedSignedHeaders = "content-type;host;x-amz-date;x-amz-user-agent"
         assertEquals(expectedSignedHeaders, actual.signedHeaders)

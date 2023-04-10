@@ -10,6 +10,7 @@ import aws.smithy.kotlin.runtime.net.Url
 import aws.smithy.kotlin.runtime.util.AttributeKey
 import aws.smithy.kotlin.runtime.util.Attributes
 import aws.smithy.kotlin.runtime.util.ValuesMap
+import aws.smithy.kotlin.runtime.util.emptyAttributes
 
 /**
  * Represents the endpoint a service client should make API operation calls to.
@@ -38,14 +39,14 @@ public data class Endpoint @InternalApi constructor(
     public val uri: Url,
     public val headers: ValuesMap<String>? = null,
     @InternalApi
-    public val attributes: Attributes = Attributes(),
+    public val attributes: Attributes = emptyAttributes(),
 ) {
     public constructor(uri: String) : this(Url.parse(uri))
 
     public constructor(
         uri: Url,
         headers: ValuesMap<String>? = null,
-    ) : this(uri, headers, Attributes())
+    ) : this(uri, headers, emptyAttributes())
 
     override fun equals(other: Any?): Boolean =
         other is Endpoint &&
@@ -59,4 +60,11 @@ public data class Endpoint @InternalApi constructor(
                 @Suppress("UNCHECKED_CAST")
                 attributes.contains(it) && attributes.getOrNull(it as AttributeKey<Any>) == other.attributes.getOrNull(it)
             }
+
+    override fun hashCode(): Int {
+        var result = uri.hashCode()
+        result = 31 * result + (headers?.hashCode() ?: 0)
+        result = 31 * result + attributes.hashCode()
+        return result
+    }
 }

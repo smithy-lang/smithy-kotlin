@@ -8,6 +8,7 @@ package aws.smithy.kotlin.runtime.auth.awscredentials
 import aws.smithy.kotlin.runtime.io.closeIfCloseable
 import aws.smithy.kotlin.runtime.time.Clock
 import aws.smithy.kotlin.runtime.tracing.trace
+import aws.smithy.kotlin.runtime.util.Attributes
 import aws.smithy.kotlin.runtime.util.CachedValue
 import aws.smithy.kotlin.runtime.util.ExpiringValue
 import kotlinx.atomicfu.atomic
@@ -54,12 +55,12 @@ public class CachedCredentialsProvider(
     private val cachedCredentials = CachedValue<Credentials>(null, bufferTime = refreshBufferWindow, clock)
     private val closed = atomic(false)
 
-    override suspend fun getCredentials(): Credentials {
+    override suspend fun resolve(attributes: Attributes): Credentials {
         check(!closed.value) { "Credentials provider is closed" }
 
         return cachedCredentials.getOrLoad {
             coroutineContext.trace<CachedCredentialsProvider> { "refreshing credentials cache" }
-            val providerCreds = source.getCredentials()
+            val providerCreds = source.resolve()
             if (providerCreds.expiration != null) {
                 val expiration = minOf(providerCreds.expiration, (clock.now() + expireCredentialsAfter))
                 ExpiringValue(providerCreds, expiration)

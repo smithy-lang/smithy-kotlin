@@ -5,7 +5,7 @@
 package aws.smithy.kotlin.runtime.auth.awssigning
 
 import aws.smithy.kotlin.runtime.auth.awscredentials.Credentials
-import aws.smithy.kotlin.runtime.auth.awssigning.tests.testCredentialsProvider
+import aws.smithy.kotlin.runtime.auth.awssigning.tests.DEFAULT_TEST_CREDENTIALS
 import aws.smithy.kotlin.runtime.hashing.sha256
 import aws.smithy.kotlin.runtime.time.Instant
 import aws.smithy.kotlin.runtime.util.decodeHexBytes
@@ -36,17 +36,15 @@ class DefaultSignatureCalculatorTest {
     @OptIn(ExperimentalCoroutinesApi::class)
     @Test
     fun testSigningKey() = runTest {
-        val credentials = Credentials("", "wJalrXUtnFEMI/K7MDENG+bPxRfiCYEXAMPLEKEY")
-
         val config = AwsSigningConfig {
             signingDate = Instant.fromIso8601("20150830")
             region = "us-east-1"
             service = "iam"
-            credentialsProvider = testCredentialsProvider
+            credentials = Credentials("", "wJalrXUtnFEMI/K7MDENG+bPxRfiCYEXAMPLEKEY")
         }
 
         val expected = "c4afb1cc5771d871763a393e44b703571b55cc28424d1a5e86da6ed3c154a4b9"
-        val actual = SignatureCalculator.Default.signingKey(config, credentials).encodeToHex()
+        val actual = SignatureCalculator.Default.signingKey(config).encodeToHex()
         assertEquals(expected, actual)
     }
 
@@ -69,7 +67,7 @@ class DefaultSignatureCalculatorTest {
             signingDate = Instant.fromIso8601("20150830T123600Z")
             region = "us-east-1"
             service = "iam"
-            credentialsProvider = testCredentialsProvider
+            credentials = DEFAULT_TEST_CREDENTIALS
         }
 
         val expected = """
@@ -103,7 +101,7 @@ class DefaultSignatureCalculatorTest {
 
         for (test in tests) {
             val config = AwsSigningConfig {
-                credentialsProvider = testCredentialsProvider
+                credentials = DEFAULT_TEST_CREDENTIALS
                 signingDate = epoch
                 region = "us-east-1"
                 service = "testservice"
