@@ -8,6 +8,7 @@ package aws.smithy.kotlin.runtime.client
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 class SdkLogModeTest {
@@ -33,5 +34,23 @@ class SdkLogModeTest {
         assertTrue { SdkLogMode.allModes().all { mode.isEnabled(it) } }
         val expected = "SdkLogMode(LogRequest|LogRequestWithBody|LogResponse|LogResponseWithBody)"
         assertEquals(expected, mode.toString())
+    }
+
+    @Test
+    fun testFromString() {
+        assertEquals(SdkLogMode.fromString("LogRequest"), SdkLogMode.LogRequest)
+    }
+
+    @Test
+    fun testFromStringComposite() {
+        assertEquals(
+            SdkLogMode.fromString("LogRequest|LogRequestWithBody|LogResponse"),
+            (SdkLogMode.LogRequest + SdkLogMode.LogRequestWithBody + SdkLogMode.LogResponse)
+        )
+    }
+
+    @Test
+    fun testUnsupportedSdkLogMode() {
+        assertNull(SdkLogMode.fromString("UnsupportedLogMode"))
     }
 }
