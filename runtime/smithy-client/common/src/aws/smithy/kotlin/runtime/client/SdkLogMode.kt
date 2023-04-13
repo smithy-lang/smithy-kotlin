@@ -55,6 +55,8 @@ public sealed class SdkLogMode(private val mask: Int) {
     public operator fun plus(mode: SdkLogMode): SdkLogMode = Composite(mask or mode.mask)
     public operator fun minus(mode: SdkLogMode): SdkLogMode = Composite(mask and mode.mask.inv())
 
+    public override fun equals(other: Any?): Boolean = (other is SdkLogMode) and (mask == (other as SdkLogMode).mask)
+
     /**
      * Test if a particular [SdkLogMode] is enabled
      */
@@ -70,6 +72,15 @@ public sealed class SdkLogMode(private val mask: Int) {
             LogResponse,
             LogResponseWithBody,
         )
+
+        /**
+         * Parse an [SdkLogMode] from a String
+         * @return the parsed SdkLogMode, or `null` if no log mode could be parsed
+         */
+        public fun fromString(string: String): SdkLogMode? =
+            string.trim().split("|").mapNotNull {
+                allModes().firstOrNull { sdkLogMode -> it.equals(sdkLogMode.toString(), ignoreCase = true) }
+            }.takeIf { it.isNotEmpty() }?.let { it.reduce { acc, sdkLogMode -> acc + sdkLogMode } }
     }
 
     override fun toString(): String =
