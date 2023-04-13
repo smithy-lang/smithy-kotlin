@@ -55,7 +55,7 @@ public class Config private constructor(builder: Builder) : HttpAuthConfig, Http
     override val interceptors: kotlin.collections.List<aws.smithy.kotlin.runtime.http.interceptors.HttpInterceptor> = builder.interceptors
     override val retryPolicy: RetryPolicy<Any?> = builder.retryPolicy ?: StandardRetryPolicy.Default
     override val retryStrategy: RetryStrategy = builder.retryStrategy ?: StandardRetryStrategy()
-    override val sdkLogMode: SdkLogMode = builder.sdkLogMode
+    override val sdkLogMode: SdkLogMode = builder.sdkLogMode ?: SdkLogMode.Default
     override val tracer: Tracer = builder.tracer ?: DefaultTracer(LoggingTraceProbe, clientName)
 """
         contents.shouldContainWithDiff(expectedProps)
@@ -127,7 +127,7 @@ public class Config private constructor(builder: Builder) : HttpAuthConfig, Http
          * performance considerations when dumping the request/response body. This is primarily a tool for
          * debug purposes.
          */
-        override var sdkLogMode: SdkLogMode = SdkLogMode.Default
+        override var sdkLogMode: SdkLogMode? = null
 
         /**
          * The tracer that is responsible for creating trace spans and wiring them up to a tracing backend (e.g.,
@@ -241,6 +241,7 @@ public class Config private constructor(builder: Builder) {
                 symbol = symbol!!.toBuilder().apply {
                     defaultValue("SdkLogMode.LogRequest") // replaces SdkLogMode.Default
                 }.build()
+                propertyType = ConfigPropertyType.RequiredWithDefault("SdkLogMode.LogRequest")
             }.build()
 
             override fun additionalServiceConfigProps(ctx: CodegenContext): List<ConfigProperty> = listOf(
@@ -323,7 +324,7 @@ public class Config private constructor(builder: Builder) {
          * performance considerations when dumping the request/response body. This is primarily a tool for
          * debug purposes.
          */
-        override var sdkLogMode: SdkLogMode = SdkLogMode.LogRequest
+        override var sdkLogMode: SdkLogMode? = SdkLogMode.LogRequest
 
         /**
          * The tracer that is responsible for creating trace spans and wiring them up to a tracing backend (e.g.,
