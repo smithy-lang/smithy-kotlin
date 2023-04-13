@@ -60,7 +60,7 @@ internal fun HttpRequest.toCrtRequest(callContext: CoroutineContext): aws.sdk.ko
         headers.forEach { key, values -> appendAll(key, values) }
     }
 
-    val contentLength = body.contentLength?.toString() ?: headers[CONTENT_LENGTH_HEADER]
+    val contentLength = body.contentLength?.takeIf { it >= 0 }?.toString() ?: headers[CONTENT_LENGTH_HEADER]
     contentLength?.let { crtHeaders.append(CONTENT_LENGTH_HEADER, it) }
 
     return aws.sdk.kotlin.crt.http.HttpRequest(method.name, url.encodedPath, crtHeaders.build(), bodyStream)
