@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.17.0] - 04/13/2023
+
+### Fixes
+* [#818](https://github.com/awslabs/smithy-kotlin/issues/818) Allow requests with zero content length in the CRT HTTP engine
+
+### Miscellaneous
+* **BREAKING**: Refactor identity and authentication APIs
+
 ## [0.16.6] - 04/06/2023
 
 ### Features
