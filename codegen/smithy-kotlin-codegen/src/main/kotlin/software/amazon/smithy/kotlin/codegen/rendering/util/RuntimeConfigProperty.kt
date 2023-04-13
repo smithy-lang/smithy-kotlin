@@ -122,9 +122,8 @@ object RuntimeConfigProperty {
         symbol = buildSymbol {
             name = RuntimeTypes.SmithyClient.SdkLogMode.name
             namespace = RuntimeTypes.SmithyClient.SdkLogMode.namespace
-            defaultValue = "SdkLogMode.Default"
-            nullable = false
         }
+        propertyType = ConfigPropertyType.RequiredWithDefault("SdkLogMode.Default")
 
         baseClass = RuntimeTypes.SmithyClient.SdkClientConfig
         builderBaseClass = buildSymbol {
