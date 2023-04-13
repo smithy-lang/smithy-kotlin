@@ -159,6 +159,7 @@ public final class aws/smithy/kotlin/runtime/client/SdkClientOptionKt {
 public abstract class aws/smithy/kotlin/runtime/client/SdkLogMode {
 	public static final field Companion Laws/smithy/kotlin/runtime/client/SdkLogMode$Companion;
 	public synthetic fun <init> (ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun equals (Ljava/lang/Object;)Z
 	public final fun isEnabled (Laws/smithy/kotlin/runtime/client/SdkLogMode;)Z
 	public final fun minus (Laws/smithy/kotlin/runtime/client/SdkLogMode;)Laws/smithy/kotlin/runtime/client/SdkLogMode;
 	public final fun plus (Laws/smithy/kotlin/runtime/client/SdkLogMode;)Laws/smithy/kotlin/runtime/client/SdkLogMode;
@@ -167,6 +168,7 @@ public abstract class aws/smithy/kotlin/runtime/client/SdkLogMode {
 
 public final class aws/smithy/kotlin/runtime/client/SdkLogMode$Companion {
 	public final fun allModes ()Ljava/util/List;
+	public final fun fromString (Ljava/lang/String;)Laws/smithy/kotlin/runtime/client/SdkLogMode;
 }
 
 public final class aws/smithy/kotlin/runtime/client/SdkLogMode$Default : aws/smithy/kotlin/runtime/client/SdkLogMode {
