@@ -45,7 +45,7 @@ class SdkLogModeTest {
     fun testFromStringComposite() {
         assertEquals(
             SdkLogMode.fromString("LogRequest|LogRequestWithBody|LogResponse"),
-            (SdkLogMode.LogRequest + SdkLogMode.LogRequestWithBody + SdkLogMode.LogResponse)
+            (SdkLogMode.LogRequest + SdkLogMode.LogRequestWithBody + SdkLogMode.LogResponse),
         )
     }
 
