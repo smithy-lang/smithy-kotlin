@@ -61,7 +61,7 @@ public interface SdkClientConfig {
          * performance considerations when dumping the request/response body. This is primarily a tool for
          * debug purposes.
          */
-        public var sdkLogMode: SdkLogMode
+        public var sdkLogMode: SdkLogMode?
 
         /**
          * The policy to use for evaluating operation results and determining whether/how to retry.
