@@ -1,0 +1,8 @@
+{
+    "id": "fe9d51c3-98cd-4c45-aed3-a797d278a36c",
+    "type": "bugfix",
+    "description": "Fix broken enum-based waiters.",
+    "issues": [
+        "awslabs/smithy-kotlin#892"
+    ]
+}
