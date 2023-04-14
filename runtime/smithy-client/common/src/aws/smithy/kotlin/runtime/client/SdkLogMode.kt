@@ -89,7 +89,7 @@ public sealed class SdkLogMode(private val mask: Int) {
     }
 
     override fun toString(): String =
-        allModes().joinToString(separator = "|", prefix = "SdkLogMode(", postfix = ")") { mode ->
+        allModes().joinToString(separator = "|") { mode ->
             if (isEnabled(mode)) mode.toString() else ""
         }
 }
