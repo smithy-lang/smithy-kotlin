@@ -56,6 +56,21 @@ public interface MutableAttributes : Attributes {
 }
 
 /**
+ * Create or change an attribute with the specified [key] using [value].
+ */
+public fun <T : Any> MutableAttributes.set(key: String, value: T): Unit = set(AttributeKey(key), value)
+
+/**
+ * Gets a value of the attribute for the specified [key] or throws an [IllegalStateException] if key does not exist
+ */
+public fun <T : Any> Attributes.get(key: String): T = get(AttributeKey(key))
+
+/**
+ * Gets a value of the attribute for the specified [key] or returns null if key does not exist
+ */
+public fun <T : Any> Attributes.getOrNull(key: String): T? = getOrNull(AttributeKey(key))
+
+/**
  * Gets a value of the attribute for the specified [key] or throws an [IllegalStateException] if key does not exist
  */
 public operator fun <T : Any> Attributes.get(key: AttributeKey<T>): T = getOrNull(key) ?: throw IllegalStateException("No instance for $key")

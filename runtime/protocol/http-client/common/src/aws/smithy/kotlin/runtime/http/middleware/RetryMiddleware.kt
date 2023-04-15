@@ -20,7 +20,7 @@ import aws.smithy.kotlin.runtime.retries.toResult
 import aws.smithy.kotlin.runtime.tracing.TraceSpan
 import aws.smithy.kotlin.runtime.tracing.debug
 import aws.smithy.kotlin.runtime.tracing.traceSpan
-import aws.smithy.kotlin.runtime.tracing.withChildTraceSpan
+import aws.smithy.kotlin.runtime.tracing.withSpan
 import kotlin.coroutines.coroutineContext
 
 /**
@@ -45,7 +45,7 @@ internal class RetryMiddleware<I, O>(
             val wrappedPolicy = PolicyLogger(policy, coroutineContext.traceSpan)
 
             val outcome = strategy.retry(wrappedPolicy) {
-                coroutineContext.withChildTraceSpan("Attempt-$attempt") {
+                withSpan("Attempt-$attempt") {
                     if (attempt > 1) {
                         coroutineContext.debug<RetryMiddleware<*, *>> { "retrying request, attempt $attempt" }
                     }
@@ -61,7 +61,7 @@ internal class RetryMiddleware<I, O>(
             outcome.toResult()
         } else {
             // Create a child span even though we won't retry
-            coroutineContext.withChildTraceSpan("Non-retryable attempt") {
+            withSpan("Non-retryable attempt") {
                 tryAttempt(modified, next, attempt)
             }
         }

@@ -247,17 +247,12 @@ abstract class HttpProtocolClientGenerator(
         val hasOutputStream = outputShape.map { it.hasStreamingMember(ctx.model) }.orElse(false)
         val inputVariableName = if (inputShape.isPresent) "input" else KotlinTypes.Unit.fullName
 
-        writer
-            .write(
-                """val rootSpan = config.tracer.createRootSpan("#L-${'$'}{op.context.#T}")""",
+        writer.withBlock(
+                """return config.tracer.#T("#L-${'$'}{op.context.#T}") {""",
+                "}",
+                RuntimeTypes.Tracing.Core.withSpan,
                 op.id.name,
                 RuntimeTypes.HttpClient.Operation.sdkRequestId,
-            )
-            .withBlock(
-                "return #T.#T(rootSpan) {",
-                "}",
-                RuntimeTypes.KotlinCoroutines.coroutineContext,
-                RuntimeTypes.Tracing.Core.withRootTraceSpan,
             ) {
                 if (hasOutputStream) {
                     write("op.#T(client, #L, block)", RuntimeTypes.HttpClient.Operation.execute, inputVariableName)

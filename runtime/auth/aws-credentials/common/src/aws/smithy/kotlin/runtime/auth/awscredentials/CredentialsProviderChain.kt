@@ -30,14 +30,14 @@ public open class CredentialsProviderChain(
     override fun toString(): String =
         (listOf(this) + providers).map { it::class.simpleName }.joinToString(" -> ")
 
-    override suspend fun resolve(attributes: Attributes): Credentials = coroutineContext.withChildTraceSpan("Credentials chain") {
+    override suspend fun resolve(attributes: Attributes): Credentials = withSpan("Credentials chain") {
         val logger = coroutineContext.traceSpan.logger<CredentialsProviderChain>()
         val chain = this@CredentialsProviderChain
         val chainException = lazy { CredentialsProviderException("No credentials could be loaded from the chain: $chain") }
         for (provider in providers) {
             logger.trace { "Attempting to load credentials from $provider" }
             try {
-                return@withChildTraceSpan provider.resolve(attributes)
+                return@withSpan provider.resolve(attributes)
             } catch (ex: Exception) {
                 logger.debug { "unable to load credentials from $provider: ${ex.message}" }
                 chainException.value.addSuppressed(ex)

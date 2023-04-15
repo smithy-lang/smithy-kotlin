@@ -44,7 +44,8 @@ public object LoggingTraceProbe : TraceProbe {
         if (event.data is TraceEventData.Message) log(span.hierarchicalId, event, event.data)
     }
 
-    override fun spanClosed(span: TraceSpan) { } // No action necessary
+    override fun spanCreated(span: TraceSpan) { }
+    override fun spanClosed(span: TraceSpan) { }
 }
 
 private val TraceSpan.hierarchicalId: String

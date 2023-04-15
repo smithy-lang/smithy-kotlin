@@ -309,7 +309,7 @@ object RuntimeTypes {
             val TraceProbe = symbol("TraceProbe")
             val Tracer = symbol("Tracer")
             val TracingClientConfig = symbol("TracingClientConfig")
-            val withRootTraceSpan = symbol("withRootTraceSpan")
+            val withSpan = symbol("withSpan")
         }
     }
 

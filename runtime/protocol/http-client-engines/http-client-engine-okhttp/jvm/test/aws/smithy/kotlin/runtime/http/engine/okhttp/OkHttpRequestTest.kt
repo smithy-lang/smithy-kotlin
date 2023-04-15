@@ -13,6 +13,9 @@ import aws.smithy.kotlin.runtime.operation.ExecutionContext
 import aws.smithy.kotlin.runtime.tracing.TraceEvent
 import aws.smithy.kotlin.runtime.tracing.TraceSpan
 import aws.smithy.kotlin.runtime.tracing.TraceSpanContextElement
+import aws.smithy.kotlin.runtime.tracing.TraceSpanStatus
+import aws.smithy.kotlin.runtime.util.MutableAttributes
+import aws.smithy.kotlin.runtime.util.mutableAttributes
 import okio.Buffer
 import org.junit.jupiter.api.Test
 import kotlin.coroutines.EmptyCoroutineContext
@@ -21,6 +24,8 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 
 private class TestTraceSpan(override val parent: TraceSpan?, override val id: String) : TraceSpan {
+    override val attributes: MutableAttributes = mutableAttributes()
+    override var spanStatus: TraceSpanStatus = TraceSpanStatus.UNSET
     override fun child(id: String): TraceSpan = TestTraceSpan(this, id)
     override fun close() = Unit
     override fun postEvent(event: TraceEvent) = Unit

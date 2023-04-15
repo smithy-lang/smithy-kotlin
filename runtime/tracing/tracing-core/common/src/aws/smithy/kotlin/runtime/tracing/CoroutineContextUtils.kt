@@ -5,9 +5,11 @@
 package aws.smithy.kotlin.runtime.tracing
 
 import aws.smithy.kotlin.runtime.InternalApi
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.withContext
 import kotlin.coroutines.CoroutineContext
+import kotlin.coroutines.coroutineContext
 
 /**
  * A [CoroutineContext] element that carries a [TraceSpan].
@@ -31,50 +33,47 @@ public val CoroutineContext.traceSpan: TraceSpan
  * coroutine context before executing [block] and restores the parent span after the block completes (whether
  * successfully or exceptionally).
  */
-public suspend inline fun <R> CoroutineContext.withChildTraceSpan(
+public suspend inline fun <R> withSpan(
     id: String,
     crossinline block: suspend CoroutineScope.() -> R,
-): R {
-    val childSpan = traceSpan.child(id)
-    return try {
-        withContext(TraceSpanContextElement(childSpan)) {
-            block()
-        }
-    } finally {
-        childSpan.close()
-    }
-}
+): R = withSpan(coroutineContext.traceSpan.child(id), block)
 
+/**
+ * Runs a block of code within the context of the given [span]. This call pushes the trace span onto the
+ * coroutine context before executing [block] and restores the context after.
+ */
 @InternalApi
-public class WrappedRootSpan(
-    private val rootSpan: TraceSpan,
-    override val parent: TraceSpan,
-) : TraceSpan by rootSpan
-
-@InternalApi
-public suspend inline fun <R> CoroutineContext.withRootTraceSpan(
-    rootSpan: TraceSpan,
+public suspend inline fun <R> withSpan(
+    span: TraceSpan,
     crossinline block: suspend CoroutineScope.() -> R,
 ): R =
     try {
-        val existingSpan = get(TraceSpanContextElement)?.traceSpan
-        check(existingSpan == null || rootSpan.parent == null || existingSpan == rootSpan.parent) {
-            "This method may only be called when no current span exists or the new span is a child of the active span"
-        }
-
-        val newRoot = if (existingSpan != null && rootSpan.parent == null) {
-            // we are in some nested context, the existing span becomes this root's parent
-            WrappedRootSpan(rootSpan, existingSpan)
-        } else {
-            rootSpan
-        }
-
-        withContext(TraceSpanContextElement(newRoot)) {
+        withContext(TraceSpanContextElement(span)) {
             block()
         }
+    } catch (ex: Exception) {
+        if (ex !is CancellationException && span.spanStatus == TraceSpanStatus.UNSET) {
+            span.spanStatus = TraceSpanStatus.ERROR
+        }
+        throw ex
     } finally {
-        rootSpan.close()
+        span.close()
     }
+
+/**
+ * Runs the block of code within the context of a new [TraceSpan]. The span is either a child of an existing trace span
+ * or a new root span created the given [Tracer]. This call pushes the trace span onto the coroutine context before
+ * executing [block] and restores the context after.
+ */
+@InternalApi
+public suspend inline fun <R> Tracer.withSpan(
+    id: String,
+    crossinline block: suspend CoroutineScope.() -> R,
+): R {
+    val existingSpan = coroutineContext[TraceSpanContextElement]?.traceSpan
+    val span = existingSpan?.child(id) ?: createRootSpan(id)
+    return withSpan(span, block)
+}
 
 /**
  * Logs a message in the [TraceSpan] of this [CoroutineContext].

@@ -5,9 +5,14 @@
 package aws.smithy.kotlin.runtime.tracing
 
 import aws.smithy.kotlin.runtime.InternalApi
+import aws.smithy.kotlin.runtime.util.MutableAttributes
+import aws.smithy.kotlin.runtime.util.mutableAttributes
 
 private data class NoOpTraceSpanImpl(override val id: String) : TraceSpan {
-    override val parent: TraceSpan? = this
+    override val parent: TraceSpan = this
+
+    override val attributes: MutableAttributes = mutableAttributes()
+    override var spanStatus: TraceSpanStatus = TraceSpanStatus.UNSET
 
     override fun child(id: String): TraceSpan = this
     override fun close() { }

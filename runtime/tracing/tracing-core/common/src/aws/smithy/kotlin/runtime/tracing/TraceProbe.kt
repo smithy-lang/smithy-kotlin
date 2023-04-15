@@ -16,6 +16,12 @@ public interface TraceProbe {
     public fun postEvent(span: TraceSpan, event: TraceEvent)
 
     /**
+     * Called when a [TraceSpan] has been created.
+     * @param span The newly created span
+     */
+    public fun spanCreated(span: TraceSpan)
+
+    /**
      * Called when a [TraceSpan] has been closed and no further events will be posted to it.
      * @param span The span which has been closed.
      */
