@@ -7,14 +7,16 @@ package aws.smithy.kotlin.runtime.tracing
 import aws.smithy.kotlin.runtime.io.use
 import aws.smithy.kotlin.runtime.logging.Logger
 import aws.smithy.kotlin.runtime.time.Instant
+import aws.smithy.kotlin.runtime.util.get
+import aws.smithy.kotlin.runtime.util.set
 
 /**
  * Creates a child span of this [TraceSpan] and passes it to the given [block]. The span is closed when the block
  * completes (regardless of whether the block terminates normally or exceptionally).
- * @param id The id for the new span. IDs should be unique among sibling spans within the same parent.
+ * @param name The name for the new span.
  * @param block The block to execute with the new child span passed as an argument.
  */
-public inline fun <T> TraceSpan.withChildSpan(id: String, block: (TraceSpan) -> T): T = child(id).use { block(it) }
+public inline fun <T> TraceSpan.withChildSpan(name: String, block: (TraceSpan) -> T): T = child(name).use { block(it) }
 
 /**
  * Logs a message in this [TraceSpan].
@@ -211,3 +213,33 @@ private class TraceSpanLogger(private val span: TraceSpan, private val sourceCom
     override fun trace(msg: () -> Any?) = log(EventLevel.Trace, null, msg)
     override fun trace(t: Throwable?, msg: () -> Any?) = log(EventLevel.Trace, t, msg)
 }
+
+/**
+ * Set a string attribute on the current span
+ */
+public fun TraceSpan.setAttribute(key: String, value: String): Unit = attributes.set(key, value)
+
+/**
+ * Get a string attribute from the current span
+ */
+public fun TraceSpan.getStringAttribute(key: String): String = attributes.get(key)
+
+/**
+ * Set a long attribute on the current span
+ */
+public fun TraceSpan.setAttribute(key: String, value: Long): Unit = attributes.set(key, value)
+
+/**
+ * Get a long attribute from the current span
+ */
+public fun TraceSpan.getLongAttribute(key: String): Long = attributes.get(key)
+
+/**
+ * Set a boolean attribute on the current span
+ */
+public fun TraceSpan.setAttribute(key: String, value: Boolean): Unit = attributes.set(key, value)
+
+/**
+ * Get a boolean attribute from the current span
+ */
+public fun TraceSpan.getBooleanAttribute(key: String): Boolean = attributes.get(key)

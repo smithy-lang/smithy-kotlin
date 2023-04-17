@@ -6,8 +6,6 @@ package aws.smithy.kotlin.runtime.tracing
 
 import aws.smithy.kotlin.runtime.io.Closeable
 import aws.smithy.kotlin.runtime.util.MutableAttributes
-import aws.smithy.kotlin.runtime.util.get
-import aws.smithy.kotlin.runtime.util.set
 
 /**
  * Defines a logical lifecycle within which events may occur. Spans are typically created before some notable operation
@@ -27,21 +25,22 @@ public interface TraceSpan : Closeable {
     public val parent: TraceSpan?
 
     /**
-     * Attributes associated with this span
+     * Attributes associated with the span that describes both built-in (e.g. name, trace ID, status, etc) and
+     * user defined characteristics of the span.
      */
     public val attributes: MutableAttributes
 
     /**
-     * The current status of this span.
+     * Metadata for this span
      */
-    public var spanStatus: TraceSpanStatus
+    public val metadata: TraceSpanMetadata
 
     /**
-     * Creates a new child span with the given ID.
-     * @param id The id for the new span. IDs should be unique among sibling spans within the same parent.
+     * Creates a new child span with the given name.
+     * @param name The name for the new span.
      * @return The new child span.
      */
-    public fun child(id: String): TraceSpan
+    public fun child(name: String): TraceSpan
 
     /**
      * Records a new event that has occurred within the logical context of this span.
@@ -51,31 +50,11 @@ public interface TraceSpan : Closeable {
 }
 
 /**
- * Set a string attribute on the current span
+ * Metadata describing a span
+ * @param traceId the trace this span belongs to
+ * @param name the name of the span
  */
-public fun TraceSpan.setAttribute(key: String, value: String): Unit = attributes.set(key, value)
-
-/**
- * Get a string attribute from the current span
- */
-public fun TraceSpan.getStringAttribute(key: String): String = attributes.get(key)
-
-/**
- * Set a long attribute on the current span
- */
-public fun TraceSpan.setAttribute(key: String, value: Long): Unit = attributes.set(key, value)
-
-/**
- * Get a long attribute from the current span
- */
-public fun TraceSpan.getLongAttribute(key: String): Long = attributes.get(key)
-
-/**
- * Set a boolean attribute on the current span
- */
-public fun TraceSpan.setAttribute(key: String, value: Boolean): Unit = attributes.set(key, value)
-
-/**
- * Get a boolean attribute from the current span
- */
-public fun TraceSpan.getBooleanAttribute(key: String): Boolean = attributes.get(key)
+public data class TraceSpanMetadata(
+    val traceId: String,
+    val name: String,
+)

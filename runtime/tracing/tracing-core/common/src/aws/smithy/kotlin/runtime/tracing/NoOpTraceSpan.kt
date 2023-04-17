@@ -12,9 +12,8 @@ private data class NoOpTraceSpanImpl(override val id: String) : TraceSpan {
     override val parent: TraceSpan = this
 
     override val attributes: MutableAttributes = mutableAttributes()
-    override var spanStatus: TraceSpanStatus = TraceSpanStatus.UNSET
-
-    override fun child(id: String): TraceSpan = this
+    override val metadata: TraceSpanMetadata = TraceSpanMetadata(id, id)
+    override fun child(name: String): TraceSpan = this
     override fun close() { }
     override fun postEvent(event: TraceEvent) { }
 }

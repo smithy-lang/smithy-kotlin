@@ -11,6 +11,8 @@ import kotlinx.coroutines.withContext
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.coroutineContext
 
+// FIXME - should we add attributes to withSpan extensions?
+
 /**
  * A [CoroutineContext] element that carries a [TraceSpan].
  * @param traceSpan The active trace span for this context.
@@ -34,9 +36,9 @@ public val CoroutineContext.traceSpan: TraceSpan
  * successfully or exceptionally).
  */
 public suspend inline fun <R> withSpan(
-    id: String,
-    crossinline block: suspend CoroutineScope.() -> R,
-): R = withSpan(coroutineContext.traceSpan.child(id), block)
+    name: String,
+    crossinline block: suspend CoroutineScope.(span: TraceSpan) -> R,
+): R = withSpan(coroutineContext.traceSpan.child(name), block)
 
 /**
  * Runs a block of code within the context of the given [span]. This call pushes the trace span onto the
@@ -45,11 +47,16 @@ public suspend inline fun <R> withSpan(
 @InternalApi
 public suspend inline fun <R> withSpan(
     span: TraceSpan,
-    crossinline block: suspend CoroutineScope.() -> R,
-): R =
-    try {
+    crossinline block: suspend CoroutineScope.(span: TraceSpan) -> R,
+): R {
+    val existingSpan = coroutineContext.get(TraceSpanContextElement)?.traceSpan
+    check(existingSpan == null || existingSpan == span.parent) {
+        "This method may only be called when no current span exists or the new span is a child of the active span"
+    }
+
+    return try {
         withContext(TraceSpanContextElement(span)) {
-            block()
+            block(span)
         }
     } catch (ex: Exception) {
         if (ex !is CancellationException && span.spanStatus == TraceSpanStatus.UNSET) {
@@ -59,19 +66,20 @@ public suspend inline fun <R> withSpan(
     } finally {
         span.close()
     }
+}
 
 /**
- * Runs the block of code within the context of a new [TraceSpan]. The span is either a child of an existing trace span
- * or a new root span created the given [Tracer]. This call pushes the trace span onto the coroutine context before
- * executing [block] and restores the context after.
+ * Runs the block of code within the context of a new [TraceSpan]. The span is either a child of the existing trace span
+ * (if one exists) OR a new root span created the given [Tracer]. This call pushes the trace span onto the coroutine
+ * context before executing [block] and restores the context after.
  */
 @InternalApi
 public suspend inline fun <R> Tracer.withSpan(
-    id: String,
-    crossinline block: suspend CoroutineScope.() -> R,
+    name: String,
+    crossinline block: suspend CoroutineScope.(span: TraceSpan) -> R,
 ): R {
     val existingSpan = coroutineContext[TraceSpanContextElement]?.traceSpan
-    val span = existingSpan?.child(id) ?: createRootSpan(id)
+    val span = existingSpan?.child(name) ?: createRootSpan(name)
     return withSpan(span, block)
 }
 

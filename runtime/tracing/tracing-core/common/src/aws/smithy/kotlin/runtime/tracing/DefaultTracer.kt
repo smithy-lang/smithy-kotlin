@@ -5,25 +5,32 @@
 package aws.smithy.kotlin.runtime.tracing
 
 import aws.smithy.kotlin.runtime.util.MutableAttributes
+import aws.smithy.kotlin.runtime.util.Uuid
 import aws.smithy.kotlin.runtime.util.mutableAttributes
 
 private class DefaultTraceSpan(
-    private val probe: TraceProbe,
-    override val parent: TraceSpan?,
+    private val tracer: DefaultTracer,
     override val id: String,
+    name: String,
+    override val parent: TraceSpan?,
 ) : TraceSpan {
+
     override val attributes: MutableAttributes by lazy { mutableAttributes() }
 
-    override var spanStatus: TraceSpanStatus = TraceSpanStatus.UNSET
+    override val metadata: TraceSpanMetadata = TraceSpanMetadata(
+        parent?.metadata?.traceId ?: id,
+        name,
+    )
+
     init {
-        probe.spanCreated(this)
+        tracer.probe.spanCreated(this)
     }
 
-    override fun child(id: String): TraceSpan = DefaultTraceSpan(probe, this, id)
+    override fun child(name: String): TraceSpan = DefaultTraceSpan(tracer, tracer.newSpanId(), name, this)
 
-    override fun close(): Unit = probe.spanClosed(this)
+    override fun close(): Unit = tracer.probe.spanClosed(this)
 
-    override fun postEvent(event: TraceEvent) = probe.postEvent(this, event)
+    override fun postEvent(event: TraceEvent) = tracer.probe.postEvent(this, event)
 }
 
 /**
@@ -33,9 +40,16 @@ private class DefaultTraceSpan(
  * being specific to a given service or use case. If this argument is blank, root IDs will be unprefixed. If this
  * argument is non-blank, the given prefix will be prepended to root IDs separated by a hyphen (`-`).
  */
-public class DefaultTracer(private val probe: TraceProbe, private val rootPrefix: String) : Tracer {
-    override fun createRootSpan(id: String): TraceSpan {
-        val fullId = if (rootPrefix.isBlank()) id else "$rootPrefix-$id"
-        return DefaultTraceSpan(probe, null, fullId)
+public class DefaultTracer(
+    internal val probe: TraceProbe,
+    private val rootPrefix: String,
+) : Tracer {
+    override fun createRootSpan(name: String): TraceSpan {
+        // FIXME - do we need rootPrefix? Should we make it an attribute instead?
+        // val fullId = if (rootPrefix.isBlank()) name else "$rootPrefix-$name"
+        return DefaultTraceSpan(this, newSpanId(), name, null)
     }
+
+    @OptIn(Uuid.WeakRng::class)
+    internal fun newSpanId(): String = Uuid.random().toString()
 }

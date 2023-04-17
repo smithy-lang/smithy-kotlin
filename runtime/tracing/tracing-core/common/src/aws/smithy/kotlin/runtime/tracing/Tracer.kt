@@ -4,20 +4,23 @@
  */
 package aws.smithy.kotlin.runtime.tracing
 
+// FIXME - tracer should take more than ID when creating a span (so we can set parent, attributes, etc)
+
 /**
  * An object which can create new tracing spans and hand events off to tracing probe(s).
  */
 public interface Tracer {
     /**
      * Create a "root" trace span, from which all child spans will be created for a given context.
-     * @param id The ID for the new root span.
+     * @param name The name for the new root span.
      */
-    public fun createRootSpan(id: String): TraceSpan
+    public fun createRootSpan(name: String): TraceSpan
 }
 
+// FIXME - I think we can get rid of nested tracer stuff
 private class NestedTracer(private val originSpan: TraceSpan, private val rootPrefix: String) : Tracer {
-    override fun createRootSpan(id: String): TraceSpan {
-        val fullId = if (rootPrefix.isBlank()) id else "$rootPrefix-$id"
+    override fun createRootSpan(name: String): TraceSpan {
+        val fullId = if (rootPrefix.isBlank()) name else "$rootPrefix-$name"
         return originSpan.child(fullId)
     }
 }

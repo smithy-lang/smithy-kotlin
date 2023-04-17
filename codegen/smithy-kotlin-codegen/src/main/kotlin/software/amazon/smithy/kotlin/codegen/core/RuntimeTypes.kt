@@ -184,6 +184,7 @@ object RuntimeTypes {
         val IdempotencyTokenProvider = symbol("IdempotencyTokenProvider")
         val IdempotencyTokenConfig = symbol("IdempotencyTokenConfig")
         val IdempotencyTokenProviderExt = symbol("idempotencyTokenProvider")
+        val operationName = symbol("operationName")
 
         object Endpoints : RuntimeTypePackage(KotlinDependency.SMITHY_CLIENT, "endpoints") {
             val EndpointProvider = symbol("EndpointProvider")
@@ -306,6 +307,7 @@ object RuntimeTypes {
             val debug = symbol("debug")
             val DefaultTracer = symbol("DefaultTracer")
             val LoggingTraceProbe = symbol("LoggingTraceProbe")
+            val setAttribute = symbol("setAttribute")
             val TraceProbe = symbol("TraceProbe")
             val Tracer = symbol("Tracer")
             val TracingClientConfig = symbol("TracingClientConfig")

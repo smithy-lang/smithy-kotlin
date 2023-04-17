@@ -8,7 +8,6 @@ package aws.smithy.kotlin.runtime.auth.awscredentials
 import aws.smithy.kotlin.runtime.io.Closeable
 import aws.smithy.kotlin.runtime.tracing.*
 import aws.smithy.kotlin.runtime.util.Attributes
-import kotlin.coroutines.coroutineContext
 
 // TODO - support caching the provider that actually resolved credentials such that future calls don't involve going through the full chain
 

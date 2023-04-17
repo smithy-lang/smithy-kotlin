@@ -26,7 +26,7 @@ import kotlin.test.assertNull
 private class TestTraceSpan(override val parent: TraceSpan?, override val id: String) : TraceSpan {
     override val attributes: MutableAttributes = mutableAttributes()
     override var spanStatus: TraceSpanStatus = TraceSpanStatus.UNSET
-    override fun child(id: String): TraceSpan = TestTraceSpan(this, id)
+    override fun child(name: String): TraceSpan = TestTraceSpan(this, name)
     override fun close() = Unit
     override fun postEvent(event: TraceEvent) = Unit
 }
