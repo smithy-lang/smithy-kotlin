@@ -20,6 +20,7 @@ public abstract interface class aws/smithy/kotlin/runtime/http/config/HttpClient
 }
 
 public final class aws/smithy/kotlin/runtime/http/engine/AlpnId : java/lang/Enum {
+	public static final field H2_PRIOR_KNOWLEDGE Laws/smithy/kotlin/runtime/http/engine/AlpnId;
 	public static final field HTTP1_1 Laws/smithy/kotlin/runtime/http/engine/AlpnId;
 	public static final field HTTP2 Laws/smithy/kotlin/runtime/http/engine/AlpnId;
 	public static final field HTTP3 Laws/smithy/kotlin/runtime/http/engine/AlpnId;
