@@ -528,7 +528,7 @@ class Bar
 
 The error trait will be processed as an exception type in Kotlin. This requires support from the client-runtime lib.
 
-See [Modeled errors](kotlin-modeled-errors.md)
+See [Modeled errors](modeled-errors.md)
 
 #### Constraint traits
 
