@@ -10,10 +10,7 @@ import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.io.SdkByteReadChannel
 import aws.smithy.kotlin.runtime.net.*
 import aws.smithy.kotlin.runtime.operation.ExecutionContext
-import aws.smithy.kotlin.runtime.tracing.TraceEvent
-import aws.smithy.kotlin.runtime.tracing.TraceSpan
-import aws.smithy.kotlin.runtime.tracing.TraceSpanContextElement
-import aws.smithy.kotlin.runtime.tracing.TraceSpanStatus
+import aws.smithy.kotlin.runtime.tracing.*
 import aws.smithy.kotlin.runtime.util.MutableAttributes
 import aws.smithy.kotlin.runtime.util.mutableAttributes
 import okio.Buffer
@@ -25,7 +22,7 @@ import kotlin.test.assertNull
 
 private class TestTraceSpan(override val parent: TraceSpan?, override val id: String) : TraceSpan {
     override val attributes: MutableAttributes = mutableAttributes()
-    override var spanStatus: TraceSpanStatus = TraceSpanStatus.UNSET
+    override val metadata: TraceSpanMetadata = TraceSpanMetadata(id, id)
     override fun child(name: String): TraceSpan = TestTraceSpan(this, name)
     override fun close() = Unit
     override fun postEvent(event: TraceEvent) = Unit

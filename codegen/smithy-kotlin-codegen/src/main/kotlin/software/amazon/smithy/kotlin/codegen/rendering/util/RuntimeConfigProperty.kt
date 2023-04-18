@@ -154,14 +154,13 @@ object RuntimeConfigProperty {
 
         documentation = """
             The tracer that is responsible for creating trace spans and wiring them up to a tracing backend (e.g.,
-            a trace probe). By default, this will create a standard tracer that uses the service name for the root
-            trace span and delegates to a logging trace probe (i.e.,
-            `DefaultTracer(LoggingTraceProbe, "<service-name>")`).
+            a trace probe). By default a tracer that delegates to a logging trace probe (i.e.
+            `DefaultTracer(LoggingTraceProbe)`).
         """.trimIndent()
         propertyType = ConfigPropertyType.Custom(
             render = { prop, writer ->
                 writer.write(
-                    """override val #1L: Tracer = builder.#1L ?: #2T(#3T, clientName)""",
+                    """override val #1L: Tracer = builder.#1L ?: #2T(#3T)""",
                     prop.propertyName,
                     RuntimeTypes.Tracing.Core.DefaultTracer,
                     RuntimeTypes.Tracing.Core.LoggingTraceProbe,

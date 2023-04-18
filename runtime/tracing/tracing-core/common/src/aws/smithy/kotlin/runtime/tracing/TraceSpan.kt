@@ -47,6 +47,9 @@ public interface TraceSpan : Closeable {
      * @param event The event to record.
      */
     public fun postEvent(event: TraceEvent)
+
+    // TODO - recordException(ex: Throwable) ?
+    // see https://opentelemetry.io/docs/reference/specification/trace/semantic_conventions/exceptions/
 }
 
 /**

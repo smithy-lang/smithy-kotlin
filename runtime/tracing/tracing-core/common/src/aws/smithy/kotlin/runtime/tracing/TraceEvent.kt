@@ -58,6 +58,8 @@ public sealed interface TraceEventData {
     public data class Timespan(override val metric: String, public val duration: () -> Duration) : Metric
 }
 
+// TODO - should events also be allowed to have attributes?
+
 /**
  * A single trace event which records the operation of the system.
  */

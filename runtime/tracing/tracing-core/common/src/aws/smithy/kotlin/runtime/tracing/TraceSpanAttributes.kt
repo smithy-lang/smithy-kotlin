@@ -7,12 +7,19 @@ package aws.smithy.kotlin.runtime.tracing
 
 import aws.smithy.kotlin.runtime.util.AttributeKey
 
-internal object TraceSpanAttributes {
+// See OTeL [Attribute naming](https://opentelemetry.io/docs/reference/specification/common/attribute-naming/)
+// for guidelines to follow when adding new (span) attribute names
+
+public object TraceSpanAttributes {
+    /**
+     * The name of the client
+     */
+    public val ClientName: AttributeKey<String> = AttributeKey("aws.smithy.kotlin.client_name")
 
     /**
      * The status of the current span.
      */
-    val SpanStatus: AttributeKey<TraceSpanStatus> = AttributeKey("aws.smithy.kotlin#TraceSpanStatus")
+    internal val SpanStatus: AttributeKey<TraceSpanStatus> = AttributeKey("aws.smithy.kotlin.span_status")
 }
 
 /**

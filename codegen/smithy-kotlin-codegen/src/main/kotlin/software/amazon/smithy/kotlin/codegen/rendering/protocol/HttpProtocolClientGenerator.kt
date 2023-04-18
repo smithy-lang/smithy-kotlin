@@ -248,14 +248,14 @@ abstract class HttpProtocolClientGenerator(
         val inputVariableName = if (inputShape.isPresent) "input" else KotlinTypes.Unit.fullName
 
         writer.withBlock(
-                """return config.tracer.#T("#L-${'$'}{op.context.#T}") { span ->""",
+                """return config.tracer.#T(#S) { span ->""",
                 "}",
                 RuntimeTypes.Tracing.Core.withSpan,
-                op.id.name,
-                RuntimeTypes.HttpClient.Operation.sdkRequestId,
+                op.id.name
             ) {
-                write("span.#T(#S, op.context.#T)", RuntimeTypes.Tracing.Core.setAttribute, "rpc.method", RuntimeTypes.SmithyClient.operationName)
+                write("span.#T(#S, op.context.#T!!)", RuntimeTypes.Tracing.Core.setAttribute, "rpc.method", RuntimeTypes.SmithyClient.operationName)
                 write("span.#T(#S, ServiceId)", RuntimeTypes.Tracing.Core.setAttribute, "rpc.service")
+                // FIXME - set client name
 
                 // FIXME - set aws-api as rpc.system attribute for AWS services
 

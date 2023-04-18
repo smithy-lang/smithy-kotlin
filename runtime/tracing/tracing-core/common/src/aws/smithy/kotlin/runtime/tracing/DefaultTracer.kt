@@ -15,6 +15,7 @@ private class DefaultTraceSpan(
     override val parent: TraceSpan?,
 ) : TraceSpan {
 
+    // FIXME - do we want mutable attributes or set/get (which would allow delayed construction)?
     override val attributes: MutableAttributes by lazy { mutableAttributes() }
 
     override val metadata: TraceSpanMetadata = TraceSpanMetadata(
@@ -33,22 +34,19 @@ private class DefaultTraceSpan(
     override fun postEvent(event: TraceEvent) = tracer.probe.postEvent(this, event)
 }
 
+// TODO - evaluate internal API or experimental for DefaultTracer (and potentially other trace APIs)?
 /**
- * The default [Tracer] implementation. This tracer allows configuring the [TraceProbe] to which events will be omitted.
- * @param probe The [TraceProbe] to which events will be omitted.
- * @param rootPrefix A string to prepend to all root IDs for this tracer. This allows easily marking a tracer's spans as
- * being specific to a given service or use case. If this argument is blank, root IDs will be unprefixed. If this
- * argument is non-blank, the given prefix will be prepended to root IDs separated by a hyphen (`-`).
+ * The default [Tracer] implementation. This tracer allows configuring one or more [TraceProbe]'s to
+ * which events will be omitted.
+ * @param probes [TraceProbe]'s to which events will be omitted.
  */
 public class DefaultTracer(
-    internal val probe: TraceProbe,
-    private val rootPrefix: String,
+    vararg probes: TraceProbe,
 ) : Tracer {
-    override fun createRootSpan(name: String): TraceSpan {
-        // FIXME - do we need rootPrefix? Should we make it an attribute instead?
-        // val fullId = if (rootPrefix.isBlank()) name else "$rootPrefix-$name"
-        return DefaultTraceSpan(this, newSpanId(), name, null)
-    }
+
+    internal val probe: TraceProbe = MultiTraceProbe(*probes)
+    override fun createRootSpan(name: String): TraceSpan =
+        DefaultTraceSpan(this, newSpanId(), name, null)
 
     @OptIn(Uuid.WeakRng::class)
     internal fun newSpanId(): String = Uuid.random().toString()

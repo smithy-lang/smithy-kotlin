@@ -40,8 +40,7 @@ class HttpProtocolClientGeneratorTest {
         commonTestContents.shouldContainOnlyOnceWithDiff("import ${KotlinDependency.HTTP.namespace}.operation.context")
         commonTestContents.shouldContainOnlyOnceWithDiff("import ${KotlinDependency.HTTP.namespace}.operation.execute")
         commonTestContents.shouldContainOnlyOnceWithDiff("import ${KotlinDependency.HTTP.namespace}.operation.roundTrip")
-        commonTestContents.shouldContainOnlyOnceWithDiff("import ${KotlinDependency.HTTP.namespace}.operation.sdkRequestId")
-        commonTestContents.shouldContainOnlyOnceWithDiff("import ${KotlinDependency.TRACING_CORE.namespace}.withRootTraceSpan")
+        commonTestContents.shouldContainOnlyOnceWithDiff("import ${KotlinDependency.TRACING_CORE.namespace}.withSpan")
     }
 
     @Test
@@ -89,8 +88,9 @@ class HttpProtocolClientGeneratorTest {
         }
         op.install(MockMiddleware(configurationField1 = "testing"))
         op.interceptors.addAll(config.interceptors)
-        val rootSpan = config.tracer.createRootSpan("GetFoo-${'$'}{op.context.sdkRequestId}")
-        return coroutineContext.withRootTraceSpan(rootSpan) {
+        return config.tracer.withSpan("GetFoo") { span ->
+            span.setAttribute("rpc.method", op.context.operationName!!)
+            span.setAttribute("rpc.service", ServiceId)
             op.roundTrip(client, input)
         }
     }
@@ -110,8 +110,9 @@ class HttpProtocolClientGeneratorTest {
         }
         op.install(MockMiddleware(configurationField1 = "testing"))
         op.interceptors.addAll(config.interceptors)
-        val rootSpan = config.tracer.createRootSpan("GetFooNoInput-${'$'}{op.context.sdkRequestId}")
-        return coroutineContext.withRootTraceSpan(rootSpan) {
+        return config.tracer.withSpan("GetFooNoInput") { span ->
+            span.setAttribute("rpc.method", op.context.operationName!!)
+            span.setAttribute("rpc.service", ServiceId)
             op.roundTrip(client, input)
         }
     }
@@ -131,8 +132,9 @@ class HttpProtocolClientGeneratorTest {
         }
         op.install(MockMiddleware(configurationField1 = "testing"))
         op.interceptors.addAll(config.interceptors)
-        val rootSpan = config.tracer.createRootSpan("GetFooNoOutput-${'$'}{op.context.sdkRequestId}")
-        return coroutineContext.withRootTraceSpan(rootSpan) {
+        return config.tracer.withSpan("GetFooNoOutput") { span ->
+            span.setAttribute("rpc.method", op.context.operationName!!)
+            span.setAttribute("rpc.service", ServiceId)
             op.roundTrip(client, input)
         }
     }
@@ -152,8 +154,9 @@ class HttpProtocolClientGeneratorTest {
         }
         op.install(MockMiddleware(configurationField1 = "testing"))
         op.interceptors.addAll(config.interceptors)
-        val rootSpan = config.tracer.createRootSpan("GetFooStreamingInput-${'$'}{op.context.sdkRequestId}")
-        return coroutineContext.withRootTraceSpan(rootSpan) {
+        return config.tracer.withSpan("GetFooStreamingInput") { span ->
+            span.setAttribute("rpc.method", op.context.operationName!!)
+            span.setAttribute("rpc.service", ServiceId)
             op.roundTrip(client, input)
         }
     }
@@ -173,8 +176,9 @@ class HttpProtocolClientGeneratorTest {
         }
         op.install(MockMiddleware(configurationField1 = "testing"))
         op.interceptors.addAll(config.interceptors)
-        val rootSpan = config.tracer.createRootSpan("GetFooStreamingOutput-${'$'}{op.context.sdkRequestId}")
-        return coroutineContext.withRootTraceSpan(rootSpan) {
+        return config.tracer.withSpan("GetFooStreamingOutput") { span ->
+            span.setAttribute("rpc.method", op.context.operationName!!)
+            span.setAttribute("rpc.service", ServiceId)
             op.execute(client, input, block)
         }
     }
@@ -194,8 +198,9 @@ class HttpProtocolClientGeneratorTest {
         }
         op.install(MockMiddleware(configurationField1 = "testing"))
         op.interceptors.addAll(config.interceptors)
-        val rootSpan = config.tracer.createRootSpan("GetFooStreamingOutputNoInput-${'$'}{op.context.sdkRequestId}")
-        return coroutineContext.withRootTraceSpan(rootSpan) {
+        return config.tracer.withSpan("GetFooStreamingOutputNoInput") { span ->
+            span.setAttribute("rpc.method", op.context.operationName!!)
+            span.setAttribute("rpc.service", ServiceId)
             op.execute(client, input, block)
         }
     }
@@ -215,8 +220,9 @@ class HttpProtocolClientGeneratorTest {
         }
         op.install(MockMiddleware(configurationField1 = "testing"))
         op.interceptors.addAll(config.interceptors)
-        val rootSpan = config.tracer.createRootSpan("GetFooStreamingInputNoOutput-${'$'}{op.context.sdkRequestId}")
-        return coroutineContext.withRootTraceSpan(rootSpan) {
+        return config.tracer.withSpan("GetFooStreamingInputNoOutput") { span ->
+            span.setAttribute("rpc.method", op.context.operationName!!)
+            span.setAttribute("rpc.service", ServiceId)
             op.roundTrip(client, input)
         }
     }
@@ -236,8 +242,9 @@ class HttpProtocolClientGeneratorTest {
         }
         op.install(MockMiddleware(configurationField1 = "testing"))
         op.interceptors.addAll(config.interceptors)
-        val rootSpan = config.tracer.createRootSpan("GetFooNoRequired-${'$'}{op.context.sdkRequestId}")
-        return coroutineContext.withRootTraceSpan(rootSpan) {
+        return config.tracer.withSpan("GetFooNoRequired") { span ->
+            span.setAttribute("rpc.method", op.context.operationName!!)
+            span.setAttribute("rpc.service", ServiceId)
             op.roundTrip(client, input)
         }
     }
@@ -257,8 +264,9 @@ class HttpProtocolClientGeneratorTest {
         }
         op.install(MockMiddleware(configurationField1 = "testing"))
         op.interceptors.addAll(config.interceptors)
-        val rootSpan = config.tracer.createRootSpan("GetFooSomeRequired-${'$'}{op.context.sdkRequestId}")
-        return coroutineContext.withRootTraceSpan(rootSpan) {
+        return config.tracer.withSpan("GetFooSomeRequired") { span ->
+            span.setAttribute("rpc.method", op.context.operationName!!)
+            span.setAttribute("rpc.service", ServiceId)
             op.roundTrip(client, input)
         }
     }

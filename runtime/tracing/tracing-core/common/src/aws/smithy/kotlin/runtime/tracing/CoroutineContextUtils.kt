@@ -78,6 +78,7 @@ public suspend inline fun <R> Tracer.withSpan(
     name: String,
     crossinline block: suspend CoroutineScope.(span: TraceSpan) -> R,
 ): R {
+    // FIXME - this is still wrong since different trace probes may be installed on the existing span vs the one that may be crated by this Tracer...
     val existingSpan = coroutineContext[TraceSpanContextElement]?.traceSpan
     val span = existingSpan?.child(name) ?: createRootSpan(name)
     return withSpan(span, block)

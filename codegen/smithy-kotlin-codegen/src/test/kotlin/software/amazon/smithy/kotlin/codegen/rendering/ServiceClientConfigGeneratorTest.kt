@@ -56,7 +56,7 @@ public class Config private constructor(builder: Builder) : HttpAuthConfig, Http
     override val retryPolicy: RetryPolicy<Any?> = builder.retryPolicy ?: StandardRetryPolicy.Default
     override val retryStrategy: RetryStrategy = builder.retryStrategy ?: StandardRetryStrategy()
     override val sdkLogMode: SdkLogMode = builder.sdkLogMode
-    override val tracer: Tracer = builder.tracer ?: DefaultTracer(LoggingTraceProbe, clientName)
+    override val tracer: Tracer = builder.tracer ?: DefaultTracer(LoggingTraceProbe)
 """
         contents.shouldContainWithDiff(expectedProps)
 
@@ -131,9 +131,8 @@ public class Config private constructor(builder: Builder) : HttpAuthConfig, Http
 
         /**
          * The tracer that is responsible for creating trace spans and wiring them up to a tracing backend (e.g.,
-         * a trace probe). By default, this will create a standard tracer that uses the service name for the root
-         * trace span and delegates to a logging trace probe (i.e.,
-         * `DefaultTracer(LoggingTraceProbe, "<service-name>")`).
+         * a trace probe). By default a tracer that delegates to a logging trace probe (i.e.
+         * `DefaultTracer(LoggingTraceProbe)`).
          */
         override var tracer: Tracer? = null
 
@@ -327,9 +326,8 @@ public class Config private constructor(builder: Builder) {
 
         /**
          * The tracer that is responsible for creating trace spans and wiring them up to a tracing backend (e.g.,
-         * a trace probe). By default, this will create a standard tracer that uses the service name for the root
-         * trace span and delegates to a logging trace probe (i.e.,
-         * `DefaultTracer(LoggingTraceProbe, "<service-name>")`).
+         * a trace probe). By default a tracer that delegates to a logging trace probe (i.e.
+         * `DefaultTracer(LoggingTraceProbe)`).
          */
         override var tracer: Tracer? = null
 """

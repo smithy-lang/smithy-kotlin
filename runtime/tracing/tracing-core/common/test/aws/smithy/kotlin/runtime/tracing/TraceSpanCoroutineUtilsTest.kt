@@ -18,7 +18,7 @@ import kotlin.test.assertNull
 class TraceSpanCoroutineUtilsTest {
     @Test
     fun testRootSpanNoExisting() = runTest {
-        val tracer = DefaultTracer(NoOpTraceProbe, "test")
+        val tracer = DefaultTracer(NoOpTraceProbe)
         val rootSpan = tracer.createRootSpan("root")
         withSpan(rootSpan) {
             val actualSpan = coroutineContext.traceSpan
@@ -28,7 +28,7 @@ class TraceSpanCoroutineUtilsTest {
 
     @Test
     fun testRootSpanExistingIsParent() = runTest {
-        val tracer = DefaultTracer(NoOpTraceProbe, "test")
+        val tracer = DefaultTracer(NoOpTraceProbe)
         val rootSpan = tracer.createRootSpan("root")
 
         withSpan(rootSpan) { currSpan ->
@@ -44,7 +44,7 @@ class TraceSpanCoroutineUtilsTest {
 
     @Test
     fun testRootSpanExistingIsNotParent() = runTest {
-        val tracer = DefaultTracer(NoOpTraceProbe, "test")
+        val tracer = DefaultTracer(NoOpTraceProbe)
         val rootSpan1 = tracer.createRootSpan("root1")
         val rootSpan2 = tracer.createRootSpan("root2")
         val illegalRoot = object : TraceSpan {
