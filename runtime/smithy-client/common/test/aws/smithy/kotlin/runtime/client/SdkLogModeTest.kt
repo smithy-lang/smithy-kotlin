@@ -5,10 +5,11 @@
 
 package aws.smithy.kotlin.runtime.client
 
+import aws.smithy.kotlin.runtime.ClientException
+import org.junit.jupiter.api.assertThrows
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
-import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 class SdkLogModeTest {
@@ -51,6 +52,11 @@ class SdkLogModeTest {
 
     @Test
     fun testUnsupportedSdkLogMode() {
-        assertNull(SdkLogMode.fromString("UnsupportedLogMode"))
+        assertThrows<ClientException> { SdkLogMode.fromString("UnsupportedLogMode") }
+    }
+
+    @Test
+    fun testUnsupportedCompositeSdkLogMode() {
+        assertThrows<ClientException> { SdkLogMode.fromString("LogRequest|UnsupportedLogMode") }
     }
 }

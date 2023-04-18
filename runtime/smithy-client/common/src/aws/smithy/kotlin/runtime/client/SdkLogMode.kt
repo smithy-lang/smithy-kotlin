@@ -5,6 +5,8 @@
 
 package aws.smithy.kotlin.runtime.client
 
+import aws.smithy.kotlin.runtime.ClientException
+
 /**
  * SdkLogMode represents the logging mode of SDK clients. The mode is backed by a bit-field where each
  * bit is a flag (mode) that describes the logging behavior for one or more client components.
@@ -75,17 +77,18 @@ public sealed class SdkLogMode(private val mask: Int) {
 
         /**
          * Parse an [SdkLogMode] from a String
-         * @return the parsed SdkLogMode, or `null` if no log mode could be parsed
+         * @return the parsed SdkLogMode
+         * @throws ClientException if the SdkLogMode could not be parsed
          */
-        public fun fromString(string: String): SdkLogMode? =
+        public fun fromString(string: String): SdkLogMode =
             string
                 .trim()
                 .split("|")
-                .mapNotNull { sdkLogModeString ->
+                .map { sdkLogModeString ->
                     allModes().firstOrNull { sdkLogMode -> sdkLogModeString.equals(sdkLogMode.toString(), ignoreCase = true) }
+                        ?: throw ClientException("SDK log mode $sdkLogModeString is not supported, should be one of: ${allModes().joinToString(", ")}")
                 }
-                .takeIf { it.isNotEmpty() }
-                ?.let { it.reduce { acc, sdkLogMode -> acc + sdkLogMode } }
+                .reduce { acc, sdkLogMode -> acc + sdkLogMode }
     }
 
     override fun toString(): String =
