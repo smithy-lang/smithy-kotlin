@@ -164,6 +164,12 @@ public enum class AlpnId(public val protocolId: String) {
     HTTP2("h2"),
 
     /**
+     * Cleartext HTTP/2 with no "upgrade" round trip. This option requires the client to have prior knowledge that the
+     * server supports cleartext HTTP/2. See also rfc_7540_34.
+     */
+    H2_PRIOR_KNOWLEDGE("h2_prior_knowledge"),
+
+    /**
      * HTTP 3
      */
     HTTP3("h3"),

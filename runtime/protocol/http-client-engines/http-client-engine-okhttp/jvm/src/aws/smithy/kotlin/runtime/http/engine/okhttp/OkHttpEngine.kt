@@ -102,6 +102,7 @@ private fun OkHttpEngineConfig.buildClient(): OkHttpClient {
                 when (it) {
                     AlpnId.HTTP1_1 -> Protocol.HTTP_1_1
                     AlpnId.HTTP2 -> Protocol.HTTP_2
+                    AlpnId.H2_PRIOR_KNOWLEDGE -> Protocol.H2_PRIOR_KNOWLEDGE
                     else -> null
                 }
             }
