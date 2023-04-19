@@ -84,6 +84,7 @@ class HttpProtocolClientGeneratorTest {
                 operationName = "GetFoo"
             }
             execution.auth = OperationAuthConfig(AuthSchemeProviderAdapter, configuredAuthSchemes, identityProviderConfig)
+            execution.endpointResolver = EndpointResolverAdapter(config)
             execution.retryStrategy = config.retryStrategy
         }
         op.install(MockMiddleware(configurationField1 = "testing"))
@@ -104,6 +105,7 @@ class HttpProtocolClientGeneratorTest {
                 operationName = "GetFooNoInput"
             }
             execution.auth = OperationAuthConfig(AuthSchemeProviderAdapter, configuredAuthSchemes, identityProviderConfig)
+            execution.endpointResolver = EndpointResolverAdapter(config)
             execution.retryStrategy = config.retryStrategy
         }
         op.install(MockMiddleware(configurationField1 = "testing"))
@@ -124,6 +126,7 @@ class HttpProtocolClientGeneratorTest {
                 operationName = "GetFooNoOutput"
             }
             execution.auth = OperationAuthConfig(AuthSchemeProviderAdapter, configuredAuthSchemes, identityProviderConfig)
+            execution.endpointResolver = EndpointResolverAdapter(config)
             execution.retryStrategy = config.retryStrategy
         }
         op.install(MockMiddleware(configurationField1 = "testing"))
@@ -144,6 +147,7 @@ class HttpProtocolClientGeneratorTest {
                 operationName = "GetFooStreamingInput"
             }
             execution.auth = OperationAuthConfig(AuthSchemeProviderAdapter, configuredAuthSchemes, identityProviderConfig)
+            execution.endpointResolver = EndpointResolverAdapter(config)
             execution.retryStrategy = config.retryStrategy
         }
         op.install(MockMiddleware(configurationField1 = "testing"))
@@ -164,6 +168,7 @@ class HttpProtocolClientGeneratorTest {
                 operationName = "GetFooStreamingOutput"
             }
             execution.auth = OperationAuthConfig(AuthSchemeProviderAdapter, configuredAuthSchemes, identityProviderConfig)
+            execution.endpointResolver = EndpointResolverAdapter(config)
             execution.retryStrategy = config.retryStrategy
         }
         op.install(MockMiddleware(configurationField1 = "testing"))
@@ -184,6 +189,7 @@ class HttpProtocolClientGeneratorTest {
                 operationName = "GetFooStreamingOutputNoInput"
             }
             execution.auth = OperationAuthConfig(AuthSchemeProviderAdapter, configuredAuthSchemes, identityProviderConfig)
+            execution.endpointResolver = EndpointResolverAdapter(config)
             execution.retryStrategy = config.retryStrategy
         }
         op.install(MockMiddleware(configurationField1 = "testing"))
@@ -204,6 +210,7 @@ class HttpProtocolClientGeneratorTest {
                 operationName = "GetFooStreamingInputNoOutput"
             }
             execution.auth = OperationAuthConfig(AuthSchemeProviderAdapter, configuredAuthSchemes, identityProviderConfig)
+            execution.endpointResolver = EndpointResolverAdapter(config)
             execution.retryStrategy = config.retryStrategy
         }
         op.install(MockMiddleware(configurationField1 = "testing"))
@@ -224,6 +231,7 @@ class HttpProtocolClientGeneratorTest {
                 operationName = "GetFooNoRequired"
             }
             execution.auth = OperationAuthConfig(AuthSchemeProviderAdapter, configuredAuthSchemes, identityProviderConfig)
+            execution.endpointResolver = EndpointResolverAdapter(config)
             execution.retryStrategy = config.retryStrategy
         }
         op.install(MockMiddleware(configurationField1 = "testing"))
@@ -244,6 +252,7 @@ class HttpProtocolClientGeneratorTest {
                 operationName = "GetFooSomeRequired"
             }
             execution.auth = OperationAuthConfig(AuthSchemeProviderAdapter, configuredAuthSchemes, identityProviderConfig)
+            execution.endpointResolver = EndpointResolverAdapter(config)
             execution.retryStrategy = config.retryStrategy
         }
         op.install(MockMiddleware(configurationField1 = "testing"))
@@ -321,6 +330,7 @@ class HttpProtocolClientGeneratorTest {
                 hostPrefix = "$prefix"
             }
             execution.auth = OperationAuthConfig(AuthSchemeProviderAdapter, configuredAuthSchemes, identityProviderConfig)
+            execution.endpointResolver = EndpointResolverAdapter(config)
             execution.retryStrategy = config.retryStrategy
         }
         """

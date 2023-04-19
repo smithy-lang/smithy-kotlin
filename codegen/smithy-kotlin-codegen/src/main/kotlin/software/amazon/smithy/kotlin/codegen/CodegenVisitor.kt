@@ -12,8 +12,6 @@ import software.amazon.smithy.kotlin.codegen.core.*
 import software.amazon.smithy.kotlin.codegen.integration.KotlinIntegration
 import software.amazon.smithy.kotlin.codegen.model.*
 import software.amazon.smithy.kotlin.codegen.rendering.*
-import software.amazon.smithy.kotlin.codegen.rendering.endpoints.EndpointParametersGenerator
-import software.amazon.smithy.kotlin.codegen.rendering.endpoints.EndpointProviderGenerator
 import software.amazon.smithy.kotlin.codegen.rendering.protocol.ApplicationProtocol
 import software.amazon.smithy.kotlin.codegen.rendering.protocol.ProtocolGenerator
 import software.amazon.smithy.model.Model
@@ -200,21 +198,14 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Unit>() {
 // the actual default implementation and test cases will only be generated if there's an actual rule set from which to
 // derive them
 private fun ProtocolGenerator.generateEndpointsSources(ctx: ProtocolGenerator.GenerationContext) {
-    val rules = ctx.service.getEndpointRules()
-    val paramsSymbol = EndpointParametersGenerator.getSymbol(ctx.settings)
-    val providerSymbol = EndpointProviderGenerator.getSymbol(ctx.settings)
-
-    ctx.delegator.useFileWriter(paramsSymbol) {
-        EndpointParametersGenerator(it, rules).render()
-    }
-    ctx.delegator.useFileWriter(providerSymbol) {
-        EndpointProviderGenerator(it, paramsSymbol).render()
-    }
-
-    generateEndpointProviderMiddleware(ctx)
-    if (rules != null) {
+    with(endpointDelegator(ctx)) {
+        val rules = ctx.service.getEndpointRules()
         generateEndpointProvider(ctx, rules)
-        generateEndpointProviderTests(ctx, ctx.service.getEndpointTests(), rules)
+        generateEndpointParameters(ctx, rules)
+        generateEndpointResolverAdapter(ctx)
+        if (rules != null) {
+            generateEndpointProviderTests(ctx, ctx.service.getEndpointTests(), rules)
+        }
     }
 }
 

@@ -13,6 +13,7 @@ import software.amazon.smithy.kotlin.codegen.model.*
 import software.amazon.smithy.kotlin.codegen.model.knowledge.AuthIndex
 import software.amazon.smithy.kotlin.codegen.rendering.auth.AuthSchemeProviderAdapterGenerator
 import software.amazon.smithy.kotlin.codegen.rendering.auth.IdentityProviderConfigGenerator
+import software.amazon.smithy.kotlin.codegen.rendering.endpoints.EndpointResolverAdapterGenerator
 import software.amazon.smithy.kotlin.codegen.rendering.serde.deserializerName
 import software.amazon.smithy.kotlin.codegen.rendering.serde.serializerName
 import software.amazon.smithy.kotlin.codegen.utils.getOrNull
@@ -227,6 +228,7 @@ abstract class HttpProtocolClientGenerator(
                 AuthSchemeProviderAdapterGenerator.getSymbol(ctx.settings)
             )
 
+            writer.write("execution.endpointResolver = #T(config)", EndpointResolverAdapterGenerator.getSymbol(ctx.settings))
             writer.write("execution.retryStrategy = config.retryStrategy")
         }
     }

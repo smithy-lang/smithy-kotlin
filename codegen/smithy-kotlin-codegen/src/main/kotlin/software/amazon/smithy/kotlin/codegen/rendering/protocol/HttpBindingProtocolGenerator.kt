@@ -60,10 +60,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
     /**
      * Template method function that generators can override to return the _default_ set of middleware for the protocol
      */
-    protected open fun getDefaultHttpMiddleware(ctx: ProtocolGenerator.GenerationContext): List<ProtocolMiddleware> =
-        listOf(
-            ResolveEndpointMiddleware(),
-        )
+    protected open fun getDefaultHttpMiddleware(ctx: ProtocolGenerator.GenerationContext): List<ProtocolMiddleware> = emptyList()
 
     /**
      * Return the function responsible for handling an operational error. This function is invoked from the operation

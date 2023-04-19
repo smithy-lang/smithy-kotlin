@@ -7,6 +7,7 @@ package aws.smithy.kotlin.runtime.http.operation
 
 import aws.smithy.kotlin.runtime.auth.AuthSchemeId
 import aws.smithy.kotlin.runtime.auth.AuthSchemeOption
+import aws.smithy.kotlin.runtime.client.endpoints.Endpoint
 import aws.smithy.kotlin.runtime.http.auth.*
 import aws.smithy.kotlin.runtime.http.interceptors.InterceptorExecutor
 import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
@@ -15,6 +16,8 @@ import aws.smithy.kotlin.runtime.identity.IdentityProvider
 import aws.smithy.kotlin.runtime.identity.IdentityProviderConfig
 import aws.smithy.kotlin.runtime.identity.asIdentityProviderConfig
 import aws.smithy.kotlin.runtime.io.Handler
+import aws.smithy.kotlin.runtime.net.Host
+import aws.smithy.kotlin.runtime.net.Scheme
 import aws.smithy.kotlin.runtime.operation.ExecutionContext
 import aws.smithy.kotlin.runtime.util.AttributeKey
 import aws.smithy.kotlin.runtime.util.Attributes
@@ -68,11 +71,34 @@ class HttpAuthHandlerTest {
 
         val schemes = listOf(scheme).associateBy(HttpAuthScheme::schemeId)
         val authConfig = OperationAuthConfig(resolver, schemes, idpConfig)
-        val op = HttpAuthHandler<Unit, Unit>(inner, interceptorExec, authConfig)
+        val op = AuthHandler<Unit, Unit>(inner, interceptorExec, authConfig)
         val request = SdkHttpRequest(ctx, HttpRequestBuilder())
         op.call(request)
 
         // ensure signer was called
         assertTrue(request.subject.headers.contains("x-test", "signed"))
+    }
+
+    @Test
+    fun testEndpointResolverInvoked() = runTest {
+        // verify resolved auth scheme option attributes make it to the signer and identity provider
+        val inner = object : Handler<SdkHttpRequest, Unit> {
+            override suspend fun call(request: SdkHttpRequest) = Unit
+        }
+        val ctx = ExecutionContext()
+        val interceptorExec = InterceptorExecutor<Unit, Unit>(ctx, emptyList(), OperationTypeInfo(Unit::class, Unit::class))
+        // seed internal state required
+        interceptorExec.readBeforeExecution(Unit)
+
+        val endpointResolver = EndpointResolver {
+            Endpoint("https://localhost")
+        }
+
+        val op = AuthHandler<Unit, Unit>(inner, interceptorExec, OperationAuthConfig.Anonymous, endpointResolver)
+        val request = SdkHttpRequest(ctx, HttpRequestBuilder())
+        op.call(request)
+
+        assertEquals(Scheme.HTTPS, request.subject.url.scheme)
+        assertEquals(Host.Domain("localhost"), request.subject.url.host)
     }
 }

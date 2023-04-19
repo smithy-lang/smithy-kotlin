@@ -15,6 +15,7 @@ import software.amazon.smithy.kotlin.codegen.rendering.util.ConfigProperty
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.ServiceShape
 import software.amazon.smithy.model.shapes.Shape
+import software.amazon.smithy.rulesengine.language.EndpointRuleSet
 
 /**
  * JVM SPI for customizing Kotlin code generation, registering new protocol
@@ -152,5 +153,13 @@ interface KotlinIntegration {
      * Get a list of auth scheme handlers this integration is responsible for
      */
     fun authSchemes(ctx: ProtocolGenerator.GenerationContext): List<AuthSchemeHandler> = emptyList()
+
+    /**
+     * Render binding of endpoint ruleset builtin parameters
+     * @param ctx The codegen generation context
+     * @param rules The endpoint rules
+     * @param writer The writer to render to
+     */
+    fun renderBindEndpointBuiltins(ctx: ProtocolGenerator.GenerationContext, rules: EndpointRuleSet, writer: KotlinWriter) {}
 }
 
