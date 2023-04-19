@@ -7,8 +7,9 @@ package aws.smithy.kotlin.runtime.http.engine.crt
 
 import aws.sdk.kotlin.crt.http.*
 import aws.sdk.kotlin.crt.io.*
-import aws.smithy.kotlin.runtime.ClientException
 import aws.smithy.kotlin.runtime.crt.SdkDefaultIO
+import aws.smithy.kotlin.runtime.http.HttpErrorCode
+import aws.smithy.kotlin.runtime.http.HttpException
 import aws.smithy.kotlin.runtime.http.engine.HttpClientEngine
 import aws.smithy.kotlin.runtime.http.engine.HttpClientEngineBase
 import aws.smithy.kotlin.runtime.http.engine.ProxyConfig
@@ -94,7 +95,7 @@ public class CrtHttpEngine(public val config: CrtHttpEngineConfig) : HttpClientE
         // handler)
         val conn = withTimeoutOrNull(config.connectionAcquireTimeout) {
             manager.acquireConnection()
-        } ?: throw ClientException("timed out waiting for an HTTP connection to be acquired from the pool")
+        } ?: throw HttpException("timed out waiting for an HTTP connection to be acquired from the pool", errorCode = HttpErrorCode.CONNECTION_ACQUIRE_TIMEOUT)
         logger.trace { "Acquired connection ${conn.id}" }
 
         val respHandler = SdkStreamResponseHandler(conn, callContext)
@@ -107,8 +108,11 @@ public class CrtHttpEngine(public val config: CrtHttpEngineConfig) : HttpClientE
         val reqTime = Instant.now()
         val engineRequest = request.toCrtRequest(callContext)
 
-        val stream = conn.makeRequest(engineRequest, respHandler)
-        stream.activate()
+        val stream = mapCrtException {
+            conn.makeRequest(engineRequest, respHandler).also { stream ->
+                stream.activate()
+            }
+        }
 
         if (request.isChunked) {
             withContext(SdkDispatchers.IO) {

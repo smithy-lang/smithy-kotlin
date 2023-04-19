@@ -22,10 +22,9 @@ public open class StandardRetryPolicy : RetryPolicy<Any?> {
 
     private val evaluationStrategies = sequenceOf(
         EvaluationStrategy(::evaluateSpecificExceptions),
-        EvaluationStrategy(::evaluateBaseException),
         EvaluationStrategy(::evaluateServiceException),
         EvaluationStrategy(::evaluateClientException),
-        EvaluationStrategy(::evaluateNonSdkException),
+        EvaluationStrategy(::evaluateBaseException),
     )
 
     /**
@@ -42,6 +41,7 @@ public open class StandardRetryPolicy : RetryPolicy<Any?> {
     private fun evaluateBaseException(ex: SdkBaseException): RetryDirective? = with(ex.sdkErrorMetadata) {
         when {
             isThrottling -> RetryDirective.RetryError(RetryErrorType.Throttling)
+            isRetryable -> RetryDirective.RetryError(RetryErrorType.Transient)
             else -> null
         }
     }
@@ -61,11 +61,6 @@ public open class StandardRetryPolicy : RetryPolicy<Any?> {
     }
 
     protected open fun evaluateSpecificExceptions(ex: Throwable): RetryDirective? = null
-
-    @Suppress("UNUSED_PARAMETER") // Until method is implemented
-    private fun evaluateNonSdkException(ex: Throwable): RetryDirective? =
-        // TODO Write logic to find connection errors, timeouts, stream faults, etc.
-        null
 }
 
 private class EvaluationStrategy<T : Throwable>(val clazz: KClass<T>, private val evaluator: (T) -> RetryDirective?) {

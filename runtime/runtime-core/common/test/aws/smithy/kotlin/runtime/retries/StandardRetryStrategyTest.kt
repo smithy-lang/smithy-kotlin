@@ -49,7 +49,7 @@ class StandardRetryStrategyTest {
                 delayer,
                 "client-error",
                 "server-error",
-                "timeout",
+                "transient",
                 "throttled",
                 "success",
             ),
@@ -147,14 +147,14 @@ class StandardRetryStrategyTest {
                     delayer,
                     "client-error",
                     "server-error",
-                    "timeout",
+                    "transient",
                 ),
             )
         }
 
         val ex = assertIs<TooManyAttemptsException>(result.exceptionOrNull(), "Unexpected ${result.exceptionOrNull()}")
         assertEquals(3, ex.attempts)
-        assertEquals("timeout", ex.lastResponse)
+        assertEquals("transient", ex.lastResponse)
 
         val token = bucket.lastTokenAcquired!!
         assertTrue(token.nextToken!!.nextToken!!.isFailure)
@@ -252,7 +252,7 @@ class StringRetryPolicy : RetryPolicy<String> {
         "fail" -> RetryDirective.TerminateAndFail
         "client-error" -> RetryDirective.RetryError(RetryErrorType.ClientSide)
         "server-error" -> RetryDirective.RetryError(RetryErrorType.ServerSide)
-        "timeout" -> RetryDirective.RetryError(RetryErrorType.Timeout)
+        "transient" -> RetryDirective.RetryError(RetryErrorType.Transient)
         "throttled" -> RetryDirective.RetryError(RetryErrorType.Throttling)
         null -> {
             assertNotNull(result.exceptionOrNull()) // If the value is null, this must be an exception

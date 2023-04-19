@@ -25,7 +25,9 @@ public enum class RetryErrorType {
     Throttling,
 
     /**
-     * A timeout condition such as a socket error or server-indicated request timeout.
+     * A connection level error such as a socket timeout, connect error, TLS negotiation timeout, etc. Typically, these
+     * should not be retried for non-idempotent requests as it's impossible to know whether the operation had a side
+     * effect on the server
      */
-    Timeout,
+    Transient,
 }
