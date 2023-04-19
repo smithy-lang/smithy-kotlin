@@ -53,7 +53,7 @@ interface EndpointDelegator {
     }
 
     /**
-     * Generate an implementation and supporting code for the modeled endpoint provider.
+     * Generate unit tests for the modeled endpoint rules test cases.
      * Will only be invoked when a model's service shape has both the rule set and test case traits for endpoints.
      */
     fun generateEndpointProviderTests(ctx: ProtocolGenerator.GenerationContext, tests: List<EndpointTestCase>, rules: EndpointRuleSet) {
