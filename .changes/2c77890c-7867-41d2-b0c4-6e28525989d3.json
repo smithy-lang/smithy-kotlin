@@ -1,0 +1,5 @@
+{
+    "id": "2c77890c-7867-41d2-b0c4-6e28525989d3",
+    "type": "feature",
+    "description": "Enhance exceptions thrown during proxy config parsing"
+}

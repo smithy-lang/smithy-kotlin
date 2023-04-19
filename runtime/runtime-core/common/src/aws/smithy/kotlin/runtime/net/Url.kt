@@ -35,7 +35,7 @@ public data class Url(
     public val encodeParameters: Boolean = true,
 ) {
     init {
-        require(port in 1..65535) { "port must be in range [1, 65535]" }
+        require(port in 1..65535) { "Given port $port is not in required range [1, 65535]" }
     }
 
     public companion object {
