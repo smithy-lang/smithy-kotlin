@@ -89,9 +89,13 @@ class EnvironmentProxySelectorTest {
     private val failCases = listOf(
         // Invalid ports specified
         FailCase(props = mapOf("http.proxyHost" to "test.proxy.aws", "http.proxyPort" to "0")),
+        FailCase(props = mapOf("http.proxyHost" to "test.proxy.aws", "http.proxyPort" to "x")),
         FailCase(props = mapOf("https.proxyHost" to "test.proxy.aws", "https.proxyPort" to "0")),
+        FailCase(props = mapOf("https.proxyHost" to "test.proxy.aws", "https.proxyPort" to "x")),
         FailCase(env = mapOf("http_proxy" to "http://test.proxy.aws:0")),
+        FailCase(env = mapOf("http_proxy" to "http://test.proxy.aws:x")),
         FailCase(env = mapOf("https_proxy" to "https://test.proxy.aws:0")),
+        FailCase(env = mapOf("https_proxy" to "https://test.proxy.aws:x")),
     )
 
     @Test
