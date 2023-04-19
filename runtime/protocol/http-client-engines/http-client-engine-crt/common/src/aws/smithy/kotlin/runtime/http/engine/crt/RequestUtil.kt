@@ -118,8 +118,14 @@ internal inline fun <T> mapCrtException(block: () -> T): T =
     try {
         block()
     } catch (ex: CrtRuntimeException) {
-        throw HttpException(ex.message ?: ex.errorDescription, ex, errorCode = mapCrtErrorCode(ex.errorCode))
+        throw HttpException(fmtCrtErrorMessage(ex.errorCode), errorCode = mapCrtErrorCode(ex.errorCode))
     }
+
+internal fun fmtCrtErrorMessage(errorCode: Int): String {
+    val errorDescription = CRT.errorString(errorCode)
+    val errName = CRT.errorName(errorCode)
+    return "$errName: $errorDescription; crtErrorCode=$errorCode"
+}
 
 // do this by name rather than error code as it's difficult to map error codes on JVM side and would be prone to breaking
 // if new errors are added to the various aws-c-* lib enum blocks.

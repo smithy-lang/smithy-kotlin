@@ -11,14 +11,36 @@ import aws.smithy.kotlin.runtime.SdkBaseException
 /**
  * Base exception class for HTTP errors
  */
-public class HttpException(
-    message: String? = null,
-    cause: Throwable? = null,
-    public val errorCode: HttpErrorCode = HttpErrorCode.SDK_UNKNOWN,
-    retryable: Boolean = false,
-) : SdkBaseException(message ?: cause?.toString(), cause) {
+public class HttpException : SdkBaseException {
+    public val errorCode: HttpErrorCode
+    public constructor(
+        message: String?,
+        errorCode: HttpErrorCode = HttpErrorCode.SDK_UNKNOWN,
+        retryable: Boolean = false,
+    ) : super(message) {
+        this.errorCode = errorCode
+        setRetryable(retryable)
+    }
+    public constructor(
+        message: String?,
+        cause: Throwable?,
+        errorCode: HttpErrorCode = HttpErrorCode.SDK_UNKNOWN,
+        retryable: Boolean = false,
+    ) : super(message, cause) {
+        this.errorCode = errorCode
+        setRetryable(retryable)
+    }
 
-    init {
+    public constructor(
+        cause: Throwable?,
+        errorCode: HttpErrorCode = HttpErrorCode.SDK_UNKNOWN,
+        retryable: Boolean = false,
+    ) : super(cause) {
+        this.errorCode = errorCode
+        setRetryable(retryable)
+    }
+
+    private fun setRetryable(retryable: Boolean) {
         sdkErrorMetadata.attributes[ErrorMetadata.Retryable] = retryable || when (errorCode) {
             HttpErrorCode.CONNECT_TIMEOUT, HttpErrorCode.TLS_NEGOTIATION_TIMEOUT -> true
             else -> false

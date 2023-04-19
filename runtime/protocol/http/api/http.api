@@ -103,9 +103,12 @@ public final class aws/smithy/kotlin/runtime/http/HttpErrorCode : java/lang/Enum
 }
 
 public final class aws/smithy/kotlin/runtime/http/HttpException : aws/smithy/kotlin/runtime/SdkBaseException {
-	public fun <init> ()V
+	public fun <init> (Ljava/lang/String;Laws/smithy/kotlin/runtime/http/HttpErrorCode;Z)V
+	public synthetic fun <init> (Ljava/lang/String;Laws/smithy/kotlin/runtime/http/HttpErrorCode;ZILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public fun <init> (Ljava/lang/String;Ljava/lang/Throwable;Laws/smithy/kotlin/runtime/http/HttpErrorCode;Z)V
 	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/Throwable;Laws/smithy/kotlin/runtime/http/HttpErrorCode;ZILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Ljava/lang/Throwable;Laws/smithy/kotlin/runtime/http/HttpErrorCode;Z)V
+	public synthetic fun <init> (Ljava/lang/Throwable;Laws/smithy/kotlin/runtime/http/HttpErrorCode;ZILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun getErrorCode ()Laws/smithy/kotlin/runtime/http/HttpErrorCode;
 	public fun toString ()Ljava/lang/String;
 }

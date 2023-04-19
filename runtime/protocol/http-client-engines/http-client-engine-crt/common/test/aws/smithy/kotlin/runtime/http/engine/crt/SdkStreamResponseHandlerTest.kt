@@ -175,7 +175,7 @@ class SdkStreamResponseHandlerTest {
             respChan.readAll(SdkSink.blackhole())
         }
 
-        ex.message.shouldContain("socket is closed.; ec=$socketClosedEc")
+        ex.message.shouldContain("socket is closed.; crtErrorCode=$socketClosedEc")
         assertEquals(HttpErrorCode.CONNECTION_CLOSED, ex.errorCode)
     }
 }

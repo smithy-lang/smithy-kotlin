@@ -195,7 +195,7 @@ internal inline fun<T> mapOkHttpExceptions(block: () -> T): T =
     try {
         block()
     } catch (ex: IOException) {
-        throw HttpException(ex.message, ex, ex.errCode(), ex.isRetryable())
+        throw HttpException(ex, ex.errCode(), ex.isRetryable())
     }
 
 private fun Exception.isRetryable(): Boolean = isCauseOrSuppressed<ConnectException>()

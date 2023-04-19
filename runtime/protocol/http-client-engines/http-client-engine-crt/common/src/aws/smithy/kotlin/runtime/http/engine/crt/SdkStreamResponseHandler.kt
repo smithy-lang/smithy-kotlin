@@ -5,7 +5,6 @@
 
 package aws.smithy.kotlin.runtime.http.engine.crt
 
-import aws.sdk.kotlin.crt.CRT
 import aws.sdk.kotlin.crt.http.*
 import aws.sdk.kotlin.crt.io.Buffer
 import aws.smithy.kotlin.runtime.http.*
@@ -174,9 +173,7 @@ internal class SdkStreamResponseHandler(
 
         // close the body channel
         if (errorCode != 0) {
-            val errorDescription = CRT.errorString(errorCode)
-            val errName = CRT.errorName(errorCode)
-            val ex = HttpException("$errName: $errorDescription; ec=$errorCode", errorCode = mapCrtErrorCode(errorCode))
+            val ex = HttpException(fmtCrtErrorMessage(errorCode), errorCode = mapCrtErrorCode(errorCode))
             responseReady.close(ex)
             bodyChan.close(ex)
         } else {
