@@ -71,7 +71,7 @@ class StandardRetryTokenBucketTest {
     fun testRetryCapacityAdjustments() = runTest {
         mapOf(
             RetryErrorType.Throttling to DefaultOptions.timeoutRetryCost,
-            RetryErrorType.Timeout to DefaultOptions.timeoutRetryCost,
+            RetryErrorType.Transient to DefaultOptions.timeoutRetryCost,
             RetryErrorType.ClientSide to DefaultOptions.retryCost,
             RetryErrorType.ServerSide to DefaultOptions.retryCost,
         ).forEach { (errorType, cost) ->

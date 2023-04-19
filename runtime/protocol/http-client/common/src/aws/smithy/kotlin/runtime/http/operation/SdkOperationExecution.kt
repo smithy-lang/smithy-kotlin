@@ -28,6 +28,7 @@ import aws.smithy.kotlin.runtime.retries.RetryStrategy
 import aws.smithy.kotlin.runtime.retries.StandardRetryStrategy
 import aws.smithy.kotlin.runtime.retries.policy.RetryPolicy
 import aws.smithy.kotlin.runtime.retries.policy.StandardRetryPolicy
+import aws.smithy.kotlin.runtime.tracing.debug
 import aws.smithy.kotlin.runtime.tracing.trace
 import aws.smithy.kotlin.runtime.util.merge
 import kotlin.coroutines.coroutineContext
@@ -53,21 +54,27 @@ public typealias SdkHttpRequest = OperationRequest<HttpRequestBuilder>
  *                                  <Retry>
  *                                     |
  *                                     v
- *                              +----------------+
- *                              |  OnEachAttempt |
- *                              |      |         |
- *                              |      v         |
- *                              |   <Signing>    |
- *                              |      |         |
- *                              |      v         |
- *                              | <Deserialize>  |
- *                              |      |         |
- *                              |      v         |
- *                              |   Receive      |
- *                              |      |         |
- *                              |      v         |
- *                              |  <HttpClient>  |
- *                              +----------------+
+ *                              +---------------------+
+ *                              |    OnEachAttempt    |
+ *                              |        |            |
+ *                              |        v            |
+ *                              |  <ResolveIdentity>  |
+ *                              |        |            |
+ *                              |        v            |
+ *                              |  <ResolveEndpoint>  |
+ *                              |        |            |
+ *                              |        v            |
+ *                              |    <Signing>        |
+ *                              |        |            |
+ *                              |        v            |
+ *                              |   <Deserialize>     |
+ *                              |        |            |
+ *                              |        v            |
+ *                              |     Receive         |
+ *                              |        |            |
+ *                              |        v            |
+ *                              |    <HttpClient>     |
+ *                              +---------------------+
  * ```
  *
  * In the above diagram the phase relationships and sequencing are shown. Requests start at [initialize] and proceed
@@ -121,13 +128,16 @@ public class SdkOperationExecution<Request, Response> {
      */
     public val receive: Phase<SdkHttpRequest, HttpCall> = Phase<SdkHttpRequest, HttpCall>()
 
-    // TODO - make endpoint resolution more explicit?
-
     /**
      * The authentication config to use. Defaults to [OperationAuthConfig.Anonymous] which uses
      * anonymous authentication (no auth).
      */
     public var auth: OperationAuthConfig = OperationAuthConfig.Anonymous
+
+    /**
+     * The endpoint resolver for the operation
+     */
+    public var endpointResolver: EndpointResolver? = null
 
     /**
      * The retry strategy to use. Defaults to [StandardRetryStrategy]
@@ -157,7 +167,8 @@ internal fun <Request, Response> SdkOperationExecution<Request, Response>.decora
 
     val receiveHandler = decorateHandler(handler, receive)
     val deserializeHandler = op.deserializer.decorate(receiveHandler, interceptors)
-    val authHandler = HttpAuthHandler(deserializeHandler, interceptors, auth)
+
+    val authHandler = AuthHandler(deserializeHandler, interceptors, auth, endpointResolver)
     val onEachAttemptHandler = decorateHandler(authHandler, onEachAttempt)
     val retryHandler = decorateHandler(onEachAttemptHandler, RetryMiddleware(retryStrategy, retryPolicy, interceptors))
 
@@ -244,10 +255,11 @@ private class MutateHandler<Output> (
     override suspend fun call(request: SdkHttpRequest): Output = inner.call(request)
 }
 
-internal class HttpAuthHandler<Input, Output>(
+internal class AuthHandler<Input, Output>(
     private val inner: Handler<SdkHttpRequest, Output>,
     private val interceptors: InterceptorExecutor<Input, Output>,
     private val authConfig: OperationAuthConfig,
+    private val endpointResolver: EndpointResolver? = null,
 ) : Handler<SdkHttpRequest, Output> {
     override suspend fun call(request: SdkHttpRequest): Output {
         // select an auth scheme by reconciling the (priority) list of candidates returned from the resolver
@@ -260,7 +272,12 @@ internal class HttpAuthHandler<Input, Output>(
         val identityProvider = authScheme.identityProvider(authConfig.identityProviderConfig)
         val identity = identityProvider.resolve(authOption.attributes)
 
-        // FIXME - endpoint resolution should happen here, either we make it explicit or we change implementation to use modifyBeforeSigning and have to stuff identity into the context
+        val resolveEndpointReq = ResolveEndpointRequest(request.context, request.subject.immutableView(), identity)
+        val endpoint = endpointResolver?.resolve(resolveEndpointReq)
+        if (endpoint != null) {
+            coroutineContext.debug<AuthHandler<*, *>> { "resolved endpoint: $endpoint" }
+            setResolvedEndpoint(request, endpoint)
+        }
 
         val modified = interceptors.modifyBeforeSigning(request.subject.immutableView(true))
             .let { request.copy(subject = it.toBuilder()) }

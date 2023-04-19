@@ -50,16 +50,16 @@ object RuntimeTypes {
 
         object Middleware : RuntimeTypePackage(KotlinDependency.HTTP, "middleware") {
             val MutateHeadersMiddleware = symbol("MutateHeaders")
-            val RetryMiddleware = symbol("RetryMiddleware")
-            val ResolveEndpoint = symbol("ResolveEndpoint")
-            val setResolvedEndpoint = symbol("setResolvedEndpoint")
         }
 
         object Operation : RuntimeTypePackage(KotlinDependency.HTTP, "operation") {
             val AuthSchemeResolver = symbol("AuthSchemeResolver")
             val context = symbol("context")
+            val EndpointResolver = symbol("EndpointResolver")
+            val ResolveEndpointRequest = symbol("ResolveEndpointRequest")
             val execute = symbol("execute")
             val HttpDeserialize = symbol("HttpDeserialize")
+            val HttpOperationContext = symbol("HttpOperationContext")
             val HttpSerialize = symbol("HttpSerialize")
             val OperationAuthConfig = symbol("OperationAuthConfig")
             val OperationRequest = symbol("OperationRequest")
@@ -67,6 +67,7 @@ object RuntimeTypes {
             val sdkRequestId = symbol("sdkRequestId")
             val SdkHttpOperation = symbol("SdkHttpOperation")
             val SdkHttpRequest = symbol("SdkHttpRequest")
+            val setResolvedEndpoint = symbol("setResolvedEndpoint")
         }
 
         object Config : RuntimeTypePackage(KotlinDependency.HTTP, "config") {
@@ -287,6 +288,7 @@ object RuntimeTypes {
 
         object HttpAuth: RuntimeTypePackage(KotlinDependency.HTTP_AUTH) {
             val AnonymousAuthScheme  = symbol("AnonymousAuthScheme")
+            val AnonymousIdentity = symbol("AnonymousIdentity")
             val AnonymousIdentityProvider = symbol("AnonymousIdentityProvider")
             val HttpAuthConfig = symbol("HttpAuthConfig")
             val HttpAuthScheme = symbol("HttpAuthScheme")

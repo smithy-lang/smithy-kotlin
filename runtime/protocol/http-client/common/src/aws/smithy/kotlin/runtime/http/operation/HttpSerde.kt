@@ -8,20 +8,17 @@ import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
 import aws.smithy.kotlin.runtime.http.response.HttpResponse
 import aws.smithy.kotlin.runtime.operation.ExecutionContext
 
-// FIXME - if SAM interfaces support suspend soon we should consider updating HttpSerialize/Deserialize to use them instead
-// see: https://youtrack.jetbrains.com/issue/KT-40978
-
 /**
  * Implemented by types that know how to serialize to the HTTP protocol.
  */
-public interface HttpSerialize<T> {
+public fun interface HttpSerialize<T> {
     public suspend fun serialize(context: ExecutionContext, input: T): HttpRequestBuilder
 }
 
 /**
  * Implemented by types that know how to deserialize from the HTTP protocol.
  */
-public interface HttpDeserialize<T> {
+public fun interface HttpDeserialize<T> {
     public suspend fun deserialize(context: ExecutionContext, response: HttpResponse): T
 }
 

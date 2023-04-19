@@ -19,12 +19,12 @@ public open class ErrorMetadata {
         /**
          * Set if an error is retryable
          */
-        public val Retryable: AttributeKey<Boolean> = AttributeKey("Retryable")
+        public val Retryable: AttributeKey<Boolean> = AttributeKey("aws.smithy.kotlin#Retryable")
 
         /**
          * Set if an error represents a throttling condition
          */
-        public val ThrottlingError: AttributeKey<Boolean> = AttributeKey("ThrottlingError")
+        public val ThrottlingError: AttributeKey<Boolean> = AttributeKey("aws.smithy.kotlin#ThrottlingError")
     }
 
     public val isRetryable: Boolean
@@ -76,11 +76,11 @@ private object EmptyProtocolResponse : ProtocolResponse
 
 public open class ServiceErrorMetadata : ErrorMetadata() {
     public companion object {
-        public val ErrorCode: AttributeKey<String> = AttributeKey("ErrorCode")
-        public val ErrorMessage: AttributeKey<String> = AttributeKey("ErrorMessage")
-        public val ErrorType: AttributeKey<ServiceException.ErrorType> = AttributeKey("ErrorType")
-        public val ProtocolResponse: AttributeKey<ProtocolResponse> = AttributeKey("ProtocolResponse")
-        public val RequestId: AttributeKey<String> = AttributeKey("RequestId")
+        public val ErrorCode: AttributeKey<String> = AttributeKey("aws.smithy.kotlin#ErrorCode")
+        public val ErrorMessage: AttributeKey<String> = AttributeKey("aws.smithy.kotlin#ErrorMessage")
+        public val ErrorType: AttributeKey<ServiceException.ErrorType> = AttributeKey("aws.smithy.kotlin#ErrorType")
+        public val ProtocolResponse: AttributeKey<ProtocolResponse> = AttributeKey("aws.smithy.kotlin#ProtocolResponse")
+        public val RequestId: AttributeKey<String> = AttributeKey("aws.smithy.kotlin#RequestId")
     }
 
     /**

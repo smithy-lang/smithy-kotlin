@@ -1176,7 +1176,7 @@ public final class aws/smithy/kotlin/runtime/retries/policy/RetryErrorType : jav
 	public static final field ClientSide Laws/smithy/kotlin/runtime/retries/policy/RetryErrorType;
 	public static final field ServerSide Laws/smithy/kotlin/runtime/retries/policy/RetryErrorType;
 	public static final field Throttling Laws/smithy/kotlin/runtime/retries/policy/RetryErrorType;
-	public static final field Timeout Laws/smithy/kotlin/runtime/retries/policy/RetryErrorType;
+	public static final field Transient Laws/smithy/kotlin/runtime/retries/policy/RetryErrorType;
 	public static fun valueOf (Ljava/lang/String;)Laws/smithy/kotlin/runtime/retries/policy/RetryErrorType;
 	public static fun values ()[Laws/smithy/kotlin/runtime/retries/policy/RetryErrorType;
 }

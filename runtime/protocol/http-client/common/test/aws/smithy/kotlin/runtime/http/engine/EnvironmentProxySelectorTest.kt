@@ -5,9 +5,12 @@
 
 package aws.smithy.kotlin.runtime.http.engine
 
+import aws.smithy.kotlin.runtime.ClientException
 import aws.smithy.kotlin.runtime.net.Url
 import aws.smithy.kotlin.runtime.util.PlatformEnvironProvider
+import org.junit.jupiter.api.assertThrows
 import kotlin.test.Test
+import kotlin.test.assertContains
 import kotlin.test.assertEquals
 
 data class TestPlatformEnvironmentProvider(
@@ -75,6 +78,41 @@ class EnvironmentProxySelectorTest {
             val url = Url.parse(testCase.url)
             val actual = selector.select(url)
             assertEquals(testCase.expected, actual, "[idx=$idx] expected $testCase resulted in proxy config: $actual")
+        }
+    }
+
+    private data class FailCase(
+        val env: Map<String, String> = emptyMap(),
+        val props: Map<String, String> = emptyMap(),
+    )
+
+    private val failCases = listOf(
+        // Invalid ports specified
+        FailCase(props = mapOf("http.proxyHost" to "test.proxy.aws", "http.proxyPort" to "0")),
+        FailCase(props = mapOf("http.proxyHost" to "test.proxy.aws", "http.proxyPort" to "x")),
+        FailCase(props = mapOf("https.proxyHost" to "test.proxy.aws", "https.proxyPort" to "0")),
+        FailCase(props = mapOf("https.proxyHost" to "test.proxy.aws", "https.proxyPort" to "x")),
+        FailCase(env = mapOf("http_proxy" to "http://test.proxy.aws:0")),
+        FailCase(env = mapOf("http_proxy" to "http://test.proxy.aws:x")),
+        FailCase(env = mapOf("https_proxy" to "https://test.proxy.aws:0")),
+        FailCase(env = mapOf("https_proxy" to "https://test.proxy.aws:x")),
+    )
+
+    @Test
+    fun testSelectFailures() {
+        failCases.forEachIndexed { idx, failCase ->
+            val testProvider = TestPlatformEnvironmentProvider(failCase.env, failCase.props)
+            val exception = assertThrows<ClientException>("[idx=$idx] expected ClientException") {
+                EnvironmentProxySelector(testProvider)
+            }
+
+            val expectedError = (failCase.env + failCase.props).map { (k, v) -> """$k="$v"""" }.joinToString(", ")
+
+            assertContains(
+                exception.message!!,
+                expectedError,
+                message = "[idx=$idx] unexpected error message ${exception.message}",
+            )
         }
     }
 }

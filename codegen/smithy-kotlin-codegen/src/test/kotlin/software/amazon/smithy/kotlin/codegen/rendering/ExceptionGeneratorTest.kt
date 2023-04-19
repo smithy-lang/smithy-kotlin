@@ -217,21 +217,6 @@ class ExceptionGeneratorTest {
                 override fun generateProtocolUnitTests(ctx: ProtocolGenerator.GenerationContext) {}
                 override fun generateProtocolClient(ctx: ProtocolGenerator.GenerationContext) {}
 
-                override fun generateEndpointProvider(
-                    ctx: ProtocolGenerator.GenerationContext,
-                    rules: EndpointRuleSet,
-                ) {
-                    error("not needed for test")
-                }
-
-                override fun generateEndpointProviderTests(
-                    ctx: ProtocolGenerator.GenerationContext,
-                    tests: List<EndpointTestCase>,
-                    rules: EndpointRuleSet,
-                ) {
-                    error("not needed for test")
-                }
-
                 override fun structuredDataParser(ctx: ProtocolGenerator.GenerationContext): StructuredDataParserGenerator {
                     error("not needed for test")
                 }

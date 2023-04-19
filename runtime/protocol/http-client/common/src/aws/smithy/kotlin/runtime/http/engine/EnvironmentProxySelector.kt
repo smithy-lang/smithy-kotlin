@@ -5,6 +5,7 @@
 
 package aws.smithy.kotlin.runtime.http.engine
 
+import aws.smithy.kotlin.runtime.ClientException
 import aws.smithy.kotlin.runtime.net.Host
 import aws.smithy.kotlin.runtime.net.Scheme
 import aws.smithy.kotlin.runtime.net.Url
@@ -58,7 +59,17 @@ private fun resolveProxyByProperty(provider: PropertyProvider, scheme: Scheme): 
         // we don't support connecting to the proxy over TLS, we expect engines would support
         // tunneling https traffic via HTTP Connect to the proxy
         val proxyProtocol = Scheme.HTTP
-        val url = Url(proxyProtocol, Host.parse(hostName), proxyPortProp?.toInt() ?: scheme.defaultPort)
+
+        val url = try {
+            Url(proxyProtocol, Host.parse(hostName), proxyPortProp?.toInt() ?: scheme.defaultPort)
+        } catch (e: Exception) {
+            val parsed = buildString {
+                append("""$hostPropName="$proxyHostProp"""")
+                proxyPortProp?.let { append(""", $hostPortPropName="$it"""") }
+            }
+            throw ClientException("Could not parse $parsed into a valid proxy URL", e)
+        }
+
         ProxyConfig.Http(url)
     }
 }
@@ -66,9 +77,17 @@ private fun resolveProxyByProperty(provider: PropertyProvider, scheme: Scheme): 
 private fun resolveProxyByEnvironment(provider: EnvironmentProvider, scheme: Scheme): ProxyConfig? =
     // lowercase takes precedence: https://about.gitlab.com/blog/2021/01/27/we-need-to-talk-no-proxy/
     listOf("${scheme.protocolName.lowercase()}_proxy", "${scheme.protocolName.uppercase()}_PROXY")
-        .mapNotNull { provider.getenv(it) }
-        .map { ProxyConfig.Http(Url.parse(it)) }
-        .firstOrNull()
+        .firstNotNullOfOrNull { envVar ->
+            provider.getenv(envVar)?.let { proxyUrlString ->
+                val url = try {
+                    Url.parse(proxyUrlString)
+                } catch (e: Exception) {
+                    val parsed = """$envVar="$proxyUrlString""""
+                    throw ClientException("Could not parse $parsed into a valid proxy URL", e)
+                }
+                ProxyConfig.Http(url)
+            }
+        }
 
 internal data class NoProxyHost(val hostMatch: String, val port: Int? = null) {
     fun matches(url: Url): Boolean {

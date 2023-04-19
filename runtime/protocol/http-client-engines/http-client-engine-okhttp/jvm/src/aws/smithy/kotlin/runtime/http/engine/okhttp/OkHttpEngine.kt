@@ -39,7 +39,7 @@ public class OkHttpEngine(
 
         val engineRequest = request.toOkHttpRequest(context, callContext)
         val engineCall = client.newCall(engineRequest)
-        val engineResponse = engineCall.executeAsync()
+        val engineResponse = mapOkHttpExceptions { engineCall.executeAsync() }
 
         callContext.job.invokeOnCompletion {
             engineResponse.body.close()
@@ -69,9 +69,9 @@ private fun OkHttpEngineConfig.buildClient(): OkHttpClient {
         followRedirects(false)
         followSslRedirects(false)
 
-        // see: https://github.com/ktorio/ktor/issues/1708#issuecomment-609988128
-        // TODO disable this once better transient exception handling is in place
-        retryOnConnectionFailure(true)
+        // Transient connection errors are handled by retry strategy (exceptions are wrapped and marked retryable
+        // appropriately internally). We don't want inner retry logic that inflates the number of retries.
+        retryOnConnectionFailure(false)
 
         connectTimeout(config.connectTimeout.toJavaDuration())
         readTimeout(config.socketReadTimeout.toJavaDuration())
@@ -102,6 +102,7 @@ private fun OkHttpEngineConfig.buildClient(): OkHttpClient {
                 when (it) {
                     AlpnId.HTTP1_1 -> Protocol.HTTP_1_1
                     AlpnId.HTTP2 -> Protocol.HTTP_2
+                    AlpnId.H2_PRIOR_KNOWLEDGE -> Protocol.H2_PRIOR_KNOWLEDGE
                     else -> null
                 }
             }

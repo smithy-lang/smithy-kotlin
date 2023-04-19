@@ -20,6 +20,7 @@ public abstract interface class aws/smithy/kotlin/runtime/http/config/HttpClient
 }
 
 public final class aws/smithy/kotlin/runtime/http/engine/AlpnId : java/lang/Enum {
+	public static final field H2_PRIOR_KNOWLEDGE Laws/smithy/kotlin/runtime/http/engine/AlpnId;
 	public static final field HTTP1_1 Laws/smithy/kotlin/runtime/http/engine/AlpnId;
 	public static final field HTTP2 Laws/smithy/kotlin/runtime/http/engine/AlpnId;
 	public static final field HTTP3 Laws/smithy/kotlin/runtime/http/engine/AlpnId;
@@ -141,9 +142,6 @@ public final class aws/smithy/kotlin/runtime/http/middleware/HttpResponseExcepti
 	public final fun setStatusCode (Laws/smithy/kotlin/runtime/http/HttpStatusCode;)V
 }
 
-public final class aws/smithy/kotlin/runtime/http/middleware/ResolveEndpointKt {
-}
-
 public abstract interface class aws/smithy/kotlin/runtime/http/operation/HttpDeserialize {
 	public abstract fun deserialize (Laws/smithy/kotlin/runtime/operation/ExecutionContext;Laws/smithy/kotlin/runtime/http/response/HttpResponse;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
@@ -194,6 +192,9 @@ public final class aws/smithy/kotlin/runtime/http/operation/MutateMiddleware$Def
 public final class aws/smithy/kotlin/runtime/http/operation/OperationAuthConfig$Companion {
 	public final fun from (Laws/smithy/kotlin/runtime/identity/IdentityProviderConfig;[Laws/smithy/kotlin/runtime/http/auth/HttpAuthScheme;)Laws/smithy/kotlin/runtime/http/operation/OperationAuthConfig;
 	public final fun getAnonymous ()Laws/smithy/kotlin/runtime/http/operation/OperationAuthConfig;
+}
+
+public final class aws/smithy/kotlin/runtime/http/operation/OperationEndpointKt {
 }
 
 public final class aws/smithy/kotlin/runtime/http/operation/OperationRequest {

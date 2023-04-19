@@ -2,35 +2,42 @@
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
  * SPDX-License-Identifier: Apache-2.0
  */
-package aws.smithy.kotlin.runtime.http.middleware
+
+package aws.smithy.kotlin.runtime.http.operation
 
 import aws.smithy.kotlin.runtime.InternalApi
 import aws.smithy.kotlin.runtime.client.endpoints.Endpoint
-import aws.smithy.kotlin.runtime.client.endpoints.EndpointProvider
-import aws.smithy.kotlin.runtime.http.operation.*
+import aws.smithy.kotlin.runtime.http.request.HttpRequest
+import aws.smithy.kotlin.runtime.identity.Identity
 import aws.smithy.kotlin.runtime.net.Host
-import aws.smithy.kotlin.runtime.tracing.debug
-import kotlin.coroutines.coroutineContext
+import aws.smithy.kotlin.runtime.operation.ExecutionContext
 
 /**
- * Http middleware for resolving the service endpoint.
- *
- * This is a static version of the otherwise-generated endpoint middleware and is intended for use by internal clients
- * within the runtime.
+ * Type agnostic version of [aws.smithy.kotlin.runtime.client.endpoints.EndpointProvider]. Typically service client
+ * specific versions are code generated and then adapted to this generic version for actually executing a request.
  */
 @InternalApi
-public class ResolveEndpoint<T>(
-    private val provider: EndpointProvider<T>,
-    private val params: T,
-) : ModifyRequestMiddleware {
-
-    override suspend fun modifyRequest(req: SdkHttpRequest): SdkHttpRequest {
-        val endpoint = provider.resolveEndpoint(params)
-        setResolvedEndpoint(req, endpoint)
-        coroutineContext.debug<ResolveEndpoint<T>> { "resolved endpoint: $endpoint" }
-        return req
-    }
+public fun interface EndpointResolver {
+    /**
+     * Resolve the endpoint to send the request to
+     * @param request The input context for the resolver function
+     * @return an [Endpoint] that can be used to connect to the service
+     */
+    public suspend fun resolve(request: ResolveEndpointRequest): Endpoint
 }
+
+/**
+ * Context for [EndpointResolver] implementations used to drive endpoint resolution
+ * @param context the operation [ExecutionContext]
+ * @param httpRequest the [HttpRequest] being built and executed
+ * @param identity the resolved [Identity] for this request
+ */
+@InternalApi
+public data class ResolveEndpointRequest(
+    public val context: ExecutionContext,
+    public val httpRequest: HttpRequest,
+    public val identity: Identity,
+)
 
 /**
  * Update an existing request with a resolved endpoint.

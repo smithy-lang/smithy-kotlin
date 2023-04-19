@@ -94,44 +94,9 @@ interface ProtocolGenerator {
     fun generateProtocolClient(ctx: GenerationContext)
 
     /**
-     * Generate a default implementation for the modeled endpoint provider.
-     * Will only be invoked when a model's service shape has the necessary endpoint rule set trait, however, the base
-     * interface and parameter type will always be generated (the expectation being that the caller supplies their own
-     * at runtime).
+     * Get the generator responsible for rendering an EndpointProvider implementation
      */
-    fun generateEndpointProvider(ctx: GenerationContext, rules: EndpointRuleSet) {
-        val paramsSymbol = EndpointParametersGenerator.getSymbol(ctx.settings)
-        val providerSymbol = EndpointProviderGenerator.getSymbol(ctx.settings)
-        val defaultProviderSymbol = DefaultEndpointProviderGenerator.getSymbol(ctx.settings)
-
-        ctx.delegator.useFileWriter(defaultProviderSymbol) {
-            DefaultEndpointProviderGenerator(it, rules, providerSymbol, paramsSymbol).render()
-        }
-    }
-
-    /**
-     * Generate an implementation and supporting code for the modeled endpoint provider.
-     * Will only be invoked when a model's service shape has both the rule set and test case traits for endpoints.
-     */
-    fun generateEndpointProviderTests(ctx: GenerationContext, tests: List<EndpointTestCase>, rules: EndpointRuleSet) {
-        val paramsSymbol = EndpointParametersGenerator.getSymbol(ctx.settings)
-        val defaultProviderSymbol = DefaultEndpointProviderGenerator.getSymbol(ctx.settings)
-        val testSymbol = DefaultEndpointProviderTestGenerator.getSymbol(ctx.settings)
-
-        ctx.delegator.useTestFileWriter("${testSymbol.name}.kt", testSymbol.namespace) {
-            DefaultEndpointProviderTestGenerator(it, rules, tests, defaultProviderSymbol, paramsSymbol).render()
-        }
-    }
-
-    /**
-     * Generate the middleware to call an endpoint provider and direct the request accordingly.
-     */
-    fun generateEndpointProviderMiddleware(ctx: GenerationContext) {
-        ctx.delegator.useFileWriter(ResolveEndpointMiddlewareGenerator.getSymbol(ctx.settings)) {
-            ResolveEndpointMiddlewareGenerator(ctx, it).render()
-        }
-    }
-    // FIXME - collapse endpoint functions to a similar delegator
+    fun endpointDelegator(ctx: GenerationContext): EndpointDelegator = EndpointDelegator.Default
 
     /**
      * Get the generator responsible for rendering an AuthSchemeProvider implementation
