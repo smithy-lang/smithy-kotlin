@@ -1,5 +1,0 @@
-{
-  "id": "01529a42-f6f9-49b7-8ee8-3888f319b332",
-  "type": "feature",
-  "description": "Add support for H2_PRIOR_KNOWLEDGE (HTTP2 without TLS)"
-}

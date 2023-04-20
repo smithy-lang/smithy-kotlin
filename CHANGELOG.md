@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.17.2] - 04/20/2023
+
+### Features
+* Add support for retrying transient HTTP errors. `RetryErrorType.Timeout` was renamed to `RetryErrorType.Transient`.
+* Enhance exceptions thrown during proxy config parsing
+* Add support for H2_PRIOR_KNOWLEDGE (HTTP2 without TLS)
+
+### Miscellaneous
+* Refactor endpoint resolution to be explicit in SdkOperationExecution and change order to match SRA.
+
 ## [0.17.1] - 04/13/2023
 
 ### Fixes

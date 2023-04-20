@@ -1,5 +1,0 @@
-{
-    "id": "29105f7e-0614-467e-b4bd-25162f45f94f",
-    "type": "misc",
-    "description": "Refactor endpoint resolution to be explicit in SdkOperationExecution and change order to match SRA."
-}
