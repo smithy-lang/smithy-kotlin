@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.17.3] - 04/20/2023
+This release is identical to 
+[0.17.2](https://github.com/awslabs/smithy-kotlin/blob/main/CHANGELOG.md#0172---04202023).
+
 ## [0.17.2] - 04/20/2023
 
 ### Features
