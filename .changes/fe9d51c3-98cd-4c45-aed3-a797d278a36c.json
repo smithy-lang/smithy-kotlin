@@ -3,6 +3,6 @@
     "type": "bugfix",
     "description": "Fix broken enum-based waiters.",
     "issues": [
-        "awslabs/smithy-kotlin#892"
+        "awslabs/aws-sdk-kotlin#892"
     ]
 }
