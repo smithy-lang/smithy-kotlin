@@ -1,0 +1,5 @@
+{
+    "id": "c0bae93d-f508-4b1e-a810-a528285f599f",
+    "type": "misc",
+    "description": "Refactor environment settings and retry modes out of aws-sdk-kotlin"
+}

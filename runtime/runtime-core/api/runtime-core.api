@@ -66,6 +66,9 @@ public final class aws/smithy/kotlin/runtime/ServiceException$ErrorType : java/l
 	public static fun values ()[Laws/smithy/kotlin/runtime/ServiceException$ErrorType;
 }
 
+public final class aws/smithy/kotlin/runtime/config/EnvironmentSettingKt {
+}
+
 public final class aws/smithy/kotlin/runtime/content/ByteArrayContent : aws/smithy/kotlin/runtime/content/ByteStream$Buffer {
 	public fun <init> ([B)V
 	public fun bytes ()[B
