@@ -1,7 +1,10 @@
+/*
+ * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * SPDX-License-Identifier: Apache-2.0
+ */
 package aws.smithy.kotlin.runtime.config
 
 import aws.smithy.kotlin.runtime.util.PlatformEnvironProvider
-import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
@@ -9,8 +12,8 @@ import kotlin.test.assertNull
 class EnvironmentSettingTest {
     @Test
     fun itResolvesSysPropSettingFirst() {
-        val setting = strEnvSetting("FOO_BAR", "foo.bar").orElse("error")
-        val testPlatform = mockPlatform(mapOf("FOO_BAR" to "error"), mapOf("foo.bar" to "success"))
+        val setting = strEnvSetting("foo.bar", "FOO_BAR").orElse("error")
+        val testPlatform = mockPlatform(mapOf("foo.bar" to "success"), mapOf("FOO_BAR" to "error"))
 
         val actual = setting.resolve(testPlatform)
         assertEquals("success", actual)
@@ -18,8 +21,8 @@ class EnvironmentSettingTest {
 
     @Test
     fun itResolvesEnvVarSettingSecond() {
-        val setting = strEnvSetting("FOO_BAR", "foo.bar").orElse("error")
-        val testPlatform = mockPlatform(mapOf("FOO_BAR" to "success"))
+        val setting = strEnvSetting("foo.bar", "FOO_BAR").orElse("error")
+        val testPlatform = mockPlatform(envVars = mapOf("FOO_BAR" to "success"))
 
         val actual = setting.resolve(testPlatform)
         assertEquals("success", actual)
@@ -27,7 +30,7 @@ class EnvironmentSettingTest {
 
     @Test
     fun itResolvesDefaultSettingThird() {
-        val setting = strEnvSetting("FOO_BAR", "foo.bar").orElse("success")
+        val setting = strEnvSetting("foo.bar", "FOO_BAR").orElse("success")
         val testPlatform = mockPlatform()
 
         val actual = setting.resolve(testPlatform)
@@ -36,7 +39,7 @@ class EnvironmentSettingTest {
 
     @Test
     fun itReturnsNullWithNoValue() {
-        val setting = strEnvSetting("FOO_BAR", "foo.bar")
+        val setting = strEnvSetting("foo.bar", "FOO_BAR")
         val testPlatform = mockPlatform()
 
         assertNull(setting.resolve(testPlatform))
@@ -44,8 +47,8 @@ class EnvironmentSettingTest {
 
     @Test
     fun itResolvesBooleans() {
-        val setting = boolEnvSetting("FOO_BAR", "foo.bar")
-        val testPlatform = mockPlatform(mapOf("FOO_BAR" to "TRUE"))
+        val setting = boolEnvSetting("foo.bar", "FOO_BAR")
+        val testPlatform = mockPlatform(mapOf("foo.bar" to "TRUE"))
 
         val actual = setting.resolve(testPlatform)
         assertEquals(true, actual)
@@ -53,8 +56,8 @@ class EnvironmentSettingTest {
 
     @Test
     fun itResolvesIntegers() {
-        val setting = intEnvSetting("FOO_BAR", "foo.bar")
-        val testPlatform = mockPlatform(mapOf("FOO_BAR" to "42"))
+        val setting = intEnvSetting("foo.bar", "FOO_BAR")
+        val testPlatform = mockPlatform(mapOf("foo.bar" to "42"))
 
         val actual = setting.resolve(testPlatform)
         assertEquals(42, actual)
@@ -62,8 +65,8 @@ class EnvironmentSettingTest {
 
     @Test
     fun itResolvesLongs() {
-        val setting = longEnvSetting("FOO_BAR", "foo.bar")
-        val testPlatform = mockPlatform(mapOf("FOO_BAR" to "-4294967296"))
+        val setting = longEnvSetting("foo.bar", "FOO_BAR")
+        val testPlatform = mockPlatform(mapOf("foo.bar" to "-4294967296"))
 
         val actual = setting.resolve(testPlatform)
         assertEquals(-4294967296L, actual)
@@ -71,15 +74,15 @@ class EnvironmentSettingTest {
 
     @Test
     fun itResolvesEnums() {
-        val setting = enumEnvSetting<Suit>("FOO_BAR", "foo.bar")
-        val testPlatform = mockPlatform(mapOf("FOO_BAR" to "spades"))
+        val setting = enumEnvSetting<Suit>("foo.bar", "FOO_BAR")
+        val testPlatform = mockPlatform(mapOf("foo.bar" to "spades"))
 
         val actual = setting.resolve(testPlatform)
         assertEquals(Suit.Spades, actual)
     }
 }
 
-private fun mockPlatform(envVars: Map<String, String> = mapOf(), sysProps: Map<String, String> = mapOf()) =
+private fun mockPlatform(sysProps: Map<String, String> = mapOf(), envVars: Map<String, String> = mapOf()) =
     object : PlatformEnvironProvider {
         override fun getAllEnvVars(): Map<String, String> = envVars
         override fun getenv(key: String): String? = envVars[key]
