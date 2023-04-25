@@ -9,6 +9,7 @@ import aws.smithy.kotlin.runtime.http.HttpBody
 import aws.smithy.kotlin.runtime.io.internal.toOkio
 import aws.smithy.kotlin.runtime.io.internal.toSdk
 import aws.smithy.kotlin.runtime.io.readAll
+import aws.smithy.kotlin.runtime.tracing.trace
 import aws.smithy.kotlin.runtime.util.derivedName
 import kotlinx.coroutines.*
 import okhttp3.MediaType
@@ -20,44 +21,50 @@ import kotlin.coroutines.CoroutineContext
 /**
  * OkHttp [RequestBody] that reads from [body] channel or source
  */
+@OptIn(DelicateCoroutinesApi::class, ExperimentalStdlibApi::class)
 internal class StreamingRequestBody(
     private val body: HttpBody,
-    callContext: CoroutineContext,
-) : RequestBody(), CoroutineScope {
+    private val callContext: CoroutineContext,
+) : RequestBody() {
 
     init {
         require(body is HttpBody.ChannelContent || body is HttpBody.SourceContent) { "Invalid streaming body $body" }
     }
 
-    private val producerJob = Job(callContext[Job])
-    override val coroutineContext: CoroutineContext = callContext + producerJob + callContext.derivedName("send-request-body") + Dispatchers.IO
     override fun contentType(): MediaType? = null
     override fun contentLength(): Long = body.contentLength ?: -1
     override fun isOneShot(): Boolean = body.isOneShot
     override fun isDuplex(): Boolean = body.isDuplex
 
-    override fun writeTo(sink: BufferedSink) = try {
-        doWriteTo(sink)
-    } catch (ex: Exception) {
-        throw when (ex) {
-            is IOException -> ex
-            // wrap all exceptions thrown from inside `okhttp3.RequestBody#writeTo(..)` as an IOException
-            // see https://github.com/awslabs/aws-sdk-kotlin/issues/733
-            else -> IOException(ex)
+    override fun writeTo(sink: BufferedSink) {
+        try {
+            doWriteTo(sink)
+        } catch (ex: Exception) {
+            when (ex) {
+                is CancellationException -> {
+                    callContext.trace<StreamingRequestBody> { "request cancelled" }
+                    // shouldn't need to propagate the exception because okhttp is cancellation aware via executeAsync()
+                    return
+                }
+                is IOException -> throw ex
+                // wrap all exceptions thrown from inside `okhttp3.RequestBody#writeTo(..)` as an IOException
+                // see https://github.com/awslabs/aws-sdk-kotlin/issues/733
+                else -> throw IOException(ex)
+            }
         }
     }
 
-    @OptIn(ExperimentalStdlibApi::class)
     private fun doWriteTo(sink: BufferedSink) {
+        val context = callContext + callContext.derivedName("send-request-body")
         if (isDuplex()) {
             // launch coroutine that writes to sink in the background
-            launch {
+            GlobalScope.launch(context + Dispatchers.IO) {
                 sink.use { transferBody(it) }
             }
         } else {
             // remove the current dispatcher (if it exists) and use the internal
             // runBlocking dispatcher that blocks the *current* thread
-            val blockingContext = coroutineContext.minusKey(CoroutineDispatcher)
+            val blockingContext = context.minusKey(CoroutineDispatcher)
 
             // Non-duplex (aka "normal") requests MUST write all of their request body
             // before this function returns. Requests are given a background thread to
@@ -68,13 +75,15 @@ internal class StreamingRequestBody(
             }
         }
     }
-    private suspend fun transferBody(sink: BufferedSink) = withJob(producerJob) {
+
+    private suspend fun transferBody(sink: BufferedSink) {
         when (body) {
             is HttpBody.ChannelContent -> {
                 val chan = body.readFrom()
                 val sdkSink = sink.toSdk()
                 chan.readAll(sdkSink)
             }
+
             is HttpBody.SourceContent -> {
                 val source = body.readFrom()
                 source.toOkio().use {
@@ -84,21 +93,5 @@ internal class StreamingRequestBody(
             // should never hit - all other body types are handled elsewhere
             else -> error("unexpected HttpBody type $body")
         }
-    }
-}
-
-/**
- * Completes the given job when the block returns calling either `complete()` when the block runs
- * successfully or `completeExceptionally()` on exception.
- * @return the result of calling [block]
- */
-private inline fun <T> withJob(job: CompletableJob, block: () -> T): T {
-    try {
-        return block()
-    } catch (ex: Exception) {
-        job.completeExceptionally(ex)
-        throw ex
-    } finally {
-        job.complete()
     }
 }

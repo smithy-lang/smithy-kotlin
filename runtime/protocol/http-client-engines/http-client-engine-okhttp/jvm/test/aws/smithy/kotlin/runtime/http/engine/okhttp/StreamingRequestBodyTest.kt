@@ -15,7 +15,6 @@ import kotlinx.coroutines.test.runTest
 import okio.Buffer
 import okio.BufferedSink
 import org.junit.jupiter.api.Test
-import java.io.IOException
 import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.test.*
 import kotlin.time.Duration.Companion.milliseconds
@@ -110,13 +109,9 @@ class StreamingRequestBodyTest {
             val callContext = coroutineContext + Job(coroutineContext.job)
             val actual = StreamingRequestBody(body, callContext)
             val buffer = Buffer()
-            // see https://github.com/awslabs/aws-sdk-kotlin/issues/733 for why we expect
-            // this to be an IOException
-            val ex = assertFailsWith<IOException> {
-                actual.writeTo(buffer)
-            }
-            assertIs<CancellationException>(ex.cause)
+            actual.writeTo(buffer)
         }
+
         delay(100.milliseconds)
 
         job.cancel()
@@ -148,10 +143,9 @@ class StreamingRequestBodyTest {
 
         assertTrue(actual.isDuplex())
 
-        assertEquals(1, callJob.children.toList().size) // producerJob
-        assertEquals(0, callJob.children.toList()[0].children.toList().size)
+        assertEquals(0, callJob.children.toList().size)
         actual.writeTo(sink)
-        assertEquals(1, callJob.children.toList()[0].children.toList().size)
+        assertEquals(1, callJob.children.toList().size) // writer
         assertEquals(sink.buffer.size, 0)
         chan.writeAll(content.source())
 
