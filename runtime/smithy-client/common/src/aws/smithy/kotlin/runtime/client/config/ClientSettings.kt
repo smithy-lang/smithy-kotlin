@@ -18,6 +18,9 @@ public object ClientSettings {
      */
     public val MaxAttempts: EnvironmentSetting<Int> = intEnvSetting("sdk.maxAttempts", "SDK_MAX_ATTEMPTS")
 
+    /**
+     * Specifies the minimum acceptable version of TLS to use when connecting to service endpoints.
+     */
     public val MinTlsVersion: EnvironmentSetting<TlsVersion> =
         enumEnvSetting<TlsVersion>("SDK_MIN_TLS", "sdk.minTls").orElse(TlsVersion.Tls1_2)
 
