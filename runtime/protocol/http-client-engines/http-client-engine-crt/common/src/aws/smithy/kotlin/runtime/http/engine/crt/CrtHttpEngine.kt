@@ -5,8 +5,14 @@
 
 package aws.smithy.kotlin.runtime.http.engine.crt
 
-import aws.sdk.kotlin.crt.http.*
-import aws.sdk.kotlin.crt.io.*
+import aws.sdk.kotlin.crt.http.HttpClientConnectionManager
+import aws.sdk.kotlin.crt.http.HttpClientConnectionManagerOptionsBuilder
+import aws.sdk.kotlin.crt.http.HttpProxyAuthorizationType
+import aws.sdk.kotlin.crt.http.HttpProxyOptions
+import aws.sdk.kotlin.crt.io.SocketOptions
+import aws.sdk.kotlin.crt.io.TlsContext
+import aws.sdk.kotlin.crt.io.TlsContextOptionsBuilder
+import aws.sdk.kotlin.crt.io.Uri
 import aws.smithy.kotlin.runtime.crt.SdkDefaultIO
 import aws.smithy.kotlin.runtime.http.HttpErrorCode
 import aws.smithy.kotlin.runtime.http.HttpException
@@ -27,6 +33,8 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeoutOrNull
+import aws.sdk.kotlin.crt.io.TlsVersion as CrtTlsVersion
+import aws.smithy.kotlin.runtime.config.TlsVersion as SdkTlsVersion
 
 internal const val DEFAULT_WINDOW_SIZE_BYTES: Int = 16 * 1024
 internal const val CHUNK_BUFFER_SIZE: Long = 64 * 1024
@@ -44,14 +52,13 @@ public class CrtHttpEngine(public val config: CrtHttpEngineConfig) : HttpClientE
     }
     private val logger = Logger.getLogger<CrtHttpEngine>()
 
-    private val customTlsContext: TlsContext? = if (config.alpn.isNotEmpty() && config.tlsContext == null) {
+    private val resolvedTlsContext: TlsContext = config.tlsContext ?: run {
         val options = TlsContextOptionsBuilder().apply {
             verifyPeer = true
             alpn = config.alpn.joinToString(separator = ";") { it.protocolId }
+            minTlsVersion = toCrtTlsVersion(config.minTlsVersion)
         }.build()
         TlsContext(options)
-    } else {
-        null
     }
 
     init {
@@ -70,7 +77,7 @@ public class CrtHttpEngine(public val config: CrtHttpEngineConfig) : HttpClientE
 
     private val options = HttpClientConnectionManagerOptionsBuilder().apply {
         clientBootstrap = config.clientBootstrap ?: SdkDefaultIO.ClientBootstrap
-        tlsContext = customTlsContext ?: config.tlsContext ?: SdkDefaultIO.TlsContext
+        tlsContext = resolvedTlsContext
         manualWindowManagement = true
         socketOptions = SocketOptions(
             connectTimeoutMs = config.connectTimeout.inWholeMilliseconds.toInt(),
@@ -129,7 +136,7 @@ public class CrtHttpEngine(public val config: CrtHttpEngineConfig) : HttpClientE
         // close all resources
         // SAFETY: shutdown is only invoked once AND only after all requests have completed and no more are coming
         connManagers.forEach { entry -> entry.value.close() }
-        customTlsContext?.close()
+        resolvedTlsContext.close()
     }
 
     private suspend fun getManagerForUri(uri: Uri, proxyConfig: ProxyConfig): HttpClientConnectionManager = mutex.withLock {
@@ -150,4 +157,11 @@ public class CrtHttpEngine(public val config: CrtHttpEngineConfig) : HttpClientE
             HttpClientConnectionManager(connOpts)
         }
     }
+}
+
+private fun toCrtTlsVersion(sdkTlsVersion: SdkTlsVersion): CrtTlsVersion = when (sdkTlsVersion) {
+    SdkTlsVersion.Tls1_0 -> CrtTlsVersion.TLSv1
+    SdkTlsVersion.Tls1_1 -> CrtTlsVersion.TLS_V1_1
+    SdkTlsVersion.Tls1_2 -> CrtTlsVersion.TLS_V1_2
+    SdkTlsVersion.Tls1_3 -> CrtTlsVersion.TLS_V1_3
 }

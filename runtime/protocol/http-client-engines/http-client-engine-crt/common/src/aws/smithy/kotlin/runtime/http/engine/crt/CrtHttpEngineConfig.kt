@@ -53,7 +53,7 @@ public class CrtHttpEngineConfig private constructor(builder: Builder) : HttpCli
         public var clientBootstrap: ClientBootstrap? = null
 
         /**
-         * Set the TLS context to use. By default it is a shared instance.
+         * Set the TLS context to use.
          */
         public var tlsContext: TlsContext? = null
 

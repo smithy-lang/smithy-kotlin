@@ -2,8 +2,8 @@
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
  * SPDX-License-Identifier: Apache-2.0
  */
-import java.io.*
-import java.net.*
+import java.io.Closeable
+import java.net.URLClassLoader
 
 description = "Common HTTP Client Engine Test Suite"
 extra["moduleName"] = "aws.smithy.kotlin.http.test"
@@ -21,14 +21,17 @@ kotlin {
             dependencies {
                 implementation(project(":runtime:protocol:http-client"))
                 implementation(project(":runtime:protocol:http-test"))
+                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion")
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:$coroutinesVersion")
                 implementation(project(":runtime:testing"))
+
+                implementation("io.ktor:ktor-network-tls-certificates:$ktorVersion")
             }
         }
 
         jvmMain {
             dependencies {
-                implementation("io.ktor:ktor-server-cio:$ktorVersion")
+                implementation("io.ktor:ktor-server-jetty:$ktorVersion")
 
                 implementation(project(":runtime:protocol:http-client-engines:http-client-engine-default"))
                 implementation(project(":runtime:protocol:http-client-engines:http-client-engine-crt"))
@@ -50,7 +53,7 @@ kotlin {
     }
 }
 
-open class LocalTestServer : DefaultTask() {
+open class LocalTestServers : DefaultTask() {
     @Internal
     var server: Closeable? = null
         private set
@@ -64,16 +67,16 @@ open class LocalTestServer : DefaultTask() {
     @TaskAction
     fun exec() {
         try {
-            println("[TestServer] start")
+            println("[TestServers] start")
             val urlClassLoaderSource = classpath.map { file -> file.toURI().toURL() }.toTypedArray()
             val loader = URLClassLoader(urlClassLoaderSource, ClassLoader.getSystemClassLoader())
 
             val mainClass = loader.loadClass(main)
-            val main = mainClass.getMethod("startServer")
+            val main = mainClass.getMethod("startServers")
             server = main.invoke(null) as Closeable
-            println("[TestServer] started")
+            println("[TestServers] started")
         } catch (cause: Throwable) {
-            println("[TestServer] failed: ${cause.message}")
+            println("[TestServers] failed: ${cause.message}")
             throw cause
         }
     }
@@ -81,17 +84,17 @@ open class LocalTestServer : DefaultTask() {
     fun stop() {
         if (server != null) {
             server?.close()
-            println("[TestServer] stop")
+            println("[TestServers] stop")
         }
     }
 }
 
 val osName = System.getProperty("os.name")
 
-val startTestServer = task<LocalTestServer>("startTestServer") {
+val startTestServers = task<LocalTestServers>("startTestServers") {
     dependsOn(tasks["jvmJar"])
 
-    main = "aws.smithy.kotlin.runtime.http.test.util.TestServerKt"
+    main = "aws.smithy.kotlin.runtime.http.test.util.TestServersKt"
     val kotlinCompilation = kotlin.targets.getByName("jvm").compilations["test"]
     classpath = (kotlinCompilation as org.jetbrains.kotlin.gradle.plugin.KotlinCompilationToRunnableFiles<*>).runtimeDependencyFiles
 }
@@ -99,7 +102,7 @@ val startTestServer = task<LocalTestServer>("startTestServer") {
 val testTasks = listOf("allTests", "jvmTest")
     .forEach {
         tasks.named(it) {
-            dependsOn(startTestServer)
+            dependsOn(startTestServers)
         }
     }
 
@@ -111,5 +114,5 @@ tasks.jvmTest {
 }
 
 gradle.buildFinished {
-    startTestServer.stop()
+    startTestServers.stop()
 }

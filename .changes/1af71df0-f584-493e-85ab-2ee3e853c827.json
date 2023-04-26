@@ -1,0 +1,8 @@
+{
+    "id": "1af71df0-f584-493e-85ab-2ee3e853c827",
+    "type": "feature",
+    "description": "Add HTTP engine configuration for minimum TLS version",
+    "issues": [
+        "awslabs/smithy-kotlin#661"
+    ]
+}

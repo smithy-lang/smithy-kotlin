@@ -5,6 +5,7 @@
 package aws.smithy.kotlin.runtime.http.engine
 
 import aws.smithy.kotlin.runtime.InternalApi
+import aws.smithy.kotlin.runtime.config.TlsVersion
 import aws.smithy.kotlin.runtime.net.HostResolver
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
@@ -71,6 +72,8 @@ public open class HttpClientEngineConfig constructor(builder: Builder) {
      * The proxy selection policy
      */
     public val proxySelector: ProxySelector = builder.proxySelector
+
+    public val minTlsVersion: TlsVersion = builder.minTlsVersion
 
     /**
      * The host name resolver (DNS)
@@ -139,6 +142,11 @@ public open class HttpClientEngineConfig constructor(builder: Builder) {
          * ```
          */
         public var proxySelector: ProxySelector = EnvironmentProxySelector()
+
+        /**
+         * Set the minimum allowed TLS version for HTTP connections.
+         */
+        public var minTlsVersion: TlsVersion = TlsVersion.Tls1_2
 
         /**
          * The host name resolver (DNS) to be used by the client
