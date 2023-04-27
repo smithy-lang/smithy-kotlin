@@ -52,14 +52,10 @@ class KotlinJmespathExpressionVisitor(
     private val nullableIndex = NullableIndex(ctx.model)
 
     // tracks the current shape on which the visitor is operating
-    private val shapeCursor = ArrayDeque<Shape>()
+    private val shapeCursor = ArrayDeque(listOf(shape))
 
     private val currentShape: Shape
         get() = shapeCursor.last()
-
-    init {
-        shapeCursor.addLast(shape)
-    }
 
     private fun acceptSubexpression(expr: JmespathExpression): VisitedExpression {
         shapeCursor.addLast(currentShape)
@@ -145,7 +141,7 @@ class KotlinJmespathExpressionVisitor(
         val right = acceptSubexpression(expression.right)
 
         val ident = addTempVar("and", "if ($leftTruthinessName) ${right.identifier} else ${left.identifier}")
-        return VisitedExpression(ident, null)
+        return VisitedExpression(ident)
     }
 
     override fun visitComparator(expression: ComparatorExpression): VisitedExpression {
@@ -166,7 +162,7 @@ class KotlinJmespathExpressionVisitor(
         }
 
         val ident = addTempVar("comparison", codegen)
-        return VisitedExpression(ident, null)
+        return VisitedExpression(ident)
     }
 
     override fun visitCurrentNode(expression: CurrentExpression): VisitedExpression {
@@ -213,7 +209,7 @@ class KotlinJmespathExpressionVisitor(
 
             val containsExpr = ensureNullGuard(subject.shape, "contains(${search.identifier})", "false")
             val ident = addTempVar("contains", "${subject.identifier}$containsExpr")
-            VisitedExpression(ident, null)
+            VisitedExpression(ident)
         }
 
         "length" -> {
@@ -224,7 +220,7 @@ class KotlinJmespathExpressionVisitor(
 
             val lengthExpr = ensureNullGuard(subject.shape, "length", "0")
             val ident = addTempVar("length", "${subject.identifier}$lengthExpr")
-            VisitedExpression(ident, null)
+            VisitedExpression(ident)
         }
 
         else -> throw CodegenException("Unknown function type in $expression")
@@ -243,7 +239,7 @@ class KotlinJmespathExpressionVisitor(
             else -> throw CodegenException("Expression type $expression is unsupported")
         }
 
-        return VisitedExpression(ident, null)
+        return VisitedExpression(ident)
     }
 
     override fun visitMultiSelectHash(expression: MultiSelectHashExpression): VisitedExpression {
@@ -273,7 +269,7 @@ class KotlinJmespathExpressionVisitor(
         val notName = "not${operand.identifier.replaceFirstChar(Char::uppercaseChar)}"
 
         val ident = addTempVar(notName, "!$truthinessName")
-        return VisitedExpression(ident, null)
+        return VisitedExpression(ident)
     }
 
     override fun visitObjectProjection(expression: ObjectProjectionExpression): VisitedExpression {
@@ -296,7 +292,7 @@ class KotlinJmespathExpressionVisitor(
         val right = acceptSubexpression(expression.right)
 
         val ident = addTempVar("or", "if ($leftTruthinessName) ${left.identifier} else ${right.identifier}")
-        return VisitedExpression(ident, null)
+        return VisitedExpression(ident)
     }
 
     override fun visitProjection(expression: ProjectionExpression): VisitedExpression {
@@ -354,4 +350,4 @@ class KotlinJmespathExpressionVisitor(
  *              shape, e.g. [LiteralExpression] (the value is just a literal) or [FunctionExpression]s where the
  *              returned value is scalar.
  */
-data class VisitedExpression(val identifier: String, val shape: Shape?)
+data class VisitedExpression(val identifier: String, val shape: Shape? = null)
