@@ -90,8 +90,8 @@ class KotlinJmespathExpressionVisitor(
         if (!condition) throw CodegenException(lazyMessage())
     }
 
-    private fun flatMappingBlock(right: JmespathExpression, leftName: String, leftShape: Shape): String {
-        if (right is CurrentExpression) return leftName // Nothing to map
+    private fun flatMappingBlock(right: JmespathExpression, leftName: String, leftShape: Shape): VisitedExpression {
+        if (right is CurrentExpression) return VisitedExpression(leftName, leftShape) // nothing to map
 
         val outerName = bestTempVarName("projection")
         writer.openBlock("val #L = #L.flatMap {", outerName, leftName)
@@ -104,7 +104,7 @@ class KotlinJmespathExpressionVisitor(
         writer.write(innerCollector)
 
         writer.closeBlock("}")
-        return outerName
+        return VisitedExpression(outerName, innerResult.shape)
     }
 
     private fun subfield(expression: FieldExpression, parentName: String): VisitedExpression {
@@ -187,8 +187,7 @@ class KotlinJmespathExpressionVisitor(
             write("#L == true", comparison.identifier)
         }
 
-        val ident = flatMappingBlock(expression.right, filteredName, left.shape)
-        return VisitedExpression(ident, left.shape)
+        return flatMappingBlock(expression.right, filteredName, left.shape)
     }
 
     override fun visitFlatten(expression: FlattenExpression): VisitedExpression {
@@ -279,8 +278,7 @@ class KotlinJmespathExpressionVisitor(
         val valuesExpr = ensureNullGuard(left.shape, "values")
         val valuesName = addTempVar("${left.identifier}Values", "${left.identifier}$valuesExpr")
 
-        val ident = flatMappingBlock(expression.right, valuesName, left.shape)
-        return VisitedExpression(ident, left.shape)
+        return flatMappingBlock(expression.right, valuesName, left.shape)
     }
 
     override fun visitOr(expression: OrExpression): VisitedExpression {
@@ -299,8 +297,7 @@ class KotlinJmespathExpressionVisitor(
         val left = acceptSubexpression(expression.left)
         requireNotNull(left.shape) { "projection is operating on nothing?" }
 
-        val ident = flatMappingBlock(expression.right, left.identifier, left.shape)
-        return VisitedExpression(ident, left.shape)
+        return flatMappingBlock(expression.right, left.identifier, left.shape)
     }
 
     override fun visitSlice(expression: SliceExpression): VisitedExpression {
