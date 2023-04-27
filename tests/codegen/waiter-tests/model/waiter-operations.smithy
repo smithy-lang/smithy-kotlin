@@ -729,6 +729,20 @@ service WaitersTestService {
             }
         ]
     },
+    HasFilteredSubStruct: {
+        acceptors: [
+            {
+                state: "success",
+                matcher: {
+                    output: {
+                        path: "lists.structs[].subStructs[?subStructPrimitives.integer > `0`][].subStructPrimitives.string"
+                        expected: "foo",
+                        comparator: "anyStringEquals"
+                    }
+                }
+            }
+        ]
+    },
 )
 @readonly
 @http(method: "GET", uri: "/entities/{name}", code: 200)
