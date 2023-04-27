@@ -118,12 +118,12 @@ object RuntimeConfigProperty {
         additionalImports = listOf(RuntimeTypes.Core.Retries.StandardRetryStrategy)
     }
 
-    val SdkLogMode = ConfigProperty {
+    val LogMode = ConfigProperty {
         symbol = buildSymbol {
-            name = RuntimeTypes.SmithyClient.SdkLogMode.name
-            namespace = RuntimeTypes.SmithyClient.SdkLogMode.namespace
+            name = RuntimeTypes.SmithyClient.LogMode.name
+            namespace = RuntimeTypes.SmithyClient.LogMode.namespace
         }
-        propertyType = ConfigPropertyType.RequiredWithDefault("SdkLogMode.Default")
+        propertyType = ConfigPropertyType.RequiredWithDefault("LogMode.Default")
 
         baseClass = RuntimeTypes.SmithyClient.SdkClientConfig
         builderBaseClass = buildSymbol {

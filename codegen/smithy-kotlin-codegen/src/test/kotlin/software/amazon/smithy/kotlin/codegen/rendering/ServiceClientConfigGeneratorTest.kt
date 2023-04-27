@@ -55,7 +55,7 @@ public class Config private constructor(builder: Builder) : HttpAuthConfig, Http
     override val interceptors: kotlin.collections.List<aws.smithy.kotlin.runtime.http.interceptors.HttpInterceptor> = builder.interceptors
     override val retryPolicy: RetryPolicy<Any?> = builder.retryPolicy ?: StandardRetryPolicy.Default
     override val retryStrategy: RetryStrategy = builder.retryStrategy ?: StandardRetryStrategy()
-    override val sdkLogMode: SdkLogMode = builder.sdkLogMode ?: SdkLogMode.Default
+    override val logMode: LogMode = builder.logMode ?: LogMode.Default
     override val tracer: Tracer = builder.tracer ?: DefaultTracer(LoggingTraceProbe, clientName)
 """
         contents.shouldContainWithDiff(expectedProps)
@@ -127,7 +127,7 @@ public class Config private constructor(builder: Builder) : HttpAuthConfig, Http
          * performance considerations when dumping the request/response body. This is primarily a tool for
          * debug purposes.
          */
-        override var sdkLogMode: SdkLogMode? = null
+        override var logMode: LogMode? = null
 
         /**
          * The tracer that is responsible for creating trace spans and wiring them up to a tracing backend (e.g.,
@@ -148,7 +148,7 @@ public class Config private constructor(builder: Builder) : HttpAuthConfig, Http
             "import ${KotlinDependency.CORE.namespace}.client.IdempotencyTokenConfig",
             "import ${KotlinDependency.CORE.namespace}.client.IdempotencyTokenProvider",
             "import ${KotlinDependency.CORE.namespace}.client.SdkClientConfig",
-            "import ${KotlinDependency.CORE.namespace}.client.SdkLogMode",
+            "import ${KotlinDependency.CORE.namespace}.client.LogMode",
         )
         expectedImports.forEach {
             contents.shouldContainWithDiff(it)
@@ -237,8 +237,8 @@ public class Config private constructor(builder: Builder) {
         val testCtx = model.newTestContext()
         val writer = createWriter()
         val customIntegration = object : KotlinIntegration {
-            private val overriddenLogMode = RuntimeConfigProperty.SdkLogMode.toBuilder().apply {
-                propertyType = ConfigPropertyType.RequiredWithDefault("SdkLogMode.LogRequest") // replaces SdkLogMode.Default
+            private val overriddenLogMode = RuntimeConfigProperty.LogMode.toBuilder().apply {
+                propertyType = ConfigPropertyType.RequiredWithDefault("LogMode.LogRequest") // replaces LogMode.Default
             }.build()
 
             override fun additionalServiceConfigProps(ctx: CodegenContext): List<ConfigProperty> = listOf(
@@ -253,7 +253,7 @@ public class Config private constructor(builder: Builder) {
         ServiceClientConfigGenerator(serviceShape, detectDefaultProps = true).render(renderingCtx, renderingCtx.writer)
         val contents = writer.toString()
 
-        // Expect sdkLogMode config value to override default to SdkLogMode.Request
+        // Expect logMode config value to override default to LogMode.Request
         val expectedConfigValues = """
     override val clientName: String = builder.clientName
     override val httpClientEngine: HttpClientEngine = builder.httpClientEngine ?: DefaultHttpEngine().manage()
@@ -264,7 +264,7 @@ public class Config private constructor(builder: Builder) {
     override val interceptors: kotlin.collections.List<aws.smithy.kotlin.runtime.http.interceptors.HttpInterceptor> = builder.interceptors
     override val retryPolicy: RetryPolicy<Any?> = builder.retryPolicy ?: StandardRetryPolicy.Default
     override val retryStrategy: RetryStrategy = builder.retryStrategy ?: StandardRetryStrategy()
-    override val sdkLogMode: SdkLogMode = builder.sdkLogMode ?: SdkLogMode.LogRequest
+    override val logMode: LogMode = builder.logMode ?: LogMode.LogRequest
     override val tracer: Tracer = builder.tracer ?: DefaultTracer(LoggingTraceProbe, clientName)"""
         contents.shouldContainWithDiff(expectedConfigValues)
     }

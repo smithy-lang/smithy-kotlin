@@ -27,8 +27,8 @@ public interface SdkClientConfig {
      * performance considerations when dumping the request/response body. This is primarily a tool for
      * debug purposes.
      */
-    public val sdkLogMode: SdkLogMode
-        get() = SdkLogMode.Default
+    public val logMode: LogMode
+        get() = LogMode.Default
 
     /**
      * The policy to use for evaluating operation results and determining whether/how to retry.
@@ -54,8 +54,8 @@ public interface SdkClientConfig {
         /**
          * Configure events that will be logged. By default, clients will not output
          * raw requests or responses.
-         * Configure the `AWS_SDK_KOTLIN_SDK_LOG_MODE` environment variable,
-         * `aws.sdk.kotlin.sdkLogMode` JVM system property, or use this setting to opt in to additional debug logging.
+         * Configure the `AWS_SDK_KOTLIN_LOG_MODE` environment variable,
+         * `aws.sdk.kotlin.logMode` JVM system property, or use this setting to opt in to additional debug logging.
          *
          * This can be used to configure logging of requests, responses, retries, etc of SDK clients.
          *
@@ -63,7 +63,7 @@ public interface SdkClientConfig {
          * performance considerations when dumping the request/response body. This is primarily a tool for
          * debug purposes.
          */
-        public var sdkLogMode: SdkLogMode?
+        public var logMode: LogMode?
 
         /**
          * The policy to use for evaluating operation results and determining whether/how to retry.
