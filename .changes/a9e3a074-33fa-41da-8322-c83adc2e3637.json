@@ -1,5 +1,0 @@
-{
-    "id": "a9e3a074-33fa-41da-8322-c83adc2e3637",
-    "type": "bugfix",
-    "description": "Fix okhttp streaming body failing to retry"
-}

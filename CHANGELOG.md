@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.17.4] - 04/27/2023
+
+### Fixes
+* [#892](https://github.com/awslabs/aws-sdk-kotlin/issues/892) Fix broken enum-based waiters.
+* Fix okhttp streaming body failing to retry
+
+### Miscellaneous
+* Refactor environment settings and retry modes out of aws-sdk-kotlin
+
 ## [0.17.3] - 04/20/2023
 This release is identical to 
 [0.17.2](https://github.com/awslabs/smithy-kotlin/blob/main/CHANGELOG.md#0172---04202023).
