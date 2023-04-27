@@ -83,18 +83,18 @@ private fun KotlinWriter.renderPathAcceptor(wi: WaiterInfo, directive: String, i
     withBlock("#T(RetryDirective.#L) {", "},", acceptorType, directive) {
         val visitor = KotlinJmespathExpressionVisitor(wi.ctx, this, visitedShape)
         val expression = JmespathExpression.parse(matcher.path)
-        val (actual, _) = expression.accept(visitor)
+        val actual = expression.accept(visitor)
 
         val expected = matcher.expected
         val comparison = when (matcher.comparator!!) {
-            PathComparator.STRING_EQUALS -> "$actual == ${expected.dq()}"
-            PathComparator.BOOLEAN_EQUALS -> "$actual == ${expected.toBoolean()}"
-            PathComparator.ANY_STRING_EQUALS -> "$actual?.any { it == ${expected.dq()} } ?: false"
+            PathComparator.STRING_EQUALS -> "${actual.identifier} == ${expected.dq()}"
+            PathComparator.BOOLEAN_EQUALS -> "${actual.identifier} == ${expected.toBoolean()}"
+            PathComparator.ANY_STRING_EQUALS -> "${actual.identifier}?.any { it == ${expected.dq()} } ?: false"
 
             // NOTE: the isNotEmpty check is necessary because the waiter spec says that `allStringEquals` requires
             // at least one value unlike Kotlin's `all` which returns true if the collection is empty
             PathComparator.ALL_STRING_EQUALS ->
-                "!$actual.isNullOrEmpty() && $actual.all { it == ${expected.dq()} }"
+                "!${actual.identifier}.isNullOrEmpty() && ${actual.identifier}.all { it == ${expected.dq()} }"
         }
         write(comparison)
     }

@@ -35,11 +35,8 @@ private val suffixSequence = sequenceOf("") + generateSequence(2) { it + 1 }.map
  * modeled object. This visitor is passed to [JmespathExpression.accept], at which point specific expression methods
  * will be invoked.
  *
- * Each step of the traversal returns a tuple of the following:
- * - A string representing the generated identifier in which the query result is stored.
- * - The underlying shape (if any) that the identifier represents. Not all expressions reference a modeled shape, e.g.
- *   [LiteralExpression] (the value is just a literal) or [FunctionExpression]s where the returned value is scalar.
- * Any intermediate code required to express the query is written immediately to the provided writer.
+ * Each step of the traversal returns a [VisitedExpression]. Any intermediate code required to express the query is
+ * written immediately to the provided writer.
  *
  * @param ctx The surrounding [CodegenContext].
  * @param writer The [KotlinWriter] to generate code into.
@@ -49,20 +46,25 @@ class KotlinJmespathExpressionVisitor(
     val ctx: CodegenContext,
     val writer: KotlinWriter,
     shape: Shape,
-) : ExpressionVisitor<Pair<String, Shape?>> {
+) : ExpressionVisitor<VisitedExpression> {
     private val tempVars = mutableSetOf<String>()
 
     private val nullableIndex = NullableIndex(ctx.model)
 
-    private var currentShape: Shape = shape
+    // tracks the current shape on which the visitor is operating
+    private val shapeCursor = ArrayDeque<Shape>()
 
-    // preserve currentShape state as we traverse subexpressions
-    private var currentShapeStack = ArrayDeque<Shape>()
+    private val currentShape: Shape
+        get() = shapeCursor.last()
 
-    private fun acceptSubexpression(expr: JmespathExpression): Pair<String, Shape?> {
-        currentShapeStack.addLast(currentShape)
+    init {
+        shapeCursor.addLast(shape)
+    }
+
+    private fun acceptSubexpression(expr: JmespathExpression): VisitedExpression {
+        shapeCursor.addLast(currentShape)
         val out = expr.accept(this)
-        currentShape = currentShapeStack.removeLast()
+        shapeCursor.removeLast()
         return out
     }
 
@@ -75,7 +77,7 @@ class KotlinJmespathExpressionVisitor(
     private fun bestTempVarName(preferredName: String): String =
         suffixSequence.map { "$preferredName$it" }.first(tempVars::add)
 
-    private fun childBlock(forExpression: JmespathExpression, shape: Shape): Pair<String, Shape?> {
+    private fun childBlock(forExpression: JmespathExpression, shape: Shape): VisitedExpression {
         val childShape = when (val target = shape.targetOrSelf(ctx.model)) {
             is ListShape -> target.member
             is MapShape -> target.value
@@ -98,10 +100,10 @@ class KotlinJmespathExpressionVisitor(
         val outerName = bestTempVarName("projection")
         writer.openBlock("val #L = #L.flatMap {", outerName, leftName)
 
-        val (innerResult, _) = childBlock(right, leftShape)
+        val innerResult = childBlock(right, leftShape)
         val innerCollector = when (right) {
-            is MultiSelectListExpression -> innerResult // Already a list
-            else -> "listOfNotNull($innerResult)"
+            is MultiSelectListExpression -> innerResult.identifier // Already a list
+            else -> "listOfNotNull(${innerResult.identifier})"
         }
         writer.write(innerCollector)
 
@@ -109,7 +111,7 @@ class KotlinJmespathExpressionVisitor(
         return outerName
     }
 
-    private fun subfield(expression: FieldExpression, parentName: String): Pair<String, Shape?> {
+    private fun subfield(expression: FieldExpression, parentName: String): VisitedExpression {
         val member = currentShape.targetOrSelf(ctx.model).getMember(expression.name).getOrNull()
             ?: throw CodegenException("reference to nonexistent member '${expression.name}' of shape $currentShape")
 
@@ -130,184 +132,195 @@ class KotlinJmespathExpressionVisitor(
             unwrapExpr?.let { append(ensureNullGuard(member, it)) }
         }
 
-        currentShape = member
-        return addTempVar(name, codegen) to currentShape
+        shapeCursor.addLast(member)
+        return VisitedExpression(addTempVar(name, codegen), member)
     }
 
-    override fun visitAnd(expression: AndExpression): Pair<String, Shape?> {
+    override fun visitAnd(expression: AndExpression): VisitedExpression {
         writer.addImport(RuntimeTypes.Core.Utils.truthiness)
 
-        val (leftName, _) = acceptSubexpression(expression.left)
-        val leftTruthinessName = addTempVar("${leftName}Truthiness", "truthiness($leftName)")
+        val left = acceptSubexpression(expression.left)
+        val leftTruthinessName = addTempVar("${left.identifier}Truthiness", "truthiness(${left.identifier})")
 
-        val (rightName, _) = acceptSubexpression(expression.right)
+        val right = acceptSubexpression(expression.right)
 
-        return addTempVar("and", "if ($leftTruthinessName) $rightName else $leftName") to null
+        val ident = addTempVar("and", "if ($leftTruthinessName) ${right.identifier} else ${left.identifier}")
+        return VisitedExpression(ident, null)
     }
 
-    override fun visitComparator(expression: ComparatorExpression): Pair<String, Shape?> {
-        val (leftName, leftShape) = acceptSubexpression(expression.left)
-        val (rightName, rightShape) = acceptSubexpression(expression.right)
+    override fun visitComparator(expression: ComparatorExpression): VisitedExpression {
+        val left = acceptSubexpression(expression.left)
+        val right = acceptSubexpression(expression.right)
 
         val codegen = buildString {
             val nullables = buildList {
-                if (leftShape?.isNullable == true) add("$leftName == null")
-                if (rightShape?.isNullable == true) add("$rightName == null")
+                if (left.shape?.isNullable == true) add("${left.identifier} == null")
+                if (right.shape?.isNullable == true) add("${left.identifier} == null")
             }
             if (nullables.isNotEmpty()) {
                 val isNullExpr = nullables.joinToString(" || ")
                 append("if ($isNullExpr) null else ")
             }
 
-            append("$leftName.compareTo($rightName) ${expression.comparator} 0")
+            append("${left.identifier}.compareTo(${right.identifier}) ${expression.comparator} 0")
         }
 
-        return addTempVar("comparison", codegen) to null
+        val ident = addTempVar("comparison", codegen)
+        return VisitedExpression(ident, null)
     }
 
-    override fun visitCurrentNode(expression: CurrentExpression): Pair<String, Shape?> {
+    override fun visitCurrentNode(expression: CurrentExpression): VisitedExpression {
         throw CodegenException("Unexpected current expression outside of flatten expression: $expression")
     }
 
-    override fun visitExpressionType(expression: ExpressionTypeExpression): Pair<String, Shape?> {
+    override fun visitExpressionType(expression: ExpressionTypeExpression): VisitedExpression {
         throw CodegenException("ExpressionTypeExpression is unsupported")
     }
 
-    override fun visitField(expression: FieldExpression): Pair<String, Shape?> = subfield(expression, "it")
+    override fun visitField(expression: FieldExpression): VisitedExpression = subfield(expression, "it")
 
-    override fun visitFilterProjection(expression: FilterProjectionExpression): Pair<String, Shape?> {
-        val (leftName, leftShape) = acceptSubexpression(expression.left)
-        requireNotNull(leftShape) { "filter projection is operating on nothing?" }
+    override fun visitFilterProjection(expression: FilterProjectionExpression): VisitedExpression {
+        val left = acceptSubexpression(expression.left)
+        requireNotNull(left.shape) { "filter projection is operating on nothing?" }
 
-        val filteredName = bestTempVarName("${leftName}Filtered")
+        val filteredName = bestTempVarName("${left.identifier}Filtered")
 
-        val filterExpr = ensureNullGuard(leftShape, "filter")
-        writer.withBlock("val #L = #L#L {", "}", filteredName, leftName, filterExpr) {
-            val (comparisonName, _) = childBlock(expression.comparison, leftShape)
-            write("#L == true", comparisonName)
+        val filterExpr = ensureNullGuard(left.shape, "filter")
+        writer.withBlock("val #L = #L#L {", "}", filteredName, left.identifier, filterExpr) {
+            val comparison = childBlock(expression.comparison, left.shape)
+            write("#L == true", comparison.identifier)
         }
 
-        return flatMappingBlock(expression.right, filteredName, leftShape) to leftShape
+        val ident = flatMappingBlock(expression.right, filteredName, left.shape)
+        return VisitedExpression(ident, left.shape)
     }
 
-    override fun visitFlatten(expression: FlattenExpression): Pair<String, Shape?> {
+    override fun visitFlatten(expression: FlattenExpression): VisitedExpression {
         writer.addImport(RuntimeTypes.Core.Utils.flattenIfPossible)
 
-        val (innerName, innerShape) = acceptSubexpression(expression.expression)
-        val flattenExpr = ensureNullGuard(innerShape, "flattenIfPossible()", "listOf()")
-        return addTempVar("${innerName}OrEmpty", "$innerName$flattenExpr") to innerShape
+        val inner = acceptSubexpression(expression.expression)
+        val flattenExpr = ensureNullGuard(inner.shape, "flattenIfPossible()", "listOf()")
+        val ident = addTempVar("${inner.identifier}OrEmpty", "${inner.identifier}$flattenExpr")
+        return VisitedExpression(ident, inner.shape)
     }
 
-    override fun visitFunction(expression: FunctionExpression): Pair<String, Shape?> = when (expression.name) {
+    override fun visitFunction(expression: FunctionExpression): VisitedExpression = when (expression.name) {
         "contains" -> {
             codegenReq(expression.arguments.size == 2) { "Unexpected number of arguments to $expression" }
 
-            val subject = expression.arguments[0]
-            val (subjectName, subjectShape) = acceptSubexpression(subject)
+            val subject = acceptSubexpression(expression.arguments[0])
+            val search = acceptSubexpression(expression.arguments[1])
 
-            val search = expression.arguments[1]
-            val (searchName, _) = acceptSubexpression(search)
-
-            val containsExpr = ensureNullGuard(subjectShape, "contains($searchName)", "false")
-            addTempVar("contains", "$subjectName$containsExpr") to null
+            val containsExpr = ensureNullGuard(subject.shape, "contains(${search.identifier})", "false")
+            val ident = addTempVar("contains", "${subject.identifier}$containsExpr")
+            VisitedExpression(ident, null)
         }
 
         "length" -> {
             codegenReq(expression.arguments.size == 1) { "Unexpected number of arguments to $expression" }
             writer.addImport(RuntimeTypes.Core.Utils.length)
 
-            val subject = expression.arguments[0]
-            val (subjectName, subjectShape) = acceptSubexpression(subject)
+            val subject = acceptSubexpression(expression.arguments[0])
 
-            val lengthExpr = ensureNullGuard(subjectShape, "length", "0")
-            addTempVar("length", "$subjectName$lengthExpr") to null
+            val lengthExpr = ensureNullGuard(subject.shape, "length", "0")
+            val ident = addTempVar("length", "${subject.identifier}$lengthExpr")
+            VisitedExpression(ident, null)
         }
 
         else -> throw CodegenException("Unknown function type in $expression")
     }
 
-    override fun visitIndex(expression: IndexExpression): Pair<String, Shape?> {
+    override fun visitIndex(expression: IndexExpression): VisitedExpression {
         throw CodegenException("IndexExpression is unsupported")
     }
 
-    override fun visitLiteral(expression: LiteralExpression): Pair<String, Shape?> = when (expression.type) {
-        RuntimeType.STRING -> addTempVar("string", expression.expectStringValue().dq()) to null
-        RuntimeType.NUMBER -> addTempVar("number", expression.expectNumberValue().toString()) to null
-        RuntimeType.BOOLEAN -> addTempVar("bool", expression.expectBooleanValue().toString()) to null
-        RuntimeType.NULL -> "null" to null
-        else -> throw CodegenException("Expression type $expression is unsupported")
+    override fun visitLiteral(expression: LiteralExpression): VisitedExpression {
+        val ident = when (expression.type) {
+            RuntimeType.STRING -> addTempVar("string", expression.expectStringValue().dq())
+            RuntimeType.NUMBER -> addTempVar("number", expression.expectNumberValue().toString())
+            RuntimeType.BOOLEAN -> addTempVar("bool", expression.expectBooleanValue().toString())
+            RuntimeType.NULL -> "null"
+            else -> throw CodegenException("Expression type $expression is unsupported")
+        }
+
+        return VisitedExpression(ident, null)
     }
 
-    override fun visitMultiSelectHash(expression: MultiSelectHashExpression): Pair<String, Shape?> {
+    override fun visitMultiSelectHash(expression: MultiSelectHashExpression): VisitedExpression {
         throw CodegenException("MultiSelectHashExpression is unsupported")
     }
 
-    override fun visitMultiSelectList(expression: MultiSelectListExpression): Pair<String, Shape?> {
+    override fun visitMultiSelectList(expression: MultiSelectListExpression): VisitedExpression {
         val listName = bestTempVarName("multiSelect")
         writer.openBlock("val #L = listOfNotNull(", listName)
 
-        expression.expressions.forEach { inner ->
+        expression.expressions.forEach {
             writer.openBlock("run {")
-            val (innerName, _) = acceptSubexpression(inner)
-            writer.write(innerName)
+            val inner = acceptSubexpression(it)
+            writer.write(inner.identifier)
             writer.closeBlock("},")
         }
 
         writer.closeBlock(")")
-        return listName to currentShape
+        return VisitedExpression(listName, currentShape)
     }
 
-    override fun visitNot(expression: NotExpression): Pair<String, Shape?> {
+    override fun visitNot(expression: NotExpression): VisitedExpression {
         writer.addImport(RuntimeTypes.Core.Utils.truthiness)
 
-        val (operandName, _) = acceptSubexpression(expression.expression)
-        val truthinessName = addTempVar("${operandName}Truthiness", "truthiness($operandName)")
-        val notName = "not${operandName.replaceFirstChar(Char::uppercaseChar)}"
-        return addTempVar(notName, "!$truthinessName") to null
+        val operand = acceptSubexpression(expression.expression)
+        val truthinessName = addTempVar("${operand.identifier}Truthiness", "truthiness(${operand.identifier})")
+        val notName = "not${operand.identifier.replaceFirstChar(Char::uppercaseChar)}"
+
+        val ident = addTempVar(notName, "!$truthinessName")
+        return VisitedExpression(ident, null)
     }
 
-    override fun visitObjectProjection(expression: ObjectProjectionExpression): Pair<String, Shape?> {
-        val (left, leftShape) = acceptSubexpression(expression.left)
-        requireNotNull(leftShape) { "object projection is operating on nothing?" }
+    override fun visitObjectProjection(expression: ObjectProjectionExpression): VisitedExpression {
+        val left = acceptSubexpression(expression.left)
+        requireNotNull(left.shape) { "object projection is operating on nothing?" }
 
-        val valuesExpr = ensureNullGuard(leftShape, "values")
-        val valuesName = addTempVar("${left}Values", "$left$valuesExpr")
-        return flatMappingBlock(expression.right, valuesName, leftShape) to leftShape
+        val valuesExpr = ensureNullGuard(left.shape, "values")
+        val valuesName = addTempVar("${left.identifier}Values", "${left.identifier}$valuesExpr")
+
+        val ident = flatMappingBlock(expression.right, valuesName, left.shape)
+        return VisitedExpression(ident, left.shape)
     }
 
-    override fun visitOr(expression: OrExpression): Pair<String, Shape?> {
+    override fun visitOr(expression: OrExpression): VisitedExpression {
         writer.addImport(RuntimeTypes.Core.Utils.truthiness)
 
-        val (leftName, _) = acceptSubexpression(expression.left)
-        val leftTruthinessName = addTempVar("${leftName}Truthiness", "truthiness($leftName)")
+        val left = acceptSubexpression(expression.left)
+        val leftTruthinessName = addTempVar("${left.identifier}Truthiness", "truthiness($${left.identifier})")
 
-        val (rightName, _) = acceptSubexpression(expression.right)
+        val right = acceptSubexpression(expression.right)
 
-        return addTempVar("or", "if ($leftTruthinessName) $leftName else $rightName") to null
+        val ident = addTempVar("or", "if ($leftTruthinessName) ${left.identifier} else ${right.identifier}")
+        return VisitedExpression(ident, null)
     }
 
-    override fun visitProjection(expression: ProjectionExpression): Pair<String, Shape?> {
-        val (leftName, leftShape) = acceptSubexpression(expression.left)
-        requireNotNull(leftShape) { "projection is operating on nothing?" }
+    override fun visitProjection(expression: ProjectionExpression): VisitedExpression {
+        val left = acceptSubexpression(expression.left)
+        requireNotNull(left.shape) { "projection is operating on nothing?" }
 
-        return flatMappingBlock(expression.right, leftName, requireNotNull(leftShape)) to leftShape
+        val ident = flatMappingBlock(expression.right, left.identifier, left.shape)
+        return VisitedExpression(ident, left.shape)
     }
 
-    override fun visitSlice(expression: SliceExpression): Pair<String, Shape?> {
+    override fun visitSlice(expression: SliceExpression): VisitedExpression {
         throw CodegenException("SliceExpression is unsupported")
     }
 
-    override fun visitSubexpression(expression: Subexpression): Pair<String, Shape?> {
-        val (leftName, leftShape) = acceptSubexpression(expression.left)
-        requireNotNull(leftShape)
+    override fun visitSubexpression(expression: Subexpression): VisitedExpression {
+        val left = acceptSubexpression(expression.left)
+        requireNotNull(left.shape)
 
-        currentShapeStack.addLast(currentShape)
-        currentShape = leftShape
+        shapeCursor.addLast(left.shape)
         val ret = when (val right = expression.right) {
-            is FieldExpression -> subfield(right, leftName)
+            is FieldExpression -> subfield(right, left.identifier)
             else -> throw CodegenException("Subexpression type $right is unsupported")
         }
-        currentShape = currentShapeStack.removeLast()
+        shapeCursor.removeLast()
 
         return ret
     }
@@ -333,3 +346,12 @@ class KotlinJmespathExpressionVisitor(
                 ctx.model.expectShape(target).let { !it.hasTrait<OperationInput>() && !it.hasTrait<OperationOutput>() } &&
                 nullableIndex.isMemberNullable(this, NullableIndex.CheckMode.CLIENT_ZERO_VALUE_V1_NO_INPUT)
 }
+
+/**
+ * Contains information about the output of a visited [JmespathExpression].
+ * @param identifier The generated identifier in which the expression result is stored.
+ * @param shape The underlying shape (if any) that the identifier represents. Not all expressions reference a modeled
+ *              shape, e.g. [LiteralExpression] (the value is just a literal) or [FunctionExpression]s where the
+ *              returned value is scalar.
+ */
+data class VisitedExpression(val identifier: String, val shape: Shape?)

@@ -9,7 +9,7 @@ service WaitersTestService {
 }
 
 @waitable(
-	// primitive equality
+    // primitive equality
     BooleanEquals: {
         acceptors: [
             {
@@ -222,7 +222,7 @@ service WaitersTestService {
             }
         ]
     },
-    
+
     // allStringEquals
     StringListAllStringEquals: {
         acceptors: [
@@ -556,7 +556,7 @@ service WaitersTestService {
     },
 
     // function: length, list filter
-    // FUTURE: @ requires generic support for CurrentExpression, currently only recognized within flattens
+    // TODO: @ requires generic support for CurrentExpression, currently only recognized within flattens
     //BooleanListLengthFiltered: {
     //    acceptors: [
     //        {
@@ -736,7 +736,7 @@ structure EntityPrimitives {
     float: Float,
     double: Double,
 
- // FUTURE: support BigInteger/BigDecimal
+ // TODO: support BigInteger/BigDecimal
  // bigInteger: BigInteger,
  // bigDecimal: BigDecimal,
 
