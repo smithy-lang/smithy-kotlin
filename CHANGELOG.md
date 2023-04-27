@@ -1,5 +1,28 @@
 # Changelog
 
+## [0.17.4] - 04/27/2023
+
+### Fixes
+* [#892](https://github.com/awslabs/aws-sdk-kotlin/issues/892) Fix broken enum-based waiters.
+* Fix okhttp streaming body failing to retry
+
+### Miscellaneous
+* Refactor environment settings and retry modes out of aws-sdk-kotlin
+
+## [0.17.3] - 04/20/2023
+This release is identical to 
+[0.17.2](https://github.com/awslabs/smithy-kotlin/blob/main/CHANGELOG.md#0172---04202023).
+
+## [0.17.2] - 04/20/2023
+
+### Features
+* Add support for retrying transient HTTP errors. `RetryErrorType.Timeout` was renamed to `RetryErrorType.Transient`.
+* Enhance exceptions thrown during proxy config parsing
+* Add support for H2_PRIOR_KNOWLEDGE (HTTP2 without TLS)
+
+### Miscellaneous
+* Refactor endpoint resolution to be explicit in SdkOperationExecution and change order to match SRA.
+
 ## [0.17.1] - 04/13/2023
 
 ### Fixes

@@ -68,6 +68,7 @@ dependencies {
     implementation(project(":runtime:protocol:http-client"))
     api(project(":runtime:tracing:tracing-core"))
 
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:$coroutinesVersion")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit5:$kotlinVersion")
 }
 
