@@ -20,6 +20,11 @@ public data class AttributeKey<T>(public val name: String) {
  */
 public interface Attributes {
     /**
+     * Flag indicating if attributes is empty
+     */
+    public val isEmpty: Boolean
+
+    /**
      * Get a value of the attribute for the specified [key] or null
      */
     public fun <T : Any> getOrNull(key: AttributeKey<T>): T?
@@ -117,6 +122,9 @@ private class AttributesImpl constructor(seed: Attributes) : MutableAttributes {
         merge(seed)
     }
 
+    override val isEmpty: Boolean
+        get() = map.isEmpty()
+
     @Suppress("UNCHECKED_CAST")
     override fun <T : Any> getOrNull(key: AttributeKey<T>): T? = map[key] as T?
 
@@ -144,6 +152,7 @@ private class AttributesImpl constructor(seed: Attributes) : MutableAttributes {
 }
 
 private object EmptyAttributes : Attributes {
+    override val isEmpty: Boolean = true
     override val keys: Set<AttributeKey<*>> = emptySet()
     override fun contains(key: AttributeKey<*>): Boolean = false
     override fun <T : Any> getOrNull(key: AttributeKey<T>): T? = null

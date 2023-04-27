@@ -19,7 +19,7 @@ class TraceSpanCoroutineUtilsTest {
     @Test
     fun testRootSpanNoExisting() = runTest {
         val tracer = DefaultTracer(NoOpTraceProbe)
-        val rootSpan = tracer.createRootSpan("root")
+        val rootSpan = tracer.createSpan("root")
         withSpan(rootSpan) {
             val actualSpan = coroutineContext.traceSpan
             assertEquals(rootSpan, actualSpan)
@@ -29,7 +29,7 @@ class TraceSpanCoroutineUtilsTest {
     @Test
     fun testRootSpanExistingIsParent() = runTest {
         val tracer = DefaultTracer(NoOpTraceProbe)
-        val rootSpan = tracer.createRootSpan("root")
+        val rootSpan = tracer.createSpan("root")
 
         withSpan(rootSpan) { currSpan ->
             assertNull(currSpan.parent)
@@ -45,8 +45,8 @@ class TraceSpanCoroutineUtilsTest {
     @Test
     fun testRootSpanExistingIsNotParent() = runTest {
         val tracer = DefaultTracer(NoOpTraceProbe)
-        val rootSpan1 = tracer.createRootSpan("root1")
-        val rootSpan2 = tracer.createRootSpan("root2")
+        val rootSpan1 = tracer.createSpan("root1")
+        val rootSpan2 = tracer.createSpan("root2")
         val illegalRoot = object : TraceSpan {
             override val parent: TraceSpan = rootSpan2
             override val id: String = "illegal span"

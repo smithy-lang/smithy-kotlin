@@ -8,14 +8,14 @@ package aws.smithy.kotlin.runtime.tracing
 /**
  * [TraceProbe] that fans out to multiple probes.
  */
-public class MultiTraceProbe(
+internal class MultiTraceProbe(
     private vararg val probes: TraceProbe,
 ) : TraceProbe {
     override fun spanCreated(span: TraceSpan) {
         probes.forEach { probe -> probe.spanCreated(span) }
     }
 
-    override fun postEvent(span: TraceSpan, event: TraceEvent) {
+    override fun postEvent(span: TraceSpanData, event: TraceEvent) {
         probes.forEach { probe -> probe.postEvent(span, event) }
     }
 

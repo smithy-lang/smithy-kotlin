@@ -11,8 +11,6 @@ import kotlinx.coroutines.withContext
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.coroutineContext
 
-// FIXME - should we add attributes to withSpan extensions?
-
 /**
  * A [CoroutineContext] element that carries a [TraceSpan].
  * @param traceSpan The active trace span for this context.
@@ -50,7 +48,7 @@ public suspend inline fun <R> withSpan(
     crossinline block: suspend CoroutineScope.(span: TraceSpan) -> R,
 ): R {
     val existingSpan = coroutineContext.get(TraceSpanContextElement)?.traceSpan
-    check(existingSpan == null || existingSpan == span.parent) {
+    check(existingSpan == null || existingSpan.context.spanId == span.context.parentId) {
         "This method may only be called when no current span exists or the new span is a child of the active span"
     }
 
@@ -62,6 +60,7 @@ public suspend inline fun <R> withSpan(
         if (ex !is CancellationException && span.spanStatus == TraceSpanStatus.UNSET) {
             span.spanStatus = TraceSpanStatus.ERROR
         }
+        span.recordException(ex, true)
         throw ex
     } finally {
         span.close()
@@ -78,9 +77,8 @@ public suspend inline fun <R> Tracer.withSpan(
     name: String,
     crossinline block: suspend CoroutineScope.(span: TraceSpan) -> R,
 ): R {
-    // FIXME - this is still wrong since different trace probes may be installed on the existing span vs the one that may be crated by this Tracer...
     val existingSpan = coroutineContext[TraceSpanContextElement]?.traceSpan
-    val span = existingSpan?.child(name) ?: createRootSpan(name)
+    val span = existingSpan?.child(name) ?: createSpan(name)
     return withSpan(span, block)
 }
 

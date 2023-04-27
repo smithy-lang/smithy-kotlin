@@ -5,7 +5,7 @@
 package aws.smithy.kotlin.runtime.tracing
 
 import aws.smithy.kotlin.runtime.io.Closeable
-import aws.smithy.kotlin.runtime.util.MutableAttributes
+import aws.smithy.kotlin.runtime.util.Attributes
 
 /**
  * Defines a logical lifecycle within which events may occur. Spans are typically created before some notable operation
@@ -14,26 +14,19 @@ import aws.smithy.kotlin.runtime.util.MutableAttributes
  */
 public interface TraceSpan : Closeable {
     /**
-     * The identifier for this span, which should be unique among sibling spans within the same parent. Trace span IDs
-     * may be used by probes to collate or decorate event output.
+     * The name of the span
      */
-    public val id: String
+    public val name: String
 
     /**
-     * The parent span for this child span (if any).
+     * The span's context
      */
-    public val parent: TraceSpan?
+    public val context: TraceContext
 
     /**
-     * Attributes associated with the span that describes both built-in (e.g. name, trace ID, status, etc) and
-     * user defined characteristics of the span.
+     * The span's status
      */
-    public val attributes: MutableAttributes
-
-    /**
-     * Metadata for this span
-     */
-    public val metadata: TraceSpanMetadata
+    public var spanStatus: TraceSpanStatus
 
     /**
      * Creates a new child span with the given name.
@@ -48,16 +41,34 @@ public interface TraceSpan : Closeable {
      */
     public fun postEvent(event: TraceEvent)
 
-    // TODO - recordException(ex: Throwable) ?
-    // see https://opentelemetry.io/docs/reference/specification/trace/semantic_conventions/exceptions/
+    /**
+     * Set the attribute with the given name to [value]
+     * NOTE: Attributes should generally be a primitive type: boolean, string, long, double or List of the same.
+     */
+    public fun <T : Any> setAttr(key: String, value: T)
 }
 
 /**
- * Metadata describing a span
- * @param traceId the trace this span belongs to
- * @param name the name of the span
+ * An immutable view of a trace span
  */
-public data class TraceSpanMetadata(
-    val traceId: String,
-    val name: String,
-)
+public interface TraceSpanData {
+    /**
+     * The name of the span
+     */
+    public val name: String
+
+    /**
+     * The span's context
+     */
+    public val context: TraceContext
+
+    /**
+     * Attributes (currently) set on the span
+     */
+    public val attributes: Attributes
+
+    /**
+     * The span's status
+     */
+    public val spanStatus: TraceSpanStatus
+}

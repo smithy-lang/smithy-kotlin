@@ -253,8 +253,8 @@ abstract class HttpProtocolClientGenerator(
                 RuntimeTypes.Tracing.Core.withSpan,
                 op.id.name
             ) {
-                write("span.#T(#S, op.context.#T!!)", RuntimeTypes.Tracing.Core.setAttribute, "rpc.method", RuntimeTypes.SmithyClient.operationName)
-                write("span.#T(#S, ServiceId)", RuntimeTypes.Tracing.Core.setAttribute, "rpc.service")
+                write("span.setAttr(#S, op.context.#T!!)", "rpc.method", RuntimeTypes.SmithyClient.operationName)
+                write("span.setAttr(#S, ServiceId)", "rpc.service")
                 // FIXME - set client name
 
                 // FIXME - set aws-api as rpc.system attribute for AWS services

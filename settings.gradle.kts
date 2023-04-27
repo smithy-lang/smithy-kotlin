@@ -63,6 +63,7 @@ include(":runtime:serde:serde-xml")
 include(":runtime:smithy-client")
 include(":runtime:smithy-test")
 include(":runtime:testing")
+include(":runtime:tracing:tracing-otel")
 include(":runtime:tracing:tracing-core")
 
 include(":codegen:smithy-kotlin-codegen")

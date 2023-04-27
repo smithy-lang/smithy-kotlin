@@ -5,6 +5,7 @@
 package aws.smithy.kotlin.runtime.tracing
 
 import aws.smithy.kotlin.runtime.time.Instant
+import aws.smithy.kotlin.runtime.util.Attributes
 import kotlin.time.Duration
 
 /**
@@ -30,7 +31,11 @@ public sealed interface TraceEventData {
      * @param content A lambda which provides the content of the message. This content does not need to include any
      * data from the exception (if any), which may be concatenated later based on probe behavior.
      */
-    public data class Message(public val exception: Throwable? = null, public val content: () -> Any?) : TraceEventData
+    public data class Log(
+        public val sourceComponent: String,
+        public val exception: Throwable? = null,
+        public val content: () -> Any?,
+    ) : TraceEventData
 
     /**
      * An interface for event data which are attributed to a named metric.
@@ -58,34 +63,32 @@ public sealed interface TraceEventData {
     public data class Timespan(override val metric: String, public val duration: () -> Duration) : Metric
 }
 
-// TODO - should events also be allowed to have attributes?
-
 /**
  * A single trace event which records the operation of the system.
  */
-public data class TraceEvent(
+public sealed interface TraceEvent {
     /**
      * The level (or severity) of this event.
      */
-    public val level: EventLevel,
+    public val level: EventLevel
 
     /**
-     * The name of the component that generated the event.
+     * The name of the event
      */
-    public val sourceComponent: String,
+    public val name: String
 
     /**
-     * The time at which the event occurred or was recorded.
+     * The time at which the event occurred or was recorded
      */
-    public val timestamp: Instant,
+    public val timestamp: Instant
 
     /**
-     * The ID of the thread on which this event occurred or was recorded.
+     * Attributes associated with this event
      */
-    public val threadId: String,
+    public val attributes: Attributes
 
     /**
-     * The contents of the event.
+     * Contents of the event
      */
-    public val data: TraceEventData,
-)
+    public val data: TraceEventData?
+}

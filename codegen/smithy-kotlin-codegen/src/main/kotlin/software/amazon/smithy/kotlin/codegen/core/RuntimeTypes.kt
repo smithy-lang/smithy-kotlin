@@ -307,7 +307,6 @@ object RuntimeTypes {
             val debug = symbol("debug")
             val DefaultTracer = symbol("DefaultTracer")
             val LoggingTraceProbe = symbol("LoggingTraceProbe")
-            val setAttribute = symbol("setAttribute")
             val TraceProbe = symbol("TraceProbe")
             val Tracer = symbol("Tracer")
             val TracingClientConfig = symbol("TracingClientConfig")

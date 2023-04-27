@@ -4,6 +4,8 @@
  */
 package aws.smithy.kotlin.runtime.tracing
 
+// TODO - mark API's experimental
+
 /**
  * A sink that receives events.
  */
@@ -13,7 +15,8 @@ public interface TraceProbe {
      * @param span The span in which the event occurred.
      * @param event The event which occurred.
      */
-    public fun postEvent(span: TraceSpan, event: TraceEvent)
+    // FIXME - can't take tracespan for metrics...
+    public fun postEvent(span: TraceSpanData, event: TraceEvent)
 
     /**
      * Called when a [TraceSpan] has been created.

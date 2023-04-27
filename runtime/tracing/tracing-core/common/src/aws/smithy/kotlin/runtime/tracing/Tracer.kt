@@ -4,15 +4,19 @@
  */
 package aws.smithy.kotlin.runtime.tracing
 
-// FIXME - tracer should take more than ID when creating a span (so we can set parent, attributes, etc)
+// FIXME - we probably want to be able to set attributes at span creation time (it can affect sampling decisions in OTeL
+//         for instance)
 
 /**
- * An object which can create new tracing spans and hand events off to tracing probe(s).
+ * An object which can create new tracing spans
  */
 public interface Tracer {
     /**
-     * Create a "root" trace span, from which all child spans will be created for a given context.
+     * Create a new trace span for a given context. Instrumented code MUST call this from the same thread
+     * that the span will be used on.
+     *
      * @param name The name for the new root span.
+     * @param parentContext The parent context to use for this span
      */
-    public fun createRootSpan(name: String): TraceSpan
+    public fun createSpan(name: String, parentContext: TraceContext? = null): TraceSpan
 }

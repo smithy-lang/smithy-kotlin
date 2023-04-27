@@ -30,33 +30,39 @@ private fun EventLevel.throwableLoggerMethod(): (KLogger, Throwable, () -> Any?)
 }
 
 // FIXME - convert to class to allow some configuration of how log messages are emitted (e.g. full with attributes vs no attributes, etc)
+
 /**
  * A [TraceProbe] that sends logs events to downstream logging libraries (e.g., Slf4j on JVM). Those downstream
  * libraries may require configuration before messages will actually appear in logs.
  */
 public object LoggingTraceProbe : TraceProbe {
-    override fun postEvent(span: TraceSpan, event: TraceEvent) {
-        val message = event.data as? TraceEventData.Message ?: return
-        val logger = KotlinLogging.logger(event.sourceComponent)
-        val spanName = span.hierarchicalName
+    override fun postEvent(span: TraceSpanData, event: TraceEvent) {
+        val message = event.data as? TraceEventData.Log ?: return
+        val logger = KotlinLogging.logger(message.sourceComponent)
 
-        // TODO - how do we want to display span attributes?
-        // example trace output: 10 [main] TRACE aws.smithy.kotlin.runtime.http.operation.SerializeHandler - GetCallerIdentity(traceId=4cd7d508-1c81-4b46-9536-1947a09a0d56) (rpc.method=GetCallerIdentity, rpc.service=STS): request serialized in 6.737141ms
-        val attrs = span.attributes.keys.joinToString(prefix = " (", postfix = ")") {
-            @Suppress("UNCHECKED_CAST")
-            val value = (span.attributes[it as AttributeKey<Any>])
-            "${it.name}=$value"
-        }.takeIf { span.attributes.keys.isNotEmpty() } ?: ""
+        // FIXME - predicate on level and return early if not enabled (missing in KotlinLogging 3.x)
+        // if (!logger.isEnabledForLevel(event.kotlinLoggingLevel)) return
 
+        // Example output
+        // 10 [main] TRACE aws.smithy.kotlin.FooHandler - MySpan[traceId=xxx, spanId=yyy, rpc.method=PutObject, rpc.service=S3]: Message
         when (message.exception) {
-            null -> event.level.loggerMethod()(logger) { "${spanName}$attrs: ${message.content()}" }
-            else -> event.level.throwableLoggerMethod()(logger, message.exception) { "${spanName}$attrs: ${message.content()}" }
+            null -> event.level.loggerMethod()(logger) { formatEvent(span, message) }
+            else -> event.level.throwableLoggerMethod()(logger, message.exception) { formatEvent(span, message) }
         }
     }
+
+    private fun formatEvent(span: TraceSpanData, data: TraceEventData.Log): String =
+        // FIXME - figure out the way otel logs trace/span IDs
+        span.attributes.keys.joinToString(
+            prefix = "${span.name}[traceId=${span.context.traceId}, spanId=${span.context.spanId}",
+            postfix = "]: ${data.content()}",
+            separator = "",
+        ) {
+            @Suppress("UNCHECKED_CAST")
+            val value = (span.attributes[it as AttributeKey<Any>])
+            ", ${it.name}=$value"
+        }
 
     override fun spanCreated(span: TraceSpan) { }
     override fun spanClosed(span: TraceSpan) { }
 }
-
-private val TraceSpan.hierarchicalName: String
-    get() = (parent?.let { "${it.hierarchicalName}/" } ?: "") + metadata.name + if (parent == null) "(traceId=${metadata.traceId})" else ""
