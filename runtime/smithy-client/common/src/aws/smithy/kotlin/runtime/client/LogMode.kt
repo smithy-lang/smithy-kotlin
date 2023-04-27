@@ -86,7 +86,7 @@ public sealed class LogMode(private val mask: Int) {
                 .split("|")
                 .map { logModeString ->
                     allModes().firstOrNull { logMode -> logModeString.equals(logMode.toString(), ignoreCase = true) }
-                        ?: throw ClientException(":Log mode $logModeString is not supported, should be one of: ${allModes().joinToString(", ")}")
+                        ?: throw ClientException("Log mode $logModeString is not supported, should be one of: ${allModes().joinToString(", ")}")
                 }
                 .reduce { acc, logMode -> acc + logMode }
     }
