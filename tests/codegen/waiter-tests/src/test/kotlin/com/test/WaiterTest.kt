@@ -681,4 +681,68 @@ class WaiterTest {
             }
         },
     )
+
+    // subfield projection
+    @Test fun testHasStructWithStringByProjection() = successTest(
+        WaitersTestClient::waitUntilHasStructWithStringByProjection,
+        GetEntityResponse { },
+        GetEntityResponse { lists = EntityLists { } },
+        GetEntityResponse {
+            lists = EntityLists { structs = listOf() }
+        },
+        GetEntityResponse {
+            lists = EntityLists { structs = listOf(Struct { }) }
+        },
+        GetEntityResponse {
+            lists = EntityLists {
+                structs = listOf(
+                    Struct { primitives = EntityPrimitives { string = "bar" } },
+                )
+            }
+        },
+        GetEntityResponse {
+            lists = EntityLists {
+                structs = listOf(
+                    Struct { primitives = EntityPrimitives { string = "bar" } },
+                    Struct { primitives = EntityPrimitives { string = "foo" } },
+                )
+            }
+        },
+    )
+    @Test fun testHasStructWithSubstructWithStringByProjection() = successTest(
+        WaitersTestClient::waitUntilHasStructWithSubstructWithStringByProjection,
+        GetEntityResponse { },
+        GetEntityResponse { lists = EntityLists { } },
+        GetEntityResponse {
+            lists = EntityLists { structs = listOf() }
+        },
+        GetEntityResponse {
+            lists = EntityLists {
+                structs = listOf(
+                    Struct { subStructs = listOf(SubStruct { }) },
+                )
+            }
+        },
+        GetEntityResponse {
+            lists = EntityLists {
+                structs = listOf(
+                    Struct { subStructs = listOf(SubStruct { subStructPrimitives = EntityPrimitives { string = "bar" } }) },
+                    Struct { subStructs = listOf(SubStruct { }) },
+                )
+            }
+        },
+        GetEntityResponse {
+            lists = EntityLists {
+                structs = listOf(
+                    Struct {
+                        subStructs = listOf(
+                            SubStruct { subStructPrimitives = EntityPrimitives { string = "bar" } },
+                            SubStruct { subStructPrimitives = EntityPrimitives { string = "baz" } },
+                        )
+                    },
+                    Struct { subStructs = listOf(SubStruct { subStructPrimitives = EntityPrimitives { string = "foo" } }) },
+                )
+            }
+        },
+    )
 }

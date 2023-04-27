@@ -699,6 +699,36 @@ service WaitersTestService {
             }
         ]
     },
+
+    // subfield projection
+    HasStructWithStringByProjection: {
+        acceptors: [
+            {
+                state: "success",
+                matcher: {
+                    output: {
+                        path: "lists.structs[].primitives.string"
+                        expected: "foo",
+                        comparator: "anyStringEquals"
+                    }
+                }
+            }
+        ]
+    },
+    HasStructWithSubstructWithStringByProjection: {
+        acceptors: [
+            {
+                state: "success",
+                matcher: {
+                    output: {
+                        path: "lists.structs[].subStructs[].subStructPrimitives.string"
+                        expected: "foo",
+                        comparator: "anyStringEquals"
+                    }
+                }
+            }
+        ]
+    },
 )
 @readonly
 @http(method: "GET", uri: "/entities/{name}", code: 200)
@@ -833,4 +863,13 @@ structure Struct {
     primitives: EntityPrimitives,
     strings: StringList,
     enums: EnumList,
+    subStructs: SubStructList,
+}
+
+list SubStructList {
+    member: SubStruct,
+}
+
+structure SubStruct {
+    subStructPrimitives: EntityPrimitives,
 }
