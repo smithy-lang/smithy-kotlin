@@ -76,7 +76,7 @@ public sealed class LogMode(private val mask: Int) {
         )
 
         /**
-         * Parse an [LogMode] from a String
+         * Parse a [LogMode] from a String
          * @return the parsed LogMode
          * @throws ClientException if the LogMode could not be parsed
          */

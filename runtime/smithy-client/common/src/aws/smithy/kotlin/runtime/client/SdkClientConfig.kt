@@ -54,8 +54,8 @@ public interface SdkClientConfig {
         /**
          * Configure events that will be logged. By default, clients will not output
          * raw requests or responses.
-         * Configure the `AWS_SDK_KOTLIN_LOG_MODE` environment variable,
-         * `aws.sdk.kotlin.logMode` JVM system property, or use this setting to opt in to additional debug logging.
+         * Configure the `sdk.logMode` JVM system property, `SDK_LOG_MODE` environment variable,
+         * or use this setting to opt in to additional debug logging.
          *
          * This can be used to configure logging of requests, responses, retries, etc of SDK clients.
          *
