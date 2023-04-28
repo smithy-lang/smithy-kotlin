@@ -7,6 +7,7 @@ package aws.smithy.kotlin.runtime.tracing
 import aws.smithy.kotlin.runtime.io.use
 import aws.smithy.kotlin.runtime.logging.Logger
 import aws.smithy.kotlin.runtime.time.Instant
+import aws.smithy.kotlin.runtime.util.AttributeKey
 import aws.smithy.kotlin.runtime.util.Attributes
 import aws.smithy.kotlin.runtime.util.emptyAttributes
 
@@ -258,4 +259,13 @@ public fun TraceSpan.postEvent(
 ) {
     val event = DefaultEvent(name, attributes, timestamp)
     postEvent(event)
+}
+
+/**
+ * Set an attribute value pair with the given key
+ * @param key the key to associate with [value]
+ * @param value the value to assign
+ */
+public fun <T: Any> TraceSpan.setAttr(key: AttributeKey<T>, value: T): Unit {
+    setAttr(key.name, value)
 }

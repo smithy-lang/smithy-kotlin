@@ -37,6 +37,11 @@ abstract class HttpProtocolClientGenerator(
         val Operation: SectionKey<OperationShape> = SectionKey("Operation")
     }
 
+    object OperationSpanAttributes: SectionId {
+        val Operation: SectionKey<OperationShape> = SectionKey("Operation")
+    }
+
+
     /**
      * Render the implementation of the service client interface
      */
@@ -255,9 +260,12 @@ abstract class HttpProtocolClientGenerator(
             ) {
                 write("span.setAttr(#S, op.context.#T!!)", "rpc.method", RuntimeTypes.SmithyClient.operationName)
                 write("span.setAttr(#S, ServiceId)", "rpc.service")
-                // FIXME - set client name
-
-                // FIXME - set aws-api as rpc.system attribute for AWS services
+                write(
+                    "span.#T(#T.ClientName, config.clientName)",
+                    RuntimeTypes.Tracing.Core.setAttrExt,
+                    RuntimeTypes.Tracing.Core.TraceSpanAttributes
+                )
+                writer.declareSection(OperationSpanAttributes)
 
                 if (hasOutputStream) {
                     write("op.#T(client, #L, block)", RuntimeTypes.HttpClient.Operation.execute, inputVariableName)
