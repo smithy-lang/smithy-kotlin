@@ -52,18 +52,17 @@ open class AuthSchemeProviderGenerator {
         writer.write(
             "internal typealias AuthSchemeProvider = #T<#T>",
             RuntimeTypes.Auth.Identity.AuthSchemeProvider,
-            paramsSymbol
+            paramsSymbol,
         )
     }
 
     private fun renderDefaultImpl(ctx: ProtocolGenerator.GenerationContext, writer: KotlinWriter) {
         writer.withBlock(
             "internal object #T : #T {",
-        "}",
+            "}",
             getDefaultSymbol(ctx.settings),
-            getSymbol(ctx.settings)
+            getSymbol(ctx.settings),
         ) {
-
             val paramsSymbol = AuthSchemeParametersGenerator.getSymbol(ctx.settings)
             val authIndex = AuthIndex()
             val operationsWithOverrides = authIndex.operationsWithOverrides(ctx)
@@ -72,7 +71,7 @@ open class AuthSchemeProviderGenerator {
                 "private val operationOverrides = mapOf<#T, List<#T>>(",
                 ")",
                 KotlinTypes.String,
-                RuntimeTypes.Auth.Identity.AuthSchemeOption
+                RuntimeTypes.Auth.Identity.AuthSchemeOption,
             ) {
                 operationsWithOverrides.forEach { op ->
                     val authHandlersForOperation = authIndex.effectiveAuthHandlersForOperation(ctx, op)
@@ -83,7 +82,7 @@ open class AuthSchemeProviderGenerator {
             withBlock(
                 "private val serviceDefaults = listOf<#T>(",
                 ")",
-                RuntimeTypes.Auth.Identity.AuthSchemeOption
+                RuntimeTypes.Auth.Identity.AuthSchemeOption,
             ) {
                 val defaultHandlers = authIndex.effectiveAuthHandlersForService(ctx)
 
@@ -99,9 +98,9 @@ open class AuthSchemeProviderGenerator {
                 "override suspend fun resolveAuthScheme(params: #T): List<#T> {",
                 "}",
                 paramsSymbol,
-                RuntimeTypes.Auth.Identity.AuthSchemeOption
-            ){
-                withBlock("return operationOverrides.getOrElse(params.operationName) {", "}"){
+                RuntimeTypes.Auth.Identity.AuthSchemeOption,
+            ) {
+                withBlock("return operationOverrides.getOrElse(params.operationName) {", "}") {
                     write("serviceDefaults")
                 }
             }
@@ -117,7 +116,7 @@ open class AuthSchemeProviderGenerator {
         case: String,
         handlers: List<AuthSchemeHandler>,
         writer: KotlinWriter,
-        op: OperationShape
+        op: OperationShape,
     ) {
         writer.withBlock("#L to listOf(", "),", case) {
             handlers.forEach {
@@ -128,5 +127,4 @@ open class AuthSchemeProviderGenerator {
             }
         }
     }
-
 }

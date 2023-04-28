@@ -17,14 +17,12 @@ buildscript {
     }
 }
 
-
 extra.set("skipPublish", true)
-
 
 val platforms = listOf("common", "jvm")
 
 platforms.forEach { platform ->
-    apply(from = rootProject.file("gradle/${platform}.gradle"))
+    apply(from = rootProject.file("gradle/$platform.gradle"))
 }
 
 val optinAnnotations = listOf("kotlin.RequiresOptIn", "aws.smithy.kotlin.runtime.InternalApi")
@@ -33,7 +31,7 @@ kotlin {
     sourceSets {
         all {
             val srcDir = if (name.endsWith("Main")) "src" else "test"
-            val resourcesPrefix = if (name.endsWith("Test")) "test-" else  ""
+            val resourcesPrefix = if (name.endsWith("Test")) "test-" else ""
             // the name is always the platform followed by a suffix of either "Main" or "Test" (e.g. jvmMain, commonTest, etc)
             val platform = name.substring(0, name.length - 4)
             kotlin.srcDir("$platform/$srcDir")
@@ -122,8 +120,7 @@ data class BenchmarkModel(val name: String) {
 val benchmarkModels = listOf(
     "twitter",
     "countries-states",
-).map{ BenchmarkModel(it) }
-
+).map { BenchmarkModel(it) }
 
 val stageGeneratedSources = tasks.register("stageGeneratedSources") {
     group = "codegen"
@@ -142,6 +139,6 @@ val stageGeneratedSources = tasks.register("stageGeneratedSources") {
     }
 }
 
-tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>{
+tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
     dependsOn(stageGeneratedSources)
 }

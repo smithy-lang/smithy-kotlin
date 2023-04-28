@@ -19,8 +19,6 @@ import software.amazon.smithy.kotlin.codegen.rendering.serde.StructuredDataParse
 import software.amazon.smithy.kotlin.codegen.rendering.serde.StructuredDataSerializerGenerator
 import software.amazon.smithy.kotlin.codegen.test.*
 import software.amazon.smithy.model.shapes.*
-import software.amazon.smithy.rulesengine.language.EndpointRuleSet
-import software.amazon.smithy.rulesengine.traits.EndpointTestCase
 import kotlin.test.Test
 import kotlin.test.assertFailsWith
 

@@ -148,7 +148,6 @@ interface KotlinIntegration {
         resolved: List<ProtocolMiddleware>,
     ): List<ProtocolMiddleware> = resolved
 
-
     /**
      * Get a list of auth scheme handlers this integration is responsible for
      */
@@ -162,4 +161,3 @@ interface KotlinIntegration {
      */
     fun renderBindEndpointBuiltins(ctx: ProtocolGenerator.GenerationContext, rules: EndpointRuleSet, writer: KotlinWriter) {}
 }
-

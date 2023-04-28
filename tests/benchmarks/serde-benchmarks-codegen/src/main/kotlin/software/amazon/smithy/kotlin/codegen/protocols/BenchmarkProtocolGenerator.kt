@@ -22,7 +22,7 @@ abstract class BenchmarkProtocolGenerator : HttpBindingProtocolGenerator() {
         object : HttpProtocolClientGenerator(
             ctx,
             listOf(),
-            getProtocolHttpBindingResolver(ctx.model, ctx.service)
+            getProtocolHttpBindingResolver(ctx.model, ctx.service),
         ) { }
 
     override fun generateProtocolUnitTests(ctx: ProtocolGenerator.GenerationContext) = Unit
@@ -33,10 +33,10 @@ abstract class BenchmarkProtocolGenerator : HttpBindingProtocolGenerator() {
     override fun operationErrorHandler(ctx: ProtocolGenerator.GenerationContext, op: OperationShape): Symbol =
         op.errorHandler(ctx.settings) { writer ->
             writer.withBlock(
-                "private suspend fun ${op.errorHandlerName()}(context: #T, response: #T): Nothing",
+                "private suspend fun ${op.errorHandlerName()}(context: #T, response: #T): Nothing {",
                 "}",
                 RuntimeTypes.Core.ExecutionContext,
-                RuntimeTypes.Http.Response.HttpResponse
+                RuntimeTypes.Http.Response.HttpResponse,
             ) {
                 write("error(\"not needed for benchmark tests\")")
             }

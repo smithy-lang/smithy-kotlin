@@ -32,7 +32,6 @@ class AuthIndex {
             .flatMap { it.authSchemes(ctx) }
             .associateBy(AuthSchemeHandler::authSchemeId)
 
-
     /**
      * Get the prioritized list of effective [AuthSchemeHandler] for an operation.
      *
@@ -48,7 +47,7 @@ class AuthIndex {
         val opEffectiveAuthSchemes = serviceIndex.getEffectiveAuthSchemes(ctx.service, op)
         return if (op.hasTrait<OptionalAuthTrait>() || opEffectiveAuthSchemes.isEmpty()) {
             listOf(AnonymousAuthSchemeHandler())
-        }else {
+        } else {
             // return handlers in same order as the priority list dictated by `auth([])` trait
             opEffectiveAuthSchemes.mapNotNull {
                 allAuthHandlers[it.key]
@@ -96,7 +95,7 @@ class AuthIndex {
         // reconcile anonymous auth
         val topDownIndex = TopDownIndex.of(ctx.model)
         val addAnonymousHandler = topDownIndex.getContainedOperations(ctx.service)
-            .any {  op ->
+            .any { op ->
                 val opEffectiveAuthSchemes = serviceIndex.getEffectiveAuthSchemes(ctx.service, op)
                 op.hasTrait<OptionalAuthTrait>() || opEffectiveAuthSchemes.isEmpty()
             }
@@ -121,5 +120,4 @@ class AuthIndex {
 
         return operationsWithOverrides.toSet()
     }
-
 }

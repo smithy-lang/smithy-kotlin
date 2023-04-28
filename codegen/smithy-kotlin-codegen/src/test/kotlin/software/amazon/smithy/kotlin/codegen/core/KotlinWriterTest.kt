@@ -8,7 +8,6 @@ package software.amazon.smithy.kotlin.codegen.core
 import io.kotest.matchers.string.shouldNotContain
 import software.amazon.smithy.kotlin.codegen.integration.SectionId
 import software.amazon.smithy.kotlin.codegen.integration.SectionKey
-import software.amazon.smithy.kotlin.codegen.lang.KotlinTypes
 import software.amazon.smithy.kotlin.codegen.model.buildSymbol
 import software.amazon.smithy.kotlin.codegen.test.TestModelDefault
 import software.amazon.smithy.kotlin.codegen.test.shouldContainOnlyOnceWithDiff

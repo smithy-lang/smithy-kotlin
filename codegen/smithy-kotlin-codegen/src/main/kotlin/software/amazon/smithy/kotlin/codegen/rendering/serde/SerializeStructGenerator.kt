@@ -112,7 +112,6 @@ open class SerializeStructGenerator(
             ShapeType.INT_ENUM,
             -> renderPrimitiveShapeSerializer(memberShape, ::serializerForPrimitiveShape)
 
-
             else -> error("Unexpected shape type: ${targetShape.type}")
         }
     }
