@@ -5,11 +5,6 @@
 
 package aws.smithy.kotlin.runtime.util
 
-import aws.smithy.kotlin.runtime.util.Filesystem
-import aws.smithy.kotlin.runtime.util.OperatingSystem
-import aws.smithy.kotlin.runtime.util.OsFamily
-import aws.smithy.kotlin.runtime.util.PlatformProvider
-
 /**
  * An implementation of [PlatformProvider] meant for testing
  * @param env Environment variable mappings
