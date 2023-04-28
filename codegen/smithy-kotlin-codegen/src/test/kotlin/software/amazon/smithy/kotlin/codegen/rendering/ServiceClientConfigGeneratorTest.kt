@@ -45,6 +45,7 @@ class ServiceClientConfigGeneratorTest {
 public class Config private constructor(builder: Builder) : HttpAuthConfig, HttpClientConfig, IdempotencyTokenConfig, SdkClientConfig, TracingClientConfig {
 """
         contents.shouldContainWithDiff(expectedCtor)
+        println("past ctor")
 
         val expectedProps = """
     override val clientName: String = builder.clientName
@@ -53,12 +54,13 @@ public class Config private constructor(builder: Builder) : HttpAuthConfig, Http
     public val endpointProvider: EndpointProvider = requireNotNull(builder.endpointProvider) { "endpointProvider is a required configuration property" }
     override val idempotencyTokenProvider: IdempotencyTokenProvider = builder.idempotencyTokenProvider ?: IdempotencyTokenProvider.Default
     override val interceptors: kotlin.collections.List<aws.smithy.kotlin.runtime.http.interceptors.HttpInterceptor> = builder.interceptors
+    override val logMode: LogMode = builder.logMode ?: LogMode.Default
     override val retryPolicy: RetryPolicy<Any?> = builder.retryPolicy ?: StandardRetryPolicy.Default
     override val retryStrategy: RetryStrategy = builder.retryStrategy ?: StandardRetryStrategy()
-    override val logMode: LogMode = builder.logMode ?: LogMode.Default
     override val tracer: Tracer = builder.tracer ?: DefaultTracer(LoggingTraceProbe, clientName)
 """
         contents.shouldContainWithDiff(expectedProps)
+        println("past props")
 
         val expectedBuilder = """
     public class Builder : HttpAuthConfig.Builder, HttpClientConfig.Builder, IdempotencyTokenConfig.Builder, SdkClientConfig.Builder<Config>, TracingClientConfig.Builder {
@@ -107,17 +109,6 @@ public class Config private constructor(builder: Builder) : HttpAuthConfig, Http
         override var interceptors: kotlin.collections.MutableList<aws.smithy.kotlin.runtime.http.interceptors.HttpInterceptor> = kotlin.collections.mutableListOf()
 
         /**
-         * The policy to use for evaluating operation results and determining whether/how to retry.
-         */
-        override var retryPolicy: RetryPolicy<Any?>? = null
-
-        /**
-         * The [RetryStrategy] implementation to use for service calls. All API calls will be wrapped by the
-         * strategy.
-         */
-        override var retryStrategy: RetryStrategy? = null
-
-        /**
          * Configure events that will be logged. By default clients will not output
          * raw requests or responses. Use this setting to opt-in to additional debug logging.
          *
@@ -128,6 +119,17 @@ public class Config private constructor(builder: Builder) : HttpAuthConfig, Http
          * debug purposes.
          */
         override var logMode: LogMode? = null
+
+        /**
+         * The policy to use for evaluating operation results and determining whether/how to retry.
+         */
+        override var retryPolicy: RetryPolicy<Any?>? = null
+
+        /**
+         * The [RetryStrategy] implementation to use for service calls. All API calls will be wrapped by the
+         * strategy.
+         */
+        override var retryStrategy: RetryStrategy? = null
 
         /**
          * The tracer that is responsible for creating trace spans and wiring them up to a tracing backend (e.g.,
@@ -262,9 +264,9 @@ public class Config private constructor(builder: Builder) {
     public val endpointProvider: EndpointProvider = requireNotNull(builder.endpointProvider) { "endpointProvider is a required configuration property" }
     override val idempotencyTokenProvider: IdempotencyTokenProvider = builder.idempotencyTokenProvider ?: IdempotencyTokenProvider.Default
     override val interceptors: kotlin.collections.List<aws.smithy.kotlin.runtime.http.interceptors.HttpInterceptor> = builder.interceptors
+    override val logMode: LogMode = builder.logMode ?: LogMode.LogRequest
     override val retryPolicy: RetryPolicy<Any?> = builder.retryPolicy ?: StandardRetryPolicy.Default
     override val retryStrategy: RetryStrategy = builder.retryStrategy ?: StandardRetryStrategy()
-    override val logMode: LogMode = builder.logMode ?: LogMode.LogRequest
     override val tracer: Tracer = builder.tracer ?: DefaultTracer(LoggingTraceProbe, clientName)"""
         contents.shouldContainWithDiff(expectedConfigValues)
     }
