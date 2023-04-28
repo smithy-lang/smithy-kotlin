@@ -11,22 +11,12 @@ import aws.smithy.kotlin.runtime.io.SdkByteReadChannel
 import aws.smithy.kotlin.runtime.net.*
 import aws.smithy.kotlin.runtime.operation.ExecutionContext
 import aws.smithy.kotlin.runtime.tracing.*
-import aws.smithy.kotlin.runtime.util.MutableAttributes
-import aws.smithy.kotlin.runtime.util.mutableAttributes
 import okio.Buffer
 import org.junit.jupiter.api.Test
 import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
-
-private class TestTraceSpan(override val parent: TraceSpan?, override val id: String) : TraceSpan {
-    override val attributes: MutableAttributes = mutableAttributes()
-    override val metadata: TraceSpanMetadata = TraceSpanMetadata(id, id)
-    override fun child(name: String): TraceSpan = TestTraceSpan(this, name)
-    override fun close() = Unit
-    override fun postEvent(event: TraceEvent) = Unit
-}
 
 class OkHttpRequestTest {
     @Test
@@ -81,7 +71,7 @@ class OkHttpRequestTest {
         val request = HttpRequest(HttpMethod.POST, url, Headers.Empty, HttpBody.Empty)
         val execContext = ExecutionContext()
 
-        val expectedSpan = TestTraceSpan(null, "a span")
+        val expectedSpan = DefaultTracer().createSpan("a span")
         val callContext = TraceSpanContextElement(expectedSpan)
 
         val actual = request.toOkHttpRequest(execContext, callContext)

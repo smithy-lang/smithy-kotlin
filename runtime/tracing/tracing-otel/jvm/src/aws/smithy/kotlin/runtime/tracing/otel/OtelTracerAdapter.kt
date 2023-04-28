@@ -11,7 +11,6 @@ import aws.smithy.kotlin.runtime.tracing.*
 import aws.smithy.kotlin.runtime.tracing.TraceSpan
 import aws.smithy.kotlin.runtime.tracing.Tracer
 import aws.smithy.kotlin.runtime.util.*
-import io.opentelemetry.api.logs.GlobalLoggerProvider
 import io.opentelemetry.api.logs.LoggerProvider
 import io.opentelemetry.api.logs.Severity
 import io.opentelemetry.api.trace.SpanContext
@@ -129,9 +128,9 @@ private data class OtelTraceContext(
 @OptIn(ExperimentalApi::class)
 private class OtelTracerAdapter(
     private val tracer: OpenTelemetryTracer,
+    private val loggerProvider: LoggerProvider,
     private val eventFilter: EventFilter?,
 ) : Tracer {
-    private val loggerProvider = GlobalLoggerProvider.get()
     override fun createSpan(name: String, parentContext: TraceContext?): TraceSpan {
         val currentContex = Context.current()
         val parentCtx = (parentContext as? OtelTraceContext)?.otelContext ?: currentContex
@@ -159,12 +158,14 @@ public fun interface EventFilter {
     public fun shouldProcess(event: TraceEvent): Boolean
 }
 
+// TODO - expose a LoggerProvider that logs to slf4j in same format as LoggingTraceProbe
+
 /**
  * Wrap an OpenTelemetry tracer as a [Tracer] instance. This will use the OTeL tracer to
- * create spans, process logs, etc.
+ * create spans, process logs, metrics etc.
  */
 @ExperimentalApi
 public fun OpenTelemetryTracer.asSdkTracer(
+    loggerProvider: LoggerProvider,
     filter: EventFilter? = null,
-    // TODO - option for how to handle logs?
-): Tracer = OtelTracerAdapter(this, filter)
+): Tracer = OtelTracerAdapter(this, loggerProvider, filter)

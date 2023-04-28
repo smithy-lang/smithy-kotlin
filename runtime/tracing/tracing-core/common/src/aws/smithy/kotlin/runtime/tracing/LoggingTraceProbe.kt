@@ -44,7 +44,6 @@ public object LoggingTraceProbe : TraceProbe {
         // if (!logger.isEnabledForLevel(event.kotlinLoggingLevel)) return
 
         // Example output
-        // 10 [main] TRACE aws.smithy.kotlin.FooHandler - MySpan[traceId=xxx, spanId=yyy, rpc.method=PutObject, rpc.service=S3]: Message
         when (message.exception) {
             null -> event.level.loggerMethod()(logger) { formatEvent(span, message) }
             else -> event.level.throwableLoggerMethod()(logger, message.exception) { formatEvent(span, message) }
@@ -52,7 +51,7 @@ public object LoggingTraceProbe : TraceProbe {
     }
 
     private fun formatEvent(span: TraceSpanData, data: TraceEventData.Log): String =
-        // FIXME - figure out the way otel logs trace/span IDs
+        // SpanName[traceId=xx, spanId=yy[, a1=v1, a2=v2, ...]: message
         span.attributes.keys.joinToString(
             prefix = "${span.name}[traceId=${span.context.traceId}, spanId=${span.context.spanId}",
             postfix = "]: ${data.content()}",

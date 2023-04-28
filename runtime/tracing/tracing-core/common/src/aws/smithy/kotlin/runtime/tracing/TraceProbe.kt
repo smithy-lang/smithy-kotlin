@@ -4,10 +4,10 @@
  */
 package aws.smithy.kotlin.runtime.tracing
 
-// TODO - mark API's experimental
+import aws.smithy.kotlin.runtime.util.Attributes
 
 /**
- * A sink that receives events.
+ * A sink that receives trace events.
  */
 public interface TraceProbe {
     /**
@@ -29,4 +29,29 @@ public interface TraceProbe {
      * @param span The span which has been closed.
      */
     public fun spanClosed(span: TraceSpan)
+}
+
+/**
+ * An immutable view of a trace span
+ */
+public interface TraceSpanData {
+    /**
+     * The name of the span
+     */
+    public val name: String
+
+    /**
+     * The span's context
+     */
+    public val context: TraceContext
+
+    /**
+     * Attributes (currently) set on the span
+     */
+    public val attributes: Attributes
+
+    /**
+     * The span's status
+     */
+    public val spanStatus: TraceSpanStatus
 }

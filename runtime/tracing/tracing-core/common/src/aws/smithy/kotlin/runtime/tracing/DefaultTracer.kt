@@ -54,6 +54,7 @@ public class DefaultTracer(
         return DefaultTraceSpan(this, ctx, name)
     }
 
+    // TODO - 16 byte hex for trace id, 8 bytes for span id
     @OptIn(Uuid.WeakRng::class)
     private fun newId(): String = Uuid.random().toString()
 }

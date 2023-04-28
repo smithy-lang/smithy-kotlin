@@ -27,6 +27,7 @@ public enum class EventLevel {
 public sealed interface TraceEventData {
     /**
      * A message that contains freeform text and optionally an exception.
+     * @param sourceComponent the name of the component that emitted this log
      * @param exception An optional exception which explains the message.
      * @param content A lambda which provides the content of the message. This content does not need to include any
      * data from the exception (if any), which may be concatenated later based on probe behavior.
@@ -92,3 +93,11 @@ public sealed interface TraceEvent {
      */
     public val data: TraceEventData?
 }
+
+internal data class DefaultEvent(
+    override val name: String,
+    override val attributes: Attributes,
+    override val timestamp: Instant,
+    override val level: EventLevel = EventLevel.Info,
+    override val data: TraceEventData? = null,
+) : TraceEvent

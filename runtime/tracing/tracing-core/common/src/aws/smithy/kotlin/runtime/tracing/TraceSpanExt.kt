@@ -243,3 +243,19 @@ public fun TraceSpan.recordException(ex: Throwable, escaped: Boolean) {
     ex.cause?.let { setAttr("exception.cause", it.toString()) }
     setAttr("exception.escaped", escaped)
 }
+
+/**
+ *
+ * Records a new event that has occurred within the logical context of this span.
+ * @param name the name of the event
+ * @param attributes any attributes associated with the event
+ * @param timestamp the time the event occurred
+ */
+public fun TraceSpan.postEvent(
+    name: String,
+    attributes: Attributes = emptyAttributes(),
+    timestamp: Instant = Instant.now(),
+) {
+    val event = DefaultEvent(name, attributes, timestamp)
+    postEvent(event)
+}

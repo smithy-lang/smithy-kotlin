@@ -16,12 +16,3 @@ public object TraceSpanAttributes {
      */
     public val ClientName: AttributeKey<String> = AttributeKey("aws.smithy.kotlin.client_name")
 }
-
-// /**
-//  * Get the current status of this span if it has been set.
-//  */
-// public var TraceSpan.spanStatus: TraceSpanStatus
-//     get() = attributes.getOrNull(TraceSpanAttributes.SpanStatus) ?: TraceSpanStatus.UNSET
-//     set(value) {
-//         attributes[TraceSpanAttributes.SpanStatus] = value
-//     }

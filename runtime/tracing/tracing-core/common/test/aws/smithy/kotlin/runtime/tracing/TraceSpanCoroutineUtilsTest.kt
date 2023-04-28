@@ -5,7 +5,6 @@
 
 package aws.smithy.kotlin.runtime.tracing
 
-import aws.smithy.kotlin.runtime.util.MutableAttributes
 import io.kotest.matchers.string.shouldContain
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
@@ -32,12 +31,12 @@ class TraceSpanCoroutineUtilsTest {
         val rootSpan = tracer.createSpan("root")
 
         withSpan(rootSpan) { currSpan ->
-            assertNull(currSpan.parent)
+            assertNull(currSpan.context.parentId)
 
             // this should be allowed since the existing span is the parent
             withSpan("root2") {
                 val actualSpan = coroutineContext.traceSpan
-                assertEquals(currSpan, actualSpan.parent)
+                assertEquals(currSpan.context.spanId, actualSpan.context.parentId)
             }
         }
     }
@@ -48,13 +47,14 @@ class TraceSpanCoroutineUtilsTest {
         val rootSpan1 = tracer.createSpan("root1")
         val rootSpan2 = tracer.createSpan("root2")
         val illegalRoot = object : TraceSpan {
-            override val parent: TraceSpan = rootSpan2
-            override val id: String = "illegal span"
-            override val attributes: MutableAttributes
-                get() = error("not needed for test")
-            override val metadata: TraceSpanMetadata
-                get() = error("not needed for test")
-
+            override val name: String = "illegal root"
+            override val context: TraceContext = object : TraceContext {
+                override val parentId: String? = rootSpan2.context.parentId
+                override val traceId: String = rootSpan2.context.traceId
+                override val spanId: String = "illegal span id"
+            }
+            override var spanStatus: TraceSpanStatus = TraceSpanStatus.UNSET
+            override fun <T : Any> setAttr(key: String, value: T) {}
             override fun postEvent(event: TraceEvent) {}
             override fun child(name: String): TraceSpan { error("not needed for test") }
             override fun close() {}

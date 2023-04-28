@@ -5,7 +5,6 @@
 package aws.smithy.kotlin.runtime.tracing
 
 import aws.smithy.kotlin.runtime.io.Closeable
-import aws.smithy.kotlin.runtime.util.Attributes
 
 /**
  * Defines a logical lifecycle within which events may occur. Spans are typically created before some notable operation
@@ -46,29 +45,4 @@ public interface TraceSpan : Closeable {
      * NOTE: Attributes should generally be a primitive type: boolean, string, long, double or List of the same.
      */
     public fun <T : Any> setAttr(key: String, value: T)
-}
-
-/**
- * An immutable view of a trace span
- */
-public interface TraceSpanData {
-    /**
-     * The name of the span
-     */
-    public val name: String
-
-    /**
-     * The span's context
-     */
-    public val context: TraceContext
-
-    /**
-     * Attributes (currently) set on the span
-     */
-    public val attributes: Attributes
-
-    /**
-     * The span's status
-     */
-    public val spanStatus: TraceSpanStatus
 }
