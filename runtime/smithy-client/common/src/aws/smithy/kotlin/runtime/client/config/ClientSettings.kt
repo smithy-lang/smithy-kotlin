@@ -27,5 +27,6 @@ public object ClientSettings {
         aws.smithy.kotlin.runtime.client.LogMode::fromString,
         "sdk.logMode",
         "SDK_LOG_MODE",
+        aws.smithy.kotlin.runtime.client.LogMode.Default
     )
 }
