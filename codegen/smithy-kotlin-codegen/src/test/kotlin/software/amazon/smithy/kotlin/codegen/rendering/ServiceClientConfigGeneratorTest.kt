@@ -45,7 +45,6 @@ class ServiceClientConfigGeneratorTest {
 public class Config private constructor(builder: Builder) : HttpAuthConfig, HttpClientConfig, IdempotencyTokenConfig, SdkClientConfig, TracingClientConfig {
 """
         contents.shouldContainWithDiff(expectedCtor)
-        println("past ctor")
 
         val expectedProps = """
     override val clientName: String = builder.clientName
@@ -60,7 +59,6 @@ public class Config private constructor(builder: Builder) : HttpAuthConfig, Http
     override val tracer: Tracer = builder.tracer ?: DefaultTracer(LoggingTraceProbe, clientName)
 """
         contents.shouldContainWithDiff(expectedProps)
-        println("past props")
 
         val expectedBuilder = """
     public class Builder : HttpAuthConfig.Builder, HttpClientConfig.Builder, IdempotencyTokenConfig.Builder, SdkClientConfig.Builder<Config>, TracingClientConfig.Builder {
