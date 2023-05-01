@@ -5,6 +5,8 @@
 
 package aws.smithy.kotlin.runtime.util
 
+import aws.smithy.kotlin.runtime.InternalApi
+
 /**
  * An implementation of [PlatformProvider] meant for testing
  * @param env Environment variable mappings
@@ -12,6 +14,7 @@ package aws.smithy.kotlin.runtime.util
  * @param fs Filesystem path to content mappings
  * @param os Operating system info to emulate
  */
+@InternalApi
 public class TestPlatformProvider(
     env: Map<String, String> = emptyMap(),
     private val props: Map<String, String> = emptyMap(),
