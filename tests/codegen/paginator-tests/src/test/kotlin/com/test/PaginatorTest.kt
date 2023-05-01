@@ -1,7 +1,10 @@
+/*
+ * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * SPDX-License-Identifier: Apache-2.0
+ */
 import com.test.TestLambdaClient
-import com.test.LambdaClient
-import com.test.paginators.functions
 import com.test.model.ListFunctionsRequest
+import com.test.paginators.functions
 import com.test.paginators.listFunctionsPaginated
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.runBlocking
@@ -27,7 +30,7 @@ class PaginatorTest {
         assertEquals(unit.pageCount * unit.itemsPerPage, fnNames.size)
         assertEquals(
             "[Function page(0) item(0), Function page(1) item(0), Function page(2) item(0), Function page(3) item(0), Function page(4) item(0)]",
-            run { fnNames.sort(); fnNames }.toString()
+            run { fnNames.sort(); fnNames }.toString(),
         )
     }
 
@@ -49,7 +52,7 @@ class PaginatorTest {
         assertEquals(unit.pageCount * unit.itemsPerPage, fnNames.size)
         assertEquals(
             "[Function page(0) item(0), Function page(1) item(0), Function page(2) item(0), Function page(3) item(0), Function page(4) item(0)]",
-            run { fnNames.sort(); fnNames }.toString()
+            run { fnNames.sort(); fnNames }.toString(),
         )
     }
 
@@ -67,7 +70,7 @@ class PaginatorTest {
         assertEquals(unit.pageCount * unit.itemsPerPage, fnNames.size)
         assertEquals(
             "[Function page(0) item(0), Function page(0) item(1), Function page(0) item(2), Function page(0) item(3), Function page(0) item(4), Function page(0) item(5), Function page(0) item(6), Function page(0) item(7), Function page(0) item(8), Function page(0) item(9)]",
-            run { fnNames.sort(); fnNames }.toString()
+            run { fnNames.sort(); fnNames }.toString(),
         )
     }
 
@@ -89,7 +92,7 @@ class PaginatorTest {
         assertEquals(unit.pageCount * unit.itemsPerPage, fnNames.size)
         assertEquals(
             "[Function page(0) item(0), Function page(0) item(1), Function page(0) item(2), Function page(0) item(3), Function page(0) item(4), Function page(0) item(5), Function page(0) item(6), Function page(0) item(7), Function page(0) item(8), Function page(0) item(9)]",
-            run { fnNames.sort(); fnNames }.toString()
+            run { fnNames.sort(); fnNames }.toString(),
         )
     }
 
@@ -147,7 +150,7 @@ class PaginatorTest {
         assertEquals(unit.pageCount * unit.itemsPerPage, fnNames.size)
         assertEquals(
             "[Function page(0) item(0), Function page(0) item(1), Function page(1) item(0), Function page(1) item(1)]",
-            run { fnNames.sort(); fnNames }.toString()
+            run { fnNames.sort(); fnNames }.toString(),
         )
     }
 
@@ -168,7 +171,7 @@ class PaginatorTest {
         assertEquals(unit.pageCount * unit.itemsPerPage, fnNames.size)
         assertEquals(
             "[Function page(0) item(0), Function page(0) item(1), Function page(1) item(0), Function page(1) item(1)]",
-            run { fnNames.sort(); fnNames }.toString()
+            run { fnNames.sort(); fnNames }.toString(),
         )
     }
 
@@ -190,7 +193,7 @@ class PaginatorTest {
         assertEquals(unit.pageCount * unit.itemsPerPage, fnNames.size)
         assertEquals(
             "[Function page(0) item(0), Function page(0) item(1), Function page(1) item(0), Function page(1) item(1)]",
-            run { fnNames.sort(); fnNames }.toString()
+            run { fnNames.sort(); fnNames }.toString(),
         )
     }
 }

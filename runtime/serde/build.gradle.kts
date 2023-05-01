@@ -7,7 +7,6 @@ description = "Serialization and deserialization for Smithy services generated b
 extra["displayName"] = "Smithy :: Kotlin :: Serde"
 extra["moduleName"] = "aws.smithy.kotlin.runtime.serde"
 
-
 kotlin {
     sourceSets {
         commonMain {

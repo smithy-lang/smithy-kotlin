@@ -49,7 +49,7 @@ class AuthSchemeParametersGenerator : AbstractConfigGenerator() {
 
             val operationName = ConfigProperty.String(
                 "operationName",
-                documentation = "The name of the operation currently being invoked."
+                documentation = "The name of the operation currently being invoked.",
             ).toBuilder()
                 .apply {
                     propertyType = ConfigPropertyType.Required("operationName is a required auth scheme parameter")

@@ -24,7 +24,6 @@ import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.shapes.ShapeId
 
-
 /**
  * Register support for the `aws.auth#sigv4` auth scheme.
  */
@@ -55,7 +54,6 @@ class Sigv4AuthSchemeIntegration : KotlinIntegration {
     }
 }
 
-
 open class SigV4AuthSchemeHandler : AuthSchemeHandler {
     override val authSchemeId: ShapeId = SigV4Trait.ID
 
@@ -74,11 +72,11 @@ open class SigV4AuthSchemeHandler : AuthSchemeHandler {
     override fun authSchemeProviderInstantiateAuthOptionExpr(
         ctx: ProtocolGenerator.GenerationContext,
         op: OperationShape?,
-        writer: KotlinWriter
+        writer: KotlinWriter,
     ) {
         val expr = if (op?.hasTrait<UnsignedPayloadTrait>() == true) {
             "#T(unsignedPayload = true)"
-        }else {
+        } else {
             "#T()"
         }
         writer.write(expr, RuntimeTypes.Auth.HttpAuthAws.sigv4)

@@ -1584,7 +1584,7 @@ deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
                 NO = 2
             }
         """
-        ).toSmithyModel()
+            ).toSmithyModel()
 
         val expected = """
             deserializer.deserializeStruct(OBJ_DESCRIPTOR) {

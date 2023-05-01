@@ -42,7 +42,7 @@ tasks.named<SmithyValidate>("smithyValidate") {
     classpath = codegen
 }
 
-tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>{
+tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
     dependsOn(generateSdk)
 }
 

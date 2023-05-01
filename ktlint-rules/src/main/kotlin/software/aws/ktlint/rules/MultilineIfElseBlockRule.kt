@@ -1,3 +1,7 @@
+/*
+ * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * SPDX-License-Identifier: Apache-2.0
+ */
 package software.aws.ktlint.rules
 
 import com.pinterest.ktlint.core.Rule
@@ -27,7 +31,7 @@ class MultilineIfElseBlockRule : Rule("multiline-if-else-block") {
      */
     private fun ASTNode.isElseIfBlock() =
         elementType == ElementType.ELSE &&
-        firstChildNode?.elementType == ElementType.IF
+            firstChildNode?.elementType == ElementType.IF
 
     /**
      * Determines if this node is on the same source file line number as its parent.

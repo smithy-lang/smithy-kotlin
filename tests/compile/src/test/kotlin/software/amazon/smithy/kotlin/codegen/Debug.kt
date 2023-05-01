@@ -7,7 +7,7 @@ package software.amazon.smithy.kotlin.codegen
 
 private const val EmitCompiledSources: String = "software.amazon.smithy.kotlin.codegen.compile.emitSourcesToTemp"
 
-object Debug{
+object Debug {
     // Toggle this flag to emit generated SDKs to /tmp for interactive debugging.
     val emitSourcesToTemp: Boolean
         get() {

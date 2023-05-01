@@ -265,7 +265,7 @@ class ShapeValueGenerator(
                     // the value is in seconds and CAN be fractional
                     if (node.isFloatingPointNumber) {
                         val value = node.value as Double
-                        val ms = round(value*1e3).toLong()
+                        val ms = round(value * 1e3).toLong()
                         writer.writeInline("Instant.#T(#L)", RuntimeTypes.Core.fromEpochMilliseconds, ms)
                     } else {
                         writer.writeInline("Instant.fromEpochSeconds(#L, 0)", node.value)

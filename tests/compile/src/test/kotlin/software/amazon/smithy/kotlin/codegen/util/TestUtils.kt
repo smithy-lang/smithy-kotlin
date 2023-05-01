@@ -36,7 +36,7 @@ data class ModelChangeTestResult(
     val originalModelCompilationResult: KotlinCompilation.Result,
     val updatedModelCompilationResult: KotlinCompilation.Result,
     val compileSuccess: Boolean,
-    val compileOutput: String
+    val compileOutput: String,
 )
 
 /**
@@ -53,7 +53,7 @@ fun testModelChangeAgainstSource(
     originalModel: Model,
     updatedModel: Model,
     testSource: String,
-    emitSourcesToTmp: Boolean = false
+    emitSourcesToTmp: Boolean = false,
 ): ModelChangeTestResult {
     val compileOutputStream = ByteArrayOutputStream()
     val originalModelCompilationResult =
@@ -66,8 +66,8 @@ fun testModelChangeAgainstSource(
         originalModelCompilationResult,
         updatedModelCompilationResult,
         originalModelCompilationResult.exitCode == KotlinCompilation.ExitCode.OK &&
-                updatedModelCompilationResult.exitCode == KotlinCompilation.ExitCode.OK,
-        compileOutputStream.toString()
+            updatedModelCompilationResult.exitCode == KotlinCompilation.ExitCode.OK,
+        compileOutputStream.toString(),
     )
 }
 
@@ -84,7 +84,7 @@ fun compileSdkAndTest(
     model: Model,
     testSource: String? = null,
     outputSink: OutputStream = System.out,
-    emitSourcesToTmp: Boolean = false
+    emitSourcesToTmp: Boolean = false,
 ): KotlinCompilation.Result {
     val sdkFileManifest = generateSdk(model)
 
@@ -112,7 +112,6 @@ fun compileSdkAndTest(
         inheritClassPath = true
         messageOutputStream = outputSink
         jvmTarget = "1.8"
-
     }.compile()
 }
 
@@ -138,11 +137,12 @@ fun generateSdk(
     manifest: MockManifest = MockManifest(),
     settings: ObjectNode = Node.objectNodeBuilder()
         .withMember(
-            "package", Node.objectNode()
+            "package",
+            Node.objectNode()
                 .withMember("name", Node.from("test"))
-                .withMember("version", Node.from("1.0.0"))
+                .withMember("version", Node.from("1.0.0")),
         )
-        .build()
+        .build(),
 ): MockManifest {
     // Initialize context
     val pluginContext = PluginContext
