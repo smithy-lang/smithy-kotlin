@@ -20,7 +20,6 @@ kotlin {
 
                 implementation("com.squareup.okhttp3:okhttp:$okHttpVersion")
                 implementation("com.squareup.okhttp3:okhttp-coroutines:$okHttpVersion")
-
             }
         }
         commonTest {

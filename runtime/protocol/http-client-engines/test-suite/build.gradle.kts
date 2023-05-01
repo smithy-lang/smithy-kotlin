@@ -2,8 +2,8 @@
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
  * SPDX-License-Identifier: Apache-2.0
  */
-import java.io.*
-import java.net.*
+import java.io.Closeable
+import java.net.URLClassLoader
 
 description = "Common HTTP Client Engine Test Suite"
 extra["moduleName"] = "aws.smithy.kotlin.http.test"

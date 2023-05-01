@@ -5,8 +5,8 @@
 
 package com.test
 
-import aws.smithy.kotlin.runtime.retries.getOrThrow
 import aws.smithy.kotlin.runtime.retries.Outcome
+import aws.smithy.kotlin.runtime.retries.getOrThrow
 import com.test.model.*
 import com.test.model.Enum
 import com.test.waiters.*
@@ -34,61 +34,73 @@ class WaiterTest {
         GetEntityResponse { primitives = EntityPrimitives { boolean = false } },
         GetEntityResponse { primitives = EntityPrimitives { boolean = true } },
     )
+
     @Test fun testBooleanEqualsByCompare() = successTest(
         WaitersTestClient::waitUntilBooleanEqualsByCompare,
         GetEntityResponse { primitives = EntityPrimitives { boolean = false } },
         GetEntityResponse { primitives = EntityPrimitives { boolean = true } },
     )
+
     @Test fun testStringEquals() = successTest(
         WaitersTestClient::waitUntilStringEquals,
         GetEntityResponse { primitives = EntityPrimitives { string = "bar" } },
         GetEntityResponse { primitives = EntityPrimitives { string = "foo" } },
     )
+
     @Test fun testStringEqualsByCompare() = successTest(
         WaitersTestClient::waitUntilStringEqualsByCompare,
         GetEntityResponse { primitives = EntityPrimitives { string = "bar" } },
         GetEntityResponse { primitives = EntityPrimitives { string = "foo" } },
     )
+
     @Test fun testByteEquals() = successTest(
         WaitersTestClient::waitUntilByteEquals,
         GetEntityResponse { primitives = EntityPrimitives { byte = 0x00 } },
         GetEntityResponse { primitives = EntityPrimitives { byte = 0x01 } },
     )
+
     @Test fun testShortEquals() = successTest(
         WaitersTestClient::waitUntilShortEquals,
         GetEntityResponse { primitives = EntityPrimitives { short = 1 } },
         GetEntityResponse { primitives = EntityPrimitives { short = 2 } },
     )
+
     @Test fun testIntegerEquals() = successTest(
         WaitersTestClient::waitUntilIntegerEquals,
         GetEntityResponse { primitives = EntityPrimitives { integer = 2 } },
         GetEntityResponse { primitives = EntityPrimitives { integer = 3 } },
     )
+
     @Test fun testLongEquals() = successTest(
         WaitersTestClient::waitUntilLongEquals,
         GetEntityResponse { primitives = EntityPrimitives { long = 3L } },
         GetEntityResponse { primitives = EntityPrimitives { long = 4L } },
     )
+
     @Test fun testFloatEquals() = successTest(
         WaitersTestClient::waitUntilFloatEquals,
         GetEntityResponse { primitives = EntityPrimitives { float = 4f } },
         GetEntityResponse { primitives = EntityPrimitives { float = 5f } },
     )
+
     @Test fun testDoubleEquals() = successTest(
         WaitersTestClient::waitUntilDoubleEquals,
         GetEntityResponse { primitives = EntityPrimitives { double = 5.0 } },
         GetEntityResponse { primitives = EntityPrimitives { double = 6.0 } },
     )
+
     @Test fun testEnumEquals() = successTest(
         WaitersTestClient::waitUntilEnumEquals,
         GetEntityResponse { primitives = EntityPrimitives { enum = Enum.Two } },
         GetEntityResponse { primitives = EntityPrimitives { enum = Enum.One } },
     )
+
     @Test fun testEnumEqualsByCompare() = successTest(
         WaitersTestClient::waitUntilEnumEqualsByCompare,
         GetEntityResponse { primitives = EntityPrimitives { enum = Enum.Two } },
         GetEntityResponse { primitives = EntityPrimitives { enum = Enum.One } },
     )
+
     @Test fun testIntEnumEquals() = successTest(
         WaitersTestClient::waitUntilIntEnumEquals,
         GetEntityResponse { primitives = EntityPrimitives { intEnum = IntEnum.Two } },
@@ -101,6 +113,7 @@ class WaiterTest {
         GetEntityResponse { lists = EntityLists { strings = listOf("bar", "baz") } },
         GetEntityResponse { lists = EntityLists { strings = listOf("foo", "bar") } },
     )
+
     @Test fun testEnumListAnyStringEquals() = successTest(
         WaitersTestClient::waitUntilEnumListAnyStringEquals,
         GetEntityResponse { lists = EntityLists { enums = listOf(Enum.Two, Enum.Two) } },
@@ -113,6 +126,7 @@ class WaiterTest {
         GetEntityResponse { lists = EntityLists { strings = listOf("foo", "bar") } },
         GetEntityResponse { lists = EntityLists { strings = listOf("foo", "foo") } },
     )
+
     @Test fun testEnumListAllStringEquals() = successTest(
         WaitersTestClient::waitUntilEnumListAllStringEquals,
         GetEntityResponse { lists = EntityLists { enums = listOf(Enum.One, Enum.Two) } },
@@ -131,6 +145,7 @@ class WaiterTest {
             lists = EntityLists { booleans = listOf(false, true) }
         },
     )
+
     @Test fun testBooleanListContainsIdentityProjection() = successTest(
         WaitersTestClient::waitUntilBooleanListContainsIdentityProjection,
         GetEntityResponse {
@@ -142,6 +157,7 @@ class WaiterTest {
             lists = EntityLists { booleans = listOf(false, true) }
         },
     )
+
     @Test fun testStringListContains() = successTest(
         WaitersTestClient::waitUntilStringListContains,
         GetEntityResponse {
@@ -153,6 +169,7 @@ class WaiterTest {
             lists = EntityLists { strings = listOf("foo", "bar") }
         },
     )
+
     @Test fun testIntegerListContains() = successTest(
         WaitersTestClient::waitUntilIntegerListContains,
         GetEntityResponse {
@@ -164,6 +181,7 @@ class WaiterTest {
             lists = EntityLists { integers = listOf(9, 10) }
         },
     )
+
     @Test fun testEnumListContains() = successTest(
         WaitersTestClient::waitUntilEnumListContains,
         GetEntityResponse {
@@ -175,6 +193,7 @@ class WaiterTest {
             lists = EntityLists { enums = listOf(Enum.One, Enum.Two) }
         },
     )
+
     @Test fun testIntEnumListContains() = successTest(
         WaitersTestClient::waitUntilIntEnumListContains,
         GetEntityResponse {
@@ -199,6 +218,7 @@ class WaiterTest {
             maps = EntityMaps { booleans = mapOf("i" to true, "j" to false) }
         },
     )
+
     @Test fun testStringMapContains() = successTest(
         WaitersTestClient::waitUntilStringMapContains,
         GetEntityResponse {
@@ -210,6 +230,7 @@ class WaiterTest {
             maps = EntityMaps { strings = mapOf("i" to "foo", "j" to "bar") }
         },
     )
+
     @Test fun testIntegerMapContains() = successTest(
         WaitersTestClient::waitUntilIntegerMapContains,
         GetEntityResponse {
@@ -221,6 +242,7 @@ class WaiterTest {
             maps = EntityMaps { integers = mapOf("i" to 9, "j" to 10) }
         },
     )
+
     @Test fun testEnumMapContains() = successTest(
         WaitersTestClient::waitUntilEnumMapContains,
         GetEntityResponse {
@@ -232,6 +254,7 @@ class WaiterTest {
             maps = EntityMaps { enums = mapOf("i" to Enum.One, "j" to Enum.Two) }
         },
     )
+
     @Test fun testIntEnumMapContains() = successTest(
         WaitersTestClient::waitUntilIntEnumMapContains,
         GetEntityResponse {
@@ -256,6 +279,7 @@ class WaiterTest {
             lists = EntityLists { booleans = listOf(true) }
         },
     )
+
     @Test fun testStringListLength() = successTest(
         WaitersTestClient::waitUntilStringListLength,
         GetEntityResponse { },
@@ -267,6 +291,7 @@ class WaiterTest {
             lists = EntityLists { strings = listOf("foo") }
         },
     )
+
     @Test fun testIntegerListLength() = successTest(
         WaitersTestClient::waitUntilIntegerListLength,
         GetEntityResponse { },
@@ -278,6 +303,7 @@ class WaiterTest {
             lists = EntityLists { integers = listOf(0) }
         },
     )
+
     @Test fun testEnumListLength() = successTest(
         WaitersTestClient::waitUntilEnumListLength,
         GetEntityResponse { },
@@ -289,6 +315,7 @@ class WaiterTest {
             lists = EntityLists { enums = listOf(Enum.One) }
         },
     )
+
     @Test fun testIntEnumListLength() = successTest(
         WaitersTestClient::waitUntilIntEnumListLength,
         GetEntityResponse { },
@@ -313,6 +340,7 @@ class WaiterTest {
             maps = EntityMaps { booleans = mapOf("" to true) }
         },
     )
+
     @Test fun testStringMapLength() = successTest(
         WaitersTestClient::waitUntilStringMapLength,
         GetEntityResponse { },
@@ -324,6 +352,7 @@ class WaiterTest {
             maps = EntityMaps { strings = mapOf("" to "foo") }
         },
     )
+
     @Test fun testIntegerMapLength() = successTest(
         WaitersTestClient::waitUntilIntegerMapLength,
         GetEntityResponse { },
@@ -335,6 +364,7 @@ class WaiterTest {
             maps = EntityMaps { integers = mapOf("" to 0) }
         },
     )
+
     @Test fun testEnumMapLength() = successTest(
         WaitersTestClient::waitUntilEnumMapLength,
         GetEntityResponse { },
@@ -346,6 +376,7 @@ class WaiterTest {
             maps = EntityMaps { enums = mapOf("" to Enum.One) }
         },
     )
+
     @Test fun testIntEnumMapLength() = successTest(
         WaitersTestClient::waitUntilIntEnumMapLength,
         GetEntityResponse { },
@@ -385,6 +416,7 @@ class WaiterTest {
             }
         },
     )
+
     @Test fun testHasStructWithString() = successTest(
         WaitersTestClient::waitUntilHasStructWithString,
         GetEntityResponse { },
@@ -411,6 +443,7 @@ class WaiterTest {
             }
         },
     )
+
     @Test fun testHasStructWithInteger() = successTest(
         WaitersTestClient::waitUntilHasStructWithInteger,
         GetEntityResponse { },
@@ -437,6 +470,7 @@ class WaiterTest {
             }
         },
     )
+
     @Test fun testHasStructWithEnum() = successTest(
         WaitersTestClient::waitUntilHasStructWithEnum,
         GetEntityResponse { },
@@ -463,6 +497,7 @@ class WaiterTest {
             }
         },
     )
+
     @Test fun testHasStructWithIntEnum() = successTest(
         WaitersTestClient::waitUntilHasStructWithIntEnum,
         GetEntityResponse { },
@@ -489,6 +524,7 @@ class WaiterTest {
             }
         },
     )
+
     @Test fun testHasStructWithStringInStringList() = successTest(
         WaitersTestClient::waitUntilHasStructWithStringInStringList,
         GetEntityResponse { },
@@ -537,6 +573,7 @@ class WaiterTest {
             }
         },
     )
+
     @Test fun testHasStructWithEnumInEnumList() = successTest(
         WaitersTestClient::waitUntilHasStructWithEnumInEnumList,
         GetEntityResponse { },
@@ -585,6 +622,7 @@ class WaiterTest {
             }
         },
     )
+
     @Test fun testHasStructWithStringInEnumList() = successTest(
         WaitersTestClient::waitUntilHasStructWithStringInEnumList,
         GetEntityResponse { },
@@ -633,6 +671,7 @@ class WaiterTest {
             }
         },
     )
+
     @Test fun testHasStructWithEnumInStringList() = successTest(
         WaitersTestClient::waitUntilHasStructWithEnumInStringList,
         GetEntityResponse { },
@@ -709,6 +748,7 @@ class WaiterTest {
             }
         },
     )
+
     @Test fun testHasStructWithSubstructWithStringByProjection() = successTest(
         WaitersTestClient::waitUntilHasStructWithSubstructWithStringByProjection,
         GetEntityResponse { },

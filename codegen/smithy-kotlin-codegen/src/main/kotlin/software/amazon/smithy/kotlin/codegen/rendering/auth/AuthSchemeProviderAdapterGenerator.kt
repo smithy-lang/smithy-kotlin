@@ -31,14 +31,13 @@ class AuthSchemeProviderAdapterGenerator {
             // TODO - auth parameters will need bound per/request as applicable (e.g. like EP2.0 or generate one per/request).
             //        This is a simplified version (using object) while design is in flux.
             writer.withBlock("internal object #T: #T {", "}", symbol, RuntimeTypes.HttpClient.Operation.AuthSchemeResolver) {
-
                 withBlock(
                     "override suspend fun resolve(request: #T): List<#T> {",
                     "}",
                     RuntimeTypes.HttpClient.Operation.SdkHttpRequest,
                     RuntimeTypes.Auth.Identity.AuthSchemeOption,
-                ){
-                    withBlock("val params = #T {", "}", AuthSchemeParametersGenerator.getSymbol(ctx.settings)){
+                ) {
+                    withBlock("val params = #T {", "}", AuthSchemeParametersGenerator.getSymbol(ctx.settings)) {
                         addImport(RuntimeTypes.Core.Utils.get)
                         write("operationName = request.context[#T.OperationName]", RuntimeTypes.SmithyClient.SdkClientOption)
                     }
@@ -48,5 +47,4 @@ class AuthSchemeProviderAdapterGenerator {
             }
         }
     }
-
 }
