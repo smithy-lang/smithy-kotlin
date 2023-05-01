@@ -171,10 +171,6 @@ public abstract interface class aws/smithy/kotlin/runtime/client/SdkClientConfig
 	public abstract fun setRetryStrategy (Laws/smithy/kotlin/runtime/retries/RetryStrategy;)V
 }
 
-public final class aws/smithy/kotlin/runtime/client/SdkClientConfig$DefaultImpls {
-	public static fun getLogMode (Laws/smithy/kotlin/runtime/client/SdkClientConfig;)Laws/smithy/kotlin/runtime/client/LogMode;
-}
-
 public abstract interface class aws/smithy/kotlin/runtime/client/SdkClientFactory {
 	public abstract fun builder ()Laws/smithy/kotlin/runtime/client/SdkClient$Builder;
 	public abstract fun invoke (Lkotlin/jvm/functions/Function1;)Laws/smithy/kotlin/runtime/client/SdkClient;

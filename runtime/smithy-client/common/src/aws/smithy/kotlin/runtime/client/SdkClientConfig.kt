@@ -28,7 +28,6 @@ public interface SdkClientConfig {
      * debug purposes.
      */
     public val logMode: LogMode
-        get() = LogMode.Default
 
     /**
      * The policy to use for evaluating operation results and determining whether/how to retry.
