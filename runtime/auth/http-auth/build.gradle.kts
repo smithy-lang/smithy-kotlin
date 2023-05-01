@@ -17,5 +17,15 @@ kotlin {
                 api(project(":runtime:auth:http-auth-api"))
             }
         }
+
+        commonTest {
+            dependencies {
+                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:$coroutinesVersion")
+            }
+        }
+
+        all {
+            languageSettings.optIn("aws.smithy.kotlin.runtime.InternalApi")
+        }
     }
 }

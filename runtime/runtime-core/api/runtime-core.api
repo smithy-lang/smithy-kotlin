@@ -833,6 +833,9 @@ public final class aws/smithy/kotlin/runtime/net/Scheme$Companion {
 	public final fun parse (Ljava/lang/String;)Laws/smithy/kotlin/runtime/net/Scheme;
 }
 
+public final class aws/smithy/kotlin/runtime/net/SchemeKt {
+}
+
 public final class aws/smithy/kotlin/runtime/net/TextKt {
 }
 

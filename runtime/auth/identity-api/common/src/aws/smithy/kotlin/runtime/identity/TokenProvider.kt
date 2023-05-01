@@ -22,7 +22,10 @@ public interface TokenProvider : IdentityProvider {
  */
 public interface Token : Identity {
     /**
-     * The token value
+     * The token value.
+     *
+     * NOTE: tokens are considered opaque values by signers, any encoding (e.g. base64 for bearer tokens) needs
+     * to be encoded in the value.
      */
     public val token: String
 }
