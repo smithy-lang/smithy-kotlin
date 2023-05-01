@@ -29,7 +29,7 @@ public object SdkClientOption {
     public val IdempotencyTokenProvider: ClientOption<IdempotencyTokenProvider> = ClientOption("IdempotencyTokenProvider")
 
     /**
-     * The client logging mode (see [LogMode]
+     * The client logging mode (see [LogMode])
      */
     public val LogMode: ClientOption<LogMode> = ClientOption("LogMode")
 
