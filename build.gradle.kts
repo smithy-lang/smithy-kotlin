@@ -143,7 +143,6 @@ dependencies {
 
 val lintPaths = listOf(
     "**/*.{kt,kts}",
-    "**/*.kts",
     "!**/generated-src/**",
     "!**/smithyprojections/**",
 )
