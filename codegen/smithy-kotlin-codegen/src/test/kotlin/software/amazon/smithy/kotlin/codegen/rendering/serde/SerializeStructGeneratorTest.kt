@@ -1320,7 +1320,7 @@ class SerializeStructGeneratorTest {
                 NO = 2
             }
         """
-                ).toSmithyModel()
+            ).toSmithyModel()
 
         val expected = """
             serializer.serializeStruct(OBJ_DESCRIPTOR) {

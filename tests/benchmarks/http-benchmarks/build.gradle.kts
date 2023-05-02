@@ -12,7 +12,7 @@ extra.set("skipPublish", true)
 val platforms = listOf("common", "jvm")
 
 platforms.forEach { platform ->
-    apply(from = rootProject.file("gradle/${platform}.gradle"))
+    apply(from = rootProject.file("gradle/$platform.gradle"))
 }
 
 val optinAnnotations = listOf("kotlin.RequiresOptIn", "aws.smithy.kotlin.runtime.InternalApi")

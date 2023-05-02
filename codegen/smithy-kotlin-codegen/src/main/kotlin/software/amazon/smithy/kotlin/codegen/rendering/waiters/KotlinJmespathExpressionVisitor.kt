@@ -57,10 +57,14 @@ class KotlinJmespathExpressionVisitor(
     private val currentShape: Shape
         get() = shapeCursor.last()
 
+    // traverses an independent expression (one whose resolved scope does not persist in the outer evaluation)
     private fun acceptSubexpression(expr: JmespathExpression): VisitedExpression {
-        shapeCursor.addLast(currentShape)
+        val pos = shapeCursor.size
         val out = expr.accept(this)
-        shapeCursor.removeLast()
+
+        val diff = shapeCursor.size - pos
+        repeat(diff) { shapeCursor.removeLast() } // reset the shape cursor
+
         return out
     }
 
@@ -73,15 +77,6 @@ class KotlinJmespathExpressionVisitor(
     private fun bestTempVarName(preferredName: String): String =
         suffixSequence.map { "$preferredName$it" }.first(tempVars::add)
 
-    private fun childBlock(forExpression: JmespathExpression, shape: Shape): VisitedExpression {
-        val childShape = when (val target = shape.targetOrSelf(ctx.model)) {
-            is ListShape -> target.member
-            is MapShape -> target.value
-            else -> shape
-        }
-        return forExpression.accept(KotlinJmespathExpressionVisitor(ctx, writer, childShape))
-    }
-
     @OptIn(ExperimentalContracts::class)
     private fun codegenReq(condition: Boolean, lazyMessage: () -> String) {
         contract {
@@ -90,13 +85,17 @@ class KotlinJmespathExpressionVisitor(
         if (!condition) throw CodegenException(lazyMessage())
     }
 
-    private fun flatMappingBlock(right: JmespathExpression, leftName: String, leftShape: Shape): VisitedExpression {
+    private fun flatMappingBlock(right: JmespathExpression, leftName: String, leftShape: Shape, innerShape: Shape?): VisitedExpression {
         if (right is CurrentExpression) return VisitedExpression(leftName, leftShape) // nothing to map
 
         val outerName = bestTempVarName("projection")
-        writer.openBlock("val #L = #L.flatMap {", outerName, leftName)
+        val flatMapExpr = ensureNullGuard(leftShape, "flatMap")
+        writer.openBlock("val #L = #L#L {", outerName, leftName, flatMapExpr)
 
-        val innerResult = childBlock(right, leftShape)
+        shapeCursor.addLast(innerShape?.targetMemberOrSelf ?: leftShape.targetMemberOrSelf)
+        val innerResult = acceptSubexpression(right)
+        shapeCursor.removeLast()
+
         val innerCollector = when (right) {
             is MultiSelectListExpression -> innerResult.identifier // Already a list
             else -> "listOfNotNull(${innerResult.identifier})"
@@ -104,7 +103,7 @@ class KotlinJmespathExpressionVisitor(
         writer.write(innerCollector)
 
         writer.closeBlock("}")
-        return VisitedExpression(outerName, innerResult.shape)
+        return VisitedExpression(outerName, leftShape, innerResult.shape)
     }
 
     private fun subfield(expression: FieldExpression, parentName: String): VisitedExpression {
@@ -151,7 +150,7 @@ class KotlinJmespathExpressionVisitor(
         val codegen = buildString {
             val nullables = buildList {
                 if (left.shape?.isNullable == true) add("${left.identifier} == null")
-                if (right.shape?.isNullable == true) add("${left.identifier} == null")
+                if (right.shape?.isNullable == true) add("${right.identifier} == null")
             }
             if (nullables.isNotEmpty()) {
                 val isNullExpr = nullables.joinToString(" || ")
@@ -176,27 +175,31 @@ class KotlinJmespathExpressionVisitor(
     override fun visitField(expression: FieldExpression): VisitedExpression = subfield(expression, "it")
 
     override fun visitFilterProjection(expression: FilterProjectionExpression): VisitedExpression {
-        val left = acceptSubexpression(expression.left)
+        val left = expression.left.accept(this)
         requireNotNull(left.shape) { "filter projection is operating on nothing?" }
 
         val filteredName = bestTempVarName("${left.identifier}Filtered")
 
         val filterExpr = ensureNullGuard(left.shape, "filter")
         writer.withBlock("val #L = #L#L {", "}", filteredName, left.identifier, filterExpr) {
-            val comparison = childBlock(expression.comparison, left.shape)
+            shapeCursor.addLast(left.shape.targetMemberOrSelf)
+            val comparison = acceptSubexpression(expression.comparison)
+            shapeCursor.removeLast()
             write("#L == true", comparison.identifier)
         }
 
-        return flatMappingBlock(expression.right, filteredName, left.shape)
+        return flatMappingBlock(expression.right, filteredName, left.shape, left.projected)
     }
 
     override fun visitFlatten(expression: FlattenExpression): VisitedExpression {
         writer.addImport(RuntimeTypes.Core.Utils.flattenIfPossible)
 
-        val inner = acceptSubexpression(expression.expression)
-        val flattenExpr = ensureNullGuard(inner.shape, "flattenIfPossible()", "listOf()")
+        val inner = expression.expression.accept(this)
+
+        val flattenExpr = ensureNullGuard(currentShape, "flattenIfPossible()")
         val ident = addTempVar("${inner.identifier}OrEmpty", "${inner.identifier}$flattenExpr")
-        return VisitedExpression(ident, inner.shape)
+
+        return VisitedExpression(ident, currentShape, inner.projected)
     }
 
     override fun visitFunction(expression: FunctionExpression): VisitedExpression = when (expression.name) {
@@ -278,7 +281,7 @@ class KotlinJmespathExpressionVisitor(
         val valuesExpr = ensureNullGuard(left.shape, "values")
         val valuesName = addTempVar("${left.identifier}Values", "${left.identifier}$valuesExpr")
 
-        return flatMappingBlock(expression.right, valuesName, left.shape)
+        return flatMappingBlock(expression.right, valuesName, left.shape, left.projected)
     }
 
     override fun visitOr(expression: OrExpression): VisitedExpression {
@@ -294,10 +297,10 @@ class KotlinJmespathExpressionVisitor(
     }
 
     override fun visitProjection(expression: ProjectionExpression): VisitedExpression {
-        val left = acceptSubexpression(expression.left)
+        val left = expression.left.accept(this)
         requireNotNull(left.shape) { "projection is operating on nothing?" }
 
-        return flatMappingBlock(expression.right, left.identifier, left.shape)
+        return flatMappingBlock(expression.right, left.identifier, left.shape, left.projected)
     }
 
     override fun visitSlice(expression: SliceExpression): VisitedExpression {
@@ -305,15 +308,12 @@ class KotlinJmespathExpressionVisitor(
     }
 
     override fun visitSubexpression(expression: Subexpression): VisitedExpression {
-        val left = acceptSubexpression(expression.left)
-        requireNotNull(left.shape)
+        val left = expression.left.accept(this)
 
-        shapeCursor.addLast(left.shape)
         val ret = when (val right = expression.right) {
             is FieldExpression -> subfield(right, left.identifier)
             else -> throw CodegenException("Subexpression type $right is unsupported")
         }
-        shapeCursor.removeLast()
 
         return ret
     }
@@ -336,8 +336,15 @@ class KotlinJmespathExpressionVisitor(
 
     private val Shape.isNullable: Boolean
         get() = this is MemberShape &&
-                ctx.model.expectShape(target).let { !it.hasTrait<OperationInput>() && !it.hasTrait<OperationOutput>() } &&
-                nullableIndex.isMemberNullable(this, NullableIndex.CheckMode.CLIENT_ZERO_VALUE_V1_NO_INPUT)
+            ctx.model.expectShape(target).let { !it.hasTrait<OperationInput>() && !it.hasTrait<OperationOutput>() } &&
+            nullableIndex.isMemberNullable(this, NullableIndex.CheckMode.CLIENT_ZERO_VALUE_V1_NO_INPUT)
+
+    private val Shape.targetMemberOrSelf: Shape
+        get() = when (val target = targetOrSelf(ctx.model)) {
+            is ListShape -> target.member
+            is MapShape -> target.value
+            else -> this
+        }
 }
 
 /**
@@ -346,5 +353,9 @@ class KotlinJmespathExpressionVisitor(
  * @param shape The underlying shape (if any) that the identifier represents. Not all expressions reference a modeled
  *              shape, e.g. [LiteralExpression] (the value is just a literal) or [FunctionExpression]s where the
  *              returned value is scalar.
+ * @param projected For projections, the context of the inner shape. For example, given the expression
+ *                  `foo[].bar[].baz.qux`, the shape that backs the identifier (and therefore determines overall nullability)
+ *                  is `foo`, but the shape that needs carried through to subfield expressions in the following projection
+ *                  is the target of `bar`, such that its subfields `baz` and `qux` can be recognized.
  */
-data class VisitedExpression(val identifier: String, val shape: Shape? = null)
+data class VisitedExpression(val identifier: String, val shape: Shape? = null, val projected: Shape? = null)

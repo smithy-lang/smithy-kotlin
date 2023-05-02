@@ -50,7 +50,7 @@ allprojects {
                     "separateInheritedMembers" : true,
                     "templatesDir": "${rootProject.file("docs/dokka-presets/templates")}"
                 }
-            """
+            """,
         )
         pluginsMapConfiguration.set(pluginConfigMap)
     }
@@ -142,9 +142,9 @@ dependencies {
 }
 
 val lintPaths = listOf(
-    "smithy-kotlin-codegen/src/**/*.kt",
-    "runtime/**/*.kt",
-    "tests/**/jvm/**/*.kt",
+    "**/*.{kt,kts}",
+    "!**/generated-src/**",
+    "!**/smithyprojections/**",
 )
 
 tasks.register<JavaExec>("ktlint") {
@@ -153,6 +153,7 @@ tasks.register<JavaExec>("ktlint") {
     classpath = configurations.getByName("ktlint")
     main = "com.pinterest.ktlint.Main"
     args = lintPaths
+    jvmArgs("--add-opens", "java.base/java.lang=ALL-UNNAMED")
 }
 
 tasks.register<JavaExec>("ktlintFormat") {
@@ -161,28 +162,31 @@ tasks.register<JavaExec>("ktlintFormat") {
     classpath = configurations.getByName("ktlint")
     main = "com.pinterest.ktlint.Main"
     args = listOf("-F") + lintPaths
+    jvmArgs("--add-opens", "java.base/java.lang=ALL-UNNAMED")
 }
 
 apiValidation {
     nonPublicMarkers.add("aws.smithy.kotlin.runtime.InternalApi")
 
-    ignoredProjects.addAll(setOf(
-        "dokka-smithy",
-        "ktlint-rules",
-        "aws-signing-tests",
-        "test-suite",
-        "http-test",
-        "smithy-test",
-        "testing",
-        "smithy-kotlin-codegen",
-        "smithy-kotlin-codegen-testutils",
-        "aws-signing-benchmarks",
-        "channel-benchmarks",
-        "http-benchmarks",
-        "serde-benchmarks",
-        "serde-benchmarks-codegen",
-        "paginator-tests",
-        "waiter-tests",
-        "compile"
-    ))
+    ignoredProjects.addAll(
+        setOf(
+            "dokka-smithy",
+            "ktlint-rules",
+            "aws-signing-tests",
+            "test-suite",
+            "http-test",
+            "smithy-test",
+            "testing",
+            "smithy-kotlin-codegen",
+            "smithy-kotlin-codegen-testutils",
+            "aws-signing-benchmarks",
+            "channel-benchmarks",
+            "http-benchmarks",
+            "serde-benchmarks",
+            "serde-benchmarks-codegen",
+            "paginator-tests",
+            "waiter-tests",
+            "compile",
+        ),
+    )
 }

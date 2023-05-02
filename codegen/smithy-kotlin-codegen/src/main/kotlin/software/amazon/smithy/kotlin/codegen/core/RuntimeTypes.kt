@@ -135,7 +135,6 @@ object RuntimeTypes {
             }
         }
 
-
         object Hashing : RuntimeTypePackage(KotlinDependency.CORE, "hashing") {
             val Sha256 = symbol("Sha256")
         }
@@ -258,7 +257,7 @@ object RuntimeTypes {
             }
         }
 
-        object Identity : RuntimeTypePackage(KotlinDependency.IDENTITY_API){
+        object Identity : RuntimeTypePackage(KotlinDependency.IDENTITY_API) {
             val AuthSchemeId = symbol("AuthSchemeId", "auth")
             val AuthSchemeProvider = symbol("AuthSchemeProvider", "auth")
             val AuthSchemeOption = symbol("AuthSchemeOption", "auth")
@@ -286,15 +285,15 @@ object RuntimeTypes {
             }
         }
 
-        object HttpAuth: RuntimeTypePackage(KotlinDependency.HTTP_AUTH) {
-            val AnonymousAuthScheme  = symbol("AnonymousAuthScheme")
+        object HttpAuth : RuntimeTypePackage(KotlinDependency.HTTP_AUTH) {
+            val AnonymousAuthScheme = symbol("AnonymousAuthScheme")
             val AnonymousIdentity = symbol("AnonymousIdentity")
             val AnonymousIdentityProvider = symbol("AnonymousIdentityProvider")
             val HttpAuthConfig = symbol("HttpAuthConfig")
             val HttpAuthScheme = symbol("HttpAuthScheme")
         }
 
-        object HttpAuthAws : RuntimeTypePackage(KotlinDependency.HTTP_AUTH_AWS){
+        object HttpAuthAws : RuntimeTypePackage(KotlinDependency.HTTP_AUTH_AWS) {
             val AwsHttpSigner = symbol("AwsHttpSigner")
             val SigV4AuthScheme = symbol("SigV4AuthScheme")
             val sigv4 = symbol("sigv4")
@@ -317,7 +316,7 @@ object RuntimeTypes {
         val coroutineContext = "kotlin.coroutines.coroutineContext".toSymbol()
     }
 
-    object KotlinxCoroutines{
+    object KotlinxCoroutines {
 
         val CompletableDeferred = "kotlinx.coroutines.CompletableDeferred".toSymbol()
         val job = "kotlinx.coroutines.job".toSymbol()
@@ -335,7 +334,7 @@ object RuntimeTypes {
         }
     }
 
-    object AwsProtocolCore: RuntimeTypePackage(KotlinDependency.AWS_PROTOCOL_CORE) {
+    object AwsProtocolCore : RuntimeTypePackage(KotlinDependency.AWS_PROTOCOL_CORE) {
         val withPayload = symbol("withPayload")
         val setAseErrorMetadata = symbol("setAseErrorMetadata")
         val AwsQueryCompatibleErrorDetails = symbol("AwsQueryCompatibleErrorDetails")
@@ -343,16 +342,16 @@ object RuntimeTypes {
         val XAmznQueryErrorHeader = symbol("X_AMZN_QUERY_ERROR_HEADER")
     }
 
-    object AwsJsonProtocols: RuntimeTypePackage(KotlinDependency.AWS_JSON_PROTOCOLS) {
+    object AwsJsonProtocols : RuntimeTypePackage(KotlinDependency.AWS_JSON_PROTOCOLS) {
         val AwsJsonProtocol = symbol("AwsJsonProtocol")
         val RestJsonErrorDeserializer = symbol("RestJsonErrorDeserializer")
     }
-    object AwsXmlProtocols: RuntimeTypePackage(KotlinDependency.AWS_XML_PROTOCOLS) {
+    object AwsXmlProtocols : RuntimeTypePackage(KotlinDependency.AWS_XML_PROTOCOLS) {
         val parseRestXmlErrorResponse = symbol("parseRestXmlErrorResponse")
         val parseEc2QueryErrorResponse = symbol("parseEc2QueryErrorResponse")
     }
 
-    object AwsEventStream: RuntimeTypePackage(KotlinDependency.AWS_EVENT_STREAM) {
+    object AwsEventStream : RuntimeTypePackage(KotlinDependency.AWS_EVENT_STREAM) {
         val HeaderValue = symbol("HeaderValue")
         val Message = symbol("Message")
         val MessageType = symbol("MessageType")
