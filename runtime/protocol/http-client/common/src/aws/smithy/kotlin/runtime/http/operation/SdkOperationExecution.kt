@@ -6,8 +6,8 @@
 package aws.smithy.kotlin.runtime.http.operation
 
 import aws.smithy.kotlin.runtime.InternalApi
-import aws.smithy.kotlin.runtime.client.SdkLogMode
-import aws.smithy.kotlin.runtime.client.sdkLogMode
+import aws.smithy.kotlin.runtime.client.LogMode
+import aws.smithy.kotlin.runtime.client.logMode
 import aws.smithy.kotlin.runtime.http.HttpHandler
 import aws.smithy.kotlin.runtime.http.auth.SignHttpRequest
 import aws.smithy.kotlin.runtime.http.interceptors.InterceptorExecutor
@@ -346,18 +346,18 @@ private class HttpCallMiddleware : Middleware<SdkHttpRequest, HttpCall> {
  * default middleware that logs requests/responses
  */
 private suspend fun httpTraceMiddleware(request: SdkHttpRequest, next: Handler<SdkHttpRequest, HttpCall>): HttpCall {
-    val logMode = request.context.sdkLogMode
+    val logMode = request.context.logMode
     val logger = coroutineContext.getLogger("httpTraceMiddleware")
 
-    if (logMode.isEnabled(SdkLogMode.LogRequest) || logMode.isEnabled(SdkLogMode.LogRequestWithBody)) {
-        val formattedReq = dumpRequest(request.subject, logMode.isEnabled(SdkLogMode.LogRequestWithBody))
+    if (logMode.isEnabled(LogMode.LogRequest) || logMode.isEnabled(LogMode.LogRequestWithBody)) {
+        val formattedReq = dumpRequest(request.subject, logMode.isEnabled(LogMode.LogRequestWithBody))
         logger.debug { "HttpRequest:\n$formattedReq" }
     }
 
     var call = next.call(request)
 
-    if (logMode.isEnabled(SdkLogMode.LogResponse) || logMode.isEnabled(SdkLogMode.LogResponseWithBody)) {
-        val (resp, formattedResp) = dumpResponse(call.response, logMode.isEnabled(SdkLogMode.LogResponseWithBody))
+    if (logMode.isEnabled(LogMode.LogResponse) || logMode.isEnabled(LogMode.LogResponseWithBody)) {
+        val (resp, formattedResp) = dumpResponse(call.response, logMode.isEnabled(LogMode.LogResponseWithBody))
         call = call.copy(response = resp)
         logger.debug { "HttpResponse:\n$formattedResp" }
     } else {

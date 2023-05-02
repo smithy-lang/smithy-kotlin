@@ -174,7 +174,7 @@ object RuntimeTypes {
     object SmithyClient : RuntimeTypePackage(KotlinDependency.SMITHY_CLIENT) {
         val SdkClient = symbol("SdkClient")
         val AbstractSdkClientBuilder = symbol("AbstractSdkClientBuilder")
-        val SdkLogMode = symbol("SdkLogMode")
+        val LogMode = symbol("LogMode")
         val SdkClientConfig = symbol("SdkClientConfig")
         val SdkClientFactory = symbol("SdkClientFactory")
         val SdkClientOption = symbol("SdkClientOption")

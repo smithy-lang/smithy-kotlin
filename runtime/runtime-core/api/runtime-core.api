@@ -1474,6 +1474,9 @@ public final class aws/smithy/kotlin/runtime/util/StackKt {
 	public static final fun topOrNull (Ljava/util/List;)Ljava/lang/Object;
 }
 
+public final class aws/smithy/kotlin/runtime/util/TestPlatformProvider$Companion {
+}
+
 public final class aws/smithy/kotlin/runtime/util/Uuid {
 	public static final field Companion Laws/smithy/kotlin/runtime/util/Uuid$Companion;
 	public fun <init> (JJ)V

@@ -88,6 +88,46 @@ public final class aws/smithy/kotlin/runtime/client/Interceptor$DefaultImpls {
 	public static fun readBeforeTransmit (Laws/smithy/kotlin/runtime/client/Interceptor;Laws/smithy/kotlin/runtime/client/ProtocolRequestInterceptorContext;)V
 }
 
+public abstract class aws/smithy/kotlin/runtime/client/LogMode {
+	public static final field Companion Laws/smithy/kotlin/runtime/client/LogMode$Companion;
+	public synthetic fun <init> (ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun isEnabled (Laws/smithy/kotlin/runtime/client/LogMode;)Z
+	public final fun minus (Laws/smithy/kotlin/runtime/client/LogMode;)Laws/smithy/kotlin/runtime/client/LogMode;
+	public final fun plus (Laws/smithy/kotlin/runtime/client/LogMode;)Laws/smithy/kotlin/runtime/client/LogMode;
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class aws/smithy/kotlin/runtime/client/LogMode$Companion {
+	public final fun allModes ()Ljava/util/List;
+	public final fun fromString (Ljava/lang/String;)Laws/smithy/kotlin/runtime/client/LogMode;
+}
+
+public final class aws/smithy/kotlin/runtime/client/LogMode$Default : aws/smithy/kotlin/runtime/client/LogMode {
+	public static final field INSTANCE Laws/smithy/kotlin/runtime/client/LogMode$Default;
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class aws/smithy/kotlin/runtime/client/LogMode$LogRequest : aws/smithy/kotlin/runtime/client/LogMode {
+	public static final field INSTANCE Laws/smithy/kotlin/runtime/client/LogMode$LogRequest;
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class aws/smithy/kotlin/runtime/client/LogMode$LogRequestWithBody : aws/smithy/kotlin/runtime/client/LogMode {
+	public static final field INSTANCE Laws/smithy/kotlin/runtime/client/LogMode$LogRequestWithBody;
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class aws/smithy/kotlin/runtime/client/LogMode$LogResponse : aws/smithy/kotlin/runtime/client/LogMode {
+	public static final field INSTANCE Laws/smithy/kotlin/runtime/client/LogMode$LogResponse;
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class aws/smithy/kotlin/runtime/client/LogMode$LogResponseWithBody : aws/smithy/kotlin/runtime/client/LogMode {
+	public static final field INSTANCE Laws/smithy/kotlin/runtime/client/LogMode$LogResponseWithBody;
+	public fun toString ()Ljava/lang/String;
+}
+
 public abstract interface class aws/smithy/kotlin/runtime/client/ProtocolRequestInterceptorContext : aws/smithy/kotlin/runtime/client/RequestInterceptorContext {
 	public abstract fun getProtocolRequest ()Ljava/lang/Object;
 }
@@ -115,24 +155,20 @@ public abstract interface class aws/smithy/kotlin/runtime/client/SdkClient$Build
 
 public abstract interface class aws/smithy/kotlin/runtime/client/SdkClientConfig {
 	public abstract fun getClientName ()Ljava/lang/String;
+	public abstract fun getLogMode ()Laws/smithy/kotlin/runtime/client/LogMode;
 	public abstract fun getRetryPolicy ()Laws/smithy/kotlin/runtime/retries/policy/RetryPolicy;
 	public abstract fun getRetryStrategy ()Laws/smithy/kotlin/runtime/retries/RetryStrategy;
-	public abstract fun getSdkLogMode ()Laws/smithy/kotlin/runtime/client/SdkLogMode;
 }
 
 public abstract interface class aws/smithy/kotlin/runtime/client/SdkClientConfig$Builder : aws/smithy/kotlin/runtime/util/Buildable {
 	public abstract fun getClientName ()Ljava/lang/String;
+	public abstract fun getLogMode ()Laws/smithy/kotlin/runtime/client/LogMode;
 	public abstract fun getRetryPolicy ()Laws/smithy/kotlin/runtime/retries/policy/RetryPolicy;
 	public abstract fun getRetryStrategy ()Laws/smithy/kotlin/runtime/retries/RetryStrategy;
-	public abstract fun getSdkLogMode ()Laws/smithy/kotlin/runtime/client/SdkLogMode;
 	public abstract fun setClientName (Ljava/lang/String;)V
+	public abstract fun setLogMode (Laws/smithy/kotlin/runtime/client/LogMode;)V
 	public abstract fun setRetryPolicy (Laws/smithy/kotlin/runtime/retries/policy/RetryPolicy;)V
 	public abstract fun setRetryStrategy (Laws/smithy/kotlin/runtime/retries/RetryStrategy;)V
-	public abstract fun setSdkLogMode (Laws/smithy/kotlin/runtime/client/SdkLogMode;)V
-}
-
-public final class aws/smithy/kotlin/runtime/client/SdkClientConfig$DefaultImpls {
-	public static fun getSdkLogMode (Laws/smithy/kotlin/runtime/client/SdkClientConfig;)Laws/smithy/kotlin/runtime/client/SdkLogMode;
 }
 
 public abstract interface class aws/smithy/kotlin/runtime/client/SdkClientFactory {
@@ -154,44 +190,6 @@ public final class aws/smithy/kotlin/runtime/client/SdkClientOption {
 }
 
 public final class aws/smithy/kotlin/runtime/client/SdkClientOptionKt {
-}
-
-public abstract class aws/smithy/kotlin/runtime/client/SdkLogMode {
-	public static final field Companion Laws/smithy/kotlin/runtime/client/SdkLogMode$Companion;
-	public synthetic fun <init> (ILkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public final fun isEnabled (Laws/smithy/kotlin/runtime/client/SdkLogMode;)Z
-	public final fun minus (Laws/smithy/kotlin/runtime/client/SdkLogMode;)Laws/smithy/kotlin/runtime/client/SdkLogMode;
-	public final fun plus (Laws/smithy/kotlin/runtime/client/SdkLogMode;)Laws/smithy/kotlin/runtime/client/SdkLogMode;
-	public fun toString ()Ljava/lang/String;
-}
-
-public final class aws/smithy/kotlin/runtime/client/SdkLogMode$Companion {
-	public final fun allModes ()Ljava/util/List;
-}
-
-public final class aws/smithy/kotlin/runtime/client/SdkLogMode$Default : aws/smithy/kotlin/runtime/client/SdkLogMode {
-	public static final field INSTANCE Laws/smithy/kotlin/runtime/client/SdkLogMode$Default;
-	public fun toString ()Ljava/lang/String;
-}
-
-public final class aws/smithy/kotlin/runtime/client/SdkLogMode$LogRequest : aws/smithy/kotlin/runtime/client/SdkLogMode {
-	public static final field INSTANCE Laws/smithy/kotlin/runtime/client/SdkLogMode$LogRequest;
-	public fun toString ()Ljava/lang/String;
-}
-
-public final class aws/smithy/kotlin/runtime/client/SdkLogMode$LogRequestWithBody : aws/smithy/kotlin/runtime/client/SdkLogMode {
-	public static final field INSTANCE Laws/smithy/kotlin/runtime/client/SdkLogMode$LogRequestWithBody;
-	public fun toString ()Ljava/lang/String;
-}
-
-public final class aws/smithy/kotlin/runtime/client/SdkLogMode$LogResponse : aws/smithy/kotlin/runtime/client/SdkLogMode {
-	public static final field INSTANCE Laws/smithy/kotlin/runtime/client/SdkLogMode$LogResponse;
-	public fun toString ()Ljava/lang/String;
-}
-
-public final class aws/smithy/kotlin/runtime/client/SdkLogMode$LogResponseWithBody : aws/smithy/kotlin/runtime/client/SdkLogMode {
-	public static final field INSTANCE Laws/smithy/kotlin/runtime/client/SdkLogMode$LogResponseWithBody;
-	public fun toString ()Ljava/lang/String;
 }
 
 public final class aws/smithy/kotlin/runtime/client/endpoints/Endpoint {

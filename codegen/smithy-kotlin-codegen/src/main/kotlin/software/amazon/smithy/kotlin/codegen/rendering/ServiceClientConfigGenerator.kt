@@ -42,7 +42,7 @@ class ServiceClientConfigGenerator(
      */
     private fun detectDefaultProps(context: CodegenContext, shape: ServiceShape): List<ConfigProperty> = buildList {
         add(RuntimeConfigProperty.ClientName)
-        add(RuntimeConfigProperty.SdkLogMode)
+        add(RuntimeConfigProperty.LogMode)
         if (context.protocolGenerator?.applicationProtocol?.isHttpProtocol == true) {
             add(RuntimeConfigProperty.HttpClientEngine)
             add(RuntimeConfigProperty.HttpInterceptors)
