@@ -70,10 +70,10 @@ public final class aws/smithy/kotlin/runtime/config/EnvironmentSettingKt {
 }
 
 public final class aws/smithy/kotlin/runtime/config/TlsVersion : java/lang/Enum {
-	public static final field Tls1_0 Laws/smithy/kotlin/runtime/config/TlsVersion;
-	public static final field Tls1_1 Laws/smithy/kotlin/runtime/config/TlsVersion;
-	public static final field Tls1_2 Laws/smithy/kotlin/runtime/config/TlsVersion;
-	public static final field Tls1_3 Laws/smithy/kotlin/runtime/config/TlsVersion;
+	public static final field TLS_1_0 Laws/smithy/kotlin/runtime/config/TlsVersion;
+	public static final field TLS_1_1 Laws/smithy/kotlin/runtime/config/TlsVersion;
+	public static final field TLS_1_2 Laws/smithy/kotlin/runtime/config/TlsVersion;
+	public static final field TLS_1_3 Laws/smithy/kotlin/runtime/config/TlsVersion;
 	public static fun valueOf (Ljava/lang/String;)Laws/smithy/kotlin/runtime/config/TlsVersion;
 	public static fun values ()[Laws/smithy/kotlin/runtime/config/TlsVersion;
 }

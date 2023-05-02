@@ -6,7 +6,6 @@
 package aws.smithy.kotlin.runtime.http.engine.crt
 
 import aws.sdk.kotlin.crt.io.ClientBootstrap
-import aws.sdk.kotlin.crt.io.TlsContext
 import aws.smithy.kotlin.runtime.http.engine.HttpClientEngineConfig
 
 /**
@@ -35,11 +34,6 @@ public class CrtHttpEngineConfig private constructor(builder: Builder) : HttpCli
      */
     public var clientBootstrap: ClientBootstrap? = builder.clientBootstrap
 
-    /**
-     * The TLS context to use. By default it is a shared instance.
-     */
-    public var tlsContext: TlsContext? = builder.tlsContext
-
     public class Builder : HttpClientEngineConfig.Builder() {
         /**
          * Set the amount of data that can be buffered before reading from the socket will cease. Reading will
@@ -51,11 +45,6 @@ public class CrtHttpEngineConfig private constructor(builder: Builder) : HttpCli
          * Set the [ClientBootstrap] to use for the engine. By default it is a shared instance.
          */
         public var clientBootstrap: ClientBootstrap? = null
-
-        /**
-         * Set the TLS context to use.
-         */
-        public var tlsContext: TlsContext? = null
 
         internal fun build(): CrtHttpEngineConfig = CrtHttpEngineConfig(this)
     }

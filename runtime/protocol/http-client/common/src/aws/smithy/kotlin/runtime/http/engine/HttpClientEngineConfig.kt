@@ -5,7 +5,6 @@
 package aws.smithy.kotlin.runtime.http.engine
 
 import aws.smithy.kotlin.runtime.InternalApi
-import aws.smithy.kotlin.runtime.config.TlsVersion
 import aws.smithy.kotlin.runtime.net.HostResolver
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
@@ -64,22 +63,20 @@ public open class HttpClientEngineConfig constructor(builder: Builder) {
     public val connectionIdleTimeout: Duration = builder.connectionIdleTimeout
 
     /**
-     * The ALPN protocol list when a TLS connection starts
-     */
-    public val alpn: List<AlpnId> = builder.alpn
-
-    /**
      * The proxy selection policy
      */
     public val proxySelector: ProxySelector = builder.proxySelector
-
-    public val minTlsVersion: TlsVersion = builder.minTlsVersion
 
     /**
      * The host name resolver (DNS)
      */
     @InternalApi
     public val hostResolver: HostResolver = builder.hostResolver
+
+    /**
+     * Settings related to TLS and secure connections
+     */
+    public val tlsContext: TlsContext = builder.tlsContext
 
     public open class Builder {
         /**
@@ -114,11 +111,6 @@ public open class HttpClientEngineConfig constructor(builder: Builder) {
         public var connectionIdleTimeout: Duration = 60.seconds
 
         /**
-         * Set the ALPN protocol list when a TLS connection starts
-         */
-        public var alpn: List<AlpnId> = emptyList()
-
-        /**
          * Set the proxy selection policy to be used.
          *
          * The default behavior is to respect common proxy system properties and environment variables.
@@ -144,41 +136,21 @@ public open class HttpClientEngineConfig constructor(builder: Builder) {
         public var proxySelector: ProxySelector = EnvironmentProxySelector()
 
         /**
-         * Set the minimum allowed TLS version for HTTP connections.
-         */
-        public var minTlsVersion: TlsVersion = TlsVersion.Tls1_2
-
-        /**
          * The host name resolver (DNS) to be used by the client
          */
         @InternalApi
         public var hostResolver: HostResolver = HostResolver.Default
+
+        /**
+         * Settings related to TLS and secure connections
+         */
+        public var tlsContext: TlsContext = TlsContext.Default
+
+        /**
+         * Settings related to TLS and secure connections
+         */
+        public fun tlsContext(block: TlsContext.Builder.() -> Unit) {
+            tlsContext = TlsContext(tlsContext.toBuilder().apply(block))
+        }
     }
-}
-
-/**
- * Common ALPN identifiers
- * See the [IANA registry](https://www.iana.org/assignments/tls-extensiontype-values/tls-extensiontype-values.xhtml#alpn-protocol-ids)
- */
-public enum class AlpnId(public val protocolId: String) {
-    /**
-     * HTTP 1.1
-     */
-    HTTP1_1("http/1.1"),
-
-    /**
-     * HTTP 2 over TLS
-     */
-    HTTP2("h2"),
-
-    /**
-     * Cleartext HTTP/2 with no "upgrade" round trip. This option requires the client to have prior knowledge that the
-     * server supports cleartext HTTP/2. See also rfc_7540_34.
-     */
-    H2_PRIOR_KNOWLEDGE("h2_prior_knowledge"),
-
-    /**
-     * HTTP 3
-     */
-    HTTP3("h3"),
 }

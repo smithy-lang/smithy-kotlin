@@ -21,8 +21,7 @@ public object ClientSettings {
     /**
      * Specifies the minimum acceptable version of TLS to use when connecting to service endpoints.
      */
-    public val MinTlsVersion: EnvironmentSetting<TlsVersion> =
-        enumEnvSetting<TlsVersion>("SDK_MIN_TLS", "sdk.minTls").orElse(TlsVersion.Tls1_2)
+    public val MinTlsVersion: EnvironmentSetting<TlsVersion> = enumEnvSetting<TlsVersion>("SDK_MIN_TLS", "sdk.minTls")
 
     /**
      * Which RetryMode to use for the default RetryPolicy, when one is not specified at the client level.
