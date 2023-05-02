@@ -785,6 +785,7 @@ class WaiterTest {
             }
         },
     )
+
     @Test fun testHasFilteredSubStruct() = successTest(
         WaitersTestClient::waitUntilHasFilteredSubStruct,
         GetEntityResponse { },

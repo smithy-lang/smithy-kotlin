@@ -336,8 +336,8 @@ class KotlinJmespathExpressionVisitor(
 
     private val Shape.isNullable: Boolean
         get() = this is MemberShape &&
-                ctx.model.expectShape(target).let { !it.hasTrait<OperationInput>() && !it.hasTrait<OperationOutput>() } &&
-                nullableIndex.isMemberNullable(this, NullableIndex.CheckMode.CLIENT_ZERO_VALUE_V1_NO_INPUT)
+            ctx.model.expectShape(target).let { !it.hasTrait<OperationInput>() && !it.hasTrait<OperationOutput>() } &&
+            nullableIndex.isMemberNullable(this, NullableIndex.CheckMode.CLIENT_ZERO_VALUE_V1_NO_INPUT)
 
     private val Shape.targetMemberOrSelf: Shape
         get() = when (val target = targetOrSelf(ctx.model)) {
