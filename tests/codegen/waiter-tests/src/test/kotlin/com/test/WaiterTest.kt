@@ -785,4 +785,52 @@ class WaiterTest {
             }
         },
     )
+
+    @Test fun testHasFilteredSubStruct() = successTest(
+        WaitersTestClient::waitUntilHasFilteredSubStruct,
+        GetEntityResponse { },
+        GetEntityResponse { lists = EntityLists { } },
+        GetEntityResponse {
+            lists = EntityLists { structs = listOf() }
+        },
+        GetEntityResponse {
+            lists = EntityLists {
+                structs = listOf(
+                    Struct { subStructs = listOf(SubStruct { }) },
+                )
+            }
+        },
+        GetEntityResponse {
+            lists = EntityLists {
+                structs = listOf(
+                    Struct { subStructs = listOf(SubStruct { subStructPrimitives = EntityPrimitives { string = "foo" } }) },
+                )
+            }
+        },
+        GetEntityResponse {
+            lists = EntityLists {
+                structs = listOf(
+                    Struct { subStructs = listOf(SubStruct { subStructPrimitives = EntityPrimitives { string = "foo"; integer = -1 } }) },
+                    Struct { subStructs = listOf(SubStruct { subStructPrimitives = EntityPrimitives { string = "bar"; integer = 2 } }) },
+                )
+            }
+        },
+        GetEntityResponse {
+            lists = EntityLists {
+                structs = listOf(
+                    Struct {
+                        subStructs = listOf(
+                            SubStruct { subStructPrimitives = EntityPrimitives { string = "foo"; integer = -1 } },
+                            SubStruct { subStructPrimitives = EntityPrimitives { string = "bar"; integer = 2 } },
+                        )
+                    },
+                    Struct {
+                        subStructs = listOf(
+                            SubStruct { subStructPrimitives = EntityPrimitives { string = "foo"; integer = 2 } },
+                        )
+                    },
+                )
+            }
+        },
+    )
 }
