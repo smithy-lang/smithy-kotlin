@@ -4,9 +4,9 @@
  */
 package software.amazon.smithy.kotlin.codegen
 
-import kotlin.test.Test
 import software.amazon.smithy.kotlin.codegen.util.asSmithy
 import software.amazon.smithy.kotlin.codegen.util.testModelChangeAgainstSource
+import kotlin.test.Test
 import kotlin.test.assertTrue
 
 /**

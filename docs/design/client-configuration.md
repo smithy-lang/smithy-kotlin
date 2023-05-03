@@ -76,7 +76,7 @@ public interface BazClient : SdkClient { // 1
     }
 
     public class Config private constructor(builder: Builder) : SdkClientConfig, HttpClientConfig {  // 6
-        override val sdkLogMode: SdkLogMode = builder.sdkLogMode  // 7
+        override val logMode: LogMode = builder.logMode  // 7
         override val httpClientEngine: HttpClientEngine? = builder.httpClientEngine
         val bazSpecificConfig: String? = builder.bazSpecificConfig
 
@@ -93,7 +93,7 @@ public interface BazClient : SdkClient { // 1
             /**
              * Description
              */
-            override var sdkLogMode: SdkLogMode = SdkLogMode.Default
+            override var logMode: LogMode = LogMode.Default
 
             /**
              * Description
@@ -130,12 +130,12 @@ codegen.
 ```kotlin
 // explicit using DSL syntax inherited from companion `SdkClientFactory`
 val c1 = BazClient { // this: BazClient.Config.Builder
-    sdkLogMode = SdkLogMode.LogRequest
+    logMode = LogMode.LogRequest
 }
 
 // use of a builder explicitly, this could be passed around for example
 val c2 = BazClient.builder().apply { // this: BazClient.Builder
-    config.sdkLogMode = SdkLogMode.LogRequest
+    config.logMode = LogMode.LogRequest
 }.build()
 
 // "vended" using common code
@@ -162,7 +162,7 @@ private object ClientVendingMachine {
             }
             else -> {
                 // always available from generic bounds:
-                config.sdkLogMode
+                config.logMode
             }
         }
         return builder.build()
@@ -239,10 +239,10 @@ public interface SdkClient : Closeable {
  */
 public interface SdkClientConfig {
     /**
-     * Controls the events that will be logged by the SDK, see [Builder.sdkLogMode].
+     * Controls the events that will be logged by the SDK, see [Builder.logMode].
      */
-    public val sdkLogMode: SdkLogMode
-        get() = SdkLogMode.Default
+    public val logMode: LogMode
+        get() = LogMode.Default
 
     public interface Builder<TConfig : SdkClientConfig> : Buildable<TConfig> {
         /**
@@ -255,7 +255,7 @@ public interface SdkClientConfig {
          * performance considerations when dumping the request/response body. This is primarily a tool for
          * debug purposes.
          */
-        public var sdkLogMode: SdkLogMode
+        public var logMode: LogMode
     }
 }
 ```

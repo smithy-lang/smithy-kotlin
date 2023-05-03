@@ -40,7 +40,7 @@ class EndpointResolverAdapterGenerator(
     }
 
     fun render() {
-            writer.openBlock("internal class #L(", CLASS_NAME)
+        writer.openBlock("internal class #L(", CLASS_NAME)
             .call {
                 renderConstructorParams()
             }
@@ -71,29 +71,29 @@ class EndpointResolverAdapterGenerator(
         writer.write(
             "private typealias BindOperationContextParamsFn = (#T.Builder, #T) -> Unit",
             EndpointParametersGenerator.getSymbol(ctx.settings),
-            RuntimeTypes.HttpClient.Operation.ResolveEndpointRequest
+            RuntimeTypes.HttpClient.Operation.ResolveEndpointRequest,
         )
-        .write("")
-        .withBlock(
-            "private val opContextBindings = mapOf<String, BindOperationContextParamsFn> (",
-            ")"
-        ){
-            val operationsWithContextBindings = operations.filter { epParameterIndex.hasContextParams(it) }
-            operationsWithContextBindings.forEach { op ->
-                val bindFn = op.bindEndpointContextFn(ctx.settings) { fnWriter ->
-                    fnWriter.withBlock(
-                        "private fun #L(builder: #T.Builder, request: #T): Unit {",
-                        "}",
-                        op.bindEndpointContextFnName(),
-                        EndpointParametersGenerator.getSymbol(ctx.settings),
-                        RuntimeTypes.HttpClient.Operation.ResolveEndpointRequest
-                    ){
-                        renderBindOperationContextParams(epParameterIndex, op, fnWriter)
+            .write("")
+            .withBlock(
+                "private val opContextBindings = mapOf<String, BindOperationContextParamsFn> (",
+                ")",
+            ) {
+                val operationsWithContextBindings = operations.filter { epParameterIndex.hasContextParams(it) }
+                operationsWithContextBindings.forEach { op ->
+                    val bindFn = op.bindEndpointContextFn(ctx.settings) { fnWriter ->
+                        fnWriter.withBlock(
+                            "private fun #L(builder: #T.Builder, request: #T): Unit {",
+                            "}",
+                            op.bindEndpointContextFnName(),
+                            EndpointParametersGenerator.getSymbol(ctx.settings),
+                            RuntimeTypes.HttpClient.Operation.ResolveEndpointRequest,
+                        ) {
+                            renderBindOperationContextParams(epParameterIndex, op, fnWriter)
+                        }
                     }
+                    write("#S to ::#T,", op.id.name, bindFn)
                 }
-                write("#S to ::#T,", op.id.name, bindFn)
             }
-        }
     }
 
     private fun renderResolve() {
@@ -101,8 +101,8 @@ class EndpointResolverAdapterGenerator(
             "override suspend fun resolve(request: #T): #T {",
             "}",
             RuntimeTypes.HttpClient.Operation.ResolveEndpointRequest,
-            RuntimeTypes.SmithyClient.Endpoints.Endpoint
-        ){
+            RuntimeTypes.SmithyClient.Endpoints.Endpoint,
+        ) {
             writer.addImport(RuntimeTypes.Core.Utils.get)
             withBlock("val params = #T {", "}", EndpointParametersGenerator.getSymbol(ctx.settings)) {
                 // The SEP dictates a specific source order to use when binding parameters (from most specific to least):
@@ -116,7 +116,7 @@ class EndpointResolverAdapterGenerator(
 
                 // Render builtins
                 if (rules != null) {
-                    ctx.integrations.forEach { it.renderBindEndpointBuiltins(ctx, rules, writer)}
+                    ctx.integrations.forEach { it.renderBindEndpointBuiltins(ctx, rules, writer) }
                 }
 
                 // Render client context
@@ -135,7 +135,7 @@ class EndpointResolverAdapterGenerator(
     private fun renderBindOperationContextParams(
         epParameterIndex: EndpointParameterIndex,
         op: OperationShape,
-        writer: KotlinWriter
+        writer: KotlinWriter,
     ) {
         if (rules == null) return
         val staticContextParams = epParameterIndex.staticContextParams(op)
@@ -149,7 +149,7 @@ class EndpointResolverAdapterGenerator(
             writer.write("val input = request.context[#T.OperationInput] as #T", RuntimeTypes.HttpClient.Operation.HttpOperationContext, inputSymbol)
         }
 
-        for(param in rules.parameters.toList()) {
+        for (param in rules.parameters.toList()) {
             val paramName = param.name.asString()
             val paramDefaultName = param.defaultName()
 
@@ -183,9 +183,7 @@ class EndpointResolverAdapterGenerator(
             }
         }
     }
-
 }
-
 
 /**
  * Get the name of the function responsible for binding an operation's context parameters to endpoint parameters.

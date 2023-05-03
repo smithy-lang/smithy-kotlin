@@ -31,7 +31,7 @@ class CodegenTestIntegration : KotlinIntegration {
  */
 class RestJsonTestProtocolGenerator(
     override val defaultTimestampFormat: TimestampFormatTrait.Format = TimestampFormatTrait.Format.EPOCH_SECONDS,
-    override val protocol: ShapeId = RestJson1Trait.ID
+    override val protocol: ShapeId = RestJson1Trait.ID,
 ) : HttpBindingProtocolGenerator() {
 
     override fun getProtocolHttpBindingResolver(model: Model, serviceShape: ServiceShape): HttpBindingResolver =
@@ -41,9 +41,8 @@ class RestJsonTestProtocolGenerator(
         // NOP
     }
 
-    override fun getHttpProtocolClientGenerator(ctx: ProtocolGenerator.GenerationContext): HttpProtocolClientGenerator {
-        return MockRestJsonProtocolClientGenerator(ctx, getHttpMiddleware(ctx), getProtocolHttpBindingResolver(ctx.model, ctx.service))
-    }
+    override fun getHttpProtocolClientGenerator(ctx: ProtocolGenerator.GenerationContext): HttpProtocolClientGenerator =
+        MockRestJsonProtocolClientGenerator(ctx, getHttpMiddleware(ctx), getProtocolHttpBindingResolver(ctx.model, ctx.service))
 
     override fun structuredDataSerializer(ctx: ProtocolGenerator.GenerationContext): StructuredDataSerializerGenerator =
         JsonSerializerGenerator(this)
@@ -57,16 +56,15 @@ class RestJsonTestProtocolGenerator(
                 "private suspend fun ${op.errorHandlerName()}(context: #T, response: #T): Nothing {",
                 "}",
                 RuntimeTypes.Core.ExecutionContext,
-                RuntimeTypes.Http.Response.HttpResponse
+                RuntimeTypes.Http.Response.HttpResponse,
             ) {
                 write("error(\"not needed for compile tests\")")
             }
         }
-
 }
 
 class MockRestJsonProtocolClientGenerator(
     ctx: ProtocolGenerator.GenerationContext,
     middleware: List<ProtocolMiddleware>,
-    httpBindingResolver: HttpBindingResolver
+    httpBindingResolver: HttpBindingResolver,
 ) : HttpProtocolClientGenerator(ctx, middleware, httpBindingResolver)

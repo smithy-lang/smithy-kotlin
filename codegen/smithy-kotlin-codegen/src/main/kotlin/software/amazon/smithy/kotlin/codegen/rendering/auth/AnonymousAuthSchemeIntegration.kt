@@ -43,7 +43,7 @@ class AnonymousAuthSchemeHandler : AuthSchemeHandler {
     override fun authSchemeProviderInstantiateAuthOptionExpr(
         ctx: ProtocolGenerator.GenerationContext,
         op: OperationShape?,
-        writer: KotlinWriter
+        writer: KotlinWriter,
     ) {
         writer.write("#T(#T.Anonymous)", RuntimeTypes.Auth.Identity.AuthSchemeOption, RuntimeTypes.Auth.Identity.AuthSchemeId)
     }

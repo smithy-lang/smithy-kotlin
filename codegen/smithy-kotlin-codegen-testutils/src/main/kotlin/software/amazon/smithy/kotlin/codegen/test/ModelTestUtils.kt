@@ -45,7 +45,7 @@ object TestModelDefault {
 // attempt to replicate transforms that happen in CodegenVisitor such that tests
 // more closely reflect reality
 private fun Model.applyKotlinCodegenTransforms(serviceShapeId: String?): Model {
-    val serviceId = if (serviceShapeId != null) ShapeId.from(serviceShapeId) else {
+    val serviceId = serviceShapeId?.let(ShapeId::from) ?: run {
         // try to autodiscover the service so that tests "Just Work" (TM) without having to do anything
         val services = this.shapes<ServiceShape>()
         check(services.size <= 1) { "multiple services discovered in model; auto inference of service shape impossible for test. Fix by passing the service shape explicitly" }
@@ -221,7 +221,7 @@ fun String.generateTestModel(
 // Specifies AWS protocols that can be set on test models.
 enum class AwsProtocolModelDeclaration(val annotation: String, val import: String) {
     REST_JSON("@restJson1", "aws.protocols#restJson1"),
-    AWS_JSON_1_1("@awsJson1_1", "aws.protocols#awsJson1_1")
+    AWS_JSON_1_1("@awsJson1_1", "aws.protocols#awsJson1_1"),
 }
 
 // Generates the model header which by default conforms to the conventions defined for test models.
@@ -259,5 +259,5 @@ fun String.prependNamespaceAndService(
         
 
         """.trimIndent() + this.trimIndent()
-    )
+        )
 }

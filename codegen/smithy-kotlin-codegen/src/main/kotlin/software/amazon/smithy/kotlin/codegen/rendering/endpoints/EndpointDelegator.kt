@@ -20,6 +20,7 @@ interface EndpointDelegator {
          */
         val Default: EndpointDelegator = object : EndpointDelegator {}
     }
+
     /**
      * Generate a default implementation for the modeled endpoint provider.
      * Will only be invoked when a model's service shape has the necessary endpoint rule set trait, however, the base

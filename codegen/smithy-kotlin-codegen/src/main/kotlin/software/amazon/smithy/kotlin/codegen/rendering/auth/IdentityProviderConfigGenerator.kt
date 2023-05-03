@@ -7,7 +7,6 @@ package software.amazon.smithy.kotlin.codegen.rendering.auth
 
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.kotlin.codegen.KotlinSettings
-import software.amazon.smithy.kotlin.codegen.core.InlineKotlinWriter
 import software.amazon.smithy.kotlin.codegen.core.KotlinWriter
 import software.amazon.smithy.kotlin.codegen.core.RuntimeTypes
 import software.amazon.smithy.kotlin.codegen.core.withBlock
@@ -37,7 +36,7 @@ class IdentityProviderConfigGenerator {
                 "}",
                 symbol,
                 serviceSymbol,
-                RuntimeTypes.Auth.Identity.IdentityProviderConfig
+                RuntimeTypes.Auth.Identity.IdentityProviderConfig,
             ) {
                 renderImpl(ctx, writer)
             }
@@ -48,18 +47,18 @@ class IdentityProviderConfigGenerator {
         val authIndex = AuthIndex()
         val authSchemes = authIndex.authHandlersForService(ctx)
         writer.write("")
-        .withBlock(
-            "override fun identityProviderForScheme(schemeId: #T): #T = when(schemeId.id) {",
-            "}",
-            RuntimeTypes.Auth.Identity.AuthSchemeId,
-            RuntimeTypes.Auth.Identity.IdentityProvider
-        ) {
-            authSchemes.forEach {
-                writeInline("#S -> ", it.authSchemeId)
-                it.identityProviderAdapterExpression(this)
+            .withBlock(
+                "override fun identityProviderForScheme(schemeId: #T): #T = when(schemeId.id) {",
+                "}",
+                RuntimeTypes.Auth.Identity.AuthSchemeId,
+                RuntimeTypes.Auth.Identity.IdentityProvider,
+            ) {
+                authSchemes.forEach {
+                    writeInline("#S -> ", it.authSchemeId)
+                    it.identityProviderAdapterExpression(this)
+                }
+                write("else -> error(#S)", "auth scheme \$schemeId not configured for client")
             }
-            write("else -> error(#S)", "auth scheme \$schemeId not configured for client")
-        }
-        .write("")
+            .write("")
     }
 }

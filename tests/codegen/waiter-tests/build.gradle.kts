@@ -41,7 +41,7 @@ tasks.named<SmithyValidate>("smithyValidate") {
     classpath = codegen
 }
 
-tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>{
+tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
     dependsOn(generateSdk)
     kotlinOptions {
         allWarningsAsErrors = false // FIXME Generated waiters code contains lots of warnings
@@ -68,6 +68,6 @@ dependencies {
     implementation(project(":runtime:protocol:http-client"))
     api(project(":runtime:tracing:tracing-core"))
 
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:$coroutinesVersion")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit5:$kotlinVersion")
 }
-

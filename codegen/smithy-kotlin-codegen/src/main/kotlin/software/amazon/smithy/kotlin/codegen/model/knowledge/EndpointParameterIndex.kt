@@ -10,16 +10,14 @@ import software.amazon.smithy.kotlin.codegen.utils.getOrNull
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.knowledge.KnowledgeIndex
 import software.amazon.smithy.model.knowledge.OperationIndex
-import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.rulesengine.traits.ContextParamTrait
 import software.amazon.smithy.rulesengine.traits.StaticContextParamsTrait
 
-
 /**
  * Provides endpoint parameter binding knowledge index
  */
-class EndpointParameterIndex private constructor(model: Model): KnowledgeIndex {
+class EndpointParameterIndex private constructor(model: Model) : KnowledgeIndex {
     private val opIndex = OperationIndex.of(model)
 
     /**
@@ -36,16 +34,15 @@ class EndpointParameterIndex private constructor(model: Model): KnowledgeIndex {
      * @param op the operation shape to get context params for
      * @return map of parameter name to input member shape
      */
-    fun inputContextParams(op: OperationShape): Map<String, MemberShape> {
+    fun inputContextParams(op: OperationShape) =
         // maps endpoint parameter name -> input member shape
-        return buildMap {
+        buildMap {
             opIndex.getInput(op).getOrNull()?.members()?.forEach { member ->
                 member.getTrait<ContextParamTrait>()?.let { trait ->
                     put(trait.name, member)
                 }
             }
         }
-    }
 
     /**
      * Check if there are any context parameters bound to an operation
@@ -59,5 +56,4 @@ class EndpointParameterIndex private constructor(model: Model): KnowledgeIndex {
     companion object {
         fun of(model: Model): EndpointParameterIndex = EndpointParameterIndex(model)
     }
-
 }

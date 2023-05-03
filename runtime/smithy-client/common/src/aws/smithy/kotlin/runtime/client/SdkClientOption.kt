@@ -29,9 +29,9 @@ public object SdkClientOption {
     public val IdempotencyTokenProvider: ClientOption<IdempotencyTokenProvider> = ClientOption("IdempotencyTokenProvider")
 
     /**
-     * The client logging mode (see [SdkLogMode]
+     * The client logging mode (see [LogMode])
      */
-    public val LogMode: ClientOption<SdkLogMode> = ClientOption("LogMode")
+    public val LogMode: ClientOption<LogMode> = ClientOption("LogMode")
 
     /**
      * Whether endpoint discovery is enabled or not. Default is true
@@ -47,11 +47,11 @@ public val ExecutionContext.idempotencyTokenProvider: IdempotencyTokenProvider
     get() = getOrNull(SdkClientOption.IdempotencyTokenProvider) ?: IdempotencyTokenProvider.Default
 
 /**
- * Get the [SdkLogMode] from the context. If one is not set a default will be returned
+ * Get the [LogMode] from the context. If one is not set a default will be returned
  */
 @InternalApi
-public val ExecutionContext.sdkLogMode: SdkLogMode
-    get() = getOrNull(SdkClientOption.LogMode) ?: SdkLogMode.Default
+public val ExecutionContext.logMode: LogMode
+    get() = getOrNull(SdkClientOption.LogMode) ?: LogMode.Default
 
 /**
  * Get the name of the operation from the context.

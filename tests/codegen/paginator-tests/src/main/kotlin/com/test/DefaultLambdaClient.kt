@@ -1,3 +1,7 @@
+/*
+ * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * SPDX-License-Identifier: Apache-2.0
+ */
 package com.test
 
 import com.test.model.FunctionConfiguration
@@ -23,29 +27,33 @@ class TestLambdaClient : LambdaClient {
 
     // Number of pages to generate
     var pageCount: Int = 10
+
     // Number of items to generate per page
     var itemsPerPage: Int = 3
+
     // Value quantifying exhaustion
     var exhaustedVal: String? = null
 
-    override suspend fun listFunctions(input: ListFunctionsRequest): ListFunctionsResponse {
-        return ListFunctionsResponse.invoke {
-            nextMarker = when {
-                (input.marker?.length ?: 0) == (pageCount - 1) -> exhaustedVal  // Exhausted pages
-                input.marker == null -> "."                                     // First page
-                else -> "${input.marker}."                                      // Next page adds a dot to the marker
-            }
-
-            val index = input.marker?.length ?: 0
-
-            val generatedFunctions = mutableListOf<FunctionConfiguration>()
-            repeat(itemsPerPage) { index2 ->
-                generatedFunctions.add(FunctionConfiguration {
-                    functionName = "Function page($index) item($index2)"
-                })
-            }
-
-            functions = generatedFunctions
+    override suspend fun listFunctions(input: ListFunctionsRequest) = ListFunctionsResponse {
+        nextMarker = when {
+            /* ktlint-disable no-multi-spaces */
+            (input.marker?.length ?: 0) == (pageCount - 1) -> exhaustedVal  // Exhausted pages
+            input.marker == null -> "."                                     // First page
+            else -> "${input.marker}."                                      // Next page adds a dot to the marker
+            /* ktlint-enable no-multi-spaces */
         }
+
+        val index = input.marker?.length ?: 0
+
+        val generatedFunctions = mutableListOf<FunctionConfiguration>()
+        repeat(itemsPerPage) { index2 ->
+            generatedFunctions.add(
+                FunctionConfiguration {
+                    functionName = "Function page($index) item($index2)"
+                },
+            )
+        }
+
+        functions = generatedFunctions
     }
 }

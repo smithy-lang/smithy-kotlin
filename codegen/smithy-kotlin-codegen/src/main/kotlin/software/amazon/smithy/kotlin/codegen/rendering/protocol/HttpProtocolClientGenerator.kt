@@ -89,22 +89,22 @@ abstract class HttpProtocolClientGenerator(
         writer.withBlock(
             "private val configuredAuthSchemes = with(config.authSchemes.associateBy(#T::schemeId).toMutableMap()){",
             "}",
-            RuntimeTypes.Auth.HttpAuth.HttpAuthScheme
-        ){
+            RuntimeTypes.Auth.HttpAuth.HttpAuthScheme,
+        ) {
             val authIndex = AuthIndex()
             val allAuthHandlers = authIndex.authHandlersForService(ctx)
 
             allAuthHandlers.forEach {
                 val (format, args) = if (it.authSchemeIdSymbol != null) {
                     "#T" to arrayOf(it.authSchemeIdSymbol!!)
-                }else {
+                } else {
                     "#T(#S)" to arrayOf(RuntimeTypes.Auth.Identity.AuthSchemeId, it.authSchemeId)
                 }
 
                 withBlock(
                     "getOrPut($format){",
                     "}",
-                    *args
+                    *args,
                 ) {
                     it.instantiateAuthSchemeExpr(ctx, this)
                 }
@@ -225,7 +225,7 @@ abstract class HttpProtocolClientGenerator(
             writer.write(
                 "execution.auth = #T(#T, configuredAuthSchemes, identityProviderConfig)",
                 RuntimeTypes.HttpClient.Operation.OperationAuthConfig,
-                AuthSchemeProviderAdapterGenerator.getSymbol(ctx.settings)
+                AuthSchemeProviderAdapterGenerator.getSymbol(ctx.settings),
             )
 
             writer.write("execution.endpointResolver = #T(config)", EndpointResolverAdapterGenerator.getSymbol(ctx.settings))

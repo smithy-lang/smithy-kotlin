@@ -26,11 +26,11 @@ interface ServiceClient : SdkClient {
     }
     
     class Config private constructor(builder: Builder) {
-        val logMode: SdkLogMode = builder.logMode ?: SdkLogMode.Default
+        val logMode: LogMode = builder.logMode ?: LogMode.Default
         val httpEngine: HttpClientEngine = builder.httpEngine
         
         class Builder {
-            var logMode: SdkLogMode? = null
+            var logMode: LogMode? = null
             val httpEngine: HttpClientEngine? = null
             fun build(): Config = Config(this)
         }
@@ -66,14 +66,14 @@ suspend fun main() {
     client.operationA { /* ... */ }
     
     client.withConfig {
-        logMode = SdkLogMode.LogRequestWithBody
+        logMode = LogMode.LogRequestWithBody
     }.use { // for one-off or explicitly-scoped operation(s), a use {} block is most convenient
         it.operationA { /* ... */ }
     }
     
     launch {
         doBackgroundRoutine(client.withConfig {
-            logMode = SdkLogMode.LogResponse
+            logMode = LogMode.LogResponse
         })
         
         doBackgroundRoutine2(client.withConfig {
@@ -125,7 +125,7 @@ suspend fun main() {
     val requestA = OperationARequest { /* ... */ }
     client.operationA(requestA)
     client.operationA(requestA, client.config.copy {
-        logMode = SdkLogMode.LogRequestWithBody
+        logMode = LogMode.LogRequestWithBody
     })
 
     val requestB = OperationBRequest { /* ... */ }
@@ -134,7 +134,7 @@ suspend fun main() {
         // existing builder extension - build request here
     }
     client.operationB(requestB) {
-        logMode = SdkLogMode.LogResponseWithBody
+        logMode = LogMode.LogResponseWithBody
     }
 }
 ```
@@ -175,7 +175,7 @@ suspend fun main() {
         it.operationA {
             requestValue = 2
             withConfig {
-                logMode = SdkLogMode.LogRequestWithBody
+                logMode = LogMode.LogRequestWithBody
             }
         }
     }
@@ -214,7 +214,7 @@ suspend fun main() {
     client.operationA { /* ... */ }
   
     client.withConfig({
-        logMode = SdkLogMode.LogRequestWithBody + SdkLogMode.LogResponseWithBody
+        logMode = LogMode.LogRequestWithBody + LogMode.LogResponseWithBody
     }) {
         client.operationA { /* ... */ }
     }

@@ -1,0 +1,5 @@
+{
+    "id": "a0f70d1d-ab72-4d18-812d-fe72059ffb2c",
+    "type": "bugfix",
+    "description": "Fix incorrect waiter codegen due to dropped projection scope"
+}
