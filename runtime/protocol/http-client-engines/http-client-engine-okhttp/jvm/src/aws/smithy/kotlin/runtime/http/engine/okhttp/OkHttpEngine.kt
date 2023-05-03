@@ -5,8 +5,10 @@
 
 package aws.smithy.kotlin.runtime.http.engine.okhttp
 
+import aws.smithy.kotlin.runtime.config.TlsVersion
 import aws.smithy.kotlin.runtime.http.engine.AlpnId
 import aws.smithy.kotlin.runtime.http.engine.HttpClientEngineBase
+import aws.smithy.kotlin.runtime.http.engine.TlsContext
 import aws.smithy.kotlin.runtime.http.engine.callContext
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.http.response.HttpCall
@@ -17,6 +19,8 @@ import kotlinx.coroutines.job
 import okhttp3.*
 import java.util.concurrent.TimeUnit
 import kotlin.time.toJavaDuration
+import aws.smithy.kotlin.runtime.config.TlsVersion as SdkTlsVersion
+import okhttp3.TlsVersion as OkHttpTlsVersion
 
 /**
  * [aws.smithy.kotlin.runtime.http.engine.HttpClientEngine] based on OkHttp.
@@ -69,6 +73,8 @@ private fun OkHttpEngineConfig.buildClient(): OkHttpClient {
         followRedirects(false)
         followSslRedirects(false)
 
+        connectionSpecs(listOf(minTlsConnectionSpec(config.tlsContext), ConnectionSpec.CLEARTEXT))
+
         // Transient connection errors are handled by retry strategy (exceptions are wrapped and marked retryable
         // appropriately internally). We don't want inner retry logic that inflates the number of retries.
         retryOnConnectionFailure(false)
@@ -97,8 +103,8 @@ private fun OkHttpEngineConfig.buildClient(): OkHttpClient {
         eventListenerFactory { call -> HttpEngineEventListener(pool, config.hostResolver, call) }
 
         // map protocols
-        if (config.alpn.isNotEmpty()) {
-            val protocols = config.alpn.mapNotNull {
+        if (config.tlsContext.alpn.isNotEmpty()) {
+            val protocols = config.tlsContext.alpn.mapNotNull {
                 when (it) {
                     AlpnId.HTTP1_1 -> Protocol.HTTP_1_1
                     AlpnId.HTTP2 -> Protocol.HTTP_2
@@ -114,4 +120,25 @@ private fun OkHttpEngineConfig.buildClient(): OkHttpClient {
 
         dns(OkHttpDns(config.hostResolver))
     }.build()
+}
+
+private fun minTlsConnectionSpec(tlsContext: TlsContext): ConnectionSpec {
+    val minVersion = tlsContext.minVersion ?: TlsVersion.TLS_1_2
+    val okHttpTlsVersions = SdkTlsVersion
+        .values()
+        .filter { it >= minVersion }
+        .sortedDescending() // Prioritize higher TLS versions first
+        .map(::toOkHttpTlsVersion)
+        .toTypedArray()
+    return ConnectionSpec
+        .Builder(ConnectionSpec.MODERN_TLS)
+        .tlsVersions(*okHttpTlsVersions)
+        .build()
+}
+
+private fun toOkHttpTlsVersion(sdkTlsVersion: SdkTlsVersion): OkHttpTlsVersion = when (sdkTlsVersion) {
+    SdkTlsVersion.TLS_1_0 -> OkHttpTlsVersion.TLS_1_0
+    SdkTlsVersion.TLS_1_1 -> OkHttpTlsVersion.TLS_1_1
+    SdkTlsVersion.TLS_1_2 -> OkHttpTlsVersion.TLS_1_2
+    SdkTlsVersion.TLS_1_3 -> OkHttpTlsVersion.TLS_1_3
 }

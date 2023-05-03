@@ -7,6 +7,7 @@ package aws.smithy.kotlin.runtime.config
 import aws.smithy.kotlin.runtime.ClientException
 import aws.smithy.kotlin.runtime.InternalApi
 import aws.smithy.kotlin.runtime.util.PlatformEnvironProvider
+import aws.smithy.kotlin.runtime.util.PlatformProvider
 
 @InternalApi
 public typealias EnvSettingFactory<T> = (String, String) -> EnvironmentSetting<T>
@@ -41,9 +42,10 @@ public data class EnvironmentSetting<T>(
  * property first, falling back to the environment variable if necessary. If neither is set, it returns the setting's
  * default value.
  * @param platform The [PlatformEnvironProvider] to use for reading system properties and environment variables.
+ * Defaults to [PlatformProvider.System].
  */
 @InternalApi
-public fun <T> EnvironmentSetting<T>.resolve(platform: PlatformEnvironProvider): T? {
+public fun <T> EnvironmentSetting<T>.resolve(platform: PlatformEnvironProvider = PlatformProvider.System): T? {
     val stringValue = platform.getProperty(sysProp) ?: platform.getenv(envVar)
     return stringValue?.let(parse) ?: defaultValue
 }

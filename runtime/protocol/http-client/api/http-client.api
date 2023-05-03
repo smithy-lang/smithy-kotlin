@@ -50,7 +50,6 @@ public class aws/smithy/kotlin/runtime/http/engine/HttpClientEngineConfig {
 	public static final field Companion Laws/smithy/kotlin/runtime/http/engine/HttpClientEngineConfig$Companion;
 	public fun <init> ()V
 	public fun <init> (Laws/smithy/kotlin/runtime/http/engine/HttpClientEngineConfig$Builder;)V
-	public final fun getAlpn ()Ljava/util/List;
 	public final fun getConnectTimeout-UwyO8pc ()J
 	public final fun getConnectionAcquireTimeout-UwyO8pc ()J
 	public final fun getConnectionIdleTimeout-UwyO8pc ()J
@@ -58,11 +57,11 @@ public class aws/smithy/kotlin/runtime/http/engine/HttpClientEngineConfig {
 	public final fun getProxySelector ()Laws/smithy/kotlin/runtime/http/engine/ProxySelector;
 	public final fun getSocketReadTimeout-UwyO8pc ()J
 	public final fun getSocketWriteTimeout-UwyO8pc ()J
+	public final fun getTlsContext ()Laws/smithy/kotlin/runtime/http/engine/TlsContext;
 }
 
 public class aws/smithy/kotlin/runtime/http/engine/HttpClientEngineConfig$Builder {
 	public fun <init> ()V
-	public final fun getAlpn ()Ljava/util/List;
 	public final fun getConnectTimeout-UwyO8pc ()J
 	public final fun getConnectionAcquireTimeout-UwyO8pc ()J
 	public final fun getConnectionIdleTimeout-UwyO8pc ()J
@@ -70,7 +69,7 @@ public class aws/smithy/kotlin/runtime/http/engine/HttpClientEngineConfig$Builde
 	public final fun getProxySelector ()Laws/smithy/kotlin/runtime/http/engine/ProxySelector;
 	public final fun getSocketReadTimeout-UwyO8pc ()J
 	public final fun getSocketWriteTimeout-UwyO8pc ()J
-	public final fun setAlpn (Ljava/util/List;)V
+	public final fun getTlsContext ()Laws/smithy/kotlin/runtime/http/engine/TlsContext;
 	public final fun setConnectTimeout-LRDsOJo (J)V
 	public final fun setConnectionAcquireTimeout-LRDsOJo (J)V
 	public final fun setConnectionIdleTimeout-LRDsOJo (J)V
@@ -78,6 +77,8 @@ public class aws/smithy/kotlin/runtime/http/engine/HttpClientEngineConfig$Builde
 	public final fun setProxySelector (Laws/smithy/kotlin/runtime/http/engine/ProxySelector;)V
 	public final fun setSocketReadTimeout-LRDsOJo (J)V
 	public final fun setSocketWriteTimeout-LRDsOJo (J)V
+	public final fun setTlsContext (Laws/smithy/kotlin/runtime/http/engine/TlsContext;)V
+	public final fun tlsContext (Lkotlin/jvm/functions/Function1;)V
 }
 
 public final class aws/smithy/kotlin/runtime/http/engine/HttpClientEngineConfig$Companion {
@@ -111,6 +112,25 @@ public abstract interface class aws/smithy/kotlin/runtime/http/engine/ProxySelec
 
 public final class aws/smithy/kotlin/runtime/http/engine/ProxySelector$Companion {
 	public final fun getNoProxy ()Laws/smithy/kotlin/runtime/http/engine/ProxySelector;
+}
+
+public final class aws/smithy/kotlin/runtime/http/engine/TlsContext {
+	public static final field Companion Laws/smithy/kotlin/runtime/http/engine/TlsContext$Companion;
+	public final fun getAlpn ()Ljava/util/List;
+	public final fun getMinVersion ()Laws/smithy/kotlin/runtime/config/TlsVersion;
+}
+
+public final class aws/smithy/kotlin/runtime/http/engine/TlsContext$Builder {
+	public fun <init> ()V
+	public final fun getAlpn ()Ljava/util/List;
+	public final fun getMinVersion ()Laws/smithy/kotlin/runtime/config/TlsVersion;
+	public final fun setAlpn (Ljava/util/List;)V
+	public final fun setMinVersion (Laws/smithy/kotlin/runtime/config/TlsVersion;)V
+}
+
+public final class aws/smithy/kotlin/runtime/http/engine/TlsContext$Companion {
+	public final fun getDefault ()Laws/smithy/kotlin/runtime/http/engine/TlsContext;
+	public final fun invoke (Lkotlin/jvm/functions/Function1;)Laws/smithy/kotlin/runtime/http/engine/TlsContext;
 }
 
 public final class aws/smithy/kotlin/runtime/http/engine/internal/ManagedHttpClientEngineKt {
