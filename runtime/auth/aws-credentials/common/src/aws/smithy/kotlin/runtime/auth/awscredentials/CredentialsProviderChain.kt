@@ -6,6 +6,7 @@
 package aws.smithy.kotlin.runtime.auth.awscredentials
 
 import aws.smithy.kotlin.runtime.identity.IdentityProviderChain
+import aws.smithy.kotlin.runtime.util.Attributes
 
 /**
  * Composite [CredentialsProvider] that delegates to a chain of providers. When asked for credentials, providers
@@ -13,4 +14,9 @@ import aws.smithy.kotlin.runtime.identity.IdentityProviderChain
  * then this class will throw an exception. The exception will include the providers tried in the message. Each
  * individual exception is available as a suppressed exception.
  */
-public typealias CredentialsProviderChain = IdentityProviderChain<CredentialsProvider, Credentials>
+public class CredentialsProviderChain(vararg providers: CredentialsProvider):
+    IdentityProviderChain<CredentialsProvider, Credentials>(*providers), CredentialsProvider {
+    override suspend fun resolve(attributes: Attributes): Credentials {
+        return super.resolve(attributes)
+    }
+}
