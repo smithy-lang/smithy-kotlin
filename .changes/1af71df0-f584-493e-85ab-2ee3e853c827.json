@@ -1,8 +1,0 @@
-{
-    "id": "1af71df0-f584-493e-85ab-2ee3e853c827",
-    "type": "feature",
-    "description": "**Breaking**: Add HTTP engine configuration for minimum TLS version. See the [BREAKING: Streamlined TLS configuration](https://github.com/awslabs/aws-sdk-kotlin/discussions/909) discussion post for more details.",
-    "issues": [
-        "awslabs/smithy-kotlin#661"
-    ]
-}

@@ -1,8 +1,0 @@
-{
-    "id": "19e30aaf-5796-40b3-8a83-a5f04641981c",
-    "type": "feature",
-    "description": "Enable resolving LogMode from environment",
-    "issues": [
-        "https://github.com/awslabs/aws-sdk-kotlin/issues/432"
-    ]
-}

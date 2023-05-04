@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.18.0] - 05/04/2023
+
+### Features
+* [#661](https://github.com/awslabs/smithy-kotlin/issues/661) **Breaking**: Add HTTP engine configuration for minimum TLS version. See the [BREAKING: Streamlined TLS configuration](https://github.com/awslabs/aws-sdk-kotlin/discussions/909) discussion post for more details.
+* BREAKING: rename SdkLogMode to LogMode
+* [#432](https://github.com/awslabs/aws-sdk-kotlin/issues/432) Enable resolving LogMode from environment
+
+### Fixes
+* Fix incorrect waiter codegen due to dropped projection scope
+* Fix broken shape cursor when generating acceptor subfield projections.
+
 ## [0.17.4] - 04/27/2023
 
 ### Fixes
