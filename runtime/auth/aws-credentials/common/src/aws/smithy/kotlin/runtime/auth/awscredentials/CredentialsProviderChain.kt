@@ -14,9 +14,7 @@ import aws.smithy.kotlin.runtime.util.Attributes
  * then this class will throw an exception. The exception will include the providers tried in the message. Each
  * individual exception is available as a suppressed exception.
  */
-public class CredentialsProviderChain(vararg providers: CredentialsProvider):
+public class CredentialsProviderChain(vararg providers: CredentialsProvider) :
     IdentityProviderChain<CredentialsProvider, Credentials>(*providers), CredentialsProvider {
-    override suspend fun resolve(attributes: Attributes): Credentials {
-        return super.resolve(attributes)
-    }
+    override suspend fun resolve(attributes: Attributes): Credentials = super.resolve(attributes)
 }

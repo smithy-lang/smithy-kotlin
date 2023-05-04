@@ -14,8 +14,6 @@ import aws.smithy.kotlin.runtime.util.Attributes
  * individual exception is available as a suppressed exception.
  *
  */
-public class TokenProviderChain(vararg providers: TokenProvider): IdentityProviderChain<TokenProvider, Token>(*providers), TokenProvider {
-    override suspend fun resolve(attributes: Attributes): Token {
-        return super.resolve(attributes)
-    }
+public class TokenProviderChain(vararg providers: TokenProvider) : IdentityProviderChain<TokenProvider, Token>(*providers), TokenProvider {
+    override suspend fun resolve(attributes: Attributes): Token = super.resolve(attributes)
 }
