@@ -12,12 +12,11 @@ import aws.smithy.kotlin.runtime.http.*
 import aws.smithy.kotlin.runtime.http.auth.AwsHttpSigner
 import aws.smithy.kotlin.runtime.http.auth.SigV4AuthScheme
 import aws.smithy.kotlin.runtime.http.content.ByteArrayContent
-import aws.smithy.kotlin.runtime.http.engine.HttpClientEngineBase
 import aws.smithy.kotlin.runtime.http.operation.*
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
-import aws.smithy.kotlin.runtime.http.response.HttpCall
 import aws.smithy.kotlin.runtime.http.response.HttpResponse
+import aws.smithy.kotlin.runtime.httptest.TestEngine
 import aws.smithy.kotlin.runtime.identity.asIdentityProviderConfig
 import aws.smithy.kotlin.runtime.net.fullUriToQueryParameters
 import aws.smithy.kotlin.runtime.operation.ExecutionContext
@@ -43,7 +42,6 @@ import kotlin.io.path.exists
 import kotlin.io.path.isDirectory
 import kotlin.io.path.name
 import kotlin.io.path.readText
-import kotlin.streams.toList
 import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
@@ -255,15 +253,7 @@ public actual abstract class SigningSuiteTestBase : HasSigner {
     private suspend fun getSignedRequest(
         operation: SdkHttpOperation<Unit, HttpResponse>,
     ): HttpRequest {
-        val mockEngine = object : HttpClientEngineBase("test") {
-            override suspend fun roundTrip(context: ExecutionContext, request: HttpRequest): HttpCall {
-                val now = Instant.now()
-                val resp = HttpResponse(HttpStatusCode.fromValue(200), Headers.Empty, HttpBody.Empty)
-                return HttpCall(request, resp, now, now)
-            }
-        }
-        val client = SdkHttpClient(mockEngine)
-
+        val client = SdkHttpClient(TestEngine())
         operation.roundTrip(client, Unit)
         return operation.context[HttpOperationContext.HttpCallList].last().request
     }

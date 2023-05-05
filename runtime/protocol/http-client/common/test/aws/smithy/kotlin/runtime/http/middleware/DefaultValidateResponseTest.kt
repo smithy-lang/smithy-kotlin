@@ -15,6 +15,7 @@ import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
 import aws.smithy.kotlin.runtime.http.response.HttpCall
 import aws.smithy.kotlin.runtime.http.response.HttpResponse
+import aws.smithy.kotlin.runtime.httptest.TestEngine
 import aws.smithy.kotlin.runtime.operation.ExecutionContext
 import aws.smithy.kotlin.runtime.time.Instant
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -27,15 +28,13 @@ import kotlin.test.assertFailsWith
 class DefaultValidateResponseTest {
     @Test
     fun itThrowsExceptionOnNon200Response() = runTest {
-        val mockEngine = object : HttpClientEngineBase("test") {
-            override suspend fun roundTrip(context: ExecutionContext, request: HttpRequest): HttpCall {
-                val resp = HttpResponse(
-                    HttpStatusCode.BadRequest,
-                    Headers.Empty,
-                    HttpBody.Empty,
-                )
-                return HttpCall(request, resp, Instant.now(), Instant.now())
-            }
+        val mockEngine = TestEngine { _, request ->
+            val resp = HttpResponse(
+                HttpStatusCode.BadRequest,
+                Headers.Empty,
+                HttpBody.Empty,
+            )
+            HttpCall(request, resp, Instant.now(), Instant.now())
         }
 
         val client = SdkHttpClient(mockEngine)
@@ -52,15 +51,13 @@ class DefaultValidateResponseTest {
 
     @Test
     fun itPassesSuccessResponses() = runTest {
-        val mockEngine = object : HttpClientEngineBase("test") {
-            override suspend fun roundTrip(context: ExecutionContext, request: HttpRequest): HttpCall {
-                val resp = HttpResponse(
-                    HttpStatusCode.Accepted,
-                    Headers.Empty,
-                    HttpBody.Empty,
-                )
-                return HttpCall(request, resp, Instant.now(), Instant.now())
-            }
+        val mockEngine = TestEngine { _, request ->
+            val resp = HttpResponse(
+                HttpStatusCode.Accepted,
+                Headers.Empty,
+                HttpBody.Empty,
+            )
+            HttpCall(request, resp, Instant.now(), Instant.now())
         }
 
         val client = SdkHttpClient(mockEngine)

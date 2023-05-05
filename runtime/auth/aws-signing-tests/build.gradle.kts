@@ -30,6 +30,7 @@ kotlin {
         jvmMain {
             dependencies {
                 implementation(project(":runtime:protocol:http"))
+                implementation(project(":runtime:protocol:http-test"))
                 implementation("io.ktor:ktor-http-cio:$ktorVersion")
                 implementation("io.ktor:ktor-utils:$ktorVersion")
                 implementation("org.jetbrains.kotlin:kotlin-test-junit5:$kotlinVersion")

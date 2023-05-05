@@ -42,6 +42,7 @@ kotlin {
         commonTest {
             dependencies {
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:$coroutinesVersion")
+                implementation(project(":runtime:protocol:http-test"))
             }
         }
 

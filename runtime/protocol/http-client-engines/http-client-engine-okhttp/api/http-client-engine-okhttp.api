@@ -2,6 +2,8 @@ public final class aws/smithy/kotlin/runtime/http/engine/okhttp/OkHttpEngine : a
 	public static final field Companion Laws/smithy/kotlin/runtime/http/engine/okhttp/OkHttpEngine$Companion;
 	public fun <init> ()V
 	public fun <init> (Laws/smithy/kotlin/runtime/http/engine/okhttp/OkHttpEngineConfig;)V
+	public synthetic fun getConfig ()Laws/smithy/kotlin/runtime/http/engine/HttpClientEngineConfig;
+	public fun getConfig ()Laws/smithy/kotlin/runtime/http/engine/okhttp/OkHttpEngineConfig;
 	public fun roundTrip (Laws/smithy/kotlin/runtime/operation/ExecutionContext;Laws/smithy/kotlin/runtime/http/request/HttpRequest;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
@@ -9,20 +11,27 @@ public final class aws/smithy/kotlin/runtime/http/engine/okhttp/OkHttpEngine$Com
 	public final fun invoke (Lkotlin/jvm/functions/Function1;)Laws/smithy/kotlin/runtime/http/engine/okhttp/OkHttpEngine;
 }
 
-public final class aws/smithy/kotlin/runtime/http/engine/okhttp/OkHttpEngineConfig : aws/smithy/kotlin/runtime/http/engine/HttpClientEngineConfig {
+public abstract interface class aws/smithy/kotlin/runtime/http/engine/okhttp/OkHttpEngineConfig : aws/smithy/kotlin/runtime/http/engine/HttpClientEngineConfig {
 	public static final field Companion Laws/smithy/kotlin/runtime/http/engine/okhttp/OkHttpEngineConfig$Companion;
-	public synthetic fun <init> (Laws/smithy/kotlin/runtime/http/engine/okhttp/OkHttpEngineConfig$Builder;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public final fun getMaxConnectionsPerHost-pVg5ArA ()I
+	public abstract fun getMaxConnectionsPerHost-pVg5ArA ()I
 }
 
-public final class aws/smithy/kotlin/runtime/http/engine/okhttp/OkHttpEngineConfig$Builder : aws/smithy/kotlin/runtime/http/engine/HttpClientEngineConfig$Builder {
-	public fun <init> ()V
-	public final fun getMaxConnectionsPerHost-0hXNFcg ()Lkotlin/UInt;
-	public final fun setMaxConnectionsPerHost-ExVfyTY (Lkotlin/UInt;)V
+public abstract interface class aws/smithy/kotlin/runtime/http/engine/okhttp/OkHttpEngineConfig$Builder : aws/smithy/kotlin/runtime/http/engine/HttpClientEngineConfig$Builder {
+	public static final field Companion Laws/smithy/kotlin/runtime/http/engine/okhttp/OkHttpEngineConfig$Builder$Companion;
+	public abstract fun getMaxConnectionsPerHost-0hXNFcg ()Lkotlin/UInt;
+	public abstract fun setMaxConnectionsPerHost-ExVfyTY (Lkotlin/UInt;)V
+}
+
+public final class aws/smithy/kotlin/runtime/http/engine/okhttp/OkHttpEngineConfig$Builder$Companion {
+	public final fun invoke ()Laws/smithy/kotlin/runtime/http/engine/okhttp/OkHttpEngineConfig$Builder;
 }
 
 public final class aws/smithy/kotlin/runtime/http/engine/okhttp/OkHttpEngineConfig$Companion {
 	public final fun getDefault ()Laws/smithy/kotlin/runtime/http/engine/okhttp/OkHttpEngineConfig;
 	public final fun invoke (Lkotlin/jvm/functions/Function1;)Laws/smithy/kotlin/runtime/http/engine/okhttp/OkHttpEngineConfig;
+}
+
+public final class aws/smithy/kotlin/runtime/http/engine/okhttp/OkHttpEngineConfigKt {
+	public static final fun okHttpEngine (Laws/smithy/kotlin/runtime/http/config/HttpEngineConfig$Builder;Lkotlin/jvm/functions/Function1;)V
 }
 

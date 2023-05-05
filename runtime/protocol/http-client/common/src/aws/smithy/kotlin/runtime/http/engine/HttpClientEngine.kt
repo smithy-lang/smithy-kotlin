@@ -18,6 +18,8 @@ import kotlin.coroutines.CoroutineContext
  * Functionality a real HTTP client must provide.
  */
 public interface HttpClientEngine : CoroutineScope {
+    public val config: HttpClientEngineConfig
+
     /**
      * Execute a single HTTP request and return the response.
      * Consumers *MUST* call `HttpCall.complete()` when finished processing the response

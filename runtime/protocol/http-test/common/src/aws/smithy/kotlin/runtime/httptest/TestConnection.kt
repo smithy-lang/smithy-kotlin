@@ -9,6 +9,7 @@ import aws.smithy.kotlin.runtime.http.Headers
 import aws.smithy.kotlin.runtime.http.HttpBody
 import aws.smithy.kotlin.runtime.http.HttpStatusCode
 import aws.smithy.kotlin.runtime.http.engine.HttpClientEngineBase
+import aws.smithy.kotlin.runtime.http.engine.HttpClientEngineConfig
 import aws.smithy.kotlin.runtime.http.engine.callContext
 import aws.smithy.kotlin.runtime.http.readAll
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
@@ -67,6 +68,8 @@ public class TestConnection(private val expected: List<MockRoundTrip> = emptyLis
     // expected is mutated in-flight, store original size
     private val iter = expected.iterator()
     private var calls = mutableListOf<CallAssertion>()
+
+    override val config: HttpClientEngineConfig = HttpClientEngineConfig.Default
 
     public companion object {
         /**

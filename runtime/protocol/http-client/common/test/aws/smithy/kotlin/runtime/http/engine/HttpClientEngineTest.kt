@@ -33,6 +33,8 @@ import kotlin.test.assertTrue
 class HttpClientEngineTest {
 
     class MockEngine : HttpClientEngineBase("test") {
+        override val config: HttpClientEngineConfig = HttpClientEngineConfig.Default
+
         var shutdownCalled = false
 
         // store a reference for usage in cancellation tests

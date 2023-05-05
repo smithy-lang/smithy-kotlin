@@ -22,6 +22,7 @@ kotlin {
         commonTest {
             dependencies {
                 implementation(project(":runtime:protocol:http-client"))
+                implementation(project(":runtime:protocol:http-test"))
                 implementation(project(":runtime:auth:aws-signing-default"))
                 implementation(project(":runtime:auth:aws-signing-crt"))
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:$coroutinesVersion")

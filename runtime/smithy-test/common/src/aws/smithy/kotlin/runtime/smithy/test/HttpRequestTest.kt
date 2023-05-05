@@ -11,10 +11,8 @@ import aws.smithy.kotlin.runtime.http.HttpBody
 import aws.smithy.kotlin.runtime.http.HttpMethod
 import aws.smithy.kotlin.runtime.http.content.ByteArrayContent
 import aws.smithy.kotlin.runtime.http.engine.HttpClientEngine
-import aws.smithy.kotlin.runtime.http.engine.HttpClientEngineBase
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
-import aws.smithy.kotlin.runtime.http.response.HttpCall
-import aws.smithy.kotlin.runtime.operation.ExecutionContext
+import aws.smithy.kotlin.runtime.httptest.TestEngine
 import aws.smithy.kotlin.runtime.util.text.urlEncodeComponent
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.TestResult
@@ -57,27 +55,25 @@ public fun httpRequestTest(block: HttpRequestTestBuilder.() -> Unit): TestResult
 
     // provide the mock engine
     lateinit var actual: HttpRequest
-    val mockEngine = object : HttpClientEngineBase("smithy-test-mock-engine") {
-        override suspend fun roundTrip(context: ExecutionContext, request: HttpRequest): HttpCall {
-            val testHeaders = HeadersBuilder().apply {
-                appendAll(request.headers)
-            }
-
-            // capture the request that was built by the service operation
-            val contentLength = request.body.contentLength
-            if (contentLength != null && contentLength > 0) {
-                // Content-Length header is not expected to be set by serialize implementations. It is expected
-                // to be read from [HttpBody::contentLength] by the underlying engine and set appropriately
-                // add it in here so tests that define it can pass
-                testHeaders["Content-Length"] = contentLength.toString()
-            }
-
-            actual = HttpRequest(method = request.method, url = request.url, headers = testHeaders.build(), body = request.body)
-
-            // this control flow requires the service call (or whatever calls the mock engine) to be the last
-            // statement in the operation{} block...
-            throw MockEngineException()
+    val mockEngine = TestEngine { _, request ->
+        val testHeaders = HeadersBuilder().apply {
+            appendAll(request.headers)
         }
+
+        // capture the request that was built by the service operation
+        val contentLength = request.body.contentLength
+        if (contentLength != null && contentLength > 0) {
+            // Content-Length header is not expected to be set by serialize implementations. It is expected
+            // to be read from [HttpBody::contentLength] by the underlying engine and set appropriately
+            // add it in here so tests that define it can pass
+            testHeaders["Content-Length"] = contentLength.toString()
+        }
+
+        actual = HttpRequest(method = request.method, url = request.url, headers = testHeaders.build(), body = request.body)
+
+        // this control flow requires the service call (or whatever calls the mock engine) to be the last
+        // statement in the operation{} block...
+        throw MockEngineException()
     }
 
     // run the actual service operation provided by the caller

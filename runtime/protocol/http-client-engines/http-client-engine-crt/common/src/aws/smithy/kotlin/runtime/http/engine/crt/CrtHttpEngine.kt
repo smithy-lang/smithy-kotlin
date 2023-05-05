@@ -42,13 +42,12 @@ internal const val CHUNK_BUFFER_SIZE: Long = 64 * 1024
 /**
  * [HttpClientEngine] based on the AWS Common Runtime HTTP client
  */
-public class CrtHttpEngine(public val config: CrtHttpEngineConfig) : HttpClientEngineBase("crt") {
+public class CrtHttpEngine(public override val config: CrtHttpEngineConfig) : HttpClientEngineBase("crt") {
     public constructor() : this(CrtHttpEngineConfig.Default)
 
     public companion object {
-        public operator fun invoke(block: CrtHttpEngineConfig.Builder.() -> Unit): CrtHttpEngine = CrtHttpEngine(
-            CrtHttpEngineConfig.Builder().apply(block).build(),
-        )
+        public operator fun invoke(block: CrtHttpEngineConfig.Builder.() -> Unit): CrtHttpEngine =
+            CrtHttpEngine(CrtHttpEngineConfig(block))
     }
     private val logger = Logger.getLogger<CrtHttpEngine>()
 

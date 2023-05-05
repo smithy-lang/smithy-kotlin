@@ -11,104 +11,108 @@ import kotlin.time.Duration.Companion.seconds
 
 // See https://github.com/aws/aws-sdk-java-v2/blob/master/http-client-spi/src/main/java/software/amazon/awssdk/http/SdkHttpConfigurationOption.java
 // for all the options the Java v2 SDK supports
-
 /**
  * Common configuration options to be interpreted by an underlying engine
  *
  * NOTE: Not all engines will support every option! Engines *SHOULD* log a warning when given a configuration
  * option they don't understand/support
  */
-public open class HttpClientEngineConfig constructor(builder: Builder) {
-    public constructor() : this(Builder())
-
+public interface HttpClientEngineConfig {
     public companion object {
         public operator fun invoke(block: Builder.() -> Unit): HttpClientEngineConfig =
-            HttpClientEngineConfig(Builder().apply(block))
+            HttpClientEngineConfigImpl(Builder().apply(block))
 
         /**
          * Default client engine config
          */
-        public val Default: HttpClientEngineConfig = HttpClientEngineConfig(Builder())
+        public val Default: HttpClientEngineConfig = HttpClientEngineConfigImpl(Builder())
     }
 
     /**
      * Timeout for each read to an underlying socket
      */
-    public val socketReadTimeout: Duration = builder.socketReadTimeout
+    public val socketReadTimeout: Duration
 
     /**
      * Timeout for each write to an underlying socket
      */
-    public val socketWriteTimeout: Duration = builder.socketWriteTimeout
+    public val socketWriteTimeout: Duration
 
     /**
      * Maximum number of open connections
      */
-    public val maxConnections: UInt = builder.maxConnections
+    public val maxConnections: UInt
 
     /**
      * The amount of time to wait for a connection to be established
      */
-    public val connectTimeout: Duration = builder.connectTimeout
+    public val connectTimeout: Duration
 
     /**
      * The amount of time to wait for an already-established connection from a connection pool
      */
-    public val connectionAcquireTimeout: Duration = builder.connectionAcquireTimeout
+    public val connectionAcquireTimeout: Duration
 
     /**
      * The amount of time before an idle connection should be reaped from a connection pool. Zero indicates that
      * idle connections should never be reaped.
      */
-    public val connectionIdleTimeout: Duration = builder.connectionIdleTimeout
+    public val connectionIdleTimeout: Duration
 
     /**
      * The proxy selection policy
      */
-    public val proxySelector: ProxySelector = builder.proxySelector
+    public val proxySelector: ProxySelector
 
     /**
      * The host name resolver (DNS)
      */
     @InternalApi
-    public val hostResolver: HostResolver = builder.hostResolver
+    public val hostResolver: HostResolver
 
     /**
      * Settings related to TLS and secure connections
      */
-    public val tlsContext: TlsContext = builder.tlsContext
+    public val tlsContext: TlsContext
 
-    public open class Builder {
+    @InternalApi
+    public fun toBuilderApplicator(): Builder.() -> Unit
+
+    public interface Builder {
+        public companion object {
+            public operator fun invoke(): Builder = HttpClientEngineConfigImpl.BuilderImpl()
+        }
+
         /**
          * Timeout for each read to an underlying socket
          */
-        public var socketReadTimeout: Duration = 30.seconds
+        public var socketReadTimeout: Duration
 
         /**
          * Timeout for each write to an underlying socket
          */
-        public var socketWriteTimeout: Duration = 30.seconds
+        public var socketWriteTimeout: Duration
 
         /**
          * Maximum number of open connections
          */
-        public var maxConnections: UInt = 16u
+        public var maxConnections: UInt
 
         /**
          * The amount of time to wait for a connection to be established
          */
-        public var connectTimeout: Duration = 2.seconds
+        public var connectTimeout: Duration
 
         /**
          * The amount of time to wait for an already-established connection from a connection pool
          */
-        public var connectionAcquireTimeout: Duration = 10.seconds
+        public var connectionAcquireTimeout: Duration
 
         /**
          * The amount of time before an idle connection should be reaped from a connection pool. Zero indicates that
          * idle connections should never be reaped.
          */
-        public var connectionIdleTimeout: Duration = 60.seconds
+        public var connectionIdleTimeout: Duration
 
         /**
          * Set the proxy selection policy to be used.
@@ -133,23 +137,65 @@ public open class HttpClientEngineConfig constructor(builder: Builder) {
          * proxySelector = ProxySelector.NoProxy
          * ```
          */
-        public var proxySelector: ProxySelector = EnvironmentProxySelector()
+        public var proxySelector: ProxySelector
 
         /**
          * The host name resolver (DNS) to be used by the client
          */
         @InternalApi
-        public var hostResolver: HostResolver = HostResolver.Default
+        public var hostResolver: HostResolver
 
         /**
          * Settings related to TLS and secure connections
          */
-        public var tlsContext: TlsContext = TlsContext.Default
+        public var tlsContext: TlsContext
 
         /**
          * Settings related to TLS and secure connections
          */
-        public fun tlsContext(block: TlsContext.Builder.() -> Unit) {
+        public fun tlsContext(block: TlsContext.Builder.() -> Unit)
+    }
+}
+
+@InternalApi
+public open class HttpClientEngineConfigImpl(builder: HttpClientEngineConfig.Builder) : HttpClientEngineConfig {
+    @InternalApi
+    public constructor() : this(BuilderImpl())
+
+    override val socketReadTimeout: Duration = builder.socketReadTimeout
+    override val socketWriteTimeout: Duration = builder.socketWriteTimeout
+    override val maxConnections: UInt = builder.maxConnections
+    override val connectTimeout: Duration = builder.connectTimeout
+    override val connectionAcquireTimeout: Duration = builder.connectionAcquireTimeout
+    override val connectionIdleTimeout: Duration = builder.connectionIdleTimeout
+    override val proxySelector: ProxySelector = builder.proxySelector
+    override val hostResolver: HostResolver = builder.hostResolver
+    override val tlsContext: TlsContext = builder.tlsContext
+
+    override fun toBuilderApplicator(): HttpClientEngineConfig.Builder.() -> Unit = {
+        socketReadTimeout = this@HttpClientEngineConfigImpl.socketReadTimeout
+        socketWriteTimeout = this@HttpClientEngineConfigImpl.socketWriteTimeout
+        maxConnections = this@HttpClientEngineConfigImpl.maxConnections
+        connectTimeout = this@HttpClientEngineConfigImpl.connectTimeout
+        connectionAcquireTimeout = this@HttpClientEngineConfigImpl.connectionAcquireTimeout
+        connectionIdleTimeout = this@HttpClientEngineConfigImpl.connectionIdleTimeout
+        proxySelector = this@HttpClientEngineConfigImpl.proxySelector
+        hostResolver = this@HttpClientEngineConfigImpl.hostResolver
+        tlsContext = this@HttpClientEngineConfigImpl.tlsContext
+    }
+
+    @InternalApi
+    public open class BuilderImpl : HttpClientEngineConfig.Builder {
+        override var socketReadTimeout: Duration = 30.seconds
+        override var socketWriteTimeout: Duration = 30.seconds
+        override var maxConnections: UInt = 16u
+        override var connectTimeout: Duration = 2.seconds
+        override var connectionAcquireTimeout: Duration = 10.seconds
+        override var connectionIdleTimeout: Duration = 60.seconds
+        override var proxySelector: ProxySelector = EnvironmentProxySelector()
+        override var hostResolver: HostResolver = HostResolver.Default
+        override var tlsContext: TlsContext = TlsContext.Default
+        override fun tlsContext(block: TlsContext.Builder.() -> Unit) {
             tlsContext = TlsContext(tlsContext.toBuilder().apply(block))
         }
     }

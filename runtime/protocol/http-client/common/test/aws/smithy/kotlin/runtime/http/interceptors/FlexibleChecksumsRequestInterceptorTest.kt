@@ -18,6 +18,7 @@ import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
 import aws.smithy.kotlin.runtime.http.request.headers
 import aws.smithy.kotlin.runtime.http.response.HttpCall
 import aws.smithy.kotlin.runtime.http.response.HttpResponse
+import aws.smithy.kotlin.runtime.httptest.TestEngine
 import aws.smithy.kotlin.runtime.io.*
 import aws.smithy.kotlin.runtime.operation.ExecutionContext
 import aws.smithy.kotlin.runtime.time.Instant
@@ -30,13 +31,7 @@ import kotlin.test.*
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class FlexibleChecksumsRequestInterceptorTest {
-    private val mockEngine = object : HttpClientEngineBase("test") {
-        override suspend fun roundTrip(context: ExecutionContext, request: HttpRequest): HttpCall {
-            val resp = HttpResponse(HttpStatusCode.OK, Headers.Empty, HttpBody.Empty)
-            return HttpCall(request, resp, Instant.now(), Instant.now())
-        }
-    }
-    private val client = SdkHttpClient(mockEngine)
+    private val client = SdkHttpClient(TestEngine())
 
     private val checksums = listOf(
         "crc32c" to "6QF4+w==",

@@ -5,22 +5,16 @@
 
 package aws.smithy.kotlin.runtime.http.config
 
+import aws.smithy.kotlin.runtime.InternalApi
+import aws.smithy.kotlin.runtime.http.engine.CloseableHttpClientEngine
 import aws.smithy.kotlin.runtime.http.engine.HttpClientEngine
+import aws.smithy.kotlin.runtime.http.engine.HttpClientEngineConfig
 import aws.smithy.kotlin.runtime.http.interceptors.HttpInterceptor
 
 /**
  * The user-accessible configuration properties for the SDKs internal HTTP client facility.
  */
-public interface HttpClientConfig {
-    /**
-     * Explicit HTTP engine to use when making SDK requests, when not set a default engine will be created and managed
-     * on behalf of the caller.
-     *
-     * **NOTE**: The caller is responsible for managing the lifetime of the engine when set. The SDK
-     * client will not close it when the client is closed.
-     */
-    public val httpClientEngine: HttpClientEngine?
-
+public interface HttpClientConfig : HttpEngineConfig {
     /**
      * Interceptors that will be executed for each SDK operation.
      * An [aws.smithy.kotlin.runtime.client.Interceptor] has access to read and modify
@@ -30,7 +24,31 @@ public interface HttpClientConfig {
      */
     public val interceptors: List<HttpInterceptor>
 
+    public interface Builder : HttpEngineConfig.Builder {
+        /**
+         * Add an [aws.smithy.kotlin.runtime.client.Interceptor] that will have access to read and modify
+         * the request and response objects as they are processed by the SDK.
+         * Interceptors added using this method are executed in the order they are configured and are always
+         * later than any added automatically by the SDK.
+         */
+        public var interceptors: MutableList<HttpInterceptor>
+    }
+}
+
+public interface HttpEngineConfig {
+    /**
+     * Explicit HTTP engine to use when making SDK requests, when not set a default engine will be created and managed
+     * on behalf of the caller.
+     *
+     * **NOTE**: The caller is responsible for managing the lifetime of the engine when set. The SDK
+     * client will not close it when the client is closed.
+     */
+    public val httpClientEngine: HttpClientEngine
+
     public interface Builder {
+        @InternalApi
+        public var engineConstructor: (HttpClientEngineConfig.Builder.() -> Unit) -> CloseableHttpClientEngine
+
         /**
          * Override the default HTTP client engine used to make SDK requests (e.g. configure proxy behavior, timeouts,
          * concurrency, etc).
@@ -41,11 +59,10 @@ public interface HttpClientConfig {
         public var httpClientEngine: HttpClientEngine?
 
         /**
-         * Add an [aws.smithy.kotlin.runtime.client.Interceptor] that will have access to read and modify
-         * the request and response objects as they are processed by the SDK.
-         * Interceptors added using this method are executed in the order they are configured and are always
-         * later than any added automatically by the SDK.
+         * The HTTP client engine configuration to use to make SDK requests.
          */
-        public var interceptors: MutableList<HttpInterceptor>
+        public fun httpClientEngine(block: (HttpClientEngineConfig.Builder.() -> Unit)? = null)
+
+        public fun buildHttpEngineConfig(): HttpEngineConfig
     }
 }

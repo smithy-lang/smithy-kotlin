@@ -78,12 +78,16 @@ class ConfigProperty private constructor(builder: Builder) {
      */
     val baseClass: Symbol? = builder.baseClass
 
+    val baseClassDelegate: Delegate? = builder.baseClassDelegate
+
     /**
      * Additional base classes the config builder should inherit from
      *
      * NOTE: Adding 1 or more base classes will implicitly render the property with an `override` modifier
      */
     val builderBaseClass: Symbol? = builder.builderBaseClass
+
+    val builderBaseClassDelegate: Delegate? = builder.builderBaseClassDelegate
 
     /**
      * The configuration property type. This controls how the property is constructed and rendered
@@ -193,7 +197,9 @@ class ConfigProperty private constructor(builder: Builder) {
         var documentation: String? = null
 
         var baseClass: Symbol? = null
+        var baseClassDelegate: Delegate? = null
         var builderBaseClass: Symbol? = null
+        var builderBaseClassDelegate: Delegate? = null
 
         var propertyType: ConfigPropertyType = ConfigPropertyType.SymbolDefault
 
@@ -230,6 +236,8 @@ class ConfigProperty private constructor(builder: Builder) {
         fun build(): ConfigProperty = ConfigProperty(this)
     }
 }
+
+data class Delegate(val symbol: Symbol, val delegationExpression: String)
 
 private fun builtInSymbol(symbolName: String, defaultValue: String?): Symbol {
     val builder = Symbol.builder()

@@ -26,14 +26,13 @@ import okhttp3.TlsVersion as OkHttpTlsVersion
  * [aws.smithy.kotlin.runtime.http.engine.HttpClientEngine] based on OkHttp.
  */
 public class OkHttpEngine(
-    private val config: OkHttpEngineConfig,
+    override val config: OkHttpEngineConfig,
 ) : HttpClientEngineBase("OkHttp") {
     public constructor() : this(OkHttpEngineConfig.Default)
 
     public companion object {
-        public operator fun invoke(block: OkHttpEngineConfig.Builder.() -> Unit): OkHttpEngine = OkHttpEngine(
-            OkHttpEngineConfig.Builder().apply(block).build(),
-        )
+        public operator fun invoke(block: OkHttpEngineConfig.Builder.() -> Unit): OkHttpEngine =
+            OkHttpEngine(OkHttpEngineConfig(block))
     }
 
     private val client = config.buildClient()
