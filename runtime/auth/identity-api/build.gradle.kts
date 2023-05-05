@@ -6,7 +6,6 @@ description = "Identity APIs"
 extra["displayName"] = "Smithy :: Kotlin :: Identity"
 extra["moduleName"] = "aws.smithy.kotlin.runtime.identity"
 
-
 val coroutinesVersion: String by project
 
 kotlin {

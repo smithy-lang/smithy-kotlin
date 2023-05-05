@@ -26,14 +26,14 @@ import software.amazon.smithy.model.traits.HttpBearerAuthTrait
 /**
  * Register support for the `smithy.api#HTTPBearerAuth` auth scheme.
  */
-class BearerTokenAuthSchemeIntegration: KotlinIntegration {
+class BearerTokenAuthSchemeIntegration : KotlinIntegration {
     // Allow integrations to customize the service config props, later integrations take precedence
     override val order: Byte = -50
 
     override fun enabledForService(model: Model, settings: KotlinSettings): Boolean =
-       ServiceIndex.of(model)
-           .getAuthSchemes(settings.service)
-           .containsKey(HttpBearerAuthTrait.ID)
+        ServiceIndex.of(model)
+            .getAuthSchemes(settings.service)
+            .containsKey(HttpBearerAuthTrait.ID)
     override fun authSchemes(ctx: ProtocolGenerator.GenerationContext): List<AuthSchemeHandler> = listOf(BearerTokenAuthSchemeHandler())
 
     override fun additionalServiceConfigProps(ctx: CodegenContext): List<ConfigProperty> {
@@ -56,7 +56,6 @@ class BearerTokenAuthSchemeIntegration: KotlinIntegration {
     }
 }
 
-
 open class BearerTokenAuthSchemeHandler : AuthSchemeHandler {
     override val authSchemeId: ShapeId = HttpBearerAuthTrait.ID
 
@@ -75,7 +74,7 @@ open class BearerTokenAuthSchemeHandler : AuthSchemeHandler {
     override fun authSchemeProviderInstantiateAuthOptionExpr(
         ctx: ProtocolGenerator.GenerationContext,
         op: OperationShape?,
-        writer: KotlinWriter
+        writer: KotlinWriter,
     ) {
         writer.write("#T(#T.HttpBearer)", RuntimeTypes.Auth.Identity.AuthSchemeOption, RuntimeTypes.Auth.Identity.AuthSchemeId)
     }
