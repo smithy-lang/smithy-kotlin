@@ -1,0 +1,5 @@
+{
+    "id": "967d3aa7-0921-4feb-a690-16e2f2592904",
+    "type": "feature",
+    "description": "Add support for bearer token auth schemes"
+}
