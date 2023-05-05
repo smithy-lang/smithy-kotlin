@@ -88,3 +88,8 @@ public abstract interface class aws/smithy/kotlin/runtime/identity/TokenProvider
 	public abstract fun resolve (Laws/smithy/kotlin/runtime/util/Attributes;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
+public final class aws/smithy/kotlin/runtime/identity/TokenProviderChain : aws/smithy/kotlin/runtime/identity/IdentityProviderChain, aws/smithy/kotlin/runtime/identity/TokenProvider {
+	public fun <init> ([Laws/smithy/kotlin/runtime/identity/TokenProvider;)V
+	public fun resolve (Laws/smithy/kotlin/runtime/util/Attributes;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
