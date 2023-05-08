@@ -5,6 +5,7 @@
 
 package aws.smithy.kotlin.runtime.identity
 
+import aws.smithy.kotlin.runtime.io.Closeable
 import aws.smithy.kotlin.runtime.util.Attributes
 
 /**
@@ -29,3 +30,11 @@ public interface Token : Identity {
      */
     public val token: String
 }
+
+/**
+ * A [TokenProvider] with [Closeable] resources. Users SHOULD call [close] when done with the provider to ensure
+ * any held resources are properly released.
+ *
+ * Implementations SHOULD evict any previously-retrieved or stored credentials when the provider is closed.
+ */
+public interface CloseableTokenProvider : TokenProvider, Closeable
