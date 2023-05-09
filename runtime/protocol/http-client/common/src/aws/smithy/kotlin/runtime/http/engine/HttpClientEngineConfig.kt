@@ -19,6 +19,10 @@ import kotlin.time.Duration.Companion.seconds
  */
 public interface HttpClientEngineConfig {
     public companion object {
+        /**
+         * Initializes a new [HttpClientEngineConfig] via a DSL builder block
+         * @param block A receiver lambda which sets the properties of the config to be built
+         */
         public operator fun invoke(block: Builder.() -> Unit): HttpClientEngineConfig =
             HttpClientEngineConfigImpl(Builder().apply(block))
 
@@ -78,8 +82,14 @@ public interface HttpClientEngineConfig {
     @InternalApi
     public fun toBuilderApplicator(): Builder.() -> Unit
 
+    /**
+     * A builder for [HttpClientEngineConfig]
+     */
     public interface Builder {
         public companion object {
+            /**
+             * Creates a new, empty builder for an [HttpClientEngineConfig]
+             */
             public operator fun invoke(): Builder = HttpClientEngineConfigImpl.BuilderImpl()
         }
 

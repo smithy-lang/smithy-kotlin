@@ -77,13 +77,11 @@ abstract class AbstractConfigGenerator {
     private fun addPropertyImports(props: Collection<ConfigProperty>, writer: KotlinWriter) {
         props.forEach {
             it.baseClass?.let(writer::addImport)
-            it.baseClassDelegate?.let { writer.addImport(it.symbol) }
-            it.builderBaseClassDelegate?.let { writer.addImport(it.symbol) }
+            it.baseClassDelegate?.symbol?.let(writer::addImport)
+            it.builderBaseClassDelegate?.symbol?.let(writer::addImport)
             writer.addImport(it.symbol)
             writer.addImportReferences(it.symbol, SymbolReference.ContextOption.USE)
-            it.additionalImports.forEach { symbol ->
-                writer.addImport(symbol)
-            }
+            it.additionalImports.forEach(writer::addImport)
         }
     }
 
@@ -161,8 +159,8 @@ abstract class AbstractConfigGenerator {
      * @param transform the selector from config property that maps the property to a base class name
      */
     private inline fun Collection<ConfigProperty>.formattedBaseClasses(
-        transform: (ConfigProperty) -> Pair<Symbol?, Delegate?>
-): String {
+        transform: (ConfigProperty) -> Pair<Symbol?, Delegate?>,
+    ): String {
         val baseClasses = map(transform)
             .mapNotNull { (symbol, delegate) -> symbol?.format(delegate) }
             .sorted()
@@ -184,4 +182,4 @@ abstract class AbstractConfigGenerator {
 }
 
 private fun Symbol.format(delegate: Delegate?): String =
-    name + (delegate?.let { " ${it.delegationExpression}" } ?: "")
+    name + (delegate?.let { " by ${it.delegationExpression}" } ?: "")

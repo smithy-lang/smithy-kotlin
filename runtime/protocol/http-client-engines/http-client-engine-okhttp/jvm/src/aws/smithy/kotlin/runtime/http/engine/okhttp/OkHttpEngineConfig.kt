@@ -5,12 +5,19 @@
 
 package aws.smithy.kotlin.runtime.http.engine.okhttp
 
-import aws.smithy.kotlin.runtime.http.config.HttpEngineConfig
+import aws.smithy.kotlin.runtime.http.config.EngineFactory
 import aws.smithy.kotlin.runtime.http.engine.HttpClientEngineConfig
 import aws.smithy.kotlin.runtime.http.engine.HttpClientEngineConfigImpl
 
+/**
+ * The configuration parameters for an OkHttp HTTP client engine.
+ */
 public interface OkHttpEngineConfig : HttpClientEngineConfig {
     public companion object {
+        /**
+         * Initializes a new [OkHttpEngineConfig] via a DSL builder block
+         * @param block A receiver lambda which sets the properties of the config to be built
+         */
         public operator fun invoke(block: Builder.() -> Unit): OkHttpEngineConfig =
             OkHttpEngineConfigImpl(Builder().apply(block))
 
@@ -25,8 +32,14 @@ public interface OkHttpEngineConfig : HttpClientEngineConfig {
      */
     public val maxConnectionsPerHost: UInt
 
+    /**
+     * A builder for [OkHttpEngineConfig]
+     */
     public interface Builder : HttpClientEngineConfig.Builder {
         public companion object {
+            /**
+             * Creates a new, empty builder for an [OkHttpEngineConfig]
+             */
             public operator fun invoke(): Builder = OkHttpEngineConfigImpl.BuilderImpl()
         }
 
@@ -53,10 +66,10 @@ internal class OkHttpEngineConfigImpl(builder: OkHttpEngineConfig.Builder) : OkH
     }
 }
 
-public fun HttpEngineConfig.Builder.okHttpEngine(block: OkHttpEngineConfig.Builder.() -> Unit) {
-    engineConstructor = OkHttpEngine.Companion::invoke
-    httpClientEngine {
-        this as OkHttpEngineConfig.Builder
-        block()
-    }
+/**
+ * Specifies the OkHttp engine
+ */
+public object OkHttp : EngineFactory<OkHttpEngineConfig.Builder, OkHttpEngine> {
+    override val engineConstructor: (OkHttpEngineConfig.Builder.() -> Unit) -> OkHttpEngine =
+        OkHttpEngine.Companion::invoke
 }

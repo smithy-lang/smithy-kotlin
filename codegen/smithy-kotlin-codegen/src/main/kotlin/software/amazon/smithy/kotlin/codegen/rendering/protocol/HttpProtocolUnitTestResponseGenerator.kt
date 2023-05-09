@@ -108,7 +108,7 @@ open class HttpProtocolUnitTestResponseGenerator protected constructor(builder: 
      * configures a mock HttpClientEngine and an idempotency token generator appropriate for protocol tests.
      */
     open fun renderConfigureServiceClient(test: HttpResponseTestCase) {
-        writer.write("httpClientEngine = mockEngine")
+        writer.write("httpClient = mockEngine")
         if (idempotentFieldsInModel) {
             // see: https://awslabs.github.io/smithy/1.0/spec/http-protocol-compliance-tests.html#parameter-format
             writer.write("idempotencyTokenProvider = #T { \"00000000-0000-4000-8000-000000000000\" }", RuntimeTypes.SmithyClient.IdempotencyTokenProvider)

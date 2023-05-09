@@ -7,6 +7,10 @@ public final class aws/smithy/kotlin/runtime/http/SdkHttpClient : aws/smithy/kot
 	public final fun getEngine ()Laws/smithy/kotlin/runtime/http/engine/HttpClientEngine;
 }
 
+public abstract interface class aws/smithy/kotlin/runtime/http/config/EngineFactory {
+	public abstract fun getEngineConstructor ()Lkotlin/jvm/functions/Function1;
+}
+
 public abstract interface class aws/smithy/kotlin/runtime/http/config/HttpClientConfig : aws/smithy/kotlin/runtime/http/config/HttpEngineConfig {
 	public abstract fun getInterceptors ()Ljava/util/List;
 }
@@ -17,20 +21,20 @@ public abstract interface class aws/smithy/kotlin/runtime/http/config/HttpClient
 }
 
 public abstract interface class aws/smithy/kotlin/runtime/http/config/HttpEngineConfig {
-	public abstract fun getHttpClientEngine ()Laws/smithy/kotlin/runtime/http/engine/HttpClientEngine;
+	public abstract fun getHttpClient ()Laws/smithy/kotlin/runtime/http/engine/HttpClientEngine;
 }
 
 public abstract interface class aws/smithy/kotlin/runtime/http/config/HttpEngineConfig$Builder {
 	public abstract fun buildHttpEngineConfig ()Laws/smithy/kotlin/runtime/http/config/HttpEngineConfig;
-	public abstract fun getEngineConstructor ()Lkotlin/jvm/functions/Function1;
-	public abstract fun getHttpClientEngine ()Laws/smithy/kotlin/runtime/http/engine/HttpClientEngine;
-	public abstract fun httpClientEngine (Lkotlin/jvm/functions/Function1;)V
-	public abstract fun setEngineConstructor (Lkotlin/jvm/functions/Function1;)V
-	public abstract fun setHttpClientEngine (Laws/smithy/kotlin/runtime/http/engine/HttpClientEngine;)V
+	public abstract fun getHttpClient ()Laws/smithy/kotlin/runtime/http/engine/HttpClientEngine;
+	public abstract fun httpClient (Laws/smithy/kotlin/runtime/http/config/EngineFactory;Lkotlin/jvm/functions/Function1;)V
+	public abstract fun httpClient (Lkotlin/jvm/functions/Function1;)V
+	public abstract fun setHttpClient (Laws/smithy/kotlin/runtime/http/engine/HttpClientEngine;)V
 }
 
 public final class aws/smithy/kotlin/runtime/http/config/HttpEngineConfig$Builder$DefaultImpls {
-	public static synthetic fun httpClientEngine$default (Laws/smithy/kotlin/runtime/http/config/HttpEngineConfig$Builder;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)V
+	public static synthetic fun httpClient$default (Laws/smithy/kotlin/runtime/http/config/HttpEngineConfig$Builder;Laws/smithy/kotlin/runtime/http/config/EngineFactory;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)V
+	public static synthetic fun httpClient$default (Laws/smithy/kotlin/runtime/http/config/HttpEngineConfig$Builder;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)V
 }
 
 public final class aws/smithy/kotlin/runtime/http/engine/AlpnId : java/lang/Enum {

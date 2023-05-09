@@ -81,7 +81,7 @@ abstract class HttpProtocolClientGenerator(
      */
     protected open fun renderProperties(writer: KotlinWriter) {
         writer.write("private val managedResources = #T()", RuntimeTypes.Core.IO.SdkManagedGroup)
-        writer.write("private val client = #T(config.httpClientEngine)", RuntimeTypes.HttpClient.SdkHttpClient)
+        writer.write("private val client = #T(config.httpClient)", RuntimeTypes.HttpClient.SdkHttpClient)
 
         // render auth resolver related properties
         writer.write("private val identityProviderConfig = #T(config)", IdentityProviderConfigGenerator.getSymbol(ctx.settings))
@@ -131,7 +131,7 @@ abstract class HttpProtocolClientGenerator(
      */
     protected open fun renderInit(writer: KotlinWriter) {
         writer.withBlock("init {", "}") {
-            write("managedResources.#T(config.httpClientEngine)", RuntimeTypes.Core.IO.addIfManaged)
+            write("managedResources.#T(config.httpClient)", RuntimeTypes.Core.IO.addIfManaged)
         }
     }
 

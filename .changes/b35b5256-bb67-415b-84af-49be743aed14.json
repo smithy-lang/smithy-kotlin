@@ -1,0 +1,5 @@
+{
+    "id": "b35b5256-bb67-415b-84af-49be743aed14",
+    "type": "feature",
+    "description": "**Breaking**: Make HTTP engines configurable in client config during initialization and during `withCopy`. See [this discussion post](https://github.com/awslabs/aws-sdk-kotlin/discussions/new?category=announcements) for more information."
+}

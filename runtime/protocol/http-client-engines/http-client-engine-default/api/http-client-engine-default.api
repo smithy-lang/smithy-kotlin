@@ -1,3 +1,8 @@
+public final class aws/smithy/kotlin/runtime/http/engine/DefaultHttp : aws/smithy/kotlin/runtime/http/config/EngineFactory {
+	public static final field INSTANCE Laws/smithy/kotlin/runtime/http/engine/DefaultHttp;
+	public fun getEngineConstructor ()Lkotlin/jvm/functions/Function1;
+}
+
 public final class aws/smithy/kotlin/runtime/http/engine/DefaultHttpEngineKt {
 	public static final fun DefaultHttpEngine (Lkotlin/jvm/functions/Function1;)Laws/smithy/kotlin/runtime/http/engine/CloseableHttpClientEngine;
 	public static synthetic fun DefaultHttpEngine$default (Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Laws/smithy/kotlin/runtime/http/engine/CloseableHttpClientEngine;

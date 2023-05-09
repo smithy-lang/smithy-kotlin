@@ -44,7 +44,7 @@ class ServiceClientConfigGenerator(
         add(RuntimeConfigProperty.ClientName)
         add(RuntimeConfigProperty.LogMode)
         if (context.protocolGenerator?.applicationProtocol?.isHttpProtocol == true) {
-            add(RuntimeConfigProperty.HttpClientEngine)
+            add(RuntimeConfigProperty.HttpClient)
             add(RuntimeConfigProperty.HttpInterceptors)
             add(RuntimeConfigProperty.HttpAuthSchemes)
         }

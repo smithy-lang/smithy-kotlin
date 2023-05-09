@@ -31,6 +31,10 @@ public class OkHttpEngine(
     public constructor() : this(OkHttpEngineConfig.Default)
 
     public companion object {
+        /**
+         * Initializes a new [OkHttpEngine] via a DSL builder block
+         * @param block A receiver lambda which sets the properties of the config to be built
+         */
         public operator fun invoke(block: OkHttpEngineConfig.Builder.() -> Unit): OkHttpEngine =
             OkHttpEngine(OkHttpEngineConfig(block))
     }

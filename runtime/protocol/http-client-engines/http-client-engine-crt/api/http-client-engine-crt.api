@@ -1,3 +1,8 @@
+public final class aws/smithy/kotlin/runtime/http/engine/crt/Crt : aws/smithy/kotlin/runtime/http/config/EngineFactory {
+	public static final field INSTANCE Laws/smithy/kotlin/runtime/http/engine/crt/Crt;
+	public fun getEngineConstructor ()Lkotlin/jvm/functions/Function1;
+}
+
 public final class aws/smithy/kotlin/runtime/http/engine/crt/CrtHttpEngine : aws/smithy/kotlin/runtime/http/engine/HttpClientEngineBase {
 	public static final field Companion Laws/smithy/kotlin/runtime/http/engine/crt/CrtHttpEngine$Companion;
 	public fun <init> ()V
@@ -33,9 +38,5 @@ public final class aws/smithy/kotlin/runtime/http/engine/crt/CrtHttpEngineConfig
 public final class aws/smithy/kotlin/runtime/http/engine/crt/CrtHttpEngineConfig$Companion {
 	public final fun getDefault ()Laws/smithy/kotlin/runtime/http/engine/crt/CrtHttpEngineConfig;
 	public final fun invoke (Lkotlin/jvm/functions/Function1;)Laws/smithy/kotlin/runtime/http/engine/crt/CrtHttpEngineConfig;
-}
-
-public final class aws/smithy/kotlin/runtime/http/engine/crt/CrtHttpEngineConfigKt {
-	public static final fun crtHttpEngine (Laws/smithy/kotlin/runtime/http/config/HttpEngineConfig$Builder;Lkotlin/jvm/functions/Function1;)V
 }
 

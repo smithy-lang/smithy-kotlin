@@ -18,6 +18,9 @@ import kotlin.coroutines.CoroutineContext
  * Functionality a real HTTP client must provide.
  */
 public interface HttpClientEngine : CoroutineScope {
+    /**
+     * The configuration used to initialize this engine
+     */
     public val config: HttpClientEngineConfig
 
     /**

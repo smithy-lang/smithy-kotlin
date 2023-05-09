@@ -42,14 +42,12 @@ object RuntimeConfigProperty {
         order = -100
     }
 
-    val HttpClientEngine = ConfigProperty {
+    val HttpClient = ConfigProperty {
+        name = "httpClient"
         symbol = RuntimeTypes.HttpClient.Engine.HttpClientEngine
 
         baseClass = RuntimeTypes.HttpClient.Config.HttpEngineConfig
-        baseClassDelegate = Delegate(
-            RuntimeTypes.HttpClientEngines.Default.HttpEngineConfigImpl,
-            "by builder.buildHttpEngineConfig()",
-        )
+        baseClassDelegate = Delegate(null, "builder.buildHttpEngineConfig()")
 
         builderBaseClass = RuntimeTypes.HttpClient.Config.HttpEngineConfig.let {
             buildSymbol {
@@ -59,10 +57,10 @@ object RuntimeConfigProperty {
         }
         builderBaseClassDelegate = Delegate(
             RuntimeTypes.HttpClientEngines.Default.HttpEngineConfigImpl,
-            "by HttpEngineConfigImpl.BuilderImpl()",
+            "HttpEngineConfigImpl.BuilderImpl()",
         )
 
-        propertyType = ConfigPropertyType.Custom({ _, _ -> }, { _, _ ->})
+        propertyType = ConfigPropertyType.Custom({ _, _ -> }, { _, _ -> })
     }
 
     val IdempotencyTokenProvider = ConfigProperty {

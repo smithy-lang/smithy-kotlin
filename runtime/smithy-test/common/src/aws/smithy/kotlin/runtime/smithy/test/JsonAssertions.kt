@@ -13,7 +13,6 @@ import kotlin.test.assertEquals
  * Assert JSON strings for equality ignoring key order
  */
 public fun assertJsonStringsEqual(expected: String, actual: String) {
-
     val expectedElement = Json.parseToJsonElement(expected)
     val actualElement = Json.parseToJsonElement(actual)
 

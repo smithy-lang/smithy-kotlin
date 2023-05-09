@@ -5,6 +5,17 @@
 
 package aws.smithy.kotlin.runtime.http.engine
 
+import aws.smithy.kotlin.runtime.http.config.EngineFactory
+
+/**
+ * Specifies the platform-default HTTP engine. Different platforms (e.g., Java) will use different implementations
+ * (e.g., OkHttp).
+ */
+public object DefaultHttp : EngineFactory<HttpClientEngineConfig.Builder, HttpClientEngine> {
+    override val engineConstructor: (HttpClientEngineConfig.Builder.() -> Unit) -> HttpClientEngine =
+        ::DefaultHttpEngine
+}
+
 /**
  * Factory function to create a new HTTP client engine using the default for the current KMP target
  */

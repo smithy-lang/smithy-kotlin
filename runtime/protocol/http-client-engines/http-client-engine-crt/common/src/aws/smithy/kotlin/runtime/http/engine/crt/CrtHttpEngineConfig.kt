@@ -6,7 +6,7 @@
 package aws.smithy.kotlin.runtime.http.engine.crt
 
 import aws.sdk.kotlin.crt.io.ClientBootstrap
-import aws.smithy.kotlin.runtime.http.config.HttpEngineConfig
+import aws.smithy.kotlin.runtime.http.config.EngineFactory
 import aws.smithy.kotlin.runtime.http.engine.HttpClientEngineConfig
 import aws.smithy.kotlin.runtime.http.engine.HttpClientEngineConfigImpl
 
@@ -16,6 +16,10 @@ import aws.smithy.kotlin.runtime.http.engine.HttpClientEngineConfigImpl
  */
 public interface CrtHttpEngineConfig : HttpClientEngineConfig {
     public companion object {
+        /**
+         * Initializes a new [CrtHttpEngineConfig] via a DSL builder block
+         * @param block A receiver lambda which sets the properties of the config to be built
+         */
         public operator fun invoke(block: Builder.() -> Unit): CrtHttpEngineConfig =
             CrtHttpEngineConfigImpl(Builder().apply(block))
 
@@ -36,8 +40,14 @@ public interface CrtHttpEngineConfig : HttpClientEngineConfig {
      */
     public var clientBootstrap: ClientBootstrap?
 
+    /**
+     * A builder for [CrtHttpEngineConfig]
+     */
     public interface Builder : HttpClientEngineConfig.Builder {
         public companion object {
+            /**
+             * Creates a new, empty builder for a [CrtHttpEngineConfig]
+             */
             public operator fun invoke(): Builder = CrtHttpEngineConfigImpl.BuilderImpl()
         }
 
@@ -54,7 +64,9 @@ public interface CrtHttpEngineConfig : HttpClientEngineConfig {
     }
 }
 
-internal class CrtHttpEngineConfigImpl constructor(builder: CrtHttpEngineConfig.Builder) : CrtHttpEngineConfig, HttpClientEngineConfigImpl(builder) {
+internal class CrtHttpEngineConfigImpl(
+    builder: CrtHttpEngineConfig.Builder,
+) : CrtHttpEngineConfig, HttpClientEngineConfigImpl(builder) {
     override val initialWindowSizeBytes: Int = builder.initialWindowSizeBytes
     override var clientBootstrap: ClientBootstrap? = builder.clientBootstrap
 
@@ -73,10 +85,10 @@ internal class CrtHttpEngineConfigImpl constructor(builder: CrtHttpEngineConfig.
     }
 }
 
-public fun HttpEngineConfig.Builder.crtHttpEngine(block: CrtHttpEngineConfig.Builder.() -> Unit) {
-    engineConstructor = CrtHttpEngine.Companion::invoke
-    httpClientEngine {
-        this as CrtHttpEngineConfig.Builder
-        block()
-    }
+/**
+ * Specifies the CRT HTTP engine
+ */
+public object Crt : EngineFactory<CrtHttpEngineConfig.Builder, CrtHttpEngine> {
+    override val engineConstructor: (CrtHttpEngineConfig.Builder.() -> Unit) -> CrtHttpEngine =
+        CrtHttpEngine.Companion::invoke
 }
