@@ -31,7 +31,7 @@ public class SingleFlightGroup<T> {
         mu.lock()
         val job = inFlight
         if (job != null) {
-            waitCount += 1
+            waitCount++
             mu.unlock()
 
             // wait for value to be produced

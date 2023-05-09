@@ -26,6 +26,6 @@ public interface IdentityProvider {
  * A [IdentityProvider] with [Closeable] resources. Users SHOULD call [close] when done with the provider to ensure
  * any held resources are properly released.
  *
- * Implementations SHOULD evict any previously-retrieved or stored identity when the provider is closed.
+ * Implementations MUST evict any previously-retrieved or stored identity when the provider is closed.
  */
 public interface CloseableIdentityProvider : IdentityProvider, Closeable

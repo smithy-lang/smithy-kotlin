@@ -56,7 +56,7 @@ class BearerTokenAuthSchemeIntegration : KotlinIntegration {
     }
 }
 
-open class BearerTokenAuthSchemeHandler : AuthSchemeHandler {
+class BearerTokenAuthSchemeHandler : AuthSchemeHandler {
     override val authSchemeId: ShapeId = HttpBearerAuthTrait.ID
 
     override val authSchemeIdSymbol: Symbol = buildSymbol {

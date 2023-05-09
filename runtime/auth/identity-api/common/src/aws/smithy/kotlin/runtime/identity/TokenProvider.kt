@@ -35,6 +35,6 @@ public interface Token : Identity {
  * A [TokenProvider] with [Closeable] resources. Users SHOULD call [close] when done with the provider to ensure
  * any held resources are properly released.
  *
- * Implementations SHOULD evict any previously-retrieved or stored credentials when the provider is closed.
+ * Implementations MUST evict any previously-retrieved or stored credentials when the provider is closed.
  */
 public interface CloseableTokenProvider : TokenProvider, Closeable

@@ -36,14 +36,14 @@ public abstract class IdentityProviderChain<P : IdentityProvider, I : Identity> 
     override suspend fun resolve(attributes: Attributes): I = coroutineContext.withChildTraceSpan("ResolveIdentityChain") {
         val logger = coroutineContext.traceSpan.logger<IdentityProviderChain<*, *>>()
         val chain = this@IdentityProviderChain
-        val chainException = lazy { IdentityProviderException("No identity could be loaded from the chain: $chain") }
+        val chainException = lazy { IdentityProviderException("No identity could be resolved from the chain: $chain") }
         for (provider in providers) {
-            logger.trace { "Attempting to load identity from $provider" }
+            logger.trace { "Attempting to resolve identity from $provider" }
             try {
                 @Suppress("UNCHECKED_CAST")
                 return@withChildTraceSpan provider.resolve(attributes) as I
             } catch (ex: Exception) {
-                logger.debug { "unable to load identity from $provider: ${ex.message}" }
+                logger.debug { "unable to resolve identity from $provider: ${ex.message}" }
                 chainException.value.addSuppressed(ex)
             }
         }

@@ -56,7 +56,7 @@ class IdentityProviderChainTest {
         val ex = assertFailsWith<IdentityProviderException> {
             chain.resolve()
         }
-        ex.message.shouldContain("No identity could be loaded from the chain: TestChain -> TestProvider -> TestProvider")
+        ex.message.shouldContain("No identity could be resolved from the chain: TestChain -> TestProvider -> TestProvider")
 
         assertEquals(2, ex.suppressedExceptions.size)
     }

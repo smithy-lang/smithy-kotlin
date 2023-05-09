@@ -14,12 +14,11 @@ import aws.smithy.kotlin.runtime.net.isSecure
 public class BearerTokenSigner : HttpSigner {
     override suspend fun sign(signingRequest: SignHttpRequest) {
         val identity = signingRequest.identity
-        check(identity is Token) { "expected a ${Token::class}} identity; found ${signingRequest.identity::class}" }
+        check(identity is Token) { "expected a ${Token::class} identity; found ${signingRequest.identity::class}" }
 
         // RFC 6750 § 5.2
         check(signingRequest.httpRequest.url.scheme.isSecure) { "https is required to use Bearer token auth" }
 
-        //
         val credentials = "Bearer ${identity.token}"
         signingRequest.httpRequest.headers["Authorization"] = credentials
     }

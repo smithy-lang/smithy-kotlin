@@ -48,7 +48,7 @@ public data class Scheme(val protocolName: String, val defaultPort: Int) {
 }
 
 /**
- * Check if scheme is over secure a protocol
+ * Check if scheme is over a secure protocol
  */
 @InternalApi
 public val Scheme.isSecure: Boolean
