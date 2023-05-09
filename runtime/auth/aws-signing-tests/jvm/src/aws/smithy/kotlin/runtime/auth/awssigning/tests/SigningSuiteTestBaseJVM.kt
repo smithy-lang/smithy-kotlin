@@ -42,6 +42,7 @@ import kotlin.io.path.exists
 import kotlin.io.path.isDirectory
 import kotlin.io.path.name
 import kotlin.io.path.readText
+import kotlin.streams.toList
 import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
