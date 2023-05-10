@@ -56,7 +56,7 @@ public class FlexibleChecksumsRequestInterceptor<I>(
             "Can't calculate the checksum of an empty body"
         }
 
-        val headerName = "x-amz-checksum-$checksumAlgorithmName"
+        val headerName = "x-amz-checksum-$checksumAlgorithmName".lowercase()
         logger.debug { "Resolved checksum header name: $headerName" }
 
         // remove all checksum headers except for $headerName
