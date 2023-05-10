@@ -186,7 +186,7 @@ class FlexibleChecksumsRequestInterceptorTest {
         val req = HttpRequestBuilder().apply {
             body = ByteArrayContent("<Foo>bar</Foo>".encodeToByteArray())
         }
-        val checksumAlgorithmName = "SHA256"
+        val checksumAlgorithmName = "sha256"
         val precalculatedChecksumValue = "sha256-checksum-value"
         req.headers { append("x-amz-checksum-$checksumAlgorithmName", precalculatedChecksumValue) }
 
