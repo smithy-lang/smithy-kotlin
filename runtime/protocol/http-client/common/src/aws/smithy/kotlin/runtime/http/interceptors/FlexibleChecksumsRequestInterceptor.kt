@@ -42,7 +42,6 @@ public class FlexibleChecksumsRequestInterceptor<I>(
         checksumAlgorithmName = checksumAlgorithmNameInitializer(input)
     }
 
-    @OptIn(ExperimentalCoroutinesApi::class)
     override suspend fun modifyBeforeRetryLoop(context: ProtocolRequestInterceptorContext<Any, HttpRequest>): HttpRequest {
         val logger = coroutineContext.getLogger<FlexibleChecksumsRequestInterceptor<I>>()
 
@@ -140,7 +139,7 @@ public class FlexibleChecksumsRequestInterceptor<I>(
      * Convert an [HttpBody] with an underlying [HashingSource] or [HashingByteReadChannel]
      * to a [CompletingSource] or [CompletingByteReadChannel], respectively.
      */
-    internal fun HttpBody.toCompletingBody(deferred: CompletableDeferred<String>) = when (this) {
+    private fun HttpBody.toCompletingBody(deferred: CompletableDeferred<String>) = when (this) {
         is HttpBody.SourceContent -> CompletingSource(deferred, (readFrom() as HashingSource)).toHttpBody(contentLength)
         is HttpBody.ChannelContent -> CompletingByteReadChannel(deferred, (readFrom() as HashingByteReadChannel)).toHttpBody(contentLength)
         else -> throw ClientException("HttpBody type is not supported")
