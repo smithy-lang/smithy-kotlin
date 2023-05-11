@@ -1,8 +1,3 @@
-public final class aws/smithy/kotlin/runtime/http/engine/crt/Crt : aws/smithy/kotlin/runtime/http/config/EngineFactory {
-	public static final field INSTANCE Laws/smithy/kotlin/runtime/http/engine/crt/Crt;
-	public fun getEngineConstructor ()Lkotlin/jvm/functions/Function1;
-}
-
 public final class aws/smithy/kotlin/runtime/http/engine/crt/CrtHttpEngine : aws/smithy/kotlin/runtime/http/engine/HttpClientEngineBase {
 	public static final field Companion Laws/smithy/kotlin/runtime/http/engine/crt/CrtHttpEngine$Companion;
 	public fun <init> ()V
@@ -32,10 +27,6 @@ public final class aws/smithy/kotlin/runtime/http/engine/crt/CrtHttpEngineConfig
 	public final fun getInitialWindowSizeBytes ()I
 	public final fun setClientBootstrap (Laws/sdk/kotlin/crt/io/ClientBootstrap;)V
 	public final fun setInitialWindowSizeBytes (I)V
-}
-
-public final class aws/smithy/kotlin/runtime/http/engine/crt/CrtHttpEngineConfig$Builder$Companion {
-	public final fun invoke ()Laws/smithy/kotlin/runtime/http/engine/crt/CrtHttpEngineConfig$Builder;
 }
 
 public final class aws/smithy/kotlin/runtime/http/engine/crt/CrtHttpEngineConfig$Companion {
