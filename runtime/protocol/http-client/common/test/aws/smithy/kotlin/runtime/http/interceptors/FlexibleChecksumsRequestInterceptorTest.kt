@@ -170,6 +170,30 @@ class FlexibleChecksumsRequestInterceptorTest {
         assertEquals(expectedHash.digest().encodeBase64String(), completableDeferred.getCompleted())
     }
 
+    @Test
+    fun itUsesPrecalculatedChecksum() = runTest {
+        val req = HttpRequestBuilder().apply {
+            body = ByteArrayContent("<Foo>bar</Foo>".encodeToByteArray())
+        }
+        val checksumAlgorithmName = "sha256"
+        val precalculatedChecksumValue = "sha256-checksum-value"
+        req.headers { append("x-amz-checksum-$checksumAlgorithmName", precalculatedChecksumValue) }
+
+        val op = newTestOperation<Unit, Unit>(req, Unit)
+
+        op.interceptors.add(
+            FlexibleChecksumsRequestInterceptor<Unit> {
+                checksumAlgorithmName
+            },
+        )
+
+        op.roundTrip(client, Unit)
+        val call = op.context.attributes[HttpOperationContext.HttpCallList].first()
+
+        assertEquals(1, call.request.headers.getNumChecksumHeaders())
+        assertEquals(precalculatedChecksumValue, call.request.headers["x-amz-checksum-sha256"])
+    }
+
     private fun Headers.getNumChecksumHeaders(): Long = entries().stream()
         .filter { (name, _) -> name.startsWith("x-amz-checksum-") }
         .count()

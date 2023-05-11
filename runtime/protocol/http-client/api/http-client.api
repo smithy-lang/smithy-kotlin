@@ -160,6 +160,10 @@ public final class aws/smithy/kotlin/runtime/http/engine/TlsContext$Companion {
 public final class aws/smithy/kotlin/runtime/http/engine/internal/ManagedHttpClientEngineKt {
 }
 
+public final class aws/smithy/kotlin/runtime/http/interceptors/ChecksumMismatchException : aws/smithy/kotlin/runtime/ClientException {
+	public fun <init> (Ljava/lang/String;)V
+}
+
 public final class aws/smithy/kotlin/runtime/http/interceptors/FlexibleChecksumsResponseInterceptor$Companion {
 	public final fun getChecksumHeaderValidated ()Laws/smithy/kotlin/runtime/util/AttributeKey;
 }

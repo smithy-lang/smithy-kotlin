@@ -83,7 +83,7 @@ public class FlexibleChecksumsResponseInterceptor<I>(
     }
 }
 
-internal class ChecksumMismatchException(message: String?) : ClientException(message)
+public class ChecksumMismatchException(message: String?) : ClientException(message)
 
 /**
  * An [SdkSource] which validates the underlying [hashingSource]'s checksum against an [expectedChecksum].

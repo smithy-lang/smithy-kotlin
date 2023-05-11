@@ -1,5 +1,0 @@
-{
-    "id": "3cf671d8-1ec4-4e2f-a4ae-0f1f08f73fd1",
-    "type": "bugfix",
-    "description": "Fix broken shape cursor when generating acceptor subfield projections."
-}
