@@ -8,7 +8,7 @@ import aws.smithy.kotlin.runtime.ClientException
 import aws.smithy.kotlin.runtime.InternalApi
 import aws.smithy.kotlin.runtime.http.config.EngineFactory
 import aws.smithy.kotlin.runtime.http.config.HttpEngineConfig
-import aws.smithy.kotlin.runtime.http.engine.internal.manageIfPossible
+import aws.smithy.kotlin.runtime.http.engine.internal.manage
 
 private typealias ConfigApplicator = HttpClientEngineConfig.Builder.() -> Unit
 
@@ -18,7 +18,7 @@ public class HttpEngineConfigImpl private constructor(override val httpClient: H
     public class BuilderImpl : HttpEngineConfig.Builder {
         private var configApplicator: ConfigApplicator = {}
         private var engineConstructor: (ConfigApplicator) -> HttpClientEngine = ::DefaultHttpEngine
-        private var engineSupplier: () -> HttpClientEngine = { engineConstructor {}.manageIfPossible() }
+        private var engineSupplier: () -> HttpClientEngine = { engineConstructor {}.manage() }
         private var state = SupplierState.NOT_INITIALIZED
 
         override var httpClient: HttpClientEngine? = null
@@ -33,7 +33,7 @@ public class HttpEngineConfigImpl private constructor(override val httpClient: H
                     null -> {
                         // Reset engine type back to default
                         engineConstructor = ::DefaultHttpEngine
-                        { engineConstructor {}.manageIfPossible() }
+                        { engineConstructor {}.manage() }
                     }
                     else -> { { value } }
                 }
@@ -41,11 +41,18 @@ public class HttpEngineConfigImpl private constructor(override val httpClient: H
             }
 
         override fun httpClient(block: HttpClientEngineConfig.Builder.() -> Unit) {
-            httpClient(DefaultHttp, block)
+            httpClientImpl<HttpClientEngineConfig.Builder, HttpClientEngine>(null, block)
         }
 
         override fun <B : HttpClientEngineConfig.Builder, E : HttpClientEngine> httpClient(
             engineFactory: EngineFactory<B, E>,
+            block: B.() -> Unit,
+        ) {
+            httpClientImpl(engineFactory, block)
+        }
+
+        private fun <B : HttpClientEngineConfig.Builder, E : HttpClientEngine> httpClientImpl(
+            engineFactory: EngineFactory<B, E>?,
             block: B.() -> Unit,
         ) {
             when (state) {
@@ -53,7 +60,7 @@ public class HttpEngineConfigImpl private constructor(override val httpClient: H
                 else -> state = SupplierState.EXPLICIT_CONFIG
             }
 
-            engineConstructor = engineFactory.engineConstructor
+            engineFactory?.let { engineConstructor = it.engineConstructor }
 
             val previousApplicator = configApplicator
             configApplicator = {
@@ -62,7 +69,7 @@ public class HttpEngineConfigImpl private constructor(override val httpClient: H
                 @Suppress("UNCHECKED_CAST") // This is safe because [engineConstructor] is definitely the right type
                 block(this as B)
             }
-            engineSupplier = { engineConstructor(configApplicator).manageIfPossible() }
+            engineSupplier = { engineConstructor(configApplicator).manage() }
         }
 
         override fun buildHttpEngineConfig(): HttpEngineConfig = HttpEngineConfigImpl(engineSupplier())

@@ -5,6 +5,7 @@
 
 package aws.smithy.kotlin.runtime.http.config
 
+import aws.smithy.kotlin.runtime.InternalApi
 import aws.smithy.kotlin.runtime.http.engine.HttpClientEngine
 import aws.smithy.kotlin.runtime.http.engine.HttpClientEngineConfig
 import aws.smithy.kotlin.runtime.http.interceptors.HttpInterceptor
@@ -36,6 +37,9 @@ public interface HttpClientConfig : HttpEngineConfig {
     }
 }
 
+@DslMarker
+public annotation class HttpEngineConfigDsl
+
 /**
  * The configuration properties for setting HTTP client engine instances or configuration.
  */
@@ -52,6 +56,7 @@ public interface HttpEngineConfig {
     /**
      * A builder for [HttpEngineConfig]
      */
+    @HttpEngineConfigDsl
     public interface Builder {
         /**
          * Override the default HTTP client engine used to make SDK requests (e.g. configure proxy behavior, timeouts,
@@ -88,12 +93,13 @@ public interface HttpEngineConfig {
         /**
          * Build an `HttpEngineConfig` from this builder.
          */
+        @InternalApi
         public fun buildHttpEngineConfig(): HttpEngineConfig
     }
 }
 
 /**
- * Identifies a type of [HttpClientEngine].
+ * A factory capable of producing [HttpClientEngine] instances.
  * @param B The type of builder used to construct configuration for the engine
  * @param E The type of engine itself
  */

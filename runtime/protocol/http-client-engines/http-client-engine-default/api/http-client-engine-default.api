@@ -1,5 +1,5 @@
-public final class aws/smithy/kotlin/runtime/http/engine/DefaultHttp : aws/smithy/kotlin/runtime/http/config/EngineFactory {
-	public static final field INSTANCE Laws/smithy/kotlin/runtime/http/engine/DefaultHttp;
+public final class aws/smithy/kotlin/runtime/http/engine/DefaultHttpEngine : aws/smithy/kotlin/runtime/http/config/EngineFactory {
+	public static final field INSTANCE Laws/smithy/kotlin/runtime/http/engine/DefaultHttpEngine;
 	public fun getEngineConstructor ()Lkotlin/jvm/functions/Function1;
 }
 

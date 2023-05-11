@@ -5,6 +5,7 @@
 package aws.smithy.kotlin.runtime.http.engine
 
 import aws.smithy.kotlin.runtime.InternalApi
+import aws.smithy.kotlin.runtime.http.config.HttpEngineConfigDsl
 import aws.smithy.kotlin.runtime.net.HostResolver
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
@@ -85,6 +86,7 @@ public interface HttpClientEngineConfig {
     /**
      * A builder for [HttpClientEngineConfig]
      */
+    @HttpEngineConfigDsl
     public interface Builder {
         public companion object {
             /**

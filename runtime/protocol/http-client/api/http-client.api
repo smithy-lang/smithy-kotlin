@@ -25,7 +25,6 @@ public abstract interface class aws/smithy/kotlin/runtime/http/config/HttpEngine
 }
 
 public abstract interface class aws/smithy/kotlin/runtime/http/config/HttpEngineConfig$Builder {
-	public abstract fun buildHttpEngineConfig ()Laws/smithy/kotlin/runtime/http/config/HttpEngineConfig;
 	public abstract fun getHttpClient ()Laws/smithy/kotlin/runtime/http/engine/HttpClientEngine;
 	public abstract fun httpClient (Laws/smithy/kotlin/runtime/http/config/EngineFactory;Lkotlin/jvm/functions/Function1;)V
 	public abstract fun httpClient (Lkotlin/jvm/functions/Function1;)V
@@ -35,6 +34,9 @@ public abstract interface class aws/smithy/kotlin/runtime/http/config/HttpEngine
 public final class aws/smithy/kotlin/runtime/http/config/HttpEngineConfig$Builder$DefaultImpls {
 	public static synthetic fun httpClient$default (Laws/smithy/kotlin/runtime/http/config/HttpEngineConfig$Builder;Laws/smithy/kotlin/runtime/http/config/EngineFactory;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)V
 	public static synthetic fun httpClient$default (Laws/smithy/kotlin/runtime/http/config/HttpEngineConfig$Builder;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)V
+}
+
+public abstract interface annotation class aws/smithy/kotlin/runtime/http/config/HttpEngineConfigDsl : java/lang/annotation/Annotation {
 }
 
 public final class aws/smithy/kotlin/runtime/http/engine/AlpnId : java/lang/Enum {
@@ -110,6 +112,9 @@ public final class aws/smithy/kotlin/runtime/http/engine/HttpClientEngineConfig$
 	public final fun invoke (Lkotlin/jvm/functions/Function1;)Laws/smithy/kotlin/runtime/http/engine/HttpClientEngineConfig;
 }
 
+public abstract interface annotation class aws/smithy/kotlin/runtime/http/engine/HttpClientEngineConfigDsl : java/lang/annotation/Annotation {
+}
+
 public abstract class aws/smithy/kotlin/runtime/http/engine/ProxyConfig {
 }
 
@@ -155,6 +160,9 @@ public final class aws/smithy/kotlin/runtime/http/engine/TlsContext$Builder {
 public final class aws/smithy/kotlin/runtime/http/engine/TlsContext$Companion {
 	public final fun getDefault ()Laws/smithy/kotlin/runtime/http/engine/TlsContext;
 	public final fun invoke (Lkotlin/jvm/functions/Function1;)Laws/smithy/kotlin/runtime/http/engine/TlsContext;
+}
+
+public abstract interface annotation class aws/smithy/kotlin/runtime/http/engine/TlsContextDsl : java/lang/annotation/Annotation {
 }
 
 public final class aws/smithy/kotlin/runtime/http/engine/internal/ManagedHttpClientEngineKt {

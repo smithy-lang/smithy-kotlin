@@ -11,7 +11,7 @@ import aws.smithy.kotlin.runtime.http.config.EngineFactory
  * Specifies the platform-default HTTP engine. Different platforms (e.g., Java) will use different implementations
  * (e.g., OkHttp).
  */
-public object DefaultHttp : EngineFactory<HttpClientEngineConfig.Builder, HttpClientEngine> {
+public object DefaultHttpEngine : EngineFactory<HttpClientEngineConfig.Builder, HttpClientEngine> {
     override val engineConstructor: (HttpClientEngineConfig.Builder.() -> Unit) -> HttpClientEngine =
         ::DefaultHttpEngine
 }

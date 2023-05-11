@@ -7,6 +7,7 @@ package aws.smithy.kotlin.runtime.http.engine
 import aws.smithy.kotlin.runtime.client.config.ClientSettings
 import aws.smithy.kotlin.runtime.config.TlsVersion
 import aws.smithy.kotlin.runtime.config.resolve
+import aws.smithy.kotlin.runtime.http.config.HttpEngineConfigDsl
 
 /**
  * Defines values related to TLS and secure connections.
@@ -36,6 +37,7 @@ public class TlsContext internal constructor(builder: Builder) {
     /**
      * Mutable configuration for [TlsContext]
      */
+    @HttpEngineConfigDsl
     public class Builder {
         /**
          * The ALPN protocol list when a TLS connection starts

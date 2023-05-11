@@ -13,16 +13,12 @@ private class ManagedHttpClientEngine(
     private val delegate: CloseableHttpClientEngine,
 ) : SdkManagedCloseable(delegate), CloseableHttpClientEngine by delegate
 
+/**
+ * Wraps an [HttpClientEngine] for internal runtime management by the SDK if possible.
+ */
 @InternalApi
-public fun HttpClientEngine.manageIfPossible(): HttpClientEngine = when (this) {
+public fun HttpClientEngine.manage(): HttpClientEngine = when (this) {
     is ManagedHttpClientEngine -> this
     is CloseableHttpClientEngine -> ManagedHttpClientEngine(this)
     else -> this
 }
-
-/**
- * Wraps a [CloseableHttpClientEngine] for internal runtime management by the SDK.
- */
-@InternalApi
-public fun CloseableHttpClientEngine.manage(): HttpClientEngine =
-    if (this is ManagedHttpClientEngine) this else ManagedHttpClientEngine(this)
