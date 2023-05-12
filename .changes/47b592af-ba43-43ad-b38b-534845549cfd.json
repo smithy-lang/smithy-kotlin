@@ -1,5 +1,0 @@
-{
-    "id": "47b592af-ba43-43ad-b38b-534845549cfd",
-    "type": "bugfix",
-    "description": "Fix usage of precalculated checksum values"
-}
