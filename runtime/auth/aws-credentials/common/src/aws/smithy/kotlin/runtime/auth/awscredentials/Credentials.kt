@@ -15,6 +15,7 @@ import aws.smithy.kotlin.runtime.util.mutableAttributes
  *
  * For more information see [AWS security credentials](https://docs.aws.amazon.com/general/latest/gr/aws-security-credentials.html#AccessKeys)
  */
+// FIXME - should probably be an interface
 public data class Credentials(
     val accessKeyId: String,
     val secretAccessKey: String,

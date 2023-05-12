@@ -5,6 +5,8 @@
 
 package aws.smithy.kotlin.runtime.net
 
+import aws.smithy.kotlin.runtime.InternalApi
+
 /**
  * Represents a wire protocol
  * @property protocolName name of protocol
@@ -44,3 +46,13 @@ public data class Scheme(val protocolName: String, val defaultPort: Int) {
         public fun parse(scheme: String): Scheme = byName[scheme.lowercase()] ?: Scheme(scheme, -1)
     }
 }
+
+/**
+ * Check if scheme is over a secure protocol
+ */
+@InternalApi
+public val Scheme.isSecure: Boolean
+    get() = when (protocolName.lowercase()) {
+        "https", "wss" -> true
+        else -> false
+    }

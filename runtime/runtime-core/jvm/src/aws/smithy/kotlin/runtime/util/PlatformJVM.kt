@@ -42,6 +42,12 @@ internal actual object SystemDefaultProvider : PlatformProvider {
         null
     }
 
+    override suspend fun writeFile(path: String, data: ByteArray) {
+        withContext(Dispatchers.IO) {
+            File(path).writeBytes(data)
+        }
+    }
+
     public suspend fun readFileOrNull(path: Path): ByteArray? = readFileOrNull(path.toAbsolutePath().toString())
     public suspend fun readFileOrNull(file: File): ByteArray? = readFileOrNull(file.absolutePath)
 

@@ -24,17 +24,28 @@ public interface Filesystem {
      */
     public suspend fun readFileOrNull(path: String): ByteArray?
 
+    /**
+     * Write the contents of a file. File will be created if it doesn't exist. Existing files will be overwritten.
+     * @param path fully qualified path encoded specifically to the target platform's filesystem
+     * @param data the file contents to write to disk
+     */
+    public suspend fun writeFile(path: String, data: ByteArray)
+
     public companion object {
         /**
          * Construct a fake filesystem from a mapping of paths to contents
          */
-        public fun fromMap(data: Map<String, ByteArray>, filePathSeparator: String = "/"): Filesystem = MapFilesystem(data, filePathSeparator)
+        public fun fromMap(data: Map<String, ByteArray>, filePathSeparator: String = "/"): Filesystem =
+            MapFilesystem(data.toMutableMap(), filePathSeparator)
     }
 }
 
 internal class MapFilesystem(
-    private val data: Map<String, ByteArray>,
+    private val memFs: MutableMap<String, ByteArray>,
     override val filePathSeparator: String,
 ) : Filesystem {
-    override suspend fun readFileOrNull(path: String): ByteArray? = data[path]
+    override suspend fun readFileOrNull(path: String): ByteArray? = memFs[path]
+    override suspend fun writeFile(path: String, data: ByteArray) {
+        memFs[path] = data
+    }
 }

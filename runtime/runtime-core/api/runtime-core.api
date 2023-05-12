@@ -833,6 +833,9 @@ public final class aws/smithy/kotlin/runtime/net/Scheme$Companion {
 	public final fun parse (Ljava/lang/String;)Laws/smithy/kotlin/runtime/net/Scheme;
 }
 
+public final class aws/smithy/kotlin/runtime/net/SchemeKt {
+}
+
 public final class aws/smithy/kotlin/runtime/net/TextKt {
 }
 
@@ -1400,6 +1403,7 @@ public abstract interface class aws/smithy/kotlin/runtime/util/Filesystem {
 	public static final field Companion Laws/smithy/kotlin/runtime/util/Filesystem$Companion;
 	public abstract fun getFilePathSeparator ()Ljava/lang/String;
 	public abstract fun readFileOrNull (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public abstract fun writeFile (Ljava/lang/String;[BLkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
 public final class aws/smithy/kotlin/runtime/util/Filesystem$Companion {

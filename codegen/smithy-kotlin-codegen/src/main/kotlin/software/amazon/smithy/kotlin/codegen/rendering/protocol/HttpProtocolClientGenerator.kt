@@ -86,6 +86,8 @@ abstract class HttpProtocolClientGenerator(
         // render auth resolver related properties
         writer.write("private val identityProviderConfig = #T(config)", IdentityProviderConfigGenerator.getSymbol(ctx.settings))
 
+        // FIXME - we probably need a way for auth handlers to signal that they are configured (e.g. config properties are not null). Right now this assumes
+        // they are all configured but a service may support multiple auth schemes and a client may not need to configure all of them
         writer.withBlock(
             "private val configuredAuthSchemes = with(config.authSchemes.associateBy(#T::schemeId).toMutableMap()){",
             "}",

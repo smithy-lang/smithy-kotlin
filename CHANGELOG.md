@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.19.0] - 05/12/2023
+
+### Features
+* Add support for bearer token auth schemes
+* Add support for writing a file via PlatformProvider
+
+### Fixes
+* Fix usage of precalculated checksum values
+
+### Miscellaneous
+* Refactor CredentialsProviderChain into generic/re-usable IdentityProviderChain
+
 ## [0.18.0] - 05/04/2023
 
 ### Features
