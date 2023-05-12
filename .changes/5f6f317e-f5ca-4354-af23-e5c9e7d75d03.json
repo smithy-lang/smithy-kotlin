@@ -1,0 +1,5 @@
+{
+    "id": "5f6f317e-f5ca-4354-af23-e5c9e7d75d03",
+    "type": "misc",
+    "description": "Refactor CredentialsProviderChain into generic/re-usable IdentityProviderChain"
+}

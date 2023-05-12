@@ -291,6 +291,10 @@ object RuntimeTypes {
             val AnonymousIdentityProvider = symbol("AnonymousIdentityProvider")
             val HttpAuthConfig = symbol("HttpAuthConfig")
             val HttpAuthScheme = symbol("HttpAuthScheme")
+
+            val BearerTokenAuthScheme = symbol("BearerTokenAuthScheme")
+            val BearerTokenProviderConfig = symbol("BearerTokenProviderConfig")
+            val BearerTokenProvider = symbol("BearerTokenProvider")
         }
 
         object HttpAuthAws : RuntimeTypePackage(KotlinDependency.HTTP_AUTH_AWS) {
