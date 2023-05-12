@@ -21,6 +21,10 @@ public final class aws/smithy/kotlin/runtime/http/auth/AnonymousIdentityProvider
 	public fun resolve (Laws/smithy/kotlin/runtime/util/Attributes;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
+public abstract interface class aws/smithy/kotlin/runtime/http/auth/BearerToken : aws/smithy/kotlin/runtime/identity/Identity {
+	public abstract fun getToken ()Ljava/lang/String;
+}
+
 public final class aws/smithy/kotlin/runtime/http/auth/BearerTokenAuthScheme : aws/smithy/kotlin/runtime/http/auth/HttpAuthScheme {
 	public fun <init> ()V
 	public fun getSchemeId-DepwgT4 ()Ljava/lang/String;
@@ -28,17 +32,29 @@ public final class aws/smithy/kotlin/runtime/http/auth/BearerTokenAuthScheme : a
 	public fun identityProvider (Laws/smithy/kotlin/runtime/identity/IdentityProviderConfig;)Laws/smithy/kotlin/runtime/identity/IdentityProvider;
 }
 
+public abstract interface class aws/smithy/kotlin/runtime/http/auth/BearerTokenProvider : aws/smithy/kotlin/runtime/identity/IdentityProvider {
+	public abstract fun resolve (Laws/smithy/kotlin/runtime/util/Attributes;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
+public final class aws/smithy/kotlin/runtime/http/auth/BearerTokenProviderChain : aws/smithy/kotlin/runtime/identity/IdentityProviderChain, aws/smithy/kotlin/runtime/http/auth/BearerTokenProvider {
+	public fun <init> ([Laws/smithy/kotlin/runtime/http/auth/BearerTokenProvider;)V
+	public fun resolve (Laws/smithy/kotlin/runtime/util/Attributes;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
 public abstract interface class aws/smithy/kotlin/runtime/http/auth/BearerTokenProviderConfig {
-	public abstract fun getBearerTokenProvider ()Laws/smithy/kotlin/runtime/identity/TokenProvider;
+	public abstract fun getBearerTokenProvider ()Laws/smithy/kotlin/runtime/http/auth/BearerTokenProvider;
 }
 
 public abstract interface class aws/smithy/kotlin/runtime/http/auth/BearerTokenProviderConfig$Builder {
-	public abstract fun getBearerTokenProvider ()Laws/smithy/kotlin/runtime/identity/TokenProvider;
-	public abstract fun setBearerTokenProvider (Laws/smithy/kotlin/runtime/identity/TokenProvider;)V
+	public abstract fun getBearerTokenProvider ()Laws/smithy/kotlin/runtime/http/auth/BearerTokenProvider;
+	public abstract fun setBearerTokenProvider (Laws/smithy/kotlin/runtime/http/auth/BearerTokenProvider;)V
 }
 
 public final class aws/smithy/kotlin/runtime/http/auth/BearerTokenSigner : aws/smithy/kotlin/runtime/http/auth/HttpSigner {
 	public fun <init> ()V
 	public fun sign (Laws/smithy/kotlin/runtime/http/auth/SignHttpRequest;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
+public abstract interface class aws/smithy/kotlin/runtime/http/auth/CloseableBearerTokenProvider : aws/smithy/kotlin/runtime/http/auth/BearerTokenProvider, java/io/Closeable {
 }
 

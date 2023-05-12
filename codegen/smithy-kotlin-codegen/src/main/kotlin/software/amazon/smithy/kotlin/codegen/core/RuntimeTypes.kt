@@ -264,8 +264,6 @@ object RuntimeTypes {
 
             val IdentityProvider = symbol("IdentityProvider", "identity")
             val IdentityProviderConfig = symbol("IdentityProviderConfig", "identity")
-
-            val TokenProvider = symbol("TokenProvider", "identity")
         }
 
         object Signing {
@@ -296,6 +294,7 @@ object RuntimeTypes {
 
             val BearerTokenAuthScheme = symbol("BearerTokenAuthScheme")
             val BearerTokenProviderConfig = symbol("BearerTokenProviderConfig")
+            val BearerTokenProvider = symbol("BearerTokenProvider")
         }
 
         object HttpAuthAws : RuntimeTypePackage(KotlinDependency.HTTP_AUTH_AWS) {

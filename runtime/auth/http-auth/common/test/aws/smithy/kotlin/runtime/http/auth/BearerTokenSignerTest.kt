@@ -6,7 +6,6 @@
 package aws.smithy.kotlin.runtime.http.auth
 
 import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
-import aws.smithy.kotlin.runtime.identity.Token
 import aws.smithy.kotlin.runtime.net.Scheme
 import aws.smithy.kotlin.runtime.time.Instant
 import aws.smithy.kotlin.runtime.util.Attributes
@@ -24,7 +23,7 @@ class BearerTokenSignerTest {
     fun testAuthorizationHeader() = runTest {
         val signer = BearerTokenSigner()
 
-        val identity = object : Token {
+        val identity = object : BearerToken {
             override val token: String = "mytoken"
             override val attributes: Attributes = emptyAttributes()
             override val expiration: Instant? = null
@@ -45,7 +44,7 @@ class BearerTokenSignerTest {
     fun testHttpsRequired() = runTest {
         val signer = BearerTokenSigner()
 
-        val identity = object : Token {
+        val identity = object : BearerToken {
             override val token: String = "mytoken"
             override val attributes: Attributes = emptyAttributes()
             override val expiration: Instant? = null

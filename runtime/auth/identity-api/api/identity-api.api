@@ -46,9 +46,6 @@ public abstract interface class aws/smithy/kotlin/runtime/auth/AuthSchemeProvide
 public abstract interface class aws/smithy/kotlin/runtime/identity/CloseableIdentityProvider : aws/smithy/kotlin/runtime/identity/IdentityProvider, java/io/Closeable {
 }
 
-public abstract interface class aws/smithy/kotlin/runtime/identity/CloseableTokenProvider : aws/smithy/kotlin/runtime/identity/TokenProvider, java/io/Closeable {
-}
-
 public abstract interface class aws/smithy/kotlin/runtime/identity/Identity {
 	public abstract fun getAttributes ()Laws/smithy/kotlin/runtime/util/Attributes;
 	public abstract fun getExpiration ()Laws/smithy/kotlin/runtime/time/Instant;
@@ -81,18 +78,5 @@ public final class aws/smithy/kotlin/runtime/identity/IdentityProviderConfigKt {
 public final class aws/smithy/kotlin/runtime/identity/IdentityProviderException : aws/smithy/kotlin/runtime/ClientException {
 	public fun <init> (Ljava/lang/String;Ljava/lang/Throwable;)V
 	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/Throwable;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
-}
-
-public abstract interface class aws/smithy/kotlin/runtime/identity/Token : aws/smithy/kotlin/runtime/identity/Identity {
-	public abstract fun getToken ()Ljava/lang/String;
-}
-
-public abstract interface class aws/smithy/kotlin/runtime/identity/TokenProvider : aws/smithy/kotlin/runtime/identity/IdentityProvider {
-	public abstract fun resolve (Laws/smithy/kotlin/runtime/util/Attributes;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-}
-
-public final class aws/smithy/kotlin/runtime/identity/TokenProviderChain : aws/smithy/kotlin/runtime/identity/IdentityProviderChain, aws/smithy/kotlin/runtime/identity/TokenProvider {
-	public fun <init> ([Laws/smithy/kotlin/runtime/identity/TokenProvider;)V
-	public fun resolve (Laws/smithy/kotlin/runtime/util/Attributes;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 

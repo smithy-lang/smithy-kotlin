@@ -39,7 +39,7 @@ class BearerTokenAuthSchemeIntegration : KotlinIntegration {
     override fun additionalServiceConfigProps(ctx: CodegenContext): List<ConfigProperty> {
         val bearerTokenProviderProp = ConfigProperty {
             name = "bearerTokenProvider"
-            symbol = RuntimeTypes.Auth.Identity.TokenProvider
+            symbol = RuntimeTypes.Auth.HttpAuth.BearerTokenProvider
             baseClass = RuntimeTypes.Auth.HttpAuth.BearerTokenProviderConfig
             useNestedBuilderBaseClass()
             documentation = """

@@ -5,10 +5,8 @@
 
 package aws.smithy.kotlin.runtime.http.auth
 
-import aws.smithy.kotlin.runtime.identity.TokenProvider
-
 /**
- * The user-accessible configuration properties for configuring a [TokenProvider].
+ * The user-accessible configuration properties for configuring a [BearerTokenProvider].
  */
 public interface BearerTokenProviderConfig {
     /**
@@ -16,7 +14,7 @@ public interface BearerTokenProviderConfig {
      * NOTE: The caller is responsible for managing the lifetime of the provider when set. The SDK
      * client will not close it when the client is closed.
      */
-    public val bearerTokenProvider: TokenProvider
+    public val bearerTokenProvider: BearerTokenProvider
 
     // FIXME - should this be nullable to allow for bearer auth to not be configured (e.g. multiple auth schemes supported)
     public interface Builder {
@@ -25,6 +23,6 @@ public interface BearerTokenProviderConfig {
          * NOTE: The caller is responsible for managing the lifetime of the provider when set. The SDK
          * client will not close it when the client is closed.
          */
-        public var bearerTokenProvider: TokenProvider?
+        public var bearerTokenProvider: BearerTokenProvider?
     }
 }
