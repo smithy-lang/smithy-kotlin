@@ -15,6 +15,7 @@ import aws.sdk.kotlin.crt.io.Uri
 import aws.smithy.kotlin.runtime.crt.SdkDefaultIO
 import aws.smithy.kotlin.runtime.http.HttpErrorCode
 import aws.smithy.kotlin.runtime.http.HttpException
+import aws.smithy.kotlin.runtime.http.config.EngineFactory
 import aws.smithy.kotlin.runtime.http.engine.HttpClientEngine
 import aws.smithy.kotlin.runtime.http.engine.HttpClientEngineBase
 import aws.smithy.kotlin.runtime.http.engine.ProxyConfig
@@ -42,14 +43,16 @@ internal const val CHUNK_BUFFER_SIZE: Long = 64 * 1024
 /**
  * [HttpClientEngine] based on the AWS Common Runtime HTTP client
  */
-public class CrtHttpEngine(public val config: CrtHttpEngineConfig) : HttpClientEngineBase("crt") {
+public class CrtHttpEngine(public override val config: CrtHttpEngineConfig) : HttpClientEngineBase("crt") {
     public constructor() : this(CrtHttpEngineConfig.Default)
 
-    public companion object {
-        public operator fun invoke(block: CrtHttpEngineConfig.Builder.() -> Unit): CrtHttpEngine = CrtHttpEngine(
-            CrtHttpEngineConfig.Builder().apply(block).build(),
-        )
+    public companion object : EngineFactory<CrtHttpEngineConfig.Builder, CrtHttpEngine> {
+        public operator fun invoke(block: CrtHttpEngineConfig.Builder.() -> Unit): CrtHttpEngine =
+            CrtHttpEngine(CrtHttpEngineConfig(block))
+
+        override val engineConstructor: (CrtHttpEngineConfig.Builder.() -> Unit) -> CrtHttpEngine = ::invoke
     }
+
     private val logger = Logger.getLogger<CrtHttpEngine>()
 
     private val crtTlsContext: CrtTlsContext = TlsContextOptionsBuilder()

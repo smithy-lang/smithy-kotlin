@@ -8,12 +8,10 @@ import aws.smithy.kotlin.runtime.http.Headers
 import aws.smithy.kotlin.runtime.http.HttpBody
 import aws.smithy.kotlin.runtime.http.HttpStatusCode
 import aws.smithy.kotlin.runtime.http.engine.HttpClientEngine
-import aws.smithy.kotlin.runtime.http.engine.HttpClientEngineBase
-import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.http.response.HttpCall
 import aws.smithy.kotlin.runtime.http.response.HttpResponse
+import aws.smithy.kotlin.runtime.httptest.TestEngine
 import aws.smithy.kotlin.runtime.io.SdkByteReadChannel
-import aws.smithy.kotlin.runtime.operation.ExecutionContext
 import aws.smithy.kotlin.runtime.time.Instant
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.TestResult
@@ -82,31 +80,29 @@ public fun <T> httpResponseTest(block: HttpResponseTestBuilder<T>.() -> Unit): T
     val testBuilder = HttpResponseTestBuilder<T>().apply(block)
 
     // provide the mock engine
-    val mockEngine = object : HttpClientEngineBase("smithy-test-resp-mock-engine") {
-        override suspend fun roundTrip(context: ExecutionContext, request: HttpRequest): HttpCall {
-            val headers = Headers {
-                testBuilder.expected.headers.forEach { (key, value) ->
-                    append(key, value)
+    val mockEngine = TestEngine { _, request ->
+        val headers = Headers {
+            testBuilder.expected.headers.forEach { (key, value) ->
+                append(key, value)
+            }
+        }
+
+        val body: HttpBody = testBuilder.expected.body?.let {
+            // emulate a real response stream which typically can only be consumed once
+            // see: https://github.com/awslabs/aws-sdk-kotlin/issues/356
+            object : HttpBody.ChannelContent() {
+                private var consumed = false
+                override fun readFrom(): SdkByteReadChannel {
+                    val content = if (consumed) ByteArray(0) else it.encodeToByteArray()
+                    consumed = true
+                    return SdkByteReadChannel(content)
                 }
             }
+        } ?: HttpBody.Empty
 
-            val body: HttpBody = testBuilder.expected.body?.let {
-                // emulate a real response stream which typically can only be consumed once
-                // see: https://github.com/awslabs/aws-sdk-kotlin/issues/356
-                object : HttpBody.ChannelContent() {
-                    private var consumed = false
-                    override fun readFrom(): SdkByteReadChannel {
-                        val content = if (consumed) ByteArray(0) else it.encodeToByteArray()
-                        consumed = true
-                        return SdkByteReadChannel(content)
-                    }
-                }
-            } ?: HttpBody.Empty
-
-            val resp = HttpResponse(testBuilder.expected.statusCode, headers, body)
-            val now = Instant.now()
-            return HttpCall(request, resp, now, now)
-        }
+        val resp = HttpResponse(testBuilder.expected.statusCode, headers, body)
+        val now = Instant.now()
+        HttpCall(request, resp, now, now)
     }
 
     testBuilder.testFn.invoke(testBuilder.expected.response, mockEngine)

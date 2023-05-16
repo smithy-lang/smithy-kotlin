@@ -72,6 +72,7 @@ object RuntimeTypes {
 
         object Config : RuntimeTypePackage(KotlinDependency.HTTP, "config") {
             val HttpClientConfig = symbol("HttpClientConfig")
+            val HttpEngineConfig = symbol("HttpEngineConfig")
         }
 
         object Engine : RuntimeTypePackage(KotlinDependency.HTTP, "engine") {
@@ -335,6 +336,7 @@ object RuntimeTypes {
     object HttpClientEngines {
         object Default : RuntimeTypePackage(KotlinDependency.DEFAULT_HTTP_ENGINE) {
             val DefaultHttpEngine = symbol("DefaultHttpEngine")
+            val HttpEngineConfigImpl = symbol("HttpEngineConfigImpl")
         }
     }
 

@@ -6,13 +6,12 @@
 package aws.smithy.kotlin.runtime.http.interceptors
 
 import aws.smithy.kotlin.runtime.http.*
-import aws.smithy.kotlin.runtime.http.engine.HttpClientEngineBase
 import aws.smithy.kotlin.runtime.http.interceptors.FlexibleChecksumsResponseInterceptor.Companion.ChecksumHeaderValidated
 import aws.smithy.kotlin.runtime.http.operation.*
-import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
 import aws.smithy.kotlin.runtime.http.response.HttpCall
 import aws.smithy.kotlin.runtime.http.response.HttpResponse
+import aws.smithy.kotlin.runtime.httptest.TestEngine
 import aws.smithy.kotlin.runtime.io.SdkSource
 import aws.smithy.kotlin.runtime.io.source
 import aws.smithy.kotlin.runtime.operation.ExecutionContext
@@ -54,18 +53,16 @@ class FlexibleChecksumsResponseInterceptorTest {
     )
 
     private fun getMockClient(response: ByteArray, responseHeaders: Headers = Headers.Empty): SdkHttpClient {
-        val mockEngine = object : HttpClientEngineBase("test") {
-            override suspend fun roundTrip(context: ExecutionContext, request: HttpRequest): HttpCall {
-                val body = object : HttpBody.SourceContent() {
-                    override val contentLength: Long = response.size.toLong()
-                    override fun readFrom(): SdkSource = response.source()
-                    override val isOneShot: Boolean get() = false
-                }
-
-                val resp = HttpResponse(HttpStatusCode.OK, responseHeaders, body)
-
-                return HttpCall(request, resp, Instant.now(), Instant.now())
+        val mockEngine = TestEngine { _, request ->
+            val body = object : HttpBody.SourceContent() {
+                override val contentLength: Long = response.size.toLong()
+                override fun readFrom(): SdkSource = response.source()
+                override val isOneShot: Boolean get() = false
             }
+
+            val resp = HttpResponse(HttpStatusCode.OK, responseHeaders, body)
+
+            HttpCall(request, resp, Instant.now(), Instant.now())
         }
         return SdkHttpClient(mockEngine)
     }

@@ -52,10 +52,10 @@ class HttpProtocolClientGeneratorTest {
     @Test
     fun `it renders properties and init`() {
         commonTestContents.shouldContainOnlyOnceWithDiff("val managedResources = SdkManagedGroup()")
-        commonTestContents.shouldContainOnlyOnceWithDiff("val client = SdkHttpClient(config.httpClientEngine)")
+        commonTestContents.shouldContainOnlyOnceWithDiff("val client = SdkHttpClient(config.httpClient)")
         val expected = """
     init {
-        managedResources.addIfManaged(config.httpClientEngine)
+        managedResources.addIfManaged(config.httpClient)
     }
 """
         commonTestContents.shouldContainOnlyOnceWithDiff(expected)

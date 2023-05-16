@@ -19,6 +19,11 @@ import kotlin.coroutines.CoroutineContext
  */
 public interface HttpClientEngine : CoroutineScope {
     /**
+     * The configuration used to initialize this engine
+     */
+    public val config: HttpClientEngineConfig
+
+    /**
      * Execute a single HTTP request and return the response.
      * Consumers *MUST* call `HttpCall.complete()` when finished processing the response
      */

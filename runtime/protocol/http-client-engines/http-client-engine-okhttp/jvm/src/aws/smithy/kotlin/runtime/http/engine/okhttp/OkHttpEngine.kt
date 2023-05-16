@@ -6,6 +6,7 @@
 package aws.smithy.kotlin.runtime.http.engine.okhttp
 
 import aws.smithy.kotlin.runtime.config.TlsVersion
+import aws.smithy.kotlin.runtime.http.config.EngineFactory
 import aws.smithy.kotlin.runtime.http.engine.AlpnId
 import aws.smithy.kotlin.runtime.http.engine.HttpClientEngineBase
 import aws.smithy.kotlin.runtime.http.engine.TlsContext
@@ -26,14 +27,19 @@ import okhttp3.TlsVersion as OkHttpTlsVersion
  * [aws.smithy.kotlin.runtime.http.engine.HttpClientEngine] based on OkHttp.
  */
 public class OkHttpEngine(
-    private val config: OkHttpEngineConfig,
+    override val config: OkHttpEngineConfig,
 ) : HttpClientEngineBase("OkHttp") {
     public constructor() : this(OkHttpEngineConfig.Default)
 
-    public companion object {
-        public operator fun invoke(block: OkHttpEngineConfig.Builder.() -> Unit): OkHttpEngine = OkHttpEngine(
-            OkHttpEngineConfig.Builder().apply(block).build(),
-        )
+    public companion object : EngineFactory<OkHttpEngineConfig.Builder, OkHttpEngine> {
+        /**
+         * Initializes a new [OkHttpEngine] via a DSL builder block
+         * @param block A receiver lambda which sets the properties of the config to be built
+         */
+        public operator fun invoke(block: OkHttpEngineConfig.Builder.() -> Unit): OkHttpEngine =
+            OkHttpEngine(OkHttpEngineConfig(block))
+
+        override val engineConstructor: (OkHttpEngineConfig.Builder.() -> Unit) -> OkHttpEngine = ::invoke
     }
 
     private val client = config.buildClient()

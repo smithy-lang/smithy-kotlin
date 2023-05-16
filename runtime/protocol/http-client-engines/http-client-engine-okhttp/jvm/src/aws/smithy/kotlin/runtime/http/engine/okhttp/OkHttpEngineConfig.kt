@@ -6,29 +6,46 @@
 package aws.smithy.kotlin.runtime.http.engine.okhttp
 
 import aws.smithy.kotlin.runtime.http.engine.HttpClientEngineConfig
+import aws.smithy.kotlin.runtime.http.engine.HttpClientEngineConfigImpl
 
-public class OkHttpEngineConfig private constructor(builder: Builder) : HttpClientEngineConfig(builder) {
+/**
+ * The configuration parameters for an OkHttp HTTP client engine.
+ */
+public class OkHttpEngineConfig private constructor(builder: Builder) : HttpClientEngineConfigImpl(builder) {
+    public companion object {
+        /**
+         * Initializes a new [OkHttpEngineConfig] via a DSL builder block
+         * @param block A receiver lambda which sets the properties of the config to be built
+         */
+        public operator fun invoke(block: Builder.() -> Unit): OkHttpEngineConfig =
+            OkHttpEngineConfig(Builder().apply(block))
+
+        /**
+         * The default engine config. Most clients should use this.
+         */
+        public val Default: OkHttpEngineConfig = OkHttpEngineConfig(Builder())
+    }
+
     /**
      * The maximum number of connections to open to a single host.
      */
     public val maxConnectionsPerHost: UInt = builder.maxConnectionsPerHost ?: builder.maxConnections
 
-    public companion object {
-        /**
-         * The default engine config. Most clients should use this.
-         */
-        public val Default: OkHttpEngineConfig = OkHttpEngineConfig(Builder())
+    override fun toBuilderApplicator(): HttpClientEngineConfig.Builder.() -> Unit = {
+        super.toBuilderApplicator()()
 
-        public operator fun invoke(block: Builder.() -> Unit): OkHttpEngineConfig =
-            Builder().apply(block).build()
+        if (this is Builder) {
+            maxConnectionsPerHost = this@OkHttpEngineConfig.maxConnectionsPerHost
+        }
     }
 
-    public class Builder : HttpClientEngineConfig.Builder() {
+    /**
+     * A builder for [OkHttpEngineConfig]
+     */
+    public class Builder : BuilderImpl() {
         /**
          * The maximum number of connections to open to a single host. Defaults to [maxConnections].
          */
         public var maxConnectionsPerHost: UInt? = null
-
-        internal fun build(): OkHttpEngineConfig = OkHttpEngineConfig(this)
     }
 }

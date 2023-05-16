@@ -42,13 +42,12 @@ class ServiceClientConfigGeneratorTest {
         contents.assertBalancedBracesAndParens()
 
         val expectedCtor = """
-public class Config private constructor(builder: Builder) : HttpAuthConfig, HttpClientConfig, IdempotencyTokenConfig, SdkClientConfig, TracingClientConfig {
+public class Config private constructor(builder: Builder) : HttpAuthConfig, HttpClientConfig, HttpEngineConfig by builder.buildHttpEngineConfig(), IdempotencyTokenConfig, SdkClientConfig, TracingClientConfig {
 """
         contents.shouldContainWithDiff(expectedCtor)
 
         val expectedProps = """
     override val clientName: String = builder.clientName
-    override val httpClientEngine: HttpClientEngine = builder.httpClientEngine ?: DefaultHttpEngine().manage()
     override val authSchemes: kotlin.collections.List<aws.smithy.kotlin.runtime.http.auth.HttpAuthScheme> = builder.authSchemes
     public val endpointProvider: EndpointProvider = requireNotNull(builder.endpointProvider) { "endpointProvider is a required configuration property" }
     override val idempotencyTokenProvider: IdempotencyTokenProvider = builder.idempotencyTokenProvider ?: IdempotencyTokenProvider.Default
@@ -61,18 +60,11 @@ public class Config private constructor(builder: Builder) : HttpAuthConfig, Http
         contents.shouldContainWithDiff(expectedProps)
 
         val expectedBuilder = """
-    public class Builder : HttpAuthConfig.Builder, HttpClientConfig.Builder, IdempotencyTokenConfig.Builder, SdkClientConfig.Builder<Config>, TracingClientConfig.Builder {
+    public class Builder : HttpAuthConfig.Builder, HttpClientConfig.Builder, HttpEngineConfig.Builder by HttpEngineConfigImpl.BuilderImpl(), IdempotencyTokenConfig.Builder, SdkClientConfig.Builder<Config>, TracingClientConfig.Builder {
         /**
          * A reader-friendly name for the client.
          */
         override var clientName: String = "Test"
-
-        /**
-         * Override the default HTTP client engine used to make SDK requests (e.g. configure proxy behavior, timeouts, concurrency, etc).
-         * NOTE: The caller is responsible for managing the lifetime of the engine when set. The SDK
-         * client will not close it when the client is closed.
-         */
-        override var httpClientEngine: HttpClientEngine? = null
 
         /**
          * Register new or override default [HttpAuthScheme]s configured for this client. By default, the set
@@ -256,7 +248,6 @@ public class Config private constructor(builder: Builder) {
         // Expect logMode config value to override default to LogMode.Request
         val expectedConfigValues = """
     override val clientName: String = builder.clientName
-    override val httpClientEngine: HttpClientEngine = builder.httpClientEngine ?: DefaultHttpEngine().manage()
     override val authSchemes: kotlin.collections.List<aws.smithy.kotlin.runtime.http.auth.HttpAuthScheme> = builder.authSchemes
     public val customProp: Int? = builder.customProp
     public val endpointProvider: EndpointProvider = requireNotNull(builder.endpointProvider) { "endpointProvider is a required configuration property" }

@@ -79,11 +79,31 @@ class ConfigProperty private constructor(builder: Builder) {
     val baseClass: Symbol? = builder.baseClass
 
     /**
+     * A delegate the config object should use as the backing implementation of this property's base class. This enables
+     * class specifications such as:
+     *
+     * ```kotlin
+     * class Config : BaseClass by BaseClassDelegate(...)
+     * ```
+     */
+    val baseClassDelegate: Delegate? = builder.baseClassDelegate
+
+    /**
      * Additional base classes the config builder should inherit from
      *
      * NOTE: Adding 1 or more base classes will implicitly render the property with an `override` modifier
      */
     val builderBaseClass: Symbol? = builder.builderBaseClass
+
+    /**
+     * A delegate the config builder object should use as the backing implementation of this property's builder base
+     * class. This enables class specifications such as:
+     *
+     * ```kotlin
+     * class Builder : BuilderBaseClass by BuilderBaseClassDelegate(...)
+     * ```
+     */
+    val builderBaseClassDelegate: Delegate? = builder.builderBaseClassDelegate
 
     /**
      * The configuration property type. This controls how the property is constructed and rendered
@@ -193,7 +213,9 @@ class ConfigProperty private constructor(builder: Builder) {
         var documentation: String? = null
 
         var baseClass: Symbol? = null
+        var baseClassDelegate: Delegate? = null
         var builderBaseClass: Symbol? = null
+        var builderBaseClassDelegate: Delegate? = null
 
         var propertyType: ConfigPropertyType = ConfigPropertyType.SymbolDefault
 
@@ -230,6 +252,14 @@ class ConfigProperty private constructor(builder: Builder) {
         fun build(): ConfigProperty = ConfigProperty(this)
     }
 }
+
+/**
+ * Represents a type which may be used for [inheritance delegation](https://kotlinlang.org/docs/delegation.html).
+ * @param symbol The symbol for the delegate target. Codegenerators should import this symbol where appropriate so that
+ * the [delegationExpression] has the correct symbol in scope.
+ * @param delegationExpression The code expression for how to delegate
+ */
+data class Delegate(val symbol: Symbol?, val delegationExpression: String)
 
 private fun builtInSymbol(symbolName: String, defaultValue: String?): Symbol {
     val builder = Symbol.builder()

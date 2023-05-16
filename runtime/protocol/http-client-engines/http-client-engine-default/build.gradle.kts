@@ -14,6 +14,12 @@ kotlin {
             dependencies {
                 api(project(":runtime:protocol:http-client"))
                 implementation(project(":runtime:logging"))
+                implementation(project(":runtime:runtime-core"))
+            }
+        }
+        commonTest {
+            dependencies {
+                implementation(project(":runtime:protocol:http-client-engines:http-client-engine-crt"))
             }
         }
         jvmMain {

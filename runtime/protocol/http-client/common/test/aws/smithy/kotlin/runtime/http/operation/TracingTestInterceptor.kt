@@ -9,6 +9,7 @@ import aws.smithy.kotlin.runtime.client.*
 import aws.smithy.kotlin.runtime.http.*
 import aws.smithy.kotlin.runtime.http.SdkHttpClient
 import aws.smithy.kotlin.runtime.http.engine.HttpClientEngineBase
+import aws.smithy.kotlin.runtime.http.engine.HttpClientEngineConfig
 import aws.smithy.kotlin.runtime.http.interceptors.HttpInterceptor
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.http.response.HttpCall
@@ -31,6 +32,8 @@ class MockHttpClientOptions {
 fun newMockHttpClient(block: MockHttpClientOptions.() -> Unit = {}): SdkHttpClient {
     val options = MockHttpClientOptions().apply(block)
     val mockEngine = object : HttpClientEngineBase("test engine") {
+        override val config: HttpClientEngineConfig = HttpClientEngineConfig.Default
+
         private var attempt = 0
         override suspend fun roundTrip(context: ExecutionContext, request: HttpRequest): HttpCall {
             attempt++

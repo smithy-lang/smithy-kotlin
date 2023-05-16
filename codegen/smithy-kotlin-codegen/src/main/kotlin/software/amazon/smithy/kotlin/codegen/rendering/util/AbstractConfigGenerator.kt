@@ -5,6 +5,7 @@
 
 package software.amazon.smithy.kotlin.codegen.rendering.util
 
+import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.codegen.core.SymbolReference
 import software.amazon.smithy.kotlin.codegen.core.CodegenContext
 import software.amazon.smithy.kotlin.codegen.core.KotlinWriter
@@ -49,7 +50,7 @@ abstract class AbstractConfigGenerator {
         addPropertyImports(props, writer)
 
         val sortedProps = props.sortedWith(compareBy({ it.order }, { it.propertyName }))
-        val formattedBaseClasses = props.formattedBaseClasses { it.baseClass?.name }
+        val formattedBaseClasses = props.formattedBaseClasses { it.baseClass to it.baseClassDelegate }
 
         writer.withBlock(
             "$visibility class #configClass.name:L private constructor(builder: Builder)$formattedBaseClasses {",
@@ -75,14 +76,12 @@ abstract class AbstractConfigGenerator {
      */
     private fun addPropertyImports(props: Collection<ConfigProperty>, writer: KotlinWriter) {
         props.forEach {
-            it.baseClass?.let { baseClass ->
-                writer.addImport(baseClass)
-            }
+            it.baseClass?.let(writer::addImport)
+            it.baseClassDelegate?.symbol?.let(writer::addImport)
+            it.builderBaseClassDelegate?.symbol?.let(writer::addImport)
             writer.addImport(it.symbol)
             writer.addImportReferences(it.symbol, SymbolReference.ContextOption.USE)
-            it.additionalImports.forEach { symbol ->
-                writer.addImport(symbol)
-            }
+            it.additionalImports.forEach(writer::addImport)
         }
     }
 
@@ -130,7 +129,7 @@ abstract class AbstractConfigGenerator {
     }
 
     protected open fun renderBuilder(props: Collection<ConfigProperty>, writer: KotlinWriter) {
-        val formattedBaseClasses = props.formattedBaseClasses { it.builderBaseClass?.name }
+        val formattedBaseClasses = props.formattedBaseClasses { it.builderBaseClass to it.builderBaseClassDelegate }
 
         writer.write("")
             .withBlock("$visibility class Builder$formattedBaseClasses {", "}") {
@@ -159,8 +158,11 @@ abstract class AbstractConfigGenerator {
      * Return the formatted base classes for the config property
      * @param transform the selector from config property that maps the property to a base class name
      */
-    private inline fun Collection<ConfigProperty>.formattedBaseClasses(transform: (ConfigProperty) -> String?): String {
-        val baseClasses = mapNotNull(transform)
+    private inline fun Collection<ConfigProperty>.formattedBaseClasses(
+        transform: (ConfigProperty) -> Pair<Symbol?, Delegate?>,
+    ): String {
+        val baseClasses = map(transform)
+            .mapNotNull { (symbol, delegate) -> symbol?.format(delegate) }
             .sorted()
             .toSet()
             .joinToString(", ")
@@ -178,3 +180,6 @@ abstract class AbstractConfigGenerator {
         }
     }
 }
+
+private fun Symbol.format(delegate: Delegate?): String =
+    name + (delegate?.let { " by ${it.delegationExpression}" } ?: "")

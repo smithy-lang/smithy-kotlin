@@ -12,6 +12,7 @@ import aws.smithy.kotlin.runtime.http.HttpStatusCode
 import aws.smithy.kotlin.runtime.http.SdkHttpClient
 import aws.smithy.kotlin.runtime.http.auth.*
 import aws.smithy.kotlin.runtime.http.engine.HttpClientEngineBase
+import aws.smithy.kotlin.runtime.http.engine.HttpClientEngineConfig
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
 import aws.smithy.kotlin.runtime.http.response.HttpCall
@@ -36,6 +37,8 @@ class SdkOperationExecutionTest {
         val op = newTestOperation<Unit, Unit>(serialized, Unit)
 
         val mockEngine = object : HttpClientEngineBase("test engine") {
+            override val config: HttpClientEngineConfig = HttpClientEngineConfig.Default
+
             private var attempt = 0
             override suspend fun roundTrip(context: ExecutionContext, request: HttpRequest): HttpCall {
                 attempt++

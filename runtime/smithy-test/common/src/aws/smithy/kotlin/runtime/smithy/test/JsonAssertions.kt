@@ -6,19 +6,15 @@ package aws.smithy.kotlin.runtime.smithy.test
 
 import aws.smithy.kotlin.runtime.http.HttpBody
 import aws.smithy.kotlin.runtime.http.readAll
-import kotlinx.serialization.UnstableDefault
 import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.JsonConfiguration
 import kotlin.test.assertEquals
 
 /**
  * Assert JSON strings for equality ignoring key order
  */
-@OptIn(UnstableDefault::class)
 public fun assertJsonStringsEqual(expected: String, actual: String) {
-    val config = JsonConfiguration()
-    val expectedElement = Json(config).parseJson(expected)
-    val actualElement = Json(config).parseJson(actual)
+    val expectedElement = Json.parseToJsonElement(expected)
+    val actualElement = Json.parseToJsonElement(actual)
 
     assertEquals(expectedElement, actualElement, "expected JSON:\n\n$expected\n\nactual:\n\n$actual\n")
 }

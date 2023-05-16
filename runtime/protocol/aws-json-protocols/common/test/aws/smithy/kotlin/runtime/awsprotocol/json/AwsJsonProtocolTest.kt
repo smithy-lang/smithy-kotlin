@@ -7,14 +7,11 @@ package aws.smithy.kotlin.runtime.awsprotocol.json
 
 import aws.smithy.kotlin.runtime.http.*
 import aws.smithy.kotlin.runtime.http.content.ByteArrayContent
-import aws.smithy.kotlin.runtime.http.engine.HttpClientEngineBase
 import aws.smithy.kotlin.runtime.http.operation.*
-import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
-import aws.smithy.kotlin.runtime.http.response.HttpCall
 import aws.smithy.kotlin.runtime.http.response.HttpResponse
+import aws.smithy.kotlin.runtime.httptest.TestEngine
 import aws.smithy.kotlin.runtime.operation.ExecutionContext
-import aws.smithy.kotlin.runtime.time.Instant
 import aws.smithy.kotlin.runtime.util.get
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
@@ -26,14 +23,6 @@ class AwsJsonProtocolTest {
 
     @Test
     fun testSetJsonProtocolHeaders() = runTest {
-        val mockEngine = object : HttpClientEngineBase("test") {
-            override suspend fun roundTrip(context: ExecutionContext, request: HttpRequest): HttpCall {
-                val resp = HttpResponse(HttpStatusCode.OK, Headers.Empty, HttpBody.Empty)
-                val now = Instant.now()
-                return HttpCall(request, resp, now, now)
-            }
-        }
-
         val op = SdkHttpOperation.build<Unit, HttpResponse> {
             serializer = UnitSerializer
             deserializer = IdentityDeserializer
@@ -41,7 +30,7 @@ class AwsJsonProtocolTest {
                 operationName = "Bar"
             }
         }
-        val client = SdkHttpClient(mockEngine)
+        val client = SdkHttpClient(TestEngine())
         val m = AwsJsonProtocol("FooService_blah", "1.1")
         op.install(m)
 
@@ -56,14 +45,6 @@ class AwsJsonProtocolTest {
 
     @Test
     fun testEmptyBody() = runTest {
-        val mockEngine = object : HttpClientEngineBase("test") {
-            override suspend fun roundTrip(context: ExecutionContext, request: HttpRequest): HttpCall {
-                val resp = HttpResponse(HttpStatusCode.OK, Headers.Empty, HttpBody.Empty)
-                val now = Instant.now()
-                return HttpCall(request, resp, now, now)
-            }
-        }
-
         val op = SdkHttpOperation.build<Unit, HttpResponse> {
             serializer = UnitSerializer
             deserializer = IdentityDeserializer
@@ -71,7 +52,7 @@ class AwsJsonProtocolTest {
                 operationName = "Bar"
             }
         }
-        val client = SdkHttpClient(mockEngine)
+        val client = SdkHttpClient(TestEngine())
         op.install(AwsJsonProtocol("FooService", "1.1"))
 
         op.roundTrip(client, Unit)
@@ -83,14 +64,6 @@ class AwsJsonProtocolTest {
 
     @Test
     fun testDoesNotOverride() = runTest {
-        val mockEngine = object : HttpClientEngineBase("test") {
-            override suspend fun roundTrip(context: ExecutionContext, request: HttpRequest): HttpCall {
-                val resp = HttpResponse(HttpStatusCode.OK, Headers.Empty, HttpBody.Empty)
-                val now = Instant.now()
-                return HttpCall(request, resp, now, now)
-            }
-        }
-
         val op = SdkHttpOperation.build<Unit, HttpResponse> {
             serializer = object : HttpSerialize<Unit> {
                 override suspend fun serialize(context: ExecutionContext, input: Unit): HttpRequestBuilder =
@@ -104,7 +77,7 @@ class AwsJsonProtocolTest {
                 operationName = "Bar"
             }
         }
-        val client = SdkHttpClient(mockEngine)
+        val client = SdkHttpClient(TestEngine())
         op.install(AwsJsonProtocol("FooService", "1.1"))
 
         op.roundTrip(client, Unit)

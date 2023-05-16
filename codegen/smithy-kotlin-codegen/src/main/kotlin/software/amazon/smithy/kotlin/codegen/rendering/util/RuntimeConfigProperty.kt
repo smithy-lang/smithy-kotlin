@@ -42,28 +42,25 @@ object RuntimeConfigProperty {
         order = -100
     }
 
-    val HttpClientEngine = ConfigProperty {
+    val HttpClient = ConfigProperty {
+        name = "httpClient"
         symbol = RuntimeTypes.HttpClient.Engine.HttpClientEngine
-        baseClass = RuntimeTypes.HttpClient.Config.HttpClientConfig
-        useNestedBuilderBaseClass()
-        documentation = """
-        Override the default HTTP client engine used to make SDK requests (e.g. configure proxy behavior, timeouts, concurrency, etc).
-        NOTE: The caller is responsible for managing the lifetime of the engine when set. The SDK
-        client will not close it when the client is closed.
-        """.trimIndent()
-        order = -100
 
-        propertyType = ConfigPropertyType.Custom(
-            render = { prop, writer ->
-                writer.write(
-                    "override val #1L: #2T = builder.#1L ?: #3T().#4T()",
-                    prop.propertyName,
-                    prop.symbol,
-                    RuntimeTypes.HttpClientEngines.Default.DefaultHttpEngine,
-                    RuntimeTypes.HttpClient.Engine.manage,
-                )
-            },
+        baseClass = RuntimeTypes.HttpClient.Config.HttpEngineConfig
+        baseClassDelegate = Delegate(null, "builder.buildHttpEngineConfig()")
+
+        builderBaseClass = RuntimeTypes.HttpClient.Config.HttpEngineConfig.let {
+            buildSymbol {
+                name = "${it.name}.Builder"
+                namespace = it.namespace
+            }
+        }
+        builderBaseClassDelegate = Delegate(
+            RuntimeTypes.HttpClientEngines.Default.HttpEngineConfigImpl,
+            "HttpEngineConfigImpl.BuilderImpl()",
         )
+
+        propertyType = ConfigPropertyType.Custom({ _, _ -> }, { _, _ -> })
     }
 
     val IdempotencyTokenProvider = ConfigProperty {
