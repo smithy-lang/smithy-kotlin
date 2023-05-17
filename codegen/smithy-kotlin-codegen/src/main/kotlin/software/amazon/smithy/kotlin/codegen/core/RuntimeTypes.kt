@@ -186,6 +186,9 @@ object RuntimeTypes {
         val IdempotencyTokenProviderExt = symbol("idempotencyTokenProvider")
 
         object Endpoints : RuntimeTypePackage(KotlinDependency.SMITHY_CLIENT, "endpoints") {
+            val AuthSchemesAttributeKey = symbol("AuthSchemesAttributeKey")
+            val AuthScheme = symbol("AuthScheme")
+            val authSchemeEndpointExt = symbol("authScheme")
             val EndpointProvider = symbol("EndpointProvider")
             val Endpoint = symbol("Endpoint")
             val EndpointProviderException = symbol("EndpointProviderException")
@@ -272,13 +275,10 @@ object RuntimeTypes {
                 val AwsSignedBodyHeader = symbol("AwsSignedBodyHeader")
                 val AwsSigner = symbol("AwsSigner")
                 val AwsSigningAttributes = symbol("AwsSigningAttributes")
+                val AwsSigningConfig = symbol("AwsSigningConfig")
+                val setSigningContext = symbol("setSigningContext")
                 val HashSpecification = symbol("HashSpecification")
-                val createPresignedRequest = symbol("createPresignedRequest")
-                val PresignedRequestConfig = symbol("PresignedRequestConfig")
-                val PresigningLocation = symbol("PresigningLocation")
-                val ServicePresignConfig = symbol("ServicePresignConfig")
-                val SigningEndpointProvider = symbol("SigningEndpointProvider")
-                val SigningContextualizedEndpoint = symbol("SigningContextualizedEndpoint")
+                val presignRequest = symbol("presignRequest")
             }
 
             object AwsSigningStandard : RuntimeTypePackage(KotlinDependency.AWS_SIGNING_DEFAULT) {

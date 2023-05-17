@@ -203,7 +203,7 @@ class ServiceClientGeneratorTest {
         val writer = KotlinWriter(TestModelDefault.NAMESPACE)
         val service = model.getShape(ShapeId.from(TestModelDefault.SERVICE_SHAPE_ID)).get().asServiceShape().get()
         val settings = KotlinSettings(service.id, KotlinSettings.PackageSettings(TestModelDefault.NAMESPACE, TestModelDefault.MODEL_VERSION), sdkId = service.id.name)
-        val protocolGenerator = if (withProtocolGenerator) MockHttpProtocolGenerator() else null
+        val protocolGenerator = if (withProtocolGenerator) MockHttpProtocolGenerator(model) else null
         val renderingCtx = RenderingContext(writer, service, model, provider, settings, protocolGenerator)
         val generator = ServiceClientGenerator(renderingCtx)
 
