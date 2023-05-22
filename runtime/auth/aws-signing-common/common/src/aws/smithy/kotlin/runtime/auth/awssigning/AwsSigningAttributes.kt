@@ -6,7 +6,7 @@ package aws.smithy.kotlin.runtime.auth.awssigning
 
 import aws.smithy.kotlin.runtime.InternalApi
 import aws.smithy.kotlin.runtime.auth.awscredentials.CredentialsProvider
-import aws.smithy.kotlin.runtime.client.endpoints.AuthScheme
+import aws.smithy.kotlin.runtime.client.endpoints.SigningContext
 import aws.smithy.kotlin.runtime.operation.ExecutionContext
 import aws.smithy.kotlin.runtime.time.Instant
 import aws.smithy.kotlin.runtime.util.AttributeKey
@@ -69,10 +69,11 @@ public object AwsSigningAttributes {
 }
 
 /**
- * Update a request's signing context properties with the receiving auth scheme.
+ * Merges this signing context into the given [ExecutionContext].
+ * @param context The execution context into which to merge the values from this signing context.
  */
 @InternalApi
-public fun AuthScheme.SigV4.setSigningContext(context: ExecutionContext) {
+public fun SigningContext.SigV4.mergeInto(context: ExecutionContext) {
     context.setUnlessBlank(AwsSigningAttributes.SigningService, signingName)
     context.setUnlessBlank(AwsSigningAttributes.SigningRegion, signingRegion)
 }

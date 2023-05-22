@@ -4,7 +4,12 @@
  */
 package software.amazon.smithy.kotlin.codegen.test
 
+import software.amazon.smithy.aws.traits.protocols.AwsJson1_0Trait
+import software.amazon.smithy.aws.traits.protocols.AwsJson1_1Trait
+import software.amazon.smithy.aws.traits.protocols.AwsQueryTrait
+import software.amazon.smithy.aws.traits.protocols.Ec2QueryTrait
 import software.amazon.smithy.aws.traits.protocols.RestJson1Trait
+import software.amazon.smithy.aws.traits.protocols.RestXmlTrait
 import software.amazon.smithy.build.MockManifest
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.codegen.core.SymbolProvider
@@ -132,12 +137,12 @@ class TestProtocolClientGenerator(
 ) : HttpProtocolClientGenerator(ctx, features, httpBindingResolver)
 
 private val allProtocols = setOf(
-    "aws.protocols#awsJson1_0",
-    "aws.protocols#awsJson1_1",
-    "aws.protocols#awsQuery",
-    "aws.protocols#ec2Query",
-    "aws.protocols#restJson1",
-    "aws.protocols#restXml",
+    AwsJson1_0Trait.ID,
+    AwsJson1_1Trait.ID,
+    AwsQueryTrait.ID,
+    Ec2QueryTrait.ID,
+    RestJson1Trait.ID,
+    RestXmlTrait.ID,
 )
 
 /** An HttpBindingProtocolGenerator for testing (nothing is rendered for serializing/deserializing payload bodies) */
@@ -152,7 +157,7 @@ class MockHttpProtocolGenerator(model: Model) : HttpBindingProtocolGenerator() {
         .allTraits
         .values
         .map(Trait::toShapeId)
-        .singleOrNull { allProtocols.contains(it.toString()) }
+        .singleOrNull(allProtocols::contains)
         ?: RestJson1Trait.ID
 
     override fun generateProtocolUnitTests(ctx: ProtocolGenerator.GenerationContext) {}

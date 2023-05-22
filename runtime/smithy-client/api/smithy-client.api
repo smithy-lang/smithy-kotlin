@@ -192,9 +192,6 @@ public final class aws/smithy/kotlin/runtime/client/SdkClientOption {
 public final class aws/smithy/kotlin/runtime/client/SdkClientOptionKt {
 }
 
-public final class aws/smithy/kotlin/runtime/client/endpoints/AuthSchemeKt {
-}
-
 public final class aws/smithy/kotlin/runtime/client/endpoints/Endpoint {
 	public fun <init> (Laws/smithy/kotlin/runtime/net/Url;Laws/smithy/kotlin/runtime/util/ValuesMap;)V
 	public synthetic fun <init> (Laws/smithy/kotlin/runtime/net/Url;Laws/smithy/kotlin/runtime/util/ValuesMap;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
@@ -217,6 +214,9 @@ public abstract interface class aws/smithy/kotlin/runtime/client/endpoints/Endpo
 
 public final class aws/smithy/kotlin/runtime/client/endpoints/EndpointProviderException : aws/smithy/kotlin/runtime/ClientException {
 	public fun <init> (Ljava/lang/String;)V
+}
+
+public final class aws/smithy/kotlin/runtime/client/endpoints/SigningContextKt {
 }
 
 public final class aws/smithy/kotlin/runtime/client/endpoints/functions/FunctionsKt {

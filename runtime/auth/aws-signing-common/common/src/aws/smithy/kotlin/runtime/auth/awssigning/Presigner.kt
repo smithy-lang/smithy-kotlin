@@ -6,7 +6,7 @@ package aws.smithy.kotlin.runtime.auth.awssigning
 
 import aws.smithy.kotlin.runtime.InternalApi
 import aws.smithy.kotlin.runtime.auth.awscredentials.CredentialsProvider
-import aws.smithy.kotlin.runtime.client.endpoints.authScheme
+import aws.smithy.kotlin.runtime.client.endpoints.signingContext
 import aws.smithy.kotlin.runtime.http.*
 import aws.smithy.kotlin.runtime.http.operation.EndpointResolver
 import aws.smithy.kotlin.runtime.http.operation.ResolveEndpointRequest
@@ -31,13 +31,13 @@ public suspend fun presignRequest(
     val credentials = credentialsProvider.resolve()
     val eprRequest = ResolveEndpointRequest(ctx, unsignedRequestBuilder.build(), credentials)
     val endpoint = endpointResolver.resolve(eprRequest)
-    val authScheme = endpoint.authScheme
+    val signingContext = endpoint.signingContext
 
     val unsignedRequest = unsignedRequestBuilder.apply { header("host", endpoint.uri.host.toString()) }.build()
 
     val config = AwsSigningConfig {
-        authScheme?.signingName?.let { service = it }
-        authScheme?.signingRegion?.let { region = it }
+        signingContext?.signingName?.let { service = it }
+        signingContext?.signingRegion?.let { region = it }
         this.credentials = credentials
         signedBodyHeader = AwsSignedBodyHeader.X_AMZ_CONTENT_SHA256
         signatureType = AwsSignatureType.HTTP_REQUEST_VIA_QUERY_PARAMS

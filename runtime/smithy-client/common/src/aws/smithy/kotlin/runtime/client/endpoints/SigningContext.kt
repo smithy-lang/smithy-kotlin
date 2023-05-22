@@ -11,26 +11,26 @@ import aws.smithy.kotlin.runtime.util.AttributeKey
  * Static attribute key for AWS endpoint auth schemes.
  */
 @InternalApi
-public val AuthSchemesAttributeKey: AttributeKey<List<AuthScheme>> = AttributeKey("authSchemes")
+public val SigningContextAttributeKey: AttributeKey<List<SigningContext>> = AttributeKey("authSchemes")
 
 /**
  * A set of signing constraints for an AWS endpoint.
  */
 @InternalApi
-public sealed class AuthScheme {
+public sealed class SigningContext {
     @InternalApi
     public data class SigV4(
         public val signingName: String?,
         public val disableDoubleEncoding: Boolean,
         public val signingRegion: String?,
-    ) : AuthScheme()
+    ) : SigningContext()
 
     @InternalApi
     public data class SigV4A(
         public val signingName: String?,
         public val disableDoubleEncoding: Boolean,
         public val signingRegionSet: List<String>,
-    ) : AuthScheme()
+    ) : SigningContext()
 }
 
 /**
@@ -40,5 +40,5 @@ public sealed class AuthScheme {
  * out the sigv4 one if present.
  */
 @InternalApi
-public val Endpoint.authScheme: AuthScheme.SigV4?
-    get() = attributes.getOrNull(AuthSchemesAttributeKey)?.find { it is AuthScheme.SigV4 } as? AuthScheme.SigV4
+public val Endpoint.signingContext: SigningContext.SigV4?
+    get() = attributes.getOrNull(SigningContextAttributeKey)?.filterIsInstance<SigningContext.SigV4>()?.firstOrNull()
