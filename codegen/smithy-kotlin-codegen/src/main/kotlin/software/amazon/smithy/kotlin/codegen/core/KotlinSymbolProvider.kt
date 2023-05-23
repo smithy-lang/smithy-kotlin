@@ -11,6 +11,7 @@ import software.amazon.smithy.kotlin.codegen.model.*
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.knowledge.NullableIndex
 import software.amazon.smithy.model.shapes.*
+import software.amazon.smithy.model.traits.DefaultTrait
 import software.amazon.smithy.model.traits.SparseTrait
 import software.amazon.smithy.model.traits.StreamingTrait
 import java.util.logging.Logger
@@ -79,10 +80,12 @@ class KotlinSymbolProvider(private val model: Model, private val settings: Kotli
 
     override fun doubleShape(shape: DoubleShape): Symbol = numberShape(shape, "Double", "0.0")
 
-    private fun numberShape(shape: Shape, typeName: String, defaultValue: String = "0"): Symbol =
-        createSymbolBuilder(shape, typeName, namespace = "kotlin")
-            .defaultValue(defaultValue)
-            .build()
+    private fun numberShape(shape: Shape, typeName: String, defaultValue: String = "0"): Symbol {
+        val symbol = createSymbolBuilder(shape, typeName, namespace = "kotlin").build()
+        return if (!symbol.properties.containsKey(SymbolProperty.DEFAULT_VALUE_KEY)) {
+            symbol.toBuilder().defaultValue(defaultValue).build()
+        } else symbol
+    }
 
     override fun bigIntegerShape(shape: BigIntegerShape?): Symbol = createBigSymbol(shape, "BigInteger")
 
@@ -172,7 +175,7 @@ class KotlinSymbolProvider(private val model: Model, private val settings: Kotli
         val targetShape =
             model.getShape(shape.target).orElseThrow { CodegenException("Shape not found: ${shape.target}") }
 
-        val targetSymbol = if (nullableIndex.isMemberNullable(shape, NullableIndex.CheckMode.CLIENT_ZERO_VALUE_V1_NO_INPUT)) {
+        val targetSymbol = if (nullableIndex.isMemberNullable(shape, NullableIndex.CheckMode.CLIENT)) {
             toSymbol(targetShape).toBuilder().boxed().build()
         } else {
             toSymbol(targetShape)
@@ -250,7 +253,24 @@ class KotlinSymbolProvider(private val model: Model, private val settings: Kotli
         if (boxed) {
             builder.boxed()
         }
+
+        shape?.getTrait<DefaultTrait>()?.let {
+            if (it.toNode().isNumberNode) {
+                builder.defaultValue(getDefaultValueForNumber(typeName, it.toNode().toString()))
+            } else {
+                builder.defaultValue(it.toNode().toString())
+            }
+        }
+
+
         return builder
+    }
+
+    private fun getDefaultValueForNumber(typeName: String, value: String) = when(typeName) {
+        "Long" -> "${value}L"
+        "Float" -> if (value.matches("[0-9]*\\.[0-9]+".toRegex())) "${value}f" else "${value}.0f"
+        "Double" -> if (value.matches("[0-9]*\\.[0-9]+".toRegex())) value else "${value}.0"
+        else -> value
     }
 
     /**
