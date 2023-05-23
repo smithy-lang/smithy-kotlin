@@ -124,10 +124,6 @@ class SymbolProviderTest {
         val modeledDefault = "2500"
         val expectedDefault = "2500L"
 
-        // There are two @defaults because:
-        // > Any structure member that targets a shape marked with @default
-        // > MUST also add a matching @default trait to the member.
-        // https://smithy.io/2.0/spec/type-refinement-traits.html#default-trait
         val model = """
         structure MyStruct {
            @default($modeledDefault)
@@ -150,10 +146,6 @@ class SymbolProviderTest {
         val modeledDefault = "2500"
         val overriddenDefault = "null"
 
-        // There are two @defaults because:
-        // > Any structure member that targets a shape marked with @default
-        // > MUST also add a matching @default trait to the member.
-        // https://smithy.io/2.0/spec/type-refinement-traits.html#default-trait
         val model = """
         structure MyStruct {
            @default($overriddenDefault)
@@ -254,63 +246,80 @@ class SymbolProviderTest {
         assertEquals("2", memberSymbol.defaultValue())
     }
 
-//    @ParameterizedTest(name = "{index} ==> ''can default document with value {0}''")
-//    @CsvSource(
-//        "null,null",
-//        "true,true",
-//        "false,false",
-//        "\"hello\",hello",
-//        "long,100,100L",
-//        "integer,5,5",
-//        "short,32767,32767",
-//        "float,3.14159,3.14159f",
-//        "double,2.71828,2.71828",
-//        "byte,10,10",
-//        "[],[]",
-//        "{},{}"
-//    )
-//    fun `can default document type`(modeledDefault: String, expectedDefault: String) {
-//        val model = """
-//        structure MyStruct {
-//           @default($modeledDefault)
-//           foo: MyDocument
-//        }
-//
-//        document MyDocument
-//        """.prependNamespaceAndService(version = "2").toSmithyModel()
-//
-//        val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model)
-//        val member = model.expectShape<MemberShape>("com.test#MyStruct\$foo")
-//        val memberSymbol = provider.toSymbol(member)
-//        assertEquals(expectedDefault, memberSymbol.defaultValue())
-//
-//    }
+    @ParameterizedTest(name = "{index} ==> ''can default document with {0} type''")
+    @CsvSource(
+        "null,null,null",
+        "boolean,true,true",
+        "boolean,false,false",
+        "string,\"hello\",hello",
+        "long,100,100",
+        "integer,5,5",
+        "short,32767,32767",
+        "float,3.14159,3.14159",
+        "double,2.71828,2.71828",
+        "byte,10,10",
+        "list,[],listOf()",
+        "map,{},mapOf()"
+    )
+    fun `can default document type`(typeName: String, modeledDefault: String, expectedDefault: String) {
+        val model = """
+        structure MyStruct {
+           @default($modeledDefault)
+           foo: MyDocument
+        }
 
-//    @Test
-//    fun `can default list type`() {
-//        // list: can only be set to an empty list
-//        // https://smithy.io/2.0/spec/type-refinement-traits.html#default-value-constraints
-//
-//        val model = """
-//        structure MyStruct {
-//           @default([])
-//           foo: MyIntegerList
-//        }
-//
-//        @default([])
-//        list MyIntegerList {
-//            member: MyString
-//        }
-//
-//        string MyString
-//        """.prependNamespaceAndService(version = "2").toSmithyModel()
-//
-//        val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model)
-//        val member = model.expectShape<MemberShape>("com.test#MyStruct\$foo")
-//        val memberSymbol = provider.toSymbol(member)
-//        assertEquals("kotlin", memberSymbol.namespace)
-//        assertEquals("[]", memberSymbol.defaultValue())
-//    }
+        document MyDocument
+        """.prependNamespaceAndService(version = "2").toSmithyModel()
+
+        val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model)
+        val member = model.expectShape<MemberShape>("com.test#MyStruct\$foo")
+        val memberSymbol = provider.toSymbol(member)
+        assertEquals(expectedDefault, memberSymbol.defaultValue())
+    }
+
+    @Test
+    fun `can default list type`() {
+        val model = """
+        structure MyStruct {
+           @default([])
+           foo: MyStringList
+        }
+
+        list MyStringList {
+            member: MyString
+        }
+
+        string MyString
+        """.prependNamespaceAndService(version = "2").toSmithyModel()
+
+        val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model)
+        val member = model.expectShape<MemberShape>("com.test#MyStruct\$foo")
+        val memberSymbol = provider.toSymbol(member)
+        assertEquals("listOf()", memberSymbol.defaultValue())
+    }
+
+    @Test
+    fun `can default map type`() {
+        val model = """
+        structure MyStruct {
+           @default({})
+           foo: MyStringToIntegerMap
+        }
+
+        map MyStringToIntegerMap {
+            key: MyString
+            value: MyInteger
+        }
+
+        string MyString
+        integer MyInteger
+        """.prependNamespaceAndService(version = "2").toSmithyModel()
+
+        val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model)
+        val member = model.expectShape<MemberShape>("com.test#MyStruct\$foo")
+        val memberSymbol = provider.toSymbol(member)
+        assertEquals("mapOf()", memberSymbol.defaultValue())
+    }
 
     @Test
     fun `can read box trait from member`() {

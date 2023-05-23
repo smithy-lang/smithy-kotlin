@@ -10,6 +10,8 @@ import software.amazon.smithy.kotlin.codegen.lang.kotlinReservedWords
 import software.amazon.smithy.kotlin.codegen.model.*
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.knowledge.NullableIndex
+import software.amazon.smithy.model.node.NullNode
+import software.amazon.smithy.model.node.NumberNode
 import software.amazon.smithy.model.shapes.*
 import software.amazon.smithy.model.traits.DefaultTrait
 import software.amazon.smithy.model.traits.SparseTrait
@@ -182,21 +184,13 @@ class KotlinSymbolProvider(private val model: Model, private val settings: Kotli
         }
 
         targetSymbol = shape.getTrait<DefaultTrait>()?.let {
-            if (it.toNode().toString() == "null" || it.toNode().toString() == "") {
-              targetSymbol.toBuilder().defaultValue("null").build()
-            } else if (it.toNode().isNumberNode) {
-                targetSymbol
-                    .toBuilder()
-                    .defaultValue(getDefaultValueForNumber(targetShape, it.toNode().toString()))
-                    .unboxed()
-                .build()
-            } else {
-                targetSymbol
-                    .toBuilder()
-                    .defaultValue(it.toNode().toString())
-                    .unboxed()
-                .build()
+            val builder = targetSymbol.toBuilder()
+            val defaultValue = getDefaultValueFromTrait(it, targetShape)
+            builder.defaultValue(defaultValue)
+            if (defaultValue != "null") {
+                builder.unboxed()
             }
+            builder.build()
         } ?: targetSymbol
 
         // figure out if we are referencing an event stream or not.
@@ -217,6 +211,18 @@ class KotlinSymbolProvider(private val model: Model, private val settings: Kotli
         } else {
             targetSymbol
         }
+    }
+
+    private fun getDefaultValueFromTrait(trait: DefaultTrait, targetShape: Shape): String {
+        return if (trait.toNode().toString() == "null" || trait.toNode().toString() == "") {
+            "null"
+        } else if (trait.toNode().isNumberNode) {
+            getDefaultValueForNumber(targetShape, trait.toNode().toString())
+        } else if (trait.toNode().isArrayNode) {
+            "listOf()"
+        } else if (trait.toNode().isObjectNode) {
+            "mapOf()"
+        } else trait.toNode().toString()
     }
 
     override fun timestampShape(shape: TimestampShape?): Symbol {
@@ -281,11 +287,10 @@ class KotlinSymbolProvider(private val model: Model, private val settings: Kotli
             }
         }
 
-
         return builder
     }
 
-    private fun getDefaultValueForNumber(shape: Shape, value: String) = when(shape) {
+    private fun getDefaultValueForNumber(shape: Shape, value: String) = when (shape) {
         is LongShape -> "${value}L"
         is FloatShape -> if (value.matches("[0-9]*\\.[0-9]+".toRegex())) "${value}f" else "${value}.0f"
         is DoubleShape -> if (value.matches("[0-9]*\\.[0-9]+".toRegex())) value else "${value}.0"
