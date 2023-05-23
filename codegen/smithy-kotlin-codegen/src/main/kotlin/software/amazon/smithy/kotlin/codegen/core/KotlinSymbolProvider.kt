@@ -102,7 +102,7 @@ class KotlinSymbolProvider(private val model: Model, private val settings: Kotli
 
     private fun createEnumSymbol(shape: Shape): Symbol {
         val namespace = "$rootNamespace.model"
-        return createSymbolBuilder(shape, shape.defaultName(service), namespace, boxed = true)
+        return createSymbolBuilder(shape, shape.defaultName(service), namespace, boxed = false)
             .definitionFile("${shape.defaultName(service)}.kt")
             .build()
     }
@@ -175,11 +175,20 @@ class KotlinSymbolProvider(private val model: Model, private val settings: Kotli
         val targetShape =
             model.getShape(shape.target).orElseThrow { CodegenException("Shape not found: ${shape.target}") }
 
-        val targetSymbol = if (nullableIndex.isMemberNullable(shape, NullableIndex.CheckMode.CLIENT)) {
+        var targetSymbol = if (nullableIndex.isMemberNullable(shape, NullableIndex.CheckMode.CLIENT)) {
             toSymbol(targetShape).toBuilder().boxed().build()
         } else {
             toSymbol(targetShape)
         }
+
+        targetSymbol = shape.getTrait<DefaultTrait>()?.let {
+            if (it.toNode().isNumberNode) {
+                targetSymbol.toBuilder().defaultValue(getDefaultValueForNumber(targetShape, it.toNode().toString())).build()
+            } else {
+                targetSymbol.toBuilder().defaultValue(it.toNode().toString()).build()
+            }
+        }
+
         // figure out if we are referencing an event stream or not.
         // NOTE: unlike blob streams we actually re-use the target (union) shape which is why we can't do this
         // when visiting a unionShape() like we can for blobShape()
@@ -256,7 +265,7 @@ class KotlinSymbolProvider(private val model: Model, private val settings: Kotli
 
         shape?.getTrait<DefaultTrait>()?.let {
             if (it.toNode().isNumberNode) {
-                builder.defaultValue(getDefaultValueForNumber(typeName, it.toNode().toString()))
+                builder.defaultValue(getDefaultValueForNumber(shape, it.toNode().toString()))
             } else {
                 builder.defaultValue(it.toNode().toString())
             }
@@ -266,10 +275,10 @@ class KotlinSymbolProvider(private val model: Model, private val settings: Kotli
         return builder
     }
 
-    private fun getDefaultValueForNumber(typeName: String, value: String) = when(typeName) {
-        "Long" -> "${value}L"
-        "Float" -> if (value.matches("[0-9]*\\.[0-9]+".toRegex())) "${value}f" else "${value}.0f"
-        "Double" -> if (value.matches("[0-9]*\\.[0-9]+".toRegex())) value else "${value}.0"
+    private fun getDefaultValueForNumber(shape: Shape, value: String) = when(shape) {
+        is LongShape -> "${value}L"
+        is FloatShape -> if (value.matches("[0-9]*\\.[0-9]+".toRegex())) "${value}f" else "${value}.0f"
+        is DoubleShape -> if (value.matches("[0-9]*\\.[0-9]+".toRegex())) value else "${value}.0"
         else -> value
     }
 
