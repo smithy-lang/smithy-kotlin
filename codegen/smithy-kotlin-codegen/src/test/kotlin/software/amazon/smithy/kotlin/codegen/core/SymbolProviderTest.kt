@@ -171,16 +171,22 @@ class SymbolProviderTest {
         assertEquals(overriddenDefault, memberSymbol.defaultValue())
     }
 
-    @ParameterizedTest(name = "{index} ==> ''can default {0} type''")
+    @ParameterizedTest(name = "{index} ==> ''can default simple {0} type''")
     @CsvSource(
         "long,100,100L",
         "integer,5,5",
         "short,32767,32767",
         "float,3.14159,3.14159f",
         "double,2.71828,2.71828",
-        "byte,10,10"
+        "byte,10,10",
+        "string,\"hello\",hello",
+        "blob,\"abcdefg\",abcdefg",
+        "boolean,true,true",
+        "bigInteger,5,5",
+        "bigDecimal,9.0123456789,9.0123456789",
+        "timestamp,1684869901,1684869901"
     )
-    fun `can default primitive number types`(typeName: String, modeledDefault: String, expectedDefault: String) {
+    fun `can default simple types`(typeName: String, modeledDefault: String, expectedDefault: String) {
         val model = """
         structure MyStruct {
            @default($modeledDefault)
@@ -194,7 +200,6 @@ class SymbolProviderTest {
         val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model)
         val member = model.expectShape<MemberShape>("com.test#MyStruct\$foo")
         val memberSymbol = provider.toSymbol(member)
-        assertEquals("kotlin", memberSymbol.namespace)
         assertEquals(expectedDefault, memberSymbol.defaultValue())
     }
 
@@ -281,7 +286,6 @@ class SymbolProviderTest {
 //
 //    }
 
-
 //    @Test
 //    fun `can default list type`() {
 //        // list: can only be set to an empty list
@@ -293,11 +297,12 @@ class SymbolProviderTest {
 //           foo: MyIntegerList
 //        }
 //
+//        @default([])
 //        list MyIntegerList {
-//            member: MyInteger
+//            member: MyString
 //        }
 //
-//        integer MyInteger
+//        string MyString
 //        """.prependNamespaceAndService(version = "2").toSmithyModel()
 //
 //        val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model)

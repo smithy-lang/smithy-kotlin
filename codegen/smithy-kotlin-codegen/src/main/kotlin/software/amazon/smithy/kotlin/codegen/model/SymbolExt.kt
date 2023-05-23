@@ -110,6 +110,11 @@ fun Symbol.defaultValue(defaultBoxed: String? = "null"): String? {
 fun Symbol.Builder.boxed(): Symbol.Builder = apply { putProperty(SymbolProperty.BOXED_KEY, true) }
 
 /**
+ * Mark a symbol as not being boxed
+ */
+fun Symbol.Builder.unboxed(): Symbol.Builder = apply { removeProperty(SymbolProperty.BOXED_KEY) }
+
+/**
  * Set the default value used when formatting the symbol
  */
 fun Symbol.Builder.defaultValue(value: String): Symbol.Builder = apply { putProperty(SymbolProperty.DEFAULT_VALUE_KEY, value) }

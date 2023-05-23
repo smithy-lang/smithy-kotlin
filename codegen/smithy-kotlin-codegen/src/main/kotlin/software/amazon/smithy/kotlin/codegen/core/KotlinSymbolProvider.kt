@@ -102,7 +102,7 @@ class KotlinSymbolProvider(private val model: Model, private val settings: Kotli
 
     private fun createEnumSymbol(shape: Shape): Symbol {
         val namespace = "$rootNamespace.model"
-        return createSymbolBuilder(shape, shape.defaultName(service), namespace, boxed = false)
+        return createSymbolBuilder(shape, shape.defaultName(service), namespace, boxed = true)
             .definitionFile("${shape.defaultName(service)}.kt")
             .build()
     }
@@ -182,12 +182,22 @@ class KotlinSymbolProvider(private val model: Model, private val settings: Kotli
         }
 
         targetSymbol = shape.getTrait<DefaultTrait>()?.let {
-            if (it.toNode().isNumberNode) {
-                targetSymbol.toBuilder().defaultValue(getDefaultValueForNumber(targetShape, it.toNode().toString())).build()
+            if (it.toNode().toString() == "null" || it.toNode().toString() == "") {
+              targetSymbol.toBuilder().defaultValue("null").build()
+            } else if (it.toNode().isNumberNode) {
+                targetSymbol
+                    .toBuilder()
+                    .defaultValue(getDefaultValueForNumber(targetShape, it.toNode().toString()))
+                    .unboxed()
+                .build()
             } else {
-                targetSymbol.toBuilder().defaultValue(it.toNode().toString()).build()
+                targetSymbol
+                    .toBuilder()
+                    .defaultValue(it.toNode().toString())
+                    .unboxed()
+                .build()
             }
-        }
+        } ?: targetSymbol
 
         // figure out if we are referencing an event stream or not.
         // NOTE: unlike blob streams we actually re-use the target (union) shape which is why we can't do this
