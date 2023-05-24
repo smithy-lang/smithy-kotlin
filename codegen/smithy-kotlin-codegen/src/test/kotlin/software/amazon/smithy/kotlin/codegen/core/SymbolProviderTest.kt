@@ -171,8 +171,8 @@ class SymbolProviderTest {
         "float,3.14159,3.14159f",
         "double,2.71828,2.71828",
         "byte,10,10",
-        "string,\"hello\",hello",
-        "blob,\"abcdefg\",abcdefg",
+        "string,\"hello\",\"hello\"",
+        "blob,\"abcdefg\",\"abcdefg\"",
         "boolean,true,true",
         "bigInteger,5,5",
         "bigDecimal,9.0123456789,9.0123456789",
@@ -237,7 +237,7 @@ class SymbolProviderTest {
         val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model)
         val member = model.expectShape<MemberShape>("com.test#MyStruct\$foo")
         val memberSymbol = provider.toSymbol(member)
-        assertEquals("club", memberSymbol.defaultValue())
+        assertEquals("\"club\"", memberSymbol.defaultValue())
     }
 
     @Test
@@ -267,7 +267,7 @@ class SymbolProviderTest {
         "null,null,null",
         "boolean,true,true",
         "boolean,false,false",
-        "string,\"hello\",hello",
+        "string,\"hello\",\"hello\"",
         "long,100,100",
         "integer,5,5",
         "short,32767,32767",

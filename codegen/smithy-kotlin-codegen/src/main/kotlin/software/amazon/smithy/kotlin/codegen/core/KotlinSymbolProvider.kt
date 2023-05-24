@@ -222,9 +222,8 @@ class KotlinSymbolProvider(private val model: Model, private val settings: Kotli
             "listOf()"
         } else if (toNode().isObjectNode) {
             "mapOf()"
-        } else if (toNode().isStringNode && toNode().toString() == "")
-        {
-            "\"\""
+        } else if (toNode().isStringNode) {
+            "\"${toNode()}\""
         } else {
             toNode().toString()
         }
