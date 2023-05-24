@@ -176,7 +176,7 @@ class SymbolProviderTest {
         "boolean,true,true",
         "bigInteger,5,5",
         "bigDecimal,9.0123456789,9.0123456789",
-        "timestamp,1684869901,1684869901"
+        "timestamp,1684869901,1684869901",
     )
     fun `can default simple types`(typeName: String, modeledDefault: String, expectedDefault: String) {
         val model = """
@@ -259,7 +259,7 @@ class SymbolProviderTest {
         "double,2.71828,2.71828",
         "byte,10,10",
         "list,[],listOf()",
-        "map,{},mapOf()"
+        "map,{},mapOf()",
     )
     fun `can default document type`(typeName: String, modeledDefault: String, expectedDefault: String) {
         val model = """

@@ -10,8 +10,6 @@ import software.amazon.smithy.kotlin.codegen.lang.kotlinReservedWords
 import software.amazon.smithy.kotlin.codegen.model.*
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.knowledge.NullableIndex
-import software.amazon.smithy.model.node.NullNode
-import software.amazon.smithy.model.node.NumberNode
 import software.amazon.smithy.model.shapes.*
 import software.amazon.smithy.model.traits.DefaultTrait
 import software.amazon.smithy.model.traits.SparseTrait
@@ -86,7 +84,9 @@ class KotlinSymbolProvider(private val model: Model, private val settings: Kotli
         val symbol = createSymbolBuilder(shape, typeName, namespace = "kotlin").build()
         return if (!symbol.properties.containsKey(SymbolProperty.DEFAULT_VALUE_KEY)) {
             symbol.toBuilder().defaultValue(defaultValue).build()
-        } else symbol
+        } else {
+            symbol
+        }
     }
 
     override fun bigIntegerShape(shape: BigIntegerShape?): Symbol = createBigSymbol(shape, "BigInteger")
@@ -213,8 +213,8 @@ class KotlinSymbolProvider(private val model: Model, private val settings: Kotli
         }
     }
 
-    private fun getDefaultValueFromTrait(trait: DefaultTrait, targetShape: Shape): String {
-        return if (trait.toNode().toString() == "null" || trait.toNode().toString() == "") {
+    private fun getDefaultValueFromTrait(trait: DefaultTrait, targetShape: Shape): String =
+        if (trait.toNode().toString() == "null" || trait.toNode().toString() == "") {
             "null"
         } else if (trait.toNode().isNumberNode) {
             getDefaultValueForNumber(targetShape, trait.toNode().toString())
@@ -222,8 +222,9 @@ class KotlinSymbolProvider(private val model: Model, private val settings: Kotli
             "listOf()"
         } else if (trait.toNode().isObjectNode) {
             "mapOf()"
-        } else trait.toNode().toString()
-    }
+        } else {
+            trait.toNode().toString()
+        }
 
     override fun timestampShape(shape: TimestampShape?): Symbol {
         val dependency = KotlinDependency.CORE
@@ -292,8 +293,8 @@ class KotlinSymbolProvider(private val model: Model, private val settings: Kotli
 
     private fun getDefaultValueForNumber(shape: Shape, value: String) = when (shape) {
         is LongShape -> "${value}L"
-        is FloatShape -> if (value.matches("[0-9]*\\.[0-9]+".toRegex())) "${value}f" else "${value}.0f"
-        is DoubleShape -> if (value.matches("[0-9]*\\.[0-9]+".toRegex())) value else "${value}.0"
+        is FloatShape -> if (value.matches("[0-9]*\\.[0-9]+".toRegex())) "${value}f" else "$value.0f"
+        is DoubleShape -> if (value.matches("[0-9]*\\.[0-9]+".toRegex())) value else "$value.0"
         else -> value
     }
 
