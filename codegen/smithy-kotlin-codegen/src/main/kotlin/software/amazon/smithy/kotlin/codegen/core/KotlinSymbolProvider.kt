@@ -279,15 +279,6 @@ class KotlinSymbolProvider(private val model: Model, private val settings: Kotli
         if (boxed) {
             builder.boxed()
         }
-
-        shape?.getTrait<DefaultTrait>()?.let {
-            if (it.toNode().isNumberNode) {
-                builder.defaultValue(getDefaultValueForNumber(shape, it.toNode().toString()))
-            } else {
-                builder.defaultValue(it.toNode().toString())
-            }
-        }
-
         return builder
     }
 
