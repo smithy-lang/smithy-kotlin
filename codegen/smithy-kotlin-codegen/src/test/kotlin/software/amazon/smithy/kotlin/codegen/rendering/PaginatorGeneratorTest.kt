@@ -17,121 +17,63 @@ import software.amazon.smithy.model.Model
 import kotlin.test.Test
 
 class PaginatorGeneratorTest {
-    private val testModelWithItems = """
-        namespace com.test
-        
-        use aws.protocols#restJson1
-        
-        service Lambda {
-            operations: [ListFunctions]
-        }
-        
-        @paginated(
-            inputToken: "Marker",
-            outputToken: "NextMarker",
-            pageSize: "MaxItems",
-            items: "Functions"
-        )
-        
-        @readonly
-        @http(method: "GET", uri: "/functions", code: 200)
-        operation ListFunctions {
-            input: ListFunctionsRequest,
-            output: ListFunctionsResponse
-        }
-        
-        structure ListFunctionsRequest {
-            @httpQuery("FunctionVersion")
-            FunctionVersion: String,
-            @httpQuery("Marker")
-            Marker: String,
-            @httpQuery("MasterRegion")
-            MasterRegion: String,
-            @httpQuery("MaxItems")
-            MaxItems: Integer
-        }
-        
-        structure ListFunctionsResponse {
-            Functions: FunctionConfigurationList,
-            NextMarker: String
-        }
-        
-        list FunctionConfigurationList {
-            member: FunctionConfiguration
-        }
-        
-        structure FunctionConfiguration {
-            FunctionName: String
-        }
-        """.toSmithyModel()
-    private val testContextWithItems = testModelWithItems.newTestContext("Lambda", "com.test")
-
-    private val codegenContextWithItems = object : CodegenContext {
-        override val model: Model = testContextWithItems.generationCtx.model
-        override val symbolProvider: SymbolProvider = testContextWithItems.generationCtx.symbolProvider
-        override val settings: KotlinSettings = testContextWithItems.generationCtx.settings
-        override val protocolGenerator: ProtocolGenerator? = testContextWithItems.generator
-        override val integrations: List<KotlinIntegration> = testContextWithItems.generationCtx.integrations
-    }
-
-    private val testModelNoItem = """
-        namespace com.test
-        
-        use aws.protocols#restJson1
-        
-        service Lambda {
-            operations: [ListFunctions]
-        }
-        
-        @paginated(
-            inputToken: "Marker",
-            outputToken: "NextMarker",
-            pageSize: "MaxItems"
-        )
-        
-        @readonly
-        @http(method: "GET", uri: "/functions", code: 200)
-        operation ListFunctions {
-            input: ListFunctionsRequest,
-            output: ListFunctionsResponse
-        }
-        
-        structure ListFunctionsRequest {
-            @httpQuery("FunctionVersion")
-            FunctionVersion: String,
-            @httpQuery("Marker")
-            Marker: String,
-            @httpQuery("MasterRegion")
-            MasterRegion: String,
-            @httpQuery("MaxItems")
-            MaxItems: Integer
-        }
-        
-        structure ListFunctionsResponse {
-            Functions: FunctionConfigurationList,
-            NextMarker: String
-        }
-        
-        list FunctionConfigurationList {
-            member: FunctionConfiguration
-        }
-        
-        structure FunctionConfiguration {
-            FunctionName: String
-        }
-        """.toSmithyModel()
-    private val testContextNoItem = testModelNoItem.newTestContext("Lambda", "com.test")
-
-    private val codegenContextNoItem = object : CodegenContext {
-        override val model: Model = testContextNoItem.generationCtx.model
-        override val symbolProvider: SymbolProvider = testContextNoItem.generationCtx.symbolProvider
-        override val settings: KotlinSettings = testContextNoItem.generationCtx.settings
-        override val protocolGenerator: ProtocolGenerator? = testContextNoItem.generator
-        override val integrations: List<KotlinIntegration> = testContextNoItem.generationCtx.integrations
-    }
-
     @Test
     fun testRenderPaginatorNoItem() {
+        val testModelNoItem = """
+            namespace com.test
+            
+            use aws.protocols#restJson1
+            
+            service Lambda {
+                operations: [ListFunctions]
+            }
+            
+            @paginated(
+                inputToken: "Marker",
+                outputToken: "NextMarker",
+                pageSize: "MaxItems"
+            )
+            @readonly
+            @http(method: "GET", uri: "/functions", code: 200)
+            operation ListFunctions {
+                input: ListFunctionsRequest,
+                output: ListFunctionsResponse
+            }
+            
+            structure ListFunctionsRequest {
+                @httpQuery("FunctionVersion")
+                FunctionVersion: String,
+                @httpQuery("Marker")
+                Marker: String,
+                @httpQuery("MasterRegion")
+                MasterRegion: String,
+                @httpQuery("MaxItems")
+                MaxItems: Integer
+            }
+            
+            structure ListFunctionsResponse {
+                Functions: FunctionConfigurationList,
+                NextMarker: String
+            }
+            
+            list FunctionConfigurationList {
+                member: FunctionConfiguration
+            }
+            
+            structure FunctionConfiguration {
+                FunctionName: String
+            }
+        """.toSmithyModel()
+        val testContextNoItem = testModelNoItem.newTestContext("Lambda", "com.test")
+
+        val codegenContextNoItem = object : CodegenContext {
+            override val model: Model = testContextNoItem.generationCtx.model
+            override val symbolProvider: SymbolProvider = testContextNoItem.generationCtx.symbolProvider
+            override val settings: KotlinSettings = testContextNoItem.generationCtx.settings
+            override val protocolGenerator: ProtocolGenerator = testContextNoItem.generator
+            override val integrations: List<KotlinIntegration> = testContextNoItem.generationCtx.integrations
+        }
+
         val unit = PaginatorGenerator()
         unit.writeAdditionalFiles(codegenContextNoItem, testContextNoItem.generationCtx.delegator)
 
@@ -154,15 +96,15 @@ class PaginatorGeneratorTest {
             public fun TestClient.listFunctionsPaginated(initialRequest: ListFunctionsRequest): Flow<ListFunctionsResponse> =
                 flow {
                     var cursor: kotlin.String? = null
-                    var isFirstPage: Boolean = true
+                    var hasNextPage: Boolean = true
             
-                    while (isFirstPage || (cursor?.isNotEmpty() == true)) {
+                    while (hasNextPage) {
                         val req = initialRequest.copy {
                             this.marker = cursor
                         }
                         val result = this@listFunctionsPaginated.listFunctions(req)
-                        isFirstPage = false
                         cursor = result.nextMarker
+                        hasNextPage = cursor?.isNotEmpty() == true
                         emit(result)
                     }
                 }
@@ -187,6 +129,62 @@ class PaginatorGeneratorTest {
 
     @Test
     fun testRenderPaginatorWithItem() {
+        val testModelWithItems = """
+            namespace com.test
+            
+            use aws.protocols#restJson1
+            
+            service Lambda {
+                operations: [ListFunctions]
+            }
+            
+            @paginated(
+                inputToken: "Marker",
+                outputToken: "NextMarker",
+                pageSize: "MaxItems",
+                items: "Functions"
+            )
+            @readonly
+            @http(method: "GET", uri: "/functions", code: 200)
+            operation ListFunctions {
+                input: ListFunctionsRequest,
+                output: ListFunctionsResponse
+            }
+            
+            structure ListFunctionsRequest {
+                @httpQuery("FunctionVersion")
+                FunctionVersion: String,
+                @httpQuery("Marker")
+                Marker: String,
+                @httpQuery("MasterRegion")
+                MasterRegion: String,
+                @httpQuery("MaxItems")
+                MaxItems: Integer
+            }
+            
+            structure ListFunctionsResponse {
+                Functions: FunctionConfigurationList,
+                NextMarker: String
+            }
+            
+            list FunctionConfigurationList {
+                member: FunctionConfiguration
+            }
+            
+            structure FunctionConfiguration {
+                FunctionName: String
+            }
+        """.toSmithyModel()
+        val testContextWithItems = testModelWithItems.newTestContext("Lambda", "com.test")
+
+        val codegenContextWithItems = object : CodegenContext {
+            override val model: Model = testContextWithItems.generationCtx.model
+            override val symbolProvider: SymbolProvider = testContextWithItems.generationCtx.symbolProvider
+            override val settings: KotlinSettings = testContextWithItems.generationCtx.settings
+            override val protocolGenerator: ProtocolGenerator = testContextWithItems.generator
+            override val integrations: List<KotlinIntegration> = testContextWithItems.generationCtx.integrations
+        }
+
         val unit = PaginatorGenerator()
         unit.writeAdditionalFiles(codegenContextWithItems, testContextWithItems.generationCtx.delegator)
 
@@ -209,15 +207,15 @@ class PaginatorGeneratorTest {
             public fun TestClient.listFunctionsPaginated(initialRequest: ListFunctionsRequest): Flow<ListFunctionsResponse> =
                 flow {
                     var cursor: kotlin.String? = null
-                    var isFirstPage: Boolean = true
+                    var hasNextPage: Boolean = true
             
-                    while (isFirstPage || (cursor?.isNotEmpty() == true)) {
+                    while (hasNextPage) {
                         val req = initialRequest.copy {
                             this.marker = cursor
                         }
                         val result = this@listFunctionsPaginated.listFunctions(req)
-                        isFirstPage = false
                         cursor = result.nextMarker
+                        hasNextPage = cursor?.isNotEmpty() == true
                         emit(result)
                     }
                 }
@@ -263,5 +261,95 @@ class PaginatorGeneratorTest {
         """.trimIndent()
 
         actual.shouldContainOnlyOnceWithDiff(expectedImports)
+    }
+
+    @Test
+    fun testRenderPaginatorWithTruncationMember() {
+        val testModel = """
+            namespace smithy.kotlin.traits
+            
+            use aws.protocols#restJson1
+            
+            @trait(selector: "*")
+            structure paginationTruncationMember { }
+            
+            service Lambda {
+                operations: [ListFunctions]
+            }
+            
+            @paginated(
+                inputToken: "Marker",
+                outputToken: "NextMarker",
+                pageSize: "MaxItems"
+            )
+            @readonly
+            @http(method: "GET", uri: "/functions", code: 200)
+            operation ListFunctions {
+                input: ListFunctionsRequest,
+                output: ListFunctionsResponse
+            }
+            
+            structure ListFunctionsRequest {
+                @httpQuery("FunctionVersion")
+                FunctionVersion: String,
+                @httpQuery("Marker")
+                Marker: String,
+                @httpQuery("MasterRegion")
+                MasterRegion: String,
+                @httpQuery("MaxItems")
+                MaxItems: Integer,
+            }
+            
+            structure ListFunctionsResponse {
+                Functions: FunctionConfigurationList,
+                @paginationTruncationMember
+                IsTruncated: Boolean,
+                NextMarker: String
+            }
+            
+            list FunctionConfigurationList {
+                member: FunctionConfiguration
+            }
+            
+            structure FunctionConfiguration {
+                FunctionName: String
+            }
+        """.toSmithyModel()
+        val testContext = testModel.newTestContext("Lambda", "smithy.kotlin.traits")
+
+        val codegenContext = object : CodegenContext {
+            override val model = testContext.generationCtx.model
+            override val symbolProvider = testContext.generationCtx.symbolProvider
+            override val settings = testContext.generationCtx.settings
+            override val protocolGenerator = testContext.generator
+            override val integrations = testContext.generationCtx.integrations
+        }
+
+        val unit = PaginatorGenerator()
+        unit.writeAdditionalFiles(codegenContext, testContext.generationCtx.delegator)
+
+        testContext.generationCtx.delegator.flushWriters()
+        val testManifest = testContext.generationCtx.delegator.fileManifest as MockManifest
+        val actual = testManifest.expectFileString("src/main/kotlin/smithy/kotlin/traits/paginators/Paginators.kt")
+
+        val expectedCode = """
+            public fun TestClient.listFunctionsPaginated(initialRequest: ListFunctionsRequest): Flow<ListFunctionsResponse> =
+                flow {
+                    var cursor: kotlin.String? = null
+                    var hasNextPage: Boolean = true
+            
+                    while (hasNextPage) {
+                        val req = initialRequest.copy {
+                            this.marker = cursor
+                        }
+                        val result = this@listFunctionsPaginated.listFunctions(req)
+                        cursor = result.nextMarker
+                        hasNextPage = result.isTruncated == true
+                        emit(result)
+                    }
+                }
+        """.trimIndent()
+
+        actual.shouldContainOnlyOnceWithDiff(expectedCode)
     }
 }

@@ -19,6 +19,7 @@ import software.amazon.smithy.kotlin.codegen.lang.KotlinTypes
 import software.amazon.smithy.kotlin.codegen.model.SymbolProperty
 import software.amazon.smithy.kotlin.codegen.model.expectShape
 import software.amazon.smithy.kotlin.codegen.model.hasTrait
+import software.amazon.smithy.kotlin.codegen.model.traits.PaginationTruncationMember
 import software.amazon.smithy.kotlin.codegen.utils.getOrNull
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.knowledge.PaginatedIndex
@@ -28,6 +29,7 @@ import software.amazon.smithy.model.shapes.MapShape
 import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.shapes.ServiceShape
 import software.amazon.smithy.model.shapes.Shape
+import software.amazon.smithy.model.shapes.StructureShape
 import software.amazon.smithy.model.traits.PaginatedTrait
 
 /**
@@ -77,6 +79,7 @@ class PaginatorGenerator : KotlinIntegration {
             serviceSymbol,
             paginatedOperation,
             inputSymbol,
+            paginationInfo.output,
             outputSymbol,
             paginationInfo,
             cursorSymbol,
@@ -100,6 +103,7 @@ class PaginatorGenerator : KotlinIntegration {
         serviceSymbol: Symbol,
         operationShape: OperationShape,
         inputSymbol: Symbol,
+        outputShape: StructureShape,
         outputSymbol: Symbol,
         paginationInfo: PaginationInfo,
         cursorSymbol: Symbol,
@@ -141,9 +145,9 @@ class PaginatorGenerator : KotlinIntegration {
             ) {
                 withBlock("#T {", "}", ExternalTypes.KotlinxCoroutines.FlowGenerator) {
                     write("var cursor: #F = null", cursorSymbol)
-                    write("var isFirstPage: Boolean = true")
+                    write("var hasNextPage: Boolean = true")
                     write("")
-                    withBlock("while (isFirstPage || (cursor?.isNotEmpty() == true)) {", "}") {
+                    withBlock("while (hasNextPage) {", "}") {
                         withBlock("val req = initialRequest.copy {", "}") {
                             write("this.$markerLiteral = cursor")
                         }
@@ -151,8 +155,17 @@ class PaginatorGenerator : KotlinIntegration {
                             "val result = this@#1LPaginated.#1L(req)",
                             operationShape.defaultName(),
                         )
-                        write("isFirstPage = false")
                         write("cursor = result.$nextMarkerLiteral")
+
+                        val truncationMember = outputShape.members().singleOrNull {
+                            it.hasTrait(PaginationTruncationMember.ID)
+                        }
+                        val hasNextPageCondition = when (truncationMember) {
+                            null -> "cursor?.isNotEmpty() == true"
+                            else -> "result.${truncationMember.defaultName()} == true"
+                        }
+
+                        write("hasNextPage = #L", hasNextPageCondition)
                         write("emit(result)")
                     }
                 }
