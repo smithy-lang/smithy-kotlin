@@ -185,7 +185,7 @@ class KotlinSymbolProvider(private val model: Model, private val settings: Kotli
 
         targetSymbol = shape.getTrait<DefaultTrait>()?.let {
             val builder = targetSymbol.toBuilder()
-            val defaultValue = getDefaultValueFromTrait(it, targetShape)
+            val defaultValue = it.getDefaultValue(targetShape)
             builder.defaultValue(defaultValue)
             if (defaultValue != "null") {
                 builder.unboxed()
@@ -213,17 +213,17 @@ class KotlinSymbolProvider(private val model: Model, private val settings: Kotli
         }
     }
 
-    private fun getDefaultValueFromTrait(trait: DefaultTrait, targetShape: Shape): String =
-        if (trait.toNode().toString() == "null") {
+    private fun DefaultTrait.getDefaultValue(targetShape: Shape): String =
+        if (toNode().toString() == "null" || toNode().toString() == "") {
             "null"
-        } else if (trait.toNode().isNumberNode) {
-            getDefaultValueForNumber(targetShape, trait.toNode().toString())
-        } else if (trait.toNode().isArrayNode) {
+        } else if (toNode().isNumberNode) {
+            getDefaultValueForNumber(targetShape, toNode().toString())
+        } else if (toNode().isArrayNode) {
             "listOf()"
-        } else if (trait.toNode().isObjectNode) {
+        } else if (toNode().isObjectNode) {
             "mapOf()"
         } else {
-            trait.toNode().toString()
+            toNode().toString()
         }
 
     override fun timestampShape(shape: TimestampShape?): Symbol {
