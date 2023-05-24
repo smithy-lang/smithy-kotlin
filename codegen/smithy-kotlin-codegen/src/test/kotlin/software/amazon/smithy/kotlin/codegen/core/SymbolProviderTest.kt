@@ -261,6 +261,7 @@ class SymbolProviderTest {
         "list,[],listOf()",
         "map,{},mapOf()",
     )
+    @Suppress("UNUSED_PARAMETER") // using the first parameter in the test name, but compiler doesn't acknowledge that
     fun `can default document type`(typeName: String, modeledDefault: String, expectedDefault: String) {
         val model = """
         structure MyStruct {
