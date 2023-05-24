@@ -214,7 +214,7 @@ class KotlinSymbolProvider(private val model: Model, private val settings: Kotli
     }
 
     private fun getDefaultValueFromTrait(trait: DefaultTrait, targetShape: Shape): String =
-        if (trait.toNode().toString() == "null" || trait.toNode().toString() == "") {
+        if (trait.toNode().toString() == "null") {
             "null"
         } else if (trait.toNode().isNumberNode) {
             getDefaultValueForNumber(targetShape, trait.toNode().toString())

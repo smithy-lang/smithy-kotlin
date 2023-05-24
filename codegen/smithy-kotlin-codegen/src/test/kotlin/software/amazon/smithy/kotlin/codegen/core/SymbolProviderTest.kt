@@ -379,6 +379,7 @@ class SymbolProviderTest {
     fun `creates streaming blobs`() {
         val model = """
             structure MyStruct {
+                @required
                 quux: BodyStream,
             }
 
