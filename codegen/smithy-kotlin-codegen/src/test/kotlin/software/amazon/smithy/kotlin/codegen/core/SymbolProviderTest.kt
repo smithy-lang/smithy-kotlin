@@ -196,6 +196,22 @@ class SymbolProviderTest {
     }
 
     @Test
+    fun `can default empty string`() {
+        val model = """
+        structure MyStruct {
+           @default("")
+           foo: myString
+        }
+        string myString
+        """.prependNamespaceAndService(version = "2").toSmithyModel()
+
+        val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model)
+        val member = model.expectShape<MemberShape>("com.test#MyStruct\$foo")
+        val memberSymbol = provider.toSymbol(member)
+        assertEquals("\"\"", memberSymbol.defaultValue())
+    }
+
+    @Test
     fun `can default enum type`() {
         val model = """
         structure MyStruct {
