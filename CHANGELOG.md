@@ -3,7 +3,7 @@
 ## [0.20.0] - 05/18/2023
 
 ### Features
-* **Breaking**: Make HTTP engines configurable in client config during initialization and during `withCopy`. See [this discussion post](https://github.com/awslabs/aws-sdk-kotlin/discussions/new?category=announcements) for more information.
+* **Breaking**: Make HTTP engines configurable in client config during initialization and during `withCopy`. See [this discussion post](https://github.com/awslabs/aws-sdk-kotlin/discussions/919) for more information.
 
 ## [0.19.0] - 05/12/2023
 
