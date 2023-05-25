@@ -157,15 +157,14 @@ class PaginatorGenerator : KotlinIntegration {
                         )
                         write("cursor = result.$nextMarkerLiteral")
 
-                        val truncationMember = outputShape.members().singleOrNull {
-                            it.hasTrait(PaginationTruncationMember.ID)
-                        }
-                        val hasNextPageCondition = when (truncationMember) {
-                            null -> "cursor?.isNotEmpty() == true"
-                            else -> "result.${truncationMember.defaultName()} == true"
-                        }
+                        val hasNextPageFlag = outputShape
+                            .members()
+                            .singleOrNull { it.hasTrait(PaginationTruncationMember.ID) }
+                            ?.defaultName()
+                            ?.let { "result.$it" }
+                            ?: "cursor?.isNotEmpty()"
 
-                        write("hasNextPage = #L", hasNextPageCondition)
+                        write("hasNextPage = #L == true", hasNextPageFlag)
                         write("emit(result)")
                     }
                 }
