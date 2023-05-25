@@ -112,11 +112,7 @@ fun Symbol.Builder.nullable(): Symbol.Builder = apply { putProperty(SymbolProper
 /**
  * Set the default value used when formatting the symbol
  */
-fun Symbol.Builder.defaultValue(value: String?): Symbol.Builder = apply {
-    value?.let {
-        putProperty(SymbolProperty.DEFAULT_VALUE_KEY, it)
-    } ?: removeProperty(SymbolProperty.DEFAULT_VALUE_KEY)
-}
+fun Symbol.Builder.defaultValue(value: String?): Symbol.Builder = apply { putProperty(SymbolProperty.DEFAULT_VALUE_KEY, value) }
 
 /**
  * Convenience function for specifying kotlin namespace
