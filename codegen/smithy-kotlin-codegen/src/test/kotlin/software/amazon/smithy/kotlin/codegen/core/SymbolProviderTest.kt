@@ -148,6 +148,7 @@ class SymbolProviderTest {
         val model = """
         structure MyStruct {
            @default(null)
+           @required
            foo: RootLevelShape
         }
         
@@ -159,7 +160,7 @@ class SymbolProviderTest {
         val member = model.expectShape<MemberShape>("com.test#MyStruct\$foo")
         val memberSymbol = provider.toSymbol(member)
         assertEquals("kotlin", memberSymbol.namespace)
-        assertEquals("null", memberSymbol.defaultValue())
+        assertEquals(null, memberSymbol.defaultValue())
     }
 
     @ParameterizedTest(name = "{index} ==> ''can default simple {0} type''")
@@ -334,42 +335,6 @@ class SymbolProviderTest {
         val member = model.expectShape<MemberShape>("com.test#MyStruct\$foo")
         val memberSymbol = provider.toSymbol(member)
         assertEquals("mapOf()", memberSymbol.defaultValue())
-    }
-
-    @Test
-    fun `can read box trait from member`() {
-        val model = """
-        structure MyStruct {
-           @box
-           foo: MyFoo
-        }
-        long MyFoo
-        """.prependNamespaceAndService().toSmithyModel()
-
-        val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model)
-        val member = model.expectShape<MemberShape>("com.test#MyStruct\$foo")
-        val memberSymbol = provider.toSymbol(member)
-        assertEquals("kotlin", memberSymbol.namespace)
-        assertEquals("null", memberSymbol.defaultValue())
-        assertTrue(memberSymbol.isNullable)
-    }
-
-    @Test
-    fun `can read box trait from target`() {
-        val model = """
-        structure MyStruct {
-           foo: MyFoo
-        }
-        @box
-        long MyFoo
-        """.prependNamespaceAndService().toSmithyModel()
-
-        val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model)
-        val member = model.expectShape<MemberShape>("com.test#MyStruct\$foo")
-        val memberSymbol = provider.toSymbol(member)
-        assertEquals("kotlin", memberSymbol.namespace)
-        assertEquals("null", memberSymbol.defaultValue())
-        assertTrue(memberSymbol.isNullable)
     }
 
     @Test

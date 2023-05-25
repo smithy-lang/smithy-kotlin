@@ -19,7 +19,7 @@ object SymbolProperty {
     const val DEFAULT_VALUE_KEY: String = "defaultValue"
 
     // Boolean property indicating this symbol should be boxed
-    const val NULLABLE_KEY: String = "boxed"
+    const val NULLABLE_KEY: String = "nullable"
 
     // the original shape the symbol was created from
     const val SHAPE_KEY: String = "shape"
@@ -92,16 +92,16 @@ val Symbol.propertyTypeMutability: PropertyTypeMutability?
 
 /**
  * Gets the default value for the symbol if present, else null
- * @param defaultBoxed the string to pass back for boxed values
+ * @param defaultNullable the string to pass back for nullable values
  */
-fun Symbol.defaultValue(defaultBoxed: String? = "null"): String? {
-    // boxed types should always be defaulted to null
-    if (isNullable) {
-        return defaultBoxed
-    }
-
+fun Symbol.defaultValue(defaultNullable: String? = "null"): String? {
     val default = getProperty(SymbolProperty.DEFAULT_VALUE_KEY, String::class.java)
-    return if (default.isPresent) default.get() else null
+
+    // nullable types should default to null if there is no default defined
+    if (!default.isPresent && isNullable) {
+        return defaultNullable
+    }
+    return default.getOrNull()
 }
 
 /**
@@ -110,14 +110,13 @@ fun Symbol.defaultValue(defaultBoxed: String? = "null"): String? {
 fun Symbol.Builder.nullable(): Symbol.Builder = apply { putProperty(SymbolProperty.NULLABLE_KEY, true) }
 
 /**
- * Mark a symbol as not being boxed
- */
-fun Symbol.Builder.nonNullable(): Symbol.Builder = apply { removeProperty(SymbolProperty.NULLABLE_KEY) }
-
-/**
  * Set the default value used when formatting the symbol
  */
-fun Symbol.Builder.defaultValue(value: String): Symbol.Builder = apply { putProperty(SymbolProperty.DEFAULT_VALUE_KEY, value) }
+fun Symbol.Builder.defaultValue(value: String?): Symbol.Builder = apply {
+    value?.let {
+        putProperty(SymbolProperty.DEFAULT_VALUE_KEY, it)
+    } ?: removeProperty(SymbolProperty.DEFAULT_VALUE_KEY)
+}
 
 /**
  * Convenience function for specifying kotlin namespace

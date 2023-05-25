@@ -74,20 +74,14 @@ class KotlinSymbolProvider(private val model: Model, private val settings: Kotli
 
     override fun shortShape(shape: ShortShape): Symbol = numberShape(shape, "Short")
 
-    override fun longShape(shape: LongShape): Symbol = numberShape(shape, "Long", "0L")
+    override fun longShape(shape: LongShape): Symbol = numberShape(shape, "Long")
 
-    override fun floatShape(shape: FloatShape): Symbol = numberShape(shape, "Float", "0.0f")
+    override fun floatShape(shape: FloatShape): Symbol = numberShape(shape, "Float")
 
-    override fun doubleShape(shape: DoubleShape): Symbol = numberShape(shape, "Double", "0.0")
+    override fun doubleShape(shape: DoubleShape): Symbol = numberShape(shape, "Double")
 
-    private fun numberShape(shape: Shape, typeName: String, defaultValue: String = "0"): Symbol {
-        val symbol = createSymbolBuilder(shape, typeName, namespace = "kotlin").build()
-        return if (!symbol.properties.containsKey(SymbolProperty.DEFAULT_VALUE_KEY)) {
-            symbol.toBuilder().defaultValue(defaultValue).build()
-        } else {
-            symbol
-        }
-    }
+    private fun numberShape(shape: Shape, typeName: String): Symbol =
+        createSymbolBuilder(shape, typeName, namespace = "kotlin").build()
 
     override fun bigIntegerShape(shape: BigIntegerShape?): Symbol = createBigSymbol(shape, "BigInteger")
 
@@ -110,7 +104,7 @@ class KotlinSymbolProvider(private val model: Model, private val settings: Kotli
     }
 
     override fun booleanShape(shape: BooleanShape?): Symbol =
-        createSymbolBuilder(shape, "Boolean", namespace = "kotlin").defaultValue("false").build()
+        createSymbolBuilder(shape, "Boolean", namespace = "kotlin").build()
 
     override fun structureShape(shape: StructureShape): Symbol {
         val name = shape.defaultName(service)
@@ -177,21 +171,16 @@ class KotlinSymbolProvider(private val model: Model, private val settings: Kotli
         val targetShape =
             model.getShape(shape.target).orElseThrow { CodegenException("Shape not found: ${shape.target}") }
 
-        var targetSymbol = if (nullableIndex.isMemberNullable(shape, NullableIndex.CheckMode.CLIENT)) {
-            toSymbol(targetShape).toBuilder().nullable().build()
-        } else {
-            toSymbol(targetShape)
-        }
+        val targetSymbol = toSymbol(targetShape)
+            .toBuilder()
+            .apply {
+                if (nullableIndex.isMemberNullable(shape, NullableIndex.CheckMode.CLIENT)) nullable()
 
-        targetSymbol = shape.getTrait<DefaultTrait>()?.let {
-            val builder = targetSymbol.toBuilder()
-            val defaultValue = it.getDefaultValue(targetShape)
-            builder.defaultValue(defaultValue)
-            if (defaultValue != "null") {
-                builder.nonNullable()
+                shape.getTrait<DefaultTrait>()?.let {
+                    defaultValue(it.getDefaultValue(targetShape))
+                }
             }
-            builder.build()
-        } ?: targetSymbol
+            .build()
 
         // figure out if we are referencing an event stream or not.
         // NOTE: unlike blob streams we actually re-use the target (union) shape which is why we can't do this
@@ -213,9 +202,9 @@ class KotlinSymbolProvider(private val model: Model, private val settings: Kotli
         }
     }
 
-    private fun DefaultTrait.getDefaultValue(targetShape: Shape): String =
-        if (toNode().toString() == "null" || (targetShape is BlobShape && toNode().toString() == "")) {
-            "null"
+    private fun DefaultTrait.getDefaultValue(targetShape: Shape): String? =
+        if (toNode().toString() == "null" || targetShape is BlobShape && toNode().toString() == "") {
+            null
         } else if (toNode().isNumberNode) {
             getDefaultValueForNumber(targetShape, toNode().toString())
         } else if (toNode().isArrayNode) {
