@@ -32,7 +32,6 @@ fun projectNeedsPlatform(project: Project, platform: String): Boolean {
 kotlin {
     jvm()
 }
-
 val sdkVersion: String by project
 
 subprojects {

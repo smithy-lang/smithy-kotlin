@@ -4,7 +4,10 @@
  */
 package aws.smithy.kotlin.runtime.auth.awssigning
 
+import aws.smithy.kotlin.runtime.InternalApi
 import aws.smithy.kotlin.runtime.auth.awscredentials.CredentialsProvider
+import aws.smithy.kotlin.runtime.client.endpoints.SigningContext
+import aws.smithy.kotlin.runtime.operation.ExecutionContext
 import aws.smithy.kotlin.runtime.time.Instant
 import aws.smithy.kotlin.runtime.util.AttributeKey
 import kotlinx.coroutines.CompletableDeferred
@@ -63,4 +66,18 @@ public object AwsSigningAttributes {
      * Operation middleware is responsible for resetting the completable deferred value.
      */
     public val RequestSignature: AttributeKey<CompletableDeferred<ByteArray>> = AttributeKey("aws.smithy.kotlin#RequestSignature")
+}
+
+/**
+ * Merges this signing context into the given [ExecutionContext].
+ * @param context The execution context into which to merge the values from this signing context.
+ */
+@InternalApi
+public fun SigningContext.SigV4.mergeInto(context: ExecutionContext) {
+    context.setUnlessBlank(AwsSigningAttributes.SigningService, signingName)
+    context.setUnlessBlank(AwsSigningAttributes.SigningRegion, signingRegion)
+}
+
+private fun ExecutionContext.setUnlessBlank(key: AttributeKey<String>, value: String?) {
+    if (!value.isNullOrBlank()) set(key, value)
 }

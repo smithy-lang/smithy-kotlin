@@ -4,7 +4,12 @@
  */
 package software.amazon.smithy.kotlin.codegen.test
 
+import software.amazon.smithy.aws.traits.protocols.AwsJson1_0Trait
+import software.amazon.smithy.aws.traits.protocols.AwsJson1_1Trait
+import software.amazon.smithy.aws.traits.protocols.AwsQueryTrait
+import software.amazon.smithy.aws.traits.protocols.Ec2QueryTrait
 import software.amazon.smithy.aws.traits.protocols.RestJson1Trait
+import software.amazon.smithy.aws.traits.protocols.RestXmlTrait
 import software.amazon.smithy.build.MockManifest
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.codegen.core.SymbolProvider
@@ -19,6 +24,7 @@ import software.amazon.smithy.model.knowledge.HttpBinding
 import software.amazon.smithy.model.knowledge.HttpBindingIndex
 import software.amazon.smithy.model.shapes.*
 import software.amazon.smithy.model.traits.TimestampFormatTrait
+import software.amazon.smithy.model.traits.Trait
 import software.amazon.smithy.utils.StringUtils
 
 // This file houses test classes and functions relating to the code generator (protocols, serializers, etc)
@@ -130,13 +136,29 @@ class TestProtocolClientGenerator(
     httpBindingResolver: HttpBindingResolver,
 ) : HttpProtocolClientGenerator(ctx, features, httpBindingResolver)
 
+private val allProtocols = setOf(
+    AwsJson1_0Trait.ID,
+    AwsJson1_1Trait.ID,
+    AwsQueryTrait.ID,
+    Ec2QueryTrait.ID,
+    RestJson1Trait.ID,
+    RestXmlTrait.ID,
+)
+
 /** An HttpBindingProtocolGenerator for testing (nothing is rendered for serializing/deserializing payload bodies) */
-class MockHttpProtocolGenerator : HttpBindingProtocolGenerator() {
+class MockHttpProtocolGenerator(model: Model) : HttpBindingProtocolGenerator() {
     override val defaultTimestampFormat: TimestampFormatTrait.Format = TimestampFormatTrait.Format.EPOCH_SECONDS
     override fun getProtocolHttpBindingResolver(model: Model, serviceShape: ServiceShape): HttpBindingResolver =
         HttpTraitResolver(model, serviceShape, ProtocolContentTypes.consistent("application/json"))
 
-    override val protocol: ShapeId = RestJson1Trait.ID
+    override val protocol: ShapeId = model
+        .serviceShapes
+        .single()
+        .allTraits
+        .values
+        .map(Trait::toShapeId)
+        .singleOrNull(allProtocols::contains)
+        ?: RestJson1Trait.ID
 
     override fun generateProtocolUnitTests(ctx: ProtocolGenerator.GenerationContext) {}
 

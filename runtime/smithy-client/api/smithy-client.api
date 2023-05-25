@@ -216,6 +216,9 @@ public final class aws/smithy/kotlin/runtime/client/endpoints/EndpointProviderEx
 	public fun <init> (Ljava/lang/String;)V
 }
 
+public final class aws/smithy/kotlin/runtime/client/endpoints/SigningContextKt {
+}
+
 public final class aws/smithy/kotlin/runtime/client/endpoints/functions/FunctionsKt {
 }
 

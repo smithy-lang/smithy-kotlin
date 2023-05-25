@@ -1,9 +1,14 @@
 # Changelog
 
+## [0.21.0] - 05/25/2023
+
+### Features
+* [#755](https://github.com/awslabs/smithy-kotlin/issues/755) **Breaking**: Refresh presigning APIs to simplify usage and add new capabilities. See [this discussion post](https://github.com/awslabs/aws-sdk-kotlin/discussions/925) for more information.
+
 ## [0.20.0] - 05/18/2023
 
 ### Features
-* **Breaking**: Make HTTP engines configurable in client config during initialization and during `withCopy`. See [this discussion post](https://github.com/awslabs/aws-sdk-kotlin/discussions/new?category=announcements) for more information.
+* **Breaking**: Make HTTP engines configurable in client config during initialization and during `withCopy`. See [this discussion post](https://github.com/awslabs/aws-sdk-kotlin/discussions/919) for more information.
 
 ## [0.19.0] - 05/12/2023
 
