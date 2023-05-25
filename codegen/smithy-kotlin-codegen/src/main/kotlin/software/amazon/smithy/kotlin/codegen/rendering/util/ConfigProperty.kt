@@ -7,9 +7,9 @@ package software.amazon.smithy.kotlin.codegen.rendering.util
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.kotlin.codegen.core.*
 import software.amazon.smithy.kotlin.codegen.model.asNullable
-import software.amazon.smithy.kotlin.codegen.model.nullable
 import software.amazon.smithy.kotlin.codegen.model.buildSymbol
 import software.amazon.smithy.kotlin.codegen.model.defaultValue
+import software.amazon.smithy.kotlin.codegen.model.nullable
 
 typealias CustomPropertyRenderer = (ConfigProperty, KotlinWriter) -> Unit
 
