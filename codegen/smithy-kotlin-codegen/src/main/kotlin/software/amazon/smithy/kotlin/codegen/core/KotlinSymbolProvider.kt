@@ -202,20 +202,14 @@ class KotlinSymbolProvider(private val model: Model, private val settings: Kotli
         }
     }
 
-    private fun DefaultTrait.getDefaultValue(targetShape: Shape): String? =
-        if (toNode().toString() == "null" || targetShape is BlobShape && toNode().toString() == "") {
-            null
-        } else if (toNode().isNumberNode) {
-            getDefaultValueForNumber(targetShape, toNode().toString())
-        } else if (toNode().isArrayNode) {
-            "listOf()"
-        } else if (toNode().isObjectNode) {
-            "mapOf()"
-        } else if (toNode().isStringNode) {
-            "\"${toNode()}\""
-        } else {
-            toNode().toString()
-        }
+    private fun DefaultTrait.getDefaultValue(targetShape: Shape): String? = when {
+        toNode().toString() == "null" || targetShape is BlobShape && toNode().toString() == "" -> null
+        toNode().isNumberNode -> getDefaultValueForNumber(targetShape, toNode().toString())
+        toNode().isArrayNode -> "listOf()"
+        toNode().isObjectNode -> "mapOf()"
+        toNode().isStringNode -> "\"${toNode()}\""
+        else -> toNode().toString()
+    }
 
     override fun timestampShape(shape: TimestampShape?): Symbol {
         val dependency = KotlinDependency.CORE
