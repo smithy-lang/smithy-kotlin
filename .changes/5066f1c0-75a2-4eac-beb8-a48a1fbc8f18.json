@@ -1,8 +1,0 @@
-{
-    "id": "5066f1c0-75a2-4eac-beb8-a48a1fbc8f18",
-    "type": "feature",
-    "description": "**Breaking**: Refresh presigning APIs to simplify usage and add new capabilities. See [this discussion post](https://github.com/awslabs/aws-sdk-kotlin/discussions/925) for more information.",
-    "issues": [
-        "awslabs/smithy-kotlin#755"
-    ]
-}
