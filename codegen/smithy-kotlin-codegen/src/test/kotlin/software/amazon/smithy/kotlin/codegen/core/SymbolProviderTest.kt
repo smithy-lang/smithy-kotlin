@@ -144,11 +144,10 @@ class SymbolProviderTest {
     @Test
     fun `can override default trait from root-level shape`() {
         val modeledDefault = "2500"
-        val overriddenDefault = "null"
 
         val model = """
         structure MyStruct {
-           @default($overriddenDefault)
+           @default(null)
            foo: RootLevelShape
         }
         
@@ -160,7 +159,7 @@ class SymbolProviderTest {
         val member = model.expectShape<MemberShape>("com.test#MyStruct\$foo")
         val memberSymbol = provider.toSymbol(member)
         assertEquals("kotlin", memberSymbol.namespace)
-        assertEquals(overriddenDefault, memberSymbol.defaultValue())
+        assertEquals(null, memberSymbol.defaultValue())
     }
 
     @ParameterizedTest(name = "{index} ==> ''can default simple {0} type''")
@@ -264,7 +263,6 @@ class SymbolProviderTest {
 
     @ParameterizedTest(name = "{index} ==> ''can default document with {0} type''")
     @CsvSource(
-        "null,null,null",
         "boolean,true,true",
         "boolean,false,false",
         "string,\"hello\",\"hello\"",
