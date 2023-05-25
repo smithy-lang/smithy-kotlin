@@ -13,7 +13,7 @@ import software.amazon.smithy.kotlin.codegen.KotlinCodegenPlugin
 import software.amazon.smithy.kotlin.codegen.core.KotlinDependency.Companion.CORE
 import software.amazon.smithy.kotlin.codegen.model.defaultValue
 import software.amazon.smithy.kotlin.codegen.model.expectShape
-import software.amazon.smithy.kotlin.codegen.model.isBoxed
+import software.amazon.smithy.kotlin.codegen.model.isNullable
 import software.amazon.smithy.kotlin.codegen.model.traits.SYNTHETIC_NAMESPACE
 import software.amazon.smithy.kotlin.codegen.test.*
 import software.amazon.smithy.model.shapes.*
@@ -86,7 +86,7 @@ class SymbolProviderTest {
         val memberSymbol = provider.toSymbol(member)
         assertEquals("kotlin", memberSymbol.namespace)
         assertEquals(expectedDefault, memberSymbol.defaultValue())
-        assertEquals(boxed, memberSymbol.isBoxed)
+        assertEquals(boxed, memberSymbol.isNullable)
 
         val expectedName = translateTypeName(primitiveType.removePrefix("Primitive"))
         assertEquals(expectedName, memberSymbol.name)
@@ -159,7 +159,7 @@ class SymbolProviderTest {
         val member = model.expectShape<MemberShape>("com.test#MyStruct\$foo")
         val memberSymbol = provider.toSymbol(member)
         assertEquals("kotlin", memberSymbol.namespace)
-        assertEquals(null, memberSymbol.defaultValue())
+        assertEquals("null", memberSymbol.defaultValue())
     }
 
     @ParameterizedTest(name = "{index} ==> ''can default simple {0} type''")
@@ -351,7 +351,7 @@ class SymbolProviderTest {
         val memberSymbol = provider.toSymbol(member)
         assertEquals("kotlin", memberSymbol.namespace)
         assertEquals("null", memberSymbol.defaultValue())
-        assertTrue(memberSymbol.isBoxed)
+        assertTrue(memberSymbol.isNullable)
     }
 
     @Test
@@ -369,7 +369,7 @@ class SymbolProviderTest {
         val memberSymbol = provider.toSymbol(member)
         assertEquals("kotlin", memberSymbol.namespace)
         assertEquals("null", memberSymbol.defaultValue())
-        assertTrue(memberSymbol.isBoxed)
+        assertTrue(memberSymbol.isNullable)
     }
 
     @Test
@@ -385,7 +385,7 @@ class SymbolProviderTest {
         val memberSymbol = provider.toSymbol(member)
         assertEquals("kotlin", memberSymbol.namespace)
         assertEquals("null", memberSymbol.defaultValue())
-        assertEquals(true, memberSymbol.isBoxed)
+        assertEquals(true, memberSymbol.isNullable)
         assertEquals("ByteArray", memberSymbol.name)
     }
 
@@ -406,7 +406,7 @@ class SymbolProviderTest {
 
         assertEquals("$RUNTIME_ROOT_NS.content", memberSymbol.namespace)
         assertEquals("null", memberSymbol.defaultValue())
-        assertEquals(true, memberSymbol.isBoxed)
+        assertEquals(true, memberSymbol.isNullable)
         assertEquals("ByteStream", memberSymbol.name)
         val dependency = memberSymbol.dependencies[0].expectProperty("dependency") as KotlinDependency
         assertEquals(CORE.artifact, dependency.artifact)
@@ -431,7 +431,7 @@ class SymbolProviderTest {
         val listSymbol = provider.toSymbol(model.expectShape<ListShape>("foo.bar#Records"))
 
         assertEquals("List<Record>", listSymbol.name)
-        assertEquals(true, listSymbol.isBoxed)
+        assertEquals(true, listSymbol.isNullable)
         assertEquals("null", listSymbol.defaultValue())
 
         // collections should contain a reference to the member type
@@ -440,7 +440,7 @@ class SymbolProviderTest {
         val sparseListSymbol = provider.toSymbol(model.expectShape<ListShape>("foo.bar#SparseRecords"))
 
         assertEquals("List<Record?>", sparseListSymbol.name)
-        assertEquals(true, sparseListSymbol.isBoxed)
+        assertEquals(true, sparseListSymbol.isNullable)
         assertEquals("null", sparseListSymbol.defaultValue())
 
         // collections should contain a reference to the member type
@@ -463,7 +463,7 @@ class SymbolProviderTest {
         val listSymbol = provider.toSymbol(listShape)
 
         assertEquals("List<Record>", listSymbol.name)
-        assertEquals(true, listSymbol.isBoxed)
+        assertEquals(true, listSymbol.isNullable)
         assertEquals("null", listSymbol.defaultValue())
 
         // collections should contain a reference to the member type
@@ -492,7 +492,7 @@ class SymbolProviderTest {
         val mapSymbol = provider.toSymbol(model.expectShape<MapShape>("${TestModelDefault.NAMESPACE}#MyMap"))
 
         assertEquals("Map<String, Record>", mapSymbol.name)
-        assertEquals(true, mapSymbol.isBoxed)
+        assertEquals(true, mapSymbol.isNullable)
         assertEquals("null", mapSymbol.defaultValue())
 
         // collections should contain a reference to the member type
@@ -501,7 +501,7 @@ class SymbolProviderTest {
         val sparseMapSymbol = provider.toSymbol(model.expectShape<MapShape>("${TestModelDefault.NAMESPACE}#MySparseMap"))
 
         assertEquals("Map<String, Record?>", sparseMapSymbol.name)
-        assertEquals(true, sparseMapSymbol.isBoxed)
+        assertEquals(true, sparseMapSymbol.isNullable)
         assertEquals("null", sparseMapSymbol.defaultValue())
 
         // collections should contain a reference to the member type
@@ -523,7 +523,7 @@ class SymbolProviderTest {
         val bigSymbol = provider.toSymbol(member)
         assertEquals("java.math", bigSymbol.namespace)
         assertEquals("null", bigSymbol.defaultValue())
-        assertEquals(true, bigSymbol.isBoxed)
+        assertEquals(true, bigSymbol.isNullable)
         assertEquals(type, bigSymbol.name)
     }
 
@@ -547,7 +547,7 @@ class SymbolProviderTest {
 
         assertEquals("foo.bar.model", symbol.namespace)
         assertEquals("null", symbol.defaultValue())
-        assertEquals(true, symbol.isBoxed)
+        assertEquals(true, symbol.isNullable)
         assertEquals("Baz", symbol.name)
         assertEquals("Baz.kt", symbol.definitionFile)
     }
@@ -567,7 +567,7 @@ class SymbolProviderTest {
 
         assertEquals("foo.bar.model", symbol.namespace)
         assertEquals("null", symbol.defaultValue())
-        assertEquals(true, symbol.isBoxed)
+        assertEquals(true, symbol.isNullable)
         assertEquals("Baz", symbol.name)
         assertEquals("Baz.kt", symbol.definitionFile)
     }
@@ -588,7 +588,7 @@ class SymbolProviderTest {
 
         assertEquals("com.test.model", symbol.namespace)
         assertEquals("null", symbol.defaultValue())
-        assertEquals(true, symbol.isBoxed)
+        assertEquals(true, symbol.isNullable)
         assertEquals("MyUnion", symbol.name)
         assertEquals("MyUnion.kt", symbol.definitionFile)
     }
@@ -607,7 +607,7 @@ class SymbolProviderTest {
         assertEquals("foo.bar.model", structSymbol.namespace)
         assertEquals("MyStruct", structSymbol.name)
         assertEquals("null", structSymbol.defaultValue())
-        assertEquals(true, structSymbol.isBoxed)
+        assertEquals(true, structSymbol.isNullable)
         assertEquals("MyStruct.kt", structSymbol.definitionFile)
         assertEquals(1, structSymbol.references.size)
     }
@@ -623,7 +623,7 @@ class SymbolProviderTest {
         val documentSymbol = provider.toSymbol(documentShape)
         assertEquals("Document", documentSymbol.name)
         assertEquals("null", documentSymbol.defaultValue())
-        assertEquals(true, documentSymbol.isBoxed)
+        assertEquals(true, documentSymbol.isNullable)
         assertEquals(RuntimeTypes.Core.Content.Document.namespace, documentSymbol.namespace)
         assertEquals(1, documentSymbol.dependencies.size)
     }
@@ -662,7 +662,7 @@ class SymbolProviderTest {
         assertEquals("$RUNTIME_ROOT_NS.time", timestampSymbol.namespace)
         assertEquals("Instant", timestampSymbol.name)
         assertEquals("null", timestampSymbol.defaultValue())
-        assertEquals(true, timestampSymbol.isBoxed)
+        assertEquals(true, timestampSymbol.isNullable)
         assertEquals(1, timestampSymbol.dependencies.size)
     }
 
@@ -687,7 +687,7 @@ class SymbolProviderTest {
         assertEquals("foo.bar.model", structSymbol.namespace)
         assertEquals("MyStruct1", structSymbol.name)
         assertEquals("null", structSymbol.defaultValue())
-        assertEquals(true, structSymbol.isBoxed)
+        assertEquals(true, structSymbol.isNullable)
         assertEquals("MyStruct1.kt", structSymbol.definitionFile)
         assertEquals(2, structSymbol.references.size)
     }
@@ -726,7 +726,7 @@ class SymbolProviderTest {
 
         assertEquals("", symbol.namespace)
         assertEquals("null", symbol.defaultValue())
-        assertEquals(true, symbol.isBoxed)
+        assertEquals(true, symbol.isNullable)
         assertEquals("Flow<com.test.model.Events>", symbol.name)
 
         assertEquals("com.test.model.Events", symbol.references[0].symbol.fullName)

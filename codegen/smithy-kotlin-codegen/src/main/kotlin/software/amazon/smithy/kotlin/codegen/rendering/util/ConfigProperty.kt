@@ -7,7 +7,7 @@ package software.amazon.smithy.kotlin.codegen.rendering.util
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.kotlin.codegen.core.*
 import software.amazon.smithy.kotlin.codegen.model.asNullable
-import software.amazon.smithy.kotlin.codegen.model.boxed
+import software.amazon.smithy.kotlin.codegen.model.nullable
 import software.amazon.smithy.kotlin.codegen.model.buildSymbol
 import software.amazon.smithy.kotlin.codegen.model.defaultValue
 
@@ -268,7 +268,7 @@ private fun builtInSymbol(symbolName: String, defaultValue: String?): Symbol {
     if (defaultValue != null) {
         builder.defaultValue(defaultValue)
     } else {
-        builder.boxed()
+        builder.nullable()
     }
     return builder.build()
 }

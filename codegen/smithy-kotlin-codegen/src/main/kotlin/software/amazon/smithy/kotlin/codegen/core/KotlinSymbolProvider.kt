@@ -178,7 +178,7 @@ class KotlinSymbolProvider(private val model: Model, private val settings: Kotli
             model.getShape(shape.target).orElseThrow { CodegenException("Shape not found: ${shape.target}") }
 
         var targetSymbol = if (nullableIndex.isMemberNullable(shape, NullableIndex.CheckMode.CLIENT)) {
-            toSymbol(targetShape).toBuilder().boxed().build()
+            toSymbol(targetShape).toBuilder().nullable().build()
         } else {
             toSymbol(targetShape)
         }
@@ -188,7 +188,7 @@ class KotlinSymbolProvider(private val model: Model, private val settings: Kotli
             val defaultValue = it.getDefaultValue(targetShape)
             builder.defaultValue(defaultValue)
             if (defaultValue != "null") {
-                builder.unboxed()
+                builder.nonNullable()
             }
             builder.build()
         } ?: targetSymbol
@@ -279,7 +279,7 @@ class KotlinSymbolProvider(private val model: Model, private val settings: Kotli
             .putProperty(SymbolProperty.SHAPE_KEY, shape)
             .name(typeName)
         if (boxed) {
-            builder.boxed()
+            builder.nullable()
         }
         return builder
     }

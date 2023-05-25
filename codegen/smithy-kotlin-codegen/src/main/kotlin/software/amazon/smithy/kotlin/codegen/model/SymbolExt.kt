@@ -19,7 +19,7 @@ object SymbolProperty {
     const val DEFAULT_VALUE_KEY: String = "defaultValue"
 
     // Boolean property indicating this symbol should be boxed
-    const val BOXED_KEY: String = "boxed"
+    const val NULLABLE_KEY: String = "boxed"
 
     // the original shape the symbol was created from
     const val SHAPE_KEY: String = "shape"
@@ -49,8 +49,8 @@ object SymbolProperty {
 /**
  * Test if a symbol is boxed
  */
-val Symbol.isBoxed: Boolean
-    get() = getProperty(SymbolProperty.BOXED_KEY).map {
+val Symbol.isNullable: Boolean
+    get() = getProperty(SymbolProperty.NULLABLE_KEY).map {
         when (it) {
             is Boolean -> it
             else -> false
@@ -60,8 +60,8 @@ val Symbol.isBoxed: Boolean
 /**
  * Test if a symbol is not boxed
  */
-val Symbol.isNotBoxed: Boolean
-    get() = !isBoxed
+val Symbol.isNotNullable: Boolean
+    get() = !isNullable
 
 enum class PropertyTypeMutability {
     /**
@@ -96,7 +96,7 @@ val Symbol.propertyTypeMutability: PropertyTypeMutability?
  */
 fun Symbol.defaultValue(defaultBoxed: String? = "null"): String? {
     // boxed types should always be defaulted to null
-    if (isBoxed) {
+    if (isNullable) {
         return defaultBoxed
     }
 
@@ -107,12 +107,12 @@ fun Symbol.defaultValue(defaultBoxed: String? = "null"): String? {
 /**
  * Mark a symbol as being boxed (nullable) i.e. `T?`
  */
-fun Symbol.Builder.boxed(): Symbol.Builder = apply { putProperty(SymbolProperty.BOXED_KEY, true) }
+fun Symbol.Builder.nullable(): Symbol.Builder = apply { putProperty(SymbolProperty.NULLABLE_KEY, true) }
 
 /**
  * Mark a symbol as not being boxed
  */
-fun Symbol.Builder.unboxed(): Symbol.Builder = apply { removeProperty(SymbolProperty.BOXED_KEY) }
+fun Symbol.Builder.nonNullable(): Symbol.Builder = apply { removeProperty(SymbolProperty.NULLABLE_KEY) }
 
 /**
  * Set the default value used when formatting the symbol
@@ -182,7 +182,7 @@ val Symbol.shape: Shape?
 /**
  * Get the nullable version of a symbol
  */
-fun Symbol.asNullable(): Symbol = toBuilder().boxed().build()
+fun Symbol.asNullable(): Symbol = toBuilder().nullable().build()
 
 /**
  * Check whether a symbol represents an extension
