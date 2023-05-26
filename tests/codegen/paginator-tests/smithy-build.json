@@ -7,16 +7,16 @@
           "name": "includeServices",
           "args": {
             "services": [
-              "com.test#Lambda"
+              "smithy.kotlin.traits#Lambda"
             ]
           }
         }
       ],
       "plugins": {
         "kotlin-codegen": {
-          "service": "com.test#Lambda",
+          "service": "smithy.kotlin.traits#Lambda",
           "package": {
-            "name": "com.test",
+            "name": "smithy.kotlin.traits",
             "version": "0.0.1"
           },
           "build": {
