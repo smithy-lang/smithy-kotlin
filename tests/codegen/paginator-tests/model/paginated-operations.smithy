@@ -1,9 +1,12 @@
-namespace com.test
+namespace smithy.kotlin.traits
 
 use aws.protocols#restJson1
 
+@trait(selector: "*")
+structure paginationTruncationMember { }
+
 service Lambda {
-    operations: [ListFunctions]
+    operations: [ListFunctions, TruncatedListFunctions]
 }
 
 @paginated(
@@ -12,7 +15,6 @@ service Lambda {
     pageSize: "MaxItems",
     items: "Functions"
 )
-
 @readonly
 @http(method: "GET", uri: "/functions", code: 200)
 operation ListFunctions {
@@ -33,6 +35,37 @@ structure ListFunctionsRequest {
 
 structure ListFunctionsResponse {
     Functions: FunctionConfigurationList,
+    NextMarker: String
+}
+
+@paginated(
+    inputToken: "Marker",
+    outputToken: "NextMarker",
+    pageSize: "MaxItems",
+    items: "Functions"
+)
+@readonly
+@http(method: "GET", uri: "/truncatedFunctions", code: 200)
+operation TruncatedListFunctions {
+    input: TruncatedListFunctionsRequest,
+    output: TruncatedListFunctionsResponse
+}
+
+structure TruncatedListFunctionsRequest {
+    @httpQuery("FunctionVersion")
+    FunctionVersion: String,
+    @httpQuery("Marker")
+    Marker: String,
+    @httpQuery("MasterRegion")
+    MasterRegion: String,
+    @httpQuery("MaxItems")
+    MaxItems: Integer
+}
+
+structure TruncatedListFunctionsResponse {
+    Functions: FunctionConfigurationList,
+    @paginationTruncationMember
+    IsTruncated: Boolean,
     NextMarker: String
 }
 
