@@ -67,7 +67,7 @@ class SymbolProviderTest {
         "Byte, null, true",
         "PrimitiveByte, 0, false",
         "Float, null, true",
-        "PrimitiveFloat, 0.0f, false",
+        "PrimitiveFloat, 0f, false",
         "Double, null, true",
         "PrimitiveDouble, 0.0, false",
         "Boolean, null, true",

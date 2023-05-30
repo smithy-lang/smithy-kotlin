@@ -74,14 +74,14 @@ class KotlinSymbolProvider(private val model: Model, private val settings: Kotli
 
     override fun shortShape(shape: ShortShape): Symbol = numberShape(shape, "Short")
 
-    override fun longShape(shape: LongShape): Symbol = numberShape(shape, "Long")
+    override fun longShape(shape: LongShape): Symbol = numberShape(shape, "Long", "0L")
 
-    override fun floatShape(shape: FloatShape): Symbol = numberShape(shape, "Float")
+    override fun floatShape(shape: FloatShape): Symbol = numberShape(shape, "Float", "0f")
 
-    override fun doubleShape(shape: DoubleShape): Symbol = numberShape(shape, "Double")
+    override fun doubleShape(shape: DoubleShape): Symbol = numberShape(shape, "Double", "0.0")
 
-    private fun numberShape(shape: Shape, typeName: String): Symbol =
-        createSymbolBuilder(shape, typeName, namespace = "kotlin").build()
+    private fun numberShape(shape: Shape, typeName: String, defaultValue: String = "0"): Symbol =
+        createSymbolBuilder(shape, typeName, namespace = "kotlin").defaultValue(defaultValue).build()
 
     override fun bigIntegerShape(shape: BigIntegerShape?): Symbol = createBigSymbol(shape, "BigInteger")
 
@@ -104,7 +104,7 @@ class KotlinSymbolProvider(private val model: Model, private val settings: Kotli
     }
 
     override fun booleanShape(shape: BooleanShape?): Symbol =
-        createSymbolBuilder(shape, "Boolean", namespace = "kotlin").build()
+        createSymbolBuilder(shape, "Boolean", namespace = "kotlin").defaultValue("false").build()
 
     override fun structureShape(shape: StructureShape): Symbol {
         val name = shape.defaultName(service)
@@ -269,7 +269,7 @@ class KotlinSymbolProvider(private val model: Model, private val settings: Kotli
 
     private fun getDefaultValueForNumber(shape: Shape, value: String) = when (shape) {
         is LongShape -> "${value}L"
-        is FloatShape -> if (value.matches("[0-9]*\\.[0-9]+".toRegex())) "${value}f" else "$value.0f"
+        is FloatShape -> "${value}f"
         is DoubleShape -> if (value.matches("[0-9]*\\.[0-9]+".toRegex())) value else "$value.0"
         else -> value
     }
