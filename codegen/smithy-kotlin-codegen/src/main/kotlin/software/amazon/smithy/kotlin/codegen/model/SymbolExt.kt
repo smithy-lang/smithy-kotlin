@@ -47,7 +47,7 @@ object SymbolProperty {
 }
 
 /**
- * Test if a symbol is boxed
+ * Test if a symbol is nullable
  */
 val Symbol.isNullable: Boolean
     get() = getProperty(SymbolProperty.NULLABLE_KEY).map {
