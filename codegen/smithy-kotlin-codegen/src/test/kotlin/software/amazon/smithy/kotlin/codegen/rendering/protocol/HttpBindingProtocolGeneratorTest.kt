@@ -366,7 +366,7 @@ internal class ConstantQueryStringOperationSerializer: HttpSerialize<ConstantQue
 internal class SmokeTestOperationDeserializer: HttpDeserialize<SmokeTestResponse> {
 
     override suspend fun deserialize(context: ExecutionContext, response: HttpResponse): SmokeTestResponse {
-        if (!response.status.isSuccess()) {
+        if (response.status.value != 234) {
             throwSmokeTestError(context, response)
         }
         val builder = SmokeTestResponse.Builder()
