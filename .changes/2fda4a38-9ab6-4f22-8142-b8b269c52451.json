@@ -1,0 +1,5 @@
+{
+    "id": "2fda4a38-9ab6-4f22-8142-b8b269c52451",
+    "type": "misc",
+    "description": "Remove `expectedHttpStatus` from HTTP operation context"
+}
