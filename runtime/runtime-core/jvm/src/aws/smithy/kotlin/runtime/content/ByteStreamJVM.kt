@@ -25,7 +25,7 @@ public fun ByteStream.Companion.fromFile(file: File): ByteStream = file.asByteSt
 public fun File.asByteStream(start: Long = 0, endInclusive: Long = length() - 1): ByteStream {
     require(start >= 0) { "start index $start cannot be negative" }
     require(endInclusive >= start - 1) {
-        "end index $endInclusive must be greater than or equal to start index minus one (${start-1})"
+        "end index $endInclusive must be greater than or equal to start index minus one (${start - 1})"
     }
 
     val len = length()
@@ -48,7 +48,7 @@ public fun Path.asByteStream(start: Long = 0, endInclusive: Long = -1): ByteStre
     require(f.isFile) { "cannot create a ByteStream from a directory: $this" }
 
     val calculatedEndInclusive = if (endInclusive == -1L) f.length() - 1L else endInclusive
-    require(calculatedEndInclusive >= start - 1) { "end index $calculatedEndInclusive must be greater or equal to start index minus one (${start-1})" }
+    require(calculatedEndInclusive >= start - 1) { "end index $calculatedEndInclusive must be greater or equal to start index minus one (${start - 1})" }
 
     return f.asByteStream(start, calculatedEndInclusive)
 }
