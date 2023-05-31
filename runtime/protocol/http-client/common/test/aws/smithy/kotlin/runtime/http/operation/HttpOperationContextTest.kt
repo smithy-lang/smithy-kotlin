@@ -15,11 +15,9 @@ class HttpOperationContextTest {
     fun testBuilder() {
         val op = HttpOperationContext.build {
             operationName = "operation"
-            expectedHttpStatus = 418
         }
 
         assertEquals("operation", op[SdkClientOption.OperationName])
-        assertEquals(418, op[HttpOperationContext.ExpectedHttpStatus])
     }
 
     @Test

@@ -80,7 +80,6 @@ class HttpProtocolClientGeneratorTest {
             serializer = GetFooOperationSerializer()
             deserializer = GetFooOperationDeserializer()
             context {
-                expectedHttpStatus = 200
                 operationName = "GetFoo"
             }
             execution.auth = OperationAuthConfig(AuthSchemeProviderAdapter, configuredAuthSchemes, identityProviderConfig)
@@ -101,7 +100,6 @@ class HttpProtocolClientGeneratorTest {
             serializer = GetFooNoInputOperationSerializer()
             deserializer = GetFooNoInputOperationDeserializer()
             context {
-                expectedHttpStatus = 200
                 operationName = "GetFooNoInput"
             }
             execution.auth = OperationAuthConfig(AuthSchemeProviderAdapter, configuredAuthSchemes, identityProviderConfig)
@@ -122,7 +120,6 @@ class HttpProtocolClientGeneratorTest {
             serializer = GetFooNoOutputOperationSerializer()
             deserializer = GetFooNoOutputOperationDeserializer()
             context {
-                expectedHttpStatus = 200
                 operationName = "GetFooNoOutput"
             }
             execution.auth = OperationAuthConfig(AuthSchemeProviderAdapter, configuredAuthSchemes, identityProviderConfig)
@@ -143,7 +140,6 @@ class HttpProtocolClientGeneratorTest {
             serializer = GetFooStreamingInputOperationSerializer()
             deserializer = GetFooStreamingInputOperationDeserializer()
             context {
-                expectedHttpStatus = 200
                 operationName = "GetFooStreamingInput"
             }
             execution.auth = OperationAuthConfig(AuthSchemeProviderAdapter, configuredAuthSchemes, identityProviderConfig)
@@ -164,7 +160,6 @@ class HttpProtocolClientGeneratorTest {
             serializer = GetFooStreamingOutputOperationSerializer()
             deserializer = GetFooStreamingOutputOperationDeserializer()
             context {
-                expectedHttpStatus = 200
                 operationName = "GetFooStreamingOutput"
             }
             execution.auth = OperationAuthConfig(AuthSchemeProviderAdapter, configuredAuthSchemes, identityProviderConfig)
@@ -185,7 +180,6 @@ class HttpProtocolClientGeneratorTest {
             serializer = GetFooStreamingOutputNoInputOperationSerializer()
             deserializer = GetFooStreamingOutputNoInputOperationDeserializer()
             context {
-                expectedHttpStatus = 200
                 operationName = "GetFooStreamingOutputNoInput"
             }
             execution.auth = OperationAuthConfig(AuthSchemeProviderAdapter, configuredAuthSchemes, identityProviderConfig)
@@ -206,7 +200,6 @@ class HttpProtocolClientGeneratorTest {
             serializer = GetFooStreamingInputNoOutputOperationSerializer()
             deserializer = GetFooStreamingInputNoOutputOperationDeserializer()
             context {
-                expectedHttpStatus = 200
                 operationName = "GetFooStreamingInputNoOutput"
             }
             execution.auth = OperationAuthConfig(AuthSchemeProviderAdapter, configuredAuthSchemes, identityProviderConfig)
@@ -227,7 +220,6 @@ class HttpProtocolClientGeneratorTest {
             serializer = GetFooNoRequiredOperationSerializer()
             deserializer = GetFooNoRequiredOperationDeserializer()
             context {
-                expectedHttpStatus = 200
                 operationName = "GetFooNoRequired"
             }
             execution.auth = OperationAuthConfig(AuthSchemeProviderAdapter, configuredAuthSchemes, identityProviderConfig)
@@ -248,7 +240,6 @@ class HttpProtocolClientGeneratorTest {
             serializer = GetFooSomeRequiredOperationSerializer()
             deserializer = GetFooSomeRequiredOperationDeserializer()
             context {
-                expectedHttpStatus = 200
                 operationName = "GetFooSomeRequired"
             }
             execution.auth = OperationAuthConfig(AuthSchemeProviderAdapter, configuredAuthSchemes, identityProviderConfig)
@@ -325,7 +316,6 @@ class HttpProtocolClientGeneratorTest {
             serializer = GetStatusOperationSerializer()
             deserializer = GetStatusOperationDeserializer()
             context {
-                expectedHttpStatus = 200
                 operationName = "GetStatus"
                 hostPrefix = "$prefix"
             }
