@@ -22,8 +22,10 @@ internal class RandomAccessFileSource(
         require(fileObject.exists()) { "cannot create SdkSource, file does not exist: $this" }
         require(fileObject.isFile) { "cannot create a SdkSource from a directory: $this" }
         require(start >= 0L) { "start position should be >= 0, found $start" }
-        require(endInclusive >= 0 && endInclusive <= fileObject.length() - 1) {
-            "endInclusive should be less than or equal to the length of the file, was $endInclusive"
+        if (fileObject.length() != 0L) {
+            require(endInclusive >= 0 && endInclusive <= fileObject.length() - 1) {
+                "endInclusive should be less than or equal to the length of the file, was $endInclusive"
+            }
         }
 
         RandomAccessFile(fileObject, "r").also {

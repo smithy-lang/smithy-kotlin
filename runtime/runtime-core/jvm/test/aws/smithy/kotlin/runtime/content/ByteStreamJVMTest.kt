@@ -8,6 +8,7 @@ package aws.smithy.kotlin.runtime.content
 import aws.smithy.kotlin.runtime.testing.RandomTempFile
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
+import java.nio.file.Files
 import kotlin.test.*
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -129,5 +130,12 @@ class ByteStreamJVMTest {
         val stream = path.asByteStream()
 
         assertEquals(1024, stream.contentLength)
+    }
+
+    @Test
+    fun `can create byte stream from empty file`() = runTest {
+        val file = Files.createTempFile(null, null)
+        val byteStream = file.asByteStream()
+        assertEquals(0, byteStream.contentLength)
     }
 }
