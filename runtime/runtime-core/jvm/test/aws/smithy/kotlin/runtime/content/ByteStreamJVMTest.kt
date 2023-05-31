@@ -133,8 +133,15 @@ class ByteStreamJVMTest {
     }
 
     @Test
-    fun `can create byte stream from empty file`() = runTest {
+    fun `can create byte stream from empty file using createTempFile`() = runTest {
         val file = Files.createTempFile(null, null)
+        val byteStream = file.asByteStream()
+        assertEquals(0, byteStream.contentLength)
+    }
+
+    @Test
+    fun `can create byte stream from empty file using RandomTempFile`() = runTest {
+        val file = RandomTempFile(sizeInBytes = 0)
         val byteStream = file.asByteStream()
         assertEquals(0, byteStream.contentLength)
     }
