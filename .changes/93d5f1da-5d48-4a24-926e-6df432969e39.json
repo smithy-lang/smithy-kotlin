@@ -1,0 +1,8 @@
+{
+    "id": "93d5f1da-5d48-4a24-926e-6df432969e39",
+    "type": "bugfix",
+    "description": "Validate modeled HTTP response codes",
+    "issues": [
+        "https://github.com/awslabs/smithy-kotlin/issues/836"
+    ]
+}
