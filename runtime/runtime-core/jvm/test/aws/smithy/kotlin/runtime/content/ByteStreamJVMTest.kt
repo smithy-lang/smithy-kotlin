@@ -37,7 +37,7 @@ class ByteStreamJVMTest {
         val e = assertFailsWith<Throwable> {
             file.asByteStream(5, 1)
         }
-        assertEquals("end index 1 must be greater than or equal to start index 5", e.message)
+        assertEquals("end index 1 must be greater than or equal to start index minus one (4)", e.message)
     }
 
     @Test
