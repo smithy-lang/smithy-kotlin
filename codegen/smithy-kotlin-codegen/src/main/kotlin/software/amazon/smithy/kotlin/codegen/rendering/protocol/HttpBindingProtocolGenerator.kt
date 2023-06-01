@@ -523,10 +523,22 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
      * Renders the logic to detect if an HTTP response should be considered an error for this operation
      */
     protected open fun renderIsHttpError(ctx: ProtocolGenerator.GenerationContext, op: OperationShape, writer: KotlinWriter) {
-        val resolver = getProtocolHttpBindingResolver(ctx.model, ctx.service)
-        writer.withBlock("if (response.status.value != #L) {", "}", resolver.httpTrait(op).code) {
-            val errorHandlerFn = operationErrorHandler(ctx, op)
-            write("#T(context, response)", errorHandlerFn)
+        val expectedResponseCode = getProtocolHttpBindingResolver(ctx.model, ctx.service)
+            .httpTrait(op)
+            .code
+
+        when (expectedResponseCode) {
+            200 -> {
+                writer.addImport(RuntimeTypes.Http.isSuccess)
+                writer.withBlock("if (!response.status.#T()) {", "}", RuntimeTypes.Http.isSuccess) {
+                    write("#T(context, response)", operationErrorHandler(ctx, op))
+                }
+            }
+            else -> {
+                writer.withBlock("if (response.status.value != #L) {", "}", expectedResponseCode) {
+                    write("#T(context, response)", operationErrorHandler(ctx, op))
+                }
+            }
         }
     }
 
