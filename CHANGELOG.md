@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.21.1] - 06/01/2023
+
+### Fixes
+* Allow empty I/O content
+
+### Miscellaneous
+* Support non-standard pagination termination
+
 ## [0.21.0] - 05/25/2023
 
 ### Features
