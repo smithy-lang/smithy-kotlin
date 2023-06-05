@@ -87,7 +87,7 @@ enum class PropertyTypeMutability {
 
 enum class DefaultValueType {
     INFERRED,
-    MODELED
+    MODELED,
 }
 
 /**
@@ -108,7 +108,7 @@ fun Symbol.defaultValue(defaultNullable: String? = "null"): String? {
 
     // nullable types should default to null if there is no modeled default
     if (isNullable && (!default.isPresent || defaultType == DefaultValueType.INFERRED)) {
-        return defaultNullable;
+        return defaultNullable
     }
     return default.getOrNull()
 }
