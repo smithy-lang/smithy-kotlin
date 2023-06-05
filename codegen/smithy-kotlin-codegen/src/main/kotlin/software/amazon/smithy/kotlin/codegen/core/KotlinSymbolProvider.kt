@@ -177,7 +177,7 @@ class KotlinSymbolProvider(private val model: Model, private val settings: Kotli
                 if (nullableIndex.isMemberNullable(shape, NullableIndex.CheckMode.CLIENT)) nullable()
 
                 shape.getTrait<DefaultTrait>()?.let {
-                    defaultValue(it.getDefaultValue(targetShape))
+                    defaultValue(it.getDefaultValue(targetShape), DefaultValueType.MODELED)
                 }
             }
             .build()

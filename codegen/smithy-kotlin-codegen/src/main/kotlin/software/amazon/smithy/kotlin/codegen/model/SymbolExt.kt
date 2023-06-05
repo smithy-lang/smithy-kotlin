@@ -18,6 +18,9 @@ object SymbolProperty {
     // The key that holds the default value for a type (symbol) as a string
     const val DEFAULT_VALUE_KEY: String = "defaultValue"
 
+    // The key that holds the type of default value
+    const val DEFAULT_VALUE_TYPE_KEY: String = "defaultValueType"
+
     // Boolean property indicating this symbol should be boxed
     const val NULLABLE_KEY: String = "nullable"
 
@@ -82,6 +85,11 @@ enum class PropertyTypeMutability {
     }
 }
 
+enum class DefaultValueType {
+    INFERRED,
+    MODELED
+}
+
 /**
  * Get the property type mutability of this symbol if set.
  */
@@ -96,10 +104,11 @@ val Symbol.propertyTypeMutability: PropertyTypeMutability?
  */
 fun Symbol.defaultValue(defaultNullable: String? = "null"): String? {
     val default = getProperty(SymbolProperty.DEFAULT_VALUE_KEY, String::class.java)
+    val defaultType = default.getOrNull()?.run { getProperty(SymbolProperty.DEFAULT_VALUE_TYPE_KEY, DefaultValueType::class.java).get() }
 
-    // nullable types should default to null if there is no default defined
-    if (!default.isPresent && isNullable) {
-        return defaultNullable
+    // nullable types should default to null if there is no modeled default
+    if (isNullable && (!default.isPresent || defaultType == DefaultValueType.INFERRED)) {
+        return defaultNullable;
     }
     return default.getOrNull()
 }
@@ -112,7 +121,10 @@ fun Symbol.Builder.nullable(): Symbol.Builder = apply { putProperty(SymbolProper
 /**
  * Set the default value used when formatting the symbol
  */
-fun Symbol.Builder.defaultValue(value: String?): Symbol.Builder = apply { putProperty(SymbolProperty.DEFAULT_VALUE_KEY, value) }
+fun Symbol.Builder.defaultValue(value: String?, type: DefaultValueType = DefaultValueType.INFERRED): Symbol.Builder = apply {
+    putProperty(SymbolProperty.DEFAULT_VALUE_KEY, value)
+    putProperty(SymbolProperty.DEFAULT_VALUE_TYPE_KEY, type)
+}
 
 /**
  * Convenience function for specifying kotlin namespace
