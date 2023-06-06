@@ -36,9 +36,9 @@ class PresignerTest {
 
         val unsignedRequestBuilder = HttpRequestBuilder()
         val ctx = ExecutionContext()
-        val credentialsProvider = StaticCredentialsProvider(Credentials("foo", "bar"))
-        val endpointResolver = StaticEndpointResolver(Endpoint(expectedUrl))
-        val signer = StaticSigner(HttpRequest { url(expectedUrl) })
+        val credentialsProvider = TestCredentialsProvider(Credentials("foo", "bar"))
+        val endpointResolver = TestEndpointResolver(Endpoint(expectedUrl))
+        val signer = TestSigner(HttpRequest { url(expectedUrl) })
         val signingConfig: AwsSigningConfig.Builder.() -> Unit = {
             service = "launch-service"
             region = "the-moon"
@@ -65,15 +65,15 @@ class PresignerTest {
     }
 }
 
-private class StaticCredentialsProvider(private val credentials: Credentials) : CredentialsProvider {
+private class TestCredentialsProvider(private val credentials: Credentials) : CredentialsProvider {
     override suspend fun resolve(attributes: Attributes): Credentials = credentials
 }
 
-private class StaticEndpointResolver(private val resolvedEndpoint: Endpoint) : EndpointResolver {
+private class TestEndpointResolver(private val resolvedEndpoint: Endpoint) : EndpointResolver {
     override suspend fun resolve(request: ResolveEndpointRequest): Endpoint = resolvedEndpoint
 }
 
-private class StaticSigner(private val signedOutput: HttpRequest) : AwsSigner {
+private class TestSigner(private val signedOutput: HttpRequest) : AwsSigner {
     override suspend fun sign(request: HttpRequest, config: AwsSigningConfig): AwsSigningResult<HttpRequest> =
         AwsSigningResult(signedOutput, byteArrayOf())
 
