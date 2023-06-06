@@ -21,7 +21,7 @@ object SymbolProperty {
     // The key that holds the type of default value
     const val DEFAULT_VALUE_TYPE_KEY: String = "defaultValueType"
 
-    // Boolean property indicating this symbol should be boxed
+    // Boolean property indicating this symbol is nullable
     const val NULLABLE_KEY: String = "nullable"
 
     // the original shape the symbol was created from
@@ -61,7 +61,7 @@ val Symbol.isNullable: Boolean
     }.orElse(false)
 
 /**
- * Test if a symbol is not boxed
+ * Test if a symbol is not nullable
  */
 val Symbol.isNotNullable: Boolean
     get() = !isNullable
@@ -114,7 +114,7 @@ fun Symbol.defaultValue(defaultNullable: String? = "null"): String? {
 }
 
 /**
- * Mark a symbol as being boxed (nullable) i.e. `T?`
+ * Mark a symbol as being nullable (i.e. `T?`)
  */
 fun Symbol.Builder.nullable(): Symbol.Builder = apply { putProperty(SymbolProperty.NULLABLE_KEY, true) }
 

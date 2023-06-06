@@ -148,7 +148,7 @@ class KotlinSymbolProvider(private val model: Model, private val settings: Kotli
     override fun listShape(shape: ListShape): Symbol {
         val reference = toSymbol(shape.member)
         val valueType = if (shape.hasTrait<SparseTrait>()) "${reference.name}?" else reference.name
-        return createSymbolBuilder(shape, "List<$valueType>", boxed = true)
+        return createSymbolBuilder(shape, "List<$valueType>", nullable = true)
             .addReferences(reference)
             .putProperty(SymbolProperty.MUTABLE_COLLECTION_FUNCTION, "mutableListOf<$valueType>")
             .putProperty(SymbolProperty.IMMUTABLE_COLLECTION_FUNCTION, "listOf<$valueType>")
@@ -159,7 +159,7 @@ class KotlinSymbolProvider(private val model: Model, private val settings: Kotli
         val reference = toSymbol(shape.value)
         val valueType = if (shape.hasTrait<SparseTrait>()) "${reference.name}?" else reference.name
 
-        return createSymbolBuilder(shape, "Map<String, $valueType>", boxed = true)
+        return createSymbolBuilder(shape, "Map<String, $valueType>", nullable = true)
             .addReferences(reference)
             .putProperty(SymbolProperty.MUTABLE_COLLECTION_FUNCTION, "mutableMapOf<String, $valueType>")
             .putProperty(SymbolProperty.IMMUTABLE_COLLECTION_FUNCTION, "mapOf<String, $valueType>")
@@ -213,7 +213,7 @@ class KotlinSymbolProvider(private val model: Model, private val settings: Kotli
 
     override fun timestampShape(shape: TimestampShape?): Symbol {
         val dependency = KotlinDependency.CORE
-        return createSymbolBuilder(shape, "Instant", boxed = true)
+        return createSymbolBuilder(shape, "Instant", nullable = true)
             .namespace("${dependency.namespace}.time", ".")
             .addDependency(dependency)
             .build()
@@ -257,11 +257,11 @@ class KotlinSymbolProvider(private val model: Model, private val settings: Kotli
     /**
      * Creates a symbol builder for the shape with the given type name in the root namespace.
      */
-    private fun createSymbolBuilder(shape: Shape?, typeName: String, boxed: Boolean = false): Symbol.Builder {
+    private fun createSymbolBuilder(shape: Shape?, typeName: String, nullable: Boolean = false): Symbol.Builder {
         val builder = Symbol.builder()
             .putProperty(SymbolProperty.SHAPE_KEY, shape)
             .name(typeName)
-        if (boxed) {
+        if (nullable) {
             builder.nullable()
         }
         return builder
