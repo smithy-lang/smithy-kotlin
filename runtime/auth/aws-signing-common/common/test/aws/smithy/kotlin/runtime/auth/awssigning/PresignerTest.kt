@@ -25,9 +25,13 @@ private const val NON_HTTPS_URL = "http://localhost:8080/path/to/resource?foo=ba
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class PresignerTest {
+    // Verify that custom endpoint URL schemes aren't changed.
+    // See https://github.com/awslabs/aws-sdk-kotlin/issues/938
     @Test
     fun testSignedUrlAllowsHttp() = testSigningUrl("http://localhost:8080/path/to/resource?foo=bar")
 
+    // Verify that custom endpoint URL schemes aren't changed.
+    // See https://github.com/awslabs/aws-sdk-kotlin/issues/938
     @Test
     fun testSignedUrlAllowsHttps() = testSigningUrl("https://localhost:8088/path/to/resource?bar=foo")
 
