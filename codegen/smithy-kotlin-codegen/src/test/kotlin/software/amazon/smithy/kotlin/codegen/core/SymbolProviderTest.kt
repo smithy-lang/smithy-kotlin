@@ -74,12 +74,19 @@ class SymbolProviderTest {
         "PrimitiveBoolean, false, false",
     )
     fun `creates primitives`(primitiveType: String, expectedDefault: String, nullable: Boolean) {
+        // IDLv2.0 requires modeling a default value on primitives
+        val defaultTrait = when {
+            primitiveType == "PrimitiveBoolean" -> "@default(false)"
+            primitiveType.startsWith("Primitive") -> "@default(0)"
+            else -> ""
+        }
+
         val model = """
             structure MyStruct {
+                $defaultTrait
                 quux: $primitiveType,
             }
         """.prependNamespaceAndService(namespace = "foo.bar").toSmithyModel()
-
         val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model, rootNamespace = "foo.bar")
         val member = model.expectShape<MemberShape>("foo.bar#MyStruct\$quux")
         val memberSymbol = provider.toSymbol(member)
@@ -109,7 +116,7 @@ class SymbolProviderTest {
         }
         
         long MyFoo
-        """.prependNamespaceAndService(version = "2").toSmithyModel()
+        """.prependNamespaceAndService().toSmithyModel()
 
         val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model)
         val member = model.expectShape<MemberShape>("com.test#MyStruct\$foo")
@@ -131,7 +138,7 @@ class SymbolProviderTest {
         
         @default($modeledDefault)
         long MyFoo
-        """.prependNamespaceAndService(version = "2").toSmithyModel()
+        """.prependNamespaceAndService().toSmithyModel()
 
         val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model)
         val member = model.expectShape<MemberShape>("com.test#MyStruct\$foo")
@@ -152,7 +159,7 @@ class SymbolProviderTest {
         
         @default($modeledDefault)
         long RootLevelShape
-        """.prependNamespaceAndService(version = "2").toSmithyModel()
+        """.prependNamespaceAndService().toSmithyModel()
 
         val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model)
         val member = model.expectShape<MemberShape>("com.test#MyStruct\$foo")
@@ -185,7 +192,7 @@ class SymbolProviderTest {
         
         @default($modeledDefault)
         $typeName Shape
-        """.prependNamespaceAndService(version = "2").toSmithyModel()
+        """.prependNamespaceAndService().toSmithyModel()
 
         val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model)
         val member = model.expectShape<MemberShape>("com.test#MyStruct\$foo")
@@ -201,7 +208,7 @@ class SymbolProviderTest {
            foo: myString
         }
         string myString
-        """.prependNamespaceAndService(version = "2").toSmithyModel()
+        """.prependNamespaceAndService().toSmithyModel()
 
         val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model)
         val member = model.expectShape<MemberShape>("com.test#MyStruct\$foo")
@@ -230,7 +237,7 @@ class SymbolProviderTest {
             @enumValue("spade")
             SPADE
         }        
-        """.prependNamespaceAndService(version = "2").toSmithyModel()
+        """.prependNamespaceAndService().toSmithyModel()
 
         val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model)
         val member = model.expectShape<MemberShape>("com.test#MyStruct\$foo")
@@ -252,7 +259,7 @@ class SymbolProviderTest {
             FALL = 3
             WINTER = 4 
         }        
-        """.prependNamespaceAndService(version = "2").toSmithyModel()
+        """.prependNamespaceAndService().toSmithyModel()
 
         val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model)
         val member = model.expectShape<MemberShape>("com.test#MyStruct\$foo")
@@ -283,7 +290,7 @@ class SymbolProviderTest {
         }
 
         document MyDocument
-        """.prependNamespaceAndService(version = "2").toSmithyModel()
+        """.prependNamespaceAndService().toSmithyModel()
 
         val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model)
         val member = model.expectShape<MemberShape>("com.test#MyStruct\$foo")
@@ -304,7 +311,7 @@ class SymbolProviderTest {
         }
 
         string MyString
-        """.prependNamespaceAndService(version = "2").toSmithyModel()
+        """.prependNamespaceAndService().toSmithyModel()
 
         val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model)
         val member = model.expectShape<MemberShape>("com.test#MyStruct\$foo")
@@ -327,7 +334,7 @@ class SymbolProviderTest {
 
         string MyString
         integer MyInteger
-        """.prependNamespaceAndService(version = "2").toSmithyModel()
+        """.prependNamespaceAndService().toSmithyModel()
 
         val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model)
         val member = model.expectShape<MemberShape>("com.test#MyStruct\$foo")
@@ -356,6 +363,7 @@ class SymbolProviderTest {
     fun `creates streaming blobs`() {
         val model = """
             structure MyStruct {
+                @required
                 quux: BodyStream,
             }
 
@@ -522,7 +530,7 @@ class SymbolProviderTest {
                 FOO = 1
                 BAR = 2
             }
-        """.prependNamespaceAndService(version = "2", namespace = "foo.bar").toSmithyModel()
+        """.prependNamespaceAndService(namespace = "foo.bar").toSmithyModel()
 
         val provider = KotlinCodegenPlugin.createSymbolProvider(model, rootNamespace = "foo.bar")
         val shape = model.expectShape<IntEnumShape>("foo.bar#Baz")
