@@ -147,7 +147,6 @@ class SymbolProviderTest {
         val model = """
         structure MyStruct {
            @default(null)
-           @required
            foo: RootLevelShape
         }
         
@@ -159,7 +158,7 @@ class SymbolProviderTest {
         val member = model.expectShape<MemberShape>("com.test#MyStruct\$foo")
         val memberSymbol = provider.toSymbol(member)
         assertEquals("kotlin", memberSymbol.namespace)
-        assertEquals(null, memberSymbol.defaultValue())
+        assertEquals("null", memberSymbol.defaultValue())
     }
 
     @ParameterizedTest(name = "{index} ==> ''can default simple {0} type''")
