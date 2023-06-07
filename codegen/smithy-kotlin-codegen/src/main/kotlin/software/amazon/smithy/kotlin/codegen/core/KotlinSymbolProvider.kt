@@ -8,6 +8,7 @@ import software.amazon.smithy.codegen.core.*
 import software.amazon.smithy.kotlin.codegen.KotlinSettings
 import software.amazon.smithy.kotlin.codegen.lang.kotlinReservedWords
 import software.amazon.smithy.kotlin.codegen.model.*
+import software.amazon.smithy.kotlin.codegen.utils.dq
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.knowledge.NullableIndex
 import software.amazon.smithy.model.shapes.*
@@ -207,7 +208,7 @@ class KotlinSymbolProvider(private val model: Model, private val settings: Kotli
         toNode().isNumberNode -> getDefaultValueForNumber(targetShape, toNode().toString())
         toNode().isArrayNode -> "listOf()"
         toNode().isObjectNode -> "mapOf()"
-        toNode().isStringNode -> "\"${toNode()}\""
+        toNode().isStringNode -> toNode().toString().dq()
         else -> toNode().toString()
     }
 
