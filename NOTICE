@@ -1,1 +1,12 @@
+AWS SDK for Kotlin
 Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+
+
+This software includes a copy of the CRC32C implementation (runtime/runtime-core/common/src/aws/smithy/kotlin/runtime/hashing/Crc32c.kt)
+from the Apache Hadoop project (https://github.com/apache/hadoop).
+Copyright 2006 and onwards The Apache Software Foundation.
+
+
+This software includes a copy of async primitives (runtime/runtime-core/common/src/aws/smithy/kotlin/runtime/io/internal/AwaitingSlot.kt) 
+from the Ktor project (https://github.com/ktorio/ktor).
+Copyright 2014-2021 JetBrains s.r.o and contributors.
