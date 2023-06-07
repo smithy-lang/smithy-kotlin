@@ -73,7 +73,7 @@ class SymbolProviderTest {
         "Boolean, null, true",
         "PrimitiveBoolean, false, false",
     )
-    fun `creates primitives`(primitiveType: String, expectedDefault: String, boxed: Boolean) {
+    fun `creates primitives`(primitiveType: String, expectedDefault: String, nullable: Boolean) {
         val model = """
             structure MyStruct {
                 quux: $primitiveType,
@@ -85,7 +85,7 @@ class SymbolProviderTest {
         val memberSymbol = provider.toSymbol(member)
         assertEquals("kotlin", memberSymbol.namespace)
         assertEquals(expectedDefault, memberSymbol.defaultValue())
-        assertEquals(boxed, memberSymbol.isNullable)
+        assertEquals(nullable, memberSymbol.isNullable)
 
         val expectedName = translateTypeName(primitiveType.removePrefix("Primitive"))
         assertEquals(expectedName, memberSymbol.name)

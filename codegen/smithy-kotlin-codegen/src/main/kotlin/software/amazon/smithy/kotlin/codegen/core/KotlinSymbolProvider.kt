@@ -88,17 +88,17 @@ class KotlinSymbolProvider(private val model: Model, private val settings: Kotli
     override fun bigDecimalShape(shape: BigDecimalShape?): Symbol = createBigSymbol(shape, "BigDecimal")
 
     private fun createBigSymbol(shape: Shape?, symbolName: String): Symbol =
-        createSymbolBuilder(shape, symbolName, namespace = "java.math", boxed = true).build()
+        createSymbolBuilder(shape, symbolName, namespace = "java.math", nullable = true).build()
 
     override fun stringShape(shape: StringShape): Symbol = if (shape.isEnum) {
         createEnumSymbol(shape)
     } else {
-        createSymbolBuilder(shape, "String", boxed = true, namespace = "kotlin").build()
+        createSymbolBuilder(shape, "String", nullable = true, namespace = "kotlin").build()
     }
 
     private fun createEnumSymbol(shape: Shape): Symbol {
         val namespace = "$rootNamespace.model"
-        return createSymbolBuilder(shape, shape.defaultName(service), namespace, boxed = true)
+        return createSymbolBuilder(shape, shape.defaultName(service), namespace, nullable = true)
             .definitionFile("${shape.defaultName(service)}.kt")
             .build()
     }
@@ -109,7 +109,7 @@ class KotlinSymbolProvider(private val model: Model, private val settings: Kotli
     override fun structureShape(shape: StructureShape): Symbol {
         val name = shape.defaultName(service)
         val namespace = "$rootNamespace.model"
-        val builder = createSymbolBuilder(shape, name, namespace, boxed = true)
+        val builder = createSymbolBuilder(shape, name, namespace, nullable = true)
             .definitionFile("$name.kt")
 
         // add a reference to each member symbol
@@ -222,7 +222,7 @@ class KotlinSymbolProvider(private val model: Model, private val settings: Kotli
     override fun blobShape(shape: BlobShape): Symbol = if (shape.hasTrait<StreamingTrait>()) {
         RuntimeTypes.Core.Content.ByteStream.asNullable()
     } else {
-        createSymbolBuilder(shape, "ByteArray", boxed = true, namespace = "kotlin").build()
+        createSymbolBuilder(shape, "ByteArray", nullable = true, namespace = "kotlin").build()
     }
 
     override fun documentShape(shape: DocumentShape?): Symbol =
@@ -231,7 +231,7 @@ class KotlinSymbolProvider(private val model: Model, private val settings: Kotli
     override fun unionShape(shape: UnionShape): Symbol {
         val name = shape.defaultName(service)
         val namespace = "$rootNamespace.model"
-        val builder = createSymbolBuilder(shape, name, namespace, boxed = true)
+        val builder = createSymbolBuilder(shape, name, namespace, nullable = true)
             .definitionFile("$name.kt")
 
         // add a reference to each member symbol
@@ -283,8 +283,8 @@ class KotlinSymbolProvider(private val model: Model, private val settings: Kotli
         shape: Shape?,
         typeName: String,
         namespace: String,
-        boxed: Boolean = false,
-    ): Symbol.Builder = createSymbolBuilder(shape, typeName, boxed).namespace(namespace, ".")
+        nullable: Boolean = false,
+    ): Symbol.Builder = createSymbolBuilder(shape, typeName, nullable).namespace(namespace, ".")
 }
 
 // Add a reference and it's children
