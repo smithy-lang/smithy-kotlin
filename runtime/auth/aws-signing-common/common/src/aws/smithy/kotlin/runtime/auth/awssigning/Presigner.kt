@@ -13,7 +13,6 @@ import aws.smithy.kotlin.runtime.http.operation.ResolveEndpointRequest
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
 import aws.smithy.kotlin.runtime.http.request.header
-import aws.smithy.kotlin.runtime.net.Scheme
 import aws.smithy.kotlin.runtime.net.Url
 import aws.smithy.kotlin.runtime.operation.ExecutionContext
 
@@ -53,7 +52,7 @@ public suspend fun presignRequest(
     return HttpRequest(
         method = signedRequest.method,
         url = Url(
-            scheme = Scheme.HTTPS,
+            scheme = endpoint.uri.scheme,
             host = endpoint.uri.host,
             port = endpoint.uri.port,
             path = signedRequest.url.path,
