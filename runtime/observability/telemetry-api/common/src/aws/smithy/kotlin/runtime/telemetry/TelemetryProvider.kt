@@ -5,9 +5,8 @@
 
 package aws.smithy.kotlin.runtime.telemetry
 
+import aws.smithy.kotlin.runtime.telemetry.logging.LoggerProvider
 import aws.smithy.kotlin.runtime.telemetry.metrics.MeterProvider
-import aws.smithy.kotlin.runtime.telemetry.metrics.NoOpMeterProvider
-import aws.smithy.kotlin.runtime.telemetry.trace.NoOpTracerProvider
 import aws.smithy.kotlin.runtime.telemetry.trace.TracerProvider
 
 /**
@@ -27,12 +26,18 @@ public interface TelemetryProvider {
     public val tracerProvider: TracerProvider
 
     /**
-     * Get the [MeterProvider] used to create new [[aws.smithy.kotlin.runtime.telemetry.metrics.Meter] instances
+     * Get the [MeterProvider] used to create new [aws.smithy.kotlin.runtime.telemetry.metrics.Meter] instances
      */
     public val meterProvider: MeterProvider
+
+    /**
+     * Get the [LoggerProvider] used to create new [aws.smithy.kotlin.runtime.telemetry.logging.LoggerProvider] instances
+     */
+    public val loggerProvider: LoggerProvider
 }
 
 private object NoOpTelemetryProvider : TelemetryProvider {
-    override val meterProvider: MeterProvider = NoOpMeterProvider
-    override val tracerProvider: TracerProvider = NoOpTracerProvider
+    override val meterProvider: MeterProvider = MeterProvider.None
+    override val tracerProvider: TracerProvider = TracerProvider.None
+    override val loggerProvider: LoggerProvider = LoggerProvider.None
 }
