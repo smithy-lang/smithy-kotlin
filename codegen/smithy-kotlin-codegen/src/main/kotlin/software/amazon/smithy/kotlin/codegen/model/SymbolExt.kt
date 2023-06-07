@@ -86,7 +86,14 @@ enum class PropertyTypeMutability {
 }
 
 enum class DefaultValueType {
+    /**
+     * A default value which has been inferred, such as 0f for floats and false for booleans
+     */
     INFERRED,
+
+    /**
+     * A default value which has been modeled using Smithy's default trait.
+     */
     MODELED,
 }
 
