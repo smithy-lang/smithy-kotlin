@@ -90,6 +90,9 @@ enum class DefaultValueType {
     MODELED,
 }
 
+val Symbol.defaultValueType: DefaultValueType?
+    get() = getProperty(SymbolProperty.DEFAULT_VALUE_TYPE_KEY, DefaultValueType::class.java).getOrNull()
+
 /**
  * Get the property type mutability of this symbol if set.
  */
@@ -104,10 +107,9 @@ val Symbol.propertyTypeMutability: PropertyTypeMutability?
  */
 fun Symbol.defaultValue(defaultNullable: String? = "null"): String? {
     val default = getProperty(SymbolProperty.DEFAULT_VALUE_KEY, String::class.java)
-    val defaultType = default.getOrNull()?.run { getProperty(SymbolProperty.DEFAULT_VALUE_TYPE_KEY, DefaultValueType::class.java).get() }
 
     // nullable types should default to null if there is no modeled default
-    if (isNullable && (!default.isPresent || defaultType == DefaultValueType.INFERRED)) {
+    if (isNullable && (!default.isPresent || defaultValueType == DefaultValueType.INFERRED)) {
         return defaultNullable
     }
     return default.getOrNull()
