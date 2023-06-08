@@ -1,8 +1,0 @@
-{
-    "id": "aeef9722-fc30-4771-80f3-abcca702b45f",
-    "type": "bugfix",
-    "description": "Allow non-HTTPS URLs in presigning",
-    "issues": [
-        "awslabs/aws-sdk-kotlin#938"
-    ]
-}

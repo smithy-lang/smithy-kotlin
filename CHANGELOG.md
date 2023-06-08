@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.21.2] - 06/08/2023
+
+### Fixes
+* [#938](https://github.com/awslabs/aws-sdk-kotlin/issues/938) Allow non-HTTPS URLs in presigning
+
 ## [0.21.1] - 06/01/2023
 
 ### Fixes
