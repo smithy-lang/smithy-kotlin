@@ -5,6 +5,7 @@
 
 package aws.smithy.kotlin.runtime.telemetry.trace
 
+import aws.smithy.kotlin.runtime.telemetry.context.Context
 import aws.smithy.kotlin.runtime.util.AttributeKey
 import aws.smithy.kotlin.runtime.util.Attributes
 
@@ -15,7 +16,7 @@ internal object NoOpTracerProvider : TracerProvider {
 private object NoOpTracer : Tracer {
     override fun createSpan(
         name: String,
-        parentContext: TraceContext?,
+        parentContext: Context?,
         initialAttributes: Attributes,
         spanKind: SpanKind,
     ): TraceSpan = NoOpTraceSpan
@@ -23,7 +24,7 @@ private object NoOpTracer : Tracer {
 
 private object NoOpTraceSpan : TraceSpan {
     override val name: String = "NoOpSpan"
-    override val traceContext: TraceContext = TraceContext.NONE
+    override val context: Context = Context.None
     override fun emitEvent(name: String, attributes: Attributes) {}
     override fun setStatus(status: SpanStatus) {}
 

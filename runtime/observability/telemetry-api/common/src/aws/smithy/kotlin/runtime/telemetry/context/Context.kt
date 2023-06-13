@@ -9,4 +9,11 @@ package aws.smithy.kotlin.runtime.telemetry.context
  * Context is an opaque propagation mechanism for telemetry providers to carry execution
  * scoped values across API boundaries.
  */
-public interface Context
+public interface Context {
+    public companion object {
+        /**
+         * A no-op [Context]
+         */
+        public val None: Context = object : Context {}
+    }
+}
