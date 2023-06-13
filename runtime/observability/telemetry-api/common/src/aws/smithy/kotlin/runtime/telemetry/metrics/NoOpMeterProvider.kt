@@ -5,7 +5,7 @@
 
 package aws.smithy.kotlin.runtime.telemetry.metrics
 
-import aws.smithy.kotlin.runtime.telemetry.trace.TraceContext
+import aws.smithy.kotlin.runtime.telemetry.context.Context
 import aws.smithy.kotlin.runtime.util.Attributes
 
 internal object NoOpMeterProvider : MeterProvider {
@@ -40,17 +40,17 @@ private object NoOpMeter : Meter {
 }
 
 private object NoOpUpDownCounter : UpDownCounter {
-    override fun add(value: Long, attributes: Attributes, context: TraceContext?) {}
+    override fun add(value: Long, attributes: Attributes, context: Context?) {}
 }
 private object NoOpMonotonicCounter : MonotonicCounter {
-    override fun add(value: Long, attributes: Attributes, context: TraceContext?) {}
+    override fun add(value: Long, attributes: Attributes, context: Context?) {}
 }
 
 private object NoOpLongHistogram : LongHistogram {
-    override fun record(value: Long, attributes: Attributes, context: TraceContext?) {}
+    override fun record(value: Long, attributes: Attributes, context: Context?) {}
 }
 private object NoOpDoubleHistogram : DoubleHistogram {
-    override fun record(value: Double, attributes: Attributes, context: TraceContext?) {}
+    override fun record(value: Double, attributes: Attributes, context: Context?) {}
 }
 
 private object NoOpGaugeHandle : GaugeHandle {

@@ -5,6 +5,7 @@
 
 package aws.smithy.kotlin.runtime.telemetry.trace
 
+import aws.smithy.kotlin.runtime.telemetry.context.Context
 import aws.smithy.kotlin.runtime.util.Attributes
 import aws.smithy.kotlin.runtime.util.emptyAttributes
 
@@ -12,7 +13,7 @@ import aws.smithy.kotlin.runtime.util.emptyAttributes
  * Entry point for creating [TraceSpan] instances.
  */
 public interface Tracer {
-    // TODO - do we want to be able to explicitly say "no parent", e.g. TraceContext.root()
+    // TODO - do we want to be able to explicitly say "no parent", e.g. Context.root()
 
     /**
      * Creates a new span and makes it active.
@@ -23,7 +24,7 @@ public interface Tracer {
      */
     public fun createSpan(
         name: String,
-        parentContext: TraceContext? = null,
+        parentContext: Context? = null,
         initialAttributes: Attributes = emptyAttributes(),
         spanKind: SpanKind = SpanKind.INTERNAL,
     ): TraceSpan

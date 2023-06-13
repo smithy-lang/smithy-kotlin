@@ -5,6 +5,7 @@
 
 package aws.smithy.kotlin.runtime.telemetry.trace
 
+import aws.smithy.kotlin.runtime.telemetry.context.Context
 import aws.smithy.kotlin.runtime.util.AttributeKey
 import aws.smithy.kotlin.runtime.util.Attributes
 import aws.smithy.kotlin.runtime.util.emptyAttributes
@@ -22,7 +23,7 @@ public interface TraceSpan {
     /**
      * The span's context
      */
-    public val traceContext: TraceContext
+    public val context: Context
 
     /**
      * Set an attribute on the span

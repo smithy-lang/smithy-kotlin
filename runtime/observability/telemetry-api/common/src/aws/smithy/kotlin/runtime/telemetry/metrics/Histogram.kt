@@ -5,7 +5,7 @@
 
 package aws.smithy.kotlin.runtime.telemetry.metrics
 
-import aws.smithy.kotlin.runtime.telemetry.trace.TraceContext
+import aws.smithy.kotlin.runtime.telemetry.context.Context
 import aws.smithy.kotlin.runtime.util.Attributes
 import aws.smithy.kotlin.runtime.util.emptyAttributes
 
@@ -20,7 +20,7 @@ public interface Histogram<T : Number> {
     public fun record(
         value: T,
         attributes: Attributes = emptyAttributes(),
-        context: TraceContext? = null,
+        context: Context? = null,
     )
 }
 public typealias LongHistogram = Histogram<Long>
