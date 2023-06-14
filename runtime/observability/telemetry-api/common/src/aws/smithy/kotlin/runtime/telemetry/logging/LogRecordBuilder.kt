@@ -12,7 +12,7 @@ import aws.smithy.kotlin.runtime.util.Attributes
 import aws.smithy.kotlin.runtime.util.get
 
 /**
- * Construct a logging record and emits it to an underlying logger
+ * Construct a logging record that can be emitted to an underlying logger.
  */
 public interface LogRecordBuilder {
     /**

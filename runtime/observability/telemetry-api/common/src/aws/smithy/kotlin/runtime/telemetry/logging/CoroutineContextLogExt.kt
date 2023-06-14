@@ -10,6 +10,9 @@ import aws.smithy.kotlin.runtime.telemetry.context.telemetryContext
 import aws.smithy.kotlin.runtime.telemetry.telemetryProvider
 import kotlin.coroutines.CoroutineContext
 
+// TODO - add new context element for "LoggingContext" to set key/value pairs/MDC with. e.g. `sdkInvocationId`
+//        e.g. withLogCtx(key to value, key to value) { ... }
+
 /**
  * Logs a message using the current [LoggerProvider] configured in this [CoroutineContext].
  * @param level The level (or severity) of this event

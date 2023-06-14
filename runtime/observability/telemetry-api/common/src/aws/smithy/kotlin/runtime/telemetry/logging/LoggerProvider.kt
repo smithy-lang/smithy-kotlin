@@ -14,6 +14,8 @@ public interface LoggerProvider {
          * A no-op [LoggerProvider] that does nothing
          */
         public val None: LoggerProvider = NoOpLoggerProvider
+
+        // TODO - Default/Global logger (JVM -> SLF4J)
     }
 
     /**
