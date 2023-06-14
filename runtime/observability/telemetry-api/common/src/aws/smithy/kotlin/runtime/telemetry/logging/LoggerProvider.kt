@@ -21,11 +21,11 @@ public interface LoggerProvider {
      *
      * @param name the name of the logger to get or create
      */
-    public fun getLogger(name: String): Logger
+    public fun getOrCreateLogger(name: String): Logger
 }
 
 /**
  * Get the logger for the class [T]
  */
 public inline fun <reified T> LoggerProvider.getLogger(): Logger =
-    getLogger(requireNotNull(T::class.qualifiedName) { "getLogger<T> cannot be used on an anonymous object" })
+    getOrCreateLogger(requireNotNull(T::class.qualifiedName) { "getLogger<T> cannot be used on an anonymous object" })

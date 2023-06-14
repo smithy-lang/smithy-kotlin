@@ -9,7 +9,7 @@ import aws.smithy.kotlin.runtime.time.Instant
 import aws.smithy.kotlin.runtime.util.Attributes
 
 internal object NoOpLoggerProvider : LoggerProvider {
-    override fun getLogger(name: String): Logger = NoOpLogger
+    override fun getOrCreateLogger(name: String): Logger = NoOpLogger
 }
 
 private object NoOpLogger : Logger {

@@ -28,5 +28,5 @@ public interface TracerProvider {
      * @param attributes (optional) specifies the instrumentation scope attributes to associate with emitted
      * telemetry
      */
-    public fun getTracer(scope: String, attributes: Attributes = emptyAttributes()): Tracer
+    public fun getOrCreateTracer(scope: String, attributes: Attributes = emptyAttributes()): Tracer
 }

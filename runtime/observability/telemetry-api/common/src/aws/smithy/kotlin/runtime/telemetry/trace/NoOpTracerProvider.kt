@@ -10,7 +10,7 @@ import aws.smithy.kotlin.runtime.util.AttributeKey
 import aws.smithy.kotlin.runtime.util.Attributes
 
 internal object NoOpTracerProvider : TracerProvider {
-    override fun getTracer(scope: String, attributes: Attributes): Tracer = NoOpTracer
+    override fun getOrCreateTracer(scope: String, attributes: Attributes): Tracer = NoOpTracer
 }
 
 private object NoOpTracer : Tracer {
@@ -27,8 +27,7 @@ private object NoOpTraceSpan : TraceSpan {
     override val context: Context = Context.None
     override fun emitEvent(name: String, attributes: Attributes) {}
     override fun setStatus(status: SpanStatus) {}
-
-    override fun <T : Any> setAttribute(key: AttributeKey<T>, value: T) {}
-    override fun setAttributes(attributes: Attributes) {}
-    override fun end() { }
+    override operator fun <T : Any> set(key: AttributeKey<T>, value: T) {}
+    override fun mergeAttributes(attributes: Attributes) {}
+    override fun close() {}
 }

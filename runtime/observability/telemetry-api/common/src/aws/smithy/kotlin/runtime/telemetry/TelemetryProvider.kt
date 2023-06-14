@@ -31,7 +31,7 @@ public interface TelemetryProvider {
     public val meterProvider: MeterProvider
 
     /**
-     * Get the [LoggerProvider] used to create new [aws.smithy.kotlin.runtime.telemetry.logging.LoggerProvider] instances
+     * Get the [LoggerProvider] used to create new [aws.smithy.kotlin.runtime.telemetry.logging.Logger] instances
      */
     public val loggerProvider: LoggerProvider
 }

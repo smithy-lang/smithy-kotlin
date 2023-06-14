@@ -10,54 +10,29 @@ package aws.smithy.kotlin.runtime.telemetry.logging
  */
 public interface Logger {
     /**
-     * Lazy add a log message if trace logging is enabled
-     */
-    public fun trace(msg: () -> Any)
-
-    /**
-     * Lazy add a log message if debug logging is enabled
-     */
-    public fun debug(msg: () -> Any)
-
-    /**
-     * Lazy add a log message if info logging is enabled
-     */
-    public fun info(msg: () -> Any)
-
-    /**
-     * Lazy add a log message if warn logging is enabled
-     */
-    public fun warn(msg: () -> Any)
-
-    /**
-     * Lazy add a log message if error logging is enabled
-     */
-    public fun error(msg: () -> Any)
-
-    /**
      * Lazy add a log message with throwable payload if trace logging is enabled
      */
-    public fun trace(t: Throwable?, msg: () -> Any)
+    public fun trace(t: Throwable? = null, msg: () -> Any)
 
     /**
      * Lazy add a log message with throwable payload if debug logging is enabled
      */
-    public fun debug(t: Throwable?, msg: () -> Any)
+    public fun debug(t: Throwable? = null, msg: () -> Any)
 
     /**
      * Lazy add a log message with throwable payload if info logging is enabled
      */
-    public fun info(t: Throwable?, msg: () -> Any)
+    public fun info(t: Throwable? = null, msg: () -> Any)
 
     /**
      * Lazy add a log message with throwable payload if warn logging is enabled
      */
-    public fun warn(t: Throwable?, msg: () -> Any?)
+    public fun warn(t: Throwable? = null, msg: () -> Any?)
 
     /**
      * Lazy add a log message with throwable payload if error logging is enabled
      */
-    public fun error(t: Throwable?, msg: () -> Any)
+    public fun error(t: Throwable? = null, msg: () -> Any)
 
     /**
      * Test if this logger is enabled for [level]

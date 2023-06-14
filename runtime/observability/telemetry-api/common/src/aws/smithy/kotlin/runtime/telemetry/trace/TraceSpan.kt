@@ -5,6 +5,7 @@
 
 package aws.smithy.kotlin.runtime.telemetry.trace
 
+import aws.smithy.kotlin.runtime.io.Closeable
 import aws.smithy.kotlin.runtime.telemetry.context.Context
 import aws.smithy.kotlin.runtime.util.AttributeKey
 import aws.smithy.kotlin.runtime.util.Attributes
@@ -14,7 +15,7 @@ import aws.smithy.kotlin.runtime.util.emptyAttributes
  * Represents a single operation/task within a trace. Each trace contains a root span and
  * optionally one or more child spans.
  */
-public interface TraceSpan {
+public interface TraceSpan : Closeable {
     /**
      * The name of the span
      */
@@ -30,13 +31,14 @@ public interface TraceSpan {
      * @param key the attribute key to use
      * @param value the value to associate with the key
      */
-    public fun <T : Any> setAttribute(key: AttributeKey<T>, value: T)
+    public operator fun <T : Any> set(key: AttributeKey<T>, value: T)
 
     /**
-     * Set all [attributes] on the span.
-     * @param attributes collection of attributes to set on the span
+     * Merge all attributes from [attributes] into this span's attributes (overriding any previously set values
+     * with the same keys).
+     * @param attributes collection of attributes to merge into current span's attributes
      */
-    public fun setAttributes(attributes: Attributes)
+    public fun mergeAttributes(attributes: Attributes)
 
     /**
      * Add an event to this span
@@ -55,5 +57,5 @@ public interface TraceSpan {
      * Marks the end of this span's execution. This MUST be called when the unit
      * of work the span represents has finished.
      */
-    public fun end()
+    override fun close()
 }

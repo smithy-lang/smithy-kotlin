@@ -24,5 +24,5 @@ public interface MeterProvider {
      * @param scope the name of the instrumentation scope that uniquely identifies this meter
      * @param attributes instrumentation scope attributes to associate with emitted telemetry
      */
-    public fun getMeter(scope: String, attributes: Attributes = emptyAttributes()): Meter
+    public fun getOrCreateMeter(scope: String, attributes: Attributes = emptyAttributes()): Meter
 }
