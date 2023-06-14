@@ -6,7 +6,6 @@
 package aws.smithy.kotlin.runtime.telemetry.trace
 
 import aws.smithy.kotlin.runtime.io.Closeable
-import aws.smithy.kotlin.runtime.telemetry.context.Context
 import aws.smithy.kotlin.runtime.util.AttributeKey
 import aws.smithy.kotlin.runtime.util.Attributes
 import aws.smithy.kotlin.runtime.util.emptyAttributes
@@ -22,11 +21,6 @@ public interface TraceSpan : Closeable {
     public val name: String
 
     /**
-     * The span's context
-     */
-    public val context: Context
-
-    /**
      * Set an attribute on the span
      * @param key the attribute key to use
      * @param value the value to associate with the key
@@ -40,6 +34,7 @@ public interface TraceSpan : Closeable {
      */
     public fun mergeAttributes(attributes: Attributes)
 
+    // FIXME - when would we use OTeL trace events vs logs?
     /**
      * Add an event to this span
      * @param name the name of the event
