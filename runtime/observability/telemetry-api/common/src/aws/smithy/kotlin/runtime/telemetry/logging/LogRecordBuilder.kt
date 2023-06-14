@@ -5,6 +5,7 @@
 
 package aws.smithy.kotlin.runtime.telemetry.logging
 
+import aws.smithy.kotlin.runtime.telemetry.context.Context
 import aws.smithy.kotlin.runtime.time.Instant
 import aws.smithy.kotlin.runtime.util.AttributeKey
 import aws.smithy.kotlin.runtime.util.Attributes
@@ -54,10 +55,16 @@ public interface LogRecordBuilder {
     public fun setAttribute(name: String, value: Any)
 
     /**
+     * Set the telemetry context to associate with this log record
+     * @param context the context to associate
+     */
+    public fun setContext(context: Context)
+
+    /**
      * Associate all key/value pairs from [attributes] with this log record
      * @param attributes the attributes to associate with this log record
      */
-    public fun setAllAttributes(attributes: Attributes) {
+    public fun mergeAttributes(attributes: Attributes) {
         attributes.keys.forEach { key ->
             @Suppress("UNCHECKED_CAST")
             setAttribute(key.name, attributes[key as AttributeKey<Any>])
