@@ -1,8 +1,0 @@
-{
-  "id": "5F4A433D-A734-4A96-B15B-71D5146CE142",
-  "type": "bugfix",
-  "description": "Fix restjson deserializer protocol",
-  "issues": [
-    "awslabs/smithy-kotlin#828"
-  ]
-}

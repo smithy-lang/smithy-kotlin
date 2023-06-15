@@ -46,15 +46,17 @@ public object RestJsonErrorDeserializer {
     }
 
     public fun deserialize(headers: Headers, payload: ByteArray?): ErrorDetails {
-        var code: String? = headers[X_AMZN_ERROR_TYPE_HEADER_NAME]
-        var message: String? = if (headers[X_AMZN_ERROR_MESSAGE_HEADER_NAME] == null) headers[X_AMZN_EVENT_ERROR_MESSAGE_HEADER_NAME] else headers[X_AMZN_ERROR_MESSAGE_HEADER_NAME]
+        var message = headers[X_AMZN_ERROR_MESSAGE_HEADER_NAME] ?: headers[X_AMZN_ERROR_MESSAGE_HEADER_NAME]
+        val headerCode: String? = headers[X_AMZN_ERROR_TYPE_HEADER_NAME]
+        var bodyCode: String? = null
+        var bodyType: String? = null
 
         if (payload != null) {
             JsonDeserializer(payload).deserializeStruct(OBJ_DESCRIPTOR) {
                 loop@ while (true) {
                     when (findNextFieldIndex()) {
-                        ERR_CODE_ALT1_DESCRIPTOR.index -> if (code == null) code = deserializeString()
-                        ERR_CODE_ALT2_DESCRIPTOR.index -> if (code == null) code = deserializeString()
+                        ERR_CODE_ALT1_DESCRIPTOR.index -> bodyCode = deserializeString()
+                        ERR_CODE_ALT2_DESCRIPTOR.index -> bodyType = deserializeString()
                         MESSAGE_ALT1_DESCRIPTOR.index,
                         MESSAGE_ALT2_DESCRIPTOR.index,
                         MESSAGE_ALT3_DESCRIPTOR.index,
@@ -65,7 +67,7 @@ public object RestJsonErrorDeserializer {
                 }
             }
         }
-        return ErrorDetails(sanitize(code), message, requestId = null)
+        return ErrorDetails(chooseCode(headerCode, bodyCode, bodyType), message, requestId = null)
     }
 }
 
@@ -83,3 +85,14 @@ public object RestJsonErrorDeserializer {
  * aws.protocoltests.restjson#FooError:http://amazon.com/smithy/com.amazon.smithy.validate/
  */
 private fun sanitize(code: String?): String? = code?.substringAfter("#")?.substringBefore(":")
+
+/**
+ * According to the spec we should check the following locations in order:
+ *
+ * HTTP header x-amzn-errortype
+ * top-level body field code
+ * top-level body field __type
+ *
+ * Source: https://github.com/awslabs/aws-sdk-kotlin/issues/828
+ */
+private fun chooseCode(headerCode: String?, bodyCode: String?, bodyType: String?): String? = sanitize(headerCode ?: bodyCode ?: bodyType)
