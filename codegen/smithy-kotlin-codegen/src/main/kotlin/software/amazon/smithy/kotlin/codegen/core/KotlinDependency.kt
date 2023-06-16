@@ -112,7 +112,7 @@ data class KotlinDependency(
         val AWS_CREDENTIALS = KotlinDependency(GradleConfiguration.Implementation, "$RUNTIME_ROOT_NS.auth.awscredentials", RUNTIME_GROUP, "aws-credentials", RUNTIME_VERSION)
         val AWS_SIGNING_COMMON = KotlinDependency(GradleConfiguration.Implementation, "$RUNTIME_ROOT_NS.auth.awssigning", RUNTIME_GROUP, "aws-signing-common", RUNTIME_VERSION)
         val AWS_SIGNING_DEFAULT = KotlinDependency(GradleConfiguration.Implementation, "$RUNTIME_ROOT_NS.auth.awssigning", RUNTIME_GROUP, "aws-signing-default", RUNTIME_VERSION)
-        val TRACING_CORE = KotlinDependency(GradleConfiguration.Api, "$RUNTIME_ROOT_NS.tracing", RUNTIME_GROUP, "tracing-core", RUNTIME_VERSION)
+        val TELEMETRY_API = KotlinDependency(GradleConfiguration.Api, "$RUNTIME_ROOT_NS.telemetry", RUNTIME_GROUP, "telemetry-api", RUNTIME_VERSION)
 
         val AWS_JSON_PROTOCOLS = KotlinDependency(GradleConfiguration.Implementation, "$RUNTIME_ROOT_NS.awsprotocol.json", RUNTIME_GROUP, "aws-json-protocols", RUNTIME_VERSION)
         val AWS_EVENT_STREAM = KotlinDependency(GradleConfiguration.Implementation, "$RUNTIME_ROOT_NS.awsprotocol.eventstream", RUNTIME_GROUP, "aws-event-stream", RUNTIME_VERSION)

@@ -22,7 +22,7 @@ dependencies {
     testImplementation(project(":runtime:protocol:http"))
     testImplementation(project(":runtime:protocol:http-client-engines:http-client-engine-default"))
     testImplementation(project(":runtime:serde:serde-json"))
-    testImplementation(project(":runtime:tracing:tracing-core"))
+    testImplementation(project(":runtime:observability:telemetry-api"))
 
     testImplementation("software.amazon.smithy:smithy-protocol-test-traits:$smithyVersion")
     testImplementation("software.amazon.smithy:smithy-aws-traits:$smithyVersion")

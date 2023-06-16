@@ -6,21 +6,29 @@ package aws.smithy.kotlin.runtime.http.engine.okhttp
 
 import aws.smithy.kotlin.runtime.net.HostResolver
 import aws.smithy.kotlin.runtime.net.toHostAddress
-import aws.smithy.kotlin.runtime.tracing.NoOpTraceSpan
-import aws.smithy.kotlin.runtime.tracing.logger
+import aws.smithy.kotlin.runtime.telemetry.logging.LoggerProvider
+import aws.smithy.kotlin.runtime.telemetry.logging.getLogger
+import aws.smithy.kotlin.runtime.telemetry.logging.logger
+import aws.smithy.kotlin.runtime.telemetry.telemetryProvider
+import aws.smithy.kotlin.runtime.telemetry.trace.SpanStatus
+import aws.smithy.kotlin.runtime.telemetry.trace.TracerProvider
+import aws.smithy.kotlin.runtime.telemetry.trace.recordException
 import okhttp3.*
 import java.io.IOException
 import java.net.InetAddress
 import java.net.InetSocketAddress
 import java.net.Proxy
 
+// FIXME - instrument http attributes on the span
+
 internal class HttpEngineEventListener(
     private val pool: ConnectionPool,
     private val hr: HostResolver,
     call: Call,
 ) : EventListener() {
-    private val traceSpan = call.request().tag<SdkRequestTag>()?.traceSpan?.child("HTTP") ?: NoOpTraceSpan
-    private val logger = traceSpan.logger<HttpEngineEventListener>()
+    private val tracerProvider = call.request().tag<SdkRequestTag>()?.callContext?.telemetryProvider?.tracerProvider ?: TracerProvider.None
+    private val traceSpan = tracerProvider.getOrCreateTracer("OkHttpEngine").createSpan("HTTP")
+    private val logger = call.request().tag<SdkRequestTag>()?.callContext?.logger<OkHttpEngine>() ?: LoggerProvider.None.getLogger<OkHttpEngine>()
 
     private inline fun trace(crossinline msg: () -> Any) {
         logger.trace { msg() }
@@ -39,6 +47,8 @@ internal class HttpEngineEventListener(
 
     override fun callFailed(call: Call, ioe: IOException) {
         trace(ioe) { "call failed" }
+        traceSpan.recordException(ioe, true)
+        traceSpan.setStatus(SpanStatus.ERROR)
         traceSpan.close()
     }
 

@@ -215,9 +215,6 @@ public final class aws/smithy/kotlin/runtime/http/operation/HttpOperationContext
 	public final fun getSdkRequestId ()Laws/smithy/kotlin/runtime/util/AttributeKey;
 }
 
-public final class aws/smithy/kotlin/runtime/http/operation/HttpOperationContextKt {
-}
-
 public abstract interface class aws/smithy/kotlin/runtime/http/operation/HttpSerialize {
 	public abstract fun serialize (Laws/smithy/kotlin/runtime/operation/ExecutionContext;Ljava/lang/Object;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }

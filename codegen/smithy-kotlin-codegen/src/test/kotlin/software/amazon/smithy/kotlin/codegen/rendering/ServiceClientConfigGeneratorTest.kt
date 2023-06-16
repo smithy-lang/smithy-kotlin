@@ -42,7 +42,7 @@ class ServiceClientConfigGeneratorTest {
         contents.assertBalancedBracesAndParens()
 
         val expectedCtor = """
-public class Config private constructor(builder: Builder) : HttpAuthConfig, HttpClientConfig, HttpEngineConfig by builder.buildHttpEngineConfig(), IdempotencyTokenConfig, SdkClientConfig, TracingClientConfig {
+public class Config private constructor(builder: Builder) : HttpAuthConfig, HttpClientConfig, HttpEngineConfig by builder.buildHttpEngineConfig(), IdempotencyTokenConfig, SdkClientConfig, TelemetryConfig {
 """
         contents.shouldContainWithDiff(expectedCtor)
 
@@ -55,12 +55,12 @@ public class Config private constructor(builder: Builder) : HttpAuthConfig, Http
     override val logMode: LogMode = builder.logMode ?: LogMode.Default
     override val retryPolicy: RetryPolicy<Any?> = builder.retryPolicy ?: StandardRetryPolicy.Default
     override val retryStrategy: RetryStrategy = builder.retryStrategy ?: StandardRetryStrategy()
-    override val tracer: Tracer = builder.tracer ?: DefaultTracer(LoggingTraceProbe, clientName)
+    override val telemetryProvider: TelemetryProvider = builder.telemetryProvider ?: TelemetryProvider.None
 """
         contents.shouldContainWithDiff(expectedProps)
 
         val expectedBuilder = """
-    public class Builder : HttpAuthConfig.Builder, HttpClientConfig.Builder, HttpEngineConfig.Builder by HttpEngineConfigImpl.BuilderImpl(), IdempotencyTokenConfig.Builder, SdkClientConfig.Builder<Config>, TracingClientConfig.Builder {
+    public class Builder : HttpAuthConfig.Builder, HttpClientConfig.Builder, HttpEngineConfig.Builder by HttpEngineConfigImpl.BuilderImpl(), IdempotencyTokenConfig.Builder, SdkClientConfig.Builder<Config>, TelemetryConfig.Builder {
         /**
          * A reader-friendly name for the client.
          */
@@ -122,12 +122,10 @@ public class Config private constructor(builder: Builder) : HttpAuthConfig, Http
         override var retryStrategy: RetryStrategy? = null
 
         /**
-         * The tracer that is responsible for creating trace spans and wiring them up to a tracing backend (e.g.,
-         * a trace probe). By default, this will create a standard tracer that uses the service name for the root
-         * trace span and delegates to a logging trace probe (i.e.,
-         * `DefaultTracer(LoggingTraceProbe, "<service-name>")`).
+         * The telemetry provider used to instrument the SDK operations with. By default this will be a no-op
+         * implementation.
          */
-        override var tracer: Tracer? = null
+        override var telemetryProvider: TelemetryProvider? = null
 
         override fun build(): Config = Config(this)
     }
@@ -256,7 +254,7 @@ public class Config private constructor(builder: Builder) {
     override val logMode: LogMode = builder.logMode ?: LogMode.LogRequest
     override val retryPolicy: RetryPolicy<Any?> = builder.retryPolicy ?: StandardRetryPolicy.Default
     override val retryStrategy: RetryStrategy = builder.retryStrategy ?: StandardRetryStrategy()
-    override val tracer: Tracer = builder.tracer ?: DefaultTracer(LoggingTraceProbe, clientName)"""
+    override val telemetryProvider: TelemetryProvider = builder.telemetryProvider ?: TelemetryProvider.None"""
         contents.shouldContainWithDiff(expectedConfigValues)
     }
 

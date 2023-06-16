@@ -13,7 +13,7 @@ kotlin {
         commonMain {
             dependencies {
                 api(project(":runtime:runtime-core"))
-                api(project(":runtime:tracing:tracing-core"))
+                api(project(":runtime:observability:telemetry-api"))
             }
         }
 

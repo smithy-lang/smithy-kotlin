@@ -9,6 +9,13 @@ package aws.smithy.kotlin.runtime.telemetry.logging
  * Internal logging facade
  */
 public interface Logger {
+    public companion object {
+        /**
+         * A no-op [Logger] that does nothing
+         */
+        public val None: Logger = NoOpLogger
+    }
+
     /**
      * Lazy add a log message with throwable payload if trace logging is enabled
      */
@@ -27,7 +34,7 @@ public interface Logger {
     /**
      * Lazy add a log message with throwable payload if warn logging is enabled
      */
-    public fun warn(t: Throwable? = null, msg: () -> Any?)
+    public fun warn(t: Throwable? = null, msg: () -> Any)
 
     /**
      * Lazy add a log message with throwable payload if error logging is enabled

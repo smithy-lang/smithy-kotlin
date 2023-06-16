@@ -37,6 +37,8 @@ abstract class HttpProtocolClientGenerator(
         val Operation: SectionKey<OperationShape> = SectionKey("Operation")
     }
 
+    object OperationSpanAttributes : SectionId
+
     /**
      * Render the implementation of the service client interface
      */
@@ -70,6 +72,8 @@ abstract class HttpProtocolClientGenerator(
             }
             .write("")
             .call { renderClose(writer) }
+            .write("")
+            .call { renderInstrumentOperation(writer) }
             .write("")
             .call { renderAdditionalMethods(writer) }
             .closeBlock("}")
@@ -249,24 +253,45 @@ abstract class HttpProtocolClientGenerator(
         val hasOutputStream = outputShape.map { it.hasStreamingMember(ctx.model) }.orElse(false)
         val inputVariableName = if (inputShape.isPresent) "input" else KotlinTypes.Unit.fullName
 
-        writer
-            .write(
-                """val rootSpan = config.tracer.createRootSpan("#L-${'$'}{op.context.#T}")""",
-                op.id.name,
-                RuntimeTypes.HttpClient.Operation.sdkRequestId,
-            )
-            .withBlock(
-                "return #T.#T(rootSpan) {",
-                "}",
-                RuntimeTypes.KotlinCoroutines.coroutineContext,
-                RuntimeTypes.Tracing.Core.withRootTraceSpan,
-            ) {
-                if (hasOutputStream) {
-                    write("op.#T(client, #L, block)", RuntimeTypes.HttpClient.Operation.execute, inputVariableName)
-                } else {
-                    write("op.#T(client, #L)", RuntimeTypes.HttpClient.Operation.roundTrip, inputVariableName)
-                }
+        writer.write("val (span, telemetryCtx) = instrumentOperation(#S)", op.id.name)
+        writer.withBlock("return #T(span, telemetryCtx) {", "}", RuntimeTypes.Observability.TelemetryApi.withSpan) {
+            if (hasOutputStream) {
+                write("op.#T(client, #L, block)", RuntimeTypes.HttpClient.Operation.execute, inputVariableName)
+            } else {
+                write("op.#T(client, #L)", RuntimeTypes.HttpClient.Operation.roundTrip, inputVariableName)
             }
+        }
+    }
+
+    private fun renderInstrumentOperation(writer: KotlinWriter) {
+        writer.withBlock(
+            "private fun instrumentOperation(operation: #T): Pair<#T, #T> {",
+            "}",
+            KotlinTypes.String,
+            RuntimeTypes.Observability.TelemetryApi.TraceSpan,
+            KotlinTypes.Coroutines.CoroutineContext,
+        ) {
+            write("val tracer = config.telemetryProvider.tracerProvider.getOrCreateTracer(config.clientName)")
+            write("val parentCtx = config.telemetryProvider.contextManager.current()")
+            write(
+                "val telemetryCtx = #T(config.telemetryProvider) + #T(parentCtx)",
+                RuntimeTypes.Observability.TelemetryApi.TelemetryProviderContext,
+                RuntimeTypes.Observability.TelemetryApi.TelemetryContextElement,
+            )
+
+            withBlock("val span = tracer.createSpan(", ")") {
+                write("#S,", "\${ServiceId}.\${operation}")
+                withBlock("#T{", "},", RuntimeTypes.Core.Utils.attributesOf) {
+                    write("#S to ServiceId", "rpc.service")
+                    write("#S to operation", "rpc.method")
+                    writer.declareSection(OperationSpanAttributes)
+                }
+                write("#T.CLIENT,", RuntimeTypes.Observability.TelemetryApi.SpanKind)
+                write("parentCtx,")
+            }
+
+            write("return span to telemetryCtx")
+        }
     }
 
     private fun ioSymbolNames(op: OperationShape): Pair<String, String> {
