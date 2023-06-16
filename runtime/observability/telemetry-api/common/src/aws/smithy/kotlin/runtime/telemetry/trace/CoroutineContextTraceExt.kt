@@ -67,10 +67,13 @@ public suspend inline fun <R> withSpan(
         block(span)
     }
 } catch (ex: Exception) {
-    if (ex !is CancellationException) {
-        span.setStatus(SpanStatus.ERROR)
+    when (ex) {
+        is CancellationException -> span.setAttribute("cancelled", true)
+        else -> {
+            span.setStatus(SpanStatus.ERROR)
+            span.recordException(ex, true)
+        }
     }
-    span.recordException(ex, true)
     throw ex
 } finally {
     span.close()
