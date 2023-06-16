@@ -19,6 +19,7 @@ import software.amazon.smithy.kotlin.codegen.test.*
 import software.amazon.smithy.model.shapes.*
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 
 class SymbolProviderTest {
     @Test
@@ -123,6 +124,7 @@ class SymbolProviderTest {
         val memberSymbol = provider.toSymbol(member)
         assertEquals("kotlin", memberSymbol.namespace)
         assertEquals(expectedDefault, memberSymbol.defaultValue())
+        assertTrue(memberSymbol.isNullable)
     }
 
     @Test
@@ -166,6 +168,7 @@ class SymbolProviderTest {
         val memberSymbol = provider.toSymbol(member)
         assertEquals("kotlin", memberSymbol.namespace)
         assertEquals("null", memberSymbol.defaultValue())
+        assertTrue(memberSymbol.isNullable)
     }
 
     @ParameterizedTest(name = "{index} ==> ''can default simple {0} type''")
@@ -343,6 +346,46 @@ class SymbolProviderTest {
     }
 
     @Test
+    fun `@clientOptional`() {
+        val model = """
+        structure MyStruct {
+            @required
+            @clientOptional
+            quux: QuuxType
+        }
+        
+        string QuuxType
+        """.prependNamespaceAndService().toSmithyModel()
+
+        val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model)
+        val member = model.expectShape<MemberShape>("com.test#MyStruct\$quux")
+        val memberSymbol = provider.toSymbol(member)
+        assertEquals("kotlin", memberSymbol.namespace)
+        assertTrue(memberSymbol.isNullable)
+        assertEquals("null", memberSymbol.defaultValue())
+    }
+
+    @Test
+    fun `@input`() {
+        val model = """
+        @input
+        structure MyStruct {
+            @required
+            quux: QuuxType
+        }
+        
+        long QuuxType
+        """.prependNamespaceAndService().toSmithyModel()
+
+        val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model)
+        val member = model.expectShape<MemberShape>("com.test#MyStruct\$quux")
+        val memberSymbol = provider.toSymbol(member)
+        assertEquals("kotlin", memberSymbol.namespace)
+        assertTrue(memberSymbol.isNullable)
+        assertEquals("null", memberSymbol.defaultValue())
+    }
+
+    @Test
     fun `creates blobs`() {
         val model = """
         structure MyStruct {
@@ -355,7 +398,7 @@ class SymbolProviderTest {
         val memberSymbol = provider.toSymbol(member)
         assertEquals("kotlin", memberSymbol.namespace)
         assertEquals("null", memberSymbol.defaultValue())
-        assertEquals(true, memberSymbol.isNullable)
+        assertTrue(memberSymbol.isNullable)
         assertEquals("ByteArray", memberSymbol.name)
     }
 
