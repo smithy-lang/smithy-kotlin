@@ -16,7 +16,7 @@ public interface Tracer {
     // TODO - do we want to be able to explicitly say "no parent", e.g. Context.root()
 
     /**
-     * Creates a new span and makes it active.
+     * Creates a new span and makes it active in the current [Context].
      *
      * @param name the name of the span
      * @param parentContext the parent context to use for this span, if not set it is
@@ -24,8 +24,8 @@ public interface Tracer {
      */
     public fun createSpan(
         name: String,
-        parentContext: Context? = null,
         initialAttributes: Attributes = emptyAttributes(),
         spanKind: SpanKind = SpanKind.INTERNAL,
+        parentContext: Context? = null,
     ): TraceSpan
 }

@@ -5,6 +5,8 @@
 
 package aws.smithy.kotlin.runtime.telemetry
 
+import aws.smithy.kotlin.runtime.telemetry.context.Context
+import aws.smithy.kotlin.runtime.telemetry.context.ContextManager
 import aws.smithy.kotlin.runtime.telemetry.logging.LoggerProvider
 import aws.smithy.kotlin.runtime.telemetry.metrics.MeterProvider
 import aws.smithy.kotlin.runtime.telemetry.trace.TracerProvider
@@ -34,10 +36,16 @@ public interface TelemetryProvider {
      * Get the [LoggerProvider] used to create new [aws.smithy.kotlin.runtime.telemetry.logging.Logger] instances
      */
     public val loggerProvider: LoggerProvider
+
+    /**
+     * Get the [ContextManager] used to get the current [Context]
+     */
+    public val contextManager: ContextManager
 }
 
 private object NoOpTelemetryProvider : TelemetryProvider {
     override val meterProvider: MeterProvider = MeterProvider.None
     override val tracerProvider: TracerProvider = TracerProvider.None
     override val loggerProvider: LoggerProvider = LoggerProvider.None
+    override val contextManager: ContextManager = ContextManager.None
 }
