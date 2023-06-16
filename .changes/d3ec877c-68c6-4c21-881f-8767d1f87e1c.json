@@ -1,0 +1,8 @@
+{
+    "id": "d3ec877c-68c6-4c21-881f-8767d1f87e1c",
+    "type": "feature",
+    "description": "Support Smithy default trait",
+    "issues": [
+        "https://github.com/awslabs/smithy-kotlin/issues/718"
+    ]
+}

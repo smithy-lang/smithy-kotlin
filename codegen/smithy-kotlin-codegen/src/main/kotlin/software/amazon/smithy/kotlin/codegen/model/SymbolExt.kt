@@ -18,8 +18,11 @@ object SymbolProperty {
     // The key that holds the default value for a type (symbol) as a string
     const val DEFAULT_VALUE_KEY: String = "defaultValue"
 
-    // Boolean property indicating this symbol should be boxed
-    const val BOXED_KEY: String = "boxed"
+    // The key that holds the type of default value
+    const val DEFAULT_VALUE_TYPE_KEY: String = "defaultValueType"
+
+    // Boolean property indicating this symbol is nullable
+    const val NULLABLE_KEY: String = "nullable"
 
     // the original shape the symbol was created from
     const val SHAPE_KEY: String = "shape"
@@ -47,10 +50,10 @@ object SymbolProperty {
 }
 
 /**
- * Test if a symbol is boxed
+ * Test if a symbol is nullable
  */
-val Symbol.isBoxed: Boolean
-    get() = getProperty(SymbolProperty.BOXED_KEY).map {
+val Symbol.isNullable: Boolean
+    get() = getProperty(SymbolProperty.NULLABLE_KEY).map {
         when (it) {
             is Boolean -> it
             else -> false
@@ -58,10 +61,10 @@ val Symbol.isBoxed: Boolean
     }.orElse(false)
 
 /**
- * Test if a symbol is not boxed
+ * Test if a symbol is not nullable
  */
-val Symbol.isNotBoxed: Boolean
-    get() = !isBoxed
+val Symbol.isNotNullable: Boolean
+    get() = !isNullable
 
 enum class PropertyTypeMutability {
     /**
@@ -82,6 +85,21 @@ enum class PropertyTypeMutability {
     }
 }
 
+enum class DefaultValueType {
+    /**
+     * A default value which has been inferred, such as 0f for floats and false for booleans
+     */
+    INFERRED,
+
+    /**
+     * A default value which has been modeled using Smithy's default trait.
+     */
+    MODELED,
+}
+
+val Symbol.defaultValueType: DefaultValueType?
+    get() = getProperty(SymbolProperty.DEFAULT_VALUE_TYPE_KEY, DefaultValueType::class.java).getOrNull()
+
 /**
  * Get the property type mutability of this symbol if set.
  */
@@ -92,27 +110,30 @@ val Symbol.propertyTypeMutability: PropertyTypeMutability?
 
 /**
  * Gets the default value for the symbol if present, else null
- * @param defaultBoxed the string to pass back for boxed values
+ * @param defaultNullable the string to pass back for nullable values
  */
-fun Symbol.defaultValue(defaultBoxed: String? = "null"): String? {
-    // boxed types should always be defaulted to null
-    if (isBoxed) {
-        return defaultBoxed
-    }
-
+fun Symbol.defaultValue(defaultNullable: String? = "null"): String? {
     val default = getProperty(SymbolProperty.DEFAULT_VALUE_KEY, String::class.java)
-    return if (default.isPresent) default.get() else null
+
+    // nullable types should default to null if there is no modeled default
+    if (isNullable && (!default.isPresent || defaultValueType == DefaultValueType.INFERRED)) {
+        return defaultNullable
+    }
+    return default.getOrNull()
 }
 
 /**
- * Mark a symbol as being boxed (nullable) i.e. `T?`
+ * Mark a symbol as being nullable (i.e. `T?`)
  */
-fun Symbol.Builder.boxed(): Symbol.Builder = apply { putProperty(SymbolProperty.BOXED_KEY, true) }
+fun Symbol.Builder.nullable(): Symbol.Builder = apply { putProperty(SymbolProperty.NULLABLE_KEY, true) }
 
 /**
  * Set the default value used when formatting the symbol
  */
-fun Symbol.Builder.defaultValue(value: String): Symbol.Builder = apply { putProperty(SymbolProperty.DEFAULT_VALUE_KEY, value) }
+fun Symbol.Builder.defaultValue(value: String?, type: DefaultValueType = DefaultValueType.INFERRED): Symbol.Builder = apply {
+    putProperty(SymbolProperty.DEFAULT_VALUE_KEY, value)
+    putProperty(SymbolProperty.DEFAULT_VALUE_TYPE_KEY, type)
+}
 
 /**
  * Convenience function for specifying kotlin namespace
@@ -177,7 +198,7 @@ val Symbol.shape: Shape?
 /**
  * Get the nullable version of a symbol
  */
-fun Symbol.asNullable(): Symbol = toBuilder().boxed().build()
+fun Symbol.asNullable(): Symbol = toBuilder().nullable().build()
 
 /**
  * Check whether a symbol represents an extension

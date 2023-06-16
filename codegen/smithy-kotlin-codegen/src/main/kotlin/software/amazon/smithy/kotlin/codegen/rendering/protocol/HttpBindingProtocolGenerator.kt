@@ -703,7 +703,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             val headerName = hdrBinding.locationName
 
             val targetSymbol = ctx.symbolProvider.toSymbol(hdrBinding.member)
-            val defaultValuePostfix = if (targetSymbol.isNotBoxed && targetSymbol.defaultValue() != null) {
+            val defaultValuePostfix = if (targetSymbol.isNotNullable && targetSymbol.defaultValue() != null) {
                 " ?: ${targetSymbol.defaultValue()}"
             } else {
                 ""

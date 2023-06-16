@@ -320,7 +320,7 @@ class KotlinPropertyFormatter(
             is Symbol -> {
                 writer.addImport(type)
                 var formatted = if (fullyQualifiedNames) type.fullName else type.name
-                if (includeNullability && type.isBoxed) {
+                if (includeNullability && type.isNullable) {
                     formatted += "?"
                 }
 

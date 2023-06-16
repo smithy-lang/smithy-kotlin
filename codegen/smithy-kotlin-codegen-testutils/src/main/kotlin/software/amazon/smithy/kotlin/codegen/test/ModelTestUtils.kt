@@ -28,14 +28,14 @@ import java.net.URL
 
 /**
  * Unless necessary to deviate for test reasons, the following literals should be used in test models:
- *  smithy version: "1"
- *  model version: "1.0.0"
+ *  smithy version: "2"
+ *  model version: "2.0.0"
  *  namespace: TestDefault.NAMESPACE
  *  service name: "Test"
  */
 object TestModelDefault {
-    const val SMITHY_IDL_VERSION = "1"
-    const val MODEL_VERSION = "1.0.0"
+    const val SMITHY_IDL_VERSION = "2"
+    const val MODEL_VERSION = "2.0.0"
     const val NAMESPACE = "com.test"
     const val SERVICE_NAME = "Test"
     const val SDK_ID = "Test"

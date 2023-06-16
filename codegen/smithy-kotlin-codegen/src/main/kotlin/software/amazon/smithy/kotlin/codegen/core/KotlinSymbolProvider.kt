@@ -8,9 +8,11 @@ import software.amazon.smithy.codegen.core.*
 import software.amazon.smithy.kotlin.codegen.KotlinSettings
 import software.amazon.smithy.kotlin.codegen.lang.kotlinReservedWords
 import software.amazon.smithy.kotlin.codegen.model.*
+import software.amazon.smithy.kotlin.codegen.utils.dq
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.knowledge.NullableIndex
 import software.amazon.smithy.model.shapes.*
+import software.amazon.smithy.model.traits.DefaultTrait
 import software.amazon.smithy.model.traits.SparseTrait
 import software.amazon.smithy.model.traits.StreamingTrait
 import java.util.logging.Logger
@@ -75,31 +77,29 @@ class KotlinSymbolProvider(private val model: Model, private val settings: Kotli
 
     override fun longShape(shape: LongShape): Symbol = numberShape(shape, "Long", "0L")
 
-    override fun floatShape(shape: FloatShape): Symbol = numberShape(shape, "Float", "0.0f")
+    override fun floatShape(shape: FloatShape): Symbol = numberShape(shape, "Float", "0f")
 
     override fun doubleShape(shape: DoubleShape): Symbol = numberShape(shape, "Double", "0.0")
 
     private fun numberShape(shape: Shape, typeName: String, defaultValue: String = "0"): Symbol =
-        createSymbolBuilder(shape, typeName, namespace = "kotlin")
-            .defaultValue(defaultValue)
-            .build()
+        createSymbolBuilder(shape, typeName, namespace = "kotlin").defaultValue(defaultValue).build()
 
     override fun bigIntegerShape(shape: BigIntegerShape?): Symbol = createBigSymbol(shape, "BigInteger")
 
     override fun bigDecimalShape(shape: BigDecimalShape?): Symbol = createBigSymbol(shape, "BigDecimal")
 
     private fun createBigSymbol(shape: Shape?, symbolName: String): Symbol =
-        createSymbolBuilder(shape, symbolName, namespace = "java.math", boxed = true).build()
+        createSymbolBuilder(shape, symbolName, namespace = "java.math", nullable = true).build()
 
     override fun stringShape(shape: StringShape): Symbol = if (shape.isEnum) {
         createEnumSymbol(shape)
     } else {
-        createSymbolBuilder(shape, "String", boxed = true, namespace = "kotlin").build()
+        createSymbolBuilder(shape, "String", nullable = true, namespace = "kotlin").build()
     }
 
     private fun createEnumSymbol(shape: Shape): Symbol {
         val namespace = "$rootNamespace.model"
-        return createSymbolBuilder(shape, shape.defaultName(service), namespace, boxed = true)
+        return createSymbolBuilder(shape, shape.defaultName(service), namespace, nullable = true)
             .definitionFile("${shape.defaultName(service)}.kt")
             .build()
     }
@@ -110,7 +110,7 @@ class KotlinSymbolProvider(private val model: Model, private val settings: Kotli
     override fun structureShape(shape: StructureShape): Symbol {
         val name = shape.defaultName(service)
         val namespace = "$rootNamespace.model"
-        val builder = createSymbolBuilder(shape, name, namespace, boxed = true)
+        val builder = createSymbolBuilder(shape, name, namespace, nullable = true)
             .definitionFile("$name.kt")
 
         // add a reference to each member symbol
@@ -149,7 +149,7 @@ class KotlinSymbolProvider(private val model: Model, private val settings: Kotli
     override fun listShape(shape: ListShape): Symbol {
         val reference = toSymbol(shape.member)
         val valueType = if (shape.hasTrait<SparseTrait>()) "${reference.name}?" else reference.name
-        return createSymbolBuilder(shape, "List<$valueType>", boxed = true)
+        return createSymbolBuilder(shape, "List<$valueType>", nullable = true)
             .addReferences(reference)
             .putProperty(SymbolProperty.MUTABLE_COLLECTION_FUNCTION, "mutableListOf<$valueType>")
             .putProperty(SymbolProperty.IMMUTABLE_COLLECTION_FUNCTION, "listOf<$valueType>")
@@ -160,7 +160,7 @@ class KotlinSymbolProvider(private val model: Model, private val settings: Kotli
         val reference = toSymbol(shape.value)
         val valueType = if (shape.hasTrait<SparseTrait>()) "${reference.name}?" else reference.name
 
-        return createSymbolBuilder(shape, "Map<String, $valueType>", boxed = true)
+        return createSymbolBuilder(shape, "Map<String, $valueType>", nullable = true)
             .addReferences(reference)
             .putProperty(SymbolProperty.MUTABLE_COLLECTION_FUNCTION, "mutableMapOf<String, $valueType>")
             .putProperty(SymbolProperty.IMMUTABLE_COLLECTION_FUNCTION, "mapOf<String, $valueType>")
@@ -172,11 +172,17 @@ class KotlinSymbolProvider(private val model: Model, private val settings: Kotli
         val targetShape =
             model.getShape(shape.target).orElseThrow { CodegenException("Shape not found: ${shape.target}") }
 
-        val targetSymbol = if (nullableIndex.isMemberNullable(shape, NullableIndex.CheckMode.CLIENT_ZERO_VALUE_V1_NO_INPUT)) {
-            toSymbol(targetShape).toBuilder().boxed().build()
-        } else {
-            toSymbol(targetShape)
-        }
+        val targetSymbol = toSymbol(targetShape)
+            .toBuilder()
+            .apply {
+                if (nullableIndex.isMemberNullable(shape, NullableIndex.CheckMode.CLIENT_ZERO_VALUE_V1_NO_INPUT)) nullable()
+
+                shape.getTrait<DefaultTrait>()?.let {
+                    defaultValue(it.getDefaultValue(targetShape), DefaultValueType.MODELED)
+                }
+            }
+            .build()
+
         // figure out if we are referencing an event stream or not.
         // NOTE: unlike blob streams we actually re-use the target (union) shape which is why we can't do this
         // when visiting a unionShape() like we can for blobShape()
@@ -197,9 +203,18 @@ class KotlinSymbolProvider(private val model: Model, private val settings: Kotli
         }
     }
 
+    private fun DefaultTrait.getDefaultValue(targetShape: Shape): String? = when {
+        toNode().toString() == "null" || targetShape is BlobShape && toNode().toString() == "" -> null
+        toNode().isNumberNode -> getDefaultValueForNumber(targetShape, toNode().toString())
+        toNode().isArrayNode -> "listOf()"
+        toNode().isObjectNode -> "mapOf()"
+        toNode().isStringNode -> toNode().toString().dq()
+        else -> toNode().toString()
+    }
+
     override fun timestampShape(shape: TimestampShape?): Symbol {
         val dependency = KotlinDependency.CORE
-        return createSymbolBuilder(shape, "Instant", boxed = true)
+        return createSymbolBuilder(shape, "Instant", nullable = true)
             .namespace("${dependency.namespace}.time", ".")
             .addDependency(dependency)
             .build()
@@ -208,7 +223,7 @@ class KotlinSymbolProvider(private val model: Model, private val settings: Kotli
     override fun blobShape(shape: BlobShape): Symbol = if (shape.hasTrait<StreamingTrait>()) {
         RuntimeTypes.Core.Content.ByteStream.asNullable()
     } else {
-        createSymbolBuilder(shape, "ByteArray", boxed = true, namespace = "kotlin").build()
+        createSymbolBuilder(shape, "ByteArray", nullable = true, namespace = "kotlin").build()
     }
 
     override fun documentShape(shape: DocumentShape?): Symbol =
@@ -217,7 +232,7 @@ class KotlinSymbolProvider(private val model: Model, private val settings: Kotli
     override fun unionShape(shape: UnionShape): Symbol {
         val name = shape.defaultName(service)
         val namespace = "$rootNamespace.model"
-        val builder = createSymbolBuilder(shape, name, namespace, boxed = true)
+        val builder = createSymbolBuilder(shape, name, namespace, nullable = true)
             .definitionFile("$name.kt")
 
         // add a reference to each member symbol
@@ -243,14 +258,21 @@ class KotlinSymbolProvider(private val model: Model, private val settings: Kotli
     /**
      * Creates a symbol builder for the shape with the given type name in the root namespace.
      */
-    private fun createSymbolBuilder(shape: Shape?, typeName: String, boxed: Boolean = false): Symbol.Builder {
+    private fun createSymbolBuilder(shape: Shape?, typeName: String, nullable: Boolean = false): Symbol.Builder {
         val builder = Symbol.builder()
             .putProperty(SymbolProperty.SHAPE_KEY, shape)
             .name(typeName)
-        if (boxed) {
-            builder.boxed()
+        if (nullable) {
+            builder.nullable()
         }
         return builder
+    }
+
+    private fun getDefaultValueForNumber(shape: Shape, value: String) = when (shape) {
+        is LongShape -> "${value}L"
+        is FloatShape -> "${value}f"
+        is DoubleShape -> if (value.matches("[0-9]*\\.[0-9]+".toRegex())) value else "$value.0"
+        else -> value
     }
 
     /**
@@ -262,8 +284,8 @@ class KotlinSymbolProvider(private val model: Model, private val settings: Kotli
         shape: Shape?,
         typeName: String,
         namespace: String,
-        boxed: Boolean = false,
-    ): Symbol.Builder = createSymbolBuilder(shape, typeName, boxed).namespace(namespace, ".")
+        nullable: Boolean = false,
+    ): Symbol.Builder = createSymbolBuilder(shape, typeName, nullable).namespace(namespace, ".")
 }
 
 // Add a reference and it's children
