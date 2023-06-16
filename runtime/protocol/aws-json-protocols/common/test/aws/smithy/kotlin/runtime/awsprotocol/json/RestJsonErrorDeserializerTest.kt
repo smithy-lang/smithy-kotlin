@@ -73,58 +73,43 @@ class RestJsonErrorDeserializerTest {
         }
         var payload = """
             {
-                "foo": "bar",
                 "code": "BodyCode",
-                "__type": "TypeCode",
-                "baz": "quux"
+                "__type": "TypeCode"
             }
         """.trimIndent().encodeToByteArray()
-        var actual = RestJsonErrorDeserializer.deserialize(headers, payload)
-        assertEquals("HeaderCode", actual.code)
+        assertEquals("HeaderCode", RestJsonErrorDeserializer.deserialize(headers, payload).code)
 
         payload = """
             {
-                "foo": "bar",
-                "__type": "TypeCode",
-                "baz": "quux"
+                "__type": "TypeCode"
             }
         """.trimIndent().encodeToByteArray()
-        actual = RestJsonErrorDeserializer.deserialize(headers, payload)
-        assertEquals("HeaderCode", actual.code)
+        assertEquals("HeaderCode", RestJsonErrorDeserializer.deserialize(headers, payload).code)
 
         payload = """
             {
-                "foo": "bar",
-                "code": "BodyCode",
-                "baz": "quux"
+                "code": "BodyCode"
             }
         """.trimIndent().encodeToByteArray()
-        actual = RestJsonErrorDeserializer.deserialize(headers, payload)
-        assertEquals("HeaderCode", actual.code)
+        assertEquals("HeaderCode", RestJsonErrorDeserializer.deserialize(headers, payload).code)
 
         // Checking for body code return
         headers = Headers {}
         payload = """
             {
-                "foo": "bar",
                 "code": "BodyCode",
-                "__type": "TypeCode",
-                "baz": "quux"
+                "__type": "TypeCode"
             }
         """.trimIndent().encodeToByteArray()
-        actual = RestJsonErrorDeserializer.deserialize(headers, payload)
-        assertEquals("BodyCode", actual.code)
+        assertEquals("BodyCode", RestJsonErrorDeserializer.deserialize(headers, payload).code)
 
         payload = """
             {
-                "foo": "bar",
                 "__type": "TypeCode",
-                "code": "BodyCode",
-                "baz": "quux"
+                "code": "BodyCode"
             }
         """.trimIndent().encodeToByteArray()
-        actual = RestJsonErrorDeserializer.deserialize(headers, payload)
-        assertEquals("BodyCode", actual.code)
+        assertEquals("BodyCode", RestJsonErrorDeserializer.deserialize(headers, payload).code)
     }
 
     @OptIn(ExperimentalStdlibApi::class, ExperimentalCoroutinesApi::class)
