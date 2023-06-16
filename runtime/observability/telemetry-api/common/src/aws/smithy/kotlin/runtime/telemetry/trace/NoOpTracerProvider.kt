@@ -16,15 +16,14 @@ internal object NoOpTracerProvider : TracerProvider {
 private object NoOpTracer : Tracer {
     override fun createSpan(
         name: String,
-        parentContext: Context?,
         initialAttributes: Attributes,
         spanKind: SpanKind,
+        parentContext: Context?,
     ): TraceSpan = NoOpTraceSpan
 }
 
 private object NoOpTraceSpan : TraceSpan {
     override val name: String = "NoOpSpan"
-    override val context: Context = Context.None
     override fun emitEvent(name: String, attributes: Attributes) {}
     override fun setStatus(status: SpanStatus) {}
     override operator fun <T : Any> set(key: AttributeKey<T>, value: T) {}
