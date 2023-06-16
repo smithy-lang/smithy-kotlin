@@ -11,8 +11,8 @@ import aws.smithy.kotlin.runtime.crt.update
 import aws.smithy.kotlin.runtime.http.Headers
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.http.request.toBuilder
+import aws.smithy.kotlin.runtime.telemetry.logging.debug
 import aws.smithy.kotlin.runtime.time.epochMilliseconds
-import aws.smithy.kotlin.runtime.tracing.debug
 import kotlin.coroutines.coroutineContext
 import aws.sdk.kotlin.crt.auth.credentials.Credentials as CrtCredentials
 import aws.sdk.kotlin.crt.auth.signing.AwsSignatureType as CrtSignatureType

@@ -17,10 +17,9 @@ import aws.smithy.kotlin.runtime.retries.RetryStrategy
 import aws.smithy.kotlin.runtime.retries.policy.RetryDirective
 import aws.smithy.kotlin.runtime.retries.policy.RetryPolicy
 import aws.smithy.kotlin.runtime.retries.toResult
-import aws.smithy.kotlin.runtime.tracing.TraceSpan
-import aws.smithy.kotlin.runtime.tracing.debug
-import aws.smithy.kotlin.runtime.tracing.traceSpan
-import aws.smithy.kotlin.runtime.tracing.withChildTraceSpan
+import aws.smithy.kotlin.runtime.telemetry.logging.debug
+import aws.smithy.kotlin.runtime.telemetry.trace.withSpan
+import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.coroutineContext
 
 /**
@@ -40,12 +39,12 @@ internal class RetryMiddleware<I, O>(
 
         var attempt = 1
         val result = if (modified.subject.isRetryable) {
-            // FIXME this is the wrong span because we want the fresh one from inside each attempt but there's no way to
+            // FIXME this is the wrong span/context because we want the fresh one from inside each attempt but there's no way to
             // wire that through without changing the `RetryPolicy` interface
-            val wrappedPolicy = PolicyLogger(policy, coroutineContext.traceSpan)
+            val wrappedPolicy = PolicyLogger(policy, coroutineContext)
 
             val outcome = strategy.retry(wrappedPolicy) {
-                coroutineContext.withChildTraceSpan("Attempt-$attempt") {
+                withSpan<RetryMiddleware<*, *>, _>("Attempt-$attempt") {
                     if (attempt > 1) {
                         coroutineContext.debug<RetryMiddleware<*, *>> { "retrying request, attempt $attempt" }
                     }
@@ -61,7 +60,7 @@ internal class RetryMiddleware<I, O>(
             outcome.toResult()
         } else {
             // Create a child span even though we won't retry
-            coroutineContext.withChildTraceSpan("Non-retryable attempt") {
+            withSpan<RetryMiddleware<*, *>, _>("Non-retryable attempt") {
                 tryAttempt(modified, next, attempt)
             }
         }
@@ -96,11 +95,11 @@ internal class RetryMiddleware<I, O>(
  */
 private class PolicyLogger<O>(
     private val policy: RetryPolicy<O>,
-    private val traceSpan: TraceSpan,
+    private val coroutineContext: CoroutineContext,
 ) : RetryPolicy<O> {
     override fun evaluate(result: Result<O>): RetryDirective = policy.evaluate(result).also {
         if (it is RetryDirective.TerminateAndFail) {
-            traceSpan.debug<RetryMiddleware<*, *>> { "request failed with non-retryable error" }
+            coroutineContext.debug<RetryMiddleware<*, *>> { "request failed with non-retryable error" }
         }
     }
 }

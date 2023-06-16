@@ -31,7 +31,7 @@ kotlin {
 
                 implementation(project(":runtime:logging"))
                 // exposes: TracingContext.TraceSpan
-                api(project(":runtime:tracing:tracing-core"))
+                api(project(":runtime:observability:telemetry-api"))
 
                 // HttpClientEngine implements CoroutineScope
                 api("org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion")

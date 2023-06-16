@@ -1,3 +1,12 @@
+public abstract interface class aws/smithy/kotlin/runtime/telemetry/TelemetryConfig {
+	public abstract fun getTelemetryProvider ()Laws/smithy/kotlin/runtime/telemetry/TelemetryProvider;
+}
+
+public abstract interface class aws/smithy/kotlin/runtime/telemetry/TelemetryConfig$Builder {
+	public abstract fun getTelemetryProvider ()Laws/smithy/kotlin/runtime/telemetry/TelemetryProvider;
+	public abstract fun setTelemetryProvider (Laws/smithy/kotlin/runtime/telemetry/TelemetryProvider;)V
+}
+
 public abstract interface class aws/smithy/kotlin/runtime/telemetry/TelemetryProvider {
 	public static final field Companion Laws/smithy/kotlin/runtime/telemetry/TelemetryProvider$Companion;
 	public abstract fun getContextManager ()Laws/smithy/kotlin/runtime/telemetry/context/ContextManager;
@@ -74,6 +83,7 @@ public final class aws/smithy/kotlin/runtime/telemetry/logging/LogRecordBuilder$
 }
 
 public abstract interface class aws/smithy/kotlin/runtime/telemetry/logging/Logger {
+	public static final field Companion Laws/smithy/kotlin/runtime/telemetry/logging/Logger$Companion;
 	public abstract fun debug (Ljava/lang/Throwable;Lkotlin/jvm/functions/Function0;)V
 	public abstract fun error (Ljava/lang/Throwable;Lkotlin/jvm/functions/Function0;)V
 	public abstract fun info (Ljava/lang/Throwable;Lkotlin/jvm/functions/Function0;)V
@@ -81,6 +91,10 @@ public abstract interface class aws/smithy/kotlin/runtime/telemetry/logging/Logg
 	public abstract fun logRecordBuilder ()Laws/smithy/kotlin/runtime/telemetry/logging/LogRecordBuilder;
 	public abstract fun trace (Ljava/lang/Throwable;Lkotlin/jvm/functions/Function0;)V
 	public abstract fun warn (Ljava/lang/Throwable;Lkotlin/jvm/functions/Function0;)V
+}
+
+public final class aws/smithy/kotlin/runtime/telemetry/logging/Logger$Companion {
+	public final fun getNone ()Laws/smithy/kotlin/runtime/telemetry/logging/Logger;
 }
 
 public final class aws/smithy/kotlin/runtime/telemetry/logging/Logger$DefaultImpls {

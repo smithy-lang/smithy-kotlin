@@ -140,30 +140,17 @@ object RuntimeConfigProperty {
         """.trimIndent()
     }
 
-    // TODO support a nice DSL for this so that callers don't have to be aware of `DefaultTracer` if they don't want
-    // to, they can just call `SomeClient { tracer { clientName = "Foo" } }` in the simple case.
-    // We could do this as an extension in the runtime off TracingClientConfig.Builder type...
-    val Tracer = ConfigProperty {
-        symbol = RuntimeTypes.Tracing.Core.Tracer
-        baseClass = RuntimeTypes.Tracing.Core.TracingClientConfig
+    var TelemetryProvider = ConfigProperty {
+        symbol = RuntimeTypes.Observability.TelemetryApi.TelemetryProvider
+        baseClass = RuntimeTypes.Observability.TelemetryApi.TelemetryConfig
         useNestedBuilderBaseClass()
 
         documentation = """
-            The tracer that is responsible for creating trace spans and wiring them up to a tracing backend (e.g.,
-            a trace probe). By default, this will create a standard tracer that uses the service name for the root
-            trace span and delegates to a logging trace probe (i.e.,
-            `DefaultTracer(LoggingTraceProbe, "<service-name>")`).
+            The telemetry provider used to instrument the SDK operations with. By default this will be a no-op
+            implementation.
         """.trimIndent()
-        propertyType = ConfigPropertyType.Custom(
-            render = { prop, writer ->
-                writer.write(
-                    """override val #1L: Tracer = builder.#1L ?: #2T(#3T, clientName)""",
-                    prop.propertyName,
-                    RuntimeTypes.Tracing.Core.DefaultTracer,
-                    RuntimeTypes.Tracing.Core.LoggingTraceProbe,
-                )
-            },
-        )
+
+        propertyType = ConfigPropertyType.RequiredWithDefault("TelemetryProvider.None")
     }
 
     val HttpInterceptors = ConfigProperty {

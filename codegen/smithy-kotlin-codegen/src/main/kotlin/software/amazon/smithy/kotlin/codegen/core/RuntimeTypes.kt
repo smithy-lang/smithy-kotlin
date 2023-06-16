@@ -308,15 +308,15 @@ object RuntimeTypes {
         }
     }
 
-    object Tracing {
-        object Core : RuntimeTypePackage(KotlinDependency.TRACING_CORE) {
-            val debug = symbol("debug")
-            val DefaultTracer = symbol("DefaultTracer")
-            val LoggingTraceProbe = symbol("LoggingTraceProbe")
-            val TraceProbe = symbol("TraceProbe")
-            val Tracer = symbol("Tracer")
-            val TracingClientConfig = symbol("TracingClientConfig")
-            val withRootTraceSpan = symbol("withRootTraceSpan")
+    object Observability {
+        object TelemetryApi : RuntimeTypePackage(KotlinDependency.TELEMETRY_API) {
+            val SpanKind = symbol("SpanKind", "trace")
+            val TelemetryConfig = symbol("TelemetryConfig")
+            val TelemetryProvider = symbol("TelemetryProvider")
+            val TelemetryProviderContext = symbol("TelemetryProviderContext")
+            val TelemetryContextElement = symbol("TelemetryContextElement", "context")
+            val TraceSpan = symbol("TraceSpan", "trace")
+            val withSpan = symbol("withSpan", "trace")
         }
     }
 

@@ -6,6 +6,7 @@
 package aws.smithy.kotlin.runtime.telemetry.logging
 
 import aws.smithy.kotlin.runtime.InternalApi
+import aws.smithy.kotlin.runtime.telemetry.context.Context
 import aws.smithy.kotlin.runtime.telemetry.context.telemetryContext
 import aws.smithy.kotlin.runtime.telemetry.telemetryProvider
 import kotlin.coroutines.CoroutineContext
@@ -189,3 +190,54 @@ public fun CoroutineContext.trace(sourceComponent: String, ex: Throwable? = null
 @InternalApi
 public inline fun <reified T> CoroutineContext.trace(ex: Throwable? = null, noinline content: () -> Any): Unit =
     log<T>(LogLevel.Trace, ex, content)
+
+/**
+ * Get a [Logger] instance using the current [LoggerProvider] configured in this [CoroutineContext]
+ * @param sourceComponent The name of the component to create a logger for
+ */
+@InternalApi
+public fun CoroutineContext.logger(sourceComponent: String): Logger {
+    val logger = this.telemetryProvider.loggerProvider.getOrCreateLogger(sourceComponent)
+    val context = this
+    // Pulling a logger instance out disregards additional telemetry context from the coroutine context,
+    // wrap the logger in a way that preserves this additional context
+    return ContextAwareLogger(context, logger, sourceComponent)
+}
+
+private class ContextAwareLogger(
+    private val context: CoroutineContext,
+    private val delegate: Logger,
+    private val sourceComponent: String,
+) : Logger {
+    override fun trace(t: Throwable?, msg: () -> Any) = context.trace(sourceComponent, t, msg)
+    override fun debug(t: Throwable?, msg: () -> Any) = context.debug(sourceComponent, t, msg)
+    override fun info(t: Throwable?, msg: () -> Any) = context.info(sourceComponent, t, msg)
+    override fun warn(t: Throwable?, msg: () -> Any) = context.warn(sourceComponent, t, msg)
+    override fun error(t: Throwable?, msg: () -> Any) = context.error(sourceComponent, t, msg)
+    override fun isEnabledFor(level: LogLevel): Boolean = delegate.isEnabledFor(level)
+    override fun logRecordBuilder(): LogRecordBuilder {
+        val builder = delegate.logRecordBuilder()
+        val telemetryContext = context.telemetryContext
+        return telemetryContext?.let { ContextAwareLogRecordBuilder(builder, it) } ?: builder
+    }
+}
+private class ContextAwareLogRecordBuilder(
+    private val delegate: LogRecordBuilder,
+    private var context: Context,
+) : LogRecordBuilder by delegate {
+    override fun setContext(context: Context) { this.context = context }
+    override fun emit() {
+        delegate.setContext(context)
+        delegate.emit()
+    }
+}
+
+/**
+ * Get a [Logger] instance using the current [LoggerProvider] configured in this [CoroutineContext]
+ * @param T The class to use for the name of the logger
+ */
+@InternalApi
+public inline fun <reified T> CoroutineContext.logger(): Logger {
+    val sourceComponent = requireNotNull(T::class.qualifiedName) { "logger<T> cannot be used on an anonymous object" }
+    return logger(sourceComponent)
+}

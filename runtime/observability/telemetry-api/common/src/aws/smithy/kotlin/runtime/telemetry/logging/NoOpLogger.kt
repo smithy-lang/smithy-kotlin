@@ -13,11 +13,11 @@ internal object NoOpLoggerProvider : LoggerProvider {
     override fun getOrCreateLogger(name: String): Logger = NoOpLogger
 }
 
-private object NoOpLogger : Logger {
+internal object NoOpLogger : Logger {
     override fun trace(t: Throwable?, msg: () -> Any) {}
     override fun debug(t: Throwable?, msg: () -> Any) {}
     override fun info(t: Throwable?, msg: () -> Any) {}
-    override fun warn(t: Throwable?, msg: () -> Any?) {}
+    override fun warn(t: Throwable?, msg: () -> Any) {}
     override fun error(t: Throwable?, msg: () -> Any) {}
     override fun isEnabledFor(level: LogLevel): Boolean = false
     override fun logRecordBuilder(): LogRecordBuilder = NoOpLogRecordBuilder
