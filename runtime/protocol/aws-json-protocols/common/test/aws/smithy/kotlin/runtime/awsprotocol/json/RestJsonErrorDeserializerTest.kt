@@ -120,6 +120,18 @@ class RestJsonErrorDeserializerTest {
         """.trimIndent().encodeToByteArray()
         actual = RestJsonErrorDeserializer.deserialize(headers, payload)
         assertEquals("BodyCode", actual.code)
+
+        headers = Headers {}
+        payload = """
+            {
+                "foo": "bar",
+                "__type": "TypeCode",
+                "code": "BodyCode",
+                "baz": "quux"
+            }
+        """.trimIndent().encodeToByteArray()
+        actual = RestJsonErrorDeserializer.deserialize(headers, payload)
+        assertEquals("BodyCode", actual.code)
     }
 
     @OptIn(ExperimentalStdlibApi::class, ExperimentalCoroutinesApi::class)
