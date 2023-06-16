@@ -6,6 +6,7 @@ package software.amazon.smithy.kotlin.codegen.core
 
 import software.amazon.smithy.codegen.core.*
 import software.amazon.smithy.kotlin.codegen.KotlinSettings
+import software.amazon.smithy.kotlin.codegen.lang.KotlinTypes
 import software.amazon.smithy.kotlin.codegen.lang.kotlinReservedWords
 import software.amazon.smithy.kotlin.codegen.model.*
 import software.amazon.smithy.kotlin.codegen.utils.dq
@@ -148,9 +149,12 @@ class KotlinSymbolProvider(private val model: Model, private val settings: Kotli
 
     override fun listShape(shape: ListShape): Symbol {
         val reference = toSymbol(shape.member)
-        val valueType = if (shape.hasTrait<SparseTrait>()) "${reference.name}?" else reference.name
+        val valueSuffix = if (shape.hasTrait<SparseTrait>()) "?" else ""
+        val valueType = "${reference.name}$valueSuffix"
+        val fullyQualifiedValueType = "${reference.fullName}$valueSuffix"
         return createSymbolBuilder(shape, "List<$valueType>", nullable = true)
             .addReferences(reference)
+            .putProperty(SymbolProperty.FULLY_QUALIFIED_NAME_HINT, "List<$fullyQualifiedValueType>")
             .putProperty(SymbolProperty.MUTABLE_COLLECTION_FUNCTION, "mutableListOf<$valueType>")
             .putProperty(SymbolProperty.IMMUTABLE_COLLECTION_FUNCTION, "listOf<$valueType>")
             .build()
@@ -158,13 +162,18 @@ class KotlinSymbolProvider(private val model: Model, private val settings: Kotli
 
     override fun mapShape(shape: MapShape): Symbol {
         val reference = toSymbol(shape.value)
-        val valueType = if (shape.hasTrait<SparseTrait>()) "${reference.name}?" else reference.name
+        val valueSuffix = if (shape.hasTrait<SparseTrait>()) "?" else ""
+        val valueType = "${reference.name}$valueSuffix"
+        val fullyQualifiedValueType = "${reference.fullName}$valueSuffix"
 
-        return createSymbolBuilder(shape, "Map<String, $valueType>", nullable = true)
+        val keyType = KotlinTypes.String.name
+        val fullyQualifiedKeyType = KotlinTypes.String.fullName
+        return createSymbolBuilder(shape, "Map<$keyType, $valueType>", nullable = true)
             .addReferences(reference)
-            .putProperty(SymbolProperty.MUTABLE_COLLECTION_FUNCTION, "mutableMapOf<String, $valueType>")
-            .putProperty(SymbolProperty.IMMUTABLE_COLLECTION_FUNCTION, "mapOf<String, $valueType>")
-            .putProperty(SymbolProperty.ENTRY_EXPRESSION, "Map.Entry<String, $valueType>")
+            .putProperty(SymbolProperty.FULLY_QUALIFIED_NAME_HINT, "Map<$fullyQualifiedKeyType, $fullyQualifiedValueType>")
+            .putProperty(SymbolProperty.MUTABLE_COLLECTION_FUNCTION, "mutableMapOf<$keyType, $valueType>")
+            .putProperty(SymbolProperty.IMMUTABLE_COLLECTION_FUNCTION, "mapOf<$keyType, $valueType>")
+            .putProperty(SymbolProperty.ENTRY_EXPRESSION, "Map.Entry<$keyType, $valueType>")
             .build()
     }
 

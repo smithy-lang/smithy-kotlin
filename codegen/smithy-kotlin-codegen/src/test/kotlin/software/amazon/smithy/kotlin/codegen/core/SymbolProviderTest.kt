@@ -13,6 +13,7 @@ import software.amazon.smithy.kotlin.codegen.KotlinCodegenPlugin
 import software.amazon.smithy.kotlin.codegen.core.KotlinDependency.Companion.CORE
 import software.amazon.smithy.kotlin.codegen.model.defaultValue
 import software.amazon.smithy.kotlin.codegen.model.expectShape
+import software.amazon.smithy.kotlin.codegen.model.fullNameHint
 import software.amazon.smithy.kotlin.codegen.model.isNullable
 import software.amazon.smithy.kotlin.codegen.model.traits.SYNTHETIC_NAMESPACE
 import software.amazon.smithy.kotlin.codegen.test.*
@@ -459,6 +460,10 @@ class SymbolProviderTest {
 
         // collections should contain a reference to the member type
         assertEquals("Record", sparseListSymbol.references[0].symbol.name)
+
+        // check the fully qualified name hint is set
+        assertEquals("List<foo.bar.model.Record>", listSymbol.fullNameHint)
+        assertEquals("List<foo.bar.model.Record?>", sparseListSymbol.fullNameHint)
     }
 
     @Test
@@ -520,6 +525,10 @@ class SymbolProviderTest {
 
         // collections should contain a reference to the member type
         assertEquals("Record", sparseMapSymbol.references[0].symbol.name)
+
+        // check the fully qualified name hint is set
+        assertEquals("Map<kotlin.String, com.test.model.Record>", mapSymbol.fullNameHint)
+        assertEquals("Map<kotlin.String, com.test.model.Record?>", sparseMapSymbol.fullNameHint)
     }
 
     @DisplayName("creates bigNumbers")
