@@ -76,7 +76,6 @@ abstract class HttpProtocolClientGenerator(
             .call { renderInstrumentOperation(writer) }
             .write("")
             .call { renderAdditionalMethods(writer) }
-            .write("")
             .closeBlock("}")
             .write("")
     }
@@ -280,18 +279,16 @@ abstract class HttpProtocolClientGenerator(
                 RuntimeTypes.Observability.TelemetryApi.TelemetryContextElement,
             )
 
-            write("val span = tracer.createSpan(")
-                .indent()
-                .write("#S,", "\${ServiceId}.\${operation}")
-                .withBlock("#T{", "},", RuntimeTypes.Core.Utils.attributesOf) {
+            withBlock("val span = tracer.createSpan(", ")") {
+                write("#S,", "\${ServiceId}.\${operation}")
+                withBlock("#T{", "},", RuntimeTypes.Core.Utils.attributesOf) {
                     write("#S to ServiceId", "rpc.service")
                     write("#S to operation", "rpc.method")
                     writer.declareSection(OperationSpanAttributes)
                 }
-                .write("#T.CLIENT,", RuntimeTypes.Observability.TelemetryApi.SpanKind)
-                .write("parentCtx")
-                .dedent()
-                .write(")")
+                write("#T.CLIENT,", RuntimeTypes.Observability.TelemetryApi.SpanKind)
+                write("parentCtx,")
+            }
 
             write("return span to telemetryCtx")
         }
