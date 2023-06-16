@@ -82,9 +82,6 @@ class RestJsonErrorDeserializerTest {
         var actual = RestJsonErrorDeserializer.deserialize(headers, payload)
         assertEquals("HeaderCode", actual.code)
 
-        headers = Headers {
-            append(X_AMZN_ERROR_TYPE_HEADER_NAME, "HeaderCode")
-        }
         payload = """
             {
                 "foo": "bar",
@@ -95,9 +92,6 @@ class RestJsonErrorDeserializerTest {
         actual = RestJsonErrorDeserializer.deserialize(headers, payload)
         assertEquals("HeaderCode", actual.code)
 
-        headers = Headers {
-            append(X_AMZN_ERROR_TYPE_HEADER_NAME, "HeaderCode")
-        }
         payload = """
             {
                 "foo": "bar",
@@ -121,7 +115,6 @@ class RestJsonErrorDeserializerTest {
         actual = RestJsonErrorDeserializer.deserialize(headers, payload)
         assertEquals("BodyCode", actual.code)
 
-        headers = Headers {}
         payload = """
             {
                 "foo": "bar",
