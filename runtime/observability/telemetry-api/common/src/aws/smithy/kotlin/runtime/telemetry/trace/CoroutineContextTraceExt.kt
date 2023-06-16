@@ -7,6 +7,7 @@ package aws.smithy.kotlin.runtime.telemetry.trace
 
 import aws.smithy.kotlin.runtime.InternalApi
 import aws.smithy.kotlin.runtime.telemetry.context.telemetryContext
+import aws.smithy.kotlin.runtime.telemetry.telemetryProvider
 import aws.smithy.kotlin.runtime.util.Attributes
 import aws.smithy.kotlin.runtime.util.emptyAttributes
 import kotlinx.coroutines.CoroutineScope
@@ -66,11 +67,49 @@ public suspend inline fun <R> withSpan(
         block(span)
     }
 } catch (ex: Exception) {
-    if (ex !is CancellationException) {
-        span.setStatus(SpanStatus.ERROR)
+    when (ex) {
+        is CancellationException -> span.setAttribute("cancelled", true)
+        else -> {
+            span.setStatus(SpanStatus.ERROR)
+            span.recordException(ex, true)
+        }
     }
-    span.recordException(ex, true)
     throw ex
 } finally {
     span.close()
+}
+
+/**
+ * Creates a new [TraceSpan] and executes [block] within the scope of the new span.
+ * The [block] of code is executed with a new coroutine context that contains the newly
+ * created span set.
+ */
+@InternalApi
+public suspend inline fun <reified T, R> withSpan(
+    name: String,
+    initialAttributes: Attributes = emptyAttributes(),
+    spanKind: SpanKind = SpanKind.INTERNAL,
+    context: CoroutineContext = EmptyCoroutineContext,
+    crossinline block: suspend CoroutineScope.(span: TraceSpan) -> R,
+): R {
+    val sourceComponent = requireNotNull(T::class.qualifiedName) { "withSpan<T> cannot be used on an anonymous object" }
+    return withSpan(sourceComponent, name, initialAttributes, spanKind, context, block)
+}
+
+/**
+ * Creates a new [TraceSpan] using [Tracer] for [sourceComponent] and executes [block]
+ * within the scope of the new span. The [block] of code is executed with a new coroutine
+ * context that contains the newly created span set.
+ */
+@InternalApi
+public suspend inline fun <R> withSpan(
+    sourceComponent: String,
+    name: String,
+    initialAttributes: Attributes = emptyAttributes(),
+    spanKind: SpanKind = SpanKind.INTERNAL,
+    context: CoroutineContext = EmptyCoroutineContext,
+    crossinline block: suspend CoroutineScope.(span: TraceSpan) -> R,
+): R {
+    val tracer = coroutineContext.telemetryProvider.tracerProvider.getOrCreateTracer(sourceComponent)
+    return tracer.withSpan(name, initialAttributes, spanKind, context, block)
 }

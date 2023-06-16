@@ -7,11 +7,9 @@ package aws.smithy.kotlin.runtime.identity
 
 import aws.smithy.kotlin.runtime.InternalApi
 import aws.smithy.kotlin.runtime.io.Closeable
-import aws.smithy.kotlin.runtime.tracing.logger
-import aws.smithy.kotlin.runtime.tracing.traceSpan
-import aws.smithy.kotlin.runtime.tracing.withChildTraceSpan
+import aws.smithy.kotlin.runtime.telemetry.logging.logger
+import aws.smithy.kotlin.runtime.telemetry.trace.withSpan
 import aws.smithy.kotlin.runtime.util.Attributes
-import kotlin.coroutines.coroutineContext
 
 // TODO - support caching the provider that actually resolved credentials such that future calls don't involve going through the full chain
 
@@ -33,15 +31,15 @@ public abstract class IdentityProviderChain<P : IdentityProvider, I : Identity> 
     override fun toString(): String =
         (listOf(this) + providers).map { it::class.simpleName }.joinToString(" -> ")
 
-    override suspend fun resolve(attributes: Attributes): I = coroutineContext.withChildTraceSpan("ResolveIdentityChain") {
-        val logger = coroutineContext.traceSpan.logger<IdentityProviderChain<*, *>>()
+    override suspend fun resolve(attributes: Attributes): I = withSpan<IdentityProviderChain<*, *>, I>("ResolveIdentityChain") {
+        val logger = coroutineContext.logger<IdentityProviderChain<*, *>>()
         val chain = this@IdentityProviderChain
         val chainException = lazy { IdentityProviderException("No identity could be resolved from the chain: $chain") }
         for (provider in providers) {
             logger.trace { "Attempting to resolve identity from $provider" }
             try {
                 @Suppress("UNCHECKED_CAST")
-                return@withChildTraceSpan provider.resolve(attributes) as I
+                return@withSpan provider.resolve(attributes) as I
             } catch (ex: Exception) {
                 logger.debug { "unable to resolve identity from $provider: ${ex.message}" }
                 chainException.value.addSuppressed(ex)

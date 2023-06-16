@@ -6,8 +6,8 @@
 package aws.smithy.kotlin.runtime.http.engine
 
 import aws.smithy.kotlin.runtime.InternalApi
-import aws.smithy.kotlin.runtime.tracing.TraceSpanContextElement
-import aws.smithy.kotlin.runtime.tracing.traceSpan
+import aws.smithy.kotlin.runtime.telemetry.TelemetryProviderContext
+import aws.smithy.kotlin.runtime.telemetry.telemetryProvider
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.InternalCoroutinesApi
@@ -25,7 +25,7 @@ internal fun HttpClientEngine.createCallContext(outerContext: CoroutineContext):
     val reqContext = coroutineContext +
         requestJob +
         CoroutineName("request-context") +
-        TraceSpanContextElement(outerContext.traceSpan)
+        TelemetryProviderContext(outerContext.telemetryProvider)
 
     // attach req to outer context, if the user cancels it will be propagated to the request
     attachToOuterJob(outerContext, requestJob)

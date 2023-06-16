@@ -28,8 +28,9 @@ import aws.smithy.kotlin.runtime.retries.RetryStrategy
 import aws.smithy.kotlin.runtime.retries.StandardRetryStrategy
 import aws.smithy.kotlin.runtime.retries.policy.RetryPolicy
 import aws.smithy.kotlin.runtime.retries.policy.StandardRetryPolicy
-import aws.smithy.kotlin.runtime.tracing.debug
-import aws.smithy.kotlin.runtime.tracing.trace
+import aws.smithy.kotlin.runtime.telemetry.logging.debug
+import aws.smithy.kotlin.runtime.telemetry.logging.logger
+import aws.smithy.kotlin.runtime.telemetry.logging.trace
 import aws.smithy.kotlin.runtime.util.merge
 import kotlin.coroutines.coroutineContext
 import kotlin.time.ExperimentalTime
@@ -347,7 +348,7 @@ private class HttpCallMiddleware : Middleware<SdkHttpRequest, HttpCall> {
  */
 private suspend fun httpTraceMiddleware(request: SdkHttpRequest, next: Handler<SdkHttpRequest, HttpCall>): HttpCall {
     val logMode = request.context.logMode
-    val logger = coroutineContext.getLogger("httpTraceMiddleware")
+    val logger = coroutineContext.logger("httpTraceMiddleware")
 
     if (logMode.isEnabled(LogMode.LogRequest) || logMode.isEnabled(LogMode.LogRequestWithBody)) {
         val formattedReq = dumpRequest(request.subject, logMode.isEnabled(LogMode.LogRequestWithBody))
