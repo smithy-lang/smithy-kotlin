@@ -66,6 +66,64 @@ class RestJsonErrorDeserializerTest {
 
     @OptIn(ExperimentalStdlibApi::class, ExperimentalCoroutinesApi::class)
     @Test
+    fun `it deserializes aws restJson error codes using right location check order`() = runTest {
+        // Checking for header code return
+        var headers = Headers {
+            append(X_AMZN_ERROR_TYPE_HEADER_NAME, "HeaderCode")
+        }
+        var payload = """
+            {
+                "foo": "bar",
+                "code": "BodyCode",
+                "__type": "TypeCode",
+                "baz": "quux"
+            }
+        """.trimIndent().encodeToByteArray()
+        var actual = RestJsonErrorDeserializer.deserialize(headers, payload)
+        assertEquals("HeaderCode", actual.code)
+
+        headers = Headers {
+            append(X_AMZN_ERROR_TYPE_HEADER_NAME, "HeaderCode")
+        }
+        payload = """
+            {
+                "foo": "bar",
+                "__type": "TypeCode",
+                "baz": "quux"
+            }
+        """.trimIndent().encodeToByteArray()
+        actual = RestJsonErrorDeserializer.deserialize(headers, payload)
+        assertEquals("HeaderCode", actual.code)
+
+        headers = Headers {
+            append(X_AMZN_ERROR_TYPE_HEADER_NAME, "HeaderCode")
+        }
+        payload = """
+            {
+                "foo": "bar",
+                "code": "BodyCode",
+                "baz": "quux"
+            }
+        """.trimIndent().encodeToByteArray()
+        actual = RestJsonErrorDeserializer.deserialize(headers, payload)
+        assertEquals("HeaderCode", actual.code)
+
+        // Checking for body code return
+        headers = Headers {}
+        payload = """
+            {
+                "foo": "bar",
+                "code": "BodyCode",
+                "__type": "TypeCode",
+                "baz": "quux"
+            }
+        """.trimIndent().encodeToByteArray()
+        actual = RestJsonErrorDeserializer.deserialize(headers, payload)
+        assertEquals("BodyCode", actual.code)
+    }
+
+    @OptIn(ExperimentalStdlibApi::class, ExperimentalCoroutinesApi::class)
+    @Test
     fun `it deserializes aws restJson error messages`() = runTest {
         val expected = "one ring to rule bring them all, and in the darkness bind them"
 
