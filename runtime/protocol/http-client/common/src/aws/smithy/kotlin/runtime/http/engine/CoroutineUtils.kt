@@ -6,6 +6,8 @@
 package aws.smithy.kotlin.runtime.http.engine
 
 import aws.smithy.kotlin.runtime.InternalApi
+import aws.smithy.kotlin.runtime.telemetry.TelemetryProviderContext
+import aws.smithy.kotlin.runtime.telemetry.telemetryProvider
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.InternalCoroutinesApi
@@ -20,7 +22,10 @@ import kotlin.coroutines.coroutineContext
 internal fun HttpClientEngine.createCallContext(outerContext: CoroutineContext): CoroutineContext {
     // attach request to engine (will ensure that shutdown only is invoked after all in-flight requests complete)
     val requestJob = Job(coroutineContext[Job])
-    val reqContext = coroutineContext + requestJob + CoroutineName("request-context")
+    val reqContext = coroutineContext +
+        requestJob +
+        CoroutineName("request-context") +
+        TelemetryProviderContext(outerContext.telemetryProvider)
 
     // attach req to outer context, if the user cancels it will be propagated to the request
     attachToOuterJob(outerContext, requestJob)
