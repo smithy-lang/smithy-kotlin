@@ -34,18 +34,12 @@ class StandardRetryIntegrationTest {
                 maxAttempts = tc.given.maxAttempts
                 this.tokenBucket = tokenBucket
                 delayProvider {
-                    println("Actually setting the delay provider values!")
                     initialDelay = tc.given.exponentialBase.milliseconds
                     scaleFactor = tc.given.exponentialPower
                     jitter = 0.0 // None of the tests use jitter
                     maxBackoff = tc.given.maxBackoffTime.milliseconds
                 }
             }
-            val delayConfig = (retryer.config.delayProvider as ExponentialBackoffWithJitter).config
-            println("retrier configured with initial delay ${delayConfig.initialDelay}")
-            println("retrier configured with scale factor ${delayConfig.scaleFactor}")
-            println("retrier configured with jitter ${delayConfig.jitter}")
-            println("retrier configured with max backoff ${delayConfig.maxBackoff}")
 
             val block = object {
                 var index = 0
