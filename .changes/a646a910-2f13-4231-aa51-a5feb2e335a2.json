@@ -1,8 +1,0 @@
-{
-    "id": "a646a910-2f13-4231-aa51-a5feb2e335a2",
-    "type": "bugfix",
-    "description": "Add fully qualified name hint for collection types",
-    "issues": [
-        "awslabs/smithy-kotlin#867"
-    ]
-}

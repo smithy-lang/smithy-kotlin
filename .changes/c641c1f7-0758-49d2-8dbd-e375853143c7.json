@@ -1,8 +1,0 @@
-{
-    "id": "c641c1f7-0758-49d2-8dbd-e375853143c7",
-    "type": "bugfix",
-    "description": "Use correct precedence order for determining restJson error codes",
-    "issues": [
-        "awslabs/smithy-kotlin#828"
-    ]
-}

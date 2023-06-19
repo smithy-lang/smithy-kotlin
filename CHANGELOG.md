@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.21.3] - 06/19/2023
+
+### Features
+* [#718](https://github.com/awslabs/smithy-kotlin/issues/718) Support Smithy default trait
+
+### Fixes
+* [#867](https://github.com/awslabs/smithy-kotlin/issues/867) Add fully qualified name hint for collection types
+* [#828](https://github.com/awslabs/smithy-kotlin/issues/828) Use correct precedence order for determining restJson error codes
+
 ## [0.21.2] - 06/08/2023
 
 ### Fixes
