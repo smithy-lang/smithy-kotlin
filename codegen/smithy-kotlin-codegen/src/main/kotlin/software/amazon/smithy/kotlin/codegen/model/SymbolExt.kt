@@ -47,6 +47,11 @@ object SymbolProperty {
 
     // Denotes the symbol is a reference to a static member of an object (e.g. of an object or companion object)
     const val OBJECT_REF: String = "objectRef"
+
+    // Adds a property to give a hint at what the fully qualified name should be. Used by #Q symbol formatter to
+    // give symbols fine-grained control over their fully qualified name (e.g. collections with generics can fully
+    // qualify the generic type)
+    const val FULLY_QUALIFIED_NAME_HINT: String = "fullyQualifiedNameHint"
 }
 
 /**
@@ -217,3 +222,9 @@ val Symbol.isObjectRef: Boolean
  */
 val Symbol.objectRef: Symbol?
     get() = getProperty(SymbolProperty.OBJECT_REF, Symbol::class.java).getOrNull()
+
+/**
+ * Get the fully qualified name hint if one is set
+ */
+val Symbol.fullNameHint: String?
+    get() = getProperty(SymbolProperty.FULLY_QUALIFIED_NAME_HINT, String::class.java).getOrNull()
