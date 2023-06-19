@@ -66,6 +66,54 @@ class RestJsonErrorDeserializerTest {
 
     @OptIn(ExperimentalStdlibApi::class, ExperimentalCoroutinesApi::class)
     @Test
+    fun `it deserializes aws restJson error codes using right location check order`() = runTest {
+        // Checking for header code return
+        var headers = Headers {
+            append(X_AMZN_ERROR_TYPE_HEADER_NAME, "HeaderCode")
+        }
+        var payload = """
+            {
+                "code": "BodyCode",
+                "__type": "TypeCode"
+            }
+        """.trimIndent().encodeToByteArray()
+        assertEquals("HeaderCode", RestJsonErrorDeserializer.deserialize(headers, payload).code)
+
+        payload = """
+            {
+                "__type": "TypeCode"
+            }
+        """.trimIndent().encodeToByteArray()
+        assertEquals("HeaderCode", RestJsonErrorDeserializer.deserialize(headers, payload).code)
+
+        payload = """
+            {
+                "code": "BodyCode"
+            }
+        """.trimIndent().encodeToByteArray()
+        assertEquals("HeaderCode", RestJsonErrorDeserializer.deserialize(headers, payload).code)
+
+        // Checking for body code return
+        headers = Headers {}
+        payload = """
+            {
+                "code": "BodyCode",
+                "__type": "TypeCode"
+            }
+        """.trimIndent().encodeToByteArray()
+        assertEquals("BodyCode", RestJsonErrorDeserializer.deserialize(headers, payload).code)
+
+        payload = """
+            {
+                "__type": "TypeCode",
+                "code": "BodyCode"
+            }
+        """.trimIndent().encodeToByteArray()
+        assertEquals("BodyCode", RestJsonErrorDeserializer.deserialize(headers, payload).code)
+    }
+
+    @OptIn(ExperimentalStdlibApi::class, ExperimentalCoroutinesApi::class)
+    @Test
     fun `it deserializes aws restJson error messages`() = runTest {
         val expected = "one ring to rule bring them all, and in the darkness bind them"
 

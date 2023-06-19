@@ -34,6 +34,7 @@ class StructureGeneratorTest {
                     foo: String,
                     object: String,
                     @documentation("This *is* documentation about the member.")
+                    @default(0)
                     bar: PrimitiveInteger,
                     baz: Integer,
                     Quux: Qux,
@@ -437,6 +438,7 @@ class StructureGeneratorTest {
             
             structure MyStruct {
                 foo: Blob,
+                @required
                 bar: BlobStream
             }
             

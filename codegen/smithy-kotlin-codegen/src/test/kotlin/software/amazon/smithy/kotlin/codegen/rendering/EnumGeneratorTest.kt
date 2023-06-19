@@ -187,7 +187,7 @@ public sealed class Baz {
                 @documentation("Documentation for this value")
                 T2_MICRO = 1
             }
-        """.prependNamespaceAndService(version = "2", namespace = "test")
+        """.prependNamespaceAndService(namespace = "test")
             .toSmithyModel()
 
         val provider = KotlinCodegenPlugin.createSymbolProvider(model, rootNamespace = "test")

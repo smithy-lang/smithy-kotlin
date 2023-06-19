@@ -17,7 +17,6 @@ class DeserializeStructGeneratorTest {
                 output: FooResponse
             }        
     """.prependNamespaceAndService(
-        version = "2",
         protocol = AwsProtocolModelDeclaration.REST_JSON,
         operations = listOf("Foo"),
     ).trimIndent()

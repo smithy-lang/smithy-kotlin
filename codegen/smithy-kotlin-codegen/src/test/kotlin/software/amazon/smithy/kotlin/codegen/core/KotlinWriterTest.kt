@@ -8,6 +8,7 @@ package software.amazon.smithy.kotlin.codegen.core
 import io.kotest.matchers.string.shouldNotContain
 import software.amazon.smithy.kotlin.codegen.integration.SectionId
 import software.amazon.smithy.kotlin.codegen.integration.SectionKey
+import software.amazon.smithy.kotlin.codegen.model.SymbolProperty
 import software.amazon.smithy.kotlin.codegen.model.buildSymbol
 import software.amazon.smithy.kotlin.codegen.test.TestModelDefault
 import software.amazon.smithy.kotlin.codegen.test.shouldContainOnlyOnceWithDiff
@@ -308,5 +309,21 @@ class KotlinWriterTest {
         val contents = unit.toString()
         contents.shouldNotContain("import com.test.Foo")
         contents.shouldContainWithDiff("import com.test.subpkg.Bar")
+    }
+
+    @Test
+    fun itFavorsFullNameHint() {
+        val unit = KotlinWriter("com.test")
+
+        val symbol = buildSymbol {
+            name = "Foo"
+            namespace = "com.test"
+            properties { set(SymbolProperty.FULLY_QUALIFIED_NAME_HINT, "baz.quux.Foo") }
+        }
+
+        unit.write("val foo = #Q", symbol)
+
+        val contents = unit.toString()
+        contents.shouldContainWithDiff("baz.quux.Foo")
     }
 }

@@ -296,7 +296,7 @@ private class KotlinSymbolFormatter(
             is Symbol -> {
                 // writer will omit unnecessary same package imports and dedupe
                 writer.addImport(type)
-                return if (fullyQualifiedPredicate(type)) type.fullName else type.name
+                return if (fullyQualifiedPredicate(type)) (type.fullNameHint ?: type.fullName) else type.name
             }
             else -> throw CodegenException("Invalid type provided for #T. Expected a Symbol, but found `$type`")
         }
@@ -320,7 +320,7 @@ class KotlinPropertyFormatter(
             is Symbol -> {
                 writer.addImport(type)
                 var formatted = if (fullyQualifiedNames) type.fullName else type.name
-                if (includeNullability && type.isBoxed) {
+                if (includeNullability && type.isNullable) {
                     formatted += "?"
                 }
 

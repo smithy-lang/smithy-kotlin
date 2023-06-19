@@ -41,7 +41,7 @@ class HttpStringValuesMapSerializerTest {
 
         val expectedContents = """
             if (input.hBool != false) append("X-d", "${'$'}{input.hBool}")
-            if (input.hFloat != 0.0f) append("X-c", "${'$'}{input.hFloat}")
+            if (input.hFloat != 0f) append("X-c", "${'$'}{input.hFloat}")
             if (input.hInt != 0) append("X-a", "${'$'}{input.hInt}")
             if (input.hLong != 0L) append("X-b", "${'$'}{input.hLong}")
             append("X-required", "${'$'}{input.hRequiredInt}")

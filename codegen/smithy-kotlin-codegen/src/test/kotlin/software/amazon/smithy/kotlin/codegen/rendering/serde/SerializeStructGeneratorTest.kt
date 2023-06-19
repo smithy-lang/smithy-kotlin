@@ -17,7 +17,6 @@ class SerializeStructGeneratorTest {
                 input: FooRequest
             }        
     """.prependNamespaceAndService(
-        version = "2",
         protocol = AwsProtocolModelDeclaration.REST_JSON,
         operations = listOf("Foo"),
     ).trimIndent()
@@ -51,7 +50,7 @@ class SerializeStructGeneratorTest {
         "PrimitiveShort, 0, 0",
         "PrimitiveLong, 0L, 0",
         "PrimitiveByte, 0, 0",
-        "PrimitiveFloat, 0.0f, 0",
+        "PrimitiveFloat, 0f, 0",
         "PrimitiveDouble, 0.0, 0",
         "PrimitiveBoolean, false, false",
     )

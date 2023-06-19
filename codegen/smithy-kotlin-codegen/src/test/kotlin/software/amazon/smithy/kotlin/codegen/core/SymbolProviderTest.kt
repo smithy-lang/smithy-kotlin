@@ -13,7 +13,8 @@ import software.amazon.smithy.kotlin.codegen.KotlinCodegenPlugin
 import software.amazon.smithy.kotlin.codegen.core.KotlinDependency.Companion.CORE
 import software.amazon.smithy.kotlin.codegen.model.defaultValue
 import software.amazon.smithy.kotlin.codegen.model.expectShape
-import software.amazon.smithy.kotlin.codegen.model.isBoxed
+import software.amazon.smithy.kotlin.codegen.model.fullNameHint
+import software.amazon.smithy.kotlin.codegen.model.isNullable
 import software.amazon.smithy.kotlin.codegen.model.traits.SYNTHETIC_NAMESPACE
 import software.amazon.smithy.kotlin.codegen.test.*
 import software.amazon.smithy.model.shapes.*
@@ -68,25 +69,32 @@ class SymbolProviderTest {
         "Byte, null, true",
         "PrimitiveByte, 0, false",
         "Float, null, true",
-        "PrimitiveFloat, 0.0f, false",
+        "PrimitiveFloat, 0f, false",
         "Double, null, true",
         "PrimitiveDouble, 0.0, false",
         "Boolean, null, true",
         "PrimitiveBoolean, false, false",
     )
-    fun `creates primitives`(primitiveType: String, expectedDefault: String, boxed: Boolean) {
+    fun `creates primitives`(primitiveType: String, expectedDefault: String, nullable: Boolean) {
+        // IDLv2.0 requires modeling a default value on primitives
+        val defaultTrait = when {
+            primitiveType == "PrimitiveBoolean" -> "@default(false)"
+            primitiveType.startsWith("Primitive") -> "@default(0)"
+            else -> ""
+        }
+
         val model = """
             structure MyStruct {
+                $defaultTrait
                 quux: $primitiveType,
             }
         """.prependNamespaceAndService(namespace = "foo.bar").toSmithyModel()
-
         val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model, rootNamespace = "foo.bar")
         val member = model.expectShape<MemberShape>("foo.bar#MyStruct\$quux")
         val memberSymbol = provider.toSymbol(member)
         assertEquals("kotlin", memberSymbol.namespace)
         assertEquals(expectedDefault, memberSymbol.defaultValue())
-        assertEquals(boxed, memberSymbol.isBoxed)
+        assertEquals(nullable, memberSymbol.isNullable)
 
         val expectedName = translateTypeName(primitiveType.removePrefix("Primitive"))
         assertEquals(expectedName, memberSymbol.name)
@@ -99,12 +107,16 @@ class SymbolProviderTest {
     }
 
     @Test
-    fun `can read box trait from member`() {
+    fun `can read default trait from member`() {
+        val modeledDefault = "5"
+        val expectedDefault = "5L"
+
         val model = """
         structure MyStruct {
-           @box
+           @default($modeledDefault)
            foo: MyFoo
         }
+        
         long MyFoo
         """.prependNamespaceAndService().toSmithyModel()
 
@@ -112,17 +124,22 @@ class SymbolProviderTest {
         val member = model.expectShape<MemberShape>("com.test#MyStruct\$foo")
         val memberSymbol = provider.toSymbol(member)
         assertEquals("kotlin", memberSymbol.namespace)
-        assertEquals("null", memberSymbol.defaultValue())
-        assertTrue(memberSymbol.isBoxed)
+        assertEquals(expectedDefault, memberSymbol.defaultValue())
+        assertTrue(memberSymbol.isNullable)
     }
 
     @Test
-    fun `can read box trait from target`() {
+    fun `can read default trait from target`() {
+        val modeledDefault = "2500"
+        val expectedDefault = "2500L"
+
         val model = """
         structure MyStruct {
+           @default($modeledDefault)
            foo: MyFoo
         }
-        @box
+        
+        @default($modeledDefault)
         long MyFoo
         """.prependNamespaceAndService().toSmithyModel()
 
@@ -130,8 +147,243 @@ class SymbolProviderTest {
         val member = model.expectShape<MemberShape>("com.test#MyStruct\$foo")
         val memberSymbol = provider.toSymbol(member)
         assertEquals("kotlin", memberSymbol.namespace)
+        assertEquals(expectedDefault, memberSymbol.defaultValue())
+    }
+
+    @Test
+    fun `can override default trait from root-level shape`() {
+        val modeledDefault = "2500"
+
+        val model = """
+        structure MyStruct {
+           @default(null)
+           foo: RootLevelShape
+        }
+        
+        @default($modeledDefault)
+        long RootLevelShape
+        """.prependNamespaceAndService().toSmithyModel()
+
+        val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model)
+        val member = model.expectShape<MemberShape>("com.test#MyStruct\$foo")
+        val memberSymbol = provider.toSymbol(member)
+        assertEquals("kotlin", memberSymbol.namespace)
         assertEquals("null", memberSymbol.defaultValue())
-        assertTrue(memberSymbol.isBoxed)
+        assertTrue(memberSymbol.isNullable)
+    }
+
+    @ParameterizedTest(name = "{index} ==> ''can default simple {0} type''")
+    @CsvSource(
+        "long,100,100L",
+        "integer,5,5",
+        "short,32767,32767",
+        "float,3.14159,3.14159f",
+        "double,2.71828,2.71828",
+        "byte,10,10",
+        "string,\"hello\",\"hello\"",
+        "blob,\"abcdefg\",\"abcdefg\"",
+        "boolean,true,true",
+        "bigInteger,5,5",
+        "bigDecimal,9.0123456789,9.0123456789",
+        "timestamp,1684869901,1684869901",
+    )
+    fun `can default simple types`(typeName: String, modeledDefault: String, expectedDefault: String) {
+        val model = """
+        structure MyStruct {
+           @default($modeledDefault)
+           foo: Shape
+        }
+        
+        @default($modeledDefault)
+        $typeName Shape
+        """.prependNamespaceAndService().toSmithyModel()
+
+        val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model)
+        val member = model.expectShape<MemberShape>("com.test#MyStruct\$foo")
+        val memberSymbol = provider.toSymbol(member)
+        assertEquals(expectedDefault, memberSymbol.defaultValue())
+    }
+
+    @Test
+    fun `can default empty string`() {
+        val model = """
+        structure MyStruct {
+           @default("")
+           foo: myString
+        }
+        string myString
+        """.prependNamespaceAndService().toSmithyModel()
+
+        val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model)
+        val member = model.expectShape<MemberShape>("com.test#MyStruct\$foo")
+        val memberSymbol = provider.toSymbol(member)
+        assertEquals("\"\"", memberSymbol.defaultValue())
+    }
+
+    @Test
+    fun `can default enum type`() {
+        val model = """
+        structure MyStruct {
+           @default("club")
+           foo: Suit
+        }
+
+        enum Suit {
+            @enumValue("diamond")
+            DIAMOND
+        
+            @enumValue("club")
+            CLUB
+        
+            @enumValue("heart")
+            HEART
+        
+            @enumValue("spade")
+            SPADE
+        }        
+        """.prependNamespaceAndService().toSmithyModel()
+
+        val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model)
+        val member = model.expectShape<MemberShape>("com.test#MyStruct\$foo")
+        val memberSymbol = provider.toSymbol(member)
+        assertEquals("\"club\"", memberSymbol.defaultValue())
+    }
+
+    @Test
+    fun `can default int enum type`() {
+        val model = """
+        structure MyStruct {
+           @default(2)
+           foo: Season
+        }
+
+        intEnum Season {
+            SPRING = 1
+            SUMMER = 2
+            FALL = 3
+            WINTER = 4 
+        }        
+        """.prependNamespaceAndService().toSmithyModel()
+
+        val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model)
+        val member = model.expectShape<MemberShape>("com.test#MyStruct\$foo")
+        val memberSymbol = provider.toSymbol(member)
+        assertEquals("2", memberSymbol.defaultValue())
+    }
+
+    @ParameterizedTest(name = "{index} ==> ''can default document with {0} type''")
+    @CsvSource(
+        "boolean,true,true",
+        "boolean,false,false",
+        "string,\"hello\",\"hello\"",
+        "long,100,100",
+        "integer,5,5",
+        "short,32767,32767",
+        "float,3.14159,3.14159",
+        "double,2.71828,2.71828",
+        "byte,10,10",
+        "list,[],listOf()",
+        "map,{},mapOf()",
+    )
+    @Suppress("UNUSED_PARAMETER") // using the first parameter in the test name, but compiler doesn't acknowledge that
+    fun `can default document type`(typeName: String, modeledDefault: String, expectedDefault: String) {
+        val model = """
+        structure MyStruct {
+           @default($modeledDefault)
+           foo: MyDocument
+        }
+
+        document MyDocument
+        """.prependNamespaceAndService().toSmithyModel()
+
+        val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model)
+        val member = model.expectShape<MemberShape>("com.test#MyStruct\$foo")
+        val memberSymbol = provider.toSymbol(member)
+        assertEquals(expectedDefault, memberSymbol.defaultValue())
+    }
+
+    @Test
+    fun `can default list type`() {
+        val model = """
+        structure MyStruct {
+           @default([])
+           foo: MyStringList
+        }
+
+        list MyStringList {
+            member: MyString
+        }
+
+        string MyString
+        """.prependNamespaceAndService().toSmithyModel()
+
+        val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model)
+        val member = model.expectShape<MemberShape>("com.test#MyStruct\$foo")
+        val memberSymbol = provider.toSymbol(member)
+        assertEquals("listOf()", memberSymbol.defaultValue())
+    }
+
+    @Test
+    fun `can default map type`() {
+        val model = """
+        structure MyStruct {
+           @default({})
+           foo: MyStringToIntegerMap
+        }
+
+        map MyStringToIntegerMap {
+            key: MyString
+            value: MyInteger
+        }
+
+        string MyString
+        integer MyInteger
+        """.prependNamespaceAndService().toSmithyModel()
+
+        val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model)
+        val member = model.expectShape<MemberShape>("com.test#MyStruct\$foo")
+        val memberSymbol = provider.toSymbol(member)
+        assertEquals("mapOf()", memberSymbol.defaultValue())
+    }
+
+    @Test
+    fun `@clientOptional`() {
+        val model = """
+        structure MyStruct {
+            @required
+            @clientOptional
+            quux: QuuxType
+        }
+        
+        string QuuxType
+        """.prependNamespaceAndService().toSmithyModel()
+
+        val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model)
+        val member = model.expectShape<MemberShape>("com.test#MyStruct\$quux")
+        val memberSymbol = provider.toSymbol(member)
+        assertEquals("kotlin", memberSymbol.namespace)
+        assertTrue(memberSymbol.isNullable)
+        assertEquals("null", memberSymbol.defaultValue())
+    }
+
+    @Test
+    fun `@input`() {
+        val model = """
+        @input
+        structure MyStruct {
+            @required
+            quux: QuuxType
+        }
+        
+        long QuuxType
+        """.prependNamespaceAndService().toSmithyModel()
+
+        val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model)
+        val member = model.expectShape<MemberShape>("com.test#MyStruct\$quux")
+        val memberSymbol = provider.toSymbol(member)
+        assertEquals("kotlin", memberSymbol.namespace)
+        assertTrue(memberSymbol.isNullable)
+        assertEquals("null", memberSymbol.defaultValue())
     }
 
     @Test
@@ -147,7 +399,7 @@ class SymbolProviderTest {
         val memberSymbol = provider.toSymbol(member)
         assertEquals("kotlin", memberSymbol.namespace)
         assertEquals("null", memberSymbol.defaultValue())
-        assertEquals(true, memberSymbol.isBoxed)
+        assertTrue(memberSymbol.isNullable)
         assertEquals("ByteArray", memberSymbol.name)
     }
 
@@ -155,6 +407,7 @@ class SymbolProviderTest {
     fun `creates streaming blobs`() {
         val model = """
             structure MyStruct {
+                @required
                 quux: BodyStream,
             }
 
@@ -168,7 +421,7 @@ class SymbolProviderTest {
 
         assertEquals("$RUNTIME_ROOT_NS.content", memberSymbol.namespace)
         assertEquals("null", memberSymbol.defaultValue())
-        assertEquals(true, memberSymbol.isBoxed)
+        assertEquals(true, memberSymbol.isNullable)
         assertEquals("ByteStream", memberSymbol.name)
         val dependency = memberSymbol.dependencies[0].expectProperty("dependency") as KotlinDependency
         assertEquals(CORE.artifact, dependency.artifact)
@@ -193,7 +446,7 @@ class SymbolProviderTest {
         val listSymbol = provider.toSymbol(model.expectShape<ListShape>("foo.bar#Records"))
 
         assertEquals("List<Record>", listSymbol.name)
-        assertEquals(true, listSymbol.isBoxed)
+        assertEquals(true, listSymbol.isNullable)
         assertEquals("null", listSymbol.defaultValue())
 
         // collections should contain a reference to the member type
@@ -202,11 +455,15 @@ class SymbolProviderTest {
         val sparseListSymbol = provider.toSymbol(model.expectShape<ListShape>("foo.bar#SparseRecords"))
 
         assertEquals("List<Record?>", sparseListSymbol.name)
-        assertEquals(true, sparseListSymbol.isBoxed)
+        assertEquals(true, sparseListSymbol.isNullable)
         assertEquals("null", sparseListSymbol.defaultValue())
 
         // collections should contain a reference to the member type
         assertEquals("Record", sparseListSymbol.references[0].symbol.name)
+
+        // check the fully qualified name hint is set
+        assertEquals("List<foo.bar.model.Record>", listSymbol.fullNameHint)
+        assertEquals("List<foo.bar.model.Record?>", sparseListSymbol.fullNameHint)
     }
 
     @Test
@@ -225,7 +482,7 @@ class SymbolProviderTest {
         val listSymbol = provider.toSymbol(listShape)
 
         assertEquals("List<Record>", listSymbol.name)
-        assertEquals(true, listSymbol.isBoxed)
+        assertEquals(true, listSymbol.isNullable)
         assertEquals("null", listSymbol.defaultValue())
 
         // collections should contain a reference to the member type
@@ -254,7 +511,7 @@ class SymbolProviderTest {
         val mapSymbol = provider.toSymbol(model.expectShape<MapShape>("${TestModelDefault.NAMESPACE}#MyMap"))
 
         assertEquals("Map<String, Record>", mapSymbol.name)
-        assertEquals(true, mapSymbol.isBoxed)
+        assertEquals(true, mapSymbol.isNullable)
         assertEquals("null", mapSymbol.defaultValue())
 
         // collections should contain a reference to the member type
@@ -263,11 +520,15 @@ class SymbolProviderTest {
         val sparseMapSymbol = provider.toSymbol(model.expectShape<MapShape>("${TestModelDefault.NAMESPACE}#MySparseMap"))
 
         assertEquals("Map<String, Record?>", sparseMapSymbol.name)
-        assertEquals(true, sparseMapSymbol.isBoxed)
+        assertEquals(true, sparseMapSymbol.isNullable)
         assertEquals("null", sparseMapSymbol.defaultValue())
 
         // collections should contain a reference to the member type
         assertEquals("Record", sparseMapSymbol.references[0].symbol.name)
+
+        // check the fully qualified name hint is set
+        assertEquals("Map<kotlin.String, com.test.model.Record>", mapSymbol.fullNameHint)
+        assertEquals("Map<kotlin.String, com.test.model.Record?>", sparseMapSymbol.fullNameHint)
     }
 
     @DisplayName("creates bigNumbers")
@@ -285,7 +546,7 @@ class SymbolProviderTest {
         val bigSymbol = provider.toSymbol(member)
         assertEquals("java.math", bigSymbol.namespace)
         assertEquals("null", bigSymbol.defaultValue())
-        assertEquals(true, bigSymbol.isBoxed)
+        assertEquals(true, bigSymbol.isNullable)
         assertEquals(type, bigSymbol.name)
     }
 
@@ -309,7 +570,7 @@ class SymbolProviderTest {
 
         assertEquals("foo.bar.model", symbol.namespace)
         assertEquals("null", symbol.defaultValue())
-        assertEquals(true, symbol.isBoxed)
+        assertEquals(true, symbol.isNullable)
         assertEquals("Baz", symbol.name)
         assertEquals("Baz.kt", symbol.definitionFile)
     }
@@ -321,7 +582,7 @@ class SymbolProviderTest {
                 FOO = 1
                 BAR = 2
             }
-        """.prependNamespaceAndService(version = "2", namespace = "foo.bar").toSmithyModel()
+        """.prependNamespaceAndService(namespace = "foo.bar").toSmithyModel()
 
         val provider = KotlinCodegenPlugin.createSymbolProvider(model, rootNamespace = "foo.bar")
         val shape = model.expectShape<IntEnumShape>("foo.bar#Baz")
@@ -329,7 +590,7 @@ class SymbolProviderTest {
 
         assertEquals("foo.bar.model", symbol.namespace)
         assertEquals("null", symbol.defaultValue())
-        assertEquals(true, symbol.isBoxed)
+        assertEquals(true, symbol.isNullable)
         assertEquals("Baz", symbol.name)
         assertEquals("Baz.kt", symbol.definitionFile)
     }
@@ -350,7 +611,7 @@ class SymbolProviderTest {
 
         assertEquals("com.test.model", symbol.namespace)
         assertEquals("null", symbol.defaultValue())
-        assertEquals(true, symbol.isBoxed)
+        assertEquals(true, symbol.isNullable)
         assertEquals("MyUnion", symbol.name)
         assertEquals("MyUnion.kt", symbol.definitionFile)
     }
@@ -369,7 +630,7 @@ class SymbolProviderTest {
         assertEquals("foo.bar.model", structSymbol.namespace)
         assertEquals("MyStruct", structSymbol.name)
         assertEquals("null", structSymbol.defaultValue())
-        assertEquals(true, structSymbol.isBoxed)
+        assertEquals(true, structSymbol.isNullable)
         assertEquals("MyStruct.kt", structSymbol.definitionFile)
         assertEquals(1, structSymbol.references.size)
     }
@@ -385,7 +646,7 @@ class SymbolProviderTest {
         val documentSymbol = provider.toSymbol(documentShape)
         assertEquals("Document", documentSymbol.name)
         assertEquals("null", documentSymbol.defaultValue())
-        assertEquals(true, documentSymbol.isBoxed)
+        assertEquals(true, documentSymbol.isNullable)
         assertEquals(RuntimeTypes.Core.Content.Document.namespace, documentSymbol.namespace)
         assertEquals(1, documentSymbol.dependencies.size)
     }
@@ -424,7 +685,7 @@ class SymbolProviderTest {
         assertEquals("$RUNTIME_ROOT_NS.time", timestampSymbol.namespace)
         assertEquals("Instant", timestampSymbol.name)
         assertEquals("null", timestampSymbol.defaultValue())
-        assertEquals(true, timestampSymbol.isBoxed)
+        assertEquals(true, timestampSymbol.isNullable)
         assertEquals(1, timestampSymbol.dependencies.size)
     }
 
@@ -449,7 +710,7 @@ class SymbolProviderTest {
         assertEquals("foo.bar.model", structSymbol.namespace)
         assertEquals("MyStruct1", structSymbol.name)
         assertEquals("null", structSymbol.defaultValue())
-        assertEquals(true, structSymbol.isBoxed)
+        assertEquals(true, structSymbol.isNullable)
         assertEquals("MyStruct1.kt", structSymbol.definitionFile)
         assertEquals(2, structSymbol.references.size)
     }
@@ -488,7 +749,7 @@ class SymbolProviderTest {
 
         assertEquals("", symbol.namespace)
         assertEquals("null", symbol.defaultValue())
-        assertEquals(true, symbol.isBoxed)
+        assertEquals(true, symbol.isNullable)
         assertEquals("Flow<com.test.model.Events>", symbol.name)
 
         assertEquals("com.test.model.Events", symbol.references[0].symbol.fullName)

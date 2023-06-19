@@ -8,7 +8,6 @@ package software.amazon.smithy.kotlin.codegen.rendering.protocol
 import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.kotlin.codegen.core.KotlinWriter
 import software.amazon.smithy.kotlin.codegen.core.RuntimeTypes
-import software.amazon.smithy.kotlin.codegen.core.addImport
 import software.amazon.smithy.kotlin.codegen.model.*
 import software.amazon.smithy.kotlin.codegen.rendering.serde.formatInstant
 import software.amazon.smithy.model.Model
@@ -81,7 +80,7 @@ class HttpStringValuesMapSerializer(
 
                     val targetSymbol = symbolProvider.toSymbol(member)
                     val defaultValue = targetSymbol.defaultValue()
-                    if ((memberTarget.isNumberShape || memberTarget.isBooleanShape) && targetSymbol.isNotBoxed && defaultValue != null) {
+                    if ((memberTarget.isNumberShape || memberTarget.isBooleanShape) && targetSymbol.isNotNullable && defaultValue != null) {
                         // unboxed primitive with a default value
                         if (member.hasTrait<RequiredTrait>()) {
                             // always serialize a required member even if it's the default

@@ -10,7 +10,7 @@ import software.amazon.smithy.kotlin.codegen.core.*
 import software.amazon.smithy.kotlin.codegen.lang.KotlinTypes
 import software.amazon.smithy.kotlin.codegen.model.filterEventStreamErrors
 import software.amazon.smithy.kotlin.codegen.model.hasTrait
-import software.amazon.smithy.kotlin.codegen.model.isBoxed
+import software.amazon.smithy.kotlin.codegen.model.isNullable
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.*
 import software.amazon.smithy.model.traits.SensitiveTrait
@@ -126,12 +126,12 @@ class UnionGenerator(
 
         return when (targetShape.type) {
             ShapeType.INTEGER ->
-                when (targetSymbol.isBoxed) {
+                when (targetSymbol.isNullable) {
                     true -> " ?: 0"
                     else -> ""
                 }
             ShapeType.BYTE ->
-                when (targetSymbol.isBoxed) {
+                when (targetSymbol.isNullable) {
                     true -> ".toInt() ?: 0"
                     else -> ".toInt()"
                 }
@@ -144,7 +144,7 @@ class UnionGenerator(
                     ".contentHashCode()"
                 }
             else ->
-                when (targetSymbol.isBoxed) {
+                when (targetSymbol.isNullable) {
                     true -> ".hashCode() ?: 0"
                     else -> ".hashCode()"
                 }

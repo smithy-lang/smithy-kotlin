@@ -78,7 +78,7 @@ open class SymbolBuilder {
     fun build(): Symbol {
         builder.name(name)
         if (nullable) {
-            builder.boxed()
+            builder.nullable()
         }
         builder.putProperty(SymbolProperty.IS_EXTENSION, isExtension)
         if (objectRef != null) {
