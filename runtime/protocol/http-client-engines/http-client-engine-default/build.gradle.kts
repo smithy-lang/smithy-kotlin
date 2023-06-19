@@ -13,7 +13,6 @@ kotlin {
         commonMain {
             dependencies {
                 api(project(":runtime:protocol:http-client"))
-                implementation(project(":runtime:logging"))
                 implementation(project(":runtime:runtime-core"))
             }
         }

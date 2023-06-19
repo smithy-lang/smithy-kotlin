@@ -16,7 +16,6 @@ kotlin {
             dependencies {
                 implementation(project(":runtime:runtime-core"))
                 api(project(":runtime:protocol:http-client"))
-                implementation(project(":runtime:logging"))
 
                 implementation("com.squareup.okhttp3:okhttp:$okHttpVersion")
                 implementation("com.squareup.okhttp3:okhttp-coroutines:$okHttpVersion")
