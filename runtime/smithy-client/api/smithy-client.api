@@ -145,6 +145,26 @@ public abstract interface class aws/smithy/kotlin/runtime/client/ResponseInterce
 	public abstract fun getResponse-d1pmJ48 ()Ljava/lang/Object;
 }
 
+public abstract interface class aws/smithy/kotlin/runtime/client/RetryClientConfig : aws/smithy/kotlin/runtime/client/RetryStrategyClientConfig {
+	public abstract fun getRetryPolicy ()Laws/smithy/kotlin/runtime/retries/policy/RetryPolicy;
+}
+
+public abstract interface class aws/smithy/kotlin/runtime/client/RetryClientConfig$Builder {
+	public abstract fun getRetryPolicy ()Laws/smithy/kotlin/runtime/retries/policy/RetryPolicy;
+	public abstract fun setRetryPolicy (Laws/smithy/kotlin/runtime/retries/policy/RetryPolicy;)V
+}
+
+public abstract interface class aws/smithy/kotlin/runtime/client/RetryStrategyClientConfig {
+	public abstract fun getRetryStrategy ()Laws/smithy/kotlin/runtime/retries/RetryStrategy;
+}
+
+public abstract interface class aws/smithy/kotlin/runtime/client/RetryStrategyClientConfig$Builder {
+	public abstract fun getRetryStrategy ()Laws/smithy/kotlin/runtime/retries/RetryStrategy;
+	public abstract fun retryStrategy (Laws/smithy/kotlin/runtime/util/DslFactory;Lkotlin/jvm/functions/Function1;)V
+	public abstract fun retryStrategy (Lkotlin/jvm/functions/Function1;)V
+	public abstract fun setRetryStrategy (Laws/smithy/kotlin/runtime/retries/RetryStrategy;)V
+}
+
 public abstract interface class aws/smithy/kotlin/runtime/client/SdkClient : java/io/Closeable {
 	public abstract fun getConfig ()Laws/smithy/kotlin/runtime/client/SdkClientConfig;
 }
@@ -156,19 +176,13 @@ public abstract interface class aws/smithy/kotlin/runtime/client/SdkClient$Build
 public abstract interface class aws/smithy/kotlin/runtime/client/SdkClientConfig {
 	public abstract fun getClientName ()Ljava/lang/String;
 	public abstract fun getLogMode ()Laws/smithy/kotlin/runtime/client/LogMode;
-	public abstract fun getRetryPolicy ()Laws/smithy/kotlin/runtime/retries/policy/RetryPolicy;
-	public abstract fun getRetryStrategy ()Laws/smithy/kotlin/runtime/retries/RetryStrategy;
 }
 
 public abstract interface class aws/smithy/kotlin/runtime/client/SdkClientConfig$Builder : aws/smithy/kotlin/runtime/util/Buildable {
 	public abstract fun getClientName ()Ljava/lang/String;
 	public abstract fun getLogMode ()Laws/smithy/kotlin/runtime/client/LogMode;
-	public abstract fun getRetryPolicy ()Laws/smithy/kotlin/runtime/retries/policy/RetryPolicy;
-	public abstract fun getRetryStrategy ()Laws/smithy/kotlin/runtime/retries/RetryStrategy;
 	public abstract fun setClientName (Ljava/lang/String;)V
 	public abstract fun setLogMode (Laws/smithy/kotlin/runtime/client/LogMode;)V
-	public abstract fun setRetryPolicy (Laws/smithy/kotlin/runtime/retries/policy/RetryPolicy;)V
-	public abstract fun setRetryStrategy (Laws/smithy/kotlin/runtime/retries/RetryStrategy;)V
 }
 
 public abstract interface class aws/smithy/kotlin/runtime/client/SdkClientFactory {

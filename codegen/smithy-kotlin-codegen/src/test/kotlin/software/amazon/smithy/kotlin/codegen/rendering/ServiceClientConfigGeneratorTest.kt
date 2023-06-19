@@ -42,7 +42,7 @@ class ServiceClientConfigGeneratorTest {
         contents.assertBalancedBracesAndParens()
 
         val expectedCtor = """
-public class Config private constructor(builder: Builder) : HttpAuthConfig, HttpClientConfig, HttpEngineConfig by builder.buildHttpEngineConfig(), IdempotencyTokenConfig, SdkClientConfig, TracingClientConfig {
+public class Config private constructor(builder: Builder) : HttpAuthConfig, HttpClientConfig, HttpEngineConfig by builder.buildHttpEngineConfig(), IdempotencyTokenConfig, RetryClientConfig, RetryStrategyClientConfig by builder.buildRetryStrategyClientConfig(), SdkClientConfig, TracingClientConfig {
 """
         contents.shouldContainWithDiff(expectedCtor)
 
@@ -54,13 +54,12 @@ public class Config private constructor(builder: Builder) : HttpAuthConfig, Http
     override val interceptors: kotlin.collections.List<aws.smithy.kotlin.runtime.http.interceptors.HttpInterceptor> = builder.interceptors
     override val logMode: LogMode = builder.logMode ?: LogMode.Default
     override val retryPolicy: RetryPolicy<Any?> = builder.retryPolicy ?: StandardRetryPolicy.Default
-    override val retryStrategy: RetryStrategy = builder.retryStrategy ?: StandardRetryStrategy()
     override val tracer: Tracer = builder.tracer ?: DefaultTracer(LoggingTraceProbe, clientName)
 """
         contents.shouldContainWithDiff(expectedProps)
 
         val expectedBuilder = """
-    public class Builder : HttpAuthConfig.Builder, HttpClientConfig.Builder, HttpEngineConfig.Builder by HttpEngineConfigImpl.BuilderImpl(), IdempotencyTokenConfig.Builder, SdkClientConfig.Builder<Config>, TracingClientConfig.Builder {
+    public class Builder : HttpAuthConfig.Builder, HttpClientConfig.Builder, HttpEngineConfig.Builder by HttpEngineConfigImpl.BuilderImpl(), IdempotencyTokenConfig.Builder, RetryClientConfig.Builder, RetryStrategyClientConfig.Builder by RetryStrategyClientConfigImpl.BuilderImpl(), SdkClientConfig.Builder<Config>, TracingClientConfig.Builder {
         /**
          * A reader-friendly name for the client.
          */
@@ -114,12 +113,6 @@ public class Config private constructor(builder: Builder) : HttpAuthConfig, Http
          * The policy to use for evaluating operation results and determining whether/how to retry.
          */
         override var retryPolicy: RetryPolicy<Any?>? = null
-
-        /**
-         * The [RetryStrategy] implementation to use for service calls. All API calls will be wrapped by the
-         * strategy.
-         */
-        override var retryStrategy: RetryStrategy? = null
 
         /**
          * The tracer that is responsible for creating trace spans and wiring them up to a tracing backend (e.g.,
@@ -255,7 +248,6 @@ public class Config private constructor(builder: Builder) {
     override val interceptors: kotlin.collections.List<aws.smithy.kotlin.runtime.http.interceptors.HttpInterceptor> = builder.interceptors
     override val logMode: LogMode = builder.logMode ?: LogMode.LogRequest
     override val retryPolicy: RetryPolicy<Any?> = builder.retryPolicy ?: StandardRetryPolicy.Default
-    override val retryStrategy: RetryStrategy = builder.retryStrategy ?: StandardRetryStrategy()
     override val tracer: Tracer = builder.tracer ?: DefaultTracer(LoggingTraceProbe, clientName)"""
         contents.shouldContainWithDiff(expectedConfigValues)
     }

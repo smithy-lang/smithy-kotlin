@@ -8,28 +8,28 @@ package aws.smithy.kotlin.runtime.retries
 import aws.smithy.kotlin.runtime.retries.delay.*
 import aws.smithy.kotlin.runtime.retries.policy.RetryDirective
 import aws.smithy.kotlin.runtime.retries.policy.RetryPolicy
+import aws.smithy.kotlin.runtime.util.DslBuilderProperty
+import aws.smithy.kotlin.runtime.util.DslFactory
 import kotlinx.coroutines.CancellationException
 
 /**
  * Implements a retry strategy utilizing backoff delayer and a token bucket for rate limiting and circuit breaking. Note
  * that the backoff delayer and token bucket work independently of each other. Either can delay retries (and the token
  * bucket can delay the initial try). The delayer is called first so that the token bucket can refill as appropriate.
- * @param options The options that control the functionality of this strategy.
- * @param tokenBucket The token bucket instance. Utilizing an existing token bucket will share call capacity between
- * those scopes.
- * @param delayProvider A delayer that can back off after the initial try to spread out the retries.
+ * @param config The options that control the functionality of this strategy.
  */
-public class StandardRetryStrategy(
-    override val options: StandardRetryStrategyOptions = StandardRetryStrategyOptions.Default,
-    private val tokenBucket: RetryTokenBucket = StandardRetryTokenBucket(),
-    private val delayProvider: DelayProvider = ExponentialBackoffWithJitter(),
-) : RetryStrategy {
+public class StandardRetryStrategy(override val config: Config = Config.default()) : RetryStrategy {
+    public companion object : DslFactory<Config.Builder, StandardRetryStrategy> {
+        public override operator fun invoke(block: Config.Builder.() -> Unit): StandardRetryStrategy =
+            StandardRetryStrategy(Config(Config.Builder().apply(block)))
+    }
+
     /**
      * Retry the given block of code until it's successful. Note this method throws exceptions for non-successful
      * outcomes from retrying.
      */
     override suspend fun <R> retry(policy: RetryPolicy<R>, block: suspend () -> R): Outcome<R> =
-        doTryLoop(block, policy, 1, tokenBucket.acquireToken())
+        doTryLoop(block, policy, 1, config.tokenBucket.acquireToken())
 
     /**
      * Perform a single iteration of the try loop. Execute the block of code, evaluate the result, and take action to
@@ -62,11 +62,11 @@ public class StandardRetryStrategy(
                     throwFailure(attempt, callResult)
 
                 is RetryDirective.RetryError ->
-                    if (attempt >= options.maxAttempts) {
+                    if (attempt >= config.maxAttempts) {
                         throwTooManyAttempts(attempt, callResult)
                     } else {
                         // Prep for another loop
-                        delayProvider.backoff(attempt)
+                        config.delayProvider.backoff(attempt)
                         fromToken.scheduleRetry(evaluation.reason)
                     }
             }
@@ -131,7 +131,7 @@ public class StandardRetryStrategy(
     private fun <R> throwTooManyAttempts(attempt: Int, result: Result<R>): Nothing =
         when (val ex = result.exceptionOrNull()) {
             null -> throw TooManyAttemptsException(
-                "Took more than ${options.maxAttempts} to get a successful response",
+                "Took more than ${config.maxAttempts} to get a successful response",
                 null,
                 attempt,
                 result.getOrNull(),
@@ -139,17 +139,113 @@ public class StandardRetryStrategy(
             )
             else -> throw ex
         }
-}
 
-/**
- * Defines configuration for a [StandardRetryStrategy].
- * @param maxAttempts The maximum number of attempts to make (including the first attempt).
- */
-public data class StandardRetryStrategyOptions(override val maxAttempts: Int) : RetryOptions {
-    public companion object {
+    /**
+     * Configuration options for [StandardRetryStrategy]
+     */
+    public class Config(builder: Builder) : RetryStrategy.Config {
+        public companion object {
+            /**
+             * Creates a new default configuration instance. A new instance is returned for each method call so that a
+             * single token bucket isn't shared across all instances. Callers that desire shared token bucket scopes
+             * should pass an explicit token bucket instance.
+             */
+            public fun default(): Config = Config(Builder())
+
+            /**
+             * The default number of maximum attempts for new config instances
+             */
+            public const val DEFAULT_MAX_ATTEMPTS: Int = 3
+        }
+
         /**
-         * The default retry strategy configuration.
+         * A delayer that can back off after the initial try to spread out the retries.
          */
-        public val Default: StandardRetryStrategyOptions = StandardRetryStrategyOptions(maxAttempts = 3)
+        public val delayProvider: DelayProvider = builder.delayProviderProperty.supply()
+
+        override val maxAttempts: Int = builder.maxAttempts
+
+        /**
+         * The token bucket instance. Utilizing an existing token bucket will share call capacity between scopes.
+         */
+        public val tokenBucket: RetryTokenBucket = builder.tokenBucketProperty.supply()
+
+        override fun toBuilderApplicator(): RetryStrategy.Config.Builder.() -> Unit = {
+            if (this is Builder) {
+                delayProvider = this@Config.delayProvider
+                maxAttempts = this@Config.maxAttempts
+                tokenBucket = this@Config.tokenBucket
+            }
+        }
+
+        /**
+         * A mutable builder for a [Config]
+         */
+        public class Builder : RetryStrategy.Config.Builder {
+            internal val delayProviderProperty = DslBuilderProperty<DelayProvider.Config.Builder, DelayProvider>(
+                ExponentialBackoffWithJitter,
+                { config.toBuilderApplicator() },
+            )
+
+            /**
+             * A delayer that can back off after the initial try to spread out the retries.
+             */
+            public var delayProvider: DelayProvider? by delayProviderProperty::instance
+
+            /**
+             * Configure a new exponential backoff delayer
+             * @param block A DSL block which sets the parameters for the exponential backoff delayer
+             */
+            public fun delayProvider(block: ExponentialBackoffWithJitter.Config.Builder.() -> Unit) {
+                delayProviderProperty.dsl(ExponentialBackoffWithJitter, block)
+            }
+
+            /**
+             * Configure a new delayer
+             * @param factory The delay provider factory to use for building a new instance
+             * @param block A DSL block which sets the parameters for the delay provider
+             */
+            public fun <B : DelayProvider.Config.Builder, D : DelayProvider> delayProvider(
+                factory: DslFactory<B, D>,
+                block: B.() -> Unit,
+            ) {
+                delayProviderProperty.dsl(factory, block)
+            }
+
+            /**
+             * The maximum number of attempts to make (including the first attempt)
+             */
+            public override var maxAttempts: Int = DEFAULT_MAX_ATTEMPTS
+
+            internal val tokenBucketProperty = DslBuilderProperty<RetryTokenBucket.Config.Builder, RetryTokenBucket>(
+                StandardRetryTokenBucket,
+                { config.toBuilderApplicator() },
+            )
+
+            /**
+             * The token bucket instance. Utilizing an existing token bucket will share call capacity between scopes.
+             */
+            public var tokenBucket: RetryTokenBucket? by tokenBucketProperty::instance
+
+            /**
+             * Configure a new standard token bucket instance.
+             * @param block A DSL block which sets the parameters for the token bucket
+             */
+            public fun tokenBucket(block: StandardRetryTokenBucket.Config.Builder.() -> Unit) {
+                tokenBucketProperty.dsl(StandardRetryTokenBucket, block)
+            }
+
+            /**
+             * Configure a new token bucket instance.
+             * @param factory The token bucket factory to use for building a new instance
+             * @param block A DSL block which sets the parameters for the token bucket
+             */
+            public fun <B : RetryTokenBucket.Config.Builder, T : RetryTokenBucket> tokenBucket(
+                factory: DslFactory<B, T>,
+                block: B.() -> Unit,
+            ) {
+                tokenBucketProperty.dsl(factory, block)
+            }
+        }
     }
 }

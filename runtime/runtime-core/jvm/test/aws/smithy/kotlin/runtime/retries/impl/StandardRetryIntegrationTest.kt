@@ -5,11 +5,11 @@
 
 package aws.smithy.kotlin.runtime.retries.impl
 
-import aws.smithy.kotlin.runtime.retries.*
+import aws.smithy.kotlin.runtime.retries.StandardRetryStrategy
+import aws.smithy.kotlin.runtime.retries.TooManyAttemptsException
 import aws.smithy.kotlin.runtime.retries.delay.ExponentialBackoffWithJitter
-import aws.smithy.kotlin.runtime.retries.delay.ExponentialBackoffWithJitterOptions
 import aws.smithy.kotlin.runtime.retries.delay.StandardRetryTokenBucket
-import aws.smithy.kotlin.runtime.retries.delay.StandardRetryTokenBucketOptions
+import aws.smithy.kotlin.runtime.retries.getOrThrow
 import aws.smithy.kotlin.runtime.retries.policy.RetryDirective
 import aws.smithy.kotlin.runtime.retries.policy.RetryErrorType
 import aws.smithy.kotlin.runtime.retries.policy.RetryPolicy
@@ -29,23 +29,23 @@ class StandardRetryIntegrationTest {
         val testCases = standardRetryIntegrationTestCases
             .mapValues { Yaml.default.decodeFromString(TestCase.serializer(), it.value) }
         testCases.forEach { (name, tc) ->
-            val options = StandardRetryStrategyOptions(maxAttempts = tc.given.maxAttempts)
-            val tokenBucket = StandardRetryTokenBucket(
-                StandardRetryTokenBucketOptions.Default.copy(
-                    maxCapacity = tc.given.initialRetryTokens,
-                    circuitBreakerMode = true,
-                    refillUnitsPerSecond = 0, // None of the tests use refill
-                ),
-            )
-            val delayer = ExponentialBackoffWithJitter(
-                ExponentialBackoffWithJitterOptions(
-                    initialDelay = tc.given.exponentialBase.milliseconds,
-                    scaleFactor = tc.given.exponentialPower,
-                    jitter = 0.0, // None of the tests use jitter
-                    maxBackoff = tc.given.maxBackoffTime.milliseconds,
-                ),
-            )
-            val retryer = StandardRetryStrategy(options, tokenBucket, delayer)
+            val tokenBucket = StandardRetryTokenBucket { maxCapacity = tc.given.initialRetryTokens }
+            val retryer = StandardRetryStrategy {
+                maxAttempts = tc.given.maxAttempts
+                this.tokenBucket = tokenBucket
+                delayProvider {
+                    println("Actually setting the delay provider values!")
+                    initialDelay = tc.given.exponentialBase.milliseconds
+                    scaleFactor = tc.given.exponentialPower
+                    jitter = 0.0 // None of the tests use jitter
+                    maxBackoff = tc.given.maxBackoffTime.milliseconds
+                }
+            }
+            val delayConfig = (retryer.config.delayProvider as ExponentialBackoffWithJitter).config
+            println("retrier configured with initial delay ${delayConfig.initialDelay}")
+            println("retrier configured with scale factor ${delayConfig.scaleFactor}")
+            println("retrier configured with jitter ${delayConfig.jitter}")
+            println("retrier configured with max backoff ${delayConfig.maxBackoff}")
 
             val block = object {
                 var index = 0
@@ -64,7 +64,7 @@ class StandardRetryIntegrationTest {
                 else -> fail("Unexpected outcome for $name: ${finalState.outcome}")
             }
 
-            val expectedDelayMs = tc.responses.map { it.expected.delay ?: 0 }.sum()
+            val expectedDelayMs = tc.responses.mapNotNull { it.expected.delay }.sum()
             if (finalState.outcome == TestOutcome.RetryQuotaExceeded) {
                 // The retry quota exceeded tests assume that the delayer won't be called when the bucket's out of
                 // capacity but that assumes no refill which is not the case most of the time. Rather than add

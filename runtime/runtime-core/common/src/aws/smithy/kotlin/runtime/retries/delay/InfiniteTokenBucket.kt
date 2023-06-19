@@ -5,6 +5,7 @@
 
 package aws.smithy.kotlin.runtime.retries.delay
 
+import aws.smithy.kotlin.runtime.InternalApi
 import aws.smithy.kotlin.runtime.retries.policy.RetryErrorType
 
 /**
@@ -12,6 +13,11 @@ import aws.smithy.kotlin.runtime.retries.policy.RetryErrorType
  * operations immediately succeed and no blocking occurs.
  */
 public object InfiniteTokenBucket : RetryTokenBucket {
+    override val config: RetryTokenBucket.Config = object : RetryTokenBucket.Config {
+        @InternalApi
+        override fun toBuilderApplicator(): RetryTokenBucket.Config.Builder.() -> Unit = { }
+    }
+
     override suspend fun acquireToken(): RetryToken = object : RetryToken {
         override suspend fun notifyFailure() = Unit
         override suspend fun notifySuccess() = Unit
