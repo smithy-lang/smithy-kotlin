@@ -1455,15 +1455,6 @@ public final class aws/smithy/kotlin/runtime/util/ConvenienceKt {
 public final class aws/smithy/kotlin/runtime/util/CoroutineUtilsKt {
 }
 
-public final class aws/smithy/kotlin/runtime/util/DslBuilderProperty {
-	public fun <init> (Laws/smithy/kotlin/runtime/util/DslFactory;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;)V
-	public synthetic fun <init> (Laws/smithy/kotlin/runtime/util/DslFactory;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public final fun dsl (Laws/smithy/kotlin/runtime/util/DslFactory;Lkotlin/jvm/functions/Function1;)V
-	public final fun getInstance ()Ljava/lang/Object;
-	public final fun getSupply ()Lkotlin/jvm/functions/Function0;
-	public final fun setInstance (Ljava/lang/Object;)V
-}
-
 public abstract interface class aws/smithy/kotlin/runtime/util/DslFactory {
 	public abstract fun invoke (Lkotlin/jvm/functions/Function1;)Ljava/lang/Object;
 }
