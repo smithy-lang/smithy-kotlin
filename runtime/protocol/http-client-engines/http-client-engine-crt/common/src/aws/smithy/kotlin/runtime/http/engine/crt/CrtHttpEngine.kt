@@ -23,8 +23,6 @@ import aws.smithy.kotlin.runtime.http.engine.callContext
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.http.response.HttpCall
 import aws.smithy.kotlin.runtime.io.internal.SdkDispatchers
-import aws.smithy.kotlin.runtime.logging.Logger
-import aws.smithy.kotlin.runtime.net.HostResolver
 import aws.smithy.kotlin.runtime.operation.ExecutionContext
 import aws.smithy.kotlin.runtime.telemetry.logging.logger
 import aws.smithy.kotlin.runtime.time.Instant
@@ -53,8 +51,6 @@ public class CrtHttpEngine(public override val config: CrtHttpEngineConfig) : Ht
         override val engineConstructor: (CrtHttpEngineConfig.Builder.() -> Unit) -> CrtHttpEngine = ::invoke
     }
 
-    private val logger = Logger.getLogger<CrtHttpEngine>()
-
     private val crtTlsContext: CrtTlsContext = TlsContextOptionsBuilder()
         .apply {
             verifyPeer = true
@@ -64,19 +60,20 @@ public class CrtHttpEngine(public override val config: CrtHttpEngineConfig) : Ht
         .build()
         .let(::CrtTlsContext)
 
-    init {
-        if (config.socketReadTimeout != CrtHttpEngineConfig.Default.socketReadTimeout) {
-            logger.warn { "CrtHttpEngine does not support socketReadTimeout(${config.socketReadTimeout}); ignoring" }
-        }
-        if (config.socketWriteTimeout != CrtHttpEngineConfig.Default.socketWriteTimeout) {
-            logger.warn { "CrtHttpEngine does not support socketWriteTimeout(${config.socketWriteTimeout}); ignoring" }
-        }
-
-        if (config.hostResolver !== HostResolver.Default) {
-            // FIXME - there is no way to currently plugin a JVM based host resolver to CRT. (see V804672153)
-            logger.warn { "CrtHttpEngine does not support custom HostResolver implementations; ignoring" }
-        }
-    }
+    // FIXME - re-enable when SLF4j default is available
+    // init {
+    //     if (config.socketReadTimeout != CrtHttpEngineConfig.Default.socketReadTimeout) {
+    //         logger.warn { "CrtHttpEngine does not support socketReadTimeout(${config.socketReadTimeout}); ignoring" }
+    //     }
+    //     if (config.socketWriteTimeout != CrtHttpEngineConfig.Default.socketWriteTimeout) {
+    //         logger.warn { "CrtHttpEngine does not support socketWriteTimeout(${config.socketWriteTimeout}); ignoring" }
+    //     }
+    //
+    //     if (config.hostResolver !== HostResolver.Default) {
+    //         // FIXME - there is no way to currently plugin a JVM based host resolver to CRT. (see V804672153)
+    //         logger.warn { "CrtHttpEngine does not support custom HostResolver implementations; ignoring" }
+    //     }
+    // }
 
     private val options = HttpClientConnectionManagerOptionsBuilder().apply {
         clientBootstrap = config.clientBootstrap ?: SdkDefaultIO.ClientBootstrap

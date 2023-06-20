@@ -11,7 +11,6 @@ import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.http.response.HttpResponse
 import aws.smithy.kotlin.runtime.io.SdkSource
 import aws.smithy.kotlin.runtime.io.internal.toSdk
-import aws.smithy.kotlin.runtime.logging.Logger
 import aws.smithy.kotlin.runtime.net.*
 import aws.smithy.kotlin.runtime.operation.ExecutionContext
 import kotlinx.coroutines.*
@@ -159,11 +158,7 @@ internal class OkHttpProxySelector(
             else -> emptyList()
         }
     }
-
-    override fun connectFailed(uri: URI?, sa: SocketAddress?, ioe: IOException?) {
-        val logger = Logger.getLogger<OkHttpProxySelector>()
-        logger.error { "failed to connect to proxy: uri=$uri; socketAddress: $sa; exception: $ioe" }
-    }
+    override fun connectFailed(uri: URI?, sa: SocketAddress?, ioe: IOException?) {}
 }
 
 private fun URI.toUrl(): Url {

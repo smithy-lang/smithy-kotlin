@@ -14,7 +14,7 @@ import aws.smithy.kotlin.runtime.http.response.HttpResponse
 import aws.smithy.kotlin.runtime.io.SdkBuffer
 import aws.smithy.kotlin.runtime.io.SdkByteChannel
 import aws.smithy.kotlin.runtime.io.SdkByteReadChannel
-import aws.smithy.kotlin.runtime.logging.Logger
+import aws.smithy.kotlin.runtime.telemetry.logging.logger
 import aws.smithy.kotlin.runtime.util.derivedName
 import kotlinx.atomicfu.locks.reentrantLock
 import kotlinx.atomicfu.locks.withLock
@@ -35,7 +35,7 @@ internal class SdkStreamResponseHandler(
     // There is no great way to do that currently without either (1) closing the connection or (2) throwing an
     // exception from a callback such that AWS_OP_ERROR is returned. Wait for HttpStream to have explicit cancellation
 
-    private val logger = Logger.getLogger<SdkStreamResponseHandler>()
+    private val logger = callContext.logger<SdkStreamResponseHandler>()
     private val responseReady = Channel<HttpResponse>(1)
     private val headers = HeadersBuilder()
 

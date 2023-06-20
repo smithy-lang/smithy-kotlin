@@ -17,7 +17,6 @@ kotlin {
             dependencies {
                 api(project(":runtime:protocol:http-client"))
 
-                implementation(project(":runtime:logging"))
                 implementation("org.jetbrains.kotlin:kotlin-test-common:$kotlinVersion")
                 implementation("org.jetbrains.kotlin:kotlin-test-annotations-common:$kotlinVersion")
                 implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:$kotlinxSerializationVersion")
