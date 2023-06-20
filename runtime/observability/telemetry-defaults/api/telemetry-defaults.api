@@ -1,0 +1,10 @@
+public final class aws/smithy/kotlin/runtime/telemetry/GlobalTelemetryProvider {
+	public static final field INSTANCE Laws/smithy/kotlin/runtime/telemetry/GlobalTelemetryProvider;
+	public final fun getInstance ()Laws/smithy/kotlin/runtime/telemetry/TelemetryProvider;
+	public final fun set (Laws/smithy/kotlin/runtime/telemetry/TelemetryProvider;)V
+}
+
+public final class aws/smithy/kotlin/runtime/telemetry/GlobalTelemetryProviderKt {
+	public static final fun getGlobal (Laws/smithy/kotlin/runtime/telemetry/TelemetryProvider$Companion;)Laws/smithy/kotlin/runtime/telemetry/TelemetryProvider;
+}
+

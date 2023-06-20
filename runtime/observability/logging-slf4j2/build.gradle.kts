@@ -1,0 +1,30 @@
+/*
+ * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * SPDX-License-Identifier: Apache-2.0
+ */
+description = "Logging provider based on SLF4J 2"
+extra["displayName"] = "Smithy :: Kotlin :: Observability :: SLF4J2 binding"
+extra["moduleName"] = "aws.smithy.kotlin.runtime.telemetry"
+
+val coroutinesVersion: String by project
+val slf4jVersion: String by project
+
+kotlin {
+    sourceSets {
+        commonMain {
+            dependencies {
+                api(project(":runtime:observability:telemetry-api"))
+            }
+        }
+
+        jvmMain {
+            dependencies {
+                implementation("org.slf4j:slf4j-api:$slf4jVersion")
+            }
+        }
+
+        all {
+            languageSettings.optIn("aws.smithy.kotlin.runtime.InternalApi")
+        }
+    }
+}

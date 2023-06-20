@@ -7,20 +7,11 @@ package aws.smithy.kotlin.runtime.telemetry.logging
 
 import aws.smithy.kotlin.runtime.telemetry.context.Context
 import aws.smithy.kotlin.runtime.time.Instant
-import aws.smithy.kotlin.runtime.util.AttributeKey
-import aws.smithy.kotlin.runtime.util.Attributes
-import aws.smithy.kotlin.runtime.util.get
 
 /**
  * Construct a logging record that can be emitted to an underlying logger.
  */
 public interface LogRecordBuilder {
-    /**
-     * Set the logging level (severity)
-     * @param level the level to log this record at
-     */
-    public fun setLevel(level: LogLevel)
-
     /**
      * Set the timestamp
      * @param ts the observed time for this event
@@ -45,31 +36,21 @@ public interface LogRecordBuilder {
      * @param message the block of code responsible for supplying a log message. `toString()` will be used on the
      * supplied value.
      */
-    public fun setMessage(message: () -> Any)
+    public fun setMessage(message: MessageSupplier)
 
     /**
-     * Set an attribute associated with this log record
+     * Set a key/value pair to associate with this log record
      * @param key the key to use
      * @param value the value to associate with [key]
      */
-    public fun setAttribute(name: String, value: Any)
+    public fun setKeyValuePair(key: String, value: Any)
 
+    // FIXME - revisit this and reconcile with propagators API and/or logging context?
     /**
      * Set the telemetry context to associate with this log record
      * @param context the context to associate
      */
     public fun setContext(context: Context)
-
-    /**
-     * Associate all key/value pairs from [attributes] with this log record
-     * @param attributes the attributes to associate with this log record
-     */
-    public fun mergeAttributes(attributes: Attributes) {
-        attributes.keys.forEach { key ->
-            @Suppress("UNCHECKED_CAST")
-            setAttribute(key.name, attributes[key as AttributeKey<Any>])
-        }
-    }
 
     /**
      * Emit this event to the underlying logger

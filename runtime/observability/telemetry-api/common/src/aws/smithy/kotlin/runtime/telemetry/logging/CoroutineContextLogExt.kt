@@ -27,14 +27,13 @@ public fun CoroutineContext.log(
     level: LogLevel,
     sourceComponent: String,
     ex: Throwable? = null,
-    content: () -> Any,
+    content: () -> String,
 ) {
     val logger = this.telemetryProvider.loggerProvider.getOrCreateLogger(sourceComponent)
     if (!logger.isEnabledFor(level)) return
     val context = this.telemetryContext
-    logger.logRecordBuilder()
+    logger.atLevel(level)
         .apply {
-            setLevel(level)
             ex?.let { setCause(it) }
             setMessage(content)
             context?.let { setContext(it) }
@@ -53,33 +52,11 @@ public fun CoroutineContext.log(
 public inline fun <reified T> CoroutineContext.log(
     level: LogLevel,
     ex: Throwable? = null,
-    noinline content: () -> Any,
+    noinline content: () -> String,
 ) {
     val sourceComponent = requireNotNull(T::class.qualifiedName) { "log<T> cannot be used on an anonymous object" }
     log(level, sourceComponent, ex, content)
 }
-
-/**
- * Logs a fatal message using the current [LoggerProvider] configured in this [CoroutineContext].
- * @param sourceComponent The name of the component that generated the event
- * @param ex An optional exception which explains the message
- * @param content A lambda which provides the content of the message. This content does not need to include any data
- * from the exception (if any), which may be concatenated later based on probe behavior.
- */
-@InternalApi
-public fun CoroutineContext.fatal(sourceComponent: String, ex: Throwable? = null, content: () -> Any): Unit =
-    log(LogLevel.Fatal, sourceComponent, ex, content)
-
-/**
- * Logs a fatal message using the current [LoggerProvider] configured in this [CoroutineContext].
- * @param T The class to use for the name of the component that generated the event
- * @param ex An optional exception which explains the message
- * @param content A lambda which provides the content of the message. This content does not need to include any data
- * from the exception (if any), which may be concatenated later based on probe behavior.
- */
-@InternalApi
-public inline fun <reified T> CoroutineContext.fatal(ex: Throwable? = null, noinline content: () -> Any): Unit =
-    log<T>(LogLevel.Fatal, ex, content)
 
 /**
  * Logs an error message using the current [LoggerProvider] configured in this [CoroutineContext].
@@ -89,7 +66,7 @@ public inline fun <reified T> CoroutineContext.fatal(ex: Throwable? = null, noin
  * from the exception (if any), which may be concatenated later based on probe behavior.
  */
 @InternalApi
-public fun CoroutineContext.error(sourceComponent: String, ex: Throwable? = null, content: () -> Any): Unit =
+public fun CoroutineContext.error(sourceComponent: String, ex: Throwable? = null, content: () -> String): Unit =
     log(LogLevel.Error, sourceComponent, ex, content)
 
 /**
@@ -100,7 +77,7 @@ public fun CoroutineContext.error(sourceComponent: String, ex: Throwable? = null
  * from the exception (if any), which may be concatenated later based on probe behavior.
  */
 @InternalApi
-public inline fun <reified T> CoroutineContext.error(ex: Throwable? = null, noinline content: () -> Any): Unit =
+public inline fun <reified T> CoroutineContext.error(ex: Throwable? = null, noinline content: () -> String): Unit =
     log<T>(LogLevel.Error, ex, content)
 
 /**
@@ -111,7 +88,7 @@ public inline fun <reified T> CoroutineContext.error(ex: Throwable? = null, noin
  * from the exception (if any), which may be concatenated later based on probe behavior.
  */
 @InternalApi
-public fun CoroutineContext.warn(sourceComponent: String, ex: Throwable? = null, content: () -> Any): Unit =
+public fun CoroutineContext.warn(sourceComponent: String, ex: Throwable? = null, content: () -> String): Unit =
     log(LogLevel.Warning, sourceComponent, ex, content)
 
 /**
@@ -122,7 +99,7 @@ public fun CoroutineContext.warn(sourceComponent: String, ex: Throwable? = null,
  * from the exception (if any), which may be concatenated later based on probe behavior.
  */
 @InternalApi
-public inline fun <reified T> CoroutineContext.warn(ex: Throwable? = null, noinline content: () -> Any): Unit =
+public inline fun <reified T> CoroutineContext.warn(ex: Throwable? = null, noinline content: () -> String): Unit =
     log<T>(LogLevel.Warning, ex, content)
 
 /**
@@ -133,7 +110,7 @@ public inline fun <reified T> CoroutineContext.warn(ex: Throwable? = null, noinl
  * from the exception (if any), which may be concatenated later based on probe behavior.
  */
 @InternalApi
-public fun CoroutineContext.info(sourceComponent: String, ex: Throwable? = null, content: () -> Any): Unit =
+public fun CoroutineContext.info(sourceComponent: String, ex: Throwable? = null, content: () -> String): Unit =
     log(LogLevel.Info, sourceComponent, ex, content)
 
 /**
@@ -144,7 +121,7 @@ public fun CoroutineContext.info(sourceComponent: String, ex: Throwable? = null,
  * from the exception (if any), which may be concatenated later based on probe behavior.
  */
 @InternalApi
-public inline fun <reified T> CoroutineContext.info(ex: Throwable? = null, noinline content: () -> Any): Unit =
+public inline fun <reified T> CoroutineContext.info(ex: Throwable? = null, noinline content: () -> String): Unit =
     log<T>(LogLevel.Info, ex, content)
 
 /**
@@ -155,7 +132,7 @@ public inline fun <reified T> CoroutineContext.info(ex: Throwable? = null, noinl
  * from the exception (if any), which may be concatenated later based on probe behavior.
  */
 @InternalApi
-public fun CoroutineContext.debug(sourceComponent: String, ex: Throwable? = null, content: () -> Any): Unit =
+public fun CoroutineContext.debug(sourceComponent: String, ex: Throwable? = null, content: () -> String): Unit =
     log(LogLevel.Debug, sourceComponent, ex, content)
 
 /**
@@ -166,7 +143,7 @@ public fun CoroutineContext.debug(sourceComponent: String, ex: Throwable? = null
  * from the exception (if any), which may be concatenated later based on probe behavior.
  */
 @InternalApi
-public inline fun <reified T> CoroutineContext.debug(ex: Throwable? = null, noinline content: () -> Any): Unit =
+public inline fun <reified T> CoroutineContext.debug(ex: Throwable? = null, noinline content: () -> String): Unit =
     log<T>(LogLevel.Debug, ex, content)
 
 /**
@@ -177,7 +154,7 @@ public inline fun <reified T> CoroutineContext.debug(ex: Throwable? = null, noin
  * from the exception (if any), which may be concatenated later based on probe behavior.
  */
 @InternalApi
-public fun CoroutineContext.trace(sourceComponent: String, ex: Throwable? = null, content: () -> Any): Unit =
+public fun CoroutineContext.trace(sourceComponent: String, ex: Throwable? = null, content: () -> String): Unit =
     log(LogLevel.Trace, sourceComponent, ex, content)
 
 /**
@@ -188,7 +165,7 @@ public fun CoroutineContext.trace(sourceComponent: String, ex: Throwable? = null
  * from the exception (if any), which may be concatenated later based on probe behavior.
  */
 @InternalApi
-public inline fun <reified T> CoroutineContext.trace(ex: Throwable? = null, noinline content: () -> Any): Unit =
+public inline fun <reified T> CoroutineContext.trace(ex: Throwable? = null, noinline content: () -> String): Unit =
     log<T>(LogLevel.Trace, ex, content)
 
 /**
@@ -209,14 +186,14 @@ private class ContextAwareLogger(
     private val delegate: Logger,
     private val sourceComponent: String,
 ) : Logger {
-    override fun trace(t: Throwable?, msg: () -> Any) = context.trace(sourceComponent, t, msg)
-    override fun debug(t: Throwable?, msg: () -> Any) = context.debug(sourceComponent, t, msg)
-    override fun info(t: Throwable?, msg: () -> Any) = context.info(sourceComponent, t, msg)
-    override fun warn(t: Throwable?, msg: () -> Any) = context.warn(sourceComponent, t, msg)
-    override fun error(t: Throwable?, msg: () -> Any) = context.error(sourceComponent, t, msg)
+    override fun trace(t: Throwable?, msg: () -> String) = context.trace(sourceComponent, t, msg)
+    override fun debug(t: Throwable?, msg: () -> String) = context.debug(sourceComponent, t, msg)
+    override fun info(t: Throwable?, msg: () -> String) = context.info(sourceComponent, t, msg)
+    override fun warn(t: Throwable?, msg: () -> String) = context.warn(sourceComponent, t, msg)
+    override fun error(t: Throwable?, msg: () -> String) = context.error(sourceComponent, t, msg)
     override fun isEnabledFor(level: LogLevel): Boolean = delegate.isEnabledFor(level)
-    override fun logRecordBuilder(): LogRecordBuilder {
-        val builder = delegate.logRecordBuilder()
+    override fun atLevel(level: LogLevel): LogRecordBuilder {
+        val builder = delegate.atLevel(level)
         val telemetryContext = context.telemetryContext
         return telemetryContext?.let { ContextAwareLogRecordBuilder(builder, it) } ?: builder
     }

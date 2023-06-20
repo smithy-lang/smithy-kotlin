@@ -17,6 +17,9 @@ public final class aws/smithy/kotlin/runtime/ErrorMetadata$Companion {
 	public final fun getThrottlingError ()Laws/smithy/kotlin/runtime/util/AttributeKey;
 }
 
+public abstract interface annotation class aws/smithy/kotlin/runtime/ExperimentalApi : java/lang/annotation/Annotation {
+}
+
 public abstract interface annotation class aws/smithy/kotlin/runtime/InternalApi : java/lang/annotation/Annotation {
 }
 
