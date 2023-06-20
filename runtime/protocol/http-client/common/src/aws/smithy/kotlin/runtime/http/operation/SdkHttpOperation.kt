@@ -33,8 +33,7 @@ public class SdkHttpOperation<I, O> internal constructor(
     internal val typeInfo: OperationTypeInfo,
 ) {
     init {
-        val sdkRequestId = Uuid.random().toString()
-        context[HttpOperationContext.SdkRequestId] = sdkRequestId
+        context[HttpOperationContext.SdkInvocationId] = Uuid.random().toString()
     }
 
     /**
@@ -68,8 +67,8 @@ public class SdkHttpOperation<I, O> internal constructor(
 /**
  * Gets the unique ID that identifies the active SDK request in this [ExecutionContext].
  */
-public val ExecutionContext.sdkRequestId: String
-    get() = get(HttpOperationContext.SdkRequestId)
+public val ExecutionContext.sdkInvocationId: String
+    get() = get(HttpOperationContext.SdkInvocationId)
 
 /**
  * Round trip an operation using the given [HttpHandler]

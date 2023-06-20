@@ -40,7 +40,7 @@ public open class HttpOperationContext {
          *
          * NOTE: This is guaranteed to exist.
          */
-        public val SdkRequestId: AttributeKey<String> = AttributeKey("aws.smithy.kotlin#SdkRequestId")
+        public val SdkInvocationId: AttributeKey<String> = AttributeKey("aws.smithy.kotlin#SdkInvocationId")
 
         /**
          * The operation input pre-serialization.
