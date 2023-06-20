@@ -20,11 +20,11 @@ import org.slf4j.spi.LoggingEventBuilder
 public object Slf4jLoggerProvider : LoggerProvider {
     override fun getOrCreateLogger(name: String): Logger {
         val sl4fjLogger = LoggerFactory.getLogger(name)
-        return Sl44JLoggerAdapter(sl4fjLogger)
+        return Slf4JLoggerAdapter(sl4fjLogger)
     }
 }
 
-private class Sl44JLoggerAdapter(private val delegate: org.slf4j.Logger) : Logger {
+private class Slf4JLoggerAdapter(private val delegate: org.slf4j.Logger) : Logger {
     private fun logWith(t: Throwable?, msg: () -> String, builder: LoggingEventBuilder) =
         builder.setMessage(msg)
             .apply {
