@@ -13,7 +13,6 @@ kotlin {
         commonMain {
             dependencies {
                 api(project(":runtime:auth:aws-signing-common"))
-                implementation(project(":runtime:logging"))
             }
         }
 
