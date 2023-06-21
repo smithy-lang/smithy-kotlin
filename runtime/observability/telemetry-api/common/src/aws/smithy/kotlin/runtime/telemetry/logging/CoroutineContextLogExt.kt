@@ -9,10 +9,46 @@ import aws.smithy.kotlin.runtime.InternalApi
 import aws.smithy.kotlin.runtime.telemetry.context.Context
 import aws.smithy.kotlin.runtime.telemetry.context.telemetryContext
 import aws.smithy.kotlin.runtime.telemetry.telemetryProvider
+import kotlinx.coroutines.withContext
+import kotlin.coroutines.AbstractCoroutineContextElement
 import kotlin.coroutines.CoroutineContext
 
-// TODO - add new context element for "LoggingContext" to set key/value pairs/MDC with. e.g. `sdkInvocationId`
-//        e.g. withLogCtx(key to value, key to value) { ... }
+/**
+ * Coroutine scoped telemetry context used for carrying telemetry provider configuration
+ * @param kvPairs key/value pairs to add to output log statements
+ */
+@InternalApi
+public data class LoggingContextElement(
+    val kvPairs: Map<String, Any>,
+) : AbstractCoroutineContextElement(LoggingContextElement) {
+
+    public constructor(vararg pairs: Pair<String, Any>) : this(pairs.toMap())
+    public companion object Key : CoroutineContext.Key<LoggingContextElement>
+    override fun toString(): String = "LoggingContextElement($kvPairs)"
+}
+
+@InternalApi
+public val CoroutineContext.loggingContext: Map<String, Any>
+    get() = get(LoggingContextElement)?.kvPairs ?: emptyMap()
+
+/**
+ * Execute [block] with key/value pairs set in the logging context. These will be automatically added
+ * to any log record executed via [CoroutineContext.log].
+ *
+ * @param kvPairs the key/value pairs to add to log records
+ * @param block the block of code to execute with the given logging context
+ * @return returns the result of executing [block]
+ */
+@InternalApi
+public suspend inline fun<R> withLogCtx(
+    vararg kvPairs: Pair<String, Any>,
+    crossinline block: () -> R,
+): R {
+    val loggingCtx = LoggingContextElement(kvPairs.toMap())
+    return withContext(loggingCtx) {
+        block()
+    }
+}
 
 /**
  * Logs a message using the current [LoggerProvider] configured in this [CoroutineContext].
@@ -32,11 +68,13 @@ public fun CoroutineContext.log(
     val logger = this.telemetryProvider.loggerProvider.getOrCreateLogger(sourceComponent)
     if (!logger.isEnabledFor(level)) return
     val context = this.telemetryContext
+    val loggingContext = this.loggingContext
     logger.atLevel(level)
         .apply {
             ex?.let { setCause(it) }
             setMessage(content)
             context?.let { setContext(it) }
+            loggingContext.forEach { entry -> setKeyValuePair(entry.key, entry.value) }
         }.emit()
 }
 
