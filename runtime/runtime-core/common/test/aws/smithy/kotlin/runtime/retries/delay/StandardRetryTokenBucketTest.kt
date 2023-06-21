@@ -14,6 +14,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
 import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.Duration.Companion.seconds
 import kotlin.time.ExperimentalTime
 import kotlin.time.TestTimeSource
 import kotlin.time.TimeSource
@@ -29,9 +30,9 @@ class StandardRetryTokenBucketTest {
         val bucket = tokenBucket(initialTryCost = 10)
 
         assertEquals(10, bucket.capacity)
-        assertTime(0) { bucket.acquireToken() }
+        assertTime(0.seconds) { bucket.acquireToken() }
         assertEquals(0, bucket.capacity)
-        assertTime(1000) { bucket.acquireToken() }
+        assertTime(1.seconds) { bucket.acquireToken() }
     }
 
     @Test
@@ -40,9 +41,9 @@ class StandardRetryTokenBucketTest {
         val bucket = tokenBucket(initialTryCost = 5, initialTrySuccessIncrement = 3)
 
         assertEquals(10, bucket.capacity)
-        val initialToken = assertTime(0) { bucket.acquireToken() }
+        val initialToken = assertTime(0.seconds) { bucket.acquireToken() }
         assertEquals(5, bucket.capacity)
-        assertTime(0) { initialToken.notifySuccess() }
+        assertTime(0.seconds) { initialToken.notifySuccess() }
         assertEquals(8, bucket.capacity)
     }
 
@@ -52,9 +53,9 @@ class StandardRetryTokenBucketTest {
         val bucket = tokenBucket(initialTryCost = 1)
 
         assertEquals(10, bucket.capacity)
-        val initialToken = assertTime(0) { bucket.acquireToken() }
+        val initialToken = assertTime(0.seconds) { bucket.acquireToken() }
         assertEquals(9, bucket.capacity)
-        assertTime(0) { initialToken.notifyFailure() }
+        assertTime(0.seconds) { initialToken.notifyFailure() }
         assertEquals(9, bucket.capacity)
     }
 
@@ -69,9 +70,9 @@ class StandardRetryTokenBucketTest {
             val bucket = tokenBucket()
 
             assertEquals(10, bucket.capacity)
-            val initialToken = assertTime(0) { bucket.acquireToken() }
+            val initialToken = assertTime(0.seconds) { bucket.acquireToken() }
             assertEquals(10, bucket.capacity)
-            assertTime(0) { initialToken.scheduleRetry(errorType) }
+            assertTime(0.seconds) { initialToken.scheduleRetry(errorType) }
             assertEquals(10 - cost, bucket.capacity)
         }
     }
@@ -84,13 +85,13 @@ class StandardRetryTokenBucketTest {
         val bucket = tokenBucket(initialTryCost = 5, timeSource = timeSource)
 
         assertEquals(10, bucket.capacity)
-        assertTime(0) { bucket.acquireToken() }
+        assertTime(0.seconds) { bucket.acquireToken() }
         assertEquals(5, bucket.capacity)
 
         // Refill rate is 10/s == 1/100ms so after 250ms we should have 2 more tokens.
         timeSource += 250.milliseconds
 
-        assertTime(0) { bucket.acquireToken() }
+        assertTime(0.seconds) { bucket.acquireToken() }
         assertEquals(2, bucket.capacity) // We had 5, 2 refilled, and then we decremented 5 more.
     }
 
@@ -100,7 +101,7 @@ class StandardRetryTokenBucketTest {
         val bucket = tokenBucket(initialTryCost = 10, circuitBreakerMode = true)
 
         assertEquals(10, bucket.capacity)
-        assertTime(0) { bucket.acquireToken() }
+        assertTime(0.seconds) { bucket.acquireToken() }
         assertEquals(0, bucket.capacity)
         val result = runCatching { bucket.acquireToken() }
         assertIs<RetryCapacityExceededException>(result.exceptionOrNull())

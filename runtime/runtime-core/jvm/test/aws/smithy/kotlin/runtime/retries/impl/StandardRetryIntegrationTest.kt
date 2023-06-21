@@ -12,12 +12,9 @@ import aws.smithy.kotlin.runtime.retries.getOrThrow
 import aws.smithy.kotlin.runtime.retries.policy.RetryDirective
 import aws.smithy.kotlin.runtime.retries.policy.RetryErrorType
 import aws.smithy.kotlin.runtime.retries.policy.RetryPolicy
-import com.charleskorn.kaml.Yaml
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.currentTime
 import kotlinx.coroutines.test.runTest
-import kotlinx.serialization.SerialName
-import kotlinx.serialization.Serializable
 import kotlin.test.*
 import kotlin.time.Duration.Companion.milliseconds
 
@@ -25,8 +22,7 @@ class StandardRetryIntegrationTest {
     @OptIn(ExperimentalCoroutinesApi::class)
     @Test
     fun testIntegrationCases() = runTest {
-        val testCases = standardRetryIntegrationTestCases
-            .mapValues { Yaml.default.decodeFromString(TestCase.serializer(), it.value) }
+        val testCases = standardRetryIntegrationTestCases.deserialize(StandardRetryTestCase.serializer())
         testCases.forEach { (name, tc) ->
             val tokenBucket = StandardRetryTokenBucket { maxCapacity = tc.given.initialRetryTokens }
             val retryer = StandardRetryStrategy {
@@ -82,40 +78,4 @@ object IntegrationTestPolicy : RetryPolicy<Int> {
         500, 502 -> RetryDirective.RetryError(RetryErrorType.ServerSide)
         else -> fail("Unexpected status code: $code")
     }
-}
-
-@Serializable
-data class TestCase(val given: Given, val responses: List<ResponseAndExpectation>)
-
-@Serializable
-data class Given(
-    @SerialName("max_attempts") val maxAttempts: Int,
-    @SerialName("initial_retry_tokens") val initialRetryTokens: Int,
-    @SerialName("exponential_base") val exponentialBase: Double,
-    @SerialName("exponential_power") val exponentialPower: Double,
-    @SerialName("max_backoff_time") val maxBackoffTime: Int,
-)
-
-@Serializable
-data class ResponseAndExpectation(val response: Response, val expected: Expectation)
-
-@Serializable
-data class Response(@SerialName("status_code") val statusCode: Int)
-
-@Serializable
-data class Expectation(val outcome: TestOutcome, @SerialName("retry_quota") val retryQuota: Int, val delay: Int? = null)
-
-@Serializable
-enum class TestOutcome {
-    @SerialName("max_attempts_exceeded")
-    MaxAttemptsExceeded,
-
-    @SerialName("retry_quota_exceeded")
-    RetryQuotaExceeded,
-
-    @SerialName("retry_request")
-    RetryRequest,
-
-    @SerialName("success")
-    Success,
 }

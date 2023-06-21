@@ -18,12 +18,14 @@ public enum class RetryMode {
     LEGACY,
 
     /**
-     * The standard retry mode. With this, the client will use the [StandardRetryStrategy][aws.smithy.kotlin.runtime.retries.StandardRetryStrategy]
+     * The standard retry mode. With this, the client will use the
+     * [StandardRetryStrategy][aws.smithy.kotlin.runtime.retries.StandardRetryStrategy].
      */
     STANDARD,
 
     /**
-     * Not implemented yet. https://github.com/awslabs/aws-sdk-kotlin/issues/701
+     * Adaptive retry mode. With this, the client will use the
+     * [AdaptiveRetryStrategy][aws.smithy.kotlin.runtime.retries.AdaptiveRetryStrategy].
      */
     ADAPTIVE,
 }

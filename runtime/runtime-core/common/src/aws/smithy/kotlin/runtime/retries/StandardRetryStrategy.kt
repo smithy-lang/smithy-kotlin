@@ -18,7 +18,7 @@ import kotlinx.coroutines.CancellationException
  * bucket can delay the initial try). The delayer is called first so that the token bucket can refill as appropriate.
  * @param config The options that control the functionality of this strategy.
  */
-public class StandardRetryStrategy(override val config: Config = Config.default()) : RetryStrategy {
+public open class StandardRetryStrategy(override val config: Config = Config.default()) : RetryStrategy {
     public companion object : DslFactory<Config.Builder, StandardRetryStrategy> {
         public override operator fun invoke(block: Config.Builder.() -> Unit): StandardRetryStrategy =
             StandardRetryStrategy(Config(Config.Builder().apply(block)))
@@ -28,8 +28,15 @@ public class StandardRetryStrategy(override val config: Config = Config.default(
      * Retry the given block of code until it's successful. Note this method throws exceptions for non-successful
      * outcomes from retrying.
      */
-    override suspend fun <R> retry(policy: RetryPolicy<R>, block: suspend () -> R): Outcome<R> =
-        doTryLoop(block, policy, 1, config.tokenBucket.acquireToken())
+    override suspend fun <R> retry(policy: RetryPolicy<R>, block: suspend () -> R): Outcome<R> {
+        try {
+            beforeInitialTry()
+        } catch (ex: RetryCapacityExceededException) {
+            throwCapacityExceeded<Unit>(ex, 1, null)
+        }
+
+        return doTryLoop(block, policy, 1, config.tokenBucket.acquireToken())
+    }
 
     /**
      * Perform a single iteration of the try loop. Execute the block of code, evaluate the result, and take action to
@@ -49,12 +56,13 @@ public class StandardRetryStrategy(override val config: Config = Config.default(
         fromToken: RetryToken,
     ): Outcome<R> {
         val callResult = runCatching { block() }
-        when (val ex = callResult.exceptionOrNull()) {
-            is CancellationException -> throw ex
-        }
+        (callResult.exceptionOrNull() as? CancellationException)?.let { throw it }
+        val evaluation = policy.evaluate(callResult)
 
         val nextToken = try {
-            when (val evaluation = policy.evaluate(callResult)) {
+            afterTry(attempt, callResult, evaluation, policy)
+
+            when (evaluation) {
                 is RetryDirective.TerminateAndSucceed ->
                     return success(fromToken, attempt, callResult)
 
@@ -69,6 +77,8 @@ public class StandardRetryStrategy(override val config: Config = Config.default(
                         config.delayProvider.backoff(attempt)
                         fromToken.scheduleRetry(evaluation.reason)
                     }
+            }.also {
+                beforeRetry(attempt + 1, callResult, evaluation, policy)
             }
         } catch (ex: RetryCapacityExceededException) {
             throwCapacityExceeded(ex, attempt, callResult)
@@ -78,6 +88,28 @@ public class StandardRetryStrategy(override val config: Config = Config.default(
         }
 
         return doTryLoop(block, policy, attempt + 1, nextToken)
+    }
+
+    protected open suspend fun beforeInitialTry() {
+        // No action necessary by default
+    }
+
+    protected open suspend fun <R> afterTry(
+        attempt: Int,
+        callResult: Result<R>,
+        evaluation: RetryDirective,
+        policy: RetryPolicy<R>,
+    ) {
+        // No action necessary by default
+    }
+
+    protected open suspend fun <R> beforeRetry(
+        attempt: Int,
+        callResult: Result<R>,
+        evaluation: RetryDirective,
+        policy: RetryPolicy<R>,
+    ) {
+        // No action necessary by default
     }
 
     /**
@@ -95,14 +127,17 @@ public class StandardRetryStrategy(override val config: Config = Config.default(
         }
     }
 
-    private fun <R> throwCapacityExceeded(cause: Throwable, attempt: Int, result: Result<R>): Nothing =
-        throw TooManyAttemptsException(
-            cause.message!!,
-            cause,
-            attempt,
-            result.getOrNull(),
-            result.exceptionOrNull(),
-        )
+    private fun <R> throwCapacityExceeded(cause: Throwable, attempt: Int, result: Result<R>?): Nothing =
+        when (val ex = result?.exceptionOrNull()) {
+            null -> throw TooManyAttemptsException(
+                cause.message!!,
+                cause,
+                attempt,
+                result?.getOrNull(),
+                result?.exceptionOrNull(),
+            )
+            else -> throw ex
+        }
 
     /**
      * Handles the termination of the retry loop because of a non-retryable failure by throwing a
@@ -143,7 +178,7 @@ public class StandardRetryStrategy(override val config: Config = Config.default(
     /**
      * Configuration options for [StandardRetryStrategy]
      */
-    public class Config(builder: Builder) : RetryStrategy.Config {
+    public open class Config(builder: Builder) : RetryStrategy.Config {
         public companion object {
             /**
              * Creates a new default configuration instance. A new instance is returned for each method call so that a
@@ -181,7 +216,7 @@ public class StandardRetryStrategy(override val config: Config = Config.default(
         /**
          * A mutable builder for a [Config]
          */
-        public class Builder : RetryStrategy.Config.Builder {
+        public open class Builder : RetryStrategy.Config.Builder {
             internal val delayProviderProperty = DslBuilderProperty<DelayProvider.Config.Builder, DelayProvider>(
                 ExponentialBackoffWithJitter,
                 { config.toBuilderApplicator() },

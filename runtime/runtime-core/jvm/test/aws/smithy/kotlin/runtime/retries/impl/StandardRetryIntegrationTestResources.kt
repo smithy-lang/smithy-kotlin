@@ -5,6 +5,9 @@
 
 package aws.smithy.kotlin.runtime.retries.impl
 
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
+
 val standardRetryIntegrationTestCases = mapOf(
     "Retry eventually succeeds" to // language=YAML
         """
@@ -32,7 +35,7 @@ val standardRetryIntegrationTestCases = mapOf(
                 expected:
                   outcome: success
                   retry_quota: 495
-        """.trimMargin(),
+        """.trimIndent(),
 
     "Fail due to max attempts reached" to // language=YAML
         """
@@ -62,7 +65,7 @@ val standardRetryIntegrationTestCases = mapOf(
                 expected:
                   outcome: max_attempts_exceeded
                   retry_quota: 490
-        """.trimMargin(),
+        """.trimIndent(),
 
     "Retry Quota reached after a single retry" to // language=YAML
         """
@@ -84,7 +87,7 @@ val standardRetryIntegrationTestCases = mapOf(
                 expected:
                   outcome: retry_quota_exceeded
                   retry_quota: 0
-        """.trimMargin(),
+        """.trimIndent(),
 
     "No retries at all if retry quota is 0" to // language=YAML
         """
@@ -100,7 +103,7 @@ val standardRetryIntegrationTestCases = mapOf(
                 expected:
                   outcome: retry_quota_exceeded
                   retry_quota: 0
-        """.trimMargin(),
+        """.trimIndent(),
 
     "Verifying exponential backoff timing" to //language=YAML
         """
@@ -142,7 +145,7 @@ val standardRetryIntegrationTestCases = mapOf(
                 expected:
                   outcome: max_attempts_exceeded
                   retry_quota: 480
-        """.trimMargin(),
+        """.trimIndent(),
 
     "Verify max backoff time" to // language=YAML
         """
@@ -184,5 +187,38 @@ val standardRetryIntegrationTestCases = mapOf(
                 expected:
                   outcome: max_attempts_exceeded
                   retry_quota: 480
-        """.trimMargin(),
+        """.trimIndent(),
 )
+
+/* ktlint-disable annotation spacing-between-declarations-with-annotations */
+
+@Serializable
+data class StandardRetryTestCase(val given: Given, val responses: List<ResponseAndExpectation>)
+
+@Serializable
+data class Given(
+    @SerialName("max_attempts") val maxAttempts: Int,
+    @SerialName("initial_retry_tokens") val initialRetryTokens: Int,
+    @SerialName("exponential_base") val exponentialBase: Double,
+    @SerialName("exponential_power") val exponentialPower: Double,
+    @SerialName("max_backoff_time") val maxBackoffTime: Int,
+)
+
+@Serializable
+data class ResponseAndExpectation(val response: Response, val expected: Expectation)
+
+@Serializable
+data class Response(@SerialName("status_code") val statusCode: Int)
+
+@Serializable
+data class Expectation(val outcome: TestOutcome, @SerialName("retry_quota") val retryQuota: Int, val delay: Int? = null)
+
+@Serializable
+enum class TestOutcome {
+    @SerialName("max_attempts_exceeded") MaxAttemptsExceeded,
+    @SerialName("retry_quota_exceeded") RetryQuotaExceeded,
+    @SerialName("retry_request") RetryRequest,
+    @SerialName("success") Success,
+}
+
+/* ktlint-enable annotation spacing-between-declarations-with-annotations */
