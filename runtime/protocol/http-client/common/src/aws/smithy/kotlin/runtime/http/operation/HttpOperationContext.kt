@@ -66,6 +66,11 @@ public open class HttpOperationContext {
         public var operationName: String? by requiredOption(SdkClientOption.OperationName)
 
         /**
+         * The name of the service the request is sent to
+         */
+        public var serviceName: String? by requiredOption(SdkClientOption.ServiceName)
+
+        /**
          * The expected HTTP status code on success
          */
         public var expectedHttpStatus: Int? by option(ExpectedHttpStatus)

@@ -115,6 +115,9 @@ public final class aws/smithy/kotlin/runtime/telemetry/logging/LoggerProvider$Co
 	public final fun getNone ()Laws/smithy/kotlin/runtime/telemetry/logging/LoggerProvider;
 }
 
+public final class aws/smithy/kotlin/runtime/telemetry/logging/LoggingContextElement$Key : kotlin/coroutines/CoroutineContext$Key {
+}
+
 public abstract interface class aws/smithy/kotlin/runtime/telemetry/metrics/AsyncMeasurement {
 	public abstract fun record (Ljava/lang/Number;Laws/smithy/kotlin/runtime/util/Attributes;Laws/smithy/kotlin/runtime/telemetry/context/Context;)V
 }

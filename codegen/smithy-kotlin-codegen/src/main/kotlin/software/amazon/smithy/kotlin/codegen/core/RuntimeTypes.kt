@@ -64,7 +64,7 @@ object RuntimeTypes {
             val OperationAuthConfig = symbol("OperationAuthConfig")
             val OperationRequest = symbol("OperationRequest")
             val roundTrip = symbol("roundTrip")
-            val sdkRequestId = symbol("sdkRequestId")
+            val telemetry = symbol("telemetry")
             val SdkHttpOperation = symbol("SdkHttpOperation")
             val SdkHttpRequest = symbol("SdkHttpRequest")
             val setResolvedEndpoint = symbol("setResolvedEndpoint")

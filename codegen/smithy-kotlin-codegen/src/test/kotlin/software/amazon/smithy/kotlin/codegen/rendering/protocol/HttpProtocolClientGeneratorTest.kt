@@ -80,6 +80,10 @@ class HttpProtocolClientGeneratorTest {
             context {
                 expectedHttpStatus = 200
                 operationName = "GetFoo"
+                serviceName = ServiceId
+            }
+            telemetry {
+                provider = config.telemetryProvider
             }
             execution.auth = OperationAuthConfig(AuthSchemeProviderAdapter, configuredAuthSchemes, identityProviderConfig)
             execution.endpointResolver = EndpointResolverAdapter(config)
@@ -87,10 +91,7 @@ class HttpProtocolClientGeneratorTest {
         }
         op.install(MockMiddleware(configurationField1 = "testing"))
         op.interceptors.addAll(config.interceptors)
-        val (span, telemetryCtx) = instrumentOperation("GetFoo")
-        return withSpan(span, telemetryCtx) {
-            op.roundTrip(client, input)
-        }
+        return op.roundTrip(client, input)
     }
 """,
 """
@@ -101,6 +102,10 @@ class HttpProtocolClientGeneratorTest {
             context {
                 expectedHttpStatus = 200
                 operationName = "GetFooNoInput"
+                serviceName = ServiceId
+            }
+            telemetry {
+                provider = config.telemetryProvider
             }
             execution.auth = OperationAuthConfig(AuthSchemeProviderAdapter, configuredAuthSchemes, identityProviderConfig)
             execution.endpointResolver = EndpointResolverAdapter(config)
@@ -108,10 +113,7 @@ class HttpProtocolClientGeneratorTest {
         }
         op.install(MockMiddleware(configurationField1 = "testing"))
         op.interceptors.addAll(config.interceptors)
-        val (span, telemetryCtx) = instrumentOperation("GetFooNoInput")
-        return withSpan(span, telemetryCtx) {
-            op.roundTrip(client, input)
-        }
+        return op.roundTrip(client, input)
     }
 """,
 """
@@ -122,6 +124,10 @@ class HttpProtocolClientGeneratorTest {
             context {
                 expectedHttpStatus = 200
                 operationName = "GetFooNoOutput"
+                serviceName = ServiceId
+            }
+            telemetry {
+                provider = config.telemetryProvider
             }
             execution.auth = OperationAuthConfig(AuthSchemeProviderAdapter, configuredAuthSchemes, identityProviderConfig)
             execution.endpointResolver = EndpointResolverAdapter(config)
@@ -129,10 +135,7 @@ class HttpProtocolClientGeneratorTest {
         }
         op.install(MockMiddleware(configurationField1 = "testing"))
         op.interceptors.addAll(config.interceptors)
-        val (span, telemetryCtx) = instrumentOperation("GetFooNoOutput")
-        return withSpan(span, telemetryCtx) {
-            op.roundTrip(client, input)
-        }
+        return op.roundTrip(client, input)
     }
 """,
 """
@@ -143,6 +146,10 @@ class HttpProtocolClientGeneratorTest {
             context {
                 expectedHttpStatus = 200
                 operationName = "GetFooStreamingInput"
+                serviceName = ServiceId
+            }
+            telemetry {
+                provider = config.telemetryProvider
             }
             execution.auth = OperationAuthConfig(AuthSchemeProviderAdapter, configuredAuthSchemes, identityProviderConfig)
             execution.endpointResolver = EndpointResolverAdapter(config)
@@ -150,10 +157,7 @@ class HttpProtocolClientGeneratorTest {
         }
         op.install(MockMiddleware(configurationField1 = "testing"))
         op.interceptors.addAll(config.interceptors)
-        val (span, telemetryCtx) = instrumentOperation("GetFooStreamingInput")
-        return withSpan(span, telemetryCtx) {
-            op.roundTrip(client, input)
-        }
+        return op.roundTrip(client, input)
     }
 """,
 """
@@ -164,6 +168,10 @@ class HttpProtocolClientGeneratorTest {
             context {
                 expectedHttpStatus = 200
                 operationName = "GetFooStreamingOutput"
+                serviceName = ServiceId
+            }
+            telemetry {
+                provider = config.telemetryProvider
             }
             execution.auth = OperationAuthConfig(AuthSchemeProviderAdapter, configuredAuthSchemes, identityProviderConfig)
             execution.endpointResolver = EndpointResolverAdapter(config)
@@ -171,10 +179,7 @@ class HttpProtocolClientGeneratorTest {
         }
         op.install(MockMiddleware(configurationField1 = "testing"))
         op.interceptors.addAll(config.interceptors)
-        val (span, telemetryCtx) = instrumentOperation("GetFooStreamingOutput")
-        return withSpan(span, telemetryCtx) {
-            op.execute(client, input, block)
-        }
+        return op.execute(client, input, block)
     }
 """,
 """
@@ -185,6 +190,10 @@ class HttpProtocolClientGeneratorTest {
             context {
                 expectedHttpStatus = 200
                 operationName = "GetFooStreamingOutputNoInput"
+                serviceName = ServiceId
+            }
+            telemetry {
+                provider = config.telemetryProvider
             }
             execution.auth = OperationAuthConfig(AuthSchemeProviderAdapter, configuredAuthSchemes, identityProviderConfig)
             execution.endpointResolver = EndpointResolverAdapter(config)
@@ -192,10 +201,7 @@ class HttpProtocolClientGeneratorTest {
         }
         op.install(MockMiddleware(configurationField1 = "testing"))
         op.interceptors.addAll(config.interceptors)
-        val (span, telemetryCtx) = instrumentOperation("GetFooStreamingOutputNoInput")
-        return withSpan(span, telemetryCtx) {
-            op.execute(client, input, block)
-        }
+        return op.execute(client, input, block)
     }
 """,
 """
@@ -206,6 +212,10 @@ class HttpProtocolClientGeneratorTest {
             context {
                 expectedHttpStatus = 200
                 operationName = "GetFooStreamingInputNoOutput"
+                serviceName = ServiceId
+            }
+            telemetry {
+                provider = config.telemetryProvider
             }
             execution.auth = OperationAuthConfig(AuthSchemeProviderAdapter, configuredAuthSchemes, identityProviderConfig)
             execution.endpointResolver = EndpointResolverAdapter(config)
@@ -213,10 +223,7 @@ class HttpProtocolClientGeneratorTest {
         }
         op.install(MockMiddleware(configurationField1 = "testing"))
         op.interceptors.addAll(config.interceptors)
-        val (span, telemetryCtx) = instrumentOperation("GetFooStreamingInputNoOutput")
-        return withSpan(span, telemetryCtx) {
-            op.roundTrip(client, input)
-        }
+        return op.roundTrip(client, input)
     }
 """,
 """
@@ -227,6 +234,10 @@ class HttpProtocolClientGeneratorTest {
             context {
                 expectedHttpStatus = 200
                 operationName = "GetFooNoRequired"
+                serviceName = ServiceId
+            }
+            telemetry {
+                provider = config.telemetryProvider
             }
             execution.auth = OperationAuthConfig(AuthSchemeProviderAdapter, configuredAuthSchemes, identityProviderConfig)
             execution.endpointResolver = EndpointResolverAdapter(config)
@@ -234,10 +245,7 @@ class HttpProtocolClientGeneratorTest {
         }
         op.install(MockMiddleware(configurationField1 = "testing"))
         op.interceptors.addAll(config.interceptors)
-        val (span, telemetryCtx) = instrumentOperation("GetFooNoRequired")
-        return withSpan(span, telemetryCtx) {
-            op.roundTrip(client, input)
-        }
+        return op.roundTrip(client, input)
     }
 """,
 """
@@ -248,6 +256,10 @@ class HttpProtocolClientGeneratorTest {
             context {
                 expectedHttpStatus = 200
                 operationName = "GetFooSomeRequired"
+                serviceName = ServiceId
+            }
+            telemetry {
+                provider = config.telemetryProvider
             }
             execution.auth = OperationAuthConfig(AuthSchemeProviderAdapter, configuredAuthSchemes, identityProviderConfig)
             execution.endpointResolver = EndpointResolverAdapter(config)
@@ -255,10 +267,7 @@ class HttpProtocolClientGeneratorTest {
         }
         op.install(MockMiddleware(configurationField1 = "testing"))
         op.interceptors.addAll(config.interceptors)
-        val (span, telemetryCtx) = instrumentOperation("GetFooSomeRequired")
-        return withSpan(span, telemetryCtx) {
-            op.roundTrip(client, input)
-        }
+        return op.roundTrip(client, input)
     }
 """,
         )
@@ -325,7 +334,11 @@ class HttpProtocolClientGeneratorTest {
             context {
                 expectedHttpStatus = 200
                 operationName = "GetStatus"
+                serviceName = ServiceId
                 hostPrefix = "$prefix"
+            }
+            telemetry {
+                provider = config.telemetryProvider
             }
             execution.auth = OperationAuthConfig(AuthSchemeProviderAdapter, configuredAuthSchemes, identityProviderConfig)
             execution.endpointResolver = EndpointResolverAdapter(config)
