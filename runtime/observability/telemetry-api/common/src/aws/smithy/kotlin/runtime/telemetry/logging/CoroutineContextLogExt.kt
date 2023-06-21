@@ -12,6 +12,7 @@ import aws.smithy.kotlin.runtime.telemetry.telemetryProvider
 import kotlinx.coroutines.withContext
 import kotlin.coroutines.AbstractCoroutineContextElement
 import kotlin.coroutines.CoroutineContext
+import kotlin.coroutines.coroutineContext
 
 /**
  * Coroutine scoped telemetry context used for carrying telemetry provider configuration
@@ -42,9 +43,11 @@ public val CoroutineContext.loggingContext: Map<String, Any>
 @InternalApi
 public suspend inline fun<R> withLogCtx(
     vararg kvPairs: Pair<String, Any>,
-    crossinline block: () -> R,
+    crossinline block: suspend () -> R,
 ): R {
-    val loggingCtx = LoggingContextElement(kvPairs.toMap())
+    val ctxMap = coroutineContext.loggingContext.toMutableMap()
+    ctxMap.putAll(kvPairs)
+    val loggingCtx = LoggingContextElement(ctxMap)
     return withContext(loggingCtx) {
         block()
     }
