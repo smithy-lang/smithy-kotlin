@@ -5,4 +5,4 @@
 
 package aws.smithy.kotlin.runtime.telemetry.logging
 
-internal expect object DefaultLoggerProvider : LoggerProvider
+internal expect val DefaultLoggerProvider: LoggerProvider

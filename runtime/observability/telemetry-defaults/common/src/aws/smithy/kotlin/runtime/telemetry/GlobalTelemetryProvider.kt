@@ -30,8 +30,8 @@ public object GlobalTelemetryProvider {
      * application initialization process.
      */
     public fun set(provider: TelemetryProvider) {
-        if (!_instance.compareAndSet(DefaultTelemetryProvider, provider)) {
-            throw IllegalStateException("Global TelemetryProvider already set! Global provider must only be configured once!")
+        check(_instance.compareAndSet(DefaultTelemetryProvider, provider)) {
+            "Global TelemetryProvider already set! Global provider must only be configured once!"
         }
     }
 }

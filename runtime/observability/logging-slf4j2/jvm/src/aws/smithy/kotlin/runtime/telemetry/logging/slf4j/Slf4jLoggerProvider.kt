@@ -5,7 +5,6 @@
 
 package aws.smithy.kotlin.runtime.telemetry.logging.slf4j
 
-import aws.smithy.kotlin.runtime.InternalApi
 import aws.smithy.kotlin.runtime.telemetry.context.Context
 import aws.smithy.kotlin.runtime.telemetry.logging.*
 import aws.smithy.kotlin.runtime.time.Instant
@@ -16,7 +15,6 @@ import org.slf4j.spi.LoggingEventBuilder
 /**
  * SLF4J 2 based logger provider
  */
-@InternalApi
 public object Slf4jLoggerProvider : LoggerProvider {
     override fun getOrCreateLogger(name: String): Logger {
         val sl4fjLogger = LoggerFactory.getLogger(name)
