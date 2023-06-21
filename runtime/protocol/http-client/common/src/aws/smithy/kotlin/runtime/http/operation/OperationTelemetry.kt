@@ -56,10 +56,11 @@ internal fun<I, O> SdkHttpOperation<I, O>.instrument(): Pair<TraceSpan, Coroutin
 
     val tracer = telemetry.provider.tracerProvider.getOrCreateTracer(serviceName)
     val parentCtx = telemetry.provider.contextManager.current()
+    val rpcName = "$serviceName.$opName"
     val telemetryCtx = TelemetryProviderContext(telemetry.provider) +
         TelemetryContextElement(parentCtx) +
         LoggingContextElement(
-            "operation" to opName,
+            "rpc" to rpcName,
             "sdkInvocationId" to context.sdkInvocationId,
         )
 
@@ -70,7 +71,7 @@ internal fun<I, O> SdkHttpOperation<I, O>.instrument(): Pair<TraceSpan, Coroutin
 
     initialAttributes.merge(telemetry.attributes)
 
-    val spanName = telemetry.spanName ?: "$serviceName.$opName"
+    val spanName = telemetry.spanName ?: rpcName
 
     val span = tracer.createSpan(
         spanName,
