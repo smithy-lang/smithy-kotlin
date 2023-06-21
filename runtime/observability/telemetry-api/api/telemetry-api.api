@@ -58,7 +58,6 @@ public final class aws/smithy/kotlin/runtime/telemetry/logging/CoroutineContextL
 public final class aws/smithy/kotlin/runtime/telemetry/logging/LogLevel : java/lang/Enum {
 	public static final field Debug Laws/smithy/kotlin/runtime/telemetry/logging/LogLevel;
 	public static final field Error Laws/smithy/kotlin/runtime/telemetry/logging/LogLevel;
-	public static final field Fatal Laws/smithy/kotlin/runtime/telemetry/logging/LogLevel;
 	public static final field Info Laws/smithy/kotlin/runtime/telemetry/logging/LogLevel;
 	public static final field Trace Laws/smithy/kotlin/runtime/telemetry/logging/LogLevel;
 	public static final field Warning Laws/smithy/kotlin/runtime/telemetry/logging/LogLevel;
@@ -68,27 +67,21 @@ public final class aws/smithy/kotlin/runtime/telemetry/logging/LogLevel : java/l
 
 public abstract interface class aws/smithy/kotlin/runtime/telemetry/logging/LogRecordBuilder {
 	public abstract fun emit ()V
-	public abstract fun mergeAttributes (Laws/smithy/kotlin/runtime/util/Attributes;)V
-	public abstract fun setAttribute (Ljava/lang/String;Ljava/lang/Object;)V
 	public abstract fun setCause (Ljava/lang/Throwable;)V
 	public abstract fun setContext (Laws/smithy/kotlin/runtime/telemetry/context/Context;)V
-	public abstract fun setLevel (Laws/smithy/kotlin/runtime/telemetry/logging/LogLevel;)V
+	public abstract fun setKeyValuePair (Ljava/lang/String;Ljava/lang/Object;)V
 	public abstract fun setMessage (Ljava/lang/String;)V
 	public abstract fun setMessage (Lkotlin/jvm/functions/Function0;)V
 	public abstract fun setTimestamp (Laws/smithy/kotlin/runtime/time/Instant;)V
 }
 
-public final class aws/smithy/kotlin/runtime/telemetry/logging/LogRecordBuilder$DefaultImpls {
-	public static fun mergeAttributes (Laws/smithy/kotlin/runtime/telemetry/logging/LogRecordBuilder;Laws/smithy/kotlin/runtime/util/Attributes;)V
-}
-
 public abstract interface class aws/smithy/kotlin/runtime/telemetry/logging/Logger {
 	public static final field Companion Laws/smithy/kotlin/runtime/telemetry/logging/Logger$Companion;
+	public abstract fun atLevel (Laws/smithy/kotlin/runtime/telemetry/logging/LogLevel;)Laws/smithy/kotlin/runtime/telemetry/logging/LogRecordBuilder;
 	public abstract fun debug (Ljava/lang/Throwable;Lkotlin/jvm/functions/Function0;)V
 	public abstract fun error (Ljava/lang/Throwable;Lkotlin/jvm/functions/Function0;)V
 	public abstract fun info (Ljava/lang/Throwable;Lkotlin/jvm/functions/Function0;)V
 	public abstract fun isEnabledFor (Laws/smithy/kotlin/runtime/telemetry/logging/LogLevel;)Z
-	public abstract fun logRecordBuilder ()Laws/smithy/kotlin/runtime/telemetry/logging/LogRecordBuilder;
 	public abstract fun trace (Ljava/lang/Throwable;Lkotlin/jvm/functions/Function0;)V
 	public abstract fun warn (Ljava/lang/Throwable;Lkotlin/jvm/functions/Function0;)V
 }
