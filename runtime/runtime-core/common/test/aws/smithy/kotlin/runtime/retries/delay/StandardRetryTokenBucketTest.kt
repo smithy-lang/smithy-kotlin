@@ -7,32 +7,26 @@ package aws.smithy.kotlin.runtime.retries.delay
 
 import aws.smithy.kotlin.runtime.retries.policy.RetryErrorType
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.test.testTimeSource
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.ExperimentalTime
 import kotlin.time.TestTimeSource
+import kotlin.time.TimeSource
 
+private const val DEFAULT_RETRY_COST = 2
+private const val DEFAULT_TIMEOUT_RETRY_COST = 3
+
+@OptIn(ExperimentalCoroutinesApi::class, ExperimentalTime::class)
 class StandardRetryTokenBucketTest {
-    companion object {
-        private val DefaultOptions = StandardRetryTokenBucketOptions(
-            maxCapacity = 10,
-            refillUnitsPerSecond = 10,
-            circuitBreakerMode = false,
-            retryCost = 2,
-            timeoutRetryCost = 3,
-            initialTryCost = 0,
-            initialTrySuccessIncrement = 1,
-        )
-    }
-
-    @OptIn(ExperimentalCoroutinesApi::class)
     @Test
     fun testWaitForCapacity() = runTest {
         // A bucket that only allows one initial try per second
-        val bucket = StandardRetryTokenBucket(DefaultOptions.copy(initialTryCost = 10))
+        val bucket = tokenBucket(initialTryCost = 10)
 
         assertEquals(10, bucket.capacity)
         assertTime(0) { bucket.acquireToken() }
@@ -40,11 +34,10 @@ class StandardRetryTokenBucketTest {
         assertTime(1000) { bucket.acquireToken() }
     }
 
-    @OptIn(ExperimentalCoroutinesApi::class)
     @Test
     fun testReturnCapacityOnSuccess() = runTest {
         // A bucket that costs capacity for an initial try and doesn't return the same capacity (for easy measuring)
-        val bucket = StandardRetryTokenBucket(DefaultOptions.copy(initialTryCost = 5, initialTrySuccessIncrement = 3))
+        val bucket = tokenBucket(initialTryCost = 5, initialTrySuccessIncrement = 3)
 
         assertEquals(10, bucket.capacity)
         val initialToken = assertTime(0) { bucket.acquireToken() }
@@ -53,11 +46,10 @@ class StandardRetryTokenBucketTest {
         assertEquals(8, bucket.capacity)
     }
 
-    @OptIn(ExperimentalCoroutinesApi::class)
     @Test
     fun testNoCapacityChangeOnFailure() = runTest {
         // A bucket that costs capacity for an initial try
-        val bucket = StandardRetryTokenBucket(DefaultOptions.copy(initialTryCost = 1))
+        val bucket = tokenBucket(initialTryCost = 1)
 
         assertEquals(10, bucket.capacity)
         val initialToken = assertTime(0) { bucket.acquireToken() }
@@ -66,16 +58,15 @@ class StandardRetryTokenBucketTest {
         assertEquals(9, bucket.capacity)
     }
 
-    @OptIn(ExperimentalCoroutinesApi::class)
     @Test
     fun testRetryCapacityAdjustments() = runTest {
         mapOf(
-            RetryErrorType.Throttling to DefaultOptions.timeoutRetryCost,
-            RetryErrorType.Transient to DefaultOptions.timeoutRetryCost,
-            RetryErrorType.ClientSide to DefaultOptions.retryCost,
-            RetryErrorType.ServerSide to DefaultOptions.retryCost,
+            RetryErrorType.Throttling to DEFAULT_TIMEOUT_RETRY_COST,
+            RetryErrorType.Transient to DEFAULT_TIMEOUT_RETRY_COST,
+            RetryErrorType.ClientSide to DEFAULT_RETRY_COST,
+            RetryErrorType.ServerSide to DEFAULT_RETRY_COST,
         ).forEach { (errorType, cost) ->
-            val bucket = StandardRetryTokenBucket(DefaultOptions)
+            val bucket = tokenBucket()
 
             assertEquals(10, bucket.capacity)
             val initialToken = assertTime(0) { bucket.acquireToken() }
@@ -85,13 +76,12 @@ class StandardRetryTokenBucketTest {
         }
     }
 
-    @OptIn(ExperimentalCoroutinesApi::class, ExperimentalTime::class)
     @Test
     fun testRefillOverTime() = runTest {
         val timeSource = TestTimeSource()
 
         // A bucket that costs capacity for an initial try
-        val bucket = StandardRetryTokenBucket(DefaultOptions.copy(initialTryCost = 5), timeSource)
+        val bucket = tokenBucket(initialTryCost = 5, timeSource = timeSource)
 
         assertEquals(10, bucket.capacity)
         assertTime(0) { bucket.acquireToken() }
@@ -104,11 +94,10 @@ class StandardRetryTokenBucketTest {
         assertEquals(2, bucket.capacity) // We had 5, 2 refilled, and then we decremented 5 more.
     }
 
-    @OptIn(ExperimentalCoroutinesApi::class)
     @Test
     fun testCircuitBreakerMode() = runTest {
         // A bucket that only allows one initial try per second
-        val bucket = StandardRetryTokenBucket(DefaultOptions.copy(initialTryCost = 10, circuitBreakerMode = true))
+        val bucket = tokenBucket(initialTryCost = 10, circuitBreakerMode = true)
 
         assertEquals(10, bucket.capacity)
         assertTime(0) { bucket.acquireToken() }
@@ -116,4 +105,27 @@ class StandardRetryTokenBucketTest {
         val result = runCatching { bucket.acquireToken() }
         assertIs<RetryCapacityExceededException>(result.exceptionOrNull())
     }
+}
+
+@OptIn(ExperimentalCoroutinesApi::class, ExperimentalTime::class)
+private fun TestScope.tokenBucket(
+    circuitBreakerMode: Boolean = false,
+    initialTryCost: Int = 0,
+    initialTrySuccessIncrement: Int = 1,
+    maxCapacity: Int = 10,
+    refillUnitsPerSecond: Int = 10,
+    retryCost: Int = DEFAULT_RETRY_COST,
+    timeoutRetryCost: Int = DEFAULT_TIMEOUT_RETRY_COST,
+    timeSource: TimeSource = testTimeSource,
+): StandardRetryTokenBucket {
+    val config = StandardRetryTokenBucket.Config {
+        this.circuitBreakerMode = circuitBreakerMode
+        this.initialTryCost = initialTryCost
+        this.initialTrySuccessIncrement = initialTrySuccessIncrement
+        this.maxCapacity = maxCapacity
+        this.refillUnitsPerSecond = refillUnitsPerSecond
+        this.retryCost = retryCost
+        this.timeoutRetryCost = timeoutRetryCost
+    }
+    return StandardRetryTokenBucket(config, timeSource)
 }
