@@ -1,0 +1,5 @@
+public final class aws/smithy/kotlin/runtime/telemetry/logging/slf4j/Slf4jLoggerProvider : aws/smithy/kotlin/runtime/telemetry/logging/LoggerProvider {
+	public static final field INSTANCE Laws/smithy/kotlin/runtime/telemetry/logging/slf4j/Slf4jLoggerProvider;
+	public fun getOrCreateLogger (Ljava/lang/String;)Laws/smithy/kotlin/runtime/telemetry/logging/Logger;
+}
+

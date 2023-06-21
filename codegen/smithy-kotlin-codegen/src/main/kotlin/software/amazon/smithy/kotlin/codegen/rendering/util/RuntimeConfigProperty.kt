@@ -144,13 +144,14 @@ object RuntimeConfigProperty {
         symbol = RuntimeTypes.Observability.TelemetryApi.TelemetryProvider
         baseClass = RuntimeTypes.Observability.TelemetryApi.TelemetryConfig
         useNestedBuilderBaseClass()
+        additionalImports = listOf(RuntimeTypes.Observability.TelemetryDefaults.Global)
 
         documentation = """
-            The telemetry provider used to instrument the SDK operations with. By default this will be a no-op
-            implementation.
+            The telemetry provider used to instrument the SDK operations with. By default, the global telemetry
+            provider will be used.
         """.trimIndent()
 
-        propertyType = ConfigPropertyType.RequiredWithDefault("TelemetryProvider.None")
+        propertyType = ConfigPropertyType.RequiredWithDefault("TelemetryProvider.Global")
     }
 
     val HttpInterceptors = ConfigProperty {

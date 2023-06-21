@@ -5,10 +5,6 @@
 
 package aws.smithy.kotlin.runtime.telemetry.logging
 
-public enum class LogLevel {
-    Error,
-    Warning,
-    Info,
-    Debug,
-    Trace,
-}
+import aws.smithy.kotlin.runtime.telemetry.logging.slf4j.Slf4jLoggerProvider
+
+internal actual val DefaultLoggerProvider: LoggerProvider = Slf4jLoggerProvider

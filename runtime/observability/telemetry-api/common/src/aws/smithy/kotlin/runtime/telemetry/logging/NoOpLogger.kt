@@ -7,30 +7,27 @@ package aws.smithy.kotlin.runtime.telemetry.logging
 
 import aws.smithy.kotlin.runtime.telemetry.context.Context
 import aws.smithy.kotlin.runtime.time.Instant
-import aws.smithy.kotlin.runtime.util.Attributes
 
 internal object NoOpLoggerProvider : LoggerProvider {
     override fun getOrCreateLogger(name: String): Logger = NoOpLogger
 }
 
 internal object NoOpLogger : Logger {
-    override fun trace(t: Throwable?, msg: () -> Any) {}
-    override fun debug(t: Throwable?, msg: () -> Any) {}
-    override fun info(t: Throwable?, msg: () -> Any) {}
-    override fun warn(t: Throwable?, msg: () -> Any) {}
-    override fun error(t: Throwable?, msg: () -> Any) {}
+    override fun trace(t: Throwable?, msg: MessageSupplier) {}
+    override fun debug(t: Throwable?, msg: MessageSupplier) {}
+    override fun info(t: Throwable?, msg: MessageSupplier) {}
+    override fun warn(t: Throwable?, msg: MessageSupplier) {}
+    override fun error(t: Throwable?, msg: MessageSupplier) {}
     override fun isEnabledFor(level: LogLevel): Boolean = false
-    override fun logRecordBuilder(): LogRecordBuilder = NoOpLogRecordBuilder
+    override fun atLevel(level: LogLevel): LogRecordBuilder = NoOpLogRecordBuilder
 }
 
 private object NoOpLogRecordBuilder : LogRecordBuilder {
-    override fun setLevel(level: LogLevel) {}
     override fun setTimestamp(ts: Instant) {}
     override fun setCause(ex: Throwable) {}
     override fun setMessage(message: String) {}
-    override fun setMessage(message: () -> Any) {}
-    override fun setAttribute(name: String, value: Any) {}
+    override fun setMessage(message: MessageSupplier) {}
+    override fun setKeyValuePair(key: String, value: Any) {}
     override fun setContext(context: Context) {}
-    override fun mergeAttributes(attributes: Attributes) {}
     override fun emit() {}
 }

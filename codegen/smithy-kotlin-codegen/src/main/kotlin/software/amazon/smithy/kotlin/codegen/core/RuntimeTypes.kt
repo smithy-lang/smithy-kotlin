@@ -318,6 +318,9 @@ object RuntimeTypes {
             val TraceSpan = symbol("TraceSpan", "trace")
             val withSpan = symbol("withSpan", "trace")
         }
+        object TelemetryDefaults : RuntimeTypePackage(KotlinDependency.TELEMETRY_DEFAULTS) {
+            val Global = symbol("Global")
+        }
     }
 
     object KotlinCoroutines {

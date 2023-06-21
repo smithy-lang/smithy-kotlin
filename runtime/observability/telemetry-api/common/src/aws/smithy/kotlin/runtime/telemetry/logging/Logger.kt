@@ -5,6 +5,8 @@
 
 package aws.smithy.kotlin.runtime.telemetry.logging
 
+public typealias MessageSupplier = () -> String
+
 /**
  * Internal logging facade
  */
@@ -19,27 +21,27 @@ public interface Logger {
     /**
      * Lazy add a log message with throwable payload if trace logging is enabled
      */
-    public fun trace(t: Throwable? = null, msg: () -> Any)
+    public fun trace(t: Throwable? = null, msg: MessageSupplier)
 
     /**
      * Lazy add a log message with throwable payload if debug logging is enabled
      */
-    public fun debug(t: Throwable? = null, msg: () -> Any)
+    public fun debug(t: Throwable? = null, msg: MessageSupplier)
 
     /**
      * Lazy add a log message with throwable payload if info logging is enabled
      */
-    public fun info(t: Throwable? = null, msg: () -> Any)
+    public fun info(t: Throwable? = null, msg: MessageSupplier)
 
     /**
      * Lazy add a log message with throwable payload if warn logging is enabled
      */
-    public fun warn(t: Throwable? = null, msg: () -> Any)
+    public fun warn(t: Throwable? = null, msg: MessageSupplier)
 
     /**
      * Lazy add a log message with throwable payload if error logging is enabled
      */
-    public fun error(t: Throwable? = null, msg: () -> Any)
+    public fun error(t: Throwable? = null, msg: MessageSupplier)
 
     /**
      * Test if this logger is enabled for [level]
@@ -49,9 +51,10 @@ public interface Logger {
 
     /**
      * Create a new log record using the returned [LogRecordBuilder]
+     * @param level the level to log at
      * @return a [LogRecordBuilder] that can be used to manually construct an event
      */
-    public fun logRecordBuilder(): LogRecordBuilder
+    public fun atLevel(level: LogLevel): LogRecordBuilder
 }
 
 /**

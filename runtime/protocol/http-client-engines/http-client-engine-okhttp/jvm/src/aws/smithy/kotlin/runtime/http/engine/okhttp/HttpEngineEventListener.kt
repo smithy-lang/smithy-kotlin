@@ -7,6 +7,7 @@ package aws.smithy.kotlin.runtime.http.engine.okhttp
 import aws.smithy.kotlin.runtime.net.HostResolver
 import aws.smithy.kotlin.runtime.net.toHostAddress
 import aws.smithy.kotlin.runtime.telemetry.logging.LoggerProvider
+import aws.smithy.kotlin.runtime.telemetry.logging.MessageSupplier
 import aws.smithy.kotlin.runtime.telemetry.logging.getLogger
 import aws.smithy.kotlin.runtime.telemetry.logging.logger
 import aws.smithy.kotlin.runtime.telemetry.telemetryProvider
@@ -19,7 +20,7 @@ import java.net.InetAddress
 import java.net.InetSocketAddress
 import java.net.Proxy
 
-// FIXME - instrument http attributes on the span
+// FIXME - instrument http attributes on the span? OkHttp is auto instrumented via OTeL javaagent...
 
 internal class HttpEngineEventListener(
     private val pool: ConnectionPool,
@@ -30,11 +31,11 @@ internal class HttpEngineEventListener(
     private val traceSpan = tracerProvider.getOrCreateTracer("OkHttpEngine").createSpan("HTTP")
     private val logger = call.request().tag<SdkRequestTag>()?.callContext?.logger<OkHttpEngine>() ?: LoggerProvider.None.getLogger<OkHttpEngine>()
 
-    private inline fun trace(crossinline msg: () -> Any) {
+    private inline fun trace(crossinline msg: MessageSupplier) {
         logger.trace { msg() }
     }
 
-    private inline fun trace(throwable: Throwable, crossinline msg: () -> Any) {
+    private inline fun trace(throwable: Throwable, crossinline msg: MessageSupplier) {
         logger.trace(throwable) { msg() }
     }
 
