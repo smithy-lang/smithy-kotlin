@@ -5,11 +5,6 @@
 
 package aws.smithy.kotlin.runtime.telemetry
 
-import aws.smithy.kotlin.runtime.telemetry.context.ContextManager
-import aws.smithy.kotlin.runtime.telemetry.logging.DefaultLoggerProvider
-import aws.smithy.kotlin.runtime.telemetry.logging.LoggerProvider
-import aws.smithy.kotlin.runtime.telemetry.metrics.MeterProvider
-import aws.smithy.kotlin.runtime.telemetry.trace.TracerProvider
 import kotlinx.atomicfu.AtomicRef
 import kotlinx.atomicfu.atomic
 
@@ -42,10 +37,3 @@ public object GlobalTelemetryProvider {
  */
 public val TelemetryProvider.Companion.Global: TelemetryProvider
     get() = GlobalTelemetryProvider.instance
-
-private object DefaultTelemetryProvider : TelemetryProvider {
-    override val loggerProvider: LoggerProvider = DefaultLoggerProvider
-    override val tracerProvider: TracerProvider = TracerProvider.None
-    override val contextManager: ContextManager = ContextManager.None
-    override val meterProvider: MeterProvider = MeterProvider.None
-}
