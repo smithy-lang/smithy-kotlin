@@ -201,9 +201,11 @@ public class aws/smithy/kotlin/runtime/http/operation/HttpOperationContext$Build
 	public final fun getExpectedHttpStatus ()Ljava/lang/Integer;
 	public final fun getHostPrefix ()Ljava/lang/String;
 	public final fun getOperationName ()Ljava/lang/String;
+	public final fun getServiceName ()Ljava/lang/String;
 	public final fun setExpectedHttpStatus (Ljava/lang/Integer;)V
 	public final fun setHostPrefix (Ljava/lang/String;)V
 	public final fun setOperationName (Ljava/lang/String;)V
+	public final fun setServiceName (Ljava/lang/String;)V
 }
 
 public final class aws/smithy/kotlin/runtime/http/operation/HttpOperationContext$Companion {
@@ -212,7 +214,7 @@ public final class aws/smithy/kotlin/runtime/http/operation/HttpOperationContext
 	public final fun getHostPrefix ()Laws/smithy/kotlin/runtime/util/AttributeKey;
 	public final fun getHttpCallList ()Laws/smithy/kotlin/runtime/util/AttributeKey;
 	public final fun getOperationInput ()Laws/smithy/kotlin/runtime/util/AttributeKey;
-	public final fun getSdkRequestId ()Laws/smithy/kotlin/runtime/util/AttributeKey;
+	public final fun getSdkInvocationId ()Laws/smithy/kotlin/runtime/util/AttributeKey;
 }
 
 public abstract interface class aws/smithy/kotlin/runtime/http/operation/HttpSerialize {
@@ -258,6 +260,9 @@ public final class aws/smithy/kotlin/runtime/http/operation/OperationRequest {
 	public fun toString ()Ljava/lang/String;
 }
 
+public final class aws/smithy/kotlin/runtime/http/operation/OperationTelemetryKt {
+}
+
 public final class aws/smithy/kotlin/runtime/http/operation/ReceiveMiddleware$DefaultImpls {
 	public static fun install (Laws/smithy/kotlin/runtime/http/operation/ReceiveMiddleware;Laws/smithy/kotlin/runtime/http/operation/SdkHttpOperation;)V
 }
@@ -266,7 +271,7 @@ public final class aws/smithy/kotlin/runtime/http/operation/SdkHttpOperation$Com
 }
 
 public final class aws/smithy/kotlin/runtime/http/operation/SdkHttpOperationKt {
-	public static final fun getSdkRequestId (Laws/smithy/kotlin/runtime/operation/ExecutionContext;)Ljava/lang/String;
+	public static final fun getSdkInvocationId (Laws/smithy/kotlin/runtime/operation/ExecutionContext;)Ljava/lang/String;
 }
 
 public final class aws/smithy/kotlin/runtime/http/operation/UnitDeserializer : aws/smithy/kotlin/runtime/http/operation/HttpDeserialize {

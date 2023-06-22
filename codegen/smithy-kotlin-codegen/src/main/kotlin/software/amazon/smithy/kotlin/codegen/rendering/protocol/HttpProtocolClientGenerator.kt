@@ -37,7 +37,9 @@ abstract class HttpProtocolClientGenerator(
         val Operation: SectionKey<OperationShape> = SectionKey("Operation")
     }
 
-    object OperationSpanAttributes : SectionId
+    object OperationTelemetryBuilder : SectionId {
+        val Operation: SectionKey<OperationShape> = SectionKey("Operation")
+    }
 
     /**
      * Render the implementation of the service client interface
@@ -72,8 +74,6 @@ abstract class HttpProtocolClientGenerator(
             }
             .write("")
             .call { renderClose(writer) }
-            .write("")
-            .call { renderInstrumentOperation(writer) }
             .write("")
             .call { renderAdditionalMethods(writer) }
             .closeBlock("}")
@@ -210,6 +210,7 @@ abstract class HttpProtocolClientGenerator(
                 writer.write("expectedHttpStatus = ${httpTrait.code}")
                 // property from implementing SdkClient
                 writer.write("operationName = #S", op.id.name)
+                writer.write("serviceName = #L", "ServiceId")
 
                 // optional endpoint trait
                 op.getTrait<EndpointTrait>()?.let { endpointTrait ->
@@ -226,6 +227,12 @@ abstract class HttpProtocolClientGenerator(
                     }
                     writer.write("hostPrefix = #S", hostPrefix)
                 }
+            }
+
+            // telemetry
+            writer.withBlock("#T {", "}", RuntimeTypes.HttpClient.Operation.telemetry) {
+                write("provider = config.telemetryProvider")
+                writer.declareSection(OperationTelemetryBuilder, mapOf(OperationTelemetryBuilder.Operation to op))
             }
 
             writer.write(
@@ -253,44 +260,10 @@ abstract class HttpProtocolClientGenerator(
         val hasOutputStream = outputShape.map { it.hasStreamingMember(ctx.model) }.orElse(false)
         val inputVariableName = if (inputShape.isPresent) "input" else KotlinTypes.Unit.fullName
 
-        writer.write("val (span, telemetryCtx) = instrumentOperation(#S)", op.id.name)
-        writer.withBlock("return #T(span, telemetryCtx) {", "}", RuntimeTypes.Observability.TelemetryApi.withSpan) {
-            if (hasOutputStream) {
-                write("op.#T(client, #L, block)", RuntimeTypes.HttpClient.Operation.execute, inputVariableName)
-            } else {
-                write("op.#T(client, #L)", RuntimeTypes.HttpClient.Operation.roundTrip, inputVariableName)
-            }
-        }
-    }
-
-    private fun renderInstrumentOperation(writer: KotlinWriter) {
-        writer.withBlock(
-            "private fun instrumentOperation(operation: #T): Pair<#T, #T> {",
-            "}",
-            KotlinTypes.String,
-            RuntimeTypes.Observability.TelemetryApi.TraceSpan,
-            KotlinTypes.Coroutines.CoroutineContext,
-        ) {
-            write("val tracer = config.telemetryProvider.tracerProvider.getOrCreateTracer(config.clientName)")
-            write("val parentCtx = config.telemetryProvider.contextManager.current()")
-            write(
-                "val telemetryCtx = #T(config.telemetryProvider) + #T(parentCtx)",
-                RuntimeTypes.Observability.TelemetryApi.TelemetryProviderContext,
-                RuntimeTypes.Observability.TelemetryApi.TelemetryContextElement,
-            )
-
-            withBlock("val span = tracer.createSpan(", ")") {
-                write("#S,", "\${ServiceId}.\${operation}")
-                withBlock("#T{", "},", RuntimeTypes.Core.Utils.attributesOf) {
-                    write("#S to ServiceId", "rpc.service")
-                    write("#S to operation", "rpc.method")
-                    writer.declareSection(OperationSpanAttributes)
-                }
-                write("#T.CLIENT,", RuntimeTypes.Observability.TelemetryApi.SpanKind)
-                write("parentCtx,")
-            }
-
-            write("return span to telemetryCtx")
+        if (hasOutputStream) {
+            writer.write("return op.#T(client, #L, block)", RuntimeTypes.HttpClient.Operation.execute, inputVariableName)
+        } else {
+            writer.write("return op.#T(client, #L)", RuntimeTypes.HttpClient.Operation.roundTrip, inputVariableName)
         }
     }
 

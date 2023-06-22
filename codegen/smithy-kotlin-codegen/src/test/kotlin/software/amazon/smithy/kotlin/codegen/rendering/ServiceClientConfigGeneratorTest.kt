@@ -55,7 +55,7 @@ public class Config private constructor(builder: Builder) : HttpAuthConfig, Http
     override val logMode: LogMode = builder.logMode ?: LogMode.Default
     override val retryPolicy: RetryPolicy<Any?> = builder.retryPolicy ?: StandardRetryPolicy.Default
     override val retryStrategy: RetryStrategy = builder.retryStrategy ?: StandardRetryStrategy()
-    override val telemetryProvider: TelemetryProvider = builder.telemetryProvider ?: TelemetryProvider.None
+    override val telemetryProvider: TelemetryProvider = builder.telemetryProvider ?: TelemetryProvider.Global
 """
         contents.shouldContainWithDiff(expectedProps)
 
@@ -122,8 +122,8 @@ public class Config private constructor(builder: Builder) : HttpAuthConfig, Http
         override var retryStrategy: RetryStrategy? = null
 
         /**
-         * The telemetry provider used to instrument the SDK operations with. By default this will be a no-op
-         * implementation.
+         * The telemetry provider used to instrument the SDK operations with. By default, the global telemetry
+         * provider will be used.
          */
         override var telemetryProvider: TelemetryProvider? = null
 
@@ -254,7 +254,7 @@ public class Config private constructor(builder: Builder) {
     override val logMode: LogMode = builder.logMode ?: LogMode.LogRequest
     override val retryPolicy: RetryPolicy<Any?> = builder.retryPolicy ?: StandardRetryPolicy.Default
     override val retryStrategy: RetryStrategy = builder.retryStrategy ?: StandardRetryStrategy()
-    override val telemetryProvider: TelemetryProvider = builder.telemetryProvider ?: TelemetryProvider.None"""
+    override val telemetryProvider: TelemetryProvider = builder.telemetryProvider ?: TelemetryProvider.Global"""
         contents.shouldContainWithDiff(expectedConfigValues)
     }
 

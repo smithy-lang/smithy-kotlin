@@ -40,7 +40,7 @@ public open class HttpOperationContext {
          *
          * NOTE: This is guaranteed to exist.
          */
-        public val SdkRequestId: AttributeKey<String> = AttributeKey("aws.smithy.kotlin#SdkRequestId")
+        public val SdkInvocationId: AttributeKey<String> = AttributeKey("aws.smithy.kotlin#SdkInvocationId")
 
         /**
          * The operation input pre-serialization.
@@ -64,6 +64,11 @@ public open class HttpOperationContext {
          * The name of the operation
          */
         public var operationName: String? by requiredOption(SdkClientOption.OperationName)
+
+        /**
+         * The name of the service the request is sent to
+         */
+        public var serviceName: String? by requiredOption(SdkClientOption.ServiceName)
 
         /**
          * The expected HTTP status code on success
