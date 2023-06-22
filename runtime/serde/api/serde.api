@@ -79,6 +79,8 @@ public abstract interface class aws/smithy/kotlin/runtime/serde/PrimitiveDeseria
 }
 
 public abstract interface class aws/smithy/kotlin/runtime/serde/PrimitiveSerializer {
+	public abstract fun serializeBigDecimal (Ljava/math/BigDecimal;)V
+	public abstract fun serializeBigInteger (Ljava/math/BigInteger;)V
 	public abstract fun serializeBoolean (Z)V
 	public abstract fun serializeByte (B)V
 	public abstract fun serializeChar (C)V
@@ -252,6 +254,8 @@ public abstract interface class aws/smithy/kotlin/runtime/serde/StructSerializer
 	public abstract fun field (Laws/smithy/kotlin/runtime/serde/SdkFieldDescriptor;Laws/smithy/kotlin/runtime/serde/SdkSerializable;)V
 	public abstract fun field (Laws/smithy/kotlin/runtime/serde/SdkFieldDescriptor;Laws/smithy/kotlin/runtime/time/Instant;Laws/smithy/kotlin/runtime/time/TimestampFormat;)V
 	public abstract fun field (Laws/smithy/kotlin/runtime/serde/SdkFieldDescriptor;Ljava/lang/String;)V
+	public abstract fun field (Laws/smithy/kotlin/runtime/serde/SdkFieldDescriptor;Ljava/math/BigDecimal;)V
+	public abstract fun field (Laws/smithy/kotlin/runtime/serde/SdkFieldDescriptor;Ljava/math/BigInteger;)V
 	public abstract fun field (Laws/smithy/kotlin/runtime/serde/SdkFieldDescriptor;S)V
 	public abstract fun field (Laws/smithy/kotlin/runtime/serde/SdkFieldDescriptor;Z)V
 	public abstract fun listField (Laws/smithy/kotlin/runtime/serde/SdkFieldDescriptor;Lkotlin/jvm/functions/Function1;)V

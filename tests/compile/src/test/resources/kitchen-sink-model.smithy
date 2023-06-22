@@ -21,6 +21,7 @@ service Example {
         BlobInput,
         ConstantQueryString,
         PrefixHeaders,
+        Primitives,
         UnionInput,
         UnionAggregateInput,
         UnionOutput,
@@ -402,6 +403,27 @@ operation PrefixHeaders{
 structure PrefixHeadersIO {
     @httpPrefixHeaders("X-Foo-")
     member1: StringMap
+}
+
+@http(method: "POST", uri: "/primitives")
+operation Primitives {
+    input: PrimitivesIO,
+    output: PrimitivesIO
+}
+
+// A structure containing all the primitive types
+structure PrimitivesIO {
+    bigDecimal: BigDecimal,
+    bigInteger: BigInteger,
+    boolean: Boolean,
+    byte: Byte,
+    double: Double,
+    float: Float,
+    integer: Integer,
+    long: Long,
+    short: Short,
+    string: String,
+    timestamp: Timestamp
 }
 
 @http(method: "POST", uri: "/input/union")

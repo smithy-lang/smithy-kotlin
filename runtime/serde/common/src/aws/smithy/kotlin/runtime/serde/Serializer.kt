@@ -3,6 +3,9 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 package aws.smithy.kotlin.runtime.serde
+
+import aws.smithy.kotlin.runtime.content.BigDecimal
+import aws.smithy.kotlin.runtime.content.BigInteger
 import aws.smithy.kotlin.runtime.content.Document
 import aws.smithy.kotlin.runtime.time.Instant
 import aws.smithy.kotlin.runtime.time.TimestampFormat
@@ -111,6 +114,24 @@ public interface StructSerializer : PrimitiveSerializer {
      * @param value
      */
     public fun field(descriptor: SdkFieldDescriptor, value: Double)
+
+    /**
+     * Writes the field name given in the descriptor, and then
+     * serializes value.
+     *
+     * @param descriptor
+     * @param value
+     */
+    public fun field(descriptor: SdkFieldDescriptor, value: BigInteger)
+
+    /**
+     * Writes the field name given in the descriptor, and then
+     * serializes value.
+     *
+     * @param descriptor
+     * @param value
+     */
+    public fun field(descriptor: SdkFieldDescriptor, value: BigDecimal)
 
     /**
      * Writes the field name given in the descriptor, and then
@@ -388,6 +409,20 @@ public interface PrimitiveSerializer {
      * @param value
      */
     public fun serializeDouble(value: Double)
+
+    /**
+     * Serializes the given value.
+     *
+     * @param value
+     */
+    public fun serializeBigInteger(value: BigInteger)
+
+    /**
+     * Serializes the given value.
+     *
+     * @param value
+     */
+    public fun serializeBigDecimal(value: BigDecimal)
 
     /**
      * Serializes the given value.

@@ -5,6 +5,8 @@
 
 package aws.smithy.kotlin.runtime.serde.json
 
+import aws.smithy.kotlin.runtime.content.BigDecimal
+import aws.smithy.kotlin.runtime.content.BigInteger
 import aws.smithy.kotlin.runtime.util.*
 
 // character code points
@@ -115,6 +117,8 @@ internal class JsonEncoder(private val pretty: Boolean = false) : JsonStreamWrit
     override fun writeValue(value: Int) = writeNumber(value)
     override fun writeValue(value: Float) = writeNumber(value)
     override fun writeValue(value: Double) = writeNumber(value)
+    override fun writeValue(value: BigInteger) = writeNumber(value)
+    override fun writeValue(value: BigDecimal) = encodeValue(value.toPlainString())
 
     override fun writeRawValue(value: String) = encodeValue(value)
 }
