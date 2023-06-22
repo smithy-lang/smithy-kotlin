@@ -7,6 +7,8 @@ package aws.smithy.kotlin.runtime.http.engine
 
 import aws.smithy.kotlin.runtime.InternalApi
 import aws.smithy.kotlin.runtime.telemetry.TelemetryProviderContext
+import aws.smithy.kotlin.runtime.telemetry.logging.LoggingContextElement
+import aws.smithy.kotlin.runtime.telemetry.logging.loggingContext
 import aws.smithy.kotlin.runtime.telemetry.telemetryProvider
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineName
@@ -25,7 +27,8 @@ internal fun HttpClientEngine.createCallContext(outerContext: CoroutineContext):
     val reqContext = coroutineContext +
         requestJob +
         CoroutineName("request-context") +
-        TelemetryProviderContext(outerContext.telemetryProvider)
+        TelemetryProviderContext(outerContext.telemetryProvider) +
+        LoggingContextElement(outerContext.loggingContext)
 
     // attach req to outer context, if the user cancels it will be propagated to the request
     attachToOuterJob(outerContext, requestJob)

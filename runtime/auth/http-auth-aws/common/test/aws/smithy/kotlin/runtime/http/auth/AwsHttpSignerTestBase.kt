@@ -79,6 +79,7 @@ public abstract class AwsHttpSignerTestBase(
 
             context {
                 operationName = "testSigningOperation"
+                serviceName = "testService"
                 set(AwsSigningAttributes.SigningRegion, "us-east-1")
                 set(AwsSigningAttributes.SigningDate, Instant.fromIso8601("2020-10-16T19:56:00Z"))
                 set(AwsSigningAttributes.SigningService, "demo")

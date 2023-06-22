@@ -115,8 +115,8 @@ public class Config private constructor(builder: Builder) : HttpAuthConfig, Http
         override var retryPolicy: RetryPolicy<Any?>? = null
 
         /**
-         * The telemetry provider used to instrument the SDK operations with. By default this will be a no-op
-         * implementation.
+         * The telemetry provider used to instrument the SDK operations with. By default, the global telemetry
+         * provider will be used.
          */
         override var telemetryProvider: TelemetryProvider? = null
 
