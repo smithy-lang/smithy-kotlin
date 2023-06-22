@@ -20,7 +20,7 @@ import aws.smithy.kotlin.runtime.retries.policy.RetryErrorType
  * transaction yielded. The rate limiter may use this information to adjust the number of available permits or the rate
  * of permit renewal.
  */
-public interface ClientRateLimiter {
+public interface RateLimiter {
     public val config: Config
 
     /**

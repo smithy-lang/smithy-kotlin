@@ -22,14 +22,14 @@ import kotlin.time.Duration.Companion.seconds
  * attempt to converge on the ideal transaction rate feasible for downstream systems.
  */
 @OptIn(ExperimentalTime::class)
-public class AdaptiveClientRateLimiter internal constructor(
+public class AdaptiveRateLimiter internal constructor(
     public override val config: Config = Config.Default,
     private val timeSource: TimeSource,
     private val rateMeasurer: AdaptiveRateMeasurer,
     private val rateCalculator: CubicRateCalculator,
-) : ClientRateLimiter {
+) : RateLimiter {
     /**
-     * Initializes a new [AdaptiveClientRateLimiter]
+     * Initializes a new [AdaptiveRateLimiter]
      * @param config The configuration parameters for this limiter
      */
     public constructor(config: Config = Config.Default) : this(
@@ -39,13 +39,13 @@ public class AdaptiveClientRateLimiter internal constructor(
         CubicRateCalculator(config, TimeSource.Monotonic),
     )
 
-    public companion object : DslFactory<Config.Builder, AdaptiveClientRateLimiter> {
+    public companion object : DslFactory<Config.Builder, AdaptiveRateLimiter> {
         /**
-         * Initializes a new [AdaptiveClientRateLimiter]
+         * Initializes a new [AdaptiveRateLimiter]
          * @param block A DSL block which sets the configuration parameters for this limiter
          */
-        public override operator fun invoke(block: Config.Builder.() -> Unit): AdaptiveClientRateLimiter =
-            AdaptiveClientRateLimiter(Config(Config.Builder().apply(block)))
+        public override operator fun invoke(block: Config.Builder.() -> Unit): AdaptiveRateLimiter =
+            AdaptiveRateLimiter(Config(Config.Builder().apply(block)))
     }
 
     private var capacity = 0.0
@@ -94,7 +94,7 @@ public class AdaptiveClientRateLimiter internal constructor(
     /**
      * The configuration for an adaptive client-side rate limiter
      */
-    public class Config(builder: Builder) : ClientRateLimiter.Config {
+    public class Config(builder: Builder) : RateLimiter.Config {
         public companion object {
             /**
              * The default configuration
@@ -143,7 +143,7 @@ public class AdaptiveClientRateLimiter internal constructor(
          */
         public val smoothing: Double = builder.smoothing
 
-        override fun toBuilderApplicator(): ClientRateLimiter.Config.Builder.() -> Unit = {
+        override fun toBuilderApplicator(): RateLimiter.Config.Builder.() -> Unit = {
             if (this is Builder) {
                 beta = this@Config.beta
                 measurementBucketDuration = this@Config.measurementBucketDuration
@@ -154,7 +154,7 @@ public class AdaptiveClientRateLimiter internal constructor(
             }
         }
 
-        public class Builder : ClientRateLimiter.Config.Builder {
+        public class Builder : RateLimiter.Config.Builder {
             /**
              * How much to scale back after receiving a throttling response. Ranges from 0.0 (do not scale back) to 1.0
              * (scale back completely). Defaults to 0.7 (scale back 70%).
@@ -201,7 +201,7 @@ public class AdaptiveClientRateLimiter internal constructor(
 
 @OptIn(ExperimentalTime::class)
 internal class CubicRateCalculator(
-    private val config: AdaptiveClientRateLimiter.Config,
+    private val config: AdaptiveRateLimiter.Config,
     private val timeSource: TimeSource = TimeSource.Monotonic,
     internal var lastMaxRate: Double = 0.0,
     internal var lastThrottleTime: TimeMark = timeSource.markNow(),
@@ -241,7 +241,7 @@ internal class CubicRateCalculator(
 
 @OptIn(ExperimentalTime::class)
 internal class AdaptiveRateMeasurer(
-    private val config: AdaptiveClientRateLimiter.Config,
+    private val config: AdaptiveRateLimiter.Config,
     private val timeSource: TimeSource,
     private var lastTxBucketMark: TimeMark = timeSource.markNow(),
     internal var measuredTxRate: Double = 0.0,

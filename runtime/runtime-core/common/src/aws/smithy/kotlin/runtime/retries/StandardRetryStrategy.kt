@@ -16,6 +16,8 @@ import kotlinx.coroutines.CancellationException
  * Implements a retry strategy utilizing backoff delayer and a token bucket for rate limiting and circuit breaking. Note
  * that the backoff delayer and token bucket work independently of each other. Either can delay retries (and the token
  * bucket can delay the initial try). The delayer is called first so that the token bucket can refill as appropriate.
+ *
+ * [StandardRetryStrategy] is the recommended retry mode for the majority of use cases.
  * @param config The options that control the functionality of this strategy.
  */
 public open class StandardRetryStrategy(override val config: Config = Config.default()) : RetryStrategy {

@@ -15,6 +15,9 @@ import aws.smithy.kotlin.runtime.util.DslFactory
  * rate limiter for achieving the ideal request rate. Note that the backoff delayer, token bucket, and rate limiter all
  * work independently of each other. Any of the three may delay retries (and the rate limiter may delay the initial try
  * as well).
+ *
+ * **Note**: The adaptive retry strategy is an advanced mode. It is not recommended for typical use cases. In most
+ * cases, [StandardRetryStrategy] is the preferred retry mode.
  * @param config The configuration for this retry strategy
  */
 public class AdaptiveRetryStrategy(override val config: Config = Config.Default) : StandardRetryStrategy(config) {
@@ -25,7 +28,7 @@ public class AdaptiveRetryStrategy(override val config: Config = Config.Default)
 
     override suspend fun beforeInitialTry() {
         super.beforeInitialTry()
-        config.clientRateLimiter.acquire(1)
+        config.rateLimiter.acquire(1)
     }
 
     override suspend fun <R> afterTry(
@@ -36,7 +39,7 @@ public class AdaptiveRetryStrategy(override val config: Config = Config.Default)
     ) {
         super.afterTry(attempt, callResult, evaluation, policy)
         val errorType = (evaluation as? RetryDirective.RetryError)?.reason
-        config.clientRateLimiter.update(errorType)
+        config.rateLimiter.update(errorType)
     }
 
     override suspend fun <R> beforeRetry(
@@ -46,7 +49,7 @@ public class AdaptiveRetryStrategy(override val config: Config = Config.Default)
         policy: RetryPolicy<R>,
     ) {
         super.beforeRetry(attempt, callResult, evaluation, policy)
-        config.clientRateLimiter.acquire(1)
+        config.rateLimiter.acquire(1)
     }
 
     /**
@@ -61,30 +64,30 @@ public class AdaptiveRetryStrategy(override val config: Config = Config.Default)
         }
 
         /**
-         * The rate limiter which may delay initial tries or retries. Defaults to an [AdaptiveClientRateLimiter].
+         * The rate limiter which may delay initial tries or retries. Defaults to an [AdaptiveRateLimiter].
          */
-        public val clientRateLimiter: ClientRateLimiter = builder.clientRateLimiterProperty.supply()
+        public val rateLimiter: RateLimiter = builder.rateLimiterProperty.supply()
 
         public class Builder : StandardRetryStrategy.Config.Builder() {
-            internal val clientRateLimiterProperty = DslBuilderProperty<ClientRateLimiter.Config.Builder, ClientRateLimiter>(
-                AdaptiveClientRateLimiter,
+            internal val rateLimiterProperty = DslBuilderProperty<RateLimiter.Config.Builder, RateLimiter>(
+                AdaptiveRateLimiter,
                 { config.toBuilderApplicator() },
             )
 
             /**
-             * The rate limiter which may delay initial tries or retries. Defaults to an [AdaptiveClientRateLimiter].
+             * The rate limiter which may delay initial tries or retries. Defaults to an [AdaptiveRateLimiter].
              */
-            public var clientRateLimiter: ClientRateLimiter? by clientRateLimiterProperty::instance
+            public var rateLimiter: RateLimiter? by rateLimiterProperty::instance
 
-            public fun clientRateLimiter(block: AdaptiveClientRateLimiter.Config.Builder.() -> Unit) {
-                clientRateLimiterProperty.dsl(AdaptiveClientRateLimiter, block)
+            public fun rateLimiter(block: AdaptiveRateLimiter.Config.Builder.() -> Unit) {
+                rateLimiterProperty.dsl(AdaptiveRateLimiter, block)
             }
 
-            public fun <B : ClientRateLimiter.Config.Builder, C : ClientRateLimiter> clientRateLimiter(
+            public fun <B : RateLimiter.Config.Builder, C : RateLimiter> rateLimiter(
                 factory: DslFactory<B, C>,
                 block: B.() -> Unit,
             ) {
-                clientRateLimiterProperty.dsl(factory, block)
+                rateLimiterProperty.dsl(factory, block)
             }
         }
     }

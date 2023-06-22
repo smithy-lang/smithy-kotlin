@@ -4,7 +4,7 @@
  */
 package aws.smithy.kotlin.runtime.retries.impl
 
-import aws.smithy.kotlin.runtime.retries.delay.AdaptiveClientRateLimiter
+import aws.smithy.kotlin.runtime.retries.delay.AdaptiveRateLimiter
 import aws.smithy.kotlin.runtime.retries.delay.AdaptiveRateMeasurer
 import aws.smithy.kotlin.runtime.retries.delay.CubicRateCalculator
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -24,14 +24,14 @@ class AdaptiveRetryIntegrationTest {
     @Test
     fun testCubicCases() = runTest {
         val timeSource = testTimeSource as TimeSource.WithComparableMarks
-        val testCases = adaptiveRetryCubicTestCases.deserialize(CubicTestCase.serializer())
+        val testCases = adaptiveRetryCubicTestCases.deserializeYaml(CubicTestCase.serializer())
 
         testCases.forEach { (name, tc) ->
             val start = timeSource.markNow()
             val tsSecondsToTimeMark = { timestamp: Double -> start + timestamp.seconds }
 
             val rateCalculator = CubicRateCalculator(
-                AdaptiveClientRateLimiter.Config.Default,
+                AdaptiveRateLimiter.Config.Default,
                 timeSource,
                 lastMaxRate = tc.given.lastMaxRate,
                 lastThrottleTime = tsSecondsToTimeMark(tc.given.lastThrottleTimeSeconds),
@@ -69,11 +69,11 @@ class AdaptiveRetryIntegrationTest {
     @Test
     fun testE2eCases() = runTest {
         val timeSource = testTimeSource as TimeSource.WithComparableMarks
-        val testCases = adaptiveRetryE2eTestCases.deserialize(E2eTestCase.serializer())
-        val config = AdaptiveClientRateLimiter.Config.Default
+        val testCases = adaptiveRetryE2eTestCases.deserializeYaml(E2eTestCase.serializer())
+        val config = AdaptiveRateLimiter.Config.Default
         val rateMeasurer = AdaptiveRateMeasurer(config, timeSource)
         val rateCalculator = CubicRateCalculator(config, timeSource)
-        val rateLimiter = AdaptiveClientRateLimiter(config, timeSource, rateMeasurer, rateCalculator)
+        val rateLimiter = AdaptiveRateLimiter(config, timeSource, rateMeasurer, rateCalculator)
 
         testCases.forEach { (name, tc) ->
             val start = timeSource.markNow()

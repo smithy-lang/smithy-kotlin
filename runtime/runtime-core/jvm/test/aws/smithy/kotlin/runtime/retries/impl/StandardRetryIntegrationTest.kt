@@ -22,7 +22,7 @@ class StandardRetryIntegrationTest {
     @OptIn(ExperimentalCoroutinesApi::class)
     @Test
     fun testIntegrationCases() = runTest {
-        val testCases = standardRetryIntegrationTestCases.deserialize(StandardRetryTestCase.serializer())
+        val testCases = standardRetryIntegrationTestCases.deserializeYaml(StandardRetryTestCase.serializer())
         testCases.forEach { (name, tc) ->
             val tokenBucket = StandardRetryTokenBucket { maxCapacity = tc.given.initialRetryTokens }
             val retryer = StandardRetryStrategy {
