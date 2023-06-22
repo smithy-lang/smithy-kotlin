@@ -28,7 +28,4 @@ class TestLoggingContext {
             }
         }
     }
-
-    suspend fun test() {
-    }
 }
