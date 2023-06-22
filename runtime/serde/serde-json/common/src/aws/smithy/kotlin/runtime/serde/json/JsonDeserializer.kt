@@ -4,6 +4,8 @@
  */
 package aws.smithy.kotlin.runtime.serde.json
 
+import aws.smithy.kotlin.runtime.content.BigDecimal
+import aws.smithy.kotlin.runtime.content.BigInteger
 import aws.smithy.kotlin.runtime.content.Document
 import aws.smithy.kotlin.runtime.serde.*
 
@@ -33,6 +35,10 @@ public class JsonDeserializer(payload: ByteArray) : Deserializer, Deserializer.E
     override fun deserializeFloat(): Float = deserializeDouble().toFloat()
 
     override fun deserializeDouble(): Double = nextNumberValue { it.toDouble() }
+
+    override fun deserializeBigInteger(): BigInteger = nextNumberValue(::BigInteger)
+
+    override fun deserializeBigDecimal(): BigDecimal = nextNumberValue(::BigDecimal)
 
     // deserializes the next token as a number with the maximum discernible precision
     private fun deserializeNumber(): Number =

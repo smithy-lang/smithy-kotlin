@@ -1,6 +1,8 @@
 public final class aws/smithy/kotlin/runtime/serde/json/JsonDeserializer : aws/smithy/kotlin/runtime/serde/Deserializer, aws/smithy/kotlin/runtime/serde/Deserializer$ElementIterator, aws/smithy/kotlin/runtime/serde/Deserializer$EntryIterator, aws/smithy/kotlin/runtime/serde/PrimitiveDeserializer {
 	public static final field Companion Laws/smithy/kotlin/runtime/serde/json/JsonDeserializer$Companion;
 	public fun <init> ([B)V
+	public fun deserializeBigDecimal ()Ljava/math/BigDecimal;
+	public fun deserializeBigInteger ()Ljava/math/BigInteger;
 	public fun deserializeBoolean ()Z
 	public fun deserializeByte ()B
 	public fun deserializeDocument ()Laws/smithy/kotlin/runtime/content/Document;

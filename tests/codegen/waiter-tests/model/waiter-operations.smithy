@@ -780,7 +780,7 @@ structure EntityPrimitives {
     float: Float,
     double: Double,
 
- // TODO: support BigInteger/BigDecimal
+ // no defined comparison
  // bigInteger: BigInteger,
  // bigDecimal: BigDecimal,
 

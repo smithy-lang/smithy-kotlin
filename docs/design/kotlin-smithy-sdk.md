@@ -38,8 +38,8 @@ hard keywords (e.g., "null" will be escaped as `` `null` ``).
 | `long`       | `Long`
 | `float`      | `Float`
 | `double`     | `Double`
-| `bigInteger` | *undecided (see [#213](https://github.com/awslabs/smithy-kotlin/issues/213))
-| `bigDecimal` | *undecided (see [#213](https://github.com/awslabs/smithy-kotlin/issues/213))
+| `bigInteger` | *custom type provided by client runtime (type aliased to `java.math.BigInteger` on JVM)
+| `bigDecimal` | *custom type provided by client runtime (type aliased to `java.math.BigDecimal` on JVM)
 | `timestamp`  | *custom type provided by client runtime
 | `document`   | *custom type provided by client runtime
 

@@ -64,6 +64,8 @@ public abstract interface class aws/smithy/kotlin/runtime/serde/MapSerializer : 
 }
 
 public abstract interface class aws/smithy/kotlin/runtime/serde/PrimitiveDeserializer {
+	public abstract fun deserializeBigDecimal ()Ljava/math/BigDecimal;
+	public abstract fun deserializeBigInteger ()Ljava/math/BigInteger;
 	public abstract fun deserializeBoolean ()Z
 	public abstract fun deserializeByte ()B
 	public abstract fun deserializeDocument ()Laws/smithy/kotlin/runtime/content/Document;

@@ -4,6 +4,8 @@
  */
 package aws.smithy.kotlin.runtime.serde
 
+import aws.smithy.kotlin.runtime.content.BigDecimal
+import aws.smithy.kotlin.runtime.content.BigInteger
 import aws.smithy.kotlin.runtime.content.Document
 
 /**
@@ -181,6 +183,16 @@ public interface PrimitiveDeserializer {
      * Deserialize and return the next token as a [Double]
      */
     public fun deserializeDouble(): Double
+
+    /**
+     * Deserialize and return the next token as a [BigInteger]
+     */
+    public fun deserializeBigInteger(): BigInteger
+
+    /**
+     * Deserialize and return the next token as a [BigDecimal]
+     */
+    public fun deserializeBigDecimal(): BigDecimal
 
     /**
      * Deserialize and return the next token as a [String]
