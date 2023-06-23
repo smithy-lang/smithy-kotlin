@@ -5,9 +5,6 @@
 
 package aws.smithy.kotlin.runtime.telemetry.trace
 
-import aws.smithy.kotlin.runtime.util.Attributes
-import aws.smithy.kotlin.runtime.util.emptyAttributes
-
 /**
  * The entry point for creating [Tracer] instances.
  */
@@ -25,8 +22,6 @@ public interface TracerProvider {
      * and attributes.
      *
      * @param scope the name of the instrumentation scope
-     * @param attributes (optional) specifies the instrumentation scope attributes to associate with emitted
-     * telemetry
      */
-    public fun getOrCreateTracer(scope: String, attributes: Attributes = emptyAttributes()): Tracer
+    public fun getOrCreateTracer(scope: String): Tracer
 }

@@ -10,7 +10,7 @@ import aws.smithy.kotlin.runtime.util.AttributeKey
 import aws.smithy.kotlin.runtime.util.Attributes
 
 internal object NoOpTracerProvider : TracerProvider {
-    override fun getOrCreateTracer(scope: String, attributes: Attributes): Tracer = NoOpTracer
+    override fun getOrCreateTracer(scope: String): Tracer = NoOpTracer
 }
 
 private object NoOpTracer : Tracer {

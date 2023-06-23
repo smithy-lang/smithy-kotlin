@@ -10,7 +10,6 @@ import aws.smithy.kotlin.runtime.client.operationName
 import aws.smithy.kotlin.runtime.client.serviceName
 import aws.smithy.kotlin.runtime.telemetry.TelemetryProvider
 import aws.smithy.kotlin.runtime.telemetry.TelemetryProviderContext
-import aws.smithy.kotlin.runtime.telemetry.context.TelemetryContextElement
 import aws.smithy.kotlin.runtime.telemetry.logging.LoggingContextElement
 import aws.smithy.kotlin.runtime.telemetry.trace.SpanKind
 import aws.smithy.kotlin.runtime.telemetry.trace.TraceSpan
@@ -56,13 +55,6 @@ internal fun<I, O> SdkHttpOperation<I, O>.instrument(): Pair<TraceSpan, Coroutin
 
     val tracer = telemetry.provider.tracerProvider.getOrCreateTracer(serviceName)
     val parentCtx = telemetry.provider.contextManager.current()
-    val rpcName = "$serviceName.$opName"
-    val telemetryCtx = TelemetryProviderContext(telemetry.provider) +
-        TelemetryContextElement(parentCtx) +
-        LoggingContextElement(
-            "rpc" to rpcName,
-            "sdkInvocationId" to context.sdkInvocationId,
-        )
 
     val initialAttributes = mutableAttributesOf {
         "rpc.service" to serviceName
@@ -71,6 +63,7 @@ internal fun<I, O> SdkHttpOperation<I, O>.instrument(): Pair<TraceSpan, Coroutin
 
     initialAttributes.merge(telemetry.attributes)
 
+    val rpcName = "$serviceName.$opName"
     val spanName = telemetry.spanName ?: rpcName
 
     val span = tracer.createSpan(
@@ -79,5 +72,12 @@ internal fun<I, O> SdkHttpOperation<I, O>.instrument(): Pair<TraceSpan, Coroutin
         telemetry.spanKind,
         parentCtx,
     )
+
+    val telemetryCtx = TelemetryProviderContext(telemetry.provider) +
+        LoggingContextElement(
+            "rpc" to rpcName,
+            "sdkInvocationId" to context.sdkInvocationId,
+        )
+
     return span to telemetryCtx
 }

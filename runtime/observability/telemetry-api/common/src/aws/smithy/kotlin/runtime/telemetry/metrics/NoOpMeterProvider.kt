@@ -9,7 +9,7 @@ import aws.smithy.kotlin.runtime.telemetry.context.Context
 import aws.smithy.kotlin.runtime.util.Attributes
 
 internal object NoOpMeterProvider : MeterProvider {
-    override fun getOrCreateMeter(scope: String, attributes: Attributes): Meter = NoOpMeter
+    override fun getOrCreateMeter(scope: String): Meter = NoOpMeter
 }
 
 /**

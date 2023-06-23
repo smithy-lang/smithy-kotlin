@@ -932,6 +932,7 @@ public final class aws/smithy/kotlin/runtime/operation/ExecutionContext : aws/sm
 	public fun getCoroutineContext ()Lkotlin/coroutines/CoroutineContext;
 	public fun getKeys ()Ljava/util/Set;
 	public fun getOrNull (Laws/smithy/kotlin/runtime/util/AttributeKey;)Ljava/lang/Object;
+	public fun isEmpty ()Z
 	public fun remove (Laws/smithy/kotlin/runtime/util/AttributeKey;)V
 	public fun set (Laws/smithy/kotlin/runtime/util/AttributeKey;Ljava/lang/Object;)V
 }
@@ -1505,6 +1506,7 @@ public abstract interface class aws/smithy/kotlin/runtime/util/Attributes {
 	public abstract fun contains (Laws/smithy/kotlin/runtime/util/AttributeKey;)Z
 	public abstract fun getKeys ()Ljava/util/Set;
 	public abstract fun getOrNull (Laws/smithy/kotlin/runtime/util/AttributeKey;)Ljava/lang/Object;
+	public abstract fun isEmpty ()Z
 }
 
 public final class aws/smithy/kotlin/runtime/util/AttributesBuilder {
