@@ -29,7 +29,7 @@ class AttributeTests {
         val boolAttr = AttributeKey<Boolean>("key")
         val otelBoolKey = boolAttr.otelAttrKeyOrNull(true)
         assertNotNull(otelBoolKey)
-        assertIs<OtelAttributeKey<Long>>(otelBoolKey)
+        assertIs<OtelAttributeKey<Boolean>>(otelBoolKey)
 
         val doubleAttr = AttributeKey<Double>("key")
         val otelDoubleKey = doubleAttr.otelAttrKeyOrNull(0.0)

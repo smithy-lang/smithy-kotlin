@@ -11,12 +11,12 @@ import aws.smithy.kotlin.runtime.util.get
 import io.opentelemetry.api.common.AttributeKey as OtelAttributeKey
 import io.opentelemetry.api.common.Attributes as OtelAttributes
 
-@Suppress("UNCHECKED_CAST")
 internal fun Attributes.toOtelAttributes(): OtelAttributes {
     val keys = this.keys
     if (keys.isEmpty()) return OtelAttributes.empty()
     val attrs = OtelAttributes.builder()
     keys.forEach {
+        @Suppress("UNCHECKED_CAST")
         val key = it as AttributeKey<Any>
         val value = get(key)
         it.otelAttrKeyOrNull(value)?.let { otelKey ->
