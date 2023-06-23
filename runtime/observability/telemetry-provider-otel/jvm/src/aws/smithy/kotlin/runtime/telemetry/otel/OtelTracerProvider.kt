@@ -56,6 +56,8 @@ private class OtelTraceSpan(
     override val name: String,
     private val otelSpan: OtelSpan,
 ) : TraceSpan {
+
+    private val spanScope = otelSpan.makeCurrent()
     override fun <T : Any> set(key: AttributeKey<T>, value: T) {
         key.otelAttrKeyOrNull(value)?.let { otelKey ->
             otelSpan.setAttribute(otelKey, value)
@@ -79,6 +81,7 @@ private class OtelTraceSpan(
 
     override fun close() {
         otelSpan.end()
+        spanScope.close()
     }
 }
 
