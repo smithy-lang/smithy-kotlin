@@ -16,13 +16,12 @@ import io.opentelemetry.api.trace.StatusCode as OtelStatus
 import io.opentelemetry.api.trace.Tracer as OtelTracer
 
 internal class OtelTracerProvider(private val otel: OpenTelemetry) : TracerProvider {
-    override fun getOrCreateTracer(scope: String, attributes: Attributes): Tracer =
-        OtelTracerImpl(otel.getTracer(scope), attributes)
+    override fun getOrCreateTracer(scope: String): Tracer =
+        OtelTracerImpl(otel.getTracer(scope))
 }
 
 private class OtelTracerImpl(
     private val otelTracer: OtelTracer,
-    private val tracerAttributes: Attributes,
 ) : Tracer {
     override fun createSpan(
         name: String,
@@ -36,10 +35,6 @@ private class OtelTracerImpl(
             .apply {
                 if (otelContext != null) {
                     setParent(otelContext)
-                }
-
-                if (!tracerAttributes.isEmpty) {
-                    setAllAttributes(initialAttributes.toOtelAttributes())
                 }
 
                 if (!initialAttributes.isEmpty) {

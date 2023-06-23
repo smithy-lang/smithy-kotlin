@@ -158,15 +158,11 @@ public final class aws/smithy/kotlin/runtime/telemetry/metrics/Meter$DefaultImpl
 
 public abstract interface class aws/smithy/kotlin/runtime/telemetry/metrics/MeterProvider {
 	public static final field Companion Laws/smithy/kotlin/runtime/telemetry/metrics/MeterProvider$Companion;
-	public abstract fun getOrCreateMeter (Ljava/lang/String;Laws/smithy/kotlin/runtime/util/Attributes;)Laws/smithy/kotlin/runtime/telemetry/metrics/Meter;
+	public abstract fun getOrCreateMeter (Ljava/lang/String;)Laws/smithy/kotlin/runtime/telemetry/metrics/Meter;
 }
 
 public final class aws/smithy/kotlin/runtime/telemetry/metrics/MeterProvider$Companion {
 	public final fun getNone ()Laws/smithy/kotlin/runtime/telemetry/metrics/MeterProvider;
-}
-
-public final class aws/smithy/kotlin/runtime/telemetry/metrics/MeterProvider$DefaultImpls {
-	public static synthetic fun getOrCreateMeter$default (Laws/smithy/kotlin/runtime/telemetry/metrics/MeterProvider;Ljava/lang/String;Laws/smithy/kotlin/runtime/util/Attributes;ILjava/lang/Object;)Laws/smithy/kotlin/runtime/telemetry/metrics/Meter;
 }
 
 public abstract interface class aws/smithy/kotlin/runtime/telemetry/metrics/MonotonicCounter {
@@ -235,14 +231,10 @@ public final class aws/smithy/kotlin/runtime/telemetry/trace/Tracer$DefaultImpls
 
 public abstract interface class aws/smithy/kotlin/runtime/telemetry/trace/TracerProvider {
 	public static final field Companion Laws/smithy/kotlin/runtime/telemetry/trace/TracerProvider$Companion;
-	public abstract fun getOrCreateTracer (Ljava/lang/String;Laws/smithy/kotlin/runtime/util/Attributes;)Laws/smithy/kotlin/runtime/telemetry/trace/Tracer;
+	public abstract fun getOrCreateTracer (Ljava/lang/String;)Laws/smithy/kotlin/runtime/telemetry/trace/Tracer;
 }
 
 public final class aws/smithy/kotlin/runtime/telemetry/trace/TracerProvider$Companion {
 	public final fun getNone ()Laws/smithy/kotlin/runtime/telemetry/trace/TracerProvider;
-}
-
-public final class aws/smithy/kotlin/runtime/telemetry/trace/TracerProvider$DefaultImpls {
-	public static synthetic fun getOrCreateTracer$default (Laws/smithy/kotlin/runtime/telemetry/trace/TracerProvider;Ljava/lang/String;Laws/smithy/kotlin/runtime/util/Attributes;ILjava/lang/Object;)Laws/smithy/kotlin/runtime/telemetry/trace/Tracer;
 }
 

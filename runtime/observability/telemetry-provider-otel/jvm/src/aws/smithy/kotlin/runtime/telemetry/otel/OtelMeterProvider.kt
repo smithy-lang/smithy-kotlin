@@ -18,10 +18,8 @@ import io.opentelemetry.api.metrics.LongUpDownCounter as OtelLongUpDownCounter
 import io.opentelemetry.api.metrics.Meter as OpenTelemetryMeter
 
 internal class OtelMeterProvider(private val otel: OpenTelemetry) : MeterProvider {
-    override fun getOrCreateMeter(scope: String, attributes: Attributes): Meter {
+    override fun getOrCreateMeter(scope: String): Meter {
         val meter = otel.getMeter(scope)
-        // FIXME: meter level attributes not supported yet by Java impl
-        // https://github.com/open-telemetry/opentelemetry-java/issues/5503
         return OtelMeter(meter)
     }
 }
