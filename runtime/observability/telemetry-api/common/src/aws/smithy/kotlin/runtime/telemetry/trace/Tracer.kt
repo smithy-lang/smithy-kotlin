@@ -13,8 +13,6 @@ import aws.smithy.kotlin.runtime.util.emptyAttributes
  * Entry point for creating [TraceSpan] instances.
  */
 public interface Tracer {
-    // TODO - do we want to be able to explicitly say "no parent", e.g. Context.root()
-
     /**
      * Creates a new span and makes it active in the current [Context].
      *

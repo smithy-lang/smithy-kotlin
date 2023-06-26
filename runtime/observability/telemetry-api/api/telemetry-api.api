@@ -72,7 +72,6 @@ public abstract interface class aws/smithy/kotlin/runtime/telemetry/logging/LogR
 	public abstract fun setKeyValuePair (Ljava/lang/String;Ljava/lang/Object;)V
 	public abstract fun setMessage (Ljava/lang/String;)V
 	public abstract fun setMessage (Lkotlin/jvm/functions/Function0;)V
-	public abstract fun setTimestamp (Laws/smithy/kotlin/runtime/time/Instant;)V
 }
 
 public abstract interface class aws/smithy/kotlin/runtime/telemetry/logging/Logger {

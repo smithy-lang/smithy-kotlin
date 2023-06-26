@@ -13,12 +13,6 @@ import aws.smithy.kotlin.runtime.time.Instant
  */
 public interface LogRecordBuilder {
     /**
-     * Set the timestamp
-     * @param ts the observed time for this event
-     */
-    public fun setTimestamp(ts: Instant)
-
-    /**
      * Set an exception associated with this event
      * Some loggers will do additional formatting for exceptions.
      * @param ex the exception to associate with this log record
@@ -45,7 +39,6 @@ public interface LogRecordBuilder {
      */
     public fun setKeyValuePair(key: String, value: Any)
 
-    // FIXME - revisit this and reconcile with propagators API and/or logging context?
     /**
      * Set the telemetry context to associate with this log record
      * @param context the context to associate
