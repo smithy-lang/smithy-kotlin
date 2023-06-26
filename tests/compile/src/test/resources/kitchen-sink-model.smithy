@@ -423,7 +423,14 @@ structure PrimitivesIO {
     long: Long,
     short: Short,
     string: String,
-    timestamp: Timestamp
+    timestamp: Timestamp,
+    primitiveBoolean: PrimitiveBoolean,
+    primitiveByte: PrimitiveByte,
+    primitiveShort: PrimitiveShort,
+    primitiveInteger: PrimitiveInteger,
+    primitiveLong: PrimitiveLong,
+    primitiveFloat: PrimitiveFloat,
+    primitiveDouble: PrimitiveDouble
 }
 
 @http(method: "POST", uri: "/input/union")
