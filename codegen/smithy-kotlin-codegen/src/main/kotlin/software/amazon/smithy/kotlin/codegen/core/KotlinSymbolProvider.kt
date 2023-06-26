@@ -68,13 +68,13 @@ class KotlinSymbolProvider(private val model: Model, private val settings: Kotli
 
     override fun toMemberName(shape: MemberShape): String = escaper.escapeMemberName(shape.defaultName())
 
-    override fun byteShape(shape: ByteShape): Symbol = numberShape(shape, "Byte")
+    override fun byteShape(shape: ByteShape): Symbol = numberShape(shape, "Byte", "0.toByte()")
 
-    override fun integerShape(shape: IntegerShape): Symbol = numberShape(shape, "Int")
+    override fun integerShape(shape: IntegerShape): Symbol = numberShape(shape, "Int", "0")
 
     override fun intEnumShape(shape: IntEnumShape): Symbol = createEnumSymbol(shape)
 
-    override fun shortShape(shape: ShortShape): Symbol = numberShape(shape, "Short")
+    override fun shortShape(shape: ShortShape): Symbol = numberShape(shape, "Short", "0.toShort()")
 
     override fun longShape(shape: LongShape): Symbol = numberShape(shape, "Long", "0L")
 
@@ -82,7 +82,7 @@ class KotlinSymbolProvider(private val model: Model, private val settings: Kotli
 
     override fun doubleShape(shape: DoubleShape): Symbol = numberShape(shape, "Double", "0.0")
 
-    private fun numberShape(shape: Shape, typeName: String, defaultValue: String = "0"): Symbol =
+    private fun numberShape(shape: Shape, typeName: String, defaultValue: String): Symbol =
         createSymbolBuilder(shape, typeName, namespace = "kotlin").defaultValue(defaultValue).build()
 
     override fun bigIntegerShape(shape: BigIntegerShape?): Symbol = RuntimeTypes.Core.Content.BigInteger
@@ -278,6 +278,8 @@ class KotlinSymbolProvider(private val model: Model, private val settings: Kotli
         is LongShape -> "${value}L"
         is FloatShape -> "${value}f"
         is DoubleShape -> if (value.matches("[0-9]*\\.[0-9]+".toRegex())) value else "$value.0"
+        is ShortShape -> "$value.toShort()"
+        is ByteShape -> "$value.toByte()"
         else -> value
     }
 

@@ -46,9 +46,9 @@ class SerializeStructGeneratorTest {
     @ParameterizedTest(name = "{index} ==> ''{0}''")
     @CsvSource(
         "PrimitiveInteger, 0, 0",
-        "PrimitiveShort, 0, 0",
+        "PrimitiveShort, 0.toShort(), 0",
         "PrimitiveLong, 0L, 0",
-        "PrimitiveByte, 0, 0",
+        "PrimitiveByte, 0.toByte(), 0",
         "PrimitiveFloat, 0f, 0",
         "PrimitiveDouble, 0.0, 0",
         "PrimitiveBoolean, false, false",
