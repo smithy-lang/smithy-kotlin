@@ -9,10 +9,7 @@ import aws.smithy.kotlin.runtime.util.DslFactory
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
-import kotlin.math.floor
-import kotlin.math.max
-import kotlin.math.min
-import kotlin.math.pow
+import kotlin.math.*
 import kotlin.time.*
 import kotlin.time.Duration.Companion.seconds
 
@@ -229,7 +226,7 @@ internal class CubicRateCalculator(
         return calculatedRate
     }
 
-    internal fun calculateTimeWindow() = ((lastMaxRate * (1 - config.beta)) / config.scaleConstant).pow(1.0 / 3)
+    internal fun calculateTimeWindow() = cbrt((lastMaxRate * (1 - config.beta)) / config.scaleConstant)
 
     internal fun cubicSuccess(): Double {
         val deltaSeconds = lastThrottleTime.elapsedNow().toDouble(DurationUnit.SECONDS)

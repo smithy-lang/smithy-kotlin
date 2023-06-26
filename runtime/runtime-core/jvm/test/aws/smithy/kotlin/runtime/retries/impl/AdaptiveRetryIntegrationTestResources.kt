@@ -8,6 +8,7 @@ import aws.smithy.kotlin.runtime.retries.policy.RetryErrorType
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
+// Test cases sourced from "new-retries" specification.
 val adaptiveRetryCubicTestCases = mapOf(
     "Cubic success #1" to // language=YAML
         """
@@ -71,6 +72,7 @@ val adaptiveRetryCubicTestCases = mapOf(
         """.trimIndent(),
 )
 
+// Test cases sourced from "new-retries" specification.
 val adaptiveRetryE2eTestCases = mapOf(
     "End-to-end test for client sending rates" to // language=YAML
         """

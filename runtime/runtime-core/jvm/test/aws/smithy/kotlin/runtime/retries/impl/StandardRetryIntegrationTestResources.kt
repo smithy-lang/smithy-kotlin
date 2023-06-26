@@ -8,6 +8,7 @@ package aws.smithy.kotlin.runtime.retries.impl
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
+// Test cases sourced from "new-retries" specification.
 val standardRetryIntegrationTestCases = mapOf(
     "Retry eventually succeeds" to // language=YAML
         """

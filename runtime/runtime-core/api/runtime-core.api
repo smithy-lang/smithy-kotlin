@@ -962,15 +962,15 @@ public final class aws/smithy/kotlin/runtime/retries/AdaptiveRetryStrategy$Compa
 public final class aws/smithy/kotlin/runtime/retries/AdaptiveRetryStrategy$Config : aws/smithy/kotlin/runtime/retries/StandardRetryStrategy$Config {
 	public static final field Companion Laws/smithy/kotlin/runtime/retries/AdaptiveRetryStrategy$Config$Companion;
 	public fun <init> (Laws/smithy/kotlin/runtime/retries/AdaptiveRetryStrategy$Config$Builder;)V
-	public final fun getClientRateLimiter ()Laws/smithy/kotlin/runtime/retries/delay/ClientRateLimiter;
+	public final fun getRateLimiter ()Laws/smithy/kotlin/runtime/retries/delay/RateLimiter;
 }
 
 public final class aws/smithy/kotlin/runtime/retries/AdaptiveRetryStrategy$Config$Builder : aws/smithy/kotlin/runtime/retries/StandardRetryStrategy$Config$Builder {
 	public fun <init> ()V
-	public final fun clientRateLimiter (Laws/smithy/kotlin/runtime/util/DslFactory;Lkotlin/jvm/functions/Function1;)V
-	public final fun clientRateLimiter (Lkotlin/jvm/functions/Function1;)V
-	public final fun getClientRateLimiter ()Laws/smithy/kotlin/runtime/retries/delay/ClientRateLimiter;
-	public final fun setClientRateLimiter (Laws/smithy/kotlin/runtime/retries/delay/ClientRateLimiter;)V
+	public final fun getRateLimiter ()Laws/smithy/kotlin/runtime/retries/delay/RateLimiter;
+	public final fun rateLimiter (Laws/smithy/kotlin/runtime/util/DslFactory;Lkotlin/jvm/functions/Function1;)V
+	public final fun rateLimiter (Lkotlin/jvm/functions/Function1;)V
+	public final fun setRateLimiter (Laws/smithy/kotlin/runtime/retries/delay/RateLimiter;)V
 }
 
 public final class aws/smithy/kotlin/runtime/retries/AdaptiveRetryStrategy$Config$Companion {
@@ -1094,24 +1094,24 @@ public final class aws/smithy/kotlin/runtime/retries/TooManyAttemptsException : 
 	public fun <init> (Ljava/lang/String;Ljava/lang/Throwable;ILjava/lang/Object;Ljava/lang/Throwable;)V
 }
 
-public final class aws/smithy/kotlin/runtime/retries/delay/AdaptiveClientRateLimiter : aws/smithy/kotlin/runtime/retries/delay/ClientRateLimiter {
-	public static final field Companion Laws/smithy/kotlin/runtime/retries/delay/AdaptiveClientRateLimiter$Companion;
-	public fun <init> (Laws/smithy/kotlin/runtime/retries/delay/AdaptiveClientRateLimiter$Config;)V
-	public synthetic fun <init> (Laws/smithy/kotlin/runtime/retries/delay/AdaptiveClientRateLimiter$Config;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+public final class aws/smithy/kotlin/runtime/retries/delay/AdaptiveRateLimiter : aws/smithy/kotlin/runtime/retries/delay/RateLimiter {
+	public static final field Companion Laws/smithy/kotlin/runtime/retries/delay/AdaptiveRateLimiter$Companion;
+	public fun <init> (Laws/smithy/kotlin/runtime/retries/delay/AdaptiveRateLimiter$Config;)V
+	public synthetic fun <init> (Laws/smithy/kotlin/runtime/retries/delay/AdaptiveRateLimiter$Config;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public fun acquire (ILkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public fun getConfig ()Laws/smithy/kotlin/runtime/retries/delay/AdaptiveClientRateLimiter$Config;
-	public synthetic fun getConfig ()Laws/smithy/kotlin/runtime/retries/delay/ClientRateLimiter$Config;
+	public fun getConfig ()Laws/smithy/kotlin/runtime/retries/delay/AdaptiveRateLimiter$Config;
+	public synthetic fun getConfig ()Laws/smithy/kotlin/runtime/retries/delay/RateLimiter$Config;
 	public fun update (Laws/smithy/kotlin/runtime/retries/policy/RetryErrorType;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
-public final class aws/smithy/kotlin/runtime/retries/delay/AdaptiveClientRateLimiter$Companion : aws/smithy/kotlin/runtime/util/DslFactory {
-	public fun invoke (Lkotlin/jvm/functions/Function1;)Laws/smithy/kotlin/runtime/retries/delay/AdaptiveClientRateLimiter;
+public final class aws/smithy/kotlin/runtime/retries/delay/AdaptiveRateLimiter$Companion : aws/smithy/kotlin/runtime/util/DslFactory {
+	public fun invoke (Lkotlin/jvm/functions/Function1;)Laws/smithy/kotlin/runtime/retries/delay/AdaptiveRateLimiter;
 	public synthetic fun invoke (Lkotlin/jvm/functions/Function1;)Ljava/lang/Object;
 }
 
-public final class aws/smithy/kotlin/runtime/retries/delay/AdaptiveClientRateLimiter$Config : aws/smithy/kotlin/runtime/retries/delay/ClientRateLimiter$Config {
-	public static final field Companion Laws/smithy/kotlin/runtime/retries/delay/AdaptiveClientRateLimiter$Config$Companion;
-	public fun <init> (Laws/smithy/kotlin/runtime/retries/delay/AdaptiveClientRateLimiter$Config$Builder;)V
+public final class aws/smithy/kotlin/runtime/retries/delay/AdaptiveRateLimiter$Config : aws/smithy/kotlin/runtime/retries/delay/RateLimiter$Config {
+	public static final field Companion Laws/smithy/kotlin/runtime/retries/delay/AdaptiveRateLimiter$Config$Companion;
+	public fun <init> (Laws/smithy/kotlin/runtime/retries/delay/AdaptiveRateLimiter$Config$Builder;)V
 	public final fun getBeta ()D
 	public final fun getMeasurementBucketDuration-UwyO8pc ()J
 	public final fun getMinCapacity ()D
@@ -1121,7 +1121,7 @@ public final class aws/smithy/kotlin/runtime/retries/delay/AdaptiveClientRateLim
 	public fun toBuilderApplicator ()Lkotlin/jvm/functions/Function1;
 }
 
-public final class aws/smithy/kotlin/runtime/retries/delay/AdaptiveClientRateLimiter$Config$Builder : aws/smithy/kotlin/runtime/retries/delay/ClientRateLimiter$Config$Builder {
+public final class aws/smithy/kotlin/runtime/retries/delay/AdaptiveRateLimiter$Config$Builder : aws/smithy/kotlin/runtime/retries/delay/RateLimiter$Config$Builder {
 	public fun <init> ()V
 	public final fun getBeta ()D
 	public final fun getMeasurementBucketDuration-UwyO8pc ()J
@@ -1137,20 +1137,8 @@ public final class aws/smithy/kotlin/runtime/retries/delay/AdaptiveClientRateLim
 	public final fun setSmoothing (D)V
 }
 
-public final class aws/smithy/kotlin/runtime/retries/delay/AdaptiveClientRateLimiter$Config$Companion {
-	public final fun getDefault ()Laws/smithy/kotlin/runtime/retries/delay/AdaptiveClientRateLimiter$Config;
-}
-
-public abstract interface class aws/smithy/kotlin/runtime/retries/delay/ClientRateLimiter {
-	public abstract fun acquire (ILkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public abstract fun getConfig ()Laws/smithy/kotlin/runtime/retries/delay/ClientRateLimiter$Config;
-	public abstract fun update (Laws/smithy/kotlin/runtime/retries/policy/RetryErrorType;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-}
-
-public abstract interface class aws/smithy/kotlin/runtime/retries/delay/ClientRateLimiter$Config {
-}
-
-public abstract interface class aws/smithy/kotlin/runtime/retries/delay/ClientRateLimiter$Config$Builder {
+public final class aws/smithy/kotlin/runtime/retries/delay/AdaptiveRateLimiter$Config$Companion {
+	public final fun getDefault ()Laws/smithy/kotlin/runtime/retries/delay/AdaptiveRateLimiter$Config;
 }
 
 public abstract interface class aws/smithy/kotlin/runtime/retries/delay/DelayProvider {
@@ -1209,6 +1197,18 @@ public final class aws/smithy/kotlin/runtime/retries/delay/InfiniteTokenBucket :
 	public static final field INSTANCE Laws/smithy/kotlin/runtime/retries/delay/InfiniteTokenBucket;
 	public fun acquireToken (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun getConfig ()Laws/smithy/kotlin/runtime/retries/delay/RetryTokenBucket$Config;
+}
+
+public abstract interface class aws/smithy/kotlin/runtime/retries/delay/RateLimiter {
+	public abstract fun acquire (ILkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public abstract fun getConfig ()Laws/smithy/kotlin/runtime/retries/delay/RateLimiter$Config;
+	public abstract fun update (Laws/smithy/kotlin/runtime/retries/policy/RetryErrorType;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
+public abstract interface class aws/smithy/kotlin/runtime/retries/delay/RateLimiter$Config {
+}
+
+public abstract interface class aws/smithy/kotlin/runtime/retries/delay/RateLimiter$Config$Builder {
 }
 
 public final class aws/smithy/kotlin/runtime/retries/delay/RetryCapacityExceededException : aws/smithy/kotlin/runtime/ClientException {
