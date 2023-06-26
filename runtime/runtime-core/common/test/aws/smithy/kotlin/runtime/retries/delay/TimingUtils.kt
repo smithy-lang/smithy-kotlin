@@ -8,16 +8,19 @@ package aws.smithy.kotlin.runtime.retries.delay
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.currentTime
-import kotlin.test.assertTrue
+import kotlinx.coroutines.test.testTimeSource
+import org.junit.jupiter.api.Assertions.assertEquals
+import kotlin.time.Duration
+import kotlin.time.ExperimentalTime
+import kotlin.time.measureTimedValue
 
-private const val timeToleranceMs = 20
+@OptIn(ExperimentalCoroutinesApi::class, ExperimentalTime::class)
+suspend fun <T> TestScope.assertTime(expectedDuration: Duration, block: suspend () -> T): T {
+    val (result, actualDuration) = testTimeSource.measureTimedValue { block() }
 
-@OptIn(ExperimentalCoroutinesApi::class)
-suspend fun <T> TestScope.assertTime(expectedMs: Int, block: suspend () -> T): T {
-    val (actualMs, result) = measure(block)
-
-    val expectedRangeMs = (expectedMs - timeToleranceMs)..(expectedMs + timeToleranceMs)
-    assertTrue(actualMs in expectedRangeMs, "Actual ms $actualMs isn't in expected range $expectedRangeMs")
+    assertEquals(expectedDuration, actualDuration) {
+        "Actual duration $actualDuration doesn't match expected duration $expectedDuration"
+    }
 
     return result
 }
