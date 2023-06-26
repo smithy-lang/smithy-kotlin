@@ -23,7 +23,6 @@ internal object NoOpLogger : Logger {
 }
 
 private object NoOpLogRecordBuilder : LogRecordBuilder {
-    override fun setTimestamp(ts: Instant) {}
     override fun setCause(ex: Throwable) {}
     override fun setMessage(message: String) {}
     override fun setMessage(message: MessageSupplier) {}

@@ -45,8 +45,6 @@ private class Slf4JLoggerAdapter(private val delegate: org.slf4j.Logger) : Logge
 private class Slf4jLogRecordBuilderAdapter(
     private val delegate: LoggingEventBuilder,
 ) : LogRecordBuilder {
-    override fun setTimestamp(ts: Instant) { }
-
     override fun setCause(ex: Throwable) {
         delegate.setCause(ex)
     }
