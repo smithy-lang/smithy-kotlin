@@ -85,12 +85,9 @@ class KotlinSymbolProvider(private val model: Model, private val settings: Kotli
     private fun numberShape(shape: Shape, typeName: String, defaultValue: String): Symbol =
         createSymbolBuilder(shape, typeName, namespace = "kotlin").defaultValue(defaultValue).build()
 
-    override fun bigIntegerShape(shape: BigIntegerShape?): Symbol = createBigSymbol(shape, "BigInteger")
+    override fun bigIntegerShape(shape: BigIntegerShape?): Symbol = RuntimeTypes.Core.Content.BigInteger
 
-    override fun bigDecimalShape(shape: BigDecimalShape?): Symbol = createBigSymbol(shape, "BigDecimal")
-
-    private fun createBigSymbol(shape: Shape?, symbolName: String): Symbol =
-        createSymbolBuilder(shape, symbolName, namespace = "java.math", nullable = true).build()
+    override fun bigDecimalShape(shape: BigDecimalShape?): Symbol = RuntimeTypes.Core.Content.BigDecimal
 
     override fun stringShape(shape: StringShape): Symbol = if (shape.isEnum) {
         createEnumSymbol(shape)

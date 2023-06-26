@@ -101,6 +101,43 @@ class JsonDeserializerTest {
     }
 
     @Test
+    fun itHandlesBigInteger() {
+        val tests = listOf(
+            "0",
+            "1",
+            "1000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+            "-1000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+        )
+
+        tests.forEach { expected ->
+            val payload = expected.encodeToByteArray()
+            val deserializer = JsonDeserializer(payload)
+            val actual = deserializer.deserializeBigInteger()
+            assertEquals(expected, actual.toString())
+        }
+    }
+
+    @Test
+    fun itHandlesBigDecimal() {
+        val tests = listOf(
+            "0",
+            "1",
+            "1000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+            "-1000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+            "1234567890.0987654321",
+            "12345678901234567890123456789012345678901234567890.09876543210987654321098765432109876543210987654321",
+            "-12345678901234567890123456789012345678901234567890.09876543210987654321098765432109876543210987654321",
+        )
+
+        tests.forEach { expected ->
+            val payload = expected.encodeToByteArray()
+            val deserializer = JsonDeserializer(payload)
+            val actual = deserializer.deserializeBigDecimal()
+            assertEquals(expected, actual.toPlainString())
+        }
+    }
+
+    @Test
     fun itHandlesBool() {
         val payload = "true".encodeToByteArray()
         val deserializer = JsonDeserializer(payload)

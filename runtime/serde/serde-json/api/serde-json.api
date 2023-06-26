@@ -1,6 +1,8 @@
 public final class aws/smithy/kotlin/runtime/serde/json/JsonDeserializer : aws/smithy/kotlin/runtime/serde/Deserializer, aws/smithy/kotlin/runtime/serde/Deserializer$ElementIterator, aws/smithy/kotlin/runtime/serde/Deserializer$EntryIterator, aws/smithy/kotlin/runtime/serde/PrimitiveDeserializer {
 	public static final field Companion Laws/smithy/kotlin/runtime/serde/json/JsonDeserializer$Companion;
 	public fun <init> ([B)V
+	public fun deserializeBigDecimal ()Ljava/math/BigDecimal;
+	public fun deserializeBigInteger ()Ljava/math/BigInteger;
 	public fun deserializeBoolean ()Z
 	public fun deserializeByte ()B
 	public fun deserializeDocument ()Laws/smithy/kotlin/runtime/content/Document;
@@ -68,6 +70,8 @@ public final class aws/smithy/kotlin/runtime/serde/json/JsonSerializer : aws/smi
 	public fun field (Laws/smithy/kotlin/runtime/serde/SdkFieldDescriptor;Laws/smithy/kotlin/runtime/serde/SdkSerializable;)V
 	public fun field (Laws/smithy/kotlin/runtime/serde/SdkFieldDescriptor;Laws/smithy/kotlin/runtime/time/Instant;Laws/smithy/kotlin/runtime/time/TimestampFormat;)V
 	public fun field (Laws/smithy/kotlin/runtime/serde/SdkFieldDescriptor;Ljava/lang/String;)V
+	public fun field (Laws/smithy/kotlin/runtime/serde/SdkFieldDescriptor;Ljava/math/BigDecimal;)V
+	public fun field (Laws/smithy/kotlin/runtime/serde/SdkFieldDescriptor;Ljava/math/BigInteger;)V
 	public fun field (Laws/smithy/kotlin/runtime/serde/SdkFieldDescriptor;S)V
 	public fun field (Laws/smithy/kotlin/runtime/serde/SdkFieldDescriptor;Z)V
 	public fun listEntry (Ljava/lang/String;Laws/smithy/kotlin/runtime/serde/SdkFieldDescriptor;Lkotlin/jvm/functions/Function1;)V
@@ -75,6 +79,8 @@ public final class aws/smithy/kotlin/runtime/serde/json/JsonSerializer : aws/smi
 	public fun mapEntry (Ljava/lang/String;Laws/smithy/kotlin/runtime/serde/SdkFieldDescriptor;Lkotlin/jvm/functions/Function1;)V
 	public fun mapField (Laws/smithy/kotlin/runtime/serde/SdkFieldDescriptor;Lkotlin/jvm/functions/Function1;)V
 	public fun nullField (Laws/smithy/kotlin/runtime/serde/SdkFieldDescriptor;)V
+	public fun serializeBigDecimal (Ljava/math/BigDecimal;)V
+	public fun serializeBigInteger (Ljava/math/BigInteger;)V
 	public fun serializeBoolean (Z)V
 	public fun serializeByte (B)V
 	public fun serializeChar (C)V
@@ -120,6 +126,8 @@ public abstract interface class aws/smithy/kotlin/runtime/serde/json/JsonStreamW
 	public abstract fun writeValue (J)V
 	public abstract fun writeValue (Ljava/lang/Number;)V
 	public abstract fun writeValue (Ljava/lang/String;)V
+	public abstract fun writeValue (Ljava/math/BigDecimal;)V
+	public abstract fun writeValue (Ljava/math/BigInteger;)V
 	public abstract fun writeValue (S)V
 	public abstract fun writeValue (Z)V
 }

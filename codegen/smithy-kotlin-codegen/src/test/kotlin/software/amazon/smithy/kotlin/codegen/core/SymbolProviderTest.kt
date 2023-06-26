@@ -544,7 +544,7 @@ class SymbolProviderTest {
 
         val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model, rootNamespace = "foo.bar")
         val bigSymbol = provider.toSymbol(member)
-        assertEquals("java.math", bigSymbol.namespace)
+        assertEquals("aws.smithy.kotlin.runtime.content", bigSymbol.namespace)
         assertEquals("null", bigSymbol.defaultValue())
         assertEquals(true, bigSymbol.isNullable)
         assertEquals(type, bigSymbol.name)

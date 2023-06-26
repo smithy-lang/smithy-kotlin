@@ -99,6 +99,8 @@ object RuntimeTypes {
         val ClientException = symbol("ClientException")
 
         object Content : RuntimeTypePackage(KotlinDependency.CORE, "content") {
+            val BigDecimal = symbol("BigDecimal")
+            val BigInteger = symbol("BigInteger")
             val ByteArrayContent = symbol("ByteArrayContent")
             val ByteStream = symbol("ByteStream")
             val buildDocument = symbol("buildDocument")

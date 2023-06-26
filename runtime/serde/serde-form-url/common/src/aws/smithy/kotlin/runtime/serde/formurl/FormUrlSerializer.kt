@@ -5,6 +5,8 @@
 
 package aws.smithy.kotlin.runtime.serde.formurl
 
+import aws.smithy.kotlin.runtime.content.BigDecimal
+import aws.smithy.kotlin.runtime.content.BigInteger
 import aws.smithy.kotlin.runtime.content.Document
 import aws.smithy.kotlin.runtime.io.SdkBuffer
 import aws.smithy.kotlin.runtime.serde.*
@@ -46,6 +48,9 @@ private class FormUrlSerializer(
     override fun serializeLong(value: Long) = write { commonWriteNumber(value) }
     override fun serializeFloat(value: Float) = write { commonWriteNumber(value) }
     override fun serializeDouble(value: Double) = write { commonWriteNumber(value) }
+    override fun serializeBigInteger(value: BigInteger) = write { commonWriteNumber(value) }
+    override fun serializeBigDecimal(value: BigDecimal) = write(value.toPlainString())
+
     override fun serializeString(value: String) = write(value)
 
     override fun serializeInstant(value: Instant, format: TimestampFormat) {
@@ -123,6 +128,14 @@ private class FormUrlStructSerializer(
 
     override fun field(descriptor: SdkFieldDescriptor, value: Double) = writeField(descriptor) {
         serializeDouble(value)
+    }
+
+    override fun field(descriptor: SdkFieldDescriptor, value: BigInteger) = writeField(descriptor) {
+        serializeBigInteger(value)
+    }
+
+    override fun field(descriptor: SdkFieldDescriptor, value: BigDecimal) = writeField(descriptor) {
+        serializeBigDecimal(value)
     }
 
     override fun field(descriptor: SdkFieldDescriptor, value: String) = writeField(descriptor) {
@@ -216,6 +229,8 @@ private class FormUrlListSerializer(
     override fun serializeLong(value: Long) = writePrefixed { commonWriteNumber(value) }
     override fun serializeFloat(value: Float) = writePrefixed { commonWriteNumber(value) }
     override fun serializeDouble(value: Double) = writePrefixed { commonWriteNumber(value) }
+    override fun serializeBigInteger(value: BigInteger) = writePrefixed { commonWriteNumber(value) }
+    override fun serializeBigDecimal(value: BigDecimal) = writePrefixed { writeUtf8(value.toPlainString()) }
     override fun serializeString(value: String) = writePrefixed { writeUtf8(value.urlEncodeComponent()) }
     override fun serializeInstant(value: Instant, format: TimestampFormat) = writePrefixed { writeUtf8(value.format(format)) }
 

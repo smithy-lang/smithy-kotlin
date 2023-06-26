@@ -21,9 +21,8 @@ class SerializeStructGeneratorTest {
         operations = listOf("Foo"),
     ).trimIndent()
 
-    // TODO ~ Support BigInteger and BigDecimal Types - https://github.com/awslabs/smithy-kotlin/issues/213
     @ParameterizedTest
-    @ValueSource(strings = ["String", "Boolean", "Byte", "Short", "Integer", "Long", "Float", "Double"/*, "BigInteger", "BigDecimal"*/])
+    @ValueSource(strings = ["String", "Boolean", "Byte", "Short", "Integer", "Long", "Float", "Double", "BigInteger", "BigDecimal"])
     fun `it serializes a structure with a simple fields`(memberType: String) {
         val model = (
             modelPrefix + """            
