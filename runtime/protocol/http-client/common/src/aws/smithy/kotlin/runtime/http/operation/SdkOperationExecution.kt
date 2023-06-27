@@ -200,6 +200,7 @@ private class OperationHandler<Input, Output>(
     private val interceptors: InterceptorExecutor<Input, Output>,
 ) : Handler<OperationRequest<Input>, Output> {
     override suspend fun call(request: OperationRequest<Input>): Output {
+        coroutineContext.trace<OperationHandler<*, *>> { "operation started" }
         val result = interceptors.readBeforeExecution(request.subject)
             .mapCatching {
                 inner.call(request)
@@ -211,6 +212,10 @@ private class OperationHandler<Input, Output>(
                 interceptors.readAfterExecution(it)
             }
 
+        when {
+            result.isSuccess -> coroutineContext.trace<OperationHandler<*, *>> { "operation completed successfully" }
+            result.isFailure -> coroutineContext.trace<OperationHandler<*, *>>(result.exceptionOrNull()) { "operation failed" }
+        }
         return result.getOrThrow()
     }
 }
@@ -227,25 +232,18 @@ private class SerializeHandler<Input, Output> (
     private val interceptors: InterceptorExecutor<Input, Output>,
 ) : Handler<OperationRequest<Input>, Output> {
 
-    @OptIn(ExperimentalTime::class)
     override suspend fun call(request: OperationRequest<Input>): Output {
         val modified = interceptors.modifyBeforeSerialization(request.subject)
             .let { request.copy(subject = it) }
 
         interceptors.readBeforeSerialization(modified.subject)
 
-        // FIXME - remove timed value to fix 1.6.x compat?
-        val tv = measureTimedValue {
-            mapRequest(modified.context, modified.subject)
-        }
-
         // store finalized operation input for later middleware to read if needed
         request.context[HttpOperationContext.OperationInput] = modified.subject as Any
 
-        val requestBuilder = tv.value
+        val requestBuilder = mapRequest(modified.context, modified.subject)
         interceptors.readAfterSerialization(requestBuilder.immutableView())
 
-        coroutineContext.trace<SerializeHandler<*, *>> { "request serialized in ${tv.duration}" }
         return inner.call(SdkHttpRequest(modified.context, requestBuilder))
     }
 }
@@ -314,7 +312,6 @@ private class DeserializeHandler<Input, Output>(
     private val interceptors: InterceptorExecutor<Input, Output>,
 ) : Handler<SdkHttpRequest, Output> {
 
-    @OptIn(ExperimentalTime::class)
     override suspend fun call(request: SdkHttpRequest): Output {
         val call = inner.call(request)
 
@@ -323,13 +320,7 @@ private class DeserializeHandler<Input, Output>(
 
         interceptors.readBeforeDeserialization(modified)
 
-        val tv = measureTimedValue {
-            mapResponse(request.context, modified.response)
-        }
-
-        coroutineContext.trace<DeserializeHandler<*, *>> { "response deserialized in: ${tv.duration}" }
-
-        val output = tv.value
+        val output = mapResponse(request.context, modified.response)
         interceptors.readAfterDeserialization(output, modified)
 
         return output

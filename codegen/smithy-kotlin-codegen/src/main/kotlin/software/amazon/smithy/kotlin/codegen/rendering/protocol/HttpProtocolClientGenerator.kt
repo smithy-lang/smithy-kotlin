@@ -119,7 +119,6 @@ abstract class HttpProtocolClientGenerator(
             write("toMap()")
         }
 
-
         writer.write("private val telemetryScope = #S", ctx.settings.pkg.name)
         writer.write("private val opMetrics = #T(telemetryScope, config.telemetryProvider)", RuntimeTypes.HttpClient.Operation.OperationMetrics)
     }
