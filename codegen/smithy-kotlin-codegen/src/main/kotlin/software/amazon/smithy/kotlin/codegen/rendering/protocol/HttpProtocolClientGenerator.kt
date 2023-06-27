@@ -118,6 +118,10 @@ abstract class HttpProtocolClientGenerator(
 
             write("toMap()")
         }
+
+
+        writer.write("private val telemetryScope = #S", ctx.settings.pkg.name)
+        writer.write("private val opMetrics = #T(telemetryScope, config.telemetryProvider)", RuntimeTypes.HttpClient.Operation.OperationMetrics)
     }
 
     protected open fun importSymbols(writer: KotlinWriter) {
@@ -232,6 +236,8 @@ abstract class HttpProtocolClientGenerator(
             // telemetry
             writer.withBlock("#T {", "}", RuntimeTypes.HttpClient.Operation.telemetry) {
                 write("provider = config.telemetryProvider")
+                write("scope = telemetryScope")
+                write("metrics = opMetrics")
                 writer.declareSection(OperationTelemetryBuilder, mapOf(OperationTelemetryBuilder.Operation to op))
             }
 

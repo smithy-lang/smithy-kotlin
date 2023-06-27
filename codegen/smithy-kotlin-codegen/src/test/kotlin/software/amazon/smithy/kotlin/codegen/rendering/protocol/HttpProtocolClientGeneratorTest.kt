@@ -84,6 +84,8 @@ class HttpProtocolClientGeneratorTest {
             }
             telemetry {
                 provider = config.telemetryProvider
+                scope = telemetryScope
+                metrics = opMetrics
             }
             execution.auth = OperationAuthConfig(AuthSchemeProviderAdapter, configuredAuthSchemes, identityProviderConfig)
             execution.endpointResolver = EndpointResolverAdapter(config)
@@ -106,6 +108,8 @@ class HttpProtocolClientGeneratorTest {
             }
             telemetry {
                 provider = config.telemetryProvider
+                scope = telemetryScope
+                metrics = opMetrics
             }
             execution.auth = OperationAuthConfig(AuthSchemeProviderAdapter, configuredAuthSchemes, identityProviderConfig)
             execution.endpointResolver = EndpointResolverAdapter(config)
@@ -128,6 +132,8 @@ class HttpProtocolClientGeneratorTest {
             }
             telemetry {
                 provider = config.telemetryProvider
+                scope = telemetryScope
+                metrics = opMetrics
             }
             execution.auth = OperationAuthConfig(AuthSchemeProviderAdapter, configuredAuthSchemes, identityProviderConfig)
             execution.endpointResolver = EndpointResolverAdapter(config)
@@ -150,6 +156,8 @@ class HttpProtocolClientGeneratorTest {
             }
             telemetry {
                 provider = config.telemetryProvider
+                scope = telemetryScope
+                metrics = opMetrics
             }
             execution.auth = OperationAuthConfig(AuthSchemeProviderAdapter, configuredAuthSchemes, identityProviderConfig)
             execution.endpointResolver = EndpointResolverAdapter(config)
@@ -172,6 +180,8 @@ class HttpProtocolClientGeneratorTest {
             }
             telemetry {
                 provider = config.telemetryProvider
+                scope = telemetryScope
+                metrics = opMetrics
             }
             execution.auth = OperationAuthConfig(AuthSchemeProviderAdapter, configuredAuthSchemes, identityProviderConfig)
             execution.endpointResolver = EndpointResolverAdapter(config)
@@ -194,6 +204,8 @@ class HttpProtocolClientGeneratorTest {
             }
             telemetry {
                 provider = config.telemetryProvider
+                scope = telemetryScope
+                metrics = opMetrics
             }
             execution.auth = OperationAuthConfig(AuthSchemeProviderAdapter, configuredAuthSchemes, identityProviderConfig)
             execution.endpointResolver = EndpointResolverAdapter(config)
@@ -216,6 +228,8 @@ class HttpProtocolClientGeneratorTest {
             }
             telemetry {
                 provider = config.telemetryProvider
+                scope = telemetryScope
+                metrics = opMetrics
             }
             execution.auth = OperationAuthConfig(AuthSchemeProviderAdapter, configuredAuthSchemes, identityProviderConfig)
             execution.endpointResolver = EndpointResolverAdapter(config)
@@ -238,6 +252,8 @@ class HttpProtocolClientGeneratorTest {
             }
             telemetry {
                 provider = config.telemetryProvider
+                scope = telemetryScope
+                metrics = opMetrics
             }
             execution.auth = OperationAuthConfig(AuthSchemeProviderAdapter, configuredAuthSchemes, identityProviderConfig)
             execution.endpointResolver = EndpointResolverAdapter(config)
@@ -260,6 +276,8 @@ class HttpProtocolClientGeneratorTest {
             }
             telemetry {
                 provider = config.telemetryProvider
+                scope = telemetryScope
+                metrics = opMetrics
             }
             execution.auth = OperationAuthConfig(AuthSchemeProviderAdapter, configuredAuthSchemes, identityProviderConfig)
             execution.endpointResolver = EndpointResolverAdapter(config)
@@ -339,6 +357,8 @@ class HttpProtocolClientGeneratorTest {
             }
             telemetry {
                 provider = config.telemetryProvider
+                scope = telemetryScope
+                metrics = opMetrics
             }
             execution.auth = OperationAuthConfig(AuthSchemeProviderAdapter, configuredAuthSchemes, identityProviderConfig)
             execution.endpointResolver = EndpointResolverAdapter(config)

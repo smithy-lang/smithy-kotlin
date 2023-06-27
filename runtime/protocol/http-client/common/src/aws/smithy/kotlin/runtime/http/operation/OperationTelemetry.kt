@@ -24,6 +24,8 @@ import kotlin.time.ExperimentalTime
  * @property spanName the overall operation span name to use (defaults to <Service.Operation>)
  * @property spanKind the kind of span to create for the operation (defaults to [SpanKind.CLIENT])
  * @property attributes initial attributes to add to the operation span
+ * @property metrics the metrics container to report operation metrics to when this operation is invoked (defaults to no-op)
+ * @property scope the telemetry scope to instrument with (will default to service name if not configured)
  */
 @InternalApi
 public class SdkOperationTelemetry {
@@ -31,6 +33,8 @@ public class SdkOperationTelemetry {
     public var spanName: String? = null
     public var spanKind: SpanKind = SpanKind.CLIENT
     public var attributes: Attributes = emptyAttributes()
+    public var metrics: OperationMetrics = OperationMetrics.None
+    public var scope: String? = null
 }
 
 /**
@@ -52,7 +56,9 @@ internal fun<I, O> SdkHttpOperation<I, O>.instrument(): Pair<TraceSpan, Coroutin
     val serviceName = checkNotNull(context.serviceName)
     val opName = checkNotNull(context.operationName)
 
-    val tracer = telemetry.provider.tracerProvider.getOrCreateTracer(serviceName)
+    val scope = telemetry.scope ?: serviceName
+
+    val tracer = telemetry.provider.tracerProvider.getOrCreateTracer(scope)
     val parentCtx = telemetry.provider.contextManager.current()
 
     val initialAttributes = mutableAttributesOf {
@@ -78,14 +84,11 @@ internal fun<I, O> SdkHttpOperation<I, O>.instrument(): Pair<TraceSpan, Coroutin
             "sdkInvocationId" to context.sdkInvocationId,
         )
 
-    // TODO - should this be generated to cache
-    val opMetrics = OperationMetrics(serviceName, telemetry.provider)
-
-    context[HttpOperationContext.OperationMetrics] = opMetrics
+    context[HttpOperationContext.OperationMetrics] = telemetry.metrics
     context[HttpOperationContext.OperationAttributes] = initialAttributes
 
     // wire up operation level telemetry (other metrics e.g. from http are instrumented elsewhere)
-    interceptors.add(OperationTelemetryInterceptor(opMetrics, serviceName, opName))
+    interceptors.add(OperationTelemetryInterceptor(telemetry.metrics, serviceName, opName))
 
     return span to telemetryCtx
 }
