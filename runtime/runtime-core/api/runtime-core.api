@@ -1249,31 +1249,31 @@ public final class aws/smithy/kotlin/runtime/retries/delay/StandardRetryTokenBuc
 public final class aws/smithy/kotlin/runtime/retries/delay/StandardRetryTokenBucket$Config : aws/smithy/kotlin/runtime/retries/delay/RetryTokenBucket$Config {
 	public static final field Companion Laws/smithy/kotlin/runtime/retries/delay/StandardRetryTokenBucket$Config$Companion;
 	public fun <init> (Laws/smithy/kotlin/runtime/retries/delay/StandardRetryTokenBucket$Config$Builder;)V
-	public final fun getCircuitBreakerMode ()Z
 	public final fun getInitialTryCost ()I
 	public final fun getInitialTrySuccessIncrement ()I
 	public final fun getMaxCapacity ()I
 	public final fun getRefillUnitsPerSecond ()I
 	public final fun getRetryCost ()I
 	public final fun getTimeoutRetryCost ()I
+	public final fun getUseCircuitBreakerMode ()Z
 }
 
 public final class aws/smithy/kotlin/runtime/retries/delay/StandardRetryTokenBucket$Config$Builder : aws/smithy/kotlin/runtime/retries/delay/RetryTokenBucket$Config$Builder {
 	public fun <init> ()V
-	public final fun getCircuitBreakerMode ()Z
 	public final fun getInitialTryCost ()I
 	public final fun getInitialTrySuccessIncrement ()I
 	public final fun getMaxCapacity ()I
 	public final fun getRefillUnitsPerSecond ()I
 	public final fun getRetryCost ()I
 	public final fun getTimeoutRetryCost ()I
-	public final fun setCircuitBreakerMode (Z)V
+	public final fun getUseCircuitBreakerMode ()Z
 	public final fun setInitialTryCost (I)V
 	public final fun setInitialTrySuccessIncrement (I)V
 	public final fun setMaxCapacity (I)V
 	public final fun setRefillUnitsPerSecond (I)V
 	public final fun setRetryCost (I)V
 	public final fun setTimeoutRetryCost (I)V
+	public final fun setUseCircuitBreakerMode (Z)V
 }
 
 public final class aws/smithy/kotlin/runtime/retries/delay/StandardRetryTokenBucket$Config$Companion {

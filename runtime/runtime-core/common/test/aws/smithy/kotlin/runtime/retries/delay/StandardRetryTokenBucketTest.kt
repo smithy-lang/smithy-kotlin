@@ -98,7 +98,7 @@ class StandardRetryTokenBucketTest {
     @Test
     fun testCircuitBreakerMode() = runTest {
         // A bucket that only allows one initial try per second
-        val bucket = tokenBucket(initialTryCost = 10, circuitBreakerMode = true)
+        val bucket = tokenBucket(initialTryCost = 10, useCircuitBreakerMode = true)
 
         assertEquals(10, bucket.capacity)
         assertTime(0.seconds) { bucket.acquireToken() }
@@ -110,7 +110,7 @@ class StandardRetryTokenBucketTest {
 
 @OptIn(ExperimentalCoroutinesApi::class, ExperimentalTime::class)
 private fun TestScope.tokenBucket(
-    circuitBreakerMode: Boolean = false,
+    useCircuitBreakerMode: Boolean = false,
     initialTryCost: Int = 0,
     initialTrySuccessIncrement: Int = 1,
     maxCapacity: Int = 10,
@@ -120,7 +120,7 @@ private fun TestScope.tokenBucket(
     timeSource: TimeSource = testTimeSource,
 ): StandardRetryTokenBucket {
     val config = StandardRetryTokenBucket.Config {
-        this.circuitBreakerMode = circuitBreakerMode
+        this.useCircuitBreakerMode = useCircuitBreakerMode
         this.initialTryCost = initialTryCost
         this.initialTrySuccessIncrement = initialTrySuccessIncrement
         this.maxCapacity = maxCapacity

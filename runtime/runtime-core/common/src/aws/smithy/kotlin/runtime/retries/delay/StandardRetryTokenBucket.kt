@@ -61,7 +61,7 @@ public class StandardRetryTokenBucket internal constructor(
         if (size <= capacity) {
             capacity -= size
         } else {
-            if (config.circuitBreakerMode) {
+            if (config.useCircuitBreakerMode) {
                 throw RetryCapacityExceededException("Insufficient capacity to attempt another retry")
             }
 
@@ -142,7 +142,7 @@ public class StandardRetryTokenBucket internal constructor(
          * been depleted. When `false`, calls to acquire tokens or schedule retries will delay until sufficient capacity
          * is available. This property will automatically be set to `true` if [refillUnitsPerSecond] is 0.
          */
-        public val circuitBreakerMode: Boolean = builder.circuitBreakerMode
+        public val useCircuitBreakerMode: Boolean = builder.useCircuitBreakerMode
 
         /**
          * The amount of capacity to decrement for the initial try
@@ -160,7 +160,7 @@ public class StandardRetryTokenBucket internal constructor(
         public val maxCapacity: Int = builder.maxCapacity
 
         /**
-         * The amount of capacity to return per second. Setting this to 0 automatically sets [circuitBreakerMode] to
+         * The amount of capacity to return per second. Setting this to 0 automatically sets [useCircuitBreakerMode] to
          * `true`.
          */
         public val refillUnitsPerSecond: Int = builder.refillUnitsPerSecond
@@ -178,7 +178,7 @@ public class StandardRetryTokenBucket internal constructor(
         @InternalApi
         override fun toBuilderApplicator(): RetryTokenBucket.Config.Builder.() -> Unit = {
             if (this is Builder) {
-                circuitBreakerMode = this@Config.circuitBreakerMode
+                useCircuitBreakerMode = this@Config.useCircuitBreakerMode
                 initialTryCost = this@Config.initialTryCost
                 initialTrySuccessIncrement = this@Config.initialTrySuccessIncrement
                 maxCapacity = this@Config.maxCapacity
@@ -197,7 +197,7 @@ public class StandardRetryTokenBucket internal constructor(
              * has been depleted. When `false`, calls to acquire tokens or schedule retries will delay until sufficient
              * capacity is available. This property will automatically be set to `true` if [refillUnitsPerSecond] is 0.
              */
-            public var circuitBreakerMode: Boolean = true
+            public var useCircuitBreakerMode: Boolean = true
 
             /**
              * The amount of capacity to decrement for the initial try
@@ -215,12 +215,12 @@ public class StandardRetryTokenBucket internal constructor(
             public var maxCapacity: Int = 500
 
             /**
-             * The amount of capacity to return per second. Setting this to 0 automatically sets [circuitBreakerMode] to
-             * `true`.
+             * The amount of capacity to return per second. Setting this to 0 automatically sets [useCircuitBreakerMode]
+             * to `true`.
              */
             public var refillUnitsPerSecond: Int = 0
                 set(value) {
-                    if (value == 0) circuitBreakerMode = true
+                    if (value == 0) useCircuitBreakerMode = true
                     field = value
                 }
 

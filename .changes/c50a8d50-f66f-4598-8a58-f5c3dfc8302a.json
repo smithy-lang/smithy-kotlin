@@ -1,7 +1,7 @@
 {
     "id": "c50a8d50-f66f-4598-8a58-f5c3dfc8302a",
     "type": "feature",
-    "description": "**Breaking**: Simplify mechanisms for setting/updating retry strategies in client config",
+    "description": "**Breaking**: Simplify mechanisms for setting/updating retry strategies in client config. See [this discussion post](https://github.com/awslabs/aws-sdk-kotlin/discussions/964) for more details.",
     "issues": [
         "awslabs/aws-sdk-kotlin#701"
     ]
