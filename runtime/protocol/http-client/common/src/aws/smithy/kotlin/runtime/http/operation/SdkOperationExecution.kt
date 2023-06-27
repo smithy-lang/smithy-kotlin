@@ -262,6 +262,8 @@ internal class AuthHandler<Input, Output>(
     private val authConfig: OperationAuthConfig,
     private val endpointResolver: EndpointResolver? = null,
 ) : Handler<SdkHttpRequest, Output> {
+
+    @OptIn(ExperimentalTime::class)
     override suspend fun call(request: SdkHttpRequest): Output {
         // select an auth scheme by reconciling the (priority) list of candidates returned from the resolver
         // with the ones actually configured/available for the SDK
@@ -271,11 +273,22 @@ internal class AuthHandler<Input, Output>(
 
         // resolve identity from the selected auth scheme
         val identityProvider = authScheme.identityProvider(authConfig.identityProviderConfig)
-        val identity = identityProvider.resolve(authOption.attributes)
+        val identity = measureTimedValue {
+            identityProvider.resolve(authOption.attributes)
+        }.let {
+            request.context.operationMetrics.resolveIdentityDuration.record(it.duration.inWholeMilliseconds, request.context.operationAttributes)
+            it.value
+        }
 
         val resolveEndpointReq = ResolveEndpointRequest(request.context, request.subject.immutableView(), identity)
-        val endpoint = endpointResolver?.resolve(resolveEndpointReq)
-        if (endpoint != null) {
+
+        if (endpointResolver != null) {
+            val endpoint = measureTimedValue {
+                endpointResolver.resolve(resolveEndpointReq)
+            }.let {
+                request.context.operationMetrics.resolveEndpointDuration.record(it.duration.inWholeMilliseconds, request.context.operationAttributes)
+                it.value
+            }
             coroutineContext.debug<AuthHandler<*, *>> { "resolved endpoint: $endpoint" }
             setResolvedEndpoint(request, endpoint)
         }

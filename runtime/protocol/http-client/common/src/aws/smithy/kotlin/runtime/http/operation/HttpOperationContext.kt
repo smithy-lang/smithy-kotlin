@@ -11,6 +11,8 @@ import aws.smithy.kotlin.runtime.client.SdkClientOption
 import aws.smithy.kotlin.runtime.http.response.HttpCall
 import aws.smithy.kotlin.runtime.operation.ExecutionContext
 import aws.smithy.kotlin.runtime.util.AttributeKey
+import aws.smithy.kotlin.runtime.util.Attributes
+import aws.smithy.kotlin.runtime.util.emptyAttributes
 
 /**
  * Common configuration for an SDK (HTTP) operation/call
@@ -50,6 +52,16 @@ public open class HttpOperationContext {
         public val OperationInput: AttributeKey<Any> = AttributeKey("aws.smithy.kotlin#OperationInput")
 
         /**
+         * The operation metrics container used by various components to record metrics
+         */
+        public val OperationMetrics: AttributeKey<OperationMetrics> = AttributeKey("aws.smithy.kotlin#OperationMetrics")
+
+        /**
+         * Cached attribute level attributes (e.g. rpc.method, rpc.service, etc)
+         */
+        public val OperationAttributes: AttributeKey<Attributes> = AttributeKey("aws.smithy.kotlin#OperationAttributes")
+
+        /**
          * Build this operation into an HTTP [ExecutionContext]
          */
         public fun build(block: Builder.() -> Unit): ExecutionContext = Builder().apply(block).build()
@@ -81,3 +93,9 @@ public open class HttpOperationContext {
         public var hostPrefix: String? by option(HostPrefix)
     }
 }
+
+internal val ExecutionContext.operationMetrics: OperationMetrics
+    get() = getOrNull(HttpOperationContext.OperationMetrics) ?: OperationMetrics.None
+
+internal val ExecutionContext.operationAttributes: Attributes
+    get() = getOrNull(HttpOperationContext.OperationAttributes) ?: emptyAttributes()
