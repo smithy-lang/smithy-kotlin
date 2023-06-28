@@ -14,55 +14,48 @@ import kotlin.test.assertTrue
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
 
+@OptIn(ExperimentalCoroutinesApi::class)
 class ExponentialBackoffWithJitterTest {
-    @OptIn(ExperimentalCoroutinesApi::class)
     @Test
     fun testScaling() = runTest {
-        val options = ExponentialBackoffWithJitterOptions(
-            initialDelay = 10.milliseconds,
-            scaleFactor = 2.0, // Make the numbers easy for tests
-            jitter = 0.0, // Disable jitter for this test
-            maxBackoff = Duration.INFINITE, // Effectively disable max backoff
-        )
-        assertEquals(listOf(10, 20, 40, 80, 160, 320), backoffSeries(6, options))
+        val delayer = ExponentialBackoffWithJitter {
+            initialDelay = 10.milliseconds
+            scaleFactor = 2.0 // Make the numbers easy for tests
+            jitter = 0.0 // Disable jitter for this test
+            maxBackoff = Duration.INFINITE // Effectively disable max backoff
+        }
+        assertEquals(listOf(10, 20, 40, 80, 160, 320), backoffSeries(6, delayer))
     }
 
-    @OptIn(ExperimentalCoroutinesApi::class)
     @Test
     fun testJitter() = runTest {
-        val options = ExponentialBackoffWithJitterOptions(
-            initialDelay = 10.milliseconds,
-            scaleFactor = 2.0, // Make the numbers easy for tests
-            jitter = 0.6, // 60% jitter for this test
-            maxBackoff = Duration.INFINITE, // Effectively disable max backoff
-        )
-        backoffSeries(6, options)
+        val delayer = ExponentialBackoffWithJitter {
+            initialDelay = 10.milliseconds
+            scaleFactor = 2.0 // Make the numbers easy for tests
+            jitter = 0.6 // 60% jitter for this test
+            maxBackoff = Duration.INFINITE // Effectively disable max backoff
+        }
+        backoffSeries(6, delayer)
             .zip(listOf(4..10, 8..20, 16..40, 32..80, 64..160, 128..320))
             .forEach { (actualMs, rangeMs) ->
                 assertTrue(actualMs in rangeMs, "Actual ms $actualMs was not in expected range $rangeMs")
             }
     }
 
-    @OptIn(ExperimentalCoroutinesApi::class)
     @Test
     fun testMaxBackoff() = runTest {
-        val options = ExponentialBackoffWithJitterOptions(
-            initialDelay = 10.milliseconds,
-            scaleFactor = 2.0, // Make the numbers easy for tests
-            jitter = 0.0, // Disable jitter for this test
-            maxBackoff = 100.milliseconds,
-        )
-        assertEquals(listOf(10, 20, 40, 80, 100, 100), backoffSeries(6, options))
+        val delayer = ExponentialBackoffWithJitter {
+            initialDelay = 10.milliseconds
+            scaleFactor = 2.0 // Make the numbers easy for tests
+            jitter = 0.0 // Disable jitter for this test
+            maxBackoff = 100.milliseconds
+        }
+        assertEquals(listOf(10, 20, 40, 80, 100, 100), backoffSeries(6, delayer))
     }
 }
 
 @OptIn(ExperimentalCoroutinesApi::class)
-private suspend fun TestScope.backoffSeries(
-    times: Int,
-    options: ExponentialBackoffWithJitterOptions,
-): List<Int> {
-    val delayer = ExponentialBackoffWithJitter(options)
-    return (1..times)
+private suspend fun TestScope.backoffSeries(times: Int, delayer: ExponentialBackoffWithJitter): List<Int> =
+    (1..times)
         .map { idx -> measure { delayer.backoff(idx) } }
         .map { it.first } // Just need the timing, not the results
-}

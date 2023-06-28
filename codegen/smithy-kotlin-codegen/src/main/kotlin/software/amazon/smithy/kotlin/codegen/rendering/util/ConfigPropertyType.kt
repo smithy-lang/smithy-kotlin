@@ -9,6 +9,10 @@ package software.amazon.smithy.kotlin.codegen.rendering.util
  * Descriptor for how a configuration property is rendered when the configuration is built
  */
 sealed class ConfigPropertyType {
+    companion object {
+        val DoNotRender = Custom(render = { _, _ -> }, renderBuilder = { _, _ -> })
+    }
+
     /**
      * A property type that uses the symbol type and builder symbol directly
      */
