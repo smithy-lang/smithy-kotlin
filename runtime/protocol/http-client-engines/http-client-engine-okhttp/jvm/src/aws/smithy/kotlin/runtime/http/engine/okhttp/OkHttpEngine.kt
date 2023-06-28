@@ -40,12 +40,15 @@ public class OkHttpEngine(
         override val engineConstructor: (OkHttpEngineConfig.Builder.() -> Unit) -> OkHttpEngine = ::invoke
     }
 
-    private val client = config.buildClient()
+    private val metrics = HttpClientMetrics(TELEMETRY_SCOPE, config.telemetryProvider)
+    private val client = config.buildClient(metrics)
+
+    init {
+        metrics.connectionsLimit = config.maxConnections.toLong()
+    }
 
     override suspend fun roundTrip(context: ExecutionContext, request: HttpRequest): HttpCall {
         val callContext = callContext()
-
-        // FIXME - publish connection limit
 
         val engineRequest = request.toOkHttpRequest(context, callContext)
         val engineCall = client.newCall(engineRequest)
@@ -65,13 +68,14 @@ public class OkHttpEngine(
     override fun shutdown() {
         client.connectionPool.evictAll()
         client.dispatcher.executorService.shutdown()
+        metrics.close()
     }
 }
 
 /**
  * Convert SDK version of HTTP configuration to OkHttp specific configuration and return the configured client
  */
-private fun OkHttpEngineConfig.buildClient(): OkHttpClient {
+private fun OkHttpEngineConfig.buildClient(metrics: HttpClientMetrics): OkHttpClient {
     val config = this
 
     return OkHttpClient.Builder().apply {
@@ -106,7 +110,7 @@ private fun OkHttpEngineConfig.buildClient(): OkHttpClient {
         dispatcher(dispatcher)
 
         // Log events coming from okhttp. Allocate a new listener per-call to facilitate dedicated trace spans.
-        eventListenerFactory { call -> HttpEngineEventListener(pool, config.hostResolver, call) }
+        eventListenerFactory { call -> HttpEngineEventListener(pool, config.hostResolver, dispatcher, metrics, call) }
 
         // map protocols
         if (config.tlsContext.alpn.isNotEmpty()) {

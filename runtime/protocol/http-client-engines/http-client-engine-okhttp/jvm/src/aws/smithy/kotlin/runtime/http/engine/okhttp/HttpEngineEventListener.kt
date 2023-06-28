@@ -4,7 +4,6 @@
  */
 package aws.smithy.kotlin.runtime.http.engine.okhttp
 
-import aws.smithy.kotlin.runtime.http.engine.internal.HttpClientMetricAttributes
 import aws.smithy.kotlin.runtime.http.engine.internal.HttpClientMetrics
 import aws.smithy.kotlin.runtime.net.HostResolver
 import aws.smithy.kotlin.runtime.net.toHostAddress
@@ -13,13 +12,9 @@ import aws.smithy.kotlin.runtime.telemetry.logging.LoggerProvider
 import aws.smithy.kotlin.runtime.telemetry.logging.MessageSupplier
 import aws.smithy.kotlin.runtime.telemetry.logging.getLogger
 import aws.smithy.kotlin.runtime.telemetry.logging.logger
-import aws.smithy.kotlin.runtime.telemetry.metrics.decrement
-import aws.smithy.kotlin.runtime.telemetry.metrics.increment
 import aws.smithy.kotlin.runtime.telemetry.telemetryProvider
 import aws.smithy.kotlin.runtime.telemetry.trace.SpanStatus
 import aws.smithy.kotlin.runtime.telemetry.trace.recordException
-import aws.smithy.kotlin.runtime.util.AttributeKey
-import aws.smithy.kotlin.runtime.util.get
 import okhttp3.*
 import java.io.IOException
 import java.net.InetAddress
@@ -29,29 +24,26 @@ import kotlin.time.ExperimentalTime
 import kotlin.time.TimeMark
 import kotlin.time.TimeSource
 
-private const val TELEMETRY_SCOPE = "aws.smithy.kotlin.runtime.http.engine.okhttp"
+internal const val TELEMETRY_SCOPE = "aws.smithy.kotlin.runtime.http.engine.okhttp"
 
+// see https://square.github.io/okhttp/features/events/#eventlistener for example callback flow
 @OptIn(ExperimentalTime::class)
 internal class HttpEngineEventListener(
     private val pool: ConnectionPool,
     private val hr: HostResolver,
+    private val dispatcher: Dispatcher,
+    private val metrics: HttpClientMetrics,
     call: Call,
 ) : EventListener() {
     private val provider: TelemetryProvider = call.request().tag<SdkRequestTag>()?.callContext?.telemetryProvider ?: TelemetryProvider.None
     private val traceSpan = provider.tracerProvider
         .getOrCreateTracer(TELEMETRY_SCOPE)
         .createSpan("HTTP")
+
     private val logger = call.request().tag<SdkRequestTag>()?.callContext?.logger<OkHttpEngine>() ?: LoggerProvider.None.getLogger<OkHttpEngine>()
 
-    private val metrics = HttpClientMetrics(TELEMETRY_SCOPE, provider)
-
-    // FIXME - need idle/warm connection usage but requires tracking delta? Better suited for async UpDownCounter...
-    init {
-        // listener is created at same time as a call, the call is then enqueued until dispatcher can execute it
-        metrics.requests.increment(HttpClientMetricAttributes.QueuedRequest)
-    }
-
-    // see https://square.github.io/okhttp/features/events/#eventlistener for flow
+    // FIXME - this isn't actually when a connection is started - this includes time in queue
+    //  see https://github.com/square/okhttp/blob/7c92ed0879477eddb2fce6b4066d151525d5687f/okhttp/src/jvmMain/kotlin/okhttp3/internal/connection/RealCall.kt#L167-L175
     private var connectStart: TimeMark? = null
 
     private inline fun trace(crossinline msg: MessageSupplier) {
@@ -64,19 +56,21 @@ internal class HttpEngineEventListener(
 
     override fun callStart(call: Call) {
         connectStart = TimeSource.Monotonic.markNow()
-        metrics.requests.decrement(HttpClientMetricAttributes.QueuedRequest)
-        metrics.requests.increment(HttpClientMetricAttributes.InFlightRequest)
+        metrics.queuedRequests = dispatcher.queuedCallsCount().toLong()
+        metrics.inFlightRequests = dispatcher.runningCallsCount().toLong()
         trace { "call started" }
     }
 
     override fun callEnd(call: Call) {
-        metrics.requests.decrement(HttpClientMetricAttributes.InFlightRequest)
+        metrics.queuedRequests = dispatcher.queuedCallsCount().toLong()
+        metrics.inFlightRequests = dispatcher.runningCallsCount().toLong()
         trace { "call complete" }
         traceSpan.close()
     }
 
     override fun callFailed(call: Call, ioe: IOException) {
-        metrics.requests.decrement(HttpClientMetricAttributes.InFlightRequest)
+        metrics.queuedRequests = dispatcher.queuedCallsCount().toLong()
+        metrics.inFlightRequests = dispatcher.runningCallsCount().toLong()
         trace(ioe) { "call failed" }
         traceSpan.recordException(ioe, true)
         traceSpan.setStatus(SpanStatus.ERROR)
@@ -103,7 +97,8 @@ internal class HttpEngineEventListener(
     }
 
     override fun connectionAcquired(call: Call, connection: Connection) {
-        metrics.connectionUsage.increment(HttpClientMetricAttributes.AcquiredConnection)
+        metrics.acquiredConnections = pool.connectionCount().toLong()
+        metrics.idleConnections = pool.idleConnectionCount().toLong()
         connectStart?.let {
             metrics.connectionAcquireDuration.record(it.elapsedNow().inWholeMilliseconds)
         }
@@ -113,7 +108,8 @@ internal class HttpEngineEventListener(
     }
 
     override fun connectionReleased(call: Call, connection: Connection) {
-        metrics.connectionUsage.decrement(HttpClientMetricAttributes.AcquiredConnection)
+        metrics.acquiredConnections = pool.connectionCount().toLong()
+        metrics.idleConnections = pool.idleConnectionCount().toLong()
         val connId = System.identityHashCode(connection)
         trace { "connection released: conn(id=$connId)=$connection; connPool: total=${pool.connectionCount()}, idle=${pool.idleConnectionCount()}" }
     }
