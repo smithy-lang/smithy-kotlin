@@ -24,7 +24,7 @@ public interface RetryTokenBucket {
     public suspend fun acquireToken(): RetryToken
 
     /**
-     * Configuration for a tucket bucket
+     * Configuration for a token bucket
      */
     public interface Config {
         @InternalApi

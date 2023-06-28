@@ -168,7 +168,7 @@ public open class StandardRetryStrategy(override val config: Config = Config.def
     private fun <R> throwTooManyAttempts(attempt: Int, result: Result<R>): Nothing =
         when (val ex = result.exceptionOrNull()) {
             null -> throw TooManyAttemptsException(
-                "Took more than ${config.maxAttempts} to get a successful response",
+                "Took more than ${config.maxAttempts} attempts to get a successful response",
                 null,
                 attempt,
                 result.getOrNull(),
