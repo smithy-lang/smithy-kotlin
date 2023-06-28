@@ -1,5 +1,5 @@
 {
     "id": "adfc6461-c39c-4dc2-bc55-ef00b16c13a5",
     "type": "bugfix",
-    "description": "Fix issue with  utility. SDK ID requires space but service name can't have space."
+    "description": "Fix issue with `ModelTestUtils` utility. SDK ID requires space but service name can't have space."
 }
