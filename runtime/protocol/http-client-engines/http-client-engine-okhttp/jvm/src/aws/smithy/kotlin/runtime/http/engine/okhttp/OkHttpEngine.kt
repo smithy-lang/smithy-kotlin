@@ -7,10 +7,8 @@ package aws.smithy.kotlin.runtime.http.engine.okhttp
 
 import aws.smithy.kotlin.runtime.config.TlsVersion
 import aws.smithy.kotlin.runtime.http.config.EngineFactory
-import aws.smithy.kotlin.runtime.http.engine.AlpnId
-import aws.smithy.kotlin.runtime.http.engine.HttpClientEngineBase
-import aws.smithy.kotlin.runtime.http.engine.TlsContext
-import aws.smithy.kotlin.runtime.http.engine.callContext
+import aws.smithy.kotlin.runtime.http.engine.*
+import aws.smithy.kotlin.runtime.http.engine.internal.HttpClientMetrics
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.http.response.HttpCall
 import aws.smithy.kotlin.runtime.operation.ExecutionContext
@@ -46,6 +44,8 @@ public class OkHttpEngine(
 
     override suspend fun roundTrip(context: ExecutionContext, request: HttpRequest): HttpCall {
         val callContext = callContext()
+
+        // FIXME - publish connection limit
 
         val engineRequest = request.toOkHttpRequest(context, callContext)
         val engineCall = client.newCall(engineRequest)

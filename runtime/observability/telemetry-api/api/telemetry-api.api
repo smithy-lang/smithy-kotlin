@@ -180,6 +180,13 @@ public final class aws/smithy/kotlin/runtime/telemetry/metrics/UpDownCounter$Def
 	public static synthetic fun add$default (Laws/smithy/kotlin/runtime/telemetry/metrics/UpDownCounter;JLaws/smithy/kotlin/runtime/util/Attributes;Laws/smithy/kotlin/runtime/telemetry/context/Context;ILjava/lang/Object;)V
 }
 
+public final class aws/smithy/kotlin/runtime/telemetry/metrics/UpDownCounterKt {
+	public static final fun decrement (Laws/smithy/kotlin/runtime/telemetry/metrics/UpDownCounter;Laws/smithy/kotlin/runtime/util/Attributes;Laws/smithy/kotlin/runtime/telemetry/context/Context;)V
+	public static synthetic fun decrement$default (Laws/smithy/kotlin/runtime/telemetry/metrics/UpDownCounter;Laws/smithy/kotlin/runtime/util/Attributes;Laws/smithy/kotlin/runtime/telemetry/context/Context;ILjava/lang/Object;)V
+	public static final fun increment (Laws/smithy/kotlin/runtime/telemetry/metrics/UpDownCounter;Laws/smithy/kotlin/runtime/util/Attributes;Laws/smithy/kotlin/runtime/telemetry/context/Context;)V
+	public static synthetic fun increment$default (Laws/smithy/kotlin/runtime/telemetry/metrics/UpDownCounter;Laws/smithy/kotlin/runtime/util/Attributes;Laws/smithy/kotlin/runtime/telemetry/context/Context;ILjava/lang/Object;)V
+}
+
 public final class aws/smithy/kotlin/runtime/telemetry/trace/CoroutineContextTraceExtKt {
 }
 
