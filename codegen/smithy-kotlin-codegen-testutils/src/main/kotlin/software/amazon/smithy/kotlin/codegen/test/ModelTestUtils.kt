@@ -8,7 +8,7 @@ import software.amazon.smithy.build.MockManifest
 import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.kotlin.codegen.KotlinCodegenPlugin
 import software.amazon.smithy.kotlin.codegen.KotlinSettings
-import software.amazon.smithy.kotlin.codegen.core.*
+import software.amazon.smithy.kotlin.codegen.core.KotlinDelegator
 import software.amazon.smithy.kotlin.codegen.inferService
 import software.amazon.smithy.kotlin.codegen.integration.KotlinIntegration
 import software.amazon.smithy.kotlin.codegen.model.OperationNormalizer
@@ -205,7 +205,7 @@ fun String.generateTestModel(
         use aws.protocols#$protocol
 
         @$protocol
-        service $serviceName {
+        service ${serviceName.filter { !it.isWhitespace() }} {
             version: "${TestModelDefault.MODEL_VERSION}",
             operations: [
                 ${operations.joinToString(separator = ", ")}
@@ -252,7 +252,7 @@ fun String.prependNamespaceAndService(
         $importExpr
         $modelProtocol
         @service(sdkId: "$serviceName")
-        service $serviceName { 
+        service ${serviceName.filter { !it.isWhitespace() }} { 
             version: "${TestModelDefault.MODEL_VERSION}",
             operations: $operations
         }
