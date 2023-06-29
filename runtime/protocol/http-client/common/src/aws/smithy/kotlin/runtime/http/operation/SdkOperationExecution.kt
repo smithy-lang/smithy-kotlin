@@ -31,9 +31,11 @@ import aws.smithy.kotlin.runtime.retries.policy.StandardRetryPolicy
 import aws.smithy.kotlin.runtime.telemetry.logging.debug
 import aws.smithy.kotlin.runtime.telemetry.logging.logger
 import aws.smithy.kotlin.runtime.telemetry.logging.trace
+import aws.smithy.kotlin.runtime.util.attributesOf
 import aws.smithy.kotlin.runtime.util.merge
 import kotlin.coroutines.coroutineContext
 import kotlin.time.ExperimentalTime
+import kotlin.time.measureTime
 import kotlin.time.measureTimedValue
 import aws.smithy.kotlin.runtime.io.middleware.decorate as decorateHandler
 
@@ -269,12 +271,16 @@ internal class AuthHandler<Input, Output>(
         val authOption = candidateAuthSchemes.firstOrNull { it.schemeId in authConfig.configuredAuthSchemes } ?: error("no auth scheme found for operation; candidates: $candidateAuthSchemes")
         val authScheme = authConfig.configuredAuthSchemes[authOption.schemeId] ?: error("auth scheme ${authOption.schemeId} not configured")
 
+        val schemeAttr = attributesOf {
+            "auth.scheme_id" to authScheme.schemeId.id
+        }
+
         // resolve identity from the selected auth scheme
         val identityProvider = authScheme.identityProvider(authConfig.identityProviderConfig)
         val identity = measureTimedValue {
             identityProvider.resolve(authOption.attributes)
         }.let {
-            request.context.operationMetrics.resolveIdentityDuration.record(it.duration.inWholeMilliseconds, request.context.operationAttributes)
+            request.context.operationMetrics.resolveIdentityDuration.record(it.duration.inWholeMilliseconds, schemeAttr)
             it.value
         }
 
@@ -299,7 +305,12 @@ internal class AuthHandler<Input, Output>(
         // signing properties need to propagate from AuthOption to signer
         modified.context.merge(authOption.attributes)
         val signingRequest = SignHttpRequest(modified.subject, identity, modified.context)
-        authScheme.signer.sign(signingRequest)
+
+        measureTime {
+            authScheme.signer.sign(signingRequest)
+        }.let {
+            request.context.operationMetrics.signingDuration.record(it.inWholeMilliseconds, schemeAttr)
+        }
 
         interceptors.readAfterSigning(modified.subject.immutableView())
         return inner.call(modified)

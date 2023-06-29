@@ -61,12 +61,14 @@ internal fun<I, O> SdkHttpOperation<I, O>.instrument(): Pair<TraceSpan, Coroutin
     val tracer = telemetry.provider.tracerProvider.getOrCreateTracer(scope)
     val parentCtx = telemetry.provider.contextManager.current()
 
-    val initialAttributes = mutableAttributesOf {
+    val opAttributes = attributesOf {
         "rpc.service" to serviceName
         "rpc.method" to opName
     }
 
-    initialAttributes.merge(telemetry.attributes)
+    val initialAttributes = telemetry.attributes.toMutableAttributes().apply {
+        merge(opAttributes)
+    }
 
     val rpcName = "$serviceName.$opName"
     val spanName = telemetry.spanName ?: rpcName
@@ -85,7 +87,7 @@ internal fun<I, O> SdkHttpOperation<I, O>.instrument(): Pair<TraceSpan, Coroutin
         )
 
     context[HttpOperationContext.OperationMetrics] = telemetry.metrics
-    context[HttpOperationContext.OperationAttributes] = initialAttributes
+    context[HttpOperationContext.OperationAttributes] = opAttributes
 
     // wire up operation level telemetry (other metrics e.g. from http are instrumented elsewhere)
     interceptors.add(OperationTelemetryInterceptor(telemetry.metrics, serviceName, opName))

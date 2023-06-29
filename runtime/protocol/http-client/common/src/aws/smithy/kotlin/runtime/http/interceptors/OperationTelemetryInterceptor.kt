@@ -72,15 +72,6 @@ internal class OperationTelemetryInterceptor(
         metrics.serializationDuration.record(serializeDuration, perRpcAttributes, metrics.provider.contextManager.current())
     }
 
-    override fun readBeforeSigning(context: ProtocolRequestInterceptorContext<Any, HttpRequest>) {
-        signingStart = timeSource.markNow()
-    }
-
-    override fun readAfterSigning(context: ProtocolRequestInterceptorContext<Any, HttpRequest>) {
-        val signingDuration = signingStart?.elapsedNow()?.inWholeMilliseconds ?: return
-        metrics.serializationDuration.record(signingDuration, perRpcAttributes, metrics.provider.contextManager.current())
-    }
-
     override fun readBeforeDeserialization(context: ProtocolResponseInterceptorContext<Any, HttpRequest, HttpResponse>) {
         deserializeStart = timeSource.markNow()
     }

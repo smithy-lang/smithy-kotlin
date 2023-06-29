@@ -48,27 +48,48 @@ public class HttpClientMetrics(
     /**
      * The amount of time it takes to acquire a connection from the pool
      */
-    public val connectionAcquireDuration: LongHistogram = meter.createLongHistogram("aws.smithy.http.connections.acquire_duration", "ms", "The amount of time requests take to acquire a connection from the pool")
+    public val connectionAcquireDuration: LongHistogram = meter.createLongHistogram(
+        "smithy.client.http.connections.acquire_duration",
+        "ms",
+        "The amount of time requests take to acquire a connection from the pool",
+    )
+
+    /**
+     * The amount of time a request spent queued waiting to be executed by the HTTP client
+     */
+    public val concurrencyQueuedDuration: LongHistogram = meter.createLongHistogram(
+        "smithy.client.http.concurrency.queued_duration",
+        "ms",
+        "The amount of time a requests spent queued waiting to be executed by the HTTP client",
+    )
 
     private val connectionLimitHandle = meter.createAsyncUpDownCounter(
-        "aws.smithy.http.connections.limit",
+        "smithy.client.http.connections.limit",
         { it.record(_connectionsLimit.value) },
         "{connection}",
         "Max connections configured for the HTTP client",
     )
 
     private val connectionUsageHandle = meter.createAsyncUpDownCounter(
-        "aws.smithy.http.connections.usage",
+        "smithy.client.http.connections.usage",
         ::recordConnectionState,
         "{connection}",
         "Current state of connections (idle, acquired)",
     )
 
-    private val requestsHandle = meter.createAsyncUpDownCounter(
-        "aws.smithy.http.requests",
+    // TODO - enable?
+    // private val concurrencyLimitHandle = meter.createAsyncUpDownCounter(
+    //     "smithy.client.http.concurrency.limit",
+    //     { it.record(_connectionsLimit.value) },
+    //     "{connection}",
+    //     "Max connections configured for the HTTP client",
+    // )
+
+    private val concurrencyHandle = meter.createAsyncUpDownCounter(
+        "smithy.client.http.concurrency.usage",
         ::recordRequestsState,
         "{request}",
-        "The current state of requests (queued, in-flight)",
+        "The current state of HTTP client request concurrency (queued, in-flight, available)",
     )
 
     /**
@@ -161,6 +182,6 @@ public class HttpClientMetrics(
     override fun close() {
         connectionLimitHandle.stop()
         connectionUsageHandle.stop()
-        requestsHandle.stop()
+        concurrencyHandle.stop()
     }
 }
