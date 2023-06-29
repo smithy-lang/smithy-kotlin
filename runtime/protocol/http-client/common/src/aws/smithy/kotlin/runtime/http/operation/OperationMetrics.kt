@@ -6,6 +6,7 @@ package aws.smithy.kotlin.runtime.http.operation
 
 import aws.smithy.kotlin.runtime.InternalApi
 import aws.smithy.kotlin.runtime.telemetry.TelemetryProvider
+import aws.smithy.kotlin.runtime.telemetry.metrics.DoubleHistogram
 import aws.smithy.kotlin.runtime.telemetry.metrics.LongHistogram
 
 /**
@@ -24,13 +25,13 @@ public class OperationMetrics(
         val None: OperationMetrics = OperationMetrics("NoOp", TelemetryProvider.None)
     }
 
-    public val rpcCallDuration: LongHistogram = meter.createLongHistogram("smithy.client.duration", "ms", "Overall call duration including retries")
+    public val rpcCallDuration: DoubleHistogram = meter.createDoubleHistogram("smithy.client.duration", "s", "Overall call duration including retries")
     public val rpcRequestSize: LongHistogram = meter.createLongHistogram("smithy.client.request.size", "By", "Size of the serialized request message")
     public val rpcResponseSize: LongHistogram = meter.createLongHistogram("smithy.client.response.size", "By", "Size of the serialized response message")
-    public val serviceCallDuration: LongHistogram = meter.createLongHistogram("smithy.client.service_call_duration", "ms", "The time it takes to connect to the service, send the request, and receive the HTTP status code and headers from the response")
-    public val serializationDuration: LongHistogram = meter.createLongHistogram("smithy.client.serialization_duration", "ms", "The time it takes to serialize a request message body")
-    public val deserializationDuration: LongHistogram = meter.createLongHistogram("smithy.client.deserialization_duration", "ms", "The time it takes to deserialize a response message body")
-    public val resolveEndpointDuration: LongHistogram = meter.createLongHistogram("smithy.client.resolve_endpoint_duration", "ms", "The time it takes to resolve an endpoint for a request")
-    public val resolveIdentityDuration: LongHistogram = meter.createLongHistogram("smithy.client.auth.resolve_identity_duration", "ms", "The time it takes to resolve an identity for signing a request")
-    public val signingDuration: LongHistogram = meter.createLongHistogram("smithy.client.auth.signing_duration", "ms", "The time it takes to sign a request")
+    public val serviceCallDuration: DoubleHistogram = meter.createDoubleHistogram("smithy.client.service_call_duration", "s", "The time it takes to connect to the service, send the request, and receive the HTTP status code and headers from the response")
+    public val serializationDuration: DoubleHistogram = meter.createDoubleHistogram("smithy.client.serialization_duration", "s", "The time it takes to serialize a request message body")
+    public val deserializationDuration: DoubleHistogram = meter.createDoubleHistogram("smithy.client.deserialization_duration", "s", "The time it takes to deserialize a response message body")
+    public val resolveEndpointDuration: DoubleHistogram = meter.createDoubleHistogram("smithy.client.resolve_endpoint_duration", "s", "The time it takes to resolve an endpoint for a request")
+    public val resolveIdentityDuration: DoubleHistogram = meter.createDoubleHistogram("smithy.client.auth.resolve_identity_duration", "s", "The time it takes to resolve an identity for signing a request")
+    public val signingDuration: DoubleHistogram = meter.createDoubleHistogram("smithy.client.auth.signing_duration", "s", "The time it takes to sign a request")
 }

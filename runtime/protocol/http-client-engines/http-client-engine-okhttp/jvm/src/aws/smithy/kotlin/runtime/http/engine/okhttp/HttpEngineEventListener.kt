@@ -12,6 +12,7 @@ import aws.smithy.kotlin.runtime.telemetry.logging.LoggerProvider
 import aws.smithy.kotlin.runtime.telemetry.logging.MessageSupplier
 import aws.smithy.kotlin.runtime.telemetry.logging.getLogger
 import aws.smithy.kotlin.runtime.telemetry.logging.logger
+import aws.smithy.kotlin.runtime.telemetry.metrics.recordSeconds
 import aws.smithy.kotlin.runtime.telemetry.telemetryProvider
 import aws.smithy.kotlin.runtime.telemetry.trace.SpanStatus
 import aws.smithy.kotlin.runtime.telemetry.trace.recordException
@@ -100,7 +101,7 @@ internal class HttpEngineEventListener(
         metrics.acquiredConnections = pool.connectionCount().toLong()
         metrics.idleConnections = pool.idleConnectionCount().toLong()
         connectStart?.let {
-            metrics.connectionAcquireDuration.record(it.elapsedNow().inWholeMilliseconds)
+            metrics.connectionAcquireDuration.recordSeconds(it.elapsedNow())
         }
 
         val connId = System.identityHashCode(connection)

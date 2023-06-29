@@ -11,6 +11,7 @@ import aws.smithy.kotlin.runtime.client.ResponseInterceptorContext
 import aws.smithy.kotlin.runtime.http.operation.OperationMetrics
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.http.response.HttpResponse
+import aws.smithy.kotlin.runtime.telemetry.metrics.recordSeconds
 import aws.smithy.kotlin.runtime.util.attributesOf
 import kotlin.time.ExperimentalTime
 import kotlin.time.TimeMark
@@ -35,7 +36,6 @@ internal class OperationTelemetryInterceptor(
     private var callStart: TimeMark? = null
     private var serializeStart: TimeMark? = null
     private var deserializeStart: TimeMark? = null
-    private var signingStart: TimeMark? = null
     private var transmitStart: TimeMark? = null
 
     private val perRpcAttributes = attributesOf {
@@ -48,11 +48,11 @@ internal class OperationTelemetryInterceptor(
     }
 
     override fun readAfterExecution(context: ResponseInterceptorContext<Any, Any, HttpRequest?, HttpResponse?>) {
-        val callDuration = callStart?.elapsedNow()?.inWholeMilliseconds ?: return
+        val callDuration = callStart?.elapsedNow() ?: return
 
         // TODO - total requests?
 
-        metrics.rpcCallDuration.record(callDuration, perRpcAttributes, metrics.provider.contextManager.current())
+        metrics.rpcCallDuration.recordSeconds(callDuration, perRpcAttributes, metrics.provider.contextManager.current())
 
         context.protocolRequest?.body?.contentLength?.let {
             metrics.rpcRequestSize.record(it, perRpcAttributes, metrics.provider.contextManager.current())
@@ -68,8 +68,8 @@ internal class OperationTelemetryInterceptor(
     }
 
     override fun readAfterSerialization(context: ProtocolRequestInterceptorContext<Any, HttpRequest>) {
-        val serializeDuration = serializeStart?.elapsedNow()?.inWholeMilliseconds ?: return
-        metrics.serializationDuration.record(serializeDuration, perRpcAttributes, metrics.provider.contextManager.current())
+        val serializeDuration = serializeStart?.elapsedNow() ?: return
+        metrics.serializationDuration.recordSeconds(serializeDuration, perRpcAttributes, metrics.provider.contextManager.current())
     }
 
     override fun readBeforeDeserialization(context: ProtocolResponseInterceptorContext<Any, HttpRequest, HttpResponse>) {
@@ -77,8 +77,8 @@ internal class OperationTelemetryInterceptor(
     }
 
     override fun readAfterDeserialization(context: ResponseInterceptorContext<Any, Any, HttpRequest, HttpResponse>) {
-        val deserializeDuration = deserializeStart?.elapsedNow()?.inWholeMilliseconds ?: return
-        metrics.deserializationDuration.record(deserializeDuration, perRpcAttributes, metrics.provider.contextManager.current())
+        val deserializeDuration = deserializeStart?.elapsedNow() ?: return
+        metrics.deserializationDuration.recordSeconds(deserializeDuration, perRpcAttributes, metrics.provider.contextManager.current())
     }
 
     override fun readBeforeTransmit(context: ProtocolRequestInterceptorContext<Any, HttpRequest>) {
@@ -86,7 +86,7 @@ internal class OperationTelemetryInterceptor(
     }
 
     override fun readAfterTransmit(context: ProtocolResponseInterceptorContext<Any, HttpRequest, HttpResponse>) {
-        val serviceCallDuration = transmitStart?.elapsedNow()?.inWholeMilliseconds ?: return
-        metrics.serviceCallDuration.record(serviceCallDuration, perRpcAttributes, metrics.provider.contextManager.current())
+        val serviceCallDuration = transmitStart?.elapsedNow() ?: return
+        metrics.serviceCallDuration.recordSeconds(serviceCallDuration, perRpcAttributes, metrics.provider.contextManager.current())
     }
 }

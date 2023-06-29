@@ -137,6 +137,9 @@ public final class aws/smithy/kotlin/runtime/telemetry/metrics/Histogram$Default
 	public static synthetic fun record$default (Laws/smithy/kotlin/runtime/telemetry/metrics/Histogram;Ljava/lang/Number;Laws/smithy/kotlin/runtime/util/Attributes;Laws/smithy/kotlin/runtime/telemetry/context/Context;ILjava/lang/Object;)V
 }
 
+public final class aws/smithy/kotlin/runtime/telemetry/metrics/HistogramKt {
+}
+
 public abstract interface class aws/smithy/kotlin/runtime/telemetry/metrics/Meter {
 	public abstract fun createAsyncUpDownCounter (Ljava/lang/String;Lkotlin/jvm/functions/Function1;Ljava/lang/String;Ljava/lang/String;)Laws/smithy/kotlin/runtime/telemetry/metrics/AsyncMeasurementHandle;
 	public abstract fun createDoubleGauge (Ljava/lang/String;Lkotlin/jvm/functions/Function1;Ljava/lang/String;Ljava/lang/String;)Laws/smithy/kotlin/runtime/telemetry/metrics/AsyncMeasurementHandle;

@@ -31,6 +31,7 @@ import aws.smithy.kotlin.runtime.retries.policy.StandardRetryPolicy
 import aws.smithy.kotlin.runtime.telemetry.logging.debug
 import aws.smithy.kotlin.runtime.telemetry.logging.logger
 import aws.smithy.kotlin.runtime.telemetry.logging.trace
+import aws.smithy.kotlin.runtime.telemetry.metrics.recordSeconds
 import aws.smithy.kotlin.runtime.util.attributesOf
 import aws.smithy.kotlin.runtime.util.merge
 import kotlin.coroutines.coroutineContext
@@ -280,7 +281,7 @@ internal class AuthHandler<Input, Output>(
         val identity = measureTimedValue {
             identityProvider.resolve(authOption.attributes)
         }.let {
-            request.context.operationMetrics.resolveIdentityDuration.record(it.duration.inWholeMilliseconds, schemeAttr)
+            request.context.operationMetrics.resolveIdentityDuration.recordSeconds(it.duration, schemeAttr)
             it.value
         }
 
@@ -290,7 +291,7 @@ internal class AuthHandler<Input, Output>(
             val endpoint = measureTimedValue {
                 endpointResolver.resolve(resolveEndpointReq)
             }.let {
-                request.context.operationMetrics.resolveEndpointDuration.record(it.duration.inWholeMilliseconds, request.context.operationAttributes)
+                request.context.operationMetrics.resolveEndpointDuration.recordSeconds(it.duration, request.context.operationAttributes)
                 it.value
             }
             coroutineContext.debug<AuthHandler<*, *>> { "resolved endpoint: $endpoint" }
@@ -309,7 +310,7 @@ internal class AuthHandler<Input, Output>(
         measureTime {
             authScheme.signer.sign(signingRequest)
         }.let {
-            request.context.operationMetrics.signingDuration.record(it.inWholeMilliseconds, schemeAttr)
+            request.context.operationMetrics.signingDuration.recordSeconds(it, schemeAttr)
         }
 
         interceptors.readAfterSigning(modified.subject.immutableView())

@@ -7,8 +7,8 @@ package aws.smithy.kotlin.runtime.http.engine.internal
 import aws.smithy.kotlin.runtime.InternalApi
 import aws.smithy.kotlin.runtime.io.Closeable
 import aws.smithy.kotlin.runtime.telemetry.TelemetryProvider
+import aws.smithy.kotlin.runtime.telemetry.metrics.DoubleHistogram
 import aws.smithy.kotlin.runtime.telemetry.metrics.LongAsyncMeasurement
-import aws.smithy.kotlin.runtime.telemetry.metrics.LongHistogram
 import aws.smithy.kotlin.runtime.util.Attributes
 import aws.smithy.kotlin.runtime.util.attributesOf
 import kotlinx.atomicfu.atomic
@@ -42,13 +42,14 @@ public class HttpClientMetrics(
     private val _connectionsLimit = atomic(0L)
     private val _idleConnections = atomic(0L)
     private val _acquiredConnections = atomic(0L)
+    private val _requestConcurrencyLimit = atomic(0L)
     private val _queuedRequests = atomic(0L)
     private val _inFlightRequests = atomic(0L)
 
     /**
      * The amount of time it takes to acquire a connection from the pool
      */
-    public val connectionAcquireDuration: LongHistogram = meter.createLongHistogram(
+    public val connectionAcquireDuration: DoubleHistogram = meter.createDoubleHistogram(
         "smithy.client.http.connections.acquire_duration",
         "ms",
         "The amount of time requests take to acquire a connection from the pool",
@@ -57,7 +58,7 @@ public class HttpClientMetrics(
     /**
      * The amount of time a request spent queued waiting to be executed by the HTTP client
      */
-    public val concurrencyQueuedDuration: LongHistogram = meter.createLongHistogram(
+    public val concurrencyQueuedDuration: DoubleHistogram = meter.createDoubleHistogram(
         "smithy.client.http.concurrency.queued_duration",
         "ms",
         "The amount of time a requests spent queued waiting to be executed by the HTTP client",
@@ -77,13 +78,12 @@ public class HttpClientMetrics(
         "Current state of connections (idle, acquired)",
     )
 
-    // TODO - enable?
-    // private val concurrencyLimitHandle = meter.createAsyncUpDownCounter(
-    //     "smithy.client.http.concurrency.limit",
-    //     { it.record(_connectionsLimit.value) },
-    //     "{connection}",
-    //     "Max connections configured for the HTTP client",
-    // )
+    private val concurrencyLimitHandle = meter.createAsyncUpDownCounter(
+        "smithy.client.http.concurrency.limit",
+        { it.record(_requestConcurrencyLimit.value) },
+        "{request}",
+        "Max concurrent requests configured for the HTTP client",
+    )
 
     private val concurrencyHandle = meter.createAsyncUpDownCounter(
         "smithy.client.http.concurrency.usage",
@@ -99,6 +99,15 @@ public class HttpClientMetrics(
         get() = _connectionsLimit.value
         set(value) {
             _connectionsLimit.update { value }
+        }
+
+    /**
+     * The maximum number of concurrent requests configured for the client
+     */
+    public var requestConcurrencyLimit: Long
+        get() = _requestConcurrencyLimit.value
+        set(value) {
+            _requestConcurrencyLimit.update { value }
         }
 
     /**
@@ -183,5 +192,6 @@ public class HttpClientMetrics(
         connectionLimitHandle.stop()
         connectionUsageHandle.stop()
         concurrencyHandle.stop()
+        concurrencyLimitHandle.stop()
     }
 }
