@@ -63,11 +63,11 @@ class SymbolProviderTest {
         "Integer, null, true",
         "PrimitiveInteger, 0, false",
         "Short, null, true",
-        "PrimitiveShort, 0, false",
+        "PrimitiveShort, 0.toShort(), false",
         "Long, null, true",
         "PrimitiveLong, 0L, false",
         "Byte, null, true",
-        "PrimitiveByte, 0, false",
+        "PrimitiveByte, 0.toByte(), false",
         "Float, null, true",
         "PrimitiveFloat, 0f, false",
         "Double, null, true",
@@ -176,10 +176,10 @@ class SymbolProviderTest {
     @CsvSource(
         "long,100,100L",
         "integer,5,5",
-        "short,32767,32767",
+        "short,32767,32767.toShort()",
         "float,3.14159,3.14159f",
         "double,2.71828,2.71828",
-        "byte,10,10",
+        "byte,10,10.toByte()",
         "string,\"hello\",\"hello\"",
         "blob,\"abcdefg\",\"abcdefg\"",
         "boolean,true,true",
@@ -544,7 +544,7 @@ class SymbolProviderTest {
 
         val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model, rootNamespace = "foo.bar")
         val bigSymbol = provider.toSymbol(member)
-        assertEquals("java.math", bigSymbol.namespace)
+        assertEquals("aws.smithy.kotlin.runtime.content", bigSymbol.namespace)
         assertEquals("null", bigSymbol.defaultValue())
         assertEquals(true, bigSymbol.isNullable)
         assertEquals(type, bigSymbol.name)

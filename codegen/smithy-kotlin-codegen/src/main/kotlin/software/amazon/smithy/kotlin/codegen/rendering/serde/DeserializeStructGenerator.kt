@@ -560,6 +560,8 @@ open class DeserializeStructGenerator(
             target.type == ShapeType.LONG -> "deserializeLong()"
             target.type == ShapeType.FLOAT -> "deserializeFloat()"
             target.type == ShapeType.DOUBLE -> "deserializeDouble()"
+            target.type == ShapeType.BIG_INTEGER -> "deserializeBigInteger()"
+            target.type == ShapeType.BIG_DECIMAL -> "deserializeBigDecimal()"
             target.type == ShapeType.DOCUMENT -> "deserializeDocument()"
 
             target.type == ShapeType.BLOB -> {

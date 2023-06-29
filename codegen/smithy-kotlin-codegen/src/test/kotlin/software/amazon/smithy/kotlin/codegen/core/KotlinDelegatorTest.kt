@@ -75,7 +75,7 @@ class KotlinDelegatorTest {
         KotlinCodegenPlugin().execute(context)
 
         val contents = manifest.getFileString("src/main/kotlin/com/test/model/GetFooRequest.kt").get()
-        contents.shouldContain("import java.math.BigInteger")
+        contents.shouldContain("import aws.smithy.kotlin.runtime.content.BigInteger")
         // ensure symbol wasn't imported as an alias by default
         contents.shouldNotContain("as BigInteger")
     }

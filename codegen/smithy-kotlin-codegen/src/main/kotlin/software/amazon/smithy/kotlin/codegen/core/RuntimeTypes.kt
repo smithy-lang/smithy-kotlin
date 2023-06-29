@@ -99,6 +99,8 @@ object RuntimeTypes {
         val ClientException = symbol("ClientException")
 
         object Content : RuntimeTypePackage(KotlinDependency.CORE, "content") {
+            val BigDecimal = symbol("BigDecimal")
+            val BigInteger = symbol("BigInteger")
             val ByteArrayContent = symbol("ByteArrayContent")
             val ByteStream = symbol("ByteStream")
             val buildDocument = symbol("buildDocument")
@@ -112,14 +114,9 @@ object RuntimeTypes {
             val Outcome = symbol("Outcome")
             val RetryStrategy = symbol("RetryStrategy")
             val StandardRetryStrategy = symbol("StandardRetryStrategy")
-            val StandardRetryStrategyOptions = symbol("StandardRetryStrategyOptions")
 
             object Delay : RuntimeTypePackage(KotlinDependency.CORE, "retries.delay") {
-                val ExponentialBackoffWithJitter = symbol("ExponentialBackoffWithJitter")
-                val ExponentialBackoffWithJitterOptions = symbol("ExponentialBackoffWithJitterOptions")
                 val InfiniteTokenBucket = symbol("InfiniteTokenBucket")
-                val StandardRetryTokenBucket = symbol("StandardRetryTokenBucket")
-                val StandardRetryTokenBucketOptions = symbol("StandardRetryTokenBucketOptions")
             }
 
             object Policy : RuntimeTypePackage(KotlinDependency.CORE, "retries.policy") {
@@ -176,6 +173,9 @@ object RuntimeTypes {
         val SdkClient = symbol("SdkClient")
         val AbstractSdkClientBuilder = symbol("AbstractSdkClientBuilder")
         val LogMode = symbol("LogMode")
+        val RetryClientConfig = symbol("RetryClientConfig")
+        val RetryStrategyClientConfig = symbol("RetryStrategyClientConfig")
+        val RetryStrategyClientConfigImpl = symbol("RetryStrategyClientConfigImpl")
         val SdkClientConfig = symbol("SdkClientConfig")
         val SdkClientFactory = symbol("SdkClientFactory")
         val SdkClientOption = symbol("SdkClientOption")

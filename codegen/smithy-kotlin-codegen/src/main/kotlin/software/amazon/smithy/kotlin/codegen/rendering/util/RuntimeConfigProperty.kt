@@ -6,6 +6,7 @@
 package software.amazon.smithy.kotlin.codegen.rendering.util
 
 import software.amazon.smithy.codegen.core.CodegenException
+import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.codegen.core.SymbolReference
 import software.amazon.smithy.kotlin.codegen.core.RuntimeTypes
 import software.amazon.smithy.kotlin.codegen.lang.KotlinTypes
@@ -19,10 +20,7 @@ object RuntimeConfigProperty {
         name = "clientName"
         symbol = KotlinTypes.String
         baseClass = RuntimeTypes.SmithyClient.SdkClientConfig
-        builderBaseClass = buildSymbol {
-            name = "${baseClass!!.name}.Builder<Config>"
-            namespace = baseClass!!.namespace
-        }
+        builderBaseClass = RuntimeTypes.SmithyClient.SdkClientConfig.nestedGenericBuilder
         documentation = """
             A reader-friendly name for the client.
         """.trimIndent()
@@ -49,18 +47,13 @@ object RuntimeConfigProperty {
         baseClass = RuntimeTypes.HttpClient.Config.HttpEngineConfig
         baseClassDelegate = Delegate(null, "builder.buildHttpEngineConfig()")
 
-        builderBaseClass = RuntimeTypes.HttpClient.Config.HttpEngineConfig.let {
-            buildSymbol {
-                name = "${it.name}.Builder"
-                namespace = it.namespace
-            }
-        }
+        builderBaseClass = RuntimeTypes.HttpClient.Config.HttpEngineConfig.nestedBuilder
         builderBaseClassDelegate = Delegate(
             RuntimeTypes.HttpClientEngines.Default.HttpEngineConfigImpl,
             "HttpEngineConfigImpl.BuilderImpl()",
         )
 
-        propertyType = ConfigPropertyType.Custom({ _, _ -> }, { _, _ -> })
+        propertyType = ConfigPropertyType.DoNotRender
     }
 
     val IdempotencyTokenProvider = ConfigProperty {
@@ -88,31 +81,29 @@ object RuntimeConfigProperty {
         """.trimIndent()
 
         propertyType = ConfigPropertyType.RequiredWithDefault("StandardRetryPolicy.Default")
-        baseClass = RuntimeTypes.SmithyClient.SdkClientConfig
-        builderBaseClass = buildSymbol {
-            name = "${baseClass!!.name}.Builder<Config>"
-            namespace = baseClass!!.namespace
-        }
+        baseClass = RuntimeTypes.SmithyClient.RetryClientConfig
+        builderBaseClass = RuntimeTypes.SmithyClient.RetryClientConfig.nestedBuilder
 
         additionalImports = listOf(RuntimeTypes.Core.Retries.Policy.StandardRetryPolicy)
     }
 
     val RetryStrategy = ConfigProperty {
-        symbol = RuntimeTypes.Core.Retries.RetryStrategy
         name = "retryStrategy"
+        symbol = RuntimeTypes.Core.Retries.RetryStrategy
         documentation = """
-            The [RetryStrategy] implementation to use for service calls. All API calls will be wrapped by the
-            strategy.
+            The [RetryStrategy] implementation to use for service calls. All API calls will be wrapped by the strategy.
         """.trimIndent()
 
-        propertyType = ConfigPropertyType.RequiredWithDefault("StandardRetryStrategy()")
-        baseClass = RuntimeTypes.SmithyClient.SdkClientConfig
-        builderBaseClass = buildSymbol {
-            name = "${baseClass!!.name}.Builder<Config>"
-            namespace = baseClass!!.namespace
-        }
+        baseClass = RuntimeTypes.SmithyClient.RetryStrategyClientConfig
+        baseClassDelegate = Delegate(null, "builder.buildRetryStrategyClientConfig()")
 
-        additionalImports = listOf(RuntimeTypes.Core.Retries.StandardRetryStrategy)
+        builderBaseClass = RuntimeTypes.SmithyClient.RetryStrategyClientConfig.nestedBuilder
+        builderBaseClassDelegate = Delegate(
+            RuntimeTypes.SmithyClient.RetryStrategyClientConfigImpl,
+            "RetryStrategyClientConfigImpl.BuilderImpl()",
+        )
+
+        propertyType = ConfigPropertyType.DoNotRender
     }
 
     val LogMode = ConfigProperty {
@@ -123,10 +114,7 @@ object RuntimeConfigProperty {
         propertyType = ConfigPropertyType.RequiredWithDefault("LogMode.Default")
 
         baseClass = RuntimeTypes.SmithyClient.SdkClientConfig
-        builderBaseClass = buildSymbol {
-            name = "${baseClass!!.name}.Builder<Config>"
-            namespace = baseClass!!.namespace
-        }
+        builderBaseClass = RuntimeTypes.SmithyClient.SdkClientConfig.nestedGenericBuilder
 
         documentation = """
         Configure events that will be logged. By default clients will not output
@@ -198,3 +186,15 @@ object RuntimeConfigProperty {
         """.trimIndent()
     }
 }
+
+private val Symbol.nestedBuilder: Symbol
+    get() = buildSymbol {
+        name = "${this@nestedBuilder.name}.Builder"
+        namespace = this@nestedBuilder.namespace
+    }
+
+private val Symbol.nestedGenericBuilder: Symbol
+    get() = buildSymbol {
+        name = "${this@nestedGenericBuilder.name}.Builder<Config>"
+        namespace = this@nestedGenericBuilder.namespace
+    }

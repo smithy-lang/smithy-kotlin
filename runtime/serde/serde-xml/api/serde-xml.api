@@ -123,11 +123,15 @@ public final class aws/smithy/kotlin/runtime/serde/xml/XmlSerializer : aws/smith
 	public fun field (Laws/smithy/kotlin/runtime/serde/SdkFieldDescriptor;Laws/smithy/kotlin/runtime/serde/SdkSerializable;)V
 	public fun field (Laws/smithy/kotlin/runtime/serde/SdkFieldDescriptor;Laws/smithy/kotlin/runtime/time/Instant;Laws/smithy/kotlin/runtime/time/TimestampFormat;)V
 	public fun field (Laws/smithy/kotlin/runtime/serde/SdkFieldDescriptor;Ljava/lang/String;)V
+	public fun field (Laws/smithy/kotlin/runtime/serde/SdkFieldDescriptor;Ljava/math/BigDecimal;)V
+	public fun field (Laws/smithy/kotlin/runtime/serde/SdkFieldDescriptor;Ljava/math/BigInteger;)V
 	public fun field (Laws/smithy/kotlin/runtime/serde/SdkFieldDescriptor;S)V
 	public fun field (Laws/smithy/kotlin/runtime/serde/SdkFieldDescriptor;Z)V
 	public fun listField (Laws/smithy/kotlin/runtime/serde/SdkFieldDescriptor;Lkotlin/jvm/functions/Function1;)V
 	public fun mapField (Laws/smithy/kotlin/runtime/serde/SdkFieldDescriptor;Lkotlin/jvm/functions/Function1;)V
 	public fun nullField (Laws/smithy/kotlin/runtime/serde/SdkFieldDescriptor;)V
+	public fun serializeBigDecimal (Ljava/math/BigDecimal;)V
+	public fun serializeBigInteger (Ljava/math/BigInteger;)V
 	public fun serializeBoolean (Z)V
 	public fun serializeByte (B)V
 	public fun serializeChar (C)V

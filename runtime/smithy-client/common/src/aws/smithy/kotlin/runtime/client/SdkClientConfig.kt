@@ -4,8 +4,6 @@
  */
 package aws.smithy.kotlin.runtime.client
 
-import aws.smithy.kotlin.runtime.retries.RetryStrategy
-import aws.smithy.kotlin.runtime.retries.policy.RetryPolicy
 import aws.smithy.kotlin.runtime.util.Buildable
 
 /**
@@ -28,16 +26,6 @@ public interface SdkClientConfig {
      * debug purposes.
      */
     public val logMode: LogMode
-
-    /**
-     * The policy to use for evaluating operation results and determining whether/how to retry.
-     */
-    public val retryPolicy: RetryPolicy<Any?>
-
-    /**
-     * The [RetryStrategy] the client will use to retry failed operations.
-     */
-    public val retryStrategy: RetryStrategy
 
     /**
      * Configurable properties that all client configuration exposes.
@@ -63,15 +51,5 @@ public interface SdkClientConfig {
          * debug purposes.
          */
         public var logMode: LogMode?
-
-        /**
-         * The policy to use for evaluating operation results and determining whether/how to retry.
-         */
-        public var retryPolicy: RetryPolicy<Any?>?
-
-        /**
-         * Configure the [RetryStrategy] the client will use to retry failed operations.
-         */
-        public var retryStrategy: RetryStrategy?
     }
 }
