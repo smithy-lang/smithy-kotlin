@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.22.0] - 06/29/2023
+
+### Features
+* [#213](https://github.com/awslabs/smithy-kotlin/issues/213) Add support for `BigInteger` and `BigDecimal` in Smithy models
+* [#701](https://github.com/awslabs/aws-sdk-kotlin/issues/701) **Breaking**: Simplify mechanisms for setting/updating retry strategies in client config. See [this discussion post](https://github.com/awslabs/aws-sdk-kotlin/discussions/964) for more details.
+* [#701](https://github.com/awslabs/aws-sdk-kotlin/issues/701) Add adaptive retry mode
+
+### Fixes
+* Fix modeled/implied default values for byte and short types
+
 ## [0.21.3] - 06/19/2023
 
 ### Features

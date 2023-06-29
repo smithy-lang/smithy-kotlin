@@ -1,5 +1,0 @@
-{
-    "id": "282d596e-a121-40e3-80d3-2f2a90aa4e5d",
-    "type": "bugfix",
-    "description": "Fix modeled/implied default values for byte and short types"
-}
