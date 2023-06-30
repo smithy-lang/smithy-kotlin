@@ -105,11 +105,7 @@ internal class XmlMapDeserializer(
 
     override fun hasNextEntry(): Boolean {
         val compareTo = when (descriptor.hasTrait<Flattened>()) {
-            // Prefer seeking to XmlSerialName if the trait exists
-            true -> when (descriptor.hasTrait<XmlSerialName>()) {
-                true -> descriptor.expectTrait<XmlSerialName>().name
-                false -> mapTrait.key
-            }
+            true -> descriptor.findTrait<XmlSerialName>()?.name ?: mapTrait.key // Prefer seeking to XmlSerialName if the trait exists
             false -> mapTrait.entry
         }
 
