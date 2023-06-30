@@ -79,6 +79,33 @@ public inline fun <reified T : XmlToken> XmlStreamReader.seek(selectionPredicate
 }
 
 /**
+ * Peek and seek forward until a token of type [T] is found.
+ * If it matches the [selectionPredicate], consume the token and return it. Otherwise, return `null` without consuming the token.
+ *
+ * @param selectionPredicate predicate that evaluates nodes of the required type to match
+ */
+public inline fun <reified T : XmlToken> XmlStreamReader.peekSeek(selectionPredicate: (T) -> Boolean = { true }): T? {
+    var token: XmlToken? = lastToken
+
+    if (token != null && token is T) {
+        return if (selectionPredicate.invoke(token)) token else null
+    }
+
+    do {
+        if (token is T) {
+            return if (selectionPredicate.invoke(token)) {
+                nextToken() as T
+            } else {
+                null
+            }
+        } else { nextToken() }
+        token = peek()
+    } while (token != null)
+
+    return null
+}
+
+/**
  * Creates an [XmlStreamReader] instance
  */
 public fun xmlStreamReader(payload: ByteArray): XmlStreamReader {

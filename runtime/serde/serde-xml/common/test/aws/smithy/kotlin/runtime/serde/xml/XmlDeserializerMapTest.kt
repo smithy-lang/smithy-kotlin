@@ -404,6 +404,221 @@ class XmlDeserializerMapTest {
 
         println(resp)
     }
+
+    // https://github.com/awslabs/aws-sdk-kotlin/issues/962
+    @Test
+    fun itHandlesConsecutiveFlatMaps() {
+        val payload = """
+            <object>
+                <firstMap>
+                    <key>key1</key>
+                    <value>1</value>
+                </firstMap>
+                <firstMap>
+                    <key>key2</key>
+                    <value>2</value>
+                </firstMap>
+                <firstMap>
+                    <key>key3</key>
+                    <value>3</value>
+                </firstMap>
+                <secondMap>
+                    <key>key4</key>
+                    <value>4</value>
+                </secondMap>
+                <secondMap>
+                    <key>key5</key>
+                    <value>5</value>
+                </secondMap>
+            </object>
+        """.encodeToByteArray()
+        val firstMapDescriptor = SdkFieldDescriptor(SerialKind.Map, XmlSerialName("firstMap"), XmlMapName(null, "key", "value"), Flattened)
+        val secondMapDescriptor = SdkFieldDescriptor(SerialKind.Map, XmlSerialName("secondMap"), XmlMapName(null, "key", "value"), Flattened)
+
+        val objDescriptor = SdkObjectDescriptor.build {
+            trait(XmlSerialName("object"))
+            field(firstMapDescriptor)
+            field(secondMapDescriptor)
+        }
+        var firstMap = mutableMapOf<String, Int>()
+        var secondMap = mutableMapOf<String, Int>()
+        val deserializer = XmlDeserializer(payload)
+        deserializer.deserializeStruct(objDescriptor) {
+            loop@while (true) {
+                when (findNextFieldIndex()) {
+                    firstMapDescriptor.index ->
+                        firstMap =
+                            deserializer.deserializeMap(firstMapDescriptor) {
+                                val map0 = mutableMapOf<String, Int>()
+                                while (hasNextEntry()) {
+                                    val k0 = key()
+                                    val v0 = if (nextHasValue()) { deserializeInt() } else { deserializeNull(); continue }
+                                    map0[k0] = v0
+                                }
+                                map0
+                            }
+                    secondMapDescriptor.index ->
+                        secondMap =
+                            deserializer.deserializeMap(secondMapDescriptor) {
+                                val map0 = mutableMapOf<String, Int>()
+                                while (hasNextEntry()) {
+                                    val k0 = key()
+                                    val v0 = if (nextHasValue()) { deserializeInt() } else { deserializeNull(); continue }
+                                    map0[k0] = v0
+                                }
+                                map0
+                            }
+                    null -> break@loop
+                    else -> skipValue()
+                }
+            }
+        }
+
+        val expectedFirstMap = mapOf("key1" to 1, "key2" to 2, "key3" to 3)
+        firstMap.shouldContainExactly(expectedFirstMap)
+        val expectedSecondMap = mapOf("key4" to 4, "key5" to 5)
+        secondMap.shouldContainExactly(expectedSecondMap)
+    }
+
+    @Test
+    fun itHandlesMapsFollowedByFlatMaps() {
+        val payload = """
+            <object>
+                <map>
+                    <entry>
+                        <key>key1</key>
+                        <value>1</value>
+                    </entry>
+                    <entry>
+                        <key>key2</key>
+                        <value>2</value>
+                    </entry>
+                </map>
+                <flatMap>
+                    <key>key3</key>
+                    <value>3</value>
+                </flatMap>
+                <flatMap>
+                    <key>key4</key>
+                    <value>4</value>
+                </flatMap>
+            </object>
+        """.encodeToByteArray()
+        val mapDescriptor = SdkFieldDescriptor(SerialKind.Map, XmlSerialName("map"))
+        val flatMapDescriptor = SdkFieldDescriptor(SerialKind.Map, XmlSerialName("flatMap"), Flattened)
+        val objDescriptor = SdkObjectDescriptor.build {
+            trait(XmlSerialName("object"))
+            field(mapDescriptor)
+            field(flatMapDescriptor)
+        }
+
+        var map = mutableMapOf<String, Int>()
+        var flatMap = mutableMapOf<String, Int>()
+
+        val deserializer = XmlDeserializer(payload)
+        deserializer.deserializeStruct(objDescriptor) {
+            loop@while (true) {
+                when (findNextFieldIndex()) {
+                    mapDescriptor.index ->
+                        map =
+                            deserializer.deserializeMap(mapDescriptor) {
+                                val map0 = mutableMapOf<String, Int>()
+                                while (hasNextEntry()) {
+                                    val k0 = key()
+                                    val v0 = if (nextHasValue()) { deserializeInt() } else { deserializeNull(); continue }
+                                    map0[k0] = v0
+                                }
+                                map0
+                            }
+                    flatMapDescriptor.index ->
+                        flatMap =
+                            deserializer.deserializeMap(flatMapDescriptor) {
+                                val map0 = mutableMapOf<String, Int>()
+                                while (hasNextEntry()) {
+                                    val k0 = key()
+                                    val v0 = if (nextHasValue()) { deserializeInt() } else { deserializeNull(); continue }
+                                    map0[k0] = v0
+                                }
+                                map0
+                            }
+                    null -> break@loop
+                    else -> skipValue()
+                }
+            }
+        }
+        map.shouldContainExactly(mapOf("key1" to 1, "key2" to 2))
+        flatMap.shouldContainExactly(mapOf("key3" to 3, "key4" to 4))
+    }
+
+    @Test
+    fun itHandlesFlatMapsFollowedByMaps() {
+        val payload = """
+            <object>
+                <flatMap>
+                    <key>key3</key>
+                    <value>3</value>
+                </flatMap>
+                <flatMap>
+                    <key>key4</key>
+                    <value>4</value>
+                </flatMap>
+                <map>
+                    <entry>
+                        <key>key1</key>
+                        <value>1</value>
+                    </entry>
+                    <entry>
+                        <key>key2</key>
+                        <value>2</value>
+                    </entry>
+                </map>
+            </object>
+        """.encodeToByteArray()
+        val mapDescriptor = SdkFieldDescriptor(SerialKind.Map, XmlSerialName("map"))
+        val flatMapDescriptor = SdkFieldDescriptor(SerialKind.Map, XmlSerialName("flatMap"), Flattened)
+        val objDescriptor = SdkObjectDescriptor.build {
+            trait(XmlSerialName("object"))
+            field(mapDescriptor)
+            field(flatMapDescriptor)
+        }
+
+        var map = mutableMapOf<String, Int>()
+        var flatMap = mutableMapOf<String, Int>()
+
+        val deserializer = XmlDeserializer(payload)
+        deserializer.deserializeStruct(objDescriptor) {
+            loop@while (true) {
+                when (findNextFieldIndex()) {
+                    mapDescriptor.index ->
+                        map =
+                            deserializer.deserializeMap(mapDescriptor) {
+                                val map0 = mutableMapOf<String, Int>()
+                                while (hasNextEntry()) {
+                                    val k0 = key()
+                                    val v0 = if (nextHasValue()) { deserializeInt() } else { deserializeNull(); continue }
+                                    map0[k0] = v0
+                                }
+                                map0
+                            }
+                    flatMapDescriptor.index ->
+                        flatMap =
+                            deserializer.deserializeMap(flatMapDescriptor) {
+                                val map0 = mutableMapOf<String, Int>()
+                                while (hasNextEntry()) {
+                                    val k0 = key()
+                                    val v0 = if (nextHasValue()) { deserializeInt() } else { deserializeNull(); continue }
+                                    map0[k0] = v0
+                                }
+                                map0
+                            }
+                    null -> break@loop
+                    else -> skipValue()
+                }
+            }
+        }
+        map.shouldContainExactly(mapOf("key1" to 1, "key2" to 2))
+        flatMap.shouldContainExactly(mapOf("key3" to 3, "key4" to 4))
+    }
 }
 
 internal class XmlMapsOperationDeserializer() {
