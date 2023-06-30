@@ -138,6 +138,8 @@ public final class aws/smithy/kotlin/runtime/telemetry/metrics/Histogram$Default
 }
 
 public final class aws/smithy/kotlin/runtime/telemetry/metrics/HistogramKt {
+	public static final fun measureSeconds (Laws/smithy/kotlin/runtime/telemetry/metrics/Histogram;Laws/smithy/kotlin/runtime/util/Attributes;Laws/smithy/kotlin/runtime/telemetry/context/Context;Lkotlin/jvm/functions/Function0;)Ljava/lang/Object;
+	public static synthetic fun measureSeconds$default (Laws/smithy/kotlin/runtime/telemetry/metrics/Histogram;Laws/smithy/kotlin/runtime/util/Attributes;Laws/smithy/kotlin/runtime/telemetry/context/Context;Lkotlin/jvm/functions/Function0;ILjava/lang/Object;)Ljava/lang/Object;
 }
 
 public abstract interface class aws/smithy/kotlin/runtime/telemetry/metrics/Meter {

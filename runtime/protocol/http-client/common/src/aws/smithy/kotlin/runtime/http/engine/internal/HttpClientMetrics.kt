@@ -119,14 +119,6 @@ public class HttpClientMetrics(
             _idleConnections.update { value }
         }
 
-    public fun incrementIdleConnections() {
-        _idleConnections += 1
-    }
-
-    public fun decrementIdleConnections() {
-        _idleConnections -= 1
-    }
-
     /**
      * The number of acquired (active) connections used right now
      */
@@ -135,14 +127,6 @@ public class HttpClientMetrics(
         set(value) {
             _acquiredConnections.update { value }
         }
-
-    public fun incrementAcquiredConnections() {
-        _acquiredConnections += 1
-    }
-
-    public fun decrementAcquiredConnections() {
-        _acquiredConnections -= 1
-    }
 
     /**
      * The number of requests currently queued waiting to be dispatched/executed by the client
@@ -153,14 +137,6 @@ public class HttpClientMetrics(
             _queuedRequests.update { value }
         }
 
-    public fun incrementQueuedRequests() {
-        _queuedRequests += 1
-    }
-
-    public fun decrementQueuedRequests() {
-        _queuedRequests -= 1
-    }
-
     /**
      * The number of requests currently in-flight (actively processing)
      */
@@ -169,14 +145,6 @@ public class HttpClientMetrics(
         set(value) {
             _inFlightRequests.update { value }
         }
-
-    public fun incrementInFlightRequests() {
-        _inFlightRequests += 1
-    }
-
-    public fun decrementInFlightRequests() {
-        _inFlightRequests -= 1
-    }
 
     private fun recordRequestsState(measurement: LongAsyncMeasurement) {
         measurement.record(inFlightRequests, HttpClientMetricAttributes.InFlightRequest)
@@ -189,9 +157,16 @@ public class HttpClientMetrics(
     }
 
     override fun close() {
-        connectionLimitHandle.stop()
-        connectionUsageHandle.stop()
-        concurrencyHandle.stop()
-        concurrencyLimitHandle.stop()
+        val exceptions = listOf(
+            runCatching(connectionLimitHandle::stop),
+            runCatching(connectionUsageHandle::stop),
+            runCatching(concurrencyHandle::stop),
+            runCatching(concurrencyLimitHandle::stop),
+        ).mapNotNull(Result<*>::exceptionOrNull)
+
+        exceptions.firstOrNull()?.let { first ->
+            exceptions.drop(1).forEach(first::addSuppressed)
+            throw first
+        }
     }
 }

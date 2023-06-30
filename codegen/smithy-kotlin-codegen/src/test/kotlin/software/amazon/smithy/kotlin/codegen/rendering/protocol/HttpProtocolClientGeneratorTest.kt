@@ -57,6 +57,9 @@ class HttpProtocolClientGeneratorTest {
     }
 """
         commonTestContents.shouldContainOnlyOnceWithDiff(expected)
+
+        commonTestContents.shouldContainOnlyOnceWithDiff("private val telemetryScope = \"${TestModelDefault.NAMESPACE}\"")
+        commonTestContents.shouldContainOnlyOnceWithDiff("private val opMetrics = OperationMetrics(telemetryScope, config.telemetryProvider)")
     }
 
     @Test

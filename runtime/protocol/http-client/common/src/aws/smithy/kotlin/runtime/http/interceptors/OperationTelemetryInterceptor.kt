@@ -48,11 +48,11 @@ internal class OperationTelemetryInterceptor(
     }
 
     override fun readAfterExecution(context: ResponseInterceptorContext<Any, Any, HttpRequest?, HttpResponse?>) {
-        val callDuration = callStart?.elapsedNow() ?: return
+        // TODO - total requests/errors?
 
-        // TODO - total requests?
-
-        metrics.rpcCallDuration.recordSeconds(callDuration, perRpcAttributes, metrics.provider.contextManager.current())
+        callStart?.elapsedNow()?.let { callDuration ->
+            metrics.rpcCallDuration.recordSeconds(callDuration, perRpcAttributes, metrics.provider.contextManager.current())
+        }
 
         context.protocolRequest?.body?.contentLength?.let {
             metrics.rpcRequestSize.record(it, perRpcAttributes, metrics.provider.contextManager.current())

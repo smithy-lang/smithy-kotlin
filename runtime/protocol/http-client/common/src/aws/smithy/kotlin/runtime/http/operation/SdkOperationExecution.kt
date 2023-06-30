@@ -31,13 +31,11 @@ import aws.smithy.kotlin.runtime.retries.policy.StandardRetryPolicy
 import aws.smithy.kotlin.runtime.telemetry.logging.debug
 import aws.smithy.kotlin.runtime.telemetry.logging.logger
 import aws.smithy.kotlin.runtime.telemetry.logging.trace
-import aws.smithy.kotlin.runtime.telemetry.metrics.recordSeconds
+import aws.smithy.kotlin.runtime.telemetry.metrics.measureSeconds
 import aws.smithy.kotlin.runtime.util.attributesOf
 import aws.smithy.kotlin.runtime.util.merge
 import kotlin.coroutines.coroutineContext
 import kotlin.time.ExperimentalTime
-import kotlin.time.measureTime
-import kotlin.time.measureTimedValue
 import aws.smithy.kotlin.runtime.io.middleware.decorate as decorateHandler
 
 public typealias SdkHttpRequest = OperationRequest<HttpRequestBuilder>
@@ -278,21 +276,15 @@ internal class AuthHandler<Input, Output>(
 
         // resolve identity from the selected auth scheme
         val identityProvider = authScheme.identityProvider(authConfig.identityProviderConfig)
-        val identity = measureTimedValue {
+        val identity = request.context.operationMetrics.resolveIdentityDuration.measureSeconds(schemeAttr) {
             identityProvider.resolve(authOption.attributes)
-        }.let {
-            request.context.operationMetrics.resolveIdentityDuration.recordSeconds(it.duration, schemeAttr)
-            it.value
         }
 
         val resolveEndpointReq = ResolveEndpointRequest(request.context, request.subject.immutableView(), identity)
 
         if (endpointResolver != null) {
-            val endpoint = measureTimedValue {
+            val endpoint = request.context.operationMetrics.resolveEndpointDuration.measureSeconds(request.context.operationAttributes) {
                 endpointResolver.resolve(resolveEndpointReq)
-            }.let {
-                request.context.operationMetrics.resolveEndpointDuration.recordSeconds(it.duration, request.context.operationAttributes)
-                it.value
             }
             coroutineContext.debug<AuthHandler<*, *>> { "resolved endpoint: $endpoint" }
             setResolvedEndpoint(request, endpoint)
@@ -307,10 +299,8 @@ internal class AuthHandler<Input, Output>(
         modified.context.merge(authOption.attributes)
         val signingRequest = SignHttpRequest(modified.subject, identity, modified.context)
 
-        measureTime {
+        request.context.operationMetrics.signingDuration.measureSeconds(schemeAttr) {
             authScheme.signer.sign(signingRequest)
-        }.let {
-            request.context.operationMetrics.signingDuration.recordSeconds(it, schemeAttr)
         }
 
         interceptors.readAfterSigning(modified.subject.immutableView())
