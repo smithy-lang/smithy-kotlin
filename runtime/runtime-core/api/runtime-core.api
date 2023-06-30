@@ -1023,6 +1023,14 @@ public final class aws/smithy/kotlin/runtime/retries/RetryFailureException : aws
 	public fun <init> (Ljava/lang/String;Ljava/lang/Throwable;ILjava/lang/Object;)V
 }
 
+public abstract interface class aws/smithy/kotlin/runtime/retries/RetryOptions {
+	public abstract fun getMaxAttempts ()Ljava/lang/Integer;
+}
+
+public final class aws/smithy/kotlin/runtime/retries/RetryOptions$DefaultImpls {
+	public static fun getMaxAttempts (Laws/smithy/kotlin/runtime/retries/RetryOptions;)Ljava/lang/Integer;
+}
+
 public abstract interface class aws/smithy/kotlin/runtime/retries/RetryStrategy {
 	public abstract fun getConfig ()Laws/smithy/kotlin/runtime/retries/RetryStrategy$Config;
 	public abstract fun retry (Laws/smithy/kotlin/runtime/retries/policy/RetryPolicy;Lkotlin/jvm/functions/Function1;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
@@ -1084,6 +1092,22 @@ public class aws/smithy/kotlin/runtime/retries/StandardRetryStrategy$Config$Buil
 
 public final class aws/smithy/kotlin/runtime/retries/StandardRetryStrategy$Config$Companion {
 	public final fun default ()Laws/smithy/kotlin/runtime/retries/StandardRetryStrategy$Config;
+}
+
+public final class aws/smithy/kotlin/runtime/retries/StandardRetryStrategyOptions : aws/smithy/kotlin/runtime/retries/RetryOptions {
+	public static final field Companion Laws/smithy/kotlin/runtime/retries/StandardRetryStrategyOptions$Companion;
+	public fun <init> (I)V
+	public final fun component1 ()I
+	public final fun copy (I)Laws/smithy/kotlin/runtime/retries/StandardRetryStrategyOptions;
+	public static synthetic fun copy$default (Laws/smithy/kotlin/runtime/retries/StandardRetryStrategyOptions;IILjava/lang/Object;)Laws/smithy/kotlin/runtime/retries/StandardRetryStrategyOptions;
+	public fun equals (Ljava/lang/Object;)Z
+	public fun getMaxAttempts ()Ljava/lang/Integer;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class aws/smithy/kotlin/runtime/retries/StandardRetryStrategyOptions$Companion {
+	public final fun getDefault ()Laws/smithy/kotlin/runtime/retries/StandardRetryStrategyOptions;
 }
 
 public final class aws/smithy/kotlin/runtime/retries/TimedOutException : aws/smithy/kotlin/runtime/retries/RetryException {
@@ -1193,6 +1217,28 @@ public final class aws/smithy/kotlin/runtime/retries/delay/ExponentialBackoffWit
 	public final fun invoke (Lkotlin/jvm/functions/Function1;)Laws/smithy/kotlin/runtime/retries/delay/ExponentialBackoffWithJitter$Config;
 }
 
+public final class aws/smithy/kotlin/runtime/retries/delay/ExponentialBackoffWithJitterOptions {
+	public static final field Companion Laws/smithy/kotlin/runtime/retries/delay/ExponentialBackoffWithJitterOptions$Companion;
+	public synthetic fun <init> (JDDJLkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1-UwyO8pc ()J
+	public final fun component2 ()D
+	public final fun component3 ()D
+	public final fun component4-UwyO8pc ()J
+	public final fun copy-A4u-v98 (JDDJ)Laws/smithy/kotlin/runtime/retries/delay/ExponentialBackoffWithJitterOptions;
+	public static synthetic fun copy-A4u-v98$default (Laws/smithy/kotlin/runtime/retries/delay/ExponentialBackoffWithJitterOptions;JDDJILjava/lang/Object;)Laws/smithy/kotlin/runtime/retries/delay/ExponentialBackoffWithJitterOptions;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getInitialDelay-UwyO8pc ()J
+	public final fun getJitter ()D
+	public final fun getMaxBackoff-UwyO8pc ()J
+	public final fun getScaleFactor ()D
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class aws/smithy/kotlin/runtime/retries/delay/ExponentialBackoffWithJitterOptions$Companion {
+	public final fun getDefault ()Laws/smithy/kotlin/runtime/retries/delay/ExponentialBackoffWithJitterOptions;
+}
+
 public final class aws/smithy/kotlin/runtime/retries/delay/InfiniteTokenBucket : aws/smithy/kotlin/runtime/retries/delay/RetryTokenBucket {
 	public static final field INSTANCE Laws/smithy/kotlin/runtime/retries/delay/InfiniteTokenBucket;
 	public fun acquireToken (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
@@ -1279,6 +1325,34 @@ public final class aws/smithy/kotlin/runtime/retries/delay/StandardRetryTokenBuc
 public final class aws/smithy/kotlin/runtime/retries/delay/StandardRetryTokenBucket$Config$Companion {
 	public final fun getDefault ()Laws/smithy/kotlin/runtime/retries/delay/StandardRetryTokenBucket$Config;
 	public final fun invoke (Lkotlin/jvm/functions/Function1;)Laws/smithy/kotlin/runtime/retries/delay/StandardRetryTokenBucket$Config;
+}
+
+public final class aws/smithy/kotlin/runtime/retries/delay/StandardRetryTokenBucketOptions {
+	public static final field Companion Laws/smithy/kotlin/runtime/retries/delay/StandardRetryTokenBucketOptions$Companion;
+	public fun <init> (IIZIIII)V
+	public final fun component1 ()I
+	public final fun component2 ()I
+	public final fun component3 ()Z
+	public final fun component4 ()I
+	public final fun component5 ()I
+	public final fun component6 ()I
+	public final fun component7 ()I
+	public final fun copy (IIZIIII)Laws/smithy/kotlin/runtime/retries/delay/StandardRetryTokenBucketOptions;
+	public static synthetic fun copy$default (Laws/smithy/kotlin/runtime/retries/delay/StandardRetryTokenBucketOptions;IIZIIIIILjava/lang/Object;)Laws/smithy/kotlin/runtime/retries/delay/StandardRetryTokenBucketOptions;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getCircuitBreakerMode ()Z
+	public final fun getInitialTryCost ()I
+	public final fun getInitialTrySuccessIncrement ()I
+	public final fun getMaxCapacity ()I
+	public final fun getRefillUnitsPerSecond ()I
+	public final fun getRetryCost ()I
+	public final fun getTimeoutRetryCost ()I
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class aws/smithy/kotlin/runtime/retries/delay/StandardRetryTokenBucketOptions$Companion {
+	public final fun getDefault ()Laws/smithy/kotlin/runtime/retries/delay/StandardRetryTokenBucketOptions;
 }
 
 public abstract class aws/smithy/kotlin/runtime/retries/policy/Acceptor {
