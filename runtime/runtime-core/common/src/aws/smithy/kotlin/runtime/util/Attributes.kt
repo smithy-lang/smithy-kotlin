@@ -73,6 +73,13 @@ public fun <T : Any> MutableAttributes.putIfAbsent(key: AttributeKey<T>, value: 
 }
 
 /**
+ * Set a value for [key] only if it is not already set and if [value] is not null.
+ */
+public fun <T : Any> MutableAttributes.putIfAbsentNotNull(key: AttributeKey<T>, value: T?) {
+    if (value != null) putIfAbsent(key, value)
+}
+
+/**
  * Set a value for [key] only if [value] is not null
  */
 public fun <T : Any> MutableAttributes.setIfValueNotNull(key: AttributeKey<T>, value: T?) {

@@ -155,6 +155,8 @@ object RuntimeTypes {
             val get = symbol("get")
             val LazyAsyncValue = symbol("LazyAsyncValue")
             val length = symbol("length")
+            val putIfAbsent = symbol("putIfAbsent")
+            val putIfAbsentNotNull = symbol("putIfAbsentNotNull")
             val truthiness = symbol("truthiness")
             val urlEncodeComponent = symbol("urlEncodeComponent", "text")
         }
