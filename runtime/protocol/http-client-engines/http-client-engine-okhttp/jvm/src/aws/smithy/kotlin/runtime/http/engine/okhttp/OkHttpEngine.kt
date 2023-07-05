@@ -93,6 +93,9 @@ private fun OkHttpEngineConfig.buildClient(metrics: HttpClientMetrics): OkHttpCl
         readTimeout(config.socketReadTimeout.toJavaDuration())
         writeTimeout(config.socketWriteTimeout.toJavaDuration())
 
+        // FIXME - register a [ConnectionListener](https://github.com/square/okhttp/blob/master/okhttp/src/jvmMain/kotlin/okhttp3/ConnectionListener.kt#L27)
+        // when a new okhttp release is cut that contains this abstraction and wireup connection uptime metrics
+
         // use our own pool configured with the timeout settings taken from config
         val pool = ConnectionPool(
             maxIdleConnections = 5, // The default from the no-arg ConnectionPool() constructor

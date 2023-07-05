@@ -21,6 +21,7 @@ import java.io.IOException
 import java.net.InetAddress
 import java.net.InetSocketAddress
 import java.net.Proxy
+import kotlin.time.Duration.Companion.seconds
 import kotlin.time.ExperimentalTime
 import kotlin.time.TimeMark
 import kotlin.time.TimeSource
@@ -43,9 +44,14 @@ internal class HttpEngineEventListener(
 
     private val logger = call.request().tag<SdkRequestTag>()?.callContext?.logger<OkHttpEngine>() ?: LoggerProvider.None.getLogger<OkHttpEngine>()
 
-    // FIXME - this isn't actually when a connection is started - this includes time in queue
+    // callStart() is invoked immediately when enqueued, next success phase is either dnsStart() or connectionAcquired()
     //  see https://github.com/square/okhttp/blob/7c92ed0879477eddb2fce6b4066d151525d5687f/okhttp/src/jvmMain/kotlin/okhttp3/internal/connection/RealCall.kt#L167-L175
-    private var connectStart: TimeMark? = null
+    private var callTimeStart: TimeMark? = null
+    private var signaledQueuedDuration = false
+    private var queuedDuration = 0.seconds
+
+    private var signaledConnectAcquireDuration = false
+    private var dnsStartTime: TimeMark? = null
 
     private inline fun trace(crossinline msg: MessageSupplier) {
         logger.trace { msg() }
@@ -56,7 +62,8 @@ internal class HttpEngineEventListener(
     }
 
     override fun callStart(call: Call) {
-        connectStart = TimeSource.Monotonic.markNow()
+        val now = TimeSource.Monotonic.markNow()
+        callTimeStart = now
         metrics.queuedRequests = dispatcher.queuedCallsCount().toLong()
         metrics.inFlightRequests = dispatcher.runningCallsCount().toLong()
         trace { "call started" }
@@ -100,8 +107,23 @@ internal class HttpEngineEventListener(
     override fun connectionAcquired(call: Call, connection: Connection) {
         metrics.acquiredConnections = pool.connectionCount().toLong()
         metrics.idleConnections = pool.idleConnectionCount().toLong()
-        connectStart?.let {
-            metrics.connectionAcquireDuration.recordSeconds(it.elapsedNow())
+
+        val callStarted = checkNotNull(callTimeStart)
+        if (!signaledQueuedDuration) {
+            signaledQueuedDuration = true
+            queuedDuration = callStarted.elapsedNow()
+            metrics.requestsQueuedDuration.recordSeconds(queuedDuration)
+        }
+
+        if (!signaledConnectAcquireDuration) {
+            signaledConnectAcquireDuration = true
+
+            val connectAcquireDuration = if (dnsStartTime != null) {
+                dnsStartTime!!.elapsedNow()
+            } else {
+                callStarted.elapsedNow() - queuedDuration
+            }
+            metrics.connectionAcquireDuration.recordSeconds(connectAcquireDuration)
         }
 
         val connId = System.identityHashCode(connection)
@@ -115,7 +137,15 @@ internal class HttpEngineEventListener(
         trace { "connection released: conn(id=$connId)=$connection; connPool: total=${pool.connectionCount()}, idle=${pool.idleConnectionCount()}" }
     }
 
-    override fun dnsStart(call: Call, domainName: String) = trace { "dns query: domain=$domainName" }
+    override fun dnsStart(call: Call, domainName: String) {
+        dnsStartTime = TimeSource.Monotonic.markNow()
+        if (!signaledQueuedDuration) {
+            queuedDuration = checkNotNull(callTimeStart).elapsedNow()
+            metrics.requestsQueuedDuration.recordSeconds(queuedDuration)
+            signaledQueuedDuration = true
+        }
+        trace { "dns query: domain=$domainName" }
+    }
 
     override fun dnsEnd(call: Call, domainName: String, inetAddressList: List<InetAddress>) =
         trace { "dns resolved: domain=$domainName; records=$inetAddressList" }

@@ -47,6 +47,7 @@ internal class RetryMiddleware<I, O>(
                 withSpan<RetryMiddleware<*, *>, _>("Attempt-$attempt") {
                     if (attempt > 1) {
                         coroutineContext.debug<RetryMiddleware<*, *>> { "retrying request, attempt $attempt" }
+                        request.context.operationMetrics.rpcRetryCount.add(1L, request.context.operationAttributes)
                     }
 
                     // Deep copy the request because later middlewares (e.g., signing) mutate it
