@@ -39,6 +39,7 @@ internal class OperationTelemetryInterceptor(
     private var serializeStart: TimeMark? = null
     private var deserializeStart: TimeMark? = null
     private var transmitStart: TimeMark? = null
+    private var attempts = 0
 
     private val perRpcAttributes = attributesOf {
         "rpc.service" to service
@@ -88,6 +89,10 @@ internal class OperationTelemetryInterceptor(
 
     override fun readAfterAttempt(context: ResponseInterceptorContext<Any, Any, HttpRequest, HttpResponse?>) {
         metrics.rpcAttempts.add(1L, perRpcAttributes, metrics.provider.contextManager.current())
+        attempts++
+        if (attempts > 1) {
+            metrics.rpcRetryCount.add(1L, perRpcAttributes, metrics.provider.contextManager.current())
+        }
     }
 
     override fun readBeforeDeserialization(context: ProtocolResponseInterceptorContext<Any, HttpRequest, HttpResponse>) {
