@@ -50,7 +50,7 @@ public class OkHttpEngine(
     override suspend fun roundTrip(context: ExecutionContext, request: HttpRequest): HttpCall {
         val callContext = callContext()
 
-        val engineRequest = request.toOkHttpRequest(context, callContext)
+        val engineRequest = request.toOkHttpRequest(context, callContext, metrics)
         val engineCall = client.newCall(engineRequest)
         val engineResponse = mapOkHttpExceptions { engineCall.executeAsync() }
 
@@ -132,6 +132,8 @@ private fun OkHttpEngineConfig.buildClient(metrics: HttpClientMetrics): OkHttpCl
         proxyAuthenticator(OkHttpProxyAuthenticator(config.proxySelector))
 
         dns(OkHttpDns(config.hostResolver))
+
+        addInterceptor(MetricsInterceptor)
     }.build()
 }
 

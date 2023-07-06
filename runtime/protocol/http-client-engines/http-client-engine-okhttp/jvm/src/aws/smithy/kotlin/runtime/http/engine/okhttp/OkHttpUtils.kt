@@ -7,6 +7,7 @@ package aws.smithy.kotlin.runtime.http.engine.okhttp
 
 import aws.smithy.kotlin.runtime.http.*
 import aws.smithy.kotlin.runtime.http.engine.ProxyConfig
+import aws.smithy.kotlin.runtime.http.engine.internal.HttpClientMetrics
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.http.response.HttpResponse
 import aws.smithy.kotlin.runtime.io.SdkSource
@@ -14,11 +15,9 @@ import aws.smithy.kotlin.runtime.io.internal.toSdk
 import aws.smithy.kotlin.runtime.net.*
 import aws.smithy.kotlin.runtime.operation.ExecutionContext
 import kotlinx.coroutines.*
+import okhttp3.*
 import okhttp3.Authenticator
-import okhttp3.Credentials
-import okhttp3.Dns
 import okhttp3.RequestBody.Companion.toRequestBody
-import okhttp3.Route
 import okhttp3.internal.http.HttpMethod
 import java.io.IOException
 import java.net.*
@@ -31,7 +30,7 @@ import okhttp3.Response as OkHttpResponse
 /**
  * SDK specific "tag" attached to an [okhttp3.Request] instance
  */
-internal data class SdkRequestTag(val execContext: ExecutionContext, val callContext: CoroutineContext)
+internal data class SdkRequestTag(val execContext: ExecutionContext, val callContext: CoroutineContext, val metrics: HttpClientMetrics)
 
 /**
  * Convert SDK [HttpRequest] to an [okhttp3.Request] instance
@@ -39,9 +38,10 @@ internal data class SdkRequestTag(val execContext: ExecutionContext, val callCon
 internal fun HttpRequest.toOkHttpRequest(
     execContext: ExecutionContext,
     callContext: CoroutineContext,
+    metrics: HttpClientMetrics,
 ): OkHttpRequest {
     val builder = OkHttpRequest.Builder()
-    builder.tag(SdkRequestTag::class, SdkRequestTag(execContext, callContext))
+    builder.tag(SdkRequestTag::class, SdkRequestTag(execContext, callContext, metrics))
 
     builder.url(url.toString())
 
