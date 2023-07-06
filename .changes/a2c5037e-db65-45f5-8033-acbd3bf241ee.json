@@ -1,8 +1,0 @@
-{
-    "id": "a2c5037e-db65-45f5-8033-acbd3bf241ee",
-    "type": "bugfix",
-    "description": "Properly deserialize XML flat maps",
-    "issues": [
-        "https://github.com/awslabs/aws-sdk-kotlin/issues/962"
-    ]
-}

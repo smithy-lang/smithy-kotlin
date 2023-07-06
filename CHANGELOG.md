@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.22.1] - 07/06/2023
+
+### Fixes
+* [#962](https://github.com/awslabs/aws-sdk-kotlin/issues/962) Properly deserialize XML flat maps
+
 ## [0.22.0] - 06/29/2023
 
 ### Features
