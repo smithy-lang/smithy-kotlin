@@ -23,17 +23,3 @@ public interface UpDownCounter {
         context: Context? = null,
     )
 }
-
-/**
- * Increment counter by 1 with given attributes, equivalent to `add(1, attributes, context)`
- */
-public fun UpDownCounter.increment(attributes: Attributes = emptyAttributes(), context: Context? = null) {
-    add(1, attributes, context)
-}
-
-/**
- * Decrement counter by 1 with given attributes, equivalent to `add(1, attributes, context)`
- */
-public fun UpDownCounter.decrement(attributes: Attributes = emptyAttributes(), context: Context? = null) {
-    add(-1, attributes, context)
-}
