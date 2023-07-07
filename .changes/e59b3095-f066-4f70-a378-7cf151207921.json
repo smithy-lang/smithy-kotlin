@@ -1,0 +1,5 @@
+{
+    "id": "e59b3095-f066-4f70-a378-7cf151207921",
+    "type": "feature",
+    "description": "Add experimental support for OpenTelemetry based telemetry provider"
+}
