@@ -4,6 +4,7 @@
  */
 package aws.smithy.kotlin.runtime.http.operation
 
+import aws.smithy.kotlin.runtime.ExperimentalApi
 import aws.smithy.kotlin.runtime.InternalApi
 import aws.smithy.kotlin.runtime.telemetry.TelemetryProvider
 import aws.smithy.kotlin.runtime.telemetry.metrics.DoubleHistogram
@@ -16,6 +17,7 @@ import aws.smithy.kotlin.runtime.telemetry.metrics.MonotonicCounter
  * @param scope the instrumentation scope
  * @param provider the telemetry provider to instrument with
  */
+@OptIn(ExperimentalApi::class)
 @InternalApi
 public class OperationMetrics(
     scope: String,
