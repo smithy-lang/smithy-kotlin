@@ -54,7 +54,7 @@ public class Config private constructor(builder: Builder) : HttpAuthConfig, Http
     override val interceptors: kotlin.collections.List<aws.smithy.kotlin.runtime.http.interceptors.HttpInterceptor> = builder.interceptors
     override val logMode: LogMode = builder.logMode ?: LogMode.Default
     override val retryPolicy: RetryPolicy<Any?> = builder.retryPolicy ?: StandardRetryPolicy.Default
-    override val telemetryProvider: TelemetryProvider = builder.telemetryProvider ?: TelemetryProvider.None
+    override val telemetryProvider: TelemetryProvider = builder.telemetryProvider ?: TelemetryProvider.Global
 """
         contents.shouldContainWithDiff(expectedProps)
 
@@ -246,7 +246,7 @@ public class Config private constructor(builder: Builder) {
     override val interceptors: kotlin.collections.List<aws.smithy.kotlin.runtime.http.interceptors.HttpInterceptor> = builder.interceptors
     override val logMode: LogMode = builder.logMode ?: LogMode.LogRequest
     override val retryPolicy: RetryPolicy<Any?> = builder.retryPolicy ?: StandardRetryPolicy.Default
-    override val telemetryProvider: TelemetryProvider = builder.telemetryProvider ?: TelemetryProvider.None"""
+    override val telemetryProvider: TelemetryProvider = builder.telemetryProvider ?: TelemetryProvider.Global"""
         contents.shouldContainWithDiff(expectedConfigValues)
     }
 
