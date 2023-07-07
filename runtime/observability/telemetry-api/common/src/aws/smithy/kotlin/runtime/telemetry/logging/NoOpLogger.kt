@@ -6,7 +6,6 @@
 package aws.smithy.kotlin.runtime.telemetry.logging
 
 import aws.smithy.kotlin.runtime.telemetry.context.Context
-import aws.smithy.kotlin.runtime.time.Instant
 
 internal object NoOpLoggerProvider : LoggerProvider {
     override fun getOrCreateLogger(name: String): Logger = NoOpLogger

@@ -6,10 +6,12 @@
 package aws.smithy.kotlin.runtime.http.engine.okhttp
 
 import aws.smithy.kotlin.runtime.http.*
+import aws.smithy.kotlin.runtime.http.engine.internal.HttpClientMetrics
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.io.SdkByteReadChannel
 import aws.smithy.kotlin.runtime.net.*
 import aws.smithy.kotlin.runtime.operation.ExecutionContext
+import aws.smithy.kotlin.runtime.telemetry.TelemetryProvider
 import okio.Buffer
 import org.junit.jupiter.api.Test
 import kotlin.coroutines.EmptyCoroutineContext
@@ -18,6 +20,9 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 
 class OkHttpRequestTest {
+
+    private val testMetrics = HttpClientMetrics("test", TelemetryProvider.None)
+
     @Test
     fun itConvertsUrls() {
         val url = UrlBuilder().apply {
@@ -38,7 +43,7 @@ class OkHttpRequestTest {
         val request = HttpRequest(HttpMethod.POST, url, Headers.Empty, HttpBody.Empty)
 
         val execContext = ExecutionContext()
-        val actual = request.toOkHttpRequest(execContext, EmptyCoroutineContext)
+        val actual = request.toOkHttpRequest(execContext, EmptyCoroutineContext, testMetrics)
         assertEquals("https", actual.url.scheme)
         assertEquals("aws.amazon.com", actual.url.host)
         assertEquals(443, actual.url.port)
@@ -58,7 +63,7 @@ class OkHttpRequestTest {
         val request = HttpRequest(HttpMethod.POST, url, headers, HttpBody.Empty)
 
         val execContext = ExecutionContext()
-        val actual = request.toOkHttpRequest(execContext, EmptyCoroutineContext)
+        val actual = request.toOkHttpRequest(execContext, EmptyCoroutineContext, testMetrics)
 
         assertEquals(3, actual.headers.size)
         assertEquals(listOf("bar", "baz"), actual.headers("FoO"))
@@ -72,7 +77,7 @@ class OkHttpRequestTest {
 
         val callContext = EmptyCoroutineContext
 
-        val actual = request.toOkHttpRequest(execContext, callContext)
+        val actual = request.toOkHttpRequest(execContext, callContext, testMetrics)
         assertEquals(execContext, actual.tag<SdkRequestTag>()?.execContext)
         assertEquals(callContext, actual.tag<SdkRequestTag>()?.callContext)
     }
@@ -82,7 +87,7 @@ class OkHttpRequestTest {
         val url = Url.parse("https://aws.amazon.com")
         val request = HttpRequest(HttpMethod.GET, url, Headers.Empty, HttpBody.Empty)
         val execContext = ExecutionContext()
-        val actual = request.toOkHttpRequest(execContext, EmptyCoroutineContext)
+        val actual = request.toOkHttpRequest(execContext, EmptyCoroutineContext, testMetrics)
 
         assertNull(actual.body)
     }
@@ -93,7 +98,7 @@ class OkHttpRequestTest {
         val content = "Hello OkHttp from HttpBody.Bytes"
         val request = HttpRequest(HttpMethod.POST, url, Headers.Empty, HttpBody.fromBytes(content.encodeToByteArray()))
         val execContext = ExecutionContext()
-        val actual = request.toOkHttpRequest(execContext, EmptyCoroutineContext)
+        val actual = request.toOkHttpRequest(execContext, EmptyCoroutineContext, testMetrics)
 
         val actualBody = assertNotNull(actual.body)
         assertEquals(request.body.contentLength, actualBody.contentLength())
@@ -116,7 +121,7 @@ class OkHttpRequestTest {
 
         val request = HttpRequest(HttpMethod.POST, url, Headers.Empty, body)
         val execContext = ExecutionContext()
-        val actual = request.toOkHttpRequest(execContext, EmptyCoroutineContext)
+        val actual = request.toOkHttpRequest(execContext, EmptyCoroutineContext, testMetrics)
 
         val actualBody = assertNotNull(actual.body)
         assertEquals(request.body.contentLength, actualBody.contentLength())
@@ -143,7 +148,7 @@ class OkHttpRequestTest {
 
         val request = HttpRequest(HttpMethod.POST, url, headers, body)
         val execContext = ExecutionContext()
-        val actual = request.toOkHttpRequest(execContext, EmptyCoroutineContext)
+        val actual = request.toOkHttpRequest(execContext, EmptyCoroutineContext, testMetrics)
 
         val actualBody = assertNotNull(actual.body)
         assertEquals(expectedContentLength.toLong(), actualBody.contentLength())
@@ -169,7 +174,7 @@ class OkHttpRequestTest {
 
         val request = HttpRequest(HttpMethod.POST, url, headers, body)
         val execContext = ExecutionContext()
-        val actual = request.toOkHttpRequest(execContext, EmptyCoroutineContext)
+        val actual = request.toOkHttpRequest(execContext, EmptyCoroutineContext, testMetrics)
 
         val actualBody = assertNotNull(actual.body)
         assertEquals(request.body.contentLength, actualBody.contentLength())

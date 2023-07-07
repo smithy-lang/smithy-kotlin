@@ -7,6 +7,8 @@ package aws.smithy.kotlin.runtime.http.engine.okhttp
 
 import aws.smithy.kotlin.runtime.http.engine.HttpClientEngineConfig
 import aws.smithy.kotlin.runtime.http.engine.HttpClientEngineConfigImpl
+import aws.smithy.kotlin.runtime.telemetry.Global
+import aws.smithy.kotlin.runtime.telemetry.TelemetryProvider
 
 /**
  * The configuration parameters for an OkHttp HTTP client engine.
@@ -47,5 +49,7 @@ public class OkHttpEngineConfig private constructor(builder: Builder) : HttpClie
          * The maximum number of connections to open to a single host. Defaults to [maxConnections].
          */
         public var maxConnectionsPerHost: UInt? = null
+
+        override var telemetryProvider: TelemetryProvider = TelemetryProvider.Global
     }
 }

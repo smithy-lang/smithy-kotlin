@@ -24,6 +24,24 @@ public interface Meter {
     ): UpDownCounter
 
     /**
+     * Create a new async up down counter.
+     *
+     * @param name the instrument name
+     * @param callback the callback to invoke when reading the counter value. NOTE: Unlike synchronous counters that
+     * record delta values, async measurements record absolute/current values.
+     * @param units the unit of measure
+     * @param description the human-readable description of the measurement
+     * @return a [AsyncMeasurementHandle] which can be used for de-registering the counter
+     * and stopping the callback from being invoked.
+     */
+    public fun createAsyncUpDownCounter(
+        name: String,
+        callback: LongUpDownCounterCallback,
+        units: String? = null,
+        description: String? = null,
+    ): AsyncMeasurementHandle
+
+    /**
      * Create a new [MonotonicCounter]
      *
      * @param name the instrument name
@@ -69,7 +87,7 @@ public interface Meter {
      * @param callback the callback to invoke when reading the gauge value
      * @param units the unit of measure
      * @param description the human-readable description of the measurement
-     * @return a [GaugeHandle] which can be used for de-registering the gauge
+     * @return a [AsyncMeasurementHandle] which can be used for de-registering the gauge
      * and stopping the callback from being invoked.
      */
     public fun createLongGauge(
@@ -77,7 +95,7 @@ public interface Meter {
         callback: LongGaugeCallback,
         units: String? = null,
         description: String? = null,
-    ): GaugeHandle
+    ): AsyncMeasurementHandle
 
     /**
      * Create a new Gauge.
@@ -86,7 +104,7 @@ public interface Meter {
      * @param callback the callback to invoke when reading the gauge value
      * @param units the unit of measure
      * @param description the human-readable description of the measurement
-     * @return a [GaugeHandle] which can be used for de-registering the gauge
+     * @return a [AsyncMeasurementHandle] which can be used for de-registering the gauge
      * and stopping the callback from being invoked.
      */
     public fun createDoubleGauge(
@@ -94,5 +112,5 @@ public interface Meter {
         callback: DoubleGaugeCallback,
         units: String? = null,
         description: String? = null,
-    ): GaugeHandle
+    ): AsyncMeasurementHandle
 }

@@ -23,22 +23,23 @@ public interface AsyncMeasurement<T : Number> {
     public fun record(
         value: T,
         attributes: Attributes = emptyAttributes(),
-        context: Context,
+        context: Context? = null,
     )
 }
 
 public typealias LongAsyncMeasurement = AsyncMeasurement<Long>
 public typealias LongGaugeCallback = (LongAsyncMeasurement) -> Unit
+public typealias LongUpDownCounterCallback = (LongAsyncMeasurement) -> Unit
 
 public typealias DoubleAsyncMeasurement = AsyncMeasurement<Double>
 public typealias DoubleGaugeCallback = (DoubleAsyncMeasurement) -> Unit
 
 /**
- * A handle to a registered guage
+ * A handle to a registered async measurement (e.g. Gauge or AsyncUpDownCounter)
  */
-public interface GaugeHandle {
+public interface AsyncMeasurementHandle {
     /**
-     * Stop recording this gauge value. The registered callback function will
+     * Stop recording this async value. The registered callback function will
      * stop being invoked after calling this function.
      */
     public fun stop()
