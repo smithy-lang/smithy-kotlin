@@ -77,6 +77,7 @@ public abstract interface class aws/smithy/kotlin/runtime/http/engine/HttpClient
 	public abstract fun getProxySelector ()Laws/smithy/kotlin/runtime/http/engine/ProxySelector;
 	public abstract fun getSocketReadTimeout-UwyO8pc ()J
 	public abstract fun getSocketWriteTimeout-UwyO8pc ()J
+	public abstract fun getTelemetryProvider ()Laws/smithy/kotlin/runtime/telemetry/TelemetryProvider;
 	public abstract fun getTlsContext ()Laws/smithy/kotlin/runtime/http/engine/TlsContext;
 }
 
@@ -90,6 +91,7 @@ public abstract interface class aws/smithy/kotlin/runtime/http/engine/HttpClient
 	public abstract fun getProxySelector ()Laws/smithy/kotlin/runtime/http/engine/ProxySelector;
 	public abstract fun getSocketReadTimeout-UwyO8pc ()J
 	public abstract fun getSocketWriteTimeout-UwyO8pc ()J
+	public abstract fun getTelemetryProvider ()Laws/smithy/kotlin/runtime/telemetry/TelemetryProvider;
 	public abstract fun getTlsContext ()Laws/smithy/kotlin/runtime/http/engine/TlsContext;
 	public abstract fun setConnectTimeout-LRDsOJo (J)V
 	public abstract fun setConnectionAcquireTimeout-LRDsOJo (J)V
@@ -99,6 +101,7 @@ public abstract interface class aws/smithy/kotlin/runtime/http/engine/HttpClient
 	public abstract fun setProxySelector (Laws/smithy/kotlin/runtime/http/engine/ProxySelector;)V
 	public abstract fun setSocketReadTimeout-LRDsOJo (J)V
 	public abstract fun setSocketWriteTimeout-LRDsOJo (J)V
+	public abstract fun setTelemetryProvider (Laws/smithy/kotlin/runtime/telemetry/TelemetryProvider;)V
 	public abstract fun setTlsContext (Laws/smithy/kotlin/runtime/http/engine/TlsContext;)V
 	public abstract fun tlsContext (Lkotlin/jvm/functions/Function1;)V
 }
@@ -213,7 +216,9 @@ public final class aws/smithy/kotlin/runtime/http/operation/HttpOperationContext
 	public final fun getExpectedHttpStatus ()Laws/smithy/kotlin/runtime/util/AttributeKey;
 	public final fun getHostPrefix ()Laws/smithy/kotlin/runtime/util/AttributeKey;
 	public final fun getHttpCallList ()Laws/smithy/kotlin/runtime/util/AttributeKey;
+	public final fun getOperationAttributes ()Laws/smithy/kotlin/runtime/util/AttributeKey;
 	public final fun getOperationInput ()Laws/smithy/kotlin/runtime/util/AttributeKey;
+	public final fun getOperationMetrics ()Laws/smithy/kotlin/runtime/util/AttributeKey;
 	public final fun getSdkInvocationId ()Laws/smithy/kotlin/runtime/util/AttributeKey;
 }
 

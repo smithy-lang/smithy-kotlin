@@ -18,6 +18,13 @@ internal object NoOpMeterProvider : MeterProvider {
 private object NoOpMeter : Meter {
     override fun createUpDownCounter(name: String, units: String?, description: String?): UpDownCounter = NoOpUpDownCounter
 
+    override fun createAsyncUpDownCounter(
+        name: String,
+        callback: LongUpDownCounterCallback,
+        units: String?,
+        description: String?,
+    ): AsyncMeasurementHandle = NoOpAsyncMeasurementHandle
+
     override fun createMonotonicCounter(name: String, units: String?, description: String?): MonotonicCounter = NoOpMonotonicCounter
 
     override fun createLongHistogram(name: String, units: String?, description: String?): LongHistogram = NoOpLongHistogram
@@ -29,14 +36,14 @@ private object NoOpMeter : Meter {
         callback: LongGaugeCallback,
         units: String?,
         description: String?,
-    ): GaugeHandle = NoOpGaugeHandle
+    ): AsyncMeasurementHandle = NoOpAsyncMeasurementHandle
 
     override fun createDoubleGauge(
         name: String,
         callback: DoubleGaugeCallback,
         units: String?,
         description: String?,
-    ): GaugeHandle = NoOpGaugeHandle
+    ): AsyncMeasurementHandle = NoOpAsyncMeasurementHandle
 }
 
 private object NoOpUpDownCounter : UpDownCounter {
@@ -53,6 +60,6 @@ private object NoOpDoubleHistogram : DoubleHistogram {
     override fun record(value: Double, attributes: Attributes, context: Context?) {}
 }
 
-private object NoOpGaugeHandle : GaugeHandle {
+private object NoOpAsyncMeasurementHandle : AsyncMeasurementHandle {
     override fun stop() {}
 }

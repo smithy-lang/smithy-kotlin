@@ -9,6 +9,7 @@ extra["moduleName"] = "aws.smithy.kotlin.runtime.http.engine.okhttp"
 
 val coroutinesVersion: String by project
 val okHttpVersion: String by project
+val otelVersion: String by project
 
 kotlin {
     sourceSets {
@@ -16,6 +17,7 @@ kotlin {
             dependencies {
                 implementation(project(":runtime:runtime-core"))
                 api(project(":runtime:protocol:http-client"))
+                implementation(project(":runtime:observability:telemetry-defaults"))
 
                 implementation("com.squareup.okhttp3:okhttp:$okHttpVersion")
                 implementation("com.squareup.okhttp3:okhttp-coroutines:$okHttpVersion")
@@ -30,6 +32,9 @@ kotlin {
         jvmTest {
             dependencies {
                 implementation(project(":runtime:testing"))
+                // use otel testing capabilities
+                implementation(project(":runtime:observability:telemetry-provider-otel"))
+                implementation("io.opentelemetry:opentelemetry-sdk-testing:$otelVersion")
             }
         }
 

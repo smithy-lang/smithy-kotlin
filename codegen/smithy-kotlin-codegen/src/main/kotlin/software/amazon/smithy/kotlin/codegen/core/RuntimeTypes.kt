@@ -62,6 +62,7 @@ object RuntimeTypes {
             val HttpOperationContext = symbol("HttpOperationContext")
             val HttpSerialize = symbol("HttpSerialize")
             val OperationAuthConfig = symbol("OperationAuthConfig")
+            val OperationMetrics = symbol("OperationMetrics")
             val OperationRequest = symbol("OperationRequest")
             val roundTrip = symbol("roundTrip")
             val telemetry = symbol("telemetry")

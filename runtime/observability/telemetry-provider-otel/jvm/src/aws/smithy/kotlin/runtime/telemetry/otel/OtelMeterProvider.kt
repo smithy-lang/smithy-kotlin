@@ -37,6 +37,24 @@ private class OtelMeter(
         return OtelUpDownCounterImpl(counter)
     }
 
+    override fun createAsyncUpDownCounter(
+        name: String,
+        callback: LongUpDownCounterCallback,
+        units: String?,
+        description: String?,
+    ): AsyncMeasurementHandle {
+        val observer = otelMeter.upDownCounterBuilder(name)
+            .apply {
+                description?.let { setDescription(it) }
+                units?.let { setUnit(units) }
+            }
+            .buildWithCallback {
+                callback(OtelLongAsyncMeasurementImpl(it))
+            }
+
+        return OtelAsyncMeasurementHandleImpl(observer)
+    }
+
     override fun createMonotonicCounter(name: String, units: String?, description: String?): MonotonicCounter {
         val counter = otelMeter.counterBuilder(name)
             .apply {
@@ -73,7 +91,7 @@ private class OtelMeter(
         callback: LongGaugeCallback,
         units: String?,
         description: String?,
-    ): GaugeHandle {
+    ): AsyncMeasurementHandle {
         val observer = otelMeter.gaugeBuilder(name)
             .apply {
                 description?.let { setDescription(it) }
@@ -83,7 +101,7 @@ private class OtelMeter(
             .buildWithCallback {
                 callback(OtelLongAsyncMeasurementImpl(it))
             }
-        return OtelGaugeHandleImpl(observer)
+        return OtelAsyncMeasurementHandleImpl(observer)
     }
 
     override fun createDoubleGauge(
@@ -91,7 +109,7 @@ private class OtelMeter(
         callback: DoubleGaugeCallback,
         units: String?,
         description: String?,
-    ): GaugeHandle {
+    ): AsyncMeasurementHandle {
         val observer = otelMeter.gaugeBuilder(name)
             .apply {
                 description?.let { setDescription(it) }
@@ -100,7 +118,7 @@ private class OtelMeter(
             .buildWithCallback {
                 callback(OtelDoubleAsyncMeasurementImpl(it))
             }
-        return OtelGaugeHandleImpl(observer)
+        return OtelAsyncMeasurementHandleImpl(observer)
     }
 }
 
@@ -157,7 +175,7 @@ private class OtelDoubleHistogramImpl(
 }
 
 private class OtelLongAsyncMeasurementImpl(private val measurement: ObservableLongMeasurement) : LongAsyncMeasurement {
-    override fun record(value: Long, attributes: Attributes, context: Context) {
+    override fun record(value: Long, attributes: Attributes, context: Context?) {
         if (attributes.isEmpty) {
             measurement.record(value)
         } else {
@@ -167,7 +185,7 @@ private class OtelLongAsyncMeasurementImpl(private val measurement: ObservableLo
 }
 
 private class OtelDoubleAsyncMeasurementImpl(private val measurement: ObservableDoubleMeasurement) : DoubleAsyncMeasurement {
-    override fun record(value: Double, attributes: Attributes, context: Context) {
+    override fun record(value: Double, attributes: Attributes, context: Context?) {
         if (attributes.isEmpty) {
             measurement.record(value)
         } else {
@@ -176,7 +194,7 @@ private class OtelDoubleAsyncMeasurementImpl(private val measurement: Observable
     }
 }
 
-private class OtelGaugeHandleImpl(private val otelHandle: AutoCloseable) : GaugeHandle {
+private class OtelAsyncMeasurementHandleImpl(private val otelHandle: AutoCloseable) : AsyncMeasurementHandle {
     override fun stop() {
         otelHandle.close()
     }
