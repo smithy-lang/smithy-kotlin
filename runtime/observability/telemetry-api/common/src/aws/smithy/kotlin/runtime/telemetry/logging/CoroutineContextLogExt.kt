@@ -5,6 +5,7 @@
 
 package aws.smithy.kotlin.runtime.telemetry.logging
 
+import aws.smithy.kotlin.runtime.ExperimentalApi
 import aws.smithy.kotlin.runtime.InternalApi
 import aws.smithy.kotlin.runtime.telemetry.context.Context
 import aws.smithy.kotlin.runtime.telemetry.context.telemetryContext
@@ -61,6 +62,7 @@ public suspend inline fun<R> withLogCtx(
  * @param content A lambda which provides the content of the message. This content does not need to include any data
  * from the exception (if any), which may be concatenated later based on probe behavior.
  */
+@OptIn(ExperimentalApi::class)
 @InternalApi
 public fun CoroutineContext.log(
     level: LogLevel,
@@ -213,6 +215,7 @@ public inline fun <reified T> CoroutineContext.trace(ex: Throwable? = null, noin
  * Get a [Logger] instance using the current [LoggerProvider] configured in this [CoroutineContext]
  * @param sourceComponent The name of the component to create a logger for
  */
+@OptIn(ExperimentalApi::class)
 @InternalApi
 public fun CoroutineContext.logger(sourceComponent: String): Logger {
     val logger = this.telemetryProvider.loggerProvider.getOrCreateLogger(sourceComponent)
