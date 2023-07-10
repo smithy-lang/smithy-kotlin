@@ -1,0 +1,8 @@
+{
+    "id": "7ea49133-ed99-4a94-b90f-c78871df5ab4",
+    "type": "feature",
+    "description": "Enable endpoint discovery",
+    "issues": [
+        "awslabs/smithy-kotlin#146"
+    ]
+}

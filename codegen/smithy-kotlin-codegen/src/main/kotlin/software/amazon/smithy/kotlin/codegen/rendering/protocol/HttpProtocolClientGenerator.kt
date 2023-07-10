@@ -32,6 +32,15 @@ abstract class HttpProtocolClientGenerator(
     protected val httpBindingResolver: HttpBindingResolver,
 ) {
 
+    object AdditionalMethodsSection : SectionId {
+        val GenerationContext: SectionKey<ProtocolGenerator.GenerationContext> = SectionKey("GenerationContext")
+    }
+
+    object EndpointResolverAdapterBinding : SectionId {
+        val GenerationContext: SectionKey<ProtocolGenerator.GenerationContext> = SectionKey("GenerationContext")
+        val OperationShape: SectionKey<OperationShape> = SectionKey("OperationShape")
+    }
+
     object OperationDeserializerBinding : SectionId {
         // Context for operation being codegened at the time of section invocation
         val Operation: SectionKey<OperationShape> = SectionKey("Operation")
@@ -230,7 +239,16 @@ abstract class HttpProtocolClientGenerator(
                 AuthSchemeProviderAdapterGenerator.getSymbol(ctx.settings),
             )
 
-            writer.write("execution.endpointResolver = #T(config)", EndpointResolverAdapterGenerator.getSymbol(ctx.settings))
+            writer.declareSection(
+                EndpointResolverAdapterBinding,
+                mapOf(
+                    EndpointResolverAdapterBinding.GenerationContext to ctx,
+                    EndpointResolverAdapterBinding.OperationShape to op,
+                ),
+            ) {
+                write("execution.endpointResolver = #T(config)", EndpointResolverAdapterGenerator.getSymbol(ctx.settings))
+            }
+
             writer.write("execution.retryStrategy = config.retryStrategy")
         }
     }
@@ -313,7 +331,9 @@ abstract class HttpProtocolClientGenerator(
     /**
      * Render any additional methods to support client operation
      */
-    protected open fun renderAdditionalMethods(writer: KotlinWriter) { }
+    protected open fun renderAdditionalMethods(writer: KotlinWriter) {
+        writer.declareSection(AdditionalMethodsSection, mapOf(AdditionalMethodsSection.GenerationContext to ctx))
+    }
 
     /**
      * Render optionally installing Md5ChecksumMiddleware.

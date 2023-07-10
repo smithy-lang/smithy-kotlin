@@ -87,7 +87,7 @@ object KotlinTypes {
     object Time {
         val Duration = builtInSymbol("Duration", "kotlin.time")
         val milliseconds = builtInSymbol("milliseconds", "kotlin.time.Duration.Companion")
-        val seconds = builtInSymbol("seconds", "kotlin.time.Duration.Companion")
+        val minutes = builtInSymbol("minutes", "kotlin.time.Duration.Companion")
     }
 
     /**

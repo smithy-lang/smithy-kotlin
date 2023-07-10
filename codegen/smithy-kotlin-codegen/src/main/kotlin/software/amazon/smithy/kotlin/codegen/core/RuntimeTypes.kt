@@ -151,6 +151,7 @@ object RuntimeTypes {
             val decodeBase64Bytes = symbol("decodeBase64Bytes")
             val encodeBase64 = symbol("encodeBase64")
             val encodeBase64String = symbol("encodeBase64String")
+            val ExpiringValue = symbol("ExpiringValue")
             val flattenIfPossible = symbol("flattenIfPossible")
             val get = symbol("get")
             val LazyAsyncValue = symbol("LazyAsyncValue")
@@ -160,6 +161,7 @@ object RuntimeTypes {
         }
 
         object Net : RuntimeTypePackage(KotlinDependency.CORE, "net") {
+            val Host = symbol("Host")
             val parameters = symbol("parameters")
             val QueryParameters = symbol("QueryParameters")
             val QueryParametersBuilder = symbol("QueryParametersBuilder")
@@ -167,6 +169,10 @@ object RuntimeTypes {
             val toQueryParameters = symbol("toQueryParameters")
             val Url = symbol("Url")
         }
+    }
+
+    object EndpointDiscovery : RuntimeTypePackage(KotlinDependency.ENDPOINT_DISCOVERY) {
+        val DiscoveredEndpointResolver = symbol("DiscoveredEndpointResolver")
     }
 
     object SmithyClient : RuntimeTypePackage(KotlinDependency.SMITHY_CLIENT) {
@@ -194,7 +200,6 @@ object RuntimeTypes {
 
             @get:JvmName("getSigningContextExtMethod")
             val signingContext = symbol("signingContext")
-
             object Functions : RuntimeTypePackage(KotlinDependency.SMITHY_CLIENT, "endpoints.functions") {
                 val substring = symbol("substring")
                 val isValidHostLabel = symbol("isValidHostLabel")

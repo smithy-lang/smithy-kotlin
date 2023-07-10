@@ -118,6 +118,7 @@ data class KotlinDependency(
         val AWS_EVENT_STREAM = KotlinDependency(GradleConfiguration.Implementation, "$RUNTIME_ROOT_NS.awsprotocol.eventstream", RUNTIME_GROUP, "aws-event-stream", RUNTIME_VERSION)
         val AWS_PROTOCOL_CORE = KotlinDependency(GradleConfiguration.Implementation, "$RUNTIME_ROOT_NS.awsprotocol", RUNTIME_GROUP, "aws-protocol-core", RUNTIME_VERSION)
         val AWS_XML_PROTOCOLS = KotlinDependency(GradleConfiguration.Implementation, "$RUNTIME_ROOT_NS.awsprotocol.xml", RUNTIME_GROUP, "aws-xml-protocols", RUNTIME_VERSION)
+        val ENDPOINT_DISCOVERY = KotlinDependency(GradleConfiguration.Implementation, "$RUNTIME_ROOT_NS.endpoints.discovery", RUNTIME_GROUP, "endpoint-discovery", RUNTIME_VERSION)
         val HTTP_AUTH = KotlinDependency(GradleConfiguration.Implementation, "$RUNTIME_ROOT_NS.http.auth", RUNTIME_GROUP, "http-auth", RUNTIME_VERSION)
         val HTTP_AUTH_AWS = KotlinDependency(GradleConfiguration.Implementation, "$RUNTIME_ROOT_NS.http.auth", RUNTIME_GROUP, "http-auth-aws", RUNTIME_VERSION)
         val IDENTITY_API = KotlinDependency(GradleConfiguration.Implementation, "$RUNTIME_ROOT_NS", RUNTIME_GROUP, "identity-api", RUNTIME_VERSION)
