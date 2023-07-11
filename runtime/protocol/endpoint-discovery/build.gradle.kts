@@ -21,6 +21,9 @@ kotlin {
         commonTest {
             dependencies {
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:$coroutinesVersion")
+
+                val mockkVersion: String by project
+                implementation("io.mockk:mockk:$mockkVersion")
             }
         }
 

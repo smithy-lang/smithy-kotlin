@@ -7,6 +7,7 @@ package aws.smithy.kotlin.runtime.endpoints.discovery
 import aws.smithy.kotlin.runtime.auth.awscredentials.Credentials
 import aws.smithy.kotlin.runtime.client.SdkClientOption
 import aws.smithy.kotlin.runtime.client.endpoints.Endpoint
+import aws.smithy.kotlin.runtime.client.operationName
 import aws.smithy.kotlin.runtime.http.HeadersBuilder
 import aws.smithy.kotlin.runtime.http.operation.EndpointResolver
 import aws.smithy.kotlin.runtime.http.operation.ResolveEndpointRequest
@@ -67,7 +68,7 @@ private val expectedHeaders = HeadersBuilder().apply { set("abc", "def") }.build
 private val expectedAttributes = attributesOf { attributeKey to "attrValue" }
 
 val delegateEndpointResolver = EndpointResolver {
-    val op = it.context.attributes[SdkClientOption.OperationName]
+    val op = it.context.operationName!!
     Endpoint(
         UrlBuilder {
             scheme = Scheme.HTTPS

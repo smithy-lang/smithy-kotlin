@@ -14,11 +14,12 @@ import kotlin.time.Duration
  * An object which caches values and allows retrieving them by key. The values expire after a time. If a value is
  * expired or absent from the cache, it will be read from [valueLookup] and then cached.
  *
- * A sweep operation will run prior to a read that happens after [minimumSweepPeriod] has elapsed from the last sweep
- * (or the initialization of the cache). This sweep will search for and remove expired entries from the cache.
+ * A sweep operation will run prior to a [get] or [invalidate] that happens after [minimumSweepPeriod] has elapsed from
+ * the last sweep (or the initialization of the cache). This sweep will search for and remove expired entries from the
+ * cache.
  *
- * Accesses to this cache are thread-safe via a mutex. All [get] and sweep operations will wait for prior invocations to
- * complete. Note that the [size] property is non-volatile and so may return stale information.
+ * Accesses to this cache are thread-safe via a mutex. All [get], [invalidate], and sweep operations will wait for prior
+ * invocations to complete. Note that the [size] property is non-volatile and so may return stale information.
  *
  * @param K The type of the keys of this cache
  * @param V The type of the values of this cache
@@ -53,6 +54,15 @@ public class ReadThroughCache<K, V>(
         } else {
             current.value
         }
+    }
+
+    /**
+     * Invalidates the value (if any) for the given key, removing it from the cache regardless of its expiry.
+     * @param key The key for which to invalidate a value.
+     */
+    public suspend fun invalidate(key: K): Unit = mutex.withLock {
+        map.remove(key)
+        if (clock.now() > nextSweep) sweep()
     }
 
     private val ExpiringValue<*>.isExpired: Boolean

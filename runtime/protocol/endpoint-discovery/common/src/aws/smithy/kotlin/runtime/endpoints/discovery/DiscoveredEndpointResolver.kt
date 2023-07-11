@@ -10,9 +10,12 @@ import aws.smithy.kotlin.runtime.client.endpoints.Endpoint
 import aws.smithy.kotlin.runtime.http.operation.EndpointResolver
 import aws.smithy.kotlin.runtime.http.operation.ResolveEndpointRequest
 import aws.smithy.kotlin.runtime.net.Host
+import aws.smithy.kotlin.runtime.operation.ExecutionContext
 import aws.smithy.kotlin.runtime.time.Clock
+import aws.smithy.kotlin.runtime.util.AttributeKey
 import aws.smithy.kotlin.runtime.util.ExpiringValue
 import aws.smithy.kotlin.runtime.util.ReadThroughCache
+import aws.smithy.kotlin.runtime.util.get
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.minutes
 
@@ -28,12 +31,17 @@ public class DiscoveredEndpointResolver(
         requireNotNull(discoverHosts().firstOrNull()) { "No endpoints discovered!" }
     }
 
+    public suspend fun invalidate(context: ExecutionContext) {
+        context.getOrNull(discoveryParamsKey)?.let { cache.invalidate(it) }
+    }
+
     override suspend fun resolve(request: ResolveEndpointRequest): Endpoint {
         val identity = request.identity
         require(identity is Credentials) { "Endpoint discovery requires AWS credentials" }
 
         val region = getRegion()
         val cacheKey = DiscoveryParams(region, identity.accessKeyId)
+        request.context[discoveryParamsKey] = cacheKey
         val discoveredHost = cache.get(cacheKey)
 
         val originalEndpoint = delegate.resolve(request)
@@ -45,4 +53,5 @@ public class DiscoveredEndpointResolver(
     }
 }
 
+private val discoveryParamsKey = AttributeKey<DiscoveryParams>("DiscoveryParams")
 private data class DiscoveryParams(private val region: String, private val identity: String)

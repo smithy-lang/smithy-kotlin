@@ -14,7 +14,10 @@ import software.amazon.smithy.kotlin.codegen.lang.KotlinTypes
 import software.amazon.smithy.kotlin.codegen.model.*
 import software.amazon.smithy.kotlin.codegen.rendering.endpoints.EndpointResolverAdapterGenerator
 import software.amazon.smithy.kotlin.codegen.rendering.protocol.HttpProtocolClientGenerator
+import software.amazon.smithy.kotlin.codegen.rendering.protocol.ProtocolGenerator
+import software.amazon.smithy.kotlin.codegen.rendering.protocol.ProtocolMiddleware
 import software.amazon.smithy.kotlin.codegen.rendering.util.ConfigProperty
+import software.amazon.smithy.kotlin.codegen.utils.getOrNull
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.shapes.ServiceShape
@@ -41,6 +44,11 @@ class EndpointDiscoveryIntegration : KotlinIntegration {
 
         return super.additionalServiceConfigProps(ctx) + additionalProps
     }
+
+    override fun customizeMiddleware(
+        ctx: ProtocolGenerator.GenerationContext,
+        resolved: List<ProtocolMiddleware>,
+    ): List<ProtocolMiddleware> = super.customizeMiddleware(ctx, resolved) + listOf(DiscoveredEndpointMiddleware)
 
     override fun enabledForService(model: Model, settings: KotlinSettings): Boolean =
         model.expectShape<ServiceShape>(settings.service).hasTrait<ClientEndpointDiscoveryTrait>()
@@ -92,5 +100,25 @@ class EndpointDiscoveryIntegration : KotlinIntegration {
                 EndpointResolverAdapterGenerator.getSymbol(ctx.settings),
             )
         }
+    }
+}
+
+private object DiscoveredEndpointMiddleware : ProtocolMiddleware {
+    override val name: String = "DiscoveredEndpointMiddleware"
+
+    override fun isEnabledFor(ctx: ProtocolGenerator.GenerationContext, op: OperationShape): Boolean =
+        op.getTrait<ClientEndpointDiscoveryTrait>()?.optionalError?.getOrNull() != null &&
+            op.hasTrait<ClientDiscoveredEndpointTrait>()
+
+    override fun render(ctx: ProtocolGenerator.GenerationContext, op: OperationShape, writer: KotlinWriter) {
+        val interceptor = buildSymbol {
+            name = "DiscoveredEndpointErrorInterceptor"
+            namespace(KotlinDependency.ENDPOINT_DISCOVERY, "aws.smithy.kotlin.runtime.endpoints.discovery")
+        }
+
+        val errorShapeId = ctx.service.expectTrait<ClientEndpointDiscoveryTrait>().optionalError.get()
+        val errorShape = ctx.model.expectShape(errorShapeId)
+        val errorSymbol = ctx.symbolProvider.toSymbol(errorShape)
+        writer.write("op.interceptors.add(#T(#T, discoveredEndpointResolver))", interceptor, errorSymbol)
     }
 }
