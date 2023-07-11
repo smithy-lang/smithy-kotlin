@@ -1,3 +1,4 @@
+software.amazon.smithy.kotlin.codegen.customization.s3.UserSuppliedRegionForCredentialsProviders
 software.amazon.smithy.kotlin.codegen.lang.BuiltinPreprocessor
 software.amazon.smithy.kotlin.codegen.lang.DocumentationPreprocessor
 software.amazon.smithy.kotlin.codegen.model.SetRefactorPreprocessor

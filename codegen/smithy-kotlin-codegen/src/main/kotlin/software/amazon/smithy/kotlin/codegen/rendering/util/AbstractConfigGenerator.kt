@@ -9,7 +9,9 @@ import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.codegen.core.SymbolReference
 import software.amazon.smithy.kotlin.codegen.core.CodegenContext
 import software.amazon.smithy.kotlin.codegen.core.KotlinWriter
+import software.amazon.smithy.kotlin.codegen.core.declareSection
 import software.amazon.smithy.kotlin.codegen.core.withBlock
+import software.amazon.smithy.kotlin.codegen.integration.SectionId
 import software.amazon.smithy.kotlin.codegen.model.PropertyTypeMutability
 import software.amazon.smithy.kotlin.codegen.model.propertyTypeMutability
 
@@ -85,6 +87,7 @@ abstract class AbstractConfigGenerator {
         }
     }
 
+    object CustomConfigPropertyType : SectionId
     protected open fun renderImmutableProperties(props: Collection<ConfigProperty>, writer: KotlinWriter) {
         props.forEach { prop ->
             val override = if (prop.requiresOverride) "override" else "public"
@@ -112,7 +115,9 @@ abstract class AbstractConfigGenerator {
                         prop.propertyType.default,
                     )
                 }
-                is ConfigPropertyType.Custom -> prop.propertyType.render(prop, writer)
+                is ConfigPropertyType.Custom -> writer.declareSection(CustomConfigPropertyType){
+                    prop.propertyType.render(prop, writer) // TODO: DO something here because this is causing something to not be imported
+                }
             }
         }
     }
