@@ -6,6 +6,7 @@ package aws.smithy.kotlin.runtime.net
 
 import aws.smithy.kotlin.runtime.util.text.splitAsQueryString
 import aws.smithy.kotlin.runtime.util.text.urlDecodeComponent
+import aws.smithy.kotlin.runtime.util.text.urlEncodeComponent
 
 internal fun urlParseImpl(url: String, decodingBehavior: UrlDecodingBehavior): Url =
     UrlBuilder {
@@ -23,22 +24,26 @@ internal fun urlParseImpl(url: String, decodingBehavior: UrlDecodingBehavior): U
             port = p ?: scheme.defaultPort
         }
 
+        val pathDecode: (String) -> String = when (decodingBehavior) {
+            UrlDecodingBehavior.DO_NOT_DECODE_PATH -> { s -> s }
+            UrlDecodingBehavior.DECODE_COMPONENTS -> String::urlDecodeComponent
+        }
         if (next.startsWith("/")) {
             next = next.capture(1 until next.firstIndexOrEnd("?", "#")) {
-                path = "/${decodingBehavior.maybeDecode(it)}"
+                path = "/${pathDecode(it)}"
             }
         }
 
         if (next.startsWith("?")) {
             next = next.capture(1 until next.firstIndexOrEnd("#")) {
                 it.splitAsQueryString().entries.forEach { (k, v) ->
-                    parameters.appendAll(decodingBehavior.maybeDecode(k), v.map { decodingBehavior.maybeDecode(it) })
+                    parameters.appendAll(k.urlEncodeComponent(), v.map(String::urlDecodeComponent))
                 }
             }
         }
 
         if (next.startsWith('#') && next.length > 1) {
-            fragment = decodingBehavior.maybeDecode(next.substring(1))
+            fragment = next.substring(1).urlDecodeComponent()
         }
     }
 

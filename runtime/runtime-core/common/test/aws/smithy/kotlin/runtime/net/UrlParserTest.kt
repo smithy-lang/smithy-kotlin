@@ -159,7 +159,7 @@ class UrlParserTest {
         assertEquals("/path/suffix", Url.parse("https://host:80/path%2Fsuffix").path)
         assertEquals(
             "/path%2Fsuffix",
-            Url.parse("https://host:80/path%2Fsuffix", UrlDecodingBehavior.DO_NOT_DECODE).path,
+            Url.parse("https://host:80/path%2Fsuffix", UrlDecodingBehavior.DO_NOT_DECODE_PATH).path,
         )
     }
 
@@ -200,17 +200,6 @@ class UrlParserTest {
                 appendAll("k2", listOf("v 2", "v&2"))
             },
             Url.parse("https://host/path?k=v&k=v&k2=v%202&k2=v%262#fragment").parameters,
-        )
-
-        assertEquals(
-            QueryParameters {
-                appendAll("k", listOf("v", "v"))
-                appendAll("k2", listOf("v%202", "v%262"))
-            },
-            Url.parse(
-                "https://host/path?k=v&k=v&k2=v%202&k2=v%262#fragment",
-                UrlDecodingBehavior.DO_NOT_DECODE,
-            ).parameters,
         )
     }
 
