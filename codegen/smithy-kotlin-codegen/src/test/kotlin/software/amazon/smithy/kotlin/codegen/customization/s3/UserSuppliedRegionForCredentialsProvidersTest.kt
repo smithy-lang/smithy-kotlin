@@ -1,3 +1,8 @@
+/*
+ * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 package software.amazon.smithy.kotlin.codegen.customization.s3
 
 import org.junit.jupiter.api.Assertions.assertFalse
@@ -10,14 +15,14 @@ import software.amazon.smithy.model.Model
 
 class UserSuppliedRegionForCredentialsProvidersTest {
     @Test
-    fun notS3ModelIntegration(){
+    fun notS3ModelIntegration() {
         val model = sampleModel("not s3")
         val isEnabledForModel = UserSuppliedRegionForCredentialsProviders().enabledForService(model, model.defaultSettings())
         assertFalse(isEnabledForModel)
     }
 
     @Test
-    fun s3ModelIntegration(){
+    fun s3ModelIntegration() {
         val model = sampleModel("s3")
         val isEnabledForModel = UserSuppliedRegionForCredentialsProviders().enabledForService(model, model.defaultSettings())
         assertTrue(isEnabledForModel)

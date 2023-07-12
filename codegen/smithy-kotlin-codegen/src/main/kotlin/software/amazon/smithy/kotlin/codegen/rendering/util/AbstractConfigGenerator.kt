@@ -115,7 +115,7 @@ abstract class AbstractConfigGenerator {
                         prop.propertyType.default,
                     )
                 }
-                is ConfigPropertyType.Custom -> writer.declareSection(CustomConfigPropertyType){
+                is ConfigPropertyType.Custom -> writer.declareSection(CustomConfigPropertyType) {
                     prop.propertyType.render(prop, writer)
                 }
             }
