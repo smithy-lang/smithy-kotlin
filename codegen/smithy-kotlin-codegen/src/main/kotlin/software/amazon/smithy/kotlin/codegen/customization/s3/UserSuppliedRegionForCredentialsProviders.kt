@@ -5,12 +5,10 @@
 
 package software.amazon.smithy.kotlin.codegen.customization.s3
 
-import software.amazon.smithy.aws.traits.ServiceTrait
 import software.amazon.smithy.kotlin.codegen.KotlinSettings
 import software.amazon.smithy.kotlin.codegen.core.withBlock
 import software.amazon.smithy.kotlin.codegen.integration.KotlinIntegration
 import software.amazon.smithy.kotlin.codegen.integration.SectionWriterBinding
-import software.amazon.smithy.kotlin.codegen.model.getTrait
 import software.amazon.smithy.kotlin.codegen.rendering.util.AbstractConfigGenerator
 import software.amazon.smithy.model.Model
 
@@ -51,5 +49,5 @@ class UserSuppliedRegionForCredentialsProviders : KotlinIntegration {
     )
 
     override fun enabledForService(model: Model, settings: KotlinSettings): Boolean =
-        model.expectShape(settings.service).getTrait<ServiceTrait>()?.sdkId.equals("s3", true)
+        model.expectShape(settings.service).isServiceShape
 }
