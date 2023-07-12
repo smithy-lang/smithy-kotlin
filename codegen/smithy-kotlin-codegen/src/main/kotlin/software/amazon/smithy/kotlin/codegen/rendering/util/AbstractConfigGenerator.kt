@@ -116,7 +116,7 @@ abstract class AbstractConfigGenerator {
                     )
                 }
                 is ConfigPropertyType.Custom -> writer.declareSection(CustomConfigPropertyType){
-                    prop.propertyType.render(prop, writer) // TODO: DO something here because this is causing something to not be imported
+                    prop.propertyType.render(prop, writer)
                 }
             }
         }
