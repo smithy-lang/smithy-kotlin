@@ -106,7 +106,12 @@ class DefaultEndpointProviderTestGenerator(
         }
 
         writer.withBlock("val expected = #T(", ")", RuntimeTypes.SmithyClient.Endpoints.Endpoint) {
-            write("uri = #T.parse(#S),", RuntimeTypes.Core.Net.Url, endpoint.url)
+            write(
+                "uri = #T.parse(#S, #T.DO_NOT_DECODE),",
+                RuntimeTypes.Core.Net.Url,
+                endpoint.url,
+                RuntimeTypes.Core.Net.UrlDecodingBehavior,
+            )
 
             if (endpoint.headers.isNotEmpty()) {
                 withBlock("headers = #T {", "},", RuntimeTypes.Http.Headers) {

@@ -7,7 +7,7 @@ package aws.smithy.kotlin.runtime.net
 import aws.smithy.kotlin.runtime.util.text.splitAsQueryString
 import aws.smithy.kotlin.runtime.util.text.urlDecodeComponent
 
-internal fun urlParseImpl(url: String): Url =
+internal fun urlParseImpl(url: String, decodingBehavior: UrlDecodingBehavior): Url =
     UrlBuilder {
         var next = url
             .captureUntilAndSkip("://") {
@@ -25,20 +25,20 @@ internal fun urlParseImpl(url: String): Url =
 
         if (next.startsWith("/")) {
             next = next.capture(1 until next.firstIndexOrEnd("?", "#")) {
-                path = "/${it.urlDecodeComponent()}"
+                path = "/${decodingBehavior.maybeDecode(it)}"
             }
         }
 
         if (next.startsWith("?")) {
             next = next.capture(1 until next.firstIndexOrEnd("#")) {
                 it.splitAsQueryString().entries.forEach { (k, v) ->
-                    parameters.appendAll(k.urlDecodeComponent(), v.map(String::urlDecodeComponent))
+                    parameters.appendAll(decodingBehavior.maybeDecode(k), v.map { decodingBehavior.maybeDecode(it) })
                 }
             }
         }
 
         if (next.startsWith('#') && next.length > 1) {
-            fragment = next.substring(1).urlDecodeComponent()
+            fragment = decodingBehavior.maybeDecode(next.substring(1))
         }
     }
 

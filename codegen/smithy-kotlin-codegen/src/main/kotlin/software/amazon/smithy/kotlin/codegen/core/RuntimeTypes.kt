@@ -166,6 +166,7 @@ object RuntimeTypes {
             val splitAsQueryParameters = symbol("splitAsQueryParameters")
             val toQueryParameters = symbol("toQueryParameters")
             val Url = symbol("Url")
+            val UrlDecodingBehavior = symbol("UrlDecodingBehavior")
         }
     }
 

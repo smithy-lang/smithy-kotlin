@@ -871,6 +871,7 @@ public final class aws/smithy/kotlin/runtime/net/Url {
 
 public final class aws/smithy/kotlin/runtime/net/Url$Companion {
 	public final fun parse (Ljava/lang/String;)Laws/smithy/kotlin/runtime/net/Url;
+	public final fun parse (Ljava/lang/String;Laws/smithy/kotlin/runtime/net/UrlDecodingBehavior;)Laws/smithy/kotlin/runtime/net/Url;
 }
 
 public final class aws/smithy/kotlin/runtime/net/UrlBuilder : aws/smithy/kotlin/runtime/util/CanDeepCopy {
@@ -900,6 +901,13 @@ public final class aws/smithy/kotlin/runtime/net/UrlBuilder : aws/smithy/kotlin/
 
 public final class aws/smithy/kotlin/runtime/net/UrlBuilder$Companion {
 	public final fun invoke (Lkotlin/jvm/functions/Function1;)Laws/smithy/kotlin/runtime/net/Url;
+}
+
+public final class aws/smithy/kotlin/runtime/net/UrlDecodingBehavior : java/lang/Enum {
+	public static final field DECODE_COMPONENTS Laws/smithy/kotlin/runtime/net/UrlDecodingBehavior;
+	public static final field DO_NOT_DECODE Laws/smithy/kotlin/runtime/net/UrlDecodingBehavior;
+	public static fun valueOf (Ljava/lang/String;)Laws/smithy/kotlin/runtime/net/UrlDecodingBehavior;
+	public static fun values ()[Laws/smithy/kotlin/runtime/net/UrlDecodingBehavior;
 }
 
 public final class aws/smithy/kotlin/runtime/net/UrlKt {
