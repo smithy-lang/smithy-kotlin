@@ -90,6 +90,7 @@ object RuntimeTypes {
     }
 
     object Core : RuntimeTypePackage(KotlinDependency.CORE) {
+        val Clock = symbol("Clock", "time")
         val ExecutionContext = symbol("ExecutionContext", "operation")
         val ErrorMetadata = symbol("ErrorMetadata")
         val ServiceErrorMetadata = symbol("ServiceErrorMetadata")
@@ -156,6 +157,7 @@ object RuntimeTypes {
             val get = symbol("get")
             val LazyAsyncValue = symbol("LazyAsyncValue")
             val length = symbol("length")
+            val ReadThroughCache = symbol("ReadThroughCache")
             val truthiness = symbol("truthiness")
             val urlEncodeComponent = symbol("urlEncodeComponent", "text")
         }
@@ -169,10 +171,6 @@ object RuntimeTypes {
             val toQueryParameters = symbol("toQueryParameters")
             val Url = symbol("Url")
         }
-    }
-
-    object EndpointDiscovery : RuntimeTypePackage(KotlinDependency.ENDPOINT_DISCOVERY) {
-        val DiscoveredEndpointResolver = symbol("DiscoveredEndpointResolver")
     }
 
     object SmithyClient : RuntimeTypePackage(KotlinDependency.SMITHY_CLIENT) {

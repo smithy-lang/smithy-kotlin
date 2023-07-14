@@ -10,7 +10,6 @@ import software.amazon.smithy.kotlin.codegen.KotlinSettings
 import software.amazon.smithy.kotlin.codegen.core.*
 import software.amazon.smithy.kotlin.codegen.integration.KotlinIntegration
 import software.amazon.smithy.kotlin.codegen.integration.SectionWriterBinding
-import software.amazon.smithy.kotlin.codegen.lang.KotlinTypes
 import software.amazon.smithy.kotlin.codegen.model.*
 import software.amazon.smithy.kotlin.codegen.rendering.endpoints.EndpointResolverAdapterGenerator
 import software.amazon.smithy.kotlin.codegen.rendering.protocol.HttpProtocolClientGenerator
@@ -27,22 +26,25 @@ class EndpointDiscoveryIntegration : KotlinIntegration {
         val endpointDiscoveryOptional = ctx
             .model
             .operationShapes
-            .any { it.getTrait<ClientDiscoveredEndpointTrait>()?.isRequired == false }
+            .none { it.getTrait<ClientDiscoveredEndpointTrait>()?.isRequired == true }
+        val discovererSymbol = EndpointDiscovererGenerator.symbolFor(ctx.settings)
+        return super.additionalServiceConfigProps(ctx) + listOf(
+            ConfigProperty {
+                name = "endpointDiscoverer"
 
-        val additionalProps =
-            if (endpointDiscoveryOptional) {
-                listOf(
-                    ConfigProperty {
-                        name = "useEndpointDiscovery"
-                        documentation = "Whether to use automatic endpoint discovery for operations where it is optional."
-                        useSymbolWithNullableBuilder(KotlinTypes.Boolean, "false")
-                    },
-                )
-            } else {
-                listOf()
-            }
-
-        return super.additionalServiceConfigProps(ctx) + additionalProps
+                if (endpointDiscoveryOptional) {
+                    documentation = """
+                        The endpoint discoverer for this client, if applicable. By default, no endpoint
+                        discovery is provided. To use endpoint discovery, set this to a valid
+                        [${discovererSymbol.name}] instance.
+                    """.trimIndent()
+                    symbol = discovererSymbol.asNullable()
+                } else {
+                    documentation = "The endpoint discoverer for this client"
+                    useSymbolWithNullableBuilder(discovererSymbol, "${discovererSymbol.name}()")
+                }
+            },
+        )
     }
 
     override fun customizeMiddleware(
@@ -55,51 +57,34 @@ class EndpointDiscoveryIntegration : KotlinIntegration {
 
     override val sectionWriters: List<SectionWriterBinding> = listOf(
         SectionWriterBinding(HttpProtocolClientGenerator.EndpointResolverAdapterBinding, ::renderEndpointResolver),
-        SectionWriterBinding(HttpProtocolClientGenerator.AdditionalMethodsSection, ::renderDiscoverEndpoint),
     )
-
-    private fun renderDiscoverEndpoint(writer: KotlinWriter, previousValue: String?) {
-        previousValue?.let(writer::write)
-
-        val ctx = writer.getContextValue(HttpProtocolClientGenerator.AdditionalMethodsSection.GenerationContext)
-        val model = ctx.model
-        val discoveryTrait = ctx.service.expectTrait<ClientEndpointDiscoveryTrait>()
-        val op = model.expectShape<OperationShape>(discoveryTrait.operation)
-
-        writer.withBlock(
-            "private val discoveredEndpointResolver = #T(#T(config), config::region) {",
-            "}",
-            RuntimeTypes.EndpointDiscovery.DiscoveredEndpointResolver,
-            EndpointResolverAdapterGenerator.getSymbol(ctx.settings),
-        ) {
-            // ASSUMPTION No services which use discovery include parameters to the EP operation (despite being
-            // possible according to the Smithy spec).
-            write("#L()", op.defaultName())
-            indent()
-            write(".endpoints")
-            withBlock("?.map { ep -> #T(", ")}", RuntimeTypes.Core.Utils.ExpiringValue) {
-                write("#T.parse(ep.address!!),", RuntimeTypes.Core.Net.Host)
-                write("#T.now() + ep.cachePeriodInMinutes.#T", RuntimeTypes.Core.Instant, KotlinTypes.Time.minutes)
-            }
-            write("?: #T()", KotlinTypes.Collections.listOf)
-            dedent()
-        }
-
-        writer.write("")
-    }
 
     private fun renderEndpointResolver(writer: KotlinWriter, previousValue: String?) {
         val ctx = writer.getContextValue(HttpProtocolClientGenerator.EndpointResolverAdapterBinding.GenerationContext)
         val op = writer.getContextValue(HttpProtocolClientGenerator.EndpointResolverAdapterBinding.OperationShape)
+        val clientSymbol = ctx.symbolProvider.toSymbol(ctx.service)
+        val defaultClientName = "Default${clientSymbol.name}"
 
         when (op.getTrait<ClientDiscoveredEndpointTrait>()?.isRequired) {
             null -> writer.write("#L", previousValue)
-            true -> writer.write("execution.endpointResolver = discoveredEndpointResolver")
+
+            true -> writer.write(
+                "execution.endpointResolver = config.endpointDiscoverer.asEndpointResolver(this@#L, #T(config))",
+                defaultClientName,
+                EndpointResolverAdapterGenerator.getSymbol(ctx.settings),
+            )
+
             false -> writer.write(
-                "execution.endpointResolver = if (config.useEndpointDiscovery) discoveredEndpointResolver else #T(config)",
+                "execution.endpointResolver = config.endpointDiscoverer?.asEndpointResolver(this@#1L, #2T(config)) ?: #2T(config)",
+                defaultClientName,
                 EndpointResolverAdapterGenerator.getSymbol(ctx.settings),
             )
         }
+    }
+
+    override fun writeAdditionalFiles(ctx: CodegenContext, delegator: KotlinDelegator) {
+        EndpointDiscovererGenerator(ctx, delegator).render()
+        super.writeAdditionalFiles(ctx, delegator)
     }
 }
 
@@ -113,12 +98,16 @@ private object DiscoveredEndpointMiddleware : ProtocolMiddleware {
     override fun render(ctx: ProtocolGenerator.GenerationContext, op: OperationShape, writer: KotlinWriter) {
         val interceptor = buildSymbol {
             name = "DiscoveredEndpointErrorInterceptor"
-            namespace(KotlinDependency.ENDPOINT_DISCOVERY, "aws.smithy.kotlin.runtime.endpoints.discovery")
+            namespace(KotlinDependency.HTTP_CLIENT, "aws.smithy.kotlin.runtime.http.interceptors")
         }
 
         val errorShapeId = ctx.service.expectTrait<ClientEndpointDiscoveryTrait>().optionalError.get()
         val errorShape = ctx.model.expectShape(errorShapeId)
         val errorSymbol = ctx.symbolProvider.toSymbol(errorShape)
-        writer.write("op.interceptors.add(#T(#T, discoveredEndpointResolver))", interceptor, errorSymbol)
+        writer.write(
+            "config.endpointDiscoverer?.let { op.interceptors.add(#T(#T, it::invalidate)) }",
+            interceptor,
+            errorSymbol,
+        )
     }
 }

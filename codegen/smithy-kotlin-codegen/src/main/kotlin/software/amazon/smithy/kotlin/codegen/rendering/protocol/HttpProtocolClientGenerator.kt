@@ -31,11 +31,6 @@ abstract class HttpProtocolClientGenerator(
     protected val middleware: List<ProtocolMiddleware>,
     protected val httpBindingResolver: HttpBindingResolver,
 ) {
-
-    object AdditionalMethodsSection : SectionId {
-        val GenerationContext: SectionKey<ProtocolGenerator.GenerationContext> = SectionKey("GenerationContext")
-    }
-
     object EndpointResolverAdapterBinding : SectionId {
         val GenerationContext: SectionKey<ProtocolGenerator.GenerationContext> = SectionKey("GenerationContext")
         val OperationShape: SectionKey<OperationShape> = SectionKey("OperationShape")
@@ -331,9 +326,7 @@ abstract class HttpProtocolClientGenerator(
     /**
      * Render any additional methods to support client operation
      */
-    protected open fun renderAdditionalMethods(writer: KotlinWriter) {
-        writer.declareSection(AdditionalMethodsSection, mapOf(AdditionalMethodsSection.GenerationContext to ctx))
-    }
+    protected open fun renderAdditionalMethods(writer: KotlinWriter) { }
 
     /**
      * Render optionally installing Md5ChecksumMiddleware.
