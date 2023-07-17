@@ -13,6 +13,13 @@ import aws.smithy.kotlin.runtime.http.response.HttpResponse
 import aws.smithy.kotlin.runtime.operation.ExecutionContext
 import kotlin.reflect.KClass
 
+/**
+ * This interceptor detects a discovered endpoint error and calls a specific [invalidate] lambda. Receiving such an
+ * error indicates that a discovered endpoint is no longer valid (e.g., has expired) and the endpoint should be
+ * re-discovered.
+ * @param errorType The service-specific error type which indicates a discovered endpoint error.
+ * @param invalidate A callback that takes action upon the receipt of a discovered endpoint error.
+ */
 @InternalApi
 public class DiscoveredEndpointErrorInterceptor(
     private val errorType: KClass<out ServiceException>,
