@@ -110,7 +110,7 @@ public data class UserInfo(public val username: String, public val password: Str
  */
 public enum class UrlDecodingBehavior {
     /**
-     * Identifies that a URL string does not its path component need to be URL-decoded.
+     * Identifies that a URL string does not need its path component need to be URL-decoded.
      */
     DO_NOT_DECODE_PATH,
 

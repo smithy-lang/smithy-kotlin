@@ -37,7 +37,7 @@ internal fun urlParseImpl(url: String, decodingBehavior: UrlDecodingBehavior): U
         if (next.startsWith("?")) {
             next = next.capture(1 until next.firstIndexOrEnd("#")) {
                 it.splitAsQueryString().entries.forEach { (k, v) ->
-                    parameters.appendAll(k.urlEncodeComponent(), v.map(String::urlDecodeComponent))
+                    parameters.appendAll(k.urlDecodeComponent(), v.map(String::urlDecodeComponent))
                 }
             }
         }

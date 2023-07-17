@@ -198,8 +198,9 @@ class UrlParserTest {
             QueryParameters {
                 appendAll("k", listOf("v", "v"))
                 appendAll("k2", listOf("v 2", "v&2"))
+                appendAll("k 3", listOf("v3"))
             },
-            Url.parse("https://host/path?k=v&k=v&k2=v%202&k2=v%262#fragment").parameters,
+            Url.parse("https://host/path?k=v&k=v&k2=v%202&k2=v%262&k%203=v3#fragment").parameters,
         )
     }
 
