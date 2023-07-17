@@ -36,7 +36,7 @@ class EndpointDiscovererGeneratorTest {
 
         actual.shouldContainOnlyOnceWithDiff(
             """
-                internal suspend fun asEndpointResolver(client: TestClient, delegate: EndpointResolverAdapter) = EndpointResolver { request ->
+                internal fun asEndpointResolver(client: TestClient, delegate: EndpointResolverAdapter) = EndpointResolver { request ->
                     val identity = request.identity
                     require(identity is Credentials) { "Endpoint discovery requires AWS credentials" }
             

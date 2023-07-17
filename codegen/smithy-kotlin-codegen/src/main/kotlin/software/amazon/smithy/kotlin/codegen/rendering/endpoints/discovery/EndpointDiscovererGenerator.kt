@@ -69,7 +69,7 @@ class EndpointDiscovererGenerator(private val ctx: CodegenContext, private val d
 
     private fun KotlinWriter.renderAsEndpointResolver() {
         withBlock(
-            "internal suspend fun asEndpointResolver(client: #T, delegate: #T) = #T { request ->",
+            "internal fun asEndpointResolver(client: #T, delegate: #T) = #T { request ->",
             "}",
             clientSymbol,
             EndpointResolverAdapterGenerator.getSymbol(ctx.settings),
