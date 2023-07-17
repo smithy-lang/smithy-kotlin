@@ -64,7 +64,7 @@ public class HttpClientMetrics(
     public val requestsQueuedDuration: DoubleHistogram = meter.createDoubleHistogram(
         "smithy.client.http.requests.queued_duration",
         "s",
-        "The amount of time a requests spent queued waiting to be executed by the HTTP client",
+        "The amount of time a request spent queued waiting to be executed by the HTTP client",
     )
 
     /**
