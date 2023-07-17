@@ -11,6 +11,7 @@ import aws.smithy.kotlin.runtime.serde.xml.serialization.BufferingXmlStreamWrite
 /**
  * Defines an interface to serialization of an XML Infoset.
  */
+@InternalApi
 public interface XmlStreamWriter {
 
     /**
@@ -36,6 +37,7 @@ public interface XmlStreamWriter {
      * or throw IllegalStateException if default namespace is already bound
      * to non-empty string.
      */
+    @InternalApi
     public fun startTag(name: String, namespace: String? = null): XmlStreamWriter
 
     /**
@@ -50,6 +52,7 @@ public interface XmlStreamWriter {
     /**
      * Write end tag. Repetition of namespace and name is just for avoiding errors.
      */
+    @InternalApi
     public fun endTag(name: String, namespace: String? = null): XmlStreamWriter
 
     /**
@@ -60,6 +63,7 @@ public interface XmlStreamWriter {
     /**
      * Set the namespace prefix
      */
+    @InternalApi
     public fun namespacePrefix(uri: String, prefix: String? = null)
 
     /**
@@ -73,6 +77,7 @@ public interface XmlStreamWriter {
     public val text: String
 }
 
+@InternalApi
 public fun XmlStreamWriter.text(text: Number) {
     this.text(text.toString())
 }

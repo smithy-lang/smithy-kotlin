@@ -23,7 +23,6 @@ import kotlin.reflect.KClass
  * @property deserializer The component responsible for deserializing an HTTP response into the output type `O`
  * @property signer The component responsible for signing the request
  */
-@OptIn(Uuid.WeakRng::class)
 @InternalApi
 public class SdkHttpOperation<I, O> internal constructor(
     public val execution: SdkOperationExecution<I, O>,
@@ -56,6 +55,7 @@ public class SdkHttpOperation<I, O> internal constructor(
     public fun install(middleware: ReceiveMiddleware) { middleware.install(this) }
     public fun install(middleware: InlineMiddleware<I, O>) { middleware.install(this) }
 
+    @InternalApi
     public companion object {
         public inline fun <reified I, reified O> build(block: SdkHttpOperationBuilder<I, O>.() -> Unit): SdkHttpOperation<I, O> =
             SdkHttpOperationBuilder<I, O>(
@@ -68,6 +68,7 @@ public class SdkHttpOperation<I, O> internal constructor(
 /**
  * Gets the unique ID that identifies the active SDK request in this [ExecutionContext].
  */
+@InternalApi
 public val ExecutionContext.sdkRequestId: String
     get() = get(HttpOperationContext.SdkRequestId)
 

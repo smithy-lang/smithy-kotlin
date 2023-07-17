@@ -12,6 +12,7 @@ import aws.smithy.kotlin.runtime.InternalApi
  */
 @InternalApi
 public interface Logger {
+    @InternalApi
     public companion object {
         /**
          * Get the logger for the class [T]
@@ -79,24 +80,29 @@ public interface Logger {
 /**
  * Add a log message if trace logging is enabled
  */
+@InternalApi
 public fun Logger.trace(msg: String): Unit = trace { msg }
 
 /**
  * Add a log message if debug logging is enabled
  */
+@InternalApi
 public fun Logger.debug(msg: String): Unit = debug { msg }
 
 /**
  * Add a log message if info logging is enabled
  */
+@InternalApi
 public fun Logger.info(msg: String): Unit = info { msg }
 
 /**
  * Add a log message if warn logging is enabled
  */
+@InternalApi
 public fun Logger.warn(msg: String): Unit = warn { msg }
 
 /**
  * Add a log message if error logging is enabled
  */
+@InternalApi
 public fun Logger.error(msg: String): Unit = error { msg }

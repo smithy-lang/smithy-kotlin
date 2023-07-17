@@ -4,6 +4,7 @@
  */
 package aws.smithy.kotlin.runtime.http.middleware
 
+import aws.smithy.kotlin.runtime.InternalApi
 import aws.smithy.kotlin.runtime.SdkBaseException
 import aws.smithy.kotlin.runtime.http.*
 import aws.smithy.kotlin.runtime.http.operation.ReceiveMiddleware
@@ -15,6 +16,7 @@ import aws.smithy.kotlin.runtime.io.Handler
 /**
  * Generic HTTP service exception
  */
+@InternalApi
 public class HttpResponseException : SdkBaseException {
 
     public constructor() : super()
@@ -54,6 +56,7 @@ public class HttpResponseException : SdkBaseException {
  * so all we can do is throw a generic exception with the code and let the user figure out what modeled error it was
  * using whatever matching mechanism they want.
  */
+@InternalApi
 public class DefaultValidateResponse : ReceiveMiddleware {
 
     override suspend fun <H : Handler<SdkHttpRequest, HttpCall>> handle(request: SdkHttpRequest, next: H): HttpCall {

@@ -21,7 +21,7 @@ import kotlin.coroutines.CoroutineContext
  */
 @InternalApi
 public open class HttpOperationContext {
-
+    @InternalApi
     public companion object {
         /**
          * The expected HTTP status code of a successful response is stored under this key
@@ -62,6 +62,7 @@ public open class HttpOperationContext {
     /**
      * Convenience builder for constructing HTTP client operations
      */
+    @InternalApi
     public open class Builder : ClientOptionsBuilder() {
 
         /**

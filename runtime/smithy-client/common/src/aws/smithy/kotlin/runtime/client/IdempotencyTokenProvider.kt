@@ -5,7 +5,6 @@
 package aws.smithy.kotlin.runtime.client
 
 import aws.smithy.kotlin.runtime.util.Uuid
-import aws.smithy.kotlin.runtime.util.Uuid.WeakRng
 
 /**
  * User-accessible configuration for client-side token generation.
@@ -53,6 +52,5 @@ public fun interface IdempotencyTokenProvider {
  * in client code.
  */
 private class DefaultIdempotencyTokenProvider : IdempotencyTokenProvider {
-    @OptIn(WeakRng::class)
     override fun generateToken(): String = Uuid.random().toString()
 }

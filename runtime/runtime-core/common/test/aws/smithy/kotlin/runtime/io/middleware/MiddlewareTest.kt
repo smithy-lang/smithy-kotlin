@@ -6,7 +6,6 @@
 package aws.smithy.kotlin.runtime.io.middleware
 
 import aws.smithy.kotlin.runtime.io.Handler
-import aws.smithy.kotlin.runtime.io.HandlerLambda
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
@@ -67,5 +66,26 @@ class MiddlewareTest {
         }
 
         assertEquals(22, mr.call("22"))
+    }
+}
+
+data class HandlerLambda<Request, Response>(private val fn: suspend (Request) -> Response) : Handler<Request, Response> {
+    override suspend fun call(request: Request): Response = fn(request)
+}
+
+class MapRequest<R1, R2, Response, H>(
+    private val inner: H,
+    private val fn: suspend (R1) -> R2,
+) : Handler<R1, Response> where H : Handler<R2, Response> {
+    override suspend fun call(request: R1): Response = inner.call(fn(request))
+}
+
+class MapResponse<Request, R1, R2, H>(
+    private val inner: H,
+    private val fn: suspend (R1) -> R2,
+) : Handler<Request, R2> where H : Handler<Request, R1> {
+    override suspend fun call(request: Request): R2 {
+        val res = inner.call(request)
+        return fn(res)
     }
 }

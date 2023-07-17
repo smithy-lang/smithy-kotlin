@@ -4,6 +4,7 @@
  */
 package aws.smithy.kotlin.runtime.serde.xml
 
+import aws.smithy.kotlin.runtime.InternalApi
 import aws.smithy.kotlin.runtime.content.BigDecimal
 import aws.smithy.kotlin.runtime.content.BigInteger
 import aws.smithy.kotlin.runtime.content.Document
@@ -16,7 +17,7 @@ import aws.smithy.kotlin.runtime.util.*
  * Provides serialization for the XML message format.
  * @param xmlWriter where content is serialize to
  */
-// TODO - mark class internal and remove integration tests once serde is stable
+@InternalApi
 public class XmlSerializer(private val xmlWriter: XmlStreamWriter = xmlStreamWriter()) : Serializer, StructSerializer {
 
     // FIXME - clean up stack to distinguish between mutable/immutable and move to utils? (e.g. MutableStack<T> = mutableStackOf())

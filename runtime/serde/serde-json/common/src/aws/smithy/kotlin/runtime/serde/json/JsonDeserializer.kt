@@ -4,6 +4,7 @@
  */
 package aws.smithy.kotlin.runtime.serde.json
 
+import aws.smithy.kotlin.runtime.InternalApi
 import aws.smithy.kotlin.runtime.content.BigDecimal
 import aws.smithy.kotlin.runtime.content.BigInteger
 import aws.smithy.kotlin.runtime.content.Document
@@ -14,7 +15,9 @@ import aws.smithy.kotlin.runtime.serde.*
  *
  * @param payload underlying document from which tokens are read
  */
+@InternalApi
 public class JsonDeserializer(payload: ByteArray) : Deserializer, Deserializer.ElementIterator, Deserializer.EntryIterator, PrimitiveDeserializer {
+    @InternalApi
     public companion object {
         private val validNumberStrings = setOf("Infinity", "-Infinity", "NaN")
     }

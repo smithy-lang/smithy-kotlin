@@ -36,6 +36,7 @@ import kotlin.time.ExperimentalTime
 import kotlin.time.measureTimedValue
 import aws.smithy.kotlin.runtime.io.middleware.decorate as decorateHandler
 
+@InternalApi
 public typealias SdkHttpRequest = OperationRequest<HttpRequestBuilder>
 
 /**
