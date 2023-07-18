@@ -15,6 +15,7 @@ import aws.smithy.kotlin.runtime.io.middleware.ModifyRequest
  */
 @InternalApi
 public interface InitializeMiddleware<Request, Response> : Middleware<OperationRequest<Request>, Response> {
+    @InternalApi
     public fun install(op: SdkHttpOperation<Request, Response>) {
         op.execution.initialize.register(this)
     }
@@ -25,6 +26,7 @@ public interface InitializeMiddleware<Request, Response> : Middleware<OperationR
  */
 @InternalApi
 public interface MutateMiddleware<Response> : Middleware<SdkHttpRequest, Response> {
+    @InternalApi
     public fun install(op: SdkHttpOperation<*, Response>) {
         op.execution.mutate.register(this)
     }
@@ -43,6 +45,7 @@ public interface ModifyRequestMiddleware : ModifyRequest<SdkHttpRequest> {
      *
      * NOTE: the default implementation will register with the [SdkOperationExecution.mutate] phase.
      */
+    @InternalApi
     public fun install(op: SdkHttpOperation<*, *>) {
         op.execution.mutate.register(this)
     }
@@ -53,6 +56,7 @@ public interface ModifyRequestMiddleware : ModifyRequest<SdkHttpRequest> {
  */
 @InternalApi
 public interface ReceiveMiddleware : Middleware<SdkHttpRequest, HttpCall> {
+    @InternalApi
     public fun install(op: SdkHttpOperation<*, *>) {
         op.execution.receive.register(this)
     }

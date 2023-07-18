@@ -61,6 +61,7 @@ public sealed class MessageType {
      * @param shapeType the event type as identified by the `:event-type` header.
      * @param contentType the content type of the payload (if present)
      */
+    @InternalApi
     public data class Event(val shapeType: String, val contentType: String? = null) : MessageType()
 
     /**
@@ -80,6 +81,7 @@ public sealed class MessageType {
      * @param shapeType the exception type as identified by the `:exception-type` header.
      * @param contentType the content type of the payload (if present)
      */
+    @InternalApi
     public data class Exception(val shapeType: String, val contentType: String? = null) : MessageType()
 
     /**
@@ -97,10 +99,12 @@ public sealed class MessageType {
      * :error-message: An error occurred
      * ```
      */
+    @InternalApi
     public data class Error(val errorCode: String, val message: String? = null) : MessageType()
 
     /**
      * Catch all for unknown message types outside of `event`, `exception`, or `error`
      */
+    @InternalApi
     public data class SdkUnknown(val messageType: String) : MessageType()
 }

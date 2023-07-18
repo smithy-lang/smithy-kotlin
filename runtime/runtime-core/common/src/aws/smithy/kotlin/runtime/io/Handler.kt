@@ -11,15 +11,3 @@ package aws.smithy.kotlin.runtime.io
 public interface Handler<in Request, out Response> {
     public suspend fun call(request: Request): Response
 }
-
-/**
- * Alias for a lambda based [Handler]
- */
-public typealias HandlerFn<Request, Response> = suspend (Request) -> Response
-
-/**
- * Adapter for [HandlerFn] that implements [Handler]
- */
-public data class HandlerLambda<Request, Response>(private val fn: HandlerFn<Request, Response>) : Handler<Request, Response> {
-    override suspend fun call(request: Request): Response = fn(request)
-}

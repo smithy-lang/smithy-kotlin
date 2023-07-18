@@ -5,6 +5,7 @@
 
 package aws.smithy.kotlin.runtime.io.middleware
 
+import aws.smithy.kotlin.runtime.InternalApi
 import aws.smithy.kotlin.runtime.io.Handler
 
 /**
@@ -15,7 +16,9 @@ import aws.smithy.kotlin.runtime.io.Handler
  * Giving these individual steps names and types allows for targeted application of middleware at
  * the (most) appropriate step.
  */
+@InternalApi
 public class Phase<Request, Response> : Middleware<Request, Response> {
+    @InternalApi
     public enum class Order {
         Before, After
     }

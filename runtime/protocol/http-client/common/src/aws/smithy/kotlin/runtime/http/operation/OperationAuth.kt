@@ -32,6 +32,7 @@ public data class OperationAuthConfig(
     val configuredAuthSchemes: Map<AuthSchemeId, HttpAuthScheme>,
     val identityProviderConfig: IdentityProviderConfig,
 ) {
+    @InternalApi
     public companion object {
         public val Anonymous: OperationAuthConfig = AnonymousAuthConfig
 

@@ -4,6 +4,7 @@
  */
 package aws.smithy.kotlin.runtime.serde.xml.deserialization
 
+import aws.smithy.kotlin.runtime.InternalApi
 import aws.smithy.kotlin.runtime.serde.DeserializationException
 import aws.smithy.kotlin.runtime.serde.xml.XmlStreamReader
 import aws.smithy.kotlin.runtime.serde.xml.XmlToken
@@ -14,6 +15,7 @@ import aws.smithy.kotlin.runtime.serde.xml.terminates
  * state, [lastToken], etc., but delegates all parsing operations to the scanner.
  * @param source The [XmlLexer] to use for XML parsing.
  */
+@InternalApi
 public class LexingXmlStreamReader(private val source: XmlLexer) : XmlStreamReader {
     private val peekQueue = ArrayDeque<XmlToken>()
 

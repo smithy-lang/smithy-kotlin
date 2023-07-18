@@ -97,19 +97,6 @@ public final class aws/smithy/kotlin/runtime/auth/awssigning/AwsSigningConfig$Co
 	public final fun invoke (Lkotlin/jvm/functions/Function1;)Laws/smithy/kotlin/runtime/auth/awssigning/AwsSigningConfig;
 }
 
-public final class aws/smithy/kotlin/runtime/auth/awssigning/AwsSigningResult {
-	public fun <init> (Ljava/lang/Object;[B)V
-	public final fun component1 ()Ljava/lang/Object;
-	public final fun component2 ()[B
-	public final fun copy (Ljava/lang/Object;[B)Laws/smithy/kotlin/runtime/auth/awssigning/AwsSigningResult;
-	public static synthetic fun copy$default (Laws/smithy/kotlin/runtime/auth/awssigning/AwsSigningResult;Ljava/lang/Object;[BILjava/lang/Object;)Laws/smithy/kotlin/runtime/auth/awssigning/AwsSigningResult;
-	public fun equals (Ljava/lang/Object;)Z
-	public final fun getOutput ()Ljava/lang/Object;
-	public final fun getSignature ()[B
-	public fun hashCode ()I
-	public fun toString ()Ljava/lang/String;
-}
-
 public abstract class aws/smithy/kotlin/runtime/auth/awssigning/HashSpecification {
 }
 

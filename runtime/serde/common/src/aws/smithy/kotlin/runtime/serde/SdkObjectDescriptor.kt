@@ -4,19 +4,24 @@
  */
 package aws.smithy.kotlin.runtime.serde
 
+import aws.smithy.kotlin.runtime.InternalApi
+
 /**
  * Metadata container for all fields of an object/class
  */
+@InternalApi
 public class SdkObjectDescriptor private constructor(builder: Builder) : SdkFieldDescriptor(
     kind = SerialKind.Struct,
     traits = builder.traits,
 ) {
     public val fields: List<SdkFieldDescriptor> = builder.fields
 
+    @InternalApi
     public companion object {
         public inline fun build(block: Builder.() -> Unit): SdkObjectDescriptor = Builder().apply(block).build()
     }
 
+    @InternalApi
     public class Builder {
         internal val fields: MutableList<SdkFieldDescriptor> = mutableListOf()
         internal val traits: MutableSet<FieldTrait> = mutableSetOf()

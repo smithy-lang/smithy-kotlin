@@ -22,6 +22,7 @@ import kotlin.time.Duration
  */
 @InternalApi
 public class AwsHttpSigner(private val config: Config) : HttpSigner {
+    @InternalApi
     public companion object {
         public inline operator fun invoke(block: Config.() -> Unit): AwsHttpSigner {
             val config = Config().apply(block)
@@ -31,6 +32,7 @@ public class AwsHttpSigner(private val config: Config) : HttpSigner {
         }
     }
 
+    @InternalApi
     public class Config {
         /**
          * The signer implementation to use for signing

@@ -4,10 +4,13 @@
  */
 package aws.smithy.kotlin.runtime.auth.awssigning
 
+import aws.smithy.kotlin.runtime.InternalApi
+
 /**
  * The result of an AWS signing operation
  * @param T The type of the result
  */
+@InternalApi
 public data class AwsSigningResult<T>(
     /**
      * The signed output.

@@ -18,6 +18,7 @@ public typealias ClientOption<T> = AttributeKey<T>
 /**
  * Builder for configuring service client options manually
  */
+@InternalApi
 public interface ClientOptions {
     /**
      * Check if the specified [option] exists

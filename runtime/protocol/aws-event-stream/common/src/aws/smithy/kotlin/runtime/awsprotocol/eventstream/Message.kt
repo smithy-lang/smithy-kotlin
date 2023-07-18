@@ -42,7 +42,7 @@ internal const val MAX_HEADER_SIZE = 128 * 1024
  */
 @InternalApi
 public data class Message(val headers: List<Header>, val payload: ByteArray) {
-
+    @InternalApi
     public companion object {
         /**
          * Read a message from [source]
@@ -88,6 +88,7 @@ public data class Message(val headers: List<Header>, val payload: ByteArray) {
             return message.build()
         }
     }
+
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other == null || this::class != other::class) return false

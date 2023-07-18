@@ -38,6 +38,7 @@ import kotlin.coroutines.coroutineContext
 import kotlin.time.ExperimentalTime
 import aws.smithy.kotlin.runtime.io.middleware.decorate as decorateHandler
 
+@InternalApi
 public typealias SdkHttpRequest = OperationRequest<HttpRequestBuilder>
 
 /**
