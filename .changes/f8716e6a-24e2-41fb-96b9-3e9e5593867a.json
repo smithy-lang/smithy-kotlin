@@ -1,0 +1,8 @@
+{
+    "id": "f8716e6a-24e2-41fb-96b9-3e9e5593867a",
+    "type": "bugfix",
+    "description": "Correct URL encoding in endpoint resolution",
+    "issues": [
+        "awslabs/smithy-kotlin#888"
+    ]
+}
