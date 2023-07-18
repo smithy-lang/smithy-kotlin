@@ -5,7 +5,6 @@
 
 package aws.smithy.kotlin.runtime.httptest
 
-import aws.smithy.kotlin.runtime.logging.Logger
 import io.ktor.server.engine.*
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeout
@@ -25,8 +24,6 @@ public abstract class TestWithLocalServer {
 
     public abstract val server: ApplicationEngine
 
-    private val logger = Logger.getLogger<TestWithLocalServer>()
-
     @BeforeTest
     public fun startServer(): Unit = runBlocking {
         withTimeout(5.seconds) {
@@ -36,7 +33,7 @@ public abstract class TestWithLocalServer {
                 attempt++
                 try {
                     server.start()
-                    logger.info { "test server listening on: $testHost:$serverPort" }
+                    println("test server listening on: $testHost:$serverPort")
                     break
                 } catch (cause: Throwable) {
                     if (attempt >= 10) throw cause
@@ -51,7 +48,7 @@ public abstract class TestWithLocalServer {
     @AfterTest
     public fun stopServer() {
         server.stop(0, 0, TimeUnit.SECONDS)
-        logger.info { "test server stopped" }
+        println("test server stopped")
     }
 
     private fun ensureServerRunning() {

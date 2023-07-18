@@ -4,41 +4,85 @@
  */
 package aws.smithy.kotlin.runtime.http.engine.okhttp
 
+import aws.smithy.kotlin.runtime.ExperimentalApi
+import aws.smithy.kotlin.runtime.http.engine.internal.HttpClientMetrics
 import aws.smithy.kotlin.runtime.net.HostResolver
 import aws.smithy.kotlin.runtime.net.toHostAddress
-import aws.smithy.kotlin.runtime.tracing.NoOpTraceSpan
-import aws.smithy.kotlin.runtime.tracing.logger
+import aws.smithy.kotlin.runtime.telemetry.TelemetryProvider
+import aws.smithy.kotlin.runtime.telemetry.logging.LoggerProvider
+import aws.smithy.kotlin.runtime.telemetry.logging.MessageSupplier
+import aws.smithy.kotlin.runtime.telemetry.logging.getLogger
+import aws.smithy.kotlin.runtime.telemetry.logging.logger
+import aws.smithy.kotlin.runtime.telemetry.metrics.recordSeconds
+import aws.smithy.kotlin.runtime.telemetry.telemetryProvider
+import aws.smithy.kotlin.runtime.telemetry.trace.SpanStatus
+import aws.smithy.kotlin.runtime.telemetry.trace.recordException
 import okhttp3.*
 import java.io.IOException
 import java.net.InetAddress
 import java.net.InetSocketAddress
 import java.net.Proxy
+import kotlin.time.Duration.Companion.seconds
+import kotlin.time.ExperimentalTime
+import kotlin.time.TimeMark
+import kotlin.time.TimeSource
 
+internal const val TELEMETRY_SCOPE = "aws.smithy.kotlin.runtime.http.engine.okhttp"
+
+// see https://square.github.io/okhttp/features/events/#eventlistener for example callback flow
+@OptIn(ExperimentalTime::class, ExperimentalApi::class)
 internal class HttpEngineEventListener(
     private val pool: ConnectionPool,
     private val hr: HostResolver,
+    private val dispatcher: Dispatcher,
+    private val metrics: HttpClientMetrics,
     call: Call,
 ) : EventListener() {
-    private val traceSpan = call.request().tag<SdkRequestTag>()?.traceSpan?.child("HTTP") ?: NoOpTraceSpan
-    private val logger = traceSpan.logger<HttpEngineEventListener>()
+    private val provider: TelemetryProvider = call.request().tag<SdkRequestTag>()?.callContext?.telemetryProvider ?: TelemetryProvider.None
+    private val traceSpan = provider.tracerProvider
+        .getOrCreateTracer(TELEMETRY_SCOPE)
+        .createSpan("HTTP")
 
-    private inline fun trace(crossinline msg: () -> Any) {
+    private val logger = call.request().tag<SdkRequestTag>()?.callContext?.logger<OkHttpEngine>() ?: LoggerProvider.None.getLogger<OkHttpEngine>()
+
+    // callStart() is invoked immediately when enqueued, next success phase is either dnsStart() or connectionAcquired()
+    //  see https://github.com/square/okhttp/blob/7c92ed0879477eddb2fce6b4066d151525d5687f/okhttp/src/jvmMain/kotlin/okhttp3/internal/connection/RealCall.kt#L167-L175
+    private var callTimeStart: TimeMark? = null
+    private var signaledQueuedDuration = false
+    private var queuedDuration = 0.seconds
+
+    private var signaledConnectAcquireDuration = false
+    private var dnsStartTime: TimeMark? = null
+
+    private inline fun trace(crossinline msg: MessageSupplier) {
         logger.trace { msg() }
     }
 
-    private inline fun trace(throwable: Throwable, crossinline msg: () -> Any) {
+    private inline fun trace(throwable: Throwable, crossinline msg: MessageSupplier) {
         logger.trace(throwable) { msg() }
     }
 
-    override fun callStart(call: Call) = trace { "call started" }
+    override fun callStart(call: Call) {
+        val now = TimeSource.Monotonic.markNow()
+        callTimeStart = now
+        metrics.queuedRequests = dispatcher.queuedCallsCount().toLong()
+        metrics.inFlightRequests = dispatcher.runningCallsCount().toLong()
+        trace { "call started" }
+    }
 
     override fun callEnd(call: Call) {
+        metrics.queuedRequests = dispatcher.queuedCallsCount().toLong()
+        metrics.inFlightRequests = dispatcher.runningCallsCount().toLong()
         trace { "call complete" }
         traceSpan.close()
     }
 
     override fun callFailed(call: Call, ioe: IOException) {
+        metrics.queuedRequests = dispatcher.queuedCallsCount().toLong()
+        metrics.inFlightRequests = dispatcher.runningCallsCount().toLong()
         trace(ioe) { "call failed" }
+        traceSpan.recordException(ioe, true)
+        traceSpan.setStatus(SpanStatus.ERROR)
         traceSpan.close()
     }
 
@@ -62,16 +106,47 @@ internal class HttpEngineEventListener(
     }
 
     override fun connectionAcquired(call: Call, connection: Connection) {
+        metrics.acquiredConnections = pool.connectionCount().toLong()
+        metrics.idleConnections = pool.idleConnectionCount().toLong()
+
+        val callStarted = checkNotNull(callTimeStart)
+        if (!signaledQueuedDuration) {
+            signaledQueuedDuration = true
+            queuedDuration = callStarted.elapsedNow()
+            metrics.requestsQueuedDuration.recordSeconds(queuedDuration)
+        }
+
+        if (!signaledConnectAcquireDuration) {
+            signaledConnectAcquireDuration = true
+
+            val connectAcquireDuration = if (dnsStartTime != null) {
+                dnsStartTime!!.elapsedNow()
+            } else {
+                callStarted.elapsedNow() - queuedDuration
+            }
+            metrics.connectionAcquireDuration.recordSeconds(connectAcquireDuration)
+        }
+
         val connId = System.identityHashCode(connection)
         trace { "connection acquired: conn(id=$connId)=$connection; connPool: total=${pool.connectionCount()}, idle=${pool.idleConnectionCount()}" }
     }
 
     override fun connectionReleased(call: Call, connection: Connection) {
+        metrics.acquiredConnections = pool.connectionCount().toLong()
+        metrics.idleConnections = pool.idleConnectionCount().toLong()
         val connId = System.identityHashCode(connection)
         trace { "connection released: conn(id=$connId)=$connection; connPool: total=${pool.connectionCount()}, idle=${pool.idleConnectionCount()}" }
     }
 
-    override fun dnsStart(call: Call, domainName: String) = trace { "dns query: domain=$domainName" }
+    override fun dnsStart(call: Call, domainName: String) {
+        dnsStartTime = TimeSource.Monotonic.markNow()
+        if (!signaledQueuedDuration) {
+            queuedDuration = checkNotNull(callTimeStart).elapsedNow()
+            metrics.requestsQueuedDuration.recordSeconds(queuedDuration)
+            signaledQueuedDuration = true
+        }
+        trace { "dns query: domain=$domainName" }
+    }
 
     override fun dnsEnd(call: Call, domainName: String, inetAddressList: List<InetAddress>) =
         trace { "dns resolved: domain=$domainName; records=$inetAddressList" }

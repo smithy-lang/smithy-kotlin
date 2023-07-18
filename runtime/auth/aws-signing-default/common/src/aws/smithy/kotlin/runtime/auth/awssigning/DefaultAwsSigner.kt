@@ -5,8 +5,8 @@
 package aws.smithy.kotlin.runtime.auth.awssigning
 
 import aws.smithy.kotlin.runtime.http.Headers
-import aws.smithy.kotlin.runtime.http.operation.getLogger
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
+import aws.smithy.kotlin.runtime.telemetry.logging.logger
 import aws.smithy.kotlin.runtime.time.TimestampFormat
 import kotlin.coroutines.coroutineContext
 
@@ -19,7 +19,7 @@ internal class DefaultAwsSignerImpl(
     private val requestMutator: RequestMutator = RequestMutator.Default,
 ) : AwsSigner {
     override suspend fun sign(request: HttpRequest, config: AwsSigningConfig): AwsSigningResult<HttpRequest> {
-        val logger = coroutineContext.getLogger<DefaultAwsSignerImpl>()
+        val logger = coroutineContext.logger<DefaultAwsSignerImpl>()
 
         // TODO implement SigV4a
         require(config.algorithm == AwsSigningAlgorithm.SIGV4) { "${config.algorithm} support is not yet implemented" }
@@ -45,7 +45,7 @@ internal class DefaultAwsSignerImpl(
         prevSignature: ByteArray,
         config: AwsSigningConfig,
     ): AwsSigningResult<Unit> {
-        val logger = coroutineContext.getLogger<DefaultAwsSignerImpl>()
+        val logger = coroutineContext.logger<DefaultAwsSignerImpl>()
 
         val stringToSign = signatureCalculator.chunkStringToSign(chunkBody, prevSignature, config)
         logger.trace { "Chunk string to sign:\n$stringToSign" }
@@ -63,7 +63,7 @@ internal class DefaultAwsSignerImpl(
         prevSignature: ByteArray,
         config: AwsSigningConfig,
     ): AwsSigningResult<Unit> {
-        val logger = coroutineContext.getLogger<DefaultAwsSignerImpl>()
+        val logger = coroutineContext.logger<DefaultAwsSignerImpl>()
 
         // FIXME - can we share canonicalization code more than we are..., also this reduce is inefficient.
         // canonicalize the headers

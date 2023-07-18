@@ -9,7 +9,7 @@ import aws.smithy.kotlin.runtime.http.HttpBody
 import aws.smithy.kotlin.runtime.io.internal.toOkio
 import aws.smithy.kotlin.runtime.io.internal.toSdk
 import aws.smithy.kotlin.runtime.io.readAll
-import aws.smithy.kotlin.runtime.tracing.trace
+import aws.smithy.kotlin.runtime.telemetry.logging.trace
 import aws.smithy.kotlin.runtime.util.derivedName
 import kotlinx.coroutines.*
 import okhttp3.MediaType

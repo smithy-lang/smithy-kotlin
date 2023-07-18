@@ -6,9 +6,11 @@
 package aws.smithy.kotlin.runtime.http.engine.okhttp
 
 import aws.smithy.kotlin.runtime.http.*
+import aws.smithy.kotlin.runtime.http.engine.internal.HttpClientMetrics
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.net.Url
 import aws.smithy.kotlin.runtime.operation.ExecutionContext
+import aws.smithy.kotlin.runtime.telemetry.TelemetryProvider
 import kotlinx.coroutines.*
 import kotlinx.coroutines.test.runTest
 import okhttp3.Protocol
@@ -20,11 +22,14 @@ import kotlin.test.*
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class OkHttpResponseTest {
+
+    private val testMetrics = HttpClientMetrics("test", TelemetryProvider.None)
+
     @Test
     fun testToSdkResponseEmptyBody() = runTest {
         val request = HttpRequest(HttpMethod.GET, Url.parse("https://aws.amazon.com"), Headers.Empty, HttpBody.Empty)
         val execContext = ExecutionContext()
-        val okRequest = request.toOkHttpRequest(execContext, EmptyCoroutineContext)
+        val okRequest = request.toOkHttpRequest(execContext, EmptyCoroutineContext, testMetrics)
 
         val okResponse = Response.Builder().apply {
             protocol(Protocol.HTTP_1_1)
@@ -43,7 +48,7 @@ class OkHttpResponseTest {
         val request = HttpRequest(HttpMethod.GET, Url.parse("https://aws.amazon.com"), Headers.Empty, HttpBody.Empty)
 
         val execContext = ExecutionContext()
-        val okRequest = request.toOkHttpRequest(execContext, EmptyCoroutineContext)
+        val okRequest = request.toOkHttpRequest(execContext, EmptyCoroutineContext, testMetrics)
 
         val content = "Hello from OkHttp".encodeToByteArray()
 

@@ -10,11 +10,11 @@ import aws.smithy.kotlin.runtime.InternalApi
 import aws.smithy.kotlin.runtime.client.ProtocolRequestInterceptorContext
 import aws.smithy.kotlin.runtime.hashing.*
 import aws.smithy.kotlin.runtime.http.*
-import aws.smithy.kotlin.runtime.http.operation.*
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.http.request.header
 import aws.smithy.kotlin.runtime.http.request.toBuilder
 import aws.smithy.kotlin.runtime.io.*
+import aws.smithy.kotlin.runtime.telemetry.logging.logger
 import aws.smithy.kotlin.runtime.util.*
 import kotlinx.coroutines.*
 import kotlin.coroutines.coroutineContext
@@ -43,7 +43,7 @@ public class FlexibleChecksumsRequestInterceptor<I>(
     }
 
     override suspend fun modifyBeforeRetryLoop(context: ProtocolRequestInterceptorContext<Any, HttpRequest>): HttpRequest {
-        val logger = coroutineContext.getLogger<FlexibleChecksumsRequestInterceptor<I>>()
+        val logger = coroutineContext.logger<FlexibleChecksumsRequestInterceptor<I>>()
 
         checksumAlgorithmName ?: run {
             logger.debug { "no checksum algorithm specified, skipping flexible checksums processing" }

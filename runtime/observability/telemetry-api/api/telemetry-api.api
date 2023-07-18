@@ -1,0 +1,246 @@
+public abstract interface class aws/smithy/kotlin/runtime/telemetry/TelemetryConfig {
+	public abstract fun getTelemetryProvider ()Laws/smithy/kotlin/runtime/telemetry/TelemetryProvider;
+}
+
+public abstract interface class aws/smithy/kotlin/runtime/telemetry/TelemetryConfig$Builder {
+	public abstract fun getTelemetryProvider ()Laws/smithy/kotlin/runtime/telemetry/TelemetryProvider;
+	public abstract fun setTelemetryProvider (Laws/smithy/kotlin/runtime/telemetry/TelemetryProvider;)V
+}
+
+public abstract interface class aws/smithy/kotlin/runtime/telemetry/TelemetryProvider {
+	public static final field Companion Laws/smithy/kotlin/runtime/telemetry/TelemetryProvider$Companion;
+	public abstract fun getContextManager ()Laws/smithy/kotlin/runtime/telemetry/context/ContextManager;
+	public abstract fun getLoggerProvider ()Laws/smithy/kotlin/runtime/telemetry/logging/LoggerProvider;
+	public abstract fun getMeterProvider ()Laws/smithy/kotlin/runtime/telemetry/metrics/MeterProvider;
+	public abstract fun getTracerProvider ()Laws/smithy/kotlin/runtime/telemetry/trace/TracerProvider;
+}
+
+public final class aws/smithy/kotlin/runtime/telemetry/TelemetryProvider$Companion {
+	public final fun getNone ()Laws/smithy/kotlin/runtime/telemetry/TelemetryProvider;
+}
+
+public final class aws/smithy/kotlin/runtime/telemetry/TelemetryProviderContext$Key : kotlin/coroutines/CoroutineContext$Key {
+}
+
+public final class aws/smithy/kotlin/runtime/telemetry/TelemetryProviderContextKt {
+}
+
+public abstract interface class aws/smithy/kotlin/runtime/telemetry/context/Context {
+	public static final field Companion Laws/smithy/kotlin/runtime/telemetry/context/Context$Companion;
+	public abstract fun makeCurrent ()Laws/smithy/kotlin/runtime/telemetry/context/Scope;
+}
+
+public final class aws/smithy/kotlin/runtime/telemetry/context/Context$Companion {
+	public final fun getNone ()Laws/smithy/kotlin/runtime/telemetry/context/Context;
+}
+
+public abstract interface class aws/smithy/kotlin/runtime/telemetry/context/ContextManager {
+	public static final field Companion Laws/smithy/kotlin/runtime/telemetry/context/ContextManager$Companion;
+	public abstract fun current ()Laws/smithy/kotlin/runtime/telemetry/context/Context;
+}
+
+public final class aws/smithy/kotlin/runtime/telemetry/context/ContextManager$Companion {
+	public final fun getNone ()Laws/smithy/kotlin/runtime/telemetry/context/ContextManager;
+}
+
+public abstract interface class aws/smithy/kotlin/runtime/telemetry/context/Scope : java/io/Closeable {
+}
+
+public final class aws/smithy/kotlin/runtime/telemetry/context/TelemetryContextElement$Key : kotlin/coroutines/CoroutineContext$Key {
+}
+
+public final class aws/smithy/kotlin/runtime/telemetry/context/TelemetryContextElementKt {
+}
+
+public final class aws/smithy/kotlin/runtime/telemetry/logging/CoroutineContextLogExtKt {
+}
+
+public final class aws/smithy/kotlin/runtime/telemetry/logging/LogLevel : java/lang/Enum {
+	public static final field Debug Laws/smithy/kotlin/runtime/telemetry/logging/LogLevel;
+	public static final field Error Laws/smithy/kotlin/runtime/telemetry/logging/LogLevel;
+	public static final field Info Laws/smithy/kotlin/runtime/telemetry/logging/LogLevel;
+	public static final field Trace Laws/smithy/kotlin/runtime/telemetry/logging/LogLevel;
+	public static final field Warning Laws/smithy/kotlin/runtime/telemetry/logging/LogLevel;
+	public static fun valueOf (Ljava/lang/String;)Laws/smithy/kotlin/runtime/telemetry/logging/LogLevel;
+	public static fun values ()[Laws/smithy/kotlin/runtime/telemetry/logging/LogLevel;
+}
+
+public abstract interface class aws/smithy/kotlin/runtime/telemetry/logging/LogRecordBuilder {
+	public abstract fun emit ()V
+	public abstract fun setCause (Ljava/lang/Throwable;)V
+	public abstract fun setContext (Laws/smithy/kotlin/runtime/telemetry/context/Context;)V
+	public abstract fun setKeyValuePair (Ljava/lang/String;Ljava/lang/Object;)V
+	public abstract fun setMessage (Ljava/lang/String;)V
+	public abstract fun setMessage (Lkotlin/jvm/functions/Function0;)V
+}
+
+public abstract interface class aws/smithy/kotlin/runtime/telemetry/logging/Logger {
+	public static final field Companion Laws/smithy/kotlin/runtime/telemetry/logging/Logger$Companion;
+	public abstract fun atLevel (Laws/smithy/kotlin/runtime/telemetry/logging/LogLevel;)Laws/smithy/kotlin/runtime/telemetry/logging/LogRecordBuilder;
+	public abstract fun debug (Ljava/lang/Throwable;Lkotlin/jvm/functions/Function0;)V
+	public abstract fun error (Ljava/lang/Throwable;Lkotlin/jvm/functions/Function0;)V
+	public abstract fun info (Ljava/lang/Throwable;Lkotlin/jvm/functions/Function0;)V
+	public abstract fun isEnabledFor (Laws/smithy/kotlin/runtime/telemetry/logging/LogLevel;)Z
+	public abstract fun trace (Ljava/lang/Throwable;Lkotlin/jvm/functions/Function0;)V
+	public abstract fun warn (Ljava/lang/Throwable;Lkotlin/jvm/functions/Function0;)V
+}
+
+public final class aws/smithy/kotlin/runtime/telemetry/logging/Logger$Companion {
+	public final fun getNone ()Laws/smithy/kotlin/runtime/telemetry/logging/Logger;
+}
+
+public final class aws/smithy/kotlin/runtime/telemetry/logging/Logger$DefaultImpls {
+	public static synthetic fun debug$default (Laws/smithy/kotlin/runtime/telemetry/logging/Logger;Ljava/lang/Throwable;Lkotlin/jvm/functions/Function0;ILjava/lang/Object;)V
+	public static synthetic fun error$default (Laws/smithy/kotlin/runtime/telemetry/logging/Logger;Ljava/lang/Throwable;Lkotlin/jvm/functions/Function0;ILjava/lang/Object;)V
+	public static synthetic fun info$default (Laws/smithy/kotlin/runtime/telemetry/logging/Logger;Ljava/lang/Throwable;Lkotlin/jvm/functions/Function0;ILjava/lang/Object;)V
+	public static synthetic fun trace$default (Laws/smithy/kotlin/runtime/telemetry/logging/Logger;Ljava/lang/Throwable;Lkotlin/jvm/functions/Function0;ILjava/lang/Object;)V
+	public static synthetic fun warn$default (Laws/smithy/kotlin/runtime/telemetry/logging/Logger;Ljava/lang/Throwable;Lkotlin/jvm/functions/Function0;ILjava/lang/Object;)V
+}
+
+public final class aws/smithy/kotlin/runtime/telemetry/logging/LoggerKt {
+	public static final fun debug (Laws/smithy/kotlin/runtime/telemetry/logging/Logger;Ljava/lang/String;)V
+	public static final fun error (Laws/smithy/kotlin/runtime/telemetry/logging/Logger;Ljava/lang/String;)V
+	public static final fun info (Laws/smithy/kotlin/runtime/telemetry/logging/Logger;Ljava/lang/String;)V
+	public static final fun trace (Laws/smithy/kotlin/runtime/telemetry/logging/Logger;Ljava/lang/String;)V
+	public static final fun warn (Laws/smithy/kotlin/runtime/telemetry/logging/Logger;Ljava/lang/String;)V
+}
+
+public abstract interface class aws/smithy/kotlin/runtime/telemetry/logging/LoggerProvider {
+	public static final field Companion Laws/smithy/kotlin/runtime/telemetry/logging/LoggerProvider$Companion;
+	public abstract fun getOrCreateLogger (Ljava/lang/String;)Laws/smithy/kotlin/runtime/telemetry/logging/Logger;
+}
+
+public final class aws/smithy/kotlin/runtime/telemetry/logging/LoggerProvider$Companion {
+	public final fun getNone ()Laws/smithy/kotlin/runtime/telemetry/logging/LoggerProvider;
+}
+
+public final class aws/smithy/kotlin/runtime/telemetry/logging/LoggingContextElement$Key : kotlin/coroutines/CoroutineContext$Key {
+}
+
+public abstract interface class aws/smithy/kotlin/runtime/telemetry/metrics/AsyncMeasurement {
+	public abstract fun record (Ljava/lang/Number;Laws/smithy/kotlin/runtime/util/Attributes;Laws/smithy/kotlin/runtime/telemetry/context/Context;)V
+}
+
+public final class aws/smithy/kotlin/runtime/telemetry/metrics/AsyncMeasurement$DefaultImpls {
+	public static synthetic fun record$default (Laws/smithy/kotlin/runtime/telemetry/metrics/AsyncMeasurement;Ljava/lang/Number;Laws/smithy/kotlin/runtime/util/Attributes;Laws/smithy/kotlin/runtime/telemetry/context/Context;ILjava/lang/Object;)V
+}
+
+public abstract interface class aws/smithy/kotlin/runtime/telemetry/metrics/AsyncMeasurementHandle {
+	public abstract fun stop ()V
+}
+
+public abstract interface class aws/smithy/kotlin/runtime/telemetry/metrics/Histogram {
+	public abstract fun record (Ljava/lang/Number;Laws/smithy/kotlin/runtime/util/Attributes;Laws/smithy/kotlin/runtime/telemetry/context/Context;)V
+}
+
+public final class aws/smithy/kotlin/runtime/telemetry/metrics/Histogram$DefaultImpls {
+	public static synthetic fun record$default (Laws/smithy/kotlin/runtime/telemetry/metrics/Histogram;Ljava/lang/Number;Laws/smithy/kotlin/runtime/util/Attributes;Laws/smithy/kotlin/runtime/telemetry/context/Context;ILjava/lang/Object;)V
+}
+
+public final class aws/smithy/kotlin/runtime/telemetry/metrics/HistogramKt {
+	public static final fun measureSeconds (Laws/smithy/kotlin/runtime/telemetry/metrics/Histogram;Laws/smithy/kotlin/runtime/util/Attributes;Laws/smithy/kotlin/runtime/telemetry/context/Context;Lkotlin/jvm/functions/Function0;)Ljava/lang/Object;
+	public static synthetic fun measureSeconds$default (Laws/smithy/kotlin/runtime/telemetry/metrics/Histogram;Laws/smithy/kotlin/runtime/util/Attributes;Laws/smithy/kotlin/runtime/telemetry/context/Context;Lkotlin/jvm/functions/Function0;ILjava/lang/Object;)Ljava/lang/Object;
+}
+
+public abstract interface class aws/smithy/kotlin/runtime/telemetry/metrics/Meter {
+	public abstract fun createAsyncUpDownCounter (Ljava/lang/String;Lkotlin/jvm/functions/Function1;Ljava/lang/String;Ljava/lang/String;)Laws/smithy/kotlin/runtime/telemetry/metrics/AsyncMeasurementHandle;
+	public abstract fun createDoubleGauge (Ljava/lang/String;Lkotlin/jvm/functions/Function1;Ljava/lang/String;Ljava/lang/String;)Laws/smithy/kotlin/runtime/telemetry/metrics/AsyncMeasurementHandle;
+	public abstract fun createDoubleHistogram (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Laws/smithy/kotlin/runtime/telemetry/metrics/Histogram;
+	public abstract fun createLongGauge (Ljava/lang/String;Lkotlin/jvm/functions/Function1;Ljava/lang/String;Ljava/lang/String;)Laws/smithy/kotlin/runtime/telemetry/metrics/AsyncMeasurementHandle;
+	public abstract fun createLongHistogram (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Laws/smithy/kotlin/runtime/telemetry/metrics/Histogram;
+	public abstract fun createMonotonicCounter (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Laws/smithy/kotlin/runtime/telemetry/metrics/MonotonicCounter;
+	public abstract fun createUpDownCounter (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Laws/smithy/kotlin/runtime/telemetry/metrics/UpDownCounter;
+}
+
+public final class aws/smithy/kotlin/runtime/telemetry/metrics/Meter$DefaultImpls {
+	public static synthetic fun createAsyncUpDownCounter$default (Laws/smithy/kotlin/runtime/telemetry/metrics/Meter;Ljava/lang/String;Lkotlin/jvm/functions/Function1;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Object;)Laws/smithy/kotlin/runtime/telemetry/metrics/AsyncMeasurementHandle;
+	public static synthetic fun createDoubleGauge$default (Laws/smithy/kotlin/runtime/telemetry/metrics/Meter;Ljava/lang/String;Lkotlin/jvm/functions/Function1;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Object;)Laws/smithy/kotlin/runtime/telemetry/metrics/AsyncMeasurementHandle;
+	public static synthetic fun createDoubleHistogram$default (Laws/smithy/kotlin/runtime/telemetry/metrics/Meter;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Object;)Laws/smithy/kotlin/runtime/telemetry/metrics/Histogram;
+	public static synthetic fun createLongGauge$default (Laws/smithy/kotlin/runtime/telemetry/metrics/Meter;Ljava/lang/String;Lkotlin/jvm/functions/Function1;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Object;)Laws/smithy/kotlin/runtime/telemetry/metrics/AsyncMeasurementHandle;
+	public static synthetic fun createLongHistogram$default (Laws/smithy/kotlin/runtime/telemetry/metrics/Meter;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Object;)Laws/smithy/kotlin/runtime/telemetry/metrics/Histogram;
+	public static synthetic fun createMonotonicCounter$default (Laws/smithy/kotlin/runtime/telemetry/metrics/Meter;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Object;)Laws/smithy/kotlin/runtime/telemetry/metrics/MonotonicCounter;
+	public static synthetic fun createUpDownCounter$default (Laws/smithy/kotlin/runtime/telemetry/metrics/Meter;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Object;)Laws/smithy/kotlin/runtime/telemetry/metrics/UpDownCounter;
+}
+
+public abstract interface class aws/smithy/kotlin/runtime/telemetry/metrics/MeterProvider {
+	public static final field Companion Laws/smithy/kotlin/runtime/telemetry/metrics/MeterProvider$Companion;
+	public abstract fun getOrCreateMeter (Ljava/lang/String;)Laws/smithy/kotlin/runtime/telemetry/metrics/Meter;
+}
+
+public final class aws/smithy/kotlin/runtime/telemetry/metrics/MeterProvider$Companion {
+	public final fun getNone ()Laws/smithy/kotlin/runtime/telemetry/metrics/MeterProvider;
+}
+
+public abstract interface class aws/smithy/kotlin/runtime/telemetry/metrics/MonotonicCounter {
+	public abstract fun add (JLaws/smithy/kotlin/runtime/util/Attributes;Laws/smithy/kotlin/runtime/telemetry/context/Context;)V
+}
+
+public final class aws/smithy/kotlin/runtime/telemetry/metrics/MonotonicCounter$DefaultImpls {
+	public static synthetic fun add$default (Laws/smithy/kotlin/runtime/telemetry/metrics/MonotonicCounter;JLaws/smithy/kotlin/runtime/util/Attributes;Laws/smithy/kotlin/runtime/telemetry/context/Context;ILjava/lang/Object;)V
+}
+
+public abstract interface class aws/smithy/kotlin/runtime/telemetry/metrics/UpDownCounter {
+	public abstract fun add (JLaws/smithy/kotlin/runtime/util/Attributes;Laws/smithy/kotlin/runtime/telemetry/context/Context;)V
+}
+
+public final class aws/smithy/kotlin/runtime/telemetry/metrics/UpDownCounter$DefaultImpls {
+	public static synthetic fun add$default (Laws/smithy/kotlin/runtime/telemetry/metrics/UpDownCounter;JLaws/smithy/kotlin/runtime/util/Attributes;Laws/smithy/kotlin/runtime/telemetry/context/Context;ILjava/lang/Object;)V
+}
+
+public final class aws/smithy/kotlin/runtime/telemetry/trace/CoroutineContextTraceExtKt {
+}
+
+public final class aws/smithy/kotlin/runtime/telemetry/trace/SpanKind : java/lang/Enum {
+	public static final field CLIENT Laws/smithy/kotlin/runtime/telemetry/trace/SpanKind;
+	public static final field INTERNAL Laws/smithy/kotlin/runtime/telemetry/trace/SpanKind;
+	public static final field SERVER Laws/smithy/kotlin/runtime/telemetry/trace/SpanKind;
+	public static fun valueOf (Ljava/lang/String;)Laws/smithy/kotlin/runtime/telemetry/trace/SpanKind;
+	public static fun values ()[Laws/smithy/kotlin/runtime/telemetry/trace/SpanKind;
+}
+
+public final class aws/smithy/kotlin/runtime/telemetry/trace/SpanStatus : java/lang/Enum {
+	public static final field ERROR Laws/smithy/kotlin/runtime/telemetry/trace/SpanStatus;
+	public static final field OK Laws/smithy/kotlin/runtime/telemetry/trace/SpanStatus;
+	public static final field UNSET Laws/smithy/kotlin/runtime/telemetry/trace/SpanStatus;
+	public static fun valueOf (Ljava/lang/String;)Laws/smithy/kotlin/runtime/telemetry/trace/SpanStatus;
+	public static fun values ()[Laws/smithy/kotlin/runtime/telemetry/trace/SpanStatus;
+}
+
+public abstract interface class aws/smithy/kotlin/runtime/telemetry/trace/TraceSpan : aws/smithy/kotlin/runtime/telemetry/context/Scope {
+	public abstract fun close ()V
+	public abstract fun emitEvent (Ljava/lang/String;Laws/smithy/kotlin/runtime/util/Attributes;)V
+	public abstract fun getName ()Ljava/lang/String;
+	public abstract fun mergeAttributes (Laws/smithy/kotlin/runtime/util/Attributes;)V
+	public abstract fun set (Laws/smithy/kotlin/runtime/util/AttributeKey;Ljava/lang/Object;)V
+	public abstract fun setStatus (Laws/smithy/kotlin/runtime/telemetry/trace/SpanStatus;)V
+}
+
+public final class aws/smithy/kotlin/runtime/telemetry/trace/TraceSpan$DefaultImpls {
+	public static synthetic fun emitEvent$default (Laws/smithy/kotlin/runtime/telemetry/trace/TraceSpan;Ljava/lang/String;Laws/smithy/kotlin/runtime/util/Attributes;ILjava/lang/Object;)V
+}
+
+public final class aws/smithy/kotlin/runtime/telemetry/trace/TraceSpanContext$Key : kotlin/coroutines/CoroutineContext$Key {
+}
+
+public final class aws/smithy/kotlin/runtime/telemetry/trace/TraceSpanExtKt {
+	public static final fun recordException (Laws/smithy/kotlin/runtime/telemetry/trace/TraceSpan;Ljava/lang/Throwable;Z)V
+	public static final fun setAttribute (Laws/smithy/kotlin/runtime/telemetry/trace/TraceSpan;Ljava/lang/String;Ljava/lang/Object;)V
+}
+
+public abstract interface class aws/smithy/kotlin/runtime/telemetry/trace/Tracer {
+	public abstract fun createSpan (Ljava/lang/String;Laws/smithy/kotlin/runtime/util/Attributes;Laws/smithy/kotlin/runtime/telemetry/trace/SpanKind;Laws/smithy/kotlin/runtime/telemetry/context/Context;)Laws/smithy/kotlin/runtime/telemetry/trace/TraceSpan;
+}
+
+public final class aws/smithy/kotlin/runtime/telemetry/trace/Tracer$DefaultImpls {
+	public static synthetic fun createSpan$default (Laws/smithy/kotlin/runtime/telemetry/trace/Tracer;Ljava/lang/String;Laws/smithy/kotlin/runtime/util/Attributes;Laws/smithy/kotlin/runtime/telemetry/trace/SpanKind;Laws/smithy/kotlin/runtime/telemetry/context/Context;ILjava/lang/Object;)Laws/smithy/kotlin/runtime/telemetry/trace/TraceSpan;
+}
+
+public abstract interface class aws/smithy/kotlin/runtime/telemetry/trace/TracerProvider {
+	public static final field Companion Laws/smithy/kotlin/runtime/telemetry/trace/TracerProvider$Companion;
+	public abstract fun getOrCreateTracer (Ljava/lang/String;)Laws/smithy/kotlin/runtime/telemetry/trace/Tracer;
+}
+
+public final class aws/smithy/kotlin/runtime/telemetry/trace/TracerProvider$Companion {
+	public final fun getNone ()Laws/smithy/kotlin/runtime/telemetry/trace/TracerProvider;
+}
+

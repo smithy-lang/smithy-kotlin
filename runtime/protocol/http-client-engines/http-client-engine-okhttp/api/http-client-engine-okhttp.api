@@ -22,7 +22,9 @@ public final class aws/smithy/kotlin/runtime/http/engine/okhttp/OkHttpEngineConf
 public final class aws/smithy/kotlin/runtime/http/engine/okhttp/OkHttpEngineConfig$Builder : aws/smithy/kotlin/runtime/http/engine/HttpClientEngineConfigImpl$BuilderImpl {
 	public fun <init> ()V
 	public final fun getMaxConnectionsPerHost-0hXNFcg ()Lkotlin/UInt;
+	public fun getTelemetryProvider ()Laws/smithy/kotlin/runtime/telemetry/TelemetryProvider;
 	public final fun setMaxConnectionsPerHost-ExVfyTY (Lkotlin/UInt;)V
+	public fun setTelemetryProvider (Laws/smithy/kotlin/runtime/telemetry/TelemetryProvider;)V
 }
 
 public final class aws/smithy/kotlin/runtime/http/engine/okhttp/OkHttpEngineConfig$Companion {

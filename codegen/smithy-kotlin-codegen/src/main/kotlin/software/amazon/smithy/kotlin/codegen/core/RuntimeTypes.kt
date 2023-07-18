@@ -62,9 +62,10 @@ object RuntimeTypes {
             val HttpOperationContext = symbol("HttpOperationContext")
             val HttpSerialize = symbol("HttpSerialize")
             val OperationAuthConfig = symbol("OperationAuthConfig")
+            val OperationMetrics = symbol("OperationMetrics")
             val OperationRequest = symbol("OperationRequest")
             val roundTrip = symbol("roundTrip")
-            val sdkRequestId = symbol("sdkRequestId")
+            val telemetry = symbol("telemetry")
             val SdkHttpOperation = symbol("SdkHttpOperation")
             val SdkHttpRequest = symbol("SdkHttpRequest")
             val setResolvedEndpoint = symbol("setResolvedEndpoint")
@@ -155,6 +156,8 @@ object RuntimeTypes {
             val get = symbol("get")
             val LazyAsyncValue = symbol("LazyAsyncValue")
             val length = symbol("length")
+            val putIfAbsent = symbol("putIfAbsent")
+            val putIfAbsentNotNull = symbol("putIfAbsentNotNull")
             val truthiness = symbol("truthiness")
             val urlEncodeComponent = symbol("urlEncodeComponent", "text")
         }
@@ -308,15 +311,18 @@ object RuntimeTypes {
         }
     }
 
-    object Tracing {
-        object Core : RuntimeTypePackage(KotlinDependency.TRACING_CORE) {
-            val debug = symbol("debug")
-            val DefaultTracer = symbol("DefaultTracer")
-            val LoggingTraceProbe = symbol("LoggingTraceProbe")
-            val TraceProbe = symbol("TraceProbe")
-            val Tracer = symbol("Tracer")
-            val TracingClientConfig = symbol("TracingClientConfig")
-            val withRootTraceSpan = symbol("withRootTraceSpan")
+    object Observability {
+        object TelemetryApi : RuntimeTypePackage(KotlinDependency.TELEMETRY_API) {
+            val SpanKind = symbol("SpanKind", "trace")
+            val TelemetryConfig = symbol("TelemetryConfig")
+            val TelemetryProvider = symbol("TelemetryProvider")
+            val TelemetryProviderContext = symbol("TelemetryProviderContext")
+            val TelemetryContextElement = symbol("TelemetryContextElement", "context")
+            val TraceSpan = symbol("TraceSpan", "trace")
+            val withSpan = symbol("withSpan", "trace")
+        }
+        object TelemetryDefaults : RuntimeTypePackage(KotlinDependency.TELEMETRY_DEFAULTS) {
+            val Global = symbol("Global")
         }
     }
 

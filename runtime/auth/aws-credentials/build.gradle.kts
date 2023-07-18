@@ -29,7 +29,7 @@ kotlin {
                 // For Instant
                 api(project(":runtime:runtime-core"))
                 api(project(":runtime:auth:identity-api"))
-                implementation(project(":runtime:tracing:tracing-core"))
+                implementation(project(":runtime:observability:telemetry-api"))
                 implementation("org.jetbrains.kotlinx:atomicfu:$atomicFuVersion")
             }
         }

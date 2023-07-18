@@ -37,6 +37,7 @@ inline fun <reified I> newTestOperation(serialized: HttpRequestBuilder): SdkHttp
         context {
             // required operation context
             operationName = "TestOperation"
+            serviceName = "TestService"
         }
     }
 

@@ -18,7 +18,6 @@ Start here for an overview:
 * [Modeled errors](modeled-errors.md)
 * [Pagination](paginators.md)
 * [Retries](retries.md)
-* [Tracing](tracing.md)
 * [Waiters](waiters.md)
 * [Interceptors](interceptors.md)
 * [Flexible checksums](flexible-checksums.md)

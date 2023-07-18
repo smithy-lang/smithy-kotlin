@@ -54,7 +54,7 @@ class ServiceClientConfigGenerator(
 
         add(RuntimeConfigProperty.RetryPolicy)
         add(RuntimeConfigProperty.RetryStrategy)
-        add(RuntimeConfigProperty.Tracer)
+        add(RuntimeConfigProperty.TelemetryProvider)
 
         if (shape.hasTrait<ClientContextParamsTrait>()) {
             addAll(clientContextConfigProps(shape.expectTrait()))
