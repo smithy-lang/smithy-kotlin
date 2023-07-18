@@ -1,0 +1,6 @@
+{
+    "id": "44708ceb-cc8c-478c-bd35-af82aa79f546",
+    "type": "misc",
+    "description": "**BREAKING**: Refactor observability API and configuration. See the [discussion](https://github.com/awslabs/aws-sdk-kotlin/discussions/981) post from the AWS SDK for Kotlin for more information."
+
+}

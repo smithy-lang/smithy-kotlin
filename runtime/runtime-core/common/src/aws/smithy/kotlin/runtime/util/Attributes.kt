@@ -20,6 +20,11 @@ public data class AttributeKey<T>(public val name: String) {
  */
 public interface Attributes {
     /**
+     * Flag indicating if attributes is empty
+     */
+    public val isEmpty: Boolean
+
+    /**
      * Get a value of the attribute for the specified [key] or null
      */
     public fun <T : Any> getOrNull(key: AttributeKey<T>): T?
@@ -73,6 +78,13 @@ public fun <T : Any> MutableAttributes.putIfAbsent(key: AttributeKey<T>, value: 
 }
 
 /**
+ * Set a value for [key] only if it is not already set and if [value] is not null.
+ */
+public fun <T : Any> MutableAttributes.putIfAbsentNotNull(key: AttributeKey<T>, value: T?) {
+    if (value != null) putIfAbsent(key, value)
+}
+
+/**
  * Set a value for [key] only if [value] is not null
  */
 public fun <T : Any> MutableAttributes.setIfValueNotNull(key: AttributeKey<T>, value: T?) {
@@ -102,6 +114,9 @@ private class AttributesImpl constructor(seed: Attributes) : MutableAttributes {
         merge(seed)
     }
 
+    override val isEmpty: Boolean
+        get() = map.isEmpty()
+
     @Suppress("UNCHECKED_CAST")
     override fun <T : Any> getOrNull(key: AttributeKey<T>): T? = map[key] as T?
 
@@ -129,6 +144,7 @@ private class AttributesImpl constructor(seed: Attributes) : MutableAttributes {
 }
 
 private object EmptyAttributes : Attributes {
+    override val isEmpty: Boolean = true
     override val keys: Set<AttributeKey<*>> = emptySet()
     override fun contains(key: AttributeKey<*>): Boolean = false
     override fun <T : Any> getOrNull(key: AttributeKey<T>): T? = null

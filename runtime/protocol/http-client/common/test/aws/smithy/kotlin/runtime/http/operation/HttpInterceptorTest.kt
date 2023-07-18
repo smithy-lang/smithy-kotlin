@@ -262,7 +262,8 @@ class HttpInterceptorTest {
             op.roundTrip(client, Unit)
         }
 
-        assertEquals(1, ex.suppressed.size)
-        assertIs<TestException>(ex.suppressed.last())
+        val cause = assertNotNull(ex.cause)
+        assertEquals(1, cause.suppressed.size)
+        assertIs<TestException>(cause.suppressed.last())
     }
 }

@@ -1,0 +1,9 @@
+public final class aws/smithy/kotlin/runtime/telemetry/otel/OpenTelemetryProvider : aws/smithy/kotlin/runtime/telemetry/TelemetryProvider {
+	public fun <init> (Lio/opentelemetry/api/OpenTelemetry;Laws/smithy/kotlin/runtime/telemetry/logging/LoggerProvider;)V
+	public synthetic fun <init> (Lio/opentelemetry/api/OpenTelemetry;Laws/smithy/kotlin/runtime/telemetry/logging/LoggerProvider;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun getContextManager ()Laws/smithy/kotlin/runtime/telemetry/context/ContextManager;
+	public fun getLoggerProvider ()Laws/smithy/kotlin/runtime/telemetry/logging/LoggerProvider;
+	public fun getMeterProvider ()Laws/smithy/kotlin/runtime/telemetry/metrics/MeterProvider;
+	public fun getTracerProvider ()Laws/smithy/kotlin/runtime/telemetry/trace/TracerProvider;
+}
+

@@ -28,6 +28,7 @@ class AwsJsonProtocolTest {
             deserializer = IdentityDeserializer
             context {
                 operationName = "Bar"
+                serviceName = "Foo"
             }
         }
         val client = SdkHttpClient(TestEngine())
@@ -50,6 +51,7 @@ class AwsJsonProtocolTest {
             deserializer = IdentityDeserializer
             context {
                 operationName = "Bar"
+                serviceName = "Foo"
             }
         }
         val client = SdkHttpClient(TestEngine())
@@ -75,6 +77,7 @@ class AwsJsonProtocolTest {
             deserializer = IdentityDeserializer
             context {
                 operationName = "Bar"
+                serviceName = "Foo"
             }
         }
         val client = SdkHttpClient(TestEngine())
