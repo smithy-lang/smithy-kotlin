@@ -91,6 +91,7 @@ object RuntimeTypes {
     }
 
     object Core : RuntimeTypePackage(KotlinDependency.CORE) {
+        val Clock = symbol("Clock", "time")
         val ExecutionContext = symbol("ExecutionContext", "operation")
         val ErrorMetadata = symbol("ErrorMetadata")
         val ServiceErrorMetadata = symbol("ServiceErrorMetadata")
@@ -152,17 +153,20 @@ object RuntimeTypes {
             val decodeBase64Bytes = symbol("decodeBase64Bytes")
             val encodeBase64 = symbol("encodeBase64")
             val encodeBase64String = symbol("encodeBase64String")
+            val ExpiringValue = symbol("ExpiringValue")
             val flattenIfPossible = symbol("flattenIfPossible")
             val get = symbol("get")
             val LazyAsyncValue = symbol("LazyAsyncValue")
             val length = symbol("length")
             val putIfAbsent = symbol("putIfAbsent")
             val putIfAbsentNotNull = symbol("putIfAbsentNotNull")
+            val ReadThroughCache = symbol("ReadThroughCache")
             val truthiness = symbol("truthiness")
             val urlEncodeComponent = symbol("urlEncodeComponent", "text")
         }
 
         object Net : RuntimeTypePackage(KotlinDependency.CORE, "net") {
+            val Host = symbol("Host")
             val parameters = symbol("parameters")
             val QueryParameters = symbol("QueryParameters")
             val QueryParametersBuilder = symbol("QueryParametersBuilder")
@@ -198,7 +202,6 @@ object RuntimeTypes {
 
             @get:JvmName("getSigningContextExtMethod")
             val signingContext = symbol("signingContext")
-
             object Functions : RuntimeTypePackage(KotlinDependency.SMITHY_CLIENT, "endpoints.functions") {
                 val substring = symbol("substring")
                 val isValidHostLabel = symbol("isValidHostLabel")

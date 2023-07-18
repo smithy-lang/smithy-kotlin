@@ -31,6 +31,10 @@ abstract class HttpProtocolClientGenerator(
     protected val middleware: List<ProtocolMiddleware>,
     protected val httpBindingResolver: HttpBindingResolver,
 ) {
+    object EndpointResolverAdapterBinding : SectionId {
+        val GenerationContext: SectionKey<ProtocolGenerator.GenerationContext> = SectionKey("GenerationContext")
+        val OperationShape: SectionKey<OperationShape> = SectionKey("OperationShape")
+    }
 
     object OperationDeserializerBinding : SectionId {
         // Context for operation being codegened at the time of section invocation
@@ -246,7 +250,16 @@ abstract class HttpProtocolClientGenerator(
                 AuthSchemeProviderAdapterGenerator.getSymbol(ctx.settings),
             )
 
-            writer.write("execution.endpointResolver = #T(config)", EndpointResolverAdapterGenerator.getSymbol(ctx.settings))
+            writer.declareSection(
+                EndpointResolverAdapterBinding,
+                mapOf(
+                    EndpointResolverAdapterBinding.GenerationContext to ctx,
+                    EndpointResolverAdapterBinding.OperationShape to op,
+                ),
+            ) {
+                write("execution.endpointResolver = #T(config)", EndpointResolverAdapterGenerator.getSymbol(ctx.settings))
+            }
+
             writer.write("execution.retryStrategy = config.retryStrategy")
         }
     }
