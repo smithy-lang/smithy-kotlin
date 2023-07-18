@@ -67,7 +67,10 @@ internal class InstrumentedRequestBody(
     override fun writeTo(sink: BufferedSink) {
         val metricsSink = InstrumentedSink(sink, counter, attributes).buffer()
         delegate.writeTo(metricsSink)
-        metricsSink.close()
+        if (metricsSink.isOpen) {
+            // ensure any buffered data is emitted to the real sink
+            metricsSink.emit()
+        }
     }
 }
 
