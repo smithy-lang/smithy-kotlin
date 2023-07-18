@@ -16,7 +16,6 @@ import aws.smithy.kotlin.runtime.io.Handler
 /**
  * Generic HTTP service exception
  */
-@InternalApi
 public class HttpResponseException : SdkBaseException {
 
     public constructor() : super()

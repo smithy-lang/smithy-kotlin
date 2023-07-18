@@ -166,6 +166,21 @@ public final class aws/smithy/kotlin/runtime/http/interceptors/ChecksumMismatchE
 	public fun <init> (Ljava/lang/String;)V
 }
 
+public final class aws/smithy/kotlin/runtime/http/middleware/HttpResponseException : aws/smithy/kotlin/runtime/SdkBaseException {
+	public fun <init> ()V
+	public fun <init> (Ljava/lang/String;)V
+	public fun <init> (Ljava/lang/String;Ljava/lang/Throwable;)V
+	public fun <init> (Ljava/lang/Throwable;)V
+	public final fun getBody ()[B
+	public final fun getHeaders ()Laws/smithy/kotlin/runtime/http/Headers;
+	public final fun getRequest ()Laws/smithy/kotlin/runtime/http/request/HttpRequest;
+	public final fun getStatusCode ()Laws/smithy/kotlin/runtime/http/HttpStatusCode;
+	public final fun setBody ([B)V
+	public final fun setHeaders (Laws/smithy/kotlin/runtime/http/Headers;)V
+	public final fun setRequest (Laws/smithy/kotlin/runtime/http/request/HttpRequest;)V
+	public final fun setStatusCode (Laws/smithy/kotlin/runtime/http/HttpStatusCode;)V
+}
+
 public final class aws/smithy/kotlin/runtime/http/operation/HttpOperationContextKt {
 }
 
