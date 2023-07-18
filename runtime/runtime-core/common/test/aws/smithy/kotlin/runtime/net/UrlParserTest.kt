@@ -159,7 +159,7 @@ class UrlParserTest {
         assertEquals("/path/suffix", Url.parse("https://host:80/path%2Fsuffix").path)
         assertEquals(
             "/path%2Fsuffix",
-            Url.parse("https://host:80/path%2Fsuffix", UrlDecodingBehavior.DO_NOT_DECODE_PATH).path,
+            Url.parse("https://host:80/path%2Fsuffix", UrlDecoding.DecodeAll - UrlDecoding.DecodePath).path,
         )
     }
 
@@ -202,6 +202,18 @@ class UrlParserTest {
             },
             Url.parse("https://host/path?k=v&k=v&k2=v%202&k2=v%262&k%203=v3#fragment").parameters,
         )
+
+        assertEquals(
+            QueryParameters {
+                appendAll("k", listOf("v", "v"))
+                appendAll("k2", listOf("v%202", "v%262"))
+                appendAll("k%203", listOf("v3"))
+            },
+            Url.parse(
+                "https://host/path?k=v&k=v&k2=v%202&k2=v%262&k%203=v3#fragment",
+                UrlDecoding.DecodeAll - UrlDecoding.DecodeQueryParameters,
+            ).parameters,
+        )
     }
 
     @Test
@@ -227,6 +239,14 @@ class UrlParserTest {
         assertEquals("frag&5ment", Url.parse("https://host?k=v#frag%265ment").fragment)
         assertEquals("frag&5ment", Url.parse("https://host/?k=v#frag%265ment").fragment)
         assertEquals("frag&5ment", Url.parse("https://host/path?k=v#frag%265ment").fragment)
+
+        assertEquals(
+            "frag%265ment",
+            Url.parse(
+                "https://host/path?k=v#frag%265ment",
+                UrlDecoding.DecodeAll - UrlDecoding.DecodeFragment,
+            ).fragment,
+        )
     }
 
     @Test

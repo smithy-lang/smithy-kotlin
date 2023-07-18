@@ -107,10 +107,10 @@ class DefaultEndpointProviderTestGenerator(
 
         writer.withBlock("val expected = #T(", ")", RuntimeTypes.SmithyClient.Endpoints.Endpoint) {
             write(
-                "uri = #T.parse(#S, #T.DO_NOT_DECODE_PATH),",
+                "uri = #1T.parse(#2S, #3T.DecodeAll - #3T.DecodePath),",
                 RuntimeTypes.Core.Net.Url,
                 endpoint.url,
-                RuntimeTypes.Core.Net.UrlDecodingBehavior,
+                RuntimeTypes.Core.Net.UrlDecoding,
             )
 
             if (endpoint.headers.isNotEmpty()) {

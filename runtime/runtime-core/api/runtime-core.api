@@ -871,7 +871,7 @@ public final class aws/smithy/kotlin/runtime/net/Url {
 
 public final class aws/smithy/kotlin/runtime/net/Url$Companion {
 	public final fun parse (Ljava/lang/String;)Laws/smithy/kotlin/runtime/net/Url;
-	public final fun parse (Ljava/lang/String;Laws/smithy/kotlin/runtime/net/UrlDecodingBehavior;)Laws/smithy/kotlin/runtime/net/Url;
+	public final fun parse (Ljava/lang/String;Laws/smithy/kotlin/runtime/net/UrlDecoding;)Laws/smithy/kotlin/runtime/net/Url;
 }
 
 public final class aws/smithy/kotlin/runtime/net/UrlBuilder : aws/smithy/kotlin/runtime/util/CanDeepCopy {
@@ -903,11 +903,40 @@ public final class aws/smithy/kotlin/runtime/net/UrlBuilder$Companion {
 	public final fun invoke (Lkotlin/jvm/functions/Function1;)Laws/smithy/kotlin/runtime/net/Url;
 }
 
-public final class aws/smithy/kotlin/runtime/net/UrlDecodingBehavior : java/lang/Enum {
-	public static final field DECODE_COMPONENTS Laws/smithy/kotlin/runtime/net/UrlDecodingBehavior;
-	public static final field DO_NOT_DECODE_PATH Laws/smithy/kotlin/runtime/net/UrlDecodingBehavior;
-	public static fun valueOf (Ljava/lang/String;)Laws/smithy/kotlin/runtime/net/UrlDecodingBehavior;
-	public static fun values ()[Laws/smithy/kotlin/runtime/net/UrlDecodingBehavior;
+public abstract class aws/smithy/kotlin/runtime/net/UrlDecoding {
+	public static final field Companion Laws/smithy/kotlin/runtime/net/UrlDecoding$Companion;
+	public synthetic fun <init> (ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun contains (Laws/smithy/kotlin/runtime/net/UrlDecoding;)Z
+	public fun equals (Ljava/lang/Object;)Z
+	public fun hashCode ()I
+	public final fun minus (Laws/smithy/kotlin/runtime/net/UrlDecoding;)Laws/smithy/kotlin/runtime/net/UrlDecoding;
+	public final fun plus (Laws/smithy/kotlin/runtime/net/UrlDecoding;)Laws/smithy/kotlin/runtime/net/UrlDecoding;
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class aws/smithy/kotlin/runtime/net/UrlDecoding$Companion {
+	public final fun getDecodeAll ()Laws/smithy/kotlin/runtime/net/UrlDecoding;
+	public final fun getEntries ()Ljava/util/Set;
+}
+
+public final class aws/smithy/kotlin/runtime/net/UrlDecoding$DecodeFragment : aws/smithy/kotlin/runtime/net/UrlDecoding {
+	public static final field INSTANCE Laws/smithy/kotlin/runtime/net/UrlDecoding$DecodeFragment;
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class aws/smithy/kotlin/runtime/net/UrlDecoding$DecodeNone : aws/smithy/kotlin/runtime/net/UrlDecoding {
+	public static final field INSTANCE Laws/smithy/kotlin/runtime/net/UrlDecoding$DecodeNone;
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class aws/smithy/kotlin/runtime/net/UrlDecoding$DecodePath : aws/smithy/kotlin/runtime/net/UrlDecoding {
+	public static final field INSTANCE Laws/smithy/kotlin/runtime/net/UrlDecoding$DecodePath;
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class aws/smithy/kotlin/runtime/net/UrlDecoding$DecodeQueryParameters : aws/smithy/kotlin/runtime/net/UrlDecoding {
+	public static final field INSTANCE Laws/smithy/kotlin/runtime/net/UrlDecoding$DecodeQueryParameters;
+	public fun toString ()Ljava/lang/String;
 }
 
 public final class aws/smithy/kotlin/runtime/net/UrlKt {

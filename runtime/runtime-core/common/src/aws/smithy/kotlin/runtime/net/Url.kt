@@ -39,8 +39,8 @@ public data class Url(
     }
 
     public companion object {
-        public fun parse(url: String): Url = parse(url, UrlDecodingBehavior.DECODE_COMPONENTS)
-        public fun parse(url: String, decodingBehavior: UrlDecodingBehavior): Url = urlParseImpl(url, decodingBehavior)
+        public fun parse(url: String): Url = parse(url, UrlDecoding.DecodeAll)
+        public fun parse(url: String, decodingBehavior: UrlDecoding): Url = urlParseImpl(url, decodingBehavior)
     }
 
     override fun toString(): String = buildString {
@@ -104,21 +104,6 @@ private fun encodePath(
  * URL username and password
  */
 public data class UserInfo(public val username: String, public val password: String)
-
-/**
- * Identifies the type of decoding behavior desired when parsing a URL.
- */
-public enum class UrlDecodingBehavior {
-    /**
-     * Identifies that a URL string does not need its path component need to be URL-decoded.
-     */
-    DO_NOT_DECODE_PATH,
-
-    /**
-     * Identifies that a URL string needs to be URL-decoded.
-     */
-    DECODE_COMPONENTS,
-}
 
 /**
  * Construct a URL by its individual components

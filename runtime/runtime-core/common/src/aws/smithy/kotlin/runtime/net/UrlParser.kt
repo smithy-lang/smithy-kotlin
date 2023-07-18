@@ -7,7 +7,7 @@ package aws.smithy.kotlin.runtime.net
 import aws.smithy.kotlin.runtime.util.text.splitAsQueryString
 import aws.smithy.kotlin.runtime.util.text.urlDecodeComponent
 
-internal fun urlParseImpl(url: String, decodingBehavior: UrlDecodingBehavior): Url =
+internal fun urlParseImpl(url: String, decoding: UrlDecoding): Url =
     UrlBuilder {
         var next = url
             .captureUntilAndSkip("://") {
@@ -23,10 +23,7 @@ internal fun urlParseImpl(url: String, decodingBehavior: UrlDecodingBehavior): U
             port = p ?: scheme.defaultPort
         }
 
-        val pathDecode: (String) -> String = when (decodingBehavior) {
-            UrlDecodingBehavior.DO_NOT_DECODE_PATH -> { s -> s }
-            UrlDecodingBehavior.DECODE_COMPONENTS -> String::urlDecodeComponent
-        }
+        val pathDecode = decoding.applicatorFor(UrlDecoding.DecodePath)
         if (next.startsWith("/")) {
             next = next.capture(1 until next.firstIndexOrEnd("?", "#")) {
                 path = "/${pathDecode(it)}"
@@ -34,17 +31,24 @@ internal fun urlParseImpl(url: String, decodingBehavior: UrlDecodingBehavior): U
         }
 
         if (next.startsWith("?")) {
+            val queryDecode = decoding.applicatorFor(UrlDecoding.DecodeQueryParameters)
             next = next.capture(1 until next.firstIndexOrEnd("#")) {
                 it.splitAsQueryString().entries.forEach { (k, v) ->
-                    parameters.appendAll(k.urlDecodeComponent(), v.map(String::urlDecodeComponent))
+                    parameters.appendAll(queryDecode(k), v.map(queryDecode))
                 }
             }
         }
 
         if (next.startsWith('#') && next.length > 1) {
-            fragment = next.substring(1).urlDecodeComponent()
+            val fragmentDecode = decoding.applicatorFor(UrlDecoding.DecodeFragment)
+            fragment = fragmentDecode(next.substring(1))
         }
     }
+
+private fun UrlDecoding.applicatorFor(part: UrlDecoding): (String) -> String = when (part) {
+    in this -> String::urlDecodeComponent
+    else -> { s -> s }
+}
 
 private fun String.firstIndexOrEnd(vararg substring: String): Int {
     val indices = substring
