@@ -1,0 +1,8 @@
+{
+    "id": "d50afb27-0e5c-46b3-9c9c-865a3c75dd21",
+    "type": "bugfix",
+    "description": "Retry connection reset errors in OkHttp engine",
+    "issues": [
+        "awslabs/aws-sdk-kotlin#905"
+    ]
+}
