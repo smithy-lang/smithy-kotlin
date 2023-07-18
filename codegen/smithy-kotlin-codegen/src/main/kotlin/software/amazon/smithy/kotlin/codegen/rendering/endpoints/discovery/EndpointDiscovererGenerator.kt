@@ -63,7 +63,7 @@ class EndpointDiscovererGenerator(private val ctx: CodegenContext, private val d
                 """private val discoveryParamsKey = #T<DiscoveryParams>("DiscoveryParams")""",
                 RuntimeTypes.Core.Utils.AttributeKey,
             )
-            write("private data class DiscoveryParams(private val region: String, private val identity: String)")
+            write("private data class DiscoveryParams(private val region: String?, private val identity: String)")
         }
     }
 

@@ -25,7 +25,7 @@ class EndpointDiscovererGeneratorTest {
                 }
                 
                 private val discoveryParamsKey = AttributeKey<DiscoveryParams>("DiscoveryParams")
-                private data class DiscoveryParams(private val region: String, private val identity: String)
+                private data class DiscoveryParams(private val region: String?, private val identity: String)
             """.trimIndent(),
         )
     }
