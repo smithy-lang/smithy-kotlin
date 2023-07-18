@@ -4,12 +4,15 @@
  */
 package aws.smithy.kotlin.runtime.util
 
+import aws.smithy.kotlin.runtime.InternalApi
 import kotlin.random.Random
 
 /**
  * A KMP-compatible implementation of UUID, necessary because no cross-platform implementation exists yet.
  */
+@InternalApi
 public data class Uuid(val high: Long, val low: Long) {
+    @InternalApi
     public companion object {
         private val nibbleChars = "0123456789abcdef".toCharArray()
         private val random = Random
@@ -25,7 +28,6 @@ public data class Uuid(val high: Long, val low: Long) {
          * [UUID v4](https://en.wikipedia.org/wiki/Universally_unique_identifier#Version_4_.28random.29).
          * UUIDs are not generated with a cryptographically-strong random number generator.
          */
-        @WeakRng
         public fun random(): Uuid {
             val high = random.nextLong() and v4Mask.inv() or v4Set
             val low = random.nextLong() and type2Mask.inv() or type2Set
@@ -78,9 +80,4 @@ public data class Uuid(val high: Long, val low: Long) {
     private val stringRep = toString(high, low)
 
     override fun toString(): String = stringRep
-
-    @RequiresOptIn("This API doesn't use cryptographically-strong random number generation.")
-    @Retention(AnnotationRetention.BINARY)
-    @Target(AnnotationTarget.FUNCTION)
-    public annotation class WeakRng
 }

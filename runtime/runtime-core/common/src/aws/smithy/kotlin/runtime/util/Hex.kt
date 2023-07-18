@@ -5,11 +5,14 @@
 
 package aws.smithy.kotlin.runtime.util
 
+import aws.smithy.kotlin.runtime.InternalApi
+
 private val hexChars = "0123456789abcdef".toCharArray()
 
 /**
  * Encode [bytes] as lowercase HEX string
  */
+@InternalApi
 public fun encodeHex(bytes: ByteArray): String = buildString(bytes.size * 2) {
     for (i in bytes.indices) {
         val byte = bytes[i].toInt() and 0xff
@@ -18,11 +21,13 @@ public fun encodeHex(bytes: ByteArray): String = buildString(bytes.size * 2) {
     }
 }
 
+@InternalApi
 public fun ByteArray.encodeToHex(): String = encodeHex(this)
 
 /**
  * Decode bytes from HEX string. There should be no spaces or `0x` prefixes
  */
+@InternalApi
 public fun decodeHex(s: String): ByteArray {
     val result = ByteArray((s.length + 1) / 2)
     var start = 0
@@ -42,4 +47,5 @@ public fun decodeHex(s: String): ByteArray {
     return result
 }
 
+@InternalApi
 public fun String.decodeHexBytes(): ByteArray = decodeHex(this)

@@ -46,6 +46,7 @@ public class FlexibleChecksumsResponseInterceptor<I>(
 
     private var shouldValidateResponseChecksum: Boolean = false
 
+    @InternalApi
     public companion object {
         // The name of the checksum header which was validated. If `null`, validation was not performed.
         public val ChecksumHeaderValidated: AttributeKey<String> = AttributeKey("ChecksumHeaderValidated")

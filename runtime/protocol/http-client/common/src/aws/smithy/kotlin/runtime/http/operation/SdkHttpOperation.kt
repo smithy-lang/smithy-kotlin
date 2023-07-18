@@ -25,7 +25,6 @@ import kotlin.reflect.KClass
  * @property typeInfo the operation type info used internally for interceptors to function correctly
  * @property telemetry the telemetry parameters used to instrument the operation with
  */
-@OptIn(Uuid.WeakRng::class)
 @InternalApi
 public class SdkHttpOperation<I, O> internal constructor(
     public val execution: SdkOperationExecution<I, O>,
@@ -58,6 +57,7 @@ public class SdkHttpOperation<I, O> internal constructor(
     public fun install(middleware: ReceiveMiddleware) { middleware.install(this) }
     public fun install(middleware: InlineMiddleware<I, O>) { middleware.install(this) }
 
+    @InternalApi
     public companion object {
         public inline fun <reified I, reified O> build(block: SdkHttpOperationBuilder<I, O>.() -> Unit): SdkHttpOperation<I, O> =
             SdkHttpOperationBuilder<I, O>(
@@ -70,6 +70,7 @@ public class SdkHttpOperation<I, O> internal constructor(
 /**
  * Gets the unique ID that identifies the active SDK request in this [ExecutionContext].
  */
+@InternalApi
 public val ExecutionContext.sdkInvocationId: String
     get() = get(HttpOperationContext.SdkInvocationId)
 

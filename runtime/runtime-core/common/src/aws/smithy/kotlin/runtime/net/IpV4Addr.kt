@@ -5,10 +5,13 @@
 
 package aws.smithy.kotlin.runtime.net
 
+import aws.smithy.kotlin.runtime.InternalApi
+
 /**
  * An IPv4 address as defined by [RFC 791](https://www.rfc-editor.org/rfc/rfc791)
  * @param octets The four eight-bit integers that make up this address
  */
+@InternalApi
 public data class IpV4Addr(
     override val octets: ByteArray,
 ) : IpAddr() {
@@ -23,6 +26,7 @@ public data class IpV4Addr(
         require(octets.size == 4) { "Invalid IPv4 repr: $octets; expected 4 bytes" }
     }
 
+    @InternalApi
     public companion object {
         /**
          * An IPv4 address with the address pointing to localhost: 127.0.0.1

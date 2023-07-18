@@ -5,6 +5,7 @@
 
 package aws.smithy.kotlin.runtime.util
 
+import aws.smithy.kotlin.runtime.InternalApi
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 
@@ -17,6 +18,7 @@ import kotlinx.coroutines.sync.withLock
  * NOTE: Properties cannot be loaded asynchronously so unlike `Lazy<T>` a `LazyAsyncValue<T>` cannot be a property
  * delegate.
  */
+@InternalApi
 public interface LazyAsyncValue<out T> {
     /**
      * Get the cached value or initialize it for the first time. Subsequent calls will return the same value.
@@ -27,6 +29,7 @@ public interface LazyAsyncValue<out T> {
 /**
  * Create a [LazyAsyncValue] with the given [initializer]
  */
+@InternalApi
 public fun <T> asyncLazy(initializer: suspend () -> T): LazyAsyncValue<T> = LazyAsyncValueImpl(initializer)
 
 internal object UNINITIALIZED_VALUE

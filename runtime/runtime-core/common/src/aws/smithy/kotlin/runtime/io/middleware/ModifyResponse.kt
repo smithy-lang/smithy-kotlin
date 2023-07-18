@@ -5,11 +5,13 @@
 
 package aws.smithy.kotlin.runtime.io.middleware
 
+import aws.smithy.kotlin.runtime.InternalApi
 import aws.smithy.kotlin.runtime.io.Handler
 
 /**
  * A transform that only modifies the output type
  */
+@InternalApi
 public interface ModifyResponse<Response> {
     public suspend fun modifyResponse(resp: Response): Response
 }

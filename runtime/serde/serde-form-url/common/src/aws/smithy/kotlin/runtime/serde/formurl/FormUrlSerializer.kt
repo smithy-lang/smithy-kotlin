@@ -5,6 +5,7 @@
 
 package aws.smithy.kotlin.runtime.serde.formurl
 
+import aws.smithy.kotlin.runtime.InternalApi
 import aws.smithy.kotlin.runtime.content.BigDecimal
 import aws.smithy.kotlin.runtime.content.BigInteger
 import aws.smithy.kotlin.runtime.content.Document
@@ -16,6 +17,7 @@ import aws.smithy.kotlin.runtime.util.text.urlEncodeComponent
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.contract
 
+@InternalApi
 public fun FormUrlSerializer(): Serializer = FormUrlSerializer(SdkBuffer())
 
 private class FormUrlSerializer(

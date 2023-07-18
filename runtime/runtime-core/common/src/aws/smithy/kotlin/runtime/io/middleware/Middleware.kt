@@ -5,11 +5,13 @@
 
 package aws.smithy.kotlin.runtime.io.middleware
 
+import aws.smithy.kotlin.runtime.InternalApi
 import aws.smithy.kotlin.runtime.io.Handler
 
 /**
  * Decorates a [Handler], transforming either the request or the response
  */
+@InternalApi
 public interface Middleware<Request, Response> {
     public suspend fun <H> handle(request: Request, next: H): Response
         where H : Handler<Request, Response>
@@ -18,11 +20,13 @@ public interface Middleware<Request, Response> {
 /**
  * Alias for a lambda based [Middleware]
  */
+@InternalApi
 public typealias MiddlewareFn<Request, Response> = suspend (Request, Handler<Request, Response>) -> Response
 
 /**
  * Adapter for [MiddlewareFn] that implements [Middleware]
  */
+@InternalApi
 public data class MiddlewareLambda<Request, Response>(
     private val fn: MiddlewareFn<Request, Response>,
 ) : Middleware<Request, Response> {
@@ -43,6 +47,7 @@ private data class DecoratedHandler<Request, Response>(
 /**
  * decorate [handler] with the given [middleware] returning a new wrapped service
  */
+@InternalApi
 public fun <Request, Response> decorate(
     handler: Handler<Request, Response>,
     vararg middleware: Middleware<Request, Response>,

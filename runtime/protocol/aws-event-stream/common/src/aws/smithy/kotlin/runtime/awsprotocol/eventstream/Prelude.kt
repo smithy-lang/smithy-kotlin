@@ -39,6 +39,7 @@ public data class Prelude(val totalLen: Int, val headersLength: Int) {
         dest.write(sink.digest())
     }
 
+    @InternalApi
     public companion object {
         /**
          * Read the prelude from [source] and validate the prelude CRC

@@ -13,7 +13,6 @@ import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
 import kotlin.test.assertFails
 
-@OptIn(Uuid.WeakRng::class)
 class HeaderValueTest {
     @Test
     fun testExpectAs() {

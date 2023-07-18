@@ -4,8 +4,10 @@
  */
 package aws.smithy.kotlin.runtime.hashing
 
+import aws.smithy.kotlin.runtime.InternalApi
 import java.security.MessageDigest
 
+@InternalApi
 public actual class Sha256 : Sha256Base() {
     private val md = MessageDigest.getInstance("SHA-256")
     override fun update(input: ByteArray, offset: Int, length: Int): Unit = md.update(input, offset, length)

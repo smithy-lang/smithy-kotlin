@@ -177,7 +177,7 @@ private fun fromParsedDateTime(parsed: ParsedDatetime): Instant {
  *
  * See also: https: *tools.ietf.org/html/rfc7231.html#section-7.1.1.1
  */
-public fun buildRfc5322Formatter(): DateTimeFormatter {
+private fun buildRfc5322Formatter(): DateTimeFormatter {
     // manually code maps to ensure correct data always used
     // (locale data can be changed by application code)
     val dow: Map<Long, String> = mapOf(
