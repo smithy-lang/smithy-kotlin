@@ -442,6 +442,7 @@ private fun buildOperation(
 
         context {
             operationName = "testSigningOperation"
+            serviceName = "testService"
             set(AwsSigningAttributes.SigningRegion, config.region)
             config.signingDate.let {
                 set(AwsSigningAttributes.SigningDate, it)

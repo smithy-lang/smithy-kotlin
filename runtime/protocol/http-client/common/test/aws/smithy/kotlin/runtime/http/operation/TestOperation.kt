@@ -29,6 +29,7 @@ inline fun <reified I, reified O> newTestOperation(serialized: HttpRequestBuilde
         context {
             // required operation context
             operationName = "TestOperation"
+            serviceName = "TestService"
         }
     }
 

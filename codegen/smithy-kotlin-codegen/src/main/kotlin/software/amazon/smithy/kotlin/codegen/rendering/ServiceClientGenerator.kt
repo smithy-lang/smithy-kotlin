@@ -64,6 +64,11 @@ class ServiceClientGenerator(private val ctx: RenderingContext<ServiceShape>) {
     private val writer = ctx.writer
 
     fun render() {
+        writer.write("\n\n")
+        writer.write("public const val ServiceId: String = #S", ctx.settings.sdkId)
+        writer.write("public const val SdkVersion: String = #S", ctx.settings.pkg.version)
+        writer.write("\n\n")
+
         writer.putContext("service.name", ctx.settings.sdkId)
 
         val topDownIndex = TopDownIndex.of(ctx.model)
