@@ -15,7 +15,7 @@ import aws.smithy.kotlin.runtime.http.toHttpBody
 import aws.smithy.kotlin.runtime.io.*
 
 @InternalApi
-public class ResponseLengthValidationInterceptor: HttpInterceptor {
+public class ResponseLengthValidationInterceptor : HttpInterceptor {
     override suspend fun modifyBeforeDeserialization(context: ProtocolResponseInterceptorContext<Any, HttpRequest, HttpResponse>): HttpResponse {
         val response = context.protocolResponse
 
@@ -34,7 +34,7 @@ private fun HttpBody.toLengthValidatingBody(expectedContentLength: Long): HttpBo
 
 private class LengthValidatingSource(
     private val source: SdkSource,
-    private val expectedContentLength: Long
+    private val expectedContentLength: Long,
 ) : SdkSource by source {
     var bytesReceived = 0L
     override fun read(sink: SdkBuffer, limit: Long): Long = source.read(sink, limit).also {
@@ -48,7 +48,7 @@ private class LengthValidatingSource(
 
 private class LengthValidatingByteReadChannel(
     private val chan: SdkByteReadChannel,
-    private val expectedContentLength: Long
+    private val expectedContentLength: Long,
 ) : SdkByteReadChannel by chan {
     var bytesReceived = 0L
 
