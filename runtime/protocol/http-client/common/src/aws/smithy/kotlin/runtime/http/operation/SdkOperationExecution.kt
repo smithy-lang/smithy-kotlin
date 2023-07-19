@@ -28,14 +28,17 @@ import aws.smithy.kotlin.runtime.retries.RetryStrategy
 import aws.smithy.kotlin.runtime.retries.StandardRetryStrategy
 import aws.smithy.kotlin.runtime.retries.policy.RetryPolicy
 import aws.smithy.kotlin.runtime.retries.policy.StandardRetryPolicy
-import aws.smithy.kotlin.runtime.tracing.debug
-import aws.smithy.kotlin.runtime.tracing.trace
+import aws.smithy.kotlin.runtime.telemetry.logging.debug
+import aws.smithy.kotlin.runtime.telemetry.logging.logger
+import aws.smithy.kotlin.runtime.telemetry.logging.trace
+import aws.smithy.kotlin.runtime.telemetry.metrics.measureSeconds
+import aws.smithy.kotlin.runtime.util.attributesOf
 import aws.smithy.kotlin.runtime.util.merge
 import kotlin.coroutines.coroutineContext
 import kotlin.time.ExperimentalTime
-import kotlin.time.measureTimedValue
 import aws.smithy.kotlin.runtime.io.middleware.decorate as decorateHandler
 
+@InternalApi
 public typealias SdkHttpRequest = OperationRequest<HttpRequestBuilder>
 
 /**
@@ -199,6 +202,7 @@ private class OperationHandler<Input, Output>(
     private val interceptors: InterceptorExecutor<Input, Output>,
 ) : Handler<OperationRequest<Input>, Output> {
     override suspend fun call(request: OperationRequest<Input>): Output {
+        coroutineContext.trace<OperationHandler<*, *>> { "operation started" }
         val result = interceptors.readBeforeExecution(request.subject)
             .mapCatching {
                 inner.call(request)
@@ -210,6 +214,10 @@ private class OperationHandler<Input, Output>(
                 interceptors.readAfterExecution(it)
             }
 
+        when {
+            result.isSuccess -> coroutineContext.trace<OperationHandler<*, *>> { "operation completed successfully" }
+            result.isFailure -> coroutineContext.trace<OperationHandler<*, *>>(result.exceptionOrNull()) { "operation failed" }
+        }
         return result.getOrThrow()
     }
 }
@@ -226,25 +234,18 @@ private class SerializeHandler<Input, Output> (
     private val interceptors: InterceptorExecutor<Input, Output>,
 ) : Handler<OperationRequest<Input>, Output> {
 
-    @OptIn(ExperimentalTime::class)
     override suspend fun call(request: OperationRequest<Input>): Output {
         val modified = interceptors.modifyBeforeSerialization(request.subject)
             .let { request.copy(subject = it) }
 
         interceptors.readBeforeSerialization(modified.subject)
 
-        // FIXME - remove timed value to fix 1.6.x compat?
-        val tv = measureTimedValue {
-            mapRequest(modified.context, modified.subject)
-        }
-
         // store finalized operation input for later middleware to read if needed
         request.context[HttpOperationContext.OperationInput] = modified.subject as Any
 
-        val requestBuilder = tv.value
+        val requestBuilder = mapRequest(modified.context, modified.subject)
         interceptors.readAfterSerialization(requestBuilder.immutableView())
 
-        coroutineContext.trace<SerializeHandler<*, *>> { "request serialized in ${tv.duration}" }
         return inner.call(SdkHttpRequest(modified.context, requestBuilder))
     }
 }
@@ -261,6 +262,8 @@ internal class AuthHandler<Input, Output>(
     private val authConfig: OperationAuthConfig,
     private val endpointResolver: EndpointResolver? = null,
 ) : Handler<SdkHttpRequest, Output> {
+
+    @OptIn(ExperimentalTime::class)
     override suspend fun call(request: SdkHttpRequest): Output {
         // select an auth scheme by reconciling the (priority) list of candidates returned from the resolver
         // with the ones actually configured/available for the SDK
@@ -268,13 +271,22 @@ internal class AuthHandler<Input, Output>(
         val authOption = candidateAuthSchemes.firstOrNull { it.schemeId in authConfig.configuredAuthSchemes } ?: error("no auth scheme found for operation; candidates: $candidateAuthSchemes")
         val authScheme = authConfig.configuredAuthSchemes[authOption.schemeId] ?: error("auth scheme ${authOption.schemeId} not configured")
 
+        val schemeAttr = attributesOf {
+            "auth.scheme_id" to authScheme.schemeId.id
+        }
+
         // resolve identity from the selected auth scheme
         val identityProvider = authScheme.identityProvider(authConfig.identityProviderConfig)
-        val identity = identityProvider.resolve(authOption.attributes)
+        val identity = request.context.operationMetrics.resolveIdentityDuration.measureSeconds(schemeAttr) {
+            identityProvider.resolve(authOption.attributes)
+        }
 
         val resolveEndpointReq = ResolveEndpointRequest(request.context, request.subject.immutableView(), identity)
-        val endpoint = endpointResolver?.resolve(resolveEndpointReq)
-        if (endpoint != null) {
+
+        if (endpointResolver != null) {
+            val endpoint = request.context.operationMetrics.resolveEndpointDuration.measureSeconds(request.context.operationAttributes) {
+                endpointResolver.resolve(resolveEndpointReq)
+            }
             coroutineContext.debug<AuthHandler<*, *>> { "resolved endpoint: $endpoint" }
             setResolvedEndpoint(request, endpoint)
         }
@@ -287,7 +299,10 @@ internal class AuthHandler<Input, Output>(
         // signing properties need to propagate from AuthOption to signer
         modified.context.merge(authOption.attributes)
         val signingRequest = SignHttpRequest(modified.subject, identity, modified.context)
-        authScheme.signer.sign(signingRequest)
+
+        request.context.operationMetrics.signingDuration.measureSeconds(schemeAttr) {
+            authScheme.signer.sign(signingRequest)
+        }
 
         interceptors.readAfterSigning(modified.subject.immutableView())
         return inner.call(modified)
@@ -300,7 +315,6 @@ private class DeserializeHandler<Input, Output>(
     private val interceptors: InterceptorExecutor<Input, Output>,
 ) : Handler<SdkHttpRequest, Output> {
 
-    @OptIn(ExperimentalTime::class)
     override suspend fun call(request: SdkHttpRequest): Output {
         val call = inner.call(request)
 
@@ -309,13 +323,7 @@ private class DeserializeHandler<Input, Output>(
 
         interceptors.readBeforeDeserialization(modified)
 
-        val tv = measureTimedValue {
-            mapResponse(request.context, modified.response)
-        }
-
-        coroutineContext.trace<DeserializeHandler<*, *>> { "response deserialized in: ${tv.duration}" }
-
-        val output = tv.value
+        val output = mapResponse(request.context, modified.response)
         interceptors.readAfterDeserialization(output, modified)
 
         return output
@@ -347,7 +355,7 @@ private class HttpCallMiddleware : Middleware<SdkHttpRequest, HttpCall> {
  */
 private suspend fun httpTraceMiddleware(request: SdkHttpRequest, next: Handler<SdkHttpRequest, HttpCall>): HttpCall {
     val logMode = request.context.logMode
-    val logger = coroutineContext.getLogger("httpTraceMiddleware")
+    val logger = coroutineContext.logger("httpTraceMiddleware")
 
     if (logMode.isEnabled(LogMode.LogRequest) || logMode.isEnabled(LogMode.LogRequestWithBody)) {
         val formattedReq = dumpRequest(request.subject, logMode.isEnabled(LogMode.LogRequestWithBody))

@@ -5,6 +5,7 @@
 
 package aws.smithy.kotlin.runtime.http.operation
 
+import aws.smithy.kotlin.runtime.InternalApi
 import aws.smithy.kotlin.runtime.operation.ExecutionContext
 import aws.smithy.kotlin.runtime.util.CanDeepCopy
 
@@ -17,6 +18,7 @@ import aws.smithy.kotlin.runtime.util.CanDeepCopy
  * @param context The operation context
  * @param subject The input type
  */
+@InternalApi
 public data class OperationRequest<T>(public val context: ExecutionContext, public val subject: T) {
     public constructor(subject: T) : this(ExecutionContext(), subject)
 }

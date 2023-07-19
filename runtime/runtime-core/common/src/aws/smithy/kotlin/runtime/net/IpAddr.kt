@@ -12,6 +12,7 @@ import aws.smithy.kotlin.runtime.InternalApi
  */
 @InternalApi
 public sealed class IpAddr {
+    @InternalApi
     public companion object {
         /**
          * Parse a string into an [IpAddr]. Fails if [s] is not a valid IP address

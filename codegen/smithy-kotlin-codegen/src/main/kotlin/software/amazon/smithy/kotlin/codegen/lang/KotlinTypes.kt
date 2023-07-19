@@ -7,6 +7,7 @@ package software.amazon.smithy.kotlin.codegen.lang
 
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.kotlin.codegen.model.buildSymbol
+import software.amazon.smithy.kotlin.codegen.model.toSymbol
 
 /**
  * Builtin kotlin types
@@ -87,7 +88,11 @@ object KotlinTypes {
     object Time {
         val Duration = builtInSymbol("Duration", "kotlin.time")
         val milliseconds = builtInSymbol("milliseconds", "kotlin.time.Duration.Companion")
-        val seconds = builtInSymbol("seconds", "kotlin.time.Duration.Companion")
+        val minutes = builtInSymbol("minutes", "kotlin.time.Duration.Companion")
+    }
+
+    object Coroutines {
+        val CoroutineContext = "kotlin.coroutines.CoroutineContext".toSymbol()
     }
 
     /**

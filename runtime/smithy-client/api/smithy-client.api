@@ -1,9 +1,3 @@
-public abstract interface class aws/smithy/kotlin/runtime/client/ClientOptions {
-	public abstract fun contains (Laws/smithy/kotlin/runtime/util/AttributeKey;)Z
-	public abstract fun remove (Laws/smithy/kotlin/runtime/util/AttributeKey;)V
-	public abstract fun set (Laws/smithy/kotlin/runtime/util/AttributeKey;Ljava/lang/Object;)V
-}
-
 public abstract class aws/smithy/kotlin/runtime/client/ClientOptionsBuilder : aws/smithy/kotlin/runtime/util/MutableAttributes {
 	public fun <init> ()V
 	public fun <init> (Laws/smithy/kotlin/runtime/util/MutableAttributes;)V
@@ -14,6 +8,7 @@ public abstract class aws/smithy/kotlin/runtime/client/ClientOptionsBuilder : aw
 	public fun getKeys ()Ljava/util/Set;
 	protected final fun getOptions ()Laws/smithy/kotlin/runtime/util/MutableAttributes;
 	public fun getOrNull (Laws/smithy/kotlin/runtime/util/AttributeKey;)Ljava/lang/Object;
+	public fun isEmpty ()Z
 	protected final fun option (Laws/smithy/kotlin/runtime/util/AttributeKey;)Laws/smithy/kotlin/runtime/client/DelegatedClientOption;
 	public fun remove (Laws/smithy/kotlin/runtime/util/AttributeKey;)V
 	protected final fun requiredOption (Laws/smithy/kotlin/runtime/util/AttributeKey;)Laws/smithy/kotlin/runtime/client/DelegatedClientOption;
@@ -201,6 +196,7 @@ public final class aws/smithy/kotlin/runtime/client/SdkClientOption {
 	public final fun getIdempotencyTokenProvider ()Laws/smithy/kotlin/runtime/util/AttributeKey;
 	public final fun getLogMode ()Laws/smithy/kotlin/runtime/util/AttributeKey;
 	public final fun getOperationName ()Laws/smithy/kotlin/runtime/util/AttributeKey;
+	public final fun getServiceName ()Laws/smithy/kotlin/runtime/util/AttributeKey;
 }
 
 public final class aws/smithy/kotlin/runtime/client/SdkClientOptionKt {

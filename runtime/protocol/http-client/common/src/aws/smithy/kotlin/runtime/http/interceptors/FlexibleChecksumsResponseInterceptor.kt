@@ -11,12 +11,12 @@ import aws.smithy.kotlin.runtime.client.ProtocolResponseInterceptorContext
 import aws.smithy.kotlin.runtime.client.RequestInterceptorContext
 import aws.smithy.kotlin.runtime.hashing.toHashFunction
 import aws.smithy.kotlin.runtime.http.HttpBody
-import aws.smithy.kotlin.runtime.http.operation.getLogger
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.http.response.HttpResponse
 import aws.smithy.kotlin.runtime.http.toHashingBody
 import aws.smithy.kotlin.runtime.http.toHttpBody
 import aws.smithy.kotlin.runtime.io.*
+import aws.smithy.kotlin.runtime.telemetry.logging.logger
 import aws.smithy.kotlin.runtime.util.AttributeKey
 import aws.smithy.kotlin.runtime.util.encodeBase64String
 import kotlin.coroutines.coroutineContext
@@ -46,6 +46,7 @@ public class FlexibleChecksumsResponseInterceptor<I>(
 
     private var shouldValidateResponseChecksum: Boolean = false
 
+    @InternalApi
     public companion object {
         // The name of the checksum header which was validated. If `null`, validation was not performed.
         public val ChecksumHeaderValidated: AttributeKey<String> = AttributeKey("ChecksumHeaderValidated")
@@ -60,7 +61,7 @@ public class FlexibleChecksumsResponseInterceptor<I>(
     override suspend fun modifyBeforeDeserialization(context: ProtocolResponseInterceptorContext<Any, HttpRequest, HttpResponse>): HttpResponse {
         if (!shouldValidateResponseChecksum) { return context.protocolResponse }
 
-        val logger = coroutineContext.getLogger<FlexibleChecksumsResponseInterceptor<I>>()
+        val logger = coroutineContext.logger<FlexibleChecksumsResponseInterceptor<I>>()
 
         val checksumHeader = CHECKSUM_HEADER_VALIDATION_PRIORITY_LIST
             .firstOrNull { context.protocolResponse.headers.contains(it) } ?: run {

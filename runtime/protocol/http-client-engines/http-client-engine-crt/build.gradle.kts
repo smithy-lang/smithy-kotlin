@@ -28,9 +28,8 @@ kotlin {
             dependencies {
                 api(project(":runtime:runtime-core"))
                 api(project(":runtime:protocol:http-client"))
-                implementation(project(":runtime:logging"))
                 implementation(project(":runtime:crt-util"))
-                implementation(project(":runtime:tracing:tracing-core"))
+                implementation(project(":runtime:observability:telemetry-api"))
 
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion")
                 implementation("org.jetbrains.kotlinx:atomicfu:$atomicFuVersion")

@@ -8,6 +8,7 @@ import software.amazon.smithy.build.MockManifest
 import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.kotlin.codegen.KotlinCodegenPlugin
 import software.amazon.smithy.kotlin.codegen.KotlinSettings
+import software.amazon.smithy.kotlin.codegen.core.CodegenContext
 import software.amazon.smithy.kotlin.codegen.core.KotlinDelegator
 import software.amazon.smithy.kotlin.codegen.inferService
 import software.amazon.smithy.kotlin.codegen.integration.KotlinIntegration
@@ -134,6 +135,14 @@ fun Model.newTestContext(
         delegator,
     )
     return TestContext(ctx, manifest, generator)
+}
+
+fun TestContext.toCodegenContext() = object : CodegenContext {
+    override val model: Model = generationCtx.model
+    override val symbolProvider: SymbolProvider = generationCtx.symbolProvider
+    override val settings: KotlinSettings = generationCtx.settings
+    override val protocolGenerator: ProtocolGenerator = generator
+    override val integrations: List<KotlinIntegration> = generationCtx.integrations
 }
 
 /**

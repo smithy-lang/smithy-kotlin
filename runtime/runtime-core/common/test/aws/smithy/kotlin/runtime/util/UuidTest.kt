@@ -4,13 +4,11 @@
  */
 package aws.smithy.kotlin.runtime.util
 
-import aws.smithy.kotlin.runtime.util.Uuid.WeakRng
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 @ExperimentalUnsignedTypes
-@OptIn(WeakRng::class)
 class UuidTest {
     @Test
     fun `it should generate random UUIDs`() {

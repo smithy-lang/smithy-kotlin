@@ -66,7 +66,8 @@ dependencies {
     implementation(project(":runtime:runtime-core"))
     implementation(project(":runtime:smithy-client"))
     implementation(project(":runtime:protocol:http-client"))
-    api(project(":runtime:tracing:tracing-core"))
+    implementation(project(":runtime:observability:telemetry-api"))
+    implementation(project(":runtime:observability:telemetry-defaults"))
 
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:$coroutinesVersion")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit5:$kotlinVersion")

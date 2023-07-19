@@ -7,10 +7,8 @@ package aws.smithy.kotlin.runtime.http.engine.okhttp
 
 import aws.smithy.kotlin.runtime.config.TlsVersion
 import aws.smithy.kotlin.runtime.http.config.EngineFactory
-import aws.smithy.kotlin.runtime.http.engine.AlpnId
-import aws.smithy.kotlin.runtime.http.engine.HttpClientEngineBase
-import aws.smithy.kotlin.runtime.http.engine.TlsContext
-import aws.smithy.kotlin.runtime.http.engine.callContext
+import aws.smithy.kotlin.runtime.http.engine.*
+import aws.smithy.kotlin.runtime.http.engine.internal.HttpClientMetrics
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.http.response.HttpCall
 import aws.smithy.kotlin.runtime.operation.ExecutionContext
@@ -42,12 +40,17 @@ public class OkHttpEngine(
         override val engineConstructor: (OkHttpEngineConfig.Builder.() -> Unit) -> OkHttpEngine = ::invoke
     }
 
-    private val client = config.buildClient()
+    private val metrics = HttpClientMetrics(TELEMETRY_SCOPE, config.telemetryProvider)
+    private val client = config.buildClient(metrics)
+
+    init {
+        metrics.connectionsLimit = config.maxConnections.toLong()
+    }
 
     override suspend fun roundTrip(context: ExecutionContext, request: HttpRequest): HttpCall {
         val callContext = callContext()
 
-        val engineRequest = request.toOkHttpRequest(context, callContext)
+        val engineRequest = request.toOkHttpRequest(context, callContext, metrics)
         val engineCall = client.newCall(engineRequest)
         val engineResponse = mapOkHttpExceptions { engineCall.executeAsync() }
 
@@ -65,13 +68,14 @@ public class OkHttpEngine(
     override fun shutdown() {
         client.connectionPool.evictAll()
         client.dispatcher.executorService.shutdown()
+        metrics.close()
     }
 }
 
 /**
  * Convert SDK version of HTTP configuration to OkHttp specific configuration and return the configured client
  */
-private fun OkHttpEngineConfig.buildClient(): OkHttpClient {
+private fun OkHttpEngineConfig.buildClient(metrics: HttpClientMetrics): OkHttpClient {
     val config = this
 
     return OkHttpClient.Builder().apply {
@@ -88,6 +92,9 @@ private fun OkHttpEngineConfig.buildClient(): OkHttpClient {
         connectTimeout(config.connectTimeout.toJavaDuration())
         readTimeout(config.socketReadTimeout.toJavaDuration())
         writeTimeout(config.socketWriteTimeout.toJavaDuration())
+
+        // FIXME - register a [ConnectionListener](https://github.com/square/okhttp/blob/master/okhttp/src/jvmMain/kotlin/okhttp3/ConnectionListener.kt#L27)
+        // when a new okhttp release is cut that contains this abstraction and wireup connection uptime metrics
 
         // use our own pool configured with the timeout settings taken from config
         val pool = ConnectionPool(
@@ -106,7 +113,7 @@ private fun OkHttpEngineConfig.buildClient(): OkHttpClient {
         dispatcher(dispatcher)
 
         // Log events coming from okhttp. Allocate a new listener per-call to facilitate dedicated trace spans.
-        eventListenerFactory { call -> HttpEngineEventListener(pool, config.hostResolver, call) }
+        eventListenerFactory { call -> HttpEngineEventListener(pool, config.hostResolver, dispatcher, metrics, call) }
 
         // map protocols
         if (config.tlsContext.alpn.isNotEmpty()) {
@@ -125,6 +132,8 @@ private fun OkHttpEngineConfig.buildClient(): OkHttpClient {
         proxyAuthenticator(OkHttpProxyAuthenticator(config.proxySelector))
 
         dns(OkHttpDns(config.hostResolver))
+
+        addInterceptor(MetricsInterceptor)
     }.build()
 }
 

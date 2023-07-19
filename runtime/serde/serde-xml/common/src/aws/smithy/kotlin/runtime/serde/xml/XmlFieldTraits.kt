@@ -5,6 +5,7 @@
 
 package aws.smithy.kotlin.runtime.serde.xml
 
+import aws.smithy.kotlin.runtime.InternalApi
 import aws.smithy.kotlin.runtime.serde.*
 
 // NOTE: By default, a descriptor without any Xml trait is assumed to be a primitive TEXT value.
@@ -20,11 +21,13 @@ import aws.smithy.kotlin.runtime.serde.*
  * @param key the name of the key field
  * @param value the name of the value field
  */
+@InternalApi
 public data class XmlMapName(
     public val entry: String? = Default.entry,
     public val key: String = Default.key,
     public val value: String = Default.value,
 ) : FieldTrait {
+    @InternalApi
     public companion object {
         /**
          * The default serialized names for aspects of a Map in XML.
@@ -43,9 +46,11 @@ public data class XmlMapName(
  *
  * @param element the name of the XML node which wraps each list or set entry.
  */
+@InternalApi
 public data class XmlCollectionName(
     public val element: String,
 ) : FieldTrait {
+    @InternalApi
     public companion object {
         /**
          * The default serialized name for a list or set element.
@@ -59,6 +64,7 @@ public data class XmlCollectionName(
  * Denotes a collection type that uses a flattened XML representation
  * see: [xmlflattened trait](https://awslabs.github.io/smithy/1.0/spec/core/xml-traits.html#xmlflattened-trait)
  */
+@InternalApi
 public object Flattened : FieldTrait
 
 /**
@@ -71,6 +77,7 @@ public object Flattened : FieldTrait
  * NOTE/FIXME: This type was written to handle the restXml protocol handling but could be refactored to be more
  *       general purpose if/when necessary to support other XML-based protocols.
  */
+@InternalApi
 public object XmlError : FieldTrait {
     public val errorTag: XmlToken.QualifiedName = XmlToken.QualifiedName("Error")
 }
@@ -78,6 +85,7 @@ public object XmlError : FieldTrait {
 /**
  * Base class for more specific XML namespace traits
  */
+@InternalApi
 public open class AbstractXmlNamespaceTrait(public val uri: String, public val prefix: String? = null) {
     public fun isDefault(): Boolean = prefix == null
     override fun toString(): String = "AbstractXmlNamespace(uri=$uri, prefix=$prefix)"
@@ -87,12 +95,14 @@ public open class AbstractXmlNamespaceTrait(public val uri: String, public val p
  * Describes the namespace associated with a field.
  * See https://awslabs.github.io/smithy/spec/xml.html#xmlnamespace-trait
  */
+@InternalApi
 public class XmlNamespace(uri: String, prefix: String? = null) : AbstractXmlNamespaceTrait(uri, prefix), FieldTrait
 
 /**
  * Describes the namespace of a list or map's value element
  * Applies to [SerialKind.List] or [SerialKind.Map]
  */
+@InternalApi
 public class XmlCollectionValueNamespace(uri: String, prefix: String? = null) :
     AbstractXmlNamespaceTrait(uri, prefix), FieldTrait
 
@@ -100,6 +110,7 @@ public class XmlCollectionValueNamespace(uri: String, prefix: String? = null) :
  * Describes the namespace associated with a map's key element
  * Applies to [SerialKind.Map]
  */
+@InternalApi
 public class XmlMapKeyNamespace(uri: String, prefix: String? = null) :
     AbstractXmlNamespaceTrait(uri, prefix), FieldTrait
 
@@ -107,11 +118,13 @@ public class XmlMapKeyNamespace(uri: String, prefix: String? = null) :
  * Specifies the name that a field is encoded into for Xml nodes.
  * See https://awslabs.github.io/smithy/1.0/spec/core/xml-traits.html?highlight=xmlname#xmlname-trait
  */
+@InternalApi
 public data class XmlSerialName(public val name: String) : FieldTrait
 
 /**
  * Specifies an alternate name that can be used to match an XML node.
  */
+@InternalApi
 public data class XmlAliasName(public val name: String) : FieldTrait
 
 private fun toQualifiedName(xmlNamespace: XmlNamespace?, name: String?): XmlToken.QualifiedName {
@@ -184,6 +197,7 @@ internal fun String.parseNodeWithPrefix(): Pair<String, String?> =
  * Specifies that a field is encoded into an XML attribute and describes the XML.
  * See https://awslabs.github.io/smithy/spec/xml.html#xmlattribute-trait
  */
+@InternalApi
 public object XmlAttribute : FieldTrait
 
 /**

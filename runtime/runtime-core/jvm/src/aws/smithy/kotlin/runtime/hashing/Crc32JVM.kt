@@ -4,8 +4,10 @@
  */
 package aws.smithy.kotlin.runtime.hashing
 
+import aws.smithy.kotlin.runtime.InternalApi
 import java.util.zip.CRC32
 
+@InternalApi
 public actual class Crc32 : Crc32Base() {
     private val md = CRC32()
 

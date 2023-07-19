@@ -14,5 +14,9 @@ kotlin {
                 api(project(":runtime:runtime-core"))
             }
         }
+
+        all {
+            languageSettings.optIn("aws.smithy.kotlin.runtime.InternalApi")
+        }
     }
 }

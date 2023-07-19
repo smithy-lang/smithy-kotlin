@@ -216,3 +216,5 @@ internal data class GeneratedDependency(
 
 fun KotlinDelegator.useFileWriter(symbol: Symbol, block: (KotlinWriter) -> Unit) =
     useFileWriter("${symbol.name}.kt", symbol.namespace, block)
+
+fun KotlinDelegator.applyFileWriter(symbol: Symbol, block: KotlinWriter.() -> Unit) = useFileWriter(symbol, block)

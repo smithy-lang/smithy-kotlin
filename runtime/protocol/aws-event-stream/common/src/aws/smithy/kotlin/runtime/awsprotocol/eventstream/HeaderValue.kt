@@ -39,12 +39,22 @@ internal enum class HeaderType(val value: Byte) {
  */
 @InternalApi
 public sealed class HeaderValue {
+    @InternalApi
     public data class Bool(val value: Boolean) : HeaderValue()
+
+    @InternalApi
     public data class Byte(val value: UByte) : HeaderValue()
+
+    @InternalApi
     public data class Int16(val value: Short) : HeaderValue()
+
+    @InternalApi
     public data class Int32(val value: Int) : HeaderValue()
+
+    @InternalApi
     public data class Int64(val value: Long) : HeaderValue()
 
+    @InternalApi
     public data class ByteArray(val value: kotlin.ByteArray) : HeaderValue() {
         override fun equals(other: Any?): Boolean {
             if (this === other) return true
@@ -60,8 +70,13 @@ public sealed class HeaderValue {
         override fun hashCode(): Int = value.contentHashCode()
     }
 
+    @InternalApi
     public data class String(val value: kotlin.String) : HeaderValue()
+
+    @InternalApi
     public data class Timestamp(val value: Instant) : HeaderValue()
+
+    @InternalApi
     public data class Uuid(val value: aws.smithy.kotlin.runtime.util.Uuid) : HeaderValue()
 
     /**
@@ -112,6 +127,7 @@ public sealed class HeaderValue {
         }
     }
 
+    @InternalApi
     public companion object {
         public fun decode(source: SdkBufferedSource): HeaderValue {
             val type = source.readByte().let { HeaderType.fromTypeId(it) }
@@ -148,12 +164,29 @@ public sealed class HeaderValue {
 
 private fun SdkBufferedSink.writeHeader(headerType: HeaderType) = writeByte(headerType.value)
 
+@InternalApi
 public fun HeaderValue.expectBool(): Boolean = checkNotNull((this as? HeaderValue.Bool)?.value) { "expected HeaderValue.Bool, found: $this" }
+
+@InternalApi
 public fun HeaderValue.expectByte(): Byte = checkNotNull((this as? HeaderValue.Byte)?.value?.toByte()) { "expected HeaderValue.Byte, found: $this" }
+
+@InternalApi
 public fun HeaderValue.expectInt16(): Short = checkNotNull((this as? HeaderValue.Int16)?.value) { "expected HeaderValue.Int16, found: $this" }
+
+@InternalApi
 public fun HeaderValue.expectInt32(): Int = checkNotNull((this as? HeaderValue.Int32)?.value) { "expected HeaderValue.Int32, found: $this" }
+
+@InternalApi
 public fun HeaderValue.expectInt64(): Long = checkNotNull((this as? HeaderValue.Int64)?.value) { "expected HeaderValue.Int64, found: $this" }
+
+@InternalApi
 public fun HeaderValue.expectString(): String = checkNotNull((this as? HeaderValue.String)?.value) { "expected HeaderValue.String, found: $this" }
+
+@InternalApi
 public fun HeaderValue.expectByteArray(): ByteArray = checkNotNull((this as? HeaderValue.ByteArray)?.value) { "expected HeaderValue.ByteArray, found: $this" }
+
+@InternalApi
 public fun HeaderValue.expectTimestamp(): Instant = checkNotNull((this as? HeaderValue.Timestamp)?.value) { "expected HeaderValue.Bool, found: $this" }
+
+@InternalApi
 public fun HeaderValue.expectUuid(): Uuid = checkNotNull((this as? HeaderValue.Uuid)?.value) { "expected HeaderValue.Bool, found: $this" }

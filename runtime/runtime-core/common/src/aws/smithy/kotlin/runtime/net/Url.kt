@@ -39,7 +39,8 @@ public data class Url(
     }
 
     public companion object {
-        public fun parse(url: String): Url = urlParseImpl(url)
+        public fun parse(url: String): Url = parse(url, UrlDecoding.DecodeAll)
+        public fun parse(url: String, decodingBehavior: UrlDecoding): Url = urlParseImpl(url, decodingBehavior)
     }
 
     override fun toString(): String = buildString {

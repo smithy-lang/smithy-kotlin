@@ -13,7 +13,7 @@ kotlin {
         commonMain {
             dependencies {
                 api(project(":runtime:runtime-core"))
-                implementation(project(":runtime:tracing:tracing-core"))
+                implementation(project(":runtime:observability:telemetry-api"))
 
                 // exposes AwsSigningConfig
                 api(project(":runtime:auth:aws-signing-common"))

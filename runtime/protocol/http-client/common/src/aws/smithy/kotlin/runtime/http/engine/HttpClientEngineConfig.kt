@@ -7,6 +7,7 @@ package aws.smithy.kotlin.runtime.http.engine
 import aws.smithy.kotlin.runtime.InternalApi
 import aws.smithy.kotlin.runtime.http.config.HttpEngineConfigDsl
 import aws.smithy.kotlin.runtime.net.HostResolver
+import aws.smithy.kotlin.runtime.telemetry.TelemetryProvider
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 
@@ -79,6 +80,11 @@ public interface HttpClientEngineConfig {
      * Settings related to TLS and secure connections
      */
     public val tlsContext: TlsContext
+
+    /**
+     * The telemetry provider that the HTTP client will be instrumented with
+     */
+    public val telemetryProvider: TelemetryProvider
 
     @InternalApi
     public fun toBuilderApplicator(): Builder.() -> Unit
@@ -163,6 +169,11 @@ public interface HttpClientEngineConfig {
         public var tlsContext: TlsContext
 
         /**
+         * The telemetry provider that the HTTP client will be instrumented with
+         */
+        public var telemetryProvider: TelemetryProvider
+
+        /**
          * Settings related to TLS and secure connections
          */
         public fun tlsContext(block: TlsContext.Builder.() -> Unit)
@@ -183,6 +194,7 @@ public open class HttpClientEngineConfigImpl(builder: HttpClientEngineConfig.Bui
     override val proxySelector: ProxySelector = builder.proxySelector
     override val hostResolver: HostResolver = builder.hostResolver
     override val tlsContext: TlsContext = builder.tlsContext
+    override val telemetryProvider: TelemetryProvider = builder.telemetryProvider
 
     override fun toBuilderApplicator(): HttpClientEngineConfig.Builder.() -> Unit = {
         socketReadTimeout = this@HttpClientEngineConfigImpl.socketReadTimeout
@@ -194,6 +206,7 @@ public open class HttpClientEngineConfigImpl(builder: HttpClientEngineConfig.Bui
         proxySelector = this@HttpClientEngineConfigImpl.proxySelector
         hostResolver = this@HttpClientEngineConfigImpl.hostResolver
         tlsContext = this@HttpClientEngineConfigImpl.tlsContext
+        telemetryProvider = this@HttpClientEngineConfigImpl.telemetryProvider
     }
 
     @InternalApi
@@ -207,6 +220,7 @@ public open class HttpClientEngineConfigImpl(builder: HttpClientEngineConfig.Bui
         override var proxySelector: ProxySelector = EnvironmentProxySelector()
         override var hostResolver: HostResolver = HostResolver.Default
         override var tlsContext: TlsContext = TlsContext.Default
+        override var telemetryProvider: TelemetryProvider = TelemetryProvider.None
         override fun tlsContext(block: TlsContext.Builder.() -> Unit) {
             tlsContext = TlsContext(tlsContext.toBuilder().apply(block))
         }

@@ -5,6 +5,8 @@
 
 package aws.smithy.kotlin.runtime.net
 
+import aws.smithy.kotlin.runtime.InternalApi
+
 /**
  * An IPv6 address as defined by [RFC 4291](https://www.rfc-editor.org/rfc/rfc4291).
  *
@@ -50,6 +52,7 @@ package aws.smithy.kotlin.runtime.net
  * @param zoneId Scoped IPv6 address zone identifier as defined in [RFC 6874](https://www.rfc-editor.org/rfc/rfc6874).
  * Scoped IPv6 addresses are described in [RFC 4007](https://www.rfc-editor.org/rfc/rfc4007)
  */
+@InternalApi
 @OptIn(ExperimentalUnsignedTypes::class)
 public data class IpV6Addr(
     override val octets: ByteArray,
@@ -76,6 +79,7 @@ public data class IpV6Addr(
         zoneId: String? = null,
     ) : this(ipv6SegmentsToOctets(a, b, c, d, e, f, g, h), zoneId)
 
+    @InternalApi
     public companion object {
         /**
          * An IPv6 address representing localhost: ::1

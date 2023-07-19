@@ -30,6 +30,7 @@ private const val MAX_HEADER_NAME_LEN = 255
  */
 @InternalApi
 public data class Header(val name: String, val value: HeaderValue) {
+    @InternalApi
     public companion object {
         /**
          * Read an encoded header from the [source]

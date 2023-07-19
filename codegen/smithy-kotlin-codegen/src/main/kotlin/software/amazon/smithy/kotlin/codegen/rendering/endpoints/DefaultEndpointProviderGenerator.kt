@@ -148,7 +148,7 @@ class DefaultEndpointProviderGenerator(
             writer.withBlock("return #T(", ")", RuntimeTypes.SmithyClient.Endpoints.Endpoint) {
                 writeInline("#T.parse(", RuntimeTypes.Core.Net.Url)
                 renderExpression(rule.endpoint.url)
-                write("),")
+                write(", #1T.DecodeAll - #1T.DecodePath),", RuntimeTypes.Core.Net.UrlDecoding)
 
                 if (rule.endpoint.headers.isNotEmpty()) {
                     withBlock("headers = #T {", "},", RuntimeTypes.Http.Headers) {
