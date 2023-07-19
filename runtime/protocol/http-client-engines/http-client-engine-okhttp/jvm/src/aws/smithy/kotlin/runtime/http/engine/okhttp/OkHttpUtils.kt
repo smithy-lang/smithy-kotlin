@@ -19,6 +19,7 @@ import okhttp3.*
 import okhttp3.Authenticator
 import okhttp3.RequestBody.Companion.toRequestBody
 import okhttp3.internal.http.HttpMethod
+import java.io.EOFException
 import java.io.IOException
 import java.net.*
 import javax.net.ssl.SSLHandshakeException
@@ -191,9 +192,10 @@ internal inline fun<T> mapOkHttpExceptions(block: () -> T): T =
         throw HttpException(ex, ex.errCode(), ex.isRetryable())
     }
 
-private fun Exception.isRetryable(): Boolean = isCauseOrSuppressed<ConnectException>()
+private fun Exception.isRetryable(): Boolean = isCauseOrSuppressed<ConnectException>() || isConnectionClosedException()
 private fun Exception.errCode(): HttpErrorCode = when {
     isConnectTimeoutException() -> HttpErrorCode.CONNECT_TIMEOUT
+    isConnectionClosedException() -> HttpErrorCode.CONNECTION_CLOSED
     isCauseOrSuppressed<SocketTimeoutException>() -> HttpErrorCode.SOCKET_TIMEOUT
     isCauseOrSuppressed<SSLHandshakeException>() -> HttpErrorCode.TLS_NEGOTIATION_ERROR
     else -> HttpErrorCode.SDK_UNKNOWN
@@ -201,6 +203,11 @@ private fun Exception.errCode(): HttpErrorCode = when {
 
 private fun Exception.isConnectTimeoutException(): Boolean =
     findCauseOrSuppressed<SocketTimeoutException>()?.message?.contains("connect", ignoreCase = true) == true
+
+private fun Exception.isConnectionClosedException(): Boolean =
+    message?.contains("unexpected end of stream") == true &&
+        (cause as? Exception)?.findCauseOrSuppressed<EOFException>()?.message?.contains("\\n not found: limit=0") == true
+
 private inline fun <reified T> Exception.isCauseOrSuppressed(): Boolean = findCauseOrSuppressed<T>() != null
 private inline fun <reified T> Exception.findCauseOrSuppressed(): T? {
     if (this is T) return this
