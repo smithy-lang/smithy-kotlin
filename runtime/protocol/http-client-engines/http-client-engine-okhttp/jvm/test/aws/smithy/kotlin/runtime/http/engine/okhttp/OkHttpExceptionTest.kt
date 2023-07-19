@@ -7,6 +7,7 @@ package aws.smithy.kotlin.runtime.http.engine.okhttp
 
 import aws.smithy.kotlin.runtime.http.HttpErrorCode
 import aws.smithy.kotlin.runtime.http.HttpException
+import java.io.EOFException
 import java.io.IOException
 import java.net.ConnectException
 import java.net.SocketTimeoutException
@@ -33,6 +34,8 @@ class OkHttpExceptionTest {
             ExceptionTest(SocketTimeoutException("read timeout"), expectedError = HttpErrorCode.SOCKET_TIMEOUT),
             ExceptionTest(IOException(SSLHandshakeException("negotiate error")), expectedError = HttpErrorCode.TLS_NEGOTIATION_ERROR),
             ExceptionTest(ConnectException("test connect error"), expectedError = HttpErrorCode.SDK_UNKNOWN, true),
+            // see https://github.com/awslabs/aws-sdk-kotlin/issues/905
+            ExceptionTest(IOException("unexpected end of stream on https://test.aws.com", EOFException("\\n not found: limit=0 content=...")), expectedError = HttpErrorCode.CONNECTION_CLOSED, expectedRetryable = true),
         )
 
         for (test in tests) {
