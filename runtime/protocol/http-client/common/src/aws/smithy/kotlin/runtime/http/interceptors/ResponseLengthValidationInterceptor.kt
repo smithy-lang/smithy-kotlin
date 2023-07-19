@@ -19,8 +19,8 @@ public class ResponseLengthValidationInterceptor: HttpInterceptor {
     override suspend fun modifyBeforeDeserialization(context: ProtocolResponseInterceptorContext<Any, HttpRequest, HttpResponse>): HttpResponse {
         val response = context.protocolResponse
 
-        return response.body.contentLength?.let {
-            response.copy(body = response.body.toLengthValidatingBody(it))
+        return response.headers["Content-Length"]?.let {
+            response.copy(body = response.body.toLengthValidatingBody(it.toLong()))
         } ?: response
     }
 }
