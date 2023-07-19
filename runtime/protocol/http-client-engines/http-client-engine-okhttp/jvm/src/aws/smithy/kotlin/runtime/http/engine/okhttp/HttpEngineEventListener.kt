@@ -36,6 +36,7 @@ internal class HttpEngineEventListener(
     private val hr: HostResolver,
     private val dispatcher: Dispatcher,
     private val metrics: HttpClientMetrics,
+    private val connectionLimiter: ConnectionLimiter,
     call: Call,
 ) : EventListener() {
     private val provider: TelemetryProvider = call.request().tag<SdkRequestTag>()?.callContext?.telemetryProvider ?: TelemetryProvider.None
@@ -132,6 +133,7 @@ internal class HttpEngineEventListener(
     }
 
     override fun connectionReleased(call: Call, connection: Connection) {
+        connectionLimiter.connectionReleased()
         metrics.acquiredConnections = pool.connectionCount().toLong()
         metrics.idleConnections = pool.idleConnectionCount().toLong()
         val connId = System.identityHashCode(connection)

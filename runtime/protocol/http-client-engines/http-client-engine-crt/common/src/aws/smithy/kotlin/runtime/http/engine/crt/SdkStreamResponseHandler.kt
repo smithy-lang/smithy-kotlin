@@ -207,6 +207,7 @@ internal class SdkStreamResponseHandler(
             }
 
             logger.trace { "Closing connection ${conn.id}" }
+            // return to pool
             conn.close()
         }
     }

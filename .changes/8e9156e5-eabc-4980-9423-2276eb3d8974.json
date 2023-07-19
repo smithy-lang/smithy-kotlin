@@ -1,0 +1,5 @@
+{
+    "id": "8e9156e5-eabc-4980-9423-2276eb3d8974",
+    "type": "bugfix",
+    "description": "Enforce maxConnections setting for OkHttp and CRT HTTP engines"
+}

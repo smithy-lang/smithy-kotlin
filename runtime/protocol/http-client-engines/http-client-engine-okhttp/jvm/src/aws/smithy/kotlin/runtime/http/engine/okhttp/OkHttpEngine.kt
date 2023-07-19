@@ -95,7 +95,6 @@ private fun OkHttpEngineConfig.buildClient(metrics: HttpClientMetrics): OkHttpCl
 
         // FIXME - register a [ConnectionListener](https://github.com/square/okhttp/blob/master/okhttp/src/jvmMain/kotlin/okhttp3/ConnectionListener.kt#L27)
         // when a new okhttp release is cut that contains this abstraction and wireup connection uptime metrics
-        // FIXME - with that ConnectionListener implement our own max connections gate?
 
         // use our own pool configured with the timeout settings taken from config
         val pool = ConnectionPool(
@@ -111,8 +110,11 @@ private fun OkHttpEngineConfig.buildClient(metrics: HttpClientMetrics): OkHttpCl
         }
         dispatcher(dispatcher)
 
+        // TODO - move connection listener/limiting to ConnectionListener rather than wiring it through event listener
+        val connLimiter = ConnectionLimiter(config.maxConnections.toInt(), pool)
+
         // Log events coming from okhttp. Allocate a new listener per-call to facilitate dedicated trace spans.
-        eventListenerFactory { call -> HttpEngineEventListener(pool, config.hostResolver, dispatcher, metrics, call) }
+        eventListenerFactory { call -> HttpEngineEventListener(pool, config.hostResolver, dispatcher, metrics, connLimiter, call) }
 
         // map protocols
         if (config.tlsContext.alpn.isNotEmpty()) {
@@ -132,6 +134,7 @@ private fun OkHttpEngineConfig.buildClient(metrics: HttpClientMetrics): OkHttpCl
 
         dns(OkHttpDns(config.hostResolver))
 
+        addInterceptor(MaxConnectionsInterceptor(connLimiter))
         addInterceptor(MetricsInterceptor)
     }.build()
 }
