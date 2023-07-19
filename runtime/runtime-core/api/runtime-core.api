@@ -380,16 +380,6 @@ public abstract interface class aws/smithy/kotlin/runtime/io/Handler {
 	public abstract fun call (Ljava/lang/Object;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
-public final class aws/smithy/kotlin/runtime/io/HandlerLambda : aws/smithy/kotlin/runtime/io/Handler {
-	public fun <init> (Lkotlin/jvm/functions/Function2;)V
-	public fun call (Ljava/lang/Object;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public final fun copy (Lkotlin/jvm/functions/Function2;)Laws/smithy/kotlin/runtime/io/HandlerLambda;
-	public static synthetic fun copy$default (Laws/smithy/kotlin/runtime/io/HandlerLambda;Lkotlin/jvm/functions/Function2;ILjava/lang/Object;)Laws/smithy/kotlin/runtime/io/HandlerLambda;
-	public fun equals (Ljava/lang/Object;)Z
-	public fun hashCode ()I
-	public fun toString ()Ljava/lang/String;
-}
-
 public final class aws/smithy/kotlin/runtime/io/JavaIOKt {
 	public static final fun sink (Ljava/io/File;)Laws/smithy/kotlin/runtime/io/SdkSink;
 	public static final fun sink (Ljava/io/OutputStream;)Laws/smithy/kotlin/runtime/io/SdkSink;
@@ -584,16 +574,6 @@ public final class aws/smithy/kotlin/runtime/io/SdkSourceKt {
 }
 
 public final class aws/smithy/kotlin/runtime/io/internal/ConvertKt {
-}
-
-public final class aws/smithy/kotlin/runtime/io/middleware/MapRequest : aws/smithy/kotlin/runtime/io/Handler {
-	public fun <init> (Laws/smithy/kotlin/runtime/io/Handler;Lkotlin/jvm/functions/Function2;)V
-	public fun call (Ljava/lang/Object;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-}
-
-public final class aws/smithy/kotlin/runtime/io/middleware/MapResponse : aws/smithy/kotlin/runtime/io/Handler {
-	public fun <init> (Laws/smithy/kotlin/runtime/io/Handler;Lkotlin/jvm/functions/Function2;)V
-	public fun call (Ljava/lang/Object;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
 public final class aws/smithy/kotlin/runtime/io/middleware/MiddlewareKt {
@@ -1435,9 +1415,6 @@ public final class aws/smithy/kotlin/runtime/util/StackKt {
 }
 
 public final class aws/smithy/kotlin/runtime/util/TestPlatformProvider$Companion {
-}
-
-public abstract interface annotation class aws/smithy/kotlin/runtime/util/Uuid$WeakRng : java/lang/annotation/Annotation {
 }
 
 public abstract interface class aws/smithy/kotlin/runtime/util/ValuesMap {
