@@ -23,9 +23,9 @@ data class ResponseLengthValidationTestOutput(val body: HttpBody)
 
 inline fun <reified I> newResponseLengthValidationTestOperation(serialized: HttpRequestBuilder): SdkHttpOperation<I, ResponseLengthValidationTestOutput> =
     SdkHttpOperation.build {
-        serializer = HttpSerialize { context, input -> serialized }
+        serializer = HttpSerialize { _, _ -> serialized }
 
-        deserializer = HttpDeserialize { context, response -> ResponseLengthValidationTestOutput(response.body) }
+        deserializer = HttpDeserialize { _, response -> ResponseLengthValidationTestOutput(response.body) }
 
         context {
             // required operation context
