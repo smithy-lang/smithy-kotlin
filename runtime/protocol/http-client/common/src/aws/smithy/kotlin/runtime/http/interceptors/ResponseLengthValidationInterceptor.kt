@@ -80,5 +80,11 @@ private class LengthValidatingByteReadChannel(
 }
 
 private fun validateContentLength(expected: Long, actual: Long) {
-    check(expected == actual) { "Total bytes consumed ($actual) does not match expected ($expected)." }
+    if (expected != actual) {
+        if (expected > actual) {
+            throw EOFException("Expected $expected bytes but received $actual bytes. The connection may have been closed prematurely.")
+        } else {
+            throw EOFException("Expected $expected bytes but received $actual bytes.")
+        }
+    }
 }

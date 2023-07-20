@@ -10,6 +10,7 @@ import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
 import aws.smithy.kotlin.runtime.http.response.HttpCall
 import aws.smithy.kotlin.runtime.http.response.HttpResponse
 import aws.smithy.kotlin.runtime.httptest.TestEngine
+import aws.smithy.kotlin.runtime.io.EOFException
 import aws.smithy.kotlin.runtime.io.SdkByteReadChannel
 import aws.smithy.kotlin.runtime.io.SdkSource
 import aws.smithy.kotlin.runtime.io.source
@@ -103,7 +104,7 @@ class ResponseLengthValidationInterceptorTest {
             getMockClientWithSourceBody(response, responseHeaders),
             getMockClientWithChannelBody(response, responseHeaders),
         ).forEach { client ->
-            assertFailsWith<IllegalStateException> {
+            assertFailsWith<EOFException> {
                 val output = op.roundTrip(client, ResponseLengthValidationTestInput("input"))
                 output.body.readAll()
             }
@@ -125,7 +126,7 @@ class ResponseLengthValidationInterceptorTest {
             getMockClientWithChannelBody(response, responseHeaders),
             getMockClientWithSourceBody(response, responseHeaders),
         ).forEach { client ->
-            assertFailsWith<IllegalStateException> {
+            assertFailsWith<EOFException> {
                 val output = op.roundTrip(client, ResponseLengthValidationTestInput("input"))
                 output.body.readAll()
             }
