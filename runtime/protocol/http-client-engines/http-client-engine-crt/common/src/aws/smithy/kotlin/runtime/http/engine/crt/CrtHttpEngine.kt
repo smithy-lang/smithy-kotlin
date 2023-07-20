@@ -26,11 +26,11 @@ import aws.smithy.kotlin.runtime.io.internal.SdkDispatchers
 import aws.smithy.kotlin.runtime.operation.ExecutionContext
 import aws.smithy.kotlin.runtime.telemetry.logging.logger
 import aws.smithy.kotlin.runtime.time.Instant
-import kotlinx.coroutines.job
+import kotlinx.coroutines.*
 import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withLock
-import kotlinx.coroutines.withContext
-import kotlinx.coroutines.withTimeoutOrNull
+import kotlinx.coroutines.sync.withPermit
 import aws.sdk.kotlin.crt.io.TlsContext as CrtTlsContext
 import aws.sdk.kotlin.crt.io.TlsVersion as CrtTlsVersion
 import aws.smithy.kotlin.runtime.config.TlsVersion as SdkTlsVersion
@@ -83,6 +83,7 @@ public class CrtHttpEngine(public override val config: CrtHttpEngineConfig) : Ht
             connectTimeoutMs = config.connectTimeout.inWholeMilliseconds.toInt(),
         )
         initialWindowSize = config.initialWindowSizeBytes
+        // FIXME - given managers are _per host_ the maxConnections parameter is not actually respected here
         maxConnections = config.maxConnections.toInt()
         maxConnectionIdleMs = config.connectionIdleTimeout.inWholeMilliseconds
     }
@@ -90,8 +91,9 @@ public class CrtHttpEngine(public override val config: CrtHttpEngineConfig) : Ht
     // connection managers are per host
     private val connManagers = mutableMapOf<String, HttpClientConnectionManager>()
     private val mutex = Mutex()
+    private val requestLimiter = Semaphore(config.maxConcurrency.toInt())
 
-    override suspend fun roundTrip(context: ExecutionContext, request: HttpRequest): HttpCall {
+    override suspend fun roundTrip(context: ExecutionContext, request: HttpRequest): HttpCall = requestLimiter.withPermit {
         val callContext = callContext()
         val logger = callContext.logger<CrtHttpEngine>()
         val proxyConfig = config.proxySelector.select(request.url)

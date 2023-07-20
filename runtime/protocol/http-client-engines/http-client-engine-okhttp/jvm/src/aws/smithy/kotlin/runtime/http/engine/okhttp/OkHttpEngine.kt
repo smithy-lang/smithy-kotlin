@@ -95,6 +95,7 @@ private fun OkHttpEngineConfig.buildClient(metrics: HttpClientMetrics): OkHttpCl
 
         // FIXME - register a [ConnectionListener](https://github.com/square/okhttp/blob/master/okhttp/src/jvmMain/kotlin/okhttp3/ConnectionListener.kt#L27)
         // when a new okhttp release is cut that contains this abstraction and wireup connection uptime metrics
+        // FIXME - with that ConnectionListener implement our own max connections gate?
 
         // use our own pool configured with the timeout settings taken from config
         val pool = ConnectionPool(
@@ -104,11 +105,9 @@ private fun OkHttpEngineConfig.buildClient(metrics: HttpClientMetrics): OkHttpCl
         )
         connectionPool(pool)
 
-        // Configure a dispatcher that uses maxConnections as a proxy for maxRequests. Note that this isn't precisely
-        // the same since some protocols (e.g., HTTP2) may use a single connection for multiple requests.
         val dispatcher = Dispatcher().apply {
-            maxRequests = config.maxConnections.toInt()
-            maxRequestsPerHost = config.maxConnectionsPerHost.toInt()
+            maxRequests = config.maxConcurrency.toInt()
+            maxRequestsPerHost = config.maxConcurrencyPerHost.toInt()
         }
         dispatcher(dispatcher)
 
