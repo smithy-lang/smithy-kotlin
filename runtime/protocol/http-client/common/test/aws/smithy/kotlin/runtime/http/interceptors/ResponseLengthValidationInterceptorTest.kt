@@ -14,7 +14,6 @@ import aws.smithy.kotlin.runtime.io.SdkByteReadChannel
 import aws.smithy.kotlin.runtime.io.SdkSource
 import aws.smithy.kotlin.runtime.io.source
 import aws.smithy.kotlin.runtime.time.Instant
-import aws.smthy.kotlin.runtime.http.interceptors.ResponseLengthValidationInterceptor
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import kotlin.test.*
