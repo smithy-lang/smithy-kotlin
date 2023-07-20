@@ -40,8 +40,6 @@ class HttpProtocolClientGeneratorTest {
         commonTestContents.shouldContainOnlyOnceWithDiff("import ${KotlinDependency.HTTP.namespace}.operation.context")
         commonTestContents.shouldContainOnlyOnceWithDiff("import ${KotlinDependency.HTTP.namespace}.operation.execute")
         commonTestContents.shouldContainOnlyOnceWithDiff("import ${KotlinDependency.HTTP.namespace}.operation.roundTrip")
-        commonTestContents.shouldContainOnlyOnceWithDiff("import ${KotlinDependency.HTTP.namespace}.operation.sdkRequestId")
-        commonTestContents.shouldContainOnlyOnceWithDiff("import ${KotlinDependency.TRACING_CORE.namespace}.withRootTraceSpan")
     }
 
     @Test
@@ -59,6 +57,9 @@ class HttpProtocolClientGeneratorTest {
     }
 """
         commonTestContents.shouldContainOnlyOnceWithDiff(expected)
+
+        commonTestContents.shouldContainOnlyOnceWithDiff("private val telemetryScope = \"${TestModelDefault.NAMESPACE}\"")
+        commonTestContents.shouldContainOnlyOnceWithDiff("private val opMetrics = OperationMetrics(telemetryScope, config.telemetryProvider)")
     }
 
     @Test
@@ -81,6 +82,12 @@ class HttpProtocolClientGeneratorTest {
             deserializer = GetFooOperationDeserializer()
             context {
                 operationName = "GetFoo"
+                serviceName = ServiceId
+            }
+            telemetry {
+                provider = config.telemetryProvider
+                scope = telemetryScope
+                metrics = opMetrics
             }
             execution.auth = OperationAuthConfig(AuthSchemeProviderAdapter, configuredAuthSchemes, identityProviderConfig)
             execution.endpointResolver = EndpointResolverAdapter(config)
@@ -88,10 +95,7 @@ class HttpProtocolClientGeneratorTest {
         }
         op.install(MockMiddleware(configurationField1 = "testing"))
         op.interceptors.addAll(config.interceptors)
-        val rootSpan = config.tracer.createRootSpan("GetFoo-${'$'}{op.context.sdkRequestId}")
-        return coroutineContext.withRootTraceSpan(rootSpan) {
-            op.roundTrip(client, input)
-        }
+        return op.roundTrip(client, input)
     }
 """,
 """
@@ -101,6 +105,12 @@ class HttpProtocolClientGeneratorTest {
             deserializer = GetFooNoInputOperationDeserializer()
             context {
                 operationName = "GetFooNoInput"
+                serviceName = ServiceId
+            }
+            telemetry {
+                provider = config.telemetryProvider
+                scope = telemetryScope
+                metrics = opMetrics
             }
             execution.auth = OperationAuthConfig(AuthSchemeProviderAdapter, configuredAuthSchemes, identityProviderConfig)
             execution.endpointResolver = EndpointResolverAdapter(config)
@@ -108,10 +118,7 @@ class HttpProtocolClientGeneratorTest {
         }
         op.install(MockMiddleware(configurationField1 = "testing"))
         op.interceptors.addAll(config.interceptors)
-        val rootSpan = config.tracer.createRootSpan("GetFooNoInput-${'$'}{op.context.sdkRequestId}")
-        return coroutineContext.withRootTraceSpan(rootSpan) {
-            op.roundTrip(client, input)
-        }
+        return op.roundTrip(client, input)
     }
 """,
 """
@@ -121,6 +128,12 @@ class HttpProtocolClientGeneratorTest {
             deserializer = GetFooNoOutputOperationDeserializer()
             context {
                 operationName = "GetFooNoOutput"
+                serviceName = ServiceId
+            }
+            telemetry {
+                provider = config.telemetryProvider
+                scope = telemetryScope
+                metrics = opMetrics
             }
             execution.auth = OperationAuthConfig(AuthSchemeProviderAdapter, configuredAuthSchemes, identityProviderConfig)
             execution.endpointResolver = EndpointResolverAdapter(config)
@@ -128,10 +141,7 @@ class HttpProtocolClientGeneratorTest {
         }
         op.install(MockMiddleware(configurationField1 = "testing"))
         op.interceptors.addAll(config.interceptors)
-        val rootSpan = config.tracer.createRootSpan("GetFooNoOutput-${'$'}{op.context.sdkRequestId}")
-        return coroutineContext.withRootTraceSpan(rootSpan) {
-            op.roundTrip(client, input)
-        }
+        return op.roundTrip(client, input)
     }
 """,
 """
@@ -141,6 +151,12 @@ class HttpProtocolClientGeneratorTest {
             deserializer = GetFooStreamingInputOperationDeserializer()
             context {
                 operationName = "GetFooStreamingInput"
+                serviceName = ServiceId
+            }
+            telemetry {
+                provider = config.telemetryProvider
+                scope = telemetryScope
+                metrics = opMetrics
             }
             execution.auth = OperationAuthConfig(AuthSchemeProviderAdapter, configuredAuthSchemes, identityProviderConfig)
             execution.endpointResolver = EndpointResolverAdapter(config)
@@ -148,10 +164,7 @@ class HttpProtocolClientGeneratorTest {
         }
         op.install(MockMiddleware(configurationField1 = "testing"))
         op.interceptors.addAll(config.interceptors)
-        val rootSpan = config.tracer.createRootSpan("GetFooStreamingInput-${'$'}{op.context.sdkRequestId}")
-        return coroutineContext.withRootTraceSpan(rootSpan) {
-            op.roundTrip(client, input)
-        }
+        return op.roundTrip(client, input)
     }
 """,
 """
@@ -161,6 +174,12 @@ class HttpProtocolClientGeneratorTest {
             deserializer = GetFooStreamingOutputOperationDeserializer()
             context {
                 operationName = "GetFooStreamingOutput"
+                serviceName = ServiceId
+            }
+            telemetry {
+                provider = config.telemetryProvider
+                scope = telemetryScope
+                metrics = opMetrics
             }
             execution.auth = OperationAuthConfig(AuthSchemeProviderAdapter, configuredAuthSchemes, identityProviderConfig)
             execution.endpointResolver = EndpointResolverAdapter(config)
@@ -168,10 +187,7 @@ class HttpProtocolClientGeneratorTest {
         }
         op.install(MockMiddleware(configurationField1 = "testing"))
         op.interceptors.addAll(config.interceptors)
-        val rootSpan = config.tracer.createRootSpan("GetFooStreamingOutput-${'$'}{op.context.sdkRequestId}")
-        return coroutineContext.withRootTraceSpan(rootSpan) {
-            op.execute(client, input, block)
-        }
+        return op.execute(client, input, block)
     }
 """,
 """
@@ -181,6 +197,12 @@ class HttpProtocolClientGeneratorTest {
             deserializer = GetFooStreamingOutputNoInputOperationDeserializer()
             context {
                 operationName = "GetFooStreamingOutputNoInput"
+                serviceName = ServiceId
+            }
+            telemetry {
+                provider = config.telemetryProvider
+                scope = telemetryScope
+                metrics = opMetrics
             }
             execution.auth = OperationAuthConfig(AuthSchemeProviderAdapter, configuredAuthSchemes, identityProviderConfig)
             execution.endpointResolver = EndpointResolverAdapter(config)
@@ -188,10 +210,7 @@ class HttpProtocolClientGeneratorTest {
         }
         op.install(MockMiddleware(configurationField1 = "testing"))
         op.interceptors.addAll(config.interceptors)
-        val rootSpan = config.tracer.createRootSpan("GetFooStreamingOutputNoInput-${'$'}{op.context.sdkRequestId}")
-        return coroutineContext.withRootTraceSpan(rootSpan) {
-            op.execute(client, input, block)
-        }
+        return op.execute(client, input, block)
     }
 """,
 """
@@ -201,6 +220,12 @@ class HttpProtocolClientGeneratorTest {
             deserializer = GetFooStreamingInputNoOutputOperationDeserializer()
             context {
                 operationName = "GetFooStreamingInputNoOutput"
+                serviceName = ServiceId
+            }
+            telemetry {
+                provider = config.telemetryProvider
+                scope = telemetryScope
+                metrics = opMetrics
             }
             execution.auth = OperationAuthConfig(AuthSchemeProviderAdapter, configuredAuthSchemes, identityProviderConfig)
             execution.endpointResolver = EndpointResolverAdapter(config)
@@ -208,10 +233,7 @@ class HttpProtocolClientGeneratorTest {
         }
         op.install(MockMiddleware(configurationField1 = "testing"))
         op.interceptors.addAll(config.interceptors)
-        val rootSpan = config.tracer.createRootSpan("GetFooStreamingInputNoOutput-${'$'}{op.context.sdkRequestId}")
-        return coroutineContext.withRootTraceSpan(rootSpan) {
-            op.roundTrip(client, input)
-        }
+        return op.roundTrip(client, input)
     }
 """,
 """
@@ -221,6 +243,12 @@ class HttpProtocolClientGeneratorTest {
             deserializer = GetFooNoRequiredOperationDeserializer()
             context {
                 operationName = "GetFooNoRequired"
+                serviceName = ServiceId
+            }
+            telemetry {
+                provider = config.telemetryProvider
+                scope = telemetryScope
+                metrics = opMetrics
             }
             execution.auth = OperationAuthConfig(AuthSchemeProviderAdapter, configuredAuthSchemes, identityProviderConfig)
             execution.endpointResolver = EndpointResolverAdapter(config)
@@ -228,10 +256,7 @@ class HttpProtocolClientGeneratorTest {
         }
         op.install(MockMiddleware(configurationField1 = "testing"))
         op.interceptors.addAll(config.interceptors)
-        val rootSpan = config.tracer.createRootSpan("GetFooNoRequired-${'$'}{op.context.sdkRequestId}")
-        return coroutineContext.withRootTraceSpan(rootSpan) {
-            op.roundTrip(client, input)
-        }
+        return op.roundTrip(client, input)
     }
 """,
 """
@@ -241,6 +266,12 @@ class HttpProtocolClientGeneratorTest {
             deserializer = GetFooSomeRequiredOperationDeserializer()
             context {
                 operationName = "GetFooSomeRequired"
+                serviceName = ServiceId
+            }
+            telemetry {
+                provider = config.telemetryProvider
+                scope = telemetryScope
+                metrics = opMetrics
             }
             execution.auth = OperationAuthConfig(AuthSchemeProviderAdapter, configuredAuthSchemes, identityProviderConfig)
             execution.endpointResolver = EndpointResolverAdapter(config)
@@ -248,10 +279,7 @@ class HttpProtocolClientGeneratorTest {
         }
         op.install(MockMiddleware(configurationField1 = "testing"))
         op.interceptors.addAll(config.interceptors)
-        val rootSpan = config.tracer.createRootSpan("GetFooSomeRequired-${'$'}{op.context.sdkRequestId}")
-        return coroutineContext.withRootTraceSpan(rootSpan) {
-            op.roundTrip(client, input)
-        }
+        return op.roundTrip(client, input)
     }
 """,
         )
@@ -317,7 +345,13 @@ class HttpProtocolClientGeneratorTest {
             deserializer = GetStatusOperationDeserializer()
             context {
                 operationName = "GetStatus"
+                serviceName = ServiceId
                 hostPrefix = "$prefix"
+            }
+            telemetry {
+                provider = config.telemetryProvider
+                scope = telemetryScope
+                metrics = opMetrics
             }
             execution.auth = OperationAuthConfig(AuthSchemeProviderAdapter, configuredAuthSchemes, identityProviderConfig)
             execution.endpointResolver = EndpointResolverAdapter(config)

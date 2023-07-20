@@ -5,11 +5,14 @@
 package aws.smithy.kotlin.runtime.serde.json
 
 import aws.smithy.kotlin.runtime.InternalApi
+import aws.smithy.kotlin.runtime.content.BigDecimal
+import aws.smithy.kotlin.runtime.content.BigInteger
 
 /**
  * Interface for serialization. Specific formats should implement this interface according to their
  * own requirements. Currently only aws.smithy.kotlin.runtime.serde.json.JsonSerializer implements this interface.
  */
+@InternalApi
 public interface JsonStreamWriter {
 
     /**
@@ -95,6 +98,16 @@ public interface JsonStreamWriter {
      * Encodes {@code value}.
      */
     public fun writeValue(value: Byte)
+
+    /**
+     * Encodes {@code value}.
+     */
+    public fun writeValue(value: BigInteger)
+
+    /**
+     * Encodes {@code value}.
+     */
+    public fun writeValue(value: BigDecimal)
 
     /**
      * Appends the contents of [value] *without* any additional formatting or escaping. Use with caution

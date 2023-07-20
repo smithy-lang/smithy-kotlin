@@ -4,12 +4,17 @@
  */
 package aws.smithy.kotlin.runtime.serde.json
 
+import aws.smithy.kotlin.runtime.InternalApi
+import aws.smithy.kotlin.runtime.content.BigDecimal
+import aws.smithy.kotlin.runtime.content.BigInteger
 import aws.smithy.kotlin.runtime.content.Document
 import aws.smithy.kotlin.runtime.serde.*
 import aws.smithy.kotlin.runtime.time.Instant
 import aws.smithy.kotlin.runtime.time.TimestampFormat
 
+@InternalApi
 public class JsonSerializer : Serializer, ListSerializer, MapSerializer, StructSerializer {
+    @InternalApi
     public companion object {
         private val doublesToStringify = setOf(Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, Double.NaN)
         private val floatsToStringify = setOf(Float.NEGATIVE_INFINITY, Float.POSITIVE_INFINITY, Float.NaN)
@@ -75,6 +80,16 @@ public class JsonSerializer : Serializer, ListSerializer, MapSerializer, StructS
     override fun field(descriptor: SdkFieldDescriptor, value: Double) {
         jsonWriter.writeName(descriptor.serialName)
         serializeDouble(value)
+    }
+
+    override fun field(descriptor: SdkFieldDescriptor, value: BigInteger) {
+        jsonWriter.writeName(descriptor.serialName)
+        serializeBigInteger(value)
+    }
+
+    override fun field(descriptor: SdkFieldDescriptor, value: BigDecimal) {
+        jsonWriter.writeName(descriptor.serialName)
+        serializeBigDecimal(value)
     }
 
     override fun field(descriptor: SdkFieldDescriptor, value: Boolean) {
@@ -238,6 +253,14 @@ public class JsonSerializer : Serializer, ListSerializer, MapSerializer, StructS
         } else {
             jsonWriter.writeValue(value)
         }
+    }
+
+    override fun serializeBigInteger(value: BigInteger) {
+        jsonWriter.writeValue(value)
+    }
+
+    override fun serializeBigDecimal(value: BigDecimal) {
+        jsonWriter.writeValue(value)
     }
 
     override fun serializeString(value: String) {

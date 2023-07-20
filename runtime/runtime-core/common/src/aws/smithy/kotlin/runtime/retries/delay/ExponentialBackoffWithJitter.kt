@@ -5,12 +5,15 @@
 
 package aws.smithy.kotlin.runtime.retries.delay
 
+import aws.smithy.kotlin.runtime.InternalApi
+import aws.smithy.kotlin.runtime.util.DslFactory
 import kotlinx.coroutines.delay
 import kotlin.math.min
 import kotlin.math.pow
 import kotlin.random.Random
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.Duration.Companion.seconds
 import kotlin.time.DurationUnit
 
 /**
@@ -23,11 +26,14 @@ import kotlin.time.DurationUnit
  * that 100% of the max delay time could be reduced (potentially down to 0). A jitter configuration of 0.0 means jitter
  * is disabled.
  *
- * @param options The configuration to use for this delayer.
+ * @param config The configuration to use for this delayer.
  */
-public class ExponentialBackoffWithJitter(
-    public val options: ExponentialBackoffWithJitterOptions = ExponentialBackoffWithJitterOptions.Default,
-) : DelayProvider {
+public class ExponentialBackoffWithJitter(override val config: Config = Config.Default) : DelayProvider {
+    public companion object : DslFactory<Config.Builder, ExponentialBackoffWithJitter> {
+        override fun invoke(block: Config.Builder.() -> Unit): ExponentialBackoffWithJitter =
+            ExponentialBackoffWithJitter(Config(block))
+    }
+
     private val random = Random.Default
 
     /**
@@ -35,43 +41,83 @@ public class ExponentialBackoffWithJitter(
      */
     override suspend fun backoff(attempt: Int) {
         require(attempt > 0) { "attempt was $attempt but must be greater than 0" }
-        val calculatedDelayMs = options.initialDelay.inWholeMilliseconds * options.scaleFactor.pow(attempt - 1)
-        val maxDelayMs = min(calculatedDelayMs, options.maxBackoff.toDouble(DurationUnit.MILLISECONDS))
-        val jitterProportion = if (options.jitter > 0.0) random.nextDouble(options.jitter) else 0.0
+        val calculatedDelayMs = config.initialDelay.inWholeMilliseconds * config.scaleFactor.pow(attempt - 1)
+        val maxDelayMs = min(calculatedDelayMs, config.maxBackoff.toDouble(DurationUnit.MILLISECONDS))
+        val jitterProportion = if (config.jitter > 0.0) random.nextDouble(config.jitter) else 0.0
         val delayMs = maxDelayMs * (1.0 - jitterProportion)
         delay(delayMs.toLong())
     }
-}
 
-/**
- * The configuration options for a [DelayProvider].
- * @param initialDelay The initial amount of delay
- * @param scaleFactor scale factor for determining backoff
- * @param jitter amount of jitter used in calculating delay
- * @param maxBackoff maximum amount of delay
- */
-public data class ExponentialBackoffWithJitterOptions(
-    public val initialDelay: Duration,
-    public val scaleFactor: Double,
-    public val jitter: Double,
-    public val maxBackoff: Duration,
-) {
-    init {
-        require(initialDelay.isPositive()) { "initialDelayMs must be at least 0" }
-        require(scaleFactor >= 1.0) { "scaleFactor must be at least 1" }
-        require(jitter in 0.0..1.0) { "jitter must be between 0 and 1" }
-        require(!maxBackoff.isNegative()) { "maxBackoffMs must be at least 0" }
-    }
+    /**
+     * Configuration options for [ExponentialBackoffWithJitter]
+     */
+    public class Config(builder: Builder) : DelayProvider.Config {
+        public companion object {
+            /**
+             * The default configuration
+             */
+            public val Default: Config = Config(Builder())
 
-    public companion object {
+            /**
+             * Initializes a new config from a builder
+             * @param block A DSL builder block which sets the values for this config
+             */
+            public operator fun invoke(block: Builder.() -> Unit): Config = Config(Builder().apply(block))
+        }
+
         /**
-         * The default backoff configuration to use.
+         * The initial maximum amount of delay
          */
-        public val Default: ExponentialBackoffWithJitterOptions = ExponentialBackoffWithJitterOptions(
-            initialDelay = 10.milliseconds, // start with 10ms
-            scaleFactor = 1.5, // 10ms -> 15ms -> 22.5ms -> 33.8ms -> 50.6ms -> …
-            jitter = 1.0, // Full jitter,
-            maxBackoff = 20_000.milliseconds, // 20s
-        )
+        public val initialDelay: Duration = builder.initialDelay
+
+        /**
+         * The scale factor by which to multiply the previous max delay
+         */
+        public val scaleFactor: Double = builder.scaleFactor
+
+        /**
+         * The amount of random variability over the max delay (1.0 mean full jitter, 0.0 means no jitter)
+         */
+        public val jitter: Double = builder.jitter
+
+        /**
+         * An upper bound for max delay which will override the [scaleFactor]
+         */
+        public val maxBackoff: Duration = builder.maxBackoff
+
+        @InternalApi
+        override fun toBuilderApplicator(): DelayProvider.Config.Builder.() -> Unit = {
+            if (this is Builder) {
+                initialDelay = this@Config.initialDelay
+                scaleFactor = this@Config.scaleFactor
+                jitter = this@Config.jitter
+                maxBackoff = this@Config.maxBackoff
+            }
+        }
+
+        /**
+         * A mutable builder for config for [ExponentialBackoffWithJitter]
+         */
+        public class Builder : DelayProvider.Config.Builder {
+            /**
+             * The initial maximum amount of delay
+             */
+            public var initialDelay: Duration = 10.milliseconds
+
+            /**
+             * The scale factor by which to multiply the previous max delay
+             */
+            public var scaleFactor: Double = 1.5
+
+            /**
+             * The amount of random variability over the max delay (1.0 mean full jitter, 0.0 means no jitter)
+             */
+            public var jitter: Double = 1.0
+
+            /**
+             * An upper bound for max delay which will override the [scaleFactor]
+             */
+            public var maxBackoff: Duration = 20.seconds
+        }
     }
 }

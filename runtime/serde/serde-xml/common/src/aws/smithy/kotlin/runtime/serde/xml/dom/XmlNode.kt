@@ -35,6 +35,7 @@ public class XmlNode {
 
     override fun toString(): String = "XmlNode($name)"
 
+    @InternalApi
     public companion object {
 
         public fun parse(xmlpayload: ByteArray): XmlNode {
@@ -60,6 +61,7 @@ public class XmlNode {
 }
 
 // parse a string into a dom representation
+@InternalApi
 public fun parseDom(reader: XmlStreamReader): XmlNode {
     val nodeStack: ListStack<XmlNode> = mutableListOf()
 
@@ -103,6 +105,7 @@ public fun parseDom(reader: XmlStreamReader): XmlNode {
     return nodeStack.pop()
 }
 
+@InternalApi
 public fun XmlNode.toXmlString(pretty: Boolean = false): String {
     val sb = StringBuilder()
     formatXmlNode(this, 0, sb, pretty)

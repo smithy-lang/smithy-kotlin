@@ -12,10 +12,6 @@ import aws.smithy.kotlin.runtime.http.operation.roundTrip
 import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
 import aws.smithy.kotlin.runtime.httptest.TestEngine
 import aws.smithy.kotlin.runtime.retries.StandardRetryStrategy
-import aws.smithy.kotlin.runtime.retries.StandardRetryStrategyOptions
-import aws.smithy.kotlin.runtime.retries.delay.DelayProvider
-import aws.smithy.kotlin.runtime.retries.delay.StandardRetryTokenBucket
-import aws.smithy.kotlin.runtime.retries.delay.StandardRetryTokenBucketOptions
 import aws.smithy.kotlin.runtime.retries.policy.RetryDirective
 import aws.smithy.kotlin.runtime.retries.policy.RetryErrorType
 import aws.smithy.kotlin.runtime.retries.policy.RetryPolicy
@@ -44,13 +40,7 @@ class RetryMiddlewareTest {
     fun testRetryMiddleware() = runTest {
         val req = HttpRequestBuilder()
         val op = newTestOperation<Unit, Unit>(req, Unit)
-
-        val delayProvider = DelayProvider { }
-        val strategy = StandardRetryStrategy(
-            StandardRetryStrategyOptions.Default,
-            StandardRetryTokenBucket(StandardRetryTokenBucketOptions.Default),
-            delayProvider,
-        )
+        val strategy = StandardRetryStrategy()
 
         op.execution.retryStrategy = strategy
         op.execution.retryPolicy = policy

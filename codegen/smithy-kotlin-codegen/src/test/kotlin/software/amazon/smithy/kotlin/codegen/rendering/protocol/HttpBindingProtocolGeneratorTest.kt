@@ -413,7 +413,7 @@ internal class SmokeTestOperationDeserializer: HttpDeserialize<SmokeTestResponse
         contents.assertBalancedBracesAndParens()
         val expectedContents = """
         builder.hBool = response.headers["X-d"]?.toBoolean() ?: false
-        builder.hFloat = response.headers["X-c"]?.toFloat() ?: 0.0f
+        builder.hFloat = response.headers["X-c"]?.toFloat() ?: 0f
         builder.hInt = response.headers["X-a"]?.toInt() ?: 0
         builder.hLong = response.headers["X-b"]?.toLong() ?: 0L
         builder.hRequiredInt = response.headers["X-required"]?.toInt() ?: 0

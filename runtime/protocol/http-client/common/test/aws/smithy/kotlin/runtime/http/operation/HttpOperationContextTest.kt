@@ -15,6 +15,7 @@ class HttpOperationContextTest {
     fun testBuilder() {
         val op = HttpOperationContext.build {
             operationName = "operation"
+            serviceName = "service"
         }
 
         assertEquals("operation", op[SdkClientOption.OperationName])

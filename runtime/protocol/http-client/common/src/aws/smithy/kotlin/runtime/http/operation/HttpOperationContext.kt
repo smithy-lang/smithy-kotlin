@@ -9,19 +9,17 @@ import aws.smithy.kotlin.runtime.InternalApi
 import aws.smithy.kotlin.runtime.client.ClientOptionsBuilder
 import aws.smithy.kotlin.runtime.client.SdkClientOption
 import aws.smithy.kotlin.runtime.http.response.HttpCall
-import aws.smithy.kotlin.runtime.logging.Logger
 import aws.smithy.kotlin.runtime.operation.ExecutionContext
-import aws.smithy.kotlin.runtime.tracing.logger
-import aws.smithy.kotlin.runtime.tracing.traceSpan
 import aws.smithy.kotlin.runtime.util.AttributeKey
-import kotlin.coroutines.CoroutineContext
+import aws.smithy.kotlin.runtime.util.Attributes
+import aws.smithy.kotlin.runtime.util.emptyAttributes
 
 /**
  * Common configuration for an SDK (HTTP) operation/call
  */
 @InternalApi
 public open class HttpOperationContext {
-
+    @InternalApi
     public companion object {
         /**
          * A prefix to prepend the resolved hostname with.
@@ -39,7 +37,7 @@ public open class HttpOperationContext {
          *
          * NOTE: This is guaranteed to exist.
          */
-        public val SdkRequestId: AttributeKey<String> = AttributeKey("aws.smithy.kotlin#SdkRequestId")
+        public val SdkInvocationId: AttributeKey<String> = AttributeKey("aws.smithy.kotlin#SdkInvocationId")
 
         /**
          * The operation input pre-serialization.
@@ -47,6 +45,16 @@ public open class HttpOperationContext {
          * NOTE: This is guaranteed to exist after serialization.
          */
         public val OperationInput: AttributeKey<Any> = AttributeKey("aws.smithy.kotlin#OperationInput")
+
+        /**
+         * The operation metrics container used by various components to record metrics
+         */
+        public val OperationMetrics: AttributeKey<OperationMetrics> = AttributeKey("aws.smithy.kotlin#OperationMetrics")
+
+        /**
+         * Cached attribute level attributes (e.g. rpc.method, rpc.service, etc)
+         */
+        public val OperationAttributes: AttributeKey<Attributes> = AttributeKey("aws.smithy.kotlin#OperationAttributes")
 
         /**
          * Build this operation into an HTTP [ExecutionContext]
@@ -57,6 +65,7 @@ public open class HttpOperationContext {
     /**
      * Convenience builder for constructing HTTP client operations
      */
+    @InternalApi
     public open class Builder : ClientOptionsBuilder() {
 
         /**
@@ -65,15 +74,19 @@ public open class HttpOperationContext {
         public var operationName: String? by requiredOption(SdkClientOption.OperationName)
 
         /**
+         * The name of the service the request is sent to
+         */
+        public var serviceName: String? by requiredOption(SdkClientOption.ServiceName)
+
+        /**
          * (Optional) prefix to prepend to a (resolved) hostname
          */
         public var hostPrefix: String? by option(HostPrefix)
     }
 }
 
-@InternalApi
-public fun CoroutineContext.getLogger(forComponentName: String): Logger = traceSpan.logger(forComponentName)
+internal val ExecutionContext.operationMetrics: OperationMetrics
+    get() = getOrNull(HttpOperationContext.OperationMetrics) ?: OperationMetrics.None
 
-@InternalApi
-public inline fun <reified T> CoroutineContext.getLogger(): Logger =
-    getLogger(requireNotNull(T::class.qualifiedName) { "getLogger<T> cannot be used on an anonymous object" })
+internal val ExecutionContext.operationAttributes: Attributes
+    get() = getOrNull(HttpOperationContext.OperationAttributes) ?: emptyAttributes()

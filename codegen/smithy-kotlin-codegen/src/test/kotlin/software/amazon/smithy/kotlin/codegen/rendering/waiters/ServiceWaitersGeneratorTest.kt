@@ -78,17 +78,15 @@ class ServiceWaitersGeneratorTest {
     @Test
     fun testRetryStrategy() {
         val expected = """
-            val strategy = run {
-                val delayOptions = ExponentialBackoffWithJitterOptions(
-                    initialDelay = 2_000.milliseconds,
-                    scaleFactor = 1.5,
-                    jitter = 1.0,
-                    maxBackoff = 120_000.milliseconds,
-                )
-                val delay = ExponentialBackoffWithJitter(delayOptions)
-            
-                val waiterOptions = StandardRetryStrategyOptions(maxAttempts = 20)
-                StandardRetryStrategy(waiterOptions, InfiniteTokenBucket, delay)
+            val strategy = StandardRetryStrategy {
+                maxAttempts = 20
+                tokenBucket = InfiniteTokenBucket
+                delayProvider {
+                    initialDelay = 2_000.milliseconds
+                    scaleFactor = 1.5
+                    jitter = 1.0
+                    maxBackoff = 120_000.milliseconds
+                }
             }
         """.formatForTest()
         generated.shouldContainOnlyOnce(expected)

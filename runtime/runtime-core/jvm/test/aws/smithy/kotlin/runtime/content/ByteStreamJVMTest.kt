@@ -8,6 +8,7 @@ package aws.smithy.kotlin.runtime.content
 import aws.smithy.kotlin.runtime.testing.RandomTempFile
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
+import java.nio.file.Files
 import kotlin.test.*
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -36,7 +37,7 @@ class ByteStreamJVMTest {
         val e = assertFailsWith<Throwable> {
             file.asByteStream(5, 1)
         }
-        assertEquals("end index 1 must be greater than or equal to start index 5", e.message)
+        assertEquals("end index 1 must be greater than or equal to start index minus one (4)", e.message)
     }
 
     @Test
@@ -129,5 +130,25 @@ class ByteStreamJVMTest {
         val stream = path.asByteStream()
 
         assertEquals(1024, stream.contentLength)
+    }
+
+    @Test
+    fun `can create byte stream from empty file and path using createTempFile`() = runTest {
+        val file = Files.createTempFile(null, null)
+        val byteStream = file.asByteStream()
+        assertEquals(0, byteStream.contentLength)
+
+        val byteStreamFromPath = file.toAbsolutePath().asByteStream()
+        assertEquals(0, byteStreamFromPath.contentLength)
+    }
+
+    @Test
+    fun `can create byte stream from empty file and path using RandomTempFile`() = runTest {
+        val file = RandomTempFile(sizeInBytes = 0)
+        val byteStream = file.asByteStream()
+        assertEquals(0, byteStream.contentLength)
+
+        val byteStreamFromPath = file.toPath().asByteStream()
+        assertEquals(0, byteStreamFromPath.contentLength)
     }
 }

@@ -19,7 +19,12 @@ kotlin {
 
                 // FIXME - this seems off, (Endpoint is consumed by presigner)
                 api(project(":runtime:protocol:http-client"))
-                implementation(project(":runtime:logging"))
+            }
+        }
+
+        commonTest {
+            dependencies {
+                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:$coroutinesVersion")
             }
         }
 

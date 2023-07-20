@@ -8,7 +8,8 @@ import software.amazon.smithy.build.MockManifest
 import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.kotlin.codegen.KotlinCodegenPlugin
 import software.amazon.smithy.kotlin.codegen.KotlinSettings
-import software.amazon.smithy.kotlin.codegen.core.*
+import software.amazon.smithy.kotlin.codegen.core.CodegenContext
+import software.amazon.smithy.kotlin.codegen.core.KotlinDelegator
 import software.amazon.smithy.kotlin.codegen.inferService
 import software.amazon.smithy.kotlin.codegen.integration.KotlinIntegration
 import software.amazon.smithy.kotlin.codegen.model.OperationNormalizer
@@ -28,14 +29,14 @@ import java.net.URL
 
 /**
  * Unless necessary to deviate for test reasons, the following literals should be used in test models:
- *  smithy version: "1"
- *  model version: "1.0.0"
+ *  smithy version: "2"
+ *  model version: "2.0.0"
  *  namespace: TestDefault.NAMESPACE
  *  service name: "Test"
  */
 object TestModelDefault {
-    const val SMITHY_IDL_VERSION = "1"
-    const val MODEL_VERSION = "1.0.0"
+    const val SMITHY_IDL_VERSION = "2"
+    const val MODEL_VERSION = "2.0.0"
     const val NAMESPACE = "com.test"
     const val SERVICE_NAME = "Test"
     const val SDK_ID = "Test"
@@ -136,6 +137,14 @@ fun Model.newTestContext(
     return TestContext(ctx, manifest, generator)
 }
 
+fun TestContext.toCodegenContext() = object : CodegenContext {
+    override val model: Model = generationCtx.model
+    override val symbolProvider: SymbolProvider = generationCtx.symbolProvider
+    override val settings: KotlinSettings = generationCtx.settings
+    override val protocolGenerator: ProtocolGenerator = generator
+    override val integrations: List<KotlinIntegration> = generationCtx.integrations
+}
+
 /**
  * Generate a KotlinSettings instance from a model.
  * @param serviceName name of service without namespace or null to attempt to discover from model
@@ -205,7 +214,7 @@ fun String.generateTestModel(
         use aws.protocols#$protocol
 
         @$protocol
-        service $serviceName {
+        service ${serviceName.filter { !it.isWhitespace() }} {
             version: "${TestModelDefault.MODEL_VERSION}",
             operations: [
                 ${operations.joinToString(separator = ", ")}
@@ -252,7 +261,7 @@ fun String.prependNamespaceAndService(
         $importExpr
         $modelProtocol
         @service(sdkId: "$serviceName")
-        service $serviceName { 
+        service ${serviceName.filter { !it.isWhitespace() }} { 
             version: "${TestModelDefault.MODEL_VERSION}",
             operations: $operations
         }

@@ -6,18 +6,36 @@
 package aws.smithy.kotlin.runtime.retries.delay
 
 import aws.smithy.kotlin.runtime.ClientException
+import aws.smithy.kotlin.runtime.InternalApi
+import aws.smithy.kotlin.runtime.retries.RetryStrategyConfigDsl
 import aws.smithy.kotlin.runtime.retries.policy.RetryErrorType
 
 /**
  * A rate-limiting token bucket for use in a client-throttled retry strategy.
  */
 public interface RetryTokenBucket {
+    public val config: Config
+
     /**
      * Acquire a token from the token bucket. This method should be called before the initial retry attempt for a block
      * of code. This method may delay if there are already insufficient tokens in the bucket due to prior retry
      * failures or large numbers of simultaneous requests.
      */
     public suspend fun acquireToken(): RetryToken
+
+    /**
+     * Configuration for a token bucket
+     */
+    public interface Config {
+        @InternalApi
+        public fun toBuilderApplicator(): Builder.() -> Unit
+
+        /**
+         * A builder for configs for token buckets
+         */
+        @RetryStrategyConfigDsl
+        public interface Builder
+    }
 }
 
 /**

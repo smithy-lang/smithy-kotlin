@@ -7,6 +7,7 @@ package aws.smithy.kotlin.runtime.http.engine
 import aws.smithy.kotlin.runtime.InternalApi
 import aws.smithy.kotlin.runtime.http.config.HttpEngineConfigDsl
 import aws.smithy.kotlin.runtime.net.HostResolver
+import aws.smithy.kotlin.runtime.telemetry.TelemetryProvider
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 
@@ -65,6 +66,12 @@ public interface HttpClientEngineConfig {
     public val connectionIdleTimeout: Duration
 
     /**
+     * The maximum number of requests that will be executed concurrently by an engine. Beyond this requests
+     * will be queued waiting to be executed by the engine.
+     */
+    public val maxConcurrency: UInt
+
+    /**
      * The proxy selection policy
      */
     public val proxySelector: ProxySelector
@@ -79,6 +86,11 @@ public interface HttpClientEngineConfig {
      * Settings related to TLS and secure connections
      */
     public val tlsContext: TlsContext
+
+    /**
+     * The telemetry provider that the HTTP client will be instrumented with
+     */
+    public val telemetryProvider: TelemetryProvider
 
     @InternalApi
     public fun toBuilderApplicator(): Builder.() -> Unit
@@ -127,6 +139,12 @@ public interface HttpClientEngineConfig {
         public var connectionIdleTimeout: Duration
 
         /**
+         * The maximum number of requests that will be executed concurrently by an engine. Beyond this requests
+         * will be queued waiting to be executed by the engine.
+         */
+        public var maxConcurrency: UInt
+
+        /**
          * Set the proxy selection policy to be used.
          *
          * The default behavior is to respect common proxy system properties and environment variables.
@@ -163,6 +181,11 @@ public interface HttpClientEngineConfig {
         public var tlsContext: TlsContext
 
         /**
+         * The telemetry provider that the HTTP client will be instrumented with
+         */
+        public var telemetryProvider: TelemetryProvider
+
+        /**
          * Settings related to TLS and secure connections
          */
         public fun tlsContext(block: TlsContext.Builder.() -> Unit)
@@ -180,9 +203,11 @@ public open class HttpClientEngineConfigImpl(builder: HttpClientEngineConfig.Bui
     override val connectTimeout: Duration = builder.connectTimeout
     override val connectionAcquireTimeout: Duration = builder.connectionAcquireTimeout
     override val connectionIdleTimeout: Duration = builder.connectionIdleTimeout
+    override val maxConcurrency: UInt = builder.maxConcurrency
     override val proxySelector: ProxySelector = builder.proxySelector
     override val hostResolver: HostResolver = builder.hostResolver
     override val tlsContext: TlsContext = builder.tlsContext
+    override val telemetryProvider: TelemetryProvider = builder.telemetryProvider
 
     override fun toBuilderApplicator(): HttpClientEngineConfig.Builder.() -> Unit = {
         socketReadTimeout = this@HttpClientEngineConfigImpl.socketReadTimeout
@@ -191,22 +216,26 @@ public open class HttpClientEngineConfigImpl(builder: HttpClientEngineConfig.Bui
         connectTimeout = this@HttpClientEngineConfigImpl.connectTimeout
         connectionAcquireTimeout = this@HttpClientEngineConfigImpl.connectionAcquireTimeout
         connectionIdleTimeout = this@HttpClientEngineConfigImpl.connectionIdleTimeout
+        maxConcurrency = this@HttpClientEngineConfigImpl.maxConcurrency
         proxySelector = this@HttpClientEngineConfigImpl.proxySelector
         hostResolver = this@HttpClientEngineConfigImpl.hostResolver
         tlsContext = this@HttpClientEngineConfigImpl.tlsContext
+        telemetryProvider = this@HttpClientEngineConfigImpl.telemetryProvider
     }
 
     @InternalApi
     public open class BuilderImpl : HttpClientEngineConfig.Builder {
         override var socketReadTimeout: Duration = 30.seconds
         override var socketWriteTimeout: Duration = 30.seconds
-        override var maxConnections: UInt = 16u
+        override var maxConnections: UInt = 64u
         override var connectTimeout: Duration = 2.seconds
         override var connectionAcquireTimeout: Duration = 10.seconds
         override var connectionIdleTimeout: Duration = 60.seconds
+        override var maxConcurrency: UInt = 128u
         override var proxySelector: ProxySelector = EnvironmentProxySelector()
         override var hostResolver: HostResolver = HostResolver.Default
         override var tlsContext: TlsContext = TlsContext.Default
+        override var telemetryProvider: TelemetryProvider = TelemetryProvider.None
         override fun tlsContext(block: TlsContext.Builder.() -> Unit) {
             tlsContext = TlsContext(tlsContext.toBuilder().apply(block))
         }

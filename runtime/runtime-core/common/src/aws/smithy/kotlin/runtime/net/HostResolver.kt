@@ -10,6 +10,7 @@ import aws.smithy.kotlin.runtime.InternalApi
 /**
  * A resolved (hostname, address) pair
  */
+@InternalApi
 public data class HostAddress(
     /**
      * The name that [address] was resolved from
@@ -27,6 +28,7 @@ public data class HostAddress(
  */
 @InternalApi
 public interface HostResolver {
+    @InternalApi
     public companion object {
         /**
          * The default DNS host resolver (usually the default for the platform, e.g. InetAddress for JVM)
@@ -48,6 +50,7 @@ public interface HostResolver {
     /**
      * Purge the cache for all addresses or a specific address when [addr] is given
      */
+    @InternalApi
     public fun purgeCache(addr: HostAddress? = null): Unit
 }
 

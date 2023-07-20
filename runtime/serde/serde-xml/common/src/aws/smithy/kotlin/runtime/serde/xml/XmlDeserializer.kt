@@ -5,6 +5,9 @@
 
 package aws.smithy.kotlin.runtime.serde.xml
 
+import aws.smithy.kotlin.runtime.InternalApi
+import aws.smithy.kotlin.runtime.content.BigDecimal
+import aws.smithy.kotlin.runtime.content.BigInteger
 import aws.smithy.kotlin.runtime.content.Document
 import aws.smithy.kotlin.runtime.serde.*
 
@@ -26,6 +29,7 @@ internal sealed class FieldLocation {
  * restXml based services DO NOT always send documents with a root element name that matches the shape ID name
  * (S3 in particular). This means there is nothing in the model that gives you enough information to validate the tag.
  */
+@InternalApi
 public class XmlDeserializer(
     private val reader: XmlStreamReader,
     private val validateRootElement: Boolean = false,
@@ -77,8 +81,14 @@ public class XmlDeserializer(
         return XmlListDeserializer(reader.subTreeReader(depth), descriptor)
     }
 
-    override fun deserializeMap(descriptor: SdkFieldDescriptor): Deserializer.EntryIterator =
-        XmlMapDeserializer(reader.subTreeReader(XmlStreamReader.SubtreeStartDepth.CURRENT), descriptor)
+    override fun deserializeMap(descriptor: SdkFieldDescriptor): Deserializer.EntryIterator {
+        val depth = when (descriptor.hasTrait<Flattened>()) {
+            true -> XmlStreamReader.SubtreeStartDepth.CURRENT
+            else -> XmlStreamReader.SubtreeStartDepth.CHILD
+        }
+
+        return XmlMapDeserializer(reader.subTreeReader(depth), descriptor)
+    }
 }
 
 /**
@@ -96,10 +106,15 @@ internal class XmlMapDeserializer(
     private val mapTrait = descriptor.findTrait<XmlMapName>() ?: XmlMapName.Default
 
     override fun hasNextEntry(): Boolean {
-        // Seek to either the entry or key token depending on the flatness of the map
+        val compareTo = when (descriptor.hasTrait<Flattened>()) {
+            true -> descriptor.findTrait<XmlSerialName>()?.name ?: mapTrait.key // Prefer seeking to XmlSerialName if the trait exists
+            false -> mapTrait.entry
+        }
+
+        // Seek to either the XML serial name, entry, or key token depending on the flatness of the map and if the name trait is present
         val nextEntryToken = when (descriptor.hasTrait<Flattened>()) {
-            true -> reader.seek<XmlToken.BeginElement> { it.name.local == mapTrait.key }
-            false -> reader.seek<XmlToken.BeginElement> { it.name.local == mapTrait.entry }
+            true -> reader.peekSeek<XmlToken.BeginElement> { it.name.local == compareTo }
+            false -> reader.seek<XmlToken.BeginElement> { it.name.local == compareTo }
         }
 
         return nextEntryToken != null
@@ -274,6 +289,16 @@ internal class XmlStructDeserializer(
     override fun deserializeFloat(): Float = deserializeValue { it.toFloatOrNull() ?: throw DeserializationException("Unable to deserialize $it") }
 
     override fun deserializeDouble(): Double = deserializeValue { it.toDoubleOrNull() ?: throw DeserializationException("Unable to deserialize $it") }
+
+    override fun deserializeBigInteger(): BigInteger = deserializeValue {
+        runCatching { BigInteger(it) }
+            .getOrElse { throw DeserializationException("Unable to deserialize $it as BigInteger") }
+    }
+
+    override fun deserializeBigDecimal(): BigDecimal = deserializeValue {
+        runCatching { BigDecimal(it) }
+            .getOrElse { throw DeserializationException("Unable to deserialize $it as BigDecimal") }
+    }
 
     override fun deserializeString(): String = deserializeValue { it }
 

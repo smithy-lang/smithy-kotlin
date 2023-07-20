@@ -17,14 +17,12 @@ class DeserializeStructGeneratorTest {
                 output: FooResponse
             }        
     """.prependNamespaceAndService(
-        version = "2",
         protocol = AwsProtocolModelDeclaration.REST_JSON,
         operations = listOf("Foo"),
     ).trimIndent()
 
-    // TODO ~ Support BigInteger and BigDecimal Types
     @ParameterizedTest
-    @ValueSource(strings = ["String", "Boolean", "Byte", "Short", "Integer", "Long", "Float", "Double"/*, "BigInteger", "BigDecimal"*/])
+    @ValueSource(strings = ["String", "Boolean", "Byte", "Short", "Integer", "Long", "Float", "Double", "BigInteger", "BigDecimal"])
     fun `it deserializes a structure with a simple fields`(memberType: String) {
         val model = (
             modelPrefix + """            

@@ -15,14 +15,16 @@ public final class aws/smithy/kotlin/runtime/http/engine/okhttp/OkHttpEngine$Com
 public final class aws/smithy/kotlin/runtime/http/engine/okhttp/OkHttpEngineConfig : aws/smithy/kotlin/runtime/http/engine/HttpClientEngineConfigImpl {
 	public static final field Companion Laws/smithy/kotlin/runtime/http/engine/okhttp/OkHttpEngineConfig$Companion;
 	public synthetic fun <init> (Laws/smithy/kotlin/runtime/http/engine/okhttp/OkHttpEngineConfig$Builder;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public final fun getMaxConnectionsPerHost-pVg5ArA ()I
+	public final fun getMaxConcurrencyPerHost-pVg5ArA ()I
 	public fun toBuilderApplicator ()Lkotlin/jvm/functions/Function1;
 }
 
 public final class aws/smithy/kotlin/runtime/http/engine/okhttp/OkHttpEngineConfig$Builder : aws/smithy/kotlin/runtime/http/engine/HttpClientEngineConfigImpl$BuilderImpl {
 	public fun <init> ()V
-	public final fun getMaxConnectionsPerHost-0hXNFcg ()Lkotlin/UInt;
-	public final fun setMaxConnectionsPerHost-ExVfyTY (Lkotlin/UInt;)V
+	public final fun getMaxConcurrencyPerHost-0hXNFcg ()Lkotlin/UInt;
+	public fun getTelemetryProvider ()Laws/smithy/kotlin/runtime/telemetry/TelemetryProvider;
+	public final fun setMaxConcurrencyPerHost-ExVfyTY (Lkotlin/UInt;)V
+	public fun setTelemetryProvider (Laws/smithy/kotlin/runtime/telemetry/TelemetryProvider;)V
 }
 
 public final class aws/smithy/kotlin/runtime/http/engine/okhttp/OkHttpEngineConfig$Companion {

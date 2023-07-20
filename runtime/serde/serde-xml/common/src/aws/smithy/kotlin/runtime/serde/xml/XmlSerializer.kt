@@ -4,6 +4,9 @@
  */
 package aws.smithy.kotlin.runtime.serde.xml
 
+import aws.smithy.kotlin.runtime.InternalApi
+import aws.smithy.kotlin.runtime.content.BigDecimal
+import aws.smithy.kotlin.runtime.content.BigInteger
 import aws.smithy.kotlin.runtime.content.Document
 import aws.smithy.kotlin.runtime.serde.*
 import aws.smithy.kotlin.runtime.time.Instant
@@ -14,7 +17,7 @@ import aws.smithy.kotlin.runtime.util.*
  * Provides serialization for the XML message format.
  * @param xmlWriter where content is serialize to
  */
-// TODO - mark class internal and remove integration tests once serde is stable
+@InternalApi
 public class XmlSerializer(private val xmlWriter: XmlStreamWriter = xmlStreamWriter()) : Serializer, StructSerializer {
 
     // FIXME - clean up stack to distinguish between mutable/immutable and move to utils? (e.g. MutableStack<T> = mutableStackOf())
@@ -116,6 +119,11 @@ public class XmlSerializer(private val xmlWriter: XmlStreamWriter = xmlStreamWri
 
     override fun field(descriptor: SdkFieldDescriptor, value: Double): Unit = numberField(descriptor, value)
 
+    override fun field(descriptor: SdkFieldDescriptor, value: BigInteger): Unit = numberField(descriptor, value)
+
+    override fun field(descriptor: SdkFieldDescriptor, value: BigDecimal): Unit =
+        field(descriptor, value.toPlainString())
+
     override fun field(descriptor: SdkFieldDescriptor, value: String): Unit =
         tagOrAttribute(descriptor, value, ::serializeString)
 
@@ -169,6 +177,12 @@ public class XmlSerializer(private val xmlWriter: XmlStreamWriter = xmlStreamWri
     override fun serializeFloat(value: Float): Unit = serializeNumber(value)
 
     override fun serializeDouble(value: Double): Unit = serializeNumber(value)
+
+    override fun serializeBigInteger(value: BigInteger): Unit = serializeNumber(value)
+
+    override fun serializeBigDecimal(value: BigDecimal) {
+        xmlWriter.text(value.toPlainString())
+    }
 
     private fun serializeNumber(value: Number): Unit = xmlWriter.text(value)
 
@@ -279,6 +293,10 @@ private class XmlMapSerializer(
 
     override fun serializeDouble(value: Double): Unit = serializePrimitive(value)
 
+    override fun serializeBigInteger(value: BigInteger): Unit = serializePrimitive(value)
+
+    override fun serializeBigDecimal(value: BigDecimal): Unit = serializePrimitive(value.toPlainString())
+
     override fun serializeString(value: String): Unit = serializePrimitive(value)
 
     override fun serializeSdkSerializable(value: SdkSerializable): Unit = value.serialize(xmlSerializer)
@@ -336,6 +354,10 @@ private class XmlListSerializer(
     override fun serializeFloat(value: Float): Unit = serializePrimitive(value)
 
     override fun serializeDouble(value: Double): Unit = serializePrimitive(value)
+
+    override fun serializeBigInteger(value: BigInteger): Unit = serializePrimitive(value)
+
+    override fun serializeBigDecimal(value: BigDecimal): Unit = serializePrimitive(value.toPlainString())
 
     override fun serializeString(value: String): Unit = serializePrimitive(value)
 

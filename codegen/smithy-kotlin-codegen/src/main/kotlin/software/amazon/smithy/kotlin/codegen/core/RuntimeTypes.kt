@@ -62,9 +62,10 @@ object RuntimeTypes {
             val HttpOperationContext = symbol("HttpOperationContext")
             val HttpSerialize = symbol("HttpSerialize")
             val OperationAuthConfig = symbol("OperationAuthConfig")
+            val OperationMetrics = symbol("OperationMetrics")
             val OperationRequest = symbol("OperationRequest")
             val roundTrip = symbol("roundTrip")
-            val sdkRequestId = symbol("sdkRequestId")
+            val telemetry = symbol("telemetry")
             val SdkHttpOperation = symbol("SdkHttpOperation")
             val SdkHttpRequest = symbol("SdkHttpRequest")
             val setResolvedEndpoint = symbol("setResolvedEndpoint")
@@ -90,6 +91,7 @@ object RuntimeTypes {
     }
 
     object Core : RuntimeTypePackage(KotlinDependency.CORE) {
+        val Clock = symbol("Clock", "time")
         val ExecutionContext = symbol("ExecutionContext", "operation")
         val ErrorMetadata = symbol("ErrorMetadata")
         val ServiceErrorMetadata = symbol("ServiceErrorMetadata")
@@ -99,6 +101,8 @@ object RuntimeTypes {
         val ClientException = symbol("ClientException")
 
         object Content : RuntimeTypePackage(KotlinDependency.CORE, "content") {
+            val BigDecimal = symbol("BigDecimal")
+            val BigInteger = symbol("BigInteger")
             val ByteArrayContent = symbol("ByteArrayContent")
             val ByteStream = symbol("ByteStream")
             val buildDocument = symbol("buildDocument")
@@ -112,14 +116,9 @@ object RuntimeTypes {
             val Outcome = symbol("Outcome")
             val RetryStrategy = symbol("RetryStrategy")
             val StandardRetryStrategy = symbol("StandardRetryStrategy")
-            val StandardRetryStrategyOptions = symbol("StandardRetryStrategyOptions")
 
             object Delay : RuntimeTypePackage(KotlinDependency.CORE, "retries.delay") {
-                val ExponentialBackoffWithJitter = symbol("ExponentialBackoffWithJitter")
-                val ExponentialBackoffWithJitterOptions = symbol("ExponentialBackoffWithJitterOptions")
                 val InfiniteTokenBucket = symbol("InfiniteTokenBucket")
-                val StandardRetryTokenBucket = symbol("StandardRetryTokenBucket")
-                val StandardRetryTokenBucketOptions = symbol("StandardRetryTokenBucketOptions")
             }
 
             object Policy : RuntimeTypePackage(KotlinDependency.CORE, "retries.policy") {
@@ -154,21 +153,27 @@ object RuntimeTypes {
             val decodeBase64Bytes = symbol("decodeBase64Bytes")
             val encodeBase64 = symbol("encodeBase64")
             val encodeBase64String = symbol("encodeBase64String")
+            val ExpiringValue = symbol("ExpiringValue")
             val flattenIfPossible = symbol("flattenIfPossible")
             val get = symbol("get")
             val LazyAsyncValue = symbol("LazyAsyncValue")
             val length = symbol("length")
+            val putIfAbsent = symbol("putIfAbsent")
+            val putIfAbsentNotNull = symbol("putIfAbsentNotNull")
+            val ReadThroughCache = symbol("ReadThroughCache")
             val truthiness = symbol("truthiness")
             val urlEncodeComponent = symbol("urlEncodeComponent", "text")
         }
 
         object Net : RuntimeTypePackage(KotlinDependency.CORE, "net") {
+            val Host = symbol("Host")
             val parameters = symbol("parameters")
             val QueryParameters = symbol("QueryParameters")
             val QueryParametersBuilder = symbol("QueryParametersBuilder")
             val splitAsQueryParameters = symbol("splitAsQueryParameters")
             val toQueryParameters = symbol("toQueryParameters")
             val Url = symbol("Url")
+            val UrlDecoding = symbol("UrlDecoding")
         }
     }
 
@@ -176,6 +181,9 @@ object RuntimeTypes {
         val SdkClient = symbol("SdkClient")
         val AbstractSdkClientBuilder = symbol("AbstractSdkClientBuilder")
         val LogMode = symbol("LogMode")
+        val RetryClientConfig = symbol("RetryClientConfig")
+        val RetryStrategyClientConfig = symbol("RetryStrategyClientConfig")
+        val RetryStrategyClientConfigImpl = symbol("RetryStrategyClientConfigImpl")
         val SdkClientConfig = symbol("SdkClientConfig")
         val SdkClientFactory = symbol("SdkClientFactory")
         val SdkClientOption = symbol("SdkClientOption")
@@ -194,7 +202,6 @@ object RuntimeTypes {
 
             @get:JvmName("getSigningContextExtMethod")
             val signingContext = symbol("signingContext")
-
             object Functions : RuntimeTypePackage(KotlinDependency.SMITHY_CLIENT, "endpoints.functions") {
                 val substring = symbol("substring")
                 val isValidHostLabel = symbol("isValidHostLabel")
@@ -308,15 +315,18 @@ object RuntimeTypes {
         }
     }
 
-    object Tracing {
-        object Core : RuntimeTypePackage(KotlinDependency.TRACING_CORE) {
-            val debug = symbol("debug")
-            val DefaultTracer = symbol("DefaultTracer")
-            val LoggingTraceProbe = symbol("LoggingTraceProbe")
-            val TraceProbe = symbol("TraceProbe")
-            val Tracer = symbol("Tracer")
-            val TracingClientConfig = symbol("TracingClientConfig")
-            val withRootTraceSpan = symbol("withRootTraceSpan")
+    object Observability {
+        object TelemetryApi : RuntimeTypePackage(KotlinDependency.TELEMETRY_API) {
+            val SpanKind = symbol("SpanKind", "trace")
+            val TelemetryConfig = symbol("TelemetryConfig")
+            val TelemetryProvider = symbol("TelemetryProvider")
+            val TelemetryProviderContext = symbol("TelemetryProviderContext")
+            val TelemetryContextElement = symbol("TelemetryContextElement", "context")
+            val TraceSpan = symbol("TraceSpan", "trace")
+            val withSpan = symbol("withSpan", "trace")
+        }
+        object TelemetryDefaults : RuntimeTypePackage(KotlinDependency.TELEMETRY_DEFAULTS) {
+            val Global = symbol("Global")
         }
     }
 

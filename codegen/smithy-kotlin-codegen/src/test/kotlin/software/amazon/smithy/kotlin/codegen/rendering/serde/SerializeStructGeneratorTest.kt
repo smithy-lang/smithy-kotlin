@@ -17,14 +17,12 @@ class SerializeStructGeneratorTest {
                 input: FooRequest
             }        
     """.prependNamespaceAndService(
-        version = "2",
         protocol = AwsProtocolModelDeclaration.REST_JSON,
         operations = listOf("Foo"),
     ).trimIndent()
 
-    // TODO ~ Support BigInteger and BigDecimal Types - https://github.com/awslabs/smithy-kotlin/issues/213
     @ParameterizedTest
-    @ValueSource(strings = ["String", "Boolean", "Byte", "Short", "Integer", "Long", "Float", "Double"/*, "BigInteger", "BigDecimal"*/])
+    @ValueSource(strings = ["String", "Boolean", "Byte", "Short", "Integer", "Long", "Float", "Double", "BigInteger", "BigDecimal"])
     fun `it serializes a structure with a simple fields`(memberType: String) {
         val model = (
             modelPrefix + """            
@@ -48,10 +46,10 @@ class SerializeStructGeneratorTest {
     @ParameterizedTest(name = "{index} ==> ''{0}''")
     @CsvSource(
         "PrimitiveInteger, 0, 0",
-        "PrimitiveShort, 0, 0",
+        "PrimitiveShort, 0.toShort(), 0",
         "PrimitiveLong, 0L, 0",
-        "PrimitiveByte, 0, 0",
-        "PrimitiveFloat, 0.0f, 0",
+        "PrimitiveByte, 0.toByte(), 0",
+        "PrimitiveFloat, 0f, 0",
         "PrimitiveDouble, 0.0, 0",
         "PrimitiveBoolean, false, false",
     )

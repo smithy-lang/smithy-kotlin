@@ -40,6 +40,27 @@ class AttributesTest {
     }
 
     @Test
+    fun testPutIfAbsentNotNull() {
+        val attributes = mutableAttributes()
+        val strKey = AttributeKey<String>("string")
+        attributes[strKey] = "foo"
+
+        attributes.putIfAbsentNotNull(strKey, null)
+        assertEquals("foo", attributes[strKey])
+
+        attributes.putIfAbsentNotNull(strKey, "bar")
+        assertEquals("foo", attributes[strKey])
+
+        attributes.remove(strKey)
+
+        attributes.putIfAbsentNotNull(strKey, null)
+        assertNull(attributes.getOrNull(strKey))
+
+        attributes.putIfAbsentNotNull(strKey, "bar")
+        assertEquals("bar", attributes[strKey])
+    }
+
+    @Test
     fun testMerge() {
         val attr1 = mutableAttributes()
         val key1 = AttributeKey<String>("k1")

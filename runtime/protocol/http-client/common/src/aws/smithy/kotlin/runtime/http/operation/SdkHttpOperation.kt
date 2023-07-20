@@ -10,6 +10,7 @@ import aws.smithy.kotlin.runtime.http.HttpHandler
 import aws.smithy.kotlin.runtime.http.interceptors.HttpInterceptor
 import aws.smithy.kotlin.runtime.http.response.complete
 import aws.smithy.kotlin.runtime.operation.ExecutionContext
+import aws.smithy.kotlin.runtime.telemetry.trace.withSpan
 import aws.smithy.kotlin.runtime.util.*
 import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.job
@@ -21,9 +22,9 @@ import kotlin.reflect.KClass
  * @property context An [ExecutionContext] instance scoped to this operation
  * @property serializer The component responsible for serializing the input type `I` into an HTTP request builder
  * @property deserializer The component responsible for deserializing an HTTP response into the output type `O`
- * @property signer The component responsible for signing the request
+ * @property typeInfo the operation type info used internally for interceptors to function correctly
+ * @property telemetry the telemetry parameters used to instrument the operation with
  */
-@OptIn(Uuid.WeakRng::class)
 @InternalApi
 public class SdkHttpOperation<I, O> internal constructor(
     public val execution: SdkOperationExecution<I, O>,
@@ -31,10 +32,10 @@ public class SdkHttpOperation<I, O> internal constructor(
     internal val serializer: HttpSerialize<I>,
     internal val deserializer: HttpDeserialize<O>,
     internal val typeInfo: OperationTypeInfo,
+    internal val telemetry: SdkOperationTelemetry,
 ) {
     init {
-        val sdkRequestId = Uuid.random().toString()
-        context[HttpOperationContext.SdkRequestId] = sdkRequestId
+        context[HttpOperationContext.SdkInvocationId] = Uuid.random().toString()
     }
 
     /**
@@ -56,6 +57,7 @@ public class SdkHttpOperation<I, O> internal constructor(
     public fun install(middleware: ReceiveMiddleware) { middleware.install(this) }
     public fun install(middleware: InlineMiddleware<I, O>) { middleware.install(this) }
 
+    @InternalApi
     public companion object {
         public inline fun <reified I, reified O> build(block: SdkHttpOperationBuilder<I, O>.() -> Unit): SdkHttpOperation<I, O> =
             SdkHttpOperationBuilder<I, O>(
@@ -68,8 +70,9 @@ public class SdkHttpOperation<I, O> internal constructor(
 /**
  * Gets the unique ID that identifies the active SDK request in this [ExecutionContext].
  */
-public val ExecutionContext.sdkRequestId: String
-    get() = get(HttpOperationContext.SdkRequestId)
+@InternalApi
+public val ExecutionContext.sdkInvocationId: String
+    get() = get(HttpOperationContext.SdkInvocationId)
 
 /**
  * Round trip an operation using the given [HttpHandler]
@@ -94,9 +97,12 @@ public suspend fun <I, O, R> SdkHttpOperation<I, O>.execute(
 ): R {
     val handler = execution.decorate(httpHandler, this)
     val request = OperationRequest(context, input)
+    val (span, telemetryCtx) = instrument()
     try {
-        val output = handler.call(request)
-        return block(output)
+        return withSpan(span, telemetryCtx) {
+            val output = handler.call(request)
+            block(output)
+        }
     } finally {
         context.cleanup()
     }
@@ -112,6 +118,7 @@ public class SdkHttpOperationBuilder<I, O> (
     private val inputType: KClass<*>,
     private val outputType: KClass<*>,
 ) {
+    public val telemetry: SdkOperationTelemetry = SdkOperationTelemetry()
     public var serializer: HttpSerialize<I>? = null
     public var deserializer: HttpDeserialize<O>? = null
     public val execution: SdkOperationExecution<I, O> = SdkOperationExecution()
@@ -121,7 +128,7 @@ public class SdkHttpOperationBuilder<I, O> (
         val opSerializer = requireNotNull(serializer) { "SdkHttpOperation.serializer must not be null" }
         val opDeserializer = requireNotNull(deserializer) { "SdkHttpOperation.deserializer must not be null" }
         val typeInfo = OperationTypeInfo(inputType, outputType)
-        return SdkHttpOperation(execution, context.build(), opSerializer, opDeserializer, typeInfo)
+        return SdkHttpOperation(execution, context.build(), opSerializer, opDeserializer, typeInfo, telemetry)
     }
 }
 

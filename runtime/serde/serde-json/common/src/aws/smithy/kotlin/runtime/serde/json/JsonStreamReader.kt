@@ -10,6 +10,7 @@ import aws.smithy.kotlin.runtime.serde.DeserializationException
 /**
  * Interface for deserializing JSON documents as a stream of tokens
  */
+@InternalApi
 public interface JsonStreamReader {
     /**
      * Grab the next token in the stream

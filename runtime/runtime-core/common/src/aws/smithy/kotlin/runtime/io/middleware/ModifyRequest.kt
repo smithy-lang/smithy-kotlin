@@ -5,11 +5,13 @@
 
 package aws.smithy.kotlin.runtime.io.middleware
 
+import aws.smithy.kotlin.runtime.InternalApi
 import aws.smithy.kotlin.runtime.io.Handler
 
 /**
  * A transform that only modifies the input type
  */
+@InternalApi
 public interface ModifyRequest<Request> {
     public suspend fun modifyRequest(req: Request): Request
 }

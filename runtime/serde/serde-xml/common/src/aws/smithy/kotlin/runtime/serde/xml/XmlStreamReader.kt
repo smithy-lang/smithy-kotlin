@@ -5,6 +5,7 @@
 
 package aws.smithy.kotlin.runtime.serde.xml
 
+import aws.smithy.kotlin.runtime.InternalApi
 import aws.smithy.kotlin.runtime.serde.xml.deserialization.LexingXmlStreamReader
 import aws.smithy.kotlin.runtime.serde.xml.deserialization.StringTextStream
 import aws.smithy.kotlin.runtime.serde.xml.deserialization.XmlLexer
@@ -14,10 +15,12 @@ import aws.smithy.kotlin.runtime.serde.xml.deserialization.XmlLexer
  * supports the ability to look ahead an arbitrary number of elements.  It can also
  * create "views" to subtrees of the document, guaranteeing that clients do not exceed bounds.
  */
+@InternalApi
 public interface XmlStreamReader {
     /**
      * Specify the depth for which a subtree is created.
      */
+    @InternalApi
     public enum class SubtreeStartDepth {
         /**
          * The subtree's minimum depth is the same as the current node depth.
@@ -40,6 +43,7 @@ public interface XmlStreamReader {
      * current level + 1 (CHILD), starting at the next node to be read from the stream.
      * @param subtreeStartDepth Determines minimum depth of the subtree
      */
+    @InternalApi
     public fun subTreeReader(subtreeStartDepth: SubtreeStartDepth = SubtreeStartDepth.CHILD): XmlStreamReader
 
     /**
@@ -59,6 +63,7 @@ public interface XmlStreamReader {
      * look-ahead at any given time during the parsing of input data.
      * @param index a positive integer representing index of node from current to peek.  Index of 1 is the next node.
      */
+    @InternalApi
     public fun peek(index: Int = 1): XmlToken?
 }
 
@@ -67,6 +72,7 @@ public interface XmlStreamReader {
  *
  * @param selectionPredicate predicate that evaluates nodes of the required type to match
  */
+@InternalApi
 public inline fun <reified T : XmlToken> XmlStreamReader.seek(selectionPredicate: (T) -> Boolean = { true }): T? {
     var token: XmlToken? = lastToken
 
@@ -79,8 +85,37 @@ public inline fun <reified T : XmlToken> XmlStreamReader.seek(selectionPredicate
 }
 
 /**
+ * Peek and seek forward until a token of type [T] is found.
+ * If it matches the [selectionPredicate], consume the token and return it. Otherwise, return `null` without consuming the token.
+ *
+ * @param selectionPredicate predicate that evaluates nodes of the required type to match
+ */
+@InternalApi
+public inline fun <reified T : XmlToken> XmlStreamReader.peekSeek(selectionPredicate: (T) -> Boolean = { true }): T? {
+    var token: XmlToken? = lastToken
+
+    if (token != null && token is T) {
+        return if (selectionPredicate.invoke(token)) token else null
+    }
+
+    do {
+        if (token is T) {
+            return if (selectionPredicate.invoke(token)) {
+                nextToken() as T
+            } else {
+                null
+            }
+        } else { nextToken() }
+        token = peek()
+    } while (token != null)
+
+    return null
+}
+
+/**
  * Creates an [XmlStreamReader] instance
  */
+@InternalApi
 public fun xmlStreamReader(payload: ByteArray): XmlStreamReader {
     val stream = StringTextStream(payload.decodeToString())
     val lexer = XmlLexer(stream)

@@ -7,6 +7,8 @@ package aws.smithy.kotlin.runtime.http.engine.okhttp
 
 import aws.smithy.kotlin.runtime.http.engine.HttpClientEngineConfig
 import aws.smithy.kotlin.runtime.http.engine.HttpClientEngineConfigImpl
+import aws.smithy.kotlin.runtime.telemetry.Global
+import aws.smithy.kotlin.runtime.telemetry.TelemetryProvider
 
 /**
  * The configuration parameters for an OkHttp HTTP client engine.
@@ -27,15 +29,15 @@ public class OkHttpEngineConfig private constructor(builder: Builder) : HttpClie
     }
 
     /**
-     * The maximum number of connections to open to a single host.
+     * The maximum number of requests to execute concurrently for a single host.
      */
-    public val maxConnectionsPerHost: UInt = builder.maxConnectionsPerHost ?: builder.maxConnections
+    public val maxConcurrencyPerHost: UInt = builder.maxConcurrencyPerHost ?: builder.maxConcurrency
 
     override fun toBuilderApplicator(): HttpClientEngineConfig.Builder.() -> Unit = {
         super.toBuilderApplicator()()
 
         if (this is Builder) {
-            maxConnectionsPerHost = this@OkHttpEngineConfig.maxConnectionsPerHost
+            maxConcurrencyPerHost = this@OkHttpEngineConfig.maxConcurrencyPerHost
         }
     }
 
@@ -44,8 +46,10 @@ public class OkHttpEngineConfig private constructor(builder: Builder) : HttpClie
      */
     public class Builder : BuilderImpl() {
         /**
-         * The maximum number of connections to open to a single host. Defaults to [maxConnections].
+         * The maximum number of requests to execute concurrently for a single host. Defaults to [maxConcurrency].
          */
-        public var maxConnectionsPerHost: UInt? = null
+        public var maxConcurrencyPerHost: UInt? = null
+
+        override var telemetryProvider: TelemetryProvider = TelemetryProvider.Global
     }
 }

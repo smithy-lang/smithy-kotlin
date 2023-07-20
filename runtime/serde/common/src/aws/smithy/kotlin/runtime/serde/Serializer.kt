@@ -3,10 +3,15 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 package aws.smithy.kotlin.runtime.serde
+
+import aws.smithy.kotlin.runtime.InternalApi
+import aws.smithy.kotlin.runtime.content.BigDecimal
+import aws.smithy.kotlin.runtime.content.BigInteger
 import aws.smithy.kotlin.runtime.content.Document
 import aws.smithy.kotlin.runtime.time.Instant
 import aws.smithy.kotlin.runtime.time.TimestampFormat
 
+@InternalApi
 public interface Serializer : PrimitiveSerializer {
     /**
      * Begin a struct (i.e. in JSON this would be a '{') and return a [StructSerializer] that can be used to serialize the struct's fields.
@@ -38,6 +43,7 @@ public interface Serializer : PrimitiveSerializer {
     public fun toByteArray(): ByteArray
 }
 
+@InternalApi
 public interface StructSerializer : PrimitiveSerializer {
 
     /**
@@ -119,6 +125,24 @@ public interface StructSerializer : PrimitiveSerializer {
      * @param descriptor
      * @param value
      */
+    public fun field(descriptor: SdkFieldDescriptor, value: BigInteger)
+
+    /**
+     * Writes the field name given in the descriptor, and then
+     * serializes value.
+     *
+     * @param descriptor
+     * @param value
+     */
+    public fun field(descriptor: SdkFieldDescriptor, value: BigDecimal)
+
+    /**
+     * Writes the field name given in the descriptor, and then
+     * serializes value.
+     *
+     * @param descriptor
+     * @param value
+     */
     public fun field(descriptor: SdkFieldDescriptor, value: String)
 
     /**
@@ -190,6 +214,7 @@ public interface StructSerializer : PrimitiveSerializer {
 /**
  * Serializes a list.
  */
+@InternalApi
 public interface ListSerializer : PrimitiveSerializer {
 
     /**
@@ -201,6 +226,7 @@ public interface ListSerializer : PrimitiveSerializer {
 /**
  * Serializes a map. In Smithy, keys in maps are always Strings.
  */
+@InternalApi
 public interface MapSerializer : PrimitiveSerializer {
 
     /**
@@ -331,6 +357,7 @@ public interface MapSerializer : PrimitiveSerializer {
 /**
  * Used to serialize primitive values.
  */
+@InternalApi
 public interface PrimitiveSerializer {
 
     /**
@@ -394,6 +421,20 @@ public interface PrimitiveSerializer {
      *
      * @param value
      */
+    public fun serializeBigInteger(value: BigInteger)
+
+    /**
+     * Serializes the given value.
+     *
+     * @param value
+     */
+    public fun serializeBigDecimal(value: BigDecimal)
+
+    /**
+     * Serializes the given value.
+     *
+     * @param value
+     */
     public fun serializeString(value: String)
 
     /**
@@ -424,6 +465,7 @@ public interface PrimitiveSerializer {
 /**
  * All components of a struct are expected to be serialized in the given block.
  */
+@InternalApi
 public inline fun Serializer.serializeStruct(sdkFieldDescriptor: SdkFieldDescriptor, crossinline block: StructSerializer.() -> Unit) {
     val struct = beginStruct(sdkFieldDescriptor)
     struct.block()
@@ -433,6 +475,7 @@ public inline fun Serializer.serializeStruct(sdkFieldDescriptor: SdkFieldDescrip
 /**
  * All elements of a list are expected to be serialized in the given block.
  */
+@InternalApi
 public inline fun Serializer.serializeList(sdkFieldDescriptor: SdkFieldDescriptor, crossinline block: ListSerializer.() -> Unit) {
     val list = beginList(sdkFieldDescriptor)
     list.block()
@@ -442,6 +485,7 @@ public inline fun Serializer.serializeList(sdkFieldDescriptor: SdkFieldDescripto
 /**
  * All entries of a map are expected to be serialized in the given block.
  */
+@InternalApi
 public inline fun Serializer.serializeMap(sdkFieldDescriptor: SdkFieldDescriptor, crossinline block: MapSerializer.() -> Unit) {
     val map = beginMap(sdkFieldDescriptor)
     map.block()

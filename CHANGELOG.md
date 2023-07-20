@@ -1,5 +1,57 @@
 # Changelog
 
+## [0.23.0] - 07/20/2023
+
+### Features
+* Add experimental support for OpenTelemetry based telemetry provider
+* [#146](https://github.com/awslabs/smithy-kotlin/issues/146) Enable endpoint discovery
+* [#898](https://github.com/awslabs/smithy-kotlin/issues/898) BREAKING: introduce `maxConcurrency` HTTP engine setting and rename OkHttp specific `maxConnectionsPerHost` to `maxConcurrencyPerHost`.
+
+### Fixes
+* [#905](https://github.com/awslabs/aws-sdk-kotlin/issues/905) Retry connection reset errors in OkHttp engine
+* [#888](https://github.com/awslabs/smithy-kotlin/issues/888) Correct URL encoding in endpoint resolution
+
+### Miscellaneous
+* **BREAKING**: Refactor observability API and configuration. See the [discussion](https://github.com/awslabs/aws-sdk-kotlin/discussions/981) post from the AWS SDK for Kotlin for more information.
+* [#947](https://github.com/awslabs/aws-sdk-kotlin/issues/947) Remove or lower visibility on several internal-only APIs
+
+## [0.22.1] - 07/06/2023
+
+### Fixes
+* [#962](https://github.com/awslabs/aws-sdk-kotlin/issues/962) Properly deserialize XML flat maps
+
+## [0.22.0] - 06/29/2023
+
+### Features
+* [#213](https://github.com/awslabs/smithy-kotlin/issues/213) Add support for `BigInteger` and `BigDecimal` in Smithy models
+* [#701](https://github.com/awslabs/aws-sdk-kotlin/issues/701) **Breaking**: Simplify mechanisms for setting/updating retry strategies in client config. See [this discussion post](https://github.com/awslabs/aws-sdk-kotlin/discussions/964) for more details.
+* [#701](https://github.com/awslabs/aws-sdk-kotlin/issues/701) Add adaptive retry mode
+
+### Fixes
+* Fix modeled/implied default values for byte and short types
+
+## [0.21.3] - 06/19/2023
+
+### Features
+* [#718](https://github.com/awslabs/smithy-kotlin/issues/718) Support Smithy default trait
+
+### Fixes
+* [#867](https://github.com/awslabs/smithy-kotlin/issues/867) Add fully qualified name hint for collection types
+* [#828](https://github.com/awslabs/smithy-kotlin/issues/828) Use correct precedence order for determining restJson error codes
+
+## [0.21.2] - 06/08/2023
+
+### Fixes
+* [#938](https://github.com/awslabs/aws-sdk-kotlin/issues/938) Allow non-HTTPS URLs in presigning
+
+## [0.21.1] - 06/01/2023
+
+### Fixes
+* Allow empty I/O content
+
+### Miscellaneous
+* Support non-standard pagination termination
+
 ## [0.21.0] - 05/25/2023
 
 ### Features

@@ -20,19 +20,17 @@ import aws.smithy.kotlin.runtime.http.engine.HttpClientEngine
 import aws.smithy.kotlin.runtime.http.engine.HttpClientEngineBase
 import aws.smithy.kotlin.runtime.http.engine.ProxyConfig
 import aws.smithy.kotlin.runtime.http.engine.callContext
-import aws.smithy.kotlin.runtime.http.operation.getLogger
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.http.response.HttpCall
 import aws.smithy.kotlin.runtime.io.internal.SdkDispatchers
-import aws.smithy.kotlin.runtime.logging.Logger
-import aws.smithy.kotlin.runtime.net.HostResolver
 import aws.smithy.kotlin.runtime.operation.ExecutionContext
+import aws.smithy.kotlin.runtime.telemetry.logging.logger
 import aws.smithy.kotlin.runtime.time.Instant
-import kotlinx.coroutines.job
+import kotlinx.coroutines.*
 import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withLock
-import kotlinx.coroutines.withContext
-import kotlinx.coroutines.withTimeoutOrNull
+import kotlinx.coroutines.sync.withPermit
 import aws.sdk.kotlin.crt.io.TlsContext as CrtTlsContext
 import aws.sdk.kotlin.crt.io.TlsVersion as CrtTlsVersion
 import aws.smithy.kotlin.runtime.config.TlsVersion as SdkTlsVersion
@@ -53,8 +51,6 @@ public class CrtHttpEngine(public override val config: CrtHttpEngineConfig) : Ht
         override val engineConstructor: (CrtHttpEngineConfig.Builder.() -> Unit) -> CrtHttpEngine = ::invoke
     }
 
-    private val logger = Logger.getLogger<CrtHttpEngine>()
-
     private val crtTlsContext: CrtTlsContext = TlsContextOptionsBuilder()
         .apply {
             verifyPeer = true
@@ -64,19 +60,20 @@ public class CrtHttpEngine(public override val config: CrtHttpEngineConfig) : Ht
         .build()
         .let(::CrtTlsContext)
 
-    init {
-        if (config.socketReadTimeout != CrtHttpEngineConfig.Default.socketReadTimeout) {
-            logger.warn { "CrtHttpEngine does not support socketReadTimeout(${config.socketReadTimeout}); ignoring" }
-        }
-        if (config.socketWriteTimeout != CrtHttpEngineConfig.Default.socketWriteTimeout) {
-            logger.warn { "CrtHttpEngine does not support socketWriteTimeout(${config.socketWriteTimeout}); ignoring" }
-        }
-
-        if (config.hostResolver !== HostResolver.Default) {
-            // FIXME - there is no way to currently plugin a JVM based host resolver to CRT. (see V804672153)
-            logger.warn { "CrtHttpEngine does not support custom HostResolver implementations; ignoring" }
-        }
-    }
+    // FIXME - re-enable when SLF4j default is available
+    // init {
+    //     if (config.socketReadTimeout != CrtHttpEngineConfig.Default.socketReadTimeout) {
+    //         logger.warn { "CrtHttpEngine does not support socketReadTimeout(${config.socketReadTimeout}); ignoring" }
+    //     }
+    //     if (config.socketWriteTimeout != CrtHttpEngineConfig.Default.socketWriteTimeout) {
+    //         logger.warn { "CrtHttpEngine does not support socketWriteTimeout(${config.socketWriteTimeout}); ignoring" }
+    //     }
+    //
+    //     if (config.hostResolver !== HostResolver.Default) {
+    //         // FIXME - there is no way to currently plugin a JVM based host resolver to CRT. (see V804672153)
+    //         logger.warn { "CrtHttpEngine does not support custom HostResolver implementations; ignoring" }
+    //     }
+    // }
 
     private val options = HttpClientConnectionManagerOptionsBuilder().apply {
         clientBootstrap = config.clientBootstrap ?: SdkDefaultIO.ClientBootstrap
@@ -86,6 +83,7 @@ public class CrtHttpEngine(public override val config: CrtHttpEngineConfig) : Ht
             connectTimeoutMs = config.connectTimeout.inWholeMilliseconds.toInt(),
         )
         initialWindowSize = config.initialWindowSizeBytes
+        // FIXME - given managers are _per host_ the maxConnections parameter is not actually respected here
         maxConnections = config.maxConnections.toInt()
         maxConnectionIdleMs = config.connectionIdleTimeout.inWholeMilliseconds
     }
@@ -93,10 +91,11 @@ public class CrtHttpEngine(public override val config: CrtHttpEngineConfig) : Ht
     // connection managers are per host
     private val connManagers = mutableMapOf<String, HttpClientConnectionManager>()
     private val mutex = Mutex()
+    private val requestLimiter = Semaphore(config.maxConcurrency.toInt())
 
-    override suspend fun roundTrip(context: ExecutionContext, request: HttpRequest): HttpCall {
+    override suspend fun roundTrip(context: ExecutionContext, request: HttpRequest): HttpCall = requestLimiter.withPermit {
         val callContext = callContext()
-        val logger = callContext.getLogger<CrtHttpEngine>()
+        val logger = callContext.logger<CrtHttpEngine>()
         val proxyConfig = config.proxySelector.select(request.url)
         val manager = getManagerForUri(request.uri, proxyConfig)
 

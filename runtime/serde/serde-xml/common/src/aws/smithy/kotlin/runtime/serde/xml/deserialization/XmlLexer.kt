@@ -4,6 +4,7 @@
  */
 package aws.smithy.kotlin.runtime.serde.xml.deserialization
 
+import aws.smithy.kotlin.runtime.InternalApi
 import aws.smithy.kotlin.runtime.serde.DeserializationException
 import aws.smithy.kotlin.runtime.serde.xml.XmlToken
 import aws.smithy.kotlin.runtime.util.text.codePointToChars
@@ -34,6 +35,7 @@ private fun AttributeMap.extractNsDeclarations(): Pair<AttributeMap, List<XmlTok
 /**
  * A lexer that scans a [StringTextStream] and reads [XmlToken] elements.
  */
+@InternalApi
 public class XmlLexer(internal val source: StringTextStream) {
     private var state: LexerState = LexerState.Initial
 

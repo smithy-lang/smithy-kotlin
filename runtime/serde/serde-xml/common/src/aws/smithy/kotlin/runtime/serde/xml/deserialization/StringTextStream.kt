@@ -4,6 +4,7 @@
  */
 package aws.smithy.kotlin.runtime.serde.xml.deserialization
 
+import aws.smithy.kotlin.runtime.InternalApi
 import aws.smithy.kotlin.runtime.serde.DeserializationException
 import kotlin.math.max
 import kotlin.math.min
@@ -16,6 +17,7 @@ private val nonAscii = """[^\x20-\x7E]""".toRegex()
  * stream is **not** advanced by `peek` operations.
  * @param source The source text for this stream.
  */
+@InternalApi
 public class StringTextStream(private val source: String) {
     private val end = source.length
     private var offset = 0

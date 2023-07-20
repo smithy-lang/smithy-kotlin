@@ -5,6 +5,8 @@
 
 package aws.smithy.kotlin.runtime.serde.xml
 
+import aws.smithy.kotlin.runtime.content.BigDecimal
+import aws.smithy.kotlin.runtime.content.BigInteger
 import aws.smithy.kotlin.runtime.content.Document
 import aws.smithy.kotlin.runtime.serde.*
 
@@ -45,6 +47,16 @@ internal class XmlPrimitiveDeserializer(private val reader: XmlStreamReader, pri
     override fun deserializeFloat(): Float = deserializeValue { it.toFloatOrNull() ?: throw DeserializationException("Unable to deserialize $it as Float") }
 
     override fun deserializeDouble(): Double = deserializeValue { it.toDoubleOrNull() ?: throw DeserializationException("Unable to deserialize $it as Double") }
+
+    override fun deserializeBigInteger(): BigInteger = deserializeValue {
+        runCatching { BigInteger(it) }
+            .getOrElse { throw DeserializationException("Unable to deserialize $it as BigInteger") }
+    }
+
+    override fun deserializeBigDecimal(): BigDecimal = deserializeValue {
+        runCatching { BigDecimal(it) }
+            .getOrElse { throw DeserializationException("Unable to deserialize $it as BigDecimal") }
+    }
 
     override fun deserializeString(): String = deserializeValue { it }
 

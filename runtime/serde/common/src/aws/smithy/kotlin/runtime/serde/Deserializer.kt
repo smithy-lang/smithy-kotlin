@@ -4,6 +4,9 @@
  */
 package aws.smithy.kotlin.runtime.serde
 
+import aws.smithy.kotlin.runtime.InternalApi
+import aws.smithy.kotlin.runtime.content.BigDecimal
+import aws.smithy.kotlin.runtime.content.BigInteger
 import aws.smithy.kotlin.runtime.content.Document
 
 /**
@@ -53,6 +56,7 @@ import aws.smithy.kotlin.runtime.content.Document
  * until it is exhausted and for each element/entry call the appropriate `deserialize*` methods.
  *
  */
+@InternalApi
 public interface Deserializer {
     /**
      * Begin deserialization of a structured type. Use the returned [FieldIterator] to drive
@@ -91,6 +95,7 @@ public interface Deserializer {
     /**
      * Iterator over raw elements in a collection
      */
+    @InternalApi
     public interface ElementIterator : PrimitiveDeserializer {
         /**
          * Advance to the next element. Returns false when no more elements are in the list
@@ -107,6 +112,7 @@ public interface Deserializer {
     /**
      * Iterator over map entries
      */
+    @InternalApi
     public interface EntryIterator : PrimitiveDeserializer {
         /**
          * Advance to the next element. Returns false when no more elements are in the map
@@ -128,6 +134,7 @@ public interface Deserializer {
     /**
      * Iterator over struct fields
      */
+    @InternalApi
     public interface FieldIterator : PrimitiveDeserializer {
         /**
          * Returns the index of the next field found, null if fields exhausted, or [UNKNOWN_FIELD].
@@ -139,6 +146,7 @@ public interface Deserializer {
          */
         public fun skipValue()
 
+        @InternalApi
         public companion object {
             /**
              * An unknown field was encountered
@@ -151,6 +159,7 @@ public interface Deserializer {
 /**
  * Common interface for deserializing primitive values
  */
+@InternalApi
 public interface PrimitiveDeserializer {
     /**
      * Deserialize and return the next token as a [Byte]
@@ -183,6 +192,16 @@ public interface PrimitiveDeserializer {
     public fun deserializeDouble(): Double
 
     /**
+     * Deserialize and return the next token as a [BigInteger]
+     */
+    public fun deserializeBigInteger(): BigInteger
+
+    /**
+     * Deserialize and return the next token as a [BigDecimal]
+     */
+    public fun deserializeBigDecimal(): BigDecimal
+
+    /**
      * Deserialize and return the next token as a [String]
      */
     public fun deserializeString(): String
@@ -206,16 +225,19 @@ public interface PrimitiveDeserializer {
     public fun deserializeNull(): Nothing?
 }
 
+@InternalApi
 public inline fun Deserializer.deserializeStruct(descriptor: SdkObjectDescriptor, block: Deserializer.FieldIterator.() -> Unit) {
     val deserializer = deserializeStruct(descriptor)
     block(deserializer)
 }
 
+@InternalApi
 public inline fun <T> Deserializer.deserializeList(descriptor: SdkFieldDescriptor, block: Deserializer.ElementIterator.() -> T): T {
     val deserializer = deserializeList(descriptor)
     return block(deserializer)
 }
 
+@InternalApi
 public inline fun <T> Deserializer.deserializeMap(descriptor: SdkFieldDescriptor, block: Deserializer.EntryIterator.() -> T): T {
     val deserializer = deserializeMap(descriptor)
     return block(deserializer)

@@ -6,8 +6,8 @@
 package aws.smithy.kotlin.runtime.auth.awscredentials
 
 import aws.smithy.kotlin.runtime.io.closeIfCloseable
+import aws.smithy.kotlin.runtime.telemetry.logging.trace
 import aws.smithy.kotlin.runtime.time.Clock
-import aws.smithy.kotlin.runtime.tracing.trace
 import aws.smithy.kotlin.runtime.util.Attributes
 import aws.smithy.kotlin.runtime.util.CachedValue
 import aws.smithy.kotlin.runtime.util.ExpiringValue

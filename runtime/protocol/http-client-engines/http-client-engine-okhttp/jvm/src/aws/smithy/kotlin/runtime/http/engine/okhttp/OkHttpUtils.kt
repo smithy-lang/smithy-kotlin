@@ -7,22 +7,19 @@ package aws.smithy.kotlin.runtime.http.engine.okhttp
 
 import aws.smithy.kotlin.runtime.http.*
 import aws.smithy.kotlin.runtime.http.engine.ProxyConfig
+import aws.smithy.kotlin.runtime.http.engine.internal.HttpClientMetrics
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.http.response.HttpResponse
 import aws.smithy.kotlin.runtime.io.SdkSource
 import aws.smithy.kotlin.runtime.io.internal.toSdk
-import aws.smithy.kotlin.runtime.logging.Logger
 import aws.smithy.kotlin.runtime.net.*
 import aws.smithy.kotlin.runtime.operation.ExecutionContext
-import aws.smithy.kotlin.runtime.tracing.TraceSpan
-import aws.smithy.kotlin.runtime.tracing.traceSpan
 import kotlinx.coroutines.*
+import okhttp3.*
 import okhttp3.Authenticator
-import okhttp3.Credentials
-import okhttp3.Dns
 import okhttp3.RequestBody.Companion.toRequestBody
-import okhttp3.Route
 import okhttp3.internal.http.HttpMethod
+import java.io.EOFException
 import java.io.IOException
 import java.net.*
 import javax.net.ssl.SSLHandshakeException
@@ -34,7 +31,7 @@ import okhttp3.Response as OkHttpResponse
 /**
  * SDK specific "tag" attached to an [okhttp3.Request] instance
  */
-internal data class SdkRequestTag(val execContext: ExecutionContext, val traceSpan: TraceSpan)
+internal data class SdkRequestTag(val execContext: ExecutionContext, val callContext: CoroutineContext, val metrics: HttpClientMetrics)
 
 /**
  * Convert SDK [HttpRequest] to an [okhttp3.Request] instance
@@ -42,9 +39,10 @@ internal data class SdkRequestTag(val execContext: ExecutionContext, val traceSp
 internal fun HttpRequest.toOkHttpRequest(
     execContext: ExecutionContext,
     callContext: CoroutineContext,
+    metrics: HttpClientMetrics,
 ): OkHttpRequest {
     val builder = OkHttpRequest.Builder()
-    builder.tag(SdkRequestTag::class, SdkRequestTag(execContext, callContext.traceSpan))
+    builder.tag(SdkRequestTag::class, SdkRequestTag(execContext, callContext, metrics))
 
     builder.url(url.toString())
 
@@ -161,11 +159,7 @@ internal class OkHttpProxySelector(
             else -> emptyList()
         }
     }
-
-    override fun connectFailed(uri: URI?, sa: SocketAddress?, ioe: IOException?) {
-        val logger = Logger.getLogger<OkHttpProxySelector>()
-        logger.error { "failed to connect to proxy: uri=$uri; socketAddress: $sa; exception: $ioe" }
-    }
+    override fun connectFailed(uri: URI?, sa: SocketAddress?, ioe: IOException?) {}
 }
 
 private fun URI.toUrl(): Url {
@@ -198,9 +192,10 @@ internal inline fun<T> mapOkHttpExceptions(block: () -> T): T =
         throw HttpException(ex, ex.errCode(), ex.isRetryable())
     }
 
-private fun Exception.isRetryable(): Boolean = isCauseOrSuppressed<ConnectException>()
+private fun Exception.isRetryable(): Boolean = isCauseOrSuppressed<ConnectException>() || isConnectionClosedException()
 private fun Exception.errCode(): HttpErrorCode = when {
     isConnectTimeoutException() -> HttpErrorCode.CONNECT_TIMEOUT
+    isConnectionClosedException() -> HttpErrorCode.CONNECTION_CLOSED
     isCauseOrSuppressed<SocketTimeoutException>() -> HttpErrorCode.SOCKET_TIMEOUT
     isCauseOrSuppressed<SSLHandshakeException>() -> HttpErrorCode.TLS_NEGOTIATION_ERROR
     else -> HttpErrorCode.SDK_UNKNOWN
@@ -208,6 +203,11 @@ private fun Exception.errCode(): HttpErrorCode = when {
 
 private fun Exception.isConnectTimeoutException(): Boolean =
     findCauseOrSuppressed<SocketTimeoutException>()?.message?.contains("connect", ignoreCase = true) == true
+
+private fun Exception.isConnectionClosedException(): Boolean =
+    message?.contains("unexpected end of stream") == true &&
+        (cause as? Exception)?.findCauseOrSuppressed<EOFException>()?.message?.contains("\\n not found: limit=0") == true
+
 private inline fun <reified T> Exception.isCauseOrSuppressed(): Boolean = findCauseOrSuppressed<T>() != null
 private inline fun <reified T> Exception.findCauseOrSuppressed(): T? {
     if (this is T) return this

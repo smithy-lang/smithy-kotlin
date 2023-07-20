@@ -15,14 +15,16 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import kotlin.test.*
 
+@OptIn(ExperimentalCoroutinesApi::class)
 class StandardRetryStrategyTest {
-    @OptIn(ExperimentalCoroutinesApi::class)
     @Test
     fun testInitialSuccess() = runTest {
-        val options = StandardRetryStrategyOptions.Default
         val bucket = RecordingTokenBucket()
         val delayer = RecordingDelayer()
-        val retryer = StandardRetryStrategy(options, bucket, delayer)
+        val retryer = StandardRetryStrategy {
+            tokenBucket = bucket
+            delayProvider = delayer
+        }
         val policy = StringRetryPolicy()
 
         val result = retryer.retry(policy, block(policy, bucket, delayer, "success"))
@@ -32,13 +34,15 @@ class StandardRetryStrategyTest {
         assertTrue(token.isSuccess)
     }
 
-    @OptIn(ExperimentalCoroutinesApi::class)
     @Test
     fun testRetryableFailures() = runTest {
-        val options = StandardRetryStrategyOptions.Default.copy(maxAttempts = 10)
         val bucket = RecordingTokenBucket()
         val delayer = RecordingDelayer()
-        val retryer = StandardRetryStrategy(options, bucket, delayer)
+        val retryer = StandardRetryStrategy {
+            maxAttempts = 10
+            tokenBucket = bucket
+            delayProvider = delayer
+        }
         val policy = StringRetryPolicy()
 
         val result = retryer.retry(
@@ -60,13 +64,14 @@ class StandardRetryStrategyTest {
         assertTrue(token.nextToken!!.nextToken!!.nextToken!!.nextToken!!.isSuccess)
     }
 
-    @OptIn(ExperimentalCoroutinesApi::class)
     @Test
     fun testNonretryableFailureFromException() = runTest {
-        val options = StandardRetryStrategyOptions.Default
         val bucket = RecordingTokenBucket()
         val delayer = RecordingDelayer()
-        val retryer = StandardRetryStrategy(options, bucket, delayer)
+        val retryer = StandardRetryStrategy {
+            tokenBucket = bucket
+            delayProvider = delayer
+        }
         val policy = StringRetryPolicy()
 
         val result = runCatching {
@@ -79,13 +84,14 @@ class StandardRetryStrategyTest {
         assertTrue(token.isFailure)
     }
 
-    @OptIn(ExperimentalCoroutinesApi::class)
     @Test
     fun testNonretryableFailureFromResult() = runTest {
-        val options = StandardRetryStrategyOptions.Default
         val bucket = RecordingTokenBucket()
         val delayer = RecordingDelayer()
-        val retryer = StandardRetryStrategy(options, bucket, delayer)
+        val retryer = StandardRetryStrategy {
+            tokenBucket = bucket
+            delayProvider = delayer
+        }
         val policy = StringRetryPolicy()
 
         val result = runCatching {
@@ -100,13 +106,14 @@ class StandardRetryStrategyTest {
         assertTrue(token.isFailure)
     }
 
-    @OptIn(ExperimentalCoroutinesApi::class)
     @Test
     fun testTooManyAttemptsFromException() = runTest {
-        val options = StandardRetryStrategyOptions.Default
         val bucket = RecordingTokenBucket()
         val delayer = RecordingDelayer()
-        val retryer = StandardRetryStrategy(options, bucket, delayer)
+        val retryer = StandardRetryStrategy {
+            tokenBucket = bucket
+            delayProvider = delayer
+        }
         val policy = StringRetryPolicy()
 
         val result = runCatching {
@@ -129,13 +136,14 @@ class StandardRetryStrategyTest {
         assertTrue(token.nextToken!!.nextToken!!.isFailure)
     }
 
-    @OptIn(ExperimentalCoroutinesApi::class)
     @Test
     fun testTooManyAttemptsFromResult() = runTest {
-        val options = StandardRetryStrategyOptions.Default
         val bucket = RecordingTokenBucket()
         val delayer = RecordingDelayer()
-        val retryer = StandardRetryStrategy(options, bucket, delayer)
+        val retryer = StandardRetryStrategy {
+            tokenBucket = bucket
+            delayProvider = delayer
+        }
         val policy = StringRetryPolicy()
 
         val result = runCatching {
@@ -200,6 +208,10 @@ fun block(
 }
 
 class RecordingTokenBucket : RetryTokenBucket {
+    override val config: RetryTokenBucket.Config = object : RetryTokenBucket.Config {
+        override fun toBuilderApplicator(): RetryTokenBucket.Config.Builder.() -> Unit = { }
+    }
+
     var lastTokenAcquired: RecordingToken? = null
 
     override suspend fun acquireToken(): RetryToken = RecordingToken().also { lastTokenAcquired = it }
@@ -236,6 +248,10 @@ class RecordingToken : RetryToken {
 }
 
 class RecordingDelayer : DelayProvider {
+    override val config: DelayProvider.Config = object : DelayProvider.Config {
+        override fun toBuilderApplicator(): DelayProvider.Config.Builder.() -> Unit = { }
+    }
+
     var lastAttempt: Int? = null
     override suspend fun backoff(attempt: Int) {
         val expectedLastAttempt = if (attempt == 1) null else attempt - 1

@@ -31,9 +31,17 @@ abstract class HttpProtocolClientGenerator(
     protected val middleware: List<ProtocolMiddleware>,
     protected val httpBindingResolver: HttpBindingResolver,
 ) {
+    object EndpointResolverAdapterBinding : SectionId {
+        val GenerationContext: SectionKey<ProtocolGenerator.GenerationContext> = SectionKey("GenerationContext")
+        val OperationShape: SectionKey<OperationShape> = SectionKey("OperationShape")
+    }
 
     object OperationDeserializerBinding : SectionId {
         // Context for operation being codegened at the time of section invocation
+        val Operation: SectionKey<OperationShape> = SectionKey("Operation")
+    }
+
+    object OperationTelemetryBuilder : SectionId {
         val Operation: SectionKey<OperationShape> = SectionKey("Operation")
     }
 
@@ -114,6 +122,9 @@ abstract class HttpProtocolClientGenerator(
 
             write("toMap()")
         }
+
+        writer.write("private val telemetryScope = #S", ctx.settings.pkg.name)
+        writer.write("private val opMetrics = #T(telemetryScope, config.telemetryProvider)", RuntimeTypes.HttpClient.Operation.OperationMetrics)
     }
 
     protected open fun importSymbols(writer: KotlinWriter) {
@@ -205,6 +216,7 @@ abstract class HttpProtocolClientGenerator(
             writer.openBlock("context {", "}") {
                 // property from implementing SdkClient
                 writer.write("operationName = #S", op.id.name)
+                writer.write("serviceName = #L", "ServiceId")
 
                 // optional endpoint trait
                 op.getTrait<EndpointTrait>()?.let { endpointTrait ->
@@ -223,13 +235,30 @@ abstract class HttpProtocolClientGenerator(
                 }
             }
 
+            // telemetry
+            writer.withBlock("#T {", "}", RuntimeTypes.HttpClient.Operation.telemetry) {
+                write("provider = config.telemetryProvider")
+                write("scope = telemetryScope")
+                write("metrics = opMetrics")
+                writer.declareSection(OperationTelemetryBuilder, mapOf(OperationTelemetryBuilder.Operation to op))
+            }
+
             writer.write(
                 "execution.auth = #T(#T, configuredAuthSchemes, identityProviderConfig)",
                 RuntimeTypes.HttpClient.Operation.OperationAuthConfig,
                 AuthSchemeProviderAdapterGenerator.getSymbol(ctx.settings),
             )
 
-            writer.write("execution.endpointResolver = #T(config)", EndpointResolverAdapterGenerator.getSymbol(ctx.settings))
+            writer.declareSection(
+                EndpointResolverAdapterBinding,
+                mapOf(
+                    EndpointResolverAdapterBinding.GenerationContext to ctx,
+                    EndpointResolverAdapterBinding.OperationShape to op,
+                ),
+            ) {
+                write("execution.endpointResolver = #T(config)", EndpointResolverAdapterGenerator.getSymbol(ctx.settings))
+            }
+
             writer.write("execution.retryStrategy = config.retryStrategy")
         }
     }
@@ -248,24 +277,11 @@ abstract class HttpProtocolClientGenerator(
         val hasOutputStream = outputShape.map { it.hasStreamingMember(ctx.model) }.orElse(false)
         val inputVariableName = if (inputShape.isPresent) "input" else KotlinTypes.Unit.fullName
 
-        writer
-            .write(
-                """val rootSpan = config.tracer.createRootSpan("#L-${'$'}{op.context.#T}")""",
-                op.id.name,
-                RuntimeTypes.HttpClient.Operation.sdkRequestId,
-            )
-            .withBlock(
-                "return #T.#T(rootSpan) {",
-                "}",
-                RuntimeTypes.KotlinCoroutines.coroutineContext,
-                RuntimeTypes.Tracing.Core.withRootTraceSpan,
-            ) {
-                if (hasOutputStream) {
-                    write("op.#T(client, #L, block)", RuntimeTypes.HttpClient.Operation.execute, inputVariableName)
-                } else {
-                    write("op.#T(client, #L)", RuntimeTypes.HttpClient.Operation.roundTrip, inputVariableName)
-                }
-            }
+        if (hasOutputStream) {
+            writer.write("return op.#T(client, #L, block)", RuntimeTypes.HttpClient.Operation.execute, inputVariableName)
+        } else {
+            writer.write("return op.#T(client, #L)", RuntimeTypes.HttpClient.Operation.roundTrip, inputVariableName)
+        }
     }
 
     private fun ioSymbolNames(op: OperationShape): Pair<String, String> {

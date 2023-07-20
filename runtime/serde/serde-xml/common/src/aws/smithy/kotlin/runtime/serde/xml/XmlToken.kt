@@ -5,9 +5,12 @@
 
 package aws.smithy.kotlin.runtime.serde.xml
 
+import aws.smithy.kotlin.runtime.InternalApi
+
 /**
  * Raw tokens produced when reading an XML document as a stream
  */
+@InternalApi
 public sealed class XmlToken {
 
     public abstract val depth: Int
@@ -15,6 +18,7 @@ public sealed class XmlToken {
     /**
      * An namespace declaration (xmlns)
      */
+    @InternalApi
     public data class Namespace(public val uri: String, public val prefix: String? = null)
 
     /**
@@ -22,6 +26,7 @@ public sealed class XmlToken {
      * @property local The localized name of an element
      * @property prefix The namespace this element belongs to
      */
+    @InternalApi
     public data class QualifiedName(public val local: String, public val prefix: String? = null) {
         override fun toString(): String = tag
 
@@ -34,6 +39,7 @@ public sealed class XmlToken {
     /**
      * The opening of an XML element
      */
+    @InternalApi
     public data class BeginElement(
         override val depth: Int,
         public val name: QualifiedName,
@@ -52,6 +58,7 @@ public sealed class XmlToken {
     /**
      * The closing of an XML element
      */
+    @InternalApi
     public data class EndElement(override val depth: Int, public val name: QualifiedName) : XmlToken() {
         // Convenience constructor for name-only nodes.
         public constructor(depth: Int, name: String) : this(depth, QualifiedName(name))
@@ -62,10 +69,12 @@ public sealed class XmlToken {
     /**
      * An XML element text as string
      */
+    @InternalApi
     public data class Text(override val depth: Int, public val value: String?) : XmlToken() {
         override fun toString(): String = "${this.value} (${this.depth})"
     }
 
+    @InternalApi
     public object StartDocument : XmlToken() {
         override val depth: Int = 0
     }
@@ -74,6 +83,7 @@ public sealed class XmlToken {
      * The end of the XML stream to signal that the XML-encoded value has no more
      * tokens
      */
+    @InternalApi
     public object EndDocument : XmlToken() {
         override val depth: Int
             get() = 0

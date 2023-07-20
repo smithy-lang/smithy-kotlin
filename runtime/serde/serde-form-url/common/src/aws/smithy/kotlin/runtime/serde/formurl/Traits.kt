@@ -5,12 +5,14 @@
 
 package aws.smithy.kotlin.runtime.serde.formurl
 
+import aws.smithy.kotlin.runtime.InternalApi
 import aws.smithy.kotlin.runtime.serde.FieldTrait
 import aws.smithy.kotlin.runtime.serde.SdkFieldDescriptor
 
 /**
  * Specifies a name that a field is encoded into for form-url elements.
  */
+@InternalApi
 public data class FormUrlSerialName(public val name: String) : FieldTrait
 
 /**
@@ -27,12 +29,14 @@ public data class FormUrlSerialName(public val name: String) : FieldTrait
  * }
  * ```
  */
+@InternalApi
 public data class QueryLiteral(public val key: String, public val value: String) : FieldTrait
 
 /**
  * Indicates that the container should be serialized in "flattened" form.
  * See: https://awslabs.github.io/smithy/1.0/spec/aws/aws-query-protocol.html#collections
  */
+@InternalApi
 public object FormUrlFlattened : FieldTrait
 
 /**
@@ -44,7 +48,9 @@ public object FormUrlFlattened : FieldTrait
  *
  * @param name the name to use which prefixes each list or set member
  */
+@InternalApi
 public data class FormUrlCollectionName(public val member: String) : FieldTrait {
+    @InternalApi
     public companion object {
         /**
          * The default serialized name for a list or set member.
@@ -64,10 +70,12 @@ public data class FormUrlCollectionName(public val member: String) : FieldTrait 
  * @param key the name of the key field
  * @param value the name of the value field
  */
+@InternalApi
 public data class FormUrlMapName(
     public val key: String = Default.key,
     public val value: String = Default.value,
 ) : FieldTrait {
+    @InternalApi
     public companion object {
         /**
          * The default serialized names for aspects of a Map in XML.
