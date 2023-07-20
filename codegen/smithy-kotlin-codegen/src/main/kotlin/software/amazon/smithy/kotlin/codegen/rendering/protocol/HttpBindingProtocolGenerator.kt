@@ -527,18 +527,8 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             .httpTrait(op)
             .code
 
-        when (expectedResponseCode) {
-            200 -> {
-                writer.addImport(RuntimeTypes.Http.isSuccess)
-                writer.withBlock("if (!response.status.#T()) {", "}", RuntimeTypes.Http.isSuccess) {
-                    write("#T(context, response)", operationErrorHandler(ctx, op))
-                }
-            }
-            else -> {
-                writer.withBlock("if (response.status.value != #L) {", "}", expectedResponseCode) {
-                    write("#T(context, response)", operationErrorHandler(ctx, op))
-                }
-            }
+        writer.withBlock("if (response.status.value != #L) {", "}", expectedResponseCode) {
+            write("#T(context, response)", operationErrorHandler(ctx, op))
         }
     }
 
