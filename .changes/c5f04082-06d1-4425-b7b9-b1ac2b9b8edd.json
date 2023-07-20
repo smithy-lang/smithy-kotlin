@@ -1,8 +1,0 @@
-{
-    "id": "c5f04082-06d1-4425-b7b9-b1ac2b9b8edd",
-    "type": "feature",
-    "description": "BREAKING: introduce `maxConcurrency` HTTP engine setting and rename OkHttp specific `maxConnectionsPerHost` to `maxConcurrencyPerHost`.",
-    "issues": [
-        "awslabs/smithy-kotlin#898"
-    ]
-}
