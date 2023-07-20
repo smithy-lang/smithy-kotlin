@@ -83,7 +83,7 @@ class ResponseLengthValidationInterceptorTest {
 
         listOf(
             getMockClientWithChannelBody(response, responseHeaders),
-            getMockClientWithSourceBody(response, responseHeaders)
+            getMockClientWithSourceBody(response, responseHeaders),
         ).forEach { client ->
             val output = op.roundTrip(client, ResponseLengthValidationTestInput("input"))
             output.body.readAll()
@@ -124,7 +124,7 @@ class ResponseLengthValidationInterceptorTest {
 
         listOf(
             getMockClientWithChannelBody(response, responseHeaders),
-            getMockClientWithSourceBody(response, responseHeaders)
+            getMockClientWithSourceBody(response, responseHeaders),
         ).forEach { client ->
             assertFailsWith<IllegalStateException> {
                 val output = op.roundTrip(client, ResponseLengthValidationTestInput("input"))
@@ -143,7 +143,7 @@ class ResponseLengthValidationInterceptorTest {
 
         listOf(
             getMockClientWithChannelBody(response, responseHeaders),
-            getMockClientWithSourceBody(response, responseHeaders)
+            getMockClientWithSourceBody(response, responseHeaders),
         ).forEach { client ->
             val output = op.roundTrip(client, ResponseLengthValidationTestInput("input"))
             output.body.readAll()
