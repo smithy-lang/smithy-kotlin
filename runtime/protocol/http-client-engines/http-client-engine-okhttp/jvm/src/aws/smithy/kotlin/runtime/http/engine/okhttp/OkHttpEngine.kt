@@ -43,10 +43,6 @@ public class OkHttpEngine(
     private val metrics = HttpClientMetrics(TELEMETRY_SCOPE, config.telemetryProvider)
     private val client = config.buildClient(metrics)
 
-    init {
-        metrics.connectionsLimit = config.maxConnections.toLong()
-    }
-
     override suspend fun roundTrip(context: ExecutionContext, request: HttpRequest): HttpCall {
         val callContext = callContext()
 
@@ -110,11 +106,8 @@ private fun OkHttpEngineConfig.buildClient(metrics: HttpClientMetrics): OkHttpCl
         }
         dispatcher(dispatcher)
 
-        // TODO - move connection listener/limiting to ConnectionListener rather than wiring it through event listener
-        val connLimiter = ConnectionLimiter(config.maxConnections.toInt(), pool)
-
         // Log events coming from okhttp. Allocate a new listener per-call to facilitate dedicated trace spans.
-        eventListenerFactory { call -> HttpEngineEventListener(pool, config.hostResolver, dispatcher, metrics, connLimiter, call) }
+        eventListenerFactory { call -> HttpEngineEventListener(pool, config.hostResolver, dispatcher, metrics, call) }
 
         // map protocols
         if (config.tlsContext.alpn.isNotEmpty()) {
@@ -134,7 +127,6 @@ private fun OkHttpEngineConfig.buildClient(metrics: HttpClientMetrics): OkHttpCl
 
         dns(OkHttpDns(config.hostResolver))
 
-        addInterceptor(MaxConnectionsInterceptor(connLimiter))
         addInterceptor(MetricsInterceptor)
     }.build()
 }
