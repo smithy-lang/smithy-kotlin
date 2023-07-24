@@ -57,14 +57,14 @@ val generateSdkRuntimeVersion by tasks.registering {
     }
 }
 
+tasks.compileKotlin {
+    dependsOn(generateSdkRuntimeVersion)
+}
+
 kotlin {
     jvmToolchain {
         languageVersion.set(JavaLanguageVersion.of(defaultJvmToolchainVersion))
     }
-}
-
-tasks.compileKotlin {
-    dependsOn(generateSdkRuntimeVersion)
 }
 
 tasks.withType<KotlinCompile> {
