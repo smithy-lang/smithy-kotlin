@@ -22,11 +22,6 @@ public open class HttpOperationContext {
     @InternalApi
     public companion object {
         /**
-         * The expected HTTP status code of a successful response is stored under this key
-         */
-        public val ExpectedHttpStatus: AttributeKey<Int> = AttributeKey("aws.smithy.kotlin#ExpectedHttpStatus")
-
-        /**
          * A prefix to prepend the resolved hostname with.
          * See [endpointTrait](https://awslabs.github.io/smithy/1.0/spec/core/endpoint-traits.html#endpoint-trait)
          */
@@ -82,11 +77,6 @@ public open class HttpOperationContext {
          * The name of the service the request is sent to
          */
         public var serviceName: String? by requiredOption(SdkClientOption.ServiceName)
-
-        /**
-         * The expected HTTP status code on success
-         */
-        public var expectedHttpStatus: Int? by option(ExpectedHttpStatus)
 
         /**
          * (Optional) prefix to prepend to a (resolved) hostname
