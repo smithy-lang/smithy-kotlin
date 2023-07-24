@@ -200,6 +200,55 @@ class XmlDeserializerStructTest {
         println(bst.nested?.nested)
     }
 
+    class BasicUnwrappedTextStructureTest {
+        var x: String? = null
+
+        companion object {
+            val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {
+                trait(XmlSerialName("payload"))
+                trait(XmlUnwrappedOutput)
+            }
+
+            fun deserialize(deserializer: Deserializer): BasicUnwrappedTextStructureTest {
+                val result = BasicUnwrappedTextStructureTest()
+                deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
+                    loop@ while (true) {
+                        when (findNextFieldIndex()) {
+                            OBJ_DESCRIPTOR.index -> result.x = deserializeString()
+                            null -> break@loop
+                            else -> throw DeserializationException(IllegalStateException("unexpected field in BasicStructTest deserializer"))
+                        }
+                    }
+                }
+                return result
+            }
+        }
+    }
+
+    @Test
+    fun itHandlesBasicUnwrappedStructs() {
+        val payload = """
+            <payload>text</payload>
+        """.encodeToByteArray()
+
+        val deserializer = XmlDeserializer(payload)
+        val bst = BasicUnwrappedTextStructureTest.deserialize(deserializer)
+
+        assertEquals("text", bst.x)
+    }
+
+    @Test
+    fun itHandlesBasicUnwrappedStructsWithNullValues() {
+        val payload = """
+            <payload></payload>
+        """.encodeToByteArray()
+
+        val deserializer = XmlDeserializer(payload)
+        val bst = BasicUnwrappedTextStructureTest.deserialize(deserializer)
+
+        assertEquals(null, bst.x)
+    }
+
     class AliasStruct {
         var message: String? = null
         var attribute: String? = null

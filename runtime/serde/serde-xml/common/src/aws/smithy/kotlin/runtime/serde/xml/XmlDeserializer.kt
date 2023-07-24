@@ -69,6 +69,9 @@ public class XmlDeserializer(
             throw DeserializationException("Expected last parsed token to be ${XmlToken.BeginElement::class} but was ${reader.lastToken}")
         }
 
+        if (descriptor.hasTrait<XmlUnwrappedOutput>()) {
+            return UnwrappedXmlStructDeserializer(descriptor, reader.subTreeReader(XmlStreamReader.SubtreeStartDepth.CURRENT))
+        }
         return XmlStructDeserializer(descriptor, reader.subTreeReader(), parentToken, attribFields)
     }
 
@@ -328,6 +331,66 @@ internal class XmlStructDeserializer(
     }
 }
 
+/**
+ * Deserializes XML structures that are unwrapped
+ * See: https://smithy.io/2.0/aws/customizations/s3-customizations.html#aws-customizations-s3unwrappedxmloutput-trait
+ *
+ * @param objDescriptor associated [SdkObjectDescriptor] which represents the expected structure
+ * @param reader underlying [XmlStreamReader] from which tokens are read
+ */
+internal class UnwrappedXmlStructDeserializer(
+    private val objDescriptor: SdkObjectDescriptor,
+    private val reader: XmlStreamReader,
+) : Deserializer.FieldIterator {
+    private val OBJ_DESCRIPTOR_INDEX: Int = 0
+
+    override fun findNextFieldIndex(): Int? {
+        return if (reader.nextToken() is XmlToken.Text) OBJ_DESCRIPTOR_INDEX else null
+    }
+
+    private fun <T> deserializeValue(transform: ((String) -> T)): T {
+        val value = reader.takeCurrentAs<XmlToken.Text>().value ?: ""
+        return transform(value)
+    }
+
+    override fun skipValue() = reader.skipNext()
+
+    override fun deserializeByte(): Byte = deserializeValue { it.toIntOrNull()?.toByte() ?: throw DeserializationException("Unable to deserialize $it") }
+
+    override fun deserializeInt(): Int = deserializeValue { it.toIntOrNull() ?: throw DeserializationException("Unable to deserialize $it") }
+
+    override fun deserializeShort(): Short = deserializeValue { it.toIntOrNull()?.toShort() ?: throw DeserializationException("Unable to deserialize $it") }
+
+    override fun deserializeLong(): Long = deserializeValue { it.toLongOrNull() ?: throw DeserializationException("Unable to deserialize $it") }
+
+    override fun deserializeFloat(): Float = deserializeValue { it.toFloatOrNull() ?: throw DeserializationException("Unable to deserialize $it") }
+
+    override fun deserializeDouble(): Double = deserializeValue { it.toDoubleOrNull() ?: throw DeserializationException("Unable to deserialize $it") }
+
+    override fun deserializeString(): String = deserializeValue { it }
+
+    override fun deserializeBoolean(): Boolean = deserializeValue { it.toBoolean() }
+
+    override fun deserializeBigInteger(): BigInteger = deserializeValue {
+        runCatching { BigInteger(it) }
+                .getOrElse { throw DeserializationException("Unable to deserialize $it as BigInteger") }
+    }
+
+    override fun deserializeBigDecimal(): BigDecimal = deserializeValue {
+        runCatching { BigDecimal(it) }
+                .getOrElse { throw DeserializationException("Unable to deserialize $it as BigDecimal") }
+    }
+
+    override fun deserializeDocument(): Document {
+        throw DeserializationException("Cannot deserialize unsupported Document type in xml")
+    }
+
+    override fun deserializeNull(): Nothing? {
+        reader.takeNextAs<XmlToken.EndElement>()
+        return null
+    }
+}
+
 // Extract the attributes from the last-read token and match them to [FieldLocation] on the [SdkObjectDescriptor].
 private fun XmlStreamReader.tokenAttributesToFieldLocations(descriptor: SdkObjectDescriptor): MutableList<FieldLocation> =
     if (descriptor.hasXmlAttributes && lastToken is XmlToken.BeginElement) {
@@ -383,16 +446,30 @@ private fun SdkObjectDescriptor.fieldTokenMatcher(fieldDescriptor: SdkFieldDescr
     return fieldDescriptor.nameMatches(beginElement.name.tag)
 }
 
-// Return the next token of the specified type or throw [DeserializerStateException] if incorrect type.
+
+/**
+ * Return the next token of the specified type or throw [DeserializationException] if incorrect type.
+ */
+internal inline fun <reified TExpected : XmlToken> XmlStreamReader.takeCurrentAs(): TExpected {
+    val token = this.lastToken ?: throw DeserializationException("Expected ${TExpected::class} but instead found null")
+    requireToken<TExpected>(token)
+    return token as TExpected
+}
+
+/**
+ * Return the next token of the specified type or throw [DeserializationException] if incorrect type.
+ */
 internal inline fun <reified TExpected : XmlToken> XmlStreamReader.takeNextAs(): TExpected {
     val token = this.nextToken() ?: throw DeserializationException("Expected ${TExpected::class} but instead found null")
     requireToken<TExpected>(token)
     return token as TExpected
 }
 
-// require that the given token be of type [TExpected] or else throw an exception
+/**
+ * Require that the given token be of type [TExpected] or else throw an exception
+ */
 internal inline fun <reified TExpected> requireToken(token: XmlToken) {
     if (token::class != TExpected::class) {
-        throw DeserializationException("expected ${TExpected::class}; found ${token::class} ($token)")
+        throw DeserializationException("Expected ${TExpected::class}; found ${token::class} ($token)")
     }
 }
