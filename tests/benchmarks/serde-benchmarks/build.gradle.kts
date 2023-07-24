@@ -142,3 +142,7 @@ val stageGeneratedSources = tasks.register("stageGeneratedSources") {
 tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
     dependsOn(stageGeneratedSources)
 }
+
+tasks.named("smithyValidate") {
+    dependsOn(tasks.named("metadataJar"))
+}

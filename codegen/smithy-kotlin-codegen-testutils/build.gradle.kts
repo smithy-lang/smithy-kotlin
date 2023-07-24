@@ -3,7 +3,6 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
@@ -25,6 +24,7 @@ val kotlinVersion: String by project
 val junitVersion: String by project
 val kotestVersion: String by project
 val jsoupVersion: String by project
+val defaultJvmToolchainVersion: String by project
 
 dependencies {
     implementation(kotlin("stdlib-jdk8"))
@@ -40,20 +40,14 @@ dependencies {
 
 kotlin {
     jvmToolchain {
-        languageVersion.set(JavaLanguageVersion.of(17))
+        languageVersion.set(JavaLanguageVersion.of(defaultJvmToolchainVersion))
     }
 }
 
 tasks.withType<KotlinCompile> {
     compilerOptions {
-        jvmTarget.set(JvmTarget.JVM_1_8)
         freeCompilerArgs.add("-opt-in=kotlin.RequiresOptIn")
     }
-}
-
-tasks.withType<JavaCompile> {
-    sourceCompatibility = JavaVersion.VERSION_1_8.toString()
-    targetCompatibility = JavaVersion.VERSION_1_8.toString()
 }
 
 // Reusable license copySpec
