@@ -344,9 +344,7 @@ internal class UnwrappedXmlStructDeserializer(
 ) : Deserializer.FieldIterator {
     private val OBJ_DESCRIPTOR_INDEX: Int = 0
 
-    override fun findNextFieldIndex(): Int? {
-        return if (reader.nextToken() is XmlToken.Text) OBJ_DESCRIPTOR_INDEX else null
-    }
+    override fun findNextFieldIndex(): Int? = if (reader.nextToken() is XmlToken.Text) OBJ_DESCRIPTOR_INDEX else null
 
     private fun <T> deserializeValue(transform: ((String) -> T)): T {
         val value = reader.takeCurrentAs<XmlToken.Text>().value ?: ""
@@ -373,12 +371,12 @@ internal class UnwrappedXmlStructDeserializer(
 
     override fun deserializeBigInteger(): BigInteger = deserializeValue {
         runCatching { BigInteger(it) }
-                .getOrElse { throw DeserializationException("Unable to deserialize $it as BigInteger") }
+            .getOrElse { throw DeserializationException("Unable to deserialize $it as BigInteger") }
     }
 
     override fun deserializeBigDecimal(): BigDecimal = deserializeValue {
         runCatching { BigDecimal(it) }
-                .getOrElse { throw DeserializationException("Unable to deserialize $it as BigDecimal") }
+            .getOrElse { throw DeserializationException("Unable to deserialize $it as BigDecimal") }
     }
 
     override fun deserializeDocument(): Document {
@@ -445,7 +443,6 @@ private fun SdkObjectDescriptor.fieldTokenMatcher(fieldDescriptor: SdkFieldDescr
 
     return fieldDescriptor.nameMatches(beginElement.name.tag)
 }
-
 
 /**
  * Return the next token of the specified type or throw [DeserializationException] if incorrect type.
