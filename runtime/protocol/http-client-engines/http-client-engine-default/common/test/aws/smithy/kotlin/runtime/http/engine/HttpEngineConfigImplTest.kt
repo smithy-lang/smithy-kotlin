@@ -23,8 +23,8 @@ class HttpEngineConfigImplTest {
 
     @Test
     fun testBuildInstanceWithConfig() {
-        config { httpClient { maxConnections = 256u } }.use { config ->
-            assertEquals(256u, config.httpClient.config.maxConnections)
+        config { httpClient { maxConcurrency = 256u } }.use { config ->
+            assertEquals(256u, config.httpClient.config.maxConcurrency)
         }
     }
 
@@ -51,7 +51,7 @@ class HttpEngineConfigImplTest {
     fun testConfigThenInstance() {
         val instance = CrtHttpEngine { initialWindowSizeBytes = 1024 }
         config {
-            httpClient { maxConnections = 256u }
+            httpClient { maxConcurrency = 256u }
             httpClient = instance
         }.use { config ->
             assertEquals(instance, config.httpClient)
@@ -63,10 +63,10 @@ class HttpEngineConfigImplTest {
         CrtHttpEngine { initialWindowSizeBytes = 1024 }.use { instance ->
             config {
                 httpClient = instance
-                httpClient { maxConnections = 256u }
+                httpClient { maxConcurrency = 256u }
             }.use { config ->
                 assertNotEquals(instance, config.httpClient)
-                assertEquals(256u, config.httpClient.config.maxConnections)
+                assertEquals(256u, config.httpClient.config.maxConcurrency)
             }
         }
     }
@@ -77,7 +77,7 @@ class HttpEngineConfigImplTest {
             val secondInstance = CrtHttpEngine { initialWindowSizeBytes = 2048 }
             config {
                 httpClient = firstInstance
-                httpClient { maxConnections = 256u }
+                httpClient { maxConcurrency = 256u }
                 httpClient = secondInstance
             }.use { config ->
                 assertNotEquals(firstInstance, config.httpClient)
@@ -90,14 +90,14 @@ class HttpEngineConfigImplTest {
     fun testConfigIsAdditive() {
         config {
             httpClient {
-                maxConnections = 256u
+                maxConcurrency = 256u
             }
             httpClient(CrtHttpEngine) {
                 initialWindowSizeBytes = 1024
             }
         }.use { config ->
             assertIs<CrtHttpEngineConfig>(config.httpClient.config)
-            assertEquals(256u, config.httpClient.config.maxConnections)
+            assertEquals(256u, config.httpClient.config.maxConcurrency)
             assertEquals(1024, (config.httpClient.config as CrtHttpEngineConfig).initialWindowSizeBytes)
         }
     }
@@ -109,11 +109,11 @@ class HttpEngineConfigImplTest {
                 initialWindowSizeBytes = 1024
             }
             httpClient {
-                maxConnections = 256u
+                maxConcurrency = 256u
             }
         }.use { config ->
             assertIs<CrtHttpEngineConfig>(config.httpClient.config)
-            assertEquals(256u, config.httpClient.config.maxConnections)
+            assertEquals(256u, config.httpClient.config.maxConcurrency)
             assertEquals(1024, (config.httpClient.config as CrtHttpEngineConfig).initialWindowSizeBytes)
         }
     }
@@ -123,9 +123,9 @@ class HttpEngineConfigImplTest {
         CrtHttpEngine { initialWindowSizeBytes = 1024 }.use { instance ->
             assertFailsWith<ClientException> {
                 config {
-                    httpClient { maxConnections = 256u }
+                    httpClient { maxConcurrency = 256u }
                     httpClient = instance
-                    httpClient { maxConnections = 256u }
+                    httpClient { maxConcurrency = 256u }
                 }
             }
         }

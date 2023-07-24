@@ -56,22 +56,25 @@ internal class ConnectionManager(
     private val mutex = Mutex()
 
     public suspend fun acquire(request: HttpRequest): HttpClientConnection {
-        // get a permit to acquire a connection (limits overall connections since managers are per/host)
-        leases.acquire()
+        val proxyConfig = config.proxySelector.select(request.url)
+
+        val manager = getManagerForUri(request.uri, proxyConfig)
+        var leaseAcquired = false
 
         return try {
-            val proxyConfig = config.proxySelector.select(request.url)
-
             // wait for an actual connection
-            val manager = getManagerForUri(request.uri, proxyConfig)
-
             val conn = withTimeout(config.connectionAcquireTimeout) {
+                // get a permit to acquire a connection (limits overall connections since managers are per/host)
+                leases.acquire()
+                leaseAcquired = true
                 manager.acquireConnection()
             }
 
             LeasedConnection(conn)
         } catch (ex: Exception) {
-            leases.release()
+            if (leaseAcquired) {
+                leases.release()
+            }
             val httpEx = when (ex) {
                 is HttpException -> ex
                 is TimeoutCancellationException -> HttpException("timed out waiting for an HTTP connection to be acquired from the pool", errorCode = HttpErrorCode.CONNECTION_ACQUIRE_TIMEOUT)
@@ -107,6 +110,7 @@ internal class ConnectionManager(
     private inner class LeasedConnection(private val delegate: HttpClientConnection) : HttpClientConnection by delegate {
         override fun close() {
             try {
+                // close actually returns to the pool
                 delegate.close()
             } finally {
                 leases.release()
