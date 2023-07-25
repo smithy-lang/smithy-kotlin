@@ -87,6 +87,7 @@ object RuntimeTypes {
             val Md5ChecksumInterceptor = symbol("Md5ChecksumInterceptor")
             val FlexibleChecksumsRequestInterceptor = symbol("FlexibleChecksumsRequestInterceptor")
             val FlexibleChecksumsResponseInterceptor = symbol("FlexibleChecksumsResponseInterceptor")
+            val ResponseLengthValidationInterceptor = symbol("ResponseLengthValidationInterceptor")
         }
     }
 

@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.23.0] - 07/20/2023
+
+### Features
+* Add experimental support for OpenTelemetry based telemetry provider
+* [#146](https://github.com/awslabs/smithy-kotlin/issues/146) Enable endpoint discovery
+* [#898](https://github.com/awslabs/smithy-kotlin/issues/898) BREAKING: introduce `maxConcurrency` HTTP engine setting and rename OkHttp specific `maxConnectionsPerHost` to `maxConcurrencyPerHost`.
+
+### Fixes
+* [#905](https://github.com/awslabs/aws-sdk-kotlin/issues/905) Retry connection reset errors in OkHttp engine
+* [#888](https://github.com/awslabs/smithy-kotlin/issues/888) Correct URL encoding in endpoint resolution
+
+### Miscellaneous
+* **BREAKING**: Refactor observability API and configuration. See the [discussion](https://github.com/awslabs/aws-sdk-kotlin/discussions/981) post from the AWS SDK for Kotlin for more information.
+* [#947](https://github.com/awslabs/aws-sdk-kotlin/issues/947) Remove or lower visibility on several internal-only APIs
+
 ## [0.22.1] - 07/06/2023
 
 ### Fixes

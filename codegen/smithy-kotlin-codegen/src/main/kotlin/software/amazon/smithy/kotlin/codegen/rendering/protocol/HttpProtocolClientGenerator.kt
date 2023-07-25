@@ -210,7 +210,6 @@ abstract class HttpProtocolClientGenerator(
 
             // execution context
             writer.openBlock("context {", "}") {
-                writer.write("expectedHttpStatus = ${httpTrait.code}")
                 // property from implementing SdkClient
                 writer.write("operationName = #S", op.id.name)
                 writer.write("serviceName = #L", "ServiceId")

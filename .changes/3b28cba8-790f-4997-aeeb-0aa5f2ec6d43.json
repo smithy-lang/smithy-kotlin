@@ -1,0 +1,6 @@
+{
+    "id": "3b28cba8-790f-4997-aeeb-0aa5f2ec6d43",
+    "type": "bugfix",
+    "description": "Enforce `maxConnections` for CRT HTTP engine",
+    "issues": ["awslabs/smithy-kotlin#880"]
+}

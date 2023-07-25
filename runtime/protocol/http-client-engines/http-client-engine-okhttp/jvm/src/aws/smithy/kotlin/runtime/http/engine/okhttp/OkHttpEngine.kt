@@ -43,10 +43,6 @@ public class OkHttpEngine(
     private val metrics = HttpClientMetrics(TELEMETRY_SCOPE, config.telemetryProvider)
     private val client = config.buildClient(metrics)
 
-    init {
-        metrics.connectionsLimit = config.maxConnections.toLong()
-    }
-
     override suspend fun roundTrip(context: ExecutionContext, request: HttpRequest): HttpCall {
         val callContext = callContext()
 
@@ -104,11 +100,9 @@ private fun OkHttpEngineConfig.buildClient(metrics: HttpClientMetrics): OkHttpCl
         )
         connectionPool(pool)
 
-        // Configure a dispatcher that uses maxConnections as a proxy for maxRequests. Note that this isn't precisely
-        // the same since some protocols (e.g., HTTP2) may use a single connection for multiple requests.
         val dispatcher = Dispatcher().apply {
-            maxRequests = config.maxConnections.toInt()
-            maxRequestsPerHost = config.maxConnectionsPerHost.toInt()
+            maxRequests = config.maxConcurrency.toInt()
+            maxRequestsPerHost = config.maxConcurrencyPerHost.toInt()
         }
         dispatcher(dispatcher)
 

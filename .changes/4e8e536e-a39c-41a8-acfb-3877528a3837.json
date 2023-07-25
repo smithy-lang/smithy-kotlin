@@ -1,8 +1,0 @@
-{
-    "id": "4e8e536e-a39c-41a8-acfb-3877528a3837",
-    "type": "misc",
-    "description": "Remove or lower visibility on several internal-only APIs",
-    "issues": [
-        "awslabs/aws-sdk-kotlin#947"
-    ]
-}
