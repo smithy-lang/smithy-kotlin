@@ -24,7 +24,6 @@ val kotlinVersion: String by project
 val junitVersion: String by project
 val kotestVersion: String by project
 val jsoupVersion: String by project
-val defaultJvmToolchainVersion: String by project
 
 dependencies {
     implementation(kotlin("stdlib-jdk8"))
@@ -36,12 +35,6 @@ dependencies {
     implementation("io.kotest:kotest-assertions-core-jvm:$kotestVersion")
     implementation("org.jetbrains.kotlin:kotlin-test:$kotlinVersion")
     implementation("org.jetbrains.kotlin:kotlin-test-junit5:$kotlinVersion")
-}
-
-kotlin {
-    jvmToolchain {
-        languageVersion.set(JavaLanguageVersion.of(defaultJvmToolchainVersion))
-    }
 }
 
 tasks.withType<KotlinCompile> {
