@@ -74,7 +74,6 @@ public abstract interface class aws/smithy/kotlin/runtime/http/engine/HttpClient
 	public abstract fun getConnectionIdleTimeout-UwyO8pc ()J
 	public abstract fun getHostResolver ()Laws/smithy/kotlin/runtime/net/HostResolver;
 	public abstract fun getMaxConcurrency-pVg5ArA ()I
-	public abstract fun getMaxConnections-pVg5ArA ()I
 	public abstract fun getProxySelector ()Laws/smithy/kotlin/runtime/http/engine/ProxySelector;
 	public abstract fun getSocketReadTimeout-UwyO8pc ()J
 	public abstract fun getSocketWriteTimeout-UwyO8pc ()J
@@ -89,7 +88,6 @@ public abstract interface class aws/smithy/kotlin/runtime/http/engine/HttpClient
 	public abstract fun getConnectionIdleTimeout-UwyO8pc ()J
 	public abstract fun getHostResolver ()Laws/smithy/kotlin/runtime/net/HostResolver;
 	public abstract fun getMaxConcurrency-pVg5ArA ()I
-	public abstract fun getMaxConnections-pVg5ArA ()I
 	public abstract fun getProxySelector ()Laws/smithy/kotlin/runtime/http/engine/ProxySelector;
 	public abstract fun getSocketReadTimeout-UwyO8pc ()J
 	public abstract fun getSocketWriteTimeout-UwyO8pc ()J
@@ -100,7 +98,6 @@ public abstract interface class aws/smithy/kotlin/runtime/http/engine/HttpClient
 	public abstract fun setConnectionIdleTimeout-LRDsOJo (J)V
 	public abstract fun setHostResolver (Laws/smithy/kotlin/runtime/net/HostResolver;)V
 	public abstract fun setMaxConcurrency-WZ4Q5Ns (I)V
-	public abstract fun setMaxConnections-WZ4Q5Ns (I)V
 	public abstract fun setProxySelector (Laws/smithy/kotlin/runtime/http/engine/ProxySelector;)V
 	public abstract fun setSocketReadTimeout-LRDsOJo (J)V
 	public abstract fun setSocketWriteTimeout-LRDsOJo (J)V

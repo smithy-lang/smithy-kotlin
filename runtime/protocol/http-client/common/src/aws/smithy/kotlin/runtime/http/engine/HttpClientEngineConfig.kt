@@ -45,11 +45,6 @@ public interface HttpClientEngineConfig {
     public val socketWriteTimeout: Duration
 
     /**
-     * Maximum number of open connections
-     */
-    public val maxConnections: UInt
-
-    /**
      * The amount of time to wait for a connection to be established
      */
     public val connectTimeout: Duration
@@ -116,11 +111,6 @@ public interface HttpClientEngineConfig {
          * Timeout for each write to an underlying socket
          */
         public var socketWriteTimeout: Duration
-
-        /**
-         * Maximum number of open connections
-         */
-        public var maxConnections: UInt
 
         /**
          * The amount of time to wait for a connection to be established
@@ -199,7 +189,6 @@ public open class HttpClientEngineConfigImpl(builder: HttpClientEngineConfig.Bui
 
     override val socketReadTimeout: Duration = builder.socketReadTimeout
     override val socketWriteTimeout: Duration = builder.socketWriteTimeout
-    override val maxConnections: UInt = builder.maxConnections
     override val connectTimeout: Duration = builder.connectTimeout
     override val connectionAcquireTimeout: Duration = builder.connectionAcquireTimeout
     override val connectionIdleTimeout: Duration = builder.connectionIdleTimeout
@@ -212,7 +201,6 @@ public open class HttpClientEngineConfigImpl(builder: HttpClientEngineConfig.Bui
     override fun toBuilderApplicator(): HttpClientEngineConfig.Builder.() -> Unit = {
         socketReadTimeout = this@HttpClientEngineConfigImpl.socketReadTimeout
         socketWriteTimeout = this@HttpClientEngineConfigImpl.socketWriteTimeout
-        maxConnections = this@HttpClientEngineConfigImpl.maxConnections
         connectTimeout = this@HttpClientEngineConfigImpl.connectTimeout
         connectionAcquireTimeout = this@HttpClientEngineConfigImpl.connectionAcquireTimeout
         connectionIdleTimeout = this@HttpClientEngineConfigImpl.connectionIdleTimeout
@@ -227,7 +215,6 @@ public open class HttpClientEngineConfigImpl(builder: HttpClientEngineConfig.Bui
     public open class BuilderImpl : HttpClientEngineConfig.Builder {
         override var socketReadTimeout: Duration = 30.seconds
         override var socketWriteTimeout: Duration = 30.seconds
-        override var maxConnections: UInt = 64u
         override var connectTimeout: Duration = 2.seconds
         override var connectionAcquireTimeout: Duration = 10.seconds
         override var connectionIdleTimeout: Duration = 60.seconds

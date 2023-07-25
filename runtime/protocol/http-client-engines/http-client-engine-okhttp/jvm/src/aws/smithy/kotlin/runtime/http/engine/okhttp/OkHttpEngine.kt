@@ -43,10 +43,6 @@ public class OkHttpEngine(
     private val metrics = HttpClientMetrics(TELEMETRY_SCOPE, config.telemetryProvider)
     private val client = config.buildClient(metrics)
 
-    init {
-        metrics.connectionsLimit = config.maxConnections.toLong()
-    }
-
     override suspend fun roundTrip(context: ExecutionContext, request: HttpRequest): HttpCall {
         val callContext = callContext()
 
@@ -95,7 +91,6 @@ private fun OkHttpEngineConfig.buildClient(metrics: HttpClientMetrics): OkHttpCl
 
         // FIXME - register a [ConnectionListener](https://github.com/square/okhttp/blob/master/okhttp/src/jvmMain/kotlin/okhttp3/ConnectionListener.kt#L27)
         // when a new okhttp release is cut that contains this abstraction and wireup connection uptime metrics
-        // FIXME - with that ConnectionListener implement our own max connections gate?
 
         // use our own pool configured with the timeout settings taken from config
         val pool = ConnectionPool(

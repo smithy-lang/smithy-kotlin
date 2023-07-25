@@ -29,6 +29,11 @@ public class CrtHttpEngineConfig private constructor(builder: Builder) : HttpCli
     }
 
     /**
+     * Maximum number of open connections
+     */
+    public val maxConnections: UInt = builder.maxConnections
+
+    /**
      * The amount of data that can be buffered before reading from the socket will cease. Reading will
      * resume as data is consumed.
      */
@@ -43,6 +48,7 @@ public class CrtHttpEngineConfig private constructor(builder: Builder) : HttpCli
         super.toBuilderApplicator()()
 
         if (this is Builder) {
+            maxConnections = this@CrtHttpEngineConfig.maxConnections
             initialWindowSizeBytes = this@CrtHttpEngineConfig.initialWindowSizeBytes
             clientBootstrap = this@CrtHttpEngineConfig.clientBootstrap
         }
@@ -52,6 +58,11 @@ public class CrtHttpEngineConfig private constructor(builder: Builder) : HttpCli
      * A builder for [CrtHttpEngineConfig]
      */
     public class Builder : BuilderImpl() {
+        /**
+         * Maximum number of open connections
+         */
+        public var maxConnections: UInt = 64u
+
         /**
          * Set the amount of data that can be buffered before reading from the socket will cease. Reading will
          * resume as data is consumed.
