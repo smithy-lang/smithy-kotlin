@@ -68,8 +68,9 @@ public data class XmlCollectionName(
 public object Flattened : FieldTrait
 
 /**
- * Specifies that an object is an XML unwrapped response.
- * See: https://smithy.io/2.0/aws/customizations/s3-customizations.html#aws-customizations-s3unwrappedxmloutput-trait
+ * Specifies that an object is XML unwrapped response.
+ *
+ * Refer to: [s3 specific example](https://smithy.io/2.0/aws/customizations/s3-customizations.html#aws-customizations-s3unwrappedxmloutput-trait)
  */
 @InternalApi
 public object XmlUnwrappedOutput : FieldTrait

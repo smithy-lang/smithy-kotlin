@@ -342,9 +342,8 @@ internal class UnwrappedXmlStructDeserializer(
     private val objDescriptor: SdkObjectDescriptor,
     private val reader: XmlStreamReader,
 ) : Deserializer.FieldIterator {
-    private val OBJ_DESCRIPTOR_INDEX: Int = 0
-
-    override fun findNextFieldIndex(): Int? = if (reader.nextToken() is XmlToken.Text) OBJ_DESCRIPTOR_INDEX else null
+    private val FIELD_INDEX: Int = 0
+    override fun findNextFieldIndex(): Int? = if (reader.nextToken() is XmlToken.Text) FIELD_INDEX else null
 
     private fun <T> deserializeValue(transform: ((String) -> T)): T {
         val value = reader.takeCurrentAs<XmlToken.Text>().value ?: ""
