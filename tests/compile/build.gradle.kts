@@ -35,12 +35,6 @@ dependencies {
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit5:$kotlinVersion")
 }
 
-kotlin {
-    jvmToolchain {
-        languageVersion.set(JavaLanguageVersion.of(17))
-    }
-}
-
 tasks.test {
     useJUnitPlatform()
     testLogging {
