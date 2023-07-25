@@ -121,8 +121,8 @@ internal class ConnectionManager(
 
 private fun toCrtTlsVersion(sdkTlsVersion: SdkTlsVersion?): CrtTlsVersion = when (sdkTlsVersion) {
     null -> aws.sdk.kotlin.crt.io.TlsVersion.SYS_DEFAULT
-    TlsVersion.TLS_1_0 -> aws.sdk.kotlin.crt.io.TlsVersion.TLSv1
-    TlsVersion.TLS_1_1 -> aws.sdk.kotlin.crt.io.TlsVersion.TLS_V1_1
-    TlsVersion.TLS_1_2 -> aws.sdk.kotlin.crt.io.TlsVersion.TLS_V1_2
-    TlsVersion.TLS_1_3 -> aws.sdk.kotlin.crt.io.TlsVersion.TLS_V1_3
+    TlsVersion.TLS_1_0 -> CrtTlsVersion.TLSv1
+    TlsVersion.TLS_1_1 -> CrtTlsVersion.TLS_V1_1
+    TlsVersion.TLS_1_2 -> CrtTlsVersion.TLS_V1_2
+    TlsVersion.TLS_1_3 -> CrtTlsVersion.TLS_V1_3
 }
