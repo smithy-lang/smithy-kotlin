@@ -10,6 +10,7 @@ import aws.smithy.kotlin.runtime.http.readAll
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.http.response.complete
 import aws.smithy.kotlin.runtime.http.test.util.AbstractEngineTest
+import aws.smithy.kotlin.runtime.http.test.util.engineConfig
 import aws.smithy.kotlin.runtime.http.test.util.test
 import aws.smithy.kotlin.runtime.http.test.util.testSetup
 import kotlinx.coroutines.*
@@ -22,6 +23,9 @@ class AsyncStressTest : AbstractEngineTest() {
     fun testConcurrentRequests() = testEngines {
         // https://github.com/awslabs/aws-sdk-kotlin/issues/170
         concurrency = 1_000
+        engineConfig {
+            maxConcurrency = 32u
+        }
 
         test { env, client ->
             val req = HttpRequest {
