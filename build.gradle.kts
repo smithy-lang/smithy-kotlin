@@ -104,8 +104,6 @@ tasks.dokkaHtmlMultiModule.configure {
     removeChildTasks(excludeFromDocumentation)
 }
 
-apply(from = rootProject.file("gradle/codecoverage.gradle"))
-
 if (
     project.hasProperty("sonatypeUsername") &&
     project.hasProperty("sonatypePassword") &&
