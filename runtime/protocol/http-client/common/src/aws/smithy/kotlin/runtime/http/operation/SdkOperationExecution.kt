@@ -20,7 +20,7 @@ import aws.smithy.kotlin.runtime.http.response.HttpCall
 import aws.smithy.kotlin.runtime.http.response.HttpResponse
 import aws.smithy.kotlin.runtime.http.response.complete
 import aws.smithy.kotlin.runtime.http.response.dumpResponse
-import aws.smithy.kotlin.runtime.io.*
+import aws.smithy.kotlin.runtime.io.Handler
 import aws.smithy.kotlin.runtime.io.middleware.Middleware
 import aws.smithy.kotlin.runtime.io.middleware.Phase
 import aws.smithy.kotlin.runtime.operation.ExecutionContext
@@ -275,10 +275,13 @@ internal class AuthHandler<Input, Output>(
             "auth.scheme_id" to authScheme.schemeId.id
         }
 
+        // signing properties need to propagate from AuthOption to signer
+        request.context.merge(authOption.attributes)
+
         // resolve identity from the selected auth scheme
         val identityProvider = authScheme.identityProvider(authConfig.identityProviderConfig)
         val identity = request.context.operationMetrics.resolveIdentityDuration.measureSeconds(schemeAttr) {
-            identityProvider.resolve(authOption.attributes)
+            identityProvider.resolve(request.context)
         }
 
         val resolveEndpointReq = ResolveEndpointRequest(request.context, request.subject.immutableView(), identity)
@@ -296,8 +299,6 @@ internal class AuthHandler<Input, Output>(
 
         interceptors.readBeforeSigning(modified.subject.immutableView())
 
-        // signing properties need to propagate from AuthOption to signer
-        modified.context.merge(authOption.attributes)
         val signingRequest = SignHttpRequest(modified.subject, identity, modified.context)
 
         request.context.operationMetrics.signingDuration.measureSeconds(schemeAttr) {
