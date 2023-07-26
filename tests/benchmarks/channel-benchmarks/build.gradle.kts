@@ -2,18 +2,6 @@
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
  * SPDX-License-Identifier: Apache-2.0
  */
-import aws.sdk.kotlin.gradle.kmp.*
-buildscript {
-    dependencies {
-        // Add our custom gradle plugin(s) to buildscript classpath (comes from github source)
-        classpath("aws.sdk.kotlin:build-plugins") {
-            version {
-                branch = "kmp-plugin"
-            }
-        }
-    }
-}
-
 plugins {
     kotlin("multiplatform")
     id("org.jetbrains.kotlinx.benchmark")
@@ -25,11 +13,6 @@ extra.set("skipPublish", true)
 val optinAnnotations = listOf("kotlin.RequiresOptIn", "aws.smithy.kotlin.runtime.InternalApi")
 
 kotlin {
-    // FIXME - refactor how we expose this
-    configureCommon()
-    configureJvm()
-    configureSourceSetsConvention()
-
     sourceSets {
         all {
             optinAnnotations.forEach { languageSettings.optIn(it) }

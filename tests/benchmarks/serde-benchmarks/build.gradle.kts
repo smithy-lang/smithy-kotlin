@@ -3,21 +3,6 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 import software.amazon.smithy.gradle.tasks.SmithyBuild
-import aws.sdk.kotlin.gradle.kmp.*
-buildscript {
-    val smithyVersion: String by project
-    dependencies {
-        classpath("software.amazon.smithy:smithy-cli:$smithyVersion")
-
-        // Add our custom gradle plugin(s) to buildscript classpath (comes from github source)
-        classpath("aws.sdk.kotlin:build-plugins") {
-            version {
-                branch = "kmp-plugin"
-            }
-        }
-    }
-}
-
 plugins {
     kotlin("multiplatform")
     id("org.jetbrains.kotlinx.benchmark")
@@ -29,10 +14,6 @@ extra.set("skipPublish", true)
 val optinAnnotations = listOf("kotlin.RequiresOptIn", "aws.smithy.kotlin.runtime.InternalApi")
 
 kotlin {
-    configureCommon()
-    configureJvm()
-    configureSourceSetsConvention()
-
     sourceSets {
         all {
             optinAnnotations.forEach { languageSettings.optIn(it) }

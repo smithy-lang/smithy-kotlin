@@ -13,6 +13,15 @@ buildscript {
     val kotlinVersion: String by project
     dependencies {
         classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion")
+
+        // Add our custom gradle plugin(s) to buildscript classpath (comes from github source)
+        // NOTE: buildscript classpath for the root project is the parent classloader for the subprojects, we
+        // only need to include it here, imports in subprojects will work automagically
+        classpath("aws.sdk.kotlin:build-plugins") {
+            version {
+                branch = "kmp-plugin"
+            }
+        }
     }
 }
 
@@ -22,6 +31,9 @@ plugins {
     id("io.github.gradle-nexus.publish-plugin") version "1.1.0"
     id("org.jetbrains.kotlinx.binary-compatibility-validator") version "0.12.1"
 }
+
+// configures (KMP) subprojects with our own KMP conventions and some default dependencies
+apply(plugin="aws.sdk.kotlin.kmp")
 
 allprojects {
     repositories {
