@@ -7,6 +7,8 @@ package aws.smithy.kotlin.dokka
 
 import org.jetbrains.dokka.base.DokkaBase
 import org.jetbrains.dokka.plugability.DokkaPlugin
+import org.jetbrains.dokka.plugability.DokkaPluginApiPreview
+import org.jetbrains.dokka.plugability.PluginApiPreviewAcknowledgement
 
 /**
  * Dokka plugin for customizing the Smithy Kotlin SDK generated API docs
@@ -21,4 +23,6 @@ class SmithyDokkaPlugin : DokkaPlugin() {
     val filterInternalApis by extending {
         dokkaBase.preMergeDocumentableTransformer providing ::FilterInternalApis
     }
+    @OptIn(DokkaPluginApiPreview::class)
+    override fun pluginApiPreviewAcknowledgement(): PluginApiPreviewAcknowledgement = PluginApiPreviewAcknowledgement
 }
