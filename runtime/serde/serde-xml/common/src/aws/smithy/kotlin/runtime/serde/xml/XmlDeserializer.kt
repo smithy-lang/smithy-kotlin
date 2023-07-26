@@ -444,7 +444,7 @@ private fun SdkObjectDescriptor.fieldTokenMatcher(fieldDescriptor: SdkFieldDescr
 }
 
 /**
- * Return the next token of the specified type or throw [DeserializationException] if incorrect type.
+ * Return the current token of the specified type or throw [DeserializationException] if incorrect type.
  */
 internal inline fun <reified TExpected : XmlToken> XmlStreamReader.takeCurrentAs(): TExpected {
     val token = this.lastToken ?: throw DeserializationException("Expected ${TExpected::class} but instead found null")
