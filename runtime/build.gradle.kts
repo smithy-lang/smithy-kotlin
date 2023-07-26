@@ -41,10 +41,13 @@ subprojects {
     apply(from = rootProject.file("gradle/publish.gradle"))
 
     kotlin {
+        explicitApi()
+
         sourceSets {
-            // common dependencies for all subprojects
+            // dependencies available for all subprojects
             named("commonMain") {
                 dependencies {
+                    // refactor to only add this to projects that need it
                     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion")
                 }
             }

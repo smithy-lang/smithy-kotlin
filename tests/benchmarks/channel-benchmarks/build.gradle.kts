@@ -2,6 +2,18 @@
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
  * SPDX-License-Identifier: Apache-2.0
  */
+import aws.sdk.kotlin.gradle.kmp.*
+buildscript {
+    dependencies {
+        // Add our custom gradle plugin(s) to buildscript classpath (comes from github source)
+        classpath("aws.sdk.kotlin:build-plugins") {
+            version {
+                branch = "kmp-plugin"
+            }
+        }
+    }
+}
+
 plugins {
     kotlin("multiplatform")
     id("org.jetbrains.kotlinx.benchmark")
@@ -9,24 +21,17 @@ plugins {
 
 extra.set("skipPublish", true)
 
-val platforms = listOf("common", "jvm")
-
-platforms.forEach { platform ->
-    apply(from = rootProject.file("gradle/$platform.gradle"))
-}
 
 val optinAnnotations = listOf("kotlin.RequiresOptIn", "aws.smithy.kotlin.runtime.InternalApi")
 
 kotlin {
+    // FIXME - refactor how we expose this
+    configureCommon()
+    configureJvm()
+    configureSourceSetsConvention()
+
     sourceSets {
         all {
-            val srcDir = if (name.endsWith("Main")) "src" else "test"
-            val resourcesPrefix = if (name.endsWith("Test")) "test-" else ""
-            // the name is always the platform followed by a suffix of either "Main" or "Test" (e.g. jvmMain, commonTest, etc)
-            val platform = name.substring(0, name.length - 4)
-            kotlin.srcDir("$platform/$srcDir")
-            resources.srcDir("$platform/${resourcesPrefix}resources")
-            languageSettings.progressiveMode = true
             optinAnnotations.forEach { languageSettings.optIn(it) }
         }
 
