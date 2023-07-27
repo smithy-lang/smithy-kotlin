@@ -14,7 +14,7 @@ import software.amazon.smithy.model.traits.AnnotationTrait
  *
  * Refer to this [s3 specific example](https://smithy.io/2.0/aws/customizations/s3-customizations.html#aws-customizations-s3unwrappedxmloutput-trait)
  */
-class UnwrappedXMLOutput(node: ObjectNode) : AnnotationTrait(ID, node) {
+class UnwrappedXmlOutput(node: ObjectNode) : AnnotationTrait(ID, node) {
     companion object {
         val ID: ShapeId = ShapeId.from("smithy.kotlin.traits#unwrappedXmlOutput")
     }

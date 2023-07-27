@@ -216,7 +216,7 @@ internal class XmlListDeserializer(
  * @param parentToken initial token of associated structure
  * @param parsedFieldLocations list of [FieldLocation] representing values able to be loaded into deserialized instances
  */
-internal class XmlStructDeserializer(
+private class XmlStructDeserializer(
     private val objDescriptor: SdkObjectDescriptor,
     private val reader: XmlStreamReader,
     private val parentToken: XmlToken.BeginElement,
@@ -338,7 +338,7 @@ internal class XmlStructDeserializer(
  * @param objDescriptor associated [SdkObjectDescriptor] which represents the expected structure
  * @param reader underlying [XmlStreamReader] from which tokens are read
  */
-internal class UnwrappedXmlStructDeserializer(
+private class UnwrappedXmlStructDeserializer(
     private val objDescriptor: SdkObjectDescriptor,
     private val reader: XmlStreamReader,
 ) : Deserializer.FieldIterator {
