@@ -2,7 +2,7 @@
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
  * SPDX-License-Identifier: Apache-2.0
  */
-import java.util.Properties
+import aws.sdk.kotlin.gradle.kmp.typedProp
 
 buildscript {
     repositories {
@@ -68,25 +68,7 @@ allprojects {
     }
 }
 
-val localProperties: Map<String, Any> by lazy {
-    val props = Properties()
-
-    listOf(
-        File(rootProject.projectDir, "local.properties"), // Project-specific local properties
-        File(rootProject.projectDir.parent, "local.properties"), // Workspace-specific local properties
-        File(System.getProperty("user.home"), ".sdkdev/local.properties"), // User-specific local properties
-    )
-        .filter(File::exists)
-        .map(File::inputStream)
-        .forEach(props::load)
-
-    props.mapKeys { (k, _) -> k.toString() }
-}
-
-fun Project.prop(name: String): Any? =
-    this.properties[name] ?: localProperties[name]
-
-if (project.prop("kotlinWarningsAsErrors")?.toString()?.toBoolean() == true) {
+if (project.typedProp<Boolean>("kotlinWarningsAsErrors") == true) {
     subprojects {
         tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
             kotlinOptions.allWarningsAsErrors = true
