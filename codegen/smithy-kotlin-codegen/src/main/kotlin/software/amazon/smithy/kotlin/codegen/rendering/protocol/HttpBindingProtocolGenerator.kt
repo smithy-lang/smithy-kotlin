@@ -9,8 +9,6 @@ import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.codegen.core.SymbolReference
 import software.amazon.smithy.kotlin.codegen.KotlinSettings
 import software.amazon.smithy.kotlin.codegen.core.*
-import software.amazon.smithy.kotlin.codegen.integration.SectionId
-import software.amazon.smithy.kotlin.codegen.integration.SectionKey
 import software.amazon.smithy.kotlin.codegen.lang.KotlinTypes
 import software.amazon.smithy.kotlin.codegen.lang.toEscapedLiteral
 import software.amazon.smithy.kotlin.codegen.model.*
@@ -631,10 +629,6 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             .closeBlock("}")
     }
 
-    object payloadDeserializer : SectionId {
-        val operation: SectionKey<String> = SectionKey("operation")
-    }
-
     /**
      * Deserialize a non-streaming payload
      */
@@ -671,7 +665,6 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                 writer.write("val payload = response.body.#T()", RuntimeTypes.Http.readAll)
                     .withBlock("if (payload != null) {", "}") {
                         write("#T(builder, payload)", bodyDeserializerFn)
-                        writer.declareSection(payloadDeserializer, mapOf(payloadDeserializer.operation to bodyDeserializerFn.name))
                     }
             }
         }
