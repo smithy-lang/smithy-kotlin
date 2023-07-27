@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.24.0] - 07/27/2023
+
+### Features
+* [#745](https://github.com/awslabs/aws-sdk-kotlin/issues/745) Add a response length validation interceptor
+
+### Fixes
+* [#880](https://github.com/awslabs/smithy-kotlin/issues/880) Enforce `maxConnections` for CRT HTTP engine
+
+### Miscellaneous
+* **BREAKING**: Remove `maxConnections` from generic HTTP engine config since it can't be enforced for OkHttp.
+
 ## [0.23.0] - 07/20/2023
 
 ### Features

@@ -1,5 +1,0 @@
-{
-    "id": "8e9156e5-eabc-4980-9423-2276eb3d8974",
-    "type": "misc",
-    "description": "**BREAKING**: Remove `maxConnections` from generic HTTP engine config since it can't be enforced for OkHttp."
-}
