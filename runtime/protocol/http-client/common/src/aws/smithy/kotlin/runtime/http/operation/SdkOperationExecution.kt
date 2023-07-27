@@ -275,7 +275,7 @@ internal class AuthHandler<Input, Output>(
             "auth.scheme_id" to authScheme.schemeId.id
         }
 
-        // signing properties need to propagate from AuthOption to signer
+        // properties need to propagate from AuthOption to signer and identity provider
         request.context.merge(authOption.attributes)
 
         // resolve identity from the selected auth scheme
