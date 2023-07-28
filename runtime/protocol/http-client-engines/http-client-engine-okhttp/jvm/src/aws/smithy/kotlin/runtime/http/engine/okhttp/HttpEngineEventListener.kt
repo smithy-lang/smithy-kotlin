@@ -5,6 +5,7 @@
 package aws.smithy.kotlin.runtime.http.engine.okhttp
 
 import aws.smithy.kotlin.runtime.ExperimentalApi
+import aws.smithy.kotlin.runtime.http.engine.EngineAttributes
 import aws.smithy.kotlin.runtime.http.engine.internal.HttpClientMetrics
 import aws.smithy.kotlin.runtime.net.HostResolver
 import aws.smithy.kotlin.runtime.net.toHostAddress
@@ -53,6 +54,8 @@ internal class HttpEngineEventListener(
 
     private var signaledConnectAcquireDuration = false
     private var dnsStartTime: TimeMark? = null
+
+    private var requestTimeEnd: TimeMark? = null
 
     private inline fun trace(crossinline msg: MessageSupplier) {
         logger.trace { msg() }
@@ -158,14 +161,22 @@ internal class HttpEngineEventListener(
 
     override fun requestBodyStart(call: Call) = trace { "sending request body" }
 
-    override fun requestBodyEnd(call: Call, byteCount: Long) =
+    override fun requestBodyEnd(call: Call, byteCount: Long) {
+        requestTimeEnd = TimeSource.Monotonic.markNow()
         trace { "finished sending request body: bytesSent=$byteCount" }
+    }
 
     override fun requestFailed(call: Call, ioe: IOException) = trace(ioe) { "request failed" }
 
     override fun requestHeadersStart(call: Call) = trace { "sending request headers" }
 
-    override fun requestHeadersEnd(call: Call, request: Request) = trace { "finished sending request headers" }
+    override fun requestHeadersEnd(call: Call, request: Request) {
+        if (request.body == null) {
+            requestTimeEnd = TimeSource.Monotonic.markNow()
+        }
+
+        trace { "finished sending request headers" }
+    }
 
     override fun responseBodyStart(call: Call) = trace { "response body available" }
 
@@ -174,7 +185,13 @@ internal class HttpEngineEventListener(
 
     override fun responseFailed(call: Call, ioe: IOException) = trace(ioe) { "response failed" }
 
-    override fun responseHeadersStart(call: Call) = trace { "response headers start" }
+    override fun responseHeadersStart(call: Call) {
+        requestTimeEnd?.elapsedNow()?.let { ttfb ->
+            metrics.timeToFirstByteDuration.recordSeconds(ttfb)
+            call.request().tag<SdkRequestTag>()?.execContext?.set(EngineAttributes.TimeToFirstByte, ttfb)
+        }
+        trace { "response headers start" }
+    }
 
     override fun responseHeadersEnd(call: Call, response: Response) {
         val contentLength = response.body.contentLength()
