@@ -216,21 +216,21 @@ internal class XmlListDeserializer(
  */
 private class XmlStructDeserializer(
     private val objDescriptor: SdkObjectDescriptor,
-    private var reader: XmlStreamReader,
+    reader: XmlStreamReader,
     private val parentToken: XmlToken.BeginElement,
     private val parsedFieldLocations: MutableList<FieldLocation> = mutableListOf(),
     private val unwrapped: Boolean,
-    private var firstIteration: Boolean = true,
 ) : Deserializer.FieldIterator {
     // Used to track direct deserialization or further nesting between calls to findNextFieldIndex() and deserialize<Type>()
     private var reentryFlag: Boolean = false
+
+    private val reader: XmlStreamReader = if (unwrapped) reader else reader.subTreeReader(XmlStreamReader.SubtreeStartDepth.CHILD)
 
     override fun findNextFieldIndex(): Int? {
         if (unwrapped) {
             val FIELD_INDEX: Int = 0
             return if (reader.peek() is XmlToken.Text) FIELD_INDEX else null
         } else {
-            if (firstIteration) reader = reader.subTreeReader(XmlStreamReader.SubtreeStartDepth.CHILD); firstIteration = false
 
             if (inNestedMode()) {
                 // Returning from a nested struct call.  Nested deserializer consumed
