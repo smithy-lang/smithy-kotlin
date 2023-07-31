@@ -11,6 +11,8 @@ import aws.smithy.kotlin.runtime.content.BigInteger
 import aws.smithy.kotlin.runtime.content.Document
 import aws.smithy.kotlin.runtime.serde.*
 
+private const val FIRST_FIELD_INDEX: Int = 0
+
 // Represents aspects of SdkFieldDescriptor that are particular to the Xml format
 internal sealed class FieldLocation {
     // specifies the mapping to a sdk field index
@@ -225,10 +227,6 @@ private class XmlStructDeserializer(
     private var reentryFlag: Boolean = false
 
     private val reader: XmlStreamReader = if (unwrapped) reader else reader.subTreeReader(XmlStreamReader.SubtreeStartDepth.CHILD)
-
-    companion object {
-        private const val FIRST_FIELD_INDEX: Int = 0
-    }
 
     override fun findNextFieldIndex(): Int? {
         if (unwrapped) {
