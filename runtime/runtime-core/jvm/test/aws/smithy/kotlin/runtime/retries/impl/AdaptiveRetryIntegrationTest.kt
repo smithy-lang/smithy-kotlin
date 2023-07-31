@@ -23,7 +23,7 @@ private const val TOLERANCE = 0.0000005
 class AdaptiveRetryIntegrationTest {
     @Test
     fun testCubicCases() = runTest {
-        val timeSource = testTimeSource as TimeSource.WithComparableMarks
+        val timeSource = testTimeSource
         val testCases = adaptiveRetryCubicTestCases.deserializeYaml(CubicTestCase.serializer())
 
         testCases.forEach { (name, tc) ->
@@ -68,7 +68,7 @@ class AdaptiveRetryIntegrationTest {
 
     @Test
     fun testE2eCases() = runTest {
-        val timeSource = testTimeSource as TimeSource.WithComparableMarks
+        val timeSource = testTimeSource
         val testCases = adaptiveRetryE2eTestCases.deserializeYaml(E2eTestCase.serializer())
         val config = AdaptiveRateLimiter.Config.Default
         val rateMeasurer = AdaptiveRateMeasurer(config, timeSource)
