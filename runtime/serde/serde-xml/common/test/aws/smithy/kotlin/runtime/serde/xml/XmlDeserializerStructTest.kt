@@ -200,23 +200,25 @@ class XmlDeserializerStructTest {
         println(bst.nested?.nested)
     }
 
-    class BasicUnwrappedTextStructureTest {
+    class BasicUnwrappedStructTest {
         var x: String? = null
 
         companion object {
-            val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {
+            val X_DESCRIPTOR = SdkFieldDescriptor(SerialKind.String, XmlSerialName("x"))
+            private val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {
                 trait(XmlSerialName("payload"))
                 trait(XmlUnwrappedOutput)
+                field(X_DESCRIPTOR)
             }
 
-            fun deserialize(deserializer: Deserializer): BasicUnwrappedTextStructureTest {
-                val result = BasicUnwrappedTextStructureTest()
+            fun deserialize(deserializer: Deserializer): BasicUnwrappedStructTest {
+                val result = BasicUnwrappedStructTest()
                 deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
                     loop@ while (true) {
                         when (findNextFieldIndex()) {
-                            OBJ_DESCRIPTOR.index -> result.x = deserializeString()
+                            X_DESCRIPTOR.index -> result.x = deserializeString()
                             null -> break@loop
-                            else -> throw DeserializationException(IllegalStateException("unexpected field in BasicStructTest deserializer"))
+                            else -> throw DeserializationException(IllegalStateException("unexpected field in BasicUnwrappedStructTest deserializer"))
                         }
                     }
                 }
@@ -228,11 +230,11 @@ class XmlDeserializerStructTest {
     @Test
     fun itHandlesBasicUnwrappedStructs() {
         val payload = """
-            <payload>text</payload>
+            <x>text</x>
         """.encodeToByteArray()
 
         val deserializer = XmlDeserializer(payload)
-        val bst = BasicUnwrappedTextStructureTest.deserialize(deserializer)
+        val bst = BasicUnwrappedStructTest.deserialize(deserializer)
 
         assertEquals("text", bst.x)
     }
@@ -240,11 +242,11 @@ class XmlDeserializerStructTest {
     @Test
     fun itHandlesBasicUnwrappedStructsWithNullValues() {
         val payload = """
-            <payload></payload>
+            <x></x>
         """.encodeToByteArray()
 
         val deserializer = XmlDeserializer(payload)
-        val bst = BasicUnwrappedTextStructureTest.deserialize(deserializer)
+        val bst = BasicUnwrappedStructTest.deserialize(deserializer)
 
         assertEquals(null, bst.x)
     }

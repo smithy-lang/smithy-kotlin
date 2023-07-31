@@ -226,10 +226,13 @@ private class XmlStructDeserializer(
 
     private val reader: XmlStreamReader = if (unwrapped) reader else reader.subTreeReader(XmlStreamReader.SubtreeStartDepth.CHILD)
 
+    companion object {
+        private const val FIRST_FIELD_INDEX: Int = 0
+    }
+
     override fun findNextFieldIndex(): Int? {
         if (unwrapped) {
-            val FIELD_INDEX: Int = 0
-            return if (reader.peek() is XmlToken.Text) FIELD_INDEX else null
+            return if (reader.peek() is XmlToken.Text) FIRST_FIELD_INDEX else null
         } else {
             if (inNestedMode()) {
                 // Returning from a nested struct call.  Nested deserializer consumed
