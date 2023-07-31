@@ -231,7 +231,6 @@ private class XmlStructDeserializer(
             val FIELD_INDEX: Int = 0
             return if (reader.peek() is XmlToken.Text) FIELD_INDEX else null
         } else {
-
             if (inNestedMode()) {
                 // Returning from a nested struct call.  Nested deserializer consumed
                 // tokens so clear them here to avoid processing stale state
