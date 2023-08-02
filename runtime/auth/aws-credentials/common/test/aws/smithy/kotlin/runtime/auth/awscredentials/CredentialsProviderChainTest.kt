@@ -1,0 +1,37 @@
+/*
+ * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+package aws.smithy.kotlin.runtime.auth.awscredentials
+
+import aws.smithy.kotlin.runtime.util.Attributes
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.test.runTest
+import org.junit.jupiter.api.Test
+import kotlin.test.assertEquals
+
+@OptIn(ExperimentalCoroutinesApi::class)
+class CredentialsProviderChainTest {
+    private class TestCredentialsProvider(val accessKeyId: String? = null, val secretAccessKey: String? = null) : CredentialsProvider {
+        override suspend fun resolve(attributes: Attributes): Credentials =
+            accessKeyId?.let {
+                secretAccessKey?.let {
+                    return Credentials(accessKeyId = accessKeyId, secretAccessKey = secretAccessKey)
+                }
+            } ?: error("no credentials available")
+    }
+
+    @Test
+    fun testVararg() = runTest {
+        val chain = CredentialsProviderChain(TestCredentialsProvider(), TestCredentialsProvider("AKeyID", "SecretKey"))
+        assertEquals(Credentials("AKeyID", "SecretKey"), chain.resolve())
+    }
+
+    @Test
+    fun testList() = runTest {
+        val credentialsProviders = listOf<CredentialsProvider>(TestCredentialsProvider(), TestCredentialsProvider("AKeyID", "SecretKey"))
+        val chain = CredentialsProviderChain(credentialsProviders)
+        assertEquals(Credentials("AKeyID", "SecretKey"), chain.resolve())
+    }
+}
