@@ -3,6 +3,6 @@
     "type": "feature",
     "description": "Make CredentialsProviderChain accept list of CredentialProviders",
     "issues": [
-        "awslabs/smithy-kotlin#1001"
+        "awslabs/aws-sdk-kotlin#1001"
     ]
 }
