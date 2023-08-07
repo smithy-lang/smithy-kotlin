@@ -232,7 +232,6 @@ private class XmlStructDeserializer(
         if (unwrapped) {
             return if (reader.peek() is XmlToken.Text) FIRST_FIELD_INDEX else null
         }
-        
         if (inNestedMode()) {
             // Returning from a nested struct call.  Nested deserializer consumed
             // tokens so clear them here to avoid processing stale state
@@ -265,7 +264,6 @@ private class XmlStructDeserializer(
             val value = reader.takeNextAs<XmlToken.Text>().value ?: ""
             return transform(value)
         }
-        
         // Set and validate mode
         reentryFlag = false
         if (parsedFieldLocations.isEmpty()) throw DeserializationException("matchedFields is empty, was findNextFieldIndex() called?")
