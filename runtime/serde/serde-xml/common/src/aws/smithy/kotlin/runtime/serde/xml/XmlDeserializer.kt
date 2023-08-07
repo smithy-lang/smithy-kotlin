@@ -231,62 +231,62 @@ private class XmlStructDeserializer(
     override fun findNextFieldIndex(): Int? {
         if (unwrapped) {
             return if (reader.peek() is XmlToken.Text) FIRST_FIELD_INDEX else null
-        } else {
-            if (inNestedMode()) {
-                // Returning from a nested struct call.  Nested deserializer consumed
-                // tokens so clear them here to avoid processing stale state
-                parsedFieldLocations.clear()
-            }
-
-            if (parsedFieldLocations.isEmpty()) {
-                val matchedFieldLocations = when (val token = reader.nextToken()) {
-                    null, is XmlToken.EndDocument -> return null
-                    is XmlToken.EndElement -> return findNextFieldIndex()
-                    is XmlToken.BeginElement -> {
-                        val nextToken = reader.peek() ?: return null
-                        val objectFields = objDescriptor.fields
-                        val memberFields = objectFields.filter { field -> objDescriptor.fieldTokenMatcher(field, token) }
-                        val matchingFields = memberFields.mapNotNull { it.findFieldLocation(token, nextToken) }
-                        matchingFields
-                    }
-                    else -> return findNextFieldIndex()
-                }
-
-                // Sorting ensures attribs are processed before text, as processing the Text token pushes the parser on to the next token.
-                parsedFieldLocations.addAll(matchedFieldLocations.sortedBy { it is FieldLocation.Text })
-            }
-
-            return parsedFieldLocations.firstOrNull()?.fieldIndex ?: Deserializer.FieldIterator.UNKNOWN_FIELD
         }
+        
+        if (inNestedMode()) {
+            // Returning from a nested struct call.  Nested deserializer consumed
+            // tokens so clear them here to avoid processing stale state
+            parsedFieldLocations.clear()
+        }
+
+        if (parsedFieldLocations.isEmpty()) {
+            val matchedFieldLocations = when (val token = reader.nextToken()) {
+                null, is XmlToken.EndDocument -> return null
+                is XmlToken.EndElement -> return findNextFieldIndex()
+                is XmlToken.BeginElement -> {
+                    val nextToken = reader.peek() ?: return null
+                    val objectFields = objDescriptor.fields
+                    val memberFields = objectFields.filter { field -> objDescriptor.fieldTokenMatcher(field, token) }
+                    val matchingFields = memberFields.mapNotNull { it.findFieldLocation(token, nextToken) }
+                    matchingFields
+                }
+                else -> return findNextFieldIndex()
+            }
+
+            // Sorting ensures attribs are processed before text, as processing the Text token pushes the parser on to the next token.
+            parsedFieldLocations.addAll(matchedFieldLocations.sortedBy { it is FieldLocation.Text })
+        }
+
+        return parsedFieldLocations.firstOrNull()?.fieldIndex ?: Deserializer.FieldIterator.UNKNOWN_FIELD
     }
 
     private fun <T> deserializeValue(transform: ((String) -> T)): T {
         if (unwrapped) {
             val value = reader.takeNextAs<XmlToken.Text>().value ?: ""
             return transform(value)
-        } else {
-            // Set and validate mode
-            reentryFlag = false
-            if (parsedFieldLocations.isEmpty()) throw DeserializationException("matchedFields is empty, was findNextFieldIndex() called?")
+        }
+        
+        // Set and validate mode
+        reentryFlag = false
+        if (parsedFieldLocations.isEmpty()) throw DeserializationException("matchedFields is empty, was findNextFieldIndex() called?")
 
-            // Take the first FieldLocation and attempt to parse it into the value specified by the descriptor.
-            return when (val nextField = parsedFieldLocations.removeFirst()) {
-                is FieldLocation.Text -> {
-                    val value = when (val peekToken = reader.peek()) {
-                        is XmlToken.Text -> reader.takeNextAs<XmlToken.Text>().value ?: ""
-                        is XmlToken.EndElement -> ""
-                        else -> throw DeserializationException("Unexpected token $peekToken")
-                    }
-                    transform(value)
+        // Take the first FieldLocation and attempt to parse it into the value specified by the descriptor.
+        return when (val nextField = parsedFieldLocations.removeFirst()) {
+            is FieldLocation.Text -> {
+                val value = when (val peekToken = reader.peek()) {
+                    is XmlToken.Text -> reader.takeNextAs<XmlToken.Text>().value ?: ""
+                    is XmlToken.EndElement -> ""
+                    else -> throw DeserializationException("Unexpected token $peekToken")
                 }
-                is FieldLocation.Attribute -> {
-                    transform(
-                        nextField
-                            .names
-                            .mapNotNull { parentToken.attributes[it] }
-                            .firstOrNull() ?: throw DeserializationException("Expected attrib value ${nextField.names.first()} not found in ${parentToken.name}"),
-                    )
-                }
+                transform(value)
+            }
+            is FieldLocation.Attribute -> {
+                transform(
+                    nextField
+                        .names
+                        .mapNotNull { parentToken.attributes[it] }
+                        .firstOrNull() ?: throw DeserializationException("Expected attrib value ${nextField.names.first()} not found in ${parentToken.name}"),
+                )
             }
         }
     }
