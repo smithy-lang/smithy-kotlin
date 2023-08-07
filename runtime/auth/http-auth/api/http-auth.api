@@ -37,6 +37,7 @@ public abstract interface class aws/smithy/kotlin/runtime/http/auth/BearerTokenP
 }
 
 public final class aws/smithy/kotlin/runtime/http/auth/BearerTokenProviderChain : aws/smithy/kotlin/runtime/identity/IdentityProviderChain, aws/smithy/kotlin/runtime/http/auth/BearerTokenProvider {
+	public fun <init> (Ljava/util/List;)V
 	public fun <init> ([Laws/smithy/kotlin/runtime/http/auth/BearerTokenProvider;)V
 	public fun resolve (Laws/smithy/kotlin/runtime/util/Attributes;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
