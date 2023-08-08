@@ -88,24 +88,3 @@ subprojects {
         dokkaPlugin(project(":dokka-smithy"))
     }
 }
-
-task<org.jetbrains.kotlin.gradle.testing.internal.KotlinTestReport>("rootAllTest") {
-    destinationDir = File(project.buildDir, "reports/tests/rootAllTest")
-    val rootAllTest = this
-    subprojects {
-        afterEvaluate {
-            if (tasks.findByName("allTests") != null) {
-                val provider = tasks.named("allTests")
-                val allTestsTaskProvider = provider as TaskProvider<org.jetbrains.kotlin.gradle.testing.internal.KotlinTestReport>
-                rootAllTest.addChild(allTestsTaskProvider)
-                rootAllTest.dependsOn(allTestsTaskProvider)
-            }
-        }
-    }
-
-    beforeEvaluate {
-        project.gradle.taskGraph.whenReady {
-            rootAllTest.maybeOverrideReporting(this)
-        }
-    }
-}

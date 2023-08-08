@@ -16,5 +16,8 @@ import aws.smithy.kotlin.runtime.util.Attributes
  */
 public class CredentialsProviderChain(vararg providers: CredentialsProvider) :
     IdentityProviderChain<CredentialsProvider, Credentials>(*providers), CredentialsProvider {
+
+    public constructor(providers: List<CredentialsProvider>) : this(*providers.toTypedArray())
+
     override suspend fun resolve(attributes: Attributes): Credentials = super.resolve(attributes)
 }

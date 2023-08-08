@@ -18,5 +18,8 @@ import aws.smithy.kotlin.runtime.util.Attributes
 public class BearerTokenProviderChain(vararg providers: BearerTokenProvider) :
     IdentityProviderChain<BearerTokenProvider, BearerToken>(*providers),
     BearerTokenProvider {
+
+    public constructor(providers: List<BearerTokenProvider>) : this(*providers.toTypedArray())
+
     override suspend fun resolve(attributes: Attributes): BearerToken = super.resolve(attributes)
 }

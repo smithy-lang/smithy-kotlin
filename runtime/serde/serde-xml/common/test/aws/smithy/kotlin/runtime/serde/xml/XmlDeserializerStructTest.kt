@@ -200,6 +200,57 @@ class XmlDeserializerStructTest {
         println(bst.nested?.nested)
     }
 
+    class BasicUnwrappedStructTest {
+        var x: String? = null
+
+        companion object {
+            val X_DESCRIPTOR = SdkFieldDescriptor(SerialKind.String, XmlSerialName("x"))
+            private val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {
+                trait(XmlSerialName("payload"))
+                trait(XmlUnwrappedOutput)
+                field(X_DESCRIPTOR)
+            }
+
+            fun deserialize(deserializer: Deserializer): BasicUnwrappedStructTest {
+                val result = BasicUnwrappedStructTest()
+                deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
+                    loop@ while (true) {
+                        when (findNextFieldIndex()) {
+                            X_DESCRIPTOR.index -> result.x = deserializeString()
+                            null -> break@loop
+                            else -> throw DeserializationException(IllegalStateException("unexpected field in BasicUnwrappedStructTest deserializer"))
+                        }
+                    }
+                }
+                return result
+            }
+        }
+    }
+
+    @Test
+    fun itHandlesBasicUnwrappedStructs() {
+        val payload = """
+            <x>text</x>
+        """.encodeToByteArray()
+
+        val deserializer = XmlDeserializer(payload)
+        val bst = BasicUnwrappedStructTest.deserialize(deserializer)
+
+        assertEquals("text", bst.x)
+    }
+
+    @Test
+    fun itHandlesBasicUnwrappedStructsWithNullValues() {
+        val payload = """
+            <x></x>
+        """.encodeToByteArray()
+
+        val deserializer = XmlDeserializer(payload)
+        val bst = BasicUnwrappedStructTest.deserialize(deserializer)
+
+        assertEquals(null, bst.x)
+    }
+
     class AliasStruct {
         var message: String? = null
         var attribute: String? = null

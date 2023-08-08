@@ -12,7 +12,10 @@ import software.amazon.smithy.kotlin.codegen.core.*
 import software.amazon.smithy.kotlin.codegen.lang.KotlinTypes
 import software.amazon.smithy.kotlin.codegen.lang.toEscapedLiteral
 import software.amazon.smithy.kotlin.codegen.model.*
-import software.amazon.smithy.kotlin.codegen.rendering.serde.*
+import software.amazon.smithy.kotlin.codegen.rendering.serde.deserializerName
+import software.amazon.smithy.kotlin.codegen.rendering.serde.formatInstant
+import software.amazon.smithy.kotlin.codegen.rendering.serde.parseInstant
+import software.amazon.smithy.kotlin.codegen.rendering.serde.serializerName
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.knowledge.HttpBinding
 import software.amazon.smithy.model.shapes.*
