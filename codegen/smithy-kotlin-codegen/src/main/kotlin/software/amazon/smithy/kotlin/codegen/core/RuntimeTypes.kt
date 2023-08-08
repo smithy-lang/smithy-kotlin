@@ -251,6 +251,7 @@ object RuntimeTypes {
             val XmlError = symbol("XmlError")
             val XmlSerializer = symbol("XmlSerializer")
             val XmlDeserializer = symbol("XmlDeserializer")
+            val XmlUnwrappedOutput = symbol("XmlUnwrappedOutput")
         }
 
         object SerdeFormUrl : RuntimeTypePackage(KotlinDependency.SERDE_FORM_URL) {

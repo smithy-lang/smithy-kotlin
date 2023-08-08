@@ -68,6 +68,14 @@ public data class XmlCollectionName(
 public object Flattened : FieldTrait
 
 /**
+ * Specifies that an object is XML unwrapped response.
+ *
+ * Refer to: [s3 specific example](https://smithy.io/2.0/aws/customizations/s3-customizations.html#aws-customizations-s3unwrappedxmloutput-trait)
+ */
+@InternalApi
+public object XmlUnwrappedOutput : FieldTrait
+
+/**
  * Denotes a structure that represents an error.  There are special rules for error deserialization
  * in various XML-based protocols. This trait provides necessary context to the deserializer to properly
  * deserialize error response data into types.

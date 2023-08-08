@@ -9,8 +9,11 @@ import software.amazon.smithy.kotlin.codegen.core.*
 import software.amazon.smithy.kotlin.codegen.integration.SectionId
 import software.amazon.smithy.kotlin.codegen.integration.SectionKey
 import software.amazon.smithy.kotlin.codegen.lang.KotlinTypes
-import software.amazon.smithy.kotlin.codegen.model.*
+import software.amazon.smithy.kotlin.codegen.model.getTrait
+import software.amazon.smithy.kotlin.codegen.model.hasStreamingMember
+import software.amazon.smithy.kotlin.codegen.model.hasTrait
 import software.amazon.smithy.kotlin.codegen.model.knowledge.AuthIndex
+import software.amazon.smithy.kotlin.codegen.model.operationSignature
 import software.amazon.smithy.kotlin.codegen.rendering.auth.AuthSchemeProviderAdapterGenerator
 import software.amazon.smithy.kotlin.codegen.rendering.auth.IdentityProviderConfigGenerator
 import software.amazon.smithy.kotlin.codegen.rendering.endpoints.EndpointResolverAdapterGenerator
@@ -34,11 +37,6 @@ abstract class HttpProtocolClientGenerator(
     object EndpointResolverAdapterBinding : SectionId {
         val GenerationContext: SectionKey<ProtocolGenerator.GenerationContext> = SectionKey("GenerationContext")
         val OperationShape: SectionKey<OperationShape> = SectionKey("OperationShape")
-    }
-
-    object OperationDeserializerBinding : SectionId {
-        // Context for operation being codegened at the time of section invocation
-        val Operation: SectionKey<OperationShape> = SectionKey("Operation")
     }
 
     object OperationTelemetryBuilder : SectionId {
@@ -204,12 +202,10 @@ abstract class HttpProtocolClientGenerator(
                 }
             }
 
-            writer.declareSection(OperationDeserializerBinding, mapOf(OperationDeserializerBinding.Operation to op)) {
-                if (outputShape.isPresent) {
-                    write("deserializer = ${op.deserializerName()}()")
-                } else {
-                    write("deserializer = UnitDeserializer")
-                }
+            if (outputShape.isPresent) {
+                writer.write("deserializer = ${op.deserializerName()}()")
+            } else {
+                writer.write("deserializer = UnitDeserializer")
             }
 
             // execution context
