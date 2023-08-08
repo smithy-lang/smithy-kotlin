@@ -34,7 +34,7 @@ public class OperationMetrics(
     public val rpcRetryCount: MonotonicCounter = meter.createMonotonicCounter("smithy.client.retries", "{count}", "The number of retries for an operation")
     public val rpcRequestSize: LongHistogram = meter.createLongHistogram("smithy.client.request.size", "By", "Size of the serialized request message")
     public val rpcResponseSize: LongHistogram = meter.createLongHistogram("smithy.client.response.size", "By", "Size of the serialized response message")
-    public val rpcAttemptDuration: DoubleHistogram = meter.createDoubleHistogram("smithy.client.attempt_duration", "s", "The time it takes to connect to the service, send the request, and receive the HTTP status code and headers from the response for an operation")
+    public val rpcAttemptDuration: DoubleHistogram = meter.createDoubleHistogram("smithy.client.attempt_duration", "s", "The time it takes to connect to complete an entire call attempt, including identity resolution, endpoint resolution, signing, sending the request, and receiving the HTTP status code and headers from the response for an operation")
     public val rpcAttemptOverheadDuration: DoubleHistogram = meter.createDoubleHistogram("smithy.client.attempt_overhead_duration", "s", "The time it takes to execute an attempt minus the time spent waiting for a response from the remote server")
     public val serializationDuration: DoubleHistogram = meter.createDoubleHistogram("smithy.client.serialization_duration", "s", "The time it takes to serialize a request message body")
     public val deserializationDuration: DoubleHistogram = meter.createDoubleHistogram("smithy.client.deserialization_duration", "s", "The time it takes to deserialize a response message body")

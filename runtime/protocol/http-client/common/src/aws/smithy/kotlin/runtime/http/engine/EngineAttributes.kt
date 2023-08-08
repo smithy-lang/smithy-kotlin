@@ -9,7 +9,14 @@ import aws.smithy.kotlin.runtime.InternalApi
 import aws.smithy.kotlin.runtime.util.AttributeKey
 import kotlin.time.Duration
 
+/**
+ * Common attributes related to HTTP engines.
+ */
 @InternalApi
 public object EngineAttributes {
+    /**
+     * The time between sending the request completely and receiving the first byte of the response. This effectively
+     * measures the time spent waiting on a response.
+     */
     public val TimeToFirstByte: AttributeKey<Duration> = AttributeKey("TimeToFirstByte")
 }

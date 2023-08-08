@@ -14,10 +14,7 @@ import aws.smithy.kotlin.runtime.http.operation.OperationMetrics
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.http.response.HttpResponse
 import aws.smithy.kotlin.runtime.telemetry.metrics.recordSeconds
-import aws.smithy.kotlin.runtime.util.attributesOf
-import aws.smithy.kotlin.runtime.util.get
-import aws.smithy.kotlin.runtime.util.merge
-import aws.smithy.kotlin.runtime.util.mutableAttributesOf
+import aws.smithy.kotlin.runtime.util.*
 import kotlin.time.ExperimentalTime
 import kotlin.time.TimeMark
 import kotlin.time.TimeSource
@@ -100,7 +97,7 @@ internal class OperationTelemetryInterceptor(
         val attemptDuration = attemptStart?.elapsedNow() ?: return
         metrics.rpcAttemptDuration.recordSeconds(attemptDuration, perRpcAttributes, metrics.provider.contextManager.current())
 
-        context.executionContext.getOrNull(EngineAttributes.TimeToFirstByte)?.let { ttfb ->
+        context.executionContext.takeOrNull(EngineAttributes.TimeToFirstByte)?.let { ttfb ->
             metrics.rpcAttemptOverheadDuration.recordSeconds(attemptDuration - ttfb, perRpcAttributes)
         }
     }
