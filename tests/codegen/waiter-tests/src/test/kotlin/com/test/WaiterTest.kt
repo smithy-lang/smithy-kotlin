@@ -12,7 +12,8 @@ import com.test.model.Enum
 import com.test.waiters.*
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
-import kotlin.test.*
+import kotlin.test.Test
+import kotlin.test.assertEquals
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class WaiterTest {
@@ -105,6 +106,25 @@ class WaiterTest {
         WaitersTestClient::waitUntilIntEnumEquals,
         GetEntityResponse { primitives = EntityPrimitives { intEnum = IntEnum.Two } },
         GetEntityResponse { primitives = EntityPrimitives { intEnum = IntEnum.One } },
+    )
+
+    // list indexing
+    @Test fun testBooleanListIndexZeroEquals() = successTest(
+        WaitersTestClient::waitUntilBooleanListIndexZeroEquals,
+        GetEntityResponse { lists = EntityLists { booleans = listOf(false) } },
+        GetEntityResponse { lists = EntityLists { booleans = listOf(true) } },
+    )
+
+    @Test fun testBooleanListIndexOneEquals() = successTest(
+        WaitersTestClient::waitUntilBooleanListIndexOneEquals,
+        GetEntityResponse { lists = EntityLists { booleans = listOf(false, false) } },
+        GetEntityResponse { lists = EntityLists { booleans = listOf(true, true) } },
+    )
+
+    @Test fun testTwoDimensionalBooleanListIndexZeroZeroEquals() = successTest(
+        WaitersTestClient::waitUntilTwoDimensionalBooleanListIndexZeroZeroEquals,
+        GetEntityResponse { twoDimensionalLists = TwoDimensionalEntityLists { booleansList = listOf(listOf(false)) } },
+        GetEntityResponse { twoDimensionalLists = TwoDimensionalEntityLists { booleansList = listOf(listOf(true)) } },
     )
 
     // anyStringEquals

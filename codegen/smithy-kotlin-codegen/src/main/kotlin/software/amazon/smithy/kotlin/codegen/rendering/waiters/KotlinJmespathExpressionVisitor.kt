@@ -14,7 +14,9 @@ import software.amazon.smithy.kotlin.codegen.core.CodegenContext
 import software.amazon.smithy.kotlin.codegen.core.KotlinWriter
 import software.amazon.smithy.kotlin.codegen.core.RuntimeTypes
 import software.amazon.smithy.kotlin.codegen.core.withBlock
-import software.amazon.smithy.kotlin.codegen.model.*
+import software.amazon.smithy.kotlin.codegen.model.hasTrait
+import software.amazon.smithy.kotlin.codegen.model.isEnum
+import software.amazon.smithy.kotlin.codegen.model.targetOrSelf
 import software.amazon.smithy.kotlin.codegen.model.traits.OperationInput
 import software.amazon.smithy.kotlin.codegen.model.traits.OperationOutput
 import software.amazon.smithy.kotlin.codegen.utils.dq
@@ -308,15 +310,33 @@ class KotlinJmespathExpressionVisitor(
     }
 
     override fun visitSubexpression(expression: Subexpression): VisitedExpression {
-        val left = expression.left.accept(this)
+        val leftName = expression.left.accept(this).identifier
 
-        val ret = when (val right = expression.right) {
-            is FieldExpression -> subfield(right, left.identifier)
+        return when (val right = expression.right) {
+            is FieldExpression -> subfield(right, leftName)
+            is IndexExpression -> index(right, leftName)
+            is Subexpression -> subexpression(right, leftName)
             else -> throw CodegenException("Subexpression type $right is unsupported")
         }
-
-        return ret
     }
+
+    private fun subexpression(expression: Subexpression, parentName: String): VisitedExpression {
+        val leftName = when (val left = expression.left) {
+            is FieldExpression -> subfield(left, parentName).identifier
+            is Subexpression -> subexpression(left, parentName).identifier
+            else -> throw CodegenException("Subexpression type $left is unsupported")
+        }
+
+        return when (val right = expression.right) {
+            is FieldExpression -> subfield(right, leftName)
+            is Subexpression -> subexpression(right, leftName)
+            is IndexExpression -> index(right, leftName)
+            else -> throw CodegenException("Subexpression type $right is unsupported")
+        }
+    }
+
+    private fun index(expression: IndexExpression, parentName: String): VisitedExpression =
+        VisitedExpression(addTempVar("index", "$parentName?.get(${expression.index})"))
 
     private val Shape.isEnumList: Boolean
         get() = this is ListShape && ctx.model.expectShape(member.target).isEnum
