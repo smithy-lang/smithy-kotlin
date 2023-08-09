@@ -1,0 +1,8 @@
+{
+    "id": "73448090-7b5b-4c5a-875a-730efacacf9d",
+    "type": "misc",
+    "description": "Tweak metrics to better support service-level benchmarks",
+    "issues": [
+        "awslabs/aws-sdk-kotlin#968"
+    ]
+}

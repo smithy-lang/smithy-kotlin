@@ -9,13 +9,12 @@ import aws.smithy.kotlin.runtime.client.ProtocolRequestInterceptorContext
 import aws.smithy.kotlin.runtime.client.ProtocolResponseInterceptorContext
 import aws.smithy.kotlin.runtime.client.RequestInterceptorContext
 import aws.smithy.kotlin.runtime.client.ResponseInterceptorContext
+import aws.smithy.kotlin.runtime.http.engine.EngineAttributes
 import aws.smithy.kotlin.runtime.http.operation.OperationMetrics
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.http.response.HttpResponse
 import aws.smithy.kotlin.runtime.telemetry.metrics.recordSeconds
-import aws.smithy.kotlin.runtime.util.attributesOf
-import aws.smithy.kotlin.runtime.util.merge
-import aws.smithy.kotlin.runtime.util.mutableAttributesOf
+import aws.smithy.kotlin.runtime.util.*
 import kotlin.time.ExperimentalTime
 import kotlin.time.TimeMark
 import kotlin.time.TimeSource
@@ -39,7 +38,7 @@ internal class OperationTelemetryInterceptor(
     private var callStart: TimeMark? = null
     private var serializeStart: TimeMark? = null
     private var deserializeStart: TimeMark? = null
-    private var transmitStart: TimeMark? = null
+    private var attemptStart: TimeMark? = null
     private var attempts = 0
 
     private val perRpcAttributes = attributesOf {
@@ -94,6 +93,13 @@ internal class OperationTelemetryInterceptor(
         if (attempts > 1) {
             metrics.rpcRetryCount.add(1L, perRpcAttributes, metrics.provider.contextManager.current())
         }
+
+        val attemptDuration = attemptStart?.elapsedNow() ?: return
+        metrics.rpcAttemptDuration.recordSeconds(attemptDuration, perRpcAttributes, metrics.provider.contextManager.current())
+
+        context.executionContext.takeOrNull(EngineAttributes.TimeToFirstByte)?.let { ttfb ->
+            metrics.rpcAttemptOverheadDuration.recordSeconds(attemptDuration - ttfb, perRpcAttributes)
+        }
     }
 
     override fun readBeforeDeserialization(context: ProtocolResponseInterceptorContext<Any, HttpRequest, HttpResponse>) {
@@ -105,12 +111,7 @@ internal class OperationTelemetryInterceptor(
         metrics.deserializationDuration.recordSeconds(deserializeDuration, perRpcAttributes, metrics.provider.contextManager.current())
     }
 
-    override fun readBeforeTransmit(context: ProtocolRequestInterceptorContext<Any, HttpRequest>) {
-        transmitStart = timeSource.markNow()
-    }
-
-    override fun readAfterTransmit(context: ProtocolResponseInterceptorContext<Any, HttpRequest, HttpResponse>) {
-        val serviceCallDuration = transmitStart?.elapsedNow() ?: return
-        metrics.rpcAttemptDuration.recordSeconds(serviceCallDuration, perRpcAttributes, metrics.provider.contextManager.current())
+    override fun readBeforeAttempt(context: ProtocolRequestInterceptorContext<Any, HttpRequest>) {
+        attemptStart = timeSource.markNow()
     }
 }
