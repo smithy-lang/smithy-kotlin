@@ -45,11 +45,9 @@ open class JsonParserGenerator(
      * @param writer the writer to write with
      * @param forMembers which subset of shapes to generated nested document deserializers for (acts as a filter)
      */
-    private fun addNestedDocumentDeserializers(ctx: ProtocolGenerator.GenerationContext, shape: Shape, writer: KotlinWriter, forMembers: Collection<MemberShape>? = null) {
+    private fun addNestedDocumentDeserializers(ctx: ProtocolGenerator.GenerationContext, shape: Shape, writer: KotlinWriter) {
         val serdeIndex = SerdeIndex.of(ctx.model)
-        val shapesRequiringDocumentDeserializer = serdeIndex.requiresDocumentDeserializer(shape).filter {
-            forMembers?.contains(it) ?: true
-        }
+        val shapesRequiringDocumentDeserializer = serdeIndex.requiresDocumentDeserializer(shape)
 
         // register a dependency on each of the members that require a deserializer impl
         // ensuring they get generated
@@ -147,7 +145,7 @@ open class JsonParserGenerator(
         val forMembers = members ?: target.members()
         val deserializeFn = documentDeserializer(ctx, target, forMembers)
         return target.payloadDeserializer(ctx.settings, symbol, forMembers) { writer ->
-            addNestedDocumentDeserializers(ctx, target, writer, forMembers)
+            addNestedDocumentDeserializers(ctx, target, writer)
             writer.withBlock("internal fun #identifier.name:L(payload: ByteArray): #T {", "}", symbol) {
                 if (target.members().isEmpty() && !target.isDocumentShape) {
                     // short circuit when the shape has no modeled members to deserialize
