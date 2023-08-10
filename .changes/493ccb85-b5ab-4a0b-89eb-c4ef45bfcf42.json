@@ -1,8 +1,0 @@
-{
-    "id": "493ccb85-b5ab-4a0b-89eb-c4ef45bfcf42",
-    "type": "feature",
-    "description": "Make CredentialsProviderChain accept list of CredentialProviders",
-    "issues": [
-        "awslabs/aws-sdk-kotlin#1001"
-    ]
-}

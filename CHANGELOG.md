@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.25.0] - 08/10/2023
+
+### Features
+* [#1001](https://github.com/awslabs/aws-sdk-kotlin/issues/1001) Make CredentialsProviderChain accept list of CredentialProviders
+* [#745](https://github.com/awslabs/aws-sdk-kotlin/issues/745) Add a response length validation interceptor
+
+### Miscellaneous
+* Upgrade kotlinx.coroutines to 1.7.3
+* [#968](https://github.com/awslabs/aws-sdk-kotlin/issues/968) Tweak metrics to better support service-level benchmarks
+* Upgrade Kotlin to 1.8.22
+
 ## [0.24.0] - 07/27/2023
 
 ### Features
