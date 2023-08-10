@@ -9,10 +9,7 @@ import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.knowledge.KnowledgeIndex
 import software.amazon.smithy.model.neighbor.RelationshipType
 import software.amazon.smithy.model.neighbor.Walker
-import software.amazon.smithy.model.shapes.CollectionShape
-import software.amazon.smithy.model.shapes.OperationShape
-import software.amazon.smithy.model.shapes.Shape
-import software.amazon.smithy.model.shapes.ShapeType
+import software.amazon.smithy.model.shapes.*
 
 /**
  * Knowledge index that provides access to shapes requiring serialize and deserialize implementations.
@@ -104,11 +101,13 @@ class SerdeIndex(private val model: Model) : KnowledgeIndex {
      * Find and return the set of shapes reachable from the given shape that would require a "document" deserializer.
      * @return The set of shapes that require a deserializer implementation
      */
-    fun requiresDocumentDeserializer(shape: Shape): Set<Shape> =
+    fun requiresDocumentDeserializer(shape: Shape, members: Collection<MemberShape>? = shape.members()): Set<Shape> =
         when (shape) {
             is OperationShape -> requiresDocumentDeserializer(listOf(shape))
             else -> {
-                val topLevelMembers = shape.members()
+                val topLevelMembers = shape
+                    .members()
+                    .filter { members?.contains(it) ?: true }
                     .map { model.expectShape(it.target) }
                     .filter { it.isStructureShape || it.isUnionShape || it is CollectionShape || it.isMapShape }
                     .toMutableSet()
