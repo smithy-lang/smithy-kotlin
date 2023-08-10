@@ -27,11 +27,10 @@ pluginManagement {
 }
 
 sourceControl {
-    gitRepository(java.net.URI("https://github.com/awslabs/aws-kotlin-repo-tools.git")){
+    gitRepository(java.net.URI("https://github.com/awslabs/aws-kotlin-repo-tools.git")) {
         producesModule("aws.sdk.kotlin:build-plugins")
     }
 }
-
 
 rootProject.name = "smithy-kotlin"
 

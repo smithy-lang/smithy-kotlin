@@ -9,7 +9,6 @@ plugins {
 
 extra.set("skipPublish", true)
 
-
 val optinAnnotations = listOf("kotlin.RequiresOptIn", "aws.smithy.kotlin.runtime.InternalApi")
 
 kotlin {
