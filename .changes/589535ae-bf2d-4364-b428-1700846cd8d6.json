@@ -1,0 +1,8 @@
+{
+    "id": "589535ae-bf2d-4364-b428-1700846cd8d6",
+    "type": "bugfix",
+    "description": "Correctly validate response length for empty bodies and byte array bodies",
+    "issues": [
+        "awslabs/aws-sdk-kotlin#1014"
+    ]
+}

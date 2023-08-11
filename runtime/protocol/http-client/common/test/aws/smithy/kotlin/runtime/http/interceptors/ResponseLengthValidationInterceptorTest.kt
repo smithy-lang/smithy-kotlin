@@ -5,6 +5,7 @@
 package aws.smithy.kotlin.runtime.http.interceptors
 
 import aws.smithy.kotlin.runtime.http.*
+import aws.smithy.kotlin.runtime.http.content.ByteArrayContent
 import aws.smithy.kotlin.runtime.http.operation.*
 import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
 import aws.smithy.kotlin.runtime.http.response.HttpCall
@@ -15,17 +16,18 @@ import aws.smithy.kotlin.runtime.io.SdkByteReadChannel
 import aws.smithy.kotlin.runtime.io.SdkSource
 import aws.smithy.kotlin.runtime.io.source
 import aws.smithy.kotlin.runtime.time.Instant
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import kotlin.test.*
 
-data class ResponseLengthValidationTestInput(val value: String)
+object ResponseLengthValidationTestInput
 data class ResponseLengthValidationTestOutput(val body: HttpBody)
 
-inline fun <reified I> newResponseLengthValidationTestOperation(serialized: HttpRequestBuilder): SdkHttpOperation<I, ResponseLengthValidationTestOutput> =
-    SdkHttpOperation.build {
-        serializer = HttpSerialize { _, _ -> serialized }
+private const val CONTENT_LENGTH_HEADER_NAME = "Content-Length"
+private val RESPONSE = "a".repeat(500).toByteArray()
 
+fun op() =
+    SdkHttpOperation.build {
+        serializer = HttpSerialize<ResponseLengthValidationTestInput> { _, _ -> HttpRequestBuilder() }
         deserializer = HttpDeserialize { _, response -> ResponseLengthValidationTestOutput(response.body) }
 
         context {
@@ -33,79 +35,55 @@ inline fun <reified I> newResponseLengthValidationTestOperation(serialized: Http
             operationName = "TestOperation"
             serviceName = "TestService"
         }
+    }.also {
+        it.interceptors.add(ResponseLengthValidationInterceptor())
     }
 
-@OptIn(ExperimentalCoroutinesApi::class)
+private fun client(body: HttpBody, expectedContentSize: Int?): SdkHttpClient {
+    val headers = Headers {
+        expectedContentSize?.let { append(CONTENT_LENGTH_HEADER_NAME, it.toString()) }
+    }
+
+    val engine = TestEngine { _, request ->
+        val resp = HttpResponse(HttpStatusCode.OK, headers, body)
+        HttpCall(request, resp, Instant.now(), Instant.now())
+    }
+
+    return SdkHttpClient(engine)
+}
+
 class ResponseLengthValidationInterceptorTest {
-    val contentLengthHeaderName = "Content-Length"
-    val response = "a".repeat(500).toByteArray()
+    private fun nonEmptyBodies() = listOf(
+        object : HttpBody.SourceContent() {
+            override val contentLength: Long = RESPONSE.size.toLong()
+            override fun readFrom(): SdkSource = RESPONSE.source()
+            override val isOneShot = false
+        },
+        object : HttpBody.ChannelContent() {
+            override val contentLength: Long = RESPONSE.size.toLong()
+            override fun readFrom() = SdkByteReadChannel(RESPONSE)
+            override val isOneShot = false
+        },
+        ByteArrayContent(RESPONSE),
+    )
 
-    private fun getMockClientWithSourceBody(response: ByteArray, responseHeaders: Headers = Headers.Empty): SdkHttpClient {
-        val mockEngine = TestEngine { _, request ->
-            val body = object : HttpBody.SourceContent() {
-                override val contentLength: Long = response.size.toLong()
-                override fun readFrom(): SdkSource = response.source()
-                override val isOneShot: Boolean get() = false
-            }
-
-            val resp = HttpResponse(HttpStatusCode.OK, responseHeaders, body)
-
-            HttpCall(request, resp, Instant.now(), Instant.now())
-        }
-        return SdkHttpClient(mockEngine)
-    }
-
-    private fun getMockClientWithChannelBody(response: ByteArray, responseHeaders: Headers = Headers.Empty): SdkHttpClient {
-        val mockEngine = TestEngine { _, request ->
-            val body = object : HttpBody.ChannelContent() {
-                override val contentLength: Long = response.size.toLong()
-                override fun readFrom() = SdkByteReadChannel(response)
-                override val isOneShot: Boolean get() = false
-            }
-
-            val resp = HttpResponse(HttpStatusCode.OK, responseHeaders, body)
-
-            HttpCall(request, resp, Instant.now(), Instant.now())
-        }
-        return SdkHttpClient(mockEngine)
-    }
+    private fun allBodies() = nonEmptyBodies() + HttpBody.Empty
 
     @Test
     fun testCorrectLengthReturned() = runTest {
-        val req = HttpRequestBuilder()
-        val op = newResponseLengthValidationTestOperation<ResponseLengthValidationTestInput>(req)
-
-        op.interceptors.add(ResponseLengthValidationInterceptor())
-
-        val responseHeaders = Headers {
-            append(contentLengthHeaderName, "${response.size}")
-        }
-
-        listOf(
-            getMockClientWithChannelBody(response, responseHeaders),
-            getMockClientWithSourceBody(response, responseHeaders),
-        ).forEach { client ->
-            val output = op.roundTrip(client, ResponseLengthValidationTestInput("input"))
+        nonEmptyBodies().forEach { body ->
+            val client = client(body, RESPONSE.size) // expect correct content length
+            val output = op().roundTrip(client, ResponseLengthValidationTestInput)
             output.body.readAll()
         }
     }
 
     @Test
     fun testNotEnoughBytesReturned() = runTest {
-        val req = HttpRequestBuilder()
-        val op = newResponseLengthValidationTestOperation<ResponseLengthValidationTestInput>(req)
-
-        op.interceptors.add(ResponseLengthValidationInterceptor())
-
-        val responseHeaders = Headers {
-            append(contentLengthHeaderName, "${response.size * 2}") // expect double the actual content length
-        }
-        listOf(
-            getMockClientWithSourceBody(response, responseHeaders),
-            getMockClientWithChannelBody(response, responseHeaders),
-        ).forEach { client ->
+        nonEmptyBodies().forEach { body ->
+            val client = client(body, RESPONSE.size * 2) // expect double the actual content length
             assertFailsWith<EOFException> {
-                val output = op.roundTrip(client, ResponseLengthValidationTestInput("input"))
+                val output = op().roundTrip(client, ResponseLengthValidationTestInput)
                 output.body.readAll()
             }
         }
@@ -113,21 +91,10 @@ class ResponseLengthValidationInterceptorTest {
 
     @Test
     fun testTooManyBytesReturned() = runTest {
-        val req = HttpRequestBuilder()
-        val op = newResponseLengthValidationTestOperation<ResponseLengthValidationTestInput>(req)
-
-        op.interceptors.add(ResponseLengthValidationInterceptor())
-
-        val responseHeaders = Headers {
-            append(contentLengthHeaderName, "${response.size / 2}") // expect half the actual content length
-        }
-
-        listOf(
-            getMockClientWithChannelBody(response, responseHeaders),
-            getMockClientWithSourceBody(response, responseHeaders),
-        ).forEach { client ->
+        allBodies().forEach { body ->
+            val client = client(body, RESPONSE.size / 2) // expect half the actual content length
             assertFailsWith<EOFException> {
-                val output = op.roundTrip(client, ResponseLengthValidationTestInput("input"))
+                val output = op().roundTrip(client, ResponseLengthValidationTestInput)
                 output.body.readAll()
             }
         }
@@ -135,18 +102,17 @@ class ResponseLengthValidationInterceptorTest {
 
     @Test
     fun testNoContentLengthSkipsValidation() = runTest {
-        val req = HttpRequestBuilder()
-        val op = newResponseLengthValidationTestOperation<ResponseLengthValidationTestInput>(req)
-
-        op.interceptors.add(ResponseLengthValidationInterceptor())
-        val responseHeaders = Headers {}
-
-        listOf(
-            getMockClientWithChannelBody(response, responseHeaders),
-            getMockClientWithSourceBody(response, responseHeaders),
-        ).forEach { client ->
-            val output = op.roundTrip(client, ResponseLengthValidationTestInput("input"))
+        allBodies().forEach { body ->
+            val client = client(body, null) // no content-length header so no validation
+            val output = op().roundTrip(client, ResponseLengthValidationTestInput)
             output.body.readAll()
         }
+    }
+
+    @Test
+    fun testEmptyBodyCorrectLengthReturned() = runTest {
+        val client = client(HttpBody.Empty, 0) // expect correct content length
+        val output = op().roundTrip(client, ResponseLengthValidationTestInput)
+        output.body.readAll()
     }
 }
