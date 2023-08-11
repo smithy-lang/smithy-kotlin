@@ -118,13 +118,33 @@ class WaiterTest {
     @Test fun testBooleanListIndexOneEquals() = successTest(
         WaitersTestClient::waitUntilBooleanListIndexOneEquals,
         GetEntityResponse { lists = EntityLists { booleans = listOf(false, false) } },
-        GetEntityResponse { lists = EntityLists { booleans = listOf(true, true) } },
+        GetEntityResponse { lists = EntityLists { booleans = listOf(true, false) } },
+        GetEntityResponse { lists = EntityLists { booleans = listOf(false, true) } },
+    )
+
+    @Test fun testBooleanListIndexNegativeTwoEquals() = successTest(
+        WaitersTestClient::waitUntilBooleanListIndexNegativeTwoEquals,
+        GetEntityResponse { lists = EntityLists { booleans = listOf(false, false) } },
+        GetEntityResponse { lists = EntityLists { booleans = listOf(false, true) } },
+        GetEntityResponse { lists = EntityLists { booleans = listOf(true, false) } },
     )
 
     @Test fun testTwoDimensionalBooleanListIndexZeroZeroEquals() = successTest(
         WaitersTestClient::waitUntilTwoDimensionalBooleanListIndexZeroZeroEquals,
         GetEntityResponse { twoDimensionalLists = TwoDimensionalEntityLists { booleansList = listOf(listOf(false)) } },
         GetEntityResponse { twoDimensionalLists = TwoDimensionalEntityLists { booleansList = listOf(listOf(true)) } },
+    )
+
+    @Test fun testStructListIndexOneStringsIndexZeroEquals() = successTest(
+        WaitersTestClient::waitUntilStructListIndexOneStringsIndexZeroEquals,
+        GetEntityResponse { lists = EntityLists { structs = listOf(Struct { strings = listOf("bar") }, Struct { strings = listOf("bar") }) } },
+        GetEntityResponse { lists = EntityLists { structs = listOf(Struct { strings = listOf("bar") }, Struct { strings = listOf("foo") }) } },
+    )
+
+    @Test fun testStructListIndexOneSubStructsIndexZeroSubStructPrimitivesBooleanEquals() = successTest(
+        WaitersTestClient::waitUntilStructListIndexOneSubStructsIndexZeroSubStructPrimitivesBooleanEquals,
+        GetEntityResponse { lists = EntityLists { structs = listOf(Struct { }, Struct { subStructs = listOf(SubStruct { subStructPrimitives = EntityPrimitives { boolean = false } }) }) } },
+        GetEntityResponse { lists = EntityLists { structs = listOf(Struct { }, Struct { subStructs = listOf(SubStruct { subStructPrimitives = EntityPrimitives { boolean = true } }) }) } },
     )
 
     // anyStringEquals

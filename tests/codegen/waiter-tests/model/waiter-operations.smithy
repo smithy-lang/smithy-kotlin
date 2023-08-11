@@ -222,6 +222,20 @@ service WaitersTestService {
             }
         ]
     },
+    BooleanListIndexNegativeTwoEquals: {
+        acceptors: [
+            {
+                state: "success",
+                matcher: {
+                    output: {
+                        path: "lists.booleans[-2]",
+                        expected: "true",
+                        comparator: "booleanEquals"
+                    }
+                }
+            }
+        ]
+    },
     TwoDimensionalBooleanListIndexZeroZeroEquals: {
         acceptors: [
             {
@@ -235,6 +249,34 @@ service WaitersTestService {
                 }
             }
         ]
+    },
+    StructListIndexOneStringsIndexZeroEquals: {
+        acceptors: [
+            {
+                state: "success",
+                matcher: {
+                    output: {
+                        path: "lists.structs[1].strings[0]",
+                        expected: "foo",
+                        comparator: "stringEquals"
+                    }
+                }
+            }
+      ]
+    },
+    StructListIndexOneSubStructsIndexZeroSubStructPrimitivesBooleanEquals: {
+        acceptors: [
+            {
+                state: "success",
+                matcher: {
+                    output: {
+                        path: "lists.structs[1].subStructs[0].subStructPrimitives.boolean",
+                        expected: "true",
+                        comparator: "booleanEquals"
+                    }
+                }
+            }
+      ]
     },
 
     // anyStringEquals

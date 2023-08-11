@@ -22,7 +22,6 @@ import software.amazon.smithy.kotlin.codegen.model.traits.OperationOutput
 import software.amazon.smithy.kotlin.codegen.utils.dq
 import software.amazon.smithy.kotlin.codegen.utils.getOrNull
 import software.amazon.smithy.kotlin.codegen.utils.toCamelCase
-import software.amazon.smithy.model.knowledge.NullableIndex
 import software.amazon.smithy.model.shapes.ListShape
 import software.amazon.smithy.model.shapes.MapShape
 import software.amazon.smithy.model.shapes.MemberShape
@@ -50,8 +49,6 @@ class KotlinJmespathExpressionVisitor(
     shape: Shape,
 ) : ExpressionVisitor<VisitedExpression> {
     private val tempVars = mutableSetOf<String>()
-
-    private val nullableIndex = NullableIndex(ctx.model)
 
     // tracks the current shape on which the visitor is operating
     private val shapeCursor = ArrayDeque(listOf(shape))
@@ -335,8 +332,11 @@ class KotlinJmespathExpressionVisitor(
         }
     }
 
-    private fun index(expression: IndexExpression, parentName: String): VisitedExpression =
-        VisitedExpression(addTempVar("index", "$parentName?.get(${expression.index})"))
+    private fun index(expression: IndexExpression, parentName: String): VisitedExpression {
+        shapeCursor.addLast(currentShape.targetOrSelf(ctx.model).targetMemberOrSelf)
+        val index = if (expression.index < 0) "$parentName.size${expression.index}" else expression.index
+        return VisitedExpression(addTempVar("index", "$parentName?.get($index)"))
+    }
 
     private val Shape.isEnumList: Boolean
         get() = this is ListShape && ctx.model.expectShape(member.target).isEnum
@@ -356,8 +356,7 @@ class KotlinJmespathExpressionVisitor(
 
     private val Shape.isNullable: Boolean
         get() = this is MemberShape &&
-            ctx.model.expectShape(target).let { !it.hasTrait<OperationInput>() && !it.hasTrait<OperationOutput>() } &&
-            nullableIndex.isMemberNullable(this, NullableIndex.CheckMode.CLIENT_ZERO_VALUE_V1_NO_INPUT)
+            ctx.model.expectShape(target).let { !it.hasTrait<OperationInput>() && !it.hasTrait<OperationOutput>() }
 
     private val Shape.targetMemberOrSelf: Shape
         get() = when (val target = targetOrSelf(ctx.model)) {
