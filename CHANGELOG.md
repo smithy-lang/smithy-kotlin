@@ -4,7 +4,6 @@
 
 ### Features
 * [#1001](https://github.com/awslabs/aws-sdk-kotlin/issues/1001) Make CredentialsProviderChain accept list of CredentialProviders
-* [#745](https://github.com/awslabs/aws-sdk-kotlin/issues/745) Add a response length validation interceptor
 
 ### Miscellaneous
 * Upgrade kotlinx.coroutines to 1.7.3
