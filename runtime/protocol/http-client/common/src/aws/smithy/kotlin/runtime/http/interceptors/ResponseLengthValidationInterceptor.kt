@@ -4,7 +4,6 @@
  */
 package aws.smithy.kotlin.runtime.http.interceptors
 
-import aws.smithy.kotlin.runtime.ClientException
 import aws.smithy.kotlin.runtime.InternalApi
 import aws.smithy.kotlin.runtime.client.ProtocolResponseInterceptorContext
 import aws.smithy.kotlin.runtime.http.HttpBody
@@ -32,7 +31,8 @@ public class ResponseLengthValidationInterceptor : HttpInterceptor {
 private fun HttpBody.toLengthValidatingBody(expectedContentLength: Long): HttpBody = when (this) {
     is HttpBody.SourceContent -> LengthValidatingSource(readFrom(), expectedContentLength).toHttpBody(contentLength)
     is HttpBody.ChannelContent -> LengthValidatingByteReadChannel(readFrom(), expectedContentLength).toHttpBody(contentLength)
-    else -> throw ClientException("HttpBody type is not supported")
+    is HttpBody.Bytes -> this.also { validateContentLength(expectedContentLength, contentLength) }
+    HttpBody.Empty -> this.also { validateContentLength(expectedContentLength, 0) }
 }
 
 /**
@@ -79,9 +79,9 @@ private class LengthValidatingByteReadChannel(
     }
 }
 
-private fun validateContentLength(expected: Long, actual: Long) {
+private fun validateContentLength(expected: Long, actual: Long?) {
     if (expected != actual) {
-        if (expected > actual) {
+        if (actual != null && expected > actual) {
             throw EOFException("Expected $expected bytes but received $actual bytes. The connection may have been closed prematurely.")
         } else {
             throw EOFException("Expected $expected bytes but received $actual bytes.")
