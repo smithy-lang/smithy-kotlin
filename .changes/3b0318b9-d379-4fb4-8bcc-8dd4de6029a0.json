@@ -1,0 +1,8 @@
+{
+    "id": "3b0318b9-d379-4fb4-8bcc-8dd4de6029a0",
+    "type": "bugfix",
+    "description": "Stop serializing default values for `@clientOptional` members",
+    "issues": [
+        "awslabs/aws-sdk-kotlin#1016"
+    ]
+}

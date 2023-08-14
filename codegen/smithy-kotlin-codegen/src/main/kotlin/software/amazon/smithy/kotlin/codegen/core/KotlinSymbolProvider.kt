@@ -13,6 +13,7 @@ import software.amazon.smithy.kotlin.codegen.utils.dq
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.knowledge.NullableIndex
 import software.amazon.smithy.model.shapes.*
+import software.amazon.smithy.model.traits.ClientOptionalTrait
 import software.amazon.smithy.model.traits.DefaultTrait
 import software.amazon.smithy.model.traits.SparseTrait
 import software.amazon.smithy.model.traits.StreamingTrait
@@ -183,8 +184,10 @@ class KotlinSymbolProvider(private val model: Model, private val settings: Kotli
             .apply {
                 if (nullableIndex.isMemberNullable(shape, NullableIndex.CheckMode.CLIENT_ZERO_VALUE_V1_NO_INPUT)) nullable()
 
-                shape.getTrait<DefaultTrait>()?.let {
-                    defaultValue(it.getDefaultValue(targetShape), DefaultValueType.MODELED)
+                if (!shape.hasTrait<ClientOptionalTrait>()) { // @ClientOptional supersedes @default
+                    shape.getTrait<DefaultTrait>()?.let {
+                        defaultValue(it.getDefaultValue(targetShape), DefaultValueType.MODELED)
+                    }
                 }
             }
             .build()
