@@ -367,6 +367,27 @@ class SymbolProviderTest {
     }
 
     @Test
+    fun `@clientOptional overrides @default`() {
+        val model = """
+        structure MyStruct {
+            @required
+            @clientOptional
+            @default("Foo")
+            quux: QuuxType
+        }
+
+        string QuuxType
+        """.prependNamespaceAndService().toSmithyModel()
+
+        val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model)
+        val member = model.expectShape<MemberShape>("com.test#MyStruct\$quux")
+        val memberSymbol = provider.toSymbol(member)
+        assertEquals("kotlin", memberSymbol.namespace)
+        assertTrue(memberSymbol.isNullable)
+        assertEquals("null", memberSymbol.defaultValue())
+    }
+
+    @Test
     fun `@input`() {
         val model = """
         @input
