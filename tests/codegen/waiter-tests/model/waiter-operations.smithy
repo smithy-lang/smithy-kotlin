@@ -193,6 +193,92 @@ service WaitersTestService {
         ]
     },
 
+    // list indexing
+    BooleanListIndexZeroEquals: {
+        acceptors: [
+            {
+                state: "success",
+                matcher: {
+                    output: {
+                        path: "lists.booleans[0]",
+                        expected: "true",
+                        comparator: "booleanEquals"
+                    }
+                }
+            }
+        ]
+    },
+    BooleanListIndexOneEquals: {
+        acceptors: [
+            {
+                state: "success",
+                matcher: {
+                    output: {
+                        path: "lists.booleans[1]",
+                        expected: "true",
+                        comparator: "booleanEquals"
+                    }
+                }
+            }
+        ]
+    },
+    BooleanListIndexNegativeTwoEquals: {
+        acceptors: [
+            {
+                state: "success",
+                matcher: {
+                    output: {
+                        path: "lists.booleans[-2]",
+                        expected: "true",
+                        comparator: "booleanEquals"
+                    }
+                }
+            }
+        ]
+    },
+    TwoDimensionalBooleanListIndexZeroZeroEquals: {
+        acceptors: [
+            {
+                state: "success",
+                matcher: {
+                    output: {
+                        path: "twoDimensionalLists.booleansList[0][0]",
+                        expected: "true",
+                        comparator: "booleanEquals"
+                    }
+                }
+            }
+        ]
+    },
+    StructListIndexOneStringsIndexZeroEquals: {
+        acceptors: [
+            {
+                state: "success",
+                matcher: {
+                    output: {
+                        path: "lists.structs[1].strings[0]",
+                        expected: "foo",
+                        comparator: "stringEquals"
+                    }
+                }
+            }
+      ]
+    },
+    StructListIndexOneSubStructsIndexZeroSubStructPrimitivesBooleanEquals: {
+        acceptors: [
+            {
+                state: "success",
+                matcher: {
+                    output: {
+                        path: "lists.structs[1].subStructs[0].subStructPrimitives.boolean",
+                        expected: "true",
+                        comparator: "booleanEquals"
+                    }
+                }
+            }
+      ]
+    },
+
     // anyStringEquals
     StringListAnyStringEquals: {
         acceptors: [
@@ -764,6 +850,7 @@ structure GetEntityRequest {
 structure GetEntityResponse {
     primitives: EntityPrimitives,
     lists: EntityLists,
+    twoDimensionalLists: TwoDimensionalEntityLists,
     maps: EntityMaps,
 }
 
@@ -800,6 +887,10 @@ structure EntityLists {
     structs: StructList,
 }
 
+structure TwoDimensionalEntityLists {
+    booleansList: TwoDimensionalBooleanList,
+}
+
 structure EntityMaps {
     booleans: BooleanMap,
     strings: StringMap,
@@ -821,6 +912,10 @@ intEnum IntEnum {
 
 list BooleanList {
     member: Boolean,
+}
+
+list TwoDimensionalBooleanList {
+    member: BooleanList,
 }
 
 list StringList {

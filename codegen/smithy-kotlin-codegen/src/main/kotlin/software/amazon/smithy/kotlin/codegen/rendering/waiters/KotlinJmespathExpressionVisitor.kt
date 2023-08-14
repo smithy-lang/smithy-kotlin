@@ -14,13 +14,14 @@ import software.amazon.smithy.kotlin.codegen.core.CodegenContext
 import software.amazon.smithy.kotlin.codegen.core.KotlinWriter
 import software.amazon.smithy.kotlin.codegen.core.RuntimeTypes
 import software.amazon.smithy.kotlin.codegen.core.withBlock
-import software.amazon.smithy.kotlin.codegen.model.*
+import software.amazon.smithy.kotlin.codegen.model.hasTrait
+import software.amazon.smithy.kotlin.codegen.model.isEnum
+import software.amazon.smithy.kotlin.codegen.model.targetOrSelf
 import software.amazon.smithy.kotlin.codegen.model.traits.OperationInput
 import software.amazon.smithy.kotlin.codegen.model.traits.OperationOutput
 import software.amazon.smithy.kotlin.codegen.utils.dq
 import software.amazon.smithy.kotlin.codegen.utils.getOrNull
 import software.amazon.smithy.kotlin.codegen.utils.toCamelCase
-import software.amazon.smithy.model.knowledge.NullableIndex
 import software.amazon.smithy.model.shapes.ListShape
 import software.amazon.smithy.model.shapes.MapShape
 import software.amazon.smithy.model.shapes.MemberShape
@@ -48,8 +49,6 @@ class KotlinJmespathExpressionVisitor(
     shape: Shape,
 ) : ExpressionVisitor<VisitedExpression> {
     private val tempVars = mutableSetOf<String>()
-
-    private val nullableIndex = NullableIndex(ctx.model)
 
     // tracks the current shape on which the visitor is operating
     private val shapeCursor = ArrayDeque(listOf(shape))
@@ -308,14 +307,35 @@ class KotlinJmespathExpressionVisitor(
     }
 
     override fun visitSubexpression(expression: Subexpression): VisitedExpression {
-        val left = expression.left.accept(this)
+        val leftName = expression.left.accept(this).identifier
 
-        val ret = when (val right = expression.right) {
-            is FieldExpression -> subfield(right, left.identifier)
+        return when (val right = expression.right) {
+            is FieldExpression -> subfield(right, leftName)
+            is IndexExpression -> index(right, leftName)
+            is Subexpression -> subexpression(right, leftName)
             else -> throw CodegenException("Subexpression type $right is unsupported")
         }
+    }
 
-        return ret
+    private fun subexpression(expression: Subexpression, parentName: String): VisitedExpression {
+        val leftName = when (val left = expression.left) {
+            is FieldExpression -> subfield(left, parentName).identifier
+            is Subexpression -> subexpression(left, parentName).identifier
+            else -> throw CodegenException("Subexpression type $left is unsupported")
+        }
+
+        return when (val right = expression.right) {
+            is FieldExpression -> subfield(right, leftName)
+            is Subexpression -> subexpression(right, leftName)
+            is IndexExpression -> index(right, leftName)
+            else -> throw CodegenException("Subexpression type $right is unsupported")
+        }
+    }
+
+    private fun index(expression: IndexExpression, parentName: String): VisitedExpression {
+        shapeCursor.addLast(currentShape.targetOrSelf(ctx.model).targetMemberOrSelf)
+        val index = if (expression.index < 0) "$parentName.size${expression.index}" else expression.index
+        return VisitedExpression(addTempVar("index", "$parentName?.get($index)"))
     }
 
     private val Shape.isEnumList: Boolean
@@ -336,8 +356,7 @@ class KotlinJmespathExpressionVisitor(
 
     private val Shape.isNullable: Boolean
         get() = this is MemberShape &&
-            ctx.model.expectShape(target).let { !it.hasTrait<OperationInput>() && !it.hasTrait<OperationOutput>() } &&
-            nullableIndex.isMemberNullable(this, NullableIndex.CheckMode.CLIENT_ZERO_VALUE_V1_NO_INPUT)
+            ctx.model.expectShape(target).let { !it.hasTrait<OperationInput>() && !it.hasTrait<OperationOutput>() }
 
     private val Shape.targetMemberOrSelf: Shape
         get() = when (val target = targetOrSelf(ctx.model)) {
