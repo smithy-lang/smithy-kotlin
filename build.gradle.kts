@@ -20,8 +20,7 @@ buildscript {
         // only need to include it here, imports in subprojects will work automagically
         classpath("aws.sdk.kotlin:build-plugins") {
             version {
-                // require("0.1.1")
-                branch = "lint-rules"
+                require("0.2.0")
             }
         }
     }
@@ -130,15 +129,6 @@ val lintPaths = listOf(
 )
 
 configureLinting(lintPaths)
-// val ktlint = configurations.getByName("ktlint")
-// dependencies {
-//     // ktlint("aws.sdk.kotlin:ktlint-rules") {
-//     //     version {
-//     //         branch = "lint-rules"
-//     //     }
-//     // }
-//     ktlint("aws.sdk.kotlin:ktlint-rules")
-// }
 
 apiValidation {
     nonPublicMarkers.add("aws.smithy.kotlin.runtime.InternalApi")
