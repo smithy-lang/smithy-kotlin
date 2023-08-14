@@ -3,40 +3,19 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 import software.amazon.smithy.gradle.tasks.SmithyBuild
-
 plugins {
     kotlin("multiplatform")
     id("org.jetbrains.kotlinx.benchmark")
     id("software.amazon.smithy")
 }
 
-buildscript {
-    val smithyVersion: String by project
-    dependencies {
-        classpath("software.amazon.smithy:smithy-cli:$smithyVersion")
-    }
-}
-
 extra.set("skipPublish", true)
-
-val platforms = listOf("common", "jvm")
-
-platforms.forEach { platform ->
-    apply(from = rootProject.file("gradle/$platform.gradle"))
-}
 
 val optinAnnotations = listOf("kotlin.RequiresOptIn", "aws.smithy.kotlin.runtime.InternalApi")
 
 kotlin {
     sourceSets {
         all {
-            val srcDir = if (name.endsWith("Main")) "src" else "test"
-            val resourcesPrefix = if (name.endsWith("Test")) "test-" else ""
-            // the name is always the platform followed by a suffix of either "Main" or "Test" (e.g. jvmMain, commonTest, etc)
-            val platform = name.substring(0, name.length - 4)
-            kotlin.srcDir("$platform/$srcDir")
-            resources.srcDir("$platform/${resourcesPrefix}resources")
-            languageSettings.progressiveMode = true
             optinAnnotations.forEach { languageSettings.optIn(it) }
         }
 

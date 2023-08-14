@@ -2,7 +2,7 @@
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
  * SPDX-License-Identifier: Apache-2.0
  */
-import java.util.Properties
+import aws.sdk.kotlin.gradle.kmp.typedProp
 
 buildscript {
     repositories {
@@ -13,6 +13,15 @@ buildscript {
     val kotlinVersion: String by project
     dependencies {
         classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion")
+
+        // Add our custom gradle plugin(s) to buildscript classpath (comes from github source)
+        // NOTE: buildscript classpath for the root project is the parent classloader for the subprojects, we
+        // only need to include it here, imports in subprojects will work automagically
+        classpath("aws.sdk.kotlin:build-plugins") {
+            version {
+                require("0.1.1")
+            }
+        }
     }
 }
 
@@ -22,6 +31,9 @@ plugins {
     id("io.github.gradle-nexus.publish-plugin") version "1.1.0"
     id("org.jetbrains.kotlinx.binary-compatibility-validator") version "0.12.1"
 }
+
+// configures (KMP) subprojects with our own KMP conventions and some default dependencies
+apply(plugin = "aws.sdk.kotlin.kmp")
 
 allprojects {
     repositories {
@@ -56,25 +68,7 @@ allprojects {
     }
 }
 
-val localProperties: Map<String, Any> by lazy {
-    val props = Properties()
-
-    listOf(
-        File(rootProject.projectDir, "local.properties"), // Project-specific local properties
-        File(rootProject.projectDir.parent, "local.properties"), // Workspace-specific local properties
-        File(System.getProperty("user.home"), ".sdkdev/local.properties"), // User-specific local properties
-    )
-        .filter(File::exists)
-        .map(File::inputStream)
-        .forEach(props::load)
-
-    props.mapKeys { (k, _) -> k.toString() }
-}
-
-fun Project.prop(name: String): Any? =
-    this.properties[name] ?: localProperties[name]
-
-if (project.prop("kotlinWarningsAsErrors")?.toString()?.toBoolean() == true) {
+if (project.typedProp<Boolean>("kotlinWarningsAsErrors") == true) {
     subprojects {
         tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
             kotlinOptions.allWarningsAsErrors = true
@@ -103,8 +97,6 @@ tasks.dokkaHtmlMultiModule.configure {
     )
     removeChildTasks(excludeFromDocumentation)
 }
-
-apply(from = rootProject.file("gradle/codecoverage.gradle"))
 
 if (
     project.hasProperty("sonatypeUsername") &&
