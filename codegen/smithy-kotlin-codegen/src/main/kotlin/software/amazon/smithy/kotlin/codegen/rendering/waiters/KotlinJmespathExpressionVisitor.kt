@@ -287,7 +287,7 @@ class KotlinJmespathExpressionVisitor(
         writer.addImport(RuntimeTypes.Core.Utils.truthiness)
 
         val left = acceptSubexpression(expression.left)
-        val leftTruthinessName = addTempVar("${left.identifier}Truthiness", "truthiness($${left.identifier})")
+        val leftTruthinessName = addTempVar("${left.identifier}Truthiness", "truthiness(${left.identifier})")
 
         val right = acceptSubexpression(expression.right)
 
