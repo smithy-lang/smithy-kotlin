@@ -173,6 +173,67 @@ class WaiterTest {
         GetEntityResponse { lists = EntityLists { enums = listOf(Enum.One, Enum.One) } },
     )
 
+    // list slicing
+    @Test fun testStringListStepSlicingEquals() = successTest(
+        WaitersTestClient::waitUntilStringListStepSlicingEquals,
+        GetEntityResponse { lists = EntityLists { strings = listOf("bar", "foo", "bar", "foo") } },
+        GetEntityResponse { lists = EntityLists { strings = listOf("foo", "bar", "foo", "bar") } },
+    )
+
+    @Test fun testStringListStopSlicingEquals() = successTest(
+        WaitersTestClient::waitUntilStringListStopSlicingEquals,
+        GetEntityResponse { lists = EntityLists { strings = listOf("bar", "bar", "foo", "foo") } },
+        GetEntityResponse { lists = EntityLists { strings = listOf("foo", "foo", "bar", "bar") } },
+    )
+
+    @Test fun testStringListStartSlicingEquals() = successTest(
+        WaitersTestClient::waitUntilStringListStartSlicingEquals,
+        GetEntityResponse { lists = EntityLists { strings = listOf("foo", "foo", "bar", "bar") } },
+        GetEntityResponse { lists = EntityLists { strings = listOf("bar", "bar", "foo", "foo") } },
+    )
+
+    @Test fun testStringListStopStepSlicingEquals() = successTest(
+        WaitersTestClient::waitUntilStringListStopStepSlicingEquals,
+        GetEntityResponse { lists = EntityLists { strings = listOf("bar", "foo", "bar", "foo", "foo", "foo", "foo", "foo") } },
+        GetEntityResponse { lists = EntityLists { strings = listOf("foo", "bar", "foo", "bar", "bar", "bar", "bar", "bar") } },
+    )
+
+    @Test fun testStringListStartStepSlicingEquals() = successTest(
+        WaitersTestClient::waitUntilStringListStartStepSlicingEquals,
+        GetEntityResponse { lists = EntityLists { strings = listOf("foo", "foo", "bar", "foo", "foo", "bar") } },
+        GetEntityResponse { lists = EntityLists { strings = listOf("bar", "bar", "foo", "bar", "bar", "foo") } },
+    )
+
+    @Test fun testStringListStartStopSlicingEquals() = successTest(
+        WaitersTestClient::waitUntilStringListStartStopSlicingEquals,
+        GetEntityResponse { lists = EntityLists { strings = listOf("foo", "foo", "foo", "bar", "foo", "foo") } },
+        GetEntityResponse { lists = EntityLists { strings = listOf("bar", "bar", "bar", "foo", "bar", "bar") } },
+    )
+
+    @Test fun testStringListStartStopStepSlicingEquals() = successTest(
+        WaitersTestClient::waitUntilStringListStartStopStepSlicingEquals,
+        GetEntityResponse { lists = EntityLists { strings = listOf("foo", "foo", "bar", "foo", "bar", "foo") } },
+        GetEntityResponse { lists = EntityLists { strings = listOf("bar", "bar", "foo", "bar", "foo", "bar") } },
+    )
+
+    @Test fun testStringListNegativeStartStopSlicingEquals() = successTest(
+        WaitersTestClient::waitUntilStringListNegativeStartStopSlicingEquals,
+        GetEntityResponse { lists = EntityLists { strings = listOf("foo", "foo", "bar", "foo") } },
+        GetEntityResponse { lists = EntityLists { strings = listOf("bar", "bar", "foo", "bar") } },
+    )
+
+    @Test fun testStringListStartNegativeStopSlicingEquals() = successTest(
+        WaitersTestClient::waitUntilStringListStartNegativeStopSlicingEquals,
+        GetEntityResponse { lists = EntityLists { strings = listOf("foo", "bar", "foo", "foo") } },
+        GetEntityResponse { lists = EntityLists { strings = listOf("bar", "foo", "bar", "bar") } },
+    )
+
+    @Test fun testStringListStopNegativeStartSlicingEquals() = successTest(
+        WaitersTestClient::waitUntilStringListStopNegativeStartSlicingEquals,
+        GetEntityResponse { lists = EntityLists { strings = listOf("foo", "bar", "bar", "foo") } },
+        GetEntityResponse { lists = EntityLists { strings = listOf("bar", "foo", "foo", "bar") } },
+    )
+
     // function: contains, list
     @Test fun testBooleanListContains() = successTest(
         WaitersTestClient::waitUntilBooleanListContains,
