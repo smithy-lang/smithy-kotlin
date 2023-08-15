@@ -316,13 +316,13 @@ class KotlinJmespathExpressionVisitor(
     }
 
     private fun slice(expression: SliceExpression, parentName: String): VisitedExpression {
-        val startIndex = if (expression.start.isEmpty()) {
+        val startIndex = if (!expression.start.isPresent) {
             "0"
         } else {
             if (expression.start.asInt < 0) "$parentName.size${expression.start.asInt}" else expression.start.asInt
         }
 
-        val stopIndex = if (expression.stop.isEmpty()) {
+        val stopIndex = if (!expression.stop.isPresent) {
             "$parentName.size"
         } else {
             if (expression.stop.asInt < 0) "$parentName.size${expression.stop.asInt}" else expression.stop.asInt
