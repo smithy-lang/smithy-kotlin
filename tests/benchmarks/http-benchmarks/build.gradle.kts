@@ -2,12 +2,13 @@
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
  * SPDX-License-Identifier: Apache-2.0
  */
+import aws.sdk.kotlin.gradle.dsl.skipPublishing
 plugins {
     kotlin("multiplatform")
     id("org.jetbrains.kotlinx.benchmark")
 }
 
-extra.set("skipPublish", true)
+skipPublishing()
 
 val optinAnnotations = listOf("kotlin.RequiresOptIn", "aws.smithy.kotlin.runtime.InternalApi")
 

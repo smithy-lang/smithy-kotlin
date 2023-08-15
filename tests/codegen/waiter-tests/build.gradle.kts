@@ -2,6 +2,7 @@
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
  * SPDX-License-Identifier: Apache-2.0
  */
+import aws.sdk.kotlin.gradle.dsl.skipPublishing
 import software.amazon.smithy.gradle.tasks.SmithyBuild
 import software.amazon.smithy.gradle.tasks.Validate as SmithyValidate
 
@@ -10,7 +11,7 @@ plugins {
     id("software.amazon.smithy")
 }
 
-extra.set("skipPublish", true)
+skipPublishing()
 
 val optinAnnotations = listOf("kotlin.RequiresOptIn", "aws.smithy.kotlin.runtime.InternalApi")
 kotlin.sourceSets.all {
