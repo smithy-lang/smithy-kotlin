@@ -328,7 +328,8 @@ class KotlinJmespathExpressionVisitor(
             if (expression.stop.asInt < 0) "$parentName.size${expression.stop.asInt}" else expression.stop.asInt
         }
 
-        val slicedListName = addTempVar("slicedList", "$parentName?.slice($startIndex..$stopIndex-1 step ${expression.step})")
+        writer.write("@OptIn(ExperimentalStdlibApi::class)")
+        val slicedListName = addTempVar("slicedList", "$parentName?.slice($startIndex..<$stopIndex step ${expression.step})")
         return VisitedExpression(slicedListName, currentShape)
     }
 
