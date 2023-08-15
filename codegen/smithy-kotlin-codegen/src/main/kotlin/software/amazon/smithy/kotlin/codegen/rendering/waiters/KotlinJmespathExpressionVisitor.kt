@@ -302,19 +302,35 @@ class KotlinJmespathExpressionVisitor(
         return flatMappingBlock(expression.right, left.identifier, left.shape, left.projected)
     }
 
+    private fun projection(expression: ProjectionExpression, parentName: String): VisitedExpression {
+        val left = when (expression.left) {
+            is SliceExpression -> slice(expression.left as SliceExpression, parentName)
+            else -> expression.left.accept(this)
+        }
+        requireNotNull(left.shape) { "projection is operating on nothing" }
+        return flatMappingBlock(expression.right, left.identifier, left.shape, left.projected)
+    }
+
     override fun visitSlice(expression: SliceExpression): VisitedExpression {
         throw CodegenException("SliceExpression is unsupported")
     }
 
+    private fun slice(expression: SliceExpression, parentName: String): VisitedExpression {
+        val startIndex = if (expression.start.isEmpty) "0" else if (expression.start.asInt < 0) "$parentName.size${expression.start.asInt}" else expression.start.asInt
+        val stopIndex = if (expression.stop.isEmpty) "$parentName.size" else if (expression.stop.asInt < 0) "$parentName.size${expression.stop.asInt}" else expression.stop.asInt
+
+        val subListName = addTempVar("subList", "$parentName?.subList($startIndex, $stopIndex)")
+        val stepListName = addTempVar("stepList", "$parentName?.toMutableList()")
+        writer.write("$stepListName?.clear()")
+        writer.withBlock("for(i in 0 until $subListName!!.size step ${expression.step}) {", "}") {
+            write("$stepListName?.add($subListName[i])")
+        }
+        return VisitedExpression(stepListName, currentShape)
+    }
+
     override fun visitSubexpression(expression: Subexpression): VisitedExpression {
         val leftName = expression.left.accept(this).identifier
-
-        return when (val right = expression.right) {
-            is FieldExpression -> subfield(right, leftName)
-            is IndexExpression -> index(right, leftName)
-            is Subexpression -> subexpression(right, leftName)
-            else -> throw CodegenException("Subexpression type $right is unsupported")
-        }
+        return processRightSubexpression(expression.right, leftName)
     }
 
     private fun subexpression(expression: Subexpression, parentName: String): VisitedExpression {
@@ -323,14 +339,17 @@ class KotlinJmespathExpressionVisitor(
             is Subexpression -> subexpression(left, parentName).identifier
             else -> throw CodegenException("Subexpression type $left is unsupported")
         }
-
-        return when (val right = expression.right) {
-            is FieldExpression -> subfield(right, leftName)
-            is Subexpression -> subexpression(right, leftName)
-            is IndexExpression -> index(right, leftName)
-            else -> throw CodegenException("Subexpression type $right is unsupported")
-        }
+        return processRightSubexpression(expression.right, leftName)
     }
+
+    private fun processRightSubexpression(expression: JmespathExpression, leftName: String): VisitedExpression =
+        when (expression) {
+            is FieldExpression -> subfield(expression, leftName)
+            is IndexExpression -> index(expression, leftName)
+            is Subexpression -> subexpression(expression, leftName)
+            is ProjectionExpression -> projection(expression, leftName)
+            else -> throw CodegenException("Subexpression type $expression is unsupported")
+        }
 
     private fun index(expression: IndexExpression, parentName: String): VisitedExpression {
         shapeCursor.addLast(currentShape.targetOrSelf(ctx.model).targetMemberOrSelf)

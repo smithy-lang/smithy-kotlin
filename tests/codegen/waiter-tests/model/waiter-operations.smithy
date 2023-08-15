@@ -339,6 +339,148 @@ service WaitersTestService {
         ]
     },
 
+    // list slicing
+    StringListStepSlicingEquals: {
+        acceptors: [
+            {
+                state: "success",
+                matcher: {
+                    output: {
+                        path: "lists.strings[::2]",
+                        expected: "foo",
+                        comparator: "allStringEquals"
+                    }
+                }
+            }
+        ]
+    },
+    StringListStopSlicingEquals: {
+        acceptors: [
+            {
+                state: "success",
+                matcher: {
+                    output: {
+                        path: "lists.strings[:2]",
+                        expected: "foo",
+                        comparator: "allStringEquals"
+                    }
+                }
+            }
+        ]
+    },
+    StringListStartSlicingEquals: {
+        acceptors: [
+            {
+                state: "success",
+                matcher: {
+                    output: {
+                        path: "lists.strings[2:]",
+                        expected: "foo",
+                        comparator: "allStringEquals"
+                    }
+                }
+            }
+        ]
+    },
+    StringListStopStepSlicingEquals: {
+        acceptors: [
+            {
+                state: "success",
+                matcher: {
+                    output: {
+                        path: "lists.strings[:4:2]",
+                        expected: "foo",
+                        comparator: "allStringEquals"
+                    }
+                }
+            }
+        ]
+    },
+    StringListStartStepSlicingEquals: {
+        acceptors: [
+            {
+                state: "success",
+                matcher: {
+                    output: {
+                        path: "lists.strings[2::3]",
+                        expected: "foo",
+                        comparator: "allStringEquals"
+                    }
+                }
+            }
+        ]
+    },
+    StringListStartStopSlicingEquals: {
+        acceptors: [
+            {
+                state: "success",
+                matcher: {
+                    output: {
+                        path: "lists.strings[3:4]",
+                        expected: "foo",
+                        comparator: "allStringEquals"
+                    }
+                }
+            }
+        ]
+    },
+    StringListStartStopStepSlicingEquals: {
+        acceptors: [
+            {
+                state: "success",
+                matcher: {
+                    output: {
+                        path: "lists.strings[2:4:2]",
+                        expected: "foo",
+                        comparator: "allStringEquals"
+                    }
+                }
+            }
+        ]
+    },
+    StringListNegativeStartStopSlicingEquals: {
+        acceptors: [
+            {
+                state: "success",
+                matcher: {
+                    output: {
+                        path: "lists.strings[-2:-1]",
+                        expected: "foo",
+                        comparator: "allStringEquals"
+                    }
+                }
+            }
+        ]
+    },
+    StringListStartNegativeStopSlicingEquals: {
+        acceptors: [
+            {
+                state: "success",
+                matcher: {
+                    output: {
+                        path: "lists.strings[1:-2]",
+                        expected: "foo",
+                        comparator: "allStringEquals"
+                    }
+                }
+            }
+        ]
+    },
+    StringListStopNegativeStartSlicingEquals: {
+        acceptors: [
+            {
+                state: "success",
+                matcher: {
+                    output: {
+                        path: "lists.strings[-3:3]",
+                        expected: "foo",
+                        comparator: "allStringEquals"
+                    }
+                }
+            }
+        ]
+    },
+
     // function: contains, list
     BooleanListContains: {
         acceptors: [
