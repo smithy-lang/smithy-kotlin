@@ -316,8 +316,17 @@ class KotlinJmespathExpressionVisitor(
     }
 
     private fun slice(expression: SliceExpression, parentName: String): VisitedExpression {
-        val startIndex = if (expression.start.isEmpty) "0" else if (expression.start.asInt < 0) "$parentName.size${expression.start.asInt}" else expression.start.asInt
-        val stopIndex = if (expression.stop.isEmpty) "$parentName.size" else if (expression.stop.asInt < 0) "$parentName.size${expression.stop.asInt}" else expression.stop.asInt
+        val startIndex = if (expression.start.isEmpty) {
+            "0"
+        } else {
+            if (expression.start.asInt < 0) "$parentName.size${expression.start.asInt}" else expression.start.asInt
+        }
+
+        val stopIndex = if (expression.stop.isEmpty) {
+            "$parentName.size"
+        } else {
+            if (expression.stop.asInt < 0) "$parentName.size${expression.stop.asInt}" else expression.stop.asInt
+        }
 
         val subListName = addTempVar("subList", "$parentName?.subList($startIndex, $stopIndex)")
         val stepListName = addTempVar("stepList", "$parentName?.toMutableList()")
