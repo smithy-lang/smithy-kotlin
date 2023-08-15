@@ -328,13 +328,8 @@ class KotlinJmespathExpressionVisitor(
             if (expression.stop.asInt < 0) "$parentName.size${expression.stop.asInt}" else expression.stop.asInt
         }
 
-        val subListName = addTempVar("subList", "$parentName?.subList($startIndex, $stopIndex)")
-        val stepListName = addTempVar("stepList", "$parentName?.toMutableList()")
-        writer.write("$stepListName?.clear()")
-        writer.withBlock("for(i in 0 until $subListName!!.size step ${expression.step}) {", "}") {
-            write("$stepListName?.add($subListName[i])")
-        }
-        return VisitedExpression(stepListName, currentShape)
+        val slicedListName = addTempVar("slicedList", "$parentName?.slice($startIndex..$stopIndex-1 step ${expression.step})")
+        return VisitedExpression(slicedListName, currentShape)
     }
 
     override fun visitSubexpression(expression: Subexpression): VisitedExpression {
