@@ -97,7 +97,7 @@ abstract class HttpProtocolClientGenerator(
         writer.withBlock(
             "private val configuredAuthSchemes = with(config.authSchemes.associateBy(#T::schemeId).toMutableMap()){",
             "}",
-            RuntimeTypes.Auth.HttpAuth.HttpAuthScheme,
+            RuntimeTypes.Auth.HttpAuth.AuthScheme,
         ) {
             val authIndex = AuthIndex()
             val allAuthHandlers = authIndex.authHandlersForService(ctx)

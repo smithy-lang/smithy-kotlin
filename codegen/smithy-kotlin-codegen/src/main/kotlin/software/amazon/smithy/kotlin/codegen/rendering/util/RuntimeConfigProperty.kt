@@ -163,7 +163,7 @@ object RuntimeConfigProperty {
 
     val HttpAuthSchemes = ConfigProperty {
         name = "authSchemes"
-        symbol = KotlinTypes.Collections.list(RuntimeTypes.Auth.HttpAuth.HttpAuthScheme, default = "emptyList()")
+        symbol = KotlinTypes.Collections.list(RuntimeTypes.Auth.HttpAuth.AuthScheme, default = "emptyList()")
         baseClass = RuntimeTypes.Auth.HttpAuth.HttpAuthConfig
         useNestedBuilderBaseClass()
         documentation = """

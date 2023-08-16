@@ -57,7 +57,7 @@ class SdkOperationExecutionTest {
                 assertFalse(request.headers.contains("receive-header"))
             }
         }
-        val authScheme = object : HttpAuthScheme {
+        val authScheme = object : AuthScheme {
             override val schemeId: AuthSchemeId = AuthSchemeId.Anonymous
             override val signer: HttpSigner = httpSigner
         }

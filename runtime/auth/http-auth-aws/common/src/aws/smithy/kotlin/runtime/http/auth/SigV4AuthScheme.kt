@@ -6,6 +6,7 @@
 package aws.smithy.kotlin.runtime.http.auth
 
 import aws.smithy.kotlin.runtime.InternalApi
+import aws.smithy.kotlin.runtime.auth.AuthOption
 import aws.smithy.kotlin.runtime.auth.AuthSchemeId
 import aws.smithy.kotlin.runtime.auth.AuthSchemeOption
 import aws.smithy.kotlin.runtime.auth.awssigning.AwsSigner
@@ -20,7 +21,7 @@ import aws.smithy.kotlin.runtime.util.emptyAttributes
 @InternalApi
 public class SigV4AuthScheme(
     config: AwsHttpSigner.Config,
-) : HttpAuthScheme {
+) : AuthScheme {
     public constructor(awsSigner: AwsSigner, serviceName: String) : this(
         AwsHttpSigner.Config().apply {
             signer = awsSigner
@@ -33,12 +34,12 @@ public class SigV4AuthScheme(
 }
 
 /**
- * Create a new [AuthSchemeOption] for the [SigV4AuthScheme]
+ * Create a new [AuthOption] for the [SigV4AuthScheme]
  * @param unsignedPayload set the signing attribute to indicate the signer should use unsigned payload.
  * @return auth scheme option representing the [SigV4AuthScheme]
  */
 @InternalApi
-public fun sigv4(unsignedPayload: Boolean = false): AuthSchemeOption {
+public fun sigv4(unsignedPayload: Boolean = false): AuthOption {
     val attrs = if (unsignedPayload) {
         attributesOf {
             AwsSigningAttributes.HashSpecification to HashSpecification.UnsignedPayload

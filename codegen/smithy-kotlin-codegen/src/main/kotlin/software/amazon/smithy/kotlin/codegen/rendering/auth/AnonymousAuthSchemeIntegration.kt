@@ -15,7 +15,6 @@ import software.amazon.smithy.kotlin.codegen.model.buildSymbol
 import software.amazon.smithy.kotlin.codegen.rendering.protocol.ProtocolGenerator
 import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.shapes.ShapeId
-import software.amazon.smithy.model.traits.OptionalAuthTrait
 
 /**
  * Register support for the `smithy.api#optionalAuth` auth scheme.
@@ -25,7 +24,7 @@ class AnonymousAuthSchemeIntegration : KotlinIntegration {
 }
 
 class AnonymousAuthSchemeHandler : AuthSchemeHandler {
-    override val authSchemeId: ShapeId = OptionalAuthTrait.ID
+    override val authSchemeId: ShapeId = ShapeId.from("smithy.api#noAuth")
     override val authSchemeIdSymbol: Symbol = buildSymbol {
         name = "AuthSchemeId.Anonymous"
         val ref = RuntimeTypes.Auth.Identity.AuthSchemeId
@@ -43,7 +42,7 @@ class AnonymousAuthSchemeHandler : AuthSchemeHandler {
         op: OperationShape?,
         writer: KotlinWriter,
     ) {
-        writer.write("#T(#T.Anonymous)", RuntimeTypes.Auth.Identity.AuthSchemeOption, RuntimeTypes.Auth.Identity.AuthSchemeId)
+        writer.write("#T(#T.Anonymous)", RuntimeTypes.Auth.Identity.AuthOption, RuntimeTypes.Auth.Identity.AuthSchemeId)
     }
 
     override fun instantiateAuthSchemeExpr(ctx: ProtocolGenerator.GenerationContext, writer: KotlinWriter) {

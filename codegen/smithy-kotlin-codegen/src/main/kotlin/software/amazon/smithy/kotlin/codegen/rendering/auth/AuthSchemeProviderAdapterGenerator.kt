@@ -35,7 +35,7 @@ class AuthSchemeProviderAdapterGenerator {
                     "override suspend fun resolve(request: #T): List<#T> {",
                     "}",
                     RuntimeTypes.HttpClient.Operation.SdkHttpRequest,
-                    RuntimeTypes.Auth.Identity.AuthSchemeOption,
+                    RuntimeTypes.Auth.Identity.AuthOption,
                 ) {
                     withBlock("val params = #T {", "}", AuthSchemeParametersGenerator.getSymbol(ctx.settings)) {
                         addImport(RuntimeTypes.Core.Utils.get)

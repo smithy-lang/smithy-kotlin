@@ -71,7 +71,7 @@ open class AuthSchemeProviderGenerator {
                 "private val operationOverrides = mapOf<#T, List<#T>>(",
                 ")",
                 KotlinTypes.String,
-                RuntimeTypes.Auth.Identity.AuthSchemeOption,
+                RuntimeTypes.Auth.Identity.AuthOption,
             ) {
                 operationsWithOverrides.forEach { op ->
                     val authHandlersForOperation = authIndex.effectiveAuthHandlersForOperation(ctx, op)
@@ -82,7 +82,7 @@ open class AuthSchemeProviderGenerator {
             withBlock(
                 "private val serviceDefaults = listOf<#T>(",
                 ")",
-                RuntimeTypes.Auth.Identity.AuthSchemeOption,
+                RuntimeTypes.Auth.Identity.AuthOption,
             ) {
                 val defaultHandlers = authIndex.effectiveAuthHandlersForService(ctx)
 
@@ -98,7 +98,7 @@ open class AuthSchemeProviderGenerator {
                 "override suspend fun resolveAuthScheme(params: #T): List<#T> {",
                 "}",
                 paramsSymbol,
-                RuntimeTypes.Auth.Identity.AuthSchemeOption,
+                RuntimeTypes.Auth.Identity.AuthOption,
             ) {
                 withBlock("return operationOverrides.getOrElse(params.operationName) {", "}") {
                     write("serviceDefaults")

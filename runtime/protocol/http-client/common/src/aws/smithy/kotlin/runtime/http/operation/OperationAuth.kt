@@ -6,12 +6,13 @@
 package aws.smithy.kotlin.runtime.http.operation
 
 import aws.smithy.kotlin.runtime.InternalApi
+import aws.smithy.kotlin.runtime.auth.AuthOption
 import aws.smithy.kotlin.runtime.auth.AuthSchemeId
 import aws.smithy.kotlin.runtime.auth.AuthSchemeOption
 import aws.smithy.kotlin.runtime.auth.AuthSchemeProvider
 import aws.smithy.kotlin.runtime.http.auth.AnonymousAuthScheme
 import aws.smithy.kotlin.runtime.http.auth.AnonymousIdentityProvider
-import aws.smithy.kotlin.runtime.http.auth.HttpAuthScheme
+import aws.smithy.kotlin.runtime.http.auth.AuthScheme
 import aws.smithy.kotlin.runtime.identity.IdentityProviderConfig
 import aws.smithy.kotlin.runtime.identity.asIdentityProviderConfig
 
@@ -29,7 +30,7 @@ private val AnonymousAuthConfig = OperationAuthConfig.from(
 @InternalApi
 public data class OperationAuthConfig(
     val authSchemeResolver: AuthSchemeResolver,
-    val configuredAuthSchemes: Map<AuthSchemeId, HttpAuthScheme>,
+    val configuredAuthSchemes: Map<AuthSchemeId, AuthScheme>,
     val identityProviderConfig: IdentityProviderConfig,
 ) {
     @InternalApi
@@ -42,10 +43,10 @@ public data class OperationAuthConfig(
          */
         public fun from(
             identityProviderConfig: IdentityProviderConfig,
-            vararg authSchemes: HttpAuthScheme,
+            vararg authSchemes: AuthScheme,
         ): OperationAuthConfig {
             val resolver = AuthSchemeResolver { authSchemes.map { AuthSchemeOption(it.schemeId) } }
-            return OperationAuthConfig(resolver, authSchemes.associateBy(HttpAuthScheme::schemeId), identityProviderConfig)
+            return OperationAuthConfig(resolver, authSchemes.associateBy(AuthScheme::schemeId), identityProviderConfig)
         }
     }
 }
@@ -60,5 +61,5 @@ public fun interface AuthSchemeResolver {
      * Resolve the candidate authentication schemes for an operation
      * @return a prioritized list of candidate auth schemes to use for the current operation
      */
-    public suspend fun resolve(request: SdkHttpRequest): List<AuthSchemeOption>
+    public suspend fun resolve(request: SdkHttpRequest): List<AuthOption>
 }

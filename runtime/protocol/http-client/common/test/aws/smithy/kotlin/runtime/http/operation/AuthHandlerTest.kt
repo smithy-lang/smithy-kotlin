@@ -45,7 +45,7 @@ class HttpAuthHandlerTest {
         interceptorExec.readBeforeExecution(Unit)
 
         val idpConfig = AnonymousIdentityProvider.asIdentityProviderConfig()
-        val scheme = object : HttpAuthScheme {
+        val scheme = object : AuthScheme {
             override val schemeId: AuthSchemeId = AuthSchemeId.Anonymous
             override fun identityProvider(identityProviderConfig: IdentityProviderConfig): IdentityProvider = object : IdentityProvider {
                 override suspend fun resolve(attributes: Attributes): Identity {
@@ -69,7 +69,7 @@ class HttpAuthHandlerTest {
             listOf(AuthSchemeOption(AuthSchemeId.Anonymous, attrs))
         }
 
-        val schemes = listOf(scheme).associateBy(HttpAuthScheme::schemeId)
+        val schemes = listOf(scheme).associateBy(AuthScheme::schemeId)
         val authConfig = OperationAuthConfig(resolver, schemes, idpConfig)
         val op = AuthHandler<Unit, Unit>(inner, interceptorExec, authConfig)
         val request = SdkHttpRequest(ctx, HttpRequestBuilder())
