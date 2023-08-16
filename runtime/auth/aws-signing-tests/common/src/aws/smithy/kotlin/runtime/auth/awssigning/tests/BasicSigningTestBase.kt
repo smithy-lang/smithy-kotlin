@@ -44,6 +44,8 @@ private const val EXPECTED_FIRST_CHUNK_SIGNATURE = "ad80c730a21e5b8d04586a2213dd
 private const val EXPECTED_SECOND_CHUNK_SIGNATURE = "0055627c9e194cb4542bae2aa5492e3c1575bbb81b612b7d234b86a503ef5497"
 private const val EXPECTED_FINAL_CHUNK_SIGNATURE = "b6c6ea8a5354eaf15b3cb7646744f4275b71ea724fed81ceb9323e279d449df9"
 
+private val EMPTY_BYTES = byteArrayOf()
+
 @Suppress("HttpUrlsUsage")
 @OptIn(ExperimentalCoroutinesApi::class)
 public abstract class BasicSigningTestBase : HasSigner {
@@ -184,8 +186,7 @@ public abstract class BasicSigningTestBase : HasSigner {
         assertEquals(EXPECTED_SECOND_CHUNK_SIGNATURE, chunk2Result.signature.decodeToString())
         prevSignature = chunk2Result.signature
 
-        // TODO - do we want 0 byte data like this or just allow null?
-        val finalChunkResult = signer.signChunk(ByteArray(0), prevSignature, chunkedSigningConfig)
+        val finalChunkResult = signer.signChunk(EMPTY_BYTES, prevSignature, chunkedSigningConfig)
         assertEquals(EXPECTED_FINAL_CHUNK_SIGNATURE, finalChunkResult.signature.decodeToString())
     }
 
