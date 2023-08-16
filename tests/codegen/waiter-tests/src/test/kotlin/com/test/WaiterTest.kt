@@ -108,6 +108,29 @@ class WaiterTest {
         GetEntityResponse { primitives = EntityPrimitives { intEnum = IntEnum.One } },
     )
 
+    // comparators
+    @Test fun testAndEquals() = successTest(
+        WaitersTestClient::waitUntilAndEquals,
+        GetEntityResponse { lists = EntityLists { booleans = listOf(false, false) } },
+        GetEntityResponse { lists = EntityLists { booleans = listOf(false, true) } },
+        GetEntityResponse { lists = EntityLists { booleans = listOf(true, false) } },
+        GetEntityResponse { lists = EntityLists { booleans = listOf(true, true) } },
+    )
+
+    @Test fun testOrEquals() = successTest(
+        WaitersTestClient::waitUntilOrEquals,
+        GetEntityResponse { lists = EntityLists { booleans = listOf(true, true) } },
+        GetEntityResponse { lists = EntityLists { booleans = listOf(true, false) } },
+        GetEntityResponse { lists = EntityLists { booleans = listOf(false, true) } },
+        GetEntityResponse { lists = EntityLists { booleans = listOf(false, false) } },
+    )
+
+    @Test fun testNotEquals() = successTest(
+        WaitersTestClient::waitUntilNotEquals,
+        GetEntityResponse { primitives = EntityPrimitives { boolean = true } },
+        GetEntityResponse { primitives = EntityPrimitives { boolean = false } },
+    )
+
     // list indexing
     @Test fun testBooleanListIndexZeroEquals() = successTest(
         WaitersTestClient::waitUntilBooleanListIndexZeroEquals,
