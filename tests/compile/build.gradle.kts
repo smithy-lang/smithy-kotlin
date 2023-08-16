@@ -2,12 +2,15 @@
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
  * SPDX-License-Identifier: Apache-2.0
  */
+import aws.sdk.kotlin.gradle.dsl.skipPublishing
 plugins {
     kotlin("jvm")
 }
 
 extra["displayName"] = "Smithy :: Kotlin :: Compile :: Test"
 extra["moduleName"] = "software.amazon.smithy.kotlin.codegen"
+
+skipPublishing()
 
 val smithyVersion: String by project
 val kotestVersion: String by project

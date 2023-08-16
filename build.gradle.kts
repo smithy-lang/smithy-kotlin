@@ -3,6 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 import aws.sdk.kotlin.gradle.dsl.configureLinting
+import aws.sdk.kotlin.gradle.dsl.configureNexus
 import aws.sdk.kotlin.gradle.util.typedProp
 
 buildscript {
@@ -20,7 +21,7 @@ buildscript {
         // only need to include it here, imports in subprojects will work automagically
         classpath("aws.sdk.kotlin:build-plugins") {
             version {
-                require("0.2.0")
+                require("0.2.2")
             }
         }
     }
@@ -29,7 +30,6 @@ buildscript {
 plugins {
     kotlin("jvm") apply false
     id("org.jetbrains.dokka")
-    id("io.github.gradle-nexus.publish-plugin") version "1.1.0"
     id("org.jetbrains.kotlinx.binary-compatibility-validator") version "0.12.1"
 }
 
@@ -99,29 +99,10 @@ tasks.dokkaHtmlMultiModule.configure {
     removeChildTasks(excludeFromDocumentation)
 }
 
-if (
-    project.hasProperty("sonatypeUsername") &&
-    project.hasProperty("sonatypePassword") &&
-    project.hasProperty("publishGroupName")
-) {
-    apply(plugin = "io.github.gradle-nexus.publish-plugin")
+// Publishing
+configureNexus()
 
-    val publishGroupName = project.property("publishGroupName") as String
-    group = publishGroupName
-
-    nexusPublishing {
-        packageGroup.set(publishGroupName)
-        repositories {
-            create("awsNexus") {
-                nexusUrl.set(uri("https://aws.oss.sonatype.org/service/local/"))
-                snapshotRepositoryUrl.set(uri("https://aws.oss.sonatype.org/content/repositories/snapshots/"))
-                username.set(project.property("sonatypeUsername") as String)
-                password.set(project.property("sonatypePassword") as String)
-            }
-        }
-    }
-}
-
+// Code Style
 val lintPaths = listOf(
     "**/*.{kt,kts}",
     "!**/generated-src/**",
@@ -130,6 +111,7 @@ val lintPaths = listOf(
 
 configureLinting(lintPaths)
 
+// Binary compatibility
 apiValidation {
     nonPublicMarkers.add("aws.smithy.kotlin.runtime.InternalApi")
 

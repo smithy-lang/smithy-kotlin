@@ -2,13 +2,14 @@
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
  * SPDX-License-Identifier: Apache-2.0
  */
+import aws.sdk.kotlin.gradle.dsl.skipPublishing
 import java.io.Closeable
 import java.net.URLClassLoader
 
 description = "Common HTTP Client Engine Test Suite"
 extra["moduleName"] = "aws.smithy.kotlin.http.test"
 
-extra["skipPublish"] = true
+skipPublishing()
 
 val coroutinesVersion: String by project
 val ktorVersion: String by project
