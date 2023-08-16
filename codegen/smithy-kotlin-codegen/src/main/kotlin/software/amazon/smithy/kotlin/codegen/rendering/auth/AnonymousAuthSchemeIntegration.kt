@@ -17,8 +17,6 @@ import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.shapes.ShapeId
 import software.amazon.smithy.model.traits.OptionalAuthTrait
 
-// FIXME - TBD whether this stays as `smithy.api#optionalAuth` ID
-
 /**
  * Register support for the `smithy.api#optionalAuth` auth scheme.
  */
