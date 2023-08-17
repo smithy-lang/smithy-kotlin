@@ -5,6 +5,7 @@
 package software.amazon.smithy.kotlin.codegen.rendering.endpoints
 
 import software.amazon.smithy.kotlin.codegen.core.KotlinWriter
+import software.amazon.smithy.kotlin.codegen.model.buildSymbol
 import software.amazon.smithy.kotlin.codegen.test.TestModelDefault
 import software.amazon.smithy.kotlin.codegen.test.assertBalancedBracesAndParens
 import software.amazon.smithy.kotlin.codegen.test.formatForTest
@@ -78,7 +79,11 @@ class EndpointParametersGeneratorTest {
         )
 
         val writer = KotlinWriter(TestModelDefault.NAMESPACE)
-        EndpointParametersGenerator(writer, rules).render()
+        val paramsSymbol = buildSymbol {
+            name = "EndpointParameters"
+            namespace = TestModelDefault.NAMESPACE
+        }
+        EndpointParametersGenerator(writer, rules, paramsSymbol).render()
 
         generatedClass = writer.toString()
     }

@@ -7,10 +7,7 @@ package software.amazon.smithy.kotlin.codegen.rendering.auth
 
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.kotlin.codegen.KotlinSettings
-import software.amazon.smithy.kotlin.codegen.core.InlineKotlinWriter
-import software.amazon.smithy.kotlin.codegen.core.KotlinWriter
-import software.amazon.smithy.kotlin.codegen.core.RuntimeTypes
-import software.amazon.smithy.kotlin.codegen.core.withBlock
+import software.amazon.smithy.kotlin.codegen.core.*
 import software.amazon.smithy.kotlin.codegen.integration.AuthSchemeHandler
 import software.amazon.smithy.kotlin.codegen.lang.KotlinTypes
 import software.amazon.smithy.kotlin.codegen.model.buildSymbol
@@ -24,13 +21,15 @@ import software.amazon.smithy.model.shapes.OperationShape
 open class AuthSchemeProviderGenerator {
     companion object {
         fun getSymbol(settings: KotlinSettings): Symbol = buildSymbol {
-            name = "AuthSchemeProvider"
+            val prefix = clientName(settings.sdkId)
+            name = "${prefix}AuthSchemeProvider"
             namespace = "${settings.pkg.name}.auth"
             definitionFile = "$name.kt"
         }
 
         fun getDefaultSymbol(settings: KotlinSettings): Symbol = buildSymbol {
-            name = "DefaultAuthSchemeProvider"
+            val prefix = clientName(settings.sdkId)
+            name = "Default${prefix}AuthSchemeProvider"
             namespace = "${settings.pkg.name}.auth"
             definitionFile = "$name.kt"
         }
@@ -49,19 +48,21 @@ open class AuthSchemeProviderGenerator {
 
     private fun renderInterface(ctx: ProtocolGenerator.GenerationContext, writer: KotlinWriter) {
         val paramsSymbol = AuthSchemeParametersGenerator.getSymbol(ctx.settings)
+        val symbol = getSymbol(ctx.settings)
         writer.dokka {
-            write("AuthSchemeProvider is responsible for resolving the authentication scheme to use for a particular operation.")
+            write("${symbol.name} is responsible for resolving the authentication scheme to use for a particular operation.")
             write("See [#T] for the default SDK behavior of this interface.", getDefaultSymbol(ctx.settings))
         }
         writer.write(
             "public interface #T : #T<#T>",
-            getSymbol(ctx.settings),
+            symbol,
             RuntimeTypes.Auth.Identity.AuthSchemeProvider,
             paramsSymbol,
         )
     }
 
     private fun renderDefaultImpl(ctx: ProtocolGenerator.GenerationContext, writer: KotlinWriter) {
+        // FIXME - probably can't remain an object
         writer.withBlock(
             "public object #T : #T {",
             "}",

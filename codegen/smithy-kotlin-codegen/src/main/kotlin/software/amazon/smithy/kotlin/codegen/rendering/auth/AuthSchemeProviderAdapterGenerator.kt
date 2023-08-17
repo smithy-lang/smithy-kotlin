@@ -8,6 +8,7 @@ package software.amazon.smithy.kotlin.codegen.rendering.auth
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.kotlin.codegen.KotlinSettings
 import software.amazon.smithy.kotlin.codegen.core.RuntimeTypes
+import software.amazon.smithy.kotlin.codegen.core.clientName
 import software.amazon.smithy.kotlin.codegen.core.withBlock
 import software.amazon.smithy.kotlin.codegen.model.buildSymbol
 import software.amazon.smithy.kotlin.codegen.rendering.protocol.ProtocolGenerator
@@ -19,7 +20,8 @@ import software.amazon.smithy.kotlin.codegen.rendering.protocol.ProtocolGenerato
 class AuthSchemeProviderAdapterGenerator {
     companion object {
         fun getSymbol(settings: KotlinSettings): Symbol = buildSymbol {
-            name = "AuthSchemeProviderAdapter"
+            val prefix = clientName(settings.sdkId)
+            name = "${prefix}AuthSchemeProviderAdapter"
             namespace = "${settings.pkg.name}.auth"
             definitionFile = "$name.kt"
         }

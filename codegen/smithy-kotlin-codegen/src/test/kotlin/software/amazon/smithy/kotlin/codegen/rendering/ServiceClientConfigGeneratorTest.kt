@@ -49,7 +49,7 @@ public class Config private constructor(builder: Builder) : HttpAuthConfig, Http
         val expectedProps = """
     override val clientName: String = builder.clientName
     override val authSchemes: kotlin.collections.List<aws.smithy.kotlin.runtime.http.auth.AuthScheme> = builder.authSchemes
-    public val endpointProvider: EndpointProvider = requireNotNull(builder.endpointProvider) { "endpointProvider is a required configuration property" }
+    public val endpointProvider: TestEndpointProvider = requireNotNull(builder.endpointProvider) { "endpointProvider is a required configuration property" }
     override val idempotencyTokenProvider: IdempotencyTokenProvider = builder.idempotencyTokenProvider ?: IdempotencyTokenProvider.Default
     override val interceptors: kotlin.collections.List<aws.smithy.kotlin.runtime.http.interceptors.HttpInterceptor> = builder.interceptors
     override val logMode: LogMode = builder.logMode ?: LogMode.Default
@@ -81,7 +81,7 @@ public class Config private constructor(builder: Builder) : HttpAuthConfig, Http
          *
          * The inputs to endpoint resolution are defined on a per-service basis (see [EndpointParameters]).
          */
-        public var endpointProvider: EndpointProvider? = null
+        public var endpointProvider: TestEndpointProvider? = null
 
         /**
          * Override the default idempotency token generator. SDK clients will generate tokens for members
@@ -241,7 +241,7 @@ public class Config private constructor(builder: Builder) {
     override val clientName: String = builder.clientName
     override val authSchemes: kotlin.collections.List<aws.smithy.kotlin.runtime.http.auth.AuthScheme> = builder.authSchemes
     public val customProp: Int? = builder.customProp
-    public val endpointProvider: EndpointProvider = requireNotNull(builder.endpointProvider) { "endpointProvider is a required configuration property" }
+    public val endpointProvider: TestEndpointProvider = requireNotNull(builder.endpointProvider) { "endpointProvider is a required configuration property" }
     override val idempotencyTokenProvider: IdempotencyTokenProvider = builder.idempotencyTokenProvider ?: IdempotencyTokenProvider.Default
     override val interceptors: kotlin.collections.List<aws.smithy.kotlin.runtime.http.interceptors.HttpInterceptor> = builder.interceptors
     override val logMode: LogMode = builder.logMode ?: LogMode.LogRequest

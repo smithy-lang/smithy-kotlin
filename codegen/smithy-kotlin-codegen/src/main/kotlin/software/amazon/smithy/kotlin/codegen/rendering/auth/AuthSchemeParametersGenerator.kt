@@ -9,6 +9,7 @@ import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.kotlin.codegen.KotlinSettings
 import software.amazon.smithy.kotlin.codegen.core.CodegenContext
+import software.amazon.smithy.kotlin.codegen.core.clientName
 import software.amazon.smithy.kotlin.codegen.core.withBlock
 import software.amazon.smithy.kotlin.codegen.integration.KotlinIntegration
 import software.amazon.smithy.kotlin.codegen.model.buildSymbol
@@ -26,13 +27,15 @@ import software.amazon.smithy.model.Model
 class AuthSchemeParametersGenerator : AbstractConfigGenerator() {
     companion object {
         fun getSymbol(settings: KotlinSettings): Symbol = buildSymbol {
-            name = "AuthSchemeParameters"
+            val prefix = clientName(settings.sdkId)
+            name = "${prefix}AuthSchemeParameters"
             namespace = "${settings.pkg.name}.auth"
             definitionFile = "$name.kt"
         }
 
         fun getImplementationSymbol(settings: KotlinSettings): Symbol = buildSymbol {
-            name = "AuthSchemeParametersImpl"
+            val prefix = clientName(settings.sdkId)
+            name = "${prefix}AuthSchemeParametersImpl"
             namespace = "${settings.pkg.name}.auth"
             definitionFile = "$name.kt"
         }

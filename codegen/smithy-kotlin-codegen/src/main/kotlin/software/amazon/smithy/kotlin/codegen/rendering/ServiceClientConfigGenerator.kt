@@ -63,9 +63,11 @@ class ServiceClientConfigGenerator(
         add(
             ConfigProperty {
                 val hasRules = shape.hasTrait<EndpointRuleSetTrait>()
+                val defaultEndpointProviderSymbol = DefaultEndpointProviderGenerator.getSymbol(context.settings)
                 symbol = EndpointProviderGenerator.getSymbol(context.settings)
+                name = "endpointProvider"
                 propertyType = if (hasRules) { // if there's a ruleset, we have a usable default, otherwise caller has to provide their own
-                    ConfigPropertyType.RequiredWithDefault("DefaultEndpointProvider()")
+                    ConfigPropertyType.RequiredWithDefault("${defaultEndpointProviderSymbol.name}()")
                 } else {
                     ConfigPropertyType.Required()
                 }
@@ -80,7 +82,7 @@ class ServiceClientConfigGenerator(
                 additionalImports = buildList {
                     add(EndpointParametersGenerator.getSymbol(context.settings))
                     if (hasRules) {
-                        add(DefaultEndpointProviderGenerator.getSymbol(context.settings))
+                        add(defaultEndpointProviderSymbol)
                     }
                 }
             },
