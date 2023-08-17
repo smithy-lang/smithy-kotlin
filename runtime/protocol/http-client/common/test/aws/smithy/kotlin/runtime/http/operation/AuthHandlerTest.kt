@@ -5,8 +5,8 @@
 
 package aws.smithy.kotlin.runtime.http.operation
 
+import aws.smithy.kotlin.runtime.auth.AuthOption
 import aws.smithy.kotlin.runtime.auth.AuthSchemeId
-import aws.smithy.kotlin.runtime.auth.AuthSchemeOption
 import aws.smithy.kotlin.runtime.client.endpoints.Endpoint
 import aws.smithy.kotlin.runtime.http.auth.*
 import aws.smithy.kotlin.runtime.http.interceptors.InterceptorExecutor
@@ -66,7 +66,7 @@ class HttpAuthHandlerTest {
             val attrs = attributesOf {
                 testAttrKey to "testing"
             }
-            listOf(AuthSchemeOption(AuthSchemeId.Anonymous, attrs))
+            listOf(AuthOption(AuthSchemeId.Anonymous, attrs))
         }
 
         val schemes = listOf(scheme).associateBy(AuthScheme::schemeId)

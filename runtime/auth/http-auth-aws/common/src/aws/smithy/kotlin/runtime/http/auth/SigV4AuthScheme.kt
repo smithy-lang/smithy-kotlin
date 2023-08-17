@@ -8,7 +8,6 @@ package aws.smithy.kotlin.runtime.http.auth
 import aws.smithy.kotlin.runtime.InternalApi
 import aws.smithy.kotlin.runtime.auth.AuthOption
 import aws.smithy.kotlin.runtime.auth.AuthSchemeId
-import aws.smithy.kotlin.runtime.auth.AuthSchemeOption
 import aws.smithy.kotlin.runtime.auth.awssigning.AwsSigner
 import aws.smithy.kotlin.runtime.auth.awssigning.AwsSigningAttributes
 import aws.smithy.kotlin.runtime.auth.awssigning.HashSpecification
@@ -47,5 +46,5 @@ public fun sigv4(unsignedPayload: Boolean = false): AuthOption {
     } else {
         emptyAttributes()
     }
-    return AuthSchemeOption(AuthSchemeId.AwsSigV4, attrs)
+    return AuthOption(AuthSchemeId.AwsSigV4, attrs)
 }

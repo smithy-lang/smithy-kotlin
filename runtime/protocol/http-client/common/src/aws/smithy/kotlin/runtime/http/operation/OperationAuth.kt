@@ -8,7 +8,6 @@ package aws.smithy.kotlin.runtime.http.operation
 import aws.smithy.kotlin.runtime.InternalApi
 import aws.smithy.kotlin.runtime.auth.AuthOption
 import aws.smithy.kotlin.runtime.auth.AuthSchemeId
-import aws.smithy.kotlin.runtime.auth.AuthSchemeOption
 import aws.smithy.kotlin.runtime.auth.AuthSchemeProvider
 import aws.smithy.kotlin.runtime.http.auth.AnonymousAuthScheme
 import aws.smithy.kotlin.runtime.http.auth.AnonymousIdentityProvider
@@ -45,7 +44,7 @@ public data class OperationAuthConfig(
             identityProviderConfig: IdentityProviderConfig,
             vararg authSchemes: AuthScheme,
         ): OperationAuthConfig {
-            val resolver = AuthSchemeResolver { authSchemes.map { AuthSchemeOption(it.schemeId) } }
+            val resolver = AuthSchemeResolver { authSchemes.map { AuthOption(it.schemeId) } }
             return OperationAuthConfig(resolver, authSchemes.associateBy(AuthScheme::schemeId), identityProviderConfig)
         }
     }
