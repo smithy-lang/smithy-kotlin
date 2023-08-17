@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.25.1] - 08/17/2023
+
+### Fixes
+* [#1016](https://github.com/awslabs/aws-sdk-kotlin/issues/1016) Stop serializing default values for `@clientOptional` members
+* [#1014](https://github.com/awslabs/aws-sdk-kotlin/issues/1014) Correctly validate response length for empty bodies and byte array bodies
+
 ## [0.25.0] - 08/10/2023
 
 ### Features
