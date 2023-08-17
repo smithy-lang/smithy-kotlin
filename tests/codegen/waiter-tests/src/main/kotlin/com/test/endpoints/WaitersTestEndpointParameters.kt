@@ -2,6 +2,6 @@
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
  * SPDX-License-Identifier: Apache-2.0
  */
-package smithy.kotlin.traits.endpoints
+package com.test.endpoints
 
-class EndpointParameters
+class WaitersTestEndpointParameters
