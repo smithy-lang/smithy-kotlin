@@ -16,6 +16,9 @@ import software.amazon.smithy.kotlin.codegen.rendering.protocol.ProtocolGenerato
 import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.shapes.ShapeId
 
+// FIXME - replace with NoAuthTrait when we upgrade to a version where it exists
+public val AnonymousAuthSchemeId: ShapeId = ShapeId.from("smithy.api#noAuth")
+
 /**
  * Register support for the `smithy.api#optionalAuth` auth scheme.
  */
@@ -24,7 +27,7 @@ class AnonymousAuthSchemeIntegration : KotlinIntegration {
 }
 
 class AnonymousAuthSchemeHandler : AuthSchemeHandler {
-    override val authSchemeId: ShapeId = ShapeId.from("smithy.api#noAuth")
+    override val authSchemeId: ShapeId = AnonymousAuthSchemeId
     override val authSchemeIdSymbol: Symbol = buildSymbol {
         name = "AuthSchemeId.Anonymous"
         val ref = RuntimeTypes.Auth.Identity.AuthSchemeId

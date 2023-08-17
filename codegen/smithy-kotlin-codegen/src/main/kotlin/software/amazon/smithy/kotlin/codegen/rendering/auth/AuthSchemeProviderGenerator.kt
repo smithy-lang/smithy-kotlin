@@ -38,7 +38,7 @@ open class AuthSchemeProviderGenerator {
 
     fun render(ctx: ProtocolGenerator.GenerationContext) {
         ctx.delegator.useSymbolWriter(getSymbol(ctx.settings)) { writer ->
-            renderTypealias(ctx, writer)
+            renderInterface(ctx, writer)
         }
 
         ctx.delegator.useSymbolWriter(getDefaultSymbol(ctx.settings)) { writer ->
@@ -47,10 +47,15 @@ open class AuthSchemeProviderGenerator {
         }
     }
 
-    private fun renderTypealias(ctx: ProtocolGenerator.GenerationContext, writer: KotlinWriter) {
+    private fun renderInterface(ctx: ProtocolGenerator.GenerationContext, writer: KotlinWriter) {
         val paramsSymbol = AuthSchemeParametersGenerator.getSymbol(ctx.settings)
+        writer.dokka {
+            write("AuthSchemeProvider is responsible for resolving the authentication scheme to use for a particular operation.")
+            write("See [#T] for the default SDK behavior of this interface.", getDefaultSymbol(ctx.settings))
+        }
         writer.write(
-            "internal typealias AuthSchemeProvider = #T<#T>",
+            "public interface #T : #T<#T>",
+            getSymbol(ctx.settings),
             RuntimeTypes.Auth.Identity.AuthSchemeProvider,
             paramsSymbol,
         )
@@ -58,7 +63,7 @@ open class AuthSchemeProviderGenerator {
 
     private fun renderDefaultImpl(ctx: ProtocolGenerator.GenerationContext, writer: KotlinWriter) {
         writer.withBlock(
-            "internal object #T : #T {",
+            "public object #T : #T {",
             "}",
             getDefaultSymbol(ctx.settings),
             getSymbol(ctx.settings),

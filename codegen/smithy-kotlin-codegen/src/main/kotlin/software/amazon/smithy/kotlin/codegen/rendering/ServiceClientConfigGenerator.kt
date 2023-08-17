@@ -46,7 +46,7 @@ class ServiceClientConfigGenerator(
         if (context.protocolGenerator?.applicationProtocol?.isHttpProtocol == true) {
             add(RuntimeConfigProperty.HttpClient)
             add(RuntimeConfigProperty.HttpInterceptors)
-            add(RuntimeConfigProperty.HttpAuthSchemes)
+            add(RuntimeConfigProperty.AuthSchemes)
         }
         if (shape.hasIdempotentTokenMember(context.model)) {
             add(RuntimeConfigProperty.IdempotencyTokenProvider)

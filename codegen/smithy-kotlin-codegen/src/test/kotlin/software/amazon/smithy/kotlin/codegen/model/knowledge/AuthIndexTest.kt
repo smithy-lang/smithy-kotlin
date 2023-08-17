@@ -10,6 +10,7 @@ import software.amazon.smithy.kotlin.codegen.integration.AuthSchemeHandler
 import software.amazon.smithy.kotlin.codegen.integration.KotlinIntegration
 import software.amazon.smithy.kotlin.codegen.loadModelFromResource
 import software.amazon.smithy.kotlin.codegen.model.expectShape
+import software.amazon.smithy.kotlin.codegen.rendering.auth.AnonymousAuthSchemeId
 import software.amazon.smithy.kotlin.codegen.rendering.auth.AnonymousAuthSchemeIntegration
 import software.amazon.smithy.kotlin.codegen.rendering.protocol.ProtocolGenerator
 import software.amazon.smithy.kotlin.codegen.test.newTestContext
@@ -18,7 +19,6 @@ import software.amazon.smithy.model.shapes.ShapeId
 import software.amazon.smithy.model.traits.HttpApiKeyAuthTrait
 import software.amazon.smithy.model.traits.HttpBasicAuthTrait
 import software.amazon.smithy.model.traits.HttpBearerAuthTrait
-import software.amazon.smithy.model.traits.OptionalAuthTrait
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -87,8 +87,8 @@ class AuthIndexTest {
         val tests = listOf(
             "com.test#GetFooServiceDefault" to listOf(HttpApiKeyAuthTrait.ID),
             "com.test#GetFooOpOverride" to listOf(HttpBasicAuthTrait.ID, HttpBearerAuthTrait.ID),
-            "com.test#GetFooAnonymous" to listOf(OptionalAuthTrait.ID),
-            "com.test#GetFooOptionalAuth" to listOf(OptionalAuthTrait.ID),
+            "com.test#GetFooAnonymous" to listOf(AnonymousAuthSchemeId),
+            "com.test#GetFooOptionalAuth" to listOf(AnonymousAuthSchemeId),
         )
 
         tests.forEach { (opShapeId, expectedSchemes) ->
@@ -119,7 +119,7 @@ class AuthIndexTest {
 
         val handlers = authIndex.effectiveAuthHandlersForService(testCtx.generationCtx)
         val actual = handlers.map { it.authSchemeId }
-        val expected = listOf(OptionalAuthTrait.ID)
+        val expected = listOf(AnonymousAuthSchemeId)
         assertEquals(expected, actual)
     }
 
@@ -131,7 +131,7 @@ class AuthIndexTest {
 
         val handlers = authIndex.authHandlersForService(testCtx.generationCtx)
         val actual = handlers.map { it.authSchemeId }.toSet()
-        val expected = setOf(HttpApiKeyAuthTrait.ID, HttpBearerAuthTrait.ID, HttpBasicAuthTrait.ID, OptionalAuthTrait.ID)
+        val expected = setOf(HttpApiKeyAuthTrait.ID, HttpBearerAuthTrait.ID, HttpBasicAuthTrait.ID, AnonymousAuthSchemeId)
         assertEquals(expected, actual)
     }
 

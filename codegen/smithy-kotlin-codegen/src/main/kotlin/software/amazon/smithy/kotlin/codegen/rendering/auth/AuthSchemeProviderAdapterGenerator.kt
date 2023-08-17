@@ -28,21 +28,26 @@ class AuthSchemeProviderAdapterGenerator {
     fun render(ctx: ProtocolGenerator.GenerationContext) {
         val symbol = getSymbol(ctx.settings)
         ctx.delegator.useSymbolWriter(symbol) { writer ->
-            // TODO - auth parameters will need bound per/request as applicable (e.g. like EP2.0 or generate one per/request).
-            //        This is a simplified version (using object) while design is in flux.
-            writer.withBlock("internal object #T: #T {", "}", symbol, RuntimeTypes.HttpClient.Operation.AuthSchemeResolver) {
+            writer.dokka("Adapts the service specific auth scheme resolver to the agnostic runtime interface and binds the auth parameters")
+            writer.withBlock(
+                "internal class #T(private val delegate: #T): #T {",
+                "}",
+                symbol,
+                AuthSchemeProviderGenerator.getSymbol(ctx.settings),
+                RuntimeTypes.HttpClient.Operation.AuthSchemeResolver,
+            ) {
                 withBlock(
                     "override suspend fun resolve(request: #T): List<#T> {",
                     "}",
                     RuntimeTypes.HttpClient.Operation.SdkHttpRequest,
                     RuntimeTypes.Auth.Identity.AuthOption,
                 ) {
-                    withBlock("val params = #T {", "}", AuthSchemeParametersGenerator.getSymbol(ctx.settings)) {
+                    withBlock("val params = #T {", "}", AuthSchemeParametersGenerator.getImplementationSymbol(ctx.settings)) {
                         addImport(RuntimeTypes.Core.Utils.get)
                         write("operationName = request.context[#T.OperationName]", RuntimeTypes.SmithyClient.SdkClientOption)
                     }
 
-                    write("return #T.resolveAuthScheme(params)", AuthSchemeProviderGenerator.getDefaultSymbol(ctx.settings))
+                    write("return delegate.resolveAuthScheme(params)")
                 }
             }
         }
