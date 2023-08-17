@@ -1,4 +1,4 @@
-public final class aws/smithy/kotlin/runtime/http/auth/AnonymousAuthScheme : aws/smithy/kotlin/runtime/http/auth/HttpAuthScheme {
+public final class aws/smithy/kotlin/runtime/http/auth/AnonymousAuthScheme : aws/smithy/kotlin/runtime/http/auth/AuthScheme {
 	public static final field INSTANCE Laws/smithy/kotlin/runtime/http/auth/AnonymousAuthScheme;
 	public fun getSchemeId-DepwgT4 ()Ljava/lang/String;
 	public fun getSigner ()Laws/smithy/kotlin/runtime/http/auth/HttpSigner;
@@ -25,7 +25,7 @@ public abstract interface class aws/smithy/kotlin/runtime/http/auth/BearerToken 
 	public abstract fun getToken ()Ljava/lang/String;
 }
 
-public final class aws/smithy/kotlin/runtime/http/auth/BearerTokenAuthScheme : aws/smithy/kotlin/runtime/http/auth/HttpAuthScheme {
+public final class aws/smithy/kotlin/runtime/http/auth/BearerTokenAuthScheme : aws/smithy/kotlin/runtime/http/auth/AuthScheme {
 	public fun <init> ()V
 	public fun getSchemeId-DepwgT4 ()Ljava/lang/String;
 	public fun getSigner ()Laws/smithy/kotlin/runtime/http/auth/HttpSigner;
