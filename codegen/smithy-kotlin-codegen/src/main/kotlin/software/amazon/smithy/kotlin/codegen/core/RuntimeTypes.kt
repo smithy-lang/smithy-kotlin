@@ -344,6 +344,8 @@ object RuntimeTypes {
         object Flow {
             // NOTE: smithy-kotlin core has an API dependency on this already
             val Flow = "kotlinx.coroutines.flow.Flow".toSymbol()
+            val flowOf = "kotlinx.coroutines.flow.flowOf".toSymbol()
+            val merge = "kotlinx.coroutines.flow.merge".toSymbol()
             val map = "kotlinx.coroutines.flow.map".toSymbol()
             val mapNotNull = "kotlinx.coroutines.flow.mapNotNull".toSymbol()
             val take = "kotlinx.coroutines.flow.take".toSymbol()

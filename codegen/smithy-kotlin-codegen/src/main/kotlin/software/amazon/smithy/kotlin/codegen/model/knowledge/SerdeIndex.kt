@@ -48,11 +48,12 @@ class SerdeIndex(private val model: Model) : KnowledgeIndex {
      * Find and return the set of shapes reachable from the given shape that would require a "document" serializer.
      * @return The set of shapes that require a serializer implementation
      */
-    fun requiresDocumentSerializer(shape: Shape): Set<Shape> =
+    fun requiresDocumentSerializer(shape: Shape, members: Collection<MemberShape>? = shape.members()): Set<Shape> =
         when (shape) {
             is OperationShape -> requiresDocumentSerializer(listOf(shape))
             else -> {
                 val topLevelMembers = shape.members()
+                    .filter { members?.contains(it) ?: true }
                     .map { model.expectShape(it.target) }
                     .filter { it.isStructureShape || it.isUnionShape || it is CollectionShape || it.isMapShape }
                     .toSet()

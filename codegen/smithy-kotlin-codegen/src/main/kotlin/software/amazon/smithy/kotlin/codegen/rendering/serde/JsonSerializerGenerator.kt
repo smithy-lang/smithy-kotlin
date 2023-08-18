@@ -44,9 +44,9 @@ open class JsonSerializerGenerator(
      * Register nested structure/map shapes reachable from the operation input shape that require a "document" serializer
      * implementation
      */
-    private fun addNestedDocumentSerializers(ctx: ProtocolGenerator.GenerationContext, shape: Shape, writer: KotlinWriter) {
+    private fun addNestedDocumentSerializers(ctx: ProtocolGenerator.GenerationContext, shape: Shape, writer: KotlinWriter, members: Collection<MemberShape>? = shape.members()) {
         val serdeIndex = SerdeIndex.of(ctx.model)
-        val shapesRequiringDocumentSerializer = serdeIndex.requiresDocumentSerializer(shape)
+        val shapesRequiringDocumentSerializer = serdeIndex.requiresDocumentSerializer(shape, members)
         // register a dependency on each of the members that require a serializer impl
         // ensuring they get generated
         shapesRequiringDocumentSerializer.forEach {
@@ -109,7 +109,7 @@ open class JsonSerializerGenerator(
 
         val serializeFn = documentSerializer(ctx, target, forMembers)
         return target.payloadSerializer(ctx.settings, symbol, forMembers) { writer ->
-            addNestedDocumentSerializers(ctx, target, writer)
+            addNestedDocumentSerializers(ctx, target, writer, forMembers)
             writer.addImportReferences(symbol, SymbolReference.ContextOption.USE)
             writer.withBlock("internal fun #identifier.name:L(input: #T): ByteArray {", "}", symbol) {
                 write("val serializer = #T()", RuntimeTypes.Serde.SerdeJson.JsonSerializer)
