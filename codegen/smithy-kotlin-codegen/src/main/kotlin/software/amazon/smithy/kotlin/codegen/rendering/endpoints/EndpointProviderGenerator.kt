@@ -33,7 +33,7 @@ class EndpointProviderGenerator(
     fun render() {
         renderDocumentation()
         writer.write(
-            "public interface #T: #T<#T>",
+            "public fun interface #T: #T<#T>",
             providerSymbol,
             RuntimeTypes.SmithyClient.Endpoints.EndpointProvider,
             paramsSymbol,
