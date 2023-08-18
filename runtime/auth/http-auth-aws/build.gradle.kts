@@ -6,8 +6,6 @@ description = "AWS-related HTTP Auth APIs"
 extra["displayName"] = "Smithy :: Kotlin :: AWS HTTP Auth"
 extra["moduleName"] = "aws.smithy.kotlin.runtime.http.auth"
 
-val coroutinesVersion: String by project
-
 kotlin {
     sourceSets {
         commonMain {
@@ -25,7 +23,7 @@ kotlin {
                 implementation(project(":runtime:protocol:http-test"))
                 implementation(project(":runtime:auth:aws-signing-default"))
                 implementation(project(":runtime:auth:aws-signing-crt"))
-                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:$coroutinesVersion")
+                implementation(libs.kotlinx.coroutines.test)
             }
         }
 

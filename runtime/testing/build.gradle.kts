@@ -13,15 +13,14 @@ kotlin {
     sourceSets {
         commonMain {
             dependencies {
-                implementation("org.jetbrains.kotlin:kotlin-test-common:$kotlinVersion")
-                implementation("org.jetbrains.kotlin:kotlin-test-annotations-common:$kotlinVersion")
+                implementation(libs.kotlin.test)
             }
         }
         jvmMain {
             dependencies {
-                api("org.junit.jupiter:junit-jupiter:$junitVersion")
-                implementation("org.jetbrains.kotlin:kotlin-test:$kotlinVersion")
-                api("org.jetbrains.kotlinx:kotlinx-coroutines-test:$coroutinesVersion")
+                api(libs.junit.jupiter)
+                implementation(libs.kotlin.test)
+                api(libs.kotlinx.coroutines.test)
             }
         }
     }

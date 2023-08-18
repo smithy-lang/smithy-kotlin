@@ -15,6 +15,7 @@ buildscript {
     val kotlinVersion: String by project
     dependencies {
         classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion")
+        classpath(libs.kotlinx.atomicfu.plugin)
 
         // Add our custom gradle plugin(s) to buildscript classpath (comes from github source)
         // NOTE: buildscript classpath for the root project is the parent classloader for the subprojects, we
@@ -26,6 +27,7 @@ buildscript {
         }
     }
 }
+
 
 plugins {
     kotlin("jvm") apply false

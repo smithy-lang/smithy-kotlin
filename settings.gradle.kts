@@ -16,13 +16,9 @@ pluginManagement {
     plugins {
         val kotlinVersion: String by settings
         val dokkaVersion: String by settings
-        val kotlinxBenchmarkVersion: String by settings
-        val smithyGradleVersion: String by settings
         id("org.jetbrains.dokka") version dokkaVersion
         id("org.jetbrains.kotlin.jvm") version kotlinVersion
         id("org.jetbrains.kotlin.multiplatform") version kotlinVersion
-        id("org.jetbrains.kotlinx.benchmark") version kotlinxBenchmarkVersion
-        id("software.amazon.smithy") version smithyGradleVersion
     }
 }
 

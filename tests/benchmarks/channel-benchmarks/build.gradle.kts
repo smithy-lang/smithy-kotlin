@@ -5,7 +5,7 @@
 import aws.sdk.kotlin.gradle.dsl.skipPublishing
 plugins {
     kotlin("multiplatform")
-    id("org.jetbrains.kotlinx.benchmark")
+    alias(libs.plugins.kotlinx.benchmark)
 }
 
 skipPublishing()
@@ -18,10 +18,9 @@ kotlin {
             optinAnnotations.forEach { languageSettings.optIn(it) }
         }
 
-        val kotlinxBenchmarkVersion: String by project
         commonMain {
             dependencies {
-                implementation("org.jetbrains.kotlinx:kotlinx-benchmark-runtime:$kotlinxBenchmarkVersion")
+                implementation(libs.kotlinx.benchmark.runtime)
             }
         }
 
@@ -29,7 +28,7 @@ kotlin {
             dependencies {
                 val ktorVersion: String by project
                 implementation(project(":runtime:runtime-core"))
-                implementation("io.ktor:ktor-io:$ktorVersion")
+                implementation(libs.ktor.io)
             }
         }
     }

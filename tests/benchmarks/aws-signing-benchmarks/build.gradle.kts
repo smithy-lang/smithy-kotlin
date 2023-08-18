@@ -5,7 +5,7 @@
 import aws.sdk.kotlin.gradle.dsl.skipPublishing
 plugins {
     kotlin("multiplatform")
-    id("org.jetbrains.kotlinx.benchmark")
+    alias(libs.plugins.kotlinx.benchmark)
 }
 
 skipPublishing()
@@ -18,10 +18,9 @@ kotlin {
             optinAnnotations.forEach { languageSettings.optIn(it) }
         }
 
-        val kotlinxBenchmarkVersion: String by project
         commonMain {
             dependencies {
-                implementation("org.jetbrains.kotlinx:kotlinx-benchmark-runtime:$kotlinxBenchmarkVersion")
+                implementation(libs.kotlinx.benchmark.runtime)
                 implementation(project(":runtime:auth:aws-signing-crt"))
                 implementation(project(":runtime:auth:aws-signing-default"))
                 implementation(project(":runtime:auth:aws-signing-tests"))

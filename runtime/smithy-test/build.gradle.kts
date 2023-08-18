@@ -20,17 +20,17 @@ kotlin {
 
                 implementation(project(":runtime:serde:serde-xml"))
 
-                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:$coroutinesVersion")
-                implementation("org.jetbrains.kotlin:kotlin-test-common:$kotlinVersion")
+                implementation(libs.kotlinx.coroutines.test)
+                implementation(libs.kotlin.test)
 
                 // kotlinx-serialization::JsonElement allows comparing arbitrary JSON docs for equality
-                implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:$kotlinxSerializationVersion")
+                implementation(libs.kotlinx.serialization.json)
             }
         }
 
         jvmMain {
             dependencies {
-                implementation("org.jetbrains.kotlin:kotlin-test:$kotlinVersion")
+                implementation(libs.kotlin.test)
             }
         }
 

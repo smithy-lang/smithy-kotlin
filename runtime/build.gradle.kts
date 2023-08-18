@@ -11,8 +11,8 @@ plugins {
 
 val sdkVersion: String by project
 
-val coroutinesVersion: String by project
-val kotestVersion: String by project
+// capture locally - scope issue with custom KMP plugin
+val libraries = libs
 
 subprojects {
     if (!needsKmpConfigured) return@subprojects
@@ -34,20 +34,20 @@ subprojects {
             named("commonMain") {
                 dependencies {
                     // refactor to only add this to projects that need it
-                    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion")
+                    implementation(libraries.kotlinx.coroutines.core)
                 }
             }
 
             named("commonTest") {
                 dependencies {
-                    implementation("io.kotest:kotest-assertions-core:$kotestVersion")
+                    implementation(libraries.kotest.assertions.core)
                 }
             }
 
             named("jvmTest") {
                 dependencies {
-                    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-debug:$coroutinesVersion")
-                    implementation("io.kotest:kotest-assertions-core-jvm:$kotestVersion")
+                    implementation(libraries.kotlinx.coroutines.debug)
+                    implementation(libraries.kotest.assertions.core.jvm)
                 }
             }
         }

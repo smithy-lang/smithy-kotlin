@@ -6,8 +6,6 @@ description = "AWS Signer default implementation"
 extra["displayName"] = "Smithy :: Kotlin :: Standard AWS Signer"
 extra["moduleName"] = "aws.smithy.kotlin.runtime.auth.awssigning"
 
-val coroutinesVersion: String by project
-
 kotlin {
     sourceSets {
         commonMain {
@@ -19,7 +17,7 @@ kotlin {
         commonTest {
             dependencies {
                 implementation(project(":runtime:auth:aws-signing-tests"))
-                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:$coroutinesVersion")
+                implementation(libs.kotlinx.coroutines.test)
             }
         }
 

@@ -7,8 +7,6 @@ description = "Support for the XML suite of AWS protocols"
 extra["displayName"] = "AWS :: Smithy :: Kotlin :: XML"
 extra["moduleName"] = "aws.smithy.kotlin.runtime.awsprotocol.xml"
 
-val coroutinesVersion: String by project
-
 kotlin {
     sourceSets {
         commonMain {
@@ -24,7 +22,7 @@ kotlin {
         commonTest {
             dependencies {
                 implementation(project(":runtime:testing"))
-                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:$coroutinesVersion")
+                implementation(libs.kotlinx.coroutines.test)
             }
         }
 
