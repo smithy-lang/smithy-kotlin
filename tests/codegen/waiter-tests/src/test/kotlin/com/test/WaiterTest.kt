@@ -279,16 +279,16 @@ class WaiterTest {
                         subStructs = listOf(
                             SubStruct {
                                 subStructPrimitives = EntityPrimitives { boolean = true }
-                            }
+                            },
                         )
                     },
                     Struct {
                         subStructs = listOf(
                             SubStruct {
                                 subStructPrimitives = EntityPrimitives { boolean = false }
-                            }
+                            },
                         )
-                    }
+                    },
                 )
             }
         },
@@ -299,16 +299,16 @@ class WaiterTest {
                         subStructs = listOf(
                             SubStruct {
                                 subStructPrimitives = EntityPrimitives { boolean = false }
-                            }
+                            },
                         )
                     },
                     Struct {
                         subStructs = listOf(
                             SubStruct {
                                 subStructPrimitives = EntityPrimitives { boolean = true }
-                            }
+                            },
                         )
-                    }
+                    },
                 )
             }
         },
@@ -393,16 +393,16 @@ class WaiterTest {
                         subStructs = listOf(
                             SubStruct {
                                 subStructPrimitives = EntityPrimitives { boolean = false }
-                            }
+                            },
                         )
                     },
                     Struct {
                         subStructs = listOf(
                             SubStruct {
                                 subStructPrimitives = EntityPrimitives { boolean = true }
-                            }
+                            },
                         )
-                    }
+                    },
                 )
             }
         },
@@ -413,16 +413,16 @@ class WaiterTest {
                         subStructs = listOf(
                             SubStruct {
                                 subStructPrimitives = EntityPrimitives { boolean = true }
-                            }
+                            },
                         )
                     },
                     Struct {
                         subStructs = listOf(
                             SubStruct {
                                 subStructPrimitives = EntityPrimitives { boolean = false }
-                            }
+                            },
                         )
-                    }
+                    },
                 )
             }
         },
