@@ -11,7 +11,6 @@ extra["moduleName"] = "aws.smithy.kotlin.http.test"
 
 skipPublishing()
 
-
 kotlin {
     sourceSets {
         commonMain {

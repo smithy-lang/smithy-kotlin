@@ -5,7 +5,8 @@
 import aws.sdk.kotlin.gradle.dsl.configurePublishing
 import aws.sdk.kotlin.gradle.kmp.*
 plugins {
-    id("org.jetbrains.dokka")
+    @Suppress("DSL_SCOPE_VIOLATION") // TODO: Remove once https://youtrack.jetbrains.com/issue/KTIJ-19369 is fixed
+    alias(libs.plugins.dokka)
     jacoco
 }
 

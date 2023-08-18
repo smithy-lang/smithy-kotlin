@@ -17,7 +17,6 @@ val sdkVersion: String by project
 group = "software.amazon.smithy.kotlin"
 version = sdkVersion
 
-
 dependencies {
     implementation(kotlin("stdlib-jdk8"))
     implementation(libs.smithy.aws.traits)

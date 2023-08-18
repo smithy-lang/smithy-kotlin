@@ -3,7 +3,6 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-
 plugins {
     kotlin("plugin.serialization") version "1.8.21"
 }

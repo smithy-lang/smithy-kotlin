@@ -4,6 +4,8 @@
  */
 import aws.sdk.kotlin.gradle.dsl.skipPublishing
 import software.amazon.smithy.gradle.tasks.SmithyBuild
+
+@Suppress("DSL_SCOPE_VIOLATION") // TODO: Remove once https://youtrack.jetbrains.com/issue/KTIJ-19369 is fixed
 plugins {
     kotlin("multiplatform")
     alias(libs.plugins.smithy.gradle)

@@ -6,7 +6,6 @@ description = "Logging provider based on SLF4J 2"
 extra["displayName"] = "Smithy :: Kotlin :: Observability :: SLF4J2 binding"
 extra["moduleName"] = "aws.smithy.kotlin.runtime.telemetry"
 
-
 kotlin {
     sourceSets {
         commonMain {

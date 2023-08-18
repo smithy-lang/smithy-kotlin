@@ -9,7 +9,6 @@ description = "Utilities for working with AWS CRT Kotlin"
 extra["displayName"] = "Smithy :: Kotlin :: CRT :: Util"
 extra["moduleName"] = "aws.smithy.kotlin.runtime.crt"
 
-
 kotlin {
     sourceSets {
         commonMain {

@@ -5,6 +5,7 @@
 import aws.sdk.kotlin.gradle.dsl.skipPublishing
 plugins {
     kotlin("multiplatform")
+    @Suppress("DSL_SCOPE_VIOLATION") // TODO: Remove once https://youtrack.jetbrains.com/issue/KTIJ-19369 is fixed
     alias(libs.plugins.kotlinx.benchmark)
 }
 
@@ -26,7 +27,6 @@ kotlin {
 
         val jvmMain by getting {
             dependencies {
-                val ktorVersion: String by project
                 implementation(project(":runtime:runtime-core"))
                 implementation(libs.ktor.io)
             }
