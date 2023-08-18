@@ -15,7 +15,7 @@ public value class AuthSchemeId(public val id: String) {
         /**
          * Indicates that an operation MAY be invoked without authentication
          */
-        public val Anonymous: AuthSchemeId = AuthSchemeId("smithy.api#optionalAuth")
+        public val Anonymous: AuthSchemeId = AuthSchemeId("smithy.api#noAuth")
 
         /**
          * HTTP Basic Authentication as defined in [RFC 2617](https://tools.ietf.org/html/rfc2617.html)
@@ -46,15 +46,5 @@ public value class AuthSchemeId(public val id: String) {
          * AWS Signature Version 4 asymmetric authentication
          */
         public val AwsSigV4Asymmetric: AuthSchemeId = AuthSchemeId("aws.auth#sigv4a")
-
-        /**
-         * AWS Signature Version 4 query authentication
-         */
-        public val AwsSigV4Query: AuthSchemeId = AuthSchemeId("aws.auth#sigv4Query")
-
-        /**
-         * AWS Signature Version 4 X.509 authentication
-         */
-        public val AwsX509: AuthSchemeId = AuthSchemeId("aws.auth#sigv4x509")
     }
 }

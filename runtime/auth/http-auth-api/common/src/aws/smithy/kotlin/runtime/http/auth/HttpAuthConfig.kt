@@ -10,20 +10,20 @@ package aws.smithy.kotlin.runtime.http.auth
  */
 public interface HttpAuthConfig {
     /**
-     * New or overridden [HttpAuthScheme]'s configured for this client. By default, the set
+     * New or overridden [AuthScheme]'s configured for this client. By default, the set
      * of auth schemes configured comes from the service model. An auth scheme configured explicitly takes
      * precedence over the defaults and can be used to customize identity resolution and signing for specific
      * authentication schemes.
      */
-    public val authSchemes: List<HttpAuthScheme>
+    public val authSchemes: List<AuthScheme>
 
     public interface Builder {
         /**
-         * Register new or override default [HttpAuthScheme]'s configured for this client. By default, the set
+         * Register new or override default [AuthScheme]'s configured for this client. By default, the set
          * of auth schemes configured comes from the service model. An auth scheme configured explicitly takes
          * precedence over the defaults and can be used to customize identity resolution and signing for specific
          * authentication schemes.
          */
-        public var authSchemes: List<HttpAuthScheme>
+        public var authSchemes: List<AuthScheme>
     }
 }

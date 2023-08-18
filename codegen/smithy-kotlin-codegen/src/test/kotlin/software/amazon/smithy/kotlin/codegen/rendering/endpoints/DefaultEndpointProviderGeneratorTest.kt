@@ -138,7 +138,11 @@ class DefaultEndpointProviderGeneratorTest {
             namespace = TestModelDefault.NAMESPACE
         }
         val writer = KotlinWriter(TestModelDefault.NAMESPACE)
-        DefaultEndpointProviderGenerator(writer, rules, interfaceSymbol, paramsSymbol).render()
+        val defaultSymbol = buildSymbol {
+            name = "DefaultEndpointProvider"
+            namespace = TestModelDefault.NAMESPACE
+        }
+        DefaultEndpointProviderGenerator(writer, rules, defaultSymbol, interfaceSymbol, paramsSymbol).render()
         generatedClass = writer.toString()
     }
 

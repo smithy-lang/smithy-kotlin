@@ -35,7 +35,7 @@ public object AnonymousIdentityProvider : IdentityProvider {
 /**
  * A no-op auth scheme
  */
-public object AnonymousAuthScheme : HttpAuthScheme {
+public object AnonymousAuthScheme : AuthScheme {
     override val schemeId: AuthSchemeId = AuthSchemeId.Anonymous
     override val signer: HttpSigner = AnonymousHttpSigner
     override fun identityProvider(identityProviderConfig: IdentityProviderConfig): IdentityProvider = AnonymousIdentityProvider

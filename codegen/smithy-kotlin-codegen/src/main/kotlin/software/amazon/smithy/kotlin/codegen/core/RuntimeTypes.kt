@@ -276,7 +276,7 @@ object RuntimeTypes {
         object Identity : RuntimeTypePackage(KotlinDependency.IDENTITY_API) {
             val AuthSchemeId = symbol("AuthSchemeId", "auth")
             val AuthSchemeProvider = symbol("AuthSchemeProvider", "auth")
-            val AuthSchemeOption = symbol("AuthSchemeOption", "auth")
+            val AuthOption = symbol("AuthOption", "auth")
 
             val IdentityProvider = symbol("IdentityProvider", "identity")
             val IdentityProviderConfig = symbol("IdentityProviderConfig", "identity")
@@ -303,7 +303,7 @@ object RuntimeTypes {
             val AnonymousIdentity = symbol("AnonymousIdentity")
             val AnonymousIdentityProvider = symbol("AnonymousIdentityProvider")
             val HttpAuthConfig = symbol("HttpAuthConfig")
-            val HttpAuthScheme = symbol("HttpAuthScheme")
+            val AuthScheme = symbol("AuthScheme")
 
             val BearerTokenAuthScheme = symbol("BearerTokenAuthScheme")
             val BearerTokenProviderConfig = symbol("BearerTokenProviderConfig")

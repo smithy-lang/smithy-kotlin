@@ -7,6 +7,7 @@ package software.amazon.smithy.kotlin.codegen.rendering.endpoints
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.kotlin.codegen.KotlinSettings
 import software.amazon.smithy.kotlin.codegen.core.KotlinWriter
+import software.amazon.smithy.kotlin.codegen.core.clientName
 import software.amazon.smithy.kotlin.codegen.core.withBlock
 import software.amazon.smithy.kotlin.codegen.model.*
 import software.amazon.smithy.kotlin.codegen.utils.getOrNull
@@ -22,13 +23,14 @@ private const val DEFAULT_DEPRECATED_MESSAGE =
 class EndpointParametersGenerator(
     private val writer: KotlinWriter,
     rules: EndpointRuleSet?,
+    private val paramsSymbol: Symbol,
 ) {
     companion object {
-        const val CLASS_NAME = "EndpointParameters"
 
         fun getSymbol(settings: KotlinSettings): Symbol =
             buildSymbol {
-                name = CLASS_NAME
+                val prefix = clientName(settings.sdkId)
+                name = "${prefix}EndpointParameters"
                 namespace = "${settings.pkg.name}.endpoints"
             }
     }
@@ -48,7 +50,8 @@ class EndpointParametersGenerator(
 
     fun render() {
         renderDocumentation()
-        writer.withBlock("public class #L private constructor(builder: Builder) {", "}", CLASS_NAME) {
+        // FIXME - this should probably be an interface
+        writer.withBlock("public class #T private constructor(builder: Builder) {", "}", paramsSymbol) {
             renderFields()
             renderCompanionObject()
             write("")
@@ -86,14 +89,14 @@ class EndpointParametersGenerator(
 
     private fun renderCompanionObject() {
         writer.withBlock("public companion object {", "}") {
-            write("public inline operator fun invoke(block: Builder.() -> Unit): #L = Builder().apply(block).build()", CLASS_NAME)
+            write("public inline operator fun invoke(block: Builder.() -> Unit): #T = Builder().apply(block).build()", paramsSymbol)
         }
     }
 
     private fun renderEquals() {
         writer.withBlock("public override fun equals(other: Any?): Boolean {", "}") {
             write("if (this === other) return true")
-            write("if (other !is #L) return false", CLASS_NAME)
+            write("if (other !is #T) return false", paramsSymbol)
             params.forEach {
                 ensureSuppressDeprecation(it)
                 write("if (this.#1L != other.#1L) return false", it.name)
@@ -121,7 +124,7 @@ class EndpointParametersGenerator(
 
     private fun renderToString() {
         writer.withBlock("public override fun toString(): String = buildString {", "}") {
-            write("append(\"#L(\")", CLASS_NAME)
+            write("append(\"#L(\")", paramsSymbol.name)
             params.forEachIndexed { index, it ->
                 ensureSuppressDeprecation(it)
                 write("""append("#1L=$#1L#2L")""", it.name, if (index < params.size - 1) "," else ")")
@@ -130,11 +133,11 @@ class EndpointParametersGenerator(
     }
 
     private fun renderCopy() {
-        writer.withBlock("public fun copy(block: Builder.() -> Unit = {}): #L {", "}", CLASS_NAME) {
+        writer.withBlock("public fun copy(block: Builder.() -> Unit = {}): #T {", "}", paramsSymbol) {
             withBlock("return Builder().apply {", "}") {
                 params.forEach {
                     ensureSuppressDeprecation(it)
-                    write("#1L = this@#2L.#1L", it.name, CLASS_NAME)
+                    write("#1L = this@#2L.#1L", it.name, paramsSymbol.name)
                 }
                 write("block()")
             }
@@ -148,7 +151,7 @@ class EndpointParametersGenerator(
                 it.renderDeclaration(writer, it.defaultLiteral, isMutable = true)
             }
             write("")
-            write("public fun build(): #1L = #1L(this)", CLASS_NAME)
+            write("public fun build(): #1T = #1T(this)", paramsSymbol)
         }
     }
 }

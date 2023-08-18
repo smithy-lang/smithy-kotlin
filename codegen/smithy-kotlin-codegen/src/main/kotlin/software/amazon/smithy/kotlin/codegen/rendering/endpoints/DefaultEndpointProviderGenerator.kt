@@ -59,17 +59,17 @@ fun interface ExpressionRenderer {
 class DefaultEndpointProviderGenerator(
     private val writer: KotlinWriter,
     private val rules: EndpointRuleSet,
+    private val defaultProviderSymbol: Symbol,
     private val interfaceSymbol: Symbol,
     private val paramsSymbol: Symbol,
     private val externalFunctions: Map<String, Symbol> = emptyMap(),
     private val propertyRenderers: Map<String, EndpointPropertyRenderer> = emptyMap(),
 ) : ExpressionRenderer {
     companion object {
-        const val CLASS_NAME = "DefaultEndpointProvider"
-
         fun getSymbol(settings: KotlinSettings): Symbol =
             buildSymbol {
-                name = CLASS_NAME
+                val prefix = clientName(settings.sdkId)
+                name = "Default${prefix}EndpointProvider"
                 namespace = "${settings.pkg.name}.endpoints"
             }
     }
@@ -78,7 +78,7 @@ class DefaultEndpointProviderGenerator(
 
     fun render() {
         renderDocumentation()
-        writer.withBlock("public class #L: #T {", "}", CLASS_NAME, interfaceSymbol) {
+        writer.withBlock("public class #T: #T {", "}", defaultProviderSymbol, interfaceSymbol) {
             renderResolve()
         }
     }

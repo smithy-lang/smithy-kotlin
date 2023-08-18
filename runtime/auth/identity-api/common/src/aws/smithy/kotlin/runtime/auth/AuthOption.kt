@@ -12,14 +12,22 @@ import aws.smithy.kotlin.runtime.util.emptyAttributes
  * A tuple of [AuthSchemeId] and typed properties. AuthSchemeOption represents a candidate
  * authentication scheme.
  */
-public data class AuthSchemeOption(
+public interface AuthOption {
     /**
      * The ID of the authentication scheme
      */
-    public val schemeId: AuthSchemeId,
+    public val schemeId: AuthSchemeId
 
     /**
      * Identity or signer attributes to use with this resolved authentication scheme
      */
-    public val attributes: Attributes = emptyAttributes(),
-)
+    public val attributes: Attributes
+}
+
+public fun AuthOption(id: AuthSchemeId, attributes: Attributes = emptyAttributes()): AuthOption =
+    AuthOptionImpl(id, attributes)
+
+private data class AuthOptionImpl(
+    override val schemeId: AuthSchemeId,
+    override val attributes: Attributes,
+) : AuthOption

@@ -1,3 +1,13 @@
+public abstract interface class aws/smithy/kotlin/runtime/http/auth/AuthScheme {
+	public abstract fun getSchemeId-DepwgT4 ()Ljava/lang/String;
+	public abstract fun getSigner ()Laws/smithy/kotlin/runtime/http/auth/HttpSigner;
+	public abstract fun identityProvider (Laws/smithy/kotlin/runtime/identity/IdentityProviderConfig;)Laws/smithy/kotlin/runtime/identity/IdentityProvider;
+}
+
+public final class aws/smithy/kotlin/runtime/http/auth/AuthScheme$DefaultImpls {
+	public static fun identityProvider (Laws/smithy/kotlin/runtime/http/auth/AuthScheme;Laws/smithy/kotlin/runtime/identity/IdentityProviderConfig;)Laws/smithy/kotlin/runtime/identity/IdentityProvider;
+}
+
 public abstract interface class aws/smithy/kotlin/runtime/http/auth/HttpAuthConfig {
 	public abstract fun getAuthSchemes ()Ljava/util/List;
 }
@@ -5,16 +15,6 @@ public abstract interface class aws/smithy/kotlin/runtime/http/auth/HttpAuthConf
 public abstract interface class aws/smithy/kotlin/runtime/http/auth/HttpAuthConfig$Builder {
 	public abstract fun getAuthSchemes ()Ljava/util/List;
 	public abstract fun setAuthSchemes (Ljava/util/List;)V
-}
-
-public abstract interface class aws/smithy/kotlin/runtime/http/auth/HttpAuthScheme {
-	public abstract fun getSchemeId-DepwgT4 ()Ljava/lang/String;
-	public abstract fun getSigner ()Laws/smithy/kotlin/runtime/http/auth/HttpSigner;
-	public abstract fun identityProvider (Laws/smithy/kotlin/runtime/identity/IdentityProviderConfig;)Laws/smithy/kotlin/runtime/identity/IdentityProvider;
-}
-
-public final class aws/smithy/kotlin/runtime/http/auth/HttpAuthScheme$DefaultImpls {
-	public static fun identityProvider (Laws/smithy/kotlin/runtime/http/auth/HttpAuthScheme;Laws/smithy/kotlin/runtime/identity/IdentityProviderConfig;)Laws/smithy/kotlin/runtime/identity/IdentityProvider;
 }
 
 public abstract interface class aws/smithy/kotlin/runtime/http/auth/HttpSigner {

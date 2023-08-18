@@ -8,6 +8,7 @@ package software.amazon.smithy.kotlin.codegen.rendering.auth
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.kotlin.codegen.KotlinSettings
 import software.amazon.smithy.kotlin.codegen.core.RuntimeTypes
+import software.amazon.smithy.kotlin.codegen.core.clientName
 import software.amazon.smithy.kotlin.codegen.core.withBlock
 import software.amazon.smithy.kotlin.codegen.model.buildSymbol
 import software.amazon.smithy.kotlin.codegen.rendering.protocol.ProtocolGenerator
@@ -19,7 +20,8 @@ import software.amazon.smithy.kotlin.codegen.rendering.protocol.ProtocolGenerato
 class AuthSchemeProviderAdapterGenerator {
     companion object {
         fun getSymbol(settings: KotlinSettings): Symbol = buildSymbol {
-            name = "AuthSchemeProviderAdapter"
+            val prefix = clientName(settings.sdkId)
+            name = "${prefix}AuthSchemeProviderAdapter"
             namespace = "${settings.pkg.name}.auth"
             definitionFile = "$name.kt"
         }
@@ -28,21 +30,26 @@ class AuthSchemeProviderAdapterGenerator {
     fun render(ctx: ProtocolGenerator.GenerationContext) {
         val symbol = getSymbol(ctx.settings)
         ctx.delegator.useSymbolWriter(symbol) { writer ->
-            // TODO - auth parameters will need bound per/request as applicable (e.g. like EP2.0 or generate one per/request).
-            //        This is a simplified version (using object) while design is in flux.
-            writer.withBlock("internal object #T: #T {", "}", symbol, RuntimeTypes.HttpClient.Operation.AuthSchemeResolver) {
+            writer.dokka("Adapts the service specific auth scheme resolver to the agnostic runtime interface and binds the auth parameters")
+            writer.withBlock(
+                "internal class #T(private val delegate: #T): #T {",
+                "}",
+                symbol,
+                AuthSchemeProviderGenerator.getSymbol(ctx.settings),
+                RuntimeTypes.HttpClient.Operation.AuthSchemeResolver,
+            ) {
                 withBlock(
                     "override suspend fun resolve(request: #T): List<#T> {",
                     "}",
                     RuntimeTypes.HttpClient.Operation.SdkHttpRequest,
-                    RuntimeTypes.Auth.Identity.AuthSchemeOption,
+                    RuntimeTypes.Auth.Identity.AuthOption,
                 ) {
-                    withBlock("val params = #T {", "}", AuthSchemeParametersGenerator.getSymbol(ctx.settings)) {
+                    withBlock("val params = #T {", "}", AuthSchemeParametersGenerator.getImplementationSymbol(ctx.settings)) {
                         addImport(RuntimeTypes.Core.Utils.get)
                         write("operationName = request.context[#T.OperationName]", RuntimeTypes.SmithyClient.SdkClientOption)
                     }
 
-                    write("return #T.resolveAuthScheme(params)", AuthSchemeProviderGenerator.getDefaultSymbol(ctx.settings))
+                    write("return delegate.resolveAuthScheme(params)")
                 }
             }
         }

@@ -12,7 +12,7 @@ import aws.smithy.kotlin.runtime.identity.IdentityProviderConfig
 /**
  * A configured authentication scheme for HTTP protocol
  */
-public interface HttpAuthScheme {
+public interface AuthScheme {
     /**
      * The unique authentication scheme ID
      */

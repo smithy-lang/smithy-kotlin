@@ -89,7 +89,7 @@ class HttpProtocolClientGeneratorTest {
                 scope = telemetryScope
                 metrics = opMetrics
             }
-            execution.auth = OperationAuthConfig(AuthSchemeProviderAdapter, configuredAuthSchemes, identityProviderConfig)
+            execution.auth = OperationAuthConfig(authSchemeAdapter, configuredAuthSchemes, identityProviderConfig)
             execution.endpointResolver = EndpointResolverAdapter(config)
             execution.retryStrategy = config.retryStrategy
         }
@@ -112,7 +112,7 @@ class HttpProtocolClientGeneratorTest {
                 scope = telemetryScope
                 metrics = opMetrics
             }
-            execution.auth = OperationAuthConfig(AuthSchemeProviderAdapter, configuredAuthSchemes, identityProviderConfig)
+            execution.auth = OperationAuthConfig(authSchemeAdapter, configuredAuthSchemes, identityProviderConfig)
             execution.endpointResolver = EndpointResolverAdapter(config)
             execution.retryStrategy = config.retryStrategy
         }
@@ -135,7 +135,7 @@ class HttpProtocolClientGeneratorTest {
                 scope = telemetryScope
                 metrics = opMetrics
             }
-            execution.auth = OperationAuthConfig(AuthSchemeProviderAdapter, configuredAuthSchemes, identityProviderConfig)
+            execution.auth = OperationAuthConfig(authSchemeAdapter, configuredAuthSchemes, identityProviderConfig)
             execution.endpointResolver = EndpointResolverAdapter(config)
             execution.retryStrategy = config.retryStrategy
         }
@@ -158,7 +158,7 @@ class HttpProtocolClientGeneratorTest {
                 scope = telemetryScope
                 metrics = opMetrics
             }
-            execution.auth = OperationAuthConfig(AuthSchemeProviderAdapter, configuredAuthSchemes, identityProviderConfig)
+            execution.auth = OperationAuthConfig(authSchemeAdapter, configuredAuthSchemes, identityProviderConfig)
             execution.endpointResolver = EndpointResolverAdapter(config)
             execution.retryStrategy = config.retryStrategy
         }
@@ -181,7 +181,7 @@ class HttpProtocolClientGeneratorTest {
                 scope = telemetryScope
                 metrics = opMetrics
             }
-            execution.auth = OperationAuthConfig(AuthSchemeProviderAdapter, configuredAuthSchemes, identityProviderConfig)
+            execution.auth = OperationAuthConfig(authSchemeAdapter, configuredAuthSchemes, identityProviderConfig)
             execution.endpointResolver = EndpointResolverAdapter(config)
             execution.retryStrategy = config.retryStrategy
         }
@@ -204,7 +204,7 @@ class HttpProtocolClientGeneratorTest {
                 scope = telemetryScope
                 metrics = opMetrics
             }
-            execution.auth = OperationAuthConfig(AuthSchemeProviderAdapter, configuredAuthSchemes, identityProviderConfig)
+            execution.auth = OperationAuthConfig(authSchemeAdapter, configuredAuthSchemes, identityProviderConfig)
             execution.endpointResolver = EndpointResolverAdapter(config)
             execution.retryStrategy = config.retryStrategy
         }
@@ -227,7 +227,7 @@ class HttpProtocolClientGeneratorTest {
                 scope = telemetryScope
                 metrics = opMetrics
             }
-            execution.auth = OperationAuthConfig(AuthSchemeProviderAdapter, configuredAuthSchemes, identityProviderConfig)
+            execution.auth = OperationAuthConfig(authSchemeAdapter, configuredAuthSchemes, identityProviderConfig)
             execution.endpointResolver = EndpointResolverAdapter(config)
             execution.retryStrategy = config.retryStrategy
         }
@@ -250,7 +250,7 @@ class HttpProtocolClientGeneratorTest {
                 scope = telemetryScope
                 metrics = opMetrics
             }
-            execution.auth = OperationAuthConfig(AuthSchemeProviderAdapter, configuredAuthSchemes, identityProviderConfig)
+            execution.auth = OperationAuthConfig(authSchemeAdapter, configuredAuthSchemes, identityProviderConfig)
             execution.endpointResolver = EndpointResolverAdapter(config)
             execution.retryStrategy = config.retryStrategy
         }
@@ -273,7 +273,7 @@ class HttpProtocolClientGeneratorTest {
                 scope = telemetryScope
                 metrics = opMetrics
             }
-            execution.auth = OperationAuthConfig(AuthSchemeProviderAdapter, configuredAuthSchemes, identityProviderConfig)
+            execution.auth = OperationAuthConfig(authSchemeAdapter, configuredAuthSchemes, identityProviderConfig)
             execution.endpointResolver = EndpointResolverAdapter(config)
             execution.retryStrategy = config.retryStrategy
         }
@@ -353,7 +353,7 @@ class HttpProtocolClientGeneratorTest {
                 scope = telemetryScope
                 metrics = opMetrics
             }
-            execution.auth = OperationAuthConfig(AuthSchemeProviderAdapter, configuredAuthSchemes, identityProviderConfig)
+            execution.auth = OperationAuthConfig(authSchemeAdapter, configuredAuthSchemes, identityProviderConfig)
             execution.endpointResolver = EndpointResolverAdapter(config)
             execution.retryStrategy = config.retryStrategy
         }
