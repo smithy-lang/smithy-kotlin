@@ -52,7 +52,7 @@ class AcceptorGeneratorTest {
         val expected = """
             val $acceptorListName = listOf<Acceptor<DescribeFooRequest, DescribeFooResponse>>(
                 OutputAcceptor(RetryDirective.TerminateAndSucceed) {
-                    val name = it.name
+                    val name = it?.name
                     name == "foo"
                 },
             )
@@ -65,24 +65,24 @@ class AcceptorGeneratorTest {
         val expected = """
             val $acceptorListName = listOf<Acceptor<DescribeFooRequest, DescribeFooResponse>>(
                 InputOutputAcceptor(RetryDirective.TerminateAndSucceed) {
-                    val input = it.input
-                    val id = input.id
+                    val input = it?.input
+                    val id = input?.id
                     id == "foo"
                 },
                 InputOutputAcceptor(RetryDirective.TerminateAndSucceed) {
-                    val output = it.output
-                    val isDeprecated = output.isDeprecated
+                    val output = it?.output
+                    val isDeprecated = output?.isDeprecated
                     isDeprecated == false
                 },
                 InputOutputAcceptor(RetryDirective.TerminateAndSucceed) {
-                    val output = it.output
-                    val tags = output.tags
-                    !tags.isNullOrEmpty() && tags.all { it == "foo" }
+                    val output = it?.output
+                    val tags = output?.tags
+                    !(tags as List<String>).isNullOrEmpty() && tags.all { it == "foo" }
                 },
                 InputOutputAcceptor(RetryDirective.TerminateAndSucceed) {
-                    val output = it.output
-                    val tags = output.tags
-                    tags?.any { it == "foo" } ?: false
+                    val output = it?.output
+                    val tags = output?.tags
+                    (tags as List<String>?)?.any { it == "foo" } ?: false
                 },
             )
         """.trimIndent()

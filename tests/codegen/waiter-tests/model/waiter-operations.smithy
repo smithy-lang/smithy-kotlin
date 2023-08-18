@@ -525,6 +525,107 @@ service WaitersTestService {
         ]
     },
 
+    // multi select list
+    StructListStringMultiSelectList: {
+        acceptors: [
+            {
+                state: "success",
+                matcher: {
+                    output: {
+                        path: "lists.structs[].[primitives.string][0][0]",
+                        expected: "foo",
+                        comparator: "stringEquals"
+                    }
+                }
+            }
+        ]
+    },
+    StructListStringListMultiSelectList: {
+        acceptors: [
+            {
+                state: "success",
+                matcher: {
+                    output: {
+                        path: "lists.structs[].[primitives.string, primitives.string][1]",
+                        expected: "foo",
+                        comparator: "allStringEquals"
+                    }
+                }
+            }
+        ]
+    },
+    StructListSubStructPrimitivesBooleanMultiSelectList: {
+        acceptors: [
+            {
+                state: "success",
+                matcher: {
+                    output: {
+                        path: "lists.structs[].[subStructs][1][0][0].subStructPrimitives.boolean",
+                        expected: "true",
+                        comparator: "booleanEquals"
+                    }
+                }
+            }
+        ]
+    },
+
+    StructListStringMultiSelectHash: {
+        acceptors: [
+            {
+                state: "success",
+                matcher: {
+                    output: {
+                        path: "(lists.structs[].{x: primitives.string, y: strings})[0].x",
+                        expected: "foo"
+                        comparator: "stringEquals"
+                    }
+                }
+            }
+        ]
+    },
+    StructListStringsMultiSelectHash: {
+        acceptors: [
+            {
+                state: "success",
+                matcher: {
+                    output: {
+                        path: "(lists.structs[].{x: primitives.string, y: strings})[1].y",
+                        expected: "foo"
+                        comparator: "allStringEquals"
+                    }
+                }
+            }
+        ]
+    },
+    StructListStringsAnyMultiSelectHash: {
+        acceptors: [
+            {
+                state: "success",
+                matcher: {
+                    output: {
+                        path: "(lists.structs[].{x: primitives.string, y: strings})[1].y",
+                        expected: "foo"
+                        comparator: "anyStringEquals"
+                    }
+                }
+            }
+        ]
+    },
+    StructListSubStructPrimitivesBooleanMultiSelectHash: {
+        acceptors: [
+            {
+                state: "success",
+                matcher: {
+                    output: {
+                        path: "(lists.structs[].{x: subStructs})[0].x[0].subStructPrimitives.boolean",
+                        expected: "true"
+                        comparator: "booleanEquals"
+                    }
+                }
+            }
+        ]
+    },
+
     // function: contains, list
     BooleanListContains: {
         acceptors: [
