@@ -220,6 +220,9 @@ class ShapeValueGenerator(
                     writer.writeInline("#L", "$symbolName.$symbolMember")
                 }
 
+                ShapeType.BIG_INTEGER -> writer.writeInline("#T(#S)", RuntimeTypes.Core.Content.BigInteger, node.value)
+                ShapeType.BIG_DECIMAL -> writer.writeInline("#T(#S)", RuntimeTypes.Core.Content.BigDecimal, node.value)
+
                 ShapeType.DOCUMENT -> writer.writeInline("#T(#S)", RuntimeTypes.Core.Content.Document, node.value)
 
                 else -> writer.writeInline("#S", node.value)
@@ -282,9 +285,11 @@ class ShapeValueGenerator(
                 ShapeType.FLOAT -> writer.writeInline("#L.toFloat()", node.value)
                 ShapeType.DOUBLE -> writer.writeInline("#L.toDouble()", node.value)
 
-                ShapeType.BIG_INTEGER, ShapeType.BIG_DECIMAL -> {
-                    // TODO - We need to decide non-JVM only symbols to generate for these before we know how to assign values to them
-                }
+                ShapeType.BIG_INTEGER ->
+                    writer.writeInline("#T(#S)", RuntimeTypes.Core.Content.BigInteger, node.value.toString())
+
+                ShapeType.BIG_DECIMAL ->
+                    writer.writeInline("#T(#S)", RuntimeTypes.Core.Content.BigDecimal, node.value.toString())
 
                 ShapeType.DOCUMENT -> writer.writeInline(
                     "#T(#L#L)",

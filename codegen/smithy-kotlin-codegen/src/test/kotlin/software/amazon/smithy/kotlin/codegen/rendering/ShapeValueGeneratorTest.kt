@@ -200,40 +200,61 @@ MyUnion.StringMember("v1")
     @Test
     fun `it renders numbers`() {
         for (type in listOf("Double", "Float")) {
-            val model = """
-                structure MyStruct {
-                    member: $type,
-                }
-            """.prependNamespaceAndService(namespace = "foo.bar").toSmithyModel()
-
-            val shape = model.expectShape(ShapeId.from("foo.bar#MyStruct"))
-            val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model, rootNamespace = "foo.bar")
-            val gen = ShapeValueGenerator(model, provider)
-
-            val tests = mapOf<ToNode, String>(
+            testType(
+                type,
                 NumberNode.from(1.2) to "1.2.to$type()",
                 StringNode.from("-Infinity") to "$type.NEGATIVE_INFINITY",
                 StringNode.from("Infinity") to "$type.POSITIVE_INFINITY",
                 StringNode.from("NaN") to "$type.NaN",
             )
+        }
+    }
 
-            for ((nodeValue, serialization) in tests) {
-                val writer = KotlinWriter(TestModelDefault.NAMESPACE)
+    @Test
+    fun `it renders big integers`() {
+        testType(
+            "BigInteger",
+            NumberNode.from(100) to """BigInteger("100")""",
+            StringNode.from("340282366920938463463374607431768211456") to """BigInteger("340282366920938463463374607431768211456")""",
+        )
+    }
 
-                val node = Node.objectNodeBuilder()
-                    .withMember("member", nodeValue)
-                    .build()
+    @Test
+    fun `it renders big decimals`() {
+        testType(
+            "BigDecimal",
+            NumberNode.from(100.23) to """BigDecimal("100.23")""",
+            StringNode.from("0.340282366920938463463374607431768211456") to """BigDecimal("0.340282366920938463463374607431768211456")""",
+        )
+    }
 
-                gen.writeShapeValueInline(writer, shape, node)
-                val contents = writer.toString()
-
-                val expected = """
-                    MyStruct {
-                        member = $serialization
-                    }
-                """.trimIndent()
-                contents.shouldContainOnlyOnce(expected)
+    private fun testType(type: String, vararg testCases: Pair<ToNode, String>) {
+        val model = """
+            structure MyStruct {
+                member: $type,
             }
+        """.prependNamespaceAndService(namespace = "foo.bar").toSmithyModel()
+
+        val shape = model.expectShape(ShapeId.from("foo.bar#MyStruct"))
+        val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model, rootNamespace = "foo.bar")
+        val gen = ShapeValueGenerator(model, provider)
+
+        for ((nodeValue, serialization) in testCases) {
+            val writer = KotlinWriter(TestModelDefault.NAMESPACE)
+
+            val node = Node.objectNodeBuilder()
+                .withMember("member", nodeValue)
+                .build()
+
+            gen.writeShapeValueInline(writer, shape, node)
+            val contents = writer.toString()
+
+            val expected = """
+                MyStruct {
+                    member = $serialization
+                }
+            """.trimIndent()
+            contents.shouldContainOnlyOnce(expected)
         }
     }
 }
