@@ -84,7 +84,7 @@ class KotlinJmespathExpressionVisitor(
         if (right is CurrentExpression) return VisitedExpression(leftName, leftShape) // nothing to map
 
         val outerName = bestTempVarName("projection")
-        val flatMapExpr = addNullGuard(leftShape, "flatMap")
+        val flatMapExpr = addNullGuard("flatMap")
         writer.openBlock("val #L = #L#L {", outerName, leftName, flatMapExpr)
 
         shapeCursor.addLast(innerShape?.targetMemberOrSelf ?: leftShape.targetMemberOrSelf)
@@ -105,12 +105,11 @@ class KotlinJmespathExpressionVisitor(
         val member = currentShape.targetOrSelf(ctx.model).getMember(expression.name).getOrNull()
 
         val name = expression.name.toCamelCase()
-        val nameExpr = addNullGuard(currentShape, name)
-        var unwrapExpr: String? = null
+        val nameExpr = addNullGuard(name)
 
-        if (member != null) {
+        val unwrapExpr = member?.let {
             val memberTarget = ctx.model.expectShape(member.target)
-            unwrapExpr = when {
+            when {
                 memberTarget.isEnum -> "value"
                 memberTarget.isEnumList -> "map { it.value }"
                 memberTarget.isEnumMap -> "mapValues { (_, v) -> v.value }"
@@ -122,10 +121,10 @@ class KotlinJmespathExpressionVisitor(
 
         val codegen = buildString {
             append("$parentName$nameExpr")
-            unwrapExpr?.let { append(addNullGuard(member, it)) }
+            unwrapExpr?.let { append(addNullGuard(it)) }
         }
 
-        if (member != null) shapeCursor.addLast(member)
+        member?.let { shapeCursor.addLast(it) }
         return VisitedExpression(addTempVar(name, codegen), member)
     }
 
@@ -178,7 +177,7 @@ class KotlinJmespathExpressionVisitor(
 
         val filteredName = bestTempVarName("${left.identifier}Filtered")
 
-        val filterExpr = addNullGuard(left.shape, "filter")
+        val filterExpr = addNullGuard("filter")
         writer.withBlock("val #L = #L#L {", "}", filteredName, left.identifier, filterExpr) {
             shapeCursor.addLast(left.shape.targetMemberOrSelf)
             val comparison = acceptSubexpression(expression.comparison)
@@ -194,7 +193,7 @@ class KotlinJmespathExpressionVisitor(
 
         val inner = expression.expression.accept(this)
 
-        val flattenExpr = addNullGuard(currentShape, "flattenIfPossible()")
+        val flattenExpr = addNullGuard("flattenIfPossible()")
         val ident = addTempVar("${inner.identifier}OrEmpty", "${inner.identifier}$flattenExpr")
 
         return VisitedExpression(ident, currentShape, inner.projected)
@@ -207,7 +206,7 @@ class KotlinJmespathExpressionVisitor(
             val subject = acceptSubexpression(expression.arguments[0])
             val search = acceptSubexpression(expression.arguments[1])
 
-            val containsExpr = addNullGuard(subject.shape, "contains(${search.identifier})", "false")
+            val containsExpr = addNullGuard("contains(${search.identifier})", "false")
             val ident = addTempVar("contains", "${subject.identifier}$containsExpr")
             VisitedExpression(ident)
         }
@@ -218,7 +217,7 @@ class KotlinJmespathExpressionVisitor(
 
             val subject = acceptSubexpression(expression.arguments[0])
 
-            val lengthExpr = addNullGuard(subject.shape, "length", "0")
+            val lengthExpr = addNullGuard("length", "0")
             val ident = addTempVar("length", "${subject.identifier}$lengthExpr")
             VisitedExpression(ident)
         }
@@ -243,34 +242,22 @@ class KotlinJmespathExpressionVisitor(
     }
 
     override fun visitMultiSelectHash(expression: MultiSelectHashExpression): VisitedExpression {
-        val attributes = StringBuilder()
-        var i = 0
+        val properties = mutableListOf<String>()
         expression.expressions.forEach {
-            if (i == expression.expressions.size - 1) {
-                attributes.append("val ${it.key}: T")
-            } else {
-                attributes.append("val ${it.key}: T, ")
-            }
-            i++
+            properties.add("val ${it.key}: T")
         }
-        writer.write("class Selection<T>($attributes)")
+        writer.write("class Selection<T>(${properties.joinToString()})")
 
         val listName = bestTempVarName("multiSelect")
         writer.openBlock("val #L = listOfNotNull(", listName)
         writer.openBlock("run {")
 
-        val identifiers = StringBuilder()
-        i = 0
+        val identifiers = mutableListOf<String>()
         expression.expressions.forEach {
             val identifier = addTempVar(it.key, acceptSubexpression(it.value).identifier)
-            if (i == expression.expressions.size - 1) {
-                identifiers.append(identifier)
-            } else {
-                identifiers.append("$identifier, ")
-            }
-            i++
+            identifiers.add(identifier)
         }
-        writer.write("Selection($identifiers)")
+        writer.write("Selection(${identifiers.joinToString()})")
 
         writer.closeBlock("},")
         writer.closeBlock(")")
@@ -309,7 +296,7 @@ class KotlinJmespathExpressionVisitor(
         val left = acceptSubexpression(expression.left)
         requireNotNull(left.shape) { "object projection is operating on nothing?" }
 
-        val valuesExpr = addNullGuard(left.shape, "values")
+        val valuesExpr = addNullGuard("values")
         val valuesName = addTempVar("${left.identifier}Values", "${left.identifier}$valuesExpr")
 
         return flatMappingBlock(expression.right, valuesName, left.shape, left.projected)
@@ -400,7 +387,7 @@ class KotlinJmespathExpressionVisitor(
     private val Shape.isEnumMap: Boolean
         get() = this is MapShape && ctx.model.expectShape(value.target).isEnum
 
-    private fun addNullGuard(shape: Shape?, expr: String, elvisExpr: String? = null): String =
+    private fun addNullGuard(expr: String, elvisExpr: String? = null): String =
         buildString {
             append("?.$expr")
             elvisExpr?.let { append(" ?: $it") }
