@@ -7,10 +7,6 @@ description = "Test utilities for generated Smithy services"
 extra["displayName"] = "Smithy :: Kotlin :: Test"
 extra["moduleName"] = "aws.smithy.kotlin.runtime.smithy.test"
 
-val coroutinesVersion: String by project
-val kotlinVersion: String by project
-val kotlinxSerializationVersion: String by project
-
 kotlin {
     sourceSets {
         commonMain {

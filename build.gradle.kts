@@ -13,13 +13,13 @@ buildscript {
     }
 
     val kotlinVersion: String by project
+    // NOTE: buildscript classpath for the root project is the parent classloader for the subprojects, we
+    // only need to add e.g. atomic-fu and build-plugins here for imports and plugins to be available in subprojects.
     dependencies {
         classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion")
         classpath(libs.kotlinx.atomicfu.plugin)
 
         // Add our custom gradle plugin(s) to buildscript classpath (comes from github source)
-        // NOTE: buildscript classpath for the root project is the parent classloader for the subprojects, we
-        // only need to include it here, imports in subprojects will work automagically
         classpath("aws.sdk.kotlin:build-plugins") {
             version {
                 require("0.2.2")

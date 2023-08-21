@@ -86,4 +86,5 @@ jsoup = { module = "org.jsoup:jsoup", version.ref = "jsoup-version" }
 [plugins]
 dokka = { id = "org.jetbrains.dokka", version.ref = "dokka-version"}
 kotlinx-benchmark = { id = "org.jetbrains.kotlinx.benchmark", version.ref = "kotlinx-benchmark-version" }
+kotlinx-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin-version"}
 smithy-gradle = { id = "software.amazon.smithy", version.ref = "smithy-gradle-version" }

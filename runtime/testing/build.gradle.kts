@@ -5,10 +5,6 @@
 
 description = "Internal test utilities"
 
-val coroutinesVersion: String by project
-val kotlinVersion: String by project
-val junitVersion: String by project
-
 kotlin {
     sourceSets {
         commonMain {
