@@ -7,6 +7,7 @@ package aws.smithy.kotlin.runtime.http.operation
 
 import aws.smithy.kotlin.runtime.client.SdkClientOption
 import aws.smithy.kotlin.runtime.util.get
+import io.kotest.matchers.string.shouldContain
 import kotlin.test.*
 
 class HttpOperationContextTest {
@@ -28,6 +29,6 @@ class HttpOperationContextTest {
             }
         }
 
-        assertTrue(ex.message!!.contains("OperationName is a required property"))
+        ex.message.shouldContain("operationName is a required HTTP execution attribute")
     }
 }

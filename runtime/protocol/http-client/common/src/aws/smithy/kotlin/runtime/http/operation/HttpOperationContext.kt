@@ -6,19 +6,16 @@
 package aws.smithy.kotlin.runtime.http.operation
 
 import aws.smithy.kotlin.runtime.InternalApi
-import aws.smithy.kotlin.runtime.client.ClientOptionsBuilder
 import aws.smithy.kotlin.runtime.client.SdkClientOption
 import aws.smithy.kotlin.runtime.http.response.HttpCall
 import aws.smithy.kotlin.runtime.operation.ExecutionContext
-import aws.smithy.kotlin.runtime.util.AttributeKey
-import aws.smithy.kotlin.runtime.util.Attributes
-import aws.smithy.kotlin.runtime.util.emptyAttributes
+import aws.smithy.kotlin.runtime.util.*
 
 /**
  * Common configuration for an SDK (HTTP) operation/call
  */
 @InternalApi
-public open class HttpOperationContext {
+public class HttpOperationContext {
     @InternalApi
     public companion object {
         /**
@@ -66,22 +63,30 @@ public open class HttpOperationContext {
      * Convenience builder for constructing HTTP client operations
      */
     @InternalApi
-    public open class Builder : ClientOptionsBuilder() {
-
+    public class Builder(private val ctx: ExecutionContext = ExecutionContext()) : MutableAttributes by ctx {
         /**
          * The name of the operation
          */
-        public var operationName: String? by requiredOption(SdkClientOption.OperationName)
+        public var operationName: String? = null
 
         /**
          * The name of the service the request is sent to
          */
-        public var serviceName: String? by requiredOption(SdkClientOption.ServiceName)
+        public var serviceName: String? = null
 
         /**
          * (Optional) prefix to prepend to a (resolved) hostname
          */
-        public var hostPrefix: String? by option(HostPrefix)
+        public var hostPrefix: String? = null
+
+        internal fun build(): ExecutionContext {
+            requireNotNull(operationName) { "operationName is a required HTTP execution attribute" }
+            requireNotNull(serviceName) { "serviceName is a required HTTP execution attribute" }
+            ctx[SdkClientOption.OperationName] = operationName!!
+            ctx[SdkClientOption.ServiceName] = serviceName!!
+            hostPrefix?.let { ctx[HostPrefix] = it }
+            return ctx
+        }
     }
 }
 
