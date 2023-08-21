@@ -347,7 +347,6 @@ object RuntimeTypes {
             val flowOf = "kotlinx.coroutines.flow.flowOf".toSymbol()
             val merge = "kotlinx.coroutines.flow.merge".toSymbol()
             val map = "kotlinx.coroutines.flow.map".toSymbol()
-            val mapNotNull = "kotlinx.coroutines.flow.mapNotNull".toSymbol()
             val take = "kotlinx.coroutines.flow.take".toSymbol()
             val drop = "kotlinx.coroutines.flow.drop".toSymbol()
         }
