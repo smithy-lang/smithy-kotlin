@@ -10,12 +10,10 @@ import aws.smithy.kotlin.runtime.retries.getOrThrow
 import com.test.model.*
 import com.test.model.Enum
 import com.test.waiters.*
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
-@OptIn(ExperimentalCoroutinesApi::class)
 class WaiterTest {
     private fun successTest(
         block: suspend WaitersTestClient.(request: GetEntityRequest) -> Outcome<GetEntityResponse>,
