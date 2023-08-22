@@ -7,16 +7,9 @@ import aws.sdk.kotlin.gradle.dsl.configureNexus
 import aws.sdk.kotlin.gradle.util.typedProp
 
 buildscript {
-    repositories {
-        mavenCentral()
-        google()
-    }
-
-    val kotlinVersion: String by project
     // NOTE: buildscript classpath for the root project is the parent classloader for the subprojects, we
     // only need to add e.g. atomic-fu and build-plugins here for imports and plugins to be available in subprojects.
     dependencies {
-        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion")
         classpath(libs.kotlinx.atomicfu.plugin)
 
         // Add our custom gradle plugin(s) to buildscript classpath (comes from github source)
@@ -28,11 +21,10 @@ buildscript {
     }
 }
 
+@Suppress("DSL_SCOPE_VIOLATION") // TODO: Remove once https://youtrack.jetbrains.com/issue/KTIJ-19369 is fixed
 plugins {
-    kotlin("jvm") apply false
-    @Suppress("DSL_SCOPE_VIOLATION") // TODO: Remove once https://youtrack.jetbrains.com/issue/KTIJ-19369 is fixed
     alias(libs.plugins.dokka)
-    id("org.jetbrains.kotlinx.binary-compatibility-validator") version "0.12.1"
+    alias(libs.plugins.kotlinx.binary.compatibility.validator)
 }
 
 // configures (KMP) subprojects with our own KMP conventions and some default dependencies
