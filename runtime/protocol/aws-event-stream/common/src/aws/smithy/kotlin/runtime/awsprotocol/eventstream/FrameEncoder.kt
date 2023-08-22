@@ -44,10 +44,6 @@ public suspend fun Flow<SdkBuffer>.asEventStreamHttpBody(scope: CoroutineScope):
         private var job: Job? = null
 
         override fun readFrom(): SdkByteReadChannel {
-            // FIXME - delaying launch here until the channel is consumed from the HTTP engine is a hacky way
-            //  of enforcing ordering to ensure the ExecutionContext is updated with the
-            //  AwsSigningAttributes.RequestSignature by the time the messages are collected and sign() is called
-
             // Although rare, nothing stops downstream consumers from invoking readFrom() more than once.
             // Only launch background collection task on first call
             if (job == null) {
