@@ -8,7 +8,8 @@ import software.amazon.smithy.gradle.tasks.Validate as SmithyValidate
 
 plugins {
     kotlin("jvm")
-    id("software.amazon.smithy")
+    @Suppress("DSL_SCOPE_VIOLATION") // TODO: Remove once https://youtrack.jetbrains.com/issue/KTIJ-19369 is fixed
+    alias(libs.plugins.smithy.gradle)
 }
 
 skipPublishing()
@@ -24,11 +25,10 @@ kotlin.sourceSets.getByName("main") {
 
 tasks["smithyBuildJar"].enabled = false
 
-val smithyVersion: String by project
 val codegen by configurations.creating
 dependencies {
     codegen(project(":codegen:smithy-kotlin-codegen"))
-    codegen("software.amazon.smithy:smithy-cli:$smithyVersion")
+    codegen(libs.smithy.cli)
 }
 
 val generateSdk = tasks.register<SmithyBuild>("generateSdk") {
@@ -58,10 +58,8 @@ tasks.test {
 }
 
 dependencies {
-    val kotlinVersion: String by project
-    val coroutinesVersion: String by project
 
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion")
+    implementation(libs.kotlinx.coroutines.core)
 
     compileOnly(project(":codegen:smithy-kotlin-codegen"))
     implementation(project(":runtime:runtime-core"))
@@ -70,6 +68,6 @@ dependencies {
     implementation(project(":runtime:observability:telemetry-api"))
     implementation(project(":runtime:observability:telemetry-defaults"))
 
-    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:$coroutinesVersion")
-    testImplementation("org.jetbrains.kotlin:kotlin-test-junit5:$kotlinVersion")
+    testImplementation(libs.kotlinx.coroutines.test)
+    testImplementation(libs.kotlin.test.junit5)
 }

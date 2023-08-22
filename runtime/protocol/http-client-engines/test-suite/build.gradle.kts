@@ -11,39 +11,34 @@ extra["moduleName"] = "aws.smithy.kotlin.http.test"
 
 skipPublishing()
 
-val coroutinesVersion: String by project
-val ktorVersion: String by project
-val slf4jVersion: String by project
-val testContainersVersion: String by project
-
 kotlin {
     sourceSets {
         commonMain {
             dependencies {
                 implementation(project(":runtime:protocol:http-client"))
                 implementation(project(":runtime:protocol:http-test"))
-                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:$coroutinesVersion")
+                implementation(libs.kotlinx.coroutines.test)
                 implementation(project(":runtime:testing"))
 
-                implementation("io.ktor:ktor-network-tls-certificates:$ktorVersion")
+                implementation(libs.ktor.network.tls.certificates)
             }
         }
 
         jvmMain {
             dependencies {
-                implementation("io.ktor:ktor-server-jetty:$ktorVersion")
+                implementation(libs.ktor.server.jetty)
 
                 implementation(project(":runtime:protocol:http-client-engines:http-client-engine-default"))
                 implementation(project(":runtime:protocol:http-client-engines:http-client-engine-crt"))
 
-                implementation("org.slf4j:slf4j-simple:$slf4jVersion")
+                implementation(libs.slf4j.simple)
             }
         }
 
         jvmTest {
             dependencies {
-                implementation("org.testcontainers:testcontainers:$testContainersVersion")
-                implementation("org.testcontainers:junit-jupiter:$testContainersVersion")
+                implementation(libs.testcontainers)
+                implementation(libs.testcontainers.junit.jupiter)
             }
         }
 

@@ -4,10 +4,12 @@
  */
 import aws.sdk.kotlin.gradle.dsl.skipPublishing
 import software.amazon.smithy.gradle.tasks.SmithyBuild
+
+@Suppress("DSL_SCOPE_VIOLATION") // TODO: Remove once https://youtrack.jetbrains.com/issue/KTIJ-19369 is fixed
 plugins {
     kotlin("multiplatform")
-    id("org.jetbrains.kotlinx.benchmark")
-    id("software.amazon.smithy")
+    alias(libs.plugins.smithy.gradle)
+    alias(libs.plugins.kotlinx.benchmark)
 }
 
 skipPublishing()
@@ -20,14 +22,12 @@ kotlin {
             optinAnnotations.forEach { languageSettings.optIn(it) }
         }
 
-        val kotlinxBenchmarkVersion: String by project
-        val coroutinesVersion: String by project
         commonMain {
             dependencies {
-                implementation("org.jetbrains.kotlinx:kotlinx-benchmark-runtime:$kotlinxBenchmarkVersion")
+                implementation(libs.kotlinx.benchmark.runtime)
                 implementation(project(":runtime:serde:serde-json"))
                 implementation(project(":runtime:serde:serde-xml"))
-                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion")
+                implementation(libs.kotlinx.coroutines.core)
             }
         }
         val jvmMain by getting {

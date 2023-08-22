@@ -6,8 +6,6 @@ description = "Telemetry provider based on OpenTelemetry"
 extra["displayName"] = "Smithy :: Kotlin :: Observability :: OpenTelemetry Provider"
 extra["moduleName"] = "aws.smithy.kotlin.runtime.telemetry.otel"
 
-val otelVersion: String by project
-
 kotlin {
     sourceSets {
         commonMain {
@@ -19,7 +17,7 @@ kotlin {
 
         jvmMain {
             dependencies {
-                api("io.opentelemetry:opentelemetry-api:$otelVersion")
+                api(libs.opentelemetry.api)
             }
         }
         all {
