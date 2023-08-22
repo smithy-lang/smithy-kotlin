@@ -246,25 +246,16 @@ class KotlinJmespathExpressionVisitor(
     }
 
     override fun visitMultiSelectHash(expression: MultiSelectHashExpression): VisitedExpression {
-        val properties = mutableListOf<String>()
-        expression.expressions.forEach {
-            properties.add("val ${it.key}: T")
-        }
-        writer.write("class Selection<T>(${properties.joinToString()})")
+        val properties = expression.expressions.keys.joinToString { "val $it: T" }
+        writer.write("class Selection<T>($properties)")
 
         val listName = bestTempVarName("multiSelect")
-        writer.openBlock("val #L = listOfNotNull(", listName)
-        writer.openBlock("run {")
-
-        val identifiers = mutableListOf<String>()
-        expression.expressions.forEach {
-            val identifier = addTempVar(it.key, it.value.accept(this).identifier)
-            identifiers.add(identifier)
+        writer.withBlock("val $listName = listOfNotNull(", ")") {
+            withBlock("run {", "}") {
+                val identifiers = expression.expressions.toList().joinToString { addTempVar(it.first, it.second.accept(this@KotlinJmespathExpressionVisitor).identifier) }
+                write("Selection($identifiers)")
+            }
         }
-        writer.write("Selection(${identifiers.joinToString()})")
-
-        writer.closeBlock("},")
-        writer.closeBlock(")")
         return VisitedExpression(listName, currentShape)
     }
 
