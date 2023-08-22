@@ -150,8 +150,8 @@ class KotlinJmespathExpressionVisitor(
 
         val codegen = buildString {
             val nullables = buildList {
-                add("${left.identifier} == null")
-                add("${right.identifier} == null")
+                if (left.shape?.isNullable == true) add("${left.identifier} == null")
+                if (right.shape?.isNullable == true) add("${right.identifier} == null")
             }
             if (nullables.isNotEmpty()) {
                 val isNullExpr = nullables.joinToString(" || ")
