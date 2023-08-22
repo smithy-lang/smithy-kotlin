@@ -6,7 +6,7 @@
 package aws.smithy.kotlin.runtime.http.middleware
 
 import aws.smithy.kotlin.runtime.http.SdkHttpClient
-import aws.smithy.kotlin.runtime.http.operation.HttpOperationContext.Companion.HttpCallList
+import aws.smithy.kotlin.runtime.http.operation.HttpOperationContext
 import aws.smithy.kotlin.runtime.http.operation.newTestOperation
 import aws.smithy.kotlin.runtime.http.operation.roundTrip
 import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
@@ -41,7 +41,7 @@ class MutateHeadersTest {
         op.install(m)
 
         op.roundTrip(client, Unit)
-        val call = op.context.attributes[HttpCallList].first()
+        val call = op.context.attributes[HttpOperationContext.HttpCallList].first()
         // overrides
         assertEquals("override", call.request.headers["foo"])
 
@@ -71,7 +71,7 @@ class MutateHeadersTest {
         op.install(m)
 
         op.roundTrip(client, Unit)
-        val call = op.context.attributes[HttpCallList].first()
+        val call = op.context.attributes[HttpOperationContext.HttpCallList].first()
         // appends existing
         assertEquals(listOf("bar", "appended"), call.request.headers.getAll("foo"))
 
@@ -101,7 +101,7 @@ class MutateHeadersTest {
         op.install(m)
 
         op.roundTrip(client, Unit)
-        val call = op.context.attributes[HttpCallList].first()
+        val call = op.context.attributes[HttpOperationContext.HttpCallList].first()
         assertEquals("bar", call.request.headers["foo"])
         assertEquals("zebra", call.request.headers["z"])
         assertEquals("qux", call.request.headers["baz"])

@@ -80,10 +80,8 @@ class HttpProtocolClientGeneratorTest {
         val op = SdkHttpOperation.build<GetFooRequest, GetFooResponse> {
             serializer = GetFooOperationSerializer()
             deserializer = GetFooOperationDeserializer()
-            context {
-                operationName = "GetFoo"
-                serviceName = ServiceId
-            }
+            operationName = "GetFoo"
+            serviceName = ServiceId
             telemetry {
                 provider = config.telemetryProvider
                 scope = telemetryScope
@@ -103,10 +101,8 @@ class HttpProtocolClientGeneratorTest {
         val op = SdkHttpOperation.build<GetFooNoInputRequest, GetFooNoInputResponse> {
             serializer = GetFooNoInputOperationSerializer()
             deserializer = GetFooNoInputOperationDeserializer()
-            context {
-                operationName = "GetFooNoInput"
-                serviceName = ServiceId
-            }
+            operationName = "GetFooNoInput"
+            serviceName = ServiceId
             telemetry {
                 provider = config.telemetryProvider
                 scope = telemetryScope
@@ -126,10 +122,8 @@ class HttpProtocolClientGeneratorTest {
         val op = SdkHttpOperation.build<GetFooNoOutputRequest, GetFooNoOutputResponse> {
             serializer = GetFooNoOutputOperationSerializer()
             deserializer = GetFooNoOutputOperationDeserializer()
-            context {
-                operationName = "GetFooNoOutput"
-                serviceName = ServiceId
-            }
+            operationName = "GetFooNoOutput"
+            serviceName = ServiceId
             telemetry {
                 provider = config.telemetryProvider
                 scope = telemetryScope
@@ -149,10 +143,8 @@ class HttpProtocolClientGeneratorTest {
         val op = SdkHttpOperation.build<GetFooStreamingInputRequest, GetFooStreamingInputResponse> {
             serializer = GetFooStreamingInputOperationSerializer()
             deserializer = GetFooStreamingInputOperationDeserializer()
-            context {
-                operationName = "GetFooStreamingInput"
-                serviceName = ServiceId
-            }
+            operationName = "GetFooStreamingInput"
+            serviceName = ServiceId
             telemetry {
                 provider = config.telemetryProvider
                 scope = telemetryScope
@@ -172,10 +164,8 @@ class HttpProtocolClientGeneratorTest {
         val op = SdkHttpOperation.build<GetFooStreamingOutputRequest, GetFooStreamingOutputResponse> {
             serializer = GetFooStreamingOutputOperationSerializer()
             deserializer = GetFooStreamingOutputOperationDeserializer()
-            context {
-                operationName = "GetFooStreamingOutput"
-                serviceName = ServiceId
-            }
+            operationName = "GetFooStreamingOutput"
+            serviceName = ServiceId
             telemetry {
                 provider = config.telemetryProvider
                 scope = telemetryScope
@@ -195,10 +185,8 @@ class HttpProtocolClientGeneratorTest {
         val op = SdkHttpOperation.build<GetFooStreamingOutputNoInputRequest, GetFooStreamingOutputNoInputResponse> {
             serializer = GetFooStreamingOutputNoInputOperationSerializer()
             deserializer = GetFooStreamingOutputNoInputOperationDeserializer()
-            context {
-                operationName = "GetFooStreamingOutputNoInput"
-                serviceName = ServiceId
-            }
+            operationName = "GetFooStreamingOutputNoInput"
+            serviceName = ServiceId
             telemetry {
                 provider = config.telemetryProvider
                 scope = telemetryScope
@@ -218,10 +206,8 @@ class HttpProtocolClientGeneratorTest {
         val op = SdkHttpOperation.build<GetFooStreamingInputNoOutputRequest, GetFooStreamingInputNoOutputResponse> {
             serializer = GetFooStreamingInputNoOutputOperationSerializer()
             deserializer = GetFooStreamingInputNoOutputOperationDeserializer()
-            context {
-                operationName = "GetFooStreamingInputNoOutput"
-                serviceName = ServiceId
-            }
+            operationName = "GetFooStreamingInputNoOutput"
+            serviceName = ServiceId
             telemetry {
                 provider = config.telemetryProvider
                 scope = telemetryScope
@@ -241,10 +227,8 @@ class HttpProtocolClientGeneratorTest {
         val op = SdkHttpOperation.build<GetFooNoRequiredRequest, GetFooNoRequiredResponse> {
             serializer = GetFooNoRequiredOperationSerializer()
             deserializer = GetFooNoRequiredOperationDeserializer()
-            context {
-                operationName = "GetFooNoRequired"
-                serviceName = ServiceId
-            }
+            operationName = "GetFooNoRequired"
+            serviceName = ServiceId
             telemetry {
                 provider = config.telemetryProvider
                 scope = telemetryScope
@@ -264,10 +248,8 @@ class HttpProtocolClientGeneratorTest {
         val op = SdkHttpOperation.build<GetFooSomeRequiredRequest, GetFooSomeRequiredResponse> {
             serializer = GetFooSomeRequiredOperationSerializer()
             deserializer = GetFooSomeRequiredOperationDeserializer()
-            context {
-                operationName = "GetFooSomeRequired"
-                serviceName = ServiceId
-            }
+            operationName = "GetFooSomeRequired"
+            serviceName = ServiceId
             telemetry {
                 provider = config.telemetryProvider
                 scope = telemetryScope
@@ -343,11 +325,9 @@ class HttpProtocolClientGeneratorTest {
         val op = SdkHttpOperation.build<GetStatusRequest, GetStatusResponse> {
             serializer = GetStatusOperationSerializer()
             deserializer = GetStatusOperationDeserializer()
-            context {
-                operationName = "GetStatus"
-                serviceName = ServiceId
-                hostPrefix = "$prefix"
-            }
+            operationName = "GetStatus"
+            serviceName = ServiceId
+            hostPrefix = "$prefix"
             telemetry {
                 provider = config.telemetryProvider
                 scope = telemetryScope
