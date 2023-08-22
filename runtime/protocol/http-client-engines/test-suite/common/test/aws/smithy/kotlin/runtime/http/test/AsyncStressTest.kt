@@ -24,6 +24,7 @@ class AsyncStressTest : AbstractEngineTest() {
         // https://github.com/awslabs/aws-sdk-kotlin/issues/170
         concurrency = 1_000
         engineConfig {
+            // FIXME - investigate windows CI issue when this is removed
             maxConcurrency = 32u
         }
 
