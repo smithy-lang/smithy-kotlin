@@ -349,6 +349,7 @@ object RuntimeTypes {
             val map = "kotlinx.coroutines.flow.map".toSymbol()
             val take = "kotlinx.coroutines.flow.take".toSymbol()
             val drop = "kotlinx.coroutines.flow.drop".toSymbol()
+            val single = "kotlinx.coroutines.flow.single".toSymbol()
         }
     }
 
