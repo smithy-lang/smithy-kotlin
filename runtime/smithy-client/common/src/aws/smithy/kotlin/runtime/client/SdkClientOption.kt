@@ -7,6 +7,7 @@ package aws.smithy.kotlin.runtime.client
 
 import aws.smithy.kotlin.runtime.InternalApi
 import aws.smithy.kotlin.runtime.operation.ExecutionContext
+import aws.smithy.kotlin.runtime.util.AttributeKey
 
 /**
  * Common client execution options
@@ -16,32 +17,32 @@ public object SdkClientOption {
     /**
      * The name of the operation
      */
-    public val OperationName: ClientOption<String> = ClientOption("aws.smithy.kotlin#OperationName")
+    public val OperationName: AttributeKey<String> = AttributeKey("aws.smithy.kotlin#OperationName")
 
     /**
      * The service name the operation is executed against
      */
-    public val ServiceName: ClientOption<String> = ClientOption("aws.smithy.kotlin#ServiceName")
+    public val ServiceName: AttributeKey<String> = AttributeKey("aws.smithy.kotlin#ServiceName")
 
     /**
      * The unique name given to a service client (often the same as [ServiceName]).
      */
-    public val ClientName: ClientOption<String> = ClientOption("aws.smithy.kotlin#ClientName")
+    public val ClientName: AttributeKey<String> = AttributeKey("aws.smithy.kotlin#ClientName")
 
     /**
      * A token generator for idempotency tokens
      */
-    public val IdempotencyTokenProvider: ClientOption<IdempotencyTokenProvider> = ClientOption("aws.smithy.kotlin#IdempotencyTokenProvider")
+    public val IdempotencyTokenProvider: AttributeKey<IdempotencyTokenProvider> = AttributeKey("aws.smithy.kotlin#IdempotencyTokenProvider")
 
     /**
      * The client logging mode (see [LogMode])
      */
-    public val LogMode: ClientOption<LogMode> = ClientOption("aws.smithy.kotlin#LogMode")
+    public val LogMode: AttributeKey<LogMode> = AttributeKey("aws.smithy.kotlin#LogMode")
 
     /**
      * Whether endpoint discovery is enabled or not. Default is true
      */
-    public val EndpointDiscoveryEnabled: ClientOption<Boolean> = ClientOption("aws.smithy.kotlin#EndpointDiscoveryEnabled")
+    public val EndpointDiscoveryEnabled: AttributeKey<Boolean> = AttributeKey("aws.smithy.kotlin#EndpointDiscoveryEnabled")
 }
 
 /**

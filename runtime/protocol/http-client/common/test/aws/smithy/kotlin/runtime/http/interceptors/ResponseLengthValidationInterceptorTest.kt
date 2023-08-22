@@ -29,12 +29,8 @@ fun op() =
     SdkHttpOperation.build {
         serializer = HttpSerialize<ResponseLengthValidationTestInput> { _, _ -> HttpRequestBuilder() }
         deserializer = HttpDeserialize { _, response -> ResponseLengthValidationTestOutput(response.body) }
-
-        context {
-            // required operation context
-            operationName = "TestOperation"
-            serviceName = "TestService"
-        }
+        operationName = "TestOperation"
+        serviceName = "TestService"
     }.also {
         it.interceptors.add(ResponseLengthValidationInterceptor())
     }

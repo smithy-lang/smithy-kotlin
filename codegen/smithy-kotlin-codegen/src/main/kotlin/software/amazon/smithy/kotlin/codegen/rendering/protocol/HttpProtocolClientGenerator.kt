@@ -209,27 +209,23 @@ abstract class HttpProtocolClientGenerator(
                 writer.write("deserializer = UnitDeserializer")
             }
 
-            // execution context
-            writer.openBlock("context {", "}") {
-                // property from implementing SdkClient
-                writer.write("operationName = #S", op.id.name)
-                writer.write("serviceName = #L", "ServiceId")
+            writer.write("operationName = #S", op.id.name)
+            writer.write("serviceName = #L", "ServiceId")
 
-                // optional endpoint trait
-                op.getTrait<EndpointTrait>()?.let { endpointTrait ->
-                    val hostPrefix = endpointTrait.hostPrefix.segments.joinToString(separator = "") { segment ->
-                        if (segment.isLabel) {
-                            // hostLabel can only target string shapes
-                            // see: https://awslabs.github.io/smithy/1.0/spec/core/endpoint-traits.html#hostlabel-trait
-                            val member =
-                                inputShape.get().members().first { member -> member.memberName == segment.content }
-                            "\${input.${member.defaultName()}}"
-                        } else {
-                            segment.content
-                        }
+            // optional endpoint trait
+            op.getTrait<EndpointTrait>()?.let { endpointTrait ->
+                val hostPrefix = endpointTrait.hostPrefix.segments.joinToString(separator = "") { segment ->
+                    if (segment.isLabel) {
+                        // hostLabel can only target string shapes
+                        // see: https://awslabs.github.io/smithy/1.0/spec/core/endpoint-traits.html#hostlabel-trait
+                        val member =
+                            inputShape.get().members().first { member -> member.memberName == segment.content }
+                        "\${input.${member.defaultName()}}"
+                    } else {
+                        segment.content
                     }
-                    writer.write("hostPrefix = #S", hostPrefix)
                 }
+                writer.write("hostPrefix = #S", hostPrefix)
             }
 
             // telemetry
