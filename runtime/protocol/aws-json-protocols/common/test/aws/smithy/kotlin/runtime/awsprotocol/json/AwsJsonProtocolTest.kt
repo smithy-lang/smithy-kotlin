@@ -26,10 +26,8 @@ class AwsJsonProtocolTest {
         val op = SdkHttpOperation.build<Unit, HttpResponse> {
             serializer = UnitSerializer
             deserializer = IdentityDeserializer
-            context {
-                operationName = "Bar"
-                serviceName = "Foo"
-            }
+            operationName = "Bar"
+            serviceName = "Foo"
         }
         val client = SdkHttpClient(TestEngine())
         val m = AwsJsonProtocol("FooService_blah", "1.1")
@@ -49,10 +47,8 @@ class AwsJsonProtocolTest {
         val op = SdkHttpOperation.build<Unit, HttpResponse> {
             serializer = UnitSerializer
             deserializer = IdentityDeserializer
-            context {
-                operationName = "Bar"
-                serviceName = "Foo"
-            }
+            operationName = "Bar"
+            serviceName = "Foo"
         }
         val client = SdkHttpClient(TestEngine())
         op.install(AwsJsonProtocol("FooService", "1.1"))
@@ -75,10 +71,8 @@ class AwsJsonProtocolTest {
                     }
             }
             deserializer = IdentityDeserializer
-            context {
-                operationName = "Bar"
-                serviceName = "Foo"
-            }
+            operationName = "Bar"
+            serviceName = "Foo"
         }
         val client = SdkHttpClient(TestEngine())
         op.install(AwsJsonProtocol("FooService", "1.1"))

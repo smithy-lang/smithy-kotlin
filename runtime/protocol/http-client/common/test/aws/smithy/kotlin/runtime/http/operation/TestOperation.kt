@@ -26,11 +26,9 @@ inline fun <reified I, reified O> newTestOperation(serialized: HttpRequestBuilde
             override suspend fun deserialize(context: ExecutionContext, response: HttpResponse): O = deserialized
         }
 
-        context {
-            // required operation context
-            operationName = "TestOperation"
-            serviceName = "TestService"
-        }
+        // required operation context
+        operationName = "TestOperation"
+        serviceName = "TestService"
     }
 
 val RetryableServiceTestException = ServiceException("test exception").apply {

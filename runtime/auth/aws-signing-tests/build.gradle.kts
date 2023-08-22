@@ -9,22 +9,15 @@ extra["moduleName"] = "aws.smithy.kotlin.runtime.auth.awssigning.tests"
 
 skipPublishing()
 
-val coroutinesVersion: String by project
-val junitVersion: String by project
-val kotlinVersion: String by project
-val kotlinxSerializationVersion: String by project
-val ktorVersion: String by project
-
 kotlin {
     sourceSets {
         commonMain {
             dependencies {
                 api(project(":runtime:auth:aws-signing-common"))
                 api(project(":runtime:auth:http-auth-aws"))
-                implementation("org.jetbrains.kotlin:kotlin-test-common:$kotlinVersion")
-                implementation("org.jetbrains.kotlin:kotlin-test-annotations-common:$kotlinVersion")
-                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:$coroutinesVersion")
-                implementation("org.junit.jupiter:junit-jupiter-params:$junitVersion")
+                implementation(libs.kotlin.test)
+                implementation(libs.kotlinx.coroutines.test)
+                implementation(libs.junit.jupiter.params)
             }
         }
 
@@ -32,10 +25,10 @@ kotlin {
             dependencies {
                 implementation(project(":runtime:protocol:http"))
                 implementation(project(":runtime:protocol:http-test"))
-                implementation("io.ktor:ktor-http-cio:$ktorVersion")
-                implementation("io.ktor:ktor-utils:$ktorVersion")
-                implementation("org.jetbrains.kotlin:kotlin-test-junit5:$kotlinVersion")
-                implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:$kotlinxSerializationVersion")
+                implementation(libs.ktor.http.cio)
+                implementation(libs.ktor.utils)
+                implementation(libs.kotlin.test.junit5)
+                implementation(libs.kotlinx.serialization.json)
             }
         }
 

@@ -6,8 +6,6 @@ description = "HTTP auth support"
 extra["displayName"] = "Smithy :: Kotlin :: HTTP Auth"
 extra["moduleName"] = "aws.smithy.kotlin.runtime.http.auth"
 
-val coroutinesVersion: String by project
-
 kotlin {
     sourceSets {
         commonMain {
@@ -20,7 +18,7 @@ kotlin {
 
         commonTest {
             dependencies {
-                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:$coroutinesVersion")
+                implementation(libs.kotlinx.coroutines.test)
             }
         }
 

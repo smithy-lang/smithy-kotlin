@@ -2,16 +2,7 @@
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
  * SPDX-License-Identifier: Apache-2.0
  */
-buildscript {
-    val atomicFuVersion: String by project
-    repositories {
-        mavenCentral()
-    }
 
-    dependencies {
-        classpath("org.jetbrains.kotlinx:atomicfu-gradle-plugin:$atomicFuVersion")
-    }
-}
 description = "Default telemetry provider"
 extra["displayName"] = "Smithy :: Kotlin :: Observability :: Telemetry Defaults"
 extra["moduleName"] = "aws.smithy.kotlin.runtime.telemetry"
@@ -27,7 +18,7 @@ kotlin {
             dependencies {
                 // Necessary for Instant, InternalApi, etc
                 api(project(":runtime:observability:telemetry-api"))
-                implementation("org.jetbrains.kotlinx:atomicfu:$atomicFuVersion")
+                implementation(libs.kotlinx.atomicfu)
             }
         }
 

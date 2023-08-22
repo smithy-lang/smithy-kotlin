@@ -17,7 +17,7 @@ kotlin {
         }
         commonTest {
             dependencies {
-                api("org.jetbrains.kotlinx:kotlinx-coroutines-test:$coroutinesVersion")
+                api(libs.kotlinx.coroutines.test)
                 implementation(project(":runtime:testing"))
             }
         }

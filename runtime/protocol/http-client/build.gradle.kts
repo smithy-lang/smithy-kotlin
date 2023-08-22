@@ -2,22 +2,10 @@
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
  * SPDX-License-Identifier: Apache-2.0
  */
-buildscript {
-    val atomicFuVersion: String by project
-    repositories {
-        mavenCentral()
-    }
-
-    dependencies {
-        classpath("org.jetbrains.kotlinx:atomicfu-gradle-plugin:$atomicFuVersion")
-    }
-}
 description = "HTTP client abstractions"
 extra["displayName"] = "Smithy :: Kotlin :: HTTP Client"
 extra["moduleName"] = "aws.smithy.kotlin.runtime.http"
 
-val coroutinesVersion: String by project
-val atomicFuVersion: String by project
 apply(plugin = "kotlinx-atomicfu")
 
 kotlin {
@@ -32,14 +20,14 @@ kotlin {
                 implementation(project(":runtime:observability:telemetry-api"))
 
                 // HttpClientEngine implements CoroutineScope
-                api("org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion")
-                implementation("org.jetbrains.kotlinx:atomicfu:$atomicFuVersion")
+                api(libs.kotlinx.coroutines.core)
+                implementation(libs.kotlinx.atomicfu)
             }
         }
 
         commonTest {
             dependencies {
-                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:$coroutinesVersion")
+                implementation(libs.kotlinx.coroutines.test)
                 implementation(project(":runtime:protocol:http-test"))
             }
         }

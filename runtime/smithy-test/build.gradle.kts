@@ -7,10 +7,6 @@ description = "Test utilities for generated Smithy services"
 extra["displayName"] = "Smithy :: Kotlin :: Test"
 extra["moduleName"] = "aws.smithy.kotlin.runtime.smithy.test"
 
-val coroutinesVersion: String by project
-val kotlinVersion: String by project
-val kotlinxSerializationVersion: String by project
-
 kotlin {
     sourceSets {
         commonMain {
@@ -20,17 +16,17 @@ kotlin {
 
                 implementation(project(":runtime:serde:serde-xml"))
 
-                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:$coroutinesVersion")
-                implementation("org.jetbrains.kotlin:kotlin-test-common:$kotlinVersion")
+                implementation(libs.kotlinx.coroutines.test)
+                implementation(libs.kotlin.test)
 
                 // kotlinx-serialization::JsonElement allows comparing arbitrary JSON docs for equality
-                implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:$kotlinxSerializationVersion")
+                implementation(libs.kotlinx.serialization.json)
             }
         }
 
         jvmMain {
             dependencies {
-                implementation("org.jetbrains.kotlin:kotlin-test:$kotlinVersion")
+                implementation(libs.kotlin.test)
             }
         }
 

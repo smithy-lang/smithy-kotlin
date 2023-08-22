@@ -5,7 +5,8 @@
 import aws.sdk.kotlin.gradle.dsl.skipPublishing
 plugins {
     kotlin("multiplatform")
-    id("org.jetbrains.kotlinx.benchmark")
+    @Suppress("DSL_SCOPE_VIOLATION") // TODO: Remove once https://youtrack.jetbrains.com/issue/KTIJ-19369 is fixed
+    alias(libs.plugins.kotlinx.benchmark)
 }
 
 skipPublishing()
@@ -18,18 +19,16 @@ kotlin {
             optinAnnotations.forEach { languageSettings.optIn(it) }
         }
 
-        val kotlinxBenchmarkVersion: String by project
         commonMain {
             dependencies {
-                implementation("org.jetbrains.kotlinx:kotlinx-benchmark-runtime:$kotlinxBenchmarkVersion")
+                implementation(libs.kotlinx.benchmark.runtime)
             }
         }
 
         val jvmMain by getting {
             dependencies {
-                val ktorVersion: String by project
                 implementation(project(":runtime:runtime-core"))
-                implementation("io.ktor:ktor-io:$ktorVersion")
+                implementation(libs.ktor.io)
             }
         }
     }

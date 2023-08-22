@@ -7,7 +7,6 @@ description = "Support for the vnd.amazon.event-stream content type"
 extra["displayName"] = "AWS :: Smithy :: Kotlin :: Protocols :: Event Stream"
 extra["moduleName"] = "aws.smithy.kotlin.runtime.awsprotocol.eventstream"
 
-val coroutinesVersion: String by project
 kotlin {
     sourceSets {
         commonMain {
@@ -18,14 +17,14 @@ kotlin {
                 // exposes AwsSigningConfig
                 api(project(":runtime:auth:aws-signing-common"))
 
-                api("org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion")
+                api(libs.kotlinx.coroutines.core)
             }
         }
 
         commonTest {
             dependencies {
                 implementation(project(":runtime:testing"))
-                api("org.jetbrains.kotlinx:kotlinx-coroutines-test:$coroutinesVersion")
+                api(libs.kotlinx.coroutines.test)
                 implementation(project(":runtime:auth:aws-signing-default"))
             }
         }
