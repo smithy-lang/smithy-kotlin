@@ -1073,6 +1073,222 @@ service WaitersTestService {
         ]
     },
 
+    // function abs
+    AbsFunctionShortEquals: {
+        acceptors: [
+            {
+                state: "success",
+                matcher: {
+                    output: {
+                        path: "abs(primitives.short) == `1`",
+                        expected: "false",
+                        comparator: "booleanEquals",
+                    }
+                }
+            }
+        ]
+    },
+    AbsFunctionIntegerEquals: {
+        acceptors: [
+            {
+                state: "success",
+                matcher: {
+                    output: {
+                        path: "abs(primitives.integer) == `1`",
+                        expected: "false",
+                        comparator: "booleanEquals",
+                    }
+                }
+            }
+        ]
+    },
+    AbsFunctionLongEquals: {
+        acceptors: [
+            {
+                state: "success",
+                matcher: {
+                    output: {
+                        path: "abs(primitives.long) == `1`",
+                        expected: "false",
+                        comparator: "booleanEquals",
+                    }
+                }
+            }
+        ]
+    },
+    AbsFunctionFloatEquals: {
+        acceptors: [
+            {
+                state: "success",
+                matcher: {
+                    output: {
+                        path: "abs(primitives.float) == `1`",
+                        expected: "false",
+                        comparator: "booleanEquals",
+                    }
+                }
+            }
+        ]
+    },
+    AbsFunctionDoubleEquals: {
+        acceptors: [
+            {
+                state: "success",
+                matcher: {
+                    output: {
+                        path: "abs(primitives.double) == `1`",
+                        expected: "false",
+                        comparator: "booleanEquals",
+                    }
+                }
+            }
+        ]
+    },
+
+    // function floor
+    FloorFunctionShortEquals: {
+        acceptors: [
+            {
+                state: "success",
+                matcher: {
+                    output: {
+                        path: "floor(primitives.short) == `1`",
+                        expected: "false",
+                        comparator: "booleanEquals",
+                    }
+                }
+            }
+        ]
+    },
+    FloorFunctionIntegerEquals: {
+        acceptors: [
+            {
+                state: "success",
+                matcher: {
+                    output: {
+                        path: "floor(primitives.integer) == `1`",
+                        expected: "false",
+                        comparator: "booleanEquals",
+                    }
+                }
+            }
+        ]
+    },
+    FloorFunctionLongEquals: {
+        acceptors: [
+            {
+                state: "success",
+                matcher: {
+                    output: {
+                        path: "floor(primitives.long) == `1`",
+                        expected: "false",
+                        comparator: "booleanEquals",
+                    }
+                }
+            }
+        ]
+    },
+    FloorFunctionFloatEquals: {
+        acceptors: [
+            {
+                state: "success",
+                matcher: {
+                    output: {
+                        path: "floor(primitives.float) == `1`",
+                        expected: "false",
+                        comparator: "booleanEquals",
+                    }
+                }
+            }
+        ]
+    },
+    FloorFunctionDoubleEquals: {
+        acceptors: [
+            {
+                state: "success",
+                matcher: {
+                    output: {
+                        path: "floor(primitives.double) == `1`",
+                        expected: "false",
+                        comparator: "booleanEquals",
+                    }
+                }
+            }
+        ]
+    },
+
+    // function ceil
+    CeilFunctionShortEquals: {
+        acceptors: [
+            {
+                state: "success",
+                matcher: {
+                    output: {
+                        path: "ceil(primitives.short) == `1`",
+                        expected: "false",
+                        comparator: "booleanEquals",
+                    }
+                }
+            }
+        ]
+    },
+    CeilFunctionIntegerEquals: {
+        acceptors: [
+            {
+                state: "success",
+                matcher: {
+                    output: {
+                        path: "ceil(primitives.integer) == `1`",
+                        expected: "false",
+                        comparator: "booleanEquals",
+                    }
+                }
+            }
+        ]
+    },
+    CeilFunctionLongEquals: {
+        acceptors: [
+            {
+                state: "success",
+                matcher: {
+                    output: {
+                        path: "ceil(primitives.long) == `1`",
+                        expected: "false",
+                        comparator: "booleanEquals",
+                    }
+                }
+            }
+        ]
+    },
+    CeilFunctionFloatEquals: {
+        acceptors: [
+            {
+                state: "success",
+                matcher: {
+                    output: {
+                        path: "ceil(primitives.float) == `1`",
+                        expected: "false",
+                        comparator: "booleanEquals",
+                    }
+                }
+            }
+        ]
+    },
+    CeilFunctionDoubleEquals: {
+        acceptors: [
+            {
+                state: "success",
+                matcher: {
+                    output: {
+                        path: "ceil(primitives.double) == `1`",
+                        expected: "false",
+                        comparator: "booleanEquals",
+                    }
+                }
+            }
+        ]
+    },
+
     // subfield projection
     HasStructWithStringByProjection: {
         acceptors: [

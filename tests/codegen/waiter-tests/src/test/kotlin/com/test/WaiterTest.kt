@@ -1014,6 +1014,112 @@ class WaiterTest {
         },
     )
 
+    // function abs
+    @Test fun testAbsFunctionShortEquals() = successTest(
+        WaitersTestClient::waitUntilAbsFunctionShortEquals,
+        GetEntityResponse { primitives = EntityPrimitives { short = -1 } },
+        GetEntityResponse { primitives = EntityPrimitives { short = 1 } },
+        GetEntityResponse { primitives = EntityPrimitives { short = 2 } },
+    )
+
+    @Test fun testAbsFunctionIntegerEquals() = successTest(
+        WaitersTestClient::waitUntilAbsFunctionIntegerEquals,
+        GetEntityResponse { primitives = EntityPrimitives { integer = -1 } },
+        GetEntityResponse { primitives = EntityPrimitives { integer = 1 } },
+        GetEntityResponse { primitives = EntityPrimitives { integer = 2 } },
+    )
+
+    @Test fun testAbsFunctionLongEquals() = successTest(
+        WaitersTestClient::waitUntilAbsFunctionLongEquals,
+        GetEntityResponse { primitives = EntityPrimitives { long = -1L } },
+        GetEntityResponse { primitives = EntityPrimitives { long = 1L } },
+        GetEntityResponse { primitives = EntityPrimitives { long = 2L } },
+    )
+
+    @Test fun testAbsFunctionFloatEquals() = successTest(
+        WaitersTestClient::waitUntilAbsFunctionFloatEquals,
+        GetEntityResponse { primitives = EntityPrimitives { float = -1f } },
+        GetEntityResponse { primitives = EntityPrimitives { float = 1f } },
+        GetEntityResponse { primitives = EntityPrimitives { float = 2f } },
+    )
+
+    @Test fun testAbsFunctionDoubleEquals() = successTest(
+        WaitersTestClient::waitUntilAbsFunctionDoubleEquals,
+        GetEntityResponse { primitives = EntityPrimitives { double = -1.0 } },
+        GetEntityResponse { primitives = EntityPrimitives { double = 1.0 } },
+        GetEntityResponse { primitives = EntityPrimitives { double = 2.0 } },
+    )
+
+    // function floor
+    @Test fun testFloorFunctionShortEquals() = successTest(
+        WaitersTestClient::waitUntilFloorFunctionShortEquals,
+        GetEntityResponse { primitives = EntityPrimitives { short = 1 } },
+        GetEntityResponse { primitives = EntityPrimitives { short = 2 } },
+    )
+
+    @Test fun testFloorFunctionIntegerEquals() = successTest(
+        WaitersTestClient::waitUntilFloorFunctionIntegerEquals,
+        GetEntityResponse { primitives = EntityPrimitives { integer = 1 } },
+        GetEntityResponse { primitives = EntityPrimitives { integer = 2 } },
+    )
+
+    @Test fun testFloorFunctionLongEquals() = successTest(
+        WaitersTestClient::waitUntilFloorFunctionLongEquals,
+        GetEntityResponse { primitives = EntityPrimitives { long = 1L } },
+        GetEntityResponse { primitives = EntityPrimitives { long = 2L } },
+    )
+
+    @Test fun testFloorFunctionFloatEquals() = successTest(
+        WaitersTestClient::waitUntilFloorFunctionFloatEquals,
+        GetEntityResponse { primitives = EntityPrimitives { float = 1.0001f } },
+        GetEntityResponse { primitives = EntityPrimitives { float = 1.9f } },
+        GetEntityResponse { primitives = EntityPrimitives { float = 1.0f } },
+        GetEntityResponse { primitives = EntityPrimitives { float = 2.0f } },
+    )
+
+    @Test fun testFloorFunctionDoubleEquals() = successTest(
+        WaitersTestClient::waitUntilFloorFunctionDoubleEquals,
+        GetEntityResponse { primitives = EntityPrimitives { double = 1.0001 } },
+        GetEntityResponse { primitives = EntityPrimitives { double = 1.9 } },
+        GetEntityResponse { primitives = EntityPrimitives { double = 1.0 } },
+        GetEntityResponse { primitives = EntityPrimitives { double = 2.0 } },
+    )
+
+    // function ceil
+    @Test fun testCeilFunctionShortEquals() = successTest(
+        WaitersTestClient::waitUntilCeilFunctionShortEquals,
+        GetEntityResponse { primitives = EntityPrimitives { short = 1 } },
+        GetEntityResponse { primitives = EntityPrimitives { short = 2 } },
+    )
+
+    @Test fun testCeilFunctionIntegerEquals() = successTest(
+        WaitersTestClient::waitUntilCeilFunctionIntegerEquals,
+        GetEntityResponse { primitives = EntityPrimitives { integer = 1 } },
+        GetEntityResponse { primitives = EntityPrimitives { integer = 2 } },
+    )
+
+    @Test fun testCeilFunctionLongEquals() = successTest(
+        WaitersTestClient::waitUntilCeilFunctionLongEquals,
+        GetEntityResponse { primitives = EntityPrimitives { long = 1L } },
+        GetEntityResponse { primitives = EntityPrimitives { long = 2L } },
+    )
+
+    @Test fun testCeilFunctionFloatEquals() = successTest(
+        WaitersTestClient::waitUntilCeilFunctionFloatEquals,
+        GetEntityResponse { primitives = EntityPrimitives { float = 0.0001f } },
+        GetEntityResponse { primitives = EntityPrimitives { float = 0.9f } },
+        GetEntityResponse { primitives = EntityPrimitives { float = 1.0f } },
+        GetEntityResponse { primitives = EntityPrimitives { float = 2.0f } },
+    )
+
+    @Test fun testCeilFunctionDoubleEquals() = successTest(
+        WaitersTestClient::waitUntilCeilFunctionDoubleEquals,
+        GetEntityResponse { primitives = EntityPrimitives { double = 0.0001 } },
+        GetEntityResponse { primitives = EntityPrimitives { double = 0.9 } },
+        GetEntityResponse { primitives = EntityPrimitives { double = 1.0 } },
+        GetEntityResponse { primitives = EntityPrimitives { double = 2.0 } },
+    )
+
     // subfield projection
     @Test fun testHasStructWithStringByProjection() = successTest(
         WaitersTestClient::waitUntilHasStructWithStringByProjection,

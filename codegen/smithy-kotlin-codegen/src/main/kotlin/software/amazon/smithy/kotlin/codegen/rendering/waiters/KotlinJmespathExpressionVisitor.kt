@@ -226,6 +226,39 @@ class KotlinJmespathExpressionVisitor(
             VisitedExpression(ident)
         }
 
+        "abs" -> {
+            codegenReq(expression.arguments.size == 1) { "Unexpected number of arguments to $expression" }
+
+            val number = acceptSubexpression(expression.arguments[0])
+
+            val absExpr = ensureNullGuard(number.shape, "let { kotlin.math.abs(it.toDouble()) }")
+            val ident = addTempVar("abs", "${number.identifier}$absExpr")
+
+            VisitedExpression(ident, number.shape)
+        }
+
+        "floor" -> {
+            codegenReq(expression.arguments.size == 1) { "Unexpected number of arguments to $expression" }
+
+            val number = acceptSubexpression(expression.arguments[0])
+
+            val absExpr = ensureNullGuard(number.shape, "let { kotlin.math.floor(it.toDouble()) }")
+            val ident = addTempVar("floor", "${number.identifier}$absExpr")
+
+            VisitedExpression(ident, number.shape)
+        }
+
+        "ceil" -> {
+            codegenReq(expression.arguments.size == 1) { "Unexpected number of arguments to $expression" }
+
+            val number = acceptSubexpression(expression.arguments[0])
+
+            val absExpr = ensureNullGuard(number.shape, "let { kotlin.math.ceil(it.toDouble()) }")
+            val ident = addTempVar("ceil", "${number.identifier}$absExpr")
+
+            VisitedExpression(ident, number.shape)
+        }
+
         else -> throw CodegenException("Unknown function type in $expression")
     }
 
@@ -379,7 +412,7 @@ class KotlinJmespathExpressionVisitor(
         val indexExpr = ensureNullGuard(currentShape, "get($index)")
         shapeCursor.removeLast()
 
-        return VisitedExpression(addTempVar("index", "$parentName$indexExpr"))
+        return VisitedExpression(addTempVar("index", "$parentName$indexExpr"), currentShape)
     }
 
     private val Shape.isEnumList: Boolean
