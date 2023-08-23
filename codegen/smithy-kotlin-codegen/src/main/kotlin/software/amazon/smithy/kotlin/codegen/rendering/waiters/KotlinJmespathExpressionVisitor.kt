@@ -96,7 +96,7 @@ class KotlinJmespathExpressionVisitor(
         shapeCursor.removeLast()
 
         val innerCollector = when (right) {
-            is MultiSelectListExpression -> innerResult.identifier // Already a list
+            is MultiSelectListExpression, is MultiSelectHashExpression -> innerResult.identifier // Already a list
             else -> "listOfNotNull(${innerResult.identifier})"
         }
         writer.write(innerCollector)
@@ -107,26 +107,28 @@ class KotlinJmespathExpressionVisitor(
 
     private fun subfield(expression: FieldExpression, parentName: String): VisitedExpression {
         val member = currentShape.targetOrSelf(ctx.model).getMember(expression.name).getOrNull()
-            ?: throw CodegenException("reference to nonexistent member '${expression.name}' of shape $currentShape")
 
         val name = expression.name.toCamelCase()
         val nameExpr = ensureNullGuard(currentShape, name)
 
-        val memberTarget = ctx.model.expectShape(member.target)
-        val unwrapExpr = when {
-            memberTarget.isEnum -> "value"
-            memberTarget.isEnumList -> "map { it.value }"
-            memberTarget.isEnumMap -> "mapValues { (_, v) -> v.value }"
-            memberTarget.isBlobShape || memberTarget.isTimestampShape ->
-                throw CodegenException("acceptor behavior for shape type ${memberTarget.type} is undefined")
-            else -> null
+        val unwrapExpr = member?.let {
+            val memberTarget = ctx.model.expectShape(member.target)
+            when {
+                memberTarget.isEnum -> "value"
+                memberTarget.isEnumList -> "map { it.value }"
+                memberTarget.isEnumMap -> "mapValues { (_, v) -> v.value }"
+                memberTarget.isBlobShape || memberTarget.isTimestampShape ->
+                    throw CodegenException("acceptor behavior for shape type ${memberTarget.type} is undefined")
+                else -> null
+            }
         }
+
         val codegen = buildString {
             append("$parentName$nameExpr")
             unwrapExpr?.let { append(ensureNullGuard(member, it)) }
         }
 
-        shapeCursor.addLast(member)
+        member?.let { shapeCursor.addLast(it) }
         return VisitedExpression(addTempVar(name, codegen), member)
     }
 
@@ -244,20 +246,32 @@ class KotlinJmespathExpressionVisitor(
     }
 
     override fun visitMultiSelectHash(expression: MultiSelectHashExpression): VisitedExpression {
-        throw CodegenException("MultiSelectHashExpression is unsupported")
+        val properties = expression.expressions.keys.joinToString { "val $it: T" }
+        writer.write("class Selection<T>($properties)")
+
+        val listName = bestTempVarName("multiSelect")
+        writer.withBlock("val $listName = listOfNotNull(", ")") {
+            withBlock("run {", "}") {
+                val identifiers = expression.expressions.toList().joinToString { addTempVar(it.first, it.second.accept(this@KotlinJmespathExpressionVisitor).identifier) }
+                write("Selection($identifiers)")
+            }
+        }
+        return VisitedExpression(listName, currentShape)
     }
 
     override fun visitMultiSelectList(expression: MultiSelectListExpression): VisitedExpression {
         val listName = bestTempVarName("multiSelect")
         writer.openBlock("val #L = listOfNotNull(", listName)
+        writer.openBlock("listOfNotNull(")
 
         expression.expressions.forEach {
             writer.openBlock("run {")
-            val inner = acceptSubexpression(it)
+            val inner = it.accept(this)
             writer.write(inner.identifier)
             writer.closeBlock("},")
         }
 
+        writer.closeBlock(")")
         writer.closeBlock(")")
         return VisitedExpression(listName, currentShape)
     }
@@ -328,8 +342,10 @@ class KotlinJmespathExpressionVisitor(
             if (expression.stop.asInt < 0) "$parentName.size${expression.stop.asInt}" else expression.stop.asInt
         }
 
+        val sliceExpr = ensureNullGuard(currentShape, "slice($startIndex..<$stopIndex step ${expression.step}")
+
         writer.write("@OptIn(ExperimentalStdlibApi::class)")
-        val slicedListName = addTempVar("slicedList", "$parentName?.slice($startIndex..<$stopIndex step ${expression.step})")
+        val slicedListName = addTempVar("slicedList", "$parentName$sliceExpr)")
         return VisitedExpression(slicedListName, currentShape)
     }
 
@@ -357,9 +373,13 @@ class KotlinJmespathExpressionVisitor(
         }
 
     private fun index(expression: IndexExpression, parentName: String): VisitedExpression {
-        shapeCursor.addLast(currentShape.targetOrSelf(ctx.model).targetMemberOrSelf)
         val index = if (expression.index < 0) "$parentName.size${expression.index}" else expression.index
-        return VisitedExpression(addTempVar("index", "$parentName?.get($index)"))
+
+        shapeCursor.addLast(currentShape.targetOrSelf(ctx.model).targetMemberOrSelf)
+        val indexExpr = ensureNullGuard(currentShape, "get($index)")
+        shapeCursor.removeLast()
+
+        return VisitedExpression(addTempVar("index", "$parentName$indexExpr"))
     }
 
     private val Shape.isEnumList: Boolean

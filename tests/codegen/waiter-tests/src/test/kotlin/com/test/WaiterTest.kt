@@ -10,12 +10,10 @@ import aws.smithy.kotlin.runtime.retries.getOrThrow
 import com.test.model.*
 import com.test.model.Enum
 import com.test.waiters.*
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
-@OptIn(ExperimentalCoroutinesApi::class)
 class WaiterTest {
     private fun successTest(
         block: suspend WaitersTestClient.(request: GetEntityRequest) -> Outcome<GetEntityResponse>,
@@ -255,6 +253,177 @@ class WaiterTest {
         WaitersTestClient::waitUntilStringListStopNegativeStartSlicingEquals,
         GetEntityResponse { lists = EntityLists { strings = listOf("foo", "bar", "bar", "foo") } },
         GetEntityResponse { lists = EntityLists { strings = listOf("bar", "foo", "foo", "bar") } },
+    )
+
+    // multi select
+    @Test fun testStructListStringMultiSelectList() = successTest(
+        WaitersTestClient::waitUntilStructListStringMultiSelectList,
+        GetEntityResponse { lists = EntityLists { structs = listOf(Struct { primitives = EntityPrimitives { string = "bar" } }, Struct { primitives = EntityPrimitives { string = "foo" } }) } },
+        GetEntityResponse { lists = EntityLists { structs = listOf(Struct { primitives = EntityPrimitives { string = "foo" } }, Struct { primitives = EntityPrimitives { string = "bar" } }) } },
+    )
+
+    @Test fun testStructListStringListMultiSelectList() = successTest(
+        WaitersTestClient::waitUntilStructListStringListMultiSelectList,
+        GetEntityResponse { lists = EntityLists { structs = listOf(Struct { primitives = EntityPrimitives { string = "foo" } }, Struct { primitives = EntityPrimitives { string = "bar" } }) } },
+        GetEntityResponse { lists = EntityLists { structs = listOf(Struct { primitives = EntityPrimitives { string = "bar" } }, Struct { primitives = EntityPrimitives { string = "foo" } }) } },
+    )
+
+    @Test fun testStructListSubStructPrimitivesBooleanMultiSelectList() = successTest(
+        WaitersTestClient::waitUntilStructListSubStructPrimitivesBooleanMultiSelectList,
+        GetEntityResponse {
+            lists = EntityLists {
+                structs = listOf(
+                    Struct {
+                        subStructs = listOf(
+                            SubStruct {
+                                subStructPrimitives = EntityPrimitives { boolean = true }
+                            },
+                        )
+                    },
+                    Struct {
+                        subStructs = listOf(
+                            SubStruct {
+                                subStructPrimitives = EntityPrimitives { boolean = false }
+                            },
+                        )
+                    },
+                )
+            }
+        },
+        GetEntityResponse {
+            lists = EntityLists {
+                structs = listOf(
+                    Struct {
+                        subStructs = listOf(
+                            SubStruct {
+                                subStructPrimitives = EntityPrimitives { boolean = false }
+                            },
+                        )
+                    },
+                    Struct {
+                        subStructs = listOf(
+                            SubStruct {
+                                subStructPrimitives = EntityPrimitives { boolean = true }
+                            },
+                        )
+                    },
+                )
+            }
+        },
+    )
+
+    @Test fun testStructListStringMultiSelectHash() = successTest(
+        WaitersTestClient::waitUntilStructListStringMultiSelectHash,
+        GetEntityResponse { lists = EntityLists { structs = listOf(Struct { primitives = EntityPrimitives { string = "bar" } }, Struct { primitives = EntityPrimitives { string = "foo" } }) } },
+        GetEntityResponse { lists = EntityLists { structs = listOf(Struct { primitives = EntityPrimitives { string = "foo" } }, Struct { primitives = EntityPrimitives { string = "bar" } }) } },
+    )
+
+    @Test fun testStructListStringsMultiSelectHash() = successTest(
+        WaitersTestClient::waitUntilStructListStringsMultiSelectHash,
+        GetEntityResponse {
+            lists = EntityLists {
+                structs = listOf(
+                    Struct {
+                        primitives = EntityPrimitives { string = "bar" }
+                        strings = listOf("bar")
+                    },
+                    Struct {
+                        primitives = EntityPrimitives { string = "bar" }
+                        strings = listOf("bar")
+                    },
+                )
+            }
+        },
+        GetEntityResponse {
+            lists = EntityLists {
+                structs = listOf(
+                    Struct {
+                        primitives = EntityPrimitives { string = "bar" }
+                        strings = listOf("bar")
+                    },
+                    Struct {
+                        primitives = EntityPrimitives { string = "bar" }
+                        strings = listOf("foo")
+                    },
+                )
+            }
+        },
+    )
+
+    @Test fun testStructListStringsAnyMultiSelectHash() = successTest(
+        WaitersTestClient::waitUntilStructListStringsAnyMultiSelectHash,
+        GetEntityResponse {
+            lists = EntityLists {
+                structs = listOf(
+                    Struct {
+                        primitives = EntityPrimitives { string = "bar" }
+                        strings = listOf("bar")
+                    },
+                    Struct {
+                        primitives = EntityPrimitives { string = "bar" }
+                        strings = listOf("bar")
+                    },
+                )
+            }
+        },
+        GetEntityResponse {
+            lists = EntityLists {
+                structs = listOf(
+                    Struct {
+                        primitives = EntityPrimitives { string = "bar" }
+                        strings = listOf("bar")
+                    },
+                    Struct {
+                        primitives = EntityPrimitives { string = "bar" }
+                        strings = listOf("bar", "bar", "foo")
+                    },
+                )
+            }
+        },
+    )
+
+    @Test fun testStructListSubStructPrimitivesBooleanMultiSelectHash() = successTest(
+        WaitersTestClient::waitUntilStructListSubStructPrimitivesBooleanMultiSelectHash,
+        GetEntityResponse {
+            lists = EntityLists {
+                structs = listOf(
+                    Struct {
+                        subStructs = listOf(
+                            SubStruct {
+                                subStructPrimitives = EntityPrimitives { boolean = false }
+                            },
+                        )
+                    },
+                    Struct {
+                        subStructs = listOf(
+                            SubStruct {
+                                subStructPrimitives = EntityPrimitives { boolean = true }
+                            },
+                        )
+                    },
+                )
+            }
+        },
+        GetEntityResponse {
+            lists = EntityLists {
+                structs = listOf(
+                    Struct {
+                        subStructs = listOf(
+                            SubStruct {
+                                subStructPrimitives = EntityPrimitives { boolean = true }
+                            },
+                        )
+                    },
+                    Struct {
+                        subStructs = listOf(
+                            SubStruct {
+                                subStructPrimitives = EntityPrimitives { boolean = false }
+                            },
+                        )
+                    },
+                )
+            }
+        },
     )
 
     // function: contains, list
