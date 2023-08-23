@@ -14,7 +14,7 @@ import kotlinx.coroutines.Job
  * Ties the lifetime of the channel and a Job together. Channel failures (closed with exception) will
  * cause the underlying [Job] to fail with the channel exception.
  *
- * This is useful for launching coroutines with the soul purpose of reading/writing data to the channel where
+ * This is useful for launching coroutines with the sole purpose of reading/writing data to the channel where
  * the coroutine should only continue if the channel hasn't failed.
  */
 @InternalApi
