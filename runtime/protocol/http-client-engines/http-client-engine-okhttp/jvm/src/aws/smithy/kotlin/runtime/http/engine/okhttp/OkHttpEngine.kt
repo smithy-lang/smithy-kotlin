@@ -14,9 +14,14 @@ import aws.smithy.kotlin.runtime.http.response.HttpCall
 import aws.smithy.kotlin.runtime.operation.ExecutionContext
 import aws.smithy.kotlin.runtime.time.Instant
 import aws.smithy.kotlin.runtime.time.fromEpochMilliseconds
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.job
+import kotlinx.coroutines.runBlocking
 import okhttp3.*
 import java.util.concurrent.TimeUnit
+import kotlin.time.Duration.Companion.microseconds
+import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.Duration.Companion.nanoseconds
 import kotlin.time.toJavaDuration
 import aws.smithy.kotlin.runtime.config.TlsVersion as SdkTlsVersion
 import okhttp3.TlsVersion as OkHttpTlsVersion
@@ -51,8 +56,13 @@ public class OkHttpEngine(
         val engineResponse = mapOkHttpExceptions { engineCall.executeAsync() }
 
         callContext.job.invokeOnCompletion {
-            engineCall.cancel()
-            runCatching { engineResponse.body.close() }
+            val closeResult = runCatching { engineResponse.body.close() }
+
+            if (closeResult.isFailure) {
+                engineCall.cancel()
+                runBlocking { delay(1.nanoseconds) }
+                engineResponse.body.close()
+            }
         }
 
         val response = engineResponse.toSdkResponse()
