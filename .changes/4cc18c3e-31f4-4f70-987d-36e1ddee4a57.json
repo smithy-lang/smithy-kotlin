@@ -1,0 +1,8 @@
+{
+    "id": "4cc18c3e-31f4-4f70-987d-36e1ddee4a57",
+    "type": "bugfix",
+    "description": "Set X-Amz-Content-Sha256 header for unsigned payload and event stream operations by default",
+    "issues": [
+        "awslabs/aws-sdk-kotlin#1029"
+    ]
+}
