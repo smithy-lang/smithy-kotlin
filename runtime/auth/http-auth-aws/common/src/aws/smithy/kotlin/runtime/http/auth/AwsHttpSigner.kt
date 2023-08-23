@@ -93,6 +93,18 @@ public class AwsHttpSigner(private val config: Config) : HttpSigner {
          * this parameter has no effect.
          */
         public var expiresAfter: Duration? = null
+
+        /**
+         * A predicate to control which headers are a part of the canonical request. Note that skipping auth-required
+         * headers will result in an unusable signature. Headers injected by the signing process cannot be skipped.
+         *
+         * This function does not override the internal check function (e.g., for `x-amzn-trace-id`, `user-agent`, etc.) but
+         * rather supplements it. In particular, a header will get signed if and only if it returns true to both the
+         * internal check and this function (if defined).
+         *
+         * The default predicate is to not reject signing any headers (i.e., `_ -> true`).
+         */
+        public var shouldSignHeader: ShouldSignHeaderPredicate = { _ -> true }
     }
 
     override suspend fun sign(signingRequest: SignHttpRequest) {
@@ -118,6 +130,7 @@ public class AwsHttpSigner(private val config: Config) : HttpSigner {
             normalizeUriPath = config.normalizeUriPath
             useDoubleUriEncode = config.useDoubleUriEncode
             expiresAfter = config.expiresAfter
+            shouldSignHeader = config.shouldSignHeader
 
             signedBodyHeader = contextSignedBodyHeader ?: config.signedBodyHeader
 

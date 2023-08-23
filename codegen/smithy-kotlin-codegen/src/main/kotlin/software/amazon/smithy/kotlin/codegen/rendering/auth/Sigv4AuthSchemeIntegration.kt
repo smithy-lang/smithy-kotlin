@@ -18,9 +18,11 @@ import software.amazon.smithy.kotlin.codegen.model.buildSymbol
 import software.amazon.smithy.kotlin.codegen.model.hasTrait
 import software.amazon.smithy.kotlin.codegen.model.knowledge.AwsSignatureVersion4
 import software.amazon.smithy.kotlin.codegen.rendering.protocol.ProtocolGenerator
+import software.amazon.smithy.kotlin.codegen.rendering.protocol.ProtocolMiddleware
 import software.amazon.smithy.kotlin.codegen.rendering.util.ConfigProperty
 import software.amazon.smithy.kotlin.codegen.rendering.util.ConfigPropertyType
 import software.amazon.smithy.model.Model
+import software.amazon.smithy.model.knowledge.EventStreamIndex
 import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.shapes.ShapeId
 
@@ -35,6 +37,11 @@ class Sigv4AuthSchemeIntegration : KotlinIntegration {
         AwsSignatureVersion4.isSupportedAuthentication(model, settings.getService(model))
 
     override fun authSchemes(ctx: ProtocolGenerator.GenerationContext): List<AuthSchemeHandler> = listOf(SigV4AuthSchemeHandler())
+
+    override fun customizeMiddleware(
+        ctx: ProtocolGenerator.GenerationContext,
+        resolved: List<ProtocolMiddleware>,
+    ): List<ProtocolMiddleware> = resolved + Sigv4SignedBodyHeaderMiddleware()
 
     override fun additionalServiceConfigProps(ctx: CodegenContext): List<ConfigProperty> {
         val credentialsProviderProp = ConfigProperty {
@@ -85,5 +92,25 @@ open class SigV4AuthSchemeHandler : AuthSchemeHandler {
     override fun instantiateAuthSchemeExpr(ctx: ProtocolGenerator.GenerationContext, writer: KotlinWriter) {
         val signingService = AwsSignatureVersion4.signingServiceName(ctx.service)
         writer.write("#T(#T, #S)", RuntimeTypes.Auth.HttpAuthAws.SigV4AuthScheme, RuntimeTypes.Auth.Signing.AwsSigningStandard.DefaultAwsSigner, signingService)
+    }
+}
+
+/**
+ * Conditionally updates the operation context to set the signed body header attribute
+ * e.g. to set `X-Amz-Content-Sha256` header.
+ */
+class Sigv4SignedBodyHeaderMiddleware : ProtocolMiddleware {
+    override val name: String = "Sigv4SignedBodyHeaderMiddleware"
+
+    override fun isEnabledFor(ctx: ProtocolGenerator.GenerationContext, op: OperationShape): Boolean {
+        val hasEventStream = EventStreamIndex.of(ctx.model).getInputInfo(op).isPresent
+        return hasEventStream || op.hasTrait<UnsignedPayloadTrait>()
+    }
+    override fun render(ctx: ProtocolGenerator.GenerationContext, op: OperationShape, writer: KotlinWriter) {
+        writer.write(
+            "op.context.set(#T.SignedBodyHeader, #T.X_AMZ_CONTENT_SHA256)",
+            RuntimeTypes.Auth.Signing.AwsSigningCommon.AwsSigningAttributes,
+            RuntimeTypes.Auth.Signing.AwsSigningCommon.AwsSignedBodyHeader,
+        )
     }
 }
