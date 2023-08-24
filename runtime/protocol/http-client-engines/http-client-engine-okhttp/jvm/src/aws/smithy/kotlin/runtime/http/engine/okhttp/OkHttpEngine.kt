@@ -58,7 +58,7 @@ public class OkHttpEngine(
             // FIXME: https://github.com/awslabs/smithy-kotlin/issues/935
             val closeResult = runCatching { engineResponse.body.close() }
 
-            if (closeResult.isFailure && closeResult.exceptionOrNull() is IllegalStateException) {
+            if (closeResult.exceptionOrNull() is IllegalStateException) {
                 engineCall.cancel()
                 runBlocking { delay(1.nanoseconds) }
                 engineResponse.body.close()
