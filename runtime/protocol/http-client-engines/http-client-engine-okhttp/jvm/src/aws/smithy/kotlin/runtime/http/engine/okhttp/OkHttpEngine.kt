@@ -19,8 +19,6 @@ import kotlinx.coroutines.job
 import kotlinx.coroutines.runBlocking
 import okhttp3.*
 import java.util.concurrent.TimeUnit
-import kotlin.time.Duration.Companion.microseconds
-import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.nanoseconds
 import kotlin.time.toJavaDuration
 import aws.smithy.kotlin.runtime.config.TlsVersion as SdkTlsVersion
