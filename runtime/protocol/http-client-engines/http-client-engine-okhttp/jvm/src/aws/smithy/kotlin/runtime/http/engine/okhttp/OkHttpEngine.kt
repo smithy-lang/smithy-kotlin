@@ -54,6 +54,7 @@ public class OkHttpEngine(
         val engineResponse = mapOkHttpExceptions { engineCall.executeAsync() }
 
         callContext.job.invokeOnCompletion {
+            // FIXME: https://github.com/awslabs/smithy-kotlin/issues/935
             val closeResult = runCatching { engineResponse.body.close() }
 
             if (closeResult.isFailure) {
