@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.26.0] - 08/24/2023
+
+### Fixes
+* [#1029](https://github.com/awslabs/aws-sdk-kotlin/issues/1029) Set X-Amz-Content-Sha256 header for unsigned payload and event stream operations by default
+
+### Miscellaneous
+* **BREAKING**: prefix generated endpoint and auth scheme providers and cleanup auth scheme APIs
+* Remove ClientOption and associated Builder
+
 ## [0.25.1] - 08/17/2023
 
 ### Fixes

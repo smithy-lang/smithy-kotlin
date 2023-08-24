@@ -1,5 +1,0 @@
-{
-    "id": "01b383de-b06e-46f0-9bbe-4f8c1a8c2b9a",
-    "type": "misc",
-    "description": "**BREAKING**: prefix generated endpoint and auth scheme providers and cleanup auth scheme APIs"
-}
