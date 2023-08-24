@@ -18,6 +18,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.job
 import kotlinx.coroutines.runBlocking
 import okhttp3.*
+import java.lang.IllegalStateException
 import java.util.concurrent.TimeUnit
 import kotlin.time.Duration.Companion.nanoseconds
 import kotlin.time.toJavaDuration
@@ -57,7 +58,7 @@ public class OkHttpEngine(
             // FIXME: https://github.com/awslabs/smithy-kotlin/issues/935
             val closeResult = runCatching { engineResponse.body.close() }
 
-            if (closeResult.isFailure) {
+            if (closeResult.isFailure && closeResult.exceptionOrNull() is IllegalStateException) {
                 engineCall.cancel()
                 runBlocking { delay(1.nanoseconds) }
                 engineResponse.body.close()
