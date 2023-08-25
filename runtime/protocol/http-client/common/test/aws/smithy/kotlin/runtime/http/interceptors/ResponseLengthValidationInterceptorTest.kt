@@ -28,7 +28,7 @@ private val RESPONSE = "a".repeat(500).toByteArray()
 fun op() =
     SdkHttpOperation.build {
         serializer = HttpSerialize<ResponseLengthValidationTestInput> { _, _ -> HttpRequestBuilder() }
-        deserializer = HttpDeserialize { _, response -> ResponseLengthValidationTestOutput(response.body) }
+        deserializer = HttpDeserialize { _, call -> ResponseLengthValidationTestOutput(call.response.body) }
         operationName = "TestOperation"
         serviceName = "TestService"
     }.also {

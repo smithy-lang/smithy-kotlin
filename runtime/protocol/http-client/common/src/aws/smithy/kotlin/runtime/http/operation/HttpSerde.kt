@@ -6,6 +6,7 @@ package aws.smithy.kotlin.runtime.http.operation
 
 import aws.smithy.kotlin.runtime.InternalApi
 import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
+import aws.smithy.kotlin.runtime.http.response.HttpCall
 import aws.smithy.kotlin.runtime.http.response.HttpResponse
 import aws.smithy.kotlin.runtime.operation.ExecutionContext
 
@@ -22,7 +23,7 @@ public fun interface HttpSerialize<T> {
  */
 @InternalApi
 public fun interface HttpDeserialize<T> {
-    public suspend fun deserialize(context: ExecutionContext, response: HttpResponse): T
+    public suspend fun deserialize(context: ExecutionContext, call: HttpCall): T
 }
 
 /**
@@ -30,7 +31,7 @@ public fun interface HttpDeserialize<T> {
  */
 @InternalApi
 public object UnitDeserializer : HttpDeserialize<Unit> {
-    override suspend fun deserialize(context: ExecutionContext, response: HttpResponse) {}
+    override suspend fun deserialize(context: ExecutionContext, call: HttpCall) {}
 }
 
 /**
@@ -46,5 +47,5 @@ public object UnitSerializer : HttpSerialize<Unit> {
  */
 @InternalApi
 public object IdentityDeserializer : HttpDeserialize<HttpResponse> {
-    override suspend fun deserialize(context: ExecutionContext, response: HttpResponse): HttpResponse = response
+    override suspend fun deserialize(context: ExecutionContext, call: HttpCall): HttpResponse = call.response
 }

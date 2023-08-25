@@ -73,7 +73,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
      * The function should have the following signature:
      *
      * ```
-     * suspend fun throwFooOperationError(context: ExecutionContext, response: HttpResponse): Nothing {
+     * suspend fun throwFooOperationError(context: ExecutionContext, call: HttpCall): Nothing {
      *     <-- CURRENT WRITER CONTEXT -->
      * }
      * ```
@@ -529,7 +529,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         writer.addImport(RuntimeTypes.Http.isSuccess)
         writer.withBlock("if (!response.status.#T()) {", "}", RuntimeTypes.Http.isSuccess) {
             val errorHandlerFn = operationErrorHandler(ctx, op)
-            write("#T(context, response)", errorHandlerFn)
+            write("#T(context, call)", errorHandlerFn)
         }
     }
 
@@ -583,11 +583,12 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         writer
             .addImport(RuntimeTypes.Core.ExecutionContext)
             .openBlock(
-                "override suspend fun deserialize(context: #T, response: #T): #T {",
+                "override suspend fun deserialize(context: #T, call: #T): #T {",
                 RuntimeTypes.Core.ExecutionContext,
-                RuntimeTypes.Http.Response.HttpResponse,
+                RuntimeTypes.Http.Response.HttpCall,
                 outputSymbol,
             )
+            .write("val response = call.response")
             .call {
                 if (outputSymbol.shape?.isError == false && op != null) {
                     // handle operation errors

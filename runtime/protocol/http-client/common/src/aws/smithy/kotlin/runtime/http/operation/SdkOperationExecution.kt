@@ -17,7 +17,6 @@ import aws.smithy.kotlin.runtime.http.request.dumpRequest
 import aws.smithy.kotlin.runtime.http.request.immutableView
 import aws.smithy.kotlin.runtime.http.request.toBuilder
 import aws.smithy.kotlin.runtime.http.response.HttpCall
-import aws.smithy.kotlin.runtime.http.response.HttpResponse
 import aws.smithy.kotlin.runtime.http.response.complete
 import aws.smithy.kotlin.runtime.http.response.dumpResponse
 import aws.smithy.kotlin.runtime.io.Handler
@@ -312,7 +311,7 @@ internal class AuthHandler<Input, Output>(
 
 private class DeserializeHandler<Input, Output>(
     private val inner: Handler<SdkHttpRequest, HttpCall>,
-    private val mapResponse: suspend (ExecutionContext, HttpResponse) -> Output,
+    private val mapResponse: suspend (ExecutionContext, HttpCall) -> Output,
     private val interceptors: InterceptorExecutor<Input, Output>,
 ) : Handler<SdkHttpRequest, Output> {
 
@@ -324,7 +323,7 @@ private class DeserializeHandler<Input, Output>(
 
         interceptors.readBeforeDeserialization(modified)
 
-        val output = mapResponse(request.context, modified.response)
+        val output = mapResponse(request.context, modified)
         interceptors.readAfterDeserialization(output, modified)
 
         return output

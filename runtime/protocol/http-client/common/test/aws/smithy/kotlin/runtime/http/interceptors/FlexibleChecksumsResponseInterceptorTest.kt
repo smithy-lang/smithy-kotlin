@@ -31,7 +31,7 @@ inline fun <reified I> newTestOperation(serialized: HttpRequestBuilder): SdkHttp
         }
 
         deserializer = object : HttpDeserialize<TestOutput> {
-            override suspend fun deserialize(context: ExecutionContext, response: HttpResponse): TestOutput = TestOutput(response.body)
+            override suspend fun deserialize(context: ExecutionContext, call: HttpCall): TestOutput = TestOutput(call.response.body)
         }
 
         context {
