@@ -10,40 +10,47 @@ import aws.smithy.kotlin.runtime.http.HttpBody
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.time.Instant
 import kotlinx.coroutines.CompletableJob
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 
 /**
  * A single request/response pair
+ *
+ * @param request the original complete request
+ * @param response the [HttpResponse] for the given [request]
+ * @param requestTime the time the request was made by the engine
+ * @param responseTime the time the response was received. This is a rough estimate of Time-to-first-header (TTFH) as
+ * reported by the engine.
+ * @param coroutineContext the call context
  */
-public data class HttpCall(
-    /**
-     * The original complete request
-     */
+public open class HttpCall(
     public val request: HttpRequest,
-
-    /**
-     * The [HttpResponse] for the given [request]
-     */
     public val response: HttpResponse,
-
-    /**
-     * The time the request was made by the engine
-     */
     public val requestTime: Instant,
-
-    /**
-     * The time the response was received. This is a rough estimate of Time-to-first-header (TTFH) as
-     * reported by the engine.
-     */
     public val responseTime: Instant,
+    public override val coroutineContext: CoroutineContext = EmptyCoroutineContext,
+) : CoroutineScope {
+
+    @InternalApi
+    public open fun copy(
+        request: HttpRequest = this.request,
+        response: HttpResponse = this.response,
+    ): HttpCall = HttpCall(request, response, requestTime, responseTime, coroutineContext)
 
     /**
-     * The context associated with this call
+     * Hook to cancel an in-flight request
      */
-    public val callContext: CoroutineContext = EmptyCoroutineContext,
-)
+    @InternalApi
+    public open fun cancelInFlight() {
+        try {
+            // ensure the response is cancelled
+            (response.body as? HttpBody.ChannelContent)?.readFrom()?.cancel(null)
+        } catch (_: Throwable) {
+        }
+    }
+}
 
 /**
  * Close the underlying response and cleanup any resources associated with it.
@@ -53,14 +60,12 @@ public data class HttpCall(
  */
 @InternalApi
 public suspend fun HttpCall.complete() {
-    val job = callContext[Job] as? CompletableJob ?: return
-
-    try {
-        // ensure the response is cancelled
-        (response.body as? HttpBody.ChannelContent)?.readFrom()?.cancel(null)
-    } catch (_: Throwable) {
-    }
-
+    val job = coroutineContext[Job] as? CompletableJob ?: return
     job.complete()
+    if (!job.isCompleted) {
+        // still outstanding children/work, the body may not have been consumed invoke the implementation specific
+        // hook to cancel the in-flight call
+        cancelInFlight()
+    }
     job.join()
 }
