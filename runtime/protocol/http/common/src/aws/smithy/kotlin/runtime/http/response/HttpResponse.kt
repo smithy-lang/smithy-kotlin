@@ -15,16 +15,49 @@ import aws.smithy.kotlin.runtime.io.*
 
 /**
  * Immutable container for an HTTP response
- *
- * @property [status] response status code
- * @property [headers] response headers
- * @property [body] response body content
  */
-public data class HttpResponse(
-    public val status: HttpStatusCode,
-    public val headers: Headers,
-    public val body: HttpBody,
-) : ProtocolResponse
+public sealed interface HttpResponse : ProtocolResponse {
+    /**
+     * The response status code
+     */
+    public val status: HttpStatusCode
+
+    /**
+     * The response headers
+     */
+    public val headers: Headers
+
+    /**
+     * The response body
+     */
+    public val body: HttpBody
+}
+
+/**
+ * Use the default HTTP response implementation
+ */
+@InternalApi
+public fun HttpResponse(
+    status: HttpStatusCode,
+    headers: Headers = Headers.Empty,
+    body: HttpBody = HttpBody.Empty,
+): HttpResponse = DefaultHttpResponse(status, headers, body)
+
+private data class DefaultHttpResponse(
+    override val status: HttpStatusCode,
+    override val headers: Headers,
+    override val body: HttpBody,
+) : HttpResponse
+
+/**
+ * Replace the response body
+ */
+@InternalApi
+public fun HttpResponse.copy(
+    status: HttpStatusCode = this.status,
+    headers: Headers = this.headers,
+    body: HttpBody = this.body,
+): HttpResponse = HttpResponse(status, headers, body)
 
 /**
  * Get an HTTP header value by name. Returns the first header if multiple headers are set
