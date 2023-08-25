@@ -203,27 +203,43 @@ class KotlinJmespathExpressionVisitor(
         return VisitedExpression(ident, currentShape, inner.projected)
     }
 
+    private fun FunctionExpression.singleArg(): VisitedExpression {
+        codegenReq(arguments.size == 1) { "Unexpected number of arguments to $this" }
+        return acceptSubexpression(this.arguments[0])
+    }
+
+    private fun FunctionExpression.twoArgs(): Pair<VisitedExpression, VisitedExpression> {
+        codegenReq(arguments.size == 2) { "Unexpected number of arguments to $this" }
+        return acceptSubexpression(this.arguments[0]) to acceptSubexpression(this.arguments[1])
+    }
+
     override fun visitFunction(expression: FunctionExpression): VisitedExpression = when (expression.name) {
         "contains" -> {
-            codegenReq(expression.arguments.size == 2) { "Unexpected number of arguments to $expression" }
-
-            val subject = acceptSubexpression(expression.arguments[0])
-            val search = acceptSubexpression(expression.arguments[1])
+            val (subject, search) = expression.twoArgs()
 
             val containsExpr = ensureNullGuard(subject.shape, "contains(${search.identifier})", "false")
             val ident = addTempVar("contains", "${subject.identifier}$containsExpr")
+
             VisitedExpression(ident)
         }
 
         "length" -> {
-            codegenReq(expression.arguments.size == 1) { "Unexpected number of arguments to $expression" }
             writer.addImport(RuntimeTypes.Core.Utils.length)
-
-            val subject = acceptSubexpression(expression.arguments[0])
+            val subject = expression.singleArg()
 
             val lengthExpr = ensureNullGuard(subject.shape, "length", "0")
             val ident = addTempVar("length", "${subject.identifier}$lengthExpr")
+
             VisitedExpression(ident)
+        }
+
+        "abs", "floor", "ceil" -> {
+            val number = expression.singleArg()
+
+            val functionExpr = ensureNullGuard(number.shape, "let { kotlin.math.${expression.name}(it.toDouble()) }")
+            val ident = addTempVar(expression.name, "${number.identifier}$functionExpr")
+
+            VisitedExpression(ident, number.shape)
         }
 
         else -> throw CodegenException("Unknown function type in $expression")
@@ -379,7 +395,7 @@ class KotlinJmespathExpressionVisitor(
         val indexExpr = ensureNullGuard(currentShape, "get($index)")
         shapeCursor.removeLast()
 
-        return VisitedExpression(addTempVar("index", "$parentName$indexExpr"))
+        return VisitedExpression(addTempVar("index", "$parentName$indexExpr"), currentShape)
     }
 
     private val Shape.isEnumList: Boolean
