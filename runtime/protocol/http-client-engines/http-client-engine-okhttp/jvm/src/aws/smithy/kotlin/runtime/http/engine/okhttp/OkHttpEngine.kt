@@ -58,7 +58,7 @@ public class OkHttpEngine(
         val requestTime = Instant.fromEpochMilliseconds(engineResponse.sentRequestAtMillis)
         val responseTime = Instant.fromEpochMilliseconds(engineResponse.receivedResponseAtMillis)
 
-        return HttpCall(request, response, requestTime, responseTime, callContext)
+        return OkHttpCall(request, response, requestTime, responseTime, callContext, engineCall)
     }
 
     override fun shutdown() {

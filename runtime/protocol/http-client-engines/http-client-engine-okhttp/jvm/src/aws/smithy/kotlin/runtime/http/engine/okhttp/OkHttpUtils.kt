@@ -9,11 +9,13 @@ import aws.smithy.kotlin.runtime.http.*
 import aws.smithy.kotlin.runtime.http.engine.ProxyConfig
 import aws.smithy.kotlin.runtime.http.engine.internal.HttpClientMetrics
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
+import aws.smithy.kotlin.runtime.http.response.HttpCall
 import aws.smithy.kotlin.runtime.http.response.HttpResponse
 import aws.smithy.kotlin.runtime.io.SdkSource
 import aws.smithy.kotlin.runtime.io.internal.toSdk
 import aws.smithy.kotlin.runtime.net.*
 import aws.smithy.kotlin.runtime.operation.ExecutionContext
+import aws.smithy.kotlin.runtime.time.Instant
 import kotlinx.coroutines.*
 import okhttp3.*
 import okhttp3.Authenticator
@@ -24,6 +26,7 @@ import java.io.IOException
 import java.net.*
 import javax.net.ssl.SSLHandshakeException
 import kotlin.coroutines.CoroutineContext
+import kotlin.coroutines.EmptyCoroutineContext
 import aws.smithy.kotlin.runtime.http.engine.ProxySelector as SdkProxySelector
 import okhttp3.Request as OkHttpRequest
 import okhttp3.Response as OkHttpResponse
@@ -160,6 +163,22 @@ internal class OkHttpProxySelector(
         }
     }
     override fun connectFailed(uri: URI?, sa: SocketAddress?, ioe: IOException?) {}
+}
+
+internal class OkHttpCall(
+    request: HttpRequest,
+    response: HttpResponse,
+    requestTime: Instant,
+    responseTime: Instant,
+    coroutineContext: CoroutineContext = EmptyCoroutineContext,
+    val call: Call,
+) : HttpCall(request, response, requestTime, responseTime, coroutineContext) {
+    override fun copy(request: HttpRequest, response: HttpResponse): HttpCall =
+        OkHttpCall(request, response, requestTime, responseTime, coroutineContext, call)
+    override fun cancelInFlight() {
+        super.cancelInFlight()
+        call.cancel()
+    }
 }
 
 private fun URI.toUrl(): Url {
