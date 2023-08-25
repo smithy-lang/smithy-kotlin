@@ -4,15 +4,13 @@
  */
 package com.test
 
-import com.test.model.GetEntityRequest
-import com.test.model.GetEntityResponse
-import kotlin.Result
+import com.test.model.*
 
 /**
  * This is a stub that produces a series of responses.
  * @param resultList The list of responses to provide for each sequential call to the [getEntity] method.
  */
-class DefaultWaitersTestClient(resultList: List<Result<GetEntityResponse>>) : WaitersTestClient {
+class DefaultWaitersTestClient<T>(resultList: List<Result<T>>) : WaitersTestClient {
     override val config: WaitersTestClient.Config
         get() = error("Unneeded for test")
 
@@ -20,8 +18,75 @@ class DefaultWaitersTestClient(resultList: List<Result<GetEntityResponse>>) : Wa
 
     private val results = resultList.iterator()
 
-    override suspend fun getEntity(input: GetEntityRequest): GetEntityResponse {
+    override suspend fun getPrimitive(input: GetPrimitiveRequest): GetPrimitiveResponse {
         val nextResult = results.next()
-        return if (nextResult.isSuccess) nextResult.getOrNull()!! else throw nextResult.exceptionOrNull()!!
+        @Suppress("UNCHECKED_CAST")
+        return if (nextResult.isSuccess) (nextResult as Result<GetPrimitiveResponse>).getOrNull()!! else throw nextResult.exceptionOrNull()!!
+    }
+
+    override suspend fun getBooleanLogic(input: GetBooleanLogicRequest): GetBooleanLogicResponse {
+        val nextResult = results.next()
+        @Suppress("UNCHECKED_CAST")
+        return if (nextResult.isSuccess) (nextResult as Result<GetBooleanLogicResponse>).getOrNull()!! else throw nextResult.exceptionOrNull()!!
+    }
+
+    override suspend fun getListOperation(input: GetListOperationRequest): GetListOperationResponse {
+        val nextResult = results.next()
+        @Suppress("UNCHECKED_CAST")
+        return if (nextResult.isSuccess) (nextResult as Result<GetListOperationResponse>).getOrNull()!! else throw nextResult.exceptionOrNull()!!
+    }
+
+    override suspend fun getStringEquals(input: GetStringEqualsRequest): GetStringEqualsResponse {
+        val nextResult = results.next()
+        @Suppress("UNCHECKED_CAST")
+        return if (nextResult.isSuccess) (nextResult as Result<GetStringEqualsResponse>).getOrNull()!! else throw nextResult.exceptionOrNull()!!
+    }
+
+    override suspend fun getMultiSelectList(input: GetMultiSelectListRequest): GetMultiSelectListResponse {
+        val nextResult = results.next()
+        @Suppress("UNCHECKED_CAST")
+        return if (nextResult.isSuccess) (nextResult as Result<GetMultiSelectListResponse>).getOrNull()!! else throw nextResult.exceptionOrNull()!!
+    }
+
+    override suspend fun getMultiSelectHash(input: GetMultiSelectHashRequest): GetMultiSelectHashResponse {
+        val nextResult = results.next()
+        @Suppress("UNCHECKED_CAST")
+        return if (nextResult.isSuccess) (nextResult as Result<GetMultiSelectHashResponse>).getOrNull()!! else throw nextResult.exceptionOrNull()!!
+    }
+
+    override suspend fun getFunctionContains(input: GetFunctionContainsRequest): GetFunctionContainsResponse {
+        val nextResult = results.next()
+        @Suppress("UNCHECKED_CAST")
+        return if (nextResult.isSuccess) (nextResult as Result<GetFunctionContainsResponse>).getOrNull()!! else throw nextResult.exceptionOrNull()!!
+    }
+
+    override suspend fun getFunctionLength(input: GetFunctionLengthRequest): GetFunctionLengthResponse {
+        val nextResult = results.next()
+        @Suppress("UNCHECKED_CAST")
+        return if (nextResult.isSuccess) (nextResult as Result<GetFunctionLengthResponse>).getOrNull()!! else throw nextResult.exceptionOrNull()!!
+    }
+
+    override suspend fun getFunctionAbs(input: GetFunctionAbsRequest): GetFunctionAbsResponse {
+        val nextResult = results.next()
+        @Suppress("UNCHECKED_CAST")
+        return if (nextResult.isSuccess) (nextResult as Result<GetFunctionAbsResponse>).getOrNull()!! else throw nextResult.exceptionOrNull()!!
+    }
+
+    override suspend fun getFunctionFloor(input: GetFunctionFloorRequest): GetFunctionFloorResponse {
+        val nextResult = results.next()
+        @Suppress("UNCHECKED_CAST")
+        return if (nextResult.isSuccess) (nextResult as Result<GetFunctionFloorResponse>).getOrNull()!! else throw nextResult.exceptionOrNull()!!
+    }
+
+    override suspend fun getFunctionCeil(input: GetFunctionCeilRequest): GetFunctionCeilResponse {
+        val nextResult = results.next()
+        @Suppress("UNCHECKED_CAST")
+        return if (nextResult.isSuccess) (nextResult as Result<GetFunctionCeilResponse>).getOrNull()!! else throw nextResult.exceptionOrNull()!!
+    }
+
+    override suspend fun getSubFieldProjection(input: GetSubFieldProjectionRequest): GetSubFieldProjectionResponse {
+        val nextResult = results.next()
+        @Suppress("UNCHECKED_CAST")
+        return if (nextResult.isSuccess) (nextResult as Result<GetSubFieldProjectionResponse>).getOrNull()!! else throw nextResult.exceptionOrNull()!!
     }
 }

@@ -203,58 +203,41 @@ class KotlinJmespathExpressionVisitor(
         return VisitedExpression(ident, currentShape, inner.projected)
     }
 
+    private fun FunctionExpression.singleArg(): VisitedExpression {
+        codegenReq(arguments.size == 1) { "Unexpected number of arguments to $this" }
+        return acceptSubexpression(this.arguments[0])
+    }
+
+    private fun FunctionExpression.twoArgs(): Pair<VisitedExpression, VisitedExpression> {
+        codegenReq(arguments.size == 2) { "Unexpected number of arguments to $this" }
+        return acceptSubexpression(this.arguments[0]) to acceptSubexpression(this.arguments[1])
+    }
+
     override fun visitFunction(expression: FunctionExpression): VisitedExpression = when (expression.name) {
         "contains" -> {
-            codegenReq(expression.arguments.size == 2) { "Unexpected number of arguments to $expression" }
-
-            val subject = acceptSubexpression(expression.arguments[0])
-            val search = acceptSubexpression(expression.arguments[1])
+            val (subject, search) = expression.twoArgs()
 
             val containsExpr = ensureNullGuard(subject.shape, "contains(${search.identifier})", "false")
             val ident = addTempVar("contains", "${subject.identifier}$containsExpr")
+
             VisitedExpression(ident)
         }
 
         "length" -> {
-            codegenReq(expression.arguments.size == 1) { "Unexpected number of arguments to $expression" }
             writer.addImport(RuntimeTypes.Core.Utils.length)
-
-            val subject = acceptSubexpression(expression.arguments[0])
+            val subject = expression.singleArg()
 
             val lengthExpr = ensureNullGuard(subject.shape, "length", "0")
             val ident = addTempVar("length", "${subject.identifier}$lengthExpr")
+
             VisitedExpression(ident)
         }
 
-        "abs" -> {
-            codegenReq(expression.arguments.size == 1) { "Unexpected number of arguments to $expression" }
+        "abs", "floor", "ceil" -> {
+            val number = expression.singleArg()
 
-            val number = acceptSubexpression(expression.arguments[0])
-
-            val absExpr = ensureNullGuard(number.shape, "let { kotlin.math.abs(it.toDouble()) }")
-            val ident = addTempVar("abs", "${number.identifier}$absExpr")
-
-            VisitedExpression(ident, number.shape)
-        }
-
-        "floor" -> {
-            codegenReq(expression.arguments.size == 1) { "Unexpected number of arguments to $expression" }
-
-            val number = acceptSubexpression(expression.arguments[0])
-
-            val absExpr = ensureNullGuard(number.shape, "let { kotlin.math.floor(it.toDouble()) }")
-            val ident = addTempVar("floor", "${number.identifier}$absExpr")
-
-            VisitedExpression(ident, number.shape)
-        }
-
-        "ceil" -> {
-            codegenReq(expression.arguments.size == 1) { "Unexpected number of arguments to $expression" }
-
-            val number = acceptSubexpression(expression.arguments[0])
-
-            val absExpr = ensureNullGuard(number.shape, "let { kotlin.math.ceil(it.toDouble()) }")
-            val ident = addTempVar("ceil", "${number.identifier}$absExpr")
+            val functionExpr = ensureNullGuard(number.shape, "let { kotlin.math.${expression.name}(it.toDouble()) }")
+            val ident = addTempVar(expression.name, "${number.identifier}$functionExpr")
 
             VisitedExpression(ident, number.shape)
         }
