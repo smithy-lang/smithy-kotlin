@@ -15,7 +15,6 @@ import aws.smithy.kotlin.runtime.io.SdkSource
 import aws.smithy.kotlin.runtime.io.internal.toSdk
 import aws.smithy.kotlin.runtime.net.*
 import aws.smithy.kotlin.runtime.operation.ExecutionContext
-import aws.smithy.kotlin.runtime.telemetry.logging.logger
 import aws.smithy.kotlin.runtime.time.Instant
 import kotlinx.coroutines.*
 import okhttp3.*
@@ -178,7 +177,6 @@ internal class OkHttpCall(
         OkHttpCall(request, response, requestTime, responseTime, coroutineContext, call)
     override fun cancelInFlight() {
         super.cancelInFlight()
-        coroutineContext.logger<OkHttpCall>().trace { "cancelling in-flight call" }
         call.cancel()
     }
 }

@@ -8,6 +8,7 @@ package aws.smithy.kotlin.runtime.http.response
 import aws.smithy.kotlin.runtime.InternalApi
 import aws.smithy.kotlin.runtime.http.HttpBody
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
+import aws.smithy.kotlin.runtime.telemetry.logging.logger
 import aws.smithy.kotlin.runtime.time.Instant
 import kotlinx.coroutines.CompletableJob
 import kotlinx.coroutines.CoroutineScope
@@ -28,8 +29,8 @@ import kotlin.coroutines.EmptyCoroutineContext
 public open class HttpCall(
     public val request: HttpRequest,
     public val response: HttpResponse,
-    public val requestTime: Instant,
-    public val responseTime: Instant,
+    public val requestTime: Instant = Instant.now(),
+    public val responseTime: Instant = Instant.now(),
     public override val coroutineContext: CoroutineContext = EmptyCoroutineContext,
 ) : CoroutineScope {
 
@@ -44,10 +45,9 @@ public open class HttpCall(
      */
     @InternalApi
     public open fun cancelInFlight() {
-        try {
+        runCatching {
             // ensure the response is cancelled
             (response.body as? HttpBody.ChannelContent)?.readFrom()?.cancel(null)
-        } catch (_: Throwable) {
         }
     }
 }
@@ -65,6 +65,7 @@ public suspend fun HttpCall.complete() {
     if (!job.isCompleted) {
         // still outstanding children/work, the body may not have been consumed invoke the implementation specific
         // hook to cancel the in-flight call
+        coroutineContext.logger<HttpCall>().trace { "cancelling in-flight call" }
         cancelInFlight()
     }
     job.join()

@@ -36,7 +36,6 @@ public sealed interface HttpResponse : ProtocolResponse {
 /**
  * Use the default HTTP response implementation
  */
-@InternalApi
 public fun HttpResponse(
     status: HttpStatusCode,
     headers: Headers = Headers.Empty,
@@ -52,7 +51,6 @@ private data class DefaultHttpResponse(
 /**
  * Replace the response body
  */
-@InternalApi
 public fun HttpResponse.copy(
     status: HttpStatusCode = this.status,
     headers: Headers = this.headers,
