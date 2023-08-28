@@ -12,7 +12,7 @@ import aws.smithy.kotlin.runtime.http.engine.okhttp.OkHttpEngine
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.http.request.headers
 import aws.smithy.kotlin.runtime.http.request.url
-import aws.smithy.kotlin.runtime.http.response.complete
+import aws.smithy.kotlin.runtime.http.complete
 import aws.smithy.kotlin.runtime.io.SdkByteReadChannel
 import aws.smithy.kotlin.runtime.io.SdkSource
 import aws.smithy.kotlin.runtime.io.source

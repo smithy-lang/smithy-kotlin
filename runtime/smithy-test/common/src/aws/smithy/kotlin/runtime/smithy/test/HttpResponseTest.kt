@@ -8,7 +8,7 @@ import aws.smithy.kotlin.runtime.http.Headers
 import aws.smithy.kotlin.runtime.http.HttpBody
 import aws.smithy.kotlin.runtime.http.HttpStatusCode
 import aws.smithy.kotlin.runtime.http.engine.HttpClientEngine
-import aws.smithy.kotlin.runtime.http.response.HttpCall
+import aws.smithy.kotlin.runtime.http.HttpCall
 import aws.smithy.kotlin.runtime.http.response.HttpResponse
 import aws.smithy.kotlin.runtime.httptest.TestEngine
 import aws.smithy.kotlin.runtime.io.SdkByteReadChannel

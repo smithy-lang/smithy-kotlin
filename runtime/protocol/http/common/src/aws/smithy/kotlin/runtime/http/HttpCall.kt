@@ -3,11 +3,11 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package aws.smithy.kotlin.runtime.http.response
+package aws.smithy.kotlin.runtime.http
 
 import aws.smithy.kotlin.runtime.InternalApi
-import aws.smithy.kotlin.runtime.http.HttpBody
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
+import aws.smithy.kotlin.runtime.http.response.HttpResponse
 import aws.smithy.kotlin.runtime.telemetry.logging.logger
 import aws.smithy.kotlin.runtime.time.Instant
 import kotlinx.coroutines.CompletableJob

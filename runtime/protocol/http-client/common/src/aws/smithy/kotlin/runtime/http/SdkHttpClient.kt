@@ -10,7 +10,6 @@ import aws.smithy.kotlin.runtime.http.engine.createCallContext
 import aws.smithy.kotlin.runtime.http.operation.SdkHttpRequest
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
-import aws.smithy.kotlin.runtime.http.response.HttpCall
 import aws.smithy.kotlin.runtime.io.Handler
 import aws.smithy.kotlin.runtime.operation.ExecutionContext
 import kotlinx.coroutines.*

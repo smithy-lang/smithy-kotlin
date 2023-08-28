@@ -585,7 +585,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             .openBlock(
                 "override suspend fun deserialize(context: #T, call: #T): #T {",
                 RuntimeTypes.Core.ExecutionContext,
-                RuntimeTypes.Http.Response.HttpCall,
+                RuntimeTypes.Http.HttpCall,
                 outputSymbol,
             )
             .write("val response = call.response")

@@ -10,7 +10,7 @@ import aws.smithy.kotlin.runtime.http.SdkHttpClient
 import aws.smithy.kotlin.runtime.http.content.ByteArrayContent
 import aws.smithy.kotlin.runtime.http.readAll
 import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
-import aws.smithy.kotlin.runtime.http.response.complete
+import aws.smithy.kotlin.runtime.http.complete
 import aws.smithy.kotlin.runtime.net.Host
 import io.kotest.matchers.string.shouldContain
 import kotlinx.coroutines.ExperimentalCoroutinesApi

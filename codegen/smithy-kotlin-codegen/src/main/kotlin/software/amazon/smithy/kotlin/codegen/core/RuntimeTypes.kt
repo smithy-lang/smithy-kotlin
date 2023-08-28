@@ -17,6 +17,7 @@ import software.amazon.smithy.kotlin.codegen.model.toSymbol
 object RuntimeTypes {
     object Http : RuntimeTypePackage(KotlinDependency.HTTP) {
         val HttpBody = symbol("HttpBody")
+        val HttpCall = symbol("HttpCall")
         val HttpMethod = symbol("HttpMethod")
         val ByteArrayContent = symbol("ByteArrayContent", subpackage = "content")
         val readAll = symbol("readAll")
@@ -41,7 +42,6 @@ object RuntimeTypes {
         }
 
         object Response : RuntimeTypePackage(KotlinDependency.HTTP, "response") {
-            val HttpCall = symbol("HttpCall")
             val HttpResponse = symbol("HttpResponse")
         }
     }

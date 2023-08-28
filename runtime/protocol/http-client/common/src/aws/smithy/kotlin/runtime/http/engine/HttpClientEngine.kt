@@ -7,7 +7,7 @@ package aws.smithy.kotlin.runtime.http.engine
 import aws.smithy.kotlin.runtime.ClientException
 import aws.smithy.kotlin.runtime.InternalApi
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
-import aws.smithy.kotlin.runtime.http.response.HttpCall
+import aws.smithy.kotlin.runtime.http.HttpCall
 import aws.smithy.kotlin.runtime.io.Closeable
 import aws.smithy.kotlin.runtime.operation.ExecutionContext
 import kotlinx.atomicfu.atomic

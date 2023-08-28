@@ -10,7 +10,7 @@ import aws.smithy.kotlin.runtime.http.*
 import aws.smithy.kotlin.runtime.http.operation.ReceiveMiddleware
 import aws.smithy.kotlin.runtime.http.operation.SdkHttpRequest
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
-import aws.smithy.kotlin.runtime.http.response.HttpCall
+import aws.smithy.kotlin.runtime.http.HttpCall
 import aws.smithy.kotlin.runtime.io.Handler
 
 /**

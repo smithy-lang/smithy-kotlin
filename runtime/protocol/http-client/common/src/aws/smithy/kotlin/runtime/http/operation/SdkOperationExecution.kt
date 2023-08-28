@@ -16,8 +16,8 @@ import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
 import aws.smithy.kotlin.runtime.http.request.dumpRequest
 import aws.smithy.kotlin.runtime.http.request.immutableView
 import aws.smithy.kotlin.runtime.http.request.toBuilder
-import aws.smithy.kotlin.runtime.http.response.HttpCall
-import aws.smithy.kotlin.runtime.http.response.complete
+import aws.smithy.kotlin.runtime.http.HttpCall
+import aws.smithy.kotlin.runtime.http.complete
 import aws.smithy.kotlin.runtime.http.response.dumpResponse
 import aws.smithy.kotlin.runtime.io.Handler
 import aws.smithy.kotlin.runtime.io.middleware.Middleware
