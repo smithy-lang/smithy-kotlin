@@ -214,8 +214,8 @@ class KotlinJmespathExpressionVisitor(
     }
 
     private fun VisitedExpression.dotFunction(expression: FunctionExpression, expr: String, elvisExpr: String? = null): VisitedExpression {
-        val expr = ensureNullGuard(this.shape, expr, elvisExpr)
-        val ident = addTempVar(expression.name, "${this.identifier}$expr")
+        val dotFunctionExpr = ensureNullGuard(this.shape, expr, elvisExpr)
+        val ident = addTempVar(expression.name, "${this.identifier}$dotFunctionExpr")
 
         return VisitedExpression(ident, this.shape)
     }
