@@ -158,7 +158,10 @@ class KotlinJmespathExpressionVisitor(
                 append("if ($isNullExpr) null else ")
             }
 
-            append("${left.identifier}.compareTo(${right.identifier}) ${expression.comparator} 0")
+            val unSafeComparatorExpr = "compareTo(${right.identifier}) ${expression.comparator} 0"
+            val comparatorExpr = if (left.nullable) buildString { append("?.$unSafeComparatorExpr") } else buildString { append(".$unSafeComparatorExpr") }
+
+            append("${left.identifier}$comparatorExpr")
         }
 
         val ident = addTempVar("comparison", codegen)
@@ -214,10 +217,10 @@ class KotlinJmespathExpressionVisitor(
     }
 
     private fun VisitedExpression.dotFunction(expression: FunctionExpression, expr: String, elvisExpr: String? = null): VisitedExpression {
-        val dotFunctionExpr = ensureNullGuard(this.shape, expr, elvisExpr)
-        val ident = addTempVar(expression.name, "${this.identifier}$dotFunctionExpr")
+        val dotFunctionExpr = ensureNullGuard(shape, expr, elvisExpr)
+        val ident = addTempVar(expression.name, "$identifier$dotFunctionExpr")
 
-        return VisitedExpression(ident, this.shape)
+        return VisitedExpression(ident, shape)
     }
 
     override fun visitFunction(expression: FunctionExpression): VisitedExpression = when (expression.name) {
@@ -244,7 +247,9 @@ class KotlinJmespathExpressionVisitor(
 
         "avg" -> {
             val numbers = expression.singleArg()
-            numbers.dotFunction(expression, "average()")
+            val average = numbers.dotFunction(expression, "average()").identifier
+            val isNaN = ensureNullGuard(numbers.shape, "isNaN() == true")
+            VisitedExpression(addTempVar("averageOrNull", "if($average$isNaN) null else $average"), nullable = true)
         }
 
         "join" -> {
@@ -457,4 +462,4 @@ class KotlinJmespathExpressionVisitor(
  *                  is `foo`, but the shape that needs carried through to subfield expressions in the following projection
  *                  is the target of `bar`, such that its subfields `baz` and `qux` can be recognized.
  */
-data class VisitedExpression(val identifier: String, val shape: Shape? = null, val projected: Shape? = null)
+data class VisitedExpression(val identifier: String, val shape: Shape? = null, val projected: Shape? = null, val nullable: Boolean = false)

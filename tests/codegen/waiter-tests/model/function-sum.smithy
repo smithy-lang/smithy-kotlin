@@ -4,7 +4,7 @@ namespace com.test
 use smithy.waiters#waitable
 
 @waitable(
-    ShortListSumEquals: {
+    ShortListSumNotEquals: {
         acceptors: [
             {
                 state: "success",
@@ -18,7 +18,7 @@ use smithy.waiters#waitable
             }
         ]
     },
-    IntegerListSumEquals: {
+    IntegerListSumNotEquals: {
         acceptors: [
             {
                 state: "success",
@@ -32,7 +32,7 @@ use smithy.waiters#waitable
             }
         ]
     },
-    LongListSumEquals: {
+    LongListSumNotEquals: {
         acceptors: [
             {
                 state: "success",
@@ -46,7 +46,7 @@ use smithy.waiters#waitable
             }
         ]
     },
-    FloatListSumEquals: {
+    FloatListSumNotEquals: {
         acceptors: [
             {
                 state: "success",
@@ -60,7 +60,7 @@ use smithy.waiters#waitable
             }
         ]
     },
-    DoubleListSumEquals: {
+    DoubleListSumNotEquals: {
         acceptors: [
             {
                 state: "success",

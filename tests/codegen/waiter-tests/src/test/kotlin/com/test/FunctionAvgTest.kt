@@ -28,40 +28,46 @@ class FunctionAvgTest {
     }
 
     @Test
-    fun testShortListAvgEquals() = successTest(
-        WaitersTestClient::waitUntilShortListAvgEquals,
+    fun testEmptyIntegerListAvgNotEquals() = successTest(
+        WaitersTestClient::waitUntilEmptyIntegerListAvgNotEquals,
+        GetFunctionAvgEqualsResponse { lists = EntityLists { integers = listOf() } },
+    )
+
+    @Test
+    fun testShortListAvgNotEquals() = successTest(
+        WaitersTestClient::waitUntilShortListAvgNotEquals,
         GetFunctionAvgEqualsResponse { lists = EntityLists { shorts = listOf(12, 12, 10, 8, 8) } },
         GetFunctionAvgEqualsResponse { lists = EntityLists { shorts = listOf(10, 10) } },
         GetFunctionAvgEqualsResponse { lists = EntityLists { shorts = listOf(0) } },
     )
 
     @Test
-    fun testIntegerListAvgEquals() = successTest(
-        WaitersTestClient::waitUntilIntegerListAvgEquals,
+    fun testIntegerListAvgNotEquals() = successTest(
+        WaitersTestClient::waitUntilIntegerListAvgNotEquals,
         GetFunctionAvgEqualsResponse { lists = EntityLists { integers = listOf(12, 12, 10, 8, 8) } },
         GetFunctionAvgEqualsResponse { lists = EntityLists { integers = listOf(10, 10) } },
         GetFunctionAvgEqualsResponse { lists = EntityLists { integers = listOf(0) } },
     )
 
     @Test
-    fun testLongListAvgEquals() = successTest(
-        WaitersTestClient::waitUntilLongListAvgEquals,
+    fun testLongListAvgNotEquals() = successTest(
+        WaitersTestClient::waitUntilLongListAvgNotEquals,
         GetFunctionAvgEqualsResponse { lists = EntityLists { longs = listOf(12L, 12L, 10L, 8L, 8L) } },
         GetFunctionAvgEqualsResponse { lists = EntityLists { longs = listOf(10L, 10L) } },
         GetFunctionAvgEqualsResponse { lists = EntityLists { longs = listOf(0L) } },
     )
 
     @Test
-    fun testFloatListAvgEquals() = successTest(
-        WaitersTestClient::waitUntilFloatListAvgEquals,
+    fun testFloatListAvgNotEquals() = successTest(
+        WaitersTestClient::waitUntilFloatListAvgNotEquals,
         GetFunctionAvgEqualsResponse { lists = EntityLists { floats = listOf(12f, 12f, 10f, 8f, 8f) } },
         GetFunctionAvgEqualsResponse { lists = EntityLists { floats = listOf(10f, 10f) } },
         GetFunctionAvgEqualsResponse { lists = EntityLists { floats = listOf(0f) } },
     )
 
     @Test
-    fun testDoubleListAvgEquals() = successTest(
-        WaitersTestClient::waitUntilDoubleListAvgEquals,
+    fun testDoubleListAvgNotEquals() = successTest(
+        WaitersTestClient::waitUntilDoubleListAvgNotEquals,
         GetFunctionAvgEqualsResponse { lists = EntityLists { doubles = listOf(12.0, 12.0, 10.0, 8.0, 8.0) } },
         GetFunctionAvgEqualsResponse { lists = EntityLists { doubles = listOf(10.0, 10.0) } },
         GetFunctionAvgEqualsResponse { lists = EntityLists { doubles = listOf(0.0) } },

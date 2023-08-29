@@ -4,21 +4,7 @@ namespace com.test
 use smithy.waiters#waitable
 
 @waitable(
-    ShortListAvgEquals: {
-        acceptors: [
-            {
-                state: "success",
-                matcher: {
-                    output: {
-                        path: "avg(lists.shorts) == `10`",
-                        expected: "false",
-                        comparator: "booleanEquals"
-                    }
-                }
-            }
-        ]
-    },
-    IntegerListAvgEquals: {
+    EmptyIntegerListAvgNotEquals: {
         acceptors: [
             {
                 state: "success",
@@ -32,7 +18,35 @@ use smithy.waiters#waitable
             }
         ]
     },
-    LongListAvgEquals: {
+    ShortListAvgNotEquals: {
+        acceptors: [
+            {
+                state: "success",
+                matcher: {
+                    output: {
+                        path: "avg(lists.shorts) == `10`",
+                        expected: "false",
+                        comparator: "booleanEquals"
+                    }
+                }
+            }
+        ]
+    },
+    IntegerListAvgNotEquals: {
+        acceptors: [
+            {
+                state: "success",
+                matcher: {
+                    output: {
+                        path: "avg(lists.integers) == `10`",
+                        expected: "false",
+                        comparator: "booleanEquals"
+                    }
+                }
+            }
+        ]
+    },
+    LongListAvgNotEquals: {
         acceptors: [
             {
                 state: "success",
@@ -46,7 +60,7 @@ use smithy.waiters#waitable
             }
         ]
     },
-    FloatListAvgEquals: {
+    FloatListAvgNotEquals: {
         acceptors: [
             {
                 state: "success",
@@ -60,7 +74,7 @@ use smithy.waiters#waitable
             }
         ]
     },
-    DoubleListAvgEquals: {
+    DoubleListAvgNotEquals: {
         acceptors: [
             {
                 state: "success",
