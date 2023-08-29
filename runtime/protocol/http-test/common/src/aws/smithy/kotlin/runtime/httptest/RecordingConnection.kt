@@ -8,11 +8,11 @@ package aws.smithy.kotlin.runtime.httptest
 import aws.smithy.kotlin.runtime.InternalApi
 import aws.smithy.kotlin.runtime.http.Headers
 import aws.smithy.kotlin.runtime.http.HttpBody
+import aws.smithy.kotlin.runtime.http.HttpCall
 import aws.smithy.kotlin.runtime.http.content.ByteArrayContent
 import aws.smithy.kotlin.runtime.http.engine.HttpClientEngine
 import aws.smithy.kotlin.runtime.http.readAll
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
-import aws.smithy.kotlin.runtime.http.HttpCall
 import aws.smithy.kotlin.runtime.http.response.HttpResponse
 import aws.smithy.kotlin.runtime.http.response.copy
 import aws.smithy.kotlin.runtime.operation.ExecutionContext

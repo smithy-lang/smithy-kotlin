@@ -53,10 +53,10 @@ class RestJsonTestProtocolGenerator(
     override fun operationErrorHandler(ctx: ProtocolGenerator.GenerationContext, op: OperationShape): Symbol =
         op.errorHandler(ctx.settings) { writer ->
             writer.withBlock(
-                "private suspend fun ${op.errorHandlerName()}(context: #T, response: #T): Nothing {",
+                "private suspend fun ${op.errorHandlerName()}(context: #T, call: #T): Nothing {",
                 "}",
                 RuntimeTypes.Core.ExecutionContext,
-                RuntimeTypes.Http.Response.HttpResponse,
+                RuntimeTypes.Http.HttpCall,
             ) {
                 write("error(\"not needed for compile tests\")")
             }

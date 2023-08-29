@@ -6,11 +6,11 @@
 package aws.smithy.kotlin.runtime.http.engine.okhttp
 
 import aws.smithy.kotlin.runtime.config.TlsVersion
+import aws.smithy.kotlin.runtime.http.HttpCall
 import aws.smithy.kotlin.runtime.http.config.EngineFactory
 import aws.smithy.kotlin.runtime.http.engine.*
 import aws.smithy.kotlin.runtime.http.engine.internal.HttpClientMetrics
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
-import aws.smithy.kotlin.runtime.http.HttpCall
 import aws.smithy.kotlin.runtime.operation.ExecutionContext
 import aws.smithy.kotlin.runtime.time.Instant
 import aws.smithy.kotlin.runtime.time.fromEpochMilliseconds

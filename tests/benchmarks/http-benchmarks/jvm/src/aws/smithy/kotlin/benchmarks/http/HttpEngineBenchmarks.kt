@@ -6,13 +6,13 @@
 package aws.smithy.kotlin.benchmarks.http
 
 import aws.smithy.kotlin.runtime.http.*
+import aws.smithy.kotlin.runtime.http.complete
 import aws.smithy.kotlin.runtime.http.engine.CloseableHttpClientEngine
 import aws.smithy.kotlin.runtime.http.engine.crt.CrtHttpEngine
 import aws.smithy.kotlin.runtime.http.engine.okhttp.OkHttpEngine
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.http.request.headers
 import aws.smithy.kotlin.runtime.http.request.url
-import aws.smithy.kotlin.runtime.http.complete
 import aws.smithy.kotlin.runtime.io.SdkByteReadChannel
 import aws.smithy.kotlin.runtime.io.SdkSource
 import aws.smithy.kotlin.runtime.io.source

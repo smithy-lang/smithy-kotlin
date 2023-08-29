@@ -494,19 +494,11 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
 
             reference(outputSymbol, SymbolReference.ContextOption.DECLARE)
         }
-        val operationDeserializerSymbols = setOf(
-            RuntimeTypes.HttpClient.Operation.HttpDeserialize,
-            RuntimeTypes.Http.Response.HttpResponse,
-        )
 
         val resolver = getProtocolHttpBindingResolver(ctx.model, ctx.service)
         val responseBindings = resolver.responseBindings(op)
         ctx.delegator.useSymbolWriter(deserializerSymbol) { writer ->
-            // import all of http, http.response , and serde packages. All serializers requires one or more of the symbols
-            // and most require quite a few. Rather than try and figure out which specific ones are used just take them
-            // all to ensure all the various DSL builders are available, etc
             writer
-                .addImport(operationDeserializerSymbols)
                 .write("")
                 .openBlock(
                     "internal class #T: #T<#T> {",
