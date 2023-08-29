@@ -89,4 +89,34 @@ class DefaultWaitersTestClient<T>(resultList: List<Result<T>>) : WaitersTestClie
         @Suppress("UNCHECKED_CAST")
         return if (nextResult.isSuccess) (nextResult as Result<GetSubFieldProjectionResponse>).getOrNull()!! else throw nextResult.exceptionOrNull()!!
     }
+
+    override suspend fun getFunctionSumEquals(input: GetFunctionSumEqualsRequest): GetFunctionSumEqualsResponse {
+        val nextResult = results.next()
+        @Suppress("UNCHECKED_CAST")
+        return if (nextResult.isSuccess) (nextResult as Result<GetFunctionSumEqualsResponse>).getOrNull()!! else throw nextResult.exceptionOrNull()!!
+    }
+
+    override suspend fun getFunctionAvgEquals(input: GetFunctionAvgEqualsRequest): GetFunctionAvgEqualsResponse {
+        val nextResult = results.next()
+        @Suppress("UNCHECKED_CAST")
+        return if (nextResult.isSuccess) (nextResult as Result<GetFunctionAvgEqualsResponse>).getOrNull()!! else throw nextResult.exceptionOrNull()!!
+    }
+
+    override suspend fun getFunctionJoinEquals(input: GetFunctionJoinEqualsRequest): GetFunctionJoinEqualsResponse {
+        val nextResult = results.next()
+        @Suppress("UNCHECKED_CAST")
+        return if (nextResult.isSuccess) (nextResult as Result<GetFunctionJoinEqualsResponse>).getOrNull()!! else throw nextResult.exceptionOrNull()!!
+    }
+
+    override suspend fun getFunctionStartsWithEquals(input: GetFunctionStartsWithEqualsRequest): GetFunctionStartsWithEqualsResponse {
+        val nextResult = results.next()
+        @Suppress("UNCHECKED_CAST")
+        return if (nextResult.isSuccess) (nextResult as Result<GetFunctionStartsWithEqualsResponse>).getOrNull()!! else throw nextResult.exceptionOrNull()!!
+    }
+
+    override suspend fun getFunctionEndsWithEquals(input: GetFunctionEndsWithEqualsRequest): GetFunctionEndsWithEqualsResponse {
+        val nextResult = results.next()
+        @Suppress("UNCHECKED_CAST")
+        return if (nextResult.isSuccess) (nextResult as Result<GetFunctionEndsWithEqualsResponse>).getOrNull()!! else throw nextResult.exceptionOrNull()!!
+    }
 }

@@ -213,33 +213,53 @@ class KotlinJmespathExpressionVisitor(
         return acceptSubexpression(this.arguments[0]) to acceptSubexpression(this.arguments[1])
     }
 
+    private fun VisitedExpression.dotFunction(expression: FunctionExpression, expr: String, elvisExpr: String? = null): VisitedExpression {
+        val expr = ensureNullGuard(this.shape, expr, elvisExpr)
+        val ident = addTempVar(expression.name, "${this.identifier}$expr")
+
+        return VisitedExpression(ident, this.shape)
+    }
+
     override fun visitFunction(expression: FunctionExpression): VisitedExpression = when (expression.name) {
         "contains" -> {
             val (subject, search) = expression.twoArgs()
-
-            val containsExpr = ensureNullGuard(subject.shape, "contains(${search.identifier})", "false")
-            val ident = addTempVar("contains", "${subject.identifier}$containsExpr")
-
-            VisitedExpression(ident)
+            subject.dotFunction(expression, "contains(${search.identifier})", "false")
         }
 
         "length" -> {
             writer.addImport(RuntimeTypes.Core.Utils.length)
             val subject = expression.singleArg()
-
-            val lengthExpr = ensureNullGuard(subject.shape, "length", "0")
-            val ident = addTempVar("length", "${subject.identifier}$lengthExpr")
-
-            VisitedExpression(ident)
+            subject.dotFunction(expression, "length", "0")
         }
 
         "abs", "floor", "ceil" -> {
             val number = expression.singleArg()
+            number.dotFunction(expression, "let { kotlin.math.${expression.name}(it.toDouble()) }")
+        }
 
-            val functionExpr = ensureNullGuard(number.shape, "let { kotlin.math.${expression.name}(it.toDouble()) }")
-            val ident = addTempVar(expression.name, "${number.identifier}$functionExpr")
+        "sum" -> {
+            val numbers = expression.singleArg()
+            numbers.dotFunction(expression, "sum()")
+        }
 
-            VisitedExpression(ident, number.shape)
+        "avg" -> {
+            val numbers = expression.singleArg()
+            numbers.dotFunction(expression, "average()")
+        }
+
+        "join" -> {
+            val (glue, list) = expression.twoArgs()
+            list.dotFunction(expression, "joinToString(${glue.identifier})")
+        }
+
+        "starts_with" -> {
+            val (subject, prefix) = expression.twoArgs()
+            subject.dotFunction(expression, "startsWith(${prefix.identifier})")
+        }
+
+        "ends_with" -> {
+            val (subject, suffix) = expression.twoArgs()
+            subject.dotFunction(expression, "endsWith(${suffix.identifier})")
         }
 
         else -> throw CodegenException("Unknown function type in $expression")
