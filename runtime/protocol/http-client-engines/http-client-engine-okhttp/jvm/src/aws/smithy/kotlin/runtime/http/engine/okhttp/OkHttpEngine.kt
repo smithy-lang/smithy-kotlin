@@ -6,11 +6,11 @@
 package aws.smithy.kotlin.runtime.http.engine.okhttp
 
 import aws.smithy.kotlin.runtime.config.TlsVersion
+import aws.smithy.kotlin.runtime.http.HttpCall
 import aws.smithy.kotlin.runtime.http.config.EngineFactory
 import aws.smithy.kotlin.runtime.http.engine.*
 import aws.smithy.kotlin.runtime.http.engine.internal.HttpClientMetrics
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
-import aws.smithy.kotlin.runtime.http.response.HttpCall
 import aws.smithy.kotlin.runtime.operation.ExecutionContext
 import aws.smithy.kotlin.runtime.time.Instant
 import aws.smithy.kotlin.runtime.time.fromEpochMilliseconds
@@ -58,7 +58,7 @@ public class OkHttpEngine(
         val requestTime = Instant.fromEpochMilliseconds(engineResponse.sentRequestAtMillis)
         val responseTime = Instant.fromEpochMilliseconds(engineResponse.receivedResponseAtMillis)
 
-        return HttpCall(request, response, requestTime, responseTime, callContext)
+        return OkHttpCall(request, response, requestTime, responseTime, callContext, engineCall)
     }
 
     override fun shutdown() {

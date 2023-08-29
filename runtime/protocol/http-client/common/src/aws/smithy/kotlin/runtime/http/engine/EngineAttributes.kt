@@ -18,5 +18,5 @@ public object EngineAttributes {
      * The time between sending the request completely and receiving the first byte of the response. This effectively
      * measures the time spent waiting on a response.
      */
-    public val TimeToFirstByte: AttributeKey<Duration> = AttributeKey("TimeToFirstByte")
+    public val TimeToFirstByte: AttributeKey<Duration> = AttributeKey("aws.smithy.kotlin#TimeToFirstByte")
 }

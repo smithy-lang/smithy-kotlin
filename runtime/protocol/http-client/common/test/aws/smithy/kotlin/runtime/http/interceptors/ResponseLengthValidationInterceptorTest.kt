@@ -5,10 +5,10 @@
 package aws.smithy.kotlin.runtime.http.interceptors
 
 import aws.smithy.kotlin.runtime.http.*
+import aws.smithy.kotlin.runtime.http.HttpCall
 import aws.smithy.kotlin.runtime.http.content.ByteArrayContent
 import aws.smithy.kotlin.runtime.http.operation.*
 import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
-import aws.smithy.kotlin.runtime.http.response.HttpCall
 import aws.smithy.kotlin.runtime.http.response.HttpResponse
 import aws.smithy.kotlin.runtime.httptest.TestEngine
 import aws.smithy.kotlin.runtime.io.EOFException
@@ -28,7 +28,7 @@ private val RESPONSE = "a".repeat(500).toByteArray()
 fun op() =
     SdkHttpOperation.build {
         serializer = HttpSerialize<ResponseLengthValidationTestInput> { _, _ -> HttpRequestBuilder() }
-        deserializer = HttpDeserialize { _, response -> ResponseLengthValidationTestOutput(response.body) }
+        deserializer = HttpDeserialize { _, call -> ResponseLengthValidationTestOutput(call.response.body) }
         operationName = "TestOperation"
         serviceName = "TestService"
     }.also {

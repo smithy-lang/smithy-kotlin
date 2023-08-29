@@ -6,9 +6,9 @@
 package aws.smithy.kotlin.runtime.http.test
 
 import aws.smithy.kotlin.runtime.http.HttpStatusCode
+import aws.smithy.kotlin.runtime.http.complete
 import aws.smithy.kotlin.runtime.http.readAll
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
-import aws.smithy.kotlin.runtime.http.response.complete
 import aws.smithy.kotlin.runtime.http.test.util.AbstractEngineTest
 import aws.smithy.kotlin.runtime.http.test.util.engineConfig
 import aws.smithy.kotlin.runtime.http.test.util.test
@@ -66,8 +66,8 @@ class AsyncStressTest : AbstractEngineTest() {
             assertEquals(HttpStatusCode.OK, call.response.status)
 
             val message = "engine=${client.engine}"
-            assertTrue(call.callContext.isActive, message)
-            assertFalse(call.callContext.job.isCompleted, message)
+            assertTrue(call.coroutineContext.isActive, message)
+            assertFalse(call.coroutineContext.job.isCompleted, message)
             val engineJobsDuring = client.engine.coroutineContext.job.children.toList()
 
             // any jobs needed to support request execution should be launched in the engine's scope
@@ -83,8 +83,8 @@ class AsyncStressTest : AbstractEngineTest() {
             // Running in debugger affects this though!
             delay(200.milliseconds)
 
-            assertFalse(call.callContext.isActive, message)
-            assertTrue(call.callContext.job.isCompleted, message)
+            assertFalse(call.coroutineContext.isActive, message)
+            assertTrue(call.coroutineContext.job.isCompleted, message)
 
             val engineJobsAfter = client.engine.coroutineContext.job.children.toList()
             assertEquals(engineJobsBefore.size, engineJobsAfter.size, message)

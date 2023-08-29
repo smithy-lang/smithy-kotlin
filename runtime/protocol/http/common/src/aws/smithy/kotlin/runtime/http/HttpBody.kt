@@ -10,6 +10,7 @@ import aws.smithy.kotlin.runtime.content.ByteStream
 import aws.smithy.kotlin.runtime.hashing.HashFunction
 import aws.smithy.kotlin.runtime.http.content.ByteArrayContent
 import aws.smithy.kotlin.runtime.io.*
+import kotlinx.coroutines.CoroutineScope
 
 /**
  * HTTP payload to be sent to a peer
@@ -211,9 +212,9 @@ public fun HttpBody.toByteStream(): ByteStream? = when (val body = this) {
  * Convenience function to treat all [HttpBody] variants with a payload as an [SdkByteReadChannel]
  */
 @InternalApi
-public fun HttpBody.toSdkByteReadChannel(): SdkByteReadChannel? = when (val body = this) {
+public fun HttpBody.toSdkByteReadChannel(scope: CoroutineScope? = null): SdkByteReadChannel? = when (val body = this) {
     is HttpBody.Empty -> null
     is HttpBody.Bytes -> SdkByteReadChannel(body.bytes())
     is HttpBody.ChannelContent -> body.readFrom()
-    is HttpBody.SourceContent -> body.readFrom().toSdkByteReadChannel()
+    is HttpBody.SourceContent -> body.readFrom().toSdkByteReadChannel(scope)
 }

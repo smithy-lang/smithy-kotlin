@@ -14,6 +14,7 @@ kotlin {
             dependencies {
                 // exposes: io/ByteStream
                 api(project(":runtime:runtime-core"))
+                implementation(project(":runtime:observability:telemetry-api"))
             }
         }
 
