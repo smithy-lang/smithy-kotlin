@@ -1,0 +1,8 @@
+{
+    "id": "9b8a79bf-8d89-481f-b671-4aba9c3b5250",
+    "type": "bugfix",
+    "description": "Fix closing an event stream causing an IllegalStateException",
+    "issues": [
+        "https://github.com/awslabs/smithy-kotlin/issues/935"
+    ]
+}
