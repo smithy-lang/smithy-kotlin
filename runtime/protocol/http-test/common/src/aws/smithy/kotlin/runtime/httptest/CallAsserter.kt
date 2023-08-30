@@ -1,3 +1,7 @@
+/*
+ * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * SPDX-License-Identifier: Apache-2.0
+ */
 package aws.smithy.kotlin.runtime.httptest
 
 import aws.smithy.kotlin.runtime.http.readAll
@@ -72,7 +76,7 @@ public interface CallAsserter {
                 }
             }
         }
-        
+
         public companion object {
             /**
              * Asserter that verifies every header of the requests match
