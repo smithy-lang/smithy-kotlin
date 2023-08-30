@@ -129,13 +129,13 @@ class HttpClientEngineTest {
     @Test
     fun testShutdownOnlyAfterInFlightDone() = runTest {
         val waiter = Channel<Unit>(1)
-        launch {
+        val job1 = launch {
             val call = client.call(SdkHttpRequest(HttpRequestBuilder()))
             waiter.receive()
             call.complete()
         }
         yield()
-        launch {
+        val job2 = launch {
             val call = client.call(SdkHttpRequest(HttpRequestBuilder()))
             waiter.receive()
             call.complete()
@@ -155,6 +155,7 @@ class HttpClientEngineTest {
         waiter.send(Unit)
         yield()
 
+        joinAll(job1, job2)
         assertFalse(engine.coroutineContext.job.isActive)
         assertTrue(engine.shutdownCalled)
     }
