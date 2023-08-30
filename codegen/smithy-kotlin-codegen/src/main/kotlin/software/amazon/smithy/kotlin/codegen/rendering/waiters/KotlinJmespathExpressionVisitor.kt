@@ -159,7 +159,7 @@ class KotlinJmespathExpressionVisitor(
             }
 
             val unSafeComparatorExpr = "compareTo(${right.identifier}) ${expression.comparator} 0"
-            val comparatorExpr = if (left.nullable) buildString { append("?.$unSafeComparatorExpr") } else buildString { append(".$unSafeComparatorExpr") }
+            val comparatorExpr = if (left.nullable) "?.$unSafeComparatorExpr" else ".$unSafeComparatorExpr"
 
             append("${left.identifier}$comparatorExpr")
         }
