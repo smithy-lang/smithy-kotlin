@@ -1,0 +1,8 @@
+{
+    "id": "d47756d3-1127-4ed0-a71f-44ca2daebf9a",
+    "type": "feature",
+    "description": "Add conversion to InputStream from ByteStream",
+    "issues": [
+        "awslabs/aws-sdk-kotlin#617"
+    ]
+}
