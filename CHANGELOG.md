@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.27.1] - 08/31/2023
+
+### Fixes
+* Correctly codegen defaults for enum shapes
+
 ## [0.27.0] - 08/31/2023
 
 ### Miscellaneous
