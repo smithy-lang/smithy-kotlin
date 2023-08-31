@@ -1,0 +1,5 @@
+{
+    "id": "855b179f-a977-459f-b7d7-fc0bccd208d7",
+    "type": "bugfix",
+    "description": "Correctly codegen defaults for enum shapes"
+}
