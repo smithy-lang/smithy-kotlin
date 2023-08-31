@@ -246,7 +246,7 @@ class SymbolProviderTest {
         val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model)
         val member = model.expectShape<MemberShape>("com.test#MyStruct\$foo")
         val memberSymbol = provider.toSymbol(member)
-        assertEquals("\"club\"", memberSymbol.defaultValue())
+        assertEquals("""com.test.model.Suit.fromValue("club")""", memberSymbol.defaultValue())
     }
 
     @Test
@@ -268,7 +268,7 @@ class SymbolProviderTest {
         val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model)
         val member = model.expectShape<MemberShape>("com.test#MyStruct\$foo")
         val memberSymbol = provider.toSymbol(member)
-        assertEquals("2", memberSymbol.defaultValue())
+        assertEquals("com.test.model.Season.fromValue(2)", memberSymbol.defaultValue())
     }
 
     @ParameterizedTest(name = "{index} ==> ''can default document with {0} type''")
