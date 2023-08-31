@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.27.0] - 08/31/2023
+
+### Miscellaneous
+* **BREAKING**: Refactor HttpCall and HttpResponse to not be data classes and make the call context more explicit
+
 ## [0.26.0] - 08/24/2023
 
 ### Fixes

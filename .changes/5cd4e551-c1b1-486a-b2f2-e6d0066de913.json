@@ -1,5 +1,0 @@
-{
-    "id": "5cd4e551-c1b1-486a-b2f2-e6d0066de913",
-    "type": "misc",
-    "description": "**BREAKING**: Refactor HttpCall and HttpResponse to not be data classes and make the call context more explicit"
-}
