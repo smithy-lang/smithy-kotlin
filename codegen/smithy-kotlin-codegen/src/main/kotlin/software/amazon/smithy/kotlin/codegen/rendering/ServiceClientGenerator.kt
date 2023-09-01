@@ -41,6 +41,11 @@ class ServiceClientGenerator(private val ctx: RenderingContext<ServiceShape>) {
              * Context key for the service symbol
              */
             val ServiceSymbol: SectionKey<Symbol> = SectionKey("ServiceSymbol")
+
+            /**
+             * Context key for the SDK ID
+             */
+            val SdkId: SectionKey<String> = SectionKey("SdkId")
         }
 
         /**
@@ -88,7 +93,10 @@ class ServiceClientGenerator(private val ctx: RenderingContext<ServiceShape>) {
                 writer.write("")
                 writer.declareSection(
                     Sections.CompanionObject,
-                    context = mapOf(Sections.CompanionObject.ServiceSymbol to serviceSymbol),
+                    context = mapOf(
+                        Sections.CompanionObject.ServiceSymbol to serviceSymbol,
+                        Sections.CompanionObject.SdkId to ctx.settings.sdkId,
+                    ),
                 ) {
                     renderCompanionObject()
                 }
