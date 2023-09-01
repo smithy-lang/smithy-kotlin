@@ -131,6 +131,8 @@ public final class aws/smithy/kotlin/runtime/content/ByteStreamKt {
 	public static final fun cancel (Laws/smithy/kotlin/runtime/content/ByteStream;)V
 	public static final fun decodeToString (Laws/smithy/kotlin/runtime/content/ByteStream;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public static final fun toByteArray (Laws/smithy/kotlin/runtime/content/ByteStream;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static final fun toFlow (Laws/smithy/kotlin/runtime/content/ByteStream;J)Lkotlinx/coroutines/flow/Flow;
+	public static synthetic fun toFlow$default (Laws/smithy/kotlin/runtime/content/ByteStream;JILjava/lang/Object;)Lkotlinx/coroutines/flow/Flow;
 }
 
 public abstract class aws/smithy/kotlin/runtime/content/Document {
