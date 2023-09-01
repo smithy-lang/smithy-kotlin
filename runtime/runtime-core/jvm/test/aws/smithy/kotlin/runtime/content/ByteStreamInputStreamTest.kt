@@ -74,7 +74,7 @@ abstract class ByteStreamInputStreamTest(
         val istream = factory.inputStream(expected)
         var offset = 0
         val actual = ByteArray(expected.size)
-        while (true) {
+        while (offset < actual.size) {
             val len = minOf(16, actual.size - offset)
             val rc = istream.read(actual, offset, len)
             if (rc == -1) break

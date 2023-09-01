@@ -29,7 +29,12 @@ private class InputAdapter(private val ch: SdkByteReadChannel) : InputStream() {
         return buffer.readByte().toInt() and 0xff
     }
     override fun read(b: ByteArray, off: Int, len: Int): Int {
-        Objects.checkFromIndexSize(off, len, b.size)
+        if (off < 0 || len < 0 || len > b.size - off) {
+            throw IndexOutOfBoundsException()
+        } else if (len == 0) {
+            return 0
+        }
+
         if (ch.isClosedForRead && buffer.size == 0L) return -1
         if (buffer.size == 0L) {
             val rc = readBlocking()
