@@ -669,7 +669,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         writer: KotlinWriter,
     ) {
         val eventStreamDeserializerFn = eventStreamResponseHandler(ctx, op)
-        writer.write("#T(builder, response.body)", eventStreamDeserializerFn)
+        writer.write("#T(builder, call)", eventStreamDeserializerFn)
     }
 
     /**
