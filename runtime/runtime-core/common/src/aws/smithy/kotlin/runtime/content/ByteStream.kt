@@ -6,10 +6,10 @@ package aws.smithy.kotlin.runtime.content
 
 import aws.smithy.kotlin.runtime.io.*
 import aws.smithy.kotlin.runtime.io.internal.SdkDispatchers
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.job
+import kotlinx.coroutines.launch
 
 /**
  * Represents an abstract read-only stream of bytes
@@ -121,6 +121,49 @@ public fun ByteStream.toFlow(bufferSizeHint: Long = 8192): Flow<ByteArray> = whe
     is ByteStream.Buffer -> flowOf(bytes())
     is ByteStream.ChannelStream -> readFrom().toFlow(bufferSizeHint)
     is ByteStream.SourceStream -> readFrom().toFlow(bufferSizeHint).flowOn(SdkDispatchers.IO)
+}
+
+/**
+ * Create a [ByteStream] from a [Flow] of individual [ByteArray]'s.
+ *
+ * @param scope the [CoroutineScope] to use for launching a coroutine to do the collection in.
+ * @param contentLength the overall content length of the [Flow] (if known). If set this will be
+ * used as [ByteStream.contentLength]. Some APIs require a known `Content-Length` header and
+ * since the total size of the flow can't be calculated without collecting it callers should set this
+ * parameter appropriately in those cases.
+ */
+public fun Flow<ByteArray>.toByteStream(
+    scope: CoroutineScope,
+    contentLength: Long? = null,
+): ByteStream {
+    val ch = SdkByteChannel(true)
+    var totalWritten = 0L
+    val job = scope.launch {
+        collect { bytes ->
+            ch.write(bytes)
+            totalWritten += bytes.size
+
+            check(contentLength == null || totalWritten <= contentLength) {
+                "$totalWritten bytes collected from flow exceeds reported content length of $contentLength"
+            }
+        }
+
+        check(contentLength == null || totalWritten == contentLength) {
+            "expected $contentLength bytes collected from flow, got $totalWritten"
+        }
+
+        ch.close()
+    }
+
+    job.invokeOnCompletion { cause ->
+        ch.close(cause)
+    }
+
+    return object : ByteStream.ChannelStream() {
+        override val contentLength: Long? = contentLength
+        override val isOneShot: Boolean = true
+        override fun readFrom(): SdkByteReadChannel = ch
+    }
 }
 
 private fun SdkByteReadChannel.toFlow(bufferSize: Long): Flow<ByteArray> = flow {
