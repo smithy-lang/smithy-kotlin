@@ -29,6 +29,7 @@ val codegen by configurations.creating
 dependencies {
     codegen(project(":codegen:smithy-kotlin-codegen"))
     codegen(libs.smithy.cli)
+    implementation(kotlin("reflect"))
 }
 
 val generateSdk = tasks.register<SmithyBuild>("generateSdk") {

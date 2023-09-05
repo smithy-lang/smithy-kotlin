@@ -20,5 +20,7 @@ service WaitersTestService {
         GetFunctionJoinEquals,
         GetFunctionStartsWithEquals,
         GetFunctionEndsWithEquals,
+        GetFunctionKeysEquals,
+        GetFunctionValuesEquals,
     ]
 }

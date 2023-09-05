@@ -52,6 +52,10 @@ class DefaultWaitersTestClient<T>(resultList: List<Result<T>>) : WaitersTestClie
 
     override suspend fun getFunctionEndsWithEquals(input: GetFunctionEndsWithEqualsRequest): GetFunctionEndsWithEqualsResponse = findSuccess()
 
+    override suspend fun getFunctionKeysEquals(input: GetFunctionKeysEqualsRequest): GetFunctionKeysEqualsResponse = findSuccess()
+
+    override suspend fun getFunctionValuesEquals(input: GetFunctionValuesEqualsRequest): GetFunctionValuesEqualsResponse = findSuccess()
+
     private fun <Response> findSuccess(): Response {
         val nextResult = results.next()
         @Suppress("UNCHECKED_CAST")

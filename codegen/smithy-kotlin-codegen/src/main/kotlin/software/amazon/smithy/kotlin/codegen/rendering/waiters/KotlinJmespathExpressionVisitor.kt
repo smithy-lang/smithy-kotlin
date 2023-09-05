@@ -218,7 +218,7 @@ class KotlinJmespathExpressionVisitor(
 
     private fun VisitedExpression.dotFunction(expression: FunctionExpression, expr: String, elvisExpr: String? = null): VisitedExpression {
         val dotFunctionExpr = ensureNullGuard(shape, expr, elvisExpr)
-        val ident = addTempVar(expression.name, "$identifier$dotFunctionExpr")
+        val ident = addTempVar(expression.name.toCamelCase(), "$identifier$dotFunctionExpr")
 
         return VisitedExpression(ident, shape)
     }
@@ -265,6 +265,18 @@ class KotlinJmespathExpressionVisitor(
         "ends_with" -> {
             val (subject, suffix) = expression.twoArgs()
             subject.dotFunction(expression, "endsWith(${suffix.identifier})")
+        }
+
+        "keys" -> {
+            val obj = expression.singleArg()
+            val keys = addTempVar("keys", "${obj.identifier}!!::class.members") // FIXME: Change to declared member properties
+            VisitedExpression(addTempVar("formattedKeys", "$keys.map { tempKeys -> tempKeys.name }"))
+        }
+
+        "values" -> {
+            val obj = expression.singleArg()
+            val x = addTempVar("x", "${obj.identifier}!!::class.declaredMemberProperties.forEach {println(it)}")
+            VisitedExpression(addTempVar("y", "listOf(\"f\")"))
         }
 
         else -> throw CodegenException("Unknown function type in $expression")
