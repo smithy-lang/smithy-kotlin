@@ -131,6 +131,8 @@ public final class aws/smithy/kotlin/runtime/content/ByteStreamKt {
 	public static final fun cancel (Laws/smithy/kotlin/runtime/content/ByteStream;)V
 	public static final fun decodeToString (Laws/smithy/kotlin/runtime/content/ByteStream;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public static final fun toByteArray (Laws/smithy/kotlin/runtime/content/ByteStream;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static final fun toByteStream (Lkotlinx/coroutines/flow/Flow;Lkotlinx/coroutines/CoroutineScope;Ljava/lang/Long;)Laws/smithy/kotlin/runtime/content/ByteStream;
+	public static synthetic fun toByteStream$default (Lkotlinx/coroutines/flow/Flow;Lkotlinx/coroutines/CoroutineScope;Ljava/lang/Long;ILjava/lang/Object;)Laws/smithy/kotlin/runtime/content/ByteStream;
 	public static final fun toFlow (Laws/smithy/kotlin/runtime/content/ByteStream;J)Lkotlinx/coroutines/flow/Flow;
 	public static synthetic fun toFlow$default (Laws/smithy/kotlin/runtime/content/ByteStream;JILjava/lang/Object;)Lkotlinx/coroutines/flow/Flow;
 }
@@ -513,10 +515,6 @@ public abstract interface class aws/smithy/kotlin/runtime/io/SdkByteReadChannel 
 	public abstract fun isClosedForRead ()Z
 	public abstract fun isClosedForWrite ()Z
 	public abstract fun read (Laws/smithy/kotlin/runtime/io/SdkBuffer;JLkotlin/coroutines/Continuation;)Ljava/lang/Object;
-}
-
-public final class aws/smithy/kotlin/runtime/io/SdkByteReadChannelJVMKt {
-	public static final fun toInputStream (Laws/smithy/kotlin/runtime/io/SdkByteReadChannel;)Ljava/io/InputStream;
 }
 
 public final class aws/smithy/kotlin/runtime/io/SdkByteReadChannelKt {
