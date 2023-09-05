@@ -517,6 +517,10 @@ public abstract interface class aws/smithy/kotlin/runtime/io/SdkByteReadChannel 
 	public abstract fun read (Laws/smithy/kotlin/runtime/io/SdkBuffer;JLkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
+public final class aws/smithy/kotlin/runtime/io/SdkByteReadChannelJVMKt {
+	public static final fun toInputStream (Laws/smithy/kotlin/runtime/io/SdkByteReadChannel;)Ljava/io/InputStream;
+}
+
 public final class aws/smithy/kotlin/runtime/io/SdkByteReadChannelKt {
 	public static final fun readAll (Laws/smithy/kotlin/runtime/io/SdkByteReadChannel;Laws/smithy/kotlin/runtime/io/SdkSink;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public static final fun readFully (Laws/smithy/kotlin/runtime/io/SdkByteReadChannel;Laws/smithy/kotlin/runtime/io/SdkBuffer;JLkotlin/coroutines/Continuation;)Ljava/lang/Object;
