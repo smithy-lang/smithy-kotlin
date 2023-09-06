@@ -164,6 +164,9 @@ object RuntimeTypes {
             val ReadThroughCache = symbol("ReadThroughCache")
             val truthiness = symbol("truthiness")
             val urlEncodeComponent = symbol("urlEncodeComponent", "text")
+            val mergeObjects = symbol("mergeObjects")
+            val getProperties = symbol("getProperties")
+            val Property = symbol("Property")
         }
 
         object Net : RuntimeTypePackage(KotlinDependency.CORE, "net") {

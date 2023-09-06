@@ -3,17 +3,16 @@ namespace com.test
 
 use smithy.waiters#waitable
 
-@suppress(["WaitableTraitJmespathProblem"]) // TODO: Remove
 @waitable(
-    KeysFunctionPrimitivesIntegerEquals2: {
+    ValuesFunctionPrimitivesEquals: {
         acceptors: [
             {
                 state: "success",
                 matcher: {
                     output: {
-                        path: "values(primitives)[0]",
-                        expected: "hello",
-                        comparator: "stringEquals"
+                        path: "values(primitives)",
+                        expected: "foo",
+                        comparator: "anyStringEquals"
                     }
                 }
             }

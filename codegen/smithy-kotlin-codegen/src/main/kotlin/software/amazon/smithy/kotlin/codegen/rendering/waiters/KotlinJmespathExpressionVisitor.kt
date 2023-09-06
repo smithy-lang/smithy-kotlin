@@ -125,7 +125,7 @@ class KotlinJmespathExpressionVisitor(
 
         val codegen = buildString {
             append("$parentName$nameExpr")
-            unwrapExpr?.let { append(ensureNullGuard(member, it)) }
+            unwrapExpr?.let { append(ensureNullGuard(member, it)) } // TODO: Add access using maps !!
         }
 
         member?.let { shapeCursor.addLast(it) }
@@ -206,77 +206,91 @@ class KotlinJmespathExpressionVisitor(
         return VisitedExpression(ident, currentShape, inner.projected)
     }
 
-    private fun FunctionExpression.singleArg(): VisitedExpression {
-        codegenReq(arguments.size == 1) { "Unexpected number of arguments to $this" }
-        return acceptSubexpression(this.arguments[0])
-    }
-
-    private fun FunctionExpression.twoArgs(): Pair<VisitedExpression, VisitedExpression> {
-        codegenReq(arguments.size == 2) { "Unexpected number of arguments to $this" }
-        return acceptSubexpression(this.arguments[0]) to acceptSubexpression(this.arguments[1])
+    private fun FunctionExpression.args(sizeConstraint: Int? = null): List<VisitedExpression> {
+        sizeConstraint?.let { codegenReq(arguments.size == sizeConstraint) { "Unexpected number of arguments to $this" } }
+        return this.getArguments().map { acceptSubexpression(it) }
     }
 
     private fun VisitedExpression.dotFunction(expression: FunctionExpression, expr: String, elvisExpr: String? = null): VisitedExpression {
         val dotFunctionExpr = ensureNullGuard(shape, expr, elvisExpr)
         val ident = addTempVar(expression.name.toCamelCase(), "$identifier$dotFunctionExpr")
 
+        shape?.let { shapeCursor.addLast(shape) }
         return VisitedExpression(ident, shape)
     }
 
     override fun visitFunction(expression: FunctionExpression): VisitedExpression = when (expression.name) {
         "contains" -> {
-            val (subject, search) = expression.twoArgs()
+            val (subject, search) = expression.args(2)
             subject.dotFunction(expression, "contains(${search.identifier})", "false")
         }
 
         "length" -> {
             writer.addImport(RuntimeTypes.Core.Utils.length)
-            val subject = expression.singleArg()
+
+            val (subject) = expression.args(1)
             subject.dotFunction(expression, "length", "0")
         }
 
         "abs", "floor", "ceil" -> {
-            val number = expression.singleArg()
+            val (number) = expression.args(1)
             number.dotFunction(expression, "let { kotlin.math.${expression.name}(it.toDouble()) }")
         }
 
         "sum" -> {
-            val numbers = expression.singleArg()
+            val (numbers) = expression.args(1)
             numbers.dotFunction(expression, "sum()")
         }
 
         "avg" -> {
-            val numbers = expression.singleArg()
+            val (numbers) = expression.args(1)
             val average = numbers.dotFunction(expression, "average()").identifier
             val isNaN = ensureNullGuard(numbers.shape, "isNaN() == true")
             VisitedExpression(addTempVar("averageOrNull", "if($average$isNaN) null else $average"), nullable = true)
         }
 
         "join" -> {
-            val (glue, list) = expression.twoArgs()
+            val (glue, list) = expression.args(2)
             list.dotFunction(expression, "joinToString(${glue.identifier})")
         }
 
         "starts_with" -> {
-            val (subject, prefix) = expression.twoArgs()
+            val (subject, prefix) = expression.args(2)
             subject.dotFunction(expression, "startsWith(${prefix.identifier})")
         }
 
         "ends_with" -> {
-            val (subject, suffix) = expression.twoArgs()
+            val (subject, suffix) = expression.args(2)
             subject.dotFunction(expression, "endsWith(${suffix.identifier})")
         }
 
         "keys" -> {
-            val obj = expression.singleArg()
-            val keys = addTempVar("keys", "${obj.identifier}!!::class.members") // FIXME: Change to declared member properties
-            VisitedExpression(addTempVar("formattedKeys", "$keys.map { tempKeys -> tempKeys.name }"))
+            writer.addImport(RuntimeTypes.Core.Utils.getProperties)
+            writer.addImport(RuntimeTypes.Core.Utils.Property) // TODO: Remove if unnecessary
+
+            val (obj) = expression.args(1)
+            obj.dotFunction(expression, "getProperties().map { it.name }")
         }
 
         "values" -> {
-            val obj = expression.singleArg()
-            val x = addTempVar("x", "${obj.identifier}!!::class.declaredMemberProperties.forEach {println(it)}")
-            VisitedExpression(addTempVar("y", "listOf(\"f\")"))
+            writer.addImport(RuntimeTypes.Core.Utils.getProperties)
+            writer.addImport(RuntimeTypes.Core.Utils.Property) // TODO: Remove if unnecessary
+
+            val (obj) = expression.args(1)
+            obj.dotFunction(expression, "getProperties().map { it.value }")
+        }
+
+        "merge" -> {
+            writer.addImport(RuntimeTypes.Core.Utils.mergeObjects)
+
+            val objects = expression.args()
+            val listOfObjects = VisitedExpression(addTempVar("objects", "listOf<Any>(${objects.forEach { it.identifier }})"))
+            val mergedHashMap = listOfObjects.dotFunction(expression,"mergeObjects()") // TODO: Add codegen to convert hash map to object
+
+            val mergedObject = addTempVar("mergedObject", "{  }")
+
+            //val properties = expression.expressions.keys.joinToString { "val $it: T" }
+            VisitedExpression()
         }
 
         else -> throw CodegenException("Unknown function type in $expression")
@@ -427,10 +441,7 @@ class KotlinJmespathExpressionVisitor(
 
     private fun index(expression: IndexExpression, parentName: String): VisitedExpression {
         val index = if (expression.index < 0) "$parentName.size${expression.index}" else expression.index
-
-        shapeCursor.addLast(currentShape.targetOrSelf(ctx.model).targetMemberOrSelf)
-        val indexExpr = ensureNullGuard(currentShape, "get($index)")
-        shapeCursor.removeLast()
+        val indexExpr = ensureNullGuard(currentShape.targetMemberOrSelf, "get($index)")
 
         return VisitedExpression(addTempVar("index", "$parentName$indexExpr"), currentShape)
     }

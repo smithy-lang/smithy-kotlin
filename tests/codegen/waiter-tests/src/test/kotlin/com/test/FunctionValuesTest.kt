@@ -5,14 +5,14 @@ import aws.smithy.kotlin.runtime.retries.getOrThrow
 import com.test.model.EntityPrimitives
 import com.test.model.GetFunctionValuesEqualsRequest
 import com.test.model.GetFunctionValuesEqualsResponse
-import com.test.waiters.waitUntilKeysFunctionPrimitivesIntegerEquals2
+import com.test.waiters.waitUntilValuesFunctionPrimitivesEquals
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 
 class FunctionValuesTest {
     private fun successTest(
-        block: suspend WaitersTestClient.(request: GetFunctionValuesEqualsRequest) -> Outcome<GetFunctionValuesEqualsResponse>,
+        block: suspend WaitersTestClient.(request: GetFunctionValuesEqualsRequest) -> Outcome<GetFunctionValuesEqualsResponse>, // TODO: Make this generic
         vararg results: GetFunctionValuesEqualsResponse,
     ): Unit = runTest {
         val client = DefaultWaitersTestClient(results.map { Result.success(it) })
@@ -24,8 +24,8 @@ class FunctionValuesTest {
     }
 
     @Test
-    fun testKeysFunctionPrimitivesStringEquals2() = successTest(
-        WaitersTestClient::waitUntilKeysFunctionPrimitivesIntegerEquals2,
-        GetFunctionValuesEqualsResponse { primitives = EntityPrimitives { string = "hello" } },
+    fun testValuesFunctionPrimitivesEquals() = successTest(
+        WaitersTestClient::waitUntilValuesFunctionPrimitivesEquals,
+        GetFunctionValuesEqualsResponse { primitives = EntityPrimitives { string = "foo" } },
     )
 }
