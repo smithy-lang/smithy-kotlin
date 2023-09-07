@@ -22,5 +22,6 @@ service WaitersTestService {
         GetFunctionEndsWithEquals,
         GetFunctionKeysEquals,
         GetFunctionValuesEquals,
+        GetFunctionMergeEquals,
     ]
 }

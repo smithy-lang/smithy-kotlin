@@ -3,28 +3,29 @@ namespace com.test
 
 use smithy.waiters#waitable
 
+@suppress(["WaitableTraitJmespathProblem"])
 @waitable(
-    ValuesFunctionPrimitivesStringEquals: {
+    MergeFunctionPrimitivesAndListsEquals: {
         acceptors: [
             {
                 state: "success",
                 matcher: {
                     output: {
-                        path: "values(primitives)",
+                        path: "merge(primitives, lists).string",
                         expected: "foo",
-                        comparator: "anyStringEquals"
+                        comparator: "stringEquals"
                     }
                 }
             }
         ]
     },
-    ValuesFunctionSampleValuesEquals: {
+    MergeFunctionOverrideObjectsEquals: {
         acceptors: [
             {
                 state: "success",
                 matcher: {
                     output: {
-                        path: "values(sampleValues)",
+                        path: "values(merge(objectOne, objectTwo))",
                         expected: "foo",
                         comparator: "allStringEquals"
                     }
@@ -34,8 +35,8 @@ use smithy.waiters#waitable
     },
 )
 @readonly
-@http(method: "GET", uri: "/values/{name}", code: 200)
-operation GetFunctionValuesEquals {
+@http(method: "GET", uri: "/merge/{name}", code: 200)
+operation GetFunctionMergeEquals {
     input: GetEntityRequest,
     output: GetEntityResponse,
     errors: [NotFound],

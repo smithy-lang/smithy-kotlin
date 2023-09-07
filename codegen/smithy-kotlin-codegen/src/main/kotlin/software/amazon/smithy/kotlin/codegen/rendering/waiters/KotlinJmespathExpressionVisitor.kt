@@ -105,11 +105,11 @@ class KotlinJmespathExpressionVisitor(
         return VisitedExpression(outerName, leftShape, innerResult.shape)
     }
 
-    private fun subfield(expression: FieldExpression, parentName: String): VisitedExpression {
+    private fun subfield(expression: FieldExpression, parentName: String, isObject: Boolean = false): VisitedExpression {
         val member = currentShape.targetOrSelf(ctx.model).getMember(expression.name).getOrNull()
 
         val name = expression.name.toCamelCase()
-        val nameExpr = ensureNullGuard(currentShape, name)
+        val nameExpr = if (isObject) "[\"$name\"]" else ensureNullGuard(currentShape, name) // Objects are represented as hash maps in code-gen
 
         val unwrapExpr = member?.let {
             val memberTarget = ctx.model.expectShape(member.target)
@@ -125,7 +125,7 @@ class KotlinJmespathExpressionVisitor(
 
         val codegen = buildString {
             append("$parentName$nameExpr")
-            unwrapExpr?.let { append(ensureNullGuard(member, it)) } // TODO: Add access using maps !!
+            unwrapExpr?.let { append(ensureNullGuard(member, it)) }
         }
 
         member?.let { shapeCursor.addLast(it) }
@@ -206,91 +206,92 @@ class KotlinJmespathExpressionVisitor(
         return VisitedExpression(ident, currentShape, inner.projected)
     }
 
-    private fun FunctionExpression.args(sizeConstraint: Int? = null): List<VisitedExpression> {
-        sizeConstraint?.let { codegenReq(arguments.size == sizeConstraint) { "Unexpected number of arguments to $this" } }
-        return this.getArguments().map { acceptSubexpression(it) }
+    private fun FunctionExpression.singleArg(): VisitedExpression {
+        codegenReq(arguments.size == 1) { "Unexpected number of arguments to $this" }
+        return acceptSubexpression(this.arguments[0])
+    }
+    private fun FunctionExpression.twoArgs(): Pair<VisitedExpression, VisitedExpression> {
+        codegenReq(arguments.size == 2) { "Unexpected number of arguments to $this" }
+        return acceptSubexpression(this.arguments[0]) to acceptSubexpression(this.arguments[1])
     }
 
-    private fun VisitedExpression.dotFunction(expression: FunctionExpression, expr: String, elvisExpr: String? = null): VisitedExpression {
+    private fun FunctionExpression.args(): VisitedExpression {
+        val args = buildString {
+            append("listOf(")
+            append(this@args.getArguments().joinToString { acceptSubexpression(it).identifier })
+            append(")")
+        }
+        return VisitedExpression(addTempVar("args", args))
+    }
+
+    private fun VisitedExpression.dotFunction(expression: FunctionExpression, expr: String, elvisExpr: String? = null, isObject: Boolean = false): VisitedExpression {
         val dotFunctionExpr = ensureNullGuard(shape, expr, elvisExpr)
         val ident = addTempVar(expression.name.toCamelCase(), "$identifier$dotFunctionExpr")
 
         shape?.let { shapeCursor.addLast(shape) }
-        return VisitedExpression(ident, shape)
+        return VisitedExpression(ident, shape, isObject = isObject)
     }
 
     override fun visitFunction(expression: FunctionExpression): VisitedExpression = when (expression.name) {
         "contains" -> {
-            val (subject, search) = expression.args(2)
+            val (subject, search) = expression.twoArgs()
             subject.dotFunction(expression, "contains(${search.identifier})", "false")
         }
 
         "length" -> {
             writer.addImport(RuntimeTypes.Core.Utils.length)
-
-            val (subject) = expression.args(1)
+            val subject = expression.singleArg()
             subject.dotFunction(expression, "length", "0")
         }
 
         "abs", "floor", "ceil" -> {
-            val (number) = expression.args(1)
+            val number = expression.singleArg()
             number.dotFunction(expression, "let { kotlin.math.${expression.name}(it.toDouble()) }")
         }
 
         "sum" -> {
-            val (numbers) = expression.args(1)
+            val numbers = expression.singleArg()
             numbers.dotFunction(expression, "sum()")
         }
 
         "avg" -> {
-            val (numbers) = expression.args(1)
+            val numbers = expression.singleArg()
             val average = numbers.dotFunction(expression, "average()").identifier
             val isNaN = ensureNullGuard(numbers.shape, "isNaN() == true")
             VisitedExpression(addTempVar("averageOrNull", "if($average$isNaN) null else $average"), nullable = true)
         }
 
         "join" -> {
-            val (glue, list) = expression.args(2)
+            val (glue, list) = expression.twoArgs()
             list.dotFunction(expression, "joinToString(${glue.identifier})")
         }
 
         "starts_with" -> {
-            val (subject, prefix) = expression.args(2)
+            val (subject, prefix) = expression.twoArgs()
             subject.dotFunction(expression, "startsWith(${prefix.identifier})")
         }
 
         "ends_with" -> {
-            val (subject, suffix) = expression.args(2)
+            val (subject, suffix) = expression.twoArgs()
             subject.dotFunction(expression, "endsWith(${suffix.identifier})")
         }
 
         "keys" -> {
             writer.addImport(RuntimeTypes.Core.Utils.getProperties)
-            writer.addImport(RuntimeTypes.Core.Utils.Property) // TODO: Remove if unnecessary
-
-            val (obj) = expression.args(1)
-            obj.dotFunction(expression, "getProperties().map { it.name }")
+            val obj = expression.singleArg()
+            obj.dotFunction(expression, "getProperties()?.map { it.name }")
         }
 
         "values" -> {
             writer.addImport(RuntimeTypes.Core.Utils.getProperties)
-            writer.addImport(RuntimeTypes.Core.Utils.Property) // TODO: Remove if unnecessary
-
-            val (obj) = expression.args(1)
-            obj.dotFunction(expression, "getProperties().map { it.value }")
+            val obj = expression.singleArg()
+            obj.dotFunction(expression, "getProperties()?.map { it.value }")
         }
 
         "merge" -> {
             writer.addImport(RuntimeTypes.Core.Utils.mergeObjects)
-
             val objects = expression.args()
-            val listOfObjects = VisitedExpression(addTempVar("objects", "listOf<Any>(${objects.forEach { it.identifier }})"))
-            val mergedHashMap = listOfObjects.dotFunction(expression,"mergeObjects()") // TODO: Add codegen to convert hash map to object
-
-            val mergedObject = addTempVar("mergedObject", "{  }")
-
-            //val properties = expression.expressions.keys.joinToString { "val $it: T" }
-            VisitedExpression()
+            objects.dotFunction(expression, "mergeObjects()", isObject = true)
         }
 
         else -> throw CodegenException("Unknown function type in $expression")
@@ -417,22 +418,22 @@ class KotlinJmespathExpressionVisitor(
     }
 
     override fun visitSubexpression(expression: Subexpression): VisitedExpression {
-        val leftName = expression.left.accept(this).identifier
-        return processRightSubexpression(expression.right, leftName)
+        val left = expression.left.accept(this)
+        return processRightSubexpression(expression.right, left.identifier, left.isObject)
     }
 
     private fun subexpression(expression: Subexpression, parentName: String): VisitedExpression {
-        val leftName = when (val left = expression.left) {
-            is FieldExpression -> subfield(left, parentName).identifier
-            is Subexpression -> subexpression(left, parentName).identifier
+        val left = when (val left = expression.left) {
+            is FieldExpression -> subfield(left, parentName)
+            is Subexpression -> subexpression(left, parentName)
             else -> throw CodegenException("Subexpression type $left is unsupported")
         }
-        return processRightSubexpression(expression.right, leftName)
+        return processRightSubexpression(expression.right, left.identifier, left.isObject)
     }
 
-    private fun processRightSubexpression(expression: JmespathExpression, leftName: String): VisitedExpression =
+    private fun processRightSubexpression(expression: JmespathExpression, leftName: String, isObject: Boolean = false): VisitedExpression =
         when (expression) {
-            is FieldExpression -> subfield(expression, leftName)
+            is FieldExpression -> subfield(expression, leftName, isObject)
             is IndexExpression -> index(expression, leftName)
             is Subexpression -> subexpression(expression, leftName)
             is ProjectionExpression -> projection(expression, leftName)
@@ -484,5 +485,9 @@ class KotlinJmespathExpressionVisitor(
  *                  `foo[].bar[].baz.qux`, the shape that backs the identifier (and therefore determines overall nullability)
  *                  is `foo`, but the shape that needs carried through to subfield expressions in the following projection
  *                  is the target of `bar`, such that its subfields `baz` and `qux` can be recognized.
+ * @param nullable Boolean to indicate that a visited expression is nullable. Shape is used for this mostly but sometimes an
+ *                 expression is nullable for reasons that are not shape related
+ * @param isObject Boolean to indicate that a visited expression results in an object. Objects are represented as hash maps
+ *                 because it is not possible to construct a class at runtime
  */
-data class VisitedExpression(val identifier: String, val shape: Shape? = null, val projected: Shape? = null, val nullable: Boolean = false)
+data class VisitedExpression(val identifier: String, val shape: Shape? = null, val projected: Shape? = null, val nullable: Boolean = false, val isObject: Boolean = false)

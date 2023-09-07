@@ -18,6 +18,9 @@ structure GetEntityResponse {
     lists: EntityLists,
     twoDimensionalLists: TwoDimensionalEntityLists,
     maps: EntityMaps,
+    sampleValues: Values,
+    objectOne: Values,
+    objectTwo: Values,
 }
 
 structure EntityPrimitives {
@@ -162,4 +165,10 @@ list SubStructList {
 
 structure SubStruct {
     subStructPrimitives: EntityPrimitives,
+}
+
+structure Values {
+    valueOne: String
+    valueTwo: String
+    valueThree: String
 }

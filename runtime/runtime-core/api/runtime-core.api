@@ -1332,6 +1332,7 @@ public abstract interface class aws/smithy/kotlin/runtime/util/CanDeepCopy {
 }
 
 public final class aws/smithy/kotlin/runtime/util/ConvenienceKt {
+	public static final fun mergeObjects (Ljava/util/List;)Ljava/util/HashMap;
 }
 
 public final class aws/smithy/kotlin/runtime/util/CoroutineUtilsKt {
@@ -1409,6 +1410,19 @@ public abstract interface class aws/smithy/kotlin/runtime/util/PlatformProvider 
 }
 
 public final class aws/smithy/kotlin/runtime/util/PlatformProvider$Companion {
+}
+
+public final class aws/smithy/kotlin/runtime/util/Property {
+	public fun <init> (Ljava/lang/String;Ljava/lang/Object;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()Ljava/lang/Object;
+	public final fun copy (Ljava/lang/String;Ljava/lang/Object;)Laws/smithy/kotlin/runtime/util/Property;
+	public static synthetic fun copy$default (Laws/smithy/kotlin/runtime/util/Property;Ljava/lang/String;Ljava/lang/Object;ILjava/lang/Object;)Laws/smithy/kotlin/runtime/util/Property;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getName ()Ljava/lang/String;
+	public final fun getValue ()Ljava/lang/Object;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
 }
 
 public abstract interface class aws/smithy/kotlin/runtime/util/PropertyProvider {

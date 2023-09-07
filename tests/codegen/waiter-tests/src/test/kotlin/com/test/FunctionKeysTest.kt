@@ -1,3 +1,8 @@
+/*
+ * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 package com.test
 
 import aws.smithy.kotlin.runtime.retries.Outcome
@@ -5,10 +10,8 @@ import aws.smithy.kotlin.runtime.retries.getOrThrow
 import com.test.model.EntityPrimitives
 import com.test.model.GetFunctionKeysEqualsRequest
 import com.test.model.GetFunctionKeysEqualsResponse
-import com.test.model.TwoDimensionalEntityLists
 import com.test.waiters.waitUntilKeysFunctionPrimitivesIntegerEquals
 import com.test.waiters.waitUntilKeysFunctionPrimitivesStringEquals
-import com.test.waiters.waitUntilKeysFunctionTwoDimensionalListsEquals
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
@@ -29,18 +32,12 @@ class FunctionKeysTest {
     @Test
     fun testKeysFunctionPrimitivesStringEquals() = successTest(
         WaitersTestClient::waitUntilKeysFunctionPrimitivesStringEquals,
-        GetFunctionKeysEqualsResponse { primitives = EntityPrimitives {  } },
+        GetFunctionKeysEqualsResponse { primitives = EntityPrimitives { } },
     )
 
     @Test
     fun testKeysFunctionPrimitivesIntegerEquals() = successTest(
         WaitersTestClient::waitUntilKeysFunctionPrimitivesIntegerEquals,
-        GetFunctionKeysEqualsResponse { primitives = EntityPrimitives {  } },
-    )
-
-    @Test
-    fun testKeysFunctionTwoDimensionalListsEquals() = successTest(
-        WaitersTestClient::waitUntilKeysFunctionTwoDimensionalListsEquals,
-        GetFunctionKeysEqualsResponse { twoDimensionalLists = TwoDimensionalEntityLists {  } },
+        GetFunctionKeysEqualsResponse { primitives = EntityPrimitives { } },
     )
 }

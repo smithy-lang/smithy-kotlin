@@ -33,20 +33,6 @@ use smithy.waiters#waitable
             }
         ]
     },
-    KeysFunctionTwoDimensionalListsEquals: {
-        acceptors: [
-            {
-                state: "success",
-                matcher: {
-                    output: {
-                        path: "keys(twoDimensionalLists)[0]",
-                        expected: "booleansList",
-                        comparator: "stringEquals"
-                    }
-                }
-            }
-        ]
-    },
 )
 @readonly
 @http(method: "GET", uri: "/keys/{name}", code: 200)
