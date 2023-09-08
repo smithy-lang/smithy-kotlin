@@ -8,7 +8,6 @@ import aws.smithy.kotlin.runtime.io.*
 import aws.smithy.kotlin.runtime.io.internal.SdkDispatchers
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.*
-import kotlinx.coroutines.job
 import kotlinx.coroutines.launch
 
 /**
@@ -112,19 +111,19 @@ public fun ByteStream.cancel() {
 /**
  * Return a [Flow] that consumes the underlying [ByteStream] when collected.
  *
- * @param bufferSizeHint the size of the buffers to emit from the flow. All buffers emitted
+ * @param bufferSize the size of the buffers to emit from the flow. All buffers emitted
  * will be of this size except for the last one which may be less than the requested buffer size.
  * This parameter has no effect for the [ByteStream.Buffer] variant. The emitted [ByteArray]
  * will be whatever size the in-memory buffer already is in that case.
  */
-public fun ByteStream.toFlow(bufferSizeHint: Long = 8192): Flow<ByteArray> = when (this) {
+public fun ByteStream.toFlow(bufferSize: Long = 8192): Flow<ByteArray> = when (this) {
     is ByteStream.Buffer -> flowOf(bytes())
-    is ByteStream.ChannelStream -> readFrom().toFlow(bufferSizeHint)
-    is ByteStream.SourceStream -> readFrom().toFlow(bufferSizeHint).flowOn(SdkDispatchers.IO)
+    is ByteStream.ChannelStream -> readFrom().toFlow(bufferSize)
+    is ByteStream.SourceStream -> readFrom().toFlow(bufferSize).flowOn(SdkDispatchers.IO)
 }
 
 /**
- * Create a [ByteStream] from a [Flow] of individual [ByteArray]'s.
+ * Create a [ByteStream] from a [Flow] of byte arrays.
  *
  * @param scope the [CoroutineScope] to use for launching a coroutine to do the collection in.
  * @param contentLength the overall content length of the [Flow] (if known). If set this will be

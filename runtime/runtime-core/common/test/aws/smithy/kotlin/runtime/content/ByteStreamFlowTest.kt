@@ -28,7 +28,7 @@ abstract class ByteStreamFlowTest(
         val buffers = mutableListOf<ByteArray>()
         flow.toList(buffers)
 
-        val totalCollected = buffers.fold(0) { acc, bytes -> acc + bytes.size }
+        val totalCollected = buffers.sumOf { it.size }
         assertEquals(data.size, totalCollected)
 
         if (byteStream is ByteStream.Buffer) {
@@ -50,12 +50,12 @@ abstract class ByteStreamFlowTest(
     }
 
     class FlowToByteStreamTest {
-        private fun randomByteArray(size: Int): ByteArray = ByteArray(size) { i -> i.toByte() }
+        private fun testByteArray(size: Int): ByteArray = ByteArray(size) { i -> i.toByte() }
 
         val data = listOf(
-            randomByteArray(576),
-            randomByteArray(9172),
-            randomByteArray(3278),
+            testByteArray(576),
+            testByteArray(9172),
+            testByteArray(3278),
         )
 
         @Test
@@ -79,7 +79,7 @@ abstract class ByteStreamFlowTest(
 
         @Test
         fun testContentLengthUnderflow() = runTest {
-            val advertisedContentLength = data.fold(0L) { acc, bytes -> acc + bytes.size } + 100L
+            val advertisedContentLength = data.sumOf { it.size } + 100L
             testInvalidContentLength(advertisedContentLength, "expected 13126 bytes collected from flow, got 13026")
         }
 
@@ -110,10 +110,10 @@ abstract class ByteStreamFlowTest(
             // cancelling the scope should close/cancel the channel
             val waiter = Channel<Unit>(1)
             val flow = flow {
-                emit(randomByteArray(128))
-                emit(randomByteArray(277))
+                emit(testByteArray(128))
+                emit(testByteArray(277))
                 waiter.receive()
-                emit(randomByteArray(97))
+                emit(testByteArray(97))
             }
 
             val job = Job()
@@ -139,10 +139,10 @@ abstract class ByteStreamFlowTest(
             // cancelling the channel should cancel the scope (via write failing)
             val waiter = Channel<Unit>(1)
             val flow = flow {
-                emit(randomByteArray(128))
-                emit(randomByteArray(277))
+                emit(testByteArray(128))
+                emit(testByteArray(277))
                 waiter.receive()
-                emit(randomByteArray(97))
+                emit(testByteArray(97))
             }
 
             val uncaughtExceptions = mutableListOf<Throwable>()
