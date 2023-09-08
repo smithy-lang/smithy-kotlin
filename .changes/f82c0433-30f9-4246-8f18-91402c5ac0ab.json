@@ -1,0 +1,8 @@
+{
+    "id": "f82c0433-30f9-4246-8f18-91402c5ac0ab",
+    "type": "feature",
+    "description": "Add conversions to and from `Flow<ByteArray>` and `ByteStream`",
+    "issues": [
+        "awslabs/aws-sdk-kotlin#612"
+    ]
+}
