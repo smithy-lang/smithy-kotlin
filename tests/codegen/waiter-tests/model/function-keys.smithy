@@ -3,7 +3,6 @@ namespace com.test
 
 use smithy.waiters#waitable
 
-@suppress(["WaitableTraitJmespathProblem"])
 @waitable(
     KeysFunctionPrimitivesStringEquals: {
         acceptors: [

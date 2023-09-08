@@ -1332,7 +1332,6 @@ public abstract interface class aws/smithy/kotlin/runtime/util/CanDeepCopy {
 }
 
 public final class aws/smithy/kotlin/runtime/util/ConvenienceKt {
-	public static final fun mergeObjects (Ljava/util/List;)Ljava/util/HashMap;
 }
 
 public final class aws/smithy/kotlin/runtime/util/CoroutineUtilsKt {

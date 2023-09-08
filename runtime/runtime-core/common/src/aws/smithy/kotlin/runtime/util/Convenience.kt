@@ -56,6 +56,7 @@ public fun HashMap<String, Any?>.getProperties(): List<Property> =
 /**
  * Merges zero or more objects' properties together (objects with same property name override each-other)
  */
+@InternalApi
 public fun List<Any?>.mergeObjects(): HashMap<String, Any?> {
     val newObject = HashMap<String, Any?>()
 
