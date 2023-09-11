@@ -7,9 +7,11 @@ package com.test
 
 import aws.smithy.kotlin.runtime.retries.Outcome
 import aws.smithy.kotlin.runtime.retries.getOrThrow
+import com.test.model.GetFunctionSumEqualsRequest
 import com.test.model.GetFunctionValuesEqualsRequest
 import com.test.model.GetFunctionValuesEqualsResponse
 import com.test.model.Values
+import com.test.utils.successTest
 import com.test.waiters.waitUntilValuesFunctionAnySampleValuesEquals
 import com.test.waiters.waitUntilValuesFunctionSampleValuesEquals
 import kotlinx.coroutines.test.runTest
@@ -17,20 +19,8 @@ import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 
 class FunctionValuesTest {
-    private fun successTest(
-        block: suspend WaitersTestClient.(request: GetFunctionValuesEqualsRequest) -> Outcome<GetFunctionValuesEqualsResponse>,
-        vararg results: GetFunctionValuesEqualsResponse,
-    ): Unit = runTest {
-        val client = DefaultWaitersTestClient(results.map { Result.success(it) })
-        val req = GetFunctionValuesEqualsRequest { name = "test" }
-
-        val outcome = client.block(req)
-        assertEquals(results.size, outcome.attempts)
-        assertEquals(results.last(), outcome.getOrThrow())
-    }
-
-    @Test
-    fun testValuesFunctionSampleValuesEquals() = successTest(
+    @Test fun testValuesFunctionSampleValuesEquals() = successTest(
+        GetFunctionValuesEqualsRequest { name = "test" },
         WaitersTestClient::waitUntilValuesFunctionSampleValuesEquals,
         GetFunctionValuesEqualsResponse {
             sampleValues = Values {
@@ -48,8 +38,8 @@ class FunctionValuesTest {
         },
     )
 
-    @Test
-    fun testValuesFunctionAnySampleValuesEquals() = successTest(
+    @Test fun testValuesFunctionAnySampleValuesEquals() = successTest(
+        GetFunctionValuesEqualsRequest { name = "test" },
         WaitersTestClient::waitUntilValuesFunctionAnySampleValuesEquals,
         GetFunctionValuesEqualsResponse {
             sampleValues = Values {

@@ -9,7 +9,9 @@ import aws.smithy.kotlin.runtime.retries.Outcome
 import aws.smithy.kotlin.runtime.retries.getOrThrow
 import com.test.model.GetFunctionMergeEqualsRequest
 import com.test.model.GetFunctionMergeEqualsResponse
+import com.test.model.GetFunctionValuesEqualsRequest
 import com.test.model.Values
+import com.test.utils.successTest
 import com.test.waiters.waitUntilMergeFunctionOverrideObjectsOneEquals
 import com.test.waiters.waitUntilMergeFunctionOverrideObjectsThreeEquals
 import com.test.waiters.waitUntilMergeFunctionOverrideObjectsTwoEquals
@@ -18,20 +20,8 @@ import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 
 class FunctionMergeTest {
-    private fun successTest(
-        block: suspend WaitersTestClient.(request: GetFunctionMergeEqualsRequest) -> Outcome<GetFunctionMergeEqualsResponse>,
-        vararg results: GetFunctionMergeEqualsResponse,
-    ): Unit = runTest {
-        val client = DefaultWaitersTestClient(results.map { Result.success(it) })
-        val req = GetFunctionMergeEqualsRequest { name = "test" }
-
-        val outcome = client.block(req)
-        assertEquals(results.size, outcome.attempts)
-        assertEquals(results.last(), outcome.getOrThrow())
-    }
-
-    @Test
-    fun testMergeFunctionOverrideObjectsOneEquals() = successTest(
+    @Test fun testMergeFunctionOverrideObjectsOneEquals() = successTest(
+        GetFunctionMergeEqualsRequest { name = "test" },
         WaitersTestClient::waitUntilMergeFunctionOverrideObjectsOneEquals,
         GetFunctionMergeEqualsResponse {
             objectOne = Values {
@@ -59,8 +49,8 @@ class FunctionMergeTest {
         },
     )
 
-    @Test
-    fun testMergeFunctionOverrideObjectsTwoEquals() = successTest(
+    @Test fun testMergeFunctionOverrideObjectsTwoEquals() = successTest(
+        GetFunctionMergeEqualsRequest { name = "test" },
         WaitersTestClient::waitUntilMergeFunctionOverrideObjectsTwoEquals,
         GetFunctionMergeEqualsResponse {
             objectOne = Values {
@@ -88,8 +78,8 @@ class FunctionMergeTest {
         },
     )
 
-    @Test
-    fun testMergeFunctionOverrideObjectsThreeEquals() = successTest(
+    @Test fun testMergeFunctionOverrideObjectsThreeEquals() = successTest(
+        GetFunctionMergeEqualsRequest { name = "test" },
         WaitersTestClient::waitUntilMergeFunctionOverrideObjectsThreeEquals,
         GetFunctionMergeEqualsResponse {
             objectOne = Values {

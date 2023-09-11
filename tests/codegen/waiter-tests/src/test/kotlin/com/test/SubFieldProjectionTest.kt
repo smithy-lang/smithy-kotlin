@@ -4,31 +4,16 @@
  */
 package com.test
 
-import aws.smithy.kotlin.runtime.retries.Outcome
-import aws.smithy.kotlin.runtime.retries.getOrThrow
 import com.test.model.*
+import com.test.utils.successTest
 import com.test.waiters.waitUntilHasFilteredSubStruct
 import com.test.waiters.waitUntilHasStructWithStringByProjection
 import com.test.waiters.waitUntilHasStructWithSubstructWithStringByProjection
-import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Test
-import kotlin.test.assertEquals
 
 class SubFieldProjectionTest {
-    private fun successTest(
-        block: suspend WaitersTestClient.(request: GetSubFieldProjectionRequest) -> Outcome<GetSubFieldProjectionResponse>,
-        vararg results: GetSubFieldProjectionResponse,
-    ): Unit = runTest {
-        val client = DefaultWaitersTestClient(results.map { Result.success(it) })
-        val req = GetSubFieldProjectionRequest { name = "test" }
-
-        val outcome = client.block(req)
-        assertEquals(results.size, outcome.attempts)
-        assertEquals(results.last(), outcome.getOrThrow())
-    }
-
-    @Test
-    fun testHasStructWithStringByProjection() = successTest(
+    @Test fun testHasStructWithStringByProjection() = successTest(
+        GetSubFieldProjectionRequest { name = "test" },
         WaitersTestClient::waitUntilHasStructWithStringByProjection,
         GetSubFieldProjectionResponse { },
         GetSubFieldProjectionResponse { lists = EntityLists { } },
@@ -56,6 +41,7 @@ class SubFieldProjectionTest {
     )
 
     @Test fun testHasStructWithSubstructWithStringByProjection() = successTest(
+        GetSubFieldProjectionRequest { name = "test" },
         WaitersTestClient::waitUntilHasStructWithSubstructWithStringByProjection,
         GetSubFieldProjectionResponse { },
         GetSubFieldProjectionResponse { lists = EntityLists { } },
@@ -93,6 +79,7 @@ class SubFieldProjectionTest {
     )
 
     @Test fun testHasFilteredSubStruct() = successTest(
+        GetSubFieldProjectionRequest { name = "test" },
         WaitersTestClient::waitUntilHasFilteredSubStruct,
         GetSubFieldProjectionResponse { },
         GetSubFieldProjectionResponse { lists = EntityLists { } },
