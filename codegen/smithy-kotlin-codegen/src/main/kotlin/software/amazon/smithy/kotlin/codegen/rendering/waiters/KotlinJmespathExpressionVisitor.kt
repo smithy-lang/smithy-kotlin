@@ -109,7 +109,8 @@ class KotlinJmespathExpressionVisitor(
         val member = currentShape.targetOrSelf(ctx.model).getMember(expression.name).getOrNull()
 
         val name = expression.name.toCamelCase()
-        val nameExpr = if (isObject) "[\"$name\"]" else ensureNullGuard(currentShape, name) // Objects are represented as hash maps in code-gen
+        // User created objects are represented as hash maps in code-gen and are marked by `isObject`
+        val nameExpr = if (isObject) "[\"$name\"]" else ensureNullGuard(currentShape, name)
 
         val unwrapExpr = member?.let {
             val memberTarget = ctx.model.expectShape(member.target)
