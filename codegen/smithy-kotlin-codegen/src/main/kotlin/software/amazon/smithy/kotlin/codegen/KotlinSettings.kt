@@ -160,7 +160,7 @@ data class BuildSettings(
     val generateDefaultBuildFiles: Boolean = true,
     val optInAnnotations: List<String>? = null,
     val generateMultiplatformProject: Boolean = false,
-    val visibility: VisibilitySettings = VisibilitySettings.Default
+    val visibility: VisibilitySettings = VisibilitySettings.Default,
 ) {
     companion object {
         const val ROOT_PROJECT = "rootProject"

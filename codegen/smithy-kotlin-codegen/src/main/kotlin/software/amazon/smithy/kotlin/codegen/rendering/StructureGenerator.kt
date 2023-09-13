@@ -52,9 +52,10 @@ class StructureGenerator(
      * Renders a normal (non-error) Smithy structure to a Kotlin class
      */
     private fun renderStructure() {
-        writer.openBlock("#L class #T private constructor(builder: Builder) {",
+        writer.openBlock(
+            "#L class #T private constructor(builder: Builder) {",
             ctx.settings.build.visibility.structure,
-            symbol
+            symbol,
         )
             .call { renderImmutableProperties() }
             .write("")
@@ -302,9 +303,10 @@ class StructureGenerator(
         val exceptionBaseClass = ExceptionBaseClassGenerator.baseExceptionSymbol(ctx.settings)
         writer.addImport(exceptionBaseClass)
 
-        writer.openBlock("#L class #T private constructor(builder: Builder) : ${exceptionBaseClass.name}() {",
+        writer.openBlock(
+            "#L class #T private constructor(builder: Builder) : ${exceptionBaseClass.name}() {",
             ctx.settings.build.visibility.error,
-            symbol
+            symbol,
         )
             .write("")
             .call { renderImmutableProperties() }

@@ -79,10 +79,12 @@ class DefaultEndpointProviderGenerator(
 
     fun render() {
         renderDocumentation()
-        writer.withBlock("#L class #T: #T {", "}",
+        writer.withBlock(
+            "#L class #T: #T {",
+            "}",
             settings.build.visibility.structure,
             defaultProviderSymbol,
-            interfaceSymbol
+            interfaceSymbol,
         ) {
             renderResolve()
         }

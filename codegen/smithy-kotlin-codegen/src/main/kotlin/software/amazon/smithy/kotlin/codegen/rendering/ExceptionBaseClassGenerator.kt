@@ -33,7 +33,9 @@ object ExceptionBaseClassGenerator {
 
         val name = clientName(ctx.settings.sdkId)
         writer.dokka("Base class for all service related exceptions thrown by the $name client")
-        writer.withBlock("#L open class #T : #T {", "}",
+        writer.withBlock(
+            "#L open class #T : #T {",
+            "}",
             ctx.settings.build.visibility.error,
             serviceException,
             baseException,

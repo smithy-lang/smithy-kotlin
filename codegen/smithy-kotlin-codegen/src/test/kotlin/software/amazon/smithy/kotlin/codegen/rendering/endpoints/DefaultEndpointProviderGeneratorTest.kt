@@ -147,7 +147,7 @@ class DefaultEndpointProviderGeneratorTest {
         val settings = KotlinSettings(
             service = ShapeId.from("EndpointProviderGeneratorTest"),
             pkg = KotlinSettings.PackageSettings("name", "version"),
-            sdkId = "testSdkId"
+            sdkId = "testSdkId",
         )
 
         DefaultEndpointProviderGenerator(writer, rules, defaultSymbol, interfaceSymbol, paramsSymbol, settings).render()
