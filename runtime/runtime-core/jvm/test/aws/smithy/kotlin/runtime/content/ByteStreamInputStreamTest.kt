@@ -4,34 +4,12 @@
  */
 package aws.smithy.kotlin.runtime.content
 
-import aws.smithy.kotlin.runtime.io.SdkByteReadChannel
-import aws.smithy.kotlin.runtime.io.SdkSource
-import aws.smithy.kotlin.runtime.io.source
 import java.io.InputStream
 import kotlin.test.Test
 import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
 
-fun interface ByteStreamFactory {
-    fun inputStream(input: ByteArray): InputStream
-    companion object {
-        val BYTE_ARRAY: ByteStreamFactory = ByteStreamFactory { input -> ByteStream.fromBytes(input).toInputStream() }
-
-        val SDK_SOURCE: ByteStreamFactory = ByteStreamFactory { input ->
-            object : ByteStream.SourceStream() {
-                override fun readFrom(): SdkSource = input.source()
-                override val contentLength: Long = input.size.toLong()
-            }.toInputStream()
-        }
-
-        val SDK_CHANNEL: ByteStreamFactory = ByteStreamFactory { input ->
-            object : ByteStream.ChannelStream() {
-                override fun readFrom(): SdkByteReadChannel = SdkByteReadChannel(input)
-                override val contentLength: Long = input.size.toLong()
-            }.toInputStream()
-        }
-    }
-}
+fun ByteStreamFactory.inputStream(input: ByteArray): InputStream = byteStream(input).toInputStream()
 
 class ByteStreamBufferInputStreamTest : ByteStreamInputStreamTest(ByteStreamFactory.BYTE_ARRAY)
 class ByteStreamSourceStreamInputStreamTest : ByteStreamInputStreamTest(ByteStreamFactory.SDK_SOURCE)

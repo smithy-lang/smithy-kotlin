@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.27.3] - 09/08/2023
+
+### Features
+* [#612](https://github.com/awslabs/aws-sdk-kotlin/issues/612) Add conversions to and from `Flow<ByteArray>` and `ByteStream`
+* [#617](https://github.com/awslabs/aws-sdk-kotlin/issues/617) Add conversion to InputStream from ByteStream
+
+### Miscellaneous
+* Expose SDK ID in service companion object section writer.
+
 ## [0.27.1] - 08/31/2023
 
 ### Fixes
