@@ -105,11 +105,12 @@ class KotlinJmespathExpressionVisitor(
         return VisitedExpression(outerName, leftShape, innerResult.shape)
     }
 
-    private fun subfield(expression: FieldExpression, parentName: String): VisitedExpression {
+    private fun subfield(expression: FieldExpression, parentName: String, isObject: Boolean = false): VisitedExpression {
         val member = currentShape.targetOrSelf(ctx.model).getMember(expression.name).getOrNull()
 
         val name = expression.name.toCamelCase()
-        val nameExpr = ensureNullGuard(currentShape, name)
+        // User created objects are represented as hash maps in code-gen and are marked by `isObject`
+        val nameExpr = if (isObject) "[\"$name\"]" else ensureNullGuard(currentShape, name)
 
         val unwrapExpr = member?.let {
             val memberTarget = ctx.model.expectShape(member.target)
@@ -210,17 +211,20 @@ class KotlinJmespathExpressionVisitor(
         codegenReq(arguments.size == 1) { "Unexpected number of arguments to $this" }
         return acceptSubexpression(this.arguments[0])
     }
-
     private fun FunctionExpression.twoArgs(): Pair<VisitedExpression, VisitedExpression> {
         codegenReq(arguments.size == 2) { "Unexpected number of arguments to $this" }
         return acceptSubexpression(this.arguments[0]) to acceptSubexpression(this.arguments[1])
     }
 
-    private fun VisitedExpression.dotFunction(expression: FunctionExpression, expr: String, elvisExpr: String? = null): VisitedExpression {
-        val dotFunctionExpr = ensureNullGuard(shape, expr, elvisExpr)
-        val ident = addTempVar(expression.name, "$identifier$dotFunctionExpr")
+    private fun FunctionExpression.args(): List<VisitedExpression> =
+        this.arguments.map { acceptSubexpression(it) }
 
-        return VisitedExpression(ident, shape)
+    private fun VisitedExpression.dotFunction(expression: FunctionExpression, expr: String, elvisExpr: String? = null, isObject: Boolean = false): VisitedExpression {
+        val dotFunctionExpr = ensureNullGuard(shape, expr, elvisExpr)
+        val ident = addTempVar(expression.name.toCamelCase(), "$identifier$dotFunctionExpr")
+
+        shape?.let { shapeCursor.addLast(shape) }
+        return VisitedExpression(ident, shape, isObject = isObject)
     }
 
     override fun visitFunction(expression: FunctionExpression): VisitedExpression = when (expression.name) {
@@ -265,6 +269,21 @@ class KotlinJmespathExpressionVisitor(
         "ends_with" -> {
             val (subject, suffix) = expression.twoArgs()
             subject.dotFunction(expression, "endsWith(${suffix.identifier})")
+        }
+
+        "keys" -> {
+            val obj = expression.singleArg()
+            VisitedExpression(addTempVar("keys", obj.getKeys()))
+        }
+
+        "values" -> {
+            val obj = expression.singleArg()
+            VisitedExpression(addTempVar("values", obj.getValues()))
+        }
+
+        "merge" -> {
+            val objects = expression.args()
+            VisitedExpression(addTempVar("merge", objects.mergeProperties()), isObject = true)
         }
 
         else -> throw CodegenException("Unknown function type in $expression")
@@ -391,22 +410,22 @@ class KotlinJmespathExpressionVisitor(
     }
 
     override fun visitSubexpression(expression: Subexpression): VisitedExpression {
-        val leftName = expression.left.accept(this).identifier
-        return processRightSubexpression(expression.right, leftName)
+        val left = expression.left.accept(this)
+        return processRightSubexpression(expression.right, left.identifier, left.isObject)
     }
 
     private fun subexpression(expression: Subexpression, parentName: String): VisitedExpression {
-        val leftName = when (val left = expression.left) {
-            is FieldExpression -> subfield(left, parentName).identifier
-            is Subexpression -> subexpression(left, parentName).identifier
+        val left = when (val left = expression.left) {
+            is FieldExpression -> subfield(left, parentName)
+            is Subexpression -> subexpression(left, parentName)
             else -> throw CodegenException("Subexpression type $left is unsupported")
         }
-        return processRightSubexpression(expression.right, leftName)
+        return processRightSubexpression(expression.right, left.identifier, left.isObject)
     }
 
-    private fun processRightSubexpression(expression: JmespathExpression, leftName: String): VisitedExpression =
+    private fun processRightSubexpression(expression: JmespathExpression, leftName: String, isObject: Boolean = false): VisitedExpression =
         when (expression) {
-            is FieldExpression -> subfield(expression, leftName)
+            is FieldExpression -> subfield(expression, leftName, isObject)
             is IndexExpression -> index(expression, leftName)
             is Subexpression -> subexpression(expression, leftName)
             is ProjectionExpression -> projection(expression, leftName)
@@ -415,10 +434,7 @@ class KotlinJmespathExpressionVisitor(
 
     private fun index(expression: IndexExpression, parentName: String): VisitedExpression {
         val index = if (expression.index < 0) "$parentName.size${expression.index}" else expression.index
-
-        shapeCursor.addLast(currentShape.targetOrSelf(ctx.model).targetMemberOrSelf)
-        val indexExpr = ensureNullGuard(currentShape, "get($index)")
-        shapeCursor.removeLast()
+        val indexExpr = ensureNullGuard(currentShape.targetMemberOrSelf, "get($index)")
 
         return VisitedExpression(addTempVar("index", "$parentName$indexExpr"), currentShape)
     }
@@ -438,6 +454,33 @@ class KotlinJmespathExpressionVisitor(
         } else {
             ".$expr"
         }
+
+    private fun VisitedExpression.getKeys(): String {
+        val keys = this.shape?.targetOrSelf(ctx.model)?.allMembers
+            ?.keys?.joinToString(", ", "listOf(", ")") { "\"$it\"" }
+        return keys ?: "listOf<String>()"
+    }
+
+    private fun VisitedExpression.getValues(): String {
+        val values = this.shape?.targetOrSelf(ctx.model)?.allMembers?.keys
+            ?.joinToString(", ", "listOf(", ")") { "${this.identifier}${ensureNullGuard(this.shape, it)}" }
+        return values ?: "listOf<String>()"
+    }
+
+    private fun List<VisitedExpression>.mergeProperties(): String {
+        val union = addTempVar("union", "HashMap<String, Any?>()")
+
+        forEach { obj ->
+            val keys = addTempVar("keys", obj.getKeys())
+            val values = addTempVar("values", obj.getValues())
+
+            writer.withBlock("for(i in $keys.indices){", "}") {
+                write("union[$keys[i]] = $values[i]")
+            }
+        }
+
+        return union
+    }
 
     private val Shape.isNullable: Boolean
         get() = this is MemberShape &&
@@ -461,5 +504,9 @@ class KotlinJmespathExpressionVisitor(
  *                  `foo[].bar[].baz.qux`, the shape that backs the identifier (and therefore determines overall nullability)
  *                  is `foo`, but the shape that needs carried through to subfield expressions in the following projection
  *                  is the target of `bar`, such that its subfields `baz` and `qux` can be recognized.
+ * @param nullable Boolean to indicate that a visited expression is nullable. Shape is used for this mostly but sometimes an
+ *                 expression is nullable for reasons that are not shape related
+ * @param isObject Boolean to indicate that a visited expression results in an object. Objects are represented as hash maps
+ *                 because it is not possible to construct a class at runtime
  */
-data class VisitedExpression(val identifier: String, val shape: Shape? = null, val projected: Shape? = null, val nullable: Boolean = false)
+data class VisitedExpression(val identifier: String, val shape: Shape? = null, val projected: Shape? = null, val nullable: Boolean = false, val isObject: Boolean = false)
