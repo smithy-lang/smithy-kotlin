@@ -7,9 +7,12 @@ package com.test
 
 import aws.smithy.kotlin.runtime.retries.Outcome
 import aws.smithy.kotlin.runtime.retries.getOrThrow
-import com.test.model.*
-import com.test.waiters.waitUntilMergeFunctionOverrideObjectsEquals
-import com.test.waiters.waitUntilMergeFunctionPrimitivesAndListsEquals
+import com.test.model.GetFunctionMergeEqualsRequest
+import com.test.model.GetFunctionMergeEqualsResponse
+import com.test.model.Values
+import com.test.waiters.waitUntilMergeFunctionOverrideObjectsOneEquals
+import com.test.waiters.waitUntilMergeFunctionOverrideObjectsThreeEquals
+import com.test.waiters.waitUntilMergeFunctionOverrideObjectsTwoEquals
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
@@ -28,43 +31,88 @@ class FunctionMergeTest {
     }
 
     @Test
-    fun testMergeFunctionPrimitivesAndListsEquals() = successTest(
-        WaitersTestClient::waitUntilMergeFunctionPrimitivesAndListsEquals,
+    fun testMergeFunctionOverrideObjectsOneEquals() = successTest(
+        WaitersTestClient::waitUntilMergeFunctionOverrideObjectsOneEquals,
         GetFunctionMergeEqualsResponse {
-            lists = EntityLists { }
-            primitives = EntityPrimitives { string = "baz" }
+            objectOne = Values {
+                valueOne = "foo"
+                valueTwo = "bar"
+                valueThree = "baz"
+            }
+            objectTwo = Values {
+                valueOne = "qux"
+                valueTwo = "qux"
+                valueThree = "qux"
+            }
         },
         GetFunctionMergeEqualsResponse {
-            lists = EntityLists { }
-            primitives = EntityPrimitives { string = "foo" }
+            objectOne = Values {
+                valueOne = "qux"
+                valueTwo = "qux"
+                valueThree = "qux"
+            }
+            objectTwo = Values {
+                valueOne = "foo"
+                valueTwo = "bar"
+                valueThree = "baz"
+            }
         },
     )
 
     @Test
-    fun testMergeFunctionOverrideObjectsEquals() = successTest(
-        WaitersTestClient::waitUntilMergeFunctionOverrideObjectsEquals,
+    fun testMergeFunctionOverrideObjectsTwoEquals() = successTest(
+        WaitersTestClient::waitUntilMergeFunctionOverrideObjectsTwoEquals,
         GetFunctionMergeEqualsResponse {
             objectOne = Values {
                 valueOne = "foo"
-                valueTwo = "foo"
-                valueThree = "foo"
+                valueTwo = "bar"
+                valueThree = "baz"
             }
             objectTwo = Values {
-                valueOne = "baz"
-                valueTwo = "baz"
-                valueThree = "baz"
+                valueOne = "qux"
+                valueTwo = "qux"
+                valueThree = "qux"
             }
         },
         GetFunctionMergeEqualsResponse {
             objectOne = Values {
-                valueOne = "baz"
-                valueTwo = "baz"
-                valueThree = "baz"
+                valueOne = "qux"
+                valueTwo = "qux"
+                valueThree = "qux"
             }
             objectTwo = Values {
                 valueOne = "foo"
-                valueTwo = "foo"
-                valueThree = "foo"
+                valueTwo = "bar"
+                valueThree = "baz"
+            }
+        },
+    )
+
+    @Test
+    fun testMergeFunctionOverrideObjectsThreeEquals() = successTest(
+        WaitersTestClient::waitUntilMergeFunctionOverrideObjectsThreeEquals,
+        GetFunctionMergeEqualsResponse {
+            objectOne = Values {
+                valueOne = "foo"
+                valueTwo = "bar"
+                valueThree = "baz"
+            }
+            objectTwo = Values {
+                valueOne = "qux"
+                valueTwo = "qux"
+                valueThree = "qux"
+            }
+        },
+        GetFunctionMergeEqualsResponse {
+            objectOne = Values {
+                valueOne = "qux"
+                valueTwo = "qux"
+                valueThree = "qux"
+            }
+            objectTwo = Values {
+                valueOne = "foo"
+                valueTwo = "bar"
+                valueThree = "baz"
             }
         },
     )

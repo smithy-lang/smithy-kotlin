@@ -5,13 +5,13 @@ use smithy.waiters#waitable
 
 @suppress(["WaitableTraitJmespathProblem"])
 @waitable(
-    MergeFunctionPrimitivesAndListsEquals: {
+    MergeFunctionOverrideObjectsOneEquals: {
         acceptors: [
             {
                 state: "success",
                 matcher: {
                     output: {
-                        path: "merge(primitives, lists).string",
+                        path: "merge(objectOne, objectTwo).valueOne",
                         expected: "foo",
                         comparator: "stringEquals"
                     }
@@ -19,15 +19,29 @@ use smithy.waiters#waitable
             }
         ]
     },
-    MergeFunctionOverrideObjectsEquals: {
+    MergeFunctionOverrideObjectsTwoEquals: {
         acceptors: [
             {
                 state: "success",
                 matcher: {
                     output: {
-                        path: "values(merge(objectOne, objectTwo))",
-                        expected: "foo",
-                        comparator: "allStringEquals"
+                        path: "merge(objectOne, objectTwo).valueTwo",
+                        expected: "bar",
+                        comparator: "stringEquals"
+                    }
+                }
+            }
+        ]
+    },
+    MergeFunctionOverrideObjectsThreeEquals: {
+        acceptors: [
+            {
+                state: "success",
+                matcher: {
+                    output: {
+                        path: "merge(objectOne, objectTwo).valueThree",
+                        expected: "baz",
+                        comparator: "stringEquals"
                     }
                 }
             }

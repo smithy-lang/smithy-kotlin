@@ -77,12 +77,12 @@ class AcceptorGeneratorTest {
                 InputOutputAcceptor(RetryDirective.TerminateAndSucceed) {
                     val output = it.output
                     val tags = output.tags
-                    !(tags as List<String>).isNullOrEmpty() && tags.all { it == "foo" }
+                    !(tags as List<String?>).isNullOrEmpty() && tags.all { it == "foo" }
                 },
                 InputOutputAcceptor(RetryDirective.TerminateAndSucceed) {
                     val output = it.output
                     val tags = output.tags
-                    (tags as List<String>?)?.any { it == "foo" } ?: false
+                    (tags as List<String?>?)?.any { it == "foo" } ?: false
                 },
             )
         """.trimIndent()

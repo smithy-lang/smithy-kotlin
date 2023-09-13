@@ -216,14 +216,8 @@ class KotlinJmespathExpressionVisitor(
         return acceptSubexpression(this.arguments[0]) to acceptSubexpression(this.arguments[1])
     }
 
-    private fun FunctionExpression.args(): VisitedExpression {
-        val args = buildString {
-            append("listOf(")
-            append(this@args.getArguments().joinToString { acceptSubexpression(it).identifier })
-            append(")")
-        }
-        return VisitedExpression(addTempVar("args", args))
-    }
+    private fun FunctionExpression.args(): List<VisitedExpression> =
+        this.arguments.map { acceptSubexpression(it) }
 
     private fun VisitedExpression.dotFunction(expression: FunctionExpression, expr: String, elvisExpr: String? = null, isObject: Boolean = false): VisitedExpression {
         val dotFunctionExpr = ensureNullGuard(shape, expr, elvisExpr)
@@ -278,21 +272,18 @@ class KotlinJmespathExpressionVisitor(
         }
 
         "keys" -> {
-            writer.addImport(RuntimeTypes.Core.Utils.getProperties)
             val obj = expression.singleArg()
-            obj.dotFunction(expression, "getProperties()?.map { it.name }")
+            VisitedExpression(addTempVar("keys", obj.getKeys()))
         }
 
         "values" -> {
-            writer.addImport(RuntimeTypes.Core.Utils.getProperties)
             val obj = expression.singleArg()
-            obj.dotFunction(expression, "getProperties()?.map { it.value }")
+            VisitedExpression(addTempVar("values", obj.getValues()))
         }
 
         "merge" -> {
-            writer.addImport(RuntimeTypes.Core.Utils.mergeObjects)
             val objects = expression.args()
-            objects.dotFunction(expression, "mergeObjects()", isObject = true)
+            VisitedExpression(addTempVar("merge", objects.mergeProperties()), isObject = true)
         }
 
         else -> throw CodegenException("Unknown function type in $expression")
@@ -463,6 +454,33 @@ class KotlinJmespathExpressionVisitor(
         } else {
             ".$expr"
         }
+
+    private fun VisitedExpression.getKeys(): String {
+        val keys = this.shape?.targetOrSelf(ctx.model)?.allMembers
+            ?.keys?.joinToString(", ", "listOf(", ")") { "\"$it\"" }
+        return keys ?: "listOf<String>()"
+    }
+
+    private fun VisitedExpression.getValues(): String {
+        val values = this.shape?.targetOrSelf(ctx.model)?.allMembers?.keys
+            ?.joinToString(", ", "listOf(", ")") { "${this.identifier}${ensureNullGuard(this.shape, it)}" }
+        return values ?: "listOf<String>()"
+    }
+
+    private fun List<VisitedExpression>.mergeProperties(): String {
+        val union = addTempVar("union", "HashMap<String, Any?>()")
+
+        forEach { obj ->
+            val keys = addTempVar("keys", obj.getKeys())
+            val values = addTempVar("values", obj.getValues())
+
+            writer.withBlock("for(i in $keys.indices){", "}") {
+                write("union[$keys[i]] = $values[i]")
+            }
+        }
+
+        return union
+    }
 
     private val Shape.isNullable: Boolean
         get() = this is MemberShape &&

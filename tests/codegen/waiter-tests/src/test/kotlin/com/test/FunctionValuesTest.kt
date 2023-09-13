@@ -7,11 +7,10 @@ package com.test
 
 import aws.smithy.kotlin.runtime.retries.Outcome
 import aws.smithy.kotlin.runtime.retries.getOrThrow
-import com.test.model.EntityPrimitives
 import com.test.model.GetFunctionValuesEqualsRequest
 import com.test.model.GetFunctionValuesEqualsResponse
 import com.test.model.Values
-import com.test.waiters.waitUntilValuesFunctionPrimitivesStringEquals
+import com.test.waiters.waitUntilValuesFunctionAnySampleValuesEquals
 import com.test.waiters.waitUntilValuesFunctionSampleValuesEquals
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Test
@@ -31,13 +30,6 @@ class FunctionValuesTest {
     }
 
     @Test
-    fun testValuesFunctionPrimitivesStringEquals() = successTest(
-        WaitersTestClient::waitUntilValuesFunctionPrimitivesStringEquals,
-        GetFunctionValuesEqualsResponse { primitives = EntityPrimitives { string = "baz" } },
-        GetFunctionValuesEqualsResponse { primitives = EntityPrimitives { string = "foo" } },
-    )
-
-    @Test
     fun testValuesFunctionSampleValuesEquals() = successTest(
         WaitersTestClient::waitUntilValuesFunctionSampleValuesEquals,
         GetFunctionValuesEqualsResponse {
@@ -52,6 +44,25 @@ class FunctionValuesTest {
                 valueOne = "foo"
                 valueTwo = "foo"
                 valueThree = "foo"
+            }
+        },
+    )
+
+    @Test
+    fun testValuesFunctionAnySampleValuesEquals() = successTest(
+        WaitersTestClient::waitUntilValuesFunctionAnySampleValuesEquals,
+        GetFunctionValuesEqualsResponse {
+            sampleValues = Values {
+                valueOne = "bar"
+                valueTwo = "baz"
+                valueThree = "qux"
+            }
+        },
+        GetFunctionValuesEqualsResponse {
+            sampleValues = Values {
+                valueOne = "foo"
+                valueTwo = "bar"
+                valueThree = "baz"
             }
         },
     )

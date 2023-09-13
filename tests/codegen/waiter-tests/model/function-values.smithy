@@ -4,20 +4,6 @@ namespace com.test
 use smithy.waiters#waitable
 
 @waitable(
-    ValuesFunctionPrimitivesStringEquals: {
-        acceptors: [
-            {
-                state: "success",
-                matcher: {
-                    output: {
-                        path: "values(primitives)",
-                        expected: "foo",
-                        comparator: "anyStringEquals"
-                    }
-                }
-            }
-        ]
-    },
     ValuesFunctionSampleValuesEquals: {
         acceptors: [
             {
@@ -27,6 +13,20 @@ use smithy.waiters#waitable
                         path: "values(sampleValues)",
                         expected: "foo",
                         comparator: "allStringEquals"
+                    }
+                }
+            }
+        ]
+    },
+    ValuesFunctionAnySampleValuesEquals: {
+        acceptors: [
+            {
+                state: "success",
+                matcher: {
+                    output: {
+                        path: "values(sampleValues)",
+                        expected: "foo",
+                        comparator: "anyStringEquals"
                     }
                 }
             }
