@@ -4,30 +4,16 @@
  */
 package com.test
 
-import aws.smithy.kotlin.runtime.retries.Outcome
-import aws.smithy.kotlin.runtime.retries.getOrThrow
 import com.test.model.*
 import com.test.model.Enum
+import com.test.utils.successTest
 import com.test.waiters.*
-import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Test
-import kotlin.test.assertEquals
 
 class FunctionContainsTest {
-    private fun successTest(
-        block: suspend WaitersTestClient.(request: GetFunctionContainsRequest) -> Outcome<GetFunctionContainsResponse>,
-        vararg results: GetFunctionContainsResponse,
-    ): Unit = runTest {
-        val client = DefaultWaitersTestClient(results.map { Result.success(it) })
-        val req = GetFunctionContainsRequest { name = "test" }
-
-        val outcome = client.block(req)
-        assertEquals(results.size, outcome.attempts)
-        assertEquals(results.last(), outcome.getOrThrow())
-    }
-
     // list
     @Test fun testBooleanListContains() = successTest(
+        GetFunctionContainsRequest { name = "test" },
         WaitersTestClient::waitUntilBooleanListContains,
         GetFunctionContainsResponse {
             primitives = EntityPrimitives { boolean = true }
@@ -40,6 +26,7 @@ class FunctionContainsTest {
     )
 
     @Test fun testBooleanListContainsIdentityProjection() = successTest(
+        GetFunctionContainsRequest { name = "test" },
         WaitersTestClient::waitUntilBooleanListContainsIdentityProjection,
         GetFunctionContainsResponse {
             primitives = EntityPrimitives { boolean = true }
@@ -52,6 +39,7 @@ class FunctionContainsTest {
     )
 
     @Test fun testStringListContains() = successTest(
+        GetFunctionContainsRequest { name = "test" },
         WaitersTestClient::waitUntilStringListContains,
         GetFunctionContainsResponse {
             primitives = EntityPrimitives { string = "bar" }
@@ -64,6 +52,7 @@ class FunctionContainsTest {
     )
 
     @Test fun testIntegerListContains() = successTest(
+        GetFunctionContainsRequest { name = "test" },
         WaitersTestClient::waitUntilIntegerListContains,
         GetFunctionContainsResponse {
             primitives = EntityPrimitives { integer = 10 }
@@ -76,6 +65,7 @@ class FunctionContainsTest {
     )
 
     @Test fun testEnumListContains() = successTest(
+        GetFunctionContainsRequest { name = "test" },
         WaitersTestClient::waitUntilEnumListContains,
         GetFunctionContainsResponse {
             primitives = EntityPrimitives { enum = Enum.Two }
@@ -88,6 +78,7 @@ class FunctionContainsTest {
     )
 
     @Test fun testIntEnumListContains() = successTest(
+        GetFunctionContainsRequest { name = "test" },
         WaitersTestClient::waitUntilIntEnumListContains,
         GetFunctionContainsResponse {
             primitives = EntityPrimitives { intEnum = IntEnum.Two }
@@ -101,6 +92,7 @@ class FunctionContainsTest {
 
     // object projection
     @Test fun testBooleanMapContains() = successTest(
+        GetFunctionContainsRequest { name = "test" },
         WaitersTestClient::waitUntilBooleanMapContains,
         GetFunctionContainsResponse {
             primitives = EntityPrimitives { boolean = false }
@@ -113,6 +105,7 @@ class FunctionContainsTest {
     )
 
     @Test fun testStringMapContains() = successTest(
+        GetFunctionContainsRequest { name = "test" },
         WaitersTestClient::waitUntilStringMapContains,
         GetFunctionContainsResponse {
             primitives = EntityPrimitives { string = "bar" }
@@ -125,6 +118,7 @@ class FunctionContainsTest {
     )
 
     @Test fun testIntegerMapContains() = successTest(
+        GetFunctionContainsRequest { name = "test" },
         WaitersTestClient::waitUntilIntegerMapContains,
         GetFunctionContainsResponse {
             primitives = EntityPrimitives { integer = 10 }
@@ -137,6 +131,7 @@ class FunctionContainsTest {
     )
 
     @Test fun testEnumMapContains() = successTest(
+        GetFunctionContainsRequest { name = "test" },
         WaitersTestClient::waitUntilEnumMapContains,
         GetFunctionContainsResponse {
             primitives = EntityPrimitives { enum = Enum.Two }
@@ -149,6 +144,7 @@ class FunctionContainsTest {
     )
 
     @Test fun testIntEnumMapContains() = successTest(
+        GetFunctionContainsRequest { name = "test" },
         WaitersTestClient::waitUntilIntEnumMapContains,
         GetFunctionContainsResponse {
             primitives = EntityPrimitives { intEnum = IntEnum.Two }

@@ -4,37 +4,24 @@
  */
 package com.test
 
-import aws.smithy.kotlin.runtime.retries.Outcome
-import aws.smithy.kotlin.runtime.retries.getOrThrow
 import com.test.model.*
+import com.test.utils.successTest
 import com.test.waiters.waitUntilStructListStringMultiSelectHash
 import com.test.waiters.waitUntilStructListStringsAnyMultiSelectHash
 import com.test.waiters.waitUntilStructListStringsMultiSelectHash
 import com.test.waiters.waitUntilStructListSubStructPrimitivesBooleanMultiSelectHash
-import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Test
-import kotlin.test.assertEquals
 
 class MultiSelectHashTest {
-    private fun successTest(
-        block: suspend WaitersTestClient.(request: GetMultiSelectHashRequest) -> Outcome<GetMultiSelectHashResponse>,
-        vararg results: GetMultiSelectHashResponse,
-    ): Unit = runTest {
-        val client = DefaultWaitersTestClient(results.map { Result.success(it) })
-        val req = GetMultiSelectHashRequest { name = "test" }
-
-        val outcome = client.block(req)
-        assertEquals(results.size, outcome.attempts)
-        assertEquals(results.last(), outcome.getOrThrow())
-    }
-
     @Test fun testStructListStringMultiSelectHash() = successTest(
+        GetMultiSelectHashRequest { name = "test" },
         WaitersTestClient::waitUntilStructListStringMultiSelectHash,
         GetMultiSelectHashResponse { lists = EntityLists { structs = listOf(Struct { primitives = EntityPrimitives { string = "bar" } }, Struct { primitives = EntityPrimitives { string = "foo" } }) } },
         GetMultiSelectHashResponse { lists = EntityLists { structs = listOf(Struct { primitives = EntityPrimitives { string = "foo" } }, Struct { primitives = EntityPrimitives { string = "bar" } }) } },
     )
 
     @Test fun testStructListStringsMultiSelectHash() = successTest(
+        GetMultiSelectHashRequest { name = "test" },
         WaitersTestClient::waitUntilStructListStringsMultiSelectHash,
         GetMultiSelectHashResponse {
             lists = EntityLists {
@@ -67,6 +54,7 @@ class MultiSelectHashTest {
     )
 
     @Test fun testStructListStringsAnyMultiSelectHash() = successTest(
+        GetMultiSelectHashRequest { name = "test" },
         WaitersTestClient::waitUntilStructListStringsAnyMultiSelectHash,
         GetMultiSelectHashResponse {
             lists = EntityLists {
@@ -99,6 +87,7 @@ class MultiSelectHashTest {
     )
 
     @Test fun testStructListSubStructPrimitivesBooleanMultiSelectHash() = successTest(
+        GetMultiSelectHashRequest { name = "test" },
         WaitersTestClient::waitUntilStructListSubStructPrimitivesBooleanMultiSelectHash,
         GetMultiSelectHashResponse {
             lists = EntityLists {
