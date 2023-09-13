@@ -16,7 +16,6 @@ import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.shapes.ShapeId
 import java.util.Optional
 import java.util.logging.Logger
-import kotlin.streams.toList
 
 // shapeId of service from which to generate an SDK
 private const val SERVICE = "service"
@@ -25,6 +24,7 @@ private const val PACKAGE_NAME = "name"
 private const val PACKAGE_VERSION = "version"
 private const val PACKAGE_DESCRIPTION = "description"
 private const val BUILD_SETTINGS = "build"
+private const val VISIBILITY_SETTINGS = "visibility"
 
 // Optional specification of sdkId for models that provide them, otherwise Service's shape id name is used
 private const val SDK_ID = "sdkId"
@@ -160,6 +160,7 @@ data class BuildSettings(
     val generateDefaultBuildFiles: Boolean = true,
     val optInAnnotations: List<String>? = null,
     val generateMultiplatformProject: Boolean = false,
+    val visibility: VisibilitySettings = VisibilitySettings.Default
 ) {
     companion object {
         const val ROOT_PROJECT = "rootProject"
@@ -170,8 +171,7 @@ data class BuildSettings(
         fun fromNode(node: Optional<ObjectNode>): BuildSettings = node.map {
             val generateFullProject = node.get().getBooleanMemberOrDefault(ROOT_PROJECT, false)
             val generateBuildFiles = node.get().getBooleanMemberOrDefault(GENERATE_DEFAULT_BUILD_FILES, true)
-            val generateMultiplatformProject =
-                node.get().getBooleanMemberOrDefault(GENERATE_MULTIPLATFORM_MODULE, false)
+            val generateMultiplatformProject = node.get().getBooleanMemberOrDefault(GENERATE_MULTIPLATFORM_MODULE, false)
             val annotations = node.get().getArrayMember(ANNOTATIONS).map {
                 it.elements.mapNotNull { node ->
                     node.asStringNode().map { stringNode ->
@@ -179,8 +179,9 @@ data class BuildSettings(
                     }.orNull()
                 }
             }.orNull()
+            val visibility = VisibilitySettings.fromNode(node.get().getObjectMember(VISIBILITY_SETTINGS))
 
-            BuildSettings(generateFullProject, generateBuildFiles, annotations, generateMultiplatformProject)
+            BuildSettings(generateFullProject, generateBuildFiles, annotations, generateMultiplatformProject, visibility)
         }.orElse(Default)
 
         /**
@@ -193,3 +194,27 @@ data class BuildSettings(
 class UnresolvableProtocolException(message: String) : CodegenException(message)
 
 private fun <T> Optional<T>.orNull(): T? = if (isPresent) get() else null
+
+data class VisibilitySettings(
+    val serviceClient: String = "public",
+    val structure: String = "public",
+    val error: String = "public",
+) {
+    companion object {
+        const val SERVICE_CLIENT = "serviceClient"
+        const val STRUCTURE = "structure"
+        const val ERROR = "error"
+
+        fun fromNode(node: Optional<ObjectNode>): VisibilitySettings = node.map {
+            val serviceClient = node.get().getStringMemberOrDefault(SERVICE_CLIENT, "public")
+            val structure = node.get().getStringMemberOrDefault(STRUCTURE, "public")
+            val error = node.get().getStringMemberOrDefault(ERROR, "public")
+            VisibilitySettings(serviceClient, structure, error)
+        }.orElse(Default)
+
+        /**
+         * Default visibility settings
+         */
+        val Default: VisibilitySettings = VisibilitySettings()
+    }
+}

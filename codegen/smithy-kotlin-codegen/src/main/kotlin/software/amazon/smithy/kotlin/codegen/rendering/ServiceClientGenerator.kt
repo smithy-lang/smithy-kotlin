@@ -67,11 +67,12 @@ class ServiceClientGenerator(private val ctx: RenderingContext<ServiceShape>) {
         requireNotNull(ctx.shape) { "ServiceShape is required to render a service client" }
     private val serviceSymbol = ctx.symbolProvider.toSymbol(service)
     private val writer = ctx.writer
+    private val visibility = ctx.settings.build.visibility.serviceClient
 
     fun render() {
         writer.write("\n\n")
-        writer.write("public const val ServiceId: String = #S", ctx.settings.sdkId)
-        writer.write("public const val SdkVersion: String = #S", ctx.settings.pkg.version)
+        writer.write("$visibility const val ServiceId: String = #S", ctx.settings.sdkId)
+        writer.write("$visibility const val SdkVersion: String = #S", ctx.settings.pkg.version)
         writer.write("\n\n")
 
         writer.putContext("service.name", ctx.settings.sdkId)
@@ -82,7 +83,7 @@ class ServiceClientGenerator(private val ctx: RenderingContext<ServiceShape>) {
 
         writer.renderDocumentation(service)
         writer.renderAnnotations(service)
-        writer.openBlock("public interface ${serviceSymbol.name} : #T {", RuntimeTypes.SmithyClient.SdkClient)
+        writer.openBlock("$visibility interface ${serviceSymbol.name} : #T {", RuntimeTypes.SmithyClient.SdkClient)
             .call {
                 // allow access to client's Config
                 writer.dokka("${serviceSymbol.name}'s configuration")
@@ -198,7 +199,7 @@ class ServiceClientGenerator(private val ctx: RenderingContext<ServiceShape>) {
             write("Any resources created on your behalf will be shared between clients, and will only be closed when ALL clients using them are closed.")
             write("If you provide a resource (e.g. [HttpClientEngine]) to the SDK, you are responsible for managing the lifetime of that resource.")
         }
-        writer.withBlock("public fun #1T.withConfig(block: #1T.Config.Builder.() -> Unit): #1T {", "}", serviceSymbol) {
+        writer.withBlock("$visibility fun #1T.withConfig(block: #1T.Config.Builder.() -> Unit): #1T {", "}", serviceSymbol) {
             write("val newConfig = config.toBuilder().apply(block).build()")
             write("return Default#L(newConfig)", serviceSymbol.name)
         }
@@ -219,7 +220,7 @@ class ServiceClientGenerator(private val ctx: RenderingContext<ServiceShape>) {
                     writer.renderDocumentation(op)
                     writer.renderAnnotations(op)
                     writer.write(
-                        "public suspend inline fun #T.#L(crossinline block: #T.Builder.() -> Unit): #T = #L(#T.Builder().apply(block).build())",
+                        "$visibility suspend inline fun #T.#L(crossinline block: #T.Builder.() -> Unit): #T = #L(#T.Builder().apply(block).build())",
                         serviceSymbol,
                         operationName,
                         inputSymbol,

@@ -54,7 +54,8 @@ open class AuthSchemeProviderGenerator {
             write("See [#T] for the default SDK behavior of this interface.", getDefaultSymbol(ctx.settings))
         }
         writer.write(
-            "public interface #T : #T<#T>",
+            "#L interface #T : #T<#T>",
+            ctx.settings.build.visibility.structure,
             symbol,
             RuntimeTypes.Auth.Identity.AuthSchemeProvider,
             paramsSymbol,
@@ -64,8 +65,9 @@ open class AuthSchemeProviderGenerator {
     private fun renderDefaultImpl(ctx: ProtocolGenerator.GenerationContext, writer: KotlinWriter) {
         // FIXME - probably can't remain an object
         writer.withBlock(
-            "public object #T : #T {",
+            "#L object #T : #T {",
             "}",
+            ctx.settings.build.visibility.structure,
             getDefaultSymbol(ctx.settings),
             getSymbol(ctx.settings),
         ) {

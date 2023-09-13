@@ -48,7 +48,10 @@ class AuthSchemeParametersGenerator : AbstractConfigGenerator() {
         val implSymbol = getImplementationSymbol(ctx.settings)
 
         ctx.delegator.useSymbolWriter(symbol) { writer ->
-            writer.withBlock("public interface #T {", "}", symbol) {
+            writer.withBlock("#L interface #T {", "}",
+                ctx.settings.build.visibility.structure,
+                symbol
+            ) {
                 dokka("The name of the operation currently being invoked.")
                 write("public val operationName: String")
             }
