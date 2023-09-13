@@ -145,7 +145,7 @@ class DefaultEndpointProviderGeneratorTest {
             namespace = TestModelDefault.NAMESPACE
         }
         val settings = KotlinSettings(
-            service = ShapeId.from("EndpointProviderGeneratorTest"),
+            service = ShapeId.from("com.test#Test"),
             pkg = KotlinSettings.PackageSettings("name", "version"),
             sdkId = "testSdkId",
         )
