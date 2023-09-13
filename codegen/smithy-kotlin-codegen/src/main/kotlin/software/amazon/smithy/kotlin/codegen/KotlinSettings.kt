@@ -16,6 +16,7 @@ import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.shapes.ShapeId
 import java.util.Optional
 import java.util.logging.Logger
+import kotlin.streams.toList
 
 // shapeId of service from which to generate an SDK
 private const val SERVICE = "service"
