@@ -52,9 +52,11 @@ class EndpointParametersGenerator(
     fun render() {
         renderDocumentation()
         // FIXME - this should probably be an interface
-        writer.withBlock("#L class #T private constructor(builder: Builder) {", "}",
+        writer.withBlock(
+            "#L class #T private constructor(builder: Builder) {",
+            "}",
             settings.build.visibility.structure,
-            paramsSymbol
+            paramsSymbol,
         ) {
             renderFields()
             renderCompanionObject()
