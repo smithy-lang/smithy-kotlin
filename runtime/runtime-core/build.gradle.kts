@@ -22,7 +22,6 @@ kotlin {
                 implementation(libs.kotlinx.atomicfu)
                 // Coroutines' locking features are used in retry token bucket implementations
                 api(libs.kotlinx.coroutines.core)
-                implementation(kotlin("reflect"))
             }
         }
 
