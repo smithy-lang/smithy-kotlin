@@ -5,19 +5,14 @@
 
 package com.test
 
-import aws.smithy.kotlin.runtime.retries.Outcome
-import aws.smithy.kotlin.runtime.retries.getOrThrow
 import com.test.model.GetFunctionMergeEqualsRequest
 import com.test.model.GetFunctionMergeEqualsResponse
-import com.test.model.GetFunctionValuesEqualsRequest
 import com.test.model.Values
 import com.test.utils.successTest
 import com.test.waiters.waitUntilMergeFunctionOverrideObjectsOneEquals
 import com.test.waiters.waitUntilMergeFunctionOverrideObjectsThreeEquals
 import com.test.waiters.waitUntilMergeFunctionOverrideObjectsTwoEquals
-import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Test
-import kotlin.test.assertEquals
 
 class FunctionMergeTest {
     @Test fun testMergeFunctionOverrideObjectsOneEquals() = successTest(

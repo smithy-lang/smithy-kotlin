@@ -5,18 +5,13 @@
 
 package com.test
 
-import aws.smithy.kotlin.runtime.retries.Outcome
-import aws.smithy.kotlin.runtime.retries.getOrThrow
-import com.test.model.GetFunctionSumEqualsRequest
 import com.test.model.GetFunctionValuesEqualsRequest
 import com.test.model.GetFunctionValuesEqualsResponse
 import com.test.model.Values
 import com.test.utils.successTest
 import com.test.waiters.waitUntilValuesFunctionAnySampleValuesEquals
 import com.test.waiters.waitUntilValuesFunctionSampleValuesEquals
-import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Test
-import kotlin.test.assertEquals
 
 class FunctionValuesTest {
     @Test fun testValuesFunctionSampleValuesEquals() = successTest(
