@@ -239,6 +239,33 @@ class KotlinSettingsTest {
     }
 
     @Test
+    fun `supports public visibility`() {
+        val model = javaClass.getResource("simple-service.smithy")!!.toSmithyModel()
+
+        val contents = """
+            {
+                "package": {
+                    "name": "aws.sdk.kotlin.runtime.protocoltest.awsrestjson",
+                    "version": "1.0.0"
+                },
+                "build": {
+                    "optInAnnotations": ["foo", "bar"]
+                },
+                "api": {
+                    "visibility": "public"
+                }
+            }
+        """.trimIndent()
+
+        val settings = KotlinSettings.from(
+            model,
+            Node.parse(contents).expectObjectNode(),
+        )
+
+        assertEquals(Visibility.PUBLIC, settings.api.visibility)
+    }
+
+    @Test
     fun `throws on unsupported visibility values`() {
         val model = javaClass.getResource("simple-service.smithy")!!.toSmithyModel()
 
