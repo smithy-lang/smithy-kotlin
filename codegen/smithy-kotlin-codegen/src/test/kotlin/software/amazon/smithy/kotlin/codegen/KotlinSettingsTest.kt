@@ -184,4 +184,82 @@ class KotlinSettingsTest {
             Node.parse(contents).expectObjectNode(),
         )
     }
+
+    @Test
+    fun `supports internal visibility`() {
+        val model = javaClass.getResource("simple-service.smithy")!!.toSmithyModel()
+
+        val contents = """
+            {
+                "package": {
+                    "name": "aws.sdk.kotlin.runtime.protocoltest.awsrestjson",
+                    "version": "1.0.0"
+                },
+                "build": {
+                    "optInAnnotations": ["foo", "bar"]
+                },
+                "api": {
+                    "visibility": "internal"
+                }
+            }
+        """.trimIndent()
+
+        val settings = KotlinSettings.from(
+            model,
+            Node.parse(contents).expectObjectNode(),
+        )
+
+        assertEquals(Visibility.INTERNAL, settings.api.visibility)
+    }
+
+    @Test
+    fun `defaults to public visibility`() {
+        val model = javaClass.getResource("simple-service.smithy")!!.toSmithyModel()
+
+        val contents = """
+            {
+                "package": {
+                    "name": "aws.sdk.kotlin.runtime.protocoltest.awsrestjson",
+                    "version": "1.0.0"
+                },
+                "build": {
+                    "optInAnnotations": ["foo", "bar"]
+                }
+            }
+        """.trimIndent()
+
+        val settings = KotlinSettings.from(
+            model,
+            Node.parse(contents).expectObjectNode(),
+        )
+
+        assertEquals(Visibility.PUBLIC, settings.api.visibility)
+    }
+
+    @Test
+    fun `works with unsupported visibility values`() {
+        val model = javaClass.getResource("simple-service.smithy")!!.toSmithyModel()
+
+        val contents = """
+            {
+                "package": {
+                    "name": "aws.sdk.kotlin.runtime.protocoltest.awsrestjson",
+                    "version": "1.0.0"
+                },
+                "build": {
+                    "optInAnnotations": ["foo", "bar"]
+                },
+                "api": {
+                    "visibility": "I don't know, just make it visible"
+                }
+            }
+        """.trimIndent()
+
+        val settings = KotlinSettings.from(
+            model,
+            Node.parse(contents).expectObjectNode(),
+        )
+
+        assertEquals(Visibility.PUBLIC, settings.api.visibility)
+    }
 }
