@@ -207,15 +207,13 @@ enum class Visibility(val value: String) {
     INTERNAL("internal"),
     ;
 
-    override fun toString(): String {
-        return value
-    }
+    override fun toString(): String = value
 
     companion object {
         public fun fromValue(value: String): Visibility = when (value.lowercase()) {
             "public" -> PUBLIC
             "internal" -> INTERNAL
-            else -> throw IllegalArgumentException("$value is not a valid Visibility, expected ${PUBLIC} or ${INTERNAL}")
+            else -> throw IllegalArgumentException("$value is not a valid Visibility value, expected $PUBLIC or $INTERNAL")
         }
     }
 }
