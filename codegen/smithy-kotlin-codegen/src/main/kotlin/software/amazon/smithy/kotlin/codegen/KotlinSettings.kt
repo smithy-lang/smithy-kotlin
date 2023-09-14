@@ -197,18 +197,31 @@ class UnresolvableProtocolException(message: String) : CodegenException(message)
 
 private fun <T> Optional<T>.orNull(): T? = if (isPresent) get() else null
 
+
+enum class Visibility(val value: String) {
+    PUBLIC("public"),
+    INTERNAL("internal");
+
+    companion object {
+        public fun fromValue(value: String): Visibility = when (value.toLowerCase()) {
+            "internal" -> INTERNAL
+            else -> PUBLIC
+        }
+    }
+}
+
 /**
  * Contains API settings for a Kotlin project
  * @param visibility String representing the visibility of code-generated classes, objects, interfaces, etc.
  */
 data class ApiSettings(
-    val visibility: String = "public",
+    val visibility: Visibility = Visibility.PUBLIC,
 ) {
     companion object {
         const val VISIBILITY = "visibility"
 
         fun fromNode(node: Optional<ObjectNode>): ApiSettings = node.map {
-            val visibility = node.get().getStringMemberOrDefault(VISIBILITY, "public")
+            val visibility = Visibility.fromValue(node.get().getStringMemberOrDefault(VISIBILITY, "public"))
             ApiSettings(visibility)
         }.orElse(Default)
 

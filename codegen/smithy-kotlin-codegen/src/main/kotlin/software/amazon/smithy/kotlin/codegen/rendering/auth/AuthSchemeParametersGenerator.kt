@@ -51,7 +51,7 @@ class AuthSchemeParametersGenerator : AbstractConfigGenerator() {
             writer.withBlock(
                 "#L interface #T {",
                 "}",
-                ctx.settings.api.visibility,
+                ctx.settings.api.visibility.value,
                 symbol,
             ) {
                 dokka("The name of the operation currently being invoked.")

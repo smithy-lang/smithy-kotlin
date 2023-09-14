@@ -36,7 +36,7 @@ object ExceptionBaseClassGenerator {
         writer.withBlock(
             "#L open class #T : #T {",
             "}",
-            ctx.settings.api.visibility,
+            ctx.settings.api.visibility.value,
             serviceException,
             baseException,
         ) {

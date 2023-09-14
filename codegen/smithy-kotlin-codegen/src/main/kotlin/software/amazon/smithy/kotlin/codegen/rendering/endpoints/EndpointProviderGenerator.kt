@@ -35,7 +35,7 @@ class EndpointProviderGenerator(
         renderDocumentation()
         writer.write(
             "#L fun interface #T: #T<#T>",
-            settings.api.visibility,
+            settings.api.visibility.value,
             providerSymbol,
             RuntimeTypes.SmithyClient.Endpoints.EndpointProvider,
             paramsSymbol,
