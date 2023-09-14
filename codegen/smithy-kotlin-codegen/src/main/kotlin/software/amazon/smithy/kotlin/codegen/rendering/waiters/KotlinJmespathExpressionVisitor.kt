@@ -527,20 +527,15 @@ class KotlinJmespathExpressionVisitor(
         addTempVar("answer", "if(${this.identifier} as Any is List<*> || ${this.identifier} as Any is Array<*>) ${this.identifier} as List<*> else listOf(${this.identifier})")
 
     private fun List<VisitedExpression>.getNotNull(): String {
-        val answer = bestTempVarName("answer")
-        writer.write("var $answer: Any? = null")
+        val notNull = bestTempVarName("notNull")
 
-        val found = bestTempVarName("found")
-        writer.write("var $found = false")
-
-        forEach {
-            writer.withBlock("if (${it.identifier} != null && !$found) {", "}") {
-                write("$answer = ${it.identifier}")
-                write("$found = true")
+        writer.withBlock("val $notNull = listOfNotNull(", ").firstOrNull()") {
+            forEach {
+                write("${it.identifier},")
             }
         }
 
-        return answer
+        return notNull
     }
 
     private val Shape.isNullable: Boolean
