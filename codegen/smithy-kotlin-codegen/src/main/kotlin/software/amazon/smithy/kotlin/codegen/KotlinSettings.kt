@@ -14,6 +14,7 @@ import software.amazon.smithy.model.node.StringNode
 import software.amazon.smithy.model.shapes.ServiceShape
 import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.shapes.ShapeId
+import java.lang.IllegalArgumentException
 import java.util.Optional
 import java.util.logging.Logger
 import kotlin.streams.toList
@@ -206,10 +207,15 @@ enum class Visibility(val value: String) {
     INTERNAL("internal"),
     ;
 
+    override fun toString(): String {
+        return value
+    }
+
     companion object {
         public fun fromValue(value: String): Visibility = when (value.lowercase()) {
+            "public" -> PUBLIC
             "internal" -> INTERNAL
-            else -> PUBLIC
+            else -> throw IllegalArgumentException("$value is not a valid Visibility, expected ${PUBLIC} or ${INTERNAL}")
         }
     }
 }

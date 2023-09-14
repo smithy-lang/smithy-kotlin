@@ -82,7 +82,7 @@ class DefaultEndpointProviderGenerator(
         writer.withBlock(
             "#L class #T: #T {",
             "}",
-            settings.api.visibility.value,
+            settings.api.visibility,
             defaultProviderSymbol,
             interfaceSymbol,
         ) {

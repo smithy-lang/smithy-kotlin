@@ -55,7 +55,7 @@ open class AuthSchemeProviderGenerator {
         }
         writer.write(
             "#L interface #T : #T<#T>",
-            ctx.settings.api.visibility.value,
+            ctx.settings.api.visibility,
             symbol,
             RuntimeTypes.Auth.Identity.AuthSchemeProvider,
             paramsSymbol,
@@ -67,7 +67,7 @@ open class AuthSchemeProviderGenerator {
         writer.withBlock(
             "#L object #T : #T {",
             "}",
-            ctx.settings.api.visibility.value,
+            ctx.settings.api.visibility,
             getDefaultSymbol(ctx.settings),
             getSymbol(ctx.settings),
         ) {

@@ -5,11 +5,13 @@
 
 package software.amazon.smithy.kotlin.codegen
 
+import org.junit.jupiter.api.assertThrows
 import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.kotlin.codegen.test.TestModelDefault
 import software.amazon.smithy.kotlin.codegen.test.toSmithyModel
 import software.amazon.smithy.model.node.Node
 import software.amazon.smithy.model.shapes.ShapeId
+import java.lang.IllegalArgumentException
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
@@ -237,7 +239,7 @@ class KotlinSettingsTest {
     }
 
     @Test
-    fun `works with unsupported visibility values`() {
+    fun `throws on unsupported visibility values`() {
         val model = javaClass.getResource("simple-service.smithy")!!.toSmithyModel()
 
         val contents = """
@@ -255,11 +257,11 @@ class KotlinSettingsTest {
             }
         """.trimIndent()
 
-        val settings = KotlinSettings.from(
-            model,
-            Node.parse(contents).expectObjectNode(),
-        )
-
-        assertEquals(Visibility.PUBLIC, settings.api.visibility)
+        assertThrows<IllegalArgumentException> {
+            KotlinSettings.from(
+                model,
+                Node.parse(contents).expectObjectNode(),
+            )
+        }
     }
 }
