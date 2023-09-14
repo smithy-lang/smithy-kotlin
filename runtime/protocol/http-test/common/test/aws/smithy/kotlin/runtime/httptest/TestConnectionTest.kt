@@ -5,12 +5,9 @@
 
 package aws.smithy.kotlin.runtime.httptest
 
-import aws.smithy.kotlin.runtime.http.HttpStatusCode
-import aws.smithy.kotlin.runtime.http.SdkHttpClient
+import aws.smithy.kotlin.runtime.http.*
 import aws.smithy.kotlin.runtime.http.content.ByteArrayContent
-import aws.smithy.kotlin.runtime.http.readAll
 import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
-import aws.smithy.kotlin.runtime.http.response.complete
 import aws.smithy.kotlin.runtime.net.Host
 import io.kotest.matchers.string.shouldContain
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -204,6 +201,7 @@ class TestConnectionTest {
         val client = SdkHttpClient(engine)
 
         val req = HttpRequestBuilder().apply {
+            method = HttpMethod.POST
             url.host = Host.Domain("test.aws.com")
             url.path = "/turtles-all-the-way-down"
             url.parameters.append("q1", "v1")

@@ -116,6 +116,12 @@ public class HttpClientMetrics(
         "The total number of bytes received by the HTTP client",
     )
 
+    public val timeToFirstByteDuration: DoubleHistogram = meter.createDoubleHistogram(
+        "smithy.client.http.time_to_first_byte",
+        "s",
+        "The amount of time after a request has been sent spent waiting on a response from the remote server",
+    )
+
     /**
      * The maximum number of connections configured for the client
      */

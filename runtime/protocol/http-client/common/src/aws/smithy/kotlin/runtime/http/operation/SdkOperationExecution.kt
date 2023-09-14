@@ -8,19 +8,18 @@ package aws.smithy.kotlin.runtime.http.operation
 import aws.smithy.kotlin.runtime.InternalApi
 import aws.smithy.kotlin.runtime.client.LogMode
 import aws.smithy.kotlin.runtime.client.logMode
+import aws.smithy.kotlin.runtime.http.HttpCall
 import aws.smithy.kotlin.runtime.http.HttpHandler
 import aws.smithy.kotlin.runtime.http.auth.SignHttpRequest
+import aws.smithy.kotlin.runtime.http.complete
 import aws.smithy.kotlin.runtime.http.interceptors.InterceptorExecutor
 import aws.smithy.kotlin.runtime.http.middleware.RetryMiddleware
 import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
 import aws.smithy.kotlin.runtime.http.request.dumpRequest
 import aws.smithy.kotlin.runtime.http.request.immutableView
 import aws.smithy.kotlin.runtime.http.request.toBuilder
-import aws.smithy.kotlin.runtime.http.response.HttpCall
-import aws.smithy.kotlin.runtime.http.response.HttpResponse
-import aws.smithy.kotlin.runtime.http.response.complete
 import aws.smithy.kotlin.runtime.http.response.dumpResponse
-import aws.smithy.kotlin.runtime.io.*
+import aws.smithy.kotlin.runtime.io.Handler
 import aws.smithy.kotlin.runtime.io.middleware.Middleware
 import aws.smithy.kotlin.runtime.io.middleware.Phase
 import aws.smithy.kotlin.runtime.operation.ExecutionContext
@@ -275,10 +274,13 @@ internal class AuthHandler<Input, Output>(
             "auth.scheme_id" to authScheme.schemeId.id
         }
 
+        // properties need to propagate from AuthOption to signer and identity provider
+        request.context.merge(authOption.attributes)
+
         // resolve identity from the selected auth scheme
         val identityProvider = authScheme.identityProvider(authConfig.identityProviderConfig)
         val identity = request.context.operationMetrics.resolveIdentityDuration.measureSeconds(schemeAttr) {
-            identityProvider.resolve(authOption.attributes)
+            identityProvider.resolve(request.context)
         }
 
         val resolveEndpointReq = ResolveEndpointRequest(request.context, request.subject.immutableView(), identity)
@@ -296,8 +298,6 @@ internal class AuthHandler<Input, Output>(
 
         interceptors.readBeforeSigning(modified.subject.immutableView())
 
-        // signing properties need to propagate from AuthOption to signer
-        modified.context.merge(authOption.attributes)
         val signingRequest = SignHttpRequest(modified.subject, identity, modified.context)
 
         request.context.operationMetrics.signingDuration.measureSeconds(schemeAttr) {
@@ -311,7 +311,7 @@ internal class AuthHandler<Input, Output>(
 
 private class DeserializeHandler<Input, Output>(
     private val inner: Handler<SdkHttpRequest, HttpCall>,
-    private val mapResponse: suspend (ExecutionContext, HttpResponse) -> Output,
+    private val mapResponse: suspend (ExecutionContext, HttpCall) -> Output,
     private val interceptors: InterceptorExecutor<Input, Output>,
 ) : Handler<SdkHttpRequest, Output> {
 
@@ -323,7 +323,7 @@ private class DeserializeHandler<Input, Output>(
 
         interceptors.readBeforeDeserialization(modified)
 
-        val output = mapResponse(request.context, modified.response)
+        val output = mapResponse(request.context, modified)
         interceptors.readAfterDeserialization(output, modified)
 
         return output

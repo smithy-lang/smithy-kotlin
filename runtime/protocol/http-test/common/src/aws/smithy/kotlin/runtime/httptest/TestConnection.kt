@@ -7,19 +7,17 @@ package aws.smithy.kotlin.runtime.httptest
 
 import aws.smithy.kotlin.runtime.http.Headers
 import aws.smithy.kotlin.runtime.http.HttpBody
+import aws.smithy.kotlin.runtime.http.HttpCall
 import aws.smithy.kotlin.runtime.http.HttpStatusCode
 import aws.smithy.kotlin.runtime.http.engine.HttpClientEngineBase
 import aws.smithy.kotlin.runtime.http.engine.HttpClientEngineConfig
 import aws.smithy.kotlin.runtime.http.engine.callContext
-import aws.smithy.kotlin.runtime.http.readAll
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
-import aws.smithy.kotlin.runtime.http.response.HttpCall
 import aws.smithy.kotlin.runtime.http.response.HttpResponse
 import aws.smithy.kotlin.runtime.operation.ExecutionContext
 import aws.smithy.kotlin.runtime.time.Instant
 import kotlin.test.assertEquals
-import kotlin.test.assertTrue
 
 /**
  * An expected HttpRequest with the response that should be returned by the engine
@@ -31,23 +29,13 @@ public data class MockRoundTrip(public val expected: HttpRequest?, public val re
 /**
  * Actual and expected [HttpRequest] pair
  */
-public data class CallAssertion(public val expected: HttpRequest?, public val actual: HttpRequest) {
+public data class RequestComparands(public val expected: HttpRequest?, public val actual: HttpRequest) {
     /**
-     * Assert that all of the components set on [expected] are also the same on [actual]. The actual request
-     * may have additional headers, only the ones set in [expected] are compared.
+     * Assert that [expected] matches [actual] according to [asserter].
+     * @param msgPrefix The prefix to include in the message if an [AssertionError] is thrown
      */
-    internal suspend fun assertRequest(idx: Int) {
-        if (expected == null) return
-        assertEquals(expected.url.toString(), actual.url.toString(), "[request#$idx]: URL mismatch")
-        expected.headers.forEach { name, values ->
-            values.forEach {
-                assertTrue(actual.headers.contains(name, it), "[request#$idx]: header `$name` missing value `$it`")
-            }
-        }
-
-        val expectedBody = expected.body.readAll()?.decodeToString()
-        val actualBody = actual.body.readAll()?.decodeToString()
-        assertEquals(expectedBody, actualBody, "[request#$idx]: body mismatch")
+    internal suspend fun assertRequest(msgPrefix: String, asserter: CallAsserter) {
+        expected?.let { asserter.assertEquals(msgPrefix, it, actual) }
     }
 }
 
@@ -67,7 +55,7 @@ public class TestConnection(private val expected: List<MockRoundTrip> = emptyLis
 
     // expected is mutated in-flight, store original size
     private val iter = expected.iterator()
-    private var calls = mutableListOf<CallAssertion>()
+    private var requests = mutableListOf<RequestComparands>()
 
     override val config: HttpClientEngineConfig = HttpClientEngineConfig.Default
 
@@ -121,7 +109,7 @@ public class TestConnection(private val expected: List<MockRoundTrip> = emptyLis
     override suspend fun roundTrip(context: ExecutionContext, request: HttpRequest): HttpCall {
         check(iter.hasNext()) { "TestConnection has no remaining expected requests" }
         val next = iter.next()
-        calls.add(CallAssertion(next.expected, request))
+        requests.add(RequestComparands(next.expected, request))
 
         val response = next.respondWith ?: HttpResponse(HttpStatusCode.OK, Headers.Empty, HttpBody.Empty)
         val now = Instant.now()
@@ -131,15 +119,15 @@ public class TestConnection(private val expected: List<MockRoundTrip> = emptyLis
     /**
      * Get the list of captured HTTP requests so far
      */
-    public fun requests(): List<CallAssertion> = calls
+    public fun requests(): List<RequestComparands> = requests
 
     /**
      * Assert that each captured request matches the expected
      */
-    public suspend fun assertRequests() {
-        assertEquals(expected.size, calls.size)
-        calls.forEachIndexed { idx, captured ->
-            captured.assertRequest(idx)
+    public suspend fun assertRequests(asserter: CallAsserter = CallAsserter.FullyMatching) {
+        assertEquals(expected.size, requests.size)
+        requests.forEachIndexed { idx, captured ->
+            captured.assertRequest("[request#$idx]", asserter)
         }
     }
 }

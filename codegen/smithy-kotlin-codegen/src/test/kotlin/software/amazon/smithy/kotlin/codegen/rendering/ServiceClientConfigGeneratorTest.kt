@@ -48,8 +48,8 @@ public class Config private constructor(builder: Builder) : HttpAuthConfig, Http
 
         val expectedProps = """
     override val clientName: String = builder.clientName
-    override val authSchemes: kotlin.collections.List<aws.smithy.kotlin.runtime.http.auth.HttpAuthScheme> = builder.authSchemes
-    public val endpointProvider: EndpointProvider = requireNotNull(builder.endpointProvider) { "endpointProvider is a required configuration property" }
+    override val authSchemes: kotlin.collections.List<aws.smithy.kotlin.runtime.http.auth.AuthScheme> = builder.authSchemes
+    public val endpointProvider: TestEndpointProvider = requireNotNull(builder.endpointProvider) { "endpointProvider is a required configuration property" }
     override val idempotencyTokenProvider: IdempotencyTokenProvider = builder.idempotencyTokenProvider ?: IdempotencyTokenProvider.Default
     override val interceptors: kotlin.collections.List<aws.smithy.kotlin.runtime.http.interceptors.HttpInterceptor> = builder.interceptors
     override val logMode: LogMode = builder.logMode ?: LogMode.Default
@@ -66,12 +66,12 @@ public class Config private constructor(builder: Builder) : HttpAuthConfig, Http
         override var clientName: String = "Test"
 
         /**
-         * Register new or override default [HttpAuthScheme]s configured for this client. By default, the set
+         * Register new or override default [AuthScheme]s configured for this client. By default, the set
          * of auth schemes configured comes from the service model. An auth scheme configured explicitly takes
          * precedence over the defaults and can be used to customize identity resolution and signing for specific
          * authentication schemes.
          */
-        override var authSchemes: kotlin.collections.List<aws.smithy.kotlin.runtime.http.auth.HttpAuthScheme> = emptyList()
+        override var authSchemes: kotlin.collections.List<aws.smithy.kotlin.runtime.http.auth.AuthScheme> = emptyList()
 
         /**
          * The endpoint provider used to determine where to make service requests. **This is an advanced config
@@ -81,7 +81,7 @@ public class Config private constructor(builder: Builder) : HttpAuthConfig, Http
          *
          * The inputs to endpoint resolution are defined on a per-service basis (see [EndpointParameters]).
          */
-        public var endpointProvider: EndpointProvider? = null
+        public var endpointProvider: TestEndpointProvider? = null
 
         /**
          * Override the default idempotency token generator. SDK clients will generate tokens for members
@@ -239,9 +239,9 @@ public class Config private constructor(builder: Builder) {
         // Expect logMode config value to override default to LogMode.Request
         val expectedConfigValues = """
     override val clientName: String = builder.clientName
-    override val authSchemes: kotlin.collections.List<aws.smithy.kotlin.runtime.http.auth.HttpAuthScheme> = builder.authSchemes
+    override val authSchemes: kotlin.collections.List<aws.smithy.kotlin.runtime.http.auth.AuthScheme> = builder.authSchemes
     public val customProp: Int? = builder.customProp
-    public val endpointProvider: EndpointProvider = requireNotNull(builder.endpointProvider) { "endpointProvider is a required configuration property" }
+    public val endpointProvider: TestEndpointProvider = requireNotNull(builder.endpointProvider) { "endpointProvider is a required configuration property" }
     override val idempotencyTokenProvider: IdempotencyTokenProvider = builder.idempotencyTokenProvider ?: IdempotencyTokenProvider.Default
     override val interceptors: kotlin.collections.List<aws.smithy.kotlin.runtime.http.interceptors.HttpInterceptor> = builder.interceptors
     override val logMode: LogMode = builder.logMode ?: LogMode.LogRequest

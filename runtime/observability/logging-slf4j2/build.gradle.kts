@@ -6,9 +6,6 @@ description = "Logging provider based on SLF4J 2"
 extra["displayName"] = "Smithy :: Kotlin :: Observability :: SLF4J2 binding"
 extra["moduleName"] = "aws.smithy.kotlin.runtime.telemetry"
 
-val coroutinesVersion: String by project
-val slf4jVersion: String by project
-
 kotlin {
     sourceSets {
         commonMain {
@@ -19,7 +16,7 @@ kotlin {
 
         jvmMain {
             dependencies {
-                implementation("org.slf4j:slf4j-api:$slf4jVersion")
+                implementation(libs.slf4j.api)
             }
         }
 

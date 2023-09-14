@@ -2,6 +2,7 @@
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
  * SPDX-License-Identifier: Apache-2.0
  */
+import aws.sdk.kotlin.gradle.dsl.configurePublishing
 plugins {
     kotlin("jvm")
     jacoco
@@ -16,26 +17,20 @@ val sdkVersion: String by project
 group = "software.amazon.smithy.kotlin"
 version = sdkVersion
 
-val smithyVersion: String by project
-val kotlinVersion: String by project
-val junitVersion: String by project
-val kotestVersion: String by project
-val jsoupVersion: String by project
-
 dependencies {
     implementation(kotlin("stdlib-jdk8"))
-    api("software.amazon.smithy:smithy-codegen-core:$smithyVersion")
-    api("software.amazon.smithy:smithy-waiters:$smithyVersion")
-    implementation("software.amazon.smithy:smithy-rules-engine:$smithyVersion")
-    implementation("software.amazon.smithy:smithy-aws-traits:$smithyVersion")
-    implementation("software.amazon.smithy:smithy-protocol-test-traits:$smithyVersion")
-    implementation("org.jsoup:jsoup:$jsoupVersion")
+    api(libs.smithy.codegen.core)
+    api(libs.smithy.waiters)
+    implementation(libs.smithy.rules.engine)
+    implementation(libs.smithy.aws.traits)
+    implementation(libs.smithy.protocol.test.traits)
+    implementation(libs.jsoup)
 
     // Test dependencies
-    testImplementation("org.junit.jupiter:junit-jupiter:$junitVersion")
-    testImplementation("io.kotest:kotest-assertions-core-jvm:$kotestVersion")
-    testImplementation("org.jetbrains.kotlin:kotlin-test:$kotlinVersion")
-    testImplementation("org.jetbrains.kotlin:kotlin-test-junit5:$kotlinVersion")
+    testImplementation(libs.junit.jupiter)
+    testImplementation(libs.kotest.assertions.core.jvm)
+    testImplementation(libs.kotlin.test)
+    testImplementation(libs.kotlin.test.junit5)
     testImplementation(project(":codegen:smithy-kotlin-codegen-testutils"))
 }
 
@@ -118,4 +113,4 @@ publishing {
     }
 }
 
-apply(from = rootProject.file("gradle/publish.gradle"))
+configurePublishing("smithy-kotlin")

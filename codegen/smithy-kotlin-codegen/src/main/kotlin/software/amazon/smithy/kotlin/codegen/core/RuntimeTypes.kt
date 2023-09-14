@@ -17,6 +17,7 @@ import software.amazon.smithy.kotlin.codegen.model.toSymbol
 object RuntimeTypes {
     object Http : RuntimeTypePackage(KotlinDependency.HTTP) {
         val HttpBody = symbol("HttpBody")
+        val HttpCall = symbol("HttpCall")
         val HttpMethod = symbol("HttpMethod")
         val ByteArrayContent = symbol("ByteArrayContent", subpackage = "content")
         val readAll = symbol("readAll")
@@ -41,7 +42,6 @@ object RuntimeTypes {
         }
 
         object Response : RuntimeTypePackage(KotlinDependency.HTTP, "response") {
-            val HttpCall = symbol("HttpCall")
             val HttpResponse = symbol("HttpResponse")
         }
     }
@@ -87,6 +87,7 @@ object RuntimeTypes {
             val Md5ChecksumInterceptor = symbol("Md5ChecksumInterceptor")
             val FlexibleChecksumsRequestInterceptor = symbol("FlexibleChecksumsRequestInterceptor")
             val FlexibleChecksumsResponseInterceptor = symbol("FlexibleChecksumsResponseInterceptor")
+            val ResponseLengthValidationInterceptor = symbol("ResponseLengthValidationInterceptor")
         }
     }
 
@@ -250,6 +251,7 @@ object RuntimeTypes {
             val XmlError = symbol("XmlError")
             val XmlSerializer = symbol("XmlSerializer")
             val XmlDeserializer = symbol("XmlDeserializer")
+            val XmlUnwrappedOutput = symbol("XmlUnwrappedOutput")
         }
 
         object SerdeFormUrl : RuntimeTypePackage(KotlinDependency.SERDE_FORM_URL) {
@@ -274,7 +276,7 @@ object RuntimeTypes {
         object Identity : RuntimeTypePackage(KotlinDependency.IDENTITY_API) {
             val AuthSchemeId = symbol("AuthSchemeId", "auth")
             val AuthSchemeProvider = symbol("AuthSchemeProvider", "auth")
-            val AuthSchemeOption = symbol("AuthSchemeOption", "auth")
+            val AuthOption = symbol("AuthOption", "auth")
 
             val IdentityProvider = symbol("IdentityProvider", "identity")
             val IdentityProviderConfig = symbol("IdentityProviderConfig", "identity")
@@ -301,7 +303,7 @@ object RuntimeTypes {
             val AnonymousIdentity = symbol("AnonymousIdentity")
             val AnonymousIdentityProvider = symbol("AnonymousIdentityProvider")
             val HttpAuthConfig = symbol("HttpAuthConfig")
-            val HttpAuthScheme = symbol("HttpAuthScheme")
+            val AuthScheme = symbol("AuthScheme")
 
             val BearerTokenAuthScheme = symbol("BearerTokenAuthScheme")
             val BearerTokenProviderConfig = symbol("BearerTokenProviderConfig")
@@ -342,7 +344,12 @@ object RuntimeTypes {
         object Flow {
             // NOTE: smithy-kotlin core has an API dependency on this already
             val Flow = "kotlinx.coroutines.flow.Flow".toSymbol()
+            val flowOf = "kotlinx.coroutines.flow.flowOf".toSymbol()
+            val merge = "kotlinx.coroutines.flow.merge".toSymbol()
             val map = "kotlinx.coroutines.flow.map".toSymbol()
+            val take = "kotlinx.coroutines.flow.take".toSymbol()
+            val drop = "kotlinx.coroutines.flow.drop".toSymbol()
+            val single = "kotlinx.coroutines.flow.single".toSymbol()
         }
     }
 

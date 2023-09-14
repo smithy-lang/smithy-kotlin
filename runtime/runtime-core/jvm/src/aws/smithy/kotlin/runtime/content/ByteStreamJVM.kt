@@ -8,7 +8,9 @@ package aws.smithy.kotlin.runtime.content
 import aws.smithy.kotlin.runtime.io.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import java.io.ByteArrayInputStream
 import java.io.File
+import java.io.InputStream
 import java.nio.file.Path
 import kotlin.io.use
 
@@ -86,3 +88,12 @@ private suspend fun File.writeAll(chan: SdkByteReadChannel): Long =
  * @return the number of bytes written
  */
 public suspend fun ByteStream.writeToFile(path: Path): Long = writeToFile(path.toFile())
+
+/**
+ * Create a blocking [InputStream] that reads from the underlying [ByteStream].
+ */
+public fun ByteStream.toInputStream(): InputStream = when (this) {
+    is ByteStream.Buffer -> ByteArrayInputStream(bytes())
+    is ByteStream.ChannelStream -> readFrom().toInputStream()
+    is ByteStream.SourceStream -> readFrom().buffer().inputStream()
+}

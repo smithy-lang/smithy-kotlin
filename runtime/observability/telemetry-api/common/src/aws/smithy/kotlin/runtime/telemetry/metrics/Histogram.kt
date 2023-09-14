@@ -39,8 +39,8 @@ public typealias DoubleHistogram = Histogram<Double>
  */
 @InternalApi
 public fun DoubleHistogram.recordSeconds(value: Duration, attributes: Attributes = emptyAttributes(), context: Context? = null) {
-    val ms = value.inWholeMilliseconds.toDouble()
-    val sec = ms / 1000
+    val ms = value.inWholeNanoseconds.toDouble()
+    val sec = ms / 1_000_000_000
     record(sec, attributes, context)
 }
 

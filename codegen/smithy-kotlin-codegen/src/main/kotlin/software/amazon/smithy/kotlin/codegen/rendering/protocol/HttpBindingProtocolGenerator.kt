@@ -12,7 +12,10 @@ import software.amazon.smithy.kotlin.codegen.core.*
 import software.amazon.smithy.kotlin.codegen.lang.KotlinTypes
 import software.amazon.smithy.kotlin.codegen.lang.toEscapedLiteral
 import software.amazon.smithy.kotlin.codegen.model.*
-import software.amazon.smithy.kotlin.codegen.rendering.serde.*
+import software.amazon.smithy.kotlin.codegen.rendering.serde.deserializerName
+import software.amazon.smithy.kotlin.codegen.rendering.serde.formatInstant
+import software.amazon.smithy.kotlin.codegen.rendering.serde.parseInstant
+import software.amazon.smithy.kotlin.codegen.rendering.serde.serializerName
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.knowledge.HttpBinding
 import software.amazon.smithy.model.shapes.*
@@ -70,7 +73,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
      * The function should have the following signature:
      *
      * ```
-     * suspend fun throwFooOperationError(context: ExecutionContext, response: HttpResponse): Nothing {
+     * suspend fun throwFooOperationError(context: ExecutionContext, call: HttpCall): Nothing {
      *     <-- CURRENT WRITER CONTEXT -->
      * }
      * ```
@@ -491,19 +494,11 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
 
             reference(outputSymbol, SymbolReference.ContextOption.DECLARE)
         }
-        val operationDeserializerSymbols = setOf(
-            RuntimeTypes.HttpClient.Operation.HttpDeserialize,
-            RuntimeTypes.Http.Response.HttpResponse,
-        )
 
         val resolver = getProtocolHttpBindingResolver(ctx.model, ctx.service)
         val responseBindings = resolver.responseBindings(op)
         ctx.delegator.useSymbolWriter(deserializerSymbol) { writer ->
-            // import all of http, http.response , and serde packages. All serializers requires one or more of the symbols
-            // and most require quite a few. Rather than try and figure out which specific ones are used just take them
-            // all to ensure all the various DSL builders are available, etc
             writer
-                .addImport(operationDeserializerSymbols)
                 .write("")
                 .openBlock(
                     "internal class #T: #T<#T> {",
@@ -526,7 +521,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         writer.addImport(RuntimeTypes.Http.isSuccess)
         writer.withBlock("if (!response.status.#T()) {", "}", RuntimeTypes.Http.isSuccess) {
             val errorHandlerFn = operationErrorHandler(ctx, op)
-            write("#T(context, response)", errorHandlerFn)
+            write("#T(context, call)", errorHandlerFn)
         }
     }
 
@@ -580,11 +575,12 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         writer
             .addImport(RuntimeTypes.Core.ExecutionContext)
             .openBlock(
-                "override suspend fun deserialize(context: #T, response: #T): #T {",
+                "override suspend fun deserialize(context: #T, call: #T): #T {",
                 RuntimeTypes.Core.ExecutionContext,
-                RuntimeTypes.Http.Response.HttpResponse,
+                RuntimeTypes.Http.HttpCall,
                 outputSymbol,
             )
+            .write("val response = call.response")
             .call {
                 if (outputSymbol.shape?.isError == false && op != null) {
                     // handle operation errors
@@ -673,7 +669,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         writer: KotlinWriter,
     ) {
         val eventStreamDeserializerFn = eventStreamResponseHandler(ctx, op)
-        writer.write("#T(builder, response.body)", eventStreamDeserializerFn)
+        writer.write("#T(builder, call)", eventStreamDeserializerFn)
     }
 
     /**

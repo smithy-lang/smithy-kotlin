@@ -13,6 +13,7 @@ import software.amazon.smithy.kotlin.codegen.utils.dq
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.knowledge.NullableIndex
 import software.amazon.smithy.model.shapes.*
+import software.amazon.smithy.model.traits.ClientOptionalTrait
 import software.amazon.smithy.model.traits.DefaultTrait
 import software.amazon.smithy.model.traits.SparseTrait
 import software.amazon.smithy.model.traits.StreamingTrait
@@ -183,8 +184,10 @@ class KotlinSymbolProvider(private val model: Model, private val settings: Kotli
             .apply {
                 if (nullableIndex.isMemberNullable(shape, NullableIndex.CheckMode.CLIENT_ZERO_VALUE_V1_NO_INPUT)) nullable()
 
-                shape.getTrait<DefaultTrait>()?.let {
-                    defaultValue(it.getDefaultValue(targetShape), DefaultValueType.MODELED)
+                if (!shape.hasTrait<ClientOptionalTrait>()) { // @ClientOptional supersedes @default
+                    shape.getTrait<DefaultTrait>()?.let {
+                        defaultValue(it.getDefaultValue(targetShape), DefaultValueType.MODELED)
+                    }
                 }
             }
             .build()
@@ -209,13 +212,28 @@ class KotlinSymbolProvider(private val model: Model, private val settings: Kotli
         }
     }
 
-    private fun DefaultTrait.getDefaultValue(targetShape: Shape): String? = when {
-        toNode().toString() == "null" || targetShape is BlobShape && toNode().toString() == "" -> null
-        toNode().isNumberNode -> getDefaultValueForNumber(targetShape, toNode().toString())
-        toNode().isArrayNode -> "listOf()"
-        toNode().isObjectNode -> "mapOf()"
-        toNode().isStringNode -> toNode().toString().dq()
-        else -> toNode().toString()
+    private fun DefaultTrait.getDefaultValue(targetShape: Shape): String? {
+        val node = toNode()
+        return when {
+            node.toString() == "null" || targetShape is BlobShape && node.toString() == "" -> null
+
+            // Check if target is an enum before treating the default like a regular number/string
+            targetShape.isEnum -> {
+                val enumSymbol = toSymbol(targetShape)
+                val arg = when {
+                    targetShape.isStringShape -> node.toString().dq()
+                    targetShape.isIntEnumShape -> getDefaultValueForNumber(ShapeType.INTEGER, node.toString())
+                    else -> throw CodegenException("Unknown enum type for $targetShape")
+                }
+                "${enumSymbol.fullName}.fromValue($arg)"
+            }
+
+            node.isNumberNode -> getDefaultValueForNumber(targetShape.type, node.toString())
+            node.isArrayNode -> "listOf()"
+            node.isObjectNode -> "mapOf()"
+            node.isStringNode -> node.toString().dq()
+            else -> node.toString()
+        }
     }
 
     override fun timestampShape(shape: TimestampShape?): Symbol {
@@ -274,12 +292,12 @@ class KotlinSymbolProvider(private val model: Model, private val settings: Kotli
         return builder
     }
 
-    private fun getDefaultValueForNumber(shape: Shape, value: String) = when (shape) {
-        is LongShape -> "${value}L"
-        is FloatShape -> "${value}f"
-        is DoubleShape -> if (value.matches("[0-9]*\\.[0-9]+".toRegex())) value else "$value.0"
-        is ShortShape -> "$value.toShort()"
-        is ByteShape -> "$value.toByte()"
+    private fun getDefaultValueForNumber(type: ShapeType, value: String) = when (type) {
+        ShapeType.LONG -> "${value}L"
+        ShapeType.FLOAT -> "${value}f"
+        ShapeType.DOUBLE -> if (value.matches("[0-9]*\\.[0-9]+".toRegex())) value else "$value.0"
+        ShapeType.SHORT -> "$value.toShort()"
+        ShapeType.BYTE -> "$value.toByte()"
         else -> value
     }
 

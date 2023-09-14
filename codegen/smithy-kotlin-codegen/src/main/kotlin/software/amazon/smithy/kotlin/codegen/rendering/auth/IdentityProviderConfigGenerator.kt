@@ -9,6 +9,7 @@ import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.kotlin.codegen.KotlinSettings
 import software.amazon.smithy.kotlin.codegen.core.KotlinWriter
 import software.amazon.smithy.kotlin.codegen.core.RuntimeTypes
+import software.amazon.smithy.kotlin.codegen.core.clientName
 import software.amazon.smithy.kotlin.codegen.core.withBlock
 import software.amazon.smithy.kotlin.codegen.model.buildSymbol
 import software.amazon.smithy.kotlin.codegen.model.knowledge.AuthIndex
@@ -21,7 +22,8 @@ import software.amazon.smithy.kotlin.codegen.rendering.protocol.ProtocolGenerato
 class IdentityProviderConfigGenerator {
     companion object {
         fun getSymbol(settings: KotlinSettings): Symbol = buildSymbol {
-            name = "IdentityProviderConfigAdapter"
+            val prefix = clientName(settings.sdkId)
+            name = "${prefix}IdentityProviderConfigAdapter"
             namespace = "${settings.pkg.name}.auth"
             definitionFile = "$name.kt"
         }

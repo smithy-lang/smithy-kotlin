@@ -5,8 +5,8 @@
 
 package aws.smithy.kotlin.runtime.http.operation
 
+import aws.smithy.kotlin.runtime.auth.AuthOption
 import aws.smithy.kotlin.runtime.auth.AuthSchemeId
-import aws.smithy.kotlin.runtime.auth.AuthSchemeOption
 import aws.smithy.kotlin.runtime.client.endpoints.Endpoint
 import aws.smithy.kotlin.runtime.http.auth.*
 import aws.smithy.kotlin.runtime.http.interceptors.InterceptorExecutor
@@ -45,7 +45,7 @@ class HttpAuthHandlerTest {
         interceptorExec.readBeforeExecution(Unit)
 
         val idpConfig = AnonymousIdentityProvider.asIdentityProviderConfig()
-        val scheme = object : HttpAuthScheme {
+        val scheme = object : AuthScheme {
             override val schemeId: AuthSchemeId = AuthSchemeId.Anonymous
             override fun identityProvider(identityProviderConfig: IdentityProviderConfig): IdentityProvider = object : IdentityProvider {
                 override suspend fun resolve(attributes: Attributes): Identity {
@@ -66,10 +66,10 @@ class HttpAuthHandlerTest {
             val attrs = attributesOf {
                 testAttrKey to "testing"
             }
-            listOf(AuthSchemeOption(AuthSchemeId.Anonymous, attrs))
+            listOf(AuthOption(AuthSchemeId.Anonymous, attrs))
         }
 
-        val schemes = listOf(scheme).associateBy(HttpAuthScheme::schemeId)
+        val schemes = listOf(scheme).associateBy(AuthScheme::schemeId)
         val authConfig = OperationAuthConfig(resolver, schemes, idpConfig)
         val op = AuthHandler<Unit, Unit>(inner, interceptorExec, authConfig)
         val request = SdkHttpRequest(ctx, HttpRequestBuilder())

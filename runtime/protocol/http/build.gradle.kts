@@ -14,12 +14,13 @@ kotlin {
             dependencies {
                 // exposes: io/ByteStream
                 api(project(":runtime:runtime-core"))
+                implementation(project(":runtime:observability:telemetry-api"))
             }
         }
 
         commonTest {
             dependencies {
-                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:$coroutinesVersion")
+                implementation(libs.kotlinx.coroutines.test)
             }
         }
 

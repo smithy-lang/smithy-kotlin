@@ -11,6 +11,8 @@ import aws.smithy.kotlin.runtime.content.BigInteger
 import aws.smithy.kotlin.runtime.content.Document
 import aws.smithy.kotlin.runtime.serde.*
 
+private const val FIRST_FIELD_INDEX: Int = 0
+
 // Represents aspects of SdkFieldDescriptor that are particular to the Xml format
 internal sealed class FieldLocation {
     // specifies the mapping to a sdk field index
@@ -69,7 +71,8 @@ public class XmlDeserializer(
             throw DeserializationException("Expected last parsed token to be ${XmlToken.BeginElement::class} but was ${reader.lastToken}")
         }
 
-        return XmlStructDeserializer(descriptor, reader.subTreeReader(), parentToken, attribFields)
+        val unwrapped = descriptor.hasTrait<XmlUnwrappedOutput>()
+        return XmlStructDeserializer(descriptor, reader.subTreeReader(XmlStreamReader.SubtreeStartDepth.CURRENT), parentToken, attribFields, unwrapped)
     }
 
     override fun deserializeList(descriptor: SdkFieldDescriptor): Deserializer.ElementIterator {
@@ -213,16 +216,22 @@ internal class XmlListDeserializer(
  * @param parentToken initial token of associated structure
  * @param parsedFieldLocations list of [FieldLocation] representing values able to be loaded into deserialized instances
  */
-internal class XmlStructDeserializer(
+private class XmlStructDeserializer(
     private val objDescriptor: SdkObjectDescriptor,
-    private val reader: XmlStreamReader,
+    reader: XmlStreamReader,
     private val parentToken: XmlToken.BeginElement,
     private val parsedFieldLocations: MutableList<FieldLocation> = mutableListOf(),
+    private val unwrapped: Boolean,
 ) : Deserializer.FieldIterator {
     // Used to track direct deserialization or further nesting between calls to findNextFieldIndex() and deserialize<Type>()
     private var reentryFlag: Boolean = false
 
+    private val reader: XmlStreamReader = if (unwrapped) reader else reader.subTreeReader(XmlStreamReader.SubtreeStartDepth.CHILD)
+
     override fun findNextFieldIndex(): Int? {
+        if (unwrapped) {
+            return if (reader.peek() is XmlToken.Text) FIRST_FIELD_INDEX else null
+        }
         if (inNestedMode()) {
             // Returning from a nested struct call.  Nested deserializer consumed
             // tokens so clear them here to avoid processing stale state
@@ -251,6 +260,10 @@ internal class XmlStructDeserializer(
     }
 
     private fun <T> deserializeValue(transform: ((String) -> T)): T {
+        if (unwrapped) {
+            val value = reader.takeNextAs<XmlToken.Text>().value ?: ""
+            return transform(value)
+        }
         // Set and validate mode
         reentryFlag = false
         if (parsedFieldLocations.isEmpty()) throw DeserializationException("matchedFields is empty, was findNextFieldIndex() called?")
@@ -383,16 +396,20 @@ private fun SdkObjectDescriptor.fieldTokenMatcher(fieldDescriptor: SdkFieldDescr
     return fieldDescriptor.nameMatches(beginElement.name.tag)
 }
 
-// Return the next token of the specified type or throw [DeserializerStateException] if incorrect type.
+/**
+ * Return the next token of the specified type or throw [DeserializationException] if incorrect type.
+ */
 internal inline fun <reified TExpected : XmlToken> XmlStreamReader.takeNextAs(): TExpected {
     val token = this.nextToken() ?: throw DeserializationException("Expected ${TExpected::class} but instead found null")
     requireToken<TExpected>(token)
     return token as TExpected
 }
 
-// require that the given token be of type [TExpected] or else throw an exception
+/**
+ * Require that the given token be of type [TExpected] or else throw an exception
+ */
 internal inline fun <reified TExpected> requireToken(token: XmlToken) {
     if (token::class != TExpected::class) {
-        throw DeserializationException("expected ${TExpected::class}; found ${token::class} ($token)")
+        throw DeserializationException("Expected ${TExpected::class}; found ${token::class} ($token)")
     }
 }

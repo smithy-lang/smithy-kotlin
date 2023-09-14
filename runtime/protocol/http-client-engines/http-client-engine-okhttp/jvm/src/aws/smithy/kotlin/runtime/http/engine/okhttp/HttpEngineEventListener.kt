@@ -5,6 +5,7 @@
 package aws.smithy.kotlin.runtime.http.engine.okhttp
 
 import aws.smithy.kotlin.runtime.ExperimentalApi
+import aws.smithy.kotlin.runtime.http.engine.EngineAttributes
 import aws.smithy.kotlin.runtime.http.engine.internal.HttpClientMetrics
 import aws.smithy.kotlin.runtime.net.HostResolver
 import aws.smithy.kotlin.runtime.net.toHostAddress
@@ -54,6 +55,8 @@ internal class HttpEngineEventListener(
     private var signaledConnectAcquireDuration = false
     private var dnsStartTime: TimeMark? = null
 
+    private var requestTimeEnd: TimeMark? = null
+
     private inline fun trace(crossinline msg: MessageSupplier) {
         logger.trace { msg() }
     }
@@ -61,6 +64,8 @@ internal class HttpEngineEventListener(
     private inline fun trace(throwable: Throwable, crossinline msg: MessageSupplier) {
         logger.trace(throwable) { msg() }
     }
+
+    // Method ordering taken from https://square.github.io/okhttp/features/events/#eventlistener
 
     override fun callStart(call: Call) {
         val now = TimeSource.Monotonic.markNow()
@@ -70,26 +75,30 @@ internal class HttpEngineEventListener(
         trace { "call started" }
     }
 
-    override fun callEnd(call: Call) {
-        metrics.queuedRequests = dispatcher.queuedCallsCount().toLong()
-        metrics.inFlightRequests = dispatcher.runningCallsCount().toLong()
-        trace { "call complete" }
-        traceSpan.close()
+    override fun dnsStart(call: Call, domainName: String) {
+        dnsStartTime = TimeSource.Monotonic.markNow()
+        if (!signaledQueuedDuration) {
+            queuedDuration = checkNotNull(callTimeStart).elapsedNow()
+            metrics.requestsQueuedDuration.recordSeconds(queuedDuration)
+            signaledQueuedDuration = true
+        }
+        trace { "dns query: domain=$domainName" }
     }
 
-    override fun callFailed(call: Call, ioe: IOException) {
-        metrics.queuedRequests = dispatcher.queuedCallsCount().toLong()
-        metrics.inFlightRequests = dispatcher.runningCallsCount().toLong()
-        trace(ioe) { "call failed" }
-        traceSpan.recordException(ioe, true)
-        traceSpan.setStatus(SpanStatus.ERROR)
-        traceSpan.close()
-    }
+    override fun dnsEnd(call: Call, domainName: String, inetAddressList: List<InetAddress>) =
+        trace { "dns resolved: domain=$domainName; records=$inetAddressList" }
 
-    override fun canceled(call: Call) = trace { "call cancelled" }
+    override fun proxySelectStart(call: Call, url: HttpUrl) = trace { "proxy select start: url=$url" }
+
+    override fun proxySelectEnd(call: Call, url: HttpUrl, proxies: List<Proxy>) =
+        trace { "proxy select end: url=$url; proxies=$proxies" }
 
     override fun connectStart(call: Call, inetSocketAddress: InetSocketAddress, proxy: Proxy) =
         trace { "starting connection: addr=$inetSocketAddress; proxy=$proxy" }
+
+    override fun secureConnectStart(call: Call) = trace { "initiating TLS connection" }
+
+    override fun secureConnectEnd(call: Call, handshake: Handshake?) = trace { "TLS connect end: handshake=$handshake" }
 
     override fun connectEnd(call: Call, inetSocketAddress: InetSocketAddress, proxy: Proxy, protocol: Protocol?) =
         trace { "connection established: addr=$inetSocketAddress; proxy=$proxy; protocol=$protocol" }
@@ -131,41 +140,37 @@ internal class HttpEngineEventListener(
         trace { "connection acquired: conn(id=$connId)=$connection; connPool: total=${pool.connectionCount()}, idle=${pool.idleConnectionCount()}" }
     }
 
-    override fun connectionReleased(call: Call, connection: Connection) {
-        metrics.acquiredConnections = pool.connectionCount().toLong()
-        metrics.idleConnections = pool.idleConnectionCount().toLong()
-        val connId = System.identityHashCode(connection)
-        trace { "connection released: conn(id=$connId)=$connection; connPool: total=${pool.connectionCount()}, idle=${pool.idleConnectionCount()}" }
-    }
+    override fun requestHeadersStart(call: Call) = trace { "sending request headers" }
 
-    override fun dnsStart(call: Call, domainName: String) {
-        dnsStartTime = TimeSource.Monotonic.markNow()
-        if (!signaledQueuedDuration) {
-            queuedDuration = checkNotNull(callTimeStart).elapsedNow()
-            metrics.requestsQueuedDuration.recordSeconds(queuedDuration)
-            signaledQueuedDuration = true
+    override fun requestHeadersEnd(call: Call, request: Request) {
+        if (request.body == null) {
+            requestTimeEnd = TimeSource.Monotonic.markNow()
         }
-        trace { "dns query: domain=$domainName" }
+
+        trace { "finished sending request headers" }
     }
-
-    override fun dnsEnd(call: Call, domainName: String, inetAddressList: List<InetAddress>) =
-        trace { "dns resolved: domain=$domainName; records=$inetAddressList" }
-
-    override fun proxySelectStart(call: Call, url: HttpUrl) = trace { "proxy select start: url=$url" }
-
-    override fun proxySelectEnd(call: Call, url: HttpUrl, proxies: List<Proxy>) =
-        trace { "proxy select end: url=$url; proxies=$proxies" }
 
     override fun requestBodyStart(call: Call) = trace { "sending request body" }
 
-    override fun requestBodyEnd(call: Call, byteCount: Long) =
+    override fun requestBodyEnd(call: Call, byteCount: Long) {
+        requestTimeEnd = TimeSource.Monotonic.markNow()
         trace { "finished sending request body: bytesSent=$byteCount" }
+    }
 
     override fun requestFailed(call: Call, ioe: IOException) = trace(ioe) { "request failed" }
 
-    override fun requestHeadersStart(call: Call) = trace { "sending request headers" }
+    override fun responseHeadersStart(call: Call) {
+        requestTimeEnd?.elapsedNow()?.let { ttfb ->
+            metrics.timeToFirstByteDuration.recordSeconds(ttfb)
+            call.request().tag<SdkRequestTag>()?.execContext?.set(EngineAttributes.TimeToFirstByte, ttfb)
+        }
+        trace { "response headers start" }
+    }
 
-    override fun requestHeadersEnd(call: Call, request: Request) = trace { "finished sending request headers" }
+    override fun responseHeadersEnd(call: Call, response: Response) {
+        val contentLength = response.body.contentLength()
+        trace { "response headers end: contentLengthHeader=$contentLength" }
+    }
 
     override fun responseBodyStart(call: Call) = trace { "response body available" }
 
@@ -174,16 +179,30 @@ internal class HttpEngineEventListener(
 
     override fun responseFailed(call: Call, ioe: IOException) = trace(ioe) { "response failed" }
 
-    override fun responseHeadersStart(call: Call) = trace { "response headers start" }
-
-    override fun responseHeadersEnd(call: Call, response: Response) {
-        val contentLength = response.body.contentLength()
-        trace { "response headers end: contentLengthHeader=$contentLength" }
+    override fun connectionReleased(call: Call, connection: Connection) {
+        metrics.acquiredConnections = pool.connectionCount().toLong()
+        metrics.idleConnections = pool.idleConnectionCount().toLong()
+        val connId = System.identityHashCode(connection)
+        trace { "connection released: conn(id=$connId)=$connection; connPool: total=${pool.connectionCount()}, idle=${pool.idleConnectionCount()}" }
     }
 
-    override fun secureConnectStart(call: Call) = trace { "initiating TLS connection" }
+    override fun callEnd(call: Call) {
+        metrics.queuedRequests = dispatcher.queuedCallsCount().toLong()
+        metrics.inFlightRequests = dispatcher.runningCallsCount().toLong()
+        trace { "call complete" }
+        traceSpan.close()
+    }
 
-    override fun secureConnectEnd(call: Call, handshake: Handshake?) = trace { "TLS connect end: handshake=$handshake" }
+    override fun callFailed(call: Call, ioe: IOException) {
+        metrics.queuedRequests = dispatcher.queuedCallsCount().toLong()
+        metrics.inFlightRequests = dispatcher.runningCallsCount().toLong()
+        trace(ioe) { "call failed" }
+        traceSpan.recordException(ioe, true)
+        traceSpan.setStatus(SpanStatus.ERROR)
+        traceSpan.close()
+    }
+
+    override fun canceled(call: Call) = trace { "call cancelled" }
 
     // NOTE: we don't configure a cache and should never get the rest of these events,
     // seeing these messages logged means we configured something wrong

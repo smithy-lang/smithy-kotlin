@@ -6,9 +6,10 @@
 package aws.smithy.kotlin.runtime.http.operation
 
 import aws.smithy.kotlin.runtime.InternalApi
+import aws.smithy.kotlin.runtime.client.SdkClientOption
 import aws.smithy.kotlin.runtime.http.HttpHandler
+import aws.smithy.kotlin.runtime.http.complete
 import aws.smithy.kotlin.runtime.http.interceptors.HttpInterceptor
-import aws.smithy.kotlin.runtime.http.response.complete
 import aws.smithy.kotlin.runtime.operation.ExecutionContext
 import aws.smithy.kotlin.runtime.telemetry.trace.withSpan
 import aws.smithy.kotlin.runtime.util.*
@@ -122,13 +123,33 @@ public class SdkHttpOperationBuilder<I, O> (
     public var serializer: HttpSerialize<I>? = null
     public var deserializer: HttpDeserialize<O>? = null
     public val execution: SdkOperationExecution<I, O> = SdkOperationExecution()
-    public val context: HttpOperationContext.Builder = HttpOperationContext.Builder()
+    public val context: ExecutionContext = ExecutionContext()
+
+    /**
+     * The name of the operation
+     */
+    public var operationName: String? = null
+
+    /**
+     * The name of the service the request is sent to
+     */
+    public var serviceName: String? = null
+
+    /**
+     * (Optional) prefix to prepend to a (resolved) hostname
+     */
+    public var hostPrefix: String? = null
 
     public fun build(): SdkHttpOperation<I, O> {
         val opSerializer = requireNotNull(serializer) { "SdkHttpOperation.serializer must not be null" }
         val opDeserializer = requireNotNull(deserializer) { "SdkHttpOperation.deserializer must not be null" }
+        requireNotNull(operationName) { "operationName is a required HTTP execution attribute" }
+        requireNotNull(serviceName) { "serviceName is a required HTTP execution attribute" }
+        context[SdkClientOption.OperationName] = operationName!!
+        context[SdkClientOption.ServiceName] = serviceName!!
+        hostPrefix?.let { context[HttpOperationContext.HostPrefix] = it }
         val typeInfo = OperationTypeInfo(inputType, outputType)
-        return SdkHttpOperation(execution, context.build(), opSerializer, opDeserializer, typeInfo, telemetry)
+        return SdkHttpOperation(execution, context, opSerializer, opDeserializer, typeInfo, telemetry)
     }
 }
 
@@ -136,7 +157,7 @@ public class SdkHttpOperationBuilder<I, O> (
  * Configure HTTP operation context elements
  */
 @InternalApi
-public inline fun <I, O> SdkHttpOperationBuilder<I, O>.context(block: HttpOperationContext.Builder.() -> Unit) {
+public inline fun <I, O> SdkHttpOperationBuilder<I, O>.context(block: ExecutionContext.() -> Unit) {
     context.apply(block)
 }
 

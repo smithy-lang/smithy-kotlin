@@ -2,6 +2,7 @@
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
  * SPDX-License-Identifier: Apache-2.0
  */
+import aws.sdk.kotlin.gradle.dsl.skipPublishing
 plugins {
     kotlin("jvm")
 }
@@ -9,15 +10,10 @@ plugins {
 extra["displayName"] = "Smithy :: Kotlin :: Compile :: Test"
 extra["moduleName"] = "software.amazon.smithy.kotlin.codegen"
 
-val smithyVersion: String by project
-val kotestVersion: String by project
-val kotlinVersion: String by project
-val junitVersion: String by project
-val kotlinCompileTestingVersion: String by project
+skipPublishing()
 
 dependencies {
     testImplementation(project(":codegen:smithy-kotlin-codegen"))
-    testImplementation(project(":runtime"))
     testImplementation(project(":runtime:runtime-core"))
     testImplementation(project(":runtime:protocol:http"))
     testImplementation(project(":runtime:protocol:http-client-engines:http-client-engine-default"))
@@ -25,13 +21,13 @@ dependencies {
     testImplementation(project(":runtime:observability:telemetry-api"))
     testImplementation(project(":runtime:observability:telemetry-defaults"))
 
-    testImplementation("software.amazon.smithy:smithy-protocol-test-traits:$smithyVersion")
-    testImplementation("software.amazon.smithy:smithy-aws-traits:$smithyVersion")
+    testImplementation(libs.smithy.protocol.test.traits)
+    testImplementation(libs.smithy.aws.traits)
 
-    testImplementation("org.junit.jupiter:junit-jupiter:$junitVersion")
-    testImplementation("io.kotest:kotest-assertions-core-jvm:$kotestVersion")
-    testImplementation("com.github.tschuchortdev:kotlin-compile-testing:$kotlinCompileTestingVersion")
-    testImplementation("org.jetbrains.kotlin:kotlin-test-junit5:$kotlinVersion")
+    testImplementation(libs.junit.jupiter)
+    testImplementation(libs.kotest.assertions.core.jvm)
+    testImplementation(libs.kotlin.compile.testing)
+    testImplementation(libs.kotlin.test.junit5)
 }
 
 tasks.test {

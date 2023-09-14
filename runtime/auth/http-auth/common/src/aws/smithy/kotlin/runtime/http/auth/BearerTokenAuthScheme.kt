@@ -10,7 +10,7 @@ import aws.smithy.kotlin.runtime.auth.AuthSchemeId
 /**
  * HTTP auth scheme for HTTP Bearer authentication as defined in [RFC 6750](https://tools.ietf.org/html/rfc6750.html)
  */
-public class BearerTokenAuthScheme : HttpAuthScheme {
+public class BearerTokenAuthScheme : AuthScheme {
     override val schemeId: AuthSchemeId = AuthSchemeId.HttpBearer
     override val signer: HttpSigner = BearerTokenSigner()
 }

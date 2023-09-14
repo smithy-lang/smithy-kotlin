@@ -6,7 +6,6 @@
 package aws.smithy.kotlin.runtime.util
 
 import aws.smithy.kotlin.runtime.InternalApi
-import kotlin.jvm.JvmName
 
 /**
  * Determines the length of a collection. This is a synonym for [Collection.size].

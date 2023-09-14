@@ -622,7 +622,7 @@ it is not well defined when or how many times a stream will be consumed (e.g. AW
 stream to calculate the payload hash. The payload is then consumed a second time when being sent out on the wire to
 the remote service). 
 
-The ability to implement a progress listener will be enabled by [per operation config](TODO) and interceptors.
+The ability to implement a progress listener is enabled by [per operation config](per-op-config.md) and interceptors.
 
 A user wishing to monitor upload progress would simply need to wrap the outgoing response body in the 
 `modifyBeforeTransmit` hook (which is guaranteed to be the last hook before the request is transmitted). A download

@@ -109,7 +109,7 @@ public actual sealed interface SdkBufferedSource : SdkSource, ReadableByteChanne
     public actual fun readUtf8(byteCount: Long): String
 
     /**
-     * Get an input stream that writes to this source
+     * Get an input stream that reads from this source
      */
     public fun inputStream(): InputStream
 

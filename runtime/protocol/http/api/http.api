@@ -89,6 +89,19 @@ public final class aws/smithy/kotlin/runtime/http/HttpBodyKt {
 	public static final fun toHttpBody ([B)Laws/smithy/kotlin/runtime/http/HttpBody;
 }
 
+public class aws/smithy/kotlin/runtime/http/HttpCall : kotlinx/coroutines/CoroutineScope {
+	public fun <init> (Laws/smithy/kotlin/runtime/http/request/HttpRequest;Laws/smithy/kotlin/runtime/http/response/HttpResponse;Laws/smithy/kotlin/runtime/time/Instant;Laws/smithy/kotlin/runtime/time/Instant;Lkotlin/coroutines/CoroutineContext;)V
+	public synthetic fun <init> (Laws/smithy/kotlin/runtime/http/request/HttpRequest;Laws/smithy/kotlin/runtime/http/response/HttpResponse;Laws/smithy/kotlin/runtime/time/Instant;Laws/smithy/kotlin/runtime/time/Instant;Lkotlin/coroutines/CoroutineContext;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun getCoroutineContext ()Lkotlin/coroutines/CoroutineContext;
+	public final fun getRequest ()Laws/smithy/kotlin/runtime/http/request/HttpRequest;
+	public final fun getRequestTime ()Laws/smithy/kotlin/runtime/time/Instant;
+	public final fun getResponse ()Laws/smithy/kotlin/runtime/http/response/HttpResponse;
+	public final fun getResponseTime ()Laws/smithy/kotlin/runtime/time/Instant;
+}
+
+public final class aws/smithy/kotlin/runtime/http/HttpCallKt {
+}
+
 public final class aws/smithy/kotlin/runtime/http/HttpErrorCode : java/lang/Enum {
 	public static final field CONNECTION_ACQUIRE_TIMEOUT Laws/smithy/kotlin/runtime/http/HttpErrorCode;
 	public static final field CONNECTION_CLOSED Laws/smithy/kotlin/runtime/http/HttpErrorCode;
@@ -280,45 +293,17 @@ public final class aws/smithy/kotlin/runtime/http/request/HttpRequestKt {
 	public static final fun toBuilder (Laws/smithy/kotlin/runtime/http/request/HttpRequest;)Laws/smithy/kotlin/runtime/http/request/HttpRequestBuilder;
 }
 
-public final class aws/smithy/kotlin/runtime/http/response/HttpCall {
-	public fun <init> (Laws/smithy/kotlin/runtime/http/request/HttpRequest;Laws/smithy/kotlin/runtime/http/response/HttpResponse;Laws/smithy/kotlin/runtime/time/Instant;Laws/smithy/kotlin/runtime/time/Instant;Lkotlin/coroutines/CoroutineContext;)V
-	public synthetic fun <init> (Laws/smithy/kotlin/runtime/http/request/HttpRequest;Laws/smithy/kotlin/runtime/http/response/HttpResponse;Laws/smithy/kotlin/runtime/time/Instant;Laws/smithy/kotlin/runtime/time/Instant;Lkotlin/coroutines/CoroutineContext;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public final fun component1 ()Laws/smithy/kotlin/runtime/http/request/HttpRequest;
-	public final fun component2 ()Laws/smithy/kotlin/runtime/http/response/HttpResponse;
-	public final fun component3 ()Laws/smithy/kotlin/runtime/time/Instant;
-	public final fun component4 ()Laws/smithy/kotlin/runtime/time/Instant;
-	public final fun component5 ()Lkotlin/coroutines/CoroutineContext;
-	public final fun copy (Laws/smithy/kotlin/runtime/http/request/HttpRequest;Laws/smithy/kotlin/runtime/http/response/HttpResponse;Laws/smithy/kotlin/runtime/time/Instant;Laws/smithy/kotlin/runtime/time/Instant;Lkotlin/coroutines/CoroutineContext;)Laws/smithy/kotlin/runtime/http/response/HttpCall;
-	public static synthetic fun copy$default (Laws/smithy/kotlin/runtime/http/response/HttpCall;Laws/smithy/kotlin/runtime/http/request/HttpRequest;Laws/smithy/kotlin/runtime/http/response/HttpResponse;Laws/smithy/kotlin/runtime/time/Instant;Laws/smithy/kotlin/runtime/time/Instant;Lkotlin/coroutines/CoroutineContext;ILjava/lang/Object;)Laws/smithy/kotlin/runtime/http/response/HttpCall;
-	public fun equals (Ljava/lang/Object;)Z
-	public final fun getCallContext ()Lkotlin/coroutines/CoroutineContext;
-	public final fun getRequest ()Laws/smithy/kotlin/runtime/http/request/HttpRequest;
-	public final fun getRequestTime ()Laws/smithy/kotlin/runtime/time/Instant;
-	public final fun getResponse ()Laws/smithy/kotlin/runtime/http/response/HttpResponse;
-	public final fun getResponseTime ()Laws/smithy/kotlin/runtime/time/Instant;
-	public fun hashCode ()I
-	public fun toString ()Ljava/lang/String;
-}
-
-public final class aws/smithy/kotlin/runtime/http/response/HttpCallKt {
-}
-
-public final class aws/smithy/kotlin/runtime/http/response/HttpResponse : aws/smithy/kotlin/runtime/ProtocolResponse {
-	public fun <init> (Laws/smithy/kotlin/runtime/http/HttpStatusCode;Laws/smithy/kotlin/runtime/http/Headers;Laws/smithy/kotlin/runtime/http/HttpBody;)V
-	public final fun component1 ()Laws/smithy/kotlin/runtime/http/HttpStatusCode;
-	public final fun component2 ()Laws/smithy/kotlin/runtime/http/Headers;
-	public final fun component3 ()Laws/smithy/kotlin/runtime/http/HttpBody;
-	public final fun copy (Laws/smithy/kotlin/runtime/http/HttpStatusCode;Laws/smithy/kotlin/runtime/http/Headers;Laws/smithy/kotlin/runtime/http/HttpBody;)Laws/smithy/kotlin/runtime/http/response/HttpResponse;
-	public static synthetic fun copy$default (Laws/smithy/kotlin/runtime/http/response/HttpResponse;Laws/smithy/kotlin/runtime/http/HttpStatusCode;Laws/smithy/kotlin/runtime/http/Headers;Laws/smithy/kotlin/runtime/http/HttpBody;ILjava/lang/Object;)Laws/smithy/kotlin/runtime/http/response/HttpResponse;
-	public fun equals (Ljava/lang/Object;)Z
-	public final fun getBody ()Laws/smithy/kotlin/runtime/http/HttpBody;
-	public final fun getHeaders ()Laws/smithy/kotlin/runtime/http/Headers;
-	public final fun getStatus ()Laws/smithy/kotlin/runtime/http/HttpStatusCode;
-	public fun hashCode ()I
-	public fun toString ()Ljava/lang/String;
+public abstract interface class aws/smithy/kotlin/runtime/http/response/HttpResponse : aws/smithy/kotlin/runtime/ProtocolResponse {
+	public abstract fun getBody ()Laws/smithy/kotlin/runtime/http/HttpBody;
+	public abstract fun getHeaders ()Laws/smithy/kotlin/runtime/http/Headers;
+	public abstract fun getStatus ()Laws/smithy/kotlin/runtime/http/HttpStatusCode;
 }
 
 public final class aws/smithy/kotlin/runtime/http/response/HttpResponseKt {
+	public static final fun HttpResponse (Laws/smithy/kotlin/runtime/http/HttpStatusCode;Laws/smithy/kotlin/runtime/http/Headers;Laws/smithy/kotlin/runtime/http/HttpBody;)Laws/smithy/kotlin/runtime/http/response/HttpResponse;
+	public static synthetic fun HttpResponse$default (Laws/smithy/kotlin/runtime/http/HttpStatusCode;Laws/smithy/kotlin/runtime/http/Headers;Laws/smithy/kotlin/runtime/http/HttpBody;ILjava/lang/Object;)Laws/smithy/kotlin/runtime/http/response/HttpResponse;
+	public static final fun copy (Laws/smithy/kotlin/runtime/http/response/HttpResponse;Laws/smithy/kotlin/runtime/http/HttpStatusCode;Laws/smithy/kotlin/runtime/http/Headers;Laws/smithy/kotlin/runtime/http/HttpBody;)Laws/smithy/kotlin/runtime/http/response/HttpResponse;
+	public static synthetic fun copy$default (Laws/smithy/kotlin/runtime/http/response/HttpResponse;Laws/smithy/kotlin/runtime/http/HttpStatusCode;Laws/smithy/kotlin/runtime/http/Headers;Laws/smithy/kotlin/runtime/http/HttpBody;ILjava/lang/Object;)Laws/smithy/kotlin/runtime/http/response/HttpResponse;
 	public static final fun getAllHeaders (Laws/smithy/kotlin/runtime/ProtocolResponse;Ljava/lang/String;)Ljava/util/List;
 	public static final fun header (Laws/smithy/kotlin/runtime/ProtocolResponse;Ljava/lang/String;)Ljava/lang/String;
 	public static final fun statusCode (Laws/smithy/kotlin/runtime/ProtocolResponse;)Laws/smithy/kotlin/runtime/http/HttpStatusCode;

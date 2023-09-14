@@ -7,10 +7,7 @@ package software.amazon.smithy.kotlin.codegen.rendering.auth
 
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.kotlin.codegen.KotlinSettings
-import software.amazon.smithy.kotlin.codegen.core.InlineKotlinWriter
-import software.amazon.smithy.kotlin.codegen.core.KotlinWriter
-import software.amazon.smithy.kotlin.codegen.core.RuntimeTypes
-import software.amazon.smithy.kotlin.codegen.core.withBlock
+import software.amazon.smithy.kotlin.codegen.core.*
 import software.amazon.smithy.kotlin.codegen.integration.AuthSchemeHandler
 import software.amazon.smithy.kotlin.codegen.lang.KotlinTypes
 import software.amazon.smithy.kotlin.codegen.model.buildSymbol
@@ -24,13 +21,15 @@ import software.amazon.smithy.model.shapes.OperationShape
 open class AuthSchemeProviderGenerator {
     companion object {
         fun getSymbol(settings: KotlinSettings): Symbol = buildSymbol {
-            name = "AuthSchemeProvider"
+            val prefix = clientName(settings.sdkId)
+            name = "${prefix}AuthSchemeProvider"
             namespace = "${settings.pkg.name}.auth"
             definitionFile = "$name.kt"
         }
 
         fun getDefaultSymbol(settings: KotlinSettings): Symbol = buildSymbol {
-            name = "DefaultAuthSchemeProvider"
+            val prefix = clientName(settings.sdkId)
+            name = "Default${prefix}AuthSchemeProvider"
             namespace = "${settings.pkg.name}.auth"
             definitionFile = "$name.kt"
         }
@@ -38,7 +37,7 @@ open class AuthSchemeProviderGenerator {
 
     fun render(ctx: ProtocolGenerator.GenerationContext) {
         ctx.delegator.useSymbolWriter(getSymbol(ctx.settings)) { writer ->
-            renderTypealias(ctx, writer)
+            renderInterface(ctx, writer)
         }
 
         ctx.delegator.useSymbolWriter(getDefaultSymbol(ctx.settings)) { writer ->
@@ -47,18 +46,25 @@ open class AuthSchemeProviderGenerator {
         }
     }
 
-    private fun renderTypealias(ctx: ProtocolGenerator.GenerationContext, writer: KotlinWriter) {
+    private fun renderInterface(ctx: ProtocolGenerator.GenerationContext, writer: KotlinWriter) {
         val paramsSymbol = AuthSchemeParametersGenerator.getSymbol(ctx.settings)
+        val symbol = getSymbol(ctx.settings)
+        writer.dokka {
+            write("${symbol.name} is responsible for resolving the authentication scheme to use for a particular operation.")
+            write("See [#T] for the default SDK behavior of this interface.", getDefaultSymbol(ctx.settings))
+        }
         writer.write(
-            "internal typealias AuthSchemeProvider = #T<#T>",
+            "public interface #T : #T<#T>",
+            symbol,
             RuntimeTypes.Auth.Identity.AuthSchemeProvider,
             paramsSymbol,
         )
     }
 
     private fun renderDefaultImpl(ctx: ProtocolGenerator.GenerationContext, writer: KotlinWriter) {
+        // FIXME - probably can't remain an object
         writer.withBlock(
-            "internal object #T : #T {",
+            "public object #T : #T {",
             "}",
             getDefaultSymbol(ctx.settings),
             getSymbol(ctx.settings),
@@ -71,7 +77,7 @@ open class AuthSchemeProviderGenerator {
                 "private val operationOverrides = mapOf<#T, List<#T>>(",
                 ")",
                 KotlinTypes.String,
-                RuntimeTypes.Auth.Identity.AuthSchemeOption,
+                RuntimeTypes.Auth.Identity.AuthOption,
             ) {
                 operationsWithOverrides.forEach { op ->
                     val authHandlersForOperation = authIndex.effectiveAuthHandlersForOperation(ctx, op)
@@ -82,7 +88,7 @@ open class AuthSchemeProviderGenerator {
             withBlock(
                 "private val serviceDefaults = listOf<#T>(",
                 ")",
-                RuntimeTypes.Auth.Identity.AuthSchemeOption,
+                RuntimeTypes.Auth.Identity.AuthOption,
             ) {
                 val defaultHandlers = authIndex.effectiveAuthHandlersForService(ctx)
 
@@ -98,7 +104,7 @@ open class AuthSchemeProviderGenerator {
                 "override suspend fun resolveAuthScheme(params: #T): List<#T> {",
                 "}",
                 paramsSymbol,
-                RuntimeTypes.Auth.Identity.AuthSchemeOption,
+                RuntimeTypes.Auth.Identity.AuthOption,
             ) {
                 withBlock("return operationOverrides.getOrElse(params.operationName) {", "}") {
                     write("serviceDefaults")

@@ -76,7 +76,7 @@ class BearerTokenAuthSchemeHandler : AuthSchemeHandler {
         op: OperationShape?,
         writer: KotlinWriter,
     ) {
-        writer.write("#T(#T.HttpBearer)", RuntimeTypes.Auth.Identity.AuthSchemeOption, RuntimeTypes.Auth.Identity.AuthSchemeId)
+        writer.write("#T(#T.HttpBearer)", RuntimeTypes.Auth.Identity.AuthOption, RuntimeTypes.Auth.Identity.AuthSchemeId)
     }
 
     override fun instantiateAuthSchemeExpr(ctx: ProtocolGenerator.GenerationContext, writer: KotlinWriter) {

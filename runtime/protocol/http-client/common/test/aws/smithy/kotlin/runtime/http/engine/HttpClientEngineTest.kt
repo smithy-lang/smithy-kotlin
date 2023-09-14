@@ -5,21 +5,19 @@
 
 package aws.smithy.kotlin.runtime.http.engine
 
-import aws.smithy.kotlin.runtime.http.Headers
-import aws.smithy.kotlin.runtime.http.HttpBody
-import aws.smithy.kotlin.runtime.http.HttpStatusCode
-import aws.smithy.kotlin.runtime.http.SdkHttpClient
+import aws.smithy.kotlin.runtime.http.*
+import aws.smithy.kotlin.runtime.http.HttpCall
+import aws.smithy.kotlin.runtime.http.complete
 import aws.smithy.kotlin.runtime.http.operation.SdkHttpRequest
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
-import aws.smithy.kotlin.runtime.http.response.HttpCall
 import aws.smithy.kotlin.runtime.http.response.HttpResponse
-import aws.smithy.kotlin.runtime.http.response.complete
 import aws.smithy.kotlin.runtime.operation.ExecutionContext
 import aws.smithy.kotlin.runtime.time.Instant
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.test.runTest
+import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
@@ -29,7 +27,6 @@ import kotlin.test.assertTrue
 /**
  * Base tests applicable for all client engines
  */
-@OptIn(ExperimentalCoroutinesApi::class)
 class HttpClientEngineTest {
 
     class MockEngine : HttpClientEngineBase("test") {
@@ -37,15 +34,11 @@ class HttpClientEngineTest {
 
         var shutdownCalled = false
 
-        // store a reference for usage in cancellation tests
-        // lateinit var callJob: Job
-
         val inFlightJobs: List<Job>
             get() = coroutineContext.job.children.toList()
 
         override suspend fun roundTrip(context: ExecutionContext, request: HttpRequest): HttpCall {
             val callContext = callContext()
-            // callJob = callContext.job
             val response = HttpResponse(HttpStatusCode.OK, Headers.Empty, HttpBody.Empty)
             return HttpCall(request, response, Instant.now(), Instant.now(), callContext)
         }
@@ -55,11 +48,17 @@ class HttpClientEngineTest {
         }
     }
 
-    private val engine = MockEngine()
-    private val client = SdkHttpClient(engine)
+    private lateinit var engine: MockEngine
+    private lateinit var client: SdkHttpClient
+
+    @BeforeTest
+    fun resetBeforeTest() {
+        engine = MockEngine()
+        client = SdkHttpClient(engine)
+    }
 
     private val HttpCall.job: Job
-        get() = callContext.job
+        get() = coroutineContext.job
 
     @Test
     fun testCallComplete() = runTest {
@@ -130,13 +129,13 @@ class HttpClientEngineTest {
     @Test
     fun testShutdownOnlyAfterInFlightDone() = runTest {
         val waiter = Channel<Unit>(1)
-        launch {
+        val job1 = launch {
             val call = client.call(SdkHttpRequest(HttpRequestBuilder()))
             waiter.receive()
             call.complete()
         }
         yield()
-        launch {
+        val job2 = launch {
             val call = client.call(SdkHttpRequest(HttpRequestBuilder()))
             waiter.receive()
             call.complete()
@@ -156,6 +155,7 @@ class HttpClientEngineTest {
         waiter.send(Unit)
         yield()
 
+        joinAll(job1, job2)
         assertFalse(engine.coroutineContext.job.isActive)
         assertTrue(engine.shutdownCalled)
     }

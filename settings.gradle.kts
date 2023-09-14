@@ -15,22 +15,21 @@ pluginManagement {
     // configure default plugin versions
     plugins {
         val kotlinVersion: String by settings
-        val dokkaVersion: String by settings
-        val kotlinxBenchmarkVersion: String by settings
-        val smithyGradleVersion: String by settings
-        id("org.jetbrains.dokka") version dokkaVersion
         id("org.jetbrains.kotlin.jvm") version kotlinVersion
         id("org.jetbrains.kotlin.multiplatform") version kotlinVersion
-        id("org.jetbrains.kotlinx.benchmark") version kotlinxBenchmarkVersion
-        id("software.amazon.smithy") version smithyGradleVersion
+    }
+}
+
+sourceControl {
+    gitRepository(java.net.URI("https://github.com/awslabs/aws-kotlin-repo-tools.git")) {
+        producesModule("aws.sdk.kotlin:build-plugins")
+        producesModule("aws.sdk.kotlin:ktlint-rules")
     }
 }
 
 rootProject.name = "smithy-kotlin"
 
 include(":dokka-smithy")
-
-include(":ktlint-rules")
 
 include(":runtime")
 include(":runtime:auth:aws-credentials")

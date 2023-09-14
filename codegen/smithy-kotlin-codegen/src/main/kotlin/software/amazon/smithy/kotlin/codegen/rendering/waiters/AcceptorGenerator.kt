@@ -89,12 +89,12 @@ private fun KotlinWriter.renderPathAcceptor(wi: WaiterInfo, directive: String, i
         val comparison = when (matcher.comparator!!) {
             PathComparator.STRING_EQUALS -> "${actual.identifier} == ${expected.dq()}"
             PathComparator.BOOLEAN_EQUALS -> "${actual.identifier} == ${expected.toBoolean()}"
-            PathComparator.ANY_STRING_EQUALS -> "${actual.identifier}?.any { it == ${expected.dq()} } ?: false"
+            PathComparator.ANY_STRING_EQUALS -> "(${actual.identifier} as List<String?>?)?.any { it == ${expected.dq()} } ?: false"
 
             // NOTE: the isNotEmpty check is necessary because the waiter spec says that `allStringEquals` requires
             // at least one value unlike Kotlin's `all` which returns true if the collection is empty
             PathComparator.ALL_STRING_EQUALS ->
-                "!${actual.identifier}.isNullOrEmpty() && ${actual.identifier}.all { it == ${expected.dq()} }"
+                "!(${actual.identifier} as List<String?>).isNullOrEmpty() && ${actual.identifier}.all { it == ${expected.dq()} }"
         }
         write(comparison)
     }

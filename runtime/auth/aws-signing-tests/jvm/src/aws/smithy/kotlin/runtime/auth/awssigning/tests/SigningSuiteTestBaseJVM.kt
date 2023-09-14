@@ -43,10 +43,7 @@ import kotlin.io.path.isDirectory
 import kotlin.io.path.name
 import kotlin.io.path.readText
 import kotlin.streams.toList
-import kotlin.test.assertContentEquals
-import kotlin.test.assertEquals
-import kotlin.test.assertIs
-import kotlin.test.assertNotNull
+import kotlin.test.*
 import kotlin.time.Duration.Companion.seconds
 
 private const val DEFAULT_SIGNING_ISO_DATE = "2015-08-30T12:36:00Z"
@@ -291,7 +288,7 @@ public actual abstract class SigningSuiteTestBase : HasSigner {
                 val actualBody = assertIs<HttpBody.Bytes>(actual.body)
                 assertContentEquals(expectedBody.bytes(), actualBody.bytes())
             }
-            else -> TODO("body comparison not implemented")
+            else -> fail("Unexpected body type ${expectedBody::class}")
         }
     }
 
@@ -383,12 +380,7 @@ public actual abstract class SigningSuiteTestBase : HasSigner {
         }
 
         val builder = HttpRequestBuilder()
-        builder.method = when (parsed.method.value.uppercase()) {
-            "GET" -> HttpMethod.GET
-            "POST" -> HttpMethod.POST
-            else -> TODO("HTTP method ${parsed.method} not implemented")
-        }
-
+        builder.method = HttpMethod.parse(parsed.method.value)
         builder.url.path = parsed.parsePath()
         parsed.uri.fullUriToQueryParameters()?.let {
             builder.url.parameters.appendAll(it)

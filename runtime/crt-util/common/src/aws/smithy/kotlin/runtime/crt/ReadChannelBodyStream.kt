@@ -69,7 +69,7 @@ public class ReadChannelBodyStream(
     override fun sendRequestBody(buffer: MutableBuffer): Boolean =
         doSendRequestBody(buffer).also { if (it) producerJob.complete() }
 
-    @OptIn(ExperimentalCoroutinesApi::class)
+    @OptIn(DelicateCoroutinesApi::class)
     private fun doSendRequestBody(buffer: MutableBuffer): Boolean {
         // ensure the request context hasn't been cancelled
         callContext.ensureActive()

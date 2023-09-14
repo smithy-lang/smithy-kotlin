@@ -1,5 +1,75 @@
 # Changelog
 
+## [0.27.3] - 09/08/2023
+
+### Features
+* [#612](https://github.com/awslabs/aws-sdk-kotlin/issues/612) Add conversions to and from `Flow<ByteArray>` and `ByteStream`
+* [#617](https://github.com/awslabs/aws-sdk-kotlin/issues/617) Add conversion to InputStream from ByteStream
+
+### Miscellaneous
+* Expose SDK ID in service companion object section writer.
+
+## [0.27.1] - 08/31/2023
+
+### Fixes
+* Correctly codegen defaults for enum shapes
+
+## [0.27.0] - 08/31/2023
+
+### Miscellaneous
+* **BREAKING**: Refactor HttpCall and HttpResponse to not be data classes and make the call context more explicit
+
+## [0.26.0] - 08/24/2023
+
+### Fixes
+* [#1029](https://github.com/awslabs/aws-sdk-kotlin/issues/1029) Set X-Amz-Content-Sha256 header for unsigned payload and event stream operations by default
+
+### Miscellaneous
+* **BREAKING**: prefix generated endpoint and auth scheme providers and cleanup auth scheme APIs
+* Remove ClientOption and associated Builder
+
+## [0.25.1] - 08/17/2023
+
+### Fixes
+* [#1016](https://github.com/awslabs/aws-sdk-kotlin/issues/1016) Stop serializing default values for `@clientOptional` members
+* [#1014](https://github.com/awslabs/aws-sdk-kotlin/issues/1014) Correctly validate response length for empty bodies and byte array bodies
+
+## [0.25.0] - 08/10/2023
+
+### Features
+* [#1001](https://github.com/awslabs/aws-sdk-kotlin/issues/1001) Make CredentialsProviderChain accept list of CredentialProviders
+
+### Miscellaneous
+* Upgrade kotlinx.coroutines to 1.7.3
+* [#968](https://github.com/awslabs/aws-sdk-kotlin/issues/968) Tweak metrics to better support service-level benchmarks
+* Upgrade Kotlin to 1.8.22
+
+## [0.24.0] - 07/27/2023
+
+### Features
+* [#745](https://github.com/awslabs/aws-sdk-kotlin/issues/745) Add a response length validation interceptor
+
+### Fixes
+* [#880](https://github.com/awslabs/smithy-kotlin/issues/880) Enforce `maxConnections` for CRT HTTP engine
+
+### Miscellaneous
+* **BREAKING**: Remove `maxConnections` from generic HTTP engine config since it can't be enforced for OkHttp.
+
+## [0.23.0] - 07/20/2023
+
+### Features
+* Add experimental support for OpenTelemetry based telemetry provider
+* [#146](https://github.com/awslabs/smithy-kotlin/issues/146) Enable endpoint discovery
+* [#898](https://github.com/awslabs/smithy-kotlin/issues/898) BREAKING: introduce `maxConcurrency` HTTP engine setting and rename OkHttp specific `maxConnectionsPerHost` to `maxConcurrencyPerHost`.
+
+### Fixes
+* [#905](https://github.com/awslabs/aws-sdk-kotlin/issues/905) Retry connection reset errors in OkHttp engine
+* [#888](https://github.com/awslabs/smithy-kotlin/issues/888) Correct URL encoding in endpoint resolution
+
+### Miscellaneous
+* **BREAKING**: Refactor observability API and configuration. See the [discussion](https://github.com/awslabs/aws-sdk-kotlin/discussions/981) post from the AWS SDK for Kotlin for more information.
+* [#947](https://github.com/awslabs/aws-sdk-kotlin/issues/947) Remove or lower visibility on several internal-only APIs
+
 ## [0.22.1] - 07/06/2023
 
 ### Fixes

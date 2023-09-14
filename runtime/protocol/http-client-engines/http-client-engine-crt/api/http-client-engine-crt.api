@@ -17,6 +17,7 @@ public final class aws/smithy/kotlin/runtime/http/engine/crt/CrtHttpEngineConfig
 	public synthetic fun <init> (Laws/smithy/kotlin/runtime/http/engine/crt/CrtHttpEngineConfig$Builder;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun getClientBootstrap ()Laws/sdk/kotlin/crt/io/ClientBootstrap;
 	public final fun getInitialWindowSizeBytes ()I
+	public final fun getMaxConnections-pVg5ArA ()I
 	public final fun setClientBootstrap (Laws/sdk/kotlin/crt/io/ClientBootstrap;)V
 	public fun toBuilderApplicator ()Lkotlin/jvm/functions/Function1;
 }
@@ -25,8 +26,10 @@ public final class aws/smithy/kotlin/runtime/http/engine/crt/CrtHttpEngineConfig
 	public fun <init> ()V
 	public final fun getClientBootstrap ()Laws/sdk/kotlin/crt/io/ClientBootstrap;
 	public final fun getInitialWindowSizeBytes ()I
+	public final fun getMaxConnections-pVg5ArA ()I
 	public final fun setClientBootstrap (Laws/sdk/kotlin/crt/io/ClientBootstrap;)V
 	public final fun setInitialWindowSizeBytes (I)V
+	public final fun setMaxConnections-WZ4Q5Ns (I)V
 }
 
 public final class aws/smithy/kotlin/runtime/http/engine/crt/CrtHttpEngineConfig$Companion {

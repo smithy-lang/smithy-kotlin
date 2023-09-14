@@ -29,7 +29,7 @@ internal fun HttpClientEngine.createCallContext(outerContext: CoroutineContext):
     val requestJob = Job(coroutineContext[Job])
     val reqContext = coroutineContext +
         requestJob +
-        CoroutineName("request-context") +
+        CoroutineName("call-context") +
         TelemetryProviderContext(outerContext.telemetryProvider) +
         LoggingContextElement(outerContext.loggingContext) +
         (outerContext.telemetryContext?.let { TelemetryContextElement(it) } ?: EmptyCoroutineContext)

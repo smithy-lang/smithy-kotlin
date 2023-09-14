@@ -9,8 +9,11 @@ import software.amazon.smithy.kotlin.codegen.core.*
 import software.amazon.smithy.kotlin.codegen.integration.SectionId
 import software.amazon.smithy.kotlin.codegen.integration.SectionKey
 import software.amazon.smithy.kotlin.codegen.lang.KotlinTypes
-import software.amazon.smithy.kotlin.codegen.model.*
+import software.amazon.smithy.kotlin.codegen.model.getTrait
+import software.amazon.smithy.kotlin.codegen.model.hasStreamingMember
+import software.amazon.smithy.kotlin.codegen.model.hasTrait
 import software.amazon.smithy.kotlin.codegen.model.knowledge.AuthIndex
+import software.amazon.smithy.kotlin.codegen.model.operationSignature
 import software.amazon.smithy.kotlin.codegen.rendering.auth.AuthSchemeProviderAdapterGenerator
 import software.amazon.smithy.kotlin.codegen.rendering.auth.IdentityProviderConfigGenerator
 import software.amazon.smithy.kotlin.codegen.rendering.endpoints.EndpointResolverAdapterGenerator
@@ -34,11 +37,6 @@ abstract class HttpProtocolClientGenerator(
     object EndpointResolverAdapterBinding : SectionId {
         val GenerationContext: SectionKey<ProtocolGenerator.GenerationContext> = SectionKey("GenerationContext")
         val OperationShape: SectionKey<OperationShape> = SectionKey("OperationShape")
-    }
-
-    object OperationDeserializerBinding : SectionId {
-        // Context for operation being codegened at the time of section invocation
-        val Operation: SectionKey<OperationShape> = SectionKey("Operation")
     }
 
     object OperationTelemetryBuilder : SectionId {
@@ -99,7 +97,7 @@ abstract class HttpProtocolClientGenerator(
         writer.withBlock(
             "private val configuredAuthSchemes = with(config.authSchemes.associateBy(#T::schemeId).toMutableMap()){",
             "}",
-            RuntimeTypes.Auth.HttpAuth.HttpAuthScheme,
+            RuntimeTypes.Auth.HttpAuth.AuthScheme,
         ) {
             val authIndex = AuthIndex()
             val allAuthHandlers = authIndex.authHandlersForService(ctx)
@@ -122,6 +120,7 @@ abstract class HttpProtocolClientGenerator(
 
             write("toMap()")
         }
+        writer.write("private val authSchemeAdapter = #T(config.authSchemeProvider)", AuthSchemeProviderAdapterGenerator.getSymbol(ctx.settings))
 
         writer.write("private val telemetryScope = #S", ctx.settings.pkg.name)
         writer.write("private val opMetrics = #T(telemetryScope, config.telemetryProvider)", RuntimeTypes.HttpClient.Operation.OperationMetrics)
@@ -204,36 +203,29 @@ abstract class HttpProtocolClientGenerator(
                 }
             }
 
-            writer.declareSection(OperationDeserializerBinding, mapOf(OperationDeserializerBinding.Operation to op)) {
-                if (outputShape.isPresent) {
-                    write("deserializer = ${op.deserializerName()}()")
-                } else {
-                    write("deserializer = UnitDeserializer")
-                }
+            if (outputShape.isPresent) {
+                writer.write("deserializer = ${op.deserializerName()}()")
+            } else {
+                writer.write("deserializer = UnitDeserializer")
             }
 
-            // execution context
-            writer.openBlock("context {", "}") {
-                writer.write("expectedHttpStatus = ${httpTrait.code}")
-                // property from implementing SdkClient
-                writer.write("operationName = #S", op.id.name)
-                writer.write("serviceName = #L", "ServiceId")
+            writer.write("operationName = #S", op.id.name)
+            writer.write("serviceName = #L", "ServiceId")
 
-                // optional endpoint trait
-                op.getTrait<EndpointTrait>()?.let { endpointTrait ->
-                    val hostPrefix = endpointTrait.hostPrefix.segments.joinToString(separator = "") { segment ->
-                        if (segment.isLabel) {
-                            // hostLabel can only target string shapes
-                            // see: https://awslabs.github.io/smithy/1.0/spec/core/endpoint-traits.html#hostlabel-trait
-                            val member =
-                                inputShape.get().members().first { member -> member.memberName == segment.content }
-                            "\${input.${member.defaultName()}}"
-                        } else {
-                            segment.content
-                        }
+            // optional endpoint trait
+            op.getTrait<EndpointTrait>()?.let { endpointTrait ->
+                val hostPrefix = endpointTrait.hostPrefix.segments.joinToString(separator = "") { segment ->
+                    if (segment.isLabel) {
+                        // hostLabel can only target string shapes
+                        // see: https://awslabs.github.io/smithy/1.0/spec/core/endpoint-traits.html#hostlabel-trait
+                        val member =
+                            inputShape.get().members().first { member -> member.memberName == segment.content }
+                        "\${input.${member.defaultName()}}"
+                    } else {
+                        segment.content
                     }
-                    writer.write("hostPrefix = #S", hostPrefix)
                 }
+                writer.write("hostPrefix = #S", hostPrefix)
             }
 
             // telemetry
@@ -245,9 +237,8 @@ abstract class HttpProtocolClientGenerator(
             }
 
             writer.write(
-                "execution.auth = #T(#T, configuredAuthSchemes, identityProviderConfig)",
+                "execution.auth = #T(authSchemeAdapter, configuredAuthSchemes, identityProviderConfig)",
                 RuntimeTypes.HttpClient.Operation.OperationAuthConfig,
-                AuthSchemeProviderAdapterGenerator.getSymbol(ctx.settings),
             )
 
             writer.declareSection(

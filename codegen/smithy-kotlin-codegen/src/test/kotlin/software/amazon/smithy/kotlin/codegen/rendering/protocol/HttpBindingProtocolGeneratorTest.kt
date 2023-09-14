@@ -365,9 +365,10 @@ internal class ConstantQueryStringOperationSerializer: HttpSerialize<ConstantQue
         val expectedContents = """
 internal class SmokeTestOperationDeserializer: HttpDeserialize<SmokeTestResponse> {
 
-    override suspend fun deserialize(context: ExecutionContext, response: HttpResponse): SmokeTestResponse {
+    override suspend fun deserialize(context: ExecutionContext, call: HttpCall): SmokeTestResponse {
+        val response = call.response
         if (!response.status.isSuccess()) {
-            throwSmokeTestError(context, response)
+            throwSmokeTestError(context, call)
         }
         val builder = SmokeTestResponse.Builder()
 

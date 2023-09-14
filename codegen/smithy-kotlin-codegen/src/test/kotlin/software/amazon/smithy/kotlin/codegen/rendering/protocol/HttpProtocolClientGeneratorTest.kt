@@ -80,17 +80,14 @@ class HttpProtocolClientGeneratorTest {
         val op = SdkHttpOperation.build<GetFooRequest, GetFooResponse> {
             serializer = GetFooOperationSerializer()
             deserializer = GetFooOperationDeserializer()
-            context {
-                expectedHttpStatus = 200
-                operationName = "GetFoo"
-                serviceName = ServiceId
-            }
+            operationName = "GetFoo"
+            serviceName = ServiceId
             telemetry {
                 provider = config.telemetryProvider
                 scope = telemetryScope
                 metrics = opMetrics
             }
-            execution.auth = OperationAuthConfig(AuthSchemeProviderAdapter, configuredAuthSchemes, identityProviderConfig)
+            execution.auth = OperationAuthConfig(authSchemeAdapter, configuredAuthSchemes, identityProviderConfig)
             execution.endpointResolver = EndpointResolverAdapter(config)
             execution.retryStrategy = config.retryStrategy
         }
@@ -104,17 +101,14 @@ class HttpProtocolClientGeneratorTest {
         val op = SdkHttpOperation.build<GetFooNoInputRequest, GetFooNoInputResponse> {
             serializer = GetFooNoInputOperationSerializer()
             deserializer = GetFooNoInputOperationDeserializer()
-            context {
-                expectedHttpStatus = 200
-                operationName = "GetFooNoInput"
-                serviceName = ServiceId
-            }
+            operationName = "GetFooNoInput"
+            serviceName = ServiceId
             telemetry {
                 provider = config.telemetryProvider
                 scope = telemetryScope
                 metrics = opMetrics
             }
-            execution.auth = OperationAuthConfig(AuthSchemeProviderAdapter, configuredAuthSchemes, identityProviderConfig)
+            execution.auth = OperationAuthConfig(authSchemeAdapter, configuredAuthSchemes, identityProviderConfig)
             execution.endpointResolver = EndpointResolverAdapter(config)
             execution.retryStrategy = config.retryStrategy
         }
@@ -128,17 +122,14 @@ class HttpProtocolClientGeneratorTest {
         val op = SdkHttpOperation.build<GetFooNoOutputRequest, GetFooNoOutputResponse> {
             serializer = GetFooNoOutputOperationSerializer()
             deserializer = GetFooNoOutputOperationDeserializer()
-            context {
-                expectedHttpStatus = 200
-                operationName = "GetFooNoOutput"
-                serviceName = ServiceId
-            }
+            operationName = "GetFooNoOutput"
+            serviceName = ServiceId
             telemetry {
                 provider = config.telemetryProvider
                 scope = telemetryScope
                 metrics = opMetrics
             }
-            execution.auth = OperationAuthConfig(AuthSchemeProviderAdapter, configuredAuthSchemes, identityProviderConfig)
+            execution.auth = OperationAuthConfig(authSchemeAdapter, configuredAuthSchemes, identityProviderConfig)
             execution.endpointResolver = EndpointResolverAdapter(config)
             execution.retryStrategy = config.retryStrategy
         }
@@ -152,17 +143,14 @@ class HttpProtocolClientGeneratorTest {
         val op = SdkHttpOperation.build<GetFooStreamingInputRequest, GetFooStreamingInputResponse> {
             serializer = GetFooStreamingInputOperationSerializer()
             deserializer = GetFooStreamingInputOperationDeserializer()
-            context {
-                expectedHttpStatus = 200
-                operationName = "GetFooStreamingInput"
-                serviceName = ServiceId
-            }
+            operationName = "GetFooStreamingInput"
+            serviceName = ServiceId
             telemetry {
                 provider = config.telemetryProvider
                 scope = telemetryScope
                 metrics = opMetrics
             }
-            execution.auth = OperationAuthConfig(AuthSchemeProviderAdapter, configuredAuthSchemes, identityProviderConfig)
+            execution.auth = OperationAuthConfig(authSchemeAdapter, configuredAuthSchemes, identityProviderConfig)
             execution.endpointResolver = EndpointResolverAdapter(config)
             execution.retryStrategy = config.retryStrategy
         }
@@ -176,17 +164,14 @@ class HttpProtocolClientGeneratorTest {
         val op = SdkHttpOperation.build<GetFooStreamingOutputRequest, GetFooStreamingOutputResponse> {
             serializer = GetFooStreamingOutputOperationSerializer()
             deserializer = GetFooStreamingOutputOperationDeserializer()
-            context {
-                expectedHttpStatus = 200
-                operationName = "GetFooStreamingOutput"
-                serviceName = ServiceId
-            }
+            operationName = "GetFooStreamingOutput"
+            serviceName = ServiceId
             telemetry {
                 provider = config.telemetryProvider
                 scope = telemetryScope
                 metrics = opMetrics
             }
-            execution.auth = OperationAuthConfig(AuthSchemeProviderAdapter, configuredAuthSchemes, identityProviderConfig)
+            execution.auth = OperationAuthConfig(authSchemeAdapter, configuredAuthSchemes, identityProviderConfig)
             execution.endpointResolver = EndpointResolverAdapter(config)
             execution.retryStrategy = config.retryStrategy
         }
@@ -200,17 +185,14 @@ class HttpProtocolClientGeneratorTest {
         val op = SdkHttpOperation.build<GetFooStreamingOutputNoInputRequest, GetFooStreamingOutputNoInputResponse> {
             serializer = GetFooStreamingOutputNoInputOperationSerializer()
             deserializer = GetFooStreamingOutputNoInputOperationDeserializer()
-            context {
-                expectedHttpStatus = 200
-                operationName = "GetFooStreamingOutputNoInput"
-                serviceName = ServiceId
-            }
+            operationName = "GetFooStreamingOutputNoInput"
+            serviceName = ServiceId
             telemetry {
                 provider = config.telemetryProvider
                 scope = telemetryScope
                 metrics = opMetrics
             }
-            execution.auth = OperationAuthConfig(AuthSchemeProviderAdapter, configuredAuthSchemes, identityProviderConfig)
+            execution.auth = OperationAuthConfig(authSchemeAdapter, configuredAuthSchemes, identityProviderConfig)
             execution.endpointResolver = EndpointResolverAdapter(config)
             execution.retryStrategy = config.retryStrategy
         }
@@ -224,17 +206,14 @@ class HttpProtocolClientGeneratorTest {
         val op = SdkHttpOperation.build<GetFooStreamingInputNoOutputRequest, GetFooStreamingInputNoOutputResponse> {
             serializer = GetFooStreamingInputNoOutputOperationSerializer()
             deserializer = GetFooStreamingInputNoOutputOperationDeserializer()
-            context {
-                expectedHttpStatus = 200
-                operationName = "GetFooStreamingInputNoOutput"
-                serviceName = ServiceId
-            }
+            operationName = "GetFooStreamingInputNoOutput"
+            serviceName = ServiceId
             telemetry {
                 provider = config.telemetryProvider
                 scope = telemetryScope
                 metrics = opMetrics
             }
-            execution.auth = OperationAuthConfig(AuthSchemeProviderAdapter, configuredAuthSchemes, identityProviderConfig)
+            execution.auth = OperationAuthConfig(authSchemeAdapter, configuredAuthSchemes, identityProviderConfig)
             execution.endpointResolver = EndpointResolverAdapter(config)
             execution.retryStrategy = config.retryStrategy
         }
@@ -248,17 +227,14 @@ class HttpProtocolClientGeneratorTest {
         val op = SdkHttpOperation.build<GetFooNoRequiredRequest, GetFooNoRequiredResponse> {
             serializer = GetFooNoRequiredOperationSerializer()
             deserializer = GetFooNoRequiredOperationDeserializer()
-            context {
-                expectedHttpStatus = 200
-                operationName = "GetFooNoRequired"
-                serviceName = ServiceId
-            }
+            operationName = "GetFooNoRequired"
+            serviceName = ServiceId
             telemetry {
                 provider = config.telemetryProvider
                 scope = telemetryScope
                 metrics = opMetrics
             }
-            execution.auth = OperationAuthConfig(AuthSchemeProviderAdapter, configuredAuthSchemes, identityProviderConfig)
+            execution.auth = OperationAuthConfig(authSchemeAdapter, configuredAuthSchemes, identityProviderConfig)
             execution.endpointResolver = EndpointResolverAdapter(config)
             execution.retryStrategy = config.retryStrategy
         }
@@ -272,17 +248,14 @@ class HttpProtocolClientGeneratorTest {
         val op = SdkHttpOperation.build<GetFooSomeRequiredRequest, GetFooSomeRequiredResponse> {
             serializer = GetFooSomeRequiredOperationSerializer()
             deserializer = GetFooSomeRequiredOperationDeserializer()
-            context {
-                expectedHttpStatus = 200
-                operationName = "GetFooSomeRequired"
-                serviceName = ServiceId
-            }
+            operationName = "GetFooSomeRequired"
+            serviceName = ServiceId
             telemetry {
                 provider = config.telemetryProvider
                 scope = telemetryScope
                 metrics = opMetrics
             }
-            execution.auth = OperationAuthConfig(AuthSchemeProviderAdapter, configuredAuthSchemes, identityProviderConfig)
+            execution.auth = OperationAuthConfig(authSchemeAdapter, configuredAuthSchemes, identityProviderConfig)
             execution.endpointResolver = EndpointResolverAdapter(config)
             execution.retryStrategy = config.retryStrategy
         }
@@ -352,18 +325,15 @@ class HttpProtocolClientGeneratorTest {
         val op = SdkHttpOperation.build<GetStatusRequest, GetStatusResponse> {
             serializer = GetStatusOperationSerializer()
             deserializer = GetStatusOperationDeserializer()
-            context {
-                expectedHttpStatus = 200
-                operationName = "GetStatus"
-                serviceName = ServiceId
-                hostPrefix = "$prefix"
-            }
+            operationName = "GetStatus"
+            serviceName = ServiceId
+            hostPrefix = "$prefix"
             telemetry {
                 provider = config.telemetryProvider
                 scope = telemetryScope
                 metrics = opMetrics
             }
-            execution.auth = OperationAuthConfig(AuthSchemeProviderAdapter, configuredAuthSchemes, identityProviderConfig)
+            execution.auth = OperationAuthConfig(authSchemeAdapter, configuredAuthSchemes, identityProviderConfig)
             execution.endpointResolver = EndpointResolverAdapter(config)
             execution.retryStrategy = config.retryStrategy
         }

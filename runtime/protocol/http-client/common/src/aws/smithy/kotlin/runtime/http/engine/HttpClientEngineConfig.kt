@@ -45,11 +45,6 @@ public interface HttpClientEngineConfig {
     public val socketWriteTimeout: Duration
 
     /**
-     * Maximum number of open connections
-     */
-    public val maxConnections: UInt
-
-    /**
      * The amount of time to wait for a connection to be established
      */
     public val connectTimeout: Duration
@@ -64,6 +59,12 @@ public interface HttpClientEngineConfig {
      * idle connections should never be reaped.
      */
     public val connectionIdleTimeout: Duration
+
+    /**
+     * The maximum number of requests that will be executed concurrently by an engine. Beyond this requests
+     * will be queued waiting to be executed by the engine.
+     */
+    public val maxConcurrency: UInt
 
     /**
      * The proxy selection policy
@@ -112,11 +113,6 @@ public interface HttpClientEngineConfig {
         public var socketWriteTimeout: Duration
 
         /**
-         * Maximum number of open connections
-         */
-        public var maxConnections: UInt
-
-        /**
          * The amount of time to wait for a connection to be established
          */
         public var connectTimeout: Duration
@@ -131,6 +127,12 @@ public interface HttpClientEngineConfig {
          * idle connections should never be reaped.
          */
         public var connectionIdleTimeout: Duration
+
+        /**
+         * The maximum number of requests that will be executed concurrently by an engine. Beyond this requests
+         * will be queued waiting to be executed by the engine.
+         */
+        public var maxConcurrency: UInt
 
         /**
          * Set the proxy selection policy to be used.
@@ -187,10 +189,10 @@ public open class HttpClientEngineConfigImpl(builder: HttpClientEngineConfig.Bui
 
     override val socketReadTimeout: Duration = builder.socketReadTimeout
     override val socketWriteTimeout: Duration = builder.socketWriteTimeout
-    override val maxConnections: UInt = builder.maxConnections
     override val connectTimeout: Duration = builder.connectTimeout
     override val connectionAcquireTimeout: Duration = builder.connectionAcquireTimeout
     override val connectionIdleTimeout: Duration = builder.connectionIdleTimeout
+    override val maxConcurrency: UInt = builder.maxConcurrency
     override val proxySelector: ProxySelector = builder.proxySelector
     override val hostResolver: HostResolver = builder.hostResolver
     override val tlsContext: TlsContext = builder.tlsContext
@@ -199,10 +201,10 @@ public open class HttpClientEngineConfigImpl(builder: HttpClientEngineConfig.Bui
     override fun toBuilderApplicator(): HttpClientEngineConfig.Builder.() -> Unit = {
         socketReadTimeout = this@HttpClientEngineConfigImpl.socketReadTimeout
         socketWriteTimeout = this@HttpClientEngineConfigImpl.socketWriteTimeout
-        maxConnections = this@HttpClientEngineConfigImpl.maxConnections
         connectTimeout = this@HttpClientEngineConfigImpl.connectTimeout
         connectionAcquireTimeout = this@HttpClientEngineConfigImpl.connectionAcquireTimeout
         connectionIdleTimeout = this@HttpClientEngineConfigImpl.connectionIdleTimeout
+        maxConcurrency = this@HttpClientEngineConfigImpl.maxConcurrency
         proxySelector = this@HttpClientEngineConfigImpl.proxySelector
         hostResolver = this@HttpClientEngineConfigImpl.hostResolver
         tlsContext = this@HttpClientEngineConfigImpl.tlsContext
@@ -213,10 +215,10 @@ public open class HttpClientEngineConfigImpl(builder: HttpClientEngineConfig.Bui
     public open class BuilderImpl : HttpClientEngineConfig.Builder {
         override var socketReadTimeout: Duration = 30.seconds
         override var socketWriteTimeout: Duration = 30.seconds
-        override var maxConnections: UInt = 16u
         override var connectTimeout: Duration = 2.seconds
         override var connectionAcquireTimeout: Duration = 10.seconds
         override var connectionIdleTimeout: Duration = 60.seconds
+        override var maxConcurrency: UInt = 128u
         override var proxySelector: ProxySelector = EnvironmentProxySelector()
         override var hostResolver: HostResolver = HostResolver.Default
         override var tlsContext: TlsContext = TlsContext.Default

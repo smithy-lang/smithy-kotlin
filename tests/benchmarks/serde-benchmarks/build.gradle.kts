@@ -2,52 +2,32 @@
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
  * SPDX-License-Identifier: Apache-2.0
  */
+import aws.sdk.kotlin.gradle.dsl.skipPublishing
 import software.amazon.smithy.gradle.tasks.SmithyBuild
 
+@Suppress("DSL_SCOPE_VIOLATION") // TODO: Remove once https://youtrack.jetbrains.com/issue/KTIJ-19369 is fixed
 plugins {
     kotlin("multiplatform")
-    id("org.jetbrains.kotlinx.benchmark")
-    id("software.amazon.smithy")
+    alias(libs.plugins.smithy.gradle)
+    alias(libs.plugins.kotlinx.benchmark)
 }
 
-buildscript {
-    val smithyVersion: String by project
-    dependencies {
-        classpath("software.amazon.smithy:smithy-cli:$smithyVersion")
-    }
-}
-
-extra.set("skipPublish", true)
-
-val platforms = listOf("common", "jvm")
-
-platforms.forEach { platform ->
-    apply(from = rootProject.file("gradle/$platform.gradle"))
-}
+skipPublishing()
 
 val optinAnnotations = listOf("kotlin.RequiresOptIn", "aws.smithy.kotlin.runtime.InternalApi")
 
 kotlin {
     sourceSets {
         all {
-            val srcDir = if (name.endsWith("Main")) "src" else "test"
-            val resourcesPrefix = if (name.endsWith("Test")) "test-" else ""
-            // the name is always the platform followed by a suffix of either "Main" or "Test" (e.g. jvmMain, commonTest, etc)
-            val platform = name.substring(0, name.length - 4)
-            kotlin.srcDir("$platform/$srcDir")
-            resources.srcDir("$platform/${resourcesPrefix}resources")
-            languageSettings.progressiveMode = true
             optinAnnotations.forEach { languageSettings.optIn(it) }
         }
 
-        val kotlinxBenchmarkVersion: String by project
-        val coroutinesVersion: String by project
         commonMain {
             dependencies {
-                implementation("org.jetbrains.kotlinx:kotlinx-benchmark-runtime:$kotlinxBenchmarkVersion")
+                implementation(libs.kotlinx.benchmark.runtime)
                 implementation(project(":runtime:serde:serde-json"))
                 implementation(project(":runtime:serde:serde-xml"))
-                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion")
+                implementation(libs.kotlinx.coroutines.core)
             }
         }
         val jvmMain by getting {

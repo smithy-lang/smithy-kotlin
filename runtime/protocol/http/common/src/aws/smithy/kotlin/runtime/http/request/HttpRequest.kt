@@ -48,8 +48,8 @@ public sealed interface HttpRequest {
 public fun HttpRequest(
     method: HttpMethod,
     url: Url,
-    headers: Headers,
-    body: HttpBody,
+    headers: Headers = Headers.Empty,
+    body: HttpBody = HttpBody.Empty,
     trailingHeaders: DeferredHeaders = DeferredHeaders.Empty,
 ): HttpRequest = RealHttpRequest(method, url, headers, body, trailingHeaders)
 

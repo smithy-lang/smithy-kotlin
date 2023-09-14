@@ -6,15 +6,13 @@
 package aws.smithy.kotlin.runtime.content
 
 import aws.smithy.kotlin.runtime.testing.RandomTempFile
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import java.nio.file.Files
 import kotlin.test.*
 
-@OptIn(ExperimentalCoroutinesApi::class)
 class ByteStreamJVMTest {
     @Test
-    fun `file as byte stream validates start`() = runTest {
+    fun testFileAsByteStreamValidatesStart() = runTest {
         val file = RandomTempFile(1024)
         val e = assertFailsWith<Throwable> {
             file.asByteStream(-1)
@@ -23,7 +21,7 @@ class ByteStreamJVMTest {
     }
 
     @Test
-    fun `file as byte stream validates end`() = runTest {
+    fun testFileAsAByteStreamValidatesEnd() = runTest {
         val file = RandomTempFile(1024)
         val e = assertFailsWith<Throwable> {
             file.asByteStream(endInclusive = 1024)
@@ -32,7 +30,7 @@ class ByteStreamJVMTest {
     }
 
     @Test
-    fun `file as byte stream validates start and end`() = runTest {
+    fun testFileAsByteStreamValidatesStartAndEnd() = runTest {
         val file = RandomTempFile(1024)
         val e = assertFailsWith<Throwable> {
             file.asByteStream(5, 1)
@@ -41,7 +39,7 @@ class ByteStreamJVMTest {
     }
 
     @Test
-    fun `file as byte stream has contentLength`() = runTest {
+    fun testFileAsByteStreamHasContentLength() = runTest {
         val file = RandomTempFile(1024)
         val stream = file.asByteStream()
 
@@ -49,7 +47,7 @@ class ByteStreamJVMTest {
     }
 
     @Test
-    fun `partial file as byte stream has contentLength`() = runTest {
+    fun testPartialFileAsByteStreamHasContentLength() = runTest {
         val file = RandomTempFile(1024)
         val stream = file.asByteStream(1, 1023)
 
@@ -57,7 +55,7 @@ class ByteStreamJVMTest {
     }
 
     @Test
-    fun `partial file as byte stream has contentLength with implicit end`() = runTest {
+    fun testPartialFileAsByteStreamHasImplicitEnd() = runTest {
         val file = RandomTempFile(1024)
         val stream = file.asByteStream(1)
 
@@ -65,7 +63,7 @@ class ByteStreamJVMTest {
     }
 
     @Test
-    fun `file as byte stream matches read`() = runTest {
+    fun testFileAsByteStreamRead() = runTest {
         val file = RandomTempFile(1024)
 
         val expected = file.readBytes()
@@ -75,7 +73,7 @@ class ByteStreamJVMTest {
     }
 
     @Test
-    fun `partial file as byte stream matches read`() = runTest {
+    fun testPartialFileAsByteStreamRead() = runTest {
         val file = RandomTempFile(1024)
 
         val expected = file.readBytes()
@@ -87,7 +85,7 @@ class ByteStreamJVMTest {
     }
 
     @Test
-    fun `partial file as byte stream using range`() = runTest {
+    fun testPartialFileRangeAsByteStreamRead() = runTest {
         val file = RandomTempFile(1024)
 
         val expected = file.readBytes()
@@ -99,7 +97,7 @@ class ByteStreamJVMTest {
     }
 
     @Test
-    fun `partial path as byte stream`() = runTest {
+    fun testPartialPathAsByteStreamRead() = runTest {
         val file = RandomTempFile(1024)
         val path = file.toPath()
 
@@ -112,7 +110,7 @@ class ByteStreamJVMTest {
     }
 
     @Test
-    fun `partial path as byte stream using range`() = runTest {
+    fun testPartialPathRangeAsByteStreamRead() = runTest {
         val file = RandomTempFile(1024)
         val path = file.toPath()
 
@@ -125,7 +123,7 @@ class ByteStreamJVMTest {
     }
 
     @Test
-    fun `path as byte stream has contentLength`() = runTest {
+    fun testPathAsByteStreamHasContentLength() = runTest {
         val path = RandomTempFile(1024).toPath()
         val stream = path.asByteStream()
 
@@ -133,7 +131,7 @@ class ByteStreamJVMTest {
     }
 
     @Test
-    fun `can create byte stream from empty file and path using createTempFile`() = runTest {
+    fun testCanCreateByteStreamFromEmptyFileAndPathUsingTempFile() = runTest {
         val file = Files.createTempFile(null, null)
         val byteStream = file.asByteStream()
         assertEquals(0, byteStream.contentLength)
@@ -143,7 +141,7 @@ class ByteStreamJVMTest {
     }
 
     @Test
-    fun `can create byte stream from empty file and path using RandomTempFile`() = runTest {
+    fun testCanCreateByteStreamFromEmptyFileAndPathUsingRandomFile() = runTest {
         val file = RandomTempFile(sizeInBytes = 0)
         val byteStream = file.asByteStream()
         assertEquals(0, byteStream.contentLength)
