@@ -54,7 +54,7 @@ class StructureGenerator(
     private fun renderStructure() {
         writer.openBlock(
             "#L class #T private constructor(builder: Builder) {",
-            ctx.settings.build.visibility.structure,
+            ctx.settings.api.visibility,
             symbol,
         )
             .call { renderImmutableProperties() }
@@ -305,7 +305,7 @@ class StructureGenerator(
 
         writer.openBlock(
             "#L class #T private constructor(builder: Builder) : ${exceptionBaseClass.name}() {",
-            ctx.settings.build.visibility.error,
+            ctx.settings.api.visibility,
             symbol,
         )
             .write("")

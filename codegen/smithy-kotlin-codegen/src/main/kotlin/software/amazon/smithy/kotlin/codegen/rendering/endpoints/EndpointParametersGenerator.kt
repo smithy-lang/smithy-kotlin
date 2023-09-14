@@ -55,7 +55,7 @@ class EndpointParametersGenerator(
         writer.withBlock(
             "#L class #T private constructor(builder: Builder) {",
             "}",
-            settings.build.visibility.structure,
+            settings.api.visibility,
             paramsSymbol,
         ) {
             renderFields()

@@ -67,7 +67,7 @@ class ServiceClientGenerator(private val ctx: RenderingContext<ServiceShape>) {
         requireNotNull(ctx.shape) { "ServiceShape is required to render a service client" }
     private val serviceSymbol = ctx.symbolProvider.toSymbol(service)
     private val writer = ctx.writer
-    private val visibility = ctx.settings.build.visibility.serviceClient
+    private val visibility = ctx.settings.api.visibility
 
     fun render() {
         writer.write("\n\n")

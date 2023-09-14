@@ -46,7 +46,7 @@ class EndpointDiscovererGenerator(private val ctx: CodegenContext, private val d
             withBlock(
                 "#L class #T {",
                 "}",
-                ctx.settings.build.visibility.structure,
+                ctx.settings.api.visibility,
                 symbol,
             ) {
                 write(
