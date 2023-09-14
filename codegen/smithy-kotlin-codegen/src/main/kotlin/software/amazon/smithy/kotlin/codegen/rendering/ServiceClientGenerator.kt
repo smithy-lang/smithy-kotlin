@@ -82,9 +82,10 @@ class ServiceClientGenerator(private val ctx: RenderingContext<ServiceShape>) {
 
         writer.renderDocumentation(service)
         writer.renderAnnotations(service)
-        writer.openBlock("#L interface ${serviceSymbol.name} : #T {",
+        writer.openBlock(
+            "#L interface ${serviceSymbol.name} : #T {",
             ctx.settings.api.visibility.value,
-            RuntimeTypes.SmithyClient.SdkClient
+            RuntimeTypes.SmithyClient.SdkClient,
         )
             .call {
                 // allow access to client's Config
@@ -201,9 +202,11 @@ class ServiceClientGenerator(private val ctx: RenderingContext<ServiceShape>) {
             write("Any resources created on your behalf will be shared between clients, and will only be closed when ALL clients using them are closed.")
             write("If you provide a resource (e.g. [HttpClientEngine]) to the SDK, you are responsible for managing the lifetime of that resource.")
         }
-        writer.withBlock("#1L fun #2T.withConfig(block: #2T.Config.Builder.() -> Unit): #2T {", "}",
+        writer.withBlock(
+            "#1L fun #2T.withConfig(block: #2T.Config.Builder.() -> Unit): #2T {",
+            "}",
             ctx.settings.api.visibility.value,
-            serviceSymbol
+            serviceSymbol,
         ) {
             write("val newConfig = config.toBuilder().apply(block).build()")
             write("return Default#L(newConfig)", serviceSymbol.name)

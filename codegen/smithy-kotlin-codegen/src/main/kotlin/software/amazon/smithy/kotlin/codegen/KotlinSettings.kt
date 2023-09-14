@@ -99,7 +99,7 @@ data class KotlinSettings(
                 PackageSettings(packageName, version, desc),
                 sdkId,
                 BuildSettings.fromNode(build),
-                ApiSettings.fromNode(api)
+                ApiSettings.fromNode(api),
             )
         }
     }
@@ -197,10 +197,10 @@ class UnresolvableProtocolException(message: String) : CodegenException(message)
 
 private fun <T> Optional<T>.orNull(): T? = if (isPresent) get() else null
 
-
 enum class Visibility(val value: String) {
     PUBLIC("public"),
-    INTERNAL("internal");
+    INTERNAL("internal"),
+    ;
 
     companion object {
         public fun fromValue(value: String): Visibility = when (value.toLowerCase()) {
