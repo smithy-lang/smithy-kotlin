@@ -53,3 +53,6 @@ public fun Double.toNumber(): Double = this
 
 @InternalApi
 public fun String.toNumber(): Double? = this.toDoubleOrNull()
+
+@InternalApi
+public fun Any.toNumber(): Nothing? = null
