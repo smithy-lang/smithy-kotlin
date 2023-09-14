@@ -207,7 +207,7 @@ enum class Visibility(val value: String) {
     ;
 
     companion object {
-        public fun fromValue(value: String): Visibility = when (value.toLowerCase()) {
+        public fun fromValue(value: String): Visibility = when (value.lowercase()) {
             "internal" -> INTERNAL
             else -> PUBLIC
         }
