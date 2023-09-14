@@ -35,3 +35,25 @@ public fun truthiness(value: Any?): Boolean = when (value) {
     null -> false
     else -> true
 }
+
+@InternalApi
+public fun List<Number>.max(): Double? =
+    @Suppress("UNCHECKED_CAST")
+    (this as List<Double>).maxOrNull()
+
+@InternalApi
+public fun List<String>.max(): String? = this.maxOrNull()
+
+@InternalApi
+public fun List<Number>.min(): Double? =
+    @Suppress("UNCHECKED_CAST")
+    (this as List<Double>).minOrNull()
+
+@InternalApi
+public fun List<String>.min(): String? = this.minOrNull()
+
+@InternalApi
+public fun Number.toNumber(): Double = this.toDouble()
+
+@InternalApi
+public fun String.toNumber(): Double? = this.toDoubleOrNull()

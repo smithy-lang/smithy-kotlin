@@ -58,6 +58,20 @@ class DefaultWaitersTestClient<T>(resultList: List<Result<T>>) : WaitersTestClie
 
     override suspend fun getFunctionMergeEquals(input: GetFunctionMergeEqualsRequest): GetFunctionMergeEqualsResponse = findSuccess()
 
+    override suspend fun getFunctionMaxEquals(input: GetFunctionMaxEqualsRequest): GetFunctionMaxEqualsResponse = findSuccess()
+
+    override suspend fun getFunctionMinEquals(input: GetFunctionMinEqualsRequest): GetFunctionMinEqualsResponse = findSuccess()
+
+    override suspend fun getFunctionReverseEquals(input: GetFunctionReverseEqualsRequest): GetFunctionReverseEqualsResponse = findSuccess()
+
+    override suspend fun getFunctionNotNullEquals(input: GetFunctionNotNullEqualsRequest): GetFunctionNotNullEqualsResponse = findSuccess()
+
+    override suspend fun getFunctionToArrayEquals(input: GetFunctionToArrayEqualsRequest): GetFunctionToArrayEqualsResponse = findSuccess()
+
+    override suspend fun getFunctionToStringEquals(input: GetFunctionToStringEqualsRequest): GetFunctionToStringEqualsResponse = findSuccess()
+
+    override suspend fun getFunctionToNumberEquals(input: GetFunctionToNumberEqualsRequest): GetFunctionToNumberEqualsResponse = findSuccess()
+
     private fun <Response> findSuccess(): Response {
         val nextResult = results.next()
         @Suppress("UNCHECKED_CAST")
