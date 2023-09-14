@@ -197,6 +197,10 @@ class UnresolvableProtocolException(message: String) : CodegenException(message)
 
 private fun <T> Optional<T>.orNull(): T? = if (isPresent) get() else null
 
+/**
+ * The visibility of code-generated classes, objects, interfaces, etc.
+ * Valid values are `public` and `internal`. `private` not supported because codegen would not compile with private classes.
+ */
 enum class Visibility(val value: String) {
     PUBLIC("public"),
     INTERNAL("internal"),
@@ -212,7 +216,7 @@ enum class Visibility(val value: String) {
 
 /**
  * Contains API settings for a Kotlin project
- * @param visibility String representing the visibility of code-generated classes, objects, interfaces, etc.
+ * @param visibility Enum representing the visibility of code-generated classes, objects, interfaces, etc.
  */
 data class ApiSettings(
     val visibility: Visibility = Visibility.PUBLIC,
