@@ -287,15 +287,13 @@ class KotlinJmespathExpressionVisitor(
         }
 
         "max" -> {
-            writer.addImport(RuntimeTypes.Core.Utils.max)
             val list = expression.singleArg()
-            list.dotFunction(expression, "max()")
+            list.dotFunction(expression, "maxOrNull()")
         }
 
         "min" -> {
-            writer.addImport(RuntimeTypes.Core.Utils.min)
             val list = expression.singleArg()
-            list.dotFunction(expression, "min()")
+            list.dotFunction(expression, "minOrNull()")
         }
 
         "reverse" -> {

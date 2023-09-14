@@ -37,23 +37,19 @@ public fun truthiness(value: Any?): Boolean = when (value) {
 }
 
 @InternalApi
-public fun List<Number>.max(): Double? =
-    @Suppress("UNCHECKED_CAST")
-    (this as List<Double>).maxOrNull()
+public fun Short.toNumber(): Short = this
 
 @InternalApi
-public fun List<String>.max(): String? = this.maxOrNull()
+public fun Int.toNumber(): Int = this
 
 @InternalApi
-public fun List<Number>.min(): Double? =
-    @Suppress("UNCHECKED_CAST")
-    (this as List<Double>).minOrNull()
+public fun Long.toNumber(): Long = this
 
 @InternalApi
-public fun List<String>.min(): String? = this.minOrNull()
+public fun Float.toNumber(): Float = this
 
 @InternalApi
-public fun Number.toNumber(): Double = this.toDouble()
+public fun Double.toNumber(): Double = this
 
 @InternalApi
 public fun String.toNumber(): Double? = this.toDoubleOrNull()

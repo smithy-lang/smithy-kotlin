@@ -164,8 +164,6 @@ object RuntimeTypes {
             val ReadThroughCache = symbol("ReadThroughCache")
             val truthiness = symbol("truthiness")
             val urlEncodeComponent = symbol("urlEncodeComponent", "text")
-            val max = symbol("max")
-            val min = symbol("min")
             val toNumber = symbol("toNumber")
         }
 
