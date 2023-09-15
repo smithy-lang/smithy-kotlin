@@ -13,6 +13,7 @@ import software.amazon.smithy.kotlin.codegen.model.defaultName
 import software.amazon.smithy.model.SourceLocation
 import software.amazon.smithy.rulesengine.language.EndpointRuleSet
 import software.amazon.smithy.rulesengine.language.syntax.Identifier
+import software.amazon.smithy.rulesengine.language.syntax.ToExpression
 import software.amazon.smithy.rulesengine.language.syntax.expressions.*
 import software.amazon.smithy.rulesengine.language.syntax.expressions.functions.*
 import software.amazon.smithy.rulesengine.language.syntax.expressions.literal.Literal
@@ -333,7 +334,7 @@ private fun Condition.buildResultIsSetExpression() =
 private fun isSet(expression: Expression) =
     IsSet
         .getDefinition()
-        .createFunction(FunctionNode.ofExpressions(IsSet.ID, expression.also { println("isSet($it)") }))
+        .createFunction(FunctionNode.ofExpressions(IsSet.ID, ToExpression { expression }))
 
 private fun Expression.isBooleanFunction(): Boolean {
     if (this !is LibraryFunction) {
