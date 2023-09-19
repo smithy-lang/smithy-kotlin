@@ -86,12 +86,15 @@ abstract class AbstractSerdeDescriptorGenerator(
 
         /**
          * Older implementations of AWS JSON protocols will unnecessarily serialize a '__type' property.
-         * This property should be ignored unless there is an explicit '__type' member in the model for AWS restJson1, awsJson1_0, and awsJson1_1
+         * This property should be ignored for unions unless there is an explicit '__type' member in the model for:
+         * AWS restJson1, awsJson1_0, and awsJson1_1
          *
          * Source: https://github.com/smithy-lang/smithy/pull/1945
          * Also see: [JsonDeserializerTest]
          */
-        if (objectShape.isUnionShape && isJsonProtocol && "__type" !in memberShapes.map { it.memberName }) writer.write("val __TYPE_DESCRIPTOR = SdkFieldDescriptor(SerialKind.String, JsonSerialName(\"__type\"))")
+        if (objectShape.isUnionShape && isJsonProtocol && "__type" !in memberShapes.map { it.memberName }) {
+            writer.write("val __TYPE_DESCRIPTOR = SdkFieldDescriptor(SerialKind.String, JsonSerialName(\"__type\"))")
+        }
 
         writer.withBlock("val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {", "}") {
             val objTraits = getObjectDescriptorTraits()
@@ -106,12 +109,15 @@ abstract class AbstractSerdeDescriptorGenerator(
 
             /**
              * Older implementations of AWS JSON protocols will unnecessarily serialize a '__type' property.
-             * This property should be ignored unless there is an explicit '__type' member in the model for AWS restJson1, awsJson1_0, and awsJson1_1
+             * This property should be ignored for unions unless there is an explicit '__type' member in the model for:
+             * AWS restJson1, awsJson1_0, and awsJson1_1
              *
              * Source: https://github.com/smithy-lang/smithy/pull/1945
              * Also see: [JsonDeserializerTest]
              */
-            if (objectShape.isUnionShape && isJsonProtocol && "__type" !in memberShapes.map { it.memberName }) write("field(__TYPE_DESCRIPTOR)")
+            if (objectShape.isUnionShape && isJsonProtocol && "__type" !in memberShapes.map { it.memberName }) {
+                write("field(__TYPE_DESCRIPTOR)")
+            }
         }
         writer.write("")
     }
