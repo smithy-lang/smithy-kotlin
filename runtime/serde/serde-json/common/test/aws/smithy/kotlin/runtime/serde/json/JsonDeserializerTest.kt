@@ -362,6 +362,71 @@ class JsonDeserializerTest {
         assertTrue(found, "unknown field not enumerated")
     }
 
+    class BasicUnionTest {
+        companion object {
+            val X_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Integer, JsonSerialName("x"))
+            val Y_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Integer, JsonSerialName("y"))
+            val __TEST_DESCRIPTOR = SdkFieldDescriptor(SerialKind.String, JsonSerialName("__type"))
+
+            val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {
+                field(X_DESCRIPTOR)
+                field(Y_DESCRIPTOR)
+                field(__TEST_DESCRIPTOR)
+            }
+        }
+    }
+
+    object SdkUnknown
+
+    @Test
+    fun itHandlesBasicUnions() {
+        val payload = """
+        {
+            "x": 1
+        }
+        """.trimIndent().encodeToByteArray()
+
+        val deserializer = JsonDeserializer(payload)
+        var value: Any? = null
+        deserializer.deserializeStruct(BasicUnionTest.OBJ_DESCRIPTOR) {
+            loop@ while (true) {
+                when (findNextFieldIndex()) {
+                    BasicUnionTest.X_DESCRIPTOR.index -> value = deserializeInt()
+                    BasicUnionTest.Y_DESCRIPTOR.index -> value = deserializeInt()
+                    BasicUnionTest.__TEST_DESCRIPTOR.index -> skipValue()
+                    null -> break@loop
+                    else -> value = SdkUnknown.also { skipValue() }
+                }
+            }
+        }
+        assertEquals(1, value)
+    }
+
+    @Test
+    fun `it ignores '__type' in union responses`() {
+        val payload = """
+        {
+            "x": 1,
+            "__type": "com.amazon#Test"
+        }
+        """.trimIndent().encodeToByteArray()
+
+        val deserializer = JsonDeserializer(payload)
+        var value: Any? = null
+        deserializer.deserializeStruct(BasicUnionTest.OBJ_DESCRIPTOR) {
+            loop@ while (true) {
+                when (findNextFieldIndex()) {
+                    BasicUnionTest.X_DESCRIPTOR.index -> value = deserializeInt()
+                    BasicUnionTest.Y_DESCRIPTOR.index -> value = deserializeInt()
+                    BasicUnionTest.__TEST_DESCRIPTOR.index -> skipValue()
+                    null -> break@loop
+                    else -> value = SdkUnknown.also { skipValue() }
+                }
+            }
+        }
+        assertEquals(1, value)
+    }
+
     class Nested2 {
         var list2: List<String>? = null
         var int2: Int? = null

@@ -22,7 +22,7 @@ open class JsonSerdeDescriptorGenerator(
     ctx: RenderingContext<Shape>,
     memberShapes: List<MemberShape>? = null,
     private val supportsJsonNameTrait: Boolean = true,
-) : AbstractSerdeDescriptorGenerator(ctx, memberShapes) {
+) : AbstractSerdeDescriptorGenerator(ctx, memberShapes, isJsonProtocol = true) {
 
     override fun getFieldDescriptorTraits(
         member: MemberShape,

@@ -6,7 +6,10 @@
 package software.amazon.smithy.kotlin.codegen.rendering.serde
 
 import software.amazon.smithy.codegen.core.Symbol
-import software.amazon.smithy.kotlin.codegen.core.*
+import software.amazon.smithy.kotlin.codegen.core.RenderingContext
+import software.amazon.smithy.kotlin.codegen.core.RuntimeTypes
+import software.amazon.smithy.kotlin.codegen.core.addImport
+import software.amazon.smithy.kotlin.codegen.core.withBlock
 import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.shapes.Shape
 
@@ -45,6 +48,7 @@ fun MutableList<SdkFieldDescriptorTrait>.add(symbol: Symbol, vararg params: Stri
 abstract class AbstractSerdeDescriptorGenerator(
     protected val ctx: RenderingContext<Shape>,
     memberShapes: List<MemberShape>? = null,
+    private val isJsonProtocol: Boolean = false,
 ) : SerdeDescriptorGenerator {
 
     protected val objectShape = requireNotNull(ctx.shape) { "rendering context requires shape to not be null" }
@@ -79,6 +83,16 @@ abstract class AbstractSerdeDescriptorGenerator(
                 renderContainerFieldDescriptors(member, nestedMember)
             }
         }
+
+        /**
+         * Older implementations of AWS JSON protocols will unnecessarily serialize a '__type' property.
+         * This is here to then ignore it when deserializing unions for AWS restJson1, awsJson1_0, and awsJson1_1
+         *
+         * Source: https://github.com/smithy-lang/smithy/pull/1945
+         * Also see: [JsonDeserializerTest]
+         */
+        if (objectShape.isUnionShape && isJsonProtocol && "__type" !in memberShapes.map { it.memberName }) writer.write("val __TYPE_DESCRIPTOR = SdkFieldDescriptor(SerialKind.String, JsonSerialName(\"__type\"))")
+
         writer.withBlock("val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {", "}") {
             val objTraits = getObjectDescriptorTraits()
             objTraits.forEach { trait ->
@@ -89,6 +103,15 @@ abstract class AbstractSerdeDescriptorGenerator(
             for (member in sortedMembers) {
                 write("field(#L)", member.descriptorName())
             }
+
+            /**
+             * Older implementations of AWS JSON protocols will unnecessarily serialize a '__type' property.
+             * This is here to then ignore it when deserializing unions for AWS restJson1, awsJson1_0, and awsJson1_1
+             *
+             * Source: https://github.com/smithy-lang/smithy/pull/1945
+             * Also see: [JsonDeserializerTest]
+             */
+            if (objectShape.isUnionShape && isJsonProtocol && "__type" !in memberShapes.map { it.memberName }) write("field(__TYPE_DESCRIPTOR)")
         }
         writer.write("")
     }

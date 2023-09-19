@@ -40,6 +40,7 @@ class DeserializeUnionGeneratorTest {
                     when(findNextFieldIndex()) {
                         I32_DESCRIPTOR.index -> value = PrimitiveUnion.I32(deserializeInt())
                         STRINGA_DESCRIPTOR.index -> value = PrimitiveUnion.Stringa(deserializeString())
+                        __TYPE_DESCRIPTOR.index -> skipValue()
                         null -> break@loop
                         else -> value = PrimitiveUnion.SdkUnknown.also { skipValue() }
                     }
@@ -99,6 +100,7 @@ class DeserializeUnionGeneratorTest {
                                 }
                                 MyAggregateUnion.UnionMap(map0)
                             }
+                        __TYPE_DESCRIPTOR.index -> skipValue()
                         null -> break@loop
                         else -> value = MyAggregateUnion.SdkUnknown.also { skipValue() }
                     }
@@ -199,6 +201,7 @@ class DeserializeUnionGeneratorTest {
                                 }
                                 FooUnion.StrMapVal(map0)
                             }
+                        __TYPE_DESCRIPTOR.index -> skipValue()
                         null -> break@loop
                         else -> value = FooUnion.SdkUnknown.also { skipValue() }
                     }
@@ -296,6 +299,7 @@ class DeserializeUnionGeneratorTest {
                                 }
                                 MyAggregateUnion.MapOfLists(map0)
                             }
+                        __TYPE_DESCRIPTOR.index -> skipValue()
                         null -> break@loop
                         else -> value = MyAggregateUnion.SdkUnknown.also { skipValue() }
                     }
