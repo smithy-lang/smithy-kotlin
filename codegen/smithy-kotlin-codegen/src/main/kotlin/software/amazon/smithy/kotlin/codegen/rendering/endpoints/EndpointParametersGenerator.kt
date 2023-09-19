@@ -22,6 +22,7 @@ private const val DEFAULT_DEPRECATED_MESSAGE =
  */
 class EndpointParametersGenerator(
     private val writer: KotlinWriter,
+    private val settings: KotlinSettings,
     rules: EndpointRuleSet?,
     private val paramsSymbol: Symbol,
 ) {
@@ -51,7 +52,12 @@ class EndpointParametersGenerator(
     fun render() {
         renderDocumentation()
         // FIXME - this should probably be an interface
-        writer.withBlock("public class #T private constructor(builder: Builder) {", "}", paramsSymbol) {
+        writer.withBlock(
+            "#L class #T private constructor(builder: Builder) {",
+            "}",
+            settings.api.visibility,
+            paramsSymbol,
+        ) {
             renderFields()
             renderCompanionObject()
             write("")
