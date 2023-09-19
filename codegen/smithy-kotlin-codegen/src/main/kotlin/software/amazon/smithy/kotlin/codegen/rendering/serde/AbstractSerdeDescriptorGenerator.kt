@@ -86,7 +86,7 @@ abstract class AbstractSerdeDescriptorGenerator(
 
         /**
          * Older implementations of AWS JSON protocols will unnecessarily serialize a '__type' property.
-         * This is here to then ignore it when deserializing unions for AWS restJson1, awsJson1_0, and awsJson1_1
+         * This property should be ignored unless there is an explicit '__type' member in the model for AWS restJson1, awsJson1_0, and awsJson1_1
          *
          * Source: https://github.com/smithy-lang/smithy/pull/1945
          * Also see: [JsonDeserializerTest]
@@ -106,7 +106,7 @@ abstract class AbstractSerdeDescriptorGenerator(
 
             /**
              * Older implementations of AWS JSON protocols will unnecessarily serialize a '__type' property.
-             * This is here to then ignore it when deserializing unions for AWS restJson1, awsJson1_0, and awsJson1_1
+             * This property should be ignored unless there is an explicit '__type' member in the model for AWS restJson1, awsJson1_0, and awsJson1_1
              *
              * Source: https://github.com/smithy-lang/smithy/pull/1945
              * Also see: [JsonDeserializerTest]

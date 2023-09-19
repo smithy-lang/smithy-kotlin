@@ -362,16 +362,16 @@ class JsonDeserializerTest {
         assertTrue(found, "unknown field not enumerated")
     }
 
-    class BasicUnionTest {
+    private class BasicUnionTest {
         companion object {
             val X_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Integer, JsonSerialName("x"))
             val Y_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Integer, JsonSerialName("y"))
-            val __TEST_DESCRIPTOR = SdkFieldDescriptor(SerialKind.String, JsonSerialName("__type"))
+            val __TYPE_DESCRIPTOR = SdkFieldDescriptor(SerialKind.String, JsonSerialName("__type"))
 
             val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {
                 field(X_DESCRIPTOR)
                 field(Y_DESCRIPTOR)
-                field(__TEST_DESCRIPTOR)
+                field(__TYPE_DESCRIPTOR)
             }
         }
     }
@@ -393,7 +393,7 @@ class JsonDeserializerTest {
                 when (findNextFieldIndex()) {
                     BasicUnionTest.X_DESCRIPTOR.index -> value = deserializeInt()
                     BasicUnionTest.Y_DESCRIPTOR.index -> value = deserializeInt()
-                    BasicUnionTest.__TEST_DESCRIPTOR.index -> skipValue()
+                    BasicUnionTest.__TYPE_DESCRIPTOR.index -> skipValue()
                     null -> break@loop
                     else -> value = SdkUnknown.also { skipValue() }
                 }
@@ -418,13 +418,52 @@ class JsonDeserializerTest {
                 when (findNextFieldIndex()) {
                     BasicUnionTest.X_DESCRIPTOR.index -> value = deserializeInt()
                     BasicUnionTest.Y_DESCRIPTOR.index -> value = deserializeInt()
-                    BasicUnionTest.__TEST_DESCRIPTOR.index -> skipValue()
+                    BasicUnionTest.__TYPE_DESCRIPTOR.index -> skipValue()
                     null -> break@loop
                     else -> value = SdkUnknown.also { skipValue() }
                 }
             }
         }
         assertEquals(1, value)
+    }
+
+    private class TypeMemberUnionTest {
+        companion object {
+            val TYPE_DESCRIPTOR = SdkFieldDescriptor(SerialKind.String, JsonSerialName("__type"))
+            val X_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Integer, JsonSerialName("x"))
+            val Y_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Integer, JsonSerialName("y"))
+
+            val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {
+                field(TYPE_DESCRIPTOR)
+                field(X_DESCRIPTOR)
+                field(Y_DESCRIPTOR)
+            }
+        }
+    }
+
+    @Test
+    fun `it handles explicit '__type' in union responses`() {
+        val payload = """
+        {
+            "x": 1,
+            "__type": "Some type"
+        }
+        """.trimIndent().encodeToByteArray()
+
+        val deserializer = JsonDeserializer(payload)
+        var value: Any? = null
+        deserializer.deserializeStruct(TypeMemberUnionTest.OBJ_DESCRIPTOR) {
+            loop@ while (true) {
+                when (findNextFieldIndex()) {
+                    TypeMemberUnionTest.TYPE_DESCRIPTOR.index -> value = deserializeString()
+                    TypeMemberUnionTest.X_DESCRIPTOR.index -> value = deserializeInt()
+                    TypeMemberUnionTest.Y_DESCRIPTOR.index -> value = deserializeInt()
+                    null -> break@loop
+                    else -> value = SdkUnknown.also { skipValue() }
+                }
+            }
+        }
+        assertEquals("Some type", value)
     }
 
     class Nested2 {
