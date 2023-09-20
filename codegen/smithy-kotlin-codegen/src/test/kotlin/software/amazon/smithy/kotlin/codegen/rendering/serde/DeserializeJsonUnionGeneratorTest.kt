@@ -10,8 +10,7 @@ import software.amazon.smithy.model.shapes.ShapeId
 import software.amazon.smithy.model.traits.TimestampFormatTrait
 import kotlin.test.Test
 
-class DeserializeUnionGeneratorTest {
-
+class DeserializeJsonUnionGeneratorTest {
     private val modelPrefix = """
             @http(method: "POST", uri: "/foo-no-input")
             operation Foo {
@@ -38,6 +37,42 @@ class DeserializeUnionGeneratorTest {
             deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
                 loop@while(true) {
                     when(findNextFieldIndex()) {
+                        I32_DESCRIPTOR.index -> value = PrimitiveUnion.I32(deserializeInt())
+                        STRINGA_DESCRIPTOR.index -> value = PrimitiveUnion.Stringa(deserializeString())
+                        __TYPE_DESCRIPTOR.index -> skipValue()
+                        null -> break@loop
+                        else -> value = PrimitiveUnion.SdkUnknown.also { skipValue() }
+                    }
+                }
+            }
+        """.formatForTest("")
+
+        val actual = model.codegenDeserializer("PrimitiveUnion")
+
+        actual.shouldContainOnlyOnceWithDiff(expected)
+    }
+
+    @Test
+    fun `it deserializes a union '__type' value`() {
+        val model = (
+                modelPrefix + """            
+            structure FooResponse { 
+                fooUnion: PrimitiveUnion
+            }
+            
+            union PrimitiveUnion {
+                i32: Integer,
+                stringA: String,
+                __type: String
+            }
+        """
+                ).toSmithyModel()
+
+        val expected = """
+            deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
+                loop@while(true) {
+                    when(findNextFieldIndex()) {
+                        TYPE_DESCRIPTOR.index -> value = PrimitiveUnion.Type(deserializeString())
                         I32_DESCRIPTOR.index -> value = PrimitiveUnion.I32(deserializeInt())
                         STRINGA_DESCRIPTOR.index -> value = PrimitiveUnion.Stringa(deserializeString())
                         null -> break@loop
@@ -99,6 +134,7 @@ class DeserializeUnionGeneratorTest {
                                 }
                                 MyAggregateUnion.UnionMap(map0)
                             }
+                        __TYPE_DESCRIPTOR.index -> skipValue()
                         null -> break@loop
                         else -> value = MyAggregateUnion.SdkUnknown.also { skipValue() }
                     }
@@ -199,6 +235,7 @@ class DeserializeUnionGeneratorTest {
                                 }
                                 FooUnion.StrMapVal(map0)
                             }
+                        __TYPE_DESCRIPTOR.index -> skipValue()
                         null -> break@loop
                         else -> value = FooUnion.SdkUnknown.also { skipValue() }
                     }
@@ -296,6 +333,7 @@ class DeserializeUnionGeneratorTest {
                                 }
                                 MyAggregateUnion.MapOfLists(map0)
                             }
+                        __TYPE_DESCRIPTOR.index -> skipValue()
                         null -> break@loop
                         else -> value = MyAggregateUnion.SdkUnknown.also { skipValue() }
                     }
@@ -315,7 +353,7 @@ class DeserializeUnionGeneratorTest {
         val testMembers = unionShape.members().toList()
 
         return testRender(testMembers) { members, writer ->
-            DeserializeUnionGenerator(
+            DeserializeJsonUnionGenerator(
                 ctx.generationCtx,
                 shapeName,
                 members,

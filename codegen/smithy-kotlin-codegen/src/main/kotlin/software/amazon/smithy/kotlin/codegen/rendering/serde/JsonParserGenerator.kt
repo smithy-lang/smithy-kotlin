@@ -129,7 +129,7 @@ open class JsonParserGenerator(
         JsonSerdeDescriptorGenerator(ctx.toRenderingContext(protocolGenerator, shape, writer), members, supportsJsonNameTrait).render()
         if (shape.isUnionShape) {
             val name = ctx.symbolProvider.toSymbol(shape).name
-            DeserializeUnionGenerator(ctx, name, members, writer, defaultTimestampFormat).render()
+            DeserializeJsonUnionGenerator(ctx, name, members, writer, defaultTimestampFormat).render()
         } else {
             DeserializeStructGenerator(ctx, members, writer, defaultTimestampFormat).render()
         }

@@ -11,7 +11,7 @@ import software.amazon.smithy.kotlin.codegen.rendering.protocol.ProtocolGenerato
 import software.amazon.smithy.model.shapes.*
 import software.amazon.smithy.model.traits.TimestampFormatTrait
 
-class DeserializeUnionGenerator(
+open class DeserializeUnionGenerator(
     ctx: ProtocolGenerator.GenerationContext,
     private val unionName: String,
     members: List<MemberShape>,
@@ -34,14 +34,6 @@ class DeserializeUnionGenerator(
                     members
                         .sortedBy { it.memberName }
                         .forEach { memberShape -> renderMemberShape(memberShape) }
-
-                    /**
-                     * Older implementations of AWS JSON protocols will unnecessarily serialize a '__type' property.
-                     * This property should be ignored unless there is an explicit '__type' member in the model
-                     *
-                     * Source: https://github.com/smithy-lang/smithy/pull/1945
-                     */
-                    if ("__type" !in members.map { it.memberName }) write("__TYPE_DESCRIPTOR.index -> skipValue()")
 
                     write("null -> break@loop")
                     write("else -> value = $unionName.SdkUnknown.also { skipValue() }")

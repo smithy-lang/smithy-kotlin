@@ -6,10 +6,7 @@
 package software.amazon.smithy.kotlin.codegen.rendering.serde
 
 import software.amazon.smithy.codegen.core.Symbol
-import software.amazon.smithy.kotlin.codegen.core.RenderingContext
-import software.amazon.smithy.kotlin.codegen.core.RuntimeTypes
-import software.amazon.smithy.kotlin.codegen.core.addImport
-import software.amazon.smithy.kotlin.codegen.core.withBlock
+import software.amazon.smithy.kotlin.codegen.core.*
 import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.shapes.Shape
 
@@ -48,7 +45,6 @@ fun MutableList<SdkFieldDescriptorTrait>.add(symbol: Symbol, vararg params: Stri
 abstract class AbstractSerdeDescriptorGenerator(
     protected val ctx: RenderingContext<Shape>,
     memberShapes: List<MemberShape>? = null,
-    private val isJsonProtocol: Boolean = false,
 ) : SerdeDescriptorGenerator {
 
     protected val objectShape = requireNotNull(ctx.shape) { "rendering context requires shape to not be null" }
@@ -83,19 +79,6 @@ abstract class AbstractSerdeDescriptorGenerator(
                 renderContainerFieldDescriptors(member, nestedMember)
             }
         }
-
-        /**
-         * Older implementations of AWS JSON protocols will unnecessarily serialize a '__type' property.
-         * This property should be ignored for unions unless there is an explicit '__type' member in the model for:
-         * AWS restJson1, awsJson1_0, and awsJson1_1
-         *
-         * Source: https://github.com/smithy-lang/smithy/pull/1945
-         * Also see: [JsonDeserializerTest]
-         */
-        if (objectShape.isUnionShape && isJsonProtocol && "__type" !in memberShapes.map { it.memberName }) {
-            writer.write("val __TYPE_DESCRIPTOR = SdkFieldDescriptor(SerialKind.String, JsonSerialName(\"__type\"))")
-        }
-
         writer.withBlock("val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {", "}") {
             val objTraits = getObjectDescriptorTraits()
             objTraits.forEach { trait ->
@@ -105,18 +88,6 @@ abstract class AbstractSerdeDescriptorGenerator(
 
             for (member in sortedMembers) {
                 write("field(#L)", member.descriptorName())
-            }
-
-            /**
-             * Older implementations of AWS JSON protocols will unnecessarily serialize a '__type' property.
-             * This property should be ignored for unions unless there is an explicit '__type' member in the model for:
-             * AWS restJson1, awsJson1_0, and awsJson1_1
-             *
-             * Source: https://github.com/smithy-lang/smithy/pull/1945
-             * Also see: [JsonDeserializerTest]
-             */
-            if (objectShape.isUnionShape && isJsonProtocol && "__type" !in memberShapes.map { it.memberName }) {
-                write("field(__TYPE_DESCRIPTOR)")
             }
         }
         writer.write("")
@@ -199,7 +170,7 @@ abstract class AbstractSerdeDescriptorGenerator(
      * @param targetShape The nested container shape type to generate a field descriptor for
      * @param level the current child nesting level (e.g. if we have mapOfMapOfList we need to generate descriptors recursively)
      */
-    private fun renderContainerFieldDescriptors(member: MemberShape, targetShape: Shape, level: Int = 0) {
+    protected fun renderContainerFieldDescriptors(member: MemberShape, targetShape: Shape, level: Int = 0) {
         renderFieldDescriptor(member, targetShape, "_C$level")
 
         // container of container (e.g. mapOfMap, listOfList, etc)
