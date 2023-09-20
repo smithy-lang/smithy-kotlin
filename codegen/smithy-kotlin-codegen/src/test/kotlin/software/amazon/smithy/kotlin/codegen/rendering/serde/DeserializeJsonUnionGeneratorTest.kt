@@ -55,7 +55,7 @@ class DeserializeJsonUnionGeneratorTest {
     @Test
     fun `it deserializes a union '__type' value`() {
         val model = (
-                modelPrefix + """            
+            modelPrefix + """            
             structure FooResponse { 
                 fooUnion: PrimitiveUnion
             }
@@ -66,7 +66,7 @@ class DeserializeJsonUnionGeneratorTest {
                 __type: String
             }
         """
-                ).toSmithyModel()
+            ).toSmithyModel()
 
         val expected = """
             deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
