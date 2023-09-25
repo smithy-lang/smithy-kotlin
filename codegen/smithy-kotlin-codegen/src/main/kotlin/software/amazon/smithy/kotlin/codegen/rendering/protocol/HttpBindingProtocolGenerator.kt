@@ -614,12 +614,10 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                         renderDeserializeResponseCode(ctx, it, writer)
                     }
             }
-            .call {
-                // Render client side error correction for `@required` members.
-                // NOTE: nested members bound via the document/payload will be handled by the deserializer for the relevant
-                // content type. All other members (e.g. bound via REST semantics) will be corrected here.
-                writer.write("builder.correctErrors()")
-            }
+            // Render client side error correction for `@required` members.
+            // NOTE: nested members bound via the document/payload will be handled by the deserializer for the relevant
+            // content type. All other members (e.g. bound via REST semantics) will be corrected here.
+            .write("builder.correctErrors()")
             .write("return builder.build()")
             .closeBlock("}")
     }

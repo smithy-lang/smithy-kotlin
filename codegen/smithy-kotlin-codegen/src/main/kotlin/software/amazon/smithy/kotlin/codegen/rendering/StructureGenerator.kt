@@ -282,15 +282,21 @@ class StructureGenerator(
 
                 write("")
 
-                // render client side error correction function to set @required members
+                // render client side error correction function to set @required members to a default
                 withBlock(
                     "internal fun correctErrors(): Builder {",
                     "}",
                 ) {
-                    sortedMembers.filter(MemberShape::isRequired).forEach {
-                        val correctedValue = ClientErrorCorrection.defaultValue(ctx, it, writer)
-                        write("if (#1L == null) #1L = #2L", ctx.symbolProvider.toMemberName(it), correctedValue)
-                    }
+                    sortedMembers
+                        .filter(MemberShape::isRequired)
+                        .filterNot {
+                            val target = ctx.model.expectShape(it.target)
+                            target.isStreaming
+                        }
+                        .forEach {
+                            val correctedValue = ClientErrorCorrection.defaultValue(ctx, it, writer)
+                            write("if (#1L == null) #1L = #2L", ctx.symbolProvider.toMemberName(it), correctedValue)
+                        }
                     write("return this")
                 }
             }
