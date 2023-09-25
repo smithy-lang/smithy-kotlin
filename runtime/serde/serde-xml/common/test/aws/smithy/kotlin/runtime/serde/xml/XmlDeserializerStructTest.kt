@@ -8,7 +8,6 @@ import aws.smithy.kotlin.runtime.serde.*
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
-@OptIn(ExperimentalStdlibApi::class)
 class XmlDeserializerStructTest {
     @Test
     fun `it handles basic structs with attribs`() {

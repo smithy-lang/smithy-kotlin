@@ -16,7 +16,6 @@ import aws.smithy.kotlin.runtime.net.Host
 import aws.smithy.kotlin.runtime.net.Scheme
 import aws.smithy.kotlin.runtime.net.Url
 import aws.smithy.kotlin.runtime.time.Instant
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.TestResult
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
@@ -47,7 +46,6 @@ private const val EXPECTED_FINAL_CHUNK_SIGNATURE = "b6c6ea8a5354eaf15b3cb7646744
 private val EMPTY_BYTES = byteArrayOf()
 
 @Suppress("HttpUrlsUsage")
-@OptIn(ExperimentalCoroutinesApi::class)
 public abstract class BasicSigningTestBase : HasSigner {
     private val defaultSigningConfig = AwsSigningConfig {
         region = "us-east-1"

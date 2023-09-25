@@ -5,14 +5,12 @@
 package aws.smithy.kotlin.runtime.util
 
 import aws.smithy.kotlin.runtime.time.ManualClock
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Assertions.assertEquals
 import kotlin.test.Test
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 
-@OptIn(ExperimentalCoroutinesApi::class)
 class ReadThroughCacheTest {
     @Test
     fun testReadThrough() = runTest {

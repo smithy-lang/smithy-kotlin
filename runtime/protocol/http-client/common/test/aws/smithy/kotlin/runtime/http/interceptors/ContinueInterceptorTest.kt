@@ -13,14 +13,12 @@ import aws.smithy.kotlin.runtime.http.request.url
 import aws.smithy.kotlin.runtime.io.SdkSource
 import aws.smithy.kotlin.runtime.net.Url
 import aws.smithy.kotlin.runtime.operation.ExecutionContext
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
 import kotlin.test.fail
 
-@OptIn(ExperimentalCoroutinesApi::class)
 class ContinueInterceptorTest {
     private fun context(request: HttpRequest) = object : ProtocolRequestInterceptorContext<Any, HttpRequest> {
         override val protocolRequest: HttpRequest = request

@@ -22,7 +22,7 @@ import kotlin.time.TimeSource
 private const val DEFAULT_RETRY_COST = 2
 private const val DEFAULT_TIMEOUT_RETRY_COST = 3
 
-@OptIn(ExperimentalCoroutinesApi::class, ExperimentalTime::class)
+@OptIn(ExperimentalTime::class)
 class StandardRetryTokenBucketTest {
     @Test
     fun testWaitForCapacity() = runTest {

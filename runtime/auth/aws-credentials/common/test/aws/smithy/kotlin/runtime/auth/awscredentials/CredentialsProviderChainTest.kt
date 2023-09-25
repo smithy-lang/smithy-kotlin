@@ -6,12 +6,10 @@
 package aws.smithy.kotlin.runtime.auth.awscredentials
 
 import aws.smithy.kotlin.runtime.util.Attributes
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 
-@OptIn(ExperimentalCoroutinesApi::class)
 class CredentialsProviderChainTest {
     private class TestCredentialsProvider(val accessKeyId: String? = null, val secretAccessKey: String? = null) : CredentialsProvider {
         override suspend fun resolve(attributes: Attributes): Credentials =

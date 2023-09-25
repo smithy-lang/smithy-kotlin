@@ -12,7 +12,6 @@ import io.kotest.matchers.maps.shouldContainExactly
 import kotlin.math.abs
 import kotlin.test.*
 
-@OptIn(ExperimentalStdlibApi::class)
 class JsonDeserializerTest {
     @Test
     fun itHandlesDoubles() {

@@ -11,12 +11,10 @@ import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
 import aws.smithy.kotlin.runtime.http.response.HttpResponse
 import io.kotest.matchers.string.shouldContain
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import kotlin.IllegalStateException
 import kotlin.test.*
 
-@OptIn(ExperimentalCoroutinesApi::class)
 class HttpInterceptorTypeValidationTest {
     @Test
     fun testModifyBeforeSerializationTypeFailure() = runTest {

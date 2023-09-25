@@ -19,11 +19,9 @@ import aws.smithy.kotlin.runtime.io.*
 import aws.smithy.kotlin.runtime.util.encodeBase64String
 import aws.smithy.kotlin.runtime.util.get
 import kotlinx.coroutines.CompletableDeferred
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import kotlin.test.*
 
-@OptIn(ExperimentalCoroutinesApi::class)
 class FlexibleChecksumsRequestInterceptorTest {
     private val client = SdkHttpClient(TestEngine())
 
@@ -145,7 +143,7 @@ class FlexibleChecksumsRequestInterceptorTest {
         expectedHash.update(byteArray)
 
         assertTrue(completableDeferred.isCompleted)
-        assertEquals(expectedHash.digest().encodeBase64String(), completableDeferred.getCompleted())
+        assertEquals(expectedHash.digest().encodeBase64String(), completableDeferred.await())
     }
 
     @Test
@@ -167,7 +165,7 @@ class FlexibleChecksumsRequestInterceptorTest {
         expectedHash.update(byteArray)
 
         assertTrue(completableDeferred.isCompleted)
-        assertEquals(expectedHash.digest().encodeBase64String(), completableDeferred.getCompleted())
+        assertEquals(expectedHash.digest().encodeBase64String(), completableDeferred.await())
     }
 
     @Test

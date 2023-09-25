@@ -9,7 +9,6 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 
 // See https://awslabs.github.io/smithy/spec/xml.html#xmlname-trait
-@OptIn(ExperimentalStdlibApi::class)
 class XmlDeserializerNamespaceTest {
 
     @Test

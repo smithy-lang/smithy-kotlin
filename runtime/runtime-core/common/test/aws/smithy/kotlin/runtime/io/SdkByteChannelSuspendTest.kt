@@ -16,7 +16,6 @@ import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
-@OptIn(ExperimentalCoroutinesApi::class)
 class SdkByteChannelSuspendTest : ManualDispatchTestBase() {
     private val ch = SdkByteChannel()
 

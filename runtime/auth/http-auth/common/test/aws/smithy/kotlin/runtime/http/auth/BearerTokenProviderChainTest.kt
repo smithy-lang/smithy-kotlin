@@ -8,12 +8,10 @@ package aws.smithy.kotlin.runtime.http.auth
 import aws.smithy.kotlin.runtime.time.Instant
 import aws.smithy.kotlin.runtime.util.Attributes
 import aws.smithy.kotlin.runtime.util.emptyAttributes
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
-@OptIn(ExperimentalCoroutinesApi::class)
 class BearerTokenProviderChainTest {
     private class TestTokenProvider(val token: String? = null) : BearerTokenProvider {
         override suspend fun resolve(attributes: Attributes): BearerToken =

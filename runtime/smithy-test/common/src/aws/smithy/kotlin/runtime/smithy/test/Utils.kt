@@ -14,13 +14,11 @@ import kotlin.test.fail
  * Convenience method for (test) code generation so that it doesn't have to deal
  * with opt-in requirements
  */
-@OptIn(ExperimentalStdlibApi::class)
 public fun String.encodeAsByteArray(): ByteArray = encodeToByteArray()
 
 /**
  * Assert that the [actual] body is empty
  */
-@OptIn(ExperimentalStdlibApi::class)
 public suspend fun assertEmptyBody(@Suppress("UNUSED_PARAMETER") expected: HttpBody?, actual: HttpBody?) {
     if (actual !is HttpBody.Empty) {
         val actualBody = actual?.readAll()?.decodeToString()
@@ -31,7 +29,6 @@ public suspend fun assertEmptyBody(@Suppress("UNUSED_PARAMETER") expected: HttpB
 /**
  * Assert that [actual] == [expected]
  */
-@OptIn(ExperimentalStdlibApi::class)
 public suspend fun assertBytesEqual(expected: HttpBody?, actual: HttpBody?) {
     val actualRead = actual?.readAll()
     val expectedRead = expected?.readAll()
@@ -41,7 +38,6 @@ public suspend fun assertBytesEqual(expected: HttpBody?, actual: HttpBody?) {
 /**
  * Assert that [actual] == [expected]
  */
-@OptIn(ExperimentalStdlibApi::class)
 public fun assertBytesEqual(expected: ByteArray?, actual: ByteArray?) {
     if (expected == null) {
         assertNull(actual, "expected no content; found ${actual?.decodeToString()}")

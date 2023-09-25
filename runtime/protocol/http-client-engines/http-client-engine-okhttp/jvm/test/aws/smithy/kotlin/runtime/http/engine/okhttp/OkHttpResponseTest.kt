@@ -20,7 +20,6 @@ import org.junit.jupiter.api.Test
 import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.test.*
 
-@OptIn(ExperimentalCoroutinesApi::class)
 class OkHttpResponseTest {
 
     private val testMetrics = HttpClientMetrics("test", TelemetryProvider.None)

@@ -10,11 +10,9 @@ import aws.smithy.kotlin.runtime.http.interceptors.HttpInterceptor
 import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
 import io.kotest.matchers.collections.shouldContainInOrder
 import io.kotest.matchers.collections.shouldNotContain
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import kotlin.test.*
 
-@ExperimentalCoroutinesApi
 class HttpInterceptorOrderTest {
     private val allHooks = listOf(
         "readBeforeExecution",

@@ -11,7 +11,6 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertTrue
 
-@OptIn(ExperimentalStdlibApi::class)
 class XmlDeserializerPrimitiveTest {
     @Test
     fun itHandlesDoubles() {

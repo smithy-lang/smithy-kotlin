@@ -14,7 +14,6 @@ import kotlinx.coroutines.test.runTest
 import kotlin.test.*
 import kotlin.time.Duration.Companion.seconds
 
-@OptIn(ExperimentalCoroutinesApi::class)
 class CachedValueTest {
     @Test
     fun testNull() = runTest {

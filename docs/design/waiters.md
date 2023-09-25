@@ -218,7 +218,6 @@ class Waiter<I, O>(
     val acceptors: List<Acceptor<I, O>>,
     val delayProvider: DelayProvider,
 ) {
-    @OptIn(ExperimentalTime::class)
     suspend fun retry(input: I): WaiterOutcome<O> =
         withTimeout(options.maxDuration.inWholeMilliseconds) {
             doTryLoop(input, 1)
