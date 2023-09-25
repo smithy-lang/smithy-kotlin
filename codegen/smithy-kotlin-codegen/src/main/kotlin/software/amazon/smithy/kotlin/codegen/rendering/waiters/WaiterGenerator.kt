@@ -41,8 +41,9 @@ internal fun KotlinWriter.renderWaiter(wi: WaiterInfo) {
         format("request: #T", wi.inputSymbol)
     }
     withBlock(
-        "public suspend fun #T.#L(#L): #T<#T> {",
+        "#L suspend fun #T.#L(#L): #T<#T> {",
         "}",
+        wi.ctx.settings.api.visibility,
         wi.serviceSymbol,
         wi.methodName,
         inputParameter,
@@ -60,7 +61,8 @@ internal fun KotlinWriter.renderWaiter(wi: WaiterInfo) {
     write("")
     wi.waiter.documentation.ifPresent(this::dokka)
     write(
-        "public suspend fun #T.#L(block: #T.Builder.() -> Unit): #T<#T> =",
+        "#L suspend fun #T.#L(block: #T.Builder.() -> Unit): #T<#T> =",
+        wi.ctx.settings.api.visibility,
         wi.serviceSymbol,
         wi.methodName,
         wi.inputSymbol,
