@@ -33,12 +33,12 @@ interface EndpointDelegator {
         val defaultProviderSymbol = DefaultEndpointProviderGenerator.getSymbol(ctx.settings)
 
         ctx.delegator.useFileWriter(providerSymbol) {
-            EndpointProviderGenerator(it, providerSymbol, paramsSymbol).render()
+            EndpointProviderGenerator(it, ctx.settings, providerSymbol, paramsSymbol).render()
         }
 
         if (rules != null) {
             ctx.delegator.useFileWriter(defaultProviderSymbol) {
-                DefaultEndpointProviderGenerator(it, rules, defaultProviderSymbol, providerSymbol, paramsSymbol).render()
+                DefaultEndpointProviderGenerator(it, rules, defaultProviderSymbol, providerSymbol, paramsSymbol, ctx.settings).render()
             }
         }
     }
@@ -49,7 +49,7 @@ interface EndpointDelegator {
     fun generateEndpointParameters(ctx: ProtocolGenerator.GenerationContext, rules: EndpointRuleSet?) {
         val paramsSymbol = EndpointParametersGenerator.getSymbol(ctx.settings)
         ctx.delegator.useFileWriter(paramsSymbol) {
-            EndpointParametersGenerator(it, rules, paramsSymbol).render()
+            EndpointParametersGenerator(it, ctx.settings, rules, paramsSymbol).render()
         }
     }
 

@@ -5,11 +5,13 @@
 
 package software.amazon.smithy.kotlin.codegen
 
+import org.junit.jupiter.api.assertThrows
 import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.kotlin.codegen.test.TestModelDefault
 import software.amazon.smithy.kotlin.codegen.test.toSmithyModel
 import software.amazon.smithy.model.node.Node
 import software.amazon.smithy.model.shapes.ShapeId
+import java.lang.IllegalArgumentException
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
@@ -183,5 +185,110 @@ class KotlinSettingsTest {
             model,
             Node.parse(contents).expectObjectNode(),
         )
+    }
+
+    @Test
+    fun `supports internal visibility`() {
+        val model = javaClass.getResource("simple-service.smithy")!!.toSmithyModel()
+
+        val contents = """
+            {
+                "package": {
+                    "name": "aws.sdk.kotlin.runtime.protocoltest.awsrestjson",
+                    "version": "1.0.0"
+                },
+                "build": {
+                    "optInAnnotations": ["foo", "bar"]
+                },
+                "api": {
+                    "visibility": "internal"
+                }
+            }
+        """.trimIndent()
+
+        val settings = KotlinSettings.from(
+            model,
+            Node.parse(contents).expectObjectNode(),
+        )
+
+        assertEquals(Visibility.INTERNAL, settings.api.visibility)
+    }
+
+    @Test
+    fun `defaults to public visibility`() {
+        val model = javaClass.getResource("simple-service.smithy")!!.toSmithyModel()
+
+        val contents = """
+            {
+                "package": {
+                    "name": "aws.sdk.kotlin.runtime.protocoltest.awsrestjson",
+                    "version": "1.0.0"
+                },
+                "build": {
+                    "optInAnnotations": ["foo", "bar"]
+                }
+            }
+        """.trimIndent()
+
+        val settings = KotlinSettings.from(
+            model,
+            Node.parse(contents).expectObjectNode(),
+        )
+
+        assertEquals(Visibility.PUBLIC, settings.api.visibility)
+    }
+
+    @Test
+    fun `supports public visibility`() {
+        val model = javaClass.getResource("simple-service.smithy")!!.toSmithyModel()
+
+        val contents = """
+            {
+                "package": {
+                    "name": "aws.sdk.kotlin.runtime.protocoltest.awsrestjson",
+                    "version": "1.0.0"
+                },
+                "build": {
+                    "optInAnnotations": ["foo", "bar"]
+                },
+                "api": {
+                    "visibility": "public"
+                }
+            }
+        """.trimIndent()
+
+        val settings = KotlinSettings.from(
+            model,
+            Node.parse(contents).expectObjectNode(),
+        )
+
+        assertEquals(Visibility.PUBLIC, settings.api.visibility)
+    }
+
+    @Test
+    fun `throws on unsupported visibility values`() {
+        val model = javaClass.getResource("simple-service.smithy")!!.toSmithyModel()
+
+        val contents = """
+            {
+                "package": {
+                    "name": "aws.sdk.kotlin.runtime.protocoltest.awsrestjson",
+                    "version": "1.0.0"
+                },
+                "build": {
+                    "optInAnnotations": ["foo", "bar"]
+                },
+                "api": {
+                    "visibility": "I don't know, just make it visible"
+                }
+            }
+        """.trimIndent()
+
+        assertThrows<IllegalArgumentException> {
+            KotlinSettings.from(
+                model,
+                Node.parse(contents).expectObjectNode(),
+            )
+        }
     }
 }

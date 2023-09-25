@@ -60,7 +60,8 @@ class DefaultEndpointProviderGenerator(
     private val defaultProviderSymbol: Symbol,
     private val interfaceSymbol: Symbol,
     private val paramsSymbol: Symbol,
-    externalFunctions: Map<String, Symbol> = emptyMap(),
+    private val settings: KotlinSettings,
+    private val externalFunctions: Map<String, Symbol> = emptyMap(),
     private val propertyRenderers: Map<String, EndpointPropertyRenderer> = emptyMap(),
 ) : ExpressionRenderer {
     companion object {
@@ -76,7 +77,13 @@ class DefaultEndpointProviderGenerator(
 
     fun render() {
         renderDocumentation()
-        writer.withBlock("public class #T: #T {", "}", defaultProviderSymbol, interfaceSymbol) {
+        writer.withBlock(
+            "#L class #T: #T {",
+            "}",
+            settings.api.visibility,
+            defaultProviderSymbol,
+            interfaceSymbol,
+        ) {
             renderResolve()
         }
     }

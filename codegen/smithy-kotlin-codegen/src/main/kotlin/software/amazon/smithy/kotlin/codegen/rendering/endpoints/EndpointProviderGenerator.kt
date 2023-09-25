@@ -18,6 +18,7 @@ import software.amazon.smithy.kotlin.codegen.model.buildSymbol
  */
 class EndpointProviderGenerator(
     private val writer: KotlinWriter,
+    private val settings: KotlinSettings,
     private val providerSymbol: Symbol,
     private val paramsSymbol: Symbol,
 ) {
@@ -33,7 +34,8 @@ class EndpointProviderGenerator(
     fun render() {
         renderDocumentation()
         writer.write(
-            "public fun interface #T: #T<#T>",
+            "#L fun interface #T: #T<#T>",
+            settings.api.visibility,
             providerSymbol,
             RuntimeTypes.SmithyClient.Endpoints.EndpointProvider,
             paramsSymbol,

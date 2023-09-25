@@ -14,6 +14,7 @@ import software.amazon.smithy.model.node.StringNode
 import software.amazon.smithy.model.shapes.ServiceShape
 import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.shapes.ShapeId
+import java.lang.IllegalArgumentException
 import java.util.Optional
 import java.util.logging.Logger
 import kotlin.streams.toList
@@ -25,6 +26,7 @@ private const val PACKAGE_NAME = "name"
 private const val PACKAGE_VERSION = "version"
 private const val PACKAGE_DESCRIPTION = "description"
 private const val BUILD_SETTINGS = "build"
+private const val API_SETTINGS = "api"
 
 // Optional specification of sdkId for models that provide them, otherwise Service's shape id name is used
 private const val SDK_ID = "sdkId"
@@ -37,6 +39,7 @@ data class KotlinSettings(
     val pkg: PackageSettings,
     val sdkId: String,
     val build: BuildSettings = BuildSettings.Default,
+    val api: ApiSettings = ApiSettings.Default,
 ) {
 
     /**
@@ -91,11 +94,13 @@ data class KotlinSettings(
             // Load the sdk id from configurations that define it, fall back to service name for those that don't.
             val sdkId = config.getStringMemberOrDefault(SDK_ID, serviceId.name)
             val build = config.getObjectMember(BUILD_SETTINGS)
+            val api = config.getObjectMember(API_SETTINGS)
             return KotlinSettings(
                 serviceId,
                 PackageSettings(packageName, version, desc),
                 sdkId,
                 BuildSettings.fromNode(build),
+                ApiSettings.fromNode(api),
             )
         }
     }
@@ -170,8 +175,7 @@ data class BuildSettings(
         fun fromNode(node: Optional<ObjectNode>): BuildSettings = node.map {
             val generateFullProject = node.get().getBooleanMemberOrDefault(ROOT_PROJECT, false)
             val generateBuildFiles = node.get().getBooleanMemberOrDefault(GENERATE_DEFAULT_BUILD_FILES, true)
-            val generateMultiplatformProject =
-                node.get().getBooleanMemberOrDefault(GENERATE_MULTIPLATFORM_MODULE, false)
+            val generateMultiplatformProject = node.get().getBooleanMemberOrDefault(GENERATE_MULTIPLATFORM_MODULE, false)
             val annotations = node.get().getArrayMember(ANNOTATIONS).map {
                 it.elements.mapNotNull { node ->
                     node.asStringNode().map { stringNode ->
@@ -193,3 +197,45 @@ data class BuildSettings(
 class UnresolvableProtocolException(message: String) : CodegenException(message)
 
 private fun <T> Optional<T>.orNull(): T? = if (isPresent) get() else null
+
+/**
+ * The visibility of code-generated classes, objects, interfaces, etc.
+ * Valid values are `public` and `internal`. `private` not supported because codegen would not compile with private classes.
+ */
+enum class Visibility(val value: String) {
+    PUBLIC("public"),
+    INTERNAL("internal"),
+    ;
+
+    override fun toString(): String = value
+
+    companion object {
+        public fun fromValue(value: String): Visibility = when (value.lowercase()) {
+            "public" -> PUBLIC
+            "internal" -> INTERNAL
+            else -> throw IllegalArgumentException("$value is not a valid Visibility value, expected $PUBLIC or $INTERNAL")
+        }
+    }
+}
+
+/**
+ * Contains API settings for a Kotlin project
+ * @param visibility Enum representing the visibility of code-generated classes, objects, interfaces, etc.
+ */
+data class ApiSettings(
+    val visibility: Visibility = Visibility.PUBLIC,
+) {
+    companion object {
+        const val VISIBILITY = "visibility"
+
+        fun fromNode(node: Optional<ObjectNode>): ApiSettings = node.map {
+            val visibility = Visibility.fromValue(node.get().getStringMemberOrDefault(VISIBILITY, "public"))
+            ApiSettings(visibility)
+        }.orElse(Default)
+
+        /**
+         * Default build settings
+         */
+        val Default: ApiSettings = ApiSettings()
+    }
+}

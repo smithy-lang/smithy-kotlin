@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.27.4] - 09/15/2023
+
+### Miscellaneous
+* bump aws-crt-kotlin to 0.7.1
+
 ## [0.27.3] - 09/08/2023
 
 ### Features

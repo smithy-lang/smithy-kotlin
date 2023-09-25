@@ -43,7 +43,12 @@ class EndpointDiscovererGenerator(private val ctx: CodegenContext, private val d
                     calls.
                 """.trimIndent(),
             )
-            withBlock("public class #T {", "}", symbol) {
+            withBlock(
+                "#L class #T {",
+                "}",
+                ctx.settings.api.visibility,
+                symbol,
+            ) {
                 write(
                     "private val cache = #T<DiscoveryParams, #T>(10.#T, #T.System)",
                     RuntimeTypes.Core.Utils.ReadThroughCache,

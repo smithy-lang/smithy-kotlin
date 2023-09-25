@@ -4,6 +4,7 @@
  */
 package software.amazon.smithy.kotlin.codegen.rendering.endpoints
 
+import software.amazon.smithy.kotlin.codegen.KotlinSettings
 import software.amazon.smithy.kotlin.codegen.core.KotlinWriter
 import software.amazon.smithy.kotlin.codegen.model.buildSymbol
 import software.amazon.smithy.kotlin.codegen.test.TestModelDefault
@@ -11,6 +12,7 @@ import software.amazon.smithy.kotlin.codegen.test.assertBalancedBracesAndParens
 import software.amazon.smithy.kotlin.codegen.test.formatForTest
 import software.amazon.smithy.kotlin.codegen.test.shouldContainOnlyOnceWithDiff
 import software.amazon.smithy.model.node.Node
+import software.amazon.smithy.model.shapes.ShapeId
 import software.amazon.smithy.rulesengine.language.EndpointRuleSet
 import kotlin.test.*
 
@@ -142,7 +144,13 @@ class DefaultEndpointProviderGeneratorTest {
             name = "DefaultEndpointProvider"
             namespace = TestModelDefault.NAMESPACE
         }
-        DefaultEndpointProviderGenerator(writer, rules, defaultSymbol, interfaceSymbol, paramsSymbol).render()
+        val settings = KotlinSettings(
+            service = ShapeId.from("com.test#Test"),
+            pkg = KotlinSettings.PackageSettings("name", "version"),
+            sdkId = "testSdkId",
+        )
+
+        DefaultEndpointProviderGenerator(writer, rules, defaultSymbol, interfaceSymbol, paramsSymbol, settings).render()
         generatedClass = writer.toString()
     }
 
