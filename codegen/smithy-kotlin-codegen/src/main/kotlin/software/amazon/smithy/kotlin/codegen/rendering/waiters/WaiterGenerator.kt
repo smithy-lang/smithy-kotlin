@@ -9,6 +9,7 @@ import software.amazon.smithy.kotlin.codegen.core.KotlinWriter
 import software.amazon.smithy.kotlin.codegen.core.RuntimeTypes
 import software.amazon.smithy.kotlin.codegen.core.withBlock
 import software.amazon.smithy.kotlin.codegen.lang.KotlinTypes
+import software.amazon.smithy.kotlin.codegen.model.hasAllOptionalMembers
 import java.text.DecimalFormat
 import java.text.DecimalFormatSymbols
 
@@ -34,12 +35,17 @@ private fun KotlinWriter.renderRetryStrategy(wi: WaiterInfo, asValName: String) 
 internal fun KotlinWriter.renderWaiter(wi: WaiterInfo) {
     write("")
     wi.waiter.documentation.ifPresent(::dokka)
+    val inputParameter = if (wi.input.hasAllOptionalMembers) {
+        format("request: #1T = #1T{}", wi.inputSymbol)
+    } else {
+        format("request: #T", wi.inputSymbol)
+    }
     withBlock(
-        "public suspend fun #T.#L(request: #T): #T<#T> {",
+        "public suspend fun #T.#L(#L): #T<#T> {",
         "}",
         wi.serviceSymbol,
         wi.methodName,
-        wi.inputSymbol,
+        inputParameter,
         RuntimeTypes.Core.Retries.Outcome,
         wi.outputSymbol,
     ) {
