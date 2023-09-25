@@ -98,6 +98,7 @@ open class JsonParserGenerator(
                         else -> {
                             writer.write("val builder = #T.Builder()", symbol)
                             renderDeserializerBody(ctx, shape, members.toList(), writer)
+                            writer.write("builder.correctErrors()")
                             writer.write("return builder.build()")
                         }
                     }

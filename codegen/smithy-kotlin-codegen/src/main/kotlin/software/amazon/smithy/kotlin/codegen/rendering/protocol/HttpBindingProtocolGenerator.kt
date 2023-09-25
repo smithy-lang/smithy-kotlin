@@ -12,10 +12,7 @@ import software.amazon.smithy.kotlin.codegen.core.*
 import software.amazon.smithy.kotlin.codegen.lang.KotlinTypes
 import software.amazon.smithy.kotlin.codegen.lang.toEscapedLiteral
 import software.amazon.smithy.kotlin.codegen.model.*
-import software.amazon.smithy.kotlin.codegen.rendering.serde.deserializerName
-import software.amazon.smithy.kotlin.codegen.rendering.serde.formatInstant
-import software.amazon.smithy.kotlin.codegen.rendering.serde.parseInstant
-import software.amazon.smithy.kotlin.codegen.rendering.serde.serializerName
+import software.amazon.smithy.kotlin.codegen.rendering.serde.*
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.knowledge.HttpBinding
 import software.amazon.smithy.model.shapes.*
@@ -573,7 +570,6 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         writer: KotlinWriter,
     ) {
         writer
-            .addImport(RuntimeTypes.Core.ExecutionContext)
             .openBlock(
                 "override suspend fun deserialize(context: #T, call: #T): #T {",
                 RuntimeTypes.Core.ExecutionContext,
@@ -617,6 +613,12 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                     ?.let {
                         renderDeserializeResponseCode(ctx, it, writer)
                     }
+            }
+            .call {
+                // Render client side error correction for `@required` members.
+                // NOTE: nested members bound via the document/payload will be handled by the deserializer for the relevant
+                // content type. All other members (e.g. bound via REST semantics) will be corrected here.
+                writer.write("builder.correctErrors()")
             }
             .write("return builder.build()")
             .closeBlock("}")
