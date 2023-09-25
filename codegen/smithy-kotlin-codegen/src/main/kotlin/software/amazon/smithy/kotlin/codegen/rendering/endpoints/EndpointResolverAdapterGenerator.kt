@@ -150,7 +150,7 @@ class EndpointResolverAdapterGenerator(
         }
 
         for (param in rules.parameters.toList()) {
-            val paramName = param.name.asString()
+            val paramName = param.name.toString()
             val paramDefaultName = param.defaultName()
 
             val staticParam = staticContextParams?.parameters?.get(paramName)
@@ -176,7 +176,7 @@ class EndpointResolverAdapterGenerator(
         if (rules == null) return
 
         rules.parameters.toList().forEach { param ->
-            val paramName = param.name.asString()
+            val paramName = param.name.toString()
             val paramDefaultName = param.defaultName()
             clientContextParams.parameters?.get(paramName)?.let {
                 writer.write("#1L = config.#1L", paramDefaultName)

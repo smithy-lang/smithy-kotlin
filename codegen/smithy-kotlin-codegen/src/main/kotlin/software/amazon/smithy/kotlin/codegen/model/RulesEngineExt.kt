@@ -8,7 +8,9 @@ import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.kotlin.codegen.lang.KotlinTypes
 import software.amazon.smithy.kotlin.codegen.utils.doubleQuote
 import software.amazon.smithy.kotlin.codegen.utils.toCamelCase
-import software.amazon.smithy.rulesengine.language.eval.Value
+import software.amazon.smithy.rulesengine.language.evaluation.value.BooleanValue
+import software.amazon.smithy.rulesengine.language.evaluation.value.StringValue
+import software.amazon.smithy.rulesengine.language.evaluation.value.Value
 import software.amazon.smithy.rulesengine.language.syntax.Identifier
 import software.amazon.smithy.rulesengine.language.syntax.parameters.Parameter
 import software.amazon.smithy.rulesengine.language.syntax.parameters.ParameterType
@@ -16,7 +18,7 @@ import software.amazon.smithy.rulesengine.language.syntax.parameters.ParameterTy
 /**
  * Derive the kotlin variable name for an identifier.
  */
-fun Identifier.defaultName(): String = asString().toCamelCase()
+fun Identifier.defaultName(): String = toString().toCamelCase()
 
 /**
  * Derive the kotlin variable name for an endpoint parameter.
@@ -38,7 +40,7 @@ fun ParameterType.toSymbol(): Symbol =
  */
 fun Value.toLiteral(): String =
     when (this) {
-        is Value.String -> expectString().doubleQuote()
-        is Value.Bool -> expectBool().toString()
-        else -> throw IllegalArgumentException("unrecognized parameter value type")
+        is StringValue -> value.doubleQuote()
+        is BooleanValue -> value.toString()
+        else -> throw IllegalArgumentException("unrecognized parameter value type $type")
     }

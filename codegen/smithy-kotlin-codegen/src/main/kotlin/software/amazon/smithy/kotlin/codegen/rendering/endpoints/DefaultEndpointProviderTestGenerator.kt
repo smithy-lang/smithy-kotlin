@@ -14,7 +14,7 @@ import software.amazon.smithy.model.node.BooleanNode
 import software.amazon.smithy.model.node.Node
 import software.amazon.smithy.model.node.StringNode
 import software.amazon.smithy.rulesengine.language.EndpointRuleSet
-import software.amazon.smithy.rulesengine.language.syntax.expr.Expression
+import software.amazon.smithy.rulesengine.language.syntax.expressions.Expression
 import software.amazon.smithy.rulesengine.traits.EndpointTestCase
 
 /**
@@ -22,7 +22,7 @@ import software.amazon.smithy.rulesengine.traits.EndpointTestCase
  */
 class DefaultEndpointProviderTestGenerator(
     private val writer: KotlinWriter,
-    private val rules: EndpointRuleSet,
+    rules: EndpointRuleSet,
     private val cases: List<EndpointTestCase>,
     private val providerSymbol: Symbol,
     private val paramsSymbol: Symbol,
@@ -40,7 +40,7 @@ class DefaultEndpointProviderTestGenerator(
 
     private val expressionGenerator = ExpressionGenerator(writer, rules, emptyMap()) // functions can't be referenced in property declarations
 
-    private val paramNames = rules.parameters.toList().map { it.name.asString() }
+    private val paramNames = rules.parameters.toList().map { it.name.toString() }
 
     private val runTestSymbol = buildSymbol {
         name = "runTest"
