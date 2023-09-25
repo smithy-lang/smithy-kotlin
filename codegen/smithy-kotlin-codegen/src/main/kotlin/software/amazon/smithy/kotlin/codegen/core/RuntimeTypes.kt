@@ -164,6 +164,7 @@ object RuntimeTypes {
             val ReadThroughCache = symbol("ReadThroughCache")
             val truthiness = symbol("truthiness")
             val urlEncodeComponent = symbol("urlEncodeComponent", "text")
+            val toNumber = symbol("toNumber")
         }
 
         object Net : RuntimeTypePackage(KotlinDependency.CORE, "net") {

@@ -286,6 +286,42 @@ class KotlinJmespathExpressionVisitor(
             VisitedExpression(addTempVar("merge", objects.mergeProperties()), isObject = true)
         }
 
+        "max" -> {
+            val list = expression.singleArg()
+            list.dotFunction(expression, "maxOrNull()")
+        }
+
+        "min" -> {
+            val list = expression.singleArg()
+            list.dotFunction(expression, "minOrNull()")
+        }
+
+        "reverse" -> {
+            val listOrString = expression.singleArg()
+            listOrString.dotFunction(expression, "reversed()")
+        }
+
+        "not_null" -> {
+            val args = expression.args()
+            VisitedExpression(addTempVar("notNull", args.getNotNull()))
+        }
+
+        "to_array" -> {
+            val arg = expression.singleArg()
+            VisitedExpression(addTempVar("toArray", arg.toArray()))
+        }
+
+        "to_string" -> {
+            val arg = expression.singleArg()
+            VisitedExpression(addTempVar("toString", arg.jmesPathToString()))
+        }
+
+        "to_number" -> {
+            writer.addImport(RuntimeTypes.Core.Utils.toNumber)
+            val arg = expression.singleArg()
+            arg.dotFunction(expression, "toNumber()")
+        }
+
         else -> throw CodegenException("Unknown function type in $expression")
     }
 
@@ -480,6 +516,24 @@ class KotlinJmespathExpressionVisitor(
         }
 
         return union
+    }
+
+    private fun VisitedExpression.jmesPathToString(): String =
+        addTempVar("answer", "if(${this.identifier} as Any is String) ${this.identifier} else ${this.identifier}.toString()")
+
+    private fun VisitedExpression.toArray(): String =
+        addTempVar("answer", "if(${this.identifier} as Any is List<*> || ${this.identifier} as Any is Array<*>) ${this.identifier} as List<*> else listOf(${this.identifier})")
+
+    private fun List<VisitedExpression>.getNotNull(): String {
+        val notNull = bestTempVarName("notNull")
+
+        writer.withBlock("val $notNull = listOfNotNull(", ").firstOrNull()") {
+            forEach {
+                write("${it.identifier},")
+            }
+        }
+
+        return notNull
     }
 
     private val Shape.isNullable: Boolean

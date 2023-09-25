@@ -23,5 +23,12 @@ service WaitersTestService {
         GetFunctionKeysEquals,
         GetFunctionValuesEquals,
         GetFunctionMergeEquals,
+        GetFunctionMaxEquals,
+        GetFunctionMinEquals,
+        GetFunctionReverseEquals,
+        GetFunctionNotNullEquals,
+        GetFunctionToArrayEquals,
+        GetFunctionToStringEquals,
+        GetFunctionToNumberEquals,
     ]
 }
