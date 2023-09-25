@@ -17,13 +17,6 @@ import kotlin.test.assertTrue
 // NOTE: protocol conformance is mostly handled by the protocol tests suite
 class HttpBindingProtocolGeneratorTest {
     private val defaultModel = loadModelFromResource("http-binding-protocol-generator-test.smithy")
-    private val modelPrefix = """
-            @http(method: "POST", uri: "/foo-no-input")
-            operation Foo {
-                input: FooRequest
-            }        
-    """.prependNamespaceAndService(protocol = AwsProtocolModelDeclaration.REST_JSON, operations = listOf("Foo")).trimIndent()
-
     private fun getTransformFileContents(filename: String, testModel: Model = defaultModel): String {
         val (ctx, manifest, generator) = testModel.newTestContext()
         generator.generateProtocolClient(ctx)
@@ -380,6 +373,7 @@ internal class SmokeTestOperationDeserializer: HttpDeserialize<SmokeTestResponse
         if (payload != null) {
             deserializeSmokeTestOperationBody(builder, payload)
         }
+        builder.correctErrors()
         return builder.build()
     }
 }
@@ -429,6 +423,17 @@ internal class SmokeTestOperationDeserializer: HttpDeserialize<SmokeTestResponse
         val expectedContents = """
         val contents = response.body.readAll()?.decodeToString()
         builder.payload1 = contents
+"""
+        contents.shouldContainOnlyOnce(expectedContents)
+    }
+
+    @Test
+    fun itDeserializesExplicitEnumPayloads() {
+        val contents = getTransformFileContents("ExplicitEnumOperationDeserializer.kt")
+        contents.assertBalancedBracesAndParens()
+        val expectedContents = """
+        val contents = response.body.readAll()?.decodeToString()
+        builder.payload1 = contents?.let { MyEnum.fromValue(it) }
 """
         contents.shouldContainOnlyOnce(expectedContents)
     }

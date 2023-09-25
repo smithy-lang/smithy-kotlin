@@ -31,6 +31,8 @@ object ClientErrorCorrection {
         val target = ctx.model.expectShape(member.target)
         val targetSymbol = ctx.symbolProvider.toSymbol(target)
 
+        // In IDL v1 all enums were `ShapeType.STRING` and you had to explicitly check for the @enum trait, this handles
+        // the differences in IDL versions
         if (target.isEnum) {
             return writer.format("#T.SdkUnknown(#S)", targetSymbol, "no value provided")
         }
