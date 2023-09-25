@@ -1335,9 +1335,6 @@ public abstract interface class aws/smithy/kotlin/runtime/util/CanDeepCopy {
 	public abstract fun deepCopy ()Ljava/lang/Object;
 }
 
-public final class aws/smithy/kotlin/runtime/util/ConvenienceKt {
-}
-
 public final class aws/smithy/kotlin/runtime/util/CoroutineUtilsKt {
 }
 
