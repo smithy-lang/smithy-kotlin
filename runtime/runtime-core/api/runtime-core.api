@@ -1365,6 +1365,9 @@ public final class aws/smithy/kotlin/runtime/util/Filesystem$Companion {
 public final class aws/smithy/kotlin/runtime/util/HexKt {
 }
 
+public final class aws/smithy/kotlin/runtime/util/JMESPathKt {
+}
+
 public final class aws/smithy/kotlin/runtime/util/LazyAsyncValueKt {
 }
 
