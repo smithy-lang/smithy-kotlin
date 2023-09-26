@@ -93,7 +93,7 @@ class PaginatorGeneratorTest {
              * @param initialRequest A [ListFunctionsRequest] to start pagination
              * @return A [kotlinx.coroutines.flow.Flow] that can collect [ListFunctionsResponse]
              */
-            public fun TestClient.listFunctionsPaginated(initialRequest: ListFunctionsRequest = ListFunctionsRequest{}): Flow<ListFunctionsResponse> =
+            public fun TestClient.listFunctionsPaginated(initialRequest: ListFunctionsRequest = ListFunctionsRequest { }): Flow<ListFunctionsResponse> =
                 flow {
                     var cursor: kotlin.String? = null
                     var hasNextPage: Boolean = true
@@ -204,7 +204,7 @@ class PaginatorGeneratorTest {
              * @param initialRequest A [ListFunctionsRequest] to start pagination
              * @return A [kotlinx.coroutines.flow.Flow] that can collect [ListFunctionsResponse]
              */
-            public fun TestClient.listFunctionsPaginated(initialRequest: ListFunctionsRequest = ListFunctionsRequest{}): Flow<ListFunctionsResponse> =
+            public fun TestClient.listFunctionsPaginated(initialRequest: ListFunctionsRequest = ListFunctionsRequest { }): Flow<ListFunctionsResponse> =
                 flow {
                     var cursor: kotlin.String? = null
                     var hasNextPage: Boolean = true
@@ -333,7 +333,7 @@ class PaginatorGeneratorTest {
         val actual = testManifest.expectFileString("src/main/kotlin/smithy/kotlin/traits/paginators/Paginators.kt")
 
         val expectedCode = """
-            public fun TestClient.listFunctionsPaginated(initialRequest: ListFunctionsRequest = ListFunctionsRequest{}): Flow<ListFunctionsResponse> =
+            public fun TestClient.listFunctionsPaginated(initialRequest: ListFunctionsRequest = ListFunctionsRequest { }): Flow<ListFunctionsResponse> =
                 flow {
                     var cursor: kotlin.String? = null
                     var hasNextPage: Boolean = true

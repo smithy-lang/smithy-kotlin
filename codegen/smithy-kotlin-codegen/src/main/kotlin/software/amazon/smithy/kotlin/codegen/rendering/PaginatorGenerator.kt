@@ -117,7 +117,7 @@ class PaginatorGenerator : KotlinIntegration {
         val docReturn = "@return A [kotlinx.coroutines.flow.Flow] that can collect [${outputSymbol.name}]"
 
         val inputParameter = if (paginationInfo.input.hasAllOptionalMembers) {
-            writer.format("initialRequest: #1T = #1T{}", inputSymbol)
+            writer.format("initialRequest: #1T = #1T { }", inputSymbol)
         } else {
             writer.format("initialRequest: #T", inputSymbol)
         }

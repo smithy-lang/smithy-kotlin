@@ -36,7 +36,7 @@ internal fun KotlinWriter.renderWaiter(wi: WaiterInfo) {
     write("")
     wi.waiter.documentation.ifPresent(::dokka)
     val inputParameter = if (wi.input.hasAllOptionalMembers) {
-        format("request: #1T = #1T{}", wi.inputSymbol)
+        format("request: #1T = #1T { }", wi.inputSymbol)
     } else {
         format("request: #T", wi.inputSymbol)
     }

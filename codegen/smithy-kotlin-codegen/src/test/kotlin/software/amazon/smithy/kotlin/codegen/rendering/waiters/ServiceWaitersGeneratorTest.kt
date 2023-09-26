@@ -43,7 +43,7 @@ class ServiceWaitersGeneratorTest {
             /**
              * Wait until a foo exists
              */
-            public suspend fun TestClient.waitUntilFooExists(request: DescribeFooRequest = DescribeFooRequest{}): Outcome<DescribeFooResponse> {
+            public suspend fun TestClient.waitUntilFooExists(request: DescribeFooRequest = DescribeFooRequest { }): Outcome<DescribeFooResponse> {
         """.trimIndent()
         val methodFooter = """
                 val policy = AcceptorRetryPolicy(request, acceptors)

@@ -38,13 +38,13 @@ class ServiceClientGeneratorTest {
     fun `it renders signatures correctly`() {
         val expectedSignatures = listOf(
             "public suspend fun getFoo(input: GetFooRequest): GetFooResponse",
-            "public suspend fun getFooNoRequired(input: GetFooNoRequiredRequest = GetFooNoRequiredRequest {}): GetFooNoRequiredResponse",
+            "public suspend fun getFooNoRequired(input: GetFooNoRequiredRequest = GetFooNoRequiredRequest { }): GetFooNoRequiredResponse",
             "public suspend fun getFooSomeRequired(input: GetFooSomeRequiredRequest): GetFooSomeRequiredResponse",
-            "public suspend fun getFooNoInput(input: GetFooNoInputRequest = GetFooNoInputRequest {}): GetFooNoInputResponse",
+            "public suspend fun getFooNoInput(input: GetFooNoInputRequest = GetFooNoInputRequest { }): GetFooNoInputResponse",
             "public suspend fun getFooNoOutput(input: GetFooNoOutputRequest): GetFooNoOutputResponse",
             "public suspend fun getFooStreamingInput(input: GetFooStreamingInputRequest): GetFooStreamingInputResponse",
             "public suspend fun <T> getFooStreamingOutput(input: GetFooStreamingOutputRequest, block: suspend (GetFooStreamingOutputResponse) -> T): T",
-            "public suspend fun <T> getFooStreamingOutputNoInput(input: GetFooStreamingOutputNoInputRequest = GetFooStreamingOutputNoInputRequest {}, block: suspend (GetFooStreamingOutputNoInputResponse) -> T): T",
+            "public suspend fun <T> getFooStreamingOutputNoInput(input: GetFooStreamingOutputNoInputRequest = GetFooStreamingOutputNoInputRequest { }, block: suspend (GetFooStreamingOutputNoInputResponse) -> T): T",
             "public suspend fun getFooStreamingInputNoOutput(input: GetFooStreamingInputNoOutputRequest): GetFooStreamingInputNoOutputResponse",
         )
         expectedSignatures.forEach {

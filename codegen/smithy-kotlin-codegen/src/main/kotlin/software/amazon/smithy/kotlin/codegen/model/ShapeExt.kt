@@ -130,7 +130,7 @@ fun OperationIndex.operationSignature(
 
     val hasOutputStream = outputShape.map { it.hasStreamingMember(model) }.orElse(false)
     val inputParam = input.map {
-        if (includeOptionalDefault && inputShape.get().hasAllOptionalMembers) "input: $it = $it {}" else "input: $it"
+        if (includeOptionalDefault && inputShape.get().hasAllOptionalMembers) "input: $it = $it { }" else "input: $it"
     }.orElse("")
     val outputParam = output.map { ": $it" }.orElse("")
 
