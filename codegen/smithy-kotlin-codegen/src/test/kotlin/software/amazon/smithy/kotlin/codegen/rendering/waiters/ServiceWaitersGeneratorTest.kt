@@ -5,6 +5,7 @@
 
 package software.amazon.smithy.kotlin.codegen.rendering.waiters
 
+import io.kotest.matchers.string.shouldContain
 import io.kotest.matchers.string.shouldContainOnlyOnce
 import software.amazon.smithy.build.MockManifest
 import software.amazon.smithy.codegen.core.SymbolProvider
@@ -42,7 +43,7 @@ class ServiceWaitersGeneratorTest {
             /**
              * Wait until a foo exists
              */
-            public suspend fun TestClient.waitUntilFooExists(request: DescribeFooRequest): Outcome<DescribeFooResponse> {
+            public suspend fun TestClient.waitUntilFooExists(request: DescribeFooRequest = DescribeFooRequest { }): Outcome<DescribeFooResponse> {
         """.trimIndent()
         val methodFooter = """
                 val policy = AcceptorRetryPolicy(request, acceptors)
@@ -50,6 +51,17 @@ class ServiceWaitersGeneratorTest {
             }
         """.trimIndent()
         generated.shouldContain(methodHeader, methodFooter)
+    }
+
+    @Test
+    fun testWaiterSignatureWithRequiredInput() {
+        val methodHeader = """
+            /**
+             * Wait until a foo exists with required input
+             */
+            public suspend fun TestClient.waitUntilFooRequiredExists(request: DescribeFooRequiredRequest): Outcome<DescribeFooRequiredResponse> {
+        """.trimIndent()
+        generated.shouldContainOnlyOnceWithDiff(methodHeader)
     }
 
     @Test
@@ -89,7 +101,7 @@ class ServiceWaitersGeneratorTest {
                 }
             }
         """.formatForTest()
-        generated.shouldContainOnlyOnce(expected)
+        generated.shouldContain(expected)
     }
 
     private fun generateService(modelResourceName: String): String {

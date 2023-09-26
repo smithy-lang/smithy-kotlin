@@ -130,7 +130,7 @@ fun OperationIndex.operationSignature(
 
     val hasOutputStream = outputShape.map { it.hasStreamingMember(model) }.orElse(false)
     val inputParam = input.map {
-        if (includeOptionalDefault && inputShape.get().isOptional()) "input: $it = $it {}" else "input: $it"
+        if (includeOptionalDefault && inputShape.get().hasAllOptionalMembers) "input: $it = $it { }" else "input: $it"
     }.orElse("")
     val outputParam = output.map { ": $it" }.orElse("")
 
@@ -245,9 +245,10 @@ fun UnionShape.filterEventStreamErrors(model: Model): Collection<MemberShape> {
 }
 
 /**
- * Test if a shape is optional.
+ * Test if a shape has all optional members (no member marked `@required`)
  */
-fun Shape.isOptional(): Boolean = members().none { it.isRequired }
+val Shape.hasAllOptionalMembers: Boolean
+    get() = members().none { it.isRequired }
 
 /**
  * Derive the input and output symbols for an operation.

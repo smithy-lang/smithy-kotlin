@@ -93,7 +93,7 @@ class PaginatorGeneratorTest {
              * @param initialRequest A [ListFunctionsRequest] to start pagination
              * @return A [kotlinx.coroutines.flow.Flow] that can collect [ListFunctionsResponse]
              */
-            public fun TestClient.listFunctionsPaginated(initialRequest: ListFunctionsRequest): Flow<ListFunctionsResponse> =
+            public fun TestClient.listFunctionsPaginated(initialRequest: ListFunctionsRequest = ListFunctionsRequest { }): Flow<ListFunctionsResponse> =
                 flow {
                     var cursor: kotlin.String? = null
                     var hasNextPage: Boolean = true
@@ -204,7 +204,7 @@ class PaginatorGeneratorTest {
              * @param initialRequest A [ListFunctionsRequest] to start pagination
              * @return A [kotlinx.coroutines.flow.Flow] that can collect [ListFunctionsResponse]
              */
-            public fun TestClient.listFunctionsPaginated(initialRequest: ListFunctionsRequest): Flow<ListFunctionsResponse> =
+            public fun TestClient.listFunctionsPaginated(initialRequest: ListFunctionsRequest = ListFunctionsRequest { }): Flow<ListFunctionsResponse> =
                 flow {
                     var cursor: kotlin.String? = null
                     var hasNextPage: Boolean = true
@@ -333,7 +333,7 @@ class PaginatorGeneratorTest {
         val actual = testManifest.expectFileString("src/main/kotlin/smithy/kotlin/traits/paginators/Paginators.kt")
 
         val expectedCode = """
-            public fun TestClient.listFunctionsPaginated(initialRequest: ListFunctionsRequest): Flow<ListFunctionsResponse> =
+            public fun TestClient.listFunctionsPaginated(initialRequest: ListFunctionsRequest = ListFunctionsRequest { }): Flow<ListFunctionsResponse> =
                 flow {
                     var cursor: kotlin.String? = null
                     var hasNextPage: Boolean = true
@@ -351,5 +351,77 @@ class PaginatorGeneratorTest {
         """.trimIndent()
 
         actual.shouldContainOnlyOnceWithDiff(expectedCode)
+    }
+
+    @Test
+    fun testRenderPaginatorWithRequiredInputMembers() {
+        val testModelNoItem = """
+            namespace com.test
+            
+            use aws.protocols#restJson1
+            
+            service Lambda {
+                operations: [ListFunctions]
+            }
+            
+            @paginated(
+                inputToken: "Marker",
+                outputToken: "NextMarker",
+                pageSize: "MaxItems"
+            )
+            @readonly
+            @http(method: "GET", uri: "/functions", code: 200)
+            operation ListFunctions {
+                input: ListFunctionsRequest,
+                output: ListFunctionsResponse
+            }
+            
+            structure ListFunctionsRequest {
+                @required
+                @httpQuery("FunctionVersion")
+                FunctionVersion: String,
+                @httpQuery("Marker")
+                Marker: String,
+                @httpQuery("MasterRegion")
+                MasterRegion: String,
+                @httpQuery("MaxItems")
+                MaxItems: Integer
+            }
+            
+            structure ListFunctionsResponse {
+                Functions: FunctionConfigurationList,
+                NextMarker: String
+            }
+            
+            list FunctionConfigurationList {
+                member: FunctionConfiguration
+            }
+            
+            structure FunctionConfiguration {
+                FunctionName: String
+            }
+        """.toSmithyModel()
+        val testContextNoItem = testModelNoItem.newTestContext("Lambda", "com.test")
+
+        val codegenContextNoItem = object : CodegenContext {
+            override val model: Model = testContextNoItem.generationCtx.model
+            override val symbolProvider: SymbolProvider = testContextNoItem.generationCtx.symbolProvider
+            override val settings: KotlinSettings = testContextNoItem.generationCtx.settings
+            override val protocolGenerator: ProtocolGenerator = testContextNoItem.generator
+            override val integrations: List<KotlinIntegration> = testContextNoItem.generationCtx.integrations
+        }
+
+        val unit = PaginatorGenerator()
+        unit.writeAdditionalFiles(codegenContextNoItem, testContextNoItem.generationCtx.delegator)
+
+        testContextNoItem.generationCtx.delegator.flushWriters()
+        val testManifest = testContextNoItem.generationCtx.delegator.fileManifest as MockManifest
+        val actual = testManifest.expectFileString("src/main/kotlin/com/test/paginators/Paginators.kt")
+
+        val expected = """
+            public fun TestClient.listFunctionsPaginated(initialRequest: ListFunctionsRequest): Flow<ListFunctionsResponse> =
+        """.trimIndent()
+
+        actual.shouldContainOnlyOnceWithDiff(expected)
     }
 }

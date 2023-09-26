@@ -59,7 +59,7 @@ fun String.shouldContain(expectedStart: String, expectedEnd: String) {
 }
 
 fun <T> List<T>.indexOfSublistOrNull(sublist: List<T>, startFrom: Int = 0): Int? =
-    drop(startFrom).windowed(sublist.size).indexOf(sublist)
+    drop(startFrom).windowed(sublist.size).indexOf(sublist).takeIf { it >= 0 }
 
 /** Format a multi-line string suitable for comparison with codegen, defaults to one level of indention. */
 fun String.formatForTest(indent: String = "    ") =

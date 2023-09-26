@@ -18,6 +18,7 @@ import software.amazon.smithy.kotlin.codegen.integration.KotlinIntegration
 import software.amazon.smithy.kotlin.codegen.lang.KotlinTypes
 import software.amazon.smithy.kotlin.codegen.model.SymbolProperty
 import software.amazon.smithy.kotlin.codegen.model.expectShape
+import software.amazon.smithy.kotlin.codegen.model.hasAllOptionalMembers
 import software.amazon.smithy.kotlin.codegen.model.hasTrait
 import software.amazon.smithy.kotlin.codegen.model.traits.PaginationTruncationMember
 import software.amazon.smithy.kotlin.codegen.utils.getOrNull
@@ -29,7 +30,6 @@ import software.amazon.smithy.model.shapes.MapShape
 import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.shapes.ServiceShape
 import software.amazon.smithy.model.shapes.Shape
-import software.amazon.smithy.model.shapes.StructureShape
 import software.amazon.smithy.model.traits.PaginatedTrait
 
 /**
@@ -54,60 +54,52 @@ class PaginatorGenerator : KotlinIntegration {
                     ?: throw CodegenException("Unexpectedly unable to get PaginationInfo from $service $paginatedOperation")
                 val paginationItemInfo = getItemDescriptorOrNull(paginationInfo, ctx)
 
-                renderPaginatorForOperation(writer, ctx, service, paginatedOperation, paginationInfo, paginationItemInfo)
+                renderPaginatorForOperation(ctx, writer, paginatedOperation, paginationInfo, paginationItemInfo)
             }
         }
     }
 
     // Render paginator(s) for operation
     private fun renderPaginatorForOperation(
-        writer: KotlinWriter,
         ctx: CodegenContext,
-        service: ServiceShape,
+        writer: KotlinWriter,
         paginatedOperation: OperationShape,
         paginationInfo: PaginationInfo,
         itemDesc: ItemDescriptor?,
     ) {
-        val serviceSymbol = ctx.symbolProvider.toSymbol(service)
-        val outputSymbol = ctx.symbolProvider.toSymbol(paginationInfo.output)
-        val inputSymbol = ctx.symbolProvider.toSymbol(paginationInfo.input)
-        val cursorMember = ctx.model.getShape(paginationInfo.inputTokenMember.target).get()
-        val cursorSymbol = ctx.symbolProvider.toSymbol(cursorMember)
-
         renderResponsePaginator(
+            ctx,
             writer,
-            serviceSymbol,
             paginatedOperation,
-            inputSymbol,
-            paginationInfo.output,
-            outputSymbol,
             paginationInfo,
-            cursorSymbol,
         )
 
         // Optionally generate paginator when nested item is specified on the trait.
         if (itemDesc != null) {
             renderItemPaginator(
+                ctx,
                 writer,
-                service,
                 paginatedOperation,
                 itemDesc,
-                outputSymbol,
             )
         }
     }
 
     // Generate the paginator that iterates over responses
     private fun renderResponsePaginator(
+        ctx: CodegenContext,
         writer: KotlinWriter,
-        serviceSymbol: Symbol,
         operationShape: OperationShape,
-        inputSymbol: Symbol,
-        outputShape: StructureShape,
-        outputSymbol: Symbol,
         paginationInfo: PaginationInfo,
-        cursorSymbol: Symbol,
     ) {
+        val service = ctx.model.expectShape<ServiceShape>(ctx.settings.service)
+        val serviceSymbol = ctx.symbolProvider.toSymbol(service)
+        val outputShape = paginationInfo.output
+        val outputSymbol = ctx.symbolProvider.toSymbol(outputShape)
+        val inputSymbol = ctx.symbolProvider.toSymbol(paginationInfo.input)
+        val cursorMember = ctx.model.getShape(paginationInfo.inputTokenMember.target).get()
+        val cursorSymbol = ctx.symbolProvider.toSymbol(cursorMember)
+
         val nextMarkerLiteral = paginationInfo.outputTokenMemberPath.joinToString(separator = "?.") {
             it.defaultName()
         }
@@ -124,6 +116,12 @@ class PaginatorGenerator : KotlinIntegration {
         """.trimIndent()
         val docReturn = "@return A [kotlinx.coroutines.flow.Flow] that can collect [${outputSymbol.name}]"
 
+        val inputParameter = if (paginationInfo.input.hasAllOptionalMembers) {
+            writer.format("initialRequest: #1T = #1T { }", inputSymbol)
+        } else {
+            writer.format("initialRequest: #T", inputSymbol)
+        }
+
         writer.write("")
         writer
             .dokka(
@@ -135,11 +133,12 @@ class PaginatorGenerator : KotlinIntegration {
             )
             .addImportReferences(cursorSymbol, SymbolReference.ContextOption.DECLARE)
             .withBlock(
-                "public fun #T.#LPaginated(initialRequest: #T): #T<#T> =",
+                "#L fun #T.#LPaginated(#L): #T<#T> =",
                 "",
+                ctx.settings.api.visibility,
                 serviceSymbol,
                 operationShape.defaultName(),
-                inputSymbol,
+                inputParameter,
                 ExternalTypes.KotlinxCoroutines.Flow,
                 outputSymbol,
             ) {
@@ -180,8 +179,9 @@ class PaginatorGenerator : KotlinIntegration {
                 """.trimMargin(),
             )
             .withBlock(
-                "public fun #T.#LPaginated(block: #T.Builder.() -> #T): #T<#T> =",
+                "#L fun #T.#LPaginated(block: #T.Builder.() -> #T): #T<#T> =",
                 "",
+                ctx.settings.api.visibility,
                 serviceSymbol,
                 operationShape.defaultName(),
                 inputSymbol,
@@ -195,12 +195,15 @@ class PaginatorGenerator : KotlinIntegration {
 
     // Generate a paginator that iterates over the model-specified item
     private fun renderItemPaginator(
+        ctx: CodegenContext,
         writer: KotlinWriter,
-        serviceShape: ServiceShape,
         operationShape: OperationShape,
         itemDesc: ItemDescriptor,
-        outputSymbol: Symbol,
     ) {
+        val serviceShape = ctx.model.expectShape<ServiceShape>(ctx.settings.service)
+        val outputShape = ctx.model.expectShape(operationShape.outputShape)
+        val outputSymbol = ctx.symbolProvider.toSymbol(outputShape)
+
         writer.write("")
         writer.dokka(
             """
@@ -223,8 +226,9 @@ class PaginatorGenerator : KotlinIntegration {
                 itemDesc.targetMember.defaultName(serviceShape),
             )
             .withBlock(
-                "public fun #T<#T>.#L(): #T<#L> =",
+                "#L fun #T<#T>.#L(): #T<#L> =",
                 "",
+                ctx.settings.api.visibility,
                 ExternalTypes.KotlinxCoroutines.Flow,
                 outputSymbol,
                 itemDesc.itemLiteral,
