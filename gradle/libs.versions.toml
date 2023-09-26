@@ -51,6 +51,7 @@ okhttp-coroutines = { module = "com.squareup.okhttp3:okhttp-coroutines", version
 opentelemetry-api = { module = "io.opentelemetry:opentelemetry-api", version.ref = "otel-version" }
 opentelemetry-sdk-testing = {module = "io.opentelemetry:opentelemetry-sdk-testing", version.ref = "otel-version" }
 slf4j-api = { module = "org.slf4j:slf4j-api", version.ref = "slf4j-version" }
+slf4j-api-v1x = { module = "org.slf4j:slf4j-api", version = "1.7.36" }
 slf4j-simple = { module = "org.slf4j:slf4j-simple", version.ref = "slf4j-version" }
 crt-kotlin = { module = "aws.sdk.kotlin.crt:aws-crt-kotlin", version.ref = "crt-kotlin-version" }
 
