@@ -20,12 +20,13 @@ pluginManagement {
     }
 }
 
-sourceControl {
-    gitRepository(java.net.URI("https://github.com/awslabs/aws-kotlin-repo-tools.git")) {
-        producesModule("aws.sdk.kotlin:build-plugins")
-        producesModule("aws.sdk.kotlin:ktlint-rules")
-    }
-}
+// sourceControl {
+//     gitRepository(java.net.URI("https://github.com/awslabs/aws-kotlin-repo-tools.git")) {
+//         producesModule("aws.sdk.kotlin:build-plugins")
+//         producesModule("aws.sdk.kotlin:ktlint-rules")
+//     }
+// }
+includeBuild("/Users/todaaron/sandbox/aws-kotlin-repo-tools")
 
 rootProject.name = "smithy-kotlin"
 

@@ -19,14 +19,13 @@ kotlin {
                 implementation(project(":runtime:protocol:http-test"))
                 implementation(libs.kotlinx.coroutines.test)
                 implementation(project(":runtime:testing"))
-
-                implementation(libs.ktor.network.tls.certificates)
             }
         }
 
         jvmMain {
             dependencies {
                 implementation(libs.ktor.server.jetty)
+                implementation(libs.ktor.network.tls.certificates)
 
                 implementation(project(":runtime:protocol:http-client-engines:http-client-engine-default"))
                 implementation(project(":runtime:protocol:http-client-engines:http-client-engine-crt"))
