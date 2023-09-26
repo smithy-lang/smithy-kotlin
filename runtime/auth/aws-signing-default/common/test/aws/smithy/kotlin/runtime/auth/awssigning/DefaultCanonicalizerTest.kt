@@ -12,12 +12,10 @@ import aws.smithy.kotlin.runtime.net.Host
 import aws.smithy.kotlin.runtime.net.UrlBuilder
 import aws.smithy.kotlin.runtime.net.parameters
 import aws.smithy.kotlin.runtime.time.Instant
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
-@OptIn(ExperimentalCoroutinesApi::class)
 class DefaultCanonicalizerTest {
     // Test adapted from https://docs.aws.amazon.com/general/latest/gr/sigv4-create-canonical-request.html
     @Test

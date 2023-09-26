@@ -19,7 +19,6 @@ import io.ktor.server.cio.*
 import io.ktor.server.engine.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.async
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeout
@@ -27,7 +26,6 @@ import kotlinx.coroutines.yield
 import kotlin.test.Test
 import kotlin.time.Duration.Companion.seconds
 
-@OptIn(ExperimentalCoroutinesApi::class)
 class AsyncStressTest : TestWithLocalServer() {
 
     override val server = embeddedServer(CIO, serverPort) {

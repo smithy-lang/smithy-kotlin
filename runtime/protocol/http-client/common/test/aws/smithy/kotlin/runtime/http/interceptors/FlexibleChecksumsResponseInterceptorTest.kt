@@ -17,7 +17,6 @@ import aws.smithy.kotlin.runtime.io.source
 import aws.smithy.kotlin.runtime.operation.ExecutionContext
 import aws.smithy.kotlin.runtime.time.Instant
 import aws.smithy.kotlin.runtime.util.get
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import kotlin.test.*
 
@@ -41,7 +40,6 @@ inline fun <reified I> newTestOperation(serialized: HttpRequestBuilder): SdkHttp
         }
     }
 
-@OptIn(ExperimentalCoroutinesApi::class)
 class FlexibleChecksumsResponseInterceptorTest {
 
     private val response = "abc".repeat(1024).toByteArray()

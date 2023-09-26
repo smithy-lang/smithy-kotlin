@@ -26,7 +26,6 @@ import aws.smithy.kotlin.runtime.operation.ExecutionContext
 import aws.smithy.kotlin.runtime.time.Instant
 import aws.smithy.kotlin.runtime.util.Attributes
 import aws.smithy.kotlin.runtime.util.get
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.TestResult
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
@@ -40,7 +39,6 @@ class CrtAwsHttpSignerTest : AwsHttpSignerTestBase(CrtAwsSigner)
  * test suite in the `aws-signing-tests` module.
  */
 @Suppress("HttpUrlsUsage")
-@OptIn(ExperimentalCoroutinesApi::class)
 public abstract class AwsHttpSignerTestBase(
     private val signer: AwsSigner,
 ) {

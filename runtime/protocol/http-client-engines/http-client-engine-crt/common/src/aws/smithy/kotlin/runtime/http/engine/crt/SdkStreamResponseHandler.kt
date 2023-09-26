@@ -26,7 +26,7 @@ import kotlin.coroutines.CoroutineContext
  * Implements the CRT stream response interface which proxies the response from the CRT to the SDK
  * @param conn The HTTP connection used to make the request. Will be closed when the response handler completes
  */
-@OptIn(ExperimentalCoroutinesApi::class, DelicateCoroutinesApi::class)
+@OptIn(DelicateCoroutinesApi::class)
 internal class SdkStreamResponseHandler(
     private val conn: HttpClientConnection,
     private val callContext: CoroutineContext,
@@ -80,7 +80,6 @@ internal class SdkStreamResponseHandler(
         }
     }
 
-    @OptIn(DelicateCoroutinesApi::class)
     private fun createHttpResponseBody(contentLength: Long?): HttpBody {
         val ch = SdkByteChannel(true)
         val writerContext = callContext + callContext.derivedName("response-body-writer")

@@ -405,7 +405,6 @@ suspend fun ByteStream.toByteArray(): ByteArray {...}
 /**
  * Consume a [ByteStream] and decode the contests as a string
  */
-@OptIn(ExperimentalStdlibApi::class)
 suspend fun ByteStream.decodeToString(): String = toByteArray().decodeToString()
 
 
@@ -588,8 +587,6 @@ fun fromByteArray(array: ByteArray): Flow<ByteArray> = flowOf(array)
 fun fromString(string: String): Flow<ByteArray> = fromByteArray(string.toByteArray())
 fun fromFile(file: File): Flow<ByteArray> = TODO()
 
-
-@OptIn(ExperimentalStdlibApi::class)
 suspend fun Flow<ByteArray>.decodeToString(): String = toByteArray().decodeToString()
 
 // NOTE: this is just an example, there are potentially more efficient ways to do this

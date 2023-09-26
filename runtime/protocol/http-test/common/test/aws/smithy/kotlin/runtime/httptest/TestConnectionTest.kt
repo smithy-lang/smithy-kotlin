@@ -10,13 +10,11 @@ import aws.smithy.kotlin.runtime.http.content.ByteArrayContent
 import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
 import aws.smithy.kotlin.runtime.net.Host
 import io.kotest.matchers.string.shouldContain
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFails
 
-@OptIn(ExperimentalCoroutinesApi::class)
 class TestConnectionTest {
     @Test
     fun testAssertRequestsSuccess() = runTest {

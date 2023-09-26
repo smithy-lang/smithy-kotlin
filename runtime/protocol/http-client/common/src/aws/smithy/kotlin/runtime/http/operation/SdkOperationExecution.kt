@@ -34,7 +34,6 @@ import aws.smithy.kotlin.runtime.telemetry.metrics.measureSeconds
 import aws.smithy.kotlin.runtime.util.attributesOf
 import aws.smithy.kotlin.runtime.util.merge
 import kotlin.coroutines.coroutineContext
-import kotlin.time.ExperimentalTime
 import aws.smithy.kotlin.runtime.io.middleware.decorate as decorateHandler
 
 @InternalApi
@@ -262,7 +261,6 @@ internal class AuthHandler<Input, Output>(
     private val endpointResolver: EndpointResolver? = null,
 ) : Handler<SdkHttpRequest, Output> {
 
-    @OptIn(ExperimentalTime::class)
     override suspend fun call(request: SdkHttpRequest): Output {
         // select an auth scheme by reconciling the (priority) list of candidates returned from the resolver
         // with the ones actually configured/available for the SDK

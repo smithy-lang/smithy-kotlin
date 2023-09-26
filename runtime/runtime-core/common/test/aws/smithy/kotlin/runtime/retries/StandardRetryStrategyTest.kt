@@ -11,11 +11,9 @@ import aws.smithy.kotlin.runtime.retries.delay.RetryTokenBucket
 import aws.smithy.kotlin.runtime.retries.policy.RetryDirective
 import aws.smithy.kotlin.runtime.retries.policy.RetryErrorType
 import aws.smithy.kotlin.runtime.retries.policy.RetryPolicy
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import kotlin.test.*
 
-@OptIn(ExperimentalCoroutinesApi::class)
 class StandardRetryStrategyTest {
     @Test
     fun testInitialSuccess() = runTest {

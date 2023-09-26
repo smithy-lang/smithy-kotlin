@@ -16,14 +16,12 @@ import aws.smithy.kotlin.runtime.time.ManualClock
 import aws.smithy.kotlin.runtime.util.Attributes
 import aws.smithy.kotlin.runtime.util.encodeToHex
 import kotlinx.coroutines.CompletableDeferred
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
-@OptIn(ExperimentalCoroutinesApi::class)
 class EventStreamSigningTest {
     private val testCredentials = Credentials("fake access key", "fake secret key")
     private val testCredentialsProvider = object : CredentialsProvider {

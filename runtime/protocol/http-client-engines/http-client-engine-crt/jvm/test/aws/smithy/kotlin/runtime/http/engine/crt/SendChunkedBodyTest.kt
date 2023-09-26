@@ -10,11 +10,9 @@ import aws.smithy.kotlin.runtime.http.toHttpBody
 import aws.smithy.kotlin.runtime.io.SdkByteReadChannel
 import aws.smithy.kotlin.runtime.io.readToByteArray
 import aws.smithy.kotlin.runtime.io.source
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import kotlin.test.*
 
-@OptIn(ExperimentalCoroutinesApi::class)
 class SendChunkedBodyTest {
     private class MockHttpStream(override val responseStatusCode: Int) : HttpStream {
         var closed: Boolean = false

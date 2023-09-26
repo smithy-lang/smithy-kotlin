@@ -5,7 +5,6 @@
 
 package aws.smithy.kotlin.runtime.testing
 
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlin.test.assertEquals
 import kotlin.test.assertNotEquals
 
@@ -39,7 +38,6 @@ import kotlin.test.assertNotEquals
  *
  * Explicitly yielding or hitting a natural suspension point will run the next continuation queued
  */
-@OptIn(ExperimentalCoroutinesApi::class)
 public abstract class ManualDispatchTestBase {
     private var current = 0
 

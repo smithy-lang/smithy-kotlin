@@ -7,13 +7,11 @@ package aws.smithy.kotlin.runtime.smithy.test
 
 import aws.smithy.kotlin.runtime.serde.xml.dom.XmlNode
 import aws.smithy.kotlin.runtime.serde.xml.dom.toXmlString
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFails
 
-@OptIn(ExperimentalCoroutinesApi::class)
 class XmlAssertionsTest {
 
     @Test

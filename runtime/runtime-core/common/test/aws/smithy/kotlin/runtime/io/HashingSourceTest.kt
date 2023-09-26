@@ -9,7 +9,6 @@ import aws.smithy.kotlin.runtime.hashing.*
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
-@OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
 class HashingSourceTest {
 
     private val hashFunctionNames = listOf("crc32", "crc32c", "md5", "sha1", "sha256")

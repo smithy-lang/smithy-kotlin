@@ -10,7 +10,6 @@ import aws.smithy.kotlin.runtime.hashing.sha256
 import aws.smithy.kotlin.runtime.time.Instant
 import aws.smithy.kotlin.runtime.util.decodeHexBytes
 import aws.smithy.kotlin.runtime.util.encodeToHex
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -33,7 +32,6 @@ class DefaultSignatureCalculatorTest {
     }
 
     // Test adapted from https://docs.aws.amazon.com/general/latest/gr/sigv4-calculate-signature.html
-    @OptIn(ExperimentalCoroutinesApi::class)
     @Test
     fun testSigningKey() = runTest {
         val config = AwsSigningConfig {

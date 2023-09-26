@@ -5,13 +5,11 @@
 
 package aws.smithy.kotlin.runtime.io
 
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.yield
 import kotlin.test.*
 
-@OptIn(ExperimentalCoroutinesApi::class)
 class SdkByteChannelTest {
     @Test
     fun testCreateAndClose() {

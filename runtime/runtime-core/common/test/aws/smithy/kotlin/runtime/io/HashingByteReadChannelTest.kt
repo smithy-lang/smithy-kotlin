@@ -11,7 +11,6 @@ import kotlin.random.Random
 import kotlin.test.Test
 import kotlin.test.assertContentEquals
 
-@OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
 class HashingByteReadChannelTest {
 
     private val hashFunctionNames = listOf("crc32", "crc32c", "md5", "sha1", "sha256")

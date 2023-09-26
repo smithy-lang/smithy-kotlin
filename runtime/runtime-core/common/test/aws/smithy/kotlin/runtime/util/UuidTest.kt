@@ -8,7 +8,6 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
-@ExperimentalUnsignedTypes
 class UuidTest {
     @Test
     fun `it should generate random UUIDs`() {

@@ -16,14 +16,12 @@ import aws.smithy.kotlin.runtime.http.request.url
 import aws.smithy.kotlin.runtime.net.Url
 import aws.smithy.kotlin.runtime.operation.ExecutionContext
 import aws.smithy.kotlin.runtime.util.Attributes
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
 private const val NON_HTTPS_URL = "http://localhost:8080/path/to/resource?foo=bar"
 
-@OptIn(ExperimentalCoroutinesApi::class)
 class PresignerTest {
     // Verify that custom endpoint URL schemes aren't changed.
     // See https://github.com/awslabs/aws-sdk-kotlin/issues/938

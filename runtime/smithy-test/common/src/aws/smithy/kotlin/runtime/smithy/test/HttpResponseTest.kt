@@ -13,7 +13,6 @@ import aws.smithy.kotlin.runtime.http.response.HttpResponse
 import aws.smithy.kotlin.runtime.httptest.TestEngine
 import aws.smithy.kotlin.runtime.io.SdkByteReadChannel
 import aws.smithy.kotlin.runtime.time.Instant
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.TestResult
 import kotlinx.coroutines.test.runTest
 
@@ -75,7 +74,6 @@ public class HttpResponseTestBuilder<T> {
  * }
  * ```
  */
-@OptIn(ExperimentalStdlibApi::class, ExperimentalCoroutinesApi::class)
 public fun <T> httpResponseTest(block: HttpResponseTestBuilder<T>.() -> Unit): TestResult = runTest {
     val testBuilder = HttpResponseTestBuilder<T>().apply(block)
 

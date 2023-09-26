@@ -15,13 +15,11 @@ import aws.smithy.kotlin.runtime.io.SdkSink
 import aws.smithy.kotlin.runtime.io.readAll
 import aws.smithy.kotlin.runtime.io.readToBuffer
 import io.kotest.matchers.string.shouldContain
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.yield
 import kotlin.test.*
 
-@OptIn(ExperimentalCoroutinesApi::class)
 class SdkStreamResponseHandlerTest {
 
     private class MockHttpStream(override val responseStatusCode: Int) : HttpStream {

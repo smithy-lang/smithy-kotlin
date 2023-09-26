@@ -13,7 +13,6 @@ import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
 import aws.smithy.kotlin.runtime.http.request.toBuilder
 import aws.smithy.kotlin.runtime.http.response.HttpResponse
 import aws.smithy.kotlin.runtime.http.response.copy
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import kotlin.IllegalStateException
 import kotlin.test.*
@@ -26,7 +25,6 @@ import kotlin.test.*
  * 2. Write only hook that modifies at every chance possible
  * 3. Read only observer hook that asserts any modified value
  */
-@OptIn(ExperimentalCoroutinesApi::class)
 class HttpInterceptorTest {
 
     class TestWriteHook : HttpInterceptor {

@@ -46,13 +46,11 @@ private fun base64DecodedLen(encoded: ByteArray): Int {
 /**
  * Encode [String] in base64 format and UTF-8 character encoding.
  */
-@OptIn(ExperimentalStdlibApi::class)
 public fun String.encodeBase64(): String = encodeToByteArray().encodeBase64().decodeToString()
 
 /**
  * Encode [ByteArray] in base64 format and UTF-8 character encoding as a [String].
  */
-@OptIn(ExperimentalStdlibApi::class)
 public fun ByteArray.encodeBase64String(): String = encodeBase64().decodeToString()
 
 /**
@@ -90,13 +88,11 @@ public fun ByteArray.encodeBase64(): ByteArray {
 /**
  * Decode [String] from base64 format
  */
-@OptIn(ExperimentalStdlibApi::class)
 public fun String.decodeBase64(): String = decodeBase64Bytes().decodeToString()
 
 /**
  * Decode [String] from base64 format to a [ByteArray]
  */
-@OptIn(ExperimentalStdlibApi::class)
 public fun String.decodeBase64Bytes(): ByteArray = encodeToByteArray().decodeBase64()
 
 /**

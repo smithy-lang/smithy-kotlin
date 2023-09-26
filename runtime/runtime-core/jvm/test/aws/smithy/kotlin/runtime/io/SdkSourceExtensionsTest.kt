@@ -7,16 +7,13 @@ package aws.smithy.kotlin.runtime.io
 
 import aws.smithy.kotlin.runtime.io.internal.JobChannel
 import aws.smithy.kotlin.runtime.testing.RandomTempFile
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.job
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.yield
 import java.util.concurrent.CancellationException
 import kotlin.test.*
 
-@OptIn(ExperimentalCoroutinesApi::class)
 class SdkSourceExtensionsTest {
     @Test
     fun testReadToByteArray() = runTest {

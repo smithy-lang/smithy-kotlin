@@ -2,8 +2,6 @@
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
  * SPDX-License-Identifier: Apache-2.0
  */
-@file:OptIn(ExperimentalCoroutinesApi::class)
-
 package aws.smithy.kotlin.runtime.smithy.test
 
 import aws.smithy.kotlin.runtime.http.HeadersBuilder
@@ -14,7 +12,6 @@ import aws.smithy.kotlin.runtime.http.engine.HttpClientEngine
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.httptest.TestEngine
 import aws.smithy.kotlin.runtime.util.text.urlEncodeComponent
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.TestResult
 import kotlinx.coroutines.test.runTest
 import kotlin.test.assertEquals
@@ -87,7 +84,6 @@ public fun httpRequestTest(block: HttpRequestTestBuilder.() -> Unit): TestResult
     assertRequest(testBuilder.expected.build(), actual)
 }
 
-@OptIn(ExperimentalStdlibApi::class)
 private suspend fun assertRequest(expected: ExpectedHttpRequest, actual: HttpRequest) {
     // run the assertions
     assertEquals(expected.method, actual.method, "expected method: `${expected.method}`; got: `${actual.method}`")
