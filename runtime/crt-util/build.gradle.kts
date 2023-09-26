@@ -11,7 +11,7 @@ extra["moduleName"] = "aws.smithy.kotlin.runtime.crt"
 
 kotlin {
     sourceSets {
-        commonMain {
+        getByName("jvmAndNativeMain") {
             dependencies {
                 api(project(":runtime:runtime-core"))
                 api(libs.crt.kotlin)
@@ -19,7 +19,7 @@ kotlin {
                 implementation(libs.kotlinx.atomicfu)
             }
         }
-        commonTest {
+        getByName("jvmAndNativeTest") {
             dependencies {
                 implementation(libs.kotlinx.coroutines.test)
             }

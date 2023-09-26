@@ -22,7 +22,8 @@ kotlin {
                 implementation(project(":runtime:protocol:http-client"))
                 implementation(project(":runtime:protocol:http-test"))
                 implementation(project(":runtime:auth:aws-signing-default"))
-                implementation(project(":runtime:auth:aws-signing-crt"))
+                // FIXME - re-enable
+                // implementation(project(":runtime:auth:aws-signing-crt"))
                 implementation(libs.kotlinx.coroutines.test)
             }
         }

@@ -6,6 +6,7 @@
 package aws.smithy.kotlin.runtime.util
 
 import aws.smithy.kotlin.runtime.InternalApi
+import kotlin.jvm.JvmName
 
 @InternalApi
 public fun Short.toNumber(): Short = this
