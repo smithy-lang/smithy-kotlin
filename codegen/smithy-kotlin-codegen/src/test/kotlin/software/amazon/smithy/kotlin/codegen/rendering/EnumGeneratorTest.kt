@@ -12,14 +12,16 @@ import software.amazon.smithy.kotlin.codegen.core.KotlinWriter
 import software.amazon.smithy.kotlin.codegen.model.expectShape
 import software.amazon.smithy.kotlin.codegen.test.*
 import software.amazon.smithy.model.shapes.IntEnumShape
+import software.amazon.smithy.model.shapes.ShapeType
 import software.amazon.smithy.model.shapes.StringShape
 import kotlin.test.Test
+import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 
 class EnumGeneratorTest {
 
     @Test
-    fun `it generates unnamed string enums`() {
+    fun itGeneratesUnnamedStringEnumsIdlv1() {
         val model = """
             @enum([
                 {
@@ -33,10 +35,35 @@ class EnumGeneratorTest {
             @documentation("Documentation for this enum")
             string Baz
             
-        """.prependNamespaceAndService(namespace = "test").toSmithyModel()
+        """
+        testUnnamedStringEnum(model, "1.0")
+    }
+
+    @Test
+    fun itGeneratesUnnamedStringEnumsIdlv2() {
+        val model = """
+            @documentation("Documentation for this enum")
+            enum Baz {
+                FOO,
+                
+                @documentation("Documentation for bar")
+                BAR,
+            }
+        """
+        testUnnamedStringEnum(model, "2.0")
+    }
+
+    private fun testUnnamedStringEnum(modelContents: String, idlVersion: String) {
+        val model = modelContents.prependNamespaceAndService(version = idlVersion, namespace = "test").toSmithyModel()
 
         val provider = KotlinCodegenPlugin.createSymbolProvider(model, rootNamespace = "test")
         val shape = model.expectShape<StringShape>("test#Baz")
+        val expectedShapeType = when (idlVersion) {
+            "1.0" -> ShapeType.STRING
+            else -> ShapeType.ENUM
+        }
+        assertEquals(expectedShapeType, shape.type)
+
         val symbol = provider.toSymbol(shape)
         val writer = KotlinWriter(TestModelDefault.NAMESPACE)
         EnumGenerator(shape, symbol, writer).render()

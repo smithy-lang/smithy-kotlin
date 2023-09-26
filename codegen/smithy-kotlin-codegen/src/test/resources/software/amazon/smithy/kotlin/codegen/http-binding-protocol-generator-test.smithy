@@ -10,6 +10,7 @@ service Test {
         SmokeTest,
         DuplicateInputTest,
         ExplicitString,
+        ExplicitEnum,
         ExplicitBlob,
         ExplicitBlobStream,
         ExplicitStruct,
@@ -110,6 +111,22 @@ structure ExplicitStringRequest {
 structure ExplicitStringResponse {
     @httpPayload
     payload1: String
+}
+
+@http(method: "POST", uri: "/explicit/enum")
+operation ExplicitEnum {
+    input: ExplicitEnumRequest,
+    output: ExplicitEnumResponse
+}
+
+structure ExplicitEnumRequest {
+    @httpPayload
+    payload1: MyEnum
+}
+
+structure ExplicitEnumResponse {
+    @httpPayload
+    payload1: MyEnum
 }
 
 @http(method: "POST", uri: "/explicit/blob")

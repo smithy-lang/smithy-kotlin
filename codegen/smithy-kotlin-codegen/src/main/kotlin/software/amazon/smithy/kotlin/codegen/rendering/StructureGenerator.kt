@@ -9,16 +9,10 @@ import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.kotlin.codegen.core.*
 import software.amazon.smithy.kotlin.codegen.lang.KotlinTypes
 import software.amazon.smithy.kotlin.codegen.model.*
+import software.amazon.smithy.kotlin.codegen.rendering.serde.ClientErrorCorrection
 import software.amazon.smithy.kotlin.codegen.utils.getOrNull
 import software.amazon.smithy.model.shapes.*
-import software.amazon.smithy.model.traits.ErrorTrait
-import software.amazon.smithy.model.traits.HttpLabelTrait
-import software.amazon.smithy.model.traits.HttpQueryParamsTrait
-import software.amazon.smithy.model.traits.HttpQueryTrait
-import software.amazon.smithy.model.traits.LengthTrait
-import software.amazon.smithy.model.traits.RetryableTrait
-import software.amazon.smithy.model.traits.SensitiveTrait
-import software.amazon.smithy.model.traits.StreamingTrait
+import software.amazon.smithy.model.traits.*
 
 /**
  * Renders Smithy structure shapes
@@ -284,6 +278,26 @@ class StructureGenerator(
                     openBlock("public fun #L(block: #Q.Builder.() -> #Q) {", memberName, memberSymbol, KotlinTypes.Unit)
                         .write("this.#L = #Q.invoke(block)", memberName, memberSymbol)
                         .closeBlock("}")
+                }
+
+                write("")
+
+                // render client side error correction function to set @required members to a default
+                withBlock(
+                    "internal fun correctErrors(): Builder {",
+                    "}",
+                ) {
+                    sortedMembers
+                        .filter(MemberShape::isRequired)
+                        .filterNot {
+                            val target = ctx.model.expectShape(it.target)
+                            target.isStreaming
+                        }
+                        .forEach {
+                            val correctedValue = ClientErrorCorrection.defaultValue(ctx, it, writer)
+                            write("if (#1L == null) #1L = #2L", ctx.symbolProvider.toMemberName(it), correctedValue)
+                        }
+                    write("return this")
                 }
             }
     }

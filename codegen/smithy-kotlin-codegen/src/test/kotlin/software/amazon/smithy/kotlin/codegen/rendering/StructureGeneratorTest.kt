@@ -197,6 +197,10 @@ class StructureGeneratorTest {
                 public fun quux(block: com.test.model.Qux.Builder.() -> kotlin.Unit) {
                     this.quux = com.test.model.Qux.invoke(block)
                 }
+                
+                internal fun correctErrors(): Builder {
+                    return this
+                }
             }
         """.formatForTest()
         commonTestContents.shouldContainOnlyOnceWithDiff(expected)
