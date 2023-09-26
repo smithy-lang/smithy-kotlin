@@ -25,24 +25,3 @@ kotlin {
         }
     }
 }
-
-// listOf("jvmApiElements", "jvmRuntimeElements")
-//     .forEach {
-//         configurations.getByName(it) {
-//             outgoing {
-//                 capability("$group:$name:$version")
-//                 capability("aws.smithy.kotlin:slf4j-logger-provider:$version")
-//             }
-//         }
-//     }
-
-afterEvaluate {
-    configurations.all {
-        val config = this
-        println("evaluating ${config.name}")
-        outgoing.capabilities.forEach { capability ->
-            println("${config.name} provides capability $capability")
-        }
-    }
-
-}

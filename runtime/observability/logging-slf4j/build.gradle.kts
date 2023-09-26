@@ -25,17 +25,3 @@ kotlin {
         }
     }
 }
-
-// declare explicit additional capabilities that conflict with `logger-slf4j2` such that consumers
-// are forced to choose
-// listOf("jvmApiElements", "jvmRuntimeElements")
-//     .forEach {
-//         configurations.getByName(it) {
-//             outgoing {
-//                 // NOTE: as soon as you declare explicit capabilities you have to include the implicit ones,
-//                 // specifically the one defined by the GAV coordinates
-//                 capability("$group:$name:$version")
-//                 capability("aws.smithy.kotlin:slf4j-logger-provider:$version")
-//             }
-//         }
-//     }
