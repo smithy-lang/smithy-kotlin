@@ -127,6 +127,8 @@ apiValidation {
             "paginator-tests",
             "waiter-tests",
             "compile",
+            "slf4j-1x-consumer",
+            "slf4j-2x-consumer",
         ),
     )
 }

@@ -13,16 +13,20 @@ import org.slf4j.LoggerFactory
  */
 public object Slf4jLoggerProvider : LoggerProvider {
 
-    private val slf4jLoggerAdapter: (org.slf4j.Logger) -> Logger = try {
+    private val useSlf4j2x = try {
         Class.forName("org.slf4j.spi.LoggingEventBuilder")
-        ::Slf4j2xLoggerAdapter
+        true
     } catch (ex: ClassNotFoundException) {
         LoggerFactory.getLogger(Slf4jLoggerProvider::class.java).warn("falling back to SLF4J 1.x compatible binding")
-        ::Slf4j1xLoggerAdapter
+        false
     }
 
     override fun getOrCreateLogger(name: String): Logger {
         val sl4fjLogger = LoggerFactory.getLogger(name)
-        return slf4jLoggerAdapter(sl4fjLogger)
+        return if (useSlf4j2x) {
+            Slf4j2xLoggerAdapter(sl4fjLogger)
+        } else {
+            Slf4j1xLoggerAdapter(sl4fjLogger)
+        }
     }
 }
