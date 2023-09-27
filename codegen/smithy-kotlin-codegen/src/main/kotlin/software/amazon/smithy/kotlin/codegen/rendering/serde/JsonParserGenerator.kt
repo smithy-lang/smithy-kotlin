@@ -29,7 +29,11 @@ open class JsonParserGenerator(
         shape: Shape,
         members: List<MemberShape>,
         writer: KotlinWriter,
-    ): JsonSerdeDescriptorGenerator = JsonSerdeDescriptorGenerator(ctx.toRenderingContext(protocolGenerator, shape, writer), members, supportsJsonNameTrait)
+    ): JsonSerdeDescriptorGenerator = JsonSerdeDescriptorGenerator(
+        ctx.toRenderingContext(protocolGenerator, shape, writer),
+        members,
+        supportsJsonNameTrait,
+    )
 
     override fun operationDeserializer(ctx: ProtocolGenerator.GenerationContext, op: OperationShape, members: List<MemberShape>): Symbol {
         val outputSymbol = op.output.get().let { ctx.symbolProvider.toSymbol(ctx.model.expectShape(it)) }

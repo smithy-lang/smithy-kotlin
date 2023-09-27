@@ -17,7 +17,7 @@ class JsonDeserializerIgnoresKeysTest {
     private val Y_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Integer, JsonSerialName("y"))
     private val Z_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Integer, JsonSerialName("z"))
     private val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {
-        trait(IgnoreKey("z")) // <----
+        trait(IgnoreKey("z"))
         field(X_DESCRIPTOR)
         field(Y_DESCRIPTOR)
         field(Z_DESCRIPTOR)
@@ -117,8 +117,8 @@ class JsonDeserializerIgnoresKeysTest {
 
     private val W_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Integer, JsonSerialName("w"))
     private val MULT_KEYS_OBJ_DESCRIPTOR = SdkObjectDescriptor.build {
-        trait(IgnoreKey("w")) // <----
-        trait(IgnoreKey("z")) // <----
+        trait(IgnoreKey("w"))
+        trait(IgnoreKey("z"))
         field(W_DESCRIPTOR)
         field(X_DESCRIPTOR)
         field(Y_DESCRIPTOR)
