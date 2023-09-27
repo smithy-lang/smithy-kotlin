@@ -5,9 +5,9 @@
 package aws.smithy.kotlin.runtime.util
 
 import aws.smithy.kotlin.runtime.ClientException
-import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertThrows
+import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 import kotlin.test.assertIs
 
 private const val DEFAULT_COLOR = "(unknown)"
@@ -103,7 +103,7 @@ class DslBuilderPropertyTest {
 
         prop.instance = OrangeMtnBike // SupplierState.EXPLICIT_INSTANCE
 
-        assertThrows<ClientException> { // Cannot switch from EXPLICIT_INSTANCE to EXPLICIT_CONFIG
+        assertFailsWith<ClientException> { // Cannot switch from EXPLICIT_INSTANCE to EXPLICIT_CONFIG
             prop.dsl(Bike) { }
         }
     }
@@ -118,7 +118,7 @@ class DslBuilderPropertyTest {
 
         prop.instance = OrangeMtnBike // SupplierState.EXPLICIT_INSTANCE
 
-        assertThrows<ClientException> { // Cannot switch from EXPLICIT_INSTANCE to EXPLICIT_CONFIG
+        assertFailsWith<ClientException> { // Cannot switch from EXPLICIT_INSTANCE to EXPLICIT_CONFIG
             prop.dsl(Car) { }
         }
     }

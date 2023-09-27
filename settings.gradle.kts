@@ -26,7 +26,7 @@ pluginManagement {
 //         producesModule("aws.sdk.kotlin:ktlint-rules")
 //     }
 // }
-includeBuild("/Users/todaaron/sandbox/aws-kotlin-repo-tools")
+includeBuild("/Users/lauzmata/aws-kotlin-repo-tools")
 
 rootProject.name = "smithy-kotlin"
 

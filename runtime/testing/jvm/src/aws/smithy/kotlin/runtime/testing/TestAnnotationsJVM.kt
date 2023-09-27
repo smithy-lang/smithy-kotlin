@@ -8,4 +8,4 @@ import org.junit.jupiter.api.condition.DisabledOnOs
 import org.junit.jupiter.api.condition.OS
 
 @DisabledOnOs(OS.WINDOWS)
-public actual annotation class IgnoreWindows(actual val reason: String)
+public annotation class IgnoreWindows(val reason: String)

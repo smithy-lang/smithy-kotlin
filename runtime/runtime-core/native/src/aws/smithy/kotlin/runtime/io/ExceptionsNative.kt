@@ -4,11 +4,11 @@
  */
 package aws.smithy.kotlin.runtime.io
 
-actual open class IOException actual constructor(
+public actual open class IOException actual constructor(
     message: String?,
     cause: Throwable?,
 ) : Exception(message, cause) {
-    actual constructor(message: String?) : this(message, null)
+    public actual constructor(message: String?) : this(message, null)
 }
 
-actual open class EOFException actual constructor(message: String?) : IOException(message)
+public actual open class EOFException actual constructor(message: String?) : IOException(message)
