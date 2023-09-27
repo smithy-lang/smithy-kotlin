@@ -13,18 +13,14 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class JsonDeserializerIgnoresKeysTest {
-    class IgnoresKeysTest {
-        companion object {
-            val X_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Integer, JsonSerialName("x"))
-            val Y_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Integer, JsonSerialName("y"))
-            val Z_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Integer, JsonSerialName("z"))
-            val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {
-                trait(IgnoreKey("z")) // <----
-                field(X_DESCRIPTOR)
-                field(Y_DESCRIPTOR)
-                field(Z_DESCRIPTOR)
-            }
-        }
+    private val X_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Integer, JsonSerialName("x"))
+    private val Y_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Integer, JsonSerialName("y"))
+    private val Z_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Integer, JsonSerialName("z"))
+    private val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {
+        trait(IgnoreKey("z")) // <----
+        field(X_DESCRIPTOR)
+        field(Y_DESCRIPTOR)
+        field(Z_DESCRIPTOR)
     }
 
     @Test
@@ -41,12 +37,12 @@ class JsonDeserializerIgnoresKeysTest {
         var x: Int? = null
         var y: Int? = null
         var z: Int? = null
-        deserializer.deserializeStruct(IgnoresKeysTest.OBJ_DESCRIPTOR) {
+        deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
             loop@ while (true) {
                 when (findNextFieldIndex()) {
-                    IgnoresKeysTest.X_DESCRIPTOR.index -> x = deserializeInt()
-                    IgnoresKeysTest.Y_DESCRIPTOR.index -> y = deserializeInt()
-                    IgnoresKeysTest.Z_DESCRIPTOR.index -> z = deserializeInt()
+                    X_DESCRIPTOR.index -> x = deserializeInt()
+                    Y_DESCRIPTOR.index -> y = deserializeInt()
+                    Z_DESCRIPTOR.index -> z = deserializeInt()
                     null -> break@loop
                 }
             }
@@ -71,12 +67,12 @@ class JsonDeserializerIgnoresKeysTest {
         var x: Int? = null
         var y: Int? = null
         var z: Int? = null
-        deserializer.deserializeStruct(IgnoresKeysTest.OBJ_DESCRIPTOR) {
+        deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
             loop@ while (true) {
                 when (findNextFieldIndex()) {
-                    IgnoresKeysTest.X_DESCRIPTOR.index -> x = deserializeInt()
-                    IgnoresKeysTest.Y_DESCRIPTOR.index -> y = deserializeInt()
-                    IgnoresKeysTest.Z_DESCRIPTOR.index -> z = deserializeInt()
+                    X_DESCRIPTOR.index -> x = deserializeInt()
+                    Y_DESCRIPTOR.index -> y = deserializeInt()
+                    Z_DESCRIPTOR.index -> z = deserializeInt()
                     null -> break@loop
                 }
             }
@@ -103,12 +99,12 @@ class JsonDeserializerIgnoresKeysTest {
         var x: Int? = null
         var y: Int? = null
         var z: Int? = null
-        deserializer.deserializeStruct(IgnoresKeysTest.OBJ_DESCRIPTOR) {
+        deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
             loop@ while (true) {
                 when (findNextFieldIndex()) {
-                    IgnoresKeysTest.X_DESCRIPTOR.index -> x = deserializeInt()
-                    IgnoresKeysTest.Y_DESCRIPTOR.index -> y = deserializeInt()
-                    IgnoresKeysTest.Z_DESCRIPTOR.index -> z = deserializeInt()
+                    X_DESCRIPTOR.index -> x = deserializeInt()
+                    Y_DESCRIPTOR.index -> y = deserializeInt()
+                    Z_DESCRIPTOR.index -> z = deserializeInt()
                     null -> break@loop
                 }
             }
@@ -119,21 +115,14 @@ class JsonDeserializerIgnoresKeysTest {
         assertEquals(null, z)
     }
 
-    class IgnoresMultipleKeysTest {
-        companion object {
-            val W_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Integer, JsonSerialName("w"))
-            val X_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Integer, JsonSerialName("x"))
-            val Y_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Integer, JsonSerialName("y"))
-            val Z_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Integer, JsonSerialName("z"))
-            val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {
-                trait(IgnoreKey("w")) // <----
-                trait(IgnoreKey("z")) // <----
-                field(W_DESCRIPTOR)
-                field(X_DESCRIPTOR)
-                field(Y_DESCRIPTOR)
-                field(Z_DESCRIPTOR)
-            }
-        }
+    private val W_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Integer, JsonSerialName("w"))
+    private val MULT_KEYS_OBJ_DESCRIPTOR = SdkObjectDescriptor.build {
+        trait(IgnoreKey("w")) // <----
+        trait(IgnoreKey("z")) // <----
+        field(W_DESCRIPTOR)
+        field(X_DESCRIPTOR)
+        field(Y_DESCRIPTOR)
+        field(Z_DESCRIPTOR)
     }
 
     @Test
@@ -152,13 +141,13 @@ class JsonDeserializerIgnoresKeysTest {
         var x: Int? = null
         var y: Int? = null
         var z: Int? = null
-        deserializer.deserializeStruct(IgnoresMultipleKeysTest.OBJ_DESCRIPTOR) {
+        deserializer.deserializeStruct(MULT_KEYS_OBJ_DESCRIPTOR) {
             loop@ while (true) {
                 when (findNextFieldIndex()) {
-                    IgnoresMultipleKeysTest.W_DESCRIPTOR.index -> w = deserializeInt()
-                    IgnoresMultipleKeysTest.X_DESCRIPTOR.index -> x = deserializeInt()
-                    IgnoresMultipleKeysTest.Y_DESCRIPTOR.index -> y = deserializeInt()
-                    IgnoresMultipleKeysTest.Z_DESCRIPTOR.index -> z = deserializeInt()
+                    W_DESCRIPTOR.index -> w = deserializeInt()
+                    X_DESCRIPTOR.index -> x = deserializeInt()
+                    Y_DESCRIPTOR.index -> y = deserializeInt()
+                    Z_DESCRIPTOR.index -> z = deserializeInt()
                     null -> break@loop
                 }
             }
