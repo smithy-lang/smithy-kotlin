@@ -233,6 +233,8 @@ object RuntimeTypes {
         val asSdkSerializable = symbol("asSdkSerializable")
         val field = symbol("field")
 
+        val IgnoreKey = symbol("IgnoreKey")
+
         object SerdeJson : RuntimeTypePackage(KotlinDependency.SERDE_JSON) {
             val JsonSerialName = symbol("JsonSerialName")
             val JsonSerializer = symbol("JsonSerializer")

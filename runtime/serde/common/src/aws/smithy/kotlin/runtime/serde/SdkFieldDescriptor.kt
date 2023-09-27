@@ -7,23 +7,6 @@ package aws.smithy.kotlin.runtime.serde
 import aws.smithy.kotlin.runtime.InternalApi
 
 /**
- * This tag interface provides a mechanism to attach type-specific metadata to any field.
- * See [aws.smithy.kotlin.runtime.serde.xml.XmlList] for an example implementation.
- *
- * For example, to specify that a list should be serialized in XML such that values are wrapped
- * in a tag called "boo", pass an instance of XmlList to the FieldDescriptor of `XmlList(elementName="boo")`.
- */
-@InternalApi
-public interface FieldTrait
-
-/**
- * Denotes that a Map or List may contain null values
- * Details at https://awslabs.github.io/smithy/1.0/spec/core/type-refinement-traits.html#sparse-trait
- */
-@InternalApi
-public object SparseValues : FieldTrait
-
-/**
  * A protocol-agnostic type description of a field.
  */
 @InternalApi
