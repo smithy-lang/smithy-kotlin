@@ -15,7 +15,6 @@ import software.amazon.smithy.model.knowledge.NullableIndex
 import software.amazon.smithy.model.shapes.*
 import software.amazon.smithy.model.traits.ClientOptionalTrait
 import software.amazon.smithy.model.traits.DefaultTrait
-import software.amazon.smithy.model.traits.SparseTrait
 import software.amazon.smithy.model.traits.StreamingTrait
 import java.util.logging.Logger
 
@@ -93,12 +92,12 @@ class KotlinSymbolProvider(private val model: Model, private val settings: Kotli
     override fun stringShape(shape: StringShape): Symbol = if (shape.isEnum) {
         createEnumSymbol(shape)
     } else {
-        createSymbolBuilder(shape, "String", nullable = true, namespace = "kotlin").build()
+        createSymbolBuilder(shape, "String", namespace = "kotlin").build()
     }
 
     private fun createEnumSymbol(shape: Shape): Symbol {
         val namespace = "$rootNamespace.model"
-        return createSymbolBuilder(shape, shape.defaultName(service), namespace, nullable = true)
+        return createSymbolBuilder(shape, shape.defaultName(service), namespace)
             .definitionFile("${shape.defaultName(service)}.kt")
             .build()
     }
@@ -109,7 +108,7 @@ class KotlinSymbolProvider(private val model: Model, private val settings: Kotli
     override fun structureShape(shape: StructureShape): Symbol {
         val name = shape.defaultName(service)
         val namespace = "$rootNamespace.model"
-        val builder = createSymbolBuilder(shape, name, namespace, nullable = true)
+        val builder = createSymbolBuilder(shape, name, namespace)
             .definitionFile("$name.kt")
 
         // add a reference to each member symbol
@@ -147,10 +146,10 @@ class KotlinSymbolProvider(private val model: Model, private val settings: Kotli
 
     override fun listShape(shape: ListShape): Symbol {
         val reference = toSymbol(shape.member)
-        val valueSuffix = if (shape.hasTrait<SparseTrait>()) "?" else ""
+        val valueSuffix = if (reference.isNullable) "?" else ""
         val valueType = "${reference.name}$valueSuffix"
         val fullyQualifiedValueType = "${reference.fullName}$valueSuffix"
-        return createSymbolBuilder(shape, "List<$valueType>", nullable = true)
+        return createSymbolBuilder(shape, "List<$valueType>")
             .addReferences(reference)
             .putProperty(SymbolProperty.FULLY_QUALIFIED_NAME_HINT, "List<$fullyQualifiedValueType>")
             .putProperty(SymbolProperty.MUTABLE_COLLECTION_FUNCTION, "mutableListOf<$valueType>")
@@ -160,13 +159,13 @@ class KotlinSymbolProvider(private val model: Model, private val settings: Kotli
 
     override fun mapShape(shape: MapShape): Symbol {
         val reference = toSymbol(shape.value)
-        val valueSuffix = if (shape.hasTrait<SparseTrait>()) "?" else ""
+        val valueSuffix = if (reference.isNullable) "?" else ""
         val valueType = "${reference.name}$valueSuffix"
         val fullyQualifiedValueType = "${reference.fullName}$valueSuffix"
 
         val keyType = KotlinTypes.String.name
         val fullyQualifiedKeyType = KotlinTypes.String.fullName
-        return createSymbolBuilder(shape, "Map<$keyType, $valueType>", nullable = true)
+        return createSymbolBuilder(shape, "Map<$keyType, $valueType>")
             .addReferences(reference)
             .putProperty(SymbolProperty.FULLY_QUALIFIED_NAME_HINT, "Map<$fullyQualifiedKeyType, $fullyQualifiedValueType>")
             .putProperty(SymbolProperty.MUTABLE_COLLECTION_FUNCTION, "mutableMapOf<$keyType, $valueType>")
@@ -182,7 +181,7 @@ class KotlinSymbolProvider(private val model: Model, private val settings: Kotli
         val targetSymbol = toSymbol(targetShape)
             .toBuilder()
             .apply {
-                if (nullableIndex.isMemberNullable(shape, NullableIndex.CheckMode.CLIENT_ZERO_VALUE_V1_NO_INPUT)) nullable()
+                if (nullableIndex.isMemberNullable(shape, settings.api.nullabilityCheckMode)) nullable()
 
                 if (!shape.hasTrait<ClientOptionalTrait>()) { // @ClientOptional supersedes @default
                     shape.getTrait<DefaultTrait>()?.let {
@@ -238,16 +237,16 @@ class KotlinSymbolProvider(private val model: Model, private val settings: Kotli
 
     override fun timestampShape(shape: TimestampShape?): Symbol {
         val dependency = KotlinDependency.CORE
-        return createSymbolBuilder(shape, "Instant", nullable = true)
+        return createSymbolBuilder(shape, "Instant")
             .namespace("${dependency.namespace}.time", ".")
             .addDependency(dependency)
             .build()
     }
 
     override fun blobShape(shape: BlobShape): Symbol = if (shape.hasTrait<StreamingTrait>()) {
-        RuntimeTypes.Core.Content.ByteStream.asNullable()
+        RuntimeTypes.Core.Content.ByteStream
     } else {
-        createSymbolBuilder(shape, "ByteArray", nullable = true, namespace = "kotlin").build()
+        createSymbolBuilder(shape, "ByteArray", namespace = "kotlin").build()
     }
 
     override fun documentShape(shape: DocumentShape?): Symbol =
@@ -256,7 +255,7 @@ class KotlinSymbolProvider(private val model: Model, private val settings: Kotli
     override fun unionShape(shape: UnionShape): Symbol {
         val name = shape.defaultName(service)
         val namespace = "$rootNamespace.model"
-        val builder = createSymbolBuilder(shape, name, namespace, nullable = true)
+        val builder = createSymbolBuilder(shape, name, namespace)
             .definitionFile("$name.kt")
 
         // add a reference to each member symbol
@@ -265,7 +264,10 @@ class KotlinSymbolProvider(private val model: Model, private val settings: Kotli
         return builder.build()
     }
 
-    override fun resourceShape(shape: ResourceShape?): Symbol = createSymbolBuilder(shape, "Resource").build()
+    override fun resourceShape(shape: ResourceShape?): Symbol {
+        // The Kotlin SDK does not produce code explicitly based on Resources
+        error { "unexpected codegen code path" }
+    }
 
     override fun operationShape(shape: OperationShape?): Symbol {
         // The Kotlin SDK does not produce code explicitly based on Operations

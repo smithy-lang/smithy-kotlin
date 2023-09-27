@@ -14,6 +14,7 @@ import software.amazon.smithy.build.MockManifest
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.kotlin.codegen.KotlinCodegenPlugin
+import software.amazon.smithy.kotlin.codegen.KotlinSettings
 import software.amazon.smithy.kotlin.codegen.core.*
 import software.amazon.smithy.kotlin.codegen.model.buildSymbol
 import software.amazon.smithy.kotlin.codegen.model.expectShape
@@ -250,9 +251,15 @@ fun generateCode(generator: (KotlinWriter) -> Unit): String {
     return rawCodegen.substring(rawCodegen.indexOf(packageDeclaration) + packageDeclaration.length).trim()
 }
 
-fun KotlinCodegenPlugin.Companion.createSymbolProvider(model: Model, rootNamespace: String = TestModelDefault.NAMESPACE, sdkId: String = TestModelDefault.SDK_ID, serviceName: String = TestModelDefault.SERVICE_NAME): SymbolProvider {
-    val settings = model.defaultSettings(serviceName = serviceName, packageName = rootNamespace, sdkId = sdkId)
-    return createSymbolProvider(model, settings)
+fun KotlinCodegenPlugin.Companion.createSymbolProvider(
+    model: Model,
+    rootNamespace: String = TestModelDefault.NAMESPACE,
+    sdkId: String = TestModelDefault.SDK_ID,
+    serviceName: String = TestModelDefault.SERVICE_NAME,
+    settings: KotlinSettings? = null,
+): SymbolProvider {
+    val resolvedSettings = settings ?: model.defaultSettings(serviceName = serviceName, packageName = rootNamespace, sdkId = sdkId)
+    return createSymbolProvider(model, resolvedSettings)
 }
 
 /**

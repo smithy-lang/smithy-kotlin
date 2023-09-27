@@ -90,6 +90,7 @@ class StructureGenerator(
                     memberName,
                     memberSymbol,
                 )
+                // FIXME - shouldn't this only target string shapes?
                 if (memberShape.isNonBlankInStruct) {
                     writer
                         .indent()
@@ -242,7 +243,6 @@ class StructureGenerator(
             .withBlock("public class Builder {", "}") {
                 for (member in sortedMembers) {
                     val (memberName, memberSymbol) = memberNameSymbolIndex[member]!!
-                    // we want the type names sans nullability (?) for arguments
                     writer.renderMemberDocumentation(model, member)
                     writer.renderAnnotations(member)
                     write("public var #L: #E", memberName, memberSymbol)
