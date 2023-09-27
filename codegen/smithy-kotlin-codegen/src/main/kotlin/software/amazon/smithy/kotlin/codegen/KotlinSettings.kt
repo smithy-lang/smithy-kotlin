@@ -7,16 +7,18 @@ package software.amazon.smithy.kotlin.codegen
 
 import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.kotlin.codegen.lang.isValidPackageName
+import software.amazon.smithy.kotlin.codegen.utils.toCamelCase
 import software.amazon.smithy.model.Model
+import software.amazon.smithy.model.knowledge.NullableIndex.CheckMode
 import software.amazon.smithy.model.knowledge.ServiceIndex
 import software.amazon.smithy.model.node.ObjectNode
 import software.amazon.smithy.model.node.StringNode
 import software.amazon.smithy.model.shapes.ServiceShape
 import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.shapes.ShapeId
-import java.lang.IllegalArgumentException
 import java.util.Optional
 import java.util.logging.Logger
+import kotlin.IllegalArgumentException
 import kotlin.streams.toList
 
 // shapeId of service from which to generate an SDK
@@ -224,19 +226,27 @@ enum class Visibility(val value: String) {
     }
 }
 
+private fun checkModefromValue(value: String): CheckMode {
+    val camelCaseToMode = CheckMode.values().associateBy { it.toString().toCamelCase() }
+    return requireNotNull(camelCaseToMode[value]) { "$value is not a valid CheckMode, expected one of ${camelCaseToMode.keys}" }
+}
+
 /**
  * Contains API settings for a Kotlin project
  * @param visibility Enum representing the visibility of code-generated classes, objects, interfaces, etc.
  */
 data class ApiSettings(
     val visibility: Visibility = Visibility.PUBLIC,
+    val nullabilityCheckMode: CheckMode = CheckMode.CLIENT_CAREFUL,
 ) {
     companion object {
         const val VISIBILITY = "visibility"
+        const val NULLABILITY_CHECK_MODE = "nullabilityCheckMode"
 
         fun fromNode(node: Optional<ObjectNode>): ApiSettings = node.map {
             val visibility = Visibility.fromValue(node.get().getStringMemberOrDefault(VISIBILITY, "public"))
-            ApiSettings(visibility)
+            val checkMode = checkModefromValue(node.get().getStringMemberOrDefault(NULLABILITY_CHECK_MODE, "clientCareful"))
+            ApiSettings(visibility, checkMode)
         }.orElse(Default)
 
         /**
