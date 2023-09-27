@@ -5,7 +5,10 @@
 
 package aws.smithy.kotlin.runtime.serde.json
 
-import aws.smithy.kotlin.runtime.serde.*
+import aws.smithy.kotlin.runtime.serde.SdkFieldDescriptor
+import aws.smithy.kotlin.runtime.serde.SdkObjectDescriptor
+import aws.smithy.kotlin.runtime.serde.SerialKind
+import aws.smithy.kotlin.runtime.serde.deserializeStruct
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -165,81 +168,5 @@ class JsonDeserializerIgnoresKeysTest {
         assertEquals(1, x)
         assertEquals(2, y)
         assertEquals(null, z)
-    }
-
-    // Now testing `regardlessOfInModel = false` option
-    class IgnoresKeysConsideringModelTest {
-        companion object {
-            val X_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Integer, JsonSerialName("x"))
-            val Y_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Integer, JsonSerialName("y"))
-            val Z_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Integer, JsonSerialName("z"))
-            val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {
-                trait(IgnoreKey("x", false)) // <----
-                field(X_DESCRIPTOR)
-                field(Y_DESCRIPTOR)
-                field(Z_DESCRIPTOR)
-            }
-        }
-    }
-
-    @Test
-    fun itDoesNotIgnoreKeyBecauseItWasInTheModel() {
-        val payload = """
-        {
-            "x": 0
-        }
-        """.trimIndent().encodeToByteArray()
-
-        val deserializer = JsonDeserializer(payload)
-        var unionValue: Int? = null
-        deserializer.deserializeStruct(IgnoresKeysConsideringModelTest.OBJ_DESCRIPTOR) {
-            loop@ while (true) {
-                when (findNextFieldIndex()) {
-                    IgnoresKeysConsideringModelTest.X_DESCRIPTOR.index -> unionValue = deserializeInt()
-                    IgnoresKeysConsideringModelTest.Y_DESCRIPTOR.index -> unionValue = deserializeInt()
-                    IgnoresKeysConsideringModelTest.Z_DESCRIPTOR.index -> unionValue = deserializeInt()
-                    null -> break@loop
-                    else -> unionValue = deserializeInt()
-                }
-            }
-        }
-
-        assertEquals(0, unionValue)
-    }
-
-    class IgnoresKeysBecauseNotInModelTest {
-        companion object {
-            val Y_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Integer, JsonSerialName("y"))
-            val Z_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Integer, JsonSerialName("z"))
-            val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {
-                trait(IgnoreKey("x", false)) // <----
-                field(Y_DESCRIPTOR)
-                field(Z_DESCRIPTOR)
-            }
-        }
-    }
-
-    @Test
-    fun itIgnoresKeyBecauseWasNotInTheModel() {
-        val payload = """
-        {
-            "x": 0
-        }
-        """.trimIndent().encodeToByteArray()
-
-        val deserializer = JsonDeserializer(payload)
-        var unionValue: Int? = null
-        deserializer.deserializeStruct(IgnoresKeysBecauseNotInModelTest.OBJ_DESCRIPTOR) {
-            loop@ while (true) {
-                when (findNextFieldIndex()) {
-                    IgnoresKeysBecauseNotInModelTest.Y_DESCRIPTOR.index -> unionValue = deserializeInt()
-                    IgnoresKeysBecauseNotInModelTest.Z_DESCRIPTOR.index -> unionValue = deserializeInt()
-                    null -> break@loop
-                    else -> unionValue = deserializeInt()
-                }
-            }
-        }
-
-        assertEquals(null, unionValue)
     }
 }

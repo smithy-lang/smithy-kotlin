@@ -22,3 +22,9 @@ public data class JsonSerialName(public val name: String) : FieldTrait
 @InternalApi
 public val SdkFieldDescriptor.serialName: String
     get() = expectTrait<JsonSerialName>().name
+
+/**
+ * Indicates to deserializers to ignore field/key
+ */
+@InternalApi
+public data class IgnoreKey(public val key: String) : FieldTrait

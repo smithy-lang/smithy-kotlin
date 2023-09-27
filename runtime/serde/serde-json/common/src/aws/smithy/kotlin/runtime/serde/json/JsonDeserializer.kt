@@ -199,14 +199,7 @@ private class JsonFieldIterator(
                 val propertyName = token.value
                 val field = descriptor.fields.find { it.serialName == propertyName }
 
-                if (descriptor.traits.contains(IgnoreKey(propertyName, false))) {
-                    if (field == null) { // not in the model
-                        reader.skipNext()
-                        return findNextFieldIndex()
-                    } else {
-                        field.index
-                    }
-                } else if (descriptor.traits.contains(IgnoreKey(propertyName, true))) {
+                if (descriptor.traits.contains(IgnoreKey(propertyName))) {
                     reader.skipNext() // the value of the ignored key
                     return findNextFieldIndex()
                 } else {
