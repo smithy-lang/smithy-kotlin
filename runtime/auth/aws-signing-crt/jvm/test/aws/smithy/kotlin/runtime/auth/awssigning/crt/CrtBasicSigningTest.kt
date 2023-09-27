@@ -6,6 +6,7 @@ package aws.smithy.kotlin.runtime.auth.awssigning.crt
 
 import aws.smithy.kotlin.runtime.auth.awssigning.AwsSigner
 import aws.smithy.kotlin.runtime.auth.awssigning.tests.BasicSigningTestBase
+import aws.smithy.kotlin.runtime.auth.awssigning.crt.CrtAwsSigner
 
 class CrtBasicSigningTest : BasicSigningTestBase() {
     override val signer: AwsSigner = CrtAwsSigner

@@ -5,13 +5,10 @@
 
 package aws.smithy.kotlin.runtime.auth.awssigning.internal
 
+import aws.smithy.kotlin.runtime.ClientException
 import aws.smithy.kotlin.runtime.InternalApi
-import aws.smithy.kotlin.runtime.auth.awssigning.AwsSigner
-import aws.smithy.kotlin.runtime.auth.awssigning.AwsSigningConfig
-import aws.smithy.kotlin.runtime.auth.awssigning.HashSpecification
-import aws.smithy.kotlin.runtime.http.DeferredHeaders
-import aws.smithy.kotlin.runtime.http.Headers
-import aws.smithy.kotlin.runtime.http.HttpBody
+import aws.smithy.kotlin.runtime.auth.awssigning.*
+import aws.smithy.kotlin.runtime.http.*
 import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
 import aws.smithy.kotlin.runtime.io.SdkBuffer
 
@@ -76,9 +73,25 @@ public fun HttpRequestBuilder.setAwsChunkedHeaders() {
  * Update the HTTP body to use aws-chunked content encoding
  */
 @InternalApi
-public expect fun HttpRequestBuilder.setAwsChunkedBody(
-    signer: AwsSigner,
-    signingConfig: AwsSigningConfig,
-    signature: ByteArray,
-    trailingHeaders: DeferredHeaders,
-)
+public fun HttpRequestBuilder.setAwsChunkedBody(signer: AwsSigner, signingConfig: AwsSigningConfig, signature: ByteArray, trailingHeaders: DeferredHeaders) {
+    body = when (body) {
+        is HttpBody.ChannelContent -> AwsChunkedByteReadChannel(
+            checkNotNull(body.toSdkByteReadChannel()),
+            signer,
+            signingConfig,
+            signature,
+            trailingHeaders,
+        ).toHttpBody(-1)
+
+        is HttpBody.SourceContent -> AwsChunkedSource(
+            (body as HttpBody.SourceContent).readFrom(),
+            signer,
+            signingConfig,
+            signature,
+            trailingHeaders,
+        ).toHttpBody(-1)
+
+        else -> throw ClientException("HttpBody type is not supported")
+    }
+}
+

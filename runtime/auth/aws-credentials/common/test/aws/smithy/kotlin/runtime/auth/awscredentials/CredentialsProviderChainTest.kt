@@ -7,7 +7,7 @@ package aws.smithy.kotlin.runtime.auth.awscredentials
 
 import aws.smithy.kotlin.runtime.util.Attributes
 import kotlinx.coroutines.test.runTest
-import org.junit.jupiter.api.Test
+import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class CredentialsProviderChainTest {

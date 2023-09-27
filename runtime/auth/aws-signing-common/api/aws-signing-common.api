@@ -147,9 +147,6 @@ public final class aws/smithy/kotlin/runtime/auth/awssigning/HashSpecification$U
 public final class aws/smithy/kotlin/runtime/auth/awssigning/PresignerKt {
 }
 
-public final class aws/smithy/kotlin/runtime/auth/awssigning/internal/AwsChunkedUtilJVMKt {
-}
-
 public final class aws/smithy/kotlin/runtime/auth/awssigning/internal/AwsChunkedUtilKt {
 	public static final field AWS_CHUNKED_THRESHOLD I
 	public static final field CHUNK_SIZE_BYTES I

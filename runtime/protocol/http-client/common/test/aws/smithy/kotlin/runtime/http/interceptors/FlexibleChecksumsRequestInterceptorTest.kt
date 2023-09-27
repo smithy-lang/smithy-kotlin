@@ -104,7 +104,7 @@ class FlexibleChecksumsRequestInterceptorTest {
         val req = HttpRequestBuilder().apply {
             body = object : HttpBody.SourceContent() {
                 override val contentLength: Long = 1024 * 1024 * 128
-                override fun readFrom(): SdkSource = "a".repeat(contentLength.toInt()).toByteArray().source()
+                override fun readFrom(): SdkSource = "a".repeat(contentLength.toInt()).encodeToByteArray().source()
                 override val isOneShot: Boolean get() = false
             }
         }
@@ -192,7 +192,5 @@ class FlexibleChecksumsRequestInterceptorTest {
         assertEquals(precalculatedChecksumValue, call.request.headers["x-amz-checksum-sha256"])
     }
 
-    private fun Headers.getNumChecksumHeaders(): Long = entries().stream()
-        .filter { (name, _) -> name.startsWith("x-amz-checksum-") }
-        .count()
+    private fun Headers.getNumChecksumHeaders(): Int = entries().count { (name, _) -> name.startsWith("x-amz-checksum-") }
 }
