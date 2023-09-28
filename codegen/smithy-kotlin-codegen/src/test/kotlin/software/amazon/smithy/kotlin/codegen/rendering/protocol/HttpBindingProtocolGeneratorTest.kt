@@ -146,7 +146,7 @@ internal class ExplicitBlobStreamOperationSerializer: HttpSerialize<ExplicitBlob
         }
 
         if (input.payload1 != null) {
-            builder.body = input.payload1.toHttpBody() ?: HttpBody.Empty
+            builder.body = input.payload1.toHttpBody()
         }
         if (builder.body !is HttpBody.Empty) {
             builder.headers.setMissing("Content-Type", "application/octet-stream")

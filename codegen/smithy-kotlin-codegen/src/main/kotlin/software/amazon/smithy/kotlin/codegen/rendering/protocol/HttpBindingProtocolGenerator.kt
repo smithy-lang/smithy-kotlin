@@ -225,8 +225,8 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                         .withBlock("builder.#T {", "}", RuntimeTypes.Http.Request.headers) {
                             renderStringValuesMapParameters(ctx, headerBindings, writer)
                             prefixHeaderBindings.forEach {
-                                writer.withBlock("input.${it.member.defaultName()}?.filter { it.value != null }?.forEach { (key, value) ->", "}") {
-                                    write("append(\"#L\$key\", value!!)", it.locationName)
+                                writer.withBlock("input.${it.member.defaultName()}?.forEach { (key, value) ->", "}") {
+                                    write("append(\"#L\$key\", value)", it.locationName)
                                 }
                             }
                         }
@@ -425,7 +425,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             ShapeType.BLOB -> {
                 val isBinaryStream = ctx.model.expectShape(binding.member.target).hasTrait<StreamingTrait>()
                 if (isBinaryStream) {
-                    writer.write("builder.body = input.#L.#T() ?: #T.Empty", memberName, RuntimeTypes.Http.toHttpBody, RuntimeTypes.Http.HttpBody)
+                    writer.write("builder.body = input.#L.#T()", memberName, RuntimeTypes.Http.toHttpBody)
                 } else {
                     writer.write("builder.body = #T.fromBytes(input.#L)", RuntimeTypes.Http.HttpBody, memberName)
                 }
