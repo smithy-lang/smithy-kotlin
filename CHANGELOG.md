@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.27.5] - 09/28/2023
+
+### Features
+* Generate paginators and waiters with a default parameter when input shape has all optional members
+* Generate client side error correction for @required members
+
+### Fixes
+* [#993](https://github.com/awslabs/aws-sdk-kotlin/issues/993) Provide SLF4J 1.x compatible fallback implementation
+
+### Miscellaneous
+* Generate internal-only clients with `internal` visibility
+* Upgrade aws-crt-kotlin to 0.7.2
+
 ## [0.27.4] - 09/15/2023
 
 ### Miscellaneous

@@ -1,5 +1,0 @@
-{
-    "id": "4602d073-9393-4496-b63d-85535a2f631a",
-    "type": "feature",
-    "description": "Generate paginators and waiters with a default parameter when input shape has all optional members"
-}

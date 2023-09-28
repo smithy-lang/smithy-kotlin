@@ -1,8 +1,0 @@
-{
-    "id": "d7863388-cf31-44d7-b613-c2376e853b97",
-    "type": "bugfix",
-    "description": "Provide SLF4J 1.x compatible fallback implementation",
-    "issues": [
-        "awslabs/aws-sdk-kotlin#993"
-    ]
-}
