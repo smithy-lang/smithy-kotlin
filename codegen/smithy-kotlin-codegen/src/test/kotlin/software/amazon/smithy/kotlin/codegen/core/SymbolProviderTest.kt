@@ -126,7 +126,7 @@ class SymbolProviderTest {
         val memberSymbol = provider.toSymbol(member)
         assertEquals("kotlin", memberSymbol.namespace)
         assertEquals(expectedDefault, memberSymbol.defaultValue())
-        assertTrue(memberSymbol.isNullable)
+        assertFalse(memberSymbol.isNullable)
     }
 
     @Test
@@ -468,8 +468,6 @@ class SymbolProviderTest {
         val listSymbol = provider.toSymbol(model.expectShape<ListShape>("foo.bar#Records"))
 
         assertEquals("List<Record>", listSymbol.name)
-        assertEquals(true, listSymbol.isNullable)
-        assertEquals("null", listSymbol.defaultValue())
 
         // collections should contain a reference to the member type
         assertEquals("Record", listSymbol.references[0].symbol.name)
@@ -477,8 +475,6 @@ class SymbolProviderTest {
         val sparseListSymbol = provider.toSymbol(model.expectShape<ListShape>("foo.bar#SparseRecords"))
 
         assertEquals("List<Record?>", sparseListSymbol.name)
-        assertEquals(true, sparseListSymbol.isNullable)
-        assertEquals("null", sparseListSymbol.defaultValue())
 
         // collections should contain a reference to the member type
         assertEquals("Record", sparseListSymbol.references[0].symbol.name)
@@ -504,8 +500,6 @@ class SymbolProviderTest {
         val listSymbol = provider.toSymbol(listShape)
 
         assertEquals("List<Record>", listSymbol.name)
-        assertEquals(true, listSymbol.isNullable)
-        assertEquals("null", listSymbol.defaultValue())
 
         // collections should contain a reference to the member type
         assertEquals("Record", listSymbol.references[0].symbol.name)
@@ -533,8 +527,6 @@ class SymbolProviderTest {
         val mapSymbol = provider.toSymbol(model.expectShape<MapShape>("${TestModelDefault.NAMESPACE}#MyMap"))
 
         assertEquals("Map<String, Record>", mapSymbol.name)
-        assertEquals(true, mapSymbol.isNullable)
-        assertEquals("null", mapSymbol.defaultValue())
 
         // collections should contain a reference to the member type
         assertEquals("Record", mapSymbol.references[0].symbol.name)
@@ -542,8 +534,6 @@ class SymbolProviderTest {
         val sparseMapSymbol = provider.toSymbol(model.expectShape<MapShape>("${TestModelDefault.NAMESPACE}#MySparseMap"))
 
         assertEquals("Map<String, Record?>", sparseMapSymbol.name)
-        assertEquals(true, sparseMapSymbol.isNullable)
-        assertEquals("null", sparseMapSymbol.defaultValue())
 
         // collections should contain a reference to the member type
         assertEquals("Record", sparseMapSymbol.references[0].symbol.name)
@@ -591,8 +581,6 @@ class SymbolProviderTest {
         val symbol = provider.toSymbol(shape)
 
         assertEquals("foo.bar.model", symbol.namespace)
-        assertEquals("null", symbol.defaultValue())
-        assertEquals(true, symbol.isNullable)
         assertEquals("Baz", symbol.name)
         assertEquals("Baz.kt", symbol.definitionFile)
     }
@@ -611,8 +599,6 @@ class SymbolProviderTest {
         val symbol = provider.toSymbol(shape)
 
         assertEquals("foo.bar.model", symbol.namespace)
-        assertEquals("null", symbol.defaultValue())
-        assertEquals(true, symbol.isNullable)
         assertEquals("Baz", symbol.name)
         assertEquals("Baz.kt", symbol.definitionFile)
     }
@@ -632,8 +618,6 @@ class SymbolProviderTest {
         val symbol = provider.toSymbol(unionShape)
 
         assertEquals("com.test.model", symbol.namespace)
-        assertEquals("null", symbol.defaultValue())
-        assertEquals(true, symbol.isNullable)
         assertEquals("MyUnion", symbol.name)
         assertEquals("MyUnion.kt", symbol.definitionFile)
     }
@@ -651,8 +635,6 @@ class SymbolProviderTest {
         val structSymbol = provider.toSymbol(structShape)
         assertEquals("foo.bar.model", structSymbol.namespace)
         assertEquals("MyStruct", structSymbol.name)
-        assertEquals("null", structSymbol.defaultValue())
-        assertEquals(true, structSymbol.isNullable)
         assertEquals("MyStruct.kt", structSymbol.definitionFile)
         assertEquals(1, structSymbol.references.size)
     }
@@ -706,8 +688,6 @@ class SymbolProviderTest {
         val timestampSymbol = provider.toSymbol(tsShape)
         assertEquals("$RUNTIME_ROOT_NS.time", timestampSymbol.namespace)
         assertEquals("Instant", timestampSymbol.name)
-        assertEquals("null", timestampSymbol.defaultValue())
-        assertEquals(true, timestampSymbol.isNullable)
         assertEquals(1, timestampSymbol.dependencies.size)
     }
 
@@ -731,8 +711,6 @@ class SymbolProviderTest {
         val structSymbol = provider.toSymbol(struct1)
         assertEquals("foo.bar.model", structSymbol.namespace)
         assertEquals("MyStruct1", structSymbol.name)
-        assertEquals("null", structSymbol.defaultValue())
-        assertEquals(true, structSymbol.isNullable)
         assertEquals("MyStruct1.kt", structSymbol.definitionFile)
         assertEquals(2, structSymbol.references.size)
     }

@@ -68,22 +68,22 @@ class KotlinSymbolProvider(private val model: Model, private val settings: Kotli
 
     override fun toMemberName(shape: MemberShape): String = escaper.escapeMemberName(shape.defaultName())
 
-    override fun byteShape(shape: ByteShape): Symbol = numberShape(shape, "Byte", "0.toByte()")
+    override fun byteShape(shape: ByteShape): Symbol = numberShape(shape, "Byte")
 
-    override fun integerShape(shape: IntegerShape): Symbol = numberShape(shape, "Int", "0")
+    override fun integerShape(shape: IntegerShape): Symbol = numberShape(shape, "Int")
 
     override fun intEnumShape(shape: IntEnumShape): Symbol = createEnumSymbol(shape)
 
-    override fun shortShape(shape: ShortShape): Symbol = numberShape(shape, "Short", "0.toShort()")
+    override fun shortShape(shape: ShortShape): Symbol = numberShape(shape, "Short")
 
-    override fun longShape(shape: LongShape): Symbol = numberShape(shape, "Long", "0L")
+    override fun longShape(shape: LongShape): Symbol = numberShape(shape, "Long")
 
-    override fun floatShape(shape: FloatShape): Symbol = numberShape(shape, "Float", "0f")
+    override fun floatShape(shape: FloatShape): Symbol = numberShape(shape, "Float")
 
-    override fun doubleShape(shape: DoubleShape): Symbol = numberShape(shape, "Double", "0.0")
+    override fun doubleShape(shape: DoubleShape): Symbol = numberShape(shape, "Double")
 
-    private fun numberShape(shape: Shape, typeName: String, defaultValue: String): Symbol =
-        createSymbolBuilder(shape, typeName, namespace = "kotlin").defaultValue(defaultValue).build()
+    private fun numberShape(shape: Shape, typeName: String): Symbol =
+        createSymbolBuilder(shape, typeName, namespace = "kotlin").build()
 
     override fun bigIntegerShape(shape: BigIntegerShape?): Symbol = RuntimeTypes.Core.Content.BigInteger
 
@@ -103,7 +103,7 @@ class KotlinSymbolProvider(private val model: Model, private val settings: Kotli
     }
 
     override fun booleanShape(shape: BooleanShape?): Symbol =
-        createSymbolBuilder(shape, "Boolean", namespace = "kotlin").defaultValue("false").build()
+        createSymbolBuilder(shape, "Boolean", namespace = "kotlin").build()
 
     override fun structureShape(shape: StructureShape): Symbol {
         val name = shape.defaultName(service)
@@ -185,7 +185,7 @@ class KotlinSymbolProvider(private val model: Model, private val settings: Kotli
 
                 if (!shape.hasTrait<ClientOptionalTrait>()) { // @ClientOptional supersedes @default
                     shape.getTrait<DefaultTrait>()?.let {
-                        defaultValue(it.getDefaultValue(targetShape), DefaultValueType.MODELED)
+                        defaultValue(it.getDefaultValue(targetShape))
                     }
                 }
             }

@@ -561,6 +561,7 @@ open class SerializeStructGenerator(
         val defaultValue = targetSymbol.defaultValue()
         val memberName = ctx.symbolProvider.toMemberName(memberShape)
 
+        // FIXME - aaron
         if ((targetShape.isNumberShape || targetShape.isBooleanShape) && targetSymbol.isNotNullable && defaultValue != null) {
             // unboxed primitive with a default value
             val ident = "input.$memberName"

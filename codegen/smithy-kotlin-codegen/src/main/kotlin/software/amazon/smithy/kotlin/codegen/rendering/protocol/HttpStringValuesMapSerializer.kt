@@ -80,8 +80,8 @@ class HttpStringValuesMapSerializer(
 
                     val targetSymbol = symbolProvider.toSymbol(member)
                     val defaultValue = targetSymbol.defaultValue()
+                    // FIXME - aaron
                     if ((memberTarget.isNumberShape || memberTarget.isBooleanShape) && targetSymbol.isNotNullable && defaultValue != null) {
-                        // unboxed primitive with a default value
                         if (member.hasTrait<RequiredTrait>()) {
                             // always serialize a required member even if it's the default
                             writer.write("append(#S, #L)", paramName, encodedValue)

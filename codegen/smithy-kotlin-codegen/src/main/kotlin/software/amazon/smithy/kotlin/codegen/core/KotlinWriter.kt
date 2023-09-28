@@ -54,16 +54,19 @@ class KotlinWriter(
         // fully qualified type: `aws.sdk.kotlin.model.Foo`
         putFormatter('Q', KotlinSymbolFormatter(this) { true })
 
+        // FIXME - only used in endpoint param generation
         // like `T` but with nullability information: `aws.sdk.kotlin.model.Foo?`. This is mostly useful
         // when formatting properties
         putFormatter('P', KotlinPropertyFormatter(this))
 
+        // FIXME - only used in pagination - remove
         // like `P` but fully qualified
         putFormatter('F', KotlinPropertyFormatter(this, fullyQualifiedNames = true))
 
         // like `P` but with default set (if applicable): `aws.sdk.kotlin.model.Foo = 1`
         putFormatter('D', KotlinPropertyFormatter(this, setDefault = true))
 
+        // FIXME - Only in structure generator - remove
         // like `D` but fully qualified
         putFormatter('E', KotlinPropertyFormatter(this, setDefault = true, fullyQualifiedNames = true))
 

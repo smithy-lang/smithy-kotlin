@@ -74,23 +74,25 @@ class StructureGenerator(
     }
 
     private fun renderImmutableProperty(memberShape: MemberShape, memberName: String, memberSymbol: Symbol) {
-        when {
-            shape.isError && memberName == "message" -> {
-                val targetShape = model.expectShape(memberShape.target)
-                if (!targetShape.isStringShape) {
-                    throw CodegenException("Message is a reserved name for exception types and cannot be used for any other property")
-                }
-                // override Throwable's message property
-                writer.write("override val #1L: #2F = builder.#1L", memberName, memberSymbol)
+        // override Throwable's message property
+        val prefix = if (shape.isError && memberName == "message") {
+            val targetShape = model.expectShape(memberShape.target)
+            if (!targetShape.isStringShape) {
+                throw CodegenException("Message is a reserved name for exception types and cannot be used for any other property")
             }
+            "override"
+        } else {
+            "public"
+        }
 
-            memberShape.isRequiredInStruct -> {
+        when {
+            memberShape.isRequiredInStruct && !memberSymbol.isNullable -> {
                 writer.write(
-                    """public val #1L: #2F = requireNotNull(builder.#1L) { "A non-null value must be provided for #1L" }""",
+                    """#1L val #2L: #3F = requireNotNull(builder.#2L) { "A non-null value must be provided for #2L" }""",
+                    prefix,
                     memberName,
                     memberSymbol,
                 )
-                // FIXME - shouldn't this only target string shapes?
                 if (memberShape.isNonBlankInStruct) {
                     writer
                         .indent()
@@ -102,17 +104,18 @@ class StructureGenerator(
                 }
             }
 
-            else -> writer.write("public val #1L: #2F = builder.#1L", memberName, memberSymbol)
+            else -> writer.write("#1L val #2L: #3F = builder.#2L", prefix, memberName, memberSymbol)
         }
     }
 
     private val MemberShape.isRequiredInStruct
         get() =
-            hasTrait<HttpLabelTrait>() ||
-                isRequired && (hasTrait<HttpQueryTrait>() || hasTrait<HttpQueryParamsTrait>())
+            hasTrait<HttpLabelTrait>() || isRequired
 
-    private val MemberShape.isNonBlankInStruct
-        get() = getTrait<LengthTrait>()?.min?.getOrNull()?.takeIf { it > 0 } != null
+    private val MemberShape.isNonBlankInStruct: Boolean
+        get() =
+            ctx.model.expectShape(target).isStringShape &&
+                getTrait<LengthTrait>()?.min?.getOrNull()?.takeIf { it > 0 } != null
 
     private fun renderCompanionObject() {
         writer.withBlock("public companion object {", "}") {
@@ -245,7 +248,15 @@ class StructureGenerator(
                     val (memberName, memberSymbol) = memberNameSymbolIndex[member]!!
                     writer.renderMemberDocumentation(model, member)
                     writer.renderAnnotations(member)
-                    write("public var #L: #E", memberName, memberSymbol)
+                    val builderMemberSymbol = if (!memberSymbol.isNullable && memberSymbol.defaultValue() == null) {
+                        // nullabilty is w.r.t to the immmutable property type, builders have to account for the user
+                        // providing required values though and thus must be nullable. They are then checked
+                        // at runtime in the ctor to ensure a value was provided
+                        memberSymbol.toBuilder().nullable().build()
+                    } else {
+                        memberSymbol
+                    }
+                    write("public var #L: #E", memberName, builderMemberSymbol)
                 }
                 write("")
 
@@ -291,7 +302,7 @@ class StructureGenerator(
                         .filter(MemberShape::isRequired)
                         .filterNot {
                             val target = ctx.model.expectShape(it.target)
-                            target.isStreaming
+                            target.isStreaming || it.hasTrait<ClientOptionalTrait>()
                         }
                         .forEach {
                             val correctedValue = ClientErrorCorrection.defaultValue(ctx, it, writer)

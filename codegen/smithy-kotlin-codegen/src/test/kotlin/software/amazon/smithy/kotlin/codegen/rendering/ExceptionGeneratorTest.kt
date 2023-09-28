@@ -113,7 +113,7 @@ class ExceptionGeneratorTest {
     @Test
     fun `error generator renders override with message member`() {
         val expected = """
-    override val message: kotlin.String? = builder.message
+    override val message: kotlin.String = requireNotNull(builder.message) { "A non-null value must be provided for message" }
 """
 
         serverErrorTestContents.shouldContainWithDiff(expected)
