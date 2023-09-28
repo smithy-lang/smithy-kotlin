@@ -80,7 +80,7 @@ public expect sealed interface SdkBufferedSource : SdkSource {
     /**
      * Reads [byteCount] bytes from this source and returns them as a byte array
      */
-    public actual fun readByteArray(byteCount: Long): ByteArray
+    public fun readByteArray(byteCount: Long): ByteArray
 
     /**
      * Reads all bytes from this source, decodes them as UTF-8, and returns the string.
