@@ -198,7 +198,13 @@ private class JsonFieldIterator(
                 val token = reader.nextTokenOf<JsonToken.Name>()
                 val propertyName = token.value
                 val field = descriptor.fields.find { it.serialName == propertyName }
-                field?.index ?: Deserializer.FieldIterator.UNKNOWN_FIELD
+
+                if (IgnoreKey(propertyName) in descriptor.traits) {
+                    reader.skipNext() // the value of the ignored key
+                    return findNextFieldIndex()
+                } else {
+                    field?.index ?: Deserializer.FieldIterator.UNKNOWN_FIELD
+                }
             }
         }
 

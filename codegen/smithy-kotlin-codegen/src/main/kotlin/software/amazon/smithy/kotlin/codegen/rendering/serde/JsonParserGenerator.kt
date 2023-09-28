@@ -24,6 +24,17 @@ open class JsonParserGenerator(
 
     open val defaultTimestampFormat: TimestampFormatTrait.Format = TimestampFormatTrait.Format.EPOCH_SECONDS
 
+    open fun descriptorGenerator(
+        ctx: ProtocolGenerator.GenerationContext,
+        shape: Shape,
+        members: List<MemberShape>,
+        writer: KotlinWriter,
+    ): JsonSerdeDescriptorGenerator = JsonSerdeDescriptorGenerator(
+        ctx.toRenderingContext(protocolGenerator, shape, writer),
+        members,
+        supportsJsonNameTrait,
+    )
+
     override fun operationDeserializer(ctx: ProtocolGenerator.GenerationContext, op: OperationShape, members: List<MemberShape>): Symbol {
         val outputSymbol = op.output.get().let { ctx.symbolProvider.toSymbol(ctx.model.expectShape(it)) }
         return op.bodyDeserializer(ctx.settings) { writer ->
@@ -127,7 +138,7 @@ open class JsonParserGenerator(
         members: List<MemberShape>,
         writer: KotlinWriter,
     ) {
-        JsonSerdeDescriptorGenerator(ctx.toRenderingContext(protocolGenerator, shape, writer), members, supportsJsonNameTrait).render()
+        descriptorGenerator(ctx, shape, members, writer).render()
         if (shape.isUnionShape) {
             val name = ctx.symbolProvider.toSymbol(shape).name
             DeserializeUnionGenerator(ctx, name, members, writer, defaultTimestampFormat).render()
