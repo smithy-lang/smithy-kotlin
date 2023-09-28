@@ -124,24 +124,26 @@ class JsonDeserializerIgnoresKeysTest {
     fun itIgnoresKeysNotInModel() {
         val payload = """
         {
-            "y": 2,
-            "x": 1
+            "x": 1,
+            "y": 2
         }
         """.trimIndent().encodeToByteArray()
 
         val deserializer = JsonDeserializer(payload)
-        var result: Int? = null
+        var x: Int? = null
+        var y: Int? = null
         deserializer.deserializeStruct(MISSING_KEYS_OBJ_DESCRIPTOR) {
             loop@ while (true) {
                 when (findNextFieldIndex()) {
-                    Y_DESCRIPTOR.index -> result = deserializeInt()
+                    Y_DESCRIPTOR.index -> y = deserializeInt()
                     null -> break@loop
-                    else -> result = deserializeInt()
+                    else -> x = deserializeInt()
                 }
             }
         }
 
-        assertEquals(2, result)
+        assertEquals(null, x)
+        assertEquals(2, y)
     }
 
     private val W_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Integer, JsonSerialName("w"))
