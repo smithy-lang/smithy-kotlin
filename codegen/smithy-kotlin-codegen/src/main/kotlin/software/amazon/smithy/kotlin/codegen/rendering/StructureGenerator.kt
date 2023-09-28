@@ -85,26 +85,25 @@ class StructureGenerator(
             "public"
         }
 
-        when {
-            memberShape.isRequiredInStruct && !memberSymbol.isNullable -> {
-                writer.write(
-                    """#1L val #2L: #3F = requireNotNull(builder.#2L) { "A non-null value must be provided for #2L" }""",
-                    prefix,
-                    memberName,
-                    memberSymbol,
-                )
-                if (memberShape.isNonBlankInStruct) {
-                    writer
-                        .indent()
-                        .write(
-                            """.apply { require(isNotBlank()) { "A non-blank value must be provided for #L" } }""",
-                            memberName,
-                        )
-                        .dedent()
-                }
-            }
+        if (memberShape.isRequiredInStruct && memberSymbol.isRequiredWithNoDefault) {
+            writer.write(
+                """#1L val #2L: #3F = requireNotNull(builder.#2L) { "A non-null value must be provided for #2L" }""",
+                prefix,
+                memberName,
+                memberSymbol,
+            )
+        } else {
+            writer.write("#1L val #2L: #3F = builder.#2L", prefix, memberName, memberSymbol)
+        }
 
-            else -> writer.write("#1L val #2L: #3F = builder.#2L", prefix, memberName, memberSymbol)
+        if (memberShape.isNonBlankInStruct) {
+            writer
+                .indent()
+                .write(
+                    """.apply { require(isNotBlank()) { "A non-blank value must be provided for #L" } }""",
+                    memberName,
+                )
+                .dedent()
         }
     }
 
@@ -248,7 +247,7 @@ class StructureGenerator(
                     val (memberName, memberSymbol) = memberNameSymbolIndex[member]!!
                     writer.renderMemberDocumentation(model, member)
                     writer.renderAnnotations(member)
-                    val builderMemberSymbol = if (!memberSymbol.isNullable && memberSymbol.defaultValue() == null) {
+                    val builderMemberSymbol = if (memberSymbol.isRequiredWithNoDefault) {
                         // nullabilty is w.r.t to the immmutable property type, builders have to account for the user
                         // providing required values though and thus must be nullable. They are then checked
                         // at runtime in the ctor to ensure a value was provided
@@ -299,7 +298,11 @@ class StructureGenerator(
                     "}",
                 ) {
                     sortedMembers
-                        .filter(MemberShape::isRequired)
+                        .filter {
+                            val (_, memberSymbol) = memberNameSymbolIndex[it]!!
+                            // required members with no default
+                            memberSymbol.isRequiredWithNoDefault
+                        }
                         .filterNot {
                             val target = ctx.model.expectShape(it.target)
                             target.isStreaming || it.hasTrait<ClientOptionalTrait>()

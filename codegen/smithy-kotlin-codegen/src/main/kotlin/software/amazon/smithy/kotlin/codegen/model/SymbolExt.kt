@@ -55,6 +55,13 @@ object SymbolProperty {
 }
 
 /**
+ * Test if a symbol is required (not-nullable) with no default value set. This means there is no builder
+ * set default so the constructor will have to generate a runtime check that a value is set.
+ */
+val Symbol.isRequiredWithNoDefault: Boolean
+    get() = !isNullable && defaultValue() == null
+
+/**
  * Test if a symbol is nullable
  */
 val Symbol.isNullable: Boolean

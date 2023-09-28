@@ -83,7 +83,7 @@ data class KotlinSettings(
          * @return Returns the extracted settings
          */
         fun from(model: Model, config: ObjectNode): KotlinSettings {
-            config.warnIfAdditionalProperties(listOf(SERVICE, PACKAGE_SETTINGS, BUILD_SETTINGS, SDK_ID))
+            config.warnIfAdditionalProperties(listOf(SERVICE, PACKAGE_SETTINGS, BUILD_SETTINGS, SDK_ID, API_SETTINGS))
 
             val serviceId = config.getStringMember(SERVICE)
                 .map(StringNode::expectShapeId)
