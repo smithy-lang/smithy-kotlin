@@ -7,7 +7,6 @@ package aws.smithy.kotlin.runtime.auth.awssigning.crt
 
 import aws.smithy.kotlin.runtime.auth.awssigning.AwsSigner
 import aws.smithy.kotlin.runtime.auth.awssigning.tests.AwsChunkedByteReadChannelTestBase
-import aws.smithy.kotlin.runtime.auth.awssigning.crt.CrtAwsSigner
 
 class CrtAwsChunkedByteReadChannelTest : AwsChunkedByteReadChannelTestBase() {
     override val signer: AwsSigner = CrtAwsSigner

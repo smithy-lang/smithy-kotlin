@@ -18,8 +18,10 @@ import kotlin.time.measureTimedValue
 suspend fun <T> TestScope.assertTime(expectedDuration: Duration, block: suspend () -> T): T {
     val (result, actualDuration) = testTimeSource.measureTimedValue { block() }
 
-    assertEquals(expectedDuration, actualDuration,
-        "Actual duration $actualDuration doesn't match expected duration $expectedDuration"
+    assertEquals(
+        expectedDuration,
+        actualDuration,
+        "Actual duration $actualDuration doesn't match expected duration $expectedDuration",
     )
 
     return result

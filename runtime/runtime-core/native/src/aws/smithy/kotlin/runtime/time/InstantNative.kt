@@ -87,6 +87,5 @@ public actual class Instant : Comparable<Instant> {
          */
         public actual val MAX_VALUE: Instant
             get() = TODO("Not yet implemented")
-
     }
 }
