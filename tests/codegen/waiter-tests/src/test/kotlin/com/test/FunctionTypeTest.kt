@@ -8,7 +8,7 @@ package com.test
 import com.test.model.*
 import com.test.utils.successTest
 import com.test.waiters.*
-import org.junit.jupiter.api.Test
+import kotlin.test.Test
 
 class FunctionTypeTest {
     @Test fun testTypeFunctionStringEquals() = successTest(
