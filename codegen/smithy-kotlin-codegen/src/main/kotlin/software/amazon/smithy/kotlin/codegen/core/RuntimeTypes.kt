@@ -237,6 +237,7 @@ object RuntimeTypes {
             val JsonSerialName = symbol("JsonSerialName")
             val JsonSerializer = symbol("JsonSerializer")
             val JsonDeserializer = symbol("JsonDeserializer")
+            val IgnoreKey = symbol("IgnoreKey")
         }
 
         object SerdeXml : RuntimeTypePackage(KotlinDependency.SERDE_XML) {
