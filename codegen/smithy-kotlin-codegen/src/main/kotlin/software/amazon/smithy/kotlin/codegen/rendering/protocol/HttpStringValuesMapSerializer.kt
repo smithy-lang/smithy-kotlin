@@ -15,8 +15,8 @@ import software.amazon.smithy.model.knowledge.HttpBinding
 import software.amazon.smithy.model.shapes.*
 import software.amazon.smithy.model.traits.IdempotencyTokenTrait
 import software.amazon.smithy.model.traits.MediaTypeTrait
-import software.amazon.smithy.model.traits.RequiredTrait
 import software.amazon.smithy.model.traits.TimestampFormatTrait
+import software.amazon.smithy.utils.AbstractCodeWriter
 
 /**
  * Shared implementation to generate serialization for members bound to HTTP query parameters or headers
@@ -54,45 +54,46 @@ class HttpStringValuesMapSerializer(
             val paramName = it.locationName
             val location = it.location
             val member = it.member
+            val memberSymbol = symbolProvider.toSymbol(member)
             when (memberTarget) {
                 is CollectionShape -> renderCollectionShape(it, memberTarget, writer)
                 is TimestampShape -> {
                     val tsFormat = resolver.determineTimestampFormat(member, location, defaultTimestampFormat)
                     // headers/query params need to be a string
                     val formatted = formatInstant("input.$memberName", tsFormat, forceString = true)
-                    writer.write("if (input.#1L != null) append(\"#2L\", #3L)", memberName, paramName, formatted)
+                    val appendFn = writer.format("append(#S, #L)", paramName, formatted)
                     writer.addImport(RuntimeTypes.Core.TimestampFormat)
+                    writer.writeWithCondIfCheck(memberSymbol.isNullable, "input.$memberName != null", appendFn)
                 }
                 is BlobShape -> {
-                    writer.write(
-                        "if (input.#1L?.isNotEmpty() == true) append(\"#2L\", input.#1L.#T())",
-                        memberName,
+                    val appendFn = writer.format(
+                        "append(#S, input.#L.#T()",
                         paramName,
+                        memberName,
                         RuntimeTypes.Core.Utils.encodeBase64String,
                     )
+                    writer.writeWithCondIfCheck(memberSymbol.isNullable, "input.$memberName?.isNotEmpty() == true", appendFn)
                 }
                 is StringShape -> renderStringShape(it, memberTarget, writer)
-                is IntEnumShape ->
-                    writer.write("if (input.#1L != null) { append(#2S, \"\${input.#1L.value}\") }", memberName, paramName)
+                is IntEnumShape -> {
+                    val appendFn = writer.format("append(#S, \"\${input.#L.value}\")", paramName, memberName)
+                    writer.writeWithCondIfCheck(memberSymbol.isNullable, "input.$memberName != null", appendFn)
+                }
                 else -> {
                     // encode to string
                     val encodedValue = "\"\${input.$memberName}\""
-
-                    val targetSymbol = symbolProvider.toSymbol(member)
-                    val defaultValue = targetSymbol.defaultValue()
-                    // FIXME - aaron
-                    if ((memberTarget.isNumberShape || memberTarget.isBooleanShape) && targetSymbol.isNotNullable && defaultValue != null) {
-                        if (member.hasTrait<RequiredTrait>()) {
-                            // always serialize a required member even if it's the default
-                            writer.write("append(#S, #L)", paramName, encodedValue)
-                        } else {
-                            writer.write("if (input.#1L != $defaultValue) append(#2S, #3L)", memberName, paramName, encodedValue)
-                        }
-                    } else {
-                        writer.write("if (input.#1L != null) append(#2S, #3L)", memberName, paramName, encodedValue)
-                    }
+                    val appendFn = writer.format("append(#S, #L)", paramName, encodedValue)
+                    writer.writeWithCondIfCheck(memberSymbol.isNullable, "input.$memberName != null", appendFn)
                 }
             }
+        }
+    }
+
+    private fun AbstractCodeWriter<*>.writeWithCondIfCheck(cond: Boolean, check: String, body: String) {
+        if (cond) {
+            write("if ($check) $body")
+        } else {
+            write(body)
         }
     }
 
@@ -125,11 +126,13 @@ class HttpStringValuesMapSerializer(
         }
 
         val memberName = symbolProvider.toMemberName(binding.member)
+        val memberSymbol = symbolProvider.toSymbol(binding.member)
         val paramName = binding.locationName
         // appendAll collection parameter 2
         val param2 = if (mapFnContents.isEmpty()) "input.$memberName" else "input.$memberName.map { $mapFnContents }"
+        val nullCheck = if (memberSymbol.isNullable) "?" else ""
         writer.write(
-            "if (input.#1L?.isNotEmpty() == true) appendAll(\"#2L\", #3L)",
+            "if (input.#1L$nullCheck.isNotEmpty() == true) appendAll(#2S, #3L)",
             memberName,
             paramName,
             param2,
@@ -140,21 +143,23 @@ class HttpStringValuesMapSerializer(
         val memberName = symbolProvider.toMemberName(binding.member)
         val location = binding.location
         val paramName = binding.locationName
+        val memberSymbol = symbolProvider.toSymbol(binding.member)
 
         // NOTE: query parameters are allowed to be empty, whereas headers should omit empty string
         // values from serde
         if ((location == HttpBinding.Location.QUERY || location == HttpBinding.Location.HEADER) && binding.member.hasTrait<IdempotencyTokenTrait>()) {
             // Call the idempotency token function if no supplied value.
             writer.addImport(RuntimeTypes.SmithyClient.IdempotencyTokenProviderExt)
-            writer.write("append(\"#L\", (input.$memberName ?: context.idempotencyTokenProvider.generateToken()))", paramName)
+            writer.write("append(#S, (input.$memberName ?: context.idempotencyTokenProvider.generateToken()))", paramName)
         } else {
             val cond =
                 if (location == HttpBinding.Location.QUERY ||
                     memberTarget.hasTrait<@Suppress("DEPRECATION") software.amazon.smithy.model.traits.EnumTrait>()
                 ) {
-                    "input.$memberName != null"
+                    if (memberSymbol.isNullable) "input.$memberName != null" else ""
                 } else {
-                    "input.$memberName?.isNotEmpty() == true"
+                    val nullCheck = if (memberSymbol.isNullable) "?" else ""
+                    "input.$memberName$nullCheck.isNotEmpty() == true"
                 }
 
             val suffix = when {
@@ -168,7 +173,8 @@ class HttpStringValuesMapSerializer(
                 else -> ""
             }
 
-            writer.write("if (#1L) append(\"#2L\", #3L)", cond, paramName, "input.${memberName}$suffix")
+            val appendFn = writer.format("append(#S, #L)", paramName, "input.${memberName}$suffix")
+            writer.writeWithCondIfCheck(cond.isNotEmpty(), cond, appendFn)
         }
     }
 }
