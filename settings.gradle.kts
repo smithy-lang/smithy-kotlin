@@ -27,7 +27,6 @@ sourceControl {
     }
 }
 
-
 rootProject.name = "smithy-kotlin"
 
 include(":dokka-smithy")
