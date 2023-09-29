@@ -183,14 +183,19 @@ class StructureGenerator(
                     true -> "?.toInt() ?: 0"
                     else -> ".toInt()"
                 }
-            ShapeType.BLOB ->
-                if (targetShape.hasTrait<StreamingTrait>()) {
+            ShapeType.BLOB -> {
+                val hashFn = if (targetShape.hasTrait<StreamingTrait>()) {
                     // ByteStream
-                    "?.hashCode() ?: 0"
+                    "hashCode()"
                 } else {
                     // ByteArray
-                    "?.contentHashCode() ?: 0"
+                    "contentHashCode()"
                 }
+                when (isNullable) {
+                    true -> "?.$hashFn ?: 0"
+                    false -> ".$hashFn"
+                }
+            }
             else ->
                 when (isNullable) {
                     true -> "?.hashCode() ?: 0"
