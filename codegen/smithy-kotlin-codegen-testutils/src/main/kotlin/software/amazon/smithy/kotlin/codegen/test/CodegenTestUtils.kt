@@ -52,7 +52,11 @@ fun testRender(
 }
 
 /** Drive codegen for serialization of a given shape */
-fun codegenSerializerForShape(model: Model, shapeId: String, location: HttpBinding.Location = HttpBinding.Location.DOCUMENT): String {
+fun codegenSerializerForShape(
+    model: Model,
+    shapeId: String,
+    location: HttpBinding.Location = HttpBinding.Location.DOCUMENT,
+): String {
     val ctx = model.newTestContext()
 
     val op = ctx.generationCtx.model.expectShape(ShapeId.from(shapeId))

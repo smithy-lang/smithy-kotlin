@@ -85,9 +85,10 @@ class KotlinSymbolProvider(private val model: Model, private val settings: Kotli
     private fun numberShape(shape: Shape, typeName: String): Symbol =
         createSymbolBuilder(shape, typeName, namespace = "kotlin").build()
 
-    override fun bigIntegerShape(shape: BigIntegerShape?): Symbol = RuntimeTypes.Core.Content.BigInteger
+    // strip nullability from these runtime symbols as nullability is context dependent
+    override fun bigIntegerShape(shape: BigIntegerShape): Symbol = RuntimeTypes.Core.Content.BigInteger.asNonNullable()
 
-    override fun bigDecimalShape(shape: BigDecimalShape?): Symbol = RuntimeTypes.Core.Content.BigDecimal
+    override fun bigDecimalShape(shape: BigDecimalShape): Symbol = RuntimeTypes.Core.Content.BigDecimal.asNonNullable()
 
     override fun stringShape(shape: StringShape): Symbol = if (shape.isEnum) {
         createEnumSymbol(shape)

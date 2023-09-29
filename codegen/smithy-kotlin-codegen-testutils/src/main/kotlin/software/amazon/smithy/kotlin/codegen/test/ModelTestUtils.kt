@@ -116,7 +116,7 @@ fun Model.toSmithyIDL(): String {
 fun Model.newTestContext(
     serviceName: String = TestModelDefault.SERVICE_NAME,
     packageName: String = TestModelDefault.NAMESPACE,
-    settings: KotlinSettings = this.defaultSettings(serviceName, packageName),
+    settings: KotlinSettings = defaultSettings(serviceName, packageName),
     generator: ProtocolGenerator = MockHttpProtocolGenerator(this),
     integrations: List<KotlinIntegration> = listOf(),
 ): TestContext {

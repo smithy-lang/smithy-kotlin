@@ -125,6 +125,11 @@ fun Symbol.defaultValue(): String? {
 fun Symbol.Builder.nullable(): Symbol.Builder = apply { putProperty(SymbolProperty.NULLABLE_KEY, true) }
 
 /**
+ * Mark a symbol as being non - nullable (i.e. `T?`)
+ */
+fun Symbol.Builder.nonNullable(): Symbol.Builder = apply { removeProperty(SymbolProperty.NULLABLE_KEY) }
+
+/**
  * Set the default value used when formatting the symbol
  */
 fun Symbol.Builder.defaultValue(value: String?): Symbol.Builder = apply {
@@ -195,6 +200,11 @@ val Symbol.shape: Shape?
  * Get the nullable version of a symbol
  */
 fun Symbol.asNullable(): Symbol = toBuilder().nullable().build()
+
+/**
+ * Get the non-nullable version of a symbol
+ */
+fun Symbol.asNonNullable(): Symbol = toBuilder().nonNullable().build()
 
 /**
  * Check whether a symbol represents an extension
