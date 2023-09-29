@@ -40,8 +40,9 @@ protected constructor(builder: Builder<T>) {
      */
     fun renderTestClass(testClassName: String) {
         writer.addImport(KotlinDependency.KOTLIN_TEST.namespace, "Test")
-        writer.dependencies.addAll(KotlinDependency.KOTLIN_TEST_JUNIT5.dependencies)
-        writer.dependencies.addAll(KotlinDependency.JUNIT_JUPITER_ENGINE.dependencies)
+        // FIXME can't use Junit in Native!
+        //writer.dependencies.addAll(KotlinDependency.KOTLIN_TEST_JUNIT5.dependencies)
+        //writer.dependencies.addAll(KotlinDependency.JUNIT_JUPITER_ENGINE.dependencies)
 
         writer.write("")
             .openBlock("class $testClassName {")
