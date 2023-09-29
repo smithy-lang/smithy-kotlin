@@ -21,6 +21,7 @@ structure GetEntityResponse {
     sampleValues: Values,
     objectOne: Values,
     objectTwo: Values,
+    types: Types,
 }
 
 structure EntityPrimitives {
@@ -171,4 +172,13 @@ structure Values {
     valueOne: String
     valueTwo: String
     valueThree: String
+}
+
+structure Types {
+    string: String
+    boolean: String
+    array: String
+    number: String
+    objectType: String
+    nullType: String
 }

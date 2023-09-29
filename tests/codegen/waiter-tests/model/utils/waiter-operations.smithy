@@ -30,5 +30,6 @@ service WaitersTestService {
         GetFunctionToArrayEquals,
         GetFunctionToStringEquals,
         GetFunctionToNumberEquals,
+        GetFunctionTypeEquals,
     ]
 }

@@ -219,8 +219,14 @@ class KotlinJmespathExpressionVisitor(
     private fun FunctionExpression.args(): List<VisitedExpression> =
         this.arguments.map { acceptSubexpression(it) }
 
-    private fun VisitedExpression.dotFunction(expression: FunctionExpression, expr: String, elvisExpr: String? = null, isObject: Boolean = false): VisitedExpression {
-        val dotFunctionExpr = ensureNullGuard(shape, expr, elvisExpr)
+    private fun VisitedExpression.dotFunction(
+        expression: FunctionExpression,
+        expr: String,
+        elvisExpr: String? = null,
+        isObject: Boolean = false,
+        enforceNullGuard: Boolean = true,
+    ): VisitedExpression {
+        val dotFunctionExpr = if (enforceNullGuard) ensureNullGuard(shape, expr, elvisExpr) else ".$expr"
         val ident = addTempVar(expression.name.toCamelCase(), "$identifier$dotFunctionExpr")
 
         shape?.let { shapeCursor.addLast(shape) }
@@ -320,6 +326,12 @@ class KotlinJmespathExpressionVisitor(
             writer.addImport(RuntimeTypes.Core.Utils.toNumber)
             val arg = expression.singleArg()
             arg.dotFunction(expression, "toNumber()")
+        }
+
+        "type" -> {
+            writer.addImport(RuntimeTypes.Core.Utils.type)
+            val arg = expression.singleArg()
+            arg.dotFunction(expression, "type()", enforceNullGuard = false)
         }
 
         else -> throw CodegenException("Unknown function type in $expression")
