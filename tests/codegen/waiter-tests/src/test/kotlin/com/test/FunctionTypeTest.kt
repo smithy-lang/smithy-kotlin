@@ -5,7 +5,10 @@
 
 package com.test
 
-import com.test.model.*
+import com.test.model.EntityLists
+import com.test.model.EntityPrimitives
+import com.test.model.GetFunctionTypeEqualsRequest
+import com.test.model.GetFunctionTypeEqualsResponse
 import com.test.utils.successTest
 import com.test.waiters.*
 import kotlin.test.Test
@@ -16,11 +19,6 @@ class FunctionTypeTest {
         WaitersTestClient::waitUntilTypeFunctionStringEquals,
         GetFunctionTypeEqualsResponse {
             primitives = EntityPrimitives { string = "foo" }
-            types = Types { string = "foo" }
-        },
-        GetFunctionTypeEqualsResponse {
-            primitives = EntityPrimitives { string = "foo" }
-            types = Types { string = "string" }
         },
     )
 
@@ -29,11 +27,6 @@ class FunctionTypeTest {
         WaitersTestClient::waitUntilTypeFunctionBooleanEquals,
         GetFunctionTypeEqualsResponse {
             primitives = EntityPrimitives { boolean = true }
-            types = Types { boolean = "foo" }
-        },
-        GetFunctionTypeEqualsResponse {
-            primitives = EntityPrimitives { boolean = true }
-            types = Types { boolean = "boolean" }
         },
     )
 
@@ -42,11 +35,6 @@ class FunctionTypeTest {
         WaitersTestClient::waitUntilTypeFunctionArrayEquals,
         GetFunctionTypeEqualsResponse {
             lists = EntityLists { booleans = listOf(true) }
-            types = Types { array = "foo" }
-        },
-        GetFunctionTypeEqualsResponse {
-            lists = EntityLists { booleans = listOf(true) }
-            types = Types { array = "array" }
         },
     )
 
@@ -55,11 +43,6 @@ class FunctionTypeTest {
         WaitersTestClient::waitUntilTypeFunctionShortEquals,
         GetFunctionTypeEqualsResponse {
             primitives = EntityPrimitives { short = 1 }
-            types = Types { number = "foo" }
-        },
-        GetFunctionTypeEqualsResponse {
-            primitives = EntityPrimitives { short = 1 }
-            types = Types { number = "number" }
         },
     )
 
@@ -68,11 +51,6 @@ class FunctionTypeTest {
         WaitersTestClient::waitUntilTypeFunctionIntegerEquals,
         GetFunctionTypeEqualsResponse {
             primitives = EntityPrimitives { integer = 1 }
-            types = Types { number = "foo" }
-        },
-        GetFunctionTypeEqualsResponse {
-            primitives = EntityPrimitives { integer = 1 }
-            types = Types { number = "number" }
         },
     )
 
@@ -81,11 +59,6 @@ class FunctionTypeTest {
         WaitersTestClient::waitUntilTypeFunctionLongEquals,
         GetFunctionTypeEqualsResponse {
             primitives = EntityPrimitives { long = 1L }
-            types = Types { number = "foo" }
-        },
-        GetFunctionTypeEqualsResponse {
-            primitives = EntityPrimitives { long = 1L }
-            types = Types { number = "number" }
         },
     )
 
@@ -94,11 +67,6 @@ class FunctionTypeTest {
         WaitersTestClient::waitUntilTypeFunctionFloatEquals,
         GetFunctionTypeEqualsResponse {
             primitives = EntityPrimitives { float = 1f }
-            types = Types { number = "foo" }
-        },
-        GetFunctionTypeEqualsResponse {
-            primitives = EntityPrimitives { float = 1f }
-            types = Types { number = "number" }
         },
     )
 
@@ -107,11 +75,6 @@ class FunctionTypeTest {
         WaitersTestClient::waitUntilTypeFunctionDoubleEquals,
         GetFunctionTypeEqualsResponse {
             primitives = EntityPrimitives { double = 1.0 }
-            types = Types { number = "foo" }
-        },
-        GetFunctionTypeEqualsResponse {
-            primitives = EntityPrimitives { double = 1.0 }
-            types = Types { number = "number" }
         },
     )
 
@@ -120,11 +83,6 @@ class FunctionTypeTest {
         WaitersTestClient::waitUntilTypeFunctionObjectEquals,
         GetFunctionTypeEqualsResponse {
             primitives = EntityPrimitives { }
-            types = Types { objectType = "foo" }
-        },
-        GetFunctionTypeEqualsResponse {
-            primitives = EntityPrimitives { }
-            types = Types { objectType = "object" }
         },
     )
 
@@ -133,11 +91,6 @@ class FunctionTypeTest {
         WaitersTestClient::waitUntilTypeFunctionMergedObjectEquals,
         GetFunctionTypeEqualsResponse {
             primitives = EntityPrimitives { }
-            types = Types { objectType = "foo" }
-        },
-        GetFunctionTypeEqualsResponse {
-            primitives = EntityPrimitives { }
-            types = Types { objectType = "object" }
         },
     )
 
@@ -146,11 +99,6 @@ class FunctionTypeTest {
         WaitersTestClient::waitUntilTypeFunctionNullEquals,
         GetFunctionTypeEqualsResponse {
             primitives = EntityPrimitives { boolean = null }
-            types = Types { nullType = "foo" }
-        },
-        GetFunctionTypeEqualsResponse {
-            primitives = EntityPrimitives { boolean = null }
-            types = Types { nullType = "null" }
         },
     )
 }

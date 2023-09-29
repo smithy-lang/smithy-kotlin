@@ -11,9 +11,9 @@ use smithy.waiters#waitable
                 state: "success",
                 matcher: {
                     output: {
-                        path: "type(primitives.string) == types.string",
-                        expected: "true",
-                        comparator: "booleanEquals"
+                        path: "type(primitives.string)",
+                        expected: "string",
+                        comparator: "stringEquals"
                     }
                 }
             }
@@ -25,9 +25,9 @@ use smithy.waiters#waitable
                 state: "success",
                 matcher: {
                     output: {
-                        path: "type(primitives.boolean) == types.boolean",
-                        expected: "true",
-                        comparator: "booleanEquals"
+                        path: "type(primitives.boolean)",
+                        expected: "boolean",
+                        comparator: "stringEquals"
                     }
                 }
             }
@@ -39,9 +39,9 @@ use smithy.waiters#waitable
                 state: "success",
                 matcher: {
                     output: {
-                        path: "type(lists.booleans) == types.array",
-                        expected: "true",
-                        comparator: "booleanEquals"
+                        path: "type(lists.booleans)",
+                        expected: "array",
+                        comparator: "stringEquals"
                     }
                 }
             }
@@ -53,9 +53,9 @@ use smithy.waiters#waitable
                 state: "success",
                 matcher: {
                     output: {
-                        path: "type(primitives.short) == types.number",
-                        expected: "true",
-                        comparator: "booleanEquals"
+                        path: "type(primitives.short)",
+                        expected: "number",
+                        comparator: "stringEquals"
                     }
                 }
             }
@@ -67,9 +67,9 @@ use smithy.waiters#waitable
                 state: "success",
                 matcher: {
                     output: {
-                        path: "type(primitives.integer) == types.number",
-                        expected: "true",
-                        comparator: "booleanEquals"
+                        path: "type(primitives.integer)",
+                        expected: "number",
+                        comparator: "stringEquals"
                     }
                 }
             }
@@ -81,9 +81,9 @@ use smithy.waiters#waitable
                 state: "success",
                 matcher: {
                     output: {
-                        path: "type(primitives.long) == types.number",
-                        expected: "true",
-                        comparator: "booleanEquals"
+                        path: "type(primitives.long)",
+                        expected: "number",
+                        comparator: "stringEquals"
                     }
                 }
             }
@@ -95,9 +95,9 @@ use smithy.waiters#waitable
                 state: "success",
                 matcher: {
                     output: {
-                        path: "type(primitives.float) == types.number",
-                        expected: "true",
-                        comparator: "booleanEquals"
+                        path: "type(primitives.float)",
+                        expected: "number",
+                        comparator: "stringEquals"
                     }
                 }
             }
@@ -109,9 +109,9 @@ use smithy.waiters#waitable
                 state: "success",
                 matcher: {
                     output: {
-                        path: "type(primitives.double) == types.number",
-                        expected: "true",
-                        comparator: "booleanEquals"
+                        path: "type(primitives.double)",
+                        expected: "number",
+                        comparator: "stringEquals"
                     }
                 }
             }
@@ -123,9 +123,9 @@ use smithy.waiters#waitable
                 state: "success",
                 matcher: {
                     output: {
-                        path: "type(primitives) == types.objectType",
-                        expected: "true",
-                        comparator: "booleanEquals"
+                        path: "type(primitives)",
+                        expected: "object",
+                        comparator: "stringEquals"
                     }
                 }
             }
@@ -137,9 +137,9 @@ use smithy.waiters#waitable
                 state: "success",
                 matcher: {
                     output: {
-                        path: "type(merge(primitives, primitives)) == types.objectType",
-                        expected: "true",
-                        comparator: "booleanEquals"
+                        path: "type(merge(primitives, primitives))",
+                        expected: "object",
+                        comparator: "stringEquals"
                     }
                 }
             }
@@ -151,9 +151,9 @@ use smithy.waiters#waitable
                 state: "success",
                 matcher: {
                     output: {
-                        path: "type(primitives.boolean) == types.nullType",
-                        expected: "true",
-                        comparator: "booleanEquals"
+                        path: "type(primitives.boolean)",
+                        expected: "null",
+                        comparator: "stringEquals"
                     }
                 }
             }
