@@ -32,9 +32,6 @@ import kotlin.test.assertEquals
 
 class DefaultAwsHttpSignerTest : AwsHttpSignerTestBase(DefaultAwsSigner)
 
-// FIXME - move out of common
-// class CrtAwsHttpSignerTest : AwsHttpSignerTestBase(CrtAwsSigner)
-
 /**
  * Basic sanity tests. Signing (including `AwsHttpSigner`) is covered by the more exhaustive
  * test suite in the `aws-signing-tests` module.
