@@ -1,0 +1,61 @@
+{
+  "version": "1.0",
+  "projections": {
+    "client-mode": {
+      "transforms": [
+        {
+          "name": "includeServices",
+          "args": {
+            "services": [
+              "smithy.kotlin.nullability#NullCheckService"
+            ]
+          }
+        }
+      ],
+      "plugins": {
+        "kotlin-codegen": {
+          "service": "smithy.kotlin.nullability#NullCheckService",
+          "package": {
+            "name": "smithy.kotlin.nullability.client",
+            "version": "0.0.1"
+          },
+          "build": {
+            "rootProject": false,
+            "generateDefaultBuildFiles": false
+          },
+          "api": {
+            "nullabilityCheckMode": "client"
+          }
+        }
+      }
+    },
+    "client-careful-mode": {
+      "transforms": [
+        {
+          "name": "includeServices",
+          "args": {
+            "services": [
+              "smithy.kotlin.nullability#NullCheckService"
+            ]
+          }
+        }
+      ],
+      "plugins": {
+        "kotlin-codegen": {
+          "service": "smithy.kotlin.nullability#NullCheckService",
+          "package": {
+            "name": "smithy.kotlin.nullability.clientcareful",
+            "version": "0.0.1"
+          },
+          "build": {
+            "rootProject": false,
+            "generateDefaultBuildFiles": false
+          },
+          "api": {
+            "nullabilityCheckMode": "clientCareful"
+          }
+        }
+      }
+    }
+  }
+}
