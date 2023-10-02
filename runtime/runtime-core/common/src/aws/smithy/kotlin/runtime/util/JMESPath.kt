@@ -67,7 +67,7 @@ public fun Any?.type(): String = when (this) {
     is String -> "string"
     is Boolean -> "boolean"
     is List<*>, is Array<*> -> "array"
-    is Short, is Int, is Long, is Float, is Double -> "number"
+    is Number -> "number"
     is Any -> "object"
     null -> "null"
     else -> throw Exception("Undetected type for: $this")
