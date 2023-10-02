@@ -137,6 +137,7 @@ apiValidation {
             "http-benchmarks",
             "serde-benchmarks",
             "serde-benchmarks-codegen",
+            "nullability-tests",
             "paginator-tests",
             "waiter-tests",
             "compile",
