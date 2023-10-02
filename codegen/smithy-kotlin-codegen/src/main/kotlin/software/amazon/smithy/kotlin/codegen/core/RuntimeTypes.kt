@@ -165,6 +165,7 @@ object RuntimeTypes {
             val truthiness = symbol("truthiness")
             val urlEncodeComponent = symbol("urlEncodeComponent", "text")
             val toNumber = symbol("toNumber")
+            val type = symbol("type")
         }
 
         object Net : RuntimeTypePackage(KotlinDependency.CORE, "net") {
