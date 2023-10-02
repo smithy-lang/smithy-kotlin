@@ -5,6 +5,7 @@
 package smithy.kotlin.nullability
 
 import kotlin.test.Test
+import kotlin.test.assertEquals
 import kotlin.test.assertNull
 
 class DefaultValueTest {
@@ -14,7 +15,9 @@ class DefaultValueTest {
             .build()
 
         // all members of structure marked with `@input` are implicitly `@clientOptional`
+        // which means they are nullable. We ignore `@default` unless it's marked `@required`
         assertNull(actual.tay)
+        assertEquals("ball", actual.lep)
     }
 
     @Test
@@ -23,6 +26,8 @@ class DefaultValueTest {
             .build()
 
         // all members of structure marked with `@input` are implicitly `@clientOptional`
+        // which means they are nullable. We ignore `@default` unless it's marked `@required`
         assertNull(actual.tay)
+        assertEquals("ball", actual.lep)
     }
 }

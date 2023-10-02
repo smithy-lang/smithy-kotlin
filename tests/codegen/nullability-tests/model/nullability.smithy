@@ -17,9 +17,12 @@ operation SayHello {
 structure TestInput {
     nested: TestStruct,
 
-    @required
     @default("hammer")
     tay: String
+
+    @required
+    @default("ball")
+    lep: String
 }
 
 structure TestStruct {
@@ -61,6 +64,11 @@ structure TestStruct {
     @required
     @clientOptional
     clientOptionalValue: Integer
+
+    @required
+    @default("model default")
+    @clientOptional
+    clientOptionalWithDefault: String
 }
 
 enum Enum {

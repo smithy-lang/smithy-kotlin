@@ -37,6 +37,9 @@ class ErrorCorrectionTest {
         assertEquals(emptyList(), actual.nestedListValue)
         assertEquals(emptyMap(), actual.mapValue)
 
+        // should still be nullable due to `@clientOptional` but due to `@required` we actually use the `@default`
+        assertEquals("model default", actual.clientOptionalWithDefault)
+
         // error correction should apply recursively
         assertEquals("", actual.nested.a)
 
@@ -70,6 +73,9 @@ class ErrorCorrectionTest {
         assertEquals(emptyList(), actual.listValue)
         assertEquals(emptyList(), actual.nestedListValue)
         assertEquals(emptyMap(), actual.mapValue)
+
+        // should still be nullable due to `@clientOptional` but due to `@required` we actually use the `@default`
+        assertEquals("model default", actual.clientOptionalWithDefault)
 
         // nested struct and union values should be null for client careful mode
         assertNull(actual.nested)

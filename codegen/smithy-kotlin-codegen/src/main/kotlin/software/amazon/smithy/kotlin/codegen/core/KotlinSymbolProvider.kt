@@ -13,9 +13,7 @@ import software.amazon.smithy.kotlin.codegen.utils.dq
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.knowledge.NullableIndex
 import software.amazon.smithy.model.shapes.*
-import software.amazon.smithy.model.traits.ClientOptionalTrait
 import software.amazon.smithy.model.traits.DefaultTrait
-import software.amazon.smithy.model.traits.InputTrait
 import software.amazon.smithy.model.traits.StreamingTrait
 import java.util.logging.Logger
 
@@ -183,12 +181,11 @@ class KotlinSymbolProvider(private val model: Model, private val settings: Kotli
         val targetSymbol = toSymbol(targetShape)
             .toBuilder()
             .apply {
-                if (nullableIndex.isMemberNullable(shape, settings.api.nullabilityCheckMode)) nullable()
+                val isNullable = nullableIndex.isMemberNullable(shape, settings.api.nullabilityCheckMode)
+                if (isNullable) nullable()
 
-                // @clientOptional supersedes @default
-                val container = model.expectShape(shape.container)
-                val isClientOptional = shape.hasTrait<ClientOptionalTrait>() || container.hasTrait<InputTrait>()
-                if (!isClientOptional) {
+                // only use @default if type is `T` (not `T?`) or marked `@required` (in which case it will be serialized anyway)
+                if (!isNullable || shape.isRequired) {
                     shape.getTrait<DefaultTrait>()?.let {
                         defaultValue(it.getDefaultValue(targetShape))
                     }

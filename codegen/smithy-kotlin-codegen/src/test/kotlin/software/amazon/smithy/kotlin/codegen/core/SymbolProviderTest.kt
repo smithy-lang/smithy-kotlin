@@ -371,7 +371,6 @@ class SymbolProviderTest {
     fun `@clientOptional overrides @default`() {
         val model = """
         structure MyStruct {
-            @required
             @clientOptional
             @default("Foo")
             quux: QuuxType
@@ -389,7 +388,49 @@ class SymbolProviderTest {
     }
 
     @Test
-    fun `@input`() {
+    fun `required @clientOptional with @default`() {
+        val model = """
+        structure MyStruct {
+            @required
+            @clientOptional
+            @default("Foo")
+            quux: QuuxType
+        }
+
+        string QuuxType
+        """.prependNamespaceAndService().toSmithyModel()
+
+        val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model)
+        val member = model.expectShape<MemberShape>("com.test#MyStruct\$quux")
+        val memberSymbol = provider.toSymbol(member)
+        assertEquals("kotlin", memberSymbol.namespace)
+        // still nullable due to `@clientOptional` but we use the default due to `@required`
+        assertTrue(memberSymbol.isNullable)
+        assertEquals("\"Foo\"", memberSymbol.defaultValue())
+    }
+
+    @Test
+    fun `@input with default`() {
+        val model = """
+        @input
+        structure MyStruct {
+            @default(2)
+            quux: QuuxType
+        }
+        
+        long QuuxType
+        """.prependNamespaceAndService().toSmithyModel()
+
+        val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model)
+        val member = model.expectShape<MemberShape>("com.test#MyStruct\$quux")
+        val memberSymbol = provider.toSymbol(member)
+        assertEquals("kotlin", memberSymbol.namespace)
+        assertTrue(memberSymbol.isNullable)
+        assertEquals("null", memberSymbol.defaultValue())
+    }
+
+    @Test
+    fun `@input with required`() {
         val model = """
         @input
         structure MyStruct {
@@ -405,8 +446,10 @@ class SymbolProviderTest {
         val member = model.expectShape<MemberShape>("com.test#MyStruct\$quux")
         val memberSymbol = provider.toSymbol(member)
         assertEquals("kotlin", memberSymbol.namespace)
+
+        // still nullable due to `@input` but we can use the default due to `@required`
         assertTrue(memberSymbol.isNullable)
-        assertEquals("null", memberSymbol.defaultValue())
+        assertEquals("2L", memberSymbol.defaultValue())
     }
 
     @Test
