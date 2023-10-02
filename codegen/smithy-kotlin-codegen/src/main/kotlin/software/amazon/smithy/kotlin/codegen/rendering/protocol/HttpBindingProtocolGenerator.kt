@@ -13,6 +13,7 @@ import software.amazon.smithy.kotlin.codegen.lang.KotlinTypes
 import software.amazon.smithy.kotlin.codegen.lang.toEscapedLiteral
 import software.amazon.smithy.kotlin.codegen.model.*
 import software.amazon.smithy.kotlin.codegen.rendering.serde.*
+import software.amazon.smithy.kotlin.codegen.utils.getOrNull
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.knowledge.HttpBinding
 import software.amazon.smithy.model.shapes.*
@@ -286,6 +287,22 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         val pathBindings = requestBindings.filter { it.location == HttpBinding.Location.LABEL }
 
         if (pathBindings.isNotEmpty()) {
+            // One of the few places we generate client side validation
+            // httpLabel bindings must be non-null
+            httpTrait.uri.segments.filter { it.isLabel || it.isGreedyLabel }.forEach { segment ->
+                val binding = pathBindings.find {
+                    it.memberName == segment.content
+                } ?: throw CodegenException("failed to find corresponding member for httpLabel `${segment.content}`")
+
+                val memberSymbol = ctx.symbolProvider.toSymbol(binding.member)
+                if (memberSymbol.isNullable) {
+                    writer.write("""requireNotNull(input.#1L) { "#1L is bound to the URI and must not be null" }""", binding.member.defaultName())
+                }
+
+                // check length trait if applicable
+                renderNonBlankGuard(ctx, binding.member, writer)
+            }
+
             writer.openBlock("val pathSegments = listOf<String>(", ")") {
                 httpTrait.uri.segments.forEach { segment ->
                     if (segment.isLabel || segment.isGreedyLabel) {
@@ -296,6 +313,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
 
                         // shape must be string, number, boolean, or timestamp
                         val targetShape = ctx.model.expectShape(binding.member.target)
+                        val memberSymbol = ctx.symbolProvider.toSymbol(binding.member)
                         val identifier = if (targetShape.isTimestampShape) {
                             writer.addImport(RuntimeTypes.Core.TimestampFormat)
                             val tsFormat = resolver.determineTimestampFormat(
@@ -303,14 +321,14 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                                 HttpBinding.Location.LABEL,
                                 defaultTimestampFormat,
                             )
-                            val tsLabel = formatInstant("input.${binding.member.defaultName()}?", tsFormat, forceString = true)
+                            val nullCheck = if (memberSymbol.isNullable) "?" else ""
+                            val tsLabel = formatInstant("input.${binding.member.defaultName()}$nullCheck", tsFormat, forceString = true)
                             tsLabel
                         } else {
                             "input.${binding.member.defaultName()}"
                         }
 
                         val encodeSymbol = RuntimeTypes.Http.Util.encodeLabel
-                        writer.addImport(encodeSymbol)
                         val encodeFn = if (segment.isGreedyLabel) {
                             writer.format("#T(greedy = true)", encodeSymbol)
                         } else {
@@ -360,6 +378,9 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                 queryLiterals.forEach { (key, value) ->
                     writer.write("append(#S, #S)", key, value)
                 }
+
+                // render length check if applicable
+                queryBindings.forEach { binding -> renderNonBlankGuard(ctx, binding.member, writer) }
 
                 renderStringValuesMapParameters(ctx, queryBindings, writer)
 
@@ -1000,3 +1021,14 @@ fun OperationShape.errorHandler(settings: KotlinSettings, block: SymbolRenderer)
     definitionFile = "${deserializerName()}.kt"
     renderBy = block
 }
+
+private fun renderNonBlankGuard(ctx: ProtocolGenerator.GenerationContext, member: MemberShape, writer: KotlinWriter) {
+    if (member.isNonBlankInStruct(ctx)) {
+        val memberSymbol = ctx.symbolProvider.toSymbol(member)
+        val nullCheck = if (memberSymbol.isNullable) "?" else ""
+        writer.write("""require(input.#1L$nullCheck.isNotBlank() == true) { "#1L is bound to the URI and must be a non-blank value" }""", member.defaultName())
+    }
+}
+private fun MemberShape.isNonBlankInStruct(ctx: ProtocolGenerator.GenerationContext): Boolean =
+    ctx.model.expectShape(target).isStringShape &&
+        getTrait<LengthTrait>()?.min?.getOrNull()?.takeIf { it > 0 } != null

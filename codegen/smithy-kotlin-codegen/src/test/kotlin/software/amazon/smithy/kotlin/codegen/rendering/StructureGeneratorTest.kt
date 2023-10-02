@@ -362,66 +362,6 @@ class StructureGeneratorTest {
     }
 
     @Test
-    fun `it handles required HTTP fields in initializers`() {
-        val model = """
-            @http(method: "POST", uri: "/foo/{bar}/{baz}")
-            operation Foo {
-                input: FooRequest
-            }
-            
-            structure FooRequest {
-                @required
-                @httpLabel
-                bar: String,
-                
-                @httpLabel
-                @required
-                baz: Integer,
-                
-                @httpPayload
-                qux: String,
-                
-                @required
-                @httpQuery("quux")
-                quux: Boolean,
-                
-                @httpQuery("corge")
-                corge: String,
-                
-                @required
-                @length(min: 0)
-                @httpQuery("grault")
-                grault: String,
-                
-                @required
-                @length(min: 3)
-                @httpQuery("garply")
-                garply: String
-            }
-        """.prependNamespaceAndService(operations = listOf("Foo")).toSmithyModel()
-
-        val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model)
-        val writer = KotlinWriter(TestModelDefault.NAMESPACE)
-        val struct = model.expectShape<StructureShape>("com.test#FooRequest")
-        val renderingCtx = RenderingContext(writer, struct, model, provider, model.defaultSettings())
-        StructureGenerator(renderingCtx).render()
-
-        val generated = writer.toString()
-        val expected = """
-            public class FooRequest private constructor(builder: Builder) {
-                public val bar: kotlin.String = requireNotNull(builder.bar) { "A non-null value must be provided for bar" }
-                public val baz: kotlin.Int = requireNotNull(builder.baz) { "A non-null value must be provided for baz" }
-                public val corge: kotlin.String? = builder.corge
-                public val garply: kotlin.String = requireNotNull(builder.garply) { "A non-null value must be provided for garply" }
-                    .apply { require(isNotBlank()) { "A non-blank value must be provided for garply" } }
-                public val grault: kotlin.String = requireNotNull(builder.grault) { "A non-null value must be provided for grault" }
-                public val quux: kotlin.Boolean = requireNotNull(builder.quux) { "A non-null value must be provided for quux" }
-                public val qux: kotlin.String? = builder.qux
-        """.formatForTest(indent = "")
-        generated.shouldContainOnlyOnceWithDiff(expected)
-    }
-
-    @Test
     fun `it handles required query params in initializers`() {
         val model = """
             @http(method: "POST", uri: "/foo")

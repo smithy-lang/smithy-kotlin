@@ -10,7 +10,6 @@ import software.amazon.smithy.kotlin.codegen.core.*
 import software.amazon.smithy.kotlin.codegen.lang.KotlinTypes
 import software.amazon.smithy.kotlin.codegen.model.*
 import software.amazon.smithy.kotlin.codegen.rendering.serde.ClientErrorCorrection
-import software.amazon.smithy.kotlin.codegen.utils.getOrNull
 import software.amazon.smithy.model.shapes.*
 import software.amazon.smithy.model.traits.*
 
@@ -85,7 +84,7 @@ class StructureGenerator(
             "public"
         }
 
-        if (memberShape.isRequiredInStruct && memberSymbol.isRequiredWithNoDefault) {
+        if (memberSymbol.isRequiredWithNoDefault) {
             writer.write(
                 """#1L val #2L: #3F = requireNotNull(builder.#2L) { "A non-null value must be provided for #2L" }""",
                 prefix,
@@ -95,26 +94,7 @@ class StructureGenerator(
         } else {
             writer.write("#1L val #2L: #3F = builder.#2L", prefix, memberName, memberSymbol)
         }
-
-        if (memberShape.isNonBlankInStruct) {
-            writer
-                .indent()
-                .write(
-                    """.apply { require(isNotBlank()) { "A non-blank value must be provided for #L" } }""",
-                    memberName,
-                )
-                .dedent()
-        }
     }
-
-    private val MemberShape.isRequiredInStruct
-        get() =
-            hasTrait<HttpLabelTrait>() || isRequired
-
-    private val MemberShape.isNonBlankInStruct: Boolean
-        get() =
-            ctx.model.expectShape(target).isStringShape &&
-                getTrait<LengthTrait>()?.min?.getOrNull()?.takeIf { it > 0 } != null
 
     private fun renderCompanionObject() {
         writer.withBlock("public companion object {", "}") {

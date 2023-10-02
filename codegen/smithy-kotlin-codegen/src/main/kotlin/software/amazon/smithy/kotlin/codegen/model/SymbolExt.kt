@@ -59,7 +59,7 @@ object SymbolProperty {
  * set default so the constructor will have to generate a runtime check that a value is set.
  */
 val Symbol.isRequiredWithNoDefault: Boolean
-    get() = !isNullable && defaultValue() == null
+    get() = isNotNullable && defaultValue() == null
 
 /**
  * Test if a symbol is nullable
