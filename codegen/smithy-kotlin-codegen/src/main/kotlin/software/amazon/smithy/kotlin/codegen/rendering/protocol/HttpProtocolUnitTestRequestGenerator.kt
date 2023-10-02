@@ -22,7 +22,9 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
     override fun renderTestBody(test: HttpRequestTestCase) {
         writer.addImport(KotlinDependency.SMITHY_TEST.namespace, "*")
         writer.addImport(KotlinDependency.HTTP.namespace, "HttpMethod")
+        writer.addImport(KotlinDependency.KOTLIN_TEST.namespace, "*")
         writer.dependencies.addAll(KotlinDependency.SMITHY_TEST.dependencies)
+        writer.dependencies.addAll(KotlinDependency.KOTLIN_TEST.dependencies)
         renderExpectedBlock(test)
         writer.write("")
         renderOperationBlock(test)

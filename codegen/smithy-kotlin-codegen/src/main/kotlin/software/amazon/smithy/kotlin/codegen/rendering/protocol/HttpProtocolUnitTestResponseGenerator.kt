@@ -40,7 +40,9 @@ open class HttpProtocolUnitTestResponseGenerator protected constructor(builder: 
     override fun renderTestBody(test: HttpResponseTestCase) {
         writer.addImport(KotlinDependency.SMITHY_TEST.namespace, "*")
         writer.addImport(KotlinDependency.HTTP.namespace, "HttpStatusCode")
+        writer.addImport(KotlinDependency.KOTLIN_TEST.namespace, "*")
         writer.dependencies.addAll(KotlinDependency.SMITHY_TEST.dependencies)
+        writer.dependencies.addAll(KotlinDependency.KOTLIN_TEST.dependencies)
         renderExpectedBlock(test)
         writer.write("")
         renderTestBlock(test)
