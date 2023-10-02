@@ -37,7 +37,7 @@ class ShapeValueGenerator(
             ShapeType.STRUCTURE -> {
                 if (params.isNullNode) {
                     params.accept(nodeVisitor)
-                }else {
+                } else {
                     classDeclaration(writer, shape.asStructureShape().get()) {
                         params.accept(nodeVisitor)
                     }

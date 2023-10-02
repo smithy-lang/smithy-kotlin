@@ -15,6 +15,7 @@ import software.amazon.smithy.model.knowledge.NullableIndex
 import software.amazon.smithy.model.shapes.*
 import software.amazon.smithy.model.traits.ClientOptionalTrait
 import software.amazon.smithy.model.traits.DefaultTrait
+import software.amazon.smithy.model.traits.InputTrait
 import software.amazon.smithy.model.traits.StreamingTrait
 import java.util.logging.Logger
 
@@ -184,7 +185,10 @@ class KotlinSymbolProvider(private val model: Model, private val settings: Kotli
             .apply {
                 if (nullableIndex.isMemberNullable(shape, settings.api.nullabilityCheckMode)) nullable()
 
-                if (!shape.hasTrait<ClientOptionalTrait>()) { // @ClientOptional supersedes @default
+                // @clientOptional supersedes @default
+                val container = model.expectShape(shape.container)
+                val isClientOptional = shape.hasTrait<ClientOptionalTrait>() || container.hasTrait<InputTrait>()
+                if (!isClientOptional) {
                     shape.getTrait<DefaultTrait>()?.let {
                         defaultValue(it.getDefaultValue(targetShape))
                     }

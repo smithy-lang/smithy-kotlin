@@ -394,6 +394,7 @@ class SymbolProviderTest {
         @input
         structure MyStruct {
             @required
+            @default(2)
             quux: QuuxType
         }
         

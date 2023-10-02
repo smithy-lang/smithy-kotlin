@@ -9,10 +9,17 @@ service NullCheckService {
     version: "1"
 }
 
-operation SayHello { input: TestInput }
+operation SayHello {
+    input: TestInput
+}
 
+@input
 structure TestInput {
-    nested: TestStruct
+    nested: TestStruct,
+
+    @required
+    @default("hammer")
+    tay: String
 }
 
 structure TestStruct {

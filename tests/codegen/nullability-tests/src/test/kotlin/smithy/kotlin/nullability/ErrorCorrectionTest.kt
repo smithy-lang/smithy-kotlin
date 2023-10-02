@@ -6,6 +6,9 @@ package smithy.kotlin.nullability
 
 import kotlin.test.*
 
+/**
+ * Test nullability of generated types and error correction behavior
+ */
 class ErrorCorrectionTest {
     @Test
     fun testErrorCorrectionClientMode() {
