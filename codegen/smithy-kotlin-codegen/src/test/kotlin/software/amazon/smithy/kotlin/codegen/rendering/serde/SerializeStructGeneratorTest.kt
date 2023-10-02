@@ -260,32 +260,6 @@ class SerializeStructGeneratorTest {
         actual.shouldContainOnlyOnceWithDiff(expected)
     }
 
-    // @Test
-    // fun `it serializes a structure with a required nested structure`() {
-    //     val model = (
-    //             modelPrefix + """
-    //         structure FooRequest {
-    //             @required
-    //             payload: NestedStructure
-    //         }
-    //
-    //         structure NestedStructure {
-    //             nestedPayload: String
-    //         }
-    //     """
-    //             ).toSmithyModel()
-    //
-    //     val expected = """
-    //         serializer.serializeStruct(OBJ_DESCRIPTOR) {
-    //             field(PAYLOAD_DESCRIPTOR, input.payload, ::serializeNestedStructureDocument)
-    //         }
-    //     """.trimIndent()
-    //
-    //     val actual = codegenSerializerForShape(model, "com.test#Foo")
-    //
-    //     actual.shouldContainOnlyOnceWithDiff(expected)
-    // }
-
     @Test
     fun `it serializes a structure containing a union of primitives`() {
         val model = (
