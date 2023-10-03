@@ -4,6 +4,7 @@ public final class aws/smithy/kotlin/runtime/auth/awssigning/AwsSignatureType : 
 	public static final field HTTP_REQUEST_TRAILING_HEADERS Laws/smithy/kotlin/runtime/auth/awssigning/AwsSignatureType;
 	public static final field HTTP_REQUEST_VIA_HEADERS Laws/smithy/kotlin/runtime/auth/awssigning/AwsSignatureType;
 	public static final field HTTP_REQUEST_VIA_QUERY_PARAMS Laws/smithy/kotlin/runtime/auth/awssigning/AwsSignatureType;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
 	public static fun valueOf (Ljava/lang/String;)Laws/smithy/kotlin/runtime/auth/awssigning/AwsSignatureType;
 	public static fun values ()[Laws/smithy/kotlin/runtime/auth/awssigning/AwsSignatureType;
 }
@@ -11,6 +12,7 @@ public final class aws/smithy/kotlin/runtime/auth/awssigning/AwsSignatureType : 
 public final class aws/smithy/kotlin/runtime/auth/awssigning/AwsSignedBodyHeader : java/lang/Enum {
 	public static final field NONE Laws/smithy/kotlin/runtime/auth/awssigning/AwsSignedBodyHeader;
 	public static final field X_AMZ_CONTENT_SHA256 Laws/smithy/kotlin/runtime/auth/awssigning/AwsSignedBodyHeader;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
 	public static fun valueOf (Ljava/lang/String;)Laws/smithy/kotlin/runtime/auth/awssigning/AwsSignedBodyHeader;
 	public static fun values ()[Laws/smithy/kotlin/runtime/auth/awssigning/AwsSignedBodyHeader;
 }
@@ -24,6 +26,7 @@ public abstract interface class aws/smithy/kotlin/runtime/auth/awssigning/AwsSig
 public final class aws/smithy/kotlin/runtime/auth/awssigning/AwsSigningAlgorithm : java/lang/Enum {
 	public static final field SIGV4 Laws/smithy/kotlin/runtime/auth/awssigning/AwsSigningAlgorithm;
 	public static final field SIGV4_ASYMMETRIC Laws/smithy/kotlin/runtime/auth/awssigning/AwsSigningAlgorithm;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
 	public static fun valueOf (Ljava/lang/String;)Laws/smithy/kotlin/runtime/auth/awssigning/AwsSigningAlgorithm;
 	public static fun values ()[Laws/smithy/kotlin/runtime/auth/awssigning/AwsSigningAlgorithm;
 }

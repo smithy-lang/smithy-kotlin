@@ -111,6 +111,7 @@ public final class aws/smithy/kotlin/runtime/http/HttpErrorCode : java/lang/Enum
 	public static final field SOCKET_TIMEOUT Laws/smithy/kotlin/runtime/http/HttpErrorCode;
 	public static final field TLS_NEGOTIATION_ERROR Laws/smithy/kotlin/runtime/http/HttpErrorCode;
 	public static final field TLS_NEGOTIATION_TIMEOUT Laws/smithy/kotlin/runtime/http/HttpErrorCode;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
 	public static fun valueOf (Ljava/lang/String;)Laws/smithy/kotlin/runtime/http/HttpErrorCode;
 	public static fun values ()[Laws/smithy/kotlin/runtime/http/HttpErrorCode;
 }
@@ -135,6 +136,7 @@ public final class aws/smithy/kotlin/runtime/http/HttpMethod : java/lang/Enum {
 	public static final field PATCH Laws/smithy/kotlin/runtime/http/HttpMethod;
 	public static final field POST Laws/smithy/kotlin/runtime/http/HttpMethod;
 	public static final field PUT Laws/smithy/kotlin/runtime/http/HttpMethod;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
 	public static fun valueOf (Ljava/lang/String;)Laws/smithy/kotlin/runtime/http/HttpMethod;
 	public static fun values ()[Laws/smithy/kotlin/runtime/http/HttpMethod;
 }
@@ -168,6 +170,7 @@ public final class aws/smithy/kotlin/runtime/http/HttpStatusCode$Category : java
 	public synthetic fun contains (Ljava/lang/Comparable;)Z
 	public synthetic fun getEndInclusive ()Ljava/lang/Comparable;
 	public fun getEndInclusive ()Ljava/lang/Integer;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
 	public synthetic fun getStart ()Ljava/lang/Comparable;
 	public fun getStart ()Ljava/lang/Integer;
 	public fun isEmpty ()Z
