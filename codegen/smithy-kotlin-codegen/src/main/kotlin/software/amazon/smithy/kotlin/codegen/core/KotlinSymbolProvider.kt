@@ -184,8 +184,8 @@ class KotlinSymbolProvider(private val model: Model, private val settings: Kotli
                 val isNullable = nullableIndex.isMemberNullable(shape, settings.api.nullabilityCheckMode)
                 if (isNullable) nullable()
 
-                // only use @default if type is `T` (not `T?`) or marked `@required` (in which case it will be serialized anyway)
-                if (!isNullable || shape.isRequired) {
+                // only use @default if type is `T`
+                if (!isNullable) {
                     shape.getTrait<DefaultTrait>()?.let {
                         defaultValue(it.getDefaultValue(targetShape))
                     }
