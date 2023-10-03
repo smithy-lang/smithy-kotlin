@@ -5,6 +5,7 @@
 package software.amazon.smithy.kotlin.codegen.rendering.serde
 
 import software.amazon.smithy.codegen.core.CodegenException
+import software.amazon.smithy.kotlin.codegen.DefaultValueSerializationMode
 import software.amazon.smithy.kotlin.codegen.core.*
 import software.amazon.smithy.kotlin.codegen.model.*
 import software.amazon.smithy.kotlin.codegen.model.targetOrSelf
@@ -567,14 +568,21 @@ open class SerializeStructGenerator(
         val postfix = idempotencyTokenPostfix(memberShape)
         val memberSymbol = ctx.symbolProvider.toSymbol(memberShape)
         val memberName = ctx.symbolProvider.toMemberName(memberShape)
-
         if (memberSymbol.isNullable) {
             val identifier = valueToSerializeName("it")
             val fn = serializerFn.format(memberShape, identifier)
             writer.write("input.$memberName?.let { $fn }$postfix")
         } else {
+            // always serialize required members, otherwise check if it's a primitive type set to it's default before serializing
+            val defaultValue = memberSymbol.defaultValue()
+            val checkDefaults = ctx.settings.api.defaultValueSerializationMode == DefaultValueSerializationMode.WHEN_DIFFERENT
+            val defaultCheck = if (checkDefaults && !memberShape.isRequired && memberSymbol.isNotNullable && defaultValue != null) {
+                "if (input.$memberName != $defaultValue) "
+            } else {
+                ""
+            }
             val fn = serializerFn.format(memberShape, "input.$memberName")
-            writer.write("$fn$postfix")
+            writer.write("${defaultCheck}${fn}$postfix")
         }
     }
 

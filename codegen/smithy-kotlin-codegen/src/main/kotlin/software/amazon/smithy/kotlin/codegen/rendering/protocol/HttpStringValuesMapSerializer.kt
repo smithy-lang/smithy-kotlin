@@ -6,6 +6,8 @@
 package software.amazon.smithy.kotlin.codegen.rendering.protocol
 
 import software.amazon.smithy.codegen.core.SymbolProvider
+import software.amazon.smithy.kotlin.codegen.DefaultValueSerializationMode
+import software.amazon.smithy.kotlin.codegen.KotlinSettings
 import software.amazon.smithy.kotlin.codegen.core.KotlinWriter
 import software.amazon.smithy.kotlin.codegen.core.RuntimeTypes
 import software.amazon.smithy.kotlin.codegen.model.*
@@ -34,6 +36,7 @@ import software.amazon.smithy.utils.AbstractCodeWriter
 class HttpStringValuesMapSerializer(
     private val model: Model,
     private val symbolProvider: SymbolProvider,
+    private val settings: KotlinSettings,
     private val bindings: List<HttpBindingDescriptor>,
     private val resolver: HttpBindingResolver,
     private val defaultTimestampFormat: TimestampFormatTrait.Format,
@@ -43,7 +46,7 @@ class HttpStringValuesMapSerializer(
         bindings: List<HttpBindingDescriptor>,
         resolver: HttpBindingResolver,
         defaultTimestampFormat: TimestampFormatTrait.Format,
-    ) : this(ctx.model, ctx.symbolProvider, bindings, resolver, defaultTimestampFormat)
+    ) : this(ctx.model, ctx.symbolProvider, ctx.settings, bindings, resolver, defaultTimestampFormat)
 
     fun render(
         writer: KotlinWriter,
@@ -77,16 +80,34 @@ class HttpStringValuesMapSerializer(
                 is StringShape -> renderStringShape(it, memberTarget, writer)
                 is IntEnumShape -> {
                     val appendFn = writer.format("append(#S, \"\${input.#L.value}\")", paramName, memberName)
-                    writer.writeWithCondIfCheck(memberSymbol.isNullable, "input.$memberName != null", appendFn)
+                    if (memberSymbol.isNullable) {
+                        writer.write("if (input.$memberName != null) $appendFn")
+                    } else {
+                        val defaultCheck = defaultCheck(member) ?: ""
+                        writer.writeWithCondIfCheck(defaultCheck.isNotEmpty(), defaultCheck, appendFn)
+                    }
                 }
                 else -> {
                     // encode to string
                     val encodedValue = "\"\${input.$memberName}\""
                     val appendFn = writer.format("append(#S, #L)", paramName, encodedValue)
-                    writer.writeWithCondIfCheck(memberSymbol.isNullable, "input.$memberName != null", appendFn)
+                    if (memberSymbol.isNullable) {
+                        writer.write("if (input.$memberName != null) $appendFn")
+                    } else {
+                        val defaultCheck = defaultCheck(member) ?: ""
+                        writer.writeWithCondIfCheck(defaultCheck.isNotEmpty(), defaultCheck, appendFn)
+                    }
                 }
             }
         }
+    }
+    private fun defaultCheck(member: MemberShape): String? {
+        val memberSymbol = symbolProvider.toSymbol(member)
+        val memberName = symbolProvider.toMemberName(member)
+        val defaultValue = memberSymbol.defaultValue()
+        val checkDefaults = settings.api.defaultValueSerializationMode == DefaultValueSerializationMode.WHEN_DIFFERENT
+        val check = "input.$memberName != $defaultValue"
+        return check.takeIf { checkDefaults && !member.isRequired && memberSymbol.isNotNullable && defaultValue != null }
     }
 
     private fun AbstractCodeWriter<*>.writeWithCondIfCheck(cond: Boolean, check: String, body: String) {
@@ -152,7 +173,7 @@ class HttpStringValuesMapSerializer(
             writer.addImport(RuntimeTypes.SmithyClient.IdempotencyTokenProviderExt)
             writer.write("append(#S, (input.$memberName ?: context.idempotencyTokenProvider.generateToken()))", paramName)
         } else {
-            val cond =
+            val nullCheck =
                 if (location == HttpBinding.Location.QUERY ||
                     memberTarget.hasTrait<@Suppress("DEPRECATION") software.amazon.smithy.model.traits.EnumTrait>()
                 ) {
@@ -161,6 +182,8 @@ class HttpStringValuesMapSerializer(
                     val nullCheck = if (memberSymbol.isNullable) "?" else ""
                     "input.$memberName$nullCheck.isNotEmpty() == true"
                 }
+
+            val cond = defaultCheck(binding.member) ?: nullCheck
 
             val suffix = when {
                 memberTarget.hasTrait<@Suppress("DEPRECATION") software.amazon.smithy.model.traits.EnumTrait>() -> {

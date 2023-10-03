@@ -5,12 +5,12 @@
 
 package software.amazon.smithy.kotlin.codegen.rendering.protocol
 
+import software.amazon.smithy.kotlin.codegen.DefaultValueSerializationMode
+import software.amazon.smithy.kotlin.codegen.KotlinSettings
 import software.amazon.smithy.kotlin.codegen.core.KotlinWriter
 import software.amazon.smithy.kotlin.codegen.loadModelFromResource
 import software.amazon.smithy.kotlin.codegen.model.expectShape
-import software.amazon.smithy.kotlin.codegen.test.assertBalancedBracesAndParens
-import software.amazon.smithy.kotlin.codegen.test.newTestContext
-import software.amazon.smithy.kotlin.codegen.test.shouldContainOnlyOnceWithDiff
+import software.amazon.smithy.kotlin.codegen.test.*
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.knowledge.HttpBinding
 import software.amazon.smithy.model.shapes.OperationShape
@@ -20,8 +20,9 @@ import kotlin.test.Test
 class HttpStringValuesMapSerializerTest {
     private val defaultModel = loadModelFromResource("http-binding-protocol-generator-test.smithy")
 
-    private fun getTestContents(model: Model, operationId: String, location: HttpBinding.Location): String {
-        val testCtx = model.newTestContext()
+    private fun getTestContents(model: Model, operationId: String, location: HttpBinding.Location, settings: KotlinSettings? = null): String {
+        val resolvedSettings = settings ?: model.defaultSettings(TestModelDefault.SERVICE_NAME, TestModelDefault.NAMESPACE)
+        val testCtx = model.newTestContext(settings = resolvedSettings)
         val httpGenerator = testCtx.generator as HttpBindingProtocolGenerator
         val resolver = httpGenerator.getProtocolHttpBindingResolver(testCtx.generationCtx.model, testCtx.generationCtx.service)
         val op = model.expectShape<OperationShape>(operationId)
@@ -35,8 +36,9 @@ class HttpStringValuesMapSerializerTest {
     }
 
     @Test
-    fun `it handles primitive header shapes`() {
-        val contents = getTestContents(defaultModel, "com.test#PrimitiveShapesOperation", HttpBinding.Location.HEADER)
+    fun `it handles primitive header shapes always mode`() {
+        val settings = defaultModel.defaultSettings(defaultValueSerializationMode = DefaultValueSerializationMode.ALWAYS)
+        val contents = getTestContents(defaultModel, "com.test#PrimitiveShapesOperation", HttpBinding.Location.HEADER, settings)
         contents.assertBalancedBracesAndParens()
 
         val expectedContents = """
@@ -50,8 +52,35 @@ class HttpStringValuesMapSerializerTest {
     }
 
     @Test
-    fun `it handles primitive query shapes`() {
+    fun `it handles primitive header shapes when different mode`() {
+        val contents = getTestContents(defaultModel, "com.test#PrimitiveShapesOperation", HttpBinding.Location.HEADER)
+        contents.assertBalancedBracesAndParens()
+
+        val expectedContents = """
+            if (input.hBool != false) append("X-d", "${'$'}{input.hBool}")
+            if (input.hFloat != 0f) append("X-c", "${'$'}{input.hFloat}")
+            if (input.hInt != 0) append("X-a", "${'$'}{input.hInt}")
+            if (input.hLong != 0L) append("X-b", "${'$'}{input.hLong}")
+            append("X-required", "${'$'}{input.hRequiredInt}")
+        """.trimIndent()
+        contents.shouldContainOnlyOnceWithDiff(expectedContents)
+    }
+
+    @Test
+    fun `it handles primitive query shapes when different mode`() {
         val contents = getTestContents(defaultModel, "com.test#PrimitiveShapesOperation", HttpBinding.Location.QUERY)
+        contents.assertBalancedBracesAndParens()
+
+        val expectedContents = """
+            if (input.qInt != 0) append("q-int", "${'$'}{input.qInt}")
+        """.trimIndent()
+        contents.shouldContainOnlyOnceWithDiff(expectedContents)
+    }
+
+    @Test
+    fun `it handles primitive query shapes always mode`() {
+        val settings = defaultModel.defaultSettings(defaultValueSerializationMode = DefaultValueSerializationMode.ALWAYS)
+        val contents = getTestContents(defaultModel, "com.test#PrimitiveShapesOperation", HttpBinding.Location.QUERY, settings)
         contents.assertBalancedBracesAndParens()
 
         val expectedContents = """
@@ -67,6 +96,46 @@ class HttpStringValuesMapSerializerTest {
 
         val expectedContents = """
             if (input.enumHeader != null) append("X-EnumHeader", input.enumHeader.value)
+        """.trimIndent()
+        contents.shouldContainOnlyOnceWithDiff(expectedContents)
+    }
+
+    @Test
+    fun `it handles enum default value when different mode`() {
+        val model = """
+            @http(method: "POST", uri: "/foo")
+            operation Foo {
+                input: FooRequest
+            }
+            
+            enum MyEnum {
+                Variant1,
+                Variant2
+            }
+            
+            intEnum MyIntEnum {
+                Tay = 1
+                Lep = 2
+            }
+            
+            structure FooRequest {
+                @default("Variant1")
+                @httpHeader("X-EnumHeader")
+                enumHeader: MyEnum
+                
+                @default(2)
+                @httpHeader("X-IntEnumHeader")
+                intEnumHeader: MyIntEnum
+            }
+        """.prependNamespaceAndService(operations = listOf("Foo")).toSmithyModel()
+
+        val contents = getTestContents(model, "com.test#Foo", HttpBinding.Location.HEADER)
+        contents.assertBalancedBracesAndParens()
+
+        val intEnumValue = "\${input.intEnumHeader.value}"
+        val expectedContents = """
+            if (input.enumHeader != com.test.model.MyEnum.fromValue("Variant1")) append("X-EnumHeader", input.enumHeader.value)
+            if (input.intEnumHeader != com.test.model.MyIntEnum.fromValue(2)) append("X-IntEnumHeader", "$intEnumValue")
         """.trimIndent()
         contents.shouldContainOnlyOnceWithDiff(expectedContents)
     }

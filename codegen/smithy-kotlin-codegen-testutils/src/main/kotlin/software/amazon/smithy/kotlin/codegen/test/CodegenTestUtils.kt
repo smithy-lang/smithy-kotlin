@@ -56,8 +56,10 @@ fun codegenSerializerForShape(
     model: Model,
     shapeId: String,
     location: HttpBinding.Location = HttpBinding.Location.DOCUMENT,
+    settings: KotlinSettings? = null,
 ): String {
-    val ctx = model.newTestContext()
+    val resolvedSettings = settings ?: model.defaultSettings(TestModelDefault.SERVICE_NAME, TestModelDefault.NAMESPACE)
+    val ctx = model.newTestContext(settings = resolvedSettings)
 
     val op = ctx.generationCtx.model.expectShape(ShapeId.from(shapeId))
     return testRender(ctx.requestMembers(op, location)) { members, writer ->

@@ -7,7 +7,9 @@ package software.amazon.smithy.kotlin.codegen.rendering.serde
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
 import org.junit.jupiter.params.provider.ValueSource
+import software.amazon.smithy.kotlin.codegen.DefaultValueSerializationMode
 import software.amazon.smithy.kotlin.codegen.test.*
+import software.amazon.smithy.model.knowledge.NullableIndex
 import kotlin.test.Test
 
 class SerializeStructGeneratorTest {
@@ -40,6 +42,101 @@ class SerializeStructGeneratorTest {
 
         val actual = codegenSerializerForShape(model, "com.test#Foo")
 
+        actual.shouldContainOnlyOnceWithDiff(expected)
+    }
+
+    @ParameterizedTest
+    @CsvSource(
+        "String, \"foo\", \"foo\"",
+        "Boolean, false, false",
+        "Byte, 0, 0.toByte()",
+        "Short, 0, 0.toShort()",
+        "Integer, 2, 2",
+        "Long, 3, 3L",
+        "Float, 0, 0f",
+        "Double, 0, 0.0",
+    )
+    fun `it serializes default values only when different mode`(memberType: String, modelDefault: String, defaultValue: String) {
+        val model = (
+            modelPrefix + """            
+            structure FooRequest { 
+                @default($modelDefault)
+                payload: $memberType
+            }
+        """
+            ).toSmithyModel()
+
+        val expected = """
+            serializer.serializeStruct(OBJ_DESCRIPTOR) {
+                if (input.payload != $defaultValue) field(PAYLOAD_DESCRIPTOR, input.payload)
+            }
+        """.trimIndent()
+
+        val actual = codegenSerializerForShape(model, "com.test#Foo")
+        actual.shouldContainOnlyOnceWithDiff(expected)
+    }
+
+    @ParameterizedTest
+    @CsvSource(
+        "String, \"foo\"",
+        "Boolean, false",
+        "Byte, 0",
+        "Short, 0",
+        "Integer, 2",
+        "Long, 3",
+        "Float, 0",
+        "Double, 0",
+    )
+    fun `it always serializes default values using always mode`(memberType: String, modelDefault: String) {
+        val model = (
+            modelPrefix + """            
+            structure FooRequest { 
+                @default($modelDefault)
+                payload: $memberType
+            }
+        """
+            ).toSmithyModel()
+
+        val expected = """
+            serializer.serializeStruct(OBJ_DESCRIPTOR) {
+                field(PAYLOAD_DESCRIPTOR, input.payload)
+            }
+        """.trimIndent()
+
+        val settings = model.defaultSettings(defaultValueSerializationMode = DefaultValueSerializationMode.ALWAYS)
+        val actual = codegenSerializerForShape(model, "com.test#Foo", settings = settings)
+        actual.shouldContainOnlyOnceWithDiff(expected)
+    }
+
+    @ParameterizedTest
+    @CsvSource(
+        "String, \"foo\"",
+        "Boolean, false",
+        "Byte, 0",
+        "Short, 0",
+        "Integer, 2",
+        "Long, 3",
+        "Float, 0",
+        "Double, 0",
+    )
+    fun `it always serializes required default values`(memberType: String, modelDefault: String) {
+        val model = (
+            modelPrefix + """            
+            structure FooRequest { 
+                @required
+                @default($modelDefault)
+                payload: $memberType
+            }
+        """
+            ).toSmithyModel()
+
+        val expected = """
+            serializer.serializeStruct(OBJ_DESCRIPTOR) {
+                field(PAYLOAD_DESCRIPTOR, input.payload)
+            }
+        """.trimIndent()
+
+        val actual = codegenSerializerForShape(model, "com.test#Foo")
         actual.shouldContainOnlyOnceWithDiff(expected)
     }
 
@@ -257,6 +354,32 @@ class SerializeStructGeneratorTest {
 
         val actual = codegenSerializerForShape(model, "com.test#Foo")
 
+        actual.shouldContainOnlyOnceWithDiff(expected)
+    }
+
+    @Test
+    fun `it serializes a structure with a nested structure using client mode`() {
+        val model = (
+            modelPrefix + """            
+            structure FooRequest { 
+                @required
+                payload: NestedStructure
+            }
+            
+            structure NestedStructure {
+                nestedPayload: String
+            }
+        """
+            ).toSmithyModel()
+
+        val expected = """
+            serializer.serializeStruct(OBJ_DESCRIPTOR) {
+                field(PAYLOAD_DESCRIPTOR, input.payload, ::serializeNestedStructureDocument)
+            }
+        """.trimIndent()
+
+        val settings = model.defaultSettings(nullabilityCheckMode = NullableIndex.CheckMode.CLIENT)
+        val actual = codegenSerializerForShape(model, "com.test#Foo", settings = settings)
         actual.shouldContainOnlyOnceWithDiff(expected)
     }
 

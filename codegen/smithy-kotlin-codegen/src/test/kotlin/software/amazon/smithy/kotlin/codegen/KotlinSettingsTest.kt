@@ -314,4 +314,21 @@ class KotlinSettingsTest {
 
         assertEquals(expected, apiSettings.nullabilityCheckMode)
     }
+
+    @ParameterizedTest(name = "{0} ==> {1}")
+    @CsvSource(
+        "always, ALWAYS",
+        "whenDifferent, WHEN_DIFFERENT",
+    )
+    fun testDefaultValueSerializationMode(pluginSetting: String, expectedEnumString: String) {
+        val expected = DefaultValueSerializationMode.valueOf(expectedEnumString)
+        val contents = """
+            {
+                "defaultValueSerializationMode": "$pluginSetting"
+            }
+        """.trimIndent()
+        val apiSettings = ApiSettings.fromNode(Node.parse(contents).asObjectNode())
+
+        assertEquals(expected, apiSettings.defaultValueSerializationMode)
+    }
 }
