@@ -72,3 +72,27 @@ public fun Any?.type(): String = when (this) {
     null -> "null"
     else -> throw Exception("Undetected type for: $this")
 }
+
+@InternalApi
+@JvmName("StringJmespathSort")
+public fun List<String>.jmespathSort(): List<String> = this.sorted()
+
+@InternalApi
+@JvmName("ShortJmespathSort")
+public fun List<Short>.jmespathSort(): List<Short> = this.sorted()
+
+@InternalApi
+@JvmName("IntJmespathSort")
+public fun List<Int>.jmespathSort(): List<Int> = this.sorted()
+
+@InternalApi
+@JvmName("FloatJmespathSort")
+public fun List<Float>.jmespathSort(): List<Float> = this.sorted()
+
+@InternalApi
+@JvmName("LongJmespathSort")
+public fun List<Long>.jmespathSort(): List<Long> = this.sorted()
+
+@InternalApi
+@JvmName("DoubleJmespathSort")
+public fun List<Double>.jmespathSort(): List<Double> = this.sorted()
