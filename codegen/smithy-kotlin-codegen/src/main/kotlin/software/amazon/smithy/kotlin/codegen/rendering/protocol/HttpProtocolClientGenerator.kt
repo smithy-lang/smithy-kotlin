@@ -128,7 +128,7 @@ abstract class HttpProtocolClientGenerator(
 
     protected open fun importSymbols(writer: KotlinWriter) {
         writer.addImport("${ctx.settings.pkg.name}.model", "*")
-        if (ctx.service.allOperations.isNotEmpty()) {
+        if (TopDownIndex(ctx.model).getContainedOperations(ctx.service).isNotEmpty()) {
             writer.addImport("${ctx.settings.pkg.name}.transform", "*")
         }
 
