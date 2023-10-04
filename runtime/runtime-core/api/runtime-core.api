@@ -676,6 +676,15 @@ public final class aws/smithy/kotlin/runtime/net/SchemeKt {
 public final class aws/smithy/kotlin/runtime/net/TextKt {
 }
 
+public final class aws/smithy/kotlin/runtime/net/TlsVersion : java/lang/Enum {
+	public static final field TLS_1_0 Laws/smithy/kotlin/runtime/net/TlsVersion;
+	public static final field TLS_1_1 Laws/smithy/kotlin/runtime/net/TlsVersion;
+	public static final field TLS_1_2 Laws/smithy/kotlin/runtime/net/TlsVersion;
+	public static final field TLS_1_3 Laws/smithy/kotlin/runtime/net/TlsVersion;
+	public static fun valueOf (Ljava/lang/String;)Laws/smithy/kotlin/runtime/net/TlsVersion;
+	public static fun values ()[Laws/smithy/kotlin/runtime/net/TlsVersion;
+}
+
 public final class aws/smithy/kotlin/runtime/net/Url {
 	public static final field Companion Laws/smithy/kotlin/runtime/net/Url$Companion;
 	public fun <init> (Laws/smithy/kotlin/runtime/net/Scheme;Laws/smithy/kotlin/runtime/net/Host;ILjava/lang/String;Laws/smithy/kotlin/runtime/net/QueryParameters;Ljava/lang/String;Laws/smithy/kotlin/runtime/net/UserInfo;ZZ)V
