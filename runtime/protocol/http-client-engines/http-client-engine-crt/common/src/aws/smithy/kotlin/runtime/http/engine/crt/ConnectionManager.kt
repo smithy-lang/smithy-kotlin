@@ -9,13 +9,13 @@ import aws.sdk.kotlin.crt.io.SocketOptions
 import aws.sdk.kotlin.crt.io.TlsContext
 import aws.sdk.kotlin.crt.io.TlsContextOptionsBuilder
 import aws.sdk.kotlin.crt.io.Uri
-import aws.smithy.kotlin.runtime.net.TlsVersion
 import aws.smithy.kotlin.runtime.crt.SdkDefaultIO
 import aws.smithy.kotlin.runtime.http.HttpErrorCode
 import aws.smithy.kotlin.runtime.http.HttpException
 import aws.smithy.kotlin.runtime.http.engine.ProxyConfig
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.io.Closeable
+import aws.smithy.kotlin.runtime.net.TlsVersion
 import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.Semaphore
