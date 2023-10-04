@@ -1,0 +1,5 @@
+{
+    "id": "598b7088-0032-4336-8aab-3c242876301c",
+    "type": "bugfix",
+    "description": "Fix codegen of services with no operations"
+}
