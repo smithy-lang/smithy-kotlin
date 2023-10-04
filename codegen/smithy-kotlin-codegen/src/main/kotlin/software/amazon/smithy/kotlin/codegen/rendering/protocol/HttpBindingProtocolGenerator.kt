@@ -155,7 +155,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         val serializerSymbol = buildSymbol {
             definitionFile = "${op.serializerName()}.kt"
             name = op.serializerName()
-            namespace = "${ctx.settings.pkg.name}.transform"
+            namespace = ctx.settings.pkg.serde
 
             reference(inputSymbol, SymbolReference.ContextOption.DECLARE)
         }
@@ -487,7 +487,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             val definitionFileName = op.deserializerName().replaceFirstChar(Char::uppercaseChar)
             definitionFile = "$definitionFileName.kt"
             name = op.deserializerName()
-            namespace = ctx.settings.pkg.subpackage("transform")
+            namespace = ctx.settings.pkg.serde
 
             reference(outputSymbol, SymbolReference.ContextOption.DECLARE)
         }
@@ -542,7 +542,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             val deserializerName = "${outputSymbol.name}Deserializer"
             definitionFile = "$deserializerName.kt"
             name = deserializerName
-            namespace = ctx.settings.pkg.subpackage("transform")
+            namespace = ctx.settings.pkg.serde
             reference(outputSymbol, SymbolReference.ContextOption.DECLARE)
         }
 
@@ -996,7 +996,7 @@ fun OperationShape.errorHandlerName(): String = "throw${capitalizedDefaultName()
  */
 fun OperationShape.errorHandler(settings: KotlinSettings, block: SymbolRenderer): Symbol = buildSymbol {
     name = errorHandlerName()
-    namespace = "${settings.pkg.name}.transform"
+    namespace = settings.pkg.serde
     // place error handler in same file as operation deserializer
     definitionFile = "${deserializerName()}.kt"
     renderBy = block

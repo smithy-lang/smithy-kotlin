@@ -127,9 +127,8 @@ abstract class HttpProtocolClientGenerator(
     }
 
     protected open fun importSymbols(writer: KotlinWriter) {
-        writer.addImport("${ctx.settings.pkg.name}.model", "*")
         if (TopDownIndex(ctx.model).getContainedOperations(ctx.service).isNotEmpty()) {
-            writer.addImport("${ctx.settings.pkg.name}.transform", "*")
+            writer.addImport(ctx.settings.pkg.serde, "*")
         }
 
         val defaultClientSymbols = setOf(

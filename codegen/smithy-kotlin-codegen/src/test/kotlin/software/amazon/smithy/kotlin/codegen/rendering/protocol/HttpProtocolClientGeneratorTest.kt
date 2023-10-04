@@ -34,7 +34,7 @@ class HttpProtocolClientGeneratorTest {
     @Test
     fun `it imports external symbols`() {
         commonTestContents.shouldContainOnlyOnceWithDiff("import ${TestModelDefault.NAMESPACE}.model.*")
-        commonTestContents.shouldContainOnlyOnceWithDiff("import ${TestModelDefault.NAMESPACE}.transform.*")
+        commonTestContents.shouldContainOnlyOnceWithDiff("import ${TestModelDefault.NAMESPACE}.serde.*")
         commonTestContents.shouldContainOnlyOnceWithDiff("import ${KotlinDependency.HTTP.namespace}.SdkHttpClient")
         commonTestContents.shouldContainOnlyOnceWithDiff("import ${KotlinDependency.HTTP.namespace}.operation.SdkHttpOperation")
         commonTestContents.shouldContainOnlyOnceWithDiff("import ${KotlinDependency.HTTP.namespace}.operation.context")
