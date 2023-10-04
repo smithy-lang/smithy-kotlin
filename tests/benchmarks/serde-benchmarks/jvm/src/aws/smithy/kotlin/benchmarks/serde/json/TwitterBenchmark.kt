@@ -7,8 +7,8 @@ package aws.smithy.kotlin.benchmarks.serde.json
 
 import aws.smithy.kotlin.benchmarks.serde.BenchmarkBase
 import aws.smithy.kotlin.benchmarks.serde.json.twitter.model.TwitterFeed
-import aws.smithy.kotlin.benchmarks.serde.json.twitter.transform.deserializeTwitterFeedDocument
-import aws.smithy.kotlin.benchmarks.serde.json.twitter.transform.serializeTwitterFeedDocument
+import aws.smithy.kotlin.benchmarks.serde.json.twitter.serde.deserializeTwitterFeedDocument
+import aws.smithy.kotlin.benchmarks.serde.json.twitter.serde.serializeTwitterFeedDocument
 import aws.smithy.kotlin.runtime.serde.json.JsonDeserializer
 import aws.smithy.kotlin.runtime.serde.json.JsonSerializer
 import aws.smithy.kotlin.runtime.serde.json.JsonToken
