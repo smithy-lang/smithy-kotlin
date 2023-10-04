@@ -41,7 +41,7 @@ class IdempotentTokenGeneratorTest {
                     }
             
                     val payload = serializeAllocateWidgetOperationBody(context, input)
-                    builder.body = ByteArrayContent(payload)
+                    builder.body = HttpBody.fromBytes(payload)
                     if (builder.body !is HttpBody.Empty) {
                         builder.headers.setMissing("Content-Type", "application/json")
                     }

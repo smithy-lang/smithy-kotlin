@@ -246,12 +246,6 @@ public final class aws/smithy/kotlin/runtime/http/HttpStatusCodeKt {
 	public static final fun isSuccess (Laws/smithy/kotlin/runtime/http/HttpStatusCode;)Z
 }
 
-public final class aws/smithy/kotlin/runtime/http/content/ByteArrayContent : aws/smithy/kotlin/runtime/http/HttpBody$Bytes {
-	public fun <init> ([B)V
-	public fun bytes ()[B
-	public fun getContentLength ()Ljava/lang/Long;
-}
-
 public abstract interface class aws/smithy/kotlin/runtime/http/request/HttpRequest {
 	public static final field Companion Laws/smithy/kotlin/runtime/http/request/HttpRequest$Companion;
 	public abstract fun getBody ()Laws/smithy/kotlin/runtime/http/HttpBody;

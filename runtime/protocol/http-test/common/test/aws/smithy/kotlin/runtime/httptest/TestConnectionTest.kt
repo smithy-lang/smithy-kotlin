@@ -6,7 +6,6 @@
 package aws.smithy.kotlin.runtime.httptest
 
 import aws.smithy.kotlin.runtime.http.*
-import aws.smithy.kotlin.runtime.http.content.ByteArrayContent
 import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
 import aws.smithy.kotlin.runtime.net.Host
 import io.kotest.matchers.string.shouldContain
@@ -24,7 +23,7 @@ class TestConnectionTest {
                     url.host = Host.Domain("test.com")
                     url.path = "/turtles-all-the-way-down"
                     headers.append("x-foo", "bar")
-                    body = ByteArrayContent("tests for your tests".encodeToByteArray())
+                    body = HttpBody.fromBytes("tests for your tests".encodeToByteArray())
                 }
             }
         }
@@ -36,7 +35,7 @@ class TestConnectionTest {
             url.path = "/turtles-all-the-way-down"
             headers.append("x-foo", "bar")
             headers.append("x-qux", "quux")
-            body = ByteArrayContent("tests for your tests".encodeToByteArray())
+            body = HttpBody.fromBytes("tests for your tests".encodeToByteArray())
         }
         client.call(req).complete()
 
@@ -51,7 +50,7 @@ class TestConnectionTest {
                     url.host = Host.Domain("test.com")
                     url.path = "/turtles-all-the-way-down"
                     headers.append("x-foo", "bar")
-                    body = ByteArrayContent("tests for your tests".encodeToByteArray())
+                    body = HttpBody.fromBytes("tests for your tests".encodeToByteArray())
                 }
             }
         }
@@ -105,7 +104,7 @@ class TestConnectionTest {
                     url.host = Host.Domain("test.com")
                     url.path = "/turtles-all-the-way-down"
                     headers.append("x-foo", "bar")
-                    body = ByteArrayContent("tests for your tests".encodeToByteArray())
+                    body = HttpBody.fromBytes("tests for your tests".encodeToByteArray())
                 }
             }
         }
@@ -116,7 +115,7 @@ class TestConnectionTest {
             url.host = Host.Domain("test.com")
             url.path = "/turtles-all-the-way-down"
             headers.append("x-foo", "bar")
-            body = ByteArrayContent("tests are good".encodeToByteArray())
+            body = HttpBody.fromBytes("tests are good".encodeToByteArray())
         }
         client.call(req).complete()
 
@@ -133,7 +132,7 @@ class TestConnectionTest {
                     url.host = Host.Domain("test.com")
                     url.path = "/turtles-all-the-way-down"
                     headers.append("x-foo", "bar")
-                    body = ByteArrayContent("tests for your tests".encodeToByteArray())
+                    body = HttpBody.fromBytes("tests for your tests".encodeToByteArray())
                 }
             }
             // ANY request
@@ -147,7 +146,7 @@ class TestConnectionTest {
             url.path = "/turtles-all-the-way-down"
             headers.append("x-foo", "bar")
             headers.append("x-qux", "quux")
-            body = ByteArrayContent("tests for your tests".encodeToByteArray())
+            body = HttpBody.fromBytes("tests for your tests".encodeToByteArray())
         }
         client.call(req).complete()
         client.call(
@@ -205,7 +204,7 @@ class TestConnectionTest {
             url.parameters.append("q1", "v1")
             headers.append("foo", "bar")
             headers.appendAll("baz", listOf("one", "two"))
-            body = ByteArrayContent("tests for your tests".encodeToByteArray())
+            body = HttpBody.fromBytes("tests for your tests".encodeToByteArray())
         }
 
         val call1 = client.call(req)

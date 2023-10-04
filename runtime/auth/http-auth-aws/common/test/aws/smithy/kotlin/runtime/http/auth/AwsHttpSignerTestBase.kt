@@ -12,7 +12,6 @@ import aws.smithy.kotlin.runtime.auth.awssigning.DefaultAwsSigner
 import aws.smithy.kotlin.runtime.auth.awssigning.crt.CrtAwsSigner
 import aws.smithy.kotlin.runtime.auth.awssigning.internal.AWS_CHUNKED_THRESHOLD
 import aws.smithy.kotlin.runtime.http.*
-import aws.smithy.kotlin.runtime.http.content.ByteArrayContent
 import aws.smithy.kotlin.runtime.http.operation.*
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
@@ -68,7 +67,7 @@ public abstract class AwsHttpSignerTestBase(
                                     override val isOneShot: Boolean = !replayable
                                 }
                             }
-                            false -> ByteArrayContent(requestBody.encodeToByteArray())
+                            false -> HttpBody.fromBytes(requestBody.encodeToByteArray())
                         }
                         headers.append("Content-Length", body.contentLength?.toString() ?: "0")
                     }

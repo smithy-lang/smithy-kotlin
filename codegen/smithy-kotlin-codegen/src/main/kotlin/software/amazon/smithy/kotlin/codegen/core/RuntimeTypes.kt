@@ -19,7 +19,6 @@ object RuntimeTypes {
         val HttpBody = symbol("HttpBody")
         val HttpCall = symbol("HttpCall")
         val HttpMethod = symbol("HttpMethod")
-        val ByteArrayContent = symbol("ByteArrayContent", subpackage = "content")
         val readAll = symbol("readAll")
         val toByteStream = symbol("toByteStream")
         val toHttpBody = symbol("toHttpBody")
@@ -109,7 +108,6 @@ object RuntimeTypes {
             val buildDocument = symbol("buildDocument")
             val decodeToString = symbol("decodeToString")
             val Document = symbol("Document")
-            val StringContent = symbol("StringContent")
             val toByteArray = symbol("toByteArray")
         }
 

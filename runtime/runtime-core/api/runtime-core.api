@@ -81,12 +81,6 @@ public final class aws/smithy/kotlin/runtime/config/TlsVersion : java/lang/Enum 
 	public static fun values ()[Laws/smithy/kotlin/runtime/config/TlsVersion;
 }
 
-public final class aws/smithy/kotlin/runtime/content/ByteArrayContent : aws/smithy/kotlin/runtime/content/ByteStream$Buffer {
-	public fun <init> ([B)V
-	public fun bytes ()[B
-	public fun getContentLength ()Ljava/lang/Long;
-}
-
 public abstract class aws/smithy/kotlin/runtime/content/ByteStream {
 	public static final field Companion Laws/smithy/kotlin/runtime/content/ByteStream$Companion;
 	public fun getContentLength ()Ljava/lang/Long;
@@ -331,12 +325,6 @@ public final class aws/smithy/kotlin/runtime/content/FileContent : aws/smithy/ko
 	public final fun getStart ()J
 	public fun isOneShot ()Z
 	public fun readFrom ()Laws/smithy/kotlin/runtime/io/SdkSource;
-}
-
-public final class aws/smithy/kotlin/runtime/content/StringContent : aws/smithy/kotlin/runtime/content/ByteStream$Buffer {
-	public fun <init> (Ljava/lang/String;)V
-	public fun bytes ()[B
-	public fun getContentLength ()Ljava/lang/Long;
 }
 
 public final class aws/smithy/kotlin/runtime/hashing/Crc32Kt {
