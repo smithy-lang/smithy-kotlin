@@ -9,7 +9,7 @@ import aws.sdk.kotlin.crt.io.SocketOptions
 import aws.sdk.kotlin.crt.io.TlsContext
 import aws.sdk.kotlin.crt.io.TlsContextOptionsBuilder
 import aws.sdk.kotlin.crt.io.Uri
-import aws.smithy.kotlin.runtime.config.TlsVersion
+import aws.smithy.kotlin.runtime.net.TlsVersion
 import aws.smithy.kotlin.runtime.crt.SdkDefaultIO
 import aws.smithy.kotlin.runtime.http.HttpErrorCode
 import aws.smithy.kotlin.runtime.http.HttpException
@@ -23,7 +23,7 @@ import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withTimeout
 import aws.sdk.kotlin.crt.io.TlsContext as CrtTlsContext
 import aws.sdk.kotlin.crt.io.TlsVersion as CrtTlsVersion
-import aws.smithy.kotlin.runtime.config.TlsVersion as SdkTlsVersion
+import aws.smithy.kotlin.runtime.net.TlsVersion as SdkTlsVersion
 
 internal class ConnectionManager(
     private val config: CrtHttpEngineConfig,

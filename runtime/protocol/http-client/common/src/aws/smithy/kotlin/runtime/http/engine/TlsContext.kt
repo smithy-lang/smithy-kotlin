@@ -5,7 +5,7 @@
 package aws.smithy.kotlin.runtime.http.engine
 
 import aws.smithy.kotlin.runtime.client.config.ClientSettings
-import aws.smithy.kotlin.runtime.config.TlsVersion
+import aws.smithy.kotlin.runtime.net.TlsVersion
 import aws.smithy.kotlin.runtime.config.resolve
 import aws.smithy.kotlin.runtime.http.config.HttpEngineConfigDsl
 
