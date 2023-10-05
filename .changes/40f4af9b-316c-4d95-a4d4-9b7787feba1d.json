@@ -1,0 +1,5 @@
+{
+    "id": "40f4af9b-316c-4d95-a4d4-9b7787feba1d",
+    "type": "misc",
+    "description": "Refactor codegen to place serialization and deserialization code into the `serde` package rather than the `transform` package."
+}

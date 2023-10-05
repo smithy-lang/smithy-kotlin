@@ -1,5 +1,0 @@
-{
-    "id": "bd8a575c-ecec-4744-bde6-44f8900d573d",
-    "type": "misc",
-    "description": "Refactor codegen to place serialization and serialization into the `serde` package rather than the `transform` package. Relocate `TlsVersion` to the  package. Make `ByteArrayContent` and friends `internal` and force consumers to go through companion object convenience functions."
-}

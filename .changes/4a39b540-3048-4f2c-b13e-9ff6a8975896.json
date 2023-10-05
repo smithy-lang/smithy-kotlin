@@ -1,0 +1,5 @@
+{
+    "id": "4a39b540-3048-4f2c-b13e-9ff6a8975896",
+    "type": "misc",
+    "description": "Relocate `TlsVersion` to the `net` package."
+}
