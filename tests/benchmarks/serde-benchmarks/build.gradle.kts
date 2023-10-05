@@ -111,9 +111,9 @@ val stageGeneratedSources = tasks.register("stageGeneratedSources") {
                 from("${it.projectionRootDir}")
                 into("${it.sourceSetRootDir}")
                 include("**/model/*.kt")
-                include("**/transform/*.kt")
-                exclude("**/transform/*OperationSerializer.kt")
-                exclude("**/transform/*OperationDeserializer.kt")
+                include("**/serde/*.kt")
+                exclude("**/serde/*OperationSerializer.kt")
+                exclude("**/serde/*OperationDeserializer.kt")
             }
         }
     }

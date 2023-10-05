@@ -7,7 +7,7 @@ package aws.smithy.kotlin.runtime.content
 /**
  * Container for wrapping a ByteArray as a [ByteStream]
  */
-public class ByteArrayContent(private val bytes: ByteArray) : ByteStream.Buffer() {
+internal class ByteArrayContent(private val bytes: ByteArray) : ByteStream.Buffer() {
     override val contentLength: Long = bytes.size.toLong()
     override fun bytes(): ByteArray = bytes
 }

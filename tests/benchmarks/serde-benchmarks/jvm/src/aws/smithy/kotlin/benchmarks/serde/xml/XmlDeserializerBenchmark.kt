@@ -6,7 +6,7 @@ package aws.smithy.kotlin.benchmarks.serde.xml
 
 import aws.smithy.kotlin.benchmarks.serde.BenchmarkBase
 import aws.smithy.kotlin.benchmarks.serde.xml.countriesstates.model.CountriesAndStates
-import aws.smithy.kotlin.benchmarks.serde.xml.countriesstates.transform.deserializeCountriesAndStatesDocument
+import aws.smithy.kotlin.benchmarks.serde.xml.countriesstates.serde.deserializeCountriesAndStatesDocument
 import aws.smithy.kotlin.runtime.serde.xml.XmlDeserializer
 import kotlinx.benchmark.*
 import kotlinx.coroutines.runBlocking

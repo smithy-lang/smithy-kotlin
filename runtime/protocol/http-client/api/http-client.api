@@ -146,15 +146,15 @@ public final class aws/smithy/kotlin/runtime/http/engine/ProxySelector$Companion
 public final class aws/smithy/kotlin/runtime/http/engine/TlsContext {
 	public static final field Companion Laws/smithy/kotlin/runtime/http/engine/TlsContext$Companion;
 	public final fun getAlpn ()Ljava/util/List;
-	public final fun getMinVersion ()Laws/smithy/kotlin/runtime/config/TlsVersion;
+	public final fun getMinVersion ()Laws/smithy/kotlin/runtime/net/TlsVersion;
 }
 
 public final class aws/smithy/kotlin/runtime/http/engine/TlsContext$Builder {
 	public fun <init> ()V
 	public final fun getAlpn ()Ljava/util/List;
-	public final fun getMinVersion ()Laws/smithy/kotlin/runtime/config/TlsVersion;
+	public final fun getMinVersion ()Laws/smithy/kotlin/runtime/net/TlsVersion;
 	public final fun setAlpn (Ljava/util/List;)V
-	public final fun setMinVersion (Laws/smithy/kotlin/runtime/config/TlsVersion;)V
+	public final fun setMinVersion (Laws/smithy/kotlin/runtime/net/TlsVersion;)V
 }
 
 public final class aws/smithy/kotlin/runtime/http/engine/TlsContext$Companion {

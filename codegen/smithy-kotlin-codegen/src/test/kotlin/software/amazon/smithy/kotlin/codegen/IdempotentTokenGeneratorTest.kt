@@ -13,22 +13,22 @@ import kotlin.test.Test
 class IdempotentTokenGeneratorTest {
     private val defaultModel: Model = javaClass.getResource("idempotent-token-test-model.smithy").toSmithyModel()
 
-    private fun getTransformFileContents(filename: String): String {
+    private fun getSerdeFileContents(filename: String): String {
         val (ctx, manifest, generator) = defaultModel.newTestContext()
         generator.generateProtocolClient(ctx)
         ctx.delegator.flushWriters()
-        return manifest.getTransformFileContents(filename)
+        return manifest.getSerdeFileContents(filename)
     }
 
     // Assume a specific file path to retrieve a file from the manifest
-    private fun MockManifest.getTransformFileContents(filename: String, packageNamespace: String = TestModelDefault.NAMESPACE): String {
+    private fun MockManifest.getSerdeFileContents(filename: String, packageNamespace: String = TestModelDefault.NAMESPACE): String {
         val packageNamespaceExpr = packageNamespace.replace('.', '/')
-        return expectFileString("src/main/kotlin/$packageNamespaceExpr/transform/$filename")
+        return expectFileString("src/main/kotlin/$packageNamespaceExpr/serde/$filename")
     }
 
     @Test
     fun `it serializes operation payload inputs with idempotency token trait`() {
-        val contents = getTransformFileContents("AllocateWidgetOperationSerializer.kt")
+        val contents = getSerdeFileContents("AllocateWidgetOperationSerializer.kt")
         contents.assertBalancedBracesAndParens()
         val expectedContents = """
             internal class AllocateWidgetOperationSerializer: HttpSerialize<AllocateWidgetRequest> {
@@ -41,7 +41,7 @@ class IdempotentTokenGeneratorTest {
                     }
             
                     val payload = serializeAllocateWidgetOperationBody(context, input)
-                    builder.body = ByteArrayContent(payload)
+                    builder.body = HttpBody.fromBytes(payload)
                     if (builder.body !is HttpBody.Empty) {
                         builder.headers.setMissing("Content-Type", "application/json")
                     }
@@ -54,7 +54,7 @@ class IdempotentTokenGeneratorTest {
 
     @Test
     fun `it serializes operation query inputs with idempotency token trait`() {
-        val contents = getTransformFileContents("AllocateWidgetQueryOperationSerializer.kt")
+        val contents = getSerdeFileContents("AllocateWidgetQueryOperationSerializer.kt")
         contents.assertBalancedBracesAndParens()
         val expectedContents = """
 internal class AllocateWidgetQueryOperationSerializer: HttpSerialize<AllocateWidgetQueryRequest> {
@@ -78,7 +78,7 @@ internal class AllocateWidgetQueryOperationSerializer: HttpSerialize<AllocateWid
 
     @Test
     fun `it serializes operation header inputs with idempotency token trait`() {
-        val contents = getTransformFileContents("AllocateWidgetHeaderOperationSerializer.kt")
+        val contents = getSerdeFileContents("AllocateWidgetHeaderOperationSerializer.kt")
         contents.assertBalancedBracesAndParens()
         val expectedContents = """
 internal class AllocateWidgetHeaderOperationSerializer: HttpSerialize<AllocateWidgetHeaderRequest> {

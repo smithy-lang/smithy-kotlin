@@ -6,7 +6,6 @@ package aws.smithy.kotlin.runtime.http.interceptors
 
 import aws.smithy.kotlin.runtime.http.*
 import aws.smithy.kotlin.runtime.http.HttpCall
-import aws.smithy.kotlin.runtime.http.content.ByteArrayContent
 import aws.smithy.kotlin.runtime.http.operation.*
 import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
 import aws.smithy.kotlin.runtime.http.response.HttpResponse
@@ -60,7 +59,7 @@ class ResponseLengthValidationInterceptorTest {
             override fun readFrom() = SdkByteReadChannel(RESPONSE)
             override val isOneShot = false
         },
-        ByteArrayContent(RESPONSE),
+        HttpBody.fromBytes(RESPONSE),
     )
 
     private fun allBodies() = nonEmptyBodies() + HttpBody.Empty

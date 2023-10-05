@@ -7,9 +7,9 @@ package aws.smithy.kotlin.runtime.client.config
 import aws.smithy.kotlin.runtime.InternalApi
 import aws.smithy.kotlin.runtime.client.LogMode
 import aws.smithy.kotlin.runtime.config.EnvironmentSetting
-import aws.smithy.kotlin.runtime.config.TlsVersion
 import aws.smithy.kotlin.runtime.config.enumEnvSetting
 import aws.smithy.kotlin.runtime.config.intEnvSetting
+import aws.smithy.kotlin.runtime.net.TlsVersion
 
 @InternalApi
 public object ClientSettings {
