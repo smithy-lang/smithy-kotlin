@@ -43,6 +43,8 @@ public expect class Instant : Comparable<Instant> {
      */
     public operator fun minus(duration: Duration): Instant
 
+    public fun until(other: Instant): Duration
+
     public companion object {
         /**
          * Parse an ISO-8601 formatted string into an [Instant]

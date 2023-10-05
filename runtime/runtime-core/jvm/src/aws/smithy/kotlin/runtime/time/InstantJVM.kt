@@ -22,6 +22,7 @@ import java.time.format.SignStyle
 import java.time.temporal.ChronoField
 import java.time.temporal.ChronoUnit
 import kotlin.time.Duration
+import kotlin.time.Duration.Companion.nanoseconds
 import java.time.Instant as jtInstant
 
 public actual class Instant(internal val value: jtInstant) : Comparable<Instant> {
@@ -79,6 +80,8 @@ public actual class Instant(internal val value: jtInstant) : Comparable<Instant>
             }
         }
     }
+
+    public actual fun until(other: Instant): Duration = value.until(other.value, ChronoUnit.NANOS).nanoseconds
 
     public actual companion object {
 
