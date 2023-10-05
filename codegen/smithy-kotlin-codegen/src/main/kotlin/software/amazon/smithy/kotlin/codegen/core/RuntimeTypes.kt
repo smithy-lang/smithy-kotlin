@@ -166,7 +166,6 @@ object RuntimeTypes {
             val urlEncodeComponent = symbol("urlEncodeComponent", "text")
             val toNumber = symbol("toNumber")
             val type = symbol("type")
-            val jmespathSort = symbol("jmespathSort")
         }
 
         object Net : RuntimeTypePackage(KotlinDependency.CORE, "net") {
