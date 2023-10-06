@@ -12,6 +12,7 @@ import aws.smithy.kotlin.runtime.http.response.HttpResponse
 import aws.smithy.kotlin.runtime.http.response.header
 import aws.smithy.kotlin.runtime.telemetry.logging.logger
 import aws.smithy.kotlin.runtime.time.Instant
+import aws.smithy.kotlin.runtime.time.until
 import kotlin.coroutines.coroutineContext
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.minutes

@@ -1233,7 +1233,6 @@ public final class aws/smithy/kotlin/runtime/time/Instant : java/lang/Comparable
 	public final fun minus-LRDsOJo (J)Laws/smithy/kotlin/runtime/time/Instant;
 	public final fun plus-LRDsOJo (J)Laws/smithy/kotlin/runtime/time/Instant;
 	public fun toString ()Ljava/lang/String;
-	public final fun until-5sfh64U (Laws/smithy/kotlin/runtime/time/Instant;)J
 }
 
 public final class aws/smithy/kotlin/runtime/time/Instant$Companion {
@@ -1251,6 +1250,7 @@ public final class aws/smithy/kotlin/runtime/time/InstantKt {
 	public static final fun fromEpochMilliseconds (Laws/smithy/kotlin/runtime/time/Instant$Companion;J)Laws/smithy/kotlin/runtime/time/Instant;
 	public static final fun getEpochMilliseconds (Laws/smithy/kotlin/runtime/time/Instant;)J
 	public static final fun toEpochDouble (Laws/smithy/kotlin/runtime/time/Instant;)D
+	public static final fun until (Laws/smithy/kotlin/runtime/time/Instant;Laws/smithy/kotlin/runtime/time/Instant;)J
 }
 
 public class aws/smithy/kotlin/runtime/time/ParseException : aws/smithy/kotlin/runtime/SdkBaseException {

@@ -81,8 +81,6 @@ public actual class Instant(internal val value: jtInstant) : Comparable<Instant>
         }
     }
 
-    public actual fun until(other: Instant): Duration = value.until(other.value, ChronoUnit.NANOS).nanoseconds
-
     public actual companion object {
 
         private val RFC_5322_FIXED_DATE_TIME: DateTimeFormatter = buildRfc5322Formatter()
