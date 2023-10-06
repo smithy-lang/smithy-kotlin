@@ -20,6 +20,7 @@ import aws.smithy.kotlin.runtime.io.source
 import aws.smithy.kotlin.runtime.time.Instant
 import kotlinx.coroutines.test.runTest
 import kotlin.test.*
+import kotlin.time.Duration
 import kotlin.time.Duration.Companion.days
 import kotlin.time.Duration.Companion.seconds
 
@@ -44,7 +45,7 @@ class ClockSkewInterceptorTest {
         val clientTime = Instant.fromRfc5322("Wed, 7 Oct 2023 16:20:50 -0400")
         val serverTime = Instant.fromRfc5322("Wed, 6 Oct 2023 16:20:50 -0400")
         assertTrue(clientTime.isSkewed(serverTime))
-        assertEquals(0.seconds - 1.days, clientTime.getSkew(serverTime))
+        assertEquals(Duration.ZERO - 1.days, clientTime.getSkew(serverTime))
     }
 
     @Test
