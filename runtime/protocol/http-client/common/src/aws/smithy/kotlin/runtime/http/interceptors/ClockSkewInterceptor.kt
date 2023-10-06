@@ -27,7 +27,7 @@ public class ClockSkewInterceptor : HttpInterceptor {
          * It may be negative if the serverTime is in the future.
          * @param serverTime the server's time
          */
-        public fun Instant.getSkew(serverTime: Instant): Duration =this.until(serverTime)
+        public fun Instant.getSkew(serverTime: Instant): Duration = this.until(serverTime)
 
         /**
          * Determine whether the client's clock is skewed relative to the server.
