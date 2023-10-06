@@ -130,7 +130,6 @@ public class AwsHttpSigner(private val config: Config) : HttpSigner {
             signingDate = attributes.getOrNull(AwsSigningAttributes.SigningDate)
                 ?: (Instant.now() + (attributes.getOrNull(HttpOperationContext.ClockSkew) ?: Duration.ZERO))
 
-
             signatureType = config.signatureType
             omitSessionToken = config.omitSessionToken
             normalizeUriPath = config.normalizeUriPath

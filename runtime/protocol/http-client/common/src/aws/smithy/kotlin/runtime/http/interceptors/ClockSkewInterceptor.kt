@@ -13,10 +13,10 @@ import aws.smithy.kotlin.runtime.http.response.header
 import aws.smithy.kotlin.runtime.telemetry.logging.logger
 import aws.smithy.kotlin.runtime.time.Instant
 import aws.smithy.kotlin.runtime.time.until
+import kotlinx.atomicfu.*
 import kotlin.coroutines.coroutineContext
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.minutes
-import kotlinx.atomicfu.*
 
 /**
  * An interceptor used to detect clock skew (difference between client and server clocks) and apply a correction.
