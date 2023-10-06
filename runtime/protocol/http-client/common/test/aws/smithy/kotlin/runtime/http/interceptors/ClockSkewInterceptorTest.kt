@@ -5,7 +5,6 @@
 package aws.smithy.kotlin.runtime.http.interceptors
 
 import aws.smithy.kotlin.runtime.http.*
-import aws.smithy.kotlin.runtime.http.content.ByteArrayContent
 import aws.smithy.kotlin.runtime.http.interceptors.ClockSkewInterceptor.Companion.CLOCK_SKEW_THRESHOLD
 import aws.smithy.kotlin.runtime.http.interceptors.ClockSkewInterceptor.Companion.getSkew
 import aws.smithy.kotlin.runtime.http.interceptors.ClockSkewInterceptor.Companion.isSkewed
@@ -78,7 +77,7 @@ class ClockSkewInterceptorTest {
         )
 
         val req = HttpRequestBuilder().apply {
-            body = ByteArrayContent("<Foo>bar</Foo>".encodeToByteArray())
+            body = "<Foo>bar</Foo>".encodeToByteArray().toHttpBody()
         }
         req.headers.append("x-amz-date", clientTimeString)
 
@@ -106,7 +105,7 @@ class ClockSkewInterceptorTest {
         )
 
         val req = HttpRequestBuilder().apply {
-            body = ByteArrayContent("<Foo>bar</Foo>".encodeToByteArray())
+            body = "<Foo>bar</Foo>".encodeToByteArray().toHttpBody()
         }
         req.headers.append("x-amz-date", clientTimeString)
 
