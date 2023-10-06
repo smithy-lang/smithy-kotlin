@@ -78,9 +78,9 @@ public class ClockSkewInterceptor : HttpInterceptor {
         }
 
         if (clientTime.isSkewed(serverTime)) {
-            val skew = clientTime.getSkew(serverTime)
-            logger.warn { "client clock is skewed $skew, applying correction" }
-            context.executionContext[HttpOperationContext.ClockSkew] = skew
+            currentSkew = clientTime.getSkew(serverTime)
+            logger.warn { "client clock is skewed $currentSkew, applying correction" }
+            context.executionContext[HttpOperationContext.ClockSkew] = currentSkew
         } else {
             logger.info { "client clock ($clientTime) is not skewed from the server ($serverTime)" }
         }
