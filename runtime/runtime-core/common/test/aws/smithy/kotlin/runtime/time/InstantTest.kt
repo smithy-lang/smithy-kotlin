@@ -7,6 +7,10 @@ package aws.smithy.kotlin.runtime.time
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.days
+import kotlin.time.Duration.Companion.hours
+import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.nanoseconds
 import kotlin.time.Duration.Companion.seconds
 
@@ -255,6 +259,28 @@ class InstantTest {
             val parsed = Instant.fromIso8601(test.first)
             val actual = parsed.format(TimestampFormat.ISO_8601)
             assertEquals(test.second, actual, "test[$idx]: failed to format offset timestamp in UTC")
+        }
+    }
+
+    @Test
+    fun testUntil() {
+        val untilTests = mapOf(
+            ("2013-01-01T00:00:00+00:00" to "2014-01-01T00:00:00+00:00") to 365.days,
+            ("2020-01-01T00:00:00+00:00" to "2021-01-01T00:00:00+00:00") to 366.days, // leap year!
+            ("2023-10-06T00:00:00+00:00" to "2023-10-06T00:00:00+00:00") to Duration.ZERO,
+            ("2023-10-06T00:00:00+00:00" to "2023-10-07T00:00:00+00:00") to 1.days,
+            ("2023-10-06T00:00:00+00:00" to "2023-10-06T01:00:00+00:00") to 1.hours,
+            ("2023-10-06T00:00:00+00:00" to "2023-10-06T00:01:00+00:00") to 1.minutes,
+            ("2023-10-06T00:00:00+00:00" to "2023-10-06T00:00:01+00:00") to 1.seconds,
+            ("2023-10-06T00:00:00+00:00" to "2023-10-06T12:12:12+00:00") to 12.hours + 12.minutes + 12.seconds,
+        )
+
+        for ((times, expectedDuration) in untilTests) {
+            val start = Instant.fromIso8601(times.first)
+            val end = Instant.fromIso8601(times.second)
+
+            assertEquals(expectedDuration, start.until(end))
+            assertEquals(end.until(start), Duration.ZERO - expectedDuration)
         }
     }
 }
