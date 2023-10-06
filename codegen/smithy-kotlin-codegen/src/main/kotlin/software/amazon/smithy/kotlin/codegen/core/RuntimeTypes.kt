@@ -336,13 +336,6 @@ object RuntimeTypes {
         }
     }
 
-    object Kotlin {
-        object Time {
-            val Duration = "kotlin.time.Duration".toSymbol()
-            val nanoseconds = "kotlin.time.Duration.Companion.nanoseconds".toSymbol()
-        }
-    }
-
     object KotlinCoroutines {
         val coroutineContext = "kotlin.coroutines.coroutineContext".toSymbol()
     }
