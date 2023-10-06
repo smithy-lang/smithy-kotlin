@@ -10,9 +10,9 @@ import aws.smithy.kotlin.runtime.http.interceptors.ClockSkewInterceptor.Companio
 import aws.smithy.kotlin.runtime.http.interceptors.ClockSkewInterceptor.Companion.getSkew
 import aws.smithy.kotlin.runtime.http.interceptors.ClockSkewInterceptor.Companion.isSkewed
 import aws.smithy.kotlin.runtime.http.operation.HttpOperationContext
-import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
 import aws.smithy.kotlin.runtime.http.operation.newTestOperation
 import aws.smithy.kotlin.runtime.http.operation.roundTrip
+import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
 import aws.smithy.kotlin.runtime.http.response.HttpResponse
 import aws.smithy.kotlin.runtime.httptest.TestEngine
 import aws.smithy.kotlin.runtime.io.SdkSource
@@ -69,9 +69,12 @@ class ClockSkewInterceptorTest {
         val clientTimeString = "20231006T131604Z"
         val clientTime = Instant.fromIso8601(clientTimeString)
 
-        val client = getMockClient("bla".encodeToByteArray(), Headers {
-            append("Date", serverTimeString)
-        })
+        val client = getMockClient(
+            "bla".encodeToByteArray(),
+            Headers {
+                append("Date", serverTimeString)
+            },
+        )
 
         val req = HttpRequestBuilder().apply {
             body = ByteArrayContent("<Foo>bar</Foo>".encodeToByteArray())
@@ -93,9 +96,12 @@ class ClockSkewInterceptorTest {
         val serverTimeString = "Wed, 06 Oct 2023 13:16:04 -0000"
         val clientTimeString = "20231006T131604Z"
 
-        val client = getMockClient("bla".encodeToByteArray(), Headers {
-            append("Date", serverTimeString)
-        })
+        val client = getMockClient(
+            "bla".encodeToByteArray(),
+            Headers {
+                append("Date", serverTimeString)
+            },
+        )
 
         val req = HttpRequestBuilder().apply {
             body = ByteArrayContent("<Foo>bar</Foo>".encodeToByteArray())

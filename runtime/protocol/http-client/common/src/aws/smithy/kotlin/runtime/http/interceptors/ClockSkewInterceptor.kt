@@ -47,7 +47,7 @@ public class ClockSkewInterceptor : HttpInterceptor {
         val logger = coroutineContext.logger<ClockSkewInterceptor>()
 
         if (currentSkew != Duration.ZERO) {
-            logger.info { "applying clock skew $currentSkew to client"}
+            logger.info { "applying clock skew $currentSkew to client" }
             context.executionContext[HttpOperationContext.ClockSkew] = currentSkew
         }
 
