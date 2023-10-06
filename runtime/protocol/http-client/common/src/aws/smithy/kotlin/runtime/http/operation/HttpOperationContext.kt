@@ -9,6 +9,7 @@ import aws.smithy.kotlin.runtime.InternalApi
 import aws.smithy.kotlin.runtime.http.HttpCall
 import aws.smithy.kotlin.runtime.operation.ExecutionContext
 import aws.smithy.kotlin.runtime.util.*
+import kotlin.time.Duration
 
 /**
  * Common configuration for an SDK (HTTP) operation/call
@@ -50,6 +51,11 @@ public object HttpOperationContext {
      * Cached attribute level attributes (e.g. rpc.method, rpc.service, etc)
      */
     public val OperationAttributes: AttributeKey<Attributes> = AttributeKey("aws.smithy.kotlin#OperationAttributes")
+
+    /**
+     * The clock skew duration to apply to any time-based calculations in the operation (e.g. signing)
+     */
+    public val ClockSkew: AttributeKey<Duration> = AttributeKey("aws.smithy.kotlin#ClockSkew")
 }
 
 internal val ExecutionContext.operationMetrics: OperationMetrics

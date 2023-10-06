@@ -88,6 +88,7 @@ object RuntimeTypes {
             val FlexibleChecksumsRequestInterceptor = symbol("FlexibleChecksumsRequestInterceptor")
             val FlexibleChecksumsResponseInterceptor = symbol("FlexibleChecksumsResponseInterceptor")
             val ResponseLengthValidationInterceptor = symbol("ResponseLengthValidationInterceptor")
+            val ClockSkewInterceptor = symbol("ClockSkewInterceptor")
         }
     }
 
@@ -332,6 +333,13 @@ object RuntimeTypes {
         }
         object TelemetryDefaults : RuntimeTypePackage(KotlinDependency.TELEMETRY_DEFAULTS) {
             val Global = symbol("Global")
+        }
+    }
+
+    object Kotlin {
+        object Time {
+            val Duration = "kotlin.time.Duration".toSymbol()
+            val nanoseconds = "kotlin.time.Duration.Companion.nanoseconds".toSymbol()
         }
     }
 

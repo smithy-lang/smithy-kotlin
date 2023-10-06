@@ -8,11 +8,13 @@ public class aws/smithy/kotlin/runtime/ClientException : aws/smithy/kotlin/runti
 public class aws/smithy/kotlin/runtime/ErrorMetadata {
 	public static final field Companion Laws/smithy/kotlin/runtime/ErrorMetadata$Companion;
 	public fun <init> ()V
+	public final fun isClockSkewError ()Z
 	public final fun isRetryable ()Z
 	public final fun isThrottling ()Z
 }
 
 public final class aws/smithy/kotlin/runtime/ErrorMetadata$Companion {
+	public final fun getClockSkewError ()Laws/smithy/kotlin/runtime/util/AttributeKey;
 	public final fun getRetryable ()Laws/smithy/kotlin/runtime/util/AttributeKey;
 	public final fun getThrottlingError ()Laws/smithy/kotlin/runtime/util/AttributeKey;
 }
@@ -1193,6 +1195,7 @@ public final class aws/smithy/kotlin/runtime/retries/policy/RetryDirective$Termi
 public final class aws/smithy/kotlin/runtime/retries/policy/RetryErrorType : java/lang/Enum {
 	public static final field ClientSide Laws/smithy/kotlin/runtime/retries/policy/RetryErrorType;
 	public static final field ServerSide Laws/smithy/kotlin/runtime/retries/policy/RetryErrorType;
+	public static final field Skew Laws/smithy/kotlin/runtime/retries/policy/RetryErrorType;
 	public static final field Throttling Laws/smithy/kotlin/runtime/retries/policy/RetryErrorType;
 	public static final field Transient Laws/smithy/kotlin/runtime/retries/policy/RetryErrorType;
 	public static fun valueOf (Ljava/lang/String;)Laws/smithy/kotlin/runtime/retries/policy/RetryErrorType;
@@ -1245,6 +1248,7 @@ public final class aws/smithy/kotlin/runtime/time/Instant : java/lang/Comparable
 	public final fun minus-LRDsOJo (J)Laws/smithy/kotlin/runtime/time/Instant;
 	public final fun plus-LRDsOJo (J)Laws/smithy/kotlin/runtime/time/Instant;
 	public fun toString ()Ljava/lang/String;
+	public final fun until-5sfh64U (Laws/smithy/kotlin/runtime/time/Instant;)J
 }
 
 public final class aws/smithy/kotlin/runtime/time/Instant$Companion {
