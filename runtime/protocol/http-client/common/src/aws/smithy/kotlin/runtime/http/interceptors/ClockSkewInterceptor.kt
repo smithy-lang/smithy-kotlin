@@ -16,6 +16,9 @@ import kotlin.coroutines.coroutineContext
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.minutes
 
+/**
+ * An interceptor used to detect clock skew (difference between client and server clocks) and apply a correction.
+ */
 public class ClockSkewInterceptor : HttpInterceptor {
     public companion object {
         /**
