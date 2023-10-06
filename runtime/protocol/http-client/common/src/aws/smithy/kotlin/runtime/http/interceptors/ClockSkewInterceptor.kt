@@ -37,7 +37,7 @@ public class ClockSkewInterceptor : HttpInterceptor {
          * Determine whether the client's clock is skewed relative to the server.
          * @param serverTime the server's time
          */
-        public fun Instant.isSkewed(serverTime: Instant): Boolean = getSkew(serverTime).absoluteValue >= CLOCK_SKEW_THRESHOLD
+        internal fun Instant.isSkewed(serverTime: Instant): Boolean = getSkew(serverTime).absoluteValue >= CLOCK_SKEW_THRESHOLD
     }
 
     // Clock skew to be applied to all requests
@@ -50,7 +50,7 @@ public class ClockSkewInterceptor : HttpInterceptor {
         val logger = coroutineContext.logger<ClockSkewInterceptor>()
 
         if (currentSkew != Duration.ZERO) {
-            logger.info { "applying clock skew $currentSkew to client" }
+            logger.debug { "applying clock skew $currentSkew to client" }
             context.executionContext[HttpOperationContext.ClockSkew] = currentSkew
         }
 
@@ -63,13 +63,6 @@ public class ClockSkewInterceptor : HttpInterceptor {
     public override suspend fun modifyBeforeDeserialization(context: ProtocolResponseInterceptorContext<Any, HttpRequest, HttpResponse>): HttpResponse {
         val logger = coroutineContext.logger<ClockSkewInterceptor>()
 
-        val clientTime = context.protocolRequest.headers["x-amz-date"]?.let {
-            Instant.fromIso8601(it)
-        } ?: run {
-            logger.info { "client did not send \"x-amz-date\" header, skipping skew calculation" }
-            return context.protocolResponse
-        }
-
         val serverTime = context.protocolResponse.header("Date")?.let {
             Instant.fromRfc5322(it)
         } ?: run {
@@ -77,12 +70,18 @@ public class ClockSkewInterceptor : HttpInterceptor {
             return context.protocolResponse
         }
 
+        val clientTime = context.protocolRequest.headers["Date"]?.let {
+            Instant.fromRfc5322(it)
+        } ?: context.protocolRequest.headers["x-amz-date"]?.let {
+            Instant.fromIso8601(it)
+        } ?: Instant.now()
+
         if (clientTime.isSkewed(serverTime)) {
             currentSkew = clientTime.getSkew(serverTime)
             logger.warn { "client clock is skewed $currentSkew, applying correction" }
             context.executionContext[HttpOperationContext.ClockSkew] = currentSkew
         } else {
-            logger.info { "client clock ($clientTime) is not skewed from the server ($serverTime)" }
+            logger.debug { "client clock ($clientTime) is not skewed from the server ($serverTime)" }
         }
 
         return context.protocolResponse
