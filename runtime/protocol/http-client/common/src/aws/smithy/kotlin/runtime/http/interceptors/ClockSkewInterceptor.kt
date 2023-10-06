@@ -1,3 +1,7 @@
+/*
+ * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * SPDX-License-Identifier: Apache-2.0
+ */
 package aws.smithy.kotlin.runtime.http.interceptors
 
 import aws.smithy.kotlin.runtime.client.ProtocolResponseInterceptorContext
@@ -58,7 +62,7 @@ public class ClockSkewInterceptor : HttpInterceptor {
             logger.warn { "client clock is skewed $skew, applying correction" }
             context.executionContext[HttpOperationContext.ClockSkew] = skew
         } else {
-            logger.info { "client clock ($clientTime) is not skewed from the server ($serverTime)"}
+            logger.info { "client clock ($clientTime) is not skewed from the server ($serverTime)" }
         }
 
         return context.protocolResponse
