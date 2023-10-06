@@ -195,8 +195,6 @@ public final class aws/smithy/kotlin/runtime/http/interceptors/ClockSkewIntercep
 
 public final class aws/smithy/kotlin/runtime/http/interceptors/ClockSkewInterceptor$Companion {
 	public final fun getCLOCK_SKEW_THRESHOLD-UwyO8pc ()J
-	public final fun getSkew-3nIYWDw (Laws/smithy/kotlin/runtime/time/Instant;Laws/smithy/kotlin/runtime/time/Instant;)J
-	public final fun isSkewed (Laws/smithy/kotlin/runtime/time/Instant;Laws/smithy/kotlin/runtime/time/Instant;)Z
 }
 
 public final class aws/smithy/kotlin/runtime/http/middleware/HttpResponseException : aws/smithy/kotlin/runtime/SdkBaseException {
