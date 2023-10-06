@@ -29,6 +29,7 @@ class ClockSkewInterceptorTest {
     fun testNotSkewed() {
         val clientTime = Instant.fromRfc5322("Wed, 6 Oct 2023 16:20:50 -0400")
         val serverTime = Instant.fromRfc5322("Wed, 6 Oct 2023 16:20:50 -0400")
+        assertEquals(clientTime, serverTime)
         assertFalse(clientTime.isSkewed(serverTime))
     }
 
@@ -56,7 +57,7 @@ class ClockSkewInterceptorTest {
         assertTrue(clientTime.isSkewed(serverTime))
         assertEquals(CLOCK_SKEW_THRESHOLD, clientTime.getSkew(serverTime))
 
-        // narrow the skew by one second, crossing the threshold
+        // shrink the skew by one second, crossing the threshold
         clientTime += 1.seconds
         assertFalse(clientTime.isSkewed(serverTime))
     }
@@ -95,6 +96,7 @@ class ClockSkewInterceptorTest {
     fun testClockSkewNotApplied() = runTest {
         val serverTimeString = "Wed, 06 Oct 2023 13:16:04 -0000"
         val clientTimeString = "20231006T131604Z"
+        assertEquals(Instant.fromRfc5322(serverTimeString), Instant.fromIso8601(clientTimeString))
 
         val client = getMockClient(
             "bla".encodeToByteArray(),
