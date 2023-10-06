@@ -7,7 +7,6 @@ package aws.smithy.kotlin.runtime.awsprotocol.json
 import aws.smithy.kotlin.runtime.InternalApi
 import aws.smithy.kotlin.runtime.client.SdkClientOption
 import aws.smithy.kotlin.runtime.http.*
-import aws.smithy.kotlin.runtime.http.content.ByteArrayContent
 import aws.smithy.kotlin.runtime.http.operation.ModifyRequestMiddleware
 import aws.smithy.kotlin.runtime.http.operation.SdkHttpRequest
 import aws.smithy.kotlin.runtime.util.get
@@ -47,7 +46,7 @@ public class AwsJsonProtocol(
             // Empty body is required by AWS JSON 1.x protocols
             // https://awslabs.github.io/smithy/1.0/spec/aws/aws-json-1_0-protocol.html#empty-body-serialization
             // https://awslabs.github.io/smithy/1.0/spec/aws/aws-json-1_1-protocol.html#empty-body-serialization
-            req.subject.body = ByteArrayContent("{}".encodeToByteArray())
+            req.subject.body = HttpBody.fromBytes("{}".encodeToByteArray())
         }
         return req
     }

@@ -9,7 +9,6 @@ import aws.smithy.kotlin.runtime.InternalApi
 import aws.smithy.kotlin.runtime.http.Headers
 import aws.smithy.kotlin.runtime.http.HttpBody
 import aws.smithy.kotlin.runtime.http.HttpCall
-import aws.smithy.kotlin.runtime.http.content.ByteArrayContent
 import aws.smithy.kotlin.runtime.http.engine.HttpClientEngine
 import aws.smithy.kotlin.runtime.http.readAll
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
@@ -39,7 +38,7 @@ public class RecordingEngine(private val wrapped: HttpClientEngine) : HttpClient
         is HttpBody.Empty -> HttpBody.Empty
         else -> {
             val bytes = body.readAll() ?: error("failed to copy $name body")
-            ByteArrayContent(bytes)
+            HttpBody.fromBytes(bytes)
         }
     }
 

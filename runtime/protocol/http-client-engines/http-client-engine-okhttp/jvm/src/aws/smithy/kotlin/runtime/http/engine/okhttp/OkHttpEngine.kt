@@ -5,12 +5,12 @@
 
 package aws.smithy.kotlin.runtime.http.engine.okhttp
 
-import aws.smithy.kotlin.runtime.config.TlsVersion
 import aws.smithy.kotlin.runtime.http.HttpCall
 import aws.smithy.kotlin.runtime.http.config.EngineFactory
 import aws.smithy.kotlin.runtime.http.engine.*
 import aws.smithy.kotlin.runtime.http.engine.internal.HttpClientMetrics
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
+import aws.smithy.kotlin.runtime.net.TlsVersion
 import aws.smithy.kotlin.runtime.operation.ExecutionContext
 import aws.smithy.kotlin.runtime.time.Instant
 import aws.smithy.kotlin.runtime.time.fromEpochMilliseconds
@@ -18,7 +18,7 @@ import kotlinx.coroutines.job
 import okhttp3.*
 import java.util.concurrent.TimeUnit
 import kotlin.time.toJavaDuration
-import aws.smithy.kotlin.runtime.config.TlsVersion as SdkTlsVersion
+import aws.smithy.kotlin.runtime.net.TlsVersion as SdkTlsVersion
 import okhttp3.TlsVersion as OkHttpTlsVersion
 
 /**

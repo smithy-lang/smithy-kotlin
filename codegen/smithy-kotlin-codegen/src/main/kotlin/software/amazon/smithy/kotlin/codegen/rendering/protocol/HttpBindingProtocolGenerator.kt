@@ -155,7 +155,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         val serializerSymbol = buildSymbol {
             definitionFile = "${op.serializerName()}.kt"
             name = op.serializerName()
-            namespace = "${ctx.settings.pkg.name}.transform"
+            namespace = ctx.settings.pkg.serde
 
             reference(inputSymbol, SymbolReference.ContextOption.DECLARE)
         }
@@ -163,7 +163,6 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             RuntimeTypes.Http.HttpBody,
             RuntimeTypes.Http.HttpMethod,
             RuntimeTypes.HttpClient.Operation.HttpSerialize,
-            RuntimeTypes.Http.ByteArrayContent,
             RuntimeTypes.Http.Request.HttpRequestBuilder,
             RuntimeTypes.Http.Request.url,
         )
@@ -265,7 +264,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             val sdg = structuredDataSerializer(ctx)
             val opBodySerializerFn = sdg.operationSerializer(ctx, op, documentMembers)
             writer.write("val payload = #T(context, input)", opBodySerializerFn)
-            writer.write("builder.body = #T(payload)", RuntimeTypes.Http.ByteArrayContent)
+            writer.write("builder.body = #T.fromBytes(payload)", RuntimeTypes.Http.HttpBody)
         }
 
         resolver.determineRequestContentType(op)?.let { contentType ->
@@ -428,7 +427,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                 if (isBinaryStream) {
                     writer.write("builder.body = input.#L.#T() ?: #T.Empty", memberName, RuntimeTypes.Http.toHttpBody, RuntimeTypes.Http.HttpBody)
                 } else {
-                    writer.write("builder.body = #T(input.#L)", RuntimeTypes.Http.ByteArrayContent, memberName)
+                    writer.write("builder.body = #T.fromBytes(input.#L)", RuntimeTypes.Http.HttpBody, memberName)
                 }
             }
 
@@ -438,20 +437,20 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                 } else {
                     memberName
                 }
-                writer.write("builder.body = #T(input.#L.#T())", RuntimeTypes.Http.ByteArrayContent, contents, KotlinTypes.Text.encodeToByteArray)
+                writer.write("builder.body = #T.fromBytes(input.#L.#T())", RuntimeTypes.Http.HttpBody, contents, KotlinTypes.Text.encodeToByteArray)
             }
 
             ShapeType.ENUM ->
                 writer.write(
-                    "builder.body = #T(input.#L.value.#T())",
-                    RuntimeTypes.Http.ByteArrayContent,
+                    "builder.body = #T.fromBytes(input.#L.value.#T())",
+                    RuntimeTypes.Http.HttpBody,
                     memberName,
                     KotlinTypes.Text.encodeToByteArray,
                 )
             ShapeType.INT_ENUM ->
                 writer.write(
-                    "builder.body = #T(input.#L.value.toString().#T())",
-                    RuntimeTypes.Http.ByteArrayContent,
+                    "builder.body = #T.fromBytes(input.#L.value.toString().#T())",
+                    RuntimeTypes.Http.HttpBody,
                     memberName,
                     KotlinTypes.Text.encodeToByteArray,
                 )
@@ -460,7 +459,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                 val sdg = structuredDataSerializer(ctx)
                 val payloadSerializerFn = sdg.payloadSerializer(ctx, binding.member)
                 writer.write("val payload = #T(input.#L)", payloadSerializerFn, memberName)
-                writer.write("builder.body = #T(payload)", RuntimeTypes.Http.ByteArrayContent)
+                writer.write("builder.body = #T.fromBytes(payload)", RuntimeTypes.Http.HttpBody)
             }
 
             else ->
@@ -487,7 +486,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             val definitionFileName = op.deserializerName().replaceFirstChar(Char::uppercaseChar)
             definitionFile = "$definitionFileName.kt"
             name = op.deserializerName()
-            namespace = ctx.settings.pkg.subpackage("transform")
+            namespace = ctx.settings.pkg.serde
 
             reference(outputSymbol, SymbolReference.ContextOption.DECLARE)
         }
@@ -542,7 +541,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             val deserializerName = "${outputSymbol.name}Deserializer"
             definitionFile = "$deserializerName.kt"
             name = deserializerName
-            namespace = ctx.settings.pkg.subpackage("transform")
+            namespace = ctx.settings.pkg.serde
             reference(outputSymbol, SymbolReference.ContextOption.DECLARE)
         }
 
@@ -996,7 +995,7 @@ fun OperationShape.errorHandlerName(): String = "throw${capitalizedDefaultName()
  */
 fun OperationShape.errorHandler(settings: KotlinSettings, block: SymbolRenderer): Symbol = buildSymbol {
     name = errorHandlerName()
-    namespace = "${settings.pkg.name}.transform"
+    namespace = settings.pkg.serde
     // place error handler in same file as operation deserializer
     definitionFile = "${deserializerName()}.kt"
     renderBy = block

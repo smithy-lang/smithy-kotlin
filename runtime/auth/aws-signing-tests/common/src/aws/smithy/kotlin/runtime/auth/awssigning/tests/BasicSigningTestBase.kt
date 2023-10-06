@@ -6,8 +6,8 @@ package aws.smithy.kotlin.runtime.auth.awssigning.tests
 
 import aws.smithy.kotlin.runtime.auth.awscredentials.Credentials
 import aws.smithy.kotlin.runtime.auth.awssigning.*
+import aws.smithy.kotlin.runtime.http.HttpBody
 import aws.smithy.kotlin.runtime.http.HttpMethod
-import aws.smithy.kotlin.runtime.http.content.ByteArrayContent
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
 import aws.smithy.kotlin.runtime.http.request.headers
@@ -66,7 +66,7 @@ public abstract class BasicSigningTestBase : HasSigner {
             headers.append("Host", "demo.us-east-1.amazonaws.com")
             headers.appendAll("x-amz-archive-description", listOf("test", "test"))
             val requestBody = "{\"TableName\": \"foo\"}"
-            body = ByteArrayContent(requestBody.encodeToByteArray())
+            body = HttpBody.fromBytes(requestBody.encodeToByteArray())
             headers.append("Content-Length", body.contentLength?.toString() ?: "0")
         }.build()
 
@@ -94,7 +94,7 @@ public abstract class BasicSigningTestBase : HasSigner {
             headers.append("Host", "demo.us-east-1.amazonaws.com")
             headers.appendAll("x-amz-archive-description", listOf("test", "test"))
             val requestBody = "{\"TableName\": \"foo\"}"
-            body = ByteArrayContent(requestBody.encodeToByteArray())
+            body = HttpBody.fromBytes(requestBody.encodeToByteArray())
             headers.append("Content-Length", body.contentLength?.toString() ?: "0")
         }.build()
 
@@ -198,7 +198,7 @@ public abstract class BasicSigningTestBase : HasSigner {
             url.path = "/"
             headers.append("Host", "test.amazonaws.com")
             headers.appendAll("x-amz-archive-description", listOf("test", "test"))
-            body = ByteArrayContent("body".encodeToByteArray())
+            body = HttpBody.fromBytes("body".encodeToByteArray())
             headers.append("Content-Length", body.contentLength?.toString() ?: "0")
         }
 

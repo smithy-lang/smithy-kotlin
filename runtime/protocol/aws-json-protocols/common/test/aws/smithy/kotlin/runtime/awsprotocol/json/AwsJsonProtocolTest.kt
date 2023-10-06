@@ -6,7 +6,6 @@
 package aws.smithy.kotlin.runtime.awsprotocol.json
 
 import aws.smithy.kotlin.runtime.http.*
-import aws.smithy.kotlin.runtime.http.content.ByteArrayContent
 import aws.smithy.kotlin.runtime.http.operation.*
 import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
 import aws.smithy.kotlin.runtime.http.response.HttpResponse
@@ -65,7 +64,7 @@ class AwsJsonProtocolTest {
                 override suspend fun serialize(context: ExecutionContext, input: Unit): HttpRequestBuilder =
                     HttpRequestBuilder().apply {
                         headers["Content-Type"] = "application/xml"
-                        body = ByteArrayContent("foo".encodeToByteArray())
+                        body = HttpBody.fromBytes("foo".encodeToByteArray())
                     }
             }
             deserializer = IdentityDeserializer

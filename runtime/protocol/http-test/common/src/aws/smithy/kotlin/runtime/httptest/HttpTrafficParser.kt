@@ -6,7 +6,6 @@
 package aws.smithy.kotlin.runtime.httptest
 
 import aws.smithy.kotlin.runtime.http.*
-import aws.smithy.kotlin.runtime.http.content.ByteArrayContent
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
 import aws.smithy.kotlin.runtime.http.request.url
@@ -102,7 +101,10 @@ private fun convertHeaders(headers: JsonObject): Headers {
     return builder.build()
 }
 
-private fun convertBody(body: String, bodyContentType: BodyContentType): HttpBody = when (bodyContentType) {
-    BodyContentType.UTF_8 -> ByteArrayContent(body.encodeToByteArray())
-    BodyContentType.BINARY -> ByteArrayContent(body.decodeBase64Bytes())
+private fun convertBody(body: String, bodyContentType: BodyContentType): HttpBody {
+    val payload = when (bodyContentType) {
+        BodyContentType.UTF_8 -> body.encodeToByteArray()
+        BodyContentType.BINARY -> body.decodeBase64Bytes()
+    }
+    return HttpBody.fromBytes(payload)
 }

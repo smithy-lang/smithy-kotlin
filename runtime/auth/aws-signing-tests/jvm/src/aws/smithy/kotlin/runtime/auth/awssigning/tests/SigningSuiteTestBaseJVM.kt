@@ -11,7 +11,6 @@ import aws.smithy.kotlin.runtime.auth.awssigning.*
 import aws.smithy.kotlin.runtime.http.*
 import aws.smithy.kotlin.runtime.http.auth.AwsHttpSigner
 import aws.smithy.kotlin.runtime.http.auth.SigV4AuthScheme
-import aws.smithy.kotlin.runtime.http.content.ByteArrayContent
 import aws.smithy.kotlin.runtime.http.operation.*
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
@@ -393,7 +392,7 @@ public actual abstract class SigningSuiteTestBase : HasSigner {
 
         if (hasBody) {
             val bytes = runBlocking { chan.readRemaining().readBytes() }
-            builder.body = ByteArrayContent(bytes)
+            builder.body = HttpBody.fromBytes(bytes)
         }
 
         return builder

@@ -4,8 +4,8 @@
  */
 package aws.smithy.kotlin.runtime.smithy.test
 
+import aws.smithy.kotlin.runtime.http.HttpBody
 import aws.smithy.kotlin.runtime.http.HttpMethod
-import aws.smithy.kotlin.runtime.http.content.ByteArrayContent
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.http.request.headers
 import aws.smithy.kotlin.runtime.net.Host
@@ -300,7 +300,7 @@ class HttpRequestTestBuilderTest {
                 operation { mockEngine ->
                     // no actual body should not make it to our assertEquals but it should still fail (invalid test setup)
                     val request = HttpRequest {
-                        body = ByteArrayContent("do not pass go".encodeToByteArray())
+                        body = HttpBody.fromBytes("do not pass go".encodeToByteArray())
                     }
                     mockEngine.roundTrip(execContext, request)
                 }
