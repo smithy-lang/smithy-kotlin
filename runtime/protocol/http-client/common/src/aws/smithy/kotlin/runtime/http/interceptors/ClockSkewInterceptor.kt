@@ -15,6 +15,7 @@ import aws.smithy.kotlin.runtime.time.Instant
 import kotlin.coroutines.coroutineContext
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.minutes
+import kotlinx.atomicfu.*
 
 /**
  * An interceptor used to detect clock skew (difference between client and server clocks) and apply a correction.
@@ -41,7 +42,10 @@ public class ClockSkewInterceptor : HttpInterceptor {
     }
 
     // Clock skew to be applied to all requests
-    private var currentSkew: Duration = Duration.ZERO
+    private var _currentSkew: AtomicRef<Duration> = atomic(Duration.ZERO)
+
+    private val currentSkew: Duration
+        get() = _currentSkew.value
 
     /**
      * Apply the previously-computed skew, if it's set, to the execution context before signing
@@ -49,9 +53,10 @@ public class ClockSkewInterceptor : HttpInterceptor {
     public override suspend fun modifyBeforeSigning(context: ProtocolRequestInterceptorContext<Any, HttpRequest>): HttpRequest {
         val logger = coroutineContext.logger<ClockSkewInterceptor>()
 
-        if (currentSkew != Duration.ZERO) {
-            logger.debug { "applying clock skew $currentSkew to client" }
-            context.executionContext[HttpOperationContext.ClockSkew] = currentSkew
+        val skew = currentSkew
+        if (skew != Duration.ZERO) {
+            logger.debug { "applying clock skew $skew to client" }
+            context.executionContext[HttpOperationContext.ClockSkew] = skew
         }
 
         return context.protocolRequest
@@ -77,9 +82,10 @@ public class ClockSkewInterceptor : HttpInterceptor {
         } ?: Instant.now()
 
         if (clientTime.isSkewed(serverTime)) {
-            currentSkew = clientTime.getSkew(serverTime)
-            logger.warn { "client clock is skewed $currentSkew, applying correction" }
-            context.executionContext[HttpOperationContext.ClockSkew] = currentSkew
+            val skew = clientTime.getSkew(serverTime)
+            logger.warn { "client clock is skewed $skew, applying correction" }
+            _currentSkew.getAndSet(skew)
+            context.executionContext[HttpOperationContext.ClockSkew] = skew
         } else {
             logger.debug { "client clock ($clientTime) is not skewed from the server ($serverTime)" }
         }
