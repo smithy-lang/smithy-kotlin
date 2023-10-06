@@ -27,17 +27,13 @@ public class ClockSkewInterceptor : HttpInterceptor {
          * It may be negative if the serverTime is in the future.
          * @param serverTime the server's time
          */
-        public fun Instant.getSkew(serverTime: Instant): Duration {
-            return this.until(serverTime)
-        }
+        public fun Instant.getSkew(serverTime: Instant): Duration =this.until(serverTime)
 
         /**
          * Determine whether the client's clock is skewed relative to the server.
          * @param serverTime the server's time
          */
-        public fun Instant.isSkewed(serverTime: Instant): Boolean {
-            return getSkew(serverTime).absoluteValue >= CLOCK_SKEW_THRESHOLD
-        }
+        public fun Instant.isSkewed(serverTime: Instant): Boolean = getSkew(serverTime).absoluteValue >= CLOCK_SKEW_THRESHOLD
     }
 
     public override suspend fun modifyBeforeDeserialization(context: ProtocolResponseInterceptorContext<Any, HttpRequest, HttpResponse>): HttpResponse {
