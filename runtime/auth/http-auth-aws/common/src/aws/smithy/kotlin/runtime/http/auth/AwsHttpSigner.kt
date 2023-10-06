@@ -12,6 +12,7 @@ import aws.smithy.kotlin.runtime.auth.awssigning.internal.setAwsChunkedBody
 import aws.smithy.kotlin.runtime.auth.awssigning.internal.setAwsChunkedHeaders
 import aws.smithy.kotlin.runtime.auth.awssigning.internal.useAwsChunkedEncoding
 import aws.smithy.kotlin.runtime.http.HttpBody
+import aws.smithy.kotlin.runtime.http.operation.HttpOperationContext
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
 import aws.smithy.kotlin.runtime.util.get
@@ -118,7 +119,7 @@ public class AwsHttpSigner(private val config: Config) : HttpSigner {
         val contextSignedBodyHeader = attributes.getOrNull(AwsSigningAttributes.SignedBodyHeader)
 
         // operation signing config is baseConfig + operation specific config/overrides
-        val signingConfig = AwsSigningConfig {
+        var signingConfig = AwsSigningConfig {
             region = attributes[AwsSigningAttributes.SigningRegion]
             service = attributes.getOrNull(AwsSigningAttributes.SigningService) ?: checkNotNull(config.service)
             credentials = signingRequest.identity as Credentials
@@ -151,6 +152,15 @@ public class AwsHttpSigner(private val config: Config) : HttpSigner {
                 // use the payload to compute the hash
                 else -> HashSpecification.CalculateFromPayload
             }
+        }
+
+        // Apply clock skew if necessary
+        signingConfig = if (attributes.contains(HttpOperationContext.ClockSkew)) {
+            val builder = signingConfig.toBuilder()
+            builder.signingDate = builder.signingDate?.plus(attributes[HttpOperationContext.ClockSkew])
+            builder.build()
+        } else {
+            signingConfig
         }
 
         if (signingConfig.useAwsChunkedEncoding) {
