@@ -8,13 +8,11 @@ public class aws/smithy/kotlin/runtime/ClientException : aws/smithy/kotlin/runti
 public class aws/smithy/kotlin/runtime/ErrorMetadata {
 	public static final field Companion Laws/smithy/kotlin/runtime/ErrorMetadata$Companion;
 	public fun <init> ()V
-	public final fun isClockSkewError ()Z
 	public final fun isRetryable ()Z
 	public final fun isThrottling ()Z
 }
 
 public final class aws/smithy/kotlin/runtime/ErrorMetadata$Companion {
-	public final fun getClockSkewError ()Laws/smithy/kotlin/runtime/util/AttributeKey;
 	public final fun getRetryable ()Laws/smithy/kotlin/runtime/util/AttributeKey;
 	public final fun getThrottlingError ()Laws/smithy/kotlin/runtime/util/AttributeKey;
 }
