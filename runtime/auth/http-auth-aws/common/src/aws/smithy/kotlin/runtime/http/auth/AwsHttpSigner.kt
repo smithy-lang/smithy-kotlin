@@ -127,8 +127,9 @@ public class AwsHttpSigner(private val config: Config) : HttpSigner {
             algorithm = config.algorithm
 
             // apply clock skew if applicable
-            signingDate = (attributes.getOrNull(AwsSigningAttributes.SigningDate) ?: Instant.now()) +
-                (attributes.getOrNull(HttpOperationContext.ClockSkew) ?: Duration.ZERO)
+            signingDate = attributes.getOrNull(AwsSigningAttributes.SigningDate)
+                ?: (Instant.now() + (attributes.getOrNull(HttpOperationContext.ClockSkew) ?: Duration.ZERO))
+
 
             signatureType = config.signatureType
             omitSessionToken = config.omitSessionToken
