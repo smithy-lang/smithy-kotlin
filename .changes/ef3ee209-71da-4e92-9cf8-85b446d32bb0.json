@@ -1,5 +1,0 @@
-{
-    "id": "ef3ee209-71da-4e92-9cf8-85b446d32bb0",
-    "type": "misc",
-    "description": "Make `ByteArrayContent` and friends `internal` and force consumers to go through companion object convenience functions."
-}
