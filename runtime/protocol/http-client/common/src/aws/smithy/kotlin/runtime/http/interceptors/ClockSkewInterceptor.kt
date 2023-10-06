@@ -42,7 +42,7 @@ public class ClockSkewInterceptor : HttpInterceptor {
     }
 
     // Clock skew to be applied to all requests
-    private var _currentSkew: AtomicRef<Duration> = atomic(Duration.ZERO)
+    private val _currentSkew: AtomicRef<Duration> = atomic(Duration.ZERO)
 
     private val currentSkew: Duration
         get() = _currentSkew.value
