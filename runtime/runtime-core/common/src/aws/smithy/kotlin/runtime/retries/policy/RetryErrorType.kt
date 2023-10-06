@@ -30,9 +30,4 @@ public enum class RetryErrorType {
      * effect on the server
      */
     Transient,
-
-    /**
-     * An error indicating that the client and server clock are skewed. A retry may be attempted after correction.
-     */
-    Skew,
 }
