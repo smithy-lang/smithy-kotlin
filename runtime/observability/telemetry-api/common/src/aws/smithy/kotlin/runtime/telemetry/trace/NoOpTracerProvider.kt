@@ -23,7 +23,7 @@ private object NoOpTracer : Tracer {
 }
 
 private object NoOpTraceSpan : TraceSpan {
-    override val name: String = "NoOpSpan"
+    override val spanContext: SpanContext = SpanContext.Invalid
     override fun emitEvent(name: String, attributes: Attributes) {}
     override fun setStatus(status: SpanStatus) {}
     override operator fun <T : Any> set(key: AttributeKey<T>, value: T) {}

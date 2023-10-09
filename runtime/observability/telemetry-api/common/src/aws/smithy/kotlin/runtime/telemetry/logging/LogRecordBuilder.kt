@@ -5,8 +5,6 @@
 
 package aws.smithy.kotlin.runtime.telemetry.logging
 
-import aws.smithy.kotlin.runtime.telemetry.context.Context
-
 /**
  * Construct a logging record that can be emitted to an underlying logger.
  */
@@ -37,12 +35,6 @@ public interface LogRecordBuilder {
      * @param value the value to associate with [key]
      */
     public fun setKeyValuePair(key: String, value: Any)
-
-    /**
-     * Set the telemetry context to associate with this log record
-     * @param context the context to associate
-     */
-    public fun setContext(context: Context)
 
     /**
      * Emit this event to the underlying logger
