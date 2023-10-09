@@ -1,0 +1,5 @@
+{
+    "id": "c063605b-4702-4d8a-a841-2e0b7aa78e78",
+    "type": "misc",
+    "description": "**BREAKING**: Remove `smithy.client.request.size`, `smithy.client.response.size`, `smithy.client.retires` metrics. Rename all `smithy.client.*` metrics to `smithy.client.call.*`."
+}
