@@ -52,9 +52,6 @@ subprojects {
                 }
             }
         }
-
-        // Due to https://youtrack.jetbrains.com/issue/KT-47039 setting jvmTarget compatibility isn't enough
-        jvmToolchain(8)
     }
 
     kotlin.sourceSets.all {
@@ -65,5 +62,11 @@ subprojects {
 
     dependencies {
         dokkaPlugin(project(":dokka-smithy"))
+    }
+
+    tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
+        kotlinOptions {
+            jvmTarget = "1.8"
+        }
     }
 }

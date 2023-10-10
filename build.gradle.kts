@@ -70,6 +70,8 @@ allprojects {
 
     if (testJavaVersion != null) {
         tasks.withType<Test> {
+            // JDK8 tests fail with out of memory sometimes, not sure why...
+            maxHeapSize = "2g"
             val toolchains = project.extensions.getByType<JavaToolchainService>()
             javaLauncher.set(
                 toolchains.launcherFor {
