@@ -8,11 +8,14 @@ package software.amazon.smithy.kotlin.codegen.core
 import software.amazon.smithy.kotlin.codegen.model.expectShape
 import software.amazon.smithy.kotlin.codegen.test.prependNamespaceAndService
 import software.amazon.smithy.kotlin.codegen.test.toSmithyModel
+import software.amazon.smithy.kotlin.codegen.utils.toCamelCase
 import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.shapes.ShapeId
+import java.io.File
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotEquals
+import kotlin.test.fail
 
 class NamingTest {
 
@@ -170,5 +173,55 @@ class NamingTest {
 
         assertNotEquals(all, firstMember)
         assertNotEquals(firstMember, secondMember)
+    }
+    @Test
+    fun testAllNames() {
+        // Set this to true to write a new test expectation file
+        val publishUpdate = false
+        val allNames = this::class.java.getResource("/all-names-test-output.txt")?.readText()!!
+        val errors = mutableListOf<String>()
+        val output = StringBuilder()
+        allNames.lines().filter { it.isNotBlank() }.forEach {
+            val split = it.split(',')
+            val input = split[0]
+            val expectation = split[1]
+            val actual = input.toCamelCase()
+            if (input.toCamelCase() != expectation) {
+                errors += "$it => $actual (expected $expectation)"
+            }
+            output.appendLine("$input,$actual")
+        }
+        if (publishUpdate) {
+            File("test-output.txt").writeText(output.toString())
+        }
+        if (errors.isNotEmpty()) {
+            fail(errors.joinToString("\n"))
+        }
+    }
+
+    @Test
+    fun testClientNames() {
+        // jq '.. | select(.sdkId?).sdkId' codegen/sdk/aws-models/*.json > /tmp/sdk-ids.txt
+        // Set this to true to write a new test expectation file
+        val publishUpdate = false
+        val allNames = this::class.java.getResource("/sdk-ids-test-output.txt")?.readText()!!
+        val errors = mutableListOf<String>()
+        val output = StringBuilder()
+        allNames.lines().filter { it.isNotBlank() }.forEach {
+            val split = it.split(',')
+            val input = split[0]
+            val expectation = split[1]
+            val actual = clientName(input)
+            if (input.toCamelCase() != expectation) {
+                errors += "$it => $actual (expected $expectation)"
+            }
+            output.appendLine("$input,$actual")
+        }
+        if (publishUpdate) {
+            File("sdk-ids-test-output.txt").writeText(output.toString())
+        }
+        if (errors.isNotEmpty()) {
+            fail(errors.joinToString("\n"))
+        }
     }
 }
