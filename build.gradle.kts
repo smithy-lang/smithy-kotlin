@@ -30,13 +30,13 @@ plugins {
 // configures (KMP) subprojects with our own KMP conventions and some default dependencies
 apply(plugin = "aws.sdk.kotlin.kmp")
 
-allprojects {
-    repositories {
-        mavenLocal()
-        mavenCentral()
-        google()
-    }
+val testJavaVersion = typedProp<String>("test.java.version")?.let {
+    JavaLanguageVersion.of(it)
+}?.also {
+    println("configuring tests to run with jdk $it")
+}
 
+allprojects {
     tasks.withType<org.jetbrains.dokka.gradle.AbstractDokkaTask>().configureEach {
         val sdkVersion: String by project
         moduleVersion.set(sdkVersion)
@@ -61,12 +61,21 @@ allprojects {
         )
         pluginsMapConfiguration.set(pluginConfigMap)
     }
-}
 
-if (project.typedProp<Boolean>("kotlinWarningsAsErrors") == true) {
-    subprojects {
+    if (rootProject.typedProp<Boolean>("kotlinWarningsAsErrors") == true) {
         tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
             kotlinOptions.allWarningsAsErrors = true
+        }
+    }
+
+    if (testJavaVersion != null) {
+        tasks.withType<Test> {
+            val toolchains = project.extensions.getByType<JavaToolchainService>()
+            javaLauncher.set(
+                toolchains.launcherFor {
+                    languageVersion.set(testJavaVersion)
+                },
+            )
         }
     }
 }
