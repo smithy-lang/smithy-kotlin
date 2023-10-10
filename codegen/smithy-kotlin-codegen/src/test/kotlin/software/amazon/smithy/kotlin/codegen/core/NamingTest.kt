@@ -119,12 +119,18 @@ class NamingTest {
             "arm64" to "Arm64",
         )
 
+        val errors = mutableListOf<String>()
         tests.forEach { (input, expected) ->
             // NOTE: a lot of these are not valid names according to the Smithy spec but since
             // we still allow deriving a name from the enum value we want to verify what _would_ happen
             // should we encounter these inputs
             val actual = input.enumVariantName()
-            assertEquals(expected, actual, "input: $input")
+            if (expected != actual) {
+                errors += "expected '$expected' != actual '$actual' for input: $input"
+            }
+        }
+        if (errors.isNotEmpty()) {
+            fail(errors.joinToString("\n"))
         }
     }
 
@@ -174,6 +180,49 @@ class NamingTest {
         assertNotEquals(all, firstMember)
         assertNotEquals(firstMember, secondMember)
     }
+
+    @Test
+    fun testCamelCase() {
+        val tests = listOf(
+            "ACLs" to "acls",
+            "ACLsUpdateStatus" to "aclsUpdateStatus",
+            "AllowedAllVPCs" to "allowedAllVpcs",
+            "BluePrimaryX" to "bluePrimaryX",
+            "CIDRs" to "cidrs",
+            "AuthTtL" to "authTtl",
+            "CNAMEPrefix" to "cnamePrefix",
+            "S3Location" to "s3Location",
+            "signatureS" to "signatureS",
+            "signatureR" to "signatureR",
+            "M3u8Settings" to "m3u8Settings",
+            "IAMUser" to "iamUser",
+            "OtaaV1_0_x" to "otaaV10X",
+            "DynamoDBv2Action" to "dynamoDbv2Action",
+            "SessionKeyEmv2000" to "sessionKeyEmv2000",
+            "SupportsClassB" to "supportsClassB",
+            "UnassignIpv6AddressesRequest" to "unassignIpv6AddressesRequest",
+            "TotalGpuMemoryInMiB" to "totalGpuMemoryInMib",
+            "WriteIOs" to "writeIos",
+            "dynamoDBv2" to "dynamoDbv2",
+            "ipv4Address" to "ipv4Address",
+            "sigv4" to "sigv4",
+            "s3key" to "s3Key",
+            "sha256sum" to "sha256Sum",
+            "Av1QvbrSettings" to "av1QvbrSettings",
+            "Av1Settings" to "av1Settings",
+            "AwsElbv2LoadBalancer" to "awsElbv2LoadBalancer",
+            "SigV4Authorization" to "sigv4Authorization",
+            "IpV6Address" to "ipv6Address",
+            "IpV6Cidr" to "ipv6Cidr",
+            "IpV4Addresses" to "ipv4Addresses",
+        )
+
+        tests.forEach { (input, expected) ->
+            val actual = input.toCamelCase()
+            assertEquals(expected, actual, "input: $input")
+        }
+    }
+
     @Test
     fun testAllNames() {
         // Set this to true to write a new test expectation file
@@ -186,7 +235,7 @@ class NamingTest {
             val input = split[0]
             val expectation = split[1]
             val actual = input.toCamelCase()
-            if (input.toCamelCase() != expectation) {
+            if (actual != expectation) {
                 errors += "$it => $actual (expected $expectation)"
             }
             output.appendLine("$input,$actual")
@@ -212,7 +261,7 @@ class NamingTest {
             val input = split[0]
             val expectation = split[1]
             val actual = clientName(input)
-            if (input.toCamelCase() != expectation) {
+            if (actual != expectation) {
                 errors += "$it => $actual (expected $expectation)"
             }
             output.appendLine("$input,$actual")
