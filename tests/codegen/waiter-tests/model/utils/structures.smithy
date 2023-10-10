@@ -155,6 +155,8 @@ map StructMap {
 structure Struct {
     primitives: EntityPrimitives,
     strings: StringList,
+    integer: Integer,
+    string: String,
     enums: EnumList,
     subStructs: SubStructList,
 }
