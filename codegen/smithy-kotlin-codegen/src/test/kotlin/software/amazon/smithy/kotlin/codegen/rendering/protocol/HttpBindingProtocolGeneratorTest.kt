@@ -554,7 +554,7 @@ internal class SmokeTestOperationDeserializer: HttpDeserialize<SmokeTestResponse
         """.prependNamespaceAndService(operations = listOf("Foo"))
             .toSmithyModel()
 
-        val contents = getTransformFileContents("FooOperationSerializer.kt", model)
+        val contents = getSerdeFileContents("FooOperationSerializer.kt", model)
 
         val label1 = "\${input.bar}"
         val label2 = "\${input.baz}"
