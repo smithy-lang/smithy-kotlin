@@ -56,6 +56,11 @@ public object HttpOperationContext {
      * The clock skew duration to apply to the signature calculation date during the operation
      */
     public val ClockSkew: AttributeKey<Duration> = AttributeKey("aws.smithy.kotlin#ClockSkew")
+
+    /**
+     * The approximate signing time of the request, used to compute client clock skew.
+     */
+    public val ClockSkewApproximateSigningTime: AttributeKey<Instant> = AttributeKey("aws.smithy.kotlin#ClockSkewApproximateSigningTime")
 }
 
 internal val ExecutionContext.operationMetrics: OperationMetrics

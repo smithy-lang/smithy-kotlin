@@ -13,6 +13,7 @@ import aws.smithy.kotlin.runtime.http.response.header
 import aws.smithy.kotlin.runtime.telemetry.logging.logger
 import aws.smithy.kotlin.runtime.time.Instant
 import aws.smithy.kotlin.runtime.time.until
+import aws.smithy.kotlin.runtime.util.get
 import kotlinx.atomicfu.*
 import kotlin.coroutines.coroutineContext
 import kotlin.time.Duration
@@ -50,6 +51,8 @@ public class ClockSkewInterceptor : HttpInterceptor {
             context.executionContext[HttpOperationContext.ClockSkew] = skew
         }
 
+        context.executionContext[HttpOperationContext.ClockSkewApproximateSigningTime] = Instant.now()
+
         return context.protocolRequest
     }
 
@@ -70,7 +73,7 @@ public class ClockSkewInterceptor : HttpInterceptor {
             Instant.fromRfc5322(it)
         } ?: context.protocolRequest.headers["x-amz-date"]?.let {
             Instant.fromIso8601(it)
-        } ?: Instant.now()
+        } ?: context.executionContext.get(HttpOperationContext.ClockSkewApproximateSigningTime)
 
         if (clientTime.isSkewed(serverTime)) {
             val skew = clientTime.until(serverTime)
