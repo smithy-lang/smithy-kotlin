@@ -29,24 +29,14 @@ public class ClockSkewInterceptor : HttpInterceptor {
         public val CLOCK_SKEW_THRESHOLD: Duration = 4.minutes
 
         /**
-         * Get the current skew between the client time and [serverTime] as a [Duration].
-         * It may be negative if the serverTime is in the past.
-         * @param serverTime the server's time
-         */
-        internal fun Instant.getSkew(serverTime: Instant): Duration = this.until(serverTime)
-
-        /**
          * Determine whether the client's clock is skewed relative to the server.
          * @param serverTime the server's time
          */
-        internal fun Instant.isSkewed(serverTime: Instant): Boolean = getSkew(serverTime).absoluteValue >= CLOCK_SKEW_THRESHOLD
+        internal fun Instant.isSkewed(serverTime: Instant): Boolean = until(serverTime).absoluteValue >= CLOCK_SKEW_THRESHOLD
     }
 
     // Clock skew to be applied to all requests
-    private val _currentSkew: AtomicRef<Duration> = atomic(Duration.ZERO)
-
-    private val currentSkew: Duration
-        get() = _currentSkew.value
+    private val _currentSkew: AtomicRef<Duration?> = atomic(null)
 
     /**
      * Apply the previously-computed skew, if it's set, to the execution context before signing
@@ -54,9 +44,9 @@ public class ClockSkewInterceptor : HttpInterceptor {
     public override suspend fun modifyBeforeSigning(context: ProtocolRequestInterceptorContext<Any, HttpRequest>): HttpRequest {
         val logger = coroutineContext.logger<ClockSkewInterceptor>()
 
-        val skew = currentSkew
-        if (skew != Duration.ZERO) {
-            logger.debug { "applying clock skew $skew to client" }
+        val skew = _currentSkew.value
+        skew?.let {
+            logger.info { "applying clock skew $skew to client" }
             context.executionContext[HttpOperationContext.ClockSkew] = skew
         }
 
@@ -72,7 +62,7 @@ public class ClockSkewInterceptor : HttpInterceptor {
         val serverTime = context.protocolResponse.header("Date")?.let {
             Instant.fromRfc5322(it)
         } ?: run {
-            logger.info { "service did not return \"Date\" header, skipping skew calculation" }
+            logger.debug { "service did not return \"Date\" header, skipping skew calculation" }
             return context.protocolResponse
         }
 
@@ -83,12 +73,12 @@ public class ClockSkewInterceptor : HttpInterceptor {
         } ?: Instant.now()
 
         if (clientTime.isSkewed(serverTime)) {
-            val skew = clientTime.getSkew(serverTime)
-            logger.warn { "client clock is skewed $skew, applying correction" }
+            val skew = clientTime.until(serverTime)
+            logger.warn { "client clock ($clientTime) is skewed $skew from the server ($serverTime), applying correction" }
             _currentSkew.getAndSet(skew)
             context.executionContext[HttpOperationContext.ClockSkew] = skew
         } else {
-            logger.debug { "client clock ($clientTime) is not skewed from the server ($serverTime)" }
+            logger.trace { "client clock ($clientTime) is not skewed from the server ($serverTime)" }
         }
 
         return context.protocolResponse
