@@ -23,27 +23,40 @@ import kotlin.time.Duration.Companion.days
 import kotlin.time.Duration.Companion.seconds
 
 class ClockSkewInterceptorTest {
+    val SKEWED_RESPONSE_CODE_DESCRIPTION = "RequestTimeTooSkewed"
+    val POSSIBLE_SKEWED_RESPONSE_CODE_DESCRIPTION = "InternalError"
+    val NOT_SKEWED_RESPONSE_CODE_DESCRIPTION = "RequestThrottled"
+
     @Test
     fun testNotSkewed() {
         val clientTime = Instant.fromRfc5322("Wed, 6 Oct 2023 16:20:50 -0400")
         val serverTime = Instant.fromRfc5322("Wed, 6 Oct 2023 16:20:50 -0400")
         assertEquals(clientTime, serverTime)
-        assertFalse(clientTime.isSkewed(serverTime))
+        assertFalse(clientTime.isSkewed(serverTime, NOT_SKEWED_RESPONSE_CODE_DESCRIPTION))
     }
 
     @Test
-    fun testSkewed() {
+    fun testSkewedByResponseCode() {
+        // clocks are exactly the same, but service returned skew error
+        val clientTime = Instant.fromRfc5322("Wed, 6 Oct 2023 16:20:50 -0400")
+        val serverTime = Instant.fromRfc5322("Wed, 6 Oct 2023 16:20:50 -0400")
+        assertTrue(clientTime.isSkewed(serverTime, SKEWED_RESPONSE_CODE_DESCRIPTION))
+        assertEquals(0.days, clientTime.until(serverTime))
+    }
+
+    @Test
+    fun testSkewedByTime() {
         val clientTime = Instant.fromRfc5322("Wed, 6 Oct 2023 16:20:50 -0400")
         val serverTime = Instant.fromRfc5322("Wed, 7 Oct 2023 16:20:50 -0400")
-        assertTrue(clientTime.isSkewed(serverTime))
+        assertTrue(clientTime.isSkewed(serverTime, POSSIBLE_SKEWED_RESPONSE_CODE_DESCRIPTION))
         assertEquals(1.days, clientTime.until(serverTime))
     }
 
     @Test
-    fun testNegativeSkewed() {
+    fun testNegativeSkewedByTime() {
         val clientTime = Instant.fromRfc5322("Wed, 7 Oct 2023 16:20:50 -0400")
         val serverTime = Instant.fromRfc5322("Wed, 6 Oct 2023 16:20:50 -0400")
-        assertTrue(clientTime.isSkewed(serverTime))
+        assertTrue(clientTime.isSkewed(serverTime, POSSIBLE_SKEWED_RESPONSE_CODE_DESCRIPTION))
         assertEquals(-1.days, clientTime.until(serverTime))
     }
 
@@ -52,12 +65,12 @@ class ClockSkewInterceptorTest {
         val minute = 20
         var clientTime = Instant.fromRfc5322("Wed, 6 Oct 2023 16:${minute - CLOCK_SKEW_THRESHOLD.inWholeMinutes}:50 -0400")
         val serverTime = Instant.fromRfc5322("Wed, 6 Oct 2023 16:$minute:50 -0400")
-        assertTrue(clientTime.isSkewed(serverTime))
+        assertTrue(clientTime.isSkewed(serverTime, POSSIBLE_SKEWED_RESPONSE_CODE_DESCRIPTION))
         assertEquals(CLOCK_SKEW_THRESHOLD, clientTime.until(serverTime))
 
         // shrink the skew by one second, crossing the threshold
         clientTime += 1.seconds
-        assertFalse(clientTime.isSkewed(serverTime))
+        assertFalse(clientTime.isSkewed(serverTime, POSSIBLE_SKEWED_RESPONSE_CODE_DESCRIPTION))
     }
 
     @Test
@@ -73,6 +86,7 @@ class ClockSkewInterceptorTest {
             Headers {
                 append("Date", serverTimeString)
             },
+            HttpStatusCode(403, POSSIBLE_SKEWED_RESPONSE_CODE_DESCRIPTION)
         )
 
         val req = HttpRequestBuilder().apply {
@@ -87,7 +101,7 @@ class ClockSkewInterceptorTest {
 
         // Validate the skew got stored in execution context
         val expectedSkew = clientTime.until(serverTime)
-        assertEquals(op.context.getOrNull(HttpOperationContext.ClockSkew), expectedSkew)
+        assertEquals(expectedSkew, op.context.getOrNull(HttpOperationContext.ClockSkew))
     }
 
     @Test
@@ -101,6 +115,7 @@ class ClockSkewInterceptorTest {
             Headers {
                 append("Date", serverTimeString)
             },
+            HttpStatusCode(403, POSSIBLE_SKEWED_RESPONSE_CODE_DESCRIPTION)
         )
 
         val req = HttpRequestBuilder().apply {
@@ -117,14 +132,14 @@ class ClockSkewInterceptorTest {
         assertNull(op.context.getOrNull(HttpOperationContext.ClockSkew))
     }
 
-    private fun getMockClient(response: ByteArray, responseHeaders: Headers = Headers.Empty): SdkHttpClient {
+    private fun getMockClient(response: ByteArray, responseHeaders: Headers = Headers.Empty, httpStatusCode: HttpStatusCode = HttpStatusCode.OK): SdkHttpClient {
         val mockEngine = TestEngine { _, request ->
             val body = object : HttpBody.SourceContent() {
                 override val contentLength: Long = response.size.toLong()
                 override fun readFrom(): SdkSource = response.source()
                 override val isOneShot: Boolean get() = false
             }
-            val resp = HttpResponse(HttpStatusCode.OK, responseHeaders, body)
+            val resp = HttpResponse(httpStatusCode, responseHeaders, body)
             HttpCall(request, resp, Instant.now(), Instant.now())
         }
         return SdkHttpClient(mockEngine)
