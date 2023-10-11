@@ -17,9 +17,9 @@ import aws.smithy.kotlin.runtime.httptest.TestEngine
 import aws.smithy.kotlin.runtime.io.SdkSource
 import aws.smithy.kotlin.runtime.io.source
 import aws.smithy.kotlin.runtime.time.Instant
+import aws.smithy.kotlin.runtime.time.until
 import kotlinx.coroutines.test.runTest
 import kotlin.test.*
-import kotlin.time.Duration
 import kotlin.time.Duration.Companion.days
 import kotlin.time.Duration.Companion.seconds
 
@@ -37,7 +37,7 @@ class ClockSkewInterceptorTest {
         val clientTime = Instant.fromRfc5322("Wed, 6 Oct 2023 16:20:50 -0400")
         val serverTime = Instant.fromRfc5322("Wed, 7 Oct 2023 16:20:50 -0400")
         assertTrue(clientTime.isSkewed(serverTime))
-        assertEquals(1.days, clientTime.getSkew(serverTime))
+        assertEquals(1.days, clientTime.until(serverTime))
     }
 
     @Test
@@ -45,7 +45,7 @@ class ClockSkewInterceptorTest {
         val clientTime = Instant.fromRfc5322("Wed, 7 Oct 2023 16:20:50 -0400")
         val serverTime = Instant.fromRfc5322("Wed, 6 Oct 2023 16:20:50 -0400")
         assertTrue(clientTime.isSkewed(serverTime))
-        assertEquals(Duration.ZERO - 1.days, clientTime.getSkew(serverTime))
+        assertEquals(-1.days, clientTime.until(serverTime))
     }
 
     @Test
@@ -54,7 +54,7 @@ class ClockSkewInterceptorTest {
         var clientTime = Instant.fromRfc5322("Wed, 6 Oct 2023 16:${minute - CLOCK_SKEW_THRESHOLD.inWholeMinutes}:50 -0400")
         val serverTime = Instant.fromRfc5322("Wed, 6 Oct 2023 16:$minute:50 -0400")
         assertTrue(clientTime.isSkewed(serverTime))
-        assertEquals(CLOCK_SKEW_THRESHOLD, clientTime.getSkew(serverTime))
+        assertEquals(CLOCK_SKEW_THRESHOLD, clientTime.until(serverTime))
 
         // shrink the skew by one second, crossing the threshold
         clientTime += 1.seconds
@@ -87,7 +87,7 @@ class ClockSkewInterceptorTest {
         op.roundTrip(client, Unit)
 
         // Validate the skew got stored in execution context
-        val expectedSkew = clientTime.getSkew(serverTime)
+        val expectedSkew = clientTime.until(serverTime)
         assertEquals(op.context.getOrNull(HttpOperationContext.ClockSkew), expectedSkew)
     }
 
