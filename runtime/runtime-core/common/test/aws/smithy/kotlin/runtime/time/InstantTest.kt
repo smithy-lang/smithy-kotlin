@@ -280,7 +280,7 @@ class InstantTest {
             val end = Instant.fromIso8601(times.second)
 
             assertEquals(expectedDuration, start.until(end))
-            assertEquals(end.until(start), Duration.ZERO - expectedDuration)
+            assertEquals(end.until(start), -expectedDuration)
         }
     }
 }
