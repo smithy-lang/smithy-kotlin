@@ -55,7 +55,7 @@ public class ClockSkewInterceptor : HttpInterceptor {
             "PriorRequestNotComplete",
             "RequestTimeout",
             "RequestTimeoutException",
-            "InternalError"
+            "InternalError",
         )
     }
 

@@ -86,7 +86,7 @@ class ClockSkewInterceptorTest {
             Headers {
                 append("Date", serverTimeString)
             },
-            HttpStatusCode(403, POSSIBLE_SKEWED_RESPONSE_CODE_DESCRIPTION)
+            HttpStatusCode(403, POSSIBLE_SKEWED_RESPONSE_CODE_DESCRIPTION),
         )
 
         val req = HttpRequestBuilder().apply {
@@ -115,7 +115,7 @@ class ClockSkewInterceptorTest {
             Headers {
                 append("Date", serverTimeString)
             },
-            HttpStatusCode(403, POSSIBLE_SKEWED_RESPONSE_CODE_DESCRIPTION)
+            HttpStatusCode(403, POSSIBLE_SKEWED_RESPONSE_CODE_DESCRIPTION),
         )
 
         val req = HttpRequestBuilder().apply {
