@@ -120,7 +120,7 @@ public class AwsHttpSigner(private val config: Config) : HttpSigner {
         val contextSignedBodyHeader = attributes.getOrNull(AwsSigningAttributes.SignedBodyHeader)
 
         // operation signing config is baseConfig + operation specific config/overrides
-        var signingConfig = AwsSigningConfig {
+        val signingConfig = AwsSigningConfig {
             region = attributes[AwsSigningAttributes.SigningRegion]
             service = attributes.getOrNull(AwsSigningAttributes.SigningService) ?: checkNotNull(config.service)
             credentials = signingRequest.identity as Credentials
