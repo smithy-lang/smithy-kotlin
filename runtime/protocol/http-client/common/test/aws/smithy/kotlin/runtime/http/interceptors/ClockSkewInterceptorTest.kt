@@ -6,7 +6,6 @@ package aws.smithy.kotlin.runtime.http.interceptors
 
 import aws.smithy.kotlin.runtime.http.*
 import aws.smithy.kotlin.runtime.http.interceptors.ClockSkewInterceptor.Companion.CLOCK_SKEW_THRESHOLD
-import aws.smithy.kotlin.runtime.http.interceptors.ClockSkewInterceptor.Companion.getSkew
 import aws.smithy.kotlin.runtime.http.interceptors.ClockSkewInterceptor.Companion.isSkewed
 import aws.smithy.kotlin.runtime.http.operation.HttpOperationContext
 import aws.smithy.kotlin.runtime.http.operation.newTestOperation
