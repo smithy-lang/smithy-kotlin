@@ -26,8 +26,6 @@ import software.amazon.smithy.model.shapes.ListShape
 import software.amazon.smithy.model.shapes.MapShape
 import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.shapes.Shape
-import kotlin.contracts.ExperimentalContracts
-import kotlin.contracts.contract
 
 private val suffixSequence = sequenceOf("") + generateSequence(2) { it + 1 }.map(Int::toString) // "", "2", "3", etc.
 
@@ -76,14 +74,6 @@ class KotlinJmespathExpressionVisitor(
     private fun bestTempVarName(preferredName: String): String =
         suffixSequence.map { "$preferredName$it" }.first(tempVars::add)
 
-    @OptIn(ExperimentalContracts::class)
-    private fun codegenReq(condition: Boolean, lazyMessage: () -> String) {
-        contract {
-            returns() implies condition
-        }
-        if (!condition) throw CodegenException(lazyMessage())
-    }
-
     private fun flatMappingBlock(right: JmespathExpression, leftName: String, leftShape: Shape, innerShape: Shape?): VisitedExpression {
         if (right is CurrentExpression) return VisitedExpression(leftName, leftShape) // nothing to map
 
@@ -105,7 +95,9 @@ class KotlinJmespathExpressionVisitor(
         return VisitedExpression(outerName, leftShape, innerResult.shape)
     }
 
-    private fun subfield(expression: FieldExpression, parentName: String, isObject: Boolean = false): VisitedExpression {
+    private data class SubFieldData(val name: String, val codegen: String, val member: Shape?)
+
+    private fun subfieldLogic(expression: FieldExpression, parentName: String, isObject: Boolean = false): SubFieldData {
         val member = currentShape.targetOrSelf(ctx.model).getMember(expression.name).getOrNull()
 
         val name = expression.name.toCamelCase()
@@ -130,8 +122,16 @@ class KotlinJmespathExpressionVisitor(
         }
 
         member?.let { shapeCursor.addLast(it) }
-        return VisitedExpression(addTempVar(name, codegen), member)
+        return SubFieldData(name, codegen, member)
     }
+
+    private fun subfield(expression: FieldExpression, parentName: String, isObject: Boolean = false): VisitedExpression {
+        val (name, codegen, member) = subfieldLogic(expression, parentName, isObject)
+        return VisitedExpression(addTempVar(name, codegen), member, nullable = currentShape.isNullable)
+    }
+
+    private fun subfieldCodegen(expression: FieldExpression, parentName: String, isObject: Boolean = false): String =
+        subfieldLogic(expression, parentName, isObject).codegen
 
     override fun visitAnd(expression: AndExpression): VisitedExpression {
         writer.addImport(RuntimeTypes.Core.Utils.truthiness)
@@ -151,22 +151,21 @@ class KotlinJmespathExpressionVisitor(
 
         val codegen = buildString {
             val nullables = buildList {
-                if (left.shape?.isNullable == true) add("${left.identifier} == null")
-                if (right.shape?.isNullable == true) add("${right.identifier} == null")
+                if (left.shape?.isNullable == true || left.nullable) add("${left.identifier} == null")
+                if (right.shape?.isNullable == true || right.nullable) add("${right.identifier} == null")
             }
+
             if (nullables.isNotEmpty()) {
                 val isNullExpr = nullables.joinToString(" || ")
                 append("if ($isNullExpr) null else ")
             }
 
-            val unSafeComparatorExpr = "compareTo(${right.identifier}) ${expression.comparator} 0"
-            val comparatorExpr = if (left.nullable) "?.$unSafeComparatorExpr" else ".$unSafeComparatorExpr"
-
+            val comparatorExpr = ".compareTo(${right.identifier}) ${expression.comparator} 0"
             append("${left.identifier}$comparatorExpr")
         }
 
-        val ident = addTempVar("comparison", codegen)
-        return VisitedExpression(ident)
+        val identifier = addTempVar("comparison", codegen)
+        return VisitedExpression(identifier)
     }
 
     override fun visitCurrentNode(expression: CurrentExpression): VisitedExpression {
@@ -207,14 +206,11 @@ class KotlinJmespathExpressionVisitor(
         return VisitedExpression(ident, currentShape, inner.projected)
     }
 
-    private fun FunctionExpression.singleArg(): VisitedExpression {
-        codegenReq(arguments.size == 1) { "Unexpected number of arguments to $this" }
-        return acceptSubexpression(this.arguments[0])
-    }
-    private fun FunctionExpression.twoArgs(): Pair<VisitedExpression, VisitedExpression> {
-        codegenReq(arguments.size == 2) { "Unexpected number of arguments to $this" }
-        return acceptSubexpression(this.arguments[0]) to acceptSubexpression(this.arguments[1])
-    }
+    private fun FunctionExpression.singleArg(): VisitedExpression =
+        acceptSubexpression(this.arguments[0])
+
+    private fun FunctionExpression.twoArgs(): Pair<VisitedExpression, VisitedExpression> =
+        acceptSubexpression(this.arguments[0]) to acceptSubexpression(this.arguments[1])
 
     private fun FunctionExpression.args(): List<VisitedExpression> =
         this.arguments.map { acceptSubexpression(it) }
@@ -257,9 +253,7 @@ class KotlinJmespathExpressionVisitor(
 
         "avg" -> {
             val numbers = expression.singleArg()
-            val average = numbers.dotFunction(expression, "average()").identifier
-            val isNaN = ensureNullGuard(numbers.shape, "isNaN() == true")
-            VisitedExpression(addTempVar("averageOrNull", "if($average$isNaN) null else $average"), nullable = true)
+            numbers.dotFunction(expression, "average()")
         }
 
         "join" -> {
@@ -332,6 +326,35 @@ class KotlinJmespathExpressionVisitor(
             writer.addImport(RuntimeTypes.Core.Utils.type)
             val arg = expression.singleArg()
             arg.dotFunction(expression, "type()", ensureNullGuard = false)
+        }
+
+        "sort" -> {
+            val arg = expression.singleArg()
+            arg.dotFunction(expression, "sorted()")
+        }
+
+        "sort_by" -> {
+            val list = expression.arguments[0].accept(this)
+            val expressionValue = expression.arguments[1]
+            list.applyFunction(expression.name.toCamelCase(), "sortedBy", expressionValue)
+        }
+
+        "max_by" -> {
+            val list = expression.arguments[0].accept(this)
+            val expressionValue = expression.arguments[1]
+            list.applyFunction(expression.name.toCamelCase(), "maxBy", expressionValue)
+        }
+
+        "min_by" -> {
+            val list = expression.arguments[0].accept(this)
+            val expressionValue = expression.arguments[1]
+            list.applyFunction(expression.name.toCamelCase(), "minBy", expressionValue)
+        }
+
+        "map" -> {
+            val list = expression.arguments[1].accept(this)
+            val expressionValue = expression.arguments[0]
+            list.applyFunction(expression.name.toCamelCase(), "map", expressionValue)
         }
 
         else -> throw CodegenException("Unknown function type in $expression")
@@ -546,6 +569,21 @@ class KotlinJmespathExpressionVisitor(
         }
 
         return notNull
+    }
+
+    private fun VisitedExpression.applyFunction(
+        name: String,
+        operation: String,
+        expression: JmespathExpression,
+    ): VisitedExpression {
+        val result = bestTempVarName(name)
+
+        writer.withBlock("val $result = ${this.identifier}?.$operation {", "}") {
+            val expressionValue = subfieldCodegen((expression as ExpressionTypeExpression).expression as FieldExpression, "it")
+            write("$expressionValue!!")
+        }
+
+        return VisitedExpression(result)
     }
 
     private val Shape.isNullable: Boolean
