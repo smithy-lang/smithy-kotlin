@@ -53,7 +53,7 @@ public object HttpOperationContext {
     public val OperationAttributes: AttributeKey<Attributes> = AttributeKey("aws.smithy.kotlin#OperationAttributes")
 
     /**
-     * The clock skew duration to apply to any time-based calculations in the operation (e.g. signing)
+     * The clock skew duration to apply to the signature calculation date during the operation
      */
     public val ClockSkew: AttributeKey<Duration> = AttributeKey("aws.smithy.kotlin#ClockSkew")
 }
