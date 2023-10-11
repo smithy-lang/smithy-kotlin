@@ -10,17 +10,19 @@ import com.test.waiters.waitUntilStructListStringMultiSelectHash
 import com.test.waiters.waitUntilStructListStringsAnyMultiSelectHash
 import com.test.waiters.waitUntilStructListStringsMultiSelectHash
 import com.test.waiters.waitUntilStructListSubStructPrimitivesBooleanMultiSelectHash
-import org.junit.jupiter.api.Test
+import kotlin.test.Test
 
 class MultiSelectHashTest {
-    @Test fun testStructListStringMultiSelectHash() = successTest(
+    @Test
+    fun testStructListStringMultiSelectHash() = successTest(
         GetMultiSelectHashRequest { name = "test" },
         WaitersTestClient::waitUntilStructListStringMultiSelectHash,
         GetMultiSelectHashResponse { lists = EntityLists { structs = listOf(Struct { primitives = EntityPrimitives { string = "bar" } }, Struct { primitives = EntityPrimitives { string = "foo" } }) } },
         GetMultiSelectHashResponse { lists = EntityLists { structs = listOf(Struct { primitives = EntityPrimitives { string = "foo" } }, Struct { primitives = EntityPrimitives { string = "bar" } }) } },
     )
 
-    @Test fun testStructListStringsMultiSelectHash() = successTest(
+    @Test
+    fun testStructListStringsMultiSelectHash() = successTest(
         GetMultiSelectHashRequest { name = "test" },
         WaitersTestClient::waitUntilStructListStringsMultiSelectHash,
         GetMultiSelectHashResponse {
@@ -53,7 +55,8 @@ class MultiSelectHashTest {
         },
     )
 
-    @Test fun testStructListStringsAnyMultiSelectHash() = successTest(
+    @Test
+    fun testStructListStringsAnyMultiSelectHash() = successTest(
         GetMultiSelectHashRequest { name = "test" },
         WaitersTestClient::waitUntilStructListStringsAnyMultiSelectHash,
         GetMultiSelectHashResponse {
@@ -86,7 +89,8 @@ class MultiSelectHashTest {
         },
     )
 
-    @Test fun testStructListSubStructPrimitivesBooleanMultiSelectHash() = successTest(
+    @Test
+    fun testStructListSubStructPrimitivesBooleanMultiSelectHash() = successTest(
         GetMultiSelectHashRequest { name = "test" },
         WaitersTestClient::waitUntilStructListSubStructPrimitivesBooleanMultiSelectHash,
         GetMultiSelectHashResponse {

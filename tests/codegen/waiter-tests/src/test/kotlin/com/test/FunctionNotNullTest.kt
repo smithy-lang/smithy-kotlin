@@ -11,10 +11,11 @@ import com.test.model.GetFunctionNotNullEqualsRequest
 import com.test.model.GetFunctionNotNullEqualsResponse
 import com.test.utils.successTest
 import com.test.waiters.waitUntilNotNullFunctionStringEquals
-import org.junit.jupiter.api.Test
+import kotlin.test.Test
 
 class FunctionNotNullTest {
-    @Test fun testNotNullFunctionStringEquals() = successTest(
+    @Test
+    fun testNotNullFunctionStringEquals() = successTest(
         GetFunctionNotNullEqualsRequest { name = "test" },
         WaitersTestClient::waitUntilNotNullFunctionStringEquals,
         GetFunctionNotNullEqualsResponse {

@@ -10,10 +10,11 @@ import com.test.model.GetFunctionMapEqualsResponse
 import com.test.model.Struct
 import com.test.utils.successTest
 import com.test.waiters.waitUntilMapStructEquals
-import org.junit.jupiter.api.Test
+import kotlin.test.Test
 
 class FunctionMapTest {
-    @Test fun testMapStructEquals() = successTest(
+    @Test
+    fun testMapStructEquals() = successTest(
         GetFunctionMapEqualsRequest { name = "test" },
         WaitersTestClient::waitUntilMapStructEquals,
         GetFunctionMapEqualsResponse {

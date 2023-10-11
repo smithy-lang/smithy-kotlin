@@ -11,10 +11,11 @@ import com.test.model.Struct
 import com.test.utils.successTest
 import com.test.waiters.waitUntilMaxByNumberEquals
 import com.test.waiters.waitUntilMaxByStringEquals
-import org.junit.jupiter.api.Test
+import kotlin.test.Test
 
 class FunctionMaxByTest {
-    @Test fun testMaxByNumberEquals() = successTest(
+    @Test
+    fun testMaxByNumberEquals() = successTest(
         GetFunctionMaxByEqualsRequest { name = "test" },
         WaitersTestClient::waitUntilMaxByNumberEquals,
         GetFunctionMaxByEqualsResponse {
@@ -31,7 +32,8 @@ class FunctionMaxByTest {
         },
     )
 
-    @Test fun testMaxByStringEquals() = successTest(
+    @Test
+    fun testMaxByStringEquals() = successTest(
         GetFunctionMaxByEqualsRequest { name = "test" },
         WaitersTestClient::waitUntilMaxByStringEquals,
         GetFunctionMaxByEqualsResponse {

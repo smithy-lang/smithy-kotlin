@@ -11,10 +11,11 @@ import com.test.model.Struct
 import com.test.utils.successTest
 import com.test.waiters.waitUntilMinByNumberEquals
 import com.test.waiters.waitUntilMinByStringEquals
-import org.junit.jupiter.api.Test
+import kotlin.test.Test
 
 class FunctionMinByTest {
-    @Test fun testMinByNumberEquals() = successTest(
+    @Test
+    fun testMinByNumberEquals() = successTest(
         GetFunctionMinByEqualsRequest { name = "test" },
         WaitersTestClient::waitUntilMinByNumberEquals,
         GetFunctionMinByEqualsResponse {
@@ -31,7 +32,8 @@ class FunctionMinByTest {
         },
     )
 
-    @Test fun testMinByStringEquals() = successTest(
+    @Test
+    fun testMinByStringEquals() = successTest(
         GetFunctionMinByEqualsRequest { name = "test" },
         WaitersTestClient::waitUntilMinByStringEquals,
         GetFunctionMinByEqualsResponse {
