@@ -1,0 +1,5 @@
+{
+    "id": "0645c929-bdfe-4d07-a131-b0b447422fff",
+    "type": "bugfix",
+    "description": "Treat all `IOException` errors in OkHttp engine as retryable (e.g., socket errors, DNS lookup failures, etc.)"
+}

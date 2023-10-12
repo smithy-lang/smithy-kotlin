@@ -208,10 +208,9 @@ internal inline fun<T> mapOkHttpExceptions(block: () -> T): T =
     try {
         block()
     } catch (ex: IOException) {
-        throw HttpException(ex, ex.errCode(), ex.isRetryable())
+        throw HttpException(ex, ex.errCode(), retryable = true) // All IOExceptions are retryable
     }
 
-private fun Exception.isRetryable(): Boolean = isCauseOrSuppressed<ConnectException>() || isConnectionClosedException()
 private fun Exception.errCode(): HttpErrorCode = when {
     isConnectTimeoutException() -> HttpErrorCode.CONNECT_TIMEOUT
     isConnectionClosedException() -> HttpErrorCode.CONNECTION_CLOSED
