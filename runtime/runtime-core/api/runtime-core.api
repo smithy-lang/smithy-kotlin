@@ -65,6 +65,7 @@ public final class aws/smithy/kotlin/runtime/ServiceException$ErrorType : java/l
 	public static final field Client Laws/smithy/kotlin/runtime/ServiceException$ErrorType;
 	public static final field Server Laws/smithy/kotlin/runtime/ServiceException$ErrorType;
 	public static final field Unknown Laws/smithy/kotlin/runtime/ServiceException$ErrorType;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
 	public static fun valueOf (Ljava/lang/String;)Laws/smithy/kotlin/runtime/ServiceException$ErrorType;
 	public static fun values ()[Laws/smithy/kotlin/runtime/ServiceException$ErrorType;
 }
@@ -672,6 +673,7 @@ public final class aws/smithy/kotlin/runtime/net/TlsVersion : java/lang/Enum {
 	public static final field TLS_1_1 Laws/smithy/kotlin/runtime/net/TlsVersion;
 	public static final field TLS_1_2 Laws/smithy/kotlin/runtime/net/TlsVersion;
 	public static final field TLS_1_3 Laws/smithy/kotlin/runtime/net/TlsVersion;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
 	public static fun valueOf (Ljava/lang/String;)Laws/smithy/kotlin/runtime/net/TlsVersion;
 	public static fun values ()[Laws/smithy/kotlin/runtime/net/TlsVersion;
 }
@@ -1183,6 +1185,7 @@ public final class aws/smithy/kotlin/runtime/retries/policy/RetryErrorType : jav
 	public static final field ServerSide Laws/smithy/kotlin/runtime/retries/policy/RetryErrorType;
 	public static final field Throttling Laws/smithy/kotlin/runtime/retries/policy/RetryErrorType;
 	public static final field Transient Laws/smithy/kotlin/runtime/retries/policy/RetryErrorType;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
 	public static fun valueOf (Ljava/lang/String;)Laws/smithy/kotlin/runtime/retries/policy/RetryErrorType;
 	public static fun values ()[Laws/smithy/kotlin/runtime/retries/policy/RetryErrorType;
 }
@@ -1262,6 +1265,7 @@ public final class aws/smithy/kotlin/runtime/time/TimestampFormat : java/lang/En
 	public static final field ISO_8601_CONDENSED Laws/smithy/kotlin/runtime/time/TimestampFormat;
 	public static final field ISO_8601_CONDENSED_DATE Laws/smithy/kotlin/runtime/time/TimestampFormat;
 	public static final field RFC_5322 Laws/smithy/kotlin/runtime/time/TimestampFormat;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
 	public static fun valueOf (Ljava/lang/String;)Laws/smithy/kotlin/runtime/time/TimestampFormat;
 	public static fun values ()[Laws/smithy/kotlin/runtime/time/TimestampFormat;
 }
@@ -1382,6 +1386,7 @@ public final class aws/smithy/kotlin/runtime/util/OsFamily : java/lang/Enum {
 	public static final field MacOs Laws/smithy/kotlin/runtime/util/OsFamily;
 	public static final field Unknown Laws/smithy/kotlin/runtime/util/OsFamily;
 	public static final field Windows Laws/smithy/kotlin/runtime/util/OsFamily;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
 	public fun toString ()Ljava/lang/String;
 	public static fun valueOf (Ljava/lang/String;)Laws/smithy/kotlin/runtime/util/OsFamily;
 	public static fun values ()[Laws/smithy/kotlin/runtime/util/OsFamily;
