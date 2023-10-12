@@ -11,7 +11,6 @@ import aws.smithy.kotlin.runtime.auth.awssigning.*
 import aws.smithy.kotlin.runtime.http.*
 import aws.smithy.kotlin.runtime.http.auth.AwsHttpSigner
 import aws.smithy.kotlin.runtime.http.auth.SigV4AuthScheme
-import aws.smithy.kotlin.runtime.http.content.ByteArrayContent
 import aws.smithy.kotlin.runtime.http.operation.*
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
@@ -38,11 +37,11 @@ import org.junit.jupiter.params.provider.MethodSource
 import java.nio.file.FileSystems
 import java.nio.file.Files
 import java.nio.file.Path
+import java.util.stream.Collectors
 import kotlin.io.path.exists
 import kotlin.io.path.isDirectory
 import kotlin.io.path.name
 import kotlin.io.path.readText
-import kotlin.streams.toList
 import kotlin.test.*
 import kotlin.time.Duration.Companion.seconds
 
@@ -95,7 +94,9 @@ public actual abstract class SigningSuiteTestBase : HasSigner {
     private val testDirPaths: List<Path> by lazy {
         Files
             .walk(testSuitePath)
-            .toList()
+            // Due to https://youtrack.jetbrains.com/issue/KT-47039 setting jvmTarget compatibility isn't enough
+            // ignore the toList() extension in-favor of something that should work JDK8+ even if we compile with JDK17+
+            .collect(Collectors.toList())
             .filter { !it.isDirectory() && it.name == "request.txt" }
             .filterNot { it.parent.name in disabledTests }
             .map { it.parent }
@@ -393,7 +394,7 @@ public actual abstract class SigningSuiteTestBase : HasSigner {
 
         if (hasBody) {
             val bytes = runBlocking { chan.readRemaining().readBytes() }
-            builder.body = ByteArrayContent(bytes)
+            builder.body = HttpBody.fromBytes(bytes)
         }
 
         return builder

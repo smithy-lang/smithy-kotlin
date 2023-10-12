@@ -50,6 +50,12 @@ data class KotlinSettings(
          * Derive a subpackage namespace from the root package name
          */
         fun subpackage(subpackageName: String): String = "$name.$subpackageName"
+
+        /**
+         * The package namespace for generated serialization/deserialization support
+         */
+        val serde: String
+            get() = subpackage("serde")
     }
 
     /**

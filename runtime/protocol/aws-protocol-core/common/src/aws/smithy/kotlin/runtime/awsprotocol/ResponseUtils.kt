@@ -8,7 +8,6 @@ import aws.smithy.kotlin.runtime.InternalApi
 import aws.smithy.kotlin.runtime.http.HttpBody
 import aws.smithy.kotlin.runtime.http.HttpStatusCode
 import aws.smithy.kotlin.runtime.http.category
-import aws.smithy.kotlin.runtime.http.content.ByteArrayContent
 import aws.smithy.kotlin.runtime.http.isSuccess
 import aws.smithy.kotlin.runtime.http.response.HttpResponse
 
@@ -23,12 +22,7 @@ public const val X_AMZN_REQUEST_ID_HEADER: String = "x-amz-request-id"
  */
 @InternalApi
 public fun HttpResponse.withPayload(payload: ByteArray?): HttpResponse {
-    val newBody = if (payload != null) {
-        ByteArrayContent(payload)
-    } else {
-        HttpBody.Empty
-    }
-
+    val newBody = payload?.let { HttpBody.fromBytes(it) } ?: HttpBody.Empty
     return HttpResponse(status, headers, newBody)
 }
 

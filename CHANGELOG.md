@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.27.6] - 10/06/2023
+
+### Fixes
+* Fix codegen of services with no operations
+
+### Miscellaneous
+* Relocate `TlsVersion` to the `net` package.
+* Refactor codegen to place serialization and deserialization code into the `serde` package rather than the `transform` package.
+* Make `ByteArrayContent` and friends `internal` and force consumers to go through companion object convenience functions.
+
 ## [0.27.5] - 09/28/2023
 
 ### Features

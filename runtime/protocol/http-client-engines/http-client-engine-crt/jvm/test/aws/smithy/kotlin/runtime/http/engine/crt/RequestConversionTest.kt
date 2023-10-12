@@ -8,7 +8,6 @@ package aws.smithy.kotlin.runtime.http.engine.crt
 import aws.smithy.kotlin.runtime.content.ByteStream
 import aws.smithy.kotlin.runtime.crt.ReadChannelBodyStream
 import aws.smithy.kotlin.runtime.http.*
-import aws.smithy.kotlin.runtime.http.content.ByteArrayContent
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.io.SdkByteReadChannel
 import aws.smithy.kotlin.runtime.io.SdkSource
@@ -41,7 +40,7 @@ class RequestConversionTest {
 
     @Test
     fun testSdkToCrtRequestBytesBody() {
-        val body = ByteArrayContent("foobar".encodeToByteArray())
+        val body = HttpBody.fromBytes("foobar".encodeToByteArray())
         val request = HttpRequest(
             HttpMethod.POST,
             Url.parse("https://test.aws.com?foo=bar"),

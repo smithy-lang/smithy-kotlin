@@ -7,7 +7,6 @@ package aws.smithy.kotlin.runtime.smithy.test
 import aws.smithy.kotlin.runtime.http.HeadersBuilder
 import aws.smithy.kotlin.runtime.http.HttpBody
 import aws.smithy.kotlin.runtime.http.HttpMethod
-import aws.smithy.kotlin.runtime.http.content.ByteArrayContent
 import aws.smithy.kotlin.runtime.http.engine.HttpClientEngine
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.httptest.TestEngine
@@ -129,7 +128,7 @@ private suspend fun assertRequest(expected: ExpectedHttpRequest, actual: HttpReq
 
     val expectedBody = expected.body?.let {
         assertNotNull(expected.bodyAssert, "body assertion function is required if an expected body is defined")
-        ByteArrayContent(it.encodeToByteArray())
+        HttpBody.fromBytes(it.encodeToByteArray())
     }
 
     expected.bodyAssert?.invoke(expectedBody, actual.body)

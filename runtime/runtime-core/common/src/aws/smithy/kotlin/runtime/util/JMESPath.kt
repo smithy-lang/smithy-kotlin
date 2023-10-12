@@ -57,3 +57,19 @@ public inline fun <reified T> Collection<Collection<T>>.flattenIfPossible(): Col
 @InternalApi
 public val <T> Collection<T>.length: Int
     get() = size
+
+/**
+ * Returns a JS type as a string
+ *
+ * See: [JMESPath spec](https://jmespath.org/specification.html#type)
+ */
+@InternalApi
+public fun Any?.type(): String = when (this) {
+    is String -> "string"
+    is Boolean -> "boolean"
+    is List<*>, is Array<*> -> "array"
+    is Number -> "number"
+    is Any -> "object"
+    null -> "null"
+    else -> throw Exception("Undetected type for: $this")
+}

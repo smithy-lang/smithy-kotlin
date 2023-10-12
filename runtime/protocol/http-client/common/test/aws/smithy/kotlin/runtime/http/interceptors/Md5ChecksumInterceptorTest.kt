@@ -7,7 +7,6 @@ package aws.smithy.kotlin.runtime.http.interceptors
 
 import aws.smithy.kotlin.runtime.http.HttpBody
 import aws.smithy.kotlin.runtime.http.SdkHttpClient
-import aws.smithy.kotlin.runtime.http.content.ByteArrayContent
 import aws.smithy.kotlin.runtime.http.operation.HttpOperationContext
 import aws.smithy.kotlin.runtime.http.operation.newTestOperation
 import aws.smithy.kotlin.runtime.http.operation.roundTrip
@@ -26,7 +25,7 @@ class Md5ChecksumInterceptorTest {
     @Test
     fun itSetsContentMd5Header() = runTest {
         val req = HttpRequestBuilder().apply {
-            body = ByteArrayContent("<Foo>bar</Foo>".encodeToByteArray())
+            body = HttpBody.fromBytes("<Foo>bar</Foo>".encodeToByteArray())
         }
         val op = newTestOperation<Unit, Unit>(req, Unit)
 
@@ -65,7 +64,7 @@ class Md5ChecksumInterceptorTest {
     @Test
     fun itDoesNotSetContentMd5Header() = runTest {
         val req = HttpRequestBuilder().apply {
-            body = ByteArrayContent("<Foo>bar</Foo>".encodeToByteArray())
+            body = HttpBody.fromBytes("<Foo>bar</Foo>".encodeToByteArray())
         }
         val op = newTestOperation<Unit, Unit>(req, Unit)
 

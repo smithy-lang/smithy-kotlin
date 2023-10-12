@@ -8,7 +8,6 @@ package aws.smithy.kotlin.runtime.http.interceptors
 import aws.smithy.kotlin.runtime.ClientException
 import aws.smithy.kotlin.runtime.hashing.toHashFunction
 import aws.smithy.kotlin.runtime.http.*
-import aws.smithy.kotlin.runtime.http.content.ByteArrayContent
 import aws.smithy.kotlin.runtime.http.operation.HttpOperationContext
 import aws.smithy.kotlin.runtime.http.operation.newTestOperation
 import aws.smithy.kotlin.runtime.http.operation.roundTrip
@@ -36,7 +35,7 @@ class FlexibleChecksumsRequestInterceptorTest {
     fun itSetsChecksumHeader() = runTest {
         checksums.forEach { (checksumAlgorithmName, expectedChecksumValue) ->
             val req = HttpRequestBuilder().apply {
-                body = ByteArrayContent("<Foo>bar</Foo>".encodeToByteArray())
+                body = HttpBody.fromBytes("<Foo>bar</Foo>".encodeToByteArray())
             }
 
             val op = newTestOperation<Unit, Unit>(req, Unit)
@@ -56,7 +55,7 @@ class FlexibleChecksumsRequestInterceptorTest {
     @Test
     fun itAllowsOnlyOneChecksumHeader() = runTest {
         val req = HttpRequestBuilder().apply {
-            body = ByteArrayContent("<Foo>bar</Foo>".encodeToByteArray())
+            body = HttpBody.fromBytes("<Foo>bar</Foo>".encodeToByteArray())
         }
         req.headers { append("x-amz-checksum-sha256", "sha256-checksum-value") }
         req.headers { append("x-amz-checksum-crc32", "crc32-checksum-value") }
@@ -81,7 +80,7 @@ class FlexibleChecksumsRequestInterceptorTest {
     @Test
     fun itThrowsOnUnsupportedChecksumAlgorithm() = runTest {
         val req = HttpRequestBuilder().apply {
-            body = ByteArrayContent("<Foo>bar</Foo>".encodeToByteArray())
+            body = HttpBody.fromBytes("<Foo>bar</Foo>".encodeToByteArray())
         }
 
         val unsupportedChecksumAlgorithmName = "fooblefabble1024"
@@ -171,7 +170,7 @@ class FlexibleChecksumsRequestInterceptorTest {
     @Test
     fun itUsesPrecalculatedChecksum() = runTest {
         val req = HttpRequestBuilder().apply {
-            body = ByteArrayContent("<Foo>bar</Foo>".encodeToByteArray())
+            body = HttpBody.fromBytes("<Foo>bar</Foo>".encodeToByteArray())
         }
         val checksumAlgorithmName = "sha256"
         val precalculatedChecksumValue = "sha256-checksum-value"

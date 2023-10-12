@@ -161,7 +161,7 @@ open class HttpProtocolUnitTestResponseGenerator protected constructor(builder: 
             when (target) {
                 is BlobShape -> {
                     val suffix = if (target.hasTrait<StreamingTrait>()) {
-                        "?.toByteArray()"
+                        writer.format("?.#T()", RuntimeTypes.Core.Content.toByteArray)
                     } else {
                         ""
                     }
