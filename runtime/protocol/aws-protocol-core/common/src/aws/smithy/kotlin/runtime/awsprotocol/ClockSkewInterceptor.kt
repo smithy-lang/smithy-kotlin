@@ -54,10 +54,9 @@ public class ClockSkewInterceptor : HttpInterceptor {
 
         // Errors possibly caused by clock skew
         private val POSSIBLE_CLOCK_SKEW_ERROR_CODES = listOf(
-            "PriorRequestNotComplete",
-            "RequestTimeout",
-            "RequestTimeoutException",
-            "InternalError",
+            "InvalidSignatureException",
+            "SignatureDoesNotMatch",
+            "AuthFailure",
         )
     }
 
