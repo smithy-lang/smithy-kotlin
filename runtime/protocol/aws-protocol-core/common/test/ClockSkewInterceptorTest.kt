@@ -1,3 +1,7 @@
+/*
+ * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * SPDX-License-Identifier: Apache-2.0
+ */
 package aws.smithy.kotlin.runtime.awsprotocol
 
 import aws.smithy.kotlin.runtime.SdkBaseException
@@ -153,7 +157,7 @@ class ClockSkewInterceptorTest {
      * An interceptor which returns a [Result.failure] with the given [exception] for the first [timesToFail] times its invoked.
      * This simulates a service returning a clock skew exception and then successfully processing any successive requests.
      */
-    private class FailedResultInterceptor(val exception: SdkBaseException, val timesToFail: Int = 1): HttpInterceptor {
+    private class FailedResultInterceptor(val exception: SdkBaseException, val timesToFail: Int = 1) : HttpInterceptor {
         var failuresSent = 0
 
         override suspend fun modifyBeforeAttemptCompletion(context: ResponseInterceptorContext<Any, Any, HttpRequest, HttpResponse?>): Result<Any> {
