@@ -2,9 +2,8 @@ package aws.smithy.kotlin.runtime.awsprotocol
 
 import aws.smithy.kotlin.runtime.SdkBaseException
 import aws.smithy.kotlin.runtime.ServiceErrorMetadata
-import aws.smithy.kotlin.runtime.awsprotocol.interceptors.ClockSkewInterceptor
-import aws.smithy.kotlin.runtime.awsprotocol.interceptors.ClockSkewInterceptor.Companion.CLOCK_SKEW_THRESHOLD
-import aws.smithy.kotlin.runtime.awsprotocol.interceptors.ClockSkewInterceptor.Companion.isSkewed
+import aws.smithy.kotlin.runtime.awsprotocol.ClockSkewInterceptor.Companion.CLOCK_SKEW_THRESHOLD
+import aws.smithy.kotlin.runtime.awsprotocol.ClockSkewInterceptor.Companion.isSkewed
 import aws.smithy.kotlin.runtime.client.ResponseInterceptorContext
 import aws.smithy.kotlin.runtime.http.*
 import aws.smithy.kotlin.runtime.http.interceptors.HttpInterceptor
