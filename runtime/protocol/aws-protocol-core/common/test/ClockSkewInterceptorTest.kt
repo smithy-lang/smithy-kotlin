@@ -31,7 +31,7 @@ import kotlin.time.Duration.Companion.seconds
 
 class ClockSkewInterceptorTest {
     val SKEWED_RESPONSE_CODE_DESCRIPTION = "RequestTimeTooSkewed"
-    val POSSIBLE_SKEWED_RESPONSE_CODE_DESCRIPTION = "InternalError"
+    val POSSIBLE_SKEWED_RESPONSE_CODE_DESCRIPTION = "InvalidSignatureException"
     val NOT_SKEWED_RESPONSE_CODE_DESCRIPTION = "RequestThrottled"
 
     @Test
