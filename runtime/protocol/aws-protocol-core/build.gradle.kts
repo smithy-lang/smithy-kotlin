@@ -9,12 +9,24 @@ extra["moduleName"] = "aws.smithy.kotlin.runtime.awsprotocol"
 
 val coroutinesVersion: String by project
 
+apply(plugin = "kotlinx-atomicfu")
+
 kotlin {
     sourceSets {
         commonMain {
             dependencies {
                 api(project(":runtime:protocol:http"))
                 api(project(":runtime:runtime-core"))
+                api(project(":runtime:protocol:http-client"))
+                api(project(":runtime:smithy-client"))
+                implementation(libs.kotlinx.atomicfu)
+            }
+        }
+
+        commonTest {
+            dependencies {
+                implementation(libs.kotlinx.coroutines.test)
+                implementation(project(":runtime:protocol:http-test"))
             }
         }
 

@@ -1,17 +1,17 @@
-/*
- * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0
- */
-package aws.smithy.kotlin.runtime.http.interceptors
+package aws.smithy.kotlin.runtime.awsprotocol
 
 import aws.smithy.kotlin.runtime.SdkBaseException
 import aws.smithy.kotlin.runtime.ServiceErrorMetadata
+import aws.smithy.kotlin.runtime.awsprotocol.interceptors.ClockSkewInterceptor
+import aws.smithy.kotlin.runtime.awsprotocol.interceptors.ClockSkewInterceptor.Companion.CLOCK_SKEW_THRESHOLD
+import aws.smithy.kotlin.runtime.awsprotocol.interceptors.ClockSkewInterceptor.Companion.isSkewed
 import aws.smithy.kotlin.runtime.client.ResponseInterceptorContext
 import aws.smithy.kotlin.runtime.http.*
-import aws.smithy.kotlin.runtime.http.interceptors.ClockSkewInterceptor.Companion.CLOCK_SKEW_THRESHOLD
-import aws.smithy.kotlin.runtime.http.interceptors.ClockSkewInterceptor.Companion.isSkewed
+import aws.smithy.kotlin.runtime.http.interceptors.HttpInterceptor
+import aws.smithy.kotlin.runtime.http.operation.HttpDeserialize
 import aws.smithy.kotlin.runtime.http.operation.HttpOperationContext
-import aws.smithy.kotlin.runtime.http.operation.newTestOperation
+import aws.smithy.kotlin.runtime.http.operation.HttpSerialize
+import aws.smithy.kotlin.runtime.http.operation.SdkHttpOperation
 import aws.smithy.kotlin.runtime.http.operation.roundTrip
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
@@ -67,7 +67,8 @@ class ClockSkewInterceptorTest {
     @Test
     fun testSkewThreshold() {
         val minute = 20
-        var clientTime = Instant.fromRfc5322("Wed, 6 Oct 2023 16:${minute - CLOCK_SKEW_THRESHOLD.inWholeMinutes}:50 -0400")
+        var clientTime =
+            Instant.fromRfc5322("Wed, 6 Oct 2023 16:${minute - CLOCK_SKEW_THRESHOLD.inWholeMinutes}:50 -0400")
         val serverTime = Instant.fromRfc5322("Wed, 6 Oct 2023 16:$minute:50 -0400")
         assertTrue(clientTime.isSkewed(serverTime, POSSIBLE_SKEWED_RESPONSE_CODE_DESCRIPTION))
         assertEquals(CLOCK_SKEW_THRESHOLD, clientTime.until(serverTime))
@@ -99,7 +100,8 @@ class ClockSkewInterceptorTest {
         val op = newTestOperation<Unit, Unit>(req, Unit)
 
         val clockSkewException = SdkBaseException()
-        clockSkewException.sdkErrorMetadata.attributes[ServiceErrorMetadata.ErrorCode] = POSSIBLE_SKEWED_RESPONSE_CODE_DESCRIPTION
+        clockSkewException.sdkErrorMetadata.attributes[ServiceErrorMetadata.ErrorCode] =
+            POSSIBLE_SKEWED_RESPONSE_CODE_DESCRIPTION
         op.interceptors.add(FailedResultInterceptor(clockSkewException))
 
         op.interceptors.add(ClockSkewInterceptor())
@@ -133,7 +135,8 @@ class ClockSkewInterceptorTest {
         val op = newTestOperation<Unit, Unit>(req, Unit)
 
         val clockSkewException = SdkBaseException()
-        clockSkewException.sdkErrorMetadata.attributes[ServiceErrorMetadata.ErrorCode] = POSSIBLE_SKEWED_RESPONSE_CODE_DESCRIPTION
+        clockSkewException.sdkErrorMetadata.attributes[ServiceErrorMetadata.ErrorCode] =
+            POSSIBLE_SKEWED_RESPONSE_CODE_DESCRIPTION
         op.interceptors.add(FailedResultInterceptor(clockSkewException))
 
         op.interceptors.add(ClockSkewInterceptor())
@@ -175,4 +178,18 @@ class ClockSkewInterceptorTest {
         }
         return SdkHttpClient(mockEngine)
     }
+
+    /**
+     * Create a new test operation using [serialized] as the already serialized version of the input type [I]
+     * and [deserialized] as the result of "deserialization" from an HTTP response.
+     */
+    inline fun <reified I, reified O> newTestOperation(serialized: HttpRequestBuilder, deserialized: O): SdkHttpOperation<I, O> =
+        SdkHttpOperation.build<I, O> {
+            serializer = HttpSerialize<I> { _, _ -> serialized }
+            deserializer = HttpDeserialize<O> { _, _ -> deserialized }
+
+            // required operation context
+            operationName = "TestOperation"
+            serviceName = "TestService"
+        }
 }

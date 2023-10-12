@@ -87,7 +87,6 @@ object RuntimeTypes {
             val FlexibleChecksumsRequestInterceptor = symbol("FlexibleChecksumsRequestInterceptor")
             val FlexibleChecksumsResponseInterceptor = symbol("FlexibleChecksumsResponseInterceptor")
             val ResponseLengthValidationInterceptor = symbol("ResponseLengthValidationInterceptor")
-            val ClockSkewInterceptor = symbol("ClockSkewInterceptor")
         }
     }
 
@@ -367,6 +366,7 @@ object RuntimeTypes {
         val AwsQueryCompatibleErrorDetails = symbol("AwsQueryCompatibleErrorDetails")
         val setAwsQueryCompatibleErrorMetadata = symbol("setAwsQueryCompatibleErrorMetadata")
         val XAmznQueryErrorHeader = symbol("X_AMZN_QUERY_ERROR_HEADER")
+        val ClockSkewInterceptor = symbol("ClockSkewInterceptor")
     }
 
     object AwsJsonProtocols : RuntimeTypePackage(KotlinDependency.AWS_JSON_PROTOCOLS) {
