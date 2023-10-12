@@ -6,6 +6,7 @@ package aws.smithy.kotlin.runtime.http.interceptors
 
 import aws.smithy.kotlin.runtime.ErrorMetadata
 import aws.smithy.kotlin.runtime.SdkBaseException
+import aws.smithy.kotlin.runtime.ServiceErrorMetadata
 import aws.smithy.kotlin.runtime.client.ProtocolRequestInterceptorContext
 import aws.smithy.kotlin.runtime.client.ResponseInterceptorContext
 import aws.smithy.kotlin.runtime.http.operation.HttpOperationContext
@@ -98,18 +99,18 @@ public class ClockSkewInterceptor : HttpInterceptor {
             Instant.fromIso8601(it)
         } ?: context.executionContext[HttpOperationContext.ClockSkewApproximateSigningTime]
 
-        if (clientTime.isSkewed(serverTime, context.protocolResponse?.status?.description)) {
+        val ex = (context.response.exceptionOrNull() as? SdkBaseException) ?: return context.response
+        val errorCode = ex.sdkErrorMetadata.attributes.getOrNull(ServiceErrorMetadata.ErrorCode)
+
+        if (clientTime.isSkewed(serverTime, errorCode)) {
             val skew = clientTime.until(serverTime)
             logger.warn { "client clock ($clientTime) is skewed $skew from the server ($serverTime), applying correction" }
             _currentSkew.getAndSet(skew)
             context.executionContext[HttpOperationContext.ClockSkew] = skew
 
             // Mark the exception as retryable
-            val ex = (context.response.exceptionOrNull() as? SdkBaseException)
-            ex?.sdkErrorMetadata?.attributes?.set(ErrorMetadata.Retryable, true)
-            ex?.let { return Result.failure(it) }
-        } else {
-            logger.trace { "client clock ($clientTime) is not skewed from the server ($serverTime)" }
+            ex.sdkErrorMetadata.attributes[ErrorMetadata.Retryable] = true
+            return Result.failure(ex)
         }
 
         return context.response

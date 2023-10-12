@@ -4,12 +4,16 @@
  */
 package aws.smithy.kotlin.runtime.http.interceptors
 
+import aws.smithy.kotlin.runtime.SdkBaseException
+import aws.smithy.kotlin.runtime.ServiceErrorMetadata
+import aws.smithy.kotlin.runtime.client.ResponseInterceptorContext
 import aws.smithy.kotlin.runtime.http.*
 import aws.smithy.kotlin.runtime.http.interceptors.ClockSkewInterceptor.Companion.CLOCK_SKEW_THRESHOLD
 import aws.smithy.kotlin.runtime.http.interceptors.ClockSkewInterceptor.Companion.isSkewed
 import aws.smithy.kotlin.runtime.http.operation.HttpOperationContext
 import aws.smithy.kotlin.runtime.http.operation.newTestOperation
 import aws.smithy.kotlin.runtime.http.operation.roundTrip
+import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
 import aws.smithy.kotlin.runtime.http.response.HttpResponse
 import aws.smithy.kotlin.runtime.httptest.TestEngine
@@ -83,10 +87,8 @@ class ClockSkewInterceptorTest {
 
         val client = getMockClient(
             "bla".encodeToByteArray(),
-            Headers {
-                append("Date", serverTimeString)
-            },
-            HttpStatusCode(403, POSSIBLE_SKEWED_RESPONSE_CODE_DESCRIPTION),
+            Headers { append("Date", serverTimeString) },
+            HttpStatusCode(403, "Forbidden"),
         )
 
         val req = HttpRequestBuilder().apply {
@@ -95,6 +97,11 @@ class ClockSkewInterceptorTest {
         req.headers.append("x-amz-date", clientTimeString)
 
         val op = newTestOperation<Unit, Unit>(req, Unit)
+
+        val clockSkewException = SdkBaseException()
+        clockSkewException.sdkErrorMetadata.attributes[ServiceErrorMetadata.ErrorCode] = POSSIBLE_SKEWED_RESPONSE_CODE_DESCRIPTION
+        op.interceptors.add(FailedResultInterceptor(clockSkewException))
+
         op.interceptors.add(ClockSkewInterceptor())
 
         op.roundTrip(client, Unit)
@@ -124,12 +131,36 @@ class ClockSkewInterceptorTest {
         req.headers.append("x-amz-date", clientTimeString)
 
         val op = newTestOperation<Unit, Unit>(req, Unit)
+
+        val clockSkewException = SdkBaseException()
+        clockSkewException.sdkErrorMetadata.attributes[ServiceErrorMetadata.ErrorCode] = POSSIBLE_SKEWED_RESPONSE_CODE_DESCRIPTION
+        op.interceptors.add(FailedResultInterceptor(clockSkewException))
+
         op.interceptors.add(ClockSkewInterceptor())
 
-        op.roundTrip(client, Unit)
+        // The request should fail because it's a non-retryable error, but there should be no skew detected.
+        assertFailsWith<SdkBaseException> {
+            op.roundTrip(client, Unit)
+        }
 
         // Validate no skew was detected
         assertNull(op.context.getOrNull(HttpOperationContext.ClockSkew))
+    }
+
+    /**
+     * An interceptor which returns a [Result.failure] with the given [exception] for the first [timesToFail] times its invoked.
+     * This simulates a service returning a clock skew exception and then successfully processing any successive requests.
+     */
+    private class FailedResultInterceptor(val exception: SdkBaseException, val timesToFail: Int = 1): HttpInterceptor {
+        var failuresSent = 0
+
+        override suspend fun modifyBeforeAttemptCompletion(context: ResponseInterceptorContext<Any, Any, HttpRequest, HttpResponse?>): Result<Any> {
+            if (failuresSent == timesToFail) {
+                return context.response
+            }
+            failuresSent += 1
+            return Result.failure(exception)
+        }
     }
 
     private fun getMockClient(response: ByteArray, responseHeaders: Headers = Headers.Empty, httpStatusCode: HttpStatusCode = HttpStatusCode.OK): SdkHttpClient {
