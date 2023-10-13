@@ -7,6 +7,7 @@ package software.amazon.smithy.kotlin.codegen
 
 import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.kotlin.codegen.lang.isValidPackageName
+import software.amazon.smithy.kotlin.codegen.utils.getOrNull
 import software.amazon.smithy.kotlin.codegen.utils.toCamelCase
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.knowledge.NullableIndex.CheckMode
@@ -239,12 +240,12 @@ val CheckMode.kotlinPluginSetting: String
 
 enum class DefaultValueSerializationMode(val value: String) {
     /**
-     * Always serialize default values even if they are set to the default
+     * Always serialize values even if they are set to the modeled default
      */
     ALWAYS("always"),
 
     /**
-     * Only serialize default values when they differ from the default given in the model.
+     * Only serialize values when they differ from the modeled default or are marked `@required`
      */
     WHEN_DIFFERENT("whenDifferent"),
     ;
@@ -274,8 +275,14 @@ data class ApiSettings(
         const val DEFAULT_VALUE_SERIALIZATION_MODE = "defaultValueSerializationMode"
 
         fun fromNode(node: Optional<ObjectNode>): ApiSettings = node.map {
-            val visibility = Visibility.fromValue(node.get().getStringMemberOrDefault(VISIBILITY, "public"))
-            val checkMode = checkModefromValue(node.get().getStringMemberOrDefault(NULLABILITY_CHECK_MODE, "clientCareful"))
+            val visibility = node.get()
+                .getStringMember(VISIBILITY)
+                .map { Visibility.fromValue(it.value) }
+                .getOrNull() ?: Visibility.PUBLIC
+            val checkMode = node.get()
+                .getStringMember(NULLABILITY_CHECK_MODE)
+                .map { checkModefromValue(it.value) }
+                .getOrNull() ?: CheckMode.CLIENT_CAREFUL
             val defaultValueSerializationMode = DefaultValueSerializationMode.fromValue(
                 node.get()
                     .getStringMemberOrDefault(

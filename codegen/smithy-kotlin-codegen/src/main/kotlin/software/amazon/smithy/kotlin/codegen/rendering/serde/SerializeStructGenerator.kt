@@ -582,7 +582,7 @@ open class SerializeStructGenerator(
                 ""
             }
             val fn = serializerFn.format(memberShape, "input.$memberName")
-            writer.write("${defaultCheck}${fn}$postfix")
+            writer.write("$defaultCheck$fn$postfix")
         }
     }
 

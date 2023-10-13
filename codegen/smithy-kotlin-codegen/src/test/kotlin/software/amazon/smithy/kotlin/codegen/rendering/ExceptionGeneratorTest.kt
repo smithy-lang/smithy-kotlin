@@ -172,7 +172,7 @@ class ExceptionGeneratorTest {
         val e = assertFailsWith<CodegenException> {
             StructureGenerator(renderingCtx).render()
         }
-        e.message.shouldContainOnlyOnceWithDiff("Message is a reserved name for exception types and cannot be used for any other property")
+        e.message.shouldContainOnlyOnceWithDiff("message is a reserved name for exception types and cannot be used for any other property")
     }
 
     class BaseExceptionGeneratorTest {

@@ -182,10 +182,10 @@ class KotlinSymbolProvider(private val model: Model, private val settings: Kotli
             .toBuilder()
             .apply {
                 val isNullable = nullableIndex.isMemberNullable(shape, settings.api.nullabilityCheckMode)
-                if (isNullable) nullable()
-
-                // only use @default if type is `T`
-                if (!isNullable) {
+                if (isNullable) {
+                    nullable()
+                } else {
+                    // only use @default if type is `T`
                     shape.getTrait<DefaultTrait>()?.let {
                         defaultValue(it.getDefaultValue(targetShape))
                     }
@@ -286,15 +286,10 @@ class KotlinSymbolProvider(private val model: Model, private val settings: Kotli
     /**
      * Creates a symbol builder for the shape with the given type name in the root namespace.
      */
-    private fun createSymbolBuilder(shape: Shape?, typeName: String, nullable: Boolean = false): Symbol.Builder {
-        val builder = Symbol.builder()
+    private fun createSymbolBuilder(shape: Shape?, typeName: String): Symbol.Builder =
+        Symbol.builder()
             .putProperty(SymbolProperty.SHAPE_KEY, shape)
             .name(typeName)
-        if (nullable) {
-            builder.nullable()
-        }
-        return builder
-    }
 
     private fun getDefaultValueForNumber(type: ShapeType, value: String) = when (type) {
         ShapeType.LONG -> "${value}L"
@@ -314,8 +309,7 @@ class KotlinSymbolProvider(private val model: Model, private val settings: Kotli
         shape: Shape?,
         typeName: String,
         namespace: String,
-        nullable: Boolean = false,
-    ): Symbol.Builder = createSymbolBuilder(shape, typeName, nullable).namespace(namespace, ".")
+    ): Symbol.Builder = createSymbolBuilder(shape, typeName).namespace(namespace, ".")
 }
 
 // Add a reference and it's children

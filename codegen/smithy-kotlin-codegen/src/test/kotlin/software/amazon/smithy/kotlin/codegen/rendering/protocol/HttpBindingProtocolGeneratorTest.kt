@@ -512,7 +512,7 @@ internal class SmokeTestOperationDeserializer: HttpDeserialize<SmokeTestResponse
     }
 
     @Test
-    fun itValidatesRequiredAndNonBlankURIBindings() {
+    fun itValidatesRequiredAndNonBlankUriBindings() {
         val model = """
             @http(method: "POST", uri: "/foo/{bar}/{baz}")
             operation Foo {

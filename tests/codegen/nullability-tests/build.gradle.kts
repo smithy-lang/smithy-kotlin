@@ -48,8 +48,6 @@ val generateSdk = tasks.register<SmithyBuild>("generateSdk") {
     classpath = codegen
     inputs.file(projectDir.resolve("smithy-build.json"))
     inputs.files(codegen)
-    doLast {
-    }
 }
 
 tasks.named<SmithyValidate>("smithyValidate") {

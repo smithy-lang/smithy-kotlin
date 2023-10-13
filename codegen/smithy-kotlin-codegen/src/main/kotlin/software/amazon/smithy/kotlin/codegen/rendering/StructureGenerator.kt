@@ -77,7 +77,7 @@ class StructureGenerator(
         val prefix = if (shape.isError && memberName == "message") {
             val targetShape = model.expectShape(memberShape.target)
             if (!targetShape.isStringShape) {
-                throw CodegenException("Message is a reserved name for exception types and cannot be used for any other property")
+                throw CodegenException("message is a reserved name for exception types and cannot be used for any other property")
             }
             "override"
         } else {
