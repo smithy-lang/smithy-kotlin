@@ -162,14 +162,14 @@ IoT Jobs Data Plane,IotJobsDataPlane
 IoT RoboRunner,IotRoboRunner
 IoT Wireless,IotWireless
 IoT,Iot
-IoTAnalytics,IoTAnalytics
+IoTAnalytics,IotAnalytics
 IotDeviceAdvisor,IotDeviceAdvisor
-IoTFleetHub,IoTFleetHub
-IoTFleetWise,IoTFleetWise
-IoTSecureTunneling,IoTSecureTunneling
-IoTSiteWise,IoTSiteWise
-IoTThingsGraph,IoTThingsGraph
-IoTTwinMaker,IoTTwinMaker
+IoTFleetHub,IotFleetHub
+IoTFleetWise,IotFleetWise
+IoTSecureTunneling,IotSecureTunneling
+IoTSiteWise,IotSiteWise
+IoTThingsGraph,IotThingsGraph
+IoTTwinMaker,IotTwinMaker
 IVS RealTime,IvsRealTime
 ivs,Ivs
 ivschat,Ivschat
@@ -309,7 +309,7 @@ Service Catalog,ServiceCatalog
 Service Quotas,ServiceQuotas
 ServiceDiscovery,ServiceDiscovery
 SES,Ses
-SESv2,SesV2
+SESv2,Sesv2
 SFN,Sfn
 Shield,Shield
 signer,Signer

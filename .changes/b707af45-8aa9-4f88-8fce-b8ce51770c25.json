@@ -1,0 +1,5 @@
+{
+    "id": "b707af45-8aa9-4f88-8fce-b8ce51770c25",
+    "type": "misc",
+    "description": "**BREAKING**: refactor CaseUtils to better deal with plurals and other edge cases."
+}

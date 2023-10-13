@@ -27,7 +27,7 @@ class NamingTest {
         assertEquals("ElastiCache", clientName("ElastiCache"))
         assertEquals("ApiGatewayManagement", clientName("ApiGatewayManagementApi"))
         assertEquals("MigrationHubConfig", clientName("MigrationHub Config"))
-        assertEquals("IoTFleetHub", clientName("IoTFleetHub"))
+        assertEquals("IotFleetHub", clientName("IoTFleetHub"))
         assertEquals("Iot1ClickProjects", clientName("IoT 1Click Projects"))
         assertEquals("DynamoDb", clientName("DynamoDB"))
 
@@ -48,8 +48,8 @@ class NamingTest {
             "ACL" to "acl",
             "ACLList" to "aclList",
             "fooey" to "fooey",
-            "stringA" to "stringa",
-            "StringA" to "stringa",
+            "stringA" to "stringA",
+            "StringA" to "stringA",
         )
 
         tests.forEach { (input, expected) ->
@@ -78,8 +78,8 @@ class NamingTest {
             "application/vnd.amazonaws.card.generic" to "ApplicationVndAmazonawsCardGeneric",
             "IPV4" to "Ipv4",
             "ipv4" to "Ipv4",
-            "IPv4" to "IpV4",
-            "ipV4" to "IpV4",
+            "IPv4" to "Ipv4",
+            "ipV4" to "Ipv4",
             "IPMatch" to "IpMatch",
             "S3" to "S3",
             "EC2Instance" to "Ec2Instance",
@@ -87,12 +87,12 @@ class NamingTest {
             "AWS::EC2::CustomerGateway" to "AwsEc2CustomerGateway",
             "application/pdf" to "ApplicationPdf",
             "ADConnector" to "AdConnector",
-            "MS-CHAPv1" to "MsChapV1",
+            "MS-CHAPv1" to "MsChapv1",
             "One-Way: Outgoing" to "OneWayOutgoing",
             "scram_sha_1" to "ScramSha1",
-            "EC_prime256v1" to "EcPrime256V1",
+            "EC_prime256v1" to "EcPrime256v1",
             "EC_PRIME256V1" to "EcPrime256V1",
-            "EC2v11.4" to "Ec2V11_4",
+            "EC2v11.4" to "Ec2v11_4",
             "nodejs4.3-edge" to "Nodejs4_3_Edge",
             "BUILD_GENERAL1_SMALL" to "BuildGeneral1Small",
             "SSE_S3" to "SseS3",
@@ -100,8 +100,8 @@ class NamingTest {
             "T100" to "T100",
             "s3:ObjectCreated:*" to "S3ObjectCreated",
             "s3:ObjectCreated:Put" to "S3ObjectCreatedPut",
-            "TLSv1" to "TlsV1",
-            "TLSv1.2" to "TlsV1_2",
+            "TLSv1" to "Tlsv1",
+            "TLSv1.2" to "Tlsv1_2",
             "us-east-1" to "UsEast1",
             "io1" to "Io1",
             "testNESTEDAcronym" to "TestNestedAcronym",
@@ -226,7 +226,7 @@ class NamingTest {
     @Test
     fun testAllNames() {
         // Set this to true to write a new test expectation file
-        val publishUpdate = false
+        val publishUpdate = true
         val allNames = this::class.java.getResource("/all-names-test-output.txt")?.readText()!!
         val errors = mutableListOf<String>()
         val output = StringBuilder()
@@ -241,7 +241,7 @@ class NamingTest {
             output.appendLine("$input,$actual")
         }
         if (publishUpdate) {
-            File("test-output.txt").writeText(output.toString())
+            File("all-names-test-output.txt").writeText(output.toString())
         }
         if (errors.isNotEmpty()) {
             fail(errors.joinToString("\n"))
@@ -252,7 +252,7 @@ class NamingTest {
     fun testClientNames() {
         // jq '.. | select(.sdkId?).sdkId' codegen/sdk/aws-models/*.json > /tmp/sdk-ids.txt
         // Set this to true to write a new test expectation file
-        val publishUpdate = false
+        val publishUpdate = true
         val allNames = this::class.java.getResource("/sdk-ids-test-output.txt")?.readText()!!
         val errors = mutableListOf<String>()
         val output = StringBuilder()

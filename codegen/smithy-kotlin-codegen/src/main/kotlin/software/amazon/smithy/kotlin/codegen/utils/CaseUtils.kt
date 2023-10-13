@@ -9,11 +9,12 @@ package software.amazon.smithy.kotlin.codegen.utils
  */
 fun String.splitOnWordBoundaries(): List<String> {
     // This is taken from Rust: https://github.com/awslabs/smithy-rs/pull/3037/files#diff-4175c66ee81a450fcf1cd3e256f36ae2c8e0b30b910be8ca505135fbe215144d
-    // previously we used the Java v2 implementation https://github.com/aws/aws-sdk-java-v2/blob/2.20.162/utils/src/main/java/software/amazon/awssdk/utils/internal/CodegenNamingUtils.java#L36
+    // with minor changes (s3 and iot as whole words). Previously we used the Java v2 implementation
+    // https://github.com/aws/aws-sdk-java-v2/blob/2.20.162/utils/src/main/java/software/amazon/awssdk/utils/internal/CodegenNamingUtils.java#L36
     // but this has some edge cases it doesn't handle well
     val out = mutableListOf<String>()
     // These are whole words but cased differently, e.g. `IPv4`, `MiB`, `GiB`, `TtL`
-    val completeWords = listOf("ipv4", "ipv6", "sigv4", "mib", "gib", "kib", "ttl")
+    val completeWords = listOf("ipv4", "ipv6", "sigv4", "mib", "gib", "kib", "ttl", "iot", "s3")
     var currentWord = ""
 
     // emit the current word and update from the next character
@@ -27,41 +28,43 @@ fun String.splitOnWordBoundaries(): List<String> {
             ""
         }
     }
-    val allLowerCase = this.lowercase() == this
-    this.forEachIndexed { index, nextCharacter ->
-        val peek = this.getOrNull(index + 1)
-        val doublePeek = this.getOrNull(index + 2)
+
+    val allLowerCase = lowercase() == this
+    forEachIndexed { index, nextChar ->
+        val peek = getOrNull(index + 1)
+        val doublePeek = getOrNull(index + 2)
         val completeWordInProgress = completeWords.any {
-            (currentWord + this.substring(index)).lowercase().startsWith(
-                it,
-            )
+            (currentWord + substring(index)).lowercase().startsWith(it)
         } && !completeWords.contains(currentWord.lowercase())
+
         when {
             // [C] in these docs indicates the value of nextCharacter
             // A[_]B
-            !nextCharacter.isLetterOrDigit() -> emit(nextCharacter)
+            !nextChar.isLetterOrDigit() -> emit(nextChar)
 
             // If we have no letters so far, push the next letter (we already know it's a letter or digit)
-            currentWord.isEmpty() -> currentWord += nextCharacter.toString()
+            currentWord.isEmpty() -> currentWord += nextChar.toString()
 
             // Abc[D]ef or Ab2[D]ef
-            !completeWordInProgress && loweredFollowedByUpper(currentWord, nextCharacter) -> emit(nextCharacter)
+            !completeWordInProgress && loweredFollowedByUpper(currentWord, nextChar) -> emit(nextChar)
 
             // s3[k]ey
-            !completeWordInProgress && allLowerCase && digitFollowedByLower(currentWord, nextCharacter) -> emit(
-                nextCharacter,
-            )
+            !completeWordInProgress && allLowerCase && digitFollowedByLower(currentWord, nextChar) -> emit(nextChar)
 
             // DB[P]roxy, or `IAM[U]ser` but not AC[L]s
-            endOfAcronym(currentWord, nextCharacter, peek, doublePeek) -> emit(nextCharacter)
+            endOfAcronym(currentWord, nextChar, peek, doublePeek) -> emit(nextChar)
+
+            // emit complete words
+            !completeWordInProgress && completeWords.contains(currentWord.lowercase()) -> emit(nextChar)
 
             // If we haven't found a word boundary, push it and keep going
-            else -> currentWord += nextCharacter.toString()
+            else -> currentWord += nextChar.toString()
         }
     }
     if (currentWord.isNotEmpty()) {
         out += currentWord
     }
+
     return out
 }
 
@@ -96,6 +99,13 @@ private fun loweredFollowedByUpper(current: String, nextChar: Char): Boolean {
         return false
     }
     return current.last().isLowerCase() || current.last().isDigit()
+}
+
+private fun loweredFollowedByDigit(current: String, nextChar: Char): Boolean {
+    if (!nextChar.isDigit()) {
+        return false
+    }
+    return current.last().isLowerCase()
 }
 
 private fun digitFollowedByLower(current: String, nextChar: Char): Boolean =
