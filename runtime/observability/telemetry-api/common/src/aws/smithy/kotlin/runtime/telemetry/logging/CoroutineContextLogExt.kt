@@ -7,13 +7,20 @@ package aws.smithy.kotlin.runtime.telemetry.logging
 
 import aws.smithy.kotlin.runtime.ExperimentalApi
 import aws.smithy.kotlin.runtime.InternalApi
-import aws.smithy.kotlin.runtime.telemetry.context.Context
-import aws.smithy.kotlin.runtime.telemetry.context.telemetryContext
 import aws.smithy.kotlin.runtime.telemetry.telemetryProvider
+import aws.smithy.kotlin.runtime.telemetry.trace.SpanContext
+import aws.smithy.kotlin.runtime.telemetry.trace.traceSpan
 import kotlinx.coroutines.withContext
 import kotlin.coroutines.AbstractCoroutineContextElement
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.coroutineContext
+
+// NOTE: these keys are specifically chosen to match the ones used by OpenTelemetry
+// so that any of the javaagent/autoconfigure MDC instrumentation doesn't result in
+// multiple key/value pairs with the same information.
+// see: https://github.com/open-telemetry/opentelemetry-java-instrumentation/blob/v1.30.0/instrumentation-api-semconv/src/main/java/io/opentelemetry/instrumentation/api/log/LoggingContextConstants.java#L14
+private const val TRACE_ID_KEY = "trace_id"
+private const val SPAN_ID_KEY = "span_id"
 
 /**
  * Coroutine scoped telemetry context used for carrying telemetry provider configuration
@@ -72,14 +79,17 @@ public fun CoroutineContext.log(
 ) {
     val logger = this.telemetryProvider.loggerProvider.getOrCreateLogger(sourceComponent)
     if (!logger.isEnabledFor(level)) return
-    val context = this.telemetryContext
     val loggingContext = this.loggingContext
+    val spanContext = this.traceSpan?.spanContext?.takeIf(SpanContext::isValid)
     logger.atLevel(level)
         .apply {
             ex?.let { setCause(it) }
             setMessage(content)
-            context?.let { setContext(it) }
             loggingContext.forEach { entry -> setKeyValuePair(entry.key, entry.value) }
+            if (spanContext != null) {
+                setKeyValuePair(TRACE_ID_KEY, spanContext.traceId)
+                setKeyValuePair(SPAN_ID_KEY, spanContext.spanId)
+            }
         }.emit()
 }
 
@@ -236,21 +246,7 @@ private class ContextAwareLogger(
     override fun warn(t: Throwable?, msg: () -> String) = context.warn(sourceComponent, t, msg)
     override fun error(t: Throwable?, msg: () -> String) = context.error(sourceComponent, t, msg)
     override fun isEnabledFor(level: LogLevel): Boolean = delegate.isEnabledFor(level)
-    override fun atLevel(level: LogLevel): LogRecordBuilder {
-        val builder = delegate.atLevel(level)
-        val telemetryContext = context.telemetryContext
-        return telemetryContext?.let { ContextAwareLogRecordBuilder(builder, it) } ?: builder
-    }
-}
-private class ContextAwareLogRecordBuilder(
-    private val delegate: LogRecordBuilder,
-    private var context: Context,
-) : LogRecordBuilder by delegate {
-    override fun setContext(context: Context) { this.context = context }
-    override fun emit() {
-        delegate.setContext(context)
-        delegate.emit()
-    }
+    override fun atLevel(level: LogLevel): LogRecordBuilder = delegate.atLevel(level)
 }
 
 /**

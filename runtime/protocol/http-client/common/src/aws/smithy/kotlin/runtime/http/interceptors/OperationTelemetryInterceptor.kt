@@ -57,14 +57,6 @@ internal class OperationTelemetryInterceptor(
             metrics.rpcCallDuration.recordSeconds(callDuration, perRpcAttributes, currentCtx)
         }
 
-        context.protocolRequest?.body?.contentLength?.let {
-            metrics.rpcRequestSize.record(it, perRpcAttributes, currentCtx)
-        }
-
-        context.protocolResponse?.body?.contentLength?.let {
-            metrics.rpcResponseSize.record(it, perRpcAttributes, currentCtx)
-        }
-
         context.response.exceptionOrNull()?.let { ex ->
             val exType = ex::class.simpleName
             val errorAttributes = if (exType != null) {
@@ -90,9 +82,6 @@ internal class OperationTelemetryInterceptor(
     override fun readAfterAttempt(context: ResponseInterceptorContext<Any, Any, HttpRequest, HttpResponse?>) {
         metrics.rpcAttempts.add(1L, perRpcAttributes, metrics.provider.contextManager.current())
         attempts++
-        if (attempts > 1) {
-            metrics.rpcRetryCount.add(1L, perRpcAttributes, metrics.provider.contextManager.current())
-        }
 
         val attemptDuration = attemptStart?.elapsedNow() ?: return
         metrics.rpcAttemptDuration.recordSeconds(attemptDuration, perRpcAttributes, metrics.provider.contextManager.current())
