@@ -11,6 +11,18 @@ import kotlinx.coroutines.withTimeout
 import kotlin.coroutines.CoroutineContext
 import kotlin.time.Duration
 
-// FIXME add engines to test
-internal actual fun engineFactories(): List<TestEngineFactory> =
-    listOf()
+internal actual fun runBlockingTest(
+    context: CoroutineContext,
+    timeout: Duration?,
+    block: suspend CoroutineScope.() -> Unit,
+) {
+    runBlocking(context) {
+        if (timeout != null) {
+            withTimeout(timeout) {
+                block()
+            }
+        } else {
+            block()
+        }
+    }
+}
