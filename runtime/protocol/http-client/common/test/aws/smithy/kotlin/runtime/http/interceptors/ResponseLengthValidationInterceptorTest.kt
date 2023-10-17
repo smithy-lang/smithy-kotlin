@@ -22,7 +22,7 @@ object ResponseLengthValidationTestInput
 data class ResponseLengthValidationTestOutput(val body: HttpBody)
 
 private const val CONTENT_LENGTH_HEADER_NAME = "Content-Length"
-private val RESPONSE = "a".repeat(500).encodeToByteArray()
+private val RESPONSE = "a".repeat(500).toByteArray()
 
 fun op() =
     SdkHttpOperation.build {
