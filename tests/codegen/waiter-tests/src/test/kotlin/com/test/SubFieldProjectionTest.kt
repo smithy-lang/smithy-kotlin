@@ -9,10 +9,11 @@ import com.test.utils.successTest
 import com.test.waiters.waitUntilHasFilteredSubStruct
 import com.test.waiters.waitUntilHasStructWithStringByProjection
 import com.test.waiters.waitUntilHasStructWithSubstructWithStringByProjection
-import org.junit.jupiter.api.Test
+import kotlin.test.Test
 
 class SubFieldProjectionTest {
-    @Test fun testHasStructWithStringByProjection() = successTest(
+    @Test
+    fun testHasStructWithStringByProjection() = successTest(
         GetSubFieldProjectionRequest { name = "test" },
         WaitersTestClient::waitUntilHasStructWithStringByProjection,
         GetSubFieldProjectionResponse { },
@@ -40,7 +41,8 @@ class SubFieldProjectionTest {
         },
     )
 
-    @Test fun testHasStructWithSubstructWithStringByProjection() = successTest(
+    @Test
+    fun testHasStructWithSubstructWithStringByProjection() = successTest(
         GetSubFieldProjectionRequest { name = "test" },
         WaitersTestClient::waitUntilHasStructWithSubstructWithStringByProjection,
         GetSubFieldProjectionResponse { },
@@ -78,7 +80,8 @@ class SubFieldProjectionTest {
         },
     )
 
-    @Test fun testHasFilteredSubStruct() = successTest(
+    @Test
+    fun testHasFilteredSubStruct() = successTest(
         GetSubFieldProjectionRequest { name = "test" },
         WaitersTestClient::waitUntilHasFilteredSubStruct,
         GetSubFieldProjectionResponse { },

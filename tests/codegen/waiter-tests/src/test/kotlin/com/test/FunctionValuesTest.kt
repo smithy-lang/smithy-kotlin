@@ -11,10 +11,11 @@ import com.test.model.Values
 import com.test.utils.successTest
 import com.test.waiters.waitUntilValuesFunctionAnySampleValuesEquals
 import com.test.waiters.waitUntilValuesFunctionSampleValuesEquals
-import org.junit.jupiter.api.Test
+import kotlin.test.Test
 
 class FunctionValuesTest {
-    @Test fun testValuesFunctionSampleValuesEquals() = successTest(
+    @Test
+    fun testValuesFunctionSampleValuesEquals() = successTest(
         GetFunctionValuesEqualsRequest { name = "test" },
         WaitersTestClient::waitUntilValuesFunctionSampleValuesEquals,
         GetFunctionValuesEqualsResponse {
@@ -33,7 +34,8 @@ class FunctionValuesTest {
         },
     )
 
-    @Test fun testValuesFunctionAnySampleValuesEquals() = successTest(
+    @Test
+    fun testValuesFunctionAnySampleValuesEquals() = successTest(
         GetFunctionValuesEqualsRequest { name = "test" },
         WaitersTestClient::waitUntilValuesFunctionAnySampleValuesEquals,
         GetFunctionValuesEqualsResponse {

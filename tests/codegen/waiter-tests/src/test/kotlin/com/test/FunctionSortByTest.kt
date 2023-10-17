@@ -11,10 +11,11 @@ import com.test.model.Struct
 import com.test.utils.successTest
 import com.test.waiters.waitUntilSortByNumberEquals
 import com.test.waiters.waitUntilSortByStringEquals
-import org.junit.jupiter.api.Test
+import kotlin.test.Test
 
 class FunctionSortByTest {
-    @Test fun testSortedByNumberEquals() = successTest(
+    @Test
+    fun testSortedByNumberEquals() = successTest(
         GetFunctionSortByEqualsRequest { name = "test" },
         WaitersTestClient::waitUntilSortByNumberEquals,
         GetFunctionSortByEqualsResponse {
@@ -34,7 +35,8 @@ class FunctionSortByTest {
         },
     )
 
-    @Test fun testSortByStringEquals() = successTest(
+    @Test
+    fun testSortByStringEquals() = successTest(
         GetFunctionSortByEqualsRequest { name = "test" },
         WaitersTestClient::waitUntilSortByStringEquals,
         GetFunctionSortByEqualsResponse {

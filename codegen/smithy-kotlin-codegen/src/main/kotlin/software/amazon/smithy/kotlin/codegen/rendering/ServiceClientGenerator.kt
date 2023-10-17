@@ -57,6 +57,11 @@ class ServiceClientGenerator(private val ctx: RenderingContext<ServiceShape>) {
              */
             val RenderingContext: SectionKey<RenderingContext<ServiceShape>> = SectionKey("RenderingContext")
         }
+
+        /**
+         * [SectionId] used when rendering the finalizeConfig block of a service client
+         */
+        object FinalizeConfig : SectionId
     }
 
     init {

@@ -5,8 +5,6 @@
 
 package aws.smithy.kotlin.runtime.telemetry.logging
 
-import aws.smithy.kotlin.runtime.telemetry.context.Context
-
 internal object NoOpLoggerProvider : LoggerProvider {
     override fun getOrCreateLogger(name: String): Logger = NoOpLogger
 }
@@ -26,6 +24,5 @@ private object NoOpLogRecordBuilder : LogRecordBuilder {
     override fun setMessage(message: String) {}
     override fun setMessage(message: MessageSupplier) {}
     override fun setKeyValuePair(key: String, value: Any) {}
-    override fun setContext(context: Context) {}
     override fun emit() {}
 }

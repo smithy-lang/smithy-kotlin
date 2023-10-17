@@ -11,6 +11,7 @@ import aws.smithy.kotlin.runtime.util.AttributeKey
 import aws.smithy.kotlin.runtime.util.Attributes
 import io.opentelemetry.api.OpenTelemetry
 import io.opentelemetry.api.trace.Span as OtelSpan
+import io.opentelemetry.api.trace.SpanContext as OtelSpanContext
 import io.opentelemetry.api.trace.SpanKind as OtelSpanKind
 import io.opentelemetry.api.trace.StatusCode as OtelStatus
 import io.opentelemetry.api.trace.Tracer as OtelTracer
@@ -43,16 +44,29 @@ private class OtelTracerImpl(
             }
             .setSpanKind(spanKind.toOtelSpanKind())
 
-        return OtelTraceSpan(name, spanBuilder.startSpan())
+        return OtelTraceSpanImpl(spanBuilder.startSpan())
     }
 }
 
-private class OtelTraceSpan(
-    override val name: String,
+private class OtelSpanContextImpl(private val otelSpanContext: OtelSpanContext) : SpanContext {
+    override val traceId: String
+        get() = otelSpanContext.traceId
+    override val spanId: String
+        get() = otelSpanContext.spanId
+    override val isRemote: Boolean
+        get() = otelSpanContext.isRemote
+    override val isValid: Boolean
+        get() = otelSpanContext.isValid
+}
+
+internal class OtelTraceSpanImpl(
     private val otelSpan: OtelSpan,
 ) : TraceSpan {
 
     private val spanScope = otelSpan.makeCurrent()
+
+    override val spanContext: SpanContext
+        get() = OtelSpanContextImpl(otelSpan.spanContext)
     override fun <T : Any> set(key: AttributeKey<T>, value: T) {
         key.otelAttrKeyOrNull(value)?.let { otelKey ->
             otelSpan.setAttribute(otelKey, value)

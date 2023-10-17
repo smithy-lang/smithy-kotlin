@@ -9,24 +9,27 @@ import com.test.utils.successTest
 import com.test.waiters.waitUntilStructListStringListMultiSelectList
 import com.test.waiters.waitUntilStructListStringMultiSelectList
 import com.test.waiters.waitUntilStructListSubStructPrimitivesBooleanMultiSelectList
-import org.junit.jupiter.api.Test
+import kotlin.test.Test
 
 class MultiSelectListTest {
-    @Test fun testStructListStringMultiSelectList() = successTest(
+    @Test
+    fun testStructListStringMultiSelectList() = successTest(
         GetMultiSelectListRequest { name = "test" },
         WaitersTestClient::waitUntilStructListStringMultiSelectList,
         GetMultiSelectListResponse { lists = EntityLists { structs = listOf(Struct { primitives = EntityPrimitives { string = "bar" } }, Struct { primitives = EntityPrimitives { string = "foo" } }) } },
         GetMultiSelectListResponse { lists = EntityLists { structs = listOf(Struct { primitives = EntityPrimitives { string = "foo" } }, Struct { primitives = EntityPrimitives { string = "bar" } }) } },
     )
 
-    @Test fun testStructListStringListMultiSelectList() = successTest(
+    @Test
+    fun testStructListStringListMultiSelectList() = successTest(
         GetMultiSelectListRequest { name = "test" },
         WaitersTestClient::waitUntilStructListStringListMultiSelectList,
         GetMultiSelectListResponse { lists = EntityLists { structs = listOf(Struct { primitives = EntityPrimitives { string = "foo" } }, Struct { primitives = EntityPrimitives { string = "bar" } }) } },
         GetMultiSelectListResponse { lists = EntityLists { structs = listOf(Struct { primitives = EntityPrimitives { string = "bar" } }, Struct { primitives = EntityPrimitives { string = "foo" } }) } },
     )
 
-    @Test fun testStructListSubStructPrimitivesBooleanMultiSelectList() = successTest(
+    @Test
+    fun testStructListSubStructPrimitivesBooleanMultiSelectList() = successTest(
         GetMultiSelectListRequest { name = "test" },
         WaitersTestClient::waitUntilStructListSubStructPrimitivesBooleanMultiSelectList,
         GetMultiSelectListResponse {

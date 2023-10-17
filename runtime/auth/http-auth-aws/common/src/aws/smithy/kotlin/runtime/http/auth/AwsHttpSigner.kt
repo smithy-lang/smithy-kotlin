@@ -12,8 +12,10 @@ import aws.smithy.kotlin.runtime.auth.awssigning.internal.setAwsChunkedBody
 import aws.smithy.kotlin.runtime.auth.awssigning.internal.setAwsChunkedHeaders
 import aws.smithy.kotlin.runtime.auth.awssigning.internal.useAwsChunkedEncoding
 import aws.smithy.kotlin.runtime.http.HttpBody
+import aws.smithy.kotlin.runtime.http.operation.HttpOperationContext
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
+import aws.smithy.kotlin.runtime.time.Instant
 import aws.smithy.kotlin.runtime.util.get
 import kotlin.time.Duration
 
@@ -123,7 +125,10 @@ public class AwsHttpSigner(private val config: Config) : HttpSigner {
             service = attributes.getOrNull(AwsSigningAttributes.SigningService) ?: checkNotNull(config.service)
             credentials = signingRequest.identity as Credentials
             algorithm = config.algorithm
+
+            // apply clock skew if applicable
             signingDate = attributes.getOrNull(AwsSigningAttributes.SigningDate)
+                ?: (Instant.now() + (attributes.getOrNull(HttpOperationContext.ClockSkew) ?: Duration.ZERO))
 
             signatureType = config.signatureType
             omitSessionToken = config.omitSessionToken

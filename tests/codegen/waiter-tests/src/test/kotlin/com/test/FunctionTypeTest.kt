@@ -14,7 +14,8 @@ import com.test.waiters.*
 import kotlin.test.Test
 
 class FunctionTypeTest {
-    @Test fun testTypeFunctionStringEquals() = successTest(
+    @Test
+    fun testTypeFunctionStringEquals() = successTest(
         GetFunctionTypeEqualsRequest { name = "test" },
         WaitersTestClient::waitUntilTypeFunctionStringEquals,
         GetFunctionTypeEqualsResponse {
@@ -22,7 +23,8 @@ class FunctionTypeTest {
         },
     )
 
-    @Test fun testTypeFunctionBooleanEquals() = successTest(
+    @Test
+    fun testTypeFunctionBooleanEquals() = successTest(
         GetFunctionTypeEqualsRequest { name = "test" },
         WaitersTestClient::waitUntilTypeFunctionBooleanEquals,
         GetFunctionTypeEqualsResponse {
@@ -30,7 +32,8 @@ class FunctionTypeTest {
         },
     )
 
-    @Test fun testTypeFunctionArrayEquals() = successTest(
+    @Test
+    fun testTypeFunctionArrayEquals() = successTest(
         GetFunctionTypeEqualsRequest { name = "test" },
         WaitersTestClient::waitUntilTypeFunctionArrayEquals,
         GetFunctionTypeEqualsResponse {
@@ -38,7 +41,8 @@ class FunctionTypeTest {
         },
     )
 
-    @Test fun testTypeFunctionShortEquals() = successTest(
+    @Test
+    fun testTypeFunctionShortEquals() = successTest(
         GetFunctionTypeEqualsRequest { name = "test" },
         WaitersTestClient::waitUntilTypeFunctionShortEquals,
         GetFunctionTypeEqualsResponse {
@@ -46,7 +50,8 @@ class FunctionTypeTest {
         },
     )
 
-    @Test fun testTypeFunctionIntegerEquals() = successTest(
+    @Test
+    fun testTypeFunctionIntegerEquals() = successTest(
         GetFunctionTypeEqualsRequest { name = "test" },
         WaitersTestClient::waitUntilTypeFunctionIntegerEquals,
         GetFunctionTypeEqualsResponse {
@@ -54,7 +59,8 @@ class FunctionTypeTest {
         },
     )
 
-    @Test fun testTypeFunctionLongEquals() = successTest(
+    @Test
+    fun testTypeFunctionLongEquals() = successTest(
         GetFunctionTypeEqualsRequest { name = "test" },
         WaitersTestClient::waitUntilTypeFunctionLongEquals,
         GetFunctionTypeEqualsResponse {
@@ -62,7 +68,8 @@ class FunctionTypeTest {
         },
     )
 
-    @Test fun testTypeFunctionFloatEquals() = successTest(
+    @Test
+    fun testTypeFunctionFloatEquals() = successTest(
         GetFunctionTypeEqualsRequest { name = "test" },
         WaitersTestClient::waitUntilTypeFunctionFloatEquals,
         GetFunctionTypeEqualsResponse {
@@ -70,7 +77,8 @@ class FunctionTypeTest {
         },
     )
 
-    @Test fun testTypeFunctionDoubleEquals() = successTest(
+    @Test
+    fun testTypeFunctionDoubleEquals() = successTest(
         GetFunctionTypeEqualsRequest { name = "test" },
         WaitersTestClient::waitUntilTypeFunctionDoubleEquals,
         GetFunctionTypeEqualsResponse {
@@ -78,7 +86,8 @@ class FunctionTypeTest {
         },
     )
 
-    @Test fun testTypeFunctionObjectEquals() = successTest(
+    @Test
+    fun testTypeFunctionObjectEquals() = successTest(
         GetFunctionTypeEqualsRequest { name = "test" },
         WaitersTestClient::waitUntilTypeFunctionObjectEquals,
         GetFunctionTypeEqualsResponse {
@@ -86,7 +95,8 @@ class FunctionTypeTest {
         },
     )
 
-    @Test fun testTypeFunctionMergedObjectEquals() = successTest(
+    @Test
+    fun testTypeFunctionMergedObjectEquals() = successTest(
         GetFunctionTypeEqualsRequest { name = "test" },
         WaitersTestClient::waitUntilTypeFunctionMergedObjectEquals,
         GetFunctionTypeEqualsResponse {
@@ -94,7 +104,8 @@ class FunctionTypeTest {
         },
     )
 
-    @Test fun testTypeFunctionNullEquals() = successTest(
+    @Test
+    fun testTypeFunctionNullEquals() = successTest(
         GetFunctionTypeEqualsRequest { name = "test" },
         WaitersTestClient::waitUntilTypeFunctionNullEquals,
         GetFunctionTypeEqualsResponse {

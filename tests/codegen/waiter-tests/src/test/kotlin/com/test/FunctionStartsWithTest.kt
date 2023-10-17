@@ -9,10 +9,11 @@ import com.test.model.GetFunctionStartsWithEqualsRequest
 import com.test.model.GetFunctionStartsWithEqualsResponse
 import com.test.utils.successTest
 import com.test.waiters.waitUntilStringStartsWithEquals
-import org.junit.jupiter.api.Test
+import kotlin.test.Test
 
 class FunctionStartsWithTest {
-    @Test fun testStringStartsWithEquals() = successTest(
+    @Test
+    fun testStringStartsWithEquals() = successTest(
         GetFunctionStartsWithEqualsRequest { name = "test" },
         WaitersTestClient::waitUntilStringStartsWithEquals,
         GetFunctionStartsWithEqualsResponse { primitives = EntityPrimitives { string = "baz" } },

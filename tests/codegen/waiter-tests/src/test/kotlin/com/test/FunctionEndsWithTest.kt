@@ -9,10 +9,11 @@ import com.test.model.GetFunctionEndsWithEqualsRequest
 import com.test.model.GetFunctionEndsWithEqualsResponse
 import com.test.utils.successTest
 import com.test.waiters.waitUntilStringEndsWithEquals
-import org.junit.jupiter.api.Test
+import kotlin.test.Test
 
 class FunctionEndsWithTest {
-    @Test fun testStringEndsWithEquals() = successTest(
+    @Test
+    fun testStringEndsWithEquals() = successTest(
         GetFunctionEndsWithEqualsRequest { name = "test" },
         WaitersTestClient::waitUntilStringEndsWithEquals,
         GetFunctionEndsWithEqualsResponse { primitives = EntityPrimitives { string = "foo" } },

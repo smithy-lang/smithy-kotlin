@@ -11,10 +11,11 @@ import com.test.model.GetFunctionToStringEqualsResponse
 import com.test.utils.successTest
 import com.test.waiters.waitUntilToStringFunctionBooleanEquals
 import com.test.waiters.waitUntilToStringFunctionStringEquals
-import org.junit.jupiter.api.Test
+import kotlin.test.Test
 
 class FunctionToStringTest {
-    @Test fun testToStringFunctionStringEquals() = successTest(
+    @Test
+    fun testToStringFunctionStringEquals() = successTest(
         GetFunctionToStringEqualsRequest { name = "test" },
         WaitersTestClient::waitUntilToStringFunctionStringEquals,
         GetFunctionToStringEqualsResponse {
@@ -25,7 +26,8 @@ class FunctionToStringTest {
         },
     )
 
-    @Test fun testToStringFunctionBooleanEquals() = successTest(
+    @Test
+    fun testToStringFunctionBooleanEquals() = successTest(
         GetFunctionToStringEqualsRequest { name = "test" },
         WaitersTestClient::waitUntilToStringFunctionBooleanEquals,
         GetFunctionToStringEqualsResponse {

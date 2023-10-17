@@ -8,11 +8,12 @@ import com.test.model.*
 import com.test.model.Enum
 import com.test.utils.successTest
 import com.test.waiters.*
-import org.junit.jupiter.api.Test
+import kotlin.test.Test
 
 class FunctionLengthTest {
     // list
-    @Test fun testBooleanListLength() = successTest(
+    @Test
+    fun testBooleanListLength() = successTest(
         GetFunctionLengthRequest { name = "test" },
         WaitersTestClient::waitUntilBooleanListLength,
         GetFunctionLengthResponse { },
@@ -25,7 +26,8 @@ class FunctionLengthTest {
         },
     )
 
-    @Test fun testStringListLength() = successTest(
+    @Test
+    fun testStringListLength() = successTest(
         GetFunctionLengthRequest { name = "test" },
         WaitersTestClient::waitUntilStringListLength,
         GetFunctionLengthResponse { },
@@ -38,7 +40,8 @@ class FunctionLengthTest {
         },
     )
 
-    @Test fun testIntegerListLength() = successTest(
+    @Test
+    fun testIntegerListLength() = successTest(
         GetFunctionLengthRequest { name = "test" },
         WaitersTestClient::waitUntilIntegerListLength,
         GetFunctionLengthResponse { },
@@ -51,7 +54,8 @@ class FunctionLengthTest {
         },
     )
 
-    @Test fun testEnumListLength() = successTest(
+    @Test
+    fun testEnumListLength() = successTest(
         GetFunctionLengthRequest { name = "test" },
         WaitersTestClient::waitUntilEnumListLength,
         GetFunctionLengthResponse { },
@@ -64,7 +68,8 @@ class FunctionLengthTest {
         },
     )
 
-    @Test fun testIntEnumListLength() = successTest(
+    @Test
+    fun testIntEnumListLength() = successTest(
         GetFunctionLengthRequest { name = "test" },
         WaitersTestClient::waitUntilIntEnumListLength,
         GetFunctionLengthResponse { },
@@ -78,7 +83,8 @@ class FunctionLengthTest {
     )
 
     // object projection
-    @Test fun testBooleanMapLength() = successTest(
+    @Test
+    fun testBooleanMapLength() = successTest(
         GetFunctionLengthRequest { name = "test" },
         WaitersTestClient::waitUntilBooleanMapLength,
         GetFunctionLengthResponse { },
@@ -91,7 +97,8 @@ class FunctionLengthTest {
         },
     )
 
-    @Test fun testStringMapLength() = successTest(
+    @Test
+    fun testStringMapLength() = successTest(
         GetFunctionLengthRequest { name = "test" },
         WaitersTestClient::waitUntilStringMapLength,
         GetFunctionLengthResponse { },
@@ -104,7 +111,8 @@ class FunctionLengthTest {
         },
     )
 
-    @Test fun testIntegerMapLength() = successTest(
+    @Test
+    fun testIntegerMapLength() = successTest(
         GetFunctionLengthRequest { name = "test" },
         WaitersTestClient::waitUntilIntegerMapLength,
         GetFunctionLengthResponse { },
@@ -117,7 +125,8 @@ class FunctionLengthTest {
         },
     )
 
-    @Test fun testEnumMapLength() = successTest(
+    @Test
+    fun testEnumMapLength() = successTest(
         GetFunctionLengthRequest { name = "test" },
         WaitersTestClient::waitUntilEnumMapLength,
         GetFunctionLengthResponse { },
@@ -130,7 +139,8 @@ class FunctionLengthTest {
         },
     )
 
-    @Test fun testIntEnumMapLength() = successTest(
+    @Test
+    fun testIntEnumMapLength() = successTest(
         GetFunctionLengthRequest { name = "test" },
         WaitersTestClient::waitUntilIntEnumMapLength,
         GetFunctionLengthResponse { },
@@ -144,7 +154,8 @@ class FunctionLengthTest {
     )
 
     // compound filter
-    @Test fun testHasStructWithBoolean() = successTest(
+    @Test
+    fun testHasStructWithBoolean() = successTest(
         GetFunctionLengthRequest { name = "test" },
         WaitersTestClient::waitUntilHasStructWithBoolean,
         GetFunctionLengthResponse { },
@@ -172,7 +183,8 @@ class FunctionLengthTest {
         },
     )
 
-    @Test fun testHasStructWithString() = successTest(
+    @Test
+    fun testHasStructWithString() = successTest(
         GetFunctionLengthRequest { name = "test" },
         WaitersTestClient::waitUntilHasStructWithString,
         GetFunctionLengthResponse { },
@@ -200,7 +212,8 @@ class FunctionLengthTest {
         },
     )
 
-    @Test fun testHasStructWithInteger() = successTest(
+    @Test
+    fun testHasStructWithInteger() = successTest(
         GetFunctionLengthRequest { name = "test" },
         WaitersTestClient::waitUntilHasStructWithInteger,
         GetFunctionLengthResponse { },
@@ -228,7 +241,8 @@ class FunctionLengthTest {
         },
     )
 
-    @Test fun testHasStructWithEnum() = successTest(
+    @Test
+    fun testHasStructWithEnum() = successTest(
         GetFunctionLengthRequest { name = "test" },
         WaitersTestClient::waitUntilHasStructWithEnum,
         GetFunctionLengthResponse { },
@@ -256,7 +270,8 @@ class FunctionLengthTest {
         },
     )
 
-    @Test fun testHasStructWithIntEnum() = successTest(
+    @Test
+    fun testHasStructWithIntEnum() = successTest(
         GetFunctionLengthRequest { name = "test" },
         WaitersTestClient::waitUntilHasStructWithIntEnum,
         GetFunctionLengthResponse { },
@@ -284,7 +299,8 @@ class FunctionLengthTest {
         },
     )
 
-    @Test fun testHasStructWithStringInStringList() = successTest(
+    @Test
+    fun testHasStructWithStringInStringList() = successTest(
         GetFunctionLengthRequest { name = "test" },
         WaitersTestClient::waitUntilHasStructWithStringInStringList,
         GetFunctionLengthResponse { },
@@ -334,7 +350,8 @@ class FunctionLengthTest {
         },
     )
 
-    @Test fun testHasStructWithEnumInEnumList() = successTest(
+    @Test
+    fun testHasStructWithEnumInEnumList() = successTest(
         GetFunctionLengthRequest { name = "test" },
         WaitersTestClient::waitUntilHasStructWithEnumInEnumList,
         GetFunctionLengthResponse { },
@@ -384,7 +401,8 @@ class FunctionLengthTest {
         },
     )
 
-    @Test fun testHasStructWithStringInEnumList() = successTest(
+    @Test
+    fun testHasStructWithStringInEnumList() = successTest(
         GetFunctionLengthRequest { name = "test" },
         WaitersTestClient::waitUntilHasStructWithStringInEnumList,
         GetFunctionLengthResponse { },
@@ -434,7 +452,8 @@ class FunctionLengthTest {
         },
     )
 
-    @Test fun testHasStructWithEnumInStringList() = successTest(
+    @Test
+    fun testHasStructWithEnumInStringList() = successTest(
         GetFunctionLengthRequest { name = "test" },
         WaitersTestClient::waitUntilHasStructWithEnumInStringList,
         GetFunctionLengthResponse { },

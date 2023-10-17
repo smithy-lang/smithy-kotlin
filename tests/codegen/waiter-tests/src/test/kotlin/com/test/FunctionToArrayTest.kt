@@ -12,10 +12,11 @@ import com.test.model.GetFunctionToArrayEqualsResponse
 import com.test.utils.successTest
 import com.test.waiters.waitUntilToArrayFunctionBooleanEquals
 import com.test.waiters.waitUntilToArrayFunctionStringListEquals
-import org.junit.jupiter.api.Test
+import kotlin.test.Test
 
 class FunctionToArrayTest {
-    @Test fun testToArrayFunctionStringListEquals() = successTest(
+    @Test
+    fun testToArrayFunctionStringListEquals() = successTest(
         GetFunctionToArrayEqualsRequest { name = "test" },
         WaitersTestClient::waitUntilToArrayFunctionStringListEquals,
         GetFunctionToArrayEqualsResponse {
@@ -26,7 +27,8 @@ class FunctionToArrayTest {
         },
     )
 
-    @Test fun testToArrayFunctionBooleanEquals() = successTest(
+    @Test
+    fun testToArrayFunctionBooleanEquals() = successTest(
         GetFunctionToArrayEqualsRequest { name = "test" },
         WaitersTestClient::waitUntilToArrayFunctionBooleanEquals,
         GetFunctionToArrayEqualsResponse {

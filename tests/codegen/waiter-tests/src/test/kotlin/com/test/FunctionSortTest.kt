@@ -10,10 +10,11 @@ import com.test.model.GetFunctionSortEqualsResponse
 import com.test.utils.successTest
 import com.test.waiters.waitUntilSortNumberEquals
 import com.test.waiters.waitUntilSortStringEquals
-import org.junit.jupiter.api.Test
+import kotlin.test.Test
 
 class FunctionSortTest {
-    @Test fun testSortNumberEquals() = successTest(
+    @Test
+    fun testSortNumberEquals() = successTest(
         GetFunctionSortEqualsRequest { name = "test" },
         WaitersTestClient::waitUntilSortNumberEquals,
         GetFunctionSortEqualsResponse {
@@ -23,7 +24,8 @@ class FunctionSortTest {
         },
     )
 
-    @Test fun testSortStringEquals() = successTest(
+    @Test
+    fun testSortStringEquals() = successTest(
         GetFunctionSortEqualsRequest { name = "test" },
         WaitersTestClient::waitUntilSortStringEquals,
         GetFunctionSortEqualsResponse {

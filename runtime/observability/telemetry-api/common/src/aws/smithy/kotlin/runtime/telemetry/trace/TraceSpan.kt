@@ -16,9 +16,9 @@ import aws.smithy.kotlin.runtime.util.emptyAttributes
  */
 public interface TraceSpan : Scope {
     /**
-     * The name of the span
+     * The immutable tracing context this span belongs to
      */
-    public val name: String
+    public val spanContext: SpanContext
 
     /**
      * Set an attribute on the span
@@ -34,7 +34,6 @@ public interface TraceSpan : Scope {
      */
     public fun mergeAttributes(attributes: Attributes)
 
-    // FIXME - when would we use OTeL trace events vs logs?
     /**
      * Add an event to this span
      * @param name the name of the event
