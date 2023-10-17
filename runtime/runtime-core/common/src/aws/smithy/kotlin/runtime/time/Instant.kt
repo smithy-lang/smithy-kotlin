@@ -5,6 +5,7 @@
 package aws.smithy.kotlin.runtime.time
 
 import kotlin.time.Duration
+import kotlin.time.Duration.Companion.milliseconds
 
 // FIXME - remove in favor of kotlinx-datetime before GA (assuming it's available). For now
 // we are stubbing this out for codegen purposes and supporting the various timestamp format parsers.
@@ -100,3 +101,5 @@ public fun Instant.Companion.fromEpochMilliseconds(milliseconds: Long): Instant 
     val ns = (milliseconds - secs * MILLISEC_PER_SEC) * NS_PER_MILLISEC
     return fromEpochSeconds(secs, ns.toInt())
 }
+
+public fun Instant.until(other: Instant): Duration = (other.epochMilliseconds - epochMilliseconds).milliseconds
