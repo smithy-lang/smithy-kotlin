@@ -4,7 +4,6 @@
  */
 package aws.smithy.kotlin.runtime.telemetry.logging.slf4j
 
-import aws.smithy.kotlin.runtime.telemetry.context.Context
 import aws.smithy.kotlin.runtime.telemetry.logging.LogLevel
 import aws.smithy.kotlin.runtime.telemetry.logging.LogRecordBuilder
 import aws.smithy.kotlin.runtime.telemetry.logging.LoggerProvider
@@ -45,10 +44,6 @@ private class Slf4j1xLogRecordBuilderAdapter(
 
     override fun setKeyValuePair(key: String, value: Any) {
         kvp[key] = value
-    }
-
-    override fun setContext(context: Context) {
-        // TODO - add a way to get the current trace context and set the key/value pair on it?
     }
 
     override fun emit() {

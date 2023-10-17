@@ -1,0 +1,5 @@
+{
+    "id": "b31b8667-e931-49cf-8897-4e2ded2b7f14",
+    "type": "misc",
+    "description": "Expose immutable `SpanContext` on `TraceSpan`"
+}

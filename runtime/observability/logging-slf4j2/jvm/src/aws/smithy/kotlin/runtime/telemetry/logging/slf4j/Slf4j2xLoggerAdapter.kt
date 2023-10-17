@@ -4,7 +4,6 @@
  */
 package aws.smithy.kotlin.runtime.telemetry.logging.slf4j
 
-import aws.smithy.kotlin.runtime.telemetry.context.Context
 import aws.smithy.kotlin.runtime.telemetry.logging.LogLevel
 import aws.smithy.kotlin.runtime.telemetry.logging.LogRecordBuilder
 import org.slf4j.event.Level
@@ -35,10 +34,6 @@ private class Slf4j2xLogRecordBuilderAdapter(
 
     override fun setKeyValuePair(key: String, value: Any) {
         delegate.addKeyValue(key, value)
-    }
-
-    override fun setContext(context: Context) {
-        // TODO - add a way to get the current trace context and set the key/value pair on it?
     }
 
     override fun emit() = delegate.log()
