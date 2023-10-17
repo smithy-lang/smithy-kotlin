@@ -1,3 +1,8 @@
+/*
+ * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 package org.slf4j
 
 // Override Logger interface to emulate having a slf4j1x interface be classloaded

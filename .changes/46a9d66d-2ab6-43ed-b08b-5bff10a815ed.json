@@ -1,0 +1,6 @@
+{
+  "id": "46a9d66d-2ab6-43ed-b08b-5bff10a815ed",
+  "type": "bugfix",
+  "description": "Prevent NoSuchMethodError when a slf4j1 logger is used with a slf4j2 classpath",
+  "issues": ["https://github.com/awslabs/aws-sdk-kotlin/issues/1077"]
+}
