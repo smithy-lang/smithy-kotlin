@@ -9,10 +9,11 @@ import com.test.model.GetFunctionAbsRequest
 import com.test.model.GetFunctionAbsResponse
 import com.test.utils.successTest
 import com.test.waiters.*
-import org.junit.jupiter.api.Test
+import kotlin.test.Test
 
 class FunctionAbsTest {
-    @Test fun testAbsFunctionShortEquals() = successTest(
+    @Test
+    fun testAbsFunctionShortEquals() = successTest(
         GetFunctionAbsRequest { name = "test" },
         WaitersTestClient::waitUntilAbsFunctionShortEquals,
         GetFunctionAbsResponse { primitives = EntityPrimitives { short = -1 } },
@@ -20,7 +21,8 @@ class FunctionAbsTest {
         GetFunctionAbsResponse { primitives = EntityPrimitives { short = 2 } },
     )
 
-    @Test fun testAbsFunctionIntegerEquals() = successTest(
+    @Test
+    fun testAbsFunctionIntegerEquals() = successTest(
         GetFunctionAbsRequest { name = "test" },
         WaitersTestClient::waitUntilAbsFunctionIntegerEquals,
         GetFunctionAbsResponse { primitives = EntityPrimitives { integer = -1 } },
@@ -28,7 +30,8 @@ class FunctionAbsTest {
         GetFunctionAbsResponse { primitives = EntityPrimitives { integer = 2 } },
     )
 
-    @Test fun testAbsFunctionLongEquals() = successTest(
+    @Test
+    fun testAbsFunctionLongEquals() = successTest(
         GetFunctionAbsRequest { name = "test" },
         WaitersTestClient::waitUntilAbsFunctionLongEquals,
         GetFunctionAbsResponse { primitives = EntityPrimitives { long = -1L } },
@@ -36,7 +39,8 @@ class FunctionAbsTest {
         GetFunctionAbsResponse { primitives = EntityPrimitives { long = 2L } },
     )
 
-    @Test fun testAbsFunctionFloatEquals() = successTest(
+    @Test
+    fun testAbsFunctionFloatEquals() = successTest(
         GetFunctionAbsRequest { name = "test" },
         WaitersTestClient::waitUntilAbsFunctionFloatEquals,
         GetFunctionAbsResponse { primitives = EntityPrimitives { float = -1f } },
@@ -44,7 +48,8 @@ class FunctionAbsTest {
         GetFunctionAbsResponse { primitives = EntityPrimitives { float = 2f } },
     )
 
-    @Test fun testAbsFunctionDoubleEquals() = successTest(
+    @Test
+    fun testAbsFunctionDoubleEquals() = successTest(
         GetFunctionAbsRequest { name = "test" },
         WaitersTestClient::waitUntilAbsFunctionDoubleEquals,
         GetFunctionAbsResponse { primitives = EntityPrimitives { double = -1.0 } },

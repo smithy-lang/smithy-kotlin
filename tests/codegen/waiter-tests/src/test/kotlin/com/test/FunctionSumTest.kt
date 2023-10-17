@@ -9,10 +9,11 @@ import com.test.model.GetFunctionSumEqualsRequest
 import com.test.model.GetFunctionSumEqualsResponse
 import com.test.utils.successTest
 import com.test.waiters.*
-import org.junit.jupiter.api.Test
+import kotlin.test.Test
 
 class FunctionSumTest {
-    @Test fun testShortListSumNotEquals() = successTest(
+    @Test
+    fun testShortListSumNotEquals() = successTest(
         GetFunctionSumEqualsRequest { name = "test" },
         WaitersTestClient::waitUntilShortListSumNotEquals,
         GetFunctionSumEqualsResponse { lists = EntityLists { shorts = listOf(1, 2, 3, 4) } },
@@ -20,7 +21,8 @@ class FunctionSumTest {
         GetFunctionSumEqualsResponse { lists = EntityLists { shorts = listOf(0) } },
     )
 
-    @Test fun testIntegerListSumNotEquals() = successTest(
+    @Test
+    fun testIntegerListSumNotEquals() = successTest(
         GetFunctionSumEqualsRequest { name = "test" },
         WaitersTestClient::waitUntilIntegerListSumNotEquals,
         GetFunctionSumEqualsResponse { lists = EntityLists { integers = listOf(1, 2, 3, 4) } },
@@ -28,7 +30,8 @@ class FunctionSumTest {
         GetFunctionSumEqualsResponse { lists = EntityLists { integers = listOf(0) } },
     )
 
-    @Test fun testLongListSumNotEquals() = successTest(
+    @Test
+    fun testLongListSumNotEquals() = successTest(
         GetFunctionSumEqualsRequest { name = "test" },
         WaitersTestClient::waitUntilLongListSumNotEquals,
         GetFunctionSumEqualsResponse { lists = EntityLists { longs = listOf(1L, 2L, 3L, 4L) } },
@@ -36,7 +39,8 @@ class FunctionSumTest {
         GetFunctionSumEqualsResponse { lists = EntityLists { longs = listOf(0L) } },
     )
 
-    @Test fun testFloatListSumNotEquals() = successTest(
+    @Test
+    fun testFloatListSumNotEquals() = successTest(
         GetFunctionSumEqualsRequest { name = "test" },
         WaitersTestClient::waitUntilFloatListSumNotEquals,
         GetFunctionSumEqualsResponse { lists = EntityLists { floats = listOf(1f, 2f, 3f, 4f) } },
@@ -44,7 +48,8 @@ class FunctionSumTest {
         GetFunctionSumEqualsResponse { lists = EntityLists { floats = listOf(0f) } },
     )
 
-    @Test fun testDoubleListSumNotEquals() = successTest(
+    @Test
+    fun testDoubleListSumNotEquals() = successTest(
         GetFunctionSumEqualsRequest { name = "test" },
         WaitersTestClient::waitUntilDoubleListSumNotEquals,
         GetFunctionSumEqualsResponse { lists = EntityLists { doubles = listOf(1.0, 2.0, 3.0, 4.0) } },

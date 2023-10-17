@@ -11,16 +11,18 @@ import com.test.model.GetFunctionKeysEqualsResponse
 import com.test.utils.successTest
 import com.test.waiters.waitUntilKeysFunctionPrimitivesIntegerEquals
 import com.test.waiters.waitUntilKeysFunctionPrimitivesStringEquals
-import org.junit.jupiter.api.Test
+import kotlin.test.Test
 
 class FunctionKeysTest {
-    @Test fun testKeysFunctionPrimitivesStringEquals() = successTest(
+    @Test
+    fun testKeysFunctionPrimitivesStringEquals() = successTest(
         GetFunctionKeysEqualsRequest { name = "test" },
         WaitersTestClient::waitUntilKeysFunctionPrimitivesStringEquals,
         GetFunctionKeysEqualsResponse { primitives = EntityPrimitives { } },
     )
 
-    @Test fun testKeysFunctionPrimitivesIntegerEquals() = successTest(
+    @Test
+    fun testKeysFunctionPrimitivesIntegerEquals() = successTest(
         GetFunctionKeysEqualsRequest { name = "test" },
         WaitersTestClient::waitUntilKeysFunctionPrimitivesIntegerEquals,
         GetFunctionKeysEqualsResponse { primitives = EntityPrimitives { } },

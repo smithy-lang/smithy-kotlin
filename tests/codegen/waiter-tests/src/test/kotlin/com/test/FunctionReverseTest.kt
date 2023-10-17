@@ -12,17 +12,19 @@ import com.test.model.GetFunctionReverseEqualsResponse
 import com.test.utils.successTest
 import com.test.waiters.waitUntilReverseFunctionStringEquals
 import com.test.waiters.waitUntilReverseFunctionStringListEquals
-import org.junit.jupiter.api.Test
+import kotlin.test.Test
 
 class FunctionReverseTest {
-    @Test fun testReverseFunctionStringListEquals() = successTest(
+    @Test
+    fun testReverseFunctionStringListEquals() = successTest(
         GetFunctionReverseEqualsRequest { name = "test" },
         WaitersTestClient::waitUntilReverseFunctionStringListEquals,
         GetFunctionReverseEqualsResponse { lists = EntityLists { strings = listOf("foo", "bar") } },
         GetFunctionReverseEqualsResponse { lists = EntityLists { strings = listOf("bar", "foo") } },
     )
 
-    @Test fun testReverseFunctionStringEquals() = successTest(
+    @Test
+    fun testReverseFunctionStringEquals() = successTest(
         GetFunctionReverseEqualsRequest { name = "test" },
         WaitersTestClient::waitUntilReverseFunctionStringEquals,
         GetFunctionReverseEqualsResponse { primitives = EntityPrimitives { string = "foo" } },

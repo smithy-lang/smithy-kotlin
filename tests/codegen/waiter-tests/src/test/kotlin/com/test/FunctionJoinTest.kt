@@ -10,17 +10,19 @@ import com.test.model.GetFunctionJoinEqualsResponse
 import com.test.utils.successTest
 import com.test.waiters.waitUntilStringListJoinEquals
 import com.test.waiters.waitUntilStringListSeparatorJoinEquals
-import org.junit.jupiter.api.Test
+import kotlin.test.Test
 
 class FunctionJoinTest {
-    @Test fun testStringListJoinEquals() = successTest(
+    @Test
+    fun testStringListJoinEquals() = successTest(
         GetFunctionJoinEqualsRequest { name = "test" },
         WaitersTestClient::waitUntilStringListJoinEquals,
         GetFunctionJoinEqualsResponse { lists = EntityLists { strings = listOf("f", "o", "x") } },
         GetFunctionJoinEqualsResponse { lists = EntityLists { strings = listOf("f", "o", "o") } },
     )
 
-    @Test fun testStringListSeparatorJoinEquals() = successTest(
+    @Test
+    fun testStringListSeparatorJoinEquals() = successTest(
         GetFunctionJoinEqualsRequest { name = "test" },
         WaitersTestClient::waitUntilStringListSeparatorJoinEquals,
         GetFunctionJoinEqualsResponse { lists = EntityLists { strings = listOf("bar", "baz") } },

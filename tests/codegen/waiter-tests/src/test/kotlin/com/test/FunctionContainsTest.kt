@@ -8,11 +8,12 @@ import com.test.model.*
 import com.test.model.Enum
 import com.test.utils.successTest
 import com.test.waiters.*
-import org.junit.jupiter.api.Test
+import kotlin.test.Test
 
 class FunctionContainsTest {
     // list
-    @Test fun testBooleanListContains() = successTest(
+    @Test
+    fun testBooleanListContains() = successTest(
         GetFunctionContainsRequest { name = "test" },
         WaitersTestClient::waitUntilBooleanListContains,
         GetFunctionContainsResponse {
@@ -25,7 +26,8 @@ class FunctionContainsTest {
         },
     )
 
-    @Test fun testBooleanListContainsIdentityProjection() = successTest(
+    @Test
+    fun testBooleanListContainsIdentityProjection() = successTest(
         GetFunctionContainsRequest { name = "test" },
         WaitersTestClient::waitUntilBooleanListContainsIdentityProjection,
         GetFunctionContainsResponse {
@@ -38,7 +40,8 @@ class FunctionContainsTest {
         },
     )
 
-    @Test fun testStringListContains() = successTest(
+    @Test
+    fun testStringListContains() = successTest(
         GetFunctionContainsRequest { name = "test" },
         WaitersTestClient::waitUntilStringListContains,
         GetFunctionContainsResponse {
@@ -51,7 +54,8 @@ class FunctionContainsTest {
         },
     )
 
-    @Test fun testIntegerListContains() = successTest(
+    @Test
+    fun testIntegerListContains() = successTest(
         GetFunctionContainsRequest { name = "test" },
         WaitersTestClient::waitUntilIntegerListContains,
         GetFunctionContainsResponse {
@@ -64,7 +68,8 @@ class FunctionContainsTest {
         },
     )
 
-    @Test fun testEnumListContains() = successTest(
+    @Test
+    fun testEnumListContains() = successTest(
         GetFunctionContainsRequest { name = "test" },
         WaitersTestClient::waitUntilEnumListContains,
         GetFunctionContainsResponse {
@@ -77,7 +82,8 @@ class FunctionContainsTest {
         },
     )
 
-    @Test fun testIntEnumListContains() = successTest(
+    @Test
+    fun testIntEnumListContains() = successTest(
         GetFunctionContainsRequest { name = "test" },
         WaitersTestClient::waitUntilIntEnumListContains,
         GetFunctionContainsResponse {
@@ -91,7 +97,8 @@ class FunctionContainsTest {
     )
 
     // object projection
-    @Test fun testBooleanMapContains() = successTest(
+    @Test
+    fun testBooleanMapContains() = successTest(
         GetFunctionContainsRequest { name = "test" },
         WaitersTestClient::waitUntilBooleanMapContains,
         GetFunctionContainsResponse {
@@ -104,7 +111,8 @@ class FunctionContainsTest {
         },
     )
 
-    @Test fun testStringMapContains() = successTest(
+    @Test
+    fun testStringMapContains() = successTest(
         GetFunctionContainsRequest { name = "test" },
         WaitersTestClient::waitUntilStringMapContains,
         GetFunctionContainsResponse {
@@ -117,7 +125,8 @@ class FunctionContainsTest {
         },
     )
 
-    @Test fun testIntegerMapContains() = successTest(
+    @Test
+    fun testIntegerMapContains() = successTest(
         GetFunctionContainsRequest { name = "test" },
         WaitersTestClient::waitUntilIntegerMapContains,
         GetFunctionContainsResponse {
@@ -130,7 +139,8 @@ class FunctionContainsTest {
         },
     )
 
-    @Test fun testEnumMapContains() = successTest(
+    @Test
+    fun testEnumMapContains() = successTest(
         GetFunctionContainsRequest { name = "test" },
         WaitersTestClient::waitUntilEnumMapContains,
         GetFunctionContainsResponse {
@@ -143,7 +153,8 @@ class FunctionContainsTest {
         },
     )
 
-    @Test fun testIntEnumMapContains() = successTest(
+    @Test
+    fun testIntEnumMapContains() = successTest(
         GetFunctionContainsRequest { name = "test" },
         WaitersTestClient::waitUntilIntEnumMapContains,
         GetFunctionContainsResponse {

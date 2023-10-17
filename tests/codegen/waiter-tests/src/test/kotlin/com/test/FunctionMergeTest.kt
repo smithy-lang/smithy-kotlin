@@ -12,10 +12,11 @@ import com.test.utils.successTest
 import com.test.waiters.waitUntilMergeFunctionOverrideObjectsOneEquals
 import com.test.waiters.waitUntilMergeFunctionOverrideObjectsThreeEquals
 import com.test.waiters.waitUntilMergeFunctionOverrideObjectsTwoEquals
-import org.junit.jupiter.api.Test
+import kotlin.test.Test
 
 class FunctionMergeTest {
-    @Test fun testMergeFunctionOverrideObjectsOneEquals() = successTest(
+    @Test
+    fun testMergeFunctionOverrideObjectsOneEquals() = successTest(
         GetFunctionMergeEqualsRequest { name = "test" },
         WaitersTestClient::waitUntilMergeFunctionOverrideObjectsOneEquals,
         GetFunctionMergeEqualsResponse {
@@ -44,7 +45,8 @@ class FunctionMergeTest {
         },
     )
 
-    @Test fun testMergeFunctionOverrideObjectsTwoEquals() = successTest(
+    @Test
+    fun testMergeFunctionOverrideObjectsTwoEquals() = successTest(
         GetFunctionMergeEqualsRequest { name = "test" },
         WaitersTestClient::waitUntilMergeFunctionOverrideObjectsTwoEquals,
         GetFunctionMergeEqualsResponse {
@@ -73,7 +75,8 @@ class FunctionMergeTest {
         },
     )
 
-    @Test fun testMergeFunctionOverrideObjectsThreeEquals() = successTest(
+    @Test
+    fun testMergeFunctionOverrideObjectsThreeEquals() = successTest(
         GetFunctionMergeEqualsRequest { name = "test" },
         WaitersTestClient::waitUntilMergeFunctionOverrideObjectsThreeEquals,
         GetFunctionMergeEqualsResponse {

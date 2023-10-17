@@ -9,31 +9,35 @@ import com.test.model.GetFunctionCeilRequest
 import com.test.model.GetFunctionCeilResponse
 import com.test.utils.successTest
 import com.test.waiters.*
-import org.junit.jupiter.api.Test
+import kotlin.test.Test
 
 class FunctionCeilTest {
-    @Test fun testCeilFunctionShortEquals() = successTest(
+    @Test
+    fun testCeilFunctionShortEquals() = successTest(
         GetFunctionCeilRequest { name = "test" },
         WaitersTestClient::waitUntilCeilFunctionShortEquals,
         GetFunctionCeilResponse { primitives = EntityPrimitives { short = 1 } },
         GetFunctionCeilResponse { primitives = EntityPrimitives { short = 2 } },
     )
 
-    @Test fun testCeilFunctionIntegerEquals() = successTest(
+    @Test
+    fun testCeilFunctionIntegerEquals() = successTest(
         GetFunctionCeilRequest { name = "test" },
         WaitersTestClient::waitUntilCeilFunctionIntegerEquals,
         GetFunctionCeilResponse { primitives = EntityPrimitives { integer = 1 } },
         GetFunctionCeilResponse { primitives = EntityPrimitives { integer = 2 } },
     )
 
-    @Test fun testCeilFunctionLongEquals() = successTest(
+    @Test
+    fun testCeilFunctionLongEquals() = successTest(
         GetFunctionCeilRequest { name = "test" },
         WaitersTestClient::waitUntilCeilFunctionLongEquals,
         GetFunctionCeilResponse { primitives = EntityPrimitives { long = 1L } },
         GetFunctionCeilResponse { primitives = EntityPrimitives { long = 2L } },
     )
 
-    @Test fun testCeilFunctionFloatEquals() = successTest(
+    @Test
+    fun testCeilFunctionFloatEquals() = successTest(
         GetFunctionCeilRequest { name = "test" },
         WaitersTestClient::waitUntilCeilFunctionFloatEquals,
         GetFunctionCeilResponse { primitives = EntityPrimitives { float = 0.0001f } },
@@ -42,7 +46,8 @@ class FunctionCeilTest {
         GetFunctionCeilResponse { primitives = EntityPrimitives { float = 2.0f } },
     )
 
-    @Test fun testCeilFunctionDoubleEquals() = successTest(
+    @Test
+    fun testCeilFunctionDoubleEquals() = successTest(
         GetFunctionCeilRequest { name = "test" },
         WaitersTestClient::waitUntilCeilFunctionDoubleEquals,
         GetFunctionCeilResponse { primitives = EntityPrimitives { double = 0.0001 } },
