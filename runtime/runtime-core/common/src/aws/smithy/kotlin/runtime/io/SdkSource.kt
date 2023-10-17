@@ -35,6 +35,7 @@ public interface SdkSource : Closeable {
      * Closes this source and releases any resources held. It is an error to read from a closed
      * source. This is an idempotent operation.
      */
+    @Throws(IOException::class)
     override fun close()
 }
 
