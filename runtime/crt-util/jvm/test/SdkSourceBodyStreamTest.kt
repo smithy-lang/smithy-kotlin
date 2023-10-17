@@ -6,7 +6,6 @@
 package aws.smithy.kotlin.runtime.crt
 
 import aws.sdk.kotlin.crt.io.MutableBuffer
-import aws.smithy.kotlin.runtime.crt.SdkSourceBodyStream
 import aws.smithy.kotlin.runtime.io.SdkBuffer
 import aws.smithy.kotlin.runtime.io.SdkSource
 import aws.smithy.kotlin.runtime.io.source
