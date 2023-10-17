@@ -37,13 +37,11 @@ public class ClockSkewInterceptor : HttpInterceptor {
          * Determine whether the client's clock is skewed relative to the server.
          * @return true if the service's response represents a definite clock skew error
          * OR a *possible* clock skew error AND the skew exists. false otherwise.
-         * @param responseCodeDescription the server's response code description
+         * @param errorCode the server's error code
          * @param serverTime the server's time
          */
-        internal fun Instant.isSkewed(serverTime: Instant, responseCodeDescription: String?): Boolean =
-            responseCodeDescription?.let {
-                CLOCK_SKEW_ERROR_CODES.contains(it) || (POSSIBLE_CLOCK_SKEW_ERROR_CODES.contains(it) && until(serverTime).absoluteValue >= CLOCK_SKEW_THRESHOLD)
-            } ?: false
+        internal fun Instant.isSkewed(serverTime: Instant, errorCode: String): Boolean =
+            CLOCK_SKEW_ERROR_CODES.contains(errorCode) || (POSSIBLE_CLOCK_SKEW_ERROR_CODES.contains(errorCode) && until(serverTime).absoluteValue >= CLOCK_SKEW_THRESHOLD)
 
         // Errors definitely caused by clock skew
         private val CLOCK_SKEW_ERROR_CODES = listOf(
@@ -102,15 +100,17 @@ public class ClockSkewInterceptor : HttpInterceptor {
         val ex = (context.response.exceptionOrNull() as? SdkBaseException) ?: return context.response
         val errorCode = ex.sdkErrorMetadata.attributes.getOrNull(ServiceErrorMetadata.ErrorCode)
 
-        if (clientTime.isSkewed(serverTime, errorCode)) {
-            val skew = clientTime.until(serverTime)
-            logger.warn { "client clock ($clientTime) is skewed $skew from the server ($serverTime), applying correction" }
-            _currentSkew.getAndSet(skew)
-            context.executionContext[HttpOperationContext.ClockSkew] = skew
+        errorCode?.let {
+            if (clientTime.isSkewed(serverTime, it)) {
+                val skew = clientTime.until(serverTime)
+                logger.warn { "client clock ($clientTime) is skewed $skew from the server ($serverTime), applying correction" }
+                _currentSkew.getAndSet(skew)
+                context.executionContext[HttpOperationContext.ClockSkew] = skew
 
-            // Mark the exception as retryable
-            ex.sdkErrorMetadata.attributes[ErrorMetadata.Retryable] = true
-            return Result.failure(ex)
+                // Mark the exception as retryable
+                ex.sdkErrorMetadata.attributes[ErrorMetadata.Retryable] = true
+                return Result.failure(ex)
+            }
         }
 
         return context.response
