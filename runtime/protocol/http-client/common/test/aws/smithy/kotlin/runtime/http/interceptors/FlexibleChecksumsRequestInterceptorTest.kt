@@ -35,7 +35,7 @@ class FlexibleChecksumsRequestInterceptorTest {
     fun itSetsChecksumHeader() = runTest {
         checksums.forEach { (checksumAlgorithmName, expectedChecksumValue) ->
             val req = HttpRequestBuilder().apply {
-                body = HttpBody.fromBytes("<Foo>bar</Foo>".toByteArray())
+                body = HttpBody.fromBytes("<Foo>bar</Foo>".encodeToByteArray())
             }
 
             val op = newTestOperation<Unit, Unit>(req, Unit)
@@ -55,7 +55,7 @@ class FlexibleChecksumsRequestInterceptorTest {
     @Test
     fun itAllowsOnlyOneChecksumHeader() = runTest {
         val req = HttpRequestBuilder().apply {
-            body = HttpBody.fromBytes("<Foo>bar</Foo>".toByteArray())
+            body = HttpBody.fromBytes("<Foo>bar</Foo>".encodeToByteArray())
         }
         req.headers { append("x-amz-checksum-sha256", "sha256-checksum-value") }
         req.headers { append("x-amz-checksum-crc32", "crc32-checksum-value") }
@@ -80,7 +80,7 @@ class FlexibleChecksumsRequestInterceptorTest {
     @Test
     fun itThrowsOnUnsupportedChecksumAlgorithm() = runTest {
         val req = HttpRequestBuilder().apply {
-            body = HttpBody.fromBytes("<Foo>bar</Foo>".toByteArray())
+            body = HttpBody.fromBytes("<Foo>bar</Foo>".encodeToByteArray())
         }
 
         val unsupportedChecksumAlgorithmName = "fooblefabble1024"
