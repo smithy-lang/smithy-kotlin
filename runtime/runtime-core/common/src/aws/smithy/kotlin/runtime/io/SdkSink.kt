@@ -47,5 +47,6 @@ public interface SdkSink : Closeable {
      * Pushes all buffered bytes to their final destination and releases resources held by this sink.
      * It is an error to write to a closed sink. This is an idempotent operation.
      */
+    @Throws(IOException::class)
     override fun close(): Unit
 }
