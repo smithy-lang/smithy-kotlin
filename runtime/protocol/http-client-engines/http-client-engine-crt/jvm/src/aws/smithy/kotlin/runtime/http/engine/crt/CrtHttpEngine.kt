@@ -32,7 +32,7 @@ public class CrtHttpEngine(public override val config: CrtHttpEngineConfig) : Ht
         public operator fun invoke(block: CrtHttpEngineConfig.Builder.() -> Unit): CrtHttpEngine =
             CrtHttpEngine(CrtHttpEngineConfig(block))
 
-        override val engineConstructor: (CrtHttpEngineConfig.Builder.() -> Unit) -> CrtHttpEngine = Companion::invoke
+        override val engineConstructor: (CrtHttpEngineConfig.Builder.() -> Unit) -> CrtHttpEngine = ::invoke
     }
 
     // FIXME - re-enable when SLF4j default is available
