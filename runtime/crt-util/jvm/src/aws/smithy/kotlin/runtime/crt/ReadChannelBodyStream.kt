@@ -21,9 +21,7 @@ private val POLLING_DELAY = 100.milliseconds
 /**
  * write as much of [outgoing] to [dest] as possible
  */
-internal fun transferRequestBody(outgoing: SdkBuffer, dest: MutableBuffer) {
-    outgoing.read(dest.buffer)
-}
+internal fun transferRequestBody(outgoing: SdkBuffer, dest: MutableBuffer) = outgoing.read(dest.buffer)
 
 /**
  * Implement's [HttpRequestBodyStream] which proxies an SDK request body channel [SdkByteReadChannel]
