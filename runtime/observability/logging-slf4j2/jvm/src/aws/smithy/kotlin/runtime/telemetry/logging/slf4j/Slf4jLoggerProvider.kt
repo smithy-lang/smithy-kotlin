@@ -13,25 +13,21 @@ import org.slf4j.event.Level
  * SLF4J based logger provider
  */
 public object Slf4jLoggerProvider : LoggerProvider {
-    private var useSlf4j2x: Boolean? = null
 
-    private fun supportsSlf4j2x(logger: org.slf4j.Logger): Boolean {
-        if (useSlf4j2x == null) {
-            useSlf4j2x = try {
-                // Considering Logger#atLevel only exists in slf4j2, this will throw in slf4j1 and proceed without throwing in slf4j2.
-                logger.atLevel(Level.DEBUG)
-                true
-            } catch (e: NoSuchMethodError) {
-                LoggerFactory.getLogger(Slf4jLoggerProvider::class.java).warn("falling back to SLF4J 1.x compatible binding")
-                false
-            }
-        }
-        return useSlf4j2x!!
+    private val useSlf4j2x = try {
+        // We get a test instance of a slf4j logger to know if the classloaded slf4j Logger class has the slf4j2 methods.
+        val logger = LoggerFactory.getLogger("version_check")
+        // Considering Logger#atLevel only exists in slf4j2, this will throw in slf4j1 and proceed without throwing in slf4j2.
+        logger.atLevel(Level.DEBUG)
+        true
+    } catch (e: NoSuchMethodError) {
+        LoggerFactory.getLogger(Slf4jLoggerProvider::class.java).warn("falling back to SLF4J 1.x compatible binding")
+        false
     }
 
     override fun getOrCreateLogger(name: String): Logger {
         val sl4fjLogger = LoggerFactory.getLogger(name)
-        return if (supportsSlf4j2x(sl4fjLogger)) {
+        return if (useSlf4j2x) {
             Slf4j2xLoggerAdapter(sl4fjLogger)
         } else {
             Slf4j1xLoggerAdapter(sl4fjLogger)
