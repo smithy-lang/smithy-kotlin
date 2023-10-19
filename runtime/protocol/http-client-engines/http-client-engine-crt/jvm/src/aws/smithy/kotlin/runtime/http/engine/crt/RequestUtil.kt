@@ -118,7 +118,11 @@ internal inline fun <T> mapCrtException(block: () -> T): T =
     try {
         block()
     } catch (ex: CrtRuntimeException) {
-        throw HttpException(fmtCrtErrorMessage(ex.errorCode), errorCode = mapCrtErrorCode(ex.errorCode))
+        throw HttpException(
+            message = fmtCrtErrorMessage(ex.errorCode),
+            errorCode = mapCrtErrorCode(ex.errorName),
+            retryable = isRetryable(ex.errorName),
+        )
     }
 
 internal fun fmtCrtErrorMessage(errorCode: Int): String {
@@ -133,7 +137,7 @@ internal fun fmtCrtErrorMessage(errorCode: Int): String {
 // See:
 // IO Errors: https://github.com/awslabs/aws-c-io/blob/v0.13.19/include/aws/io/io.h#L89
 // HTTP Errors: https://github.com/awslabs/aws-c-http/blob/v0.7.6/include/aws/http/http.h#L15
-internal fun mapCrtErrorCode(code: Int): HttpErrorCode = when (CRT.errorName(code)) {
+private fun mapCrtErrorCode(errorName: String?) = when (errorName) {
     "AWS_IO_SOCKET_TIMEOUT" -> HttpErrorCode.SOCKET_TIMEOUT
     "AWS_ERROR_HTTP_UNSUPPORTED_PROTOCOL" -> HttpErrorCode.PROTOCOL_NEGOTIATION_ERROR
     "AWS_IO_SOCKET_NOT_CONNECTED" -> HttpErrorCode.CONNECT_TIMEOUT
@@ -142,6 +146,27 @@ internal fun mapCrtErrorCode(code: Int): HttpErrorCode = when (CRT.errorName(cod
     in connectionClosedErrors -> HttpErrorCode.CONNECTION_CLOSED
     else -> HttpErrorCode.SDK_UNKNOWN
 }
+
+internal fun mapCrtErrorCode(code: Int) = mapCrtErrorCode(CRT.errorName(code))
+
+internal fun isRetryable(errorName: String?) = errorName?.let {
+    when {
+        // All IO errors are retryable
+        it.startsWith("AWS_IO_") || it.startsWith("AWS_ERROR_IO_") -> true
+
+        // Any connection closure is retryable
+        it in connectionClosedErrors -> true
+
+        // All proxy errors are retryable
+        it.startsWith("AWS_ERROR_HTTP_PROXY_") -> true
+
+        // Any connection manager issues are retryable
+        it.startsWith("AWS_ERROR_HTTP_CONNECTION_MANAGER_") -> true
+
+        // Any other errors are not retryable
+        else -> false
+    }
+} ?: false // Unknown error codes are not retryable
 
 private val tlsNegotiationErrors = setOf(
     "AWS_IO_TLS_ERROR_NEGOTIATION_FAILURE",
@@ -152,6 +177,7 @@ private val tlsNegotiationErrors = setOf(
 
 private val connectionClosedErrors = setOf(
     "AWS_ERROR_HTTP_CONNECTION_CLOSED",
+    "AWS_ERROR_HTTP_SERVER_CLOSED",
     "AWS_IO_BROKEN_PIPE",
     "AWS_IO_SOCKET_CLOSED",
 )
