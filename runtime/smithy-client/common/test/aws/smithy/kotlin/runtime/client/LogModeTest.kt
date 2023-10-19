@@ -33,7 +33,7 @@ class LogModeTest {
     fun testToString() {
         val mode = LogMode.allModes().reduce { acc, curr -> acc + curr }
         assertTrue { LogMode.allModes().all { mode.isEnabled(it) } }
-        val expected = "LogRequest|LogRequestWithBody|LogResponse|LogResponseWithBody"
+        val expected = "LogRequest|LogRequestWithBody|LogResponse|LogResponseWithBody|LogSigning"
         assertEquals(expected, mode.toString())
     }
 

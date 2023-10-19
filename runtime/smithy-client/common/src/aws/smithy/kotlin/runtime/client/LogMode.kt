@@ -52,6 +52,13 @@ public sealed class LogMode(private val mask: Int) {
         override fun toString(): String = "LogResponseWithBody"
     }
 
+    /**
+     * Log intermediate signing details (e.g. canonical request, string to sign, etc)
+     */
+    public object LogSigning : LogMode(0x10) {
+        override fun toString(): String = "LogSigning"
+    }
+
     internal class Composite(mask: Int) : LogMode(mask)
 
     public operator fun plus(mode: LogMode): LogMode = Composite(mask or mode.mask)
@@ -73,6 +80,7 @@ public sealed class LogMode(private val mask: Int) {
             LogRequestWithBody,
             LogResponse,
             LogResponseWithBody,
+            LogSigning,
         )
 
         /**

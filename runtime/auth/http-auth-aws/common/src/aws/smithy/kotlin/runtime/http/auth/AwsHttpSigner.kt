@@ -11,6 +11,8 @@ import aws.smithy.kotlin.runtime.auth.awssigning.internal.isEligibleForAwsChunke
 import aws.smithy.kotlin.runtime.auth.awssigning.internal.setAwsChunkedBody
 import aws.smithy.kotlin.runtime.auth.awssigning.internal.setAwsChunkedHeaders
 import aws.smithy.kotlin.runtime.auth.awssigning.internal.useAwsChunkedEncoding
+import aws.smithy.kotlin.runtime.client.LogMode
+import aws.smithy.kotlin.runtime.client.SdkClientOption
 import aws.smithy.kotlin.runtime.http.HttpBody
 import aws.smithy.kotlin.runtime.http.operation.HttpOperationContext
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
@@ -138,6 +140,7 @@ public class AwsHttpSigner(private val config: Config) : HttpSigner {
             shouldSignHeader = config.shouldSignHeader
 
             signedBodyHeader = contextSignedBodyHeader ?: config.signedBodyHeader
+            enableTraceLogging = attributes.getOrNull(SdkClientOption.LogMode)?.isEnabled(LogMode.LogSigning) == true
 
             // SDKs are supposed to default to signed payload _always_ when possible (and when `unsignedPayload` trait
             // isn't present). The only exception is when the customer explicitly disables signed payloads (via Config.isUnsignedPayload).
