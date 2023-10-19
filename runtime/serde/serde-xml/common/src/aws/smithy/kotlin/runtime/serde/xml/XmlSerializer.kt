@@ -219,11 +219,10 @@ private class XmlMapSerializer(
             checkNotNull(mapTrait.entry)
         }
 
-        val entryNamespace = descriptor.findTrait<XmlNamespace>()
         val keyNamespace = descriptor.findTrait<XmlMapKeyNamespace>()
         val valueNamespace = descriptor.findTrait<XmlCollectionValueNamespace>()
 
-        xmlWriter.writeTag(tagName, entryNamespace) {
+        xmlWriter.writeTag(tagName) {
             writeTag(mapTrait.key, keyNamespace) { text(key) }
             writeTag(mapTrait.value, valueNamespace) { valueFn() }
         }
