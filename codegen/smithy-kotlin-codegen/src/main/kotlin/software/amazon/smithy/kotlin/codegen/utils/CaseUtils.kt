@@ -86,7 +86,7 @@ private fun endOfAcronym(current: String, nextChar: Char, peek: Char?, doublePee
     }
 
     // Skip cases like `AR[N]s`, `AC[L]s` but not `IAM[U]ser`
-    if (peek == 's' && (doublePeek == null || !doublePeek.isLowerCase())) {
+    if (peek == 's' && doublePeek?.isLowerCase() != true) {
         return false
     }
 

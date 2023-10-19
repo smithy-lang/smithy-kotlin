@@ -226,10 +226,10 @@ class NamingTest {
     @Test
     fun testAllNames() {
         // Set this to true to write a new test expectation file
-        val publishUpdate = true
-        val allNames = this::class.java.getResource("/all-names-test-output.txt")?.readText()!!
+        val publishUpdate = false
+        val allNames = this::class.java.getResource("/all-names-test-output.csv")?.readText()!!
         val errors = mutableListOf<String>()
-        val output = StringBuilder()
+        val output = StringBuilder().apply { appendLine("input,actual") }
         allNames.lines().filter { it.isNotBlank() }.forEach {
             val split = it.split(',')
             val input = split[0]
@@ -241,7 +241,7 @@ class NamingTest {
             output.appendLine("$input,$actual")
         }
         if (publishUpdate) {
-            File("all-names-test-output.txt").writeText(output.toString())
+            File("all-names-test-output.csv").writeText(output.toString())
         }
         if (errors.isNotEmpty()) {
             fail(errors.joinToString("\n"))
@@ -250,12 +250,12 @@ class NamingTest {
 
     @Test
     fun testClientNames() {
-        // jq '.. | select(.sdkId?).sdkId' codegen/sdk/aws-models/*.json > /tmp/sdk-ids.txt
+        // jq '.. | select(.sdkId?).sdkId' codegen/sdk/aws-models/*.json > /tmp/sdk-ids.csv
         // Set this to true to write a new test expectation file
-        val publishUpdate = true
-        val allNames = this::class.java.getResource("/sdk-ids-test-output.txt")?.readText()!!
+        val publishUpdate = false
+        val allNames = this::class.java.getResource("/sdk-ids-test-output.csv")?.readText()!!
         val errors = mutableListOf<String>()
-        val output = StringBuilder()
+        val output = StringBuilder().apply { appendLine("input,actual") }
         allNames.lines().filter { it.isNotBlank() }.forEach {
             val split = it.split(',')
             val input = split[0]
@@ -267,7 +267,7 @@ class NamingTest {
             output.appendLine("$input,$actual")
         }
         if (publishUpdate) {
-            File("sdk-ids-test-output.txt").writeText(output.toString())
+            File("sdk-ids-test-output.csv").writeText(output.toString())
         }
         if (errors.isNotEmpty()) {
             fail(errors.joinToString("\n"))
