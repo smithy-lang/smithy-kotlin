@@ -45,8 +45,8 @@ class LogModeTest {
     @Test
     fun testFromStringComposite() {
         assertEquals(
-            LogMode.fromString("LogRequest|LogRequestWithBody|LogResponse"),
-            (LogMode.LogRequest + LogMode.LogRequestWithBody + LogMode.LogResponse),
+            LogMode.fromString("LogRequest|LogRequestWithBody|LogResponse|LogSigning"),
+            (LogMode.LogRequest + LogMode.LogRequestWithBody + LogMode.LogResponse + LogMode.LogSigning),
         )
     }
 

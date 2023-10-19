@@ -166,9 +166,9 @@ public class AwsSigningConfig(builder: Builder) {
 
     /**
      * Flag enabling whether detailed trace logging is enabled (if the signer implementation supports it). When true
-     * signers should emit intermediate logging details such as the canonical request and string to sign at the trace
-     * level. This is an opt-in configuration because these intermediate outputs may contain sensitive fields bound
-     * to headers, URI, or query parmaeters.
+     * signers should emit intermediate logging details such as the canonical request at the trace level.
+     * This is an opt-in configuration because these intermediate outputs may contain sensitive fields bound
+     * to headers, URI, or query parameters.
      */
     public val enableTraceLogging: Boolean = builder.enableTraceLogging
 
