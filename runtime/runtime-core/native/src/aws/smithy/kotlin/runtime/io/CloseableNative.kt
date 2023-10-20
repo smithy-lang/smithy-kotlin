@@ -5,5 +5,6 @@
 package aws.smithy.kotlin.runtime.io
 
 public actual interface Closeable {
+    @Throws(IOException::class)
     public actual fun close()
 }
