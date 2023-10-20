@@ -42,14 +42,6 @@ public fun truthiness(value: Any?): Boolean = when (value) {
     else -> true
 }
 
-@InternalApi
-@JvmName("noOpUnnestedCollection")
-public inline fun <reified T> Collection<T>.flattenIfPossible(): Collection<T> = this
-
-@InternalApi
-@JvmName("flattenNestedCollection")
-public inline fun <reified T> Collection<Collection<T>>.flattenIfPossible(): Collection<T> = flatten()
-
 /**
  * Determines the length of a collection. This is a synonym for [Collection.size].
  */
