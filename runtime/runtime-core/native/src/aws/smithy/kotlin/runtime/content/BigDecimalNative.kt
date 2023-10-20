@@ -13,10 +13,6 @@ public actual class BigDecimal actual constructor(value: String) : Number() {
         TODO("Not yet implemented")
     }
 
-    override fun toChar(): Char {
-        TODO("Not yet implemented")
-    }
-
     override fun toDouble(): Double {
         TODO("Not yet implemented")
     }
