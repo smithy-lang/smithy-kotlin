@@ -34,6 +34,12 @@ kotlin {
             }
         }
 
+        jvmAndNativeMain {
+            dependencies {
+                implementation(libs.kotlinx.coroutines.test)
+            }
+        }
+
         jvmTest {
             dependencies {
                 implementation(libs.testcontainers)
