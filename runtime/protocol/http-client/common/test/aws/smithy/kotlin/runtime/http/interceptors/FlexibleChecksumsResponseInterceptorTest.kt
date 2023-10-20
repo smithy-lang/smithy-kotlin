@@ -42,7 +42,7 @@ inline fun <reified I> newTestOperation(serialized: HttpRequestBuilder): SdkHttp
 
 class FlexibleChecksumsResponseInterceptorTest {
 
-    private val response = "abc".repeat(1024).toByteArray()
+    private val response = "abc".repeat(1024).encodeToByteArray()
 
     private val checksums: List<Pair<String, String>> = listOf(
         "crc32c" to "wS3hug==",
