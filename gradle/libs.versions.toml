@@ -10,7 +10,7 @@ okio-version = "3.3.0"
 otel-version = "1.27.0"
 slf4j-version = "2.0.6"
 slf4j-v1x-version = "1.7.36"
-crt-kotlin-version = "0.7.2"
+crt-kotlin-version = "0.7.4-SNAPSHOT"
 
 # codegen
 smithy-version = "1.39.0"
