@@ -140,7 +140,7 @@ public class AwsHttpSigner(private val config: Config) : HttpSigner {
             shouldSignHeader = config.shouldSignHeader
 
             signedBodyHeader = contextSignedBodyHeader ?: config.signedBodyHeader
-            enableTraceLogging = attributes.getOrNull(SdkClientOption.LogMode)?.isEnabled(LogMode.LogSigning) == true
+            logRequest = attributes.getOrNull(SdkClientOption.LogMode)?.isEnabled(LogMode.LogRequest) == true
 
             // SDKs are supposed to default to signed payload _always_ when possible (and when `unsignedPayload` trait
             // isn't present). The only exception is when the customer explicitly disables signed payloads (via Config.isUnsignedPayload).

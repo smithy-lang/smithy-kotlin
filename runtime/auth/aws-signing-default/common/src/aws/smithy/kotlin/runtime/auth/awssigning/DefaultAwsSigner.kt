@@ -25,7 +25,7 @@ internal class DefaultAwsSignerImpl(
         require(config.algorithm == AwsSigningAlgorithm.SIGV4) { "${config.algorithm} support is not yet implemented" }
 
         val canonical = canonicalizer.canonicalRequest(request, config)
-        if (config.enableTraceLogging) {
+        if (config.logRequest) {
             logger.trace { "Canonical request:\n${canonical.requestString}" }
         }
 
