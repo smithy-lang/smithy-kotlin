@@ -3106,8 +3106,8 @@ AutomationType,automationType
 Autoprovision,autoprovision
 Autotune,autotune
 AuxiliaryDataLocation,auxiliaryDataLocation
-Av1QvbrSettings,av1QvbrSettings
-Av1Settings,av1Settings
+Av1QvbrSettings,aV1QvbrSettings
+Av1Settings,aV1Settings
 AvailBlanking,availBlanking
 AvailBlankingImage,availBlankingImage
 AvailConfiguration,availConfiguration
@@ -18080,7 +18080,7 @@ DynamoDBCatalogSource,dynamoDbCatalogSource
 DynamoDBStreamParameters,dynamoDbStreamParameters
 DynamoDBTarget,dynamoDbTarget
 DynamoDBTargets,dynamoDbTargets
-DynamoDBv2Action,dynamoDbv2Action
+DynamoDBv2Action,dynamoDbV2Action
 DynamoDbSettings,dynamoDbSettings
 DynamodbDataSourceConfig,dynamodbDataSourceConfig
 Dynatrace,dynatrace
@@ -56359,7 +56359,7 @@ durationSeconds,durationSeconds
 durations,durations
 dynamicParameters,dynamicParameters
 dynamoDB,dynamoDb
-dynamoDBv2,dynamoDbv2
+dynamoDBv2,dynamoDbV2
 dynamodb,dynamodb
 dynamodbConfig,dynamodbConfig
 eTag,eTag

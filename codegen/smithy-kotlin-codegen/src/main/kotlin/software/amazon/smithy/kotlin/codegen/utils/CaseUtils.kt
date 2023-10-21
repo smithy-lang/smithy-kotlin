@@ -37,6 +37,8 @@ fun String.splitOnWordBoundaries(): List<String> {
             (currentWord + substring(index)).lowercase().startsWith(it)
         } && !completeWords.contains(currentWord.lowercase())
 
+        // println("completeWordInProgress: $completeWordInProgress, curr: $currentWord")
+
         when {
             // [C] in these docs indicates the value of nextCharacter
             // A[_]B
@@ -51,11 +53,11 @@ fun String.splitOnWordBoundaries(): List<String> {
             // s3[k]ey
             !completeWordInProgress && allLowerCase && digitFollowedByLower(currentWord, nextChar) -> emit(nextChar)
 
-            // DB[P]roxy, or `IAM[U]ser` but not AC[L]s
-            endOfAcronym(currentWord, nextChar, peek, doublePeek) -> emit(nextChar)
-
             // emit complete words
             !completeWordInProgress && completeWords.contains(currentWord.lowercase()) -> emit(nextChar)
+
+            // DB[P]roxy, or `IAM[U]ser` but not AC[L]s
+            !completeWordInProgress && endOfAcronym(currentWord, nextChar, peek, doublePeek) -> emit(nextChar)
 
             // If we haven't found a word boundary, push it and keep going
             else -> currentWord += nextChar.toString()
@@ -76,6 +78,12 @@ private fun endOfAcronym(current: String, nextChar: Char, peek: Char?, doublePee
         // Not an acronym in progress
         return false
     }
+
+    if (nextChar == 'v' && peek?.isDigit() == true) {
+        // Handle cases like `DynamoDB[v]2`
+        return true
+    }
+
     if (!nextChar.isUpperCase()) {
         // We aren't at the next word yet
         return false

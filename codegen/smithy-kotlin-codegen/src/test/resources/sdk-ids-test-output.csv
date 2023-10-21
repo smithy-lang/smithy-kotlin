@@ -309,7 +309,7 @@ Service Catalog,ServiceCatalog
 Service Quotas,ServiceQuotas
 ServiceDiscovery,ServiceDiscovery
 SES,Ses
-SESv2,Sesv2
+SESv2,SesV2
 SFN,Sfn
 Shield,Shield
 signer,Signer
