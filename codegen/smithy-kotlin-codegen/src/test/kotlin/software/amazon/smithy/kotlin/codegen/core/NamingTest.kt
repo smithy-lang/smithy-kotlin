@@ -8,11 +8,14 @@ package software.amazon.smithy.kotlin.codegen.core
 import software.amazon.smithy.kotlin.codegen.model.expectShape
 import software.amazon.smithy.kotlin.codegen.test.prependNamespaceAndService
 import software.amazon.smithy.kotlin.codegen.test.toSmithyModel
+import software.amazon.smithy.kotlin.codegen.utils.toCamelCase
 import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.shapes.ShapeId
+import java.io.File
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotEquals
+import kotlin.test.fail
 
 class NamingTest {
 
@@ -24,7 +27,7 @@ class NamingTest {
         assertEquals("ElastiCache", clientName("ElastiCache"))
         assertEquals("ApiGatewayManagement", clientName("ApiGatewayManagementApi"))
         assertEquals("MigrationHubConfig", clientName("MigrationHub Config"))
-        assertEquals("IoTFleetHub", clientName("IoTFleetHub"))
+        assertEquals("IotFleetHub", clientName("IoTFleetHub"))
         assertEquals("Iot1ClickProjects", clientName("IoT 1Click Projects"))
         assertEquals("DynamoDb", clientName("DynamoDB"))
 
@@ -45,8 +48,8 @@ class NamingTest {
             "ACL" to "acl",
             "ACLList" to "aclList",
             "fooey" to "fooey",
-            "stringA" to "stringa",
-            "StringA" to "stringa",
+            "stringA" to "stringA",
+            "StringA" to "stringA",
         )
 
         tests.forEach { (input, expected) ->
@@ -75,8 +78,8 @@ class NamingTest {
             "application/vnd.amazonaws.card.generic" to "ApplicationVndAmazonawsCardGeneric",
             "IPV4" to "Ipv4",
             "ipv4" to "Ipv4",
-            "IPv4" to "IpV4",
-            "ipV4" to "IpV4",
+            "IPv4" to "Ipv4",
+            "ipV4" to "Ipv4",
             "IPMatch" to "IpMatch",
             "S3" to "S3",
             "EC2Instance" to "Ec2Instance",
@@ -87,9 +90,9 @@ class NamingTest {
             "MS-CHAPv1" to "MsChapV1",
             "One-Way: Outgoing" to "OneWayOutgoing",
             "scram_sha_1" to "ScramSha1",
-            "EC_prime256v1" to "EcPrime256V1",
+            "EC_prime256v1" to "EcPrime256v1",
             "EC_PRIME256V1" to "EcPrime256V1",
-            "EC2v11.4" to "Ec2V11_4",
+            "EC2v11.4" to "Ec2v11_4",
             "nodejs4.3-edge" to "Nodejs4_3_Edge",
             "BUILD_GENERAL1_SMALL" to "BuildGeneral1Small",
             "SSE_S3" to "SseS3",
@@ -116,12 +119,18 @@ class NamingTest {
             "arm64" to "Arm64",
         )
 
+        val errors = mutableListOf<String>()
         tests.forEach { (input, expected) ->
             // NOTE: a lot of these are not valid names according to the Smithy spec but since
             // we still allow deriving a name from the enum value we want to verify what _would_ happen
             // should we encounter these inputs
             val actual = input.enumVariantName()
-            assertEquals(expected, actual, "input: $input")
+            if (expected != actual) {
+                errors += "expected '$expected' != actual '$actual' for input: $input"
+            }
+        }
+        if (errors.isNotEmpty()) {
+            fail(errors.joinToString("\n"))
         }
     }
 
@@ -170,5 +179,99 @@ class NamingTest {
 
         assertNotEquals(all, firstMember)
         assertNotEquals(firstMember, secondMember)
+    }
+
+    @Test
+    fun testCamelCase() {
+        val tests = listOf(
+            "ACLs" to "acls",
+            "ACLsUpdateStatus" to "aclsUpdateStatus",
+            "AllowedAllVPCs" to "allowedAllVpcs",
+            "BluePrimaryX" to "bluePrimaryX",
+            "CIDRs" to "cidrs",
+            "AuthTtL" to "authTtl",
+            "CNAMEPrefix" to "cnamePrefix",
+            "S3Location" to "s3Location",
+            "signatureS" to "signatureS",
+            "signatureR" to "signatureR",
+            "M3u8Settings" to "m3u8Settings",
+            "IAMUser" to "iamUser",
+            "OtaaV1_0_x" to "otaaV10X",
+            "DynamoDBv2Action" to "dynamoDbV2Action",
+            "SessionKeyEmv2000" to "sessionKeyEmv2000",
+            "SupportsClassB" to "supportsClassB",
+            "UnassignIpv6AddressesRequest" to "unassignIpv6AddressesRequest",
+            "TotalGpuMemoryInMiB" to "totalGpuMemoryInMib",
+            "WriteIOs" to "writeIos",
+            "dynamoDBv2" to "dynamoDbV2",
+            "ipv4Address" to "ipv4Address",
+            "sigv4" to "sigv4",
+            "s3key" to "s3Key",
+            "sha256sum" to "sha256Sum",
+            "Av1QvbrSettings" to "aV1QvbrSettings",
+            "Av1Settings" to "aV1Settings",
+            "AwsElbv2LoadBalancer" to "awsElbv2LoadBalancer",
+            "SigV4Authorization" to "sigv4Authorization",
+            "IpV6Address" to "ipv6Address",
+            "IPv6Address" to "ipv6Address",
+            "IpV6Cidr" to "ipv6Cidr",
+            "IpV4Addresses" to "ipv4Addresses",
+        )
+
+        tests.forEach { (input, expected) ->
+            val actual = input.toCamelCase()
+            assertEquals(expected, actual, "input: $input")
+        }
+    }
+
+    @Test
+    fun testAllNames() {
+        // Set this to true to write a new test expectation file
+        val publishUpdate = false
+        val allNames = this::class.java.getResource("/all-names-test-output.csv")?.readText()!!
+        val errors = mutableListOf<String>()
+        val output = StringBuilder().apply { appendLine("input,actual") }
+        allNames.lines().filter { it.isNotBlank() }.forEach {
+            val split = it.split(',')
+            val input = split[0]
+            val expectation = split[1]
+            val actual = input.toCamelCase()
+            if (actual != expectation) {
+                errors += "$it => $actual (expected $expectation)"
+            }
+            output.appendLine("$input,$actual")
+        }
+        if (publishUpdate) {
+            File("all-names-test-output.csv").writeText(output.toString())
+        }
+        if (errors.isNotEmpty()) {
+            fail(errors.joinToString("\n"))
+        }
+    }
+
+    @Test
+    fun testClientNames() {
+        // jq '.. | select(.sdkId?).sdkId' codegen/sdk/aws-models/*.json > /tmp/sdk-ids.csv
+        // Set this to true to write a new test expectation file
+        val publishUpdate = false
+        val allNames = this::class.java.getResource("/sdk-ids-test-output.csv")?.readText()!!
+        val errors = mutableListOf<String>()
+        val output = StringBuilder().apply { appendLine("input,actual") }
+        allNames.lines().filter { it.isNotBlank() }.forEach {
+            val split = it.split(',')
+            val input = split[0]
+            val expectation = split[1]
+            val actual = clientName(input)
+            if (actual != expectation) {
+                errors += "$it => $actual (expected $expectation)"
+            }
+            output.appendLine("$input,$actual")
+        }
+        if (publishUpdate) {
+            File("sdk-ids-test-output.csv").writeText(output.toString())
+        }
+        if (errors.isNotEmpty()) {
+            fail(errors.joinToString("\n"))
+        }
     }
 }

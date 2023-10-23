@@ -53,6 +53,7 @@ public final class aws/smithy/kotlin/runtime/auth/awssigning/AwsSigningConfig {
 	public final fun getCredentials ()Laws/smithy/kotlin/runtime/auth/awscredentials/Credentials;
 	public final fun getExpiresAfter-FghU774 ()Lkotlin/time/Duration;
 	public final fun getHashSpecification ()Laws/smithy/kotlin/runtime/auth/awssigning/HashSpecification;
+	public final fun getLogRequest ()Z
 	public final fun getNormalizeUriPath ()Z
 	public final fun getOmitSessionToken ()Z
 	public final fun getRegion ()Ljava/lang/String;
@@ -72,6 +73,7 @@ public final class aws/smithy/kotlin/runtime/auth/awssigning/AwsSigningConfig$Bu
 	public final fun getCredentials ()Laws/smithy/kotlin/runtime/auth/awscredentials/Credentials;
 	public final fun getExpiresAfter-FghU774 ()Lkotlin/time/Duration;
 	public final fun getHashSpecification ()Laws/smithy/kotlin/runtime/auth/awssigning/HashSpecification;
+	public final fun getLogRequest ()Z
 	public final fun getNormalizeUriPath ()Z
 	public final fun getOmitSessionToken ()Z
 	public final fun getRegion ()Ljava/lang/String;
@@ -85,6 +87,7 @@ public final class aws/smithy/kotlin/runtime/auth/awssigning/AwsSigningConfig$Bu
 	public final fun setCredentials (Laws/smithy/kotlin/runtime/auth/awscredentials/Credentials;)V
 	public final fun setExpiresAfter-BwNAW2A (Lkotlin/time/Duration;)V
 	public final fun setHashSpecification (Laws/smithy/kotlin/runtime/auth/awssigning/HashSpecification;)V
+	public final fun setLogRequest (Z)V
 	public final fun setNormalizeUriPath (Z)V
 	public final fun setOmitSessionToken (Z)V
 	public final fun setRegion (Ljava/lang/String;)V

@@ -1,0 +1,5 @@
+{
+    "id": "b1a1bee4-e3e4-4520-ae8e-48d3b0e94ae9",
+    "type": "bugfix",
+    "description": "Do not log intermediate signature calculations without explicit opt-in via `LogMode.LogSigning`."
+}

@@ -1,0 +1,357 @@
+AccessAnalyzer,AccessAnalyzer
+Account,Account
+ACM PCA,AcmPca
+ACM,Acm
+Alexa For Business,AlexaForBusiness
+amp,Amp
+Amplify,Amplify
+AmplifyBackend,AmplifyBackend
+AmplifyUIBuilder,AmplifyUiBuilder
+API Gateway,ApiGateway
+ApiGatewayManagementApi,ApiGatewayManagement
+ApiGatewayV2,ApiGatewayV2
+App Mesh,AppMesh
+AppConfig,AppConfig
+AppConfigData,AppConfigData
+AppFabric,AppFabric
+Appflow,Appflow
+AppIntegrations,AppIntegrations
+Application Auto Scaling,ApplicationAutoScaling
+Application Discovery Service,ApplicationDiscovery
+Application Insights,ApplicationInsights
+ApplicationCostProfiler,ApplicationCostProfiler
+AppRunner,AppRunner
+AppStream,AppStream
+AppSync,AppSync
+ARC Zonal Shift,ArcZonalShift
+Athena,Athena
+AuditManager,AuditManager
+Auto Scaling Plans,AutoScalingPlans
+Auto Scaling,AutoScaling
+Backup Gateway,BackupGateway
+Backup,Backup
+BackupStorage,BackupStorage
+Batch,Batch
+Bedrock Runtime,BedrockRuntime
+Bedrock,Bedrock
+billingconductor,Billingconductor
+Braket,Braket
+Budgets,Budgets
+Chime SDK Identity,ChimeSdkIdentity
+Chime SDK Media Pipelines,ChimeSdkMediaPipelines
+Chime SDK Meetings,ChimeSdkMeetings
+Chime SDK Messaging,ChimeSdkMessaging
+Chime SDK Voice,ChimeSdkVoice
+Chime,Chime
+CleanRooms,CleanRooms
+Cloud9,Cloud9
+CloudControl,CloudControl
+CloudDirectory,CloudDirectory
+CloudFormation,CloudFormation
+CloudFront,CloudFront
+CloudHSM V2,CloudHsmV2
+CloudHSM,CloudHsm
+CloudSearch Domain,CloudSearchDomain
+CloudSearch,CloudSearch
+CloudTrail Data,CloudTrailData
+CloudTrail,CloudTrail
+CloudWatch Events,CloudWatchEvents
+CloudWatch Logs,CloudWatchLogs
+CloudWatch,CloudWatch
+codeartifact,Codeartifact
+CodeBuild,CodeBuild
+CodeCatalyst,CodeCatalyst
+CodeCommit,CodeCommit
+CodeDeploy,CodeDeploy
+CodeGuru Reviewer,CodeGuruReviewer
+CodeGuru Security,CodeGuruSecurity
+CodeGuruProfiler,CodeGuruProfiler
+CodePipeline,CodePipeline
+CodeStar connections,CodeStarConnections
+codestar notifications,CodestarNotifications
+CodeStar,CodeStar
+Cognito Identity Provider,CognitoIdentityProvider
+Cognito Identity,CognitoIdentity
+Cognito Sync,CognitoSync
+Comprehend,Comprehend
+ComprehendMedical,ComprehendMedical
+Compute Optimizer,ComputeOptimizer
+Config Service,Config
+Connect Contact Lens,ConnectContactLens
+Connect,Connect
+ConnectCampaigns,ConnectCampaigns
+ConnectCases,ConnectCases
+ConnectParticipant,ConnectParticipant
+ControlTower,ControlTower
+Cost and Usage Report Service,CostAndUsageReport
+Cost Explorer,CostExplorer
+Customer Profiles,CustomerProfiles
+Data Pipeline,DataPipeline
+Database Migration Service,DatabaseMigration
+DataBrew,DataBrew
+DataExchange,DataExchange
+DataSync,DataSync
+DataZone,DataZone
+DAX,Dax
+Detective,Detective
+Device Farm,DeviceFarm
+DevOps Guru,DevOpsGuru
+Direct Connect,DirectConnect
+Directory Service,Directory
+DLM,Dlm
+DocDB Elastic,DocDbElastic
+DocDB,DocDb
+drs,Drs
+DynamoDB Streams,DynamoDbStreams
+DynamoDB,DynamoDb
+EBS,Ebs
+EC2 Instance Connect,Ec2InstanceConnect
+EC2,Ec2
+ECR PUBLIC,EcrPublic
+ECR,Ecr
+ECS,Ecs
+EFS,Efs
+EKS,Eks
+Elastic Beanstalk,ElasticBeanstalk
+Elastic Inference,ElasticInference
+Elastic Load Balancing v2,ElasticLoadBalancingV2
+Elastic Load Balancing,ElasticLoadBalancing
+Elastic Transcoder,ElasticTranscoder
+ElastiCache,ElastiCache
+Elasticsearch Service,Elasticsearch
+EMR containers,EmrContainers
+EMR Serverless,EmrServerless
+EMR,Emr
+EntityResolution,EntityResolution
+EventBridge,EventBridge
+Evidently,Evidently
+finspace data,FinspaceData
+finspace,Finspace
+Firehose,Firehose
+fis,Fis
+FMS,Fms
+forecast,Forecast
+forecastquery,Forecastquery
+FraudDetector,FraudDetector
+FSx,FSx
+GameLift,GameLift
+GameSparks,GameSparks
+Glacier,Glacier
+Global Accelerator,GlobalAccelerator
+Glue,Glue
+grafana,Grafana
+Greengrass,Greengrass
+GreengrassV2,GreengrassV2
+GroundStation,GroundStation
+GuardDuty,GuardDuty
+Health,Health
+HealthLake,HealthLake
+Honeycode,Honeycode
+IAM,Iam
+identitystore,Identitystore
+imagebuilder,Imagebuilder
+Inspector,Inspector
+Inspector2,Inspector2
+InternetMonitor,InternetMonitor
+IoT 1Click Devices Service,Iot1ClickDevices
+IoT 1Click Projects,Iot1ClickProjects
+IoT Data Plane,IotDataPlane
+IoT Events Data,IotEventsData
+IoT Events,IotEvents
+IoT Jobs Data Plane,IotJobsDataPlane
+IoT RoboRunner,IotRoboRunner
+IoT Wireless,IotWireless
+IoT,Iot
+IoTAnalytics,IotAnalytics
+IotDeviceAdvisor,IotDeviceAdvisor
+IoTFleetHub,IotFleetHub
+IoTFleetWise,IotFleetWise
+IoTSecureTunneling,IotSecureTunneling
+IoTSiteWise,IotSiteWise
+IoTThingsGraph,IotThingsGraph
+IoTTwinMaker,IotTwinMaker
+IVS RealTime,IvsRealTime
+ivs,Ivs
+ivschat,Ivschat
+Kafka,Kafka
+KafkaConnect,KafkaConnect
+Kendra Ranking,KendraRanking
+kendra,Kendra
+Keyspaces,Keyspaces
+Kinesis Analytics V2,KinesisAnalyticsV2
+Kinesis Analytics,KinesisAnalytics
+Kinesis Video Archived Media,KinesisVideoArchivedMedia
+Kinesis Video Media,KinesisVideoMedia
+Kinesis Video Signaling,KinesisVideoSignaling
+Kinesis Video WebRTC Storage,KinesisVideoWebRtcStorage
+Kinesis Video,KinesisVideo
+Kinesis,Kinesis
+KMS,Kms
+LakeFormation,LakeFormation
+Lambda,Lambda
+Lex Model Building Service,LexModelBuilding
+Lex Models V2,LexModelsV2
+Lex Runtime Service,LexRuntime
+Lex Runtime V2,LexRuntimeV2
+License Manager Linux Subscriptions,LicenseManagerLinuxSubscriptions
+License Manager User Subscriptions,LicenseManagerUserSubscriptions
+License Manager,LicenseManager
+Lightsail,Lightsail
+Location,Location
+LookoutEquipment,LookoutEquipment
+LookoutMetrics,LookoutMetrics
+LookoutVision,LookoutVision
+m2,M2
+Machine Learning,MachineLearning
+Macie,Macie
+Macie2,Macie2
+ManagedBlockchain Query,ManagedBlockchainQuery
+ManagedBlockchain,ManagedBlockchain
+Marketplace Catalog,MarketplaceCatalog
+Marketplace Commerce Analytics,MarketplaceCommerceAnalytics
+Marketplace Entitlement Service,MarketplaceEntitlement
+Marketplace Metering,MarketplaceMetering
+MediaConnect,MediaConnect
+MediaConvert,MediaConvert
+MediaLive,MediaLive
+MediaPackage Vod,MediaPackageVod
+MediaPackage,MediaPackage
+MediaPackageV2,MediaPackageV2
+MediaStore Data,MediaStoreData
+MediaStore,MediaStore
+MediaTailor,MediaTailor
+Medical Imaging,MedicalImaging
+MemoryDB,MemoryDb
+mgn,Mgn
+Migration Hub Refactor Spaces,MigrationHubRefactorSpaces
+Migration Hub,MigrationHub
+MigrationHub Config,MigrationHubConfig
+MigrationHubOrchestrator,MigrationHubOrchestrator
+MigrationHubStrategy,MigrationHubStrategy
+Mobile,Mobile
+mq,Mq
+MTurk,MTurk
+MWAA,Mwaa
+Neptune,Neptune
+neptunedata,Neptunedata
+Network Firewall,NetworkFirewall
+NetworkManager,NetworkManager
+nimble,Nimble
+OAM,Oam
+Omics,Omics
+OpenSearch,OpenSearch
+OpenSearchServerless,OpenSearchServerless
+OpsWorks,OpsWorks
+OpsWorksCM,OpsWorksCm
+Organizations,Organizations
+OSIS,Osis
+Outposts,Outposts
+Panorama,Panorama
+Payment Cryptography Data,PaymentCryptographyData
+Payment Cryptography,PaymentCryptography
+Pca Connector Ad,PcaConnectorAd
+Personalize Events,PersonalizeEvents
+Personalize Runtime,PersonalizeRuntime
+Personalize,Personalize
+PI,Pi
+Pinpoint Email,PinpointEmail
+Pinpoint SMS Voice V2,PinpointSmsVoiceV2
+Pinpoint SMS Voice,PinpointSmsVoice
+Pinpoint,Pinpoint
+Pipes,Pipes
+Polly,Polly
+Pricing,Pricing
+PrivateNetworks,PrivateNetworks
+Proton,Proton
+QLDB Session,QldbSession
+QLDB,Qldb
+QuickSight,QuickSight
+RAM,Ram
+rbin,Rbin
+RDS Data,RdsData
+RDS,Rds
+Redshift Data,RedshiftData
+Redshift Serverless,RedshiftServerless
+Redshift,Redshift
+Rekognition,Rekognition
+resiliencehub,Resiliencehub
+Resource Explorer 2,ResourceExplorer2
+Resource Groups Tagging API,ResourceGroupsTagging
+Resource Groups,ResourceGroups
+RoboMaker,RoboMaker
+RolesAnywhere,RolesAnywhere
+Route 53 Domains,Route53Domains
+Route 53,Route53
+Route53 Recovery Cluster,Route53RecoveryCluster
+Route53 Recovery Control Config,Route53RecoveryControlConfig
+Route53 Recovery Readiness,Route53RecoveryReadiness
+Route53Resolver,Route53Resolver
+RUM,Rum
+S3 Control,S3Control
+S3,S3
+S3Outposts,S3Outposts
+SageMaker A2I Runtime,SageMakerA2IRuntime
+Sagemaker Edge,SagemakerEdge
+SageMaker FeatureStore Runtime,SageMakerFeatureStoreRuntime
+SageMaker Geospatial,SageMakerGeospatial
+SageMaker Metrics,SageMakerMetrics
+SageMaker Runtime,SageMakerRuntime
+SageMaker,SageMaker
+savingsplans,Savingsplans
+Scheduler,Scheduler
+schemas,Schemas
+Secrets Manager,SecretsManager
+SecurityHub,SecurityHub
+SecurityLake,SecurityLake
+ServerlessApplicationRepository,ServerlessApplicationRepository
+Service Catalog AppRegistry,ServiceCatalogAppRegistry
+Service Catalog,ServiceCatalog
+Service Quotas,ServiceQuotas
+ServiceDiscovery,ServiceDiscovery
+SES,Ses
+SESv2,SesV2
+SFN,Sfn
+Shield,Shield
+signer,Signer
+SimSpaceWeaver,SimSpaceWeaver
+SMS,Sms
+Snow Device Management,SnowDeviceManagement
+Snowball,Snowball
+SNS,Sns
+SQS,Sqs
+SSM Contacts,SsmContacts
+SSM Incidents,SsmIncidents
+Ssm Sap,SsmSap
+SSM,Ssm
+SSO Admin,SsoAdmin
+SSO OIDC,SsoOidc
+SSO,Sso
+Storage Gateway,StorageGateway
+STS,Sts
+Support App,SupportApp
+Support,Support
+SWF,Swf
+synthetics,Synthetics
+Textract,Textract
+Timestream Query,TimestreamQuery
+Timestream Write,TimestreamWrite
+tnb,Tnb
+Transcribe Streaming,TranscribeStreaming
+Transcribe,Transcribe
+Transfer,Transfer
+Translate,Translate
+VerifiedPermissions,VerifiedPermissions
+Voice ID,VoiceId
+VPC Lattice,VpcLattice
+WAF Regional,WafRegional
+WAF,Waf
+WAFV2,Wafv2
+WellArchitected,WellArchitected
+Wisdom,Wisdom
+WorkDocs,WorkDocs
+WorkLink,WorkLink
+WorkMail,WorkMail
+WorkMailMessageFlow,WorkMailMessageFlow
+WorkSpaces Web,WorkSpacesWeb
+WorkSpaces,WorkSpaces
+XRay,XRay
