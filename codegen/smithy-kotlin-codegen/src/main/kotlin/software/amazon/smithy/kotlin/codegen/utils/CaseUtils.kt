@@ -37,8 +37,6 @@ fun String.splitOnWordBoundaries(): List<String> {
             (currentWord + substring(index)).lowercase().startsWith(it)
         } && !completeWords.contains(currentWord.lowercase())
 
-        // println("completeWordInProgress: $completeWordInProgress, curr: $currentWord")
-
         when {
             // [C] in these docs indicates the value of nextCharacter
             // A[_]B
