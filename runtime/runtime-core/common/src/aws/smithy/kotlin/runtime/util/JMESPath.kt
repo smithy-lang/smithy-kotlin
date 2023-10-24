@@ -64,3 +64,10 @@ public fun Any?.type(): String = when (this) {
     null -> "null"
     else -> throw Exception("Undetected type for: $this")
 }
+
+@InternalApi
+public expect inline fun <reified T> Collection<T>.flattenIfPossible(): Collection<T>
+
+@InternalApi
+public expect inline fun <reified T> Collection<Collection<T>>.flattenIfPossible(): Collection<T>
+

@@ -8,9 +8,7 @@ package aws.smithy.kotlin.runtime.util
 import aws.smithy.kotlin.runtime.InternalApi
 
 @InternalApi
-@JvmName("noOpUnnestedCollection")
 public actual inline fun <reified T> Collection<T>.flattenIfPossible(): Collection<T> = this
 
 @InternalApi
-@JvmName("flattenNestedCollection")
 public actual inline fun <reified T> Collection<Collection<T>>.flattenIfPossible(): Collection<T> = flatten()
