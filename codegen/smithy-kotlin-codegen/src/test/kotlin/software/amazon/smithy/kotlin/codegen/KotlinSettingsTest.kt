@@ -5,7 +5,6 @@
 
 package software.amazon.smithy.kotlin.codegen
 
-import org.junit.jupiter.api.assertThrows
 import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.kotlin.codegen.test.TestModelDefault
 import software.amazon.smithy.kotlin.codegen.test.toSmithyModel
@@ -284,7 +283,7 @@ class KotlinSettingsTest {
             }
         """.trimIndent()
 
-        assertThrows<IllegalArgumentException> {
+        assertFailsWith<IllegalArgumentException> {
             KotlinSettings.from(
                 model,
                 Node.parse(contents).expectObjectNode(),
