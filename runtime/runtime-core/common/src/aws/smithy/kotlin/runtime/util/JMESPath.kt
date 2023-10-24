@@ -6,6 +6,7 @@
 package aws.smithy.kotlin.runtime.util
 
 import aws.smithy.kotlin.runtime.InternalApi
+import kotlin.jvm.JvmName
 
 @InternalApi
 public fun Short.toNumber(): Short = this
@@ -66,8 +67,9 @@ public fun Any?.type(): String = when (this) {
 }
 
 @InternalApi
-public expect inline fun <reified T> Collection<T>.flattenIfPossible(): Collection<T>
+@JvmName("noOpUnnestedCollection")
+public inline fun <reified T> Collection<T>.flattenIfPossible(): Collection<T> = this
 
 @InternalApi
-public expect inline fun <reified T> Collection<Collection<T>>.flattenIfPossible(): Collection<T>
-
+@JvmName("flattenNestedCollection")
+public inline fun <reified T> Collection<Collection<T>>.flattenIfPossible(): Collection<T> = flatten()
