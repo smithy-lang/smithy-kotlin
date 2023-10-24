@@ -62,7 +62,7 @@ jobs:
         run: |
           echo "kotlinWarningsAsErrors=true" >> $GITHUB_WORKSPACE/local.properties
           ./gradlew apiCheck
-          ./gradlew test allTests
+          ./gradlew test jvmTest
       - name: Save Test Reports
         if: failure()
         uses: actions/upload-artifact@v3

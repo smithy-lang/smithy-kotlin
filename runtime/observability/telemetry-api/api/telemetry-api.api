@@ -61,6 +61,7 @@ public final class aws/smithy/kotlin/runtime/telemetry/logging/LogLevel : java/l
 	public static final field Info Laws/smithy/kotlin/runtime/telemetry/logging/LogLevel;
 	public static final field Trace Laws/smithy/kotlin/runtime/telemetry/logging/LogLevel;
 	public static final field Warning Laws/smithy/kotlin/runtime/telemetry/logging/LogLevel;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
 	public static fun valueOf (Ljava/lang/String;)Laws/smithy/kotlin/runtime/telemetry/logging/LogLevel;
 	public static fun values ()[Laws/smithy/kotlin/runtime/telemetry/logging/LogLevel;
 }
@@ -205,6 +206,7 @@ public final class aws/smithy/kotlin/runtime/telemetry/trace/SpanKind : java/lan
 	public static final field CLIENT Laws/smithy/kotlin/runtime/telemetry/trace/SpanKind;
 	public static final field INTERNAL Laws/smithy/kotlin/runtime/telemetry/trace/SpanKind;
 	public static final field SERVER Laws/smithy/kotlin/runtime/telemetry/trace/SpanKind;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
 	public static fun valueOf (Ljava/lang/String;)Laws/smithy/kotlin/runtime/telemetry/trace/SpanKind;
 	public static fun values ()[Laws/smithy/kotlin/runtime/telemetry/trace/SpanKind;
 }
@@ -213,6 +215,7 @@ public final class aws/smithy/kotlin/runtime/telemetry/trace/SpanStatus : java/l
 	public static final field ERROR Laws/smithy/kotlin/runtime/telemetry/trace/SpanStatus;
 	public static final field OK Laws/smithy/kotlin/runtime/telemetry/trace/SpanStatus;
 	public static final field UNSET Laws/smithy/kotlin/runtime/telemetry/trace/SpanStatus;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
 	public static fun valueOf (Ljava/lang/String;)Laws/smithy/kotlin/runtime/telemetry/trace/SpanStatus;
 	public static fun values ()[Laws/smithy/kotlin/runtime/telemetry/trace/SpanStatus;
 }

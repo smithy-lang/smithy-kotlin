@@ -9,7 +9,6 @@ import aws.smithy.kotlin.runtime.auth.awscredentials.CredentialsProvider
 import aws.smithy.kotlin.runtime.auth.awssigning.AwsSigner
 import aws.smithy.kotlin.runtime.auth.awssigning.AwsSigningAttributes
 import aws.smithy.kotlin.runtime.auth.awssigning.DefaultAwsSigner
-import aws.smithy.kotlin.runtime.auth.awssigning.crt.CrtAwsSigner
 import aws.smithy.kotlin.runtime.auth.awssigning.internal.AWS_CHUNKED_THRESHOLD
 import aws.smithy.kotlin.runtime.http.*
 import aws.smithy.kotlin.runtime.http.operation.*
@@ -31,7 +30,6 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class DefaultAwsHttpSignerTest : AwsHttpSignerTestBase(DefaultAwsSigner)
-class CrtAwsHttpSignerTest : AwsHttpSignerTestBase(CrtAwsSigner)
 
 /**
  * Basic sanity tests. Signing (including `AwsHttpSigner`) is covered by the more exhaustive

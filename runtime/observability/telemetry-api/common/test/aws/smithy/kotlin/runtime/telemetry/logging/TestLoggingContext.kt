@@ -6,7 +6,7 @@
 package aws.smithy.kotlin.runtime.telemetry.logging
 
 import kotlinx.coroutines.test.runTest
-import org.junit.jupiter.api.Test
+import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class TestLoggingContext {

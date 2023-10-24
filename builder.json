@@ -20,7 +20,7 @@
     ],
     "test_steps": [
         "{gradlew} apiCheck",
-        "{gradlew} test allTests"
+        "{gradlew} test jvmTest"
     ],
     "upstream": [
         {
