@@ -109,4 +109,5 @@ jobs:
         # the generated protocol test projects will use whatever the SDK thinks the version of smithy-kotlin should be
         sed -i "s/smithy-kotlin-version = .*$/smithy-kotlin-version = \"$SMITHY_KOTLIN_VERSION\"/" gradle/libs.versions.toml
         ./gradlew --parallel publishToMavenLocal
+        ./gradlew test jvmTest
         ./gradlew testAllProtocols
