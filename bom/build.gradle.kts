@@ -20,6 +20,7 @@ val sdkVersion: String by project
 
 group = "aws.smithy.kotlin"
 version = sdkVersion
+description = "Provides a BOM"
 
 val evaluateAfter = listOf(":runtime")
 evaluateAfter.forEach { evaluationDependsOn(it) }
@@ -79,6 +80,7 @@ publishing {
 
         create<MavenPublication>("versionCatalog") {
             artifactId = "version-catalog"
+            description = "Provides a version catalog"
             from(components["versionCatalog"])
         }
     }
