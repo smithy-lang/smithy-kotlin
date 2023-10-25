@@ -5,7 +5,6 @@
 
 package software.amazon.smithy.kotlin.codegen
 
-import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
 import software.amazon.smithy.codegen.core.CodegenException
