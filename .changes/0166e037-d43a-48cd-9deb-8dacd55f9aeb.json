@@ -1,5 +1,0 @@
-{
-    "id": "0166e037-d43a-48cd-9deb-8dacd55f9aeb",
-    "type": "feature",
-    "description": "Refactor codegen to support treating `@required` members as non-nullable."
-}
