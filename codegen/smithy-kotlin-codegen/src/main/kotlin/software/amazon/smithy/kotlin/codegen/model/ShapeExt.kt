@@ -218,7 +218,6 @@ fun OperationShape.isOutputEventStream(model: Model): Boolean {
     return respShape.hasEventStreamMember(model)
 }
 
-// FIXME - move to the InputTrait and OutputTrait provided by smithy now
 /**
  * Test if a structure shape is an operation input
  */

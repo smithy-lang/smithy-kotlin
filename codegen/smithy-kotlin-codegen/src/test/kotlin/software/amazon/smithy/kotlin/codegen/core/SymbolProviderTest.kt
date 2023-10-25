@@ -9,17 +9,18 @@ import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
 import org.junit.jupiter.params.provider.ValueSource
 import software.amazon.smithy.codegen.core.SymbolProvider
+import software.amazon.smithy.kotlin.codegen.ApiSettings
 import software.amazon.smithy.kotlin.codegen.KotlinCodegenPlugin
 import software.amazon.smithy.kotlin.codegen.core.KotlinDependency.Companion.CORE
-import software.amazon.smithy.kotlin.codegen.model.defaultValue
-import software.amazon.smithy.kotlin.codegen.model.expectShape
-import software.amazon.smithy.kotlin.codegen.model.fullNameHint
-import software.amazon.smithy.kotlin.codegen.model.isNullable
+import software.amazon.smithy.kotlin.codegen.model.*
 import software.amazon.smithy.kotlin.codegen.model.traits.SYNTHETIC_NAMESPACE
 import software.amazon.smithy.kotlin.codegen.test.*
+import software.amazon.smithy.model.knowledge.NullableIndex.CheckMode
 import software.amazon.smithy.model.shapes.*
+import software.amazon.smithy.model.traits.ClientOptionalTrait
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class SymbolProviderTest {
@@ -125,7 +126,7 @@ class SymbolProviderTest {
         val memberSymbol = provider.toSymbol(member)
         assertEquals("kotlin", memberSymbol.namespace)
         assertEquals(expectedDefault, memberSymbol.defaultValue())
-        assertTrue(memberSymbol.isNullable)
+        assertFalse(memberSymbol.isNullable)
     }
 
     @Test
@@ -370,7 +371,6 @@ class SymbolProviderTest {
     fun `@clientOptional overrides @default`() {
         val model = """
         structure MyStruct {
-            @required
             @clientOptional
             @default("Foo")
             quux: QuuxType
@@ -388,11 +388,11 @@ class SymbolProviderTest {
     }
 
     @Test
-    fun `@input`() {
+    fun `@input with default`() {
         val model = """
         @input
         structure MyStruct {
-            @required
+            @default(2)
             quux: QuuxType
         }
         
@@ -404,6 +404,7 @@ class SymbolProviderTest {
         val memberSymbol = provider.toSymbol(member)
         assertEquals("kotlin", memberSymbol.namespace)
         assertTrue(memberSymbol.isNullable)
+        // @input makes every member implicitly @clientOptional
         assertEquals("null", memberSymbol.defaultValue())
     }
 
@@ -467,8 +468,6 @@ class SymbolProviderTest {
         val listSymbol = provider.toSymbol(model.expectShape<ListShape>("foo.bar#Records"))
 
         assertEquals("List<Record>", listSymbol.name)
-        assertEquals(true, listSymbol.isNullable)
-        assertEquals("null", listSymbol.defaultValue())
 
         // collections should contain a reference to the member type
         assertEquals("Record", listSymbol.references[0].symbol.name)
@@ -476,8 +475,6 @@ class SymbolProviderTest {
         val sparseListSymbol = provider.toSymbol(model.expectShape<ListShape>("foo.bar#SparseRecords"))
 
         assertEquals("List<Record?>", sparseListSymbol.name)
-        assertEquals(true, sparseListSymbol.isNullable)
-        assertEquals("null", sparseListSymbol.defaultValue())
 
         // collections should contain a reference to the member type
         assertEquals("Record", sparseListSymbol.references[0].symbol.name)
@@ -503,8 +500,6 @@ class SymbolProviderTest {
         val listSymbol = provider.toSymbol(listShape)
 
         assertEquals("List<Record>", listSymbol.name)
-        assertEquals(true, listSymbol.isNullable)
-        assertEquals("null", listSymbol.defaultValue())
 
         // collections should contain a reference to the member type
         assertEquals("Record", listSymbol.references[0].symbol.name)
@@ -532,8 +527,6 @@ class SymbolProviderTest {
         val mapSymbol = provider.toSymbol(model.expectShape<MapShape>("${TestModelDefault.NAMESPACE}#MyMap"))
 
         assertEquals("Map<String, Record>", mapSymbol.name)
-        assertEquals(true, mapSymbol.isNullable)
-        assertEquals("null", mapSymbol.defaultValue())
 
         // collections should contain a reference to the member type
         assertEquals("Record", mapSymbol.references[0].symbol.name)
@@ -541,8 +534,6 @@ class SymbolProviderTest {
         val sparseMapSymbol = provider.toSymbol(model.expectShape<MapShape>("${TestModelDefault.NAMESPACE}#MySparseMap"))
 
         assertEquals("Map<String, Record?>", sparseMapSymbol.name)
-        assertEquals(true, sparseMapSymbol.isNullable)
-        assertEquals("null", sparseMapSymbol.defaultValue())
 
         // collections should contain a reference to the member type
         assertEquals("Record", sparseMapSymbol.references[0].symbol.name)
@@ -590,8 +581,6 @@ class SymbolProviderTest {
         val symbol = provider.toSymbol(shape)
 
         assertEquals("foo.bar.model", symbol.namespace)
-        assertEquals("null", symbol.defaultValue())
-        assertEquals(true, symbol.isNullable)
         assertEquals("Baz", symbol.name)
         assertEquals("Baz.kt", symbol.definitionFile)
     }
@@ -610,8 +599,6 @@ class SymbolProviderTest {
         val symbol = provider.toSymbol(shape)
 
         assertEquals("foo.bar.model", symbol.namespace)
-        assertEquals("null", symbol.defaultValue())
-        assertEquals(true, symbol.isNullable)
         assertEquals("Baz", symbol.name)
         assertEquals("Baz.kt", symbol.definitionFile)
     }
@@ -631,8 +618,6 @@ class SymbolProviderTest {
         val symbol = provider.toSymbol(unionShape)
 
         assertEquals("com.test.model", symbol.namespace)
-        assertEquals("null", symbol.defaultValue())
-        assertEquals(true, symbol.isNullable)
         assertEquals("MyUnion", symbol.name)
         assertEquals("MyUnion.kt", symbol.definitionFile)
     }
@@ -650,8 +635,6 @@ class SymbolProviderTest {
         val structSymbol = provider.toSymbol(structShape)
         assertEquals("foo.bar.model", structSymbol.namespace)
         assertEquals("MyStruct", structSymbol.name)
-        assertEquals("null", structSymbol.defaultValue())
-        assertEquals(true, structSymbol.isNullable)
         assertEquals("MyStruct.kt", structSymbol.definitionFile)
         assertEquals(1, structSymbol.references.size)
     }
@@ -705,8 +688,6 @@ class SymbolProviderTest {
         val timestampSymbol = provider.toSymbol(tsShape)
         assertEquals("$RUNTIME_ROOT_NS.time", timestampSymbol.namespace)
         assertEquals("Instant", timestampSymbol.name)
-        assertEquals("null", timestampSymbol.defaultValue())
-        assertEquals(true, timestampSymbol.isNullable)
         assertEquals(1, timestampSymbol.dependencies.size)
     }
 
@@ -730,8 +711,6 @@ class SymbolProviderTest {
         val structSymbol = provider.toSymbol(struct1)
         assertEquals("foo.bar.model", structSymbol.namespace)
         assertEquals("MyStruct1", structSymbol.name)
-        assertEquals("null", structSymbol.defaultValue())
-        assertEquals(true, structSymbol.isNullable)
         assertEquals("MyStruct1.kt", structSymbol.definitionFile)
         assertEquals(2, structSymbol.references.size)
     }
@@ -774,5 +753,151 @@ class SymbolProviderTest {
         assertEquals("Flow<com.test.model.Events>", symbol.name)
 
         assertEquals("com.test.model.Events", symbol.references[0].symbol.fullName)
+    }
+
+    @ParameterizedTest(name = "{index} ==> ''{0}''")
+    @ValueSource(strings = ["CLIENT_CAREFUL", "CLIENT"])
+    fun `it handles client nullability for IDL v2 check modes`(rawCheckMode: String) {
+        val model = """
+            operation TestOp {
+                input: OpInput
+            }
+
+            @input
+            structure OpInput {
+                @httpHeader("x-test")
+                xTestHeader: String,
+
+                @required
+                boolean: Boolean
+
+                list: IntList,
+                map: StringMap,
+
+                @required
+                top: MyStruct
+            }
+
+            integer MyInt
+            
+            @default("foo")
+            string MyString
+
+            list IntList {
+                member: MyInt
+            }
+
+            @sparse
+            list SparseIntList {
+                member: MyInt
+            }
+
+            map StringMap {
+                key: String,
+                value: MyInt
+            }
+
+            structure MyStruct {
+                @required
+                union: MyUnion,
+
+                @required
+                string: String,
+
+                @required
+                list: IntList,
+
+                sparseList: SparseIntList,
+
+                @required
+                nested: Nested,
+
+                @required
+                @clientOptional
+                clientOptionalString: String,
+
+                @required
+                enum: MyEnum,
+                
+                @default(1)
+                defaultInt: MyInt,
+                
+                @default("foo")
+                defaultString: MyString,
+                
+                @default(null)
+                defaultButNullString: MyString
+            }
+
+            enum MyEnum {
+                Variant1,
+                Variant2
+            }
+
+            structure Nested {
+                nestedString: String
+            }
+
+            union MyUnion {
+                blob: Blob,
+                boolean: Boolean,
+                date: Timestamp,
+                int: Integer,
+            }
+        """.prependNamespaceAndService(operations = listOf("TestOp")).toSmithyModel()
+
+        val checkMode = CheckMode.valueOf(rawCheckMode)
+        val settings = model.defaultSettings().copy(api = ApiSettings(nullabilityCheckMode = checkMode))
+        val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model, settings = settings)
+
+        // opInput members always optional because of @input
+        val opInputStruct = model.expectShape<StructureShape>("com.test#OpInput")
+        opInputStruct.members().forEach {
+            assertTrue(provider.toSymbol(it).isNullable, "expected $it to be nullable because its marked with @input trait")
+        }
+
+        // struct/union members optional in client careful
+        val myStruct = model.expectShape<StructureShape>("com.test#MyStruct")
+        val unionAndStructMembers = listOf("union", "nested").map { myStruct.getMember(it).get() }
+        unionAndStructMembers.forEach {
+            val memberSymbol = provider.toSymbol(it)
+            when (checkMode) {
+                CheckMode.CLIENT_CAREFUL -> assertTrue(memberSymbol.isNullable, "struct/union $it should be optional in $checkMode mode")
+                else -> assertFalse(memberSymbol.isNullable, "struct/union $it should be required in $checkMode")
+            }
+        }
+
+        // required members not optional - except client careful
+        myStruct.members()
+            .filter(MemberShape::isRequired)
+            .filterNot { it in unionAndStructMembers }
+            .forEach {
+                val memberSymbol = provider.toSymbol(it)
+                if (it.hasTrait<ClientOptionalTrait>()) {
+                    assertTrue(memberSymbol.isNullable, "@clientOptional member $it should be nullable regardless of @required")
+                } else {
+                    assertFalse(memberSymbol.isNullable, "@required member $it should not be nullable")
+                }
+            }
+
+        // union members are not optional
+        val unionShape = model.expectShape<UnionShape>("com.test#MyUnion")
+        assertTrue(unionShape.members().map { provider.toSymbol(it) }.none { it.isNullable }, "union members should not be nullable")
+
+        // default null are optional
+        myStruct.members()
+            .filter { it.hasNullDefault() }
+            .forEach {
+                val memberSymbol = provider.toSymbol(it)
+                assertTrue(memberSymbol.isNullable, "member $it with explicit null default should be nullable")
+            }
+
+        // non-null default are not optional
+        myStruct.members()
+            .filter { it.hasNonNullDefault() }
+            .forEach {
+                val memberSymbol = provider.toSymbol(it)
+                assertFalse(memberSymbol.isNullable, "member $it with non-null default should not be nullable")
+            }
     }
 }

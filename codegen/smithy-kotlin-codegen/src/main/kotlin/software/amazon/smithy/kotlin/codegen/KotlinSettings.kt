@@ -7,16 +7,19 @@ package software.amazon.smithy.kotlin.codegen
 
 import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.kotlin.codegen.lang.isValidPackageName
+import software.amazon.smithy.kotlin.codegen.utils.getOrNull
+import software.amazon.smithy.kotlin.codegen.utils.toCamelCase
 import software.amazon.smithy.model.Model
+import software.amazon.smithy.model.knowledge.NullableIndex.CheckMode
 import software.amazon.smithy.model.knowledge.ServiceIndex
 import software.amazon.smithy.model.node.ObjectNode
 import software.amazon.smithy.model.node.StringNode
 import software.amazon.smithy.model.shapes.ServiceShape
 import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.shapes.ShapeId
-import java.lang.IllegalArgumentException
 import java.util.Optional
 import java.util.logging.Logger
+import kotlin.IllegalArgumentException
 import kotlin.streams.toList
 
 // shapeId of service from which to generate an SDK
@@ -81,7 +84,7 @@ data class KotlinSettings(
          * @return Returns the extracted settings
          */
         fun from(model: Model, config: ObjectNode): KotlinSettings {
-            config.warnIfAdditionalProperties(listOf(SERVICE, PACKAGE_SETTINGS, BUILD_SETTINGS, SDK_ID))
+            config.warnIfAdditionalProperties(listOf(SERVICE, PACKAGE_SETTINGS, BUILD_SETTINGS, SDK_ID, API_SETTINGS))
 
             val serviceId = config.getStringMember(SERVICE)
                 .map(StringNode::expectShapeId)
@@ -224,19 +227,70 @@ enum class Visibility(val value: String) {
     }
 }
 
+private fun checkModefromValue(value: String): CheckMode {
+    val camelCaseToMode = CheckMode.values().associateBy { it.toString().toCamelCase() }
+    return requireNotNull(camelCaseToMode[value]) { "$value is not a valid CheckMode, expected one of ${camelCaseToMode.keys}" }
+}
+
+/**
+ * Get the plugin setting for this check mode
+ */
+val CheckMode.kotlinPluginSetting: String
+    get() = toString().toCamelCase()
+
+enum class DefaultValueSerializationMode(val value: String) {
+    /**
+     * Always serialize values even if they are set to the modeled default
+     */
+    ALWAYS("always"),
+
+    /**
+     * Only serialize values when they differ from the modeled default or are marked `@required`
+     */
+    WHEN_DIFFERENT("whenDifferent"),
+    ;
+    override fun toString(): String = value
+    companion object {
+        fun fromValue(value: String): DefaultValueSerializationMode =
+            values().find {
+                it.value == value
+            } ?: throw IllegalArgumentException("$value is not a valid DefaultValueSerializationMode, expected one of ${values().map { it.value }}")
+    }
+}
+
 /**
  * Contains API settings for a Kotlin project
  * @param visibility Enum representing the visibility of code-generated classes, objects, interfaces, etc.
+ * @param nullabilityCheckMode Enum representing the nullability check mode to use
+ * @param defaultValueSerializationMode Enum representing when default values should be serialized
  */
 data class ApiSettings(
     val visibility: Visibility = Visibility.PUBLIC,
+    val nullabilityCheckMode: CheckMode = CheckMode.CLIENT_CAREFUL,
+    val defaultValueSerializationMode: DefaultValueSerializationMode = DefaultValueSerializationMode.WHEN_DIFFERENT,
 ) {
     companion object {
         const val VISIBILITY = "visibility"
+        const val NULLABILITY_CHECK_MODE = "nullabilityCheckMode"
+        const val DEFAULT_VALUE_SERIALIZATION_MODE = "defaultValueSerializationMode"
 
         fun fromNode(node: Optional<ObjectNode>): ApiSettings = node.map {
-            val visibility = Visibility.fromValue(node.get().getStringMemberOrDefault(VISIBILITY, "public"))
-            ApiSettings(visibility)
+            val visibility = node.get()
+                .getStringMember(VISIBILITY)
+                .map { Visibility.fromValue(it.value) }
+                .getOrNull() ?: Visibility.PUBLIC
+            val checkMode = node.get()
+                .getStringMember(NULLABILITY_CHECK_MODE)
+                .map { checkModefromValue(it.value) }
+                .getOrNull() ?: CheckMode.CLIENT_CAREFUL
+            val defaultValueSerializationMode = DefaultValueSerializationMode.fromValue(
+                node.get()
+                    .getStringMemberOrDefault(
+                        DEFAULT_VALUE_SERIALIZATION_MODE,
+                        DefaultValueSerializationMode.WHEN_DIFFERENT.value,
+                    ),
+            )
+            ApiSettings(visibility, checkMode, defaultValueSerializationMode)
         }.orElse(Default)
 
         /**
