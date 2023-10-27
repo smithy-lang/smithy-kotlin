@@ -34,8 +34,14 @@ class ShapeValueGenerator(
     fun writeShapeValueInline(writer: KotlinWriter, shape: Shape, params: Node) {
         val nodeVisitor = ShapeValueNodeVisitor(writer, this, shape)
         when (shape.type) {
-            ShapeType.STRUCTURE -> classDeclaration(writer, shape.asStructureShape().get()) {
-                params.accept(nodeVisitor)
+            ShapeType.STRUCTURE -> {
+                if (params.isNullNode) {
+                    params.accept(nodeVisitor)
+                } else {
+                    classDeclaration(writer, shape.asStructureShape().get()) {
+                        params.accept(nodeVisitor)
+                    }
+                }
             }
             ShapeType.MAP -> mapDeclaration(writer, shape.asMapShape().get()) {
                 params.accept(nodeVisitor)

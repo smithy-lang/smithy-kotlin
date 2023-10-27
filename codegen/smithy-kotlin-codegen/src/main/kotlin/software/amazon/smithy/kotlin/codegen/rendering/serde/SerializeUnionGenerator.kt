@@ -132,34 +132,13 @@ class SerializeUnionGenerator(
      *
      * @param memberShape [MemberShape] referencing the primitive type
      */
-    override fun renderPrimitiveShapeSerializer(
+    override fun renderShapeSerializer(
         memberShape: MemberShape,
-        serializerNameFn: (MemberShape) -> SerializeInfo,
+        serializerFn: SerializeFunction,
     ) {
-        val (serializeFn, encoded) = serializerNameFn(memberShape)
-        // FIXME - this doesn't account for unboxed primitives
         val unionTypeName = memberShape.unionTypeName(ctx)
-        val descriptorName = memberShape.descriptorName()
-
-        writer.write("is $unionTypeName -> $serializeFn($descriptorName, $encoded)")
-    }
-
-    override fun renderTimestampMemberSerializer(memberShape: MemberShape) {
-        writer.addImport(RuntimeTypes.Core.TimestampFormat)
-        val target = ctx.model.expectShape(memberShape.target)
-        val tsFormat = memberShape
-            .getTrait(TimestampFormatTrait::class.java)
-            .map { it.format }
-            .orElseGet {
-                target.getTrait(TimestampFormatTrait::class.java)
-                    .map { it.format }
-                    .orElse(defaultTimestampFormat)
-            }
-            .toRuntimeEnum()
-
-        val unionTypeName = memberShape.unionTypeName(ctx)
-        val descriptorName = memberShape.descriptorName()
-        writer.write("is $unionTypeName -> field($descriptorName, input.value, $tsFormat)")
+        val fn = serializerFn.format(memberShape, "input.value")
+        writer.write("is $unionTypeName -> $fn")
     }
 }
 

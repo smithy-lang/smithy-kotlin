@@ -1,5 +1,0 @@
-{
-    "id": "6de10487-c3a0-4c63-929a-ba11a415ea8f",
-    "type": "feature",
-    "description": "Detect and automatically correct clock skew to prevent signing errors"
-}

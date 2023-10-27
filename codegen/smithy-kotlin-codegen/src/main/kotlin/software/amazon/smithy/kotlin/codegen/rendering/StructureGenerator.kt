@@ -10,7 +10,6 @@ import software.amazon.smithy.kotlin.codegen.core.*
 import software.amazon.smithy.kotlin.codegen.lang.KotlinTypes
 import software.amazon.smithy.kotlin.codegen.model.*
 import software.amazon.smithy.kotlin.codegen.rendering.serde.ClientErrorCorrection
-import software.amazon.smithy.kotlin.codegen.utils.getOrNull
 import software.amazon.smithy.model.shapes.*
 import software.amazon.smithy.model.traits.*
 
@@ -74,44 +73,28 @@ class StructureGenerator(
     }
 
     private fun renderImmutableProperty(memberShape: MemberShape, memberName: String, memberSymbol: Symbol) {
-        when {
-            shape.isError && memberName == "message" -> {
-                val targetShape = model.expectShape(memberShape.target)
-                if (!targetShape.isStringShape) {
-                    throw CodegenException("Message is a reserved name for exception types and cannot be used for any other property")
-                }
-                // override Throwable's message property
-                writer.write("override val #1L: #2F = builder.#1L", memberName, memberSymbol)
+        // override Throwable's message property
+        val prefix = if (shape.isError && memberName == "message") {
+            val targetShape = model.expectShape(memberShape.target)
+            if (!targetShape.isStringShape) {
+                throw CodegenException("message is a reserved name for exception types and cannot be used for any other property")
             }
+            "override"
+        } else {
+            "public"
+        }
 
-            memberShape.isRequiredInStruct -> {
-                writer.write(
-                    """public val #1L: #2F = requireNotNull(builder.#1L) { "A non-null value must be provided for #1L" }""",
-                    memberName,
-                    memberSymbol,
-                )
-                if (memberShape.isNonBlankInStruct) {
-                    writer
-                        .indent()
-                        .write(
-                            """.apply { require(isNotBlank()) { "A non-blank value must be provided for #L" } }""",
-                            memberName,
-                        )
-                        .dedent()
-                }
-            }
-
-            else -> writer.write("public val #1L: #2F = builder.#1L", memberName, memberSymbol)
+        if (memberSymbol.isRequiredWithNoDefault) {
+            writer.write(
+                """#1L val #2L: #3F = requireNotNull(builder.#2L) { "A non-null value must be provided for #2L" }""",
+                prefix,
+                memberName,
+                memberSymbol,
+            )
+        } else {
+            writer.write("#1L val #2L: #3F = builder.#2L", prefix, memberName, memberSymbol)
         }
     }
-
-    private val MemberShape.isRequiredInStruct
-        get() =
-            hasTrait<HttpLabelTrait>() ||
-                isRequired && (hasTrait<HttpQueryTrait>() || hasTrait<HttpQueryParamsTrait>())
-
-    private val MemberShape.isNonBlankInStruct
-        get() = getTrait<LengthTrait>()?.min?.getOrNull()?.takeIf { it > 0 } != null
 
     private fun renderCompanionObject() {
         writer.withBlock("public companion object {", "}") {
@@ -180,14 +163,19 @@ class StructureGenerator(
                     true -> "?.toInt() ?: 0"
                     else -> ".toInt()"
                 }
-            ShapeType.BLOB ->
-                if (targetShape.hasTrait<StreamingTrait>()) {
+            ShapeType.BLOB -> {
+                val hashFn = if (targetShape.hasTrait<StreamingTrait>()) {
                     // ByteStream
-                    "?.hashCode() ?: 0"
+                    "hashCode()"
                 } else {
                     // ByteArray
-                    "?.contentHashCode() ?: 0"
+                    "contentHashCode()"
                 }
+                when (isNullable) {
+                    true -> "?.$hashFn ?: 0"
+                    false -> ".$hashFn"
+                }
+            }
             else ->
                 when (isNullable) {
                     true -> "?.hashCode() ?: 0"
@@ -242,10 +230,17 @@ class StructureGenerator(
             .withBlock("public class Builder {", "}") {
                 for (member in sortedMembers) {
                     val (memberName, memberSymbol) = memberNameSymbolIndex[member]!!
-                    // we want the type names sans nullability (?) for arguments
                     writer.renderMemberDocumentation(model, member)
                     writer.renderAnnotations(member)
-                    write("public var #L: #E", memberName, memberSymbol)
+                    val builderMemberSymbol = if (memberSymbol.isRequiredWithNoDefault) {
+                        // nullabilty is w.r.t to the immmutable property type, builders have to account for the user
+                        // providing required values though and thus must be nullable. They are then checked
+                        // at runtime in the ctor to ensure a value was provided
+                        memberSymbol.toBuilder().nullable().build()
+                    } else {
+                        memberSymbol
+                    }
+                    write("public var #L: #E", memberName, builderMemberSymbol)
                 }
                 write("")
 
@@ -288,10 +283,14 @@ class StructureGenerator(
                     "}",
                 ) {
                     sortedMembers
-                        .filter(MemberShape::isRequired)
+                        .filter {
+                            val (_, memberSymbol) = memberNameSymbolIndex[it]!!
+                            // required members with no default
+                            memberSymbol.isRequiredWithNoDefault
+                        }
                         .filterNot {
                             val target = ctx.model.expectShape(it.target)
-                            target.isStreaming
+                            target.isStreaming || it.hasTrait<ClientOptionalTrait>()
                         }
                         .forEach {
                             val correctedValue = ClientErrorCorrection.defaultValue(ctx, it, writer)

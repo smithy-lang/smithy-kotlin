@@ -164,6 +164,14 @@ public class AwsSigningConfig(builder: Builder) {
      */
     public val expiresAfter: Duration? = builder.expiresAfter
 
+    /**
+     * Flag enabling whether detailed trace logging is enabled (if the signer implementation supports it). When true
+     * signers should emit intermediate logging details such as the canonical request at the trace level.
+     * This is an opt-in configuration because these intermediate outputs may contain sensitive fields bound
+     * to headers, URI, or query parameters.
+     */
+    public val logRequest: Boolean = builder.logRequest
+
     public fun toBuilder(): Builder = Builder().also {
         it.region = region
         it.service = service
@@ -178,6 +186,7 @@ public class AwsSigningConfig(builder: Builder) {
         it.signedBodyHeader = signedBodyHeader
         it.credentials = credentials
         it.expiresAfter = expiresAfter
+        it.logRequest = logRequest
     }
 
     public class Builder {
@@ -194,6 +203,7 @@ public class AwsSigningConfig(builder: Builder) {
         public var signedBodyHeader: AwsSignedBodyHeader = AwsSignedBodyHeader.NONE
         public var credentials: Credentials? = null
         public var expiresAfter: Duration? = null
+        public var logRequest: Boolean = false
 
         public fun build(): AwsSigningConfig = AwsSigningConfig(this)
     }

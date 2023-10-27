@@ -60,33 +60,36 @@ class ServiceClientConfigGenerator(
             addAll(clientContextConfigProps(shape.expectTrait()))
         }
 
-        add(
-            ConfigProperty {
-                val hasRules = shape.hasTrait<EndpointRuleSetTrait>()
-                val defaultEndpointProviderSymbol = DefaultEndpointProviderGenerator.getSymbol(context.settings)
-                symbol = EndpointProviderGenerator.getSymbol(context.settings)
-                name = "endpointProvider"
-                propertyType = if (hasRules) { // if there's a ruleset, we have a usable default, otherwise caller has to provide their own
-                    ConfigPropertyType.RequiredWithDefault("${defaultEndpointProviderSymbol.name}()")
-                } else {
-                    ConfigPropertyType.Required()
-                }
-                documentation = """
-                    The endpoint provider used to determine where to make service requests. **This is an advanced config
-                    option.**
-
-                    Endpoint resolution occurs as part of the workflow for every request made via the service client.
-
-                    The inputs to endpoint resolution are defined on a per-service basis (see [EndpointParameters]).
-                """.trimIndent()
-                additionalImports = buildList {
-                    add(EndpointParametersGenerator.getSymbol(context.settings))
-                    if (hasRules) {
-                        add(defaultEndpointProviderSymbol)
+        // FIXME - we only generate an endpoint provider type if we have a protocol generator defined
+        if (context.protocolGenerator != null) {
+            add(
+                ConfigProperty {
+                    val hasRules = shape.hasTrait<EndpointRuleSetTrait>()
+                    val defaultEndpointProviderSymbol = DefaultEndpointProviderGenerator.getSymbol(context.settings)
+                    symbol = EndpointProviderGenerator.getSymbol(context.settings)
+                    name = "endpointProvider"
+                    propertyType = if (hasRules) { // if there's a ruleset, we have a usable default, otherwise caller has to provide their own
+                        ConfigPropertyType.RequiredWithDefault("${defaultEndpointProviderSymbol.name}()")
+                    } else {
+                        ConfigPropertyType.Required()
                     }
-                }
-            },
-        )
+                    documentation = """
+                        The endpoint provider used to determine where to make service requests. **This is an advanced config
+                        option.**
+
+                        Endpoint resolution occurs as part of the workflow for every request made via the service client.
+
+                        The inputs to endpoint resolution are defined on a per-service basis (see [EndpointParameters]).
+                    """.trimIndent()
+                    additionalImports = buildList {
+                        add(EndpointParametersGenerator.getSymbol(context.settings))
+                        if (hasRules) {
+                            add(defaultEndpointProviderSymbol)
+                        }
+                    }
+                },
+            )
+        }
     }
 
     /**

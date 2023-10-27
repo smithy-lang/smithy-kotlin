@@ -16,7 +16,7 @@ import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.OutputStream
 
-private const val SmithyVersion = "1.0"
+private const val SmithyVersion = "2.0"
 
 /**
  * Load and initialize a model from a Java resource URL

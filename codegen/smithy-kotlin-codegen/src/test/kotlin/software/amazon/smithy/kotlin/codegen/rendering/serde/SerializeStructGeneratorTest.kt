@@ -7,7 +7,9 @@ package software.amazon.smithy.kotlin.codegen.rendering.serde
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
 import org.junit.jupiter.params.provider.ValueSource
+import software.amazon.smithy.kotlin.codegen.DefaultValueSerializationMode
 import software.amazon.smithy.kotlin.codegen.test.*
+import software.amazon.smithy.model.knowledge.NullableIndex
 import kotlin.test.Test
 
 class SerializeStructGeneratorTest {
@@ -43,21 +45,22 @@ class SerializeStructGeneratorTest {
         actual.shouldContainOnlyOnceWithDiff(expected)
     }
 
-    @ParameterizedTest(name = "{index} ==> ''{0}''")
+    @ParameterizedTest
     @CsvSource(
-        "PrimitiveInteger, 0, 0",
-        "PrimitiveShort, 0.toShort(), 0",
-        "PrimitiveLong, 0L, 0",
-        "PrimitiveByte, 0.toByte(), 0",
-        "PrimitiveFloat, 0f, 0",
-        "PrimitiveDouble, 0.0, 0",
-        "PrimitiveBoolean, false, false",
+        "String, \"foo\", \"foo\"",
+        "Boolean, false, false",
+        "Byte, 0, 0.toByte()",
+        "Short, 0, 0.toShort()",
+        "Integer, 2, 2",
+        "Long, 3, 3L",
+        "Float, 0, 0f",
+        "Double, 0, 0.0",
     )
-    fun `it serializes a structure with primitive fields`(memberType: String, defaultValue: String, smithyDefaultValue: String) {
+    fun `it serializes default values only when different mode`(memberType: String, modelDefault: String, defaultValue: String) {
         val model = (
             modelPrefix + """            
             structure FooRequest { 
-                @default($smithyDefaultValue)
+                @default($modelDefault)
                 payload: $memberType
             }
         """
@@ -70,18 +73,81 @@ class SerializeStructGeneratorTest {
         """.trimIndent()
 
         val actual = codegenSerializerForShape(model, "com.test#Foo")
-
         actual.shouldContainOnlyOnceWithDiff(expected)
     }
 
-    @Test
-    fun `it always serializes a structure with required primitive fields`() {
+    @ParameterizedTest
+    @CsvSource(
+        "String, \"foo\"",
+        "Boolean, false",
+        "Byte, 0",
+        "Short, 0",
+        "Integer, 2",
+        "Long, 3",
+        "Float, 0",
+        "Double, 0",
+    )
+    fun `it always serializes default values using always mode`(memberType: String, modelDefault: String) {
+        val model = (
+            modelPrefix + """            
+            structure FooRequest { 
+                @default($modelDefault)
+                payload: $memberType
+            }
+        """
+            ).toSmithyModel()
+
+        val expected = """
+            serializer.serializeStruct(OBJ_DESCRIPTOR) {
+                field(PAYLOAD_DESCRIPTOR, input.payload)
+            }
+        """.trimIndent()
+
+        val settings = model.defaultSettings(defaultValueSerializationMode = DefaultValueSerializationMode.ALWAYS)
+        val actual = codegenSerializerForShape(model, "com.test#Foo", settings = settings)
+        actual.shouldContainOnlyOnceWithDiff(expected)
+    }
+
+    @ParameterizedTest
+    @CsvSource(
+        "String, \"foo\"",
+        "Boolean, false",
+        "Byte, 0",
+        "Short, 0",
+        "Integer, 2",
+        "Long, 3",
+        "Float, 0",
+        "Double, 0",
+    )
+    fun `it always serializes required default values`(memberType: String, modelDefault: String) {
         val model = (
             modelPrefix + """            
             structure FooRequest { 
                 @required
-                @default(0)
-                payload: PrimitiveInteger
+                @default($modelDefault)
+                payload: $memberType
+            }
+        """
+            ).toSmithyModel()
+
+        val expected = """
+            serializer.serializeStruct(OBJ_DESCRIPTOR) {
+                field(PAYLOAD_DESCRIPTOR, input.payload)
+            }
+        """.trimIndent()
+
+        val actual = codegenSerializerForShape(model, "com.test#Foo")
+        actual.shouldContainOnlyOnceWithDiff(expected)
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = ["String", "Boolean", "Byte", "Short", "Integer", "Long", "Float", "Double", "BigInteger", "BigDecimal"])
+    fun `it serializes a structure with simple required fields`(memberType: String) {
+        val model = (
+            modelPrefix + """            
+            structure FooRequest { 
+                @required
+                payload: $memberType
             }
         """
             ).toSmithyModel()
@@ -97,11 +163,17 @@ class SerializeStructGeneratorTest {
         actual.shouldContainOnlyOnceWithDiff(expected)
     }
 
-    @Test
-    fun `it serializes a structure with epoch timestamp field`() {
+    @ParameterizedTest(name = "{index} ==> ''{0}''")
+    @CsvSource(
+        "EPOCH_SECONDS, epoch-seconds",
+        "ISO_8601, date-time",
+        "RFC_5322, http-date",
+    )
+    fun `it serializes a structure with timestamp field`(runtimeEnum: String, tsFormatTrait: String) {
         val model = (
             modelPrefix + """            
             structure FooRequest { 
+                @timestampFormat("$tsFormatTrait")
                 payload: Timestamp
             }
         """
@@ -109,7 +181,7 @@ class SerializeStructGeneratorTest {
 
         val expected = """
             serializer.serializeStruct(OBJ_DESCRIPTOR) {
-                input.payload?.let { field(PAYLOAD_DESCRIPTOR, it, TimestampFormat.EPOCH_SECONDS) }
+                input.payload?.let { field(PAYLOAD_DESCRIPTOR, it, TimestampFormat.$runtimeEnum) }
             }
         """.trimIndent()
 
@@ -119,11 +191,11 @@ class SerializeStructGeneratorTest {
     }
 
     @Test
-    fun `it serializes a structure with iso8601 timestamp field`() {
+    fun `it serializes a structure with required timestamp field`() {
         val model = (
             modelPrefix + """            
             structure FooRequest { 
-                @timestampFormat("date-time")
+                @required
                 payload: Timestamp
             }
         """
@@ -131,11 +203,12 @@ class SerializeStructGeneratorTest {
 
         val expected = """
             serializer.serializeStruct(OBJ_DESCRIPTOR) {
-                input.payload?.let { field(PAYLOAD_DESCRIPTOR, it, TimestampFormat.ISO_8601) }
+                field(PAYLOAD_DESCRIPTOR, input.payload, TimestampFormat.EPOCH_SECONDS)
             }
         """.trimIndent()
 
         val actual = codegenSerializerForShape(model, "com.test#Foo")
+
         actual.shouldContainOnlyOnceWithDiff(expected)
     }
 
@@ -285,6 +358,32 @@ class SerializeStructGeneratorTest {
     }
 
     @Test
+    fun `it serializes a structure with a nested structure using client mode`() {
+        val model = (
+            modelPrefix + """            
+            structure FooRequest { 
+                @required
+                payload: NestedStructure
+            }
+            
+            structure NestedStructure {
+                nestedPayload: String
+            }
+        """
+            ).toSmithyModel()
+
+        val expected = """
+            serializer.serializeStruct(OBJ_DESCRIPTOR) {
+                field(PAYLOAD_DESCRIPTOR, input.payload, ::serializeNestedStructureDocument)
+            }
+        """.trimIndent()
+
+        val settings = model.defaultSettings(nullabilityCheckMode = NullableIndex.CheckMode.CLIENT)
+        val actual = codegenSerializerForShape(model, "com.test#Foo", settings = settings)
+        actual.shouldContainOnlyOnceWithDiff(expected)
+    }
+
+    @Test
     fun `it serializes a structure containing a union of primitives`() {
         val model = (
             modelPrefix + """            
@@ -332,6 +431,36 @@ class SerializeStructGeneratorTest {
                         for (el0 in input.payload) {
                             serializeInt(el0)
                         }
+                    }
+                }
+            }
+        """.trimIndent()
+
+        val actual = codegenSerializerForShape(model, "com.test#Foo").stripCodegenPrefix()
+
+        actual.shouldContainOnlyOnceWithDiff(expected)
+    }
+
+    @Test
+    fun `it serializes a structure containing a required list`() {
+        val model = (
+            modelPrefix + """            
+            structure FooRequest { 
+                @required
+                payload: IntList
+            }
+            
+            list IntList {
+                member: Integer
+            }
+        """
+            ).toSmithyModel()
+
+        val expected = """
+            serializer.serializeStruct(OBJ_DESCRIPTOR) {
+                listField(PAYLOAD_DESCRIPTOR) {
+                    for (el0 in input.payload) {
+                        serializeInt(el0)
                     }
                 }
             }
@@ -906,6 +1035,35 @@ class SerializeStructGeneratorTest {
     }
 
     @Test
+    fun `it serializes a structure containing a required map`() {
+        val model = (
+            modelPrefix + """            
+            structure FooRequest { 
+                @required
+                payload: StringMap
+            }
+            
+            map StringMap {
+                key: String,
+                value: String
+            }
+        """
+            ).toSmithyModel()
+
+        val expected = """
+            serializer.serializeStruct(OBJ_DESCRIPTOR) {
+                mapField(PAYLOAD_DESCRIPTOR) {
+                    input.payload.forEach { (key, value) -> entry(key, value) }
+                }
+            }
+        """.trimIndent()
+
+        val actual = codegenSerializerForShape(model, "com.test#Foo").stripCodegenPrefix()
+
+        actual.shouldContainOnlyOnceWithDiff(expected)
+    }
+
+    @Test
     fun `it serializes a structure containing a map of a union of primitive values`() {
         val model = (
             modelPrefix + """            
@@ -1415,6 +1573,7 @@ class SerializeStructGeneratorTest {
 
     @Test
     fun `it serializes a structure containing timestamps`() {
+        // ensure we read the timestamp trait correctly off members and target shape
         val model = (
             modelPrefix + """            
                 

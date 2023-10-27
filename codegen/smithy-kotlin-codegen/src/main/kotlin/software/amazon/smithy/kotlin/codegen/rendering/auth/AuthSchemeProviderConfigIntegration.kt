@@ -14,6 +14,7 @@ import software.amazon.smithy.kotlin.codegen.rendering.util.ConfigPropertyType
  */
 class AuthSchemeProviderConfigIntegration : KotlinIntegration {
     override fun additionalServiceConfigProps(ctx: CodegenContext): List<ConfigProperty> {
+        if (ctx.protocolGenerator == null) return super.additionalServiceConfigProps(ctx)
         val defaultProvider = AuthSchemeProviderGenerator.getDefaultSymbol(ctx.settings)
         return listOf(
             ConfigProperty {

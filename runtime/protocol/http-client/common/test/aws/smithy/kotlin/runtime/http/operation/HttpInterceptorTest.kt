@@ -262,7 +262,7 @@ class HttpInterceptorTest {
         }
 
         val cause = assertNotNull(ex.cause)
-        assertEquals(1, cause.suppressed.size)
-        assertIs<TestException>(cause.suppressed.last())
+        assertEquals(1, cause.suppressedExceptions.size)
+        assertIs<TestException>(cause.suppressedExceptions.last())
     }
 }

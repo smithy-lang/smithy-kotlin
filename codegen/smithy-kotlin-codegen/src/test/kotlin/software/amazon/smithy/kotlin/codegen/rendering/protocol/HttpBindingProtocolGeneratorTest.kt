@@ -146,7 +146,7 @@ internal class ExplicitBlobStreamOperationSerializer: HttpSerialize<ExplicitBlob
         }
 
         if (input.payload1 != null) {
-            builder.body = input.payload1.toHttpBody() ?: HttpBody.Empty
+            builder.body = input.payload1.toHttpBody()
         }
         if (builder.body !is HttpBody.Empty) {
             builder.headers.setMissing("Content-Type", "application/octet-stream")
@@ -248,7 +248,7 @@ internal class EnumInputOperationSerializer: HttpSerialize<EnumInputRequest> {
     fun itSerializesOperationInputsWithTimestamps() {
         val contents = getSerdeFileContents("TimestampInputOperationSerializer.kt")
         contents.assertBalancedBracesAndParens()
-        val tsLabel = "\${input.tsLabel?.format(TimestampFormat.ISO_8601)}" // workaround for raw strings not being able to contain escapes
+        val tsLabel = "\${input.tsLabel.format(TimestampFormat.ISO_8601)}" // workaround for raw strings not being able to contain escapes
         val expectedContents = """
 internal class TimestampInputOperationSerializer: HttpSerialize<TimestampInputRequest> {
     override suspend fun serialize(context: ExecutionContext, input: TimestampInputRequest): HttpRequestBuilder {
@@ -508,6 +508,76 @@ internal class SmokeTestOperationDeserializer: HttpDeserialize<SmokeTestResponse
         val expected = """
             path = "/test/$latest"
         """
+        contents.shouldContainOnlyOnceWithDiff(expected)
+    }
+
+    @Test
+    fun itValidatesRequiredAndNonBlankUriBindings() {
+        val model = """
+            @http(method: "POST", uri: "/foo/{bar}/{baz}")
+            operation Foo {
+                input: FooRequest
+            }
+
+            @input
+            structure FooRequest {
+                @required
+                @length(min: 3)
+                @httpLabel
+                bar: String,
+
+                @httpLabel
+                @required
+                baz: Integer,
+
+                @httpPayload
+                qux: String,
+
+                @required
+                @httpQuery("quux")
+                quux: Boolean,
+
+                @httpQuery("corge")
+                corge: String,
+
+                @required
+                @length(min: 0)
+                @httpQuery("grault")
+                grault: String,
+
+                @required
+                @length(min: 3)
+                @httpQuery("garply")
+                garply: String
+            }
+            
+        """.prependNamespaceAndService(operations = listOf("Foo"))
+            .toSmithyModel()
+
+        val contents = getSerdeFileContents("FooOperationSerializer.kt", model)
+
+        val label1 = "\${input.bar}"
+        val label2 = "\${input.baz}"
+        val quux = "\${input.quux}"
+        val expected = """
+            requireNotNull(input.bar) { "bar is bound to the URI and must not be null" }
+            require(input.bar?.isNotBlank() == true) { "bar is bound to the URI and must be a non-blank value" }
+            requireNotNull(input.baz) { "baz is bound to the URI and must not be null" }
+            val pathSegments = listOf<String>(
+                "foo",
+                "$label1".encodeLabel(),
+                "$label2".encodeLabel(),
+            )
+            path = pathSegments.joinToString(separator = "/", prefix = "/")
+            parameters {
+                require(input.garply?.isNotBlank() == true) { "garply is bound to the URI and must be a non-blank value" }
+                if (input.corge != null) append("corge", input.corge)
+                if (input.garply != null) append("garply", input.garply)
+                if (input.grault != null) append("grault", input.grault)
+                if (input.quux != null) append("quux", "$quux")
+            }
+        """
+
         contents.shouldContainOnlyOnceWithDiff(expected)
     }
 }

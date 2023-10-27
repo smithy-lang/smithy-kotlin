@@ -97,8 +97,7 @@ class PaginatorGenerator : KotlinIntegration {
         val outputShape = paginationInfo.output
         val outputSymbol = ctx.symbolProvider.toSymbol(outputShape)
         val inputSymbol = ctx.symbolProvider.toSymbol(paginationInfo.input)
-        val cursorMember = ctx.model.getShape(paginationInfo.inputTokenMember.target).get()
-        val cursorSymbol = ctx.symbolProvider.toSymbol(cursorMember)
+        val cursorSymbol = ctx.symbolProvider.toSymbol(paginationInfo.inputTokenMember)
 
         val nextMarkerLiteral = paginationInfo.outputTokenMemberPath.joinToString(separator = "?.") {
             it.defaultName()

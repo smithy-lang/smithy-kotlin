@@ -5,9 +5,6 @@
 
 package aws.smithy.kotlin.runtime.io
 
-import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertThrows
-import java.lang.IllegalStateException
 import kotlin.test.*
 
 /**
@@ -311,7 +308,7 @@ abstract class BufferedSourceTest(
         sink.flush()
 
         source.require(1024 * 9)
-        assertThrows<EOFException> {
+        assertFailsWith<EOFException> {
             source.require(1024 * 9 + 1)
         }
     }

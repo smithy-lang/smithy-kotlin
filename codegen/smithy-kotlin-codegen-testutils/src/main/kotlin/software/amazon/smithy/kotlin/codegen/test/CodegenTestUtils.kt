@@ -14,6 +14,7 @@ import software.amazon.smithy.build.MockManifest
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.kotlin.codegen.KotlinCodegenPlugin
+import software.amazon.smithy.kotlin.codegen.KotlinSettings
 import software.amazon.smithy.kotlin.codegen.core.*
 import software.amazon.smithy.kotlin.codegen.model.buildSymbol
 import software.amazon.smithy.kotlin.codegen.model.expectShape
@@ -51,8 +52,14 @@ fun testRender(
 }
 
 /** Drive codegen for serialization of a given shape */
-fun codegenSerializerForShape(model: Model, shapeId: String, location: HttpBinding.Location = HttpBinding.Location.DOCUMENT): String {
-    val ctx = model.newTestContext()
+fun codegenSerializerForShape(
+    model: Model,
+    shapeId: String,
+    location: HttpBinding.Location = HttpBinding.Location.DOCUMENT,
+    settings: KotlinSettings? = null,
+): String {
+    val resolvedSettings = settings ?: model.defaultSettings(TestModelDefault.SERVICE_NAME, TestModelDefault.NAMESPACE)
+    val ctx = model.newTestContext(settings = resolvedSettings)
 
     val op = ctx.generationCtx.model.expectShape(ShapeId.from(shapeId))
     return testRender(ctx.requestMembers(op, location)) { members, writer ->
@@ -250,9 +257,15 @@ fun generateCode(generator: (KotlinWriter) -> Unit): String {
     return rawCodegen.substring(rawCodegen.indexOf(packageDeclaration) + packageDeclaration.length).trim()
 }
 
-fun KotlinCodegenPlugin.Companion.createSymbolProvider(model: Model, rootNamespace: String = TestModelDefault.NAMESPACE, sdkId: String = TestModelDefault.SDK_ID, serviceName: String = TestModelDefault.SERVICE_NAME): SymbolProvider {
-    val settings = model.defaultSettings(serviceName = serviceName, packageName = rootNamespace, sdkId = sdkId)
-    return createSymbolProvider(model, settings)
+fun KotlinCodegenPlugin.Companion.createSymbolProvider(
+    model: Model,
+    rootNamespace: String = TestModelDefault.NAMESPACE,
+    sdkId: String = TestModelDefault.SDK_ID,
+    serviceName: String = TestModelDefault.SERVICE_NAME,
+    settings: KotlinSettings? = null,
+): SymbolProvider {
+    val resolvedSettings = settings ?: model.defaultSettings(serviceName = serviceName, packageName = rootNamespace, sdkId = sdkId)
+    return createSymbolProvider(model, resolvedSettings)
 }
 
 /**

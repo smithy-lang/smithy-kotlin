@@ -5,10 +5,12 @@
 
 package software.amazon.smithy.kotlin.codegen
 
-import org.junit.jupiter.api.assertThrows
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.CsvSource
 import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.kotlin.codegen.test.TestModelDefault
 import software.amazon.smithy.kotlin.codegen.test.toSmithyModel
+import software.amazon.smithy.model.knowledge.NullableIndex.CheckMode
 import software.amazon.smithy.model.node.Node
 import software.amazon.smithy.model.shapes.ShapeId
 import java.lang.IllegalArgumentException
@@ -284,11 +286,48 @@ class KotlinSettingsTest {
             }
         """.trimIndent()
 
-        assertThrows<IllegalArgumentException> {
+        assertFailsWith<IllegalArgumentException> {
             KotlinSettings.from(
                 model,
                 Node.parse(contents).expectObjectNode(),
             )
         }
+    }
+
+    @ParameterizedTest(name = "{0} ==> {1}")
+    @CsvSource(
+        "client, CLIENT",
+        "clientCareful, CLIENT_CAREFUL",
+        "clientZeroValueV1, CLIENT_ZERO_VALUE_V1",
+        "clientZeroValueV1NoInput, CLIENT_ZERO_VALUE_V1_NO_INPUT",
+        "server, SERVER",
+    )
+    fun testNullabilityCheckMode(pluginSetting: String, expectedEnumString: String) {
+        val expected = CheckMode.valueOf(expectedEnumString)
+        val contents = """
+            {
+                "nullabilityCheckMode": "$pluginSetting"
+            }
+        """.trimIndent()
+        val apiSettings = ApiSettings.fromNode(Node.parse(contents).asObjectNode())
+
+        assertEquals(expected, apiSettings.nullabilityCheckMode)
+    }
+
+    @ParameterizedTest(name = "{0} ==> {1}")
+    @CsvSource(
+        "always, ALWAYS",
+        "whenDifferent, WHEN_DIFFERENT",
+    )
+    fun testDefaultValueSerializationMode(pluginSetting: String, expectedEnumString: String) {
+        val expected = DefaultValueSerializationMode.valueOf(expectedEnumString)
+        val contents = """
+            {
+                "defaultValueSerializationMode": "$pluginSetting"
+            }
+        """.trimIndent()
+        val apiSettings = ApiSettings.fromNode(Node.parse(contents).asObjectNode())
+
+        assertEquals(expected, apiSettings.defaultValueSerializationMode)
     }
 }

@@ -55,6 +55,13 @@ object SymbolProperty {
 }
 
 /**
+ * Test if a symbol is required (not-nullable) with no default value set. This means there is no builder
+ * set default so the constructor will have to generate a runtime check that a value is set.
+ */
+val Symbol.isRequiredWithNoDefault: Boolean
+    get() = isNotNullable && defaultValue() == null
+
+/**
  * Test if a symbol is nullable
  */
 val Symbol.isNullable: Boolean
@@ -90,21 +97,6 @@ enum class PropertyTypeMutability {
     }
 }
 
-enum class DefaultValueType {
-    /**
-     * A default value which has been inferred, such as 0f for floats and false for booleans
-     */
-    INFERRED,
-
-    /**
-     * A default value which has been modeled using Smithy's default trait.
-     */
-    MODELED,
-}
-
-val Symbol.defaultValueType: DefaultValueType?
-    get() = getProperty(SymbolProperty.DEFAULT_VALUE_TYPE_KEY, DefaultValueType::class.java).getOrNull()
-
 /**
  * Get the property type mutability of this symbol if set.
  */
@@ -115,15 +107,15 @@ val Symbol.propertyTypeMutability: PropertyTypeMutability?
 
 /**
  * Gets the default value for the symbol if present, else null
- * @param defaultNullable the string to pass back for nullable values
  */
-fun Symbol.defaultValue(defaultNullable: String? = "null"): String? {
+fun Symbol.defaultValue(): String? {
     val default = getProperty(SymbolProperty.DEFAULT_VALUE_KEY, String::class.java)
 
     // nullable types should default to null if there is no modeled default
-    if (isNullable && (!default.isPresent || defaultValueType == DefaultValueType.INFERRED)) {
-        return defaultNullable
+    if (isNullable && !default.isPresent) {
+        return "null"
     }
+
     return default.getOrNull()
 }
 
@@ -133,11 +125,15 @@ fun Symbol.defaultValue(defaultNullable: String? = "null"): String? {
 fun Symbol.Builder.nullable(): Symbol.Builder = apply { putProperty(SymbolProperty.NULLABLE_KEY, true) }
 
 /**
+ * Mark a symbol as being non - nullable (i.e. `T?`)
+ */
+fun Symbol.Builder.nonNullable(): Symbol.Builder = apply { removeProperty(SymbolProperty.NULLABLE_KEY) }
+
+/**
  * Set the default value used when formatting the symbol
  */
-fun Symbol.Builder.defaultValue(value: String?, type: DefaultValueType = DefaultValueType.INFERRED): Symbol.Builder = apply {
+fun Symbol.Builder.defaultValue(value: String?): Symbol.Builder = apply {
     putProperty(SymbolProperty.DEFAULT_VALUE_KEY, value)
-    putProperty(SymbolProperty.DEFAULT_VALUE_TYPE_KEY, type)
 }
 
 /**
@@ -204,6 +200,11 @@ val Symbol.shape: Shape?
  * Get the nullable version of a symbol
  */
 fun Symbol.asNullable(): Symbol = toBuilder().nullable().build()
+
+/**
+ * Get the non-nullable version of a symbol
+ */
+fun Symbol.asNonNullable(): Symbol = toBuilder().nonNullable().build()
 
 /**
  * Check whether a symbol represents an extension

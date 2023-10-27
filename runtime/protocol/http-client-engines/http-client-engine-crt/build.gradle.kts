@@ -10,7 +10,7 @@ extra["moduleName"] = "aws.smithy.kotlin.runtime.http.engine.crt"
 
 kotlin {
     sourceSets {
-        commonMain {
+        jvmMain {
             dependencies {
                 api(project(":runtime:runtime-core"))
                 api(project(":runtime:protocol:http-client"))
@@ -22,7 +22,7 @@ kotlin {
             }
         }
 
-        commonTest {
+        jvmTest {
             dependencies {
                 implementation(project(":runtime:testing"))
                 implementation(project(":runtime:protocol:http-test"))

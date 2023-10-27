@@ -1,5 +1,0 @@
-{
-    "id": "0645c929-bdfe-4d07-a131-b0b447422fff",
-    "type": "bugfix",
-    "description": "Treat all IO errors in OkHttp & CRT engines as retryable (e.g., socket errors, DNS lookup failures, etc.)"
-}

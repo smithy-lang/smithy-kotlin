@@ -44,6 +44,7 @@ public final class aws/smithy/kotlin/runtime/http/engine/AlpnId : java/lang/Enum
 	public static final field HTTP1_1 Laws/smithy/kotlin/runtime/http/engine/AlpnId;
 	public static final field HTTP2 Laws/smithy/kotlin/runtime/http/engine/AlpnId;
 	public static final field HTTP3 Laws/smithy/kotlin/runtime/http/engine/AlpnId;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
 	public final fun getProtocolId ()Ljava/lang/String;
 	public static fun valueOf (Ljava/lang/String;)Laws/smithy/kotlin/runtime/http/engine/AlpnId;
 	public static fun values ()[Laws/smithy/kotlin/runtime/http/engine/AlpnId;

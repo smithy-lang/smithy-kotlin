@@ -5,6 +5,7 @@
 package software.amazon.smithy.kotlin.codegen.rendering.serde
 
 import software.amazon.smithy.codegen.core.CodegenException
+import software.amazon.smithy.kotlin.codegen.DefaultValueSerializationMode
 import software.amazon.smithy.kotlin.codegen.core.*
 import software.amazon.smithy.kotlin.codegen.model.*
 import software.amazon.smithy.kotlin.codegen.model.targetOrSelf
@@ -44,11 +45,19 @@ open class SerializeStructGenerator(
 ) {
     /**
      * Container for serialization information for a particular shape being serialized to
-     *
-     * @property fn The name of the serialization function to use
-     * @property encodedValue The value to pass to the serialization function
      */
-    data class SerializeInfo(val fn: String, val encodedValue: String)
+    fun interface SerializeFunction {
+        /**
+         * Return the formatted function invocation to serialize the given [member]
+         * e.g.
+         * ```
+         * field(X_DESCRIPTOR, input.x)
+         * ```
+         * @param member the member shape being serialized
+         * @param identifier the identifier name to render the invocation with
+         */
+        fun format(member: MemberShape, identifier: String): String
+    }
 
     /**
      * Returns the name to put in codegen to refer to the parent collection type.
@@ -93,9 +102,8 @@ open class SerializeStructGenerator(
             ShapeType.MAP -> renderMapMemberSerializer(memberShape, targetShape as MapShape)
             ShapeType.STRUCTURE,
             ShapeType.UNION,
-            -> renderPrimitiveShapeSerializer(memberShape, ::serializerForStructureShape)
+            -> renderShapeSerializer(memberShape, serializerForStructureShape)
 
-            ShapeType.TIMESTAMP -> renderTimestampMemberSerializer(memberShape)
             ShapeType.BLOB,
             ShapeType.BOOLEAN,
             ShapeType.STRING,
@@ -105,12 +113,13 @@ open class SerializeStructGenerator(
             ShapeType.LONG,
             ShapeType.FLOAT,
             ShapeType.DOUBLE,
-            ShapeType.BIG_DECIMAL,
-            ShapeType.DOCUMENT,
             ShapeType.BIG_INTEGER,
+            ShapeType.BIG_DECIMAL,
+            ShapeType.TIMESTAMP,
+            ShapeType.DOCUMENT,
             ShapeType.ENUM,
             ShapeType.INT_ENUM,
-            -> renderPrimitiveShapeSerializer(memberShape, ::serializerForPrimitiveShape)
+            -> renderShapeSerializer(memberShape, serializerForSimpleShape)
 
             else -> error("Unexpected shape type: ${targetShape.type}")
         }
@@ -130,8 +139,9 @@ open class SerializeStructGenerator(
         val memberName = ctx.symbolProvider.toMemberName(memberShape)
         val descriptorName = memberShape.descriptorName()
         val nestingLevel = 0
+        val memberSymbol = ctx.symbolProvider.toSymbol(memberShape)
 
-        writer.withBlock("if (input.$memberName != null) {", "}") {
+        writer.wrapBlockIf(memberSymbol.isNullable, "if (input.$memberName != null) {", "}") {
             writer.withBlock("mapField($descriptorName) {", "}") {
                 delegateMapSerialization(memberShape, targetShape, nestingLevel, memberName)
             }
@@ -152,8 +162,9 @@ open class SerializeStructGenerator(
         val memberName = ctx.symbolProvider.toMemberName(memberShape)
         val descriptorName = memberShape.descriptorName()
         val nestingLevel = 0
+        val memberSymbol = ctx.symbolProvider.toSymbol(memberShape)
 
-        writer.withBlock("if (input.$memberName != null) {", "}") {
+        writer.wrapBlockIf(memberSymbol.isNullable, "if (input.$memberName != null) {", "}") {
             writer.withBlock("listField($descriptorName) {", "}") {
                 delegateListSerialization(memberShape, targetShape, nestingLevel, memberName)
             }
@@ -544,51 +555,35 @@ open class SerializeStructGenerator(
     }
 
     /**
-     * Render code to serialize a primitive or structure shape. Example:
+     * Render code to serialize a simple shape or structure shape. Example:
      *
      * ```
      * input.payload?.let { field(PAYLOAD_DESCRIPTOR, it) }
      * ```
      *
-     * @param memberShape [MemberShape] referencing the primitive type
+     * @param memberShape [MemberShape] member shape to render serializer for
+     * @param serializerFn [SerializeFunction] the serializer responsible for returning the function to invoke
      */
-    open fun renderPrimitiveShapeSerializer(memberShape: MemberShape, serializerNameFn: (MemberShape) -> SerializeInfo) {
-        val (serializeFn, encoded) = serializerNameFn(memberShape)
+    open fun renderShapeSerializer(memberShape: MemberShape, serializerFn: SerializeFunction) {
         val postfix = idempotencyTokenPostfix(memberShape)
-
-        val targetShape = ctx.model.expectShape(memberShape.target)
-        val targetSymbol = ctx.symbolProvider.toSymbol(memberShape)
-        val defaultValue = targetSymbol.defaultValue()
+        val memberSymbol = ctx.symbolProvider.toSymbol(memberShape)
         val memberName = ctx.symbolProvider.toMemberName(memberShape)
-
-        if ((targetShape.isNumberShape || targetShape.isBooleanShape) && targetSymbol.isNotNullable && defaultValue != null) {
-            // unboxed primitive with a default value
-            val ident = "input.$memberName"
-            val check = when (memberShape.hasTrait<RequiredTrait>()) {
-                true -> "" // always serialize a required member even if it's the default
-                else -> "if ($ident != $defaultValue) "
-            }
-            writer.write("${check}$serializeFn(#L, $ident)", memberShape.descriptorName())
+        if (memberSymbol.isNullable) {
+            val identifier = valueToSerializeName("it")
+            val fn = serializerFn.format(memberShape, identifier)
+            writer.write("input.$memberName?.let { $fn }$postfix")
         } else {
-            writer.write("input.#L?.let { $serializeFn(#L, $encoded) }$postfix", memberName, memberShape.descriptorName())
-        }
-    }
-
-    open fun renderTimestampMemberSerializer(memberShape: MemberShape) {
-        val memberName = ctx.symbolProvider.toMemberName(memberShape)
-        writer.addImport(RuntimeTypes.Core.TimestampFormat)
-        val target = ctx.model.expectShape(memberShape.target)
-        val tsFormat = memberShape
-            .getTrait(TimestampFormatTrait::class.java)
-            .map { it.format }
-            .orElseGet {
-                target.getTrait(TimestampFormatTrait::class.java)
-                    .map { it.format }
-                    .orElse(defaultTimestampFormat)
+            // always serialize required members, otherwise check if it's a primitive type set to it's default before serializing
+            val defaultValue = memberSymbol.defaultValue()
+            val checkDefaults = ctx.settings.api.defaultValueSerializationMode == DefaultValueSerializationMode.WHEN_DIFFERENT
+            val defaultCheck = if (checkDefaults && !memberShape.isRequired && memberSymbol.isNotNullable && defaultValue != null) {
+                "if (input.$memberName != $defaultValue) "
+            } else {
+                ""
             }
-            .toRuntimeEnum()
-
-        writer.write("input.#L?.let { field(#L, it, #L) }", memberName, memberShape.descriptorName(), tsFormat)
+            val fn = serializerFn.format(memberShape, "input.$memberName")
+            writer.write("$defaultCheck$fn$postfix")
+        }
     }
 
     /**
@@ -606,44 +601,50 @@ open class SerializeStructGenerator(
 
     /**
      * Return the serializer function for a Structure or Union
-     * @param shape [Shape] to generate serializer
-     * @return SerializeInfo of field name and encoding
      */
-    private fun serializerForStructureShape(shape: Shape): SerializeInfo {
-        // target shape type to deserialize is either the shape itself or member.target
-        val target = shape.targetOrSelf(ctx.model)
-        // the Smithy type hierarchy is private such that tighter type handling at the function level isn't possible
-        require(target.type == ShapeType.STRUCTURE || target.type == ShapeType.UNION) { "Unexpected serializer for member: $shape; target: $target" }
+    private val serializerForStructureShape: SerializeFunction =
+        SerializeFunction { member, identifier ->
+            // target shape type to deserialize is either the shape itself or member.target
+            val target = member.targetOrSelf(ctx.model)
+            // the Smithy type hierarchy is private such that tighter type handling at the function level isn't possible
+            require(target.type == ShapeType.STRUCTURE || target.type == ShapeType.UNION) { "Unexpected serializer for member: $member; target: $target" }
 
-        val symbol = ctx.symbolProvider.toSymbol(target)
-        val memberSerializerName = symbol.documentSerializerName()
-        val valueToSerializeName = valueToSerializeName("it")
-        // invoke the ctor of the serializer to delegate to and pass the value
-        val encoded = "$valueToSerializeName, ::$memberSerializerName"
-
-        return SerializeInfo("field", encoded)
-    }
-
-    /**
-     * get the serialization function and encoded value for the given [Shape], this only handles "primitive" types,
-     * collections should be handled separately
-     * @param shape The shape to be serialized
-     */
-    private fun serializerForPrimitiveShape(shape: Shape): SerializeInfo {
-        // target shape type to deserialize is either the shape itself or member.target
-        val target = shape.targetOrSelf(ctx.model)
-        val valueSuffix = if (target.isEnum) ".value" else ""
-        val defaultIdentifier = valueToSerializeName("it") + valueSuffix
-        val serializerFn = "field"
-
-        val encoded = if (target.type == ShapeType.BLOB) {
-            writer.addImport(RuntimeTypes.Core.Utils.encodeBase64String)
-            "$defaultIdentifier.encodeBase64String()"
-        } else {
-            defaultIdentifier
+            val symbol = ctx.symbolProvider.toSymbol(target)
+            val memberSerializerName = symbol.documentSerializerName()
+            val descriptor = member.descriptorName()
+            // invoke the ctor of the serializer to delegate to and pass the value
+            "field($descriptor, $identifier, ::$memberSerializerName)"
         }
 
-        return SerializeInfo(serializerFn, encoded)
+    /**
+     * Get the serialization function and encoded value for the given [Shape], this only handles
+     * [simple types](https://smithy.io/2.0/spec/simple-types.html),  collections should be handled separately.
+     */
+    private val serializerForSimpleShape = SerializeFunction { member, identifier ->
+        // target shape type to deserialize is either the shape itself or member.target
+        val target = member.targetOrSelf(ctx.model)
+
+        val encoded = when {
+            target.type == ShapeType.BLOB -> writer.format("#L.#T()", identifier, RuntimeTypes.Core.Utils.encodeBase64String)
+            target.type == ShapeType.TIMESTAMP -> {
+                writer.addImport(RuntimeTypes.Core.TimestampFormat)
+                val tsFormat = member
+                    .getTrait(TimestampFormatTrait::class.java)
+                    .map { it.format }
+                    .orElseGet {
+                        target.getTrait(TimestampFormatTrait::class.java)
+                            .map { it.format }
+                            .orElse(defaultTimestampFormat)
+                    }
+                    .toRuntimeEnum()
+                "$identifier, $tsFormat"
+            }
+            target.isEnum -> "$identifier.value"
+            else -> identifier
+        }
+
+        val descriptor = member.descriptorName()
+        "field($descriptor, $encoded)"
     }
 
     /**

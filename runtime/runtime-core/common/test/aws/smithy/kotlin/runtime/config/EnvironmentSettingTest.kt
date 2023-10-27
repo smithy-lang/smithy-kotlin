@@ -5,7 +5,7 @@
 package aws.smithy.kotlin.runtime.config
 
 import aws.smithy.kotlin.runtime.util.PlatformEnvironProvider
-import org.junit.jupiter.api.Test
+import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
 
