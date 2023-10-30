@@ -1,0 +1,5 @@
+{
+    "id": "84f4430b-0add-4c85-9753-7c1b1338812e",
+    "type": "bugfix",
+    "description": "Retry a better set of CRT HTTP exceptions"
+}
