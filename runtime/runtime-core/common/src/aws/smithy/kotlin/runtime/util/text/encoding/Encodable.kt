@@ -16,9 +16,9 @@ public class Encodable internal constructor(
     override fun toString(): String = buildString {
         append("Encodable(decoded=")
         append(decoded)
-        append(",encoded=")
+        append(", encoded=")
         append(encoded)
-        append(",encoding=")
+        append(", encoding=")
         append(encoding.name)
         append(")")
     }

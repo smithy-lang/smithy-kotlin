@@ -109,7 +109,7 @@ public class PercentEncoding(
                     i++
                 }
             } else {
-                append(decodeMap[c] ?: throw IllegalArgumentException("unknown encoding"))
+                append(decodeMap[c] ?: throw IllegalArgumentException("unknown encoding, cannot decode character '$c'"))
                 i++
             }
         }
