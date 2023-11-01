@@ -110,7 +110,8 @@ tasks.jvmTest {
     // set test environment for proxy tests
     systemProperty("MITM_PROXY_SCRIPTS_ROOT", projectDir.resolve("proxy-scripts").absolutePath)
     val enableProxyTestsProp = "aws.test.http.enableProxyTests"
-    systemProperty(enableProxyTestsProp, System.getProperties().getOrDefault(enableProxyTestsProp, "true"))
+    val runningInCodeBuild = System.getenv().containsKey("CODEBUILD_BUILD_ID")
+    systemProperty(enableProxyTestsProp, System.getProperties().getOrDefault(enableProxyTestsProp, !runningInCodeBuild))
 }
 
 gradle.buildFinished {
