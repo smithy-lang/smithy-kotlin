@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.28.1] - 11/01/2023
+
+### Fixes
+* Retry a better set of CRT HTTP exceptions
+
 ## [0.28.0] - 10/25/2023
 
 ### Features
