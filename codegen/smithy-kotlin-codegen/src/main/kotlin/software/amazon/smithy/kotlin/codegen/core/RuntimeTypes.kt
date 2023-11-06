@@ -35,6 +35,7 @@ object RuntimeTypes {
         object Request : RuntimeTypePackage(KotlinDependency.HTTP, "request") {
             val HttpRequest = symbol("HttpRequest")
             val HttpRequestBuilder = symbol("HttpRequestBuilder")
+            val immutableView = symbol("immutableView")
             val url = symbol("url")
             val headers = symbol("headers")
             val toBuilder = symbol("toBuilder")
@@ -314,6 +315,7 @@ object RuntimeTypes {
         object HttpAuthAws : RuntimeTypePackage(KotlinDependency.HTTP_AUTH_AWS) {
             val AwsHttpSigner = symbol("AwsHttpSigner")
             val SigV4AuthScheme = symbol("SigV4AuthScheme")
+            val mergeAuthOptions = symbol("mergeAuthOptions")
             val sigv4 = symbol("sigv4")
         }
     }

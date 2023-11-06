@@ -12,6 +12,7 @@ import software.amazon.smithy.kotlin.codegen.integration.AuthSchemeHandler
 import software.amazon.smithy.kotlin.codegen.lang.KotlinTypes
 import software.amazon.smithy.kotlin.codegen.model.buildSymbol
 import software.amazon.smithy.kotlin.codegen.model.knowledge.AuthIndex
+import software.amazon.smithy.kotlin.codegen.rendering.endpoints.DefaultEndpointProviderGenerator
 import software.amazon.smithy.kotlin.codegen.rendering.protocol.ProtocolGenerator
 import software.amazon.smithy.model.shapes.OperationShape
 
@@ -108,8 +109,21 @@ open class AuthSchemeProviderGenerator {
                 paramsSymbol,
                 RuntimeTypes.Auth.Identity.AuthOption,
             ) {
-                withBlock("return operationOverrides.getOrElse(params.operationName) {", "}") {
+                withBlock("val modeledAuthOptions = operationOverrides.getOrElse(params.operationName) {", "}") {
                     write("serviceDefaults")
+                }
+
+                if (ctx.settings.api.enableEndpointAuthProvider) {
+                    write("")
+                    withBlock("val endpointAuthContext = params.endpointParameters?.let {", "} ?: emptyList()") {
+                        // FIXME - this should use the endpoint provider from config
+                        write("val endpoint = #T().resolveEndpoint(params.endpointParameters!!)", DefaultEndpointProviderGenerator.getSymbol(ctx.settings))
+                        write("endpoint.attributes.getOrNull(#T) ?: emptyList()", RuntimeTypes.SmithyClient.Endpoints.SigningContextAttributeKey)
+                    }
+                    write("")
+                    write("return #T(modeledAuthOptions, endpointAuthContext)", RuntimeTypes.Auth.HttpAuthAws.mergeAuthOptions)
+                } else {
+                    write("return modeledAuthOptions")
                 }
             }
 

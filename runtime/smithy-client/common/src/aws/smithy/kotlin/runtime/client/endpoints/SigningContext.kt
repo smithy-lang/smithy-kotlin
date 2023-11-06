@@ -33,6 +33,7 @@ public sealed class SigningContext {
     ) : SigningContext()
 }
 
+// FIXME - remove or refactor
 /**
  * Sugar extension to pull an auth scheme out of the attribute set.
  *

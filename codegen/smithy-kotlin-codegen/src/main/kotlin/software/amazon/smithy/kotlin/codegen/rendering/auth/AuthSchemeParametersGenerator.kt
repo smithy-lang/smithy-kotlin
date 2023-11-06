@@ -12,14 +12,14 @@ import software.amazon.smithy.kotlin.codegen.core.CodegenContext
 import software.amazon.smithy.kotlin.codegen.core.clientName
 import software.amazon.smithy.kotlin.codegen.core.withBlock
 import software.amazon.smithy.kotlin.codegen.integration.KotlinIntegration
+import software.amazon.smithy.kotlin.codegen.model.asNullable
 import software.amazon.smithy.kotlin.codegen.model.buildSymbol
+import software.amazon.smithy.kotlin.codegen.rendering.endpoints.EndpointParametersGenerator
 import software.amazon.smithy.kotlin.codegen.rendering.protocol.ProtocolGenerator
 import software.amazon.smithy.kotlin.codegen.rendering.util.AbstractConfigGenerator
 import software.amazon.smithy.kotlin.codegen.rendering.util.ConfigProperty
 import software.amazon.smithy.kotlin.codegen.rendering.util.ConfigPropertyType
 import software.amazon.smithy.model.Model
-
-// FIXME - TBD where parameters are actually sourced from.
 
 /**
  * Generate the input type used for resolving authentication schemes
@@ -56,6 +56,16 @@ class AuthSchemeParametersGenerator : AbstractConfigGenerator() {
             ) {
                 dokka("The name of the operation currently being invoked.")
                 write("public val operationName: String")
+                if (ctx.settings.api.enableEndpointAuthProvider) {
+                    dokka(
+                        """
+                        |The parameters used for endpoint resolution. The default implementation of this interface 
+                        |relies on endpoint metadata to resolve auth scheme candidates.
+                        |
+                        """.trimMargin(),
+                    )
+                    write("public val endpointParameters: #P", EndpointParametersGenerator.getSymbol(ctx.settings).asNullable())
+                }
             }
         }
 
@@ -79,7 +89,20 @@ class AuthSchemeParametersGenerator : AbstractConfigGenerator() {
                     baseClass = symbol
                 }.build()
 
-            val props = listOf(operationName)
+            val props = mutableListOf(operationName)
+            if (ctx.settings.api.enableEndpointAuthProvider) {
+                val endpointParamsProperty = ConfigProperty {
+                    name = "endpointParameters"
+                    this.symbol = EndpointParametersGenerator.getSymbol(ctx.settings).asNullable()
+                    baseClass = symbol
+                    documentation = """
+                        The parameters used for endpoint resolution. The default implementation of this interface 
+                        relies on endpoint metadata to resolve auth scheme candidates.
+                    """.trimIndent()
+                }
+                props.add(endpointParamsProperty)
+            }
+
             render(codegenCtx, props, writer)
         }
     }

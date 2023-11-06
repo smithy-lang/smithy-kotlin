@@ -263,16 +263,20 @@ enum class DefaultValueSerializationMode(val value: String) {
  * @param visibility Enum representing the visibility of code-generated classes, objects, interfaces, etc.
  * @param nullabilityCheckMode Enum representing the nullability check mode to use
  * @param defaultValueSerializationMode Enum representing when default values should be serialized
+ * @param enableEndpointAuthProvider flag indicating that endpoint resolution should be enabled as part of resolving
+ * an auth scheme. This is an advanced option that only a select few service clients like S3 and EventBridge require.
  */
 data class ApiSettings(
     val visibility: Visibility = Visibility.PUBLIC,
     val nullabilityCheckMode: CheckMode = CheckMode.CLIENT_CAREFUL,
     val defaultValueSerializationMode: DefaultValueSerializationMode = DefaultValueSerializationMode.WHEN_DIFFERENT,
+    val enableEndpointAuthProvider: Boolean = false,
 ) {
     companion object {
         const val VISIBILITY = "visibility"
         const val NULLABILITY_CHECK_MODE = "nullabilityCheckMode"
         const val DEFAULT_VALUE_SERIALIZATION_MODE = "defaultValueSerializationMode"
+        const val ENABLE_ENDPOINT_AUTH_PROVIDER = "enableEndpointAuthProvider"
 
         fun fromNode(node: Optional<ObjectNode>): ApiSettings = node.map {
             val visibility = node.get()
@@ -290,7 +294,8 @@ data class ApiSettings(
                         DefaultValueSerializationMode.WHEN_DIFFERENT.value,
                     ),
             )
-            ApiSettings(visibility, checkMode, defaultValueSerializationMode)
+            val enableEndpointAuthProvider = node.get().getBooleanMemberOrDefault(ENABLE_ENDPOINT_AUTH_PROVIDER, false)
+            ApiSettings(visibility, checkMode, defaultValueSerializationMode, enableEndpointAuthProvider)
         }.orElse(Default)
 
         /**

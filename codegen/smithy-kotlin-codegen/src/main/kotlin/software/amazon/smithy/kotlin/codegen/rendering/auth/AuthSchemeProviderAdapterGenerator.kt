@@ -11,6 +11,7 @@ import software.amazon.smithy.kotlin.codegen.core.RuntimeTypes
 import software.amazon.smithy.kotlin.codegen.core.clientName
 import software.amazon.smithy.kotlin.codegen.core.withBlock
 import software.amazon.smithy.kotlin.codegen.model.buildSymbol
+import software.amazon.smithy.kotlin.codegen.rendering.endpoints.EndpointResolverAdapterGenerator
 import software.amazon.smithy.kotlin.codegen.rendering.protocol.ProtocolGenerator
 
 /**
@@ -32,10 +33,10 @@ class AuthSchemeProviderAdapterGenerator {
         ctx.delegator.useSymbolWriter(symbol) { writer ->
             writer.dokka("Adapts the service specific auth scheme resolver to the agnostic runtime interface and binds the auth parameters")
             writer.withBlock(
-                "internal class #T(private val delegate: #T): #T {",
+                "internal class #T(private val config: #T.Config): #T {",
                 "}",
                 symbol,
-                AuthSchemeProviderGenerator.getSymbol(ctx.settings),
+                ctx.symbolProvider.toSymbol(ctx.service),
                 RuntimeTypes.HttpClient.Operation.AuthSchemeResolver,
             ) {
                 withBlock(
@@ -47,9 +48,20 @@ class AuthSchemeProviderAdapterGenerator {
                     withBlock("val params = #T {", "}", AuthSchemeParametersGenerator.getImplementationSymbol(ctx.settings)) {
                         addImport(RuntimeTypes.Core.Utils.get)
                         write("operationName = request.context[#T.OperationName]", RuntimeTypes.SmithyClient.SdkClientOption)
+
+                        if (ctx.settings.api.enableEndpointAuthProvider) {
+                            write(
+                                "val resolveEndpointReq = #T(request.context, request.subject.#T(), #T)",
+                                RuntimeTypes.HttpClient.Operation.ResolveEndpointRequest,
+                                RuntimeTypes.Http.Request.immutableView,
+                                RuntimeTypes.Auth.HttpAuth.AnonymousIdentity,
+                            )
+
+                            write("endpointParameters = #T(config, resolveEndpointReq)", EndpointResolverAdapterGenerator.getResolveEndpointParamsFn(ctx.settings))
+                        }
                     }
 
-                    write("return delegate.resolveAuthScheme(params)")
+                    write("return config.authSchemeProvider.resolveAuthScheme(params)")
                 }
             }
         }

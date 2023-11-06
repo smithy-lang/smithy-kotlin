@@ -120,7 +120,7 @@ abstract class HttpProtocolClientGenerator(
 
             write("toMap()")
         }
-        writer.write("private val authSchemeAdapter = #T(config.authSchemeProvider)", AuthSchemeProviderAdapterGenerator.getSymbol(ctx.settings))
+        writer.write("private val authSchemeAdapter = #T(config)", AuthSchemeProviderAdapterGenerator.getSymbol(ctx.settings))
 
         writer.write("private val telemetryScope = #S", ctx.settings.pkg.name)
         writer.write("private val opMetrics = #T(telemetryScope, config.telemetryProvider)", RuntimeTypes.HttpClient.Operation.OperationMetrics)
