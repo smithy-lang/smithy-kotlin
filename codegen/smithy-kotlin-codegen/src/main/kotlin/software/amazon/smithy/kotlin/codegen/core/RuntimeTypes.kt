@@ -317,6 +317,7 @@ object RuntimeTypes {
             val SigV4AuthScheme = symbol("SigV4AuthScheme")
             val mergeAuthOptions = symbol("mergeAuthOptions")
             val sigv4 = symbol("sigv4")
+            val toAuthOption = symbol("toAuthOption")
         }
     }
 

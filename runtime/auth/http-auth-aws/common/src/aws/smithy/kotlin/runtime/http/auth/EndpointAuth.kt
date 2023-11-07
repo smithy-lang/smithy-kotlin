@@ -17,16 +17,7 @@ import aws.smithy.kotlin.runtime.util.toMutableAttributes
  * Merge the list of modeled auth options with the auth schemes from the resolved endpoint context.
  */
 @InternalApi
-public fun mergeAuthOptions(modeled: List<AuthOption>, endpointContext: List<SigningContext>): List<AuthOption> {
-    val endpointOptions = endpointContext.map {
-        val attrs = mutableAttributes()
-        it.mergeInto(attrs)
-        when (it) {
-            is SigningContext.SigV4 -> AuthOption(AuthSchemeId.AwsSigV4, attrs)
-            is SigningContext.SigV4A -> AuthOption(AuthSchemeId.AwsSigV4Asymmetric, attrs)
-        }
-    }
-
+public fun mergeAuthOptions(modeled: List<AuthOption>, endpointOptions: List<AuthOption>): List<AuthOption> {
     // merge the two lists, preferring the priority order from endpoints
     val modeledById = modeled.associateBy(AuthOption::schemeId)
     val merged = mutableListOf<AuthOption>()
@@ -49,4 +40,14 @@ public fun mergeAuthOptions(modeled: List<AuthOption>, endpointContext: List<Sig
     merged.addAll(modelOnlyOptions)
 
     return merged
+}
+
+@InternalApi
+public fun SigningContext.toAuthOption(): AuthOption {
+    val attrs = mutableAttributes()
+    mergeInto(attrs)
+    return when (this) {
+        is SigningContext.SigV4 -> AuthOption(AuthSchemeId.AwsSigV4, attrs)
+        is SigningContext.SigV4A -> AuthOption(AuthSchemeId.AwsSigV4Asymmetric, attrs)
+    }
 }

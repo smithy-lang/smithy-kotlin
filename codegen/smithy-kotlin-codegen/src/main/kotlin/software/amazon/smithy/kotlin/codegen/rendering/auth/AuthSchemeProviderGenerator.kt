@@ -115,13 +115,14 @@ open class AuthSchemeProviderGenerator {
 
                 if (ctx.settings.api.enableEndpointAuthProvider) {
                     write("")
-                    withBlock("val endpointAuthContext = params.endpointParameters?.let {", "} ?: emptyList()") {
+                    withBlock("val endpointAuthOptions = params.endpointParameters?.let {", "} ?: emptyList()") {
                         // FIXME - this should use the endpoint provider from config
                         write("val endpoint = #T().resolveEndpoint(params.endpointParameters!!)", DefaultEndpointProviderGenerator.getSymbol(ctx.settings))
-                        write("endpoint.attributes.getOrNull(#T) ?: emptyList()", RuntimeTypes.SmithyClient.Endpoints.SigningContextAttributeKey)
+                        write("val signingContext = endpoint.attributes.getOrNull(#T) ?: emptyList()", RuntimeTypes.SmithyClient.Endpoints.SigningContextAttributeKey)
+                        write("signingContext.map(#T::#T)", RuntimeTypes.SmithyClient.Endpoints.SigningContext, RuntimeTypes.Auth.HttpAuthAws.toAuthOption)
                     }
                     write("")
-                    write("return #T(modeledAuthOptions, endpointAuthContext)", RuntimeTypes.Auth.HttpAuthAws.mergeAuthOptions)
+                    write("return #T(modeledAuthOptions, endpointAuthOptions)", RuntimeTypes.Auth.HttpAuthAws.mergeAuthOptions)
                 } else {
                     write("return modeledAuthOptions")
                 }
