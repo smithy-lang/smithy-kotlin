@@ -13,9 +13,9 @@ description = "Provides common test utilities for Smithy-Kotlin code generation"
 extra["displayName"] = "Smithy :: Kotlin :: Codegen Utils"
 extra["moduleName"] = "software.amazon.smithy.kotlin.codegen.test"
 
-val sdkVersion: String by project
+val smithyKotlinCodegenVersion: String by project
 group = "software.amazon.smithy.kotlin"
-version = sdkVersion
+version = smithyKotlinCodegenVersion
 
 dependencies {
     implementation(kotlin("stdlib-jdk8"))
