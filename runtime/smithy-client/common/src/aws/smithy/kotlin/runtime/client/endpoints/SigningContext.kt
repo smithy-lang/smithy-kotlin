@@ -5,41 +5,18 @@
 package aws.smithy.kotlin.runtime.client.endpoints
 
 import aws.smithy.kotlin.runtime.InternalApi
+import aws.smithy.kotlin.runtime.auth.AuthOption
 import aws.smithy.kotlin.runtime.util.AttributeKey
 
 /**
- * Static attribute key for AWS endpoint auth schemes.
+ * Static attribute key for AWS endpoint auth schemes that can influence the signing context
  */
 @InternalApi
-public val SigningContextAttributeKey: AttributeKey<List<SigningContext>> = AttributeKey("authSchemes")
+public val SigningContextAttributeKey: AttributeKey<List<AuthOption>> = AttributeKey("aws.smithy.kotlin#endpointAuthSchemes")
 
 /**
- * A set of signing constraints for an AWS endpoint.
+ * Sugar extension to pull the auth option(s) out of the endpoint attributes.
  */
 @InternalApi
-public sealed class SigningContext {
-    @InternalApi
-    public data class SigV4(
-        public val signingName: String?,
-        public val disableDoubleEncoding: Boolean,
-        public val signingRegion: String?,
-    ) : SigningContext()
-
-    @InternalApi
-    public data class SigV4A(
-        public val signingName: String?,
-        public val disableDoubleEncoding: Boolean,
-        public val signingRegionSet: List<String>,
-    ) : SigningContext()
-}
-
-// FIXME - remove or refactor
-/**
- * Sugar extension to pull an auth scheme out of the attribute set.
- *
- * FUTURE: Right now we only support sigv4. The auth scheme property can include multiple schemes, for now we only pull
- * out the sigv4 one if present.
- */
-@InternalApi
-public val Endpoint.signingContext: SigningContext.SigV4?
-    get() = attributes.getOrNull(SigningContextAttributeKey)?.filterIsInstance<SigningContext.SigV4>()?.firstOrNull()
+public val Endpoint.authOptions: List<AuthOption>
+    get() = attributes.getOrNull(SigningContextAttributeKey) ?: emptyList()

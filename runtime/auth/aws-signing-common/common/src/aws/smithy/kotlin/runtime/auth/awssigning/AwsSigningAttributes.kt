@@ -4,13 +4,9 @@
  */
 package aws.smithy.kotlin.runtime.auth.awssigning
 
-import aws.smithy.kotlin.runtime.InternalApi
 import aws.smithy.kotlin.runtime.auth.awscredentials.CredentialsProvider
-import aws.smithy.kotlin.runtime.client.endpoints.SigningContext
 import aws.smithy.kotlin.runtime.time.Instant
 import aws.smithy.kotlin.runtime.util.AttributeKey
-import aws.smithy.kotlin.runtime.util.MutableAttributes
-import aws.smithy.kotlin.runtime.util.setIfValueNotNull
 import kotlinx.coroutines.CompletableDeferred
 
 /**
@@ -77,28 +73,4 @@ public object AwsSigningAttributes {
      * Flag indicating whether to enable double URI encoding. See [AwsSigningConfig.useDoubleUriEncode] for more details.
      */
     public val EnableDoubleUriEncode: AttributeKey<Boolean> = AttributeKey("aws.smithy.kotlin#EnableDoubleUriEncode")
-}
-
-/**
- * Merges this signing context into the given [MutableAttributes].
- * @param attributes The attributes into which to merge the values from this signing context.
- */
-@InternalApi
-public fun SigningContext.mergeInto(attributes: MutableAttributes) {
-    when (this) {
-        is SigningContext.SigV4 -> {
-            attributes.setUnlessBlank(AwsSigningAttributes.SigningService, signingName)
-            attributes.setUnlessBlank(AwsSigningAttributes.SigningRegion, signingRegion)
-            attributes.setIfValueNotNull(AwsSigningAttributes.EnableDoubleUriEncode, !disableDoubleEncoding)
-        }
-        is SigningContext.SigV4A -> {
-            attributes.setUnlessBlank(AwsSigningAttributes.SigningService, signingName)
-            attributes[AwsSigningAttributes.SigningRegionSet] = signingRegionSet.toSet()
-            attributes.setIfValueNotNull(AwsSigningAttributes.EnableDoubleUriEncode, !disableDoubleEncoding)
-        }
-    }
-}
-
-private fun MutableAttributes.setUnlessBlank(key: AttributeKey<String>, value: String?) {
-    if (!value.isNullOrBlank()) set(key, value)
 }

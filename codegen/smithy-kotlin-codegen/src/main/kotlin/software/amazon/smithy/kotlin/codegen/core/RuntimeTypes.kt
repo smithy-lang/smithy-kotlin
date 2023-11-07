@@ -199,11 +199,8 @@ object RuntimeTypes {
             val EndpointProvider = symbol("EndpointProvider")
             val Endpoint = symbol("Endpoint")
             val EndpointProviderException = symbol("EndpointProviderException")
-            val SigningContext = symbol("SigningContext")
             val SigningContextAttributeKey = symbol("SigningContextAttributeKey")
-
-            @get:JvmName("getSigningContextExtMethod")
-            val signingContext = symbol("signingContext")
+            val authOptions = symbol("authOptions")
             object Functions : RuntimeTypePackage(KotlinDependency.SMITHY_CLIENT, "endpoints.functions") {
                 val substring = symbol("substring")
                 val isValidHostLabel = symbol("isValidHostLabel")
@@ -317,7 +314,7 @@ object RuntimeTypes {
             val SigV4AuthScheme = symbol("SigV4AuthScheme")
             val mergeAuthOptions = symbol("mergeAuthOptions")
             val sigv4 = symbol("sigv4")
-            val toAuthOption = symbol("toAuthOption")
+            val sigv4A = symbol("sigv4A")
         }
     }
 

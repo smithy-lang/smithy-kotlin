@@ -135,7 +135,7 @@ public class AwsHttpSigner(private val config: Config) : HttpSigner {
             signatureType = config.signatureType
             omitSessionToken = config.omitSessionToken
             normalizeUriPath = config.normalizeUriPath
-            useDoubleUriEncode = config.useDoubleUriEncode
+            useDoubleUriEncode = attributes.getOrNull(AwsSigningAttributes.EnableDoubleUriEncode) ?: config.useDoubleUriEncode
             expiresAfter = config.expiresAfter
             shouldSignHeader = config.shouldSignHeader
 

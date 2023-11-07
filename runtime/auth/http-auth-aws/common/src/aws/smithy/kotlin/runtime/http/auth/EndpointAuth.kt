@@ -6,12 +6,7 @@ package aws.smithy.kotlin.runtime.http.auth
 
 import aws.smithy.kotlin.runtime.InternalApi
 import aws.smithy.kotlin.runtime.auth.AuthOption
-import aws.smithy.kotlin.runtime.auth.AuthSchemeId
-import aws.smithy.kotlin.runtime.auth.awssigning.mergeInto
-import aws.smithy.kotlin.runtime.client.endpoints.SigningContext
-import aws.smithy.kotlin.runtime.util.merge
-import aws.smithy.kotlin.runtime.util.mutableAttributes
-import aws.smithy.kotlin.runtime.util.toMutableAttributes
+import aws.smithy.kotlin.runtime.util.*
 
 /**
  * Merge the list of modeled auth options with the auth schemes from the resolved endpoint context.
@@ -35,19 +30,9 @@ public fun mergeAuthOptions(modeled: List<AuthOption>, endpointOptions: List<Aut
     }
 
     // tack on auth options that only exist in modeled list
-    val mergedById = merged.associateBy(AuthOption::schemeId)
+    val mergedById = merged.map(AuthOption::schemeId).toSet()
     val modelOnlyOptions = modeled.filterNot { mergedById.contains(it.schemeId) }
     merged.addAll(modelOnlyOptions)
 
     return merged
-}
-
-@InternalApi
-public fun SigningContext.toAuthOption(): AuthOption {
-    val attrs = mutableAttributes()
-    mergeInto(attrs)
-    return when (this) {
-        is SigningContext.SigV4 -> AuthOption(AuthSchemeId.AwsSigV4, attrs)
-        is SigningContext.SigV4A -> AuthOption(AuthSchemeId.AwsSigV4Asymmetric, attrs)
-    }
 }
