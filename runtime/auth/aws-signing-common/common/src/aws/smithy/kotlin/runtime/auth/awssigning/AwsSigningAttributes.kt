@@ -24,7 +24,7 @@ public object AwsSigningAttributes {
     public val SigningRegion: AttributeKey<String> = AttributeKey("aws.smithy.kotlin#AwsSigningRegion")
 
     /**
-     *
+     * The AWS region-set used for computing the signature.
      */
     public val SigningRegionSet: AttributeKey<Set<String>> = AttributeKey("aws.smithy.kotlin#AwsSigningRegionSet")
 
