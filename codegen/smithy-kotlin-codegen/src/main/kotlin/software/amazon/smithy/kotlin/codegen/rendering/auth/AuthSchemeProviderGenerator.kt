@@ -12,7 +12,7 @@ import software.amazon.smithy.kotlin.codegen.integration.AuthSchemeHandler
 import software.amazon.smithy.kotlin.codegen.lang.KotlinTypes
 import software.amazon.smithy.kotlin.codegen.model.buildSymbol
 import software.amazon.smithy.kotlin.codegen.model.knowledge.AuthIndex
-import software.amazon.smithy.kotlin.codegen.rendering.endpoints.DefaultEndpointProviderGenerator
+import software.amazon.smithy.kotlin.codegen.rendering.endpoints.EndpointProviderGenerator
 import software.amazon.smithy.kotlin.codegen.rendering.protocol.ProtocolGenerator
 import software.amazon.smithy.model.shapes.OperationShape
 
@@ -64,12 +64,12 @@ open class AuthSchemeProviderGenerator {
     }
 
     private fun renderDefaultImpl(ctx: ProtocolGenerator.GenerationContext, writer: KotlinWriter) {
-        // FIXME - probably can't remain an object
         writer.withBlock(
-            "#L object #T : #T {",
+            "#L class #T(private val endpointProvider: #T? = null) : #T {",
             "}",
             ctx.settings.api.visibility,
             getDefaultSymbol(ctx.settings),
+            EndpointProviderGenerator.getSymbol(ctx.settings),
             getSymbol(ctx.settings),
         ) {
             val paramsSymbol = AuthSchemeParametersGenerator.getSymbol(ctx.settings)
@@ -115,11 +115,13 @@ open class AuthSchemeProviderGenerator {
 
                 if (ctx.settings.api.enableEndpointAuthProvider) {
                     write("")
-                    withBlock("val endpointAuthOptions = params.endpointParameters?.let {", "} ?: emptyList()") {
-                        // FIXME - this should use the endpoint provider from config
-                        write("val endpoint = #T().resolveEndpoint(params.endpointParameters!!)", DefaultEndpointProviderGenerator.getSymbol(ctx.settings))
-                        write("endpoint.#T", RuntimeTypes.SmithyClient.Endpoints.authOptions)
-                    }
+                    write("val endpointParams = params.endpointParameters")
+                    openBlock("val endpointAuthOptions = if (endpointProvider != null && endpointParams != null) {")
+                        .write("val endpoint = endpointProvider.resolveEndpoint(endpointParams)")
+                        .write("endpoint.#T", RuntimeTypes.SmithyClient.Endpoints.authOptions)
+                        .closeAndOpenBlock("} else {")
+                        .write("emptyList()")
+                        .closeBlock("}")
                     write("")
                     write("return #T(modeledAuthOptions, endpointAuthOptions)", RuntimeTypes.Auth.HttpAuthAws.mergeAuthOptions)
                 } else {
