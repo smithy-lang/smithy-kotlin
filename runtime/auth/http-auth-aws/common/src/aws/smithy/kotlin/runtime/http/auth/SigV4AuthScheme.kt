@@ -20,7 +20,7 @@ import aws.smithy.kotlin.runtime.util.*
 public class SigV4AuthScheme(
     config: AwsHttpSigner.Config,
 ) : AuthScheme {
-    public constructor(awsSigner: AwsSigner, serviceName: String) : this(
+    public constructor(awsSigner: AwsSigner, serviceName: String? = null) : this(
         AwsHttpSigner.Config().apply {
             signer = awsSigner
             service = serviceName
@@ -40,7 +40,7 @@ public class SigV4AuthScheme(
  * @return auth scheme option representing the [SigV4AuthScheme]
  */
 @InternalApi
-public fun sigv4(
+public fun sigV4(
     unsignedPayload: Boolean = false,
     serviceName: String? = null,
     signingRegion: String? = null,
@@ -55,7 +55,7 @@ public fun sigv4(
         mutAttrs.setNotBlank(AwsSigningAttributes.SigningRegion, signingRegion)
         mutAttrs.setNotBlank(AwsSigningAttributes.SigningService, serviceName)
         if (disableDoubleUriEncode != null) {
-            mutAttrs[AwsSigningAttributes.EnableDoubleUriEncode] = !disableDoubleUriEncode
+            mutAttrs[AwsSigningAttributes.UseDoubleUriEncode] = !disableDoubleUriEncode
         }
 
         mutAttrs

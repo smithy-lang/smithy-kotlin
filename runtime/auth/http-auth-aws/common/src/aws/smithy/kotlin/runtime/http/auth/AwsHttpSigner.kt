@@ -30,7 +30,6 @@ public class AwsHttpSigner(private val config: Config) : HttpSigner {
     public companion object {
         public inline operator fun invoke(block: Config.() -> Unit): AwsHttpSigner {
             val config = Config().apply(block)
-            requireNotNull(config.service) { "A service must be specified for the middleware" }
             requireNotNull(config.signer) { "A signer must be specified for the middleware" }
             return AwsHttpSigner(config)
         }
@@ -120,13 +119,22 @@ public class AwsHttpSigner(private val config: Config) : HttpSigner {
         // favor attributes from the current request context
         val contextHashSpecification = attributes.getOrNull(AwsSigningAttributes.HashSpecification)
         val contextSignedBodyHeader = attributes.getOrNull(AwsSigningAttributes.SignedBodyHeader)
+        val contextRegion = attributes[AwsSigningAttributes.SigningRegion]
+        val contextRegionSet = attributes.getOrNull(AwsSigningAttributes.SigningRegionSet)
+        val contextUseDoubleUriEncode = attributes.getOrNull(AwsSigningAttributes.UseDoubleUriEncode)
+        val contextNormalizeUriPath = attributes.getOrNull(AwsSigningAttributes.NormalizeUriPath)
+        val contextServiceName = attributes.getOrNull(AwsSigningAttributes.SigningService)
 
         // operation signing config is baseConfig + operation specific config/overrides
         val signingConfig = AwsSigningConfig {
-            region = attributes[AwsSigningAttributes.SigningRegion]
-            service = attributes.getOrNull(AwsSigningAttributes.SigningService) ?: checkNotNull(config.service)
+            service = contextServiceName ?: checkNotNull(config.service)
             credentials = signingRequest.identity as Credentials
             algorithm = config.algorithm
+
+            region = when {
+                algorithm == AwsSigningAlgorithm.SIGV4_ASYMMETRIC && !contextRegionSet.isNullOrEmpty() -> contextRegionSet.joinToString(",")
+                else -> contextRegion
+            }
 
             // apply clock skew if applicable
             signingDate = attributes.getOrNull(AwsSigningAttributes.SigningDate)
@@ -134,8 +142,8 @@ public class AwsHttpSigner(private val config: Config) : HttpSigner {
 
             signatureType = config.signatureType
             omitSessionToken = config.omitSessionToken
-            normalizeUriPath = config.normalizeUriPath
-            useDoubleUriEncode = attributes.getOrNull(AwsSigningAttributes.EnableDoubleUriEncode) ?: config.useDoubleUriEncode
+            normalizeUriPath = contextNormalizeUriPath ?: config.normalizeUriPath
+            useDoubleUriEncode = contextUseDoubleUriEncode ?: config.useDoubleUriEncode
             expiresAfter = config.expiresAfter
             shouldSignHeader = config.shouldSignHeader
 

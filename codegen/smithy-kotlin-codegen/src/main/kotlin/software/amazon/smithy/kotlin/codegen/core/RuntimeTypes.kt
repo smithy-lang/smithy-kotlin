@@ -313,8 +313,8 @@ object RuntimeTypes {
             val AwsHttpSigner = symbol("AwsHttpSigner")
             val SigV4AuthScheme = symbol("SigV4AuthScheme")
             val mergeAuthOptions = symbol("mergeAuthOptions")
-            val sigv4 = symbol("sigv4")
-            val sigv4A = symbol("sigv4A")
+            val sigV4 = symbol("sigV4")
+            val sigV4A = symbol("sigV4A")
         }
     }
 

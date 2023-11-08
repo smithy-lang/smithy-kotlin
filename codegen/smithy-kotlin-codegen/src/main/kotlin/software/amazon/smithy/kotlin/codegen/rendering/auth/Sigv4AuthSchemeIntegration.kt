@@ -86,7 +86,7 @@ open class SigV4AuthSchemeHandler : AuthSchemeHandler {
         } else {
             "#T()"
         }
-        writer.write(expr, RuntimeTypes.Auth.HttpAuthAws.sigv4)
+        writer.write(expr, RuntimeTypes.Auth.HttpAuthAws.sigV4)
     }
 
     override fun instantiateAuthSchemeExpr(ctx: ProtocolGenerator.GenerationContext, writer: KotlinWriter) {
