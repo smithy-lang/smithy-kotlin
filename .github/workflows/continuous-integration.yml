@@ -102,12 +102,16 @@ jobs:
         # TODO - JVM only
         cd $GITHUB_WORKSPACE/smithy-kotlin
         ./gradlew --parallel publishToMavenLocal
-        SMITHY_KOTLIN_VERSION=$(grep sdkVersion= gradle.properties | cut -d = -f 2)
+        SMITHY_KOTLIN_RUNTIME_VERSION=$(grep sdkVersion= gradle.properties | cut -d = -f 2)
+        SMITHY_KOTLIN_CODEGEN_VERSION=$(grep codegenVersion= gradle.properties | cut -d = -f 2)
         cd $GITHUB_WORKSPACE/aws-sdk-kotlin
-        # replace smithy-kotlin-runtime-version to be whatever we are testing such that the protocol test projects
-        # don't fail with a version that doesn't exist locally or in maven central. Otherwise
-        # the generated protocol test projects will use whatever the SDK thinks the version of smithy-kotlin should be
-        sed -i "s/smithy-kotlin-runtime-version = .*$/smithy-kotlin-runtime-version = \"$SMITHY_KOTLIN_VERSION\"/" gradle/libs.versions.toml
+        # replace smithy-kotlin-runtime-version and smithy-kotlin-codegen-version to be
+        # whatever we are testing such that the protocol test projects don't fail with a
+        # version that doesn't exist locally or in maven central. Otherwise the generated
+        # protocol test projects will use whatever the SDK thinks the version of
+        # smithy-kotlin should be
+        sed -i "s/smithy-kotlin-runtime-version = .*$/smithy-kotlin-runtime-version = \"$SMITHY_KOTLIN_RUNTIME_VERSION\"/" gradle/libs.versions.toml
+        sed -i "s/smithy-kotlin-codegen-version = .*$/smithy-kotlin-codegen-version = \"$SMITHY_KOTLIN_CODEGEN_VERSION\"/" gradle/libs.versions.toml
         ./gradlew --parallel publishToMavenLocal
         ./gradlew test jvmTest
         ./gradlew testAllProtocols
