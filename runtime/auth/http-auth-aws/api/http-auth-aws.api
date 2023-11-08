@@ -1,3 +1,9 @@
+public final class aws/smithy/kotlin/runtime/http/auth/EndpointAuthKt {
+}
+
+public final class aws/smithy/kotlin/runtime/http/auth/SigV4AsymmetricAuthSchemeKt {
+}
+
 public final class aws/smithy/kotlin/runtime/http/auth/SigV4AuthSchemeKt {
 }
 
