@@ -18,7 +18,6 @@ import aws.smithy.kotlin.runtime.util.mutableAttributes
 /**
  * HTTP auth scheme for AWS signature version 4 Asymmetric
  */
-@InternalApi
 public class SigV4AsymmetricAuthScheme(
     config: AwsHttpSigner.Config,
 ) : AuthScheme {

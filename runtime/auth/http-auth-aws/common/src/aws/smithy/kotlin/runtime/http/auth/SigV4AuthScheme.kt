@@ -16,7 +16,6 @@ import aws.smithy.kotlin.runtime.util.*
 /**
  * HTTP auth scheme for AWS signature version 4
  */
-@InternalApi
 public class SigV4AuthScheme(
     config: AwsHttpSigner.Config,
 ) : AuthScheme {
