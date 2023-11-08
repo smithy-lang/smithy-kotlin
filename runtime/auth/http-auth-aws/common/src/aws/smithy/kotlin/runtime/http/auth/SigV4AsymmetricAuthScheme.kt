@@ -10,7 +10,8 @@ import aws.smithy.kotlin.runtime.auth.AuthSchemeId
 import aws.smithy.kotlin.runtime.auth.awssigning.AwsSigner
 import aws.smithy.kotlin.runtime.auth.awssigning.AwsSigningAlgorithm
 import aws.smithy.kotlin.runtime.auth.awssigning.AwsSigningAttributes
-import aws.smithy.kotlin.runtime.auth.awssigning.HashSpecification
+import aws.smithy.kotlin.runtime.identity.IdentityProvider
+import aws.smithy.kotlin.runtime.identity.IdentityProviderConfig
 import aws.smithy.kotlin.runtime.util.emptyAttributes
 import aws.smithy.kotlin.runtime.util.mutableAttributes
 
@@ -32,6 +33,10 @@ public class SigV4AsymmetricAuthScheme(
         },
     )
 
+    // FIXME - remove when we add full support for SigV4A in codegen
+    override fun identityProvider(identityProviderConfig: IdentityProviderConfig): IdentityProvider =
+        identityProviderConfig.identityProviderForScheme(AuthSchemeId.AwsSigV4)
+
     override val schemeId: AuthSchemeId = AuthSchemeId.AwsSigV4Asymmetric
     override val signer: AwsHttpSigner = AwsHttpSigner(config)
 }
@@ -42,6 +47,7 @@ public class SigV4AsymmetricAuthScheme(
  * @param serviceName override the service name to sign for
  * @param signingRegionSet override the signing region set to sign for
  * @param disableDoubleUriEncode disable double URI encoding
+ * @param normalizeUriPath flag indicating if the URI path should be normalized when forming the canonical request
  * @return auth scheme option representing the [SigV4AsymmetricAuthScheme]
  */
 @InternalApi
@@ -50,23 +56,14 @@ public fun sigV4A(
     serviceName: String? = null,
     signingRegionSet: List<String>? = null,
     disableDoubleUriEncode: Boolean? = null,
+    normalizeUriPath: Boolean? = null,
 ): AuthOption {
-    val attrs = if (unsignedPayload || serviceName != null || signingRegionSet != null || disableDoubleUriEncode != null) {
+    val attrs = if (unsignedPayload || serviceName != null || signingRegionSet != null || disableDoubleUriEncode != null || normalizeUriPath != null) {
         val mutAttrs = mutableAttributes()
-
-        if (unsignedPayload) {
-            mutAttrs[AwsSigningAttributes.HashSpecification] = HashSpecification.UnsignedPayload
-        }
-
         if (!signingRegionSet.isNullOrEmpty()) {
             mutAttrs[AwsSigningAttributes.SigningRegionSet] = signingRegionSet.toSet()
         }
-
-        mutAttrs.setNotBlank(AwsSigningAttributes.SigningService, serviceName)
-
-        if (disableDoubleUriEncode != null) {
-            mutAttrs[AwsSigningAttributes.UseDoubleUriEncode] = !disableDoubleUriEncode
-        }
+        setCommonSigV4Attrs(mutAttrs, unsignedPayload, serviceName, disableDoubleUriEncode, normalizeUriPath)
 
         mutAttrs
     } else {
