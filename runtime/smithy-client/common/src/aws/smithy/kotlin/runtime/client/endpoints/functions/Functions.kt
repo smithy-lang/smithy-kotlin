@@ -7,8 +7,8 @@ package aws.smithy.kotlin.runtime.client.endpoints.functions
 
 import aws.smithy.kotlin.runtime.InternalApi
 import aws.smithy.kotlin.runtime.net.*
-import aws.smithy.kotlin.runtime.util.text.ensureSuffix
-import aws.smithy.kotlin.runtime.util.text.urlEncodeComponent
+import aws.smithy.kotlin.runtime.text.ensureSuffix
+import aws.smithy.kotlin.runtime.text.urlEncodeComponent
 
 @InternalApi
 public fun substring(value: String?, start: Int, stop: Int, reverse: Boolean): String? =

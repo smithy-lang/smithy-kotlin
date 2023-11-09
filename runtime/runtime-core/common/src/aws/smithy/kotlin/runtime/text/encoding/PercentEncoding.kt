@@ -2,47 +2,9 @@
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
  * SPDX-License-Identifier: Apache-2.0
  */
-package aws.smithy.kotlin.runtime.util.text.encoding
+package aws.smithy.kotlin.runtime.text.encoding
 
 import aws.smithy.kotlin.runtime.InternalApi
-
-private val ALPHA = (('A'..'Z') + ('a'..'z')).toSet()
-private val DIGIT = ('0'..'9').toSet()
-private val UNRESERVED = ALPHA + DIGIT + setOf('-', '.', '_', '~')
-private val SUB_DELIMS = setOf('!', '$', '&', '\'', '(', ')', '*', ',', ';', '=')
-private val VALID_UCHAR = UNRESERVED + SUB_DELIMS
-private val VALID_PCHAR = VALID_UCHAR + setOf(':', '@')
-private val VALID_FCHAR = VALID_PCHAR + setOf('/', '?')
-private val VALID_QCHAR = VALID_FCHAR - setOf('&', '=')
-
-@InternalApi
-public interface Encoding {
-    @InternalApi
-    public companion object {
-        public val UserInfo: Encoding = PercentEncoding("user info", VALID_UCHAR)
-        public val Path: Encoding = PercentEncoding("path", VALID_PCHAR)
-        public val Query: Encoding = PercentEncoding("query string", VALID_QCHAR, mapOf(' ' to '+'))
-        public val Fragment: Encoding = PercentEncoding("fragment", VALID_FCHAR)
-
-        internal val None = object : Encoding {
-            override val name = "(no encoding)"
-            override fun decode(encoded: String) = encoded
-            override fun encode(decoded: String) = decoded
-        }
-    }
-
-    public val name: String
-
-    public fun decode(encoded: String): String
-    public fun encode(decoded: String): String
-
-    public fun encodableFromDecoded(decoded: String): Encodable = Encodable(decoded, encode(decoded), this)
-    public fun encodableFromEncoded(encoded: String): Encodable {
-        val decoded = decode(encoded)
-        val reencoded = encode(decoded) // TODO is this right?
-        return Encodable(decoded, reencoded, this)
-    }
-}
 
 @InternalApi
 public class PercentEncoding(
@@ -52,7 +14,21 @@ public class PercentEncoding(
 ) : Encoding {
     @InternalApi
     public companion object {
+        private val ALPHA = (('A'..'Z') + ('a'..'z')).toSet()
+        private val DIGIT = ('0'..'9').toSet()
+        private val UNRESERVED = ALPHA + DIGIT + setOf('-', '.', '_', '~')
+        private val SUB_DELIMS = setOf('!', '$', '&', '\'', '(', ')', '*', ',', ';', '=')
+        private val VALID_UCHAR = UNRESERVED + SUB_DELIMS
+        private val VALID_PCHAR = VALID_UCHAR + setOf(':', '@')
+        private val VALID_FCHAR = VALID_PCHAR + setOf('/', '?')
+        private val VALID_QCHAR = VALID_FCHAR - setOf('&', '=')
+
         private const val UPPER_HEX = "0123456789ABCDEF"
+
+        public val UserInfo: Encoding = PercentEncoding("user info", VALID_UCHAR)
+        public val Path: Encoding = PercentEncoding("path", VALID_PCHAR)
+        public val Query: Encoding = PercentEncoding("query string", VALID_QCHAR, mapOf(' ' to '+'))
+        public val Fragment: Encoding = PercentEncoding("fragment", VALID_FCHAR)
 
         private fun percentAsciiEncode(char: Char) = buildString {
             val value = char.code and 0xff
@@ -73,7 +49,7 @@ public class PercentEncoding(
     private val asciiMapping = (0..<128)
         .map(Int::toChar)
         .filterNot(validChars::contains)
-        .associateWith(::percentAsciiEncode)
+        .associateWith(Companion::percentAsciiEncode)
 
     private val encodeMap = asciiMapping + specialMapping.mapValues { (_, char) -> char.toString() }
 

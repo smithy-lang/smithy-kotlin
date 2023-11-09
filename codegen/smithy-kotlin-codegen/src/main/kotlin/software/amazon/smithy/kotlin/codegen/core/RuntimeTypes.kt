@@ -143,15 +143,21 @@ object RuntimeTypes {
             val SdkManagedGroup = symbol("SdkManagedGroup")
             val addIfManaged = symbol("addIfManaged", isExtension = true)
         }
+
+        object Text : RuntimeTypePackage(KotlinDependency.CORE, "text") {
+            object Encoding : RuntimeTypePackage(KotlinDependency.CORE, "text.encoding") {
+                val decodeBase64 = symbol("decodeBase64")
+                val decodeBase64Bytes = symbol("decodeBase64Bytes")
+                val encodeBase64 = symbol("encodeBase64")
+                val encodeBase64String = symbol("encodeBase64String")
+            }
+        }
+
         object Utils : RuntimeTypePackage(KotlinDependency.CORE, "util") {
             val Attributes = symbol("Attributes")
             val MutableAttributes = symbol("MutableAttributes")
             val attributesOf = symbol("attributesOf")
             val AttributeKey = symbol("AttributeKey")
-            val decodeBase64 = symbol("decodeBase64")
-            val decodeBase64Bytes = symbol("decodeBase64Bytes")
-            val encodeBase64 = symbol("encodeBase64")
-            val encodeBase64String = symbol("encodeBase64String")
             val ExpiringValue = symbol("ExpiringValue")
             val flattenIfPossible = symbol("flattenIfPossible")
             val get = symbol("get")
@@ -161,7 +167,6 @@ object RuntimeTypes {
             val putIfAbsentNotNull = symbol("putIfAbsentNotNull")
             val ReadThroughCache = symbol("ReadThroughCache")
             val truthiness = symbol("truthiness")
-            val urlEncodeComponent = symbol("urlEncodeComponent", "text")
             val toNumber = symbol("toNumber")
             val type = symbol("type")
         }

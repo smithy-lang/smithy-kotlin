@@ -4,7 +4,7 @@
  */
 package aws.smithy.kotlin.runtime.hashing
 
-import aws.smithy.kotlin.runtime.util.encodeBase64String
+import aws.smithy.kotlin.runtime.text.encoding.encodeBase64String
 import kotlin.test.Test
 import kotlin.test.assertEquals
 

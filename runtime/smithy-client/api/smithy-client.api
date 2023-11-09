@@ -180,16 +180,16 @@ public final class aws/smithy/kotlin/runtime/client/SdkClientOptionKt {
 }
 
 public final class aws/smithy/kotlin/runtime/client/endpoints/Endpoint {
-	public fun <init> (Laws/smithy/kotlin/runtime/net/Url;Laws/smithy/kotlin/runtime/util/ValuesMap;)V
-	public synthetic fun <init> (Laws/smithy/kotlin/runtime/net/Url;Laws/smithy/kotlin/runtime/util/ValuesMap;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Laws/smithy/kotlin/runtime/net/Url;Laws/smithy/kotlin/runtime/collections/ValuesMap;)V
+	public synthetic fun <init> (Laws/smithy/kotlin/runtime/net/Url;Laws/smithy/kotlin/runtime/collections/ValuesMap;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public fun <init> (Ljava/lang/String;)V
 	public final fun component1 ()Laws/smithy/kotlin/runtime/net/Url;
-	public final fun component2 ()Laws/smithy/kotlin/runtime/util/ValuesMap;
+	public final fun component2 ()Laws/smithy/kotlin/runtime/collections/ValuesMap;
 	public final fun component3 ()Laws/smithy/kotlin/runtime/util/Attributes;
-	public final fun copy (Laws/smithy/kotlin/runtime/net/Url;Laws/smithy/kotlin/runtime/util/ValuesMap;Laws/smithy/kotlin/runtime/util/Attributes;)Laws/smithy/kotlin/runtime/client/endpoints/Endpoint;
-	public static synthetic fun copy$default (Laws/smithy/kotlin/runtime/client/endpoints/Endpoint;Laws/smithy/kotlin/runtime/net/Url;Laws/smithy/kotlin/runtime/util/ValuesMap;Laws/smithy/kotlin/runtime/util/Attributes;ILjava/lang/Object;)Laws/smithy/kotlin/runtime/client/endpoints/Endpoint;
+	public final fun copy (Laws/smithy/kotlin/runtime/net/Url;Laws/smithy/kotlin/runtime/collections/ValuesMap;Laws/smithy/kotlin/runtime/util/Attributes;)Laws/smithy/kotlin/runtime/client/endpoints/Endpoint;
+	public static synthetic fun copy$default (Laws/smithy/kotlin/runtime/client/endpoints/Endpoint;Laws/smithy/kotlin/runtime/net/Url;Laws/smithy/kotlin/runtime/collections/ValuesMap;Laws/smithy/kotlin/runtime/util/Attributes;ILjava/lang/Object;)Laws/smithy/kotlin/runtime/client/endpoints/Endpoint;
 	public fun equals (Ljava/lang/Object;)Z
-	public final fun getHeaders ()Laws/smithy/kotlin/runtime/util/ValuesMap;
+	public final fun getHeaders ()Laws/smithy/kotlin/runtime/collections/ValuesMap;
 	public final fun getUri ()Laws/smithy/kotlin/runtime/net/Url;
 	public fun hashCode ()I
 	public fun toString ()Ljava/lang/String;

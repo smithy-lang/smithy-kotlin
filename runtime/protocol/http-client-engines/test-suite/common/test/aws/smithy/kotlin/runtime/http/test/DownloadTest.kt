@@ -16,7 +16,7 @@ import aws.smithy.kotlin.runtime.http.test.util.test
 import aws.smithy.kotlin.runtime.http.test.util.testSetup
 import aws.smithy.kotlin.runtime.http.toSdkByteReadChannel
 import aws.smithy.kotlin.runtime.io.*
-import aws.smithy.kotlin.runtime.util.encodeToHex
+import aws.smithy.kotlin.runtime.text.encoding.encodeToHex
 import kotlin.test.*
 
 class DownloadTest : AbstractEngineTest() {

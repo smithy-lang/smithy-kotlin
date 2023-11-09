@@ -5,8 +5,8 @@
 package aws.smithy.kotlin.runtime.http.util
 
 import aws.smithy.kotlin.runtime.InternalApi
-import aws.smithy.kotlin.runtime.util.text.VALID_PCHAR_DELIMS
-import aws.smithy.kotlin.runtime.util.text.encodeUrlPath
+import aws.smithy.kotlin.runtime.text.VALID_PCHAR_DELIMS
+import aws.smithy.kotlin.runtime.text.encodeUrlPath
 
 // RFC-3986 §3.3 allows sub-delims (defined in section2.2) to be in the path component.
 // This includes both colon ':' and comma ',' characters.

@@ -8,9 +8,9 @@ import aws.smithy.kotlin.runtime.net.Host
 import aws.smithy.kotlin.runtime.net.Scheme
 import aws.smithy.kotlin.runtime.net.splitHostPort
 import aws.smithy.kotlin.runtime.net.toUrlString
-import aws.smithy.kotlin.runtime.util.text.Scanner
-import aws.smithy.kotlin.runtime.util.text.encoding.Encodable
-import aws.smithy.kotlin.runtime.util.text.encoding.Encoding
+import aws.smithy.kotlin.runtime.text.Scanner
+import aws.smithy.kotlin.runtime.text.encoding.Encodable
+import aws.smithy.kotlin.runtime.text.encoding.PercentEncoding
 
 /**
  * Represents a full, valid URL
@@ -216,14 +216,14 @@ public class Url private constructor(
          */
         public var fragmentDecoded: String?
             get() = fragment?.decoded
-            set(value) { fragment = value?.let(Encoding.Fragment::encodableFromDecoded) }
+            set(value) { fragment = value?.let(PercentEncoding.Fragment::encodableFromDecoded) }
 
         /**
          * Get or set the fragment as an **encoded** string
          */
         public var fragmentEncoded: String?
             get() = fragment?.encoded
-            set(value) { fragment = value?.let(Encoding.Fragment::encodableFromEncoded) }
+            set(value) { fragment = value?.let(PercentEncoding.Fragment::encodableFromEncoded) }
 
         // User info
 

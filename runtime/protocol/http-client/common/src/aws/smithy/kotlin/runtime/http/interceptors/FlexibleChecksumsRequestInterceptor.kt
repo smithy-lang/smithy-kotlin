@@ -15,8 +15,10 @@ import aws.smithy.kotlin.runtime.http.request.header
 import aws.smithy.kotlin.runtime.http.request.toBuilder
 import aws.smithy.kotlin.runtime.io.*
 import aws.smithy.kotlin.runtime.telemetry.logging.logger
-import aws.smithy.kotlin.runtime.util.*
-import kotlinx.coroutines.*
+import aws.smithy.kotlin.runtime.text.encoding.encodeBase64String
+import aws.smithy.kotlin.runtime.util.LazyAsyncValue
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.job
 import kotlin.coroutines.coroutineContext
 
 /**

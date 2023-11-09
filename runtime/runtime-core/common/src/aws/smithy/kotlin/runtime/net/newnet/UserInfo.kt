@@ -4,12 +4,12 @@
  */
 package aws.smithy.kotlin.runtime.net.newnet
 
-import aws.smithy.kotlin.runtime.util.text.encoding.Encodable
-import aws.smithy.kotlin.runtime.util.text.encoding.Encoding
+import aws.smithy.kotlin.runtime.text.encoding.Encodable
+import aws.smithy.kotlin.runtime.text.encoding.PercentEncoding
 
 /**
  * Represents the user authentication information in a URL
- * @param userName The user name of the caller
+ * @param userName The username of the caller
  * @param password The password for the caller
  */
 public class UserInfo private constructor(public val userName: Encodable, public val password: Encodable) {
@@ -57,24 +57,24 @@ public class UserInfo private constructor(public val userName: Encodable, public
 
         public var userNameDecoded: String
             get() = userName.decoded
-            set(value) { userName = Encoding.UserInfo.encodableFromDecoded(value) }
+            set(value) { userName = PercentEncoding.UserInfo.encodableFromDecoded(value) }
 
         public var userNameEncoded: String
             get() = userName.encoded
-            set(value) { userName = Encoding.UserInfo.encodableFromEncoded(value) }
+            set(value) { userName = PercentEncoding.UserInfo.encodableFromDecoded(value) }
 
         private var password = userInfo?.password ?: Encodable.Empty
 
         public var passwordDecoded: String
             get() = password.decoded
-            set(value) { password = Encoding.UserInfo.encodableFromDecoded(value) }
+            set(value) { password = PercentEncoding.UserInfo.encodableFromDecoded(value) }
 
         public var passwordEncoded: String
             get() = password.encoded
-            set(value) { password = Encoding.UserInfo.encodableFromEncoded(value) }
+            set(value) { password = PercentEncoding.UserInfo.encodableFromEncoded(value) }
 
-        internal fun parseDecoded(decoded: String) = parse(decoded, Encoding.UserInfo::encodableFromDecoded)
-        internal fun parseEncoded(encoded: String) = parse(encoded, Encoding.UserInfo::encodableFromEncoded)
+        internal fun parseDecoded(decoded: String) = parse(decoded, PercentEncoding.UserInfo::encodableFromDecoded)
+        internal fun parseEncoded(encoded: String) = parse(encoded, PercentEncoding.UserInfo::encodableFromEncoded)
 
         private fun parse(text: String, toEncodable: (String) -> Encodable) {
             if (text.isEmpty()) {

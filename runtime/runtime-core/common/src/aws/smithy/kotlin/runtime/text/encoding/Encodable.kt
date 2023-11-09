@@ -2,7 +2,7 @@
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
  * SPDX-License-Identifier: Apache-2.0
  */
-package aws.smithy.kotlin.runtime.util.text.encoding
+package aws.smithy.kotlin.runtime.text.encoding
 
 public class Encodable internal constructor(
     public val decoded: String,

@@ -5,9 +5,13 @@
 package aws.smithy.kotlin.runtime.net
 
 import aws.smithy.kotlin.runtime.InternalApi
-import aws.smithy.kotlin.runtime.util.*
-import aws.smithy.kotlin.runtime.util.text.splitAsQueryString
-import aws.smithy.kotlin.runtime.util.text.urlEncodeComponent
+import aws.smithy.kotlin.runtime.collections.ValuesMap
+import aws.smithy.kotlin.runtime.collections.ValuesMapBuilder
+import aws.smithy.kotlin.runtime.collections.ValuesMapImpl
+import aws.smithy.kotlin.runtime.collections.deepCopy
+import aws.smithy.kotlin.runtime.text.splitAsQueryString
+import aws.smithy.kotlin.runtime.text.urlEncodeComponent
+import aws.smithy.kotlin.runtime.util.CanDeepCopy
 
 /**
  * Container for HTTP query parameters

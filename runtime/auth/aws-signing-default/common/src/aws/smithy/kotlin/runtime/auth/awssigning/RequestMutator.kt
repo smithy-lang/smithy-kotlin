@@ -5,7 +5,7 @@
 package aws.smithy.kotlin.runtime.auth.awssigning
 
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
-import aws.smithy.kotlin.runtime.util.text.urlReencodeComponent
+import aws.smithy.kotlin.runtime.text.urlReencodeComponent
 
 /**
  * An object that can mutate requests to include signing attributes.

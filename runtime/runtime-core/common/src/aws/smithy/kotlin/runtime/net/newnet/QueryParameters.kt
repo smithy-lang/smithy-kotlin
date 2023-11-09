@@ -4,8 +4,8 @@
  */
 package aws.smithy.kotlin.runtime.net.newnet
 
-import aws.smithy.kotlin.runtime.util.text.encoding.Encodable
-import aws.smithy.kotlin.runtime.util.text.encoding.Encoding
+import aws.smithy.kotlin.runtime.text.encoding.Encodable
+import aws.smithy.kotlin.runtime.text.encoding.PercentEncoding
 
 /**
  * Represents the parameters in a URL query string.
@@ -68,8 +68,8 @@ public class QueryParameters private constructor(private val delegate: Map<Encod
         internal fun asDecoded() = asDecoded(delegate)
         internal fun asEncoded() = asEncoded(delegate)
 
-        internal fun parseDecoded(decoded: String) = parse(decoded, Encoding.Query::encodableFromDecoded)
-        internal fun parseEncoded(encoded: String) = parse(encoded, Encoding.Query::encodableFromEncoded)
+        internal fun parseDecoded(decoded: String) = parse(decoded, PercentEncoding.Query::encodableFromDecoded)
+        internal fun parseEncoded(encoded: String) = parse(encoded, PercentEncoding.Query::encodableFromEncoded)
 
         private fun parse(text: String, toEncodable: (String) -> Encodable) {
             clear()

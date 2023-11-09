@@ -15,9 +15,12 @@ import aws.smithy.kotlin.runtime.http.util.encodeLabel
 import aws.smithy.kotlin.runtime.io.*
 import aws.smithy.kotlin.runtime.io.internal.SdkDispatchers
 import aws.smithy.kotlin.runtime.net.UrlBuilder
+import aws.smithy.kotlin.runtime.text.encoding.encodeToHex
+import aws.smithy.kotlin.runtime.text.normalizePathSegments
+import aws.smithy.kotlin.runtime.text.transformPathSegments
+import aws.smithy.kotlin.runtime.text.urlEncodeComponent
+import aws.smithy.kotlin.runtime.text.urlReencodeComponent
 import aws.smithy.kotlin.runtime.time.TimestampFormat
-import aws.smithy.kotlin.runtime.util.*
-import aws.smithy.kotlin.runtime.util.text.*
 import kotlinx.coroutines.withContext
 
 /**

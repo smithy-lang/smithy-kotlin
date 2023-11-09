@@ -73,7 +73,7 @@ class HttpStringValuesMapSerializer(
                         "append(#S, input.#L.#T()",
                         paramName,
                         memberName,
-                        RuntimeTypes.Core.Utils.encodeBase64String,
+                        RuntimeTypes.Core.Text.Encoding.encodeBase64String,
                     )
                     writer.writeWithCondIfCheck(memberSymbol.isNullable, "input.$memberName?.isNotEmpty() == true", appendFn)
                 }
@@ -190,7 +190,7 @@ class HttpStringValuesMapSerializer(
                     ".value"
                 }
                 memberTarget.hasTrait<MediaTypeTrait>() -> {
-                    writer.addImport(RuntimeTypes.Core.Utils.encodeBase64)
+                    writer.addImport(RuntimeTypes.Core.Text.Encoding.encodeBase64)
                     ".encodeBase64()"
                 }
                 else -> ""

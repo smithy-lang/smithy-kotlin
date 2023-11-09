@@ -5,10 +5,10 @@
 package aws.smithy.kotlin.runtime.net
 
 import aws.smithy.kotlin.runtime.InternalApi
+import aws.smithy.kotlin.runtime.text.encodeUrlPath
+import aws.smithy.kotlin.runtime.text.urlDecodeComponent
+import aws.smithy.kotlin.runtime.text.urlEncodeComponent
 import aws.smithy.kotlin.runtime.util.CanDeepCopy
-import aws.smithy.kotlin.runtime.util.text.encodeUrlPath
-import aws.smithy.kotlin.runtime.util.text.urlDecodeComponent
-import aws.smithy.kotlin.runtime.util.text.urlEncodeComponent
 
 /**
  * Represents an immutable URL of the form: `scheme://[userinfo@]host[:port][/path][?query][#fragment]`

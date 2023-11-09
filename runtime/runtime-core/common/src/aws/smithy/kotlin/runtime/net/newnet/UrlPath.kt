@@ -4,9 +4,9 @@
  */
 package aws.smithy.kotlin.runtime.net.newnet
 
-import aws.smithy.kotlin.runtime.util.newcoll.MutableListView
-import aws.smithy.kotlin.runtime.util.text.encoding.Encodable
-import aws.smithy.kotlin.runtime.util.text.encoding.Encoding
+import aws.smithy.kotlin.runtime.collections.MutableListView
+import aws.smithy.kotlin.runtime.text.encoding.Encodable
+import aws.smithy.kotlin.runtime.text.encoding.PercentEncoding
 
 /**
  * Represents the path component of a URL
@@ -85,7 +85,7 @@ public class UrlPath private constructor(public val segments: List<Encodable>, p
         public val decodedSegments: MutableList<String> = MutableListView(
             segments,
             Encodable::decoded,
-            Encoding.Query::encodableFromDecoded,
+            PercentEncoding.Query::encodableFromDecoded,
         )
 
         /**
@@ -94,7 +94,7 @@ public class UrlPath private constructor(public val segments: List<Encodable>, p
         public val encodedSegments: MutableList<String> = MutableListView(
             segments,
             Encodable::encoded,
-            Encoding.Query::encodableFromEncoded,
+            PercentEncoding.Query::encodableFromEncoded,
         )
 
         /**
@@ -105,8 +105,8 @@ public class UrlPath private constructor(public val segments: List<Encodable>, p
         internal fun asDecoded() = asDecoded(segments, trailingSlash)
         internal fun asEncoded() = asEncoded(segments, trailingSlash)
 
-        internal fun parseDecoded(decoded: String): Unit = parse(decoded, Encoding.Path::encodableFromDecoded)
-        internal fun parseEncoded(encoded: String): Unit = parse(encoded, Encoding.Path::encodableFromEncoded)
+        internal fun parseDecoded(decoded: String): Unit = parse(decoded, PercentEncoding.Path::encodableFromDecoded)
+        internal fun parseEncoded(encoded: String): Unit = parse(encoded, PercentEncoding.Path::encodableFromEncoded)
 
         private fun parse(text: String, toEncodable: (String) -> Encodable) {
             segments.clear()

@@ -4,7 +4,7 @@
  */
 package aws.smithy.kotlin.runtime.net
 
-import aws.smithy.kotlin.runtime.util.text.urlEncodeComponent
+import aws.smithy.kotlin.runtime.text.urlEncodeComponent
 
 /**
  * A [Host] represents a parsed internet host. This may be an internet address (IPv4, IPv6) or a domain name.

@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package aws.smithy.kotlin.runtime.util.text
+package aws.smithy.kotlin.runtime.text
 
 import io.kotest.matchers.maps.shouldContain
 import kotlin.test.*

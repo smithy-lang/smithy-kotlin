@@ -753,7 +753,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                     )
                 }
                 is BlobShape -> {
-                    writer.write("builder.#L = response.headers[#S]?.#T()", memberName, headerName, RuntimeTypes.Core.Utils.decodeBase64)
+                    writer.write("builder.#L = response.headers[#S]?.#T()", memberName, headerName, RuntimeTypes.Core.Text.Encoding.decodeBase64)
                 }
                 is StringShape -> {
                     when {
@@ -768,7 +768,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                             )
                         }
                         memberTarget.hasTrait<MediaTypeTrait>() -> {
-                            writer.write("builder.#L = response.headers[#S]?.#T()", memberName, headerName, RuntimeTypes.Core.Utils.decodeBase64)
+                            writer.write("builder.#L = response.headers[#S]?.#T()", memberName, headerName, RuntimeTypes.Core.Text.Encoding.decodeBase64)
                         }
                         else -> {
                             writer.write("builder.#L = response.headers[#S]", memberName, headerName)
@@ -828,7 +828,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                                     "${enumSymbol.name}.fromValue(it)"
                                 }
                                 collectionMemberTarget.hasTrait<MediaTypeTrait>() -> {
-                                    writer.addImport(RuntimeTypes.Core.Utils.decodeBase64)
+                                    writer.addImport(RuntimeTypes.Core.Text.Encoding.decodeBase64)
                                     "it.decodeBase64()"
                                 }
                                 else -> ""

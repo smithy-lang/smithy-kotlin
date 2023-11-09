@@ -4,8 +4,8 @@
  */
 package aws.smithy.kotlin.runtime.net
 
-import aws.smithy.kotlin.runtime.util.text.splitAsQueryString
-import aws.smithy.kotlin.runtime.util.text.urlDecodeComponent
+import aws.smithy.kotlin.runtime.text.splitAsQueryString
+import aws.smithy.kotlin.runtime.text.urlDecodeComponent
 
 internal fun urlParseImpl(url: String, decoding: UrlDecoding): Url =
     UrlBuilder {
