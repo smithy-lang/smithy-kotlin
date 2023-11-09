@@ -6,7 +6,6 @@ package aws.smithy.kotlin.runtime.http.auth
 
 import aws.smithy.kotlin.runtime.auth.AuthOption
 import aws.smithy.kotlin.runtime.auth.AuthSchemeId
-import aws.smithy.kotlin.runtime.util.AttributeKey
 import aws.smithy.kotlin.runtime.util.attributesOf
 import aws.smithy.kotlin.runtime.util.get
 import kotlin.test.Test
@@ -34,11 +33,7 @@ class EndpointAuthTest {
         expected.forEachIndexed { idx, expectedOption ->
             val actualOption = actual[idx]
             assertEquals(expectedOption.schemeId, actualOption.schemeId)
-            assertEquals(expectedOption.attributes.keys.map { it.name }.toSet(), actualOption.attributes.keys.map { it.name }.toSet())
-            expectedOption.attributes.keys.forEach {
-                val key = it as AttributeKey<Any>
-                assertEquals(expectedOption.attributes[key], actualOption.attributes[key])
-            }
+            assertEquals(expectedOption.attributes, actualOption.attributes)
         }
     }
 }
