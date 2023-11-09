@@ -15,7 +15,7 @@ buildscript {
         // Add our custom gradle plugin(s) to buildscript classpath (comes from github source)
         classpath("aws.sdk.kotlin:build-plugins") {
             version {
-                require("0.2.8")
+                require("0.2.9")
             }
         }
     }
