@@ -119,21 +119,21 @@ public class AwsHttpSigner(private val config: Config) : HttpSigner {
         // favor attributes from the current request context
         val contextHashSpecification = attributes.getOrNull(AwsSigningAttributes.HashSpecification)
         val contextSignedBodyHeader = attributes.getOrNull(AwsSigningAttributes.SignedBodyHeader)
-        val contextRegion = attributes[AwsSigningAttributes.SigningRegion]
-        val contextRegionSet = attributes.getOrNull(AwsSigningAttributes.SigningRegionSet)
+        val contextSigningRegion = attributes[AwsSigningAttributes.SigningRegion]
+        val contextSigningRegionSet = attributes.getOrNull(AwsSigningAttributes.SigningRegionSet)
         val contextUseDoubleUriEncode = attributes.getOrNull(AwsSigningAttributes.UseDoubleUriEncode)
         val contextNormalizeUriPath = attributes.getOrNull(AwsSigningAttributes.NormalizeUriPath)
-        val contextServiceName = attributes.getOrNull(AwsSigningAttributes.SigningService)
+        val contextSigningServiceName = attributes.getOrNull(AwsSigningAttributes.SigningService)
 
         // operation signing config is baseConfig + operation specific config/overrides
         val signingConfig = AwsSigningConfig {
-            service = contextServiceName ?: checkNotNull(config.service)
+            service = contextSigningServiceName ?: checkNotNull(config.service)
             credentials = signingRequest.identity as Credentials
             algorithm = config.algorithm
 
             region = when {
-                algorithm == AwsSigningAlgorithm.SIGV4_ASYMMETRIC && !contextRegionSet.isNullOrEmpty() -> contextRegionSet.joinToString(",")
-                else -> contextRegion
+                algorithm == AwsSigningAlgorithm.SIGV4_ASYMMETRIC && !contextSigningRegionSet.isNullOrEmpty() -> contextSigningRegionSet.joinToString(",")
+                else -> contextSigningRegion
             }
 
             // apply clock skew if applicable

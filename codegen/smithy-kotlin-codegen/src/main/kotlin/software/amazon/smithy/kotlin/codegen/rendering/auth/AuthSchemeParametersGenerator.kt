@@ -89,20 +89,17 @@ class AuthSchemeParametersGenerator : AbstractConfigGenerator() {
                     baseClass = symbol
                 }.build()
 
-            val props = mutableListOf(operationName)
-            if (ctx.settings.api.enableEndpointAuthProvider) {
-                val endpointParamsProperty = ConfigProperty {
-                    name = "endpointParameters"
-                    this.symbol = EndpointParametersGenerator.getSymbol(ctx.settings).asNullable()
-                    baseClass = symbol
-                    documentation = """
-                        The parameters used for endpoint resolution. The default implementation of this interface 
-                        relies on endpoint metadata to resolve auth scheme candidates.
-                    """.trimIndent()
-                }
-                props.add(endpointParamsProperty)
-            }
+            val endpointParamsProperty = ConfigProperty {
+                name = "endpointParameters"
+                this.symbol = EndpointParametersGenerator.getSymbol(ctx.settings).asNullable()
+                baseClass = symbol
+                documentation = """
+                    The parameters used for endpoint resolution. The default implementation of this interface 
+                    relies on endpoint metadata to resolve auth scheme candidates.
+                """.trimIndent()
+            }.takeIf { ctx.settings.api.enableEndpointAuthProvider }
 
+            val props = listOfNotNull(operationName, endpointParamsProperty)
             render(codegenCtx, props, writer)
         }
     }

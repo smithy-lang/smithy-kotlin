@@ -143,6 +143,7 @@ private class AttributesImpl constructor(seed: Attributes) : MutableAttributes {
         get() = map.keys
 
     override fun equals(other: Any?): Boolean {
+        if (this === other) return true
         if (other == null) return false
         if (other !is Attributes) return false
         if (keys.size != other.keys.size) return false
