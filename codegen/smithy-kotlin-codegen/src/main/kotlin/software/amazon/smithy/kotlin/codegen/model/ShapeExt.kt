@@ -21,7 +21,6 @@ import software.amazon.smithy.rulesengine.language.EndpointRuleSet
 import software.amazon.smithy.rulesengine.traits.EndpointRuleSetTrait
 import software.amazon.smithy.rulesengine.traits.EndpointTestCase
 import software.amazon.smithy.rulesengine.traits.EndpointTestsTrait
-import kotlin.streams.toList
 
 /**
  * Get all shapes of a particular type from the model.
@@ -216,6 +215,14 @@ fun OperationShape.isInputEventStream(model: Model): Boolean {
 fun OperationShape.isOutputEventStream(model: Model): Boolean {
     val respShape = model.expectShape<StructureShape>(output.get())
     return respShape.hasEventStreamMember(model)
+}
+
+/**
+ * Returns boolean indicating if operation input is union shaped
+ */
+fun OperationShape.inputIsUnionShape(model: Model): Boolean {
+    val reqShape = model.expectShape<StructureShape>(input.get())
+    return reqShape.isUnionShape
 }
 
 /**

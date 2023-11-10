@@ -12,7 +12,10 @@ import software.amazon.smithy.kotlin.codegen.core.*
 import software.amazon.smithy.kotlin.codegen.lang.KotlinTypes
 import software.amazon.smithy.kotlin.codegen.lang.toEscapedLiteral
 import software.amazon.smithy.kotlin.codegen.model.*
-import software.amazon.smithy.kotlin.codegen.rendering.serde.*
+import software.amazon.smithy.kotlin.codegen.rendering.serde.deserializerName
+import software.amazon.smithy.kotlin.codegen.rendering.serde.formatInstant
+import software.amazon.smithy.kotlin.codegen.rendering.serde.parseInstant
+import software.amazon.smithy.kotlin.codegen.rendering.serde.serializerName
 import software.amazon.smithy.kotlin.codegen.utils.getOrNull
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.knowledge.HttpBinding
@@ -267,7 +270,15 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             writer.write("val payload = #T(context, input)", opBodySerializerFn)
             writer.write("builder.body = #T.fromBytes(payload)", RuntimeTypes.Http.HttpBody)
         }
+        renderContentTypeHeader(ctx, op, writer, resolver)
+    }
 
+    protected open fun renderContentTypeHeader(
+        ctx: ProtocolGenerator.GenerationContext,
+        op: OperationShape,
+        writer: KotlinWriter,
+        resolver: HttpBindingResolver = getProtocolHttpBindingResolver(ctx.model, ctx.service),
+    ) {
         resolver.determineRequestContentType(op)?.let { contentType ->
             writer.withBlock("if (builder.body !is HttpBody.Empty) {", "}") {
                 write("builder.headers.setMissing(\"Content-Type\", #S)", contentType)
