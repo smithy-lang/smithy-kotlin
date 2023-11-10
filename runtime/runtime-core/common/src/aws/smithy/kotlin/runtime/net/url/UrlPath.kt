@@ -2,7 +2,7 @@
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
  * SPDX-License-Identifier: Apache-2.0
  */
-package aws.smithy.kotlin.runtime.net.newnet
+package aws.smithy.kotlin.runtime.net.url
 
 import aws.smithy.kotlin.runtime.collections.MutableListView
 import aws.smithy.kotlin.runtime.text.encoding.Encodable
@@ -13,7 +13,10 @@ import aws.smithy.kotlin.runtime.text.encoding.PercentEncoding
  * @param segments A list of path segments
  * @param trailingSlash Indicates whether a trailing slash is present in the path (e.g., "/foo/bar/" vs "/foo/bar")
  */
-public class UrlPath private constructor(public val segments: List<Encodable>, public val trailingSlash: Boolean = false) {
+public class UrlPath private constructor(
+    public val segments: List<Encodable>,
+    public val trailingSlash: Boolean = false,
+) {
     public companion object {
         /**
          * Create a new [UrlPath] via a DSL builder block
@@ -28,15 +31,13 @@ public class UrlPath private constructor(public val segments: List<Encodable>, p
         private fun asEncoded(segments: List<Encodable>, trailingSlash: Boolean) =
             asString(segments, trailingSlash, Encodable::encoded)
 
-        private fun asString(segments: List<Encodable>, trailingSlash: Boolean, encodableForm: (Encodable) -> String) = when {
-            segments.isEmpty() -> if (trailingSlash) "/" else ""
-            else -> segments.joinToString(
+        private fun asString(segments: List<Encodable>, trailingSlash: Boolean, encodableForm: (Encodable) -> String) =
+            segments.joinToString(
                 separator = "/",
-                prefix = "/",
+                prefix = if (segments.isEmpty()) "" else "/",
                 postfix = if (trailingSlash) "/" else "",
                 transform = encodableForm,
             )
-        }
 
         /**
          * Parse a **decoded** path string into a [UrlPath] instance
@@ -73,11 +74,18 @@ public class UrlPath private constructor(public val segments: List<Encodable>, p
         private val segments: MutableList<Encodable> = path?.segments?.toMutableList() ?: mutableListOf()
 
         /**
-         * Remove all existing segments
+         * Get or set the URL path as a **decoded** string.
          */
-        public fun clearSegments() {
-            segments.clear()
-        }
+        public var decoded: String
+            get() = asDecoded(segments, trailingSlash)
+            set(value) { parseDecoded(value) }
+
+        /**
+         * Get or set the URL path as an **encoded** string.
+         */
+        public var encoded: String
+            get() = asEncoded(segments, trailingSlash)
+            set(value) { parseEncoded(value) }
 
         /**
          * A mutable list of **decoded** path segments. Any changes to this list will update the builder.
@@ -101,9 +109,6 @@ public class UrlPath private constructor(public val segments: List<Encodable>, p
          * Indicates whether a trailing slash is present in the path (e.g., "/foo/bar/" vs "/foo/bar")
          */
         public var trailingSlash: Boolean = path?.trailingSlash ?: false
-
-        internal fun asDecoded() = asDecoded(segments, trailingSlash)
-        internal fun asEncoded() = asEncoded(segments, trailingSlash)
 
         internal fun parseDecoded(decoded: String): Unit = parse(decoded, PercentEncoding.Path::encodableFromDecoded)
         internal fun parseEncoded(encoded: String): Unit = parse(encoded, PercentEncoding.Path::encodableFromEncoded)

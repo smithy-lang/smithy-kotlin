@@ -2,18 +2,18 @@
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
  * SPDX-License-Identifier: Apache-2.0
  */
-package aws.smithy.kotlin.runtime.net.newnet
+package aws.smithy.kotlin.runtime.net.url
 
 import kotlin.test.Test
 import kotlin.test.fail
 import aws.smithy.kotlin.runtime.net.Url as OldUrl
-import aws.smithy.kotlin.runtime.net.newnet.Url as NewUrl
+import aws.smithy.kotlin.runtime.net.url.Url as NewUrl
 
 class UrlTest {
     private fun testEquivalence(vararg urls: String) {
         val errors = urls.mapNotNull { url ->
             val old = OldUrl.parse(url).toString()
-            val new = NewUrl.parseEncoded(url).toString()
+            val new = NewUrl.parse(url).toString()
             if (old == new) null else "Old: <$old>, New: <$new>"
         }
         if (errors.isNotEmpty()) {

@@ -816,9 +816,9 @@ public final class aws/smithy/kotlin/runtime/net/UserInfo {
 	public fun toString ()Ljava/lang/String;
 }
 
-public final class aws/smithy/kotlin/runtime/net/newnet/QueryParameters : java/util/Map, kotlin/jvm/internal/markers/KMappedMarker {
-	public static final field Companion Laws/smithy/kotlin/runtime/net/newnet/QueryParameters$Companion;
-	public synthetic fun <init> (Ljava/util/Map;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
+public final class aws/smithy/kotlin/runtime/net/url/QueryParameters : java/util/Map, kotlin/jvm/internal/markers/KMappedMarker {
+	public static final field Companion Laws/smithy/kotlin/runtime/net/url/QueryParameters$Companion;
+	public synthetic fun <init> (Ljava/util/Map;ZLkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public fun clear ()V
 	public fun compute (Laws/smithy/kotlin/runtime/text/encoding/Encodable;Ljava/util/function/BiFunction;)Ljava/util/List;
 	public synthetic fun compute (Ljava/lang/Object;Ljava/util/function/BiFunction;)Ljava/lang/Object;
@@ -835,6 +835,7 @@ public final class aws/smithy/kotlin/runtime/net/newnet/QueryParameters : java/u
 	public final synthetic fun get (Ljava/lang/Object;)Ljava/lang/Object;
 	public final fun get (Ljava/lang/Object;)Ljava/util/List;
 	public fun getEntries ()Ljava/util/Set;
+	public final fun getForceQuery ()Z
 	public fun getKeys ()Ljava/util/Set;
 	public fun getSize ()I
 	public fun getValues ()Ljava/util/Collection;
@@ -856,14 +857,14 @@ public final class aws/smithy/kotlin/runtime/net/newnet/QueryParameters : java/u
 	public synthetic fun replace (Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;)Z
 	public fun replaceAll (Ljava/util/function/BiFunction;)V
 	public final fun size ()I
-	public final fun toBuilder ()Laws/smithy/kotlin/runtime/net/newnet/QueryParameters$Builder;
+	public final fun toBuilder ()Laws/smithy/kotlin/runtime/net/url/QueryParameters$Builder;
 	public fun toString ()Ljava/lang/String;
 	public final fun values ()Ljava/util/Collection;
 }
 
-public final class aws/smithy/kotlin/runtime/net/newnet/QueryParameters$Builder : java/util/Map, kotlin/jvm/internal/markers/KMutableMap {
+public final class aws/smithy/kotlin/runtime/net/url/QueryParameters$Builder : java/util/Map, kotlin/jvm/internal/markers/KMutableMap {
 	public fun <init> ()V
-	public final fun build ()Laws/smithy/kotlin/runtime/net/newnet/QueryParameters;
+	public final fun build ()Laws/smithy/kotlin/runtime/net/url/QueryParameters;
 	public fun clear ()V
 	public fun containsKey (Laws/smithy/kotlin/runtime/text/encoding/Encodable;)Z
 	public final fun containsKey (Ljava/lang/Object;)Z
@@ -873,7 +874,10 @@ public final class aws/smithy/kotlin/runtime/net/newnet/QueryParameters$Builder 
 	public fun get (Laws/smithy/kotlin/runtime/text/encoding/Encodable;)Ljava/util/List;
 	public final synthetic fun get (Ljava/lang/Object;)Ljava/lang/Object;
 	public final fun get (Ljava/lang/Object;)Ljava/util/List;
+	public final fun getDecoded ()Ljava/lang/String;
+	public final fun getEncoded ()Ljava/lang/String;
 	public fun getEntries ()Ljava/util/Set;
+	public final fun getForceQuery ()Z
 	public fun getKeys ()Ljava/util/Set;
 	public fun getSize ()I
 	public fun getValues ()Ljava/util/Collection;
@@ -885,114 +889,114 @@ public final class aws/smithy/kotlin/runtime/net/newnet/QueryParameters$Builder 
 	public fun remove (Laws/smithy/kotlin/runtime/text/encoding/Encodable;)Ljava/util/List;
 	public final synthetic fun remove (Ljava/lang/Object;)Ljava/lang/Object;
 	public final fun remove (Ljava/lang/Object;)Ljava/util/List;
+	public final fun setDecoded (Ljava/lang/String;)V
+	public final fun setEncoded (Ljava/lang/String;)V
+	public final fun setForceQuery (Z)V
 	public final fun size ()I
 	public final fun values ()Ljava/util/Collection;
 }
 
-public final class aws/smithy/kotlin/runtime/net/newnet/QueryParameters$Companion {
-	public final fun invoke (Lkotlin/jvm/functions/Function1;)Laws/smithy/kotlin/runtime/net/newnet/QueryParameters;
-	public final fun parseDecoded (Ljava/lang/String;)Laws/smithy/kotlin/runtime/net/newnet/QueryParameters;
-	public final fun parseEncoded (Ljava/lang/String;)Laws/smithy/kotlin/runtime/net/newnet/QueryParameters;
+public final class aws/smithy/kotlin/runtime/net/url/QueryParameters$Companion {
+	public final fun invoke (Lkotlin/jvm/functions/Function1;)Laws/smithy/kotlin/runtime/net/url/QueryParameters;
+	public final fun parseDecoded (Ljava/lang/String;)Laws/smithy/kotlin/runtime/net/url/QueryParameters;
+	public final fun parseEncoded (Ljava/lang/String;)Laws/smithy/kotlin/runtime/net/url/QueryParameters;
 }
 
-public final class aws/smithy/kotlin/runtime/net/newnet/Url {
-	public static final field Companion Laws/smithy/kotlin/runtime/net/newnet/Url$Companion;
-	public synthetic fun <init> (Laws/smithy/kotlin/runtime/net/Scheme;Laws/smithy/kotlin/runtime/net/Host;ILaws/smithy/kotlin/runtime/net/newnet/UrlPath;Laws/smithy/kotlin/runtime/net/newnet/QueryParameters;Laws/smithy/kotlin/runtime/text/encoding/Encodable;Laws/smithy/kotlin/runtime/net/newnet/UserInfo;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
+public final class aws/smithy/kotlin/runtime/net/url/Url {
+	public static final field Companion Laws/smithy/kotlin/runtime/net/url/Url$Companion;
+	public synthetic fun <init> (Laws/smithy/kotlin/runtime/net/Scheme;Laws/smithy/kotlin/runtime/net/Host;ILaws/smithy/kotlin/runtime/net/url/UrlPath;Laws/smithy/kotlin/runtime/net/url/QueryParameters;Laws/smithy/kotlin/runtime/net/url/UserInfo;Laws/smithy/kotlin/runtime/text/encoding/Encodable;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun getFragment ()Laws/smithy/kotlin/runtime/text/encoding/Encodable;
 	public final fun getHost ()Laws/smithy/kotlin/runtime/net/Host;
-	public final fun getPath ()Laws/smithy/kotlin/runtime/net/newnet/UrlPath;
+	public final fun getParameters ()Laws/smithy/kotlin/runtime/net/url/QueryParameters;
+	public final fun getPath ()Laws/smithy/kotlin/runtime/net/url/UrlPath;
 	public final fun getPort ()I
-	public final fun getQueryParameters ()Laws/smithy/kotlin/runtime/net/newnet/QueryParameters;
 	public final fun getScheme ()Laws/smithy/kotlin/runtime/net/Scheme;
-	public final fun getUserInfo ()Laws/smithy/kotlin/runtime/net/newnet/UserInfo;
-	public final fun toBuilder ()Laws/smithy/kotlin/runtime/net/newnet/Url$Builder;
+	public final fun getUserInfo ()Laws/smithy/kotlin/runtime/net/url/UserInfo;
+	public final fun toBuilder ()Laws/smithy/kotlin/runtime/net/url/Url$Builder;
 	public fun toString ()Ljava/lang/String;
 }
 
-public final class aws/smithy/kotlin/runtime/net/newnet/Url$Builder {
+public final class aws/smithy/kotlin/runtime/net/url/Url$Builder {
 	public fun <init> ()V
-	public final fun build ()Laws/smithy/kotlin/runtime/net/newnet/Url;
-	public final fun clearQueryParameters ()V
-	public final fun clearUserInfo ()V
-	public final fun getFragmentDecoded ()Ljava/lang/String;
-	public final fun getFragmentEncoded ()Ljava/lang/String;
+	public final fun build ()Laws/smithy/kotlin/runtime/net/url/Url;
+	public final fun getDecodedFragment ()Ljava/lang/String;
+	public final fun getEncodedFragment ()Ljava/lang/String;
 	public final fun getHost ()Laws/smithy/kotlin/runtime/net/Host;
-	public final fun getPathDecoded ()Ljava/lang/String;
-	public final fun getPathEncoded ()Ljava/lang/String;
+	public final fun getParameters ()Laws/smithy/kotlin/runtime/net/url/QueryParameters$Builder;
+	public final fun getPath ()Laws/smithy/kotlin/runtime/net/url/UrlPath$Builder;
 	public final fun getPort ()Ljava/lang/Integer;
-	public final fun getQueryParametersDecoded ()Ljava/lang/String;
-	public final fun getQueryParametersEncoded ()Ljava/lang/String;
 	public final fun getScheme ()Laws/smithy/kotlin/runtime/net/Scheme;
+	public final fun getUserInfo ()Laws/smithy/kotlin/runtime/net/url/UserInfo$Builder;
+	public final fun parameters (Lkotlin/jvm/functions/Function1;)V
 	public final fun path (Lkotlin/jvm/functions/Function1;)V
-	public final fun queryParameters (Lkotlin/jvm/functions/Function1;)V
-	public final fun setFragmentDecoded (Ljava/lang/String;)V
-	public final fun setFragmentEncoded (Ljava/lang/String;)V
+	public final fun setDecodedFragment (Ljava/lang/String;)V
+	public final fun setEncodedFragment (Ljava/lang/String;)V
 	public final fun setHost (Laws/smithy/kotlin/runtime/net/Host;)V
-	public final fun setPathDecoded (Ljava/lang/String;)V
-	public final fun setPathEncoded (Ljava/lang/String;)V
 	public final fun setPort (Ljava/lang/Integer;)V
-	public final fun setQueryParametersDecoded (Ljava/lang/String;)V
-	public final fun setQueryParametersEncoded (Ljava/lang/String;)V
 	public final fun setScheme (Laws/smithy/kotlin/runtime/net/Scheme;)V
 	public final fun userInfo (Lkotlin/jvm/functions/Function1;)V
 }
 
-public final class aws/smithy/kotlin/runtime/net/newnet/Url$Companion {
-	public final fun invoke (Lkotlin/jvm/functions/Function1;)Laws/smithy/kotlin/runtime/net/newnet/Url;
-	public final fun parseEncoded (Ljava/lang/String;)Laws/smithy/kotlin/runtime/net/newnet/Url;
+public final class aws/smithy/kotlin/runtime/net/url/Url$Companion {
+	public final fun invoke (Lkotlin/jvm/functions/Function1;)Laws/smithy/kotlin/runtime/net/url/Url;
+	public final fun parse (Ljava/lang/String;)Laws/smithy/kotlin/runtime/net/url/Url;
 }
 
-public final class aws/smithy/kotlin/runtime/net/newnet/UrlPath {
-	public static final field Companion Laws/smithy/kotlin/runtime/net/newnet/UrlPath$Companion;
+public final class aws/smithy/kotlin/runtime/net/url/UrlPath {
+	public static final field Companion Laws/smithy/kotlin/runtime/net/url/UrlPath$Companion;
 	public synthetic fun <init> (Ljava/util/List;ZLkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun getSegments ()Ljava/util/List;
 	public final fun getTrailingSlash ()Z
-	public final fun toBuilder ()Laws/smithy/kotlin/runtime/net/newnet/UrlPath$Builder;
+	public final fun toBuilder ()Laws/smithy/kotlin/runtime/net/url/UrlPath$Builder;
 	public fun toString ()Ljava/lang/String;
 }
 
-public final class aws/smithy/kotlin/runtime/net/newnet/UrlPath$Builder {
+public final class aws/smithy/kotlin/runtime/net/url/UrlPath$Builder {
 	public fun <init> ()V
-	public final fun build ()Laws/smithy/kotlin/runtime/net/newnet/UrlPath;
-	public final fun clearSegments ()V
+	public final fun build ()Laws/smithy/kotlin/runtime/net/url/UrlPath;
+	public final fun getDecoded ()Ljava/lang/String;
 	public final fun getDecodedSegments ()Ljava/util/List;
+	public final fun getEncoded ()Ljava/lang/String;
 	public final fun getEncodedSegments ()Ljava/util/List;
 	public final fun getTrailingSlash ()Z
+	public final fun setDecoded (Ljava/lang/String;)V
+	public final fun setEncoded (Ljava/lang/String;)V
 	public final fun setTrailingSlash (Z)V
 }
 
-public final class aws/smithy/kotlin/runtime/net/newnet/UrlPath$Companion {
-	public final fun invoke (Lkotlin/jvm/functions/Function1;)Laws/smithy/kotlin/runtime/net/newnet/UrlPath;
-	public final fun parseDecoded (Ljava/lang/String;)Laws/smithy/kotlin/runtime/net/newnet/UrlPath;
-	public final fun parseEncoded (Ljava/lang/String;)Laws/smithy/kotlin/runtime/net/newnet/UrlPath;
+public final class aws/smithy/kotlin/runtime/net/url/UrlPath$Companion {
+	public final fun invoke (Lkotlin/jvm/functions/Function1;)Laws/smithy/kotlin/runtime/net/url/UrlPath;
+	public final fun parseDecoded (Ljava/lang/String;)Laws/smithy/kotlin/runtime/net/url/UrlPath;
+	public final fun parseEncoded (Ljava/lang/String;)Laws/smithy/kotlin/runtime/net/url/UrlPath;
 }
 
-public final class aws/smithy/kotlin/runtime/net/newnet/UserInfo {
-	public static final field Companion Laws/smithy/kotlin/runtime/net/newnet/UserInfo$Companion;
+public final class aws/smithy/kotlin/runtime/net/url/UserInfo {
+	public static final field Companion Laws/smithy/kotlin/runtime/net/url/UserInfo$Companion;
 	public synthetic fun <init> (Laws/smithy/kotlin/runtime/text/encoding/Encodable;Laws/smithy/kotlin/runtime/text/encoding/Encodable;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun getPassword ()Laws/smithy/kotlin/runtime/text/encoding/Encodable;
 	public final fun getUserName ()Laws/smithy/kotlin/runtime/text/encoding/Encodable;
-	public final fun toBuilder ()Laws/smithy/kotlin/runtime/net/newnet/UserInfo$Builder;
+	public final fun toBuilder ()Laws/smithy/kotlin/runtime/net/url/UserInfo$Builder;
 	public fun toString ()Ljava/lang/String;
 }
 
-public final class aws/smithy/kotlin/runtime/net/newnet/UserInfo$Builder {
+public final class aws/smithy/kotlin/runtime/net/url/UserInfo$Builder {
 	public fun <init> ()V
-	public final fun build ()Laws/smithy/kotlin/runtime/net/newnet/UserInfo;
-	public final fun getPasswordDecoded ()Ljava/lang/String;
-	public final fun getPasswordEncoded ()Ljava/lang/String;
-	public final fun getUserNameDecoded ()Ljava/lang/String;
-	public final fun getUserNameEncoded ()Ljava/lang/String;
-	public final fun setPasswordDecoded (Ljava/lang/String;)V
-	public final fun setPasswordEncoded (Ljava/lang/String;)V
-	public final fun setUserNameDecoded (Ljava/lang/String;)V
-	public final fun setUserNameEncoded (Ljava/lang/String;)V
+	public final fun build ()Laws/smithy/kotlin/runtime/net/url/UserInfo;
+	public final fun getDecodedPassword ()Ljava/lang/String;
+	public final fun getDecodedUserName ()Ljava/lang/String;
+	public final fun getEncodedPassword ()Ljava/lang/String;
+	public final fun getEncodedUserName ()Ljava/lang/String;
+	public final fun setDecodedPassword (Ljava/lang/String;)V
+	public final fun setDecodedUserName (Ljava/lang/String;)V
+	public final fun setEncodedPassword (Ljava/lang/String;)V
+	public final fun setEncodedUserName (Ljava/lang/String;)V
 }
 
-public final class aws/smithy/kotlin/runtime/net/newnet/UserInfo$Companion {
-	public final fun invoke (Lkotlin/jvm/functions/Function1;)Laws/smithy/kotlin/runtime/net/newnet/UserInfo;
-	public final fun parseDecoded (Ljava/lang/String;)Laws/smithy/kotlin/runtime/net/newnet/UserInfo;
-	public final fun parseEncoded (Ljava/lang/String;)Laws/smithy/kotlin/runtime/net/newnet/UserInfo;
+public final class aws/smithy/kotlin/runtime/net/url/UserInfo$Companion {
+	public final fun getEmpty ()Laws/smithy/kotlin/runtime/net/url/UserInfo;
+	public final fun invoke (Lkotlin/jvm/functions/Function1;)Laws/smithy/kotlin/runtime/net/url/UserInfo;
+	public final fun parseDecoded (Ljava/lang/String;)Laws/smithy/kotlin/runtime/net/url/UserInfo;
+	public final fun parseEncoded (Ljava/lang/String;)Laws/smithy/kotlin/runtime/net/url/UserInfo;
 }
 
 public final class aws/smithy/kotlin/runtime/operation/ExecutionContext : aws/smithy/kotlin/runtime/util/MutableAttributes, kotlinx/coroutines/CoroutineScope {
@@ -1427,6 +1431,7 @@ public final class aws/smithy/kotlin/runtime/text/encoding/Encodable {
 	public final fun getEncoded ()Ljava/lang/String;
 	public final fun getEncoding ()Laws/smithy/kotlin/runtime/text/encoding/Encoding;
 	public fun hashCode ()I
+	public final fun isEmpty ()Z
 	public fun toString ()Ljava/lang/String;
 }
 

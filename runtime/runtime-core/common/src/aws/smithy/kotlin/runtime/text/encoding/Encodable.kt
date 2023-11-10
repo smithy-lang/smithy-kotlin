@@ -13,15 +13,7 @@ public class Encodable internal constructor(
         public val Empty: Encodable = Encodable("", "", Encoding.None)
     }
 
-    override fun toString(): String = buildString {
-        append("Encodable(decoded=")
-        append(decoded)
-        append(", encoded=")
-        append(encoded)
-        append(", encoding=")
-        append(encoding.name)
-        append(")")
-    }
+    public val isEmpty: Boolean = decoded.isEmpty() && encoded.isEmpty()
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
@@ -37,5 +29,15 @@ public class Encodable internal constructor(
         result = 31 * result + encoded.hashCode()
         result = 31 * result + encoding.hashCode()
         return result
+    }
+
+    override fun toString(): String = buildString {
+        append("Encodable(decoded=")
+        append(decoded)
+        append(", encoded=")
+        append(encoded)
+        append(", encoding=")
+        append(encoding.name)
+        append(")")
     }
 }

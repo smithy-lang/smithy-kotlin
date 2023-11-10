@@ -2,7 +2,7 @@
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
  * SPDX-License-Identifier: Apache-2.0
  */
-package aws.smithy.kotlin.runtime.net.newnet
+package aws.smithy.kotlin.runtime.net.url
 
 import aws.smithy.kotlin.runtime.text.encoding.Encodable
 import aws.smithy.kotlin.runtime.text.encoding.PercentEncoding
@@ -14,6 +14,11 @@ import aws.smithy.kotlin.runtime.text.encoding.PercentEncoding
  */
 public class UserInfo private constructor(public val userName: Encodable, public val password: Encodable) {
     public companion object {
+        /**
+         * No username or password
+         */
+        public val Empty: UserInfo = UserInfo(Encodable.Empty, Encodable.Empty)
+
         /**
          * Create a new [UserInfo] via a DSL builder block
          * @param block The code to apply to the builder
@@ -42,7 +47,11 @@ public class UserInfo private constructor(public val userName: Encodable, public
      */
     public fun toBuilder(): Builder = Builder(this)
 
-    override fun toString(): String = "${userName.encoded}:${password.encoded}"
+    override fun toString(): String = when {
+        userName.isEmpty -> ""
+        password.isEmpty -> userName.encoded
+        else -> "${userName.encoded}:${userName.decoded}"
+    }
 
     /**
      * A mutable builder used to construct [UserInfo] instances
@@ -55,21 +64,33 @@ public class UserInfo private constructor(public val userName: Encodable, public
 
         private var userName = userInfo?.userName ?: Encodable.Empty
 
-        public var userNameDecoded: String
+        /**
+         * Gets or sets the username as a **decoded** string
+         */
+        public var decodedUserName: String
             get() = userName.decoded
             set(value) { userName = PercentEncoding.UserInfo.encodableFromDecoded(value) }
 
-        public var userNameEncoded: String
+        /**
+         * Gets or sets the username as an **encoded** string
+         */
+        public var encodedUserName: String
             get() = userName.encoded
             set(value) { userName = PercentEncoding.UserInfo.encodableFromDecoded(value) }
 
         private var password = userInfo?.password ?: Encodable.Empty
 
-        public var passwordDecoded: String
+        /**
+         * Gets or sets the password as a **decoded** string
+         */
+        public var decodedPassword: String
             get() = password.decoded
             set(value) { password = PercentEncoding.UserInfo.encodableFromDecoded(value) }
 
-        public var passwordEncoded: String
+        /**
+         * Gets or sets the password as an **encoded** string
+         */
+        public var encodedPassword: String
             get() = password.encoded
             set(value) { password = PercentEncoding.UserInfo.encodableFromEncoded(value) }
 

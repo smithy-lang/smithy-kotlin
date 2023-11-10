@@ -2,15 +2,16 @@
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
  * SPDX-License-Identifier: Apache-2.0
  */
-package aws.smithy.kotlin.runtime.net.newnet
+package aws.smithy.kotlin.runtime.net.url
 
 import aws.smithy.kotlin.runtime.net.Host
 import aws.smithy.kotlin.runtime.net.Scheme
-import aws.smithy.kotlin.runtime.net.splitHostPort
+import aws.smithy.kotlin.runtime.net.isIpv6
 import aws.smithy.kotlin.runtime.net.toUrlString
 import aws.smithy.kotlin.runtime.text.Scanner
 import aws.smithy.kotlin.runtime.text.encoding.Encodable
 import aws.smithy.kotlin.runtime.text.encoding.PercentEncoding
+import aws.smithy.kotlin.runtime.text.urlDecodeComponent
 
 /**
  * Represents a full, valid URL
@@ -18,8 +19,7 @@ import aws.smithy.kotlin.runtime.text.encoding.PercentEncoding
  * @param host The [Host] for the URL
  * @param port The remote port number for the URL (e.g., TCP port)
  * @param path The path element of this URL
- * @param queryParameters Optional query parameters for this URL. Note that `null` parameters are different from *empty*
- * parameters.
+ * @param parameters The query parameters for this URL.
  * @param fragment Optional fragment component of this URL (without the `#` character)
  * @param userInfo Optional user authentication information for this URL
  */
@@ -28,9 +28,9 @@ public class Url private constructor(
     public val host: Host,
     public val port: Int,
     public val path: UrlPath,
-    public val queryParameters: QueryParameters?,
+    public val parameters: QueryParameters,
+    public val userInfo: UserInfo,
     public val fragment: Encodable?,
-    public val userInfo: UserInfo?,
 ) {
     public companion object {
         /**
@@ -45,7 +45,7 @@ public class Url private constructor(
          * @param encoded An encoded URL string
          * @return A new [Url] instance
          */
-        public fun parseEncoded(encoded: String): Url = Url {
+        public fun parse(encoded: String): Url = Url {
             val scanner = Scanner(encoded)
             scanner.requireAndSkip("://") { scheme = Scheme.parse(it) }
 
@@ -67,12 +67,12 @@ public class Url private constructor(
 
             scanner.ifStartsWith("?") {
                 scanner.upToOrEnd("#") {
-                    queryParameters { parseEncoded(it) }
+                    parameters { parseEncoded(it) }
                 }
             }
 
             scanner.ifStartsWith("#") {
-                scanner.upToOrEnd { fragmentEncoded = it }
+                scanner.upToOrEnd { encodedFragment = it }
             }
         }
     }
@@ -99,10 +99,7 @@ public class Url private constructor(
             append(port)
         }
         append(path)
-        queryParameters?.let {
-            append('?')
-            append(it)
-        }
+        append(parameters)
         fragment?.let {
             append('#')
             append(it.encoded)
@@ -137,7 +134,10 @@ public class Url private constructor(
 
         // Path
 
-        private val path: UrlPath.Builder = url?.path?.toBuilder() ?: UrlPath.Builder()
+        /**
+         * Gets the URL path builder
+         */
+        public val path: UrlPath.Builder = url?.path?.toBuilder() ?: UrlPath.Builder()
 
         /**
          * Update the [UrlPath] of this URL via a DSL builder block
@@ -147,65 +147,35 @@ public class Url private constructor(
             path.apply(block)
         }
 
-        /**
-         * Get or set the URL path as a **decoded** string
-         */
-        public var pathDecoded: String
-            get() = path.asDecoded()
-            set(value) { path.parseDecoded(value) }
-
-        /**
-         * Get or set the URL path as an **encoded** string
-         */
-        public var pathEncoded: String
-            get() = path.asEncoded()
-            set(value) { path.parseEncoded(value) }
-
         // Query parameters
 
-        private var queryParameters = url?.queryParameters?.toBuilder()
-
         /**
-         * Remove all query parameters from this URL
+         * Gets the query parameters builder
          */
-        public fun clearQueryParameters() {
-            queryParameters = null
-        }
+        public val parameters: QueryParameters.Builder = url?.parameters?.toBuilder() ?: QueryParameters.Builder()
 
         /**
          * Update the [QueryParameters] of this URL via a DSL builder block
          * @param block The code to apply to the [QueryParameters] builder
          */
-        public fun queryParameters(block: QueryParameters.Builder.() -> Unit) {
-            val queryParameters = this.queryParameters ?: QueryParameters.Builder().also { this.queryParameters = it }
-            queryParameters.apply(block)
+        public fun parameters(block: QueryParameters.Builder.() -> Unit) {
+            parameters.apply(block)
         }
 
-        /**
-         * Get or set the query parameters as a **decoded** string
-         */
-        public var queryParametersDecoded: String?
-            get() = queryParameters?.asDecoded()
-            set(value) {
-                if (value == null) {
-                    queryParameters = null
-                } else {
-                    queryParameters { parseDecoded(value) }
-                }
-            }
+        // User info
 
         /**
-         * Get or set the query parameters as an **encoded** string
+         * Get the user info builder
          */
-        public var queryParametersEncoded: String?
-            get() = queryParameters?.asEncoded()
-            set(value) {
-                if (value == null) {
-                    queryParameters = null
-                } else {
-                    queryParameters { parseEncoded(value) }
-                }
-            }
+        public val userInfo: UserInfo.Builder = url?.userInfo?.toBuilder() ?: UserInfo.Builder()
+
+        /**
+         * Set the user info in this URL via a DSL builder block
+         * @param block The code to apply to the [UserInfo] builder
+         */
+        public fun userInfo(block: UserInfo.Builder.() -> Unit) {
+            userInfo.apply(block)
+        }
 
         // Fragment
 
@@ -214,36 +184,16 @@ public class Url private constructor(
         /**
          * Get or set the fragment as a **decoded** string
          */
-        public var fragmentDecoded: String?
+        public var decodedFragment: String?
             get() = fragment?.decoded
             set(value) { fragment = value?.let(PercentEncoding.Fragment::encodableFromDecoded) }
 
         /**
          * Get or set the fragment as an **encoded** string
          */
-        public var fragmentEncoded: String?
+        public var encodedFragment: String?
             get() = fragment?.encoded
             set(value) { fragment = value?.let(PercentEncoding.Fragment::encodableFromEncoded) }
-
-        // User info
-
-        private var userInfo: UserInfo.Builder? = url?.userInfo?.toBuilder()
-
-        /**
-         * Remove the user info from the URL
-         */
-        public fun clearUserInfo() {
-            userInfo = null
-        }
-
-        /**
-         * Set the user info in this URL via a DSL builder block
-         * @param block The code to apply to the [UserInfo] builder
-         */
-        public fun userInfo(block: UserInfo.Builder.() -> Unit) {
-            val userInfo = this.userInfo ?: UserInfo.Builder().also { this.userInfo = it }
-            userInfo.apply(block)
-        }
 
         // Build method
 
@@ -256,9 +206,40 @@ public class Url private constructor(
             host,
             port ?: scheme.defaultPort,
             path.build(),
-            queryParameters?.build(),
+            parameters.build(),
+            userInfo.build(),
             fragment,
-            userInfo?.build(),
         )
     }
+}
+
+private fun String.splitHostPort(): Pair<Host, Int?> {
+    val lBracketIndex = indexOf('[')
+    val rBracketIndex = indexOf(']')
+    val lastColonIndex = lastIndexOf(":")
+    val hostEndIndex = when {
+        rBracketIndex != -1 -> rBracketIndex + 1
+        lastColonIndex != -1 -> lastColonIndex
+        else -> length
+    }
+
+    require(lBracketIndex == -1 && rBracketIndex == -1 || lBracketIndex < rBracketIndex) { "unmatched [ or ]" }
+    require(lBracketIndex <= 0) { "unexpected characters before [" }
+    require(rBracketIndex == -1 || rBracketIndex == hostEndIndex - 1) { "unexpected characters after ]" }
+
+    val host = if (lBracketIndex != -1) {
+        substring(lBracketIndex + 1 until rBracketIndex)
+    } else {
+        substring(0 until hostEndIndex)
+    }
+
+    val decodedHost = host.urlDecodeComponent()
+    if (lBracketIndex != -1 && rBracketIndex != -1 && !decodedHost.isIpv6()) {
+        throw IllegalArgumentException("non-ipv6 host was enclosed in []-brackets")
+    }
+
+    return Pair(
+        Host.parse(decodedHost),
+        if (hostEndIndex != -1 && hostEndIndex != length) substring(hostEndIndex + 1).toInt() else null,
+    )
 }
