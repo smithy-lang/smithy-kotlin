@@ -193,7 +193,7 @@ val Shape.isStreaming: Boolean
     get() = hasTrait<StreamingTrait>()
 
 /**
- * Returns boolean indicating if operation input is union shaped
+ * Returns boolean indicating if operations explicitly set HTTP payload is a union
  */
 fun OperationShape.payloadIsUnionShape(model: Model): Boolean {
     val requestShape = model.expectShape<StructureShape>(input.get())
@@ -224,14 +224,6 @@ fun OperationShape.isInputEventStream(model: Model): Boolean {
 fun OperationShape.isOutputEventStream(model: Model): Boolean {
     val respShape = model.expectShape<StructureShape>(output.get())
     return respShape.hasEventStreamMember(model)
-}
-
-/**
- * Returns boolean indicating if operation input is union shaped
- */
-fun OperationShape.inputIsUnionShape(model: Model): Boolean {
-    val reqShape = model.expectShape<StructureShape>(input.get())
-    return reqShape.isUnionShape
 }
 
 /**
