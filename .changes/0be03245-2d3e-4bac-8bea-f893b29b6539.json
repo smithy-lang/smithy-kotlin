@@ -1,0 +1,5 @@
+{
+    "id": "0be03245-2d3e-4bac-8bea-f893b29b6539",
+    "type": "feature",
+    "description": "Enable resolving auth schemes via endpoint resolution"
+}

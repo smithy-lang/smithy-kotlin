@@ -35,6 +35,7 @@ object RuntimeTypes {
         object Request : RuntimeTypePackage(KotlinDependency.HTTP, "request") {
             val HttpRequest = symbol("HttpRequest")
             val HttpRequestBuilder = symbol("HttpRequestBuilder")
+            val immutableView = symbol("immutableView")
             val url = symbol("url")
             val headers = symbol("headers")
             val toBuilder = symbol("toBuilder")
@@ -198,11 +199,8 @@ object RuntimeTypes {
             val EndpointProvider = symbol("EndpointProvider")
             val Endpoint = symbol("Endpoint")
             val EndpointProviderException = symbol("EndpointProviderException")
-            val SigningContext = symbol("SigningContext")
             val SigningContextAttributeKey = symbol("SigningContextAttributeKey")
-
-            @get:JvmName("getSigningContextExtMethod")
-            val signingContext = symbol("signingContext")
+            val authOptions = symbol("authOptions")
             object Functions : RuntimeTypePackage(KotlinDependency.SMITHY_CLIENT, "endpoints.functions") {
                 val substring = symbol("substring")
                 val isValidHostLabel = symbol("isValidHostLabel")
@@ -314,7 +312,9 @@ object RuntimeTypes {
         object HttpAuthAws : RuntimeTypePackage(KotlinDependency.HTTP_AUTH_AWS) {
             val AwsHttpSigner = symbol("AwsHttpSigner")
             val SigV4AuthScheme = symbol("SigV4AuthScheme")
-            val sigv4 = symbol("sigv4")
+            val mergeAuthOptions = symbol("mergeAuthOptions")
+            val sigV4 = symbol("sigV4")
+            val sigV4A = symbol("sigV4A")
         }
     }
 

@@ -130,7 +130,13 @@ class ServiceClientConfigGenerator(
             .map { it.additionalServiceConfigProps(ctx).byName() }
             .forEach(allPropsByName::putAll)
 
+        writer.pushState()
+        // Service client config is always nested inside the service client interface. Its visibility is taken
+        // from that type. If the interface is `internal` then trying to use `internal` as the visibility on the
+        // nested config class is a compilation error.
+        writer.putContext("visibility", "public")
         super.render(ctx, allPropsByName.values.toList(), writer)
+        writer.popState()
     }
 
     override fun renderBuilderBuildMethod(writer: KotlinWriter) {

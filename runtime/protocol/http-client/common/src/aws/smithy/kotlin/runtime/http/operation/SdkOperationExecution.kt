@@ -7,6 +7,7 @@ package aws.smithy.kotlin.runtime.http.operation
 
 import aws.smithy.kotlin.runtime.InternalApi
 import aws.smithy.kotlin.runtime.client.LogMode
+import aws.smithy.kotlin.runtime.client.endpoints.authOptions
 import aws.smithy.kotlin.runtime.client.logMode
 import aws.smithy.kotlin.runtime.http.HttpCall
 import aws.smithy.kotlin.runtime.http.HttpHandler
@@ -32,6 +33,7 @@ import aws.smithy.kotlin.runtime.telemetry.logging.logger
 import aws.smithy.kotlin.runtime.telemetry.logging.trace
 import aws.smithy.kotlin.runtime.telemetry.metrics.measureSeconds
 import aws.smithy.kotlin.runtime.util.attributesOf
+import aws.smithy.kotlin.runtime.util.emptyAttributes
 import aws.smithy.kotlin.runtime.util.merge
 import kotlin.coroutines.coroutineContext
 import aws.smithy.kotlin.runtime.io.middleware.decorate as decorateHandler
@@ -289,6 +291,9 @@ internal class AuthHandler<Input, Output>(
             }
             coroutineContext.debug<AuthHandler<*, *>> { "resolved endpoint: $endpoint" }
             setResolvedEndpoint(request, endpoint)
+            // update the request context with endpoint specific auth signing context
+            val endpointAuthAttributes = endpoint.authOptions.firstOrNull { it.schemeId == authScheme.schemeId }?.attributes ?: emptyAttributes()
+            request.context.merge(endpointAuthAttributes)
         }
 
         val modified = interceptors.modifyBeforeSigning(request.subject.immutableView(true))

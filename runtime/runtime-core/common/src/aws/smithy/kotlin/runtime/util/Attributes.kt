@@ -141,6 +141,20 @@ private class AttributesImpl constructor(seed: Attributes) : MutableAttributes {
 
     override val keys: Set<AttributeKey<*>>
         get() = map.keys
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other == null) return false
+        if (other !is Attributes) return false
+        if (keys.size != other.keys.size) return false
+
+        return keys.all {
+            @Suppress("UNCHECKED_CAST")
+            contains(it) && getOrNull(it as AttributeKey<Any>) == other.getOrNull(it)
+        }
+    }
+
+    override fun hashCode(): Int = map.hashCode()
 }
 
 private object EmptyAttributes : Attributes {
