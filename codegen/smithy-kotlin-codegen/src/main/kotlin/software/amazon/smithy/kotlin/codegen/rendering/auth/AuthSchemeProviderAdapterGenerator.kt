@@ -45,7 +45,7 @@ class AuthSchemeProviderAdapterGenerator {
                     RuntimeTypes.HttpClient.Operation.SdkHttpRequest,
                     RuntimeTypes.Auth.Identity.AuthOption,
                 ) {
-                    withBlock("val params = #T {", "}", AuthSchemeParametersGenerator.getImplementationSymbol(ctx.settings)) {
+                    withBlock("val params = #T {", "}", AuthSchemeParametersGenerator.getSymbol(ctx.settings)) {
                         addImport(RuntimeTypes.Core.Utils.get)
                         write("operationName = request.context[#T.OperationName]", RuntimeTypes.SmithyClient.SdkClientOption)
 

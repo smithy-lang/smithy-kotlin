@@ -60,9 +60,16 @@ abstract class AbstractConfigGenerator {
             renderCompanionObject(writer)
             renderToBuilder(sortedProps, writer)
             renderBuilder(sortedProps, writer)
+            renderAdditionalMethods(ctx, sortedProps, writer)
         }
 
         writer.removeContext("configClass.name")
+    }
+
+    /**
+     * Hook to render additional methods on the generated type
+     */
+    protected open fun renderAdditionalMethods(ctx: CodegenContext, props: List<ConfigProperty>, writer: KotlinWriter) {
     }
 
     protected open fun renderCompanionObject(writer: KotlinWriter) {

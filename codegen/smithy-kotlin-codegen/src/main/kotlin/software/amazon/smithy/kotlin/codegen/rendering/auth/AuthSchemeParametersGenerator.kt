@@ -9,6 +9,7 @@ import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.kotlin.codegen.KotlinSettings
 import software.amazon.smithy.kotlin.codegen.core.CodegenContext
+import software.amazon.smithy.kotlin.codegen.core.KotlinWriter
 import software.amazon.smithy.kotlin.codegen.core.clientName
 import software.amazon.smithy.kotlin.codegen.core.withBlock
 import software.amazon.smithy.kotlin.codegen.integration.KotlinIntegration
@@ -32,45 +33,13 @@ class AuthSchemeParametersGenerator : AbstractConfigGenerator() {
             namespace = "${settings.pkg.name}.auth"
             definitionFile = "$name.kt"
         }
-
-        fun getImplementationSymbol(settings: KotlinSettings): Symbol = buildSymbol {
-            val prefix = clientName(settings.sdkId)
-            name = "${prefix}AuthSchemeParametersImpl"
-            namespace = "${settings.pkg.name}.auth"
-            definitionFile = "$name.kt"
-        }
     }
-
-    override val visibility: String = "internal"
 
     fun render(ctx: ProtocolGenerator.GenerationContext) {
         val symbol = getSymbol(ctx.settings)
-        val implSymbol = getImplementationSymbol(ctx.settings)
 
         ctx.delegator.useSymbolWriter(symbol) { writer ->
-            writer.withBlock(
-                "#L interface #T {",
-                "}",
-                ctx.settings.api.visibility,
-                symbol,
-            ) {
-                dokka("The name of the operation currently being invoked.")
-                write("public val operationName: String")
-                if (ctx.settings.api.enableEndpointAuthProvider) {
-                    dokka(
-                        """
-                        |The parameters used for endpoint resolution. The default implementation of this interface 
-                        |relies on endpoint metadata to resolve auth scheme candidates.
-                        |
-                        """.trimMargin(),
-                    )
-                    write("public val endpointParameters: #P", EndpointParametersGenerator.getSymbol(ctx.settings).asNullable())
-                }
-            }
-        }
-
-        ctx.delegator.useSymbolWriter(implSymbol) { writer ->
-            writer.putContext("configClass.name", implSymbol.name)
+            writer.putContext("configClass.name", symbol.name)
 
             val codegenCtx = object : CodegenContext {
                 override val model: Model = ctx.model
@@ -86,13 +55,11 @@ class AuthSchemeParametersGenerator : AbstractConfigGenerator() {
             ).toBuilder()
                 .apply {
                     propertyType = ConfigPropertyType.Required("operationName is a required auth scheme parameter")
-                    baseClass = symbol
                 }.build()
 
             val endpointParamsProperty = ConfigProperty {
                 name = "endpointParameters"
                 this.symbol = EndpointParametersGenerator.getSymbol(ctx.settings).asNullable()
-                baseClass = symbol
                 documentation = """
                     The parameters used for endpoint resolution. The default implementation of this interface 
                     relies on endpoint metadata to resolve auth scheme candidates.
@@ -101,6 +68,64 @@ class AuthSchemeParametersGenerator : AbstractConfigGenerator() {
 
             val props = listOfNotNull(operationName, endpointParamsProperty)
             render(codegenCtx, props, writer)
+        }
+    }
+
+    override fun renderAdditionalMethods(ctx: CodegenContext, props: List<ConfigProperty>, writer: KotlinWriter) {
+        writer.write("")
+        renderToString(ctx, props, writer)
+        writer.write("")
+        renderEquals(ctx, props, writer)
+        writer.write("")
+        renderHashCode(ctx, props, writer)
+        writer.write("")
+        renderCopy(ctx, props, writer)
+    }
+
+    private fun renderEquals(ctx: CodegenContext, props: List<ConfigProperty>, writer: KotlinWriter) {
+        writer.withBlock("$visibility override fun equals(other: Any?): Boolean {", "}") {
+            write("if (this === other) return true")
+            write("if (other !is #T) return false", getSymbol(ctx.settings))
+            props.forEach { prop ->
+                write("if (this.#1L != other.#1L) return false", prop.propertyName)
+            }
+            write("return true")
+        }
+    }
+    private fun renderToString(ctx: CodegenContext, props: List<ConfigProperty>, writer: KotlinWriter) {
+        writer.withBlock("$visibility override fun toString(): String = buildString {", "}") {
+            write("append(\"#L(\")", getSymbol(ctx.settings).name)
+            props.forEachIndexed { idx, prop ->
+                write("""append("#1L=$#1L#2L")""", prop.propertyName, if (idx < props.size - 1) "," else ")")
+            }
+        }
+    }
+
+    private fun renderHashCode(ctx: CodegenContext, props: List<ConfigProperty>, writer: KotlinWriter) {
+        writer.withBlock("public override fun hashCode(): Int {", "}") {
+            if (props.isEmpty()) {
+                write("return this::class.hashCode()")
+                return@withBlock
+            }
+
+            write("var result = #L?.hashCode() ?: 0", props[0].propertyName)
+            props.drop(1).forEach {
+                write("result = 31 * result + (#L?.hashCode() ?: 0)", it.propertyName)
+            }
+            write("return result")
+        }
+    }
+
+    private fun renderCopy(ctx: CodegenContext, props: List<ConfigProperty>, writer: KotlinWriter) {
+        val symbol = getSymbol(ctx.settings)
+        writer.withBlock("public fun copy(block: Builder.() -> Unit = {}): #T {", "}", symbol) {
+            withBlock("return Builder().apply {", "}") {
+                props.forEach {
+                    write("#1L = this@#2L.#1L", it.propertyName, symbol.name)
+                }
+                write("block()")
+            }
+            write(".build()")
         }
     }
 }
