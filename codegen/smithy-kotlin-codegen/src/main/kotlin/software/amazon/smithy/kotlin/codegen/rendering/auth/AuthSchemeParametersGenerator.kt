@@ -77,7 +77,7 @@ class AuthSchemeParametersGenerator : AbstractConfigGenerator() {
         writer.write("")
         renderEquals(ctx, props, writer)
         writer.write("")
-        renderHashCode(ctx, props, writer)
+        renderHashCode(props, writer)
         writer.write("")
         renderCopy(ctx, props, writer)
     }
@@ -101,8 +101,8 @@ class AuthSchemeParametersGenerator : AbstractConfigGenerator() {
         }
     }
 
-    private fun renderHashCode(ctx: CodegenContext, props: List<ConfigProperty>, writer: KotlinWriter) {
-        writer.withBlock("public override fun hashCode(): Int {", "}") {
+    private fun renderHashCode(props: List<ConfigProperty>, writer: KotlinWriter) {
+        writer.withBlock("$visibility override fun hashCode(): Int {", "}") {
             if (props.isEmpty()) {
                 write("return this::class.hashCode()")
                 return@withBlock
