@@ -13,6 +13,7 @@ It assumes familiarity with the Smithy IDL, compression algorithms, interceptors
 The client experience should be seamless.
 
 Here is how a client might use/configure this:
+
 ```kotlin
 val client = S3Client {
     region = "us-west-2"
@@ -20,19 +21,36 @@ val client = S3Client {
     requestMinCompressionSizeBytes = 200
 }
 ```
-or
+
 ```kotlin
 val client = S3Client.fromEnvironment {
     region = "us-west-2"
 }
-```
-```kotlin
-// In config file 
+
+// In config file
 [default]
 disable_request_compression = true
 request_min_compression_size_bytes = 200
 ```
+
 Both of these examples achieve the same result.
+
+```kotlin
+val client = S3Client.fromEnvironment {
+    region = "us-west-2"
+}
+
+class UserCompressionAlgorithm : CompressionAlgorithm {
+    override val id: String = "custom"
+    override suspend fun compress(stream: ByteStream?): ByteStream {
+        ...
+    }
+}
+
+client.addCompressionAlgorithm(UserCompressionAlgorithm)
+```
+
+This would add a user supplied compression algorithm
 
 ### Client Configuration
 
@@ -80,9 +98,12 @@ Will only look at explicit client config:
 |------------------------------|----------------------------------|--------------------------------------|------------------------------------------|--------------------------------------|
 | Min payload size to compress | `requestMinCompressionSizeBytes` | `aws.requestMinCompressionSizeBytes` | `AWS_REQUEST_MIN_COMPRESSION_SIZE_BYTES` | `request_min_compression_size_bytes` |
 
-This feature can also be configured to use user supplied compression algorithms. The user can add compression algorithms using the client configuration function `addCompressionAlgorithms`.
+This feature can also be configured to use user supplied compression algorithms. The user can add compression algorithms using the client configuration function `addCompressionAlgorithms`. The compression algorithm must implement the `CompressionAlgorithm` interface.
 ```kotlin
-// TODO: Write
+val client = S3Client.fromEnvironment {
+    region = "us-west-2"
+}
+client.addCompressionAlgorithm(...)
 ```
 
 ### The Trait
@@ -95,10 +116,10 @@ Below is an abbreviated example of the requestCompression [trait](https://smithy
 operation ...
 ```
 
-The SDK has its own list of supported compression algorithms as a list of `CompressionAlgorithm`s.
+The SDK has its own list of supported compression algorithms as a list of `CompressionAlgorithm`s in the client config.
 
 ```kotlin
-private val supportedCompressionAlgorithms: List<CompressionAlgorithm> = listOf(
+private val compressionAlgorithms: List<CompressionAlgorithm> = listOf(
     GzipCompressionAlgorithm()
 )
 ```
@@ -151,7 +172,7 @@ public interface CompressionAlgorithm {
 The `id` is used to match a supported `CompressionAlgorithm` to a requested compression algorithm from the trait. The `compress` function is used to compress HTTP bodies.
 
 #### Compression
-Gzip JVM streaming compression implementation:
+Gzip JVM compression implementation:
 
 ```kotlin
 /**
@@ -164,30 +185,15 @@ Could also use function to convert stream to byte array but chances are will run
 of memory doing so. Body will probably be large if using streaming trait on it.
 
 If that code to convert the types is not possible for some reason then will have to 
-hand write gzip implementation.
+handwrite gzip implementation.
  
 **/
 ```
 
-[//]: # (Allowing user supplied compression algorithms is possible if it's something that wants to be done. There are a couple of issues with this feature that aren't impossible to overcome but certainly pose a challenge that might not be worth it. Some of those include:)
-
-[//]: # ()
-[//]: # (1. Server side would be unable to decompress a random compression algorithm provided by a user. There might be no way around this unless a user is implementing a compression algorithm that the SDK would not support at the time. Then there is some niche use case for this.)
-
-[//]: # ()
-[//]: # (2. Allowing a user supplied compression algorithm that adjusts the "level" of compression is a good idea but in practice the server side might not be able to handle this functionality and this could break things for the customer.)
-
-[//]: # ()
-[//]: # (3. Customers might want to use their own implementations of compressing algorithms but this seems unnecessary.)
-
-[//]: # ()
-[//]: # (That level of client configurability comes with some caveats, and a decision was made to not pursue this feature. Regardless of that this can always be added later if it starts to seem necessary/required.)
-
 ### Implementation
 This feature is implemented by registering an [interceptor](interceptors.md) that replaces the outgoing request body with a compressed equivalent.
 
-The interceptor holds most of the logic for this feature to work. The search logic for requested to supported compression algorithms is inside it. The actual compression is initiated here and the header logic as well. Finally, the list of supported compression algorithms is inside it. It could be refactored out, but it lives inside the interceptor for the time being as there are no real use cases for it outside the interceptor.
-
+The interceptor holds most of the logic for this feature to work. The search logic for requested to supported compression algorithms is inside it. The actual compression is initiated here and the header logic as well.
 ```kotlin
 private val VALID_COMPRESSION_RANGE = 0..10485760
 private val DEFAULT_COMPRESSION_THRESHOLD_BYTES = 10240
@@ -198,7 +204,7 @@ private val DEFAULT_COMPRESSION_THRESHOLD_BYTES = 10240
 public class RequestCompressionTraitInterceptor(
     private val compressionThreshold: Int = DEFAULT_COMPRESSION_THRESHOLD_BYTES,
     private val requestedCompressionAlgorithms: List<String>,
-    private val supportedCompressionAlgorithms: Map<String, CompressionAlgorithm>,
+    private val supportedCompressionAlgorithms: List<CompressionAlgorithm>,
 ) : HttpInterceptor {
     
     // Verify min compression size setting is in range
@@ -216,7 +222,9 @@ public class RequestCompressionTraitInterceptor(
         if (streamingPayload || payloadSize!! >= compressionThreshold) {
 
             // Check if requested algorithm(s) is supported
-            requestedCompressionAlgorithms.find { supportedCompressionAlgorithms[it] }?.let { algorithm ->
+            supportedCompressionAlgorithms.find { supported ->
+                requestedCompressionAlgorithms.find { supported.id == it } != null
+            }?.let { algorithm ->
 
                 // Attempt compression
                 val request = context.protocolRequest.toBuilder()
@@ -287,7 +295,7 @@ class RequestCompressionTrait : KotlinIntegration {
                     ) {
                         write("config.requestMinCompressionSizeBytes,")
                         write("listOf(${requestedCompressionAlgorithms.forEach { write("$it, ") }}),")
-                        // write("config.compressionAlgorithms.associateBy(CompressionAlgorithm::id)")
+                        // write("config.compressionAlgorithms")
                     }
                 }
             }
