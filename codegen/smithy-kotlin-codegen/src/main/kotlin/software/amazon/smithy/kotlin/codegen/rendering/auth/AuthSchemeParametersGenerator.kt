@@ -83,7 +83,7 @@ class AuthSchemeParametersGenerator : AbstractConfigGenerator() {
     }
 
     private fun renderEquals(ctx: CodegenContext, props: List<ConfigProperty>, writer: KotlinWriter) {
-        writer.withBlock("$visibility override fun equals(other: Any?): Boolean {", "}") {
+        writer.withBlock("override fun equals(other: Any?): Boolean {", "}") {
             write("if (this === other) return true")
             write("if (other !is #T) return false", getSymbol(ctx.settings))
             props.forEach { prop ->
@@ -93,7 +93,7 @@ class AuthSchemeParametersGenerator : AbstractConfigGenerator() {
         }
     }
     private fun renderToString(ctx: CodegenContext, props: List<ConfigProperty>, writer: KotlinWriter) {
-        writer.withBlock("$visibility override fun toString(): String = buildString {", "}") {
+        writer.withBlock("override fun toString(): String = buildString {", "}") {
             write("append(\"#L(\")", getSymbol(ctx.settings).name)
             props.forEachIndexed { idx, prop ->
                 write("""append("#1L=$#1L#2L")""", prop.propertyName, if (idx < props.size - 1) "," else ")")
@@ -102,7 +102,7 @@ class AuthSchemeParametersGenerator : AbstractConfigGenerator() {
     }
 
     private fun renderHashCode(props: List<ConfigProperty>, writer: KotlinWriter) {
-        writer.withBlock("$visibility override fun hashCode(): Int {", "}") {
+        writer.withBlock("override fun hashCode(): Int {", "}") {
             if (props.isEmpty()) {
                 write("return this::class.hashCode()")
                 return@withBlock
@@ -118,7 +118,7 @@ class AuthSchemeParametersGenerator : AbstractConfigGenerator() {
 
     private fun renderCopy(ctx: CodegenContext, props: List<ConfigProperty>, writer: KotlinWriter) {
         val symbol = getSymbol(ctx.settings)
-        writer.withBlock("public fun copy(block: Builder.() -> Unit = {}): #T {", "}", symbol) {
+        writer.withBlock("#visibility:L fun copy(block: Builder.() -> Unit = {}): #T {", "}", symbol) {
             withBlock("return Builder().apply {", "}") {
                 props.forEach {
                     write("#1L = this@#2L.#1L", it.propertyName, symbol.name)
