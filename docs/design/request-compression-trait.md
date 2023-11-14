@@ -11,8 +11,6 @@ It assumes familiarity with the [Smithy IDL](https://smithy.io/2.0/index.html), 
 
 ### Client Experience
 
-Here is how a client might use/configure this:
-
 Both of these examples achieve the same result.
 ```kotlin
 val client = S3Client {
@@ -114,7 +112,7 @@ operation ...
 
 The SDK has its own list of supported compression algorithms as a list of `CompressionAlgorithm`s in the client config.
 ```kotlin
-private val compressionAlgorithms: List<CompressionAlgorithm> = mutableListOf(
+val compressionAlgorithms: List<CompressionAlgorithm> = mutableListOf(
     GzipCompressionAlgorithm()
 )
 ```
@@ -215,7 +213,6 @@ class RequestCompressionTrait : KotlinIntegration {
     ): List<ProtocolMiddleware> = resolved + requestCompressionTraitMiddleware
 
     // TODO: Use `additionalServiceConfigProps` to register `compressionAlgorithms`
-    // TODO: Register function for client config to support user supplied compression algorithms (`addCompressionAlgorithms`)
 
     // Middleware
     private val requestCompressionTraitMiddleware = object : ProtocolMiddleware {
