@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.28.2] - 11/14/2023
+
+### Features
+* Enable resolving auth schemes via endpoint resolution
+
+### Miscellaneous
+* Separate codegen project versioning
+
 ## [0.28.1] - 11/01/2023
 
 ### Fixes
