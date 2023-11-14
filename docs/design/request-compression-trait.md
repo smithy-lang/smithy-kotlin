@@ -98,7 +98,7 @@ Will only look at explicit client config:
 |------------------------------|----------------------------------|--------------------------------------|------------------------------------------|--------------------------------------|
 | Min payload size to compress | `requestMinCompressionSizeBytes` | `aws.requestMinCompressionSizeBytes` | `AWS_REQUEST_MIN_COMPRESSION_SIZE_BYTES` | `request_min_compression_size_bytes` |
 
-This feature can also be configured to use user supplied compression algorithms. The user can add compression algorithms using the client configuration function `addCompressionAlgorithms`. The compression algorithm must implement the `CompressionAlgorithm` interface.
+This feature can also be configured to use user supplied compression algorithms. The user can add compression algorithms using the client configuration function `addCompressionAlgorithms`. A user supplied algorithm may override the built-in implementation, and the compression algorithm must implement the `CompressionAlgorithm` interface.
 ```kotlin
 val client = S3Client.fromEnvironment {
     region = "us-west-2"
