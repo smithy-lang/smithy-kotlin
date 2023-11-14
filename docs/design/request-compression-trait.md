@@ -5,7 +5,7 @@
 
 ## Abstract
 This document covers the design and implementation to support [request compression](https://smithy.io/2.0/spec/behavior-traits.html?highlight=requestcompression#requestcompression-trait). Request compression refers to compressing the payload of a request prior to sending it to a service reducing the overall payload size. Request compression is used to reduce the overall number of requests and the bandwidth required to send data to the service.
-It assumes familiarity with the Smithy IDL, compression algorithms, interceptors, and middleware.
+It assumes familiarity with the [Smithy IDL](https://smithy.io/2.0/index.html), [compression algorithms](https://en.wikipedia.org/wiki/Data_compression), [interceptors](interceptors.md), and [middleware](https://en.wikipedia.org/wiki/Middleware).
 
 ## Design
 
@@ -13,6 +13,7 @@ It assumes familiarity with the Smithy IDL, compression algorithms, interceptors
 
 Here is how a client might use/configure this:
 
+Both of these examples achieve the same result.
 ```kotlin
 val client = S3Client {
     region = "us-west-2"
@@ -32,24 +33,20 @@ disable_request_compression = true
 request_min_compression_size_bytes = 200
 ```
 
-Both of these examples achieve the same result.
-
+This would add a user supplied compression algorithm.
 ```kotlin
 val client = S3Client.fromEnvironment {
     region = "us-west-2"
+    compressionAlgorithms += CustomCompressionAlgorithm()
 }
 
 class CustomCompressionAlgorithm : CompressionAlgorithm {
     override val id: String = "custom"
-    override suspend fun compress(stream: HttpBody?): HttpBody {
+    override suspend fun compress(stream: HttpBody): HttpBody {
         ...
     }
 }
-
-client.addCompressionAlgorithm(CustomCompressionAlgorithm)
 ```
-
-This would add a user supplied compression algorithm.
 
 ### Client Configuration
 
@@ -97,16 +94,16 @@ Will only look at explicit client config:
 |------------------------------|----------------------------------|--------------------------------------|------------------------------------------|--------------------------------------|
 | Min payload size to compress | `requestMinCompressionSizeBytes` | `aws.requestMinCompressionSizeBytes` | `AWS_REQUEST_MIN_COMPRESSION_SIZE_BYTES` | `request_min_compression_size_bytes` |
 
-This feature can also be configured to use user supplied compression algorithms. The user can add compression algorithms using the client configuration function `addCompressionAlgorithms`. A user supplied algorithm may override the built-in implementation, and the compression algorithm must implement the `CompressionAlgorithm` interface.
+This feature can also be configured to use user supplied compression algorithms. The user can add compression algorithms using the client builder. A user supplied algorithm may override the built-in implementation, and the compression algorithm must implement the `CompressionAlgorithm` interface.
 ```kotlin
 val client = S3Client.fromEnvironment {
     region = "us-west-2"
+    compressionAlgorithms += ...
 }
-client.addCompressionAlgorithm(...)
 ```
 
 ### The Trait
-Below is an abbreviated example of the requestCompression trait in use:
+Below is an abbreviated example of the request compression trait in use:
 
 ```smithy
 @requestCompression(
@@ -116,9 +113,8 @@ operation ...
 ```
 
 The SDK has its own list of supported compression algorithms as a list of `CompressionAlgorithm`s in the client config.
-
 ```kotlin
-private val compressionAlgorithms: List<CompressionAlgorithm> = listOf(
+private val compressionAlgorithms: List<CompressionAlgorithm> = mutableListOf(
     GzipCompressionAlgorithm()
 )
 ```
@@ -128,14 +124,16 @@ Each algorithm will be attempted in the order they appear in the trait until one
 
 After compression occurs, the `Content-Encoding` header will contain the name of the compression algorithm used. It will be appended to the list of content encodings if the header was already present with some value.
 
+No encoding header before compression:
 ```http request
-// There was no encoding in header before compression
 POST /upload-data HTTP/1.1
 Host: example.com
 Content-Type: application/json
 Content-Encoding: gzip
+```
 
-// There was an encoding in header before compression
+Existing `br` encoding in header before compression:
+```http request
 POST /upload-data HTTP/1.1
 Host: example.com
 Content-Type: application/json
@@ -144,7 +142,7 @@ Content-Encoding: br, gzip
 
 ### Compression Algorithms
 Given that Kotlin is multiplatform there should be multiple implementations of each compression algorithm. Currently gzip is the only supported compression algorithm by the server side and the only one supported for
-the SDK. Only gzip for JVM is supported specifically. This is done by using the following packages from the Java standard library: `GZIPInputStream` and `GZIPOutputStream`. The other KMP targets are not implemented, and are planned to be implemented using the CRT.
+the SDK. Only gzip for JVM is supported specifically. This is done by using the following classes from the Java standard library: `GZIPInputStream` and `GZIPOutputStream`. The other KMP targets are not implemented, and are planned to be implemented using the CRT.
 
 New algorithms can be added as they become supported using the compression algorithm interface and by adding them to the list of supported algorithms. The same goes for non JVM KMP targets, these can be added by filling in the `actual` declarations for the target.
 
@@ -164,7 +162,7 @@ public interface CompressionAlgorithm {
     /**
      * Compresses a payload
      */
-    public suspend fun compress(stream: HttpBody?): HttpBody
+    public suspend fun compress(stream: HttpBody): HttpBody
 }
 ```
 
@@ -263,7 +261,7 @@ if (!config.disableRequestCompression) {
 ```
 
 ### Implementation
-This feature is implemented by registering an [interceptor](interceptors.md) that replaces the outgoing request body with a compressed equivalent.
+This feature is implemented by registering an interceptor that replaces the outgoing request body with a compressed equivalent.
 
 The interceptor holds most of the logic for this feature to work. The mapping logic for requested to supported compression algorithms is inside it. The actual compression is initiated here and the header logic as well.
 ```kotlin
@@ -312,7 +310,7 @@ public class RequestCompressionTraitInterceptor(
 ```
 
 ### Testing
-Testing is done using both unit tests and Smithy HTTP protocol compliance tests. The SDK unit tests are used to verify behaviour and ensure it doesn't drift over time. Smithy HTTP protocol tests are used to test the behavior in a more integrated way.
+Testing is done using both unit tests and Smithy HTTP protocol compliance tests. The SDK unit tests are used to verify behavior and ensure it doesn't drift over time. Smithy HTTP protocol tests are used to test the behavior in a more integrated way.
 
 ## References
 [Smithy request compression trait](https://smithy.io/2.0/spec/behavior-traits.html?highlight=requestcompression#requestcompression-trait)
