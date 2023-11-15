@@ -182,11 +182,12 @@ class SymbolProviderTest {
         "double,2.71828,2.71828",
         "byte,10,10.toByte()",
         "string,\"hello\",\"hello\"",
-        "blob,\"abcdefg\",\"abcdefg\"",
+        "blob,\"abcdefg\",\"abcdefg\".encodeToByteArray()",
         "boolean,true,true",
         "bigInteger,5,5",
         "bigDecimal,9.0123456789,9.0123456789",
-        "timestamp,1684869901,1684869901",
+        "timestamp,1684869901,'aws.smithy.kotlin.runtime.time.Instant.fromEpochSeconds(1684869901, 0)'",
+        "timestamp,1.5,'aws.smithy.kotlin.runtime.time.Instant.fromEpochMilliseconds(1500)'"
     )
     fun `can default simple types`(typeName: String, modeledDefault: String, expectedDefault: String) {
         val model = """
@@ -274,17 +275,17 @@ class SymbolProviderTest {
 
     @ParameterizedTest(name = "{index} ==> ''can default document with {0} type''")
     @CsvSource(
-        "boolean,true,true",
-        "boolean,false,false",
-        "string,\"hello\",\"hello\"",
-        "long,100,100",
-        "integer,5,5",
-        "short,32767,32767",
-        "float,3.14159,3.14159",
-        "double,2.71828,2.71828",
-        "byte,10,10",
-        "list,[],listOf()",
-        "map,{},mapOf()",
+        "boolean,true,aws.smithy.kotlin.runtime.content.Document(true)",
+        "boolean,false,aws.smithy.kotlin.runtime.content.Document(false)",
+        "string,\"hello\",aws.smithy.kotlin.runtime.content.Document(\"hello\")",
+        "long,100,aws.smithy.kotlin.runtime.content.Document(100)",
+        "integer,5,aws.smithy.kotlin.runtime.content.Document(5)",
+        "short,32767,aws.smithy.kotlin.runtime.content.Document(32767)",
+        "float,3.14159,aws.smithy.kotlin.runtime.content.Document(3.14159)",
+        "double,2.71828,aws.smithy.kotlin.runtime.content.Document(2.71828)",
+        "byte,10,aws.smithy.kotlin.runtime.content.Document(10)",
+        "list,[],aws.smithy.kotlin.runtime.content.Document(listOf())",
+        "map,{},aws.smithy.kotlin.runtime.content.Document(mapOf())",
     )
     @Suppress("UNUSED_PARAMETER") // using the first parameter in the test name, but compiler doesn't acknowledge that
     fun `can default document type`(typeName: String, modeledDefault: String, expectedDefault: String) {
