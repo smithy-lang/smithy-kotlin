@@ -10,16 +10,12 @@ import software.amazon.smithy.kotlin.codegen.lang.KotlinTypes
 import software.amazon.smithy.kotlin.codegen.lang.kotlinReservedWords
 import software.amazon.smithy.kotlin.codegen.model.*
 import software.amazon.smithy.kotlin.codegen.utils.dq
-import software.amazon.smithy.kotlin.codegen.utils.getOrNull
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.knowledge.NullableIndex
-import software.amazon.smithy.model.node.Node
-import software.amazon.smithy.model.node.NumberNode
 import software.amazon.smithy.model.shapes.*
 import software.amazon.smithy.model.traits.DefaultTrait
 import software.amazon.smithy.model.traits.StreamingTrait
 import java.util.logging.Logger
-import kotlin.math.round
 
 /**
  * Convert shapes to Kotlin types
@@ -233,51 +229,12 @@ class KotlinSymbolProvider(private val model: Model, private val settings: Kotli
                 "${enumSymbol.fullName}.fromValue($arg)"
             }
 
-            targetShape.isBlobShape -> "${node.toString().dq()}.encodeToByteArray()"
-            targetShape.isDocumentShape -> getDefaultValueForDocument(node)
-            targetShape.isTimestampShape -> getDefaultValueForTimestamp(node.asNumberNode().get())
-
             node.isNumberNode -> getDefaultValueForNumber(targetShape.type, node.toString())
             node.isArrayNode -> "listOf()"
             node.isObjectNode -> "mapOf()"
             node.isStringNode -> node.toString().dq()
             else -> node.toString()
         }
-    }
-
-    private fun getDefaultValueForTimestamp(node: NumberNode): String {
-        val instant = RuntimeTypes.Core.Instant
-
-        return if (node.isFloatingPointNumber) {
-            val fromEpochMilliseconds = RuntimeTypes.Core.fromEpochMilliseconds
-            val value = node.value as Double
-            val ms = round(value * 1e3).toLong()
-            "$instant.$fromEpochMilliseconds($ms)"
-        } else {
-            "$instant.fromEpochSeconds(${node.value}, 0)"
-        }
-    }
-
-    private fun getDefaultValueForDocument(node: Node): String {
-        val documentSymbol = RuntimeTypes.Core.Content.Document.fullName
-        val content: String = when {
-            node.isArrayNode -> {
-                val formattedElements: String = node.asArrayNode().getOrNull()?.elements?.joinToString() ?: ""
-                "listOf($formattedElements)"
-            }
-            node.isObjectNode -> {
-                val members = node.asObjectNode().getOrNull()?.members
-                val formattedMembers: String = members?.map { "${it.key.value} to ${it.value}" }?.joinToString() ?: ""
-                "mapOf($formattedMembers)"
-            }
-            node.isNumberNode -> node.asNumberNode().toString()
-            node.isStringNode -> node.asStringNode().getOrNull()?.value?.dq() ?: ""
-            node.isBooleanNode -> node.asBooleanNode().get().value.toString()
-            node.isNullNode -> "null"
-            else -> throw RuntimeException("Unsupported node $node")
-        }
-
-        return "$documentSymbol($content)"
     }
 
     override fun timestampShape(shape: TimestampShape?): Symbol {
