@@ -4,6 +4,8 @@
  */
 package software.amazon.smithy.kotlin.codegen.utils
 
+private val completeWords = listOf("ipv4", "ipv6", "sigv4", "mib", "gib", "kib", "ttl", "iot", "s3")
+
 /**
  * Split a string on word boundaries
  */
@@ -14,11 +16,12 @@ fun String.splitOnWordBoundaries(): List<String> {
     // but this has some edge cases it doesn't handle well
     val out = mutableListOf<String>()
     // These are whole words but cased differently, e.g. `IPv4`, `MiB`, `GiB`, `TtL`
-    val completeWords = listOf("ipv4", "ipv6", "sigv4", "mib", "gib", "kib", "ttl", "iot", "s3")
     var currentWord = ""
+    var computeWordInProgress = true
 
     // emit the current word and update from the next character
     val emit = { next: Char ->
+        computeWordInProgress = true
         if (currentWord.isNotEmpty()) {
             out += currentWord.lowercase()
         }
@@ -33,9 +36,13 @@ fun String.splitOnWordBoundaries(): List<String> {
     forEachIndexed { index, nextChar ->
         val peek = getOrNull(index + 1)
         val doublePeek = getOrNull(index + 2)
-        val completeWordInProgress = completeWords.any {
-            (currentWord + substring(index)).lowercase().startsWith(it)
-        } && !completeWords.contains(currentWord.lowercase())
+        val completeWordInProgress = {
+            val result = computeWordInProgress && currentWord.isNotEmpty() && completeWords.any {
+                (currentWord + substring(index)).startsWith(it, ignoreCase = true)
+            } && !completeWords.contains(currentWord.lowercase())
+            computeWordInProgress = result
+            result
+        }
 
         when {
             // [C] in these docs indicates the value of nextCharacter
@@ -46,16 +53,16 @@ fun String.splitOnWordBoundaries(): List<String> {
             currentWord.isEmpty() -> currentWord += nextChar.toString()
 
             // Abc[D]ef or Ab2[D]ef
-            !completeWordInProgress && loweredFollowedByUpper(currentWord, nextChar) -> emit(nextChar)
+            !completeWordInProgress() && loweredFollowedByUpper(currentWord, nextChar) -> emit(nextChar)
 
             // s3[k]ey
-            !completeWordInProgress && allLowerCase && digitFollowedByLower(currentWord, nextChar) -> emit(nextChar)
+            !completeWordInProgress() && allLowerCase && digitFollowedByLower(currentWord, nextChar) -> emit(nextChar)
 
             // emit complete words
-            !completeWordInProgress && completeWords.contains(currentWord.lowercase()) -> emit(nextChar)
+            !completeWordInProgress() && completeWords.contains(currentWord.lowercase()) -> emit(nextChar)
 
             // DB[P]roxy, or `IAM[U]ser` but not AC[L]s
-            !completeWordInProgress && endOfAcronym(currentWord, nextChar, peek, doublePeek) -> emit(nextChar)
+            !completeWordInProgress() && endOfAcronym(currentWord, nextChar, peek, doublePeek) -> emit(nextChar)
 
             // If we haven't found a word boundary, push it and keep going
             else -> currentWord += nextChar.toString()
