@@ -187,7 +187,7 @@ class SymbolProviderTest {
         "bigInteger,5,5",
         "bigDecimal,9.0123456789,9.0123456789",
         "timestamp,1684869901,'aws.smithy.kotlin.runtime.time.Instant.fromEpochSeconds(1684869901, 0)'",
-        "timestamp,1.5,'aws.smithy.kotlin.runtime.time.Instant.fromEpochMilliseconds(1500)'"
+        "timestamp,1.5,'aws.smithy.kotlin.runtime.time.fromEpochMilliseconds.invoke(aws.smithy.kotlin.runtime.time.Instant, 1500)'"
     )
     fun `can default simple types`(typeName: String, modeledDefault: String, expectedDefault: String) {
         val model = """
