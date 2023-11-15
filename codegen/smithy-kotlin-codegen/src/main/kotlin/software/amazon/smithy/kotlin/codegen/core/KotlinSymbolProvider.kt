@@ -260,19 +260,14 @@ class KotlinSymbolProvider(private val model: Model, private val settings: Kotli
     private fun getDefaultValueForDocument(node: Node): String {
         val documentSymbol = RuntimeTypes.Core.Content.Document.fullName
         val content: String = when {
-            node.isArrayNode -> {
-                val formattedElements: String = node.asArrayNode().get().elements.joinToString()
-                "listOf($formattedElements)"
-            }
-            node.isObjectNode -> {
-                val members = node.asObjectNode().get().members
-                val formattedMembers: String = members.map { "${it.key.value} to ${it.value}" }.joinToString()
-                "mapOf($formattedMembers)"
-            }
             node.isNumberNode -> node.asNumberNode().get().value.toString()
             node.isStringNode -> node.asStringNode().get().value.dq()
             node.isBooleanNode -> node.asBooleanNode().get().value.toString()
             node.isNullNode -> "null"
+            // Note: Only empty maps and lists can be used as a default value for DocumentShape
+            // https://smithy.io/2.0/spec/type-refinement-traits.html#default-value-constraints
+            node.isArrayNode -> "listOf()"
+            node.isObjectNode -> "mapOf()"
             else -> throw RuntimeException("Unsupported node $node")
         }
 
