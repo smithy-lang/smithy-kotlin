@@ -248,7 +248,8 @@ class KotlinSymbolProvider(private val model: Model, private val settings: Kotli
         val instant = RuntimeTypes.Core.Instant
 
         return if (node.isFloatingPointNumber) {
-            val fromEpochMilliseconds = RuntimeTypes.Core.fromEpochMilliseconds // FIXME how to import this without access to a writer?
+            val fromEpochMilliseconds = RuntimeTypes.Core.fromEpochMilliseconds
+
             val value = node.value as Double
             val ms = round(value * 1e3).toLong()
             "$fromEpochMilliseconds.invoke($instant, $ms)"
