@@ -262,16 +262,16 @@ class KotlinSymbolProvider(private val model: Model, private val settings: Kotli
         val documentSymbol = RuntimeTypes.Core.Content.Document.fullName
         val content: String = when {
             node.isArrayNode -> {
-                val formattedElements: String = node.asArrayNode().getOrNull()?.elements?.joinToString() ?: ""
+                val formattedElements: String = node.asArrayNode().get().elements.joinToString()
                 "listOf($formattedElements)"
             }
             node.isObjectNode -> {
-                val members = node.asObjectNode().getOrNull()?.members
-                val formattedMembers: String = members?.map { "${it.key.value} to ${it.value}" }?.joinToString() ?: ""
+                val members = node.asObjectNode().get().members
+                val formattedMembers: String = members.map { "${it.key.value} to ${it.value}" }.joinToString()
                 "mapOf($formattedMembers)"
             }
-            node.isNumberNode -> node.asNumberNode().toString()
-            node.isStringNode -> node.asStringNode().getOrNull()?.value?.dq() ?: ""
+            node.isNumberNode -> node.asNumberNode().get().value.toString()
+            node.isStringNode -> node.asStringNode().get().value.dq()
             node.isBooleanNode -> node.asBooleanNode().get().value.toString()
             node.isNullNode -> "null"
             else -> throw RuntimeException("Unsupported node $node")
