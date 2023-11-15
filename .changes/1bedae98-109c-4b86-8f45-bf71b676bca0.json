@@ -1,0 +1,5 @@
+{
+    "id": "1bedae98-109c-4b86-8f45-bf71b676bca0",
+    "type": "feature",
+    "description": "Add support for modeling defaults on BlobShapes, DocumentShapes, and TimestampShapes"
+}
