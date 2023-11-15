@@ -1,0 +1,5 @@
+{
+    "id": "6467a679-d9c3-4741-8219-28d7d32abf5f",
+    "type": "misc",
+    "description": "refactor: make `Credentials` an interface"
+}
