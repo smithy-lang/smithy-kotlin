@@ -362,7 +362,6 @@ public actual abstract class SigningSuiteTestBase : HasSigner {
     /**
      * Parse a path containing an HTTP request into an in memory representation of an SDK request
      */
-    @OptIn(InternalAPI::class)
     private fun parseRequest(path: Path): HttpRequestBuilder {
         // we have to do some massaging of these input files to get a valid request out of the parser.
         var text = path.readText()

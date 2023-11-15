@@ -31,7 +31,7 @@ import kotlin.time.TimeSource
 internal const val TELEMETRY_SCOPE = "aws.smithy.kotlin.runtime.http.engine.okhttp"
 
 // see https://square.github.io/okhttp/features/events/#eventlistener for example callback flow
-@OptIn(ExperimentalTime::class, ExperimentalApi::class)
+@OptIn(ExperimentalApi::class)
 internal class HttpEngineEventListener(
     private val pool: ConnectionPool,
     private val hr: HostResolver,

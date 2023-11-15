@@ -27,7 +27,7 @@ import kotlin.time.TimeSource
  * @param operation the name of the operation
  * @param timeSource the time source to use for measuring elapsed time
  */
-@OptIn(ExperimentalTime::class, ExperimentalApi::class)
+@OptIn(ExperimentalApi::class)
 internal class OperationTelemetryInterceptor(
     private val metrics: OperationMetrics,
     private val service: String,

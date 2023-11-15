@@ -51,7 +51,6 @@ public fun DoubleHistogram.recordSeconds(value: Duration, attributes: Attributes
  * @param context (Optional) trace context to associate with this measurement
  * @param block the code to execute and return a result from
  */
-@OptIn(ExperimentalTime::class)
 public inline fun <T> DoubleHistogram.measureSeconds(attributes: Attributes = emptyAttributes(), context: Context? = null, block: () -> T): T {
     val tv = measureTimedValue(block)
     recordSeconds(tv.duration, attributes, context)
