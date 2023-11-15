@@ -16,7 +16,6 @@ import aws.smithy.kotlin.runtime.telemetry.trace.SpanKind
 import aws.smithy.kotlin.runtime.telemetry.trace.TraceSpan
 import aws.smithy.kotlin.runtime.util.*
 import kotlin.coroutines.CoroutineContext
-import kotlin.time.ExperimentalTime
 
 /**
  * Telemetry parameters used to instrument an operation
