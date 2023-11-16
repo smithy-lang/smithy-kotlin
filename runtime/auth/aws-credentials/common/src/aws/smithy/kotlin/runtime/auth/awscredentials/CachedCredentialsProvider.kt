@@ -61,9 +61,10 @@ public class CachedCredentialsProvider(
         return cachedCredentials.getOrLoad {
             coroutineContext.trace<CachedCredentialsProvider> { "refreshing credentials cache" }
             val providerCreds = source.resolve()
-            val expiration = listOfNotNull(providerCreds.expiration, clock.now() + expireCredentialsAfter).min()
-            val creds = providerCreds.copy(expiration = expiration)
-            ExpiringValue(creds, expiration)
+            val cacheExpiration = listOfNotNull(providerCreds.expiration, clock.now() + expireCredentialsAfter).min()
+            val credsExpiration = providerCreds.expiration ?: cacheExpiration
+            val creds = providerCreds.copy(expiration = credsExpiration)
+            ExpiringValue(creds, cacheExpiration)
         }
     }
 
