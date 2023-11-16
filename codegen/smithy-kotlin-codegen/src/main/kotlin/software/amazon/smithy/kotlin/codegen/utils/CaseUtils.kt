@@ -4,6 +4,7 @@
  */
 package software.amazon.smithy.kotlin.codegen.utils
 
+// These are whole words but cased differently, e.g. `IPv4`, `MiB`, `GiB`, `TtL`
 private val completeWords = listOf("ipv4", "ipv6", "sigv4", "mib", "gib", "kib", "ttl", "iot", "s3")
 
 /**
@@ -15,7 +16,6 @@ fun String.splitOnWordBoundaries(): List<String> {
     // https://github.com/aws/aws-sdk-java-v2/blob/2.20.162/utils/src/main/java/software/amazon/awssdk/utils/internal/CodegenNamingUtils.java#L36
     // but this has some edge cases it doesn't handle well
     val out = mutableListOf<String>()
-    // These are whole words but cased differently, e.g. `IPv4`, `MiB`, `GiB`, `TtL`
     var currentWord = ""
     var computeWordInProgress = true
 

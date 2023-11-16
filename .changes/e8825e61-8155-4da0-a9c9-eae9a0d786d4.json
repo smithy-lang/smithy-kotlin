@@ -1,5 +1,0 @@
-{
-    "id": "e8825e61-8155-4da0-a9c9-eae9a0d786d4",
-    "type": "misc",
-    "description": "Optimize `splitOnWordBoundaries` implementation"
-}
