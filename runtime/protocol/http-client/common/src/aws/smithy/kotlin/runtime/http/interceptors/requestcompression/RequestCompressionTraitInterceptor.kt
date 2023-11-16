@@ -7,7 +7,7 @@ package aws.smithy.kotlin.runtime.http.interceptors.requestcompression
 
 import aws.smithy.kotlin.runtime.client.ProtocolRequestInterceptorContext
 import aws.smithy.kotlin.runtime.http.interceptors.HttpInterceptor
-import aws.smithy.kotlin.runtime.http.interceptors.requestcompression.util.CompressionAlgorithm
+import aws.smithy.kotlin.runtime.http.interceptors.requestcompression.compressionalgorithms.CompressionAlgorithm
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.http.request.toBuilder
 
@@ -43,8 +43,7 @@ public class RequestCompressionTraitInterceptor(
 
                 // Attempt compression
                 val request = context.protocolRequest.toBuilder()
-                request.body = request.body
-                // TODO: Write compression
+                request.body = algorithm.compress(request.body)
                 request.headers.append("Content-Encoding", algorithm.id)
                 return request.build()
             }
