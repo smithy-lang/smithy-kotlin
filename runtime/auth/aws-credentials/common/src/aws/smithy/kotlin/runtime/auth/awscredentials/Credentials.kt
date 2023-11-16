@@ -15,6 +15,30 @@ import aws.smithy.kotlin.runtime.util.*
  * For more information see [AWS security credentials](https://docs.aws.amazon.com/general/latest/gr/aws-security-credentials.html#AccessKeys)
  */
 public interface Credentials : Identity {
+    public companion object {
+        /**
+         * Create a new [Credentials] instance
+         */
+        public operator fun invoke(
+            accessKeyId: String,
+            secretAccessKey: String,
+            sessionToken: String? = null,
+            expiration: Instant? = null,
+            providerName: String? = null,
+            attributes: Attributes? = null,
+        ): Credentials {
+            val resolvedAttributes = if (providerName != null && attributes?.getOrNull(IdentityAttributes.ProviderName) != providerName) {
+                val merged = attributes?.toMutableAttributes() ?: mutableAttributes()
+                merged.setIfValueNotNull(IdentityAttributes.ProviderName, providerName)
+                merged
+            } else {
+                attributes ?: emptyAttributes()
+            }
+
+            return CredentialsImpl(accessKeyId, secretAccessKey, sessionToken, expiration, resolvedAttributes)
+        }
+    }
+
     /**
      * Identifies the user interacting with services
      */
@@ -64,25 +88,3 @@ private data class CredentialsImpl(
     override val expiration: Instant? = null,
     override val attributes: Attributes = emptyAttributes(),
 ) : Credentials
-
-/**
- * Create a new [Credentials] instance
- */
-public fun Credentials(
-    accessKeyId: String,
-    secretAccessKey: String,
-    sessionToken: String? = null,
-    expiration: Instant? = null,
-    providerName: String? = null,
-    attributes: Attributes? = null,
-): Credentials {
-    val resolvedAttributes = if (providerName != null && attributes?.getOrNull(IdentityAttributes.ProviderName) != providerName) {
-        val merged = attributes?.toMutableAttributes() ?: mutableAttributes()
-        merged.setIfValueNotNull(IdentityAttributes.ProviderName, providerName)
-        merged
-    } else {
-        attributes ?: emptyAttributes()
-    }
-
-    return CredentialsImpl(accessKeyId, secretAccessKey, sessionToken, expiration, resolvedAttributes)
-}

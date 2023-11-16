@@ -13,7 +13,7 @@ package aws.smithy.kotlin.runtime.util
  */
 public data class AttributeKey<T>(public val name: String) {
     init {
-        require(name.isNotBlank()) { "AttributeKey name (`$name`) cannot be blank" }
+        require(name.isNotBlank()) { "AttributeKey name must not be blank" }
     }
     override fun toString(): String = "AttributeKey($name)"
 }
