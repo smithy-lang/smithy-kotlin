@@ -35,6 +35,25 @@ fun interface SectionWriter {
 }
 
 /**
+ * A [SectionWriter] that always appends to the existing section contents (if any).
+ */
+fun interface AppendingSectionWriter : SectionWriter {
+    override fun write(writer: KotlinWriter, previousValue: String?) {
+        if (!previousValue.isNullOrBlank()) {
+            writer.write(previousValue)
+        }
+        append(writer)
+    }
+
+    /**
+     * This function writes code for the bound section.
+     * @param writer the writer used to write contents to for the active section, contents are always appended
+     * in the case of multiple section writers being bound to the same section.
+     */
+    fun append(writer: KotlinWriter)
+}
+
+/**
  * Binds a [SectionId] to a specific [SectionWriter]. Integrations may provide
  * lists of these bindings to allow overriding of codegen output at defined points
  * in where [CodeWriter.markSection()] has been called.

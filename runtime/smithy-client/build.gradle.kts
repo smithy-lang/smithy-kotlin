@@ -13,6 +13,7 @@ kotlin {
         commonMain {
             dependencies {
                 api(project(":runtime:runtime-core"))
+                api(project(":runtime:auth:identity-api"))
             }
         }
         commonTest {

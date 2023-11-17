@@ -13,9 +13,9 @@ description = "Generates Kotlin code from Smithy models"
 extra["displayName"] = "Smithy :: Kotlin :: Codegen"
 extra["moduleName"] = "software.amazon.smithy.kotlin.codegen"
 
-val sdkVersion: String by project
+val codegenVersion: String by project
 group = "software.amazon.smithy.kotlin"
-version = sdkVersion
+version = codegenVersion
 
 dependencies {
     implementation(kotlin("stdlib-jdk8"))

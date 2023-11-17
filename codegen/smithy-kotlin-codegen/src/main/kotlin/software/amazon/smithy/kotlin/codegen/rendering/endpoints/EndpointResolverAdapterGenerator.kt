@@ -37,6 +37,12 @@ class EndpointResolverAdapterGenerator(
                 namespace = "${settings.pkg.name}.endpoints.internal"
                 definitionFile = "$name.kt"
             }
+
+        fun getResolveEndpointParamsFn(settings: KotlinSettings): Symbol =
+            buildSymbol {
+                name = "resolveEndpointParams"
+                namespace = "${settings.pkg.name}.endpoints.internal"
+            }
     }
 
     fun render() {
@@ -53,6 +59,7 @@ class EndpointResolverAdapterGenerator(
             .closeBlock("}")
             .write("")
             .call {
+                renderResolveEndpointParams()
                 // render a single version shared across instances
                 renderOperationContextBindingMap()
             }
@@ -96,15 +103,19 @@ class EndpointResolverAdapterGenerator(
             }
     }
 
-    private fun renderResolve() {
+    private fun renderResolveEndpointParams() {
+        // NOTE: this is internal as it's re-used for auth scheme resolver generators in specific instances where they
+        // fallback to endpoint rules (e.g. S3 & EventBridge)
         writer.withBlock(
-            "override suspend fun resolve(request: #T): #T {",
+            "internal fun #T(config: #T.Config, request: #T): #T {",
             "}",
+            getResolveEndpointParamsFn(ctx.settings),
+            ctx.symbolProvider.toSymbol(ctx.service),
             RuntimeTypes.HttpClient.Operation.ResolveEndpointRequest,
-            RuntimeTypes.SmithyClient.Endpoints.Endpoint,
+            EndpointParametersGenerator.getSymbol(ctx.settings),
         ) {
             writer.addImport(RuntimeTypes.Core.Utils.get)
-            withBlock("val params = #T {", "}", EndpointParametersGenerator.getSymbol(ctx.settings)) {
+            withBlock("return #T {", "}", EndpointParametersGenerator.getSymbol(ctx.settings)) {
                 // The SEP dictates a specific source order to use when binding parameters (from most specific to least):
                 // 1. staticContextParams (from operation shape)
                 // 2. contextParam (from member of operation input shape)
@@ -126,6 +137,17 @@ class EndpointResolverAdapterGenerator(
                 write("val opName = request.context[#T.OperationName]", RuntimeTypes.SmithyClient.SdkClientOption)
                 write("opContextBindings[opName]?.invoke(this, request)")
             }
+        }
+    }
+
+    private fun renderResolve() {
+        writer.withBlock(
+            "override suspend fun resolve(request: #T): #T {",
+            "}",
+            RuntimeTypes.HttpClient.Operation.ResolveEndpointRequest,
+            RuntimeTypes.SmithyClient.Endpoints.Endpoint,
+        ) {
+            write("val params = resolveEndpointParams(config, request)")
             write("val endpoint = config.endpointProvider.resolveEndpoint(params)")
             renderPostResolution()
             write("return endpoint")

@@ -29,7 +29,7 @@ import software.amazon.smithy.model.shapes.ShapeId
 /**
  * Register support for the `aws.auth#sigv4` auth scheme.
  */
-class Sigv4AuthSchemeIntegration : KotlinIntegration {
+class SigV4AuthSchemeIntegration : KotlinIntegration {
     // Allow integrations to customize the service config props, later integrations take precedence
     override val order: Byte = -50
 
@@ -86,7 +86,7 @@ open class SigV4AuthSchemeHandler : AuthSchemeHandler {
         } else {
             "#T()"
         }
-        writer.write(expr, RuntimeTypes.Auth.HttpAuthAws.sigv4)
+        writer.write(expr, RuntimeTypes.Auth.HttpAuthAws.sigV4)
     }
 
     override fun instantiateAuthSchemeExpr(ctx: ProtocolGenerator.GenerationContext, writer: KotlinWriter) {

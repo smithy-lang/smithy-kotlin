@@ -1,5 +1,22 @@
 # Changelog
 
+## [0.29.0] - 11/17/2023
+
+### Features
+* Add support for modeling defaults on BlobShapes, DocumentShapes, and TimestampShapes
+
+### Miscellaneous
+* **BREAKING**: make `Credentials` an interface
+* Upgrade dependencies to their latest versions, notably Kotlin 1.9.20
+
+## [0.28.2] - 11/14/2023
+
+### Features
+* Enable resolving auth schemes via endpoint resolution
+
+### Miscellaneous
+* Separate codegen project versioning
+
 ## [0.28.1] - 11/01/2023
 
 ### Fixes

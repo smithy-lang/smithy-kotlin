@@ -12,7 +12,10 @@ package aws.smithy.kotlin.runtime.util
  * @param name the name of the attribute (for diagnostics)
  */
 public data class AttributeKey<T>(public val name: String) {
-    override fun toString(): String = if (name.isBlank()) super.toString() else "ExecutionAttributeKey: $name"
+    init {
+        require(name.isNotBlank()) { "AttributeKey name must not be blank" }
+    }
+    override fun toString(): String = "AttributeKey($name)"
 }
 
 /**
@@ -59,6 +62,12 @@ public interface MutableAttributes : Attributes {
      */
     public fun <T : Any> computeIfAbsent(key: AttributeKey<T>, block: () -> T): T
 }
+
+/**
+ * Flag indicating if attributes is not empty
+ */
+public val Attributes.isNotEmpty: Boolean
+    get() = !isEmpty
 
 /**
  * Gets a value of the attribute for the specified [key] or throws an [IllegalStateException] if key does not exist
@@ -141,6 +150,21 @@ private class AttributesImpl constructor(seed: Attributes) : MutableAttributes {
 
     override val keys: Set<AttributeKey<*>>
         get() = map.keys
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other == null) return false
+        if (other !is Attributes) return false
+        if (keys.size != other.keys.size) return false
+
+        return keys.all {
+            @Suppress("UNCHECKED_CAST")
+            contains(it) && getOrNull(it as AttributeKey<Any>) == other.getOrNull(it)
+        }
+    }
+
+    override fun hashCode(): Int = map.hashCode()
+    override fun toString(): String = map.toString()
 }
 
 private object EmptyAttributes : Attributes {

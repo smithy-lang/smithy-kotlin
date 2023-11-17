@@ -16,7 +16,6 @@ import kotlin.math.floor
 import kotlin.math.min
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.DurationUnit
-import kotlin.time.ExperimentalTime
 import kotlin.time.TimeSource
 
 /**
@@ -24,7 +23,6 @@ import kotlin.time.TimeSource
  * @param config The configuration to use for this bucket.
  * @param timeSource A monotonic time source to use for calculating the temporal token fill of the bucket.
  */
-@OptIn(ExperimentalTime::class)
 public class StandardRetryTokenBucket internal constructor(
     override val config: Config,
     private val timeSource: TimeSource,
