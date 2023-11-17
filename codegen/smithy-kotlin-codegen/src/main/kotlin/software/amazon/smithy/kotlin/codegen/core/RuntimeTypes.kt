@@ -175,8 +175,8 @@ object RuntimeTypes {
             val Host = symbol("Host")
 
             object Url : RuntimeTypePackage(KotlinDependency.CORE, "net.url") {
+                val QueryParameters = symbol("QueryParameters")
                 val Url = symbol("Url")
-                val UrlDecoding = symbol("UrlDecoding")
             }
         }
     }

@@ -33,6 +33,7 @@ public class PercentEncoding(
         public val Path: Encoding = PercentEncoding("path", VALID_PCHAR)
         public val Query: Encoding = PercentEncoding("query string", VALID_QCHAR)
         public val Fragment: Encoding = PercentEncoding("fragment", VALID_FCHAR)
+        public val FormUrl: Encoding = PercentEncoding("form URL", VALID_QCHAR, mapOf(' ' to '+'))
 
         private fun percentAsciiEncode(char: Char) = buildString {
             val value = char.code and 0xff
