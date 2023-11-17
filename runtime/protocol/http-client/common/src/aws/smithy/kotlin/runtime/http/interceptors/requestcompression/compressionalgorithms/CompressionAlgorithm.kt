@@ -7,7 +7,7 @@ package aws.smithy.kotlin.runtime.http.interceptors.requestcompression.compressi
 
 import aws.smithy.kotlin.runtime.http.HttpBody
 
-public interface CompressionAlgorithm { // TODO: Make sure accessible from SDK client or just outside
+public interface CompressionAlgorithm {
     /**
      * The ID of the compression algorithm
      */
