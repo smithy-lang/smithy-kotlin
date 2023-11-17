@@ -320,8 +320,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                         // spec dictates member name and label name MUST be the same
                         val binding = pathBindings.find { binding ->
                             binding.memberName == segment.content
-                        }
-                            ?: throw CodegenException("failed to find corresponding member for httpLabel `${segment.content}")
+                        } ?: throw CodegenException("failed to find corresponding member for httpLabel `${segment.content}")
 
                         // shape must be string, number, boolean, or timestamp
                         val targetShape = ctx.model.expectShape(binding.member.target)
@@ -354,6 +353,10 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                         writer.write("add(\"#L\")", segment.content.toEscapedLiteral())
                     }
                 }
+            }
+
+            if (httpTrait.uri.segments.isEmpty()) {
+                writer.write("path.trailingSlash = true")
             }
         } else {
             // all literals, inline directly

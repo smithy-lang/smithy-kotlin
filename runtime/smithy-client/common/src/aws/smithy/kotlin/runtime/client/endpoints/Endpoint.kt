@@ -8,7 +8,6 @@ package aws.smithy.kotlin.runtime.client.endpoints
 import aws.smithy.kotlin.runtime.InternalApi
 import aws.smithy.kotlin.runtime.collections.ValuesMap
 import aws.smithy.kotlin.runtime.net.url.Url
-import aws.smithy.kotlin.runtime.util.AttributeKey
 import aws.smithy.kotlin.runtime.util.Attributes
 import aws.smithy.kotlin.runtime.util.emptyAttributes
 

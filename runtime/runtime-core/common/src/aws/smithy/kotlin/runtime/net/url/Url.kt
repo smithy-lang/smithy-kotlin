@@ -45,35 +45,39 @@ public class Url private constructor(
          * [UrlEncoding.All], meaning that the entire URL string is properly encoded.
          * @return A new [Url] instance
          */
-        public fun parse(value: String, encoding: UrlEncoding = UrlEncoding.All): Url = Url {
-            val scanner = Scanner(value)
-            scanner.requireAndSkip("://") { scheme = Scheme.parse(it) }
+        public fun parse(value: String, encoding: UrlEncoding = UrlEncoding.All): Url = try {
+            Url {
+                val scanner = Scanner(value)
+                scanner.requireAndSkip("://") { scheme = Scheme.parse(it) }
 
-            scanner.optionalAndSkip("@") {
-                userInfo.parseEncoded(it)
-            }
+                scanner.optionalAndSkip("@") {
+                    userInfo.parseEncoded(it)
+                }
 
-            scanner.upToOrEnd("/", "?", "#") { authority ->
-                val (h, p) = authority.parseHostPort()
-                host = h
-                p?.let { port = it }
-            }
+                scanner.upToOrEnd("/", "?", "#") { authority ->
+                    val (h, p) = authority.parseHostPort()
+                    host = h
+                    p?.let { port = it }
+                }
 
-            scanner.ifStartsWith("/") {
-                scanner.upToOrEnd("?", "#") {
-                    path.parse(it, encoding)
+                scanner.ifStartsWith("/") {
+                    scanner.upToOrEnd("?", "#") {
+                        path.parse(it, encoding)
+                    }
+                }
+
+                scanner.ifStartsWith("?") {
+                    scanner.upToOrEnd("#") {
+                        parameters.parse(it, encoding)
+                    }
+                }
+
+                scanner.ifStartsWithSkip("#") {
+                    scanner.upToOrEnd { parseFragment(it, encoding) }
                 }
             }
-
-            scanner.ifStartsWith("?") {
-                scanner.upToOrEnd("#") {
-                    parameters.parse(it, encoding)
-                }
-            }
-
-            scanner.ifStartsWithSkip("#") {
-                scanner.upToOrEnd { parseFragment(it, encoding) }
-            }
+        } catch (e: IllegalArgumentException) {
+            throw IllegalArgumentException("Cannot parse \"$value\" as a URL", e)
         }
 
         private fun stringify(
