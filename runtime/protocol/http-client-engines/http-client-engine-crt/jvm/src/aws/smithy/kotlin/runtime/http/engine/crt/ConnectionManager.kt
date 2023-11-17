@@ -97,7 +97,7 @@ internal class ConnectionManager(
                         authType = when {
                             proxyConfig.url.userInfo.isNotEmpty -> HttpProxyAuthorizationType.Basic
                             else -> HttpProxyAuthorizationType.None
-                        }
+                        },
                     )
                     else -> null
                 }

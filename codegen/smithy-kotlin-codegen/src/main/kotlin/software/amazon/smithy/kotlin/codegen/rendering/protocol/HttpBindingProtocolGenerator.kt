@@ -326,7 +326,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                             val tsLabel = formatInstant(
                                 "input.${binding.member.defaultName()}$nullCheck",
                                 tsFormat,
-                                forceString = true
+                                forceString = true,
                             )
                             tsLabel
                         } else {

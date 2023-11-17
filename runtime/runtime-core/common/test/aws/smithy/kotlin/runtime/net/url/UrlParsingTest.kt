@@ -6,7 +6,6 @@ package aws.smithy.kotlin.runtime.net.url
 
 import aws.smithy.kotlin.runtime.net.Host
 import aws.smithy.kotlin.runtime.net.Scheme
-import aws.smithy.kotlin.runtime.text.encoding.PercentEncoding
 import kotlin.test.*
 
 class UrlParsingTest {

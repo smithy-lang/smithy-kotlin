@@ -4,11 +4,9 @@
  */
 package aws.smithy.kotlin.runtime.net.url
 
-import aws.smithy.kotlin.runtime.collections.views.MutableListView
 import aws.smithy.kotlin.runtime.collections.views.asView
 import aws.smithy.kotlin.runtime.text.encoding.Encodable
 import aws.smithy.kotlin.runtime.text.encoding.PercentEncoding
-import aws.smithy.kotlin.runtime.util.CanDeepCopy
 
 /**
  * Represents the path component of a URL

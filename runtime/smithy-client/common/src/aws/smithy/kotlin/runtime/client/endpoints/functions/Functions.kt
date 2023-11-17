@@ -6,10 +6,12 @@
 package aws.smithy.kotlin.runtime.client.endpoints.functions
 
 import aws.smithy.kotlin.runtime.InternalApi
-import aws.smithy.kotlin.runtime.net.*
+import aws.smithy.kotlin.runtime.net.Host
+import aws.smithy.kotlin.runtime.net.isValidHostname
+import aws.smithy.kotlin.runtime.net.toUrlString
 import aws.smithy.kotlin.runtime.text.encoding.PercentEncoding
-import aws.smithy.kotlin.runtime.net.url.Url as SdkUrl
 import aws.smithy.kotlin.runtime.text.ensureSuffix
+import aws.smithy.kotlin.runtime.net.url.Url as SdkUrl
 
 @InternalApi
 public fun substring(value: String?, start: Int, stop: Int, reverse: Boolean): String? =

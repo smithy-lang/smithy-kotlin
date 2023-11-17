@@ -11,9 +11,6 @@ import aws.smithy.kotlin.runtime.http.*
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
 import aws.smithy.kotlin.runtime.net.url.QueryParameters
-import aws.smithy.kotlin.runtime.net.url.Url
-import aws.smithy.kotlin.runtime.text.ensurePrefix
-import aws.smithy.kotlin.runtime.text.ensureSuffix
 import kotlin.coroutines.coroutineContext
 import aws.sdk.kotlin.crt.http.Headers as HeadersCrt
 import aws.sdk.kotlin.crt.http.HttpRequest as HttpRequestCrt

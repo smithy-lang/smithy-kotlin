@@ -234,7 +234,7 @@ class HttpRequestTestBuilderTest {
                     val request = HttpRequest {
                         method = HttpMethod.POST
 
-                        url{
+                        url {
                             path.encoded = "/foo"
                             parameters.decodedParameters {
                                 add("baz", "quux")
