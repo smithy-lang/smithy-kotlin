@@ -1,6 +1,0 @@
-{
-    "id": "6467a679-d9c3-4741-8219-28d7d32abf5f",
-    "type": "misc",
-    "description": "**BREAKING**: make `Credentials` an interface",
-    "requiresMinorVersionBump": true
-}
