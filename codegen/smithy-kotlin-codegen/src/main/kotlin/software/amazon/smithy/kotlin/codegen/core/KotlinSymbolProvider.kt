@@ -13,6 +13,7 @@ import software.amazon.smithy.kotlin.codegen.utils.dq
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.knowledge.NullableIndex
 import software.amazon.smithy.model.node.Node
+import software.amazon.smithy.model.node.NodeType
 import software.amazon.smithy.model.node.NumberNode
 import software.amazon.smithy.model.shapes.*
 import software.amazon.smithy.model.traits.DefaultTrait
@@ -260,16 +261,16 @@ class KotlinSymbolProvider(private val model: Model, private val settings: Kotli
 
     private fun getDefaultValueForDocument(node: Node): String {
         val documentSymbol = RuntimeTypes.Core.Content.Document.fullName
-        val content: String = when {
-            node.isNumberNode -> node.asNumberNode().get().value.toString()
-            node.isStringNode -> node.asStringNode().get().value.dq()
-            node.isBooleanNode -> node.asBooleanNode().get().value.toString()
-            node.isNullNode -> "null"
+        val content: String = when (node.type) {
+            NodeType.NUMBER -> node.asNumberNode().get().value.toString()
+            NodeType.STRING -> node.asStringNode().get().value.dq()
+            NodeType.BOOLEAN -> node.asBooleanNode().get().value.toString()
+            NodeType.NULL -> "null"
             // Note: Only empty maps and lists can be used as a default value for DocumentShape
             // https://smithy.io/2.0/spec/type-refinement-traits.html#default-value-constraints
-            node.isArrayNode -> "listOf()"
-            node.isObjectNode -> "mapOf()"
-            else -> throw RuntimeException("Unsupported node $node")
+            NodeType.ARRAY -> "listOf()"
+            NodeType.OBJECT -> "mapOf()"
+            null -> throw RuntimeException("Default value of `null` node not supported")
         }
 
         return "$documentSymbol($content)"
