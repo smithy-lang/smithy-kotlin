@@ -124,7 +124,7 @@ internal inline fun <T> mapCrtException(block: () -> T): T =
         throw HttpException(
             message = fmtCrtErrorMessage(ex.errorCode),
             errorCode = mapCrtErrorCode(ex.errorName),
-            retryable = isRetryable(ex.errorName),
+            retryable = isRetryable(ex.errorCode, ex.errorName),
         )
     }
 
@@ -152,7 +152,7 @@ private fun mapCrtErrorCode(errorName: String?) = when (errorName) {
 
 internal fun mapCrtErrorCode(code: Int) = mapCrtErrorCode(CRT.errorName(code))
 
-internal fun isRetryable(errorName: String?) = errorName?.let {
+internal fun isRetryable(errorCode: Int, errorName: String?) = errorName?.let {
     when {
         // All IO errors are retryable
         it.startsWith("AWS_IO_") || it.startsWith("AWS_ERROR_IO_") -> true
@@ -160,11 +160,8 @@ internal fun isRetryable(errorName: String?) = errorName?.let {
         // Any connection closure is retryable
         it in connectionClosedErrors -> true
 
-        // All proxy errors are retryable
-        it.startsWith("AWS_ERROR_HTTP_PROXY_") -> true
-
-        // Any connection manager issues are retryable
-        it.startsWith("AWS_ERROR_HTTP_CONNECTION_MANAGER_") -> true
+        // Specific HTTP errors are retryable
+        it.startsWith("AWS_ERROR_HTTP_") -> CRT.isHttpErrorRetryable(errorCode)
 
         // Any other errors are not retryable
         else -> false

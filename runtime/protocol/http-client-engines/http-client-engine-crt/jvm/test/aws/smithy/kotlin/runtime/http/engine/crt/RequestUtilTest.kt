@@ -11,36 +11,35 @@ import kotlin.test.assertTrue
 class RequestUtilTest {
     @Test
     fun testExceptionRetryability() {
-        setOf(
+        mapOf(
             // All IO errors are retryable
-            "AWS_IO_SOCKET_NETWORK_DOWN",
-            "AWS_ERROR_IO_OPERATION_CANCELLED",
-            "AWS_IO_DNS_NO_ADDRESS_FOR_HOST",
+            1050 to "AWS_IO_SOCKET_NETWORK_DOWN",
+            1042 to "AWS_ERROR_IO_OPERATION_CANCELLED",
+            1060 to "AWS_IO_DNS_NO_ADDRESS_FOR_HOST",
 
             // Any connection closure is retryable
-            "AWS_ERROR_HTTP_CONNECTION_CLOSED",
-            "AWS_ERROR_HTTP_SERVER_CLOSED",
-            "AWS_IO_BROKEN_PIPE",
+            2058 to "AWS_ERROR_HTTP_CONNECTION_CLOSED",
+            2070 to "AWS_ERROR_HTTP_SERVER_CLOSED",
+            1044 to "AWS_IO_BROKEN_PIPE",
 
-            // All proxy errors are retryable
-            "AWS_ERROR_HTTP_PROXY_CONNECT_FAILED",
-            "AWS_ERROR_HTTP_PROXY_STRATEGY_NTLM_CHALLENGE_TOKEN_MISSING",
-            "AWS_ERROR_HTTP_PROXY_STRATEGY_TOKEN_RETRIEVAL_FAILURE",
+            // Specific HTTP errors are retryable
+            2071 to "AWS_ERROR_HTTP_PROXY_CONNECT_FAILED",
+            2068 to "AWS_ERROR_HTTP_CONNECTION_MANAGER_INVALID_STATE_FOR_ACQUIRE",
+            2069 to "AWS_ERROR_HTTP_CONNECTION_MANAGER_VENDED_CONNECTION_UNDERFLOW",
+        ).forEach { (code, name) ->
+            assertTrue(isRetryable(code, name), "Expected $name to be retryable!")
+        }
 
-            // Any connection manager issues are retryable
-            "AWS_ERROR_HTTP_CONNECTION_MANAGER_INVALID_STATE_FOR_ACQUIRE",
-            "AWS_ERROR_HTTP_CONNECTION_MANAGER_VENDED_CONNECTION_UNDERFLOW",
-            "AWS_ERROR_HTTP_CONNECTION_MANAGER_SHUTTING_DOWN",
-        ).forEach { name -> assertTrue(isRetryable(name), "Expected $name to be retryable!") }
-
-        setOf(
+        mapOf(
             // Any other errors are not retryable
-            "AWS_ERROR_HTTP_INVALID_METHOD",
-            "AWS_ERROR_PKCS11_CKR_CANCEL",
-            "AWS_ERROR_PEM_MALFORMED",
+            2053 to "AWS_ERROR_HTTP_INVALID_METHOD",
+            1078 to "AWS_ERROR_PKCS11_CKR_CANCEL",
+            1179 to "AWS_ERROR_PEM_MALFORMED",
 
             // Unknown error codes are not retryable
-            null,
-        ).forEach { name -> assertFalse(isRetryable(name), "Expected $name to not be retryable!") }
+            0 to null,
+        ).forEach { (code, name) ->
+            assertFalse(isRetryable(code, name), "Expected $name to not be retryable!")
+        }
     }
 }
