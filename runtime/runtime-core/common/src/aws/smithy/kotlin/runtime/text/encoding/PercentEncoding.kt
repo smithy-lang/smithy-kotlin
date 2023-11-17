@@ -28,6 +28,7 @@ public class PercentEncoding(
 
         private const val UPPER_HEX = "0123456789ABCDEF"
 
+        public val Host: Encoding = PercentEncoding("host", UNRESERVED + ':') // e.g., for IPv6 zone ID encoding
         public val UserInfo: Encoding = PercentEncoding("user info", VALID_UCHAR)
         public val Path: Encoding = PercentEncoding("path", VALID_PCHAR)
         public val Query: Encoding = PercentEncoding("query string", VALID_QCHAR)

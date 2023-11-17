@@ -4,15 +4,11 @@
  */
 package aws.smithy.kotlin.runtime.net.url
 
-import aws.smithy.kotlin.runtime.net.Host
-import aws.smithy.kotlin.runtime.net.Scheme
-import aws.smithy.kotlin.runtime.net.isIpv6
-import aws.smithy.kotlin.runtime.net.toUrlString
+import aws.smithy.kotlin.runtime.net.*
 import aws.smithy.kotlin.runtime.text.Scanner
 import aws.smithy.kotlin.runtime.text.encoding.Encodable
 import aws.smithy.kotlin.runtime.text.encoding.PercentEncoding
 import aws.smithy.kotlin.runtime.text.ensurePrefix
-import aws.smithy.kotlin.runtime.text.urlDecodeComponent
 import aws.smithy.kotlin.runtime.util.CanDeepCopy
 
 /**
@@ -58,7 +54,7 @@ public class Url private constructor(
             }
 
             scanner.upToOrEnd("/", "?", "#") { authority ->
-                val (h, p) = authority.splitHostPort()
+                val (h, p) = authority.parseHostPort()
                 host = h
                 p?.let { port = it }
             }
@@ -316,33 +312,30 @@ public class Url private constructor(
     }
 }
 
-private fun String.splitHostPort(): Pair<Host, Int?> {
-    val lBracketIndex = indexOf('[')
-    val rBracketIndex = indexOf(']')
-    val lastColonIndex = lastIndexOf(":")
-    val hostEndIndex = when {
-        rBracketIndex != -1 -> rBracketIndex + 1
-        lastColonIndex != -1 -> lastColonIndex
-        else -> length
-    }
+private fun String.parseHostPort(): Pair<Host, Int?> =
+    if (startsWith('[')) {
+        val bracketEnd = indexOf(']')
+        require(bracketEnd > 0) { "unmatched [ or ]" }
 
-    require(lBracketIndex == -1 && rBracketIndex == -1 || lBracketIndex < rBracketIndex) { "unmatched [ or ]" }
-    require(lBracketIndex <= 0) { "unexpected characters before [" }
-    require(rBracketIndex == -1 || rBracketIndex == hostEndIndex - 1) { "unexpected characters after ]" }
+        val encodedHostName = substring(1, bracketEnd)
+        val decodedHostName = PercentEncoding.Host.decode(encodedHostName)
+        val host = Host.parse(decodedHostName)
+        require(host is Host.IpAddress && host.address is IpV6Addr) { "non-ipv6 host was enclosed in []-brackets" }
 
-    val host = if (lBracketIndex != -1) {
-        substring(lBracketIndex + 1 until rBracketIndex)
+        val port = when (getOrNull(bracketEnd + 1)) {
+            ':' -> substring(bracketEnd + 2).toInt()
+            null -> null
+            else -> throw IllegalArgumentException("unexpected characters after ]")
+        }
+
+        host to port
     } else {
-        substring(0 until hostEndIndex)
-    }
+        val parts = split(':')
 
-    val decodedHost = host.urlDecodeComponent()
-    if (lBracketIndex != -1 && rBracketIndex != -1 && !decodedHost.isIpv6()) {
-        throw IllegalArgumentException("non-ipv6 host was enclosed in []-brackets")
-    }
+        val decodedHostName = PercentEncoding.Host.decode(parts[0])
+        val host = Host.parse(decodedHostName)
+        require(host !is Host.IpAddress || host.address !is IpV6Addr) { "ipv6 host given without []-brackets" }
 
-    return Pair(
-        Host.parse(decodedHost),
-        if (hostEndIndex != -1 && hostEndIndex != length) substring(hostEndIndex + 1).toInt() else null,
-    )
-}
+        val port = parts.getOrNull(1)?.toInt()
+        host to port
+    }

@@ -7,9 +7,9 @@ package aws.smithy.kotlin.runtime.client.endpoints.functions
 
 import aws.smithy.kotlin.runtime.InternalApi
 import aws.smithy.kotlin.runtime.net.*
+import aws.smithy.kotlin.runtime.text.encoding.PercentEncoding
 import aws.smithy.kotlin.runtime.net.url.Url as SdkUrl
 import aws.smithy.kotlin.runtime.text.ensureSuffix
-import aws.smithy.kotlin.runtime.text.urlEncodeComponent
 
 @InternalApi
 public fun substring(value: String?, start: Int, stop: Int, reverse: Boolean): String? =
@@ -28,7 +28,7 @@ public fun isValidHostLabel(value: String?, allowSubdomains: Boolean): Boolean =
     } ?: false
 
 @InternalApi
-public fun uriEncode(value: String): String = value.urlEncodeComponent(formUrlEncode = false)
+public fun uriEncode(value: String): String = PercentEncoding.Query.encode(value)
 
 @InternalApi
 public fun parseUrl(value: String?): Url? =

@@ -4,7 +4,7 @@
  */
 package aws.smithy.kotlin.runtime.net
 
-import aws.smithy.kotlin.runtime.text.urlEncodeComponent
+import aws.smithy.kotlin.runtime.text.encoding.PercentEncoding
 
 /**
  * A [Host] represents a parsed internet host. This may be an internet address (IPv4, IPv6) or a domain name.
@@ -39,13 +39,10 @@ private fun hostParseImpl(host: String): Host {
 public fun Host.toUrlString(): String =
     when (this) {
         is Host.IpAddress -> when (address) {
-            is IpV6Addr -> {
-                if (address.zoneId == null) {
-                    "[$address]"
-                } else {
-                    val withoutZoneId = address.copy(zoneId = null)
-                    "[$withoutZoneId%25${address.zoneId.urlEncodeComponent()}]"
-                }
+            is IpV6Addr -> buildString {
+                append('[')
+                append(PercentEncoding.Host.encode(address.toString()))
+                append(']')
             }
             else -> address.toString()
         }

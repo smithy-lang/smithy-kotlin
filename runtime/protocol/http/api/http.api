@@ -309,6 +309,3 @@ public final class aws/smithy/kotlin/runtime/http/response/HttpResponseKt {
 public final class aws/smithy/kotlin/runtime/http/util/HeaderListsKt {
 }
 
-public final class aws/smithy/kotlin/runtime/http/util/TextKt {
-}
-

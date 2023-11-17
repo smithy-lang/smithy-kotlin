@@ -18,7 +18,6 @@ import aws.smithy.kotlin.runtime.net.url.Url
 import aws.smithy.kotlin.runtime.net.url.UrlPath
 import aws.smithy.kotlin.runtime.text.encoding.PercentEncoding
 import aws.smithy.kotlin.runtime.text.encoding.encodeToHex
-import aws.smithy.kotlin.runtime.text.urlEncodeComponent
 import aws.smithy.kotlin.runtime.time.TimestampFormat
 import kotlinx.coroutines.withContext
 
