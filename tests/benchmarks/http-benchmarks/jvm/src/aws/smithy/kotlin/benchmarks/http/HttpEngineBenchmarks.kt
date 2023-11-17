@@ -86,7 +86,7 @@ open class HttpEngineBenchmarks {
             scheme = Scheme.HTTP
             host = Host.Domain("localhost")
             port = serverPort
-            path = "/hello"
+            path.decoded = "/hello"
         }
 
         headers {
@@ -99,7 +99,7 @@ open class HttpEngineBenchmarks {
             scheme = Scheme.HTTP
             host = Host.Domain("localhost")
             port = serverPort
-            path = "/download"
+            path.decoded = "/download"
         }
 
         headers {
@@ -113,7 +113,7 @@ open class HttpEngineBenchmarks {
             method = HttpMethod.POST
             host = Host.Domain("localhost")
             port = serverPort
-            path = "/upload"
+            path.decoded = "/upload"
         }
         body = HttpBody.fromBytes(largeData)
     }
@@ -125,7 +125,7 @@ open class HttpEngineBenchmarks {
             method = HttpMethod.POST
             host = Host.Domain("localhost")
             port = serverPort
-            path = "/upload"
+            path.decoded = "/upload"
         }
         body = if (useSource) {
             object : HttpBody.SourceContent() {

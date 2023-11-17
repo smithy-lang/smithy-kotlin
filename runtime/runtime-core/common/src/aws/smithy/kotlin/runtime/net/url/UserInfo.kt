@@ -41,16 +41,41 @@ public class UserInfo private constructor(public val userName: Encodable, public
         public fun parseEncoded(encoded: String): UserInfo = UserInfo { parseEncoded(encoded) }
     }
 
+    init {
+        require(password.isEmpty || userName.isNotEmpty) { "Cannot have a password without a user name" }
+    }
+
+    public val isEmpty: Boolean = userName.isEmpty && password.isEmpty
+    public val isNotEmpty: Boolean = !isEmpty
+
     /**
      * Copy the properties of this [UserInfo] instance into a new [Builder] object. Any changes to the builder
      * *will not* affect this instance.
      */
     public fun toBuilder(): Builder = Builder(this)
 
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other == null || this::class != other::class) return false
+
+        other as UserInfo
+
+        if (userName != other.userName) return false
+        if (password != other.password) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = userName.hashCode()
+        result = 31 * result + password.hashCode()
+        return result
+    }
+
     override fun toString(): String = when {
         userName.isEmpty -> ""
         password.isEmpty -> userName.encoded
-        else -> "${userName.encoded}:${userName.decoded}"
+        else -> "${userName.encoded}:${password.encoded}"
     }
 
     /**
@@ -76,7 +101,7 @@ public class UserInfo private constructor(public val userName: Encodable, public
          */
         public var encodedUserName: String
             get() = userName.encoded
-            set(value) { userName = PercentEncoding.UserInfo.encodableFromDecoded(value) }
+            set(value) { userName = PercentEncoding.UserInfo.encodableFromEncoded(value) }
 
         private var password = userInfo?.password ?: Encodable.Empty
 
@@ -117,5 +142,15 @@ public class UserInfo private constructor(public val userName: Encodable, public
          * @return A new [UserInfo] instance
          */
         public fun build(): UserInfo = UserInfo(userName, password)
+
+        public fun copyFrom(other: UserInfo) {
+            userName = other.userName
+            password = other.password
+        }
+
+        public fun copyFrom(other: Builder) {
+            userName = other.userName
+            password = other.password
+        }
     }
 }

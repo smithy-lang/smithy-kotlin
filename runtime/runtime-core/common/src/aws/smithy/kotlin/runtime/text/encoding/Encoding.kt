@@ -25,7 +25,7 @@ public interface Encoding {
     public fun encodableFromDecoded(decoded: String): Encodable = Encodable(decoded, encode(decoded), this)
     public fun encodableFromEncoded(encoded: String): Encodable {
         val decoded = decode(encoded)
-        val reencoded = encode(decoded) // TODO is this right?
-        return Encodable(decoded, reencoded, this)
+        // val reencoded = encode(decoded) // TODO is this right?
+        return Encodable(decoded, encoded, this)
     }
 }

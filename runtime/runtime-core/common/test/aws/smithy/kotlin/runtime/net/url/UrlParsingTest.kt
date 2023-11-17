@@ -2,12 +2,14 @@
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
  * SPDX-License-Identifier: Apache-2.0
  */
-package aws.smithy.kotlin.runtime.net
+package aws.smithy.kotlin.runtime.net.url
 
+import aws.smithy.kotlin.runtime.net.Host
+import aws.smithy.kotlin.runtime.net.Scheme
+import aws.smithy.kotlin.runtime.text.encoding.PercentEncoding
 import kotlin.test.*
-import kotlin.test.Test
 
-class UrlParserTest {
+class UrlParsingTest {
     @Test
     fun testScheme() {
         assertEquals(Scheme.HTTP, Url.parse("http://host").scheme)
@@ -142,78 +144,92 @@ class UrlParserTest {
 
     @Test
     fun testNoPath() {
-        assertEquals("", Url.parse("https://host").path)
-        assertEquals("", Url.parse("https://host/").path)
-        assertEquals("", Url.parse("https://host?").path)
-        assertEquals("", Url.parse("https://host#").path)
-        assertEquals("", Url.parse("https://host/?").path)
-        assertEquals("", Url.parse("https://host/#").path)
-        assertEquals("", Url.parse("https://host?#").path)
-        assertEquals("", Url.parse("https://host/?#").path)
+        assertEquals("", Url.parse("https://host").path.toString())
+        assertEquals("", Url.parse("https://host?").path.toString())
+        assertEquals("", Url.parse("https://host#").path.toString())
+        assertEquals("", Url.parse("https://host?#").path.toString())
     }
 
     @Test
     fun testPath() {
-        assertEquals("/path", Url.parse("https://host/path").path)
-        assertEquals("/path", Url.parse("https://host:80/path").path)
-        assertEquals("/path/suffix", Url.parse("https://host:80/path%2Fsuffix").path)
-        assertEquals(
-            "/path%2Fsuffix",
-            Url.parse("https://host:80/path%2Fsuffix", UrlDecoding.DecodeAll - UrlDecoding.DecodePath).path,
-        )
+        assertEquals("/path", Url.parse("https://host/path").path.toString())
+        assertEquals("/path", Url.parse("https://host:80/path").path.toString())
+        assertEquals("/path%2Fsuffix", Url.parse("https://host:80/path%2Fsuffix").path.toString())
+        assertEquals("/path%252Fsuffix", Url.parse("https://host:80/path%2Fsuffix", UrlEncoding.None).path.toString())
+
+        // Empty paths with a trailing slash
+        assertEquals("/", Url.parse("https://host/").path.toString())
+        assertEquals("/", Url.parse("https://host/?").path.toString())
+        assertEquals("/", Url.parse("https://host/#").path.toString())
+        assertEquals("/", Url.parse("https://host/?#").path.toString())
     }
 
     @Test
     fun testNoQuery() {
-        assertEquals(QueryParameters.Empty, Url.parse("https://host").parameters)
-        assertEquals(QueryParameters.Empty, Url.parse("https://host/").parameters)
-        assertEquals(QueryParameters.Empty, Url.parse("https://host?").parameters)
-        assertEquals(QueryParameters.Empty, Url.parse("https://host#").parameters)
-        assertEquals(QueryParameters.Empty, Url.parse("https://host/?").parameters)
-        assertEquals(QueryParameters.Empty, Url.parse("https://host/#").parameters)
-        assertEquals(QueryParameters.Empty, Url.parse("https://host?#").parameters)
-        assertEquals(QueryParameters.Empty, Url.parse("https://host/?#").parameters)
+        listOf(
+            "https://host",
+            "https://host/",
+            "https://host#",
+            "https://host/#",
+        ).forEach { url ->
+            val parsed = Url.parse(url).parameters
+            assertEquals(0, parsed.size)
+            assertFalse(parsed.forceQuery, "Expected forceQuery=false for $url")
+        }
     }
 
     @Test
     fun testQuery() {
         assertEquals(
-            QueryParameters { append("k", "v") },
+            QueryParameters { decodedParameters { add("k", "v") } },
             Url.parse("https://host?k=v").parameters,
         )
         assertEquals(
-            QueryParameters { append("k", "v") },
+            QueryParameters { decodedParameters { add("k", "v") } },
             Url.parse("https://host/path?k=v").parameters,
         )
         assertEquals(
-            QueryParameters { append("k", "v") },
+            QueryParameters { decodedParameters { add("k", "v") } },
             Url.parse("https://host?k=v#fragment").parameters,
         )
         assertEquals(
-            QueryParameters { append("k", "v") },
+            QueryParameters { decodedParameters { add("k", "v") } },
             Url.parse("https://host/path?k=v#fragment").parameters,
         )
 
         assertEquals(
             QueryParameters {
-                appendAll("k", listOf("v", "v"))
-                appendAll("k2", listOf("v 2", "v&2"))
-                appendAll("k 3", listOf("v3"))
+                decodedParameters {
+                    addAll("k", listOf("v", "v"))
+                    addAll("k2", listOf("v 2", "v&2"))
+                    addAll("k 3", listOf("v3"))
+                }
             },
             Url.parse("https://host/path?k=v&k=v&k2=v%202&k2=v%262&k%203=v3#fragment").parameters,
         )
 
         assertEquals(
             QueryParameters {
-                appendAll("k", listOf("v", "v"))
-                appendAll("k2", listOf("v%202", "v%262"))
-                appendAll("k%203", listOf("v3"))
+                decodedParameters {
+                    addAll("k", listOf("v", "v"))
+                    addAll("k2", listOf("v%202", "v%262"))
+                    addAll("k%203", listOf("v3"))
+                }
             },
-            Url.parse(
-                "https://host/path?k=v&k=v&k2=v%202&k2=v%262&k%203=v3#fragment",
-                UrlDecoding.DecodeAll - UrlDecoding.DecodeQueryParameters,
-            ).parameters,
+            Url.parse("https://host/path?k=v&k=v&k2=v%202&k2=v%262&k%203=v3#fragment", UrlEncoding.None).parameters,
         )
+
+        // No query parameters but an empty query string (i.e., forceQuery)
+        listOf(
+            "https://host?",
+            "https://host/?",
+            "https://host?#",
+            "https://host/?#",
+        ).forEach { url ->
+            val parsed = Url.parse(url).parameters
+            assertEquals(0, parsed.size)
+            assertTrue(parsed.forceQuery, "Expected forceQuery=true for $url")
+        }
     }
 
     @Test
@@ -221,49 +237,55 @@ class UrlParserTest {
         assertNull(Url.parse("https://host").fragment)
         assertNull(Url.parse("https://host/").fragment)
         assertNull(Url.parse("https://host?").fragment)
-        assertNull(Url.parse("https://host#").fragment)
         assertNull(Url.parse("https://host/?").fragment)
-        assertNull(Url.parse("https://host/#").fragment)
-        assertNull(Url.parse("https://host?#").fragment)
-        assertNull(Url.parse("https://host/?#").fragment)
     }
 
     @Test
     fun testFragment() {
-        assertEquals("frag&5ment", Url.parse("https://host#frag%265ment").fragment)
-        assertEquals("frag&5ment", Url.parse("https://host/#frag%265ment").fragment)
-        assertEquals("frag&5ment", Url.parse("https://host?#frag%265ment").fragment)
-        assertEquals("frag&5ment", Url.parse("https://host/?#frag%265ment").fragment)
-        assertEquals("frag&5ment", Url.parse("https://host/path#frag%265ment").fragment)
-        assertEquals("frag&5ment", Url.parse("https://host/path?#frag%265ment").fragment)
-        assertEquals("frag&5ment", Url.parse("https://host?k=v#frag%265ment").fragment)
-        assertEquals("frag&5ment", Url.parse("https://host/?k=v#frag%265ment").fragment)
-        assertEquals("frag&5ment", Url.parse("https://host/path?k=v#frag%265ment").fragment)
+        assertEquals("frag&5ment", Url.parse("https://host#frag%265ment").fragment!!.decoded)
+        assertEquals("frag&5ment", Url.parse("https://host/#frag%265ment").fragment!!.decoded)
+        assertEquals("frag&5ment", Url.parse("https://host?#frag%265ment").fragment!!.decoded)
+        assertEquals("frag&5ment", Url.parse("https://host/?#frag%265ment").fragment!!.decoded)
+        assertEquals("frag&5ment", Url.parse("https://host/path#frag%265ment").fragment!!.decoded)
+        assertEquals("frag&5ment", Url.parse("https://host/path?#frag%265ment").fragment!!.decoded)
+        assertEquals("frag&5ment", Url.parse("https://host?k=v#frag%265ment").fragment!!.decoded)
+        assertEquals("frag&5ment", Url.parse("https://host/?k=v#frag%265ment").fragment!!.decoded)
+        assertEquals("frag&5ment", Url.parse("https://host/path?k=v#frag%265ment").fragment!!.decoded)
 
         assertEquals(
             "frag%265ment",
-            Url.parse(
-                "https://host/path?k=v#frag%265ment",
-                UrlDecoding.DecodeAll - UrlDecoding.DecodeFragment,
-            ).fragment,
+            Url.parse("https://host/path?k=v#frag%265ment", UrlEncoding.None).fragment!!.decoded,
         )
+
+        // No fragment text but a fragment separator (i.e., `#`)
+        assertEquals("", Url.parse("https://host#").fragment!!.decoded)
+        assertEquals("", Url.parse("https://host/#").fragment!!.decoded)
+        assertEquals("", Url.parse("https://host?#").fragment!!.decoded)
+        assertEquals("", Url.parse("https://host/?#").fragment!!.decoded)
     }
 
     @Test
     fun testUserInfo() {
-        assertEquals(UserInfo("user:", "pass@"), Url.parse("https://user%3A:pass%40@host").userInfo)
+        val expected = UserInfo {
+            decodedUserName = "user:"
+            decodedPassword = "pass@"
+        }
+        assertEquals(expected, Url.parse("https://user%3A:pass%40@host").userInfo)
     }
 
     @Test
     fun testComplete() {
-        val expected = UrlBuilder {
+        val expected = Url {
             scheme = Scheme.HTTPS
-            userInfo = UserInfo("userinfo user", "userinfo pass")
+            userInfo {
+                decodedUserName = "userinfo user"
+                decodedPassword = "userinfo pass"
+            }
             host = Host.Domain("hostname.info")
             port = 4433
-            path = "/pa th"
-            parameters.append("query", "val ue")
-            fragment = "frag ment"
+            path.decoded = "/pa th"
+            parameters.decodedParameters.add("query", "val ue")
+            decodedFragment = "frag ment"
         }
         val actual = Url.parse("https://userinfo%20user:userinfo%20pass@hostname.info:4433/pa%20th?query=val%20ue#frag%20ment")
         assertEquals(expected, actual)

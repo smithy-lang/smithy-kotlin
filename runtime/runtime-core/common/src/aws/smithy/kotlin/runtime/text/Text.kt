@@ -222,4 +222,7 @@ public fun String.urlReencodeComponent(formUrlDecode: Boolean = false, formUrlEn
     urlDecodeComponent(formUrlDecode).urlEncodeComponent(formUrlEncode)
 
 @InternalApi
+public fun String.ensurePrefix(prefix: String): String = if (startsWith(prefix)) this else prefix + this
+
+@InternalApi
 public fun String.ensureSuffix(suffix: String): String = if (endsWith(suffix)) this else plus(suffix)

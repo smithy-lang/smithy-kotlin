@@ -4,6 +4,7 @@
  */
 package aws.smithy.kotlin.runtime.net
 
+/*
 import aws.smithy.kotlin.runtime.InternalApi
 import aws.smithy.kotlin.runtime.text.encodeUrlPath
 import aws.smithy.kotlin.runtime.text.urlDecodeComponent
@@ -170,3 +171,4 @@ public fun UserInfo(value: String): UserInfo {
         if (info.size > 1) info[1].urlDecodeComponent() else "",
     )
 }
+*/

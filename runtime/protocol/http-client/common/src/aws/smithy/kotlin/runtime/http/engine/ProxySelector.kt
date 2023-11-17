@@ -5,7 +5,7 @@
 
 package aws.smithy.kotlin.runtime.http.engine
 
-import aws.smithy.kotlin.runtime.net.Url
+import aws.smithy.kotlin.runtime.net.url.Url
 
 /**
  * Selects the proxy to use for a given [Url]. Implementations **MUST** be stable and return the

@@ -4,6 +4,7 @@
  */
 package aws.smithy.kotlin.runtime.net
 
+/*
 import aws.smithy.kotlin.runtime.InternalApi
 import aws.smithy.kotlin.runtime.collections.ValuesMap
 import aws.smithy.kotlin.runtime.collections.ValuesMapBuilder
@@ -109,3 +110,4 @@ public fun String.splitAsQueryParameters(): QueryParameters {
     }
     return builder.build()
 }
+*/

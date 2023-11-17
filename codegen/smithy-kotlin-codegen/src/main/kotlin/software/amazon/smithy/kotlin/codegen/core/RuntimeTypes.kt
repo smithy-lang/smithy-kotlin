@@ -173,13 +173,11 @@ object RuntimeTypes {
 
         object Net : RuntimeTypePackage(KotlinDependency.CORE, "net") {
             val Host = symbol("Host")
-            val parameters = symbol("parameters")
-            val QueryParameters = symbol("QueryParameters")
-            val QueryParametersBuilder = symbol("QueryParametersBuilder")
-            val splitAsQueryParameters = symbol("splitAsQueryParameters")
-            val toQueryParameters = symbol("toQueryParameters")
-            val Url = symbol("Url")
-            val UrlDecoding = symbol("UrlDecoding")
+
+            object Url : RuntimeTypePackage(KotlinDependency.CORE, "net.url") {
+                val Url = symbol("Url")
+                val UrlDecoding = symbol("UrlDecoding")
+            }
         }
     }
 

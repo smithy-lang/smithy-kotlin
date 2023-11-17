@@ -4,9 +4,11 @@
  */
 package aws.smithy.kotlin.runtime.net.url
 
-import aws.smithy.kotlin.runtime.collections.MutableListView
+import aws.smithy.kotlin.runtime.collections.views.MutableListView
+import aws.smithy.kotlin.runtime.collections.views.asView
 import aws.smithy.kotlin.runtime.text.encoding.Encodable
 import aws.smithy.kotlin.runtime.text.encoding.PercentEncoding
+import aws.smithy.kotlin.runtime.util.CanDeepCopy
 
 /**
  * Represents the path component of a URL
@@ -18,6 +20,11 @@ public class UrlPath private constructor(
     public val trailingSlash: Boolean = false,
 ) {
     public companion object {
+        /**
+         * No URL path
+         */
+        public val Empty: UrlPath = UrlPath { }
+
         /**
          * Create a new [UrlPath] via a DSL builder block
          * @param block The code to apply to the builder
@@ -60,6 +67,24 @@ public class UrlPath private constructor(
      */
     public fun toBuilder(): Builder = Builder(this)
 
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other == null || this::class != other::class) return false
+
+        other as UrlPath
+
+        if (segments != other.segments) return false
+        if (trailingSlash != other.trailingSlash) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = segments.hashCode()
+        result = 31 * result + trailingSlash.hashCode()
+        return result
+    }
+
     override fun toString(): String = asEncoded(segments, trailingSlash)
 
     /**
@@ -70,8 +95,6 @@ public class UrlPath private constructor(
          * Initialize an empty [UrlPath] builder
          */
         public constructor() : this(null)
-
-        private val segments: MutableList<Encodable> = path?.segments?.toMutableList() ?: mutableListOf()
 
         /**
          * Get or set the URL path as a **decoded** string.
@@ -87,28 +110,66 @@ public class UrlPath private constructor(
             get() = asEncoded(segments, trailingSlash)
             set(value) { parseEncoded(value) }
 
+        public val segments: MutableList<Encodable> = path?.segments?.toMutableList() ?: mutableListOf()
+
         /**
          * A mutable list of **decoded** path segments. Any changes to this list will update the builder.
          */
-        public val decodedSegments: MutableList<String> = MutableListView(
-            segments,
+        public val decodedSegments: MutableList<String> = segments.asView(
             Encodable::decoded,
             PercentEncoding.Query::encodableFromDecoded,
         )
 
+        public fun decodedSegments(block: MutableList<String>.() -> Unit) {
+            decodedSegments.apply(block)
+        }
+
         /**
          * A mutable list of **encoded** path segments. Any changes to this list will update the builder.
          */
-        public val encodedSegments: MutableList<String> = MutableListView(
-            segments,
+        public val encodedSegments: MutableList<String> = segments.asView(
             Encodable::encoded,
             PercentEncoding.Query::encodableFromEncoded,
         )
+
+        public fun encodedSegments(block: MutableList<String>.() -> Unit) {
+            encodedSegments.apply(block)
+        }
+
+        /**
+         * Normalizes the segments of a URL path according to the following rules:
+         * * The returned path always begins with `/` (e.g., `a/b/c` → `/a/b/c`)
+         * * The returned path ends with `/` if the input path also does
+         * * Empty segments are discarded (e.g., `/a//b` → `/a/b`)
+         * * Segments of `.` are discarded (e.g., `/a/./b` → `/a/b`)
+         * * Segments of `..` are used to discard ancestor paths (e.g., `/a/b/../c` → `/a/c`)
+         * * All other segments are unmodified
+         */
+        public fun normalize() {
+            segments.listIterator().apply {
+                while (hasNext()) {
+                    when (next().decoded) {
+                        ".", "" -> remove()
+                        ".." -> {
+                            remove()
+                            check(hasPrevious()) { "Cannot normalize because \"..\" has no parent" }
+                            previous()
+                            remove()
+                        }
+                    }
+                }
+            }
+
+            if (segments.isEmpty()) trailingSlash = true
+        }
 
         /**
          * Indicates whether a trailing slash is present in the path (e.g., "/foo/bar/" vs "/foo/bar")
          */
         public var trailingSlash: Boolean = path?.trailingSlash ?: false
+
+        internal fun parse(text: String, encoding: UrlEncoding): Unit =
+            if (UrlEncoding.Path in encoding) parseEncoded(text) else parseDecoded(text)
 
         internal fun parseDecoded(decoded: String): Unit = parse(decoded, PercentEncoding.Path::encodableFromDecoded)
         internal fun parseEncoded(encoded: String): Unit = parse(encoded, PercentEncoding.Path::encodableFromEncoded)
@@ -134,5 +195,17 @@ public class UrlPath private constructor(
          * @return A new [UrlPath] instance
          */
         public fun build(): UrlPath = UrlPath(segments.toList(), trailingSlash)
+
+        public fun copyFrom(other: UrlPath) {
+            segments.clear()
+            segments.addAll(other.segments)
+            trailingSlash = other.trailingSlash
+        }
+
+        public fun copyFrom(other: Builder) {
+            segments.clear()
+            segments.addAll(other.segments)
+            trailingSlash = other.trailingSlash
+        }
     }
 }

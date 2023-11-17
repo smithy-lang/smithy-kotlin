@@ -4,6 +4,7 @@
  */
 package aws.smithy.kotlin.runtime.net
 
+/*
 import kotlin.test.*
 
 class QueryParametersTest {
@@ -150,3 +151,4 @@ class QueryParametersTest {
         assertNull(params)
     }
 }
+*/

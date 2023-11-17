@@ -255,7 +255,7 @@ public abstract interface class aws/smithy/kotlin/runtime/http/request/HttpReque
 	public abstract fun getHeaders ()Laws/smithy/kotlin/runtime/http/Headers;
 	public abstract fun getMethod ()Laws/smithy/kotlin/runtime/http/HttpMethod;
 	public abstract fun getTrailingHeaders ()Laws/smithy/kotlin/runtime/http/DeferredHeaders;
-	public abstract fun getUrl ()Laws/smithy/kotlin/runtime/net/Url;
+	public abstract fun getUrl ()Laws/smithy/kotlin/runtime/net/url/Url;
 }
 
 public final class aws/smithy/kotlin/runtime/http/request/HttpRequest$Companion {
@@ -271,7 +271,7 @@ public final class aws/smithy/kotlin/runtime/http/request/HttpRequestBuilder : a
 	public final fun getHeaders ()Laws/smithy/kotlin/runtime/http/HeadersBuilder;
 	public final fun getMethod ()Laws/smithy/kotlin/runtime/http/HttpMethod;
 	public final fun getTrailingHeaders ()Laws/smithy/kotlin/runtime/http/DeferredHeadersBuilder;
-	public final fun getUrl ()Laws/smithy/kotlin/runtime/net/UrlBuilder;
+	public final fun getUrl ()Laws/smithy/kotlin/runtime/net/url/Url$Builder;
 	public final fun setBody (Laws/smithy/kotlin/runtime/http/HttpBody;)V
 	public final fun setMethod (Laws/smithy/kotlin/runtime/http/HttpMethod;)V
 	public fun toString ()Ljava/lang/String;
@@ -280,13 +280,13 @@ public final class aws/smithy/kotlin/runtime/http/request/HttpRequestBuilder : a
 public final class aws/smithy/kotlin/runtime/http/request/HttpRequestBuilderKt {
 	public static final fun header (Laws/smithy/kotlin/runtime/http/request/HttpRequestBuilder;Ljava/lang/String;Ljava/lang/String;)V
 	public static final fun headers (Laws/smithy/kotlin/runtime/http/request/HttpRequestBuilder;Lkotlin/jvm/functions/Function1;)V
-	public static final fun url (Laws/smithy/kotlin/runtime/http/request/HttpRequestBuilder;Laws/smithy/kotlin/runtime/net/Url;)V
+	public static final fun url (Laws/smithy/kotlin/runtime/http/request/HttpRequestBuilder;Laws/smithy/kotlin/runtime/net/url/Url;)V
 	public static final fun url (Laws/smithy/kotlin/runtime/http/request/HttpRequestBuilder;Lkotlin/jvm/functions/Function1;)V
 }
 
 public final class aws/smithy/kotlin/runtime/http/request/HttpRequestKt {
-	public static final fun HttpRequest (Laws/smithy/kotlin/runtime/http/HttpMethod;Laws/smithy/kotlin/runtime/net/Url;Laws/smithy/kotlin/runtime/http/Headers;Laws/smithy/kotlin/runtime/http/HttpBody;Laws/smithy/kotlin/runtime/http/DeferredHeaders;)Laws/smithy/kotlin/runtime/http/request/HttpRequest;
-	public static synthetic fun HttpRequest$default (Laws/smithy/kotlin/runtime/http/HttpMethod;Laws/smithy/kotlin/runtime/net/Url;Laws/smithy/kotlin/runtime/http/Headers;Laws/smithy/kotlin/runtime/http/HttpBody;Laws/smithy/kotlin/runtime/http/DeferredHeaders;ILjava/lang/Object;)Laws/smithy/kotlin/runtime/http/request/HttpRequest;
+	public static final fun HttpRequest (Laws/smithy/kotlin/runtime/http/HttpMethod;Laws/smithy/kotlin/runtime/net/url/Url;Laws/smithy/kotlin/runtime/http/Headers;Laws/smithy/kotlin/runtime/http/HttpBody;Laws/smithy/kotlin/runtime/http/DeferredHeaders;)Laws/smithy/kotlin/runtime/http/request/HttpRequest;
+	public static synthetic fun HttpRequest$default (Laws/smithy/kotlin/runtime/http/HttpMethod;Laws/smithy/kotlin/runtime/net/url/Url;Laws/smithy/kotlin/runtime/http/Headers;Laws/smithy/kotlin/runtime/http/HttpBody;Laws/smithy/kotlin/runtime/http/DeferredHeaders;ILjava/lang/Object;)Laws/smithy/kotlin/runtime/http/request/HttpRequest;
 	public static final fun toBuilder (Laws/smithy/kotlin/runtime/http/request/HttpRequest;)Laws/smithy/kotlin/runtime/http/request/HttpRequestBuilder;
 }
 

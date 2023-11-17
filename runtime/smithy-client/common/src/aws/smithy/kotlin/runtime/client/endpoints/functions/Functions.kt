@@ -7,6 +7,7 @@ package aws.smithy.kotlin.runtime.client.endpoints.functions
 
 import aws.smithy.kotlin.runtime.InternalApi
 import aws.smithy.kotlin.runtime.net.*
+import aws.smithy.kotlin.runtime.net.url.Url as SdkUrl
 import aws.smithy.kotlin.runtime.text.ensureSuffix
 import aws.smithy.kotlin.runtime.text.urlEncodeComponent
 
@@ -32,9 +33,9 @@ public fun uriEncode(value: String): String = value.urlEncodeComponent(formUrlEn
 @InternalApi
 public fun parseUrl(value: String?): Url? =
     value?.let {
-        val sdkUrl: aws.smithy.kotlin.runtime.net.Url
+        val sdkUrl: SdkUrl
         try {
-            sdkUrl = aws.smithy.kotlin.runtime.net.Url.parse(value)
+            sdkUrl = SdkUrl.parse(value)
         } catch (e: Exception) {
             return null
         }
@@ -46,11 +47,12 @@ public fun parseUrl(value: String?): Url? =
             }
         }
 
+        val sdkUrlPath = sdkUrl.path.toString()
         return Url(
             scheme = sdkUrl.scheme.protocolName,
             authority,
-            path = sdkUrl.path,
-            normalizedPath = sdkUrl.path.ensureSuffix("/"),
+            path = sdkUrlPath,
+            normalizedPath = sdkUrlPath.ensureSuffix("/"),
             isIp = sdkUrl.host is Host.IpAddress,
         )
     }

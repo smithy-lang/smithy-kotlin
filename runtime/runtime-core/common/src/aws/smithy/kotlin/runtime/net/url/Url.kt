@@ -11,7 +11,9 @@ import aws.smithy.kotlin.runtime.net.toUrlString
 import aws.smithy.kotlin.runtime.text.Scanner
 import aws.smithy.kotlin.runtime.text.encoding.Encodable
 import aws.smithy.kotlin.runtime.text.encoding.PercentEncoding
+import aws.smithy.kotlin.runtime.text.ensurePrefix
 import aws.smithy.kotlin.runtime.text.urlDecodeComponent
+import aws.smithy.kotlin.runtime.util.CanDeepCopy
 
 /**
  * Represents a full, valid URL
@@ -41,16 +43,18 @@ public class Url private constructor(
         public operator fun invoke(block: Builder.() -> Unit): Url = Builder().apply(block).build()
 
         /**
-         * Parse an **encoded** string into a [Url] instance
-         * @param encoded An encoded URL string
+         * Parse a URL string into a [Url] instance
+         * @param value A URL string
+         * @param encoding The components of the given [value] which are in a URL-encoded form. Defaults to
+         * [UrlEncoding.All], meaning that the entire URL string is properly encoded.
          * @return A new [Url] instance
          */
-        public fun parse(encoded: String): Url = Url {
-            val scanner = Scanner(encoded)
+        public fun parse(value: String, encoding: UrlEncoding = UrlEncoding.All): Url = Url {
+            val scanner = Scanner(value)
             scanner.requireAndSkip("://") { scheme = Scheme.parse(it) }
 
             scanner.optionalAndSkip("@") {
-                userInfo { parseEncoded(it) }
+                userInfo.parseEncoded(it)
             }
 
             scanner.upToOrEnd("/", "?", "#") { authority ->
@@ -61,24 +65,70 @@ public class Url private constructor(
 
             scanner.ifStartsWith("/") {
                 scanner.upToOrEnd("?", "#") {
-                    path { parseEncoded("/$it") }
+                    path.parse(it, encoding)
                 }
             }
 
             scanner.ifStartsWith("?") {
                 scanner.upToOrEnd("#") {
-                    parameters { parseEncoded(it) }
+                    parameters.parse(it, encoding)
                 }
             }
 
-            scanner.ifStartsWith("#") {
-                scanner.upToOrEnd { encodedFragment = it }
+            scanner.ifStartsWithSkip("#") {
+                scanner.upToOrEnd { parseFragment(it, encoding) }
             }
+        }
+
+        private fun stringify(
+            scheme: Scheme,
+            host: Host,
+            port: Int,
+            path: UrlPath,
+            parameters: QueryParameters,
+            userInfo: UserInfo,
+            fragment: Encodable?,
+        ): Pair<String, String> {
+            var splitAt: Int
+
+            val encoded = buildString {
+                append(scheme.protocolName)
+                append("://")
+                append(userInfo)
+                append(host.toUrlString())
+                if (port != scheme.defaultPort) {
+                    append(":")
+                    append(port)
+                }
+
+                splitAt = length
+
+                append(path)
+                append(parameters)
+                fragment?.let {
+                    append('#')
+                    append(it.encoded)
+                }
+            }
+
+            val requestRelativePath = encoded
+                .substring(splitAt)
+                .ensurePrefix("/") // Request-line URI requires '/' for empty path
+
+            return encoded to requestRelativePath
         }
     }
 
+    private val encoded: String
+    public val requestRelativePath: String
+
     init {
         require(port in 1..65535) { "Given port $port is not in required range [1, 65535]" }
+
+        stringify(scheme, host, port, path, parameters, userInfo, fragment).let {
+            encoded = it.first
+            requestRelativePath = it.second
+        }
     }
 
     /**
@@ -87,29 +137,43 @@ public class Url private constructor(
      */
     public fun toBuilder(): Builder = Builder(this)
 
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other == null || this::class != other::class) return false
+
+        other as Url
+
+        if (scheme != other.scheme) return false
+        if (host != other.host) return false
+        if (port != other.port) return false
+        if (path != other.path) return false
+        if (parameters != other.parameters) return false
+        if (userInfo != other.userInfo) return false
+        if (fragment != other.fragment) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = scheme.hashCode()
+        result = 31 * result + host.hashCode()
+        result = 31 * result + port
+        result = 31 * result + path.hashCode()
+        result = 31 * result + parameters.hashCode()
+        result = 31 * result + userInfo.hashCode()
+        result = 31 * result + (fragment?.hashCode() ?: 0)
+        return result
+    }
+
     /**
      * Returns the encoded string representation of this URL
      */
-    override fun toString(): String = buildString {
-        append(scheme.protocolName)
-        append("://")
-        append(host.toUrlString())
-        if (port != scheme.defaultPort) {
-            append(":")
-            append(port)
-        }
-        append(path)
-        append(parameters)
-        fragment?.let {
-            append('#')
-            append(it.encoded)
-        }
-    }
+    override fun toString(): String = encoded
 
     /**
      * A mutable builder used to construct [Url] instances
      */
-    public class Builder internal constructor(url: Url?) {
+    public class Builder internal constructor(url: Url?) : CanDeepCopy<Builder> {
         /**
          * Initialize an empty [Url] builder
          */
@@ -137,7 +201,8 @@ public class Url private constructor(
         /**
          * Gets the URL path builder
          */
-        public val path: UrlPath.Builder = url?.path?.toBuilder() ?: UrlPath.Builder()
+        public var path: UrlPath.Builder = url?.path?.toBuilder() ?: UrlPath.Builder()
+            private set
 
         /**
          * Update the [UrlPath] of this URL via a DSL builder block
@@ -181,6 +246,14 @@ public class Url private constructor(
 
         private var fragment: Encodable? = url?.fragment
 
+        internal fun parseFragment(value: String, encoding: UrlEncoding) {
+            if (UrlEncoding.Fragment in encoding) {
+                encodedFragment = value
+            } else {
+                decodedFragment = value
+            }
+        }
+
         /**
          * Get or set the fragment as a **decoded** string
          */
@@ -210,6 +283,36 @@ public class Url private constructor(
             userInfo.build(),
             fragment,
         )
+
+        override fun deepCopy(): Builder = Builder().also {
+            it.scheme = scheme
+            it.host = host
+            it.port = port
+            it.path.copyFrom(path)
+            it.parameters.copyFrom(parameters)
+            it.userInfo.copyFrom(userInfo)
+            it.fragment = fragment
+        }
+
+        public fun copyFrom(url: Url) {
+            scheme = url.scheme
+            host = url.host
+            port = url.port
+            path.copyFrom(url.path)
+            parameters.copyFrom(url.parameters)
+            userInfo.copyFrom(url.userInfo)
+            fragment = url.fragment
+        }
+
+        public val requestRelativePath: String
+            get() = buildString {
+                append(path.encoded)
+                append(parameters.encoded)
+                fragment?.let {
+                    append('#')
+                    append(it.encoded)
+                }
+            }.ensurePrefix("/")
     }
 }
 

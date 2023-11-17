@@ -54,7 +54,7 @@ public abstract class AwsHttpSignerTestBase(
                         method = HttpMethod.POST
                         url.scheme = Scheme.HTTP
                         url.host = Host.Domain("demo.us-east-1.amazonaws.com")
-                        url.path = "/"
+                        url.path.encoded = "/"
                         headers.append("Host", "demo.us-east-1.amazonaws.com")
                         headers.appendAll("x-amz-archive-description", listOf("test", "test"))
                         body = when (streaming) {

@@ -5,7 +5,7 @@
 package aws.smithy.kotlin.runtime.http.request
 
 import aws.smithy.kotlin.runtime.http.*
-import aws.smithy.kotlin.runtime.net.Url
+import aws.smithy.kotlin.runtime.net.url.Url
 
 /**
  * Immutable representation of an HTTP request

@@ -33,7 +33,7 @@ class FileUploadDownloadTest : AbstractEngineTest() {
             val req = HttpRequest {
                 method = HttpMethod.POST
                 testSetup(env)
-                url.path = "/upload/content"
+                url.path.decoded = "/upload/content"
                 body = httpBody
             }
 
@@ -49,7 +49,7 @@ class FileUploadDownloadTest : AbstractEngineTest() {
         test { env, client ->
             val req = HttpRequest {
                 testSetup(env)
-                url.path = "/download/integrity"
+                url.path.decoded = "/download/integrity"
             }
 
             val call = client.call(req)

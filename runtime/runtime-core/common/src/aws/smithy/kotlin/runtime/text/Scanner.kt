@@ -22,14 +22,40 @@ public class Scanner(public val text: String) {
         .minByOrNull { (_, index) -> index }
 
     /**
-     * If [text] starts with [prefix] at the current position, advances the current position by the length of [prefix]
-     * and invokes the given [handler]. Otherwise, the position does not change and the [handler] is not invoked.
+     * If [text] starts with [prefix] at the current position, invokes the given [handler]. Otherwise, the position does
+     * not change and the [handler] is not invoked.
+     *
+     * This method is similar to [ifStartsWithSkip] except that the prefix is included when [handler] is invoked.
      *
      * **Example**:
      *
      * ```kotlin
      * val scanner = Scanner("abc def")
      * scanner.ifStartsWith("abc") {
+     *     println(scanner) // Prints "Scanner('abc def')"
+     * }
+     * ```
+     *
+     * @param prefix The prefix to test for at the current position
+     * @param handler The handler to invoke if [text] starts with [prefix] at the current position
+     */
+    public fun ifStartsWith(prefix: String, handler: () -> Unit) {
+        if (startsWith(prefix)) {
+            handler()
+        }
+    }
+
+    /**
+     * If [text] starts with [prefix] at the current position, advances the current position by the length of [prefix]
+     * and invokes the given [handler]. Otherwise, the position does not change and the [handler] is not invoked.
+     *
+     * This method is similar to [ifStartsWith] except that the prefix is not included when [handler] is invoked.
+     *
+     * **Example**:
+     *
+     * ```kotlin
+     * val scanner = Scanner("abc def")
+     * scanner.ifStartsWithSkip("abc") {
      *     // Scanner has now skipped "abc"
      *     println(scanner) // Prints "Scanner(' def')"
      * }
@@ -38,7 +64,7 @@ public class Scanner(public val text: String) {
      * @param prefix The prefix to test for at the current position
      * @param handler The handler to invoke if [text] starts with [prefix] at the current position
      */
-    public fun ifStartsWith(prefix: String, handler: () -> Unit) {
+    public fun ifStartsWithSkip(prefix: String, handler: () -> Unit) {
         if (startsWith(prefix)) {
             currentIndex += prefix.length
             handler()

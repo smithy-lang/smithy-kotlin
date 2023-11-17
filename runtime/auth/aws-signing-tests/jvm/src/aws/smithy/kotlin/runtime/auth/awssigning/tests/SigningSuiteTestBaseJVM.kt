@@ -18,7 +18,7 @@ import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
 import aws.smithy.kotlin.runtime.http.response.HttpResponse
 import aws.smithy.kotlin.runtime.httptest.TestEngine
 import aws.smithy.kotlin.runtime.identity.asIdentityProviderConfig
-import aws.smithy.kotlin.runtime.net.fullUriToQueryParameters
+import aws.smithy.kotlin.runtime.net.url.Url
 import aws.smithy.kotlin.runtime.operation.ExecutionContext
 import aws.smithy.kotlin.runtime.time.Instant
 import aws.smithy.kotlin.runtime.util.Attributes
@@ -146,8 +146,8 @@ public actual abstract class SigningSuiteTestBase : HasSigner {
         testSigv4Middleware(test)
     }
 
-    private fun getTests(signatureType: AwsSignatureType): List<Sigv4TestSuiteTest> {
-        val tests = testDirPaths.map { dir ->
+    private fun getTests(signatureType: AwsSignatureType): List<Sigv4TestSuiteTest> =
+        testDirPaths.map { dir ->
             try {
                 val req = getRequest(dir)
                 val config = getSigningConfig(dir) ?: defaultTestSigningConfig
@@ -162,8 +162,6 @@ public actual abstract class SigningSuiteTestBase : HasSigner {
                 throw ex
             }
         }
-        return tests
-    }
 
     /**
      * Run a test from the suite against the AwsSigv4Middleware implementation
@@ -273,15 +271,7 @@ public actual abstract class SigningSuiteTestBase : HasSigner {
         val extraHeaders = actual.headers.lowerKeys() - expected.headers.lowerKeys()
         assertEquals(0, extraHeaders.size, "Found extra headers in request: $extraHeaders")
 
-        expected.url.parameters.forEach { key, values ->
-            val expectedValues = values.sorted().joinToString(separator = ", ")
-            val actualValues = actual.url.parameters.getAll(key)?.sorted()?.joinToString(separator = ", ")
-            assertNotNull(actualValues, "expected query key `$key` not found in actual signed request")
-            assertEquals(expectedValues, actualValues, "expected query param `$key=$expectedValues` in signed request")
-        }
-
-        val extraParams = actual.url.parameters.lowerKeys() - expected.url.parameters.lowerKeys()
-        assertEquals(0, extraParams.size, "Found extra query params in request: $extraParams")
+        assertEquals(expected.url.parameters, actual.url.parameters)
 
         when (val expectedBody = expected.body) {
             is HttpBody.Empty -> assertIs<HttpBody.Empty>(actual.body)
@@ -362,7 +352,6 @@ public actual abstract class SigningSuiteTestBase : HasSigner {
     /**
      * Parse a path containing an HTTP request into an in memory representation of an SDK request
      */
-    @OptIn(InternalAPI::class)
     private fun parseRequest(path: Path): HttpRequestBuilder {
         // we have to do some massaging of these input files to get a valid request out of the parser.
         var text = path.readText()
@@ -382,10 +371,7 @@ public actual abstract class SigningSuiteTestBase : HasSigner {
 
         val builder = HttpRequestBuilder()
         builder.method = HttpMethod.parse(parsed.method.value)
-        builder.url.path = parsed.parsePath()
-        parsed.uri.fullUriToQueryParameters()?.let {
-            builder.url.parameters.appendAll(it)
-        }
+        builder.url.copyFrom(parsed)
 
         val parsedHeaders = CIOHeaders(parsed.headers)
         parsedHeaders.forEach { key, values ->
@@ -401,19 +387,17 @@ public actual abstract class SigningSuiteTestBase : HasSigner {
     }
 }
 
+private fun Url.Builder.copyFrom(cioRequest: Request) {
+    val parts = cioRequest.uri.split('?', limit = 2)
+    path.encoded = parts[0]
+    parts.getOrNull(1)?.let { parameters.encoded = it }
+}
+
 private fun jsonCredentials(jsonObject: JsonObject): Credentials = Credentials(
     jsonObject["access_key_id"]!!.jsonPrimitive.content,
     jsonObject["secret_access_key"]!!.jsonPrimitive.content,
     jsonObject["token"]?.jsonPrimitive?.content,
 )
-
-/**
- * parse path from ktor request uri
- */
-private fun Request.parsePath(): String {
-    val idx = uri.indexOf("?")
-    return if (idx > 0) uri.substring(0, idx) else uri.toString()
-}
 
 /**
  * Construct on SdkHttpOperation for testing with middleware

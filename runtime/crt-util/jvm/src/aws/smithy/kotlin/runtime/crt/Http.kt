@@ -10,8 +10,10 @@ import aws.smithy.kotlin.runtime.InternalApi
 import aws.smithy.kotlin.runtime.http.*
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
-import aws.smithy.kotlin.runtime.net.QueryParameters
-import aws.smithy.kotlin.runtime.net.splitAsQueryParameters
+import aws.smithy.kotlin.runtime.net.url.QueryParameters
+import aws.smithy.kotlin.runtime.net.url.Url
+import aws.smithy.kotlin.runtime.text.ensurePrefix
+import aws.smithy.kotlin.runtime.text.ensureSuffix
 import kotlin.coroutines.coroutineContext
 import aws.sdk.kotlin.crt.http.Headers as HeadersCrt
 import aws.sdk.kotlin.crt.http.HttpRequest as HttpRequestCrt
@@ -41,7 +43,7 @@ public suspend fun HttpRequest.toSignableCrtRequest(
 ): HttpRequestCrt =
     HttpRequestCrt(
         method = method.name,
-        encodedPath = url.encodedPath,
+        encodedPath = url.requestRelativePath,
         headers = headers.toCrtHeaders(),
         body = signableBodyStream(body, unsignedPayload, awsChunked),
     )
@@ -66,12 +68,12 @@ public fun HttpRequestBuilder.update(crtRequest: HttpRequestCrt) {
 
     if (crtRequest.encodedPath.isNotBlank()) {
         crtRequest.queryParameters()?.let {
-            it.forEach { key, values ->
+            it.forEach { (key, values) ->
                 // the crt request has a url encoded path which means
                 // simply appending missing could result in both the raw and percent-encoded
                 // value being present. Instead just append new keys added by signing
-                if (!url.parameters.contains(key)) {
-                    url.parameters.appendAll(key, values)
+                if (key !in url.parameters) {
+                    url.parameters.addAll(key, values)
                 }
             }
         }
@@ -88,8 +90,8 @@ public fun HttpRequestCrt.queryParameters(): QueryParameters? {
     if (idx < 0 || idx + 1 > encodedPath.length) return null
 
     val fragmentIdx = encodedPath.indexOf("#", startIndex = idx)
-    val rawQueryString = if (fragmentIdx > 0) encodedPath.substring(idx + 1, fragmentIdx) else encodedPath.substring(idx + 1)
-    return rawQueryString.splitAsQueryParameters()
+    val rawQueryString = if (fragmentIdx > 0) encodedPath.substring(idx, fragmentIdx) else encodedPath.substring(idx)
+    return QueryParameters.parseEncoded(rawQueryString)
 }
 
 /**

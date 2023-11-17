@@ -34,7 +34,10 @@ internal val HttpRequest.uri: Uri
             scheme = Protocol.createOrDefault(sdkUrl.scheme.protocolName)
             host = sdkUrl.host.toString()
             port = sdkUrl.port
-            userInfo = sdkUrl.userInfo?.let { UserInfo(it.username, it.password) }
+            userInfo = sdkUrl
+                .userInfo
+                .takeIf { it.isNotEmpty }
+                ?.let { UserInfo(it.userName.decoded, it.password.decoded) }
             // the rest is part of each individual request, manager only needs the host info
         }
     }
@@ -67,7 +70,7 @@ internal fun HttpRequest.toCrtRequest(callContext: CoroutineContext): aws.sdk.ko
     val contentLength = body.contentLength?.takeIf { it >= 0 }?.toString() ?: headers[CONTENT_LENGTH_HEADER]
     contentLength?.let { crtHeaders.append(CONTENT_LENGTH_HEADER, it) }
 
-    return aws.sdk.kotlin.crt.http.HttpRequest(method.name, url.encodedPath, crtHeaders.build(), bodyStream)
+    return aws.sdk.kotlin.crt.http.HttpRequest(method.name, url.requestRelativePath, crtHeaders.build(), bodyStream)
 }
 
 /**

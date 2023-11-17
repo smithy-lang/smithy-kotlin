@@ -14,6 +14,7 @@ public class Encodable internal constructor(
     }
 
     public val isEmpty: Boolean = decoded.isEmpty() && encoded.isEmpty()
+    public val isNotEmpty: Boolean = !isEmpty
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
@@ -30,6 +31,8 @@ public class Encodable internal constructor(
         result = 31 * result + encoding.hashCode()
         return result
     }
+
+    public fun reencode(): Encodable = encoding.encodableFromDecoded(decoded)
 
     override fun toString(): String = buildString {
         append("Encodable(decoded=")

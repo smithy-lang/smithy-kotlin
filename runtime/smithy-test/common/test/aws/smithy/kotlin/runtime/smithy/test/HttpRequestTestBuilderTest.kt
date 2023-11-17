@@ -8,6 +8,7 @@ import aws.smithy.kotlin.runtime.http.HttpBody
 import aws.smithy.kotlin.runtime.http.HttpMethod
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.http.request.headers
+import aws.smithy.kotlin.runtime.http.request.url
 import aws.smithy.kotlin.runtime.net.Host
 import aws.smithy.kotlin.runtime.operation.ExecutionContext
 import io.kotest.matchers.string.shouldContain
@@ -47,7 +48,7 @@ class HttpRequestTestBuilderTest {
                 operation { mockEngine ->
                     val builder = HttpRequest {
                         method = HttpMethod.POST
-                        url.path = "/bar"
+                        url.path.encoded = "/bar"
                     }
                     mockEngine.roundTrip(execContext, builder)
                 }
@@ -68,9 +69,14 @@ class HttpRequestTestBuilderTest {
                 operation { mockEngine ->
                     val request = HttpRequest {
                         method = HttpMethod.POST
-                        url.path = "/foo"
-                        url.parameters.append("baz", "quux")
-                        url.parameters.append("Hi", "Hello")
+
+                        url {
+                            path.encoded = "/foo"
+                            parameters.decodedParameters {
+                                add("baz", "quux")
+                                add("Hi", "Hello")
+                            }
+                        }
                     }
                     mockEngine.roundTrip(execContext, request)
                 }
@@ -92,10 +98,15 @@ class HttpRequestTestBuilderTest {
                 operation { mockEngine ->
                     val request = HttpRequest {
                         method = HttpMethod.POST
-                        url.path = "/foo"
-                        url.parameters.append("baz", "quux")
-                        url.parameters.append("Hi", "Hello there")
-                        url.parameters.append("foobar", "i am forbidden")
+
+                        url {
+                            path.encoded = "/foo"
+                            parameters.decodedParameters {
+                                add("baz", "quux")
+                                add("Hi", "Hello there")
+                                add("foobar", "i am forbidden")
+                            }
+                        }
                     }
                     mockEngine.roundTrip(execContext, request)
                 }
@@ -118,10 +129,15 @@ class HttpRequestTestBuilderTest {
                 operation { mockEngine ->
                     val request = HttpRequest {
                         method = HttpMethod.POST
-                        url.path = "/foo"
-                        url.parameters.append("baz", "quux")
-                        url.parameters.append("Hi", "Hello there")
-                        url.parameters.append("foobar2", "i am not forbidden")
+
+                        url {
+                            path.encoded = "/foo"
+                            parameters.decodedParameters {
+                                add("baz", "quux")
+                                add("Hi", "Hello there")
+                                add("foobar2", "i am not forbidden")
+                            }
+                        }
                     }
                     mockEngine.roundTrip(execContext, request)
                 }
@@ -148,11 +164,16 @@ class HttpRequestTestBuilderTest {
                 operation { mockEngine ->
                     val request = HttpRequest {
                         method = HttpMethod.POST
-                        url.path = "/foo"
-                        url.parameters.append("baz", "quux")
-                        url.parameters.append("Hi", "Hello there")
-                        url.parameters.append("foobar2", "i am not forbidden")
-                        url.parameters.append("requiredQuery", "i am required")
+
+                        url {
+                            path.encoded = "/foo"
+                            parameters.decodedParameters {
+                                add("baz", "quux")
+                                add("Hi", "Hello there")
+                                add("foobar2", "i am not forbidden")
+                                add("requiredQuery", "i am required")
+                            }
+                        }
 
                         headers {
                             append("k1", "v1")
@@ -180,7 +201,7 @@ class HttpRequestTestBuilderTest {
                 operation { mockEngine ->
                     val request = HttpRequest {
                         method = HttpMethod.POST
-                        url.path = "/foo"
+                        url.path.encoded = "/foo"
                         headers {
                             appendAll("k1", listOf("v1", "v2"))
                             appendAll("k2", listOf("v3", "v4"))
@@ -212,11 +233,16 @@ class HttpRequestTestBuilderTest {
                 operation { mockEngine ->
                     val request = HttpRequest {
                         method = HttpMethod.POST
-                        url.path = "/foo"
-                        url.parameters.append("baz", "quux")
-                        url.parameters.append("Hi", "Hello there")
-                        url.parameters.append("foobar2", "i am not forbidden")
-                        url.parameters.append("requiredQuery", "i am required")
+
+                        url{
+                            path.encoded = "/foo"
+                            parameters.decodedParameters {
+                                add("baz", "quux")
+                                add("Hi", "Hello there")
+                                add("foobar2", "i am not forbidden")
+                                add("requiredQuery", "i am required")
+                            }
+                        }
 
                         headers {
                             append("k1", "v1")
@@ -251,11 +277,16 @@ class HttpRequestTestBuilderTest {
                 operation { mockEngine ->
                     val request = HttpRequest {
                         method = HttpMethod.POST
-                        url.path = "/foo"
-                        url.parameters.append("baz", "quux")
-                        url.parameters.append("Hi", "Hello there")
-                        url.parameters.append("foobar2", "i am not forbidden")
-                        url.parameters.append("requiredQuery", "i am required")
+
+                        url {
+                            path.encoded = "/foo"
+                            parameters.decodedParameters {
+                                add("baz", "quux")
+                                add("Hi", "Hello there")
+                                add("foobar2", "i am not forbidden")
+                                add("requiredQuery", "i am required")
+                            }
+                        }
 
                         headers {
                             append("k1", "v1")

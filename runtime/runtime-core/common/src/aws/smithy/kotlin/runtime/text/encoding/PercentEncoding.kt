@@ -21,13 +21,16 @@ public class PercentEncoding(
         private val VALID_UCHAR = UNRESERVED + SUB_DELIMS
         private val VALID_PCHAR = VALID_UCHAR + setOf(':', '@')
         private val VALID_FCHAR = VALID_PCHAR + setOf('/', '?')
-        private val VALID_QCHAR = VALID_FCHAR - setOf('&', '=')
+
+        // GOTCHA: according to RFC 3986, this _should_ be VALID_FCHAR - setOf('&', '=') but SigV4 is very strict on
+        // what MUST be encoded in queries: https://docs.aws.amazon.com/IAM/latest/UserGuide/create-signed-request.html
+        private val VALID_QCHAR = UNRESERVED
 
         private const val UPPER_HEX = "0123456789ABCDEF"
 
         public val UserInfo: Encoding = PercentEncoding("user info", VALID_UCHAR)
         public val Path: Encoding = PercentEncoding("path", VALID_PCHAR)
-        public val Query: Encoding = PercentEncoding("query string", VALID_QCHAR, mapOf(' ' to '+'))
+        public val Query: Encoding = PercentEncoding("query string", VALID_QCHAR)
         public val Fragment: Encoding = PercentEncoding("fragment", VALID_FCHAR)
 
         private fun percentAsciiEncode(char: Char) = buildString {
@@ -45,7 +48,6 @@ public class PercentEncoding(
         }
     }
 
-    @OptIn(ExperimentalStdlibApi::class)
     private val asciiMapping = (0..<128)
         .map(Int::toChar)
         .filterNot(validChars::contains)
@@ -85,7 +87,7 @@ public class PercentEncoding(
                     i++
                 }
             } else {
-                append(decodeMap[c] ?: throw IllegalArgumentException("unknown encoding, cannot decode character '$c'"))
+                append(decodeMap[c] ?: c)
                 i++
             }
         }

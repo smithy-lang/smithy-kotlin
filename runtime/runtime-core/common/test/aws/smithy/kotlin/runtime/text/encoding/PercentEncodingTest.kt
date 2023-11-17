@@ -21,4 +21,18 @@ class PercentEncodingTest {
         val encoded = PercentEncoding.Query.encode(decoded)
         assertEquals("f%F0%9F%98%81o", encoded)
     }
+
+    @Test
+    fun testPathDecoding() {
+        val encoded = "path%2Fsuffix"
+        val decoded = PercentEncoding.Path.decode(encoded)
+        assertEquals("path/suffix", decoded)
+    }
+
+    @Test
+    fun testPathEncoding() {
+        val decoded = "path/suffix"
+        val encoded = PercentEncoding.Path.encode(decoded)
+        assertEquals("path%2Fsuffix", encoded)
+    }
 }

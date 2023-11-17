@@ -303,46 +303,47 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                 renderNonBlankGuard(ctx, binding.member, writer)
             }
 
-            writer.openBlock("val pathSegments = listOf<String>(", ")") {
+            writer.withBlock("path.decodedSegments {", "}") {
                 httpTrait.uri.segments.forEach { segment ->
                     if (segment.isLabel || segment.isGreedyLabel) {
                         // spec dictates member name and label name MUST be the same
                         val binding = pathBindings.find { binding ->
                             binding.memberName == segment.content
-                        } ?: throw CodegenException("failed to find corresponding member for httpLabel `${segment.content}")
+                        }
+                            ?: throw CodegenException("failed to find corresponding member for httpLabel `${segment.content}")
 
                         // shape must be string, number, boolean, or timestamp
                         val targetShape = ctx.model.expectShape(binding.member.target)
                         val memberSymbol = ctx.symbolProvider.toSymbol(binding.member)
                         val identifier = if (targetShape.isTimestampShape) {
-                            writer.addImport(RuntimeTypes.Core.TimestampFormat)
+                            addImport(RuntimeTypes.Core.TimestampFormat)
                             val tsFormat = resolver.determineTimestampFormat(
                                 binding.member,
                                 HttpBinding.Location.LABEL,
                                 defaultTimestampFormat,
                             )
                             val nullCheck = if (memberSymbol.isNullable) "?" else ""
-                            val tsLabel = formatInstant("input.${binding.member.defaultName()}$nullCheck", tsFormat, forceString = true)
+                            val tsLabel = formatInstant(
+                                "input.${binding.member.defaultName()}$nullCheck",
+                                tsFormat,
+                                forceString = true
+                            )
                             tsLabel
                         } else {
                             "input.${binding.member.defaultName()}"
                         }
 
-                        val encodeSymbol = RuntimeTypes.Http.Util.encodeLabel
-                        val encodeFn = if (segment.isGreedyLabel) {
-                            writer.format("#T(greedy = true)", encodeSymbol)
+                        if (segment.isGreedyLabel) {
+                            write("addAll(#S.split(#S))", "\${$identifier}", '"')
                         } else {
-                            writer.format("#T()", encodeSymbol)
+                            write("add(#S)", "\${$identifier}")
                         }
-                        writer.write("#S.$encodeFn,", "\${$identifier}")
                     } else {
                         // literal
-                        writer.write("\"#L\",", segment.content.toEscapedLiteral())
+                        writer.write("add(\"#L\")", segment.content.toEscapedLiteral())
                     }
                 }
             }
-
-            writer.write("""path = pathSegments.joinToString(separator = "/", prefix = "/")""")
         } else {
             // all literals, inline directly
             val resolvedPath = httpTrait.uri.segments.joinToString(
@@ -352,7 +353,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                     it.content.toEscapedLiteral()
                 },
             )
-            writer.write("path = \"#L\"", resolvedPath)
+            writer.write("path.encoded = \"#L\"", resolvedPath)
         }
     }
 
@@ -373,45 +374,44 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
 
         if (queryBindings.isEmpty() && queryLiterals.isEmpty() && queryMapBindings.isEmpty()) return
 
-        writer
-            .withBlock("#T {", "}", RuntimeTypes.Core.Net.parameters) {
-                queryLiterals.forEach { (key, value) ->
-                    writer.write("append(#S, #S)", key, value)
-                }
-
-                // render length check if applicable
-                queryBindings.forEach { binding -> renderNonBlankGuard(ctx, binding.member, writer) }
-
-                renderStringValuesMapParameters(ctx, queryBindings, writer)
-
-                queryMapBindings.forEach {
-                    // either Map<String, String> or Map<String, Collection<String>>
-                    // https://awslabs.github.io/smithy/1.0/spec/core/http-traits.html#httpqueryparams-trait
-                    val target = ctx.model.expectShape<MapShape>(it.member.target)
-                    val valueTarget = ctx.model.expectShape(target.value.target)
-                    val fn = when (valueTarget.type) {
-                        ShapeType.STRING -> "append"
-                        ShapeType.LIST, ShapeType.SET -> "appendAll"
-                        else -> throw CodegenException("unexpected value type for httpQueryParams map")
-                    }
-
-                    val nullCheck = if (target.hasTrait<SparseTrait>()) {
-                        "if (value != null) "
-                    } else {
-                        ""
-                    }
-
-                    writer.write("input.${it.member.defaultName()}")
-                        .indent()
-                        // ensure query precedence rules are enforced by filtering keys already set
-                        // (httpQuery bound members take precedence over a query map with same key)
-                        .write("?.filterNot{ contains(it.key) }")
-                        .withBlock("?.forEach { (key, value) ->", "}") {
-                            write("${nullCheck}$fn(key, value)")
-                        }
-                        .dedent()
-                }
+        writer.withBlock("parameters.encodedParameters {", "}") {
+            queryLiterals.forEach { (key, value) ->
+                writer.write("add(#S, #S)", key, value)
             }
+
+            // render length check if applicable
+            queryBindings.forEach { binding -> renderNonBlankGuard(ctx, binding.member, writer) }
+
+            renderStringValuesMapParameters(ctx, queryBindings, writer)
+
+            queryMapBindings.forEach {
+                // either Map<String, String> or Map<String, Collection<String>>
+                // https://awslabs.github.io/smithy/1.0/spec/core/http-traits.html#httpqueryparams-trait
+                val target = ctx.model.expectShape<MapShape>(it.member.target)
+                val valueTarget = ctx.model.expectShape(target.value.target)
+                val fn = when (valueTarget.type) {
+                    ShapeType.STRING -> "add"
+                    ShapeType.LIST, ShapeType.SET -> "addAll"
+                    else -> throw CodegenException("unexpected value type for httpQueryParams map")
+                }
+
+                val nullCheck = if (target.hasTrait<SparseTrait>()) {
+                    "if (value != null) "
+                } else {
+                    ""
+                }
+
+                writer.write("input.${it.member.defaultName()}")
+                    .indent()
+                    // ensure query precedence rules are enforced by filtering keys already set
+                    // (httpQuery bound members take precedence over a query map with same key)
+                    .write("?.filterNot{ contains(it.key) }")
+                    .withBlock("?.forEach { (key, value) ->", "}") {
+                        write("${nullCheck}$fn(key, value)")
+                    }
+                    .dedent()
+            }
+        }
     }
 
     // shared implementation for rendering members that belong to StringValuesMap (e.g. Header or Query parameters)

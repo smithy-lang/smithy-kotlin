@@ -4,6 +4,7 @@
  */
 package aws.smithy.kotlin.runtime.net
 
+/*
 import aws.smithy.kotlin.runtime.text.splitAsQueryString
 import aws.smithy.kotlin.runtime.text.urlDecodeComponent
 
@@ -111,3 +112,4 @@ internal fun String.splitHostPort(): Pair<Host, Int?> {
         if (hostEndIndex != -1 && hostEndIndex != length) substring(hostEndIndex + 1).toInt() else null,
     )
 }
+*/
