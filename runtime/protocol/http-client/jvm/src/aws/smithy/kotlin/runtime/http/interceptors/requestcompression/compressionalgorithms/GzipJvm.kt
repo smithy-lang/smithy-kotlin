@@ -63,7 +63,7 @@ internal class GzipByteReadChannel(
     private val buffer = SdkBuffer()
     private val gzipOS = GZIPOutputStream(buffer.outputStream())
 
-    // TODO: Deal with edge cases and maybe change limits
+    // TODO: Deal with edge cases and maybe change limits ... not entirely sure how this works yet
     override suspend fun read(sink: SdkBuffer, limit: Long): Long {
         val tempBuff = SdkBuffer()
         delegate.read(tempBuff, 1)
