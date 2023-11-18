@@ -193,6 +193,15 @@ public final class aws/smithy/kotlin/runtime/http/interceptors/requestcompressio
 	public fun readBeforeTransmit (Laws/smithy/kotlin/runtime/client/ProtocolRequestInterceptorContext;)V
 }
 
+public abstract interface class aws/smithy/kotlin/runtime/http/interceptors/requestcompression/compressionalgorithms/CompressionAlgorithm {
+	public abstract fun compress (Laws/smithy/kotlin/runtime/http/HttpBody;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public abstract fun getId ()Ljava/lang/String;
+}
+
+public final class aws/smithy/kotlin/runtime/http/interceptors/requestcompression/compressionalgorithms/HttpBodyToJavaIoOutputStreamKt {
+	public static final fun convertToJavaOutputStream (Laws/smithy/kotlin/runtime/content/ByteStream;)V
+}
+
 public abstract interface class aws/smithy/kotlin/runtime/http/interceptors/requestcompression/util/CompressionAlgorithm {
 	public abstract fun compress (Laws/smithy/kotlin/runtime/http/HttpBody;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public abstract fun getId ()Ljava/lang/String;
