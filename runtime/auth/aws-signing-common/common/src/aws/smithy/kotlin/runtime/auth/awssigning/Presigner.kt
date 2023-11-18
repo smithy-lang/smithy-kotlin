@@ -17,7 +17,6 @@ import aws.smithy.kotlin.runtime.http.request.header
 import aws.smithy.kotlin.runtime.net.url.Url
 import aws.smithy.kotlin.runtime.operation.ExecutionContext
 import aws.smithy.kotlin.runtime.util.emptyAttributes
-import aws.smithy.kotlin.runtime.util.get
 
 @InternalApi
 public suspend fun presignRequest(

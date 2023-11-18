@@ -64,7 +64,7 @@ internal class AllocateWidgetQueryOperationSerializer: HttpSerialize<AllocateWid
 
         builder.url {
             path.encoded = "/input/AllocateWidgetQuery"
-            parameters.encodedParameters {
+            parameters.decodedParameters {
                 add("clientToken", (input.clientToken ?: context.idempotencyTokenProvider.generateToken()))
             }
         }

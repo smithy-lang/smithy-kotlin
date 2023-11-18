@@ -344,7 +344,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                         }
 
                         if (segment.isGreedyLabel) {
-                            write("addAll(#S.split(#S))", "\${$identifier}", '"')
+                            write("addAll(#S.split(#S))", "\${$identifier}", '/')
                         } else {
                             write("add(#S)", "\${$identifier}")
                         }
@@ -388,7 +388,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
 
         if (queryBindings.isEmpty() && queryLiterals.isEmpty() && queryMapBindings.isEmpty()) return
 
-        writer.withBlock("parameters.encodedParameters {", "}") {
+        writer.withBlock("parameters.decodedParameters {", "}") {
             queryLiterals.forEach { (key, value) ->
                 writer.write("add(#S, #S)", key, value)
             }

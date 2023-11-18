@@ -49,10 +49,10 @@ internal class SmokeTestOperationSerializer: HttpSerialize<SmokeTestRequest> {
         builder.url {
             path.decodedSegments {
                 add("smoketest")
-                addAll("$label1".split("\""))
+                addAll("$label1".split("/"))
                 add("foo")
             }
-            parameters.encodedParameters {
+            parameters.decodedParameters {
                 if (input.query1 != null) add("Query1", input.query1)
             }
         }
@@ -260,7 +260,7 @@ internal class TimestampInputOperationSerializer: HttpSerialize<TimestampInputRe
                 add("timestamp")
                 add("$tsLabel")
             }
-            parameters.encodedParameters {
+            parameters.decodedParameters {
                 if (input.queryTimestamp != null) add("qtime", input.queryTimestamp.format(TimestampFormat.ISO_8601))
                 if (input.queryTimestampList?.isNotEmpty() == true) addAll("qtimeList", input.queryTimestampList.map { it.format(TimestampFormat.ISO_8601) })
             }
@@ -335,7 +335,7 @@ internal class ConstantQueryStringOperationSerializer: HttpSerialize<ConstantQue
                 add("ConstantQueryString")
                 add("$label1")
             }
-            parameters.encodedParameters {
+            parameters.decodedParameters {
                 add("foo", "bar")
                 add("hello", "")
             }
@@ -565,7 +565,7 @@ internal class SmokeTestOperationDeserializer: HttpDeserialize<SmokeTestResponse
                 add("$label1")
                 add("$label2")
             }
-            parameters.encodedParameters {
+            parameters.decodedParameters {
                 require(input.garply?.isNotBlank() == true) { "garply is bound to the URI and must be a non-blank value" }
                 if (input.corge != null) add("corge", input.corge)
                 if (input.garply != null) add("garply", input.garply)
