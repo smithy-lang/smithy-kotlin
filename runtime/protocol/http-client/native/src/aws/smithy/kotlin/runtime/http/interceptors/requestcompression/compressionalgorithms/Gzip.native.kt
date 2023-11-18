@@ -7,7 +7,7 @@ package aws.smithy.kotlin.runtime.http.interceptors.requestcompression.compressi
 
 import aws.smithy.kotlin.runtime.http.HttpBody
 
-internal actual class Gzip : CompressionAlgorithm {
+public actual class Gzip actual constructor() : CompressionAlgorithm {
     actual override val id: String
         get() = TODO("Not yet implemented")
 
