@@ -137,6 +137,8 @@ public class Url private constructor(
      */
     public fun toBuilder(): Builder = Builder(this)
 
+    public fun copy(block: Builder.() -> Unit = { }): Url = toBuilder().apply(block).build()
+
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other == null || this::class != other::class) return false

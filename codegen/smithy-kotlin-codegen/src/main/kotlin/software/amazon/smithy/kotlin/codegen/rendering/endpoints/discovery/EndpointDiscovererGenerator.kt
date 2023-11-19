@@ -92,7 +92,7 @@ class EndpointDiscovererGenerator(private val ctx: CodegenContext, private val d
             write("")
             write("val originalEndpoint = delegate.resolve(request)")
             withBlock("#T(", ")", RuntimeTypes.SmithyClient.Endpoints.Endpoint) {
-                write("originalEndpoint.uri.copy(host = discoveredHost),")
+                write("originalEndpoint.uri.copy { host = discoveredHost },")
                 write("originalEndpoint.headers,")
                 write("originalEndpoint.attributes,")
             }
