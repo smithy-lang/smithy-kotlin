@@ -17,7 +17,7 @@ public class PercentEncoding(
         private val ALPHA = (('A'..'Z') + ('a'..'z')).toSet()
         private val DIGIT = ('0'..'9').toSet()
         private val UNRESERVED = ALPHA + DIGIT + setOf('-', '.', '_', '~')
-        private val SUB_DELIMS = setOf('!', '$', '&', '\'', '(', ')', '*', ',', ';', '=')
+        private val SUB_DELIMS = setOf('!', '$', '&', '\'', '(', ')', '*', '+', ',', ';', '=')
         private val VALID_UCHAR = UNRESERVED + SUB_DELIMS
         private val VALID_PCHAR = VALID_UCHAR + setOf(':', '@')
         private val VALID_FCHAR = VALID_PCHAR + setOf('/', '?')
@@ -25,6 +25,10 @@ public class PercentEncoding(
         // GOTCHA: according to RFC 3986, this _should_ be VALID_FCHAR - setOf('&', '=') but SigV4 is very strict on
         // what MUST be encoded in queries: https://docs.aws.amazon.com/IAM/latest/UserGuide/create-signed-request.html
         private val VALID_QCHAR = UNRESERVED
+
+        // Undocumented formally but crafted to pass Smithy protocol tests, most especially this one:
+        // https://github.com/smithy-lang/smithy/blob/d457aabb80feb4088caa3ac27d337b84e3ebc43d/smithy-aws-protocol-tests/model/restXml/http-labels.smithy#L42-L59
+        private val SMITHY_LABEL_CHAR = UNRESERVED
 
         private const val UPPER_HEX = "0123456789ABCDEF"
 
@@ -34,6 +38,7 @@ public class PercentEncoding(
         public val Query: Encoding = PercentEncoding("query string", VALID_QCHAR)
         public val Fragment: Encoding = PercentEncoding("fragment", VALID_FCHAR)
         public val FormUrl: Encoding = PercentEncoding("form URL", VALID_QCHAR, mapOf(' ' to '+'))
+        public val SmithyLabel: Encoding = PercentEncoding("Smithy label", SMITHY_LABEL_CHAR)
 
         private fun percentAsciiEncode(char: Char) = buildString {
             val value = char.code and 0xff

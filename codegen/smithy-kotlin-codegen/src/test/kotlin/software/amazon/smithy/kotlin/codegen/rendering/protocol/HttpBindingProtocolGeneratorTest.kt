@@ -47,10 +47,10 @@ internal class SmokeTestOperationSerializer: HttpSerialize<SmokeTestRequest> {
         builder.method = HttpMethod.POST
 
         builder.url {
-            path.decodedSegments {
-                add("smoketest")
-                addAll("$label1".split("/"))
-                add("foo")
+            path.encodedSegments {
+                add(PercentEncoding.Path.encode("smoketest"))
+                "$label1".split("/").mapTo(this) { PercentEncoding.SmithyLabel.encode(it) }
+                add(PercentEncoding.Path.encode("foo"))
             }
             parameters.decodedParameters {
                 if (input.query1 != null) add("Query1", input.query1)
@@ -255,10 +255,10 @@ internal class TimestampInputOperationSerializer: HttpSerialize<TimestampInputRe
         builder.method = HttpMethod.POST
 
         builder.url {
-            path.decodedSegments {
-                add("input")
-                add("timestamp")
-                add("$tsLabel")
+            path.encodedSegments {
+                add(PercentEncoding.Path.encode("input"))
+                add(PercentEncoding.Path.encode("timestamp"))
+                add(PercentEncoding.SmithyLabel.encode("$tsLabel"))
             }
             parameters.decodedParameters {
                 if (input.queryTimestamp != null) add("qtime", input.queryTimestamp.format(TimestampFormat.ISO_8601))
@@ -331,9 +331,9 @@ internal class ConstantQueryStringOperationSerializer: HttpSerialize<ConstantQue
         builder.method = HttpMethod.GET
 
         builder.url {
-            path.decodedSegments {
-                add("ConstantQueryString")
-                add("$label1")
+            path.encodedSegments {
+                add(PercentEncoding.Path.encode("ConstantQueryString"))
+                add(PercentEncoding.SmithyLabel.encode("$label1"))
             }
             parameters.decodedParameters {
                 add("foo", "bar")
@@ -560,10 +560,10 @@ internal class SmokeTestOperationDeserializer: HttpDeserialize<SmokeTestResponse
             requireNotNull(input.bar) { "bar is bound to the URI and must not be null" }
             require(input.bar?.isNotBlank() == true) { "bar is bound to the URI and must be a non-blank value" }
             requireNotNull(input.baz) { "baz is bound to the URI and must not be null" }
-            path.decodedSegments {
-                add("foo")
-                add("$label1")
-                add("$label2")
+            path.encodedSegments {
+                add(PercentEncoding.Path.encode("foo"))
+                add(PercentEncoding.SmithyLabel.encode("$label1"))
+                add(PercentEncoding.SmithyLabel.encode("$label2"))
             }
             parameters.decodedParameters {
                 require(input.garply?.isNotBlank() == true) { "garply is bound to the URI and must be a non-blank value" }

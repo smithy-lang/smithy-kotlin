@@ -314,7 +314,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                 renderNonBlankGuard(ctx, binding.member, writer)
             }
 
-            writer.withBlock("path.decodedSegments {", "}") {
+            writer.withBlock("path.encodedSegments {", "}") {
                 httpTrait.uri.segments.forEach { segment ->
                     if (segment.isLabel || segment.isGreedyLabel) {
                         // spec dictates member name and label name MUST be the same
@@ -343,14 +343,17 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                             "input.${binding.member.defaultName()}"
                         }
 
+                        val encodeFn = format("#T.SmithyLabel.encode", RuntimeTypes.Core.Text.Encoding.PercentEncoding)
+
                         if (segment.isGreedyLabel) {
-                            write("addAll(#S.split(#S))", "\${$identifier}", '/')
+                            write("#S.split(#S).mapTo(this) { #L(it) }", "\${$identifier}", '/', encodeFn)
                         } else {
-                            write("add(#S)", "\${$identifier}")
+                            write("add(#L(#S))", encodeFn, "\${$identifier}")
                         }
                     } else {
                         // literal
-                        writer.write("add(\"#L\")", segment.content.toEscapedLiteral())
+                        val encodeFn = format("#T.Path.encode", RuntimeTypes.Core.Text.Encoding.PercentEncoding)
+                        writer.write("add(#L(\"#L\"))", encodeFn, segment.content.toEscapedLiteral())
                     }
                 }
             }

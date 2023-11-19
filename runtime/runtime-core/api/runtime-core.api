@@ -923,6 +923,8 @@ public final class aws/smithy/kotlin/runtime/net/url/UrlPath {
 	public static final field Companion Laws/smithy/kotlin/runtime/net/url/UrlPath$Companion;
 	public synthetic fun <init> (Ljava/util/List;ZLkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public fun equals (Ljava/lang/Object;)Z
+	public final fun getDecoded ()Ljava/lang/String;
+	public final fun getEncoded ()Ljava/lang/String;
 	public final fun getSegments ()Ljava/util/List;
 	public final fun getTrailingSlash ()Z
 	public fun hashCode ()I

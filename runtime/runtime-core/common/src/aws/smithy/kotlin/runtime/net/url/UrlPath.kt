@@ -83,7 +83,13 @@ public class UrlPath private constructor(
         return result
     }
 
-    override fun toString(): String = asEncoded(segments, trailingSlash)
+    public val decoded: String
+        get() = asDecoded(segments, trailingSlash)
+
+    public val encoded: String
+        get() = asEncoded(segments, trailingSlash)
+
+    override fun toString(): String = encoded
 
     /**
      * A mutable builder used to construct [UrlPath] instances
@@ -115,7 +121,7 @@ public class UrlPath private constructor(
          */
         public val decodedSegments: MutableList<String> = segments.asView(
             Encodable::decoded,
-            PercentEncoding.Query::encodableFromDecoded,
+            PercentEncoding.Path::encodableFromDecoded,
         )
 
         public fun decodedSegments(block: MutableList<String>.() -> Unit) {
@@ -127,7 +133,7 @@ public class UrlPath private constructor(
          */
         public val encodedSegments: MutableList<String> = segments.asView(
             Encodable::encoded,
-            PercentEncoding.Query::encodableFromEncoded,
+            PercentEncoding.Path::encodableFromEncoded,
         )
 
         public fun encodedSegments(block: MutableList<String>.() -> Unit) {
