@@ -7,7 +7,7 @@ package aws.smithy.kotlin.runtime.http.interceptors.requestcompression.compressi
 
 import aws.smithy.kotlin.runtime.http.HttpBody
 
-public expect class Gzip(): CompressionAlgorithm {
+public expect class Gzip() : CompressionAlgorithm {
     override val id: String
     override suspend fun compress(stream: HttpBody): HttpBody
 }

@@ -14,5 +14,4 @@ public actual class Gzip actual constructor() : CompressionAlgorithm {
     actual override suspend fun compress(stream: HttpBody): HttpBody {
         TODO("Not yet implemented")
     }
-
 }

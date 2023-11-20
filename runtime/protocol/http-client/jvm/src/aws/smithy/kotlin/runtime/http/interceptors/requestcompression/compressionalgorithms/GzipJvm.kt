@@ -14,11 +14,11 @@ import aws.smithy.kotlin.runtime.io.SdkSource
 import java.io.ByteArrayOutputStream
 import java.util.zip.GZIPOutputStream
 
-public actual class Gzip actual constructor(): CompressionAlgorithm {
+public actual class Gzip actual constructor() : CompressionAlgorithm {
     actual override val id: String
         get() = "gzip"
 
-    actual override suspend fun compress(stream: HttpBody): HttpBody = when(stream) {
+    actual override suspend fun compress(stream: HttpBody): HttpBody = when (stream) {
         is HttpBody.SourceContent -> GzipSdkSource(stream.readFrom()).toHttpBody()
         is HttpBody.ChannelContent -> GzipByteReadChannel(stream.readFrom()).toHttpBody()
         is HttpBody.Bytes -> compressByteArray(stream.bytes())
@@ -41,35 +41,58 @@ internal fun compressByteArray(bytes: ByteArray): HttpBody {
 }
 
 internal class GzipSdkSource(
-    private val delegate: SdkSource,
-): SdkSource by delegate {
-    private val buffer = SdkBuffer()
-    private val gzipOS = GZIPOutputStream(buffer.outputStream())
+    private val source: SdkSource,
+) : SdkSource by source {
+    private val gzipBuffer = SdkBuffer()
+    private val gzipOutputStream = GZIPOutputStream(gzipBuffer.outputStream())
 
-    // TODO: Deal with edge cases and maybe change limits
     override fun read(sink: SdkBuffer, limit: Long): Long {
-        val tempBuff = SdkBuffer()
-        delegate.read(tempBuff, 1)
-        val bA = tempBuff.readByteArray()
-        gzipOS.write(bA)
-        buffer.read(sink, 1)
-        return -1
+        // Read "limit" bytes into byte array
+        val converter = SdkBuffer()
+        val bytesRead = source.read(converter, limit)
+        if (bytesRead == -1L) source.close()
+        val byteArray = converter.readByteArray()
+        converter.close()
+
+        // Pass byteArray to gzip, which passes them to gzip buffer
+        gzipOutputStream.write(byteArray)
+
+        // Extract compressed byteArray into function sink
+        gzipBuffer.readAll(sink)
+        if (bytesRead == -1L) {
+            gzipOutputStream.close()
+            gzipBuffer.close()
+        }
+
+        // Returns amount of bytes read from source
+        return bytesRead
     }
 }
 
 internal class GzipByteReadChannel(
-    private val delegate: SdkByteReadChannel,
-): SdkByteReadChannel by delegate {
-    private val buffer = SdkBuffer()
-    private val gzipOS = GZIPOutputStream(buffer.outputStream())
+    private val source: SdkByteReadChannel,
+) : SdkByteReadChannel by source {
+    private val gzipBuffer = SdkBuffer()
+    private val gzipOutputStream = GZIPOutputStream(gzipBuffer.outputStream())
 
-    // TODO: Deal with edge cases and maybe change limits ... not entirely sure how this works yet
     override suspend fun read(sink: SdkBuffer, limit: Long): Long {
-        val tempBuff = SdkBuffer()
-        delegate.read(tempBuff, 1)
-        val bA = tempBuff.readByteArray()
-        gzipOS.write(bA)
-        buffer.read(sink, 1)
-        return -1
+        // Read "limit" bytes into byte array
+        val converter = SdkBuffer()
+        val bytesRead = source.read(converter, limit)
+        val byteArray = converter.readByteArray()
+        converter.close()
+
+        // Pass byteArray to gzip, which passes them to gzip buffer
+        gzipOutputStream.write(byteArray)
+
+        // Extract compressed byteArray into function sink
+        gzipBuffer.readAll(sink)
+        if (bytesRead == -1L) {
+            gzipOutputStream.close()
+            gzipBuffer.close()
+        }
+
+        // Returns amount of bytes read from source
+        return bytesRead
     }
 }
