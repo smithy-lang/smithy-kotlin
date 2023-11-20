@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package aws.smithy.kotlin.runtime.http.interceptors.requestcompression.compressionalgorithms
+package aws.smithy.kotlin.runtime.http.interceptors.requestcompression
 
 import aws.smithy.kotlin.runtime.http.HttpBody
 

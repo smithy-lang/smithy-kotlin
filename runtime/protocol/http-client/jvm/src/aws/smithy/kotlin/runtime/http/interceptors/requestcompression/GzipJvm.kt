@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package aws.smithy.kotlin.runtime.http.interceptors.requestcompression.compressionalgorithms
+package aws.smithy.kotlin.runtime.http.interceptors.requestcompression
 
 import aws.smithy.kotlin.runtime.ClientException
 import aws.smithy.kotlin.runtime.http.HttpBody
@@ -54,7 +54,7 @@ internal class GzipSdkSource(
         val byteArray = converter.readByteArray()
         converter.close()
 
-        // Pass byteArray to gzip, which passes them to gzip buffer
+        // Pass byteArray to gzip
         gzipOutputStream.write(byteArray)
 
         // Extract compressed byteArray into function sink
@@ -82,7 +82,7 @@ internal class GzipByteReadChannel(
         val byteArray = converter.readByteArray()
         converter.close()
 
-        // Pass byteArray to gzip, which passes them to gzip buffer
+        // Pass byteArray to gzip
         gzipOutputStream.write(byteArray)
 
         // Extract compressed byteArray into function sink

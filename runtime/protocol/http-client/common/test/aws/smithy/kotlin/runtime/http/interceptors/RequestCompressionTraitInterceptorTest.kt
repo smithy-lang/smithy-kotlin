@@ -8,7 +8,7 @@ package aws.smithy.kotlin.runtime.http.interceptors
 import aws.smithy.kotlin.runtime.content.toByteArray
 import aws.smithy.kotlin.runtime.http.HttpBody
 import aws.smithy.kotlin.runtime.http.SdkHttpClient
-import aws.smithy.kotlin.runtime.http.interceptors.requestcompression.compressionalgorithms.Gzip
+import aws.smithy.kotlin.runtime.http.interceptors.requestcompression.Gzip
 import aws.smithy.kotlin.runtime.http.operation.HttpOperationContext
 import aws.smithy.kotlin.runtime.http.operation.newTestOperation
 import aws.smithy.kotlin.runtime.http.operation.roundTrip
@@ -32,7 +32,6 @@ class RequestCompressionTraitInterceptorTest {
         }
 
         val op = newTestOperation<Unit, Unit>(req, Unit)
-
         op.interceptors.add(
             RequestCompressionTraitInterceptor(
                 0,
@@ -40,8 +39,8 @@ class RequestCompressionTraitInterceptorTest {
                 listOf(),
             ),
         )
-
         op.roundTrip(client, Unit)
+
         val call = op.context.attributes[HttpOperationContext.HttpCallList].first()
         assertEquals(null, call.request.headers["Content-Encoding"])
         assertEquals("<Foo>bar</Foo>", call.request.body.toByteStream()!!.toByteArray().decodeToString())
@@ -55,7 +54,6 @@ class RequestCompressionTraitInterceptorTest {
             }
 
             val op = newTestOperation<Unit, Unit>(req, Unit)
-
             op.interceptors.add(
                 RequestCompressionTraitInterceptor(
                     -1,
@@ -63,7 +61,6 @@ class RequestCompressionTraitInterceptorTest {
                     listOf(Gzip()),
                 ),
             )
-
             op.roundTrip(client, Unit)
         }
     }
@@ -76,7 +73,6 @@ class RequestCompressionTraitInterceptorTest {
         }
 
         val op = newTestOperation<Unit, Unit>(req, Unit)
-
         op.interceptors.add(
             RequestCompressionTraitInterceptor(
                 0,
@@ -84,8 +80,8 @@ class RequestCompressionTraitInterceptorTest {
                 listOf(Gzip()),
             ),
         )
-
         op.roundTrip(client, Unit)
+
         val call = op.context.attributes[HttpOperationContext.HttpCallList].first()
         assertEquals("gzip", call.request.headers["Content-Encoding"])
         assertEquals("<Foo>bar</Foo>", call.request.body.toByteStream()!!.toByteArray().decodeToString())
@@ -100,7 +96,6 @@ class RequestCompressionTraitInterceptorTest {
         req.headers.append("Content-Encoding", "br")
 
         val op = newTestOperation<Unit, Unit>(req, Unit)
-
         op.interceptors.add(
             RequestCompressionTraitInterceptor(
                 0,
@@ -108,8 +103,8 @@ class RequestCompressionTraitInterceptorTest {
                 listOf(Gzip()),
             ),
         )
-
         op.roundTrip(client, Unit)
+
         val call = op.context.attributes[HttpOperationContext.HttpCallList].first()
         assertEquals("br, gzip", call.request.headers["Content-Encoding"])
         assertEquals("<Foo>bar</Foo>", call.request.body.toByteStream()!!.toByteArray().decodeToString())

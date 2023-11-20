@@ -7,7 +7,7 @@ package aws.smithy.kotlin.runtime.http.interceptors
 
 import aws.smithy.kotlin.runtime.InternalApi
 import aws.smithy.kotlin.runtime.client.ProtocolRequestInterceptorContext
-import aws.smithy.kotlin.runtime.http.interceptors.requestcompression.compressionalgorithms.CompressionAlgorithm
+import aws.smithy.kotlin.runtime.http.interceptors.requestcompression.CompressionAlgorithm
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
 import aws.smithy.kotlin.runtime.http.request.header
