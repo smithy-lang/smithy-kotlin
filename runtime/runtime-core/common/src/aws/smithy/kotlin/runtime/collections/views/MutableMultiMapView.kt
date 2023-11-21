@@ -8,7 +8,8 @@ import aws.smithy.kotlin.runtime.collections.Entry
 import aws.smithy.kotlin.runtime.collections.MutableMultiMap
 import kotlin.jvm.JvmName
 
-// TODO is there a way to inherit [MultiMap]? Seems tricky because of the `out` param...
+// FIXME As written, `getOrPut` doesn't work correctly on views because it can return a reference to the `defaultValue`
+//  but that's ignored by views because we need to create the "canonical" data source in the `src` map.
 internal class MutableMultiMapView<KSrc, KDest, VSrc, VDest>(
     private val src: MutableMultiMap<KSrc, VSrc>,
     private val kSrc2Dest: (KSrc) -> KDest,
@@ -17,9 +18,24 @@ internal class MutableMultiMapView<KSrc, KDest, VSrc, VDest>(
     private val vDest2Src: (VDest) -> VSrc,
 ) : MutableMultiMap<KDest, VDest> {
     private val vListSrc2Dest: (MutableList<VSrc>) -> MutableList<VDest> = { it.asView(vSrc2Dest, vDest2Src) }
-    private val vListDest2Src: (MutableList<VDest>) -> MutableList<VSrc> = { it.asView(vDest2Src, vSrc2Dest) }
 
-    private fun ensureKey(key: KDest) = getOrPut(key, ::mutableListOf)
+    private val vListDest2Src: (MutableList<VDest>) -> MutableList<VSrc> = {
+        // FIXME this is not ideal because it forgets any connection to the given `MutableList<VDest>`
+        it.mapTo(mutableListOf(), vDest2Src)
+    }
+
+    private fun ensureKey(key: KDest): MutableList<VDest> {
+        // FIXME Can't use getOrPut(key, mutableListOf()) because that will return a reference to the `mutableListOf()`
+        //  which is disconnected from any views. Values added would disappear into the aether.
+
+        val existingList = get(key)
+        return if (existingList == null) {
+            src[kDest2Src(key)] = mutableListOf()
+            getValue(key)
+        } else {
+            existingList
+        }
+    }
 
     private fun fwdEntryView(src: MutableMap.MutableEntry<KSrc, MutableList<VSrc>>) =
         MutableEntryView(src, kSrc2Dest, vListSrc2Dest, vListDest2Src)

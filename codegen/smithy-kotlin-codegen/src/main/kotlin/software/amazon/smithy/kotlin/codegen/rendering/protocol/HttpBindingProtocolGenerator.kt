@@ -402,10 +402,11 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         }
 
         if (queryBindings.isNotEmpty() || queryMapBindings.isNotEmpty()) {
-            writer.withBlock("parameters.encodedParameters {", "}") {
-                // Set up a temporary map for the query labels
-                writer.write("val labels = #T<String, String>()", RuntimeTypes.Core.Collections.mutableMultiMapOf)
-
+            writer.withBlock(
+                "parameters.decodedParameters(#T.SmithyLabel) {",
+                "}",
+                RuntimeTypes.Core.Text.Encoding.PercentEncoding,
+            ) {
                 // render length check if applicable
                 queryBindings.forEach { binding -> renderNonBlankGuard(ctx, binding.member, writer) }
 
@@ -417,8 +418,8 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                     val target = ctx.model.expectShape<MapShape>(it.member.target)
                     val valueTarget = ctx.model.expectShape(target.value.target)
                     val fn = when (valueTarget.type) {
-                        ShapeType.STRING -> "labels.add"
-                        ShapeType.LIST, ShapeType.SET -> "labels.addAll"
+                        ShapeType.STRING -> "add"
+                        ShapeType.LIST, ShapeType.SET -> "addAll"
                         else -> throw CodegenException("unexpected value type for httpQueryParams map")
                     }
 
@@ -438,17 +439,6 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                         }
                         .dedent()
                 }
-
-                // Transfer encoded labels into query params map
-                openBlock("labels")
-                write(".entries")
-                withBlock(".associateTo(this) { (key, values) ->", "}") {
-                    write(
-                        "#1T.SmithyLabel.encode(key) to values.mapTo(mutableListOf(), #1T.SmithyLabel::encode)",
-                        RuntimeTypes.Core.Text.Encoding.PercentEncoding,
-                    )
-                }
-                dedent()
             }
         }
     }

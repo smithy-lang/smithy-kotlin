@@ -64,14 +64,8 @@ internal class AllocateWidgetQueryOperationSerializer: HttpSerialize<AllocateWid
 
         builder.url {
             path.encoded = "/input/AllocateWidgetQuery"
-            parameters.encodedParameters {
-                val labels = mutableMultiMapOf<String, String>()
-                labels.add("clientToken", (input.clientToken ?: context.idempotencyTokenProvider.generateToken()))
-                labels
-                    .entries
-                    .associateTo(this) { (key, values) ->
-                        PercentEncoding.SmithyLabel.encode(key) to values.mapTo(mutableListOf(), PercentEncoding.SmithyLabel::encode)
-                    }
+            parameters.decodedParameters(PercentEncoding.SmithyLabel) {
+                add("clientToken", (input.clientToken ?: context.idempotencyTokenProvider.generateToken()))
             }
         }
 
