@@ -4,11 +4,13 @@
  */
 package aws.smithy.kotlin.runtime.net.url
 
+import aws.smithy.kotlin.runtime.InternalApi
 import aws.smithy.kotlin.runtime.collections.MultiMap
 import aws.smithy.kotlin.runtime.collections.MutableMultiMap
 import aws.smithy.kotlin.runtime.collections.mutableMultiMapOf
 import aws.smithy.kotlin.runtime.collections.views.asView
 import aws.smithy.kotlin.runtime.text.encoding.Encodable
+import aws.smithy.kotlin.runtime.text.encoding.Encoding
 import aws.smithy.kotlin.runtime.text.encoding.PercentEncoding
 
 /**
@@ -193,6 +195,20 @@ public class QueryParameters private constructor(
          */
         public fun decodedParameters(block: MutableMultiMap<String, String>.() -> Unit) {
             decodedParameters.apply(block)
+        }
+
+        @InternalApi
+        public fun decodedParameters(encoding: Encoding, block: MutableMultiMap<String, String>.() -> Unit) {
+            val params = when (encoding) {
+                PercentEncoding.Query -> decodedParameters
+                else -> asView(
+                    Encodable::decoded,
+                    encoding::encodableFromDecoded,
+                    Encodable::decoded,
+                    encoding::encodableFromDecoded,
+                )
+            }
+            params.apply(block)
         }
 
         /**

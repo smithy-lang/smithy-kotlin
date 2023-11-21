@@ -39,13 +39,14 @@ public class Encodable internal constructor(
 
         if (decoded != other.decoded) return false
         if (encoded != other.encoded) return false
-        return encoding == other.encoding
+        // return encoding == other.encoding
+        return true
     }
 
     override fun hashCode(): Int {
         var result = decoded.hashCode()
         result = 31 * result + encoded.hashCode()
-        result = 31 * result + encoding.hashCode()
+        // result = 31 * result + encoding.hashCode()
         return result
     }
 

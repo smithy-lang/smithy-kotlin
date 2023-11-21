@@ -5,7 +5,7 @@
 package aws.smithy.kotlin.runtime.collections.views
 
 internal open class MutableListView<Src, Dest>(
-    private val src: MutableList<Src>,
+    internal val src: MutableList<Src>,
     private val src2Dest: (Src) -> Dest,
     private val dest2Src: (Dest) -> Src,
 ) : MutableList<Dest>, ListView<Src, Dest>(src, src2Dest, dest2Src) {

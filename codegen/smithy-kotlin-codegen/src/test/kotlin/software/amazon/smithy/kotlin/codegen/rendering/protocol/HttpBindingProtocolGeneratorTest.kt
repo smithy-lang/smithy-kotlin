@@ -52,14 +52,8 @@ internal class SmokeTestOperationSerializer: HttpSerialize<SmokeTestRequest> {
                 "$label1".split("/").mapTo(this) { PercentEncoding.SmithyLabel.encode(it) }
                 add(PercentEncoding.Path.encode("foo"))
             }
-            parameters.encodedParameters {
-                val labels = mutableMultiMapOf<String, String>()
-                if (input.query1 != null) labels.add("Query1", input.query1)
-                labels
-                    .entries
-                    .associateTo(this) { (key, values) ->
-                        PercentEncoding.SmithyLabel.encode(key) to values.mapTo(mutableListOf(), PercentEncoding.SmithyLabel::encode)
-                    }
+            parameters.decodedParameters(PercentEncoding.SmithyLabel) {
+                if (input.query1 != null) add("Query1", input.query1)
             }
         }
 
@@ -266,15 +260,9 @@ internal class TimestampInputOperationSerializer: HttpSerialize<TimestampInputRe
                 add(PercentEncoding.Path.encode("timestamp"))
                 add(PercentEncoding.SmithyLabel.encode("$tsLabel"))
             }
-            parameters.encodedParameters {
-                val labels = mutableMultiMapOf<String, String>()
-                if (input.queryTimestamp != null) labels.add("qtime", input.queryTimestamp.format(TimestampFormat.ISO_8601))
-                if (input.queryTimestampList?.isNotEmpty() == true) labels.addAll("qtimeList", input.queryTimestampList.map { it.format(TimestampFormat.ISO_8601) })
-                labels
-                    .entries
-                    .associateTo(this) { (key, values) ->
-                        PercentEncoding.SmithyLabel.encode(key) to values.mapTo(mutableListOf(), PercentEncoding.SmithyLabel::encode)
-                    }
+            parameters.decodedParameters(PercentEncoding.SmithyLabel) {
+                if (input.queryTimestamp != null) add("qtime", input.queryTimestamp.format(TimestampFormat.ISO_8601))
+                if (input.queryTimestampList?.isNotEmpty() == true) addAll("qtimeList", input.queryTimestampList.map { it.format(TimestampFormat.ISO_8601) })
             }
         }
 
@@ -577,18 +565,12 @@ internal class SmokeTestOperationDeserializer: HttpDeserialize<SmokeTestResponse
                 add(PercentEncoding.SmithyLabel.encode("$label1"))
                 add(PercentEncoding.SmithyLabel.encode("$label2"))
             }
-            parameters.encodedParameters {
-                val labels = mutableMultiMapOf<String, String>()
+            parameters.decodedParameters(PercentEncoding.SmithyLabel) {
                 require(input.garply?.isNotBlank() == true) { "garply is bound to the URI and must be a non-blank value" }
-                if (input.corge != null) labels.add("corge", input.corge)
-                if (input.garply != null) labels.add("garply", input.garply)
-                if (input.grault != null) labels.add("grault", input.grault)
-                if (input.quux != null) labels.add("quux", "$quux")
-                labels
-                    .entries
-                    .associateTo(this) { (key, values) ->
-                        PercentEncoding.SmithyLabel.encode(key) to values.mapTo(mutableListOf(), PercentEncoding.SmithyLabel::encode)
-                    }
+                if (input.corge != null) add("corge", input.corge)
+                if (input.garply != null) add("garply", input.garply)
+                if (input.grault != null) add("grault", input.grault)
+                if (input.quux != null) add("quux", "$quux")
             }
         """
 
