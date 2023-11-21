@@ -179,6 +179,8 @@ class UrlParsingTest {
 
     @Test
     fun testQuery() {
+        val full = Url.parse("https://host?k=v")
+
         assertEquals(
             QueryParameters { decodedParameters { add("k", "v") } },
             Url.parse("https://host?k=v").parameters,
@@ -229,6 +231,8 @@ class UrlParsingTest {
             assertEquals(0, parsed.size)
             assertTrue(parsed.forceQuerySeparator, "Expected forceQuery=true for $url")
         }
+
+        println(full)
     }
 
     @Test

@@ -162,7 +162,7 @@ public class QueryParameters private constructor(
             val params = text.removePrefix("?")
 
             if (params.isNotEmpty()) {
-                params
+                val parsed = params
                     .split("&")
                     .map { segment ->
                         val parts = segment.split("=")
@@ -174,7 +174,12 @@ public class QueryParameters private constructor(
                         }
                         key to value
                     }
-                    .groupByTo(map, Pair<String, String>::first, Pair<String, String>::second)
+                    .groupBy(Pair<String, String>::first, Pair<String, String>::second)
+
+                // FIXME groupByTo(map, ...) should work but it relies on `getOrPut` which is an extension method
+                //  defined in stdlib that cannot be overridden. See `MutableMultiMapView` for more details on why
+                //  `getOrPut` doesn't work.
+                map.addAll(parsed)
             }
         }
 

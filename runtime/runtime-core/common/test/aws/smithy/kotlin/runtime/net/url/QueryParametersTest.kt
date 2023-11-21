@@ -40,7 +40,7 @@ class QueryParametersTest {
             }
         }.toString()
 
-        assertEquals("?a=green%20apple&b=yellow%20banana&a=red+apple", paramString)
+        assertEquals("?a=green%20apple&a=red+apple&b=yellow%20banana", paramString)
     }
 }
 
