@@ -6,6 +6,9 @@ package aws.smithy.kotlin.runtime.text.encoding
 
 import aws.smithy.kotlin.runtime.InternalApi
 
+/**
+ * An algorithm which can convert data between a decoded string and an encoded string
+ */
 @InternalApi
 public interface Encoding {
     @InternalApi
@@ -17,15 +20,28 @@ public interface Encoding {
         }
     }
 
+    /**
+     * The name of this encoding
+     */
     public val name: String
 
+    /**
+     * Given **encoded** data, returns the **decoded* representation
+     */
     public fun decode(encoded: String): String
+
+    /**
+     * Given **decoded** data, returns the **encoded* representation
+     */
     public fun encode(decoded: String): String
 
+    /**
+     * Given **decoded** data, returns an [Encodable] containing both the decoded and encoded data
+     */
     public fun encodableFromDecoded(decoded: String): Encodable = Encodable(decoded, encode(decoded), this)
-    public fun encodableFromEncoded(encoded: String): Encodable {
-        val decoded = decode(encoded)
-        // val reencoded = encode(decoded) // TODO is this right?
-        return Encodable(decoded, encoded, this)
-    }
+
+    /**
+     * Given **encoded** data, returns an [Encodable] containing both the decoded and encoded data.
+     */
+    public fun encodableFromEncoded(encoded: String): Encodable = Encodable(decode(encoded), encoded, this)
 }

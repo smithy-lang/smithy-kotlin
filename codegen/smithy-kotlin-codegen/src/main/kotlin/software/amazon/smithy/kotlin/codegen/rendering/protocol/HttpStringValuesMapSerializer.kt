@@ -215,7 +215,7 @@ class HttpStringValuesMapSerializer(
 
 private val HttpBinding.Location.addFnName: String
     get() = when (this) {
-        HttpBinding.Location.QUERY, HttpBinding.Location.QUERY_PARAMS -> "add" // uses MutableMultiMap
+        HttpBinding.Location.QUERY, HttpBinding.Location.QUERY_PARAMS -> "labels.add" // uses MutableMultiMap
         else -> "append" // uses ValuesMapBuilder
     }
 

@@ -72,7 +72,7 @@ class HttpStringValuesMapSerializerTest {
         contents.assertBalancedBracesAndParens()
 
         val expectedContents = """
-            if (input.qInt != 0) add("q-int", "${'$'}{input.qInt}")
+            if (input.qInt != 0) labels.add("q-int", "${'$'}{input.qInt}")
         """.trimIndent()
         contents.shouldContainOnlyOnceWithDiff(expectedContents)
     }
@@ -84,7 +84,7 @@ class HttpStringValuesMapSerializerTest {
         contents.assertBalancedBracesAndParens()
 
         val expectedContents = """
-            add("q-int", "${'$'}{input.qInt}")
+            labels.add("q-int", "${'$'}{input.qInt}")
         """.trimIndent()
         contents.shouldContainOnlyOnceWithDiff(expectedContents)
     }
@@ -190,8 +190,8 @@ class HttpStringValuesMapSerializerTest {
 
         val queryContents = getTestContents(defaultModel, "com.test#TimestampInput", HttpBinding.Location.QUERY)
         val expectedQueryContents = """
-            if (input.queryTimestamp != null) add("qtime", input.queryTimestamp.format(TimestampFormat.ISO_8601))
-            if (input.queryTimestampList?.isNotEmpty() == true) addAll("qtimeList", input.queryTimestampList.map { it.format(TimestampFormat.ISO_8601) })
+            if (input.queryTimestamp != null) labels.add("qtime", input.queryTimestamp.format(TimestampFormat.ISO_8601))
+            if (input.queryTimestampList?.isNotEmpty() == true) labels.addAll("qtimeList", input.queryTimestampList.map { it.format(TimestampFormat.ISO_8601) })
         """.trimIndent()
         queryContents.shouldContainOnlyOnceWithDiff(expectedQueryContents)
     }

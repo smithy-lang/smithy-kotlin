@@ -5,9 +5,9 @@
 
 package aws.smithy.kotlin.runtime.identity
 
+import aws.smithy.kotlin.runtime.collections.Attributes
+import aws.smithy.kotlin.runtime.collections.emptyAttributes
 import aws.smithy.kotlin.runtime.io.Closeable
-import aws.smithy.kotlin.runtime.util.Attributes
-import aws.smithy.kotlin.runtime.util.emptyAttributes
 
 /**
  * Resolves identities for a service client

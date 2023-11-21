@@ -101,6 +101,17 @@ object RuntimeTypes {
         val TimestampFormat = symbol("TimestampFormat", "time")
         val ClientException = symbol("ClientException")
 
+        object Collections : RuntimeTypePackage(KotlinDependency.CORE, "collections") {
+            val Attributes = symbol("Attributes")
+            val attributesOf = symbol("attributesOf")
+            val AttributeKey = symbol("AttributeKey")
+            val get = symbol("get")
+            val mutableMultiMapOf = symbol("mutableMultiMapOf")
+            val putIfAbsent = symbol("putIfAbsent")
+            val putIfAbsentNotNull = symbol("putIfAbsentNotNull")
+            val ReadThroughCache = symbol("ReadThroughCache")
+        }
+
         object Content : RuntimeTypePackage(KotlinDependency.CORE, "content") {
             val BigDecimal = symbol("BigDecimal")
             val BigInteger = symbol("BigInteger")
@@ -156,18 +167,10 @@ object RuntimeTypes {
         }
 
         object Utils : RuntimeTypePackage(KotlinDependency.CORE, "util") {
-            val Attributes = symbol("Attributes")
-            val MutableAttributes = symbol("MutableAttributes")
-            val attributesOf = symbol("attributesOf")
-            val AttributeKey = symbol("AttributeKey")
             val ExpiringValue = symbol("ExpiringValue")
             val flattenIfPossible = symbol("flattenIfPossible")
-            val get = symbol("get")
             val LazyAsyncValue = symbol("LazyAsyncValue")
             val length = symbol("length")
-            val putIfAbsent = symbol("putIfAbsent")
-            val putIfAbsentNotNull = symbol("putIfAbsentNotNull")
-            val ReadThroughCache = symbol("ReadThroughCache")
             val truthiness = symbol("truthiness")
             val toNumber = symbol("toNumber")
             val type = symbol("type")

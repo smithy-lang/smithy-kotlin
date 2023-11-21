@@ -6,9 +6,9 @@
 package aws.smithy.kotlin.runtime.telemetry.metrics
 
 import aws.smithy.kotlin.runtime.InternalApi
+import aws.smithy.kotlin.runtime.collections.Attributes
+import aws.smithy.kotlin.runtime.collections.emptyAttributes
 import aws.smithy.kotlin.runtime.telemetry.context.Context
-import aws.smithy.kotlin.runtime.util.Attributes
-import aws.smithy.kotlin.runtime.util.emptyAttributes
 import kotlin.time.Duration
 import kotlin.time.measureTimedValue
 

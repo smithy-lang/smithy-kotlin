@@ -46,16 +46,8 @@ internal class DefaultRequestMutator : RequestMutator {
                 canonical.request.headers["Authorization"] = "$ALGORITHM_NAME $credential, $signedHeaders, $signature"
             }
 
-            AwsSignatureType.HTTP_REQUEST_VIA_QUERY_PARAMS -> {
+            AwsSignatureType.HTTP_REQUEST_VIA_QUERY_PARAMS ->
                 canonical.request.url.parameters.decodedParameters.put("X-Amz-Signature", signatureHex)
-
-                /* TODO don't need to reencode because their already canonicalized by `Encodable`?
-                entries().forEach {
-                    remove(it.key)
-                    appendAll(it.key, it.value.map(String::urlReencodeComponent))
-                }
-                 */
-            }
 
             else -> TODO("Support for ${config.signatureType} is not yet implemented")
         }

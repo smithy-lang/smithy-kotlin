@@ -6,7 +6,7 @@ package aws.smithy.kotlin.runtime.client.endpoints
 
 import aws.smithy.kotlin.runtime.InternalApi
 import aws.smithy.kotlin.runtime.auth.AuthOption
-import aws.smithy.kotlin.runtime.util.AttributeKey
+import aws.smithy.kotlin.runtime.collections.AttributeKey
 
 /**
  * Static attribute key for AWS endpoint auth schemes that can influence the signing context

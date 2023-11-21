@@ -5,9 +5,9 @@
 
 package aws.smithy.kotlin.runtime.telemetry.otel
 
-import aws.smithy.kotlin.runtime.util.AttributeKey
-import aws.smithy.kotlin.runtime.util.Attributes
-import aws.smithy.kotlin.runtime.util.get
+import aws.smithy.kotlin.runtime.collections.AttributeKey
+import aws.smithy.kotlin.runtime.collections.Attributes
+import aws.smithy.kotlin.runtime.collections.get
 import io.opentelemetry.api.common.AttributeKey as OtelAttributeKey
 import io.opentelemetry.api.common.Attributes as OtelAttributes
 

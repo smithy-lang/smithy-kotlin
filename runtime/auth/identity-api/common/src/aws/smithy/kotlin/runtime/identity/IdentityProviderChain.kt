@@ -6,10 +6,10 @@
 package aws.smithy.kotlin.runtime.identity
 
 import aws.smithy.kotlin.runtime.InternalApi
+import aws.smithy.kotlin.runtime.collections.Attributes
 import aws.smithy.kotlin.runtime.io.Closeable
 import aws.smithy.kotlin.runtime.telemetry.logging.logger
 import aws.smithy.kotlin.runtime.telemetry.trace.withSpan
-import aws.smithy.kotlin.runtime.util.Attributes
 
 // TODO - support caching the provider that actually resolved credentials such that future calls don't involve going through the full chain
 

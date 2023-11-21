@@ -6,10 +6,10 @@
 package aws.smithy.kotlin.runtime.client.endpoints
 
 import aws.smithy.kotlin.runtime.InternalApi
+import aws.smithy.kotlin.runtime.collections.Attributes
 import aws.smithy.kotlin.runtime.collections.ValuesMap
+import aws.smithy.kotlin.runtime.collections.emptyAttributes
 import aws.smithy.kotlin.runtime.net.url.Url
-import aws.smithy.kotlin.runtime.util.Attributes
-import aws.smithy.kotlin.runtime.util.emptyAttributes
 
 /**
  * Represents the endpoint a service client should make API operation calls to.

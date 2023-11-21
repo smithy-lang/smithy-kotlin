@@ -206,18 +206,14 @@ internal fun Url.Builder.canonicalPath(config: AwsSigningConfig): String {
  * Canonicalizes the query parameters from this [Url.Builder].
  * @return The canonicalized query parameters
  */
-internal fun Url.Builder.canonicalQueryParams(): String {
-    val canonicalized = parameters
+internal fun Url.Builder.canonicalQueryParams(): String = QueryParameters {
+    parameters
         .entries
-        .associate { (key, values) -> key.reencode().encoded to values.map { it.reencode().encoded } } // FIXME 🤮
+        .associate { (key, values) -> key.reencode().encoded to values.map { it.reencode().encoded } } // re-encode all
         .entries
         .sortedWith(compareBy { it.key }) // Sort keys
-        .associate { (key, values) -> key to values.sorted().toMutableList() } // Sort values
-
-    return QueryParameters {
-        encodedParameters.putAll(canonicalized)
-    }.toString().removePrefix("?")
-}
+        .associateTo(encodedParameters) { (key, values) -> key to values.sorted().toMutableList() } // Sort values
+}.toString().removePrefix("?")
 
 private fun Pair<String, List<String>>.canonicalLine(): String {
     val valuesString = second.joinToString(separator = ",") { it.trimAll() }

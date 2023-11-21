@@ -7,12 +7,13 @@ package aws.smithy.kotlin.runtime.http.operation
 
 import aws.smithy.kotlin.runtime.InternalApi
 import aws.smithy.kotlin.runtime.client.SdkClientOption
+import aws.smithy.kotlin.runtime.collections.get
 import aws.smithy.kotlin.runtime.http.HttpHandler
 import aws.smithy.kotlin.runtime.http.complete
 import aws.smithy.kotlin.runtime.http.interceptors.HttpInterceptor
 import aws.smithy.kotlin.runtime.operation.ExecutionContext
 import aws.smithy.kotlin.runtime.telemetry.trace.withSpan
-import aws.smithy.kotlin.runtime.util.*
+import aws.smithy.kotlin.runtime.util.Uuid
 import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.job
 import kotlin.reflect.KClass

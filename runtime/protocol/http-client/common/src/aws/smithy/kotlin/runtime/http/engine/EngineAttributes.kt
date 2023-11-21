@@ -6,7 +6,7 @@
 package aws.smithy.kotlin.runtime.http.engine
 
 import aws.smithy.kotlin.runtime.InternalApi
-import aws.smithy.kotlin.runtime.util.AttributeKey
+import aws.smithy.kotlin.runtime.collections.AttributeKey
 import kotlin.time.Duration
 
 /**

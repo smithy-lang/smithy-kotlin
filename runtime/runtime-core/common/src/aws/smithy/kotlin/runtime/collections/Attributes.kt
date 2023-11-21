@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package aws.smithy.kotlin.runtime.util
+package aws.smithy.kotlin.runtime.collections
 
 /**
  * Specifies a key for an attribute

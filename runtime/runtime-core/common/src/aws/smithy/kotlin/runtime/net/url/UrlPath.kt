@@ -114,6 +114,9 @@ public class UrlPath private constructor(
             get() = asEncoded(segments, trailingSlash)
             set(value) { parseEncoded(value) }
 
+        /**
+         * Gets the segments of this URL path
+         */
         public val segments: MutableList<Encodable> = path?.segments?.toMutableList() ?: mutableListOf()
 
         /**
@@ -124,6 +127,10 @@ public class UrlPath private constructor(
             PercentEncoding.Path::encodableFromDecoded,
         )
 
+        /**
+         * Applies the given DSL block to the **decoded** path segments. Any changes to the list will update the
+         * builder.
+         */
         public fun decodedSegments(block: MutableList<String>.() -> Unit) {
             decodedSegments.apply(block)
         }
@@ -136,6 +143,10 @@ public class UrlPath private constructor(
             PercentEncoding.Path::encodableFromEncoded,
         )
 
+        /**
+         * Applies the given DSL block to the **encoded** path segments. Any changes to the list will update the
+         * builder.
+         */
         public fun encodedSegments(block: MutableList<String>.() -> Unit) {
             encodedSegments.apply(block)
         }
@@ -200,12 +211,18 @@ public class UrlPath private constructor(
          */
         public fun build(): UrlPath = UrlPath(segments.toList(), trailingSlash)
 
+        /**
+         * Copies the state from [other] into this builder. All existing state is overwritten.
+         */
         public fun copyFrom(other: UrlPath) {
             segments.clear()
             segments.addAll(other.segments)
             trailingSlash = other.trailingSlash
         }
 
+        /**
+         * Copies the state from [other] into this builder. All existing state is overwritten.
+         */
         public fun copyFrom(other: Builder) {
             segments.clear()
             segments.addAll(other.segments)

@@ -5,7 +5,7 @@
 
 package aws.smithy.kotlin.runtime.identity
 
-import aws.smithy.kotlin.runtime.util.AttributeKey
+import aws.smithy.kotlin.runtime.collections.AttributeKey
 
 /**
  * Common [Identity] attribute keys

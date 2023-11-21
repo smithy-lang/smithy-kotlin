@@ -82,7 +82,7 @@ class HttpRequestTestBuilderTest {
                 }
             }
         }
-        ex.message.shouldContain("expected query name value pair not found: `Hi:Hello%20there`")
+        ex.message.shouldContain("Query parameter `Hi` does not contain expected value `Hello%20there`. Actual values: [Hello]")
     }
 
     @Test

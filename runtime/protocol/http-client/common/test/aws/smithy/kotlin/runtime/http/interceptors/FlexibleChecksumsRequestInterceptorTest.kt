@@ -6,6 +6,7 @@
 package aws.smithy.kotlin.runtime.http.interceptors
 
 import aws.smithy.kotlin.runtime.ClientException
+import aws.smithy.kotlin.runtime.collections.get
 import aws.smithy.kotlin.runtime.hashing.toHashFunction
 import aws.smithy.kotlin.runtime.http.*
 import aws.smithy.kotlin.runtime.http.operation.HttpOperationContext
@@ -16,7 +17,6 @@ import aws.smithy.kotlin.runtime.http.request.headers
 import aws.smithy.kotlin.runtime.httptest.TestEngine
 import aws.smithy.kotlin.runtime.io.*
 import aws.smithy.kotlin.runtime.text.encoding.encodeBase64String
-import aws.smithy.kotlin.runtime.util.get
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.test.runTest
 import kotlin.test.*

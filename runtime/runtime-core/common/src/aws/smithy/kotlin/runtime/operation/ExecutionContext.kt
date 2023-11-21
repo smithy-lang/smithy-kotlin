@@ -4,8 +4,8 @@
  */
 package aws.smithy.kotlin.runtime.operation
 
-import aws.smithy.kotlin.runtime.util.MutableAttributes
-import aws.smithy.kotlin.runtime.util.mutableAttributes
+import aws.smithy.kotlin.runtime.collections.MutableAttributes
+import aws.smithy.kotlin.runtime.collections.mutableAttributes
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlin.coroutines.CoroutineContext

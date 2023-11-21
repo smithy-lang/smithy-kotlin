@@ -45,7 +45,14 @@ public class UserInfo private constructor(public val userName: Encodable, public
         require(password.isEmpty || userName.isNotEmpty) { "Cannot have a password without a user name" }
     }
 
+    /**
+     * Indicates whether this [UserInfo] has a blank [userName] and [password]
+     */
     public val isEmpty: Boolean = userName.isEmpty && password.isEmpty
+
+    /**
+     * Indicates whether this [UserInfo] has a non-blank [userName] or [password]
+     */
     public val isNotEmpty: Boolean = !isEmpty
 
     /**
@@ -143,11 +150,17 @@ public class UserInfo private constructor(public val userName: Encodable, public
          */
         public fun build(): UserInfo = UserInfo(userName, password)
 
+        /**
+         * Copies the state from [other] into this builder. All existing state is overwritten.
+         */
         public fun copyFrom(other: UserInfo) {
             userName = other.userName
             password = other.password
         }
 
+        /**
+         * Copies the state from [other] into this builder. All existing state is overwritten.
+         */
         public fun copyFrom(other: Builder) {
             userName = other.userName
             password = other.password

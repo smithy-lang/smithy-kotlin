@@ -11,7 +11,7 @@ class QueryParametersTest {
     @Test
     fun testParse() {
         val actual = QueryParameters.parseEncoded("?")
-        val expected = QueryParameters { forceQuery = true }
+        val expected = QueryParameters { forceQuerySeparator = true }
         assertEquals(expected, actual)
     }
 }

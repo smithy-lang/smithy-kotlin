@@ -5,8 +5,8 @@
 
 package aws.smithy.kotlin.runtime.telemetry.otel
 
-import aws.smithy.kotlin.runtime.util.AttributeKey
-import aws.smithy.kotlin.runtime.util.attributesOf
+import aws.smithy.kotlin.runtime.collections.AttributeKey
+import aws.smithy.kotlin.runtime.collections.attributesOf
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertIs

@@ -120,6 +120,17 @@ public class Url private constructor(
     }
 
     private val encoded: String
+
+    /**
+     * Gets a request-relative path string for this URL which is suitable for use in an HTTP request line. The given
+     * path will include query parameters and the fragment and will be prepended with a `/` (even for empty paths
+     * without a trailing slash configured). It will not include the protocol, host, port, or user info.
+     *
+     * For example:
+     * ```
+     * /path/to/resource?key=value#fragment
+     * ```
+     */
     public val requestRelativePath: String
 
     init {
@@ -137,6 +148,10 @@ public class Url private constructor(
      */
     public fun toBuilder(): Builder = Builder(this)
 
+    /**
+     * Returns a copy of this URL with the given DSL builder block applied to modify any desired fields. The returned
+     * instance is disconnected from this instance.
+     */
     public fun copy(block: Builder.() -> Unit = { }): Url = toBuilder().apply(block).build()
 
     override fun equals(other: Any?): Boolean {
@@ -296,6 +311,9 @@ public class Url private constructor(
             it.fragment = fragment
         }
 
+        /**
+         * Copies state from [url] into this builder. All existing state is overwritten.
+         */
         public fun copyFrom(url: Url) {
             scheme = url.scheme
             host = url.host
@@ -306,6 +324,16 @@ public class Url private constructor(
             fragment = url.fragment
         }
 
+        /**
+         * Gets a request-relative path string for this URL which is suitable for use in an HTTP request line. The given
+         * path will include query parameters and the fragment and will be prepended with a `/` (even for empty paths
+         * without a trailing slash configured). It will not include the protocol, host, port, or user info.
+         *
+         * For example:
+         * ```
+         * /path/to/resource?key=value#fragment
+         * ```
+         */
         public val requestRelativePath: String
             get() = buildString {
                 append(path.encoded)

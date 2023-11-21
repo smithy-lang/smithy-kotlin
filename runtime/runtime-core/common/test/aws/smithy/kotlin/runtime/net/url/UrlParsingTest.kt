@@ -173,7 +173,7 @@ class UrlParsingTest {
         ).forEach { url ->
             val parsed = Url.parse(url).parameters
             assertEquals(0, parsed.size)
-            assertFalse(parsed.forceQuery, "Expected forceQuery=false for $url")
+            assertFalse(parsed.forceQuerySeparator, "Expected forceQuery=false for $url")
         }
     }
 
@@ -227,7 +227,7 @@ class UrlParsingTest {
         ).forEach { url ->
             val parsed = Url.parse(url).parameters
             assertEquals(0, parsed.size)
-            assertTrue(parsed.forceQuery, "Expected forceQuery=true for $url")
+            assertTrue(parsed.forceQuerySeparator, "Expected forceQuery=true for $url")
         }
     }
 

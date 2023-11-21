@@ -4,4 +4,4 @@
  */
 package aws.smithy.kotlin.runtime.collections
 
-internal class Entry<K, V>(override val key: K, override val value: V) : Map.Entry<K, V>
+internal data class Entry<K, V>(override val key: K, override val value: V) : Map.Entry<K, V>

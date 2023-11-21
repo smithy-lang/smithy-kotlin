@@ -6,8 +6,7 @@ package aws.smithy.kotlin.runtime.http.auth
 
 import aws.smithy.kotlin.runtime.auth.AuthOption
 import aws.smithy.kotlin.runtime.auth.AuthSchemeId
-import aws.smithy.kotlin.runtime.util.attributesOf
-import aws.smithy.kotlin.runtime.util.get
+import aws.smithy.kotlin.runtime.collections.attributesOf
 import kotlin.test.Test
 import kotlin.test.assertEquals
 

@@ -9,12 +9,15 @@ import aws.smithy.kotlin.runtime.client.ProtocolRequestInterceptorContext
 import aws.smithy.kotlin.runtime.client.ProtocolResponseInterceptorContext
 import aws.smithy.kotlin.runtime.client.RequestInterceptorContext
 import aws.smithy.kotlin.runtime.client.ResponseInterceptorContext
+import aws.smithy.kotlin.runtime.collections.attributesOf
+import aws.smithy.kotlin.runtime.collections.merge
+import aws.smithy.kotlin.runtime.collections.mutableAttributesOf
+import aws.smithy.kotlin.runtime.collections.takeOrNull
 import aws.smithy.kotlin.runtime.http.engine.EngineAttributes
 import aws.smithy.kotlin.runtime.http.operation.OperationMetrics
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.http.response.HttpResponse
 import aws.smithy.kotlin.runtime.telemetry.metrics.recordSeconds
-import aws.smithy.kotlin.runtime.util.*
 import kotlin.time.TimeMark
 import kotlin.time.TimeSource
 

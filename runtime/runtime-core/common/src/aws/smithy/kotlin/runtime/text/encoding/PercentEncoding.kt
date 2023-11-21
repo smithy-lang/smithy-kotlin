@@ -6,6 +6,14 @@ package aws.smithy.kotlin.runtime.text.encoding
 
 import aws.smithy.kotlin.runtime.InternalApi
 
+/**
+ * An algorithm that percent-encodes string data for use in URLs
+ * @param name The name of this encoding
+ * @param validChars The set of characters which are valid _unencoded_ (i.e., in plain text). All other characters will
+ * be percent-encoded unless they appear in [specialMapping].
+ * @param specialMapping A mapping of characters to their special (i.e., non-percent-encoded) form. The characters which
+ * are keys in this map will not be percent-encoded.
+ */
 @InternalApi
 public class PercentEncoding(
     override val name: String,
@@ -14,6 +22,7 @@ public class PercentEncoding(
 ) : Encoding {
     @InternalApi
     public companion object {
+        // These definitions are from RFC 3986 Appendix A, see https://datatracker.ietf.org/doc/html/rfc3986#appendix-A
         private val ALPHA = (('A'..'Z') + ('a'..'z')).toSet()
         private val DIGIT = ('0'..'9').toSet()
         private val UNRESERVED = ALPHA + DIGIT + setOf('-', '.', '_', '~')
@@ -26,18 +35,44 @@ public class PercentEncoding(
         // what MUST be encoded in queries: https://docs.aws.amazon.com/IAM/latest/UserGuide/create-signed-request.html
         private val VALID_QCHAR = UNRESERVED
 
-        // Undocumented formally but crafted to pass Smithy protocol tests, most especially this one:
-        // https://github.com/smithy-lang/smithy/blob/d457aabb80feb4088caa3ac27d337b84e3ebc43d/smithy-aws-protocol-tests/model/restXml/http-labels.smithy#L42-L59
+        // https://smithy.io/2.0/spec/http-bindings.html#httplabel-serialization-rules
         private val SMITHY_LABEL_CHAR = UNRESERVED
 
         private const val UPPER_HEX = "0123456789ABCDEF"
 
+        /**
+         * A [PercentEncoding] instance suitable for encoding host names/addresses
+         */
         public val Host: Encoding = PercentEncoding("host", UNRESERVED + ':') // e.g., for IPv6 zone ID encoding
+
+        /**
+         * A [PercentEncoding] instance suitable for encoding userinfo
+         */
         public val UserInfo: Encoding = PercentEncoding("user info", VALID_UCHAR)
+
+        /**
+         * A [PercentEncoding] instance suitable for encoding URL paths
+         */
         public val Path: Encoding = PercentEncoding("path", VALID_PCHAR)
+
+        /**
+         * A [PercentEncoding] instance suitable for encoding query strings
+         */
         public val Query: Encoding = PercentEncoding("query string", VALID_QCHAR)
+
+        /**
+         * A [PercentEncoding] instance suitable for encoding URL fragments
+         */
         public val Fragment: Encoding = PercentEncoding("fragment", VALID_FCHAR)
+
+        /**
+         * A [PercentEncoding] instance suitable for encoding `application/x-www-form-urlencoded` data
+         */
         public val FormUrl: Encoding = PercentEncoding("form URL", VALID_QCHAR, mapOf(' ' to '+'))
+
+        /**
+         * A [PercentEncoding] instance suitable for encoding values into Smithy labels
+         */
         public val SmithyLabel: Encoding = PercentEncoding("Smithy label", SMITHY_LABEL_CHAR)
 
         private fun percentAsciiEncode(char: Char) = buildString {
@@ -47,7 +82,7 @@ public class PercentEncoding(
             append(UPPER_HEX[value and 0x0f])
         }
 
-        public fun StringBuilder.percentEncode(byte: Byte) {
+        private fun StringBuilder.percentEncode(byte: Byte) {
             val value = byte.toInt() and 0xff
             append('%')
             append(UPPER_HEX[value shr 4])

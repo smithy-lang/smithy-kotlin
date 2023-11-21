@@ -92,7 +92,7 @@ private suspend fun assertRequest(expected: ExpectedHttpRequest, actual: HttpReq
     expected.queryParams.forEach { (key, value) ->
         val actualValues = actualParams[key]
         assertNotNull(actualValues, "expected query parameter `$key`; no values found")
-        assertTrue(value in actualValues, "expected query name value pair not found: `$key:$value`")
+        assertTrue(value in actualValues, "Query parameter `$key` does not contain expected value `$value`. Actual values: ${actualValues.joinToString(", ", "[", "]")}")
     }
 
     expected.forbiddenQueryParams.forEach {

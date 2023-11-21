@@ -8,8 +8,8 @@ package aws.smithy.kotlin.runtime.awsprotocol
 import aws.smithy.kotlin.runtime.InternalApi
 import aws.smithy.kotlin.runtime.ServiceErrorMetadata
 import aws.smithy.kotlin.runtime.ServiceException
+import aws.smithy.kotlin.runtime.collections.setIfValueNotNull
 import aws.smithy.kotlin.runtime.http.response.HttpResponse
-import aws.smithy.kotlin.runtime.util.setIfValueNotNull
 
 /**
  * Common error response details

@@ -21,7 +21,7 @@ public class QueryParameters private constructor(
      * A flag indicating whether to force inclusion of the `?` query separator even when there are no parameters (e.g.,
      * `http://foo.com?` vs `http://foo.com`).
      */
-    public val forceQuery: Boolean,
+    public val forceQuerySeparator: Boolean,
 ) : MultiMap<Encodable, Encodable> by delegate {
     public companion object {
         /**
@@ -36,21 +36,21 @@ public class QueryParameters private constructor(
          */
         public operator fun invoke(block: Builder.() -> Unit): QueryParameters = Builder().apply(block).build()
 
-        private fun asDecoded(values: Sequence<Map.Entry<Encodable, Encodable>>, forceQuery: Boolean) =
-            asString(values, forceQuery, Encodable::decoded)
+        private fun asDecoded(values: Sequence<Map.Entry<Encodable, Encodable>>, forceQuerySeparator: Boolean) =
+            asString(values, forceQuerySeparator, Encodable::decoded)
 
-        private fun asEncoded(values: Sequence<Map.Entry<Encodable, Encodable>>, forceQuery: Boolean) =
-            asString(values, forceQuery, Encodable::encoded)
+        private fun asEncoded(values: Sequence<Map.Entry<Encodable, Encodable>>, forceQuerySeparator: Boolean) =
+            asString(values, forceQuerySeparator, Encodable::encoded)
 
         private fun asString(
             values: Sequence<Map.Entry<Encodable, Encodable>>,
-            forceQuery: Boolean,
+            forceQuerySeparator: Boolean,
             encodableForm: (Encodable) -> String,
         ) =
             values
                 .joinToString(
                     separator = "&",
-                    prefix = if (forceQuery || values.any()) "?" else "",
+                    prefix = if (forceQuerySeparator || values.any()) "?" else "",
                 ) { (key, value) -> "${encodableForm(key)}=${encodableForm(value)}" }
 
         /**
@@ -72,8 +72,11 @@ public class QueryParameters private constructor(
      * Copy the properties of this [QueryParameters] instance into a new [Builder] object. Any changes to the builder
      * *will not* affect this instance.
      */
-    public fun toBuilder(): Builder = Builder(delegate.toMutableMultiMap(), forceQuery)
+    public fun toBuilder(): Builder = Builder(delegate.toMutableMultiMap(), forceQuerySeparator)
 
+    /**
+     * Gets the query parameters as decoded keys/values
+     */
     public val decodedParameters: MultiMap<String, String>
         get() = asView(
             Encodable::decoded,
@@ -82,6 +85,9 @@ public class QueryParameters private constructor(
             PercentEncoding.Query::encodableFromDecoded,
         )
 
+    /**
+     * Gets the query parameters as encoded keys/values
+     */
     public val encodedParameters: MultiMap<String, String>
         get() = asView(
             Encodable::encoded,
@@ -97,18 +103,18 @@ public class QueryParameters private constructor(
         other as QueryParameters
 
         if (delegate != other.delegate) return false
-        if (forceQuery != other.forceQuery) return false
+        if (forceQuerySeparator != other.forceQuerySeparator) return false
 
         return true
     }
 
     override fun hashCode(): Int {
         var result = delegate.hashCode()
-        result = 31 * result + forceQuery.hashCode()
+        result = 31 * result + forceQuerySeparator.hashCode()
         return result
     }
 
-    override fun toString(): String = asEncoded(delegate.entryValues, forceQuery)
+    override fun toString(): String = asEncoded(delegate.entryValues, forceQuerySeparator)
 
     /**
      * A mutable builder used to construct [QueryParameters] instances
@@ -120,7 +126,7 @@ public class QueryParameters private constructor(
          * A flag indicating whether to force inclusion of the `?` query separator even when there are no parameters
          * (e.g., `http://foo.com?` vs `http://foo.com`).
          */
-        public var forceQuery: Boolean = false,
+        public var forceQuerySeparator: Boolean = false,
     ) : MutableMultiMap<Encodable, Encodable> by delegate {
         /**
          * Initialize an empty [QueryParameters] builder
@@ -131,14 +137,14 @@ public class QueryParameters private constructor(
          * Get or set the query parameters as a **decoded** string.
          */
         public var decoded: String
-            get() = asDecoded(delegate.entryValues, forceQuery)
+            get() = asDecoded(delegate.entryValues, forceQuerySeparator)
             set(value) { parseDecoded(value) }
 
         /**
          * Get or set the query parameters as an **encoded** string.
          */
         public var encoded: String
-            get() = asEncoded(delegate.entryValues, forceQuery)
+            get() = asEncoded(delegate.entryValues, forceQuerySeparator)
             set(value) { parseEncoded(value) }
 
         internal fun parse(value: String, encoding: UrlEncoding): Unit =
@@ -150,7 +156,7 @@ public class QueryParameters private constructor(
         private fun parseInto(map: MutableMultiMap<String, String>, text: String) {
             clear()
 
-            forceQuery = text == "?"
+            forceQuerySeparator = text == "?"
             val params = text.removePrefix("?")
 
             if (params.isNotEmpty()) {
@@ -170,6 +176,10 @@ public class QueryParameters private constructor(
             }
         }
 
+        /**
+         * Gets the query parameters as decoded keys/values. Changes to this map are reflected in the
+         * [encodedParameters] map as well.
+         */
         public val decodedParameters: MutableMultiMap<String, String> = asView(
             Encodable::decoded,
             PercentEncoding.Query::encodableFromDecoded,
@@ -177,10 +187,18 @@ public class QueryParameters private constructor(
             PercentEncoding.Query::encodableFromDecoded,
         )
 
+        /**
+         * Applies the given DSL block to the decoded query parameters. Changes to this map are reflected in the
+         * [encodedParameters] map as well.
+         */
         public fun decodedParameters(block: MutableMultiMap<String, String>.() -> Unit) {
             decodedParameters.apply(block)
         }
 
+        /**
+         * Gets the query parameters as encoded keys/values. Changes to this map are reflected in the
+         * [decodedParameters] map as well.
+         */
         public val encodedParameters: MutableMultiMap<String, String> = asView(
             Encodable::encoded,
             PercentEncoding.Query::encodableFromEncoded,
@@ -188,6 +206,10 @@ public class QueryParameters private constructor(
             PercentEncoding.Query::encodableFromEncoded,
         )
 
+        /**
+         * Applies the given DSL block to the encoded query parameters. Changes to this map are reflected in the
+         * [decodedParameters] map as well.
+         */
         public fun encodedParameters(block: MutableMultiMap<String, String>.() -> Unit) {
             encodedParameters.apply(block)
         }
@@ -196,22 +218,28 @@ public class QueryParameters private constructor(
          * Build a new [QueryParameters] from the currently-configured builder values
          * @return A new [QueryParameters] instance
          */
-        public fun build(): QueryParameters = QueryParameters(delegate.toMultiMap(), forceQuery)
+        public fun build(): QueryParameters = QueryParameters(delegate.toMultiMap(), forceQuerySeparator)
 
+        /**
+         * Copies the state from [other] into this builder. All existing state is overwritten.
+         */
         public fun copyFrom(other: QueryParameters) {
             clear()
             other.mapValuesTo(this) { (_, values) ->
                 values.toMutableList() // Copy the mutable list to a new mutable list
             }
-            forceQuery = other.forceQuery
+            forceQuerySeparator = other.forceQuerySeparator
         }
 
+        /**
+         * Copies the state from [other] into this builder. All existing state is overwritten.
+         */
         public fun copyFrom(other: Builder) {
             clear()
             other.mapValuesTo(this) { (_, values) ->
                 values.toMutableList() // Copy the mutable list to a new mutable list
             }
-            forceQuery = other.forceQuery
+            forceQuerySeparator = other.forceQuerySeparator
         }
     }
 }

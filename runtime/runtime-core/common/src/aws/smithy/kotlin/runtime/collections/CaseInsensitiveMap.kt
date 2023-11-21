@@ -2,7 +2,7 @@
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
  * SPDX-License-Identifier: Apache-2.0
  */
-package aws.smithy.kotlin.runtime.util
+package aws.smithy.kotlin.runtime.collections
 
 import aws.smithy.kotlin.runtime.InternalApi
 
@@ -56,24 +56,24 @@ internal class CaseInsensitiveMap<Value>() : MutableMap<String, Value> {
     }
 
     override fun remove(key: String): Value? = impl.remove(key.toInsensitive())
-}
 
-private class Entry<Key, Value>(
-    override val key: Key,
-    override var value: Value,
-) : MutableMap.MutableEntry<Key, Value> {
+    private class Entry<Key, Value>(
+        override val key: Key,
+        override var value: Value,
+    ) : MutableMap.MutableEntry<Key, Value> {
 
-    override fun setValue(newValue: Value): Value {
-        value = newValue
-        return value
+        override fun setValue(newValue: Value): Value {
+            value = newValue
+            return value
+        }
+
+        override fun hashCode(): Int = 17 * 31 + key!!.hashCode() + value!!.hashCode()
+
+        override fun equals(other: Any?): Boolean {
+            if (other == null || other !is Map.Entry<*, *>) return false
+            return other.key == key && other.value == value
+        }
+
+        override fun toString(): String = "$key=$value"
     }
-
-    override fun hashCode(): Int = 17 * 31 + key!!.hashCode() + value!!.hashCode()
-
-    override fun equals(other: Any?): Boolean {
-        if (other == null || other !is Map.Entry<*, *>) return false
-        return other.key == key && other.value == value
-    }
-
-    override fun toString(): String = "$key=$value"
 }

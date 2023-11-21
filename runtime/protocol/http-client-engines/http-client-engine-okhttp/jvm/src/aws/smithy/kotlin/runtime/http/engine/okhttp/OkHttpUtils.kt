@@ -134,7 +134,10 @@ internal class OkHttpProxyAuthenticator(
         for (challenge in response.challenges()) {
             if (challenge.scheme.lowercase() == "okhttp-preemptive" || challenge.scheme == "Basic") {
                 return response.request.newBuilder()
-                    .header("Proxy-Authorization", userInfo.toBasicCredentials())
+                    .header(
+                        "Proxy-Authorization",
+                        Credentials.basic(userInfo.userName.decoded, userInfo.password.decoded),
+                    )
                     .build()
             }
         }
@@ -142,8 +145,6 @@ internal class OkHttpProxyAuthenticator(
         return null
     }
 }
-
-private fun UserInfo.toBasicCredentials() = Credentials.basic(userName.decoded, password.decoded)
 
 internal class OkHttpDns(
     private val hr: HostResolver,

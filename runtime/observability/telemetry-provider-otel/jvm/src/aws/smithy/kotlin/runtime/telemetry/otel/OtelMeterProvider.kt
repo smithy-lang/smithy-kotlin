@@ -5,9 +5,9 @@
 
 package aws.smithy.kotlin.runtime.telemetry.otel
 
+import aws.smithy.kotlin.runtime.collections.Attributes
 import aws.smithy.kotlin.runtime.telemetry.context.Context
 import aws.smithy.kotlin.runtime.telemetry.metrics.*
-import aws.smithy.kotlin.runtime.util.Attributes
 import io.opentelemetry.api.OpenTelemetry
 import io.opentelemetry.api.metrics.ObservableDoubleMeasurement
 import io.opentelemetry.api.metrics.ObservableLongMeasurement
