@@ -15,7 +15,7 @@ import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.http.response.HttpResponse
 import aws.smithy.kotlin.runtime.http.response.copy
 import aws.smithy.kotlin.runtime.operation.ExecutionContext
-import aws.smithy.kotlin.runtime.util.encodeBase64String
+import aws.smithy.kotlin.runtime.text.encoding.encodeBase64String
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.*
 

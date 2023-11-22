@@ -12,13 +12,13 @@ public final class aws/smithy/kotlin/runtime/http/auth/AnonymousHttpSigner : aws
 
 public final class aws/smithy/kotlin/runtime/http/auth/AnonymousIdentity : aws/smithy/kotlin/runtime/identity/Identity {
 	public static final field INSTANCE Laws/smithy/kotlin/runtime/http/auth/AnonymousIdentity;
-	public fun getAttributes ()Laws/smithy/kotlin/runtime/util/Attributes;
+	public fun getAttributes ()Laws/smithy/kotlin/runtime/collections/Attributes;
 	public fun getExpiration ()Laws/smithy/kotlin/runtime/time/Instant;
 }
 
 public final class aws/smithy/kotlin/runtime/http/auth/AnonymousIdentityProvider : aws/smithy/kotlin/runtime/identity/IdentityProvider {
 	public static final field INSTANCE Laws/smithy/kotlin/runtime/http/auth/AnonymousIdentityProvider;
-	public fun resolve (Laws/smithy/kotlin/runtime/util/Attributes;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun resolve (Laws/smithy/kotlin/runtime/collections/Attributes;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
 public abstract interface class aws/smithy/kotlin/runtime/http/auth/BearerToken : aws/smithy/kotlin/runtime/identity/Identity {
@@ -33,13 +33,13 @@ public final class aws/smithy/kotlin/runtime/http/auth/BearerTokenAuthScheme : a
 }
 
 public abstract interface class aws/smithy/kotlin/runtime/http/auth/BearerTokenProvider : aws/smithy/kotlin/runtime/identity/IdentityProvider {
-	public abstract fun resolve (Laws/smithy/kotlin/runtime/util/Attributes;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public abstract fun resolve (Laws/smithy/kotlin/runtime/collections/Attributes;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
 public final class aws/smithy/kotlin/runtime/http/auth/BearerTokenProviderChain : aws/smithy/kotlin/runtime/identity/IdentityProviderChain, aws/smithy/kotlin/runtime/http/auth/BearerTokenProvider {
 	public fun <init> (Ljava/util/List;)V
 	public fun <init> ([Laws/smithy/kotlin/runtime/http/auth/BearerTokenProvider;)V
-	public fun resolve (Laws/smithy/kotlin/runtime/util/Attributes;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun resolve (Laws/smithy/kotlin/runtime/collections/Attributes;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
 public abstract interface class aws/smithy/kotlin/runtime/http/auth/BearerTokenProviderConfig {

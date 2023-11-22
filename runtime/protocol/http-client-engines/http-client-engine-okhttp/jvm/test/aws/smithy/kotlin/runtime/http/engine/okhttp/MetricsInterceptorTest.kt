@@ -5,10 +5,10 @@
 package aws.smithy.kotlin.runtime.http.engine.okhttp
 
 import aws.smithy.kotlin.runtime.ExperimentalApi
+import aws.smithy.kotlin.runtime.collections.emptyAttributes
 import aws.smithy.kotlin.runtime.http.engine.internal.HttpClientMetrics
 import aws.smithy.kotlin.runtime.operation.ExecutionContext
 import aws.smithy.kotlin.runtime.telemetry.otel.OpenTelemetryProvider
-import aws.smithy.kotlin.runtime.util.emptyAttributes
 import io.opentelemetry.api.common.AttributeKey
 import io.opentelemetry.sdk.metrics.data.MetricData
 import io.opentelemetry.sdk.testing.junit5.OpenTelemetryExtension

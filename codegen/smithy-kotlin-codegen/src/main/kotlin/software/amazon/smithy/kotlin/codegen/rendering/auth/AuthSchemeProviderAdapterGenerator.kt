@@ -46,7 +46,7 @@ class AuthSchemeProviderAdapterGenerator {
                     RuntimeTypes.Auth.Identity.AuthOption,
                 ) {
                     withBlock("val params = #T {", "}", AuthSchemeParametersGenerator.getSymbol(ctx.settings)) {
-                        addImport(RuntimeTypes.Core.Utils.get)
+                        addImport(RuntimeTypes.Core.Collections.get)
                         write("operationName = request.context[#T.OperationName]", RuntimeTypes.SmithyClient.SdkClientOption)
 
                         if (ctx.settings.api.enableEndpointAuthProvider) {

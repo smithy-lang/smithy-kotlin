@@ -17,7 +17,7 @@ import aws.smithy.kotlin.runtime.http.request.url
 import aws.smithy.kotlin.runtime.http.test.util.AbstractEngineTest
 import aws.smithy.kotlin.runtime.http.test.util.engineConfig
 import aws.smithy.kotlin.runtime.http.test.util.test
-import aws.smithy.kotlin.runtime.net.Url
+import aws.smithy.kotlin.runtime.net.url.Url
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.condition.EnabledIfSystemProperty
 import org.testcontainers.containers.BindMode
@@ -102,8 +102,7 @@ private suspend fun testProxyResponse(client: SdkHttpClient) {
         // NOTE: you can still use mitmproxy to proxy https traffic without intercepting it
         // like any normal proxy by setting the `--ignore-hosts` option to forward all traffic
         // but that would mean we make an actual request to the origin
-        url(Url.parse("http://aws.amazon.com"))
-        url.path = "/"
+        url(Url.parse("http://aws.amazon.com/"))
         header("Host", "aws.amazon.com")
     }
 

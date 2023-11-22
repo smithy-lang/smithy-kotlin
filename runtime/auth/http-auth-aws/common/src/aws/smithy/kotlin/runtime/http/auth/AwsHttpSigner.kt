@@ -13,12 +13,12 @@ import aws.smithy.kotlin.runtime.auth.awssigning.internal.setAwsChunkedHeaders
 import aws.smithy.kotlin.runtime.auth.awssigning.internal.useAwsChunkedEncoding
 import aws.smithy.kotlin.runtime.client.LogMode
 import aws.smithy.kotlin.runtime.client.SdkClientOption
+import aws.smithy.kotlin.runtime.collections.get
 import aws.smithy.kotlin.runtime.http.HttpBody
 import aws.smithy.kotlin.runtime.http.operation.HttpOperationContext
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
 import aws.smithy.kotlin.runtime.time.Instant
-import aws.smithy.kotlin.runtime.util.get
 import kotlin.time.Duration
 
 /**
@@ -197,11 +197,11 @@ private fun HttpRequestBuilder.update(signedRequest: HttpRequest) {
         this.headers.appendMissing(key, values)
     }
 
-    signedRequest.url.parameters.forEach { key, values ->
+    signedRequest.url.parameters.forEach { (key, values) ->
         // The signed request has a URL-encoded path which means simply appending missing could result in both the raw
         // and percent-encoded value being present. Instead, just append new keys added by signing.
-        if (!this.url.parameters.contains(key)) {
-            url.parameters.appendAll(key, values)
+        if (key !in url.parameters) {
+            url.parameters.addAll(key, values)
         }
     }
 }

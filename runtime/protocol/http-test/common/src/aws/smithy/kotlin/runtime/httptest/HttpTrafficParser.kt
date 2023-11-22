@@ -10,8 +10,8 @@ import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
 import aws.smithy.kotlin.runtime.http.request.url
 import aws.smithy.kotlin.runtime.http.response.HttpResponse
-import aws.smithy.kotlin.runtime.net.Url
-import aws.smithy.kotlin.runtime.util.decodeBase64Bytes
+import aws.smithy.kotlin.runtime.net.url.Url
+import aws.smithy.kotlin.runtime.text.encoding.decodeBase64Bytes
 import kotlinx.serialization.json.*
 
 internal fun parseHttpTraffic(json: String) = buildTestConnection {

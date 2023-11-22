@@ -8,13 +8,13 @@ package aws.smithy.kotlin.runtime.http.operation
 import aws.smithy.kotlin.runtime.ExperimentalApi
 import aws.smithy.kotlin.runtime.InternalApi
 import aws.smithy.kotlin.runtime.client.*
+import aws.smithy.kotlin.runtime.collections.*
 import aws.smithy.kotlin.runtime.http.interceptors.OperationTelemetryInterceptor
 import aws.smithy.kotlin.runtime.telemetry.TelemetryProvider
 import aws.smithy.kotlin.runtime.telemetry.TelemetryProviderContext
 import aws.smithy.kotlin.runtime.telemetry.logging.LoggingContextElement
 import aws.smithy.kotlin.runtime.telemetry.trace.SpanKind
 import aws.smithy.kotlin.runtime.telemetry.trace.TraceSpan
-import aws.smithy.kotlin.runtime.util.*
 import kotlin.coroutines.CoroutineContext
 
 /**

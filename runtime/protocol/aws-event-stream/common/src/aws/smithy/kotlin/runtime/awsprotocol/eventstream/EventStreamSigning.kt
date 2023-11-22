@@ -7,12 +7,12 @@ package aws.smithy.kotlin.runtime.awsprotocol.eventstream
 
 import aws.smithy.kotlin.runtime.InternalApi
 import aws.smithy.kotlin.runtime.auth.awssigning.*
+import aws.smithy.kotlin.runtime.collections.get
 import aws.smithy.kotlin.runtime.io.SdkBuffer
 import aws.smithy.kotlin.runtime.operation.ExecutionContext
+import aws.smithy.kotlin.runtime.text.encoding.decodeHexBytes
 import aws.smithy.kotlin.runtime.time.Clock
 import aws.smithy.kotlin.runtime.time.Instant
-import aws.smithy.kotlin.runtime.util.decodeHexBytes
-import aws.smithy.kotlin.runtime.util.get
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 

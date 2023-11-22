@@ -6,7 +6,8 @@ package aws.smithy.kotlin.runtime.http.auth
 
 import aws.smithy.kotlin.runtime.InternalApi
 import aws.smithy.kotlin.runtime.auth.AuthOption
-import aws.smithy.kotlin.runtime.util.*
+import aws.smithy.kotlin.runtime.collections.merge
+import aws.smithy.kotlin.runtime.collections.toMutableAttributes
 
 /**
  * Merge the list of modeled auth options with the auth schemes from the resolved endpoint context.

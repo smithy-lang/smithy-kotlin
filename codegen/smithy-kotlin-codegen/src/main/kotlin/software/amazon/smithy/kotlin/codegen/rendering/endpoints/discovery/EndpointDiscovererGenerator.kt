@@ -51,7 +51,7 @@ class EndpointDiscovererGenerator(private val ctx: CodegenContext, private val d
             ) {
                 write(
                     "private val cache = #T<DiscoveryParams, #T>(10.#T, #T.System)",
-                    RuntimeTypes.Core.Utils.ReadThroughCache,
+                    RuntimeTypes.Core.Collections.ReadThroughCache,
                     RuntimeTypes.Core.Net.Host,
                     KotlinTypes.Time.minutes,
                     RuntimeTypes.Core.Clock,
@@ -66,7 +66,7 @@ class EndpointDiscovererGenerator(private val ctx: CodegenContext, private val d
             write("")
             write(
                 """private val discoveryParamsKey = #T<DiscoveryParams>("DiscoveryParams")""",
-                RuntimeTypes.Core.Utils.AttributeKey,
+                RuntimeTypes.Core.Collections.AttributeKey,
             )
             write("private data class DiscoveryParams(private val region: String?, private val identity: String)")
         }
@@ -92,7 +92,7 @@ class EndpointDiscovererGenerator(private val ctx: CodegenContext, private val d
             write("")
             write("val originalEndpoint = delegate.resolve(request)")
             withBlock("#T(", ")", RuntimeTypes.SmithyClient.Endpoints.Endpoint) {
-                write("originalEndpoint.uri.copy(host = discoveredHost),")
+                write("originalEndpoint.uri.copy { host = discoveredHost },")
                 write("originalEndpoint.headers,")
                 write("originalEndpoint.attributes,")
             }

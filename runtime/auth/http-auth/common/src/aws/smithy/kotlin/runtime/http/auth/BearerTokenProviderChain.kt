@@ -5,8 +5,8 @@
 
 package aws.smithy.kotlin.runtime.http.auth
 
+import aws.smithy.kotlin.runtime.collections.Attributes
 import aws.smithy.kotlin.runtime.identity.IdentityProviderChain
-import aws.smithy.kotlin.runtime.util.Attributes
 
 /**
  * Composite [BearerTokenProvider] that delegates to a chain of providers. When asked for identity, providers

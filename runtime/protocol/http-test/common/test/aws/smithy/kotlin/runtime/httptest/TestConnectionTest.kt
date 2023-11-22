@@ -21,7 +21,7 @@ class TestConnectionTest {
             expect {
                 request {
                     url.host = Host.Domain("test.com")
-                    url.path = "/turtles-all-the-way-down"
+                    url.path.decoded = "/turtles-all-the-way-down"
                     headers.append("x-foo", "bar")
                     body = HttpBody.fromBytes("tests for your tests".encodeToByteArray())
                 }
@@ -32,7 +32,7 @@ class TestConnectionTest {
 
         val req = HttpRequestBuilder().apply {
             url.host = Host.Domain("test.com")
-            url.path = "/turtles-all-the-way-down"
+            url.path.decoded = "/turtles-all-the-way-down"
             headers.append("x-foo", "bar")
             headers.append("x-qux", "quux")
             body = HttpBody.fromBytes("tests for your tests".encodeToByteArray())
@@ -48,7 +48,7 @@ class TestConnectionTest {
             expect {
                 request {
                     url.host = Host.Domain("test.com")
-                    url.path = "/turtles-all-the-way-down"
+                    url.path.decoded = "/turtles-all-the-way-down"
                     headers.append("x-foo", "bar")
                     body = HttpBody.fromBytes("tests for your tests".encodeToByteArray())
                 }
@@ -59,7 +59,7 @@ class TestConnectionTest {
 
         val req = HttpRequestBuilder().apply {
             url.host = Host.Domain("test.com")
-            url.path = "/tests-for-your-tests"
+            url.path.decoded = "/tests-for-your-tests"
             headers.append("x-foo", "bar")
         }
         client.call(req).complete()
@@ -75,7 +75,7 @@ class TestConnectionTest {
             expect {
                 request {
                     url.host = Host.Domain("test.com")
-                    url.path = "/turtles-all-the-way-down"
+                    url.path.decoded = "/turtles-all-the-way-down"
                     headers.append("x-foo", "bar")
                     headers.append("x-baz", "qux")
                 }
@@ -86,7 +86,7 @@ class TestConnectionTest {
 
         val req = HttpRequestBuilder().apply {
             url.host = Host.Domain("test.com")
-            url.path = "/turtles-all-the-way-down"
+            url.path.decoded = "/turtles-all-the-way-down"
             headers.append("x-foo", "bar")
         }
         client.call(req).complete()
@@ -102,7 +102,7 @@ class TestConnectionTest {
             expect {
                 request {
                     url.host = Host.Domain("test.com")
-                    url.path = "/turtles-all-the-way-down"
+                    url.path.decoded = "/turtles-all-the-way-down"
                     headers.append("x-foo", "bar")
                     body = HttpBody.fromBytes("tests for your tests".encodeToByteArray())
                 }
@@ -113,7 +113,7 @@ class TestConnectionTest {
 
         val req = HttpRequestBuilder().apply {
             url.host = Host.Domain("test.com")
-            url.path = "/turtles-all-the-way-down"
+            url.path.decoded = "/turtles-all-the-way-down"
             headers.append("x-foo", "bar")
             body = HttpBody.fromBytes("tests are good".encodeToByteArray())
         }
@@ -130,7 +130,7 @@ class TestConnectionTest {
             expect {
                 request {
                     url.host = Host.Domain("test.com")
-                    url.path = "/turtles-all-the-way-down"
+                    url.path.decoded = "/turtles-all-the-way-down"
                     headers.append("x-foo", "bar")
                     body = HttpBody.fromBytes("tests for your tests".encodeToByteArray())
                 }
@@ -143,7 +143,7 @@ class TestConnectionTest {
 
         val req = HttpRequestBuilder().apply {
             url.host = Host.Domain("test.com")
-            url.path = "/turtles-all-the-way-down"
+            url.path.decoded = "/turtles-all-the-way-down"
             headers.append("x-foo", "bar")
             headers.append("x-qux", "quux")
             body = HttpBody.fromBytes("tests for your tests".encodeToByteArray())
@@ -200,8 +200,8 @@ class TestConnectionTest {
         val req = HttpRequestBuilder().apply {
             method = HttpMethod.POST
             url.host = Host.Domain("test.aws.com")
-            url.path = "/turtles-all-the-way-down"
-            url.parameters.append("q1", "v1")
+            url.path.decoded = "/turtles-all-the-way-down"
+            url.parameters.decodedParameters.add("q1", "v1")
             headers.append("foo", "bar")
             headers.appendAll("baz", listOf("one", "two"))
             body = HttpBody.fromBytes("tests for your tests".encodeToByteArray())

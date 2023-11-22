@@ -13,8 +13,8 @@ public class aws/smithy/kotlin/runtime/ErrorMetadata {
 }
 
 public final class aws/smithy/kotlin/runtime/ErrorMetadata$Companion {
-	public final fun getRetryable ()Laws/smithy/kotlin/runtime/util/AttributeKey;
-	public final fun getThrottlingError ()Laws/smithy/kotlin/runtime/util/AttributeKey;
+	public final fun getRetryable ()Laws/smithy/kotlin/runtime/collections/AttributeKey;
+	public final fun getThrottlingError ()Laws/smithy/kotlin/runtime/collections/AttributeKey;
 }
 
 public abstract interface annotation class aws/smithy/kotlin/runtime/ExperimentalApi : java/lang/annotation/Annotation {
@@ -45,11 +45,11 @@ public class aws/smithy/kotlin/runtime/ServiceErrorMetadata : aws/smithy/kotlin/
 }
 
 public final class aws/smithy/kotlin/runtime/ServiceErrorMetadata$Companion {
-	public final fun getErrorCode ()Laws/smithy/kotlin/runtime/util/AttributeKey;
-	public final fun getErrorMessage ()Laws/smithy/kotlin/runtime/util/AttributeKey;
-	public final fun getErrorType ()Laws/smithy/kotlin/runtime/util/AttributeKey;
-	public final fun getProtocolResponse ()Laws/smithy/kotlin/runtime/util/AttributeKey;
-	public final fun getRequestId ()Laws/smithy/kotlin/runtime/util/AttributeKey;
+	public final fun getErrorCode ()Laws/smithy/kotlin/runtime/collections/AttributeKey;
+	public final fun getErrorMessage ()Laws/smithy/kotlin/runtime/collections/AttributeKey;
+	public final fun getErrorType ()Laws/smithy/kotlin/runtime/collections/AttributeKey;
+	public final fun getProtocolResponse ()Laws/smithy/kotlin/runtime/collections/AttributeKey;
+	public final fun getRequestId ()Laws/smithy/kotlin/runtime/collections/AttributeKey;
 }
 
 public class aws/smithy/kotlin/runtime/ServiceException : aws/smithy/kotlin/runtime/SdkBaseException {
@@ -68,6 +68,119 @@ public final class aws/smithy/kotlin/runtime/ServiceException$ErrorType : java/l
 	public static fun getEntries ()Lkotlin/enums/EnumEntries;
 	public static fun valueOf (Ljava/lang/String;)Laws/smithy/kotlin/runtime/ServiceException$ErrorType;
 	public static fun values ()[Laws/smithy/kotlin/runtime/ServiceException$ErrorType;
+}
+
+public final class aws/smithy/kotlin/runtime/collections/AttributeKey {
+	public fun <init> (Ljava/lang/String;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun copy (Ljava/lang/String;)Laws/smithy/kotlin/runtime/collections/AttributeKey;
+	public static synthetic fun copy$default (Laws/smithy/kotlin/runtime/collections/AttributeKey;Ljava/lang/String;ILjava/lang/Object;)Laws/smithy/kotlin/runtime/collections/AttributeKey;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getName ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public abstract interface class aws/smithy/kotlin/runtime/collections/Attributes {
+	public abstract fun contains (Laws/smithy/kotlin/runtime/collections/AttributeKey;)Z
+	public abstract fun getKeys ()Ljava/util/Set;
+	public abstract fun getOrNull (Laws/smithy/kotlin/runtime/collections/AttributeKey;)Ljava/lang/Object;
+	public abstract fun isEmpty ()Z
+}
+
+public final class aws/smithy/kotlin/runtime/collections/AttributesBuilder {
+	public fun <init> ()V
+	public final fun getAttributes ()Laws/smithy/kotlin/runtime/collections/MutableAttributes;
+	public final fun to (Laws/smithy/kotlin/runtime/collections/AttributeKey;Ljava/lang/Object;)V
+	public final fun to (Ljava/lang/String;Ljava/lang/Object;)V
+}
+
+public final class aws/smithy/kotlin/runtime/collections/AttributesKt {
+	public static final fun attributesOf (Lkotlin/jvm/functions/Function1;)Laws/smithy/kotlin/runtime/collections/Attributes;
+	public static final fun emptyAttributes ()Laws/smithy/kotlin/runtime/collections/Attributes;
+	public static final fun get (Laws/smithy/kotlin/runtime/collections/Attributes;Laws/smithy/kotlin/runtime/collections/AttributeKey;)Ljava/lang/Object;
+	public static final fun isNotEmpty (Laws/smithy/kotlin/runtime/collections/Attributes;)Z
+	public static final fun merge (Laws/smithy/kotlin/runtime/collections/MutableAttributes;Laws/smithy/kotlin/runtime/collections/Attributes;)V
+	public static final fun mutableAttributes ()Laws/smithy/kotlin/runtime/collections/MutableAttributes;
+	public static final fun mutableAttributesOf (Lkotlin/jvm/functions/Function1;)Laws/smithy/kotlin/runtime/collections/MutableAttributes;
+	public static final fun putIfAbsent (Laws/smithy/kotlin/runtime/collections/MutableAttributes;Laws/smithy/kotlin/runtime/collections/AttributeKey;Ljava/lang/Object;)V
+	public static final fun putIfAbsentNotNull (Laws/smithy/kotlin/runtime/collections/MutableAttributes;Laws/smithy/kotlin/runtime/collections/AttributeKey;Ljava/lang/Object;)V
+	public static final fun setIfValueNotNull (Laws/smithy/kotlin/runtime/collections/MutableAttributes;Laws/smithy/kotlin/runtime/collections/AttributeKey;Ljava/lang/Object;)V
+	public static final fun take (Laws/smithy/kotlin/runtime/collections/MutableAttributes;Laws/smithy/kotlin/runtime/collections/AttributeKey;)Ljava/lang/Object;
+	public static final fun takeOrNull (Laws/smithy/kotlin/runtime/collections/MutableAttributes;Laws/smithy/kotlin/runtime/collections/AttributeKey;)Ljava/lang/Object;
+	public static final fun toMutableAttributes (Laws/smithy/kotlin/runtime/collections/Attributes;)Laws/smithy/kotlin/runtime/collections/MutableAttributes;
+}
+
+public abstract interface class aws/smithy/kotlin/runtime/collections/MultiMap : java/util/Map, kotlin/jvm/internal/markers/KMappedMarker {
+	public abstract fun contains (Ljava/lang/Object;Ljava/lang/Object;)Z
+	public abstract fun getEntryValues ()Lkotlin/sequences/Sequence;
+	public abstract fun toMutableMultiMap ()Laws/smithy/kotlin/runtime/collections/MutableMultiMap;
+}
+
+public final class aws/smithy/kotlin/runtime/collections/MultiMap$DefaultImpls {
+	public static fun contains (Laws/smithy/kotlin/runtime/collections/MultiMap;Ljava/lang/Object;Ljava/lang/Object;)Z
+	public static fun toMutableMultiMap (Laws/smithy/kotlin/runtime/collections/MultiMap;)Laws/smithy/kotlin/runtime/collections/MutableMultiMap;
+}
+
+public final class aws/smithy/kotlin/runtime/collections/MultiMapKt {
+	public static final fun multiMapOf ([Lkotlin/Pair;)Laws/smithy/kotlin/runtime/collections/MultiMap;
+}
+
+public abstract interface class aws/smithy/kotlin/runtime/collections/MutableAttributes : aws/smithy/kotlin/runtime/collections/Attributes {
+	public abstract fun computeIfAbsent (Laws/smithy/kotlin/runtime/collections/AttributeKey;Lkotlin/jvm/functions/Function0;)Ljava/lang/Object;
+	public abstract fun remove (Laws/smithy/kotlin/runtime/collections/AttributeKey;)V
+	public abstract fun set (Laws/smithy/kotlin/runtime/collections/AttributeKey;Ljava/lang/Object;)V
+}
+
+public abstract interface class aws/smithy/kotlin/runtime/collections/MutableMultiMap : java/util/Map, kotlin/jvm/internal/markers/KMutableMap {
+	public abstract fun add (Ljava/lang/Object;ILjava/lang/Object;)V
+	public abstract fun add (Ljava/lang/Object;Ljava/lang/Object;)Z
+	public abstract fun addAll (Ljava/lang/Object;ILjava/util/Collection;)Z
+	public abstract fun addAll (Ljava/lang/Object;Ljava/util/Collection;)Z
+	public abstract fun addAll (Ljava/util/Map;)V
+	public abstract fun contains (Ljava/lang/Object;Ljava/lang/Object;)Z
+	public abstract fun getEntryValues ()Lkotlin/sequences/Sequence;
+	public abstract fun put (Ljava/lang/Object;Ljava/lang/Object;)Ljava/util/List;
+	public abstract fun removeAll (Ljava/lang/Object;Ljava/util/Collection;)Ljava/lang/Boolean;
+	public abstract fun removeAt (Ljava/lang/Object;I)Ljava/lang/Object;
+	public abstract fun removeElement (Ljava/lang/Object;Ljava/lang/Object;)Z
+	public abstract fun retainAll (Ljava/lang/Object;Ljava/util/Collection;)Ljava/lang/Boolean;
+	public abstract fun toMultiMap ()Laws/smithy/kotlin/runtime/collections/MultiMap;
+}
+
+public final class aws/smithy/kotlin/runtime/collections/MutableMultiMap$DefaultImpls {
+	public static fun addAll (Laws/smithy/kotlin/runtime/collections/MutableMultiMap;Ljava/util/Map;)V
+	public static fun contains (Laws/smithy/kotlin/runtime/collections/MutableMultiMap;Ljava/lang/Object;Ljava/lang/Object;)Z
+	public static fun put (Laws/smithy/kotlin/runtime/collections/MutableMultiMap;Ljava/lang/Object;Ljava/lang/Object;)Ljava/util/List;
+	public static fun toMultiMap (Laws/smithy/kotlin/runtime/collections/MutableMultiMap;)Laws/smithy/kotlin/runtime/collections/MultiMap;
+}
+
+public final class aws/smithy/kotlin/runtime/collections/MutableMultiMapKt {
+	public static final fun mutableMultiMapOf ([Lkotlin/Pair;)Laws/smithy/kotlin/runtime/collections/MutableMultiMap;
+}
+
+public final class aws/smithy/kotlin/runtime/collections/StackKt {
+}
+
+public abstract interface class aws/smithy/kotlin/runtime/collections/ValuesMap {
+	public abstract fun contains (Ljava/lang/String;)Z
+	public abstract fun contains (Ljava/lang/String;Ljava/lang/Object;)Z
+	public abstract fun entries ()Ljava/util/Set;
+	public abstract fun forEach (Lkotlin/jvm/functions/Function2;)V
+	public abstract fun get (Ljava/lang/String;)Ljava/lang/Object;
+	public abstract fun getAll (Ljava/lang/String;)Ljava/util/List;
+	public abstract fun getCaseInsensitiveName ()Z
+	public abstract fun isEmpty ()Z
+	public abstract fun names ()Ljava/util/Set;
+}
+
+public final class aws/smithy/kotlin/runtime/collections/ValuesMap$DefaultImpls {
+	public static fun contains (Laws/smithy/kotlin/runtime/collections/ValuesMap;Ljava/lang/String;Ljava/lang/Object;)Z
+	public static fun forEach (Laws/smithy/kotlin/runtime/collections/ValuesMap;Lkotlin/jvm/functions/Function2;)V
+	public static fun get (Laws/smithy/kotlin/runtime/collections/ValuesMap;Ljava/lang/String;)Ljava/lang/Object;
+}
+
+public final class aws/smithy/kotlin/runtime/collections/ValuesMapKt {
 }
 
 public final class aws/smithy/kotlin/runtime/config/EnvironmentSettingKt {
@@ -609,36 +722,6 @@ public final class aws/smithy/kotlin/runtime/net/HostResolver$DefaultImpls {
 	public static synthetic fun purgeCache$default (Laws/smithy/kotlin/runtime/net/HostResolver;Laws/smithy/kotlin/runtime/net/HostAddress;ILjava/lang/Object;)V
 }
 
-public abstract interface class aws/smithy/kotlin/runtime/net/QueryParameters : aws/smithy/kotlin/runtime/util/ValuesMap {
-	public static final field Companion Laws/smithy/kotlin/runtime/net/QueryParameters$Companion;
-}
-
-public final class aws/smithy/kotlin/runtime/net/QueryParameters$Companion {
-	public final fun getEmpty ()Laws/smithy/kotlin/runtime/net/QueryParameters;
-	public final fun invoke (Lkotlin/jvm/functions/Function1;)Laws/smithy/kotlin/runtime/net/QueryParameters;
-}
-
-public final class aws/smithy/kotlin/runtime/net/QueryParameters$DefaultImpls {
-	public static fun contains (Laws/smithy/kotlin/runtime/net/QueryParameters;Ljava/lang/String;Ljava/lang/String;)Z
-	public static fun forEach (Laws/smithy/kotlin/runtime/net/QueryParameters;Lkotlin/jvm/functions/Function2;)V
-	public static fun get (Laws/smithy/kotlin/runtime/net/QueryParameters;Ljava/lang/String;)Ljava/lang/String;
-}
-
-public final class aws/smithy/kotlin/runtime/net/QueryParametersBuilder : aws/smithy/kotlin/runtime/util/ValuesMapBuilder, aws/smithy/kotlin/runtime/util/CanDeepCopy {
-	public fun <init> ()V
-	public fun build ()Laws/smithy/kotlin/runtime/net/QueryParameters;
-	public synthetic fun build ()Laws/smithy/kotlin/runtime/util/ValuesMap;
-	public fun deepCopy ()Laws/smithy/kotlin/runtime/net/QueryParametersBuilder;
-	public synthetic fun deepCopy ()Ljava/lang/Object;
-	public fun toString ()Ljava/lang/String;
-}
-
-public final class aws/smithy/kotlin/runtime/net/QueryParametersKt {
-	public static final fun toQueryParameters (Ljava/util/Map;)Laws/smithy/kotlin/runtime/net/QueryParameters;
-	public static final fun urlEncode (Laws/smithy/kotlin/runtime/net/QueryParameters;)Ljava/lang/String;
-	public static final fun urlEncodeTo (Laws/smithy/kotlin/runtime/net/QueryParameters;Ljava/lang/Appendable;)V
-}
-
 public final class aws/smithy/kotlin/runtime/net/Scheme {
 	public static final field Companion Laws/smithy/kotlin/runtime/net/Scheme$Companion;
 	public fun <init> (Ljava/lang/String;I)V
@@ -678,136 +761,303 @@ public final class aws/smithy/kotlin/runtime/net/TlsVersion : java/lang/Enum {
 	public static fun values ()[Laws/smithy/kotlin/runtime/net/TlsVersion;
 }
 
-public final class aws/smithy/kotlin/runtime/net/Url {
-	public static final field Companion Laws/smithy/kotlin/runtime/net/Url$Companion;
-	public fun <init> (Laws/smithy/kotlin/runtime/net/Scheme;Laws/smithy/kotlin/runtime/net/Host;ILjava/lang/String;Laws/smithy/kotlin/runtime/net/QueryParameters;Ljava/lang/String;Laws/smithy/kotlin/runtime/net/UserInfo;ZZ)V
-	public synthetic fun <init> (Laws/smithy/kotlin/runtime/net/Scheme;Laws/smithy/kotlin/runtime/net/Host;ILjava/lang/String;Laws/smithy/kotlin/runtime/net/QueryParameters;Ljava/lang/String;Laws/smithy/kotlin/runtime/net/UserInfo;ZZILkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public final fun component1 ()Laws/smithy/kotlin/runtime/net/Scheme;
-	public final fun component2 ()Laws/smithy/kotlin/runtime/net/Host;
-	public final fun component3 ()I
-	public final fun component4 ()Ljava/lang/String;
-	public final fun component5 ()Laws/smithy/kotlin/runtime/net/QueryParameters;
-	public final fun component6 ()Ljava/lang/String;
-	public final fun component7 ()Laws/smithy/kotlin/runtime/net/UserInfo;
-	public final fun component8 ()Z
-	public final fun component9 ()Z
-	public final fun copy (Laws/smithy/kotlin/runtime/net/Scheme;Laws/smithy/kotlin/runtime/net/Host;ILjava/lang/String;Laws/smithy/kotlin/runtime/net/QueryParameters;Ljava/lang/String;Laws/smithy/kotlin/runtime/net/UserInfo;ZZ)Laws/smithy/kotlin/runtime/net/Url;
-	public static synthetic fun copy$default (Laws/smithy/kotlin/runtime/net/Url;Laws/smithy/kotlin/runtime/net/Scheme;Laws/smithy/kotlin/runtime/net/Host;ILjava/lang/String;Laws/smithy/kotlin/runtime/net/QueryParameters;Ljava/lang/String;Laws/smithy/kotlin/runtime/net/UserInfo;ZZILjava/lang/Object;)Laws/smithy/kotlin/runtime/net/Url;
+public final class aws/smithy/kotlin/runtime/net/url/QueryParameters : aws/smithy/kotlin/runtime/collections/MultiMap {
+	public static final field Companion Laws/smithy/kotlin/runtime/net/url/QueryParameters$Companion;
+	public synthetic fun <init> (Laws/smithy/kotlin/runtime/collections/MultiMap;ZLkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun clear ()V
+	public fun compute (Laws/smithy/kotlin/runtime/text/encoding/Encodable;Ljava/util/function/BiFunction;)Ljava/util/List;
+	public synthetic fun compute (Ljava/lang/Object;Ljava/util/function/BiFunction;)Ljava/lang/Object;
+	public fun computeIfAbsent (Laws/smithy/kotlin/runtime/text/encoding/Encodable;Ljava/util/function/Function;)Ljava/util/List;
+	public synthetic fun computeIfAbsent (Ljava/lang/Object;Ljava/util/function/Function;)Ljava/lang/Object;
+	public fun computeIfPresent (Laws/smithy/kotlin/runtime/text/encoding/Encodable;Ljava/util/function/BiFunction;)Ljava/util/List;
+	public synthetic fun computeIfPresent (Ljava/lang/Object;Ljava/util/function/BiFunction;)Ljava/lang/Object;
+	public fun contains (Laws/smithy/kotlin/runtime/text/encoding/Encodable;Laws/smithy/kotlin/runtime/text/encoding/Encodable;)Z
+	public synthetic fun contains (Ljava/lang/Object;Ljava/lang/Object;)Z
+	public fun containsKey (Laws/smithy/kotlin/runtime/text/encoding/Encodable;)Z
+	public final fun containsKey (Ljava/lang/Object;)Z
+	public final fun containsValue (Ljava/lang/Object;)Z
+	public fun containsValue (Ljava/util/List;)Z
+	public final fun entrySet ()Ljava/util/Set;
 	public fun equals (Ljava/lang/Object;)Z
-	public final fun getEncodeParameters ()Z
-	public final fun getEncodedPath ()Ljava/lang/String;
-	public final fun getForceQuery ()Z
-	public final fun getFragment ()Ljava/lang/String;
-	public final fun getHost ()Laws/smithy/kotlin/runtime/net/Host;
-	public final fun getParameters ()Laws/smithy/kotlin/runtime/net/QueryParameters;
-	public final fun getPath ()Ljava/lang/String;
-	public final fun getPort ()I
-	public final fun getScheme ()Laws/smithy/kotlin/runtime/net/Scheme;
-	public final fun getUserInfo ()Laws/smithy/kotlin/runtime/net/UserInfo;
+	public fun get (Laws/smithy/kotlin/runtime/text/encoding/Encodable;)Ljava/util/List;
+	public final synthetic fun get (Ljava/lang/Object;)Ljava/lang/Object;
+	public final fun get (Ljava/lang/Object;)Ljava/util/List;
+	public final fun getDecodedParameters ()Laws/smithy/kotlin/runtime/collections/MultiMap;
+	public final fun getEncodedParameters ()Laws/smithy/kotlin/runtime/collections/MultiMap;
+	public fun getEntries ()Ljava/util/Set;
+	public fun getEntryValues ()Lkotlin/sequences/Sequence;
+	public final fun getForceQuerySeparator ()Z
+	public fun getKeys ()Ljava/util/Set;
+	public fun getSize ()I
+	public fun getValues ()Ljava/util/Collection;
 	public fun hashCode ()I
+	public fun isEmpty ()Z
+	public final fun keySet ()Ljava/util/Set;
+	public fun merge (Laws/smithy/kotlin/runtime/text/encoding/Encodable;Ljava/util/List;Ljava/util/function/BiFunction;)Ljava/util/List;
+	public synthetic fun merge (Ljava/lang/Object;Ljava/lang/Object;Ljava/util/function/BiFunction;)Ljava/lang/Object;
+	public fun put (Laws/smithy/kotlin/runtime/text/encoding/Encodable;Ljava/util/List;)Ljava/util/List;
+	public synthetic fun put (Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+	public fun putAll (Ljava/util/Map;)V
+	public fun putIfAbsent (Laws/smithy/kotlin/runtime/text/encoding/Encodable;Ljava/util/List;)Ljava/util/List;
+	public synthetic fun putIfAbsent (Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+	public synthetic fun remove (Ljava/lang/Object;)Ljava/lang/Object;
+	public fun remove (Ljava/lang/Object;)Ljava/util/List;
+	public fun remove (Ljava/lang/Object;Ljava/lang/Object;)Z
+	public fun replace (Laws/smithy/kotlin/runtime/text/encoding/Encodable;Ljava/util/List;)Ljava/util/List;
+	public fun replace (Laws/smithy/kotlin/runtime/text/encoding/Encodable;Ljava/util/List;Ljava/util/List;)Z
+	public synthetic fun replace (Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+	public synthetic fun replace (Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;)Z
+	public fun replaceAll (Ljava/util/function/BiFunction;)V
+	public final fun size ()I
+	public final fun toBuilder ()Laws/smithy/kotlin/runtime/net/url/QueryParameters$Builder;
+	public fun toMutableMultiMap ()Laws/smithy/kotlin/runtime/collections/MutableMultiMap;
+	public fun toString ()Ljava/lang/String;
+	public final fun values ()Ljava/util/Collection;
+}
+
+public final class aws/smithy/kotlin/runtime/net/url/QueryParameters$Builder : aws/smithy/kotlin/runtime/collections/MutableMultiMap {
+	public fun <init> ()V
+	public fun add (Laws/smithy/kotlin/runtime/text/encoding/Encodable;ILaws/smithy/kotlin/runtime/text/encoding/Encodable;)V
+	public fun add (Laws/smithy/kotlin/runtime/text/encoding/Encodable;Laws/smithy/kotlin/runtime/text/encoding/Encodable;)Z
+	public synthetic fun add (Ljava/lang/Object;ILjava/lang/Object;)V
+	public synthetic fun add (Ljava/lang/Object;Ljava/lang/Object;)Z
+	public fun addAll (Laws/smithy/kotlin/runtime/text/encoding/Encodable;ILjava/util/Collection;)Z
+	public fun addAll (Laws/smithy/kotlin/runtime/text/encoding/Encodable;Ljava/util/Collection;)Z
+	public synthetic fun addAll (Ljava/lang/Object;ILjava/util/Collection;)Z
+	public synthetic fun addAll (Ljava/lang/Object;Ljava/util/Collection;)Z
+	public fun addAll (Ljava/util/Map;)V
+	public final fun build ()Laws/smithy/kotlin/runtime/net/url/QueryParameters;
+	public fun clear ()V
+	public fun contains (Laws/smithy/kotlin/runtime/text/encoding/Encodable;Laws/smithy/kotlin/runtime/text/encoding/Encodable;)Z
+	public synthetic fun contains (Ljava/lang/Object;Ljava/lang/Object;)Z
+	public fun containsKey (Laws/smithy/kotlin/runtime/text/encoding/Encodable;)Z
+	public final fun containsKey (Ljava/lang/Object;)Z
+	public final fun containsValue (Ljava/lang/Object;)Z
+	public fun containsValue (Ljava/util/List;)Z
+	public final fun copyFrom (Laws/smithy/kotlin/runtime/net/url/QueryParameters$Builder;)V
+	public final fun copyFrom (Laws/smithy/kotlin/runtime/net/url/QueryParameters;)V
+	public final fun decodedParameters (Lkotlin/jvm/functions/Function1;)V
+	public final fun encodedParameters (Lkotlin/jvm/functions/Function1;)V
+	public final fun entrySet ()Ljava/util/Set;
+	public fun get (Laws/smithy/kotlin/runtime/text/encoding/Encodable;)Ljava/util/List;
+	public final synthetic fun get (Ljava/lang/Object;)Ljava/lang/Object;
+	public final fun get (Ljava/lang/Object;)Ljava/util/List;
+	public final fun getDecoded ()Ljava/lang/String;
+	public final fun getDecodedParameters ()Laws/smithy/kotlin/runtime/collections/MutableMultiMap;
+	public final fun getEncoded ()Ljava/lang/String;
+	public final fun getEncodedParameters ()Laws/smithy/kotlin/runtime/collections/MutableMultiMap;
+	public fun getEntries ()Ljava/util/Set;
+	public fun getEntryValues ()Lkotlin/sequences/Sequence;
+	public final fun getForceQuerySeparator ()Z
+	public fun getKeys ()Ljava/util/Set;
+	public fun getSize ()I
+	public fun getValues ()Ljava/util/Collection;
+	public fun isEmpty ()Z
+	public final fun keySet ()Ljava/util/Set;
+	public fun put (Laws/smithy/kotlin/runtime/text/encoding/Encodable;Laws/smithy/kotlin/runtime/text/encoding/Encodable;)Ljava/util/List;
+	public fun put (Laws/smithy/kotlin/runtime/text/encoding/Encodable;Ljava/util/List;)Ljava/util/List;
+	public synthetic fun put (Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+	public synthetic fun put (Ljava/lang/Object;Ljava/lang/Object;)Ljava/util/List;
+	public fun putAll (Ljava/util/Map;)V
+	public fun remove (Laws/smithy/kotlin/runtime/text/encoding/Encodable;)Ljava/util/List;
+	public final synthetic fun remove (Ljava/lang/Object;)Ljava/lang/Object;
+	public final fun remove (Ljava/lang/Object;)Ljava/util/List;
+	public fun removeAll (Laws/smithy/kotlin/runtime/text/encoding/Encodable;Ljava/util/Collection;)Ljava/lang/Boolean;
+	public synthetic fun removeAll (Ljava/lang/Object;Ljava/util/Collection;)Ljava/lang/Boolean;
+	public fun removeAt (Laws/smithy/kotlin/runtime/text/encoding/Encodable;I)Laws/smithy/kotlin/runtime/text/encoding/Encodable;
+	public synthetic fun removeAt (Ljava/lang/Object;I)Ljava/lang/Object;
+	public fun removeElement (Laws/smithy/kotlin/runtime/text/encoding/Encodable;Laws/smithy/kotlin/runtime/text/encoding/Encodable;)Z
+	public synthetic fun removeElement (Ljava/lang/Object;Ljava/lang/Object;)Z
+	public fun retainAll (Laws/smithy/kotlin/runtime/text/encoding/Encodable;Ljava/util/Collection;)Ljava/lang/Boolean;
+	public synthetic fun retainAll (Ljava/lang/Object;Ljava/util/Collection;)Ljava/lang/Boolean;
+	public final fun setDecoded (Ljava/lang/String;)V
+	public final fun setEncoded (Ljava/lang/String;)V
+	public final fun setForceQuerySeparator (Z)V
+	public final fun size ()I
+	public fun toMultiMap ()Laws/smithy/kotlin/runtime/collections/MultiMap;
+	public final fun values ()Ljava/util/Collection;
+}
+
+public final class aws/smithy/kotlin/runtime/net/url/QueryParameters$Companion {
+	public final fun getEmpty ()Laws/smithy/kotlin/runtime/net/url/QueryParameters;
+	public final fun invoke (Lkotlin/jvm/functions/Function1;)Laws/smithy/kotlin/runtime/net/url/QueryParameters;
+	public final fun parseDecoded (Ljava/lang/String;)Laws/smithy/kotlin/runtime/net/url/QueryParameters;
+	public final fun parseEncoded (Ljava/lang/String;)Laws/smithy/kotlin/runtime/net/url/QueryParameters;
+}
+
+public final class aws/smithy/kotlin/runtime/net/url/Url {
+	public static final field Companion Laws/smithy/kotlin/runtime/net/url/Url$Companion;
+	public synthetic fun <init> (Laws/smithy/kotlin/runtime/net/Scheme;Laws/smithy/kotlin/runtime/net/Host;ILaws/smithy/kotlin/runtime/net/url/UrlPath;Laws/smithy/kotlin/runtime/net/url/QueryParameters;Laws/smithy/kotlin/runtime/net/url/UserInfo;Laws/smithy/kotlin/runtime/text/encoding/Encodable;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun copy (Lkotlin/jvm/functions/Function1;)Laws/smithy/kotlin/runtime/net/url/Url;
+	public static synthetic fun copy$default (Laws/smithy/kotlin/runtime/net/url/Url;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Laws/smithy/kotlin/runtime/net/url/Url;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getFragment ()Laws/smithy/kotlin/runtime/text/encoding/Encodable;
+	public final fun getHost ()Laws/smithy/kotlin/runtime/net/Host;
+	public final fun getParameters ()Laws/smithy/kotlin/runtime/net/url/QueryParameters;
+	public final fun getPath ()Laws/smithy/kotlin/runtime/net/url/UrlPath;
+	public final fun getPort ()I
+	public final fun getRequestRelativePath ()Ljava/lang/String;
+	public final fun getScheme ()Laws/smithy/kotlin/runtime/net/Scheme;
+	public final fun getUserInfo ()Laws/smithy/kotlin/runtime/net/url/UserInfo;
+	public fun hashCode ()I
+	public final fun toBuilder ()Laws/smithy/kotlin/runtime/net/url/Url$Builder;
 	public fun toString ()Ljava/lang/String;
 }
 
-public final class aws/smithy/kotlin/runtime/net/Url$Companion {
-	public final fun parse (Ljava/lang/String;)Laws/smithy/kotlin/runtime/net/Url;
-	public final fun parse (Ljava/lang/String;Laws/smithy/kotlin/runtime/net/UrlDecoding;)Laws/smithy/kotlin/runtime/net/Url;
-}
-
-public final class aws/smithy/kotlin/runtime/net/UrlBuilder : aws/smithy/kotlin/runtime/util/CanDeepCopy {
-	public static final field Companion Laws/smithy/kotlin/runtime/net/UrlBuilder$Companion;
+public final class aws/smithy/kotlin/runtime/net/url/Url$Builder : aws/smithy/kotlin/runtime/util/CanDeepCopy {
 	public fun <init> ()V
-	public final fun build ()Laws/smithy/kotlin/runtime/net/Url;
-	public fun deepCopy ()Laws/smithy/kotlin/runtime/net/UrlBuilder;
+	public final fun build ()Laws/smithy/kotlin/runtime/net/url/Url;
+	public final fun copyFrom (Laws/smithy/kotlin/runtime/net/url/Url;)V
+	public fun deepCopy ()Laws/smithy/kotlin/runtime/net/url/Url$Builder;
 	public synthetic fun deepCopy ()Ljava/lang/Object;
-	public final fun getForceQuery ()Z
-	public final fun getFragment ()Ljava/lang/String;
+	public final fun getDecodedFragment ()Ljava/lang/String;
+	public final fun getEncodedFragment ()Ljava/lang/String;
 	public final fun getHost ()Laws/smithy/kotlin/runtime/net/Host;
-	public final fun getParameters ()Laws/smithy/kotlin/runtime/net/QueryParametersBuilder;
-	public final fun getPath ()Ljava/lang/String;
+	public final fun getParameters ()Laws/smithy/kotlin/runtime/net/url/QueryParameters$Builder;
+	public final fun getPath ()Laws/smithy/kotlin/runtime/net/url/UrlPath$Builder;
 	public final fun getPort ()Ljava/lang/Integer;
+	public final fun getRequestRelativePath ()Ljava/lang/String;
 	public final fun getScheme ()Laws/smithy/kotlin/runtime/net/Scheme;
-	public final fun getUserInfo ()Laws/smithy/kotlin/runtime/net/UserInfo;
-	public final fun setForceQuery (Z)V
-	public final fun setFragment (Ljava/lang/String;)V
+	public final fun getUserInfo ()Laws/smithy/kotlin/runtime/net/url/UserInfo$Builder;
+	public final fun parameters (Lkotlin/jvm/functions/Function1;)V
+	public final fun path (Lkotlin/jvm/functions/Function1;)V
+	public final fun setDecodedFragment (Ljava/lang/String;)V
+	public final fun setEncodedFragment (Ljava/lang/String;)V
 	public final fun setHost (Laws/smithy/kotlin/runtime/net/Host;)V
-	public final fun setParameters (Laws/smithy/kotlin/runtime/net/QueryParametersBuilder;)V
-	public final fun setPath (Ljava/lang/String;)V
 	public final fun setPort (Ljava/lang/Integer;)V
 	public final fun setScheme (Laws/smithy/kotlin/runtime/net/Scheme;)V
-	public final fun setUserInfo (Laws/smithy/kotlin/runtime/net/UserInfo;)V
-	public fun toString ()Ljava/lang/String;
+	public final fun userInfo (Lkotlin/jvm/functions/Function1;)V
 }
 
-public final class aws/smithy/kotlin/runtime/net/UrlBuilder$Companion {
-	public final fun invoke (Lkotlin/jvm/functions/Function1;)Laws/smithy/kotlin/runtime/net/Url;
+public final class aws/smithy/kotlin/runtime/net/url/Url$Companion {
+	public final fun invoke (Lkotlin/jvm/functions/Function1;)Laws/smithy/kotlin/runtime/net/url/Url;
+	public final fun parse (Ljava/lang/String;Laws/smithy/kotlin/runtime/net/url/UrlEncoding;)Laws/smithy/kotlin/runtime/net/url/Url;
+	public static synthetic fun parse$default (Laws/smithy/kotlin/runtime/net/url/Url$Companion;Ljava/lang/String;Laws/smithy/kotlin/runtime/net/url/UrlEncoding;ILjava/lang/Object;)Laws/smithy/kotlin/runtime/net/url/Url;
 }
 
-public abstract class aws/smithy/kotlin/runtime/net/UrlDecoding {
-	public static final field Companion Laws/smithy/kotlin/runtime/net/UrlDecoding$Companion;
+public abstract class aws/smithy/kotlin/runtime/net/url/UrlEncoding {
+	public static final field Companion Laws/smithy/kotlin/runtime/net/url/UrlEncoding$Companion;
 	public synthetic fun <init> (ILkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public final fun contains (Laws/smithy/kotlin/runtime/net/UrlDecoding;)Z
+	public final fun contains (Laws/smithy/kotlin/runtime/net/url/UrlEncoding;)Z
 	public fun equals (Ljava/lang/Object;)Z
 	public fun hashCode ()I
-	public final fun minus (Laws/smithy/kotlin/runtime/net/UrlDecoding;)Laws/smithy/kotlin/runtime/net/UrlDecoding;
-	public final fun plus (Laws/smithy/kotlin/runtime/net/UrlDecoding;)Laws/smithy/kotlin/runtime/net/UrlDecoding;
+	public final fun minus (Laws/smithy/kotlin/runtime/net/url/UrlEncoding;)Laws/smithy/kotlin/runtime/net/url/UrlEncoding;
+	public final fun plus (Laws/smithy/kotlin/runtime/net/url/UrlEncoding;)Laws/smithy/kotlin/runtime/net/url/UrlEncoding;
 	public fun toString ()Ljava/lang/String;
 }
 
-public final class aws/smithy/kotlin/runtime/net/UrlDecoding$Companion {
-	public final fun getDecodeAll ()Laws/smithy/kotlin/runtime/net/UrlDecoding;
+public final class aws/smithy/kotlin/runtime/net/url/UrlEncoding$Companion {
+	public final fun getAll ()Laws/smithy/kotlin/runtime/net/url/UrlEncoding;
 	public final fun getEntries ()Ljava/util/Set;
 }
 
-public final class aws/smithy/kotlin/runtime/net/UrlDecoding$DecodeFragment : aws/smithy/kotlin/runtime/net/UrlDecoding {
-	public static final field INSTANCE Laws/smithy/kotlin/runtime/net/UrlDecoding$DecodeFragment;
+public final class aws/smithy/kotlin/runtime/net/url/UrlEncoding$Fragment : aws/smithy/kotlin/runtime/net/url/UrlEncoding {
+	public static final field INSTANCE Laws/smithy/kotlin/runtime/net/url/UrlEncoding$Fragment;
 	public fun toString ()Ljava/lang/String;
 }
 
-public final class aws/smithy/kotlin/runtime/net/UrlDecoding$DecodeNone : aws/smithy/kotlin/runtime/net/UrlDecoding {
-	public static final field INSTANCE Laws/smithy/kotlin/runtime/net/UrlDecoding$DecodeNone;
+public final class aws/smithy/kotlin/runtime/net/url/UrlEncoding$None : aws/smithy/kotlin/runtime/net/url/UrlEncoding {
+	public static final field INSTANCE Laws/smithy/kotlin/runtime/net/url/UrlEncoding$None;
 	public fun toString ()Ljava/lang/String;
 }
 
-public final class aws/smithy/kotlin/runtime/net/UrlDecoding$DecodePath : aws/smithy/kotlin/runtime/net/UrlDecoding {
-	public static final field INSTANCE Laws/smithy/kotlin/runtime/net/UrlDecoding$DecodePath;
+public final class aws/smithy/kotlin/runtime/net/url/UrlEncoding$Path : aws/smithy/kotlin/runtime/net/url/UrlEncoding {
+	public static final field INSTANCE Laws/smithy/kotlin/runtime/net/url/UrlEncoding$Path;
 	public fun toString ()Ljava/lang/String;
 }
 
-public final class aws/smithy/kotlin/runtime/net/UrlDecoding$DecodeQueryParameters : aws/smithy/kotlin/runtime/net/UrlDecoding {
-	public static final field INSTANCE Laws/smithy/kotlin/runtime/net/UrlDecoding$DecodeQueryParameters;
+public final class aws/smithy/kotlin/runtime/net/url/UrlEncoding$QueryParameters : aws/smithy/kotlin/runtime/net/url/UrlEncoding {
+	public static final field INSTANCE Laws/smithy/kotlin/runtime/net/url/UrlEncoding$QueryParameters;
 	public fun toString ()Ljava/lang/String;
 }
 
-public final class aws/smithy/kotlin/runtime/net/UrlKt {
-	public static final fun parameters (Laws/smithy/kotlin/runtime/net/UrlBuilder;Lkotlin/jvm/functions/Function1;)V
-}
-
-public final class aws/smithy/kotlin/runtime/net/UserInfo {
-	public fun <init> (Ljava/lang/String;Ljava/lang/String;)V
-	public final fun component1 ()Ljava/lang/String;
-	public final fun component2 ()Ljava/lang/String;
-	public final fun copy (Ljava/lang/String;Ljava/lang/String;)Laws/smithy/kotlin/runtime/net/UserInfo;
-	public static synthetic fun copy$default (Laws/smithy/kotlin/runtime/net/UserInfo;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Object;)Laws/smithy/kotlin/runtime/net/UserInfo;
+public final class aws/smithy/kotlin/runtime/net/url/UrlPath {
+	public static final field Companion Laws/smithy/kotlin/runtime/net/url/UrlPath$Companion;
+	public synthetic fun <init> (Ljava/util/List;ZLkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public fun equals (Ljava/lang/Object;)Z
-	public final fun getPassword ()Ljava/lang/String;
-	public final fun getUsername ()Ljava/lang/String;
+	public final fun getDecoded ()Ljava/lang/String;
+	public final fun getEncoded ()Ljava/lang/String;
+	public final fun getSegments ()Ljava/util/List;
+	public final fun getTrailingSlash ()Z
 	public fun hashCode ()I
+	public final fun toBuilder ()Laws/smithy/kotlin/runtime/net/url/UrlPath$Builder;
 	public fun toString ()Ljava/lang/String;
 }
 
-public final class aws/smithy/kotlin/runtime/operation/ExecutionContext : aws/smithy/kotlin/runtime/util/MutableAttributes, kotlinx/coroutines/CoroutineScope {
+public final class aws/smithy/kotlin/runtime/net/url/UrlPath$Builder {
+	public fun <init> ()V
+	public final fun build ()Laws/smithy/kotlin/runtime/net/url/UrlPath;
+	public final fun copyFrom (Laws/smithy/kotlin/runtime/net/url/UrlPath$Builder;)V
+	public final fun copyFrom (Laws/smithy/kotlin/runtime/net/url/UrlPath;)V
+	public final fun decodedSegments (Lkotlin/jvm/functions/Function1;)V
+	public final fun encodedSegments (Lkotlin/jvm/functions/Function1;)V
+	public final fun getDecoded ()Ljava/lang/String;
+	public final fun getDecodedSegments ()Ljava/util/List;
+	public final fun getEncoded ()Ljava/lang/String;
+	public final fun getEncodedSegments ()Ljava/util/List;
+	public final fun getSegments ()Ljava/util/List;
+	public final fun getTrailingSlash ()Z
+	public final fun normalize ()V
+	public final fun setDecoded (Ljava/lang/String;)V
+	public final fun setEncoded (Ljava/lang/String;)V
+	public final fun setTrailingSlash (Z)V
+}
+
+public final class aws/smithy/kotlin/runtime/net/url/UrlPath$Companion {
+	public final fun getEmpty ()Laws/smithy/kotlin/runtime/net/url/UrlPath;
+	public final fun invoke (Lkotlin/jvm/functions/Function1;)Laws/smithy/kotlin/runtime/net/url/UrlPath;
+	public final fun parseDecoded (Ljava/lang/String;)Laws/smithy/kotlin/runtime/net/url/UrlPath;
+	public final fun parseEncoded (Ljava/lang/String;)Laws/smithy/kotlin/runtime/net/url/UrlPath;
+}
+
+public final class aws/smithy/kotlin/runtime/net/url/UserInfo {
+	public static final field Companion Laws/smithy/kotlin/runtime/net/url/UserInfo$Companion;
+	public synthetic fun <init> (Laws/smithy/kotlin/runtime/text/encoding/Encodable;Laws/smithy/kotlin/runtime/text/encoding/Encodable;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getPassword ()Laws/smithy/kotlin/runtime/text/encoding/Encodable;
+	public final fun getUserName ()Laws/smithy/kotlin/runtime/text/encoding/Encodable;
+	public fun hashCode ()I
+	public final fun isEmpty ()Z
+	public final fun isNotEmpty ()Z
+	public final fun toBuilder ()Laws/smithy/kotlin/runtime/net/url/UserInfo$Builder;
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class aws/smithy/kotlin/runtime/net/url/UserInfo$Builder {
+	public fun <init> ()V
+	public final fun build ()Laws/smithy/kotlin/runtime/net/url/UserInfo;
+	public final fun copyFrom (Laws/smithy/kotlin/runtime/net/url/UserInfo$Builder;)V
+	public final fun copyFrom (Laws/smithy/kotlin/runtime/net/url/UserInfo;)V
+	public final fun getDecodedPassword ()Ljava/lang/String;
+	public final fun getDecodedUserName ()Ljava/lang/String;
+	public final fun getEncodedPassword ()Ljava/lang/String;
+	public final fun getEncodedUserName ()Ljava/lang/String;
+	public final fun setDecodedPassword (Ljava/lang/String;)V
+	public final fun setDecodedUserName (Ljava/lang/String;)V
+	public final fun setEncodedPassword (Ljava/lang/String;)V
+	public final fun setEncodedUserName (Ljava/lang/String;)V
+}
+
+public final class aws/smithy/kotlin/runtime/net/url/UserInfo$Companion {
+	public final fun getEmpty ()Laws/smithy/kotlin/runtime/net/url/UserInfo;
+	public final fun invoke (Lkotlin/jvm/functions/Function1;)Laws/smithy/kotlin/runtime/net/url/UserInfo;
+	public final fun parseDecoded (Ljava/lang/String;)Laws/smithy/kotlin/runtime/net/url/UserInfo;
+	public final fun parseEncoded (Ljava/lang/String;)Laws/smithy/kotlin/runtime/net/url/UserInfo;
+}
+
+public final class aws/smithy/kotlin/runtime/operation/ExecutionContext : aws/smithy/kotlin/runtime/collections/MutableAttributes, kotlinx/coroutines/CoroutineScope {
 	public static final field Companion Laws/smithy/kotlin/runtime/operation/ExecutionContext$Companion;
 	public fun <init> ()V
 	public synthetic fun <init> (Laws/smithy/kotlin/runtime/operation/ExecutionContext$ExecutionContextBuilder;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public fun computeIfAbsent (Laws/smithy/kotlin/runtime/util/AttributeKey;Lkotlin/jvm/functions/Function0;)Ljava/lang/Object;
-	public fun contains (Laws/smithy/kotlin/runtime/util/AttributeKey;)Z
-	public final fun getAttributes ()Laws/smithy/kotlin/runtime/util/MutableAttributes;
+	public fun computeIfAbsent (Laws/smithy/kotlin/runtime/collections/AttributeKey;Lkotlin/jvm/functions/Function0;)Ljava/lang/Object;
+	public fun contains (Laws/smithy/kotlin/runtime/collections/AttributeKey;)Z
+	public final fun getAttributes ()Laws/smithy/kotlin/runtime/collections/MutableAttributes;
 	public fun getCoroutineContext ()Lkotlin/coroutines/CoroutineContext;
 	public fun getKeys ()Ljava/util/Set;
-	public fun getOrNull (Laws/smithy/kotlin/runtime/util/AttributeKey;)Ljava/lang/Object;
+	public fun getOrNull (Laws/smithy/kotlin/runtime/collections/AttributeKey;)Ljava/lang/Object;
 	public fun isEmpty ()Z
-	public fun remove (Laws/smithy/kotlin/runtime/util/AttributeKey;)V
-	public fun set (Laws/smithy/kotlin/runtime/util/AttributeKey;Ljava/lang/Object;)V
+	public fun remove (Laws/smithy/kotlin/runtime/collections/AttributeKey;)V
+	public fun set (Laws/smithy/kotlin/runtime/collections/AttributeKey;Ljava/lang/Object;)V
 }
 
 public final class aws/smithy/kotlin/runtime/operation/ExecutionContext$Companion {
@@ -817,8 +1067,8 @@ public final class aws/smithy/kotlin/runtime/operation/ExecutionContext$Companio
 public final class aws/smithy/kotlin/runtime/operation/ExecutionContext$ExecutionContextBuilder {
 	public fun <init> ()V
 	public final fun build ()Laws/smithy/kotlin/runtime/operation/ExecutionContext;
-	public final fun getAttributes ()Laws/smithy/kotlin/runtime/util/MutableAttributes;
-	public final fun setAttributes (Laws/smithy/kotlin/runtime/util/MutableAttributes;)V
+	public final fun getAttributes ()Laws/smithy/kotlin/runtime/collections/MutableAttributes;
+	public final fun setAttributes (Laws/smithy/kotlin/runtime/collections/MutableAttributes;)V
 }
 
 public final class aws/smithy/kotlin/runtime/retries/AdaptiveRetryStrategy : aws/smithy/kotlin/runtime/retries/StandardRetryStrategy {
@@ -1205,6 +1455,46 @@ public final class aws/smithy/kotlin/runtime/retries/policy/StandardRetryPolicy$
 	public final fun getDefault ()Laws/smithy/kotlin/runtime/retries/policy/StandardRetryPolicy;
 }
 
+public final class aws/smithy/kotlin/runtime/text/TextKt {
+}
+
+public final class aws/smithy/kotlin/runtime/text/Utf8Kt {
+}
+
+public final class aws/smithy/kotlin/runtime/text/encoding/Base64Kt {
+	public static final fun decodeBase64 (Ljava/lang/String;)Ljava/lang/String;
+	public static final fun decodeBase64 ([B)[B
+	public static final fun decodeBase64Bytes (Ljava/lang/String;)[B
+	public static final fun encodeBase64 (Ljava/lang/String;)Ljava/lang/String;
+	public static final fun encodeBase64 ([B)[B
+	public static final fun encodeBase64String ([B)Ljava/lang/String;
+}
+
+public final class aws/smithy/kotlin/runtime/text/encoding/Encodable {
+	public static final field Companion Laws/smithy/kotlin/runtime/text/encoding/Encodable$Companion;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getDecoded ()Ljava/lang/String;
+	public final fun getEncoded ()Ljava/lang/String;
+	public final fun getEncoding ()Laws/smithy/kotlin/runtime/text/encoding/Encoding;
+	public fun hashCode ()I
+	public final fun isEmpty ()Z
+	public final fun isNotEmpty ()Z
+	public final fun reencode ()Laws/smithy/kotlin/runtime/text/encoding/Encodable;
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class aws/smithy/kotlin/runtime/text/encoding/Encodable$Companion {
+	public final fun getEmpty ()Laws/smithy/kotlin/runtime/text/encoding/Encodable;
+}
+
+public final class aws/smithy/kotlin/runtime/text/encoding/Encoding$DefaultImpls {
+	public static fun encodableFromDecoded (Laws/smithy/kotlin/runtime/text/encoding/Encoding;Ljava/lang/String;)Laws/smithy/kotlin/runtime/text/encoding/Encodable;
+	public static fun encodableFromEncoded (Laws/smithy/kotlin/runtime/text/encoding/Encoding;Ljava/lang/String;)Laws/smithy/kotlin/runtime/text/encoding/Encodable;
+}
+
+public final class aws/smithy/kotlin/runtime/text/encoding/HexKt {
+}
+
 public abstract interface class aws/smithy/kotlin/runtime/time/Clock {
 	public static final field Companion Laws/smithy/kotlin/runtime/time/Clock$Companion;
 	public abstract fun now ()Laws/smithy/kotlin/runtime/time/Instant;
@@ -1271,56 +1561,6 @@ public final class aws/smithy/kotlin/runtime/time/TimestampFormat : java/lang/En
 	public static fun values ()[Laws/smithy/kotlin/runtime/time/TimestampFormat;
 }
 
-public final class aws/smithy/kotlin/runtime/util/AttributeKey {
-	public fun <init> (Ljava/lang/String;)V
-	public final fun component1 ()Ljava/lang/String;
-	public final fun copy (Ljava/lang/String;)Laws/smithy/kotlin/runtime/util/AttributeKey;
-	public static synthetic fun copy$default (Laws/smithy/kotlin/runtime/util/AttributeKey;Ljava/lang/String;ILjava/lang/Object;)Laws/smithy/kotlin/runtime/util/AttributeKey;
-	public fun equals (Ljava/lang/Object;)Z
-	public final fun getName ()Ljava/lang/String;
-	public fun hashCode ()I
-	public fun toString ()Ljava/lang/String;
-}
-
-public abstract interface class aws/smithy/kotlin/runtime/util/Attributes {
-	public abstract fun contains (Laws/smithy/kotlin/runtime/util/AttributeKey;)Z
-	public abstract fun getKeys ()Ljava/util/Set;
-	public abstract fun getOrNull (Laws/smithy/kotlin/runtime/util/AttributeKey;)Ljava/lang/Object;
-	public abstract fun isEmpty ()Z
-}
-
-public final class aws/smithy/kotlin/runtime/util/AttributesBuilder {
-	public fun <init> ()V
-	public final fun getAttributes ()Laws/smithy/kotlin/runtime/util/MutableAttributes;
-	public final fun to (Laws/smithy/kotlin/runtime/util/AttributeKey;Ljava/lang/Object;)V
-	public final fun to (Ljava/lang/String;Ljava/lang/Object;)V
-}
-
-public final class aws/smithy/kotlin/runtime/util/AttributesKt {
-	public static final fun attributesOf (Lkotlin/jvm/functions/Function1;)Laws/smithy/kotlin/runtime/util/Attributes;
-	public static final fun emptyAttributes ()Laws/smithy/kotlin/runtime/util/Attributes;
-	public static final fun get (Laws/smithy/kotlin/runtime/util/Attributes;Laws/smithy/kotlin/runtime/util/AttributeKey;)Ljava/lang/Object;
-	public static final fun isNotEmpty (Laws/smithy/kotlin/runtime/util/Attributes;)Z
-	public static final fun merge (Laws/smithy/kotlin/runtime/util/MutableAttributes;Laws/smithy/kotlin/runtime/util/Attributes;)V
-	public static final fun mutableAttributes ()Laws/smithy/kotlin/runtime/util/MutableAttributes;
-	public static final fun mutableAttributesOf (Lkotlin/jvm/functions/Function1;)Laws/smithy/kotlin/runtime/util/MutableAttributes;
-	public static final fun putIfAbsent (Laws/smithy/kotlin/runtime/util/MutableAttributes;Laws/smithy/kotlin/runtime/util/AttributeKey;Ljava/lang/Object;)V
-	public static final fun putIfAbsentNotNull (Laws/smithy/kotlin/runtime/util/MutableAttributes;Laws/smithy/kotlin/runtime/util/AttributeKey;Ljava/lang/Object;)V
-	public static final fun setIfValueNotNull (Laws/smithy/kotlin/runtime/util/MutableAttributes;Laws/smithy/kotlin/runtime/util/AttributeKey;Ljava/lang/Object;)V
-	public static final fun take (Laws/smithy/kotlin/runtime/util/MutableAttributes;Laws/smithy/kotlin/runtime/util/AttributeKey;)Ljava/lang/Object;
-	public static final fun takeOrNull (Laws/smithy/kotlin/runtime/util/MutableAttributes;Laws/smithy/kotlin/runtime/util/AttributeKey;)Ljava/lang/Object;
-	public static final fun toMutableAttributes (Laws/smithy/kotlin/runtime/util/Attributes;)Laws/smithy/kotlin/runtime/util/MutableAttributes;
-}
-
-public final class aws/smithy/kotlin/runtime/util/Base64Kt {
-	public static final fun decodeBase64 (Ljava/lang/String;)Ljava/lang/String;
-	public static final fun decodeBase64 ([B)[B
-	public static final fun decodeBase64Bytes (Ljava/lang/String;)[B
-	public static final fun encodeBase64 (Ljava/lang/String;)Ljava/lang/String;
-	public static final fun encodeBase64 ([B)[B
-	public static final fun encodeBase64String ([B)Ljava/lang/String;
-}
-
 public abstract interface class aws/smithy/kotlin/runtime/util/Buildable {
 	public abstract fun build ()Ljava/lang/Object;
 }
@@ -1353,19 +1593,10 @@ public final class aws/smithy/kotlin/runtime/util/Filesystem$Companion {
 	public static synthetic fun fromMap$default (Laws/smithy/kotlin/runtime/util/Filesystem$Companion;Ljava/util/Map;Ljava/lang/String;ILjava/lang/Object;)Laws/smithy/kotlin/runtime/util/Filesystem;
 }
 
-public final class aws/smithy/kotlin/runtime/util/HexKt {
-}
-
 public final class aws/smithy/kotlin/runtime/util/JMESPathKt {
 }
 
 public final class aws/smithy/kotlin/runtime/util/LazyAsyncValueKt {
-}
-
-public abstract interface class aws/smithy/kotlin/runtime/util/MutableAttributes : aws/smithy/kotlin/runtime/util/Attributes {
-	public abstract fun computeIfAbsent (Laws/smithy/kotlin/runtime/util/AttributeKey;Lkotlin/jvm/functions/Function0;)Ljava/lang/Object;
-	public abstract fun remove (Laws/smithy/kotlin/runtime/util/AttributeKey;)V
-	public abstract fun set (Laws/smithy/kotlin/runtime/util/AttributeKey;Ljava/lang/Object;)V
 }
 
 public final class aws/smithy/kotlin/runtime/util/OperatingSystem {
@@ -1415,36 +1646,6 @@ public abstract interface class aws/smithy/kotlin/runtime/util/PropertyProvider 
 	public abstract fun getProperty (Ljava/lang/String;)Ljava/lang/String;
 }
 
-public final class aws/smithy/kotlin/runtime/util/StackKt {
-}
-
 public final class aws/smithy/kotlin/runtime/util/TestPlatformProvider$Companion {
-}
-
-public abstract interface class aws/smithy/kotlin/runtime/util/ValuesMap {
-	public abstract fun contains (Ljava/lang/String;)Z
-	public abstract fun contains (Ljava/lang/String;Ljava/lang/Object;)Z
-	public abstract fun entries ()Ljava/util/Set;
-	public abstract fun forEach (Lkotlin/jvm/functions/Function2;)V
-	public abstract fun get (Ljava/lang/String;)Ljava/lang/Object;
-	public abstract fun getAll (Ljava/lang/String;)Ljava/util/List;
-	public abstract fun getCaseInsensitiveName ()Z
-	public abstract fun isEmpty ()Z
-	public abstract fun names ()Ljava/util/Set;
-}
-
-public final class aws/smithy/kotlin/runtime/util/ValuesMap$DefaultImpls {
-	public static fun contains (Laws/smithy/kotlin/runtime/util/ValuesMap;Ljava/lang/String;Ljava/lang/Object;)Z
-	public static fun forEach (Laws/smithy/kotlin/runtime/util/ValuesMap;Lkotlin/jvm/functions/Function2;)V
-	public static fun get (Laws/smithy/kotlin/runtime/util/ValuesMap;Ljava/lang/String;)Ljava/lang/Object;
-}
-
-public final class aws/smithy/kotlin/runtime/util/ValuesMapKt {
-}
-
-public final class aws/smithy/kotlin/runtime/util/text/TextKt {
-}
-
-public final class aws/smithy/kotlin/runtime/util/text/Utf8Kt {
 }
 

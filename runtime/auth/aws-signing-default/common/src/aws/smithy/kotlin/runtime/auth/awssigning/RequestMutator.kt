@@ -5,7 +5,6 @@
 package aws.smithy.kotlin.runtime.auth.awssigning
 
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
-import aws.smithy.kotlin.runtime.util.text.urlReencodeComponent
 
 /**
  * An object that can mutate requests to include signing attributes.
@@ -22,7 +21,6 @@ internal interface RequestMutator {
      * Appends authorization information to a canonical request, returning a new request ready to be sent.
      * @param config The signing configuration to use
      * @param canonical The [CanonicalRequest] which has already been modified
-     * @param credentials The retrieved credentials used in the signing process
      * @param signatureHex The signature as a hex string
      * @return A new [HttpRequest] containing all the relevant signing/authorization attributes which is ready to be
      * sent.
@@ -48,16 +46,8 @@ internal class DefaultRequestMutator : RequestMutator {
                 canonical.request.headers["Authorization"] = "$ALGORITHM_NAME $credential, $signedHeaders, $signature"
             }
 
-            AwsSignatureType.HTTP_REQUEST_VIA_QUERY_PARAMS -> {
-                with(canonical.request.url.parameters) {
-                    set("X-Amz-Signature", signatureHex)
-
-                    entries().forEach {
-                        remove(it.key)
-                        appendAll(it.key, it.value.map(String::urlReencodeComponent))
-                    }
-                }
-            }
+            AwsSignatureType.HTTP_REQUEST_VIA_QUERY_PARAMS ->
+                canonical.request.url.parameters.decodedParameters.put("X-Amz-Signature", signatureHex)
 
             else -> TODO("Support for ${config.signatureType} is not yet implemented")
         }
