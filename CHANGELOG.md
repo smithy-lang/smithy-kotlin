@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.30.0] - 11/22/2023
+
+### Features
+* BREAKING: Overhaul URL APIs to clarify content encoding, when data is in which state, and to reduce the number of times data is encoded/decoded
+
 ## [0.29.0] - 11/17/2023
 
 ### Features

@@ -1,5 +1,0 @@
-{
-    "id": "1cd7d354-501b-439a-a01a-3e884558383a",
-    "type": "feature",
-    "description": "BREAKING: Overhaul URL APIs to clarify content encoding, when data is in which state, and to reduce the number of times data is encoded/decoded"
-}
