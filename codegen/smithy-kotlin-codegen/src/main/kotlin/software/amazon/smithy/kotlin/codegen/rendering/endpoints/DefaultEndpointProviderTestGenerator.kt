@@ -127,7 +127,8 @@ class DefaultEndpointProviderTestGenerator(
                         }
 
                         // FIXME Refactor to avoid using .create(). Still need to pass the type of V (e.g. AttributeKey<typeOf(v)>)
-                        writeInline("#T.create(#S, ",
+                        writeInline(
+                            "#T.create(#S, ",
                             RuntimeTypes.Core.Collections.AttributeKey,
                             k,
                         )

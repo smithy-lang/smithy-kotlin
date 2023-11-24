@@ -12,9 +12,6 @@ import software.amazon.smithy.kotlin.codegen.model.buildSymbol
 import software.amazon.smithy.kotlin.codegen.model.defaultName
 import software.amazon.smithy.model.SourceLocation
 import software.amazon.smithy.rulesengine.language.EndpointRuleSet
-import software.amazon.smithy.rulesengine.language.evaluation.type.BooleanType
-import software.amazon.smithy.rulesengine.language.evaluation.type.IntegerType
-import software.amazon.smithy.rulesengine.language.evaluation.type.StringType
 import software.amazon.smithy.rulesengine.language.syntax.Identifier
 import software.amazon.smithy.rulesengine.language.syntax.ToExpression
 import software.amazon.smithy.rulesengine.language.syntax.expressions.*
@@ -184,9 +181,10 @@ class DefaultEndpointProviderGenerator(
                             // otherwise, we just traverse the value like any other rules expression, object values will
                             // be rendered as Documents
                             // FIXME Refactor to avoid using .create(). Still need to pass the type of V (e.g. AttributeKey<typeOf(v)>)
-                            writeInline("#T.create(#S, ",
+                            writeInline(
+                                "#T.create(#S, ",
                                 RuntimeTypes.Core.Collections.AttributeKey,
-                                kStr
+                                kStr,
                             )
                             renderExpression(v)
                             writeInline(") to ")
