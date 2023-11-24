@@ -126,7 +126,13 @@ class DefaultEndpointProviderTestGenerator(
                             return@forEach
                         }
 
-                        writeInline("#T(#S) to ", RuntimeTypes.Core.Collections.AttributeKey, k)
+                        // FIXME Refactor to avoid using .create(). Still need to pass the type of V (e.g. AttributeKey<typeOf(v)>)
+                        writeInline("#T.create(#S, ",
+                            RuntimeTypes.Core.Collections.AttributeKey,
+                            k,
+                        )
+                        renderExpression(Expression.fromNode(v))
+                        writeInline(") to ")
                         renderExpression(Expression.fromNode(v))
                         ensureNewline()
                     }
