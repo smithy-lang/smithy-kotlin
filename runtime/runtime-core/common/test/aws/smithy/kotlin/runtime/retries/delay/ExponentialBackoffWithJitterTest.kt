@@ -5,7 +5,6 @@
 
 package aws.smithy.kotlin.runtime.retries.delay
 
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
@@ -14,7 +13,6 @@ import kotlin.test.assertTrue
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
 
-@OptIn(ExperimentalCoroutinesApi::class)
 class ExponentialBackoffWithJitterTest {
     @Test
     fun testScaling() = runTest {
@@ -54,7 +52,6 @@ class ExponentialBackoffWithJitterTest {
     }
 }
 
-@OptIn(ExperimentalCoroutinesApi::class)
 private suspend fun TestScope.backoffSeries(times: Int, delayer: ExponentialBackoffWithJitter): List<Int> =
     (1..times)
         .map { idx -> measure { delayer.backoff(idx) } }

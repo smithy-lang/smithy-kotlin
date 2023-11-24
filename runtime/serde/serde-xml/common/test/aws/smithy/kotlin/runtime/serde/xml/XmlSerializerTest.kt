@@ -27,7 +27,6 @@ private fun String.toXmlCompactString(): String =
         .replace("\n", "")
         .replace(Regex(">\\s+"), ">")
 
-@OptIn(ExperimentalStdlibApi::class)
 class XmlSerializerTest {
 
     @Test

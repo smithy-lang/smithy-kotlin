@@ -6,7 +6,6 @@ package aws.smithy.kotlin.runtime.http.interceptors
 
 import aws.smithy.kotlin.runtime.http.*
 import aws.smithy.kotlin.runtime.http.HttpCall
-import aws.smithy.kotlin.runtime.http.content.ByteArrayContent
 import aws.smithy.kotlin.runtime.http.operation.*
 import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
 import aws.smithy.kotlin.runtime.http.response.HttpResponse
@@ -23,7 +22,7 @@ object ResponseLengthValidationTestInput
 data class ResponseLengthValidationTestOutput(val body: HttpBody)
 
 private const val CONTENT_LENGTH_HEADER_NAME = "Content-Length"
-private val RESPONSE = "a".repeat(500).toByteArray()
+private val RESPONSE = "a".repeat(500).encodeToByteArray()
 
 fun op() =
     SdkHttpOperation.build {
@@ -60,7 +59,7 @@ class ResponseLengthValidationInterceptorTest {
             override fun readFrom() = SdkByteReadChannel(RESPONSE)
             override val isOneShot = false
         },
-        ByteArrayContent(RESPONSE),
+        HttpBody.fromBytes(RESPONSE),
     )
 
     private fun allBodies() = nonEmptyBodies() + HttpBody.Empty

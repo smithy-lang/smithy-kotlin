@@ -11,10 +11,14 @@ import aws.smithy.kotlin.runtime.auth.awssigning.internal.isEligibleForAwsChunke
 import aws.smithy.kotlin.runtime.auth.awssigning.internal.setAwsChunkedBody
 import aws.smithy.kotlin.runtime.auth.awssigning.internal.setAwsChunkedHeaders
 import aws.smithy.kotlin.runtime.auth.awssigning.internal.useAwsChunkedEncoding
+import aws.smithy.kotlin.runtime.client.LogMode
+import aws.smithy.kotlin.runtime.client.SdkClientOption
+import aws.smithy.kotlin.runtime.collections.get
 import aws.smithy.kotlin.runtime.http.HttpBody
+import aws.smithy.kotlin.runtime.http.operation.HttpOperationContext
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
-import aws.smithy.kotlin.runtime.util.get
+import aws.smithy.kotlin.runtime.time.Instant
 import kotlin.time.Duration
 
 /**
@@ -26,7 +30,6 @@ public class AwsHttpSigner(private val config: Config) : HttpSigner {
     public companion object {
         public inline operator fun invoke(block: Config.() -> Unit): AwsHttpSigner {
             val config = Config().apply(block)
-            requireNotNull(config.service) { "A service must be specified for the middleware" }
             requireNotNull(config.signer) { "A signer must be specified for the middleware" }
             return AwsHttpSigner(config)
         }
@@ -116,23 +119,36 @@ public class AwsHttpSigner(private val config: Config) : HttpSigner {
         // favor attributes from the current request context
         val contextHashSpecification = attributes.getOrNull(AwsSigningAttributes.HashSpecification)
         val contextSignedBodyHeader = attributes.getOrNull(AwsSigningAttributes.SignedBodyHeader)
+        val contextSigningRegion = attributes[AwsSigningAttributes.SigningRegion]
+        val contextSigningRegionSet = attributes.getOrNull(AwsSigningAttributes.SigningRegionSet)
+        val contextUseDoubleUriEncode = attributes.getOrNull(AwsSigningAttributes.UseDoubleUriEncode)
+        val contextNormalizeUriPath = attributes.getOrNull(AwsSigningAttributes.NormalizeUriPath)
+        val contextSigningServiceName = attributes.getOrNull(AwsSigningAttributes.SigningService)
 
         // operation signing config is baseConfig + operation specific config/overrides
         val signingConfig = AwsSigningConfig {
-            region = attributes[AwsSigningAttributes.SigningRegion]
-            service = attributes.getOrNull(AwsSigningAttributes.SigningService) ?: checkNotNull(config.service)
+            service = contextSigningServiceName ?: checkNotNull(config.service)
             credentials = signingRequest.identity as Credentials
             algorithm = config.algorithm
+
+            region = when {
+                algorithm == AwsSigningAlgorithm.SIGV4_ASYMMETRIC && !contextSigningRegionSet.isNullOrEmpty() -> contextSigningRegionSet.joinToString(",")
+                else -> contextSigningRegion
+            }
+
+            // apply clock skew if applicable
             signingDate = attributes.getOrNull(AwsSigningAttributes.SigningDate)
+                ?: (Instant.now() + (attributes.getOrNull(HttpOperationContext.ClockSkew) ?: Duration.ZERO))
 
             signatureType = config.signatureType
             omitSessionToken = config.omitSessionToken
-            normalizeUriPath = config.normalizeUriPath
-            useDoubleUriEncode = config.useDoubleUriEncode
+            normalizeUriPath = contextNormalizeUriPath ?: config.normalizeUriPath
+            useDoubleUriEncode = contextUseDoubleUriEncode ?: config.useDoubleUriEncode
             expiresAfter = config.expiresAfter
             shouldSignHeader = config.shouldSignHeader
 
             signedBodyHeader = contextSignedBodyHeader ?: config.signedBodyHeader
+            logRequest = attributes.getOrNull(SdkClientOption.LogMode)?.isEnabled(LogMode.LogRequest) == true
 
             // SDKs are supposed to default to signed payload _always_ when possible (and when `unsignedPayload` trait
             // isn't present). The only exception is when the customer explicitly disables signed payloads (via Config.isUnsignedPayload).
@@ -181,11 +197,11 @@ private fun HttpRequestBuilder.update(signedRequest: HttpRequest) {
         this.headers.appendMissing(key, values)
     }
 
-    signedRequest.url.parameters.forEach { key, values ->
+    signedRequest.url.parameters.forEach { (key, values) ->
         // The signed request has a URL-encoded path which means simply appending missing could result in both the raw
         // and percent-encoded value being present. Instead, just append new keys added by signing.
-        if (!this.url.parameters.contains(key)) {
-            url.parameters.appendAll(key, values)
+        if (key !in url.parameters) {
+            url.parameters.addAll(key, values)
         }
     }
 }

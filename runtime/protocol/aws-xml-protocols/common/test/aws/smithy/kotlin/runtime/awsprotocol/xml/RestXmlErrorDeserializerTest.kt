@@ -5,11 +5,9 @@
 package aws.smithy.kotlin.runtime.awsprotocol.xml
 
 import aws.smithy.kotlin.runtime.serde.DeserializationException
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import kotlin.test.*
 
-@OptIn(ExperimentalCoroutinesApi::class)
 class RestXmlErrorDeserializerTest {
 
     @Test

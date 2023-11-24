@@ -565,7 +565,7 @@ open class DeserializeStructGenerator(
             target.type == ShapeType.DOCUMENT -> "deserializeDocument()"
 
             target.type == ShapeType.BLOB -> {
-                writer.addImport(RuntimeTypes.Core.Utils.decodeBase64Bytes)
+                writer.addImport(RuntimeTypes.Core.Text.Encoding.decodeBase64Bytes)
                 "deserializeString().decodeBase64Bytes()"
             }
 

@@ -38,7 +38,14 @@ class StructureGeneratorTest {
                     bar: PrimitiveInteger,
                     baz: Integer,
                     Quux: Qux,
-                    byteValue: Byte
+                    byteValue: Byte,
+                    @default("zed")
+                    defaultString: String,
+                    @required
+                    requiredInt: Integer,
+                    @clientOptional
+                    @required
+                    requiredIntButNullable: Integer
                 }
             """,
         )
@@ -80,9 +87,12 @@ class StructureGeneratorTest {
                 public val bar: kotlin.Int = builder.bar
                 public val baz: kotlin.Int? = builder.baz
                 public val byteValue: kotlin.Byte? = builder.byteValue
+                public val defaultString: kotlin.String = builder.defaultString
                 public val foo: kotlin.String? = builder.foo
                 public val `object`: kotlin.String? = builder.`object`
                 public val quux: com.test.model.Qux? = builder.quux
+                public val requiredInt: kotlin.Int = requireNotNull(builder.requiredInt) { "A non-null value must be provided for requiredInt" }
+                public val requiredIntButNullable: kotlin.Int? = builder.requiredIntButNullable
         """.formatForTest(indent = "")
 
         commonTestContents.shouldContainOnlyOnceWithDiff(expectedClassDecl)
@@ -106,9 +116,12 @@ class StructureGeneratorTest {
                 append("bar=${'$'}bar,")
                 append("baz=${'$'}baz,")
                 append("byteValue=${'$'}byteValue,")
+                append("defaultString=${'$'}defaultString,")
                 append("foo=${'$'}foo,")
                 append("object=${'$'}`object`,")
-                append("quux=${'$'}quux")
+                append("quux=${'$'}quux,")
+                append("requiredInt=${'$'}requiredInt,")
+                append("requiredIntButNullable=${'$'}requiredIntButNullable")
                 append(")")
             }
         """.formatForTest()
@@ -123,9 +136,12 @@ class StructureGeneratorTest {
             var result = bar
             result = 31 * result + (baz ?: 0)
             result = 31 * result + (byteValue?.toInt() ?: 0)
+            result = 31 * result + (defaultString.hashCode())
             result = 31 * result + (foo?.hashCode() ?: 0)
             result = 31 * result + (`object`?.hashCode() ?: 0)
             result = 31 * result + (quux?.hashCode() ?: 0)
+            result = 31 * result + (requiredInt)
+            result = 31 * result + (requiredIntButNullable ?: 0)
             return result
         }
         """.formatForTest()
@@ -144,9 +160,12 @@ class StructureGeneratorTest {
                 if (bar != other.bar) return false
                 if (baz != other.baz) return false
                 if (byteValue != other.byteValue) return false
+                if (defaultString != other.defaultString) return false
                 if (foo != other.foo) return false
                 if (`object` != other.`object`) return false
                 if (quux != other.quux) return false
+                if (requiredInt != other.requiredInt) return false
+                if (requiredIntButNullable != other.requiredIntButNullable) return false
         
                 return true
             }
@@ -172,9 +191,12 @@ class StructureGeneratorTest {
                 public var bar: kotlin.Int = 0
                 public var baz: kotlin.Int? = null
                 public var byteValue: kotlin.Byte? = null
+                public var defaultString: kotlin.String = "zed"
                 public var foo: kotlin.String? = null
                 public var `object`: kotlin.String? = null
                 public var quux: com.test.model.Qux? = null
+                public var requiredInt: kotlin.Int? = null
+                public var requiredIntButNullable: kotlin.Int? = null
         
                 @PublishedApi
                 internal constructor()
@@ -183,9 +205,12 @@ class StructureGeneratorTest {
                     this.bar = x.bar
                     this.baz = x.baz
                     this.byteValue = x.byteValue
+                    this.defaultString = x.defaultString
                     this.foo = x.foo
                     this.`object` = x.`object`
                     this.quux = x.quux
+                    this.requiredInt = x.requiredInt
+                    this.requiredIntButNullable = x.requiredIntButNullable
                 }
         
                 @PublishedApi
@@ -196,6 +221,11 @@ class StructureGeneratorTest {
                  */
                 public fun quux(block: com.test.model.Qux.Builder.() -> kotlin.Unit) {
                     this.quux = com.test.model.Qux.invoke(block)
+                }
+                
+                internal fun correctErrors(): Builder {
+                    if (requiredInt == null) requiredInt = 0
+                    return this
                 }
             }
         """.formatForTest()
@@ -332,66 +362,6 @@ class StructureGeneratorTest {
     }
 
     @Test
-    fun `it handles required HTTP fields in initializers`() {
-        val model = """
-            @http(method: "POST", uri: "/foo/{bar}/{baz}")
-            operation Foo {
-                input: FooRequest
-            }
-            
-            structure FooRequest {
-                @required
-                @httpLabel
-                bar: String,
-                
-                @httpLabel
-                @required
-                baz: Integer,
-                
-                @httpPayload
-                qux: String,
-                
-                @required
-                @httpQuery("quux")
-                quux: Boolean,
-                
-                @httpQuery("corge")
-                corge: String,
-                
-                @required
-                @length(min: 0)
-                @httpQuery("grault")
-                grault: String,
-                
-                @required
-                @length(min: 3)
-                @httpQuery("garply")
-                garply: String
-            }
-        """.prependNamespaceAndService(operations = listOf("Foo")).toSmithyModel()
-
-        val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model)
-        val writer = KotlinWriter(TestModelDefault.NAMESPACE)
-        val struct = model.expectShape<StructureShape>("com.test#FooRequest")
-        val renderingCtx = RenderingContext(writer, struct, model, provider, model.defaultSettings())
-        StructureGenerator(renderingCtx).render()
-
-        val generated = writer.toString()
-        val expected = """
-            public class FooRequest private constructor(builder: Builder) {
-                public val bar: kotlin.String? = requireNotNull(builder.bar) { "A non-null value must be provided for bar" }
-                public val baz: kotlin.Int? = requireNotNull(builder.baz) { "A non-null value must be provided for baz" }
-                public val corge: kotlin.String? = builder.corge
-                public val garply: kotlin.String? = requireNotNull(builder.garply) { "A non-null value must be provided for garply" }
-                    .apply { require(isNotBlank()) { "A non-blank value must be provided for garply" } }
-                public val grault: kotlin.String? = requireNotNull(builder.grault) { "A non-null value must be provided for grault" }
-                public val quux: kotlin.Boolean? = requireNotNull(builder.quux) { "A non-null value must be provided for quux" }
-                public val qux: kotlin.String? = builder.qux
-        """.formatForTest(indent = "")
-        generated.shouldContainOnlyOnceWithDiff(expected)
-    }
-
-    @Test
     fun `it handles required query params in initializers`() {
         val model = """
             @http(method: "POST", uri: "/foo")
@@ -423,7 +393,7 @@ class StructureGeneratorTest {
         val generated = writer.toString()
         val expected = """
             public class FooRequest private constructor(builder: Builder) {
-                public val bar: Map<String, String>? = requireNotNull(builder.bar) { "A non-null value must be provided for bar" }
+                public val bar: Map<String, String> = requireNotNull(builder.bar) { "A non-null value must be provided for bar" }
                 public val baz: kotlin.String? = builder.baz
         """.formatForTest(indent = "")
         generated.shouldContainOnlyOnceWithDiff(expected)

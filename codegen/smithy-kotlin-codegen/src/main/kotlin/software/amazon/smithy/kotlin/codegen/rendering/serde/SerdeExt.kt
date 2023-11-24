@@ -42,8 +42,8 @@ fun OperationShape.bodySerializer(
     block: SymbolRenderer,
 ): Symbol = buildSymbol {
     name = bodySerializerName()
-    namespace = "${settings.pkg.name}.transform"
-    // place body serializer in same file as operation serializer implementaiton
+    namespace = settings.pkg.serde
+    // place body serializer in same file as operation serializer implementation
     definitionFile = "${serializerName()}.kt"
     renderBy = block
 }
@@ -68,7 +68,7 @@ fun OperationShape.bodyDeserializer(
     block: SymbolRenderer,
 ): Symbol = buildSymbol {
     name = bodyDeserializerName()
-    namespace = "${settings.pkg.name}.transform"
+    namespace = settings.pkg.serde
     // place body serializer in same file as operation serializer implementation
     definitionFile = "${deserializerName()}.kt"
     renderBy = block
@@ -95,7 +95,7 @@ fun Shape.documentSerializer(
 
     return buildSymbol {
         name = "$base$suffix"
-        namespace = settings.pkg.subpackage("transform")
+        namespace = settings.pkg.serde
         definitionFile = "${symbol.name}DocumentSerializer.kt"
         reference(symbol, SymbolReference.ContextOption.DECLARE)
         renderBy = block
@@ -123,7 +123,7 @@ fun Shape.documentDeserializer(
 
     return buildSymbol {
         name = "$base$suffix"
-        namespace = settings.pkg.subpackage("transform")
+        namespace = settings.pkg.serde
         definitionFile = "${symbol.name}DocumentDeserializer.kt"
         reference(symbol, SymbolReference.ContextOption.DECLARE)
         renderBy = block
@@ -141,7 +141,7 @@ fun Symbol.errorDeserializerName(): String = "deserialize" + StringUtils.capital
  */
 fun Symbol.errorDeserializer(settings: KotlinSettings, block: SymbolRenderer): Symbol = buildSymbol {
     name = errorDeserializerName()
-    namespace = "${settings.pkg.name}.transform"
+    namespace = settings.pkg.serde
     val symbol = this@errorDeserializer
     // place it in the same file as the exception deserializer, e.g. for HTTP protocols this will be in
     // same file as HttpDeserialize
@@ -163,7 +163,7 @@ fun Shape.payloadDeserializer(
     val suffix = mangledSuffix(members)
     return buildSymbol {
         name = "$base$suffix"
-        namespace = settings.pkg.subpackage("transform")
+        namespace = settings.pkg.serde
         definitionFile = "${symbol.name}PayloadDeserializer.kt"
         reference(symbol, SymbolReference.ContextOption.DECLARE)
         renderBy = block
@@ -183,7 +183,7 @@ fun Shape.payloadSerializer(
     val suffix = mangledSuffix(members)
     return buildSymbol {
         name = "$base$suffix"
-        namespace = "${settings.pkg.name}.transform"
+        namespace = settings.pkg.serde
         definitionFile = "${symbol.name}PayloadSerializer.kt"
         reference(symbol, SymbolReference.ContextOption.DECLARE)
         renderBy = block

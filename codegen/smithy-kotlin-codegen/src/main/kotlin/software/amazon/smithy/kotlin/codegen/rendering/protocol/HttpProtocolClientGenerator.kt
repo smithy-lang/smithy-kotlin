@@ -120,15 +120,17 @@ abstract class HttpProtocolClientGenerator(
 
             write("toMap()")
         }
-        writer.write("private val authSchemeAdapter = #T(config.authSchemeProvider)", AuthSchemeProviderAdapterGenerator.getSymbol(ctx.settings))
+        writer.write("private val authSchemeAdapter = #T(config)", AuthSchemeProviderAdapterGenerator.getSymbol(ctx.settings))
 
         writer.write("private val telemetryScope = #S", ctx.settings.pkg.name)
         writer.write("private val opMetrics = #T(telemetryScope, config.telemetryProvider)", RuntimeTypes.HttpClient.Operation.OperationMetrics)
     }
 
     protected open fun importSymbols(writer: KotlinWriter) {
-        writer.addImport("${ctx.settings.pkg.name}.model", "*")
-        writer.addImport("${ctx.settings.pkg.name}.transform", "*")
+        writer.addImport(ctx.settings.pkg.subpackage("model"), "*")
+        if (TopDownIndex(ctx.model).getContainedOperations(ctx.service).isNotEmpty()) {
+            writer.addImport(ctx.settings.pkg.serde, "*")
+        }
 
         val defaultClientSymbols = setOf(
             RuntimeTypes.HttpClient.Operation.SdkHttpOperation,

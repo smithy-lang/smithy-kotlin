@@ -16,15 +16,15 @@ kotlin {
                 implementation(project(":runtime:runtime-core"))
             }
         }
-        commonTest {
-            dependencies {
-                implementation(project(":runtime:protocol:http-client-engines:http-client-engine-crt"))
-            }
-        }
         jvmMain {
             dependencies {
                 // okhttp works on both JVM and Android
                 implementation(project(":runtime:protocol:http-client-engines:http-client-engine-okhttp"))
+            }
+        }
+        jvmTest {
+            dependencies {
+                implementation(project(":runtime:protocol:http-client-engines:http-client-engine-crt"))
             }
         }
         all {

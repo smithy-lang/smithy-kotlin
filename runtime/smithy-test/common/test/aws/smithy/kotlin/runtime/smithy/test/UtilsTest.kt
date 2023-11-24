@@ -5,18 +5,15 @@
 package aws.smithy.kotlin.runtime.smithy.test
 
 import aws.smithy.kotlin.runtime.http.HttpBody
-import aws.smithy.kotlin.runtime.http.content.ByteArrayContent
 import io.kotest.matchers.string.shouldContain
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertFails
 
-@OptIn(ExperimentalCoroutinesApi::class)
 class UtilsTest {
 
     private val testBodyContents = "bueller...bueller".encodeAsByteArray()
-    private val testBody = ByteArrayContent(testBodyContents)
+    private val testBody = HttpBody.fromBytes(testBodyContents)
 
     @Test
     fun itComparesEmptyBodies() = runTest {
@@ -42,10 +39,10 @@ class UtilsTest {
         ex2.message!!.shouldContain("actual content was null")
 
         val ex3 = assertFails {
-            assertBytesEqual(ByteArrayContent("foo".encodeAsByteArray()), testBody)
+            assertBytesEqual(HttpBody.fromBytes("foo".encodeAsByteArray()), testBody)
         }
         ex3.message.shouldContain("actual bytes read does not match expected")
 
-        assertBytesEqual(ByteArrayContent(testBodyContents), testBody)
+        assertBytesEqual(HttpBody.fromBytes(testBodyContents), testBody)
     }
 }

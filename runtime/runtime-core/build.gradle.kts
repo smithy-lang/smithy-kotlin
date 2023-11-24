@@ -29,8 +29,13 @@ kotlin {
             dependencies {
                 // Coroutines' locking features are used in retry token bucket implementations
                 api(libs.kotlinx.coroutines.test)
-                implementation(libs.kaml)
                 implementation(project(":runtime:testing"))
+            }
+        }
+
+        jvmTest {
+            dependencies {
+                implementation(libs.kaml)
             }
         }
 

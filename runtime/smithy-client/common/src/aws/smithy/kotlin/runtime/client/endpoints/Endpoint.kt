@@ -6,11 +6,10 @@
 package aws.smithy.kotlin.runtime.client.endpoints
 
 import aws.smithy.kotlin.runtime.InternalApi
-import aws.smithy.kotlin.runtime.net.Url
-import aws.smithy.kotlin.runtime.util.AttributeKey
-import aws.smithy.kotlin.runtime.util.Attributes
-import aws.smithy.kotlin.runtime.util.ValuesMap
-import aws.smithy.kotlin.runtime.util.emptyAttributes
+import aws.smithy.kotlin.runtime.collections.Attributes
+import aws.smithy.kotlin.runtime.collections.ValuesMap
+import aws.smithy.kotlin.runtime.collections.emptyAttributes
+import aws.smithy.kotlin.runtime.net.url.Url
 
 /**
  * Represents the endpoint a service client should make API operation calls to.
@@ -52,14 +51,7 @@ public data class Endpoint @InternalApi constructor(
         other is Endpoint &&
             uri == other.uri &&
             headers == other.headers &&
-            attributesEqual(other)
-
-    private fun attributesEqual(other: Endpoint): Boolean =
-        attributes.keys.size == other.attributes.keys.size &&
-            attributes.keys.all {
-                @Suppress("UNCHECKED_CAST")
-                attributes.contains(it) && attributes.getOrNull(it as AttributeKey<Any>) == other.attributes.getOrNull(it)
-            }
+            attributes == other.attributes
 
     override fun hashCode(): Int {
         var result = uri.hashCode()

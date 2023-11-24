@@ -5,14 +5,12 @@
 package aws.smithy.kotlin.runtime.awsprotocol.xml
 
 import aws.smithy.kotlin.runtime.serde.DeserializationException
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertNull
 
-@OptIn(ExperimentalCoroutinesApi::class)
 class Ec2QueryErrorDeserializerTest {
     @Test
     fun `it deserializes ec2Query errors`() = runTest {

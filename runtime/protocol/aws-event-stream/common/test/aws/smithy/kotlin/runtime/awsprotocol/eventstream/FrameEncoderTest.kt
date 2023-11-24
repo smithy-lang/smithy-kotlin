@@ -7,7 +7,6 @@ package aws.smithy.kotlin.runtime.awsprotocol.eventstream
 
 import aws.smithy.kotlin.runtime.http.readAll
 import aws.smithy.kotlin.runtime.io.SdkBuffer
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.toList
@@ -16,7 +15,6 @@ import kotlin.test.Test
 import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
 
-@OptIn(ExperimentalCoroutinesApi::class)
 class FrameEncoderTest {
     @Test
     fun testEncode() = runTest {

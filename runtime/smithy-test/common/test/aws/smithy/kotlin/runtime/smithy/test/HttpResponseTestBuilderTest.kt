@@ -15,7 +15,6 @@ class HttpResponseTestBuilderTest {
     private data class Foo(val bar: Int, val baz: String)
 
     @Test
-    @OptIn(ExperimentalStdlibApi::class)
     fun itBuildsResponses() {
         httpResponseTest<Foo> {
             expected {

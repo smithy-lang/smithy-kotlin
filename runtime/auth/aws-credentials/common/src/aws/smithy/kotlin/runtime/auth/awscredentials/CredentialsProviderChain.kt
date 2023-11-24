@@ -5,8 +5,8 @@
 
 package aws.smithy.kotlin.runtime.auth.awscredentials
 
+import aws.smithy.kotlin.runtime.collections.Attributes
 import aws.smithy.kotlin.runtime.identity.IdentityProviderChain
-import aws.smithy.kotlin.runtime.util.Attributes
 
 /**
  * Composite [CredentialsProvider] that delegates to a chain of providers. When asked for credentials, providers

@@ -1,0 +1,357 @@
+AccessAnalyzer
+Account
+ACM PCA
+ACM
+Alexa For Business
+amp
+Amplify
+AmplifyBackend
+AmplifyUIBuilder
+API Gateway
+ApiGatewayManagementApi
+ApiGatewayV2
+App Mesh
+AppConfig
+AppConfigData
+AppFabric
+Appflow
+AppIntegrations
+Application Auto Scaling
+Application Discovery Service
+Application Insights
+ApplicationCostProfiler
+AppRunner
+AppStream
+AppSync
+ARC Zonal Shift
+Athena
+AuditManager
+Auto Scaling Plans
+Auto Scaling
+Backup Gateway
+Backup
+BackupStorage
+Batch
+Bedrock Runtime
+Bedrock
+billingconductor
+Braket
+Budgets
+Chime SDK Identity
+Chime SDK Media Pipelines
+Chime SDK Meetings
+Chime SDK Messaging
+Chime SDK Voice
+Chime
+CleanRooms
+Cloud9
+CloudControl
+CloudDirectory
+CloudFormation
+CloudFront
+CloudHSM V2
+CloudHSM
+CloudSearch Domain
+CloudSearch
+CloudTrail Data
+CloudTrail
+CloudWatch Events
+CloudWatch Logs
+CloudWatch
+codeartifact
+CodeBuild
+CodeCatalyst
+CodeCommit
+CodeDeploy
+CodeGuru Reviewer
+CodeGuru Security
+CodeGuruProfiler
+CodePipeline
+CodeStar connections
+codestar notifications
+CodeStar
+Cognito Identity Provider
+Cognito Identity
+Cognito Sync
+Comprehend
+ComprehendMedical
+Compute Optimizer
+Config Service
+Connect Contact Lens
+Connect
+ConnectCampaigns
+ConnectCases
+ConnectParticipant
+ControlTower
+Cost and Usage Report Service
+Cost Explorer
+Customer Profiles
+Data Pipeline
+Database Migration Service
+DataBrew
+DataExchange
+DataSync
+DataZone
+DAX
+Detective
+Device Farm
+DevOps Guru
+Direct Connect
+Directory Service
+DLM
+DocDB Elastic
+DocDB
+drs
+DynamoDB Streams
+DynamoDB
+EBS
+EC2 Instance Connect
+EC2
+ECR PUBLIC
+ECR
+ECS
+EFS
+EKS
+Elastic Beanstalk
+Elastic Inference
+Elastic Load Balancing v2
+Elastic Load Balancing
+Elastic Transcoder
+ElastiCache
+Elasticsearch Service
+EMR containers
+EMR Serverless
+EMR
+EntityResolution
+EventBridge
+Evidently
+finspace data
+finspace
+Firehose
+fis
+FMS
+forecast
+forecastquery
+FraudDetector
+FSx
+GameLift
+GameSparks
+Glacier
+Global Accelerator
+Glue
+grafana
+Greengrass
+GreengrassV2
+GroundStation
+GuardDuty
+Health
+HealthLake
+Honeycode
+IAM
+identitystore
+imagebuilder
+Inspector
+Inspector2
+InternetMonitor
+IoT 1Click Devices Service
+IoT 1Click Projects
+IoT Data Plane
+IoT Events Data
+IoT Events
+IoT Jobs Data Plane
+IoT RoboRunner
+IoT Wireless
+IoT
+IoTAnalytics
+IotDeviceAdvisor
+IoTFleetHub
+IoTFleetWise
+IoTSecureTunneling
+IoTSiteWise
+IoTThingsGraph
+IoTTwinMaker
+IVS RealTime
+ivs
+ivschat
+Kafka
+KafkaConnect
+Kendra Ranking
+kendra
+Keyspaces
+Kinesis Analytics V2
+Kinesis Analytics
+Kinesis Video Archived Media
+Kinesis Video Media
+Kinesis Video Signaling
+Kinesis Video WebRTC Storage
+Kinesis Video
+Kinesis
+KMS
+LakeFormation
+Lambda
+Lex Model Building Service
+Lex Models V2
+Lex Runtime Service
+Lex Runtime V2
+License Manager Linux Subscriptions
+License Manager User Subscriptions
+License Manager
+Lightsail
+Location
+LookoutEquipment
+LookoutMetrics
+LookoutVision
+m2
+Machine Learning
+Macie
+Macie2
+ManagedBlockchain Query
+ManagedBlockchain
+Marketplace Catalog
+Marketplace Commerce Analytics
+Marketplace Entitlement Service
+Marketplace Metering
+MediaConnect
+MediaConvert
+MediaLive
+MediaPackage Vod
+MediaPackage
+MediaPackageV2
+MediaStore Data
+MediaStore
+MediaTailor
+Medical Imaging
+MemoryDB
+mgn
+Migration Hub Refactor Spaces
+Migration Hub
+MigrationHub Config
+MigrationHubOrchestrator
+MigrationHubStrategy
+Mobile
+mq
+MTurk
+MWAA
+Neptune
+neptunedata
+Network Firewall
+NetworkManager
+nimble
+OAM
+Omics
+OpenSearch
+OpenSearchServerless
+OpsWorks
+OpsWorksCM
+Organizations
+OSIS
+Outposts
+Panorama
+Payment Cryptography Data
+Payment Cryptography
+Pca Connector Ad
+Personalize Events
+Personalize Runtime
+Personalize
+PI
+Pinpoint Email
+Pinpoint SMS Voice V2
+Pinpoint SMS Voice
+Pinpoint
+Pipes
+Polly
+Pricing
+PrivateNetworks
+Proton
+QLDB Session
+QLDB
+QuickSight
+RAM
+rbin
+RDS Data
+RDS
+Redshift Data
+Redshift Serverless
+Redshift
+Rekognition
+resiliencehub
+Resource Explorer 2
+Resource Groups Tagging API
+Resource Groups
+RoboMaker
+RolesAnywhere
+Route 53 Domains
+Route 53
+Route53 Recovery Cluster
+Route53 Recovery Control Config
+Route53 Recovery Readiness
+Route53Resolver
+RUM
+S3 Control
+S3
+S3Outposts
+SageMaker A2I Runtime
+Sagemaker Edge
+SageMaker FeatureStore Runtime
+SageMaker Geospatial
+SageMaker Metrics
+SageMaker Runtime
+SageMaker
+savingsplans
+Scheduler
+schemas
+Secrets Manager
+SecurityHub
+SecurityLake
+ServerlessApplicationRepository
+Service Catalog AppRegistry
+Service Catalog
+Service Quotas
+ServiceDiscovery
+SES
+SESv2
+SFN
+Shield
+signer
+SimSpaceWeaver
+SMS
+Snow Device Management
+Snowball
+SNS
+SQS
+SSM Contacts
+SSM Incidents
+Ssm Sap
+SSM
+SSO Admin
+SSO OIDC
+SSO
+Storage Gateway
+STS
+Support App
+Support
+SWF
+synthetics
+Textract
+Timestream Query
+Timestream Write
+tnb
+Transcribe Streaming
+Transcribe
+Transfer
+Translate
+VerifiedPermissions
+Voice ID
+VPC Lattice
+WAF Regional
+WAF
+WAFV2
+WellArchitected
+Wisdom
+WorkDocs
+WorkLink
+WorkMail
+WorkMailMessageFlow
+WorkSpaces Web
+WorkSpaces
+XRay

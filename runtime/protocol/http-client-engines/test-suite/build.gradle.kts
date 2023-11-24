@@ -19,19 +19,24 @@ kotlin {
                 implementation(project(":runtime:protocol:http-test"))
                 implementation(libs.kotlinx.coroutines.test)
                 implementation(project(":runtime:testing"))
-
-                implementation(libs.ktor.network.tls.certificates)
             }
         }
 
         jvmMain {
             dependencies {
                 implementation(libs.ktor.server.jetty)
+                implementation(libs.ktor.network.tls.certificates)
 
                 implementation(project(":runtime:protocol:http-client-engines:http-client-engine-default"))
                 implementation(project(":runtime:protocol:http-client-engines:http-client-engine-crt"))
 
                 implementation(libs.slf4j.simple)
+            }
+        }
+
+        jvmAndNativeMain {
+            dependencies {
+                implementation(libs.kotlinx.coroutines.test)
             }
         }
 
@@ -105,7 +110,8 @@ tasks.jvmTest {
     // set test environment for proxy tests
     systemProperty("MITM_PROXY_SCRIPTS_ROOT", projectDir.resolve("proxy-scripts").absolutePath)
     val enableProxyTestsProp = "aws.test.http.enableProxyTests"
-    systemProperty(enableProxyTestsProp, System.getProperties().getOrDefault(enableProxyTestsProp, "true"))
+    val runningInCodeBuild = System.getenv().containsKey("CODEBUILD_BUILD_ID")
+    systemProperty(enableProxyTestsProp, System.getProperties().getOrDefault(enableProxyTestsProp, !runningInCodeBuild))
 }
 
 gradle.buildFinished {

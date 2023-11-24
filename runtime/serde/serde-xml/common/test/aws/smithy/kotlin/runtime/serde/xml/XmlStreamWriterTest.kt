@@ -7,7 +7,6 @@ package aws.smithy.kotlin.runtime.serde.xml
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
-@OptIn(ExperimentalStdlibApi::class)
 class XmlStreamWriterTest {
 
     @Test

@@ -7,23 +7,21 @@ package aws.smithy.kotlin.runtime.auth.awssigning
 import aws.smithy.kotlin.runtime.auth.awscredentials.Credentials
 import aws.smithy.kotlin.runtime.auth.awscredentials.CredentialsProvider
 import aws.smithy.kotlin.runtime.client.endpoints.Endpoint
+import aws.smithy.kotlin.runtime.collections.Attributes
 import aws.smithy.kotlin.runtime.http.Headers
 import aws.smithy.kotlin.runtime.http.operation.EndpointResolver
 import aws.smithy.kotlin.runtime.http.operation.ResolveEndpointRequest
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
 import aws.smithy.kotlin.runtime.http.request.url
-import aws.smithy.kotlin.runtime.net.Url
+import aws.smithy.kotlin.runtime.net.url.Url
 import aws.smithy.kotlin.runtime.operation.ExecutionContext
-import aws.smithy.kotlin.runtime.util.Attributes
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
 private const val NON_HTTPS_URL = "http://localhost:8080/path/to/resource?foo=bar"
 
-@OptIn(ExperimentalCoroutinesApi::class)
 class PresignerTest {
     // Verify that custom endpoint URL schemes aren't changed.
     // See https://github.com/awslabs/aws-sdk-kotlin/issues/938
@@ -63,9 +61,7 @@ class PresignerTest {
         assertEquals(expectedUrl.host, actualUrl.host)
         assertEquals(expectedUrl.port, actualUrl.port)
         assertEquals(expectedUrl.path, actualUrl.path)
-        expectedUrl.parameters.forEach { key, value ->
-            assertEquals(value, actualUrl.parameters.getAll(key))
-        }
+        assertEquals(expectedUrl.parameters, actualUrl.parameters)
     }
 }
 

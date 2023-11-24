@@ -12,7 +12,6 @@ import kotlin.test.assertEquals
 
 private val testAnonObjDescriptor = SdkObjectDescriptor.build { }
 
-@OptIn(ExperimentalStdlibApi::class)
 class JsonSerializerTest {
 
     @Test

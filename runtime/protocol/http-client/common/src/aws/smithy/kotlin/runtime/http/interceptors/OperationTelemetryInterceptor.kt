@@ -9,13 +9,15 @@ import aws.smithy.kotlin.runtime.client.ProtocolRequestInterceptorContext
 import aws.smithy.kotlin.runtime.client.ProtocolResponseInterceptorContext
 import aws.smithy.kotlin.runtime.client.RequestInterceptorContext
 import aws.smithy.kotlin.runtime.client.ResponseInterceptorContext
+import aws.smithy.kotlin.runtime.collections.attributesOf
+import aws.smithy.kotlin.runtime.collections.merge
+import aws.smithy.kotlin.runtime.collections.mutableAttributesOf
+import aws.smithy.kotlin.runtime.collections.takeOrNull
 import aws.smithy.kotlin.runtime.http.engine.EngineAttributes
 import aws.smithy.kotlin.runtime.http.operation.OperationMetrics
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.http.response.HttpResponse
 import aws.smithy.kotlin.runtime.telemetry.metrics.recordSeconds
-import aws.smithy.kotlin.runtime.util.*
-import kotlin.time.ExperimentalTime
 import kotlin.time.TimeMark
 import kotlin.time.TimeSource
 
@@ -27,7 +29,7 @@ import kotlin.time.TimeSource
  * @param operation the name of the operation
  * @param timeSource the time source to use for measuring elapsed time
  */
-@OptIn(ExperimentalTime::class, ExperimentalApi::class)
+@OptIn(ExperimentalApi::class)
 internal class OperationTelemetryInterceptor(
     private val metrics: OperationMetrics,
     private val service: String,
@@ -57,14 +59,6 @@ internal class OperationTelemetryInterceptor(
             metrics.rpcCallDuration.recordSeconds(callDuration, perRpcAttributes, currentCtx)
         }
 
-        context.protocolRequest?.body?.contentLength?.let {
-            metrics.rpcRequestSize.record(it, perRpcAttributes, currentCtx)
-        }
-
-        context.protocolResponse?.body?.contentLength?.let {
-            metrics.rpcResponseSize.record(it, perRpcAttributes, currentCtx)
-        }
-
         context.response.exceptionOrNull()?.let { ex ->
             val exType = ex::class.simpleName
             val errorAttributes = if (exType != null) {
@@ -90,9 +84,6 @@ internal class OperationTelemetryInterceptor(
     override fun readAfterAttempt(context: ResponseInterceptorContext<Any, Any, HttpRequest, HttpResponse?>) {
         metrics.rpcAttempts.add(1L, perRpcAttributes, metrics.provider.contextManager.current())
         attempts++
-        if (attempts > 1) {
-            metrics.rpcRetryCount.add(1L, perRpcAttributes, metrics.provider.contextManager.current())
-        }
 
         val attemptDuration = attemptStart?.elapsedNow() ?: return
         metrics.rpcAttemptDuration.recordSeconds(attemptDuration, perRpcAttributes, metrics.provider.contextManager.current())

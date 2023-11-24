@@ -8,7 +8,6 @@ package aws.smithy.kotlin.runtime.auth.awssigning.tests
 import aws.smithy.kotlin.runtime.auth.awssigning.*
 import aws.smithy.kotlin.runtime.auth.awssigning.internal.CHUNK_SIZE_BYTES
 import aws.smithy.kotlin.runtime.io.*
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.TestResult
@@ -17,7 +16,6 @@ import kotlin.random.Random
 import kotlin.test.*
 import kotlin.time.Duration.Companion.milliseconds
 
-@OptIn(ExperimentalCoroutinesApi::class)
 abstract class AwsChunkedByteReadChannelTestBase : AwsChunkedTestBase(AwsChunkedReaderFactory.Channel) {
     @Test
     fun testSlowProducerMultipleChunksPartialLast(): TestResult = runTest {

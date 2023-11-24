@@ -6,17 +6,16 @@ package software.amazon.smithy.kotlin.codegen.test
 
 import software.amazon.smithy.build.MockManifest
 import software.amazon.smithy.codegen.core.SymbolProvider
-import software.amazon.smithy.kotlin.codegen.KotlinCodegenPlugin
-import software.amazon.smithy.kotlin.codegen.KotlinSettings
+import software.amazon.smithy.kotlin.codegen.*
 import software.amazon.smithy.kotlin.codegen.core.CodegenContext
 import software.amazon.smithy.kotlin.codegen.core.KotlinDelegator
-import software.amazon.smithy.kotlin.codegen.inferService
 import software.amazon.smithy.kotlin.codegen.integration.KotlinIntegration
 import software.amazon.smithy.kotlin.codegen.model.OperationNormalizer
 import software.amazon.smithy.kotlin.codegen.model.shapes
 import software.amazon.smithy.kotlin.codegen.rendering.protocol.ProtocolGenerator
 import software.amazon.smithy.kotlin.codegen.utils.getOrNull
 import software.amazon.smithy.model.Model
+import software.amazon.smithy.model.knowledge.NullableIndex.CheckMode
 import software.amazon.smithy.model.node.Node
 import software.amazon.smithy.model.shapes.ServiceShape
 import software.amazon.smithy.model.shapes.ShapeId
@@ -116,12 +115,12 @@ fun Model.toSmithyIDL(): String {
 fun Model.newTestContext(
     serviceName: String = TestModelDefault.SERVICE_NAME,
     packageName: String = TestModelDefault.NAMESPACE,
-    settings: KotlinSettings = this.defaultSettings(serviceName, packageName),
+    settings: KotlinSettings = defaultSettings(serviceName, packageName),
     generator: ProtocolGenerator = MockHttpProtocolGenerator(this),
     integrations: List<KotlinIntegration> = listOf(),
 ): TestContext {
     val manifest = MockManifest()
-    val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model = this, rootNamespace = packageName, serviceName = serviceName)
+    val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model = this, rootNamespace = packageName, serviceName = serviceName, settings = settings)
     val service = this.getShape(ShapeId.from("$packageName#$serviceName")).get().asServiceShape().get()
     val delegator = KotlinDelegator(settings, this, manifest, provider)
 
@@ -173,6 +172,8 @@ fun Model.defaultSettings(
     packageVersion: String = TestModelDefault.MODEL_VERSION,
     sdkId: String = TestModelDefault.SDK_ID,
     generateDefaultBuildFiles: Boolean = false,
+    nullabilityCheckMode: CheckMode = CheckMode.CLIENT_CAREFUL,
+    defaultValueSerializationMode: DefaultValueSerializationMode = DefaultValueSerializationMode.WHEN_DIFFERENT,
 ): KotlinSettings {
     val serviceId = if (serviceName == null) {
         this.inferService()
@@ -196,6 +197,12 @@ fun Model.defaultSettings(
                 "build",
                 Node.objectNode()
                     .withMember("generateDefaultBuildFiles", Node.from(generateDefaultBuildFiles)),
+            )
+            .withMember(
+                "api",
+                Node.objectNode()
+                    .withMember(ApiSettings.NULLABILITY_CHECK_MODE, Node.from(nullabilityCheckMode.kotlinPluginSetting))
+                    .withMember(ApiSettings.DEFAULT_VALUE_SERIALIZATION_MODE, Node.from(defaultValueSerializationMode.value)),
             )
             .build(),
     )

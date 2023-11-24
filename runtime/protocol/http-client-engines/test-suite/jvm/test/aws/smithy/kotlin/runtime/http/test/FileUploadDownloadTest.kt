@@ -15,7 +15,7 @@ import aws.smithy.kotlin.runtime.http.test.util.AbstractEngineTest
 import aws.smithy.kotlin.runtime.http.test.util.test
 import aws.smithy.kotlin.runtime.http.test.util.testSetup
 import aws.smithy.kotlin.runtime.testing.RandomTempFile
-import aws.smithy.kotlin.runtime.util.encodeToHex
+import aws.smithy.kotlin.runtime.text.encoding.encodeToHex
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.fail
@@ -33,7 +33,7 @@ class FileUploadDownloadTest : AbstractEngineTest() {
             val req = HttpRequest {
                 method = HttpMethod.POST
                 testSetup(env)
-                url.path = "/upload/content"
+                url.path.decoded = "/upload/content"
                 body = httpBody
             }
 
@@ -49,7 +49,7 @@ class FileUploadDownloadTest : AbstractEngineTest() {
         test { env, client ->
             val req = HttpRequest {
                 testSetup(env)
-                url.path = "/download/integrity"
+                url.path.decoded = "/download/integrity"
             }
 
             val call = client.call(req)

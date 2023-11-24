@@ -5,9 +5,9 @@
 
 package aws.smithy.kotlin.runtime.telemetry.trace
 
+import aws.smithy.kotlin.runtime.collections.AttributeKey
+import aws.smithy.kotlin.runtime.collections.Attributes
 import aws.smithy.kotlin.runtime.telemetry.context.Context
-import aws.smithy.kotlin.runtime.util.AttributeKey
-import aws.smithy.kotlin.runtime.util.Attributes
 
 internal object NoOpTracerProvider : TracerProvider {
     override fun getOrCreateTracer(scope: String): Tracer = NoOpTracer
@@ -23,7 +23,7 @@ private object NoOpTracer : Tracer {
 }
 
 private object NoOpTraceSpan : TraceSpan {
-    override val name: String = "NoOpSpan"
+    override val spanContext: SpanContext = SpanContext.Invalid
     override fun emitEvent(name: String, attributes: Attributes) {}
     override fun setStatus(status: SpanStatus) {}
     override operator fun <T : Any> set(key: AttributeKey<T>, value: T) {}

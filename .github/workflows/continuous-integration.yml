@@ -4,87 +4,114 @@ on:
   push:
     branches: [ main ]
   pull_request:
-    branches:
-      - main
-      - 'feat-*'
   workflow_dispatch:
 
+# Allow one instance of this workflow per pull request, and cancel older runs when new changes are pushed
+concurrency:
+  group: ci-pr-${{ github.ref }}
+  cancel-in-progress: true
+
 env:
-  BUILDER_VERSION: v0.8.22
-  BUILDER_SOURCE: releases
-  # host owned by CRT team to host aws-crt-builder releases. Contact their on-call with any issues
-  BUILDER_HOST: https://d19elf31gohf1l.cloudfront.net
-  PACKAGE_NAME: smithy-kotlin
-  LINUX_BASE_IMAGE: ubuntu-16-x64
   RUN: ${{ github.run_id }}-${{ github.run_number }}
+  GRADLE_OPTS: "-Dorg.gradle.daemon=false -Dkotlin.incremental=false"
 
 jobs:
-  linux-compat:
+  jvm:
     runs-on: ubuntu-latest
-    steps:
-    - name: Checkout sources
-      uses: actions/checkout@v2
-    - uses: actions/cache@v2
-      with:
-        path: |
-          ~/.gradle/caches
-          ~/.gradle/wrapper
-        key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*') }}
-        restore-keys: |
-          ${{ runner.os }}-gradle-
-    - name: Build and Test ${{ env.PACKAGE_NAME }}
-      run: |
-        python3 -c "from urllib.request import urlretrieve; urlretrieve('${{ env.BUILDER_HOST }}/${{ env.BUILDER_SOURCE }}/${{ env.BUILDER_VERSION }}/builder.pyz?run=${{ env.RUN }}', 'builder.pyz')"
-        chmod a+x builder.pyz
-        echo "kotlinWarningsAsErrors=true" >> $GITHUB_WORKSPACE/local.properties
-        ./builder.pyz build -p ${{ env.PACKAGE_NAME }}
-
-  macos-compat:
-    runs-on: macos-latest
-    steps:
-    - name: Checkout sources
-      uses: actions/checkout@v2
-    - uses: actions/cache@v2
-      with:
-        path: |
-          ~/.gradle/caches
-          ~/.gradle/wrapper
-        key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*') }}
-        restore-keys: |
-          ${{ runner.os }}-gradle-
-    - name: Build and Test ${{ env.PACKAGE_NAME }}
-      run: |
-        python3 -c "from urllib.request import urlretrieve; urlretrieve('${{ env.BUILDER_HOST }}/${{ env.BUILDER_SOURCE }}/${{ env.BUILDER_VERSION }}/builder.pyz?run=${{ env.RUN }}', 'builder.pyz')"
-        chmod a+x builder.pyz
-        echo "kotlinWarningsAsErrors=true" >> $GITHUB_WORKSPACE/local.properties
-        ./builder.pyz build -p ${{ env.PACKAGE_NAME }}
-
-  windows-compat:
-    runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # we build with a specific JDK version but source/target compatibility should ensure the jar is usable by
+        # the target versions we want to support
+        java-version:
+          - 8
+          - 11
+          - 17
+          - 21
     steps:
       - name: Checkout sources
-        uses: actions/checkout@v2
-      - name: Build and Test ${{ env.PACKAGE_NAME }}
+        uses: actions/checkout@v4
+      - name: Configure JDK
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'corretto'
+          java-version: 17
+          cache: 'gradle'
+      - name: Test
+        shell: bash
         run: |
-          python3 -c "from urllib.request import urlretrieve; urlretrieve('${{ env.BUILDER_HOST }}/${{ env.BUILDER_SOURCE }}/${{ env.BUILDER_VERSION }}/builder.pyz?run=${{ env.RUN }}', 'builder.pyz')"
-          python3 builder.pyz build -p ${{ env.PACKAGE_NAME }}
+          ./gradlew -Ptest.java.version=${{ matrix.java-version }} jvmTest --stacktrace
+
+  all-platforms:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ ubuntu-latest, macos-latest, windows-latest ]
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v4
+      - name: Configure JDK
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'corretto'
+          java-version: 17
+          cache: 'gradle'
+      - name: Test
+        shell: bash
+        run: |
+          echo "kotlinWarningsAsErrors=true" >> $GITHUB_WORKSPACE/local.properties
+          ./gradlew apiCheck
+          ./gradlew test jvmTest
+      - name: Save Test Reports
+        if: failure()
+        uses: actions/upload-artifact@v3
+        with:
+          name: test-reports
+          path: '**/build/reports'
 
   downstream:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout sources
-      uses: actions/checkout@v2
-    - uses: actions/cache@v2
+      uses: actions/checkout@v4
       with:
-        path: |
-          ~/.gradle/caches
-          ~/.gradle/wrapper
-        key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*') }}
-        restore-keys: |
-          ${{ runner.os }}-gradle-
-    - name: Build and Test ${{ env.PACKAGE_NAME }} Downstream Consumers
+        path: 'smithy-kotlin'
+    - name: Checkout tools
+      uses: actions/checkout@v4
+      with:
+        path: 'aws-kotlin-repo-tools'
+        repository: 'awslabs/aws-kotlin-repo-tools'
+        ref: '0.2.3'
+        sparse-checkout: |
+          .github
+    - name: Checkout aws-sdk-kotlin
+      uses: ./aws-kotlin-repo-tools/.github/actions/checkout-head
+      with:
+        # smithy-kotlin is checked out as a sibling dir which will automatically make it an included build
+        path: 'aws-sdk-kotlin'
+        repository: 'awslabs/aws-sdk-kotlin'
+    - name: Configure JDK
+      uses: actions/setup-java@v3
+      with:
+        distribution: 'corretto'
+        java-version: 17
+        cache: 'gradle'
+    - name: Build and Test aws-sdk-kotlin downstream
       run: |
-        python3 -c "from urllib.request import urlretrieve; urlretrieve('${{ env.BUILDER_HOST }}/${{ env.BUILDER_SOURCE }}/${{ env.BUILDER_VERSION }}/builder.pyz?run=${{ env.RUN }}', 'builder')"
-        chmod a+x builder
-        echo "kotlinWarningsAsErrors=true" >> $GITHUB_WORKSPACE/local.properties
-        ./builder build -p ${{ env.PACKAGE_NAME }} --spec downstream
+        # TODO - JVM only
+        cd $GITHUB_WORKSPACE/smithy-kotlin
+        ./gradlew --parallel publishToMavenLocal
+        SMITHY_KOTLIN_RUNTIME_VERSION=$(grep sdkVersion= gradle.properties | cut -d = -f 2)
+        SMITHY_KOTLIN_CODEGEN_VERSION=$(grep codegenVersion= gradle.properties | cut -d = -f 2)
+        cd $GITHUB_WORKSPACE/aws-sdk-kotlin
+        # replace smithy-kotlin-runtime-version and smithy-kotlin-codegen-version to be
+        # whatever we are testing such that the protocol test projects don't fail with a
+        # version that doesn't exist locally or in maven central. Otherwise the generated
+        # protocol test projects will use whatever the SDK thinks the version of
+        # smithy-kotlin should be
+        sed -i "s/smithy-kotlin-runtime-version = .*$/smithy-kotlin-runtime-version = \"$SMITHY_KOTLIN_RUNTIME_VERSION\"/" gradle/libs.versions.toml
+        sed -i "s/smithy-kotlin-codegen-version = .*$/smithy-kotlin-codegen-version = \"$SMITHY_KOTLIN_CODEGEN_VERSION\"/" gradle/libs.versions.toml
+        ./gradlew --parallel publishToMavenLocal
+        ./gradlew test jvmTest
+        ./gradlew testAllProtocols

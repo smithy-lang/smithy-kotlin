@@ -6,12 +6,12 @@
 package aws.smithy.kotlin.runtime.http.engine
 
 import aws.smithy.kotlin.runtime.ClientException
-import aws.smithy.kotlin.runtime.net.Url
+import aws.smithy.kotlin.runtime.net.url.Url
 import aws.smithy.kotlin.runtime.util.PlatformEnvironProvider
-import org.junit.jupiter.api.assertThrows
 import kotlin.test.Test
 import kotlin.test.assertContains
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 
 data class TestPlatformEnvironmentProvider(
     private val env: Map<String, String> = emptyMap(),
@@ -102,7 +102,7 @@ class EnvironmentProxySelectorTest {
     fun testSelectFailures() {
         failCases.forEachIndexed { idx, failCase ->
             val testProvider = TestPlatformEnvironmentProvider(failCase.env, failCase.props)
-            val exception = assertThrows<ClientException>("[idx=$idx] expected ClientException") {
+            val exception = assertFailsWith<ClientException>("[idx=$idx] expected ClientException") {
                 EnvironmentProxySelector(testProvider)
             }
 

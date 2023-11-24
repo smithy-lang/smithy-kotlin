@@ -4,6 +4,7 @@ public final class aws/smithy/kotlin/runtime/auth/awssigning/AwsSignatureType : 
 	public static final field HTTP_REQUEST_TRAILING_HEADERS Laws/smithy/kotlin/runtime/auth/awssigning/AwsSignatureType;
 	public static final field HTTP_REQUEST_VIA_HEADERS Laws/smithy/kotlin/runtime/auth/awssigning/AwsSignatureType;
 	public static final field HTTP_REQUEST_VIA_QUERY_PARAMS Laws/smithy/kotlin/runtime/auth/awssigning/AwsSignatureType;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
 	public static fun valueOf (Ljava/lang/String;)Laws/smithy/kotlin/runtime/auth/awssigning/AwsSignatureType;
 	public static fun values ()[Laws/smithy/kotlin/runtime/auth/awssigning/AwsSignatureType;
 }
@@ -11,6 +12,7 @@ public final class aws/smithy/kotlin/runtime/auth/awssigning/AwsSignatureType : 
 public final class aws/smithy/kotlin/runtime/auth/awssigning/AwsSignedBodyHeader : java/lang/Enum {
 	public static final field NONE Laws/smithy/kotlin/runtime/auth/awssigning/AwsSignedBodyHeader;
 	public static final field X_AMZ_CONTENT_SHA256 Laws/smithy/kotlin/runtime/auth/awssigning/AwsSignedBodyHeader;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
 	public static fun valueOf (Ljava/lang/String;)Laws/smithy/kotlin/runtime/auth/awssigning/AwsSignedBodyHeader;
 	public static fun values ()[Laws/smithy/kotlin/runtime/auth/awssigning/AwsSignedBodyHeader;
 }
@@ -24,23 +26,24 @@ public abstract interface class aws/smithy/kotlin/runtime/auth/awssigning/AwsSig
 public final class aws/smithy/kotlin/runtime/auth/awssigning/AwsSigningAlgorithm : java/lang/Enum {
 	public static final field SIGV4 Laws/smithy/kotlin/runtime/auth/awssigning/AwsSigningAlgorithm;
 	public static final field SIGV4_ASYMMETRIC Laws/smithy/kotlin/runtime/auth/awssigning/AwsSigningAlgorithm;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
 	public static fun valueOf (Ljava/lang/String;)Laws/smithy/kotlin/runtime/auth/awssigning/AwsSigningAlgorithm;
 	public static fun values ()[Laws/smithy/kotlin/runtime/auth/awssigning/AwsSigningAlgorithm;
 }
 
 public final class aws/smithy/kotlin/runtime/auth/awssigning/AwsSigningAttributes {
 	public static final field INSTANCE Laws/smithy/kotlin/runtime/auth/awssigning/AwsSigningAttributes;
-	public final fun getCredentialsProvider ()Laws/smithy/kotlin/runtime/util/AttributeKey;
-	public final fun getHashSpecification ()Laws/smithy/kotlin/runtime/util/AttributeKey;
-	public final fun getRequestSignature ()Laws/smithy/kotlin/runtime/util/AttributeKey;
-	public final fun getSignedBodyHeader ()Laws/smithy/kotlin/runtime/util/AttributeKey;
-	public final fun getSigner ()Laws/smithy/kotlin/runtime/util/AttributeKey;
-	public final fun getSigningDate ()Laws/smithy/kotlin/runtime/util/AttributeKey;
-	public final fun getSigningRegion ()Laws/smithy/kotlin/runtime/util/AttributeKey;
-	public final fun getSigningService ()Laws/smithy/kotlin/runtime/util/AttributeKey;
-}
-
-public final class aws/smithy/kotlin/runtime/auth/awssigning/AwsSigningAttributesKt {
+	public final fun getCredentialsProvider ()Laws/smithy/kotlin/runtime/collections/AttributeKey;
+	public final fun getHashSpecification ()Laws/smithy/kotlin/runtime/collections/AttributeKey;
+	public final fun getNormalizeUriPath ()Laws/smithy/kotlin/runtime/collections/AttributeKey;
+	public final fun getRequestSignature ()Laws/smithy/kotlin/runtime/collections/AttributeKey;
+	public final fun getSignedBodyHeader ()Laws/smithy/kotlin/runtime/collections/AttributeKey;
+	public final fun getSigner ()Laws/smithy/kotlin/runtime/collections/AttributeKey;
+	public final fun getSigningDate ()Laws/smithy/kotlin/runtime/collections/AttributeKey;
+	public final fun getSigningRegion ()Laws/smithy/kotlin/runtime/collections/AttributeKey;
+	public final fun getSigningRegionSet ()Laws/smithy/kotlin/runtime/collections/AttributeKey;
+	public final fun getSigningService ()Laws/smithy/kotlin/runtime/collections/AttributeKey;
+	public final fun getUseDoubleUriEncode ()Laws/smithy/kotlin/runtime/collections/AttributeKey;
 }
 
 public final class aws/smithy/kotlin/runtime/auth/awssigning/AwsSigningConfig {
@@ -50,6 +53,7 @@ public final class aws/smithy/kotlin/runtime/auth/awssigning/AwsSigningConfig {
 	public final fun getCredentials ()Laws/smithy/kotlin/runtime/auth/awscredentials/Credentials;
 	public final fun getExpiresAfter-FghU774 ()Lkotlin/time/Duration;
 	public final fun getHashSpecification ()Laws/smithy/kotlin/runtime/auth/awssigning/HashSpecification;
+	public final fun getLogRequest ()Z
 	public final fun getNormalizeUriPath ()Z
 	public final fun getOmitSessionToken ()Z
 	public final fun getRegion ()Ljava/lang/String;
@@ -69,6 +73,7 @@ public final class aws/smithy/kotlin/runtime/auth/awssigning/AwsSigningConfig$Bu
 	public final fun getCredentials ()Laws/smithy/kotlin/runtime/auth/awscredentials/Credentials;
 	public final fun getExpiresAfter-FghU774 ()Lkotlin/time/Duration;
 	public final fun getHashSpecification ()Laws/smithy/kotlin/runtime/auth/awssigning/HashSpecification;
+	public final fun getLogRequest ()Z
 	public final fun getNormalizeUriPath ()Z
 	public final fun getOmitSessionToken ()Z
 	public final fun getRegion ()Ljava/lang/String;
@@ -82,6 +87,7 @@ public final class aws/smithy/kotlin/runtime/auth/awssigning/AwsSigningConfig$Bu
 	public final fun setCredentials (Laws/smithy/kotlin/runtime/auth/awscredentials/Credentials;)V
 	public final fun setExpiresAfter-BwNAW2A (Lkotlin/time/Duration;)V
 	public final fun setHashSpecification (Laws/smithy/kotlin/runtime/auth/awssigning/HashSpecification;)V
+	public final fun setLogRequest (Z)V
 	public final fun setNormalizeUriPath (Z)V
 	public final fun setOmitSessionToken (Z)V
 	public final fun setRegion (Ljava/lang/String;)V
@@ -145,9 +151,6 @@ public final class aws/smithy/kotlin/runtime/auth/awssigning/HashSpecification$U
 }
 
 public final class aws/smithy/kotlin/runtime/auth/awssigning/PresignerKt {
-}
-
-public final class aws/smithy/kotlin/runtime/auth/awssigning/internal/AwsChunkedUtilJVMKt {
 }
 
 public final class aws/smithy/kotlin/runtime/auth/awssigning/internal/AwsChunkedUtilKt {

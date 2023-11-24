@@ -1,5 +1,81 @@
 # Changelog
 
+## [0.30.0] - 11/22/2023
+
+### Features
+* BREAKING: Overhaul URL APIs to clarify content encoding, when data is in which state, and to reduce the number of times data is encoded/decoded
+
+## [0.29.0] - 11/17/2023
+
+### Features
+* Add support for modeling defaults on BlobShapes, DocumentShapes, and TimestampShapes
+
+### Miscellaneous
+* **BREAKING**: make `Credentials` an interface
+* Upgrade dependencies to their latest versions, notably Kotlin 1.9.20
+
+## [0.28.2] - 11/14/2023
+
+### Features
+* Enable resolving auth schemes via endpoint resolution
+
+### Miscellaneous
+* Separate codegen project versioning
+
+## [0.28.1] - 11/01/2023
+
+### Fixes
+* Retry a better set of CRT HTTP exceptions
+
+## [0.28.0] - 10/25/2023
+
+### Features
+* Refactor codegen to support treating `@required` members as non-nullable.
+* Detect and automatically correct clock skew to prevent signing errors
+* Publish a BOM and a Version Catalog
+
+### Fixes
+* [#1077](https://github.com/awslabs/aws-sdk-kotlin/issues/1077) Prevent NoSuchMethodError when a slf4j1 logger is used with a slf4j2 classpath
+* Treat all IO errors in OkHttp & CRT engines as retryable (e.g., socket errors, DNS lookup failures, etc.)
+* Do not log intermediate signature calculations without explicit opt-in via `LogMode.LogSigning`.
+
+### Miscellaneous
+* **BREAKING**: refactor CaseUtils to better deal with plurals and other edge cases.
+* Upgrade aws-crt-kotlin to latest version
+* **BREAKING**: Remove `smithy.client.request.size`, `smithy.client.response.size`, `smithy.client.retries` metrics. Rename all `smithy.client.*` metrics to `smithy.client.call.*`.
+* Upgrade Dokka to 1.9.0
+* Expose immutable `SpanContext` on `TraceSpan`
+* Upgrade Kotlin to 1.9.10
+* Add skeleton implementation of a second KMP target
+
+## [0.27.6] - 10/06/2023
+
+### Fixes
+* Fix codegen of services with no operations
+
+### Miscellaneous
+* Relocate `TlsVersion` to the `net` package.
+* Refactor codegen to place serialization and deserialization code into the `serde` package rather than the `transform` package.
+* Make `ByteArrayContent` and friends `internal` and force consumers to go through companion object convenience functions.
+
+## [0.27.5] - 09/28/2023
+
+### Features
+* Generate paginators and waiters with a default parameter when input shape has all optional members
+* Generate client side error correction for @required members
+
+### Fixes
+* [#993](https://github.com/awslabs/aws-sdk-kotlin/issues/993) Provide SLF4J 1.x compatible fallback implementation
+
+### Miscellaneous
+* Generate internal-only clients with `internal` visibility
+* Upgrade aws-crt-kotlin to 0.7.2
+
+## [0.27.4] - 09/15/2023
+
+### Miscellaneous
+* bump aws-crt-kotlin to 0.7.1
+
 ## [0.27.3] - 09/08/2023
 
 ### Features

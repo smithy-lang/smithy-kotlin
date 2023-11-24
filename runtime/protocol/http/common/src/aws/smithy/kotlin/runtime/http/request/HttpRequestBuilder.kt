@@ -8,9 +8,7 @@ import aws.smithy.kotlin.runtime.InternalApi
 import aws.smithy.kotlin.runtime.http.*
 import aws.smithy.kotlin.runtime.http.content.ByteArrayContent
 import aws.smithy.kotlin.runtime.io.*
-import aws.smithy.kotlin.runtime.net.Url
-import aws.smithy.kotlin.runtime.net.UrlBuilder
-import aws.smithy.kotlin.runtime.net.encodedPath
+import aws.smithy.kotlin.runtime.net.url.Url
 import aws.smithy.kotlin.runtime.util.CanDeepCopy
 
 /**
@@ -22,12 +20,12 @@ import aws.smithy.kotlin.runtime.util.CanDeepCopy
  */
 public class HttpRequestBuilder private constructor(
     public var method: HttpMethod,
-    public val url: UrlBuilder,
+    public val url: Url.Builder,
     public val headers: HeadersBuilder,
     public var body: HttpBody,
     public val trailingHeaders: DeferredHeadersBuilder,
 ) : CanDeepCopy<HttpRequestBuilder> {
-    public constructor() : this(HttpMethod.GET, UrlBuilder(), HeadersBuilder(), HttpBody.Empty, DeferredHeadersBuilder())
+    public constructor() : this(HttpMethod.GET, Url.Builder(), HeadersBuilder(), HttpBody.Empty, DeferredHeadersBuilder())
 
     public fun build(): HttpRequest =
         HttpRequest(method, url.build(), if (headers.isEmpty()) Headers.Empty else headers.build(), body, if (trailingHeaders.isEmpty()) DeferredHeaders.Empty else trailingHeaders.build())
@@ -70,7 +68,7 @@ public fun HttpRequestBuilder.immutableView(
 /**
  * Modify the URL inside the block
  */
-public fun HttpRequestBuilder.url(block: UrlBuilder.() -> Unit) {
+public fun HttpRequestBuilder.url(block: Url.Builder.() -> Unit) {
     url.apply(block)
 }
 
@@ -78,16 +76,7 @@ public fun HttpRequestBuilder.url(block: UrlBuilder.() -> Unit) {
  * Set values from an existing [Url] instance
  */
 public fun HttpRequestBuilder.url(value: Url) {
-    url.apply {
-        scheme = value.scheme
-        host = value.host
-        port = value.port
-        path = value.path
-        parameters.appendAll(value.parameters)
-        fragment = value.fragment
-        userInfo = value.userInfo
-        forceQuery = value.forceQuery
-    }
+    url.copyFrom(value)
 }
 
 /**
@@ -113,7 +102,7 @@ public suspend fun dumpRequest(request: HttpRequestBuilder, dumpBody: Boolean): 
     val buffer = SdkBuffer()
 
     // TODO - we have no way to know the http version at this level to set HTTP/x.x
-    buffer.writeUtf8("${request.method} ${request.url.encodedPath}\r\n")
+    buffer.writeUtf8("${request.method} ${request.url.requestRelativePath}\r\n")
     buffer.writeUtf8("Host: ${request.url.host}\r\n")
 
     val contentLength = request.headers["Content-Length"]?.toLongOrNull() ?: (request.body.contentLength ?: 0)

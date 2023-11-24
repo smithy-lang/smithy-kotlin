@@ -21,7 +21,6 @@ import software.amazon.smithy.rulesengine.language.EndpointRuleSet
 import software.amazon.smithy.rulesengine.traits.EndpointRuleSetTrait
 import software.amazon.smithy.rulesengine.traits.EndpointTestCase
 import software.amazon.smithy.rulesengine.traits.EndpointTestsTrait
-import kotlin.streams.toList
 
 /**
  * Get all shapes of a particular type from the model.
@@ -130,7 +129,7 @@ fun OperationIndex.operationSignature(
 
     val hasOutputStream = outputShape.map { it.hasStreamingMember(model) }.orElse(false)
     val inputParam = input.map {
-        if (includeOptionalDefault && inputShape.get().isOptional()) "input: $it = $it {}" else "input: $it"
+        if (includeOptionalDefault && inputShape.get().hasAllOptionalMembers) "input: $it = $it { }" else "input: $it"
     }.orElse("")
     val outputParam = output.map { ": $it" }.orElse("")
 
@@ -194,6 +193,15 @@ val Shape.isStreaming: Boolean
     get() = hasTrait<StreamingTrait>()
 
 /**
+ * Returns boolean indicating if operations explicitly set HTTP payload is a union
+ */
+fun OperationShape.payloadIsUnionShape(model: Model): Boolean {
+    val requestShape = model.expectShape<StructureShape>(input.get())
+    val payload = requestShape.findMemberWithTrait<HttpPayloadTrait>(model)?.targetOrSelf(model)
+    return payload is UnionShape
+}
+
+/**
  * Test if a member targets an event stream
  */
 fun StructureShape.hasEventStreamMember(model: Model): Boolean {
@@ -218,7 +226,6 @@ fun OperationShape.isOutputEventStream(model: Model): Boolean {
     return respShape.hasEventStreamMember(model)
 }
 
-// FIXME - move to the InputTrait and OutputTrait provided by smithy now
 /**
  * Test if a structure shape is an operation input
  */
@@ -245,9 +252,10 @@ fun UnionShape.filterEventStreamErrors(model: Model): Collection<MemberShape> {
 }
 
 /**
- * Test if a shape is optional.
+ * Test if a shape has all optional members (no member marked `@required`)
  */
-fun Shape.isOptional(): Boolean = members().none { it.isRequired }
+val Shape.hasAllOptionalMembers: Boolean
+    get() = members().none { it.isRequired }
 
 /**
  * Derive the input and output symbols for an operation.

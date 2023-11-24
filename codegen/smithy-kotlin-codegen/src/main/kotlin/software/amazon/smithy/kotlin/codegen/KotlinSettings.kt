@@ -7,7 +7,10 @@ package software.amazon.smithy.kotlin.codegen
 
 import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.kotlin.codegen.lang.isValidPackageName
+import software.amazon.smithy.kotlin.codegen.utils.getOrNull
+import software.amazon.smithy.kotlin.codegen.utils.toCamelCase
 import software.amazon.smithy.model.Model
+import software.amazon.smithy.model.knowledge.NullableIndex.CheckMode
 import software.amazon.smithy.model.knowledge.ServiceIndex
 import software.amazon.smithy.model.node.ObjectNode
 import software.amazon.smithy.model.node.StringNode
@@ -16,6 +19,7 @@ import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.shapes.ShapeId
 import java.util.Optional
 import java.util.logging.Logger
+import kotlin.IllegalArgumentException
 import kotlin.streams.toList
 
 // shapeId of service from which to generate an SDK
@@ -25,6 +29,7 @@ private const val PACKAGE_NAME = "name"
 private const val PACKAGE_VERSION = "version"
 private const val PACKAGE_DESCRIPTION = "description"
 private const val BUILD_SETTINGS = "build"
+private const val API_SETTINGS = "api"
 
 // Optional specification of sdkId for models that provide them, otherwise Service's shape id name is used
 private const val SDK_ID = "sdkId"
@@ -37,6 +42,7 @@ data class KotlinSettings(
     val pkg: PackageSettings,
     val sdkId: String,
     val build: BuildSettings = BuildSettings.Default,
+    val api: ApiSettings = ApiSettings.Default,
 ) {
 
     /**
@@ -47,6 +53,12 @@ data class KotlinSettings(
          * Derive a subpackage namespace from the root package name
          */
         fun subpackage(subpackageName: String): String = "$name.$subpackageName"
+
+        /**
+         * The package namespace for generated serialization/deserialization support
+         */
+        val serde: String
+            get() = subpackage("serde")
     }
 
     /**
@@ -72,7 +84,7 @@ data class KotlinSettings(
          * @return Returns the extracted settings
          */
         fun from(model: Model, config: ObjectNode): KotlinSettings {
-            config.warnIfAdditionalProperties(listOf(SERVICE, PACKAGE_SETTINGS, BUILD_SETTINGS, SDK_ID))
+            config.warnIfAdditionalProperties(listOf(SERVICE, PACKAGE_SETTINGS, BUILD_SETTINGS, SDK_ID, API_SETTINGS))
 
             val serviceId = config.getStringMember(SERVICE)
                 .map(StringNode::expectShapeId)
@@ -91,11 +103,13 @@ data class KotlinSettings(
             // Load the sdk id from configurations that define it, fall back to service name for those that don't.
             val sdkId = config.getStringMemberOrDefault(SDK_ID, serviceId.name)
             val build = config.getObjectMember(BUILD_SETTINGS)
+            val api = config.getObjectMember(API_SETTINGS)
             return KotlinSettings(
                 serviceId,
                 PackageSettings(packageName, version, desc),
                 sdkId,
                 BuildSettings.fromNode(build),
+                ApiSettings.fromNode(api),
             )
         }
     }
@@ -170,8 +184,7 @@ data class BuildSettings(
         fun fromNode(node: Optional<ObjectNode>): BuildSettings = node.map {
             val generateFullProject = node.get().getBooleanMemberOrDefault(ROOT_PROJECT, false)
             val generateBuildFiles = node.get().getBooleanMemberOrDefault(GENERATE_DEFAULT_BUILD_FILES, true)
-            val generateMultiplatformProject =
-                node.get().getBooleanMemberOrDefault(GENERATE_MULTIPLATFORM_MODULE, false)
+            val generateMultiplatformProject = node.get().getBooleanMemberOrDefault(GENERATE_MULTIPLATFORM_MODULE, false)
             val annotations = node.get().getArrayMember(ANNOTATIONS).map {
                 it.elements.mapNotNull { node ->
                     node.asStringNode().map { stringNode ->
@@ -193,3 +206,101 @@ data class BuildSettings(
 class UnresolvableProtocolException(message: String) : CodegenException(message)
 
 private fun <T> Optional<T>.orNull(): T? = if (isPresent) get() else null
+
+/**
+ * The visibility of code-generated classes, objects, interfaces, etc.
+ * Valid values are `public` and `internal`. `private` not supported because codegen would not compile with private classes.
+ */
+enum class Visibility(val value: String) {
+    PUBLIC("public"),
+    INTERNAL("internal"),
+    ;
+
+    override fun toString(): String = value
+
+    companion object {
+        public fun fromValue(value: String): Visibility = when (value.lowercase()) {
+            "public" -> PUBLIC
+            "internal" -> INTERNAL
+            else -> throw IllegalArgumentException("$value is not a valid Visibility value, expected $PUBLIC or $INTERNAL")
+        }
+    }
+}
+
+private fun checkModefromValue(value: String): CheckMode {
+    val camelCaseToMode = CheckMode.values().associateBy { it.toString().toCamelCase() }
+    return requireNotNull(camelCaseToMode[value]) { "$value is not a valid CheckMode, expected one of ${camelCaseToMode.keys}" }
+}
+
+/**
+ * Get the plugin setting for this check mode
+ */
+val CheckMode.kotlinPluginSetting: String
+    get() = toString().toCamelCase()
+
+enum class DefaultValueSerializationMode(val value: String) {
+    /**
+     * Always serialize values even if they are set to the modeled default
+     */
+    ALWAYS("always"),
+
+    /**
+     * Only serialize values when they differ from the modeled default or are marked `@required`
+     */
+    WHEN_DIFFERENT("whenDifferent"),
+    ;
+    override fun toString(): String = value
+    companion object {
+        fun fromValue(value: String): DefaultValueSerializationMode =
+            values().find {
+                it.value == value
+            } ?: throw IllegalArgumentException("$value is not a valid DefaultValueSerializationMode, expected one of ${values().map { it.value }}")
+    }
+}
+
+/**
+ * Contains API settings for a Kotlin project
+ * @param visibility Enum representing the visibility of code-generated classes, objects, interfaces, etc.
+ * @param nullabilityCheckMode Enum representing the nullability check mode to use
+ * @param defaultValueSerializationMode Enum representing when default values should be serialized
+ * @param enableEndpointAuthProvider flag indicating that endpoint resolution should be enabled as part of resolving
+ * an auth scheme. This is an advanced option that only a select few service clients like S3 and EventBridge require.
+ */
+data class ApiSettings(
+    val visibility: Visibility = Visibility.PUBLIC,
+    val nullabilityCheckMode: CheckMode = CheckMode.CLIENT_CAREFUL,
+    val defaultValueSerializationMode: DefaultValueSerializationMode = DefaultValueSerializationMode.WHEN_DIFFERENT,
+    val enableEndpointAuthProvider: Boolean = false,
+) {
+    companion object {
+        const val VISIBILITY = "visibility"
+        const val NULLABILITY_CHECK_MODE = "nullabilityCheckMode"
+        const val DEFAULT_VALUE_SERIALIZATION_MODE = "defaultValueSerializationMode"
+        const val ENABLE_ENDPOINT_AUTH_PROVIDER = "enableEndpointAuthProvider"
+
+        fun fromNode(node: Optional<ObjectNode>): ApiSettings = node.map {
+            val visibility = node.get()
+                .getStringMember(VISIBILITY)
+                .map { Visibility.fromValue(it.value) }
+                .getOrNull() ?: Visibility.PUBLIC
+            val checkMode = node.get()
+                .getStringMember(NULLABILITY_CHECK_MODE)
+                .map { checkModefromValue(it.value) }
+                .getOrNull() ?: CheckMode.CLIENT_CAREFUL
+            val defaultValueSerializationMode = DefaultValueSerializationMode.fromValue(
+                node.get()
+                    .getStringMemberOrDefault(
+                        DEFAULT_VALUE_SERIALIZATION_MODE,
+                        DefaultValueSerializationMode.WHEN_DIFFERENT.value,
+                    ),
+            )
+            val enableEndpointAuthProvider = node.get().getBooleanMemberOrDefault(ENABLE_ENDPOINT_AUTH_PROVIDER, false)
+            ApiSettings(visibility, checkMode, defaultValueSerializationMode, enableEndpointAuthProvider)
+        }.orElse(Default)
+
+        /**
+         * Default build settings
+         */
+        val Default: ApiSettings = ApiSettings()
+    }
+}

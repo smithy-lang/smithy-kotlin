@@ -9,15 +9,12 @@ import aws.smithy.kotlin.runtime.auth.awssigning.tests.DEFAULT_TEST_CREDENTIALS
 import aws.smithy.kotlin.runtime.http.*
 import aws.smithy.kotlin.runtime.http.request.*
 import aws.smithy.kotlin.runtime.net.Host
-import aws.smithy.kotlin.runtime.net.UrlBuilder
-import aws.smithy.kotlin.runtime.net.parameters
+import aws.smithy.kotlin.runtime.net.url.Url
 import aws.smithy.kotlin.runtime.time.Instant
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
-@OptIn(ExperimentalCoroutinesApi::class)
 class DefaultCanonicalizerTest {
     // Test adapted from https://docs.aws.amazon.com/general/latest/gr/sigv4-create-canonical-request.html
     @Test
@@ -26,10 +23,9 @@ class DefaultCanonicalizerTest {
             method = HttpMethod.GET
             url {
                 host = Host.Domain("iam.amazonaws.com")
-                path = ""
-                parameters {
-                    set("Action", "ListUsers")
-                    set("Version", "2010-05-08")
+                parameters.decodedParameters {
+                    add("Action", "ListUsers")
+                    add("Version", "2010-05-08")
                 }
             }
             headers {
@@ -83,8 +79,8 @@ class DefaultCanonicalizerTest {
     // Targeted test for proper URI path escaping. See https://github.com/awslabs/smithy-kotlin/issues/657
     @Test
     fun testEscapablePath() {
-        val uri = UrlBuilder()
-        uri.path = "/2013-04-01/healthcheck/foo%3Cbar%3Ebaz%3C%2Fbar%3E"
+        val uri = Url.Builder()
+        uri.path.encoded = "/2013-04-01/healthcheck/foo%3Cbar%3Ebaz%3C%2Fbar%3E"
 
         val config = AwsSigningConfig {
             normalizeUriPath = true
@@ -95,6 +91,35 @@ class DefaultCanonicalizerTest {
         }
 
         assertEquals("/2013-04-01/healthcheck/foo%253Cbar%253Ebaz%253C%252Fbar%253E", uri.canonicalPath(config))
+    }
+
+    @Test
+    fun testCanonicalPath() {
+        val config = AwsSigningConfig {
+            normalizeUriPath = true
+            useDoubleUriEncode = true
+            region = "the-moon"
+            service = "landing-pad"
+            credentials = DEFAULT_TEST_CREDENTIALS
+        }
+
+        val uri = Url.Builder()
+        uri.path.encoded = "/foo/bar/baz%3Cqux%3Aquux"
+        assertEquals("/foo/bar/baz%253Cqux%253Aquux", uri.canonicalPath(config))
+    }
+
+    @Test
+    fun testCanonicalQueryParams() {
+        Url.Builder().apply {
+            parameters {
+                decodedParameters {
+                    addAll("foo", listOf("banana", "apple", "cherry"))
+                    addAll("bar", listOf("elderberry", "date"))
+                }
+                assertEquals("?foo=banana&foo=apple&foo=cherry&bar=elderberry&bar=date", decoded)
+            }
+            assertEquals("bar=date&bar=elderberry&foo=apple&foo=banana&foo=cherry", canonicalQueryParams())
+        }
     }
 
     @Test

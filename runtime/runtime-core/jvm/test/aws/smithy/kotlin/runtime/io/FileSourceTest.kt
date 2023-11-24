@@ -7,13 +7,11 @@ package aws.smithy.kotlin.runtime.io
 
 import aws.smithy.kotlin.runtime.testing.RandomTempFile
 import io.kotest.matchers.string.shouldContain
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 
-@OptIn(ExperimentalCoroutinesApi::class)
 class FileSourceTest {
     @Test
     fun testStartPositionValidation() = runTest {

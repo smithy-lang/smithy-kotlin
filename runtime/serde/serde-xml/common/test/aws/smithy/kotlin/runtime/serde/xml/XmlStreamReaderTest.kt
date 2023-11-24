@@ -7,7 +7,6 @@ package aws.smithy.kotlin.runtime.serde.xml
 import aws.smithy.kotlin.runtime.serde.DeserializationException
 import kotlin.test.*
 
-@OptIn(ExperimentalStdlibApi::class)
 class XmlStreamReaderTest {
     @Test
     fun itDeserializesXml() {

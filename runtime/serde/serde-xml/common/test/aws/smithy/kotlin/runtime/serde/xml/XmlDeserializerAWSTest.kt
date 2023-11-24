@@ -9,7 +9,6 @@ import kotlin.test.Test
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
-@OptIn(ExperimentalStdlibApi::class)
 class XmlDeserializerAWSTest {
 
     class HostedZoneConfig private constructor(builder: Builder) {

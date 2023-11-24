@@ -10,6 +10,7 @@ import aws.smithy.kotlin.runtime.http.engine.internal.HttpClientMetrics
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.io.SdkByteReadChannel
 import aws.smithy.kotlin.runtime.net.*
+import aws.smithy.kotlin.runtime.net.url.Url
 import aws.smithy.kotlin.runtime.operation.ExecutionContext
 import aws.smithy.kotlin.runtime.telemetry.TelemetryProvider
 import okio.Buffer
@@ -25,16 +26,16 @@ class OkHttpRequestTest {
 
     @Test
     fun itConvertsUrls() {
-        val url = UrlBuilder().apply {
+        val url = Url {
             scheme = Scheme.HTTPS
             host = Host.Domain("aws.amazon.com")
-            path = "/foo%2Fbar/qux"
-            parameters {
-                append("q", "dogs")
-                append("q", "&")
-                append("q", "lep ball")
+            path.encoded = "/foo%2Fbar/qux"
+            parameters.decodedParameters {
+                add("q", "dogs")
+                add("q", "&")
+                add("q", "lep ball")
             }
-        }.build()
+        }
 
         // check our encoding
         val expectedUrl = "https://aws.amazon.com/foo%2Fbar/qux?q=dogs&q=%26&q=lep%20ball"

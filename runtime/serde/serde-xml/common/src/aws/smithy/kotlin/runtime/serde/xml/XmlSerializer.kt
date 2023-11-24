@@ -5,13 +5,13 @@
 package aws.smithy.kotlin.runtime.serde.xml
 
 import aws.smithy.kotlin.runtime.InternalApi
+import aws.smithy.kotlin.runtime.collections.*
 import aws.smithy.kotlin.runtime.content.BigDecimal
 import aws.smithy.kotlin.runtime.content.BigInteger
 import aws.smithy.kotlin.runtime.content.Document
 import aws.smithy.kotlin.runtime.serde.*
 import aws.smithy.kotlin.runtime.time.Instant
 import aws.smithy.kotlin.runtime.time.TimestampFormat
-import aws.smithy.kotlin.runtime.util.*
 
 /**
  * Provides serialization for the XML message format.
@@ -219,11 +219,10 @@ private class XmlMapSerializer(
             checkNotNull(mapTrait.entry)
         }
 
-        val entryNamespace = descriptor.findTrait<XmlNamespace>()
         val keyNamespace = descriptor.findTrait<XmlMapKeyNamespace>()
         val valueNamespace = descriptor.findTrait<XmlCollectionValueNamespace>()
 
-        xmlWriter.writeTag(tagName, entryNamespace) {
+        xmlWriter.writeTag(tagName) {
             writeTag(mapTrait.key, keyNamespace) { text(key) }
             writeTag(mapTrait.value, valueNamespace) { valueFn() }
         }

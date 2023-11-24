@@ -12,7 +12,7 @@ import software.amazon.smithy.kotlin.codegen.core.withBlock
 import software.amazon.smithy.kotlin.codegen.model.*
 import software.amazon.smithy.kotlin.codegen.utils.getOrNull
 import software.amazon.smithy.rulesengine.language.EndpointRuleSet
-import software.amazon.smithy.rulesengine.language.syntax.parameters.Parameter
+import software.amazon.smithy.rulesengine.language.syntax.parameters.Deprecated
 
 private const val DEFAULT_DEPRECATED_MESSAGE =
     "This field is deprecated and no longer recommended for use."
@@ -22,6 +22,7 @@ private const val DEFAULT_DEPRECATED_MESSAGE =
  */
 class EndpointParametersGenerator(
     private val writer: KotlinWriter,
+    private val settings: KotlinSettings,
     rules: EndpointRuleSet?,
     private val paramsSymbol: Symbol,
 ) {
@@ -42,7 +43,7 @@ class EndpointParametersGenerator(
                 it.defaultName(),
                 it.type.toSymbol(),
                 it.isRequired,
-                it.defaultValue.getOrNull()?.toLiteral() ?: "null",
+                it.default.getOrNull()?.toLiteral() ?: "null",
                 it.documentation.getOrNull(),
                 it.deprecated.getOrNull(),
             )
@@ -51,7 +52,12 @@ class EndpointParametersGenerator(
     fun render() {
         renderDocumentation()
         // FIXME - this should probably be an interface
-        writer.withBlock("public class #T private constructor(builder: Builder) {", "}", paramsSymbol) {
+        writer.withBlock(
+            "#L class #T private constructor(builder: Builder) {",
+            "}",
+            settings.api.visibility,
+            paramsSymbol,
+        ) {
             renderFields()
             renderCompanionObject()
             write("")
@@ -165,7 +171,7 @@ private data class KotlinEndpointParameter(
     // endpoint params do not, so we must store the default ourselves to render.
     val defaultLiteral: String,
     val documentation: String?,
-    val deprecated: Parameter.Deprecated?,
+    val deprecated: Deprecated?,
 )
 
 private fun KotlinEndpointParameter.renderDeclaration(writer: KotlinWriter, initialValueLiteral: String, isMutable: Boolean = false) {
@@ -177,8 +183,8 @@ private fun KotlinEndpointParameter.renderDeclaration(writer: KotlinWriter, init
     writer.write("")
 }
 
-private fun Parameter.Deprecated.writeKotlinAnnotation(writer: KotlinWriter) =
-    writer.write("@Deprecated(#S)", message ?: DEFAULT_DEPRECATED_MESSAGE)
+private fun Deprecated.writeKotlinAnnotation(writer: KotlinWriter) =
+    writer.write("@Deprecated(#S)", message.getOrNull() ?: DEFAULT_DEPRECATED_MESSAGE)
 
 private fun KotlinWriter.ensureSuppressDeprecation(param: KotlinEndpointParameter) =
     param.deprecated?.let { write("@Suppress(\"DEPRECATION\")") }

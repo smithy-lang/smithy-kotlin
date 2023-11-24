@@ -11,7 +11,6 @@ import aws.smithy.kotlin.runtime.http.DeferredHeaders
 import aws.smithy.kotlin.runtime.http.toHeaders
 import aws.smithy.kotlin.runtime.io.*
 import aws.smithy.kotlin.runtime.time.Instant
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.TestResult
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.withTimeout
@@ -53,7 +52,6 @@ fun AwsChunkedReaderFactory.create(
     previousSignature: ByteArray,
 ): AwsChunkedTestReader = create(data, signer, signingConfig, previousSignature, DeferredHeaders.Empty)
 
-@OptIn(ExperimentalCoroutinesApi::class)
 abstract class AwsChunkedTestBase(
     val factory: AwsChunkedReaderFactory,
 ) : HasSigner {

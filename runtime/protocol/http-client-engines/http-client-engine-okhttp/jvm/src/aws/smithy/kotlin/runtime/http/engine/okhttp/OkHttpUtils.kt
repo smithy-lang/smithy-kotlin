@@ -14,6 +14,8 @@ import aws.smithy.kotlin.runtime.http.response.HttpResponse
 import aws.smithy.kotlin.runtime.io.SdkSource
 import aws.smithy.kotlin.runtime.io.internal.toSdk
 import aws.smithy.kotlin.runtime.net.*
+import aws.smithy.kotlin.runtime.net.url.Url
+import aws.smithy.kotlin.runtime.net.url.UserInfo
 import aws.smithy.kotlin.runtime.operation.ExecutionContext
 import aws.smithy.kotlin.runtime.time.Instant
 import kotlinx.coroutines.*
@@ -113,7 +115,11 @@ internal class OkHttpProxyAuthenticator(
         }
 
         val url = response.request.url.let {
-            Url(scheme = Scheme(it.scheme, it.port), host = Host.parse(it.host), port = it.port)
+            Url {
+                scheme = Scheme(it.scheme, it.port)
+                host = Host.parse(it.host)
+                port = it.port
+            }
         }
 
         // NOTE: We will end up querying the proxy selector twice. We do this to allow
@@ -128,7 +134,10 @@ internal class OkHttpProxyAuthenticator(
         for (challenge in response.challenges()) {
             if (challenge.scheme.lowercase() == "okhttp-preemptive" || challenge.scheme == "Basic") {
                 return response.request.newBuilder()
-                    .header("Proxy-Authorization", Credentials.basic(userInfo.username, userInfo.password))
+                    .header(
+                        "Proxy-Authorization",
+                        Credentials.basic(userInfo.userName.decoded, userInfo.password.decoded),
+                    )
                     .build()
             }
         }
@@ -183,24 +192,24 @@ internal class OkHttpCall(
 
 private fun URI.toUrl(): Url {
     val uri = this
-    return UrlBuilder {
+    return Url {
         scheme = Scheme.parse(uri.scheme)
 
         // OkHttp documentation calls out that v6 addresses will contain the []s
         host = Host.parse(if (uri.host.startsWith("[")) uri.host.substring(1 until uri.host.length - 1) else uri.host)
 
         port = uri.port.takeIf { it > 0 }
-        path = uri.path
+        path.encoded = uri.rawPath
 
-        if (uri.query != null && uri.query.isNotBlank()) {
-            val parsedParameters = uri.query.splitAsQueryParameters()
-            parameters.appendAll(parsedParameters)
+        if (!uri.rawQuery.isNullOrBlank()) {
+            parameters.encoded = uri.rawQuery
         }
 
-        userInfo = uri.userInfo?.takeIf { it.isNotBlank() }
-            ?.let(::UserInfo)
+        if (!uri.rawUserInfo.isNullOrBlank()) {
+            userInfo.copyFrom(UserInfo.parseEncoded(uri.rawUserInfo))
+        }
 
-        fragment = uri.fragment?.takeIf { it.isNotBlank() }
+        encodedFragment = uri.rawFragment
     }
 }
 
@@ -208,10 +217,9 @@ internal inline fun<T> mapOkHttpExceptions(block: () -> T): T =
     try {
         block()
     } catch (ex: IOException) {
-        throw HttpException(ex, ex.errCode(), ex.isRetryable())
+        throw HttpException(ex, ex.errCode(), retryable = true) // All IOExceptions are retryable
     }
 
-private fun Exception.isRetryable(): Boolean = isCauseOrSuppressed<ConnectException>() || isConnectionClosedException()
 private fun Exception.errCode(): HttpErrorCode = when {
     isConnectTimeoutException() -> HttpErrorCode.CONNECT_TIMEOUT
     isConnectionClosedException() -> HttpErrorCode.CONNECTION_CLOSED

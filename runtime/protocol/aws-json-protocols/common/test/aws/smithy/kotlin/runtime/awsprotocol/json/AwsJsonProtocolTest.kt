@@ -5,20 +5,17 @@
 
 package aws.smithy.kotlin.runtime.awsprotocol.json
 
+import aws.smithy.kotlin.runtime.collections.get
 import aws.smithy.kotlin.runtime.http.*
-import aws.smithy.kotlin.runtime.http.content.ByteArrayContent
 import aws.smithy.kotlin.runtime.http.operation.*
 import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
 import aws.smithy.kotlin.runtime.http.response.HttpResponse
 import aws.smithy.kotlin.runtime.httptest.TestEngine
 import aws.smithy.kotlin.runtime.operation.ExecutionContext
-import aws.smithy.kotlin.runtime.util.get
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
-@OptIn(ExperimentalCoroutinesApi::class)
 class AwsJsonProtocolTest {
 
     @Test
@@ -67,7 +64,7 @@ class AwsJsonProtocolTest {
                 override suspend fun serialize(context: ExecutionContext, input: Unit): HttpRequestBuilder =
                     HttpRequestBuilder().apply {
                         headers["Content-Type"] = "application/xml"
-                        body = ByteArrayContent("foo".encodeToByteArray())
+                        body = HttpBody.fromBytes("foo".encodeToByteArray())
                     }
             }
             deserializer = IdentityDeserializer

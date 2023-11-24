@@ -6,12 +6,10 @@
 package aws.smithy.kotlin.runtime.io.middleware
 
 import aws.smithy.kotlin.runtime.io.Handler
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
-@OptIn(ExperimentalCoroutinesApi::class)
 class MiddlewareTest {
 
     @Test

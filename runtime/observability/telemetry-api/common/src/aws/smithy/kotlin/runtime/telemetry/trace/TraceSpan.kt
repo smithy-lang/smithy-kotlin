@@ -5,10 +5,10 @@
 
 package aws.smithy.kotlin.runtime.telemetry.trace
 
+import aws.smithy.kotlin.runtime.collections.AttributeKey
+import aws.smithy.kotlin.runtime.collections.Attributes
+import aws.smithy.kotlin.runtime.collections.emptyAttributes
 import aws.smithy.kotlin.runtime.telemetry.context.Scope
-import aws.smithy.kotlin.runtime.util.AttributeKey
-import aws.smithy.kotlin.runtime.util.Attributes
-import aws.smithy.kotlin.runtime.util.emptyAttributes
 
 /**
  * Represents a single operation/task within a trace. Each trace contains a root span and
@@ -16,9 +16,9 @@ import aws.smithy.kotlin.runtime.util.emptyAttributes
  */
 public interface TraceSpan : Scope {
     /**
-     * The name of the span
+     * The immutable tracing context this span belongs to
      */
-    public val name: String
+    public val spanContext: SpanContext
 
     /**
      * Set an attribute on the span
@@ -34,7 +34,6 @@ public interface TraceSpan : Scope {
      */
     public fun mergeAttributes(attributes: Attributes)
 
-    // FIXME - when would we use OTeL trace events vs logs?
     /**
      * Add an event to this span
      * @param name the name of the event

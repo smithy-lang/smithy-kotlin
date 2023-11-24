@@ -34,8 +34,14 @@ class ShapeValueGenerator(
     fun writeShapeValueInline(writer: KotlinWriter, shape: Shape, params: Node) {
         val nodeVisitor = ShapeValueNodeVisitor(writer, this, shape)
         when (shape.type) {
-            ShapeType.STRUCTURE -> classDeclaration(writer, shape.asStructureShape().get()) {
-                params.accept(nodeVisitor)
+            ShapeType.STRUCTURE -> {
+                if (params.isNullNode) {
+                    params.accept(nodeVisitor)
+                } else {
+                    classDeclaration(writer, shape.asStructureShape().get()) {
+                        params.accept(nodeVisitor)
+                    }
+                }
             }
             ShapeType.MAP -> mapDeclaration(writer, shape.asMapShape().get()) {
                 params.accept(nodeVisitor)
@@ -97,12 +103,6 @@ class ShapeValueGenerator(
     }
 
     private fun primitiveDeclaration(writer: KotlinWriter, shape: Shape, block: () -> Unit) {
-        val blobHandlingSymbols = listOf(
-            RuntimeTypes.Core.Content.ByteArrayContent,
-            RuntimeTypes.Core.Content.ByteStream,
-            RuntimeTypes.Core.Content.StringContent,
-            RuntimeTypes.Core.Content.toByteArray,
-        )
         val suffix = when {
             shape.isEnum -> {
                 val symbol = symbolProvider.toSymbol(shape)
@@ -112,8 +112,7 @@ class ShapeValueGenerator(
 
             shape.type == ShapeType.BLOB -> {
                 if (shape.hasTrait<StreamingTrait>()) {
-                    writer.addImport(blobHandlingSymbols)
-                    writer.writeInline("StringContent(")
+                    writer.writeInline("#T.fromString(", RuntimeTypes.Core.Content.ByteStream)
                     ")"
                 } else {
                     // blob params are spit out as strings

@@ -15,16 +15,13 @@ import aws.smithy.kotlin.runtime.http.request.toBuilder
 import aws.smithy.kotlin.runtime.http.request.url
 import aws.smithy.kotlin.runtime.io.SdkByteReadChannel
 import aws.smithy.kotlin.runtime.net.Host
-import aws.smithy.kotlin.runtime.net.QueryParameters
 import aws.smithy.kotlin.runtime.net.Scheme
-import aws.smithy.kotlin.runtime.net.Url
-import kotlinx.coroutines.ExperimentalCoroutinesApi
+import aws.smithy.kotlin.runtime.net.url.Url
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
-@OptIn(ExperimentalCoroutinesApi::class)
 class HttpRequestBuilderTest {
     @Test
     fun itBuilds() {
@@ -52,8 +49,8 @@ class HttpRequestBuilderTest {
         val builder = HttpRequestBuilder().apply {
             url {
                 host = Host.Domain("test.amazon.com")
-                path = "/debug/test"
-                parameters.append("foo", "bar")
+                path.encoded = "/debug/test"
+                parameters.decodedParameters.add("foo", "bar")
             }
             headers {
                 append("x-baz", "quux")
@@ -83,14 +80,12 @@ class HttpRequestBuilderTest {
     fun testRequestToBuilder() = runTest {
         val req = HttpRequest(
             method = HttpMethod.POST,
-            url = Url(
-                Scheme.HTTPS,
-                Host.Domain("test.amazon.com"),
-                path = "/debug/test",
-                parameters = QueryParameters {
-                    append("q1", "foo")
-                },
-            ),
+            url = Url {
+                scheme = Scheme.HTTPS
+                host = Host.Domain("test.amazon.com")
+                path.decoded = "/debug/test"
+                parameters.decodedParameters.add("q1", "foo")
+            },
             headers = Headers {
                 append("x-baz", "bar")
                 append("x-quux", "qux")

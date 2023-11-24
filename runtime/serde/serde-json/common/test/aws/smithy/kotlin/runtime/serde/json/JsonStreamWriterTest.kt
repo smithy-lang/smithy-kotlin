@@ -8,7 +8,6 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 
-@OptIn(ExperimentalStdlibApi::class)
 class JsonStreamWriterTest {
     @Test
     fun testArrayOfObjects() {

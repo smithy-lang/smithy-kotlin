@@ -13,18 +13,16 @@ import software.amazon.smithy.kotlin.codegen.model.defaultName
 import software.amazon.smithy.model.SourceLocation
 import software.amazon.smithy.rulesengine.language.EndpointRuleSet
 import software.amazon.smithy.rulesengine.language.syntax.Identifier
-import software.amazon.smithy.rulesengine.language.syntax.expr.Expression
-import software.amazon.smithy.rulesengine.language.syntax.expr.Literal
-import software.amazon.smithy.rulesengine.language.syntax.expr.Reference
-import software.amazon.smithy.rulesengine.language.syntax.expr.Template
-import software.amazon.smithy.rulesengine.language.syntax.fn.*
+import software.amazon.smithy.rulesengine.language.syntax.ToExpression
+import software.amazon.smithy.rulesengine.language.syntax.expressions.*
+import software.amazon.smithy.rulesengine.language.syntax.expressions.functions.*
+import software.amazon.smithy.rulesengine.language.syntax.expressions.literal.Literal
+import software.amazon.smithy.rulesengine.language.syntax.expressions.literal.LiteralVisitor
 import software.amazon.smithy.rulesengine.language.syntax.rule.Condition
 import software.amazon.smithy.rulesengine.language.syntax.rule.EndpointRule
 import software.amazon.smithy.rulesengine.language.syntax.rule.ErrorRule
 import software.amazon.smithy.rulesengine.language.syntax.rule.Rule
 import software.amazon.smithy.rulesengine.language.syntax.rule.TreeRule
-import software.amazon.smithy.rulesengine.language.visit.ExpressionVisitor
-import software.amazon.smithy.rulesengine.language.visit.TemplateVisitor
 
 /**
  * The core set of standard library functions available to the rules language.
@@ -62,6 +60,7 @@ class DefaultEndpointProviderGenerator(
     private val defaultProviderSymbol: Symbol,
     private val interfaceSymbol: Symbol,
     private val paramsSymbol: Symbol,
+    private val settings: KotlinSettings,
     private val externalFunctions: Map<String, Symbol> = emptyMap(),
     private val propertyRenderers: Map<String, EndpointPropertyRenderer> = emptyMap(),
 ) : ExpressionRenderer {
@@ -78,7 +77,13 @@ class DefaultEndpointProviderGenerator(
 
     fun render() {
         renderDocumentation()
-        writer.withBlock("public class #T: #T {", "}", defaultProviderSymbol, interfaceSymbol) {
+        writer.withBlock(
+            "#L class #T: #T {",
+            "}",
+            settings.api.visibility,
+            defaultProviderSymbol,
+            interfaceSymbol,
+        ) {
             renderResolve()
         }
     }
@@ -122,14 +127,14 @@ class DefaultEndpointProviderGenerator(
         writer.wrapBlockIf(assignments.isNotEmpty(), "run {", "}") {
             assignments.forEach {
                 writer.writeInline("val #L = ", it.result.get().defaultName())
-                renderExpression(it.fn)
+                renderExpression(it.function)
                 writer.write("")
             }
             if (expressions.isNotEmpty()) {
                 writer.openBlock("if (")
                 expressions.forEachIndexed { index, it ->
-                    renderExpression(it.fn)
-                    if (!it.fn.isBooleanFunction()) { // these are meant to be evaluated on "truthiness" (i.e. is the result non-null)
+                    renderExpression(it.function)
+                    if (!it.function.isBooleanFunction()) { // these are meant to be evaluated on "truthiness" (i.e. is the result non-null)
                         writeInline(" != null")
                     }
                     write(if (index == expressions.lastIndex) "" else " &&")
@@ -146,9 +151,9 @@ class DefaultEndpointProviderGenerator(
     private fun renderEndpointRule(rule: EndpointRule) {
         withConditions(rule.conditions) {
             writer.withBlock("return #T(", ")", RuntimeTypes.SmithyClient.Endpoints.Endpoint) {
-                writeInline("#T.parse(", RuntimeTypes.Core.Net.Url)
+                writeInline("#T.parse(", RuntimeTypes.Core.Net.Url.Url)
                 renderExpression(rule.endpoint.url)
-                write(", #1T.DecodeAll - #1T.DecodePath),", RuntimeTypes.Core.Net.UrlDecoding)
+                write("),")
 
                 if (rule.endpoint.headers.isNotEmpty()) {
                     withBlock("headers = #T {", "},", RuntimeTypes.Http.Headers) {
@@ -163,9 +168,9 @@ class DefaultEndpointProviderGenerator(
                 }
 
                 if (rule.endpoint.properties.isNotEmpty()) {
-                    withBlock("attributes = #T {", "},", RuntimeTypes.Core.Utils.attributesOf) {
+                    withBlock("attributes = #T {", "},", RuntimeTypes.Core.Collections.attributesOf) {
                         rule.endpoint.properties.entries.forEach { (k, v) ->
-                            val kStr = k.asString()
+                            val kStr = k.toString()
 
                             // caller has a chance to generate their own value for a recognized property
                             if (kStr in propertyRenderers) {
@@ -175,7 +180,7 @@ class DefaultEndpointProviderGenerator(
 
                             // otherwise, we just traverse the value like any other rules expression, object values will
                             // be rendered as Documents
-                            writeInline("#T(#S) to ", RuntimeTypes.Core.Utils.AttributeKey, kStr)
+                            writeInline("#T(#S) to ", RuntimeTypes.Core.Collections.AttributeKey, kStr)
                             renderExpression(v)
                             ensureNewline()
                         }
@@ -204,9 +209,9 @@ class ExpressionGenerator(
     private val writer: KotlinWriter,
     private val rules: EndpointRuleSet,
     private val functions: Map<String, Symbol>,
-) : ExpressionVisitor<Unit>, Literal.Vistor<Unit>, TemplateVisitor<Unit> {
+) : ExpressionVisitor<Unit>, LiteralVisitor<Unit>, TemplateVisitor<Unit> {
     override fun visitLiteral(literal: Literal) {
-        literal.accept(this as Literal.Vistor<Unit>)
+        literal.accept(this as LiteralVisitor<Unit>)
     }
 
     override fun visitRef(reference: Reference) {
@@ -220,7 +225,7 @@ class ExpressionGenerator(
         getAttr.target.accept(this)
         getAttr.path.forEach {
             when (it) {
-                is GetAttr.Part.Key -> writer.writeInline("?.#L", it.key().asString())
+                is GetAttr.Part.Key -> writer.writeInline("?.#L", it.key().toString())
                 is GetAttr.Part.Index -> writer.writeInline("?.getOrNull(#L)", it.index())
                 else -> throw CodegenException("unexpected path")
             }
@@ -273,15 +278,15 @@ class ExpressionGenerator(
         writer.writeInline("\"")
     }
 
-    override fun visitBool(value: Boolean) {
+    override fun visitBoolean(value: Boolean) {
         writer.writeInline("#L", value)
     }
 
     override fun visitRecord(value: MutableMap<Identifier, Literal>) {
         writer.withInlineBlock("#T {", "}", RuntimeTypes.Core.Content.buildDocument) {
             value.entries.forEachIndexed { index, (k, v) ->
-                writeInline("#S to ", k.asString())
-                v.accept(this@ExpressionGenerator as Literal.Vistor<Unit>)
+                writeInline("#S to ", k.toString())
+                v.accept(this@ExpressionGenerator as LiteralVisitor<Unit>)
                 if (index < value.size - 1) write("")
             }
         }
@@ -290,7 +295,7 @@ class ExpressionGenerator(
     override fun visitTuple(value: MutableList<Literal>) {
         writer.withInlineBlock("listOf(", ")") {
             value.forEachIndexed { index, it ->
-                it.accept(this@ExpressionGenerator as Literal.Vistor<Unit>)
+                it.accept(this@ExpressionGenerator as LiteralVisitor<Unit>)
                 if (index < value.size - 1) write(",") else writeInline(",")
             }
         }
@@ -328,13 +333,15 @@ private fun List<Condition>.partition(): Pair<List<Condition>, List<Condition>> 
 
 // build an "isSet" expression that checks the nullness of the result of an assignment operation
 private fun Condition.buildResultIsSetExpression() =
-    Condition.Builder()
-        .fn(
-            IsSet.ofExpression(
-                Reference(result.get(), SourceLocation.NONE),
-            ),
-        )
+    Condition
+        .Builder()
+        .fn(isSet(Reference(result.get(), SourceLocation.NONE)))
         .build()
+
+private fun isSet(expression: Expression) =
+    IsSet
+        .getDefinition()
+        .createFunction(FunctionNode.ofExpressions(IsSet.ID, ToExpression { expression }))
 
 private fun Expression.isBooleanFunction(): Boolean {
     if (this !is LibraryFunction) {

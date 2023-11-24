@@ -20,6 +20,14 @@ pluginManagement {
     }
 }
 
+dependencyResolutionManagement {
+    repositories {
+        mavenLocal()
+        mavenCentral()
+        google()
+    }
+}
+
 sourceControl {
     gitRepository(java.net.URI("https://github.com/awslabs/aws-kotlin-repo-tools.git")) {
         producesModule("aws.sdk.kotlin:build-plugins")
@@ -31,6 +39,7 @@ rootProject.name = "smithy-kotlin"
 
 include(":dokka-smithy")
 
+include(":bom")
 include(":runtime")
 include(":runtime:auth:aws-credentials")
 include(":runtime:auth:aws-signing-common")
@@ -76,5 +85,9 @@ include(":tests:benchmarks:http-benchmarks")
 include(":tests:benchmarks:serde-benchmarks-codegen")
 include(":tests:benchmarks:serde-benchmarks")
 include(":tests:compile")
+include(":tests:codegen:nullability-tests")
 include(":tests:codegen:paginator-tests")
 include(":tests:codegen:waiter-tests")
+include(":tests:integration:slf4j-1x-consumer")
+include(":tests:integration:slf4j-2x-consumer")
+include(":tests:integration:slf4j-hybrid-consumer")

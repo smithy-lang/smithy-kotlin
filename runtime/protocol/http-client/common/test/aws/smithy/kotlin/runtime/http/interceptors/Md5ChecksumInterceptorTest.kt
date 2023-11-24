@@ -5,30 +5,27 @@
 
 package aws.smithy.kotlin.runtime.http.interceptors
 
+import aws.smithy.kotlin.runtime.collections.get
 import aws.smithy.kotlin.runtime.http.HttpBody
 import aws.smithy.kotlin.runtime.http.SdkHttpClient
-import aws.smithy.kotlin.runtime.http.content.ByteArrayContent
 import aws.smithy.kotlin.runtime.http.operation.HttpOperationContext
 import aws.smithy.kotlin.runtime.http.operation.newTestOperation
 import aws.smithy.kotlin.runtime.http.operation.roundTrip
 import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
 import aws.smithy.kotlin.runtime.httptest.TestEngine
 import aws.smithy.kotlin.runtime.io.SdkByteReadChannel
-import aws.smithy.kotlin.runtime.util.get
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
 
-@OptIn(ExperimentalCoroutinesApi::class)
 class Md5ChecksumInterceptorTest {
     private val client = SdkHttpClient(TestEngine())
 
     @Test
     fun itSetsContentMd5Header() = runTest {
         val req = HttpRequestBuilder().apply {
-            body = ByteArrayContent("<Foo>bar</Foo>".encodeToByteArray())
+            body = HttpBody.fromBytes("<Foo>bar</Foo>".encodeToByteArray())
         }
         val op = newTestOperation<Unit, Unit>(req, Unit)
 
@@ -67,7 +64,7 @@ class Md5ChecksumInterceptorTest {
     @Test
     fun itDoesNotSetContentMd5Header() = runTest {
         val req = HttpRequestBuilder().apply {
-            body = ByteArrayContent("<Foo>bar</Foo>".encodeToByteArray())
+            body = HttpBody.fromBytes("<Foo>bar</Foo>".encodeToByteArray())
         }
         val op = newTestOperation<Unit, Unit>(req, Unit)
 

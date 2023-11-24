@@ -5,9 +5,9 @@
 
 package aws.smithy.kotlin.runtime.telemetry.metrics
 
+import aws.smithy.kotlin.runtime.collections.Attributes
+import aws.smithy.kotlin.runtime.collections.emptyAttributes
 import aws.smithy.kotlin.runtime.telemetry.context.Context
-import aws.smithy.kotlin.runtime.util.Attributes
-import aws.smithy.kotlin.runtime.util.emptyAttributes
 
 /**
  * Callback parameter passed to record a gauge value

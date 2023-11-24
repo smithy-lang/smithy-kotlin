@@ -26,7 +26,7 @@ class RedirectTest : AbstractEngineTest() {
         test { env, client ->
             val req = HttpRequest {
                 testSetup(env)
-                url.path = path
+                url.path.decoded = path
             }
 
             val call = client.call(req)

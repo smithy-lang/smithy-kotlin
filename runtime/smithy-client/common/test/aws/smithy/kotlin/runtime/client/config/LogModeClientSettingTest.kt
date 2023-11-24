@@ -9,13 +9,11 @@ import aws.smithy.kotlin.runtime.ClientException
 import aws.smithy.kotlin.runtime.client.LogMode
 import aws.smithy.kotlin.runtime.config.resolve
 import aws.smithy.kotlin.runtime.util.TestPlatformProvider
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 
-@OptIn(ExperimentalCoroutinesApi::class)
 class LogModeClientSettingTest {
 
     @Test

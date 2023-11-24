@@ -6,17 +6,14 @@
 package aws.smithy.kotlin.runtime.httptest
 
 import aws.smithy.kotlin.runtime.http.*
-import aws.smithy.kotlin.runtime.http.content.ByteArrayContent
 import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
 import aws.smithy.kotlin.runtime.net.Host
 import io.kotest.matchers.string.shouldContain
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFails
 
-@OptIn(ExperimentalCoroutinesApi::class)
 class TestConnectionTest {
     @Test
     fun testAssertRequestsSuccess() = runTest {
@@ -24,9 +21,9 @@ class TestConnectionTest {
             expect {
                 request {
                     url.host = Host.Domain("test.com")
-                    url.path = "/turtles-all-the-way-down"
+                    url.path.decoded = "/turtles-all-the-way-down"
                     headers.append("x-foo", "bar")
-                    body = ByteArrayContent("tests for your tests".encodeToByteArray())
+                    body = HttpBody.fromBytes("tests for your tests".encodeToByteArray())
                 }
             }
         }
@@ -35,10 +32,10 @@ class TestConnectionTest {
 
         val req = HttpRequestBuilder().apply {
             url.host = Host.Domain("test.com")
-            url.path = "/turtles-all-the-way-down"
+            url.path.decoded = "/turtles-all-the-way-down"
             headers.append("x-foo", "bar")
             headers.append("x-qux", "quux")
-            body = ByteArrayContent("tests for your tests".encodeToByteArray())
+            body = HttpBody.fromBytes("tests for your tests".encodeToByteArray())
         }
         client.call(req).complete()
 
@@ -51,9 +48,9 @@ class TestConnectionTest {
             expect {
                 request {
                     url.host = Host.Domain("test.com")
-                    url.path = "/turtles-all-the-way-down"
+                    url.path.decoded = "/turtles-all-the-way-down"
                     headers.append("x-foo", "bar")
-                    body = ByteArrayContent("tests for your tests".encodeToByteArray())
+                    body = HttpBody.fromBytes("tests for your tests".encodeToByteArray())
                 }
             }
         }
@@ -62,7 +59,7 @@ class TestConnectionTest {
 
         val req = HttpRequestBuilder().apply {
             url.host = Host.Domain("test.com")
-            url.path = "/tests-for-your-tests"
+            url.path.decoded = "/tests-for-your-tests"
             headers.append("x-foo", "bar")
         }
         client.call(req).complete()
@@ -78,7 +75,7 @@ class TestConnectionTest {
             expect {
                 request {
                     url.host = Host.Domain("test.com")
-                    url.path = "/turtles-all-the-way-down"
+                    url.path.decoded = "/turtles-all-the-way-down"
                     headers.append("x-foo", "bar")
                     headers.append("x-baz", "qux")
                 }
@@ -89,7 +86,7 @@ class TestConnectionTest {
 
         val req = HttpRequestBuilder().apply {
             url.host = Host.Domain("test.com")
-            url.path = "/turtles-all-the-way-down"
+            url.path.decoded = "/turtles-all-the-way-down"
             headers.append("x-foo", "bar")
         }
         client.call(req).complete()
@@ -105,9 +102,9 @@ class TestConnectionTest {
             expect {
                 request {
                     url.host = Host.Domain("test.com")
-                    url.path = "/turtles-all-the-way-down"
+                    url.path.decoded = "/turtles-all-the-way-down"
                     headers.append("x-foo", "bar")
-                    body = ByteArrayContent("tests for your tests".encodeToByteArray())
+                    body = HttpBody.fromBytes("tests for your tests".encodeToByteArray())
                 }
             }
         }
@@ -116,9 +113,9 @@ class TestConnectionTest {
 
         val req = HttpRequestBuilder().apply {
             url.host = Host.Domain("test.com")
-            url.path = "/turtles-all-the-way-down"
+            url.path.decoded = "/turtles-all-the-way-down"
             headers.append("x-foo", "bar")
-            body = ByteArrayContent("tests are good".encodeToByteArray())
+            body = HttpBody.fromBytes("tests are good".encodeToByteArray())
         }
         client.call(req).complete()
 
@@ -133,9 +130,9 @@ class TestConnectionTest {
             expect {
                 request {
                     url.host = Host.Domain("test.com")
-                    url.path = "/turtles-all-the-way-down"
+                    url.path.decoded = "/turtles-all-the-way-down"
                     headers.append("x-foo", "bar")
-                    body = ByteArrayContent("tests for your tests".encodeToByteArray())
+                    body = HttpBody.fromBytes("tests for your tests".encodeToByteArray())
                 }
             }
             // ANY request
@@ -146,10 +143,10 @@ class TestConnectionTest {
 
         val req = HttpRequestBuilder().apply {
             url.host = Host.Domain("test.com")
-            url.path = "/turtles-all-the-way-down"
+            url.path.decoded = "/turtles-all-the-way-down"
             headers.append("x-foo", "bar")
             headers.append("x-qux", "quux")
-            body = ByteArrayContent("tests for your tests".encodeToByteArray())
+            body = HttpBody.fromBytes("tests for your tests".encodeToByteArray())
         }
         client.call(req).complete()
         client.call(
@@ -203,11 +200,11 @@ class TestConnectionTest {
         val req = HttpRequestBuilder().apply {
             method = HttpMethod.POST
             url.host = Host.Domain("test.aws.com")
-            url.path = "/turtles-all-the-way-down"
-            url.parameters.append("q1", "v1")
+            url.path.decoded = "/turtles-all-the-way-down"
+            url.parameters.decodedParameters.add("q1", "v1")
             headers.append("foo", "bar")
             headers.appendAll("baz", listOf("one", "two"))
-            body = ByteArrayContent("tests for your tests".encodeToByteArray())
+            body = HttpBody.fromBytes("tests for your tests".encodeToByteArray())
         }
 
         val call1 = client.call(req)

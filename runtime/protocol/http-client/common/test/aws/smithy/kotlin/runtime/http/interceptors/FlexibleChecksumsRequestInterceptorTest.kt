@@ -6,9 +6,9 @@
 package aws.smithy.kotlin.runtime.http.interceptors
 
 import aws.smithy.kotlin.runtime.ClientException
+import aws.smithy.kotlin.runtime.collections.get
 import aws.smithy.kotlin.runtime.hashing.toHashFunction
 import aws.smithy.kotlin.runtime.http.*
-import aws.smithy.kotlin.runtime.http.content.ByteArrayContent
 import aws.smithy.kotlin.runtime.http.operation.HttpOperationContext
 import aws.smithy.kotlin.runtime.http.operation.newTestOperation
 import aws.smithy.kotlin.runtime.http.operation.roundTrip
@@ -16,14 +16,11 @@ import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
 import aws.smithy.kotlin.runtime.http.request.headers
 import aws.smithy.kotlin.runtime.httptest.TestEngine
 import aws.smithy.kotlin.runtime.io.*
-import aws.smithy.kotlin.runtime.util.encodeBase64String
-import aws.smithy.kotlin.runtime.util.get
+import aws.smithy.kotlin.runtime.text.encoding.encodeBase64String
 import kotlinx.coroutines.CompletableDeferred
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import kotlin.test.*
 
-@OptIn(ExperimentalCoroutinesApi::class)
 class FlexibleChecksumsRequestInterceptorTest {
     private val client = SdkHttpClient(TestEngine())
 
@@ -38,7 +35,7 @@ class FlexibleChecksumsRequestInterceptorTest {
     fun itSetsChecksumHeader() = runTest {
         checksums.forEach { (checksumAlgorithmName, expectedChecksumValue) ->
             val req = HttpRequestBuilder().apply {
-                body = ByteArrayContent("<Foo>bar</Foo>".encodeToByteArray())
+                body = HttpBody.fromBytes("<Foo>bar</Foo>".encodeToByteArray())
             }
 
             val op = newTestOperation<Unit, Unit>(req, Unit)
@@ -58,7 +55,7 @@ class FlexibleChecksumsRequestInterceptorTest {
     @Test
     fun itAllowsOnlyOneChecksumHeader() = runTest {
         val req = HttpRequestBuilder().apply {
-            body = ByteArrayContent("<Foo>bar</Foo>".encodeToByteArray())
+            body = HttpBody.fromBytes("<Foo>bar</Foo>".encodeToByteArray())
         }
         req.headers { append("x-amz-checksum-sha256", "sha256-checksum-value") }
         req.headers { append("x-amz-checksum-crc32", "crc32-checksum-value") }
@@ -83,7 +80,7 @@ class FlexibleChecksumsRequestInterceptorTest {
     @Test
     fun itThrowsOnUnsupportedChecksumAlgorithm() = runTest {
         val req = HttpRequestBuilder().apply {
-            body = ByteArrayContent("<Foo>bar</Foo>".encodeToByteArray())
+            body = HttpBody.fromBytes("<Foo>bar</Foo>".encodeToByteArray())
         }
 
         val unsupportedChecksumAlgorithmName = "fooblefabble1024"
@@ -106,7 +103,7 @@ class FlexibleChecksumsRequestInterceptorTest {
         val req = HttpRequestBuilder().apply {
             body = object : HttpBody.SourceContent() {
                 override val contentLength: Long = 1024 * 1024 * 128
-                override fun readFrom(): SdkSource = "a".repeat(contentLength.toInt()).toByteArray().source()
+                override fun readFrom(): SdkSource = "a".repeat(contentLength.toInt()).encodeToByteArray().source()
                 override val isOneShot: Boolean get() = false
             }
         }
@@ -145,7 +142,7 @@ class FlexibleChecksumsRequestInterceptorTest {
         expectedHash.update(byteArray)
 
         assertTrue(completableDeferred.isCompleted)
-        assertEquals(expectedHash.digest().encodeBase64String(), completableDeferred.getCompleted())
+        assertEquals(expectedHash.digest().encodeBase64String(), completableDeferred.await())
     }
 
     @Test
@@ -167,13 +164,13 @@ class FlexibleChecksumsRequestInterceptorTest {
         expectedHash.update(byteArray)
 
         assertTrue(completableDeferred.isCompleted)
-        assertEquals(expectedHash.digest().encodeBase64String(), completableDeferred.getCompleted())
+        assertEquals(expectedHash.digest().encodeBase64String(), completableDeferred.await())
     }
 
     @Test
     fun itUsesPrecalculatedChecksum() = runTest {
         val req = HttpRequestBuilder().apply {
-            body = ByteArrayContent("<Foo>bar</Foo>".encodeToByteArray())
+            body = HttpBody.fromBytes("<Foo>bar</Foo>".encodeToByteArray())
         }
         val checksumAlgorithmName = "sha256"
         val precalculatedChecksumValue = "sha256-checksum-value"
@@ -194,7 +191,5 @@ class FlexibleChecksumsRequestInterceptorTest {
         assertEquals(precalculatedChecksumValue, call.request.headers["x-amz-checksum-sha256"])
     }
 
-    private fun Headers.getNumChecksumHeaders(): Long = entries().stream()
-        .filter { (name, _) -> name.startsWith("x-amz-checksum-") }
-        .count()
+    private fun Headers.getNumChecksumHeaders(): Int = entries().count { (name, _) -> name.startsWith("x-amz-checksum-") }
 }

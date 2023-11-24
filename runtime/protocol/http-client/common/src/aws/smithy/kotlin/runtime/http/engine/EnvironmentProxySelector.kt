@@ -8,8 +8,11 @@ package aws.smithy.kotlin.runtime.http.engine
 import aws.smithy.kotlin.runtime.ClientException
 import aws.smithy.kotlin.runtime.net.Host
 import aws.smithy.kotlin.runtime.net.Scheme
-import aws.smithy.kotlin.runtime.net.Url
-import aws.smithy.kotlin.runtime.util.*
+import aws.smithy.kotlin.runtime.net.url.Url
+import aws.smithy.kotlin.runtime.util.EnvironmentProvider
+import aws.smithy.kotlin.runtime.util.PlatformEnvironProvider
+import aws.smithy.kotlin.runtime.util.PlatformProvider
+import aws.smithy.kotlin.runtime.util.PropertyProvider
 
 /**
  * Select a proxy via environment. This selector will look for
@@ -61,7 +64,11 @@ private fun resolveProxyByProperty(provider: PropertyProvider, scheme: Scheme): 
         val proxyProtocol = Scheme.HTTP
 
         val url = try {
-            Url(proxyProtocol, Host.parse(hostName), proxyPortProp?.toInt() ?: scheme.defaultPort)
+            Url {
+                this.scheme = proxyProtocol
+                host = Host.parse(hostName)
+                proxyPortProp?.let { port = it.toInt() }
+            }
         } catch (e: Exception) {
             val parsed = buildString {
                 append("""$hostPropName="$proxyHostProp"""")

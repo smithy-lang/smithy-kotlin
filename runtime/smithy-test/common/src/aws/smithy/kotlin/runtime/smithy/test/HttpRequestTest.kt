@@ -2,19 +2,14 @@
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
  * SPDX-License-Identifier: Apache-2.0
  */
-@file:OptIn(ExperimentalCoroutinesApi::class)
-
 package aws.smithy.kotlin.runtime.smithy.test
 
 import aws.smithy.kotlin.runtime.http.HeadersBuilder
 import aws.smithy.kotlin.runtime.http.HttpBody
 import aws.smithy.kotlin.runtime.http.HttpMethod
-import aws.smithy.kotlin.runtime.http.content.ByteArrayContent
 import aws.smithy.kotlin.runtime.http.engine.HttpClientEngine
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.httptest.TestEngine
-import aws.smithy.kotlin.runtime.util.text.urlEncodeComponent
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.TestResult
 import kotlinx.coroutines.test.runTest
 import kotlin.test.assertEquals
@@ -87,25 +82,25 @@ public fun httpRequestTest(block: HttpRequestTestBuilder.() -> Unit): TestResult
     assertRequest(testBuilder.expected.build(), actual)
 }
 
-@OptIn(ExperimentalStdlibApi::class)
 private suspend fun assertRequest(expected: ExpectedHttpRequest, actual: HttpRequest) {
     // run the assertions
     assertEquals(expected.method, actual.method, "expected method: `${expected.method}`; got: `${actual.method}`")
-    assertEquals(expected.uri, actual.url.path, "expected path: `${expected.uri}`; got: `${actual.url.path}`")
+    assertEquals(expected.uri, actual.url.path.toString(), "expected path: `${expected.uri}`; got: `${actual.url.path}`")
 
-    // have to deal with URL encoding
-    expected.queryParams.forEach { (name, value) ->
-        val actualValues = actual.url.parameters.getAll(name)
-        assertNotNull(actualValues, "expected query parameter `$name`; no values found")
-        assertTrue(actualValues.map { it.urlEncodeComponent() }.contains(value), "expected query name value pair not found: `$name:$value`")
+    val actualParams = actual.url.parameters.encodedParameters
+
+    expected.queryParams.forEach { (key, value) ->
+        val actualValues = actualParams[key]
+        assertNotNull(actualValues, "expected query parameter `$key`; no values found")
+        assertTrue(value in actualValues, "Query parameter `$key` does not contain expected value `$value`. Actual values: ${actualValues.joinToString(", ", "[", "]")}")
     }
 
     expected.forbiddenQueryParams.forEach {
-        assertFalse(actual.url.parameters.contains(it), "forbidden query parameter found: `$it`")
+        assertFalse(it in actualParams, "forbidden query parameter found: `$it`")
     }
 
     expected.requiredQueryParams.forEach {
-        assertTrue(actual.url.parameters.contains(it), "expected required query parameter not found: `$it`")
+        assertTrue(it in actualParams, "expected required query parameter not found: `$it`")
     }
 
     expected.headers.forEach { (name, value) ->
@@ -133,7 +128,7 @@ private suspend fun assertRequest(expected: ExpectedHttpRequest, actual: HttpReq
 
     val expectedBody = expected.body?.let {
         assertNotNull(expected.bodyAssert, "body assertion function is required if an expected body is defined")
-        ByteArrayContent(it.encodeToByteArray())
+        HttpBody.fromBytes(it.encodeToByteArray())
     }
 
     expected.bodyAssert?.invoke(expectedBody, actual.body)

@@ -9,7 +9,7 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.currentTime
 import kotlinx.coroutines.test.testTimeSource
-import org.junit.jupiter.api.Assertions.assertEquals
+import kotlin.test.assertEquals
 import kotlin.time.Duration
 import kotlin.time.ExperimentalTime
 import kotlin.time.measureTimedValue
@@ -18,9 +18,11 @@ import kotlin.time.measureTimedValue
 suspend fun <T> TestScope.assertTime(expectedDuration: Duration, block: suspend () -> T): T {
     val (result, actualDuration) = testTimeSource.measureTimedValue { block() }
 
-    assertEquals(expectedDuration, actualDuration) {
-        "Actual duration $actualDuration doesn't match expected duration $expectedDuration"
-    }
+    assertEquals(
+        expectedDuration,
+        actualDuration,
+        "Actual duration $actualDuration doesn't match expected duration $expectedDuration",
+    )
 
     return result
 }

@@ -15,7 +15,7 @@ buildscript {
         // Add our custom gradle plugin(s) to buildscript classpath (comes from github source)
         classpath("aws.sdk.kotlin:build-plugins") {
             version {
-                require("0.2.2")
+                require("0.2.9")
             }
         }
     }
@@ -30,13 +30,13 @@ plugins {
 // configures (KMP) subprojects with our own KMP conventions and some default dependencies
 apply(plugin = "aws.sdk.kotlin.kmp")
 
-allprojects {
-    repositories {
-        mavenLocal()
-        mavenCentral()
-        google()
-    }
+val testJavaVersion = typedProp<String>("test.java.version")?.let {
+    JavaLanguageVersion.of(it)
+}?.also {
+    println("configuring tests to run with jdk $it")
+}
 
+allprojects {
     tasks.withType<org.jetbrains.dokka.gradle.AbstractDokkaTask>().configureEach {
         val sdkVersion: String by project
         moduleVersion.set(sdkVersion)
@@ -61,12 +61,23 @@ allprojects {
         )
         pluginsMapConfiguration.set(pluginConfigMap)
     }
-}
 
-if (project.typedProp<Boolean>("kotlinWarningsAsErrors") == true) {
-    subprojects {
+    if (rootProject.typedProp<Boolean>("kotlinWarningsAsErrors") == true) {
         tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
             kotlinOptions.allWarningsAsErrors = true
+        }
+    }
+
+    if (testJavaVersion != null) {
+        tasks.withType<Test> {
+            // JDK8 tests fail with out of memory sometimes, not sure why...
+            maxHeapSize = "2g"
+            val toolchains = project.extensions.getByType<JavaToolchainService>()
+            javaLauncher.set(
+                toolchains.launcherFor {
+                    languageVersion.set(testJavaVersion)
+                },
+            )
         }
     }
 }
@@ -79,7 +90,9 @@ tasks.dokkaHtmlMultiModule.configure {
     // This is especially important for inter-repo linking (e.g., via externalDocumentationLink) because the
     // package-list doesn't contain enough project path information to indicate where modules' documentation are
     // located.
-    fileLayout.set { parent, child -> parent.outputDirectory.get().resolve(child.project.name) }
+    fileLayout.set { parent, child ->
+        parent.outputDirectory.dir(child.moduleName)
+    }
 
     includes.from(
         // NOTE: these get concatenated
@@ -124,9 +137,12 @@ apiValidation {
             "http-benchmarks",
             "serde-benchmarks",
             "serde-benchmarks-codegen",
+            "nullability-tests",
             "paginator-tests",
             "waiter-tests",
             "compile",
+            "slf4j-1x-consumer",
+            "slf4j-2x-consumer",
         ),
     )
 }

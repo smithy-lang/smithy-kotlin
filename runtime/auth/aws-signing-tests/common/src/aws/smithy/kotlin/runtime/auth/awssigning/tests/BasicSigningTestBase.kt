@@ -6,17 +6,16 @@ package aws.smithy.kotlin.runtime.auth.awssigning.tests
 
 import aws.smithy.kotlin.runtime.auth.awscredentials.Credentials
 import aws.smithy.kotlin.runtime.auth.awssigning.*
+import aws.smithy.kotlin.runtime.http.HttpBody
 import aws.smithy.kotlin.runtime.http.HttpMethod
-import aws.smithy.kotlin.runtime.http.content.ByteArrayContent
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
 import aws.smithy.kotlin.runtime.http.request.headers
 import aws.smithy.kotlin.runtime.http.request.url
 import aws.smithy.kotlin.runtime.net.Host
 import aws.smithy.kotlin.runtime.net.Scheme
-import aws.smithy.kotlin.runtime.net.Url
+import aws.smithy.kotlin.runtime.net.url.Url
 import aws.smithy.kotlin.runtime.time.Instant
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.TestResult
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
@@ -47,7 +46,6 @@ private const val EXPECTED_FINAL_CHUNK_SIGNATURE = "b6c6ea8a5354eaf15b3cb7646744
 private val EMPTY_BYTES = byteArrayOf()
 
 @Suppress("HttpUrlsUsage")
-@OptIn(ExperimentalCoroutinesApi::class)
 public abstract class BasicSigningTestBase : HasSigner {
     private val defaultSigningConfig = AwsSigningConfig {
         region = "us-east-1"
@@ -64,11 +62,11 @@ public abstract class BasicSigningTestBase : HasSigner {
             method = HttpMethod.POST
             url.scheme = Scheme.HTTP
             url.host = Host.Domain("demo.us-east-1.amazonaws.com")
-            url.path = "/"
+            url.path.encoded = "/"
             headers.append("Host", "demo.us-east-1.amazonaws.com")
             headers.appendAll("x-amz-archive-description", listOf("test", "test"))
             val requestBody = "{\"TableName\": \"foo\"}"
-            body = ByteArrayContent(requestBody.encodeToByteArray())
+            body = HttpBody.fromBytes(requestBody.encodeToByteArray())
             headers.append("Content-Length", body.contentLength?.toString() ?: "0")
         }.build()
 
@@ -92,11 +90,11 @@ public abstract class BasicSigningTestBase : HasSigner {
             method = HttpMethod.POST
             url.scheme = Scheme.HTTP
             url.host = Host.Domain("demo.us-east-1.amazonaws.com")
-            url.path = "/"
+            url.path.encoded = "/"
             headers.append("Host", "demo.us-east-1.amazonaws.com")
             headers.appendAll("x-amz-archive-description", listOf("test", "test"))
             val requestBody = "{\"TableName\": \"foo\"}"
-            body = ByteArrayContent(requestBody.encodeToByteArray())
+            body = HttpBody.fromBytes(requestBody.encodeToByteArray())
             headers.append("Content-Length", body.contentLength?.toString() ?: "0")
         }.build()
 
@@ -197,10 +195,10 @@ public abstract class BasicSigningTestBase : HasSigner {
             method = HttpMethod.POST
             url.scheme = Scheme.HTTP
             url.host = Host.Domain("test.amazonaws.com")
-            url.path = "/"
+            url.path.encoded = "/"
             headers.append("Host", "test.amazonaws.com")
             headers.appendAll("x-amz-archive-description", listOf("test", "test"))
-            body = ByteArrayContent("body".encodeToByteArray())
+            body = HttpBody.fromBytes("body".encodeToByteArray())
             headers.append("Content-Length", body.contentLength?.toString() ?: "0")
         }
 

@@ -6,13 +6,13 @@ package aws.smithy.kotlin.runtime.http.engine.internal
 
 import aws.smithy.kotlin.runtime.ExperimentalApi
 import aws.smithy.kotlin.runtime.InternalApi
+import aws.smithy.kotlin.runtime.collections.Attributes
+import aws.smithy.kotlin.runtime.collections.attributesOf
 import aws.smithy.kotlin.runtime.io.Closeable
 import aws.smithy.kotlin.runtime.telemetry.TelemetryProvider
 import aws.smithy.kotlin.runtime.telemetry.metrics.DoubleHistogram
 import aws.smithy.kotlin.runtime.telemetry.metrics.LongAsyncMeasurement
 import aws.smithy.kotlin.runtime.telemetry.metrics.MonotonicCounter
-import aws.smithy.kotlin.runtime.util.Attributes
-import aws.smithy.kotlin.runtime.util.attributesOf
 import kotlinx.atomicfu.atomic
 import kotlinx.atomicfu.update
 

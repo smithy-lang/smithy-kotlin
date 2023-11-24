@@ -6,11 +6,14 @@
 package aws.smithy.kotlin.runtime.serde.xml.dom
 
 import aws.smithy.kotlin.runtime.InternalApi
+import aws.smithy.kotlin.runtime.collections.ListStack
+import aws.smithy.kotlin.runtime.collections.pop
+import aws.smithy.kotlin.runtime.collections.push
+import aws.smithy.kotlin.runtime.collections.top
 import aws.smithy.kotlin.runtime.serde.DeserializationException
 import aws.smithy.kotlin.runtime.serde.xml.XmlStreamReader
 import aws.smithy.kotlin.runtime.serde.xml.XmlToken
 import aws.smithy.kotlin.runtime.serde.xml.xmlStreamReader
-import aws.smithy.kotlin.runtime.util.*
 
 /**
  * DOM representation of an XML document

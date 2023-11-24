@@ -14,7 +14,7 @@ import software.amazon.smithy.model.node.BooleanNode
 import software.amazon.smithy.model.node.Node
 import software.amazon.smithy.model.node.StringNode
 import software.amazon.smithy.rulesengine.language.EndpointRuleSet
-import software.amazon.smithy.rulesengine.language.syntax.expr.Expression
+import software.amazon.smithy.rulesengine.language.syntax.expressions.Expression
 import software.amazon.smithy.rulesengine.traits.EndpointTestCase
 
 /**
@@ -22,7 +22,7 @@ import software.amazon.smithy.rulesengine.traits.EndpointTestCase
  */
 class DefaultEndpointProviderTestGenerator(
     private val writer: KotlinWriter,
-    private val rules: EndpointRuleSet,
+    rules: EndpointRuleSet,
     private val cases: List<EndpointTestCase>,
     private val providerSymbol: Symbol,
     private val paramsSymbol: Symbol,
@@ -40,7 +40,7 @@ class DefaultEndpointProviderTestGenerator(
 
     private val expressionGenerator = ExpressionGenerator(writer, rules, emptyMap()) // functions can't be referenced in property declarations
 
-    private val paramNames = rules.parameters.toList().map { it.name.asString() }
+    private val paramNames = rules.parameters.toList().map { it.name.toString() }
 
     private val runTestSymbol = buildSymbol {
         name = "runTest"
@@ -106,12 +106,7 @@ class DefaultEndpointProviderTestGenerator(
         }
 
         writer.withBlock("val expected = #T(", ")", RuntimeTypes.SmithyClient.Endpoints.Endpoint) {
-            write(
-                "uri = #1T.parse(#2S, #3T.DecodeAll - #3T.DecodePath),",
-                RuntimeTypes.Core.Net.Url,
-                endpoint.url,
-                RuntimeTypes.Core.Net.UrlDecoding,
-            )
+            write("uri = #T.parse(#S),", RuntimeTypes.Core.Net.Url.Url, endpoint.url)
 
             if (endpoint.headers.isNotEmpty()) {
                 withBlock("headers = #T {", "},", RuntimeTypes.Http.Headers) {
@@ -124,14 +119,14 @@ class DefaultEndpointProviderTestGenerator(
             }
 
             if (endpoint.properties.isNotEmpty()) {
-                withBlock("attributes = #T {", "},", RuntimeTypes.Core.Utils.attributesOf) {
+                withBlock("attributes = #T {", "},", RuntimeTypes.Core.Collections.attributesOf) {
                     endpoint.properties.entries.forEach { (k, v) ->
                         if (k in expectedPropertyRenderers) {
                             expectedPropertyRenderers[k]!!(writer, Expression.fromNode(v), this@DefaultEndpointProviderTestGenerator)
                             return@forEach
                         }
 
-                        writeInline("#T(#S) to ", RuntimeTypes.Core.Utils.AttributeKey, k)
+                        writeInline("#T(#S) to ", RuntimeTypes.Core.Collections.AttributeKey, k)
                         renderExpression(Expression.fromNode(v))
                         ensureNewline()
                     }

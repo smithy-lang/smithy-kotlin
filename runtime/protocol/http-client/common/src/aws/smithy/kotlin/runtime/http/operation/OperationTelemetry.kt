@@ -8,15 +8,14 @@ package aws.smithy.kotlin.runtime.http.operation
 import aws.smithy.kotlin.runtime.ExperimentalApi
 import aws.smithy.kotlin.runtime.InternalApi
 import aws.smithy.kotlin.runtime.client.*
+import aws.smithy.kotlin.runtime.collections.*
 import aws.smithy.kotlin.runtime.http.interceptors.OperationTelemetryInterceptor
 import aws.smithy.kotlin.runtime.telemetry.TelemetryProvider
 import aws.smithy.kotlin.runtime.telemetry.TelemetryProviderContext
 import aws.smithy.kotlin.runtime.telemetry.logging.LoggingContextElement
 import aws.smithy.kotlin.runtime.telemetry.trace.SpanKind
 import aws.smithy.kotlin.runtime.telemetry.trace.TraceSpan
-import aws.smithy.kotlin.runtime.util.*
 import kotlin.coroutines.CoroutineContext
-import kotlin.time.ExperimentalTime
 
 /**
  * Telemetry parameters used to instrument an operation
@@ -52,7 +51,7 @@ public inline fun<I, O> SdkHttpOperationBuilder<I, O>.telemetry(block: SdkOperat
  * @return the span for the operation and the additional coroutine context to execute the operation with containing
  * telemetry elements.
  */
-@OptIn(ExperimentalTime::class, ExperimentalApi::class)
+@OptIn(ExperimentalApi::class)
 internal fun<I, O> SdkHttpOperation<I, O>.instrument(): Pair<TraceSpan, CoroutineContext> {
     val serviceName = checkNotNull(context.serviceName)
     val opName = checkNotNull(context.operationName)

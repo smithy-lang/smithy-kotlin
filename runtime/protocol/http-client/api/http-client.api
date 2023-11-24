@@ -44,6 +44,7 @@ public final class aws/smithy/kotlin/runtime/http/engine/AlpnId : java/lang/Enum
 	public static final field HTTP1_1 Laws/smithy/kotlin/runtime/http/engine/AlpnId;
 	public static final field HTTP2 Laws/smithy/kotlin/runtime/http/engine/AlpnId;
 	public static final field HTTP3 Laws/smithy/kotlin/runtime/http/engine/AlpnId;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
 	public final fun getProtocolId ()Ljava/lang/String;
 	public static fun valueOf (Ljava/lang/String;)Laws/smithy/kotlin/runtime/http/engine/AlpnId;
 	public static fun values ()[Laws/smithy/kotlin/runtime/http/engine/AlpnId;
@@ -123,20 +124,20 @@ public final class aws/smithy/kotlin/runtime/http/engine/ProxyConfig$Direct : aw
 }
 
 public final class aws/smithy/kotlin/runtime/http/engine/ProxyConfig$Http : aws/smithy/kotlin/runtime/http/engine/ProxyConfig {
-	public fun <init> (Laws/smithy/kotlin/runtime/net/Url;)V
+	public fun <init> (Laws/smithy/kotlin/runtime/net/url/Url;)V
 	public fun <init> (Ljava/lang/String;)V
-	public final fun component1 ()Laws/smithy/kotlin/runtime/net/Url;
-	public final fun copy (Laws/smithy/kotlin/runtime/net/Url;)Laws/smithy/kotlin/runtime/http/engine/ProxyConfig$Http;
-	public static synthetic fun copy$default (Laws/smithy/kotlin/runtime/http/engine/ProxyConfig$Http;Laws/smithy/kotlin/runtime/net/Url;ILjava/lang/Object;)Laws/smithy/kotlin/runtime/http/engine/ProxyConfig$Http;
+	public final fun component1 ()Laws/smithy/kotlin/runtime/net/url/Url;
+	public final fun copy (Laws/smithy/kotlin/runtime/net/url/Url;)Laws/smithy/kotlin/runtime/http/engine/ProxyConfig$Http;
+	public static synthetic fun copy$default (Laws/smithy/kotlin/runtime/http/engine/ProxyConfig$Http;Laws/smithy/kotlin/runtime/net/url/Url;ILjava/lang/Object;)Laws/smithy/kotlin/runtime/http/engine/ProxyConfig$Http;
 	public fun equals (Ljava/lang/Object;)Z
-	public final fun getUrl ()Laws/smithy/kotlin/runtime/net/Url;
+	public final fun getUrl ()Laws/smithy/kotlin/runtime/net/url/Url;
 	public fun hashCode ()I
 	public fun toString ()Ljava/lang/String;
 }
 
 public abstract interface class aws/smithy/kotlin/runtime/http/engine/ProxySelector {
 	public static final field Companion Laws/smithy/kotlin/runtime/http/engine/ProxySelector$Companion;
-	public abstract fun select (Laws/smithy/kotlin/runtime/net/Url;)Laws/smithy/kotlin/runtime/http/engine/ProxyConfig;
+	public abstract fun select (Laws/smithy/kotlin/runtime/net/url/Url;)Laws/smithy/kotlin/runtime/http/engine/ProxyConfig;
 }
 
 public final class aws/smithy/kotlin/runtime/http/engine/ProxySelector$Companion {
@@ -146,15 +147,15 @@ public final class aws/smithy/kotlin/runtime/http/engine/ProxySelector$Companion
 public final class aws/smithy/kotlin/runtime/http/engine/TlsContext {
 	public static final field Companion Laws/smithy/kotlin/runtime/http/engine/TlsContext$Companion;
 	public final fun getAlpn ()Ljava/util/List;
-	public final fun getMinVersion ()Laws/smithy/kotlin/runtime/config/TlsVersion;
+	public final fun getMinVersion ()Laws/smithy/kotlin/runtime/net/TlsVersion;
 }
 
 public final class aws/smithy/kotlin/runtime/http/engine/TlsContext$Builder {
 	public fun <init> ()V
 	public final fun getAlpn ()Ljava/util/List;
-	public final fun getMinVersion ()Laws/smithy/kotlin/runtime/config/TlsVersion;
+	public final fun getMinVersion ()Laws/smithy/kotlin/runtime/net/TlsVersion;
 	public final fun setAlpn (Ljava/util/List;)V
-	public final fun setMinVersion (Laws/smithy/kotlin/runtime/config/TlsVersion;)V
+	public final fun setMinVersion (Laws/smithy/kotlin/runtime/net/TlsVersion;)V
 }
 
 public final class aws/smithy/kotlin/runtime/http/engine/TlsContext$Companion {

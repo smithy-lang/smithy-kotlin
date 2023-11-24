@@ -22,8 +22,13 @@ kotlin {
                 implementation(project(":runtime:protocol:http-client"))
                 implementation(project(":runtime:protocol:http-test"))
                 implementation(project(":runtime:auth:aws-signing-default"))
-                implementation(project(":runtime:auth:aws-signing-crt"))
                 implementation(libs.kotlinx.coroutines.test)
+            }
+        }
+
+        jvmTest {
+            dependencies {
+                implementation(project(":runtime:auth:aws-signing-crt"))
             }
         }
 

@@ -8,6 +8,7 @@ package aws.smithy.kotlin.runtime.http.operation
 import aws.smithy.kotlin.runtime.InternalApi
 import aws.smithy.kotlin.runtime.client.endpoints.Endpoint
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
+import aws.smithy.kotlin.runtime.http.request.url
 import aws.smithy.kotlin.runtime.identity.Identity
 import aws.smithy.kotlin.runtime.net.Host
 import aws.smithy.kotlin.runtime.operation.ExecutionContext
@@ -49,21 +50,20 @@ public data class ResolveEndpointRequest(
 public fun setResolvedEndpoint(req: SdkHttpRequest, endpoint: Endpoint) {
     val hostPrefix = req.context.getOrNull(HttpOperationContext.HostPrefix) ?: ""
     val hostname = "$hostPrefix${endpoint.uri.host}"
-    val joinedPath = buildString {
-        append(endpoint.uri.path.removeSuffix("/"))
-        if (req.subject.url.path.isNotBlank()) {
-            append("/")
-            append(req.subject.url.path.removePrefix("/"))
-        }
-    }
 
-    req.subject.url.scheme = endpoint.uri.scheme
-    req.subject.url.userInfo = endpoint.uri.userInfo
-    req.subject.url.host = Host.parse(hostname)
-    req.subject.url.port = endpoint.uri.port
-    req.subject.url.path = joinedPath
-    req.subject.url.parameters.appendAll(endpoint.uri.parameters)
-    req.subject.url.fragment = endpoint.uri.fragment
+    req.subject.url {
+        // Can't use Url.Builder.copyFrom because we need to keep existing path/parameters and merge in new ones
+        scheme = endpoint.uri.scheme
+        userInfo.copyFrom(endpoint.uri.userInfo)
+        host = Host.parse(hostname)
+        port = endpoint.uri.port
+        path {
+            trailingSlash = trailingSlash || segments.isEmpty() && endpoint.uri.path.trailingSlash
+            segments.addAll(0, endpoint.uri.path.segments)
+        }
+        parameters.addAll(endpoint.uri.parameters)
+        encodedFragment = endpoint.uri.fragment?.encoded
+    }
 
     req.subject.headers["Host"] = hostname
     endpoint.headers?.let { req.subject.headers.appendAll(it) }

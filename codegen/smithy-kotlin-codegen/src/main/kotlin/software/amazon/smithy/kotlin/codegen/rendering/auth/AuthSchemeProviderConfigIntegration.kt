@@ -14,14 +14,22 @@ import software.amazon.smithy.kotlin.codegen.rendering.util.ConfigPropertyType
  */
 class AuthSchemeProviderConfigIntegration : KotlinIntegration {
     override fun additionalServiceConfigProps(ctx: CodegenContext): List<ConfigProperty> {
+        if (ctx.protocolGenerator == null) return super.additionalServiceConfigProps(ctx)
         val defaultProvider = AuthSchemeProviderGenerator.getDefaultSymbol(ctx.settings)
+
         return listOf(
             ConfigProperty {
                 name = "authSchemeProvider"
                 symbol = AuthSchemeProviderGenerator.getSymbol(ctx.settings)
                 documentation = "Configure the provider used to resolve the authentication scheme to use for a particular operation."
                 additionalImports = listOf(defaultProvider)
-                propertyType = ConfigPropertyType.RequiredWithDefault(defaultProvider.name)
+                if (ctx.settings.api.enableEndpointAuthProvider) {
+                    propertyType = ConfigPropertyType.RequiredWithDefault("${defaultProvider.name}(endpointProvider)")
+                } else {
+                    propertyType = ConfigPropertyType.RequiredWithDefault("${defaultProvider.name}()")
+                }
+                // needs to come after endpointProvider
+                order = 100
             },
         )
     }

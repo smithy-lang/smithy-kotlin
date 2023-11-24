@@ -4,35 +4,125 @@
  */
 package software.amazon.smithy.kotlin.codegen.utils
 
+// These are whole words but cased differently, e.g. `IPv4`, `MiB`, `GiB`, `TtL`
+private val completeWords = listOf("ipv4", "ipv6", "sigv4", "mib", "gib", "kib", "ttl", "iot", "s3")
+
 /**
  * Split a string on word boundaries
  */
 fun String.splitOnWordBoundaries(): List<String> {
-    // adapted from Java v2 SDK CodegenNamingUtils.splitOnWordBoundaries
-    var result = this
+    // This is taken from Rust: https://github.com/awslabs/smithy-rs/pull/3037/files#diff-4175c66ee81a450fcf1cd3e256f36ae2c8e0b30b910be8ca505135fbe215144d
+    // with minor changes (s3 and iot as whole words). Previously we used the Java v2 implementation
+    // https://github.com/aws/aws-sdk-java-v2/blob/2.20.162/utils/src/main/java/software/amazon/awssdk/utils/internal/CodegenNamingUtils.java#L36
+    // but this has some edge cases it doesn't handle well
+    val out = mutableListOf<String>()
+    var currentWord = ""
+    var computeWordInProgress = true
 
-    // all non-alphanumeric characters: "acm-success"-> "acm success"
-    result = result.replace(Regex("[^A-Za-z0-9+]"), " ")
+    // emit the current word and update from the next character
+    val emit = { next: Char ->
+        computeWordInProgress = true
+        if (currentWord.isNotEmpty()) {
+            out += currentWord.lowercase()
+        }
+        currentWord = if (next.isLetterOrDigit()) {
+            next.toString()
+        } else {
+            ""
+        }
+    }
 
-    // if a number has a standalone v in front of it, separate it out
-    result = result.replace(Regex("([^a-z]{2,})v([0-9]+)"), "$1 v$2 ") // TESTv4 -> "TEST v4 "
-        .replace(Regex("([^A-Z]{2,})V([0-9]+)"), "$1 V$2 ") // TestV4 -> "Test V4 "
+    val allLowerCase = lowercase() == this
+    forEachIndexed { index, nextChar ->
+        val peek = getOrNull(index + 1)
+        val doublePeek = getOrNull(index + 2)
+        val completeWordInProgress = {
+            val result = computeWordInProgress && currentWord.isNotEmpty() && completeWords.any {
+                (currentWord + substring(index)).startsWith(it, ignoreCase = true)
+            } && !completeWords.contains(currentWord.lowercase())
+            computeWordInProgress = result
+            result
+        }
 
-    // add a space between camelCased words
-    result = result.split(Regex("(?<=[a-z])(?=[A-Z]([a-zA-Z]|[0-9]))")).joinToString(separator = " ") // AcmSuccess -> // "Acm Success"
+        when {
+            // [C] in these docs indicates the value of nextCharacter
+            // A[_]B
+            !nextChar.isLetterOrDigit() -> emit(nextChar)
 
-    // add a space after acronyms
-    result = result.replace(Regex("([A-Z]+)([A-Z][a-z])"), "$1 $2") // "ACMSuccess" -> "ACM Success"
+            // If we have no letters so far, push the next letter (we already know it's a letter or digit)
+            currentWord.isEmpty() -> currentWord += nextChar.toString()
 
-    // add space after a number in the middle of a word
-    result = result.replace(Regex("([0-9])([a-zA-Z])"), "$1 $2") // "s3ec2" -> "s3 ec2"
+            // Abc[D]ef or Ab2[D]ef
+            !completeWordInProgress() && loweredFollowedByUpper(currentWord, nextChar) -> emit(nextChar)
 
-    // remove extra spaces - multiple consecutive ones or those and the beginning/end of words
-    result = result.replace(Regex("\\s+"), " ") // "Foo  Bar" -> "Foo Bar"
-        .trim() // " Foo " -> "Foo"
+            // s3[k]ey
+            !completeWordInProgress() && allLowerCase && digitFollowedByLower(currentWord, nextChar) -> emit(nextChar)
 
-    return result.split(" ")
+            // emit complete words
+            !completeWordInProgress() && completeWords.contains(currentWord.lowercase()) -> emit(nextChar)
+
+            // DB[P]roxy, or `IAM[U]ser` but not AC[L]s
+            !completeWordInProgress() && endOfAcronym(currentWord, nextChar, peek, doublePeek) -> emit(nextChar)
+
+            // If we haven't found a word boundary, push it and keep going
+            else -> currentWord += nextChar.toString()
+        }
+    }
+    if (currentWord.isNotEmpty()) {
+        out += currentWord
+    }
+
+    return out
 }
+
+/**
+ * Handle cases like `DB[P]roxy`, `ARN[S]upport`, `AC[L]s`
+ */
+private fun endOfAcronym(current: String, nextChar: Char, peek: Char?, doublePeek: Char?): Boolean {
+    if (!current.last().isUpperCase()) {
+        // Not an acronym in progress
+        return false
+    }
+
+    if (nextChar == 'v' && peek?.isDigit() == true) {
+        // Handle cases like `DynamoDB[v]2`
+        return true
+    }
+
+    if (!nextChar.isUpperCase()) {
+        // We aren't at the next word yet
+        return false
+    }
+
+    if (peek?.isLowerCase() != true) {
+        return false
+    }
+
+    // Skip cases like `AR[N]s`, `AC[L]s` but not `IAM[U]ser`
+    if (peek == 's' && doublePeek?.isLowerCase() != true) {
+        return false
+    }
+
+    // Skip cases like `DynamoD[B]v2`
+    return !(peek == 'v' && doublePeek?.isDigit() == true)
+}
+
+private fun loweredFollowedByUpper(current: String, nextChar: Char): Boolean {
+    if (!nextChar.isUpperCase()) {
+        return false
+    }
+    return current.last().isLowerCase() || current.last().isDigit()
+}
+
+private fun loweredFollowedByDigit(current: String, nextChar: Char): Boolean {
+    if (!nextChar.isDigit()) {
+        return false
+    }
+    return current.last().isLowerCase()
+}
+
+private fun digitFollowedByLower(current: String, nextChar: Char): Boolean =
+    (current.last().isDigit() && nextChar.isLowerCase())
 
 /**
  * Convert a string to `PascalCase` (uppercase start with upper case word boundaries)

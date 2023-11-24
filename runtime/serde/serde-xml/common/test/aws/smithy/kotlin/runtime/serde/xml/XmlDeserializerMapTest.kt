@@ -8,7 +8,6 @@ import aws.smithy.kotlin.runtime.serde.*
 import io.kotest.matchers.maps.shouldContainExactly
 import kotlin.test.Test
 
-@OptIn(ExperimentalStdlibApi::class)
 class XmlDeserializerMapTest {
 
     @Test

@@ -113,7 +113,7 @@ class ExceptionGeneratorTest {
     @Test
     fun `error generator renders override with message member`() {
         val expected = """
-    override val message: kotlin.String? = builder.message
+    override val message: kotlin.String = requireNotNull(builder.message) { "A non-null value must be provided for message" }
 """
 
         serverErrorTestContents.shouldContainWithDiff(expected)
@@ -172,7 +172,7 @@ class ExceptionGeneratorTest {
         val e = assertFailsWith<CodegenException> {
             StructureGenerator(renderingCtx).render()
         }
-        e.message.shouldContainOnlyOnceWithDiff("Message is a reserved name for exception types and cannot be used for any other property")
+        e.message.shouldContainOnlyOnceWithDiff("message is a reserved name for exception types and cannot be used for any other property")
     }
 
     class BaseExceptionGeneratorTest {
