@@ -21,7 +21,7 @@ public data class AttributeKey<T>(public val name: String) {
 
     public companion object {
         @InternalApi
-        public fun <T> create(name: String, value: T): AttributeKey<T> = AttributeKey(name)
+        public fun <T> create(name: String, @Suppress("UNUSED_PARAMETER") value: T): AttributeKey<T> = AttributeKey(name)
     }
 }
 
