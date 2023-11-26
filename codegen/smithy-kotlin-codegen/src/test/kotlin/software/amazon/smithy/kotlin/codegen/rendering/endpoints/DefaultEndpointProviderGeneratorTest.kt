@@ -217,17 +217,13 @@ class DefaultEndpointProviderGeneratorTest {
                     append("fooheader", "barheader")
                 },
                 attributes = attributesOf {
-                    AttributeKey.create("foo", "bar") to "bar"
-                    AttributeKey.create("fooInt", 7) to 7
-                    AttributeKey.create("fooBoolean", true) to true
-                    AttributeKey.create("fooObject", buildDocument {
-                        "fooObjectFoo" to "bar"
-                    }) to buildDocument {
+                    "foo" to "bar"
+                    "fooInt" to 7
+                    "fooBoolean" to true
+                    "fooObject" to buildDocument {
                         "fooObjectFoo" to "bar"
                     }
-                    AttributeKey.create("fooArray", listOf(
-                        "\"fooArrayBar\"",
-                    )) to listOf(
+                    "fooArray" to listOf(
                         "\"fooArrayBar\"",
                     )
                 },
