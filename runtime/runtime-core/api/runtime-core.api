@@ -81,9 +81,6 @@ public final class aws/smithy/kotlin/runtime/collections/AttributeKey {
 	public fun toString ()Ljava/lang/String;
 }
 
-public final class aws/smithy/kotlin/runtime/collections/AttributeKey$Companion {
-}
-
 public abstract interface class aws/smithy/kotlin/runtime/collections/Attributes {
 	public abstract fun contains (Laws/smithy/kotlin/runtime/collections/AttributeKey;)Z
 	public abstract fun getKeys ()Ljava/util/Set;
