@@ -5,8 +5,6 @@
 
 package aws.smithy.kotlin.runtime.collections
 
-import aws.smithy.kotlin.runtime.InternalApi
-
 /**
  * Specifies a key for an attribute
  *
@@ -18,11 +16,6 @@ public data class AttributeKey<T>(public val name: String) {
         require(name.isNotBlank()) { "AttributeKey name must not be blank" }
     }
     override fun toString(): String = "AttributeKey($name)"
-
-    public companion object {
-        @InternalApi
-        public fun <T> create(name: String, @Suppress("UNUSED_PARAMETER") value: T): AttributeKey<T> = AttributeKey(name)
-    }
 }
 
 /**
