@@ -417,8 +417,7 @@ suspend fun ByteStream.toFile(..) {...}
 
 
 
-The `SdkByteReadChannel` interface is given below and represents an abstract channel to read bytes from, it's definition is subject to change:
-
+The `SdkByteReadChannel` interface is given below and represents an abstract channel to read bytes from:
 
 ```kotlin
 /**
@@ -474,7 +473,7 @@ public interface SdkByteReadChannel {
 
 ```
 
-The `SdkSource` interface is given below and represents an abstract source to read bytes from, it's definition is subject to change:
+The `SdkSource` interface is given below and represents an abstract source to read bytes from:
 
 ```kotlin
 /**
