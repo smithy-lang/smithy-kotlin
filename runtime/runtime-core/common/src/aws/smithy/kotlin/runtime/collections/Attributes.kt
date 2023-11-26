@@ -8,7 +8,7 @@ package aws.smithy.kotlin.runtime.collections
 /**
  * Specifies a key for an attribute
  *
- * @param T is the type of the vale stored in the attribute
+ * @param T is the type of the value stored in the attribute
  * @param name the name of the attribute (for diagnostics)
  */
 public data class AttributeKey<T>(public val name: String) {

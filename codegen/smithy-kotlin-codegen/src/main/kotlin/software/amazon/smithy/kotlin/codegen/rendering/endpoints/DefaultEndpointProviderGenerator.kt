@@ -180,7 +180,7 @@ class DefaultEndpointProviderGenerator(
 
                             // otherwise, we just traverse the value like any other rules expression, object values will
                             // be rendered as Documents
-                            writeInline("#T(#S) to ", RuntimeTypes.Core.Collections.AttributeKey, kStr)
+                            writeInline("#S to ", kStr)
                             renderExpression(v)
                             ensureNewline()
                         }

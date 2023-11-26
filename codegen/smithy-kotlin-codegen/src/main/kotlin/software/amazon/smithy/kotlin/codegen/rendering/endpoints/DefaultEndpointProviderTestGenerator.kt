@@ -126,7 +126,7 @@ class DefaultEndpointProviderTestGenerator(
                             return@forEach
                         }
 
-                        writeInline("#T(#S) to ", RuntimeTypes.Core.Collections.AttributeKey, k)
+                        writeInline("#S to ", k)
                         renderExpression(Expression.fromNode(v))
                         ensureNewline()
                     }
