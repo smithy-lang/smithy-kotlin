@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.0.0] - 11/26/2023
+
+### Miscellaneous
+* Mark runtime as stable
+
 ## [0.30.0] - 11/22/2023
 
 ### Features
