@@ -16,111 +16,38 @@ env:
   GRADLE_OPTS: "-Dorg.gradle.daemon=false -Dkotlin.incremental=false"
 
 jobs:
-#  jvm:
-#    runs-on: ubuntu-latest
-#    strategy:
-#      fail-fast: false
-#      matrix:
-#        # we build with a specific JDK version but source/target compatibility should ensure the jar is usable by
-#        # the target versions we want to support
-#        java-version:
-#          - 8
-#          - 11
-#          - 17
-#          - 21
-#    steps:
-#      - name: Checkout sources
-#        uses: actions/checkout@v4
-#      - name: Configure JDK
-#        uses: actions/setup-java@v3
-#        with:
-#          distribution: 'corretto'
-#          java-version: 17
-#          cache: 'gradle'
-#      - name: Test
-#        shell: bash
-#        run: |
-#          ./gradlew -Ptest.java.version=${{ matrix.java-version }} jvmTest --stacktrace
-#
-#  all-platforms:
-#    runs-on: ${{ matrix.os }}
-#    strategy:
-#      fail-fast: false
-#      matrix:
-#        os: [ ubuntu-latest, macos-latest, windows-latest ]
-#    steps:
-#      - name: Checkout sources
-#        uses: actions/checkout@v4
-#      - name: Configure JDK
-#        uses: actions/setup-java@v3
-#        with:
-#          distribution: 'corretto'
-#          java-version: 17
-#          cache: 'gradle'
-#      - name: Test
-#        shell: bash
-#        run: |
-#          echo "kotlinWarningsAsErrors=true" >> $GITHUB_WORKSPACE/local.properties
-#          ./gradlew apiCheck
-#          ./gradlew test jvmTest
-#      - name: Save Test Reports
-#        if: failure()
-#        uses: actions/upload-artifact@v3
-#        with:
-#          name: test-reports
-#          path: '**/build/reports'
-#
-#  downstream:
-#    runs-on: ubuntu-latest
-#    steps:
-#    - name: Checkout sources
-#      uses: actions/checkout@v4
-#      with:
-#        path: 'smithy-kotlin'
-#    - name: Checkout tools
-#      uses: actions/checkout@v4
-#      with:
-#        path: 'aws-kotlin-repo-tools'
-#        repository: 'awslabs/aws-kotlin-repo-tools'
-#        ref: '0.2.3'
-#        sparse-checkout: |
-#          .github
-#    - name: Checkout aws-sdk-kotlin
-#      uses: ./aws-kotlin-repo-tools/.github/actions/checkout-head
-#      with:
-#        # smithy-kotlin is checked out as a sibling dir which will automatically make it an included build
-#        path: 'aws-sdk-kotlin'
-#        repository: 'awslabs/aws-sdk-kotlin'
-#    - name: Configure JDK
-#      uses: actions/setup-java@v3
-#      with:
-#        distribution: 'corretto'
-#        java-version: 17
-#        cache: 'gradle'
-#    - name: Build and Test aws-sdk-kotlin downstream
-#      run: |
-#        # TODO - JVM only
-#        cd $GITHUB_WORKSPACE/smithy-kotlin
-#        ./gradlew --parallel publishToMavenLocal
-#        SMITHY_KOTLIN_RUNTIME_VERSION=$(grep sdkVersion= gradle.properties | cut -d = -f 2)
-#        SMITHY_KOTLIN_CODEGEN_VERSION=$(grep codegenVersion= gradle.properties | cut -d = -f 2)
-#        cd $GITHUB_WORKSPACE/aws-sdk-kotlin
-#        # replace smithy-kotlin-runtime-version and smithy-kotlin-codegen-version to be
-#        # whatever we are testing such that the protocol test projects don't fail with a
-#        # version that doesn't exist locally or in maven central. Otherwise the generated
-#        # protocol test projects will use whatever the SDK thinks the version of
-#        # smithy-kotlin should be
-#        sed -i "s/smithy-kotlin-runtime-version = .*$/smithy-kotlin-runtime-version = \"$SMITHY_KOTLIN_RUNTIME_VERSION\"/" gradle/libs.versions.toml
-#        sed -i "s/smithy-kotlin-codegen-version = .*$/smithy-kotlin-codegen-version = \"$SMITHY_KOTLIN_CODEGEN_VERSION\"/" gradle/libs.versions.toml
-#        ./gradlew --parallel publishToMavenLocal
-#        ./gradlew test jvmTest
-#        ./gradlew testAllProtocols
-  windows:
+  jvm:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # we build with a specific JDK version but source/target compatibility should ensure the jar is usable by
+        # the target versions we want to support
+        java-version:
+          - 8
+          - 11
+          - 17
+          - 21
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v4
+      - name: Configure JDK
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'corretto'
+          java-version: 17
+          cache: 'gradle'
+      - name: Test
+        shell: bash
+        run: |
+          ./gradlew -Ptest.java.version=${{ matrix.java-version }} jvmTest --stacktrace
+
+  all-platforms:
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
-        os: [ windows-latest ]
+        os: [ ubuntu-latest, macos-latest, windows-latest ]
     steps:
       - name: Checkout sources
         uses: actions/checkout@v4
@@ -134,10 +61,57 @@ jobs:
         shell: bash
         run: |
           echo "kotlinWarningsAsErrors=true" >> $GITHUB_WORKSPACE/local.properties
-          ./gradlew :runtime:protocol:http-client:jvmTest
+          ./gradlew apiCheck
+          ./gradlew test jvmTest
       - name: Save Test Reports
         if: failure()
         uses: actions/upload-artifact@v3
         with:
-          name: test-reports-${{ matrix.os }}
+          name: test-reports
           path: '**/build/reports'
+
+  downstream:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout sources
+      uses: actions/checkout@v4
+      with:
+        path: 'smithy-kotlin'
+    - name: Checkout tools
+      uses: actions/checkout@v4
+      with:
+        path: 'aws-kotlin-repo-tools'
+        repository: 'awslabs/aws-kotlin-repo-tools'
+        ref: '0.2.3'
+        sparse-checkout: |
+          .github
+    - name: Checkout aws-sdk-kotlin
+      uses: ./aws-kotlin-repo-tools/.github/actions/checkout-head
+      with:
+        # smithy-kotlin is checked out as a sibling dir which will automatically make it an included build
+        path: 'aws-sdk-kotlin'
+        repository: 'awslabs/aws-sdk-kotlin'
+    - name: Configure JDK
+      uses: actions/setup-java@v3
+      with:
+        distribution: 'corretto'
+        java-version: 17
+        cache: 'gradle'
+    - name: Build and Test aws-sdk-kotlin downstream
+      run: |
+        # TODO - JVM only
+        cd $GITHUB_WORKSPACE/smithy-kotlin
+        ./gradlew --parallel publishToMavenLocal
+        SMITHY_KOTLIN_RUNTIME_VERSION=$(grep sdkVersion= gradle.properties | cut -d = -f 2)
+        SMITHY_KOTLIN_CODEGEN_VERSION=$(grep codegenVersion= gradle.properties | cut -d = -f 2)
+        cd $GITHUB_WORKSPACE/aws-sdk-kotlin
+        # replace smithy-kotlin-runtime-version and smithy-kotlin-codegen-version to be
+        # whatever we are testing such that the protocol test projects don't fail with a
+        # version that doesn't exist locally or in maven central. Otherwise the generated
+        # protocol test projects will use whatever the SDK thinks the version of
+        # smithy-kotlin should be
+        sed -i "s/smithy-kotlin-runtime-version = .*$/smithy-kotlin-runtime-version = \"$SMITHY_KOTLIN_RUNTIME_VERSION\"/" gradle/libs.versions.toml
+        sed -i "s/smithy-kotlin-codegen-version = .*$/smithy-kotlin-codegen-version = \"$SMITHY_KOTLIN_CODEGEN_VERSION\"/" gradle/libs.versions.toml
+        ./gradlew --parallel publishToMavenLocal
+        ./gradlew test jvmTest
+        ./gradlew testAllProtocols
