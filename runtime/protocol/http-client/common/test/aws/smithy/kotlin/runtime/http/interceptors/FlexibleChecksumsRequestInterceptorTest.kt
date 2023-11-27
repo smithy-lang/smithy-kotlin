@@ -99,6 +99,11 @@ class FlexibleChecksumsRequestInterceptorTest {
     }
 
     @Test
+    fun testFailureReports() {
+        fail("test failure")
+    }
+
+    @Test
     fun itRemovesChecksumHeadersForAwsChunked() = runTest {
         val data = ByteArray(1024 * 1024 * 128) { 'a'.code.toByte() }
 
