@@ -100,10 +100,12 @@ class FlexibleChecksumsRequestInterceptorTest {
 
     @Test
     fun itRemovesChecksumHeadersForAwsChunked() = runTest {
+        val data = ByteArray(1024 * 1024 * 128) { "a".toByte() }
+
         val req = HttpRequestBuilder().apply {
             body = object : HttpBody.SourceContent() {
-                override val contentLength: Long = 1024 * 1024 * 128
-                override fun readFrom(): SdkSource = "a".repeat(contentLength.toInt()).encodeToByteArray().source()
+                override val contentLength: Long = data.size.toLong()
+                override fun readFrom(): SdkSource = data.source()
                 override val isOneShot: Boolean get() = false
             }
         }
