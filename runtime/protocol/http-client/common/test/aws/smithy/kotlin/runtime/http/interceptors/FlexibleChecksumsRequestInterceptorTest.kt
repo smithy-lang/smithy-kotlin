@@ -100,7 +100,7 @@ class FlexibleChecksumsRequestInterceptorTest {
 
     @Test
     fun itRemovesChecksumHeadersForAwsChunked() = runTest {
-        val data = ByteArray(1024 * 1024 * 128) { "a".toByte() }
+        val data = ByteArray(1024 * 1024 * 128) { 'a'.code.toByte() }
 
         val req = HttpRequestBuilder().apply {
             body = object : HttpBody.SourceContent() {
