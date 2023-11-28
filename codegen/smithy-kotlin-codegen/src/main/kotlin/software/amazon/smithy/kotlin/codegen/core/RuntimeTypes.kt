@@ -89,8 +89,8 @@ object RuntimeTypes {
             val FlexibleChecksumsResponseInterceptor = symbol("FlexibleChecksumsResponseInterceptor")
             val ResponseLengthValidationInterceptor = symbol("ResponseLengthValidationInterceptor")
             val RequestCompressionTraitInterceptor = symbol("RequestCompressionTraitInterceptor")
-            val CompressionAlgorithm = symbol("CompressionAlgorithm")
-            val Gzip = symbol("Gzip")
+            val CompressionAlgorithm = symbol("CompressionAlgorithm", "interceptors.requestcompression")
+            val Gzip = symbol("Gzip", "interceptors.requestcompression")
         }
     }
 
