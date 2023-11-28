@@ -184,7 +184,7 @@ object RuntimeTypes {
         }
     }
 
-    object SmithyClient : RuntimeTypePackage(KotlinDependency.SMITHY_CLIENT) { // TODO: Maybe here
+    object SmithyClient : RuntimeTypePackage(KotlinDependency.SMITHY_CLIENT) {
         val SdkClient = symbol("SdkClient")
         val AbstractSdkClientBuilder = symbol("AbstractSdkClientBuilder")
         val LogMode = symbol("LogMode")

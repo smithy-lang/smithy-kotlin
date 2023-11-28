@@ -14,7 +14,7 @@ public class GzipSdkSource(
     private val gzipBuffer = SdkBuffer()
     private val gzipOutputStream = GZIPOutputStream(gzipBuffer.outputStream())
 
-    override fun read(sink: SdkBuffer, limit: Long): Long {
+    override fun read(sink: SdkBuffer, limit: Long): Long { // TODO: Test this
         require(limit >= 0L)
         if (limit == 0L) return 0L
 
