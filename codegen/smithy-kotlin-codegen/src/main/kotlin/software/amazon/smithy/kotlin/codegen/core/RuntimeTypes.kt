@@ -89,6 +89,8 @@ object RuntimeTypes {
             val FlexibleChecksumsResponseInterceptor = symbol("FlexibleChecksumsResponseInterceptor")
             val ResponseLengthValidationInterceptor = symbol("ResponseLengthValidationInterceptor")
             val RequestCompressionTraitInterceptor = symbol("RequestCompressionTraitInterceptor")
+            val CompressionAlgorithm = symbol("CompressionAlgorithm")
+            val Gzip = symbol("Gzip")
         }
     }
 
@@ -101,6 +103,7 @@ object RuntimeTypes {
         val fromEpochMilliseconds = symbol("fromEpochMilliseconds", "time")
         val TimestampFormat = symbol("TimestampFormat", "time")
         val ClientException = symbol("ClientException")
+        val RequestCompressionConfig = symbol("RequestCompressionConfig", "compression")
 
         object Content : RuntimeTypePackage(KotlinDependency.CORE, "content") {
             val BigDecimal = symbol("BigDecimal")

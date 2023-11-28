@@ -7,59 +7,51 @@ package aws.smithy.kotlin.runtime.http.interceptors
 
 import aws.smithy.kotlin.runtime.InternalApi
 import aws.smithy.kotlin.runtime.client.ProtocolRequestInterceptorContext
+import aws.smithy.kotlin.runtime.http.HttpBody
 import aws.smithy.kotlin.runtime.http.interceptors.requestcompression.CompressionAlgorithm
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
-import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
-import aws.smithy.kotlin.runtime.http.request.header
 import aws.smithy.kotlin.runtime.http.request.toBuilder
 
-private val VALID_COMPRESSION_RANGE = 0..10485760
+private val VALID_COMPRESSION_THRESHOLD_BYTES_RANGE = 0..10485760
 
 /**
- * HTTP interceptor that compresses operation request payloads when eligible
+ * HTTP interceptor that compresses operation request payloads when eligible.
  */
 @InternalApi
 public class RequestCompressionTraitInterceptor(
-    private val compressionThreshold: Int,
-    private val requestedCompressionAlgorithms: List<String>,
-    private val supportedCompressionAlgorithms: List<CompressionAlgorithm>,
+    private val compressionThresholdBytes: Int,
+    private val supportedCompressionAlgorithms: List<String>,
+    private val availableCompressionAlgorithms: List<CompressionAlgorithm>,
 ) : HttpInterceptor {
 
     init {
-        require(compressionThreshold in VALID_COMPRESSION_RANGE) { "compressionThresholdBytes ($compressionThreshold) must be in the range $VALID_COMPRESSION_RANGE" }
+        require(compressionThresholdBytes in VALID_COMPRESSION_THRESHOLD_BYTES_RANGE) { "compressionThresholdBytes ($compressionThresholdBytes) must be in the range $VALID_COMPRESSION_THRESHOLD_BYTES_RANGE" }
     }
 
     override suspend fun modifyBeforeRetryLoop(
         context: ProtocolRequestInterceptorContext<Any, HttpRequest>,
     ): HttpRequest {
         val payloadSize = context.protocolRequest.body.contentLength
-        val streamingPayload = payloadSize == null
-        if (streamingPayload || payloadSize!! >= compressionThreshold) {
-            supportedCompressionAlgorithms.find { supported ->
-                requestedCompressionAlgorithms.find { supported.id == it } != null
-            }?.let { algorithm ->
-
-                val request = context.protocolRequest.toBuilder()
-                request.body = algorithm.compress(request.body)
-                addHeader(request, algorithm.id)
-                return request.build()
-            }
+        val algorithm = availableCompressionAlgorithms.find { available ->
+            supportedCompressionAlgorithms.find { available.id == it } != null
         }
-        return context.protocolRequest
+
+        return if (algorithm != null && (context.protocolRequest.body.isStreaming || payloadSize!! >= compressionThresholdBytes)) {
+            val request = context.protocolRequest.toBuilder()
+            request.body = algorithm.compress(request.body)
+            request.headers.append("Content-Encoding", algorithm.id)
+            request.build()
+        } else {
+            context.protocolRequest
+        }
     }
 }
 
 /**
- * Appends the algorithm id to the content encoding header. Doesn't remove old content encodings if already present
- * in header
+ * Determines if a http body is streaming type or not.
  */
-private fun addHeader(request: HttpRequestBuilder, algorithmId: String) {
-    val previousEncodings = request.headers["Content-Encoding"]
-    val contentEncodingHeaderPrefix = previousEncodings?.let { "$previousEncodings, " } ?: ""
-
-    request.headers.remove("Content-Encoding")
-    request.header(
-        "Content-Encoding",
-        "$contentEncodingHeaderPrefix$algorithmId",
-    )
-}
+private val HttpBody.isStreaming: Boolean
+    get() = when (this) {
+        is HttpBody.ChannelContent, is HttpBody.SourceContent -> true
+        else -> false
+    }

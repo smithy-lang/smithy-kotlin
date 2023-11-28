@@ -7,6 +7,9 @@ package aws.smithy.kotlin.runtime.http.interceptors.requestcompression
 
 import aws.smithy.kotlin.runtime.http.HttpBody
 
+/**
+ * Represents a compression algorithm to be used for compressing request payloads on qualifying operations
+ */
 public interface CompressionAlgorithm {
     /**
      * The ID of the compression algorithm

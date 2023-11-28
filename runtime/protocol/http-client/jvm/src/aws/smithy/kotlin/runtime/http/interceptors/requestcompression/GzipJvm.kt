@@ -46,7 +46,7 @@ internal class GzipSdkSource(
     private val gzipBuffer = SdkBuffer()
     private val gzipOutputStream = GZIPOutputStream(gzipBuffer.outputStream())
 
-    override fun read(sink: SdkBuffer, limit: Long): Long {
+    override fun read(sink: SdkBuffer, limit: Long): Long { // TODO: Fix this
         // Read "limit" bytes into byte array
         val converter = SdkBuffer()
         val bytesRead = source.read(converter, limit)
@@ -75,7 +75,7 @@ internal class GzipByteReadChannel(
     private val gzipBuffer = SdkBuffer()
     private val gzipOutputStream = GZIPOutputStream(gzipBuffer.outputStream())
 
-    override suspend fun read(sink: SdkBuffer, limit: Long): Long {
+    override suspend fun read(sink: SdkBuffer, limit: Long): Long { // TODO: Fix this
         // Read "limit" bytes into byte array
         val converter = SdkBuffer()
         val bytesRead = source.read(converter, limit)

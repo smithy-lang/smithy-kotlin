@@ -18,7 +18,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class GzipJvmTest {
-    @Ignore
+    @Ignore // TODO: Re-enable test
     @Test
     fun testGzipSdkSource() = runTest {
         val byteArray = "<Foo>bar</Foo>".encodeToByteArray()
@@ -37,7 +37,7 @@ class GzipJvmTest {
         assertEquals(decompressedByteArray, "<Foo>bar</Foo>")
     }
 
-    @Ignore
+    @Ignore // TODO: Re-enable test
     @Test
     fun testGzipByteReadChannel() = runTest {
         val byteArray = "<Foo>bar</Foo>".encodeToByteArray()
