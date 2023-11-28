@@ -20,7 +20,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 
-class RequestCompressionTraitInterceptorTest {
+class RequestCompressionInterceptorTest {
     private val client = SdkHttpClient(TestEngine())
 
     @Test
@@ -31,7 +31,7 @@ class RequestCompressionTraitInterceptorTest {
 
         val op = newTestOperation<Unit, Unit>(req, Unit)
         op.interceptors.add(
-            RequestCompressionTraitInterceptor(
+            RequestCompressionInterceptor(
                 100000,
                 listOf("gzip"),
                 listOf(Gzip()),
@@ -52,7 +52,7 @@ class RequestCompressionTraitInterceptorTest {
 
         val op = newTestOperation<Unit, Unit>(req, Unit)
         op.interceptors.add(
-            RequestCompressionTraitInterceptor(
+            RequestCompressionInterceptor(
                 0,
                 listOf(),
                 listOf(),
@@ -75,7 +75,7 @@ class RequestCompressionTraitInterceptorTest {
 
         assertFailsWith<IllegalArgumentException> {
             op.interceptors.add(
-                RequestCompressionTraitInterceptor(
+                RequestCompressionInterceptor(
                     -1,
                     listOf("gzip"),
                     listOf(Gzip()),
@@ -93,7 +93,7 @@ class RequestCompressionTraitInterceptorTest {
 
         val op = newTestOperation<Unit, Unit>(req, Unit)
         op.interceptors.add(
-            RequestCompressionTraitInterceptor(
+            RequestCompressionInterceptor(
                 0,
                 listOf("gzip"),
                 listOf(Gzip()),
@@ -115,7 +115,7 @@ class RequestCompressionTraitInterceptorTest {
 
         val op = newTestOperation<Unit, Unit>(req, Unit)
         op.interceptors.add(
-            RequestCompressionTraitInterceptor(
+            RequestCompressionInterceptor(
                 1000000000,
                 listOf("gzip"),
                 listOf(Gzip()),
@@ -138,7 +138,7 @@ class RequestCompressionTraitInterceptorTest {
 
         val op = newTestOperation<Unit, Unit>(req, Unit)
         op.interceptors.add(
-            RequestCompressionTraitInterceptor(
+            RequestCompressionInterceptor(
                 0,
                 listOf("gzip"),
                 listOf(Gzip()),

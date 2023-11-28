@@ -8,3 +8,4 @@ software.amazon.smithy.kotlin.codegen.rendering.auth.AuthSchemeProviderConfigInt
 software.amazon.smithy.kotlin.codegen.rendering.auth.AnonymousAuthSchemeIntegration
 software.amazon.smithy.kotlin.codegen.rendering.auth.BearerTokenAuthSchemeIntegration
 software.amazon.smithy.kotlin.codegen.rendering.endpoints.discovery.EndpointDiscoveryIntegration
+software.amazon.smithy.kotlin.codegen.rendering.compression.RequestCompressionIntegration

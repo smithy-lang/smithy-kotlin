@@ -74,6 +74,7 @@ object RuntimeTypes {
         object Config : RuntimeTypePackage(KotlinDependency.HTTP, "config") {
             val HttpClientConfig = symbol("HttpClientConfig")
             val HttpEngineConfig = symbol("HttpEngineConfig")
+            val CompressionClientConfig = symbol("CompressionClientConfig")
         }
 
         object Engine : RuntimeTypePackage(KotlinDependency.HTTP, "engine") {
@@ -88,7 +89,7 @@ object RuntimeTypes {
             val FlexibleChecksumsRequestInterceptor = symbol("FlexibleChecksumsRequestInterceptor")
             val FlexibleChecksumsResponseInterceptor = symbol("FlexibleChecksumsResponseInterceptor")
             val ResponseLengthValidationInterceptor = symbol("ResponseLengthValidationInterceptor")
-            val RequestCompressionTraitInterceptor = symbol("RequestCompressionTraitInterceptor")
+            val RequestCompressionInterceptor = symbol("RequestCompressionInterceptor")
             val CompressionAlgorithm = symbol("CompressionAlgorithm", "interceptors.requestcompression")
             val Gzip = symbol("Gzip", "interceptors.requestcompression")
         }
@@ -183,7 +184,7 @@ object RuntimeTypes {
         }
     }
 
-    object SmithyClient : RuntimeTypePackage(KotlinDependency.SMITHY_CLIENT) {
+    object SmithyClient : RuntimeTypePackage(KotlinDependency.SMITHY_CLIENT) { // TODO: Maybe here
         val SdkClient = symbol("SdkClient")
         val AbstractSdkClientBuilder = symbol("AbstractSdkClientBuilder")
         val LogMode = symbol("LogMode")

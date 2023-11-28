@@ -7,6 +7,18 @@ public final class aws/smithy/kotlin/runtime/http/SdkHttpClient : aws/smithy/kot
 	public final fun getEngine ()Laws/smithy/kotlin/runtime/http/engine/HttpClientEngine;
 }
 
+public abstract interface class aws/smithy/kotlin/runtime/http/config/CompressionClientConfig {
+	public abstract fun getDisableRequestCompression ()Z
+	public abstract fun getRequestMinCompressionSizeBytes ()J
+}
+
+public abstract interface class aws/smithy/kotlin/runtime/http/config/CompressionClientConfig$Builder {
+	public abstract fun getDisableRequestCompression ()Ljava/lang/Boolean;
+	public abstract fun getRequestMinCompressionSizeBytes ()Ljava/lang/Long;
+	public abstract fun setDisableRequestCompression (Ljava/lang/Boolean;)V
+	public abstract fun setRequestMinCompressionSizeBytes (Ljava/lang/Long;)V
+}
+
 public abstract interface class aws/smithy/kotlin/runtime/http/config/EngineFactory {
 	public abstract fun getEngineConstructor ()Lkotlin/jvm/functions/Function1;
 }
@@ -171,13 +183,15 @@ public final class aws/smithy/kotlin/runtime/http/interceptors/ChecksumMismatchE
 }
 
 public abstract interface class aws/smithy/kotlin/runtime/http/interceptors/requestcompression/CompressionAlgorithm {
-	public abstract fun compress (Laws/smithy/kotlin/runtime/http/HttpBody;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public abstract fun compress (Laws/smithy/kotlin/runtime/http/request/HttpRequest;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public abstract fun getContentEncoding ()Ljava/lang/String;
 	public abstract fun getId ()Ljava/lang/String;
 }
 
 public final class aws/smithy/kotlin/runtime/http/interceptors/requestcompression/Gzip : aws/smithy/kotlin/runtime/http/interceptors/requestcompression/CompressionAlgorithm {
 	public fun <init> ()V
-	public fun compress (Laws/smithy/kotlin/runtime/http/HttpBody;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun compress (Laws/smithy/kotlin/runtime/http/request/HttpRequest;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun getContentEncoding ()Ljava/lang/String;
 	public fun getId ()Ljava/lang/String;
 }
 

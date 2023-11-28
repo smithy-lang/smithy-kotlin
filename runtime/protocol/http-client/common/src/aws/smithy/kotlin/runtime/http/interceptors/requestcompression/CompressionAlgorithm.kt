@@ -5,19 +5,26 @@
 
 package aws.smithy.kotlin.runtime.http.interceptors.requestcompression
 
-import aws.smithy.kotlin.runtime.http.HttpBody
+import aws.smithy.kotlin.runtime.http.request.HttpRequest
 
 /**
  * Represents a compression algorithm to be used for compressing request payloads on qualifying operations
  */
 public interface CompressionAlgorithm {
     /**
-     * The ID of the compression algorithm
+     * The ID of the compression algorithm.
      */
     public val id: String
 
     /**
-     * Compresses a payload
+     * The name of the content encoding to be appended to the `Content-Encoding` header.
+     * The [IANA](https://www.iana.org/assignments/http-parameters/http-parameters.xhtml)
+     * has a list of registered encodings for reference.
      */
-    public suspend fun compress(stream: HttpBody): HttpBody
+    public val contentEncoding: String
+
+    /**
+     * Compresses a HTTP request
+     */
+    public suspend fun compress(request: HttpRequest): HttpRequest
 }

@@ -10,7 +10,6 @@ import aws.smithy.kotlin.runtime.client.ProtocolRequestInterceptorContext
 import aws.smithy.kotlin.runtime.http.HttpBody
 import aws.smithy.kotlin.runtime.http.interceptors.requestcompression.CompressionAlgorithm
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
-import aws.smithy.kotlin.runtime.http.request.toBuilder
 
 private val VALID_COMPRESSION_THRESHOLD_BYTES_RANGE = 0..10485760
 
@@ -18,8 +17,8 @@ private val VALID_COMPRESSION_THRESHOLD_BYTES_RANGE = 0..10485760
  * HTTP interceptor that compresses operation request payloads when eligible.
  */
 @InternalApi
-public class RequestCompressionTraitInterceptor(
-    private val compressionThresholdBytes: Int,
+public class RequestCompressionInterceptor(
+    private val compressionThresholdBytes: Long,
     private val supportedCompressionAlgorithms: List<String>,
     private val availableCompressionAlgorithms: List<CompressionAlgorithm>,
 ) : HttpInterceptor {
@@ -36,11 +35,8 @@ public class RequestCompressionTraitInterceptor(
             supportedCompressionAlgorithms.find { available.id == it } != null
         }
 
-        return if (algorithm != null && (context.protocolRequest.body.isStreaming || payloadSize!! >= compressionThresholdBytes)) {
-            val request = context.protocolRequest.toBuilder()
-            request.body = algorithm.compress(request.body)
-            request.headers.append("Content-Encoding", algorithm.id)
-            request.build()
+        return if (algorithm != null && (context.protocolRequest.body.isStreaming || payloadSize?.let { it >= compressionThresholdBytes } == true)) {
+            algorithm.compress(context.protocolRequest)
         } else {
             context.protocolRequest
         }
@@ -51,7 +47,7 @@ public class RequestCompressionTraitInterceptor(
  * Determines if a http body is streaming type or not.
  */
 private val HttpBody.isStreaming: Boolean
-    get() = when (this) {
-        is HttpBody.ChannelContent, is HttpBody.SourceContent -> true
+    get() = when {
+        this is HttpBody.ChannelContent || this is HttpBody.SourceContent || this.contentLength == null -> true
         else -> false
     }
