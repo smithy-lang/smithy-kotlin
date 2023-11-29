@@ -14,28 +14,24 @@ public class GzipSdkSource(
     private val gzipBuffer = SdkBuffer()
     private val gzipOutputStream = GZIPOutputStream(gzipBuffer.outputStream())
 
-    override fun read(sink: SdkBuffer, limit: Long): Long { // TODO: Test this
+    override fun read(sink: SdkBuffer, limit: Long): Long {
         require(limit >= 0L)
         if (limit == 0L) return 0L
 
         val temp = SdkBuffer()
         val rc = source.read(temp, limit)
 
-        if (rc == -1L) {
-            // may trigger additional bytes written by gzip defalter
-            gzipOutputStream.close()
-        }
-
-        // source is exhausted and nothing left buffered we are done
-        if (rc == -1L && gzipBuffer.exhausted()) return -1L
-
-        // compress what we read and add it to the buffer
-        if (rc >= 0L) {
+        return if (rc >= 0L) {
             gzipOutputStream.write(temp.readByteArray())
+            gzipBuffer.readAll(sink)
+            rc
+        } else {
+            require(rc == -1L)
+            gzipOutputStream.write(temp.readByteArray())
+            gzipOutputStream.close()
+            gzipBuffer.readAll(sink)
+            rc
         }
-
-        // read bytes read from compressed content
-        return gzipBuffer.read(sink, limit)
     }
 
     override fun close() {
