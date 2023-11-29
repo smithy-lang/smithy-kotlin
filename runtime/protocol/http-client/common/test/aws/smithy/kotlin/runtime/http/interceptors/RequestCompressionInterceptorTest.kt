@@ -5,6 +5,7 @@
 
 package aws.smithy.kotlin.runtime.http.interceptors
 
+import aws.smithy.kotlin.runtime.collections.get
 import aws.smithy.kotlin.runtime.content.toByteArray
 import aws.smithy.kotlin.runtime.http.*
 import aws.smithy.kotlin.runtime.http.interceptors.requestcompression.Gzip
@@ -15,7 +16,6 @@ import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
 import aws.smithy.kotlin.runtime.httptest.TestEngine
 import aws.smithy.kotlin.runtime.io.SdkByteReadChannel
 import aws.smithy.kotlin.runtime.io.source
-import aws.smithy.kotlin.runtime.util.get
 import kotlinx.coroutines.test.runTest
 import kotlin.test.*
 
