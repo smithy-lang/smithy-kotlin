@@ -20,19 +20,19 @@ public actual class Gzip actual constructor() : CompressionAlgorithm {
     actual override val contentEncoding: String = "gzip"
 
     actual override suspend fun compress(request: HttpRequest): HttpRequest {
-        val request = request.toBuilder()
-        val uncompressedBody = request.body
+        val compressedRequest = request.toBuilder()
+        val uncompressedBody = compressedRequest.body
 
-        request.body = when (uncompressedBody) {
+        compressedRequest.body = when (uncompressedBody) {
             is HttpBody.SourceContent -> GzipSdkSource(uncompressedBody.readFrom()).toHttpBody()
             is HttpBody.ChannelContent -> GzipByteReadChannel(uncompressedBody.readFrom()).toHttpBody()
             is HttpBody.Bytes -> compressByteArray(uncompressedBody.bytes())
             is HttpBody.Empty -> uncompressedBody
             else -> throw ClientException("HttpBody type is not supported")
         }
-        request.headers.append("Content-Encoding", contentEncoding)
+        compressedRequest.headers.append("Content-Encoding", contentEncoding)
 
-        return request.build()
+        return compressedRequest.build()
     }
 }
 
