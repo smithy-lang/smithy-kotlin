@@ -13,12 +13,11 @@ import aws.smithy.kotlin.runtime.http.operation.newTestOperation
 import aws.smithy.kotlin.runtime.http.operation.roundTrip
 import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
 import aws.smithy.kotlin.runtime.httptest.TestEngine
+import aws.smithy.kotlin.runtime.io.SdkByteReadChannel
+import aws.smithy.kotlin.runtime.io.source
 import aws.smithy.kotlin.runtime.util.get
 import kotlinx.coroutines.test.runTest
-import kotlin.test.Ignore
-import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertFailsWith
+import kotlin.test.*
 
 class RequestCompressionInterceptorTest {
     private val client = SdkHttpClient(TestEngine())
@@ -84,7 +83,6 @@ class RequestCompressionInterceptorTest {
         }
     }
 
-    @Ignore // TODO: Re-enable test
     @Test
     fun testCompression() = runTest {
         val req = HttpRequestBuilder().apply {
@@ -103,20 +101,22 @@ class RequestCompressionInterceptorTest {
 
         val call = op.context.attributes[HttpOperationContext.HttpCallList].first()
         assertEquals("gzip", call.request.headers["Content-Encoding"])
-        assertEquals("<Foo>bar</Foo>", call.request.body.toByteStream()!!.toByteArray().decodeToString())
+        assertTrue(
+            byteArrayOf(31, -117, 8, 0, 0, 0, 0, 0, 0, -1, -77, 113, -53, -49, -73, 75, 74, 44, -78, -47, 7, 49, 0, 29, -105, -38, 89, 14, 0, 0, 0).contentEquals(call.request.body.readAll()),
+        )
     }
 
     @Ignore // TODO: Re-enable test
     @Test
-    fun testStreamingPayloadAlwaysCompressed() = runTest {
+    fun testSdkByteReadChannelAlwaysCompressed() = runTest {
         val req = HttpRequestBuilder().apply {
-            body = HttpBody.fromBytes("<Foo>bar</Foo>".encodeToByteArray()).toSdkByteReadChannel()!!.toHttpBody()
+            body = SdkByteReadChannel("<Foo>bar</Foo>".encodeToByteArray()).toHttpBody()
         }
 
         val op = newTestOperation<Unit, Unit>(req, Unit)
         op.interceptors.add(
             RequestCompressionInterceptor(
-                1000000000,
+                10000000,
                 listOf("gzip"),
                 listOf(Gzip()),
             ),
@@ -125,10 +125,35 @@ class RequestCompressionInterceptorTest {
 
         val call = op.context.attributes[HttpOperationContext.HttpCallList].first()
         assertEquals("gzip", call.request.headers["Content-Encoding"])
-        assertEquals("<Foo>bar</Foo>", call.request.body.toByteStream()!!.toByteArray().decodeToString())
+        assertEquals(
+            byteArrayOf(31, -117, 8, 0, 0, 0, 0, 0, 0, -1, -77, 113, -53, -49, -73, 75, 74, 44, -78, -47, 7, 49, 0, 29, -105, -38, 89, 14, 0, 0, 0),
+            call.request.body.readAll(),
+        )
     }
 
-    @Ignore // TODO: Re-enable test
+    @Test
+    fun testSdkSourceAlwaysCompressed() = runTest {
+        val req = HttpRequestBuilder().apply {
+            body = "<Foo>bar</Foo>".encodeToByteArray().source().toHttpBody()
+        }
+
+        val op = newTestOperation<Unit, Unit>(req, Unit)
+        op.interceptors.add(
+            RequestCompressionInterceptor(
+                10000000,
+                listOf("gzip"),
+                listOf(Gzip()),
+            ),
+        )
+        op.roundTrip(client, Unit)
+
+        val call = op.context.attributes[HttpOperationContext.HttpCallList].first()
+        assertEquals("gzip", call.request.headers["Content-Encoding"])
+        assertTrue(
+            byteArrayOf(31, -117, 8, 0, 0, 0, 0, 0, 0, -1, -77, 113, -53, -49, -73, 75, 74, 44, -78, -47, 7, 49, 0, 29, -105, -38, 89, 14, 0, 0, 0).contentEquals(call.request.body.readAll()),
+        )
+    }
+
     @Test
     fun testCompressionWithMultipleHeaders() = runTest {
         val req = HttpRequestBuilder().apply {
@@ -148,6 +173,8 @@ class RequestCompressionInterceptorTest {
 
         val call = op.context.attributes[HttpOperationContext.HttpCallList].first()
         assertEquals(listOf("br", "gzip"), call.request.headers.getAll("Content-Encoding"))
-        assertEquals("<Foo>bar</Foo>", call.request.body.toByteStream()!!.toByteArray().decodeToString())
+        assertTrue(
+            byteArrayOf(31, -117, 8, 0, 0, 0, 0, 0, 0, -1, -77, 113, -53, -49, -73, 75, 74, 44, -78, -47, 7, 49, 0, 29, -105, -38, 89, 14, 0, 0, 0).contentEquals(call.request.body.readAll()),
+        )
     }
 }

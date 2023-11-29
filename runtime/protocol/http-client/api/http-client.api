@@ -195,17 +195,6 @@ public final class aws/smithy/kotlin/runtime/http/interceptors/requestcompressio
 	public fun getId ()Ljava/lang/String;
 }
 
-public abstract interface class aws/smithy/kotlin/runtime/http/interceptors/requestcompression/compressionalgorithms/CompressionAlgorithm {
-	public abstract fun compress (Laws/smithy/kotlin/runtime/http/HttpBody;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public abstract fun getId ()Ljava/lang/String;
-}
-
-public final class aws/smithy/kotlin/runtime/http/interceptors/requestcompression/compressionalgorithms/Gzip : aws/smithy/kotlin/runtime/http/interceptors/requestcompression/compressionalgorithms/CompressionAlgorithm {
-	public fun <init> ()V
-	public fun compress (Laws/smithy/kotlin/runtime/http/HttpBody;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public fun getId ()Ljava/lang/String;
-}
-
 public final class aws/smithy/kotlin/runtime/http/middleware/HttpResponseException : aws/smithy/kotlin/runtime/SdkBaseException {
 	public fun <init> ()V
 	public fun <init> (Ljava/lang/String;)V

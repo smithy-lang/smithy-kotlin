@@ -14,24 +14,23 @@ public class GzipByteReadChannel(
     private val gzipBuffer = SdkBuffer()
     private val gzipOutputStream = GZIPOutputStream(gzipBuffer.outputStream())
 
-    override suspend fun read(sink: SdkBuffer, limit: Long): Long { // TODO: Fix this
-        // Read "limit" bytes into byte array
-        val converter = SdkBuffer()
-        val bytesRead = source.read(converter, limit)
-        val byteArray = converter.readByteArray()
-        converter.close()
+    override suspend fun read(sink: SdkBuffer, limit: Long): Long {
+        require(limit >= 0L)
+        if (limit == 0L) return 0L
 
-        // Pass byteArray to gzip
-        gzipOutputStream.write(byteArray)
+        val temp = SdkBuffer()
+        val rc = source.read(temp, limit)
 
-        // Extract compressed byteArray into function sink
-        gzipBuffer.readAll(sink)
-        if (bytesRead == -1L) {
+        return if (rc >= 0L) {
+            gzipOutputStream.write(temp.readByteArray())
+            gzipBuffer.readAll(sink)
+            rc
+        } else {
+            require(rc == -1L)
+            gzipOutputStream.write(temp.readByteArray())
             gzipOutputStream.close()
-            gzipBuffer.close()
+            gzipBuffer.readAll(sink)
+            rc
         }
-
-        // Returns amount of bytes read from source
-        return bytesRead
     }
 }

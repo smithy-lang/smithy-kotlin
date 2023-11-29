@@ -34,17 +34,17 @@ public actual class Gzip actual constructor() : CompressionAlgorithm {
 
         return request.build()
     }
+}
 
-    private fun compressByteArray(bytes: ByteArray): HttpBody {
-        val byteArrayOutputStream = ByteArrayOutputStream()
-        val gzipOutputStream = GZIPOutputStream(byteArrayOutputStream)
+internal fun compressByteArray(bytes: ByteArray): HttpBody {
+    val byteArrayOutputStream = ByteArrayOutputStream()
+    val gzipOutputStream = GZIPOutputStream(byteArrayOutputStream)
 
-        gzipOutputStream.write(bytes)
-        gzipOutputStream.close()
+    gzipOutputStream.write(bytes)
+    gzipOutputStream.close()
 
-        val compressedBody = byteArrayOutputStream.toByteArray().toHttpBody()
-        byteArrayOutputStream.close()
+    val compressedBody = byteArrayOutputStream.toByteArray().toHttpBody()
+    byteArrayOutputStream.close()
 
-        return compressedBody
-    }
+    return compressedBody
 }

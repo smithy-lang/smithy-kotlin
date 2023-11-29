@@ -70,16 +70,6 @@ public final class aws/smithy/kotlin/runtime/ServiceException$ErrorType : java/l
 	public static fun values ()[Laws/smithy/kotlin/runtime/ServiceException$ErrorType;
 }
 
-public abstract interface class aws/smithy/kotlin/runtime/compression/RequestCompressionConfig {
-	public abstract fun getDisableRequestCompression ()Z
-	public abstract fun getRequestMinCompressionSizeBytes ()I
-}
-
-public abstract interface class aws/smithy/kotlin/runtime/compression/RequestCompressionConfig$Builder {
-	public abstract fun getDisableRequestCompression ()Z
-	public abstract fun getRequestMinCompressionSizeBytes ()I
-}
-
 public final class aws/smithy/kotlin/runtime/config/EnvironmentSettingKt {
 }
 

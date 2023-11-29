@@ -7,18 +7,13 @@ package aws.smithy.kotlin.runtime.http.interceptors.requestcompression
 
 import aws.smithy.kotlin.runtime.content.toByteArray
 import aws.smithy.kotlin.runtime.http.toByteStream
-import aws.smithy.kotlin.runtime.io.SdkBuffer
-import aws.smithy.kotlin.runtime.io.source
-import aws.smithy.kotlin.runtime.io.toSdkByteReadChannel
-import aws.smithy.kotlin.runtime.io.use
+import aws.smithy.kotlin.runtime.io.*
 import kotlinx.coroutines.test.runTest
 import java.util.zip.GZIPInputStream
-import kotlin.test.Ignore
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class GzipJvmTest {
-    @Ignore // TODO: Re-enable test
     @Test
     fun testGzipSdkSource() = runTest {
         val byteArray = "<Foo>bar</Foo>".encodeToByteArray()
@@ -28,7 +23,6 @@ class GzipJvmTest {
         val answerBuffer = SdkBuffer()
         while (gzipSdkSource.read(answerBuffer, 1) != -1L);
         gzipSdkSource.close()
-        byteArraySource.close()
 
         val compressedByteArray = answerBuffer.readByteArray()
         answerBuffer.close()
@@ -37,16 +31,15 @@ class GzipJvmTest {
         assertEquals(decompressedByteArray, "<Foo>bar</Foo>")
     }
 
-    @Ignore // TODO: Re-enable test
     @Test
     fun testGzipByteReadChannel() = runTest {
         val byteArray = "<Foo>bar</Foo>".encodeToByteArray()
         val byteArraySource = byteArray.source()
-        val gzipSdkSource = GzipByteReadChannel(byteArraySource.toSdkByteReadChannel())
+        val gzipByteReadChannel = GzipByteReadChannel(byteArraySource.toSdkByteReadChannel())
 
         val answerBuffer = SdkBuffer()
-        while (gzipSdkSource.read(answerBuffer, 1) != -1L);
-        byteArraySource.close()
+        while (gzipByteReadChannel.read(answerBuffer, 1) != -1L);
+        gzipByteReadChannel.cancel(null)
 
         val compressedByteArray = answerBuffer.readByteArray()
         answerBuffer.close()
