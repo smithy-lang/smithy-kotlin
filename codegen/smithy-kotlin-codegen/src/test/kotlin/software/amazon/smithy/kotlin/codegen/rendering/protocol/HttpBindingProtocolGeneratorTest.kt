@@ -47,14 +47,13 @@ internal class SmokeTestOperationSerializer: HttpSerialize<SmokeTestRequest> {
         builder.method = HttpMethod.POST
 
         builder.url {
-            val pathSegments = listOf<String>(
-                "smoketest",
-                "$label1".encodeLabel(),
-                "foo",
-            )
-            path = pathSegments.joinToString(separator = "/", prefix = "/")
-            parameters {
-                if (input.query1 != null) append("Query1", input.query1)
+            path.encodedSegments {
+                add(PercentEncoding.Path.encode("smoketest"))
+                "$label1".split("/").mapTo(this) { PercentEncoding.SmithyLabel.encode(it) }
+                add(PercentEncoding.Path.encode("foo"))
+            }
+            parameters.decodedParameters(PercentEncoding.SmithyLabel) {
+                if (input.query1 != null) add("Query1", input.query1)
             }
         }
 
@@ -88,7 +87,7 @@ internal class ExplicitStringOperationSerializer: HttpSerialize<ExplicitStringRe
         builder.method = HttpMethod.POST
 
         builder.url {
-            path = "/explicit/string"
+            path.encoded = "/explicit/string"
         }
 
         if (input.payload1 != null) {
@@ -115,7 +114,7 @@ internal class ExplicitBlobOperationSerializer: HttpSerialize<ExplicitBlobReques
         builder.method = HttpMethod.POST
 
         builder.url {
-            path = "/explicit/blob"
+            path.encoded = "/explicit/blob"
         }
 
         if (input.payload1 != null) {
@@ -142,7 +141,7 @@ internal class ExplicitBlobStreamOperationSerializer: HttpSerialize<ExplicitBlob
         builder.method = HttpMethod.POST
 
         builder.url {
-            path = "/explicit/blobstream"
+            path.encoded = "/explicit/blobstream"
         }
 
         if (input.payload1 != null) {
@@ -169,7 +168,7 @@ internal class ExplicitStructOperationSerializer: HttpSerialize<ExplicitStructRe
         builder.method = HttpMethod.POST
 
         builder.url {
-            path = "/explicit/struct"
+            path.encoded = "/explicit/struct"
         }
 
         if (input.payload1 != null) {
@@ -197,7 +196,7 @@ internal class ExplicitDocumentOperationSerializer: HttpSerialize<ExplicitDocume
         builder.method = HttpMethod.POST
 
         builder.url {
-            path = "/explicit/document"
+            path.encoded = "/explicit/document"
         }
 
         if (input.payload1 != null) {
@@ -225,7 +224,7 @@ internal class EnumInputOperationSerializer: HttpSerialize<EnumInputRequest> {
         builder.method = HttpMethod.POST
 
         builder.url {
-            path = "/input/enum"
+            path.encoded = "/input/enum"
         }
 
         builder.headers {
@@ -256,15 +255,14 @@ internal class TimestampInputOperationSerializer: HttpSerialize<TimestampInputRe
         builder.method = HttpMethod.POST
 
         builder.url {
-            val pathSegments = listOf<String>(
-                "input",
-                "timestamp",
-                "$tsLabel".encodeLabel(),
-            )
-            path = pathSegments.joinToString(separator = "/", prefix = "/")
-            parameters {
-                if (input.queryTimestamp != null) append("qtime", input.queryTimestamp.format(TimestampFormat.ISO_8601))
-                if (input.queryTimestampList?.isNotEmpty() == true) appendAll("qtimeList", input.queryTimestampList.map { it.format(TimestampFormat.ISO_8601) })
+            path.encodedSegments {
+                add(PercentEncoding.Path.encode("input"))
+                add(PercentEncoding.Path.encode("timestamp"))
+                add(PercentEncoding.SmithyLabel.encode("$tsLabel"))
+            }
+            parameters.decodedParameters(PercentEncoding.SmithyLabel) {
+                if (input.queryTimestamp != null) add("qtime", input.queryTimestamp.format(TimestampFormat.ISO_8601))
+                if (input.queryTimestampList?.isNotEmpty() == true) addAll("qtimeList", input.queryTimestampList.map { it.format(TimestampFormat.ISO_8601) })
             }
         }
 
@@ -300,7 +298,7 @@ internal class BlobInputOperationSerializer: HttpSerialize<BlobInputRequest> {
         builder.method = HttpMethod.POST
 
         builder.url {
-            path = "/input/blob"
+            path.encoded = "/input/blob"
         }
 
         builder.headers {
@@ -333,14 +331,13 @@ internal class ConstantQueryStringOperationSerializer: HttpSerialize<ConstantQue
         builder.method = HttpMethod.GET
 
         builder.url {
-            val pathSegments = listOf<String>(
-                "ConstantQueryString",
-                "$label1".encodeLabel(),
-            )
-            path = pathSegments.joinToString(separator = "/", prefix = "/")
-            parameters {
-                append("foo", "bar")
-                append("hello", "")
+            path.encodedSegments {
+                add(PercentEncoding.Path.encode("ConstantQueryString"))
+                add(PercentEncoding.SmithyLabel.encode("$label1"))
+            }
+            parameters.decodedParameters {
+                add("foo", "bar")
+                add("hello", "")
             }
         }
 
@@ -506,7 +503,7 @@ internal class SmokeTestOperationDeserializer: HttpDeserialize<SmokeTestResponse
 
         val latest = "\\\$LATEST"
         val expected = """
-            path = "/test/$latest"
+            path.encoded = "/test/$latest"
         """
         contents.shouldContainOnlyOnceWithDiff(expected)
     }
@@ -563,18 +560,17 @@ internal class SmokeTestOperationDeserializer: HttpDeserialize<SmokeTestResponse
             requireNotNull(input.bar) { "bar is bound to the URI and must not be null" }
             require(input.bar?.isNotBlank() == true) { "bar is bound to the URI and must be a non-blank value" }
             requireNotNull(input.baz) { "baz is bound to the URI and must not be null" }
-            val pathSegments = listOf<String>(
-                "foo",
-                "$label1".encodeLabel(),
-                "$label2".encodeLabel(),
-            )
-            path = pathSegments.joinToString(separator = "/", prefix = "/")
-            parameters {
+            path.encodedSegments {
+                add(PercentEncoding.Path.encode("foo"))
+                add(PercentEncoding.SmithyLabel.encode("$label1"))
+                add(PercentEncoding.SmithyLabel.encode("$label2"))
+            }
+            parameters.decodedParameters(PercentEncoding.SmithyLabel) {
                 require(input.garply?.isNotBlank() == true) { "garply is bound to the URI and must be a non-blank value" }
-                if (input.corge != null) append("corge", input.corge)
-                if (input.garply != null) append("garply", input.garply)
-                if (input.grault != null) append("grault", input.grault)
-                if (input.quux != null) append("quux", "$quux")
+                if (input.corge != null) add("corge", input.corge)
+                if (input.garply != null) add("garply", input.garply)
+                if (input.grault != null) add("grault", input.grault)
+                if (input.quux != null) add("quux", "$quux")
             }
         """
 

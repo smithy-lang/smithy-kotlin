@@ -9,10 +9,10 @@ import aws.smithy.kotlin.runtime.ServiceException
 import aws.smithy.kotlin.runtime.client.ResponseInterceptorContext
 import aws.smithy.kotlin.runtime.client.SdkClientOption
 import aws.smithy.kotlin.runtime.client.operationName
+import aws.smithy.kotlin.runtime.collections.get
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.http.response.HttpResponse
 import aws.smithy.kotlin.runtime.operation.ExecutionContext
-import aws.smithy.kotlin.runtime.util.get
 import kotlinx.coroutines.test.runTest
 import kotlin.test.*
 

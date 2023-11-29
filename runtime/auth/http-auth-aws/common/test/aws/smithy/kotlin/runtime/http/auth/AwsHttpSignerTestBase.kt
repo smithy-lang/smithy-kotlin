@@ -10,6 +10,8 @@ import aws.smithy.kotlin.runtime.auth.awssigning.AwsSigner
 import aws.smithy.kotlin.runtime.auth.awssigning.AwsSigningAttributes
 import aws.smithy.kotlin.runtime.auth.awssigning.DefaultAwsSigner
 import aws.smithy.kotlin.runtime.auth.awssigning.internal.AWS_CHUNKED_THRESHOLD
+import aws.smithy.kotlin.runtime.collections.Attributes
+import aws.smithy.kotlin.runtime.collections.get
 import aws.smithy.kotlin.runtime.http.*
 import aws.smithy.kotlin.runtime.http.operation.*
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
@@ -22,8 +24,6 @@ import aws.smithy.kotlin.runtime.net.Host
 import aws.smithy.kotlin.runtime.net.Scheme
 import aws.smithy.kotlin.runtime.operation.ExecutionContext
 import aws.smithy.kotlin.runtime.time.Instant
-import aws.smithy.kotlin.runtime.util.Attributes
-import aws.smithy.kotlin.runtime.util.get
 import kotlinx.coroutines.test.TestResult
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
@@ -54,7 +54,7 @@ public abstract class AwsHttpSignerTestBase(
                         method = HttpMethod.POST
                         url.scheme = Scheme.HTTP
                         url.host = Host.Domain("demo.us-east-1.amazonaws.com")
-                        url.path = "/"
+                        url.path.encoded = "/"
                         headers.append("Host", "demo.us-east-1.amazonaws.com")
                         headers.appendAll("x-amz-archive-description", listOf("test", "test"))
                         body = when (streaming) {

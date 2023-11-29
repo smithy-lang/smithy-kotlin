@@ -5,7 +5,7 @@
 
 package aws.smithy.kotlin.runtime.telemetry.trace
 
-import aws.smithy.kotlin.runtime.util.AttributeKey
+import aws.smithy.kotlin.runtime.collections.AttributeKey
 
 /**
  * Set common error attributes from an exception

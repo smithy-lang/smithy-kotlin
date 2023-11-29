@@ -46,7 +46,7 @@ class EndpointDiscovererGeneratorTest {
             
                     val originalEndpoint = delegate.resolve(request)
                     Endpoint(
-                        originalEndpoint.uri.copy(host = discoveredHost),
+                        originalEndpoint.uri.copy { host = discoveredHost },
                         originalEndpoint.headers,
                         originalEndpoint.attributes,
                     )

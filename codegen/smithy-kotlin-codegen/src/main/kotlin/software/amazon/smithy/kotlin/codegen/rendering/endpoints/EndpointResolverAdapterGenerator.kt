@@ -114,7 +114,7 @@ class EndpointResolverAdapterGenerator(
             RuntimeTypes.HttpClient.Operation.ResolveEndpointRequest,
             EndpointParametersGenerator.getSymbol(ctx.settings),
         ) {
-            writer.addImport(RuntimeTypes.Core.Utils.get)
+            writer.addImport(RuntimeTypes.Core.Collections.get)
             withBlock("return #T {", "}", EndpointParametersGenerator.getSymbol(ctx.settings)) {
                 // The SEP dictates a specific source order to use when binding parameters (from most specific to least):
                 // 1. staticContextParams (from operation shape)
@@ -164,7 +164,7 @@ class EndpointResolverAdapterGenerator(
         val inputContextParams = epParameterIndex.inputContextParams(op)
 
         if (inputContextParams.isNotEmpty()) {
-            writer.addImport(RuntimeTypes.Core.Utils.get)
+            writer.addImport(RuntimeTypes.Core.Collections.get)
             writer.write("@Suppress(#S)", "UNCHECKED_CAST")
             val opInputShape = ctx.model.expectShape(op.inputShape)
             val inputSymbol = ctx.symbolProvider.toSymbol(opInputShape)

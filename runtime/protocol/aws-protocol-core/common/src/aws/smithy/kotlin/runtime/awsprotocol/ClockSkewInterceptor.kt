@@ -9,6 +9,7 @@ import aws.smithy.kotlin.runtime.SdkBaseException
 import aws.smithy.kotlin.runtime.ServiceErrorMetadata
 import aws.smithy.kotlin.runtime.client.ProtocolRequestInterceptorContext
 import aws.smithy.kotlin.runtime.client.ResponseInterceptorContext
+import aws.smithy.kotlin.runtime.collections.get
 import aws.smithy.kotlin.runtime.http.interceptors.HttpInterceptor
 import aws.smithy.kotlin.runtime.http.operation.HttpOperationContext
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
@@ -17,7 +18,6 @@ import aws.smithy.kotlin.runtime.http.response.header
 import aws.smithy.kotlin.runtime.telemetry.logging.logger
 import aws.smithy.kotlin.runtime.time.Instant
 import aws.smithy.kotlin.runtime.time.until
-import aws.smithy.kotlin.runtime.util.get
 import kotlinx.atomicfu.*
 import kotlin.coroutines.coroutineContext
 import kotlin.time.Duration

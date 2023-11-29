@@ -67,7 +67,7 @@ jobs:
         if: failure()
         uses: actions/upload-artifact@v3
         with:
-          name: test-reports
+          name: test-reports-${{ matrix.os }}
           path: '**/build/reports'
 
   downstream:

@@ -12,7 +12,7 @@ import aws.smithy.kotlin.runtime.http.HttpBody
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.http.request.header
 import aws.smithy.kotlin.runtime.http.request.toBuilder
-import aws.smithy.kotlin.runtime.util.encodeBase64String
+import aws.smithy.kotlin.runtime.text.encoding.encodeBase64String
 
 /**
  * Set the `Content-MD5` header based on the current payload

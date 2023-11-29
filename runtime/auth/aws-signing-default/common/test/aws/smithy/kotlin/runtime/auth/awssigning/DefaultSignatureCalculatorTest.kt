@@ -7,9 +7,9 @@ package aws.smithy.kotlin.runtime.auth.awssigning
 import aws.smithy.kotlin.runtime.auth.awscredentials.Credentials
 import aws.smithy.kotlin.runtime.auth.awssigning.tests.DEFAULT_TEST_CREDENTIALS
 import aws.smithy.kotlin.runtime.hashing.sha256
+import aws.smithy.kotlin.runtime.text.encoding.decodeHexBytes
+import aws.smithy.kotlin.runtime.text.encoding.encodeToHex
 import aws.smithy.kotlin.runtime.time.Instant
-import aws.smithy.kotlin.runtime.util.decodeHexBytes
-import aws.smithy.kotlin.runtime.util.encodeToHex
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals

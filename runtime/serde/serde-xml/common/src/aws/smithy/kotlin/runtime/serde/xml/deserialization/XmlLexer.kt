@@ -7,7 +7,7 @@ package aws.smithy.kotlin.runtime.serde.xml.deserialization
 import aws.smithy.kotlin.runtime.InternalApi
 import aws.smithy.kotlin.runtime.serde.DeserializationException
 import aws.smithy.kotlin.runtime.serde.xml.XmlToken
-import aws.smithy.kotlin.runtime.util.text.codePointToChars
+import aws.smithy.kotlin.runtime.text.codePointToChars
 
 private val decimalCharRef = "#([0-9]+)".toRegex()
 private val hexCharRef = "#x([0-9a-fA-F]+)".toRegex()

@@ -5,8 +5,8 @@
 
 package aws.smithy.kotlin.runtime.serde.json
 
-import aws.smithy.kotlin.runtime.serde.*
-import aws.smithy.kotlin.runtime.util.*
+import aws.smithy.kotlin.runtime.collections.*
+import aws.smithy.kotlin.runtime.serde.DeserializationException
 
 private val DIGITS = ('0'..'9').toSet()
 private val EXP = setOf('e', 'E')

@@ -11,7 +11,10 @@ import aws.smithy.kotlin.runtime.auth.AuthSchemeId
 import aws.smithy.kotlin.runtime.auth.awssigning.AwsSigner
 import aws.smithy.kotlin.runtime.auth.awssigning.AwsSigningAttributes
 import aws.smithy.kotlin.runtime.auth.awssigning.HashSpecification
-import aws.smithy.kotlin.runtime.util.*
+import aws.smithy.kotlin.runtime.collections.AttributeKey
+import aws.smithy.kotlin.runtime.collections.MutableAttributes
+import aws.smithy.kotlin.runtime.collections.emptyAttributes
+import aws.smithy.kotlin.runtime.collections.mutableAttributes
 
 /**
  * HTTP auth scheme for AWS signature version 4

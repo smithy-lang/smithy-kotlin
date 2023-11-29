@@ -111,18 +111,4 @@ private fun String.isIpv6AddressSegment(): Boolean = length in 1..4 && all(Char:
 
 internal fun String.isIpv6ZoneId(): Boolean = isNotEmpty() && '%' !in this
 
-private fun String.isValidPercentEncoded(): Boolean {
-    forEachIndexed { index, char ->
-        when (char) {
-            in 'a'..'z', in 'A'..'Z', in '0'..'9', '-', '_', '.', '~' -> return@forEachIndexed
-            '%' -> {
-                if (index > length - 2) return false
-                if (!this[index+1].isHexDigit() || !this[index+2].isHexDigit()) return false
-            }
-            else -> return false
-        }
-    }
-    return true
-}
-
 private fun Char.isHexDigit(): Boolean = this in '0'..'9' || this in 'a'..'f' || this in 'A'..'F'

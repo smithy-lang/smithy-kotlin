@@ -8,16 +8,15 @@ import aws.smithy.kotlin.runtime.InternalApi
 import aws.smithy.kotlin.runtime.auth.AuthSchemeId
 import aws.smithy.kotlin.runtime.auth.awscredentials.CredentialsProvider
 import aws.smithy.kotlin.runtime.client.endpoints.authOptions
+import aws.smithy.kotlin.runtime.collections.emptyAttributes
 import aws.smithy.kotlin.runtime.http.*
 import aws.smithy.kotlin.runtime.http.operation.EndpointResolver
 import aws.smithy.kotlin.runtime.http.operation.ResolveEndpointRequest
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
 import aws.smithy.kotlin.runtime.http.request.header
-import aws.smithy.kotlin.runtime.net.Url
+import aws.smithy.kotlin.runtime.net.url.Url
 import aws.smithy.kotlin.runtime.operation.ExecutionContext
-import aws.smithy.kotlin.runtime.util.emptyAttributes
-import aws.smithy.kotlin.runtime.util.get
 
 @InternalApi
 public suspend fun presignRequest(
@@ -54,14 +53,13 @@ public suspend fun presignRequest(
 
     return HttpRequest(
         method = signedRequest.method,
-        url = Url(
-            scheme = endpoint.uri.scheme,
-            host = endpoint.uri.host,
-            port = endpoint.uri.port,
-            path = signedRequest.url.path,
-            parameters = signedRequest.url.parameters,
-            encodeParameters = false,
-        ),
+        url = Url {
+            scheme = endpoint.uri.scheme
+            host = endpoint.uri.host
+            port = endpoint.uri.port
+            path.copyFrom(signedRequest.url.path)
+            parameters.copyFrom(signedRequest.url.parameters)
+        },
         headers = signedRequest.headers,
         body = HttpBody.Empty,
     )

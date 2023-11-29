@@ -92,9 +92,12 @@ internal class ConnectionManager(
                     is ProxyConfig.Http -> HttpProxyOptions(
                         proxyConfig.url.host.toString(),
                         proxyConfig.url.port,
-                        authUsername = proxyConfig.url.userInfo?.username,
-                        authPassword = proxyConfig.url.userInfo?.password,
-                        authType = if (proxyConfig.url.userInfo != null) HttpProxyAuthorizationType.Basic else HttpProxyAuthorizationType.None,
+                        authUsername = proxyConfig.url.userInfo.userName.decoded,
+                        authPassword = proxyConfig.url.userInfo.password.decoded,
+                        authType = when {
+                            proxyConfig.url.userInfo.isNotEmpty -> HttpProxyAuthorizationType.Basic
+                            else -> HttpProxyAuthorizationType.None
+                        },
                     )
                     else -> null
                 }

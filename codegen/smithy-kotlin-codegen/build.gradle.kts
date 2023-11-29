@@ -17,6 +17,9 @@ val codegenVersion: String by project
 group = "software.amazon.smithy.kotlin"
 version = codegenVersion
 
+val sdkVersion: String by project
+val runtimeVersion = sdkVersion
+
 dependencies {
     implementation(kotlin("stdlib-jdk8"))
     api(libs.smithy.codegen.core)
@@ -44,7 +47,7 @@ val generateSdkRuntimeVersion by tasks.registering {
     outputs.file(versionFile)
     sourceSets.main.get().output.dir(resourcesDir)
     doLast {
-        versionFile.writeText("$version")
+        versionFile.writeText("$runtimeVersion")
     }
 }
 

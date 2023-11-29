@@ -34,7 +34,7 @@ private val requestToSign = HttpRequest {
     url {
         scheme = Scheme.HTTPS
         host = Host.Domain("foo.com")
-        path = "bar/baz/../qux/"
+        path.decoded = "bar/baz/../qux/"
         port = 8080
     }
     headers {

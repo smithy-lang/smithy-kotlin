@@ -21,14 +21,16 @@ import software.amazon.smithy.model.traits.TimestampFormatTrait
 import software.amazon.smithy.utils.AbstractCodeWriter
 
 /**
- * Shared implementation to generate serialization for members bound to HTTP query parameters or headers
- * (both of which are implemented using `ValuesMap<String>`).
+ * Shared implementation to generate serialization for members bound to HTTP query parameters or headers. These
+ * locations are represented by different data structures:
+ * * **query parameters**: `MutableMultiMap`
+ * * **headers**: `ValuesMapBuilder`
  *
  * This is a partial generator, the entry point for rendering from this component is an open block where the current
- * value of `this` is a `ValuesMapBuilder<String>`.
+ * value of `this` one of the types listed above.
  *
  * Example output this class generates:
- * ```
+ * ```kotlin
  * if (input.field1 != null) append("X-Foo", input.field1)
  * if (input.field2?.isNotEmpty() == true) appendAll("X-Foo", input.field2!!.map { it.value })
  * ```
@@ -56,6 +58,7 @@ class HttpStringValuesMapSerializer(
             val memberTarget = model.expectShape(it.member.target)
             val paramName = it.locationName
             val location = it.location
+            val addFnName = location.addFnName
             val member = it.member
             val memberSymbol = symbolProvider.toSymbol(member)
             when (memberTarget) {
@@ -64,43 +67,45 @@ class HttpStringValuesMapSerializer(
                     val tsFormat = resolver.determineTimestampFormat(member, location, defaultTimestampFormat)
                     // headers/query params need to be a string
                     val formatted = formatInstant("input.$memberName", tsFormat, forceString = true)
-                    val appendFn = writer.format("append(#S, #L)", paramName, formatted)
+                    val addFn = writer.format("#L(#S, #L)", addFnName, paramName, formatted)
                     writer.addImport(RuntimeTypes.Core.TimestampFormat)
-                    writer.writeWithCondIfCheck(memberSymbol.isNullable, "input.$memberName != null", appendFn)
+                    writer.writeWithCondIfCheck(memberSymbol.isNullable, "input.$memberName != null", addFn)
                 }
                 is BlobShape -> {
-                    val appendFn = writer.format(
-                        "append(#S, input.#L.#T()",
+                    val addFn = writer.format(
+                        "#L(#S, input.#L.#T())",
+                        addFnName,
                         paramName,
                         memberName,
-                        RuntimeTypes.Core.Utils.encodeBase64String,
+                        RuntimeTypes.Core.Text.Encoding.encodeBase64String,
                     )
-                    writer.writeWithCondIfCheck(memberSymbol.isNullable, "input.$memberName?.isNotEmpty() == true", appendFn)
+                    writer.writeWithCondIfCheck(memberSymbol.isNullable, "input.$memberName?.isNotEmpty() == true", addFn)
                 }
                 is StringShape -> renderStringShape(it, memberTarget, writer)
                 is IntEnumShape -> {
-                    val appendFn = writer.format("append(#S, \"\${input.#L.value}\")", paramName, memberName)
+                    val addFn = writer.format("#L(#S, \"\${input.#L.value}\")", addFnName, paramName, memberName)
                     if (memberSymbol.isNullable) {
-                        writer.write("if (input.$memberName != null) $appendFn")
+                        writer.write("if (input.$memberName != null) $addFn")
                     } else {
                         val defaultCheck = defaultCheck(member) ?: ""
-                        writer.writeWithCondIfCheck(defaultCheck.isNotEmpty(), defaultCheck, appendFn)
+                        writer.writeWithCondIfCheck(defaultCheck.isNotEmpty(), defaultCheck, addFn)
                     }
                 }
                 else -> {
                     // encode to string
                     val encodedValue = "\"\${input.$memberName}\""
-                    val appendFn = writer.format("append(#S, #L)", paramName, encodedValue)
+                    val addFn = writer.format("#L(#S, #L)", addFnName, paramName, encodedValue)
                     if (memberSymbol.isNullable) {
-                        writer.write("if (input.$memberName != null) $appendFn")
+                        writer.write("if (input.$memberName != null) $addFn")
                     } else {
                         val defaultCheck = defaultCheck(member) ?: ""
-                        writer.writeWithCondIfCheck(defaultCheck.isNotEmpty(), defaultCheck, appendFn)
+                        writer.writeWithCondIfCheck(defaultCheck.isNotEmpty(), defaultCheck, addFn)
                     }
                 }
             }
         }
     }
+
     private fun defaultCheck(member: MemberShape): String? {
         val memberSymbol = symbolProvider.toSymbol(member)
         val memberName = symbolProvider.toMemberName(member)
@@ -149,12 +154,13 @@ class HttpStringValuesMapSerializer(
         val memberName = symbolProvider.toMemberName(binding.member)
         val memberSymbol = symbolProvider.toSymbol(binding.member)
         val paramName = binding.locationName
-        // appendAll collection parameter 2
+        // addAll collection parameter 2
         val param2 = if (mapFnContents.isEmpty()) "input.$memberName" else "input.$memberName.map { $mapFnContents }"
         val nullCheck = if (memberSymbol.isNullable) "?" else ""
         writer.write(
-            "if (input.#1L$nullCheck.isNotEmpty() == true) appendAll(#2S, #3L)",
+            "if (input.#L$nullCheck.isNotEmpty() == true) #L(#S, #L)",
             memberName,
+            binding.location.addAllFnName,
             paramName,
             param2,
         )
@@ -163,6 +169,7 @@ class HttpStringValuesMapSerializer(
     private fun renderStringShape(binding: HttpBindingDescriptor, memberTarget: StringShape, writer: KotlinWriter) {
         val memberName = symbolProvider.toMemberName(binding.member)
         val location = binding.location
+        val addFnName = location.addFnName
         val paramName = binding.locationName
         val memberSymbol = symbolProvider.toSymbol(binding.member)
 
@@ -171,7 +178,11 @@ class HttpStringValuesMapSerializer(
         if ((location == HttpBinding.Location.QUERY || location == HttpBinding.Location.HEADER) && binding.member.hasTrait<IdempotencyTokenTrait>()) {
             // Call the idempotency token function if no supplied value.
             writer.addImport(RuntimeTypes.SmithyClient.IdempotencyTokenProviderExt)
-            writer.write("append(#S, (input.$memberName ?: context.idempotencyTokenProvider.generateToken()))", paramName)
+            writer.write(
+                "#L(#S, (input.$memberName ?: context.idempotencyTokenProvider.generateToken()))",
+                addFnName,
+                paramName,
+            )
         } else {
             val nullCheck =
                 if (location == HttpBinding.Location.QUERY ||
@@ -190,14 +201,23 @@ class HttpStringValuesMapSerializer(
                     ".value"
                 }
                 memberTarget.hasTrait<MediaTypeTrait>() -> {
-                    writer.addImport(RuntimeTypes.Core.Utils.encodeBase64)
+                    writer.addImport(RuntimeTypes.Core.Text.Encoding.encodeBase64)
                     ".encodeBase64()"
                 }
                 else -> ""
             }
 
-            val appendFn = writer.format("append(#S, #L)", paramName, "input.${memberName}$suffix")
-            writer.writeWithCondIfCheck(cond.isNotEmpty(), cond, appendFn)
+            val addFn = writer.format("#L(#S, #L)", addFnName, paramName, "input.${memberName}$suffix")
+            writer.writeWithCondIfCheck(cond.isNotEmpty(), cond, addFn)
         }
     }
 }
+
+private val HttpBinding.Location.addFnName: String
+    get() = when (this) {
+        HttpBinding.Location.QUERY, HttpBinding.Location.QUERY_PARAMS -> "add" // uses MutableMultiMap
+        else -> "append" // uses ValuesMapBuilder
+    }
+
+private val HttpBinding.Location.addAllFnName: String
+    get() = "${addFnName}All"

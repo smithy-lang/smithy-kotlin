@@ -15,7 +15,7 @@ import aws.smithy.kotlin.runtime.http.test.util.AbstractEngineTest
 import aws.smithy.kotlin.runtime.http.test.util.test
 import aws.smithy.kotlin.runtime.http.test.util.testSetup
 import aws.smithy.kotlin.runtime.io.*
-import aws.smithy.kotlin.runtime.util.encodeToHex
+import aws.smithy.kotlin.runtime.text.encoding.encodeToHex
 import kotlinx.coroutines.*
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -33,7 +33,7 @@ class UploadTest : AbstractEngineTest() {
             val req = HttpRequest {
                 method = HttpMethod.POST
                 testSetup(env)
-                url.path = "/upload/content"
+                url.path.decoded = "/upload/content"
                 body = block()
             }
 
@@ -80,7 +80,7 @@ class UploadTest : AbstractEngineTest() {
             val req = HttpRequest {
                 method = HttpMethod.POST
                 testSetup(env)
-                url.path = "/upload/content"
+                url.path.decoded = "/upload/content"
                 body = content
             }
 
@@ -115,7 +115,7 @@ class UploadTest : AbstractEngineTest() {
             val req = HttpRequest {
                 method = HttpMethod.POST
                 testSetup(env)
-                url.path = "/upload/content"
+                url.path.decoded = "/upload/content"
                 body = content
             }
 
@@ -153,7 +153,7 @@ class UploadTest : AbstractEngineTest() {
             val req = HttpRequest {
                 method = HttpMethod.POST
                 testSetup(env)
-                url.path = "/upload/content"
+                url.path.decoded = "/upload/content"
                 body = wrappedStream.toHttpBody()
             }
 
@@ -175,7 +175,7 @@ class UploadTest : AbstractEngineTest() {
                     append("Content-Type", "application/xml")
                 }
                 testSetup(env)
-                url.path = "/upload/content"
+                url.path.decoded = "/upload/content"
                 body = HttpBody.Empty
             }
 
@@ -212,7 +212,7 @@ class UploadTest : AbstractEngineTest() {
             val req = HttpRequest {
                 method = HttpMethod.POST
                 testSetup(env)
-                url.path = "/upload/content"
+                url.path.decoded = "/upload/content"
                 body = chan.toHttpBody(16 * 1024 * 1024)
             }
 

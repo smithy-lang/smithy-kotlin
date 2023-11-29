@@ -151,9 +151,9 @@ class DefaultEndpointProviderGenerator(
     private fun renderEndpointRule(rule: EndpointRule) {
         withConditions(rule.conditions) {
             writer.withBlock("return #T(", ")", RuntimeTypes.SmithyClient.Endpoints.Endpoint) {
-                writeInline("#T.parse(", RuntimeTypes.Core.Net.Url)
+                writeInline("#T.parse(", RuntimeTypes.Core.Net.Url.Url)
                 renderExpression(rule.endpoint.url)
-                write(", #1T.DecodeAll - #1T.DecodePath),", RuntimeTypes.Core.Net.UrlDecoding)
+                write("),")
 
                 if (rule.endpoint.headers.isNotEmpty()) {
                     withBlock("headers = #T {", "},", RuntimeTypes.Http.Headers) {
@@ -168,7 +168,7 @@ class DefaultEndpointProviderGenerator(
                 }
 
                 if (rule.endpoint.properties.isNotEmpty()) {
-                    withBlock("attributes = #T {", "},", RuntimeTypes.Core.Utils.attributesOf) {
+                    withBlock("attributes = #T {", "},", RuntimeTypes.Core.Collections.attributesOf) {
                         rule.endpoint.properties.entries.forEach { (k, v) ->
                             val kStr = k.toString()
 
@@ -180,7 +180,7 @@ class DefaultEndpointProviderGenerator(
 
                             // otherwise, we just traverse the value like any other rules expression, object values will
                             // be rendered as Documents
-                            writeInline("#T(#S) to ", RuntimeTypes.Core.Utils.AttributeKey, kStr)
+                            writeInline("#S to ", kStr)
                             renderExpression(v)
                             ensureNewline()
                         }

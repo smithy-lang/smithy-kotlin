@@ -12,10 +12,14 @@ import software.amazon.smithy.kotlin.codegen.model.*
 import software.amazon.smithy.kotlin.codegen.utils.dq
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.knowledge.NullableIndex
+import software.amazon.smithy.model.node.Node
+import software.amazon.smithy.model.node.NodeType
+import software.amazon.smithy.model.node.NumberNode
 import software.amazon.smithy.model.shapes.*
 import software.amazon.smithy.model.traits.DefaultTrait
 import software.amazon.smithy.model.traits.StreamingTrait
 import java.util.logging.Logger
+import kotlin.math.round
 
 /**
  * Convert shapes to Kotlin types
@@ -229,12 +233,47 @@ class KotlinSymbolProvider(private val model: Model, private val settings: Kotli
                 "${enumSymbol.fullName}.fromValue($arg)"
             }
 
+            targetShape.isBlobShape -> "${node.toString().dq()}.encodeToByteArray()"
+            targetShape.isDocumentShape -> getDefaultValueForDocument(node)
+            targetShape.isTimestampShape -> getDefaultValueForTimestamp(node.asNumberNode().get())
+
             node.isNumberNode -> getDefaultValueForNumber(targetShape.type, node.toString())
             node.isArrayNode -> "listOf()"
             node.isObjectNode -> "mapOf()"
             node.isStringNode -> node.toString().dq()
             else -> node.toString()
         }
+    }
+
+    private fun getDefaultValueForTimestamp(node: NumberNode): String {
+        val instant = RuntimeTypes.Core.Instant
+
+        return if (node.isFloatingPointNumber) {
+            val fromEpochMilliseconds = RuntimeTypes.Core.fromEpochMilliseconds
+
+            val value = node.value as Double
+            val ms = round(value * 1e3).toLong()
+            "$fromEpochMilliseconds.invoke($instant, $ms)"
+        } else {
+            "$instant.fromEpochSeconds(${node.value}, 0)"
+        }
+    }
+
+    private fun getDefaultValueForDocument(node: Node): String {
+        val documentSymbol = RuntimeTypes.Core.Content.Document.fullName
+        val content: String = when (node.type) {
+            NodeType.NUMBER -> node.asNumberNode().get().value.toString()
+            NodeType.STRING -> node.asStringNode().get().value.dq()
+            NodeType.BOOLEAN -> node.asBooleanNode().get().value.toString()
+            NodeType.NULL -> "null"
+            // Note: Only empty maps and lists can be used as a default value for DocumentShape
+            // https://smithy.io/2.0/spec/type-refinement-traits.html#default-value-constraints
+            NodeType.ARRAY -> "listOf()"
+            NodeType.OBJECT -> "mapOf()"
+            null -> throw RuntimeException("Default value of `null` node not supported")
+        }
+
+        return "$documentSymbol($content)"
     }
 
     override fun timestampShape(shape: TimestampShape?): Symbol {

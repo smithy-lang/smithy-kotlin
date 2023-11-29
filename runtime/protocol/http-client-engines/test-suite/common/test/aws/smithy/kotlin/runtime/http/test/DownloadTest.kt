@@ -16,7 +16,7 @@ import aws.smithy.kotlin.runtime.http.test.util.test
 import aws.smithy.kotlin.runtime.http.test.util.testSetup
 import aws.smithy.kotlin.runtime.http.toSdkByteReadChannel
 import aws.smithy.kotlin.runtime.io.*
-import aws.smithy.kotlin.runtime.util.encodeToHex
+import aws.smithy.kotlin.runtime.text.encoding.encodeToHex
 import kotlin.test.*
 
 class DownloadTest : AbstractEngineTest() {
@@ -66,7 +66,7 @@ class DownloadTest : AbstractEngineTest() {
         test { env, client ->
             val req = HttpRequest {
                 testSetup(env)
-                url.path = "/download/integrity"
+                url.path.decoded = "/download/integrity"
             }
 
             val call = client.call(req)
@@ -93,8 +93,8 @@ class DownloadTest : AbstractEngineTest() {
         test { env, client ->
             val req = HttpRequest {
                 testSetup(env)
-                url.path = "/download/integrity"
-                url.parameters.append("chunked-response", "true")
+                url.path.decoded = "/download/integrity"
+                url.parameters.decodedParameters.add("chunked-response", "true")
             }
 
             val call = client.call(req)
@@ -124,7 +124,7 @@ class DownloadTest : AbstractEngineTest() {
         test { env, client ->
             val req = HttpRequest {
                 testSetup(env)
-                url.path = "/download/empty"
+                url.path.decoded = "/download/empty"
             }
 
             val call = client.call(req)

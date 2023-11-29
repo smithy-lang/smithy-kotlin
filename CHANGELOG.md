@@ -1,5 +1,26 @@
 # Changelog
 
+## [1.0.1] - 11/26/2023
+
+## [1.0.0] - 11/26/2023
+
+### Miscellaneous
+* Mark runtime as stable
+
+## [0.30.0] - 11/22/2023
+
+### Features
+* BREAKING: Overhaul URL APIs to clarify content encoding, when data is in which state, and to reduce the number of times data is encoded/decoded
+
+## [0.29.0] - 11/17/2023
+
+### Features
+* Add support for modeling defaults on BlobShapes, DocumentShapes, and TimestampShapes
+
+### Miscellaneous
+* **BREAKING**: make `Credentials` an interface
+* Upgrade dependencies to their latest versions, notably Kotlin 1.9.20
+
 ## [0.28.2] - 11/14/2023
 
 ### Features

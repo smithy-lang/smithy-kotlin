@@ -9,7 +9,7 @@ import aws.smithy.kotlin.runtime.hashing.sha256
 import aws.smithy.kotlin.runtime.http.HttpBody
 import aws.smithy.kotlin.runtime.io.*
 import aws.smithy.kotlin.runtime.testing.RandomTempFile
-import aws.smithy.kotlin.runtime.util.encodeToHex
+import aws.smithy.kotlin.runtime.text.encoding.encodeToHex
 import kotlinx.coroutines.*
 import kotlinx.coroutines.test.runTest
 import okio.Buffer

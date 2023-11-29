@@ -4,9 +4,9 @@
  */
 package aws.smithy.kotlin.runtime.http.engine.okhttp
 
+import aws.smithy.kotlin.runtime.collections.Attributes
+import aws.smithy.kotlin.runtime.collections.attributesOf
 import aws.smithy.kotlin.runtime.telemetry.metrics.MonotonicCounter
-import aws.smithy.kotlin.runtime.util.Attributes
-import aws.smithy.kotlin.runtime.util.attributesOf
 import okhttp3.*
 import okio.*
 

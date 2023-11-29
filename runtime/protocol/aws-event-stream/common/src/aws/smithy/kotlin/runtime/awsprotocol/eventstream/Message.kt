@@ -8,7 +8,7 @@ package aws.smithy.kotlin.runtime.awsprotocol.eventstream
 import aws.smithy.kotlin.runtime.InternalApi
 import aws.smithy.kotlin.runtime.hashing.Crc32
 import aws.smithy.kotlin.runtime.io.*
-import aws.smithy.kotlin.runtime.util.encodeToHex
+import aws.smithy.kotlin.runtime.text.encoding.encodeToHex
 
 internal const val MESSAGE_CRC_BYTE_LEN = 4
 

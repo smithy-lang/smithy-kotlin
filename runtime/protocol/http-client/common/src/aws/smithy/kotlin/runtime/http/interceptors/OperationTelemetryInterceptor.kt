@@ -9,13 +9,15 @@ import aws.smithy.kotlin.runtime.client.ProtocolRequestInterceptorContext
 import aws.smithy.kotlin.runtime.client.ProtocolResponseInterceptorContext
 import aws.smithy.kotlin.runtime.client.RequestInterceptorContext
 import aws.smithy.kotlin.runtime.client.ResponseInterceptorContext
+import aws.smithy.kotlin.runtime.collections.attributesOf
+import aws.smithy.kotlin.runtime.collections.merge
+import aws.smithy.kotlin.runtime.collections.mutableAttributesOf
+import aws.smithy.kotlin.runtime.collections.takeOrNull
 import aws.smithy.kotlin.runtime.http.engine.EngineAttributes
 import aws.smithy.kotlin.runtime.http.operation.OperationMetrics
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.http.response.HttpResponse
 import aws.smithy.kotlin.runtime.telemetry.metrics.recordSeconds
-import aws.smithy.kotlin.runtime.util.*
-import kotlin.time.ExperimentalTime
 import kotlin.time.TimeMark
 import kotlin.time.TimeSource
 
@@ -27,7 +29,7 @@ import kotlin.time.TimeSource
  * @param operation the name of the operation
  * @param timeSource the time source to use for measuring elapsed time
  */
-@OptIn(ExperimentalTime::class, ExperimentalApi::class)
+@OptIn(ExperimentalApi::class)
 internal class OperationTelemetryInterceptor(
     private val metrics: OperationMetrics,
     private val service: String,

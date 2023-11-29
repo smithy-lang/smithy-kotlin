@@ -31,7 +31,7 @@ service Test {
     ]
 }
 
-@http(method: "POST", uri: "/smoketest/{label1}/foo")
+@http(method: "POST", uri: "/smoketest/{label1+}/foo")
 operation SmokeTest {
     input: SmokeTestRequest,
     output: SmokeTestResponse,

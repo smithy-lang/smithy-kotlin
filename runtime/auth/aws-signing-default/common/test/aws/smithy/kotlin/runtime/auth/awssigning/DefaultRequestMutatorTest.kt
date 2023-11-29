@@ -10,7 +10,6 @@ import aws.smithy.kotlin.runtime.http.HttpBody
 import aws.smithy.kotlin.runtime.http.HttpMethod
 import aws.smithy.kotlin.runtime.http.request.*
 import aws.smithy.kotlin.runtime.net.Host
-import aws.smithy.kotlin.runtime.net.parameters
 import aws.smithy.kotlin.runtime.time.Instant
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -52,11 +51,11 @@ private val baseRequest = HttpRequest {
     method = HttpMethod.GET
     url {
         host = Host.Domain("foo.com")
-        path = "bar/baz"
-        parameters {
-            append("a", "apple")
-            append("b", "banana")
-            append("c", "cherry")
+        path.decoded = "bar/baz"
+        parameters.decodedParameters {
+            add("a", "apple")
+            add("b", "banana")
+            add("c", "cherry")
         }
     }
     headers {

@@ -37,7 +37,7 @@ class IdempotentTokenGeneratorTest {
                     builder.method = HttpMethod.POST
             
                     builder.url {
-                        path = "/input/AllocateWidget"
+                        path.encoded = "/input/AllocateWidget"
                     }
             
                     val payload = serializeAllocateWidgetOperationBody(context, input)
@@ -63,9 +63,9 @@ internal class AllocateWidgetQueryOperationSerializer: HttpSerialize<AllocateWid
         builder.method = HttpMethod.POST
 
         builder.url {
-            path = "/input/AllocateWidgetQuery"
-            parameters {
-                append("clientToken", (input.clientToken ?: context.idempotencyTokenProvider.generateToken()))
+            path.encoded = "/input/AllocateWidgetQuery"
+            parameters.decodedParameters(PercentEncoding.SmithyLabel) {
+                add("clientToken", (input.clientToken ?: context.idempotencyTokenProvider.generateToken()))
             }
         }
 
@@ -87,7 +87,7 @@ internal class AllocateWidgetHeaderOperationSerializer: HttpSerialize<AllocateWi
         builder.method = HttpMethod.POST
 
         builder.url {
-            path = "/input/AllocateWidgetHeader"
+            path.encoded = "/input/AllocateWidgetHeader"
         }
 
         builder.headers {

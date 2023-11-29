@@ -170,7 +170,7 @@ class DefaultEndpointProviderGeneratorTest {
                 params.bazName == "gov"
             ) {
                 return Endpoint(
-                    Url.parse("https://basic.condition", UrlDecoding.DecodeAll - UrlDecoding.DecodePath),
+                    Url.parse("https://basic.condition"),
                 )
             }
         """.formatForTest(indent = "        ")
@@ -187,7 +187,7 @@ class DefaultEndpointProviderGeneratorTest {
                     resourceIdPrefix == "gov.${'$'}{params.resourceId}"
                 ) {
                     return Endpoint(
-                        Url.parse("https://assignment.condition", UrlDecoding.DecodeAll - UrlDecoding.DecodePath),
+                        Url.parse("https://assignment.condition"),
                     )
                 }
             }
@@ -212,18 +212,18 @@ class DefaultEndpointProviderGeneratorTest {
     fun testEndpointFields() {
         val expected = """
             return Endpoint(
-                Url.parse("https://global.api", UrlDecoding.DecodeAll - UrlDecoding.DecodePath),
+                Url.parse("https://global.api"),
                 headers = Headers {
                     append("fooheader", "barheader")
                 },
                 attributes = attributesOf {
-                    AttributeKey("foo") to "bar"
-                    AttributeKey("fooInt") to 7
-                    AttributeKey("fooBoolean") to true
-                    AttributeKey("fooObject") to buildDocument {
+                    "foo" to "bar"
+                    "fooInt" to 7
+                    "fooBoolean" to true
+                    "fooObject" to buildDocument {
                         "fooObjectFoo" to "bar"
                     }
-                    AttributeKey("fooArray") to listOf(
+                    "fooArray" to listOf(
                         "\"fooArrayBar\"",
                     )
                 },
