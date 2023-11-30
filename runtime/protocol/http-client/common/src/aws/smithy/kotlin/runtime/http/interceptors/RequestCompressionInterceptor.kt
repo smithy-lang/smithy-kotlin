@@ -14,7 +14,7 @@ import aws.smithy.kotlin.runtime.http.request.HttpRequest
 private val VALID_COMPRESSION_THRESHOLD_BYTES_RANGE = 0..10485760
 
 /**
- * HTTP interceptor that compresses operation request payloads when eligible.
+ * HTTP interceptor that compresses request payloads
  */
 @InternalApi
 public class RequestCompressionInterceptor(
@@ -30,12 +30,12 @@ public class RequestCompressionInterceptor(
     override suspend fun modifyBeforeRetryLoop(
         context: ProtocolRequestInterceptorContext<Any, HttpRequest>,
     ): HttpRequest {
-        val payloadSize = context.protocolRequest.body.contentLength
+        val payloadSizeBytes = context.protocolRequest.body.contentLength
         val algorithm = availableCompressionAlgorithms.find { available ->
             supportedCompressionAlgorithms.find { available.id == it } != null
         }
 
-        return if (algorithm != null && (context.protocolRequest.body.isStreaming || payloadSize?.let { it >= compressionThresholdBytes } == true)) {
+        return if (algorithm != null && (context.protocolRequest.body.isStreaming || payloadSizeBytes?.let { it >= compressionThresholdBytes } == true)) {
             algorithm.compress(context.protocolRequest)
         } else {
             context.protocolRequest

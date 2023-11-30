@@ -6,18 +6,23 @@
 package aws.smithy.kotlin.runtime.http.interceptors
 
 import aws.smithy.kotlin.runtime.collections.get
-import aws.smithy.kotlin.runtime.content.toByteArray
-import aws.smithy.kotlin.runtime.http.*
+import aws.smithy.kotlin.runtime.http.HttpBody
+import aws.smithy.kotlin.runtime.http.SdkHttpClient
 import aws.smithy.kotlin.runtime.http.interceptors.requestcompression.Gzip
 import aws.smithy.kotlin.runtime.http.operation.HttpOperationContext
 import aws.smithy.kotlin.runtime.http.operation.newTestOperation
 import aws.smithy.kotlin.runtime.http.operation.roundTrip
+import aws.smithy.kotlin.runtime.http.readAll
 import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
+import aws.smithy.kotlin.runtime.http.toHttpBody
 import aws.smithy.kotlin.runtime.httptest.TestEngine
 import aws.smithy.kotlin.runtime.io.SdkByteReadChannel
 import aws.smithy.kotlin.runtime.io.source
 import kotlinx.coroutines.test.runTest
-import kotlin.test.*
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
+import kotlin.test.assertTrue
 
 class RequestCompressionInterceptorTest {
     private val client = SdkHttpClient(TestEngine())
@@ -40,7 +45,7 @@ class RequestCompressionInterceptorTest {
 
         val call = op.context.attributes[HttpOperationContext.HttpCallList].first()
         assertEquals(null, call.request.headers["Content-Encoding"])
-        assertEquals("<Foo>bar</Foo>", call.request.body.toByteStream()!!.toByteArray().decodeToString())
+        assertEquals("<Foo>bar</Foo>", call.request.body.readAll()?.decodeToString())
     }
 
     @Test
@@ -61,7 +66,7 @@ class RequestCompressionInterceptorTest {
 
         val call = op.context.attributes[HttpOperationContext.HttpCallList].first()
         assertEquals(null, call.request.headers["Content-Encoding"])
-        assertEquals("<Foo>bar</Foo>", call.request.body.toByteStream()!!.toByteArray().decodeToString())
+        assertEquals("<Foo>bar</Foo>", call.request.body.readAll()?.decodeToString())
     }
 
     @Test
@@ -102,11 +107,11 @@ class RequestCompressionInterceptorTest {
         val call = op.context.attributes[HttpOperationContext.HttpCallList].first()
         assertEquals("gzip", call.request.headers["Content-Encoding"])
         assertTrue(
-            byteArrayOf(31, -117, 8, 0, 0, 0, 0, 0, 0, -1, -77, 113, -53, -49, -73, 75, 74, 44, -78, -47, 7, 49, 0, 29, -105, -38, 89, 14, 0, 0, 0).contentEquals(call.request.body.readAll()),
+            byteArrayOf(31, -117, 8, 0, 0, 0, 0, 0, 0, -1, -77, 113, -53, -49, -73, 75, 74, 44, -78, -47, 7, 49, 0, 29, -105, -38, 89, 14, 0, 0, 0)
+                .contentEquals(call.request.body.readAll()),
         )
     }
 
-    @Ignore // TODO: Re-enable test
     @Test
     fun testSdkByteReadChannelAlwaysCompressed() = runTest {
         val req = HttpRequestBuilder().apply {
@@ -125,9 +130,9 @@ class RequestCompressionInterceptorTest {
 
         val call = op.context.attributes[HttpOperationContext.HttpCallList].first()
         assertEquals("gzip", call.request.headers["Content-Encoding"])
-        assertEquals(
-            byteArrayOf(31, -117, 8, 0, 0, 0, 0, 0, 0, -1, -77, 113, -53, -49, -73, 75, 74, 44, -78, -47, 7, 49, 0, 29, -105, -38, 89, 14, 0, 0, 0),
-            call.request.body.readAll(),
+        assertTrue(
+            byteArrayOf(31, -117, 8, 0, 0, 0, 0, 0, 0, -1, -77, 113, -53, -49, -73, 75, 74, 44, -78, -47, 7, 49, 0, 29, -105, -38, 89, 14, 0, 0, 0)
+                .contentEquals(call.request.body.readAll()),
         )
     }
 
@@ -150,7 +155,8 @@ class RequestCompressionInterceptorTest {
         val call = op.context.attributes[HttpOperationContext.HttpCallList].first()
         assertEquals("gzip", call.request.headers["Content-Encoding"])
         assertTrue(
-            byteArrayOf(31, -117, 8, 0, 0, 0, 0, 0, 0, -1, -77, 113, -53, -49, -73, 75, 74, 44, -78, -47, 7, 49, 0, 29, -105, -38, 89, 14, 0, 0, 0).contentEquals(call.request.body.readAll()),
+            byteArrayOf(31, -117, 8, 0, 0, 0, 0, 0, 0, -1, -77, 113, -53, -49, -73, 75, 74, 44, -78, -47, 7, 49, 0, 29, -105, -38, 89, 14, 0, 0, 0)
+                .contentEquals(call.request.body.readAll()),
         )
     }
 
@@ -174,7 +180,8 @@ class RequestCompressionInterceptorTest {
         val call = op.context.attributes[HttpOperationContext.HttpCallList].first()
         assertEquals(listOf("br", "gzip"), call.request.headers.getAll("Content-Encoding"))
         assertTrue(
-            byteArrayOf(31, -117, 8, 0, 0, 0, 0, 0, 0, -1, -77, 113, -53, -49, -73, 75, 74, 44, -78, -47, 7, 49, 0, 29, -105, -38, 89, 14, 0, 0, 0).contentEquals(call.request.body.readAll()),
+            byteArrayOf(31, -117, 8, 0, 0, 0, 0, 0, 0, -1, -77, 113, -53, -49, -73, 75, 74, 44, -78, -47, 7, 49, 0, 29, -105, -38, 89, 14, 0, 0, 0)
+                .contentEquals(call.request.body.readAll()),
         )
     }
 }

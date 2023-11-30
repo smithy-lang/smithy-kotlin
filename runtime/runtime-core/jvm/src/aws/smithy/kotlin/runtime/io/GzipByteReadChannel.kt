@@ -9,8 +9,8 @@ import java.util.zip.GZIPOutputStream
 
 @InternalApi
 public class GzipByteReadChannel(
-    private val source: SdkByteReadChannel,
-) : SdkByteReadChannel by source {
+    private val channel: SdkByteReadChannel,
+) : SdkByteReadChannel by channel {
     private val gzipBuffer = SdkBuffer()
     private val gzipOutputStream = GZIPOutputStream(gzipBuffer.outputStream())
 
@@ -19,18 +19,17 @@ public class GzipByteReadChannel(
         if (limit == 0L) return 0L
 
         val temp = SdkBuffer()
-        val rc = source.read(temp, limit)
+        val rc = channel.read(temp, limit)
 
-        return if (rc >= 0L) {
-            gzipOutputStream.write(temp.readByteArray())
-            gzipBuffer.readAll(sink)
-            rc
-        } else {
-            require(rc == -1L)
-            gzipOutputStream.write(temp.readByteArray())
+        gzipOutputStream.write(temp.readByteArray())
+        gzipBuffer.readAll(sink)
+
+        if (isClosedForRead) {
             gzipOutputStream.close()
             gzipBuffer.readAll(sink)
-            rc
+            gzipBuffer.close()
         }
+
+        return rc
     }
 }

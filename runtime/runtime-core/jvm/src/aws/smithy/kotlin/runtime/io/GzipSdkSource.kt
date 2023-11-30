@@ -21,17 +21,17 @@ public class GzipSdkSource(
         val temp = SdkBuffer()
         val rc = source.read(temp, limit)
 
-        return if (rc >= 0L) {
-            gzipOutputStream.write(temp.readByteArray())
-            gzipBuffer.readAll(sink)
-            rc
-        } else {
-            require(rc == -1L)
+        gzipOutputStream.write(temp.readByteArray())
+        gzipBuffer.readAll(sink)
+
+        if (rc == -1L) {
             gzipOutputStream.write(temp.readByteArray())
             gzipOutputStream.close()
             gzipBuffer.readAll(sink)
-            rc
+            temp.close()
         }
+
+        return rc
     }
 
     override fun close() {
