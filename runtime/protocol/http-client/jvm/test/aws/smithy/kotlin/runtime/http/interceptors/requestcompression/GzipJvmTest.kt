@@ -13,7 +13,6 @@ import java.util.zip.GZIPInputStream
 import kotlin.test.Test
 import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
-import kotlin.test.assertTrue
 
 class GzipJvmTest {
     private val payload = "<Foo>bar</Foo>"
@@ -56,9 +55,9 @@ class GzipJvmTest {
         val compressedByteArray = answerBuffer.readByteArray()
         answerBuffer.close()
 
-        assertTrue(
-            byteArrayOf(31, -117, 8, 0, 0, 0, 0, 0, 0, -1, -77, 113, -53, -49, -73, 75, 74, 44, -78, -47, 7, 49, 0, 29, -105, -38, 89, 14, 0, 0, 0)
-                .contentEquals(compressedByteArray),
+        assertContentEquals(
+            byteArrayOf(31, -117, 8, 0, 0, 0, 0, 0, 0, -1, -77, 113, -53, -49, -73, 75, 74, 44, -78, -47, 7, 49, 0, 29, -105, -38, 89, 14, 0, 0, 0),
+            compressedByteArray,
         )
 
         val decompressedPayload = GZIPInputStream(compressedByteArray.inputStream()).bufferedReader(Charsets.UTF_8).use { it.readText() }
@@ -70,9 +69,9 @@ class GzipJvmTest {
     fun testBytes() = runTest {
         val compressedByteArray = compressByteArray(byteArray).readAll()
 
-        assertTrue(
-            byteArrayOf(31, -117, 8, 0, 0, 0, 0, 0, 0, -1, -77, 113, -53, -49, -73, 75, 74, 44, -78, -47, 7, 49, 0, 29, -105, -38, 89, 14, 0, 0, 0)
-                .contentEquals(compressedByteArray),
+        assertContentEquals(
+            byteArrayOf(31, -117, 8, 0, 0, 0, 0, 0, 0, -1, -77, 113, -53, -49, -73, 75, 74, 44, -78, -47, 7, 49, 0, 29, -105, -38, 89, 14, 0, 0, 0),
+            compressedByteArray,
         )
 
         val decompressedPayload = GZIPInputStream(compressedByteArray?.inputStream()).bufferedReader(Charsets.UTF_8).use { it.readText() }
