@@ -5,7 +5,6 @@
 
 package aws.smithy.kotlin.runtime.http.interceptors.requestcompression
 
-import aws.smithy.kotlin.runtime.ClientException
 import aws.smithy.kotlin.runtime.http.HttpBody
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.http.request.toBuilder
@@ -16,6 +15,7 @@ import java.io.ByteArrayOutputStream
 import java.util.zip.GZIPOutputStream
 
 public actual class Gzip actual constructor() : CompressionAlgorithm {
+
     actual override val id: String = "gzip"
     actual override val contentEncoding: String = "gzip"
 
@@ -26,25 +26,23 @@ public actual class Gzip actual constructor() : CompressionAlgorithm {
         compressedRequest.body = when (uncompressedBody) {
             is HttpBody.SourceContent -> GzipSdkSource(uncompressedBody.readFrom()).toHttpBody()
             is HttpBody.ChannelContent -> GzipByteReadChannel(uncompressedBody.readFrom()).toHttpBody()
-            is HttpBody.Bytes -> compressByteArray(uncompressedBody.bytes())
+            is HttpBody.Bytes -> compressBytes(uncompressedBody.bytes()).toHttpBody()
             is HttpBody.Empty -> uncompressedBody
-            else -> throw ClientException("HttpBody type is not supported")
+            else -> throw IllegalStateException("HttpBody type '$uncompressedBody' is not supported")
         }
+
         compressedRequest.headers.append("Content-Encoding", contentEncoding)
 
         return compressedRequest.build()
     }
 }
 
-internal fun compressByteArray(bytes: ByteArray): HttpBody {
+internal fun compressBytes(bytes: ByteArray): ByteArray {
     val byteArrayOutputStream = ByteArrayOutputStream()
     val gzipOutputStream = GZIPOutputStream(byteArrayOutputStream)
 
-    gzipOutputStream.write(bytes)
-    gzipOutputStream.close()
+    gzipOutputStream.write(bytes); gzipOutputStream.close()
 
-    val compressedBody = byteArrayOutputStream.toByteArray().toHttpBody()
-    byteArrayOutputStream.close()
-
+    val compressedBody = byteArrayOutputStream.toByteArray(); byteArrayOutputStream.close()
     return compressedBody
 }

@@ -6,15 +6,13 @@
 package aws.smithy.kotlin.runtime.http.interceptors
 
 import aws.smithy.kotlin.runtime.collections.get
-import aws.smithy.kotlin.runtime.http.HttpBody
-import aws.smithy.kotlin.runtime.http.SdkHttpClient
+import aws.smithy.kotlin.runtime.http.*
+import aws.smithy.kotlin.runtime.http.interceptors.requestcompression.CompressionAlgorithm
 import aws.smithy.kotlin.runtime.http.interceptors.requestcompression.Gzip
 import aws.smithy.kotlin.runtime.http.operation.HttpOperationContext
 import aws.smithy.kotlin.runtime.http.operation.newTestOperation
 import aws.smithy.kotlin.runtime.http.operation.roundTrip
-import aws.smithy.kotlin.runtime.http.readAll
 import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
-import aws.smithy.kotlin.runtime.http.toHttpBody
 import aws.smithy.kotlin.runtime.httptest.TestEngine
 import aws.smithy.kotlin.runtime.io.SdkByteReadChannel
 import aws.smithy.kotlin.runtime.io.source
@@ -24,164 +22,190 @@ import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 
+expect fun decompressGzipBytes(compressed: ByteArray): ByteArray
+
+private data class HeaderValue(val headerName: String, val headerValue: String)
+
 class RequestCompressionInterceptorTest {
+
     private val client = SdkHttpClient(TestEngine())
 
-    @Test
-    fun testNoCompressionBecauseOfThreshold() = runTest {
-        val req = HttpRequestBuilder().apply {
-            body = HttpBody.fromBytes("<Foo>bar</Foo>".encodeToByteArray())
+    private suspend fun mockCall(
+            suppliedBody: HttpBody,
+            compressionThresholdBytes: Long,
+            supportedCompressionAlgorithms: List<String>,
+            availableCompressionAlgorithms: List<CompressionAlgorithm>,
+            additionalHeaders: List<HeaderValue>? = null,
+    ): HttpCall {
+        val request = HttpRequestBuilder().apply {
+            body = suppliedBody
         }
 
-        val op = newTestOperation<Unit, Unit>(req, Unit)
-        op.interceptors.add(
-            RequestCompressionInterceptor(
-                100000,
-                listOf("gzip"),
-                listOf(Gzip()),
-            ),
+        additionalHeaders?.forEach {
+            request.headers.append(it.headerName, it.headerValue)
+        }
+
+        val op = newTestOperation<Unit, Unit>(
+                request,
+                Unit,
         )
+
+        op.interceptors.add(
+                RequestCompressionInterceptor(
+                        compressionThresholdBytes,
+                        supportedCompressionAlgorithms,
+                        availableCompressionAlgorithms
+                ),
+        )
+
         op.roundTrip(client, Unit)
 
-        val call = op.context.attributes[HttpOperationContext.HttpCallList].first()
-        assertEquals(null, call.request.headers["Content-Encoding"])
-        assertEquals("<Foo>bar</Foo>", call.request.body.readAll()?.decodeToString())
+        return op.context.attributes[HttpOperationContext.HttpCallList].first()
     }
 
     @Test
-    fun testNoCompressionBecauseOfNoSupportedAlgorithm() = runTest {
-        val req = HttpRequestBuilder().apply {
-            body = HttpBody.fromBytes("<Foo>bar</Foo>".encodeToByteArray())
-        }
+    fun testCompressionThresholdTooHigh() = runTest {
+        val payload = "<Foo>bar</Foo>"
+        val bytes = payload.encodeToByteArray()
 
-        val op = newTestOperation<Unit, Unit>(req, Unit)
-        op.interceptors.add(
-            RequestCompressionInterceptor(
-                0,
-                listOf(),
-                listOf(),
-            ),
+        val call = mockCall(
+                HttpBody.fromBytes(bytes),
+                bytes.size + 1L,
+                listOf("gzip"),
+                listOf(Gzip()),
         )
-        op.roundTrip(client, Unit)
 
-        val call = op.context.attributes[HttpOperationContext.HttpCallList].first()
-        assertEquals(null, call.request.headers["Content-Encoding"])
-        assertEquals("<Foo>bar</Foo>", call.request.body.readAll()?.decodeToString())
+        val contentEncodingHeader = call.request.headers["Content-Encoding"]
+        assertEquals(null, contentEncodingHeader)
+
+        val sentBytes = call.request.body.readAll()
+        assertEquals(bytes, sentBytes)
+    }
+
+    @Test
+    fun testCompression() = runTest {
+        val payload = "<Foo>bar</Foo>"
+        val bytes = payload.encodeToByteArray()
+
+        val call = mockCall(
+                HttpBody.fromBytes(bytes),
+                bytes.size.toLong(),
+                listOf("gzip"),
+                listOf(Gzip()),
+        )
+
+        val contentEncodingHeader = call.request.headers.getAll("Content-Encoding")
+        assertEquals(listOf("gzip"), contentEncodingHeader)
+
+        val compressedByes = call.request.body.readAll()
+        val decompressedBytes = compressedByes?.let { decompressGzipBytes(compressedByes) }
+        assertContentEquals(bytes, decompressedBytes)
+    }
+
+    @Test
+    fun testSdkSource() = runTest {
+        val payload = "<Foo>bar</Foo>"
+        val bytes = payload.encodeToByteArray()
+
+        val call = mockCall(
+                bytes.source().toHttpBody(),
+                bytes.size + 1L, // Compression threshold bytes will be ignored
+                listOf("gzip"),
+                listOf(Gzip()),
+        )
+
+        val contentEncodingHeader = call.request.headers.getAll("Content-Encoding")
+        assertEquals(listOf("gzip"), contentEncodingHeader)
+
+        val compressedByes = call.request.body.readAll()
+        val decompressedBytes = compressedByes?.let { decompressGzipBytes(compressedByes) }
+        assertContentEquals(bytes, decompressedBytes)
+    }
+
+    @Test
+    fun testSdkByteReadChannel() = runTest {
+        val payload = "<Foo>bar</Foo>"
+        val bytes = payload.encodeToByteArray()
+
+        val call = mockCall(
+                SdkByteReadChannel(bytes).toHttpBody(),
+                bytes.size + 1L, // Compression threshold bytes will be ignored
+                listOf("gzip"),
+                listOf(Gzip()),
+        )
+
+        val contentEncodingHeader = call.request.headers.getAll("Content-Encoding")
+        assertEquals(listOf("gzip"), contentEncodingHeader)
+
+        val compressedByes = call.request.body.readAll()
+        val decompressedBytes = compressedByes?.let { decompressGzipBytes(compressedByes) }
+        assertContentEquals(bytes, decompressedBytes)
+    }
+
+    @Test
+    fun testHeaderAlreadySet() = runTest {
+        val payload = "<Foo>bar</Foo>"
+        val bytes = payload.encodeToByteArray()
+
+        val call = mockCall(
+                HttpBody.fromBytes(bytes),
+                bytes.size.toLong(),
+                listOf("gzip"),
+                listOf(Gzip()),
+                listOf(
+                        HeaderValue("Content-Encoding", "br")
+                ),
+        )
+
+        val contentEncodingHeader = call.request.headers.getAll("Content-Encoding")
+        assertEquals(listOf("br", "gzip"), contentEncodingHeader)
+
+        val compressedByes = call.request.body.readAll()
+        val decompressedBytes = compressedByes?.let { decompressGzipBytes(compressedByes) }
+        assertContentEquals(bytes, decompressedBytes)
+    }
+
+    @Test
+    fun testNoSupportedAlgorithms() = runTest {
+        val payload = "<Foo>bar</Foo>"
+        val bytes = payload.encodeToByteArray()
+
+        val call = mockCall(
+                HttpBody.fromBytes(bytes),
+                bytes.size.toLong(),
+                listOf(),
+                listOf(),
+        )
+
+        val contentEncodingHeader = call.request.headers["Content-Encoding"]
+        assertEquals(null, contentEncodingHeader)
+
+        val sentBytes = call.request.body.readAll()
+        assertEquals(bytes, sentBytes)
     }
 
     @Test
     fun testInvalidCompressionThreshold() = runTest {
-        val req = HttpRequestBuilder().apply {
-            body = HttpBody.fromBytes("<Foo>bar</Foo>".encodeToByteArray())
-        }
+        val payload = "<Foo>bar</Foo>"
+        val bytes = payload.encodeToByteArray()
 
-        val op = newTestOperation<Unit, Unit>(req, Unit)
+        val op = newTestOperation<Unit, Unit>(
+            HttpRequestBuilder().apply {
+                body = HttpBody.fromBytes(bytes)
+            },
+            Unit
+        )
+
+        val invalidCompressionThreshold = -1L
 
         assertFailsWith<IllegalArgumentException> {
             op.interceptors.add(
                 RequestCompressionInterceptor(
-                    -1,
+                    invalidCompressionThreshold,
                     listOf("gzip"),
                     listOf(Gzip()),
                 ),
             )
         }
-    }
-
-    @Test
-    fun testCompression() = runTest {
-        val req = HttpRequestBuilder().apply {
-            body = HttpBody.fromBytes("<Foo>bar</Foo>".encodeToByteArray())
-        }
-
-        val op = newTestOperation<Unit, Unit>(req, Unit)
-        op.interceptors.add(
-            RequestCompressionInterceptor(
-                0,
-                listOf("gzip"),
-                listOf(Gzip()),
-            ),
-        )
-        op.roundTrip(client, Unit)
-
-        val call = op.context.attributes[HttpOperationContext.HttpCallList].first()
-        assertEquals("gzip", call.request.headers["Content-Encoding"])
-        assertContentEquals(
-            byteArrayOf(31, -117, 8, 0, 0, 0, 0, 0, 0, -1, -77, 113, -53, -49, -73, 75, 74, 44, -78, -47, 7, 49, 0, 29, -105, -38, 89, 14, 0, 0, 0),
-            call.request.body.readAll(),
-        )
-    }
-
-    @Test
-    fun testSdkByteReadChannelAlwaysCompressed() = runTest {
-        val req = HttpRequestBuilder().apply {
-            body = SdkByteReadChannel("<Foo>bar</Foo>".encodeToByteArray()).toHttpBody()
-        }
-
-        val op = newTestOperation<Unit, Unit>(req, Unit)
-        op.interceptors.add(
-            RequestCompressionInterceptor(
-                10000000,
-                listOf("gzip"),
-                listOf(Gzip()),
-            ),
-        )
-        op.roundTrip(client, Unit)
-
-        val call = op.context.attributes[HttpOperationContext.HttpCallList].first()
-        assertEquals("gzip", call.request.headers["Content-Encoding"])
-        assertContentEquals(
-            byteArrayOf(31, -117, 8, 0, 0, 0, 0, 0, 0, -1, -77, 113, -53, -49, -73, 75, 74, 44, -78, -47, 7, 49, 0, 29, -105, -38, 89, 14, 0, 0, 0),
-            call.request.body.readAll(),
-        )
-    }
-
-    @Test
-    fun testSdkSourceAlwaysCompressed() = runTest {
-        val req = HttpRequestBuilder().apply {
-            body = "<Foo>bar</Foo>".encodeToByteArray().source().toHttpBody()
-        }
-
-        val op = newTestOperation<Unit, Unit>(req, Unit)
-        op.interceptors.add(
-            RequestCompressionInterceptor(
-                10000000,
-                listOf("gzip"),
-                listOf(Gzip()),
-            ),
-        )
-        op.roundTrip(client, Unit)
-
-        val call = op.context.attributes[HttpOperationContext.HttpCallList].first()
-        assertEquals("gzip", call.request.headers["Content-Encoding"])
-        assertContentEquals(
-            byteArrayOf(31, -117, 8, 0, 0, 0, 0, 0, 0, -1, -77, 113, -53, -49, -73, 75, 74, 44, -78, -47, 7, 49, 0, 29, -105, -38, 89, 14, 0, 0, 0),
-            call.request.body.readAll(),
-        )
-    }
-
-    @Test
-    fun testCompressionWithMultipleHeaders() = runTest {
-        val req = HttpRequestBuilder().apply {
-            body = HttpBody.fromBytes("<Foo>bar</Foo>".encodeToByteArray())
-        }
-        req.headers.append("Content-Encoding", "br")
-
-        val op = newTestOperation<Unit, Unit>(req, Unit)
-        op.interceptors.add(
-            RequestCompressionInterceptor(
-                0,
-                listOf("gzip"),
-                listOf(Gzip()),
-            ),
-        )
-        op.roundTrip(client, Unit)
-
-        val call = op.context.attributes[HttpOperationContext.HttpCallList].first()
-        assertEquals(listOf("br", "gzip"), call.request.headers.getAll("Content-Encoding"))
-        assertContentEquals(
-            byteArrayOf(31, -117, 8, 0, 0, 0, 0, 0, 0, -1, -77, 113, -53, -49, -73, 75, 74, 44, -78, -47, 7, 49, 0, 29, -105, -38, 89, 14, 0, 0, 0),
-            call.request.body.readAll(),
-        )
     }
 }
