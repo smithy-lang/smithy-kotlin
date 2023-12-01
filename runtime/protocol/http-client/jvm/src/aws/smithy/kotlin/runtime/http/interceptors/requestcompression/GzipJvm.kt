@@ -21,7 +21,7 @@ public actual class Gzip actual constructor() : CompressionAlgorithm {
 
     actual override suspend fun compress(request: HttpRequest): HttpRequest {
         val compressedRequest = request.toBuilder()
-        val uncompressedBody = compressedRequest.body
+        val uncompressedBody = request.body
 
         compressedRequest.body = when (uncompressedBody) {
             is HttpBody.SourceContent -> GzipSdkSource(uncompressedBody.readFrom()).toHttpBody()
