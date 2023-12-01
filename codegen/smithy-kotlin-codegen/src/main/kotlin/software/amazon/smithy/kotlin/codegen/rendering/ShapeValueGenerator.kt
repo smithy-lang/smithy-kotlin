@@ -25,24 +25,40 @@ class ShapeValueGenerator(
 ) {
 
     /**
-     * Writes generation of a shape value type declaration for the given the parameters.
+     * Renders the generation of a shape value declaration for the given parameters inline
+     * with the current writer.
      *
      * @param writer writer to write generated code with.
      * @param shape the shape that will be declared.
      * @param params parameters to fill the generated shape declaration.
      */
-    fun writeShapeValueInline(writer: KotlinWriter, shape: Shape, params: Node) {
+    fun instantiateShapeInline(writer: KotlinWriter, shape: Shape, params: Node) {
+        if (shape.isStructureShape) {
+            classDeclaration(writer, shape.asStructureShape().get()) {
+                writeShapeValuesInline(writer, shape, params)
+            }
+        } else {
+            writeShapeValuesInline(writer, shape, params)
+        }
+    }
+
+    /**
+     * Renders the mapping of the shape fields to the given parameters
+     *
+     * @param writer writer to write generated code with.
+     * @param shape the shape that will be declared.
+     * @param params parameters to fill the generated shape declaration.
+     */
+    fun writeShapeValues(writer: KotlinWriter, shape: Shape, params: Node) {
+        writer.ensureNewline()
+        writeShapeValuesInline(writer, shape, params)
+        writer.ensureNewline()
+    }
+
+    private fun writeShapeValuesInline(writer: KotlinWriter, shape: Shape, params: Node) {
         val nodeVisitor = ShapeValueNodeVisitor(writer, this, shape)
         when (shape.type) {
-            ShapeType.STRUCTURE -> {
-                if (params.isNullNode) {
-                    params.accept(nodeVisitor)
-                } else {
-                    classDeclaration(writer, shape.asStructureShape().get()) {
-                        params.accept(nodeVisitor)
-                    }
-                }
-            }
+            ShapeType.STRUCTURE -> params.accept(nodeVisitor)
             ShapeType.MAP -> mapDeclaration(writer, shape.asMapShape().get()) {
                 params.accept(nodeVisitor)
             }
@@ -62,7 +78,7 @@ class ShapeValueGenerator(
             .indent()
             .call { block() }
             .dedent()
-            .write("")
+            .ensureNewline()
             .write("}")
     }
 
@@ -76,7 +92,7 @@ class ShapeValueGenerator(
             .indent()
             .call { block() }
             .dedent()
-            .write("")
+            .ensureNewline()
             .write(")")
 
         writer.popState()
@@ -96,7 +112,7 @@ class ShapeValueGenerator(
             .indent()
             .call { block() }
             .dedent()
-            .write("")
+            .ensureNewline()
             .write(")")
 
         writer.popState()
@@ -157,9 +173,9 @@ class ShapeValueGenerator(
                         memberShape = generator.model.expectShape(member.target)
                         val memberName = generator.symbolProvider.toMemberName(member)
                         writer.writeInline("#L = ", memberName)
-                        generator.writeShapeValueInline(writer, memberShape, valueNode)
+                        generator.instantiateShapeInline(writer, memberShape, valueNode)
                         if (i < node.members.size - 1) {
-                            writer.write("")
+                            writer.ensureNewline()
                         }
                     }
                     is MapShape -> {
@@ -169,7 +185,7 @@ class ShapeValueGenerator(
                         if (valueNode is NullNode) {
                             writer.write("null")
                         } else {
-                            generator.writeShapeValueInline(writer, memberShape, valueNode)
+                            generator.instantiateShapeInline(writer, memberShape, valueNode)
                             if (i < node.members.size - 1) {
                                 writer.writeInline(",\n")
                             }
@@ -177,7 +193,7 @@ class ShapeValueGenerator(
                     }
                     is DocumentShape -> {
                         writer.writeInline("#S to ", keyNode.value)
-                        generator.writeShapeValueInline(writer, currShape, valueNode)
+                        generator.instantiateShapeInline(writer, currShape, valueNode)
                         writer.writeInline("\n")
                     }
                     is UnionShape -> {
@@ -189,7 +205,7 @@ class ShapeValueGenerator(
                         val memberName = generator.symbolProvider.toMemberName(member)
                         val variantName = memberName.replaceFirstChar { c -> c.uppercaseChar() }
                         writer.writeInline("${currSymbol.name}.$variantName(")
-                        generator.writeShapeValueInline(writer, memberShape, valueNode)
+                        generator.instantiateShapeInline(writer, memberShape, valueNode)
                         writer.write(")")
                     }
                     else -> throw CodegenException("unexpected shape type " + currShape.type)
@@ -238,7 +254,8 @@ class ShapeValueGenerator(
                     writer.withInlineBlock("#T(", ")", RuntimeTypes.Core.Content.Document) {
                         writer.withInlineBlock("listOf(", ")") {
                             node.elements.forEach {
-                                generator.writeShapeValueInline(writer, currShape, it)
+                                generator.instantiateShapeInline(writer, currShape, it)
+                                writer.unwrite(writer.newline)
                                 writer.writeInline(",\n")
                             }
                         }
@@ -249,9 +266,14 @@ class ShapeValueGenerator(
                     val memberShape = generator.model.expectShape((currShape as CollectionShape).member.target)
                     var i = 0
                     node.elements.forEach { element ->
-                        generator.writeShapeValueInline(writer, memberShape, element)
+                        generator.instantiateShapeInline(writer, memberShape, element)
+                        writer.unwrite(writer.newline)
                         if (i < node.elements.size - 1) {
-                            writer.writeInline(",\n")
+                            writer.pushState()
+                            writer.indentText = ""
+                            writer.writeInlineWithNoFormatting(",")
+                            writer.ensureNewline()
+                            writer.popState()
                         }
                         i++
                     }

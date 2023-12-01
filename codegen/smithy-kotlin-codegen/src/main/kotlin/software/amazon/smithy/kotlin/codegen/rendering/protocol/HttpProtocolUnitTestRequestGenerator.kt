@@ -101,7 +101,7 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
                     writer.writeInline("\nval input = ")
                         .indent()
                         .call {
-                            ShapeValueGenerator(model, symbolProvider).writeShapeValueInline(writer, inputShape, test.params)
+                            ShapeValueGenerator(model, symbolProvider).instantiateShapeInline(writer, inputShape, test.params)
                         }
                         .dedent()
                         .write("")
