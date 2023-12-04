@@ -10,13 +10,17 @@ import java.util.zip.GZIPOutputStream
 @InternalApi
 public class GzipSdkSource(
     private val source: SdkSource,
+    private val bytesAvailable: Int?,
 ) : SdkSource {
     private val gzipBuffer = SdkBuffer()
-    private val gzipOutputStream = GZIPOutputStream(gzipBuffer.outputStream())
+    private val gzipOutputStream = GZIPOutputStream(gzipBuffer.outputStream(), true)
+    private var bytesRead: Int = 0
 
     override fun read(sink: SdkBuffer, limit: Long): Long {
         require(limit >= 0L)
         if (limit == 0L) return 0L
+
+        if (bytesRead == bytesAvailable) return -1
 
         val temp = SdkBuffer()
         val rc = source.read(temp, limit)
@@ -24,17 +28,20 @@ public class GzipSdkSource(
         gzipOutputStream.write(temp.readByteArray())
         gzipBuffer.readAll(sink)
 
-        if (rc == -1L) {
-            gzipOutputStream.write(temp.readByteArray())
+        bytesRead += rc.toInt()
+
+        if (bytesRead == bytesAvailable || rc == -1L) {
             gzipOutputStream.close()
             gzipBuffer.readAll(sink)
-            temp.close()
+            gzipBuffer.close()
         }
 
         return rc
     }
 
     override fun close() {
+        gzipOutputStream.close()
+        gzipBuffer.close()
         source.close()
     }
 }

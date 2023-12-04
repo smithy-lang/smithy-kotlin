@@ -34,4 +34,11 @@ public class GzipByteReadChannel(
 
         return rc
     }
+
+    override fun cancel(cause: Throwable?): Boolean {
+        gzipOutputStream.close()
+        gzipBuffer.close()
+
+        return channel.cancel(cause)
+    }
 }
