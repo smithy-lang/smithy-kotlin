@@ -16,11 +16,29 @@ public class GzipSdkSource(
     private val gzipOutputStream = GZIPOutputStream(gzipBuffer.outputStream(), true)
     private var bytesRead: Int = 0
 
+    /**
+     * Keeps track of whether a read operation has been made on this sdk source
+     */
+    private var read: Boolean = false
+
     override fun read(sink: SdkBuffer, limit: Long): Long {
         require(limit >= 0L)
         if (limit == 0L) return 0L
 
-        if (bytesRead == bytesAvailable) return -1
+        if (bytesRead == bytesAvailable) {
+            if (!read) { // Empty payload
+                gzipOutputStream.write(ByteArray(0))
+                gzipOutputStream.close()
+                gzipBuffer.readAll(sink)
+                gzipBuffer.close()
+
+                read = true
+            }
+
+            return -1
+        }
+
+        if (!read) read = true
 
         val temp = SdkBuffer()
         val rc = source.read(temp, limit)
