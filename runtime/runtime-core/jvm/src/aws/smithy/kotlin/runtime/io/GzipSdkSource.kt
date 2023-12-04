@@ -54,6 +54,8 @@ public class GzipSdkSource(
             gzipBuffer.close()
         }
 
+        temp.close()
+
         return rc
     }
 

@@ -50,6 +50,8 @@ public class GzipByteReadChannel(
             gzipBuffer.close()
         }
 
+        temp.close()
+
         return rc
     }
 
