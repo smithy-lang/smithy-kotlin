@@ -34,29 +34,29 @@ class GzipCompressionTest {
 
         runGzipSdkSourceCompressionTest(
             "“Foo Bar” are very commonly seen as variables in samples and examples. Some sources will claim " +
-                    "that this is an interpretation of “F.U.B.A.R.”, a military term...",
+                "that this is an interpretation of “F.U.B.A.R.”, a military term...",
             3L,
         )
         runGzipSdkSourceCompressionTest(
             "“Foo Bar” are very commonly seen as variables in samples and examples. Some sources will claim " +
-                    "that this is an interpretation of “F.U.B.A.R.”, a military term...",
+                "that this is an interpretation of “F.U.B.A.R.”, a military term...",
             1003L,
         )
 
         runGzipSdkSourceCompressionTest(
             "Lorem ipsum dolor sit amet, dolorem corpora iracundia has ea, duo cu stet alterum scriptorem, " +
-                    "et qui putent tractatos. Ne epicurei gloriatur pro, et ornatus consulatu necessitatibus qui. " +
-                    "Veri eripuit feugiat sed no, dicat ridens id quo. Mei ne putent impedit antiopam. Ad libris " +
-                    "assueverit his. Quo te brute vitae iuvaret, ut nibh bonorum sea. Mel altera vocibus ei, no vel" +
-                    " tantas postea doming.",
+                "et qui putent tractatos. Ne epicurei gloriatur pro, et ornatus consulatu necessitatibus qui. " +
+                "Veri eripuit feugiat sed no, dicat ridens id quo. Mei ne putent impedit antiopam. Ad libris " +
+                "assueverit his. Quo te brute vitae iuvaret, ut nibh bonorum sea. Mel altera vocibus ei, no vel" +
+                " tantas postea doming.",
             1L,
         )
         runGzipSdkSourceCompressionTest(
             "Lorem ipsum dolor sit amet, dolorem corpora iracundia has ea, duo cu stet alterum scriptorem, " +
-                    "et qui putent tractatos. Ne epicurei gloriatur pro, et ornatus consulatu necessitatibus qui. " +
-                    "Veri eripuit feugiat sed no, dicat ridens id quo. Mei ne putent impedit antiopam. Ad libris " +
-                    "assueverit his. Quo te brute vitae iuvaret, ut nibh bonorum sea. Mel altera vocibus ei, no vel" +
-                    " tantas postea doming.",
+                "et qui putent tractatos. Ne epicurei gloriatur pro, et ornatus consulatu necessitatibus qui. " +
+                "Veri eripuit feugiat sed no, dicat ridens id quo. Mei ne putent impedit antiopam. Ad libris " +
+                "assueverit his. Quo te brute vitae iuvaret, ut nibh bonorum sea. Mel altera vocibus ei, no vel" +
+                " tantas postea doming.",
             1005L,
         )
     }
@@ -73,30 +73,30 @@ class GzipCompressionTest {
 
         runGzipByteReadChannelCompressionTest(
             "“Foo Bar” are very commonly seen as variables in samples and examples. Some sources will claim " +
-                    "that this is an interpretation of “F.U.B.A.R.”, a military term...",
+                "that this is an interpretation of “F.U.B.A.R.”, a military term...",
             3L,
         )
         runGzipByteReadChannelCompressionTest(
             "“Foo Bar” are very commonly seen as variables in samples and examples. Some sources will claim " +
-                    "that this is an interpretation of “F.U.B.A.R.”, a military term...",
+                "that this is an interpretation of “F.U.B.A.R.”, a military term...",
             1003L,
         )
 
         runGzipByteReadChannelCompressionTest(
-                "Lorem ipsum dolor sit amet, dolorem corpora iracundia has ea, duo cu stet alterum scriptorem, " +
-                        "et qui putent tractatos. Ne epicurei gloriatur pro, et ornatus consulatu necessitatibus qui. " +
-                        "Veri eripuit feugiat sed no, dicat ridens id quo. Mei ne putent impedit antiopam. Ad libris " +
-                        "assueverit his. Quo te brute vitae iuvaret, ut nibh bonorum sea. Mel altera vocibus ei, no vel" +
-                        " tantas postea doming.",
-                1L,
+            "Lorem ipsum dolor sit amet, dolorem corpora iracundia has ea, duo cu stet alterum scriptorem, " +
+                "et qui putent tractatos. Ne epicurei gloriatur pro, et ornatus consulatu necessitatibus qui. " +
+                "Veri eripuit feugiat sed no, dicat ridens id quo. Mei ne putent impedit antiopam. Ad libris " +
+                "assueverit his. Quo te brute vitae iuvaret, ut nibh bonorum sea. Mel altera vocibus ei, no vel" +
+                " tantas postea doming.",
+            1L,
         )
         runGzipByteReadChannelCompressionTest(
-                "Lorem ipsum dolor sit amet, dolorem corpora iracundia has ea, duo cu stet alterum scriptorem, " +
-                        "et qui putent tractatos. Ne epicurei gloriatur pro, et ornatus consulatu necessitatibus qui. " +
-                        "Veri eripuit feugiat sed no, dicat ridens id quo. Mei ne putent impedit antiopam. Ad libris " +
-                        "assueverit his. Quo te brute vitae iuvaret, ut nibh bonorum sea. Mel altera vocibus ei, no vel" +
-                        " tantas postea doming.",
-                1005L,
+            "Lorem ipsum dolor sit amet, dolorem corpora iracundia has ea, duo cu stet alterum scriptorem, " +
+                "et qui putent tractatos. Ne epicurei gloriatur pro, et ornatus consulatu necessitatibus qui. " +
+                "Veri eripuit feugiat sed no, dicat ridens id quo. Mei ne putent impedit antiopam. Ad libris " +
+                "assueverit his. Quo te brute vitae iuvaret, ut nibh bonorum sea. Mel altera vocibus ei, no vel" +
+                " tantas postea doming.",
+            1005L,
         )
     }
 }
@@ -121,8 +121,11 @@ private fun runGzipSdkSourceCompressionTest(payload: String, limit: Long, skipRe
         },
 
         { gzipSdkSource, tempBuffer, payloadSize, readLimit ->
-            if (skipReadFully) while (gzipSdkSource.read(tempBuffer, readLimit) != -1L);
-            else gzipSdkSource.readFully(tempBuffer, payloadSize)
+            if (skipReadFully) {
+                while (gzipSdkSource.read(tempBuffer, readLimit) != -1L);
+            } else {
+                gzipSdkSource.readFully(tempBuffer, payloadSize)
+            }
             null
         },
 
@@ -132,7 +135,7 @@ private fun runGzipSdkSourceCompressionTest(payload: String, limit: Long, skipRe
         },
     )
 
-    readingMethods.forEach {readSourceCompletely ->
+    readingMethods.forEach { readSourceCompletely ->
         val bytes = payload.encodeToByteArray()
         val bytesHash = bytes.crc32()
 
@@ -160,8 +163,11 @@ private suspend fun runGzipByteReadChannelCompressionTest(payload: String, limit
 
         { gzipByteReadChannel, tempBuffer, payloadSize, readLimit ->
             runBlocking {
-                if (skipReadFully) do { gzipByteReadChannel.read(tempBuffer, readLimit) } while (!gzipByteReadChannel.isClosedForRead)
-                else gzipByteReadChannel.readFully(tempBuffer, payloadSize)
+                if (skipReadFully) {
+                    do { gzipByteReadChannel.read(tempBuffer, readLimit) } while (!gzipByteReadChannel.isClosedForRead)
+                } else {
+                    gzipByteReadChannel.readFully(tempBuffer, payloadSize)
+                }
             }
         },
 
@@ -172,7 +178,7 @@ private suspend fun runGzipByteReadChannelCompressionTest(payload: String, limit
         },
     )
 
-    readingMethods.forEach {readSourceCompletely ->
+    readingMethods.forEach { readSourceCompletely ->
         val bytes = payload.encodeToByteArray()
         val bytesHash = bytes.crc32()
 

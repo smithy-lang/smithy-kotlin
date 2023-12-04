@@ -31,11 +31,11 @@ class RequestCompressionInterceptorTest {
     private val client = SdkHttpClient(TestEngine())
 
     private suspend fun mockCall(
-            suppliedBody: HttpBody,
-            compressionThresholdBytes: Long,
-            supportedCompressionAlgorithms: List<String>,
-            availableCompressionAlgorithms: List<CompressionAlgorithm>,
-            additionalHeaders: List<HeaderValue>? = null,
+        suppliedBody: HttpBody,
+        compressionThresholdBytes: Long,
+        supportedCompressionAlgorithms: List<String>,
+        availableCompressionAlgorithms: List<CompressionAlgorithm>,
+        additionalHeaders: List<HeaderValue>? = null,
     ): HttpCall {
         val request = HttpRequestBuilder().apply {
             body = suppliedBody
@@ -46,16 +46,16 @@ class RequestCompressionInterceptorTest {
         }
 
         val op = newTestOperation<Unit, Unit>(
-                request,
-                Unit,
+            request,
+            Unit,
         )
 
         op.interceptors.add(
-                RequestCompressionInterceptor(
-                        compressionThresholdBytes,
-                        supportedCompressionAlgorithms,
-                        availableCompressionAlgorithms
-                ),
+            RequestCompressionInterceptor(
+                compressionThresholdBytes,
+                supportedCompressionAlgorithms,
+                availableCompressionAlgorithms,
+            ),
         )
 
         op.roundTrip(client, Unit)
@@ -69,10 +69,10 @@ class RequestCompressionInterceptorTest {
         val bytes = payload.encodeToByteArray()
 
         val call = mockCall(
-                HttpBody.fromBytes(bytes),
-                bytes.size + 1L,
-                listOf("gzip"),
-                listOf(Gzip()),
+            HttpBody.fromBytes(bytes),
+            bytes.size + 1L,
+            listOf("gzip"),
+            listOf(Gzip()),
         )
 
         val contentEncodingHeader = call.request.headers["Content-Encoding"]
@@ -88,10 +88,10 @@ class RequestCompressionInterceptorTest {
         val bytes = payload.encodeToByteArray()
 
         val call = mockCall(
-                HttpBody.fromBytes(bytes),
-                bytes.size.toLong(),
-                listOf("gzip"),
-                listOf(Gzip()),
+            HttpBody.fromBytes(bytes),
+            bytes.size.toLong(),
+            listOf("gzip"),
+            listOf(Gzip()),
         )
 
         val contentEncodingHeader = call.request.headers.getAll("Content-Encoding")
@@ -108,10 +108,10 @@ class RequestCompressionInterceptorTest {
         val bytes = payload.encodeToByteArray()
 
         val call = mockCall(
-                bytes.source().toHttpBody(),
-                bytes.size + 1L, // Compression threshold bytes will be ignored
-                listOf("gzip"),
-                listOf(Gzip()),
+            bytes.source().toHttpBody(),
+            bytes.size + 1L, // Compression threshold bytes will be ignored
+            listOf("gzip"),
+            listOf(Gzip()),
         )
 
         val contentEncodingHeader = call.request.headers.getAll("Content-Encoding")
@@ -128,10 +128,10 @@ class RequestCompressionInterceptorTest {
         val bytes = payload.encodeToByteArray()
 
         val call = mockCall(
-                SdkByteReadChannel(bytes).toHttpBody(),
-                bytes.size + 1L, // Compression threshold bytes will be ignored
-                listOf("gzip"),
-                listOf(Gzip()),
+            SdkByteReadChannel(bytes).toHttpBody(),
+            bytes.size + 1L, // Compression threshold bytes will be ignored
+            listOf("gzip"),
+            listOf(Gzip()),
         )
 
         val contentEncodingHeader = call.request.headers.getAll("Content-Encoding")
@@ -148,13 +148,13 @@ class RequestCompressionInterceptorTest {
         val bytes = payload.encodeToByteArray()
 
         val call = mockCall(
-                HttpBody.fromBytes(bytes),
-                bytes.size.toLong(),
-                listOf("gzip"),
-                listOf(Gzip()),
-                listOf(
-                        HeaderValue("Content-Encoding", "br")
-                ),
+            HttpBody.fromBytes(bytes),
+            bytes.size.toLong(),
+            listOf("gzip"),
+            listOf(Gzip()),
+            listOf(
+                HeaderValue("Content-Encoding", "br"),
+            ),
         )
 
         val contentEncodingHeader = call.request.headers.getAll("Content-Encoding")
@@ -171,10 +171,10 @@ class RequestCompressionInterceptorTest {
         val bytes = payload.encodeToByteArray()
 
         val call = mockCall(
-                HttpBody.fromBytes(bytes),
-                bytes.size.toLong(),
-                listOf(),
-                listOf(),
+            HttpBody.fromBytes(bytes),
+            bytes.size.toLong(),
+            listOf(),
+            listOf(),
         )
 
         val contentEncodingHeader = call.request.headers["Content-Encoding"]
@@ -193,7 +193,7 @@ class RequestCompressionInterceptorTest {
             HttpRequestBuilder().apply {
                 body = HttpBody.fromBytes(bytes)
             },
-            Unit
+            Unit,
         )
 
         val invalidCompressionThreshold = -1L
