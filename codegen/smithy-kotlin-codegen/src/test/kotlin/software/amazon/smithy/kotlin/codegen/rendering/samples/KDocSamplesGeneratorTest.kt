@@ -30,6 +30,13 @@ class KDocSamplesGeneratorTest {
         operation GetFoo {
             input: GetFooInput
             output: GetFooOutput
+            errors: [MyOperationError]
+        }
+        
+        @error("client")
+        structure MyOperationError {
+            @required
+            message: String
         }
         
         structure GetFooInput { 
@@ -52,6 +59,19 @@ class KDocSamplesGeneratorTest {
                     member1: "qux"
                 }
                 output: {}
+            },
+            {
+                title: "Error example for MyOperation"
+                input: {
+                    member1: "!"
+                }
+                error: {
+                    shapeId: MyOperationError
+                    content: {
+                        message: "Invalid 'foo'. Special character not allowed."
+                    }
+                },
+                allowConstraintErrors: true
             }
         ])
         """.toSmithyModel()
@@ -112,10 +132,8 @@ class KDocSamplesGeneratorTest {
 
         testCtx.generationCtx.delegator.flushWriters()
 
-        val actualContents = testCtx.manifest.expectFileString("samples/GetFoo.kt")
+        val actualContents = testCtx.manifest.expectFileString("src/samples/GetFoo.kt")
         actualContents.shouldContainOnlyOnceWithDiff(expectedContents)
         actualContents.shouldContainOnlyOnceWithDiff("package test.samples")
     }
-
-    // TODO - test error generation
 }

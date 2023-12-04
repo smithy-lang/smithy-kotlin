@@ -1,5 +1,6 @@
 software.amazon.smithy.kotlin.codegen.lang.BuiltinPreprocessor
 software.amazon.smithy.kotlin.codegen.lang.DocumentationPreprocessor
+software.amazon.smithy.kotlin.codegen.rendering.samples.KDocSamplesGenerator
 software.amazon.smithy.kotlin.codegen.model.SetRefactorPreprocessor
 software.amazon.smithy.kotlin.codegen.rendering.PaginatorGenerator
 software.amazon.smithy.kotlin.codegen.rendering.waiters.ServiceWaitersGenerator

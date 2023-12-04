@@ -206,7 +206,7 @@ class ShapeValueGenerator(
                         val variantName = memberName.replaceFirstChar { c -> c.uppercaseChar() }
                         writer.writeInline("${currSymbol.name}.$variantName(")
                         generator.instantiateShapeInline(writer, memberShape, valueNode)
-                        writer.write(")")
+                        writer.writeInline(")")
                     }
                     else -> throw CodegenException("unexpected shape type " + currShape.type)
                 }

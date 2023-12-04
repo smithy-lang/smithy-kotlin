@@ -8,6 +8,7 @@ import software.amazon.smithy.kotlin.codegen.KotlinSettings
 import software.amazon.smithy.kotlin.codegen.core.*
 import software.amazon.smithy.kotlin.codegen.integration.KotlinIntegration
 import software.amazon.smithy.kotlin.codegen.model.expectTrait
+import software.amazon.smithy.kotlin.codegen.model.hasAllOptionalMembers
 import software.amazon.smithy.kotlin.codegen.model.hasTrait
 import software.amazon.smithy.kotlin.codegen.rendering.ShapeValueGenerator
 import software.amazon.smithy.model.Model
@@ -47,11 +48,11 @@ class KDocSamplesGenerator : KotlinIntegration {
             when {
                 shape is OperationShape && shape.hasTrait<ExamplesTrait>() && trait is DocumentationTrait -> {
                     val examplesTrait = shape.expectTrait<ExamplesTrait>()
-                    val kdocSampleIdentifiers =
-                        (0 until examplesTrait.examples.size).joinToString(separator = "\n") { idx ->
-                            val identifier = sampleIdentifier(settings, shape, idx)
-                            "@sample $identifier"
-                        }
+                    val filtered = examplesTrait.examples.filterNot { it.error.isPresent }
+                    val kdocSampleIdentifiers = filtered.indices.joinToString(separator = "\n") { idx ->
+                        val identifier = sampleIdentifier(settings, shape, idx)
+                        "@sample $identifier"
+                    }
 
                     val updatedDocs = trait.value + "\n\n" + kdocSampleIdentifiers
                     DocumentationTrait(updatedDocs, trait.sourceLocation)
@@ -81,24 +82,27 @@ class KDocSamplesGenerator : KotlinIntegration {
 
                 val writer = KotlinWriter(samplePackage(ctx.settings))
                 writer.withBlock("class #L {", "}", sampleClassName(op)) {
-                    examples.examples.forEachIndexed { idx, example ->
-                        write("")
-                        write("@Sample")
-                        withBlock("fun #L() {", "}", sampleFunctionName(idx)) {
-                            val docs = example.documentation.getOrDefault(example.title)
-                            // TODO - cleanup formatting on docs
-                            write("// #L", docs)
-                            if (example.error.isPresent) {
-                                renderErrorExample()
-                            } else {
+                    examples.examples
+                        // unclear what benefit error examples provide, omit for now
+                        .filterNot { it.error.isPresent }
+                        .forEachIndexed { idx, example ->
+                            write("")
+                            write("@Sample")
+                            withBlock("fun #L() {", "}", sampleFunctionName(idx)) {
+                                example.documentation
+                                    .getOrDefault(example.title)
+                                    .breakLongLines()
+                                    .forEach { line ->
+                                        write("// #L", line)
+                                    }
+
                                 renderNormalExample(ctx, writer, op, example)
                             }
+                            write("")
                         }
-                        write("")
-                    }
                 }
                 val contents = writer.toString()
-                delegator.fileManifest.writeFile("samples/${op.id.name}.kt", contents)
+                delegator.fileManifest.writeFile("src/samples/${op.id.name}.kt", contents)
             }
     }
 
@@ -106,15 +110,40 @@ class KDocSamplesGenerator : KotlinIntegration {
         val clientName = clientName(ctx.settings.sdkId).replaceFirstChar { it.lowercase(Locale.getDefault()) }
         val respPrefix = if (example.output.isPresent) "val resp = " else ""
 
-        writer.withBlock("#L#LClient.#L {", "}", respPrefix, clientName, op.defaultName()) {
-            val input = ctx.model.expectShape(op.inputShape)
-            ShapeValueGenerator(ctx.model, ctx.symbolProvider).writeShapeValues(writer, input, example.input)
+        val input = ctx.model.expectShape(op.inputShape)
+        if (input.hasAllOptionalMembers && example.input.isEmpty) {
+            writer.write("#L#LClient.#L()", respPrefix, clientName, op.defaultName())
+        } else {
+            writer.withBlock("#L#LClient.#L {", "}", respPrefix, clientName, op.defaultName()) {
+                ShapeValueGenerator(ctx.model, ctx.symbolProvider).writeShapeValues(writer, input, example.input)
+            }
         }
 
-        // TODO - echo outputs if applicable
+        // TODO - not clear what benefit there is to the example output, omit it for now
+    }
+}
+
+internal fun String.breakLongLines(maxLineLengthChars: Int = 100): List<String> {
+    val words = Regex("\\w+[.,]?|\\\".*\\\"[.,]?|\\(.*\\)[.,]?").findAll(this).map(MatchResult::value)
+    val lines = mutableListOf<String>()
+    val wordsOnLine = mutableListOf<String>()
+    var lineLength = 0
+
+    words.forEach { word ->
+        if (word.length + lineLength < maxLineLengthChars) {
+            if (wordsOnLine.isNotEmpty()) lineLength++
+            lineLength += word.length
+            wordsOnLine.add(word)
+        } else {
+            lines.add(wordsOnLine.joinToString(separator = " "))
+            lineLength = 0
+            wordsOnLine.clear()
+            wordsOnLine.add(word)
+        }
     }
 
-    private fun renderErrorExample() {
-        // TODO - error samples
+    if (wordsOnLine.isNotEmpty()) {
+        lines.add(wordsOnLine.joinToString(separator = " "))
     }
+    return lines
 }
