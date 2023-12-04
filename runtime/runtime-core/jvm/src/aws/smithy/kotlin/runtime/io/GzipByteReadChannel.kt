@@ -18,6 +18,8 @@ public class GzipByteReadChannel(
         require(limit >= 0L)
         if (limit == 0L) return 0L
 
+        if (isClosedForRead) return -1
+
         val temp = SdkBuffer()
         val rc = channel.read(temp, limit)
 
