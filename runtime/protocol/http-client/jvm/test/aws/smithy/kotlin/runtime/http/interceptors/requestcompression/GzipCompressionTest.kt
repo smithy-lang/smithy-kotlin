@@ -108,7 +108,7 @@ private fun runBytesCompressionTest(payload: String) {
     val compressedBytes = compressBytes(bytes)
     val decompressedBytes = decompressGzipBytes(compressedBytes)
 
-    assertContentEquals(decompressedBytes, bytes)
+    assertContentEquals(bytes, decompressedBytes)
     assertEquals(bytesHash, decompressedBytes.crc32())
 }
 
@@ -148,7 +148,7 @@ private fun runGzipSdkSourceCompressionTest(payload: String, limit: Long, skipRe
         val compressedBytes = compressedByteArray ?: tempBuffer.readByteArray(); tempBuffer.close()
         val decompressedBytes = decompressGzipBytes(compressedBytes)
 
-        assertContentEquals(decompressedBytes, bytes)
+        assertContentEquals(bytes, decompressedBytes)
         assertEquals(bytesHash, decompressedBytes.crc32())
     }
 }
@@ -178,20 +178,20 @@ private suspend fun runGzipByteReadChannelCompressionTest(payload: String, limit
         },
     )
 
-    readingMethods.forEach { readSourceCompletely ->
+    readingMethods.forEach { readChannelCompletely ->
         val bytes = payload.encodeToByteArray()
         val bytesHash = bytes.crc32()
 
         val gzipByteReadChannel = GzipByteReadChannel(SdkByteReadChannel(bytes))
         val tempBuffer = SdkBuffer()
 
-        readSourceCompletely(gzipByteReadChannel, tempBuffer, bytes.size.toLong(), limit)
+        readChannelCompletely(gzipByteReadChannel, tempBuffer, bytes.size.toLong(), limit)
         gzipByteReadChannel.cancel(null)
 
         val compressedBytes = tempBuffer.readByteArray(); tempBuffer.close()
         val decompressedBytes = decompressGzipBytes(compressedBytes)
 
-        assertContentEquals(decompressedBytes, bytes)
+        assertContentEquals(bytes, decompressedBytes)
         assertEquals(bytesHash, decompressedBytes.crc32())
     }
 }
