@@ -41,7 +41,7 @@ class CustomCertificateTest {
         val (keyStore, keyStoreFile) = createKeyStore()
         val serverEnv = createServerEnv(keyStore, keyStoreFile)
         val server = embeddedServer(Netty, serverEnv).start()
-        
+
         val request = HttpRequest {
             method = HttpMethod.POST
             url {
@@ -52,7 +52,7 @@ class CustomCertificateTest {
             }
             body = HttpBody.fromBytes(EXPECTED_REQUEST_BODY.toByteArray())
         }
-        
+
         try {
             withProperties(
                 "javax.net.ssl.trustStore" to keyStoreFile.absolutePath,
