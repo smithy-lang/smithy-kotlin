@@ -24,7 +24,7 @@ public actual class Gzip actual constructor() : CompressionAlgorithm {
         val uncompressedBody = request.body
 
         compressedRequest.body = when (uncompressedBody) {
-            is HttpBody.SourceContent -> GzipSdkSource(uncompressedBody.readFrom(), uncompressedBody.contentLength?.toInt()).toHttpBody()
+            is HttpBody.SourceContent -> GzipSdkSource(uncompressedBody.readFrom(), uncompressedBody.contentLength).toHttpBody()
             is HttpBody.ChannelContent -> GzipByteReadChannel(uncompressedBody.readFrom()).toHttpBody()
             is HttpBody.Bytes -> compressBytes(uncompressedBody.bytes()).toHttpBody()
             is HttpBody.Empty -> uncompressedBody

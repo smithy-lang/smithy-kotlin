@@ -139,7 +139,7 @@ private fun runGzipSdkSourceCompressionTest(payload: String, limit: Long, skipRe
         val bytes = payload.encodeToByteArray()
         val bytesHash = bytes.crc32()
 
-        val gzipSdkSource = GzipSdkSource(bytes.source(), bytes.size)
+        val gzipSdkSource = GzipSdkSource(bytes.source(), bytes.size.toLong())
         val tempBuffer = SdkBuffer()
 
         val compressedByteArray = readSourceCompletely(gzipSdkSource, tempBuffer, bytes.size.toLong(), limit)

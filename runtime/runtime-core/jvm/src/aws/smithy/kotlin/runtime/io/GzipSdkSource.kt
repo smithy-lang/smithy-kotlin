@@ -10,11 +10,11 @@ import java.util.zip.GZIPOutputStream
 @InternalApi
 public class GzipSdkSource(
     private val source: SdkSource,
-    private val bytesAvailable: Int?,
+    private val bytesAvailable: Long?,
 ) : SdkSource {
     private val gzipBuffer = SdkBuffer()
     private val gzipOutputStream = GZIPOutputStream(gzipBuffer.outputStream(), true)
-    private var bytesRead: Int = 0
+    private var bytesRead: Long = 0
 
     /**
      * Keeps track of whether a read operation has been made on this sdk source
@@ -46,7 +46,7 @@ public class GzipSdkSource(
         gzipOutputStream.write(temp.readByteArray())
         gzipBuffer.readAll(sink)
 
-        bytesRead += rc.toInt()
+        bytesRead += rc
 
         if (bytesRead == bytesAvailable || rc == -1L) {
             gzipOutputStream.close()
