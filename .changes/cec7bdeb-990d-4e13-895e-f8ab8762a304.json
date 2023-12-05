@@ -1,0 +1,5 @@
+{
+    "id": "cec7bdeb-990d-4e13-895e-f8ab8762a304",
+    "type": "feature",
+    "description": "Add a convenience function for creating `CachedCredentialsProvider`"
+}
