@@ -8,7 +8,7 @@ package aws.smithy.kotlin.runtime.http.interceptors.requestcompression
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
 
 /**
- * Represents a compression algorithm. Is used by algorithms compressing request payloads on operations with the
+ * Represents a compression algorithm. Used by an interceptor to compress request payloads on operations with the
  * [requestCompression trait](https://smithy.io/2.0/spec/behavior-traits.html#requestcompression-trait)
  */
 public interface CompressionAlgorithm {

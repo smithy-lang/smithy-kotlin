@@ -32,7 +32,7 @@ class RequestCompressionIntegration : KotlinIntegration {
     ): List<ProtocolMiddleware> = resolved + requestCompressionTraitMiddleware
 
     override fun additionalServiceConfigProps(ctx: CodegenContext): List<ConfigProperty> =
-        super.additionalServiceConfigProps(ctx) + listOf(
+        listOf(
             ConfigProperty {
                 name = "compressionAlgorithms"
                 documentation = """
@@ -51,7 +51,7 @@ class RequestCompressionIntegration : KotlinIntegration {
                 baseClass = RuntimeTypes.HttpClient.Config.CompressionClientConfig
                 useNestedBuilderBaseClass()
                 documentation = """
-                    Flag used to determine when a request should be compressed or not.
+                    Flag used to determine if a request should be compressed or not.
                     False by default.
                 """.trimIndent()
             },
@@ -69,7 +69,6 @@ class RequestCompressionIntegration : KotlinIntegration {
 }
 
 private val requestCompressionTraitMiddleware = object : ProtocolMiddleware {
-    private val interceptorSymbol = RuntimeTypes.HttpClient.Interceptors.RequestCompressionInterceptor
     override val name: String = "RequestCompressionMiddleware"
 
     override fun render(ctx: ProtocolGenerator.GenerationContext, op: OperationShape, writer: KotlinWriter) {
@@ -83,7 +82,7 @@ private val requestCompressionTraitMiddleware = object : ProtocolMiddleware {
                 withBlock(
                     "op.interceptors.add(#T(",
                     "))",
-                    interceptorSymbol,
+                    RuntimeTypes.HttpClient.Interceptors.RequestCompressionInterceptor,
                 ) {
                     write("config.requestMinCompressionSizeBytes,")
                     write(

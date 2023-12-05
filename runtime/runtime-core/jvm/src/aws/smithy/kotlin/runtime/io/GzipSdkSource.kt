@@ -10,7 +10,7 @@ import java.util.zip.GZIPOutputStream
 @InternalApi
 public class GzipSdkSource(
     private val source: SdkSource,
-    private val bytesAvailable: Long?,
+    private val bytesAvailable: Long? = null,
 ) : SdkSource {
     private val gzipBuffer = SdkBuffer()
     private val gzipOutputStream = GZIPOutputStream(gzipBuffer.outputStream(), true)
@@ -35,7 +35,7 @@ public class GzipSdkSource(
                 read = true
             }
 
-            return -1
+            return -1L
         }
 
         if (!read) read = true

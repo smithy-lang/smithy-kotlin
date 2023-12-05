@@ -33,7 +33,7 @@ public class GzipByteReadChannel(
                 read = true
             }
 
-            return -1
+            return -1L
         }
 
         if (!read) read = true

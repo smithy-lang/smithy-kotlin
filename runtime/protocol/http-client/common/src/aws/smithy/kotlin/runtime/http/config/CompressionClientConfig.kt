@@ -15,10 +15,8 @@ public interface CompressionClientConfig {
     public val disableRequestCompression: Boolean
 
     /**
-     * The threshold in bytes used to determine when a request should be compressed.
-     * Looks at payload size.
-     * Should be in range: 0-10485760.
-     * 10240 by default.
+     * The threshold in bytes used to determine if a request should be compressed or not.
+     * MUST be in the range 0-10,485,760 (10 MB). Defaults to 10,240 (10 KB).
      */
     public val requestMinCompressionSizeBytes: Long
 
@@ -30,10 +28,8 @@ public interface CompressionClientConfig {
         public var disableRequestCompression: Boolean?
 
         /**
-         * The threshold in bytes used to determine when a request should be compressed.
-         * Looks at payload size.
-         * Should be in range: 0-10485760.
-         * 10240 by default.
+         * The threshold in bytes used to determine if a request should be compressed or not.
+         * MUST be in the range 0-10,485,760 (10 MB). Defaults to 10,240 (10 KB).
          */
         public var requestMinCompressionSizeBytes: Long?
     }

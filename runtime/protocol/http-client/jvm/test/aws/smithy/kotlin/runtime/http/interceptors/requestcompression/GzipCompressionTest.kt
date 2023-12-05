@@ -10,94 +10,53 @@ import aws.smithy.kotlin.runtime.http.interceptors.decompressGzipBytes
 import aws.smithy.kotlin.runtime.io.*
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
-import kotlin.test.Test
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.ValueSource
 import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
 
 class GzipCompressionTest {
-    @Test
-    fun testBytesCompression() {
-        runBytesCompressionTest("")
-        runBytesCompressionTest("<Foo>bar</Foo>")
-        runBytesCompressionTest("<Baz>foo</Baz>".repeat(100))
+    @ParameterizedTest
+    @ValueSource(
+        strings = [
+            "",
+            "<Foo>bar</Foo>",
+        ],
+    )
+    fun testBytesCompression(payload: String) {
+        runBytesCompressionTest(payload)
     }
 
-    @Test
-    fun testGzipSdkSourceCompression() = runTest {
-        // "readFully" implementation doesn't allow for a read() on empty payloads and will fail test because of that so skipping it
-        runGzipSdkSourceCompressionTest("", 1L, true)
-        runGzipSdkSourceCompressionTest("", 1001L, true)
-
-        runGzipSdkSourceCompressionTest("<Qux>baz</Qux>", 1L)
-        runGzipSdkSourceCompressionTest("<Qux>baz</Qux>", 2L)
-        runGzipSdkSourceCompressionTest("<Bar>foo</Bar>", 1002L)
-
-        runGzipSdkSourceCompressionTest(
-            "“Foo Bar” are very commonly seen as variables in samples and examples. Some sources will claim " +
-                "that this is an interpretation of “F.U.B.A.R.”, a military term...",
-            3L,
-        )
-        runGzipSdkSourceCompressionTest(
-            "“Foo Bar” are very commonly seen as variables in samples and examples. Some sources will claim " +
-                "that this is an interpretation of “F.U.B.A.R.”, a military term...",
-            1003L,
-        )
-
-        runGzipSdkSourceCompressionTest(
+    @ParameterizedTest
+    @ValueSource(
+        strings = [
+            "",
             "Lorem ipsum dolor sit amet, dolorem corpora iracundia has ea, duo cu stet alterum scriptorem, " +
                 "et qui putent tractatos. Ne epicurei gloriatur pro, et ornatus consulatu necessitatibus qui. " +
                 "Veri eripuit feugiat sed no, dicat ridens id quo. Mei ne putent impedit antiopam. Ad libris " +
                 "assueverit his. Quo te brute vitae iuvaret, ut nibh bonorum sea. Mel altera vocibus ei, no vel" +
-                " tantas postea doming.",
-            1L,
-        )
-        runGzipSdkSourceCompressionTest(
-            "Lorem ipsum dolor sit amet, dolorem corpora iracundia has ea, duo cu stet alterum scriptorem, " +
-                "et qui putent tractatos. Ne epicurei gloriatur pro, et ornatus consulatu necessitatibus qui. " +
-                "Veri eripuit feugiat sed no, dicat ridens id quo. Mei ne putent impedit antiopam. Ad libris " +
-                "assueverit his. Quo te brute vitae iuvaret, ut nibh bonorum sea. Mel altera vocibus ei, no vel" +
-                " tantas postea doming.",
-            1005L,
-        )
+                "tantas postea doming.",
+        ],
+    )
+    fun testGzipSdkSourceCompression(payload: String) = runTest {
+        runGzipSdkSourceCompressionTest(payload, 1L)
+        runGzipSdkSourceCompressionTest(payload, 1000L)
     }
 
-    @Test
-    fun testGzipByteReadChannelCompression() = runTest {
-        // "readFully" implementation doesn't allow for a read() on empty payloads and will fail test because of that so skipping it
-        runGzipByteReadChannelCompressionTest("", 1L, true)
-        runGzipByteReadChannelCompressionTest("", 1001L, true)
-
-        runGzipByteReadChannelCompressionTest("<Qux>baz</Qux>", 1L)
-        runGzipByteReadChannelCompressionTest("<Qux>baz</Qux>", 2L)
-        runGzipByteReadChannelCompressionTest("<Bar>foo</Bar>", 1002L)
-
-        runGzipByteReadChannelCompressionTest(
-            "“Foo Bar” are very commonly seen as variables in samples and examples. Some sources will claim " +
-                "that this is an interpretation of “F.U.B.A.R.”, a military term...",
-            3L,
-        )
-        runGzipByteReadChannelCompressionTest(
-            "“Foo Bar” are very commonly seen as variables in samples and examples. Some sources will claim " +
-                "that this is an interpretation of “F.U.B.A.R.”, a military term...",
-            1003L,
-        )
-
-        runGzipByteReadChannelCompressionTest(
+    @ParameterizedTest
+    @ValueSource(
+        strings = [
+            "",
             "Lorem ipsum dolor sit amet, dolorem corpora iracundia has ea, duo cu stet alterum scriptorem, " +
                 "et qui putent tractatos. Ne epicurei gloriatur pro, et ornatus consulatu necessitatibus qui. " +
                 "Veri eripuit feugiat sed no, dicat ridens id quo. Mei ne putent impedit antiopam. Ad libris " +
                 "assueverit his. Quo te brute vitae iuvaret, ut nibh bonorum sea. Mel altera vocibus ei, no vel" +
-                " tantas postea doming.",
-            1L,
-        )
-        runGzipByteReadChannelCompressionTest(
-            "Lorem ipsum dolor sit amet, dolorem corpora iracundia has ea, duo cu stet alterum scriptorem, " +
-                "et qui putent tractatos. Ne epicurei gloriatur pro, et ornatus consulatu necessitatibus qui. " +
-                "Veri eripuit feugiat sed no, dicat ridens id quo. Mei ne putent impedit antiopam. Ad libris " +
-                "assueverit his. Quo te brute vitae iuvaret, ut nibh bonorum sea. Mel altera vocibus ei, no vel" +
-                " tantas postea doming.",
-            1005L,
-        )
+                "tantas postea doming.",
+        ],
+    )
+    fun testGzipByteReadChannelCompression(payload: String) = runTest {
+        runGzipByteReadChannelCompressionTest(payload, 1L)
+        runGzipByteReadChannelCompressionTest(payload, 1000L)
     }
 }
 
@@ -112,16 +71,17 @@ private fun runBytesCompressionTest(payload: String) {
     assertEquals(bytesHash, decompressedBytes.crc32())
 }
 
-private fun runGzipSdkSourceCompressionTest(payload: String, limit: Long, skipReadFully: Boolean = false) {
-    val readingMethods = listOf<(GzipSdkSource, SdkBuffer, Long, Long) -> ByteArray?> (
-        { gzipSdkSource, _, _, _ ->
+private fun runGzipSdkSourceCompressionTest(payload: String, limit: Long) {
+    val readingMethods = listOf<(GzipSdkSource, SdkBuffer, Long, Long, Boolean) -> ByteArray?> (
+        { gzipSdkSource, _, _, _, _ ->
             runBlocking {
                 gzipSdkSource.readToByteArray()
             }
         },
 
-        { gzipSdkSource, tempBuffer, payloadSize, readLimit ->
-            if (skipReadFully) {
+        { gzipSdkSource, tempBuffer, payloadSize, readLimit, skipReadFully ->
+            // "readFully" implementation doesn't allow for a read() on empty payloads and will fail test because of that so using while loop instead
+            if (skipReadFully || payloadSize == 0L) {
                 while (gzipSdkSource.read(tempBuffer, readLimit) != -1L);
             } else {
                 gzipSdkSource.readFully(tempBuffer, payloadSize)
@@ -129,7 +89,7 @@ private fun runGzipSdkSourceCompressionTest(payload: String, limit: Long, skipRe
             null
         },
 
-        { gzipSdkSource, tempBuffer, _, readLimit ->
+        { gzipSdkSource, tempBuffer, _, readLimit, _ ->
             while (gzipSdkSource.read(tempBuffer, readLimit) != -1L);
             null
         },
@@ -139,21 +99,41 @@ private fun runGzipSdkSourceCompressionTest(payload: String, limit: Long, skipRe
         val bytes = payload.encodeToByteArray()
         val bytesHash = bytes.crc32()
 
-        val gzipSdkSource = GzipSdkSource(bytes.source(), bytes.size.toLong())
-        val tempBuffer = SdkBuffer()
+        listOf(
+            GzipSdkSourceWrapper(
+                GzipSdkSource(bytes.source(), bytes.size.toLong()),
+                false,
+            ),
+            GzipSdkSourceWrapper(
+                GzipSdkSource(bytes.source()),
+                true,
+            ),
+        ).forEach { gzip ->
+            val tempBuffer = SdkBuffer()
 
-        val compressedByteArray = readSourceCompletely(gzipSdkSource, tempBuffer, bytes.size.toLong(), limit)
-        gzipSdkSource.close()
+            val compressedByteArray = readSourceCompletely(
+                gzip.gzipSdkSource,
+                tempBuffer,
+                bytes.size.toLong(),
+                limit,
+                gzip.shouldSkipReadFully,
+            )
+            gzip.gzipSdkSource.close()
 
-        val compressedBytes = compressedByteArray ?: tempBuffer.readByteArray(); tempBuffer.close()
-        val decompressedBytes = decompressGzipBytes(compressedBytes)
+            val compressedBytes = compressedByteArray ?: tempBuffer.readByteArray()
+            tempBuffer.close()
 
-        assertContentEquals(bytes, decompressedBytes)
-        assertEquals(bytesHash, decompressedBytes.crc32())
+            val decompressedBytes = decompressGzipBytes(compressedBytes)
+
+            assertContentEquals(bytes, decompressedBytes)
+            assertEquals(bytesHash, decompressedBytes.crc32())
+        }
     }
 }
 
-private suspend fun runGzipByteReadChannelCompressionTest(payload: String, limit: Long, skipReadFully: Boolean = false) {
+private data class GzipSdkSourceWrapper(val gzipSdkSource: GzipSdkSource, val shouldSkipReadFully: Boolean)
+
+private suspend fun runGzipByteReadChannelCompressionTest(payload: String, limit: Long) {
     val readingMethods = listOf<(GzipByteReadChannel, SdkBuffer, Long, Long) -> Unit> (
         { gzipByteReadChannel, tempBuffer, _, _ ->
             runBlocking {
@@ -163,7 +143,8 @@ private suspend fun runGzipByteReadChannelCompressionTest(payload: String, limit
 
         { gzipByteReadChannel, tempBuffer, payloadSize, readLimit ->
             runBlocking {
-                if (skipReadFully) {
+                // "readFully" implementation doesn't allow for a read() on empty payloads and will fail test because of that so using while loop instead
+                if (payloadSize == 0L) {
                     do { gzipByteReadChannel.read(tempBuffer, readLimit) } while (!gzipByteReadChannel.isClosedForRead)
                 } else {
                     gzipByteReadChannel.readFully(tempBuffer, payloadSize)
@@ -188,7 +169,9 @@ private suspend fun runGzipByteReadChannelCompressionTest(payload: String, limit
         readChannelCompletely(gzipByteReadChannel, tempBuffer, bytes.size.toLong(), limit)
         gzipByteReadChannel.cancel(null)
 
-        val compressedBytes = tempBuffer.readByteArray(); tempBuffer.close()
+        val compressedBytes = tempBuffer.readByteArray()
+        tempBuffer.close()
+
         val decompressedBytes = decompressGzipBytes(compressedBytes)
 
         assertContentEquals(bytes, decompressedBytes)

@@ -41,8 +41,11 @@ internal fun compressBytes(bytes: ByteArray): ByteArray {
     val byteArrayOutputStream = ByteArrayOutputStream()
     val gzipOutputStream = GZIPOutputStream(byteArrayOutputStream)
 
-    gzipOutputStream.write(bytes); gzipOutputStream.close()
+    gzipOutputStream.write(bytes)
+    gzipOutputStream.close()
 
-    val compressedBody = byteArrayOutputStream.toByteArray(); byteArrayOutputStream.close()
+    val compressedBody = byteArrayOutputStream.toByteArray()
+    byteArrayOutputStream.close()
+
     return compressedBody
 }
