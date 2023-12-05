@@ -31,6 +31,8 @@ kotlin {
                 // use otel testing capabilities
                 implementation(project(":runtime:observability:telemetry-provider-otel"))
                 implementation(libs.opentelemetry.sdk.testing)
+                implementation(libs.ktor.network.tls.certificates)
+                implementation(libs.ktor.server.netty)
             }
         }
 
