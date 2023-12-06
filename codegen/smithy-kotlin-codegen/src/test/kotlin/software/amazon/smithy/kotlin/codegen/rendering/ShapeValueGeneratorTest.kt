@@ -79,8 +79,6 @@ listOf<String>(
         contents.shouldContainOnlyOnceWithDiff(expected)
     }
 
-    // TODO - nested map tests
-
     @Test
     fun `it renders nested lists`() {
         val model = """

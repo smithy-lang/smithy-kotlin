@@ -74,7 +74,8 @@ class ShapeValueGenerator(
     private fun classDeclaration(writer: KotlinWriter, shape: StructureShape, block: () -> Unit) {
         val symbol = symbolProvider.toSymbol(shape)
         // invoke the generated DSL builder for the class
-        writer.writeInline("#L {\n", symbol.name)
+        writer.writeInline("#L {", symbol.name)
+            .ensureNewline()
             .indent()
             .call { block() }
             .dedent()
@@ -88,7 +89,8 @@ class ShapeValueGenerator(
 
         val collectionGeneratorFunction = symbolProvider.toSymbol(shape).expectProperty(SymbolProperty.IMMUTABLE_COLLECTION_FUNCTION)
 
-        writer.writeInline("$collectionGeneratorFunction(\n")
+        writer.writeInline("$collectionGeneratorFunction(")
+            .ensureNewline()
             .indent()
             .call { block() }
             .dedent()
@@ -108,7 +110,8 @@ class ShapeValueGenerator(
         collectionSymbol.references.forEach {
             writer.addImport(it.symbol)
         }
-        writer.writeInline("$generatorFn(\n")
+        writer.writeInline("$generatorFn(")
+            .ensureNewline()
             .indent()
             .call { block() }
             .dedent()
@@ -158,7 +161,8 @@ class ShapeValueGenerator(
         override fun objectNode(node: ObjectNode) {
             if (currShape.type == ShapeType.DOCUMENT) {
                 writer
-                    .writeInline("#T {\n", RuntimeTypes.Core.Content.buildDocument)
+                    .writeInline("#T {", RuntimeTypes.Core.Content.buildDocument)
+                    .ensureNewline()
                     .indent()
             }
 
@@ -187,14 +191,15 @@ class ShapeValueGenerator(
                         } else {
                             generator.instantiateShapeInline(writer, memberShape, valueNode)
                             if (i < node.members.size - 1) {
-                                writer.writeInline(",\n")
+                                writer.writeInline(",")
+                                    .ensureNewline()
                             }
                         }
                     }
                     is DocumentShape -> {
                         writer.writeInline("#S to ", keyNode.value)
                         generator.instantiateShapeInline(writer, currShape, valueNode)
-                        writer.writeInline("\n")
+                        writer.ensureNewline()
                     }
                     is UnionShape -> {
                         val member = currShape.getMember(keyNode.value).orElseThrow {
@@ -256,7 +261,8 @@ class ShapeValueGenerator(
                             node.elements.forEach {
                                 generator.instantiateShapeInline(writer, currShape, it)
                                 writer.unwrite(writer.newline)
-                                writer.writeInline(",\n")
+                                writer.writeInline(",")
+                                    .ensureNewline()
                             }
                         }
                     }

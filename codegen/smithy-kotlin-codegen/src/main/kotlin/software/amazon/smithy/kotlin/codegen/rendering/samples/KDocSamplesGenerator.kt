@@ -21,12 +21,6 @@ import software.amazon.smithy.model.transform.ModelTransformer
 import java.util.*
 import kotlin.jvm.optionals.getOrDefault
 
-// FIXME - add to default integrations (after documentation pre-processor)
-
-// FIXME: This renders using the playground by default which won't actually work
-//  see https://github.com/Kotlin/dokka/issues/3041
-//  Probably hold off merging until fixed
-
 /**
  * [KotlinIntegration] that renders [KDoc samples](https://kotlinlang.org/docs/kotlin-doc.html#sample-identifier)
  * and pre-processes the documentation to insert references to the generated sample identifiers for operations
