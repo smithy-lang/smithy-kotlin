@@ -35,7 +35,7 @@ public interface CompressionClientConfig {
          * More compression algorithms can be added and may override an existing implementation.
          * Use the `CompressionAlgorithm` interface to create one.
          */
-        public var compressionAlgorithms: List<CompressionAlgorithm>
+        public var compressionAlgorithms: MutableList<CompressionAlgorithm>
 
         /**
          * Flag used to determine when a request should be compressed or not.

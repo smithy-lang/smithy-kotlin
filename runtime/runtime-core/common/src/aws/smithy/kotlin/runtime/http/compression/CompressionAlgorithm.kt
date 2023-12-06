@@ -31,5 +31,4 @@ public interface CompressionAlgorithm {
     public fun compressSdkSource(source: SdkSource, bytesToRead: Long?): SdkSource
 
     public fun compressSdkByteReadChannel(channel: SdkByteReadChannel): SdkByteReadChannel
-
 }

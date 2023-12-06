@@ -41,10 +41,16 @@ class RequestCompressionIntegration : KotlinIntegration {
         listOf(
             ConfigProperty {
                 name = "compressionAlgorithms"
-                symbol = Symbol.builder()
-                    .name("List<${RuntimeTypes.Core.Http.Compression.CompressionAlgorithm}>")
-                    .defaultValue("listOf(${RuntimeTypes.Core.Http.Compression.Gzip}())")
-                    .build()
+                symbol =
+                    Symbol.builder()
+                        .name("List<${RuntimeTypes.Core.Http.Compression.CompressionAlgorithm}>")
+                        .build()
+                builderSymbol =
+                    Symbol.builder()
+                        .name("MutableList<${RuntimeTypes.Core.Http.Compression.CompressionAlgorithm}>")
+                        .defaultValue("mutableListOf(${RuntimeTypes.Core.Http.Compression.Gzip}())")
+                        .build()
+                toBuilderExpression = ".toMutableList()"
                 baseClass = RuntimeTypes.HttpClient.Config.CompressionClientConfig
                 useNestedBuilderBaseClass()
                 documentation = """
@@ -53,6 +59,7 @@ class RequestCompressionIntegration : KotlinIntegration {
                 Use the `CompressionAlgorithm` interface to create one.
                 """.trimIndent()
             },
+
             ConfigProperty {
                 name = "disableRequestCompression"
                 useSymbolWithNullableBuilder(KotlinTypes.Boolean, "false")
@@ -63,6 +70,7 @@ class RequestCompressionIntegration : KotlinIntegration {
                     False by default.
                 """.trimIndent()
             },
+
             ConfigProperty {
                 name = "requestMinCompressionSizeBytes"
                 useSymbolWithNullableBuilder(KotlinTypes.Long, "10_240")

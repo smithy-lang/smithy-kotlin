@@ -148,7 +148,7 @@ class RequestCompressionInterceptorTest {
             bytes.size.toLong(),
             listOf("gzip"),
             listOf(Gzip()),
-            Headers { set("Content-Encoding", "br") }
+            Headers { set("Content-Encoding", "br") },
         )
 
         val contentEncodingHeader = call.request.headers.getAll("Content-Encoding")
