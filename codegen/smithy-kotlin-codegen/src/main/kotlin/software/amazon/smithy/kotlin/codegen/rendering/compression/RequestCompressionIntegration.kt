@@ -14,6 +14,7 @@ import software.amazon.smithy.kotlin.codegen.integration.KotlinIntegration
 import software.amazon.smithy.kotlin.codegen.lang.KotlinTypes
 import software.amazon.smithy.kotlin.codegen.model.defaultValue
 import software.amazon.smithy.kotlin.codegen.model.getTrait
+import software.amazon.smithy.kotlin.codegen.model.hasTrait
 import software.amazon.smithy.kotlin.codegen.rendering.protocol.ProtocolGenerator
 import software.amazon.smithy.kotlin.codegen.rendering.protocol.ProtocolMiddleware
 import software.amazon.smithy.kotlin.codegen.rendering.util.ConfigProperty
@@ -21,6 +22,11 @@ import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.traits.RequestCompressionTrait
 
+/**
+ * Adds request compression settings if request compression trait is present.
+ * Adds middleware that registers interceptor and provides functionality for request compression if request compression
+ * is not disabled via settings.
+ */
 class RequestCompressionIntegration : KotlinIntegration {
 
     override fun enabledForService(model: Model, settings: KotlinSettings): Boolean =
@@ -35,15 +41,17 @@ class RequestCompressionIntegration : KotlinIntegration {
         listOf(
             ConfigProperty {
                 name = "compressionAlgorithms"
+                symbol = Symbol.builder()
+                    .name("List<${RuntimeTypes.HttpClient.Interceptors.CompressionAlgorithm}>")
+                    .defaultValue("listOf(${RuntimeTypes.HttpClient.Interceptors.Gzip}())")
+                    .build()
+                baseClass = RuntimeTypes.HttpClient.Config.CompressionClientConfig
+                useNestedBuilderBaseClass()
                 documentation = """
-                The mutable list of compression algorithms supported by the SDK.
+                The list of compression algorithms supported by the SDK.
                 More compression algorithms can be added and may override an existing implementation.
                 Use the `CompressionAlgorithm` interface to create one.
                 """.trimIndent()
-                symbol = Symbol.builder()
-                    .name("MutableList<${RuntimeTypes.HttpClient.Interceptors.CompressionAlgorithm}>")
-                    .defaultValue("mutableListOf(${RuntimeTypes.HttpClient.Interceptors.Gzip}())")
-                    .build()
             },
             ConfigProperty {
                 name = "disableRequestCompression"
@@ -57,7 +65,7 @@ class RequestCompressionIntegration : KotlinIntegration {
             },
             ConfigProperty {
                 name = "requestMinCompressionSizeBytes"
-                useSymbolWithNullableBuilder(KotlinTypes.Long, "10240")
+                useSymbolWithNullableBuilder(KotlinTypes.Long, "10_240")
                 baseClass = RuntimeTypes.HttpClient.Config.CompressionClientConfig
                 useNestedBuilderBaseClass()
                 documentation = """
@@ -71,30 +79,32 @@ class RequestCompressionIntegration : KotlinIntegration {
 private val requestCompressionTraitMiddleware = object : ProtocolMiddleware {
     override val name: String = "RequestCompressionMiddleware"
 
-    override fun render(ctx: ProtocolGenerator.GenerationContext, op: OperationShape, writer: KotlinWriter) {
-        op.getTrait<RequestCompressionTrait>()?.let { trait ->
-            val supportedCompressionAlgorithms = trait.encodings
+    override fun isEnabledFor(ctx: ProtocolGenerator.GenerationContext, op: OperationShape): Boolean =
+        op.hasTrait<RequestCompressionTrait>()
 
-            writer.withBlock(
-                "if (config.disableRequestCompression == false) {",
-                "}",
+    override fun render(ctx: ProtocolGenerator.GenerationContext, op: OperationShape, writer: KotlinWriter) {
+        val requestCompressionTrait = op.getTrait<RequestCompressionTrait>()!!
+        val supportedCompressionAlgorithms = requestCompressionTrait.encodings
+
+        writer.withBlock(
+            "if (config.disableRequestCompression == false) {",
+            "}",
+        ) {
+            withBlock(
+                "op.interceptors.add(#T(",
+                "))",
+                RuntimeTypes.HttpClient.Interceptors.RequestCompressionInterceptor,
             ) {
-                withBlock(
-                    "op.interceptors.add(#T(",
-                    "))",
-                    RuntimeTypes.HttpClient.Interceptors.RequestCompressionInterceptor,
-                ) {
-                    write("config.requestMinCompressionSizeBytes,")
-                    write(
-                        "listOf(${supportedCompressionAlgorithms.joinToString(
-                            separator = ", ",
-                            transform = {
-                                "\"$it\""
-                            },
-                        )}),",
-                    )
-                    write("config.compressionAlgorithms")
-                }
+                write("config.requestMinCompressionSizeBytes,")
+                write("config.compressionAlgorithms")
+                write(
+                    "listOf(${supportedCompressionAlgorithms.joinToString(
+                        separator = ", ",
+                        transform = {
+                            "\"$it\""
+                        },
+                    )}),",
+                )
             }
         }
     }

@@ -5,6 +5,7 @@
 
 package aws.smithy.kotlin.runtime.http.interceptors.requestcompression
 
+import aws.smithy.kotlin.runtime.InternalApi
 import aws.smithy.kotlin.runtime.http.HttpBody
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.http.request.toBuilder
@@ -14,12 +15,19 @@ import aws.smithy.kotlin.runtime.io.GzipSdkSource
 import java.io.ByteArrayOutputStream
 import java.util.zip.GZIPOutputStream
 
+/**
+ * The gzip compression algorithm.
+ * Used to compress http requests.
+ *
+ * See: https://en.wikipedia.org/wiki/Gzip
+ */
+@InternalApi
 public actual class Gzip actual constructor() : CompressionAlgorithm {
 
     actual override val id: String = "gzip"
     actual override val contentEncoding: String = "gzip"
 
-    actual override suspend fun compress(request: HttpRequest): HttpRequest {
+    actual override fun compress(request: HttpRequest): HttpRequest {
         val compressedRequest = request.toBuilder()
         val uncompressedBody = request.body
 
@@ -35,17 +43,17 @@ public actual class Gzip actual constructor() : CompressionAlgorithm {
 
         return compressedRequest.build()
     }
-}
 
-internal fun compressBytes(bytes: ByteArray): ByteArray {
-    val byteArrayOutputStream = ByteArrayOutputStream()
-    val gzipOutputStream = GZIPOutputStream(byteArrayOutputStream)
+    public fun compressBytes(bytes: ByteArray): ByteArray {
+        val byteArrayOutputStream = ByteArrayOutputStream()
+        val gzipOutputStream = GZIPOutputStream(byteArrayOutputStream)
 
-    gzipOutputStream.write(bytes)
-    gzipOutputStream.close()
+        gzipOutputStream.write(bytes)
+        gzipOutputStream.close()
 
-    val compressedBody = byteArrayOutputStream.toByteArray()
-    byteArrayOutputStream.close()
+        val compressedBody = byteArrayOutputStream.toByteArray()
+        byteArrayOutputStream.close()
 
-    return compressedBody
+        return compressedBody
+    }
 }

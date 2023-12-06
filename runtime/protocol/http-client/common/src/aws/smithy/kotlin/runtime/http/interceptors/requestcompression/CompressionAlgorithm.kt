@@ -28,5 +28,5 @@ public interface CompressionAlgorithm {
     /**
      * Compresses a HTTP request's body
      */
-    public suspend fun compress(request: HttpRequest): HttpRequest
+    public fun compress(request: HttpRequest): HttpRequest
 }

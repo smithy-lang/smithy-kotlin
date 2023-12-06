@@ -24,8 +24,6 @@ import kotlin.test.assertFailsWith
 
 expect fun decompressGzipBytes(compressed: ByteArray): ByteArray
 
-private data class HeaderValue(val headerName: String, val headerValue: String)
-
 class RequestCompressionInterceptorTest {
 
     private val client = SdkHttpClient(TestEngine())
@@ -35,15 +33,13 @@ class RequestCompressionInterceptorTest {
         compressionThresholdBytes: Long,
         supportedCompressionAlgorithms: List<String>,
         availableCompressionAlgorithms: List<CompressionAlgorithm>,
-        additionalHeaders: List<HeaderValue>? = null,
+        additionalHeaders: Headers = Headers.Empty,
     ): HttpCall {
         val request = HttpRequestBuilder().apply {
             body = suppliedBody
         }
 
-        additionalHeaders?.forEach {
-            request.headers.append(it.headerName, it.headerValue)
-        }
+        request.headers.appendAll(additionalHeaders)
 
         val op = newTestOperation<Unit, Unit>(
             request,
@@ -53,8 +49,8 @@ class RequestCompressionInterceptorTest {
         op.interceptors.add(
             RequestCompressionInterceptor(
                 compressionThresholdBytes,
-                supportedCompressionAlgorithms,
                 availableCompressionAlgorithms,
+                supportedCompressionAlgorithms,
             ),
         )
 
@@ -152,9 +148,7 @@ class RequestCompressionInterceptorTest {
             bytes.size.toLong(),
             listOf("gzip"),
             listOf(Gzip()),
-            listOf(
-                HeaderValue("Content-Encoding", "br"),
-            ),
+            Headers { set("Content-Encoding", "br") }
         )
 
         val contentEncodingHeader = call.request.headers.getAll("Content-Encoding")
@@ -202,8 +196,8 @@ class RequestCompressionInterceptorTest {
             op.interceptors.add(
                 RequestCompressionInterceptor(
                     invalidCompressionThreshold,
-                    listOf("gzip"),
                     listOf(Gzip()),
+                    listOf("gzip"),
                 ),
             )
         }

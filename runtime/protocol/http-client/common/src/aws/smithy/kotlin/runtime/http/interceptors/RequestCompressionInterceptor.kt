@@ -7,13 +7,13 @@ package aws.smithy.kotlin.runtime.http.interceptors
 
 import aws.smithy.kotlin.runtime.InternalApi
 import aws.smithy.kotlin.runtime.client.ProtocolRequestInterceptorContext
+import aws.smithy.kotlin.runtime.http.HttpBody
 import aws.smithy.kotlin.runtime.http.interceptors.requestcompression.CompressionAlgorithm
-import aws.smithy.kotlin.runtime.http.isStreaming
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.telemetry.logging.logger
 import kotlin.coroutines.coroutineContext
 
-private val VALID_COMPRESSION_THRESHOLD_BYTES_RANGE = 0..10485760
+private val VALID_COMPRESSION_THRESHOLD_BYTES_RANGE = 0..10_485_760
 
 /**
  * HTTP interceptor that compresses request payloads
@@ -24,8 +24,8 @@ private val VALID_COMPRESSION_THRESHOLD_BYTES_RANGE = 0..10485760
 @InternalApi
 public class RequestCompressionInterceptor(
     private val compressionThresholdBytes: Long,
-    private val supportedCompressionAlgorithms: List<String>,
     private val availableCompressionAlgorithms: List<CompressionAlgorithm>,
+    private val supportedCompressionAlgorithms: List<String>,
 ) : HttpInterceptor {
 
     init {
@@ -62,3 +62,9 @@ public class RequestCompressionInterceptor(
         return null
     }
 }
+
+/**
+ * Determines if a http body is streaming type or not.
+ */
+private val HttpBody.isStreaming: Boolean
+    get() = this is HttpBody.ChannelContent || this is HttpBody.SourceContent || this.contentLength == null

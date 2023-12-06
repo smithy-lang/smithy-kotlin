@@ -7,6 +7,9 @@ package aws.smithy.kotlin.runtime.io
 import aws.smithy.kotlin.runtime.InternalApi
 import java.util.zip.GZIPOutputStream
 
+/**
+ * Wraps the SdkSource so that it compresses into gzip format with each read.
+ */
 @InternalApi
 public class GzipSdkSource(
     private val source: SdkSource,
@@ -53,8 +56,6 @@ public class GzipSdkSource(
             gzipBuffer.readAll(sink)
             gzipBuffer.close()
         }
-
-        temp.close()
 
         return rc
     }

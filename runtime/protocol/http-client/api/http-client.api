@@ -8,13 +8,16 @@ public final class aws/smithy/kotlin/runtime/http/SdkHttpClient : aws/smithy/kot
 }
 
 public abstract interface class aws/smithy/kotlin/runtime/http/config/CompressionClientConfig {
+	public abstract fun getCompressionAlgorithms ()Ljava/util/List;
 	public abstract fun getDisableRequestCompression ()Z
 	public abstract fun getRequestMinCompressionSizeBytes ()J
 }
 
 public abstract interface class aws/smithy/kotlin/runtime/http/config/CompressionClientConfig$Builder {
+	public abstract fun getCompressionAlgorithms ()Ljava/util/List;
 	public abstract fun getDisableRequestCompression ()Ljava/lang/Boolean;
 	public abstract fun getRequestMinCompressionSizeBytes ()Ljava/lang/Long;
+	public abstract fun setCompressionAlgorithms (Ljava/util/List;)V
 	public abstract fun setDisableRequestCompression (Ljava/lang/Boolean;)V
 	public abstract fun setRequestMinCompressionSizeBytes (Ljava/lang/Long;)V
 }
@@ -183,16 +186,9 @@ public final class aws/smithy/kotlin/runtime/http/interceptors/ChecksumMismatchE
 }
 
 public abstract interface class aws/smithy/kotlin/runtime/http/interceptors/requestcompression/CompressionAlgorithm {
-	public abstract fun compress (Laws/smithy/kotlin/runtime/http/request/HttpRequest;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public abstract fun compress (Laws/smithy/kotlin/runtime/http/request/HttpRequest;)Laws/smithy/kotlin/runtime/http/request/HttpRequest;
 	public abstract fun getContentEncoding ()Ljava/lang/String;
 	public abstract fun getId ()Ljava/lang/String;
-}
-
-public final class aws/smithy/kotlin/runtime/http/interceptors/requestcompression/Gzip : aws/smithy/kotlin/runtime/http/interceptors/requestcompression/CompressionAlgorithm {
-	public fun <init> ()V
-	public fun compress (Laws/smithy/kotlin/runtime/http/request/HttpRequest;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public fun getContentEncoding ()Ljava/lang/String;
-	public fun getId ()Ljava/lang/String;
 }
 
 public final class aws/smithy/kotlin/runtime/http/middleware/HttpResponseException : aws/smithy/kotlin/runtime/SdkBaseException {

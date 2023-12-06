@@ -218,9 +218,3 @@ public fun HttpBody.toSdkByteReadChannel(scope: CoroutineScope? = null): SdkByte
     is HttpBody.ChannelContent -> body.readFrom()
     is HttpBody.SourceContent -> body.readFrom().toSdkByteReadChannel(scope)
 }
-
-/**
- * Determines if a http body is streaming type or not.
- */
-public val HttpBody.isStreaming: Boolean
-    get() = this is HttpBody.ChannelContent || this is HttpBody.SourceContent || this.contentLength == null

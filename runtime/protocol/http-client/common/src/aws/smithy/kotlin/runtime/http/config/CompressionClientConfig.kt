@@ -4,10 +4,19 @@
  */
 package aws.smithy.kotlin.runtime.http.config
 
+import aws.smithy.kotlin.runtime.http.interceptors.requestcompression.CompressionAlgorithm
+
 /**
  * The user-accessible configuration properties for configuring request compression.
  */
 public interface CompressionClientConfig {
+    /**
+     * The list of compression algorithms supported by the SDK.
+     * More compression algorithms can be added and may override an existing implementation.
+     * Use the `CompressionAlgorithm` interface to create one.
+     */
+    public val compressionAlgorithms: List<CompressionAlgorithm>
+
     /**
      * Flag used to determine when a request should be compressed or not.
      * False by default.
@@ -21,6 +30,13 @@ public interface CompressionClientConfig {
     public val requestMinCompressionSizeBytes: Long
 
     public interface Builder {
+        /**
+         * The list of compression algorithms supported by the SDK.
+         * More compression algorithms can be added and may override an existing implementation.
+         * Use the `CompressionAlgorithm` interface to create one.
+         */
+        public var compressionAlgorithms: MutableList<CompressionAlgorithm>?
+
         /**
          * Flag used to determine when a request should be compressed or not.
          * False by default.
