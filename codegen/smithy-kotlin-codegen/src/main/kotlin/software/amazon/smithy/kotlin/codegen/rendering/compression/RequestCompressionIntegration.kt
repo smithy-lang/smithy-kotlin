@@ -42,8 +42,8 @@ class RequestCompressionIntegration : KotlinIntegration {
             ConfigProperty {
                 name = "compressionAlgorithms"
                 symbol = Symbol.builder()
-                    .name("List<${RuntimeTypes.HttpClient.Interceptors.CompressionAlgorithm}>")
-                    .defaultValue("listOf(${RuntimeTypes.HttpClient.Interceptors.Gzip}())")
+                    .name("List<${RuntimeTypes.Core.Http.Compression.CompressionAlgorithm}>")
+                    .defaultValue("listOf(${RuntimeTypes.Core.Http.Compression.Gzip}())")
                     .build()
                 baseClass = RuntimeTypes.HttpClient.Config.CompressionClientConfig
                 useNestedBuilderBaseClass()
@@ -96,7 +96,7 @@ private val requestCompressionTraitMiddleware = object : ProtocolMiddleware {
                 RuntimeTypes.HttpClient.Interceptors.RequestCompressionInterceptor,
             ) {
                 write("config.requestMinCompressionSizeBytes,")
-                write("config.compressionAlgorithms")
+                write("config.compressionAlgorithms,")
                 write(
                     "listOf(${supportedCompressionAlgorithms.joinToString(
                         separator = ", ",

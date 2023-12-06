@@ -90,8 +90,6 @@ object RuntimeTypes {
             val FlexibleChecksumsResponseInterceptor = symbol("FlexibleChecksumsResponseInterceptor")
             val ResponseLengthValidationInterceptor = symbol("ResponseLengthValidationInterceptor")
             val RequestCompressionInterceptor = symbol("RequestCompressionInterceptor")
-            val CompressionAlgorithm = symbol("CompressionAlgorithm", "interceptors.requestcompression")
-            val Gzip = symbol("Gzip", "interceptors.requestcompression")
         }
     }
 
@@ -104,7 +102,6 @@ object RuntimeTypes {
         val fromEpochMilliseconds = symbol("fromEpochMilliseconds", "time")
         val TimestampFormat = symbol("TimestampFormat", "time")
         val ClientException = symbol("ClientException")
-        val RequestCompressionConfig = symbol("RequestCompressionConfig", "compression")
 
         object Collections : RuntimeTypePackage(KotlinDependency.CORE, "collections") {
             val Attributes = symbol("Attributes")
@@ -153,6 +150,13 @@ object RuntimeTypes {
 
         object Hashing : RuntimeTypePackage(KotlinDependency.CORE, "hashing") {
             val Sha256 = symbol("Sha256")
+        }
+
+        object Http : RuntimeTypePackage(KotlinDependency.CORE, "http") {
+            object Compression : RuntimeTypePackage(KotlinDependency.CORE, "http.compression") {
+                val CompressionAlgorithm = symbol("CompressionAlgorithm")
+                val Gzip = symbol("Gzip")
+            }
         }
 
         object IO : RuntimeTypePackage(KotlinDependency.CORE, "io") {

@@ -186,7 +186,9 @@ public final class aws/smithy/kotlin/runtime/http/interceptors/ChecksumMismatchE
 }
 
 public abstract interface class aws/smithy/kotlin/runtime/http/interceptors/requestcompression/CompressionAlgorithm {
-	public abstract fun compress (Laws/smithy/kotlin/runtime/http/request/HttpRequest;)Laws/smithy/kotlin/runtime/http/request/HttpRequest;
+	public abstract fun compressBytes ([B)[B
+	public abstract fun compressSdkByteReadChannel (Laws/smithy/kotlin/runtime/io/SdkByteReadChannel;)Laws/smithy/kotlin/runtime/io/SdkByteReadChannel;
+	public abstract fun compressSdkSource (Laws/smithy/kotlin/runtime/io/SdkSource;Ljava/lang/Long;)Laws/smithy/kotlin/runtime/io/SdkSource;
 	public abstract fun getContentEncoding ()Ljava/lang/String;
 	public abstract fun getId ()Ljava/lang/String;
 }
