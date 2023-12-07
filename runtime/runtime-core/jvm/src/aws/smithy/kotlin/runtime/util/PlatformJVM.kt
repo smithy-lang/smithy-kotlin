@@ -48,7 +48,7 @@ internal actual object SystemDefaultProvider : PlatformProvider {
         }
     }
 
-    override suspend fun fileExists(path: String): Boolean = File(path).exists()
+    override fun fileExists(path: String): Boolean = File(path).exists()
 
     public suspend fun readFileOrNull(path: Path): ByteArray? = readFileOrNull(path.toAbsolutePath().toString())
     public suspend fun readFileOrNull(file: File): ByteArray? = readFileOrNull(file.absolutePath)

@@ -35,7 +35,7 @@ public interface Filesystem {
      * Check if a file exists at the [path].
      * @param path fully qualified path encoded specifically to the target platform's filesystem
      */
-    public suspend fun fileExists(path: String): Boolean
+    public fun fileExists(path: String): Boolean
 
     public companion object {
         /**
@@ -54,5 +54,5 @@ internal class MapFilesystem(
     override suspend fun writeFile(path: String, data: ByteArray) {
         memFs[path] = data
     }
-    override suspend fun fileExists(path: String): Boolean = memFs[path] != null
+    override fun fileExists(path: String): Boolean = memFs[path] != null
 }
