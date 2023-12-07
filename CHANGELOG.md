@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.0.2] - 12/07/2023
+
+### Features
+* Add a convenience function for creating `CachedCredentialsProvider`
+
 ## [1.0.1] - 11/26/2023
 
 ## [1.0.0] - 11/26/2023
