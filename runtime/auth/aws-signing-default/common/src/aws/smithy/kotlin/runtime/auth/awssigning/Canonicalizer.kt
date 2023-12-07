@@ -16,6 +16,7 @@ import aws.smithy.kotlin.runtime.io.internal.SdkDispatchers
 import aws.smithy.kotlin.runtime.net.url.QueryParameters
 import aws.smithy.kotlin.runtime.net.url.Url
 import aws.smithy.kotlin.runtime.net.url.UrlPath
+import aws.smithy.kotlin.runtime.text.encoding.Encodable
 import aws.smithy.kotlin.runtime.text.encoding.PercentEncoding
 import aws.smithy.kotlin.runtime.text.encoding.encodeToHex
 import aws.smithy.kotlin.runtime.time.TimestampFormat
@@ -93,8 +94,17 @@ internal class DefaultCanonicalizer(private val sha256Supplier: HashSupplier = :
                     }
 
                     AwsSignatureType.HTTP_REQUEST_VIA_QUERY_PARAMS -> {
-                        val params = builder.url.parameters.decodedParameters
-                        if (overwrite || name !in params) params.put(name, value)
+                        val params = builder.url.parameters
+
+                        if (overwrite || name !in params.decodedParameters) {
+                            // Remove existing entry because we're using a different encoding
+                            params.decodedParameters.remove(name)
+
+                            params.put(
+                                PercentEncoding.SigV4.encodableFromDecoded(name),
+                                PercentEncoding.SigV4.encodableFromDecoded(value),
+                            )
+                        }
                     }
 
                     else -> TODO("Support for ${config.signatureType} is not yet implemented")
@@ -193,10 +203,13 @@ private const val STREAM_CHUNK_BYTES = 16384 // 16KB
  */
 internal fun Url.Builder.canonicalPath(config: AwsSigningConfig): String {
     val srcPath = path
-    val srcSegments = srcPath.encodedSegments
-    val destSegments = if (config.useDoubleUriEncode) srcSegments.map(PercentEncoding.Path::encode) else srcSegments
+    val srcSegments = srcPath.segments
+    val mapper: (Encodable) -> Encodable = when (config.useDoubleUriEncode) {
+        true -> { existing -> PercentEncoding.SigV4.encodableFromDecoded(existing.encoded) }
+        else -> { { it } }
+    }
     return UrlPath {
-        encodedSegments.addAll(destSegments)
+        srcSegments.mapTo(segments, mapper)
         trailingSlash = srcPath.trailingSlash
         if (config.normalizeUriPath) normalize()
     }.toString()
@@ -209,10 +222,16 @@ internal fun Url.Builder.canonicalPath(config: AwsSigningConfig): String {
 internal fun Url.Builder.canonicalQueryParams(): String = QueryParameters {
     parameters
         .entries
-        .associate { (key, values) -> key.reencode().encoded to values.map { it.reencode().encoded } } // re-encode all
+        .associate { (key, values) ->
+            val reencodedKey = key.reencode(PercentEncoding.SigV4)
+            val reencodedValues = values.map { it.reencode(PercentEncoding.SigV4) }
+            reencodedKey to reencodedValues
+        }
         .entries
-        .sortedWith(compareBy { it.key }) // Sort keys
-        .associateTo(encodedParameters) { (key, values) -> key to values.sorted().toMutableList() } // Sort values
+        .sortedWith(compareBy { it.key.encoded }) // Sort keys
+        .associateTo(this) { (key, values) ->
+            key to values.sortedWith(compareBy { it.encoded }).toMutableList() // Sort values
+        }
 }.toString().removePrefix("?")
 
 private fun Pair<String, List<String>>.canonicalLine(): String {
