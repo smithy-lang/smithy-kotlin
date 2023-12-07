@@ -31,6 +31,8 @@ public interface Filesystem {
      */
     public suspend fun writeFile(path: String, data: ByteArray)
 
+    public suspend fun fileExists(path: String): Boolean
+
     public companion object {
         /**
          * Construct a fake filesystem from a mapping of paths to contents
@@ -48,4 +50,5 @@ internal class MapFilesystem(
     override suspend fun writeFile(path: String, data: ByteArray) {
         memFs[path] = data
     }
+    override suspend fun fileExists(path: String): Boolean = memFs[path] != null
 }

@@ -24,6 +24,10 @@ internal actual object SystemDefaultProvider : PlatformProvider {
         TODO("Not yet implemented")
     }
 
+    override suspend fun fileExists(path: String): Boolean {
+        TODO("Not yet implemented")
+    }
+
     override fun osInfo(): OperatingSystem {
         TODO("Not yet implemented")
     }
