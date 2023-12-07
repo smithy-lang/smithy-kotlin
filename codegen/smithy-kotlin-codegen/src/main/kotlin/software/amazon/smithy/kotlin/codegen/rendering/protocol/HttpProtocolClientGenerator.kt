@@ -5,31 +5,33 @@
 package software.amazon.smithy.kotlin.codegen.rendering.protocol
 
 import software.amazon.smithy.aws.traits.HttpChecksumTrait
+import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.kotlin.codegen.core.*
 import software.amazon.smithy.kotlin.codegen.integration.SectionId
 import software.amazon.smithy.kotlin.codegen.integration.SectionKey
 import software.amazon.smithy.kotlin.codegen.lang.KotlinTypes
-import software.amazon.smithy.kotlin.codegen.model.getTrait
-import software.amazon.smithy.kotlin.codegen.model.hasStreamingMember
-import software.amazon.smithy.kotlin.codegen.model.hasTrait
+import software.amazon.smithy.kotlin.codegen.model.*
 import software.amazon.smithy.kotlin.codegen.model.knowledge.AuthIndex
-import software.amazon.smithy.kotlin.codegen.model.operationSignature
+import software.amazon.smithy.kotlin.codegen.model.knowledge.AwsSignatureVersion4
 import software.amazon.smithy.kotlin.codegen.rendering.auth.AuthSchemeProviderAdapterGenerator
 import software.amazon.smithy.kotlin.codegen.rendering.auth.IdentityProviderConfigGenerator
 import software.amazon.smithy.kotlin.codegen.rendering.endpoints.EndpointResolverAdapterGenerator
 import software.amazon.smithy.kotlin.codegen.rendering.serde.deserializerName
 import software.amazon.smithy.kotlin.codegen.rendering.serde.serializerName
+import software.amazon.smithy.kotlin.codegen.utils.dq
 import software.amazon.smithy.kotlin.codegen.utils.getOrNull
 import software.amazon.smithy.model.knowledge.OperationIndex
+import software.amazon.smithy.model.knowledge.ServiceIndex
 import software.amazon.smithy.model.knowledge.TopDownIndex
 import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.traits.EndpointTrait
+import software.amazon.smithy.model.traits.HttpBearerAuthTrait
 import software.amazon.smithy.model.traits.HttpChecksumRequiredTrait
 
 /**
  * Renders an implementation of a service interface for HTTP protocol
  */
-abstract class HttpProtocolClientGenerator(
+open class HttpProtocolClientGenerator(
     protected val ctx: ProtocolGenerator.GenerationContext,
     protected val middleware: List<ProtocolMiddleware>,
     protected val httpBindingResolver: HttpBindingResolver,
@@ -41,6 +43,10 @@ abstract class HttpProtocolClientGenerator(
 
     object OperationTelemetryBuilder : SectionId {
         val Operation: SectionKey<OperationShape> = SectionKey("Operation")
+    }
+
+    object MergeServiceDefaults : SectionId {
+        val GenerationContext: SectionKey<ProtocolGenerator.GenerationContext> = SectionKey("GenerationContext")
     }
 
     /**
@@ -76,6 +82,8 @@ abstract class HttpProtocolClientGenerator(
             }
             .write("")
             .call { renderClose(writer) }
+            .write("")
+            .call { renderMergeServiceDefaults(writer) }
             .write("")
             .call { renderAdditionalMethods(writer) }
             .closeBlock("}")
@@ -146,6 +154,19 @@ abstract class HttpProtocolClientGenerator(
     protected open fun renderInit(writer: KotlinWriter) {
         writer.withBlock("init {", "}") {
             write("managedResources.#T(config.httpClient)", RuntimeTypes.Core.IO.addIfManaged)
+
+            // FIXME - relocate to auth integrations and declare a new section writer
+            if (AwsSignatureVersion4.isSupportedAuthentication(ctx.model, ctx.settings.getService(ctx.model))) {
+                write("managedResources.#T(config.credentialsProvider)", RuntimeTypes.Core.IO.addIfManaged)
+            }
+
+            val serviceIndex = ServiceIndex.of(ctx.model)
+            val hasBearerTokenAuth = serviceIndex
+                .getAuthSchemes(ctx.settings.service)
+                .containsKey(HttpBearerAuthTrait.ID)
+            if (hasBearerTokenAuth) {
+                write("managedResources.#T(config.bearerTokenProvider)", RuntimeTypes.Core.IO.addIfManaged)
+            }
         }
     }
 
@@ -254,7 +275,10 @@ abstract class HttpProtocolClientGenerator(
             }
 
             writer.write("execution.retryStrategy = config.retryStrategy")
+            writer.write("execution.retryPolicy = config.retryPolicy")
         }
+
+        writer.write("mergeServiceDefaults(op.context)")
     }
 
     protected open fun renderFinalizeBeforeExecute(writer: KotlinWriter, opIndex: OperationIndex, op: OperationShape) {
@@ -351,4 +375,58 @@ abstract class HttpProtocolClientGenerator(
             } ?: writer.write("op.interceptors.add(#T<#T>())", interceptorSymbol, inputSymbol)
         }
     }
+
+    /**
+     * render a utility function to populate an operation's ExecutionContext with defaults from service config, environment, etc
+     */
+    private fun renderMergeServiceDefaults(writer: KotlinWriter) {
+        writer.dokka("merge the defaults configured for the service into the execution context before firing off a request")
+        writer.withBlock(
+            "private fun mergeServiceDefaults(ctx: #T) {",
+            "}",
+            RuntimeTypes.Core.ExecutionContext,
+        ) {
+            // FIXME - move to aws specific codegen
+            // putIfAbsent(AwsClientOption, "Region", nullable = true)
+            putIfAbsent(RuntimeTypes.SmithyClient.SdkClientOption, "ClientName")
+            putIfAbsent(RuntimeTypes.SmithyClient.SdkClientOption, "LogMode")
+
+            // FIXME - migrate to auth integrations as section writers
+            // fill in auth/signing attributes
+            if (AwsSignatureVersion4.isSupportedAuthentication(ctx.model, ctx.service)) {
+                // default signing context (most of this has been moved to auth schemes but some things like event streams still depend on this)
+                val signingServiceName = AwsSignatureVersion4.signingServiceName(ctx.service)
+                putIfAbsent(
+                    RuntimeTypes.Auth.Signing.AwsSigningCommon.AwsSigningAttributes,
+                    "SigningService",
+                    signingServiceName.dq(),
+                )
+                putIfAbsent(
+                    RuntimeTypes.Auth.Signing.AwsSigningCommon.AwsSigningAttributes,
+                    "SigningRegion",
+                    "config.region",
+                    nullable = true,
+                )
+                putIfAbsent(RuntimeTypes.Auth.Signing.AwsSigningCommon.AwsSigningAttributes, "CredentialsProvider")
+            }
+
+            if (ctx.service.hasIdempotentTokenMember(ctx.model)) {
+                putIfAbsent(RuntimeTypes.SmithyClient.SdkClientOption, "IdempotencyTokenProvider", nullable = true)
+            }
+
+            writer.declareSection(MergeServiceDefaults)
+        }
+    }
+}
+
+// TODO - rename
+fun KotlinWriter.putIfAbsent(
+    attributesSymbol: Symbol,
+    name: String,
+    literalValue: String? = null,
+    nullable: Boolean = false,
+) {
+    val putSymbol = if (nullable) RuntimeTypes.Core.Collections.putIfAbsentNotNull else RuntimeTypes.Core.Collections.putIfAbsent
+    val actualValue = literalValue ?: "config.${name.replaceFirstChar(Char::lowercaseChar)}"
+    write("ctx.#T(#T.#L, #L)", putSymbol, attributesSymbol, name, actualValue)
 }
