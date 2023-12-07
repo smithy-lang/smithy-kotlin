@@ -31,6 +31,10 @@ public interface Filesystem {
      */
     public suspend fun writeFile(path: String, data: ByteArray)
 
+    /**
+     * Check if a file exists at the [path].
+     * @param path fully qualified path encoded specifically to the target platform's filesystem
+     */
     public suspend fun fileExists(path: String): Boolean
 
     public companion object {
