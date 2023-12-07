@@ -14,7 +14,6 @@ import software.amazon.smithy.kotlin.codegen.rendering.protocol.ProtocolMiddlewa
 import software.amazon.smithy.kotlin.codegen.rendering.util.ConfigProperty
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.ServiceShape
-import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.rulesengine.language.EndpointRuleSet
 
 /**
@@ -96,30 +95,6 @@ interface KotlinIntegration {
         model: Model,
         symbolProvider: SymbolProvider,
     ): SymbolProvider = symbolProvider
-
-    /**
-     * Called each time a writer is used that defines a shape.
-     *
-     * Any mutations made on the writer (for example, adding
-     * section interceptors) are removed after the callback has completed;
-     * the callback is invoked in between pushing and popping state from
-     * the writer.
-     *
-     * @param settings Settings used to generate.
-     * @param model Model to generate from.
-     * @param symbolProvider Symbol provider used for codegen.
-     * @param writer Writer that will be used.
-     * @param definedShape Shape that is being defined in the writer.
-     */
-    fun onShapeWriterUse(
-        settings: KotlinSettings,
-        model: Model,
-        symbolProvider: SymbolProvider,
-        writer: KotlinWriter,
-        definedShape: Shape,
-    ) {
-        // pass
-    }
 
     /**
      * Write additional files defined by this integration
