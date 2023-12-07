@@ -22,25 +22,25 @@ class QueryParametersTest {
     fun testDecodedParametersAlternateEncoding() {
         val paramString = QueryParameters {
             decodedParameters {
-                add("a", "green:apple")
-                add("b", "yellow:banana")
+                add("a", "one green:apple")
+                add("b", "two yellow:bananas")
             }
 
             decodedParameters(PercentEncoding.FormUrl) {
-                add("a", "red:apple")
+                add("a", "three red:apples")
             }
 
             val allValues = entryValues.toSet()
             listOf(
-                "a" to "green:apple",
-                "b" to "yellow:banana",
-                "a" to "red%3Aapple",
+                "a" to "one%20green:apple",
+                "b" to "two%20yellow:bananas",
+                "a" to "three%20red%3Aapples",
             ).forEach { (key, value) ->
                 assertTrue(allValues.any { it.key.encoded == key && it.value.encoded == value }, dumpMultiMap())
             }
         }.toString()
 
-        assertEquals("?a=green:apple&a=red%3Aapple&b=yellow:banana", paramString)
+        assertEquals("?a=one%20green:apple&a=three%20red%3Aapples&b=two%20yellow:bananas", paramString)
     }
 }
 

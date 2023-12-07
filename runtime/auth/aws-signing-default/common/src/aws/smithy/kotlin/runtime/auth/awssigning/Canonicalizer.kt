@@ -204,10 +204,18 @@ private const val STREAM_CHUNK_BYTES = 16384 // 16KB
 internal fun Url.Builder.canonicalPath(config: AwsSigningConfig): String {
     val srcPath = path
     val srcSegments = srcPath.segments
+
     val mapper: (Encodable) -> Encodable = when (config.useDoubleUriEncode) {
-        true -> { existing -> PercentEncoding.SigV4.encodableFromDecoded(existing.encoded) }
-        else -> { { it } }
+        true -> { existing ->
+            // This is _double_ encoding so treat the existing encoded output as "decoded" for the purposes re-encoding
+            PercentEncoding.SigV4.encodableFromDecoded(existing.encoded)
+        }
+        else -> {
+            // This is _single_ encoding and the data are already encoded—just pass it straight through
+            { it }
+        }
     }
+
     return UrlPath {
         srcSegments.mapTo(segments, mapper)
         trailingSlash = srcPath.trailingSlash
