@@ -1,8 +1,0 @@
-{
-    "id": "57a9f297-a562-4d70-a0f1-1821816a54eb",
-    "type": "bugfix",
-    "description": "Correctly sign special characters (e.g., \"@\") in URL paths",
-    "issues": [
-        "awslabs/smtihy-kotlin#1008"
-    ]
-}
