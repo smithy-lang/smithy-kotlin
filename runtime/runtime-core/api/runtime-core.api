@@ -1480,6 +1480,7 @@ public final class aws/smithy/kotlin/runtime/text/encoding/Encodable {
 	public final fun isEmpty ()Z
 	public final fun isNotEmpty ()Z
 	public final fun reencode ()Laws/smithy/kotlin/runtime/text/encoding/Encodable;
+	public final fun reencode (Laws/smithy/kotlin/runtime/text/encoding/Encoding;)Laws/smithy/kotlin/runtime/text/encoding/Encodable;
 	public fun toString ()Ljava/lang/String;
 }
 
