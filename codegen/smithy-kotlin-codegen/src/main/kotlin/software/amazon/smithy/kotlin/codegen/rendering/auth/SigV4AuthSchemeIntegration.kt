@@ -9,14 +9,16 @@ import software.amazon.smithy.aws.traits.auth.UnsignedPayloadTrait
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.codegen.core.SymbolReference
 import software.amazon.smithy.kotlin.codegen.KotlinSettings
-import software.amazon.smithy.kotlin.codegen.core.CodegenContext
-import software.amazon.smithy.kotlin.codegen.core.KotlinWriter
-import software.amazon.smithy.kotlin.codegen.core.RuntimeTypes
+import software.amazon.smithy.kotlin.codegen.core.*
+import software.amazon.smithy.kotlin.codegen.integration.AppendingSectionWriter
 import software.amazon.smithy.kotlin.codegen.integration.AuthSchemeHandler
 import software.amazon.smithy.kotlin.codegen.integration.KotlinIntegration
+import software.amazon.smithy.kotlin.codegen.integration.SectionWriterBinding
 import software.amazon.smithy.kotlin.codegen.model.buildSymbol
 import software.amazon.smithy.kotlin.codegen.model.hasTrait
 import software.amazon.smithy.kotlin.codegen.model.knowledge.AwsSignatureVersion4
+import software.amazon.smithy.kotlin.codegen.rendering.protocol.HttpProtocolUnitTestRequestGenerator
+import software.amazon.smithy.kotlin.codegen.rendering.protocol.HttpProtocolUnitTestResponseGenerator
 import software.amazon.smithy.kotlin.codegen.rendering.protocol.ProtocolGenerator
 import software.amazon.smithy.kotlin.codegen.rendering.protocol.ProtocolMiddleware
 import software.amazon.smithy.kotlin.codegen.rendering.util.ConfigProperty
@@ -58,6 +60,43 @@ class SigV4AuthSchemeIntegration : KotlinIntegration {
         }
 
         return listOf(credentialsProviderProp)
+    }
+
+    override val sectionWriters: List<SectionWriterBinding>
+        get() = listOf(
+            // configure credentials for protocol unit tests
+            SectionWriterBinding(HttpProtocolUnitTestRequestGenerator.ConfigureServiceClient, renderHttpProtocolRequestTestConfigureServiceClient),
+            SectionWriterBinding(HttpProtocolUnitTestResponseGenerator.ConfigureServiceClient, renderHttpProtocolResponseTestConfigureServiceClient),
+        )
+
+    private val renderHttpProtocolRequestTestConfigureServiceClient = AppendingSectionWriter { writer ->
+        val ctx = writer.getContextValue(HttpProtocolUnitTestRequestGenerator.ConfigureServiceClient.Context)
+        val op = writer.getContextValue(HttpProtocolUnitTestRequestGenerator.ConfigureServiceClient.Operation)
+        renderConfigureServiceClient(ctx, op, writer)
+    }
+
+    private val renderHttpProtocolResponseTestConfigureServiceClient = AppendingSectionWriter { writer ->
+        val ctx = writer.getContextValue(HttpProtocolUnitTestResponseGenerator.ConfigureServiceClient.Context)
+        val op = writer.getContextValue(HttpProtocolUnitTestResponseGenerator.ConfigureServiceClient.Operation)
+        renderConfigureServiceClient(ctx, op, writer)
+    }
+
+    private fun renderConfigureServiceClient(ctx: ProtocolGenerator.GenerationContext, op: OperationShape, writer: KotlinWriter) {
+        if (AwsSignatureVersion4.hasSigV4AuthScheme(ctx.model, ctx.service, op)) {
+            writer.withBlock(
+                "credentialsProvider = object : #T {",
+                "}",
+                RuntimeTypes.Auth.Credentials.AwsCredentials.CredentialsProvider,
+            ) {
+                writer.write(
+                    "override suspend fun resolve(attributes: #1T): #2T = #2T(#3S, #4S)",
+                    RuntimeTypes.Core.Collections.Attributes,
+                    RuntimeTypes.Auth.Credentials.AwsCredentials.Credentials,
+                    "AKID",
+                    "SECRET",
+                )
+            }
+        }
     }
 }
 
