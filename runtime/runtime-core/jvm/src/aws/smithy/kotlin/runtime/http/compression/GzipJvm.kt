@@ -38,7 +38,7 @@ public actual class Gzip actual constructor() : CompressionAlgorithm {
         return compressedBody
     }
 
-    actual override fun compressSdkSource(source: SdkSource, bytesToRead: Long?): SdkSource = GzipSdkSource(source, bytesToRead)
+    actual override fun compressSdkSource(source: SdkSource): SdkSource = GzipSdkSource(source)
 
     actual override fun compressSdkByteReadChannel(channel: SdkByteReadChannel): SdkByteReadChannel = GzipByteReadChannel(channel)
 }

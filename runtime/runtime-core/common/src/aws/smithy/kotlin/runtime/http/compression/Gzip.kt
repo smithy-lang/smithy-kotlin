@@ -20,6 +20,6 @@ public expect class Gzip() : CompressionAlgorithm {
     override val id: String
     override val contentEncoding: String
     override fun compressBytes(bytes: ByteArray): ByteArray
-    override fun compressSdkSource(source: SdkSource, bytesToRead: Long?): SdkSource
+    override fun compressSdkSource(source: SdkSource): SdkSource
     override fun compressSdkByteReadChannel(channel: SdkByteReadChannel): SdkByteReadChannel
 }

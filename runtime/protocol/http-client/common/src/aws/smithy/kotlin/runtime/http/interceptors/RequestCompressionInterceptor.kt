@@ -45,7 +45,7 @@ public class RequestCompressionInterceptor(
             val uncompressedBody = context.protocolRequest.body
 
             compressedRequest.body = when (uncompressedBody) {
-                is HttpBody.SourceContent -> algorithm.compressSdkSource(uncompressedBody.readFrom(), uncompressedBody.contentLength).toHttpBody()
+                is HttpBody.SourceContent -> algorithm.compressSdkSource(uncompressedBody.readFrom()).toHttpBody()
                 is HttpBody.ChannelContent -> algorithm.compressSdkByteReadChannel(uncompressedBody.readFrom()).toHttpBody()
                 is HttpBody.Bytes -> algorithm.compressBytes(uncompressedBody.bytes()).toHttpBody()
                 is HttpBody.Empty -> uncompressedBody
@@ -76,10 +76,10 @@ public class RequestCompressionInterceptor(
         }
         return null
     }
-}
 
-/**
- * Determines if a http body is streaming type or not.
- */
-private val HttpBody.isStreaming: Boolean
-    get() = this is HttpBody.ChannelContent || this is HttpBody.SourceContent || this.contentLength == null
+    /**
+     * Determines if a http body is streaming type or not.
+     */
+    private val HttpBody.isStreaming: Boolean
+        get() = this is HttpBody.ChannelContent || this is HttpBody.SourceContent || this.contentLength == null
+}

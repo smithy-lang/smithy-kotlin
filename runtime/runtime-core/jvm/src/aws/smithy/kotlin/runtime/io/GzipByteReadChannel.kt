@@ -15,51 +15,46 @@ public class GzipByteReadChannel(
     private val channel: SdkByteReadChannel,
 ) : SdkByteReadChannel by channel {
     private val gzipBuffer = SdkBuffer()
-    private val gzipOutputStream = GZIPOutputStream(gzipBuffer.outputStream())
+    private val gzipOutputStream = GZIPOutputStream(gzipBuffer.outputStream(), true)
+    private var gzipOutputStreamClosed = false
 
-    /**
-     * Keeps track of whether a read operation has been made on this byte read channel
-     */
-    private var read: Boolean = false
+    override val availableForRead: Int
+        get() = gzipBuffer.size.toInt()
+
+    override val isClosedForRead: Boolean
+        get() = channel.isClosedForRead && gzipBuffer.exhausted() && gzipOutputStreamClosed
 
     override suspend fun read(sink: SdkBuffer, limit: Long): Long {
         require(limit >= 0L)
         if (limit == 0L) return 0L
 
-        if (isClosedForRead) {
-            if (!read) { // Empty payload
-                gzipOutputStream.write(ByteArray(0))
-                gzipOutputStream.close()
-                gzipBuffer.readAll(sink)
-                gzipBuffer.close()
-
-                read = true
-            }
-
-            return -1L
-        }
-
-        if (!read) read = true
-
         val temp = SdkBuffer()
         val rc = channel.read(temp, limit)
 
-        gzipOutputStream.write(temp.readByteArray())
-        gzipBuffer.readAll(sink)
-
-        if (isClosedForRead) {
+        if (rc == -1L) {
+            // may trigger additional bytes written by gzip defalter
             gzipOutputStream.close()
             gzipBuffer.readAll(sink)
-            gzipBuffer.close()
+
+            gzipOutputStreamClosed = true
         }
 
-        return rc
+        // source is exhausted and nothing left buffered we are done
+        if (rc == -1L && gzipBuffer.exhausted()) {
+            return -1L
+        }
+
+        if (rc >= 0L) {
+            gzipOutputStream.write(temp.readByteArray())
+            gzipOutputStream.flush()
+        }
+
+        // read bytes read from compressed content
+        return gzipBuffer.read(sink, limit)
     }
 
     override fun cancel(cause: Throwable?): Boolean {
         gzipOutputStream.close()
-        gzipBuffer.close()
-
         return channel.cancel(cause)
     }
 }

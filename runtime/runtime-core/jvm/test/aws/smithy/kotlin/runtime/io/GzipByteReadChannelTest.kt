@@ -2,9 +2,8 @@
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
  * SPDX-License-Identifier: Apache-2.0
  */
-package aws.smithy.kotlin.runtime.http.interceptors
+package aws.smithy.kotlin.runtime.io
 
-import aws.smithy.kotlin.runtime.io.use
 import java.util.zip.GZIPInputStream
 
 actual fun decompressGzipBytes(bytes: ByteArray): ByteArray =

@@ -26,9 +26,21 @@ public interface CompressionAlgorithm {
      */
     public val contentEncoding: String
 
+    /**
+     * Compresses a bytes array
+     * @return Compressed [ByteArray]
+     */
     public fun compressBytes(bytes: ByteArray): ByteArray
 
-    public fun compressSdkSource(source: SdkSource, bytesToRead: Long?): SdkSource
+    /**
+     * Wraps the [SdkSource] with another that is capable of compressing the payload with each read.
+     * @return [SdkSource] with compression capabilities.
+     */
+    public fun compressSdkSource(source: SdkSource): SdkSource
 
+    /**
+     * Wraps the [SdkByteReadChannel] with another that is capable of compressing the payload with each read.
+     * @return [SdkByteReadChannel] with compression capabilities.
+     */
     public fun compressSdkByteReadChannel(channel: SdkByteReadChannel): SdkByteReadChannel
 }

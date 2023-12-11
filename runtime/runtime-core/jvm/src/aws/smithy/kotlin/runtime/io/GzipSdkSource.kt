@@ -13,56 +13,39 @@ import java.util.zip.GZIPOutputStream
 @InternalApi
 public class GzipSdkSource(
     private val source: SdkSource,
-    private val bytesAvailable: Long? = null,
 ) : SdkSource {
     private val gzipBuffer = SdkBuffer()
     private val gzipOutputStream = GZIPOutputStream(gzipBuffer.outputStream(), true)
-    private var bytesRead: Long = 0
-
-    /**
-     * Keeps track of whether a read operation has been made on this sdk source
-     */
-    private var read: Boolean = false
 
     override fun read(sink: SdkBuffer, limit: Long): Long {
         require(limit >= 0L)
         if (limit == 0L) return 0L
 
-        if (bytesRead == bytesAvailable) {
-            if (!read) { // Empty payload
-                gzipOutputStream.write(ByteArray(0))
-                gzipOutputStream.close()
-                gzipBuffer.readAll(sink)
-                gzipBuffer.close()
-
-                read = true
-            }
-
-            return -1L
-        }
-
-        if (!read) read = true
-
         val temp = SdkBuffer()
         val rc = source.read(temp, limit)
 
-        gzipOutputStream.write(temp.readByteArray())
-        gzipBuffer.readAll(sink)
-
-        bytesRead += rc
-
-        if (bytesRead == bytesAvailable || rc == -1L) {
+        if (rc == -1L) {
+            // may trigger additional bytes written by gzip defalter
             gzipOutputStream.close()
             gzipBuffer.readAll(sink)
-            gzipBuffer.close()
         }
 
-        return rc
+        // source is exhausted and nothing left buffered we are done
+        if (rc == -1L && gzipBuffer.exhausted()) {
+            return -1L
+        }
+
+        if (rc >= 0L) {
+            gzipOutputStream.write(temp.readByteArray())
+            gzipOutputStream.flush()
+        }
+
+        // read bytes read from compressed content
+        return gzipBuffer.read(sink, limit)
     }
 
     override fun close() {
         gzipOutputStream.close()
-        gzipBuffer.close()
         source.close()
     }
 }
