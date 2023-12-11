@@ -74,6 +74,7 @@ object RuntimeTypes {
         object Config : RuntimeTypePackage(KotlinDependency.HTTP, "config") {
             val HttpClientConfig = symbol("HttpClientConfig")
             val HttpEngineConfig = symbol("HttpEngineConfig")
+            val RequestCompressionConfig = symbol("RequestCompressionConfig")
             val CompressionClientConfig = symbol("CompressionClientConfig")
         }
 

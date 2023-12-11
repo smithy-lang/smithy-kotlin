@@ -175,7 +175,7 @@ object RuntimeConfigProperty {
     }
 }
 
-private val Symbol.nestedBuilder: Symbol
+internal val Symbol.nestedBuilder: Symbol
     get() = buildSymbol {
         name = "${this@nestedBuilder.name}.Builder"
         namespace = this@nestedBuilder.namespace
