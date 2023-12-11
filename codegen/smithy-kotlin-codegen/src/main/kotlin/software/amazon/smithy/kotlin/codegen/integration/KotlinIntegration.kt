@@ -8,13 +8,12 @@ import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.kotlin.codegen.*
 import software.amazon.smithy.kotlin.codegen.core.CodegenContext
 import software.amazon.smithy.kotlin.codegen.core.KotlinDelegator
-import software.amazon.smithy.kotlin.codegen.core.KotlinWriter
+import software.amazon.smithy.kotlin.codegen.rendering.endpoints.EndpointCustomization
 import software.amazon.smithy.kotlin.codegen.rendering.protocol.ProtocolGenerator
 import software.amazon.smithy.kotlin.codegen.rendering.protocol.ProtocolMiddleware
 import software.amazon.smithy.kotlin.codegen.rendering.util.ConfigProperty
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.ServiceShape
-import software.amazon.smithy.rulesengine.language.EndpointRuleSet
 
 /**
  * JVM SPI for customizing Kotlin code generation, registering new protocol
@@ -129,10 +128,8 @@ interface KotlinIntegration {
     fun authSchemes(ctx: ProtocolGenerator.GenerationContext): List<AuthSchemeHandler> = emptyList()
 
     /**
-     * Render binding of endpoint ruleset builtin parameters
-     * @param ctx The codegen generation context
-     * @param rules The endpoint rules
-     * @param writer The writer to render to
+     * Register an endpoint customization
+     * @param ctx the codegen generation context
      */
-    fun renderBindEndpointBuiltins(ctx: ProtocolGenerator.GenerationContext, rules: EndpointRuleSet, writer: KotlinWriter) {}
+    fun customizeEndpointResolution(ctx: ProtocolGenerator.GenerationContext): EndpointCustomization? = null
 }

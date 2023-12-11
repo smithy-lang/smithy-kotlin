@@ -61,8 +61,7 @@ class DefaultEndpointProviderGenerator(
     private val interfaceSymbol: Symbol,
     private val paramsSymbol: Symbol,
     private val settings: KotlinSettings,
-    private val externalFunctions: Map<String, Symbol> = emptyMap(),
-    private val propertyRenderers: Map<String, EndpointPropertyRenderer> = emptyMap(),
+    private val endpointCustomizations: List<EndpointCustomization> = emptyList(),
 ) : ExpressionRenderer {
     companion object {
         fun getSymbol(settings: KotlinSettings): Symbol =
@@ -72,6 +71,19 @@ class DefaultEndpointProviderGenerator(
                 namespace = "${settings.pkg.name}.endpoints"
             }
     }
+    private val externalFunctions = endpointCustomizations
+        .map { it.externalFunctions }
+        .fold(mutableMapOf<String, Symbol>()) { acc, extFunctions ->
+            acc.putAll(extFunctions)
+            acc
+        }.toMap()
+
+    private val propertyRenderers = endpointCustomizations
+        .map { it.propertyRenderers }
+        .fold(mutableMapOf<String, EndpointPropertyRenderer>()) { acc, propRenderers ->
+            acc.putAll(propRenderers)
+            acc
+        }
 
     private val expressionGenerator = ExpressionGenerator(writer, rules, coreFunctions + externalFunctions)
 

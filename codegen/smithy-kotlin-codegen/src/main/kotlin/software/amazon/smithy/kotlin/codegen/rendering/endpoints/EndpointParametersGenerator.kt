@@ -51,7 +51,6 @@ class EndpointParametersGenerator(
 
     fun render() {
         renderDocumentation()
-        // FIXME - this should probably be an interface
         writer.withBlock(
             "#L class #T private constructor(builder: Builder) {",
             "}",
