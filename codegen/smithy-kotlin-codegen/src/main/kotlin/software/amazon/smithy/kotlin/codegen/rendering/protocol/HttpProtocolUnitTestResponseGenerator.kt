@@ -13,11 +13,13 @@ import software.amazon.smithy.kotlin.codegen.model.hasStreamingMember
 import software.amazon.smithy.kotlin.codegen.model.hasTrait
 import software.amazon.smithy.kotlin.codegen.model.shape
 import software.amazon.smithy.kotlin.codegen.rendering.ShapeValueGenerator
+import software.amazon.smithy.kotlin.codegen.rendering.endpoints.EndpointProviderGenerator
 import software.amazon.smithy.model.shapes.*
 import software.amazon.smithy.model.traits.HttpLabelTrait
 import software.amazon.smithy.model.traits.StreamingTrait
 import software.amazon.smithy.protocoltests.traits.HttpRequestTestCase
 import software.amazon.smithy.protocoltests.traits.HttpResponseTestCase
+import software.amazon.smithy.rulesengine.traits.EndpointRuleSetTrait
 
 /**
  * Generates HTTP protocol unit tests for `httpResponseTest` cases
@@ -133,6 +135,16 @@ open class HttpProtocolUnitTestResponseGenerator protected constructor(builder: 
                 writer.write(
                     "idempotencyTokenProvider = #T { \"00000000-0000-4000-8000-000000000000\" }",
                     RuntimeTypes.SmithyClient.IdempotencyTokenProvider,
+                )
+            }
+
+            // if the model doesn't have endpoint rules we have to fill it in with a default
+            if (!serviceShape.hasTrait<EndpointRuleSetTrait>()) {
+                writer.write(
+                    "endpointProvider = #T { #T(#S) }",
+                    EndpointProviderGenerator.getSymbol(ctx.settings),
+                    RuntimeTypes.SmithyClient.Endpoints.Endpoint,
+                    "https://hostname",
                 )
             }
         }

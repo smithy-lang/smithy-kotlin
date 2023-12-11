@@ -4,15 +4,13 @@
  */
 package software.amazon.smithy.kotlin.codegen.rendering.endpoints
 
+import software.amazon.smithy.aws.traits.ServiceTrait
 import software.amazon.smithy.kotlin.codegen.KotlinSettings
 import software.amazon.smithy.kotlin.codegen.core.CodegenContext
 import software.amazon.smithy.kotlin.codegen.core.KotlinWriter
 import software.amazon.smithy.kotlin.codegen.core.RuntimeTypes
 import software.amazon.smithy.kotlin.codegen.integration.KotlinIntegration
-import software.amazon.smithy.kotlin.codegen.model.asNullable
-import software.amazon.smithy.kotlin.codegen.model.defaultName
-import software.amazon.smithy.kotlin.codegen.model.expectShape
-import software.amazon.smithy.kotlin.codegen.model.getEndpointRules
+import software.amazon.smithy.kotlin.codegen.model.*
 import software.amazon.smithy.kotlin.codegen.rendering.protocol.ProtocolGenerator
 import software.amazon.smithy.kotlin.codegen.rendering.util.ConfigProperty
 import software.amazon.smithy.kotlin.codegen.rendering.util.ConfigPropertyType
@@ -46,7 +44,8 @@ class SdkEndpointBuiltinIntegration : KotlinIntegration {
 
     override fun enabledForService(model: Model, settings: KotlinSettings): Boolean {
         val service = model.expectShape<ServiceShape>(settings.service)
-        return service.getEndpointRules()?.parameters?.find { it.isBuiltIn && it.builtIn.get() == BUILTIN_NAME } != null
+        val isAwsSdk = service.hasTrait<ServiceTrait>()
+        return isAwsSdk || service.getEndpointRules()?.parameters?.find { it.isBuiltIn && it.builtIn.get() == BUILTIN_NAME } != null
     }
 
     override fun additionalServiceConfigProps(ctx: CodegenContext): List<ConfigProperty> = listOf(EndpointUrlProp)
