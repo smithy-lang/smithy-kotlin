@@ -32,12 +32,6 @@ kotlin {
             }
         }
 
-        jvmTest {
-            dependencies {
-                implementation(libs.junit.jupiter)
-            }
-        }
-
         all {
             languageSettings.optIn("aws.smithy.kotlin.runtime.InternalApi")
         }
