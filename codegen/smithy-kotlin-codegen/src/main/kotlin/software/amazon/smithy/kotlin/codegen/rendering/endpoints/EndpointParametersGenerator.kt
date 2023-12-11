@@ -10,6 +10,7 @@ import software.amazon.smithy.kotlin.codegen.core.KotlinWriter
 import software.amazon.smithy.kotlin.codegen.core.clientName
 import software.amazon.smithy.kotlin.codegen.core.withBlock
 import software.amazon.smithy.kotlin.codegen.model.*
+import software.amazon.smithy.kotlin.codegen.rendering.protocol.ProtocolGenerator
 import software.amazon.smithy.kotlin.codegen.utils.getOrNull
 import software.amazon.smithy.rulesengine.language.EndpointRuleSet
 import software.amazon.smithy.rulesengine.language.syntax.parameters.Deprecated
@@ -21,10 +22,9 @@ private const val DEFAULT_DEPRECATED_MESSAGE =
  * Renders the struct of parameters to be passed to the endpoint provider for resolution.
  */
 class EndpointParametersGenerator(
-    private val writer: KotlinWriter,
-    private val settings: KotlinSettings,
+    private val ctx: ProtocolGenerator.GenerationContext,
     rules: EndpointRuleSet?,
-    private val paramsSymbol: Symbol,
+    private val writer: KotlinWriter,
 ) {
     companion object {
 
@@ -49,12 +49,14 @@ class EndpointParametersGenerator(
             )
         }
 
+    private val paramsSymbol = getSymbol(ctx.settings)
+
     fun render() {
         renderDocumentation()
         writer.withBlock(
             "#L class #T private constructor(builder: Builder) {",
             "}",
-            settings.api.visibility,
+            ctx.settings.api.visibility,
             paramsSymbol,
         ) {
             renderFields()

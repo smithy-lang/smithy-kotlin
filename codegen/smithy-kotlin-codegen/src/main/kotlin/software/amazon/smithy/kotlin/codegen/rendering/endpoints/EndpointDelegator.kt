@@ -28,17 +28,16 @@ interface EndpointDelegator {
      * at runtime).
      */
     fun generateEndpointProvider(ctx: ProtocolGenerator.GenerationContext, rules: EndpointRuleSet?) {
-        val paramsSymbol = EndpointParametersGenerator.getSymbol(ctx.settings)
         val providerSymbol = EndpointProviderGenerator.getSymbol(ctx.settings)
         val defaultProviderSymbol = DefaultEndpointProviderGenerator.getSymbol(ctx.settings)
 
         ctx.delegator.useFileWriter(providerSymbol) {
-            EndpointProviderGenerator(it, ctx.settings, providerSymbol, paramsSymbol).render()
+            EndpointProviderGenerator(ctx, it).render()
         }
 
         if (rules != null) {
             ctx.delegator.useFileWriter(defaultProviderSymbol) {
-                DefaultEndpointProviderGenerator(it, rules, defaultProviderSymbol, providerSymbol, paramsSymbol, ctx.settings).render()
+                DefaultEndpointProviderGenerator(ctx, rules, it).render()
             }
         }
     }
@@ -47,9 +46,8 @@ interface EndpointDelegator {
      * Generate the input parameter type for the generated endpoint provider implementation.
      */
     fun generateEndpointParameters(ctx: ProtocolGenerator.GenerationContext, rules: EndpointRuleSet?) {
-        val paramsSymbol = EndpointParametersGenerator.getSymbol(ctx.settings)
-        ctx.delegator.useFileWriter(paramsSymbol) {
-            EndpointParametersGenerator(it, ctx.settings, rules, paramsSymbol).render()
+        ctx.delegator.useFileWriter(EndpointParametersGenerator.getSymbol(ctx.settings)) {
+            EndpointParametersGenerator(ctx, rules, it).render()
         }
     }
 

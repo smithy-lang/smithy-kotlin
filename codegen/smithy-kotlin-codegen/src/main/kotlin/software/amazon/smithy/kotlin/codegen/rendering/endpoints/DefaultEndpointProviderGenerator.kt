@@ -10,6 +10,7 @@ import software.amazon.smithy.kotlin.codegen.KotlinSettings
 import software.amazon.smithy.kotlin.codegen.core.*
 import software.amazon.smithy.kotlin.codegen.model.buildSymbol
 import software.amazon.smithy.kotlin.codegen.model.defaultName
+import software.amazon.smithy.kotlin.codegen.rendering.protocol.ProtocolGenerator
 import software.amazon.smithy.model.SourceLocation
 import software.amazon.smithy.rulesengine.language.EndpointRuleSet
 import software.amazon.smithy.rulesengine.language.syntax.Identifier
@@ -55,13 +56,9 @@ fun interface ExpressionRenderer {
  * Renders the default endpoint provider based on the provided rule set.
  */
 class DefaultEndpointProviderGenerator(
-    private val writer: KotlinWriter,
+    private val ctx: ProtocolGenerator.GenerationContext,
     private val rules: EndpointRuleSet,
-    private val defaultProviderSymbol: Symbol,
-    private val interfaceSymbol: Symbol,
-    private val paramsSymbol: Symbol,
-    private val settings: KotlinSettings,
-    private val endpointCustomizations: List<EndpointCustomization> = emptyList(),
+    private val writer: KotlinWriter,
 ) : ExpressionRenderer {
     companion object {
         fun getSymbol(settings: KotlinSettings): Symbol =
@@ -71,6 +68,9 @@ class DefaultEndpointProviderGenerator(
                 namespace = "${settings.pkg.name}.endpoints"
             }
     }
+
+    private val endpointCustomizations = ctx.integrations.mapNotNull { it.customizeEndpointResolution(ctx) }
+
     private val externalFunctions = endpointCustomizations
         .map { it.externalFunctions }
         .fold(mutableMapOf<String, Symbol>()) { acc, extFunctions ->
@@ -87,12 +87,16 @@ class DefaultEndpointProviderGenerator(
 
     private val expressionGenerator = ExpressionGenerator(writer, rules, coreFunctions + externalFunctions)
 
+    private val defaultProviderSymbol = getSymbol(ctx.settings)
+    private val interfaceSymbol = EndpointProviderGenerator.getSymbol(ctx.settings)
+    private val paramsSymbol = EndpointParametersGenerator.getSymbol(ctx.settings)
+
     fun render() {
         renderDocumentation()
         writer.withBlock(
             "#L class #T: #T {",
             "}",
-            settings.api.visibility,
+            ctx.settings.api.visibility,
             defaultProviderSymbol,
             interfaceSymbol,
         ) {

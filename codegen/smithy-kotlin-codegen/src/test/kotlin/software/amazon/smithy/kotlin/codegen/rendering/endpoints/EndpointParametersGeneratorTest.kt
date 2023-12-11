@@ -4,15 +4,8 @@
  */
 package software.amazon.smithy.kotlin.codegen.rendering.endpoints
 
-import software.amazon.smithy.kotlin.codegen.KotlinSettings
-import software.amazon.smithy.kotlin.codegen.core.KotlinWriter
-import software.amazon.smithy.kotlin.codegen.model.buildSymbol
-import software.amazon.smithy.kotlin.codegen.test.TestModelDefault
-import software.amazon.smithy.kotlin.codegen.test.assertBalancedBracesAndParens
-import software.amazon.smithy.kotlin.codegen.test.formatForTest
-import software.amazon.smithy.kotlin.codegen.test.shouldContainOnlyOnceWithDiff
+import software.amazon.smithy.kotlin.codegen.test.*
 import software.amazon.smithy.model.node.Node
-import software.amazon.smithy.model.shapes.ShapeId
 import software.amazon.smithy.rulesengine.language.EndpointRuleSet
 import kotlin.test.*
 
@@ -80,17 +73,17 @@ class EndpointParametersGeneratorTest {
             """,
         )
 
-        val writer = KotlinWriter(TestModelDefault.NAMESPACE)
-        val paramsSymbol = buildSymbol {
-            name = "EndpointParameters"
-            namespace = TestModelDefault.NAMESPACE
-        }
-        val settings = KotlinSettings(
-            service = ShapeId.from("com.test#Test"),
-            pkg = KotlinSettings.PackageSettings("name", "version"),
-            sdkId = "testSdkId",
-        )
-        EndpointParametersGenerator(writer, settings, rules, paramsSymbol).render()
+        val model =
+            """
+            namespace com.test
+            service Test {
+                version: "1.0.0",
+            }
+        """.toSmithyModel()
+
+        val testCtx = model.newTestContext()
+        val writer = testCtx.newWriter()
+        EndpointParametersGenerator(testCtx.generationCtx, rules, writer).render()
 
         generatedClass = writer.toString()
     }
