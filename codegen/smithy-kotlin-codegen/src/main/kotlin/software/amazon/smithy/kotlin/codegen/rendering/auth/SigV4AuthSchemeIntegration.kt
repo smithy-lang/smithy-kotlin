@@ -20,12 +20,10 @@ import software.amazon.smithy.kotlin.codegen.model.knowledge.AwsSignatureVersion
 import software.amazon.smithy.kotlin.codegen.rendering.endpoints.EndpointCustomization
 import software.amazon.smithy.kotlin.codegen.rendering.endpoints.EndpointPropertyRenderer
 import software.amazon.smithy.kotlin.codegen.rendering.endpoints.ExpressionRenderer
-import software.amazon.smithy.kotlin.codegen.rendering.protocol.HttpProtocolUnitTestRequestGenerator
-import software.amazon.smithy.kotlin.codegen.rendering.protocol.HttpProtocolUnitTestResponseGenerator
-import software.amazon.smithy.kotlin.codegen.rendering.protocol.ProtocolGenerator
-import software.amazon.smithy.kotlin.codegen.rendering.protocol.ProtocolMiddleware
+import software.amazon.smithy.kotlin.codegen.rendering.protocol.*
 import software.amazon.smithy.kotlin.codegen.rendering.util.ConfigProperty
 import software.amazon.smithy.kotlin.codegen.rendering.util.ConfigPropertyType
+import software.amazon.smithy.kotlin.codegen.utils.dq
 import software.amazon.smithy.kotlin.codegen.utils.getOrNull
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.knowledge.EventStreamIndex
@@ -75,21 +73,48 @@ class SigV4AuthSchemeIntegration : KotlinIntegration {
 
     override val sectionWriters: List<SectionWriterBinding>
         get() = listOf(
-            // configure credentials for protocol unit tests
             SectionWriterBinding(HttpProtocolUnitTestRequestGenerator.ConfigureServiceClient, renderHttpProtocolRequestTestConfigureServiceClient),
             SectionWriterBinding(HttpProtocolUnitTestResponseGenerator.ConfigureServiceClient, renderHttpProtocolResponseTestConfigureServiceClient),
+            SectionWriterBinding(HttpProtocolClientGenerator.ClientInitializer, renderClientInitializer),
+            SectionWriterBinding(HttpProtocolClientGenerator.MergeServiceDefaults, renderMergeServiceDefaults),
         )
 
+    // set service client defaults for HTTP request protocol tests
     private val renderHttpProtocolRequestTestConfigureServiceClient = AppendingSectionWriter { writer ->
         val ctx = writer.getContextValue(HttpProtocolUnitTestRequestGenerator.ConfigureServiceClient.Context)
         val op = writer.getContextValue(HttpProtocolUnitTestRequestGenerator.ConfigureServiceClient.Operation)
         renderConfigureServiceClientForTest(ctx, op, writer)
     }
 
+    // set service client defaults for HTTP response protocol tests
     private val renderHttpProtocolResponseTestConfigureServiceClient = AppendingSectionWriter { writer ->
         val ctx = writer.getContextValue(HttpProtocolUnitTestResponseGenerator.ConfigureServiceClient.Context)
         val op = writer.getContextValue(HttpProtocolUnitTestResponseGenerator.ConfigureServiceClient.Operation)
         renderConfigureServiceClientForTest(ctx, op, writer)
+    }
+
+    // add credentials to managed resources in the service client initializer
+    private val renderClientInitializer = AppendingSectionWriter { writer ->
+        val ctx = writer.getContextValue(HttpProtocolClientGenerator.ClientInitializer.GenerationContext)
+        if (AwsSignatureVersion4.isSupportedAuthentication(ctx.model, ctx.settings.getService(ctx.model))) {
+            writer.write("managedResources.#T(config.credentialsProvider)", RuntimeTypes.Core.IO.addIfManaged)
+        }
+    }
+
+    // render sigv4 related execution context properties
+    private val renderMergeServiceDefaults = AppendingSectionWriter { writer ->
+        val ctx = writer.getContextValue(HttpProtocolClientGenerator.ClientInitializer.GenerationContext)
+        // fill in auth/signing attributes
+        if (AwsSignatureVersion4.isSupportedAuthentication(ctx.model, ctx.service)) {
+            // default signing context (most of this has been moved to auth schemes but some things like event streams still depend on this)
+            val signingServiceName = AwsSignatureVersion4.signingServiceName(ctx.service)
+            writer.putIfAbsent(
+                RuntimeTypes.Auth.Signing.AwsSigningCommon.AwsSigningAttributes,
+                "SigningService",
+                signingServiceName.dq(),
+            )
+            writer.putIfAbsent(RuntimeTypes.Auth.Signing.AwsSigningCommon.AwsSigningAttributes, "CredentialsProvider")
+        }
     }
 
     private fun renderConfigureServiceClientForTest(ctx: ProtocolGenerator.GenerationContext, op: OperationShape, writer: KotlinWriter) {
