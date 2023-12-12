@@ -56,12 +56,10 @@ interface EndpointDelegator {
      * Will only be invoked when a model's service shape has both the rule set and test case traits for endpoints.
      */
     fun generateEndpointProviderTests(ctx: ProtocolGenerator.GenerationContext, tests: List<EndpointTestCase>, rules: EndpointRuleSet) {
-        val paramsSymbol = EndpointParametersGenerator.getSymbol(ctx.settings)
-        val defaultProviderSymbol = DefaultEndpointProviderGenerator.getSymbol(ctx.settings)
         val testSymbol = DefaultEndpointProviderTestGenerator.getSymbol(ctx.settings)
 
         ctx.delegator.useTestFileWriter("${testSymbol.name}.kt", testSymbol.namespace) {
-            DefaultEndpointProviderTestGenerator(it, rules, tests, defaultProviderSymbol, paramsSymbol).render()
+            DefaultEndpointProviderTestGenerator(ctx, rules, tests, it).render()
         }
     }
 
