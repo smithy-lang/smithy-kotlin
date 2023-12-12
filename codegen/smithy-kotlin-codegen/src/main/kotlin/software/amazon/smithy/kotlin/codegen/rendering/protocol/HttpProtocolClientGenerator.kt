@@ -380,7 +380,7 @@ open class HttpProtocolClientGenerator(
                 putIfAbsent(RuntimeTypes.SmithyClient.SdkClientOption, "IdempotencyTokenProvider", nullable = true)
             }
 
-            writer.declareSection(MergeServiceDefaults)
+            writer.declareSection(MergeServiceDefaults, mapOf(MergeServiceDefaults.GenerationContext to ctx))
         }
     }
 }
