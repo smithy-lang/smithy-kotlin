@@ -2,12 +2,9 @@
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
  * SPDX-License-Identifier: Apache-2.0
  */
-
 package aws.smithy.kotlin.runtime.http.compression
 
 import aws.smithy.kotlin.runtime.InternalApi
-import aws.smithy.kotlin.runtime.io.SdkByteReadChannel
-import aws.smithy.kotlin.runtime.io.SdkSource
 
 /**
  * The gzip compression algorithm.
@@ -16,10 +13,13 @@ import aws.smithy.kotlin.runtime.io.SdkSource
  * See: https://en.wikipedia.org/wiki/Gzip
  */
 @InternalApi
-public expect class Gzip() : CompressionAlgorithm {
+public actual class Gzip : CompressionAlgorithm {
     override val id: String
+        get() = TODO("Not yet implemented")
     override val contentEncoding: String
-    override fun compressBytes(bytes: ByteArray): ByteArray
-    override fun compressSdkSource(source: SdkSource): SdkSource
-    override fun compressSdkByteReadChannel(channel: SdkByteReadChannel): SdkByteReadChannel
+        get() = TODO("Not yet implemented")
+
+    override fun compress(stream: ByteStream): ByteStream {
+        TODO("Not yet implemented")
+    }
 }

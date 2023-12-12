@@ -7,11 +7,10 @@ package aws.smithy.kotlin.runtime.http.interceptors
 
 import aws.smithy.kotlin.runtime.InternalApi
 import aws.smithy.kotlin.runtime.client.ProtocolRequestInterceptorContext
+import aws.smithy.kotlin.runtime.compression.CompressionAlgorithm
+import aws.smithy.kotlin.runtime.compression.compressRequest
 import aws.smithy.kotlin.runtime.http.HttpBody
-import aws.smithy.kotlin.runtime.http.compression.CompressionAlgorithm
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
-import aws.smithy.kotlin.runtime.http.request.toBuilder
-import aws.smithy.kotlin.runtime.http.toHttpBody
 import aws.smithy.kotlin.runtime.telemetry.logging.logger
 import kotlin.coroutines.coroutineContext
 
@@ -41,20 +40,7 @@ public class RequestCompressionInterceptor(
         val algorithm = findMatch(supportedCompressionAlgorithms, availableCompressionAlgorithms)
 
         return if (algorithm != null && (context.protocolRequest.body.isStreaming || payloadSizeBytes?.let { it >= compressionThresholdBytes } == true)) {
-            val compressedRequest = context.protocolRequest.toBuilder()
-            val uncompressedBody = context.protocolRequest.body
-
-            compressedRequest.body = when (uncompressedBody) {
-                is HttpBody.SourceContent -> algorithm.compressSdkSource(uncompressedBody.readFrom()).toHttpBody()
-                is HttpBody.ChannelContent -> algorithm.compressSdkByteReadChannel(uncompressedBody.readFrom()).toHttpBody()
-                is HttpBody.Bytes -> algorithm.compressBytes(uncompressedBody.bytes()).toHttpBody()
-                is HttpBody.Empty -> uncompressedBody
-                else -> throw IllegalStateException("HttpBody type '$uncompressedBody' is not supported")
-            }
-
-            compressedRequest.headers.append("Content-Encoding", algorithm.contentEncoding)
-
-            return compressedRequest.build()
+            algorithm.compressRequest(context.protocolRequest)
         } else {
             val logger = coroutineContext.logger<RequestCompressionInterceptor>()
             val skipCause = if (algorithm == null) "requested compression algorithm(s) are not supported by the client" else "request size threshold ($compressionThresholdBytes) was not met"

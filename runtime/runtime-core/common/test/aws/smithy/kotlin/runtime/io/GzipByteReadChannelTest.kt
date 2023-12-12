@@ -34,7 +34,7 @@ class GzipByteReadChannelTest {
 
     @Test
     fun testReadToBuffer() = runTest {
-        val payload = "Hello World".repeat(100)
+        val payload = "Hello World".repeat(1600)
         val bytes = payload.encodeToByteArray()
         val bytesHash = bytes.crc32()
 
@@ -52,7 +52,7 @@ class GzipByteReadChannelTest {
 
     @Test
     fun testReadRemaining() = runTest {
-        val payload = "Hello World".repeat(100)
+        val payload = "Hello World".repeat(1600)
         val bytes = payload.encodeToByteArray()
         val bytesHash = bytes.crc32()
 
@@ -91,7 +91,7 @@ class GzipByteReadChannelTest {
 
     @Test
     fun testReadLargeBody() = runTest {
-        val payload = "Hello World".repeat(100)
+        val payload = "Hello World".repeat(1600)
         val bytes = payload.encodeToByteArray()
         val bytesHash = bytes.crc32()
 
@@ -131,7 +131,7 @@ class GzipByteReadChannelTest {
 
     @Test
     fun testReadLargeBodyLargeLimit() = runTest {
-        val payload = "Hello World".repeat(100)
+        val payload = "Hello World".repeat(1600)
         val bytes = payload.encodeToByteArray()
         val bytesHash = bytes.crc32()
 
@@ -171,7 +171,7 @@ class GzipByteReadChannelTest {
 
     @Test
     fun testIsClosedForReadLargeBody() = runTest {
-        val payload = "Hello World".repeat(100)
+        val payload = "Hello World".repeat(1600)
         val bytes = payload.encodeToByteArray()
         val bytesHash = bytes.crc32()
 
@@ -211,7 +211,7 @@ class GzipByteReadChannelTest {
 
     @Test
     fun testIsClosedForReadLargeBodyLargeLimit() = runTest {
-        val payload = "Hello World".repeat(100)
+        val payload = "Hello World".repeat(1600)
         val bytes = payload.encodeToByteArray()
         val bytesHash = bytes.crc32()
 

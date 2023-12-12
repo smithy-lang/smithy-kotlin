@@ -11,7 +11,7 @@ import java.util.zip.GZIPOutputStream
  * Wraps the SdkSource so that it compresses into gzip format with each read.
  */
 @InternalApi
-public class GzipSdkSource(
+public actual class GzipSdkSource actual constructor(
     private val source: SdkSource,
 ) : SdkSource {
     private val gzipBuffer = SdkBuffer()

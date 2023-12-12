@@ -104,21 +104,30 @@ public fun String.toHttpBody(): HttpBody = encodeToByteArray().toHttpBody()
  */
 @InternalApi
 public fun ByteStream.toHttpBody(): HttpBody = when (val byteStream = this) {
-    is ByteStream.Buffer -> object : HttpBody.Bytes() {
-        override val contentLength: Long? = byteStream.contentLength
-        override fun bytes(): ByteArray = byteStream.bytes()
-    }
+    is ByteStream.Buffer -> ByteStreamBufferHttpBody(byteStream)
+    is ByteStream.ChannelStream -> ByteStreamChannelHttpBody(byteStream)
+    is ByteStream.SourceStream -> ByteStreamSourceHttpBody(byteStream)
+}
 
-    is ByteStream.ChannelStream -> object : HttpBody.ChannelContent() {
-        override val contentLength: Long? = byteStream.contentLength
-        override val isOneShot: Boolean = byteStream.isOneShot
-        override fun readFrom(): SdkByteReadChannel = byteStream.readFrom()
-    }
-    is ByteStream.SourceStream -> object : HttpBody.SourceContent() {
-        override val contentLength: Long? = byteStream.contentLength
-        override val isOneShot: Boolean = byteStream.isOneShot
-        override fun readFrom(): SdkSource = byteStream.readFrom()
-    }
+private interface ByteStreamHttpBody {
+    val stream: ByteStream
+}
+
+private class ByteStreamBufferHttpBody(override val stream: ByteStream.Buffer) : ByteStreamHttpBody, HttpBody.Bytes() {
+    override val contentLength: Long? = stream.contentLength
+    override fun bytes(): ByteArray = stream.bytes()
+}
+
+private class ByteStreamChannelHttpBody(override val stream: ByteStream.ChannelStream) : ByteStreamHttpBody, HttpBody.ChannelContent() {
+    override val contentLength: Long? = stream.contentLength
+    override val isOneShot: Boolean = stream.isOneShot
+    override fun readFrom(): SdkByteReadChannel = stream.readFrom()
+}
+
+private class ByteStreamSourceHttpBody(override val stream: ByteStream.SourceStream) : ByteStreamHttpBody, HttpBody.SourceContent() {
+    override val contentLength: Long? = stream.contentLength
+    override val isOneShot: Boolean = stream.isOneShot
+    override fun readFrom(): SdkSource = stream.readFrom()
 }
 
 /**
@@ -190,21 +199,25 @@ public suspend fun HttpBody.readAll(): ByteArray? = when (this) {
 /**
  * Convert an [HttpBody] variant to the corresponding [ByteStream] variant or null if empty.
  */
-public fun HttpBody.toByteStream(): ByteStream? = when (val body = this) {
-    is HttpBody.Empty -> null
-    is HttpBody.Bytes -> object : ByteStream.Buffer() {
-        override val contentLength: Long? = body.contentLength
-        override fun bytes(): ByteArray = body.bytes()
-    }
-    is HttpBody.ChannelContent -> object : ByteStream.ChannelStream() {
-        override val contentLength: Long? = body.contentLength
-        override val isOneShot: Boolean = body.isOneShot
-        override fun readFrom(): SdkByteReadChannel = body.readFrom()
-    }
-    is HttpBody.SourceContent -> object : ByteStream.SourceStream() {
-        override val contentLength: Long? = body.contentLength
-        override val isOneShot: Boolean = body.isOneShot
-        override fun readFrom(): SdkSource = body.readFrom()
+public fun HttpBody.toByteStream(): ByteStream? {
+    if (this is ByteStreamHttpBody) return this.stream // avoid wrapping multiple times
+
+    return when (val body = this) {
+        is HttpBody.Empty -> null
+        is HttpBody.Bytes -> object : ByteStream.Buffer() {
+            override val contentLength: Long? = body.contentLength
+            override fun bytes(): ByteArray = body.bytes()
+        }
+        is HttpBody.ChannelContent -> object : ByteStream.ChannelStream() {
+            override val contentLength: Long? = body.contentLength
+            override val isOneShot: Boolean = body.isOneShot
+            override fun readFrom(): SdkByteReadChannel = body.readFrom()
+        }
+        is HttpBody.SourceContent -> object : ByteStream.SourceStream() {
+            override val contentLength: Long? = body.contentLength
+            override val isOneShot: Boolean = body.isOneShot
+            override fun readFrom(): SdkSource = body.readFrom()
+        }
     }
 }
 

@@ -3,10 +3,9 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package aws.smithy.kotlin.runtime.http.compression
+package aws.smithy.kotlin.runtime.compression
 
-import aws.smithy.kotlin.runtime.io.SdkByteReadChannel
-import aws.smithy.kotlin.runtime.io.SdkSource
+import aws.smithy.kotlin.runtime.content.ByteStream
 
 /**
  * Represents a compression algorithm. Used by an interceptor to compress request payloads on operations with the
@@ -27,20 +26,8 @@ public interface CompressionAlgorithm {
     public val contentEncoding: String
 
     /**
-     * Compresses a bytes array
-     * @return Compressed [ByteArray]
+     * Compresses a byte stream.
+     * @return Compressed [ByteStream]
      */
-    public fun compressBytes(bytes: ByteArray): ByteArray
-
-    /**
-     * Wraps the [SdkSource] with another that is capable of compressing the payload with each read.
-     * @return [SdkSource] with compression capabilities.
-     */
-    public fun compressSdkSource(source: SdkSource): SdkSource
-
-    /**
-     * Wraps the [SdkByteReadChannel] with another that is capable of compressing the payload with each read.
-     * @return [SdkByteReadChannel] with compression capabilities.
-     */
-    public fun compressSdkByteReadChannel(channel: SdkByteReadChannel): SdkByteReadChannel
+    public fun compress(stream: ByteStream): ByteStream
 }

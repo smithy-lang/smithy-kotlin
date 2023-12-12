@@ -4,8 +4,9 @@
  */
 package aws.smithy.kotlin.runtime.http.config
 
-import aws.smithy.kotlin.runtime.http.compression.CompressionAlgorithm
-import aws.smithy.kotlin.runtime.http.compression.Gzip
+import aws.smithy.kotlin.runtime.InternalApi
+import aws.smithy.kotlin.runtime.compression.CompressionAlgorithm
+import aws.smithy.kotlin.runtime.compression.Gzip
 
 @DslMarker
 public annotation class CompressionClientConfigDsl
@@ -13,12 +14,13 @@ public annotation class CompressionClientConfigDsl
 public interface CompressionClientConfig {
     public val requestCompression: RequestCompressionConfig
 
+    @CompressionClientConfigDsl
     public interface Builder {
-        public fun requestCompression(block: RequestCompressionConfig.Builder?.() -> Unit) {
+        public fun requestCompression(block: RequestCompressionConfig.Builder.() -> Unit) {
             requestCompression.apply(block)
         }
 
-        public var requestCompression: RequestCompressionConfig.Builder?
+        public val requestCompression: RequestCompressionConfig.Builder
     }
 }
 
@@ -31,6 +33,7 @@ public class RequestCompressionConfig(builder: Builder) {
             RequestCompressionConfig(Builder().apply(block))
     }
 
+    @InternalApi
     public fun toBuilderApplicator(): Builder = Builder().apply {
         compressionAlgorithms = this@RequestCompressionConfig.compressionAlgorithms.toMutableList()
         disableRequestCompression = this@RequestCompressionConfig.disableRequestCompression
@@ -38,7 +41,7 @@ public class RequestCompressionConfig(builder: Builder) {
     }
 
     /**
-     * The list of compression algorithms supported by the SDK.
+     * The list of compression algorithms supported by the client.
      * More compression algorithms can be added and may override an existing implementation.
      * Use the `CompressionAlgorithm` interface to create one.
      */
@@ -62,7 +65,7 @@ public class RequestCompressionConfig(builder: Builder) {
     @CompressionClientConfigDsl
     public class Builder {
         /**
-         * The list of compression algorithms supported by the SDK.
+         * The list of compression algorithms supported by the client.
          * More compression algorithms can be added and may override an existing implementation.
          * Use the `CompressionAlgorithm` interface to create one.
          */

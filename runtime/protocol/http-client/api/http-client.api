@@ -14,7 +14,6 @@ public abstract interface class aws/smithy/kotlin/runtime/http/config/Compressio
 public abstract interface class aws/smithy/kotlin/runtime/http/config/CompressionClientConfig$Builder {
 	public abstract fun getRequestCompression ()Laws/smithy/kotlin/runtime/http/config/RequestCompressionConfig$Builder;
 	public abstract fun requestCompression (Lkotlin/jvm/functions/Function1;)V
-	public abstract fun setRequestCompression (Laws/smithy/kotlin/runtime/http/config/RequestCompressionConfig$Builder;)V
 }
 
 public final class aws/smithy/kotlin/runtime/http/config/CompressionClientConfig$Builder$DefaultImpls {
@@ -62,7 +61,6 @@ public final class aws/smithy/kotlin/runtime/http/config/RequestCompressionConfi
 	public final fun getCompressionAlgorithms ()Ljava/util/List;
 	public final fun getDisableRequestCompression ()Z
 	public final fun getRequestMinCompressionSizeBytes ()J
-	public final fun toBuilderApplicator ()Laws/smithy/kotlin/runtime/http/config/RequestCompressionConfig$Builder;
 }
 
 public final class aws/smithy/kotlin/runtime/http/config/RequestCompressionConfig$Builder {

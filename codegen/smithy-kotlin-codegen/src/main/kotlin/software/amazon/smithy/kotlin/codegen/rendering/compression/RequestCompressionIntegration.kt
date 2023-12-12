@@ -58,7 +58,7 @@ class RequestCompressionIntegration : KotlinIntegration {
                 
                 * compressionAlgorithms:
                 
-                 The list of compression algorithms supported by the SDK.
+                 The list of compression algorithms supported by the client.
                  More compression algorithms can be added and may override an existing implementation.
                  Use the `CompressionAlgorithm` interface to create one.
                 

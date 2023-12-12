@@ -11,7 +11,7 @@ import java.util.zip.GZIPOutputStream
  * Wraps the SdkByteReadChannel so that it compresses into gzip format with each read.
  */
 @InternalApi
-public class GzipByteReadChannel(
+public actual class GzipByteReadChannel actual constructor(
     private val channel: SdkByteReadChannel,
 ) : SdkByteReadChannel by channel {
     private val gzipBuffer = SdkBuffer()

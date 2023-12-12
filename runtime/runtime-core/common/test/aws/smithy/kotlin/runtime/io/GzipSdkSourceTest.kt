@@ -50,7 +50,10 @@ class GzipSdkSourceTest {
 
     @Test
     fun testReadLargeBody() = runTest {
-        val payload = "Hello World".repeat(100)
+        val payload = "Hello World".repeat(1600)
+
+        println("\n\n\n${payload.length}\n\n\n")
+
         val bytes = payload.encodeToByteArray()
         val bytesHash = bytes.crc32()
 
@@ -90,7 +93,7 @@ class GzipSdkSourceTest {
 
     @Test
     fun testReadLargeBodyLargeLimit() = runTest {
-        val payload = "Hello World".repeat(100)
+        val payload = "Hello World".repeat(1600)
         val bytes = payload.encodeToByteArray()
         val bytesHash = bytes.crc32()
 

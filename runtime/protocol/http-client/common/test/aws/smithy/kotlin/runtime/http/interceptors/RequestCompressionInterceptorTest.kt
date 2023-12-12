@@ -6,9 +6,9 @@
 package aws.smithy.kotlin.runtime.http.interceptors
 
 import aws.smithy.kotlin.runtime.collections.get
+import aws.smithy.kotlin.runtime.compression.CompressionAlgorithm
+import aws.smithy.kotlin.runtime.compression.Gzip
 import aws.smithy.kotlin.runtime.http.*
-import aws.smithy.kotlin.runtime.http.compression.CompressionAlgorithm
-import aws.smithy.kotlin.runtime.http.compression.Gzip
 import aws.smithy.kotlin.runtime.http.operation.HttpOperationContext
 import aws.smithy.kotlin.runtime.http.operation.newTestOperation
 import aws.smithy.kotlin.runtime.http.operation.roundTrip
