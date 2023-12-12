@@ -4,4 +4,7 @@
  */
 package aws.smithy.kotlin.runtime.io
 
+/**
+ * Wraps the SdkSource so that it compresses into gzip format with each read.
+ */
 public expect class GzipSdkSource(source: SdkSource) : SdkSource

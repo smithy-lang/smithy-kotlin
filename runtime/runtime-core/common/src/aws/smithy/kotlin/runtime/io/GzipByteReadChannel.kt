@@ -4,4 +4,7 @@
  */
 package aws.smithy.kotlin.runtime.io
 
+/**
+ * Wraps the SdkByteReadChannel so that it compresses into gzip format with each read.
+ */
 public expect class GzipByteReadChannel(channel: SdkByteReadChannel) : SdkByteReadChannel
