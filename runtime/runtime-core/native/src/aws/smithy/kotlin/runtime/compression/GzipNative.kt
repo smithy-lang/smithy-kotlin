@@ -5,6 +5,7 @@
 package aws.smithy.kotlin.runtime.compression
 
 import aws.smithy.kotlin.runtime.InternalApi
+import aws.smithy.kotlin.runtime.content.ByteStream
 
 /**
  * The gzip compression algorithm.
