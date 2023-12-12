@@ -1,5 +1,15 @@
 # Changelog
 
+## [1.0.3] - 12/08/2023
+
+### Fixes
+* [#1008](https://github.com/awslabs/smtihy-kotlin/issues/1008) Correctly sign special characters (e.g., "@") in URL paths
+
+## [1.0.2] - 12/07/2023
+
+### Features
+* Add a convenience function for creating `CachedCredentialsProvider`
+
 ## [1.0.1] - 11/26/2023
 
 ## [1.0.0] - 11/26/2023

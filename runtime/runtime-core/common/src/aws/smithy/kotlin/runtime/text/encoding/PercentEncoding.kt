@@ -31,12 +31,14 @@ public class PercentEncoding(
         private val VALID_PCHAR = VALID_UCHAR + setOf(':', '@')
         private val VALID_FCHAR = VALID_PCHAR + setOf('/', '?')
 
-        // GOTCHA: according to RFC 3986, this _should_ be VALID_FCHAR - setOf('&', '=') but SigV4 is very strict on
-        // what MUST be encoded in queries: https://docs.aws.amazon.com/IAM/latest/UserGuide/create-signed-request.html
-        private val VALID_QCHAR = UNRESERVED
+        private val VALID_QCHAR = VALID_FCHAR - setOf('&', '=') // UNRESERVED
 
         // https://smithy.io/2.0/spec/http-bindings.html#httplabel-serialization-rules
         private val SMITHY_LABEL_CHAR = UNRESERVED
+
+        // SigV4 is very strict on what MUST be encoded in queries:
+        // https://docs.aws.amazon.com/IAM/latest/UserGuide/create-signed-request.html
+        private val SIGV4_SIGNING_CHAR = UNRESERVED
 
         private const val UPPER_HEX = "0123456789ABCDEF"
 
@@ -66,14 +68,20 @@ public class PercentEncoding(
         public val Fragment: Encoding = PercentEncoding("fragment", VALID_FCHAR)
 
         /**
-         * A [PercentEncoding] instance suitable for encoding `application/x-www-form-urlencoded` data
+         * A [PercentEncoding] instance suitable for encoding Smithy-specific `application/x-www-form-urlencoded` data
          */
-        public val FormUrl: Encoding = PercentEncoding("form URL", VALID_QCHAR, mapOf(' ' to '+'))
+        public val FormUrl: Encoding = PercentEncoding("form URL", UNRESERVED)
 
         /**
          * A [PercentEncoding] instance suitable for encoding values into Smithy labels
          */
         public val SmithyLabel: Encoding = PercentEncoding("Smithy label", SMITHY_LABEL_CHAR)
+
+        /**
+         * A [PercentEncoding] instance suitable for encoding values used during SigV4 canonicalization and signature
+         * creation
+         */
+        public val SigV4: Encoding = PercentEncoding("SigV4", SIGV4_SIGNING_CHAR)
 
         private fun percentAsciiEncode(char: Char) = buildString {
             val value = char.code and 0xff

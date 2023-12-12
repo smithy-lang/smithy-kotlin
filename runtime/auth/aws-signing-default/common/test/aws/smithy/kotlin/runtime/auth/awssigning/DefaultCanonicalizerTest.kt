@@ -104,8 +104,8 @@ class DefaultCanonicalizerTest {
         }
 
         val uri = Url.Builder()
-        uri.path.encoded = "/foo/bar/baz%3Cqux%3Aquux"
-        assertEquals("/foo/bar/baz%253Cqux%253Aquux", uri.canonicalPath(config))
+        uri.path.encoded = "/foo/@bar/baz%3Cqux%3Aquux"
+        assertEquals("/foo/%40bar/baz%253Cqux%253Aquux", uri.canonicalPath(config))
     }
 
     @Test
@@ -114,11 +114,11 @@ class DefaultCanonicalizerTest {
             parameters {
                 decodedParameters {
                     addAll("foo", listOf("banana", "apple", "cherry"))
-                    addAll("bar", listOf("elderberry", "date"))
+                    addAll("bar", listOf("elderberry", "d@te"))
                 }
-                assertEquals("?foo=banana&foo=apple&foo=cherry&bar=elderberry&bar=date", decoded)
+                assertEquals("?foo=banana&foo=apple&foo=cherry&bar=elderberry&bar=d@te", decoded)
             }
-            assertEquals("bar=date&bar=elderberry&foo=apple&foo=banana&foo=cherry", canonicalQueryParams())
+            assertEquals("bar=d%40te&bar=elderberry&foo=apple&foo=banana&foo=cherry", canonicalQueryParams())
         }
     }
 

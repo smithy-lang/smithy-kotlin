@@ -1488,6 +1488,7 @@ public final class aws/smithy/kotlin/runtime/text/encoding/Encodable {
 	public final fun isEmpty ()Z
 	public final fun isNotEmpty ()Z
 	public final fun reencode ()Laws/smithy/kotlin/runtime/text/encoding/Encodable;
+	public final fun reencode (Laws/smithy/kotlin/runtime/text/encoding/Encoding;)Laws/smithy/kotlin/runtime/text/encoding/Encodable;
 	public fun toString ()Ljava/lang/String;
 }
 
@@ -1591,6 +1592,7 @@ public abstract interface class aws/smithy/kotlin/runtime/util/EnvironmentProvid
 
 public abstract interface class aws/smithy/kotlin/runtime/util/Filesystem {
 	public static final field Companion Laws/smithy/kotlin/runtime/util/Filesystem$Companion;
+	public abstract fun fileExists (Ljava/lang/String;)Z
 	public abstract fun getFilePathSeparator ()Ljava/lang/String;
 	public abstract fun readFileOrNull (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public abstract fun writeFile (Ljava/lang/String;[BLkotlin/coroutines/Continuation;)Ljava/lang/Object;

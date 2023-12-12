@@ -6,6 +6,8 @@
 package aws.smithy.kotlin.runtime.serde.formurl
 
 import aws.smithy.kotlin.runtime.serde.*
+import aws.smithy.kotlin.runtime.time.Instant
+import aws.smithy.kotlin.runtime.time.TimestampFormat
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -21,6 +23,7 @@ class FormUrlSerializerTest {
         val double: Double = 6.2,
         val char: Char = 'c',
         val string: String = "foo",
+        val timestamp: Instant = Instant.fromEpochSeconds(0),
         val listInt: List<Int> = listOf(5, 6, 7),
 
     ) : SdkSerializable {
@@ -34,6 +37,7 @@ class FormUrlSerializerTest {
             val descriptorDouble = SdkFieldDescriptor(SerialKind.Double, FormUrlSerialName("double"))
             val descriptorChar = SdkFieldDescriptor(SerialKind.Char, FormUrlSerialName("char"))
             val descriptorString = SdkFieldDescriptor(SerialKind.String, FormUrlSerialName("string"))
+            val descriptorTimstamp = SdkFieldDescriptor(SerialKind.Timestamp, FormUrlSerialName("timestamp"))
             val descriptorListInt = SdkFieldDescriptor(SerialKind.List, FormUrlSerialName("listInt"))
         }
 
@@ -50,6 +54,7 @@ class FormUrlSerializerTest {
                 field(descriptorDouble, double)
                 field(descriptorChar, char)
                 field(descriptorString, string)
+                field(descriptorTimstamp, timestamp, TimestampFormat.ISO_8601)
                 listField(descriptorListInt) {
                     for (value in listInt) {
                         serializeInt(value)
@@ -108,6 +113,7 @@ class FormUrlSerializerTest {
             &double=6.2
             &char=c
             &string=foo
+            &timestamp=1970-01-01T00%3A00%3A00Z
             &listInt.member.1=5
             &listInt.member.2=6
             &listInt.member.3=7

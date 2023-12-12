@@ -4,15 +4,12 @@
  */
 package aws.smithy.kotlin.runtime.util
 
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.test.runTest
 import java.nio.file.Files
 import java.nio.file.Path
 import kotlin.io.path.absolutePathString
 import kotlin.io.path.writeText
-import kotlin.test.BeforeTest
-import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertNotNull
+import kotlin.test.*
 
 class PlatformJVMTest {
 
@@ -26,7 +23,7 @@ class PlatformJVMTest {
     }
 
     @Test
-    fun itReadsFiles() = runBlocking {
+    fun itReadsFiles() = runTest {
         val actual = PlatformProvider.System.readFileOrNull(tempFile.absolutePathString())
 
         assertNotNull(actual)
@@ -48,5 +45,10 @@ class PlatformJVMTest {
             .associate { (key, value) -> key.toString() to value.toString() }
         val allPropertiesFromPlatform = PlatformProvider.System.getAllProperties()
         assertEquals(allPropertiesFromSystem, allPropertiesFromPlatform)
+    }
+
+    @Test
+    fun testFileExists() = runTest {
+        assertTrue(PlatformProvider.System.fileExists(tempFile.absolutePathString()))
     }
 }

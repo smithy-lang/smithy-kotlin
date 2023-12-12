@@ -30,7 +30,7 @@ public fun isValidHostLabel(value: String?, allowSubdomains: Boolean): Boolean =
     } ?: false
 
 @InternalApi
-public fun uriEncode(value: String): String = PercentEncoding.Query.encode(value)
+public fun uriEncode(value: String): String = PercentEncoding.SmithyLabel.encode(value)
 
 @InternalApi
 public fun parseUrl(value: String?): Url? =
