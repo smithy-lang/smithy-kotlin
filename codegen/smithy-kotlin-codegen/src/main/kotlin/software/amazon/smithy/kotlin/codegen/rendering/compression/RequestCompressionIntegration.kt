@@ -40,10 +40,10 @@ class RequestCompressionIntegration : KotlinIntegration {
         listOf(
             ConfigProperty {
                 name = "requestCompression"
-                symbol = RuntimeTypes.HttpClient.Config.RequestCompressionConfig
-                builderSymbol = RuntimeTypes.HttpClient.Config.RequestCompressionConfig.nestedBuilder
+                symbol = RuntimeTypes.SmithyClient.Config.RequestCompressionConfig
+                builderSymbol = RuntimeTypes.SmithyClient.Config.RequestCompressionConfig.nestedBuilder
                 toBuilderExpression = ".toBuilderApplicator()"
-                baseClass = RuntimeTypes.HttpClient.Config.CompressionClientConfig
+                baseClass = RuntimeTypes.SmithyClient.Config.CompressionClientConfig
                 propertyType = ConfigPropertyType.Custom(
                     render = { prop, writer ->
                         writer.write(
