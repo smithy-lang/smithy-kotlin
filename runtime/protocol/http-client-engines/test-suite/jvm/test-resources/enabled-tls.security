@@ -1,0 +1,4 @@
+# This file should be merged with the main security file for the running JDK. Consequently, the only key we need to
+# specify is the disabled TLS algorithms, which would normally include TLSv1 and TLSv1.1 but we want those enabled for
+# TLS tests.
+jdk.tls.disabledAlgorithms=anon, NULL

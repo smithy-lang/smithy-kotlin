@@ -63,9 +63,9 @@ class DownloadTest : AbstractEngineTest() {
         }
 
     private fun runReadSuspendIntegrityTest(reader: suspend (SdkByteReadChannel, Int) -> String) = testEngines {
-        test { env, client ->
+        test { _, client ->
             val req = HttpRequest {
-                testSetup(env)
+                testSetup()
                 url.path.decoded = "/download/integrity"
             }
 
@@ -90,9 +90,9 @@ class DownloadTest : AbstractEngineTest() {
 
     @Test
     fun testChunkedResponse() = testEngines {
-        test { env, client ->
+        test { _, client ->
             val req = HttpRequest {
-                testSetup(env)
+                testSetup()
                 url.path.decoded = "/download/integrity"
                 url.parameters.decodedParameters.add("chunked-response", "true")
             }
@@ -121,9 +121,9 @@ class DownloadTest : AbstractEngineTest() {
     fun testEmptyPayloadRepresentation() = testEngines {
         // We have behavior built on top of how an empty payload is represented, ensure it is consitent
         // across engines, see https://github.com/awslabs/aws-sdk-kotlin/issues/638
-        test { env, client ->
+        test { _, client ->
             val req = HttpRequest {
-                testSetup(env)
+                testSetup()
                 url.path.decoded = "/download/empty"
             }
 

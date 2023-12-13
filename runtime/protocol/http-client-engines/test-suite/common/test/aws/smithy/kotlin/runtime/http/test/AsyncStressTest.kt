@@ -9,10 +9,7 @@ import aws.smithy.kotlin.runtime.http.HttpStatusCode
 import aws.smithy.kotlin.runtime.http.complete
 import aws.smithy.kotlin.runtime.http.readAll
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
-import aws.smithy.kotlin.runtime.http.test.util.AbstractEngineTest
-import aws.smithy.kotlin.runtime.http.test.util.engineConfig
-import aws.smithy.kotlin.runtime.http.test.util.test
-import aws.smithy.kotlin.runtime.http.test.util.testSetup
+import aws.smithy.kotlin.runtime.http.test.util.*
 import kotlinx.coroutines.*
 import kotlin.test.*
 import kotlin.time.Duration.Companion.milliseconds
@@ -28,9 +25,9 @@ class AsyncStressTest : AbstractEngineTest() {
             maxConcurrency = 32u
         }
 
-        test { env, client ->
+        test { _, client ->
             val req = HttpRequest {
-                testSetup(env)
+                testSetup()
                 url.path.decoded = "concurrent"
             }
 
@@ -54,9 +51,9 @@ class AsyncStressTest : AbstractEngineTest() {
     fun testHttpCallJobCompletion() = testEngines {
         // https://github.com/awslabs/aws-sdk-kotlin/issues/587
 
-        test { env, client ->
+        test { _, client ->
             val req = HttpRequest {
-                testSetup(env)
+                testSetup()
                 url.path.decoded = "concurrent"
             }
 
