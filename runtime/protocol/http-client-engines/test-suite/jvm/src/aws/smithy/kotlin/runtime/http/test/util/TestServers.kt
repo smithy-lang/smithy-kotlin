@@ -28,11 +28,11 @@ private fun testServer(serverType: ServerType): TestServer = when (serverType) {
     ServerType.DEFAULT -> TestServer(8082, ConnectorType.HTTP, null, Application::testRoutes)
 
     // FIXME Enable once we figure out how to get TLS1 and TLS1.1 working
-    // ServerType.TLS_1_0 -> TestServer(8083, ConnectorType.HTTPS, "TLSv1", Application::tlsRoutes)
+    // ServerType.TLS_1_0 -> TestServer(8090, ConnectorType.HTTPS, "TLSv1", Application::tlsRoutes)
 
-    ServerType.TLS_1_1 -> TestServer(8084, ConnectorType.HTTPS, "TLSv1.1", Application::tlsRoutes)
-    ServerType.TLS_1_2 -> TestServer(8085, ConnectorType.HTTPS, "TLSv1.2", Application::tlsRoutes)
-    ServerType.TLS_1_3 -> TestServer(8086, ConnectorType.HTTPS, "TLSv1.3", Application::tlsRoutes)
+    ServerType.TLS_1_1 -> TestServer(8091, ConnectorType.HTTPS, "TLSv1.1", Application::tlsRoutes)
+    ServerType.TLS_1_2 -> TestServer(8092, ConnectorType.HTTPS, "TLSv1.2", Application::tlsRoutes)
+    ServerType.TLS_1_3 -> TestServer(8093, ConnectorType.HTTPS, "TLSv1.3", Application::tlsRoutes)
 }
 
 private class Resources : Closeable {
