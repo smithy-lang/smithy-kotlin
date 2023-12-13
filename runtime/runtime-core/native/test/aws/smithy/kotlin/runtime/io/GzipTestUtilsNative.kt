@@ -4,6 +4,6 @@
  */
 package aws.smithy.kotlin.runtime.io
 
-actual fun decompressGzipBytes(bytes: ByteArray): ByteArray {
+internal actual fun decompressGzipBytes(bytes: ByteArray): ByteArray {
     TODO("Not yet implemented")
 }

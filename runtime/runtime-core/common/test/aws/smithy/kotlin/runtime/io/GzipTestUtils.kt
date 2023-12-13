@@ -4,4 +4,4 @@
  */
 package aws.smithy.kotlin.runtime.io
 
-expect fun decompressGzipBytes(bytes: ByteArray): ByteArray
+internal expect fun decompressGzipBytes(bytes: ByteArray): ByteArray

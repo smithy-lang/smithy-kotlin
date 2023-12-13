@@ -6,5 +6,5 @@ package aws.smithy.kotlin.runtime.io
 
 import java.util.zip.GZIPInputStream
 
-actual fun decompressGzipBytes(bytes: ByteArray): ByteArray =
+internal actual fun decompressGzipBytes(bytes: ByteArray): ByteArray =
     GZIPInputStream(bytes.inputStream()).use { it.readBytes() }
