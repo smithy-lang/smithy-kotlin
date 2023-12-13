@@ -47,7 +47,7 @@ class RequestCompressionIntegration : KotlinIntegration {
                 propertyType = ConfigPropertyType.Custom(
                     render = { prop, writer ->
                         writer.write(
-                            "override val #1L: #2T = builder.#1L?.let { #2T(builder.#1L!!) } ?: #2T{}",
+                            "override val #1L: #2T = builder.#1L?.let { #2T(it) } ?: #2T{}",
                             prop.propertyName,
                             prop.symbol,
                         )

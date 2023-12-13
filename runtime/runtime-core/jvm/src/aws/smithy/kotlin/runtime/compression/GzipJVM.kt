@@ -4,7 +4,6 @@
  */
 package aws.smithy.kotlin.runtime.compression
 
-import aws.smithy.kotlin.runtime.InternalApi
 import aws.smithy.kotlin.runtime.content.ByteStream
 import aws.smithy.kotlin.runtime.io.GzipByteReadChannel
 import aws.smithy.kotlin.runtime.io.GzipSdkSource
@@ -19,7 +18,6 @@ import java.util.zip.GZIPOutputStream
  *
  * See: https://en.wikipedia.org/wiki/Gzip
  */
-@InternalApi
 public actual class Gzip : CompressionAlgorithm {
     override val id: String = "gzip"
     override val contentEncoding: String = "gzip"

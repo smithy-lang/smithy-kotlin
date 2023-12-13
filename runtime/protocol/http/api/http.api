@@ -1,7 +1,3 @@
-public final class aws/smithy/kotlin/runtime/compression/CompressRequestKt {
-	public static final fun compressRequest (Laws/smithy/kotlin/runtime/compression/CompressionAlgorithm;Laws/smithy/kotlin/runtime/http/request/HttpRequest;)Laws/smithy/kotlin/runtime/http/request/HttpRequest;
-}
-
 public abstract interface class aws/smithy/kotlin/runtime/http/DeferredHeaders : aws/smithy/kotlin/runtime/collections/ValuesMap {
 	public static final field Companion Laws/smithy/kotlin/runtime/http/DeferredHeaders$Companion;
 }
@@ -251,6 +247,10 @@ public final class aws/smithy/kotlin/runtime/http/HttpStatusCodeKt {
 	public static final fun category (Laws/smithy/kotlin/runtime/http/HttpStatusCode;)Laws/smithy/kotlin/runtime/http/HttpStatusCode$Category;
 	public static final fun isInformational (Laws/smithy/kotlin/runtime/http/HttpStatusCode;)Z
 	public static final fun isSuccess (Laws/smithy/kotlin/runtime/http/HttpStatusCode;)Z
+}
+
+public final class aws/smithy/kotlin/runtime/http/compression/CompressRequestKt {
+	public static final fun compressRequest (Laws/smithy/kotlin/runtime/compression/CompressionAlgorithm;Laws/smithy/kotlin/runtime/http/request/HttpRequest;)Laws/smithy/kotlin/runtime/http/request/HttpRequest;
 }
 
 public abstract interface class aws/smithy/kotlin/runtime/http/request/HttpRequest {

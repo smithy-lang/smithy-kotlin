@@ -32,9 +32,8 @@ public actual class GzipByteReadChannel actual constructor(
         val rc = channel.read(temp, limit)
 
         if (rc == -1L) {
-            // may trigger additional bytes written by gzip defalter
+            // may trigger additional bytes written by gzip deflater
             gzipOutputStream.close()
-            gzipBuffer.readAll(sink)
 
             gzipOutputStreamClosed = true
         }

@@ -189,6 +189,13 @@ public abstract interface class aws/smithy/kotlin/runtime/compression/Compressio
 	public abstract fun getId ()Ljava/lang/String;
 }
 
+public final class aws/smithy/kotlin/runtime/compression/Gzip : aws/smithy/kotlin/runtime/compression/CompressionAlgorithm {
+	public fun <init> ()V
+	public fun compress (Laws/smithy/kotlin/runtime/content/ByteStream;)Laws/smithy/kotlin/runtime/content/ByteStream;
+	public fun getContentEncoding ()Ljava/lang/String;
+	public fun getId ()Ljava/lang/String;
+}
+
 public final class aws/smithy/kotlin/runtime/config/EnvironmentSettingKt {
 }
 

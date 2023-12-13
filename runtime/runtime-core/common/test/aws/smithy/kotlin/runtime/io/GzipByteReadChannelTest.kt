@@ -10,8 +10,6 @@ import kotlin.test.Test
 import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
 
-expect fun decompressGzipBytes(bytes: ByteArray): ByteArray
-
 class GzipByteReadChannelTest {
     @Test
     fun testReadAll() = runTest {

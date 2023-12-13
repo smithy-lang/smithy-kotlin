@@ -25,9 +25,8 @@ public actual class GzipSdkSource actual constructor(
         val rc = source.read(temp, limit)
 
         if (rc == -1L) {
-            // may trigger additional bytes written by gzip defalter
+            // may trigger additional bytes written by gzip deflater
             gzipOutputStream.close()
-            gzipBuffer.readAll(sink)
         }
 
         // source is exhausted and nothing left buffered we are done
