@@ -84,8 +84,6 @@ internal data class SslConfig private constructor(
         withProperties(
             "javax.net.ssl.trustStore" to keyStoreFile.absolutePath,
             "javax.net.ssl.trustStorePassword" to keyStorePassword,
-            "jdk.tls.client.protocols" to "TLSv1,TLSv1.1,TLSv1.2,TLSv1.3",
-            "https.protocols" to "TLSv1,TLSv1.1,TLSv1.2,TLSv1.3",
         ) {
             block()
         }
