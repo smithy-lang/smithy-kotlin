@@ -4,8 +4,7 @@
  */
 package aws.smithy.kotlin.runtime.http.interceptors
 
-import aws.smithy.kotlin.runtime.io.use
 import java.util.zip.GZIPInputStream
 
-actual fun decompressGzipBytes(bytes: ByteArray): ByteArray =
-    GZIPInputStream(bytes.inputStream()).bufferedReader(Charsets.UTF_8).use { it.readText() }.toByteArray()
+internal actual fun decompressGzipBytes(bytes: ByteArray): ByteArray =
+    GZIPInputStream(bytes.inputStream()).use { it.readBytes() }

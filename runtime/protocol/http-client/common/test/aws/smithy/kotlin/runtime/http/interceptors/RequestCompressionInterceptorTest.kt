@@ -22,7 +22,7 @@ import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 
-expect fun decompressGzipBytes(bytes: ByteArray): ByteArray
+internal expect fun decompressGzipBytes(bytes: ByteArray): ByteArray
 
 class RequestCompressionInterceptorTest {
 
