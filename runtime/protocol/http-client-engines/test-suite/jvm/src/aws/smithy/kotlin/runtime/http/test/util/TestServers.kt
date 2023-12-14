@@ -14,7 +14,7 @@ import io.ktor.server.engine.*
 import io.ktor.server.jetty.*
 import redirectTests
 import java.io.Closeable
-import java.nio.file.Path
+import java.nio.file.Paths
 import java.util.concurrent.TimeUnit
 
 private data class TestServer(
@@ -56,7 +56,7 @@ private class Resources : Closeable {
 internal fun startServers(sslConfigPath: String): Closeable {
     val sslConfig = SslConfig.generate()
     println("Persisting custom SSL config to $sslConfigPath...")
-    sslConfig.persist(Path.of(sslConfigPath))
+    sslConfig.persist(Paths.get(sslConfigPath))
 
     val servers = Resources()
     println("Starting local servers for HTTP client engine test suite...")

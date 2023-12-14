@@ -11,7 +11,7 @@ import aws.smithy.kotlin.runtime.http.request.url
 import aws.smithy.kotlin.runtime.http.test.util.*
 import aws.smithy.kotlin.runtime.http.test.util.testServers
 import aws.smithy.kotlin.runtime.net.TlsVersion
-import java.nio.file.Path
+import java.nio.file.Paths
 import kotlin.test.*
 
 class ConnectionTest : AbstractEngineTest() {
@@ -19,7 +19,7 @@ class ConnectionTest : AbstractEngineTest() {
         val url = testServers.getValue(serverType)
 
         val sslConfigPath = System.getProperty("SSL_CONFIG_PATH")
-        val sslConfig = SslConfig.load(Path.of(sslConfigPath))
+        val sslConfig = SslConfig.load(Paths.get(sslConfigPath))
 
         // Set SSL certs via system properties which HTTP clients should pick up
         sslConfig.useAsSystemProperties {
