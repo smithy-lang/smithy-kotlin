@@ -40,6 +40,9 @@ jobs:
       - name: Test
         shell: bash
         run: |
+          echo Checking ports in use...
+          netstat -tlpn
+          echo
           ./gradlew -Ptest.java.version=${{ matrix.java-version }} jvmTest --stacktrace
 
   all-platforms:
