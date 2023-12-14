@@ -1,0 +1,5 @@
+{
+    "id": "85c1a6d6-9e18-475a-8c8a-766d041530ab",
+    "type": "misc",
+    "description": "Refactor codegen to move non AWS specific support into core"
+}

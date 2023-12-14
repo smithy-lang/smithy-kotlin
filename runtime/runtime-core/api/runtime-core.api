@@ -1595,6 +1595,9 @@ public final class aws/smithy/kotlin/runtime/util/Filesystem$Companion {
 	public static synthetic fun fromMap$default (Laws/smithy/kotlin/runtime/util/Filesystem$Companion;Ljava/util/Map;Ljava/lang/String;ILjava/lang/Object;)Laws/smithy/kotlin/runtime/util/Filesystem;
 }
 
+public final class aws/smithy/kotlin/runtime/util/FlowUtilKt {
+}
+
 public final class aws/smithy/kotlin/runtime/util/JMESPathKt {
 }
 

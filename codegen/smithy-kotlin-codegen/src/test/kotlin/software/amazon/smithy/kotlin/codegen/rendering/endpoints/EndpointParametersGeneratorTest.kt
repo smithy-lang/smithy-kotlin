@@ -4,15 +4,8 @@
  */
 package software.amazon.smithy.kotlin.codegen.rendering.endpoints
 
-import software.amazon.smithy.kotlin.codegen.KotlinSettings
-import software.amazon.smithy.kotlin.codegen.core.KotlinWriter
-import software.amazon.smithy.kotlin.codegen.model.buildSymbol
-import software.amazon.smithy.kotlin.codegen.test.TestModelDefault
-import software.amazon.smithy.kotlin.codegen.test.assertBalancedBracesAndParens
-import software.amazon.smithy.kotlin.codegen.test.formatForTest
-import software.amazon.smithy.kotlin.codegen.test.shouldContainOnlyOnceWithDiff
+import software.amazon.smithy.kotlin.codegen.test.*
 import software.amazon.smithy.model.node.Node
-import software.amazon.smithy.model.shapes.ShapeId
 import software.amazon.smithy.rulesengine.language.EndpointRuleSet
 import kotlin.test.*
 
@@ -80,17 +73,17 @@ class EndpointParametersGeneratorTest {
             """,
         )
 
-        val writer = KotlinWriter(TestModelDefault.NAMESPACE)
-        val paramsSymbol = buildSymbol {
-            name = "EndpointParameters"
-            namespace = TestModelDefault.NAMESPACE
-        }
-        val settings = KotlinSettings(
-            service = ShapeId.from("com.test#Test"),
-            pkg = KotlinSettings.PackageSettings("name", "version"),
-            sdkId = "testSdkId",
-        )
-        EndpointParametersGenerator(writer, settings, rules, paramsSymbol).render()
+        val model =
+            """
+            namespace com.test
+            service Test {
+                version: "1.0.0",
+            }
+        """.toSmithyModel()
+
+        val testCtx = model.newTestContext()
+        val writer = testCtx.newWriter()
+        EndpointParametersGenerator(testCtx.generationCtx, rules, writer).render()
 
         generatedClass = writer.toString()
     }
@@ -131,7 +124,7 @@ class EndpointParametersGeneratorTest {
     @Test
     fun testConstructor() {
         val expected = """
-            public class EndpointParameters private constructor(builder: Builder)
+            public class TestEndpointParameters private constructor(builder: Builder)
         """.formatForTest(indent = "")
         generatedClass.shouldContainOnlyOnceWithDiff(expected)
     }
@@ -178,7 +171,7 @@ class EndpointParametersGeneratorTest {
     fun testCompanionObject() {
         val expected = """
             public companion object {
-                public inline operator fun invoke(block: Builder.() -> Unit): EndpointParameters = Builder().apply(block).build()
+                public inline operator fun invoke(block: Builder.() -> Unit): TestEndpointParameters = Builder().apply(block).build()
             }
         """.formatForTest()
         generatedClass.shouldContainOnlyOnceWithDiff(expected)
@@ -189,7 +182,7 @@ class EndpointParametersGeneratorTest {
         val expected = """
             public override fun equals(other: Any?): Boolean {
                 if (this === other) return true
-                if (other !is EndpointParameters) return false
+                if (other !is TestEndpointParameters) return false
                 if (this.booleanField != other.booleanField) return false
                 if (this.defaultedBooleanField != other.defaultedBooleanField) return false
                 if (this.defaultedStringField != other.defaultedStringField) return false
@@ -236,7 +229,7 @@ class EndpointParametersGeneratorTest {
     fun testToString() {
         val expected = """
             public override fun toString(): String = buildString {
-                append("EndpointParameters(")
+                append("TestEndpointParameters(")
                 append("booleanField=${'$'}booleanField,")
                 append("defaultedBooleanField=${'$'}defaultedBooleanField,")
                 append("defaultedStringField=${'$'}defaultedStringField,")
@@ -258,21 +251,21 @@ class EndpointParametersGeneratorTest {
     @Test
     fun testCopy() {
         val expected = """
-            public fun copy(block: Builder.() -> Unit = {}): EndpointParameters {
+            public fun copy(block: Builder.() -> Unit = {}): TestEndpointParameters {
                 return Builder().apply {
-                    booleanField = this@EndpointParameters.booleanField
-                    defaultedBooleanField = this@EndpointParameters.defaultedBooleanField
-                    defaultedStringField = this@EndpointParameters.defaultedStringField
+                    booleanField = this@TestEndpointParameters.booleanField
+                    defaultedBooleanField = this@TestEndpointParameters.defaultedBooleanField
+                    defaultedStringField = this@TestEndpointParameters.defaultedStringField
                     @Suppress("DEPRECATION")
-                    deprecatedField = this@EndpointParameters.deprecatedField
+                    deprecatedField = this@TestEndpointParameters.deprecatedField
                     @Suppress("DEPRECATION")
-                    deprecatedMessageField = this@EndpointParameters.deprecatedMessageField
+                    deprecatedMessageField = this@TestEndpointParameters.deprecatedMessageField
                     @Suppress("DEPRECATION")
-                    documentedDeprecatedField = this@EndpointParameters.documentedDeprecatedField
-                    documentedField = this@EndpointParameters.documentedField
-                    requiredBooleanField = this@EndpointParameters.requiredBooleanField
-                    requiredStringField = this@EndpointParameters.requiredStringField
-                    stringField = this@EndpointParameters.stringField
+                    documentedDeprecatedField = this@TestEndpointParameters.documentedDeprecatedField
+                    documentedField = this@TestEndpointParameters.documentedField
+                    requiredBooleanField = this@TestEndpointParameters.requiredBooleanField
+                    requiredStringField = this@TestEndpointParameters.requiredStringField
+                    stringField = this@TestEndpointParameters.stringField
                     block()
                 }
                 .build()
@@ -314,7 +307,7 @@ class EndpointParametersGeneratorTest {
          
                 public var stringField: String? = null
          
-                public fun build(): EndpointParameters = EndpointParameters(this)
+                public fun build(): TestEndpointParameters = TestEndpointParameters(this)
             }
         """.formatForTest()
         generatedClass.shouldContainOnlyOnceWithDiff(expected)

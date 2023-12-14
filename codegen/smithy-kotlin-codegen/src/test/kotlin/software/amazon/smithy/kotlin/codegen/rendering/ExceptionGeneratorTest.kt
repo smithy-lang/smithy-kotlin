@@ -11,12 +11,11 @@ import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.kotlin.codegen.KotlinCodegenPlugin
 import software.amazon.smithy.kotlin.codegen.core.*
+import software.amazon.smithy.kotlin.codegen.integration.KotlinIntegration
+import software.amazon.smithy.kotlin.codegen.integration.SectionWriter
+import software.amazon.smithy.kotlin.codegen.integration.SectionWriterBinding
 import software.amazon.smithy.kotlin.codegen.model.buildSymbol
 import software.amazon.smithy.kotlin.codegen.model.expectShape
-import software.amazon.smithy.kotlin.codegen.rendering.protocol.ApplicationProtocol
-import software.amazon.smithy.kotlin.codegen.rendering.protocol.ProtocolGenerator
-import software.amazon.smithy.kotlin.codegen.rendering.serde.StructuredDataParserGenerator
-import software.amazon.smithy.kotlin.codegen.rendering.serde.StructuredDataSerializerGenerator
 import software.amazon.smithy.kotlin.codegen.test.*
 import software.amazon.smithy.model.shapes.*
 import kotlin.test.Test
@@ -200,38 +199,29 @@ class ExceptionGeneratorTest {
         }
 
         @Test
-        fun itExtendsProtocolGeneratorBaseClass() {
+        fun itCanBeOverridden() {
             val model = "".prependNamespaceAndService().toSmithyModel()
-            val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model)
-            val writer = KotlinWriter(TestModelDefault.NAMESPACE)
+            val exceptionBaseClassSymbol: Symbol = buildSymbol {
+                name = "QuxException"
+                namespace = "foo.bar"
+            }
+            val integration = object : KotlinIntegration {
+                override val sectionWriters: List<SectionWriterBinding>
+                    get() = listOf(SectionWriterBinding(ExceptionBaseClassGenerator.ExceptionBaseClassSection, exceptionSectionWriter))
 
-            val protocolGenerator = object : ProtocolGenerator {
-                override val protocol: ShapeId
-                    get() = error("not needed for test")
-
-                override val applicationProtocol: ApplicationProtocol
-                    get() = error("not needed for test")
-
-                override fun generateProtocolUnitTests(ctx: ProtocolGenerator.GenerationContext) {}
-                override fun generateProtocolClient(ctx: ProtocolGenerator.GenerationContext) {}
-
-                override fun structuredDataParser(ctx: ProtocolGenerator.GenerationContext): StructuredDataParserGenerator {
-                    error("not needed for test")
-                }
-
-                override fun structuredDataSerializer(ctx: ProtocolGenerator.GenerationContext): StructuredDataSerializerGenerator {
-                    error("not needed for test")
-                }
-
-                override val exceptionBaseClassSymbol: Symbol = buildSymbol {
-                    name = "QuxException"
-                    namespace = "foo.bar"
+                private val exceptionSectionWriter = SectionWriter { writer, _ ->
+                    val ctx = writer.getContextValue(ExceptionBaseClassGenerator.ExceptionBaseClassSection.CodegenContext)
+                    ServiceExceptionBaseClassGenerator(exceptionBaseClassSymbol).render(ctx, writer)
                 }
             }
 
-            val ctx = GenerationContext(model, provider, model.defaultSettings(), protocolGenerator)
-            ExceptionBaseClassGenerator.render(ctx, writer)
-            val contents = writer.toString()
+            val ctx = model.newTestContext(integrations = listOf(integration))
+            ctx.generationCtx.delegator.useFileWriter("Exception.kt", "") { writer ->
+                ExceptionBaseClassGenerator.render(ctx.toCodegenContext(), writer)
+            }
+            ctx.generationCtx.delegator.flushWriters()
+
+            val contents = ctx.manifest.getFileString("src/main/kotlin/Exception.kt").get()
 
             val expected = """
                 public open class TestException : QuxException {

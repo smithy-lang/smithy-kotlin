@@ -90,7 +90,9 @@ class HttpProtocolClientGeneratorTest {
             execution.auth = OperationAuthConfig(authSchemeAdapter, configuredAuthSchemes, identityProviderConfig)
             execution.endpointResolver = EndpointResolverAdapter(config)
             execution.retryStrategy = config.retryStrategy
+            execution.retryPolicy = config.retryPolicy
         }
+        mergeServiceDefaults(op.context)
         op.install(MockMiddleware(configurationField1 = "testing"))
         op.interceptors.addAll(config.interceptors)
         return op.roundTrip(client, input)
@@ -111,7 +113,9 @@ class HttpProtocolClientGeneratorTest {
             execution.auth = OperationAuthConfig(authSchemeAdapter, configuredAuthSchemes, identityProviderConfig)
             execution.endpointResolver = EndpointResolverAdapter(config)
             execution.retryStrategy = config.retryStrategy
+            execution.retryPolicy = config.retryPolicy
         }
+        mergeServiceDefaults(op.context)
         op.install(MockMiddleware(configurationField1 = "testing"))
         op.interceptors.addAll(config.interceptors)
         return op.roundTrip(client, input)
@@ -132,7 +136,9 @@ class HttpProtocolClientGeneratorTest {
             execution.auth = OperationAuthConfig(authSchemeAdapter, configuredAuthSchemes, identityProviderConfig)
             execution.endpointResolver = EndpointResolverAdapter(config)
             execution.retryStrategy = config.retryStrategy
+            execution.retryPolicy = config.retryPolicy
         }
+        mergeServiceDefaults(op.context)
         op.install(MockMiddleware(configurationField1 = "testing"))
         op.interceptors.addAll(config.interceptors)
         return op.roundTrip(client, input)
@@ -153,7 +159,9 @@ class HttpProtocolClientGeneratorTest {
             execution.auth = OperationAuthConfig(authSchemeAdapter, configuredAuthSchemes, identityProviderConfig)
             execution.endpointResolver = EndpointResolverAdapter(config)
             execution.retryStrategy = config.retryStrategy
+            execution.retryPolicy = config.retryPolicy
         }
+        mergeServiceDefaults(op.context)
         op.install(MockMiddleware(configurationField1 = "testing"))
         op.interceptors.addAll(config.interceptors)
         return op.roundTrip(client, input)
@@ -174,7 +182,9 @@ class HttpProtocolClientGeneratorTest {
             execution.auth = OperationAuthConfig(authSchemeAdapter, configuredAuthSchemes, identityProviderConfig)
             execution.endpointResolver = EndpointResolverAdapter(config)
             execution.retryStrategy = config.retryStrategy
+            execution.retryPolicy = config.retryPolicy
         }
+        mergeServiceDefaults(op.context)
         op.install(MockMiddleware(configurationField1 = "testing"))
         op.interceptors.addAll(config.interceptors)
         return op.execute(client, input, block)
@@ -195,7 +205,9 @@ class HttpProtocolClientGeneratorTest {
             execution.auth = OperationAuthConfig(authSchemeAdapter, configuredAuthSchemes, identityProviderConfig)
             execution.endpointResolver = EndpointResolverAdapter(config)
             execution.retryStrategy = config.retryStrategy
+            execution.retryPolicy = config.retryPolicy
         }
+        mergeServiceDefaults(op.context)
         op.install(MockMiddleware(configurationField1 = "testing"))
         op.interceptors.addAll(config.interceptors)
         return op.execute(client, input, block)
@@ -216,7 +228,9 @@ class HttpProtocolClientGeneratorTest {
             execution.auth = OperationAuthConfig(authSchemeAdapter, configuredAuthSchemes, identityProviderConfig)
             execution.endpointResolver = EndpointResolverAdapter(config)
             execution.retryStrategy = config.retryStrategy
+            execution.retryPolicy = config.retryPolicy
         }
+        mergeServiceDefaults(op.context)
         op.install(MockMiddleware(configurationField1 = "testing"))
         op.interceptors.addAll(config.interceptors)
         return op.roundTrip(client, input)
@@ -237,7 +251,9 @@ class HttpProtocolClientGeneratorTest {
             execution.auth = OperationAuthConfig(authSchemeAdapter, configuredAuthSchemes, identityProviderConfig)
             execution.endpointResolver = EndpointResolverAdapter(config)
             execution.retryStrategy = config.retryStrategy
+            execution.retryPolicy = config.retryPolicy
         }
+        mergeServiceDefaults(op.context)
         op.install(MockMiddleware(configurationField1 = "testing"))
         op.interceptors.addAll(config.interceptors)
         return op.roundTrip(client, input)
@@ -258,7 +274,9 @@ class HttpProtocolClientGeneratorTest {
             execution.auth = OperationAuthConfig(authSchemeAdapter, configuredAuthSchemes, identityProviderConfig)
             execution.endpointResolver = EndpointResolverAdapter(config)
             execution.retryStrategy = config.retryStrategy
+            execution.retryPolicy = config.retryPolicy
         }
+        mergeServiceDefaults(op.context)
         op.install(MockMiddleware(configurationField1 = "testing"))
         op.interceptors.addAll(config.interceptors)
         return op.roundTrip(client, input)
@@ -336,7 +354,9 @@ class HttpProtocolClientGeneratorTest {
             execution.auth = OperationAuthConfig(authSchemeAdapter, configuredAuthSchemes, identityProviderConfig)
             execution.endpointResolver = EndpointResolverAdapter(config)
             execution.retryStrategy = config.retryStrategy
+            execution.retryPolicy = config.retryPolicy
         }
+        mergeServiceDefaults(op.context)
         """
         contents.shouldContainOnlyOnceWithDiff(expectedFragment)
     }
