@@ -37,10 +37,6 @@ jobs:
           distribution: 'corretto'
           java-version: 17
           cache: 'gradle'
-      - name: Dump ports
-        shell: bash
-        run: |
-          netstat -tapn
       - name: Test
         shell: bash
         run: |

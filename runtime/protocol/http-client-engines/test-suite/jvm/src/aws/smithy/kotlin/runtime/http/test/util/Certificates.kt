@@ -7,7 +7,6 @@ package aws.smithy.kotlin.runtime.http.test.util
 import io.ktor.network.tls.certificates.*
 import java.io.File
 import java.io.FileInputStream
-import java.nio.file.Files
 import java.nio.file.Path
 import java.security.KeyStore
 
@@ -44,7 +43,7 @@ internal data class SslConfig private constructor(
         }
 
         fun load(fromPath: Path): SslConfig {
-            val text = Files.readString(fromPath)
+            val text = fromPath.toFile().readText()
             val (
                 keyStoreFilePath,
                 keyStorePassword,
@@ -68,7 +67,7 @@ internal data class SslConfig private constructor(
     }
 
     fun persist(toPath: Path) {
-        Files.writeString(toPath, toString())
+        toPath.toFile().writeText(toString())
     }
 
     override fun toString(): String =
