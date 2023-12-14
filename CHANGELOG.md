@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.0.4] - 12/14/2023
+
+### Miscellaneous
+* Refactor codegen to move non AWS specific support into core
+
 ## [1.0.3] - 12/08/2023
 
 ### Fixes
