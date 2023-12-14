@@ -122,7 +122,7 @@ fun Model.newTestContext(
     val manifest = MockManifest()
     val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model = this, rootNamespace = packageName, serviceName = serviceName, settings = settings)
     val service = this.getShape(ShapeId.from("$packageName#$serviceName")).get().asServiceShape().get()
-    val delegator = KotlinDelegator(settings, this, manifest, provider)
+    val delegator = KotlinDelegator(settings, this, manifest, provider, integrations)
 
     val ctx = ProtocolGenerator.GenerationContext(
         settings,

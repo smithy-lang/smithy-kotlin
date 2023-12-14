@@ -377,4 +377,4 @@ private fun SdkFieldDescriptor.copyWithNewSerialName(newName: String): SdkFieldD
     return SdkFieldDescriptor(kind, newTraits)
 }
 
-private fun String.encode() = PercentEncoding.Query.encode(this)
+private fun String.encode() = PercentEncoding.FormUrl.encode(this)

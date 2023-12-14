@@ -271,7 +271,11 @@ public actual abstract class SigningSuiteTestBase : HasSigner {
         val extraHeaders = actual.headers.lowerKeys() - expected.headers.lowerKeys()
         assertEquals(0, extraHeaders.size, "Found extra headers in request: $extraHeaders")
 
-        assertEquals(expected.url.parameters, actual.url.parameters)
+        if (expected.url.parameters != actual.url.parameters) {
+            fun dumpParams(request: HttpRequest) =
+                request.url.parameters.entryValues.joinToString("\n", "\n") { (key, value) -> "  $key = $value" }
+            fail("\nTest case parameters: ${dumpParams(expected)}\n\nActual parameters: ${dumpParams(actual)}\n")
+        }
 
         when (val expectedBody = expected.body) {
             is HttpBody.Empty -> assertIs<HttpBody.Empty>(actual.body)

@@ -54,7 +54,12 @@ public class Encodable internal constructor(
      * Returns a new [Encodable] derived from re-encoding this instance's [decoded] data. This _may_ be different from
      * the current instance's [encoded] data if the object was created with a non-canonical encoding.
      */
-    public fun reencode(): Encodable = encoding.encodableFromDecoded(decoded)
+    public fun reencode(): Encodable = reencode(encoding)
+
+    /**
+     * Returns a new [Encodable] derived from re-encoding this instance's [decoded] data with [newEncoding].
+     */
+    public fun reencode(newEncoding: Encoding): Encodable = newEncoding.encodableFromDecoded(decoded)
 
     override fun toString(): String = buildString {
         append("Encodable(decoded=")

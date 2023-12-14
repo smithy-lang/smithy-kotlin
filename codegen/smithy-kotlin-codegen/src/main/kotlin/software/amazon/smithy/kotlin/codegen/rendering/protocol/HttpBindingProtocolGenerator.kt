@@ -46,7 +46,10 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
     /**
      * Get the [HttpProtocolClientGenerator] to be used to render the implementation of the service client interface
      */
-    abstract fun getHttpProtocolClientGenerator(ctx: ProtocolGenerator.GenerationContext): HttpProtocolClientGenerator
+    open fun getHttpProtocolClientGenerator(ctx: ProtocolGenerator.GenerationContext): HttpProtocolClientGenerator {
+        val middleware = getHttpMiddleware(ctx)
+        return HttpProtocolClientGenerator(ctx, middleware, getProtocolHttpBindingResolver(ctx.model, ctx.service))
+    }
 
     /**
      * Get all the middleware that should be installed into the operation's middleware stack (`SdkOperationExecution`)

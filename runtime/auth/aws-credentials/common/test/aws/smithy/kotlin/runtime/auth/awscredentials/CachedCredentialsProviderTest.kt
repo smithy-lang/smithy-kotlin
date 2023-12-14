@@ -136,4 +136,18 @@ class CachedCredentialsProviderTest {
         }
         assertEquals(1, source.callCount)
     }
+
+    @Test
+    fun testCachedConvenienceFunction() = runTest {
+        val source = TestCredentialsProvider(expiration = testExpiration)
+        val provider = source.cached(clock = testClock)
+
+        val creds = provider.resolve()
+        val expected = Credentials("AKID", "secret", expiration = testExpiration)
+        assertEquals(expected, creds)
+        assertEquals(1, source.callCount)
+
+        provider.resolve()
+        assertEquals(1, source.callCount)
+    }
 }
