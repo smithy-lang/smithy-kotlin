@@ -37,12 +37,13 @@ jobs:
           distribution: 'corretto'
           java-version: 17
           cache: 'gradle'
+      - name: Dump ports
+        shell: bash
+        run: |
+          netstat -tapn
       - name: Test
         shell: bash
         run: |
-          echo Checking ports in use...
-          netstat -tlpn
-          echo
           ./gradlew -Ptest.java.version=${{ matrix.java-version }} jvmTest --stacktrace
 
   all-platforms:
