@@ -10,8 +10,10 @@ import software.amazon.smithy.kotlin.codegen.core.KotlinWriter
 import software.amazon.smithy.kotlin.codegen.core.RuntimeTypes
 import software.amazon.smithy.kotlin.codegen.core.withBlock
 import software.amazon.smithy.kotlin.codegen.integration.KotlinIntegration
+import software.amazon.smithy.kotlin.codegen.model.defaultValue
 import software.amazon.smithy.kotlin.codegen.model.getTrait
 import software.amazon.smithy.kotlin.codegen.model.hasTrait
+import software.amazon.smithy.kotlin.codegen.model.nonNullable
 import software.amazon.smithy.kotlin.codegen.rendering.protocol.ProtocolGenerator
 import software.amazon.smithy.kotlin.codegen.rendering.protocol.ProtocolMiddleware
 import software.amazon.smithy.kotlin.codegen.rendering.util.ConfigProperty
@@ -41,13 +43,17 @@ class RequestCompressionIntegration : KotlinIntegration {
             ConfigProperty {
                 name = "requestCompression"
                 symbol = RuntimeTypes.SmithyClient.Config.RequestCompressionConfig
-                builderSymbol = RuntimeTypes.SmithyClient.Config.RequestCompressionConfig.nestedBuilder
+                builderSymbol = RuntimeTypes.SmithyClient.Config.RequestCompressionConfig.nestedBuilder.toBuilder()
+                    .defaultValue("${this.symbol}{}.toBuilderApplicator()")
+                    .nonNullable()
+                    .build()
                 toBuilderExpression = ".toBuilderApplicator()"
                 baseClass = RuntimeTypes.SmithyClient.Config.CompressionClientConfig
+                builderBaseClass = RuntimeTypes.SmithyClient.Config.CompressionClientConfig.nestedBuilder
                 propertyType = ConfigPropertyType.Custom(
                     render = { prop, writer ->
                         writer.write(
-                            "override val #1L: #2T = builder.#1L?.let { #2T(it) } ?: #2T{}",
+                            "override val #1L: #2T = #2T(builder.#1L)",
                             prop.propertyName,
                             prop.symbol,
                         )
