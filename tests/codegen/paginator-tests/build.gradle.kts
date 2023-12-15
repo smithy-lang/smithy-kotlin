@@ -20,8 +20,8 @@ kotlin.sourceSets.all {
 }
 
 kotlin.sourceSets.getByName("main") {
-    kotlin.srcDir("${project.buildDir}/generated-src/src")
-    kotlin.srcDir("${project.buildDir}/smithyprojections/paginator-tests/paginator-tests/kotlin-codegen")
+    kotlin.srcDir(layout.buildDirectory.dir("generated-src/src"))
+    kotlin.srcDir(layout.buildDirectory.dir("smithyprojections/paginator-tests/paginator-tests/kotlin-codegen"))
 }
 
 tasks["smithyBuildJar"].enabled = false

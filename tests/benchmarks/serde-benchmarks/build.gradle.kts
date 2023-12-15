@@ -31,7 +31,7 @@ kotlin {
             }
         }
         val jvmMain by getting {
-            kotlin.srcDir("${project.buildDir}/generated-src/src")
+            kotlin.srcDir(layout.buildDirectory.dir("generated-src/src"))
         }
     }
 }
@@ -91,10 +91,10 @@ val generateSdk = tasks.create<SmithyBuild>("generateSdk") {
 
 data class BenchmarkModel(val name: String) {
     val projectionRootDir: File
-        get() = project.file("${project.buildDir}/smithyprojections/${project.name}/$name/kotlin-codegen/src/main/kotlin").absoluteFile
+        get() = layout.buildDirectory.dir("smithyprojections/${project.name}/$name/kotlin-codegen/src/main/kotlin").get().asFile.absoluteFile
 
     val sourceSetRootDir: File
-        get() = project.file("${project.buildDir}/generated-src/src").absoluteFile
+        get() = layout.buildDirectory.dir("generated-src/src").get().asFile.absoluteFile
 }
 
 val benchmarkModels = listOf(
