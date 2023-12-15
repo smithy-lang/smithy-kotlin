@@ -14,7 +14,7 @@ public annotation class CompressionClientConfigDsl
 /**
  * The configuration properties for a client that supports compression
  */
-public interface CompressionClientConfig/*(builder: Builder)*/ {
+public interface CompressionClientConfig {
     public val requestCompression: RequestCompressionConfig
 
     @CompressionClientConfigDsl
@@ -22,7 +22,7 @@ public interface CompressionClientConfig/*(builder: Builder)*/ {
         public var requestCompression: RequestCompressionConfig.Builder
 
         public fun requestCompression(block: RequestCompressionConfig.Builder.() -> Unit) {
-            this.requestCompression = requestCompression.apply(block)
+            requestCompression.apply(block)
         }
     }
 }
