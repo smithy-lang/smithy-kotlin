@@ -66,11 +66,13 @@ subprojects {
     }
 
     tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
-        kotlinOptions {
-            jvmTarget = "1.8"
-        }
         compilerOptions {
             jvmTarget.set(JvmTarget.JVM_1_8)
+            freeCompilerArgs.add("-Xexpect-actual-classes")
+        }
+    }
+    tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinNativeCompile> {
+        compilerOptions {
             freeCompilerArgs.add("-Xexpect-actual-classes")
         }
     }
