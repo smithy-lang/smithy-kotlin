@@ -31,7 +31,7 @@ class AsyncStressTest : AbstractEngineTest() {
         test { env, client ->
             val req = HttpRequest {
                 testSetup(env)
-                url.path = "concurrent"
+                url.path.decoded = "concurrent"
             }
 
             val call = client.call(req)
@@ -57,7 +57,7 @@ class AsyncStressTest : AbstractEngineTest() {
         test { env, client ->
             val req = HttpRequest {
                 testSetup(env)
-                url.path = "concurrent"
+                url.path.decoded = "concurrent"
             }
 
             val engineJobsBefore = client.engine.coroutineContext.job.children.toList()

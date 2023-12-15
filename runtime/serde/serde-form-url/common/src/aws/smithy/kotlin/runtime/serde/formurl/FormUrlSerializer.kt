@@ -11,9 +11,9 @@ import aws.smithy.kotlin.runtime.content.BigInteger
 import aws.smithy.kotlin.runtime.content.Document
 import aws.smithy.kotlin.runtime.io.SdkBuffer
 import aws.smithy.kotlin.runtime.serde.*
+import aws.smithy.kotlin.runtime.text.encoding.PercentEncoding
 import aws.smithy.kotlin.runtime.time.Instant
 import aws.smithy.kotlin.runtime.time.TimestampFormat
-import aws.smithy.kotlin.runtime.util.text.urlEncodeComponent
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.contract
 
@@ -40,7 +40,7 @@ private class FormUrlSerializer(
         buffer.apply(block)
     }
 
-    private fun write(value: String) = write { writeUtf8(value.urlEncodeComponent()) }
+    private fun write(value: String) = write { writeUtf8(value.encode()) }
 
     override fun serializeBoolean(value: Boolean) = write("$value")
     override fun serializeByte(value: Byte) = write { commonWriteNumber(value) }
@@ -233,7 +233,7 @@ private class FormUrlListSerializer(
     override fun serializeDouble(value: Double) = writePrefixed { commonWriteNumber(value) }
     override fun serializeBigInteger(value: BigInteger) = writePrefixed { commonWriteNumber(value) }
     override fun serializeBigDecimal(value: BigDecimal) = writePrefixed { writeUtf8(value.toPlainString()) }
-    override fun serializeString(value: String) = writePrefixed { writeUtf8(value.urlEncodeComponent()) }
+    override fun serializeString(value: String) = writePrefixed { writeUtf8(value.encode()) }
     override fun serializeInstant(value: Instant, format: TimestampFormat) = writePrefixed { writeUtf8(value.format(format)) }
 
     override fun serializeSdkSerializable(value: SdkSerializable) {
@@ -265,9 +265,7 @@ private class FormUrlMapSerializer(
     private fun writeKey(key: String) {
         idx++
         if (buffer.size > 0L) buffer.writeUtf8("&")
-
-        val encodedKey = key.urlEncodeComponent()
-        buffer.writeUtf8("$commonPrefix.${mapName.key}=$encodedKey")
+        buffer.writeUtf8("$commonPrefix.${mapName.key}=${key.encode()}")
     }
 
     private fun writeEntry(key: String, block: () -> Unit) {
@@ -378,3 +376,5 @@ private fun SdkFieldDescriptor.copyWithNewSerialName(newName: String): SdkFieldD
     newTraits.add(FormUrlSerialName(newName))
     return SdkFieldDescriptor(kind, newTraits)
 }
+
+private fun String.encode() = PercentEncoding.FormUrl.encode(this)

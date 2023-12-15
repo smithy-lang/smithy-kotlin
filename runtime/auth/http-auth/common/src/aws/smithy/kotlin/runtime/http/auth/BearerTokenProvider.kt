@@ -5,10 +5,10 @@
 
 package aws.smithy.kotlin.runtime.http.auth
 
+import aws.smithy.kotlin.runtime.collections.Attributes
 import aws.smithy.kotlin.runtime.identity.Identity
 import aws.smithy.kotlin.runtime.identity.IdentityProvider
 import aws.smithy.kotlin.runtime.io.Closeable
-import aws.smithy.kotlin.runtime.util.Attributes
 
 /**
  * Represents a producer/source of Bearer authentication tokens

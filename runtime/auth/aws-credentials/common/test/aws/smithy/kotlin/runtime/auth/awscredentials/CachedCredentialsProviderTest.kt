@@ -5,9 +5,9 @@
 
 package aws.smithy.kotlin.runtime.auth.awscredentials
 
+import aws.smithy.kotlin.runtime.collections.Attributes
 import aws.smithy.kotlin.runtime.time.Instant
 import aws.smithy.kotlin.runtime.time.ManualClock
-import aws.smithy.kotlin.runtime.util.Attributes
 import io.kotest.matchers.string.shouldContain
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
@@ -134,6 +134,20 @@ class CachedCredentialsProviderTest {
         assertFailsWith<IllegalStateException> {
             provider.resolve()
         }
+        assertEquals(1, source.callCount)
+    }
+
+    @Test
+    fun testCachedConvenienceFunction() = runTest {
+        val source = TestCredentialsProvider(expiration = testExpiration)
+        val provider = source.cached(clock = testClock)
+
+        val creds = provider.resolve()
+        val expected = Credentials("AKID", "secret", expiration = testExpiration)
+        assertEquals(expected, creds)
+        assertEquals(1, source.callCount)
+
+        provider.resolve()
         assertEquals(1, source.callCount)
     }
 }

@@ -5,7 +5,7 @@
 
 package aws.smithy.kotlin.runtime.auth.awscredentials
 
-import aws.smithy.kotlin.runtime.util.Attributes
+import aws.smithy.kotlin.runtime.collections.Attributes
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals

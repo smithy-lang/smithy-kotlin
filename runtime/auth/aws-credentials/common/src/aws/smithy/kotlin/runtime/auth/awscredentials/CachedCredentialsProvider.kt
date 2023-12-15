@@ -5,10 +5,10 @@
 
 package aws.smithy.kotlin.runtime.auth.awscredentials
 
+import aws.smithy.kotlin.runtime.collections.Attributes
 import aws.smithy.kotlin.runtime.io.closeIfCloseable
 import aws.smithy.kotlin.runtime.telemetry.logging.trace
 import aws.smithy.kotlin.runtime.time.Clock
-import aws.smithy.kotlin.runtime.util.Attributes
 import aws.smithy.kotlin.runtime.util.CachedValue
 import aws.smithy.kotlin.runtime.util.ExpiringValue
 import kotlinx.atomicfu.atomic
@@ -61,14 +61,10 @@ public class CachedCredentialsProvider(
         return cachedCredentials.getOrLoad {
             coroutineContext.trace<CachedCredentialsProvider> { "refreshing credentials cache" }
             val providerCreds = source.resolve()
-            if (providerCreds.expiration != null) {
-                val expiration = minOf(providerCreds.expiration, (clock.now() + expireCredentialsAfter))
-                ExpiringValue(providerCreds, expiration)
-            } else {
-                val expiration = clock.now() + expireCredentialsAfter
-                val creds = providerCreds.copy(expiration = expiration)
-                ExpiringValue(creds, expiration)
-            }
+            val cacheExpiration = listOfNotNull(providerCreds.expiration, clock.now() + expireCredentialsAfter).min()
+            val credsExpiration = providerCreds.expiration ?: cacheExpiration
+            val creds = providerCreds.copy(expiration = credsExpiration)
+            ExpiringValue(creds, cacheExpiration)
         }
     }
 
@@ -78,3 +74,21 @@ public class CachedCredentialsProvider(
         source.closeIfCloseable()
     }
 }
+
+/**
+ * A utility function which wraps a [CredentialsProvider] in a [CachedCredentialsProvider].
+ *
+ * @param expireCredentialsAfter the default expiration time period for sourced credentials. For a given set of
+ * cached credentials, the refresh time period will be the minimum of this time and any expiration timestamp on
+ * the credentials themselves.
+ * @param refreshBufferWindow amount of time before the actual credential expiration time when credentials are
+ * considered expired. For example, if credentials are expiring in 15 minutes, and the buffer time is 10 seconds,
+ * then any requests made after 14 minutes and 50 seconds will load new credentials. Defaults to 10 seconds.
+ * @param clock the source of time for this provider
+ * @return the newly-constructed credentials provider
+ */
+public fun CredentialsProvider.cached(
+    expireCredentialsAfter: Duration = DEFAULT_CREDENTIALS_REFRESH_SECONDS.seconds,
+    refreshBufferWindow: Duration = DEFAULT_CREDENTIALS_REFRESH_BUFFER_SECONDS.seconds,
+    clock: Clock = Clock.System,
+): CachedCredentialsProvider = CachedCredentialsProvider(this, expireCredentialsAfter, refreshBufferWindow, clock)

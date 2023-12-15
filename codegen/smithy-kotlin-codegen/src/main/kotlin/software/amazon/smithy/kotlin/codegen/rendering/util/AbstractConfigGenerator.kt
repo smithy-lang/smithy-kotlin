@@ -9,6 +9,7 @@ import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.codegen.core.SymbolReference
 import software.amazon.smithy.kotlin.codegen.core.CodegenContext
 import software.amazon.smithy.kotlin.codegen.core.KotlinWriter
+import software.amazon.smithy.kotlin.codegen.core.putMissingContext
 import software.amazon.smithy.kotlin.codegen.core.withBlock
 import software.amazon.smithy.kotlin.codegen.model.PropertyTypeMutability
 import software.amazon.smithy.kotlin.codegen.model.propertyTypeMutability
@@ -32,20 +33,14 @@ import software.amazon.smithy.kotlin.codegen.model.propertyTypeMutability
  */
 abstract class AbstractConfigGenerator {
 
-    /**
-     * The generated type visibility e.g. `public`, `internal`, `private`.
-     */
-    open val visibility: String = "public"
-
     open fun render(
         ctx: CodegenContext,
         props: Collection<ConfigProperty>,
         writer: KotlinWriter,
     ) {
-        if (writer.getContext("configClass.name") == null) {
-            // push context to be used throughout generation of the class
-            writer.putContext("configClass.name", "Config")
-        }
+        writer.pushState()
+        writer.putMissingContext("configClass.name", "Config")
+        writer.putMissingContext("visibility", ctx.settings.api.visibility)
 
         addPropertyImports(props, writer)
 
@@ -53,21 +48,28 @@ abstract class AbstractConfigGenerator {
         val formattedBaseClasses = props.formattedBaseClasses { it.baseClass to it.baseClassDelegate }
 
         writer.withBlock(
-            "$visibility class #configClass.name:L private constructor(builder: Builder)$formattedBaseClasses {",
+            "#visibility:L class #configClass.name:L private constructor(builder: Builder)$formattedBaseClasses {",
             "}",
         ) {
             renderImmutableProperties(sortedProps, writer)
             renderCompanionObject(writer)
             renderToBuilder(sortedProps, writer)
             renderBuilder(sortedProps, writer)
+            renderAdditionalMethods(ctx, sortedProps, writer)
         }
 
-        writer.removeContext("configClass.name")
+        writer.popState()
+    }
+
+    /**
+     * Hook to render additional methods on the generated type
+     */
+    protected open fun renderAdditionalMethods(ctx: CodegenContext, props: List<ConfigProperty>, writer: KotlinWriter) {
     }
 
     protected open fun renderCompanionObject(writer: KotlinWriter) {
-        writer.withBlock("$visibility companion object {", "}") {
-            write("$visibility inline operator fun invoke(block: Builder.() -> kotlin.Unit): #configClass.name:L = Builder().apply(block).build()")
+        writer.withBlock("#visibility:L companion object {", "}") {
+            write("#visibility:L inline operator fun invoke(block: Builder.() -> kotlin.Unit): #configClass.name:L = Builder().apply(block).build()")
         }
     }
 
@@ -119,7 +121,7 @@ abstract class AbstractConfigGenerator {
 
     protected open fun renderToBuilder(props: Collection<ConfigProperty>, writer: KotlinWriter) {
         writer.write("")
-            .withBlock("$visibility fun toBuilder(): Builder = Builder().apply {", "}") {
+            .withBlock("#visibility:L fun toBuilder(): Builder = Builder().apply {", "}") {
                 props
                     .filter { it.propertyType !is ConfigPropertyType.ConstantValue }
                     .forEach { prop ->
@@ -132,7 +134,7 @@ abstract class AbstractConfigGenerator {
         val formattedBaseClasses = props.formattedBaseClasses { it.builderBaseClass to it.builderBaseClassDelegate }
 
         writer.write("")
-            .withBlock("$visibility class Builder$formattedBaseClasses {", "}") {
+            .withBlock("#visibility:L class Builder$formattedBaseClasses {", "}") {
                 // override DSL properties
                 props
                     .filter { it.propertyType !is ConfigPropertyType.ConstantValue }

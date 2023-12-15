@@ -5,9 +5,9 @@
 
 package aws.smithy.kotlin.runtime.serde.json
 
+import aws.smithy.kotlin.runtime.collections.*
 import aws.smithy.kotlin.runtime.content.BigDecimal
 import aws.smithy.kotlin.runtime.content.BigInteger
-import aws.smithy.kotlin.runtime.util.*
 
 // character code points
 private const val CP_QUOTATION = 0x22

@@ -35,6 +35,7 @@ object RuntimeTypes {
         object Request : RuntimeTypePackage(KotlinDependency.HTTP, "request") {
             val HttpRequest = symbol("HttpRequest")
             val HttpRequestBuilder = symbol("HttpRequestBuilder")
+            val immutableView = symbol("immutableView")
             val url = symbol("url")
             val headers = symbol("headers")
             val toBuilder = symbol("toBuilder")
@@ -100,6 +101,17 @@ object RuntimeTypes {
         val TimestampFormat = symbol("TimestampFormat", "time")
         val ClientException = symbol("ClientException")
 
+        object Collections : RuntimeTypePackage(KotlinDependency.CORE, "collections") {
+            val Attributes = symbol("Attributes")
+            val attributesOf = symbol("attributesOf")
+            val AttributeKey = symbol("AttributeKey")
+            val get = symbol("get")
+            val mutableMultiMapOf = symbol("mutableMultiMapOf")
+            val putIfAbsent = symbol("putIfAbsent")
+            val putIfAbsentNotNull = symbol("putIfAbsentNotNull")
+            val ReadThroughCache = symbol("ReadThroughCache")
+        }
+
         object Content : RuntimeTypePackage(KotlinDependency.CORE, "content") {
             val BigDecimal = symbol("BigDecimal")
             val BigInteger = symbol("BigInteger")
@@ -143,38 +155,35 @@ object RuntimeTypes {
             val SdkManagedGroup = symbol("SdkManagedGroup")
             val addIfManaged = symbol("addIfManaged", isExtension = true)
         }
+
+        object Text : RuntimeTypePackage(KotlinDependency.CORE, "text") {
+            object Encoding : RuntimeTypePackage(KotlinDependency.CORE, "text.encoding") {
+                val decodeBase64 = symbol("decodeBase64")
+                val decodeBase64Bytes = symbol("decodeBase64Bytes")
+                val encodeBase64 = symbol("encodeBase64")
+                val encodeBase64String = symbol("encodeBase64String")
+                val PercentEncoding = symbol("PercentEncoding")
+            }
+        }
+
         object Utils : RuntimeTypePackage(KotlinDependency.CORE, "util") {
-            val Attributes = symbol("Attributes")
-            val MutableAttributes = symbol("MutableAttributes")
-            val attributesOf = symbol("attributesOf")
-            val AttributeKey = symbol("AttributeKey")
-            val decodeBase64 = symbol("decodeBase64")
-            val decodeBase64Bytes = symbol("decodeBase64Bytes")
-            val encodeBase64 = symbol("encodeBase64")
-            val encodeBase64String = symbol("encodeBase64String")
             val ExpiringValue = symbol("ExpiringValue")
             val flattenIfPossible = symbol("flattenIfPossible")
-            val get = symbol("get")
             val LazyAsyncValue = symbol("LazyAsyncValue")
             val length = symbol("length")
-            val putIfAbsent = symbol("putIfAbsent")
-            val putIfAbsentNotNull = symbol("putIfAbsentNotNull")
-            val ReadThroughCache = symbol("ReadThroughCache")
+            val mergeSequential = symbol("mergeSequential")
             val truthiness = symbol("truthiness")
-            val urlEncodeComponent = symbol("urlEncodeComponent", "text")
             val toNumber = symbol("toNumber")
             val type = symbol("type")
         }
 
         object Net : RuntimeTypePackage(KotlinDependency.CORE, "net") {
             val Host = symbol("Host")
-            val parameters = symbol("parameters")
-            val QueryParameters = symbol("QueryParameters")
-            val QueryParametersBuilder = symbol("QueryParametersBuilder")
-            val splitAsQueryParameters = symbol("splitAsQueryParameters")
-            val toQueryParameters = symbol("toQueryParameters")
-            val Url = symbol("Url")
-            val UrlDecoding = symbol("UrlDecoding")
+
+            object Url : RuntimeTypePackage(KotlinDependency.CORE, "net.url") {
+                val QueryParameters = symbol("QueryParameters")
+                val Url = symbol("Url")
+            }
         }
     }
 
@@ -198,11 +207,8 @@ object RuntimeTypes {
             val EndpointProvider = symbol("EndpointProvider")
             val Endpoint = symbol("Endpoint")
             val EndpointProviderException = symbol("EndpointProviderException")
-            val SigningContext = symbol("SigningContext")
             val SigningContextAttributeKey = symbol("SigningContextAttributeKey")
-
-            @get:JvmName("getSigningContextExtMethod")
-            val signingContext = symbol("signingContext")
+            val authOptions = symbol("authOptions")
             object Functions : RuntimeTypePackage(KotlinDependency.SMITHY_CLIENT, "endpoints.functions") {
                 val substring = symbol("substring")
                 val isValidHostLabel = symbol("isValidHostLabel")
@@ -314,7 +320,9 @@ object RuntimeTypes {
         object HttpAuthAws : RuntimeTypePackage(KotlinDependency.HTTP_AUTH_AWS) {
             val AwsHttpSigner = symbol("AwsHttpSigner")
             val SigV4AuthScheme = symbol("SigV4AuthScheme")
-            val sigv4 = symbol("sigv4")
+            val mergeAuthOptions = symbol("mergeAuthOptions")
+            val sigV4 = symbol("sigV4")
+            val sigV4A = symbol("sigV4A")
         }
     }
 

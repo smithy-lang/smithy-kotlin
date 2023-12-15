@@ -6,9 +6,12 @@
 package aws.smithy.kotlin.runtime.client.endpoints.functions
 
 import aws.smithy.kotlin.runtime.InternalApi
-import aws.smithy.kotlin.runtime.net.*
-import aws.smithy.kotlin.runtime.util.text.ensureSuffix
-import aws.smithy.kotlin.runtime.util.text.urlEncodeComponent
+import aws.smithy.kotlin.runtime.net.Host
+import aws.smithy.kotlin.runtime.net.isValidHostname
+import aws.smithy.kotlin.runtime.net.toUrlString
+import aws.smithy.kotlin.runtime.text.encoding.PercentEncoding
+import aws.smithy.kotlin.runtime.text.ensureSuffix
+import aws.smithy.kotlin.runtime.net.url.Url as SdkUrl
 
 @InternalApi
 public fun substring(value: String?, start: Int, stop: Int, reverse: Boolean): String? =
@@ -27,14 +30,14 @@ public fun isValidHostLabel(value: String?, allowSubdomains: Boolean): Boolean =
     } ?: false
 
 @InternalApi
-public fun uriEncode(value: String): String = value.urlEncodeComponent(formUrlEncode = false)
+public fun uriEncode(value: String): String = PercentEncoding.SmithyLabel.encode(value)
 
 @InternalApi
 public fun parseUrl(value: String?): Url? =
     value?.let {
-        val sdkUrl: aws.smithy.kotlin.runtime.net.Url
+        val sdkUrl: SdkUrl
         try {
-            sdkUrl = aws.smithy.kotlin.runtime.net.Url.parse(value)
+            sdkUrl = SdkUrl.parse(value)
         } catch (e: Exception) {
             return null
         }
@@ -46,11 +49,12 @@ public fun parseUrl(value: String?): Url? =
             }
         }
 
+        val sdkUrlPath = sdkUrl.path.toString()
         return Url(
             scheme = sdkUrl.scheme.protocolName,
             authority,
-            path = sdkUrl.path,
-            normalizedPath = sdkUrl.path.ensureSuffix("/"),
+            path = sdkUrlPath,
+            normalizedPath = sdkUrlPath.ensureSuffix("/"),
             isIp = sdkUrl.host is Host.IpAddress,
         )
     }

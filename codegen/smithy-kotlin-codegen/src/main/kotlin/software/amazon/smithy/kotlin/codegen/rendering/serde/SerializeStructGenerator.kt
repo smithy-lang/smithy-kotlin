@@ -438,7 +438,7 @@ open class SerializeStructGenerator(
 
         writer.write(
             "$containerName$listMemberName.forEach { ($keyName, $valueName) -> entry($keyName, $valueName.#T()) }",
-            RuntimeTypes.Core.Utils.encodeBase64String,
+            RuntimeTypes.Core.Text.Encoding.encodeBase64String,
         )
     }
 
@@ -517,7 +517,7 @@ open class SerializeStructGenerator(
         val containerName = if (nestingLevel == 0) "input." else ""
 
         writer.withBlock("for ($elementName in $containerName$listMemberName) {", "}") {
-            writer.write("serializeString($elementName.#T())", RuntimeTypes.Core.Utils.encodeBase64String)
+            writer.write("serializeString($elementName.#T())", RuntimeTypes.Core.Text.Encoding.encodeBase64String)
         }
     }
 
@@ -625,7 +625,7 @@ open class SerializeStructGenerator(
         val target = member.targetOrSelf(ctx.model)
 
         val encoded = when {
-            target.type == ShapeType.BLOB -> writer.format("#L.#T()", identifier, RuntimeTypes.Core.Utils.encodeBase64String)
+            target.type == ShapeType.BLOB -> writer.format("#L.#T()", identifier, RuntimeTypes.Core.Text.Encoding.encodeBase64String)
             target.type == ShapeType.TIMESTAMP -> {
                 writer.addImport(RuntimeTypes.Core.TimestampFormat)
                 val tsFormat = member

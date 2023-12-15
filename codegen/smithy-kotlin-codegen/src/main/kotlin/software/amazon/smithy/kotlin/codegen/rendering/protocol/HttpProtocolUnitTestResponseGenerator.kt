@@ -7,20 +7,31 @@ package software.amazon.smithy.kotlin.codegen.rendering.protocol
 import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.kotlin.codegen.core.*
+import software.amazon.smithy.kotlin.codegen.integration.SectionId
+import software.amazon.smithy.kotlin.codegen.integration.SectionKey
 import software.amazon.smithy.kotlin.codegen.model.hasStreamingMember
 import software.amazon.smithy.kotlin.codegen.model.hasTrait
 import software.amazon.smithy.kotlin.codegen.model.shape
 import software.amazon.smithy.kotlin.codegen.rendering.ShapeValueGenerator
+import software.amazon.smithy.kotlin.codegen.rendering.endpoints.EndpointProviderGenerator
 import software.amazon.smithy.model.shapes.*
 import software.amazon.smithy.model.traits.HttpLabelTrait
 import software.amazon.smithy.model.traits.StreamingTrait
+import software.amazon.smithy.protocoltests.traits.HttpRequestTestCase
 import software.amazon.smithy.protocoltests.traits.HttpResponseTestCase
+import software.amazon.smithy.rulesengine.traits.EndpointRuleSetTrait
 
 /**
  * Generates HTTP protocol unit tests for `httpResponseTest` cases
  */
 open class HttpProtocolUnitTestResponseGenerator protected constructor(builder: Builder) :
     HttpProtocolUnitTestGenerator<HttpResponseTestCase>(builder) {
+
+    object ConfigureServiceClient : SectionId {
+        val Test: SectionKey<HttpRequestTestCase> = SectionKey("Test")
+        val Context: SectionKey<ProtocolGenerator.GenerationContext> = SectionKey("Context")
+        val Operation: SectionKey<OperationShape> = SectionKey("Operation")
+    }
 
     protected open val outputShape: Shape?
         get() {
@@ -110,10 +121,32 @@ open class HttpProtocolUnitTestResponseGenerator protected constructor(builder: 
      * configures a mock HttpClientEngine and an idempotency token generator appropriate for protocol tests.
      */
     open fun renderConfigureServiceClient(test: HttpResponseTestCase) {
-        writer.write("httpClient = mockEngine")
-        if (idempotentFieldsInModel) {
-            // see: https://awslabs.github.io/smithy/1.0/spec/http-protocol-compliance-tests.html#parameter-format
-            writer.write("idempotencyTokenProvider = #T { \"00000000-0000-4000-8000-000000000000\" }", RuntimeTypes.SmithyClient.IdempotencyTokenProvider)
+        writer.declareSection(
+            HttpProtocolUnitTestRequestGenerator.ConfigureServiceClient,
+            mapOf(
+                ConfigureServiceClient.Test to test,
+                ConfigureServiceClient.Context to ctx,
+                ConfigureServiceClient.Operation to operation,
+            ),
+        ) {
+            writer.write("httpClient = mockEngine")
+            if (idempotentFieldsInModel) {
+                // see: https://awslabs.github.io/smithy/1.0/spec/http-protocol-compliance-tests.html#parameter-format
+                writer.write(
+                    "idempotencyTokenProvider = #T { \"00000000-0000-4000-8000-000000000000\" }",
+                    RuntimeTypes.SmithyClient.IdempotencyTokenProvider,
+                )
+            }
+
+            // if the model doesn't have endpoint rules we have to fill it in with a default
+            if (!serviceShape.hasTrait<EndpointRuleSetTrait>()) {
+                writer.write(
+                    "endpointProvider = #T { #T(#S) }",
+                    EndpointProviderGenerator.getSymbol(ctx.settings),
+                    RuntimeTypes.SmithyClient.Endpoints.Endpoint,
+                    "https://hostname",
+                )
+            }
         }
     }
 

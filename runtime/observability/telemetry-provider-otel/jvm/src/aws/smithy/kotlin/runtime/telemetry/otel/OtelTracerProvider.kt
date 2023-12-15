@@ -5,10 +5,10 @@
 
 package aws.smithy.kotlin.runtime.telemetry.otel
 
+import aws.smithy.kotlin.runtime.collections.AttributeKey
+import aws.smithy.kotlin.runtime.collections.Attributes
 import aws.smithy.kotlin.runtime.telemetry.context.Context
 import aws.smithy.kotlin.runtime.telemetry.trace.*
-import aws.smithy.kotlin.runtime.util.AttributeKey
-import aws.smithy.kotlin.runtime.util.Attributes
 import io.opentelemetry.api.OpenTelemetry
 import io.opentelemetry.api.trace.Span as OtelSpan
 import io.opentelemetry.api.trace.SpanContext as OtelSpanContext

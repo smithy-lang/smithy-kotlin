@@ -10,6 +10,7 @@ import software.amazon.smithy.kotlin.codegen.KotlinSettings
 import software.amazon.smithy.kotlin.codegen.core.*
 import software.amazon.smithy.kotlin.codegen.model.buildSymbol
 import software.amazon.smithy.kotlin.codegen.model.defaultName
+import software.amazon.smithy.kotlin.codegen.rendering.protocol.ProtocolGenerator
 import software.amazon.smithy.model.SourceLocation
 import software.amazon.smithy.rulesengine.language.EndpointRuleSet
 import software.amazon.smithy.rulesengine.language.syntax.Identifier
@@ -55,14 +56,9 @@ fun interface ExpressionRenderer {
  * Renders the default endpoint provider based on the provided rule set.
  */
 class DefaultEndpointProviderGenerator(
-    private val writer: KotlinWriter,
+    private val ctx: ProtocolGenerator.GenerationContext,
     private val rules: EndpointRuleSet,
-    private val defaultProviderSymbol: Symbol,
-    private val interfaceSymbol: Symbol,
-    private val paramsSymbol: Symbol,
-    private val settings: KotlinSettings,
-    private val externalFunctions: Map<String, Symbol> = emptyMap(),
-    private val propertyRenderers: Map<String, EndpointPropertyRenderer> = emptyMap(),
+    private val writer: KotlinWriter,
 ) : ExpressionRenderer {
     companion object {
         fun getSymbol(settings: KotlinSettings): Symbol =
@@ -73,14 +69,34 @@ class DefaultEndpointProviderGenerator(
             }
     }
 
+    private val endpointCustomizations = ctx.integrations.mapNotNull { it.customizeEndpointResolution(ctx) }
+
+    private val externalFunctions = endpointCustomizations
+        .map { it.externalFunctions }
+        .fold(mutableMapOf<String, Symbol>()) { acc, extFunctions ->
+            acc.putAll(extFunctions)
+            acc
+        }.toMap()
+
+    private val propertyRenderers = endpointCustomizations
+        .map { it.propertyRenderers }
+        .fold(mutableMapOf<String, EndpointPropertyRenderer>()) { acc, propRenderers ->
+            acc.putAll(propRenderers)
+            acc
+        }
+
     private val expressionGenerator = ExpressionGenerator(writer, rules, coreFunctions + externalFunctions)
+
+    private val defaultProviderSymbol = getSymbol(ctx.settings)
+    private val interfaceSymbol = EndpointProviderGenerator.getSymbol(ctx.settings)
+    private val paramsSymbol = EndpointParametersGenerator.getSymbol(ctx.settings)
 
     fun render() {
         renderDocumentation()
         writer.withBlock(
             "#L class #T: #T {",
             "}",
-            settings.api.visibility,
+            ctx.settings.api.visibility,
             defaultProviderSymbol,
             interfaceSymbol,
         ) {
@@ -151,9 +167,9 @@ class DefaultEndpointProviderGenerator(
     private fun renderEndpointRule(rule: EndpointRule) {
         withConditions(rule.conditions) {
             writer.withBlock("return #T(", ")", RuntimeTypes.SmithyClient.Endpoints.Endpoint) {
-                writeInline("#T.parse(", RuntimeTypes.Core.Net.Url)
+                writeInline("#T.parse(", RuntimeTypes.Core.Net.Url.Url)
                 renderExpression(rule.endpoint.url)
-                write(", #1T.DecodeAll - #1T.DecodePath),", RuntimeTypes.Core.Net.UrlDecoding)
+                write("),")
 
                 if (rule.endpoint.headers.isNotEmpty()) {
                     withBlock("headers = #T {", "},", RuntimeTypes.Http.Headers) {
@@ -168,7 +184,7 @@ class DefaultEndpointProviderGenerator(
                 }
 
                 if (rule.endpoint.properties.isNotEmpty()) {
-                    withBlock("attributes = #T {", "},", RuntimeTypes.Core.Utils.attributesOf) {
+                    withBlock("attributes = #T {", "},", RuntimeTypes.Core.Collections.attributesOf) {
                         rule.endpoint.properties.entries.forEach { (k, v) ->
                             val kStr = k.toString()
 
@@ -180,7 +196,7 @@ class DefaultEndpointProviderGenerator(
 
                             // otherwise, we just traverse the value like any other rules expression, object values will
                             // be rendered as Documents
-                            writeInline("#T(#S) to ", RuntimeTypes.Core.Utils.AttributeKey, kStr)
+                            writeInline("#S to ", kStr)
                             renderExpression(v)
                             ensureNewline()
                         }

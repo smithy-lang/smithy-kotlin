@@ -5,6 +5,7 @@
 
 package aws.smithy.kotlin.runtime.http.interceptors
 
+import aws.smithy.kotlin.runtime.collections.get
 import aws.smithy.kotlin.runtime.http.HttpBody
 import aws.smithy.kotlin.runtime.http.SdkHttpClient
 import aws.smithy.kotlin.runtime.http.operation.HttpOperationContext
@@ -13,7 +14,6 @@ import aws.smithy.kotlin.runtime.http.operation.roundTrip
 import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
 import aws.smithy.kotlin.runtime.httptest.TestEngine
 import aws.smithy.kotlin.runtime.io.SdkByteReadChannel
-import aws.smithy.kotlin.runtime.util.get
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals

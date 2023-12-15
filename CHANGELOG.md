@@ -1,5 +1,49 @@
 # Changelog
 
+## [1.0.4] - 12/14/2023
+
+### Miscellaneous
+* Refactor codegen to move non AWS specific support into core
+
+## [1.0.3] - 12/08/2023
+
+### Fixes
+* [#1008](https://github.com/awslabs/smtihy-kotlin/issues/1008) Correctly sign special characters (e.g., "@") in URL paths
+
+## [1.0.2] - 12/07/2023
+
+### Features
+* Add a convenience function for creating `CachedCredentialsProvider`
+
+## [1.0.1] - 11/26/2023
+
+## [1.0.0] - 11/26/2023
+
+### Miscellaneous
+* Mark runtime as stable
+
+## [0.30.0] - 11/22/2023
+
+### Features
+* BREAKING: Overhaul URL APIs to clarify content encoding, when data is in which state, and to reduce the number of times data is encoded/decoded
+
+## [0.29.0] - 11/17/2023
+
+### Features
+* Add support for modeling defaults on BlobShapes, DocumentShapes, and TimestampShapes
+
+### Miscellaneous
+* **BREAKING**: make `Credentials` an interface
+* Upgrade dependencies to their latest versions, notably Kotlin 1.9.20
+
+## [0.28.2] - 11/14/2023
+
+### Features
+* Enable resolving auth schemes via endpoint resolution
+
+### Miscellaneous
+* Separate codegen project versioning
+
 ## [0.28.1] - 11/01/2023
 
 ### Fixes

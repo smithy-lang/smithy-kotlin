@@ -4,15 +4,8 @@
  */
 package software.amazon.smithy.kotlin.codegen.rendering.endpoints
 
-import software.amazon.smithy.kotlin.codegen.KotlinSettings
-import software.amazon.smithy.kotlin.codegen.core.KotlinWriter
-import software.amazon.smithy.kotlin.codegen.model.buildSymbol
-import software.amazon.smithy.kotlin.codegen.test.TestModelDefault
-import software.amazon.smithy.kotlin.codegen.test.assertBalancedBracesAndParens
-import software.amazon.smithy.kotlin.codegen.test.formatForTest
-import software.amazon.smithy.kotlin.codegen.test.shouldContainOnlyOnceWithDiff
+import software.amazon.smithy.kotlin.codegen.test.*
 import software.amazon.smithy.model.node.Node
-import software.amazon.smithy.model.shapes.ShapeId
 import software.amazon.smithy.rulesengine.language.EndpointRuleSet
 import kotlin.test.*
 
@@ -131,26 +124,18 @@ class DefaultEndpointProviderGeneratorTest {
             """,
         )
 
-        val paramsSymbol = buildSymbol {
-            name = "EndpointParameters"
-            namespace = TestModelDefault.NAMESPACE
-        }
-        val interfaceSymbol = buildSymbol {
-            name = "EndpointProvider"
-            namespace = TestModelDefault.NAMESPACE
-        }
-        val writer = KotlinWriter(TestModelDefault.NAMESPACE)
-        val defaultSymbol = buildSymbol {
-            name = "DefaultEndpointProvider"
-            namespace = TestModelDefault.NAMESPACE
-        }
-        val settings = KotlinSettings(
-            service = ShapeId.from("com.test#Test"),
-            pkg = KotlinSettings.PackageSettings("name", "version"),
-            sdkId = "testSdkId",
-        )
+        val model =
+            """
+            namespace com.test
+            service Test {
+                version: "1.0.0",
+            }
+        """.toSmithyModel()
 
-        DefaultEndpointProviderGenerator(writer, rules, defaultSymbol, interfaceSymbol, paramsSymbol, settings).render()
+        val testCtx = model.newTestContext()
+        val writer = testCtx.newWriter()
+
+        DefaultEndpointProviderGenerator(testCtx.generationCtx, rules, writer).render()
         generatedClass = writer.toString()
     }
 
@@ -170,7 +155,7 @@ class DefaultEndpointProviderGeneratorTest {
                 params.bazName == "gov"
             ) {
                 return Endpoint(
-                    Url.parse("https://basic.condition", UrlDecoding.DecodeAll - UrlDecoding.DecodePath),
+                    Url.parse("https://basic.condition"),
                 )
             }
         """.formatForTest(indent = "        ")
@@ -187,7 +172,7 @@ class DefaultEndpointProviderGeneratorTest {
                     resourceIdPrefix == "gov.${'$'}{params.resourceId}"
                 ) {
                     return Endpoint(
-                        Url.parse("https://assignment.condition", UrlDecoding.DecodeAll - UrlDecoding.DecodePath),
+                        Url.parse("https://assignment.condition"),
                     )
                 }
             }
@@ -212,18 +197,18 @@ class DefaultEndpointProviderGeneratorTest {
     fun testEndpointFields() {
         val expected = """
             return Endpoint(
-                Url.parse("https://global.api", UrlDecoding.DecodeAll - UrlDecoding.DecodePath),
+                Url.parse("https://global.api"),
                 headers = Headers {
                     append("fooheader", "barheader")
                 },
                 attributes = attributesOf {
-                    AttributeKey("foo") to "bar"
-                    AttributeKey("fooInt") to 7
-                    AttributeKey("fooBoolean") to true
-                    AttributeKey("fooObject") to buildDocument {
+                    "foo" to "bar"
+                    "fooInt" to 7
+                    "fooBoolean" to true
+                    "fooObject" to buildDocument {
                         "fooObjectFoo" to "bar"
                     }
-                    AttributeKey("fooArray") to listOf(
+                    "fooArray" to listOf(
                         "\"fooArrayBar\"",
                     )
                 },

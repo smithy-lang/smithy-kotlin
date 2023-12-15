@@ -7,7 +7,7 @@ package aws.smithy.kotlin.runtime.auth.awssigning.tests
 
 import aws.smithy.kotlin.runtime.auth.awscredentials.Credentials
 import aws.smithy.kotlin.runtime.auth.awscredentials.CredentialsProvider
-import aws.smithy.kotlin.runtime.util.Attributes
+import aws.smithy.kotlin.runtime.collections.Attributes
 
 public val DEFAULT_TEST_CREDENTIALS: Credentials = Credentials("AKID", "SECRET", "SESSION")
 public val DEFAULT_TEST_CREDENTIALS_PROVIDER: CredentialsProvider = DEFAULT_TEST_CREDENTIALS.asStaticProvider()

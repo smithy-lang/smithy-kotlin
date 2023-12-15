@@ -53,7 +53,7 @@ class AsyncStressTest : TestWithLocalServer() {
                 method = HttpMethod.GET
                 host = Host.Domain(testHost)
                 port = serverPort
-                path = "/largeResponse"
+                path.decoded = "/largeResponse"
             }
         }
 

@@ -5,8 +5,8 @@
 
 package aws.smithy.kotlin.runtime.identity
 
+import aws.smithy.kotlin.runtime.collections.Attributes
 import aws.smithy.kotlin.runtime.time.Instant
-import aws.smithy.kotlin.runtime.util.Attributes
 
 /**
  * Uniquely-distinguishing properties which identify an actor

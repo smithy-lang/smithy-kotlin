@@ -21,7 +21,6 @@ import software.amazon.smithy.rulesengine.language.EndpointRuleSet
 import software.amazon.smithy.rulesengine.traits.EndpointRuleSetTrait
 import software.amazon.smithy.rulesengine.traits.EndpointTestCase
 import software.amazon.smithy.rulesengine.traits.EndpointTestsTrait
-import kotlin.streams.toList
 
 /**
  * Get all shapes of a particular type from the model.
@@ -192,6 +191,15 @@ val Shape.isSparse: Boolean
  */
 val Shape.isStreaming: Boolean
     get() = hasTrait<StreamingTrait>()
+
+/**
+ * Returns boolean indicating if operations explicitly set HTTP payload is a union
+ */
+fun OperationShape.payloadIsUnionShape(model: Model): Boolean {
+    val requestShape = model.expectShape<StructureShape>(input.get())
+    val payload = requestShape.findMemberWithTrait<HttpPayloadTrait>(model)?.targetOrSelf(model)
+    return payload is UnionShape
+}
 
 /**
  * Test if a member targets an event stream

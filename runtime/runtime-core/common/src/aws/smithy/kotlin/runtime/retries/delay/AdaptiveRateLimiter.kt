@@ -18,7 +18,6 @@ import kotlin.time.Duration.Companion.seconds
  * based on the number of successful transactions vs throttling errors. This limiter applies a smoothing function in an
  * attempt to converge on the ideal transaction rate feasible for downstream systems.
  */
-@OptIn(ExperimentalTime::class)
 public class AdaptiveRateLimiter internal constructor(
     public override val config: Config = Config.Default,
     private val timeSource: TimeSource,
@@ -196,7 +195,6 @@ public class AdaptiveRateLimiter internal constructor(
     }
 }
 
-@OptIn(ExperimentalTime::class)
 internal class CubicRateCalculator(
     private val config: AdaptiveRateLimiter.Config,
     private val timeSource: TimeSource = TimeSource.Monotonic,
@@ -236,7 +234,6 @@ internal class CubicRateCalculator(
     internal fun cubicThrottle(rate: Double) = rate * config.beta
 }
 
-@OptIn(ExperimentalTime::class)
 internal class AdaptiveRateMeasurer(
     private val config: AdaptiveRateLimiter.Config,
     private val timeSource: TimeSource,

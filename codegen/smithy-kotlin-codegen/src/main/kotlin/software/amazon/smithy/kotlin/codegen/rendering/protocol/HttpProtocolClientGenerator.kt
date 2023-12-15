@@ -5,15 +5,13 @@
 package software.amazon.smithy.kotlin.codegen.rendering.protocol
 
 import software.amazon.smithy.aws.traits.HttpChecksumTrait
+import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.kotlin.codegen.core.*
 import software.amazon.smithy.kotlin.codegen.integration.SectionId
 import software.amazon.smithy.kotlin.codegen.integration.SectionKey
 import software.amazon.smithy.kotlin.codegen.lang.KotlinTypes
-import software.amazon.smithy.kotlin.codegen.model.getTrait
-import software.amazon.smithy.kotlin.codegen.model.hasStreamingMember
-import software.amazon.smithy.kotlin.codegen.model.hasTrait
+import software.amazon.smithy.kotlin.codegen.model.*
 import software.amazon.smithy.kotlin.codegen.model.knowledge.AuthIndex
-import software.amazon.smithy.kotlin.codegen.model.operationSignature
 import software.amazon.smithy.kotlin.codegen.rendering.auth.AuthSchemeProviderAdapterGenerator
 import software.amazon.smithy.kotlin.codegen.rendering.auth.IdentityProviderConfigGenerator
 import software.amazon.smithy.kotlin.codegen.rendering.endpoints.EndpointResolverAdapterGenerator
@@ -29,7 +27,7 @@ import software.amazon.smithy.model.traits.HttpChecksumRequiredTrait
 /**
  * Renders an implementation of a service interface for HTTP protocol
  */
-abstract class HttpProtocolClientGenerator(
+open class HttpProtocolClientGenerator(
     protected val ctx: ProtocolGenerator.GenerationContext,
     protected val middleware: List<ProtocolMiddleware>,
     protected val httpBindingResolver: HttpBindingResolver,
@@ -41,6 +39,14 @@ abstract class HttpProtocolClientGenerator(
 
     object OperationTelemetryBuilder : SectionId {
         val Operation: SectionKey<OperationShape> = SectionKey("Operation")
+    }
+
+    object ClientInitializer : SectionId {
+        val GenerationContext: SectionKey<ProtocolGenerator.GenerationContext> = SectionKey("GenerationContext")
+    }
+
+    object MergeServiceDefaults : SectionId {
+        val GenerationContext: SectionKey<ProtocolGenerator.GenerationContext> = SectionKey("GenerationContext")
     }
 
     /**
@@ -76,6 +82,8 @@ abstract class HttpProtocolClientGenerator(
             }
             .write("")
             .call { renderClose(writer) }
+            .write("")
+            .call { renderMergeServiceDefaults(writer) }
             .write("")
             .call { renderAdditionalMethods(writer) }
             .closeBlock("}")
@@ -120,7 +128,7 @@ abstract class HttpProtocolClientGenerator(
 
             write("toMap()")
         }
-        writer.write("private val authSchemeAdapter = #T(config.authSchemeProvider)", AuthSchemeProviderAdapterGenerator.getSymbol(ctx.settings))
+        writer.write("private val authSchemeAdapter = #T(config)", AuthSchemeProviderAdapterGenerator.getSymbol(ctx.settings))
 
         writer.write("private val telemetryScope = #S", ctx.settings.pkg.name)
         writer.write("private val opMetrics = #T(telemetryScope, config.telemetryProvider)", RuntimeTypes.HttpClient.Operation.OperationMetrics)
@@ -146,6 +154,7 @@ abstract class HttpProtocolClientGenerator(
     protected open fun renderInit(writer: KotlinWriter) {
         writer.withBlock("init {", "}") {
             write("managedResources.#T(config.httpClient)", RuntimeTypes.Core.IO.addIfManaged)
+            writer.declareSection(ClientInitializer, mapOf(ClientInitializer.GenerationContext to ctx))
         }
     }
 
@@ -254,7 +263,10 @@ abstract class HttpProtocolClientGenerator(
             }
 
             writer.write("execution.retryStrategy = config.retryStrategy")
+            writer.write("execution.retryPolicy = config.retryPolicy")
         }
+
+        writer.write("mergeServiceDefaults(op.context)")
     }
 
     protected open fun renderFinalizeBeforeExecute(writer: KotlinWriter, opIndex: OperationIndex, op: OperationShape) {
@@ -351,4 +363,38 @@ abstract class HttpProtocolClientGenerator(
             } ?: writer.write("op.interceptors.add(#T<#T>())", interceptorSymbol, inputSymbol)
         }
     }
+
+    /**
+     * render a utility function to populate an operation's ExecutionContext with defaults from service config, environment, etc
+     */
+    private fun renderMergeServiceDefaults(writer: KotlinWriter) {
+        writer.dokka("merge the defaults configured for the service into the execution context before firing off a request")
+        writer.withBlock(
+            "private fun mergeServiceDefaults(ctx: #T) {",
+            "}",
+            RuntimeTypes.Core.ExecutionContext,
+        ) {
+            putIfAbsent(RuntimeTypes.SmithyClient.SdkClientOption, "ClientName")
+            putIfAbsent(RuntimeTypes.SmithyClient.SdkClientOption, "LogMode")
+            if (ctx.service.hasIdempotentTokenMember(ctx.model)) {
+                putIfAbsent(RuntimeTypes.SmithyClient.SdkClientOption, "IdempotencyTokenProvider", nullable = true)
+            }
+
+            writer.declareSection(MergeServiceDefaults, mapOf(MergeServiceDefaults.GenerationContext to ctx))
+        }
+    }
+}
+
+/**
+ * Convenience extension for writing to the operation execution context
+ */
+fun KotlinWriter.putIfAbsent(
+    attributesSymbol: Symbol,
+    name: String,
+    literalValue: String? = null,
+    nullable: Boolean = false,
+) {
+    val putSymbol = if (nullable) RuntimeTypes.Core.Collections.putIfAbsentNotNull else RuntimeTypes.Core.Collections.putIfAbsent
+    val actualValue = literalValue ?: "config.${name.replaceFirstChar(Char::lowercaseChar)}"
+    write("ctx.#T(#T.#L, #L)", putSymbol, attributesSymbol, name, actualValue)
 }

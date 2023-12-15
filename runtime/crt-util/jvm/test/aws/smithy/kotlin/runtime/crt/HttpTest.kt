@@ -11,8 +11,6 @@ import aws.smithy.kotlin.runtime.http.request.headers
 import aws.smithy.kotlin.runtime.http.request.url
 import aws.smithy.kotlin.runtime.net.Host
 import aws.smithy.kotlin.runtime.net.Scheme
-import aws.smithy.kotlin.runtime.net.encodedPath
-import aws.smithy.kotlin.runtime.net.parameters
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -30,10 +28,8 @@ class HttpTest {
                 scheme = Scheme.HTTPS
                 host = Host.Domain("test.com")
                 port = 3000
-                path = "/foo/bar/baz"
-                parameters {
-                    append("foo", "bar")
-                }
+                path.encoded = "/foo/bar/baz"
+                parameters.decodedParameters.add("foo", "bar")
             }
 
             headers {
@@ -66,10 +62,10 @@ class HttpTest {
             }
         }
 
-        assertEquals("/foo/bar/baz", builder.url.path)
+        assertEquals("/foo/bar/baz", builder.url.path.encoded)
 
-        assertTrue(builder.url.parameters.contains("foo", "bar"))
-        assertTrue(builder.url.parameters.contains("baz", "quux"))
+        assertTrue(builder.url.parameters.decodedParameters.contains("foo", "bar"))
+        assertTrue(builder.url.parameters.decodedParameters.contains("baz", "quux"))
     }
 
     @Test
@@ -79,7 +75,7 @@ class HttpTest {
             url {
                 scheme = Scheme.HTTPS
                 host = Host.Domain("test.com")
-                path = "/foo"
+                path.encoded = "/foo"
             }
         }
 
@@ -95,7 +91,7 @@ class HttpTest {
         assertEquals(Host.Domain("test.com"), builder.url.host)
         assertEquals(Scheme.HTTPS, builder.url.scheme)
 
-        assertEquals("/foo", builder.url.path)
+        assertEquals("/foo", builder.url.path.encoded)
     }
 
     @Test
@@ -108,22 +104,20 @@ class HttpTest {
                 scheme = Scheme.HTTPS
                 host = Host.Domain("test.com")
                 port = 3000
-                path = "/foo/bar/baz"
-                parameters {
-                    append("foo", "/")
-                }
+                path.encoded = "/foo/bar/baz"
+                parameters.decodedParameters.add("foo", "/")
             }
         }
 
         // build a slightly modified crt request (e.g. after signing new headers or query params will be present)
         val crtHeaders = HeadersCrt.build { }
-        val crtRequest = HttpRequestCrt("POST", builder.url.encodedPath, crtHeaders, null)
+        val crtRequest = HttpRequestCrt("POST", builder.url.path.encoded, crtHeaders, null)
 
         builder.update(crtRequest)
 
-        assertEquals("/foo/bar/baz", builder.url.path)
+        assertEquals("/foo/bar/baz", builder.url.path.encoded)
 
-        val values = builder.url.parameters.getAll("foo")!!
+        val values = builder.url.parameters.decodedParameters.getValue("foo")
         assertEquals(1, values.size)
         assertEquals("/", values.first())
     }

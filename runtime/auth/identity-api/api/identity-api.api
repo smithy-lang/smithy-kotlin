@@ -1,11 +1,11 @@
 public abstract interface class aws/smithy/kotlin/runtime/auth/AuthOption {
-	public abstract fun getAttributes ()Laws/smithy/kotlin/runtime/util/Attributes;
+	public abstract fun getAttributes ()Laws/smithy/kotlin/runtime/collections/Attributes;
 	public abstract fun getSchemeId-DepwgT4 ()Ljava/lang/String;
 }
 
 public final class aws/smithy/kotlin/runtime/auth/AuthOptionKt {
-	public static final fun AuthOption-Jh0Pmzk (Ljava/lang/String;Laws/smithy/kotlin/runtime/util/Attributes;)Laws/smithy/kotlin/runtime/auth/AuthOption;
-	public static synthetic fun AuthOption-Jh0Pmzk$default (Ljava/lang/String;Laws/smithy/kotlin/runtime/util/Attributes;ILjava/lang/Object;)Laws/smithy/kotlin/runtime/auth/AuthOption;
+	public static final fun AuthOption-Jh0Pmzk (Ljava/lang/String;Laws/smithy/kotlin/runtime/collections/Attributes;)Laws/smithy/kotlin/runtime/auth/AuthOption;
+	public static synthetic fun AuthOption-Jh0Pmzk$default (Ljava/lang/String;Laws/smithy/kotlin/runtime/collections/Attributes;ILjava/lang/Object;)Laws/smithy/kotlin/runtime/auth/AuthOption;
 }
 
 public final class aws/smithy/kotlin/runtime/auth/AuthSchemeId {
@@ -41,13 +41,13 @@ public abstract interface class aws/smithy/kotlin/runtime/identity/CloseableIden
 }
 
 public abstract interface class aws/smithy/kotlin/runtime/identity/Identity {
-	public abstract fun getAttributes ()Laws/smithy/kotlin/runtime/util/Attributes;
+	public abstract fun getAttributes ()Laws/smithy/kotlin/runtime/collections/Attributes;
 	public abstract fun getExpiration ()Laws/smithy/kotlin/runtime/time/Instant;
 }
 
 public final class aws/smithy/kotlin/runtime/identity/IdentityAttributes {
 	public static final field INSTANCE Laws/smithy/kotlin/runtime/identity/IdentityAttributes;
-	public final fun getProviderName ()Laws/smithy/kotlin/runtime/util/AttributeKey;
+	public final fun getProviderName ()Laws/smithy/kotlin/runtime/collections/AttributeKey;
 }
 
 public final class aws/smithy/kotlin/runtime/identity/IdentityAttributesKt {
@@ -55,11 +55,11 @@ public final class aws/smithy/kotlin/runtime/identity/IdentityAttributesKt {
 }
 
 public abstract interface class aws/smithy/kotlin/runtime/identity/IdentityProvider {
-	public abstract fun resolve (Laws/smithy/kotlin/runtime/util/Attributes;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public abstract fun resolve (Laws/smithy/kotlin/runtime/collections/Attributes;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
 public final class aws/smithy/kotlin/runtime/identity/IdentityProvider$DefaultImpls {
-	public static synthetic fun resolve$default (Laws/smithy/kotlin/runtime/identity/IdentityProvider;Laws/smithy/kotlin/runtime/util/Attributes;Lkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
+	public static synthetic fun resolve$default (Laws/smithy/kotlin/runtime/identity/IdentityProvider;Laws/smithy/kotlin/runtime/collections/Attributes;Lkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
 }
 
 public abstract interface class aws/smithy/kotlin/runtime/identity/IdentityProviderConfig {

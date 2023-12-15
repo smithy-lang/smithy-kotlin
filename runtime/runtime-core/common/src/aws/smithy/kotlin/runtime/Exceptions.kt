@@ -4,9 +4,9 @@
  */
 package aws.smithy.kotlin.runtime
 
-import aws.smithy.kotlin.runtime.util.AttributeKey
-import aws.smithy.kotlin.runtime.util.MutableAttributes
-import aws.smithy.kotlin.runtime.util.mutableAttributes
+import aws.smithy.kotlin.runtime.collections.AttributeKey
+import aws.smithy.kotlin.runtime.collections.MutableAttributes
+import aws.smithy.kotlin.runtime.collections.mutableAttributes
 
 /**
  * Additional metadata about an error

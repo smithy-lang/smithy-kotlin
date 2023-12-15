@@ -150,6 +150,14 @@ inline fun <W : AbstractCodeWriter<W>, reified V> AbstractCodeWriter<W>.getConte
  */
 inline fun <W : AbstractCodeWriter<W>, reified V> AbstractCodeWriter<W>.getContextValue(key: SectionKey<V>): V = getContextValue(key.name)
 
+/**
+ * Convenience function to set context only if there is no value already associated with the given [key]
+ */
+fun <W : AbstractCodeWriter<W>> AbstractCodeWriter<W>.putMissingContext(key: String, value: Any) {
+    if (getContext(key) != null) return
+    putContext(key, value)
+}
+
 typealias InlineCodeWriter = AbstractCodeWriter<*>.() -> Unit
 
 /**

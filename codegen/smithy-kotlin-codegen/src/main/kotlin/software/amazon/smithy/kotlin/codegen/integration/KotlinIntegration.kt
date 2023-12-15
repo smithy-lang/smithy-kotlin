@@ -8,14 +8,12 @@ import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.kotlin.codegen.*
 import software.amazon.smithy.kotlin.codegen.core.CodegenContext
 import software.amazon.smithy.kotlin.codegen.core.KotlinDelegator
-import software.amazon.smithy.kotlin.codegen.core.KotlinWriter
+import software.amazon.smithy.kotlin.codegen.rendering.endpoints.EndpointCustomization
 import software.amazon.smithy.kotlin.codegen.rendering.protocol.ProtocolGenerator
 import software.amazon.smithy.kotlin.codegen.rendering.protocol.ProtocolMiddleware
 import software.amazon.smithy.kotlin.codegen.rendering.util.ConfigProperty
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.ServiceShape
-import software.amazon.smithy.model.shapes.Shape
-import software.amazon.smithy.rulesengine.language.EndpointRuleSet
 
 /**
  * JVM SPI for customizing Kotlin code generation, registering new protocol
@@ -98,30 +96,6 @@ interface KotlinIntegration {
     ): SymbolProvider = symbolProvider
 
     /**
-     * Called each time a writer is used that defines a shape.
-     *
-     * Any mutations made on the writer (for example, adding
-     * section interceptors) are removed after the callback has completed;
-     * the callback is invoked in between pushing and popping state from
-     * the writer.
-     *
-     * @param settings Settings used to generate.
-     * @param model Model to generate from.
-     * @param symbolProvider Symbol provider used for codegen.
-     * @param writer Writer that will be used.
-     * @param definedShape Shape that is being defined in the writer.
-     */
-    fun onShapeWriterUse(
-        settings: KotlinSettings,
-        model: Model,
-        symbolProvider: SymbolProvider,
-        writer: KotlinWriter,
-        definedShape: Shape,
-    ) {
-        // pass
-    }
-
-    /**
      * Write additional files defined by this integration
      * @param ctx The codegen generation context
      * @param delegator File writer(s)
@@ -154,10 +128,8 @@ interface KotlinIntegration {
     fun authSchemes(ctx: ProtocolGenerator.GenerationContext): List<AuthSchemeHandler> = emptyList()
 
     /**
-     * Render binding of endpoint ruleset builtin parameters
-     * @param ctx The codegen generation context
-     * @param rules The endpoint rules
-     * @param writer The writer to render to
+     * Register an endpoint customization
+     * @param ctx the codegen generation context
      */
-    fun renderBindEndpointBuiltins(ctx: ProtocolGenerator.GenerationContext, rules: EndpointRuleSet, writer: KotlinWriter) {}
+    fun customizeEndpointResolution(ctx: ProtocolGenerator.GenerationContext): EndpointCustomization? = null
 }

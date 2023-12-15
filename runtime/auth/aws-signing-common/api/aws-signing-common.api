@@ -33,17 +33,17 @@ public final class aws/smithy/kotlin/runtime/auth/awssigning/AwsSigningAlgorithm
 
 public final class aws/smithy/kotlin/runtime/auth/awssigning/AwsSigningAttributes {
 	public static final field INSTANCE Laws/smithy/kotlin/runtime/auth/awssigning/AwsSigningAttributes;
-	public final fun getCredentialsProvider ()Laws/smithy/kotlin/runtime/util/AttributeKey;
-	public final fun getHashSpecification ()Laws/smithy/kotlin/runtime/util/AttributeKey;
-	public final fun getRequestSignature ()Laws/smithy/kotlin/runtime/util/AttributeKey;
-	public final fun getSignedBodyHeader ()Laws/smithy/kotlin/runtime/util/AttributeKey;
-	public final fun getSigner ()Laws/smithy/kotlin/runtime/util/AttributeKey;
-	public final fun getSigningDate ()Laws/smithy/kotlin/runtime/util/AttributeKey;
-	public final fun getSigningRegion ()Laws/smithy/kotlin/runtime/util/AttributeKey;
-	public final fun getSigningService ()Laws/smithy/kotlin/runtime/util/AttributeKey;
-}
-
-public final class aws/smithy/kotlin/runtime/auth/awssigning/AwsSigningAttributesKt {
+	public final fun getCredentialsProvider ()Laws/smithy/kotlin/runtime/collections/AttributeKey;
+	public final fun getHashSpecification ()Laws/smithy/kotlin/runtime/collections/AttributeKey;
+	public final fun getNormalizeUriPath ()Laws/smithy/kotlin/runtime/collections/AttributeKey;
+	public final fun getRequestSignature ()Laws/smithy/kotlin/runtime/collections/AttributeKey;
+	public final fun getSignedBodyHeader ()Laws/smithy/kotlin/runtime/collections/AttributeKey;
+	public final fun getSigner ()Laws/smithy/kotlin/runtime/collections/AttributeKey;
+	public final fun getSigningDate ()Laws/smithy/kotlin/runtime/collections/AttributeKey;
+	public final fun getSigningRegion ()Laws/smithy/kotlin/runtime/collections/AttributeKey;
+	public final fun getSigningRegionSet ()Laws/smithy/kotlin/runtime/collections/AttributeKey;
+	public final fun getSigningService ()Laws/smithy/kotlin/runtime/collections/AttributeKey;
+	public final fun getUseDoubleUriEncode ()Laws/smithy/kotlin/runtime/collections/AttributeKey;
 }
 
 public final class aws/smithy/kotlin/runtime/auth/awssigning/AwsSigningConfig {
