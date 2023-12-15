@@ -171,6 +171,7 @@ object RuntimeTypes {
             val flattenIfPossible = symbol("flattenIfPossible")
             val LazyAsyncValue = symbol("LazyAsyncValue")
             val length = symbol("length")
+            val mergeSequential = symbol("mergeSequential")
             val truthiness = symbol("truthiness")
             val toNumber = symbol("toNumber")
             val type = symbol("type")

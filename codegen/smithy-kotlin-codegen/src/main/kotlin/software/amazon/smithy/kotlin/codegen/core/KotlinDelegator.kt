@@ -111,17 +111,6 @@ class KotlinDelegator(
         writer.addImportReferences(symbol, SymbolReference.ContextOption.DECLARE)
         writer.dependencies.addAll(symbol.dependencies)
         writer.pushState()
-
-        // shape is stored in the property bag when generated, if it's there pull it back out
-        val shape = symbol.getProperty("shape", Shape::class.java)
-        if (shape.isPresent) {
-            // Allow integrations to do things like add onSection callbacks.
-            // these onSection callbacks are removed when popState is called.
-            for (integration in integrations) {
-                integration.onShapeWriterUse(settings, model, symbolProvider, writer, shape.get())
-            }
-        }
-
         block(writer)
         writer.popState()
     }

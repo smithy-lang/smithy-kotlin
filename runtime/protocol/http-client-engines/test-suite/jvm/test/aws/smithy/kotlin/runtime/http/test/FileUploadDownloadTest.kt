@@ -25,14 +25,14 @@ class FileUploadDownloadTest : AbstractEngineTest() {
 
     @Test
     fun testUploadIntegrityFileContent() = testEngines {
-        test { env, client ->
+        test { _, client ->
             val file = RandomTempFile(5 * 1024 * 1024) // 5MB
             val httpBody = file.asByteStream().toHttpBody()
             val expectedSha = file.readBytes().sha256().encodeToHex()
 
             val req = HttpRequest {
                 method = HttpMethod.POST
-                testSetup(env)
+                testSetup()
                 url.path.decoded = "/upload/content"
                 body = httpBody
             }
@@ -46,9 +46,9 @@ class FileUploadDownloadTest : AbstractEngineTest() {
 
     @Test
     fun testDownloadIntegrityFileContent() = testEngines {
-        test { env, client ->
+        test { _, client ->
             val req = HttpRequest {
-                testSetup(env)
+                testSetup()
                 url.path.decoded = "/download/integrity"
             }
 

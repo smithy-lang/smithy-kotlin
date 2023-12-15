@@ -23,9 +23,9 @@ class RedirectTest : AbstractEngineTest() {
     fun testDoNotFollow302() = testDoNotFollow(HttpStatusCode.Found, "/redirect/found")
 
     private fun testDoNotFollow(expectedStatus: HttpStatusCode, path: String) = testEngines {
-        test { env, client ->
+        test { _, client ->
             val req = HttpRequest {
-                testSetup(env)
+                testSetup()
                 url.path.decoded = path
             }
 
