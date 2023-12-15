@@ -186,6 +186,7 @@ public abstract interface class aws/smithy/kotlin/runtime/client/config/Compress
 public abstract interface class aws/smithy/kotlin/runtime/client/config/CompressionClientConfig$Builder {
 	public abstract fun getRequestCompression ()Laws/smithy/kotlin/runtime/client/config/RequestCompressionConfig$Builder;
 	public abstract fun requestCompression (Lkotlin/jvm/functions/Function1;)V
+	public abstract fun setRequestCompression (Laws/smithy/kotlin/runtime/client/config/RequestCompressionConfig$Builder;)V
 }
 
 public final class aws/smithy/kotlin/runtime/client/config/CompressionClientConfig$Builder$DefaultImpls {
