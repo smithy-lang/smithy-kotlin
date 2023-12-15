@@ -24,6 +24,12 @@ class SmithyDokkaPlugin : DokkaPlugin() {
         dokkaBase.preMergeDocumentableTransformer providing ::FilterInternalApis
     }
 
+    // FIXME Re-enable search once Dokka addresses performance issues
+    // https://github.com/Kotlin/dokka/issues/2741
+    val disableSearch by extending {
+        dokkaBase.htmlPreprocessors providing ::NoOpSearchbarDataInstaller override dokkaBase.baseSearchbarDataInstaller
+    }
+
     @OptIn(DokkaPluginApiPreview::class)
     override fun pluginApiPreviewAcknowledgement() = PluginApiPreviewAcknowledgement
 }
