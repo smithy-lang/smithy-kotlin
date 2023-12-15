@@ -15,8 +15,10 @@ Both of these examples achieve the same result.
 ```kotlin
 val client = S3Client {
     region = "us-west-2"
-    disableRequestCompression = true
-    requestMinCompressionSizeBytes = 200
+    requestCompression {
+        requestMinCompressionSizeBytes = 200
+        disableRequestCompression = true
+    }
 }
 ```
 
@@ -35,14 +37,14 @@ This would add a user supplied compression algorithm.
 ```kotlin
 val client = S3Client.fromEnvironment {
     region = "us-west-2"
-    compressionAlgorithms += CustomCompressionAlgorithm()
+    requestCompression {
+        compressionAlgorithms += CustomCompressionAlgorithm()
+    }
 }
 
 class CustomCompressionAlgorithm : CompressionAlgorithm {
     override val id: String = "custom"
-    override suspend fun compress(stream: HttpBody): HttpBody {
-        ...
-    }
+    ...
 }
 ```
 
@@ -69,7 +71,9 @@ Will only look at explicit client config:
 ```kotlin
     val client = S3Client {
         region = "us-west-2"
-        disableRequestCompression = true
+        requestCompression {
+            ...
+        }
     }
 ```
 
@@ -83,7 +87,7 @@ Will only look at explicit client config:
 | Enable/disable compression   | `disableRequestCompression`      | `aws.disableRequestCompression`      | `AWS_DISABLE_REQUEST_COMPRESSION`        | `disable_request_compression`        |
 
 #### Minimum Request Compression Size Bytes 
-* Type: Int
+* Type: Long
 * Default: 10,240 (10KB)
 * Range: 0 - 10,485,760 (0MB - 10MB) 
 * Notes: Setting will be ignored if payload is a stream
@@ -96,7 +100,14 @@ This feature can also be configured to use user supplied compression algorithms.
 ```kotlin
 val client = S3Client.fromEnvironment {
     region = "us-west-2"
-    compressionAlgorithms += ...
+    requestCompression {
+        compressionAlgorithms = mutableListOf(CustomGzip())
+    }
+}
+
+class CustomGzip : CompressionAlgorithm {
+    override val id: String = "gzip"
+    ...
 }
 ```
 
@@ -110,10 +121,10 @@ Below is an abbreviated example of the request compression trait in use:
 operation ...
 ```
 
-The SDK has its own list of supported compression algorithms as a list of `CompressionAlgorithm`s in the client config.
+The client has its own list of supported compression algorithms as a list of `CompressionAlgorithm`s in the client config.
 ```kotlin
-val compressionAlgorithms: List<CompressionAlgorithm> = mutableListOf(
-    GzipCompressionAlgorithm()
+val compressionAlgorithms: List<CompressionAlgorithm> = listOf(
+    Gzip()
 )
 ```
 
@@ -148,41 +159,138 @@ New algorithms can be added as they become supported using the compression algor
 This interface is used to represent a compression algorithm.
 
 ```kotlin
-/**
- * Represents a compression algorithm to be used for compressing request payloads on qualifying operations
- */
 public interface CompressionAlgorithm {
     /**
      * The ID of the compression algorithm
      */
     public val id: String
+
+    /**
+     * The name of the content encoding to be appended to the `Content-Encoding` header.
+     * The [IANA](https://www.iana.org/assignments/http-parameters/http-parameters.xhtml)
+     * has a list of registered encodings for reference.
+     */
+    public val contentEncoding: String
     
     /**
-     * Compresses a payload
+     * Compresses a stream
      */
-    public suspend fun compress(stream: HttpBody): HttpBody
+    public fun compress(stream: ByteStream): ByteStream
 }
 ```
 
-The `id` is used to match a supported `CompressionAlgorithm` to a requested compression algorithm from the trait. The `compress` function is used to compress HTTP bodies.
+The `id` is used to match a supported `CompressionAlgorithm` to a requested compression algorithm from the trait. The `contentEncoding` is used to set a value in the `Content-Encoding` header, and the `compress` function is used to compress the request.
 
 #### Compression
 Gzip JVM compression implementation:
 
+ByteStream implementation
 ```kotlin
-/**
+val byteArrayOutputStream = ByteArrayOutputStream()
+val gzipOutputStream = GZIPOutputStream(byteArrayOutputStream)
 
-Plan on writing code to convert SourceContent & ChannelContent to  
-`java.io.OutputStream` to use `GZIPOutputStream` in similar fashion as above.
-`GZIPOutputStream` takes in a `java.io.OutputStream` which `ByteArrayOutputStream` is.
+gzipOutputStream.write(stream.bytes())
+gzipOutputStream.close()
 
-Could also use function to convert stream to byte array but chances are will run out
-of memory doing so. Body will probably be large if using streaming trait on it.
+val compressedBody = byteArrayOutputStream.toByteArray()
+byteArrayOutputStream.close()
 
-If that code to convert the types is not possible for some reason then will have to 
-handwrite gzip implementation.
- 
-**/
+return compressedBody
+```
+
+The SourceStream and ChannelStream implementation wrap the source so that it compresses into gzip format with each read.
+
+SourceStream implementation
+```kotlin
+@InternalApi
+public actual class GzipSdkSource actual constructor(
+    private val source: SdkSource,
+) : SdkSource {
+    private val gzipBuffer = SdkBuffer()
+    private val gzipOutputStream = GZIPOutputStream(gzipBuffer.outputStream(), true)
+
+    override fun read(sink: SdkBuffer, limit: Long): Long {
+        require(limit >= 0L)
+        if (limit == 0L) return 0L
+
+        val temp = SdkBuffer()
+        val rc = source.read(temp, limit)
+
+        if (rc == -1L) {
+            // may trigger additional bytes written by gzip deflater
+            gzipOutputStream.close()
+        }
+
+        // source is exhausted and nothing left buffered we are done
+        if (rc == -1L && gzipBuffer.exhausted()) {
+            return -1L
+        }
+
+        if (rc >= 0L) {
+            gzipOutputStream.write(temp.readByteArray())
+            gzipOutputStream.flush()
+        }
+
+        // read bytes read from compressed content
+        return gzipBuffer.read(sink, limit)
+    }
+
+    override fun close() {
+        gzipOutputStream.close()
+        source.close()
+    }
+}
+```
+
+ChannelStream implementation
+```kotlin
+@InternalApi
+public actual class GzipByteReadChannel actual constructor(
+    private val channel: SdkByteReadChannel,
+) : SdkByteReadChannel by channel {
+    private val gzipBuffer = SdkBuffer()
+    private val gzipOutputStream = GZIPOutputStream(gzipBuffer.outputStream(), true)
+    private var gzipOutputStreamClosed = false
+
+    override val availableForRead: Int
+        get() = gzipBuffer.size.toInt()
+
+    override val isClosedForRead: Boolean
+        get() = channel.isClosedForRead && gzipBuffer.exhausted() && gzipOutputStreamClosed
+
+    override suspend fun read(sink: SdkBuffer, limit: Long): Long {
+        require(limit >= 0L)
+        if (limit == 0L) return 0L
+
+        val temp = SdkBuffer()
+        val rc = channel.read(temp, limit)
+
+        if (rc == -1L) {
+            // may trigger additional bytes written by gzip deflater
+            gzipOutputStream.close()
+
+            gzipOutputStreamClosed = true
+        }
+
+        // source is exhausted and nothing left buffered we are done
+        if (rc == -1L && gzipBuffer.exhausted()) {
+            return -1L
+        }
+
+        if (rc >= 0L) {
+            gzipOutputStream.write(temp.readByteArray())
+            gzipOutputStream.flush()
+        }
+
+        // read bytes read from compressed content
+        return gzipBuffer.read(sink, limit)
+    }
+
+    override fun cancel(cause: Throwable?): Boolean {
+        gzipOutputStream.close()
+        return channel.cancel(cause)
+    }
+}
 ```
 
 ### Codegen
@@ -192,13 +300,10 @@ Middleware registration has the following steps:
 * Determine if the service has an operation with the `requestCompression` trait
 * If so middleware is registered  for the service
 * The middleware will look at each operation in the service individually
-* The middleware will then determine if an operation has the `requestCompression` trait
+* The middleware will then determine if an operation has the `requestCompression` trait and request compression is not disabled.
 * If so then it'll add an interceptor to the operation
 
 ```kotlin
-/**
- * Middleware that enables compression of payloads for HTTP requests
- */
 class RequestCompressionTrait : KotlinIntegration {
 
     // Will determine if middleware is registered for service
@@ -212,34 +317,84 @@ class RequestCompressionTrait : KotlinIntegration {
         resolved: List<ProtocolMiddleware>
     ): List<ProtocolMiddleware> = resolved + requestCompressionTraitMiddleware
 
-    // TODO: Use `additionalServiceConfigProps` to register `compressionAlgorithms`
+    // Adds request compression config
+    override fun additionalServiceConfigProps(ctx: CodegenContext): List<ConfigProperty> =
+        listOf(
+            ConfigProperty {
+                name = "requestCompression"
+                symbol = RuntimeTypes.SmithyClient.Config.RequestCompressionConfig
+                builderSymbol = RuntimeTypes.SmithyClient.Config.RequestCompressionConfig.nestedBuilder.toBuilder()
+                    .defaultValue("${this.symbol}{}.toBuilderApplicator()")
+                    .nonNullable()
+                    .build()
+                toBuilderExpression = ".toBuilderApplicator()"
+                baseClass = RuntimeTypes.SmithyClient.Config.CompressionClientConfig
+                builderBaseClass = RuntimeTypes.SmithyClient.Config.CompressionClientConfig.nestedBuilder
+                propertyType = ConfigPropertyType.Custom(
+                    render = { prop, writer ->
+                        writer.write(
+                            "override val #1L: #2T = #2T(builder.#1L)",
+                            prop.propertyName,
+                            prop.symbol,
+                        )
+                    },
+                )
+                documentation = """
+                The configuration properties for request compression:
+                
+                * compressionAlgorithms:
+                
+                 The list of compression algorithms supported by the client.
+                 More compression algorithms can be added and may override an existing implementation.
+                 Use the `CompressionAlgorithm` interface to create one.
+                
+                * disableRequestCompression:
+                 
+                 Flag used to determine when a request should be compressed or not.
+                 False by default.
+                             
+                * requestMinCompressionSizeBytes:
+                 
+                The threshold in bytes used to determine if a request should be compressed or not.
+                MUST be in the range 0-10,485,760 (10 MB). Defaults to 10,240 (10 KB).
+                """.trimIndent()
+            },
+        )
 
     // Middleware
     private val requestCompressionTraitMiddleware = object : ProtocolMiddleware {
-        private val interceptorSymbol = RuntimeTypes.HttpClient.Interceptors.RequestCompressionTraitInterceptor
         override val name: String = "RequestCompressionTrait"
 
-        // Will add interceptor to operation(s) in service with `requestCompression` trait 
-        override fun render(ctx: ProtocolGenerator.GenerationContext, op: OperationShape, writer: KotlinWriter) {
-            op.getTrait<RequestCompressionTrait>()?.let { trait ->
-                val requestedCompressionAlgorithms = trait.encodings
+        override fun isEnabledFor(ctx: ProtocolGenerator.GenerationContext, op: OperationShape): Boolean =
+            op.hasTrait<RequestCompressionTrait>()
 
-                writer.withBlock(
-                    "if (config.disableRequestCompression == false) {",
-                    "}"
+        override fun render(ctx: ProtocolGenerator.GenerationContext, op: OperationShape, writer: KotlinWriter) {
+            val requestCompressionTrait = op.getTrait<RequestCompressionTrait>()!!
+            val supportedCompressionAlgorithms = requestCompressionTrait.encodings
+
+            writer.withBlock(
+                "if (config.requestCompression.disableRequestCompression == false) {",
+                "}",
+            ) {
+                withBlock(
+                    "op.interceptors.add(#T(",
+                    "))",
+                    RuntimeTypes.HttpClient.Interceptors.RequestCompressionInterceptor,
                 ) {
-                    withBlock(
-                            "op.interceptors.add(#T(",
-                            "))",
-                            interceptorSymbol,
-                    ) {
-                        write("config.requestMinCompressionSizeBytes,")
-                        write("listOf(${requestedCompressionAlgorithms.joinToString(", ")}),")
-                        // write("config.compressionAlgorithms")
-                    }
+                    write("config.requestCompression.requestMinCompressionSizeBytes,")
+                    write("config.requestCompression.compressionAlgorithms,")
+                    write(
+                        "listOf(${supportedCompressionAlgorithms.joinToString(
+                            separator = ", ",
+                            transform = {
+                                "\"$it\""
+                            },
+                        )}),",
+                    )
                 }
             }
         }
+    }
     }
 }
 ```
@@ -247,11 +402,11 @@ class RequestCompressionTrait : KotlinIntegration {
 Interceptor registered on an operation:
 ```kotlin
 ...
-if (!config.disableRequestCompression) {
+if (config.requestCompression.disableRequestCompression == false) {
     op.interceptors.add(RequestCompressionTraitInterceptor(
-        config.requestMinCompressionSizeBytes,
+        config.requestCompression.requestMinCompressionSizeBytes,
+        config.requestCompression.compressionAlgorithms,
         listOf("gzip", "custom", ),
-        // config.compressionAlgorithms
     )
 }
 ...
@@ -260,49 +415,65 @@ if (!config.disableRequestCompression) {
 ### Implementation
 This feature is implemented by registering an interceptor that replaces the outgoing request body with a compressed equivalent.
 
-The interceptor holds most of the logic for this feature to work. The mapping logic for requested to supported compression algorithms is inside it. The actual compression is initiated here and the header logic as well.
+The interceptor holds the search logic for requested to supported compression algorithms, and the actual compression is initiated here.
 ```kotlin
-private val VALID_COMPRESSION_RANGE = 0..10485760
-private val DEFAULT_COMPRESSION_THRESHOLD_BYTES = 10240
+private val VALID_COMPRESSION_THRESHOLD_BYTES_RANGE = 0..10_485_760
 
-/**
- * HTTP interceptor that compresses operation request payloads when eligible
- */
-public class RequestCompressionTraitInterceptor(
-    private val compressionThreshold: Int = DEFAULT_COMPRESSION_THRESHOLD_BYTES,
-    private val requestedCompressionAlgorithms: List<String>,
-    private val supportedCompressionAlgorithms: List<CompressionAlgorithm>,
+@InternalApi
+public class RequestCompressionInterceptor(
+    private val compressionThresholdBytes: Long,
+    private val availableCompressionAlgorithms: List<CompressionAlgorithm>,
+    private val supportedCompressionAlgorithms: List<String>,
 ) : HttpInterceptor {
-    
-    // Verify min compression size setting is in range
+
     init {
-        require(compressionThreshold in VALID_COMPRESSION_RANGE) { "compressionThresholdBytes ($compressionThresholdBytes) must be in the range $VALID_COMPRESSION_RANGE" }
+        require(compressionThresholdBytes in VALID_COMPRESSION_THRESHOLD_BYTES_RANGE) { "compressionThresholdBytes ($compressionThresholdBytes) must be in the range $VALID_COMPRESSION_THRESHOLD_BYTES_RANGE" }
     }
 
     override suspend fun modifyBeforeRetryLoop(
-        context: ProtocolRequestInterceptorContext<Any, HttpRequest>
+        context: ProtocolRequestInterceptorContext<Any, HttpRequest>,
     ): HttpRequest {
+        val payloadSizeBytes = context.protocolRequest.body.contentLength
         
-        // Determine if going forward with compression
-        val payloadSize = context.protocolRequest.body.contentLength
-        val streamingPayload = payloadSize == null
-        if (streamingPayload || payloadSize!! >= compressionThreshold) {
-
-            // Check if requested algorithm(s) is supported
-            supportedCompressionAlgorithms.find { supported ->
-                requestedCompressionAlgorithms.find { supported.id == it } != null
-            }?.let { algorithm ->
-
-                // Attempt compression
-                val request = context.protocolRequest.toBuilder()
-                request.body = request.body
-                // TODO: Write compression
-                request.headers.append("Content-Encoding", algorithm.id)
-                return request.build()
-            }
+        // Searching compression algorithms
+        val algorithm = supportedCompressionAlgorithms.firstNotNullOfOrNull { id ->
+            availableCompressionAlgorithms.find { it.id == id }
         }
-        return context.protocolRequest
+
+        // Determining if compression is applied or not
+        return if (algorithm != null && (context.protocolRequest.body.isStreaming || payloadSizeBytes?.let { it >= compressionThresholdBytes } == true)) {
+            algorithm.compressRequest(context.protocolRequest)
+        } else {
+            val logger = coroutineContext.logger<RequestCompressionInterceptor>()
+            val skipCause = if (algorithm == null) "no modeled compression algorithms are supported by the client" else "request size threshold ($compressionThresholdBytes) was not met"
+
+            logger.debug { "skipping request compression because $skipCause" }
+
+            context.protocolRequest
+        }
     }
+
+    /**
+     * Determines if a http body is streaming type or not.
+     */
+    private val HttpBody.isStreaming: Boolean
+        get() = this is HttpBody.ChannelContent || this is HttpBody.SourceContent || this.contentLength == null
+}
+```
+
+The Http Request is compressed and the `Content-Encoding` header is appended from this function.
+```kotlin
+public fun CompressionAlgorithm.compressRequest(request: HttpRequest): HttpRequest {
+    val stream = request.body.toByteStream() ?: return request
+
+    val compressedRequest = request.toBuilder()
+
+    val compressedStream = compress(stream)
+    compressedRequest.body = compressedStream.toHttpBody()
+
+    compressedRequest.headers.append("Content-Encoding", contentEncoding)
+
+    return compressedRequest.build()
 }
 ```
 
@@ -322,3 +493,4 @@ Testing is done using both unit tests and Smithy HTTP protocol compliance tests.
 
 ## Revision history
 11/07/2023 - Created
+12/15/2023 - Updated after implementation
