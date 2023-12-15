@@ -127,7 +127,11 @@ class EndpointResolverAdapterGenerator(
 
                 // Render builtins
                 if (rules != null) {
-                    ctx.integrations.forEach { it.renderBindEndpointBuiltins(ctx, rules, writer) }
+                    ctx.integrations
+                        .mapNotNull { it.customizeEndpointResolution(ctx) }
+                        .forEach {
+                            it.renderBindEndpointBuiltins(ctx, rules, writer)
+                        }
                 }
 
                 // Render client context

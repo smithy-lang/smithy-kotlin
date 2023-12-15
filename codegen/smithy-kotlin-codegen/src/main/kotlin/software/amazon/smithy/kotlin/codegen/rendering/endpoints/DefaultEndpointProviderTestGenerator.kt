@@ -9,6 +9,7 @@ import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.kotlin.codegen.KotlinSettings
 import software.amazon.smithy.kotlin.codegen.core.*
 import software.amazon.smithy.kotlin.codegen.model.buildSymbol
+import software.amazon.smithy.kotlin.codegen.rendering.protocol.ProtocolGenerator
 import software.amazon.smithy.kotlin.codegen.utils.toCamelCase
 import software.amazon.smithy.model.node.BooleanNode
 import software.amazon.smithy.model.node.Node
@@ -21,12 +22,10 @@ import software.amazon.smithy.rulesengine.traits.EndpointTestCase
  * Renders test cases for the default endpoint provider.
  */
 class DefaultEndpointProviderTestGenerator(
-    private val writer: KotlinWriter,
+    private val ctx: ProtocolGenerator.GenerationContext,
     rules: EndpointRuleSet,
     private val cases: List<EndpointTestCase>,
-    private val providerSymbol: Symbol,
-    private val paramsSymbol: Symbol,
-    private val expectedPropertyRenderers: Map<String, EndpointPropertyRenderer> = emptyMap(),
+    private val writer: KotlinWriter,
 ) : ExpressionRenderer {
     companion object {
         const val CLASS_NAME = "DefaultEndpointProviderTest"
@@ -37,6 +36,16 @@ class DefaultEndpointProviderTestGenerator(
                 namespace = "${settings.pkg.name}.endpoints"
             }
     }
+
+    private val paramsSymbol = EndpointParametersGenerator.getSymbol(ctx.settings)
+    private val providerSymbol = DefaultEndpointProviderGenerator.getSymbol(ctx.settings)
+    private val endpointCustomizations = ctx.integrations.mapNotNull { it.customizeEndpointResolution(ctx) }
+    private val propertyRenderers = endpointCustomizations
+        .map { it.propertyRenderers }
+        .fold(mutableMapOf<String, EndpointPropertyRenderer>()) { acc, propRenderers ->
+            acc.putAll(propRenderers)
+            acc
+        }
 
     private val expressionGenerator = ExpressionGenerator(writer, rules, emptyMap()) // functions can't be referenced in property declarations
 
@@ -121,8 +130,8 @@ class DefaultEndpointProviderTestGenerator(
             if (endpoint.properties.isNotEmpty()) {
                 withBlock("attributes = #T {", "},", RuntimeTypes.Core.Collections.attributesOf) {
                     endpoint.properties.entries.forEach { (k, v) ->
-                        if (k in expectedPropertyRenderers) {
-                            expectedPropertyRenderers[k]!!(writer, Expression.fromNode(v), this@DefaultEndpointProviderTestGenerator)
+                        if (k in propertyRenderers) {
+                            propertyRenderers[k]!!(writer, Expression.fromNode(v), this@DefaultEndpointProviderTestGenerator)
                             return@forEach
                         }
 

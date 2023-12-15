@@ -11,9 +11,13 @@ import software.amazon.smithy.kotlin.codegen.KotlinSettings
 import software.amazon.smithy.kotlin.codegen.core.CodegenContext
 import software.amazon.smithy.kotlin.codegen.core.KotlinWriter
 import software.amazon.smithy.kotlin.codegen.core.RuntimeTypes
+import software.amazon.smithy.kotlin.codegen.core.getContextValue
+import software.amazon.smithy.kotlin.codegen.integration.AppendingSectionWriter
 import software.amazon.smithy.kotlin.codegen.integration.AuthSchemeHandler
 import software.amazon.smithy.kotlin.codegen.integration.KotlinIntegration
+import software.amazon.smithy.kotlin.codegen.integration.SectionWriterBinding
 import software.amazon.smithy.kotlin.codegen.model.buildSymbol
+import software.amazon.smithy.kotlin.codegen.rendering.protocol.HttpProtocolClientGenerator
 import software.amazon.smithy.kotlin.codegen.rendering.protocol.ProtocolGenerator
 import software.amazon.smithy.kotlin.codegen.rendering.util.ConfigProperty
 import software.amazon.smithy.kotlin.codegen.rendering.util.ConfigPropertyType
@@ -53,6 +57,22 @@ class BearerTokenAuthSchemeIntegration : KotlinIntegration {
         }
 
         return listOf(bearerTokenProviderProp)
+    }
+
+    override val sectionWriters: List<SectionWriterBinding>
+        get() = listOf(
+            SectionWriterBinding(HttpProtocolClientGenerator.ClientInitializer, renderClientInitializer),
+        )
+
+    private val renderClientInitializer = AppendingSectionWriter { writer ->
+        val ctx = writer.getContextValue(HttpProtocolClientGenerator.ClientInitializer.GenerationContext)
+        val serviceIndex = ServiceIndex.of(ctx.model)
+        val hasBearerTokenAuth = serviceIndex
+            .getAuthSchemes(ctx.settings.service)
+            .containsKey(HttpBearerAuthTrait.ID)
+        if (hasBearerTokenAuth) {
+            writer.write("managedResources.#T(config.bearerTokenProvider)", RuntimeTypes.Core.IO.addIfManaged)
+        }
     }
 }
 
