@@ -4,7 +4,6 @@
  */
 
 plugins {
-    @Suppress("DSL_SCOPE_VIOLATION") // TODO: Remove once https://youtrack.jetbrains.com/issue/KTIJ-19369 is fixed
     alias(libs.plugins.kotlinx.serialization)
 }
 

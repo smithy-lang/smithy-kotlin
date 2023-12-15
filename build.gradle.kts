@@ -15,13 +15,12 @@ buildscript {
         // Add our custom gradle plugin(s) to buildscript classpath (comes from github source)
         classpath("aws.sdk.kotlin:build-plugins") {
             version {
-                require("0.2.9")
+                require("0.3.0")
             }
         }
     }
 }
 
-@Suppress("DSL_SCOPE_VIOLATION") // TODO: Remove once https://youtrack.jetbrains.com/issue/KTIJ-19369 is fixed
 plugins {
     alias(libs.plugins.dokka)
     alias(libs.plugins.kotlinx.binary.compatibility.validator)
