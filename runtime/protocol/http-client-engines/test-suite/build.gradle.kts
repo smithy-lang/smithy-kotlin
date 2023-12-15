@@ -64,6 +64,9 @@ open class LocalTestServers : DefaultTask() {
     @Internal
     lateinit var classpath: FileCollection
 
+    @Input
+    lateinit var sslConfigPath: String
+
     @TaskAction
     fun exec() {
         try {
@@ -72,8 +75,8 @@ open class LocalTestServers : DefaultTask() {
             val loader = URLClassLoader(urlClassLoaderSource, ClassLoader.getSystemClassLoader())
 
             val mainClass = loader.loadClass(main)
-            val main = mainClass.getMethod("startServers")
-            server = main.invoke(null) as Closeable
+            val main = mainClass.getMethod("startServers", String::class.java)
+            server = main.invoke(null, sslConfigPath) as Closeable
             println("[TestServers] started")
         } catch (cause: Throwable) {
             println("[TestServers] failed: ${cause.message}")
@@ -97,6 +100,7 @@ val startTestServers = task<LocalTestServers>("startTestServers") {
     main = "aws.smithy.kotlin.runtime.http.test.util.TestServersKt"
     val kotlinCompilation = kotlin.targets.getByName("jvm").compilations["test"]
     classpath = (kotlinCompilation as org.jetbrains.kotlin.gradle.plugin.KotlinCompilationToRunnableFiles<*>).runtimeDependencyFiles
+    sslConfigPath = File.createTempFile("ssl-", ".cfg").absolutePath
 }
 
 val testTasks = listOf("allTests", "jvmTest")
@@ -109,6 +113,7 @@ val testTasks = listOf("allTests", "jvmTest")
 tasks.jvmTest {
     // set test environment for proxy tests
     systemProperty("MITM_PROXY_SCRIPTS_ROOT", projectDir.resolve("proxy-scripts").absolutePath)
+    systemProperty("SSL_CONFIG_PATH", startTestServers.sslConfigPath)
     val enableProxyTestsProp = "aws.test.http.enableProxyTests"
     val runningInCodeBuild = System.getenv().containsKey("CODEBUILD_BUILD_ID")
     systemProperty(enableProxyTestsProp, System.getProperties().getOrDefault(enableProxyTestsProp, !runningInCodeBuild))

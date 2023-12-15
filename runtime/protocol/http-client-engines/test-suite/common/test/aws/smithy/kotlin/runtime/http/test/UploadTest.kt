@@ -28,11 +28,11 @@ class UploadTest : AbstractEngineTest() {
         block: () -> HttpBody,
     ) = testEngines {
         // test that what we write the entire contents given to us
-        test { env, client ->
+        test { _, client ->
 
             val req = HttpRequest {
                 method = HttpMethod.POST
-                testSetup(env)
+                testSetup()
                 url.path.decoded = "/upload/content"
                 body = block()
             }
@@ -68,7 +68,7 @@ class UploadTest : AbstractEngineTest() {
 
     @Test
     fun testUploadWithDelay() = testEngines {
-        test { env, client ->
+        test { _, client ->
             val data = ByteArray(16 * 1024 * 1024) { it.toByte() }
             val sha = data.sha256().encodeToHex()
             val ch = SdkByteChannel(autoFlush = true)
@@ -79,7 +79,7 @@ class UploadTest : AbstractEngineTest() {
 
             val req = HttpRequest {
                 method = HttpMethod.POST
-                testSetup(env)
+                testSetup()
                 url.path.decoded = "/upload/content"
                 body = content
             }
@@ -103,7 +103,7 @@ class UploadTest : AbstractEngineTest() {
 
     @Test
     fun testUploadWithClosingDelay() = testEngines {
-        test { env, client ->
+        test { _, client ->
             val data = ByteArray(16) { it.toByte() }
             val sha = data.sha256().encodeToHex()
             val ch = SdkByteChannel(autoFlush = true)
@@ -114,7 +114,7 @@ class UploadTest : AbstractEngineTest() {
 
             val req = HttpRequest {
                 method = HttpMethod.POST
-                testSetup(env)
+                testSetup()
                 url.path.decoded = "/upload/content"
                 body = content
             }
@@ -138,7 +138,7 @@ class UploadTest : AbstractEngineTest() {
     fun testUploadWithWrappedStream() = testEngines {
         // test custom ByteStream behavior
         // see https://github.com/awslabs/smithy-kotlin/issues/613
-        test { env, client ->
+        test { _, client ->
             val data = ByteArray(1024 * 1024) { it.toByte() }
             val sha = data.sha256().encodeToHex()
 
@@ -152,7 +152,7 @@ class UploadTest : AbstractEngineTest() {
 
             val req = HttpRequest {
                 method = HttpMethod.POST
-                testSetup(env)
+                testSetup()
                 url.path.decoded = "/upload/content"
                 body = wrappedStream.toHttpBody()
             }
@@ -168,13 +168,13 @@ class UploadTest : AbstractEngineTest() {
     fun testUploadEmptyWithContentTypes() = testEngines {
         // test that empty bodies with a specified Content-Type actually include Content-Type in the request
         // see https://github.com/awslabs/aws-sdk-kotlin/issues/588
-        test { env, client ->
+        test { _, client ->
             val req = HttpRequest {
                 method = HttpMethod.POST
                 headers {
                     append("Content-Type", "application/xml")
                 }
-                testSetup(env)
+                testSetup()
                 url.path.decoded = "/upload/content"
                 body = HttpBody.Empty
             }
@@ -201,7 +201,7 @@ class UploadTest : AbstractEngineTest() {
     @OptIn(DelicateCoroutinesApi::class)
     @Test
     fun testUploadCancellation() = testEngines {
-        test { env, client ->
+        test { _, client ->
             val chan = SdkByteChannel(autoFlush = true)
 
             val writeJob = GlobalScope.launch {
@@ -211,7 +211,7 @@ class UploadTest : AbstractEngineTest() {
 
             val req = HttpRequest {
                 method = HttpMethod.POST
-                testSetup(env)
+                testSetup()
                 url.path.decoded = "/upload/content"
                 body = chan.toHttpBody(16 * 1024 * 1024)
             }
