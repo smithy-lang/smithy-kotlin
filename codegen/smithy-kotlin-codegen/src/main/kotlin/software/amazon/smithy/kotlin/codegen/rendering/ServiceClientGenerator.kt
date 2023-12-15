@@ -77,6 +77,7 @@ class ServiceClientGenerator(private val ctx: RenderingContext<ServiceShape>) {
         writer.write("\n\n")
         writer.write("#L const val ServiceId: String = #S", ctx.settings.api.visibility, ctx.settings.sdkId)
         writer.write("#L const val SdkVersion: String = #S", ctx.settings.api.visibility, ctx.settings.pkg.version)
+        writer.write("#L const val ServiceApiVersion: String = #S", ctx.settings.api.visibility, service.version)
         writer.write("\n\n")
 
         writer.putContext("service.name", ctx.settings.sdkId)
