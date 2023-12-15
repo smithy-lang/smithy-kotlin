@@ -4,6 +4,8 @@
  */
 import aws.sdk.kotlin.gradle.dsl.configurePublishing
 import aws.sdk.kotlin.gradle.kmp.*
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+
 plugins {
     alias(libs.plugins.dokka)
     jacoco
@@ -66,6 +68,10 @@ subprojects {
     tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
         kotlinOptions {
             jvmTarget = "1.8"
+        }
+        compilerOptions {
+            jvmTarget.set(JvmTarget.JVM_1_8)
+            freeCompilerArgs.add("-Xexpect-actual-classes")
         }
     }
 }
