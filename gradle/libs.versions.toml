@@ -87,6 +87,8 @@ jsoup = { module = "org.jsoup:jsoup", version.ref = "jsoup-version" }
 
 [plugins]
 dokka = { id = "org.jetbrains.dokka", version.ref = "dokka-version"}
+kotlin-jvm = {id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin-version" }
+kotlin-multiplatform = {id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin-version" }
 kotlinx-benchmark = { id = "org.jetbrains.kotlinx.benchmark", version.ref = "kotlinx-benchmark-version" }
 kotlinx-binary-compatibility-validator = { id = "org.jetbrains.kotlinx.binary-compatibility-validator", version = "0.13.2" }
 kotlinx-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin-version"}

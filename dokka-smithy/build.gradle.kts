@@ -9,7 +9,7 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
  * SPDX-License-Identifier: Apache-2.0
  */
 plugins {
-    kotlin("jvm")
+    alias(libs.plugins.kotlin.jvm)
 }
 
 description = "Custom Dokka plugin for Kotlin Smithy SDK API docs"

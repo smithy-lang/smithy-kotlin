@@ -24,6 +24,10 @@ buildscript {
 plugins {
     alias(libs.plugins.dokka)
     alias(libs.plugins.kotlinx.binary.compatibility.validator)
+    // ensure the correct version of KGP ends up on our buildscript classpath
+    // since build-plugins also has <some> version in its dependency closure
+    alias(libs.plugins.kotlin.multiplatform) apply false
+    alias(libs.plugins.kotlin.jvm) apply false
 }
 
 // configures (KMP) subprojects with our own KMP conventions and some default dependencies
