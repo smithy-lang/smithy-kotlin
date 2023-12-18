@@ -18,7 +18,6 @@ kotlin {
                 implementation(project(":runtime:observability:telemetry-api"))
 
                 implementation(libs.kotlinx.coroutines.core)
-                implementation(libs.kotlinx.atomicfu)
             }
         }
 

@@ -4,7 +4,7 @@ dokka-version = "1.9.10"
 
 # libs
 coroutines-version = "1.7.3"
-atomicfu-version = "0.22.0"
+atomicfu-version = "0.23.1"
 okhttp-version = "5.0.0-alpha.11"
 okio-version = "3.6.0"
 otel-version = "1.32.0"

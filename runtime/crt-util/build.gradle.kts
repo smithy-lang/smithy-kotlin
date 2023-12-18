@@ -16,7 +16,6 @@ kotlin {
                 api(project(":runtime:runtime-core"))
                 api(libs.crt.kotlin)
                 api(project(":runtime:protocol:http"))
-                implementation(libs.kotlinx.atomicfu)
             }
         }
         jvmTest {

@@ -19,7 +19,6 @@ kotlin {
                 api(project(":runtime:runtime-core"))
                 api(project(":runtime:protocol:http-client"))
                 api(project(":runtime:smithy-client"))
-                implementation(libs.kotlinx.atomicfu)
             }
         }
 

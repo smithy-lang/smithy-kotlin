@@ -17,7 +17,6 @@ kotlin {
                 api(project(":runtime:runtime-core"))
                 api(project(":runtime:auth:identity-api"))
                 implementation(project(":runtime:observability:telemetry-api"))
-                implementation(libs.kotlinx.atomicfu)
             }
         }
         commonTest {
