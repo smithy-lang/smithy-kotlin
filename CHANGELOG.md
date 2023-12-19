@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.0.5] - 12/19/2023
+
+### Miscellaneous
+* Disable search and address accessibility violations in documentation
+
 ## [1.0.4] - 12/14/2023
 
 ### Miscellaneous
