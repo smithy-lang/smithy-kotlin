@@ -151,13 +151,6 @@ object RuntimeTypes {
             val Sha256 = symbol("Sha256")
         }
 
-        object Http : RuntimeTypePackage(KotlinDependency.CORE, "http") {
-            object Compression : RuntimeTypePackage(KotlinDependency.CORE, "http.compression") {
-                val CompressionAlgorithm = symbol("CompressionAlgorithm")
-                val Gzip = symbol("Gzip")
-            }
-        }
-
         object IO : RuntimeTypePackage(KotlinDependency.CORE, "io") {
             val Closeable = symbol("Closeable")
             val SdkManagedGroup = symbol("SdkManagedGroup")

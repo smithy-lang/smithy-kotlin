@@ -56,7 +56,7 @@ public class RequestCompressionConfig(builder: Builder) {
     public val requestMinCompressionSizeBytes: Long = builder.requestMinCompressionSizeBytes ?: 10_240
 
     @InternalApi
-    public fun toBuilderApplicator(): Builder = Builder().apply {
+    public fun toBuilder(): Builder = Builder().apply {
         compressionAlgorithms = this@RequestCompressionConfig.compressionAlgorithms.toMutableList()
         disableRequestCompression = this@RequestCompressionConfig.disableRequestCompression
         requestMinCompressionSizeBytes = this@RequestCompressionConfig.requestMinCompressionSizeBytes

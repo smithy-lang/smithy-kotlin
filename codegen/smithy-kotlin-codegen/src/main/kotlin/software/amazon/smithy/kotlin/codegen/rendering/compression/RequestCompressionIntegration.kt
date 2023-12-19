@@ -2,6 +2,11 @@
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
  * SPDX-License-Identifier: Apache-2.0
  */
+
+/*
+ * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * SPDX-License-Identifier: Apache-2.0
+ */
 package software.amazon.smithy.kotlin.codegen.rendering.compression
 
 import software.amazon.smithy.kotlin.codegen.KotlinSettings
@@ -44,10 +49,10 @@ class RequestCompressionIntegration : KotlinIntegration {
                 name = "requestCompression"
                 symbol = RuntimeTypes.SmithyClient.Config.RequestCompressionConfig
                 builderSymbol = RuntimeTypes.SmithyClient.Config.RequestCompressionConfig.nestedBuilder.toBuilder()
-                    .defaultValue("${this.symbol}{}.toBuilderApplicator()")
+                    .defaultValue("${this.symbol}.Builder()")
                     .nonNullable()
                     .build()
-                toBuilderExpression = ".toBuilderApplicator()"
+                toBuilderExpression = ".toBuilder()"
                 baseClass = RuntimeTypes.SmithyClient.Config.CompressionClientConfig
                 builderBaseClass = RuntimeTypes.SmithyClient.Config.CompressionClientConfig.nestedBuilder
                 propertyType = ConfigPropertyType.Custom(
@@ -60,23 +65,8 @@ class RequestCompressionIntegration : KotlinIntegration {
                     },
                 )
                 documentation = """
-                The configuration properties for request compression:
-                
-                * compressionAlgorithms:
-                
-                 The list of compression algorithms supported by the client.
-                 More compression algorithms can be added and may override an existing implementation.
-                 Use the `CompressionAlgorithm` interface to create one.
-                
-                * disableRequestCompression:
-                 
-                 Flag used to determine when a request should be compressed or not.
-                 False by default.
-                             
-                * requestMinCompressionSizeBytes:
-                 
-                The threshold in bytes used to determine if a request should be compressed or not.
-                MUST be in the range 0-10,485,760 (10 MB). Defaults to 10,240 (10 KB).
+                Configuration settings related to request compression.
+                See [aws.smithy.kotlin.runtime.client.config.CompressionClientConfig] for more information
                 """.trimIndent()
             },
         )
