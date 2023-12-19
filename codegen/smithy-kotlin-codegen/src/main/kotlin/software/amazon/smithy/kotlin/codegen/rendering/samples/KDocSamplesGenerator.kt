@@ -50,7 +50,6 @@ class KDocSamplesGenerator : KotlinIntegration {
                         "@sample $identifier"
                     }
 
-                    shape.getTrait<DocumentationTrait>()?.sourceLocation
                     val existingDocs = shape.getTrait<DocumentationTrait>()
                     val updatedDocs = buildString {
                         if (existingDocs != null) {
