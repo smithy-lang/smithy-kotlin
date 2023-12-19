@@ -25,7 +25,7 @@ class ShapeValueGenerator(
 ) {
 
     /**
-     * Renders the generation of a shape value declaration for the given parameters inline
+     * Renders a shape value declaration for the given parameters inline
      * with the current writer.
      *
      * @param writer writer to write generated code with.

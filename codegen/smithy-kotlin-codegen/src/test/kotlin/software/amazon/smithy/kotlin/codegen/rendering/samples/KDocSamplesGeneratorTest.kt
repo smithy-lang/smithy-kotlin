@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Test
 import software.amazon.smithy.kotlin.codegen.KotlinSettings
 import software.amazon.smithy.kotlin.codegen.model.expectShape
 import software.amazon.smithy.kotlin.codegen.model.expectTrait
+import software.amazon.smithy.kotlin.codegen.model.hasTrait
 import software.amazon.smithy.kotlin.codegen.test.newTestContext
 import software.amazon.smithy.kotlin.codegen.test.shouldContainOnlyOnceWithDiff
 import software.amazon.smithy.kotlin.codegen.test.toCodegenContext
@@ -15,7 +16,9 @@ import software.amazon.smithy.kotlin.codegen.test.toSmithyModel
 import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.shapes.ShapeId
 import software.amazon.smithy.model.traits.DocumentationTrait
+import software.amazon.smithy.model.transform.ModelTransformer
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 
 class KDocSamplesGeneratorTest {
     private val model = """
@@ -95,8 +98,31 @@ class KDocSamplesGeneratorTest {
         val expected = """
             This is documentation for GetFoo
             
+            @sample test.samples.GetFoo.sample
             @sample test.samples.GetFoo.sample1
-            @sample test.samples.GetFoo.sample2
+        """.trimIndent()
+        assertEquals(expected, docs)
+    }
+
+    @Test
+    fun itHandlesOperationsWithNoDocTrait() {
+        val modelNoDocs = ModelTransformer
+            .create()
+            .removeTraitsIf(model) { _, trait ->
+                trait is DocumentationTrait
+            }
+            .toBuilder()
+            .build()
+
+        assertFalse(modelNoDocs.expectShape<OperationShape>("com.test#GetFoo").hasTrait<DocumentationTrait>())
+
+        val integration = KDocSamplesGenerator()
+        val modified = integration.preprocessModel(modelNoDocs, settings)
+
+        val docs = modified.expectShape<OperationShape>("com.test#GetFoo").expectTrait<DocumentationTrait>().value
+        val expected = """
+            @sample test.samples.GetFoo.sample
+            @sample test.samples.GetFoo.sample1
         """.trimIndent()
         assertEquals(expected, docs)
     }
@@ -111,7 +137,7 @@ class KDocSamplesGeneratorTest {
             class GetFoo {
 
                 @Sample
-                fun sample1() {
+                fun sample() {
                     // Invoke GetFoo
                     val resp = fooClient.getFoo {
                         member1 = "bar"
@@ -119,13 +145,12 @@ class KDocSamplesGeneratorTest {
                 }
 
                 @Sample
-                fun sample2() {
+                fun sample1() {
                     // Invoke GetFoo example 2
                     val resp = fooClient.getFoo {
                         member1 = "qux"
                     }
                 }
-
             }
 
         """.trimIndent()

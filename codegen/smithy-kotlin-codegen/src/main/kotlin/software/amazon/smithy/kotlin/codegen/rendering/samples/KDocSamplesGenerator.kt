@@ -8,10 +8,12 @@ import software.amazon.smithy.kotlin.codegen.KotlinSettings
 import software.amazon.smithy.kotlin.codegen.core.*
 import software.amazon.smithy.kotlin.codegen.integration.KotlinIntegration
 import software.amazon.smithy.kotlin.codegen.model.expectTrait
+import software.amazon.smithy.kotlin.codegen.model.getTrait
 import software.amazon.smithy.kotlin.codegen.model.hasAllOptionalMembers
 import software.amazon.smithy.kotlin.codegen.model.hasTrait
 import software.amazon.smithy.kotlin.codegen.rendering.ShapeValueGenerator
 import software.amazon.smithy.model.Model
+import software.amazon.smithy.model.SourceLocation
 import software.amazon.smithy.model.knowledge.TopDownIndex
 import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.traits.DocumentationTrait
@@ -38,9 +40,9 @@ class KDocSamplesGenerator : KotlinIntegration {
      */
     override fun preprocessModel(model: Model, settings: KotlinSettings): Model {
         val transformer = ModelTransformer.create()
-        return transformer.mapTraits(model) { shape, trait ->
+        return transformer.mapShapes(model) { shape ->
             when {
-                shape is OperationShape && shape.hasTrait<ExamplesTrait>() && trait is DocumentationTrait -> {
+                shape is OperationShape && shape.hasTrait<ExamplesTrait>() -> {
                     val examplesTrait = shape.expectTrait<ExamplesTrait>()
                     val filtered = examplesTrait.examples.filterNot { it.error.isPresent }
                     val kdocSampleIdentifiers = filtered.indices.joinToString(separator = "\n") { idx ->
@@ -48,10 +50,22 @@ class KDocSamplesGenerator : KotlinIntegration {
                         "@sample $identifier"
                     }
 
-                    val updatedDocs = trait.value + "\n\n" + kdocSampleIdentifiers
-                    DocumentationTrait(updatedDocs, trait.sourceLocation)
+                    shape.getTrait<DocumentationTrait>()?.sourceLocation
+                    val existingDocs = shape.getTrait<DocumentationTrait>()
+                    val updatedDocs = buildString {
+                        if (existingDocs != null) {
+                            append(existingDocs.value)
+                            append("\n\n")
+                        }
+                        append(kdocSampleIdentifiers)
+                    }
+                    val sourceLocation = existingDocs?.sourceLocation ?: SourceLocation.NONE
+                    val newOrUpdatedDocTrait = DocumentationTrait(updatedDocs, sourceLocation)
+                    shape.toBuilder()
+                        .addTrait(newOrUpdatedDocTrait)
+                        .build()
                 }
-                else -> trait
+                else -> shape
             }
         }
     }
@@ -63,10 +77,11 @@ class KDocSamplesGenerator : KotlinIntegration {
             sampleFunctionName(index),
         ).joinToString(separator = ".")
 
-    private fun sampleFunctionName(index: Int): String = "sample${index + 1}"
+    private fun sampleFunctionName(index: Int): String = "sample" + if (index > 0) "$index" else ""
     private fun sampleClassName(op: OperationShape): String = op.id.name
 
     private fun samplePackage(settings: KotlinSettings): String = settings.pkg.subpackage("samples")
+
     override fun writeAdditionalFiles(ctx: CodegenContext, delegator: KotlinDelegator) {
         val topDownIndex = TopDownIndex.of(ctx.model)
         val operations = topDownIndex.getContainedOperations(ctx.settings.service)
@@ -76,14 +91,16 @@ class KDocSamplesGenerator : KotlinIntegration {
 
                 val writer = KotlinWriter(samplePackage(ctx.settings))
                 writer.withBlock("class #L {", "}", sampleClassName(op)) {
-                    examples.examples
+                    examples
+                        .examples
                         // unclear what benefit error examples provide, omit for now
                         .filterNot { it.error.isPresent }
                         .forEachIndexed { idx, example ->
                             write("")
                             write("@Sample")
                             withBlock("fun #L() {", "}", sampleFunctionName(idx)) {
-                                example.documentation
+                                example
+                                    .documentation
                                     .getOrDefault(example.title)
                                     .breakLongLines()
                                     .forEach { line ->
@@ -92,7 +109,6 @@ class KDocSamplesGenerator : KotlinIntegration {
 
                                 renderNormalExample(ctx, writer, op, example)
                             }
-                            write("")
                         }
                 }
                 val contents = writer.toString()
@@ -112,13 +128,12 @@ class KDocSamplesGenerator : KotlinIntegration {
                 ShapeValueGenerator(ctx.model, ctx.symbolProvider).writeShapeValues(writer, input, example.input)
             }
         }
-
-        // TODO - not clear what benefit there is to the example output, omit it for now
     }
 }
 
+private val wordsPattern = Regex("""\w+[.,]?|".*?"[.,]?|\(.*\)[.,]?""")
 internal fun String.breakLongLines(maxLineLengthChars: Int = 100): List<String> {
-    val words = Regex("\\w+[.,]?|\\\".*\\\"[.,]?|\\(.*\\)[.,]?").findAll(this).map(MatchResult::value)
+    val words = wordsPattern.findAll(this).map(MatchResult::value)
     val lines = mutableListOf<String>()
     val wordsOnLine = mutableListOf<String>()
     var lineLength = 0
