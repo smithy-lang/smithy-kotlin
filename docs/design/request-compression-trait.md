@@ -60,23 +60,6 @@ This feature can be configured by a customer to adjust the minimum payload size 
 *NOTE*: The client needs to be instantiated using `fromEnvironment()` for it to check all the available locations or else it
 will only look at the explicit client config.
 
-Will look in all 4 locations:
-```kotlin
-    val client = S3Client.fromEnvironment {
-        region = "us-west-2"
-    }
-```
-
-Will only look at explicit client config:
-```kotlin
-    val client = S3Client {
-        region = "us-west-2"
-        requestCompression {
-            ...
-        }
-    }
-```
-
 #### Disable Request Compression 
 * Type: Boolean
 * Default: False
@@ -109,23 +92,6 @@ class CustomGzip : CompressionAlgorithm {
     override val id: String = "gzip"
     ...
 }
-```
-
-### The Trait
-Below is an abbreviated example of the request compression trait in use:
-
-```smithy
-@requestCompression(
-    encodings: ["gzip", "custom"]
-)
-operation ...
-```
-
-The client has its own list of supported compression algorithms as a list of `CompressionAlgorithm`s in the client config.
-```kotlin
-val compressionAlgorithms: List<CompressionAlgorithm> = listOf(
-    Gzip()
-)
 ```
 
 ### Behavior
@@ -182,7 +148,6 @@ public interface CompressionAlgorithm {
 The `id` is used to match a supported `CompressionAlgorithm` to a requested compression algorithm from the trait. The `contentEncoding` is used to set a value in the `Content-Encoding` header, and the `compress` function is used to compress the request.
 
 #### Compression
-Gzip JVM compression implementation:
 
 ByteStream implementation
 ```kotlin
@@ -198,100 +163,7 @@ byteArrayOutputStream.close()
 return compressedBody
 ```
 
-The SourceStream and ChannelStream implementation wrap the source so that it compresses into gzip format with each read.
-
-SourceStream implementation
-```kotlin
-@InternalApi
-public actual class GzipSdkSource actual constructor(
-    private val source: SdkSource,
-) : SdkSource {
-    private val gzipBuffer = SdkBuffer()
-    private val gzipOutputStream = GZIPOutputStream(gzipBuffer.outputStream(), true)
-
-    override fun read(sink: SdkBuffer, limit: Long): Long {
-        require(limit >= 0L)
-        if (limit == 0L) return 0L
-
-        val temp = SdkBuffer()
-        val rc = source.read(temp, limit)
-
-        if (rc == -1L) {
-            // may trigger additional bytes written by gzip deflater
-            gzipOutputStream.close()
-        }
-
-        // source is exhausted and nothing left buffered we are done
-        if (rc == -1L && gzipBuffer.exhausted()) {
-            return -1L
-        }
-
-        if (rc >= 0L) {
-            gzipOutputStream.write(temp.readByteArray())
-            gzipOutputStream.flush()
-        }
-
-        // read bytes read from compressed content
-        return gzipBuffer.read(sink, limit)
-    }
-
-    override fun close() {
-        gzipOutputStream.close()
-        source.close()
-    }
-}
-```
-
-ChannelStream implementation
-```kotlin
-@InternalApi
-public actual class GzipByteReadChannel actual constructor(
-    private val channel: SdkByteReadChannel,
-) : SdkByteReadChannel by channel {
-    private val gzipBuffer = SdkBuffer()
-    private val gzipOutputStream = GZIPOutputStream(gzipBuffer.outputStream(), true)
-    private var gzipOutputStreamClosed = false
-
-    override val availableForRead: Int
-        get() = gzipBuffer.size.toInt()
-
-    override val isClosedForRead: Boolean
-        get() = channel.isClosedForRead && gzipBuffer.exhausted() && gzipOutputStreamClosed
-
-    override suspend fun read(sink: SdkBuffer, limit: Long): Long {
-        require(limit >= 0L)
-        if (limit == 0L) return 0L
-
-        val temp = SdkBuffer()
-        val rc = channel.read(temp, limit)
-
-        if (rc == -1L) {
-            // may trigger additional bytes written by gzip deflater
-            gzipOutputStream.close()
-
-            gzipOutputStreamClosed = true
-        }
-
-        // source is exhausted and nothing left buffered we are done
-        if (rc == -1L && gzipBuffer.exhausted()) {
-            return -1L
-        }
-
-        if (rc >= 0L) {
-            gzipOutputStream.write(temp.readByteArray())
-            gzipOutputStream.flush()
-        }
-
-        // read bytes read from compressed content
-        return gzipBuffer.read(sink, limit)
-    }
-
-    override fun cancel(cause: Throwable?): Boolean {
-        gzipOutputStream.close()
-        return channel.cancel(cause)
-    }
-}
-```
+The `GzipSdkSource` and `GzipByteReadChannel` implementations wrap the source so that it compresses into gzip format with each read.
 
 ### Codegen
 Middleware registration has the following steps:
@@ -487,7 +359,7 @@ Testing is done using both unit tests and Smithy HTTP protocol compliance tests.
 
 [Smithy HTTP protocol compliance test for `requestCompression`](https://github.com/smithy-lang/smithy/blob/806b624733e3fc0e2d3a866ff986d5a63bb96274/smithy-aws-protocol-tests/model/awsJson1_0/requestCompression.smithy)
 
-[Shared  `config` and `credentials` file docs](https://docs.aws.amazon.com/sdkref/latest/guide/file-format.html)
+[Shared `config` and `credentials` file docs](https://docs.aws.amazon.com/sdkref/latest/guide/file-format.html)
 
 [Docs for Kotlin multi-platform (expect/actual)](https://kotlinlang.org/docs/multiplatform-expect-actual.html)
 
