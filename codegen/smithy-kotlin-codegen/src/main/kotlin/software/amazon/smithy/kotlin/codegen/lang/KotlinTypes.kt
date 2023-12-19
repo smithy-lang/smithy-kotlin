@@ -6,6 +6,8 @@
 package software.amazon.smithy.kotlin.codegen.lang
 
 import software.amazon.smithy.codegen.core.Symbol
+import software.amazon.smithy.kotlin.codegen.core.KotlinDependency
+import software.amazon.smithy.kotlin.codegen.core.RuntimeTypePackage
 import software.amazon.smithy.kotlin.codegen.model.buildSymbol
 import software.amazon.smithy.kotlin.codegen.model.toSymbol
 
@@ -35,14 +37,14 @@ object KotlinTypes {
     val Double: Symbol = builtInSymbol("Double")
     val Boolean: Symbol = builtInSymbol("Boolean")
 
-    object Collections {
-        val List: Symbol = builtInSymbol("List", "kotlin.collections")
-        val listOf: Symbol = builtInSymbol("listOf", "kotlin.collections")
-        val MutableList: Symbol = builtInSymbol("MutableList", "kotlin.collections")
-        val Map: Symbol = builtInSymbol("Map", "kotlin.collections")
-        val mutableListOf: Symbol = builtInSymbol("mutableListOf", "kotlin.collections")
-        val mutableMapOf: Symbol = builtInSymbol("mutableMapOf", "kotlin.collections")
-        val Set: Symbol = builtInSymbol("Set", "kotlin.collections")
+    object Collections : RuntimeTypePackage(KotlinDependency.KOTLIN_STDLIB, "collections") {
+        val List: Symbol = stdlibSymbol("List")
+        val listOf: Symbol = stdlibSymbol("listOf")
+        val MutableList: Symbol = stdlibSymbol("MutableList")
+        val Map: Symbol = stdlibSymbol("Map")
+        val mutableListOf: Symbol = stdlibSymbol("mutableListOf")
+        val mutableMapOf: Symbol = stdlibSymbol("mutableMapOf")
+        val Set: Symbol = stdlibSymbol("Set")
 
         private fun listType(
             listType: Symbol,
@@ -55,6 +57,7 @@ object KotlinTypes {
             defaultValue = default
             reference(listType)
             reference(target)
+            dependency(KotlinDependency.KOTLIN_STDLIB)
         }
 
         /**
@@ -76,19 +79,19 @@ object KotlinTypes {
         ): Symbol = listType(MutableList, target, isNullable, default)
     }
 
-    object Jvm {
-        val JvmName = builtInSymbol("JvmName", "kotlin.jvm")
-        val JvmStatic = builtInSymbol("JvmStatic", "kotlin.jvm")
+    object Jvm : RuntimeTypePackage(KotlinDependency.KOTLIN_STDLIB, "jvm") {
+        val JvmName = stdlibSymbol("JvmName")
+        val JvmStatic = stdlibSymbol("JvmStatic")
     }
 
-    object Text {
-        val encodeToByteArray = builtInSymbol("encodeToByteArray", "kotlin.text")
+    object Text : RuntimeTypePackage(KotlinDependency.KOTLIN_STDLIB, "text") {
+        val encodeToByteArray = stdlibSymbol("encodeToByteArray")
     }
 
-    object Time {
-        val Duration = builtInSymbol("Duration", "kotlin.time")
-        val milliseconds = builtInSymbol("milliseconds", "kotlin.time.Duration.Companion")
-        val minutes = builtInSymbol("minutes", "kotlin.time.Duration.Companion")
+    object Time : RuntimeTypePackage(KotlinDependency.KOTLIN_STDLIB, "time") {
+        val Duration = stdlibSymbol("Duration")
+        val milliseconds = stdlibSymbol("milliseconds", "time.Duration.Companion")
+        val minutes = stdlibSymbol("minutes", "time.Duration.Companion")
     }
 
     object Coroutines {
@@ -96,7 +99,7 @@ object KotlinTypes {
     }
 
     /**
-     * A (non-exhaustive) set of builtin Kotlin symbols
+     * A (non-exhaustive) set of builtin Kotlin symbols (and common stdlib symbols)
      */
     val All: Set<Symbol> = setOf(
         Unit,
@@ -164,3 +167,8 @@ fun String.toEscapedLiteral(): String = replace("\$", "\\$")
  * Return true if string is valid package namespace, false otherwise.
  */
 fun String.isValidPackageName() = isNotEmpty() && all { it.isLetterOrDigit() || it == '.' }
+
+private fun RuntimeTypePackage.stdlibSymbol(
+    name: String,
+    subpackage: String = defaultSubpackage,
+): Symbol = symbol(name, subpackage, isExtension = false, nullable = false)

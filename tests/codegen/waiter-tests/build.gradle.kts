@@ -8,7 +8,6 @@ import software.amazon.smithy.gradle.tasks.Validate as SmithyValidate
 
 plugins {
     kotlin("jvm")
-    @Suppress("DSL_SCOPE_VIOLATION") // TODO: Remove once https://youtrack.jetbrains.com/issue/KTIJ-19369 is fixed
     alias(libs.plugins.smithy.gradle)
 }
 
@@ -20,7 +19,7 @@ kotlin.sourceSets.all {
 }
 
 kotlin.sourceSets.getByName("main") {
-    kotlin.srcDir("${project.buildDir}/smithyprojections/waiter-tests/waiter-tests/kotlin-codegen/src/main/kotlin")
+    kotlin.srcDir(layout.buildDirectory.dir("smithyprojections/waiter-tests/waiter-tests/kotlin-codegen/src/main/kotlin"))
 }
 
 tasks["smithyBuildJar"].enabled = false

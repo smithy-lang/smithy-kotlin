@@ -21,7 +21,6 @@ kotlin {
 
                 // HttpClientEngine implements CoroutineScope
                 api(libs.kotlinx.coroutines.core)
-                implementation(libs.kotlinx.atomicfu)
             }
         }
 

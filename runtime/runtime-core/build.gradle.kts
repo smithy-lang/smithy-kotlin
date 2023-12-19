@@ -4,7 +4,6 @@
  */
 
 plugins {
-    @Suppress("DSL_SCOPE_VIOLATION") // TODO: Remove once https://youtrack.jetbrains.com/issue/KTIJ-19369 is fixed
     alias(libs.plugins.kotlinx.serialization)
 }
 
@@ -19,7 +18,6 @@ kotlin {
         commonMain {
             dependencies {
                 implementation(libs.okio)
-                implementation(libs.kotlinx.atomicfu)
                 // Coroutines' locking features are used in retry token bucket implementations
                 api(libs.kotlinx.coroutines.core)
             }

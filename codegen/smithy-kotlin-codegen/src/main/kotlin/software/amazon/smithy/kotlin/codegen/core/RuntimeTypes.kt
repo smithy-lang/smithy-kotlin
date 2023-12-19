@@ -5,9 +5,6 @@
 
 package software.amazon.smithy.kotlin.codegen.core
 
-import software.amazon.smithy.codegen.core.Symbol
-import software.amazon.smithy.kotlin.codegen.model.buildSymbol
-import software.amazon.smithy.kotlin.codegen.model.namespace
 import software.amazon.smithy.kotlin.codegen.model.toSymbol
 
 /**
@@ -407,21 +404,5 @@ object RuntimeTypes {
         val expectString = symbol("expectString")
 
         val sign = symbol("sign")
-    }
-}
-
-abstract class RuntimeTypePackage(
-    val dependency: KotlinDependency,
-    val defaultSubpackage: String = "",
-) {
-    /**
-     * Create a symbol named by [name] from the [RuntimeTypePackage].
-     * @param name the name of the symbol
-     * @param subpackage the subpackage from the [dependency] namespace, defaults to [defaultSubpackage]
-     */
-    fun symbol(name: String, subpackage: String = defaultSubpackage, isExtension: Boolean = false): Symbol = buildSymbol {
-        this.name = name
-        namespace(dependency, subpackage)
-        this.isExtension = isExtension
     }
 }

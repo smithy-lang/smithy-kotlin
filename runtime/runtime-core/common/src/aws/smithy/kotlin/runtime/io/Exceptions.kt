@@ -6,10 +6,13 @@
 package aws.smithy.kotlin.runtime.io
 
 public expect open class IOException(message: String?, cause: Throwable?) : Exception {
-    public constructor(message: String? = null)
+    public constructor()
+    public constructor(message: String?)
 }
 
-public expect open class EOFException(message: String? = null) : IOException
+public expect open class EOFException(message: String?) : IOException {
+    public constructor()
+}
 
 /**
  * Indicates attempt to write on a closed channel (i.e. [SdkByteWriteChannel.isClosedForWrite] == true)

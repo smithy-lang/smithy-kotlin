@@ -3,8 +3,11 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 import aws.sdk.kotlin.gradle.dsl.configurePublishing
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+
 plugins {
-    kotlin("jvm")
+    alias(libs.plugins.kotlin.jvm)
     jacoco
     `maven-publish`
 }
@@ -40,26 +43,28 @@ dependencies {
 val generateSdkRuntimeVersion by tasks.registering {
     // generate the version of the runtime to use as a resource.
     // this keeps us from having to manually change version numbers in multiple places
-    val resourcesDir = "$buildDir/resources/main/software/amazon/smithy/kotlin/codegen/core"
+    val resourcesDir = layout.buildDirectory.dir("resources/main/software/amazon/smithy/kotlin/codegen/core").get()
     val versionFile = file("$resourcesDir/sdk-version.txt")
     val gradlePropertiesFile = rootProject.file("gradle.properties")
     inputs.file(gradlePropertiesFile)
     outputs.file(versionFile)
     sourceSets.main.get().output.dir(resourcesDir)
     doLast {
-        versionFile.writeText("$runtimeVersion")
+        versionFile.writeText(runtimeVersion)
     }
 }
 
-// unlike the runtime, smithy-kotlin codegen package is not expected to run on Android...we can target 1.8
-tasks.compileKotlin {
-    kotlinOptions.jvmTarget = "1.8"
-    kotlinOptions.freeCompilerArgs += "-opt-in=kotlin.RequiresOptIn"
+tasks.withType<KotlinCompile> {
+    compilerOptions {
+        jvmTarget.set(JvmTarget.JVM_1_8)
+        freeCompilerArgs.add("-opt-in=kotlin.RequiresOptIn")
+    }
     dependsOn(generateSdkRuntimeVersion)
 }
 
-tasks.compileTestKotlin {
-    kotlinOptions.jvmTarget = "1.8"
+tasks.withType<JavaCompile> {
+    sourceCompatibility = JavaVersion.VERSION_1_8.toString()
+    targetCompatibility = JavaVersion.VERSION_1_8.toString()
 }
 
 // Reusable license copySpec
@@ -80,7 +85,7 @@ tasks.jar {
 val sourcesJar by tasks.creating(Jar::class) {
     group = "publishing"
     description = "Assembles Kotlin sources jar"
-    classifier = "sources"
+    archiveClassifier.set("sources")
     from(sourceSets.getByName("main").allSource)
 }
 
@@ -98,9 +103,9 @@ tasks.test {
 // Configure jacoco (code coverage) to generate an HTML report
 tasks.jacocoTestReport {
     reports {
-        xml.isEnabled = false
-        csv.isEnabled = false
-        html.destination = file("$buildDir/reports/jacoco")
+        xml.required.set(false)
+        csv.required.set(false)
+        html.outputLocation.set(layout.buildDirectory.dir("reports/jacoco"))
     }
 }
 

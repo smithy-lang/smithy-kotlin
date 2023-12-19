@@ -5,8 +5,11 @@
 package software.amazon.smithy.kotlin.codegen.core
 
 import software.amazon.smithy.codegen.core.CodegenException
+import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.codegen.core.SymbolDependency
 import software.amazon.smithy.codegen.core.SymbolDependencyContainer
+import software.amazon.smithy.kotlin.codegen.model.buildSymbol
+import software.amazon.smithy.kotlin.codegen.model.namespace
 import software.amazon.smithy.utils.StringUtils
 
 // root namespace for the runtime
@@ -34,7 +37,7 @@ private fun getDefaultRuntimeVersion(): String {
 // publishing info
 const val RUNTIME_GROUP: String = "aws.smithy.kotlin"
 val RUNTIME_VERSION: String = System.getProperty("smithy.kotlin.codegen.clientRuntimeVersion", getDefaultRuntimeVersion())
-val KOTLIN_COMPILER_VERSION: String = System.getProperty("smithy.kotlin.codegen.kotlinCompilerVersion", "1.9.10")
+val KOTLIN_COMPILER_VERSION: String = System.getProperty("smithy.kotlin.codegen.kotlinCompilerVersion", "1.9.21")
 
 enum class SourceSet {
     CommonMain,
@@ -124,6 +127,7 @@ data class KotlinDependency(
         val IDENTITY_API = KotlinDependency(GradleConfiguration.Implementation, "$RUNTIME_ROOT_NS", RUNTIME_GROUP, "identity-api", RUNTIME_VERSION)
 
         // External third-party dependencies
+        val KOTLIN_STDLIB = KotlinDependency(GradleConfiguration.Implementation, "kotlin", "org.jetbrains.kotlin", "kotlin-stdlib", KOTLIN_COMPILER_VERSION)
         val KOTLIN_TEST = KotlinDependency(GradleConfiguration.TestImplementation, "kotlin.test", "org.jetbrains.kotlin", "kotlin-test", KOTLIN_COMPILER_VERSION)
     }
 
@@ -135,5 +139,30 @@ data class KotlinDependency(
             .putProperty("dependency", this)
             .build()
         return listOf(dependency)
+    }
+}
+
+abstract class RuntimeTypePackage(
+    val dependency: KotlinDependency,
+    val defaultSubpackage: String = "",
+) {
+    /**
+     * Create a symbol named by [name] from the [RuntimeTypePackage].
+     * @param name the name of the symbol
+     * @param subpackage the subpackage from the [dependency] namespace, defaults to [defaultSubpackage]
+     * @param isExtension flag indicating this is an extension to [Symbol]
+     * @param nullable flag indicating if this symbol is nullable or not (NOTE: Nullability is generally inferred only
+     * on member symbols).
+     */
+    fun symbol(
+        name: String,
+        subpackage: String = defaultSubpackage,
+        isExtension: Boolean = false,
+        nullable: Boolean = true,
+    ): Symbol = buildSymbol {
+        this.name = name
+        namespace(dependency, subpackage)
+        this.isExtension = isExtension
+        this.nullable = nullable
     }
 }

@@ -79,10 +79,11 @@ class KotlinWriter(
      * @param alias an alias name to give to the imported symbol (e.g. `import foo.bar.baz as Quux`)
      */
     fun addImport(symbol: Symbol, alias: String = symbol.name): KotlinWriter {
-        // don't import built-in symbols
-        if (symbol.isBuiltIn) return this
-
+        // stdlib still needs added
         addDepsRecursively(symbol)
+
+        // don't import built-in symbols or symbols from stdlib imported by compiler
+        if (symbol.isBuiltIn) return this
 
         // object references should import the containing object rather than the member referenced
         if (symbol.isObjectRef) {
