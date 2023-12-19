@@ -19,7 +19,7 @@ public interface CompressionClientConfig {
 
     @CompressionClientConfigDsl
     public interface Builder {
-        public var requestCompression: RequestCompressionConfig.Builder
+        public val requestCompression: RequestCompressionConfig.Builder
 
         public fun requestCompression(block: RequestCompressionConfig.Builder.() -> Unit) {
             requestCompression.apply(block)
@@ -30,7 +30,7 @@ public interface CompressionClientConfig {
 /**
  * The configuration properties for request compression.
  */
-public class RequestCompressionConfig(builder: Builder) {
+public class RequestCompressionConfig @InternalApi constructor(builder: Builder) {
     public companion object {
         public inline operator fun invoke(block: Builder.() -> Unit): RequestCompressionConfig =
             RequestCompressionConfig(Builder().apply(block))
@@ -66,7 +66,7 @@ public class RequestCompressionConfig(builder: Builder) {
      * A builder for [CompressionClientConfig]
      */
     @CompressionClientConfigDsl
-    public class Builder {
+    public class Builder @InternalApi constructor() {
         /**
          * The list of compression algorithms supported by the client.
          * More compression algorithms can be added and may override an existing implementation.
