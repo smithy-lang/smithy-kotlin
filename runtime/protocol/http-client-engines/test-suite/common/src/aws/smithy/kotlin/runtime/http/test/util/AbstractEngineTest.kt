@@ -19,7 +19,16 @@ import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 
 // TODO - add ipv6 test server/tests
-private val TEST_SERVER = Url.parse("http://127.0.0.1:8082")
+public enum class ServerType {
+    DEFAULT,
+
+    // FIXME Enable once we figure out how to get TLS1 and TLS1.1 working
+    // TLS_1_0,
+
+    TLS_1_1,
+    TLS_1_2,
+    TLS_1_3,
+}
 
 /**
  * Abstract base class that all engine test suite test classes should inherit from.
@@ -54,13 +63,16 @@ public abstract class AbstractEngineTest {
 internal expect fun engineFactories(): List<TestEngineFactory>
 
 /**
+ * Gets the mapping of server types to endpoint URLs.
+ */
+internal expect val testServers: Map<ServerType, Url>
+
+/**
  * Container for current engine test environment
- *
- * @param testServer the URL to the local running test server
  * @param coroutineId unique ID for current coroutine/job (concurrency > 1)
  * @param attempt the current attempt number when repeat > 1
  */
-public data class TestEnvironment(public val testServer: Url, public val coroutineId: Int, public val attempt: Int)
+public data class TestEnvironment(public val coroutineId: Int, public val attempt: Int)
 
 /**
  * Configure the test
@@ -101,7 +113,7 @@ public fun testWithClient(
 ): Unit = runBlockingTest(timeout = timeout) {
     runConcurrently(builder.concurrency) { coroutineId ->
         repeat(builder.repeat) { attempt ->
-            val env = TestEnvironment(TEST_SERVER, coroutineId, attempt)
+            val env = TestEnvironment(coroutineId, attempt)
             builder.test(env, client)
         }
     }
@@ -116,12 +128,16 @@ internal expect fun runBlockingTest(
 ): Unit
 
 private suspend fun runConcurrently(level: Int, block: suspend (Int) -> Unit) {
-    coroutineScope {
-        List(level) {
-            async {
-                block(it)
-            }
-        }.awaitAll()
+    if (level > 1) {
+        coroutineScope {
+            List(level) {
+                async {
+                    block(it)
+                }
+            }.awaitAll()
+        }
+    } else {
+        block(1)
     }
 }
 
@@ -129,9 +145,9 @@ public fun EngineTestBuilder.test(block: suspend (env: TestEnvironment, client: 
     test = block
 }
 
-public fun HttpRequestBuilder.testSetup(env: TestEnvironment) {
-    url(env.testServer)
-    headers.append("Host", "${env.testServer.host}:${env.testServer.port}")
+public fun HttpRequestBuilder.testSetup(testServer: Url = testServers.getValue(ServerType.DEFAULT)) {
+    url(testServer)
+    headers.append("Host", "${testServer.host}:${testServer.port}")
 }
 
 public fun EngineTestBuilder.engineConfig(block: HttpClientEngineConfig.Builder.() -> Unit) {

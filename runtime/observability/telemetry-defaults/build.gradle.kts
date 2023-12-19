@@ -18,7 +18,6 @@ kotlin {
             dependencies {
                 // Necessary for Instant, InternalApi, etc
                 api(project(":runtime:observability:telemetry-api"))
-                implementation(libs.kotlinx.atomicfu)
             }
         }
 
