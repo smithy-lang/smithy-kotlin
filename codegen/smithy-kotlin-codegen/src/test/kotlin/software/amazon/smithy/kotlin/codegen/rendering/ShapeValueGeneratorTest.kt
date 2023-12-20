@@ -4,7 +4,6 @@
  */
 package software.amazon.smithy.kotlin.codegen.rendering
 
-import io.kotest.matchers.string.shouldContainOnlyOnce
 import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.kotlin.codegen.KotlinCodegenPlugin
 import software.amazon.smithy.kotlin.codegen.core.KotlinWriter
@@ -37,10 +36,9 @@ class ShapeValueGeneratorTest {
             .withMember("k3", 3)
             .build()
 
-        ShapeValueGenerator(model, provider).writeShapeValueInline(writer, mapShape, params)
+        ShapeValueGenerator(model, provider).instantiateShapeInline(writer, mapShape, params)
         val contents = writer.toString()
 
-        // FIXME - can't seem to get indentation quite right in our node visitor...
         val expected = """
 mapOf<String, Int>(
     "k1" to 1,
@@ -49,7 +47,7 @@ mapOf<String, Int>(
 )
 """
 
-        contents.shouldContainOnlyOnce(expected)
+        contents.shouldContainOnlyOnceWithDiff(expected)
     }
 
     @Test
@@ -61,13 +59,13 @@ mapOf<String, Int>(
         """.prependNamespaceAndService(namespace = "foo.bar").toSmithyModel()
 
         val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model, rootNamespace = "foo.bar")
-        val mapShape = model.expectShape(ShapeId.from("foo.bar#MyList"))
+        val listShape = model.expectShape(ShapeId.from("foo.bar#MyList"))
         val writer = KotlinWriter("test")
 
         val values: Array<Node> = listOf("v1", "v2", "v3").map(Node::from).toTypedArray()
         val params = Node.arrayNode(*values)
 
-        ShapeValueGenerator(model, provider).writeShapeValueInline(writer, mapShape, params)
+        ShapeValueGenerator(model, provider).instantiateShapeInline(writer, listShape, params)
         val contents = writer.toString()
 
         val expected = """
@@ -78,7 +76,52 @@ listOf<String>(
 )
         """.trimIndent()
 
-        contents.shouldContainOnlyOnce(expected)
+        contents.shouldContainOnlyOnceWithDiff(expected)
+    }
+
+    @Test
+    fun `it renders nested lists`() {
+        val model = """
+            list MyList {
+                member: NestedList,
+            }
+            list NestedList {
+                member: String
+            }
+        """.prependNamespaceAndService(namespace = "foo.bar").toSmithyModel()
+
+        val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model, rootNamespace = "foo.bar")
+        val listShape = model.expectShape(ShapeId.from("foo.bar#MyList"))
+        val writer = KotlinWriter("test")
+
+        val values = listOf(
+            listOf("v1", "v2", "v3"),
+            listOf("v4", "v5", "v6"),
+        ).map {
+            Node.arrayNode(*it.map(Node::from).toTypedArray())
+        }.toTypedArray()
+
+        val params = Node.arrayNode(*values)
+
+        ShapeValueGenerator(model, provider).instantiateShapeInline(writer, listShape, params)
+        val contents = writer.toString()
+
+        val expected = """
+listOf<List<String>>(
+    listOf<String>(
+        "v1",
+        "v2",
+        "v3"
+    ),
+    listOf<String>(
+        "v4",
+        "v5",
+        "v6"
+    )
+)
+        """.trimIndent()
+
+        contents.shouldContainOnlyOnceWithDiff(expected)
     }
 
     @Test
@@ -129,7 +172,7 @@ listOf<String>(
             .withMember("nullMember", Node.nullNode())
             .build()
 
-        ShapeValueGenerator(model, provider).writeShapeValueInline(writer, structShape, params)
+        ShapeValueGenerator(model, provider).instantiateShapeInline(writer, structShape, params)
         val contents = writer.toString()
 
         val expected = """
@@ -140,7 +183,6 @@ MyStruct {
     structMember = Nested {
         tsMember = Instant.fromEpochSeconds(11223344, 0)
     }
-
     enumMember = MyEnum.fromValue("fooey")
     floatMember = 2.toFloat()
     doubleMember = 3.0.toDouble()
@@ -148,7 +190,32 @@ MyStruct {
 }
         """.trimIndent()
 
-        contents.shouldContainOnlyOnce(expected)
+        contents.shouldContainOnlyOnceWithDiff(expected)
+    }
+
+    @Test
+    fun `it renders null structs`() {
+        val model = """
+            structure MyStruct {
+                stringMember: String,
+            }
+        """.prependNamespaceAndService(namespace = "foo.bar").toSmithyModel()
+
+        val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model, rootNamespace = "foo.bar")
+
+        val structShape = model.expectShape(ShapeId.from("foo.bar#MyStruct"))
+        val writer = KotlinWriter("test")
+
+        val params = Node.nullNode()
+
+        ShapeValueGenerator(model, provider).instantiateShapeInline(writer, structShape, params)
+        val contents = writer.toString()
+
+        val expected = """
+            null
+        """.trimIndent()
+
+        contents.shouldContainOnlyOnceWithDiff(expected)
     }
 
     @Test
@@ -187,14 +254,14 @@ MyStruct {
             .withMember("stringMember", "v1")
             .build()
 
-        ShapeValueGenerator(model, provider).writeShapeValueInline(writer, unionShape, params)
+        ShapeValueGenerator(model, provider).instantiateShapeInline(writer, unionShape, params)
         val contents = writer.toString()
 
         val expected = """
 MyUnion.StringMember("v1")
         """.trimIndent()
 
-        contents.shouldContainOnlyOnce(expected)
+        contents.shouldContainOnlyOnceWithDiff(expected)
     }
 
     @Test
@@ -246,7 +313,7 @@ MyUnion.StringMember("v1")
                 .withMember("member", nodeValue)
                 .build()
 
-            gen.writeShapeValueInline(writer, shape, node)
+            gen.instantiateShapeInline(writer, shape, node)
             val contents = writer.toString()
 
             val expected = """
@@ -254,7 +321,7 @@ MyUnion.StringMember("v1")
                     member = $serialization
                 }
             """.trimIndent()
-            contents.shouldContainOnlyOnce(expected)
+            contents.shouldContainOnlyOnceWithDiff(expected)
         }
     }
 }

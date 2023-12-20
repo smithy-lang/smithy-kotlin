@@ -80,7 +80,7 @@ open class HttpProtocolUnitTestResponseGenerator protected constructor(builder: 
                     .call {
                         outputShape?.let {
                             writer.writeInline("\nresponse = ")
-                            ShapeValueGenerator(model, symbolProvider).writeShapeValueInline(writer, it, test.params)
+                            ShapeValueGenerator(model, symbolProvider).instantiateShapeInline(writer, it, test.params)
                         }
                     }
                     .write("")
