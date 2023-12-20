@@ -76,7 +76,7 @@ class KDocSamplesGenerator : KotlinIntegration {
             sampleFunctionName(index),
         ).joinToString(separator = ".")
 
-    private fun sampleFunctionName(index: Int): String = "sample" + if (index > 0) "$index" else ""
+    private fun sampleFunctionName(index: Int): String = "sample" + if (index > 0) "${index + 1}" else ""
     private fun sampleClassName(op: OperationShape): String = op.id.name
 
     private fun samplePackage(settings: KotlinSettings): String = settings.pkg.subpackage("samples")

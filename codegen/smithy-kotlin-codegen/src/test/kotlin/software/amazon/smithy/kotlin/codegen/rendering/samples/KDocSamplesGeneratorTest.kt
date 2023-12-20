@@ -99,7 +99,7 @@ class KDocSamplesGeneratorTest {
             This is documentation for GetFoo
             
             @sample test.samples.GetFoo.sample
-            @sample test.samples.GetFoo.sample1
+            @sample test.samples.GetFoo.sample2
         """.trimIndent()
         assertEquals(expected, docs)
     }
@@ -122,7 +122,7 @@ class KDocSamplesGeneratorTest {
         val docs = modified.expectShape<OperationShape>("com.test#GetFoo").expectTrait<DocumentationTrait>().value
         val expected = """
             @sample test.samples.GetFoo.sample
-            @sample test.samples.GetFoo.sample1
+            @sample test.samples.GetFoo.sample2
         """.trimIndent()
         assertEquals(expected, docs)
     }
@@ -145,7 +145,7 @@ class KDocSamplesGeneratorTest {
                 }
 
                 @Sample
-                fun sample1() {
+                fun sample2() {
                     // Invoke GetFoo example 2
                     val resp = fooClient.getFoo {
                         member1 = "qux"

@@ -34,8 +34,12 @@ class ShapeValueGenerator(
      */
     fun instantiateShapeInline(writer: KotlinWriter, shape: Shape, params: Node) {
         if (shape.isStructureShape) {
-            classDeclaration(writer, shape.asStructureShape().get()) {
+            if (params.isNullNode) {
                 writeShapeValuesInline(writer, shape, params)
+            } else {
+                classDeclaration(writer, shape.asStructureShape().get()) {
+                    writeShapeValuesInline(writer, shape, params)
+                }
             }
         } else {
             writeShapeValuesInline(writer, shape, params)

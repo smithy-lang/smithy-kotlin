@@ -194,6 +194,31 @@ MyStruct {
     }
 
     @Test
+    fun `it renders null structs`() {
+        val model = """
+            structure MyStruct {
+                stringMember: String,
+            }
+        """.prependNamespaceAndService(namespace = "foo.bar").toSmithyModel()
+
+        val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model, rootNamespace = "foo.bar")
+
+        val structShape = model.expectShape(ShapeId.from("foo.bar#MyStruct"))
+        val writer = KotlinWriter("test")
+
+        val params = Node.nullNode()
+
+        ShapeValueGenerator(model, provider).instantiateShapeInline(writer, structShape, params)
+        val contents = writer.toString()
+
+        val expected = """
+            null
+        """.trimIndent()
+
+        contents.shouldContainOnlyOnceWithDiff(expected)
+    }
+
+    @Test
     fun `it renders unions`() {
         val model = """
             structure Nested {
