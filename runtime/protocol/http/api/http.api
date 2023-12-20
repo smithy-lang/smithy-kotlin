@@ -249,6 +249,10 @@ public final class aws/smithy/kotlin/runtime/http/HttpStatusCodeKt {
 	public static final fun isSuccess (Laws/smithy/kotlin/runtime/http/HttpStatusCode;)Z
 }
 
+public final class aws/smithy/kotlin/runtime/http/compression/CompressRequestKt {
+	public static final fun compressRequest (Laws/smithy/kotlin/runtime/compression/CompressionAlgorithm;Laws/smithy/kotlin/runtime/http/request/HttpRequest;)Laws/smithy/kotlin/runtime/http/request/HttpRequest;
+}
+
 public abstract interface class aws/smithy/kotlin/runtime/http/request/HttpRequest {
 	public static final field Companion Laws/smithy/kotlin/runtime/http/request/HttpRequest$Companion;
 	public abstract fun getBody ()Laws/smithy/kotlin/runtime/http/HttpBody;

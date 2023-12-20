@@ -85,6 +85,7 @@ object RuntimeTypes {
             val FlexibleChecksumsRequestInterceptor = symbol("FlexibleChecksumsRequestInterceptor")
             val FlexibleChecksumsResponseInterceptor = symbol("FlexibleChecksumsResponseInterceptor")
             val ResponseLengthValidationInterceptor = symbol("ResponseLengthValidationInterceptor")
+            val RequestCompressionInterceptor = symbol("RequestCompressionInterceptor")
         }
     }
 
@@ -199,6 +200,11 @@ object RuntimeTypes {
         val IdempotencyTokenProvider = symbol("IdempotencyTokenProvider")
         val IdempotencyTokenConfig = symbol("IdempotencyTokenConfig")
         val IdempotencyTokenProviderExt = symbol("idempotencyTokenProvider")
+
+        object Config : RuntimeTypePackage(KotlinDependency.SMITHY_CLIENT, "config") {
+            val RequestCompressionConfig = symbol("RequestCompressionConfig")
+            val CompressionClientConfig = symbol("CompressionClientConfig")
+        }
 
         object Endpoints : RuntimeTypePackage(KotlinDependency.SMITHY_CLIENT, "endpoints") {
             val EndpointProvider = symbol("EndpointProvider")
