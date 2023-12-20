@@ -3,12 +3,12 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 import aws.sdk.kotlin.gradle.dsl.skipPublishing
-import software.amazon.smithy.gradle.tasks.SmithyBuild
+import software.amazon.smithy.gradle.tasks.SmithyBuildTask
 
 plugins {
     kotlin("multiplatform")
-    alias(libs.plugins.smithy.gradle)
     alias(libs.plugins.kotlinx.benchmark)
+    alias(libs.plugins.smithy.gradle.base)
 }
 
 skipPublishing()
@@ -73,19 +73,36 @@ afterEvaluate {
     }
 }
 
-tasks["smithyBuildJar"].enabled = false
-
-val codegen by configurations.creating
-
-dependencies {
-    codegen(project(":tests:benchmarks:serde-benchmarks-codegen"))
+smithy {
+    format.set(false)
 }
 
-val generateSdk = tasks.create<SmithyBuild>("generateSdk") {
+val codegen by configurations.creating
+dependencies {
+    codegen(project(":tests:benchmarks:serde-benchmarks-codegen"))
+    codegen(libs.smithy.cli)
+    codegen(libs.smithy.model)
+}
+
+// FIXME - probably a bug in smithy gradle base plugin
+val configurationsNeededBySmithyGradle = listOf(
+    "smithyCli",
+    "smithyBuild",
+    "runtimeClasspath",
+)
+    .forEach {
+        configurations.create(it)
+    }
+
+val generateSdk = tasks.create<SmithyBuildTask>("smithyBuild") {
     group = "codegen"
-    classpath = configurations.getByName("codegen")
-    inputs.file(projectDir.resolve("smithy-build.json"))
-    inputs.files(configurations.getByName("codegen"))
+    resolvedCliClasspath.set(codegen)
+    runtimeClasspath.set(codegen)
+    buildClasspath.set(codegen)
+    smithyBuildConfigs.set(files("smithy-build.json"))
+    val modelFiles = fileTree("model")
+    modelFiles.include("*.smithy")
+    models.set(modelFiles)
 }
 
 data class BenchmarkModel(val name: String) {

@@ -3,15 +3,32 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 import aws.sdk.kotlin.gradle.dsl.skipPublishing
-import software.amazon.smithy.gradle.tasks.SmithyBuild
-import software.amazon.smithy.gradle.tasks.Validate as SmithyValidate
+import software.amazon.smithy.gradle.tasks.SmithyBuildTask
 
 plugins {
-    kotlin("jvm")
-    alias(libs.plugins.smithy.gradle)
+    alias(libs.plugins.kotlin.jvm)
+    alias(libs.plugins.smithy.gradle.base)
 }
 
 skipPublishing()
+
+smithy {
+    format.set(false)
+}
+
+val codegen by configurations.creating
+dependencies {
+    codegen(project(":codegen:smithy-kotlin-codegen"))
+    codegen(libs.smithy.cli)
+    codegen(libs.smithy.model)
+}
+
+val generateSdk = tasks.named<SmithyBuildTask>("smithyBuild")
+generateSdk.configure {
+    resolvedCliClasspath.set(codegen)
+    runtimeClasspath.set(codegen)
+    buildClasspath.set(codegen)
+}
 
 val optinAnnotations = listOf("kotlin.RequiresOptIn", "aws.smithy.kotlin.runtime.InternalApi")
 kotlin.sourceSets.all {
@@ -19,27 +36,7 @@ kotlin.sourceSets.all {
 }
 
 kotlin.sourceSets.getByName("main") {
-    kotlin.srcDir(layout.buildDirectory.dir("generated-src/src"))
-    kotlin.srcDir(layout.buildDirectory.dir("smithyprojections/paginator-tests/paginator-tests/kotlin-codegen"))
-}
-
-tasks["smithyBuildJar"].enabled = false
-
-val codegen by configurations.creating
-dependencies {
-    codegen(project(":codegen:smithy-kotlin-codegen"))
-    codegen(libs.smithy.cli)
-}
-
-val generateSdk = tasks.register<SmithyBuild>("generateSdk") {
-    group = "codegen"
-    classpath = codegen
-    inputs.file(projectDir.resolve("smithy-build.json"))
-    inputs.files(codegen)
-}
-
-tasks.named<SmithyValidate>("smithyValidate") {
-    classpath = codegen
+    kotlin.srcDir(smithy.getPluginProjectionPath("paginator-tests", "kotlin-codegen").map { it.resolve("src/main/kotlin") })
 }
 
 tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
@@ -55,10 +52,9 @@ tasks.test {
 }
 
 dependencies {
+    compileOnly(project(":codegen:smithy-kotlin-codegen"))
 
     implementation(libs.kotlinx.coroutines.core)
-
-    compileOnly(project(":codegen:smithy-kotlin-codegen"))
     implementation(project(":runtime:runtime-core"))
     implementation(project(":runtime:smithy-client"))
     implementation(project(":runtime:protocol:http-client"))

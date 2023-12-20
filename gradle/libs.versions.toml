@@ -14,7 +14,7 @@ crt-kotlin-version = "0.8.2"
 
 # codegen
 smithy-version = "1.42.0"
-smithy-gradle-version = "0.7.0"
+smithy-gradle-version = "0.9.0"
 
 # testing
 junit-version = "5.10.1"
@@ -58,6 +58,7 @@ crt-kotlin = { module = "aws.sdk.kotlin.crt:aws-crt-kotlin", version.ref = "crt-
 
 smithy-codegen-core = { module = "software.amazon.smithy:smithy-codegen-core", version.ref = "smithy-version" }
 smithy-cli = { module = "software.amazon.smithy:smithy-cli", version.ref = "smithy-version" }
+smithy-model = { module = "software.amazon.smithy:smithy-model", version.ref = "smithy-version" }
 smithy-waiters = { module = "software.amazon.smithy:smithy-waiters", version.ref = "smithy-version" }
 smithy-rules-engine = { module = "software.amazon.smithy:smithy-rules-engine", version.ref = "smithy-version" }
 smithy-aws-traits = { module = "software.amazon.smithy:smithy-aws-traits", version.ref = "smithy-version" }
@@ -92,4 +93,4 @@ kotlin-multiplatform = {id = "org.jetbrains.kotlin.multiplatform", version.ref =
 kotlinx-benchmark = { id = "org.jetbrains.kotlinx.benchmark", version.ref = "kotlinx-benchmark-version" }
 kotlinx-binary-compatibility-validator = { id = "org.jetbrains.kotlinx.binary-compatibility-validator", version = "0.13.2" }
 kotlinx-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin-version"}
-smithy-gradle = { id = "software.amazon.smithy", version.ref = "smithy-gradle-version" }
+smithy-gradle-base = { id = "software.amazon.smithy.gradle.smithy-base", version.ref = "smithy-gradle-version" }
