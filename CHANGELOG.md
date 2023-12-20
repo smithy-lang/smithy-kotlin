@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.0.6] - 12/20/2023
+
+### Features
+* Generate KDoc samples from modeled examples
+* [#955](https://github.com/awslabs/smithy-kotlin/issues/955) Added support for [request compression](https://smithy.io/2.0/spec/behavior-traits.html#requestcompression-trait)
+
 ## [1.0.5] - 12/19/2023
 
 ### Miscellaneous

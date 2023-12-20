@@ -1,8 +1,0 @@
-{
-    "id": "496c5a77-02ba-41e1-a7b3-19a88a7a29d8",
-    "type": "feature",
-    "description": "Added support for [request compression](https://smithy.io/2.0/spec/behavior-traits.html#requestcompression-trait)",
-    "issues": [
-        "awslabs/smithy-kotlin#955"
-    ]
-}
