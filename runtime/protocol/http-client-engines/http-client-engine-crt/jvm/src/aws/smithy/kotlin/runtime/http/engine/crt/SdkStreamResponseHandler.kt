@@ -205,20 +205,23 @@ internal class SdkStreamResponseHandler(
 
     private fun HttpResponse.wrapBody(): HttpResponse {
         val wrappedBody = when (val originalBody = body) {
-            is HttpBody.Empty -> return this
-            is HttpBody.Bytes -> originalBody
-                .bytes()
-                .source()
-                .reportingTo(clientMetrics.bytesReceived)
-                .toHttpBody(originalBody.contentLength)
-            is HttpBody.SourceContent -> originalBody
-                .readFrom()
-                .reportingTo(clientMetrics.bytesReceived)
-                .toHttpBody(originalBody.contentLength)
-            is HttpBody.ChannelContent -> originalBody
-                .readFrom()
-                .reportingTo(clientMetrics.bytesReceived)
-                .toHttpBody(originalBody.contentLength)
+            is HttpBody.Empty -> return this // Don't need an object copy since we're not wrapping the body
+            is HttpBody.Bytes ->
+                originalBody
+                    .bytes()
+                    .source()
+                    .reportingTo(clientMetrics.bytesReceived)
+                    .toHttpBody(originalBody.contentLength)
+            is HttpBody.SourceContent ->
+                originalBody
+                    .readFrom()
+                    .reportingTo(clientMetrics.bytesReceived)
+                    .toHttpBody(originalBody.contentLength)
+            is HttpBody.ChannelContent ->
+                originalBody
+                    .readFrom()
+                    .reportingTo(clientMetrics.bytesReceived)
+                    .toHttpBody(originalBody.contentLength)
         }
         return copy(body = wrappedBody)
     }

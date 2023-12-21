@@ -45,7 +45,7 @@ class SdkStreamResponseHandlerTest {
     }
 
     private val mockConn = MockHttpClientConnection()
-    
+
     private val execContext = ExecutionContext()
     private val metrics = HttpClientMetrics("", TelemetryProvider.None)
 

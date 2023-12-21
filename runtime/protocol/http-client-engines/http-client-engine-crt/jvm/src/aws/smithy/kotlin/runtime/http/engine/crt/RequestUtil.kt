@@ -8,7 +8,6 @@ package aws.smithy.kotlin.runtime.http.engine.crt
 import aws.sdk.kotlin.crt.CRT
 import aws.sdk.kotlin.crt.CrtRuntimeException
 import aws.sdk.kotlin.crt.http.HeadersBuilder
-import aws.sdk.kotlin.crt.http.HttpRequestBodyStream
 import aws.sdk.kotlin.crt.http.HttpStream
 import aws.sdk.kotlin.crt.io.Protocol
 import aws.sdk.kotlin.crt.io.Uri
