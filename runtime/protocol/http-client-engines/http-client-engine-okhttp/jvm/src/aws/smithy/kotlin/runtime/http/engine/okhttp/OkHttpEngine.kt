@@ -40,7 +40,9 @@ public class OkHttpEngine(
         override val engineConstructor: (OkHttpEngineConfig.Builder.() -> Unit) -> OkHttpEngine = ::invoke
     }
 
-    private val metrics = HttpClientMetrics(TELEMETRY_SCOPE, config.telemetryProvider)
+    private val metrics = HttpClientMetrics(TELEMETRY_SCOPE, config.telemetryProvider).apply {
+        requestConcurrencyLimit = config.maxConcurrency.toLong()
+    }
     private val client = config.buildClient(metrics)
 
     override suspend fun roundTrip(context: ExecutionContext, request: HttpRequest): HttpCall {

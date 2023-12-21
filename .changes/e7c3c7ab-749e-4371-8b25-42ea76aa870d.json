@@ -1,0 +1,8 @@
+{
+    "id": "e7c3c7ab-749e-4371-8b25-42ea76aa870d",
+    "type": "feature",
+    "description": "Emit metrics from CRT HTTP engine",
+    "issues": [
+        "https://github.com/awslabs/smithy-kotlin/issues/893"
+    ]
+}

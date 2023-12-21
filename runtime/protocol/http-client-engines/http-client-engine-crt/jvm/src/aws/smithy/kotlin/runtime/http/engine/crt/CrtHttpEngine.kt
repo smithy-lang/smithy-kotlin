@@ -10,6 +10,7 @@ import aws.smithy.kotlin.runtime.http.config.EngineFactory
 import aws.smithy.kotlin.runtime.http.engine.HttpClientEngine
 import aws.smithy.kotlin.runtime.http.engine.HttpClientEngineBase
 import aws.smithy.kotlin.runtime.http.engine.callContext
+import aws.smithy.kotlin.runtime.http.engine.internal.HttpClientMetrics
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.io.internal.SdkDispatchers
 import aws.smithy.kotlin.runtime.operation.ExecutionContext
@@ -21,6 +22,8 @@ import kotlinx.coroutines.sync.withPermit
 
 internal const val DEFAULT_WINDOW_SIZE_BYTES: Int = 16 * 1024
 internal const val CHUNK_BUFFER_SIZE: Long = 64 * 1024
+
+private const val TELEMETRY_SCOPE = "aws.smithy.kotlin.runtime.http.engine.crt"
 
 /**
  * [HttpClientEngine] based on the AWS Common Runtime HTTP client
@@ -51,7 +54,11 @@ public class CrtHttpEngine(public override val config: CrtHttpEngineConfig) : Ht
     // }
 
     private val requestLimiter = Semaphore(config.maxConcurrency.toInt())
-    private val connectionManager = ConnectionManager(config)
+    private val metrics = HttpClientMetrics(TELEMETRY_SCOPE, config.telemetryProvider).apply {
+        connectionsLimit = config.maxConnections.toLong()
+        requestConcurrencyLimit = config.maxConcurrency.toLong()
+    }
+    private val connectionManager = ConnectionManager(config, metrics)
 
     override suspend fun roundTrip(context: ExecutionContext, request: HttpRequest): HttpCall = requestLimiter.withPermit {
         val callContext = callContext()
@@ -63,7 +70,7 @@ public class CrtHttpEngine(public override val config: CrtHttpEngineConfig) : Ht
         val conn = connectionManager.acquire(request)
         logger.trace { "Acquired connection ${conn.id}" }
 
-        val respHandler = SdkStreamResponseHandler(conn, callContext)
+        val respHandler = SdkStreamResponseHandler(conn, callContext, context, metrics)
         callContext.job.invokeOnCompletion {
             logger.trace { "completing handler; cause=$it" }
             // ensures the stream is driven to completion regardless of what the downstream consumer does
@@ -71,7 +78,7 @@ public class CrtHttpEngine(public override val config: CrtHttpEngineConfig) : Ht
         }
 
         val reqTime = Instant.now()
-        val engineRequest = request.toCrtRequest(callContext)
+        val engineRequest = request.toCrtRequest(callContext, metrics)
 
         val stream = mapCrtException {
             conn.makeRequest(engineRequest, respHandler).also { stream ->
@@ -81,7 +88,7 @@ public class CrtHttpEngine(public override val config: CrtHttpEngineConfig) : Ht
 
         if (request.isChunked) {
             withContext(SdkDispatchers.IO) {
-                stream.sendChunkedBody(request.body)
+                stream.sendChunkedBody(request.body, metrics)
             }
         }
 

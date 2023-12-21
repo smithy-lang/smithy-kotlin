@@ -13,9 +13,12 @@ import aws.smithy.kotlin.runtime.crt.SdkDefaultIO
 import aws.smithy.kotlin.runtime.http.HttpErrorCode
 import aws.smithy.kotlin.runtime.http.HttpException
 import aws.smithy.kotlin.runtime.http.engine.ProxyConfig
+import aws.smithy.kotlin.runtime.http.engine.internal.HttpClientMetrics
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.io.Closeable
 import aws.smithy.kotlin.runtime.net.TlsVersion
+import aws.smithy.kotlin.runtime.telemetry.metrics.measureSeconds
+import kotlinx.atomicfu.atomic
 import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.Semaphore
@@ -27,8 +30,10 @@ import aws.smithy.kotlin.runtime.net.TlsVersion as SdkTlsVersion
 
 internal class ConnectionManager(
     private val config: CrtHttpEngineConfig,
+    private val metrics: HttpClientMetrics,
 ) : Closeable {
     private val leases = Semaphore(config.maxConnections.toInt())
+    private val pending = atomic(0L)
 
     private val crtTlsContext: TlsContext = TlsContextOptionsBuilder()
         .apply {
@@ -61,16 +66,22 @@ internal class ConnectionManager(
         val manager = getManagerForUri(request.uri, proxyConfig)
         var leaseAcquired = false
 
-        return try {
-            // wait for an actual connection
-            val conn = withTimeout(config.connectionAcquireTimeout) {
-                // get a permit to acquire a connection (limits overall connections since managers are per/host)
-                leases.acquire()
-                leaseAcquired = true
-                manager.acquireConnection()
-            }
+        metrics.queuedRequests = pending.incrementAndGet()
 
-            LeasedConnection(conn)
+        return try {
+            metrics.requestsQueuedDuration.measureSeconds {
+                // wait for an actual connection
+                val conn = withTimeout(config.connectionAcquireTimeout) {
+                    // get a permit to acquire a connection (limits overall connections since managers are per/host)
+                    leases.acquire()
+                    leaseAcquired = true
+                    metrics.connectionAcquireDuration.measureSeconds {
+                        manager.acquireConnection()
+                    }
+                }
+
+                LeasedConnection(conn)
+            }
         } catch (ex: Exception) {
             if (leaseAcquired) {
                 leases.release()
@@ -82,8 +93,18 @@ internal class ConnectionManager(
             }
 
             throw httpEx
+        } finally {
+            metrics.queuedRequests = pending.decrementAndGet()
+            emitConnections()
         }
     }
+
+    private fun emitConnections() {
+        val idleConnections = leases.availablePermits.toLong()
+        metrics.idleConnections = idleConnections
+        metrics.acquiredConnections = config.maxConnections.toLong() - idleConnections
+    }
+
     private suspend fun getManagerForUri(uri: Uri, proxyConfig: ProxyConfig): HttpClientConnectionManager = mutex.withLock {
         connManagers.getOrPut(uri.authority) {
             val connOpts = options.apply {
@@ -105,6 +126,7 @@ internal class ConnectionManager(
             HttpClientConnectionManager(connOpts)
         }
     }
+
     override fun close() {
         connManagers.forEach { entry -> entry.value.close() }
         crtTlsContext.close()
@@ -117,6 +139,7 @@ internal class ConnectionManager(
                 delegate.close()
             } finally {
                 leases.release()
+                emitConnections()
             }
         }
     }

@@ -6,12 +6,16 @@
 package aws.smithy.kotlin.runtime.http.engine.crt
 
 import aws.sdk.kotlin.crt.http.HttpStream
+import aws.smithy.kotlin.runtime.http.engine.internal.HttpClientMetrics
 import aws.smithy.kotlin.runtime.http.toHttpBody
 import aws.smithy.kotlin.runtime.io.SdkByteReadChannel
 import aws.smithy.kotlin.runtime.io.readToByteArray
 import aws.smithy.kotlin.runtime.io.source
+import aws.smithy.kotlin.runtime.telemetry.TelemetryProvider
 import kotlinx.coroutines.test.runTest
 import kotlin.test.*
+
+private val metrics = HttpClientMetrics("", TelemetryProvider.None)
 
 class SendChunkedBodyTest {
     private class MockHttpStream(override val responseStatusCode: Int) : HttpStream {
@@ -33,7 +37,7 @@ class SendChunkedBodyTest {
 
         val source = chunkedBytes.source()
 
-        stream.sendChunkedBody(source.toHttpBody(chunkedBytes.size.toLong()))
+        stream.sendChunkedBody(source.toHttpBody(chunkedBytes.size.toLong()), metrics)
 
         // source should be fully consumed with 1 chunk written
         assertEquals(0, source.readToByteArray().size)
@@ -52,7 +56,7 @@ class SendChunkedBodyTest {
 
         val source = chunkedBytes.source()
 
-        stream.sendChunkedBody(source.toHttpBody(chunkedBytes.size.toLong()))
+        stream.sendChunkedBody(source.toHttpBody(chunkedBytes.size.toLong()), metrics)
 
         // source should be fully consumed
         assertEquals(0, source.readToByteArray().size)
@@ -71,7 +75,7 @@ class SendChunkedBodyTest {
 
         val channel = SdkByteReadChannel(chunkedBytes)
 
-        stream.sendChunkedBody(channel.toHttpBody(chunkedBytes.size.toLong()))
+        stream.sendChunkedBody(channel.toHttpBody(chunkedBytes.size.toLong()), metrics)
 
         // channel should be fully consumed with 1 chunk written
         assertEquals(0, channel.availableForRead)
@@ -91,7 +95,7 @@ class SendChunkedBodyTest {
 
         val channel = SdkByteReadChannel(chunkedBytes)
 
-        stream.sendChunkedBody(channel.toHttpBody(chunkedBytes.size.toLong()))
+        stream.sendChunkedBody(channel.toHttpBody(chunkedBytes.size.toLong()), metrics)
 
         // source should be fully consumed
         assertEquals(0, channel.availableForRead)

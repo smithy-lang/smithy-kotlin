@@ -176,6 +176,20 @@ public class HttpClientMetrics(
             _inFlightRequests.update { value }
         }
 
+    /**
+     * Atomically increase the number of inflight requests by 1.
+     */
+    public fun incrementInflightRequests() {
+        _inFlightRequests.incrementAndGet()
+    }
+
+    /**
+     * Atomically decrease the number of inflight requests by 1.
+     */
+    public fun decrementInflightRequests() {
+        _inFlightRequests.decrementAndGet()
+    }
+
     private fun recordRequestsState(measurement: LongAsyncMeasurement) {
         measurement.record(inFlightRequests, HttpClientMetricAttributes.InFlightRequest)
         measurement.record(queuedRequests, HttpClientMetricAttributes.QueuedRequest)

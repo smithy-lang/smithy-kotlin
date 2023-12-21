@@ -10,16 +10,27 @@ import aws.sdk.kotlin.crt.io.Buffer
 import aws.smithy.kotlin.runtime.http.*
 import aws.smithy.kotlin.runtime.http.HeadersBuilder
 import aws.smithy.kotlin.runtime.http.HttpException
+import aws.smithy.kotlin.runtime.http.engine.EngineAttributes
+import aws.smithy.kotlin.runtime.http.engine.crt.io.reportingTo
+import aws.smithy.kotlin.runtime.http.engine.internal.HttpClientMetrics
 import aws.smithy.kotlin.runtime.http.response.HttpResponse
+import aws.smithy.kotlin.runtime.http.response.copy
 import aws.smithy.kotlin.runtime.io.SdkBuffer
 import aws.smithy.kotlin.runtime.io.SdkByteChannel
 import aws.smithy.kotlin.runtime.io.SdkByteReadChannel
+import aws.smithy.kotlin.runtime.io.source
+import aws.smithy.kotlin.runtime.operation.ExecutionContext
 import aws.smithy.kotlin.runtime.telemetry.logging.logger
+import aws.smithy.kotlin.runtime.telemetry.metrics.recordSeconds
+import aws.smithy.kotlin.runtime.time.Instant
+import aws.smithy.kotlin.runtime.time.fromEpochNanoseconds
 import aws.smithy.kotlin.runtime.util.derivedName
 import kotlinx.atomicfu.locks.reentrantLock
 import kotlinx.atomicfu.locks.withLock
-import kotlinx.coroutines.*
+import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.launch
 import kotlin.coroutines.CoroutineContext
 
 /**
@@ -30,6 +41,8 @@ import kotlin.coroutines.CoroutineContext
 internal class SdkStreamResponseHandler(
     private val conn: HttpClientConnection,
     private val callContext: CoroutineContext,
+    private val execContext: ExecutionContext,
+    private val clientMetrics: HttpClientMetrics,
 ) : HttpStreamResponseHandler {
     // TODO - need to cancel the stream when the body is closed from the caller side early.
     // There is no great way to do that currently without either (1) closing the connection or (2) throwing an
@@ -56,6 +69,10 @@ internal class SdkStreamResponseHandler(
         }
 
     private var streamCompleted = false
+
+    init {
+        clientMetrics.incrementInflightRequests()
+    }
 
     /**
      * Called by the response read channel as data is consumed
@@ -184,7 +201,27 @@ internal class SdkStreamResponseHandler(
     }
 
     internal suspend fun waitForResponse(): HttpResponse =
-        responseReady.receive()
+        responseReady.receive().wrapBody()
+
+    private fun HttpResponse.wrapBody(): HttpResponse {
+        val wrappedBody = when (val originalBody = body) {
+            is HttpBody.Empty -> return this
+            is HttpBody.Bytes -> originalBody
+                .bytes()
+                .source()
+                .reportingTo(clientMetrics.bytesReceived)
+                .toHttpBody(originalBody.contentLength)
+            is HttpBody.SourceContent -> originalBody
+                .readFrom()
+                .reportingTo(clientMetrics.bytesReceived)
+                .toHttpBody(originalBody.contentLength)
+            is HttpBody.ChannelContent -> originalBody
+                .readFrom()
+                .reportingTo(clientMetrics.bytesReceived)
+                .toHttpBody(originalBody.contentLength)
+        }
+        return copy(body = wrappedBody)
+    }
 
     /**
      * Invoked only after the consumer is finished with the response and it is safe to cleanup resources
@@ -197,6 +234,8 @@ internal class SdkStreamResponseHandler(
         // and more data is pending arrival). It can also happen if the coroutine for this request is cancelled
         // before onResponseComplete fires.
         lock.withLock {
+            clientMetrics.decrementInflightRequests()
+
             val forceClose = !streamCompleted
 
             if (forceClose) {
@@ -210,4 +249,19 @@ internal class SdkStreamResponseHandler(
             conn.close()
         }
     }
+
+    override fun onMetrics(stream: HttpStream, metrics: HttpStreamMetrics) {
+        val sendEnd = positiveInstantOrNull(metrics.sendEndTimestampNs)
+        val receiveStart = positiveInstantOrNull(metrics.receiveStartTimestampNs)
+
+        if (sendEnd != null && receiveStart != null) {
+            val ttfb = receiveStart - sendEnd
+            if (ttfb.isPositive()) {
+                clientMetrics.timeToFirstByteDuration.recordSeconds(ttfb)
+                execContext[EngineAttributes.TimeToFirstByte] = ttfb
+            }
+        }
+    }
 }
+
+private fun positiveInstantOrNull(ns: Long): Instant? = if (ns > 0) Instant.fromEpochNanoseconds(ns) else null

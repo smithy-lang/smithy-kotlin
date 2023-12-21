@@ -44,6 +44,13 @@ public expect class Instant : Comparable<Instant> {
      */
     public operator fun minus(duration: Duration): Instant
 
+    /**
+     * Returns a duration representing the amount of time between this and [other]. If [other] is before this instant,
+     * the resulting duration will be negative.
+     * @param other The [Instant] marking the end of the duration
+     */
+    public operator fun minus(other: Instant): Duration
+
     public companion object {
         /**
          * Parse an ISO-8601 formatted string into an [Instant]
@@ -101,5 +108,8 @@ public fun Instant.Companion.fromEpochMilliseconds(milliseconds: Long): Instant 
     val ns = (milliseconds - secs * MILLISEC_PER_SEC) * NS_PER_MILLISEC
     return fromEpochSeconds(secs, ns.toInt())
 }
+
+public fun Instant.Companion.fromEpochNanoseconds(ns: Long): Instant =
+    fromEpochSeconds(ns / NS_PER_SEC, ns.mod(NS_PER_SEC))
 
 public fun Instant.until(other: Instant): Duration = (other.epochMilliseconds - epochMilliseconds).milliseconds
