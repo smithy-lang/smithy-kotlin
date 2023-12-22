@@ -13,9 +13,15 @@ buildscript {
         classpath(libs.kotlinx.atomicfu.plugin)
 
         // Add our custom gradle plugin(s) to buildscript classpath (comes from github source)
+        // NOTE: Anything included in our build plugin is added to the classpath for all projects,
+        // this includes bundled plugins and their versions. As an example the smithy gradle base
+        // plugin is used by the smithybuild plugin which means you can't apply it with a different
+        // version directly because it's already on the classpath.
+        // FIXME - if we publish this plugin it would fix a lot of things
         classpath("aws.sdk.kotlin:build-plugins") {
             version {
-                require("0.3.1")
+                // require("0.3.1")
+                branch = "smithy-build-plugin"
             }
         }
     }

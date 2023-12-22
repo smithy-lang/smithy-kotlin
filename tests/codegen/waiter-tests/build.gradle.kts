@@ -2,32 +2,25 @@
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
  * SPDX-License-Identifier: Apache-2.0
  */
+import aws.sdk.kotlin.gradle.codegen.smithyKotlinProjectionSrcDir
 import aws.sdk.kotlin.gradle.dsl.skipPublishing
-import software.amazon.smithy.gradle.tasks.SmithyBuildTask
 
 plugins {
     alias(libs.plugins.kotlin.jvm)
-    alias(libs.plugins.smithy.gradle.base)
+    id("aws.sdk.kotlin.gradle.smithybuild")
 }
 
 skipPublishing()
 
-smithy {
-    format.set(false)
-}
-
-val codegen by configurations.creating
+val codegen by configurations.getting
 dependencies {
     codegen(project(":codegen:smithy-kotlin-codegen"))
     codegen(libs.smithy.cli)
     codegen(libs.smithy.model)
 }
 
-val generateSdk = tasks.named<SmithyBuildTask>("smithyBuild")
-generateSdk.configure {
-    resolvedCliClasspath.set(codegen)
-    runtimeClasspath.set(codegen)
-    buildClasspath.set(codegen)
+tasks.generateSmithyProjections {
+    smithyBuildConfigs.set(files("smithy-build.json"))
 }
 
 val optinAnnotations = listOf("kotlin.RequiresOptIn", "aws.smithy.kotlin.runtime.InternalApi")
@@ -36,11 +29,11 @@ kotlin.sourceSets.all {
 }
 
 kotlin.sourceSets.getByName("main") {
-    kotlin.srcDir(smithy.getPluginProjectionPath("waiter-tests", "kotlin-codegen").map { it.resolve("src/main/kotlin") })
+    kotlin.srcDir(smithyBuild.smithyKotlinProjectionSrcDir("waiter-tests"))
 }
 
 tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
-    dependsOn(generateSdk)
+    dependsOn(tasks.generateSmithyProjections)
     kotlinOptions {
         // generated code has warnings unfortunately
         allWarningsAsErrors = false

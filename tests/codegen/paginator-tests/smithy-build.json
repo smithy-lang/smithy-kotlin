@@ -1,5 +1,6 @@
 {
   "version": "1.0",
+  "sources": ["model/paginated-operations.smithy"],
   "projections": {
     "paginator-tests": {
       "transforms": [
