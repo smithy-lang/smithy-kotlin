@@ -74,7 +74,7 @@ class OkHttpRequestTest {
     fun itSupportsNonAsciiHeaderValues() {
         val url = Url.parse("https://aws.amazon.com")
         val headers = Headers {
-            append("foo", "\uD83D\uDCA9")
+            append("foo", "\uD83E\uDD7D")
         }
         val request = HttpRequest(HttpMethod.POST, url, headers, HttpBody.Empty)
 
@@ -82,7 +82,7 @@ class OkHttpRequestTest {
         val actual = request.toOkHttpRequest(execContext, EmptyCoroutineContext, testMetrics)
 
         assertEquals(1, actual.headers.size)
-        assertEquals(listOf("\uD83D\uDCA9"), actual.headers("foo"))
+        assertEquals(listOf("\uD83E\uDD7D"), actual.headers("foo"))
     }
 
     @Test
