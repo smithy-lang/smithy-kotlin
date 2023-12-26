@@ -18,6 +18,8 @@ import aws.smithy.kotlin.runtime.http.HttpBody
 import aws.smithy.kotlin.runtime.http.operation.HttpOperationContext
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
+import aws.smithy.kotlin.runtime.text.encoding.decodeBase64Bytes
+import aws.smithy.kotlin.runtime.text.encoding.encodeToHex
 import aws.smithy.kotlin.runtime.time.Instant
 import kotlin.time.Duration
 
@@ -162,6 +164,12 @@ public class AwsHttpSigner(private val config: Config) : HttpSigner {
                     } else {
                         HashSpecification.StreamingAws4HmacSha256Payload
                     }
+                }
+                request.headers["x-amz-checksum-sha256"] != null -> {
+                    // If it's set, reuse flexible checksums SHA256
+                    HashSpecification.Precalculated(
+                        request.headers["x-amz-checksum-sha256"]!!.decodeBase64Bytes().encodeToHex()
+                    )
                 }
                 config.isUnsignedPayload -> HashSpecification.UnsignedPayload
                 // use the payload to compute the hash
