@@ -1,0 +1,5 @@
+{
+    "id": "0b435166-944d-4836-8683-964034b823cc",
+    "type": "feature",
+    "description": "Re-use SHA256 checksum during signing"
+}
