@@ -168,7 +168,7 @@ public class AwsHttpSigner(private val config: Config) : HttpSigner {
                 request.headers["x-amz-checksum-sha256"] != null -> {
                     // Re-use flexible checksums SHA256 if it's set
                     HashSpecification.Precalculated(
-                        request.headers["x-amz-checksum-sha256"]!!.decodeBase64Bytes().encodeToHex()
+                        request.headers["x-amz-checksum-sha256"]!!.decodeBase64Bytes().encodeToHex(),
                     )
                 }
                 config.isUnsignedPayload -> HashSpecification.UnsignedPayload
