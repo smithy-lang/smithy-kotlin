@@ -82,7 +82,7 @@ class OkHttpRequestTest {
         val actual = request.toOkHttpRequest(execContext, EmptyCoroutineContext, testMetrics)
 
         assertEquals(1, actual.headers.size)
-        assertEquals(listOf( "\uD83D\uDCA9"), actual.headers("foo"))
+        assertEquals(listOf("\uD83D\uDCA9"), actual.headers("foo"))
     }
 
     @Test
