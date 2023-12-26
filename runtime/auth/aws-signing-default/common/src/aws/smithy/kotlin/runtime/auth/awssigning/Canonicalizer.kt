@@ -193,9 +193,6 @@ internal class DefaultCanonicalizer(private val sha256Supplier: HashSupplier = :
     }
 }
 
-/** The number of bytes to read at a time during SHA256 calculation on streaming bodies. */
-private const val STREAM_CHUNK_BYTES = 16384 // 16KB
-
 /**
  * Canonicalizes a path from this [Url.Builder].
  * @param config The signing configuration to use
