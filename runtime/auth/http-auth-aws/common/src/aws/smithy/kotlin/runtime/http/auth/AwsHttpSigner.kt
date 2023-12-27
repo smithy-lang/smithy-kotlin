@@ -165,12 +165,6 @@ public class AwsHttpSigner(private val config: Config) : HttpSigner {
                         HashSpecification.StreamingAws4HmacSha256Payload
                     }
                 }
-                request.headers["x-amz-checksum-sha256"] != null -> {
-                    // Re-use flexible checksums SHA256 if it's set
-                    HashSpecification.Precalculated(
-                        request.headers["x-amz-checksum-sha256"]!!.decodeBase64Bytes().encodeToHex(),
-                    )
-                }
                 config.isUnsignedPayload -> HashSpecification.UnsignedPayload
                 // use the payload to compute the hash
                 else -> HashSpecification.CalculateFromPayload
