@@ -20,8 +20,7 @@ buildscript {
         // FIXME - if we publish this plugin it would fix a lot of things
         classpath("aws.sdk.kotlin:build-plugins") {
             version {
-                // require("0.3.1")
-                branch = "smithy-build-plugin"
+                require("0.3.2")
             }
         }
     }
