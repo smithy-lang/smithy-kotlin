@@ -5,6 +5,7 @@
 
 package aws.smithy.kotlin.runtime.http.test.util
 
+import aws.smithy.kotlin.runtime.http.test.suite.*
 import aws.smithy.kotlin.runtime.http.test.suite.concurrentTests
 import aws.smithy.kotlin.runtime.http.test.suite.downloadTests
 import aws.smithy.kotlin.runtime.http.test.suite.tlsTests
@@ -122,6 +123,7 @@ internal fun Application.testRoutes() {
     downloadTests()
     uploadTests()
     concurrentTests()
+    nonAsciiHeaderValueTests()
 }
 
 // configure SSL-only routes

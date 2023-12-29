@@ -21,7 +21,7 @@ class NonAsciiHeaderValueTest : AbstractEngineTest() {
         test { _, client ->
             val req = HttpRequest {
                 testSetup()
-                url.path.decoded = "concurrent"
+                url.path.decoded = "non-ascii"
                 headers.append("non-ascii-header", "µ")
                 headers.append("another-one", "\uD83C\uDF0A")
             }
