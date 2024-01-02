@@ -9,7 +9,7 @@ import io.ktor.server.application.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 
-internal fun Application.nonAsciiHeaderValueTests() {
+internal fun Application.headerTests() {
     routing {
         route("non-ascii") {
             get {

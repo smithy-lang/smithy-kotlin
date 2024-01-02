@@ -14,8 +14,9 @@ import aws.smithy.kotlin.runtime.http.test.util.testSetup
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
-class NonAsciiHeaderValueTest : AbstractEngineTest() {
+class HeaderTest : AbstractEngineTest() {
 
+    // https://github.com/awslabs/aws-sdk-kotlin/issues/1163
     @Test
     fun testNonAsciiHeaderValue() = testEngines {
         test { _, client ->

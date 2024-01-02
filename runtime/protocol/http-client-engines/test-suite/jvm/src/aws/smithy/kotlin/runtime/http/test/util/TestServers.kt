@@ -123,7 +123,7 @@ internal fun Application.testRoutes() {
     downloadTests()
     uploadTests()
     concurrentTests()
-    nonAsciiHeaderValueTests()
+    headerTests()
 }
 
 // configure SSL-only routes
