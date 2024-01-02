@@ -1,5 +1,0 @@
-{
-    "id": "3306baa4-f011-4290-9888-82937160ad79",
-    "type": "feature",
-    "description": "Support non-ASCII header values in the default HTTP engine"
-}

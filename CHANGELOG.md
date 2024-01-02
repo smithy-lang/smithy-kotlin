@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.0.7] - 01/02/2024
+
+### Features
+* Support non-ASCII header values in the default HTTP engine
+
+### Miscellaneous
+* Bump smithy version to 1.42.0
+
 ## [1.0.6] - 12/20/2023
 
 ### Features
