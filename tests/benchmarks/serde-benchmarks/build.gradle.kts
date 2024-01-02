@@ -3,12 +3,11 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 import aws.sdk.kotlin.gradle.dsl.skipPublishing
-import software.amazon.smithy.gradle.tasks.SmithyBuild
 
 plugins {
     kotlin("multiplatform")
-    alias(libs.plugins.smithy.gradle)
     alias(libs.plugins.kotlinx.benchmark)
+    id("aws.sdk.kotlin.gradle.smithybuild")
 }
 
 skipPublishing()
@@ -73,19 +72,15 @@ afterEvaluate {
     }
 }
 
-tasks["smithyBuildJar"].enabled = false
-
-val codegen by configurations.creating
-
+val codegen by configurations.getting
 dependencies {
     codegen(project(":tests:benchmarks:serde-benchmarks-codegen"))
+    codegen(libs.smithy.cli)
+    codegen(libs.smithy.model)
 }
 
-val generateSdk = tasks.create<SmithyBuild>("generateSdk") {
-    group = "codegen"
-    classpath = configurations.getByName("codegen")
-    inputs.file(projectDir.resolve("smithy-build.json"))
-    inputs.files(configurations.getByName("codegen"))
+tasks.generateSmithyProjections {
+    smithyBuildConfigs.set(files("smithy-build.json"))
 }
 
 data class BenchmarkModel(val name: String) {
@@ -103,7 +98,7 @@ val benchmarkModels = listOf(
 
 val stageGeneratedSources = tasks.register("stageGeneratedSources") {
     group = "codegen"
-    dependsOn(generateSdk)
+    dependsOn(tasks.generateSmithyProjections)
     doLast {
         benchmarkModels.forEach {
             copy {
