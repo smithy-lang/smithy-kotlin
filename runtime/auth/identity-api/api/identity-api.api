@@ -27,6 +27,7 @@ public final class aws/smithy/kotlin/runtime/auth/AuthSchemeId$Companion {
 	public final fun getAnonymous-DepwgT4 ()Ljava/lang/String;
 	public final fun getAwsSigV4-DepwgT4 ()Ljava/lang/String;
 	public final fun getAwsSigV4Asymmetric-DepwgT4 ()Ljava/lang/String;
+	public final fun getAwsSigV4S3Express-DepwgT4 ()Ljava/lang/String;
 	public final fun getHttpApiKey-DepwgT4 ()Ljava/lang/String;
 	public final fun getHttpBasic-DepwgT4 ()Ljava/lang/String;
 	public final fun getHttpBearer-DepwgT4 ()Ljava/lang/String;

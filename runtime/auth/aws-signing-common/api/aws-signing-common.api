@@ -1,3 +1,9 @@
+public final class S3ExpressAttributes {
+	public static final field INSTANCE LS3ExpressAttributes;
+	public final fun getBucket ()Laws/smithy/kotlin/runtime/collections/AttributeKey;
+	public final fun getClient ()Laws/smithy/kotlin/runtime/collections/AttributeKey;
+}
+
 public final class aws/smithy/kotlin/runtime/auth/awssigning/AwsSignatureType : java/lang/Enum {
 	public static final field HTTP_REQUEST_CHUNK Laws/smithy/kotlin/runtime/auth/awssigning/AwsSignatureType;
 	public static final field HTTP_REQUEST_EVENT Laws/smithy/kotlin/runtime/auth/awssigning/AwsSignatureType;
