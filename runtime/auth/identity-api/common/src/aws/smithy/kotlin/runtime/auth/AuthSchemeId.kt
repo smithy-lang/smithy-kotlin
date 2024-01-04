@@ -46,5 +46,10 @@ public value class AuthSchemeId(public val id: String) {
          * AWS Signature Version 4 asymmetric authentication
          */
         public val AwsSigV4Asymmetric: AuthSchemeId = AuthSchemeId("aws.auth#sigv4a")
+
+        /**
+         * AWS Signature Version 4 authentication for S3 Express One Zone
+         */
+        public val AwsSigV4S3Express: AuthSchemeId = AuthSchemeId("aws.auth#sigv4-s3express")
     }
 }
