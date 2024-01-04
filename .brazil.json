@@ -1,0 +1,64 @@
+{
+  "dependencies": {
+    "com.squareup.okhttp3:okhttp-coroutines-jvm:5.*": "OkHttp3CoroutinesJvm-5.x",
+    "com.squareup.okhttp3:okhttp-coroutines:5.*": "OkHttp3Coroutines-5.x",
+    "com.squareup.okhttp3:okhttp-jvm:5.*": "OkHttp3Jvm-5.x",
+    "com.squareup.okhttp3:okhttp:5.*": "OkHttp3-5.x",
+    "com.squareup.okio:okio-jvm:3.*": "OkioJvm-3.x",
+    "com.squareup.okio:okio:3.*": "Okio-3.x",
+    "io.opentelemetry:opentelemetry-api:1.*": "Maven-io-opentelemetry_opentelemetry-api-1.x",
+    "org.jetbrains.kotlin:kotlin-stdlib-common:1.9.*": "KotlinStdlibCommon-1.9.x",
+    "org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.9.*": "KotlinStdlibJdk8-1.9.x",
+    "org.jetbrains.kotlin:kotlin-stdlib:1.9.*": "KotlinStdlib-1.9.x",
+    "org.jetbrains.kotlinx:atomicfu-jvm:0.23.1": "AtomicfuJvm-0.23.1",
+    "org.jetbrains.kotlinx:atomicfu:0.23.1": "Atomicfu-0.23.1",
+    "org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm:1.7.*": "KotlinxCoroutinesCoreJvm-1.7.x",
+    "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.*": "KotlinxCoroutinesCore-1.7.x",
+    "org.jetbrains.kotlinx:kotlinx-coroutines-jdk8:1.7.*": "KotlinxCoroutinesJdk8-1.7.x",
+    "org.slf4j:slf4j-api:2.*": "Maven-org-slf4j_slf4j-api-2.x",
+    "software.amazon.awssdk.crt:aws-crt:0.*": "Aws-crt-java-1.0.x",
+    "aws.sdk.kotlin.crt:aws-crt-kotlin:0.8.*": "AwsCrtKotlin-0.8.x"
+  },
+  "packageHandlingRules": {
+    "versioning": {
+      "defaultVersionLayout": "{MAJOR}.0.x",
+      "overrides": {
+        "software.amazon.smithy.kotlin:smithy-kotlin-codegen": "{MAJOR}.{MINOR}.x",
+        "software.amazon.smithy.kotlin:smithy-kotlin-codegen-testutils": "{MAJOR}.{MINOR}.x"
+      }
+    },
+    "rename": {
+        "software.amazon.smithy.kotlin:smithy-kotlin-codegen": "SmithyKotlinCodegen",
+        "software.amazon.smithy.kotlin:smithy-kotlin-codegen-testutils": "SmithyKotlinCodegenTestUtils"
+    },
+    "ignore": [
+      "aws.smithy.kotlin:http-test",
+      "aws.smithy.kotlin:smithy-test",
+      "aws.smithy.kotlin:testing",
+      "aws.smithy.kotlin:bom",
+      "aws.smithy.kotlin:version-catalog"
+    ],
+    "resolvesConflictDependencies": {
+      "com.squareup.okhttp3:okhttp-coroutines-jvm:5.*": [
+        "KotlinStdlibCommon-1.9.x",
+        "KotlinStdlib-1.9.x",
+        "KotlinxCoroutinesCoreJvm-1.7.x"
+      ],
+      "com.squareup.okhttp3:okhttp-jvm:5.*": [
+        "KotlinStdlibCommon-1.9.x",
+        "KotlinStdlib-1.9.x"
+      ],
+      "com.squareup.okio:okio-jvm:3.*": [
+        "KotlinStdlibCommon-1.9.x",
+        "KotlinStdlibJdk8-1.9.x"
+      ],
+      "org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm:1.7.*": [
+        "KotlinStdlibCommon-1.9.x",
+        "KotlinStdlibJdk8-1.9.x"
+      ],
+      "org.jetbrains.kotlinx:kotlinx-coroutines-jdk8:1.7.*": [
+        "KotlinStdlibJdk8-1.9.x"
+      ]
+    }
+  }
+}
