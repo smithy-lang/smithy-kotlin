@@ -21,8 +21,16 @@ internal class DefaultAwsSignerImpl(
     override suspend fun sign(request: HttpRequest, config: AwsSigningConfig): AwsSigningResult<HttpRequest> {
         val logger = coroutineContext.logger<DefaultAwsSignerImpl>()
 
-        // TODO implement SigV4a
-        require(config.algorithm == AwsSigningAlgorithm.SIGV4) { "${config.algorithm} support is not yet implemented" }
+        // TODO: implement SigV4a
+        if (config.algorithm != AwsSigningAlgorithm.SIGV4) {
+            var exceptionMessage = "${config.algorithm} support is not yet implemented for the default signer."
+
+            if (config.algorithm == AwsSigningAlgorithm.SIGV4_ASYMMETRIC) {
+                exceptionMessage += " Please follow the AWS SDK for Kotlin developer guide to set it up with the CRT signer. **LINK TO GUIDE**"
+            }
+
+            throw UnsupportedSigningAlgorithm(exceptionMessage)
+        }
 
         val canonical = canonicalizer.canonicalRequest(request, config)
         if (config.logRequest) {
