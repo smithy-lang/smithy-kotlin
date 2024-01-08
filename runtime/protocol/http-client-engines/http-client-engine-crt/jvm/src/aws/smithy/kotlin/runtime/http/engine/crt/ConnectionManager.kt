@@ -95,14 +95,14 @@ internal class ConnectionManager(
             throw httpEx
         } finally {
             metrics.queuedRequests = pending.decrementAndGet()
-            emitConnections()
+            emitMetrics()
         }
     }
 
-    private fun emitConnections() {
-        val idleConnections = leases.availablePermits.toLong()
-        metrics.idleConnections = idleConnections
-        metrics.acquiredConnections = config.maxConnections.toLong() - idleConnections
+    private fun emitMetrics() {
+        val acquiredConnections = connManagers.values.sumOf { it.managerMetrics.leasedConcurrency }
+        metrics.acquiredConnections = acquiredConnections
+        metrics.idleConnections = config.maxConnections.toLong() - acquiredConnections
     }
 
     private suspend fun getManagerForUri(uri: Uri, proxyConfig: ProxyConfig): HttpClientConnectionManager = mutex.withLock {
@@ -139,7 +139,7 @@ internal class ConnectionManager(
                 delegate.close()
             } finally {
                 leases.release()
-                emitConnections()
+                emitMetrics()
             }
         }
     }
