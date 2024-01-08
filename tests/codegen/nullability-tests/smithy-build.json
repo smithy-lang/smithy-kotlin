@@ -1,5 +1,6 @@
 {
   "version": "1.0",
+  "sources": ["model/nullability.smithy"],
   "projections": {
     "client-mode": {
       "transforms": [

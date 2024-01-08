@@ -21,6 +21,7 @@ import aws.smithy.kotlin.runtime.time.Instant
 import kotlinx.coroutines.*
 import okhttp3.*
 import okhttp3.Authenticator
+import okhttp3.Headers
 import okhttp3.RequestBody.Companion.toRequestBody
 import okhttp3.internal.http.HttpMethod
 import java.io.EOFException
@@ -51,11 +52,13 @@ internal fun HttpRequest.toOkHttpRequest(
 
     builder.url(url.toString())
 
+    val okHttpHeaders = Headers.Builder()
     headers.forEach { key, values ->
         values.forEach {
-            builder.addHeader(key, it)
+            okHttpHeaders.addUnsafeNonAscii(key, it)
         }
     }
+    builder.headers(okHttpHeaders.build())
 
     val engineBody = if (HttpMethod.permitsRequestBody(method.name)) {
         when (val body = body) {
