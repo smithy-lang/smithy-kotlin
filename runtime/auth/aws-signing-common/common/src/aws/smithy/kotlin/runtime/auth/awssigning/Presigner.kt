@@ -12,6 +12,7 @@ import aws.smithy.kotlin.runtime.collections.emptyAttributes
 import aws.smithy.kotlin.runtime.http.*
 import aws.smithy.kotlin.runtime.http.operation.EndpointResolver
 import aws.smithy.kotlin.runtime.http.operation.ResolveEndpointRequest
+import aws.smithy.kotlin.runtime.http.operation.setResolvedEndpoint
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
 import aws.smithy.kotlin.runtime.http.request.header
@@ -32,9 +33,11 @@ public suspend fun presignRequest(
     val credentials = credentialsProvider.resolve()
     val eprRequest = ResolveEndpointRequest(ctx, unsignedRequestBuilder.build(), credentials)
     val endpoint = endpointResolver.resolve(eprRequest)
+    setResolvedEndpoint(unsignedRequestBuilder, ctx, endpoint)
+
     val signingContext = endpoint.authOptions.firstOrNull { it.schemeId == AuthSchemeId.AwsSigV4 }?.attributes ?: emptyAttributes()
 
-    val unsignedRequest = unsignedRequestBuilder.apply { header("host", endpoint.uri.host.toString()) }.build()
+    // val unsignedRequest = unsignedRequestBuilder.apply { header("host", endpoint.uri.host.toString()) }.build()
 
     val config = AwsSigningConfig {
         region = signingContext.getOrNull(AwsSigningAttributes.SigningRegion)
@@ -48,7 +51,7 @@ public suspend fun presignRequest(
         signingConfig()
     }
 
-    val result = signer.sign(unsignedRequest, config)
+    val result = signer.sign(unsignedRequestBuilder.build(), config)
     val signedRequest = result.output
 
     return HttpRequest(

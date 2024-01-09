@@ -19,8 +19,7 @@ import aws.smithy.kotlin.runtime.operation.ExecutionContext
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
-
-private const val NON_HTTPS_URL = "http://localhost:8080/path/to/resource?foo=bar"
+import kotlin.test.assertTrue
 
 class PresignerTest {
     // Verify that custom endpoint URL schemes aren't changed.
@@ -40,7 +39,7 @@ class PresignerTest {
         val ctx = ExecutionContext()
         val credentialsProvider = TestCredentialsProvider(Credentials("foo", "bar"))
         val endpointResolver = TestEndpointResolver(Endpoint(expectedUrl))
-        val signer = TestSigner(HttpRequest { url(expectedUrl) })
+        val signer = DefaultAwsSigner
         val signingConfig: AwsSigningConfig.Builder.() -> Unit = {
             service = "launch-service"
             region = "the-moon"
@@ -61,7 +60,10 @@ class PresignerTest {
         assertEquals(expectedUrl.host, actualUrl.host)
         assertEquals(expectedUrl.port, actualUrl.port)
         assertEquals(expectedUrl.path, actualUrl.path)
-        assertEquals(expectedUrl.parameters, actualUrl.parameters)
+
+        expectedUrl.parameters.encodedParameters.entryValues.forEach { (key, value) ->
+            assertTrue(actualUrl.parameters.encodedParameters.contains(key, value))
+        }
     }
 }
 
