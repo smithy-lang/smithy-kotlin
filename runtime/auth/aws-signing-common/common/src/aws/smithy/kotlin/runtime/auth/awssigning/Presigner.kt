@@ -15,7 +15,6 @@ import aws.smithy.kotlin.runtime.http.operation.ResolveEndpointRequest
 import aws.smithy.kotlin.runtime.http.operation.setResolvedEndpoint
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
-import aws.smithy.kotlin.runtime.http.request.header
 import aws.smithy.kotlin.runtime.net.url.Url
 import aws.smithy.kotlin.runtime.operation.ExecutionContext
 
@@ -36,8 +35,6 @@ public suspend fun presignRequest(
     setResolvedEndpoint(unsignedRequestBuilder, ctx, endpoint)
 
     val signingContext = endpoint.authOptions.firstOrNull { it.schemeId == AuthSchemeId.AwsSigV4 }?.attributes ?: emptyAttributes()
-
-    // val unsignedRequest = unsignedRequestBuilder.apply { header("host", endpoint.uri.host.toString()) }.build()
 
     val config = AwsSigningConfig {
         region = signingContext.getOrNull(AwsSigningAttributes.SigningRegion)
