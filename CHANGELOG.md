@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.0.8] - 01/09/2024
+
+### Fixes
+* [#1173](https://github.com/awslabs/aws-sdk-kotlin/issues/1173) Correctly apply resolved endpoint to presigned requests
+
 ## [1.0.7] - 01/02/2024
 
 ### Features

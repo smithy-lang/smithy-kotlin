@@ -1,8 +1,0 @@
-{
-    "id": "80e3c346-9a4a-4d47-84f1-1655742f9711",
-    "type": "bugfix",
-    "description": "Correctly apply resolved endpoint to presigned requests",
-    "issues": [
-        "awslabs/aws-sdk-kotlin#1173"
-    ]
-}
