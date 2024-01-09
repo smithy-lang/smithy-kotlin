@@ -11,18 +11,6 @@ buildscript {
     // only need to add e.g. atomic-fu and build-plugins here for imports and plugins to be available in subprojects.
     dependencies {
         classpath(libs.kotlinx.atomicfu.plugin)
-
-        // Add our custom gradle plugin(s) to buildscript classpath (comes from github source)
-        // NOTE: Anything included in our build plugin is added to the classpath for all projects,
-        // this includes bundled plugins and their versions. As an example the smithy gradle base
-        // plugin is used by the smithybuild plugin which means you can't apply it with a different
-        // version directly because it's already on the classpath.
-        // FIXME - if we publish this plugin it would fix a lot of things
-        classpath("aws.sdk.kotlin:build-plugins") {
-            version {
-                require("0.3.2")
-            }
-        }
     }
 }
 
@@ -33,10 +21,16 @@ plugins {
     // since build-plugins also has <some> version in its dependency closure
     alias(libs.plugins.kotlin.multiplatform) apply false
     alias(libs.plugins.kotlin.jvm) apply false
-}
 
-// configures (KMP) subprojects with our own KMP conventions and some default dependencies
-apply(plugin = "aws.sdk.kotlin.kmp")
+    // Add our custom gradle plugin(s) to buildscript classpath
+    // NOTE: Anything included in our build plugin is added to the classpath for all projects,
+    // this includes bundled plugins and their versions. As an example the smithy gradle base
+    // plugin is used by the smithybuild plugin which means you can't apply it with a different
+    // version directly because it's already on the classpath.
+    //
+    // Plugin configures (KMP) subprojects with our own KMP conventions and some default dependencies
+    alias(libs.plugins.aws.kotlin.repo.tools.kmp)
+}
 
 val testJavaVersion = typedProp<String>("test.java.version")?.let {
     JavaLanguageVersion.of(it)
