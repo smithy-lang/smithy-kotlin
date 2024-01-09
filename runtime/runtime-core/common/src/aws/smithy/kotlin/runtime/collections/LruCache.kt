@@ -4,23 +4,32 @@
  */
 package aws.smithy.kotlin.runtime.collections
 
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
+
+/**
+ * A thread-safe generic LRU (least recently used) cache.
+ * Cache entries will be added up to a configured [maxSize].
+ * Once full, adding a new cache entry will evict the least recently used entry.
+ */
 public class LruCache<K, V>(
     public val maxSize: Int,
 ) {
+    private val mu = Mutex() // protects map
     private val map = linkedMapOf<K, V>()
 
-    public operator fun get(k: K): V? {
+    public suspend fun get(k: K): V? = mu.withLock {
         return map[k].also { map.moveKeyToBack(k) }
     }
 
-    public fun put(k: K, v: V): Unit {
+    public suspend fun put(k: K, v: V): Unit = mu.withLock {
         if (map.size == maxSize) {
             map.remove(map.entries.first().key)
         }
         map[k] = v
     }
 
-    public fun remove(k: K): V? = map.remove(k)
+    public suspend fun remove(k: K): V? = mu.withLock { map.remove(k) }
 
     public val entries: MutableSet<MutableMap.MutableEntry<K, V>>
         get() = map.entries
