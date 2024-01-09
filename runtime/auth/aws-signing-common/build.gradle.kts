@@ -23,6 +23,9 @@ kotlin {
         commonTest {
             dependencies {
                 implementation(libs.kotlinx.coroutines.test)
+
+                // Needed for an actual signer implementation in tests
+                implementation(project(":runtime:auth:aws-signing-default"))
             }
         }
 
