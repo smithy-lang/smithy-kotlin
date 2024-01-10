@@ -190,6 +190,20 @@ public class HttpClientMetrics(
         _inFlightRequests.decrementAndGet()
     }
 
+    /**
+     * Atomically increase the number of queued requests by 1.
+     */
+    public fun incrementQueuedRequests() {
+        _queuedRequests.incrementAndGet()
+    }
+
+    /**
+     * Atomically decrease the number of queued requests by 1.
+     */
+    public fun decrementQueuedRequests() {
+        _queuedRequests.decrementAndGet()
+    }
+
     private fun recordRequestsState(measurement: LongAsyncMeasurement) {
         measurement.record(inFlightRequests, HttpClientMetricAttributes.InFlightRequest)
         measurement.record(queuedRequests, HttpClientMetricAttributes.QueuedRequest)
