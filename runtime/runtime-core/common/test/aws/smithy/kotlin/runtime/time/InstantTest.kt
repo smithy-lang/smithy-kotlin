@@ -13,7 +13,6 @@ import kotlin.time.Duration.Companion.hours
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.nanoseconds
 import kotlin.time.Duration.Companion.seconds
-import kotlin.time.DurationUnit
 
 // tests for conversion from a parsed representation into an Instant instance
 
@@ -207,7 +206,6 @@ class InstantTest {
         val ts2 = 1_234_567_890_123_456_789L
         val expected2 = Instant.fromEpochSeconds(1_234_567_890L, 123_456_789)
         assertEquals(expected2, Instant.fromEpochNanoseconds(ts2))
-
     }
 
     // Select tests pulled from edge cases/tickets in the V2 Java SDK.
