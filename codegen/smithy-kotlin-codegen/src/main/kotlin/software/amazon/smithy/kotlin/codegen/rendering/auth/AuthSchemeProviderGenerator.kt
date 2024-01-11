@@ -9,6 +9,7 @@ import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.kotlin.codegen.KotlinSettings
 import software.amazon.smithy.kotlin.codegen.core.*
 import software.amazon.smithy.kotlin.codegen.integration.AuthSchemeHandler
+import software.amazon.smithy.kotlin.codegen.integration.SectionId
 import software.amazon.smithy.kotlin.codegen.lang.KotlinTypes
 import software.amazon.smithy.kotlin.codegen.model.buildSymbol
 import software.amazon.smithy.kotlin.codegen.model.knowledge.AuthIndex
@@ -35,6 +36,8 @@ open class AuthSchemeProviderGenerator {
             definitionFile = "$name.kt"
         }
     }
+
+    object ServiceDefaults: SectionId
 
     fun render(ctx: ProtocolGenerator.GenerationContext) {
         ctx.delegator.useSymbolWriter(getSymbol(ctx.settings)) { writer ->
@@ -93,6 +96,8 @@ open class AuthSchemeProviderGenerator {
                 ")",
                 RuntimeTypes.Auth.Identity.AuthOption,
             ) {
+                declareSection(ServiceDefaults)
+
                 val defaultHandlers = authIndex.effectiveAuthHandlersForService(ctx)
 
                 defaultHandlers.forEach {

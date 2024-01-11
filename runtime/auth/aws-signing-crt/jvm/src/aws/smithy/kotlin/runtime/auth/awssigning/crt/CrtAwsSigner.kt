@@ -80,6 +80,7 @@ private fun AwsSignedBodyHeader.toCrtSignedBodyHeaderType() = when (this) {
 private fun AwsSigningAlgorithm.toCrtSigningAlgorithm() = when (this) {
     AwsSigningAlgorithm.SIGV4 -> CrtSigningAlgorithm.SIGV4
     AwsSigningAlgorithm.SIGV4_ASYMMETRIC -> CrtSigningAlgorithm.SIGV4_ASYMMETRIC
+    AwsSigningAlgorithm.SIGV4_S3EXPRESS -> CrtSigningAlgorithm.SIGV4_S3EXPRESS
 }
 
 private suspend fun AwsSigningConfig.toCrtSigningConfig(): CrtSigningConfig {

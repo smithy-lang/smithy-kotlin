@@ -37,7 +37,7 @@ import java.util.*
 /**
  * Register support for the `aws.auth#sigv4` auth scheme.
  */
-class SigV4AuthSchemeIntegration : KotlinIntegration {
+open class SigV4AuthSchemeIntegration : KotlinIntegration {
     // Allow integrations to customize the service config props, later integrations take precedence
     override val order: Byte = -50
 

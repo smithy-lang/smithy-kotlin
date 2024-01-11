@@ -49,6 +49,8 @@ open class HttpProtocolClientGenerator(
         val GenerationContext: SectionKey<ProtocolGenerator.GenerationContext> = SectionKey("GenerationContext")
     }
 
+    object ConfigureAuthSchemes : SectionId
+
     /**
      * Render the implementation of the service client interface
      */
@@ -125,6 +127,8 @@ open class HttpProtocolClientGenerator(
                     it.instantiateAuthSchemeExpr(ctx, this)
                 }
             }
+
+            declareSection(ConfigureAuthSchemes)
 
             write("toMap()")
         }
@@ -353,6 +357,7 @@ open class HttpProtocolClientGenerator(
             ?.firstOrNull { it.memberName == httpChecksumTrait?.requestAlgorithmMember?.getOrNull() }
 
         if (hasTrait<HttpChecksumRequiredTrait>() || httpChecksumTrait?.isRequestChecksumRequired == true) {
+            // TODO add a check for S3 Express, switching to CRC32 if it's enabled.
             val interceptorSymbol = RuntimeTypes.HttpClient.Interceptors.Md5ChecksumInterceptor
             val inputSymbol = ctx.symbolProvider.toSymbol(ctx.model.expectShape(inputShape))
 

@@ -173,6 +173,7 @@ public class AwsHttpSigner(private val config: Config) : HttpSigner {
             request.setAwsChunkedHeaders()
         }
 
+        println("AwsHttpSigner signing the request with ${config.algorithm}")
         val signingResult = checkNotNull(config.signer).sign(request.build(), signingConfig)
         val signedRequest = signingResult.output
 

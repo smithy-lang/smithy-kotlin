@@ -118,7 +118,9 @@ internal class DefaultCanonicalizer(private val sha256Supplier: HashSupplier = :
         param("X-Amz-Content-Sha256", hash, addHashHeader)
         param("X-Amz-Date", config.signingDate.format(TimestampFormat.ISO_8601_CONDENSED))
         param("X-Amz-Expires", config.expiresAfter?.inWholeSeconds?.toString(), signViaQueryParams)
-        param("X-Amz-Security-Token", sessionToken, !config.omitSessionToken) // Add pre-sig if omitSessionToken=false
+        // Add pre-sig if omitSessionToken=false and request is not SigV4 for S3 Express
+        param("X-Amz-Security-Token", sessionToken, (!config.omitSessionToken && config.algorithm != AwsSigningAlgorithm.SIGV4_S3EXPRESS))
+        param("X-Amz-S3Session-Token", sessionToken, config.algorithm == AwsSigningAlgorithm.SIGV4_S3EXPRESS)
 
         val headers = builder
             .headers

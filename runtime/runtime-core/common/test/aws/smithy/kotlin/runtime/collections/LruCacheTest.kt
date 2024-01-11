@@ -14,7 +14,7 @@ public class LruCacheTest {
     fun testGetAndPut() = runTest {
         val cache = LruCache<String, String>(1)
         cache.put("a", "a")
-        assertEquals(cache["a"], "a")
+        assertEquals(cache.get("a"), "a")
     }
 
     @Test

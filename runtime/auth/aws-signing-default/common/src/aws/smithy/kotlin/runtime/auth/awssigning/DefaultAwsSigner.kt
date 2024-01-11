@@ -22,7 +22,9 @@ internal class DefaultAwsSignerImpl(
         val logger = coroutineContext.logger<DefaultAwsSignerImpl>()
 
         // TODO implement SigV4a
-        require(config.algorithm == AwsSigningAlgorithm.SIGV4) { "${config.algorithm} support is not yet implemented" }
+        require(config.algorithm == AwsSigningAlgorithm.SIGV4 || config.algorithm == AwsSigningAlgorithm.SIGV4_S3EXPRESS) {
+            "${config.algorithm} support is not yet implemented"
+        }
 
         val canonical = canonicalizer.canonicalRequest(request, config)
         if (config.logRequest) {

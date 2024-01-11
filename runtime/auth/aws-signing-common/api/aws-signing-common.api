@@ -1,9 +1,3 @@
-public final class S3ExpressAttributes {
-	public static final field INSTANCE LS3ExpressAttributes;
-	public final fun getBucket ()Laws/smithy/kotlin/runtime/collections/AttributeKey;
-	public final fun getClient ()Laws/smithy/kotlin/runtime/collections/AttributeKey;
-}
-
 public final class aws/smithy/kotlin/runtime/auth/awssigning/AwsSignatureType : java/lang/Enum {
 	public static final field HTTP_REQUEST_CHUNK Laws/smithy/kotlin/runtime/auth/awssigning/AwsSignatureType;
 	public static final field HTTP_REQUEST_EVENT Laws/smithy/kotlin/runtime/auth/awssigning/AwsSignatureType;
@@ -32,6 +26,7 @@ public abstract interface class aws/smithy/kotlin/runtime/auth/awssigning/AwsSig
 public final class aws/smithy/kotlin/runtime/auth/awssigning/AwsSigningAlgorithm : java/lang/Enum {
 	public static final field SIGV4 Laws/smithy/kotlin/runtime/auth/awssigning/AwsSigningAlgorithm;
 	public static final field SIGV4_ASYMMETRIC Laws/smithy/kotlin/runtime/auth/awssigning/AwsSigningAlgorithm;
+	public static final field SIGV4_S3EXPRESS Laws/smithy/kotlin/runtime/auth/awssigning/AwsSigningAlgorithm;
 	public static fun getEntries ()Lkotlin/enums/EnumEntries;
 	public static fun valueOf (Ljava/lang/String;)Laws/smithy/kotlin/runtime/auth/awssigning/AwsSigningAlgorithm;
 	public static fun values ()[Laws/smithy/kotlin/runtime/auth/awssigning/AwsSigningAlgorithm;

@@ -24,6 +24,11 @@ public enum class AwsSigningAlgorithm {
      * AWS Signature Version 4 Asymmetric
      */
     SIGV4_ASYMMETRIC,
+
+    /**
+     * AWS Signature Version 4 for S3 Express
+     */
+    SIGV4_S3EXPRESS
 }
 
 /**

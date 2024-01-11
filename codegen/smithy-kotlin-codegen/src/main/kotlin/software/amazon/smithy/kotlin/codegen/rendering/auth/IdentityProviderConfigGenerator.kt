@@ -7,10 +7,8 @@ package software.amazon.smithy.kotlin.codegen.rendering.auth
 
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.kotlin.codegen.KotlinSettings
-import software.amazon.smithy.kotlin.codegen.core.KotlinWriter
-import software.amazon.smithy.kotlin.codegen.core.RuntimeTypes
-import software.amazon.smithy.kotlin.codegen.core.clientName
-import software.amazon.smithy.kotlin.codegen.core.withBlock
+import software.amazon.smithy.kotlin.codegen.core.*
+import software.amazon.smithy.kotlin.codegen.integration.SectionId
 import software.amazon.smithy.kotlin.codegen.model.buildSymbol
 import software.amazon.smithy.kotlin.codegen.model.knowledge.AuthIndex
 import software.amazon.smithy.kotlin.codegen.rendering.protocol.ProtocolGenerator
@@ -28,6 +26,8 @@ class IdentityProviderConfigGenerator {
             definitionFile = "$name.kt"
         }
     }
+
+    object ConfigureIdentityProviderForAuthScheme : SectionId
 
     fun render(ctx: ProtocolGenerator.GenerationContext) {
         val symbol = getSymbol(ctx.settings)
@@ -59,6 +59,7 @@ class IdentityProviderConfigGenerator {
                     writeInline("#S -> ", it.authSchemeId)
                     it.identityProviderAdapterExpression(this)
                 }
+                declareSection(ConfigureIdentityProviderForAuthScheme)
                 write("else -> error(#S)", "auth scheme \$schemeId not configured for client")
             }
             .write("")
