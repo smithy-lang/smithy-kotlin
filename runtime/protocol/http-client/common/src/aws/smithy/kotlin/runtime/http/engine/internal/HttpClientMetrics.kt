@@ -25,12 +25,12 @@ public object HttpClientMetricAttributes {
     public val AcquiredConnection: Attributes = attributesOf { "state" to "acquired" }
     public val QueuedRequest: Attributes = attributesOf { "state" to "queued" }
     public val InFlightRequest: Attributes = attributesOf { "state" to "in-flight" }
-    public val TotalThread: Attributes = attributesOf { "state" to "total" }
+    public val IdleThread: Attributes = attributesOf { "state" to "idle" }
     public val ActiveThread: Attributes = attributesOf { "state" to "active" }
 }
 
 @InternalApi
-public data class ThreadState(val total: Long, val active: Long)
+public data class ThreadState(val idle: Long, val active: Long)
 
 /**
  * Container for common HTTP engine related metrics. Engine implementations can re-use this and update
@@ -130,7 +130,7 @@ public class HttpClientMetrics(
                 "smithy.client.http.threads.count",
                 { measurement -> recordThreadState(measurement, callback) },
                 "{thread}",
-                "Current state of HTTP engine threads (active, running)",
+                "Current state of HTTP engine threads (idle, active)",
             )
         },
     )
@@ -201,7 +201,7 @@ public class HttpClientMetrics(
 
     private fun recordThreadState(measurement: LongAsyncMeasurement, callback: () -> ThreadState?) {
         callback()?.let { threadState ->
-            measurement.record(threadState.total, HttpClientMetricAttributes.TotalThread)
+            measurement.record(threadState.idle, HttpClientMetricAttributes.IdleThread)
             measurement.record(threadState.active, HttpClientMetricAttributes.ActiveThread)
         }
     }

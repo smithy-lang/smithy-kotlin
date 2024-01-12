@@ -76,7 +76,9 @@ public class OkHttpEngine(
 }
 
 private fun Dispatcher.getThreadState(): ThreadState? = (executorService as? ThreadPoolExecutor)?.let { executor ->
-    ThreadState(executor.poolSize.toLong(), executor.activeCount.toLong())
+    val active = executor.activeCount.toLong()
+    val idle = executor.poolSize.toLong() - active
+    ThreadState(idle, active)
 }
 
 private fun OkHttpEngineConfig.buildDispatcher() = Dispatcher().apply {
