@@ -352,20 +352,13 @@ open class HttpProtocolClientGenerator(
             return
         }
 
-        val requestAlgorithmMember = ctx.model.getShape(input.get()).getOrNull()
-            ?.members()
-            ?.firstOrNull { it.memberName == httpChecksumTrait?.requestAlgorithmMember?.getOrNull() }
-
         if (hasTrait<HttpChecksumRequiredTrait>() || httpChecksumTrait?.isRequestChecksumRequired == true) {
-            // TODO add a check for S3 Express, switching to CRC32 if it's enabled.
             val interceptorSymbol = RuntimeTypes.HttpClient.Interceptors.Md5ChecksumInterceptor
             val inputSymbol = ctx.symbolProvider.toSymbol(ctx.model.expectShape(inputShape))
 
-            requestAlgorithmMember?.let {
-                writer.withBlock("op.interceptors.add(#T<#T> { ", "})", interceptorSymbol, inputSymbol) {
-                    writer.write("it.#L?.value == null", requestAlgorithmMember.defaultName())
-                }
-            } ?: writer.write("op.interceptors.add(#T<#T>())", interceptorSymbol, inputSymbol)
+            writer.withBlock("op.interceptors.add(#T<#T> { ", "})", interceptorSymbol, inputSymbol) {
+                writer.write("!op.context.contains(#T.ChecksumAlgorithm)", RuntimeTypes.HttpClient.Operation.HttpOperationContext)
+            }
         }
     }
 

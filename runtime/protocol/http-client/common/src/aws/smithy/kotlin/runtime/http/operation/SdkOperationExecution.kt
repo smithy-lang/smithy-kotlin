@@ -294,6 +294,9 @@ internal class AuthHandler<Input, Output>(
             // update the request context with endpoint specific auth signing context
             val endpointAuthAttributes = endpoint.authOptions.firstOrNull { it.schemeId == authScheme.schemeId }?.attributes ?: emptyAttributes()
             request.context.merge(endpointAuthAttributes)
+
+            // also update the request context with endpoint attributes
+            request.context.merge(endpoint.attributes)
         }
 
         val modified = interceptors.modifyBeforeSigning(request.subject.immutableView(true))

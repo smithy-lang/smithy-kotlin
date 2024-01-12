@@ -39,12 +39,8 @@ class FlexibleChecksumsRequestInterceptorTest {
             }
 
             val op = newTestOperation<Unit, Unit>(req, Unit)
-
-            op.interceptors.add(
-                FlexibleChecksumsRequestInterceptor<Unit> {
-                    checksumAlgorithmName
-                },
-            )
+            op.context[HttpOperationContext.ChecksumAlgorithm] = checksumAlgorithmName
+            op.interceptors.add(FlexibleChecksumsRequestInterceptor())
 
             op.roundTrip(client, Unit)
             val call = op.context.attributes[HttpOperationContext.HttpCallList].first()
@@ -64,12 +60,8 @@ class FlexibleChecksumsRequestInterceptorTest {
         val checksumAlgorithmName = "crc32c"
 
         val op = newTestOperation<Unit, Unit>(req, Unit)
-
-        op.interceptors.add(
-            FlexibleChecksumsRequestInterceptor<Unit> {
-                checksumAlgorithmName
-            },
-        )
+        op.context[HttpOperationContext.ChecksumAlgorithm] = checksumAlgorithmName
+        op.interceptors.add(FlexibleChecksumsRequestInterceptor())
 
         op.roundTrip(client, Unit)
         val call = op.context.attributes[HttpOperationContext.HttpCallList].first()
@@ -86,12 +78,8 @@ class FlexibleChecksumsRequestInterceptorTest {
         val unsupportedChecksumAlgorithmName = "fooblefabble1024"
 
         val op = newTestOperation<Unit, Unit>(req, Unit)
-
-        op.interceptors.add(
-            FlexibleChecksumsRequestInterceptor<Unit> {
-                unsupportedChecksumAlgorithmName
-            },
-        )
+        op.context[HttpOperationContext.ChecksumAlgorithm] = unsupportedChecksumAlgorithmName
+        op.interceptors.add(FlexibleChecksumsRequestInterceptor())
 
         assertFailsWith<ClientException> {
             op.roundTrip(client, Unit)
@@ -113,12 +101,8 @@ class FlexibleChecksumsRequestInterceptorTest {
         val checksumAlgorithmName = "crc32c"
 
         val op = newTestOperation<Unit, Unit>(req, Unit)
-
-        op.interceptors.add(
-            FlexibleChecksumsRequestInterceptor<Unit> {
-                checksumAlgorithmName
-            },
-        )
+        op.context[HttpOperationContext.ChecksumAlgorithm] = checksumAlgorithmName
+        op.interceptors.add(FlexibleChecksumsRequestInterceptor())
 
         op.roundTrip(client, Unit)
         val call = op.context.attributes[HttpOperationContext.HttpCallList].first()
@@ -179,12 +163,8 @@ class FlexibleChecksumsRequestInterceptorTest {
         req.headers { append("x-amz-checksum-$checksumAlgorithmName", precalculatedChecksumValue) }
 
         val op = newTestOperation<Unit, Unit>(req, Unit)
-
-        op.interceptors.add(
-            FlexibleChecksumsRequestInterceptor<Unit> {
-                checksumAlgorithmName
-            },
-        )
+        op.context[HttpOperationContext.ChecksumAlgorithm] = checksumAlgorithmName
+        op.interceptors.add(FlexibleChecksumsRequestInterceptor())
 
         op.roundTrip(client, Unit)
         val call = op.context.attributes[HttpOperationContext.HttpCallList].first()

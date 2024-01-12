@@ -10,6 +10,7 @@ import aws.smithy.kotlin.runtime.InternalApi
 import aws.smithy.kotlin.runtime.client.ProtocolRequestInterceptorContext
 import aws.smithy.kotlin.runtime.hashing.*
 import aws.smithy.kotlin.runtime.http.*
+import aws.smithy.kotlin.runtime.http.operation.HttpOperationContext
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.http.request.header
 import aws.smithy.kotlin.runtime.http.request.toBuilder
@@ -29,23 +30,13 @@ import kotlin.coroutines.coroutineContext
  * Otherwise, if it will be sent as a trailing header, calculate the checksum as asynchronously as the body is streamed.
  * In this case, a [LazyAsyncValue] will be added to the execution context which allows the trailing checksum to be sent
  * after the entire body has been streamed.
- *
- * @param checksumAlgorithmNameInitializer a function which parses the input [I] to return the checksum algorithm name
  */
 @InternalApi
-public class FlexibleChecksumsRequestInterceptor<I>(
-    private val checksumAlgorithmNameInitializer: (I) -> String?,
-) : HttpInterceptor {
-    private var checksumAlgorithmName: String? = null
+public class FlexibleChecksumsRequestInterceptor: HttpInterceptor {
+    override suspend fun modifyBeforeSigning(context: ProtocolRequestInterceptorContext<Any, HttpRequest>): HttpRequest {
+        val logger = coroutineContext.logger<FlexibleChecksumsRequestInterceptor>()
 
-    override fun readAfterSerialization(context: ProtocolRequestInterceptorContext<Any, HttpRequest>) {
-        @Suppress("UNCHECKED_CAST")
-        val input = context.request as I
-        checksumAlgorithmName = checksumAlgorithmNameInitializer(input)
-    }
-
-    override suspend fun modifyBeforeRetryLoop(context: ProtocolRequestInterceptorContext<Any, HttpRequest>): HttpRequest {
-        val logger = coroutineContext.logger<FlexibleChecksumsRequestInterceptor<I>>()
+        val checksumAlgorithmName = context.executionContext.getOrNull(HttpOperationContext.ChecksumAlgorithm)
 
         checksumAlgorithmName ?: run {
             logger.debug { "no checksum algorithm specified, skipping flexible checksums processing" }
