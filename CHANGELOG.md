@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.0.9] - 01/12/2024
+
+### Fixes
+* [#1177](https://github.com/awslabs/aws-sdk-kotlin/issues/1177) Correctly include custom ports in signing/presigning
+
 ## [1.0.8] - 01/09/2024
 
 ### Fixes
