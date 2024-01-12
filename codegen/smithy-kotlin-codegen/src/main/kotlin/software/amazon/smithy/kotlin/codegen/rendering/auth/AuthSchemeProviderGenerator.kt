@@ -37,7 +37,7 @@ open class AuthSchemeProviderGenerator {
         }
     }
 
-    object ServiceDefaults: SectionId
+    object ServiceDefaults : SectionId
 
     fun render(ctx: ProtocolGenerator.GenerationContext) {
         ctx.delegator.useSymbolWriter(getSymbol(ctx.settings)) { writer ->

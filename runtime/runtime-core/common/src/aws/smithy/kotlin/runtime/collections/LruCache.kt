@@ -38,7 +38,7 @@ public class LruCache<K, V>(
         get() = map.size
 }
 
-private fun <K, V> LinkedHashMap<K, V>.moveKeyToBack(k: K): Unit {
+private fun <K, V> LinkedHashMap<K, V>.moveKeyToBack(k: K) {
     if (containsKey(k)) {
         put(k, remove(k)!!)
     }

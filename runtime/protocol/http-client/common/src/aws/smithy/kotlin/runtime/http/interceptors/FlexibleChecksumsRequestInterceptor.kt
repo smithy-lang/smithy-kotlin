@@ -32,7 +32,7 @@ import kotlin.coroutines.coroutineContext
  * after the entire body has been streamed.
  */
 @InternalApi
-public class FlexibleChecksumsRequestInterceptor: HttpInterceptor {
+public class FlexibleChecksumsRequestInterceptor : HttpInterceptor {
     override suspend fun modifyBeforeSigning(context: ProtocolRequestInterceptorContext<Any, HttpRequest>): HttpRequest {
         val logger = coroutineContext.logger<FlexibleChecksumsRequestInterceptor>()
 
