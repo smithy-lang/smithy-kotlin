@@ -77,6 +77,6 @@ public fun setResolvedEndpoint(req: HttpRequestBuilder, ctx: ExecutionContext, e
         encodedFragment = endpoint.uri.fragment?.encoded
     }
 
-    req.headers["Host"] = hostname
+    req.headers["Host"] = req.url.hostAndPort
     endpoint.headers?.let { req.headers.appendAll(it) }
 }
