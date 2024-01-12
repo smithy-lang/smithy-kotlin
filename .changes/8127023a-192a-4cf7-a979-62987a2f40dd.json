@@ -1,0 +1,8 @@
+{
+    "id": "8127023a-192a-4cf7-a979-62987a2f40dd",
+    "type": "bugfix",
+    "description": "Correctly include custom ports in signing/presigning",
+    "issues": [
+        "awslabs/aws-sdk-kotlin#1177"
+    ]
+}
