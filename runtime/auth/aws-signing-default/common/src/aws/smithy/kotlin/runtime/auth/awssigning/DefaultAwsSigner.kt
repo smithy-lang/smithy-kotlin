@@ -23,13 +23,10 @@ internal class DefaultAwsSignerImpl(
 
         // TODO: implement SigV4a
         if (config.algorithm != AwsSigningAlgorithm.SIGV4) {
-            var exceptionMessage = "${config.algorithm} support is not yet implemented for the default signer."
-
-            if (config.algorithm == AwsSigningAlgorithm.SIGV4_ASYMMETRIC) {
-                exceptionMessage += " Please follow the AWS SDK for Kotlin developer guide to set it up with the CRT signer. **LINK TO GUIDE**"
-            }
-
-            throw UnsupportedSigningAlgorithm(exceptionMessage)
+            throw UnsupportedSigningAlgorithm(
+                "${config.algorithm} support is not yet implemented for the default signer.",
+                config.algorithm == AwsSigningAlgorithm.SIGV4_ASYMMETRIC,
+            )
         }
 
         val canonical = canonicalizer.canonicalRequest(request, config)

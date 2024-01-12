@@ -11,3 +11,4 @@ software.amazon.smithy.kotlin.codegen.rendering.auth.BearerTokenAuthSchemeIntegr
 software.amazon.smithy.kotlin.codegen.rendering.endpoints.discovery.EndpointDiscoveryIntegration
 software.amazon.smithy.kotlin.codegen.rendering.endpoints.SdkEndpointBuiltinIntegration
 software.amazon.smithy.kotlin.codegen.rendering.compression.RequestCompressionIntegration
+software.amazon.smithy.kotlin.codegen.rendering.auth.SigV4AsymmetricAuthSchemeIntegration
