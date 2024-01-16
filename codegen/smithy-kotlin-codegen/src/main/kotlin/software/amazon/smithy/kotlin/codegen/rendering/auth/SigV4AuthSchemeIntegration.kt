@@ -182,14 +182,18 @@ private object Sigv4EndpointCustomization : EndpointCustomization {
     )
 }
 
-// TODO: This functions and it's helpers might be able to be made 'internal' and re-used for asymmetric.
 private fun renderAuthSchemes(writer: KotlinWriter, authSchemes: Expression, expressionRenderer: ExpressionRenderer) {
     writer.writeInline("#T to ", RuntimeTypes.SmithyClient.Endpoints.SigningContextAttributeKey)
     writer.withBlock("listOf(", ")") {
         authSchemes.toNode().expectArrayNode().forEach {
             val scheme = it.expectObjectNode()
             val schemeName = scheme.expectStringMember("name").value
-            val authFactoryFn = if (schemeName == "sigv4") RuntimeTypes.Auth.HttpAuthAws.sigV4 else return@forEach
+
+            val authFactoryFn = when (schemeName) {
+                "sigv4" -> RuntimeTypes.Auth.HttpAuthAws.sigV4
+                "sigv4a" -> RuntimeTypes.Auth.HttpAuthAws.sigV4A
+                else -> return@forEach
+            }
 
             withBlock("#T(", "),", authFactoryFn) {
                 // we delegate back to the expression visitor for each of these fields because it's possible to
@@ -201,9 +205,16 @@ private fun renderAuthSchemes(writer: KotlinWriter, authSchemes: Expression, exp
                 writeInline("disableDoubleUriEncode = ")
                 renderOrElse(expressionRenderer, scheme.getBooleanMember("disableDoubleEncoding"), "false")
 
-                renderSigV4Fields(writer, scheme, expressionRenderer)
+                renderFieldsForScheme(writer, scheme, expressionRenderer)
             }
         }
+    }
+}
+
+private fun renderFieldsForScheme(writer: KotlinWriter, scheme: ObjectNode, expressionRenderer: ExpressionRenderer) {
+    when (scheme.expectStringMember("name").value) {
+        "sigv4" -> renderSigV4Fields(writer, scheme, expressionRenderer)
+        "sigv4a" -> renderSigV4AFields(writer, scheme, expressionRenderer)
     }
 }
 

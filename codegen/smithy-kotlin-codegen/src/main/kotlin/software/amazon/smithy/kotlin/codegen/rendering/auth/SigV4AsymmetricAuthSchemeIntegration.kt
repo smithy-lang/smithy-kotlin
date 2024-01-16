@@ -49,9 +49,6 @@ class SigV4AsymmetricAuthSchemeIntegration : KotlinIntegration {
     override fun additionalServiceConfigProps(ctx: CodegenContext): List<ConfigProperty> =
         if (modelHasSigV4aTrait(ctx)) listOf(credentialsProviderProp) else super.additionalServiceConfigProps(ctx)
 
-    override fun customizeEndpointResolution(ctx: ProtocolGenerator.GenerationContext): EndpointCustomization? =
-        if (modelHasSigV4aTrait(ctx)) SigV4AsymmetricEndpointCustomization else null
-
     override val sectionWriters: List<SectionWriterBinding> = listOf(
             SectionWriterBinding(HttpProtocolUnitTestRequestGenerator.ConfigureServiceClient, renderHttpProtocolRequestTestConfigureServiceClient),
             SectionWriterBinding(HttpProtocolUnitTestResponseGenerator.ConfigureServiceClient, renderHttpProtocolResponseTestConfigureServiceClient),
@@ -172,37 +169,7 @@ private class SigV4AsymmetricSignedBodyHeaderMiddleware : ProtocolMiddleware {
     }
 }
 
-private object SigV4AsymmetricEndpointCustomization : EndpointCustomization {
-    override val propertyRenderers: Map<String, EndpointPropertyRenderer> = mapOf(
-        "authSchemes" to ::renderSigV4aAuthScheme,
-    )
-}
-
-private fun renderSigV4aAuthScheme(writer: KotlinWriter, authSchemes: Expression, expressionRenderer: ExpressionRenderer) {
-    writer.writeInline("#T to ", RuntimeTypes.SmithyClient.Endpoints.SigningContextAttributeKey)
-    writer.withBlock("listOf(", ")") {
-        authSchemes.toNode().expectArrayNode().forEach {
-            val scheme = it.expectObjectNode()
-            val schemeName = scheme.expectStringMember("name").value
-            val authFactoryFn = if (schemeName == "sigv4a") RuntimeTypes.Auth.HttpAuthAws.sigV4A else return@forEach
-
-            withBlock("#T(", "),", authFactoryFn) {
-                // we delegate back to the expression visitor for each of these fields because it's possible to
-                // encounter template strings throughout
-
-                writeInline("serviceName = ")
-                renderOrElse(expressionRenderer, scheme.getStringMember("signingName"), "null")
-
-                writeInline("disableDoubleUriEncode = ")
-                renderOrElse(expressionRenderer, scheme.getBooleanMember("disableDoubleEncoding"), "false")
-
-                renderSigV4AFields(writer, scheme, expressionRenderer)
-            }
-        }
-    }
-}
-
-private fun renderSigV4AFields(writer: KotlinWriter, scheme: ObjectNode, expressionRenderer: ExpressionRenderer) {
+internal fun renderSigV4AFields(writer: KotlinWriter, scheme: ObjectNode, expressionRenderer: ExpressionRenderer) {
     writer.writeInline("signingRegionSet = ")
     expressionRenderer.renderExpression(Expression.fromNode(scheme.expectArrayMember("signingRegionSet")))
     writer.write(",")
