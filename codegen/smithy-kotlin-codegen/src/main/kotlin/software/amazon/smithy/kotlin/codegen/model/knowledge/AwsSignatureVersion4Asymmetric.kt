@@ -39,10 +39,10 @@ object AwsSignatureVersion4Asymmetric {
      */
     fun signingServiceName(model: Model, serviceShape: ServiceShape): String {
         val trait = ServiceIndex
-                .of(model)
-                .getAuthSchemes(serviceShape)
-                .values
-                .find { it.javaClass == SigV4Trait::class.java }
+            .of(model)
+            .getAuthSchemes(serviceShape)
+            .values
+            .find { it.javaClass == SigV4Trait::class.java }
         return (trait as SigV4Trait).name // TODO: Might be a better way to do this
     }
 

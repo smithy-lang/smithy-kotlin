@@ -5,7 +5,6 @@
 package software.amazon.smithy.kotlin.codegen.rendering.auth
 
 import software.amazon.smithy.aws.traits.auth.SigV4ATrait
-import software.amazon.smithy.aws.traits.auth.SigV4Trait
 import software.amazon.smithy.aws.traits.auth.UnsignedPayloadTrait
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.codegen.core.SymbolReference
@@ -18,8 +17,6 @@ import software.amazon.smithy.kotlin.codegen.integration.SectionWriterBinding
 import software.amazon.smithy.kotlin.codegen.model.buildSymbol
 import software.amazon.smithy.kotlin.codegen.model.hasTrait
 import software.amazon.smithy.kotlin.codegen.model.knowledge.AwsSignatureVersion4Asymmetric
-import software.amazon.smithy.kotlin.codegen.rendering.endpoints.EndpointCustomization
-import software.amazon.smithy.kotlin.codegen.rendering.endpoints.EndpointPropertyRenderer
 import software.amazon.smithy.kotlin.codegen.rendering.endpoints.ExpressionRenderer
 import software.amazon.smithy.kotlin.codegen.rendering.protocol.*
 import software.amazon.smithy.kotlin.codegen.rendering.util.ConfigProperty
@@ -50,11 +47,11 @@ class SigV4AsymmetricAuthSchemeIntegration : KotlinIntegration {
         if (modelHasSigV4aTrait(ctx)) listOf(credentialsProviderProp) else super.additionalServiceConfigProps(ctx)
 
     override val sectionWriters: List<SectionWriterBinding> = listOf(
-            SectionWriterBinding(HttpProtocolUnitTestRequestGenerator.ConfigureServiceClient, renderHttpProtocolRequestTestConfigureServiceClient),
-            SectionWriterBinding(HttpProtocolUnitTestResponseGenerator.ConfigureServiceClient, renderHttpProtocolResponseTestConfigureServiceClient),
-            SectionWriterBinding(HttpProtocolClientGenerator.ClientInitializer, renderClientInitializer),
-            SectionWriterBinding(HttpProtocolClientGenerator.MergeServiceDefaults, renderMergeServiceDefaults),
-        )
+        SectionWriterBinding(HttpProtocolUnitTestRequestGenerator.ConfigureServiceClient, renderHttpProtocolRequestTestConfigureServiceClient),
+        SectionWriterBinding(HttpProtocolUnitTestResponseGenerator.ConfigureServiceClient, renderHttpProtocolResponseTestConfigureServiceClient),
+        SectionWriterBinding(HttpProtocolClientGenerator.ClientInitializer, renderClientInitializer),
+        SectionWriterBinding(HttpProtocolClientGenerator.MergeServiceDefaults, renderMergeServiceDefaults),
+    )
 }
 
 // set service client defaults for HTTP request protocol tests
@@ -190,4 +187,3 @@ internal fun modelHasSigV4aTrait(ctx: CodegenContext): Boolean =
         .getAuthSchemes(ctx.settings.service)
         .values
         .any { it.javaClass == SigV4ATrait::class.java }
-
