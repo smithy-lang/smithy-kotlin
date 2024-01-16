@@ -25,6 +25,7 @@ class OperationEndpointTest {
 
         assertEquals(Host.Domain("api.test.com"), actual.url.host)
         assertEquals(Scheme.HTTPS, actual.url.scheme)
+        assertEquals(443, actual.url.port)
         assertEquals("api.test.com", actual.headers["Host"])
     }
 
@@ -38,6 +39,7 @@ class OperationEndpointTest {
         assertEquals(Host.Domain("api.test.com"), actual.url.host)
         assertEquals(Scheme.HTTPS, actual.url.scheme)
         assertEquals(8080, actual.url.port)
+        assertEquals("api.test.com:8080", actual.headers["Host"])
     }
 
     @Test
