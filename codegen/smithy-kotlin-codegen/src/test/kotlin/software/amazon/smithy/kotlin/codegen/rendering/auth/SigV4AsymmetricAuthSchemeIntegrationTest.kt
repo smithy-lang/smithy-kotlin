@@ -1,16 +1,16 @@
+/*
+ * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * SPDX-License-Identifier: Apache-2.0
+ */
 package software.amazon.smithy.kotlin.codegen.rendering.auth
 
 import software.amazon.smithy.aws.traits.protocols.AwsJson1_0Trait
 import software.amazon.smithy.build.MockManifest
-import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.kotlin.codegen.KotlinSettings
-import software.amazon.smithy.kotlin.codegen.core.CodegenContext
 import software.amazon.smithy.kotlin.codegen.core.KotlinDelegator
 import software.amazon.smithy.kotlin.codegen.core.KotlinSymbolProvider
-import software.amazon.smithy.kotlin.codegen.integration.KotlinIntegration
 import software.amazon.smithy.kotlin.codegen.rendering.protocol.ProtocolGenerator
 import software.amazon.smithy.kotlin.codegen.test.toSmithyModel
-import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.ShapeId
 import kotlin.test.Test
 import kotlin.test.assertFalse
@@ -72,7 +72,7 @@ class SigV4AsymmetricAuthSchemeIntegrationTest {
         """.toSmithyModel()
 
     @Test
-    fun testModelWithoutSigV4aTrait() {
+    fun testModelWithoutSigV4aTraitGetsFlaggedCorrectly() {
         val settings = KotlinSettings(
             testModelWithoutSigV4aTrait.serviceShapes.first().id,
             KotlinSettings.PackageSettings("example", "1.0.0"),
@@ -99,20 +99,11 @@ class SigV4AsymmetricAuthSchemeIntegrationTest {
             ),
         )
 
-        val codegenContext = object : CodegenContext {
-            override val model: Model = testModelWithoutSigV4aTrait
-            override val symbolProvider: SymbolProvider = symbolProvider
-            override val settings: KotlinSettings = settings
-            override val protocolGenerator: ProtocolGenerator? = null
-            override val integrations: List<KotlinIntegration> = listOf()
-        }
-
-        assertFalse(modelHasSigV4aTrait(codegenContext))
         assertFalse(modelHasSigV4aTrait(generationContext))
     }
 
     @Test
-    fun testModelWithSigV4aTrait() {
+    fun testModelWithSigV4aTraitGetsFlaggedCorrectly() {
         val settings = KotlinSettings(
             testModelWithSigV4aTrait.serviceShapes.first().id,
             KotlinSettings.PackageSettings("example", "1.0.0"),
@@ -139,15 +130,6 @@ class SigV4AsymmetricAuthSchemeIntegrationTest {
             ),
         )
 
-        val codegenContext = object : CodegenContext {
-            override val model: Model = testModelWithSigV4aTrait
-            override val symbolProvider: SymbolProvider = symbolProvider
-            override val settings: KotlinSettings = settings
-            override val protocolGenerator: ProtocolGenerator? = null
-            override val integrations: List<KotlinIntegration> = listOf()
-        }
-
-        assertTrue(modelHasSigV4aTrait(codegenContext))
         assertTrue(modelHasSigV4aTrait(generationContext))
     }
 }

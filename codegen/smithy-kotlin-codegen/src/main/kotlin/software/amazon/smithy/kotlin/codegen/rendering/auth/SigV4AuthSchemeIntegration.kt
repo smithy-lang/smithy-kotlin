@@ -121,7 +121,7 @@ class SigV4AuthSchemeIntegration : KotlinIntegration {
     }
 }
 
-internal open class SigV4AuthSchemeHandler : AuthSchemeHandler {
+open class SigV4AuthSchemeHandler : AuthSchemeHandler {
     override val authSchemeId: ShapeId = SigV4Trait.ID
 
     override val authSchemeIdSymbol: Symbol = buildSymbol {
@@ -155,18 +155,18 @@ internal open class SigV4AuthSchemeHandler : AuthSchemeHandler {
     }
 }
 
-// TODO: This could be made internal and shared. Change files and name tho
 /**
  * Conditionally updates the operation context to set the signed body header attribute
  * e.g. to set `X-Amz-Content-Sha256` header.
  */
-class Sigv4SignedBodyHeaderMiddleware : ProtocolMiddleware {
+internal class Sigv4SignedBodyHeaderMiddleware : ProtocolMiddleware {
     override val name: String = "Sigv4SignedBodyHeaderMiddleware"
 
     override fun isEnabledFor(ctx: ProtocolGenerator.GenerationContext, op: OperationShape): Boolean {
         val hasEventStream = EventStreamIndex.of(ctx.model).getInputInfo(op).isPresent
         return hasEventStream || op.hasTrait<UnsignedPayloadTrait>()
     }
+
     override fun render(ctx: ProtocolGenerator.GenerationContext, op: OperationShape, writer: KotlinWriter) {
         writer.write(
             "op.context.set(#T.SignedBodyHeader, #T.X_AMZ_CONTENT_SHA256)",
@@ -182,6 +182,8 @@ private object Sigv4EndpointCustomization : EndpointCustomization {
     )
 }
 
+// SigV4a requires SigV4 so SigV4 integration renders SigV4a auth scheme.
+// See comment in example model: https://smithy.io/2.0/aws/aws-auth.html?highlight=sigv4#aws-auth-sigv4a-trait
 private fun renderAuthSchemes(writer: KotlinWriter, authSchemes: Expression, expressionRenderer: ExpressionRenderer) {
     writer.writeInline("#T to ", RuntimeTypes.SmithyClient.Endpoints.SigningContextAttributeKey)
     writer.withBlock("listOf(", ")") {
@@ -223,8 +225,13 @@ private fun renderSigV4Fields(writer: KotlinWriter, scheme: ObjectNode, expressi
     writer.renderOrElse(expressionRenderer, scheme.getStringMember("signingRegion"), "null")
 }
 
-// TODO: Shared between sigV4 and sigV4A
-internal fun KotlinWriter.renderOrElse(
+private fun renderSigV4AFields(writer: KotlinWriter, scheme: ObjectNode, expressionRenderer: ExpressionRenderer) {
+    writer.writeInline("signingRegionSet = ")
+    expressionRenderer.renderExpression(Expression.fromNode(scheme.expectArrayMember("signingRegionSet")))
+    writer.write(",")
+}
+
+private fun KotlinWriter.renderOrElse(
     expressionRenderer: ExpressionRenderer,
     optionalNode: Optional<out Node>,
     whenNullValue: String,
@@ -237,7 +244,6 @@ internal fun KotlinWriter.renderOrElse(
     write(",")
 }
 
-// TODO: Shared between sigV4 and sigV4A
 internal val credentialsProviderProp = ConfigProperty {
     symbol = RuntimeTypes.Auth.Credentials.AwsCredentials.CredentialsProvider
     baseClass = RuntimeTypes.Auth.Credentials.AwsCredentials.CredentialsProviderConfig
