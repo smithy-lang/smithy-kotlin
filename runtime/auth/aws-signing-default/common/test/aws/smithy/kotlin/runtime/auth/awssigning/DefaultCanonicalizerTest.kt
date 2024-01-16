@@ -13,6 +13,7 @@ import aws.smithy.kotlin.runtime.net.url.Url
 import aws.smithy.kotlin.runtime.time.Instant
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
+import kotlin.test.assertContains
 import kotlin.test.assertEquals
 
 class DefaultCanonicalizerTest {
@@ -152,5 +153,30 @@ class DefaultCanonicalizerTest {
 
         val expectedSignedHeaders = "content-type;host;x-amz-date;x-amz-user-agent"
         assertEquals(expectedSignedHeaders, actual.signedHeaders)
+    }
+
+    @Test
+    fun testCustomPort() = runTest {
+        val request = HttpRequest {
+            method = HttpMethod.GET
+            url {
+                host = Host.Domain("bar.amazonaws.com")
+                port = 8080
+            }
+            body = HttpBody.Empty
+        }
+
+        val signingDateString = "20150830T123600Z"
+        val config = AwsSigningConfig {
+            region = "foo"
+            service = "bar"
+            signingDate = Instant.fromIso8601(signingDateString)
+            credentials = Credentials("foo", "bar") // anything without a session token set
+        }
+
+        val canonicalizer = Canonicalizer.Default
+        val actual = canonicalizer.canonicalRequest(request, config)
+
+        assertContains(actual.requestString, "host:bar.amazonaws.com:8080")
     }
 }

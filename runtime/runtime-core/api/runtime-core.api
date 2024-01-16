@@ -916,6 +916,7 @@ public final class aws/smithy/kotlin/runtime/net/url/Url {
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun getFragment ()Laws/smithy/kotlin/runtime/text/encoding/Encodable;
 	public final fun getHost ()Laws/smithy/kotlin/runtime/net/Host;
+	public final fun getHostAndPort ()Ljava/lang/String;
 	public final fun getParameters ()Laws/smithy/kotlin/runtime/net/url/QueryParameters;
 	public final fun getPath ()Laws/smithy/kotlin/runtime/net/url/UrlPath;
 	public final fun getPort ()I
@@ -936,6 +937,7 @@ public final class aws/smithy/kotlin/runtime/net/url/Url$Builder : aws/smithy/ko
 	public final fun getDecodedFragment ()Ljava/lang/String;
 	public final fun getEncodedFragment ()Ljava/lang/String;
 	public final fun getHost ()Laws/smithy/kotlin/runtime/net/Host;
+	public final fun getHostAndPort ()Ljava/lang/String;
 	public final fun getParameters ()Laws/smithy/kotlin/runtime/net/url/QueryParameters$Builder;
 	public final fun getPath ()Laws/smithy/kotlin/runtime/net/url/UrlPath$Builder;
 	public final fun getPort ()Ljava/lang/Integer;

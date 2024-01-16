@@ -122,6 +122,17 @@ public class Url private constructor(
     private val encoded: String
 
     /**
+     * Gets the host and port for the URL. The port is omitted if it's the default for the scheme.
+     */
+    public val hostAndPort: String = buildString {
+        append(host)
+        if (port != scheme.defaultPort) {
+            append(':')
+            append(port)
+        }
+    }
+
+    /**
      * Gets a request-relative path string for this URL which is suitable for use in an HTTP request line. The given
      * path will include query parameters and the fragment and will be prepended with a `/` (even for empty paths
      * without a trailing slash configured). It will not include the protocol, host, port, or user info.
@@ -212,6 +223,18 @@ public class Url private constructor(
          * The remote port number for the URL (e.g., TCP port)
          */
         public var port: Int? = url?.port
+
+        /**
+         * Gets the host and port for the URL. The port is omitted if it's the default for the scheme.
+         */
+        public val hostAndPort: String
+            get() = buildString {
+                append(host)
+                if (port != null && port != scheme.defaultPort) {
+                    append(':')
+                    append(port)
+                }
+            }
 
         // Path
 
