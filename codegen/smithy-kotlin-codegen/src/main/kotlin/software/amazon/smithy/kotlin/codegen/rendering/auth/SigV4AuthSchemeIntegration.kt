@@ -39,6 +39,7 @@ import java.util.*
  */
 class SigV4AuthSchemeIntegration : KotlinIntegration {
     // Allow integrations to customize the service config props, later integrations take precedence
+    // Needs to happen after the `SigV4AsymmetricTraitCustomization` (-60).
     override val order: Byte = -50
 
     override fun enabledForService(model: Model, settings: KotlinSettings): Boolean =
@@ -51,22 +52,7 @@ class SigV4AuthSchemeIntegration : KotlinIntegration {
         resolved: List<ProtocolMiddleware>,
     ): List<ProtocolMiddleware> = resolved + Sigv4SignedBodyHeaderMiddleware()
 
-    override fun additionalServiceConfigProps(ctx: CodegenContext): List<ConfigProperty> {
-        val credentialsProviderProp = ConfigProperty {
-            symbol = RuntimeTypes.Auth.Credentials.AwsCredentials.CredentialsProvider
-            baseClass = RuntimeTypes.Auth.Credentials.AwsCredentials.CredentialsProviderConfig
-            useNestedBuilderBaseClass()
-            documentation = """
-                The AWS credentials provider to use for authenticating requests. 
-                NOTE: The caller is responsible for managing the lifetime of the provider when set. The SDK
-                client will not close it when the client is closed.
-            """.trimIndent()
-
-            propertyType = ConfigPropertyType.Required()
-        }
-
-        return listOf(credentialsProviderProp)
-    }
+    override fun additionalServiceConfigProps(ctx: CodegenContext): List<ConfigProperty> = listOf(credentialsProviderProp)
 
     override fun customizeEndpointResolution(ctx: ProtocolGenerator.GenerationContext): EndpointCustomization =
         Sigv4EndpointCustomization
@@ -174,13 +160,14 @@ open class SigV4AuthSchemeHandler : AuthSchemeHandler {
  * Conditionally updates the operation context to set the signed body header attribute
  * e.g. to set `X-Amz-Content-Sha256` header.
  */
-class Sigv4SignedBodyHeaderMiddleware : ProtocolMiddleware {
+internal class Sigv4SignedBodyHeaderMiddleware : ProtocolMiddleware {
     override val name: String = "Sigv4SignedBodyHeaderMiddleware"
 
     override fun isEnabledFor(ctx: ProtocolGenerator.GenerationContext, op: OperationShape): Boolean {
         val hasEventStream = EventStreamIndex.of(ctx.model).getInputInfo(op).isPresent
         return hasEventStream || op.hasTrait<UnsignedPayloadTrait>()
     }
+
     override fun render(ctx: ProtocolGenerator.GenerationContext, op: OperationShape, writer: KotlinWriter) {
         writer.write(
             "op.context.set(#T.SignedBodyHeader, #T.X_AMZ_CONTENT_SHA256)",
@@ -196,20 +183,20 @@ private object Sigv4EndpointCustomization : EndpointCustomization {
     )
 }
 
-private fun String.toAuthOptionFactoryFn(): Symbol? =
-    when (this) {
-        "sigv4" -> RuntimeTypes.Auth.HttpAuthAws.sigV4
-        "sigv4a" -> RuntimeTypes.Auth.HttpAuthAws.sigV4A
-        else -> null
-    }
-
+// SigV4a requires SigV4 so SigV4 integration renders SigV4a auth scheme.
+// See comment in example model: https://smithy.io/2.0/aws/aws-auth.html?highlight=sigv4#aws-auth-sigv4a-trait
 private fun renderAuthSchemes(writer: KotlinWriter, authSchemes: Expression, expressionRenderer: ExpressionRenderer) {
     writer.writeInline("#T to ", RuntimeTypes.SmithyClient.Endpoints.SigningContextAttributeKey)
     writer.withBlock("listOf(", ")") {
         authSchemes.toNode().expectArrayNode().forEach {
             val scheme = it.expectObjectNode()
             val schemeName = scheme.expectStringMember("name").value
-            val authFactoryFn = schemeName.toAuthOptionFactoryFn() ?: return@forEach
+
+            val authFactoryFn = when (schemeName) {
+                "sigv4" -> RuntimeTypes.Auth.HttpAuthAws.sigV4
+                "sigv4a" -> RuntimeTypes.Auth.HttpAuthAws.sigV4A
+                else -> return@forEach
+            }
 
             withBlock("#T(", "),", authFactoryFn) {
                 // we delegate back to the expression visitor for each of these fields because it's possible to
@@ -221,13 +208,28 @@ private fun renderAuthSchemes(writer: KotlinWriter, authSchemes: Expression, exp
                 writeInline("disableDoubleUriEncode = ")
                 renderOrElse(expressionRenderer, scheme.getBooleanMember("disableDoubleEncoding"), "false")
 
-                when (schemeName) {
-                    "sigv4" -> renderSigV4Fields(writer, scheme, expressionRenderer)
-                    "sigv4a" -> renderSigV4AFields(writer, scheme, expressionRenderer)
-                }
+                renderFieldsForScheme(writer, scheme, expressionRenderer)
             }
         }
     }
+}
+
+private fun renderFieldsForScheme(writer: KotlinWriter, scheme: ObjectNode, expressionRenderer: ExpressionRenderer) {
+    when (scheme.expectStringMember("name").value) {
+        "sigv4" -> renderSigV4Fields(writer, scheme, expressionRenderer)
+        "sigv4a" -> renderSigV4AFields(writer, scheme, expressionRenderer)
+    }
+}
+
+private fun renderSigV4Fields(writer: KotlinWriter, scheme: ObjectNode, expressionRenderer: ExpressionRenderer) {
+    writer.writeInline("signingRegion = ")
+    writer.renderOrElse(expressionRenderer, scheme.getStringMember("signingRegion"), "null")
+}
+
+private fun renderSigV4AFields(writer: KotlinWriter, scheme: ObjectNode, expressionRenderer: ExpressionRenderer) {
+    writer.writeInline("signingRegionSet = ")
+    expressionRenderer.renderExpression(Expression.fromNode(scheme.expectArrayMember("signingRegionSet")))
+    writer.write(",")
 }
 
 private fun KotlinWriter.renderOrElse(
@@ -243,13 +245,15 @@ private fun KotlinWriter.renderOrElse(
     write(",")
 }
 
-private fun renderSigV4Fields(writer: KotlinWriter, scheme: ObjectNode, expressionRenderer: ExpressionRenderer) {
-    writer.writeInline("signingRegion = ")
-    writer.renderOrElse(expressionRenderer, scheme.getStringMember("signingRegion"), "null")
-}
+internal val credentialsProviderProp = ConfigProperty {
+    symbol = RuntimeTypes.Auth.Credentials.AwsCredentials.CredentialsProvider
+    baseClass = RuntimeTypes.Auth.Credentials.AwsCredentials.CredentialsProviderConfig
+    useNestedBuilderBaseClass()
+    documentation = """
+                The AWS credentials provider to use for authenticating requests. 
+                NOTE: The caller is responsible for managing the lifetime of the provider when set. The SDK
+                client will not close it when the client is closed.
+    """.trimIndent()
 
-private fun renderSigV4AFields(writer: KotlinWriter, scheme: ObjectNode, expressionRenderer: ExpressionRenderer) {
-    writer.writeInline("signingRegionSet = ")
-    expressionRenderer.renderExpression(Expression.fromNode(scheme.expectArrayMember("signingRegionSet")))
-    writer.write(",")
+    propertyType = ConfigPropertyType.Required()
 }

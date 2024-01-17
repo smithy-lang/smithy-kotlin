@@ -34,7 +34,7 @@ public class SigV4AsymmetricAuthScheme(
 
     // FIXME - remove when we add full support for SigV4A in codegen
     override fun identityProvider(identityProviderConfig: IdentityProviderConfig): IdentityProvider =
-        identityProviderConfig.identityProviderForScheme(AuthSchemeId.AwsSigV4)
+        identityProviderConfig.identityProviderForScheme(AuthSchemeId.AwsSigV4Asymmetric)
 
     override val schemeId: AuthSchemeId = AuthSchemeId.AwsSigV4Asymmetric
     override val signer: AwsHttpSigner = AwsHttpSigner(config)
