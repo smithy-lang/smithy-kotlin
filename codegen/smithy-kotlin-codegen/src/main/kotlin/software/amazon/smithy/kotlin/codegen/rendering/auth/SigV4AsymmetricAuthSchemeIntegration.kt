@@ -25,7 +25,8 @@ import software.amazon.smithy.model.shapes.ShapeId
  * Register support for the `aws.auth#sigv4a` auth scheme.
  */
 class SigV4AsymmetricAuthSchemeIntegration : KotlinIntegration {
-    override val order: Byte = -59
+    // Needs to happen after the `SigV4AsymmetricTraitCustomization` (-60).
+    override val order: Byte = -50
 
     // Needs to be true due to the way integrations are filtered out before application and sigV4a customization.
     // See 'CodegenVisitor' & 'SigV4AsymmetricTraitCustomization'

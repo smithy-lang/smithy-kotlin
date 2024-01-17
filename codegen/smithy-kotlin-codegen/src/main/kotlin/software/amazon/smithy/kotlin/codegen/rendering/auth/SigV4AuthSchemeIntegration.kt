@@ -39,6 +39,7 @@ import java.util.*
  */
 class SigV4AuthSchemeIntegration : KotlinIntegration {
     // Allow integrations to customize the service config props, later integrations take precedence
+    // Needs to happen after the `SigV4AsymmetricTraitCustomization` (-60).
     override val order: Byte = -50
 
     override fun enabledForService(model: Model, settings: KotlinSettings): Boolean =

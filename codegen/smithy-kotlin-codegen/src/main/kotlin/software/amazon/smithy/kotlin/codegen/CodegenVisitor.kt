@@ -50,7 +50,7 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Unit>() {
         LOGGER.info("Discovering KotlinIntegration providers...")
         integrations = ServiceLoader.load(KotlinIntegration::class.java, classLoader)
             .onEach { integration -> LOGGER.info("Loaded KotlinIntegration: ${integration.javaClass.name}") }
-            .filter { integration -> integration.enabledForService(context.model, settings) }
+            .filter { integration -> integration.enabledForService(context.model, settings) } // TODO: Change so we don't filter until previous integrations model modifications are complete
             .onEach { integration -> LOGGER.info("Enabled KotlinIntegration: ${integration.javaClass.name}") }
             .sortedBy(KotlinIntegration::order)
 

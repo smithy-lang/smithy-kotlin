@@ -23,9 +23,9 @@ internal class DefaultAwsSignerImpl(
 
         // TODO: implement SigV4a
         if (config.algorithm != AwsSigningAlgorithm.SIGV4) {
-            throw UnsupportedSigningAlgorithm(
+            throw UnsupportedSigningAlgorithmException(
                 "${config.algorithm} support is not yet implemented for the default signer.",
-                config.algorithm == AwsSigningAlgorithm.SIGV4_ASYMMETRIC,
+                config.algorithm,
             )
         }
 
