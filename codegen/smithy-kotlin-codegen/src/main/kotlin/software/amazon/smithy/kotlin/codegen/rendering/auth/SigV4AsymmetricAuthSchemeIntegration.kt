@@ -32,7 +32,7 @@ class SigV4AsymmetricAuthSchemeIntegration : KotlinIntegration {
     override fun enabledForService(model: Model, settings: KotlinSettings): Boolean = true
 
     override fun authSchemes(ctx: ProtocolGenerator.GenerationContext): List<AuthSchemeHandler> =
-        if (modelHasSigV4aTrait(ctx)) listOf(SigV4AsymmetricAuthSchemeHandler()) else super.authSchemes(ctx)
+        if (modelHasSigV4aTrait(ctx)) listOf(SigV4AsymmetricAuthSchemeHandler()) else emptyList()
 }
 
 private class SigV4AsymmetricAuthSchemeHandler : AuthSchemeHandler {
