@@ -29,7 +29,7 @@ public suspend fun presignRequest(
 ): HttpRequest {
     unsignedRequestBuilder.body = HttpBody.Empty
 
-    val credentials = credentialsProvider.resolve()
+    val credentials = credentialsProvider.resolve(ctx.attributes)
     val eprRequest = ResolveEndpointRequest(ctx, unsignedRequestBuilder.build(), credentials)
     val endpoint = endpointResolver.resolve(eprRequest)
     setResolvedEndpoint(unsignedRequestBuilder, ctx, endpoint)
