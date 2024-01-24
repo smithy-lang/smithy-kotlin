@@ -1,5 +1,0 @@
-{
-    "id": "21f40dd1-529e-40d1-8cd9-ebee9a649ff7",
-    "type": "bugfix",
-    "description": "Ensure attributes are passed to credentials providers during resolution"
-}
