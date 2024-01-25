@@ -9,11 +9,11 @@ import kotlinx.coroutines.sync.withLock
 
 /**
  * A thread-safe generic LRU (least recently used) cache.
- * Cache entries will be added up to a configured [maxSize].
+ * Cache entries will be added up to a configured [capacity].
  * Once full, adding a new cache entry will evict the least recently used entry.
  */
 public class LruCache<K, V>(
-    public val maxSize: Int,
+    public val capacity: Int,
 ) {
     private val mu = Mutex() // protects map
     private val map = linkedMapOf<K, V>()
@@ -32,7 +32,7 @@ public class LruCache<K, V>(
     }
 
     public suspend fun putUnlocked(k: K, v: V): Unit {
-        if (map.size == maxSize) {
+        if (map.size == capacity) {
             map.remove(map.entries.first().key)
         }
         map[k] = v
