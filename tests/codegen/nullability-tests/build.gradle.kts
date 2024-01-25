@@ -7,7 +7,7 @@ import aws.sdk.kotlin.gradle.dsl.skipPublishing
 
 plugins {
     alias(libs.plugins.kotlin.jvm)
-    id("aws.sdk.kotlin.gradle.smithybuild")
+    alias(libs.plugins.aws.kotlin.repo.tools.smithybuild)
 }
 
 skipPublishing()

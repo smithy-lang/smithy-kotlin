@@ -7,7 +7,8 @@ import aws.sdk.kotlin.gradle.dsl.skipPublishing
 plugins {
     kotlin("multiplatform")
     alias(libs.plugins.kotlinx.benchmark)
-    id("aws.sdk.kotlin.gradle.smithybuild")
+    alias(libs.plugins.aws.kotlin.repo.tools.smithybuild)
+    alias(libs.plugins.aws.kotlin.repo.tools.kmp)
 }
 
 skipPublishing()
