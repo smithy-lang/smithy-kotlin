@@ -21,9 +21,12 @@ internal class DefaultAwsSignerImpl(
     override suspend fun sign(request: HttpRequest, config: AwsSigningConfig): AwsSigningResult<HttpRequest> {
         val logger = coroutineContext.logger<DefaultAwsSignerImpl>()
 
-        // TODO implement SigV4a
-        require(config.algorithm == AwsSigningAlgorithm.SIGV4 || config.algorithm == AwsSigningAlgorithm.SIGV4_S3EXPRESS) {
-            "${config.algorithm} support is not yet implemented"
+        // TODO: implement SigV4a
+        if (config.algorithm != AwsSigningAlgorithm.SIGV4 && config.algorithm != AwsSigningAlgorithm.SIGV4_S3EXPRESS) {
+            throw UnsupportedSigningAlgorithmException(
+                "${config.algorithm} support is not yet implemented for the default signer.",
+                config.algorithm,
+            )
         }
 
         val canonical = canonicalizer.canonicalRequest(request, config)

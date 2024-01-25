@@ -323,6 +323,7 @@ object RuntimeTypes {
         object HttpAuthAws : RuntimeTypePackage(KotlinDependency.HTTP_AUTH_AWS) {
             val AwsHttpSigner = symbol("AwsHttpSigner")
             val SigV4AuthScheme = symbol("SigV4AuthScheme")
+            val SigV4AsymmetricAuthScheme = symbol("SigV4AsymmetricAuthScheme")
             val mergeAuthOptions = symbol("mergeAuthOptions")
             val sigV4 = symbol("sigV4")
             val sigV4A = symbol("sigV4A")

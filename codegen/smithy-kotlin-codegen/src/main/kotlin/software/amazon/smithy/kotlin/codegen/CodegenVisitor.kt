@@ -8,9 +8,15 @@ package software.amazon.smithy.kotlin.codegen
 import software.amazon.smithy.build.FileManifest
 import software.amazon.smithy.build.PluginContext
 import software.amazon.smithy.codegen.core.SymbolProvider
-import software.amazon.smithy.kotlin.codegen.core.*
+import software.amazon.smithy.kotlin.codegen.core.GenerationContext
+import software.amazon.smithy.kotlin.codegen.core.KotlinDelegator
+import software.amazon.smithy.kotlin.codegen.core.KotlinDependency
+import software.amazon.smithy.kotlin.codegen.core.toRenderingContext
 import software.amazon.smithy.kotlin.codegen.integration.KotlinIntegration
-import software.amazon.smithy.kotlin.codegen.model.*
+import software.amazon.smithy.kotlin.codegen.model.OperationNormalizer
+import software.amazon.smithy.kotlin.codegen.model.getEndpointRules
+import software.amazon.smithy.kotlin.codegen.model.getEndpointTests
+import software.amazon.smithy.kotlin.codegen.model.hasTrait
 import software.amazon.smithy.kotlin.codegen.rendering.*
 import software.amazon.smithy.kotlin.codegen.rendering.protocol.ApplicationProtocol
 import software.amazon.smithy.kotlin.codegen.rendering.protocol.ProtocolGenerator
@@ -44,10 +50,9 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Unit>() {
         LOGGER.info("Discovering KotlinIntegration providers...")
         integrations = ServiceLoader.load(KotlinIntegration::class.java, classLoader)
             .onEach { integration -> LOGGER.info("Loaded KotlinIntegration: ${integration.javaClass.name}") }
-            .filter { integration -> integration.enabledForService(context.model, settings) }
+            .filter { integration -> integration.enabledForService(context.model, settings) } // TODO: Change so we don't filter until previous integrations model modifications are complete
             .onEach { integration -> LOGGER.info("Enabled KotlinIntegration: ${integration.javaClass.name}") }
             .sortedBy(KotlinIntegration::order)
-            .toList()
 
         LOGGER.info("Preprocessing model")
         // Model pre-processing:

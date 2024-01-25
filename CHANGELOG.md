@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.11] - 01/24/2024
+
+### Fixes
+* Ensure attributes are passed to credentials providers during resolution
+
+## [1.0.10] - 01/17/2024
+
 ## [1.0.9] - 01/12/2024
 
 ### Fixes
