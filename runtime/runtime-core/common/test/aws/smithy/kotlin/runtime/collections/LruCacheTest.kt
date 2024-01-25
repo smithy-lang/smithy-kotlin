@@ -12,16 +12,16 @@ public class LruCacheTest {
     @Test
     fun testGetAndPut() = runTest {
         val cache = LruCache<String, String>(1)
-        cache.put("a", "a")
-        assertEquals(cache.get("a"), "a")
+        cache.put("a", "1")
+        assertEquals(cache.get("a"), "1")
     }
 
     @Test
     fun testGetShouldMoveToBack() = runTest {
         val cache = LruCache<String, String>(3)
-        cache.put("a", "a")
-        cache.put("b", "b")
-        cache.put("c", "c")
+        cache.put("a", "1")
+        cache.put("b", "2")
+        cache.put("c", "3")
 
         assertEquals(3, cache.size)
         assertEquals("a, b, c", cache.entries.joinToString { it.key })
@@ -33,11 +33,11 @@ public class LruCacheTest {
     @Test
     fun testEviction() = runTest {
         val cache = LruCache<String, String>(2)
-        cache.put("a", "a")
-        cache.put("b", "b")
+        cache.put("a", "1")
+        cache.put("b", "2")
         assertEquals(2, cache.size)
 
-        cache.put("c", "c")
+        cache.put("c", "3")
         assertEquals(2, cache.size)
         assertEquals("b, c", cache.entries.joinToString { it.key })
     }
