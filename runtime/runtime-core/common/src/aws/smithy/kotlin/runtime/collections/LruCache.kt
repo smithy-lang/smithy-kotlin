@@ -18,11 +18,20 @@ public class LruCache<K, V>(
     private val mu = Mutex() // protects map
     private val map = linkedMapOf<K, V>()
 
-    public suspend fun get(k: K): V? = mu.withLock {
-        return map[k].also { map.moveKeyToBack(k) }
+    public suspend fun get(k: K): V? = withLock {
+        getUnlocked(k)
     }
 
-    public suspend fun put(k: K, v: V): Unit = mu.withLock {
+    public suspend fun getUnlocked(k: K): V? {
+        map.moveKeyToBack(k)
+        return map[k]
+    }
+
+    public suspend fun put(k: K, v: V): Unit = withLock {
+        putUnlocked(k, v)
+    }
+
+    public suspend fun putUnlocked(k: K, v: V): Unit {
         if (map.size == maxSize) {
             map.remove(map.entries.first().key)
         }
@@ -30,6 +39,10 @@ public class LruCache<K, V>(
     }
 
     public suspend fun remove(k: K): V? = mu.withLock { map.remove(k) }
+
+    public suspend fun <T> withLock(block: suspend () -> T): T = mu.withLock {
+        block()
+    }
 
     public val entries: MutableSet<MutableMap.MutableEntry<K, V>>
         get() = map.entries
