@@ -17,7 +17,7 @@ public class LruCacheTest {
     }
 
     @Test
-    fun testGetShouldMoveToBack() = runTest {
+    fun testGetShouldUpdateLruStatus() = runTest {
         val cache = LruCache<String, String>(3)
         cache.put("a", "1")
         cache.put("b", "2")
