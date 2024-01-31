@@ -197,6 +197,11 @@ public class JsonSerializer : Serializer, ListSerializer, MapSerializer, StructS
         if (value != null) serializeInstant(value, format) else jsonWriter.writeNull()
     }
 
+    override fun entry(key: String, value: Document?) {
+        jsonWriter.writeName(key)
+        if (value != null) serializeDocument(value) else jsonWriter.writeNull()
+    }
+
     override fun listEntry(key: String, listDescriptor: SdkFieldDescriptor, block: ListSerializer.() -> Unit) {
         jsonWriter.writeName(key)
         beginList(listDescriptor)

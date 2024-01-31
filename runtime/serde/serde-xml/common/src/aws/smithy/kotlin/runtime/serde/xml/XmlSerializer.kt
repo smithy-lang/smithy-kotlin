@@ -259,6 +259,9 @@ private class XmlMapSerializer(
 
     override fun entry(key: String, value: Instant?, format: TimestampFormat): Unit = entry(key, value?.format(format))
 
+    override fun entry(key: String, value: Document?) =
+        throw SerializationException("document values not supported by xml serializer")
+
     override fun listEntry(key: String, listDescriptor: SdkFieldDescriptor, block: ListSerializer.() -> Unit) {
         writeEntry(key) {
             val ls = xmlSerializer.beginList(listDescriptor)
