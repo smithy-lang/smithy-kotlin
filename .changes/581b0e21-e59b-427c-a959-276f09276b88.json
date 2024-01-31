@@ -1,5 +1,0 @@
-{
-    "id": "581b0e21-e59b-427c-a959-276f09276b88",
-    "type": "bugfix",
-    "description": "Correctly serialize maps which use the `Document` type as a value"
-}
