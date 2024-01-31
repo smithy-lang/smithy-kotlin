@@ -199,7 +199,7 @@ public class JsonSerializer : Serializer, ListSerializer, MapSerializer, StructS
 
     override fun entry(key: String, value: Document?) {
         jsonWriter.writeName(key)
-        if (value != null) serializeDocument(value) else jsonWriter.writeNull()
+        serializeDocument(value)
     }
 
     override fun listEntry(key: String, listDescriptor: SdkFieldDescriptor, block: ListSerializer.() -> Unit) {
