@@ -110,7 +110,7 @@ class JsonSerializerTest {
                 "string" to "bar"
                 "bool" to false
                 "null" to null
-            }
+            },
         )
         val json = JsonSerializer()
         json.serializeMap(testAnonObjDescriptor) {
