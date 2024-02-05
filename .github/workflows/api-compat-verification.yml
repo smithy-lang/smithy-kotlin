@@ -20,7 +20,7 @@ jobs:
             # git diff numstat shows lines deleted in field 2, hence sum up field 2 across all items 
             { s += $2 }
             
-            # exit with the number of lines deleted as the result code so that `if ${{ failure() }}` works below
+            # exit with the number of lines deleted as the result code so that `if failure()` works below
             END { exit s }
           '
       - name: Error message
