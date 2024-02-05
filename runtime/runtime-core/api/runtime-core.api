@@ -2,7 +2,6 @@ public class aws/smithy/kotlin/runtime/ClientException : aws/smithy/kotlin/runti
 	public fun <init> ()V
 	public fun <init> (Ljava/lang/String;)V
 	public fun <init> (Ljava/lang/String;Ljava/lang/Throwable;)V
-	public fun <init> (Ljava/lang/Throwable;)V
 }
 
 public class aws/smithy/kotlin/runtime/ErrorMetadata {
