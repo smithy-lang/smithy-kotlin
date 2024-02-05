@@ -1,4 +1,41 @@
+public final class aws/smithy/kotlin/runtime/http/auth/AwsHttpSigner : aws/smithy/kotlin/runtime/http/auth/HttpSigner {
+	public static final field Companion Laws/smithy/kotlin/runtime/http/auth/AwsHttpSigner$Companion;
+	public fun <init> (Laws/smithy/kotlin/runtime/http/auth/AwsHttpSigner$Config;)V
+	public fun sign (Laws/smithy/kotlin/runtime/http/auth/SignHttpRequest;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
+public final class aws/smithy/kotlin/runtime/http/auth/AwsHttpSigner$Companion {
+	public final fun invoke (Lkotlin/jvm/functions/Function1;)Laws/smithy/kotlin/runtime/http/auth/AwsHttpSigner;
+}
+
+public final class aws/smithy/kotlin/runtime/http/auth/AwsHttpSigner$Config {
+	public fun <init> ()V
+	public final fun getAlgorithm ()Laws/smithy/kotlin/runtime/auth/awssigning/AwsSigningAlgorithm;
+	public final fun getExpiresAfter-FghU774 ()Lkotlin/time/Duration;
+	public final fun getNormalizeUriPath ()Z
+	public final fun getOmitSessionToken ()Z
+	public final fun getService ()Ljava/lang/String;
+	public final fun getShouldSignHeader ()Lkotlin/jvm/functions/Function1;
+	public final fun getSignatureType ()Laws/smithy/kotlin/runtime/auth/awssigning/AwsSignatureType;
+	public final fun getSignedBodyHeader ()Laws/smithy/kotlin/runtime/auth/awssigning/AwsSignedBodyHeader;
+	public final fun getSigner ()Laws/smithy/kotlin/runtime/auth/awssigning/AwsSigner;
+	public final fun getUseDoubleUriEncode ()Z
+	public final fun isUnsignedPayload ()Z
+	public final fun setAlgorithm (Laws/smithy/kotlin/runtime/auth/awssigning/AwsSigningAlgorithm;)V
+	public final fun setExpiresAfter-BwNAW2A (Lkotlin/time/Duration;)V
+	public final fun setNormalizeUriPath (Z)V
+	public final fun setOmitSessionToken (Z)V
+	public final fun setService (Ljava/lang/String;)V
+	public final fun setShouldSignHeader (Lkotlin/jvm/functions/Function1;)V
+	public final fun setSignatureType (Laws/smithy/kotlin/runtime/auth/awssigning/AwsSignatureType;)V
+	public final fun setSignedBodyHeader (Laws/smithy/kotlin/runtime/auth/awssigning/AwsSignedBodyHeader;)V
+	public final fun setSigner (Laws/smithy/kotlin/runtime/auth/awssigning/AwsSigner;)V
+	public final fun setUnsignedPayload (Z)V
+	public final fun setUseDoubleUriEncode (Z)V
+}
+
 public final class aws/smithy/kotlin/runtime/http/auth/EndpointAuthKt {
+	public static final fun mergeAuthOptions (Ljava/util/List;Ljava/util/List;)Ljava/util/List;
 }
 
 public final class aws/smithy/kotlin/runtime/http/auth/SigV4AsymmetricAuthScheme : aws/smithy/kotlin/runtime/http/auth/AuthScheme {
@@ -12,6 +49,8 @@ public final class aws/smithy/kotlin/runtime/http/auth/SigV4AsymmetricAuthScheme
 }
 
 public final class aws/smithy/kotlin/runtime/http/auth/SigV4AsymmetricAuthSchemeKt {
+	public static final fun sigV4A (ZLjava/lang/String;Ljava/util/List;Ljava/lang/Boolean;Ljava/lang/Boolean;)Laws/smithy/kotlin/runtime/auth/AuthOption;
+	public static synthetic fun sigV4A$default (ZLjava/lang/String;Ljava/util/List;Ljava/lang/Boolean;Ljava/lang/Boolean;ILjava/lang/Object;)Laws/smithy/kotlin/runtime/auth/AuthOption;
 }
 
 public final class aws/smithy/kotlin/runtime/http/auth/SigV4AuthScheme : aws/smithy/kotlin/runtime/http/auth/AuthScheme {
@@ -25,5 +64,7 @@ public final class aws/smithy/kotlin/runtime/http/auth/SigV4AuthScheme : aws/smi
 }
 
 public final class aws/smithy/kotlin/runtime/http/auth/SigV4AuthSchemeKt {
+	public static final fun sigV4 (ZLjava/lang/String;Ljava/lang/String;Ljava/lang/Boolean;Ljava/lang/Boolean;)Laws/smithy/kotlin/runtime/auth/AuthOption;
+	public static synthetic fun sigV4$default (ZLjava/lang/String;Ljava/lang/String;Ljava/lang/Boolean;Ljava/lang/Boolean;ILjava/lang/Object;)Laws/smithy/kotlin/runtime/auth/AuthOption;
 }
 

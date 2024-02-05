@@ -1,3 +1,10 @@
+public abstract class aws/smithy/kotlin/runtime/client/AbstractSdkClientBuilder : aws/smithy/kotlin/runtime/client/SdkClient$Builder {
+	public fun <init> ()V
+	public final fun build ()Laws/smithy/kotlin/runtime/client/SdkClient;
+	public synthetic fun build ()Ljava/lang/Object;
+	protected abstract fun newClient (Laws/smithy/kotlin/runtime/client/SdkClientConfig;)Laws/smithy/kotlin/runtime/client/SdkClient;
+}
+
 public abstract interface class aws/smithy/kotlin/runtime/client/IdempotencyTokenConfig {
 	public abstract fun getIdempotencyTokenProvider ()Laws/smithy/kotlin/runtime/client/IdempotencyTokenProvider;
 }
@@ -131,10 +138,25 @@ public abstract interface class aws/smithy/kotlin/runtime/client/RetryStrategyCl
 }
 
 public abstract interface class aws/smithy/kotlin/runtime/client/RetryStrategyClientConfig$Builder {
+	public abstract fun buildRetryStrategyClientConfig ()Laws/smithy/kotlin/runtime/client/RetryStrategyClientConfig;
 	public abstract fun getRetryStrategy ()Laws/smithy/kotlin/runtime/retries/RetryStrategy;
 	public abstract fun retryStrategy (Laws/smithy/kotlin/runtime/util/DslFactory;Lkotlin/jvm/functions/Function1;)V
 	public abstract fun retryStrategy (Lkotlin/jvm/functions/Function1;)V
 	public abstract fun setRetryStrategy (Laws/smithy/kotlin/runtime/retries/RetryStrategy;)V
+}
+
+public final class aws/smithy/kotlin/runtime/client/RetryStrategyClientConfigImpl : aws/smithy/kotlin/runtime/client/RetryStrategyClientConfig {
+	public synthetic fun <init> (Laws/smithy/kotlin/runtime/retries/RetryStrategy;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun getRetryStrategy ()Laws/smithy/kotlin/runtime/retries/RetryStrategy;
+}
+
+public final class aws/smithy/kotlin/runtime/client/RetryStrategyClientConfigImpl$BuilderImpl : aws/smithy/kotlin/runtime/client/RetryStrategyClientConfig$Builder {
+	public fun <init> ()V
+	public fun buildRetryStrategyClientConfig ()Laws/smithy/kotlin/runtime/client/RetryStrategyClientConfig;
+	public fun getRetryStrategy ()Laws/smithy/kotlin/runtime/retries/RetryStrategy;
+	public fun retryStrategy (Laws/smithy/kotlin/runtime/util/DslFactory;Lkotlin/jvm/functions/Function1;)V
+	public fun retryStrategy (Lkotlin/jvm/functions/Function1;)V
+	public fun setRetryStrategy (Laws/smithy/kotlin/runtime/retries/RetryStrategy;)V
 }
 
 public abstract interface class aws/smithy/kotlin/runtime/client/SdkClient : java/io/Closeable {
@@ -177,6 +199,18 @@ public final class aws/smithy/kotlin/runtime/client/SdkClientOption {
 }
 
 public final class aws/smithy/kotlin/runtime/client/SdkClientOptionKt {
+	public static final fun getIdempotencyTokenProvider (Laws/smithy/kotlin/runtime/operation/ExecutionContext;)Laws/smithy/kotlin/runtime/client/IdempotencyTokenProvider;
+	public static final fun getLogMode (Laws/smithy/kotlin/runtime/operation/ExecutionContext;)Laws/smithy/kotlin/runtime/client/LogMode;
+	public static final fun getOperationName (Laws/smithy/kotlin/runtime/operation/ExecutionContext;)Ljava/lang/String;
+	public static final fun getServiceName (Laws/smithy/kotlin/runtime/operation/ExecutionContext;)Ljava/lang/String;
+}
+
+public final class aws/smithy/kotlin/runtime/client/config/ClientSettings {
+	public static final field INSTANCE Laws/smithy/kotlin/runtime/client/config/ClientSettings;
+	public final fun getLogMode ()Laws/smithy/kotlin/runtime/config/EnvironmentSetting;
+	public final fun getMaxAttempts ()Laws/smithy/kotlin/runtime/config/EnvironmentSetting;
+	public final fun getMinTlsVersion ()Laws/smithy/kotlin/runtime/config/EnvironmentSetting;
+	public final fun getRetryMode ()Laws/smithy/kotlin/runtime/config/EnvironmentSetting;
 }
 
 public abstract interface class aws/smithy/kotlin/runtime/client/config/CompressionClientConfig {
@@ -197,12 +231,15 @@ public abstract interface annotation class aws/smithy/kotlin/runtime/client/conf
 
 public final class aws/smithy/kotlin/runtime/client/config/RequestCompressionConfig {
 	public static final field Companion Laws/smithy/kotlin/runtime/client/config/RequestCompressionConfig$Companion;
+	public fun <init> (Laws/smithy/kotlin/runtime/client/config/RequestCompressionConfig$Builder;)V
 	public final fun getCompressionAlgorithms ()Ljava/util/List;
 	public final fun getDisableRequestCompression ()Z
 	public final fun getRequestMinCompressionSizeBytes ()J
+	public final fun toBuilder ()Laws/smithy/kotlin/runtime/client/config/RequestCompressionConfig$Builder;
 }
 
 public final class aws/smithy/kotlin/runtime/client/config/RequestCompressionConfig$Builder {
+	public fun <init> ()V
 	public final fun getCompressionAlgorithms ()Ljava/util/List;
 	public final fun getDisableRequestCompression ()Ljava/lang/Boolean;
 	public final fun getRequestMinCompressionSizeBytes ()Ljava/lang/Long;
@@ -215,9 +252,20 @@ public final class aws/smithy/kotlin/runtime/client/config/RequestCompressionCon
 	public final fun invoke (Lkotlin/jvm/functions/Function1;)Laws/smithy/kotlin/runtime/client/config/RequestCompressionConfig;
 }
 
+public final class aws/smithy/kotlin/runtime/client/config/RetryMode : java/lang/Enum {
+	public static final field ADAPTIVE Laws/smithy/kotlin/runtime/client/config/RetryMode;
+	public static final field LEGACY Laws/smithy/kotlin/runtime/client/config/RetryMode;
+	public static final field STANDARD Laws/smithy/kotlin/runtime/client/config/RetryMode;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Laws/smithy/kotlin/runtime/client/config/RetryMode;
+	public static fun values ()[Laws/smithy/kotlin/runtime/client/config/RetryMode;
+}
+
 public final class aws/smithy/kotlin/runtime/client/endpoints/Endpoint {
 	public fun <init> (Laws/smithy/kotlin/runtime/net/url/Url;Laws/smithy/kotlin/runtime/collections/ValuesMap;)V
 	public synthetic fun <init> (Laws/smithy/kotlin/runtime/net/url/Url;Laws/smithy/kotlin/runtime/collections/ValuesMap;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Laws/smithy/kotlin/runtime/net/url/Url;Laws/smithy/kotlin/runtime/collections/ValuesMap;Laws/smithy/kotlin/runtime/collections/Attributes;)V
+	public synthetic fun <init> (Laws/smithy/kotlin/runtime/net/url/Url;Laws/smithy/kotlin/runtime/collections/ValuesMap;Laws/smithy/kotlin/runtime/collections/Attributes;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public fun <init> (Ljava/lang/String;)V
 	public final fun component1 ()Laws/smithy/kotlin/runtime/net/url/Url;
 	public final fun component2 ()Laws/smithy/kotlin/runtime/collections/ValuesMap;
@@ -225,6 +273,7 @@ public final class aws/smithy/kotlin/runtime/client/endpoints/Endpoint {
 	public final fun copy (Laws/smithy/kotlin/runtime/net/url/Url;Laws/smithy/kotlin/runtime/collections/ValuesMap;Laws/smithy/kotlin/runtime/collections/Attributes;)Laws/smithy/kotlin/runtime/client/endpoints/Endpoint;
 	public static synthetic fun copy$default (Laws/smithy/kotlin/runtime/client/endpoints/Endpoint;Laws/smithy/kotlin/runtime/net/url/Url;Laws/smithy/kotlin/runtime/collections/ValuesMap;Laws/smithy/kotlin/runtime/collections/Attributes;ILjava/lang/Object;)Laws/smithy/kotlin/runtime/client/endpoints/Endpoint;
 	public fun equals (Ljava/lang/Object;)Z
+	public final fun getAttributes ()Laws/smithy/kotlin/runtime/collections/Attributes;
 	public final fun getHeaders ()Laws/smithy/kotlin/runtime/collections/ValuesMap;
 	public final fun getUri ()Laws/smithy/kotlin/runtime/net/url/Url;
 	public fun hashCode ()I
@@ -240,8 +289,33 @@ public final class aws/smithy/kotlin/runtime/client/endpoints/EndpointProviderEx
 }
 
 public final class aws/smithy/kotlin/runtime/client/endpoints/SigningContextKt {
+	public static final fun getAuthOptions (Laws/smithy/kotlin/runtime/client/endpoints/Endpoint;)Ljava/util/List;
+	public static final fun getSigningContextAttributeKey ()Laws/smithy/kotlin/runtime/collections/AttributeKey;
 }
 
 public final class aws/smithy/kotlin/runtime/client/endpoints/functions/FunctionsKt {
+	public static final fun isValidHostLabel (Ljava/lang/String;Z)Z
+	public static final fun parseUrl (Ljava/lang/String;)Laws/smithy/kotlin/runtime/client/endpoints/functions/Url;
+	public static final fun substring (Ljava/lang/String;IIZ)Ljava/lang/String;
+	public static final fun uriEncode (Ljava/lang/String;)Ljava/lang/String;
+}
+
+public final class aws/smithy/kotlin/runtime/client/endpoints/functions/Url {
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Z)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()Ljava/lang/String;
+	public final fun component3 ()Ljava/lang/String;
+	public final fun component4 ()Ljava/lang/String;
+	public final fun component5 ()Z
+	public final fun copy (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Z)Laws/smithy/kotlin/runtime/client/endpoints/functions/Url;
+	public static synthetic fun copy$default (Laws/smithy/kotlin/runtime/client/endpoints/functions/Url;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ZILjava/lang/Object;)Laws/smithy/kotlin/runtime/client/endpoints/functions/Url;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getAuthority ()Ljava/lang/String;
+	public final fun getNormalizedPath ()Ljava/lang/String;
+	public final fun getPath ()Ljava/lang/String;
+	public final fun getScheme ()Ljava/lang/String;
+	public fun hashCode ()I
+	public final fun isIp ()Z
+	public fun toString ()Ljava/lang/String;
 }
 
