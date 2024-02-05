@@ -9,8 +9,11 @@ import aws.sdk.kotlin.gradle.util.typedProp
 buildscript {
     // NOTE: buildscript classpath for the root project is the parent classloader for the subprojects, we
     // only need to add e.g. atomic-fu and build-plugins here for imports and plugins to be available in subprojects.
+    // NOTE: Anything included in the root buildscript classpath is added to the classpath for all projects!
     dependencies {
         classpath(libs.kotlinx.atomicfu.plugin)
+        // Add our custom gradle build logic to buildscript classpath
+        classpath(libs.aws.kotlin.repo.tools.build.support)
     }
 }
 
@@ -21,15 +24,6 @@ plugins {
     // since build-plugins also has <some> version in its dependency closure
     alias(libs.plugins.kotlin.multiplatform) apply false
     alias(libs.plugins.kotlin.jvm) apply false
-
-    // Add our custom gradle plugin(s) to buildscript classpath
-    // NOTE: Anything included in our build plugin is added to the classpath for all projects,
-    // this includes bundled plugins and their versions. As an example the smithy gradle base
-    // plugin is used by the smithybuild plugin which means you can't apply it with a different
-    // version directly because it's already on the classpath.
-    //
-    // Plugin configures (KMP) subprojects with our own KMP conventions and some default dependencies
-    alias(libs.plugins.aws.kotlin.repo.tools.kmp)
 }
 
 val testJavaVersion = typedProp<String>("test.java.version")?.let {

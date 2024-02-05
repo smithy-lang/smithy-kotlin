@@ -329,6 +329,15 @@ public interface MapSerializer : PrimitiveSerializer {
     public fun entry(key: String, value: SdkSerializable?)
 
     /**
+     * Writes the key given in the descriptor, and then
+     * serializes value.
+     *
+     * @param key
+     * @param value
+     */
+    public fun entry(key: String, value: Document?)
+
+    /**
      * Writes the field name given in the descriptor, and then
      * serializes the list field using the given block.
      *

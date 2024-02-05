@@ -97,6 +97,31 @@ class JsonSerializerTest {
     }
 
     @Test
+    fun canSerializeMapOfDocuments() {
+        val objs = mapOf(
+            "A1" to buildDocument {
+                "number" to 12L
+                "string" to "foo"
+                "bool" to true
+                "null" to null
+            },
+            "B2" to buildDocument {
+                "number" to 4.5
+                "string" to "bar"
+                "bool" to false
+                "null" to null
+            },
+        )
+        val json = JsonSerializer()
+        json.serializeMap(testAnonObjDescriptor) {
+            for (obj in objs) {
+                entry(obj.key, obj.value)
+            }
+        }
+        assertEquals("""{"A1":{"number":12,"string":"foo","bool":true,"null":null},"B2":{"number":4.5,"string":"bar","bool":false,"null":null}}""", json.toByteArray().decodeToString())
+    }
+
+    @Test
     fun canSerializeMapOfLists() {
         val objs = mapOf(
             "A1" to listOf("a", "b", "c"),

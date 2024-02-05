@@ -227,6 +227,49 @@ class JsonDeserializerTest {
     }
 
     @Test
+    fun itHandlesMapsOfDocuments() {
+        val payload = """
+            {
+                "key1": {
+                    "number": 12,
+                    "string": "foo",
+                    "bool": true,
+                    "null": null
+                },
+                "key2": {
+                    "number": 4.5,
+                    "string": "bar",
+                    "bool": false,
+                    "null": null
+                }
+            }
+        """.trimIndent().encodeToByteArray()
+        val deserializer: Deserializer = JsonDeserializer(payload)
+        val actual = deserializer.deserializeMap(SdkFieldDescriptor(SerialKind.Map)) {
+            val map = mutableMapOf<String, Document>()
+            while (hasNextEntry()) {
+                map[key()] = deserializeDocument()
+            }
+            return@deserializeMap map
+        }
+        val expected = mapOf(
+            "key1" to buildDocument {
+                "number" to 12L
+                "string" to "foo"
+                "bool" to true
+                "null" to null
+            },
+            "key2" to buildDocument {
+                "number" to 4.5
+                "string" to "bar"
+                "bool" to false
+                "null" to null
+            },
+        )
+        actual.shouldContainExactly(expected)
+    }
+
+    @Test
     fun itChecksNullValuesOfNonSparseMaps() {
         val payload = """
             {

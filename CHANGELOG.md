@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.0.12] - 01/31/2024
+
+### Fixes
+* Correctly serialize maps which use the `Document` type as a value
+
 ## [1.0.11] - 01/24/2024
 
 ### Fixes

@@ -333,6 +333,9 @@ private class FormUrlMapSerializer(
         value.serialize(FormUrlSerializer(buffer, nestedPrefix))
     }
 
+    override fun entry(key: String, value: Document?) =
+        throw SerializationException("document values not supported by form-url serializer")
+
     override fun listEntry(key: String, listDescriptor: SdkFieldDescriptor, block: ListSerializer.() -> Unit) {
         writeKey(key)
 
