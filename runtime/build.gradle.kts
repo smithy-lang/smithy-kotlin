@@ -8,6 +8,7 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
     alias(libs.plugins.dokka)
+    alias(libs.plugins.aws.kotlin.repo.tools.kmp) apply false
     jacoco
 }
 
@@ -24,6 +25,7 @@ subprojects {
     apply {
         plugin("org.jetbrains.kotlin.multiplatform")
         plugin("org.jetbrains.dokka")
+        plugin(libraries.plugins.aws.kotlin.repo.tools.kmp.get().pluginId)
     }
 
     configurePublishing("smithy-kotlin")
