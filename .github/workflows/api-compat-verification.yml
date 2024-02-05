@@ -27,7 +27,7 @@ jobs:
         if: ${{ failure() }}
         run: |
           echo "::error ::This change modifies the public API in a way that may be backwards-incompatible. Carefully"
-          echo "::error ::review this pull request and either:
+          echo "::error ::review this pull request and either:"
           echo "::error ::* Revert the changes which caused the API incompatibility –or–"
           echo "::error ::* Add the 'acknowledge-api-break' label to this PR (in rare cases warranting an API breakage)"
           exit 1
