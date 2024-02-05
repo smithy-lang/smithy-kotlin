@@ -10,17 +10,22 @@ import aws.smithy.kotlin.runtime.http.config.EngineFactory
 import aws.smithy.kotlin.runtime.http.engine.HttpClientEngine
 import aws.smithy.kotlin.runtime.http.engine.HttpClientEngineBase
 import aws.smithy.kotlin.runtime.http.engine.callContext
+import aws.smithy.kotlin.runtime.http.engine.internal.HttpClientMetrics
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.io.internal.SdkDispatchers
 import aws.smithy.kotlin.runtime.operation.ExecutionContext
 import aws.smithy.kotlin.runtime.telemetry.logging.logger
+import aws.smithy.kotlin.runtime.telemetry.metrics.recordSeconds
 import aws.smithy.kotlin.runtime.time.Instant
 import kotlinx.coroutines.*
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
+import kotlin.time.TimeSource
 
 internal const val DEFAULT_WINDOW_SIZE_BYTES: Int = 16 * 1024
 internal const val CHUNK_BUFFER_SIZE: Long = 64 * 1024
+
+private const val TELEMETRY_SCOPE = "aws.smithy.kotlin.runtime.http.engine.crt"
 
 /**
  * [HttpClientEngine] based on the AWS Common Runtime HTTP client
@@ -51,43 +56,54 @@ public class CrtHttpEngine(public override val config: CrtHttpEngineConfig) : Ht
     // }
 
     private val requestLimiter = Semaphore(config.maxConcurrency.toInt())
-    private val connectionManager = ConnectionManager(config)
+    private val metrics = HttpClientMetrics(TELEMETRY_SCOPE, config.telemetryProvider).apply {
+        connectionsLimit = config.maxConnections.toLong()
+        requestConcurrencyLimit = config.maxConcurrency.toLong()
+    }
+    private val connectionManager = ConnectionManager(config, metrics)
 
-    override suspend fun roundTrip(context: ExecutionContext, request: HttpRequest): HttpCall = requestLimiter.withPermit {
-        val callContext = callContext()
-        val logger = callContext.logger<CrtHttpEngine>()
+    override suspend fun roundTrip(context: ExecutionContext, request: HttpRequest): HttpCall {
+        metrics.incrementQueuedRequests()
+        val enqueued = TimeSource.Monotonic.markNow()
+        return requestLimiter.withPermit {
+            metrics.requestsQueuedDuration.recordSeconds(enqueued.elapsedNow())
+            metrics.decrementQueuedRequests()
 
-        // LIFETIME: connection will be released back to the pool/manager when
-        // the response completes OR on exception (both handled by the completion handler registered on the stream
-        // handler)
-        val conn = connectionManager.acquire(request)
-        logger.trace { "Acquired connection ${conn.id}" }
+            val callContext = callContext()
+            val logger = callContext.logger<CrtHttpEngine>()
 
-        val respHandler = SdkStreamResponseHandler(conn, callContext)
-        callContext.job.invokeOnCompletion {
-            logger.trace { "completing handler; cause=$it" }
-            // ensures the stream is driven to completion regardless of what the downstream consumer does
-            respHandler.complete()
-        }
+            // LIFETIME: connection will be released back to the pool/manager when
+            // the response completes OR on exception (both handled by the completion handler registered on the stream
+            // handler)
+            val conn = connectionManager.acquire(request)
+            logger.trace { "Acquired connection ${conn.id}" }
 
-        val reqTime = Instant.now()
-        val engineRequest = request.toCrtRequest(callContext)
-
-        val stream = mapCrtException {
-            conn.makeRequest(engineRequest, respHandler).also { stream ->
-                stream.activate()
+            val respHandler = SdkStreamResponseHandler(conn, callContext, context, metrics)
+            callContext.job.invokeOnCompletion {
+                logger.trace { "completing handler; cause=$it" }
+                // ensures the stream is driven to completion regardless of what the downstream consumer does
+                respHandler.complete()
             }
-        }
 
-        if (request.isChunked) {
-            withContext(SdkDispatchers.IO) {
-                stream.sendChunkedBody(request.body)
+            val reqTime = Instant.now()
+            val engineRequest = request.toCrtRequest(callContext, metrics)
+
+            val stream = mapCrtException {
+                conn.makeRequest(engineRequest, respHandler).also { stream ->
+                    stream.activate()
+                }
             }
+
+            if (request.isChunked) {
+                withContext(SdkDispatchers.IO) {
+                    stream.sendChunkedBody(request.body, metrics)
+                }
+            }
+
+            val resp = respHandler.waitForResponse()
+
+            HttpCall(request, resp, reqTime, Instant.now(), callContext)
         }
-
-        val resp = respHandler.waitForResponse()
-
-        return HttpCall(request, resp, reqTime, Instant.now(), callContext)
     }
 
     override fun shutdown() {

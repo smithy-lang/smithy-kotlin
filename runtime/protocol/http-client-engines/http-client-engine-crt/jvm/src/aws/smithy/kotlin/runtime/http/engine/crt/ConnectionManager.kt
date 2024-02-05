@@ -13,9 +13,11 @@ import aws.smithy.kotlin.runtime.crt.SdkDefaultIO
 import aws.smithy.kotlin.runtime.http.HttpErrorCode
 import aws.smithy.kotlin.runtime.http.HttpException
 import aws.smithy.kotlin.runtime.http.engine.ProxyConfig
+import aws.smithy.kotlin.runtime.http.engine.internal.HttpClientMetrics
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.io.Closeable
 import aws.smithy.kotlin.runtime.net.TlsVersion
+import aws.smithy.kotlin.runtime.telemetry.metrics.measureSeconds
 import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.Semaphore
@@ -27,6 +29,7 @@ import aws.smithy.kotlin.runtime.net.TlsVersion as SdkTlsVersion
 
 internal class ConnectionManager(
     private val config: CrtHttpEngineConfig,
+    private val metrics: HttpClientMetrics,
 ) : Closeable {
     private val leases = Semaphore(config.maxConnections.toInt())
 
@@ -67,7 +70,9 @@ internal class ConnectionManager(
                 // get a permit to acquire a connection (limits overall connections since managers are per/host)
                 leases.acquire()
                 leaseAcquired = true
-                manager.acquireConnection()
+                metrics.connectionAcquireDuration.measureSeconds {
+                    manager.acquireConnection()
+                }
             }
 
             LeasedConnection(conn)
@@ -82,8 +87,21 @@ internal class ConnectionManager(
             }
 
             throw httpEx
+        } finally {
+            emitMetrics()
         }
     }
+
+    private fun emitMetrics() {
+        val (acquiredConnections, idleConnections) = connManagers
+            .values
+            .map { it.managerMetrics }
+            .fold(0L to 0L) { (a, i), m -> a + m.leasedConcurrency to i + m.availableConcurrency }
+
+        metrics.acquiredConnections = acquiredConnections
+        metrics.idleConnections = idleConnections
+    }
+
     private suspend fun getManagerForUri(uri: Uri, proxyConfig: ProxyConfig): HttpClientConnectionManager = mutex.withLock {
         connManagers.getOrPut(uri.authority) {
             val connOpts = options.apply {
@@ -105,6 +123,7 @@ internal class ConnectionManager(
             HttpClientConnectionManager(connOpts)
         }
     }
+
     override fun close() {
         connManagers.forEach { entry -> entry.value.close() }
         crtTlsContext.close()
@@ -117,6 +136,7 @@ internal class ConnectionManager(
                 delegate.close()
             } finally {
                 leases.release()
+                emitMetrics()
             }
         }
     }

@@ -40,6 +40,15 @@ public actual class Instant : Comparable<Instant> {
         TODO("Not yet implemented")
     }
 
+    /**
+     * Returns a duration representing the amount of time between this and [other]. If [other] is before this instant,
+     * the resulting duration will be negative.
+     * @param other The [Instant] marking the end of the duration
+     */
+    public actual operator fun minus(other: Instant): Duration {
+        TODO("Not yet implemented")
+    }
+
     public actual companion object {
         /**
          * Parse an ISO-8601 formatted string into an [Instant]

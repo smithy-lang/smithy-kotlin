@@ -11,9 +11,12 @@ import aws.smithy.kotlin.runtime.http.HttpBody
 import aws.smithy.kotlin.runtime.http.HttpErrorCode
 import aws.smithy.kotlin.runtime.http.HttpException
 import aws.smithy.kotlin.runtime.http.HttpStatusCode
+import aws.smithy.kotlin.runtime.http.engine.internal.HttpClientMetrics
 import aws.smithy.kotlin.runtime.io.SdkSink
 import aws.smithy.kotlin.runtime.io.readAll
 import aws.smithy.kotlin.runtime.io.readToBuffer
+import aws.smithy.kotlin.runtime.operation.ExecutionContext
+import aws.smithy.kotlin.runtime.telemetry.TelemetryProvider
 import io.kotest.matchers.string.shouldContain
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.runTest
@@ -40,9 +43,12 @@ class SdkStreamResponseHandlerTest {
 
     private val mockConn = MockHttpClientConnection()
 
+    private val execContext = ExecutionContext()
+    private val metrics = HttpClientMetrics("", TelemetryProvider.None)
+
     @Test
     fun testWaitSuccessResponse() = runTest {
-        val handler = SdkStreamResponseHandler(mockConn, coroutineContext)
+        val handler = SdkStreamResponseHandler(mockConn, coroutineContext, execContext, metrics)
         val stream = MockHttpStream(200)
         launch {
             val headers = listOf(
@@ -67,7 +73,7 @@ class SdkStreamResponseHandlerTest {
 
     @Test
     fun testWaitNoHeaders() = runTest {
-        val handler = SdkStreamResponseHandler(mockConn, coroutineContext)
+        val handler = SdkStreamResponseHandler(mockConn, coroutineContext, execContext, metrics)
         val stream = MockHttpStream(200)
         launch {
             handler.onResponseComplete(stream, 0)
@@ -79,7 +85,7 @@ class SdkStreamResponseHandlerTest {
 
     @Test
     fun testWaitFailedResponse() = runTest {
-        val handler = SdkStreamResponseHandler(mockConn, coroutineContext)
+        val handler = SdkStreamResponseHandler(mockConn, coroutineContext, execContext, metrics)
         val stream = MockHttpStream(200)
         launch {
             handler.onResponseComplete(stream, -1)
@@ -93,7 +99,7 @@ class SdkStreamResponseHandlerTest {
 
     @Test
     fun testRespBodyCreated() = runTest {
-        val handler = SdkStreamResponseHandler(mockConn, coroutineContext)
+        val handler = SdkStreamResponseHandler(mockConn, coroutineContext, execContext, metrics)
         val stream = MockHttpStream(200)
         launch {
             val headers = listOf(
@@ -120,7 +126,7 @@ class SdkStreamResponseHandlerTest {
 
     @Test
     fun testRespBody() = runTest {
-        val handler = SdkStreamResponseHandler(mockConn, coroutineContext)
+        val handler = SdkStreamResponseHandler(mockConn, coroutineContext, execContext, metrics)
         val stream = MockHttpStream(200)
         val data = "Fool of a Took! Throw yourself in next time and rid us of your stupidity!"
         launch {
@@ -148,7 +154,7 @@ class SdkStreamResponseHandlerTest {
 
     @Test
     fun testStreamError() = runTest {
-        val handler = SdkStreamResponseHandler(mockConn, coroutineContext)
+        val handler = SdkStreamResponseHandler(mockConn, coroutineContext, execContext, metrics)
         val stream = MockHttpStream(200)
         val data = "foo bar"
         val socketClosedEc = 1051

@@ -8,15 +8,19 @@ package aws.smithy.kotlin.runtime.http.engine.crt
 import aws.smithy.kotlin.runtime.content.ByteStream
 import aws.smithy.kotlin.runtime.crt.ReadChannelBodyStream
 import aws.smithy.kotlin.runtime.http.*
+import aws.smithy.kotlin.runtime.http.engine.internal.HttpClientMetrics
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.io.SdkByteReadChannel
 import aws.smithy.kotlin.runtime.io.SdkSource
 import aws.smithy.kotlin.runtime.io.source
 import aws.smithy.kotlin.runtime.net.url.Url
+import aws.smithy.kotlin.runtime.telemetry.TelemetryProvider
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancel
 import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.test.*
+
+private val metrics = HttpClientMetrics("", TelemetryProvider.None)
 
 class RequestConversionTest {
     private fun byteStreamFromContents(contents: String): ByteStream =
@@ -48,7 +52,7 @@ class RequestConversionTest {
             body,
         )
 
-        val crtRequest = request.toCrtRequest(EmptyCoroutineContext)
+        val crtRequest = request.toCrtRequest(EmptyCoroutineContext, metrics)
         assertEquals("POST", crtRequest.method)
         assertFalse(crtRequest.body is ReadChannelBodyStream)
     }
@@ -65,7 +69,7 @@ class RequestConversionTest {
         )
 
         val testContext = EmptyCoroutineContext + Job()
-        val crtRequest = request.toCrtRequest(testContext)
+        val crtRequest = request.toCrtRequest(testContext, metrics)
         assertEquals("POST", crtRequest.method)
         val crtBody = crtRequest.body as ReadChannelBodyStream
         crtBody.cancel()
@@ -83,7 +87,7 @@ class RequestConversionTest {
         )
 
         val testContext = EmptyCoroutineContext + Job()
-        val crtRequest = request.toCrtRequest(testContext)
+        val crtRequest = request.toCrtRequest(testContext, metrics)
         assertEquals("6", crtRequest.headers["Content-Length"])
 
         val crtBody = crtRequest.body as ReadChannelBodyStream
@@ -100,7 +104,7 @@ class RequestConversionTest {
         )
 
         val testContext = EmptyCoroutineContext + Job()
-        val crtRequest = request.toCrtRequest(testContext)
+        val crtRequest = request.toCrtRequest(testContext, metrics)
         assertEquals("0", crtRequest.headers["Content-Length"])
     }
 
@@ -119,7 +123,7 @@ class RequestConversionTest {
         )
 
         val testContext = EmptyCoroutineContext + Job()
-        val crtRequest = request.toCrtRequest(testContext)
+        val crtRequest = request.toCrtRequest(testContext, metrics)
         assertNotNull(request.body)
         assertNull(crtRequest.body)
     }
@@ -139,7 +143,7 @@ class RequestConversionTest {
         )
 
         val testContext = EmptyCoroutineContext + Job()
-        val crtRequest = request.toCrtRequest(testContext)
+        val crtRequest = request.toCrtRequest(testContext, metrics)
         assertNotNull(request.body)
         assertNull(crtRequest.body)
     }

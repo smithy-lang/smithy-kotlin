@@ -8,7 +8,6 @@ package aws.smithy.kotlin.runtime.http.engine.crt
 import aws.sdk.kotlin.crt.CRT
 import aws.sdk.kotlin.crt.CrtRuntimeException
 import aws.sdk.kotlin.crt.http.HeadersBuilder
-import aws.sdk.kotlin.crt.http.HttpRequestBodyStream
 import aws.sdk.kotlin.crt.http.HttpStream
 import aws.sdk.kotlin.crt.io.Protocol
 import aws.sdk.kotlin.crt.io.Uri
@@ -18,10 +17,13 @@ import aws.smithy.kotlin.runtime.crt.SdkSourceBodyStream
 import aws.smithy.kotlin.runtime.http.HttpBody
 import aws.smithy.kotlin.runtime.http.HttpErrorCode
 import aws.smithy.kotlin.runtime.http.HttpException
+import aws.smithy.kotlin.runtime.http.engine.crt.io.reportingTo
+import aws.smithy.kotlin.runtime.http.engine.internal.HttpClientMetrics
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.io.SdkBuffer
 import aws.smithy.kotlin.runtime.io.buffer
 import aws.smithy.kotlin.runtime.io.readToByteArray
+import aws.smithy.kotlin.runtime.io.source
 import kotlinx.coroutines.job
 import kotlin.coroutines.CoroutineContext
 
@@ -42,7 +44,10 @@ internal val HttpRequest.uri: Uri
         }
     }
 
-internal fun HttpRequest.toCrtRequest(callContext: CoroutineContext): aws.sdk.kotlin.crt.http.HttpRequest {
+internal fun HttpRequest.toCrtRequest(
+    callContext: CoroutineContext,
+    metrics: HttpClientMetrics,
+): aws.sdk.kotlin.crt.http.HttpRequest {
     val body = this.body
     check(!body.isDuplex) { "CrtHttpEngine does not yet support full duplex streams" }
     val bodyStream = if (isChunked) {
@@ -50,10 +55,16 @@ internal fun HttpRequest.toCrtRequest(callContext: CoroutineContext): aws.sdk.ko
     } else {
         when (body) {
             is HttpBody.Empty -> null
-            is HttpBody.Bytes -> HttpRequestBodyStream.fromByteArray(body.bytes())
-            is HttpBody.ChannelContent -> ReadChannelBodyStream(body.readFrom(), callContext)
+            is HttpBody.Bytes -> {
+                val source = body.bytes().source().reportingTo(metrics.bytesSent)
+                SdkSourceBodyStream(source)
+            }
+            is HttpBody.ChannelContent -> {
+                val source = body.readFrom().reportingTo(metrics.bytesSent)
+                ReadChannelBodyStream(source, callContext)
+            }
             is HttpBody.SourceContent -> {
-                val source = body.readFrom()
+                val source = body.readFrom().reportingTo(metrics.bytesSent)
                 callContext.job.invokeOnCompletion {
                     source.close()
                 }
@@ -85,10 +96,10 @@ internal val HttpRequest.isChunked: Boolean get() = (this.body is HttpBody.Sourc
  * Send a chunked body using the CRT writeChunk bindings.
  * @param body an HTTP body that has a chunked content encoding. Must be [HttpBody.SourceContent] or [HttpBody.ChannelContent]
  */
-internal suspend fun HttpStream.sendChunkedBody(body: HttpBody) {
+internal suspend fun HttpStream.sendChunkedBody(body: HttpBody, metrics: HttpClientMetrics) {
     when (body) {
         is HttpBody.SourceContent -> {
-            val source = body.readFrom()
+            val source = body.readFrom().reportingTo(metrics.bytesSent)
             val bufferedSource = source.buffer()
 
             while (!bufferedSource.exhausted()) {
@@ -97,7 +108,7 @@ internal suspend fun HttpStream.sendChunkedBody(body: HttpBody) {
             }
         }
         is HttpBody.ChannelContent -> {
-            val chan = body.readFrom()
+            val chan = body.readFrom().reportingTo(metrics.bytesSent)
             var buffer = SdkBuffer()
             val nextBuffer = SdkBuffer()
             var sentFirstChunk = false

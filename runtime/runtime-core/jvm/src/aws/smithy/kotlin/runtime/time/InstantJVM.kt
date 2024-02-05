@@ -22,6 +22,7 @@ import java.time.format.SignStyle
 import java.time.temporal.ChronoField
 import java.time.temporal.ChronoUnit
 import kotlin.time.Duration
+import kotlin.time.Duration.Companion.nanoseconds
 import java.time.Instant as jtInstant
 
 public actual class Instant(internal val value: jtInstant) : Comparable<Instant> {
@@ -56,6 +57,18 @@ public actual class Instant(internal val value: jtInstant) : Comparable<Instant>
      * If the [duration] is negative, the returned instant is later than this instant.
      */
     public actual operator fun minus(duration: Duration): Instant = plus(-duration)
+
+    private val ns: Long get() = value.epochSecond * NS_PER_SEC + value.nano
+
+    /**
+     * Returns a duration representing the amount of time between this and [other]. If [other] is before this instant,
+     * the resulting duration will be negative.
+     * @param other The [Instant] marking the end of the duration
+     */
+    public actual operator fun minus(other: Instant): Duration {
+        val delta = this.ns - other.ns
+        return delta.nanoseconds
+    }
 
     /**
      * Encode the [Instant] as a string into the format specified by [TimestampFormat]

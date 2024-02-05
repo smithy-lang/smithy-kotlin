@@ -197,6 +197,17 @@ class InstantTest {
         assertEquals(expected2, Instant.fromEpochMilliseconds(ts2))
     }
 
+    @Test
+    fun testFromEpochNanoseconds() {
+        val ts1 = 1_234_567_890_000_000_000L
+        val expected1 = Instant.fromEpochSeconds(1_234_567_890L)
+        assertEquals(expected1, Instant.fromEpochNanoseconds(ts1))
+
+        val ts2 = 1_234_567_890_123_456_789L
+        val expected2 = Instant.fromEpochSeconds(1_234_567_890L, 123_456_789)
+        assertEquals(expected2, Instant.fromEpochNanoseconds(ts2))
+    }
+
     // Select tests pulled from edge cases/tickets in the V2 Java SDK.
     // Always good to learn from others...
     class V2JavaSdkTests {
@@ -242,6 +253,17 @@ class InstantTest {
         val offset = 10.seconds + 1000.nanoseconds
         assertEquals(Instant.fromEpochSeconds(1010, 2000), start + offset)
         assertEquals(Instant.fromEpochSeconds(990, 0), start - offset)
+    }
+
+    @Test
+    fun testMinusInstant() {
+        val start = Instant.fromEpochSeconds(1000, 1000)
+        val end = Instant.fromEpochSeconds(1500, 1200)
+        val duration = end - start
+        duration.toComponents { seconds, ns ->
+            assertEquals(500L, seconds)
+            assertEquals(200, ns)
+        }
     }
 
     @Test
