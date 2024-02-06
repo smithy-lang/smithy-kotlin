@@ -1,0 +1,8 @@
+{
+    "id": "ed8a74dd-01a4-46c3-96eb-8ac9356bead6",
+    "type": "bugfix",
+    "description": "Correctly parse URLs which contain the `@` symbol in the path and/or fragment (but not in the userinfo)",
+    "issues": [
+        "awslabs/smithy-kotlin#1031"
+    ]
+}

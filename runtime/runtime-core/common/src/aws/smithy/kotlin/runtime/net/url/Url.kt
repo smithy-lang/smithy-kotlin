@@ -50,14 +50,18 @@ public class Url private constructor(
                 val scanner = Scanner(value)
                 scanner.requireAndSkip("://") { scheme = Scheme.parse(it) }
 
-                scanner.optionalAndSkip("@") {
-                    userInfo.parseEncoded(it)
-                }
-
                 scanner.upToOrEnd("/", "?", "#") { authority ->
-                    val (h, p) = authority.parseHostPort()
-                    host = h
-                    p?.let { port = it }
+                    val innerScanner = Scanner(authority)
+
+                    innerScanner.optionalAndSkip("@") {
+                        userInfo.parseEncoded(it)
+                    }
+
+                    innerScanner.upToOrEnd { hostport ->
+                        val (h, p) = hostport.parseHostPort()
+                        host = h
+                        p?.let { port = it }
+                    }
                 }
 
                 scanner.ifStartsWith("/") {

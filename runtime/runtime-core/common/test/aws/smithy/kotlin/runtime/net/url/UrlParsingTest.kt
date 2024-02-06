@@ -277,6 +277,22 @@ class UrlParsingTest {
     }
 
     @Test
+    fun testAtSymbolsOutsideOfUserInfo() {
+        data class Test(val url: String, val userInfo: String, val path: String, val fragment: String?)
+        listOf(
+            Test("https://host/foo/bar@baz/blah", "", "/foo/bar@baz/blah", null),
+            Test("https://host/foo/bar/baz/blah#qux@quux", "", "/foo/bar/baz/blah", "qux@quux"),
+            Test("https://user:pass@host/foo/bar@baz/blah", "user:pass", "/foo/bar@baz/blah", null),
+            Test("https://user:pass@host/foo/bar@baz/blah#qux@quux", "user:pass", "/foo/bar@baz/blah", "qux@quux"),
+        ).forEach { (urlString, expectedUserInfo, expectedPath, expectedFragment) ->
+            val url = Url.parse(urlString)
+            assertEquals(expectedUserInfo, url.userInfo.toString(), "Error parsing $urlString")
+            assertEquals(expectedPath, url.path.encoded, "Error parsing $urlString")
+            assertEquals(expectedFragment, url.fragment?.encoded, "Error parsing $urlString")
+        }
+    }
+
+    @Test
     fun testComplete() {
         val expected = Url {
             scheme = Scheme.HTTPS

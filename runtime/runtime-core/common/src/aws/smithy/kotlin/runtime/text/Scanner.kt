@@ -169,7 +169,7 @@ public class Scanner(public val text: String) {
      * ```
      *
      * @param literals One or more strings to search for at/after the current position
-     * @param handler The handler to invoke on the substring *up to but not including nearest found element of
+     * @param handler The handler to invoke on the substring *up to but not including* nearest found element of
      * [literals] or, if none of [literals] are found,
      */
     public fun upToOrEnd(vararg literals: String, handler: (String) -> Unit) {
