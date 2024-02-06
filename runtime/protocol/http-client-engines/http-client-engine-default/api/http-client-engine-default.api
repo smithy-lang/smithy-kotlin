@@ -8,3 +8,17 @@ public final class aws/smithy/kotlin/runtime/http/engine/DefaultHttpEngineKt {
 	public static synthetic fun DefaultHttpEngine$default (Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Laws/smithy/kotlin/runtime/http/engine/CloseableHttpClientEngine;
 }
 
+public final class aws/smithy/kotlin/runtime/http/engine/HttpEngineConfigImpl : aws/smithy/kotlin/runtime/http/config/HttpEngineConfig {
+	public synthetic fun <init> (Laws/smithy/kotlin/runtime/http/engine/HttpClientEngine;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun getHttpClient ()Laws/smithy/kotlin/runtime/http/engine/HttpClientEngine;
+}
+
+public final class aws/smithy/kotlin/runtime/http/engine/HttpEngineConfigImpl$BuilderImpl : aws/smithy/kotlin/runtime/http/config/HttpEngineConfig$Builder {
+	public fun <init> ()V
+	public fun buildHttpEngineConfig ()Laws/smithy/kotlin/runtime/http/config/HttpEngineConfig;
+	public fun getHttpClient ()Laws/smithy/kotlin/runtime/http/engine/HttpClientEngine;
+	public fun httpClient (Laws/smithy/kotlin/runtime/http/config/EngineFactory;Lkotlin/jvm/functions/Function1;)V
+	public fun httpClient (Lkotlin/jvm/functions/Function1;)V
+	public fun setHttpClient (Laws/smithy/kotlin/runtime/http/engine/HttpClientEngine;)V
+}
+

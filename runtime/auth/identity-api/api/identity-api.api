@@ -62,11 +62,20 @@ public final class aws/smithy/kotlin/runtime/identity/IdentityProvider$DefaultIm
 	public static synthetic fun resolve$default (Laws/smithy/kotlin/runtime/identity/IdentityProvider;Laws/smithy/kotlin/runtime/collections/Attributes;Lkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
 }
 
+public abstract class aws/smithy/kotlin/runtime/identity/IdentityProviderChain : aws/smithy/kotlin/runtime/identity/CloseableIdentityProvider {
+	public fun <init> ([Laws/smithy/kotlin/runtime/identity/IdentityProvider;)V
+	public fun close ()V
+	protected final fun getProviders ()[Laws/smithy/kotlin/runtime/identity/IdentityProvider;
+	public fun resolve (Laws/smithy/kotlin/runtime/collections/Attributes;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun toString ()Ljava/lang/String;
+}
+
 public abstract interface class aws/smithy/kotlin/runtime/identity/IdentityProviderConfig {
 	public abstract fun identityProviderForScheme-kHcdgsI (Ljava/lang/String;)Laws/smithy/kotlin/runtime/identity/IdentityProvider;
 }
 
 public final class aws/smithy/kotlin/runtime/identity/IdentityProviderConfigKt {
+	public static final fun asIdentityProviderConfig (Laws/smithy/kotlin/runtime/identity/IdentityProvider;)Laws/smithy/kotlin/runtime/identity/IdentityProviderConfig;
 }
 
 public final class aws/smithy/kotlin/runtime/identity/IdentityProviderException : aws/smithy/kotlin/runtime/ClientException {

@@ -19,10 +19,23 @@ public final class aws/smithy/kotlin/runtime/telemetry/TelemetryProvider$Compani
 	public final fun getNone ()Laws/smithy/kotlin/runtime/telemetry/TelemetryProvider;
 }
 
+public final class aws/smithy/kotlin/runtime/telemetry/TelemetryProviderContext : kotlin/coroutines/AbstractCoroutineContextElement {
+	public static final field Key Laws/smithy/kotlin/runtime/telemetry/TelemetryProviderContext$Key;
+	public fun <init> (Laws/smithy/kotlin/runtime/telemetry/TelemetryProvider;)V
+	public final fun component1 ()Laws/smithy/kotlin/runtime/telemetry/TelemetryProvider;
+	public final fun copy (Laws/smithy/kotlin/runtime/telemetry/TelemetryProvider;)Laws/smithy/kotlin/runtime/telemetry/TelemetryProviderContext;
+	public static synthetic fun copy$default (Laws/smithy/kotlin/runtime/telemetry/TelemetryProviderContext;Laws/smithy/kotlin/runtime/telemetry/TelemetryProvider;ILjava/lang/Object;)Laws/smithy/kotlin/runtime/telemetry/TelemetryProviderContext;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getProvider ()Laws/smithy/kotlin/runtime/telemetry/TelemetryProvider;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
 public final class aws/smithy/kotlin/runtime/telemetry/TelemetryProviderContext$Key : kotlin/coroutines/CoroutineContext$Key {
 }
 
 public final class aws/smithy/kotlin/runtime/telemetry/TelemetryProviderContextKt {
+	public static final fun getTelemetryProvider (Lkotlin/coroutines/CoroutineContext;)Laws/smithy/kotlin/runtime/telemetry/TelemetryProvider;
 }
 
 public abstract interface class aws/smithy/kotlin/runtime/telemetry/context/Context {
@@ -46,13 +59,39 @@ public final class aws/smithy/kotlin/runtime/telemetry/context/ContextManager$Co
 public abstract interface class aws/smithy/kotlin/runtime/telemetry/context/Scope : java/io/Closeable {
 }
 
+public final class aws/smithy/kotlin/runtime/telemetry/context/TelemetryContextElement : kotlin/coroutines/AbstractCoroutineContextElement, kotlin/coroutines/CoroutineContext$Element, kotlinx/coroutines/ThreadContextElement {
+	public static final field Key Laws/smithy/kotlin/runtime/telemetry/context/TelemetryContextElement$Key;
+	public fun <init> (Laws/smithy/kotlin/runtime/telemetry/context/Context;)V
+	public final fun getContext ()Laws/smithy/kotlin/runtime/telemetry/context/Context;
+	public fun restoreThreadContext (Lkotlin/coroutines/CoroutineContext;Laws/smithy/kotlin/runtime/telemetry/context/Scope;)V
+	public synthetic fun restoreThreadContext (Lkotlin/coroutines/CoroutineContext;Ljava/lang/Object;)V
+	public fun updateThreadContext (Lkotlin/coroutines/CoroutineContext;)Laws/smithy/kotlin/runtime/telemetry/context/Scope;
+	public synthetic fun updateThreadContext (Lkotlin/coroutines/CoroutineContext;)Ljava/lang/Object;
+}
+
 public final class aws/smithy/kotlin/runtime/telemetry/context/TelemetryContextElement$Key : kotlin/coroutines/CoroutineContext$Key {
 }
 
 public final class aws/smithy/kotlin/runtime/telemetry/context/TelemetryContextElementKt {
+	public static final fun getTelemetryContext (Lkotlin/coroutines/CoroutineContext;)Laws/smithy/kotlin/runtime/telemetry/context/Context;
 }
 
 public final class aws/smithy/kotlin/runtime/telemetry/logging/CoroutineContextLogExtKt {
+	public static final fun debug (Lkotlin/coroutines/CoroutineContext;Ljava/lang/String;Ljava/lang/Throwable;Lkotlin/jvm/functions/Function0;)V
+	public static synthetic fun debug$default (Lkotlin/coroutines/CoroutineContext;Ljava/lang/String;Ljava/lang/Throwable;Lkotlin/jvm/functions/Function0;ILjava/lang/Object;)V
+	public static final fun error (Lkotlin/coroutines/CoroutineContext;Ljava/lang/String;Ljava/lang/Throwable;Lkotlin/jvm/functions/Function0;)V
+	public static synthetic fun error$default (Lkotlin/coroutines/CoroutineContext;Ljava/lang/String;Ljava/lang/Throwable;Lkotlin/jvm/functions/Function0;ILjava/lang/Object;)V
+	public static final fun getLoggingContext (Lkotlin/coroutines/CoroutineContext;)Ljava/util/Map;
+	public static final fun info (Lkotlin/coroutines/CoroutineContext;Ljava/lang/String;Ljava/lang/Throwable;Lkotlin/jvm/functions/Function0;)V
+	public static synthetic fun info$default (Lkotlin/coroutines/CoroutineContext;Ljava/lang/String;Ljava/lang/Throwable;Lkotlin/jvm/functions/Function0;ILjava/lang/Object;)V
+	public static final fun log (Lkotlin/coroutines/CoroutineContext;Laws/smithy/kotlin/runtime/telemetry/logging/LogLevel;Ljava/lang/String;Ljava/lang/Throwable;Lkotlin/jvm/functions/Function0;)V
+	public static synthetic fun log$default (Lkotlin/coroutines/CoroutineContext;Laws/smithy/kotlin/runtime/telemetry/logging/LogLevel;Ljava/lang/String;Ljava/lang/Throwable;Lkotlin/jvm/functions/Function0;ILjava/lang/Object;)V
+	public static final fun logger (Lkotlin/coroutines/CoroutineContext;Ljava/lang/String;)Laws/smithy/kotlin/runtime/telemetry/logging/Logger;
+	public static final fun trace (Lkotlin/coroutines/CoroutineContext;Ljava/lang/String;Ljava/lang/Throwable;Lkotlin/jvm/functions/Function0;)V
+	public static synthetic fun trace$default (Lkotlin/coroutines/CoroutineContext;Ljava/lang/String;Ljava/lang/Throwable;Lkotlin/jvm/functions/Function0;ILjava/lang/Object;)V
+	public static final fun warn (Lkotlin/coroutines/CoroutineContext;Ljava/lang/String;Ljava/lang/Throwable;Lkotlin/jvm/functions/Function0;)V
+	public static synthetic fun warn$default (Lkotlin/coroutines/CoroutineContext;Ljava/lang/String;Ljava/lang/Throwable;Lkotlin/jvm/functions/Function0;ILjava/lang/Object;)V
+	public static final fun withLogCtx ([Lkotlin/Pair;Lkotlin/jvm/functions/Function1;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
 public final class aws/smithy/kotlin/runtime/telemetry/logging/LogLevel : java/lang/Enum {
@@ -114,6 +153,19 @@ public final class aws/smithy/kotlin/runtime/telemetry/logging/LoggerProvider$Co
 	public final fun getNone ()Laws/smithy/kotlin/runtime/telemetry/logging/LoggerProvider;
 }
 
+public final class aws/smithy/kotlin/runtime/telemetry/logging/LoggingContextElement : kotlin/coroutines/AbstractCoroutineContextElement {
+	public static final field Key Laws/smithy/kotlin/runtime/telemetry/logging/LoggingContextElement$Key;
+	public fun <init> (Ljava/util/Map;)V
+	public fun <init> ([Lkotlin/Pair;)V
+	public final fun component1 ()Ljava/util/Map;
+	public final fun copy (Ljava/util/Map;)Laws/smithy/kotlin/runtime/telemetry/logging/LoggingContextElement;
+	public static synthetic fun copy$default (Laws/smithy/kotlin/runtime/telemetry/logging/LoggingContextElement;Ljava/util/Map;ILjava/lang/Object;)Laws/smithy/kotlin/runtime/telemetry/logging/LoggingContextElement;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getKvPairs ()Ljava/util/Map;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
 public final class aws/smithy/kotlin/runtime/telemetry/logging/LoggingContextElement$Key : kotlin/coroutines/CoroutineContext$Key {
 }
 
@@ -140,6 +192,8 @@ public final class aws/smithy/kotlin/runtime/telemetry/metrics/Histogram$Default
 public final class aws/smithy/kotlin/runtime/telemetry/metrics/HistogramKt {
 	public static final fun measureSeconds (Laws/smithy/kotlin/runtime/telemetry/metrics/Histogram;Laws/smithy/kotlin/runtime/collections/Attributes;Laws/smithy/kotlin/runtime/telemetry/context/Context;Lkotlin/jvm/functions/Function0;)Ljava/lang/Object;
 	public static synthetic fun measureSeconds$default (Laws/smithy/kotlin/runtime/telemetry/metrics/Histogram;Laws/smithy/kotlin/runtime/collections/Attributes;Laws/smithy/kotlin/runtime/telemetry/context/Context;Lkotlin/jvm/functions/Function0;ILjava/lang/Object;)Ljava/lang/Object;
+	public static final fun recordSeconds-dWUq8MI (Laws/smithy/kotlin/runtime/telemetry/metrics/Histogram;JLaws/smithy/kotlin/runtime/collections/Attributes;Laws/smithy/kotlin/runtime/telemetry/context/Context;)V
+	public static synthetic fun recordSeconds-dWUq8MI$default (Laws/smithy/kotlin/runtime/telemetry/metrics/Histogram;JLaws/smithy/kotlin/runtime/collections/Attributes;Laws/smithy/kotlin/runtime/telemetry/context/Context;ILjava/lang/Object;)V
 }
 
 public abstract interface class aws/smithy/kotlin/runtime/telemetry/metrics/Meter {
@@ -188,6 +242,13 @@ public final class aws/smithy/kotlin/runtime/telemetry/metrics/UpDownCounter$Def
 }
 
 public final class aws/smithy/kotlin/runtime/telemetry/trace/CoroutineContextTraceExtKt {
+	public static final fun getTraceSpan (Lkotlin/coroutines/CoroutineContext;)Laws/smithy/kotlin/runtime/telemetry/trace/TraceSpan;
+	public static final fun withSpan (Laws/smithy/kotlin/runtime/telemetry/trace/TraceSpan;Lkotlin/coroutines/CoroutineContext;Lkotlin/jvm/functions/Function3;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static final fun withSpan (Laws/smithy/kotlin/runtime/telemetry/trace/Tracer;Ljava/lang/String;Laws/smithy/kotlin/runtime/collections/Attributes;Laws/smithy/kotlin/runtime/telemetry/trace/SpanKind;Lkotlin/coroutines/CoroutineContext;Lkotlin/jvm/functions/Function3;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static final fun withSpan (Ljava/lang/String;Ljava/lang/String;Laws/smithy/kotlin/runtime/collections/Attributes;Laws/smithy/kotlin/runtime/telemetry/trace/SpanKind;Lkotlin/coroutines/CoroutineContext;Lkotlin/jvm/functions/Function3;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static synthetic fun withSpan$default (Laws/smithy/kotlin/runtime/telemetry/trace/TraceSpan;Lkotlin/coroutines/CoroutineContext;Lkotlin/jvm/functions/Function3;Lkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
+	public static synthetic fun withSpan$default (Laws/smithy/kotlin/runtime/telemetry/trace/Tracer;Ljava/lang/String;Laws/smithy/kotlin/runtime/collections/Attributes;Laws/smithy/kotlin/runtime/telemetry/trace/SpanKind;Lkotlin/coroutines/CoroutineContext;Lkotlin/jvm/functions/Function3;Lkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
+	public static synthetic fun withSpan$default (Ljava/lang/String;Ljava/lang/String;Laws/smithy/kotlin/runtime/collections/Attributes;Laws/smithy/kotlin/runtime/telemetry/trace/SpanKind;Lkotlin/coroutines/CoroutineContext;Lkotlin/jvm/functions/Function3;Lkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
 }
 
 public abstract interface class aws/smithy/kotlin/runtime/telemetry/trace/SpanContext {
@@ -231,6 +292,18 @@ public abstract interface class aws/smithy/kotlin/runtime/telemetry/trace/TraceS
 
 public final class aws/smithy/kotlin/runtime/telemetry/trace/TraceSpan$DefaultImpls {
 	public static synthetic fun emitEvent$default (Laws/smithy/kotlin/runtime/telemetry/trace/TraceSpan;Ljava/lang/String;Laws/smithy/kotlin/runtime/collections/Attributes;ILjava/lang/Object;)V
+}
+
+public final class aws/smithy/kotlin/runtime/telemetry/trace/TraceSpanContext : kotlin/coroutines/AbstractCoroutineContextElement {
+	public static final field Key Laws/smithy/kotlin/runtime/telemetry/trace/TraceSpanContext$Key;
+	public fun <init> (Laws/smithy/kotlin/runtime/telemetry/trace/TraceSpan;)V
+	public final fun component1 ()Laws/smithy/kotlin/runtime/telemetry/trace/TraceSpan;
+	public final fun copy (Laws/smithy/kotlin/runtime/telemetry/trace/TraceSpan;)Laws/smithy/kotlin/runtime/telemetry/trace/TraceSpanContext;
+	public static synthetic fun copy$default (Laws/smithy/kotlin/runtime/telemetry/trace/TraceSpanContext;Laws/smithy/kotlin/runtime/telemetry/trace/TraceSpan;ILjava/lang/Object;)Laws/smithy/kotlin/runtime/telemetry/trace/TraceSpanContext;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getTraceSpan ()Laws/smithy/kotlin/runtime/telemetry/trace/TraceSpan;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
 }
 
 public final class aws/smithy/kotlin/runtime/telemetry/trace/TraceSpanContext$Key : kotlin/coroutines/CoroutineContext$Key {
