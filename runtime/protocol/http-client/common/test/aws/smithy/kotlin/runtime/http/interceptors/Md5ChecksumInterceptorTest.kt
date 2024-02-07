@@ -29,11 +29,7 @@ class Md5ChecksumInterceptorTest {
         }
         val op = newTestOperation<Unit, Unit>(req, Unit)
 
-        op.interceptors.add(
-            Md5ChecksumInterceptor<Unit> {
-                true
-            },
-        )
+        op.interceptors.add(Md5ChecksumInterceptor())
 
         val expected = "RG22oBSZFmabBbkzVGRi4w=="
         op.roundTrip(client, Unit)
@@ -50,11 +46,7 @@ class Md5ChecksumInterceptorTest {
         }
         val op = newTestOperation<Unit, Unit>(req, Unit)
 
-        op.interceptors.add(
-            Md5ChecksumInterceptor<Unit> {
-                true
-            },
-        )
+        op.interceptors.add(Md5ChecksumInterceptor())
 
         op.roundTrip(client, Unit)
         val call = op.context.attributes[HttpOperationContext.HttpCallList].first()
@@ -68,11 +60,10 @@ class Md5ChecksumInterceptorTest {
         }
         val op = newTestOperation<Unit, Unit>(req, Unit)
 
-        op.interceptors.add(
-            Md5ChecksumInterceptor<Unit> {
-                false // interceptor disabled
-            },
-        )
+        // having this "checksum algorithm" configured means MD5 checksum interceptor should not run
+        op.context[HttpOperationContext.ChecksumAlgorithm] = "blablabla"
+
+        op.interceptors.add(Md5ChecksumInterceptor())
 
         op.roundTrip(client, Unit)
         val call = op.context.attributes[HttpOperationContext.HttpCallList].first()
