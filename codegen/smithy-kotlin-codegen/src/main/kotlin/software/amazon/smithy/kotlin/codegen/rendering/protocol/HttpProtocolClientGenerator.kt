@@ -353,12 +353,7 @@ open class HttpProtocolClientGenerator(
         }
 
         if (hasTrait<HttpChecksumRequiredTrait>() || httpChecksumTrait?.isRequestChecksumRequired == true) {
-            val interceptorSymbol = RuntimeTypes.HttpClient.Interceptors.Md5ChecksumInterceptor
-            val inputSymbol = ctx.symbolProvider.toSymbol(ctx.model.expectShape(inputShape))
-
-            writer.withBlock("op.interceptors.add(#T<#T> { ", "})", interceptorSymbol, inputSymbol) {
-                writer.write("!op.context.contains(#T.ChecksumAlgorithm)", RuntimeTypes.HttpClient.Operation.HttpOperationContext)
-            }
+            writer.write("op.interceptors.add(#T())", RuntimeTypes.HttpClient.Interceptors.Md5ChecksumInterceptor)
         }
     }
 
