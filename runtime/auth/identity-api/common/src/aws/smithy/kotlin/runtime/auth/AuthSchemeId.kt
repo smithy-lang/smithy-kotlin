@@ -50,6 +50,6 @@ public value class AuthSchemeId(public val id: String) {
         /**
          * AWS Signature Version 4 authentication for S3 Express One Zone
          */
-        public val AwsSigV4S3Express: AuthSchemeId = AuthSchemeId("aws.auth#sigv4s3express")
+        public val AwsSigV4S3Express: AuthSchemeId = AuthSchemeId("aws.auth#sigv4s3express") // FIXME move to aws-sdk-kotlin
     }
 }
