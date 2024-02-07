@@ -25,7 +25,7 @@ import kotlin.time.Duration
  * AWS SigV4/SigV4a [HttpSigner] that signs outgoing requests using the given [config]
  */
 @InternalApi
-public class AwsHttpSigner(private val config: Config) : HttpSigner {
+public open class AwsHttpSigner(private val config: Config) : HttpSigner {
     @InternalApi
     public companion object {
         public inline operator fun invoke(block: Config.() -> Unit): AwsHttpSigner {
@@ -124,6 +124,7 @@ public class AwsHttpSigner(private val config: Config) : HttpSigner {
         val contextUseDoubleUriEncode = attributes.getOrNull(AwsSigningAttributes.UseDoubleUriEncode)
         val contextNormalizeUriPath = attributes.getOrNull(AwsSigningAttributes.NormalizeUriPath)
         val contextSigningServiceName = attributes.getOrNull(AwsSigningAttributes.SigningService)
+        val contextOmitSessionToken = attributes.getOrNull(AwsSigningAttributes.OmitSessionToken)
 
         // operation signing config is baseConfig + operation specific config/overrides
         val signingConfig = AwsSigningConfig {
@@ -141,7 +142,7 @@ public class AwsHttpSigner(private val config: Config) : HttpSigner {
                 ?: (Instant.now() + (attributes.getOrNull(HttpOperationContext.ClockSkew) ?: Duration.ZERO))
 
             signatureType = config.signatureType
-            omitSessionToken = config.omitSessionToken
+            omitSessionToken = contextOmitSessionToken ?: config.omitSessionToken
             normalizeUriPath = contextNormalizeUriPath ?: config.normalizeUriPath
             useDoubleUriEncode = contextUseDoubleUriEncode ?: config.useDoubleUriEncode
             expiresAfter = config.expiresAfter
