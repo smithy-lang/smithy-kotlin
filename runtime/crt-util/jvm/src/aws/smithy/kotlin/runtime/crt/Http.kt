@@ -119,7 +119,6 @@ public fun Headers.toCrtHeaders(): aws.sdk.kotlin.crt.http.Headers {
     val headersBuilder = aws.sdk.kotlin.crt.http.HeadersBuilder()
 
     forEach { key, values ->
-        if (key == "X-Amz-S3Session-Token") { return@forEach }
         headersBuilder.appendAll(key, values)
     }
 

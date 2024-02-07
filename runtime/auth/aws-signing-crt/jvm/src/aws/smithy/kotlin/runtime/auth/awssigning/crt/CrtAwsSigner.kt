@@ -28,21 +28,22 @@ public object CrtAwsSigner : AwsSigner {
         val isAwsChunked = request.headers.contains("Content-Encoding", "aws-chunked")
         val isS3Express = request.headers.contains("X-Amz-S3Session-Token")
 
-        val crtConfig = config.toCrtSigningConfig().toBuilder().apply {
-            if (isS3Express)  {
-                algorithm = CrtSigningAlgorithm.SIGV4_S3EXPRESS
-                omitSessionToken = false
-            }
-        }.build()
+        val requestBuilder = request.toBuilder()
 
-        val crtRequest = request.toSignableCrtRequest(isUnsigned, isAwsChunked)
+        val crtConfig = config.toCrtSigningConfig().toBuilder()
+        if (isS3Express)  {
+            crtConfig.algorithm = CrtSigningAlgorithm.SIGV4_S3EXPRESS
+            crtConfig.omitSessionToken = false
+            requestBuilder.headers.remove("X-Amz-S3Session-Token")
+        }
 
-        val crtResult = CrtSigner.sign(crtRequest, crtConfig)
+        val crtRequest = requestBuilder.build().toSignableCrtRequest(isUnsigned, isAwsChunked)
+
+        val crtResult = CrtSigner.sign(crtRequest, crtConfig.build())
         coroutineContext.debug<CrtAwsSigner> { "Calculated signature: ${crtResult.signature.decodeToString()}" }
 
         val crtSignedResult = checkNotNull(crtResult.signedRequest) { "Signed request unexpectedly null" }
 
-        val requestBuilder = request.toBuilder()
         requestBuilder.update(crtSignedResult)
         return AwsSigningResult(requestBuilder.build(), crtResult.signature)
     }
