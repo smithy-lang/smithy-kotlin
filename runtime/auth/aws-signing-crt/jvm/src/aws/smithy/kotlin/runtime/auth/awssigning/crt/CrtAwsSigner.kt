@@ -26,8 +26,16 @@ public object CrtAwsSigner : AwsSigner {
     override suspend fun sign(request: HttpRequest, config: AwsSigningConfig): AwsSigningResult<HttpRequest> {
         val isUnsigned = config.hashSpecification is HashSpecification.UnsignedPayload
         val isAwsChunked = request.headers.contains("Content-Encoding", "aws-chunked")
+        val isS3Express = request.headers.contains("X-Amz-S3Session-Token")
+
+        val crtConfig = config.toCrtSigningConfig().toBuilder().apply {
+            if (isS3Express)  {
+                algorithm = CrtSigningAlgorithm.SIGV4_S3EXPRESS
+                omitSessionToken = false
+            }
+        }.build()
+
         val crtRequest = request.toSignableCrtRequest(isUnsigned, isAwsChunked)
-        val crtConfig = config.toCrtSigningConfig()
 
         val crtResult = CrtSigner.sign(crtRequest, crtConfig)
         coroutineContext.debug<CrtAwsSigner> { "Calculated signature: ${crtResult.signature.decodeToString()}" }
@@ -80,7 +88,6 @@ private fun AwsSignedBodyHeader.toCrtSignedBodyHeaderType() = when (this) {
 private fun AwsSigningAlgorithm.toCrtSigningAlgorithm() = when (this) {
     AwsSigningAlgorithm.SIGV4 -> CrtSigningAlgorithm.SIGV4
     AwsSigningAlgorithm.SIGV4_ASYMMETRIC -> CrtSigningAlgorithm.SIGV4_ASYMMETRIC
-    AwsSigningAlgorithm.SIGV4_S3EXPRESS -> CrtSigningAlgorithm.SIGV4_S3EXPRESS
 }
 
 private suspend fun AwsSigningConfig.toCrtSigningConfig(): CrtSigningConfig {

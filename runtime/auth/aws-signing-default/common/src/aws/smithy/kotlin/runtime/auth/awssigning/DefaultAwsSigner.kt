@@ -22,7 +22,7 @@ internal class DefaultAwsSignerImpl(
         val logger = coroutineContext.logger<DefaultAwsSignerImpl>()
 
         // TODO: implement SigV4a
-        if (config.algorithm != AwsSigningAlgorithm.SIGV4 && config.algorithm != AwsSigningAlgorithm.SIGV4_S3EXPRESS) {
+        if (config.algorithm != AwsSigningAlgorithm.SIGV4) {
             throw UnsupportedSigningAlgorithmException(
                 "${config.algorithm} support is not yet implemented for the default signer.",
                 config.algorithm,

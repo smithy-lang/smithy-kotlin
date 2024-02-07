@@ -26,7 +26,6 @@ public abstract interface class aws/smithy/kotlin/runtime/auth/awssigning/AwsSig
 public final class aws/smithy/kotlin/runtime/auth/awssigning/AwsSigningAlgorithm : java/lang/Enum {
 	public static final field SIGV4 Laws/smithy/kotlin/runtime/auth/awssigning/AwsSigningAlgorithm;
 	public static final field SIGV4_ASYMMETRIC Laws/smithy/kotlin/runtime/auth/awssigning/AwsSigningAlgorithm;
-	public static final field SIGV4_S3EXPRESS Laws/smithy/kotlin/runtime/auth/awssigning/AwsSigningAlgorithm;
 	public static fun getEntries ()Lkotlin/enums/EnumEntries;
 	public static fun valueOf (Ljava/lang/String;)Laws/smithy/kotlin/runtime/auth/awssigning/AwsSigningAlgorithm;
 	public static fun values ()[Laws/smithy/kotlin/runtime/auth/awssigning/AwsSigningAlgorithm;
