@@ -2,6 +2,8 @@
 
 Smithy code generators for Kotlin.
 
+This is a CI test for external contributors
+
 [![License][apache-badge]][apache-url]
 
 [apache-badge]: https://img.shields.io/badge/License-Apache%202.0-blue.svg
