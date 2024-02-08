@@ -116,8 +116,6 @@ configureLinting(lintPaths)
 
 // Binary compatibility
 apiValidation {
-    nonPublicMarkers.add("aws.smithy.kotlin.runtime.InternalApi")
-
     ignoredProjects.addAll(
         setOf(
             "dokka-smithy",

@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.0.13] - 02/07/2024
+
+### Fixes
+* [#1031](https://github.com/awslabs/smithy-kotlin/issues/1031) Correctly parse URLs which contain the `@` symbol in the path and/or fragment (but not in the userinfo)
+
 ## [1.0.12] - 01/31/2024
 
 ### Fixes
