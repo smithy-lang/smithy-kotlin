@@ -1,4 +1,4 @@
-public final class aws/smithy/kotlin/runtime/http/auth/AwsHttpSigner : aws/smithy/kotlin/runtime/http/auth/HttpSigner {
+public class aws/smithy/kotlin/runtime/http/auth/AwsHttpSigner : aws/smithy/kotlin/runtime/http/auth/HttpSigner {
 	public static final field Companion Laws/smithy/kotlin/runtime/http/auth/AwsHttpSigner$Companion;
 	public fun <init> (Laws/smithy/kotlin/runtime/http/auth/AwsHttpSigner$Config;)V
 	public fun sign (Laws/smithy/kotlin/runtime/http/auth/SignHttpRequest;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;

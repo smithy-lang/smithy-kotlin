@@ -307,7 +307,7 @@ public final class aws/smithy/kotlin/runtime/http/interceptors/DiscoveredEndpoin
 }
 
 public final class aws/smithy/kotlin/runtime/http/interceptors/FlexibleChecksumsRequestInterceptor : aws/smithy/kotlin/runtime/client/Interceptor {
-	public fun <init> (Lkotlin/jvm/functions/Function1;)V
+	public fun <init> ()V
 	public fun modifyBeforeAttemptCompletion-gIAlu-s (Laws/smithy/kotlin/runtime/client/ResponseInterceptorContext;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun modifyBeforeCompletion-gIAlu-s (Laws/smithy/kotlin/runtime/client/ResponseInterceptorContext;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun modifyBeforeDeserialization (Laws/smithy/kotlin/runtime/client/ProtocolResponseInterceptorContext;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
@@ -359,8 +359,6 @@ public final class aws/smithy/kotlin/runtime/http/interceptors/FlexibleChecksums
 
 public final class aws/smithy/kotlin/runtime/http/interceptors/Md5ChecksumInterceptor : aws/smithy/kotlin/runtime/client/Interceptor {
 	public fun <init> ()V
-	public fun <init> (Lkotlin/jvm/functions/Function1;)V
-	public synthetic fun <init> (Lkotlin/jvm/functions/Function1;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public fun modifyBeforeAttemptCompletion-gIAlu-s (Laws/smithy/kotlin/runtime/client/ResponseInterceptorContext;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun modifyBeforeCompletion-gIAlu-s (Laws/smithy/kotlin/runtime/client/ResponseInterceptorContext;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun modifyBeforeDeserialization (Laws/smithy/kotlin/runtime/client/ProtocolResponseInterceptorContext;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
@@ -476,6 +474,7 @@ public abstract interface class aws/smithy/kotlin/runtime/http/operation/HttpDes
 
 public final class aws/smithy/kotlin/runtime/http/operation/HttpOperationContext {
 	public static final field INSTANCE Laws/smithy/kotlin/runtime/http/operation/HttpOperationContext;
+	public final fun getChecksumAlgorithm ()Laws/smithy/kotlin/runtime/collections/AttributeKey;
 	public final fun getClockSkew ()Laws/smithy/kotlin/runtime/collections/AttributeKey;
 	public final fun getClockSkewApproximateSigningTime ()Laws/smithy/kotlin/runtime/collections/AttributeKey;
 	public final fun getHostPrefix ()Laws/smithy/kotlin/runtime/collections/AttributeKey;
