@@ -22,7 +22,7 @@ import aws.smithy.kotlin.runtime.text.encoding.encodeBase64String
  *   - https://datatracker.ietf.org/doc/html/rfc1864.html
  */
 @InternalApi
-public class Md5ChecksumInterceptor: HttpInterceptor {
+public class Md5ChecksumInterceptor : HttpInterceptor {
     override suspend fun modifyBeforeSigning(context: ProtocolRequestInterceptorContext<Any, HttpRequest>): HttpRequest {
         if (context.executionContext.contains(HttpOperationContext.ChecksumAlgorithm)) {
             return context.protocolRequest

@@ -5,7 +5,6 @@
 package aws.smithy.kotlin.runtime.collections
 
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.withTimeout
@@ -52,9 +51,9 @@ public class LruCacheTest {
         val cache = LruCache<String, String>(2)
 
         launch {
-           cache.withLock {
-               delay(5000L)
-           }
+            cache.withLock {
+                delay(5000L)
+            }
         }
 
         launch {
