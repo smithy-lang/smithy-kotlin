@@ -56,7 +56,7 @@ public class FlexibleChecksumsRequestInterceptor : HttpInterceptor {
         // this handles the case where a user inputs a precalculated checksum, but it doesn't match the input checksum algorithm
         req.headers.removeAllChecksumHeadersExcept(headerName)
 
-        val checksumAlgorithm = checksumAlgorithmName!!.toHashFunction() ?: throw ClientException("Could not parse checksum algorithm $checksumAlgorithmName")
+        val checksumAlgorithm = checksumAlgorithmName.toHashFunction() ?: throw ClientException("Could not parse checksum algorithm $checksumAlgorithmName")
 
         if (!checksumAlgorithm.isSupported) {
             throw ClientException("Checksum algorithm $checksumAlgorithmName is not supported for flexible checksums")
