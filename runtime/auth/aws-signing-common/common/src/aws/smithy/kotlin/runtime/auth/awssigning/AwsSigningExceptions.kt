@@ -12,10 +12,14 @@ import aws.smithy.kotlin.runtime.InternalApi
  *
  * See: [AwsSigningAlgorithm], [AwsSigner]
  *
- * @param isSigV4a Whether the unsupported signing algorithm is sigV4a
+ * @param signingAlgorithm The unsupported signing algorithm
  */
 @InternalApi
 public class UnsupportedSigningAlgorithmException(
     message: String,
     public val signingAlgorithm: AwsSigningAlgorithm,
-) : ClientException(message)
+    cause: Throwable? = null,
+) : ClientException(
+    message,
+    cause,
+)
