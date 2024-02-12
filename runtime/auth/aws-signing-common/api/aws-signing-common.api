@@ -186,7 +186,8 @@ public final class aws/smithy/kotlin/runtime/auth/awssigning/PresignerKt {
 }
 
 public final class aws/smithy/kotlin/runtime/auth/awssigning/UnsupportedSigningAlgorithmException : aws/smithy/kotlin/runtime/ClientException {
-	public fun <init> (Ljava/lang/String;Laws/smithy/kotlin/runtime/auth/awssigning/AwsSigningAlgorithm;)V
+	public fun <init> (Ljava/lang/String;Laws/smithy/kotlin/runtime/auth/awssigning/AwsSigningAlgorithm;Ljava/lang/Throwable;)V
+	public synthetic fun <init> (Ljava/lang/String;Laws/smithy/kotlin/runtime/auth/awssigning/AwsSigningAlgorithm;Ljava/lang/Throwable;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun getSigningAlgorithm ()Laws/smithy/kotlin/runtime/auth/awssigning/AwsSigningAlgorithm;
 }
 
