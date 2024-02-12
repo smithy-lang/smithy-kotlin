@@ -26,7 +26,7 @@ public object CrtAwsSigner : AwsSigner {
     override suspend fun sign(request: HttpRequest, config: AwsSigningConfig): AwsSigningResult<HttpRequest> {
         val isUnsigned = config.hashSpecification is HashSpecification.UnsignedPayload
         val isAwsChunked = request.headers.contains("Content-Encoding", "aws-chunked")
-        val isS3Express = request.headers.contains("X-Amz-S3Session-Token")
+        val isS3Express = request.headers.contains("X-Amz-S3session-Token")
 
         val requestBuilder = request.toBuilder()
 
@@ -34,7 +34,7 @@ public object CrtAwsSigner : AwsSigner {
         if (isS3Express) {
             crtConfig.algorithm = CrtSigningAlgorithm.SIGV4_S3EXPRESS
             crtConfig.omitSessionToken = false
-            requestBuilder.headers.remove("X-Amz-S3Session-Token")
+            requestBuilder.headers.remove("X-Amz-S3session-Token")
         }
 
         val crtRequest = requestBuilder.build().toSignableCrtRequest(isUnsigned, isAwsChunked)
