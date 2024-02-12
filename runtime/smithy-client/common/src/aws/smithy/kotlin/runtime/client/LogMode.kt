@@ -34,7 +34,7 @@ public sealed class LogMode(private val mask: Int) {
     /**
      * Log the request details as well as the body if possible
      */
-    public object LogRequestWithBody : LogMode(0x02) {
+    public object LogRequestWithBody : LogMode(0x03) {
         override fun toString(): String = "LogRequestWithBody"
     }
 
@@ -48,7 +48,7 @@ public sealed class LogMode(private val mask: Int) {
     /**
      * Log the response details as well as the body if possible
      */
-    public object LogResponseWithBody : LogMode(0x08) {
+    public object LogResponseWithBody : LogMode(0x0C) {
         override fun toString(): String = "LogResponseWithBody"
     }
 

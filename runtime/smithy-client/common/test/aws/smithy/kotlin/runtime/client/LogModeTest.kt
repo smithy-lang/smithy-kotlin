@@ -55,4 +55,15 @@ class LogModeTest {
     fun testUnsupportedCompositeLogMode() {
         assertFailsWith<ClientException> { LogMode.fromString("LogRequest|UnsupportedLogMode") }
     }
+
+    @Test
+    fun testWithBodyImpliesWithout() {
+        // LogRequestWithBody implies LogRequest
+        assertTrue(LogMode.LogRequestWithBody.isEnabled(LogMode.LogRequest))
+        assertFalse(LogMode.LogRequestWithBody.isEnabled(LogMode.LogResponse))
+
+        // LogResponseWithBody implies LogResponse
+        assertTrue(LogMode.LogResponseWithBody.isEnabled(LogMode.LogResponse))
+        assertFalse(LogMode.LogResponseWithBody.isEnabled(LogMode.LogRequest))
+    }
 }

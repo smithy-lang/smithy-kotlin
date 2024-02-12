@@ -18,9 +18,7 @@ import aws.smithy.kotlin.runtime.net.Host
 import aws.smithy.kotlin.runtime.net.Scheme
 import aws.smithy.kotlin.runtime.net.url.Url
 import kotlinx.coroutines.test.runTest
-import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertTrue
+import kotlin.test.*
 
 class HttpRequestBuilderTest {
     @Test
@@ -67,13 +65,18 @@ class HttpRequestBuilderTest {
         }
 
         assertTrue(builder.body is HttpBody.ChannelContent)
-        dumpRequest(builder, false)
+        val actualNoContent = dumpRequest(builder, false)
+        val expectedNoContent = "GET /debug/test?foo=bar\r\nHost: test.amazon.com\r\nContent-Length: ${content.length}\r\nx-baz: quux;qux\r\n\r\n"
         assertTrue(builder.body is HttpBody.ChannelContent)
+        assertEquals(expectedNoContent, actualNoContent)
 
-        val actual = dumpRequest(builder, true)
-        assertTrue(builder.body is HttpBody.Bytes)
-        val expected = "GET /debug/test?foo=bar\r\nHost: test.amazon.com\r\nContent-Length: ${content.length}\r\nx-baz: quux;qux\r\n\r\n$content"
-        assertEquals(expected, actual)
+        val actualWithContent = dumpRequest(builder, true)
+        assertTrue(builder.body is HttpBody.SourceContent)
+        val expectedWithContent = "$expectedNoContent$content"
+        assertEquals(expectedWithContent, actualWithContent)
+
+        val actualReplacedContent = builder.body.readAll()?.decodeToString() ?: fail("expected content")
+        assertEquals(content, actualReplacedContent)
     }
 
     @Test
