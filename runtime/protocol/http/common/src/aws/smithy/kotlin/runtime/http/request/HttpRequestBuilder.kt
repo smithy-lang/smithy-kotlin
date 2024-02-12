@@ -112,8 +112,8 @@ public suspend fun dumpRequest(request: HttpRequestBuilder, dumpBody: Boolean): 
     val skip = setOf("Host", "Content-Length")
     request.headers.entries()
         .filterNot { it.key in skip }
-        .forEach { entry ->
-            buffer.writeUtf8(entry.value.joinToString(separator = ";", prefix = "${entry.key}: ", postfix = "\r\n"))
+        .forEach { (key, values) ->
+            buffer.writeUtf8(values.joinToString(separator = ";", prefix = "${key}: ", postfix = "\r\n"))
         }
 
     buffer.writeUtf8("\r\n")

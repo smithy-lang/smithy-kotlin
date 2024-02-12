@@ -75,7 +75,7 @@ class HttpRequestBuilderTest {
         val expectedWithContent = "$expectedNoContent$content"
         assertEquals(expectedWithContent, actualWithContent)
 
-        val actualReplacedContent = builder.body.readAll()?.decodeToString() ?: fail("expected content")
+        val actualReplacedContent = assertNotNull(builder.body.readAll()?.decodeToString())
         assertEquals(content, actualReplacedContent)
     }
 
