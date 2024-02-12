@@ -113,7 +113,7 @@ public suspend fun dumpRequest(request: HttpRequestBuilder, dumpBody: Boolean): 
     request.headers.entries()
         .filterNot { it.key in skip }
         .forEach { (key, values) ->
-            buffer.writeUtf8(values.joinToString(separator = ";", prefix = "${key}: ", postfix = "\r\n"))
+            buffer.writeUtf8(values.joinToString(separator = ";", prefix = "$key: ", postfix = "\r\n"))
         }
 
     buffer.writeUtf8("\r\n")
