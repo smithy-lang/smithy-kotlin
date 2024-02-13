@@ -80,7 +80,7 @@ public object AwsSigningAttributes {
     public val NormalizeUriPath: AttributeKey<Boolean> = AttributeKey("aws.smithy.kotlin.signing#NormalizeUriPath")
 
     /**
-     * Flag indicating whether the X-Amz-Session-Token header should be omitted from the canonical request during signing.
+     * Flag indicating whether the X-Amz-Security-Token header should be omitted from the canonical request during signing.
      */
     public val OmitSessionToken: AttributeKey<Boolean> = AttributeKey("aws.smithy.kotlin.signing#OmitSessionToken")
 }
