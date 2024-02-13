@@ -25,7 +25,7 @@ import kotlin.time.Duration
  * AWS SigV4/SigV4a [HttpSigner] that signs outgoing requests using the given [config]
  */
 @InternalApi
-public open class AwsHttpSigner(private val config: Config) : HttpSigner {
+public class AwsHttpSigner(private val config: Config) : HttpSigner {
     @InternalApi
     public companion object {
         public inline operator fun invoke(block: Config.() -> Unit): AwsHttpSigner {
