@@ -66,4 +66,16 @@ public class LruCacheTest {
             }
         }
     }
+
+    @Test
+    fun testUpdatingKeyWhenCacheIsFullDoesNotEvict() = runTest {
+        val cache = LruCache<String, Int>(2)
+
+        cache.put("a", 1)
+
+        cache.put("b", 2)
+        cache.put("b", 3)
+
+        assertEquals(2, cache.size)
+    }
 }

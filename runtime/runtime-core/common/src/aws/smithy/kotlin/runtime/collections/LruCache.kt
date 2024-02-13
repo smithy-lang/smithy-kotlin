@@ -56,7 +56,7 @@ public class LruCache<K, V>(
      * @return [Unit]
      */
     public suspend fun putUnlocked(k: K, v: V) {
-        if (map.size == capacity) {
+        if (k !in map && map.size == capacity) {
             map.remove(map.entries.first().key)
         }
         map[k] = v
