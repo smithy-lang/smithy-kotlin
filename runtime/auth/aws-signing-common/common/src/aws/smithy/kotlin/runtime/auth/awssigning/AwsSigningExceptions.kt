@@ -12,7 +12,9 @@ import aws.smithy.kotlin.runtime.InternalApi
  *
  * See: [AwsSigningAlgorithm], [AwsSigner]
  *
+ * @param message The message displayed by the exception
  * @param signingAlgorithm The unsupported signing algorithm
+ * @param cause The cause of the exception
  */
 @InternalApi
 public class UnsupportedSigningAlgorithmException(
