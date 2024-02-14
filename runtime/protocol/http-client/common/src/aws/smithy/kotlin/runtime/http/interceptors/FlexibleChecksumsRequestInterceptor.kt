@@ -30,6 +30,9 @@ import kotlin.coroutines.coroutineContext
  * Otherwise, if it will be sent as a trailing header, calculate the checksum as asynchronously as the body is streamed.
  * In this case, a [LazyAsyncValue] will be added to the execution context which allows the trailing checksum to be sent
  * after the entire body has been streamed.
+ *
+ * @param checksumAlgorithmNameInitializer an optional function which parses the input [I] to return the checksum algorithm name.
+ * if not set, then the [HttpOperationContext.ChecksumAlgorithm] execution context attribute will be used.
  */
 @InternalApi
 public class FlexibleChecksumsRequestInterceptor<I>(
