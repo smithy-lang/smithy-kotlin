@@ -19,6 +19,8 @@ import aws.smithy.kotlin.runtime.text.encoding.encodeBase64String
  * See:
  *   - https://awslabs.github.io/smithy/1.0/spec/core/behavior-traits.html#httpchecksumrequired-trait
  *   - https://datatracker.ietf.org/doc/html/rfc1864.html
+ * @param block An optional function which parses the input [I] to determine if the `Content-MD5` header should be set.
+ * If not provided, the default behavior will set the header.
  */
 @InternalApi
 public class Md5ChecksumInterceptor<I>(
