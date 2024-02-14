@@ -32,11 +32,21 @@ import kotlin.coroutines.coroutineContext
  * after the entire body has been streamed.
  */
 @InternalApi
-public class FlexibleChecksumsRequestInterceptor : HttpInterceptor {
-    override suspend fun modifyBeforeSigning(context: ProtocolRequestInterceptorContext<Any, HttpRequest>): HttpRequest {
-        val logger = coroutineContext.logger<FlexibleChecksumsRequestInterceptor>()
+public class FlexibleChecksumsRequestInterceptor<I>(
+    private val checksumAlgorithmNameInitializer: ((I) -> String?)? = null
+) : HttpInterceptor {
+    private var checksumAlgorithmName: String? = null
 
-        val checksumAlgorithmName = context.executionContext.getOrNull(HttpOperationContext.ChecksumAlgorithm)
+    override fun readAfterSerialization(context: ProtocolRequestInterceptorContext<Any, HttpRequest>) {
+        @Suppress("UNCHECKED_CAST")
+        val input = context.request as I
+        checksumAlgorithmName = checksumAlgorithmNameInitializer?.invoke(input)
+    }
+
+    override suspend fun modifyBeforeSigning(context: ProtocolRequestInterceptorContext<Any, HttpRequest>): HttpRequest {
+        val logger = coroutineContext.logger<FlexibleChecksumsRequestInterceptor<I>>()
+
+        val checksumAlgorithmName = checksumAlgorithmName ?: context.executionContext.getOrNull(HttpOperationContext.ChecksumAlgorithm)
 
         checksumAlgorithmName ?: run {
             logger.debug { "no checksum algorithm specified, skipping flexible checksums processing" }

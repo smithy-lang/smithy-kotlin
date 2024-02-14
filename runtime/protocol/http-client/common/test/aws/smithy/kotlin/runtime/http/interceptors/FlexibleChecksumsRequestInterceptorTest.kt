@@ -40,7 +40,7 @@ class FlexibleChecksumsRequestInterceptorTest {
 
             val op = newTestOperation<Unit, Unit>(req, Unit)
             op.context[HttpOperationContext.ChecksumAlgorithm] = checksumAlgorithmName
-            op.interceptors.add(FlexibleChecksumsRequestInterceptor())
+            op.interceptors.add(FlexibleChecksumsRequestInterceptor<Unit>())
 
             op.roundTrip(client, Unit)
             val call = op.context.attributes[HttpOperationContext.HttpCallList].first()
@@ -61,7 +61,7 @@ class FlexibleChecksumsRequestInterceptorTest {
 
         val op = newTestOperation<Unit, Unit>(req, Unit)
         op.context[HttpOperationContext.ChecksumAlgorithm] = checksumAlgorithmName
-        op.interceptors.add(FlexibleChecksumsRequestInterceptor())
+        op.interceptors.add(FlexibleChecksumsRequestInterceptor<Unit>())
 
         op.roundTrip(client, Unit)
         val call = op.context.attributes[HttpOperationContext.HttpCallList].first()
@@ -79,7 +79,7 @@ class FlexibleChecksumsRequestInterceptorTest {
 
         val op = newTestOperation<Unit, Unit>(req, Unit)
         op.context[HttpOperationContext.ChecksumAlgorithm] = unsupportedChecksumAlgorithmName
-        op.interceptors.add(FlexibleChecksumsRequestInterceptor())
+        op.interceptors.add(FlexibleChecksumsRequestInterceptor<Unit>())
 
         assertFailsWith<ClientException> {
             op.roundTrip(client, Unit)
@@ -102,7 +102,7 @@ class FlexibleChecksumsRequestInterceptorTest {
 
         val op = newTestOperation<Unit, Unit>(req, Unit)
         op.context[HttpOperationContext.ChecksumAlgorithm] = checksumAlgorithmName
-        op.interceptors.add(FlexibleChecksumsRequestInterceptor())
+        op.interceptors.add(FlexibleChecksumsRequestInterceptor<Unit>())
 
         op.roundTrip(client, Unit)
         val call = op.context.attributes[HttpOperationContext.HttpCallList].first()
@@ -164,7 +164,7 @@ class FlexibleChecksumsRequestInterceptorTest {
 
         val op = newTestOperation<Unit, Unit>(req, Unit)
         op.context[HttpOperationContext.ChecksumAlgorithm] = checksumAlgorithmName
-        op.interceptors.add(FlexibleChecksumsRequestInterceptor())
+        op.interceptors.add(FlexibleChecksumsRequestInterceptor<Unit>())
 
         op.roundTrip(client, Unit)
         val call = op.context.attributes[HttpOperationContext.HttpCallList].first()
