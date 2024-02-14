@@ -39,8 +39,11 @@ class FlexibleChecksumsRequestInterceptorTest {
             }
 
             val op = newTestOperation<Unit, Unit>(req, Unit)
-            op.context[HttpOperationContext.ChecksumAlgorithm] = checksumAlgorithmName
-            op.interceptors.add(FlexibleChecksumsRequestInterceptor<Unit>())
+            op.interceptors.add(
+                FlexibleChecksumsRequestInterceptor<Unit> {
+                    checksumAlgorithmName
+                },
+            )
 
             op.roundTrip(client, Unit)
             val call = op.context.attributes[HttpOperationContext.HttpCallList].first()
@@ -60,8 +63,11 @@ class FlexibleChecksumsRequestInterceptorTest {
         val checksumAlgorithmName = "crc32c"
 
         val op = newTestOperation<Unit, Unit>(req, Unit)
-        op.context[HttpOperationContext.ChecksumAlgorithm] = checksumAlgorithmName
-        op.interceptors.add(FlexibleChecksumsRequestInterceptor<Unit>())
+        op.interceptors.add(
+            FlexibleChecksumsRequestInterceptor<Unit> {
+                checksumAlgorithmName
+            },
+        )
 
         op.roundTrip(client, Unit)
         val call = op.context.attributes[HttpOperationContext.HttpCallList].first()
@@ -78,8 +84,11 @@ class FlexibleChecksumsRequestInterceptorTest {
         val unsupportedChecksumAlgorithmName = "fooblefabble1024"
 
         val op = newTestOperation<Unit, Unit>(req, Unit)
-        op.context[HttpOperationContext.ChecksumAlgorithm] = unsupportedChecksumAlgorithmName
-        op.interceptors.add(FlexibleChecksumsRequestInterceptor<Unit>())
+        op.interceptors.add(
+            FlexibleChecksumsRequestInterceptor<Unit> {
+                unsupportedChecksumAlgorithmName
+            },
+        )
 
         assertFailsWith<ClientException> {
             op.roundTrip(client, Unit)
@@ -101,13 +110,33 @@ class FlexibleChecksumsRequestInterceptorTest {
         val checksumAlgorithmName = "crc32c"
 
         val op = newTestOperation<Unit, Unit>(req, Unit)
-        op.context[HttpOperationContext.ChecksumAlgorithm] = checksumAlgorithmName
-        op.interceptors.add(FlexibleChecksumsRequestInterceptor<Unit>())
+        op.interceptors.add(
+            FlexibleChecksumsRequestInterceptor<Unit> {
+                checksumAlgorithmName
+            },
+        )
 
         op.roundTrip(client, Unit)
         val call = op.context.attributes[HttpOperationContext.HttpCallList].first()
 
         assertEquals(0, call.request.headers.getNumChecksumHeaders())
+    }
+
+    @Test
+    fun itSetsChecksumHeaderViaExecutionContext() = runTest {
+        checksums.forEach { (checksumAlgorithmName, expectedChecksumValue) ->
+            val req = HttpRequestBuilder().apply {
+                body = HttpBody.fromBytes("<Foo>bar</Foo>".encodeToByteArray())
+            }
+
+            val op = newTestOperation<Unit, Unit>(req, Unit)
+            op.context[HttpOperationContext.ChecksumAlgorithm] = checksumAlgorithmName
+            op.interceptors.add(FlexibleChecksumsRequestInterceptor<Unit>())
+
+            op.roundTrip(client, Unit)
+            val call = op.context.attributes[HttpOperationContext.HttpCallList].first()
+            assertEquals(expectedChecksumValue, call.request.headers["x-amz-checksum-$checksumAlgorithmName"])
+        }
     }
 
     @Test
