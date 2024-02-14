@@ -24,7 +24,7 @@ import aws.smithy.kotlin.runtime.text.encoding.encodeBase64String
  */
 @InternalApi
 public class Md5ChecksumInterceptor<I>(
-    private val block: ((input: I) -> Boolean)? = null
+    private val block: ((input: I) -> Boolean)? = null,
 ) : HttpInterceptor {
     private var cachedChecksum: String? = null
 
