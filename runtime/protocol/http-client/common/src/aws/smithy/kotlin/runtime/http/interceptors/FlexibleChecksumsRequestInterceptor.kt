@@ -39,6 +39,7 @@ public class FlexibleChecksumsRequestInterceptor<I>(
     private val checksumAlgorithmNameInitializer: ((I) -> String?)? = null
 ) : HttpInterceptor {
     private var checksumAlgorithmName: String? = null
+    private var cachedChecksum: String? = null
 
     override fun readAfterSerialization(context: ProtocolRequestInterceptorContext<Any, HttpRequest>) {
         @Suppress("UNCHECKED_CAST")
@@ -96,17 +97,18 @@ public class FlexibleChecksumsRequestInterceptor<I>(
 
             req.trailingHeaders.append(headerName, deferredChecksum)
         } else if (req.headers[headerName] == null) {
-            logger.debug { "Calculating checksum" }
-
-            val checksum: String = when {
-                req.body.contentLength == null && !req.body.isOneShot -> {
-                    val channel = req.body.toSdkByteReadChannel()!!
-                    channel.rollingHash(checksumAlgorithm).encodeBase64String()
-                }
-                else -> {
-                    val bodyBytes = req.body.readAll()!!
-                    req.body = bodyBytes.toHttpBody() // replace the consumed body
-                    bodyBytes.hash(checksumAlgorithm).encodeBase64String()
+            val checksum: String = cachedChecksum ?: run {
+                logger.debug { "Calculating checksum" }
+                when {
+                    req.body.contentLength == null && !req.body.isOneShot -> {
+                        val channel = req.body.toSdkByteReadChannel()!!
+                        channel.rollingHash(checksumAlgorithm).encodeBase64String().also { cachedChecksum = it }
+                    }
+                    else -> {
+                        val bodyBytes = req.body.readAll()!!
+                        req.body = bodyBytes.toHttpBody() // replace the consumed body
+                        bodyBytes.hash(checksumAlgorithm).encodeBase64String().also { cachedChecksum = it }
+                    }
                 }
             }
 
