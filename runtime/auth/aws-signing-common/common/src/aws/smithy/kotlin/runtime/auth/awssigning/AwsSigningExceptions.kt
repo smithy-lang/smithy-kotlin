@@ -24,4 +24,13 @@ public class UnsupportedSigningAlgorithmException(
 ) : ClientException(
     message,
     cause,
-)
+) {
+    public constructor(
+        message: String,
+        signingAlgorithm: AwsSigningAlgorithm,
+    ) : this (
+        message,
+        signingAlgorithm,
+        null,
+    )
+}
