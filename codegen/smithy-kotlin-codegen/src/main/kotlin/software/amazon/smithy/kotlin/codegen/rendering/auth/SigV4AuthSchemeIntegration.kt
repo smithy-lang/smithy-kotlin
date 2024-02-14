@@ -37,7 +37,7 @@ import java.util.*
 /**
  * Register support for the `aws.auth#sigv4` auth scheme.
  */
-open class SigV4AuthSchemeIntegration : KotlinIntegration {
+class SigV4AuthSchemeIntegration : KotlinIntegration {
     // Allow integrations to customize the service config props, later integrations take precedence
     // Needs to happen after the `SigV4AsymmetricTraitCustomization` (-60).
     override val order: Byte = -50
@@ -160,7 +160,7 @@ open class SigV4AuthSchemeHandler : AuthSchemeHandler {
  * Conditionally updates the operation context to set the signed body header attribute
  * e.g. to set `X-Amz-Content-Sha256` header.
  */
-internal class Sigv4SignedBodyHeaderMiddleware : ProtocolMiddleware {
+public class Sigv4SignedBodyHeaderMiddleware : ProtocolMiddleware {
     override val name: String = "Sigv4SignedBodyHeaderMiddleware"
 
     override fun isEnabledFor(ctx: ProtocolGenerator.GenerationContext, op: OperationShape): Boolean {
@@ -245,7 +245,7 @@ private fun KotlinWriter.renderOrElse(
     write(",")
 }
 
-internal val credentialsProviderProp = ConfigProperty {
+public val credentialsProviderProp = ConfigProperty {
     symbol = RuntimeTypes.Auth.Credentials.AwsCredentials.CredentialsProvider
     baseClass = RuntimeTypes.Auth.Credentials.AwsCredentials.CredentialsProviderConfig
     useNestedBuilderBaseClass()
