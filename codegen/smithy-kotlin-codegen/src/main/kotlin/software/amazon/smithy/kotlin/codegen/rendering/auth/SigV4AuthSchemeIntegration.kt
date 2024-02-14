@@ -160,7 +160,7 @@ open class SigV4AuthSchemeHandler : AuthSchemeHandler {
  * Conditionally updates the operation context to set the signed body header attribute
  * e.g. to set `X-Amz-Content-Sha256` header.
  */
-public class Sigv4SignedBodyHeaderMiddleware : ProtocolMiddleware {
+internal class Sigv4SignedBodyHeaderMiddleware : ProtocolMiddleware {
     override val name: String = "Sigv4SignedBodyHeaderMiddleware"
 
     override fun isEnabledFor(ctx: ProtocolGenerator.GenerationContext, op: OperationShape): Boolean {
@@ -245,7 +245,7 @@ private fun KotlinWriter.renderOrElse(
     write(",")
 }
 
-public val credentialsProviderProp = ConfigProperty {
+internal val credentialsProviderProp = ConfigProperty {
     symbol = RuntimeTypes.Auth.Credentials.AwsCredentials.CredentialsProvider
     baseClass = RuntimeTypes.Auth.Credentials.AwsCredentials.CredentialsProviderConfig
     useNestedBuilderBaseClass()
