@@ -41,6 +41,10 @@ object RuntimeTypes {
         object Response : RuntimeTypePackage(KotlinDependency.HTTP, "response") {
             val HttpResponse = symbol("HttpResponse")
         }
+
+        object Operation: RuntimeTypePackage(KotlinDependency.HTTP, "operation") {
+            val HttpOperationContext = symbol("HttpOperationContext")
+        }
     }
     object HttpClient : RuntimeTypePackage(KotlinDependency.HTTP_CLIENT) {
         val SdkHttpClient = symbol("SdkHttpClient")
