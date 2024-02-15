@@ -23,43 +23,23 @@ public class LruCache<K, V>(
      * @param k the key to look up
      * @return the value associated with the key, or null if it does not exist
      */
-    public suspend fun get(k: K): V? = withLock {
-        getUnlocked(k)
-    }
-
-    /**
-     * Returns the value for a key [k], or null if it does not exist.
-     * Note: This method is not thread-safe! The mutex must be locked before calling.
-     * @param k the key to look up
-     * @return the value associated with the key, or null if it does not exist
-     */
-    public suspend fun getUnlocked(k: K): V? {
+    public suspend fun get(k: K): V? = mu.withLock {
         map.moveKeyToBack(k)
         return map[k]
     }
 
     /**
-     * Add a new entry to the cache with a key [k] and value [v].
+     * Add or update a cache entry with a key [k] and value [v].
      * @param k the key to associate the value with
      * @param v the value to store in the cache
      * @return [Unit]
      */
-    public suspend fun put(k: K, v: V): Unit = withLock {
-        putUnlocked(k, v)
-    }
-
-    /**
-     * Add a new entry to the cache with a key [k] and value [v].
-     * Note: This method is not thread-safe! The mutex must be locked before calling.
-     * @param k the key to associate the value with
-     * @param v the value to store in the cache
-     * @return [Unit]
-     */
-    public suspend fun putUnlocked(k: K, v: V) {
+    public suspend fun put(k: K, v: V): Unit = mu.withLock {
         if (k !in map && map.size == capacity) {
             map.remove(map.keys.first())
         }
         map[k] = v
+        map.moveKeyToBack(k)
     }
 
     /**
@@ -70,21 +50,10 @@ public class LruCache<K, V>(
     public suspend fun remove(k: K): V? = mu.withLock { map.remove(k) }
 
     /**
-     * Lock the mutex and execute a function [block].
-     * Note: It is safe for [block] to call [getUnlocked] and [putUnlocked].
-     * @param block A function accepting zero arguments and returning some value [T]
-     * @return The result of the function, [T]
+     * Get a snapshot of the entries in the cache.
      */
-    public suspend fun <T> withLock(block: suspend () -> T): T = mu.withLock {
-        block()
-    }
-
-    /**
-     * Get the set of entries in the cache.
-     * Note: This is not thread safe! If you plan to iterate over entries, lock the mutex.
-     */
-    public val entries: MutableSet<MutableMap.MutableEntry<K, V>>
-        get() = map.entries
+    public val entries: Set<Map.Entry<K, V>>
+        get() = map.toMap().entries
 
     /**
      * Get the current size of the cache
