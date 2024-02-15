@@ -1,8 +1,0 @@
-{
-    "id": "00960dac-40d8-4b6d-a3a7-12eb944d5753",
-    "type": "bugfix",
-    "description": "Fix `PutObject` request when `LogMode` is set to `LogRequestWithBody`",
-    "issues": [
-        "awslabs/aws-sdk-kotlin#1198"
-    ]
-}

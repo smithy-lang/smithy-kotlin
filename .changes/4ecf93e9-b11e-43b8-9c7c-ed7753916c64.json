@@ -1,5 +1,0 @@
-{
-    "id": "4ecf93e9-b11e-43b8-9c7c-ed7753916c64",
-    "type": "bugfix",
-    "description": "Fix `LogRequestWithBody` and `LogResponseWithBody` imply `LogRequest` and `LogResponse` respectively"
-}
