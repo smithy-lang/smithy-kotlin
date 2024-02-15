@@ -4,9 +4,9 @@
  */
 package aws.smithy.kotlin.runtime.collections
 
+import aws.smithy.kotlin.runtime.InternalApi
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
-import aws.smithy.kotlin.runtime.InternalApi
 
 /**
  * A thread-safe generic LRU (least recently used) cache.
