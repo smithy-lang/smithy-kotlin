@@ -42,7 +42,7 @@ object RuntimeTypes {
             val HttpResponse = symbol("HttpResponse")
         }
 
-        object Operation: RuntimeTypePackage(KotlinDependency.HTTP, "operation") {
+        object Operation : RuntimeTypePackage(KotlinDependency.HTTP, "operation") {
             val HttpOperationContext = symbol("HttpOperationContext")
         }
     }

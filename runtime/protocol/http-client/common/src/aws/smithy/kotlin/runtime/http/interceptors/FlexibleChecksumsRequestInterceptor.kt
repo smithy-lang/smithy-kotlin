@@ -36,7 +36,7 @@ import kotlin.coroutines.coroutineContext
  */
 @InternalApi
 public class FlexibleChecksumsRequestInterceptor<I>(
-    private val checksumAlgorithmNameInitializer: ((I) -> String?)? = null
+    private val checksumAlgorithmNameInitializer: ((I) -> String?)? = null,
 ) : HttpInterceptor {
     private var checksumAlgorithmName: String? = null
     private var cachedChecksum: String? = null
