@@ -6,12 +6,14 @@ package aws.smithy.kotlin.runtime.collections
 
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import aws.smithy.kotlin.runtime.InternalApi
 
 /**
  * A thread-safe generic LRU (least recently used) cache.
  * Entries will be added up to a configured [capacity].
  * Once full, adding a new entry will evict the least recently used entry.
  */
+@InternalApi
 public class LruCache<K, V>(
     public val capacity: Int,
 ) {
