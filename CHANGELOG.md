@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.0.14] - 02/15/2024
+
+### Fixes
+* Fix `LogRequestWithBody` and `LogResponseWithBody` imply `LogRequest` and `LogResponse` respectively
+* [#1198](https://github.com/awslabs/aws-sdk-kotlin/issues/1198) Fix `PutObject` request when `LogMode` is set to `LogRequestWithBody`
+
 ## [1.0.13] - 02/07/2024
 
 ### Fixes

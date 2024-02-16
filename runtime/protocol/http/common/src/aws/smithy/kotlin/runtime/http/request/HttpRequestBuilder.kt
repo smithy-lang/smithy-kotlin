@@ -6,7 +6,6 @@ package aws.smithy.kotlin.runtime.http.request
 
 import aws.smithy.kotlin.runtime.InternalApi
 import aws.smithy.kotlin.runtime.http.*
-import aws.smithy.kotlin.runtime.http.content.ByteArrayContent
 import aws.smithy.kotlin.runtime.io.*
 import aws.smithy.kotlin.runtime.net.url.Url
 import aws.smithy.kotlin.runtime.util.CanDeepCopy
@@ -113,26 +112,35 @@ public suspend fun dumpRequest(request: HttpRequestBuilder, dumpBody: Boolean): 
     val skip = setOf("Host", "Content-Length")
     request.headers.entries()
         .filterNot { it.key in skip }
-        .forEach {
-            buffer.writeUtf8(it.value.joinToString(separator = ";", prefix = "${it.key}: ", postfix = "\r\n"))
+        .forEach { (key, values) ->
+            buffer.writeUtf8(values.joinToString(separator = ";", prefix = "$key: ", postfix = "\r\n"))
         }
 
     buffer.writeUtf8("\r\n")
-
     if (dumpBody) {
         when (val body = request.body) {
             is HttpBody.Bytes -> buffer.write(body.bytes())
             is HttpBody.ChannelContent, is HttpBody.SourceContent -> {
                 // consume the stream and replace the body
-                val content = body.readAll()
-                if (content != null) {
-                    buffer.write(content)
-                    request.body = ByteArrayContent(content)
-                }
+                request.body = copyHttpBody(request.body, buffer)
             }
             is HttpBody.Empty -> { } // nothing to dump
         }
     }
 
     return buffer.readUtf8()
+}
+
+private suspend fun copyHttpBody(original: HttpBody, buffer: SdkBuffer): HttpBody {
+    val content = original.readAll() ?: return HttpBody.Empty
+    buffer.write(content)
+    return object : HttpBody.SourceContent() {
+        override fun readFrom(): SdkSource =
+            content.source()
+
+        // even though we know the content length we preserve the original in case it was chunked encoding
+        override val contentLength: Long? = original.contentLength
+        override val isOneShot: Boolean = original.isOneShot
+        override val isDuplex: Boolean = original.isDuplex
+    }
 }
