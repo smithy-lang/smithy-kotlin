@@ -7,6 +7,7 @@ package aws.smithy.kotlin.runtime.collections
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 
 public class LruCacheTest {
     @Test
@@ -66,5 +67,16 @@ public class LruCacheTest {
         cache.put("b", 3)
 
         assertEquals(2, cache.size)
+    }
+
+    @Test
+    fun testCapacity() = runTest {
+        assertFailsWith<IllegalArgumentException> {
+            LruCache<Any, Any>(-1)
+        }
+        assertFailsWith<IllegalArgumentException> {
+            LruCache<Any, Any>(0)
+        }
+        LruCache<Any, Any>(1)
     }
 }

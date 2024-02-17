@@ -20,6 +20,10 @@ public class LruCache<K, V>(
     private val mu = Mutex() // protects map
     private val map = linkedMapOf<K, V>()
 
+    init {
+        require(capacity > 0) { "cache capacity must be greater than 0, was $capacity" }
+    }
+
     /**
      * Returns the value for a key [k], or null if it does not exist.
      * @param k the key to look up
