@@ -57,12 +57,14 @@ public class LruCache<K, V>(
 
     /**
      * Get a snapshot of the entries in the cache.
+     * Note: This is not thread-safe! the underlying entries may change immediately after calling.
      */
     public val entries: Set<Map.Entry<K, V>>
         get() = map.toMap().entries
 
     /**
      * Get the current size of the cache
+     * Note: This is not thread-safe! The size may change immediately after calling.
      */
     public val size: Int
         get() = map.size
