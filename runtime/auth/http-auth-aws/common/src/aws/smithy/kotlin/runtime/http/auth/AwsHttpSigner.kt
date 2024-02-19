@@ -125,6 +125,8 @@ public class AwsHttpSigner(private val config: Config) : HttpSigner {
         val contextNormalizeUriPath = attributes.getOrNull(AwsSigningAttributes.NormalizeUriPath)
         val contextSigningServiceName = attributes.getOrNull(AwsSigningAttributes.SigningService)
 
+        val enableAwsChunked = attributes.getOrNull(AwsSigningAttributes.EnableAwsChunked) ?: false
+
         // operation signing config is baseConfig + operation specific config/overrides
         val signingConfig = AwsSigningConfig {
             service = contextSigningServiceName ?: checkNotNull(config.service)
@@ -156,7 +158,7 @@ public class AwsHttpSigner(private val config: Config) : HttpSigner {
             hashSpecification = when {
                 contextHashSpecification != null -> contextHashSpecification
                 body is HttpBody.Empty -> HashSpecification.EmptyBody
-                body.isEligibleForAwsChunkedStreaming -> {
+                body.isEligibleForAwsChunkedStreaming && enableAwsChunked -> {
                     if (request.headers.contains("x-amz-trailer")) {
                         if (config.isUnsignedPayload) HashSpecification.StreamingUnsignedPayloadWithTrailers else HashSpecification.StreamingAws4HmacSha256PayloadWithTrailers
                     } else {
