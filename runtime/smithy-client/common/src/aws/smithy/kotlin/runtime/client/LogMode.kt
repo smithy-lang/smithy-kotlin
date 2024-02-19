@@ -62,7 +62,7 @@ public sealed class LogMode(private val mask: Int) {
     /**
      * Test if a particular [LogMode] is enabled
      */
-    public fun isEnabled(mode: LogMode): Boolean = mask and mode.mask != 0
+    public fun isEnabled(mode: LogMode): Boolean = mask and mode.mask == mode.mask
 
     public companion object {
         /**
