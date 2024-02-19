@@ -80,6 +80,14 @@ public object AwsSigningAttributes {
     public val NormalizeUriPath: AttributeKey<Boolean> = AttributeKey("aws.smithy.kotlin.signing#NormalizeUriPath")
 
     /**
+     * Flag indicating whether to enable sending requests with `aws-chunked` content encoding. Defaults to `false`.
+     * Note: This flag does not solely control aws-chunked behavior. The size of the request body must also be above a
+     * defined threshold in order to be chunked.
+     * @see <a href="https://docs.aws.amazon.com/AmazonS3/latest/API/sigv4-streaming.html">SigV4 Streaming</a>
+     */
+    public val EnableAwsChunked: AttributeKey<Boolean> = AttributeKey("aws.smithy.kotlin.signing#EnableAwsChunked")
+
+    /**
      * Flag indicating whether the X-Amz-Security-Token header should be omitted from the canonical request during signing.
      */
     public val OmitSessionToken: AttributeKey<Boolean> = AttributeKey("aws.smithy.kotlin.signing#OmitSessionToken")

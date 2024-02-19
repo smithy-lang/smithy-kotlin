@@ -1,0 +1,5 @@
+{
+    "id": "01ea7858-c080-447f-9bd1-93bdec3f0161",
+    "type": "bugfix",
+    "description": "Fix LogMode unintentionally enabling *WithBody modes"
+}

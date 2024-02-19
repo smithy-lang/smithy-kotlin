@@ -66,4 +66,13 @@ class LogModeTest {
         assertTrue(LogMode.LogResponseWithBody.isEnabled(LogMode.LogResponse))
         assertFalse(LogMode.LogResponseWithBody.isEnabled(LogMode.LogRequest))
     }
+
+    @Test
+    fun testWithoutBodyDoesNotImplyWith() {
+        // LogRequest does NOT imply LogRequestWithBody
+        assertFalse(LogMode.LogRequest.isEnabled(LogMode.LogRequestWithBody))
+
+        // LogResponse does NOT imply LogResponseWithBody
+        assertFalse(LogMode.LogResponse.isEnabled(LogMode.LogResponseWithBody))
+    }
 }
