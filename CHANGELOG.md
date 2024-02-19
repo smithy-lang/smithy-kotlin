@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.0.15] - 02/19/2024
+
+### Features
+* Add `EnableAwsChunked` signing attribute
+
+### Fixes
+* Fix LogMode unintentionally enabling *WithBody modes
+
 ## [1.0.14] - 02/15/2024
 
 ### Fixes
