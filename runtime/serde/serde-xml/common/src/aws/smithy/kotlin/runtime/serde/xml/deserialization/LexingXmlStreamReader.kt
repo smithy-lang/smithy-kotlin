@@ -42,16 +42,18 @@ public class LexingXmlStreamReader(private val source: XmlLexer) : XmlStreamRead
     override fun skipNext() {
         val peekToken = peek(1) ?: return
         val startDepth = peekToken.depth
+        scanUntilDepth(startDepth, nextToken())
+    }
 
-        tailrec fun scanUntilDepth(from: XmlToken?) {
-            when {
-                from == null || from is XmlToken.EndDocument -> return // End of document
-                from is XmlToken.EndElement && from.depth == startDepth -> return // Returned to original start depth
-                else -> scanUntilDepth(nextToken()) // Keep scannin'!
-            }
+    private tailrec fun scanUntilDepth(startDepth: Int, from: XmlToken?) {
+        when {
+            from == null || from is XmlToken.EndDocument -> return // End of document
+            from is XmlToken.EndElement && from.depth == startDepth -> return // Returned to original start depth
+            else -> scanUntilDepth(startDepth, nextToken()) // Keep scannin'!
         }
-
-        scanUntilDepth(nextToken())
+    }
+    override fun skipCurrent() {
+        scanUntilDepth(lastToken?.depth ?: 0, lastToken)
     }
 
     override fun subTreeReader(subtreeStartDepth: XmlStreamReader.SubtreeStartDepth): XmlStreamReader =
@@ -110,6 +112,8 @@ private class ChildXmlStreamReader(
 
     override fun skipNext() = parent.skipNext()
 
+    override fun skipCurrent() = parent.skipCurrent()
+
     override fun subTreeReader(subtreeStartDepth: XmlStreamReader.SubtreeStartDepth): XmlStreamReader =
         parent.subTreeReader(subtreeStartDepth)
 }
@@ -118,17 +122,19 @@ private class ChildXmlStreamReader(
  * An empty XML stream reader that trivially returns `null` for all [nextToken] and [peek] invocations.
  * @param parent The [LexingXmlStreamReader] on which this child reader is based.
  */
-private class EmptyXmlStreamReader(private val parent: XmlStreamReader) : XmlStreamReader {
+private class EmptyXmlStreamReader(private val parent: XmlStreamReader?) : XmlStreamReader {
     override val lastToken: XmlToken?
-        get() = parent.lastToken
+        get() = parent?.lastToken
 
     override fun nextToken(): XmlToken? = null
 
     override fun peek(index: Int): XmlToken? = null
 
     override fun skipNext() = Unit
-
+    override fun skipCurrent() = Unit
     override fun subTreeReader(subtreeStartDepth: XmlStreamReader.SubtreeStartDepth): XmlStreamReader = this
 }
 
 private fun <T> List<T>.getOrNull(index: Int): T? = if (index < size) this[index] else null
+
+internal fun XmlStreamReader.emptyReader(parent: XmlStreamReader? = this): XmlStreamReader = EmptyXmlStreamReader(parent)
