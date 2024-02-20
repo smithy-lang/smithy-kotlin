@@ -47,6 +47,7 @@ dependencies {
     implementation(project(":runtime:serde"))
     implementation(project(":runtime:serde:serde-json"))
     implementation(project(":runtime:serde:serde-xml"))
+    implementation(project(":runtime:smithy-test"))
 
     testImplementation(libs.kotlin.test.junit5)
 }

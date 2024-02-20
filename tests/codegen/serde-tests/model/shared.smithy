@@ -87,68 +87,77 @@ map IntegerEnumMap {
 }
 
 
-union Choice {
-    @xmlFlattened
-    @xmlName("flatmap")
-    flatMap: StringMap,
+@mixin
+structure PrimitiveTypesMixin {
+    strField: String,
+    byteField: Byte,
+    intField: Integer,
+    shortField: Short,
+    longField: Long,
+    floatField: Float,
+    doubleField: Double,
+    bigIntegerField: BigInteger,
+    bigDecimalField: BigDecimal,
+    boolField: Boolean,
+    blobField: Blob,
+    enumField: FooEnum,
+    intEnumField: IntegerEnum,
+    dateTimeField: DateTime,
+    epochTimeField: EpochSeconds,
+    httpTimeField: HttpDate,
+}
 
+@mixin
+union PrimitiveTypesUnionMixin {
+    strField: String,
+    byteField: Byte,
+    intField: Integer,
+    shortField: Short,
+    longField: Long,
+    floatField: Float,
+    doubleField: Double,
+    bigIntegerField: BigInteger,
+    bigDecimalField: BigDecimal,
+    boolField: Boolean,
+    blobField: Blob,
+    enumField: FooEnum,
+    intEnumField: IntegerEnum,
+    dateTimeField: DateTime,
+    epochTimeField: EpochSeconds,
+    httpTimeField: HttpDate,
+    unitField: Unit
+}
+
+@mixin
+structure MapTypesMixin {
     normalMap: StringMap,
-
     sparseMap: SparseStringMap,
+    nestedMap: NestedStringMap,
+    listMap: StringListMap,
+}
 
-    // FIXME - doesn't work with current codegen
-    // listMap: StringListMap,
+@mixin
+union MapTypesUnionMixin {
+    normalMap: StringMap,
+    sparseMap: SparseStringMap,
+    // FIXME - doesn't work with current codegen for unions
+    // nestedMap: NestedStringMap,
+}
 
-    // FIXME - doesn't work with current codegen
-    // nestedMap: NestedStringMap
+@mixin
+structure ListTypesMixin {
+    normalList: StringList,
+    sparseList: SparseStringList,
+    nestedList: NestedStringList,
+}
 
-    @xmlFlattened
-    @xmlName("flatlist")
-    flatList: StringList,
-
+@mixin
+union ListTypesUnionMixin {
     normalList: StringList,
 
     sparseList: SparseStringList,
 
-    // FIXME - doesn't work with current codegen
+    // FIXME - doesn't work with current codegen for unions
     // nestedList: NestedStringList,
-
-    str: String,
-
-    enum: FooEnum,
-
-    dateTime: DateTime,
-    epochTime: EpochSeconds,
-    httpTime: HttpDate,
-
-    @xmlName("double")
-    fpDouble: Double,
-
-    top: Top,
-
-    blob: Blob,
-
-    unit: Unit,
-
-    // TODO - enum lists, timestamp lists, structure list, structure map, multiple flat lists interspersed (xml only)
 }
 
-structure Top {
-    choice: Choice,
-
-    strField: String,
-
-    enumField: FooEnum,
-
-    @xmlAttribute
-    extra: Long,
-
-    @xmlName("prefix:local")
-    renamedWithPrefix: String,
-
-
-    // FIXME - move back to Choice when supported properly
-    listMap: StringListMap,
-    nestedMap: NestedStringMap
-    nestedList: NestedStringList,
-}
