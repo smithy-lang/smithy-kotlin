@@ -9,7 +9,7 @@ plugins {
 
 skipPublishing()
 
-description = "Codegen support for serde-benchmarks project"
+description = "Codegen support for serde related integration tests"
 
 dependencies {
     implementation(project(":codegen:smithy-kotlin-codegen"))

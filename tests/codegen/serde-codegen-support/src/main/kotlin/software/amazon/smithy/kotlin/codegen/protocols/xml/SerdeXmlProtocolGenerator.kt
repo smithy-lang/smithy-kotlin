@@ -4,7 +4,7 @@
  */
 package software.amazon.smithy.kotlin.codegen.protocols.xml
 
-import software.amazon.smithy.kotlin.codegen.protocols.BenchmarkProtocolGenerator
+import software.amazon.smithy.kotlin.codegen.protocols.SerdeProtocolGenerator
 import software.amazon.smithy.kotlin.codegen.rendering.protocol.*
 import software.amazon.smithy.kotlin.codegen.rendering.serde.StructuredDataParserGenerator
 import software.amazon.smithy.kotlin.codegen.rendering.serde.StructuredDataSerializerGenerator
@@ -13,11 +13,11 @@ import software.amazon.smithy.kotlin.codegen.rendering.serde.XmlSerializerGenera
 import software.amazon.smithy.model.shapes.ShapeId
 
 /**
- * Protocol generator for benchmark protocol [SerdeBenchmarkXmlProtocol].
+ * Protocol generator for testing [SerdeXmlProtocol].
  */
-object SerdeBenchmarkXmlProtocolGenerator : BenchmarkProtocolGenerator() {
+object SerdeXmlProtocolGenerator : SerdeProtocolGenerator() {
     override val contentTypes = ProtocolContentTypes.consistent("application/xml")
-    override val protocol: ShapeId = SerdeBenchmarkXmlProtocol.ID
+    override val protocol: ShapeId = SerdeXmlProtocol.ID
 
     override fun structuredDataParser(ctx: ProtocolGenerator.GenerationContext): StructuredDataParserGenerator =
         XmlParserGenerator(this, defaultTimestampFormat)

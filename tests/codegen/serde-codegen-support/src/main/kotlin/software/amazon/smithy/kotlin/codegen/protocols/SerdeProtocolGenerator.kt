@@ -13,7 +13,7 @@ import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.shapes.ServiceShape
 import software.amazon.smithy.model.traits.TimestampFormatTrait
 
-abstract class BenchmarkProtocolGenerator : HttpBindingProtocolGenerator() {
+abstract class SerdeProtocolGenerator : HttpBindingProtocolGenerator() {
     abstract val contentTypes: ProtocolContentTypes
 
     override val defaultTimestampFormat: TimestampFormatTrait.Format = TimestampFormatTrait.Format.EPOCH_SECONDS
@@ -38,7 +38,7 @@ abstract class BenchmarkProtocolGenerator : HttpBindingProtocolGenerator() {
                 RuntimeTypes.Core.ExecutionContext,
                 RuntimeTypes.Http.HttpCall,
             ) {
-                write("error(\"not needed for benchmark tests\")")
+                write("error(\"not needed for codegen related tests\")")
             }
         }
 }
