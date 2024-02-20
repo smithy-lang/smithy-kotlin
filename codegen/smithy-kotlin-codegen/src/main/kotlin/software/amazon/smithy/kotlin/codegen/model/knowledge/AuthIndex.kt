@@ -85,15 +85,8 @@ class AuthIndex {
         val serviceIndex = ServiceIndex.of(ctx.model)
         val allAuthHandlers = authHandlers(ctx)
 
-        // all auth schemes possible on the service (this does not handle optional/anonymous or custom auth schemes)
+        // all auth schemes possible on the service (this does not handle optional/anonymous auth)
         val allAuthSchemes = serviceIndex.getAuthSchemes(ctx.service)
-
-        // reconcile custom auth schemes
-        val effectiveAuthSchemes = serviceIndex.getEffectiveAuthSchemes(ctx.service)
-        if (allAuthSchemes != effectiveAuthSchemes) {
-            allAuthSchemes.putAll(effectiveAuthSchemes) // merge effectiveAuthSchemes into allAuthSchemes
-        }
-
         val handlers = mutableListOf<AuthSchemeHandler>()
         allAuthSchemes.mapNotNullTo(handlers) {
             allAuthHandlers[it.key]
