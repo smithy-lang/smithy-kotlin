@@ -9,7 +9,6 @@ import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.kotlin.codegen.KotlinSettings
 import software.amazon.smithy.kotlin.codegen.core.*
 import software.amazon.smithy.kotlin.codegen.integration.AuthSchemeHandler
-import software.amazon.smithy.kotlin.codegen.integration.SectionId
 import software.amazon.smithy.kotlin.codegen.lang.KotlinTypes
 import software.amazon.smithy.kotlin.codegen.model.buildSymbol
 import software.amazon.smithy.kotlin.codegen.model.knowledge.AuthIndex
