@@ -27,8 +27,6 @@ class IdentityProviderConfigGenerator {
         }
     }
 
-    object ConfigureIdentityProviderForAuthScheme : SectionId
-
     fun render(ctx: ProtocolGenerator.GenerationContext) {
         val symbol = getSymbol(ctx.settings)
         val serviceSymbol = ctx.symbolProvider.toSymbol(ctx.service)
@@ -59,7 +57,6 @@ class IdentityProviderConfigGenerator {
                     writeInline("#S -> ", it.authSchemeId)
                     it.identityProviderAdapterExpression(this)
                 }
-                declareSection(ConfigureIdentityProviderForAuthScheme)
                 write("else -> error(#S)", "auth scheme \$schemeId not configured for client")
             }
             .write("")

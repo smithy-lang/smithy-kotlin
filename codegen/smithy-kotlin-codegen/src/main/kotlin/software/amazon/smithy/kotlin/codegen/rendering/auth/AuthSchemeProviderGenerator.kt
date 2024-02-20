@@ -37,8 +37,6 @@ open class AuthSchemeProviderGenerator {
         }
     }
 
-    object ServiceDefaults : SectionId
-
     fun render(ctx: ProtocolGenerator.GenerationContext) {
         ctx.delegator.useSymbolWriter(getSymbol(ctx.settings)) { writer ->
             renderInterface(ctx, writer)
@@ -96,8 +94,6 @@ open class AuthSchemeProviderGenerator {
                 ")",
                 RuntimeTypes.Auth.Identity.AuthOption,
             ) {
-                declareSection(ServiceDefaults)
-
                 val defaultHandlers = authIndex.effectiveAuthHandlersForService(ctx)
 
                 defaultHandlers.forEach {

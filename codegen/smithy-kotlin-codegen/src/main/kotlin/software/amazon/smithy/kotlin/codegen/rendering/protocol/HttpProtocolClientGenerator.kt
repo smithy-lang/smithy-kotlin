@@ -49,8 +49,6 @@ open class HttpProtocolClientGenerator(
         val GenerationContext: SectionKey<ProtocolGenerator.GenerationContext> = SectionKey("GenerationContext")
     }
 
-    object ConfigureAuthSchemes : SectionId
-
     /**
      * Render the implementation of the service client interface
      */
@@ -127,8 +125,6 @@ open class HttpProtocolClientGenerator(
                     it.instantiateAuthSchemeExpr(ctx, this)
                 }
             }
-
-            declareSection(ConfigureAuthSchemes)
 
             write("toMap()")
         }
@@ -356,7 +352,7 @@ open class HttpProtocolClientGenerator(
             val interceptorSymbol = RuntimeTypes.HttpClient.Interceptors.Md5ChecksumInterceptor
             val inputSymbol = ctx.symbolProvider.toSymbol(ctx.model.expectShape(inputShape))
             writer.withBlock("op.interceptors.add(#T<#T> {", "})", interceptorSymbol, inputSymbol) {
-                writer.write("op.context.getOrNull(#T.ChecksumAlgorithm) == null", RuntimeTypes.Http.Operation.HttpOperationContext)
+                writer.write("op.context.getOrNull(#T.ChecksumAlgorithm) == null", RuntimeTypes.HttpClient.Operation.HttpOperationContext)
             }
         }
     }
