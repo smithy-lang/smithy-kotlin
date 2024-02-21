@@ -5,11 +5,10 @@
 
 package aws.smithy.kotlin.runtime.http.interceptors
 
-
 import aws.smithy.kotlin.runtime.client.ProtocolRequestInterceptorContext
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
 
-public abstract class AbstractChecksumInterceptor: HttpInterceptor {
+public abstract class AbstractChecksumInterceptor : HttpInterceptor {
     private var cachedChecksum: String? = null
 
     override suspend fun modifyBeforeSigning(context: ProtocolRequestInterceptorContext<Any, HttpRequest>): HttpRequest {

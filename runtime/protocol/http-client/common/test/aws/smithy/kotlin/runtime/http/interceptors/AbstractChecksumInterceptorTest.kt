@@ -1,9 +1,12 @@
+/*
+ * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * SPDX-License-Identifier: Apache-2.0
+ */
 import aws.smithy.kotlin.runtime.client.ProtocolRequestInterceptorContext
 import aws.smithy.kotlin.runtime.collections.get
 import aws.smithy.kotlin.runtime.http.HttpBody
 import aws.smithy.kotlin.runtime.http.SdkHttpClient
 import aws.smithy.kotlin.runtime.http.interceptors.AbstractChecksumInterceptor
-import aws.smithy.kotlin.runtime.http.interceptors.FlexibleChecksumsRequestInterceptor
 import aws.smithy.kotlin.runtime.http.operation.HttpOperationContext
 import aws.smithy.kotlin.runtime.http.operation.newTestOperation
 import aws.smithy.kotlin.runtime.http.operation.roundTrip
@@ -15,7 +18,6 @@ import aws.smithy.kotlin.runtime.httptest.TestEngine
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
-
 
 class AbstractChecksumInterceptorTest {
     private val client = SdkHttpClient(TestEngine())
@@ -65,7 +67,7 @@ class AbstractChecksumInterceptorTest {
 
         override fun applyChecksum(
             context: ProtocolRequestInterceptorContext<Any, HttpRequest>,
-            checksum: String?
+            checksum: String?,
         ): HttpRequest {
             val req = context.protocolRequest.toBuilder()
             checksum ?.let { req.header(CHECKSUM_TEST_HEADER, it) }
