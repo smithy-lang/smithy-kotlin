@@ -38,11 +38,9 @@ public class Md5ChecksumInterceptor<I>(
             return context.protocolRequest
         }
 
-        val checksum = cachedChecksum ?: run {
-            when (val body = context.protocolRequest.body) {
-                is HttpBody.Bytes -> body.bytes().md5().encodeBase64String().also { cachedChecksum = it }
-                else -> null
-            }
+        val checksum = cachedChecksum ?: when (val body = context.protocolRequest.body) {
+            is HttpBody.Bytes -> body.bytes().md5().encodeBase64String().also { cachedChecksum = it }
+            else -> null
         }
 
         return checksum?.let {
