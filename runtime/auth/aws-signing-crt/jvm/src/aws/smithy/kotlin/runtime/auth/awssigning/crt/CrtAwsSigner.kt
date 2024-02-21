@@ -34,7 +34,7 @@ public object CrtAwsSigner : AwsSigner {
         if (isS3Express) {
             crtConfig.algorithm = CrtSigningAlgorithm.SIGV4_S3EXPRESS
             crtConfig.omitSessionToken = false
-            requestBuilder.headers.remove("X-Amz-S3session-Token")
+            requestBuilder.headers.remove("X-Amz-S3session-Token") // CRT signer fails if this header is already present
         }
 
         val crtRequest = requestBuilder.build().toSignableCrtRequest(isUnsigned, isAwsChunked)
