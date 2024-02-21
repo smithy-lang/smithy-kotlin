@@ -25,28 +25,30 @@ import aws.smithy.kotlin.runtime.text.encoding.encodeBase64String
 @InternalApi
 public class Md5ChecksumInterceptor<I>(
     private val block: ((input: I) -> Boolean)? = null,
-) : HttpInterceptor {
-    private var cachedChecksum: String? = null
-
+) : AbstractChecksumInterceptor() {
     override suspend fun modifyBeforeSigning(context: ProtocolRequestInterceptorContext<Any, HttpRequest>): HttpRequest {
         @Suppress("UNCHECKED_CAST")
         val input = context.request as I
 
         val injectMd5Header = block?.invoke(input) ?: true
-
         if (!injectMd5Header) {
             return context.protocolRequest
         }
 
-        val checksum = cachedChecksum ?: when (val body = context.protocolRequest.body) {
-            is HttpBody.Bytes -> body.bytes().md5().encodeBase64String().also { cachedChecksum = it }
+        return super.modifyBeforeSigning(context)
+    }
+
+    public override suspend fun calculateChecksum(context: ProtocolRequestInterceptorContext<Any, HttpRequest>): String? =
+        when (val body = context.protocolRequest.body) {
+            is HttpBody.Bytes -> body.bytes().md5().encodeBase64String()
             else -> null
         }
 
-        return checksum?.let {
-            val req = context.protocolRequest.toBuilder()
-            req.header("Content-MD5", it)
-            req.build()
-        } ?: context.protocolRequest
+    public override fun applyChecksum(context: ProtocolRequestInterceptorContext<Any, HttpRequest>, checksum: String?): HttpRequest {
+        val req = context.protocolRequest.toBuilder()
+        checksum?.let {
+            req.header("Content-MD5", checksum)
+        }
+        return req.build()
     }
 }

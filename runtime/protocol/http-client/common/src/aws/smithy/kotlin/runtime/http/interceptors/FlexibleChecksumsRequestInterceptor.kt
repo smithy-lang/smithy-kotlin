@@ -12,10 +12,10 @@ import aws.smithy.kotlin.runtime.hashing.*
 import aws.smithy.kotlin.runtime.http.*
 import aws.smithy.kotlin.runtime.http.operation.HttpOperationContext
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
-import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
 import aws.smithy.kotlin.runtime.http.request.header
 import aws.smithy.kotlin.runtime.http.request.toBuilder
 import aws.smithy.kotlin.runtime.io.*
+import aws.smithy.kotlin.runtime.operation.ExecutionContext
 import aws.smithy.kotlin.runtime.telemetry.logging.logger
 import aws.smithy.kotlin.runtime.text.encoding.encodeBase64String
 import aws.smithy.kotlin.runtime.util.LazyAsyncValue
@@ -38,9 +38,8 @@ import kotlin.coroutines.coroutineContext
 @InternalApi
 public class FlexibleChecksumsRequestInterceptor<I>(
     private val checksumAlgorithmNameInitializer: ((I) -> String?)? = null,
-) : HttpInterceptor {
+) : AbstractChecksumInterceptor() {
     private var checksumAlgorithmName: String? = null
-    private var cachedChecksum: String? = null
 
     override fun readAfterSerialization(context: ProtocolRequestInterceptorContext<Any, HttpRequest>) {
         @Suppress("UNCHECKED_CAST")
@@ -48,10 +47,14 @@ public class FlexibleChecksumsRequestInterceptor<I>(
         checksumAlgorithmName = checksumAlgorithmNameInitializer?.invoke(input)
     }
 
+    private val ExecutionContext.checksumAlgorithm: String? get() =
+        this@FlexibleChecksumsRequestInterceptor.checksumAlgorithmName
+            ?: this.getOrNull(HttpOperationContext.ChecksumAlgorithm)
+
     override suspend fun modifyBeforeSigning(context: ProtocolRequestInterceptorContext<Any, HttpRequest>): HttpRequest {
         val logger = coroutineContext.logger<FlexibleChecksumsRequestInterceptor<I>>()
 
-        val checksumAlgorithmName = checksumAlgorithmName ?: context.executionContext.getOrNull(HttpOperationContext.ChecksumAlgorithm)
+        val checksumAlgorithmName = context.executionContext.checksumAlgorithm
 
         checksumAlgorithmName ?: run {
             logger.debug { "no checksum algorithm specified, skipping flexible checksums processing" }
@@ -97,28 +100,43 @@ public class FlexibleChecksumsRequestInterceptor<I>(
             }
 
             req.trailingHeaders.append(headerName, deferredChecksum)
-        } else if (req.headers[headerName] == null) {
-            val checksum: String = cachedChecksum ?: req.calculateChecksum(checksumAlgorithm)
+            return req.build()
+        } else {
+            return super.modifyBeforeSigning(context)
+        }
+    }
+
+    override suspend fun calculateChecksum(context: ProtocolRequestInterceptorContext<Any, HttpRequest>): String? {
+        val req = context.protocolRequest.toBuilder()
+        val checksumAlgorithm = context.executionContext.checksumAlgorithm?.toHashFunction() ?: return null
+
+        return when {
+            req.body.contentLength == null && !req.body.isOneShot -> {
+                val channel = req.body.toSdkByteReadChannel()!!
+                channel.rollingHash(checksumAlgorithm).encodeBase64String()
+            }
+            else -> {
+                val bodyBytes = req.body.readAll()!!
+                req.body = bodyBytes.toHttpBody()
+                bodyBytes.hash(checksumAlgorithm).encodeBase64String()
+            }
+        }
+    }
+
+    override fun applyChecksum(
+        context: ProtocolRequestInterceptorContext<Any, HttpRequest>,
+        checksum: String?,
+    ): HttpRequest {
+        val checksumAlgorithmName = context.executionContext.checksumAlgorithm
+        val headerName = "x-amz-checksum-$checksumAlgorithmName".lowercase()
+
+        val req = context.protocolRequest.toBuilder()
+
+        checksum?.let {
             req.header(headerName, checksum)
         }
 
         return req.build()
-    }
-
-    /**
-     * Calculate the checksum of this [HttpRequestBuilder]'s body.
-     * @param checksumAlgorithm the [HashFunction] to use to calculate the checksum
-     */
-    private suspend fun HttpRequestBuilder.calculateChecksum(checksumAlgorithm: HashFunction) = when {
-        body.contentLength == null && !body.isOneShot -> {
-            val channel = body.toSdkByteReadChannel()!!
-            channel.rollingHash(checksumAlgorithm).encodeBase64String().also { cachedChecksum = it }
-        }
-        else -> {
-            val bodyBytes = body.readAll()!!
-            this.body = bodyBytes.toHttpBody()
-            bodyBytes.hash(checksumAlgorithm).encodeBase64String().also { cachedChecksum = it }
-        }
     }
 
     // FIXME this duplicates the logic from aws-signing-common, but can't import from there due to circular import.
