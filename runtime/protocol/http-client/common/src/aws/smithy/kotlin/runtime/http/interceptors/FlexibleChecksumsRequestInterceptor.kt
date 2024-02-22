@@ -133,7 +133,9 @@ public class FlexibleChecksumsRequestInterceptor<I>(
         val req = context.protocolRequest.toBuilder()
 
         checksum?.let {
-            req.header(headerName, checksum)
+            if (!req.headers.contains(headerName)) {
+                req.header(headerName, checksum)
+            }
         }
 
         return req.build()
