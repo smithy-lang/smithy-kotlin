@@ -24,6 +24,8 @@ plugins {
     // since build-plugins also has <some> version in its dependency closure
     alias(libs.plugins.kotlin.multiplatform) apply false
     alias(libs.plugins.kotlin.jvm) apply false
+
+    id("aws.sdk.kotlin.apiscan") version "0.4.1"
 }
 
 val testJavaVersion = typedProp<String>("test.java.version")?.let {
