@@ -103,6 +103,7 @@ object RuntimeTypes {
             val Attributes = symbol("Attributes")
             val attributesOf = symbol("attributesOf")
             val AttributeKey = symbol("AttributeKey")
+            val createOrAppend = symbol("createOrAppend")
             val get = symbol("get")
             val mutableMultiMapOf = symbol("mutableMultiMapOf")
             val putIfAbsent = symbol("putIfAbsent")
@@ -262,6 +263,18 @@ object RuntimeTypes {
             val XmlSerializer = symbol("XmlSerializer")
             val XmlDeserializer = symbol("XmlDeserializer")
             val XmlUnwrappedOutput = symbol("XmlUnwrappedOutput")
+
+            val TagReader = symbol("TagReader")
+            val xmlStreamReader = symbol("xmlStreamReader")
+            val root = symbol("root")
+            val text = symbol("text")
+            val readInt = symbol("readInt")
+            val readShort = symbol("readShort")
+            val readLong = symbol("readLong")
+            val readFloat = symbol("readFloat")
+            val readDouble = symbol("readDouble")
+            val readByte = symbol("readByte")
+            val readBoolean = symbol("readBoolean")
         }
 
         object SerdeFormUrl : RuntimeTypePackage(KotlinDependency.SERDE_FORM_URL) {

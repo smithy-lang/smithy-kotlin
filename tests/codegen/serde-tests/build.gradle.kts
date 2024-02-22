@@ -23,6 +23,10 @@ dependencies {
 tasks.generateSmithyProjections {
     smithyBuildConfigs.set(files("smithy-build.json"))
     inputs.dir(project.layout.projectDirectory.dir("model"))
+    listOf("xml", "json").forEach { projectionName ->
+        val fromDir = smithyBuild.smithyKotlinProjectionSrcDir(projectionName)
+        outputs.dir(fromDir)
+    }
     buildClasspath.set(codegen)
 }
 
@@ -58,6 +62,9 @@ val stageGeneratedSources = tasks.register("stageGeneratedSources") {
     group = "codegen"
     dependsOn(tasks.generateSmithyProjections)
     outputs.dir(generatedSrcDir)
+    // FIXME - this task up-to-date checks are wrong, likely something is not setup right with inputs/outputs somewhere
+    // for now just always run it
+    outputs.upToDateWhen { false }
     doLast {
         listOf("xml", "json").forEach { projectionName ->
             val fromDir = smithyBuild.smithyKotlinProjectionSrcDir(projectionName)

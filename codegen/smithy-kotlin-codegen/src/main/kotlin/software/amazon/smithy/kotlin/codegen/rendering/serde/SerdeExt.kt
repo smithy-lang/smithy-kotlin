@@ -289,3 +289,5 @@ internal fun Shape.childShape(model: Model): Shape? = when (this) {
     is MapShape -> model.expectShape(this.value.target)
     else -> null
 }
+
+internal fun nullabilitySuffix(isSparse: Boolean): String = if (isSparse) "?" else ""

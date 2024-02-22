@@ -187,3 +187,7 @@ fun <T : AbstractCodeWriter<T>> T.callIf(test: Boolean, runnable: Runnable): T {
     }
     return this
 }
+
+/** Escape the [expressionStart] character to avoid problems during formatting */
+fun <T : AbstractCodeWriter<T>> T.escape(text: String): String =
+    text.replace("$expressionStart", "$expressionStart$expressionStart")

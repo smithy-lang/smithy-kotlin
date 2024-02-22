@@ -33,6 +33,11 @@ public class TagReader(
         return reader.nextToken()
     }
 
+    public fun nextHasValue(): Boolean {
+        if (closed) return false
+        return reader.peek() !is XmlToken.EndElement
+    }
+
     public fun skipNext() {
         if (closed) return
         reader.skipNext()
@@ -88,15 +93,6 @@ public fun XmlToken.BeginElement.tagReader(reader: XmlStreamReader): TagReader {
     check(name == start.name) { "expected start tag $name but current reader state is on ${start.name}" }
     return TagReader(this, reader)
 }
-
-// @InternalApi
-// public fun <T> XmlToken.BeginElement.decode(reader: XmlStreamReader, block: TagReader.() -> T): T {
-//     val scoped = tagReader(reader)
-//     val result = block(scoped)
-//     // exhaust this reader
-//     scoped.drop()
-//     return result
-// }
 
 /**
  * Consume the next token and map the data value from it using [transform]
