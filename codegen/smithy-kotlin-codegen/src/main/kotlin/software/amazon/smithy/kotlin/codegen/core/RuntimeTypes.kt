@@ -231,6 +231,7 @@ object RuntimeTypes {
         val SerialKind = symbol("SerialKind")
         val SerializationException = symbol("SerializationException")
         val DeserializationException = symbol("DeserializationException")
+        val getOrDeserializeErr = symbol("getOrDeserializeErr")
 
         val serializeStruct = symbol("serializeStruct")
         val serializeList = symbol("serializeList")
@@ -241,6 +242,18 @@ object RuntimeTypes {
         val deserializeMap = symbol("deserializeMap")
         val asSdkSerializable = symbol("asSdkSerializable")
         val field = symbol("field")
+
+        val parse = symbol("parse")
+        val parseInt = symbol("parseInt")
+        val parseShort = symbol("parseShort")
+        val parseLong = symbol("parseLong")
+        val parseFloat = symbol("parseFloat")
+        val parseDouble = symbol("parseDouble")
+        val parseByte = symbol("parseByte")
+        val parseBoolean = symbol("parseBoolean")
+        val parseTimestamp = symbol("parseTimestamp")
+        val parseBigInteger = symbol("parseBigInteger")
+        val parseBigDecimal = symbol("parseBigDecimal")
 
         object SerdeJson : RuntimeTypePackage(KotlinDependency.SERDE_JSON) {
             val JsonSerialName = symbol("JsonSerialName")
@@ -267,14 +280,8 @@ object RuntimeTypes {
             val TagReader = symbol("TagReader")
             val xmlStreamReader = symbol("xmlStreamReader")
             val root = symbol("root")
-            val text = symbol("text")
-            val readInt = symbol("readInt")
-            val readShort = symbol("readShort")
-            val readLong = symbol("readLong")
-            val readFloat = symbol("readFloat")
-            val readDouble = symbol("readDouble")
-            val readByte = symbol("readByte")
-            val readBoolean = symbol("readBoolean")
+            val data = symbol("data")
+            val tryData = symbol("tryData")
         }
 
         object SerdeFormUrl : RuntimeTypePackage(KotlinDependency.SERDE_FORM_URL) {

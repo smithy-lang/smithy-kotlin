@@ -5,6 +5,8 @@
 package aws.smithy.kotlin.runtime.serde
 
 import aws.smithy.kotlin.runtime.ClientException
+import aws.smithy.kotlin.runtime.InternalApi
+import aws.smithy.kotlin.runtime.util.mapErr
 
 /**
  * Exception class for all serialization errors
@@ -33,3 +35,12 @@ public class DeserializationException : ClientException {
 
     public constructor(cause: Throwable?) : super(cause)
 }
+
+/**
+ * Get the underlying [success][Result.isSuccess] value or wrap the failure in a [DeserializationException]
+ * and throw it.
+ */
+@InternalApi
+public inline fun <T> Result<T>.getOrDeserializeErr(errorMessage: () -> String): T =
+    mapErr { DeserializationException(errorMessage(), it) }
+        .getOrThrow()

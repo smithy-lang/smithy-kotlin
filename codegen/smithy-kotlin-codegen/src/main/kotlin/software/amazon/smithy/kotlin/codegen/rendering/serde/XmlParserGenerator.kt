@@ -5,10 +5,10 @@
 
 package software.amazon.smithy.kotlin.codegen.rendering.serde
 
-import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.codegen.core.SymbolReference
 import software.amazon.smithy.kotlin.codegen.core.*
+import software.amazon.smithy.kotlin.codegen.core.RuntimeTypes.Serde
 import software.amazon.smithy.kotlin.codegen.core.RuntimeTypes.Serde.SerdeXml
 import software.amazon.smithy.kotlin.codegen.model.*
 import software.amazon.smithy.kotlin.codegen.model.knowledge.SerdeIndex
@@ -17,6 +17,7 @@ import software.amazon.smithy.kotlin.codegen.rendering.protocol.toRenderingConte
 import software.amazon.smithy.model.shapes.*
 import software.amazon.smithy.model.traits.SparseTrait
 import software.amazon.smithy.model.traits.TimestampFormatTrait
+import software.amazon.smithy.model.traits.XmlAttributeTrait
 import software.amazon.smithy.model.traits.XmlFlattenedTrait
 import software.amazon.smithy.model.traits.XmlNameTrait
 import software.amazon.smithy.utils.StringUtils
@@ -92,7 +93,7 @@ open class XmlParserGenerator(
             // val name = ctx.symbolProvider.toSymbol(shape).name
             // DeserializeUnionGenerator(ctx, name, members, writer, defaultTimestampFormat).render()
         } else {
-            deserializeStruct(ctx, shape, members, writer)
+            deserializeStruct(ctx, members, writer)
         }
     }
 
@@ -179,19 +180,42 @@ open class XmlParserGenerator(
     }
     private fun deserializeStruct(
         ctx: ProtocolGenerator.GenerationContext,
-        shape: Shape,
         members: List<MemberShape>,
         writer: KotlinWriter,
     ) {
-        // TODO - split attribute members and non attribute members
-        // TODO - don't generate a parse loop if no attribute members
+        // split attribute members and non attribute members
+        val attributeMembers = members.filter { it.hasTrait<XmlAttributeTrait>() }
+        attributeMembers.forEach { member ->
+            deserializeAttributeMember(ctx, member, writer)
+        }
+
+        val payloadMembers = members.filterNot { it.hasTrait<XmlAttributeTrait>() }
+        // don't generate a parse loop if no attribute members
+        if (payloadMembers.isEmpty()) return
+        writer.write("")
         writer.deserializeLoop {
-            members.forEach { member ->
+            payloadMembers.forEach { member ->
                 val name = member.getTrait<XmlNameTrait>()?.value ?: member.memberName
                 write("// ${member.memberName} ${escape(member.id.toString())}")
                 writeInline("#S -> builder.#L = ", name, member.defaultName())
                 deserializeMember(ctx, member, writer)
             }
+        }
+    }
+
+    private fun deserializeAttributeMember(
+        ctx: ProtocolGenerator.GenerationContext,
+        member: MemberShape,
+        writer: KotlinWriter,
+    ) {
+        val memberName = member.getTrait<XmlNameTrait>()?.value ?: member.memberName
+        writer.withBlock(
+            "reader.startTag.getAttr(#S)?.let {",
+            "}",
+            memberName,
+        ) {
+            writeInline("builder.#L = ", member.defaultName())
+            deserializePrimitiveMember(ctx, member, "it", textExprIsResult = false, this)
         }
     }
 
@@ -220,7 +244,13 @@ open class XmlParserGenerator(
                 val deserializeFn = documentDeserializer(ctx, target)
                 writer.write("#T(curr)", deserializeFn)
             }
-            else -> deserializePrimitiveMember(ctx, member, writer)
+            else -> deserializePrimitiveMember(
+                ctx,
+                member,
+                writer.format("curr.#T()", SerdeXml.tryData),
+                textExprIsResult = true,
+                writer,
+            )
         }
     }
 
@@ -423,7 +453,9 @@ open class XmlParserGenerator(
                         }
                     }
                     write("if (key == null) throw #T(#S)", RuntimeTypes.Serde.DeserializationException, "missing key map entry")
-                    write("if (value == null) throw #T(#S)", RuntimeTypes.Serde.DeserializationException, "missing value map entry")
+                    if (!isSparse) {
+                        write("if (value == null) throw #T(#S)", RuntimeTypes.Serde.DeserializationException, "missing value map entry")
+                    }
                     write("dest[key] = value")
                 }
             }
@@ -433,37 +465,60 @@ open class XmlParserGenerator(
     private fun deserializePrimitiveMember(
         ctx: ProtocolGenerator.GenerationContext,
         member: MemberShape,
+        textExpr: String,
+        textExprIsResult: Boolean,
         writer: KotlinWriter,
     ) {
         val target = ctx.model.expectShape(member.target)
-        when (target.type) {
-            ShapeType.BLOB -> writer.write("curr.#T().#T()", SerdeXml.text, RuntimeTypes.Core.Text.Encoding.decodeBase64Bytes)
-            ShapeType.BOOLEAN -> writer.write("curr.#T()", SerdeXml.readBoolean)
-            ShapeType.STRING -> writer.write("curr.#T()", SerdeXml.text)
+
+        val parseFn = when (target.type) {
+            ShapeType.BLOB -> writer.format("#T { it.#T() } ", Serde.parse, RuntimeTypes.Core.Text.Encoding.decodeBase64Bytes)
+            ShapeType.BOOLEAN -> writer.format("#T()", Serde.parseBoolean)
+            ShapeType.STRING -> {
+                if (!textExprIsResult) {
+                    writer.write(textExpr)
+                    return
+                } else {
+                    null
+                }
+            }
             ShapeType.TIMESTAMP -> {
                 val trait = member.getTrait<TimestampFormatTrait>() ?: target.getTrait()
                 val tsFormat = trait?.format ?: defaultTimestampFormat
-
-                // FIXME - reconcile with utility function that already exists
-                val fromFn = when (tsFormat) {
-                    TimestampFormatTrait.Format.EPOCH_SECONDS -> "fromEpochSeconds"
-                    TimestampFormatTrait.Format.DATE_TIME -> "fromIso8601"
-                    TimestampFormatTrait.Format.HTTP_DATE -> "fromRfc5322"
-                    else -> throw CodegenException("unknown timestamp format: $tsFormat")
-                }
-                writer.write("#T.#L(curr.#T())", RuntimeTypes.Core.Instant, fromFn, SerdeXml.text)
+                // val fromArg = writer.format("curr.#T()")
+                // val fmtExpr = writer.parseInstantExpr(fromArg, tsFormat)
+                // writer.write(fmtExpr)
+                val runtimeEnum = tsFormat.toRuntimeEnum(writer)
+                writer.format("#T(#L)", Serde.parseTimestamp, runtimeEnum)
             }
-            ShapeType.BYTE -> writer.write("curr.#T()", SerdeXml.readByte)
-            ShapeType.SHORT -> writer.write("curr.#T()", SerdeXml.readShort)
-            ShapeType.INTEGER -> writer.write("curr.#T()", SerdeXml.readInt)
-            ShapeType.LONG -> writer.write("curr.#T()", SerdeXml.readLong)
-            ShapeType.FLOAT -> writer.write("curr.#T()", SerdeXml.readFloat)
-            ShapeType.DOUBLE -> writer.write("curr.#T()", SerdeXml.readDouble)
-            ShapeType.BIG_DECIMAL -> writer.write("#T(curr.#T())", RuntimeTypes.Core.Content.BigDecimal, SerdeXml.text)
-            ShapeType.BIG_INTEGER -> writer.write("#T(curr.#T())", RuntimeTypes.Core.Content.BigInteger, SerdeXml.text)
-            ShapeType.ENUM -> writer.write("#T.fromValue(curr.#T())", ctx.symbolProvider.toSymbol(target), SerdeXml.text)
-            ShapeType.INT_ENUM -> writer.write("#T.fromValue(curr.#T())", ctx.symbolProvider.toSymbol(target), SerdeXml.readInt)
+            ShapeType.BYTE -> writer.format("#T()", Serde.parseByte)
+            ShapeType.SHORT -> writer.format("#T()", Serde.parseShort)
+            ShapeType.INTEGER -> writer.format("#T()", Serde.parseInt)
+            ShapeType.LONG -> writer.format("#T()", Serde.parseLong)
+            ShapeType.FLOAT -> writer.format("#T()", Serde.parseFloat)
+            ShapeType.DOUBLE -> writer.format("#T()", Serde.parseDouble)
+            ShapeType.BIG_DECIMAL -> writer.format("#T()", Serde.parseBigDecimal)
+            ShapeType.BIG_INTEGER -> writer.format("#T()", Serde.parseBigInteger)
+            ShapeType.ENUM -> {
+                if (!textExprIsResult) {
+                    writer.write("#T.fromValue(#L)", ctx.symbolProvider.toSymbol(target), textExpr)
+                    return
+                }
+                writer.format("#T { #T.fromValue(it) } ", Serde.parse, ctx.symbolProvider.toSymbol(target))
+            }
+            ShapeType.INT_ENUM -> {
+                writer.format("#T { #T.fromValue(it.toInt()) } ", Serde.parse, ctx.symbolProvider.toSymbol(target))
+            }
             else -> error("unknown primitive member shape $member")
         }
+
+        val escapedErrMessage = "expected $target".replace("$", "$$")
+        writer.write(textExpr)
+            .indent()
+            .callIf(parseFn != null) {
+                writer.write(".#L", parseFn)
+            }
+            .write(".#T { #S }", Serde.getOrDeserializeErr, escapedErrMessage)
+            .dedent()
     }
 }

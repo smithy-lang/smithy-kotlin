@@ -167,7 +167,7 @@ fun writeMessage(writer: XmlStreamWriter, message: Message) {
     writer.apply {
         startTag("message")
         startTag("id")
-        text(message.id)
+        data(message.id)
         endTag("id")
         startTag("text")
         text(message.text)
@@ -190,7 +190,7 @@ fun writeUser(writer: XmlStreamWriter, user: User) {
     writer.text(user.name)
     writer.endTag("name")
     writer.startTag("followers_count")
-    writer.text(user.followersCount)
+    writer.data(user.followersCount)
     writer.endTag("followers_count")
     writer.endTag("user")
 }
@@ -200,7 +200,7 @@ fun writeDoublesArray(writer: XmlStreamWriter, doubles: Array<Double>?) {
     if (doubles != null) {
         for (value in doubles) {
             writer.startTag("position")
-            writer.text(value)
+            writer.data(value)
             writer.endTag("position")
         }
     }

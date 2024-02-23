@@ -123,10 +123,10 @@ class TagReaderTest {
                     assertEquals(2, curr.nextTag()?.readInt())
                 }
                 "Child2" -> {
-                    assertEquals("this is an a", curr.nextTag()?.text())
+                    assertEquals("this is an a", curr.nextTag()?.data())
                     // intentionally ignore the next tag and don't consume the entire child subtree
                 }
-                "Child4" -> assertEquals("  ", curr.nextTag()?.text())
+                "Child4" -> assertEquals("  ", curr.nextTag()?.data())
                 else -> {}
             }
             // consume the current tag entirely before trying to process the next

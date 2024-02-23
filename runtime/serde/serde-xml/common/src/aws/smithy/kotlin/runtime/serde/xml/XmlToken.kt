@@ -53,6 +53,9 @@ public sealed class XmlToken {
         public constructor(depth: Int, name: String, attributes: Map<QualifiedName, String>) : this(depth, QualifiedName(name), attributes)
 
         override fun toString(): String = "<${this.name} (${this.depth})>"
+
+        // convenience function for codegen
+        public fun getAttr(qualified: String): String? = attributes[QualifiedName(qualified)]
     }
 
     /**

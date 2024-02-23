@@ -79,6 +79,7 @@ public class TagReader(
     }
 }
 
+@InternalApi
 public fun XmlStreamReader.root(): TagReader {
     val start = seek<XmlToken.BeginElement>() ?: error("expected start tag: last = $lastToken")
     return start.tagReader(this)
@@ -99,25 +100,44 @@ public fun XmlToken.BeginElement.tagReader(reader: XmlStreamReader): TagReader {
  *
  * If the next token is not [XmlToken.Text] an exception will be thrown
  */
-public fun <T> TagReader.map(transform: (String) -> T): T =
-    transform(text())
+@InternalApi
+public inline fun <T> TagReader.mapData(transform: (String) -> T): T =
+    transform(data())
 
-public fun TagReader.text(): String =
+@InternalApi
+public fun TagReader.data(): String =
     when (val next = nextToken()) {
         is XmlToken.Text -> next.value ?: ""
         null, is XmlToken.EndElement -> ""
         else -> throw DeserializationException("expected XmlToken.Text element, found $next")
     }
 
-private fun <T> TagReader.mapOrThrow(expected: String, mapper: (String) -> T?): T =
-    map { raw ->
-        mapper(raw) ?: throw DeserializationException("could not deserialize $raw as $expected for tag ${this.startTag}")
-    }
+@InternalApi
+public fun TagReader.tryData(): Result<String> = runCatching { data() }
 
-public fun TagReader.readInt(): Int = mapOrThrow("Int", String::toIntOrNull)
-public fun TagReader.readShort(): Short = mapOrThrow("Short", String::toShortOrNull)
-public fun TagReader.readLong(): Long = mapOrThrow("Long", String::toLongOrNull)
-public fun TagReader.readFloat(): Float = mapOrThrow("Float", String::toFloatOrNull)
-public fun TagReader.readDouble(): Double = mapOrThrow("Double", String::toDoubleOrNull)
-public fun TagReader.readByte(): Byte = mapOrThrow("Byte") { it.toIntOrNull()?.toByte() }
-public fun TagReader.readBoolean(): Boolean = mapOrThrow("Boolean", String::toBoolean)
+//
+// private fun <T> TagReader.mapOrThrow(expected: String, mapper: (String) -> T?): T =
+//     map { raw ->
+//         mapper(raw) ?: throw DeserializationException("could not deserialize $raw as $expected for tag ${this.startTag}")
+//     }
+//
+// @InternalApi
+// public fun TagReader.readInt(): Int = mapOrThrow("Int", String::toIntOrNull)
+//
+// @InternalApi
+// public fun TagReader.readShort(): Short = mapOrThrow("Short", String::toShortOrNull)
+//
+// @InternalApi
+// public fun TagReader.readLong(): Long = mapOrThrow("Long", String::toLongOrNull)
+//
+// @InternalApi
+// public fun TagReader.readFloat(): Float = mapOrThrow("Float", String::toFloatOrNull)
+//
+// @InternalApi
+// public fun TagReader.readDouble(): Double = mapOrThrow("Double", String::toDoubleOrNull)
+//
+// @InternalApi
+// public fun TagReader.readByte(): Byte = mapOrThrow("Byte") { it.toIntOrNull()?.toByte() }
+//
+// @InternalApi
+// public fun TagReader.readBoolean(): Boolean = mapOrThrow("Boolean", String::toBoolean)

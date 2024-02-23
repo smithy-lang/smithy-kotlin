@@ -184,7 +184,7 @@ public class XmlSerializer(private val xmlWriter: XmlStreamWriter = xmlStreamWri
         xmlWriter.text(value.toPlainString())
     }
 
-    private fun serializeNumber(value: Number): Unit = xmlWriter.text(value)
+    private fun serializeNumber(value: Number): Unit = xmlWriter.data(value)
 
     override fun serializeString(value: String) {
         xmlWriter.text(value)
