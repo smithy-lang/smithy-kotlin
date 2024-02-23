@@ -4,10 +4,13 @@
  */
 package aws.smithy.kotlin.tests.serde
 
+import aws.smithy.kotlin.runtime.serde.xml.root
+import aws.smithy.kotlin.runtime.serde.xml.xmlStreamReader
 import aws.smithy.kotlin.tests.serde.xml.model.StructType
 import aws.smithy.kotlin.tests.serde.xml.serde.deserializeStructTypeDocument
 import aws.smithy.kotlin.tests.serde.xml.serde.serializeStructTypeDocument
 import kotlin.test.Test
+import kotlin.test.assertEquals
 
 class XmlListTest : AbstractXmlTest() {
     @Test
@@ -100,24 +103,25 @@ class XmlListTest : AbstractXmlTest() {
         testRoundTrip(expected, payload, ::serializeStructTypeDocument, ::deserializeStructTypeDocument)
     }
 
-    // FIXME - re-enable after we implement fix
-    // @Test
-    // fun testDeserializeInterspersedSparseLists() {
-    //     // see https://github.com/awslabs/aws-sdk-kotlin/issues/1220
-    //     val expected = StructType {
-    //         flatList = listOf("foo", "bar")
-    //         secondFlatList = listOf(1, 2)
-    //     }
-    //     val payload = """
-    //         <StructType>
-    //             <flatlist1>foo</flatlist1>
-    //             <flatlist2>1</flatlist2>
-    //             <flatlist1>bar</flatlist1>
-    //             <flatlist2>2</flatlist2>
-    //         </StructType>
-    //     """.trimIndent()
-    //     val deserializer = XmlDeserializer(payload.encodeToByteArray())
-    //     val actualDeserialized = deserializeStructTypeDocument(deserializer)
-    //     assertEquals(expected, actualDeserialized)
-    // }
+    @Test
+    fun testInterspersedFlatLists() {
+        // see https://github.com/awslabs/aws-sdk-kotlin/issues/1220
+        val expected = StructType {
+            flatList = listOf("foo", "bar")
+            secondFlatList = listOf(1, 2)
+        }
+        val payload = """
+            <StructType>
+                <flatlist1>foo</flatlist1>
+                <flatlist2>1</flatlist2>
+                <flatlist1>bar</flatlist1>
+                <flatlist2>2</flatlist2>
+            </StructType>
+        """.trimIndent()
+
+        // we don't round trip this because the format isn't going to match
+        val reader = xmlStreamReader(payload.encodeToByteArray()).root()
+        val actualDeserialized = deserializeStructTypeDocument(reader)
+        assertEquals(expected, actualDeserialized)
+    }
 }

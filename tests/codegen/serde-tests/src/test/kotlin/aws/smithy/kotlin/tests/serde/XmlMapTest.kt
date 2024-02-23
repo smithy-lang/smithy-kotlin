@@ -4,11 +4,15 @@
  */
 package aws.smithy.kotlin.tests.serde
 
+import aws.smithy.kotlin.runtime.serde.xml.root
+import aws.smithy.kotlin.runtime.serde.xml.xmlStreamReader
 import aws.smithy.kotlin.tests.serde.xml.model.FooEnum
 import aws.smithy.kotlin.tests.serde.xml.model.StructType
+import aws.smithy.kotlin.tests.serde.xml.model.UnionType
 import aws.smithy.kotlin.tests.serde.xml.serde.deserializeStructTypeDocument
 import aws.smithy.kotlin.tests.serde.xml.serde.serializeStructTypeDocument
 import kotlin.test.Test
+import kotlin.test.assertEquals
 
 class XmlMapTest : AbstractXmlTest() {
     @Test
@@ -161,5 +165,58 @@ class XmlMapTest : AbstractXmlTest() {
             </StructType>
         """.trimIndent()
         testRoundTrip(expected, payload, ::serializeStructTypeDocument, ::deserializeStructTypeDocument)
+    }
+
+    @Test
+    fun testInterspersedFlatMaps() {
+        // see https://github.com/awslabs/aws-sdk-kotlin/issues/1220
+        val expected = StructType {
+            flatEnumMap = mapOf(
+                "foo" to FooEnum.Foo,
+                "bar" to FooEnum.Bar,
+            )
+            unionField = UnionType.Struct(
+                StructType {
+                    normalMap = mapOf("k1" to "v1", "k2" to "v2")
+                    flatEnumMap = mapOf("inner" to FooEnum.Baz)
+                },
+            )
+        }
+        val payload = """
+            <StructType>
+                <flatenummap>
+                    <key>foo</key>
+                    <value>Foo</value>
+                </flatenummap>
+                <extra></extra>
+                <unionField>
+                    <struct>
+                        <normalMap>
+                            <entry>
+                                <key>k1</key>
+                                <value>v1</value>
+                            </entry>
+                            <entry>
+                                <key>k2</key>
+                                <value>v2</value>
+                            </entry>
+                        </normalMap>
+                        <flatenummap>
+                            <key>inner</key>
+                            <value>Baz</value>
+                        </flatenummap>
+                    </struct>
+                </unionField>
+                <flatenummap>
+                    <key>bar</key>
+                    <value>Bar</value>
+                </flatenummap>
+            </StructType>
+        """.trimIndent()
+
+        // we don't round trip this because the format isn't going to match
+        val reader = xmlStreamReader(payload.encodeToByteArray()).root()
+        val actualDeserialized = deserializeStructTypeDocument(reader)
+        assertEquals(expected, actualDeserialized)
     }
 }
