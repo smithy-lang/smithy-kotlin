@@ -30,6 +30,22 @@ public sealed class XmlToken {
     public data class QualifiedName(public val local: String, public val prefix: String? = null) {
         override fun toString(): String = tag
 
+        @InternalApi
+        public companion object {
+
+            /**
+             * Construct a [QualifiedName] from a raw string representation
+             */
+            public fun from(qualified: String): QualifiedName {
+                val split = qualified.split(":", limit = 2)
+                val (local, prefix) = when (split.size == 2) {
+                    true -> split[1] to split[0]
+                    false -> split[0] to null
+                }
+                return QualifiedName(local, prefix)
+            }
+        }
+
         public val tag: String get() = when (prefix) {
             null -> local
             else -> "$prefix:$local"
@@ -55,7 +71,7 @@ public sealed class XmlToken {
         override fun toString(): String = "<${this.name} (${this.depth})>"
 
         // convenience function for codegen
-        public fun getAttr(qualified: String): String? = attributes[QualifiedName(qualified)]
+        public fun getAttr(qualified: String): String? = attributes[QualifiedName.from(qualified)]
     }
 
     /**
