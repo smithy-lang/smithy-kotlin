@@ -140,8 +140,7 @@ structure MapTypesMixin {
 union MapTypesUnionMixin {
     normalMap: StringMap,
     sparseMap: SparseStringMap,
-    // FIXME - doesn't work with current codegen for unions
-    // nestedMap: NestedStringMap,
+    nestedMap: NestedStringMap,
 }
 
 @mixin
@@ -157,7 +156,6 @@ union ListTypesUnionMixin {
 
     sparseList: SparseStringList,
 
-    // FIXME - doesn't work with current codegen for unions
-    // nestedList: NestedStringList,
+    nestedList: NestedStringList,
 }
 

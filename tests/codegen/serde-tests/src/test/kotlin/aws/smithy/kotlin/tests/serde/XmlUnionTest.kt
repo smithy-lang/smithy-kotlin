@@ -109,6 +109,55 @@ class XmlUnionTest : AbstractXmlTest() {
     }
 
     @Test
+    fun testFlatList() {
+        val expected = StructType {
+            unionField = UnionType.FlatList(listOf("foo", "bar"))
+        }
+
+        val payload = """
+            <StructType>
+                <unionField>
+                    <flatlist>foo</flatlist>
+                    <flatlist>bar</flatlist>
+                </unionField>
+            </StructType>
+        """.trimIndent()
+        testRoundTrip(expected, payload, ::serializeStructTypeDocument, ::deserializeStructTypeDocument)
+    }
+
+    @Test
+    fun testNestedList() {
+        val expected = StructType {
+            unionField = UnionType.NestedList(
+                listOf(
+                    listOf("a", "b", "c"),
+                    listOf("x", "y", "z"),
+                ),
+            )
+        }
+
+        val payload = """
+            <StructType>
+                <unionField>
+                    <nestedList>
+                        <member>
+                            <member>a</member>
+                            <member>b</member>
+                            <member>c</member>
+                        </member>
+                        <member>
+                            <member>x</member>
+                            <member>y</member>
+                            <member>z</member>
+                        </member>
+                    </nestedList>
+                </unionField>
+            </StructType>
+        """.trimIndent()
+        testRoundTrip(expected, payload, ::serializeStructTypeDocument, ::deserializeStructTypeDocument)
+    }
+
+    @Test
     fun testNormalMap() {
         val expected = StructType {
             unionField = UnionType.NormalMap(
@@ -131,6 +180,86 @@ class XmlUnionTest : AbstractXmlTest() {
                             <value>v2</value>
                         </entry>
                     </normalMap>
+                </unionField>
+            </StructType>
+        """.trimIndent()
+        testRoundTrip(expected, payload, ::serializeStructTypeDocument, ::deserializeStructTypeDocument)
+    }
+
+    @Test
+    fun testNestedMap() {
+        val expected = StructType {
+            unionField = UnionType.NestedMap(
+                mapOf(
+                    "foo" to mapOf(
+                        "k1" to "v1",
+                        "k2" to "v2",
+                    ),
+                    "bar" to mapOf(
+                        "k3" to "v3",
+                        "k4" to "v4",
+                    ),
+                ),
+            )
+        }
+        val payload = """
+            <StructType>
+                <unionField>
+                    <nestedMap>
+                        <entry>
+                            <key>foo</key>
+                            <value>
+                                <entry>
+                                    <key>k1</key>
+                                    <value>v1</value>
+                                </entry>
+                                <entry>
+                                    <key>k2</key>
+                                    <value>v2</value>
+                                </entry>
+                            </value>
+                        </entry>
+                        <entry>
+                            <key>bar</key>
+                            <value>
+                                <entry>
+                                    <key>k3</key>
+                                    <value>v3</value>
+                                </entry>
+                                <entry>
+                                    <key>k4</key>
+                                    <value>v4</value>
+                                </entry>
+                            </value>
+                        </entry>
+                    </nestedMap>
+                </unionField>
+            </StructType>
+        """.trimIndent()
+        testRoundTrip(expected, payload, ::serializeStructTypeDocument, ::deserializeStructTypeDocument)
+    }
+
+    @Test
+    fun testFlatMap() {
+        val expected = StructType {
+            unionField = UnionType.FlatMap(
+                mapOf(
+                    "foo" to "bar",
+                    "bar" to "baz",
+                ),
+            )
+        }
+        val payload = """
+            <StructType>
+                <unionField>
+                    <flatmap>
+                        <key>foo</key>
+                        <value>bar</value>
+                    </flatmap>
+                    <flatmap>
+                        <key>bar</key>
+                        <value>baz</value>
+                    </flatmap>
                 </unionField>
             </StructType>
         """.trimIndent()

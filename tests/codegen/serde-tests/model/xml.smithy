@@ -83,6 +83,4 @@ union UnionType with [PrimitiveTypesUnionMixin, ListTypesUnionMixin, MapTypesUni
     fpDouble: Double,
 
     struct: StructType,
-
-    // TODO - enum lists, timestamp lists, structure list, structure map, multiple flat lists interspersed (xml only)
 }
