@@ -4,6 +4,7 @@
  */
 package aws.smithy.kotlin.runtime.serde.xml
 
+import aws.smithy.kotlin.runtime.serde.parseInt
 import kotlin.test.*
 
 class TagReaderTest {
@@ -119,8 +120,8 @@ class TagReaderTest {
             val curr = decoder.nextTag() ?: break@loop
             when (curr.startTag.name.tag) {
                 "Child1" -> {
-                    assertEquals(1, curr.nextTag()?.readInt())
-                    assertEquals(2, curr.nextTag()?.readInt())
+                    assertEquals(1, curr.nextTag()?.data()?.parseInt()?.getOrNull())
+                    assertEquals(2, curr.nextTag()?.data()?.parseInt()?.getOrNull())
                 }
                 "Child2" -> {
                     assertEquals("this is an a", curr.nextTag()?.data())

@@ -104,6 +104,9 @@ public fun XmlToken.BeginElement.tagReader(reader: XmlStreamReader): TagReader {
 public inline fun <T> TagReader.mapData(transform: (String) -> T): T =
     transform(data())
 
+/**
+ * Unwrap the next token as [XmlToken.Text] and return its' value or throw a [DeserializationException]
+ */
 @InternalApi
 public fun TagReader.data(): String =
     when (val next = nextToken()) {
@@ -112,32 +115,9 @@ public fun TagReader.data(): String =
         else -> throw DeserializationException("expected XmlToken.Text element, found $next")
     }
 
+/**
+ * Attempt to get the text token as [XmlToken.Text] and return a result containing its' value on success
+ * or the exception thrown on failure.
+ */
 @InternalApi
 public fun TagReader.tryData(): Result<String> = runCatching { data() }
-
-//
-// private fun <T> TagReader.mapOrThrow(expected: String, mapper: (String) -> T?): T =
-//     map { raw ->
-//         mapper(raw) ?: throw DeserializationException("could not deserialize $raw as $expected for tag ${this.startTag}")
-//     }
-//
-// @InternalApi
-// public fun TagReader.readInt(): Int = mapOrThrow("Int", String::toIntOrNull)
-//
-// @InternalApi
-// public fun TagReader.readShort(): Short = mapOrThrow("Short", String::toShortOrNull)
-//
-// @InternalApi
-// public fun TagReader.readLong(): Long = mapOrThrow("Long", String::toLongOrNull)
-//
-// @InternalApi
-// public fun TagReader.readFloat(): Float = mapOrThrow("Float", String::toFloatOrNull)
-//
-// @InternalApi
-// public fun TagReader.readDouble(): Double = mapOrThrow("Double", String::toDoubleOrNull)
-//
-// @InternalApi
-// public fun TagReader.readByte(): Byte = mapOrThrow("Byte") { it.toIntOrNull()?.toByte() }
-//
-// @InternalApi
-// public fun TagReader.readBoolean(): Boolean = mapOrThrow("Boolean", String::toBoolean)

@@ -274,7 +274,6 @@ object RuntimeTypes {
             val XmlMapName = symbol("XmlMapName")
             val XmlError = symbol("XmlError")
             val XmlSerializer = symbol("XmlSerializer")
-            val XmlDeserializer = symbol("XmlDeserializer")
             val XmlUnwrappedOutput = symbol("XmlUnwrappedOutput")
 
             val TagReader = symbol("TagReader")
