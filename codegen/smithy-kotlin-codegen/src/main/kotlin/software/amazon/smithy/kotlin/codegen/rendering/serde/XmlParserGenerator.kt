@@ -89,9 +89,7 @@ open class XmlParserGenerator(
         writer: KotlinWriter,
     ) {
         if (shape.isUnionShape) {
-            // TODO - parse unions
-            // val name = ctx.symbolProvider.toSymbol(shape).name
-            // DeserializeUnionGenerator(ctx, name, members, writer, defaultTimestampFormat).render()
+            deserializeUnion(ctx, members, writer)
         } else {
             deserializeStruct(ctx, members, writer)
         }
@@ -178,6 +176,28 @@ open class XmlParserGenerator(
             write("curr.drop()")
         }
     }
+
+    private fun deserializeUnion(
+        ctx: ProtocolGenerator.GenerationContext,
+        members: List<MemberShape>,
+        writer: KotlinWriter,
+    ) {
+        writer.deserializeLoop {
+            members.forEach { member ->
+                val name = member.getTrait<XmlNameTrait>()?.value ?: member.memberName
+                write("// ${member.memberName} ${escape(member.id.toString())}")
+                val unionTypeName = member.unionTypeName(ctx)
+                val unionVariantName = member.unionVariantName()
+                withBlock("#S -> value = #L(", ")", name, unionTypeName) {
+                    // FIXME - need to propagate accumulator
+                    // should be value?.as#LOrNull()
+                    val accumFn = "value?.as${unionVariantName}OrNull()"
+                    deserializeMember(ctx, member, writer)
+                }
+            }
+        }
+    }
+
     private fun deserializeStruct(
         ctx: ProtocolGenerator.GenerationContext,
         members: List<MemberShape>,
