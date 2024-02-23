@@ -173,6 +173,9 @@ open class XmlParserGenerator(
                     write("else -> {}")
                 }
             }
+            // maintain stream reader state by dropping the current element and all it's children
+            // this ensures nested elements with potentially the same name as a higher level element
+            // are not erroneously returned and matched by `nextTag()`
             write("curr.drop()")
         }
     }
@@ -187,11 +190,7 @@ open class XmlParserGenerator(
                 val name = member.getTrait<XmlNameTrait>()?.value ?: member.memberName
                 write("// ${member.memberName} ${escape(member.id.toString())}")
                 val unionTypeName = member.unionTypeName(ctx)
-                val unionVariantName = member.unionVariantName()
                 withBlock("#S -> value = #L(", ")", name, unionTypeName) {
-                    // FIXME - need to propagate accumulator
-                    // should be value?.as#LOrNull()
-                    val accumFn = "value?.as${unionVariantName}OrNull()"
                     deserializeMember(ctx, member, writer)
                 }
             }
@@ -345,6 +344,19 @@ open class XmlParserGenerator(
         writer.write("#T(curr)", deserializeFn)
     }
 
+    private fun flatCollectionAccumulatorExpr(
+        ctx: ProtocolGenerator.GenerationContext,
+        member: MemberShape,
+    ): String =
+        when (val container = ctx.model.expectShape(member.container)) {
+            is StructureShape -> "builder.${member.defaultName()}"
+            is UnionShape -> {
+                val unionVariantName = member.unionVariantName()
+                "value?.as${unionVariantName}OrNull()"
+            }
+            else -> error("unexpected container shape $container for member $member")
+        }
+
     private fun deserializeFlatList(
         ctx: ProtocolGenerator.GenerationContext,
         member: MemberShape,
@@ -353,7 +365,8 @@ open class XmlParserGenerator(
         val target = ctx.model.expectShape<CollectionShape>(member.target)
         writer.withBlock("run {", "}") {
             deserializeListInner(ctx, target, this)
-            write("#T(builder.#L, el)", RuntimeTypes.Core.Collections.createOrAppend, member.defaultName())
+            val accum = flatCollectionAccumulatorExpr(ctx, member)
+            write("#T(#L, el)", RuntimeTypes.Core.Collections.createOrAppend, accum)
         }
     }
 
@@ -413,9 +426,10 @@ open class XmlParserGenerator(
         val valueSymbol = ctx.symbolProvider.toSymbol(target.value)
         val isSparse = target.hasTrait<SparseTrait>()
         writer.withBlock("run {", "}") {
+            val accum = flatCollectionAccumulatorExpr(ctx, member)
             write(
-                "val dest = builder.#L?.toMutableMap() ?: mutableMapOf<#T, #T#L>()",
-                member.defaultName(),
+                "val dest = #L?.toMutableMap() ?: mutableMapOf<#T, #T#L>()",
+                accum,
                 keySymbol,
                 valueSymbol,
                 nullabilitySuffix(isSparse),
@@ -472,9 +486,9 @@ open class XmlParserGenerator(
                             deserializeMember(ctx, map.value, this)
                         }
                     }
-                    write("if (key == null) throw #T(#S)", RuntimeTypes.Serde.DeserializationException, "missing key map entry")
+                    write("if (key == null) throw #T(#S)", Serde.DeserializationException, "missing key map entry")
                     if (!isSparse) {
-                        write("if (value == null) throw #T(#S)", RuntimeTypes.Serde.DeserializationException, "missing value map entry")
+                        write("if (value == null) throw #T(#S)", Serde.DeserializationException, "missing value map entry")
                     }
                     write("dest[key] = value")
                 }
