@@ -10,8 +10,10 @@ import software.amazon.smithy.codegen.core.SymbolReference
 import software.amazon.smithy.kotlin.codegen.core.*
 import software.amazon.smithy.kotlin.codegen.core.RuntimeTypes.Serde
 import software.amazon.smithy.kotlin.codegen.core.RuntimeTypes.Serde.SerdeXml
+import software.amazon.smithy.kotlin.codegen.lang.KotlinTypes
 import software.amazon.smithy.kotlin.codegen.model.*
 import software.amazon.smithy.kotlin.codegen.model.knowledge.SerdeIndex
+import software.amazon.smithy.kotlin.codegen.model.traits.UnwrappedXmlOutput
 import software.amazon.smithy.kotlin.codegen.rendering.protocol.ProtocolGenerator
 import software.amazon.smithy.kotlin.codegen.rendering.protocol.toRenderingContext
 import software.amazon.smithy.model.shapes.*
@@ -30,6 +32,14 @@ open class XmlParserGenerator(
     private val protocolGenerator: ProtocolGenerator,
     private val defaultTimestampFormat: TimestampFormatTrait.Format,
 ) : StructuredDataParserGenerator {
+
+    /**
+     * Deserialization context that holds current state
+     * @param tagReader the name of the current tag reader to operate on
+     */
+    data class SerdeCtx(
+        val tagReader: String,
+    )
 
     // FIXME - remove
     open fun descriptorGenerator(
@@ -77,21 +87,39 @@ open class XmlParserGenerator(
         documentMembers: List<MemberShape>,
         writer: KotlinWriter,
     ) {
-        writer.write("val reader = #T(payload).#T()", SerdeXml.xmlStreamReader, SerdeXml.root)
+        writer.write("val root = #T(payload).#T()", SerdeXml.xmlStreamReader, SerdeXml.root)
         val shape = ctx.model.expectShape(op.output.get())
-        renderDeserializerBody(ctx, shape, documentMembers, writer)
+        val serdeCtx = unwrapOperationBody(ctx, SerdeCtx("root"), op, writer)
+
+        if (op.hasTrait<UnwrappedXmlOutput>()) {
+            renderDeserializerUnwrappedXmlBody(ctx, serdeCtx, shape, writer)
+        } else {
+            renderDeserializerBody(ctx, serdeCtx, shape, documentMembers, writer)
+        }
     }
+
+    /**
+     * Hook for protocols to perform logic prior to deserializing the operation output.
+     * Implementations must return the [SerdeCtx] to use for further deserialization.
+     */
+    protected open fun unwrapOperationBody(
+        ctx: ProtocolGenerator.GenerationContext,
+        serdeCtx: SerdeCtx,
+        op: OperationShape,
+        writer: KotlinWriter,
+    ): SerdeCtx = serdeCtx
 
     protected fun renderDeserializerBody(
         ctx: ProtocolGenerator.GenerationContext,
+        serdeCtx: SerdeCtx,
         shape: Shape,
         members: List<MemberShape>,
         writer: KotlinWriter,
     ) {
         if (shape.isUnionShape) {
-            deserializeUnion(ctx, members, writer)
+            deserializeUnion(ctx, serdeCtx, members, writer)
         } else {
-            deserializeStruct(ctx, members, writer)
+            deserializeStruct(ctx, serdeCtx, members, writer)
         }
     }
 
@@ -104,13 +132,14 @@ open class XmlParserGenerator(
         return shape.documentDeserializer(ctx.settings, symbol, members) { writer ->
             writer.openBlock("internal fun #identifier.name:L(reader: #T): #T {", SerdeXml.TagReader, symbol)
                 .call {
+                    val serdeCtx = SerdeCtx("reader")
                     if (shape.isUnionShape) {
                         writer.write("var value: #T? = null", symbol)
-                        renderDeserializerBody(ctx, shape, members.toList(), writer)
-                        writer.write("return value ?: throw #T(#S)", RuntimeTypes.Serde.DeserializationException, "Deserialized union value unexpectedly null: ${symbol.name}")
+                        renderDeserializerBody(ctx, serdeCtx, shape, members.toList(), writer)
+                        writer.write("return value ?: throw #T(#S)", Serde.DeserializationException, "Deserialized union value unexpectedly null: ${symbol.name}")
                     } else {
                         writer.write("val builder = #T.Builder()", symbol)
-                        renderDeserializerBody(ctx, shape, members.toList(), writer)
+                        renderDeserializerBody(ctx, serdeCtx, shape, members.toList(), writer)
                         writer.write("builder.correctErrors()")
                         writer.write("return builder.build()")
                     }
@@ -130,12 +159,24 @@ open class XmlParserGenerator(
             val fnName = symbol.errorDeserializerName()
             writer.openBlock("internal fun #L(builder: #T.Builder, payload: ByteArray) {", fnName, symbol)
                 .call {
-                    writer.write("val reader = #T(payload).#T()", SerdeXml.xmlStreamReader, SerdeXml.root)
-                    renderDeserializerBody(ctx, errorShape, members, writer)
+                    writer.write("val root = #T(payload).#T()", SerdeXml.xmlStreamReader, SerdeXml.root)
+                    val serdeCtx = unwrapOperationError(ctx, SerdeCtx("root"), errorShape, writer)
+                    renderDeserializerBody(ctx, serdeCtx, errorShape, members, writer)
                 }
                 .closeBlock("}")
         }
     }
+
+    /**
+     * Hook for protocols to perform logic prior to deserializing an operation error.
+     * Implementations must return the [SerdeCtx] to use for further deserialization.
+     */
+    protected open fun unwrapOperationError(
+        ctx: ProtocolGenerator.GenerationContext,
+        serdeCtx: SerdeCtx,
+        errorShape: StructureShape,
+        writer: KotlinWriter,
+    ): SerdeCtx = serdeCtx
 
     override fun payloadDeserializer(
         ctx: ProtocolGenerator.GenerationContext,
@@ -154,21 +195,22 @@ open class XmlParserGenerator(
                     // short circuit when the shape has no modeled members to deserialize
                     write("return #T.Builder().build()", symbol)
                 } else {
-                    write("val deserializer = #T(payload)", SerdeXml.XmlDeserializer)
-                    write("return #T(deserializer)", deserializeFn)
+                    writer.write("val root = #T(payload).#T()", SerdeXml.xmlStreamReader, SerdeXml.root)
+                    write("return #T(root)", deserializeFn)
                 }
             }
         }
     }
 
     private fun KotlinWriter.deserializeLoop(
+        serdeCtx: SerdeCtx,
         ignoreUnexpected: Boolean = true,
-        block: KotlinWriter.() -> Unit,
+        block: KotlinWriter.(SerdeCtx) -> Unit,
     ) {
         withBlock("loop@while(true) {", "}") {
-            write("val curr = reader.nextTag() ?: break@loop")
+            write("val curr = ${serdeCtx.tagReader}.nextTag() ?: break@loop")
             withBlock("when(curr.startTag.name.tag) {", "}") {
-                block(this)
+                block(this, serdeCtx.copy(tagReader = "curr"))
                 if (ignoreUnexpected) {
                     write("else -> {}")
                 }
@@ -182,16 +224,17 @@ open class XmlParserGenerator(
 
     private fun deserializeUnion(
         ctx: ProtocolGenerator.GenerationContext,
+        serdeCtx: SerdeCtx,
         members: List<MemberShape>,
         writer: KotlinWriter,
     ) {
-        writer.deserializeLoop {
+        writer.deserializeLoop(serdeCtx) { innerCtx ->
             members.forEach { member ->
                 val name = member.getTrait<XmlNameTrait>()?.value ?: member.memberName
                 write("// ${member.memberName} ${escape(member.id.toString())}")
                 val unionTypeName = member.unionTypeName(ctx)
                 withBlock("#S -> value = #L(", ")", name, unionTypeName) {
-                    deserializeMember(ctx, member, writer)
+                    deserializeMember(ctx, innerCtx, member, writer)
                 }
             }
         }
@@ -199,37 +242,39 @@ open class XmlParserGenerator(
 
     private fun deserializeStruct(
         ctx: ProtocolGenerator.GenerationContext,
+        serdeCtx: SerdeCtx,
         members: List<MemberShape>,
         writer: KotlinWriter,
     ) {
         // split attribute members and non attribute members
         val attributeMembers = members.filter { it.hasTrait<XmlAttributeTrait>() }
         attributeMembers.forEach { member ->
-            deserializeAttributeMember(ctx, member, writer)
+            deserializeAttributeMember(ctx, serdeCtx, member, writer)
         }
 
         val payloadMembers = members.filterNot { it.hasTrait<XmlAttributeTrait>() }
         // don't generate a parse loop if no attribute members
         if (payloadMembers.isEmpty()) return
         writer.write("")
-        writer.deserializeLoop {
+        writer.deserializeLoop(serdeCtx) { innerCtx ->
             payloadMembers.forEach { member ->
                 val name = member.getTrait<XmlNameTrait>()?.value ?: member.memberName
                 write("// ${member.memberName} ${escape(member.id.toString())}")
                 writeInline("#S -> builder.#L = ", name, member.defaultName())
-                deserializeMember(ctx, member, writer)
+                deserializeMember(ctx, innerCtx, member, writer)
             }
         }
     }
 
     private fun deserializeAttributeMember(
         ctx: ProtocolGenerator.GenerationContext,
+        serdeCtx: SerdeCtx,
         member: MemberShape,
         writer: KotlinWriter,
     ) {
         val memberName = member.getTrait<XmlNameTrait>()?.value ?: member.memberName
         writer.withBlock(
-            "reader.startTag.getAttr(#S)?.let {",
+            "${serdeCtx.tagReader}.startTag.getAttr(#S)?.let {",
             "}",
             memberName,
         ) {
@@ -240,6 +285,7 @@ open class XmlParserGenerator(
 
     private fun deserializeMember(
         ctx: ProtocolGenerator.GenerationContext,
+        serdeCtx: SerdeCtx,
         member: MemberShape,
         writer: KotlinWriter,
     ) {
@@ -247,16 +293,16 @@ open class XmlParserGenerator(
         when (target.type) {
             ShapeType.LIST, ShapeType.SET -> {
                 if (member.hasTrait<XmlFlattenedTrait>()) {
-                    deserializeFlatList(ctx, member, writer)
+                    deserializeFlatList(ctx, serdeCtx, member, writer)
                 } else {
-                    deserializeList(ctx, member, writer)
+                    deserializeList(ctx, serdeCtx, member, writer)
                 }
             }
             ShapeType.MAP -> {
                 if (member.hasTrait<XmlFlattenedTrait>()) {
-                    deserializeFlatMap(ctx, member, writer)
+                    deserializeFlatMap(ctx, serdeCtx, member, writer)
                 } else {
-                    deserializeMap(ctx, member, writer)
+                    deserializeMap(ctx, serdeCtx, member, writer)
                 }
             }
             ShapeType.STRUCTURE, ShapeType.UNION -> {
@@ -324,6 +370,7 @@ open class XmlParserGenerator(
 
     private fun deserializeList(
         ctx: ProtocolGenerator.GenerationContext,
+        serdeCtx: SerdeCtx,
         member: MemberShape,
         writer: KotlinWriter,
     ) {
@@ -332,16 +379,16 @@ open class XmlParserGenerator(
         val isSparse = target.hasTrait<SparseTrait>()
         val deserializeFn = deserializeShape(ctx, target) {
             write("val result = mutableListOf<#T#L>()", ctx.symbolProvider.toSymbol(targetMember), nullabilitySuffix(isSparse))
-            deserializeLoop {
+            deserializeLoop(SerdeCtx(tagReader = "reader")) { innerCtx ->
                 val memberName = targetMember.getTrait<XmlNameTrait>()?.value ?: targetMember.memberName
                 withBlock("#S -> {", "}", memberName) {
-                    deserializeListInner(ctx, target, this)
+                    deserializeListInner(ctx, innerCtx, target, this)
                     write("result.add(el)")
                 }
             }
             write("return result")
         }
-        writer.write("#T(curr)", deserializeFn)
+        writer.write("#T(${serdeCtx.tagReader})", deserializeFn)
     }
 
     private fun flatCollectionAccumulatorExpr(
@@ -359,12 +406,13 @@ open class XmlParserGenerator(
 
     private fun deserializeFlatList(
         ctx: ProtocolGenerator.GenerationContext,
+        serdeCtx: SerdeCtx,
         member: MemberShape,
         writer: KotlinWriter,
     ) {
         val target = ctx.model.expectShape<CollectionShape>(member.target)
         writer.withBlock("run {", "}") {
-            deserializeListInner(ctx, target, this)
+            deserializeListInner(ctx, serdeCtx, target, this)
             val accum = flatCollectionAccumulatorExpr(ctx, member)
             write("#T(#L, el)", RuntimeTypes.Core.Collections.createOrAppend, accum)
         }
@@ -372,6 +420,7 @@ open class XmlParserGenerator(
 
     private fun deserializeListInner(
         ctx: ProtocolGenerator.GenerationContext,
+        serdeCtx: SerdeCtx,
         target: CollectionShape,
         writer: KotlinWriter,
     ) {
@@ -380,44 +429,47 @@ open class XmlParserGenerator(
         val isSparse = target.hasTrait<SparseTrait>()
         with(writer) {
             if (isSparse) {
-                openBlock("val el = if (curr.nextHasValue()) {")
+                openBlock("val el = if (${serdeCtx.tagReader}.nextHasValue()) {")
                     .call {
-                        deserializeMember(ctx, target.member, this)
+                        deserializeMember(ctx, serdeCtx, target.member, this)
                     }
                     .closeAndOpenBlock("} else {")
                     .write("null")
                     .closeBlock("}")
             } else {
                 writeInline("val el = ")
-                deserializeMember(ctx, target.member, this)
+                deserializeMember(ctx, serdeCtx, target.member, this)
             }
         }
     }
 
     private fun deserializeMap(
         ctx: ProtocolGenerator.GenerationContext,
+        serdeCtx: SerdeCtx,
         member: MemberShape,
         writer: KotlinWriter,
     ) {
         val target = ctx.model.expectShape<MapShape>(member.target)
         val keySymbol = ctx.symbolProvider.toSymbol(target.key)
         val valueSymbol = ctx.symbolProvider.toSymbol(target.value)
+        writer.addImportReferences(valueSymbol, SymbolReference.ContextOption.USE)
         val isSparse = target.hasTrait<SparseTrait>()
 
         val deserializeFn = deserializeShape(ctx, target) {
             write("val result = mutableMapOf<#T, #T#L>()", keySymbol, valueSymbol, nullabilitySuffix(isSparse))
-            deserializeLoop {
+            deserializeLoop(SerdeCtx("reader")) { innerCtx ->
                 withBlock("#S -> {", "}", "entry") {
                     val deserializeEntryFn = deserializeMapEntry(ctx, target)
-                    write("#T(result, curr)", deserializeEntryFn)
+                    write("#T(result, ${innerCtx.tagReader})", deserializeEntryFn)
                 }
             }
             write("return result")
         }
-        writer.write("#T(curr)", deserializeFn)
+        writer.write("#T(${serdeCtx.tagReader})", deserializeFn)
     }
     private fun deserializeFlatMap(
         ctx: ProtocolGenerator.GenerationContext,
+        serdeCtx: SerdeCtx,
         member: MemberShape,
         writer: KotlinWriter,
     ) {
@@ -425,6 +477,7 @@ open class XmlParserGenerator(
         val keySymbol = ctx.symbolProvider.toSymbol(target.key)
         val valueSymbol = ctx.symbolProvider.toSymbol(target.value)
         val isSparse = target.hasTrait<SparseTrait>()
+        writer.addImportReferences(valueSymbol, SymbolReference.ContextOption.USE)
         writer.withBlock("run {", "}") {
             val accum = flatCollectionAccumulatorExpr(ctx, member)
             write(
@@ -435,7 +488,7 @@ open class XmlParserGenerator(
                 nullabilitySuffix(isSparse),
             )
             val deserializeEntryFn = deserializeMapEntry(ctx, target)
-            write("#T(dest, curr)", deserializeEntryFn)
+            write("#T(dest, ${serdeCtx.tagReader})", deserializeEntryFn)
             write("dest")
         }
     }
@@ -448,6 +501,7 @@ open class XmlParserGenerator(
         val keySymbol = ctx.symbolProvider.toSymbol(map.key)
         val valueSymbol = ctx.symbolProvider.toSymbol(map.value)
         val isSparse = map.hasTrait<SparseTrait>()
+        val serdeCtx = SerdeCtx("reader")
 
         return buildSymbol {
             name = "deserialize${shapeName}Entry"
@@ -458,8 +512,9 @@ open class XmlParserGenerator(
                 // dedicated map deserializer, they inline the entry deserialization since the map
                 // being built up is not processed all at once
                 writer.withBlock(
-                    "internal fun $name(dest: MutableMap<#T, #T#L>, reader: #T) {",
+                    "internal fun $name(dest: #T<#T, #T#L>, reader: #T) {",
                     "}",
+                    KotlinTypes.Collections.MutableMap,
                     keySymbol,
                     valueSymbol,
                     nullabilitySuffix(isSparse),
@@ -467,23 +522,24 @@ open class XmlParserGenerator(
                 ) {
                     write("var key: #T? = null", keySymbol)
                     write("var value: #T? = null", valueSymbol)
-                    deserializeLoop {
+                    writer.addImportReferences(valueSymbol, SymbolReference.ContextOption.USE)
+                    deserializeLoop(serdeCtx) { innerCtx ->
                         val keyName = map.key.getTrait<XmlNameTrait>()?.value ?: map.key.memberName
                         writeInline("#S -> key = ", keyName)
-                        deserializeMember(ctx, map.key, this)
+                        deserializeMember(ctx, innerCtx, map.key, this)
 
                         val valueName = map.value.getTrait<XmlNameTrait>()?.value ?: map.value.memberName
                         if (isSparse) {
-                            openBlock("#S -> value = if (curr.nextHasValue()) {", valueName)
+                            openBlock("#S -> value = if (${innerCtx.tagReader}.nextHasValue()) {", valueName)
                                 .call {
-                                    deserializeMember(ctx, map.value, this)
+                                    deserializeMember(ctx, innerCtx, map.value, this)
                                 }
                                 .closeAndOpenBlock("} else {")
                                 .write("null")
                                 .closeBlock("}")
                         } else {
                             writeInline("#S -> value = ", valueName)
-                            deserializeMember(ctx, map.value, this)
+                            deserializeMember(ctx, innerCtx, map.value, this)
                         }
                     }
                     write("if (key == null) throw #T(#S)", Serde.DeserializationException, "missing key map entry")
@@ -554,5 +610,25 @@ open class XmlParserGenerator(
             }
             .write(".#T { #S }", Serde.getOrDeserializeErr, escapedErrMessage)
             .dedent()
+    }
+
+    private fun renderDeserializerUnwrappedXmlBody(
+        ctx: ProtocolGenerator.GenerationContext,
+        serdeCtx: SerdeCtx,
+        shape: Shape,
+        writer: KotlinWriter,
+    ) {
+        val members = shape.members()
+        check(members.size == 1) {
+            "unwrapped XML output trait is only allowed on operation output structs with exactly one member"
+        }
+
+        val member = members.first()
+        writer.withBlock("when(${serdeCtx.tagReader}.startTag.name.tag) {", "}") {
+            val name = member.getTrait<XmlNameTrait>()?.value ?: member.memberName
+            write("// ${member.memberName} ${escape(member.id.toString())}")
+            writeInline("#S -> builder.#L = ", name, member.defaultName())
+            deserializeMember(ctx, serdeCtx, member, writer)
+        }
     }
 }

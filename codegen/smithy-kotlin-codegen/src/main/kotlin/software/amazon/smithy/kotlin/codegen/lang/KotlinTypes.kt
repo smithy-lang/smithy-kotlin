@@ -41,6 +41,7 @@ object KotlinTypes {
         val List: Symbol = stdlibSymbol("List")
         val listOf: Symbol = stdlibSymbol("listOf")
         val MutableList: Symbol = stdlibSymbol("MutableList")
+        val MutableMap: Symbol = stdlibSymbol("MutableMap")
         val Map: Symbol = stdlibSymbol("Map")
         val mutableListOf: Symbol = stdlibSymbol("mutableListOf")
         val mutableMapOf: Symbol = stdlibSymbol("mutableMapOf")
