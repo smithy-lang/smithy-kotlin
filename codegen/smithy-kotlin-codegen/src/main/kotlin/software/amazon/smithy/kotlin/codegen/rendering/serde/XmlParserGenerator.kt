@@ -307,12 +307,12 @@ open class XmlParserGenerator(
             }
             ShapeType.STRUCTURE, ShapeType.UNION -> {
                 val deserializeFn = documentDeserializer(ctx, target)
-                writer.write("#T(curr)", deserializeFn)
+                writer.write("#T(${serdeCtx.tagReader})", deserializeFn)
             }
             else -> deserializePrimitiveMember(
                 ctx,
                 member,
-                writer.format("curr.#T()", SerdeXml.tryData),
+                writer.format("${serdeCtx.tagReader}.#T()", SerdeXml.tryData),
                 textExprIsResult = true,
                 writer,
             )
