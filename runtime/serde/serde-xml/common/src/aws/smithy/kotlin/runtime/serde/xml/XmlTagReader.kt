@@ -95,7 +95,7 @@ private fun XmlStreamReader.root(): XmlTagReader {
 @InternalApi
 public fun XmlToken.BeginElement.tagReader(reader: XmlStreamReader): XmlTagReader {
     val start = reader.lastToken as? XmlToken.BeginElement ?: error("expected start tag found ${reader.lastToken}")
-    check(name == start.name) { "expected start tag $name but current reader state is on ${start.name}" }
+    check(qualifiedName == start.qualifiedName) { "expected start tag $qualifiedName but current reader state is on ${start.qualifiedName}" }
     return XmlTagReader(this, reader)
 }
 

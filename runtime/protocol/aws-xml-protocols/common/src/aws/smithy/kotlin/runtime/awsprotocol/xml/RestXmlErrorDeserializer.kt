@@ -47,21 +47,21 @@ internal object XmlErrorDeserializer {
         var code: String? = null
         var requestId: String? = null
 
-        val rootTagName = root.tag.name.tag
+        val rootTagName = root.tag.name
         check(rootTagName == "ErrorResponse" || rootTagName == "Error") {
             "expected restXml error response with root tag of <ErrorResponse> or <Error>"
         }
 
         // wrapped error, unwrap it
         var errTag = root
-        if (root.tag.name.tag == "ErrorResponse") {
+        if (root.tag.name == "ErrorResponse") {
             errTag = root.nextTag() ?: error("expected more tags after <ErrorResponse>")
         }
 
-        if (errTag.tag.name.tag == "Error") {
+        if (errTag.tag.name == "Error") {
             loop@ while (true) {
                 val curr = errTag.nextTag() ?: break@loop
-                when (curr.tag.name.tag) {
+                when (curr.tag.name) {
                     "Code" -> code = curr.data()
                     "Message", "message" -> message = curr.data()
                     "RequestId" -> requestId = curr.data()
@@ -74,7 +74,7 @@ internal object XmlErrorDeserializer {
         if (requestId == null) {
             loop@while (true) {
                 val curr = root.nextTag() ?: break@loop
-                when (curr.tag.name.tag) {
+                when (curr.tag.name) {
                     "RequestId" -> requestId = curr.data()
                 }
             }

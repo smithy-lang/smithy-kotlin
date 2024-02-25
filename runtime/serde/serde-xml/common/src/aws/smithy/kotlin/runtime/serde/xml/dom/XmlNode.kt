@@ -46,7 +46,7 @@ public class XmlNode {
             return parseDom(reader)
         }
 
-        internal fun fromToken(token: XmlToken.BeginElement): XmlNode = XmlNode(token.name).apply {
+        internal fun fromToken(token: XmlToken.BeginElement): XmlNode = XmlNode(token.qualifiedName).apply {
             attributes.putAll(token.attributes)
             namespaces.addAll(token.nsDeclarations)
         }
@@ -83,8 +83,8 @@ public fun parseDom(reader: XmlStreamReader): XmlNode {
             is XmlToken.EndElement -> {
                 val curr = nodeStack.top()
 
-                if (curr.name != token.name) {
-                    throw DeserializationException("expected end of element: `${curr.name}`, found: `${token.name}`")
+                if (curr.name != token.qualifiedName) {
+                    throw DeserializationException("expected end of element: `${curr.name}`, found: `${token.qualifiedName}`")
                 }
 
                 if (nodeStack.count() > 1) {
@@ -121,7 +121,7 @@ internal fun formatXmlNode(curr: XmlNode, depth: Int, sb: StringBuilder, pretty:
 
         // open tag
         append("$indent<")
-        append(curr.name.tag)
+        append(curr.name.toString())
         curr.namespaces.forEach {
             // namespaces declared by this node
             append(" xmlns")
@@ -134,7 +134,7 @@ internal fun formatXmlNode(curr: XmlNode, depth: Int, sb: StringBuilder, pretty:
         // attributes
         if (curr.attributes.isNotEmpty()) append(" ")
         curr.attributes.forEach {
-            append("${it.key.tag}=\"${it.value}\"")
+            append("${it.key}=\"${it.value}\"")
         }
         append(">")
 
@@ -155,7 +155,7 @@ internal fun formatXmlNode(curr: XmlNode, depth: Int, sb: StringBuilder, pretty:
         }
 
         append("</")
-        append(curr.name.tag)
+        append(curr.name.toString())
         append(">")
 
         if (pretty && depth > 0) appendLine()

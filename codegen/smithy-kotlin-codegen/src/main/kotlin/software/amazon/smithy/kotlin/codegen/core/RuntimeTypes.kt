@@ -276,9 +276,9 @@ object RuntimeTypes {
             val XmlSerializer = symbol("XmlSerializer")
             val XmlUnwrappedOutput = symbol("XmlUnwrappedOutput")
 
-            val TagReader = symbol("TagReader")
+            val XmlTagReader = symbol("XmlTagReader")
             val xmlStreamReader = symbol("xmlStreamReader")
-            val xmlTagReader = symbol("xmlTagReader")
+            val xmlRootTagReader = symbol("xmlTagReader")
             val data = symbol("data")
             val tryData = symbol("tryData")
         }

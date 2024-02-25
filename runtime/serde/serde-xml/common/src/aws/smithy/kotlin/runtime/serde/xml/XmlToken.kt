@@ -28,7 +28,10 @@ public sealed class XmlToken {
      */
     @InternalApi
     public data class QualifiedName(public val local: String, public val prefix: String? = null) {
-        override fun toString(): String = tag
+        override fun toString(): String = when (prefix) {
+            null -> local
+            else -> "$prefix:$local"
+        }
 
         @InternalApi
         public companion object {
@@ -45,11 +48,6 @@ public sealed class XmlToken {
                 return QualifiedName(local, prefix)
             }
         }
-
-        public val tag: String get() = when (prefix) {
-            null -> local
-            else -> "$prefix:$local"
-        }
     }
 
     /**
@@ -58,31 +56,44 @@ public sealed class XmlToken {
     @InternalApi
     public data class BeginElement(
         override val depth: Int,
-        public val name: QualifiedName,
+        public val qualifiedName: QualifiedName,
         public val attributes: Map<QualifiedName, String> = emptyMap(),
         public val nsDeclarations: List<Namespace> = emptyList(),
     ) : XmlToken() {
+
         // Convenience constructor for name-only nodes.
         public constructor(depth: Int, name: String) : this(depth, QualifiedName(name))
 
         // Convenience constructor for name-only nodes with attributes.
         public constructor(depth: Int, name: String, attributes: Map<QualifiedName, String>) : this(depth, QualifiedName(name), attributes)
 
-        override fun toString(): String = "<${this.name} (${this.depth})>"
+        override fun toString(): String = "<${this.qualifiedName} (${this.depth})>"
 
         // convenience function for codegen
         public fun getAttr(qualified: String): String? = attributes[QualifiedName.from(qualified)]
+
+        /**
+         * Get the qualified tag name of this element
+         */
+        val name: String
+            get() = qualifiedName.toString()
     }
 
     /**
      * The closing of an XML element
      */
     @InternalApi
-    public data class EndElement(override val depth: Int, public val name: QualifiedName) : XmlToken() {
+    public data class EndElement(override val depth: Int, public val qualifiedName: QualifiedName) : XmlToken() {
         // Convenience constructor for name-only nodes.
         public constructor(depth: Int, name: String) : this(depth, QualifiedName(name))
 
-        override fun toString(): String = "</${this.name}> (${this.depth})"
+        override fun toString(): String = "</${this.qualifiedName}> (${this.depth})"
+
+        /**
+         * Get the qualified tag name of this element
+         */
+        val name: String
+            get() = qualifiedName.toString()
     }
 
     /**
@@ -109,8 +120,8 @@ public sealed class XmlToken {
     }
 
     override fun toString(): String = when (this) {
-        is BeginElement -> "<${this.name}>"
-        is EndElement -> "</${this.name}>"
+        is BeginElement -> "<${this.qualifiedName}>"
+        is EndElement -> "</${this.qualifiedName}>"
         is Text -> "${this.value}"
         StartDocument -> "[StartDocument]"
         EndDocument -> "[EndDocument]"
@@ -131,7 +142,7 @@ internal fun XmlToken?.terminates(beginToken: XmlToken?): Boolean {
     if (this !is XmlToken.EndElement) return false
     if (beginToken !is XmlToken.BeginElement) return false
     if (depth != beginToken.depth) return false
-    if (name != beginToken.name) return false
+    if (qualifiedName != beginToken.qualifiedName) return false
 
     return true
 }

@@ -28,11 +28,11 @@ internal object Ec2QueryErrorResponseDeserializer {
     fun deserialize(root: XmlTagReader): Ec2QueryErrorResponse = runCatching {
         var errors: List<Ec2QueryError>? = null
         var requestId: String? = null
-        if (root.tag.name.tag != "Response") error("expected <Response> found ${root.tag}")
+        if (root.tag.name != "Response") error("expected <Response> found ${root.tag}")
 
         loop@while (true) {
             val curr = root.nextTag() ?: break@loop
-            when (curr.tag.name.tag) {
+            when (curr.tag.name) {
                 "Errors" -> errors = Ec2QueryErrorListDeserializer.deserialize(curr)
                 "RequestId" -> requestId = curr.data()
             }
@@ -48,7 +48,7 @@ internal object Ec2QueryErrorListDeserializer {
         val errors = mutableListOf<Ec2QueryError>()
         loop@ while (true) {
             val curr = root.nextTag() ?: break@loop
-            when (curr.tag.name.tag) {
+            when (curr.tag.name) {
                 "Error" -> {
                     val el = Ec2QueryErrorDeserializer.deserialize(curr)
                     errors.add(el)
@@ -68,7 +68,7 @@ internal object Ec2QueryErrorDeserializer {
 
         loop@ while (true) {
             val curr = root.nextTag() ?: break@loop
-            when (curr.tag.name.tag) {
+            when (curr.tag.name) {
                 "Code" -> code = curr.data()
                 "Message", "message" -> message = curr.data()
             }
