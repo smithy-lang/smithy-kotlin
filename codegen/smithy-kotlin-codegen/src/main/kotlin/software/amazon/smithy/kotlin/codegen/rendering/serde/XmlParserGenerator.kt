@@ -15,7 +15,6 @@ import software.amazon.smithy.kotlin.codegen.model.*
 import software.amazon.smithy.kotlin.codegen.model.knowledge.SerdeIndex
 import software.amazon.smithy.kotlin.codegen.model.traits.UnwrappedXmlOutput
 import software.amazon.smithy.kotlin.codegen.rendering.protocol.ProtocolGenerator
-import software.amazon.smithy.kotlin.codegen.rendering.protocol.toRenderingContext
 import software.amazon.smithy.model.shapes.*
 import software.amazon.smithy.model.traits.SparseTrait
 import software.amazon.smithy.model.traits.TimestampFormatTrait
@@ -28,8 +27,6 @@ import software.amazon.smithy.utils.StringUtils
  * XML parser generator based on common deserializer interface and XML serde descriptors
  */
 open class XmlParserGenerator(
-    // FIXME - shouldn't be necessary but XML serde descriptor generator needs it for rendering context
-    private val protocolGenerator: ProtocolGenerator,
     private val defaultTimestampFormat: TimestampFormatTrait.Format,
 ) : StructuredDataParserGenerator {
 
@@ -40,14 +37,6 @@ open class XmlParserGenerator(
     data class SerdeCtx(
         val tagReader: String,
     )
-
-    // FIXME - remove
-    open fun descriptorGenerator(
-        ctx: ProtocolGenerator.GenerationContext,
-        shape: Shape,
-        members: List<MemberShape>,
-        writer: KotlinWriter,
-    ): XmlSerdeDescriptorGenerator = XmlSerdeDescriptorGenerator(ctx.toRenderingContext(protocolGenerator, shape, writer), members)
 
     override fun operationDeserializer(
         ctx: ProtocolGenerator.GenerationContext,
