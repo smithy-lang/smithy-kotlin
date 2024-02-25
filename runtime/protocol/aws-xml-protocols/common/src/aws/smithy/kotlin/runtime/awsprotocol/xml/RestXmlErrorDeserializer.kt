@@ -7,10 +7,9 @@ package aws.smithy.kotlin.runtime.awsprotocol.xml
 import aws.smithy.kotlin.runtime.InternalApi
 import aws.smithy.kotlin.runtime.awsprotocol.ErrorDetails
 import aws.smithy.kotlin.runtime.serde.*
-import aws.smithy.kotlin.runtime.serde.xml.TagReader
+import aws.smithy.kotlin.runtime.serde.xml.XmlTagReader
 import aws.smithy.kotlin.runtime.serde.xml.data
-import aws.smithy.kotlin.runtime.serde.xml.root
-import aws.smithy.kotlin.runtime.serde.xml.xmlStreamReader
+import aws.smithy.kotlin.runtime.serde.xml.xmlTagReader
 
 /**
  * Provides access to specific values regardless of message form
@@ -35,7 +34,7 @@ internal data class XmlError(
  */
 @InternalApi
 public fun parseRestXmlErrorResponse(payload: ByteArray): ErrorDetails {
-    val details = XmlErrorDeserializer.deserialize(xmlStreamReader(payload).root())
+    val details = XmlErrorDeserializer.deserialize(xmlTagReader(payload))
     return ErrorDetails(details.code, details.message, details.requestId)
 }
 
@@ -43,26 +42,26 @@ public fun parseRestXmlErrorResponse(payload: ByteArray): ErrorDetails {
  * This deserializer is used for both wrapped and unwrapped restXml errors.
  */
 internal object XmlErrorDeserializer {
-    fun deserialize(root: TagReader): XmlError = runCatching {
+    fun deserialize(root: XmlTagReader): XmlError = runCatching {
         var message: String? = null
         var code: String? = null
         var requestId: String? = null
 
-        val rootTagName = root.startTag.name.tag
+        val rootTagName = root.tag.name.tag
         check(rootTagName == "ErrorResponse" || rootTagName == "Error") {
             "expected restXml error response with root tag of <ErrorResponse> or <Error>"
         }
 
         // wrapped error, unwrap it
         var errTag = root
-        if (root.startTag.name.tag == "ErrorResponse") {
+        if (root.tag.name.tag == "ErrorResponse") {
             errTag = root.nextTag() ?: error("expected more tags after <ErrorResponse>")
         }
 
-        if (errTag.startTag.name.tag == "Error") {
+        if (errTag.tag.name.tag == "Error") {
             loop@ while (true) {
                 val curr = errTag.nextTag() ?: break@loop
-                when (curr.startTag.name.tag) {
+                when (curr.tag.name.tag) {
                     "Code" -> code = curr.data()
                     "Message", "message" -> message = curr.data()
                     "RequestId" -> requestId = curr.data()
@@ -75,7 +74,7 @@ internal object XmlErrorDeserializer {
         if (requestId == null) {
             loop@while (true) {
                 val curr = root.nextTag() ?: break@loop
-                when (curr.startTag.name.tag) {
+                when (curr.tag.name.tag) {
                     "RequestId" -> requestId = curr.data()
                 }
             }

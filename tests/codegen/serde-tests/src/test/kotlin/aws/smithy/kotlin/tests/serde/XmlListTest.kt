@@ -4,8 +4,7 @@
  */
 package aws.smithy.kotlin.tests.serde
 
-import aws.smithy.kotlin.runtime.serde.xml.root
-import aws.smithy.kotlin.runtime.serde.xml.xmlStreamReader
+import aws.smithy.kotlin.runtime.serde.xml.xmlTagReader
 import aws.smithy.kotlin.tests.serde.xml.model.StructType
 import aws.smithy.kotlin.tests.serde.xml.serde.deserializeStructTypeDocument
 import aws.smithy.kotlin.tests.serde.xml.serde.serializeStructTypeDocument
@@ -120,7 +119,7 @@ class XmlListTest : AbstractXmlTest() {
         """.trimIndent()
 
         // we don't round trip this because the format isn't going to match
-        val reader = xmlStreamReader(payload.encodeToByteArray()).root()
+        val reader = xmlTagReader(payload.encodeToByteArray())
         val actualDeserialized = deserializeStructTypeDocument(reader)
         assertEquals(expected, actualDeserialized)
     }

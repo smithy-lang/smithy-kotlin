@@ -15,7 +15,7 @@ internal data class Ec2QueryError(val code: String?, val message: String?)
 
 @InternalApi
 public fun parseEc2QueryErrorResponse(payload: ByteArray): ErrorDetails {
-    val response = Ec2QueryErrorResponseDeserializer.deserialize(xmlStreamReader(payload).root())
+    val response = Ec2QueryErrorResponseDeserializer.deserialize(xmlTagReader(payload))
     val firstError = response.errors.firstOrNull()
     return ErrorDetails(firstError?.code, firstError?.message, response.requestId)
 }
@@ -25,14 +25,14 @@ public fun parseEc2QueryErrorResponse(payload: ByteArray): ErrorDetails {
  * https://smithy.io/2.0/aws/protocols/aws-ec2-query-protocol.html#operation-error-serialization
  */
 internal object Ec2QueryErrorResponseDeserializer {
-    fun deserialize(root: TagReader): Ec2QueryErrorResponse = runCatching {
+    fun deserialize(root: XmlTagReader): Ec2QueryErrorResponse = runCatching {
         var errors: List<Ec2QueryError>? = null
         var requestId: String? = null
-        if (root.startTag.name.tag != "Response") error("expected <Response> found ${root.startTag}")
+        if (root.tag.name.tag != "Response") error("expected <Response> found ${root.tag}")
 
         loop@while (true) {
             val curr = root.nextTag() ?: break@loop
-            when (curr.startTag.name.tag) {
+            when (curr.tag.name.tag) {
                 "Errors" -> errors = Ec2QueryErrorListDeserializer.deserialize(curr)
                 "RequestId" -> requestId = curr.data()
             }
@@ -44,11 +44,11 @@ internal object Ec2QueryErrorResponseDeserializer {
 }
 
 internal object Ec2QueryErrorListDeserializer {
-    fun deserialize(root: TagReader): List<Ec2QueryError> {
+    fun deserialize(root: XmlTagReader): List<Ec2QueryError> {
         val errors = mutableListOf<Ec2QueryError>()
         loop@ while (true) {
             val curr = root.nextTag() ?: break@loop
-            when (curr.startTag.name.tag) {
+            when (curr.tag.name.tag) {
                 "Error" -> {
                     val el = Ec2QueryErrorDeserializer.deserialize(curr)
                     errors.add(el)
@@ -62,13 +62,13 @@ internal object Ec2QueryErrorListDeserializer {
 
 internal object Ec2QueryErrorDeserializer {
 
-    fun deserialize(root: TagReader): Ec2QueryError {
+    fun deserialize(root: XmlTagReader): Ec2QueryError {
         var code: String? = null
         var message: String? = null
 
         loop@ while (true) {
             val curr = root.nextTag() ?: break@loop
-            when (curr.startTag.name.tag) {
+            when (curr.tag.name.tag) {
                 "Code" -> code = curr.data()
                 "Message", "message" -> message = curr.data()
             }

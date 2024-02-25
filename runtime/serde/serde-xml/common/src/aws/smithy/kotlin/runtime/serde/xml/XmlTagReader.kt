@@ -9,22 +9,25 @@ import aws.smithy.kotlin.runtime.io.Closeable
 import aws.smithy.kotlin.runtime.serde.DeserializationException
 
 /**
- * An [XmlStreamReader] scoped to reading a single XML element [startTag]
- * [TagReader] provides a "tag" scoped view into an XML document. Methods return
+ * An [XmlStreamReader] scoped to reading a single XML element [tag]
+ * [XmlTagReader] provides a "tag" scoped view into an XML document. Methods return
  * `null` when the current tag has been exhausted.
  */
 @InternalApi
-public class TagReader(
-    public val startTag: XmlToken.BeginElement,
+public class XmlTagReader(
+    public val tag: XmlToken.BeginElement,
     private val reader: XmlStreamReader,
 ) : Closeable {
-    private var last: TagReader? = null
+    private var last: XmlTagReader? = null
     private var closed = false
 
+    /**
+     * Return the next actionable token or null if stream is exhausted.
+     */
     public fun nextToken(): XmlToken? {
         if (closed) return null
         val peek = reader.peek()
-        if (peek.terminates(startTag)) {
+        if (peek.terminates(tag)) {
             // consume it and close the tag reader
             reader.nextToken()
             closed = true
@@ -33,37 +36,31 @@ public class TagReader(
         return reader.nextToken()
     }
 
+    /**
+     * Check if the next token has a value, returns false if [XmlToken.EndElement]
+     * would be returned.
+     */
     public fun nextHasValue(): Boolean {
         if (closed) return false
         return reader.peek() !is XmlToken.EndElement
     }
 
-    public fun skipNext() {
-        if (closed) return
-        reader.skipNext()
-    }
-
-    public fun skipCurrent() {
-        if (closed) return
-        reader.skipCurrent()
-    }
-
     override fun close(): Unit = drop()
 
+    /**
+     * Exhaust this [XmlTagReader] to completion. This should always
+     * be invoked to maintain deserialization state.
+     */
     public fun drop() {
         do {
             val tok = nextToken()
         } while (tok != null)
-        // // consume the end token for this element
-        // // FIXME - consuming the next token that ends this messes up the subtree reader state, `nextToken()` will now start
-        // // to return more tokens
-        // val next = parent.peek()
-        // if (next.terminates(startElement)) {
-        //     parent.nextToken()
-        // }
     }
 
-    public fun nextTag(): TagReader? {
+    /**
+     * Return an [XmlTagReader] for the next [XmlToken.BeginElement]
+     */
+    public fun nextTag(): XmlTagReader? {
         last?.drop()
 
         var cand = nextToken()
@@ -79,8 +76,15 @@ public class TagReader(
     }
 }
 
+/**
+ * Get a [XmlTagReader] for the root tag. This is the entry point for beginning
+ * deserialization.
+ */
 @InternalApi
-public fun XmlStreamReader.root(): TagReader {
+public fun xmlTagReader(payload: ByteArray): XmlTagReader =
+    xmlStreamReader(payload).root()
+
+private fun XmlStreamReader.root(): XmlTagReader {
     val start = seek<XmlToken.BeginElement>() ?: error("expected start tag: last = $lastToken")
     return start.tagReader(this)
 }
@@ -89,26 +93,17 @@ public fun XmlStreamReader.root(): TagReader {
  * Create a new reader scoped to this element.
  */
 @InternalApi
-public fun XmlToken.BeginElement.tagReader(reader: XmlStreamReader): TagReader {
+public fun XmlToken.BeginElement.tagReader(reader: XmlStreamReader): XmlTagReader {
     val start = reader.lastToken as? XmlToken.BeginElement ?: error("expected start tag found ${reader.lastToken}")
     check(name == start.name) { "expected start tag $name but current reader state is on ${start.name}" }
-    return TagReader(this, reader)
+    return XmlTagReader(this, reader)
 }
-
-/**
- * Consume the next token and map the data value from it using [transform]
- *
- * If the next token is not [XmlToken.Text] an exception will be thrown
- */
-@InternalApi
-public inline fun <T> TagReader.mapData(transform: (String) -> T): T =
-    transform(data())
 
 /**
  * Unwrap the next token as [XmlToken.Text] and return its' value or throw a [DeserializationException]
  */
 @InternalApi
-public fun TagReader.data(): String =
+public fun XmlTagReader.data(): String =
     when (val next = nextToken()) {
         is XmlToken.Text -> next.value ?: ""
         null, is XmlToken.EndElement -> ""
@@ -120,4 +115,4 @@ public fun TagReader.data(): String =
  * or the exception thrown on failure.
  */
 @InternalApi
-public fun TagReader.tryData(): Result<String> = runCatching { data() }
+public fun XmlTagReader.tryData(): Result<String> = runCatching { data() }

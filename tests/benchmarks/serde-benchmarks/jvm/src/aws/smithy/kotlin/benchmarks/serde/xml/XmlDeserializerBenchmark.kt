@@ -7,8 +7,7 @@ package aws.smithy.kotlin.benchmarks.serde.xml
 import aws.smithy.kotlin.benchmarks.serde.BenchmarkBase
 import aws.smithy.kotlin.benchmarks.serde.xml.countriesstates.model.CountriesAndStates
 import aws.smithy.kotlin.benchmarks.serde.xml.countriesstates.serde.deserializeCountriesAndStatesDocument
-import aws.smithy.kotlin.runtime.serde.xml.root
-import aws.smithy.kotlin.runtime.serde.xml.xmlStreamReader
+import aws.smithy.kotlin.runtime.serde.xml.xmlTagReader
 import kotlinx.benchmark.*
 import kotlinx.coroutines.runBlocking
 
@@ -19,7 +18,7 @@ open class XmlDeserializerBenchmark : BenchmarkBase() {
 
     private fun deserialize(): CountriesAndStates =
         runBlocking {
-            val deserializer = xmlStreamReader(source).root()
+            val deserializer = xmlTagReader(source)
             deserializeCountriesAndStatesDocument(deserializer)
         }
 

@@ -13,14 +13,14 @@ abstract class AbstractXmlTest {
         expected: T,
         payload: String,
         serializerFn: (XmlSerializer, T) -> Unit,
-        deserializerFn: (TagReader) -> T,
+        deserializerFn: (XmlTagReader) -> T,
     ) {
         val serializer = XmlSerializer()
         serializerFn(serializer, expected)
         val actualPayload = serializer.toByteArray().decodeToString()
         assertXmlStringsEqual(payload, actualPayload)
 
-        val reader = xmlStreamReader(payload.encodeToByteArray()).root()
+        val reader = xmlTagReader(payload.encodeToByteArray())
         val actualDeserialized = deserializerFn(reader)
         assertEquals(expected, actualDeserialized)
     }

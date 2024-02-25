@@ -76,7 +76,7 @@ open class XmlParserGenerator(
         documentMembers: List<MemberShape>,
         writer: KotlinWriter,
     ) {
-        writer.write("val root = #T(payload).#T()", SerdeXml.xmlStreamReader, SerdeXml.root)
+        writer.write("val root = #T(payload)", SerdeXml.xmlTagReader)
         val shape = ctx.model.expectShape(op.output.get())
         val serdeCtx = unwrapOperationBody(ctx, SerdeCtx("root"), op, writer)
 
@@ -148,7 +148,7 @@ open class XmlParserGenerator(
             val fnName = symbol.errorDeserializerName()
             writer.openBlock("internal fun #L(builder: #T.Builder, payload: ByteArray) {", fnName, symbol)
                 .call {
-                    writer.write("val root = #T(payload).#T()", SerdeXml.xmlStreamReader, SerdeXml.root)
+                    writer.write("val root = #T(payload)", SerdeXml.xmlTagReader)
                     val serdeCtx = unwrapOperationError(ctx, SerdeCtx("root"), errorShape, writer)
                     renderDeserializerBody(ctx, serdeCtx, errorShape, members, writer)
                 }
@@ -184,7 +184,7 @@ open class XmlParserGenerator(
                     // short circuit when the shape has no modeled members to deserialize
                     write("return #T.Builder().build()", symbol)
                 } else {
-                    writer.write("val root = #T(payload).#T()", SerdeXml.xmlStreamReader, SerdeXml.root)
+                    writer.write("val root = #T(payload)", SerdeXml.xmlTagReader)
                     write("return #T(root)", deserializeFn)
                 }
             }
@@ -198,7 +198,7 @@ open class XmlParserGenerator(
     ) {
         withBlock("loop@while(true) {", "}") {
             write("val curr = ${serdeCtx.tagReader}.nextTag() ?: break@loop")
-            withBlock("when(curr.startTag.name.tag) {", "}") {
+            withBlock("when(curr.tag.name.tag) {", "}") {
                 block(this, serdeCtx.copy(tagReader = "curr"))
                 if (ignoreUnexpected) {
                     write("else -> {}")
@@ -263,7 +263,7 @@ open class XmlParserGenerator(
     ) {
         val memberName = member.getTrait<XmlNameTrait>()?.value ?: member.memberName
         writer.withBlock(
-            "${serdeCtx.tagReader}.startTag.getAttr(#S)?.let {",
+            "${serdeCtx.tagReader}.tag.getAttr(#S)?.let {",
             "}",
             memberName,
         ) {
@@ -613,7 +613,7 @@ open class XmlParserGenerator(
         }
 
         val member = members.first()
-        writer.withBlock("when(${serdeCtx.tagReader}.startTag.name.tag) {", "}") {
+        writer.withBlock("when(${serdeCtx.tagReader}.tag.name.tag) {", "}") {
             val name = member.getTrait<XmlNameTrait>()?.value ?: member.memberName
             write("// ${member.memberName} ${escape(member.id.toString())}")
             writeInline("#S -> builder.#L = ", name, member.defaultName())

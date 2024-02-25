@@ -7,7 +7,7 @@ package aws.smithy.kotlin.runtime.serde.xml
 import aws.smithy.kotlin.runtime.serde.parseInt
 import kotlin.test.*
 
-class TagReaderTest {
+class XmlTagReaderTest {
 
     @Test
     fun testNextTag() {
@@ -24,13 +24,13 @@ class TagReaderTest {
                     <d>more</d>
             </XmlListsInputOutput>
         """.encodeToByteArray()
-        val scoped = xmlStreamReader(payload).root()
+        val scoped = xmlTagReader(payload)
         val expected = listOf("a", "b", "c", "d")
             .map { XmlToken.BeginElement(2, it) }
 
         expected.forEach { expectedStartTag ->
             val tagReader = assertNotNull(scoped.nextTag())
-            assertEquals(expectedStartTag, tagReader.startTag)
+            assertEquals(expectedStartTag, tagReader.tag)
             tagReader.drop()
         }
     }
@@ -54,11 +54,11 @@ class TagReaderTest {
                 </Child4>
             </Root>
            """.encodeToByteArray()
-        val scoped = xmlStreamReader(payload).root()
-        assertEquals(XmlToken.BeginElement(1, "Root"), scoped.startTag)
+        val scoped = xmlTagReader(payload)
+        assertEquals(XmlToken.BeginElement(1, "Root"), scoped.tag)
 
         val s1 = assertNotNull(scoped.nextTag())
-        assertEquals(XmlToken.BeginElement(2, "Child1"), s1.startTag)
+        assertEquals(XmlToken.BeginElement(2, "Child1"), s1.tag)
         val s1Elements = listOf(
             XmlToken.BeginElement(3, "x"),
             XmlToken.Text(3, "1"),
@@ -70,14 +70,14 @@ class TagReaderTest {
         assertEquals(s1Elements, s1.allTokens())
 
         val s2 = assertNotNull(scoped.nextTag())
-        assertEquals(XmlToken.BeginElement(2, "Child2"), s2.startTag)
+        assertEquals(XmlToken.BeginElement(2, "Child2"), s2.tag)
 
         val aReader = assertNotNull(s2.nextTag())
-        assertEquals(XmlToken.BeginElement(3, "a"), aReader.startTag)
+        assertEquals(XmlToken.BeginElement(3, "a"), aReader.tag)
         assertNull(aReader.nextTag())
 
         val bReader = assertNotNull(s2.nextTag())
-        assertEquals(XmlToken.BeginElement(3, "b"), bReader.startTag)
+        assertEquals(XmlToken.BeginElement(3, "b"), bReader.tag)
         assertEquals(XmlToken.Text(3, "4"), bReader.nextToken())
         assertNull(bReader.nextToken())
         bReader.drop()
@@ -88,7 +88,7 @@ class TagReaderTest {
         selfCloseReader.drop()
 
         val s4 = assertNotNull(scoped.nextTag())
-        assertEquals(XmlToken.BeginElement(2, "Child4"), s4.startTag)
+        assertEquals(XmlToken.BeginElement(2, "Child4"), s4.tag)
     }
 
     @Test
@@ -115,10 +115,10 @@ class TagReaderTest {
             </Root>
            """.encodeToByteArray()
 
-        val decoder = xmlStreamReader(payload).root()
+        val decoder = xmlTagReader(payload)
         loop@while (true) {
             val curr = decoder.nextTag() ?: break@loop
-            when (curr.startTag.name.tag) {
+            when (curr.tag.name.tag) {
                 "Child1" -> {
                     assertEquals(1, curr.nextTag()?.data()?.parseInt()?.getOrNull())
                     assertEquals(2, curr.nextTag()?.data()?.parseInt()?.getOrNull())
@@ -136,7 +136,7 @@ class TagReaderTest {
     }
 }
 
-fun TagReader.allTokens(): List<XmlToken> {
+fun XmlTagReader.allTokens(): List<XmlToken> {
     val tokenList = mutableListOf<XmlToken>()
     var nextToken: XmlToken?
     do {

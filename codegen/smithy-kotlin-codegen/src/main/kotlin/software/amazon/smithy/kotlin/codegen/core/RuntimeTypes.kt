@@ -278,7 +278,7 @@ object RuntimeTypes {
 
             val TagReader = symbol("TagReader")
             val xmlStreamReader = symbol("xmlStreamReader")
-            val root = symbol("root")
+            val xmlTagReader = symbol("xmlTagReader")
             val data = symbol("data")
             val tryData = symbol("tryData")
         }

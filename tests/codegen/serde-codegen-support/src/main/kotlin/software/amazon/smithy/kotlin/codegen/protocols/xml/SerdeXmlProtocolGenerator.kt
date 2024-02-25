@@ -20,7 +20,7 @@ object SerdeXmlProtocolGenerator : SerdeProtocolGenerator() {
     override val protocol: ShapeId = SerdeXmlProtocol.ID
 
     override fun structuredDataParser(ctx: ProtocolGenerator.GenerationContext): StructuredDataParserGenerator =
-        XmlParserGenerator(this, defaultTimestampFormat)
+        XmlParserGenerator(defaultTimestampFormat)
 
     override fun structuredDataSerializer(ctx: ProtocolGenerator.GenerationContext): StructuredDataSerializerGenerator =
         XmlSerializerGenerator(this, defaultTimestampFormat)
