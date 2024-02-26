@@ -44,9 +44,9 @@ public class Md5ChecksumInterceptor<I>(
             else -> null
         }
 
-    public override fun applyChecksum(context: ProtocolRequestInterceptorContext<Any, HttpRequest>, checksum: String?): HttpRequest {
+    public override fun applyChecksum(context: ProtocolRequestInterceptorContext<Any, HttpRequest>, checksum: String): HttpRequest {
         val req = context.protocolRequest.toBuilder()
-        checksum?.let {
+        if (!req.headers.contains("Content-MD5")) {
             req.header("Content-MD5", checksum)
         }
         return req.build()

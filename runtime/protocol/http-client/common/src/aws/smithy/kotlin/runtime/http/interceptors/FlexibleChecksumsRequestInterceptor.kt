@@ -15,7 +15,6 @@ import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.http.request.header
 import aws.smithy.kotlin.runtime.http.request.toBuilder
 import aws.smithy.kotlin.runtime.io.*
-import aws.smithy.kotlin.runtime.operation.ExecutionContext
 import aws.smithy.kotlin.runtime.telemetry.logging.logger
 import aws.smithy.kotlin.runtime.text.encoding.encodeBase64String
 import aws.smithy.kotlin.runtime.util.LazyAsyncValue
@@ -117,16 +116,14 @@ public class FlexibleChecksumsRequestInterceptor<I>(
 
     override fun applyChecksum(
         context: ProtocolRequestInterceptorContext<Any, HttpRequest>,
-        checksum: String?,
+        checksum: String,
     ): HttpRequest {
         val headerName = "x-amz-checksum-$checksumAlgorithmName".lowercase()
 
         val req = context.protocolRequest.toBuilder()
 
-        checksum?.let {
-            if (!req.headers.contains(headerName)) {
-                req.header(headerName, checksum)
-            }
+        if (!req.headers.contains(headerName)) {
+            req.header(headerName, checksum)
         }
 
         return req.build()
