@@ -47,16 +47,6 @@ public final class aws/smithy/kotlin/runtime/serde/xml/XmlCollectionValueNamespa
 	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 }
 
-public final class aws/smithy/kotlin/runtime/serde/xml/XmlDeserializer : aws/smithy/kotlin/runtime/serde/Deserializer {
-	public fun <init> (Laws/smithy/kotlin/runtime/serde/xml/XmlStreamReader;Z)V
-	public synthetic fun <init> (Laws/smithy/kotlin/runtime/serde/xml/XmlStreamReader;ZILkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public fun <init> ([BZ)V
-	public synthetic fun <init> ([BZILkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public fun deserializeList (Laws/smithy/kotlin/runtime/serde/SdkFieldDescriptor;)Laws/smithy/kotlin/runtime/serde/Deserializer$ElementIterator;
-	public fun deserializeMap (Laws/smithy/kotlin/runtime/serde/SdkFieldDescriptor;)Laws/smithy/kotlin/runtime/serde/Deserializer$EntryIterator;
-	public fun deserializeStruct (Laws/smithy/kotlin/runtime/serde/SdkObjectDescriptor;)Laws/smithy/kotlin/runtime/serde/Deserializer$FieldIterator;
-}
-
 public final class aws/smithy/kotlin/runtime/serde/xml/XmlError : aws/smithy/kotlin/runtime/serde/FieldTrait {
 	public static final field INSTANCE Laws/smithy/kotlin/runtime/serde/xml/XmlError;
 	public final fun getErrorTag ()Laws/smithy/kotlin/runtime/serde/xml/XmlToken$QualifiedName;
@@ -153,6 +143,7 @@ public abstract interface class aws/smithy/kotlin/runtime/serde/xml/XmlStreamRea
 	public abstract fun getLastToken ()Laws/smithy/kotlin/runtime/serde/xml/XmlToken;
 	public abstract fun nextToken ()Laws/smithy/kotlin/runtime/serde/xml/XmlToken;
 	public abstract fun peek (I)Laws/smithy/kotlin/runtime/serde/xml/XmlToken;
+	public abstract fun skipCurrent ()V
 	public abstract fun skipNext ()V
 	public abstract fun subTreeReader (Laws/smithy/kotlin/runtime/serde/xml/XmlStreamReader$SubtreeStartDepth;)Laws/smithy/kotlin/runtime/serde/xml/XmlStreamReader;
 }
@@ -199,6 +190,23 @@ public final class aws/smithy/kotlin/runtime/serde/xml/XmlStreamWriterKt {
 	public static synthetic fun xmlStreamWriter$default (ZILjava/lang/Object;)Laws/smithy/kotlin/runtime/serde/xml/XmlStreamWriter;
 }
 
+public final class aws/smithy/kotlin/runtime/serde/xml/XmlTagReader : java/io/Closeable {
+	public fun <init> (Laws/smithy/kotlin/runtime/serde/xml/XmlToken$BeginElement;Laws/smithy/kotlin/runtime/serde/xml/XmlStreamReader;)V
+	public fun close ()V
+	public final fun drop ()V
+	public final fun getTag ()Laws/smithy/kotlin/runtime/serde/xml/XmlToken$BeginElement;
+	public final fun nextHasValue ()Z
+	public final fun nextTag ()Laws/smithy/kotlin/runtime/serde/xml/XmlTagReader;
+	public final fun nextToken ()Laws/smithy/kotlin/runtime/serde/xml/XmlToken;
+}
+
+public final class aws/smithy/kotlin/runtime/serde/xml/XmlTagReaderKt {
+	public static final fun data (Laws/smithy/kotlin/runtime/serde/xml/XmlTagReader;)Ljava/lang/String;
+	public static final fun tagReader (Laws/smithy/kotlin/runtime/serde/xml/XmlToken$BeginElement;Laws/smithy/kotlin/runtime/serde/xml/XmlStreamReader;)Laws/smithy/kotlin/runtime/serde/xml/XmlTagReader;
+	public static final fun tryData (Laws/smithy/kotlin/runtime/serde/xml/XmlTagReader;)Ljava/lang/Object;
+	public static final fun xmlTagReader ([B)Laws/smithy/kotlin/runtime/serde/xml/XmlTagReader;
+}
+
 public abstract class aws/smithy/kotlin/runtime/serde/xml/XmlToken {
 	public abstract fun getDepth ()I
 	public fun toString ()Ljava/lang/String;
@@ -216,10 +224,12 @@ public final class aws/smithy/kotlin/runtime/serde/xml/XmlToken$BeginElement : a
 	public final fun copy (ILaws/smithy/kotlin/runtime/serde/xml/XmlToken$QualifiedName;Ljava/util/Map;Ljava/util/List;)Laws/smithy/kotlin/runtime/serde/xml/XmlToken$BeginElement;
 	public static synthetic fun copy$default (Laws/smithy/kotlin/runtime/serde/xml/XmlToken$BeginElement;ILaws/smithy/kotlin/runtime/serde/xml/XmlToken$QualifiedName;Ljava/util/Map;Ljava/util/List;ILjava/lang/Object;)Laws/smithy/kotlin/runtime/serde/xml/XmlToken$BeginElement;
 	public fun equals (Ljava/lang/Object;)Z
+	public final fun getAttr (Ljava/lang/String;)Ljava/lang/String;
 	public final fun getAttributes ()Ljava/util/Map;
 	public fun getDepth ()I
-	public final fun getName ()Laws/smithy/kotlin/runtime/serde/xml/XmlToken$QualifiedName;
+	public final fun getName ()Ljava/lang/String;
 	public final fun getNsDeclarations ()Ljava/util/List;
+	public final fun getQualifiedName ()Laws/smithy/kotlin/runtime/serde/xml/XmlToken$QualifiedName;
 	public fun hashCode ()I
 	public fun toString ()Ljava/lang/String;
 }
@@ -238,7 +248,8 @@ public final class aws/smithy/kotlin/runtime/serde/xml/XmlToken$EndElement : aws
 	public static synthetic fun copy$default (Laws/smithy/kotlin/runtime/serde/xml/XmlToken$EndElement;ILaws/smithy/kotlin/runtime/serde/xml/XmlToken$QualifiedName;ILjava/lang/Object;)Laws/smithy/kotlin/runtime/serde/xml/XmlToken$EndElement;
 	public fun equals (Ljava/lang/Object;)Z
 	public fun getDepth ()I
-	public final fun getName ()Laws/smithy/kotlin/runtime/serde/xml/XmlToken$QualifiedName;
+	public final fun getName ()Ljava/lang/String;
+	public final fun getQualifiedName ()Laws/smithy/kotlin/runtime/serde/xml/XmlToken$QualifiedName;
 	public fun hashCode ()I
 	public fun toString ()Ljava/lang/String;
 }
@@ -258,6 +269,7 @@ public final class aws/smithy/kotlin/runtime/serde/xml/XmlToken$Namespace {
 }
 
 public final class aws/smithy/kotlin/runtime/serde/xml/XmlToken$QualifiedName {
+	public static final field Companion Laws/smithy/kotlin/runtime/serde/xml/XmlToken$QualifiedName$Companion;
 	public fun <init> (Ljava/lang/String;Ljava/lang/String;)V
 	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun component1 ()Ljava/lang/String;
@@ -267,9 +279,12 @@ public final class aws/smithy/kotlin/runtime/serde/xml/XmlToken$QualifiedName {
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun getLocal ()Ljava/lang/String;
 	public final fun getPrefix ()Ljava/lang/String;
-	public final fun getTag ()Ljava/lang/String;
 	public fun hashCode ()I
 	public fun toString ()Ljava/lang/String;
+}
+
+public final class aws/smithy/kotlin/runtime/serde/xml/XmlToken$QualifiedName$Companion {
+	public final fun from (Ljava/lang/String;)Laws/smithy/kotlin/runtime/serde/xml/XmlToken$QualifiedName;
 }
 
 public final class aws/smithy/kotlin/runtime/serde/xml/XmlToken$StartDocument : aws/smithy/kotlin/runtime/serde/xml/XmlToken {
@@ -299,6 +314,7 @@ public final class aws/smithy/kotlin/runtime/serde/xml/deserialization/LexingXml
 	public fun getLastToken ()Laws/smithy/kotlin/runtime/serde/xml/XmlToken;
 	public fun nextToken ()Laws/smithy/kotlin/runtime/serde/xml/XmlToken;
 	public fun peek (I)Laws/smithy/kotlin/runtime/serde/xml/XmlToken;
+	public fun skipCurrent ()V
 	public fun skipNext ()V
 	public fun subTreeReader (Laws/smithy/kotlin/runtime/serde/xml/XmlStreamReader$SubtreeStartDepth;)Laws/smithy/kotlin/runtime/serde/xml/XmlStreamReader;
 }

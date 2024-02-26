@@ -39,6 +39,10 @@ public final class aws/smithy/kotlin/runtime/serde/DeserializerKt {
 	public static final fun deserializeStruct (Laws/smithy/kotlin/runtime/serde/Deserializer;Laws/smithy/kotlin/runtime/serde/SdkObjectDescriptor;Lkotlin/jvm/functions/Function1;)V
 }
 
+public final class aws/smithy/kotlin/runtime/serde/ExceptionsKt {
+	public static final fun getOrDeserializeErr (Ljava/lang/Object;Lkotlin/jvm/functions/Function0;)Ljava/lang/Object;
+}
+
 public abstract interface class aws/smithy/kotlin/runtime/serde/FieldTrait {
 }
 
@@ -62,6 +66,31 @@ public abstract interface class aws/smithy/kotlin/runtime/serde/MapSerializer : 
 	public abstract fun entry (Ljava/lang/String;Ljava/lang/String;)V
 	public abstract fun listEntry (Ljava/lang/String;Laws/smithy/kotlin/runtime/serde/SdkFieldDescriptor;Lkotlin/jvm/functions/Function1;)V
 	public abstract fun mapEntry (Ljava/lang/String;Laws/smithy/kotlin/runtime/serde/SdkFieldDescriptor;Lkotlin/jvm/functions/Function1;)V
+}
+
+public final class aws/smithy/kotlin/runtime/serde/ParsersKt {
+	public static final fun parse (Ljava/lang/Object;Lkotlin/jvm/functions/Function1;)Ljava/lang/Object;
+	public static final fun parse (Ljava/lang/String;Lkotlin/jvm/functions/Function1;)Ljava/lang/Object;
+	public static final fun parseBigDecimal (Ljava/lang/Object;)Ljava/lang/Object;
+	public static final fun parseBigDecimal (Ljava/lang/String;)Ljava/lang/Object;
+	public static final fun parseBigInteger (Ljava/lang/Object;)Ljava/lang/Object;
+	public static final fun parseBigInteger (Ljava/lang/String;)Ljava/lang/Object;
+	public static final fun parseBoolean (Ljava/lang/Object;)Ljava/lang/Object;
+	public static final fun parseBoolean (Ljava/lang/String;)Ljava/lang/Object;
+	public static final fun parseByte (Ljava/lang/Object;)Ljava/lang/Object;
+	public static final fun parseByte (Ljava/lang/String;)Ljava/lang/Object;
+	public static final fun parseDouble (Ljava/lang/Object;)Ljava/lang/Object;
+	public static final fun parseDouble (Ljava/lang/String;)Ljava/lang/Object;
+	public static final fun parseFloat (Ljava/lang/Object;)Ljava/lang/Object;
+	public static final fun parseFloat (Ljava/lang/String;)Ljava/lang/Object;
+	public static final fun parseInt (Ljava/lang/Object;)Ljava/lang/Object;
+	public static final fun parseInt (Ljava/lang/String;)Ljava/lang/Object;
+	public static final fun parseLong (Ljava/lang/Object;)Ljava/lang/Object;
+	public static final fun parseLong (Ljava/lang/String;)Ljava/lang/Object;
+	public static final fun parseShort (Ljava/lang/Object;)Ljava/lang/Object;
+	public static final fun parseShort (Ljava/lang/String;)Ljava/lang/Object;
+	public static final fun parseTimestamp (Ljava/lang/Object;Laws/smithy/kotlin/runtime/time/TimestampFormat;)Ljava/lang/Object;
+	public static final fun parseTimestamp (Ljava/lang/String;Laws/smithy/kotlin/runtime/time/TimestampFormat;)Ljava/lang/Object;
 }
 
 public abstract interface class aws/smithy/kotlin/runtime/serde/PrimitiveDeserializer {

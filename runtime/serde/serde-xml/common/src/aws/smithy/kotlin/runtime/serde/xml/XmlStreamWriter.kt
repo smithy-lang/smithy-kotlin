@@ -78,7 +78,7 @@ public interface XmlStreamWriter {
 }
 
 @InternalApi
-public fun XmlStreamWriter.data(text: Number) {
+public fun XmlStreamWriter.text(text: Number) {
     this.text(text.toString())
 }
 
