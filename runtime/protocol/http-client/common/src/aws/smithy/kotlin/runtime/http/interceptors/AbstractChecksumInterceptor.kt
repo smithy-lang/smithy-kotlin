@@ -5,9 +5,11 @@
 
 package aws.smithy.kotlin.runtime.http.interceptors
 
+import aws.smithy.kotlin.runtime.InternalApi
 import aws.smithy.kotlin.runtime.client.ProtocolRequestInterceptorContext
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
 
+@InternalApi
 public abstract class AbstractChecksumInterceptor : HttpInterceptor {
     private var cachedChecksum: String? = null
 
