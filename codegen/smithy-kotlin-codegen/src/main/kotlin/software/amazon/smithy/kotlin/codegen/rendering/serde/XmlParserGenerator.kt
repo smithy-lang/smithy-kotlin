@@ -248,8 +248,9 @@ open class XmlParserGenerator(
         writer.deserializeLoop(serdeCtx) { innerCtx ->
             payloadMembers.forEach { member ->
                 val name = member.getTrait<XmlNameTrait>()?.value ?: member.memberName
+
                 write("// ${member.memberName} ${escape(member.id.toString())}")
-                writeInline("#S -> builder.#L = ", name, member.defaultName())
+                writeInline("#S -> builder.#L = ", name, ctx.symbolProvider.toMemberName(member))
                 deserializeMember(ctx, innerCtx, member, writer)
             }
         }
@@ -267,7 +268,7 @@ open class XmlParserGenerator(
             "}",
             memberName,
         ) {
-            writeInline("builder.#L = ", member.defaultName())
+            writeInline("builder.#L = ", ctx.symbolProvider.toMemberName(member))
             deserializePrimitiveMember(ctx, member, "it", textExprIsResult = false, this)
         }
     }
@@ -383,15 +384,17 @@ open class XmlParserGenerator(
     private fun flatCollectionAccumulatorExpr(
         ctx: ProtocolGenerator.GenerationContext,
         member: MemberShape,
-    ): String =
-        when (val container = ctx.model.expectShape(member.container)) {
-            is StructureShape -> "builder.${member.defaultName()}"
+    ): String {
+        val escapedMemberName = ctx.symbolProvider.toMemberName(member)
+        return when (val container = ctx.model.expectShape(member.container)) {
+            is StructureShape -> "builder.$escapedMemberName"
             is UnionShape -> {
                 val unionVariantName = member.unionVariantName()
                 "value?.as${unionVariantName}OrNull()"
             }
             else -> error("unexpected container shape $container for member $member")
         }
+    }
 
     private fun deserializeFlatList(
         ctx: ProtocolGenerator.GenerationContext,
@@ -616,7 +619,7 @@ open class XmlParserGenerator(
         writer.withBlock("when(${serdeCtx.tagReader}.tag.name) {", "}") {
             val name = member.getTrait<XmlNameTrait>()?.value ?: member.memberName
             write("// ${member.memberName} ${escape(member.id.toString())}")
-            writeInline("#S -> builder.#L = ", name, member.defaultName())
+            writeInline("#S -> builder.#L = ", name, ctx.symbolProvider.toMemberName(member))
             deserializeMember(ctx, serdeCtx, member, writer)
         }
     }
