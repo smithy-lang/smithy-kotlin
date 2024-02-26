@@ -39,15 +39,14 @@ import kotlin.coroutines.coroutineContext
 public class FlexibleChecksumsRequestInterceptor<I>(
     private val checksumAlgorithmNameInitializer: ((I) -> String?)? = null,
 ) : AbstractChecksumInterceptor() {
+    private var checksumAlgorithmName: String? = null
 
     override suspend fun modifyBeforeSigning(context: ProtocolRequestInterceptorContext<Any, HttpRequest>): HttpRequest {
         val logger = coroutineContext.logger<FlexibleChecksumsRequestInterceptor<I>>()
 
         @Suppress("UNCHECKED_CAST")
         val input = context.request as I
-
-        val checksumAlgorithmName = checksumAlgorithmNameInitializer?.invoke(input)
-            ?: context.executionContext.getOrNull(HttpOperationContext.ChecksumAlgorithm)
+        checksumAlgorithmName = checksumAlgorithmNameInitializer?.invoke(input) ?: context.executionContext.getOrNull(HttpOperationContext.ChecksumAlgorithm)
 
         checksumAlgorithmName ?: run {
             logger.debug { "no checksum algorithm specified, skipping flexible checksums processing" }
@@ -67,7 +66,7 @@ public class FlexibleChecksumsRequestInterceptor<I>(
         // this handles the case where a user inputs a precalculated checksum, but it doesn't match the input checksum algorithm
         req.headers.removeAllChecksumHeadersExcept(headerName)
 
-        val checksumAlgorithm = checksumAlgorithmName.toHashFunction() ?: throw ClientException("Could not parse checksum algorithm $checksumAlgorithmName")
+        val checksumAlgorithm = checksumAlgorithmName?.toHashFunction() ?: throw ClientException("Could not parse checksum algorithm $checksumAlgorithmName")
 
         if (!checksumAlgorithm.isSupported) {
             throw ClientException("Checksum algorithm $checksumAlgorithmName is not supported for flexible checksums")
@@ -101,7 +100,7 @@ public class FlexibleChecksumsRequestInterceptor<I>(
 
     override suspend fun calculateChecksum(context: ProtocolRequestInterceptorContext<Any, HttpRequest>): String? {
         val req = context.protocolRequest.toBuilder()
-        val checksumAlgorithm = context.executionContext.checksumAlgorithm?.toHashFunction() ?: return null
+        val checksumAlgorithm = checksumAlgorithmName?.toHashFunction() ?: return null
 
         return when {
             req.body.contentLength == null && !req.body.isOneShot -> {
@@ -120,7 +119,6 @@ public class FlexibleChecksumsRequestInterceptor<I>(
         context: ProtocolRequestInterceptorContext<Any, HttpRequest>,
         checksum: String?,
     ): HttpRequest {
-        val checksumAlgorithmName = context.executionContext.checksumAlgorithm
         val headerName = "x-amz-checksum-$checksumAlgorithmName".lowercase()
 
         val req = context.protocolRequest.toBuilder()

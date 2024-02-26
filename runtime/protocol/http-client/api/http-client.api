@@ -338,7 +338,6 @@ public final class aws/smithy/kotlin/runtime/http/interceptors/FlexibleChecksums
 	public fun applyChecksum (Laws/smithy/kotlin/runtime/client/ProtocolRequestInterceptorContext;Ljava/lang/String;)Laws/smithy/kotlin/runtime/http/request/HttpRequest;
 	public fun calculateChecksum (Laws/smithy/kotlin/runtime/client/ProtocolRequestInterceptorContext;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun modifyBeforeSigning (Laws/smithy/kotlin/runtime/client/ProtocolRequestInterceptorContext;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public fun readAfterSerialization (Laws/smithy/kotlin/runtime/client/ProtocolRequestInterceptorContext;)V
 }
 
 public final class aws/smithy/kotlin/runtime/http/interceptors/FlexibleChecksumsResponseInterceptor : aws/smithy/kotlin/runtime/client/Interceptor {
