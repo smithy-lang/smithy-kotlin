@@ -67,10 +67,10 @@ class AbstractChecksumInterceptorTest {
 
         override fun applyChecksum(
             context: ProtocolRequestInterceptorContext<Any, HttpRequest>,
-            checksum: String?,
+            checksum: String,
         ): HttpRequest {
             val req = context.protocolRequest.toBuilder()
-            checksum ?.let { req.header(CHECKSUM_TEST_HEADER, it) }
+            req.header(CHECKSUM_TEST_HEADER, checksum)
             return req.build()
         }
     }
