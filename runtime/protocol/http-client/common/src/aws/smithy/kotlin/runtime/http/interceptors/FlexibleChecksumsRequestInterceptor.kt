@@ -40,6 +40,9 @@ public class FlexibleChecksumsRequestInterceptor<I>(
 ) : AbstractChecksumInterceptor() {
     private var checksumAlgorithmName: String? = null
 
+    @Deprecated("readAfterSerialization is no longer used")
+    override fun readAfterSerialization(context: ProtocolRequestInterceptorContext<Any, HttpRequest>) { }
+
     override suspend fun modifyBeforeSigning(context: ProtocolRequestInterceptorContext<Any, HttpRequest>): HttpRequest {
         val logger = coroutineContext.logger<FlexibleChecksumsRequestInterceptor<I>>()
 
