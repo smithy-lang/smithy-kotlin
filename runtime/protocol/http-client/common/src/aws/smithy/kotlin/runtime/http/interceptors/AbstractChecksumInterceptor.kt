@@ -13,10 +13,10 @@ public abstract class AbstractChecksumInterceptor : HttpInterceptor {
 
     override suspend fun modifyBeforeSigning(context: ProtocolRequestInterceptorContext<Any, HttpRequest>): HttpRequest {
         cachedChecksum ?: calculateChecksum(context).also { cachedChecksum = it }
-        return applyChecksum(context, cachedChecksum)
+        return cachedChecksum?.let { applyChecksum(context, it) } ?: context.protocolRequest
     }
 
     public abstract suspend fun calculateChecksum(context: ProtocolRequestInterceptorContext<Any, HttpRequest>): String?
 
-    public abstract fun applyChecksum(context: ProtocolRequestInterceptorContext<Any, HttpRequest>, checksum: String?): HttpRequest
+    public abstract fun applyChecksum(context: ProtocolRequestInterceptorContext<Any, HttpRequest>, checksum: String): HttpRequest
 }
