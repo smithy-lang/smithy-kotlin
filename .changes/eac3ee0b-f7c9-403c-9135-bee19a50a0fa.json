@@ -1,0 +1,5 @@
+{
+    "id": "eac3ee0b-f7c9-403c-9135-bee19a50a0fa",
+    "type": "feature",
+    "description": "The signing region set is now configurable for the `SigV4AsymmetricAuthScheme`"
+}

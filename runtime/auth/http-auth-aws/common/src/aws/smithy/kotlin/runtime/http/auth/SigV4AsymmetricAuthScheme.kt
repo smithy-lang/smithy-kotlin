@@ -24,13 +24,24 @@ public class SigV4AsymmetricAuthScheme(
     public constructor(
         awsSigner: AwsSigner,
         serviceName: String? = null,
-        clientSigningRegionSet: List<String>? = null,
     ) : this(
         AwsHttpSigner.Config().apply {
             signer = awsSigner
             service = serviceName
             algorithm = AwsSigningAlgorithm.SIGV4_ASYMMETRIC
-            clientSigv4aSigningRegion = clientSigningRegionSet
+        },
+    )
+
+    public constructor(
+        awsSigner: AwsSigner,
+        serviceName: String? = null,
+        clientSigningRegionSet: List<String>? = null,
+    ) : this (
+        AwsHttpSigner.Config().apply {
+            signer = awsSigner
+            service = serviceName
+            algorithm = AwsSigningAlgorithm.SIGV4_ASYMMETRIC
+            clientSigv4aSigningRegionSet = clientSigningRegionSet
         },
     )
 
