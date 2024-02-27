@@ -488,7 +488,7 @@ open class XmlParserGenerator(
         writer: KotlinWriter,
     ) {
         val target = ctx.model.expectShape<MapShape>(member.target)
-        val keySymbol = ctx.symbolProvider.toSymbol(target.key)
+        val keySymbol = KotlinTypes.String
         val valueSymbol = ctx.symbolProvider.toSymbol(target.value)
         val isSparse = target.hasTrait<SparseTrait>()
         writer.addImportReferences(valueSymbol, SymbolReference.ContextOption.USE)
@@ -512,7 +512,7 @@ open class XmlParserGenerator(
         map: MapShape,
     ): Symbol {
         val shapeName = StringUtils.capitalize(map.id.getName(ctx.service))
-        val keySymbol = ctx.symbolProvider.toSymbol(map.key)
+        val keySymbol = KotlinTypes.String
         val valueSymbol = ctx.symbolProvider.toSymbol(map.value)
         val isSparse = map.hasTrait<SparseTrait>()
         val serdeCtx = SerdeCtx("reader")
