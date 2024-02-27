@@ -1,8 +1,8 @@
 public final class aws/smithy/kotlin/runtime/awsprotocol/xml/Ec2QueryErrorDeserializerKt {
-	public static final fun parseEc2QueryErrorResponse ([B)Laws/smithy/kotlin/runtime/awsprotocol/ErrorDetails;
+	public static final fun parseEc2QueryErrorResponse ([BLkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
 public final class aws/smithy/kotlin/runtime/awsprotocol/xml/RestXmlErrorDeserializerKt {
-	public static final fun parseRestXmlErrorResponse ([B)Laws/smithy/kotlin/runtime/awsprotocol/ErrorDetails;
+	public static final fun parseRestXmlErrorResponse ([BLkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
