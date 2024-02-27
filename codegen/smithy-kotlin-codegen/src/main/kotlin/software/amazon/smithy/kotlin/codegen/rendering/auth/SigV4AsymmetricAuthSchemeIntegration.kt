@@ -66,7 +66,7 @@ private class SigV4AsymmetricAuthSchemeHandler : AuthSchemeHandler {
 
     override fun instantiateAuthSchemeExpr(ctx: ProtocolGenerator.GenerationContext, writer: KotlinWriter) {
         val signingService = AwsSignatureVersion4Asymmetric.signingServiceName(ctx.service)
-        writer.write("#T(#T, #S)", RuntimeTypes.Auth.HttpAuthAws.SigV4AsymmetricAuthScheme, RuntimeTypes.Auth.Signing.AwsSigningStandard.DefaultAwsSigner, signingService)
+        writer.write("#T(#T, #S, config.sigv4aSigningRegionSet)", RuntimeTypes.Auth.HttpAuthAws.SigV4AsymmetricAuthScheme, RuntimeTypes.Auth.Signing.AwsSigningStandard.DefaultAwsSigner, signingService)
     }
 }
 

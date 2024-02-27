@@ -108,6 +108,12 @@ public class AwsHttpSigner(private val config: Config) : HttpSigner {
          * The default predicate is to not reject signing any headers (i.e., `_ -> true`).
          */
         public var shouldSignHeader: ShouldSignHeaderPredicate = { _ -> true }
+
+        /**
+         * The sigV4a region set that was configured by the client.
+         * If value is not null then it should take precedence over the contextSigningRegionSet from the attributes
+         */
+        public var clientSigv4aSigningRegion: List<String>? = null
     }
 
     override suspend fun sign(signingRequest: SignHttpRequest) {
@@ -134,6 +140,7 @@ public class AwsHttpSigner(private val config: Config) : HttpSigner {
             algorithm = config.algorithm
 
             region = when {
+                algorithm == AwsSigningAlgorithm.SIGV4_ASYMMETRIC && config.clientSigv4aSigningRegion != null -> config.clientSigv4aSigningRegion!!.toSet().joinToString(",")
                 algorithm == AwsSigningAlgorithm.SIGV4_ASYMMETRIC && !contextSigningRegionSet.isNullOrEmpty() -> contextSigningRegionSet.joinToString(",")
                 else -> contextSigningRegion
             }
