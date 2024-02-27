@@ -192,9 +192,7 @@ class DefaultEndpointProviderGenerator(
 
                             // caller has a chance to generate their own value for a recognized property
                             if (kStr in propertyRenderers) {
-                                println("kStr $kStr in propertyRenderers: ${propertyRenderers.entries}")
                                 propertyRenderers[kStr]!!.forEach { renderer ->
-                                    println("invoking renderer $renderer")
                                     renderer(writer, v, this@DefaultEndpointProviderGenerator)
                                 }
                                 return@forEach
