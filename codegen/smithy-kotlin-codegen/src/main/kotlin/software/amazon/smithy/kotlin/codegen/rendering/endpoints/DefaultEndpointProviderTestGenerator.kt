@@ -42,8 +42,10 @@ class DefaultEndpointProviderTestGenerator(
     private val endpointCustomizations = ctx.integrations.mapNotNull { it.customizeEndpointResolution(ctx) }
     private val propertyRenderers = endpointCustomizations
         .map { it.propertyRenderers }
-        .fold(mutableMapOf<String, EndpointPropertyRenderer>()) { acc, propRenderers ->
-            acc.putAll(propRenderers)
+        .fold(mutableMapOf<String, MutableList<EndpointPropertyRenderer>>()) { acc, propRenderers ->
+            propRenderers.forEach { (key, propRenderer) ->
+                acc[key] = acc.getOrDefault(key, mutableListOf()).also { it.add(propRenderer) }
+            }
             acc
         }
 
@@ -131,7 +133,9 @@ class DefaultEndpointProviderTestGenerator(
                 withBlock("attributes = #T {", "},", RuntimeTypes.Core.Collections.attributesOf) {
                     endpoint.properties.entries.forEach { (k, v) ->
                         if (k in propertyRenderers) {
-                            propertyRenderers[k]!!(writer, Expression.fromNode(v), this@DefaultEndpointProviderTestGenerator)
+                            propertyRenderers[k]!!.forEach { renderer ->
+                                renderer(writer, Expression.fromNode(v), this@DefaultEndpointProviderTestGenerator)
+                            }
                             return@forEach
                         }
 
