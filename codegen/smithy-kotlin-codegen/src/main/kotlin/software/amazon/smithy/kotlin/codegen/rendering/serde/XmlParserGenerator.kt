@@ -268,7 +268,7 @@ open class XmlParserGenerator(
             payloadMembers.forEach { member ->
                 val name = member.getTrait<XmlNameTrait>()?.value ?: member.memberName
 
-                write("// ${member.memberName} ${escape(member.id.toString())}")
+                writeMemberDebugComment(ctx, member)
                 writeInline("#S -> builder.#L = ", name, ctx.symbolProvider.toMemberName(member))
                 deserializeMember(ctx, innerCtx, member, writer)
             }
