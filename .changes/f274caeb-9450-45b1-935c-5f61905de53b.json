@@ -1,0 +1,5 @@
+{
+    "id": "f274caeb-9450-45b1-935c-5f61905de53b",
+    "type": "misc",
+    "description": "Refactor exception codegen to delegate message field to exception base class"
+}
