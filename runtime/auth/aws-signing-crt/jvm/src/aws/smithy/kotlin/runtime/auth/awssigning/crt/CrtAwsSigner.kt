@@ -22,11 +22,13 @@ import aws.sdk.kotlin.crt.auth.signing.AwsSigningAlgorithm as CrtSigningAlgorith
 import aws.sdk.kotlin.crt.auth.signing.AwsSigningConfig as CrtSigningConfig
 import aws.sdk.kotlin.crt.http.Headers as CrtHeaders
 
+private const val S3_EXPRESS_HEADER_NAME = "X-Amz-S3session-Token"
+
 public object CrtAwsSigner : AwsSigner {
     override suspend fun sign(request: HttpRequest, config: AwsSigningConfig): AwsSigningResult<HttpRequest> {
         val isUnsigned = config.hashSpecification is HashSpecification.UnsignedPayload
         val isAwsChunked = request.headers.contains("Content-Encoding", "aws-chunked")
-        val isS3Express = request.headers.contains("X-Amz-S3session-Token")
+        val isS3Express = request.headers.contains(S3_EXPRESS_HEADER_NAME)
 
         val requestBuilder = request.toBuilder()
 
@@ -34,7 +36,7 @@ public object CrtAwsSigner : AwsSigner {
         if (isS3Express) {
             crtConfig.algorithm = CrtSigningAlgorithm.SIGV4_S3EXPRESS
             crtConfig.omitSessionToken = false
-            requestBuilder.headers.remove("X-Amz-S3session-Token") // CRT signer fails if this header is already present
+            requestBuilder.headers.remove(S3_EXPRESS_HEADER_NAME) // CRT signer fails if this header is already present
         }
 
         val crtRequest = requestBuilder.build().toSignableCrtRequest(isUnsigned, isAwsChunked)
