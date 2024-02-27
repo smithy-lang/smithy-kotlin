@@ -4,10 +4,13 @@
  */
 package aws.smithy.kotlin.runtime.util
 
+import aws.smithy.kotlin.runtime.InternalApi
+
 /**
  * Maps the exception to a new error if this instance represents [failure][Result.isFailure], leaving
  * a [success][Result.isSuccess] value untouched.
  */
+@InternalApi
 public inline fun <T> Result<T>.mapErr(onFailure: (Throwable) -> Throwable): Result<T> =
     when (val ex = exceptionOrNull()) {
         null -> this

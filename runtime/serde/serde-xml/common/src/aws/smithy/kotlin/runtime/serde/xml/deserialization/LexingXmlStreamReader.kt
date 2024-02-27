@@ -52,9 +52,6 @@ public class LexingXmlStreamReader(private val source: XmlLexer) : XmlStreamRead
             else -> scanUntilDepth(startDepth, nextToken()) // Keep scannin'!
         }
     }
-    override fun skipCurrent() {
-        scanUntilDepth(lastToken?.depth ?: 0, lastToken)
-    }
 
     override fun subTreeReader(subtreeStartDepth: XmlStreamReader.SubtreeStartDepth): XmlStreamReader =
         if (peek(1).terminates(lastToken)) {
@@ -112,8 +109,6 @@ private class ChildXmlStreamReader(
 
     override fun skipNext() = parent.skipNext()
 
-    override fun skipCurrent() = parent.skipCurrent()
-
     override fun subTreeReader(subtreeStartDepth: XmlStreamReader.SubtreeStartDepth): XmlStreamReader =
         parent.subTreeReader(subtreeStartDepth)
 }
@@ -131,10 +126,7 @@ private class EmptyXmlStreamReader(private val parent: XmlStreamReader?) : XmlSt
     override fun peek(index: Int): XmlToken? = null
 
     override fun skipNext() = Unit
-    override fun skipCurrent() = Unit
     override fun subTreeReader(subtreeStartDepth: XmlStreamReader.SubtreeStartDepth): XmlStreamReader = this
 }
 
 private fun <T> List<T>.getOrNull(index: Int): T? = if (index < size) this[index] else null
-
-internal fun XmlStreamReader.emptyReader(parent: XmlStreamReader? = this): XmlStreamReader = EmptyXmlStreamReader(parent)

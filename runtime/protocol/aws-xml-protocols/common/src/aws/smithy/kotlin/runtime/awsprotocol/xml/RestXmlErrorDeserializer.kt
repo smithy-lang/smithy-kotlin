@@ -33,7 +33,7 @@ internal data class XmlError(
  * Returns parsed data in normalized form or throws [DeserializationException] if response cannot be parsed.
  */
 @InternalApi
-public fun parseRestXmlErrorResponse(payload: ByteArray): ErrorDetails {
+public suspend fun parseRestXmlErrorResponse(payload: ByteArray): ErrorDetails {
     val details = XmlErrorDeserializer.deserialize(xmlTagReader(payload))
     return ErrorDetails(details.code, details.message, details.requestId)
 }
@@ -47,21 +47,21 @@ internal object XmlErrorDeserializer {
         var code: String? = null
         var requestId: String? = null
 
-        val rootTagName = root.tag.name
+        val rootTagName = root.tagName
         check(rootTagName == "ErrorResponse" || rootTagName == "Error") {
             "expected restXml error response with root tag of <ErrorResponse> or <Error>"
         }
 
         // wrapped error, unwrap it
         var errTag = root
-        if (root.tag.name == "ErrorResponse") {
+        if (root.tagName == "ErrorResponse") {
             errTag = root.nextTag() ?: error("expected more tags after <ErrorResponse>")
         }
 
-        if (errTag.tag.name == "Error") {
-            loop@ while (true) {
+        if (errTag.tagName == "Error") {
+            loop@while (true) {
                 val curr = errTag.nextTag() ?: break@loop
-                when (curr.tag.name) {
+                when (curr.tagName) {
                     "Code" -> code = curr.data()
                     "Message", "message" -> message = curr.data()
                     "RequestId" -> requestId = curr.data()
@@ -74,7 +74,7 @@ internal object XmlErrorDeserializer {
         if (requestId == null) {
             loop@while (true) {
                 val curr = root.nextTag() ?: break@loop
-                when (curr.tag.name) {
+                when (curr.tagName) {
                     "RequestId" -> requestId = curr.data()
                 }
             }

@@ -59,11 +59,6 @@ public interface XmlStreamReader {
     public fun skipNext()
 
     /**
-     * Recursively skip the current token. Meant for discarding unwanted/unrecognized nodes in an XML document
-     */
-    public fun skipCurrent()
-
-    /**
      * Peek at the next token type.  Successive calls will return the same value, meaning there is only one
      * look-ahead at any given time during the parsing of input data.
      * @param index a positive integer representing index of node from current to peek.  Index of 1 is the next node.

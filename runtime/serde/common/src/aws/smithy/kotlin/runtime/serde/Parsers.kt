@@ -34,6 +34,7 @@ public fun String.parseDouble(): Result<Double> = parse(String::toDouble)
 @InternalApi
 public fun String.parseByte(): Result<Byte> = parse { it.toInt().toByte() }
 
+@InternalApi
 public fun String.parseBigInteger(): Result<BigInteger> = parse(::BigInteger)
 
 @InternalApi

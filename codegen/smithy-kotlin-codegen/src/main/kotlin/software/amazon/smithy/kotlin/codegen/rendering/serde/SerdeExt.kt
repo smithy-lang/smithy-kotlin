@@ -237,7 +237,7 @@ fun TimestampFormatTrait.Format.toRuntimeEnum(writer: KotlinWriter): String {
         TimestampFormatTrait.Format.EPOCH_SECONDS -> "EPOCH_SECONDS"
         TimestampFormatTrait.Format.DATE_TIME -> "ISO_8601"
         TimestampFormatTrait.Format.HTTP_DATE -> "RFC_5322"
-        TimestampFormatTrait.Format.UNKNOWN -> error("unknown timestamp format trait")
+        else -> throw CodegenException("unknown timestamp format: $this")
     }
     return writer.format("#T.#L", RuntimeTypes.Core.TimestampFormat, enum)
 }

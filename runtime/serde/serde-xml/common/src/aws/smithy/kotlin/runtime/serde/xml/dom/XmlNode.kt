@@ -46,7 +46,7 @@ public class XmlNode {
             return parseDom(reader)
         }
 
-        internal fun fromToken(token: XmlToken.BeginElement): XmlNode = XmlNode(token.qualifiedName).apply {
+        internal fun fromToken(token: XmlToken.BeginElement): XmlNode = XmlNode(token.name).apply {
             attributes.putAll(token.attributes)
             namespaces.addAll(token.nsDeclarations)
         }
@@ -83,8 +83,8 @@ public fun parseDom(reader: XmlStreamReader): XmlNode {
             is XmlToken.EndElement -> {
                 val curr = nodeStack.top()
 
-                if (curr.name != token.qualifiedName) {
-                    throw DeserializationException("expected end of element: `${curr.name}`, found: `${token.qualifiedName}`")
+                if (curr.name != token.name) {
+                    throw DeserializationException("expected end of element: `${curr.name}`, found: `${token.name}`")
                 }
 
                 if (nodeStack.count() > 1) {

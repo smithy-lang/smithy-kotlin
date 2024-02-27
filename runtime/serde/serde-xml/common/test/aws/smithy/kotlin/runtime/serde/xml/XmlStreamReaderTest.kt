@@ -112,7 +112,7 @@ class XmlStreamReaderTest {
 
         assertEquals(6, actual.size)
         assertIs<XmlToken.BeginElement>(actual.first())
-        assertEquals("payload", (actual.first() as XmlToken.BeginElement).qualifiedName.local)
+        assertEquals("payload", (actual.first() as XmlToken.BeginElement).name.local)
     }
 
     @Test
@@ -193,7 +193,7 @@ class XmlStreamReaderTest {
         assertEquals(expected, actual)
     }
 
-    private fun skipTest(skipCurrent: Boolean) {
+    private fun skipTest() {
         val payload = """
             <payload>
                 <x>1></x>
@@ -224,30 +224,19 @@ class XmlStreamReaderTest {
             nextToken() // end x
         }
 
-        val nt = if (skipCurrent) {
-            reader.nextToken()
-        } else {
-            reader.peek()
-        }
+        val nt = reader.peek()
 
         assertIs<XmlToken.BeginElement>(nt)
-        assertEquals("unknown", nt.qualifiedName.local)
+        assertEquals("unknown", nt.name.local)
 
-        if (skipCurrent) {
-            reader.skipCurrent()
-        } else {
-            reader.skipNext()
-        }
+        reader.skipNext()
 
         val y = reader.nextToken() as XmlToken.BeginElement
-        assertEquals("y", y.qualifiedName.local)
+        assertEquals("y", y.name.local)
     }
 
     @Test
-    fun itSkipsNextValuesRecursively() = skipTest(false)
-
-    @Test
-    fun itSkipsCurrentValuesRecursively() = skipTest(true)
+    fun itSkipsNextValuesRecursively() = skipTest()
 
     @Test
     fun itSkipsSimpleValues() {
@@ -269,11 +258,11 @@ class XmlStreamReaderTest {
         assertIs<XmlToken.BeginElement>(reader.peek())
 
         val zElement = reader.nextToken() as XmlToken.BeginElement
-        assertEquals("z", zElement.qualifiedName.local)
+        assertEquals("z", zElement.name.local)
         reader.skipNext()
 
         val yElement = reader.nextToken() as XmlToken.BeginElement
-        assertEquals("y", yElement.qualifiedName.local)
+        assertEquals("y", yElement.name.local)
     }
 
     @Test
@@ -312,7 +301,7 @@ class XmlStreamReaderTest {
         assertNull(reader.lastToken, "Expected to start with null lastToken")
         var peekedToken = reader.peek()
         assertIs<XmlToken.BeginElement>(peekedToken)
-        assertEquals("l1", peekedToken.qualifiedName.local)
+        assertEquals("l1", peekedToken.name.local)
         assertNull(reader.lastToken, "Expected peek to not effect lastToken")
         reader.nextToken() // consumed l1
         assertEquals(1, reader.lastToken?.depth, "Expected level 1")
@@ -320,14 +309,14 @@ class XmlStreamReaderTest {
         peekedToken = reader.nextToken() // consumed l2
         assertEquals(2, reader.lastToken?.depth, "Expected level 2")
         assertIs<XmlToken.BeginElement>(peekedToken)
-        assertEquals("l2", peekedToken.qualifiedName.local)
+        assertEquals("l2", peekedToken.name.local)
         reader.peek()
         assertEquals(2, reader.lastToken?.depth, "Expected peek to not effect level")
 
         peekedToken = reader.nextToken()
         assertEquals(3, reader.lastToken?.depth, "Expected level 3")
         assertIs<XmlToken.BeginElement>(peekedToken)
-        assertEquals("l3", peekedToken.qualifiedName.local)
+        assertEquals("l3", peekedToken.name.local)
         reader.peek()
         assertEquals(3, reader.lastToken?.depth, "Expected peek to not effect level")
     }
@@ -459,7 +448,7 @@ class XmlStreamReaderTest {
 
         val token = unit.nextToken()
         assertIs<XmlToken.BeginElement>(token)
-        assertEquals("root", token.qualifiedName.local)
+        assertEquals("root", token.name.local)
 
         var subTree1 = unit.subTreeReader()
         var subTree1Elements = subTree1.allTokens()
@@ -575,25 +564,25 @@ class XmlStreamReaderTest {
         val rTokenTake = actual.nextToken()
 
         assertIs<XmlToken.BeginElement>(rTokenPeek)
-        assertEquals("r", rTokenPeek.qualifiedName.local)
+        assertEquals("r", rTokenPeek.name.local)
 
         assertIs<XmlToken.BeginElement>(aToken)
-        assertEquals("a", aToken.qualifiedName.local)
+        assertEquals("a", aToken.name.local)
 
         assertIs<XmlToken.BeginElement>(rTokenTake)
-        assertEquals("r", rTokenTake.qualifiedName.local)
+        assertEquals("r", rTokenTake.name.local)
 
         val bToken = actual.peek(2)
         assertIs<XmlToken.BeginElement>(bToken)
-        assertEquals("b", bToken.qualifiedName.local)
+        assertEquals("b", bToken.name.local)
 
         val aTokenTake = actual.nextToken()
         assertIs<XmlToken.BeginElement>(aTokenTake)
-        assertEquals("a", aTokenTake.qualifiedName.local)
+        assertEquals("a", aTokenTake.name.local)
 
         val aCloseToken = actual.peek(5) // 1:<b> 2:<c> 3:</c> 4:</b> 5:</a>
         assertIs<XmlToken.EndElement>(aCloseToken)
-        assertEquals("a", aCloseToken.qualifiedName.local)
+        assertEquals("a", aCloseToken.name.local)
 
         val restOfTokens = actual.allTokens()
         assertEquals(restOfTokens.size, 6)
@@ -621,12 +610,12 @@ class XmlStreamReaderTest {
         // match begin node of depth 2
         val l2Node = unit.seek<XmlToken.BeginElement> { it.depth == 2 }
         assertIs<XmlToken.BeginElement>(l2Node)
-        assertEquals("a", l2Node.qualifiedName.local)
+        assertEquals("a", l2Node.name.local)
 
         // verify next token is correct
         val nextNode = unit.nextToken()
         assertIs<XmlToken.BeginElement>(nextNode)
-        assertEquals("b", nextNode.qualifiedName.local)
+        assertEquals("b", nextNode.name.local)
 
         // verify no match produces null
         unit = xmlStreamReader(payload)

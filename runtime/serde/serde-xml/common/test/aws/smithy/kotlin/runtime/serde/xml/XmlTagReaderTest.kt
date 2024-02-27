@@ -118,7 +118,7 @@ class XmlTagReaderTest {
         val decoder = xmlTagReader(payload)
         loop@while (true) {
             val curr = decoder.nextTag() ?: break@loop
-            when (curr.tag.name) {
+            when (curr.tagName) {
                 "Child1" -> {
                     assertEquals(1, curr.nextTag()?.data()?.parseInt()?.getOrNull())
                     assertEquals(2, curr.nextTag()?.data()?.parseInt()?.getOrNull())

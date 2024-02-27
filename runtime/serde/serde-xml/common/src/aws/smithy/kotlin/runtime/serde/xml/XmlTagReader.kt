@@ -5,21 +5,27 @@
 package aws.smithy.kotlin.runtime.serde.xml
 
 import aws.smithy.kotlin.runtime.InternalApi
-import aws.smithy.kotlin.runtime.io.Closeable
 import aws.smithy.kotlin.runtime.serde.DeserializationException
 
 /**
  * An [XmlStreamReader] scoped to reading a single XML element [tag]
- * [XmlTagReader] provides a "tag" scoped view into an XML document. Methods return
+ * XmlTagReader provides a "tag" scoped view into an XML document. Methods return
  * `null` when the current tag has been exhausted.
  */
 @InternalApi
 public class XmlTagReader(
     public val tag: XmlToken.BeginElement,
     private val reader: XmlStreamReader,
-) : Closeable {
-    private var last: XmlTagReader? = null
+) {
+    // last tag we emitted and returned to the caller
+    private var lastEmitted: XmlTagReader? = null
     private var closed = false
+
+    /**
+     * Get the fully qualified tag name of [tag]
+     */
+    public val tagName: String
+        get() = tag.name.toString()
 
     /**
      * Return the next actionable token or null if stream is exhausted.
@@ -45,8 +51,6 @@ public class XmlTagReader(
         return reader.peek() !is XmlToken.EndElement
     }
 
-    override fun close(): Unit = drop()
-
     /**
      * Exhaust this [XmlTagReader] to completion. This should always
      * be invoked to maintain deserialization state.
@@ -58,10 +62,11 @@ public class XmlTagReader(
     }
 
     /**
-     * Return an [XmlTagReader] for the next [XmlToken.BeginElement]
+     * Return an [XmlTagReader] for the next [XmlToken.BeginElement]. The returned reader
+     * is only valid until [nextTag] is called or [drop] is invoked on it, whichever comes first.
      */
     public fun nextTag(): XmlTagReader? {
-        last?.drop()
+        lastEmitted?.drop()
 
         var cand = nextToken()
         while (cand != null && cand !is XmlToken.BeginElement) {
@@ -71,7 +76,7 @@ public class XmlTagReader(
         val nextTok = cand as? XmlToken.BeginElement
 
         return nextTok?.tagReader(reader).also { newScope ->
-            last = newScope
+            lastEmitted = newScope
         }
     }
 }
@@ -95,12 +100,12 @@ private fun XmlStreamReader.root(): XmlTagReader {
 @InternalApi
 public fun XmlToken.BeginElement.tagReader(reader: XmlStreamReader): XmlTagReader {
     val start = reader.lastToken as? XmlToken.BeginElement ?: error("expected start tag found ${reader.lastToken}")
-    check(qualifiedName == start.qualifiedName) { "expected start tag $qualifiedName but current reader state is on ${start.qualifiedName}" }
+    check(name == start.name) { "expected start tag $name but current reader state is on ${start.name}" }
     return XmlTagReader(this, reader)
 }
 
 /**
- * Unwrap the next token as [XmlToken.Text] and return its' value or throw a [DeserializationException]
+ * Unwrap the next token as [XmlToken.Text] and return its value or throw a [DeserializationException]
  */
 @InternalApi
 public fun XmlTagReader.data(): String =
