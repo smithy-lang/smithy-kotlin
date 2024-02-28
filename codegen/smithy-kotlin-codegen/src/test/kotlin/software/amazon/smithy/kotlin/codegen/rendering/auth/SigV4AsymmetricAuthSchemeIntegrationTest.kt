@@ -7,8 +7,10 @@ package software.amazon.smithy.kotlin.codegen.rendering.auth
 import software.amazon.smithy.aws.traits.protocols.AwsJson1_0Trait
 import software.amazon.smithy.build.MockManifest
 import software.amazon.smithy.kotlin.codegen.KotlinSettings
+import software.amazon.smithy.kotlin.codegen.core.CodegenContext
 import software.amazon.smithy.kotlin.codegen.core.KotlinDelegator
 import software.amazon.smithy.kotlin.codegen.core.KotlinSymbolProvider
+import software.amazon.smithy.kotlin.codegen.integration.KotlinIntegration
 import software.amazon.smithy.kotlin.codegen.rendering.protocol.ProtocolGenerator
 import software.amazon.smithy.kotlin.codegen.test.toSmithyModel
 import software.amazon.smithy.model.shapes.ShapeId
@@ -99,7 +101,16 @@ class SigV4AsymmetricAuthSchemeIntegrationTest {
             ),
         )
 
+        val codegenContext = object : CodegenContext {
+            override val model = testModelWithoutSigV4aTrait
+            override val symbolProvider = symbolProvider
+            override val settings = settings
+            override val protocolGenerator = null
+            override val integrations: List<KotlinIntegration> = emptyList()
+        }
+
         assertFalse(modelHasSigV4aTrait(generationContext))
+        assertFalse(modelHasSigV4aTrait(codegenContext))
     }
 
     @Test
@@ -130,6 +141,15 @@ class SigV4AsymmetricAuthSchemeIntegrationTest {
             ),
         )
 
+        val codegenContext = object : CodegenContext {
+            override val model = testModelWithSigV4aTrait
+            override val symbolProvider = symbolProvider
+            override val settings = settings
+            override val protocolGenerator = null
+            override val integrations: List<KotlinIntegration> = emptyList()
+        }
+
         assertTrue(modelHasSigV4aTrait(generationContext))
+        assertTrue(modelHasSigV4aTrait(codegenContext))
     }
 }

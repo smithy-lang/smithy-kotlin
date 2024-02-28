@@ -205,6 +205,15 @@ public final class aws/smithy/kotlin/runtime/client/SdkClientOptionKt {
 	public static final fun getServiceName (Laws/smithy/kotlin/runtime/operation/ExecutionContext;)Ljava/lang/String;
 }
 
+public abstract interface class aws/smithy/kotlin/runtime/client/SigV4aClientConfig {
+	public abstract fun getSigv4aSigningRegionSet ()Ljava/util/List;
+}
+
+public abstract interface class aws/smithy/kotlin/runtime/client/SigV4aClientConfig$Builder {
+	public abstract fun getSigv4aSigningRegionSet ()Ljava/util/List;
+	public abstract fun setSigv4aSigningRegionSet (Ljava/util/List;)V
+}
+
 public final class aws/smithy/kotlin/runtime/client/config/ClientSettings {
 	public static final field INSTANCE Laws/smithy/kotlin/runtime/client/config/ClientSettings;
 	public final fun getLogMode ()Laws/smithy/kotlin/runtime/config/EnvironmentSetting;

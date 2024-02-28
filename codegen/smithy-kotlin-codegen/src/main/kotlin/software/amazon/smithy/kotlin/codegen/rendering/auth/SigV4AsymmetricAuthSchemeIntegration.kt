@@ -12,10 +12,13 @@ import software.amazon.smithy.kotlin.codegen.KotlinSettings
 import software.amazon.smithy.kotlin.codegen.core.*
 import software.amazon.smithy.kotlin.codegen.integration.AuthSchemeHandler
 import software.amazon.smithy.kotlin.codegen.integration.KotlinIntegration
+import software.amazon.smithy.kotlin.codegen.lang.KotlinTypes
+import software.amazon.smithy.kotlin.codegen.model.asNullable
 import software.amazon.smithy.kotlin.codegen.model.buildSymbol
 import software.amazon.smithy.kotlin.codegen.model.hasTrait
 import software.amazon.smithy.kotlin.codegen.model.knowledge.AwsSignatureVersion4Asymmetric
 import software.amazon.smithy.kotlin.codegen.rendering.protocol.*
+import software.amazon.smithy.kotlin.codegen.rendering.util.ConfigProperty
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.knowledge.ServiceIndex
 import software.amazon.smithy.model.shapes.OperationShape
@@ -34,6 +37,23 @@ class SigV4AsymmetricAuthSchemeIntegration : KotlinIntegration {
 
     override fun authSchemes(ctx: ProtocolGenerator.GenerationContext): List<AuthSchemeHandler> =
         if (modelHasSigV4aTrait(ctx)) listOf(SigV4AsymmetricAuthSchemeHandler()) else emptyList()
+
+    override fun additionalServiceConfigProps(ctx: CodegenContext): List<ConfigProperty> =
+        if (modelHasSigV4aTrait(ctx)) {
+            listOf(
+                ConfigProperty {
+                    name = "sigv4aSigningRegionSet"
+                    symbol = KotlinTypes.Collections.list(KotlinTypes.String).asNullable()
+                    baseClass = RuntimeTypes.SmithyClient.Config.SigV4aClientConfig
+                    useNestedBuilderBaseClass()
+                    documentation = """
+                    The set of regions to use when signing a request with SigV4a. If not provided this will automatically be set by the SDK.
+                    """.trimIndent()
+                },
+            )
+        } else {
+            emptyList()
+        }
 }
 
 private class SigV4AsymmetricAuthSchemeHandler : AuthSchemeHandler {
@@ -74,5 +94,12 @@ internal fun modelHasSigV4aTrait(ctx: ProtocolGenerator.GenerationContext): Bool
     ServiceIndex
         .of(ctx.model)
         .getAuthSchemes(ctx.service)
+        .values
+        .any { it.javaClass == SigV4ATrait::class.java }
+
+internal fun modelHasSigV4aTrait(ctx: CodegenContext): Boolean =
+    ServiceIndex
+        .of(ctx.model)
+        .getAuthSchemes(ctx.settings.service)
         .values
         .any { it.javaClass == SigV4ATrait::class.java }
