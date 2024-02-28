@@ -113,6 +113,10 @@ public final class aws/smithy/kotlin/runtime/collections/AttributesKt {
 	public static final fun toMutableAttributes (Laws/smithy/kotlin/runtime/collections/Attributes;)Laws/smithy/kotlin/runtime/collections/MutableAttributes;
 }
 
+public final class aws/smithy/kotlin/runtime/collections/CollectionExtKt {
+	public static final fun createOrAppend (Ljava/util/List;Ljava/lang/Object;)Ljava/util/List;
+}
+
 public abstract interface class aws/smithy/kotlin/runtime/collections/MultiMap : java/util/Map, kotlin/jvm/internal/markers/KMappedMarker {
 	public abstract fun contains (Ljava/lang/Object;Ljava/lang/Object;)Z
 	public abstract fun getEntryValues ()Lkotlin/sequences/Sequence;
@@ -2251,6 +2255,10 @@ public final class aws/smithy/kotlin/runtime/util/PlatformProvider$Companion {
 public abstract interface class aws/smithy/kotlin/runtime/util/PropertyProvider {
 	public abstract fun getAllProperties ()Ljava/util/Map;
 	public abstract fun getProperty (Ljava/lang/String;)Ljava/lang/String;
+}
+
+public final class aws/smithy/kotlin/runtime/util/ResultExtKt {
+	public static final fun mapErr (Ljava/lang/Object;Lkotlin/jvm/functions/Function1;)Ljava/lang/Object;
 }
 
 public final class aws/smithy/kotlin/runtime/util/SingleFlightGroup {

@@ -9,8 +9,7 @@ import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.codegen.core.SymbolReference
 import software.amazon.smithy.kotlin.codegen.KotlinSettings
-import software.amazon.smithy.kotlin.codegen.core.SymbolRenderer
-import software.amazon.smithy.kotlin.codegen.core.defaultName
+import software.amazon.smithy.kotlin.codegen.core.*
 import software.amazon.smithy.kotlin.codegen.core.mangledSuffix
 import software.amazon.smithy.kotlin.codegen.model.buildSymbol
 import software.amazon.smithy.model.Model
@@ -216,11 +215,31 @@ fun formatInstant(paramName: String, tsFmt: TimestampFormatTrait.Format, forceSt
  * @param paramName The name of the local identifier to convert to an `Instant`
  * @param tsFmt The timestamp format [paramName] is expected to be converted from
  */
-fun parseInstant(paramName: String, tsFmt: TimestampFormatTrait.Format): String = when (tsFmt) {
-    TimestampFormatTrait.Format.EPOCH_SECONDS -> "Instant.fromEpochSeconds($paramName)"
-    TimestampFormatTrait.Format.DATE_TIME -> "Instant.fromIso8601($paramName)"
-    TimestampFormatTrait.Format.HTTP_DATE -> "Instant.fromRfc5322($paramName)"
-    else -> throw CodegenException("unknown timestamp format: $tsFmt")
+fun KotlinWriter.parseInstantExpr(paramName: String, tsFmt: TimestampFormatTrait.Format): String {
+    val fn = when (tsFmt) {
+        TimestampFormatTrait.Format.EPOCH_SECONDS -> "fromEpochSeconds"
+        TimestampFormatTrait.Format.DATE_TIME -> "fromIso8601"
+        TimestampFormatTrait.Format.HTTP_DATE -> "fromRfc5322"
+        else -> throw CodegenException("unknown timestamp format: $tsFmt")
+    }
+    return format("#T.#L(#L)", RuntimeTypes.Core.Instant, fn, paramName)
+}
+
+fun TimestampFormatTrait.Format.toRuntimeEnum(): String = when (this) {
+    TimestampFormatTrait.Format.EPOCH_SECONDS -> "TimestampFormat.EPOCH_SECONDS"
+    TimestampFormatTrait.Format.DATE_TIME -> "TimestampFormat.ISO_8601"
+    TimestampFormatTrait.Format.HTTP_DATE -> "TimestampFormat.RFC_5322"
+    else -> throw CodegenException("unknown timestamp format: $this")
+}
+
+fun TimestampFormatTrait.Format.toRuntimeEnum(writer: KotlinWriter): String {
+    val enum = when (this) {
+        TimestampFormatTrait.Format.EPOCH_SECONDS -> "EPOCH_SECONDS"
+        TimestampFormatTrait.Format.DATE_TIME -> "ISO_8601"
+        TimestampFormatTrait.Format.HTTP_DATE -> "RFC_5322"
+        else -> throw CodegenException("unknown timestamp format: $this")
+    }
+    return writer.format("#T.#L", RuntimeTypes.Core.TimestampFormat, enum)
 }
 
 /**
@@ -289,3 +308,5 @@ internal fun Shape.childShape(model: Model): Shape? = when (this) {
     is MapShape -> model.expectShape(this.value.target)
     else -> null
 }
+
+internal fun nullabilitySuffix(isSparse: Boolean): String = if (isSparse) "?" else ""

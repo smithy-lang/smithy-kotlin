@@ -1,0 +1,8 @@
+{
+    "id": "fb00b4ae-ffdb-4137-baa8-574848296da1",
+    "type": "bugfix",
+    "description": "Refactor XML deserialization to handle flat collections",
+    "issues": [
+        "awslabs/aws-sdk-kotlin#1220"
+    ]
+}

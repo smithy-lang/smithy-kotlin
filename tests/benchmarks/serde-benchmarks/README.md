@@ -8,20 +8,20 @@ This project contains micro benchmarks for the serialization implementation(s).
 ./gradlew :runtime:serde:serde-benchmarks:jvmBenchmark
 ```
 
-Baseline `0.7.8-beta` on EC2 **[m5.4xlarge](https://aws.amazon.com/ec2/instance-types/m5/)** in **OpenJK 1.8.0_312**:
+Baseline on EC2 **[m5.4xlarge](https://aws.amazon.com/ec2/instance-types/m5/)** in **Corretto-17.0.10.8.1**:
 
 ```
 jvm summary:
-Benchmark                                                         (sourceFilename)  Mode  Cnt   Score    Error  Units
-a.s.k.b.s.json.CitmBenchmark.tokensBenchmark                                   N/A  avgt    5  12.530 ±  0.611  ms/op
-a.s.k.b.s.json.TwitterBenchmark.deserializeBenchmark                           N/A  avgt    5  10.148 ±  7.515  ms/op
-a.s.k.b.s.json.TwitterBenchmark.serializeBenchmark                             N/A  avgt    5   1.534 ±  1.608  ms/op
-a.s.k.b.s.json.TwitterBenchmark.tokensBenchmark                                N/A  avgt    5   6.381 ±  3.615  ms/op
-a.s.k.b.s.xml.BufferStreamWriterBenchmark.serializeBenchmark                   N/A  avgt    5  11.746 ±  0.262  ms/op
-a.s.k.b.s.xml.XmlDeserializerBenchmark.deserializeBenchmark                    N/A  avgt    5  90.697 ±  1.178  ms/op
-a.s.k.b.s.xml.XmlLexerBenchmark.deserializeBenchmark          countries-states.xml  avgt    5  22.665 ±  0.473  ms/op
-a.s.k.b.s.xml.XmlLexerBenchmark.deserializeBenchmark            kotlin-article.xml  avgt    5   0.734 ±  0.017  ms/op
-a.s.k.b.s.xml.XmlSerializerBenchmark.serializeBenchmark                        N/A  avgt    5  27.324 ± 31.331  ms/op
+Benchmark                                                         (sourceFilename)  Mode  Cnt   Score   Error  Units
+a.s.k.b.s.json.CitmBenchmark.tokensBenchmark                                   N/A  avgt    5  10.066 ± 0.033  ms/op
+a.s.k.b.s.json.TwitterBenchmark.deserializeBenchmark                           N/A  avgt    5   7.295 ± 0.033  ms/op
+a.s.k.b.s.json.TwitterBenchmark.serializeBenchmark                             N/A  avgt    5   1.498 ± 0.026  ms/op
+a.s.k.b.s.json.TwitterBenchmark.tokensBenchmark                                N/A  avgt    5   4.431 ± 0.029  ms/op
+a.s.k.b.s.xml.BufferStreamWriterBenchmark.serializeBenchmark                   N/A  avgt    5  10.540 ± 0.134  ms/op
+a.s.k.b.s.xml.XmlDeserializerBenchmark.deserializeBenchmark                    N/A  avgt    5  33.566 ± 0.074  ms/op
+a.s.k.b.s.xml.XmlLexerBenchmark.deserializeBenchmark          countries-states.xml  avgt    5  25.200 ± 0.079  ms/op
+a.s.k.b.s.xml.XmlLexerBenchmark.deserializeBenchmark            kotlin-article.xml  avgt    5   0.846 ± 0.003  ms/op
+a.s.k.b.s.xml.XmlSerializerBenchmark.serializeBenchmark                        N/A  avgt    5  21.714 ± 0.385  ms/op
 ```
 
 ## JSON Data
@@ -44,7 +44,7 @@ Raw data was imported from multiple sources:
 
 ## Benchmarks
 
-The `model` folder contains hand rolled Smithy models for some of the benchmarks. The `smithy-benchmarks-codegen` project 
-contains the codegen support to generate these models.
+The `model` folder contains hand rolled Smithy models for some of the benchmarks. 
+The `tests/codegen/serde-codegen-support` module contains the codegen support to generate these models.
 
 These models are generated as part of the build. Until you run `assemble` you may see errors in your IDE.
