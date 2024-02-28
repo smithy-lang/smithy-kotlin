@@ -149,5 +149,8 @@ public open class ServiceException : SdkBaseException {
 
     public constructor(cause: Throwable?) : super(cause)
 
+    override val message: String?
+        get() = super.message ?: sdkErrorMetadata.errorMessage
+
     override val sdkErrorMetadata: ServiceErrorMetadata = ServiceErrorMetadata()
 }

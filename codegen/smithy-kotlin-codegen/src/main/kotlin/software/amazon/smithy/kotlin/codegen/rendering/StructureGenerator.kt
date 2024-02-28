@@ -66,33 +66,29 @@ class StructureGenerator(
         // generate the immutable properties that are set from a builder
         sortedMembers.forEach {
             val (memberName, memberSymbol) = memberNameSymbolIndex[it]!!
+            // Throwable.message is handled special and passed as a constructor parameter to the parent exception base class
+            if (shape.isError && memberName == "message") {
+                val targetShape = model.expectShape(it.target)
+                if (!targetShape.isStringShape) {
+                    throw CodegenException("message is a reserved name for exception types and cannot be used for any other property")
+                }
+                return@forEach
+            }
             writer.renderMemberDocumentation(model, it)
             writer.renderAnnotations(it)
-            renderImmutableProperty(it, memberName, memberSymbol)
+            renderImmutableProperty(memberName, memberSymbol)
         }
     }
 
-    private fun renderImmutableProperty(memberShape: MemberShape, memberName: String, memberSymbol: Symbol) {
-        // override Throwable's message property
-        val prefix = if (shape.isError && memberName == "message") {
-            val targetShape = model.expectShape(memberShape.target)
-            if (!targetShape.isStringShape) {
-                throw CodegenException("message is a reserved name for exception types and cannot be used for any other property")
-            }
-            "override"
-        } else {
-            "public"
-        }
-
+    private fun renderImmutableProperty(memberName: String, memberSymbol: Symbol) {
         if (memberSymbol.isRequiredWithNoDefault) {
             writer.write(
-                """#1L val #2L: #3F = requireNotNull(builder.#2L) { "A non-null value must be provided for #2L" }""",
-                prefix,
+                """public val #1L: #2F = requireNotNull(builder.#1L) { "A non-null value must be provided for #1L" }""",
                 memberName,
                 memberSymbol,
             )
         } else {
-            writer.write("#1L val #2L: #3F = builder.#2L", prefix, memberName, memberSymbol)
+            writer.write("public val #1L: #2F = builder.#1L", memberName, memberSymbol)
         }
     }
 
@@ -316,10 +312,16 @@ class StructureGenerator(
         val exceptionBaseClass = ExceptionBaseClassGenerator.baseExceptionSymbol(ctx.settings)
         writer.addImport(exceptionBaseClass)
 
+        val superParam = shape.members().find {
+            symbolProvider.toMemberName(it) == "message"
+        }?.let { "builder.message" } ?: ""
+
         writer.openBlock(
-            "#L class #T private constructor(builder: Builder) : ${exceptionBaseClass.name}() {",
+            "#L class #T private constructor(builder: Builder) : #L(#L) {",
             ctx.settings.api.visibility,
             symbol,
+            exceptionBaseClass.name,
+            superParam,
         )
             .write("")
             .call { renderImmutableProperties() }

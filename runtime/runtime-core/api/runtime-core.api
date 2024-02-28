@@ -58,6 +58,7 @@ public class aws/smithy/kotlin/runtime/ServiceException : aws/smithy/kotlin/runt
 	public fun <init> (Ljava/lang/String;)V
 	public fun <init> (Ljava/lang/String;Ljava/lang/Throwable;)V
 	public fun <init> (Ljava/lang/Throwable;)V
+	public fun getMessage ()Ljava/lang/String;
 	public synthetic fun getSdkErrorMetadata ()Laws/smithy/kotlin/runtime/ErrorMetadata;
 	public fun getSdkErrorMetadata ()Laws/smithy/kotlin/runtime/ServiceErrorMetadata;
 }
