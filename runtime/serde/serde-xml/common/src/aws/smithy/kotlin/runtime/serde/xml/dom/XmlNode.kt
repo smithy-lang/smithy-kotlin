@@ -121,7 +121,7 @@ internal fun formatXmlNode(curr: XmlNode, depth: Int, sb: StringBuilder, pretty:
 
         // open tag
         append("$indent<")
-        append(curr.name.tag)
+        append(curr.name.toString())
         curr.namespaces.forEach {
             // namespaces declared by this node
             append(" xmlns")
@@ -134,7 +134,7 @@ internal fun formatXmlNode(curr: XmlNode, depth: Int, sb: StringBuilder, pretty:
         // attributes
         if (curr.attributes.isNotEmpty()) append(" ")
         curr.attributes.forEach {
-            append("${it.key.tag}=\"${it.value}\"")
+            append("${it.key}=\"${it.value}\"")
         }
         append(">")
 
@@ -155,7 +155,7 @@ internal fun formatXmlNode(curr: XmlNode, depth: Int, sb: StringBuilder, pretty:
         }
 
         append("</")
-        append(curr.name.tag)
+        append(curr.name.toString())
         append(">")
 
         if (pretty && depth > 0) appendLine()

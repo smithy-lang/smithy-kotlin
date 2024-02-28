@@ -31,6 +31,7 @@ internal sealed class FieldLocation {
  * restXml based services DO NOT always send documents with a root element name that matches the shape ID name
  * (S3 in particular). This means there is nothing in the model that gives you enough information to validate the tag.
  */
+@Deprecated("XmlDeserializer is deprecated and will be removed in a future release")
 @InternalApi
 public class XmlDeserializer(
     private val reader: XmlStreamReader,

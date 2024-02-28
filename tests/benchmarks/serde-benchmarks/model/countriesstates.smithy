@@ -2,9 +2,9 @@ $version: "1.0"
 
 namespace aws.benchmarks.countries_states
 
-use aws.benchmarks.protocols#serdeBenchmarkXml
+use aws.serde.protocols#serdeXml
 
-@serdeBenchmarkXml
+@serdeXml
 service CountriesStatesService {
     version: "2019-12-16",
     operations: [GetCountriesAndStates]

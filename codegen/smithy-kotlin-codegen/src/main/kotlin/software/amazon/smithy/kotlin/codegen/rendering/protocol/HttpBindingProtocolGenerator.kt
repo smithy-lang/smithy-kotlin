@@ -14,7 +14,7 @@ import software.amazon.smithy.kotlin.codegen.lang.toEscapedLiteral
 import software.amazon.smithy.kotlin.codegen.model.*
 import software.amazon.smithy.kotlin.codegen.rendering.serde.deserializerName
 import software.amazon.smithy.kotlin.codegen.rendering.serde.formatInstant
-import software.amazon.smithy.kotlin.codegen.rendering.serde.parseInstant
+import software.amazon.smithy.kotlin.codegen.rendering.serde.parseInstantExpr
 import software.amazon.smithy.kotlin.codegen.rendering.serde.serializerName
 import software.amazon.smithy.kotlin.codegen.utils.getOrNull
 import software.amazon.smithy.model.Model
@@ -813,14 +813,12 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                         HttpBinding.Location.HEADER,
                         defaultTimestampFormat,
                     )
-                    writer
-                        .addImport(RuntimeTypes.Core.Instant)
-                        .write(
-                            "builder.#L = response.headers[#S]?.let { #L }",
-                            memberName,
-                            headerName,
-                            parseInstant("it", tsFormat),
-                        )
+                    writer.write(
+                        "builder.#L = response.headers[#S]?.let { #L }",
+                        memberName,
+                        headerName,
+                        writer.parseInstantExpr("it", tsFormat),
+                    )
                 }
                 is ListShape -> {
                     // member > boolean, number, string, or timestamp
@@ -849,8 +847,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                             if (tsFormat == TimestampFormatTrait.Format.HTTP_DATE) {
                                 splitFn = "splitHttpDateHeaderListValues"
                             }
-                            writer.addImport(RuntimeTypes.Core.Instant)
-                            parseInstant("it", tsFormat)
+                            writer.parseInstantExpr("it", tsFormat)
                         }
                         is StringShape -> {
                             when {

@@ -1,0 +1,31 @@
+{
+  "version": "1.0",
+  "sources": ["model"],
+  "projections": {
+    "xml": {
+      "transforms": [
+        {
+          "name": "includeServices",
+          "args": {
+            "services": [
+              "aws.tests.serde.xml#XmlService"
+            ]
+          }
+        }
+      ],
+      "plugins": {
+        "kotlin-codegen": {
+          "service": "aws.tests.serde.xml#XmlService",
+          "package": {
+            "name": "aws.smithy.kotlin.tests.serde.xml",
+            "version": "0.0.1"
+          },
+          "build": {
+            "rootProject": false,
+            "generateDefaultBuildFiles": false
+          }
+        }
+      }
+    }
+  }
+}

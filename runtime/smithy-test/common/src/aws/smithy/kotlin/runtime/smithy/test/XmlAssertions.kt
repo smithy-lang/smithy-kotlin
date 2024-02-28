@@ -14,7 +14,7 @@ import kotlin.test.assertEquals
 /**
  * Assert XML strings for equality ignoring key order
  */
-public suspend fun assertXmlStringsEqual(expected: String, actual: String) {
+public fun assertXmlStringsEqual(expected: String, actual: String) {
     // parse into a dom representation and sort the dom into a canonical form for comparison
     val expectedNode = XmlNode.parse(expected.encodeToByteArray()).apply { toCanonicalForm() }
     val actualNode = XmlNode.parse(actual.encodeToByteArray()).apply { toCanonicalForm() }

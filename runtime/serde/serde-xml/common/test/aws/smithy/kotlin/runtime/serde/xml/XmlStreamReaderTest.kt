@@ -193,8 +193,7 @@ class XmlStreamReaderTest {
         assertEquals(expected, actual)
     }
 
-    @Test
-    fun itSkipsValuesRecursively() {
+    private fun skipTest() {
         val payload = """
             <payload>
                 <x>1></x>
@@ -226,14 +225,18 @@ class XmlStreamReaderTest {
         }
 
         val nt = reader.peek()
-        assertIs<XmlToken.BeginElement>(nt)
 
+        assertIs<XmlToken.BeginElement>(nt)
         assertEquals("unknown", nt.name.local)
+
         reader.skipNext()
 
         val y = reader.nextToken() as XmlToken.BeginElement
         assertEquals("y", y.name.local)
     }
+
+    @Test
+    fun itSkipsNextValuesRecursively() = skipTest()
 
     @Test
     fun itSkipsSimpleValues() {

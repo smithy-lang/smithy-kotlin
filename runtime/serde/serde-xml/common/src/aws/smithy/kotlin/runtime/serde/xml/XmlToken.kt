@@ -28,12 +28,29 @@ public sealed class XmlToken {
      */
     @InternalApi
     public data class QualifiedName(public val local: String, public val prefix: String? = null) {
-        override fun toString(): String = tag
-
-        public val tag: String get() = when (prefix) {
+        override fun toString(): String = when (prefix) {
             null -> local
             else -> "$prefix:$local"
         }
+
+        @InternalApi
+        public companion object {
+
+            /**
+             * Construct a [QualifiedName] from a raw string representation
+             */
+            public fun from(qualified: String): QualifiedName {
+                val split = qualified.split(":", limit = 2)
+                val (local, prefix) = when (split.size == 2) {
+                    true -> split[1] to split[0]
+                    false -> split[0] to null
+                }
+                return QualifiedName(local, prefix)
+            }
+        }
+
+        val tag: String
+            get() = toString()
     }
 
     /**
@@ -46,13 +63,17 @@ public sealed class XmlToken {
         public val attributes: Map<QualifiedName, String> = emptyMap(),
         public val nsDeclarations: List<Namespace> = emptyList(),
     ) : XmlToken() {
+
         // Convenience constructor for name-only nodes.
         public constructor(depth: Int, name: String) : this(depth, QualifiedName(name))
 
         // Convenience constructor for name-only nodes with attributes.
         public constructor(depth: Int, name: String, attributes: Map<QualifiedName, String>) : this(depth, QualifiedName(name), attributes)
 
-        override fun toString(): String = "<${this.name} (${this.depth})>"
+        override fun toString(): String = "<$name ($depth)>"
+
+        // convenience function for codegen
+        public fun getAttr(qualified: String): String? = attributes[QualifiedName.from(qualified)]
     }
 
     /**
@@ -63,7 +84,7 @@ public sealed class XmlToken {
         // Convenience constructor for name-only nodes.
         public constructor(depth: Int, name: String) : this(depth, QualifiedName(name))
 
-        override fun toString(): String = "</${this.name}> (${this.depth})"
+        override fun toString(): String = "</$name> ($depth)"
     }
 
     /**
@@ -71,7 +92,7 @@ public sealed class XmlToken {
      */
     @InternalApi
     public data class Text(override val depth: Int, public val value: String?) : XmlToken() {
-        override fun toString(): String = "${this.value} (${this.depth})"
+        override fun toString(): String = "$value ($depth)"
     }
 
     @InternalApi
@@ -90,9 +111,9 @@ public sealed class XmlToken {
     }
 
     override fun toString(): String = when (this) {
-        is BeginElement -> "<${this.name}>"
-        is EndElement -> "</${this.name}>"
-        is Text -> "${this.value}"
+        is BeginElement -> "<$name>"
+        is EndElement -> "</$name>"
+        is Text -> "$value"
         StartDocument -> "[StartDocument]"
         EndDocument -> "[EndDocument]"
     }

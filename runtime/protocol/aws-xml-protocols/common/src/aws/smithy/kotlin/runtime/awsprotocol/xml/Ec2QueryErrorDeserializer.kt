@@ -6,10 +6,8 @@ package aws.smithy.kotlin.runtime.awsprotocol.xml
 
 import aws.smithy.kotlin.runtime.InternalApi
 import aws.smithy.kotlin.runtime.awsprotocol.ErrorDetails
-import aws.smithy.kotlin.runtime.serde.*
-import aws.smithy.kotlin.runtime.serde.xml.XmlCollectionName
-import aws.smithy.kotlin.runtime.serde.xml.XmlDeserializer
-import aws.smithy.kotlin.runtime.serde.xml.XmlSerialName
+import aws.smithy.kotlin.runtime.serde.getOrDeserializeErr
+import aws.smithy.kotlin.runtime.serde.xml.*
 
 internal data class Ec2QueryErrorResponse(val errors: List<Ec2QueryError>, val requestId: String?)
 
@@ -17,83 +15,65 @@ internal data class Ec2QueryError(val code: String?, val message: String?)
 
 @InternalApi
 public suspend fun parseEc2QueryErrorResponse(payload: ByteArray): ErrorDetails {
-    val response = Ec2QueryErrorResponseDeserializer.deserialize(XmlDeserializer(payload, true))
+    val response = Ec2QueryErrorResponseDeserializer.deserialize(xmlTagReader(payload))
     val firstError = response.errors.firstOrNull()
     return ErrorDetails(firstError?.code, firstError?.message, response.requestId)
 }
 
 /**
  * Deserializes EC2 Query protocol errors as specified by
- * https://awslabs.github.io/smithy/1.0/spec/aws/aws-ec2-query-protocol.html#operation-error-serialization
+ * https://smithy.io/2.0/aws/protocols/aws-ec2-query-protocol.html#operation-error-serialization
  */
 internal object Ec2QueryErrorResponseDeserializer {
-    private val ERRORS_DESCRIPTOR = SdkFieldDescriptor(
-        SerialKind.List,
-        XmlSerialName("Errors"),
-        XmlCollectionName("Error"),
-    )
-    private val REQUESTID_DESCRIPTOR = SdkFieldDescriptor(SerialKind.String, XmlSerialName("RequestId"))
-    private val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {
-        trait(XmlSerialName("Response"))
-        field(ERRORS_DESCRIPTOR)
-        field(REQUESTID_DESCRIPTOR)
-    }
-
-    suspend fun deserialize(deserializer: Deserializer): Ec2QueryErrorResponse {
-        var errors = listOf<Ec2QueryError>()
+    fun deserialize(root: XmlTagReader): Ec2QueryErrorResponse = runCatching {
+        var errors: List<Ec2QueryError>? = null
         var requestId: String? = null
+        if (root.tagName != "Response") error("expected <Response> found ${root.tag}")
 
-        deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
-            loop@ while (true) {
-                when (findNextFieldIndex()) {
-                    ERRORS_DESCRIPTOR.index -> errors = deserializer.deserializeList(ERRORS_DESCRIPTOR) {
-                        val collection = mutableListOf<Ec2QueryError>()
-                        while (hasNextElement()) {
-                            if (nextHasValue()) {
-                                val element = Ec2QueryErrorDeserializer.deserialize(deserializer)
-                                collection.add(element)
-                            } else {
-                                deserializeNull()
-                                continue
-                            }
-                        }
-                        collection
-                    }
-                    REQUESTID_DESCRIPTOR.index -> requestId = deserializeString()
-                    null -> break@loop
-                    else -> skipValue()
-                }
+        loop@while (true) {
+            val curr = root.nextTag() ?: break@loop
+            when (curr.tagName) {
+                "Errors" -> errors = Ec2QueryErrorListDeserializer.deserialize(curr)
+                "RequestId" -> requestId = curr.data()
             }
+            curr.drop()
         }
 
-        return Ec2QueryErrorResponse(errors, requestId)
+        Ec2QueryErrorResponse(errors ?: emptyList(), requestId)
+    }.getOrDeserializeErr { "Unable to deserialize EC2Query error" }
+}
+
+internal object Ec2QueryErrorListDeserializer {
+    fun deserialize(root: XmlTagReader): List<Ec2QueryError> {
+        val errors = mutableListOf<Ec2QueryError>()
+        loop@while (true) {
+            val curr = root.nextTag() ?: break@loop
+            when (curr.tagName) {
+                "Error" -> {
+                    val el = Ec2QueryErrorDeserializer.deserialize(curr)
+                    errors.add(el)
+                }
+            }
+            curr.drop()
+        }
+        return errors
     }
 }
 
 internal object Ec2QueryErrorDeserializer {
-    private val CODE_DESCRIPTOR = SdkFieldDescriptor(SerialKind.String, XmlSerialName("Code"))
-    private val MESSAGE_DESCRIPTOR = SdkFieldDescriptor(SerialKind.String, XmlSerialName("Message"))
-    private val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {
-        trait(XmlSerialName("Error"))
-        field(CODE_DESCRIPTOR)
-        field(MESSAGE_DESCRIPTOR)
-    }
 
-    suspend fun deserialize(deserializer: Deserializer): Ec2QueryError {
+    fun deserialize(root: XmlTagReader): Ec2QueryError {
         var code: String? = null
         var message: String? = null
 
-        deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
-            loop@ while (true) {
-                when (findNextFieldIndex()) {
-                    CODE_DESCRIPTOR.index -> code = deserializeString()
-                    MESSAGE_DESCRIPTOR.index -> message = deserializeString()
-                    null -> break@loop
-                    else -> skipValue()
-                }
+        loop@while (true) {
+            val curr = root.nextTag() ?: break@loop
+            when (curr.tagName) {
+                "Code" -> code = curr.data()
+                "Message", "message" -> message = curr.data()
             }
+            curr.drop()
         }
-
         return Ec2QueryError(code, message)
     }
 }

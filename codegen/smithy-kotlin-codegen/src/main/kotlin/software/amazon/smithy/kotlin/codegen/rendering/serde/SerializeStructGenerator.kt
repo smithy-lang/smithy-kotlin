@@ -680,10 +680,3 @@ open class SerializeStructGenerator(
         return "serialize$suffix"
     }
 }
-
-fun TimestampFormatTrait.Format.toRuntimeEnum(): String = when (this) {
-    TimestampFormatTrait.Format.EPOCH_SECONDS -> "TimestampFormat.EPOCH_SECONDS"
-    TimestampFormatTrait.Format.DATE_TIME -> "TimestampFormat.ISO_8601"
-    TimestampFormatTrait.Format.HTTP_DATE -> "TimestampFormat.RFC_5322"
-    else -> throw CodegenException("unknown timestamp format: $this")
-}
