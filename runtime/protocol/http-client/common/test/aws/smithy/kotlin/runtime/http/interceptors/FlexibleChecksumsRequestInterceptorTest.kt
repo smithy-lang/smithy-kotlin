@@ -127,6 +127,23 @@ class FlexibleChecksumsRequestInterceptorTest {
     }
 
     @Test
+    fun itSetsChecksumHeaderViaExecutionContext() = runTest {
+        checksums.forEach { (checksumAlgorithmName, expectedChecksumValue) ->
+            val req = HttpRequestBuilder().apply {
+                body = HttpBody.fromBytes("<Foo>bar</Foo>".encodeToByteArray())
+            }
+
+            val op = newTestOperation<Unit, Unit>(req, Unit)
+            op.context[HttpOperationContext.ChecksumAlgorithm] = checksumAlgorithmName
+            op.interceptors.add(FlexibleChecksumsRequestInterceptor<Unit>())
+
+            op.roundTrip(client, Unit)
+            val call = op.context.attributes[HttpOperationContext.HttpCallList].first()
+            assertEquals(expectedChecksumValue, call.request.headers["x-amz-checksum-$checksumAlgorithmName"])
+        }
+    }
+
+    @Test
     fun testCompletingSource() = runTest {
         val hashFunctionName = "crc32"
 

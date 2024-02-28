@@ -33,7 +33,7 @@ public abstract class Crc32Base : HashFunction {
 public expect class Crc32() : Crc32Base
 
 /**
- * Compute the MD5 hash of the current [ByteArray]
+ * Compute the CRC32 checksum of the given [ByteArray]
  */
 @InternalApi
 public fun ByteArray.crc32(): UInt = Crc32().apply { update(this@crc32) }.digestValue()

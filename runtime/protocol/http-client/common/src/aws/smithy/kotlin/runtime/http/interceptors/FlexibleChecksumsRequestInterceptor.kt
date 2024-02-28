@@ -10,6 +10,7 @@ import aws.smithy.kotlin.runtime.InternalApi
 import aws.smithy.kotlin.runtime.client.ProtocolRequestInterceptorContext
 import aws.smithy.kotlin.runtime.hashing.*
 import aws.smithy.kotlin.runtime.http.*
+import aws.smithy.kotlin.runtime.http.operation.HttpOperationContext
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.http.request.header
 import aws.smithy.kotlin.runtime.http.request.toBuilder
@@ -30,22 +31,24 @@ import kotlin.coroutines.coroutineContext
  * In this case, a [LazyAsyncValue] will be added to the execution context which allows the trailing checksum to be sent
  * after the entire body has been streamed.
  *
- * @param checksumAlgorithmNameInitializer a function which parses the input [I] to return the checksum algorithm name
+ * @param checksumAlgorithmNameInitializer an optional function which parses the input [I] to return the checksum algorithm name.
+ * if not set, then the [HttpOperationContext.ChecksumAlgorithm] execution context attribute will be used.
  */
 @InternalApi
 public class FlexibleChecksumsRequestInterceptor<I>(
-    private val checksumAlgorithmNameInitializer: (I) -> String?,
-) : HttpInterceptor {
+    private val checksumAlgorithmNameInitializer: ((I) -> String?)? = null,
+) : AbstractChecksumInterceptor() {
     private var checksumAlgorithmName: String? = null
 
-    override fun readAfterSerialization(context: ProtocolRequestInterceptorContext<Any, HttpRequest>) {
+    @Deprecated("readAfterSerialization is no longer used")
+    override fun readAfterSerialization(context: ProtocolRequestInterceptorContext<Any, HttpRequest>) { }
+
+    override suspend fun modifyBeforeSigning(context: ProtocolRequestInterceptorContext<Any, HttpRequest>): HttpRequest {
+        val logger = coroutineContext.logger<FlexibleChecksumsRequestInterceptor<I>>()
+
         @Suppress("UNCHECKED_CAST")
         val input = context.request as I
-        checksumAlgorithmName = checksumAlgorithmNameInitializer(input)
-    }
-
-    override suspend fun modifyBeforeRetryLoop(context: ProtocolRequestInterceptorContext<Any, HttpRequest>): HttpRequest {
-        val logger = coroutineContext.logger<FlexibleChecksumsRequestInterceptor<I>>()
+        checksumAlgorithmName = checksumAlgorithmNameInitializer?.invoke(input) ?: context.executionContext.getOrNull(HttpOperationContext.ChecksumAlgorithm)
 
         checksumAlgorithmName ?: run {
             logger.debug { "no checksum algorithm specified, skipping flexible checksums processing" }
@@ -65,7 +68,7 @@ public class FlexibleChecksumsRequestInterceptor<I>(
         // this handles the case where a user inputs a precalculated checksum, but it doesn't match the input checksum algorithm
         req.headers.removeAllChecksumHeadersExcept(headerName)
 
-        val checksumAlgorithm = checksumAlgorithmName!!.toHashFunction() ?: throw ClientException("Could not parse checksum algorithm $checksumAlgorithmName")
+        val checksumAlgorithm = checksumAlgorithmName?.toHashFunction() ?: throw ClientException("Could not parse checksum algorithm $checksumAlgorithmName")
 
         if (!checksumAlgorithm.isSupported) {
             throw ClientException("Checksum algorithm $checksumAlgorithmName is not supported for flexible checksums")
@@ -91,21 +94,38 @@ public class FlexibleChecksumsRequestInterceptor<I>(
             }
 
             req.trailingHeaders.append(headerName, deferredChecksum)
-        } else if (req.headers[headerName] == null) {
-            logger.debug { "Calculating checksum" }
+            return req.build()
+        } else {
+            return super.modifyBeforeSigning(context)
+        }
+    }
 
-            val checksum: String = when {
-                req.body.contentLength == null && !req.body.isOneShot -> {
-                    val channel = req.body.toSdkByteReadChannel()!!
-                    channel.rollingHash(checksumAlgorithm).encodeBase64String()
-                }
-                else -> {
-                    val bodyBytes = req.body.readAll()!!
-                    req.body = bodyBytes.toHttpBody() // replace the consumed body
-                    bodyBytes.hash(checksumAlgorithm).encodeBase64String()
-                }
+    override suspend fun calculateChecksum(context: ProtocolRequestInterceptorContext<Any, HttpRequest>): String? {
+        val req = context.protocolRequest.toBuilder()
+        val checksumAlgorithm = checksumAlgorithmName?.toHashFunction() ?: return null
+
+        return when {
+            req.body.contentLength == null && !req.body.isOneShot -> {
+                val channel = req.body.toSdkByteReadChannel()!!
+                channel.rollingHash(checksumAlgorithm).encodeBase64String()
             }
+            else -> {
+                val bodyBytes = req.body.readAll()!!
+                req.body = bodyBytes.toHttpBody()
+                bodyBytes.hash(checksumAlgorithm).encodeBase64String()
+            }
+        }
+    }
 
+    override fun applyChecksum(
+        context: ProtocolRequestInterceptorContext<Any, HttpRequest>,
+        checksum: String,
+    ): HttpRequest {
+        val headerName = "x-amz-checksum-$checksumAlgorithmName".lowercase()
+
+        val req = context.protocolRequest.toBuilder()
+
+        if (!req.headers.contains(headerName)) {
             req.header(headerName, checksum)
         }
 
