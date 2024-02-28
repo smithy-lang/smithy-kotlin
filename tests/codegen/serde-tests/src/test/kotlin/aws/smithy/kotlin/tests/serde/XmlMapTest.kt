@@ -218,4 +218,60 @@ class XmlMapTest : AbstractXmlTest() {
         val actualDeserialized = deserializeStructTypeDocument(reader)
         assertEquals(expected, actualDeserialized)
     }
+
+    @Test
+    fun testEnumValueMap() {
+        val expected = StructType {
+            enumValueMap = mapOf(
+                "foo" to FooEnum.Foo,
+                "bar" to FooEnum.Bar,
+            )
+        }
+        val payload = """
+            <StructType>
+                <enumValueMap>
+                    <entry>
+                        <key>foo</key>
+                        <value>Foo</value>
+                    </entry>
+                    <entry>
+                        <key>bar</key>
+                        <value>Bar</value>
+                    </entry>
+                </enumValueMap>
+            </StructType>
+        """.trimIndent()
+        testRoundTrip(expected, payload, ::serializeStructTypeDocument, ::deserializeStructTypeDocument)
+    }
+
+    @Test
+    fun testEnumKeyMap() {
+        // see also https://github.com/awslabs/smithy-kotlin/issues/1045
+        val expected = StructType {
+            enumKeyMap = mapOf(
+                FooEnum.Foo.value to 1,
+                "Bar" to 2,
+                "Unknown" to 3,
+            )
+        }
+        val payload = """
+            <StructType>
+                <enumKeyMap>
+                    <entry>
+                        <key>Foo</key>
+                        <value>1</value>
+                    </entry>
+                    <entry>
+                        <key>Bar</key>
+                        <value>2</value>
+                    </entry>
+                    <entry>
+                        <key>Unknown</key>
+                        <value>3</value>
+                    </entry>
+                </enumKeyMap>
+            </StructType>
+        """.trimIndent()
+        testRoundTrip(expected, payload, ::serializeStructTypeDocument, ::deserializeStructTypeDocument)
+    }
 }

@@ -62,6 +62,11 @@ map FooEnumMap {
     value: FooEnum,
 }
 
+map FooEnumKeyMap {
+    key: FooEnum,
+    value: Integer
+}
+
 @timestampFormat("date-time")
 timestamp DateTime
 
@@ -134,6 +139,8 @@ structure MapTypesMixin {
     sparseMap: SparseStringMap,
     nestedMap: NestedStringMap,
     listMap: StringListMap,
+    enumValueMap: FooEnumMap,
+    enumKeyMap: FooEnumKeyMap,
 }
 
 @mixin
