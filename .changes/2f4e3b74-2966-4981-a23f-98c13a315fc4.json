@@ -1,0 +1,8 @@
+{
+    "id": "2f4e3b74-2966-4981-a23f-98c13a315fc4",
+    "type": "bugfix",
+    "description": "Disable [OkHttp's transparent response decompression](https://square.github.io/okhttp/features/calls/#rewriting-requests) by manually specifying `Accept-Encoding: identity` in requests",
+    "issues": [
+        "awslabs/smithy-kotlin#1041"
+    ]
+}
