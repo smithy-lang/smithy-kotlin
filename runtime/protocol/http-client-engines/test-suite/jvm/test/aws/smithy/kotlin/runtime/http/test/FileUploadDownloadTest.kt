@@ -6,6 +6,7 @@
 package aws.smithy.kotlin.runtime.http.test
 
 import aws.smithy.kotlin.runtime.content.asByteStream
+import aws.smithy.kotlin.runtime.content.toByteArray
 import aws.smithy.kotlin.runtime.content.writeToFile
 import aws.smithy.kotlin.runtime.hashing.sha256
 import aws.smithy.kotlin.runtime.http.*
@@ -16,8 +17,11 @@ import aws.smithy.kotlin.runtime.http.test.util.test
 import aws.smithy.kotlin.runtime.http.test.util.testSetup
 import aws.smithy.kotlin.runtime.testing.RandomTempFile
 import aws.smithy.kotlin.runtime.text.encoding.encodeToHex
+import java.io.ByteArrayInputStream
+import java.util.zip.GZIPInputStream
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 import kotlin.test.fail
 
 // extra sanity check that files work end-to-end
@@ -68,6 +72,35 @@ class FileUploadDownloadTest : AbstractEngineTest() {
                 val readSha256 = file.readBytes().sha256().encodeToHex()
                 assertEquals(expectedSha256, readSha256)
                 assertEquals(contentLength, file.length())
+            } finally {
+                call.complete()
+            }
+        }
+    }
+
+    // https://github.com/awslabs/smithy-kotlin/issues/1041
+    @Test
+    fun testDownloadCompressedPayload() = testEngines {
+        test { _, client ->
+            val req = HttpRequest {
+                testSetup()
+                url.path.decoded = "/download/gzipped"
+            }
+
+            val call = client.call(req)
+            try {
+                assertEquals(HttpStatusCode.OK, call.response.status)
+                assertEquals("gzip", call.response.headers["Content-Encoding"]) // Verify response isn't decompressed
+
+                val body = checkNotNull(call.response.body.toByteStream()).toByteArray()
+                assertTrue(body.size < 1024) // Uncompressed payload is 1024 bytes; verify compressed body is smaller
+
+                val uncompressed = ByteArrayInputStream(body).use { baStream ->
+                    GZIPInputStream(baStream).use { gzStream ->
+                        gzStream.readAllBytes()
+                    }
+                }
+                assertEquals(1024, uncompressed.size)
             } finally {
                 call.complete()
             }

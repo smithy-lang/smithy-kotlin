@@ -86,6 +86,7 @@ class OkHttpRequestTest {
         assertEquals(listOf("\uD83E\uDD7D"), actual.headers("foo"))
     }
 
+    // https://github.com/awslabs/smithy-kotlin/issues/1041
     @Test
     fun itAddsAcceptEncodingHeader() {
         val url = Url.parse("https://aws.amazon.com")
@@ -102,6 +103,7 @@ class OkHttpRequestTest {
         assertEquals(listOf("identity"), actual.headers("Accept-Encoding"))
     }
 
+    // https://github.com/awslabs/smithy-kotlin/issues/1041
     @Test
     fun itDoesNotModifyAcceptEncodingHeaderIfAlreadySet() {
         val url = Url.parse("https://aws.amazon.com")
