@@ -25,6 +25,7 @@ public abstract interface annotation class aws/smithy/kotlin/runtime/InternalApi
 }
 
 public abstract interface class aws/smithy/kotlin/runtime/ProtocolResponse {
+	public abstract fun getSummary ()Ljava/lang/String;
 }
 
 public class aws/smithy/kotlin/runtime/SdkBaseException : java/lang/RuntimeException {
@@ -58,6 +59,7 @@ public class aws/smithy/kotlin/runtime/ServiceException : aws/smithy/kotlin/runt
 	public fun <init> (Ljava/lang/String;)V
 	public fun <init> (Ljava/lang/String;Ljava/lang/Throwable;)V
 	public fun <init> (Ljava/lang/Throwable;)V
+	protected fun getDisplayMetadata ()Ljava/util/List;
 	public fun getMessage ()Ljava/lang/String;
 	public synthetic fun getSdkErrorMetadata ()Laws/smithy/kotlin/runtime/ErrorMetadata;
 	public fun getSdkErrorMetadata ()Laws/smithy/kotlin/runtime/ServiceErrorMetadata;
