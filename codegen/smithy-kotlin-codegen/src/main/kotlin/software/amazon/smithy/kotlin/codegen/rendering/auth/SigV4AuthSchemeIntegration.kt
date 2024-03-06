@@ -186,29 +186,36 @@ private object Sigv4EndpointCustomization : EndpointCustomization {
 // SigV4a requires SigV4 so SigV4 integration renders SigV4a auth scheme.
 // See comment in example model: https://smithy.io/2.0/aws/aws-auth.html?highlight=sigv4#aws-auth-sigv4a-trait
 private fun renderAuthSchemes(writer: KotlinWriter, authSchemes: Expression, expressionRenderer: ExpressionRenderer) {
-    writer.writeInline("#T to ", RuntimeTypes.SmithyClient.Endpoints.SigningContextAttributeKey)
-    writer.withBlock("listOf(", ")") {
-        authSchemes.toNode().expectArrayNode().forEach {
-            val scheme = it.expectObjectNode()
-            val schemeName = scheme.expectStringMember("name").value
+    val schemes = authSchemes.toNode().expectArrayNode().filter {
+        val name = it.expectObjectNode().expectStringMember("name").value
+        name == "sigv4" || name == "sigv4a"
+    }.takeIf { it.isNotEmpty() }
 
-            val authFactoryFn = when (schemeName) {
-                "sigv4" -> RuntimeTypes.Auth.HttpAuthAws.sigV4
-                "sigv4a" -> RuntimeTypes.Auth.HttpAuthAws.sigV4A
-                else -> return@forEach
-            }
+    schemes?.let {
+        writer.writeInline("#T to ", RuntimeTypes.SmithyClient.Endpoints.SigningContextAttributeKey)
+        writer.withBlock("listOf(", ")") {
+            schemes.forEach {
+                val scheme = it.expectObjectNode()
+                val schemeName = scheme.expectStringMember("name").value
 
-            withBlock("#T(", "),", authFactoryFn) {
-                // we delegate back to the expression visitor for each of these fields because it's possible to
-                // encounter template strings throughout
+                val authFactoryFn = when (schemeName) {
+                    "sigv4" -> RuntimeTypes.Auth.HttpAuthAws.sigV4
+                    "sigv4a" -> RuntimeTypes.Auth.HttpAuthAws.sigV4A
+                    else -> return@forEach
+                }
 
-                writeInline("serviceName = ")
-                renderOrElse(expressionRenderer, scheme.getStringMember("signingName"), "null")
+                withBlock("#T(", "),", authFactoryFn) {
+                    // we delegate back to the expression visitor for each of these fields because it's possible to
+                    // encounter template strings throughout
 
-                writeInline("disableDoubleUriEncode = ")
-                renderOrElse(expressionRenderer, scheme.getBooleanMember("disableDoubleEncoding"), "false")
+                    writeInline("serviceName = ")
+                    renderOrElse(expressionRenderer, scheme.getStringMember("signingName"), "null")
 
-                renderFieldsForScheme(writer, scheme, expressionRenderer)
+                    writeInline("disableDoubleUriEncode = ")
+                    renderOrElse(expressionRenderer, scheme.getBooleanMember("disableDoubleEncoding"), "false")
+
+                    renderFieldsForScheme(writer, scheme, expressionRenderer)
+                }
             }
         }
     }

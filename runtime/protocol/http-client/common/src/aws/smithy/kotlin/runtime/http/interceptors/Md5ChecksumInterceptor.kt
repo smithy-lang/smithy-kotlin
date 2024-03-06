@@ -19,36 +19,36 @@ import aws.smithy.kotlin.runtime.text.encoding.encodeBase64String
  * See:
  *   - https://awslabs.github.io/smithy/1.0/spec/core/behavior-traits.html#httpchecksumrequired-trait
  *   - https://datatracker.ietf.org/doc/html/rfc1864.html
+ * @param block An optional function which parses the input [I] to determine if the `Content-MD5` header should be set.
+ * If not provided, the default behavior will set the header.
  */
 @InternalApi
 public class Md5ChecksumInterceptor<I>(
     private val block: ((input: I) -> Boolean)? = null,
-) : HttpInterceptor {
+) : AbstractChecksumInterceptor() {
+    override suspend fun modifyBeforeSigning(context: ProtocolRequestInterceptorContext<Any, HttpRequest>): HttpRequest {
+        @Suppress("UNCHECKED_CAST")
+        val input = context.request as I
 
-    private var shouldInjectMD5Header: Boolean = false
-
-    override fun readAfterSerialization(context: ProtocolRequestInterceptorContext<Any, HttpRequest>) {
-        shouldInjectMD5Header = block?.let {
-            @Suppress("UNCHECKED_CAST")
-            val input = context.request as I
-            it(input)
-        } ?: true
-    }
-
-    override suspend fun modifyBeforeRetryLoop(context: ProtocolRequestInterceptorContext<Any, HttpRequest>): HttpRequest {
-        if (!shouldInjectMD5Header) {
+        val injectMd5Header = block?.invoke(input) ?: true
+        if (!injectMd5Header) {
             return context.protocolRequest
         }
 
-        val checksum = when (val body = context.protocolRequest.body) {
+        return super.modifyBeforeSigning(context)
+    }
+
+    public override suspend fun calculateChecksum(context: ProtocolRequestInterceptorContext<Any, HttpRequest>): String? =
+        when (val body = context.protocolRequest.body) {
             is HttpBody.Bytes -> body.bytes().md5().encodeBase64String()
             else -> null
         }
 
-        return checksum?.let {
-            val req = context.protocolRequest.toBuilder()
-            req.header("Content-MD5", it)
-            req.build()
-        } ?: context.protocolRequest
+    public override fun applyChecksum(context: ProtocolRequestInterceptorContext<Any, HttpRequest>, checksum: String): HttpRequest {
+        val req = context.protocolRequest.toBuilder()
+        if (!req.headers.contains("Content-MD5")) {
+            req.header("Content-MD5", checksum)
+        }
+        return req.build()
     }
 }

@@ -8,7 +8,6 @@ package software.amazon.smithy.kotlin.codegen.rendering.serde
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.kotlin.codegen.core.RenderingContext
 import software.amazon.smithy.kotlin.codegen.core.RuntimeTypes
-import software.amazon.smithy.kotlin.codegen.core.addImport
 import software.amazon.smithy.kotlin.codegen.core.defaultName
 import software.amazon.smithy.kotlin.codegen.model.expectShape
 import software.amazon.smithy.kotlin.codegen.model.expectTrait
@@ -78,7 +77,6 @@ open class XmlSerdeDescriptorGenerator(
         nameSuffix: String,
     ): List<SdkFieldDescriptorTrait> {
         ctx.writer.addImport(
-            RuntimeTypes.Serde.SerdeXml.XmlDeserializer,
             RuntimeTypes.Serde.SerdeXml.XmlSerialName,
         )
 

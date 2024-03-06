@@ -124,6 +124,7 @@ public class AwsHttpSigner(private val config: Config) : HttpSigner {
         val contextUseDoubleUriEncode = attributes.getOrNull(AwsSigningAttributes.UseDoubleUriEncode)
         val contextNormalizeUriPath = attributes.getOrNull(AwsSigningAttributes.NormalizeUriPath)
         val contextSigningServiceName = attributes.getOrNull(AwsSigningAttributes.SigningService)
+        val contextOmitSessionToken = attributes.getOrNull(AwsSigningAttributes.OmitSessionToken)
 
         val enableAwsChunked = attributes.getOrNull(AwsSigningAttributes.EnableAwsChunked) ?: false
 
@@ -143,7 +144,7 @@ public class AwsHttpSigner(private val config: Config) : HttpSigner {
                 ?: (Instant.now() + (attributes.getOrNull(HttpOperationContext.ClockSkew) ?: Duration.ZERO))
 
             signatureType = config.signatureType
-            omitSessionToken = config.omitSessionToken
+            omitSessionToken = contextOmitSessionToken ?: config.omitSessionToken
             normalizeUriPath = contextNormalizeUriPath ?: config.normalizeUriPath
             useDoubleUriEncode = contextUseDoubleUriEncode ?: config.useDoubleUriEncode
             expiresAfter = config.expiresAfter

@@ -1,5 +1,16 @@
 # Changelog
 
+## [1.0.16] - 02/28/2024
+
+### Features
+* Add support for S3 Express One Zone
+
+### Fixes
+* [#1220](https://github.com/awslabs/aws-sdk-kotlin/issues/1220) Refactor XML deserialization to handle flat collections
+
+### Miscellaneous
+* Refactor exception codegen to delegate message field to exception base class
+
 ## [1.0.15] - 02/19/2024
 
 ### Features

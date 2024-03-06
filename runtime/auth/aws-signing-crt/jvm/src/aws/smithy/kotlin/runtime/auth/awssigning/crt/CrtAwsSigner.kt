@@ -22,19 +22,30 @@ import aws.sdk.kotlin.crt.auth.signing.AwsSigningAlgorithm as CrtSigningAlgorith
 import aws.sdk.kotlin.crt.auth.signing.AwsSigningConfig as CrtSigningConfig
 import aws.sdk.kotlin.crt.http.Headers as CrtHeaders
 
+private const val S3_EXPRESS_HEADER_NAME = "X-Amz-S3session-Token"
+
 public object CrtAwsSigner : AwsSigner {
     override suspend fun sign(request: HttpRequest, config: AwsSigningConfig): AwsSigningResult<HttpRequest> {
         val isUnsigned = config.hashSpecification is HashSpecification.UnsignedPayload
         val isAwsChunked = request.headers.contains("Content-Encoding", "aws-chunked")
-        val crtRequest = request.toSignableCrtRequest(isUnsigned, isAwsChunked)
-        val crtConfig = config.toCrtSigningConfig()
+        val isS3Express = request.headers.contains(S3_EXPRESS_HEADER_NAME)
 
-        val crtResult = CrtSigner.sign(crtRequest, crtConfig)
+        val requestBuilder = request.toBuilder()
+
+        val crtConfig = config.toCrtSigningConfig().toBuilder()
+        if (isS3Express) {
+            crtConfig.algorithm = CrtSigningAlgorithm.SIGV4_S3EXPRESS
+            crtConfig.omitSessionToken = false
+            requestBuilder.headers.remove(S3_EXPRESS_HEADER_NAME) // CRT signer fails if this header is already present
+        }
+
+        val crtRequest = requestBuilder.build().toSignableCrtRequest(isUnsigned, isAwsChunked)
+
+        val crtResult = CrtSigner.sign(crtRequest, crtConfig.build())
         coroutineContext.debug<CrtAwsSigner> { "Calculated signature: ${crtResult.signature.decodeToString()}" }
 
         val crtSignedResult = checkNotNull(crtResult.signedRequest) { "Signed request unexpectedly null" }
 
-        val requestBuilder = request.toBuilder()
         requestBuilder.update(crtSignedResult)
         return AwsSigningResult(requestBuilder.build(), crtResult.signature)
     }

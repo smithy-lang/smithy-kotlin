@@ -55,6 +55,7 @@ public final class aws/smithy/kotlin/runtime/auth/awssigning/AwsSigningAttribute
 	public final fun getEnableAwsChunked ()Laws/smithy/kotlin/runtime/collections/AttributeKey;
 	public final fun getHashSpecification ()Laws/smithy/kotlin/runtime/collections/AttributeKey;
 	public final fun getNormalizeUriPath ()Laws/smithy/kotlin/runtime/collections/AttributeKey;
+	public final fun getOmitSessionToken ()Laws/smithy/kotlin/runtime/collections/AttributeKey;
 	public final fun getRequestSignature ()Laws/smithy/kotlin/runtime/collections/AttributeKey;
 	public final fun getSignedBodyHeader ()Laws/smithy/kotlin/runtime/collections/AttributeKey;
 	public final fun getSigner ()Laws/smithy/kotlin/runtime/collections/AttributeKey;

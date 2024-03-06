@@ -80,8 +80,10 @@ class DefaultEndpointProviderGenerator(
 
     private val propertyRenderers = endpointCustomizations
         .map { it.propertyRenderers }
-        .fold(mutableMapOf<String, EndpointPropertyRenderer>()) { acc, propRenderers ->
-            acc.putAll(propRenderers)
+        .fold(mutableMapOf<String, MutableList<EndpointPropertyRenderer>>()) { acc, propRenderers ->
+            propRenderers.forEach { (key, propRenderer) ->
+                acc[key] = acc.getOrDefault(key, mutableListOf()).also { it.add(propRenderer) }
+            }
             acc
         }
 
@@ -190,7 +192,9 @@ class DefaultEndpointProviderGenerator(
 
                             // caller has a chance to generate their own value for a recognized property
                             if (kStr in propertyRenderers) {
-                                propertyRenderers[kStr]!!(writer, v, this@DefaultEndpointProviderGenerator)
+                                propertyRenderers[kStr]!!.forEach { renderer ->
+                                    renderer(writer, v, this@DefaultEndpointProviderGenerator)
+                                }
                                 return@forEach
                             }
 

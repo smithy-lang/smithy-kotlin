@@ -75,13 +75,14 @@ afterEvaluate {
 
 val codegen by configurations.getting
 dependencies {
-    codegen(project(":tests:benchmarks:serde-benchmarks-codegen"))
+    codegen(project(":tests:codegen:serde-codegen-support"))
     codegen(libs.smithy.cli)
     codegen(libs.smithy.model)
 }
 
 tasks.generateSmithyProjections {
     smithyBuildConfigs.set(files("smithy-build.json"))
+    buildClasspath.set(codegen)
 }
 
 data class BenchmarkModel(val name: String) {

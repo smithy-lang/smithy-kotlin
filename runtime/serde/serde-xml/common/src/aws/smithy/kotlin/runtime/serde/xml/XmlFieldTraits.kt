@@ -168,7 +168,7 @@ internal fun SdkFieldDescriptor.toQualifiedNames(
 /**
  * Determines if the qualified name of this field descriptor matches the given name.
  */
-internal fun SdkFieldDescriptor.nameMatches(other: String): Boolean = toQualifiedNames().any { it.tag == other }
+internal fun SdkFieldDescriptor.nameMatches(other: String): Boolean = toQualifiedNames().any { it.toString() == other }
 
 /**
  * Requires that the given name matches one of this field descriptor's qualified names.

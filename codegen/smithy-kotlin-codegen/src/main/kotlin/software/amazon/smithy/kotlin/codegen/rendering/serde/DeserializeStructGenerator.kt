@@ -605,5 +605,3 @@ open class DeserializeStructGenerator(
         }
     }
 }
-
-private fun nullabilitySuffix(isSparse: Boolean): String = if (isSparse) "?" else ""

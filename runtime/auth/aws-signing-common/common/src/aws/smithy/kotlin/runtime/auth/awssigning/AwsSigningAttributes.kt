@@ -86,4 +86,9 @@ public object AwsSigningAttributes {
      * @see <a href="https://docs.aws.amazon.com/AmazonS3/latest/API/sigv4-streaming.html">SigV4 Streaming</a>
      */
     public val EnableAwsChunked: AttributeKey<Boolean> = AttributeKey("aws.smithy.kotlin.signing#EnableAwsChunked")
+
+    /**
+     * Flag indicating whether the X-Amz-Security-Token header should be omitted from the canonical request during signing.
+     */
+    public val OmitSessionToken: AttributeKey<Boolean> = AttributeKey("aws.smithy.kotlin.signing#OmitSessionToken")
 }

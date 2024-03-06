@@ -86,10 +86,51 @@ class ExceptionGeneratorTest {
         clientErrorTestContents.shouldContainWithDiff(expectedClientClassDecl)
 
         val expectedServerClassDecl = """
-            class InternalServerException private constructor(builder: Builder) : TestException() {
+            class InternalServerException private constructor(builder: Builder) : TestException(builder.message) {
         """.trimIndent()
 
         serverErrorTestContents.shouldContainWithDiff(expectedServerClassDecl)
+    }
+
+    @Test
+    fun `throwable message special cases`() {
+        val model = """
+        @httpError(500)
+        @error("server")
+        structure CapitalizedMessageMemberException {
+            Message: String
+        }
+        
+        @httpError(500)
+        @error("server")
+        structure NoMessageMemberException { }
+        """
+            .prependNamespaceAndService(version = "2.0")
+            .toSmithyModel()
+
+        val expectedCapMessageClassDecl = """
+            class CapitalizedMessageMemberException private constructor(builder: Builder) : TestException(builder.message) {
+        """.trimIndent()
+
+        val expectedNoMessageClassDecl = """
+            class NoMessageMemberException private constructor(builder: Builder) : TestException() {
+        """.trimIndent()
+
+        val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model)
+
+        listOf(
+            "com.test#CapitalizedMessageMemberException" to expectedCapMessageClassDecl,
+            "com.test#NoMessageMemberException" to expectedNoMessageClassDecl,
+        ).forEach { (shapeId, expected) ->
+
+            val writer = KotlinWriter(TestModelDefault.NAMESPACE)
+            val struct = model.expectShape<StructureShape>(shapeId)
+            val renderingCtx = RenderingContext(writer, struct, model, provider, model.defaultSettings())
+            StructureGenerator(renderingCtx).render()
+
+            val generated = writer.toString()
+            generated.shouldContainOnlyOnceWithDiff(expected)
+        }
     }
 
     @Test
@@ -107,16 +148,6 @@ class ExceptionGeneratorTest {
         // sanity check since we are testing fragments
         clientErrorTestContents.assertBalancedBracesAndParens()
         serverErrorTestContents.assertBalancedBracesAndParens()
-    }
-
-    @Test
-    fun `error generator renders override with message member`() {
-        val expected = """
-    override val message: kotlin.String = requireNotNull(builder.message) { "A non-null value must be provided for message" }
-"""
-
-        serverErrorTestContents.shouldContainWithDiff(expected)
-        clientErrorTestContents.shouldNotContain(expected)
     }
 
     @Test
