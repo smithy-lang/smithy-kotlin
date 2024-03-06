@@ -60,6 +60,20 @@ object KotlinTypes {
             dependency(KotlinDependency.KOTLIN_STDLIB)
         }
 
+        private fun setType(
+            setType: Symbol,
+            target: Symbol,
+            isNullable: Boolean = false,
+            default: String? = null,
+        ): Symbol = buildSymbol {
+            name = "${setType.fullName}<${target.fullName}>"
+            nullable = isNullable
+            defaultValue = default
+            reference(setType)
+            reference(target)
+            dependency(KotlinDependency.KOTLIN_STDLIB)
+        }
+
         /**
          * Convenience function to get a `List<target>` as a symbol
          */
@@ -77,6 +91,15 @@ object KotlinTypes {
             isNullable: Boolean = false,
             default: String? = null,
         ): Symbol = listType(MutableList, target, isNullable, default)
+
+        /**
+         * Convenience function to get a `Set<target>` as a symbol
+         */
+        fun set(
+            target: Symbol,
+            isNullable: Boolean = false,
+            default: String? = null,
+        ): Symbol = setType(Set, target, isNullable, default)
     }
 
     object Jvm : RuntimeTypePackage(KotlinDependency.KOTLIN_STDLIB, "jvm") {

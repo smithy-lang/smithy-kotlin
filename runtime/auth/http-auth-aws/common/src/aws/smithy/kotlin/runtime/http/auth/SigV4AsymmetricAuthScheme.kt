@@ -32,19 +32,6 @@ public class SigV4AsymmetricAuthScheme(
         },
     )
 
-    public constructor(
-        awsSigner: AwsSigner,
-        serviceName: String? = null,
-        clientSigningRegionSet: List<String>? = null,
-    ) : this (
-        AwsHttpSigner.Config().apply {
-            signer = awsSigner
-            service = serviceName
-            algorithm = AwsSigningAlgorithm.SIGV4_ASYMMETRIC
-            clientSigv4aSigningRegionSet = clientSigningRegionSet
-        },
-    )
-
     // FIXME - remove when we add full support for SigV4A in codegen
     override fun identityProvider(identityProviderConfig: IdentityProviderConfig): IdentityProvider =
         identityProviderConfig.identityProviderForScheme(AuthSchemeId.AwsSigV4Asymmetric)

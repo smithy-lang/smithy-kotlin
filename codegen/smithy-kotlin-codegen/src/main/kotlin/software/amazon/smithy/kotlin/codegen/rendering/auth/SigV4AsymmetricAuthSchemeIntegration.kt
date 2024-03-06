@@ -10,8 +10,10 @@ import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.codegen.core.SymbolReference
 import software.amazon.smithy.kotlin.codegen.KotlinSettings
 import software.amazon.smithy.kotlin.codegen.core.*
+import software.amazon.smithy.kotlin.codegen.integration.AppendingSectionWriter
 import software.amazon.smithy.kotlin.codegen.integration.AuthSchemeHandler
 import software.amazon.smithy.kotlin.codegen.integration.KotlinIntegration
+import software.amazon.smithy.kotlin.codegen.integration.SectionWriterBinding
 import software.amazon.smithy.kotlin.codegen.lang.KotlinTypes
 import software.amazon.smithy.kotlin.codegen.model.asNullable
 import software.amazon.smithy.kotlin.codegen.model.buildSymbol
@@ -42,8 +44,8 @@ class SigV4AsymmetricAuthSchemeIntegration : KotlinIntegration {
         if (modelHasSigV4aTrait(ctx)) {
             listOf(
                 ConfigProperty {
-                    name = "sigv4aSigningRegionSet"
-                    symbol = KotlinTypes.Collections.list(KotlinTypes.String).asNullable()
+                    name = "sigV4aSigningRegionSet"
+                    symbol = KotlinTypes.Collections.set(KotlinTypes.String).asNullable()
                     baseClass = RuntimeTypes.SmithyClient.Config.SigV4aClientConfig
                     useNestedBuilderBaseClass()
                     documentation = """
@@ -54,6 +56,23 @@ class SigV4AsymmetricAuthSchemeIntegration : KotlinIntegration {
         } else {
             emptyList()
         }
+
+    override val sectionWriters: List<SectionWriterBinding>
+        get() = listOf(
+            SectionWriterBinding(HttpProtocolClientGenerator.MergeServiceDefaults, renderMergeServiceDefaults),
+        )
+}
+
+private val renderMergeServiceDefaults = AppendingSectionWriter { writer ->
+    val ctx = writer.getContextValue(HttpProtocolClientGenerator.ClientInitializer.GenerationContext)
+    if (modelHasSigV4aTrait(ctx)) {
+        writer.putIfAbsent(
+            RuntimeTypes.Auth.Signing.AwsSigningCommon.AwsSigningAttributes,
+            "SigningRegionSet",
+            "config.sigV4aSigningRegionSet",
+            true,
+        )
+    }
 }
 
 private class SigV4AsymmetricAuthSchemeHandler : AuthSchemeHandler {
@@ -86,7 +105,7 @@ private class SigV4AsymmetricAuthSchemeHandler : AuthSchemeHandler {
 
     override fun instantiateAuthSchemeExpr(ctx: ProtocolGenerator.GenerationContext, writer: KotlinWriter) {
         val signingService = AwsSignatureVersion4Asymmetric.signingServiceName(ctx.service)
-        writer.write("#T(#T, #S, config.sigv4aSigningRegionSet)", RuntimeTypes.Auth.HttpAuthAws.SigV4AsymmetricAuthScheme, RuntimeTypes.Auth.Signing.AwsSigningStandard.DefaultAwsSigner, signingService)
+        writer.write("#T(#T, #S)", RuntimeTypes.Auth.HttpAuthAws.SigV4AsymmetricAuthScheme, RuntimeTypes.Auth.Signing.AwsSigningStandard.DefaultAwsSigner, signingService)
     }
 }
 

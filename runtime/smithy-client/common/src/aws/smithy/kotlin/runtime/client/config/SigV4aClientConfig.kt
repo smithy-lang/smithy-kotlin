@@ -11,12 +11,12 @@ public interface SigV4aClientConfig {
     /**
      * The set of regions to use when signing a request with SigV4a. If provided it will override endpoints metadata.
      */
-    public val sigv4aSigningRegionSet: List<String>?
+    public val sigV4aSigningRegionSet: Set<String>?
 
     public interface Builder {
         /**
          * The set of regions to use when signing a request with SigV4a. If provided it will override endpoints metadata.
          */
-        public var sigv4aSigningRegionSet: List<String>?
+        public var sigV4aSigningRegionSet: Set<String>?
     }
 }

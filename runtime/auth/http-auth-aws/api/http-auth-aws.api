@@ -11,7 +11,6 @@ public final class aws/smithy/kotlin/runtime/http/auth/AwsHttpSigner$Companion {
 public final class aws/smithy/kotlin/runtime/http/auth/AwsHttpSigner$Config {
 	public fun <init> ()V
 	public final fun getAlgorithm ()Laws/smithy/kotlin/runtime/auth/awssigning/AwsSigningAlgorithm;
-	public final fun getClientSigv4aSigningRegionSet ()Ljava/util/List;
 	public final fun getExpiresAfter-FghU774 ()Lkotlin/time/Duration;
 	public final fun getNormalizeUriPath ()Z
 	public final fun getOmitSessionToken ()Z
@@ -23,7 +22,6 @@ public final class aws/smithy/kotlin/runtime/http/auth/AwsHttpSigner$Config {
 	public final fun getUseDoubleUriEncode ()Z
 	public final fun isUnsignedPayload ()Z
 	public final fun setAlgorithm (Laws/smithy/kotlin/runtime/auth/awssigning/AwsSigningAlgorithm;)V
-	public final fun setClientSigv4aSigningRegionSet (Ljava/util/List;)V
 	public final fun setExpiresAfter-BwNAW2A (Lkotlin/time/Duration;)V
 	public final fun setNormalizeUriPath (Z)V
 	public final fun setOmitSessionToken (Z)V
@@ -43,8 +41,6 @@ public final class aws/smithy/kotlin/runtime/http/auth/EndpointAuthKt {
 public final class aws/smithy/kotlin/runtime/http/auth/SigV4AsymmetricAuthScheme : aws/smithy/kotlin/runtime/http/auth/AuthScheme {
 	public fun <init> (Laws/smithy/kotlin/runtime/auth/awssigning/AwsSigner;Ljava/lang/String;)V
 	public synthetic fun <init> (Laws/smithy/kotlin/runtime/auth/awssigning/AwsSigner;Ljava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public fun <init> (Laws/smithy/kotlin/runtime/auth/awssigning/AwsSigner;Ljava/lang/String;Ljava/util/List;)V
-	public synthetic fun <init> (Laws/smithy/kotlin/runtime/auth/awssigning/AwsSigner;Ljava/lang/String;Ljava/util/List;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public fun <init> (Laws/smithy/kotlin/runtime/http/auth/AwsHttpSigner$Config;)V
 	public fun getSchemeId-DepwgT4 ()Ljava/lang/String;
 	public fun getSigner ()Laws/smithy/kotlin/runtime/http/auth/AwsHttpSigner;
