@@ -121,6 +121,7 @@ public class AwsHttpSigner(private val config: Config) : HttpSigner {
         val contextSignedBodyHeader = attributes.getOrNull(AwsSigningAttributes.SignedBodyHeader)
         val contextSigningRegion = attributes[AwsSigningAttributes.SigningRegion]
         val contextSigningRegionSet = attributes.getOrNull(AwsSigningAttributes.SigningRegionSet)
+        val configSigningRegionSet = attributes.getOrNull(AwsSigningAttributes.ConfigSigningRegionSet)
         val contextUseDoubleUriEncode = attributes.getOrNull(AwsSigningAttributes.UseDoubleUriEncode)
         val contextNormalizeUriPath = attributes.getOrNull(AwsSigningAttributes.NormalizeUriPath)
         val contextSigningServiceName = attributes.getOrNull(AwsSigningAttributes.SigningService)
@@ -135,6 +136,7 @@ public class AwsHttpSigner(private val config: Config) : HttpSigner {
             algorithm = config.algorithm
 
             region = when {
+                algorithm == AwsSigningAlgorithm.SIGV4_ASYMMETRIC && !configSigningRegionSet.isNullOrEmpty() -> configSigningRegionSet.joinToString(",")
                 algorithm == AwsSigningAlgorithm.SIGV4_ASYMMETRIC && !contextSigningRegionSet.isNullOrEmpty() -> contextSigningRegionSet.joinToString(",")
                 else -> contextSigningRegion
             }

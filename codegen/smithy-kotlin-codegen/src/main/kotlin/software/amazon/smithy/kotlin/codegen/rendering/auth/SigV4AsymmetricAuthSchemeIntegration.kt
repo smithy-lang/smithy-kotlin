@@ -68,7 +68,7 @@ private val renderMergeServiceDefaults = AppendingSectionWriter { writer ->
     if (modelHasSigV4aTrait(ctx)) {
         writer.putIfAbsent(
             RuntimeTypes.Auth.Signing.AwsSigningCommon.AwsSigningAttributes,
-            "SigningRegionSet",
+            "ConfigSigningRegionSet",
             "config.sigV4aSigningRegionSet",
             true,
         )
