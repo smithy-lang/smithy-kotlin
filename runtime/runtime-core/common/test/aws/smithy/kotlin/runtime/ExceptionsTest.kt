@@ -60,8 +60,8 @@ class ExceptionsTest {
         }
         assertEquals(
             "Service returned error code $ERROR_CODE, " +
-                    "Error type: $ERROR_TYPE, " +
-                    "Protocol response: $PROTOCOL_RESPONSE_SUMMARY",
+                "Error type: $ERROR_TYPE, " +
+                "Protocol response: $PROTOCOL_RESPONSE_SUMMARY",
             e.message,
         )
     }
@@ -76,9 +76,9 @@ class ExceptionsTest {
         }
         assertEquals(
             "Service returned error code $ERROR_CODE, " +
-                    "Error type: $ERROR_TYPE, " +
-                    "Protocol response: $PROTOCOL_RESPONSE_SUMMARY, " +
-                    "Request ID: $REQUEST_ID",
+                "Error type: $ERROR_TYPE, " +
+                "Protocol response: $PROTOCOL_RESPONSE_SUMMARY, " +
+                "Request ID: $REQUEST_ID",
             e.message,
         )
     }
