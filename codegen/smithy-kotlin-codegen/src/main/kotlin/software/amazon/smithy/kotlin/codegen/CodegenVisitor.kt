@@ -40,7 +40,7 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Unit>() {
     private val fileManifest: FileManifest = context.fileManifest
     private val symbolProvider: SymbolProvider
     private val writers: KotlinDelegator
-    private val integrations: List<KotlinIntegration>
+    private val integrations: MutableList<KotlinIntegration>
     private val protocolGenerator: ProtocolGenerator?
     private val applicationProtocol: ApplicationProtocol
     private val baseGenerationContext: GenerationContext
@@ -50,20 +50,28 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Unit>() {
         LOGGER.info("Discovering KotlinIntegration providers...")
         integrations = ServiceLoader.load(KotlinIntegration::class.java, classLoader)
             .onEach { integration -> LOGGER.info("Loaded KotlinIntegration: ${integration.javaClass.name}") }
-            .filter { integration -> integration.enabledForService(context.model, settings) } // TODO: Change so we don't filter until previous integrations model modifications are complete
-            .onEach { integration -> LOGGER.info("Enabled KotlinIntegration: ${integration.javaClass.name}") }
             .sortedBy(KotlinIntegration::order)
+            .toMutableList()
+
+        var resolvedModel = context.model
+        val disabledIntegrations = mutableListOf<KotlinIntegration>()
 
         LOGGER.info("Preprocessing model")
+
         // Model pre-processing:
         // 1. Start with the model from the plugin context
         // 2. Apply integrations
         // 3. Flatten error shapes (see: https://github.com/awslabs/smithy/pull/919)
         // 4. Normalize the operations
-        var resolvedModel = context.model
         for (integration in integrations) {
-            resolvedModel = integration.preprocessModel(resolvedModel, settings)
+            if (integration.enabledForService(resolvedModel, settings)) {
+                LOGGER.info("Enabled KotlinIntegration: ${integration.javaClass.name}")
+                resolvedModel = integration.preprocessModel(resolvedModel, settings)
+            } else {
+                disabledIntegrations.add(integration)
+            }
         }
+        integrations.removeAll(disabledIntegrations)
 
         resolvedModel = ModelTransformer.create()
             .copyServiceErrorsToOperations(resolvedModel, settings.getService(resolvedModel))
