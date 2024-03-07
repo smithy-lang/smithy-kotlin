@@ -205,7 +205,6 @@ object RuntimeTypes {
         object Config : RuntimeTypePackage(KotlinDependency.SMITHY_CLIENT, "config") {
             val RequestCompressionConfig = symbol("RequestCompressionConfig")
             val CompressionClientConfig = symbol("CompressionClientConfig")
-            val SigV4aClientConfig = symbol("SigV4aClientConfig")
         }
 
         object Endpoints : RuntimeTypePackage(KotlinDependency.SMITHY_CLIENT, "endpoints") {
@@ -300,6 +299,7 @@ object RuntimeTypes {
                 val Credentials = symbol("Credentials")
                 val CredentialsProvider = symbol("CredentialsProvider")
                 val CredentialsProviderConfig = symbol("CredentialsProviderConfig")
+                val SigV4aClientConfig = symbol("SigV4aClientConfig")
             }
         }
 

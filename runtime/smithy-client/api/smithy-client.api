@@ -261,15 +261,6 @@ public final class aws/smithy/kotlin/runtime/client/config/RetryMode : java/lang
 	public static fun values ()[Laws/smithy/kotlin/runtime/client/config/RetryMode;
 }
 
-public abstract interface class aws/smithy/kotlin/runtime/client/config/SigV4aClientConfig {
-	public abstract fun getSigV4aSigningRegionSet ()Ljava/util/Set;
-}
-
-public abstract interface class aws/smithy/kotlin/runtime/client/config/SigV4aClientConfig$Builder {
-	public abstract fun getSigV4aSigningRegionSet ()Ljava/util/Set;
-	public abstract fun setSigV4aSigningRegionSet (Ljava/util/Set;)V
-}
-
 public final class aws/smithy/kotlin/runtime/client/endpoints/Endpoint {
 	public fun <init> (Laws/smithy/kotlin/runtime/net/url/Url;Laws/smithy/kotlin/runtime/collections/ValuesMap;)V
 	public synthetic fun <init> (Laws/smithy/kotlin/runtime/net/url/Url;Laws/smithy/kotlin/runtime/collections/ValuesMap;ILkotlin/jvm/internal/DefaultConstructorMarker;)V

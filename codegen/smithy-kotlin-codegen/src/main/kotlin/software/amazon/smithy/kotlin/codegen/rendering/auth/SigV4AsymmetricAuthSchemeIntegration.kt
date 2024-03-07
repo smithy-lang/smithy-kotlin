@@ -46,7 +46,7 @@ class SigV4AsymmetricAuthSchemeIntegration : KotlinIntegration {
                 ConfigProperty {
                     name = "sigV4aSigningRegionSet"
                     symbol = KotlinTypes.Collections.set(KotlinTypes.String).asNullable()
-                    baseClass = RuntimeTypes.SmithyClient.Config.SigV4aClientConfig
+                    baseClass = RuntimeTypes.Auth.Credentials.AwsCredentials.SigV4aClientConfig
                     useNestedBuilderBaseClass()
                     documentation = """
                     The set of regions to use when signing a request with SigV4a. If not provided this will automatically be set by the SDK.

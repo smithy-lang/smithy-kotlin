@@ -136,6 +136,9 @@ public class AwsHttpSigner(private val config: Config) : HttpSigner {
             algorithm = config.algorithm
 
             region = when {
+                // signing region set from client config overrides all other sources like endpoints because it's designed as an
+                // escape hatch for customers to control/limit which regions a request will be valid for (e.g. since some services
+                // use '*')
                 algorithm == AwsSigningAlgorithm.SIGV4_ASYMMETRIC && !configSigningRegionSet.isNullOrEmpty() -> configSigningRegionSet.joinToString(",")
                 algorithm == AwsSigningAlgorithm.SIGV4_ASYMMETRIC && !contextSigningRegionSet.isNullOrEmpty() -> contextSigningRegionSet.joinToString(",")
                 else -> contextSigningRegion
