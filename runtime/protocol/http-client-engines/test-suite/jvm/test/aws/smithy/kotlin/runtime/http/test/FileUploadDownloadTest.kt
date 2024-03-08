@@ -97,7 +97,7 @@ class FileUploadDownloadTest : AbstractEngineTest() {
 
                 val uncompressed = ByteArrayInputStream(body).use { baStream ->
                     GZIPInputStream(baStream).use { gzStream ->
-                        gzStream.readAllBytes()
+                        gzStream.readBytes()
                     }
                 }
                 assertEquals(1024, uncompressed.size)
