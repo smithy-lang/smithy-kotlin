@@ -46,7 +46,9 @@ private data class DefaultHttpResponse(
     override val status: HttpStatusCode,
     override val headers: Headers,
     override val body: HttpBody,
-) : HttpResponse
+) : HttpResponse {
+    override val summary: String = "HTTP ${status.value} ${status.description}"
+}
 
 /**
  * Replace the response body

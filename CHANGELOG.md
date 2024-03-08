@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.0.17] - 03/07/2024
+
+### Features
+* [#1212](https://github.com/awslabs/aws-sdk-kotlin/issues/1212) Add error metadata to ServiceException messages when a service-provided message isn't available
+* [#1212](https://github.com/awslabs/aws-sdk-kotlin/issues/1212) Add request IDs to exception messages where available
+
 ## [1.0.16] - 02/28/2024
 
 ### Features

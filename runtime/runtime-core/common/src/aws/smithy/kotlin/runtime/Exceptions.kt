@@ -70,9 +70,16 @@ public open class ClientException : SdkBaseException {
  * Generic interface that any protocol (e.g. HTTP, MQTT, etc) can extend to provide additional access to
  * protocol specific details.
  */
-public interface ProtocolResponse
+public interface ProtocolResponse {
+    /**
+     * A short string summarizing the response, suitable for display in exception messages or debug scenarios
+     */
+    public val summary: String
+}
 
-private object EmptyProtocolResponse : ProtocolResponse
+private object EmptyProtocolResponse : ProtocolResponse {
+    override val summary: String = "(empty response)"
+}
 
 public open class ServiceErrorMetadata : ErrorMetadata() {
     public companion object {
@@ -149,8 +156,21 @@ public open class ServiceException : SdkBaseException {
 
     public constructor(cause: Throwable?) : super(cause)
 
-    override val message: String?
-        get() = super.message ?: sdkErrorMetadata.errorMessage
+    protected open val displayMetadata: List<String>
+        get() = buildList {
+            val serviceProvidedMessage = super.message ?: sdkErrorMetadata.errorMessage
+            if (serviceProvidedMessage == null) {
+                sdkErrorMetadata.errorCode?.let { add("Service returned error code $it") }
+                add("Error type: ${sdkErrorMetadata.errorType}")
+                add("Protocol response: ${sdkErrorMetadata.protocolResponse.summary}")
+            } else {
+                add(serviceProvidedMessage)
+            }
+            sdkErrorMetadata.requestId?.let { add("Request ID: $it") }
+        }
+
+    override val message: String
+        get() = displayMetadata.joinToString()
 
     override val sdkErrorMetadata: ServiceErrorMetadata = ServiceErrorMetadata()
 }

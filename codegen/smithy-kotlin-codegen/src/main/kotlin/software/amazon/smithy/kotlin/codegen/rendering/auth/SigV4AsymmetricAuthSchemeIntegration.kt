@@ -30,32 +30,28 @@ import software.amazon.smithy.model.shapes.ShapeId
  * Register support for the `aws.auth#sigv4a` auth scheme.
  */
 class SigV4AsymmetricAuthSchemeIntegration : KotlinIntegration {
-    // Needs to happen after the `SigV4AsymmetricTraitCustomization` (-60).
-    override val order: Byte = -50
-
-    // Needs to be true due to the way integrations are filtered out before application and sigV4a customization.
-    // See 'CodegenVisitor' & 'SigV4AsymmetricTraitCustomization'
-    override fun enabledForService(model: Model, settings: KotlinSettings): Boolean = true
+    override fun enabledForService(model: Model, settings: KotlinSettings): Boolean =
+        ServiceIndex
+            .of(model)
+            .getAuthSchemes(settings.service)
+            .values
+            .any { it.javaClass == SigV4ATrait::class.java }
 
     override fun authSchemes(ctx: ProtocolGenerator.GenerationContext): List<AuthSchemeHandler> =
-        if (modelHasSigV4aTrait(ctx)) listOf(SigV4AsymmetricAuthSchemeHandler()) else emptyList()
+        listOf(SigV4AsymmetricAuthSchemeHandler())
 
     override fun additionalServiceConfigProps(ctx: CodegenContext): List<ConfigProperty> =
-        if (modelHasSigV4aTrait(ctx)) {
-            listOf(
-                ConfigProperty {
-                    name = "sigV4aSigningRegionSet"
-                    symbol = KotlinTypes.Collections.set(KotlinTypes.String).asNullable()
-                    baseClass = RuntimeTypes.Auth.Credentials.AwsCredentials.SigV4aClientConfig
-                    useNestedBuilderBaseClass()
-                    documentation = """
-                    The set of regions to use when signing a request with SigV4a. If not provided this will automatically be set by the SDK.
-                    """.trimIndent()
-                },
-            )
-        } else {
-            emptyList()
-        }
+        listOf(
+            ConfigProperty {
+                name = "sigV4aSigningRegionSet"
+                symbol = KotlinTypes.Collections.set(KotlinTypes.String).asNullable()
+                baseClass = RuntimeTypes.Auth.Credentials.AwsCredentials.SigV4aClientConfig
+                useNestedBuilderBaseClass()
+                documentation = """
+                The set of regions to use when signing a request with SigV4a. If not provided this will automatically be set by the SDK.
+                """.trimIndent()
+            },
+        )
 
     override val sectionWriters: List<SectionWriterBinding>
         get() = listOf(
@@ -64,15 +60,12 @@ class SigV4AsymmetricAuthSchemeIntegration : KotlinIntegration {
 }
 
 private val renderMergeServiceDefaults = AppendingSectionWriter { writer ->
-    val ctx = writer.getContextValue(HttpProtocolClientGenerator.ClientInitializer.GenerationContext)
-    if (modelHasSigV4aTrait(ctx)) {
-        writer.putIfAbsent(
-            RuntimeTypes.Auth.Signing.AwsSigningCommon.AwsSigningAttributes,
-            "ConfigSigningRegionSet",
-            "config.sigV4aSigningRegionSet",
-            true,
-        )
-    }
+    writer.putIfAbsent(
+        RuntimeTypes.Auth.Signing.AwsSigningCommon.AwsSigningAttributes,
+        "ConfigSigningRegionSet",
+        "config.sigV4aSigningRegionSet",
+        true,
+    )
 }
 
 private class SigV4AsymmetricAuthSchemeHandler : AuthSchemeHandler {
@@ -108,17 +101,3 @@ private class SigV4AsymmetricAuthSchemeHandler : AuthSchemeHandler {
         writer.write("#T(#T, #S)", RuntimeTypes.Auth.HttpAuthAws.SigV4AsymmetricAuthScheme, RuntimeTypes.Auth.Signing.AwsSigningStandard.DefaultAwsSigner, signingService)
     }
 }
-
-internal fun modelHasSigV4aTrait(ctx: ProtocolGenerator.GenerationContext): Boolean =
-    ServiceIndex
-        .of(ctx.model)
-        .getAuthSchemes(ctx.service)
-        .values
-        .any { it.javaClass == SigV4ATrait::class.java }
-
-internal fun modelHasSigV4aTrait(ctx: CodegenContext): Boolean =
-    ServiceIndex
-        .of(ctx.model)
-        .getAuthSchemes(ctx.settings.service)
-        .values
-        .any { it.javaClass == SigV4ATrait::class.java }
