@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.0.18] - 03/11/2024
+
+### Miscellaneous
+* Bump smithy version to 1.45.0
+
 ## [1.0.17] - 03/07/2024
 
 ### Features
