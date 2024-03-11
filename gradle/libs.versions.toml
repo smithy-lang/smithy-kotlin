@@ -15,7 +15,7 @@ slf4j-v1x-version = "1.7.36"
 crt-kotlin-version = "0.8.5"
 
 # codegen
-smithy-version = "1.42.0"
+smithy-version = "1.45.0"
 smithy-gradle-version = "0.9.0"
 
 # testing
