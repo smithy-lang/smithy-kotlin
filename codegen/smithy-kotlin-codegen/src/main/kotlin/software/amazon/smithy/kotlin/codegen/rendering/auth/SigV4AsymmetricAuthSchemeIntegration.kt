@@ -10,12 +10,17 @@ import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.codegen.core.SymbolReference
 import software.amazon.smithy.kotlin.codegen.KotlinSettings
 import software.amazon.smithy.kotlin.codegen.core.*
+import software.amazon.smithy.kotlin.codegen.integration.AppendingSectionWriter
 import software.amazon.smithy.kotlin.codegen.integration.AuthSchemeHandler
 import software.amazon.smithy.kotlin.codegen.integration.KotlinIntegration
+import software.amazon.smithy.kotlin.codegen.integration.SectionWriterBinding
+import software.amazon.smithy.kotlin.codegen.lang.KotlinTypes
+import software.amazon.smithy.kotlin.codegen.model.asNullable
 import software.amazon.smithy.kotlin.codegen.model.buildSymbol
 import software.amazon.smithy.kotlin.codegen.model.hasTrait
 import software.amazon.smithy.kotlin.codegen.model.knowledge.AwsSignatureVersion4Asymmetric
 import software.amazon.smithy.kotlin.codegen.rendering.protocol.*
+import software.amazon.smithy.kotlin.codegen.rendering.util.ConfigProperty
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.knowledge.ServiceIndex
 import software.amazon.smithy.model.shapes.OperationShape
@@ -34,6 +39,33 @@ class SigV4AsymmetricAuthSchemeIntegration : KotlinIntegration {
 
     override fun authSchemes(ctx: ProtocolGenerator.GenerationContext): List<AuthSchemeHandler> =
         listOf(SigV4AsymmetricAuthSchemeHandler())
+
+    override fun additionalServiceConfigProps(ctx: CodegenContext): List<ConfigProperty> =
+        listOf(
+            ConfigProperty {
+                name = "sigV4aSigningRegionSet"
+                symbol = KotlinTypes.Collections.set(KotlinTypes.String).asNullable()
+                baseClass = RuntimeTypes.Auth.Credentials.AwsCredentials.SigV4aClientConfig
+                useNestedBuilderBaseClass()
+                documentation = """
+                The set of regions to use when signing a request with SigV4a. If not provided this will automatically be set by the SDK.
+                """.trimIndent()
+            },
+        )
+
+    override val sectionWriters: List<SectionWriterBinding>
+        get() = listOf(
+            SectionWriterBinding(HttpProtocolClientGenerator.MergeServiceDefaults, renderMergeServiceDefaults),
+        )
+}
+
+private val renderMergeServiceDefaults = AppendingSectionWriter { writer ->
+    writer.putIfAbsent(
+        RuntimeTypes.Auth.Signing.AwsSigningCommon.AwsSigningAttributes,
+        "ConfigSigningRegionSet",
+        "config.sigV4aSigningRegionSet",
+        true,
+    )
 }
 
 private class SigV4AsymmetricAuthSchemeHandler : AuthSchemeHandler {

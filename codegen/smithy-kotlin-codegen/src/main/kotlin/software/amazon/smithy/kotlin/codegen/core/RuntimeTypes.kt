@@ -299,6 +299,7 @@ object RuntimeTypes {
                 val Credentials = symbol("Credentials")
                 val CredentialsProvider = symbol("CredentialsProvider")
                 val CredentialsProviderConfig = symbol("CredentialsProviderConfig")
+                val SigV4aClientConfig = symbol("SigV4aClientConfig")
             }
         }
 
