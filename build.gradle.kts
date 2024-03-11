@@ -126,6 +126,8 @@ apiValidation {
             "testing",
             "smithy-kotlin-codegen",
             "smithy-kotlin-codegen-testutils",
+            "smithy-aws-kotlin-codegen",
+            "protocol-tests",
             "aws-signing-benchmarks",
             "channel-benchmarks",
             "http-benchmarks",

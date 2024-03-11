@@ -68,6 +68,8 @@ include(":runtime:testing")
 
 include(":codegen:smithy-kotlin-codegen")
 include(":codegen:smithy-kotlin-codegen-testutils")
+include(":codegen:smithy-aws-kotlin-codegen")
+include(":codegen:protocol-tests")
 
 include(":tests")
 include(":tests:benchmarks:aws-signing-benchmarks")

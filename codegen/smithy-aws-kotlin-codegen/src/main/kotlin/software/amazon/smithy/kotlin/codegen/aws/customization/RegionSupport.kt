@@ -92,11 +92,12 @@ class RegionSupport : KotlinIntegration {
         val isAwsSdk = ctx.service.hasTrait<ServiceTrait>()
 
         if (isAwsSdk) {
-            val awsClientOption = buildSymbol {
-                name = "AwsClientOption"
-                namespace = "aws.sdk.kotlin.runtime.client"
-            }
-            writer.putIfAbsent(awsClientOption, "Region", nullable = true)
+            writer.putIfAbsent(
+                RuntimeTypes.AwsProtocolCore.AwsAttributes,
+                "Region",
+                "config.region",
+                nullable = true,
+            )
         }
 
         writer.putIfAbsent(

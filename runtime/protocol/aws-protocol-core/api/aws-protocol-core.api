@@ -1,3 +1,8 @@
+public final class aws/smithy/kotlin/runtime/awsprotocol/AwsAttributes {
+	public static final field INSTANCE Laws/smithy/kotlin/runtime/awsprotocol/AwsAttributes;
+	public final fun getRegion ()Laws/smithy/kotlin/runtime/collections/AttributeKey;
+}
+
 public abstract interface class aws/smithy/kotlin/runtime/awsprotocol/AwsErrorDetails {
 	public abstract fun getCode ()Ljava/lang/String;
 	public abstract fun getMessage ()Ljava/lang/String;

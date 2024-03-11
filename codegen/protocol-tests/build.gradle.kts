@@ -5,7 +5,7 @@
 import aws.sdk.kotlin.gradle.codegen.dsl.generateSmithyProjections
 import aws.sdk.kotlin.gradle.codegen.dsl.smithyKotlinPlugin
 import aws.sdk.kotlin.gradle.codegen.smithyKotlinProjectionPath
-import aws.sdk.kotlin.gradle.codegen.smithyKotlinProjectionSrcDir
+import aws.sdk.kotlin.gradle.dsl.skipPublishing
 
 plugins {
     kotlin("jvm")
@@ -13,6 +13,8 @@ plugins {
 }
 
 description = "Smithy protocol test suite"
+
+skipPublishing()
 
 data class ProtocolTest(val projectionName: String, val serviceShapeId: String, val sdkId: String? = null) {
     val packageName: String = projectionName.lowercase().filter { it.isLetterOrDigit() }
@@ -28,11 +30,6 @@ val enabledProtocols = listOf(
     ProtocolTest("aws-restxml", "aws.protocoltests.restxml#RestXml"),
     ProtocolTest("aws-restxml-xmlns", "aws.protocoltests.restxml.xmlns#RestXmlWithNamespace"),
     ProtocolTest("aws-query", "aws.protocoltests.query#AwsQuery"),
-
-    // service specific tests
-    ProtocolTest("apigateway", "com.amazonaws.apigateway#BackplaneControlService"),
-    ProtocolTest("glacier", "com.amazonaws.glacier#Glacier"),
-    ProtocolTest("machinelearning", "com.amazonaws.machinelearning#AmazonML_20141212", sdkId = "Machine Learning"),
 
     // Custom hand written tests
     ProtocolTest("error-correction-json", "aws.protocoltests.errorcorrection#RequiredValueJson"),
@@ -77,7 +74,7 @@ smithyBuild {
 
 val codegen by configurations.getting
 dependencies {
-    codegen(project(":codegen:aws-sdk-codegen"))
+    codegen(project(":codegen:smithy-aws-kotlin-codegen"))
     codegen(libs.smithy.cli)
     codegen(libs.smithy.model)
 
@@ -89,7 +86,8 @@ dependencies {
 
 tasks.generateSmithyProjections {
     // ensure the generated clients use the same version of the runtime as the aws aws-runtime
-    val smithyKotlinRuntimeVersion = libs.versions.smithy.kotlin.runtime.version.get()
+    val sdkVersion: String by project
+    val smithyKotlinRuntimeVersion = sdkVersion
     doFirst {
         System.setProperty("smithy.kotlin.codegen.clientRuntimeVersion", smithyKotlinRuntimeVersion)
     }
@@ -135,18 +133,6 @@ smithyBuild.projections.forEach {
         group = "Verification"
         projectionName.set(it.name)
         projectionRootDirectory.set(smithyBuild.smithyKotlinProjectionPath(it.name).map { it.toString() })
-    }
-
-    // FIXME This is a hack to work around how protocol tests aren't in the actual service model and thus codegen
-    // separately from service customizations.
-    val copyStaticFiles = tasks.register<Copy>("copyStaticFiles-$protocolName") {
-        group = "codegen"
-        from(rootProject.projectDir.resolve("services/$protocolName/common/src"))
-        into(smithyBuild.smithyKotlinProjectionSrcDir(it.name))
-    }
-
-    tasks.generateSmithyProjections.configure {
-        finalizedBy(copyStaticFiles)
     }
 }
 

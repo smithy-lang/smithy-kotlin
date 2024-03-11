@@ -2,27 +2,27 @@
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
  * SPDX-License-Identifier: Apache-2.0
  */
+import aws.sdk.kotlin.gradle.dsl.configurePublishing
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
-/*
- * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0
- */
 plugins {
     alias(libs.plugins.kotlin.jvm)
     jacoco
+    `maven-publish`
 }
 
-val sdkVersion: String by project
+val codegenVersion: String by project
 description = "Codegen support for AWS protocols"
 group = "software.amazon.smithy.kotlin"
-version = sdkVersion
+version = codegenVersion
+
+val sdkVersion: String by project
 
 dependencies {
 
     implementation(libs.kotlin.stdlib.jdk8)
-    api(libs.smithy.kotlin.codegen)
+    api(project(":codegen:smithy-kotlin-codegen"))
 
     api(libs.smithy.aws.traits)
     api(libs.smithy.aws.iam.traits)
@@ -34,7 +34,7 @@ dependencies {
     testImplementation(libs.junit.jupiter.params)
     testImplementation(libs.kotest.assertions.core.jvm)
     testImplementation(libs.kotlin.test.junit5)
-    testImplementation(libs.smithy.kotlin.codegen.testutils)
+    testImplementation(project(":codegen:smithy-kotlin-codegen-testutils"))
 
     testImplementation(libs.slf4j.api)
     testImplementation(libs.slf4j.simple)
@@ -96,3 +96,14 @@ val sourcesJar by tasks.creating(Jar::class) {
     archiveClassifier.set("sources")
     from(sourceSets.getByName("main").allSource)
 }
+
+publishing {
+    publications {
+        create<MavenPublication>("codegen") {
+            from(components["java"])
+            artifact(sourcesJar)
+        }
+    }
+}
+
+configurePublishing("smithy-kotlin")

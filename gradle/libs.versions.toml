@@ -64,9 +64,14 @@ smithy-codegen-core = { module = "software.amazon.smithy:smithy-codegen-core", v
 smithy-cli = { module = "software.amazon.smithy:smithy-cli", version.ref = "smithy-version" }
 smithy-model = { module = "software.amazon.smithy:smithy-model", version.ref = "smithy-version" }
 smithy-waiters = { module = "software.amazon.smithy:smithy-waiters", version.ref = "smithy-version" }
-smithy-rules-engine = { module = "software.amazon.smithy:smithy-rules-engine", version.ref = "smithy-version" }
-smithy-aws-traits = { module = "software.amazon.smithy:smithy-aws-traits", version.ref = "smithy-version" }
 smithy-protocol-test-traits = { module = "software.amazon.smithy:smithy-protocol-test-traits", version.ref = "smithy-version" }
+smithy-aws-traits = { module = "software.amazon.smithy:smithy-aws-traits", version.ref = "smithy-version" }
+smithy-rules-engine = { module = "software.amazon.smithy:smithy-rules-engine", version.ref = "smithy-version" }
+smithy-aws-endpoints = { module = "software.amazon.smithy:smithy-aws-endpoints", version.ref = "smithy-version" }
+smithy-aws-protocol-tests = { module = "software.amazon.smithy:smithy-aws-protocol-tests", version.ref = "smithy-version" }
+smithy-aws-iam-traits = { module = "software.amazon.smithy:smithy-aws-iam-traits", version.ref = "smithy-version" }
+smithy-aws-cloudformation-traits = { module = "software.amazon.smithy:smithy-aws-cloudformation-traits", version.ref = "smithy-version" }
+smithy-smoke-test-traits = { module = "software.amazon.smithy:smithy-smoke-test-traits", version.ref = "smithy-version" }
 
 junit-jupiter = { module = "org.junit.jupiter:junit-jupiter", version.ref = "junit-version" }
 junit-jupiter-params = { module = "org.junit.jupiter:junit-jupiter-params", version.ref = "junit-version" }
