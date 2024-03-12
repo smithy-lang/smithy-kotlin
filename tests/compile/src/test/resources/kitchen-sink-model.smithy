@@ -239,6 +239,11 @@ map StringMap {
     value: String
 }
 
+map EnumKeyedStringMap {
+    key: MyEnum,
+    value: String
+}
+
 // only exists as value of a map through MapInputRequest::structMap
 structure ReachableOnlyThroughMap {
     prop1: Integer
@@ -280,6 +285,8 @@ structure MapInputRequest {
     structMap: StructMap,
     enumMap: EnumMap,
     blobMap: BlobMap,
+    stringMap: StringMap,
+    enumKeyedStringMap: EnumKeyedStringMap,
     mapOfLists: MapOfLists,
     nestedMap: NestedMap
 }
@@ -289,6 +296,8 @@ structure MapOutputResponse {
     structMap: StructMap,
     enumMap: EnumMap,
     blobMap: BlobMap,
+    stringMap: StringMap,
+    enumKeyedStringMap: EnumKeyedStringMap,
     nestedMap: NestedMap
 }
 

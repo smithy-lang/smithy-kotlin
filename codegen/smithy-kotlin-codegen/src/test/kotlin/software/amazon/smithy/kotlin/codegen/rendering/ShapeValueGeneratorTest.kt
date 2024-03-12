@@ -51,6 +51,52 @@ mapOf<String, Int>(
     }
 
     @Test
+    fun `it renders maps with enum keys`() {
+        val model = """
+            @enum([
+                {
+                    value: "k1",
+                },
+                {
+                    value: "k2",
+                },
+                {
+                    value: "k3",
+                },
+            ])
+            string KeyType
+            
+            map MyMap {
+                key: KeyType,
+                value: Integer,
+            }
+        """.prependNamespaceAndService(namespace = "foo.bar").toSmithyModel()
+
+        val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model, rootNamespace = "foo.bar")
+        val mapShape = model.expectShape(ShapeId.from("foo.bar#MyMap"))
+        val writer = KotlinWriter("test")
+
+        val params = Node.objectNodeBuilder()
+            .withMember("k1", 1)
+            .withMember("k2", 2)
+            .withMember("k3", 3)
+            .build()
+
+        ShapeValueGenerator(model, provider).instantiateShapeInline(writer, mapShape, params)
+        val contents = writer.toString()
+
+        val expected = """
+mapOf<KeyType, Int>(
+    KeyType.fromValue("k1") to 1,
+    KeyType.fromValue("k2") to 2,
+    KeyType.fromValue("k3") to 3
+)
+"""
+
+        contents.shouldContainOnlyOnceWithDiff(expected)
+    }
+
+    @Test
     fun `it renders lists`() {
         val model = """
             list MyList {

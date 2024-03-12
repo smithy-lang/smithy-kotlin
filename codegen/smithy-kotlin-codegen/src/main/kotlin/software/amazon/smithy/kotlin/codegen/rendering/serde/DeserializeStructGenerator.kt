@@ -5,6 +5,7 @@
 package software.amazon.smithy.kotlin.codegen.rendering.serde
 
 import software.amazon.smithy.codegen.core.CodegenException
+import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.kotlin.codegen.core.*
 import software.amazon.smithy.kotlin.codegen.lang.KotlinTypes
 import software.amazon.smithy.kotlin.codegen.model.*
@@ -145,9 +146,10 @@ open class DeserializeStructGenerator(
             .indent()
             .withBlock("deserializer.#T($descriptorName) {", "}", RuntimeTypes.Serde.deserializeMap) {
                 write(
-                    "val #L = #T<String, #T#L>()",
+                    "val #L = #T<#T, #T#L>()",
                     mutableCollectionName,
                     KotlinTypes.Collections.mutableMapOf,
+                    ctx.symbolProvider.toSymbol(targetShape.key),
                     ctx.symbolProvider.toSymbol(targetShape.value),
                     nullabilitySuffix(targetShape.isSparse),
                 )
@@ -168,6 +170,8 @@ open class DeserializeStructGenerator(
         nestingLevel: Int,
         parentMemberName: String,
     ) {
+        val keyShape = ctx.model.expectShape(mapShape.key.target)
+        val keySymbol = ctx.symbolProvider.toSymbol(keyShape)
         val elementShape = ctx.model.expectShape(mapShape.value.target)
         val isSparse = mapShape.isSparse
 
@@ -187,18 +191,44 @@ open class DeserializeStructGenerator(
             ShapeType.TIMESTAMP,
             ShapeType.ENUM,
             ShapeType.INT_ENUM,
-            -> renderEntry(elementShape, nestingLevel, isSparse, parentMemberName)
+            -> renderEntry(keyShape, keySymbol, elementShape, nestingLevel, isSparse, parentMemberName)
 
             ShapeType.SET,
             ShapeType.LIST,
-            -> renderListEntry(rootMemberShape, elementShape as CollectionShape, nestingLevel, isSparse, parentMemberName)
+            -> renderListEntry(
+                rootMemberShape,
+                keyShape,
+                keySymbol,
+                elementShape as CollectionShape,
+                nestingLevel,
+                isSparse,
+                parentMemberName,
+            )
 
-            ShapeType.MAP -> renderMapEntry(rootMemberShape, elementShape as MapShape, nestingLevel, isSparse, parentMemberName)
+            ShapeType.MAP -> renderMapEntry(
+                rootMemberShape,
+                keyShape,
+                keySymbol,
+                elementShape as MapShape,
+                nestingLevel,
+                isSparse,
+                parentMemberName,
+            )
+
             ShapeType.UNION,
             ShapeType.STRUCTURE,
-            -> renderNestedStructureEntry(elementShape, nestingLevel, isSparse, parentMemberName)
+            -> renderNestedStructureEntry(keyShape, keySymbol, elementShape, nestingLevel, isSparse, parentMemberName)
 
             else -> error("Unhandled type ${elementShape.type}")
+        }
+    }
+
+    private fun writeKeyVal(keyShape: Shape, keySymbol: Symbol, keyName: String) {
+        writer.writeInline("val $keyName = ")
+        if (keyShape.isEnum) {
+            writer.write("#T.fromValue(key())", keySymbol)
+        } else {
+            writer.write("key()")
         }
     }
 
@@ -212,6 +242,8 @@ open class DeserializeStructGenerator(
      * ```
      */
     private fun renderNestedStructureEntry(
+        keyShape: Shape,
+        keySymbol: Symbol,
         elementShape: Shape,
         nestingLevel: Int,
         isSparse: Boolean,
@@ -226,7 +258,7 @@ open class DeserializeStructGenerator(
             writer.addImport(symbol)
         }
 
-        writer.write("val $keyName = key()")
+        writeKeyVal(keyShape, keySymbol, keyName)
         writer.write("val $valueName = if (nextHasValue()) { $deserializerFn } else { deserializeNull()$populateNullValuePostfix }")
         writer.write("$parentMemberName[$keyName] = $valueName")
     }
@@ -247,6 +279,8 @@ open class DeserializeStructGenerator(
      */
     private fun renderMapEntry(
         rootMemberShape: MemberShape,
+        keyShape: Shape,
+        keySymbol: Symbol,
         mapShape: MapShape,
         nestingLevel: Int,
         isSparse: Boolean,
@@ -260,14 +294,15 @@ open class DeserializeStructGenerator(
         val memberName = nextNestingLevel.variableNameFor(NestedIdentifierType.MAP)
         val collectionReturnExpression = collectionReturnExpression(rootMemberShape, memberName)
 
-        writer.write("val $keyName = key()")
+        writeKeyVal(keyShape, keySymbol, keyName)
         writer.withBlock("val $valueName =", "") {
             withBlock("if (nextHasValue()) {", "} else { deserializeNull()$populateNullValuePostfix }") {
                 withBlock("deserializer.#T($descriptorName) {", "}", RuntimeTypes.Serde.deserializeMap) {
                     write(
-                        "val #L = #T<String, #T#L>()",
+                        "val #L = #T<#T, #T#L>()",
                         memberName,
                         KotlinTypes.Collections.mutableMapOf,
+                        keySymbol,
                         ctx.symbolProvider.toSymbol(mapShape.value),
                         nullabilitySuffix(mapShape.isSparse),
                     )
@@ -298,6 +333,8 @@ open class DeserializeStructGenerator(
      */
     private fun renderListEntry(
         rootMemberShape: MemberShape,
+        keyShape: Shape,
+        keySymbol: Symbol,
         collectionShape: CollectionShape,
         nestingLevel: Int,
         isSparse: Boolean,
@@ -311,7 +348,7 @@ open class DeserializeStructGenerator(
         val memberName = nextNestingLevel.variableNameFor(NestedIdentifierType.COLLECTION)
         val collectionReturnExpression = collectionReturnExpression(rootMemberShape, memberName)
 
-        writer.write("val $keyName = key()")
+        writeKeyVal(keyShape, keySymbol, keyName)
         writer.withBlock("val $valueName =", "") {
             withBlock("if (nextHasValue()) {", "} else { deserializeNull()$populateNullValuePostfix }") {
                 withBlock("deserializer.#T($descriptorName) {", "}", RuntimeTypes.Serde.deserializeList) {
@@ -340,13 +377,20 @@ open class DeserializeStructGenerator(
      * map0[k0] = el0
      * ```
      */
-    private fun renderEntry(elementShape: Shape, nestingLevel: Int, isSparse: Boolean, parentMemberName: String) {
+    private fun renderEntry(
+        keyShape: Shape,
+        keySymbol: Symbol,
+        elementShape: Shape,
+        nestingLevel: Int,
+        isSparse: Boolean,
+        parentMemberName: String,
+    ) {
         val deserializerFn = deserializerForShape(elementShape)
         val keyName = nestingLevel.variableNameFor(NestedIdentifierType.KEY)
         val valueName = nestingLevel.variableNameFor(NestedIdentifierType.VALUE)
         val populateNullValuePostfix = if (isSparse) "" else "; continue"
 
-        writer.write("val $keyName = key()")
+        writeKeyVal(keyShape, keySymbol, keyName)
         writer.write("val $valueName = if (nextHasValue()) { $deserializerFn } else { deserializeNull()$populateNullValuePostfix }")
         writer.write("$parentMemberName[$keyName] = $valueName")
     }
@@ -476,9 +520,10 @@ open class DeserializeStructGenerator(
 
         writer.withBlock("val $elementName = deserializer.#T($descriptorName) {", "}", RuntimeTypes.Serde.deserializeMap) {
             write(
-                "val #L = #T<String, #T#L>()",
+                "val #L = #T<#T, #T#L>()",
                 mapName,
                 KotlinTypes.Collections.mutableMapOf,
+                ctx.symbolProvider.toSymbol(mapShape.key),
                 ctx.symbolProvider.toSymbol(mapShape.value),
                 nullabilitySuffix(mapShape.isSparse),
             )
