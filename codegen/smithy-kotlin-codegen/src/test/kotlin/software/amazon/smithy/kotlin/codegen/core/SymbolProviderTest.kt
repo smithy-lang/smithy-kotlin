@@ -539,7 +539,7 @@ class SymbolProviderTest {
         assertEquals("Map<String, Record?>", sparseMapSymbol.name)
 
         // collections should contain a reference to the member type
-        val sparseRefNames = mapSymbol.references.map { it.symbol.fullName }
+        val sparseRefNames = sparseMapSymbol.references.map { it.symbol.fullName }
         assertTrue("kotlin.String" in sparseRefNames)
         assertTrue("com.test.model.Record" in sparseRefNames)
 
