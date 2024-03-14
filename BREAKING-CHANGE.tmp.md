@@ -65,7 +65,7 @@ Content-Encoding: gzip
 
 # How to migrate
 
-If you are using the default OkHttp engine and **do not want** to decompress response bodies, the no change is necessary.
+If you are using the default OkHttp engine and **do not want** to decompress response bodies, then no change is necessary.
 
 If you **do want** to decompress response bodies, you will need to update your code. Response bodies may be decompressed using JVM's [`GZIPInputStream`](https://docs.oracle.com/javase/8/docs/api/java/util/zip/GZIPInputStream.html) and the [`ByteStream.toInputStream()`](https://sdk.amazonaws.com/kotlin/api/smithy-kotlin/api/latest/runtime-core/aws.smithy.kotlin.runtime.content/to-input-stream.html) extension function:
 
