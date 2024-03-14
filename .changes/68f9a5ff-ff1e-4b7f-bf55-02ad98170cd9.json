@@ -1,0 +1,5 @@
+{
+    "id": "68f9a5ff-ff1e-4b7f-bf55-02ad98170cd9",
+    "type": "misc",
+    "description": "Remove \"Content-Length\" header for requests made with `aws-chunked` encoding"
+}
