@@ -1,5 +1,0 @@
-{
-    "id": "512f819d-8276-4437-9fdf-89342106aa40",
-    "type": "misc",
-    "description": "Relocate AWS protocol codegen support from `aws-sdk-kotlin`"
-}

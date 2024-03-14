@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.0.19] - 03/14/2024
+
+### Miscellaneous
+* Relocate AWS protocol codegen support from `aws-sdk-kotlin`
+
 ## [1.0.18] - 03/11/2024
 
 ### Miscellaneous
