@@ -66,9 +66,9 @@ public val AwsSigningConfig.useAwsChunkedEncoding: Boolean
 public fun HttpRequestBuilder.setAwsChunkedHeaders() {
     headers.append("Content-Encoding", "aws-chunked")
     headers["Transfer-Encoding"] = "chunked"
-    headers["X-Amz-Decoded-Content-Length"] = checkNotNull(headers["Content-Length"] ?: body.contentLength?.toString()) {
+    headers["X-Amz-Decoded-Content-Length"] = headers["Content-Length"] ?: body.contentLength?.toString() ?: throw ClientException(
         "Expected \"Content-Length\" header or `body.contentLength` to be set for aws-chunked"
-    }
+    )
     headers.remove("Content-Length") // Any precalculated Content-Length is no longer correct after we chunk the body up
 }
 
