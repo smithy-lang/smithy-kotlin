@@ -4,7 +4,7 @@ An upcoming release of the **AWS SDK for Kotlin** will change the key type for s
 
 # Release date
 
-This feature will ship with the **v1.0.80** release planned for **3/18/2024**.
+This feature will ship with the **v1.1.0** release planned for **3/18/2024**.
 
 # What's changing
 
