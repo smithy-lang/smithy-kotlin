@@ -395,6 +395,7 @@ object RuntimeTypes {
     object AwsProtocolCore : RuntimeTypePackage(KotlinDependency.AWS_PROTOCOL_CORE) {
         val withPayload = symbol("withPayload")
         val setAseErrorMetadata = symbol("setAseErrorMetadata")
+        val AwsAttributes = symbol("AwsAttributes")
         val AwsQueryCompatibleErrorDetails = symbol("AwsQueryCompatibleErrorDetails")
         val setAwsQueryCompatibleErrorMetadata = symbol("setAwsQueryCompatibleErrorMetadata")
         val XAmznQueryErrorHeader = symbol("X_AMZN_QUERY_ERROR_HEADER")
