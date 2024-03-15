@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.0.20] - 03/15/2024
+
+### Miscellaneous
+* Remove "Content-Length" header for requests made with `aws-chunked` encoding
+
 ## [1.0.19] - 03/14/2024
 
 ### Miscellaneous
