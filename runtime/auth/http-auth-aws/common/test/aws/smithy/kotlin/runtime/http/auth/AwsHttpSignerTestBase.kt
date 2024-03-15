@@ -148,8 +148,8 @@ public abstract class AwsHttpSignerTestBase(
         val op = buildOperation(streaming = true, replayable = false, requestBody = "a".repeat(AWS_CHUNKED_THRESHOLD + 1))
         val expectedDate = "20201016T195600Z"
         val expectedSig = "AWS4-HMAC-SHA256 Credential=AKID/20201016/us-east-1/demo/aws4_request, " +
-            "SignedHeaders=content-encoding;content-length;host;transfer-encoding;x-amz-archive-description;x-amz-date;x-amz-decoded-content-length;x-amz-security-token, " +
-            "Signature=dec1a06b61f953afe430ce4a0f10ee8d5ad3d29696516c4ccda23a0aab6664d5"
+            "SignedHeaders=content-encoding;host;transfer-encoding;x-amz-archive-description;x-amz-date;x-amz-decoded-content-length;x-amz-security-token, " +
+            "Signature=ac341b9b248a0b23d2fcd9f7e805f4eb0b8a1b789bb23a8ec6adc6c48dd084ad"
 
         val signed = getSignedRequest(op)
         assertEquals(expectedDate, signed.headers["X-Amz-Date"])
@@ -161,8 +161,8 @@ public abstract class AwsHttpSignerTestBase(
         val op = buildOperation(streaming = true, replayable = true, requestBody = "a".repeat(AWS_CHUNKED_THRESHOLD + 1))
         val expectedDate = "20201016T195600Z"
         val expectedSig = "AWS4-HMAC-SHA256 Credential=AKID/20201016/us-east-1/demo/aws4_request, " +
-            "SignedHeaders=content-encoding;content-length;host;transfer-encoding;x-amz-archive-description;x-amz-date;x-amz-decoded-content-length;x-amz-security-token, " +
-            "Signature=dec1a06b61f953afe430ce4a0f10ee8d5ad3d29696516c4ccda23a0aab6664d5"
+            "SignedHeaders=content-encoding;host;transfer-encoding;x-amz-archive-description;x-amz-date;x-amz-decoded-content-length;x-amz-security-token, " +
+            "Signature=ac341b9b248a0b23d2fcd9f7e805f4eb0b8a1b789bb23a8ec6adc6c48dd084ad"
 
         val signed = getSignedRequest(op)
         assertEquals(expectedDate, signed.headers["X-Amz-Date"])
@@ -175,8 +175,8 @@ public abstract class AwsHttpSignerTestBase(
         val expectedDate = "20201016T195600Z"
         // should have same signature as testSignAwsChunkedStreamNonReplayable(), except for the hash, since the body is different
         val expectedSig = "AWS4-HMAC-SHA256 Credential=AKID/20201016/us-east-1/demo/aws4_request, " +
-            "SignedHeaders=content-encoding;content-length;host;transfer-encoding;x-amz-archive-description;x-amz-date;x-amz-decoded-content-length;x-amz-security-token, " +
-            "Signature=9600a7fbf17056d41557ec5d6abfe7b5db4a75222e563f5e16afde9c1c0014bb"
+            "SignedHeaders=content-encoding;host;transfer-encoding;x-amz-archive-description;x-amz-date;x-amz-decoded-content-length;x-amz-security-token, " +
+            "Signature=3f0277123c9ed8a8858f793886a0ac0fcb457bc54401ffc22d470f373397cff0"
 
         val signed = getSignedRequest(op)
         assertEquals(expectedDate, signed.headers["X-Amz-Date"])
