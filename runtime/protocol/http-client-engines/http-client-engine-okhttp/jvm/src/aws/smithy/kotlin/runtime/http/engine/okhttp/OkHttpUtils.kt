@@ -21,7 +21,6 @@ import aws.smithy.kotlin.runtime.time.Instant
 import kotlinx.coroutines.*
 import okhttp3.*
 import okhttp3.Authenticator
-import okhttp3.Headers
 import okhttp3.RequestBody.Companion.toRequestBody
 import okhttp3.internal.http.HttpMethod
 import java.io.EOFException
@@ -31,6 +30,7 @@ import javax.net.ssl.SSLHandshakeException
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 import aws.smithy.kotlin.runtime.http.engine.ProxySelector as SdkProxySelector
+import okhttp3.Headers as OkHttpHeaders
 import okhttp3.Request as OkHttpRequest
 import okhttp3.Response as OkHttpResponse
 
@@ -49,16 +49,8 @@ internal fun HttpRequest.toOkHttpRequest(
 ): OkHttpRequest {
     val builder = OkHttpRequest.Builder()
     builder.tag(SdkRequestTag::class, SdkRequestTag(execContext, callContext, metrics))
-
     builder.url(url.toString())
-
-    val okHttpHeaders = Headers.Builder()
-    headers.forEach { key, values ->
-        values.forEach {
-            okHttpHeaders.addUnsafeNonAscii(key, it)
-        }
-    }
-    builder.headers(okHttpHeaders.build())
+    builder.headers(headers.toOkHttpHeaders())
 
     val engineBody = if (HttpMethod.permitsRequestBody(method.name)) {
         when (val body = body) {
@@ -87,6 +79,19 @@ internal fun HttpRequest.toOkHttpRequest(
 
     return builder.build()
 }
+
+private fun Headers.toOkHttpHeaders(): OkHttpHeaders = OkHttpHeaders.Builder().also { okHeaders ->
+    forEach { key, values ->
+        values.forEach { value ->
+            okHeaders.addUnsafeNonAscii(key, value)
+        }
+    }
+
+    if ("Accept-Encoding" !in this) {
+        // Disable OkHttp transparent response decompression. See https://github.com/awslabs/smithy-kotlin/issues/1041
+        okHeaders.addUnsafeNonAscii("Accept-Encoding", "identity")
+    }
+}.build()
 
 /**
  * Convert an [okhttp3.Response] to an SDK [HttpResponse]

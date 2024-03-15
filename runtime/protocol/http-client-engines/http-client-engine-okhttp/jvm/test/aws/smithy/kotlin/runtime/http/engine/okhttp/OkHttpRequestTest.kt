@@ -19,6 +19,7 @@ import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
+import kotlin.test.assertTrue
 
 class OkHttpRequestTest {
 
@@ -66,7 +67,7 @@ class OkHttpRequestTest {
         val execContext = ExecutionContext()
         val actual = request.toOkHttpRequest(execContext, EmptyCoroutineContext, testMetrics)
 
-        assertEquals(3, actual.headers.size)
+        assertTrue(actual.headers.size >= 3)
         assertEquals(listOf("bar", "baz"), actual.headers("FoO"))
     }
 
@@ -81,8 +82,43 @@ class OkHttpRequestTest {
         val execContext = ExecutionContext()
         val actual = request.toOkHttpRequest(execContext, EmptyCoroutineContext, testMetrics)
 
-        assertEquals(1, actual.headers.size)
+        assertTrue(actual.headers.size >= 1)
         assertEquals(listOf("\uD83E\uDD7D"), actual.headers("foo"))
+    }
+
+    // https://github.com/awslabs/smithy-kotlin/issues/1041
+    @Test
+    fun itAddsAcceptEncodingHeader() {
+        val url = Url.parse("https://aws.amazon.com")
+        val headers = Headers {
+            append("foo", "bar")
+        }
+        val request = HttpRequest(HttpMethod.POST, url, headers, HttpBody.Empty)
+
+        val execContext = ExecutionContext()
+        val actual = request.toOkHttpRequest(execContext, EmptyCoroutineContext, testMetrics)
+
+        assertEquals(2, actual.headers.size)
+        assertEquals(listOf("bar"), actual.headers("foo"))
+        assertEquals(listOf("identity"), actual.headers("Accept-Encoding"))
+    }
+
+    // https://github.com/awslabs/smithy-kotlin/issues/1041
+    @Test
+    fun itDoesNotModifyAcceptEncodingHeaderIfAlreadySet() {
+        val url = Url.parse("https://aws.amazon.com")
+        val headers = Headers {
+            append("foo", "bar")
+            append("Accept-Encoding", "gzip")
+        }
+        val request = HttpRequest(HttpMethod.POST, url, headers, HttpBody.Empty)
+
+        val execContext = ExecutionContext()
+        val actual = request.toOkHttpRequest(execContext, EmptyCoroutineContext, testMetrics)
+
+        assertEquals(2, actual.headers.size)
+        assertEquals(listOf("bar"), actual.headers("foo"))
+        assertEquals(listOf("gzip"), actual.headers("Accept-Encoding"))
     }
 
     @Test

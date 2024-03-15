@@ -15,6 +15,8 @@ import io.ktor.server.routing.*
 import io.ktor.utils.io.*
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import java.io.ByteArrayOutputStream
+import java.util.zip.GZIPOutputStream
 import kotlin.random.Random
 
 internal fun Application.downloadTests() {
@@ -60,6 +62,21 @@ internal fun Application.downloadTests() {
                 call.response.status(HttpStatusCode.OK)
                 call.response.header("x-foo", "foo")
                 call.response.header("x-bar", "bar")
+            }
+
+            get("/gzipped") {
+                val uncompressed = ByteArray(1024) { it.toByte() }
+                val compressed = ByteArrayOutputStream().use { baStream ->
+                    GZIPOutputStream(baStream).use { gzStream ->
+                        gzStream.write(uncompressed)
+                        gzStream.flush()
+                    }
+                    baStream.flush()
+                    baStream.toByteArray()
+                }
+
+                call.response.header("Content-Encoding", "gzip")
+                call.respondBytes(compressed)
             }
         }
     }
