@@ -463,7 +463,7 @@ open class XmlParserGenerator(
         writer: KotlinWriter,
     ) {
         val target = ctx.model.expectShape<MapShape>(member.target)
-        val keySymbol = KotlinTypes.String
+        val keySymbol = ctx.symbolProvider.toSymbol(target.key)
         val valueSymbol = ctx.symbolProvider.toSymbol(target.value)
         writer.addImportReferences(valueSymbol, SymbolReference.ContextOption.USE)
         val isSparse = target.hasTrait<SparseTrait>()
@@ -512,7 +512,7 @@ open class XmlParserGenerator(
         map: MapShape,
     ): Symbol {
         val shapeName = StringUtils.capitalize(map.id.getName(ctx.service))
-        val keySymbol = KotlinTypes.String
+        val keySymbol = ctx.symbolProvider.toSymbol(map.key)
         val valueSymbol = ctx.symbolProvider.toSymbol(map.value)
         val isSparse = map.hasTrait<SparseTrait>()
         val serdeCtx = SerdeCtx("reader")
@@ -541,14 +541,6 @@ open class XmlParserGenerator(
                         val keyName = map.key.getTrait<XmlNameTrait>()?.value ?: map.key.memberName
                         writeInline("#S -> key = ", keyName)
                         deserializeMember(ctx, innerCtx, map.key, this)
-                        // FIXME - We re-use deserializeMember here but key types targeting enums
-                        //         have to pull the raw string value back out because of
-                        //         https://github.com/awslabs/smithy-kotlin/issues/1045
-                        val targetValueShape = ctx.model.expectShape(map.key.target)
-                        if (targetValueShape.type == ShapeType.ENUM) {
-                            writer.indent()
-                                .write(".value")
-                        }
 
                         val valueName = map.value.getTrait<XmlNameTrait>()?.value ?: map.value.memberName
                         if (isSparse) {

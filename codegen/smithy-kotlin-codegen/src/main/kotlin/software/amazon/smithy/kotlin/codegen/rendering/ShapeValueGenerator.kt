@@ -188,7 +188,16 @@ class ShapeValueGenerator(
                     }
                     is MapShape -> {
                         memberShape = generator.model.expectShape(currShape.value.target)
-                        writer.writeInline("#S to ", keyNode.value)
+
+                        val keyTarget = generator.model.expectShape(currShape.key.target)
+                        if (keyTarget.isEnum) {
+                            val keySymbol = generator.symbolProvider.toSymbol(currShape.key)
+                            writer.writeInline("#T.fromValue(#S)", keySymbol, keyNode.value)
+                        } else {
+                            writer.writeInline("#S", keyNode.value)
+                        }
+
+                        writer.writeInline(" to ")
 
                         if (valueNode is NullNode) {
                             writer.write("null")

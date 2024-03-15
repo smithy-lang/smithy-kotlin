@@ -43,6 +43,7 @@ data class KotlinSettings(
     val sdkId: String,
     val build: BuildSettings = BuildSettings.Default,
     val api: ApiSettings = ApiSettings.Default,
+    val debug: Boolean = false,
 ) {
 
     /**
@@ -104,12 +105,14 @@ data class KotlinSettings(
             val sdkId = config.getStringMemberOrDefault(SDK_ID, serviceId.name)
             val build = config.getObjectMember(BUILD_SETTINGS)
             val api = config.getObjectMember(API_SETTINGS)
+            val debug = config.getBooleanMemberOrDefault("debug", false)
             return KotlinSettings(
                 serviceId,
                 PackageSettings(packageName, version, desc),
                 sdkId,
                 BuildSettings.fromNode(build),
                 ApiSettings.fromNode(api),
+                debug,
             )
         }
     }

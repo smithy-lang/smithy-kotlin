@@ -249,9 +249,9 @@ class XmlMapTest : AbstractXmlTest() {
         // see also https://github.com/awslabs/smithy-kotlin/issues/1045
         val expected = StructType {
             enumKeyMap = mapOf(
-                FooEnum.Foo.value to 1,
-                "Bar" to 2,
-                "Unknown" to 3,
+                FooEnum.Foo to 1,
+                FooEnum.Bar to 2,
+                FooEnum.SdkUnknown("Unknown") to 3,
             )
         }
         val payload = """

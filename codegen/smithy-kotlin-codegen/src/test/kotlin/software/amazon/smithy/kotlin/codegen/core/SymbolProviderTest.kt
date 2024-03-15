@@ -529,19 +529,56 @@ class SymbolProviderTest {
 
         assertEquals("Map<String, Record>", mapSymbol.name)
 
-        // collections should contain a reference to the member type
-        assertEquals("Record", mapSymbol.references[0].symbol.name)
+        // collections should contain a reference to the member types
+        val refNames = mapSymbol.references.map { it.symbol.fullName }
+        assertTrue("kotlin.String" in refNames)
+        assertTrue("com.test.model.Record" in refNames)
 
         val sparseMapSymbol = provider.toSymbol(model.expectShape<MapShape>("${TestModelDefault.NAMESPACE}#MySparseMap"))
 
         assertEquals("Map<String, Record?>", sparseMapSymbol.name)
 
         // collections should contain a reference to the member type
-        assertEquals("Record", sparseMapSymbol.references[0].symbol.name)
+        val sparseRefNames = sparseMapSymbol.references.map { it.symbol.fullName }
+        assertTrue("kotlin.String" in sparseRefNames)
+        assertTrue("com.test.model.Record" in sparseRefNames)
 
         // check the fully qualified name hint is set
         assertEquals("Map<kotlin.String, com.test.model.Record>", mapSymbol.fullNameHint)
         assertEquals("Map<kotlin.String, com.test.model.Record?>", sparseMapSymbol.fullNameHint)
+    }
+
+    @Test
+    fun `creates maps with enum keys`() {
+        val model = """
+            @enum([
+                {
+                    value: "FOO",
+                },
+                {
+                    value: "BAR",
+                },
+            ])
+            string Type
+
+            structure Record {}
+
+            map MyMap {
+                key: Type,
+                value: Record,
+            }
+        """.prependNamespaceAndService().toSmithyModel()
+
+        val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model)
+
+        val mapSymbol = provider.toSymbol(model.expectShape<MapShape>("${TestModelDefault.NAMESPACE}#MyMap"))
+
+        assertEquals("Map<Type, Record>", mapSymbol.name)
+
+        // collections should contain a reference to the member types
+        val refNames = mapSymbol.references.map { it.symbol.fullName }
+        assertTrue("com.test.model.Type" in refNames)
+        assertTrue("com.test.model.Record" in refNames)
     }
 
     @DisplayName("creates bigNumbers")

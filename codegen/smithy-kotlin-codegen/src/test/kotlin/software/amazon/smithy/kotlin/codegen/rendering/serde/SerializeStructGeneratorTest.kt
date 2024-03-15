@@ -1035,6 +1035,46 @@ class SerializeStructGeneratorTest {
     }
 
     @Test
+    fun `it serializes a structure containing a map with enum keys`() {
+        val model = (
+            modelPrefix + """            
+            structure FooRequest { 
+                payload: KeyValuedMap
+            }
+            
+            map KeyValuedMap {
+                key: KeyType,
+                value: String
+            }
+            
+            @enum([
+                {
+                    value: "FOO",
+                },
+                {
+                    value: "BAR",
+                },
+            ])
+            string KeyType
+        """
+            ).toSmithyModel()
+
+        val expected = """
+            serializer.serializeStruct(OBJ_DESCRIPTOR) {
+                if (input.payload != null) {
+                    mapField(PAYLOAD_DESCRIPTOR) {
+                        input.payload.forEach { (key, value) -> entry(key.value, value) }
+                    }
+                }
+            }
+        """.trimIndent()
+
+        val actual = codegenSerializerForShape(model, "com.test#Foo").stripCodegenPrefix()
+
+        actual.shouldContainOnlyOnceWithDiff(expected)
+    }
+
+    @Test
     fun `it serializes a structure containing a required map`() {
         val model = (
             modelPrefix + """            

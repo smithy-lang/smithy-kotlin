@@ -1027,6 +1027,57 @@ class DeserializeStructGeneratorTest {
     }
 
     @Test
+    fun `it deserializes a structure containing a map with an enum key`() {
+        val model = (
+            modelPrefix + """            
+            structure FooResponse { 
+                payload: KeyValuedMap
+            }
+            
+            map KeyValuedMap {
+                key: KeyType,
+                value: String
+            }
+            
+            @enum([
+                {
+                    value: "FOO",
+                },
+                {
+                    value: "BAR",
+                },
+            ])
+            string KeyType
+        """
+            ).toSmithyModel()
+
+        val expected = """
+            deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
+                loop@while (true) {
+                    when (findNextFieldIndex()) {
+                        PAYLOAD_DESCRIPTOR.index -> builder.payload =
+                            deserializer.deserializeMap(PAYLOAD_DESCRIPTOR) {
+                                val map0 = mutableMapOf<KeyType, String>()
+                                while (hasNextEntry()) {
+                                    val k0 = KeyType.fromValue(key())
+                                    val v0 = if (nextHasValue()) { deserializeString() } else { deserializeNull(); continue }
+                                    map0[k0] = v0
+                                }
+                                map0
+                            }
+                        null -> break@loop
+                        else -> skipValue()
+                    }
+                }
+            }
+        """.trimIndent()
+
+        val actual = codegenDeserializerForShape(model, "com.test#Foo")
+
+        actual.shouldContainOnlyOnceWithDiff(expected)
+    }
+
+    @Test
     fun `it deserializes a structure containing a map of a union of primitive values`() {
         val model = (
             modelPrefix + """            

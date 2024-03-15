@@ -175,6 +175,7 @@ open class SerializeStructGenerator(
      * Delegates to other functions based on the type of value target of map.
      */
     protected fun delegateMapSerialization(rootMemberShape: MemberShape, mapShape: MapShape, nestingLevel: Int, parentMemberName: String) {
+        val keyShape = ctx.model.expectShape(mapShape.key.target)
         val elementShape = ctx.model.expectShape(mapShape.value.target)
         val isSparse = mapShape.isSparse
 
@@ -192,18 +193,41 @@ open class SerializeStructGenerator(
             ShapeType.BIG_INTEGER,
             ShapeType.ENUM,
             ShapeType.INT_ENUM,
-            -> renderPrimitiveEntry(elementShape, nestingLevel, parentMemberName)
+            -> renderPrimitiveEntry(keyShape, elementShape, nestingLevel, parentMemberName)
 
-            ShapeType.BLOB -> renderBlobEntry(nestingLevel, parentMemberName)
-            ShapeType.TIMESTAMP -> renderTimestampEntry(mapShape.value, elementShape, nestingLevel, parentMemberName)
+            ShapeType.BLOB -> renderBlobEntry(keyShape, nestingLevel, parentMemberName)
+
+            ShapeType.TIMESTAMP -> renderTimestampEntry(
+                keyShape,
+                mapShape.value,
+                elementShape,
+                nestingLevel,
+                parentMemberName,
+            )
+
             ShapeType.SET,
             ShapeType.LIST,
-            -> renderListEntry(rootMemberShape, elementShape as CollectionShape, nestingLevel, isSparse, parentMemberName)
+            -> renderListEntry(
+                rootMemberShape,
+                keyShape,
+                elementShape as CollectionShape,
+                nestingLevel,
+                isSparse,
+                parentMemberName,
+            )
 
-            ShapeType.MAP -> renderMapEntry(rootMemberShape, elementShape as MapShape, nestingLevel, isSparse, parentMemberName)
+            ShapeType.MAP -> renderMapEntry(
+                rootMemberShape,
+                keyShape,
+                elementShape as MapShape,
+                nestingLevel,
+                isSparse,
+                parentMemberName,
+            )
+
             ShapeType.UNION,
             ShapeType.STRUCTURE,
-            -> renderNestedStructureEntry(elementShape, nestingLevel, parentMemberName, isSparse)
+            -> renderNestedStructureEntry(keyShape, elementShape, nestingLevel, parentMemberName, isSparse)
 
             else -> error("Unhandled type ${elementShape.type}")
         }
@@ -276,6 +300,7 @@ open class SerializeStructGenerator(
      * ```
      */
     private fun renderNestedStructureEntry(
+        keyShape: Shape,
         structureShape: Shape,
         nestingLevel: Int,
         parentMemberName: String,
@@ -283,13 +308,14 @@ open class SerializeStructGenerator(
     ) {
         val serializerTypeName = ctx.symbolProvider.toSymbol(structureShape).documentSerializerName()
         val (keyName, valueName) = keyValueNames(nestingLevel)
+        val keyValue = keyValue(keyShape, keyName)
         val containerName = if (nestingLevel == 0) "input." else ""
 
         val value = "asSdkSerializable($valueName, ::$serializerTypeName)"
 
         when (isSparse) {
-            true -> writer.write("$containerName$parentMemberName.forEach { ($keyName, $valueName) -> if ($valueName != null) entry($keyName, $value) else entry($keyName, null as String?) }")
-            false -> writer.write("$containerName$parentMemberName.forEach { ($keyName, $valueName) -> entry($keyName, $value) }")
+            true -> writer.write("$containerName$parentMemberName.forEach { ($keyName, $valueName) -> if ($valueName != null) entry($keyValue, $value) else entry($keyValue, null as String?) }")
+            false -> writer.write("$containerName$parentMemberName.forEach { ($keyName, $valueName) -> entry($keyValue, $value) }")
         }
     }
 
@@ -337,6 +363,7 @@ open class SerializeStructGenerator(
      */
     private fun renderMapEntry(
         rootMemberShape: MemberShape,
+        keyShape: Shape,
         mapShape: MapShape,
         nestingLevel: Int,
         isSparse: Boolean,
@@ -345,11 +372,12 @@ open class SerializeStructGenerator(
         val descriptorName = rootMemberShape.descriptorName(nestingLevel.nestedDescriptorName())
         val containerName = if (nestingLevel == 0) "input." else ""
         val (keyName, valueName) = keyValueNames(nestingLevel)
+        val keyValue = keyValue(keyShape, keyName)
         val parentName = parentName(valueName)
 
         writer.withBlock("$containerName$parentMemberName.forEach { ($keyName, $valueName) ->", "}") {
-            writer.wrapBlockIf(isSparse, "if ($valueName != null) {", "} else entry($keyName, null as String?)") {
-                writer.withBlock("mapEntry($keyName, $descriptorName) {", "}") {
+            writer.wrapBlockIf(isSparse, "if ($valueName != null) {", "} else entry($keyValue, null as String?)") {
+                writer.withBlock("mapEntry($keyValue, $descriptorName) {", "}") {
                     delegateMapSerialization(rootMemberShape, mapShape, nestingLevel + 1, parentName)
                 }
             }
@@ -367,6 +395,7 @@ open class SerializeStructGenerator(
      */
     private fun renderListEntry(
         rootMemberShape: MemberShape,
+        keyShape: Shape,
         elementShape: CollectionShape,
         nestingLevel: Int,
         isSparse: Boolean,
@@ -376,10 +405,11 @@ open class SerializeStructGenerator(
         val containerName = if (nestingLevel == 0) "input." else ""
         val (keyName, valueName) = keyValueNames(nestingLevel)
         val parentName = parentName(valueName)
+        val keyValue = keyValue(keyShape, keyName)
 
         writer.withBlock("$containerName$parentMemberName.forEach { ($keyName, $valueName) ->", "}") {
-            writer.wrapBlockIf(isSparse, "if ($valueName != null) {", "} else entry($keyName, null as String?)") {
-                writer.withBlock("listEntry($keyName, $descriptorName) {", "}") {
+            writer.wrapBlockIf(isSparse, "if ($valueName != null) {", "} else entry($keyValue, null as String?)") {
+                writer.withBlock("listEntry($keyValue, $descriptorName) {", "}") {
                     delegateListSerialization(rootMemberShape, elementShape, nestingLevel + 1, parentName)
                 }
             }
@@ -417,12 +447,13 @@ open class SerializeStructGenerator(
      * c0.forEach { (key1, value1) -> entry(key1, value1) }
      * ```
      */
-    private fun renderPrimitiveEntry(elementShape: Shape, nestingLevel: Int, listMemberName: String) {
+    private fun renderPrimitiveEntry(keyShape: Shape, elementShape: Shape, nestingLevel: Int, listMemberName: String) {
         val containerName = if (nestingLevel == 0) "input." else ""
         val enumPostfix = if (elementShape.isEnum) ".value" else ""
         val (keyName, valueName) = keyValueNames(nestingLevel)
+        val keyValue = keyValue(keyShape, keyName)
 
-        writer.write("$containerName$listMemberName.forEach { ($keyName, $valueName) -> entry($keyName, $valueName$enumPostfix) }")
+        writer.write("$containerName$listMemberName.forEach { ($keyName, $valueName) -> entry($keyValue, $valueName$enumPostfix) }")
     }
 
     /**
@@ -432,12 +463,13 @@ open class SerializeStructGenerator(
      * input.fooBlobMap.forEach { (key, value) -> entry(key, value.encodeBase64String()) }
      * ```
      */
-    private fun renderBlobEntry(nestingLevel: Int, listMemberName: String) {
+    private fun renderBlobEntry(keyShape: Shape, nestingLevel: Int, listMemberName: String) {
         val containerName = if (nestingLevel == 0) "input." else ""
         val (keyName, valueName) = keyValueNames(nestingLevel)
+        val keyValue = keyValue(keyShape, keyName)
 
         writer.write(
-            "$containerName$listMemberName.forEach { ($keyName, $valueName) -> entry($keyName, $valueName.#T()) }",
+            "$containerName$listMemberName.forEach { ($keyName, $valueName) -> entry($keyValue, $valueName.#T()) }",
             RuntimeTypes.Core.Text.Encoding.encodeBase64String,
         )
     }
@@ -449,7 +481,13 @@ open class SerializeStructGenerator(
      * input.fooTimestampMap.forEach { (key, value) -> entry(key, it, TimestampFormat.EPOCH_SECONDS) }
      * ```
      */
-    private fun renderTimestampEntry(memberShape: Shape, elementShape: Shape, nestingLevel: Int, listMemberName: String) {
+    private fun renderTimestampEntry(
+        keyShape: Shape,
+        memberShape: Shape,
+        elementShape: Shape,
+        nestingLevel: Int,
+        listMemberName: String,
+    ) {
         writer.addImport(RuntimeTypes.Core.TimestampFormat)
 
         // favor the member shape if it overrides the value shape trait
@@ -466,9 +504,10 @@ open class SerializeStructGenerator(
             .toRuntimeEnum()
 
         val (keyName, valueName) = keyValueNames(nestingLevel)
+        val keyValue = keyValue(keyShape, keyName)
         val containerName = if (nestingLevel == 0) "input." else ""
 
-        writer.write("$containerName$listMemberName.forEach { ($keyName, $valueName) -> entry($keyName, it, $tsFormat) }")
+        writer.write("$containerName$listMemberName.forEach { ($keyName, $valueName) -> entry($keyValue, it, $tsFormat) }")
     }
 
     /**
@@ -658,6 +697,8 @@ open class SerializeStructGenerator(
 
         return keyName to valueName
     }
+
+    private fun keyValue(keyShape: Shape, keyName: String) = keyName + if (keyShape.isEnum) ".value" else ""
 
     /**
      * Get the name of the `PrimitiveSerializer` function name for the corresponding shape type

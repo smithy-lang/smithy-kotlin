@@ -150,6 +150,7 @@ class KotlinDelegator(
         val needsNewline = writers.containsKey(formattedFilename)
         val writer = writers.getOrPut(formattedFilename) {
             val kotlinWriter = KotlinWriter(namespace)
+            if (settings.debug) kotlinWriter.enableStackTraceComments(true)
 
             // Register all integrations [SectionWriterBindings] on the writer.
             integrations.forEach { integration ->

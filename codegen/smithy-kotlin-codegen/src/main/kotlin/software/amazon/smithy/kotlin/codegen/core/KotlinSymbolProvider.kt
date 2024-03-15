@@ -6,7 +6,6 @@ package software.amazon.smithy.kotlin.codegen.core
 
 import software.amazon.smithy.codegen.core.*
 import software.amazon.smithy.kotlin.codegen.KotlinSettings
-import software.amazon.smithy.kotlin.codegen.lang.KotlinTypes
 import software.amazon.smithy.kotlin.codegen.lang.kotlinReservedWords
 import software.amazon.smithy.kotlin.codegen.model.*
 import software.amazon.smithy.kotlin.codegen.utils.dq
@@ -162,15 +161,18 @@ class KotlinSymbolProvider(private val model: Model, private val settings: Kotli
     }
 
     override fun mapShape(shape: MapShape): Symbol {
-        val reference = toSymbol(shape.value)
-        val valueSuffix = if (reference.isNullable) "?" else ""
-        val valueType = "${reference.name}$valueSuffix"
-        val fullyQualifiedValueType = "${reference.fullName}$valueSuffix"
+        val keyReference = toSymbol(shape.key)
+        val keyType = keyReference.name
+        val fullyQualifiedKeyType = keyReference.fullName
 
-        val keyType = KotlinTypes.String.name
-        val fullyQualifiedKeyType = KotlinTypes.String.fullName
+        val valueReference = toSymbol(shape.value)
+        val valueSuffix = if (valueReference.isNullable) "?" else ""
+        val valueType = "${valueReference.name}$valueSuffix"
+        val fullyQualifiedValueType = "${valueReference.fullName}$valueSuffix"
+
         return createSymbolBuilder(shape, "Map<$keyType, $valueType>")
-            .addReferences(reference)
+            .addReferences(keyReference)
+            .addReferences(valueReference)
             .putProperty(SymbolProperty.FULLY_QUALIFIED_NAME_HINT, "Map<$fullyQualifiedKeyType, $fullyQualifiedValueType>")
             .putProperty(SymbolProperty.MUTABLE_COLLECTION_FUNCTION, "mutableMapOf<$keyType, $valueType>")
             .putProperty(SymbolProperty.IMMUTABLE_COLLECTION_FUNCTION, "mapOf<$keyType, $valueType>")
