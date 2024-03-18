@@ -302,7 +302,7 @@ open class DeserializeStructGenerator(
                         "val #L = #T<#T, #T#L>()",
                         memberName,
                         KotlinTypes.Collections.mutableMapOf,
-                        keySymbol,
+                        ctx.symbolProvider.toSymbol(mapShape.key),
                         ctx.symbolProvider.toSymbol(mapShape.value),
                         nullabilitySuffix(mapShape.isSparse),
                     )
