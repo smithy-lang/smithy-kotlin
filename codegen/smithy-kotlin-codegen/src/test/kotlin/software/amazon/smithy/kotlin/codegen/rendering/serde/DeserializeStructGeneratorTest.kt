@@ -1078,6 +1078,84 @@ class DeserializeStructGeneratorTest {
     }
 
     @Test
+    fun `it deserializes a structure containing a map with an enum key and a value that is a map with an enum key`() {
+        val model = (
+            modelPrefix + """
+            structure FooResponse {
+                payload: OuterKeyValuedMap
+            }
+
+            map OuterKeyValuedMap {
+                key: OuterKeyType,
+                value: InnerKeyValuedMap
+            }
+
+            @enum([
+                {
+                    value: "FOO",
+                },
+                {
+                    value: "BAR",
+                },
+            ])
+            string OuterKeyType
+
+            map InnerKeyValuedMap {
+                key: InnerKeyType,
+                value: String
+            }
+
+            @enum([
+                {
+                    value: "BAZ",
+                },
+                {
+                    value: "QUX",
+                },
+            ])
+            string InnerKeyType
+        """
+            ).toSmithyModel()
+
+        val expected = """
+            deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
+                loop@while (true) {
+                    when (findNextFieldIndex()) {
+                        PAYLOAD_DESCRIPTOR.index -> builder.payload =
+                            deserializer.deserializeMap(PAYLOAD_DESCRIPTOR) {
+                                val map0 = mutableMapOf<OuterKeyType, Map<InnerKeyType, String>>()
+                                while (hasNextEntry()) {
+                                    val k0 = OuterKeyType.fromValue(key())
+                                    val v0 =
+                                        if (nextHasValue()) {
+                                            deserializer.deserializeMap(PAYLOAD_C0_DESCRIPTOR) {
+                                                val map1 = mutableMapOf<InnerKeyType, String>()
+                                                while (hasNextEntry()) {
+                                                    val k1 = InnerKeyType.fromValue(key())
+                                                    val v1 = if (nextHasValue()) { deserializeString() } else { deserializeNull(); continue }
+                                                    map1[k1] = v1
+                                                }
+                                                map1
+                                            }
+                                        } else { deserializeNull(); continue }
+
+                                    map0[k0] = v0
+                                }
+                                map0
+                            }
+                        null -> break@loop
+                        else -> skipValue()
+                    }
+                }
+            }
+        """.trimIndent()
+
+        val actual = codegenDeserializerForShape(model, "com.test#Foo")
+
+        actual.shouldContainOnlyOnceWithDiff(expected)
+    }
+
+    @Test
     fun `it deserializes a structure containing a map of a union of primitive values`() {
         val model = (
             modelPrefix + """            
