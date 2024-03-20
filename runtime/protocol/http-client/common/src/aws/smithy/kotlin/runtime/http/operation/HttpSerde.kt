@@ -14,17 +14,79 @@ import aws.smithy.kotlin.runtime.operation.ExecutionContext
  * Implemented by types that know how to serialize to the HTTP protocol.
  */
 @InternalApi
-public fun interface HttpSerialize<T> {
-    public suspend fun serialize(context: ExecutionContext, input: T): HttpRequestBuilder
+public sealed interface HttpSerializer<T> {
+
+    /**
+     * Serializer for streaming operations that need full control over serialization of the body
+     */
+    @InternalApi
+    public interface Streaming<T> : HttpSerializer<T> {
+        public suspend fun serialize(context: ExecutionContext, input: T): HttpRequestBuilder
+    }
+
+    /**
+     * Serializer for non-streaming (simple) operations that don't need to ever suspend.
+     */
+    @InternalApi
+    public interface NonStreaming<T> : HttpSerializer<T> {
+        public fun serialize(context: ExecutionContext, input: T): HttpRequestBuilder
+    }
 }
 
 /**
  * Implemented by types that know how to deserialize from the HTTP protocol.
  */
 @InternalApi
+public sealed interface HttpDeserializer<T> {
+
+    /**
+     * Deserializer for streaming operations that need full control over deserialization of the body
+     */
+    @InternalApi
+    public interface Streaming<T> : HttpDeserializer<T> {
+        public suspend fun deserialize(context: ExecutionContext, call: HttpCall): T
+    }
+
+    /**
+     * Deserializer for non-streaming (simple) operations that don't need to ever suspend. These
+     * operations are handed the full payload if it exists.
+     */
+    @InternalApi
+    public interface NonStreaming<T> : HttpDeserializer<T> {
+        public fun deserialize(context: ExecutionContext, call: HttpCall, payload: ByteArray?): T
+    }
+}
+
+/**
+ * Implemented by types that know how to serialize to the HTTP protocol.
+ */
+@Deprecated("use HttpSerializer.Streaming")
+@InternalApi
+public fun interface HttpSerialize<T> {
+    public suspend fun serialize(context: ExecutionContext, input: T): HttpRequestBuilder
+}
+
+private class LegacyHttpSerializeAdapter<T>(val serializer: HttpSerialize<T>) : HttpSerializer.Streaming<T> {
+    override suspend fun serialize(context: ExecutionContext, input: T): HttpRequestBuilder =
+        serializer.serialize(context, input)
+}
+internal fun <T> HttpSerialize<T>.intoSerializer(): HttpSerializer<T> = LegacyHttpSerializeAdapter(this)
+
+/**
+ * Implemented by types that know how to deserialize from the HTTP protocol.
+ */
+@Deprecated("use HttpDeserializer.Streaming")
+@InternalApi
 public fun interface HttpDeserialize<T> {
     public suspend fun deserialize(context: ExecutionContext, call: HttpCall): T
 }
+
+private class LegacyHttpDeserializeAdapter<T>(val deserializer: HttpDeserialize<T>) : HttpDeserializer.Streaming<T> {
+    override suspend fun deserialize(context: ExecutionContext, call: HttpCall): T =
+        deserializer.deserialize(context, call)
+}
+
+internal fun <T> HttpDeserialize<T>.intoDeserializer(): HttpDeserializer<T> = LegacyHttpDeserializeAdapter(this)
 
 /**
  * Convenience deserialize implementation for a type with no output type

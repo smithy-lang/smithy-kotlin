@@ -33,7 +33,7 @@ internal data class XmlError(
  * Returns parsed data in normalized form or throws [DeserializationException] if response cannot be parsed.
  */
 @InternalApi
-public suspend fun parseRestXmlErrorResponse(payload: ByteArray): ErrorDetails {
+public fun parseRestXmlErrorResponse(payload: ByteArray): ErrorDetails {
     val details = XmlErrorDeserializer.deserialize(xmlTagReader(payload))
     return ErrorDetails(details.code, details.message, details.requestId)
 }
