@@ -66,10 +66,13 @@ public fun interface HttpSerialize<T> {
     public suspend fun serialize(context: ExecutionContext, input: T): HttpRequestBuilder
 }
 
+@Suppress("DEPRECATION")
 private class LegacyHttpSerializeAdapter<T>(val serializer: HttpSerialize<T>) : HttpSerializer.Streaming<T> {
     override suspend fun serialize(context: ExecutionContext, input: T): HttpRequestBuilder =
         serializer.serialize(context, input)
 }
+
+@Suppress("DEPRECATION")
 internal fun <T> HttpSerialize<T>.intoSerializer(): HttpSerializer<T> = LegacyHttpSerializeAdapter(this)
 
 /**
@@ -81,16 +84,19 @@ public fun interface HttpDeserialize<T> {
     public suspend fun deserialize(context: ExecutionContext, call: HttpCall): T
 }
 
+@Suppress("DEPRECATION")
 private class LegacyHttpDeserializeAdapter<T>(val deserializer: HttpDeserialize<T>) : HttpDeserializer.Streaming<T> {
     override suspend fun deserialize(context: ExecutionContext, call: HttpCall): T =
         deserializer.deserialize(context, call)
 }
 
+@Suppress("DEPRECATION")
 internal fun <T> HttpDeserialize<T>.intoDeserializer(): HttpDeserializer<T> = LegacyHttpDeserializeAdapter(this)
 
 /**
  * Convenience deserialize implementation for a type with no output type
  */
+@Suppress("DEPRECATION")
 @InternalApi
 public object UnitDeserializer : HttpDeserialize<Unit> {
     override suspend fun deserialize(context: ExecutionContext, call: HttpCall) {}
@@ -99,6 +105,7 @@ public object UnitDeserializer : HttpDeserialize<Unit> {
 /**
  * Convenience serialize implementation for a type with no input type
  */
+@Suppress("DEPRECATION")
 @InternalApi
 public object UnitSerializer : HttpSerialize<Unit> {
     override suspend fun serialize(context: ExecutionContext, input: Unit): HttpRequestBuilder = HttpRequestBuilder()
@@ -107,6 +114,7 @@ public object UnitSerializer : HttpSerialize<Unit> {
 /**
  * Convenience deserialize implementation that returns the response without modification
  */
+@Suppress("DEPRECATION")
 @InternalApi
 public object IdentityDeserializer : HttpDeserialize<HttpResponse> {
     override suspend fun deserialize(context: ExecutionContext, call: HttpCall): HttpResponse = call.response

@@ -74,7 +74,7 @@ public inline fun HttpRequestBuilder.url(block: Url.Builder.() -> Unit) {
 /**
  * Set values from an existing [Url] instance
  */
-public inline fun HttpRequestBuilder.url(value: Url) {
+public fun HttpRequestBuilder.url(value: Url) {
     url.copyFrom(value)
 }
 

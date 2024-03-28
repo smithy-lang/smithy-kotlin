@@ -407,8 +407,8 @@ object RuntimeTypes {
         val RestJsonErrorDeserializer = symbol("RestJsonErrorDeserializer")
     }
     object AwsXmlProtocols : RuntimeTypePackage(KotlinDependency.AWS_XML_PROTOCOLS) {
-        val parseRestXmlErrorResponse = symbol("parseRestXmlErrorResponse")
-        val parseEc2QueryErrorResponse = symbol("parseEc2QueryErrorResponse")
+        val parseRestXmlErrorResponseNoSuspend = symbol("parseRestXmlErrorResponseNoSuspend")
+        val parseEc2QueryErrorResponseNoSuspend = symbol("parseEc2QueryErrorResponseNoSuspend")
     }
 
     object AwsEventStream : RuntimeTypePackage(KotlinDependency.AWS_EVENT_STREAM) {

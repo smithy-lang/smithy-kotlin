@@ -37,6 +37,7 @@ public class SdkHttpOperation<I, O> internal constructor(
     internal val telemetry: SdkOperationTelemetry,
 ) {
 
+    @Suppress("DEPRECATION")
     internal constructor(
         execution: SdkOperationExecution<I, O>,
         context: ExecutionContext,
@@ -132,6 +133,7 @@ public class SdkHttpOperationBuilder<I, O> (
 ) {
     public val telemetry: SdkOperationTelemetry = SdkOperationTelemetry()
 
+    @Suppress("DEPRECATION")
     @Deprecated("use serializeWith")
     public var serializer: HttpSerialize<I>? = null
         set(value) {
@@ -141,6 +143,7 @@ public class SdkHttpOperationBuilder<I, O> (
 
     public var serializeWith: HttpSerializer<I>? = null
 
+    @Suppress("DEPRECATION")
     @Deprecated("use deserializeWith")
     public var deserializer: HttpDeserialize<O>? = null
         set(value) {
