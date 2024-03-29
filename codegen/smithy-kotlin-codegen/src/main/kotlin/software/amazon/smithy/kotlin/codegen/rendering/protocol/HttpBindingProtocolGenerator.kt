@@ -77,7 +77,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
      * The function should have the following signature:
      *
      * ```
-     * fun throwFooOperationError(context: ExecutionContext, call: HttpCall, payload: HttpByteArray?): Nothing {
+     * fun throwFooOperationError(context: ExecutionContext, call: HttpCall, payload: ByteArray?): Nothing {
      *     <-- CURRENT WRITER CONTEXT -->
      * }
      * ```
