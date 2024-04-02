@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.1.3] - 04/02/2024
+
+### Fixes
+* Fix not generating waiters and paginators for operations that come from resources
+
+### Miscellaneous
+* Decrease generated client artifact sizes by reducing the number of suspension points for operations and inlining commonly used HTTP builders
+
 ## [1.1.1] - 03/19/2024
 
 ## [1.1.0] - 03/18/2024
