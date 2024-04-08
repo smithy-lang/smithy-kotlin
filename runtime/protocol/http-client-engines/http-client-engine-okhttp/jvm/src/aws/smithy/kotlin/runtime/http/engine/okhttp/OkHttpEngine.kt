@@ -51,6 +51,7 @@ public class OkHttpEngine(
         val engineResponse = mapOkHttpExceptions { engineCall.executeAsync() }
 
         callContext.job.invokeOnCompletion {
+            engineCall.cancel()
             engineResponse.body.close()
         }
 
