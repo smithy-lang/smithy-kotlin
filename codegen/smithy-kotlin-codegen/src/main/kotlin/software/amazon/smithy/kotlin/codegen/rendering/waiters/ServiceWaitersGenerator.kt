@@ -44,9 +44,9 @@ internal fun CodegenContext.allWaiters(): List<WaiterInfo> {
             WaiterInfo(this, service, op, name, waiter)
         } ?: listOf()
 
-    return service
-        .allOperations
-        .map { model.expectShape<OperationShape>(it) }
+    return TopDownIndex
+        .of(model)
+        .getContainedOperations(service)
         .flatMap(::operationWaiters)
 }
 

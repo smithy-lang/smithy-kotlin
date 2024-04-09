@@ -4,38 +4,18 @@ namespace com.test
 use smithy.waiters#waitable
 
 service Test {
-    version: "1.0.0",
-    operations: [
-        DescribeFoo,
-        DescribeFooRequired,
+    version: "1.0.0"
+    resources: [
+        Foo
     ]
 }
 
-@waitable(
-    FooExists: {
-        documentation: "Wait until a foo exists",
-        acceptors: [
-            {
-                state: "success",
-                matcher: {
-                    success: true
-                }
-            },
-            {
-                state: "retry",
-                matcher: {
-                    errorType: "NotFound"
-                }
-            }
-        ]
-    }
-)
-operation DescribeFoo {
-    input: DescribeFooInput,
-    output: DescribeFooOutput,
-    errors: [NotFound, UnknownError]
+resource Foo {
+    identifiers: { id: String }
+    read: DescribeFooRequired
 }
 
+@readonly
 @waitable(
     FooRequiredExists: {
         documentation: "Wait until a foo exists with required input",
@@ -61,19 +41,14 @@ operation DescribeFooRequired {
     errors: [NotFound, UnknownError]
 }
 
-structure DescribeFooInput {
+structure DescribeFooRequiredInput {
+    @required
     id: String
 }
 
 structure DescribeFooOutput {
     name: String
 }
-
-structure DescribeFooRequiredInput {
-    @required
-    id: String
-}
-
 
 @error("client")
 structure NotFound {}

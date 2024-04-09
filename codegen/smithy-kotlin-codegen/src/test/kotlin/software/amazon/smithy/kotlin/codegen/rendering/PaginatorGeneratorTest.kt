@@ -424,4 +424,116 @@ class PaginatorGeneratorTest {
 
         actual.shouldContainOnlyOnceWithDiff(expected)
     }
+
+    @Test
+    fun testRenderPaginatorFromResourceOperation() {
+        val testModel = """
+            namespace com.test
+            
+            use aws.protocols#restJson1
+            
+            service Lambda {
+                resources: [Function],
+            }
+            
+            resource Function {
+                identifiers: { id: String },
+                list: ListFunctions,
+            }
+            
+            @paginated(
+                inputToken: "Marker",
+                outputToken: "NextMarker",
+                pageSize: "MaxItems",
+            )
+            @readonly
+            @http(method: "GET", uri: "/functions", code: 200)
+            operation ListFunctions {
+                input: ListFunctionsRequest,
+                output: ListFunctionsResponse,
+            }
+            
+            structure ListFunctionsRequest {
+                @httpQuery("Marker")
+                Marker: String,
+                @httpQuery("MaxItems")
+                MaxItems: Integer,
+            }
+            
+            structure ListFunctionsResponse {
+                Functions: FunctionsList,
+                NextMarker: String,
+            }
+            
+            list FunctionsList {
+                member: FunctionSummary,
+            }
+            
+            structure FunctionSummary {
+                id: String,
+                name: String
+            }
+        """.toSmithyModel()
+        val testContext = testModel.newTestContext("Lambda", "com.test")
+
+        val codegenContext = object : CodegenContext {
+            override val model: Model = testContext.generationCtx.model
+            override val symbolProvider: SymbolProvider = testContext.generationCtx.symbolProvider
+            override val settings: KotlinSettings = testContext.generationCtx.settings
+            override val protocolGenerator: ProtocolGenerator = testContext.generator
+            override val integrations: List<KotlinIntegration> = testContext.generationCtx.integrations
+        }
+
+        val unit = PaginatorGenerator()
+        unit.writeAdditionalFiles(codegenContext, testContext.generationCtx.delegator)
+
+        testContext.generationCtx.delegator.flushWriters()
+        val testManifest = testContext.generationCtx.delegator.fileManifest as MockManifest
+        val actual = testManifest.expectFileString("src/main/kotlin/com/test/paginators/Paginators.kt")
+
+        val expected = """
+            /**
+             * Paginate over [ListFunctionsResponse] results.
+             *
+             * When this operation is called, a [kotlinx.coroutines.Flow] is created. Flows are lazy (cold) so no service
+             * calls are made until the flow is collected. This also means there is no guarantee that the request is valid
+             * until then. Once you start collecting the flow, the SDK will lazily load response pages by making service
+             * calls until there are no pages left or the flow is cancelled. If there are errors in your request, you will
+             * see the failures only after you start collection.
+             * @param initialRequest A [ListFunctionsRequest] to start pagination
+             * @return A [kotlinx.coroutines.flow.Flow] that can collect [ListFunctionsResponse]
+             */
+            public fun TestClient.listFunctionsPaginated(initialRequest: ListFunctionsRequest = ListFunctionsRequest { }): Flow<ListFunctionsResponse> =
+                flow {
+                    var cursor: kotlin.String? = null
+                    var hasNextPage: Boolean = true
+            
+                    while (hasNextPage) {
+                        val req = initialRequest.copy {
+                            this.marker = cursor
+                        }
+                        val result = this@listFunctionsPaginated.listFunctions(req)
+                        cursor = result.nextMarker
+                        hasNextPage = cursor?.isNotEmpty() == true
+                        emit(result)
+                    }
+                }
+            
+            /**
+             * Paginate over [ListFunctionsResponse] results.
+             *
+             * When this operation is called, a [kotlinx.coroutines.Flow] is created. Flows are lazy (cold) so no service
+             * calls are made until the flow is collected. This also means there is no guarantee that the request is valid
+             * until then. Once you start collecting the flow, the SDK will lazily load response pages by making service
+             * calls until there are no pages left or the flow is cancelled. If there are errors in your request, you will
+             * see the failures only after you start collection.
+             * @param block A builder block used for DSL-style invocation of the operation
+             * @return A [kotlinx.coroutines.flow.Flow] that can collect [ListFunctionsResponse]
+             */
+            public fun TestClient.listFunctionsPaginated(block: ListFunctionsRequest.Builder.() -> Unit): Flow<ListFunctionsResponse> =
+                listFunctionsPaginated(ListFunctionsRequest.Builder().apply(block).build())
+        """.trimIndent()
+
+        actual.shouldContainOnlyOnceWithDiff(expected)
+    }
 }
