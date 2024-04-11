@@ -1,7 +1,7 @@
 {
     "id": "19208b1c-8c36-452b-a6e3-e0bef345776a",
     "type": "feature",
-    "description": "Add new @SdkDsl DSL marker to all generated structure builders, clarifying DSL scopes when building complex types",
+    "description": "⚠️ **IMPORTANT**: Add new @SdkDsl DSL marker to all generated structure builders, clarifying DSL scopes when building complex types. See the [**Scope control applied to DSL builders** breaking change announcement](https://github.com/awslabs/aws-sdk-kotlin/discussions/1280) for more details.",
     "issues": [
         "awslabs/smithy-kotlin#428"
     ]
