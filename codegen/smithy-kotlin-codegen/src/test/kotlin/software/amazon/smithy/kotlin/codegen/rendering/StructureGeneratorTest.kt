@@ -184,6 +184,7 @@ class StructureGeneratorTest {
     @Test
     fun `it renders a builder impl`() {
         val expected = """
+            @SdkDsl
             public class Builder {
                 /**
                  * This *is* documentation about the member.

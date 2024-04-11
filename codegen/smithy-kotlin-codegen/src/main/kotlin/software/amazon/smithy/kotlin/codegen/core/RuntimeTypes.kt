@@ -98,6 +98,7 @@ object RuntimeTypes {
         val fromEpochMilliseconds = symbol("fromEpochMilliseconds", "time")
         val TimestampFormat = symbol("TimestampFormat", "time")
         val ClientException = symbol("ClientException")
+        val SdkDsl = symbol("SdkDsl")
 
         object Collections : RuntimeTypePackage(KotlinDependency.CORE, "collections") {
             val Attributes = symbol("Attributes")
