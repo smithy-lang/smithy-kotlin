@@ -17,6 +17,11 @@ public expect class TelemetryContextElement(context: Context) : CoroutineContext
     public companion object Key : CoroutineContext.Key<TelemetryContextElement>
 
     public val context: Context
+    override val key: CoroutineContext.Key<*>
+    override fun <E : CoroutineContext.Element> get(key: CoroutineContext.Key<E>): E?
+    override fun <R> fold(initial: R, operation: (R, CoroutineContext.Element) -> R): R
+    override fun plus(context: CoroutineContext): CoroutineContext
+    override fun minusKey(key: CoroutineContext.Key<*>): CoroutineContext
 }
 
 /**

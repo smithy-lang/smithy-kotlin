@@ -29,7 +29,23 @@ public interface PlatformProvider : PlatformEnvironProvider, Filesystem {
     public val isNative: Boolean
 }
 
-internal expect object SystemDefaultProvider : PlatformProvider
+internal expect object SystemDefaultProvider : PlatformProvider {
+    override fun osInfo(): OperatingSystem
+    override val filePathSeparator: String
+    override fun fileExists(path: String): Boolean
+    override fun getAllEnvVars(): Map<String, String>
+    override fun getAllProperties(): Map<String, String>
+    override fun getProperty(key: String): String?
+    override fun getenv(key: String): String?
+    override suspend fun readFileOrNull(path: String): ByteArray?
+    override suspend fun writeFile(path: String, data: ByteArray)
+    override val isJvm: Boolean
+    override val isAndroid: Boolean
+    override val isBrowser: Boolean
+    override val isNode: Boolean
+    override val isNative: Boolean
+}
+
 
 public data class OperatingSystem(val family: OsFamily, val version: String?)
 
