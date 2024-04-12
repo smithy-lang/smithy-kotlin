@@ -6,6 +6,7 @@
 package aws.smithy.kotlin.runtime.http.engine
 
 import aws.smithy.kotlin.runtime.ClientException
+import aws.smithy.kotlin.runtime.InternalApi
 import aws.smithy.kotlin.runtime.net.Host
 import aws.smithy.kotlin.runtime.net.Scheme
 import aws.smithy.kotlin.runtime.net.url.Url
@@ -29,7 +30,8 @@ import aws.smithy.kotlin.runtime.util.PropertyProvider
  * - `https_proxy`, `HTTPS_PROXY`
  * - `no_proxy`, `NO_PROXY`
  */
-internal class EnvironmentProxySelector(provider: PlatformEnvironProvider = PlatformProvider.System) : ProxySelector {
+@InternalApi
+public class EnvironmentProxySelector(provider: PlatformEnvironProvider = PlatformProvider.System) : ProxySelector {
     private val httpProxy by lazy { resolveProxyByProperty(provider, Scheme.HTTP) ?: resolveProxyByEnvironment(provider, Scheme.HTTP) }
     private val httpsProxy by lazy { resolveProxyByProperty(provider, Scheme.HTTPS) ?: resolveProxyByEnvironment(provider, Scheme.HTTPS) }
     private val noProxyHosts by lazy { resolveNoProxyHosts(provider) }

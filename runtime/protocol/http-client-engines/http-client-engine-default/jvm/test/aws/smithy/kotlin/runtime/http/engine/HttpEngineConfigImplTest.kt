@@ -9,6 +9,7 @@ import aws.smithy.kotlin.runtime.http.config.HttpEngineConfig
 import aws.smithy.kotlin.runtime.http.engine.crt.CrtHttpEngine
 import aws.smithy.kotlin.runtime.http.engine.crt.CrtHttpEngineConfig
 import aws.smithy.kotlin.runtime.io.closeIfCloseable
+import aws.smithy.kotlin.runtime.util.TestPlatformProvider
 import org.junit.jupiter.api.Test
 import kotlin.test.*
 
@@ -128,6 +129,21 @@ class HttpEngineConfigImplTest {
                     httpClient { maxConcurrency = 256u }
                 }
             }
+        }
+    }
+
+    // reproduces https://github.com/awslabs/aws-sdk-kotlin/issues/1281
+    @Test
+    fun testCanConfigureProxySelectorWithInvalidEnvVarsPresent() {
+        val testPlatformProvider = TestPlatformProvider(env = mapOf("http_proxy" to "invalid", "https_proxy" to "invalid"))
+
+        val builder = HttpEngineConfigImpl.BuilderImpl()
+        builder.httpClient {
+            proxySelector = EnvironmentProxySelector(testPlatformProvider)
+        }
+
+        builder.httpClient {
+            proxySelector = ProxySelector.NoProxy
         }
     }
 }
