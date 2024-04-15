@@ -30,8 +30,7 @@ import aws.smithy.kotlin.runtime.util.PropertyProvider
  * - `https_proxy`, `HTTPS_PROXY`
  * - `no_proxy`, `NO_PROXY`
  */
-@InternalApi
-public class EnvironmentProxySelector(provider: PlatformEnvironProvider = PlatformProvider.System) : ProxySelector {
+internal class EnvironmentProxySelector(provider: PlatformEnvironProvider = PlatformProvider.System) : ProxySelector {
     private val httpProxy by lazy { resolveProxyByProperty(provider, Scheme.HTTP) ?: resolveProxyByEnvironment(provider, Scheme.HTTP) }
     private val httpsProxy by lazy { resolveProxyByProperty(provider, Scheme.HTTPS) ?: resolveProxyByEnvironment(provider, Scheme.HTTPS) }
     private val noProxyHosts by lazy { resolveNoProxyHosts(provider) }

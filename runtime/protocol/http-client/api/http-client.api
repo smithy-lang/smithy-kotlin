@@ -63,13 +63,6 @@ public final class aws/smithy/kotlin/runtime/http/engine/EngineAttributes {
 	public final fun getTimeToFirstByte ()Laws/smithy/kotlin/runtime/collections/AttributeKey;
 }
 
-public final class aws/smithy/kotlin/runtime/http/engine/EnvironmentProxySelector : aws/smithy/kotlin/runtime/http/engine/ProxySelector {
-	public fun <init> ()V
-	public fun <init> (Laws/smithy/kotlin/runtime/util/PlatformEnvironProvider;)V
-	public synthetic fun <init> (Laws/smithy/kotlin/runtime/util/PlatformEnvironProvider;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public fun select (Laws/smithy/kotlin/runtime/net/url/Url;)Laws/smithy/kotlin/runtime/http/engine/ProxyConfig;
-}
-
 public abstract interface class aws/smithy/kotlin/runtime/http/engine/HttpClientEngine : kotlinx/coroutines/CoroutineScope {
 	public abstract fun getConfig ()Laws/smithy/kotlin/runtime/http/engine/HttpClientEngineConfig;
 	public abstract fun roundTrip (Laws/smithy/kotlin/runtime/operation/ExecutionContext;Laws/smithy/kotlin/runtime/http/request/HttpRequest;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
