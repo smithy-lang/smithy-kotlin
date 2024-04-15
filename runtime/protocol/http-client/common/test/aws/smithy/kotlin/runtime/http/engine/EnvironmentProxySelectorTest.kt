@@ -102,8 +102,9 @@ class EnvironmentProxySelectorTest {
     fun testSelectFailures() {
         failCases.forEachIndexed { idx, failCase ->
             val testProvider = TestPlatformEnvironmentProvider(failCase.env, failCase.props)
+            val selector = EnvironmentProxySelector(testProvider)
             val exception = assertFailsWith<ClientException>("[idx=$idx] expected ClientException") {
-                EnvironmentProxySelector(testProvider)
+                selector.select(Url.parse("http://localhost:8000")) // call `select` because proxy selector resolves env vars lazily
             }
 
             val expectedError = (failCase.env + failCase.props).map { (k, v) -> """$k="$v"""" }.joinToString(", ")

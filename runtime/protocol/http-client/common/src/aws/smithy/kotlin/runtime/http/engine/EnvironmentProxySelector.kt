@@ -30,11 +30,9 @@ import aws.smithy.kotlin.runtime.util.PropertyProvider
  * - `no_proxy`, `NO_PROXY`
  */
 internal class EnvironmentProxySelector(provider: PlatformEnvironProvider = PlatformProvider.System) : ProxySelector {
-    private val httpProxy =
-        resolveProxyByProperty(provider, Scheme.HTTP) ?: resolveProxyByEnvironment(provider, Scheme.HTTP)
-    private val httpsProxy =
-        resolveProxyByProperty(provider, Scheme.HTTPS) ?: resolveProxyByEnvironment(provider, Scheme.HTTPS)
-    private val noProxyHosts = resolveNoProxyHosts(provider)
+    private val httpProxy by lazy { resolveProxyByProperty(provider, Scheme.HTTP) ?: resolveProxyByEnvironment(provider, Scheme.HTTP) }
+    private val httpsProxy by lazy { resolveProxyByProperty(provider, Scheme.HTTPS) ?: resolveProxyByEnvironment(provider, Scheme.HTTPS) }
+    private val noProxyHosts by lazy { resolveNoProxyHosts(provider) }
 
     override fun select(url: Url): ProxyConfig {
         if (httpProxy == null && httpsProxy == null || noProxy(url)) return ProxyConfig.Direct
