@@ -136,10 +136,12 @@ class HttpEngineConfigImplTest {
     @Test
     fun testCanConfigureProxySelectorWithInvalidEnvVarsPresent() {
         try {
-            System.setProperty("http.proxyHost", "invalid")
-            System.setProperty("https.proxyHost", "invalid")
+            System.setProperty("http.proxyHost", "invalid!")
+            System.setProperty("https.proxyHost", "invalid!")
 
             val builder = HttpEngineConfigImpl.BuilderImpl()
+            builder.buildHttpEngineConfig()
+
             builder.httpClient {
                 proxySelector = ProxySelector.NoProxy
             }
