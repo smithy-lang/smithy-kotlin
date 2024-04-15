@@ -11,9 +11,9 @@ import java.util.zip.CRC32
 public actual class Crc32 : Crc32Base() {
     private val md = CRC32()
 
-    override fun update(input: ByteArray, offset: Int, length: Int): Unit = md.update(input, offset, length)
+    actual override fun update(input: ByteArray, offset: Int, length: Int): Unit = md.update(input, offset, length)
 
-    override fun digestValue(): UInt = md.value.toUInt()
+    actual override fun digestValue(): UInt = md.value.toUInt()
 
-    override fun reset(): Unit = md.reset()
+    actual override fun reset(): Unit = md.reset()
 }
