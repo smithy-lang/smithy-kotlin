@@ -47,11 +47,12 @@ class PaginatorGenerator : KotlinIntegration {
         val service = ctx.model.expectShape<ServiceShape>(ctx.settings.service)
         val paginatedIndex = PaginatedIndex.of(ctx.model)
 
-        delegator.useFileWriter("Paginators.kt", "${ctx.settings.pkg.name}.paginators") { writer ->
-            val paginatedOperations = service.allOperations
-                .map { ctx.model.expectShape<OperationShape>(it) }
-                .filter { operationShape -> operationShape.hasTrait(PaginatedTrait.ID) }
+        val paginatedOperations = TopDownIndex
+            .of(ctx.model)
+            .getContainedOperations(ctx.settings.service)
+            .filter { it.hasTrait<PaginatedTrait>() }
 
+        delegator.useFileWriter("Paginators.kt", "${ctx.settings.pkg.name}.paginators") { writer ->
             paginatedOperations.forEach { paginatedOperation ->
                 val paginationInfo = paginatedIndex.getPaginationInfo(service, paginatedOperation).getOrNull()
                     ?: throw CodegenException("Unexpectedly unable to get PaginationInfo from $service $paginatedOperation")
