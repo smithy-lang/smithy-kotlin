@@ -56,7 +56,6 @@ public class OkHttpEngine(
 
         return OkHttpCall(request, response, requestTime, responseTime, callContext, engineCall).also { call ->
             callContext.job.invokeOnCompletion { error ->
-                call.call.isCanceled()
                 if (error != null) call.cancelInFlight()
                 engineResponse.body.close()
             }
