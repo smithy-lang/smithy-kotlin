@@ -5,6 +5,12 @@ public abstract class aws/smithy/kotlin/runtime/client/AbstractSdkClientBuilder 
 	protected abstract fun newClient (Laws/smithy/kotlin/runtime/client/SdkClientConfig;)Laws/smithy/kotlin/runtime/client/SdkClient;
 }
 
+public abstract class aws/smithy/kotlin/runtime/client/AbstractSdkClientFactory : aws/smithy/kotlin/runtime/client/SdkClientFactory {
+	public fun <init> ()V
+	protected fun finalizeConfig (Laws/smithy/kotlin/runtime/client/SdkClient$Builder;)V
+	public fun invoke (Lkotlin/jvm/functions/Function1;)Laws/smithy/kotlin/runtime/client/SdkClient;
+}
+
 public abstract interface class aws/smithy/kotlin/runtime/client/IdempotencyTokenConfig {
 	public abstract fun getIdempotencyTokenProvider ()Laws/smithy/kotlin/runtime/client/IdempotencyTokenProvider;
 }
