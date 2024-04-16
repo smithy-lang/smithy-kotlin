@@ -52,3 +52,9 @@ public annotation class InternalApi
     AnnotationTarget.CONSTRUCTOR,
 )
 public annotation class ExperimentalApi
+
+/**
+ * Signifies that a type is considered part of an SDK DSL for the purposes of scope control
+ */
+@DslMarker
+public annotation class SdkDsl

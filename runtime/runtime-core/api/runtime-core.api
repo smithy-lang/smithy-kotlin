@@ -36,6 +36,9 @@ public class aws/smithy/kotlin/runtime/SdkBaseException : java/lang/RuntimeExcep
 	public fun getSdkErrorMetadata ()Laws/smithy/kotlin/runtime/ErrorMetadata;
 }
 
+public abstract interface annotation class aws/smithy/kotlin/runtime/SdkDsl : java/lang/annotation/Annotation {
+}
+
 public class aws/smithy/kotlin/runtime/ServiceErrorMetadata : aws/smithy/kotlin/runtime/ErrorMetadata {
 	public static final field Companion Laws/smithy/kotlin/runtime/ServiceErrorMetadata$Companion;
 	public fun <init> ()V
