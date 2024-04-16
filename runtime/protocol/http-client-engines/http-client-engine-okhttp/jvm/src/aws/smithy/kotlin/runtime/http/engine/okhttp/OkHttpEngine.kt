@@ -50,16 +50,17 @@ public class OkHttpEngine(
         val engineCall = client.newCall(engineRequest)
         val engineResponse = mapOkHttpExceptions { engineCall.executeAsync() }
 
-        callContext.job.invokeOnCompletion {
-            engineCall.cancel()
-            engineResponse.body.close()
-        }
-
         val response = engineResponse.toSdkResponse()
         val requestTime = Instant.fromEpochMilliseconds(engineResponse.sentRequestAtMillis)
         val responseTime = Instant.fromEpochMilliseconds(engineResponse.receivedResponseAtMillis)
 
-        return OkHttpCall(request, response, requestTime, responseTime, callContext, engineCall)
+        return OkHttpCall(request, response, requestTime, responseTime, callContext, engineCall).also { call ->
+            callContext.job.invokeOnCompletion { error ->
+                call.call.isCanceled()
+                if (error != null) call.cancelInFlight()
+                engineResponse.body.close()
+            }
+        }
     }
 
     override fun shutdown() {
