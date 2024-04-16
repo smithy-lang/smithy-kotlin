@@ -19,7 +19,7 @@ class ClockSkew : KotlinIntegration {
             SectionWriterBinding(
                 ServiceClientGenerator.Sections.CompanionObject.FinalizeConfig,
                 clockSkewSectionWriter,
-            )
+            ),
         )
 
     private val clockSkewSectionWriter = AppendingSectionWriter { writer ->
