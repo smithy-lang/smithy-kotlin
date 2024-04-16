@@ -50,7 +50,7 @@ class ServiceWaitersGeneratorTest {
                 return strategy.retry(policy) { describeFooOptional(request) }
             }
         """.trimIndent()
-        generateService().shouldContain(methodHeader, methodFooter)
+        generateService("simple-service-with-operation-waiter.smithy").shouldContain(methodHeader, methodFooter)
     }
 
     @Test
@@ -124,7 +124,7 @@ class ServiceWaitersGeneratorTest {
         }
     }
 
-    private fun generateService(modelResourceName: String = "simple-service-with-operation-waiter.smithy"): String {
+    private fun generateService(modelResourceName: String): String {
         val model = loadModelFromResource(modelResourceName)
         val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model)
         val service = model.getShape(ShapeId.from(TestModelDefault.SERVICE_SHAPE_ID)).get().asServiceShape().get()
