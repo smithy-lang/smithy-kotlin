@@ -55,8 +55,11 @@ public class OkHttpEngine(
         val responseTime = Instant.fromEpochMilliseconds(engineResponse.receivedResponseAtMillis)
 
         return OkHttpCall(request, response, requestTime, responseTime, callContext, engineCall).also { call ->
-            callContext.job.invokeOnCompletion { error ->
-                if (error != null) call.cancelInFlight()
+            callContext.job.invokeOnCompletion { cause ->
+                // If cause is non-null that means the job was cancelled (CancellationException) or failed (anything
+                // else). In both cases we need to ensure that the engine-side resources are cleaned up completely
+                // since they wouldn't otherwise be. https://github.com/smithy-lang/smithy-kotlin/issues/1061
+                if (cause != null) call.cancelInFlight()
                 engineResponse.body.close()
             }
         }

@@ -102,17 +102,17 @@ class AsyncStressTest : AbstractEngineTest() {
             assertFailsWith<CancellationException> {
                 coroutineScope {
                     val parentScope = this
-
-                    println("Invoking call on ctx $coroutineContext")
                     val call = client.call(req)
 
                     val bytes = async {
                         delay(100.milliseconds)
-                        println("Body of type ${call.response.body} on ctx $coroutineContext")
+
                         try {
+                            // The server side is feeding us bytes very slowly. This shouldn't complete before the
+                            // parentScope cancellation happens below.
                             call.response.body.readAll()
                         } catch (e: Throwable) {
-                            // IllegalStateException: "Unbalanced enter/exit" will be thrown if body closed improperly
+                            // "IllegalStateException: Unbalanced enter/exit" will be thrown if body closed improperly
                             assertIsNot<IllegalStateException>(e)
                             null
                         }
