@@ -1,8 +1,0 @@
-{
-    "id": "289fe06b-6d65-47da-a007-360398c39244",
-    "type": "bugfix",
-    "description": "Correctly handle async cancellation of call context in OkHttp engine",
-    "issues": [
-        "awslabs/smithy-kotlin#1061"
-    ]
-}

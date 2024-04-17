@@ -1,8 +1,0 @@
-{
-    "id": "6ffd0a2b-9801-4814-a6d1-9d84196ff130",
-    "type": "bugfix",
-    "description": "Lazily resolve proxy environment variables",
-    "issues": [
-        "https://github.com/awslabs/aws-sdk-kotlin/issues/1281"
-    ]
-}

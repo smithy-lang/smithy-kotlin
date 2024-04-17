@@ -1,5 +1,15 @@
 # Changelog
 
+## [1.1.4] - 04/17/2024
+
+### Features
+* [#428](https://github.com/awslabs/smithy-kotlin/issues/428) ⚠️ **IMPORTANT**: Add new @SdkDsl DSL marker to all generated structure builders, clarifying DSL scopes when building complex types. See the [**Scope control applied to DSL builders** breaking change announcement](https://github.com/awslabs/aws-sdk-kotlin/discussions/1280) for more details.
+
+### Fixes
+* [#900](https://github.com/awslabs/aws-sdk-kotlin/issues/900) Correctly generate waiters and paginators for resource operations
+* [#1281](https://github.com/awslabs/aws-sdk-kotlin/issues/1281) Lazily resolve proxy environment variables
+* [#1061](https://github.com/awslabs/smithy-kotlin/issues/1061) Correctly handle async cancellation of call context in OkHttp engine
+
 ## [1.1.3] - 04/02/2024
 
 ### Fixes

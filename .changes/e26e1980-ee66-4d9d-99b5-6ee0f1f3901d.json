@@ -1,8 +1,0 @@
-{
-    "id": "e26e1980-ee66-4d9d-99b5-6ee0f1f3901d",
-    "type": "bugfix",
-    "description": "Correctly generate waiters and paginators for resource operations",
-    "issues": [
-        "awslabs/aws-sdk-kotlin#900"
-    ]
-}
