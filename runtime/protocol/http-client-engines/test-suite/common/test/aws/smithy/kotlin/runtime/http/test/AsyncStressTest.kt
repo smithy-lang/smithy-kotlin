@@ -87,4 +87,45 @@ class AsyncStressTest : AbstractEngineTest() {
             assertEquals(engineJobsBefore.size, engineJobsAfter.size, message)
         }
     }
+
+    @Test
+    fun testJobCancellation() = testEngines {
+        // https://github.com/smithy-lang/smithy-kotlin/issues/1061
+
+        test { _, client ->
+            val req = HttpRequest {
+                testSetup()
+                url.path.decoded = "slow"
+            }
+
+            // Expect CancellationException because we're cancelling
+            assertFailsWith<CancellationException> {
+                coroutineScope {
+                    val parentScope = this
+                    val call = client.call(req)
+
+                    val bytes = async {
+                        delay(100.milliseconds)
+
+                        try {
+                            // The server side is feeding us bytes very slowly. This shouldn't complete before the
+                            // parentScope cancellation happens below.
+                            call.response.body.readAll()
+                        } catch (e: Throwable) {
+                            // "IllegalStateException: Unbalanced enter/exit" will be thrown if body closed improperly
+                            assertIsNot<IllegalStateException>(e)
+                            null
+                        }
+                    }
+
+                    val cancellation = async {
+                        delay(400.milliseconds)
+                        parentScope.cancel("Cancelling!")
+                    }
+
+                    awaitAll(bytes, cancellation)
+                }
+            }
+        }
+    }
 }
