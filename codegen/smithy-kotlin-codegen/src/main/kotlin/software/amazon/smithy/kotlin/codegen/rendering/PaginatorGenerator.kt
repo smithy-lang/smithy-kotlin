@@ -16,10 +16,7 @@ import software.amazon.smithy.kotlin.codegen.core.defaultName
 import software.amazon.smithy.kotlin.codegen.core.withBlock
 import software.amazon.smithy.kotlin.codegen.integration.KotlinIntegration
 import software.amazon.smithy.kotlin.codegen.lang.KotlinTypes
-import software.amazon.smithy.kotlin.codegen.model.SymbolProperty
-import software.amazon.smithy.kotlin.codegen.model.expectShape
-import software.amazon.smithy.kotlin.codegen.model.hasAllOptionalMembers
-import software.amazon.smithy.kotlin.codegen.model.hasTrait
+import software.amazon.smithy.kotlin.codegen.model.*
 import software.amazon.smithy.kotlin.codegen.model.traits.PaginationTruncationMember
 import software.amazon.smithy.kotlin.codegen.utils.getOrNull
 import software.amazon.smithy.model.Model
@@ -267,6 +264,7 @@ private fun getItemDescriptorOrNull(paginationInfo: PaginationInfo, ctx: Codegen
     val itemLiteral = paginationInfo.itemsMemberPath!!.last()!!.defaultName()
     val itemPathLiteral = paginationInfo.itemsMemberPath.joinToString(separator = "?.") { it.defaultName() }
     val itemMember = ctx.model.expectShape(itemMemberId)
+    val isSparse = itemMember.isSparse
     val (collectionLiteral, targetMember) = when (itemMember) {
         is MapShape ->
             ctx.symbolProvider.toSymbol(itemMember)
@@ -279,7 +277,7 @@ private fun getItemDescriptorOrNull(paginationInfo: PaginationInfo, ctx: Codegen
     }
 
     return ItemDescriptor(
-        collectionLiteral,
+        collectionLiteral + if (isSparse) "?" else "",
         targetMember,
         itemLiteral,
         itemPathLiteral,
