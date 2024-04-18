@@ -1,0 +1,5 @@
+{
+    "id": "56a90e2f-014b-4abd-8baa-5ce12dc60320",
+    "type": "bugfix",
+    "description": "Correctly handle error correction of int enums"
+}

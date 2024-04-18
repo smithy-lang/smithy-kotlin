@@ -83,5 +83,6 @@ class ErrorCorrectionTest {
 
         // enums become unknown variant
         assertEquals(smithy.kotlin.nullability.clientcareful.model.Enum.SdkUnknown("no value provided"), actual.enum)
+        assertEquals(smithy.kotlin.nullability.clientcareful.model.IntEnum.SdkUnknown(0), actual.intEnum)
     }
 }
