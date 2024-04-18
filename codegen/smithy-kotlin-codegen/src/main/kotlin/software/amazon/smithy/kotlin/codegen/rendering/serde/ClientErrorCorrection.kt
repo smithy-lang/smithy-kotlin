@@ -9,6 +9,7 @@ import software.amazon.smithy.kotlin.codegen.core.CodegenContext
 import software.amazon.smithy.kotlin.codegen.core.KotlinWriter
 import software.amazon.smithy.kotlin.codegen.core.RuntimeTypes
 import software.amazon.smithy.kotlin.codegen.model.isEnum
+import software.amazon.smithy.kotlin.codegen.model.isStringEnumShape
 import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.shapes.ShapeType
 
@@ -33,8 +34,10 @@ object ClientErrorCorrection {
 
         // In IDL v1 all enums were `ShapeType.STRING` and you had to explicitly check for the @enum trait, this handles
         // the differences in IDL versions
-        if (target.isEnum) {
+        if (target.isStringEnumShape) {
             return writer.format("#T.SdkUnknown(#S)", targetSymbol, "no value provided")
+        } else if (target.isIntEnumShape) {
+            return writer.format("#T.SdkUnknown(0)", targetSymbol)
         }
 
         return when (target.type) {
