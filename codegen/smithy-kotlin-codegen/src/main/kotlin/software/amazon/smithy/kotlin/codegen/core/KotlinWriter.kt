@@ -17,6 +17,7 @@ import software.amazon.smithy.kotlin.codegen.utils.getOrNull
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.shapes.Shape
+import software.amazon.smithy.model.traits.DeprecatedTrait
 import software.amazon.smithy.model.traits.DocumentationTrait
 import software.amazon.smithy.model.traits.EnumDefinition
 import software.amazon.smithy.utils.AbstractCodeWriter
@@ -219,7 +220,9 @@ class KotlinWriter(
      */
     private fun renderDeprecatedAnnotation(shape: Shape) {
         if (shape.isDeprecated) {
-            write("""@Deprecated("No longer recommended for use. See AWS API documentation for more details.")""")
+            val message = shape.expectTrait<DeprecatedTrait>().message?.getOrNull()
+                ?: "No longer recommended for use. See AWS API documentation for more details."
+            write("""@Deprecated("$message")""")
         }
     }
 
