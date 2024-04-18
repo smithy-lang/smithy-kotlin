@@ -18,9 +18,6 @@ If you've _already_ upgraded your OkHttp version and are experiencing this error
 2. Upgrade your OkHttp dependency to **v5.0.0-alpha.14**.
 3. Resolve any issues caused by OkHttp's breaking changes. See [their change log](https://square.github.io/okhttp/changelogs/changelog/) for information.
 
-# Additional information
-Some common 
-
 # Feedback
 
 If you have any questions concerning this change, please feel free to engage with us in this discussion. If you encounter a bug with these changes, please [file an issue](https://github.com/awslabs/aws-sdk-kotlin/issues/new/choose).
