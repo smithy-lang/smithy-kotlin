@@ -222,7 +222,7 @@ class KotlinWriter(
         if (shape.isDeprecated) {
             val message = shape.expectTrait<DeprecatedTrait>().message?.getOrNull()
                 ?: "No longer recommended for use. See AWS API documentation for more details."
-            write("""@Deprecated("#S")""", message)
+            write("""@Deprecated(#S)""", message)
         }
     }
 
