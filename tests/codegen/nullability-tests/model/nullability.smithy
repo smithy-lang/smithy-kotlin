@@ -54,6 +54,9 @@ structure TestStruct {
     enum: Enum
 
     @required
+    intEnum: IntEnum
+
+    @required
     union: U
 
     notRequired: String,
@@ -75,6 +78,12 @@ enum Enum {
     A,
     B,
     C
+}
+
+intEnum IntEnum {
+    ONE =   1,
+    TWO =   2,
+    THREE = 3
 }
 
 union U {
