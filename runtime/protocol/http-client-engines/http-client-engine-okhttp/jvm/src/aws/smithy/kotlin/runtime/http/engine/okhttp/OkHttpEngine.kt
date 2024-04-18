@@ -14,8 +14,10 @@ import aws.smithy.kotlin.runtime.net.TlsVersion
 import aws.smithy.kotlin.runtime.operation.ExecutionContext
 import aws.smithy.kotlin.runtime.time.Instant
 import aws.smithy.kotlin.runtime.time.fromEpochMilliseconds
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.job
 import okhttp3.*
+import okhttp3.coroutines.executeAsync
 import java.util.concurrent.TimeUnit
 import kotlin.time.toJavaDuration
 import aws.smithy.kotlin.runtime.net.TlsVersion as SdkTlsVersion
@@ -48,6 +50,8 @@ public class OkHttpEngine(
 
         val engineRequest = request.toOkHttpRequest(context, callContext, metrics)
         val engineCall = client.newCall(engineRequest)
+
+        @OptIn(ExperimentalCoroutinesApi::class)
         val engineResponse = mapOkHttpExceptions { engineCall.executeAsync() }
 
         val response = engineResponse.toSdkResponse()
