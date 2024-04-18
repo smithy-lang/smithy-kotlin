@@ -10,11 +10,16 @@ The Kotlin SDK will be upgrading its dependency on OkHttp to v5.0.0-alpha.14. If
 
 If you _do_ have direct dependencies on OkHttp and the AWS SDK for Kotlin, you will need to upgrade to OkHttp **v5.0.0-alpha.14** along with your upgrade to AWS SDK for Kotlin **v1.2.0**.
 
+If you've _already_ upgraded your OkHttp version and are experiencing this error, it will be resolved by upgrading to AWS SDK for Kotlin **v1.2.0**:  `java.lang.NoClassDefFoundError: Failed resolution of: Lokhttp3/JvmCallExtensionsKt;`
+
 # How to migrate
 
 1. Upgrade your AWS SDK for Kotlin dependency to **v.1.2.0**.
 2. Upgrade your OkHttp dependency to **v5.0.0-alpha.14**.
 3. Resolve any issues caused by OkHttp's breaking changes. See [their change log](https://square.github.io/okhttp/changelogs/changelog/) for information.
+
+# Additional information
+Some common 
 
 # Feedback
 
