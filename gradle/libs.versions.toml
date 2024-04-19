@@ -1,5 +1,5 @@
 [versions]
-kotlin-version = "1.9.22"
+kotlin-version = "1.9.23"
 dokka-version = "1.9.10"
 
 aws-kotlin-repo-tools-version = "0.4.0"
@@ -7,8 +7,8 @@ aws-kotlin-repo-tools-version = "0.4.0"
 # libs
 coroutines-version = "1.7.3"
 atomicfu-version = "0.23.1"
-okhttp-version = "5.0.0-alpha.11"
-okio-version = "3.6.0"
+okhttp-version = "5.0.0-alpha.14"
+okio-version = "3.9.0"
 otel-version = "1.32.0"
 slf4j-version = "2.0.9"
 slf4j-v1x-version = "1.7.36"
