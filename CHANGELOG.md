@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.1.5] - 04/19/2024
+
+### Fixes
+* Correctly handle error correction of int enums
+* Correctly codegen paginators for items in sparse lists
+
 ## [1.1.4] - 04/17/2024
 
 ### Features

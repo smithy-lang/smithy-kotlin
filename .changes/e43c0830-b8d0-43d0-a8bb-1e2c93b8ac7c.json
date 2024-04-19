@@ -1,5 +1,0 @@
-{
-    "id": "e43c0830-b8d0-43d0-a8bb-1e2c93b8ac7c",
-    "type": "bugfix",
-    "description": "Correctly codegen paginators for items in sparse lists"
-}
