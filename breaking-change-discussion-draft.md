@@ -11,7 +11,7 @@ The Kotlin SDK will be upgrading its dependency on OkHttp to v5.0.0-alpha.14. If
 
 If you _do_ have direct dependencies on OkHttp and the AWS SDK for Kotlin, you will need to upgrade to OkHttp **v5.0.0-alpha.14** along with your upgrade to AWS SDK for Kotlin **v1.2.0**.
 
-If you _do_ depend on different version of the AWS SDK for Kotlin in the same project, you will need to make sure they are all upgraded to **v1.2.0** together. Versions of the SDK prior to **v1.2.0** will no longer be compatible with newer versions.
+If you _do_ depend on different versions of the AWS SDK for Kotlin in the same project, you will need to make sure they are all upgraded to **v1.2.0** together. Versions of the SDK prior to **v1.2.0** will no longer be compatible with newer versions.
 
 If you've _already_ upgraded your OkHttp version and are experiencing this error, it will be resolved by upgrading to AWS SDK for Kotlin **v1.2.0**:  `java.lang.NoClassDefFoundError: Failed resolution of: Lokhttp3/JvmCallExtensionsKt;`
 
