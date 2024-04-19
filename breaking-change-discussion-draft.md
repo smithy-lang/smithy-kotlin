@@ -18,7 +18,7 @@ If you've _already_ upgraded your OkHttp version and are experiencing this error
 # How to migrate
 
 1. Upgrade all of your AWS SDK for Kotlin dependencies to **v.1.2.0**.
-2. Upgrade your OkHttp dependency to **v5.0.0-alpha.14**.
+2. Upgrade your OkHttp dependency to **v5.0.0-alpha.14** if you have a direct dependency.
 3. Resolve any issues caused by OkHttp's breaking changes. See [their change log](https://square.github.io/okhttp/changelogs/changelog/) for information.
 
 # Feedback
