@@ -7,7 +7,7 @@ This feature will ship with the **v1.2.0** release planned for **4/22/2024**.
 # What's changing
 
 The Kotlin SDK will be upgrading its dependency on OkHttp to v5.0.0-alpha.14. If you don't directly depend on OkHttp alongside the AWS SDK for Kotlin 
-*AND* you don't depend on different versions of the AWS SDK for Kotlin in the same project, this change should not affect you.
+**AND** you don't depend on different versions of the AWS SDK for Kotlin in the same project, this change should not affect you.
 
 If you _do_ have direct dependencies on OkHttp and the AWS SDK for Kotlin, you will need to upgrade to OkHttp **v5.0.0-alpha.14** along with your upgrade to AWS SDK for Kotlin **v1.2.0**.
 
