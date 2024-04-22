@@ -21,7 +21,7 @@ jobs:
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: ${{ secrets.CI_AWS_ROLE_ARN }}
+          role-to-assume: ${{ secrets.TEST_CI_AWS_ROLE_ARN }} # TODO: Stop using test role
           aws-region: us-west-2
       - name: Generate Artifact Size Metrics
         run: ./gradlew artifactSizeMetrics
@@ -42,7 +42,7 @@ jobs:
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: ${{ secrets.CI_AWS_ROLE_ARN }}
+          role-to-assume: ${{ secrets.TEST_CI_AWS_ROLE_ARN }} # TODO: Stop using test role
           aws-region: us-west-2
       - name: Generate Artifact Size Metrics
         run: ./gradlew artifactSizeMetrics
