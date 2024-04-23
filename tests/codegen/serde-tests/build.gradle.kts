@@ -2,6 +2,7 @@
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
  * SPDX-License-Identifier: Apache-2.0
  */
+import aws.sdk.kotlin.gradle.codegen.dsl.generateSmithyProjections
 import aws.sdk.kotlin.gradle.codegen.smithyKotlinProjectionSrcDir
 import aws.sdk.kotlin.gradle.dsl.skipPublishing
 
@@ -81,6 +82,13 @@ val stageGeneratedSources = tasks.register("stageGeneratedSources") {
             }
         }
     }
+}
+
+tasks.kotlinSourcesJar {
+    dependsOn(
+        tasks.generateSmithyProjections,
+        stageGeneratedSources,
+    )
 }
 
 kotlin.sourceSets.getByName("main") {
