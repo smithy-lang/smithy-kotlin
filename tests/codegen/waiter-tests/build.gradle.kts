@@ -23,6 +23,10 @@ tasks.generateSmithyProjections {
     smithyBuildConfigs.set(files("smithy-build.json"))
 }
 
+tasks.kotlinSourcesJar {
+    dependsOn(tasks.generateSmithyProjections)
+}
+
 val optinAnnotations = listOf("kotlin.RequiresOptIn", "aws.smithy.kotlin.runtime.InternalApi")
 kotlin.sourceSets.all {
     optinAnnotations.forEach { languageSettings.optIn(it) }
