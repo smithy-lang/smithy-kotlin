@@ -20,7 +20,7 @@ dependencies {
 }
 
 tasks.generateSmithyProjections {
-    smithyBuildConfigs.set(files("smithy-build.json"))
+    smithyBuildConfigs.set(files("smithy-build.json")) // Triggering CI
 }
 
 tasks.kotlinSourcesJar {
