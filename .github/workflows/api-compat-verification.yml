@@ -16,10 +16,10 @@ jobs:
           git fetch origin ${{ github.base_ref }} --depth 1 && \
           git diff remotes/origin/${{ github.base_ref }} --numstat "*.api" | awk '
             BEGIN { s = 0 }
-          
+            
             # git diff numstat shows lines deleted in field 2, hence sum up field 2 across all items 
             { s += $2 }
-          
+            
             # exit with the number of lines deleted as the result code so that `if failure()` works below
             END { exit s }
           '
