@@ -10,4 +10,11 @@ import aws.smithy.kotlin.runtime.io.Closeable
 /**
  * Delineates a logical scope that has a beginning and end (e.g. a function)
  */
-public interface Scope : Closeable
+public interface Scope : Closeable {
+    public companion object {
+        /**
+         * A [Scope] that does nothing
+         */
+        public val None: Scope = object : AbstractScope() { }
+    }
+}

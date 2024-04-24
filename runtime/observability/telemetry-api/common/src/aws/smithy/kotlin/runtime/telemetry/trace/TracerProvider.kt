@@ -13,7 +13,7 @@ public interface TracerProvider {
         /**
          * A [TracerProvider] that does nothing
          */
-        public val None: TracerProvider = NoOpTracerProvider
+        public val None: TracerProvider = object : AbstractTracerProvider() { }
     }
 
     /**

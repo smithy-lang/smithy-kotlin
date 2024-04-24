@@ -10,6 +10,13 @@ import aws.smithy.kotlin.runtime.collections.emptyAttributes
 import aws.smithy.kotlin.runtime.telemetry.context.Context
 
 public interface UpDownCounter {
+    public companion object {
+        /**
+         * An [UpDownCounter] that does nothing
+         */
+        public val None: UpDownCounter = object : AbstractUpDownCounter() { }
+    }
+
     /**
      * Records a value
      *

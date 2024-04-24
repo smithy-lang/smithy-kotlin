@@ -10,6 +10,13 @@ import aws.smithy.kotlin.runtime.collections.emptyAttributes
 import aws.smithy.kotlin.runtime.telemetry.context.Context
 
 public interface MonotonicCounter {
+    public companion object {
+        /**
+         * A [MonotonicCounter] that does nothing
+         */
+        public val None: MonotonicCounter = object : AbstractMonotonicCounter() { }
+    }
+
     /**
      * Records a value
      *

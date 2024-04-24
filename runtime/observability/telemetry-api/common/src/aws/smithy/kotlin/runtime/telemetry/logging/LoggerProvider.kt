@@ -13,7 +13,7 @@ public interface LoggerProvider {
         /**
          * A no-op [LoggerProvider] that does nothing
          */
-        public val None: LoggerProvider = NoOpLoggerProvider
+        public val None: LoggerProvider = object : AbstractLoggerProvider() { }
     }
 
     /**

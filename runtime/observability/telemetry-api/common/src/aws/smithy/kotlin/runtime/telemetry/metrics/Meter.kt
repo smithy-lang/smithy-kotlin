@@ -9,6 +9,12 @@ package aws.smithy.kotlin.runtime.telemetry.metrics
  * Factory for creating instruments for recording measurements.
  */
 public interface Meter {
+    public companion object {
+        /**
+         * A [Meter] that does nothing
+         */
+        public val None: Meter = object : AbstractMeter() { }
+    }
 
     /**
      * Create a new [UpDownCounter]

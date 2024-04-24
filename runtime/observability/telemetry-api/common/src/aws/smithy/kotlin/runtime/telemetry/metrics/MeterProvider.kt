@@ -13,7 +13,7 @@ public interface MeterProvider {
         /**
          * A [MeterProvider] that does nothing
          */
-        public val None: MeterProvider = NoOpMeterProvider
+        public val None: MeterProvider = object : AbstractMeterProvider() { }
     }
 
     /**
