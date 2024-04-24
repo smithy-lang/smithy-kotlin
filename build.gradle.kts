@@ -24,7 +24,7 @@ plugins {
     // since build-plugins also has <some> version in its dependency closure
     alias(libs.plugins.kotlin.multiplatform) apply false
     alias(libs.plugins.kotlin.jvm) apply false
-    id("artifact-size-metrics") version "0.4.2" // TODO: Use lib.versions.toml
+    alias(libs.plugins.aws.kotlin.repo.tools.artifactsizemetrics)
 }
 
 artifactSizeMetrics {
