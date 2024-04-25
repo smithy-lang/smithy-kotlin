@@ -28,7 +28,7 @@ plugins {
 }
 
 artifactSizeMetrics {
-    artifactPrefixes = setOf(":codegen", ":runtime")
+    artifactPrefixes = setOf(":runtime")
     significantChangeThresholdPercentage = 5.0
     projectRepositoryName = "smithy-kotlin"
 }

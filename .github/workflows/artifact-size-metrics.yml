@@ -32,11 +32,7 @@ jobs:
       - name: Generate Artifact Size Metrics
         run: ./gradlew artifactSizeMetrics
       - name: Save Artifact Size Metrics
-        run: |
-          cd build/reports/metrics
-          REPOSITORY=$(echo ${{ github.repository }} | cut -d '/' -f 2)
-          aws s3 cp artifact-size-metrics.csv s3://${{ secrets.ARTIFACT_METRICS_BUCKET }}/$REPOSITORY-${{ github.event.release.tag_name }}-release.csv
-          aws s3 cp artifact-size-metrics.csv s3://${{ secrets.ARTIFACT_METRICS_BUCKET }}/$REPOSITORY-latest-release.csv
+        run: ./gradlew saveArtifactSizeMetrics
       - name: Put Artifact Size Metrics in CloudWatch
         run: ./gradlew putArtifactSizeMetricsInCloudWatch -Prelease=${{ github.event.release.tag_name }}
   size-check:
@@ -86,18 +82,19 @@ jobs:
             const response = await github.graphql(getComments)
             const comments = response.repository.pullRequest.comments.nodes
 
-            for (const i in comments) {
-              if (comments[i].author.login == 'github-actions' && !comments[i].isMinimized && comments[i].body.startsWith('Affected Artifacts')) {
-                const hideComment = 
-                  `mutation { 
+            const mutations = comments
+              .filter(c => c[i].author.login == 'github-actions' && !c[i].isMinimized && c[i].body.startsWith('Affected Artifacts'))
+              .map(c =>
+                const hideComment =
+                  `mutation {
                     minimizeComment(input:{subjectId:"${comments[i].id}", classifier:OUTDATED}){
                       clientMutationId
-                    } 
+                    }
                   }`
             
-                await github.graphql(hideComment)
-              }
-            }
+                github.graphql(hideComment)
+              )
+            await Promise.all(mutations)
 
             const fs = require('node:fs')
             const comment = fs.readFileSync('build/reports/metrics/artifact-analysis.md', 'utf8')
@@ -117,5 +114,6 @@ jobs:
           cd build/reports/metrics
           cat has-significant-change.txt | grep false || {
             echo An artifact increased in size by more than allowed or a new artifact was created.
+            echo If this is expected please add the 'acknowledge-artifact-size-increase' label to this pull request.
             exit 1
           }
