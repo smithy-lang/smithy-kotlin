@@ -44,7 +44,16 @@
         "KotlinStdlib-1.9.x",
         "KotlinxCoroutinesCoreJvm-1.7.x"
       ],
+      "com.squareup.okhttp3:okhttp-coroutines:5.*": [
+        "KotlinStdlibCommon-1.9.x",
+        "KotlinStdlib-1.9.x",
+        "KotlinxCoroutinesCoreJvm-1.7.x"
+      ],
       "com.squareup.okhttp3:okhttp-jvm:5.*": [
+        "KotlinStdlibCommon-1.9.x",
+        "KotlinStdlib-1.9.x"
+      ],
+      "com.squareup.okhttp3:okhttp:5.*": [
         "KotlinStdlibCommon-1.9.x",
         "KotlinStdlib-1.9.x"
       ],
