@@ -1,0 +1,9 @@
+{
+    "id": "5498a35b-f57f-4c0c-bbf7-43e07830be01",
+    "type": "bugfix",
+    "description": "⚠️ **IMPORTANT**: Add config finalization to service clients via new abstract factory class; apply clock skew interceptor to clients created via `invoke`",
+    "issues": [
+        "awslabs/aws-sdk-kotlin#1211"
+    ],
+    "requiresMinorVersionBump": true
+}

@@ -37,6 +37,12 @@ class ServiceClientGenerator(private val ctx: RenderingContext<ServiceShape>) {
          * [SectionId] used when rendering the service interface companion object
          */
         object CompanionObject : SectionId {
+
+            /**
+             * [SectionId] used when rendering the finalizeConfig block of a service client companion object
+             */
+            object FinalizeConfig : SectionId
+
             /**
              * Context key for the service symbol
              */
@@ -46,6 +52,11 @@ class ServiceClientGenerator(private val ctx: RenderingContext<ServiceShape>) {
              * Context key for the SDK ID
              */
             val SdkId: SectionKey<String> = SectionKey("SdkId")
+
+            /**
+             * [SectionId] used when rendering the supertype(s) of the companion object
+             */
+            object SuperTypes : SectionId
         }
 
         /**
@@ -57,11 +68,6 @@ class ServiceClientGenerator(private val ctx: RenderingContext<ServiceShape>) {
              */
             val RenderingContext: SectionKey<RenderingContext<ServiceShape>> = SectionKey("RenderingContext")
         }
-
-        /**
-         * [SectionId] used when rendering the finalizeConfig block of a service client
-         */
-        object FinalizeConfig : SectionId
     }
 
     init {
@@ -88,38 +94,28 @@ class ServiceClientGenerator(private val ctx: RenderingContext<ServiceShape>) {
 
         writer.renderDocumentation(service)
         writer.renderAnnotations(service)
-        writer.openBlock(
+        writer.withBlock(
             "#L interface ${serviceSymbol.name} : #T {",
+            "}",
             ctx.settings.api.visibility,
             RuntimeTypes.SmithyClient.SdkClient,
-        )
-            .call {
-                // allow access to client's Config
-                writer.dokka("${serviceSymbol.name}'s configuration")
-                writer.write("public override val config: Config")
-            }
-            .call {
-                // allow integrations to add additional fields to companion object or configuration
-                writer.write("")
-                writer.declareSection(
-                    Sections.CompanionObject,
-                    context = mapOf(
-                        Sections.CompanionObject.ServiceSymbol to serviceSymbol,
-                        Sections.CompanionObject.SdkId to ctx.settings.sdkId,
-                    ),
-                ) {
-                    renderCompanionObject()
-                }
-                writer.write("")
-                renderServiceBuilder()
+        ) {
+            // allow access to client's Config
+            dokka("${serviceSymbol.name}'s configuration")
+            write("public override val config: Config")
 
-                writer.write("")
-                renderServiceConfig()
-            }
-            .call {
-                operations.forEach { renderOperation(operationsIndex, it) }
-            }
-            .closeBlock("}")
+            // allow integrations to add additional fields to companion object or configuration
+            write("")
+            renderCompanionObject()
+
+            write("")
+            renderServiceBuilder()
+
+            write("")
+            renderServiceConfig()
+
+            operations.forEach { renderOperation(operationsIndex, it) }
+        }
             .write("")
 
         if (ctx.protocolGenerator != null) { // returns default impl, which only exists if there's a protocol generator
@@ -172,15 +168,39 @@ class ServiceClientGenerator(private val ctx: RenderingContext<ServiceShape>) {
     private fun renderCompanionObject() {
         // don't render a companion object which is used for building a service client unless we have a protocol generator
         if (ctx.protocolGenerator == null) return
-        writer.withBlock(
-            "public companion object : #T<Config, Config.Builder, #T, Builder> {",
-            "}",
-            RuntimeTypes.SmithyClient.SdkClientFactory,
-            serviceSymbol,
-        ) {
-            write("@#T", KotlinTypes.Jvm.JvmStatic)
-            write("override fun builder(): Builder = Builder()")
-        }
+
+        writer
+            .writeInline("public companion object : ")
+            .declareSection(
+                Sections.CompanionObject.SuperTypes,
+                context = mapOf(
+                    Sections.CompanionObject.ServiceSymbol to serviceSymbol,
+                ),
+            ) {
+                writeInline(
+                    "#T<Config, Config.Builder, #T, Builder>()",
+                    RuntimeTypes.SmithyClient.AbstractSdkClientFactory,
+                    serviceSymbol,
+                )
+            }
+            .withBlock(" {", "}") {
+                declareSection(
+                    Sections.CompanionObject,
+                    context = mapOf(
+                        Sections.CompanionObject.ServiceSymbol to serviceSymbol,
+                        Sections.CompanionObject.SdkId to ctx.settings.sdkId,
+                    ),
+                ) {
+                    write("@#T", KotlinTypes.Jvm.JvmStatic)
+                    write("override fun builder(): Builder = Builder()")
+                    write("")
+                    withBlock("override fun finalizeConfig(builder: Builder) {", "}") {
+                        declareSection(Sections.CompanionObject.FinalizeConfig) {
+                            write("super.finalizeConfig(builder)")
+                        }
+                    }
+                }
+            }
     }
 
     private fun renderOperation(opIndex: OperationIndex, op: OperationShape) {
