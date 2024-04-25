@@ -1,6 +1,0 @@
-{
-    "id": "8e87c6dd-5138-4b79-a0c2-255ecf31898b",
-    "type": "misc",
-    "description": "⚠️ **IMPORTANT**: Upgrade to latest versions of OkHttp, Okio, Kotlin",
-    "requiresMinorVersionBump": true
-}
