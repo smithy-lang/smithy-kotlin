@@ -5,8 +5,8 @@
 package aws.smithy.kotlin.runtime.telemetry.metrics
 
 /**
- * An abstract implementation of a meter provider. By default, this class uses no-op implementations for all members
- * unless overridden in a subclass.
+ * An abstract implementation of a meter. By default, this class uses no-op implementations for all members unless
+ * overridden in a subclass.
  */
 public abstract class AbstractMeter : Meter {
     override fun createUpDownCounter(name: String, units: String?, description: String?): UpDownCounter =
