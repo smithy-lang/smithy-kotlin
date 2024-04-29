@@ -21,7 +21,6 @@ import aws.smithy.kotlin.runtime.time.ParseException
 import aws.smithy.kotlin.runtime.time.until
 import kotlinx.atomicfu.*
 import kotlin.coroutines.coroutineContext
-import kotlin.math.log
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.minutes
 
