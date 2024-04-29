@@ -17,9 +17,11 @@ import aws.smithy.kotlin.runtime.http.response.HttpResponse
 import aws.smithy.kotlin.runtime.http.response.header
 import aws.smithy.kotlin.runtime.telemetry.logging.logger
 import aws.smithy.kotlin.runtime.time.Instant
+import aws.smithy.kotlin.runtime.time.ParseException
 import aws.smithy.kotlin.runtime.time.until
 import kotlinx.atomicfu.*
 import kotlin.coroutines.coroutineContext
+import kotlin.math.log
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.minutes
 
@@ -85,7 +87,12 @@ public class ClockSkewInterceptor : HttpInterceptor {
         val logger = coroutineContext.logger<ClockSkewInterceptor>()
 
         val serverTime = context.protocolResponse?.header("Date")?.let {
-            Instant.fromRfc5322(it)
+            try {
+                Instant.fromRfc5322(it)
+            } catch (e: ParseException) {
+                logger.warn(e) { "Service returned malformed \"Date\" header value \"$it\", skipping skew calculation" }
+                return context.response
+            }
         } ?: run {
             logger.debug { "service did not return \"Date\" header, skipping skew calculation" }
             return context.response

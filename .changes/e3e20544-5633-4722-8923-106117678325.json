@@ -1,0 +1,8 @@
+{
+    "id": "e3e20544-5633-4722-8923-106117678325",
+    "type": "bugfix",
+    "description": "Gracefully degrade in clock skew interceptor when receiving a `Date` header value with a malformed date",
+    "issues": [
+        "awslabs/aws-sdk-kotlin#1293"
+    ]
+}

@@ -78,18 +78,19 @@ class ClockSkewInterceptorTest {
         assertFalse(clientTime.isSkewed(serverTime, POSSIBLE_SKEWED_RESPONSE_CODE_DESCRIPTION))
     }
 
-    @Test
-    fun testClockSkewApplied() = runTest {
-        val serverTimeString = "Wed, 14 Sep 2023 16:20:50 -0400"
-        val serverTime = Instant.fromRfc5322(serverTimeString)
-
-        val clientTimeString = "20231006T131604Z"
+    private suspend fun testRoundTrip(
+        serverTimeString: String,
+        clientTimeString: String,
+        httpStatusCode: HttpStatusCode,
+        expectException: Boolean,
+    ) {
+        val serverTime = runCatching { Instant.fromRfc5322(serverTimeString) }.getOrNull()
         val clientTime = Instant.fromIso8601(clientTimeString)
 
         val client = getMockClient(
             "bla".encodeToByteArray(),
             Headers { append("Date", serverTimeString) },
-            HttpStatusCode(403, "Forbidden"),
+            httpStatusCode,
         )
 
         val req = HttpRequestBuilder().apply {
@@ -106,48 +107,52 @@ class ClockSkewInterceptorTest {
 
         op.interceptors.add(ClockSkewInterceptor())
 
-        op.roundTrip(client, Unit)
+        if (expectException) {
+            assertFailsWith<SdkBaseException> {
+                op.roundTrip(client, Unit)
+            }
 
-        // Validate the skew got stored in execution context
-        val expectedSkew = clientTime.until(serverTime)
-        assertEquals(expectedSkew, op.context.getOrNull(HttpOperationContext.ClockSkew))
+            // Validate no skew was detected
+            assertNull(op.context.getOrNull(HttpOperationContext.ClockSkew))
+        } else {
+            op.roundTrip(client, Unit)
+
+            serverTime?.let {
+                // Validate the skew got stored in execution context
+                val expectedSkew = clientTime.until(it)
+                assertEquals(expectedSkew, op.context.getOrNull(HttpOperationContext.ClockSkew))
+            }
+        }
     }
 
     @Test
-    fun testClockSkewNotApplied() = runTest {
-        val serverTimeString = "Wed, 06 Oct 2023 13:16:04 -0000"
-        val clientTimeString = "20231006T131604Z"
-        assertEquals(Instant.fromRfc5322(serverTimeString), Instant.fromIso8601(clientTimeString))
-
-        val client = getMockClient(
-            "bla".encodeToByteArray(),
-            Headers {
-                append("Date", serverTimeString)
-            },
-            HttpStatusCode(403, POSSIBLE_SKEWED_RESPONSE_CODE_DESCRIPTION),
+    fun testClockSkewApplied() = runTest {
+        testRoundTrip(
+            serverTimeString = "Wed, 14 Sep 2023 16:20:50 -0400", // Big skew
+            clientTimeString = "20231006T131604Z",
+            httpStatusCode = HttpStatusCode.Forbidden,
+            expectException = false,
         )
+    }
 
-        val req = HttpRequestBuilder().apply {
-            body = "<Foo>bar</Foo>".encodeToByteArray().toHttpBody()
-        }
-        req.headers.append("x-amz-date", clientTimeString)
+    @Test
+    fun testClockSkewNotApplied_NoSkew() = runTest {
+        testRoundTrip(
+            serverTimeString = "Wed, 06 Oct 2023 13:16:04 -0000", // No skew
+            clientTimeString = "20231006T131604Z",
+            httpStatusCode = HttpStatusCode(403, POSSIBLE_SKEWED_RESPONSE_CODE_DESCRIPTION),
+            expectException = true,
+        )
+    }
 
-        val op = newTestOperation<Unit, Unit>(req, Unit)
-
-        val clockSkewException = SdkBaseException()
-        clockSkewException.sdkErrorMetadata.attributes[ServiceErrorMetadata.ErrorCode] =
-            POSSIBLE_SKEWED_RESPONSE_CODE_DESCRIPTION
-        op.interceptors.add(FailedResultInterceptor(clockSkewException))
-
-        op.interceptors.add(ClockSkewInterceptor())
-
-        // The request should fail because it's a non-retryable error, but there should be no skew detected.
-        assertFailsWith<SdkBaseException> {
-            op.roundTrip(client, Unit)
-        }
-
-        // Validate no skew was detected
-        assertNull(op.context.getOrNull(HttpOperationContext.ClockSkew))
+    @Test
+    fun testClockSkewNotApplied_BadDate() = runTest {
+        testRoundTrip(
+            serverTimeString = "Wed, 06 Oct 23 13:16:04 -0000", // Two digit year == ☠️
+            clientTimeString = "20231006T131604Z",
+            httpStatusCode = HttpStatusCode(403, POSSIBLE_SKEWED_RESPONSE_CODE_DESCRIPTION),
+            expectException = true,
+        )
     }
 
     /**
