@@ -55,9 +55,13 @@ class ServiceClientGeneratorTest {
     @Test
     fun `it renders a companion object with default client factory if protocol generator`() {
         val expected = """
-            public companion object : SdkClientFactory<Config, Config.Builder, TestClient, Builder> {
+            public companion object : AbstractSdkClientFactory<Config, Config.Builder, TestClient, Builder>() {
                 @JvmStatic
                 override fun builder(): Builder = Builder()
+            
+                override fun finalizeConfig(builder: Builder) {
+                    super.finalizeConfig(builder)
+                }
             }
         """.formatForTest()
         commonWithProtocolTestContents.shouldContainOnlyOnceWithDiff(expected)
@@ -66,7 +70,7 @@ class ServiceClientGeneratorTest {
     @Test
     fun `it renders a companion object without default client factory if no protocol generator`() {
         val expected = """
-            public companion object : SdkClientFactory
+            public companion object : AbstractSdkClientFactory
         """.formatForTest()
         commonTestContents.shouldNotContain(expected)
     }
@@ -91,9 +95,7 @@ class ServiceClientGeneratorTest {
         val writer = KotlinWriter(TestModelDefault.NAMESPACE)
         val service = model.expectShape<ServiceShape>(TestModelDefault.SERVICE_SHAPE_ID)
         writer.registerSectionWriter(ServiceClientGenerator.Sections.CompanionObject) { codeWriter, _ ->
-            codeWriter.openBlock("public companion object {")
-                .write("public fun foo(): Int = 1")
-                .closeBlock("}")
+            codeWriter.write("public fun foo(): Int = 1")
         }
 
         writer.registerSectionWriter(ServiceClientGenerator.Sections.ServiceConfig) { codeWriter, _ ->
@@ -103,13 +105,17 @@ class ServiceClientGeneratorTest {
         }
 
         val settings = KotlinSettings(service.id, KotlinSettings.PackageSettings("test", "0.0"), sdkId = service.id.name)
-        val renderingCtx = RenderingContext(writer, service, model, provider, settings)
+
+        // Without a protocol generator the companion object won't be generated so use a fake protocol here.
+        val protocol = MockHttpProtocolGenerator(model)
+        val renderingCtx = RenderingContext(writer, service, model, provider, settings, protocol)
+
         val generator = ServiceClientGenerator(renderingCtx)
         generator.render()
         val contents = writer.toString()
 
         val expectedCompanionOverride = """
-            public companion object {
+            public companion object : AbstractSdkClientFactory<Config, Config.Builder, TestClient, Builder>() {
                 public fun foo(): Int = 1
             }
         """.formatForTest()

@@ -1,5 +1,15 @@
 # Changelog
 
+## [1.2.1] - 04/27/2024
+
+## [1.2.0] - 04/25/2024
+
+### Fixes
+* [#1211](https://github.com/awslabs/aws-sdk-kotlin/issues/1211) ⚠️ **IMPORTANT**: Add config finalization to service clients via new abstract factory class; apply clock skew interceptor to clients created via `invoke`
+
+### Miscellaneous
+* ⚠️ **IMPORTANT**: Upgrade to latest versions of OkHttp, Okio, Kotlin
+
 ## [1.1.5] - 04/19/2024
 
 ### Fixes

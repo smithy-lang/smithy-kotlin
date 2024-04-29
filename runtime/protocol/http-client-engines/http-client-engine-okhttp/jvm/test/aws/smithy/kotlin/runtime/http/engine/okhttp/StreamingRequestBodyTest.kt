@@ -13,7 +13,6 @@ import aws.smithy.kotlin.runtime.text.encoding.encodeToHex
 import kotlinx.coroutines.*
 import kotlinx.coroutines.test.runTest
 import okio.Buffer
-import okio.BufferedSink
 import org.junit.jupiter.api.Test
 import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.test.*
@@ -134,7 +133,7 @@ class StreamingRequestBodyTest {
             override fun readFrom(): SdkByteReadChannel = chan
         }
 
-        val sink = TestSink()
+        val sink = Buffer()
 
         val callJob = Job()
         val callContext = coroutineContext + callJob
@@ -145,19 +144,14 @@ class StreamingRequestBodyTest {
         assertEquals(0, callJob.children.toList().size)
         actual.writeTo(sink)
         assertEquals(1, callJob.children.toList().size) // writer
-        assertEquals(sink.buffer.size, 0)
+        assertEquals(sink.size, 0)
         chan.writeAll(content.source())
-
-        assertFalse(sink.isClosed)
 
         chan.close()
         callJob.complete()
         callJob.join()
 
-        // we must manually close the sink given to us when stream completes
-        assertTrue(sink.isClosed)
-
-        val actualSha256 = sink.buffer.sha256().hex()
+        val actualSha256 = sink.sha256().hex()
         assertEquals(expectedSha256, actualSha256)
     }
 
@@ -174,14 +168,9 @@ class StreamingRequestBodyTest {
         val callContext = coroutineContext + Job()
         val actual = StreamingRequestBody(body, callContext)
 
-        val sink = TestSink()
+        val sink = Buffer()
         actual.writeTo(sink)
 
-        assertContentEquals(file.readBytes(), sink.buffer.readByteArray())
+        assertContentEquals(file.readBytes(), sink.readByteArray())
     }
-}
-
-private class TestSink(override val buffer: Buffer = Buffer()) : BufferedSink by buffer {
-    var isClosed = false
-    override fun close() { isClosed = true }
 }
