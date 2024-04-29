@@ -121,7 +121,7 @@ private fun parseNonProxyHost(raw: String): NonProxyHost {
     return when (pair.size) {
         1 -> NonProxyHost(pair[0])
         2 -> NonProxyHost(pair[0], pair[1].toInt())
-        else -> error("invalid non proxied host: $raw")
+        else -> error("invalid non proxy host: $raw")
     }
 }
 
