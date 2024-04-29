@@ -1,7 +1,7 @@
 {
     "id": "040b1587-ec85-4601-9eec-a5158cb0edac",
     "type": "bugfix",
-    "description": "Support http.nonProxyHosts JVM system property",
+    "description": "Support `http.nonProxyHosts` JVM system property",
     "issues": [
         "https://github.com/smithy-lang/smithy-kotlin/issues/1081"
     ]
