@@ -52,11 +52,11 @@ class EnvironmentProxySelectorTest {
         TestCase(ProxyConfig.Direct, env = mapOf("no_proxy" to "aws.amazon.com") + httpsProxyEnv),
         TestCase(ProxyConfig.Direct, env = mapOf("no_proxy" to ".amazon.com") + httpsProxyEnv),
 
-        TestCase(ProxyConfig.Direct, props = mapOf("http.nonProxyHosts" to "aws.amazon.com") + httpsProxyProps),
-        TestCase(ProxyConfig.Direct, props = mapOf("http.nonProxyHosts" to ".amazon.com") + httpsProxyProps),
-
         TestCase(ProxyConfig.Direct, props = mapOf("http.noProxyHosts" to "aws.amazon.com") + httpsProxyProps),
         TestCase(ProxyConfig.Direct, props = mapOf("http.noProxyHosts" to ".amazon.com") + httpsProxyProps),
+
+        TestCase(ProxyConfig.Direct, props = mapOf("http.nonProxyHosts" to "aws.amazon.com") + httpsProxyProps),
+        TestCase(ProxyConfig.Direct, props = mapOf("http.nonProxyHosts" to ".amazon.com") + httpsProxyProps),
 
         // multiple no proxy hosts normalization
         TestCase(ProxyConfig.Direct, env = mapOf("no_proxy" to "example.com,.amazon.com") + httpsProxyEnv),
@@ -74,11 +74,11 @@ class EnvironmentProxySelectorTest {
         // no_proxy set but doesn't match
         TestCase(expectedProxyConfig, env = httpsProxyEnv + mapOf("no_proxy" to "example.com")),
 
-        // prioritize http.nonProxyHosts over http.noProxyHosts
-        TestCase(ProxyConfig.Direct, props = mapOf("http.nonProxyHosts" to "example.com|.amazon.com", "http.noProxyHosts" to "") + httpsProxyProps),
+        // prioritize http.noProxyHosts over http.nonProxyHosts
+        TestCase(ProxyConfig.Direct, props = mapOf("http.noProxyHosts" to "example.com|.amazon.com", "http.nonProxyHosts" to "") + httpsProxyProps),
 
-        // even though http.noProxyHosts is configured to go ProxyConfig.Direct, nonProxyHosts is present and should be prioritized
-        TestCase(expectedProxyConfig, props = mapOf("http.nonProxyHosts" to "", "http.noProxyHosts" to "example.com|.amazon.com") + httpsProxyProps),
+        // even though http.nonProxyHosts is configured to go ProxyConfig.Direct, noProxyHosts is present and should be prioritized
+        TestCase(expectedProxyConfig, props = mapOf("http.noProxyHosts" to "", "http.nonProxyHosts" to "example.com|.amazon.com") + httpsProxyProps),
     )
 
     @Test

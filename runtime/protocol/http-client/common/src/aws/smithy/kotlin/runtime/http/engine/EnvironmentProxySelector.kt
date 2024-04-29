@@ -22,8 +22,8 @@ import aws.smithy.kotlin.runtime.util.PropertyProvider
  * - `http.proxyPort`
  * - `https.proxyHost`
  * - `https.proxyPort`
- * - `http.nonProxyHosts`
  * - `http.noProxyHosts`
+ * - `http.nonProxyHosts`
  *
  * **Environment variables in the given order**:
  * - `http_proxy`, `HTTP_PROXY`
@@ -130,8 +130,9 @@ private fun resolveNonProxyHosts(provider: PlatformEnvironProvider): Set<NonProx
     // patterns separated by '|'. The patterns may start or end with a '*' for wildcards. Any host matching one of
     // these patterns will be reached through a direct connection instead of through a proxy.
 
-    // NOTE: Both http.nonProxyHosts AND http.noProxyHosts are checked: https://github.com/smithy-lang/smithy-kotlin/issues/1081
-    val nonProxyHostProperty = provider.getProperty("http.nonProxyHosts") ?: provider.getProperty("http.noProxyHosts")
+    // NOTE: Both http.noProxyHosts (legacy behavior) AND http.nonProxyHosts (correct value according to the spec) are checked
+    // https://github.com/smithy-lang/smithy-kotlin/issues/1081
+    val nonProxyHostProperty = provider.getProperty("http.noProxyHosts") ?: provider.getProperty("http.nonProxyHosts")
 
     val nonProxyHostProps = nonProxyHostProperty
         ?.split('|')
