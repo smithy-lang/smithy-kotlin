@@ -130,9 +130,9 @@ private fun resolveNonProxyHosts(provider: PlatformEnvironProvider): Set<NonProx
     // patterns separated by '|'. The patterns may start or end with a '*' for wildcards. Any host matching one of
     // these patterns will be reached through a direct connection instead of through a proxy.
 
-    // NOTE: Both http.noProxyHosts (legacy behavior) AND http.nonProxyHosts (correct value according to the spec) are checked
+    // NOTE: Both http.nonProxyHosts (correct value according to the spec) AND http.noProxyHosts (legacy behavior) are checked
     // https://github.com/smithy-lang/smithy-kotlin/issues/1081
-    val nonProxyHostProperty = provider.getProperty("http.noProxyHosts") ?: provider.getProperty("http.nonProxyHosts")
+    val nonProxyHostProperty = provider.getProperty("http.nonProxyHosts") ?: provider.getProperty("http.noProxyHosts")
 
     val nonProxyHostProps = nonProxyHostProperty
         ?.split('|')
