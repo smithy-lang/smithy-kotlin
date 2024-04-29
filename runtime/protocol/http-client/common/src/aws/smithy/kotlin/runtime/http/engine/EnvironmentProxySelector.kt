@@ -22,8 +22,8 @@ import aws.smithy.kotlin.runtime.util.PropertyProvider
  * - `http.proxyPort`
  * - `https.proxyHost`
  * - `https.proxyPort`
- * - `http.noProxyHosts`
  * - `http.nonProxyHosts`
+ * - `http.noProxyHosts`
  *
  * **Environment variables in the given order**:
  * - `http_proxy`, `HTTP_PROXY`
