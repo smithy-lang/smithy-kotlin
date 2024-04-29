@@ -60,8 +60,8 @@ class EnvironmentProxySelectorTest {
 
         // multiple no proxy hosts normalization
         TestCase(ProxyConfig.Direct, env = mapOf("no_proxy" to "example.com,.amazon.com") + httpsProxyEnv),
-        TestCase(ProxyConfig.Direct, props = mapOf("http.nonProxyHosts" to "example.com|.amazon.com") + httpsProxyProps),
         TestCase(ProxyConfig.Direct, props = mapOf("http.noProxyHosts" to "example.com|.amazon.com") + httpsProxyProps),
+        TestCase(ProxyConfig.Direct, props = mapOf("http.nonProxyHosts" to "example.com|.amazon.com") + httpsProxyProps),
 
         // environment
         TestCase(expectedProxyConfig, env = httpsProxyEnv),
