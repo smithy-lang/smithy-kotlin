@@ -1,0 +1,5 @@
+{
+    "id": "0523c42d-d3a6-4789-800b-b613e6589170",
+    "type": "feature",
+    "description": "Provide new abstract versions of telemetry classes to simplify the creation of custom telemetry providers"
+}

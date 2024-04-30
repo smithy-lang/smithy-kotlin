@@ -13,6 +13,18 @@ import kotlin.time.Duration
 import kotlin.time.measureTimedValue
 
 public interface Histogram<T : Number> {
+    public companion object {
+        /**
+         * A [DoubleHistogram] that does nothing
+         */
+        public val DoubleNone: DoubleHistogram = object : AbstractDoubleHistogram() { }
+
+        /**
+         * A [LongHistogram] that does nothing
+         */
+        public val LongNone: LongHistogram = object : AbstractLongHistogram() { }
+    }
+
     /**
      * Updates the statistics with a value
      *

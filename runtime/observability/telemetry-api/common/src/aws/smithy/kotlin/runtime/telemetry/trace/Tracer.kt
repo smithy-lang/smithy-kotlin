@@ -13,6 +13,13 @@ import aws.smithy.kotlin.runtime.telemetry.context.Context
  * Entry point for creating [TraceSpan] instances.
  */
 public interface Tracer {
+    public companion object {
+        /**
+         * A [Tracer] that does nothing
+         */
+        public val None: Tracer = object : AbstractTracer() { }
+    }
+
     /**
      * Creates a new span and makes it active in the current [Context].
      *

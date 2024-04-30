@@ -15,7 +15,7 @@ public interface Logger {
         /**
          * A no-op [Logger] that does nothing
          */
-        public val None: Logger = NoOpLogger
+        public val None: Logger = object : AbstractLogger() { }
     }
 
     /**

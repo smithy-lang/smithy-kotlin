@@ -20,7 +20,7 @@ public interface TelemetryProvider {
         /**
          * Default (no-op) telemetry provider
          */
-        public val None: TelemetryProvider = NoOpTelemetryProvider
+        public val None: TelemetryProvider = object : AbstractTelemetryProvider() { }
     }
 
     /**
@@ -46,12 +46,4 @@ public interface TelemetryProvider {
      */
     @ExperimentalApi
     public val contextManager: ContextManager
-}
-
-@OptIn(ExperimentalApi::class)
-private object NoOpTelemetryProvider : TelemetryProvider {
-    override val meterProvider: MeterProvider = MeterProvider.None
-    override val tracerProvider: TracerProvider = TracerProvider.None
-    override val loggerProvider: LoggerProvider = LoggerProvider.None
-    override val contextManager: ContextManager = ContextManager.None
 }
