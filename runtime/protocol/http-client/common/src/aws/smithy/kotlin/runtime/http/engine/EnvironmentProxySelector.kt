@@ -22,6 +22,7 @@ import aws.smithy.kotlin.runtime.util.PropertyProvider
  * - `http.proxyPort`
  * - `https.proxyHost`
  * - `https.proxyPort`
+ * - `http.nonProxyHosts`
  * - `http.noProxyHosts`
  *
  * **Environment variables in the given order**:
@@ -32,10 +33,10 @@ import aws.smithy.kotlin.runtime.util.PropertyProvider
 internal class EnvironmentProxySelector(provider: PlatformEnvironProvider = PlatformProvider.System) : ProxySelector {
     private val httpProxy by lazy { resolveProxyByProperty(provider, Scheme.HTTP) ?: resolveProxyByEnvironment(provider, Scheme.HTTP) }
     private val httpsProxy by lazy { resolveProxyByProperty(provider, Scheme.HTTPS) ?: resolveProxyByEnvironment(provider, Scheme.HTTPS) }
-    private val noProxyHosts by lazy { resolveNoProxyHosts(provider) }
+    private val nonProxyHosts by lazy { resolveNonProxyHosts(provider) }
 
     override fun select(url: Url): ProxyConfig {
-        if (httpProxy == null && httpsProxy == null || noProxy(url)) return ProxyConfig.Direct
+        if (httpProxy == null && httpsProxy == null || nonProxy(url)) return ProxyConfig.Direct
 
         val proxyConfig = when (url.scheme) {
             Scheme.HTTP -> httpProxy
@@ -46,7 +47,7 @@ internal class EnvironmentProxySelector(provider: PlatformEnvironProvider = Plat
         return proxyConfig ?: ProxyConfig.Direct
     }
 
-    private fun noProxy(url: Url): Boolean = noProxyHosts.any { it.matches(url) }
+    private fun nonProxy(url: Url): Boolean = nonProxyHosts.any { it.matches(url) }
 }
 
 private fun resolveProxyByProperty(provider: PropertyProvider, scheme: Scheme): ProxyConfig? {
@@ -94,7 +95,7 @@ private fun resolveProxyByEnvironment(provider: EnvironmentProvider, scheme: Sch
             }
         }
 
-internal data class NoProxyHost(val hostMatch: String, val port: Int? = null) {
+internal data class NonProxyHost(val hostMatch: String, val port: Int? = null) {
     fun matches(url: Url): Boolean {
         // any host
         if (hostMatch == "*") return true
@@ -115,24 +116,29 @@ internal data class NoProxyHost(val hostMatch: String, val port: Int? = null) {
     }
 }
 
-private fun parseNoProxyHost(raw: String): NoProxyHost {
+private fun parseNonProxyHost(raw: String): NonProxyHost {
     val pair = raw.split(':', limit = 2)
     return when (pair.size) {
-        1 -> NoProxyHost(pair[0])
-        2 -> NoProxyHost(pair[0], pair[1].toInt())
-        else -> error("invalid no proxy host: $raw")
+        1 -> NonProxyHost(pair[0])
+        2 -> NonProxyHost(pair[0], pair[1].toInt())
+        else -> error("invalid non proxy host: $raw")
     }
 }
 
-private fun resolveNoProxyHosts(provider: PlatformEnvironProvider): Set<NoProxyHost> {
+private fun resolveNonProxyHosts(provider: PlatformEnvironProvider): Set<NonProxyHost> {
     // http.nonProxyHosts:a list of hosts that should be reached directly, bypassing the proxy. This is a list of
     // patterns separated by '|'. The patterns may start or end with a '*' for wildcards. Any host matching one of
     // these patterns will be reached through a direct connection instead of through a proxy.
-    val noProxyHostProps = provider.getProperty("http.noProxyHosts")
+
+    // NOTE: Both http.nonProxyHosts (correct value according to the spec) AND http.noProxyHosts (legacy behavior) are checked
+    // https://github.com/smithy-lang/smithy-kotlin/issues/1081
+    val nonProxyHostProperty = provider.getProperty("http.nonProxyHosts") ?: provider.getProperty("http.noProxyHosts")
+
+    val nonProxyHostProps = nonProxyHostProperty
         ?.split('|')
         ?.map { it.trim() }
         ?.map { it.trimStart('.') }
-        ?.map(::parseNoProxyHost)
+        ?.map(::parseNonProxyHost)
         ?.toSet() ?: emptySet()
 
     // `no_proxy` is a comma or space-separated list of machine or domain names, with optional :port part.
@@ -142,8 +148,8 @@ private fun resolveNoProxyHosts(provider: PlatformEnvironProvider): Set<NoProxyH
         .flatMap { it.split(',', ' ') }
         .map { it.trim() }
         .map { it.trimStart('.') }
-        .map(::parseNoProxyHost)
+        .map(::parseNonProxyHost)
         .toSet()
 
-    return noProxyHostProps + noProxyEnv
+    return nonProxyHostProps + noProxyEnv
 }

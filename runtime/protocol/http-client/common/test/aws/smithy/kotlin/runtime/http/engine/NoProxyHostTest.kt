@@ -45,7 +45,7 @@ class NoProxyHostTest {
     @Test
     fun testMatches() {
         tests.forEachIndexed { i, testCase ->
-            val noProxyHost = NoProxyHost(testCase.noProxyHost, testCase.noProxyPort)
+            val noProxyHost = NonProxyHost(testCase.noProxyHost, testCase.noProxyPort)
             val url = Url.parse(testCase.url)
 
             assertEquals(testCase.shouldMatch, noProxyHost.matches(url), "[idx=$i] expected $noProxyHost to match $url")
