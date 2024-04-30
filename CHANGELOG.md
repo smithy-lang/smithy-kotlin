@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.2.2] - 04/30/2024
+
+### Features
+* Provide new abstract versions of telemetry classes to simplify the creation of custom telemetry providers
+
+### Fixes
+* [#1293](https://github.com/awslabs/aws-sdk-kotlin/issues/1293) Gracefully degrade in clock skew interceptor when receiving a `Date` header value with a malformed date
+* [#1081](https://github.com/smithy-lang/smithy-kotlin/issues/1081) Support `http.nonProxyHosts` JVM system property
+
 ## [1.2.1] - 04/27/2024
 
 ## [1.2.0] - 04/25/2024
