@@ -32,7 +32,7 @@ jobs:
       - name: Generate Artifact Size Metrics
         run: ./gradlew artifactSizeMetrics
       - name: Save Artifact Size Metrics
-        run: ./gradlew saveArtifactSizeMetrics
+        run: ./gradlew saveArtifactSizeMetrics -Prelease=${{ github.event.release.tag_name }}
       - name: Put Artifact Size Metrics in CloudWatch
         run: ./gradlew putArtifactSizeMetricsInCloudWatch -Prelease=${{ github.event.release.tag_name }}
   size-check:
