@@ -265,7 +265,7 @@ open class SerializeStructGenerator(
             ShapeType.MAP -> renderMapElement(rootMemberShape, elementShape as MapShape, nestingLevel, parentMemberName)
             ShapeType.UNION,
             ShapeType.STRUCTURE,
-            -> renderNestedStructureElement(elementShape, nestingLevel, parentMemberName)
+            -> renderNestedStructureElement(elementShape, nestingLevel, parentMemberName, isSparse)
 
             else -> error("Unhandled type ${elementShape.type}")
         }
@@ -280,7 +280,7 @@ open class SerializeStructGenerator(
      * }
      * ```
      */
-    private fun renderNestedStructureElement(structureShape: Shape, nestingLevel: Int, parentMemberName: String) {
+    private fun renderNestedStructureElement(structureShape: Shape, nestingLevel: Int, parentMemberName: String, isSparse: Boolean,) {
         val serializerFnName = structureShape.type.primitiveSerializerFunctionName()
         val serializerTypeName = ctx.symbolProvider.toSymbol(structureShape).documentSerializerName()
         val elementName = nestingLevel.variableNameFor(NestedIdentifierType.ELEMENT)
@@ -288,7 +288,10 @@ open class SerializeStructGenerator(
         val valueToSerializeName = valueToSerializeName(elementName)
 
         writer.withBlock("for ($elementName in $containerName$parentMemberName) {", "}") {
-            writer.write("$serializerFnName(#T($valueToSerializeName, ::$serializerTypeName))", RuntimeTypes.Serde.asSdkSerializable)
+            when(isSparse) {
+                true -> writer.write("if ($elementName != null) $serializerFnName(#T($valueToSerializeName, ::$serializerTypeName)) else serializeNull()", RuntimeTypes.Serde.asSdkSerializable)
+                false -> writer.write("$serializerFnName(#T($valueToSerializeName, ::$serializerTypeName))", RuntimeTypes.Serde.asSdkSerializable)
+            }
         }
     }
 
