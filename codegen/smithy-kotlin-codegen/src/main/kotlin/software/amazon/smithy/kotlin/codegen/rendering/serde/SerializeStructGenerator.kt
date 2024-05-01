@@ -280,7 +280,7 @@ open class SerializeStructGenerator(
      * }
      * ```
      */
-    private fun renderNestedStructureElement(structureShape: Shape, nestingLevel: Int, parentMemberName: String, isSparse: Boolean,) {
+    private fun renderNestedStructureElement(structureShape: Shape, nestingLevel: Int, parentMemberName: String, isSparse: Boolean) {
         val serializerFnName = structureShape.type.primitiveSerializerFunctionName()
         val serializerTypeName = ctx.symbolProvider.toSymbol(structureShape).documentSerializerName()
         val elementName = nestingLevel.variableNameFor(NestedIdentifierType.ELEMENT)
@@ -288,7 +288,7 @@ open class SerializeStructGenerator(
         val valueToSerializeName = valueToSerializeName(elementName)
 
         writer.withBlock("for ($elementName in $containerName$parentMemberName) {", "}") {
-            when(isSparse) {
+            when (isSparse) {
                 true -> writer.write("if ($elementName != null) $serializerFnName(#T($valueToSerializeName, ::$serializerTypeName)) else serializeNull()", RuntimeTypes.Serde.asSdkSerializable)
                 false -> writer.write("$serializerFnName(#T($valueToSerializeName, ::$serializerTypeName))", RuntimeTypes.Serde.asSdkSerializable)
             }
