@@ -42,8 +42,8 @@ kotlin {
 
         jvmTest {
             dependencies {
-                implementation(libs.testcontainers)
-                implementation(libs.testcontainers.junit.jupiter)
+                implementation(libs.docker.core)
+                implementation(libs.docker.transport.zerodep)
             }
         }
 

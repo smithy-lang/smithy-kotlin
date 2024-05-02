@@ -2086,6 +2086,7 @@ public final class aws/smithy/kotlin/runtime/time/Instant : java/lang/Comparable
 	public final fun getEpochSeconds ()J
 	public final fun getNanosecondsOfSecond ()I
 	public fun hashCode ()I
+	public final fun minus-5sfh64U (Laws/smithy/kotlin/runtime/time/Instant;)J
 	public final fun minus-LRDsOJo (J)Laws/smithy/kotlin/runtime/time/Instant;
 	public final fun plus-LRDsOJo (J)Laws/smithy/kotlin/runtime/time/Instant;
 	public fun toString ()Ljava/lang/String;
