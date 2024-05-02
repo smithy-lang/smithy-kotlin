@@ -13,6 +13,7 @@ otel-version = "1.32.0"
 slf4j-version = "2.0.9"
 slf4j-v1x-version = "1.7.36"
 crt-kotlin-version = "0.8.5"
+micrometer-version = "1.12.5"
 
 # codegen
 smithy-version = "1.47.0"
@@ -59,6 +60,7 @@ slf4j-api = { module = "org.slf4j:slf4j-api", version.ref = "slf4j-version" }
 slf4j-api-v1x = { module = "org.slf4j:slf4j-api", version.ref = "slf4j-v1x-version" }
 slf4j-simple = { module = "org.slf4j:slf4j-simple", version.ref = "slf4j-version" }
 crt-kotlin = { module = "aws.sdk.kotlin.crt:aws-crt-kotlin", version.ref = "crt-kotlin-version" }
+micrometer-core = { module = "io.micrometer:micrometer-core", version.ref = "micrometer-version" }
 
 smithy-codegen-core = { module = "software.amazon.smithy:smithy-codegen-core", version.ref = "smithy-version" }
 smithy-cli = { module = "software.amazon.smithy:smithy-cli", version.ref = "smithy-version" }
