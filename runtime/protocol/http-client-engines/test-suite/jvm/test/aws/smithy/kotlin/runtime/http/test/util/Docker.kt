@@ -103,7 +103,8 @@ class Docker {
 
             client
                 .pullImageCmd(imageName)
-                .execAndMeasure(loggerAdapter) { "Pulled missing image $imageName" }
+                .execAndMeasure(loggerAdapter) { "Started image pull for $imageName" }
+                .awaitCompletion()
         }
     }
 
