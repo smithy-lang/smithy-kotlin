@@ -94,7 +94,7 @@ class Docker {
     private fun ensureImageExists(imageName: String, loggingHandler: (String) -> Unit) {
         val exists = client
             .listImagesCmd()
-            .withImageNameFilter(imageName)
+            .withReferenceFilter(imageName)
             .execAndMeasure { "Checking for $imageName locally (exists = ${it.any()})" }
             .any()
 
