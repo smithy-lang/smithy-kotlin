@@ -4,8 +4,6 @@
  */
 package aws.smithy.kotlin.runtime.http.test.util
 
-import aws.smithy.kotlin.runtime.util.OsFamily
-import aws.smithy.kotlin.runtime.util.PlatformProvider
 import com.github.dockerjava.api.async.ResultCallback
 import com.github.dockerjava.api.command.AsyncDockerCmd
 import com.github.dockerjava.api.command.SyncDockerCmd
