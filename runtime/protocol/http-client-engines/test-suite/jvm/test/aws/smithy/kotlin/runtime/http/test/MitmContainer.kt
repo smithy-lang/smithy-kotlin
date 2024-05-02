@@ -35,8 +35,10 @@ class MitmContainer(vararg options: String) : Closeable {
         // Make proxy scripts from host available to container
         val binding = Bind(PROXY_SCRIPT_ROOT, Volume(CONTAINER_MOUNT_POINT), AccessMode.ro)
 
+        delegate = Docker.Instance.createContainer(IMAGE_NAME, cmd, binding, exposedPort)
+
         try {
-            delegate = Docker.Instance.createContainer(IMAGE_NAME, cmd, binding, exposedPort).apply {
+            delegate.apply {
                 attachLogger(::println)
                 start()
                 waitUntilReady()
