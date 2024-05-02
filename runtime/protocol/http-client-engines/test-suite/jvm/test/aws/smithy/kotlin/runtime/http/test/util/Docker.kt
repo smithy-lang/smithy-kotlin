@@ -23,6 +23,7 @@ import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.measureTimedValue
 
+private val DOCKER_HOST = URI.create("unix:///var/run/docker.sock")
 private val MAX_POLL_TIME = 10.seconds
 private const val POLL_CONNECT_TIMEOUT_MS = 100
 private val POLL_INTERVAL = 250.milliseconds
@@ -38,15 +39,8 @@ class Docker {
     private val client = run {
         val config = DefaultDockerClientConfig.createDefaultConfigBuilder().build()
 
-        // Default Docker host locations according to Docker reference guide:
-        // https://docs.docker.com/reference/cli/dockerd/#bind-docker-to-another-hostport-or-a-unix-socket
-        val dockerHostString = when (PlatformProvider.System.osInfo().family) {
-            OsFamily.Windows -> "tcp://localhost:2376"
-            else -> "unix:///var/run/docker.sock"
-        }
-
         val httpClient = ZerodepDockerHttpClient.Builder()
-            .dockerHost(URI.create(dockerHostString))
+            .dockerHost(DOCKER_HOST)
             .build()
 
         DockerClientImpl.getInstance(config, httpClient)
