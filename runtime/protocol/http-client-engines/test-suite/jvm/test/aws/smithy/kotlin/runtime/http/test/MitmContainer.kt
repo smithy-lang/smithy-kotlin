@@ -39,7 +39,6 @@ class MitmContainer(vararg options: String) : Closeable {
 
         try {
             delegate.apply {
-                attachLogger(::println)
                 start()
                 waitUntilReady()
             }

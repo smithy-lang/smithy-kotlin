@@ -52,7 +52,15 @@ class Docker {
         DockerClientImpl.getInstance(config, httpClient)
     }
 
-    fun createContainer(imageName: String, cmd: List<String>, bind: Bind, exposedPort: ExposedPort): Container {
+    fun createContainer(
+        imageName: String,
+        cmd: List<String>,
+        bind: Bind,
+        exposedPort: ExposedPort,
+        loggingHandler: (String) -> Unit = ::println,
+    ): Container {
+        ensureImageExists(imageName, loggingHandler)
+
         val portBinding = PortBinding(Ports.Binding.empty(), exposedPort)
 
         val hostConfig = HostConfig
@@ -69,28 +77,38 @@ class Docker {
             .id
             .substring(0..<12) // Short container IDs are 12 chars vs full container IDs at 64 chars
 
+        val loggerAdapter = LoggerAdapter<Frame>(loggingHandler) { it.payload.decodeToString() }
+
+        client
+            .attachContainerCmd(id)
+            .withFollowStream(true)
+            .withStdOut(true)
+            .withStdErr(true)
+            .withLogs(true)
+            .execAndMeasure(loggerAdapter) { "Attached logger to container $id" }
+            .awaitStarted()
+
         return Container(id, exposedPort)
+    }
+
+    private fun ensureImageExists(imageName: String, loggingHandler: (String) -> Unit) {
+        val exists = client
+            .listImagesCmd()
+            .withImageNameFilter(imageName)
+            .execAndMeasure { "Checking for $imageName locally (exists = ${it.any()})" }
+            .any()
+
+        if (!exists) {
+            val loggerAdapter = LoggerAdapter<PullResponseItem>(loggingHandler) { it.status }
+
+            client
+                .pullImageCmd(imageName)
+                .execAndMeasure(loggerAdapter) { "Pulled missing image $imageName" }
+        }
     }
 
     inner class Container(val id: String, val exposedPort: ExposedPort) : Closeable {
         private val poller = Poller(MAX_POLL_TIME, POLL_INTERVAL)
-
-        fun attachLogger(handler: (String) -> Unit) {
-            val logger = object : ResultCallback.Adapter<Frame>() {
-                override fun onNext(frame: Frame?) {
-                    frame?.payload?.decodeToString()?.let(handler)
-                }
-            }
-
-            client
-                .attachContainerCmd(id)
-                .withFollowStream(true)
-                .withStdOut(true)
-                .withStdErr(true)
-                .withLogs(true)
-                .execAndMeasure(logger) { "Attached logger to container $id" }
-                .awaitStarted()
-        }
 
         override fun close() {
             client
@@ -130,6 +148,15 @@ class Docker {
         }
 
         fun waitUntilReady() = poller.pollTrue("Socket localHost:$hostPort → $exposedPort on container $id", ::isReady)
+    }
+}
+
+private class LoggerAdapter<I>(
+    val handler: (String) -> Unit,
+    val converter: (I) -> String?,
+) : ResultCallback.Adapter<I>() {
+    override fun onNext(value: I?) {
+        value?.let(converter)?.let(handler)
     }
 }
 
