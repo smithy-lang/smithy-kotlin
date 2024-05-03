@@ -24,7 +24,7 @@ kotest-version = "5.8.0"
 kotlin-compile-testing-version = "1.5.0"
 kotlinx-benchmark-version = "0.4.9"
 kotlinx-serialization-version = "1.6.0"
-testcontainers-version = "1.19.1"
+docker-java-version = "3.3.6"
 ktor-version = "2.3.6"
 kaml-version = "0.55.0"
 jsoup-version = "1.16.2"
@@ -81,8 +81,8 @@ kotest-assertions-core = { module = "io.kotest:kotest-assertions-core", version.
 kotest-assertions-core-jvm = { module = "io.kotest:kotest-assertions-core-jvm", version.ref = "kotest-version" }
 kotlinx-benchmark-runtime = { module = "org.jetbrains.kotlinx:kotlinx-benchmark-runtime", version.ref = "kotlinx-benchmark-version" }
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinx-serialization-version" }
-testcontainers = { module = "org.testcontainers:testcontainers", version.ref = "testcontainers-version" }
-testcontainers-junit-jupiter = { module = "org.testcontainers:junit-jupiter", version.ref = "testcontainers-version" }
+docker-core = { module = "com.github.docker-java:docker-java-core", version.ref = "docker-java-version" }
+docker-transport-zerodep = { module = "com.github.docker-java:docker-java-transport-zerodep", version.ref = "docker-java-version" }
 
 ktor-http-cio = { module = "io.ktor:ktor-http-cio", version.ref = "ktor-version" }
 ktor-utils = { module = "io.ktor:ktor-utils", version.ref = "ktor-version" }

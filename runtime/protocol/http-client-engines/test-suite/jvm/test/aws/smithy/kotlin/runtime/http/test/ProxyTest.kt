@@ -2,7 +2,6 @@
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
  * SPDX-License-Identifier: Apache-2.0
  */
-
 package aws.smithy.kotlin.runtime.http.test
 
 import aws.smithy.kotlin.runtime.http.HttpStatusCode
@@ -18,49 +17,34 @@ import aws.smithy.kotlin.runtime.http.test.util.AbstractEngineTest
 import aws.smithy.kotlin.runtime.http.test.util.engineConfig
 import aws.smithy.kotlin.runtime.http.test.util.test
 import aws.smithy.kotlin.runtime.net.url.Url
+import org.junit.jupiter.api.AfterAll
+import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.api.condition.EnabledIfSystemProperty
-import org.testcontainers.containers.BindMode
-import org.testcontainers.containers.GenericContainer
-import org.testcontainers.junit.jupiter.Container
-import org.testcontainers.junit.jupiter.Testcontainers
-import org.testcontainers.utility.DockerImageName
 import kotlin.test.assertEquals
 
-// defined by gradle script
-private val PROXY_SCRIPT_ROOT = System.getProperty("MITM_PROXY_SCRIPTS_ROOT")
-private fun mitmProxyContainer(
-    vararg options: String,
-) = GenericContainer(DockerImageName.parse("mitmproxy/mitmproxy:8.1.0"))
-    .withExposedPorts(8080)
-    .withFileSystemBind(PROXY_SCRIPT_ROOT, "/home/mitmproxy/scripts", BindMode.READ_ONLY)
-    .withLogConsumer {
-        print(it.utf8String)
-    }.apply {
-        val command = buildString {
-            // load the custom addon which by default does nothing without setting additional options
-            append("mitmdump --flow-detail 2 -s /home/mitmproxy/scripts/fakeupstream.py")
-            append(options.joinToString(separator = " ", prefix = " "))
-        }
-        withCommand(command)
-    }
-
-@Testcontainers(disabledWithoutDocker = true)
+@TestInstance(TestInstance.Lifecycle.PER_CLASS) // enables non-static @BeforeAll/@AfterAll methods
 @EnabledIfSystemProperty(named = "aws.test.http.enableProxyTests", matches = "true")
 class ProxyTest : AbstractEngineTest() {
+    private lateinit var mitmProxy: MitmContainer
 
-    @Container
-    val mitmProxy = mitmProxyContainer("--set fakeupstream=aws.amazon.com")
+    @BeforeAll
+    fun setUp() {
+        mitmProxy = MitmContainer("--set", "fakeupstream=aws.amazon.com")
+    }
+
+    @AfterAll
+    fun cleanUp() {
+        mitmProxy.close()
+    }
 
     @Test
-    fun testHttpProxy() = testEngines(
-        // we would expect a customer to configure proxy support on the underlying engine
-        skipEngines = setOf("KtorEngine"),
-    ) {
+    fun testHttpProxy() = testEngines {
         engineConfig {
-            val proxyPort = mitmProxy.getMappedPort(8080)
+            val hostPort = mitmProxy.hostPort
             proxySelector = ProxySelector {
-                ProxyConfig.Http("http://127.0.0.1:$proxyPort")
+                ProxyConfig.Http("http://127.0.0.1:$hostPort")
             }
         }
 
@@ -70,22 +54,27 @@ class ProxyTest : AbstractEngineTest() {
     }
 }
 
-@Testcontainers(disabledWithoutDocker = true)
+@TestInstance(TestInstance.Lifecycle.PER_CLASS) // enables non-static @BeforeAll/@AfterAll methods
 @EnabledIfSystemProperty(named = "aws.test.http.enableProxyTests", matches = "true")
 class ProxyAuthTest : AbstractEngineTest() {
+    private lateinit var mitmProxy: MitmContainer
 
-    @Container
-    val mitmProxy = mitmProxyContainer("--proxyauth testuser:testpass --set fakeupstream=aws.amazon.com")
+    @BeforeAll
+    fun setUp() {
+        mitmProxy = MitmContainer("--proxyauth", "testuser:testpass", "--set", "fakeupstream=aws.amazon.com")
+    }
+
+    @AfterAll
+    fun cleanUp() {
+        mitmProxy.close()
+    }
 
     @Test
-    fun testHttpProxyAuth() = testEngines(
-        // we would expect a customer to configure proxy support on the underlying engine
-        skipEngines = setOf("KtorEngine"),
-    ) {
+    fun testHttpProxyAuth() = testEngines {
         engineConfig {
-            val proxyPort = mitmProxy.getMappedPort(8080)
+            val hostPort = mitmProxy.hostPort
             proxySelector = ProxySelector {
-                ProxyConfig.Http("http://testuser:testpass@127.0.0.1:$proxyPort")
+                ProxyConfig.Http("http://testuser:testpass@127.0.0.1:$hostPort")
             }
         }
 
