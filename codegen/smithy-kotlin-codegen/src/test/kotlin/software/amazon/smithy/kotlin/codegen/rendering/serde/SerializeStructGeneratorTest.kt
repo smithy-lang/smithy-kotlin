@@ -580,6 +580,195 @@ class SerializeStructGeneratorTest {
     }
 
     @Test
+    fun `it serializes a structure containing a sparse list of structures`() {
+        val model = (
+            modelPrefix + """            
+            structure FooRequest { 
+                payload: SparseStructureList
+            }
+            
+            @sparse
+            list SparseStructureList {
+                member: FooStruct
+            }
+            
+            structure FooStruct {
+                fooValue: Integer
+            }
+        """
+            ).toSmithyModel()
+
+        val expected = """
+            serializer.serializeStruct(OBJ_DESCRIPTOR) {
+                if (input.payload != null) {
+                    listField(PAYLOAD_DESCRIPTOR) {
+                        for (el0 in input.payload) {
+                            if (el0 != null) {
+                                serializeSdkSerializable(asSdkSerializable(el0, ::serializeFooStructDocument))
+                            } else serializeNull()
+                        }
+                    }
+                }
+            }
+        """.trimIndent()
+
+        val actual = codegenSerializerForShape(model, "com.test#Foo").stripCodegenPrefix()
+
+        actual.shouldContainOnlyOnceWithDiff(expected)
+    }
+
+    @Test
+    fun `it serializes a structure containing a sparse list of timestamps`() {
+        val model = (
+            modelPrefix + """            
+            structure FooRequest { 
+                payload: SparseTimestampList
+            }
+            
+            @sparse
+            list SparseTimestampList {
+                member: Timestamp
+            }
+        """
+            ).toSmithyModel()
+
+        val expected = """
+            serializer.serializeStruct(OBJ_DESCRIPTOR) {
+                if (input.payload != null) {
+                    listField(PAYLOAD_DESCRIPTOR) {
+                        for (el0 in input.payload) {
+                            if (el0 != null) {
+                                serializeInstant(el0, TimestampFormat.EPOCH_SECONDS)
+                            } else serializeNull()
+                        }
+                    }
+                }
+            }
+        """.trimIndent()
+
+        val actual = codegenSerializerForShape(model, "com.test#Foo").stripCodegenPrefix()
+
+        actual.shouldContainOnlyOnceWithDiff(expected)
+    }
+
+    @Test
+    fun `it serializes a structure containing a sparse list of lists`() {
+        val model = (
+            modelPrefix + """            
+            structure FooRequest { 
+                payload: SparsePrimitiveListList
+            }
+            
+            @sparse
+            list SparsePrimitiveListList {
+                member: PrimitiveList
+            }
+            
+            list PrimitiveList {
+                member: Integer
+            }
+        """
+            ).toSmithyModel()
+
+        val expected = """
+            serializer.serializeStruct(OBJ_DESCRIPTOR) {
+                if (input.payload != null) {
+                    listField(PAYLOAD_DESCRIPTOR) {
+                        for (el0 in input.payload) {
+                            serializer.serializeList(PAYLOAD_C0_DESCRIPTOR) {
+                                if (el0 != null) {
+                                    for (el1 in el0) {
+                                        serializeInt(el1)
+                                    }
+                                } else serializeNull()
+                            }
+                        }
+                    }
+                }
+            }
+        """.trimIndent()
+
+        val actual = codegenSerializerForShape(model, "com.test#Foo").stripCodegenPrefix()
+
+        actual.shouldContainOnlyOnceWithDiff(expected)
+    }
+
+    @Test
+    fun `it serializes a structure containing a sparse list of maps`() {
+        val model = (
+            modelPrefix + """            
+            structure FooRequest { 
+                payload: SparseMapList
+            }
+            
+            @sparse
+            list SparseMapList {
+                member: PrimitiveMap
+            }
+            
+            map PrimitiveMap {
+                key: String,
+                value: Integer
+            }
+        """
+            ).toSmithyModel()
+
+        val expected = """
+            serializer.serializeStruct(OBJ_DESCRIPTOR) {
+                if (input.payload != null) {
+                    listField(PAYLOAD_DESCRIPTOR) {
+                        for (el0 in input.payload) {
+                            serializer.serializeMap(PAYLOAD_C0_DESCRIPTOR) {
+                                if (el0 != null) {
+                                    el0.forEach { (key1, value1) -> entry(key1, value1) }
+                                } else serializeNull()
+                            }
+                        }
+                    }
+                }
+            }
+        """.trimIndent()
+
+        val actual = codegenSerializerForShape(model, "com.test#Foo").stripCodegenPrefix()
+
+        actual.shouldContainOnlyOnceWithDiff(expected)
+    }
+
+    @Test
+    fun `it serializes a structure containing a sparse list of blobs`() {
+        val model = (
+            modelPrefix + """            
+            structure FooRequest { 
+                payload: SparseBlobList
+            }
+            
+            @sparse
+            list SparseBlobList {
+                member: Blob
+            }
+        """
+            ).toSmithyModel()
+
+        val expected = """
+            serializer.serializeStruct(OBJ_DESCRIPTOR) {
+                if (input.payload != null) {
+                    listField(PAYLOAD_DESCRIPTOR) {
+                        for (el0 in input.payload) {
+                            if (el0 != null) {
+                                serializeString(el0.encodeBase64String())
+                            } else serializeNull()
+                        }
+                    }
+                }
+            }
+        """.trimIndent()
+
+        val actual = codegenSerializerForShape(model, "com.test#Foo").stripCodegenPrefix()
+
+        actual.shouldContainOnlyOnceWithDiff(expected)
+    }
+
+    @Test
     fun `it serializes a structure containing a list of a nested list of a primitive type`() {
         val model = (
             modelPrefix + """            
@@ -1159,7 +1348,81 @@ class SerializeStructGeneratorTest {
             serializer.serializeStruct(OBJ_DESCRIPTOR) {
                 if (input.payload != null) {
                     mapField(PAYLOAD_DESCRIPTOR) {
-                        input.payload.forEach { (key, value) -> entry(key, value) }
+                        input.payload.forEach { (key, value) ->
+                            if (value != null) {
+                                entry(key, value)
+                            } else entry(key, null as String?)
+                        }
+                    }
+                }
+            }
+        """.trimIndent()
+
+        val actual = codegenSerializerForShape(model, "com.test#Foo").stripCodegenPrefix()
+
+        actual.shouldContainOnlyOnceWithDiff(expected)
+    }
+
+    @Test
+    fun `it serializes a structure containing a sparse map of a blob value`() {
+        val model = (
+            modelPrefix + """
+            structure FooRequest {
+                payload: BlobMap
+            }
+
+            @sparse
+            map BlobMap {
+                key: String,
+                value: Blob
+            }
+        """
+            ).toSmithyModel()
+
+        val expected = """
+            serializer.serializeStruct(OBJ_DESCRIPTOR) {
+                if (input.payload != null) {
+                    mapField(PAYLOAD_DESCRIPTOR) {
+                        input.payload.forEach { (key, value) ->
+                            if (value != null) {
+                                entry(key, value.encodeBase64String())
+                            } else entry(key, null as String?)
+                        }
+                    }
+                }
+            }
+        """.trimIndent()
+
+        val actual = codegenSerializerForShape(model, "com.test#Foo").stripCodegenPrefix()
+
+        actual.shouldContainOnlyOnceWithDiff(expected)
+    }
+
+    @Test
+    fun `it serializes a structure containing a sparse map of a timestamp value`() {
+        val model = (
+            modelPrefix + """
+            structure FooRequest {
+                payload: TimestampMap
+            }
+
+            @sparse
+            map TimestampMap {
+                key: String,
+                value: Timestamp
+            }
+        """
+            ).toSmithyModel()
+
+        val expected = """
+            serializer.serializeStruct(OBJ_DESCRIPTOR) {
+                if (input.payload != null) {
+                    mapField(PAYLOAD_DESCRIPTOR) {
+                        input.payload.forEach { (key, value) ->
+                            if (value != null) {
+                                entry(key, it, TimestampFormat.EPOCH_SECONDS)
+                            } else entry(key, null as String?)
+                        }
                     }
                 }
             }
