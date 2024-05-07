@@ -464,7 +464,7 @@ open class SerializeStructGenerator(
         when (isSparse) {
             true -> {
                 writer.withBlock("$containerName$listMemberName.forEach { ($keyName, $valueName) ->", "}") {
-                    writer.withBlock("if (value != null) {", "} else entry(key, null as String?)") {
+                    writer.withBlock("if ($valueName != null) {", "} else entry($keyValue, null as String?)") {
                         writer.write("entry($keyValue, $valueName$enumPostfix)")
                     }
                 }
@@ -488,7 +488,7 @@ open class SerializeStructGenerator(
         when (isSparse) {
             true -> {
                 writer.withBlock("$containerName$listMemberName.forEach { ($keyName, $valueName) ->", "}") {
-                    writer.withBlock("if (value != null) {", "} else entry(key, null as String?)") {
+                    writer.withBlock("if ($valueName != null) {", "} else entry($keyValue, null as String?)") {
                         writer.write("entry($keyValue, $valueName.#T())", RuntimeTypes.Core.Text.Encoding.encodeBase64String)
                     }
                 }
@@ -539,7 +539,7 @@ open class SerializeStructGenerator(
         when (isSparse) {
             true -> {
                 writer.withBlock("$containerName$listMemberName.forEach { ($keyName, $valueName) ->", "}") {
-                    writer.withBlock("if (value != null) {", "} else entry(key, null as String?)") {
+                    writer.withBlock("if ($valueName != null) {", "} else entry($keyValue, null as String?)") {
                         writer.write("entry($keyValue, it, $tsFormat)")
                     }
                 }
