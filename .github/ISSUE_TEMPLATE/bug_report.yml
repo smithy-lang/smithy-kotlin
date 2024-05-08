@@ -63,9 +63,9 @@ body:
       required: false
 
   - type: input
-    id: kotlin-sdk-version
+    id: smithy-kotlin-version
     attributes:
-      label: AWS SDK for Kotlin version
+      label: Smithy-Kotlin version
     validations:
       required: true
 
