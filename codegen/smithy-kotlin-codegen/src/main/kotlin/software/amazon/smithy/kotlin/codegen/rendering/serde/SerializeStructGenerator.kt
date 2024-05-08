@@ -461,15 +461,10 @@ open class SerializeStructGenerator(
         val (keyName, valueName) = keyValueNames(nestingLevel)
         val keyValue = keyValue(keyShape, keyName)
 
-        when (isSparse) {
-            true -> {
-                writer.withBlock("$containerName$listMemberName.forEach { ($keyName, $valueName) ->", "}") {
-                    writer.withBlock("if ($valueName != null) {", "} else entry($keyValue, null as String?)") {
-                        writer.write("entry($keyValue, $valueName$enumPostfix)")
-                    }
-                }
+        writer.withBlock("$containerName$listMemberName.forEach { ($keyName, $valueName) ->", "}") {
+            writer.wrapBlockIf(isSparse, "if ($valueName != null) {", "} else entry($keyValue, null as String?)") {
+                writer.write("entry($keyValue, $valueName$enumPostfix)")
             }
-            false -> writer.write("$containerName$listMemberName.forEach { ($keyName, $valueName) -> entry($keyValue, $valueName$enumPostfix) }")
         }
     }
 
@@ -485,19 +480,9 @@ open class SerializeStructGenerator(
         val (keyName, valueName) = keyValueNames(nestingLevel)
         val keyValue = keyValue(keyShape, keyName)
 
-        when (isSparse) {
-            true -> {
-                writer.withBlock("$containerName$listMemberName.forEach { ($keyName, $valueName) ->", "}") {
-                    writer.withBlock("if ($valueName != null) {", "} else entry($keyValue, null as String?)") {
-                        writer.write("entry($keyValue, $valueName.#T())", RuntimeTypes.Core.Text.Encoding.encodeBase64String)
-                    }
-                }
-            }
-            false -> {
-                writer.write(
-                    "$containerName$listMemberName.forEach { ($keyName, $valueName) -> entry($keyValue, $valueName.#T()) }",
-                    RuntimeTypes.Core.Text.Encoding.encodeBase64String,
-                )
+        writer.withBlock("$containerName$listMemberName.forEach { ($keyName, $valueName) ->", "}") {
+            writer.wrapBlockIf(isSparse, "if ($valueName != null) {", "} else entry($keyValue, null as String?)") {
+                writer.write("entry($keyValue, $valueName.#T())", RuntimeTypes.Core.Text.Encoding.encodeBase64String)
             }
         }
     }
@@ -536,15 +521,10 @@ open class SerializeStructGenerator(
         val keyValue = keyValue(keyShape, keyName)
         val containerName = if (nestingLevel == 0) "input." else ""
 
-        when (isSparse) {
-            true -> {
-                writer.withBlock("$containerName$listMemberName.forEach { ($keyName, $valueName) ->", "}") {
-                    writer.withBlock("if ($valueName != null) {", "} else entry($keyValue, null as String?)") {
-                        writer.write("entry($keyValue, it, $tsFormat)")
-                    }
-                }
+        writer.withBlock("$containerName$listMemberName.forEach { ($keyName, $valueName) ->", "}") {
+            writer.wrapBlockIf(isSparse, "if ($valueName != null) {", "} else entry($keyValue, null as String?)") {
+                writer.write("entry($keyValue, it, $tsFormat)")
             }
-            false -> writer.write("$containerName$listMemberName.forEach { ($keyName, $valueName) -> entry($keyValue, it, $tsFormat) }")
         }
     }
 

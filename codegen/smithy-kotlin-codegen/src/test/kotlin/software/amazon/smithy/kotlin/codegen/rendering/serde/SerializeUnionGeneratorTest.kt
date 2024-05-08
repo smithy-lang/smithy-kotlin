@@ -108,14 +108,18 @@ class SerializeUnionGeneratorTest {
                         mapField(STRMAPMAPVAL_DESCRIPTOR) {
                             input.value.forEach { (key, value) ->
                                 mapEntry(key, STRMAPMAPVAL_C0_DESCRIPTOR) {
-                                    value.forEach { (key1, value1) -> entry(key1, value1) }
+                                    value.forEach { (key1, value1) ->
+                                        entry(key1, value1)
+                                    }
                                 }
                             }
                         }
                     }
                     is FooUnion.StrMapVal -> {
                         mapField(STRMAPVAL_DESCRIPTOR) {
-                            input.value.forEach { (key, value) -> entry(key, value) }
+                            input.value.forEach { (key, value) ->
+                                entry(key, value)
+                            }
                         }
                     }
                     is FooUnion.SdkUnknown -> throw SerializationException("Cannot serialize SdkUnknown")
