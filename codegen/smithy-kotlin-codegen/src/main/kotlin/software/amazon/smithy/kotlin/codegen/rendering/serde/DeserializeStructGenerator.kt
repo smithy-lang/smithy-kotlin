@@ -615,6 +615,7 @@ open class DeserializeStructGenerator(
             }
 
             target.type == ShapeType.TIMESTAMP -> {
+                // FIXME add a customization for CBOR
                 writer.addImport(RuntimeTypes.Core.Instant)
                 val trait = shape.getTrait<TimestampFormatTrait>() ?: target.getTrait()
                 val tsFormat = trait?.format ?: defaultTimestampFormat

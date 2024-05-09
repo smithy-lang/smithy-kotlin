@@ -293,6 +293,12 @@ object RuntimeTypes {
             val QueryLiteral = symbol("QueryLiteral")
             val FormUrlSerializer = symbol("FormUrlSerializer")
         }
+
+        object SerdeCbor : RuntimeTypePackage(KotlinDependency.SERDE_CBOR) {
+            val CborSerializer = symbol("CborSerializer")
+            val CborDeserializer = symbol("CborDeserializer")
+            val CborSerialName = symbol("CborSerialName")
+        }
     }
 
     object Auth {
