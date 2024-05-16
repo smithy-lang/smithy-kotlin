@@ -41,6 +41,8 @@ class EnvironmentProxySelectorTest {
         "https.proxyPort" to "80",
     )
     private val httpProxyProps = mapOf("http.proxyHost" to "test.proxy.aws")
+    private val wildcardPrefixNonProxyProps = mapOf("http.nonProxyHosts" to "*amazon.com")
+    private val wildcardSuffixNonProxyProps = mapOf("http.nonProxyHosts" to "amazon.co*")
 
     private val expectedProxyConfig = ProxyConfig.Http(Url.parse("http://test.proxy.aws"))
 
@@ -57,6 +59,20 @@ class EnvironmentProxySelectorTest {
 
         TestCase(ProxyConfig.Direct, props = mapOf("http.nonProxyHosts" to "aws.amazon.com") + httpsProxyProps),
         TestCase(ProxyConfig.Direct, props = mapOf("http.nonProxyHosts" to ".amazon.com") + httpsProxyProps),
+
+        // no proxy w/ wildcards
+
+        TestCase(ProxyConfig.Direct, "https://aws.amazon.com", props = wildcardPrefixNonProxyProps + httpsProxyProps),
+        TestCase(ProxyConfig.Direct, "https://blamazon.com", props = wildcardPrefixNonProxyProps + httpsProxyProps),
+        TestCase(ProxyConfig.Direct, "https://amazon.com", props = wildcardPrefixNonProxyProps + httpsProxyProps),
+        TestCase(expectedProxyConfig, "https://aws.com", props = wildcardPrefixNonProxyProps + httpsProxyProps),
+        TestCase(expectedProxyConfig, "https://amazon.com.br", props = wildcardPrefixNonProxyProps + httpsProxyProps),
+
+        TestCase(ProxyConfig.Direct, "https://amazon.com", props = wildcardSuffixNonProxyProps + httpsProxyProps),
+        TestCase(ProxyConfig.Direct, "https://amazon.com.br", props = wildcardSuffixNonProxyProps + httpsProxyProps),
+        TestCase(ProxyConfig.Direct, "https://amazon.co.jp", props = wildcardSuffixNonProxyProps + httpsProxyProps),
+        TestCase(expectedProxyConfig, "https://aws.amazon.com", props = wildcardSuffixNonProxyProps + httpsProxyProps),
+        TestCase(expectedProxyConfig, "https://blamazon.com", props = wildcardSuffixNonProxyProps + httpsProxyProps),
 
         // multiple no proxy hosts normalization
         TestCase(ProxyConfig.Direct, env = mapOf("no_proxy" to "example.com,.amazon.com") + httpsProxyEnv),

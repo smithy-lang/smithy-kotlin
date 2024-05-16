@@ -105,6 +105,10 @@ internal data class NonProxyHost(val hostMatch: String, val port: Int? = null) {
 
         val name = url.host.toString()
 
+        // handle start/end wildcard cases
+        if (hostMatch.endsWith("*")) return name.startsWith(hostMatch.removeSuffix("*"))
+        if (hostMatch.startsWith("*")) return name.endsWith(hostMatch.removePrefix("*"))
+
         if (hostMatch.length > name.length) return false
 
         val match = name.endsWith(hostMatch)

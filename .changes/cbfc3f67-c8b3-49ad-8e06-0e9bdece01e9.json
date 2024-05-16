@@ -1,0 +1,8 @@
+{
+    "id": "cbfc3f67-c8b3-49ad-8e06-0e9bdece01e9",
+    "type": "bugfix",
+    "description": "Respect `*` wildcard in `http.nonProxyHosts` when used as prefix or suffix",
+    "issues": [
+        "smithy-lang/smithy-kotlin#1092"
+    ]
+}
