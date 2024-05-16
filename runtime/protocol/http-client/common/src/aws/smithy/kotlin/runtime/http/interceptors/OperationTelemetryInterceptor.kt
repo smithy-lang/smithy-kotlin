@@ -14,6 +14,7 @@ import aws.smithy.kotlin.runtime.collections.merge
 import aws.smithy.kotlin.runtime.collections.mutableAttributesOf
 import aws.smithy.kotlin.runtime.collections.takeOrNull
 import aws.smithy.kotlin.runtime.http.engine.EngineAttributes
+import aws.smithy.kotlin.runtime.http.operation.OperationAttributes
 import aws.smithy.kotlin.runtime.http.operation.OperationMetrics
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.http.response.HttpResponse
@@ -44,8 +45,8 @@ internal class OperationTelemetryInterceptor(
     private var attempts = 0
 
     private val perRpcAttributes = attributesOf {
-        "rpc.service" to service
-        "rpc.method" to operation
+        OperationAttributes.RpcService to service
+        OperationAttributes.RpcOperation to operation
     }
 
     override fun readBeforeExecution(context: RequestInterceptorContext<Any>) {

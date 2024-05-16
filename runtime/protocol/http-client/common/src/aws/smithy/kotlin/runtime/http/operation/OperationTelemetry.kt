@@ -62,8 +62,9 @@ internal fun <I, O> SdkHttpOperation<I, O>.instrument(): Pair<TraceSpan, Corouti
     val parentCtx = telemetry.provider.contextManager.current()
 
     val opAttributes = attributesOf {
-        "rpc.service" to serviceName
-        "rpc.method" to opName
+        OperationAttributes.RpcService to serviceName
+        OperationAttributes.RpcOperation to opName
+        OperationAttributes.AwsInvocationId to this@instrument.context[HttpOperationContext.SdkInvocationId]
     }
 
     val initialAttributes = telemetry.attributes.toMutableAttributes().apply {

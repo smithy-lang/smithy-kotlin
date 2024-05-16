@@ -51,7 +51,8 @@ public object HttpOperationContext {
     public val OperationMetrics: AttributeKey<OperationMetrics> = AttributeKey("aws.smithy.kotlin#OperationMetrics")
 
     /**
-     * Cached attribute level attributes (e.g. rpc.method, rpc.service, etc)
+     * Cached operation-level attributes (e.g. rpc.method, rpc.service, etc). See [OperationAttributes] for more
+     * details.
      */
     public val OperationAttributes: AttributeKey<Attributes> = AttributeKey("aws.smithy.kotlin#OperationAttributes")
 
