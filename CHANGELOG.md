@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.2.4] - 05/16/2024
+
+### Fixes
+* [#1092](https://github.com/smithy-lang/smithy-kotlin/issues/1092) Respect `*` wildcard in `http.nonProxyHosts` when used as prefix or suffix
+
 ## [1.2.3] - 05/10/2024
 
 ## [1.2.2] - 04/30/2024
