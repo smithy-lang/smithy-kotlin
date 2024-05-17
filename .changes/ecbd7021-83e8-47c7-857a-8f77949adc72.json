@@ -1,0 +1,8 @@
+{
+    "id": "ecbd7021-83e8-47c7-857a-8f77949adc72",
+    "type": "bugfix",
+    "description": "Fix serialization of URI-bound request parameters which are enums",
+    "issues": [
+        "awslabs/aws-sdk-kotlin#1314"
+    ]
+}
