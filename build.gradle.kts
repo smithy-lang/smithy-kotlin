@@ -24,6 +24,13 @@ plugins {
     // since build-plugins also has <some> version in its dependency closure
     alias(libs.plugins.kotlin.multiplatform) apply false
     alias(libs.plugins.kotlin.jvm) apply false
+    alias(libs.plugins.aws.kotlin.repo.tools.artifactsizemetrics)
+}
+
+artifactSizeMetrics {
+    artifactPrefixes = setOf(":runtime")
+    significantChangeThresholdPercentage = 5.0
+    projectRepositoryName = "smithy-kotlin"
 }
 
 val testJavaVersion = typedProp<String>("test.java.version")?.let {
@@ -76,6 +83,9 @@ allprojects {
             )
         }
     }
+
+    // Enables running `./gradlew allDeps` to get a comprehensive list of dependencies for every subproject
+    tasks.register<DependencyReportTask>("allDeps") { }
 }
 
 // configure the root multimodule docs

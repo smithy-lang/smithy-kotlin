@@ -1,5 +1,47 @@
 # Changelog
 
+## [1.2.4] - 05/16/2024
+
+### Fixes
+* [#1092](https://github.com/smithy-lang/smithy-kotlin/issues/1092) Respect `*` wildcard in `http.nonProxyHosts` when used as prefix or suffix
+
+## [1.2.3] - 05/10/2024
+
+## [1.2.2] - 04/30/2024
+
+### Features
+* Provide new abstract versions of telemetry classes to simplify the creation of custom telemetry providers
+
+### Fixes
+* [#1293](https://github.com/awslabs/aws-sdk-kotlin/issues/1293) Gracefully degrade in clock skew interceptor when receiving a `Date` header value with a malformed date
+* [#1081](https://github.com/smithy-lang/smithy-kotlin/issues/1081) Support `http.nonProxyHosts` JVM system property
+
+## [1.2.1] - 04/27/2024
+
+## [1.2.0] - 04/25/2024
+
+### Fixes
+* [#1211](https://github.com/awslabs/aws-sdk-kotlin/issues/1211) ⚠️ **IMPORTANT**: Add config finalization to service clients via new abstract factory class; apply clock skew interceptor to clients created via `invoke`
+
+### Miscellaneous
+* ⚠️ **IMPORTANT**: Upgrade to latest versions of OkHttp, Okio, Kotlin
+
+## [1.1.5] - 04/19/2024
+
+### Fixes
+* Correctly handle error correction of int enums
+* Correctly codegen paginators for items in sparse lists
+
+## [1.1.4] - 04/17/2024
+
+### Features
+* [#428](https://github.com/awslabs/smithy-kotlin/issues/428) ⚠️ **IMPORTANT**: Add new @SdkDsl DSL marker to all generated structure builders, clarifying DSL scopes when building complex types. See the [**Scope control applied to DSL builders** breaking change announcement](https://github.com/awslabs/aws-sdk-kotlin/discussions/1280) for more details.
+
+### Fixes
+* [#900](https://github.com/awslabs/aws-sdk-kotlin/issues/900) Correctly generate waiters and paginators for resource operations
+* [#1281](https://github.com/awslabs/aws-sdk-kotlin/issues/1281) Lazily resolve proxy environment variables
+* [#1061](https://github.com/awslabs/smithy-kotlin/issues/1061) Correctly handle async cancellation of call context in OkHttp engine
+
 ## [1.1.3] - 04/02/2024
 
 ### Fixes

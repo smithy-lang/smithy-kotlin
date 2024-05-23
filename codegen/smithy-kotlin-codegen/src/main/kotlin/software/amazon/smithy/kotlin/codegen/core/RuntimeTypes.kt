@@ -98,6 +98,7 @@ object RuntimeTypes {
         val fromEpochMilliseconds = symbol("fromEpochMilliseconds", "time")
         val TimestampFormat = symbol("TimestampFormat", "time")
         val ClientException = symbol("ClientException")
+        val SdkDsl = symbol("SdkDsl")
 
         object Collections : RuntimeTypePackage(KotlinDependency.CORE, "collections") {
             val Attributes = symbol("Attributes")
@@ -189,6 +190,7 @@ object RuntimeTypes {
     object SmithyClient : RuntimeTypePackage(KotlinDependency.SMITHY_CLIENT) {
         val SdkClient = symbol("SdkClient")
         val AbstractSdkClientBuilder = symbol("AbstractSdkClientBuilder")
+        val AbstractSdkClientFactory = symbol("AbstractSdkClientFactory")
         val LogMode = symbol("LogMode")
         val RetryClientConfig = symbol("RetryClientConfig")
         val RetryStrategyClientConfig = symbol("RetryStrategyClientConfig")

@@ -11,15 +11,14 @@ package aws.smithy.kotlin.runtime.telemetry.context
  */
 public interface ContextManager {
     public companion object {
-        public val None: ContextManager = NoOpContextManager
+        /**
+         * A [ContextManager] that does nothing
+         */
+        public val None: ContextManager = object : AbstractContextManager() { }
     }
 
     /**
      * Return the current [Context]
      */
     public fun current(): Context
-}
-
-private object NoOpContextManager : ContextManager {
-    override fun current(): Context = Context.None
 }

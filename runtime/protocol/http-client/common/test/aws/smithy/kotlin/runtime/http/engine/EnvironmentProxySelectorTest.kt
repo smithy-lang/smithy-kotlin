@@ -41,6 +41,8 @@ class EnvironmentProxySelectorTest {
         "https.proxyPort" to "80",
     )
     private val httpProxyProps = mapOf("http.proxyHost" to "test.proxy.aws")
+    private val wildcardPrefixNonProxyProps = mapOf("http.nonProxyHosts" to "*amazon.com")
+    private val wildcardSuffixNonProxyProps = mapOf("http.nonProxyHosts" to "amazon.co*")
 
     private val expectedProxyConfig = ProxyConfig.Http(Url.parse("http://test.proxy.aws"))
 
@@ -51,12 +53,31 @@ class EnvironmentProxySelectorTest {
         // no proxy
         TestCase(ProxyConfig.Direct, env = mapOf("no_proxy" to "aws.amazon.com") + httpsProxyEnv),
         TestCase(ProxyConfig.Direct, env = mapOf("no_proxy" to ".amazon.com") + httpsProxyEnv),
+
         TestCase(ProxyConfig.Direct, props = mapOf("http.noProxyHosts" to "aws.amazon.com") + httpsProxyProps),
         TestCase(ProxyConfig.Direct, props = mapOf("http.noProxyHosts" to ".amazon.com") + httpsProxyProps),
+
+        TestCase(ProxyConfig.Direct, props = mapOf("http.nonProxyHosts" to "aws.amazon.com") + httpsProxyProps),
+        TestCase(ProxyConfig.Direct, props = mapOf("http.nonProxyHosts" to ".amazon.com") + httpsProxyProps),
+
+        // no proxy w/ wildcards
+
+        TestCase(ProxyConfig.Direct, "https://aws.amazon.com", props = wildcardPrefixNonProxyProps + httpsProxyProps),
+        TestCase(ProxyConfig.Direct, "https://blamazon.com", props = wildcardPrefixNonProxyProps + httpsProxyProps),
+        TestCase(ProxyConfig.Direct, "https://amazon.com", props = wildcardPrefixNonProxyProps + httpsProxyProps),
+        TestCase(expectedProxyConfig, "https://aws.com", props = wildcardPrefixNonProxyProps + httpsProxyProps),
+        TestCase(expectedProxyConfig, "https://amazon.com.br", props = wildcardPrefixNonProxyProps + httpsProxyProps),
+
+        TestCase(ProxyConfig.Direct, "https://amazon.com", props = wildcardSuffixNonProxyProps + httpsProxyProps),
+        TestCase(ProxyConfig.Direct, "https://amazon.com.br", props = wildcardSuffixNonProxyProps + httpsProxyProps),
+        TestCase(ProxyConfig.Direct, "https://amazon.co.jp", props = wildcardSuffixNonProxyProps + httpsProxyProps),
+        TestCase(expectedProxyConfig, "https://aws.amazon.com", props = wildcardSuffixNonProxyProps + httpsProxyProps),
+        TestCase(expectedProxyConfig, "https://blamazon.com", props = wildcardSuffixNonProxyProps + httpsProxyProps),
 
         // multiple no proxy hosts normalization
         TestCase(ProxyConfig.Direct, env = mapOf("no_proxy" to "example.com,.amazon.com") + httpsProxyEnv),
         TestCase(ProxyConfig.Direct, props = mapOf("http.noProxyHosts" to "example.com|.amazon.com") + httpsProxyProps),
+        TestCase(ProxyConfig.Direct, props = mapOf("http.nonProxyHosts" to "example.com|.amazon.com") + httpsProxyProps),
 
         // environment
         TestCase(expectedProxyConfig, env = httpsProxyEnv),
@@ -68,6 +89,12 @@ class EnvironmentProxySelectorTest {
 
         // no_proxy set but doesn't match
         TestCase(expectedProxyConfig, env = httpsProxyEnv + mapOf("no_proxy" to "example.com")),
+
+        // prioritize http.nonProxyHosts over http.noProxyHosts
+        TestCase(ProxyConfig.Direct, props = mapOf("http.nonProxyHosts" to "example.com|.amazon.com", "http.noProxyHosts" to "") + httpsProxyProps),
+
+        // even though http.noProxyHosts is configured to go ProxyConfig.Direct, nonProxyHosts is present and should be prioritized
+        TestCase(expectedProxyConfig, props = mapOf("http.nonProxyHosts" to "", "http.noProxyHosts" to "example.com|.amazon.com") + httpsProxyProps),
     )
 
     @Test
@@ -102,8 +129,9 @@ class EnvironmentProxySelectorTest {
     fun testSelectFailures() {
         failCases.forEachIndexed { idx, failCase ->
             val testProvider = TestPlatformEnvironmentProvider(failCase.env, failCase.props)
+            val selector = EnvironmentProxySelector(testProvider)
             val exception = assertFailsWith<ClientException>("[idx=$idx] expected ClientException") {
-                EnvironmentProxySelector(testProvider)
+                selector.select(Url.parse("http://localhost:8000")) // call `select` because proxy selector resolves env vars lazily
             }
 
             val expectedError = (failCase.env + failCase.props).map { (k, v) -> """$k="$v"""" }.joinToString(", ")

@@ -1,14 +1,14 @@
 [versions]
-kotlin-version = "2.0.0-RC1"
+kotlin-version = "2.0.0"
 dokka-version = "1.9.10"
 
-aws-kotlin-repo-tools-version = "0.4.1"
+aws-kotlin-repo-tools-version = "0.4.6"
 
 # libs
 coroutines-version = "1.7.3"
 atomicfu-version = "0.23.1"
-okhttp-version = "5.0.0-alpha.11"
-okio-version = "3.6.0"
+okhttp-version = "5.0.0-alpha.14"
+okio-version = "3.9.0"
 otel-version = "1.32.0"
 slf4j-version = "2.0.9"
 slf4j-v1x-version = "1.7.36"
@@ -23,8 +23,8 @@ junit-version = "5.10.1"
 kotest-version = "5.8.0"
 kotlin-compile-testing-version = "1.5.0"
 kotlinx-benchmark-version = "0.4.9"
-kotlinx-serialization-version = "1.6.3"
-testcontainers-version = "1.19.1"
+kotlinx-serialization-version = "1.6.0"
+docker-java-version = "3.3.6"
 ktor-version = "2.3.6"
 kaml-version = "0.55.0"
 jsoup-version = "1.16.2"
@@ -85,8 +85,8 @@ kotest-assertions-core = { module = "io.kotest:kotest-assertions-core", version.
 kotest-assertions-core-jvm = { module = "io.kotest:kotest-assertions-core-jvm", version.ref = "kotest-version" }
 kotlinx-benchmark-runtime = { module = "org.jetbrains.kotlinx:kotlinx-benchmark-runtime", version.ref = "kotlinx-benchmark-version" }
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinx-serialization-version" }
-testcontainers = { module = "org.testcontainers:testcontainers", version.ref = "testcontainers-version" }
-testcontainers-junit-jupiter = { module = "org.testcontainers:junit-jupiter", version.ref = "testcontainers-version" }
+docker-core = { module = "com.github.docker-java:docker-java-core", version.ref = "docker-java-version" }
+docker-transport-zerodep = { module = "com.github.docker-java:docker-java-transport-zerodep", version.ref = "docker-java-version" }
 
 ktor-http-cio = { module = "io.ktor:ktor-http-cio", version.ref = "ktor-version" }
 ktor-utils = { module = "io.ktor:ktor-utils", version.ref = "ktor-version" }
@@ -108,3 +108,4 @@ kotlinx-binary-compatibility-validator = { id = "org.jetbrains.kotlinx.binary-co
 kotlinx-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin-version"}
 aws-kotlin-repo-tools-kmp = { id = "aws.sdk.kotlin.gradle.kmp", version.ref = "aws-kotlin-repo-tools-version" }
 aws-kotlin-repo-tools-smithybuild = { id = "aws.sdk.kotlin.gradle.smithybuild", version.ref = "aws-kotlin-repo-tools-version" }
+aws-kotlin-repo-tools-artifactsizemetrics = { id = "aws.sdk.kotlin.gradle.artifactsizemetrics", version.ref = "aws-kotlin-repo-tools-version" }

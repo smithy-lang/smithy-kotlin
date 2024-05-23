@@ -14,7 +14,7 @@ public interface Context {
         /**
          * A no-op [Context]
          */
-        public val None: Context = NoOpContext
+        public val None: Context = object : AbstractContext() { }
     }
 
     /**
@@ -24,12 +24,4 @@ public interface Context {
      * is considered no longer active (returning the current active context to whatever it was previously if set).
      */
     public fun makeCurrent(): Scope
-}
-
-private object NoOpContext : Context {
-    override fun makeCurrent(): Scope = NoOpScope
-}
-
-private object NoOpScope : Scope {
-    override fun close() {}
 }

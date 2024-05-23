@@ -119,3 +119,21 @@ public suspend fun dumpResponse(response: HttpResponse, dumpBody: Boolean): Pair
 
     return respCopy to buffer.readUtf8()
 }
+
+/**
+ * Convert an HttpResponse to an [HttpResponseBuilder]
+ */
+public fun HttpResponse.toBuilder(): HttpResponseBuilder = when (this) {
+    is HttpResponseBuilderView -> {
+        check(allowToBuilder) { "This is an immutable HttpResponse that should not be converted to a builder" }
+        builder
+    }
+    else -> {
+        val resp = this
+        HttpResponseBuilder().apply {
+            status = resp.status
+            headers.appendAll(resp.headers)
+            body = resp.body
+        }
+    }
+}

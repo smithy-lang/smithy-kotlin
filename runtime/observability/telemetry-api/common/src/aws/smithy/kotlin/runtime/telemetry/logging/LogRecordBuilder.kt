@@ -9,6 +9,13 @@ package aws.smithy.kotlin.runtime.telemetry.logging
  * Construct a logging record that can be emitted to an underlying logger.
  */
 public interface LogRecordBuilder {
+    public companion object {
+        /**
+         * A [LogRecordBuilder] that does nothing
+         */
+        public val None: LogRecordBuilder = object : AbstractLogRecordBuilder() { }
+    }
+
     /**
      * Set an exception associated with this event
      * Some loggers will do additional formatting for exceptions.

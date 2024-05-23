@@ -130,6 +130,26 @@ class HttpEngineConfigImplTest {
             }
         }
     }
+
+    // reproduces https://github.com/awslabs/aws-sdk-kotlin/issues/1281
+    @Test
+    fun testCanConfigureProxySelectorWithInvalidEnvVarsPresent() {
+        try {
+            System.setProperty("http.proxyHost", "invalid!")
+            System.setProperty("https.proxyHost", "invalid!")
+
+            val builder = HttpEngineConfigImpl.BuilderImpl()
+            builder.buildHttpEngineConfig()
+
+            builder.httpClient {
+                proxySelector = ProxySelector.NoProxy
+            }
+            builder.buildHttpEngineConfig()
+        } finally {
+            System.clearProperty("http.proxyHost")
+            System.clearProperty("https.proxyHost")
+        }
+    }
 }
 
 private fun config(block: HttpEngineConfig.Builder.() -> Unit): HttpEngineConfig =

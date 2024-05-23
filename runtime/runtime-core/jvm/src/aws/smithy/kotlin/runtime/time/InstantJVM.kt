@@ -22,6 +22,8 @@ import java.time.format.SignStyle
 import java.time.temporal.ChronoField
 import java.time.temporal.ChronoUnit
 import kotlin.time.Duration
+import kotlin.time.toKotlinDuration
+import java.time.Duration as jtDuration
 import java.time.Instant as jtInstant
 
 public actual class Instant(internal val value: jtInstant) : Comparable<Instant> {
@@ -56,6 +58,9 @@ public actual class Instant(internal val value: jtInstant) : Comparable<Instant>
      * If the [duration] is negative, the returned instant is later than this instant.
      */
     public actual operator fun minus(duration: Duration): Instant = plus(-duration)
+
+    public actual operator fun minus(other: Instant): Duration =
+        jtDuration.between(other.value, value).toKotlinDuration()
 
     /**
      * Encode the [Instant] as a string into the format specified by [TimestampFormat]

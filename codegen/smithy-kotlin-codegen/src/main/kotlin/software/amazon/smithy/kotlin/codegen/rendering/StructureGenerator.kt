@@ -223,6 +223,7 @@ class StructureGenerator(
 
     private fun renderBuilder() {
         writer.write("")
+            .write("@#T", RuntimeTypes.Core.SdkDsl)
             .withBlock("public class Builder {", "}") {
                 for (member in sortedMembers) {
                     val (memberName, memberSymbol) = memberNameSymbolIndex[member]!!

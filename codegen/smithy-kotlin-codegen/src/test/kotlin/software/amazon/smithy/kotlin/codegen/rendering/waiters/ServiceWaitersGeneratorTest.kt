@@ -20,37 +20,37 @@ import software.amazon.smithy.kotlin.codegen.test.*
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.ShapeId
 import kotlin.test.Test
-import kotlin.test.assertFalse
-import kotlin.test.assertTrue
+import kotlin.test.assertEquals
 
 class ServiceWaitersGeneratorTest {
-    private val generated = generateService("simple-service-with-waiter.smithy")
-
     @Test
     fun testServiceGate() {
-        val enabledServiceModel = loadModelFromResource("simple-service-with-waiter.smithy")
-        val enabledServiceSettings = enabledServiceModel.newTestContext().generationCtx.settings
-        assertTrue(ServiceWaitersGenerator().enabledForService(enabledServiceModel, enabledServiceSettings))
-
-        val disabledServiceModel = loadModelFromResource("simple-service.smithy")
-        val disabledServiceSettings = disabledServiceModel.newTestContext().generationCtx.settings
-        assertFalse(ServiceWaitersGenerator().enabledForService(disabledServiceModel, disabledServiceSettings))
+        mapOf(
+            "simple-service-with-operation-waiter.smithy" to true,
+            "simple-service-with-resource-waiter.smithy" to true,
+            "simple-service.smithy" to false,
+        ).forEach { (modelName, expectEnabled) ->
+            val model = loadModelFromResource(modelName)
+            val settings = model.newTestContext().generationCtx.settings
+            val actualEnabled = ServiceWaitersGenerator().enabledForService(model, settings)
+            assertEquals(expectEnabled, actualEnabled)
+        }
     }
 
     @Test
-    fun testMainWaiterMethod() {
+    fun testWaiterSignatureWithOptionalInput() {
         val methodHeader = """
             /**
-             * Wait until a foo exists
+             * Wait until a foo exists with optional input
              */
-            public suspend fun TestClient.waitUntilFooExists(request: DescribeFooRequest = DescribeFooRequest { }): Outcome<DescribeFooResponse> {
+            public suspend fun TestClient.waitUntilFooOptionalExists(request: DescribeFooOptionalRequest = DescribeFooOptionalRequest { }): Outcome<DescribeFooOptionalResponse> {
         """.trimIndent()
         val methodFooter = """
                 val policy = AcceptorRetryPolicy(request, acceptors)
-                return strategy.retry(policy) { describeFoo(request) }
+                return strategy.retry(policy) { describeFooOptional(request) }
             }
         """.trimIndent()
-        generated.shouldContain(methodHeader, methodFooter)
+        generateService("simple-service-with-operation-waiter.smithy").shouldContain(methodHeader, methodFooter)
     }
 
     @Test
@@ -61,30 +61,45 @@ class ServiceWaitersGeneratorTest {
              */
             public suspend fun TestClient.waitUntilFooRequiredExists(request: DescribeFooRequiredRequest): Outcome<DescribeFooRequiredResponse> {
         """.trimIndent()
-        generated.shouldContainOnlyOnceWithDiff(methodHeader)
+        listOf(
+            generateService("simple-service-with-operation-waiter.smithy"),
+            generateService("simple-service-with-resource-waiter.smithy"),
+        ).forEach { generated ->
+            generated.shouldContain(methodHeader)
+        }
     }
 
     @Test
     fun testConvenienceWaiterMethod() {
         val expected = """
             /**
-             * Wait until a foo exists
+             * Wait until a foo exists with required input
              */
-            public suspend fun TestClient.waitUntilFooExists(block: DescribeFooRequest.Builder.() -> Unit): Outcome<DescribeFooResponse> =
-                waitUntilFooExists(DescribeFooRequest.Builder().apply(block).build())
+            public suspend fun TestClient.waitUntilFooRequiredExists(block: DescribeFooRequiredRequest.Builder.() -> Unit): Outcome<DescribeFooRequiredResponse> =
+                waitUntilFooRequiredExists(DescribeFooRequiredRequest.Builder().apply(block).build())
         """.trimIndent()
-        generated.shouldContainOnlyOnce(expected)
+        listOf(
+            generateService("simple-service-with-operation-waiter.smithy"),
+            generateService("simple-service-with-resource-waiter.smithy"),
+        ).forEach { generated ->
+            generated.shouldContain(expected)
+        }
     }
 
     @Test
     fun testAcceptorList() {
         val expected = """
-            val acceptors = listOf<Acceptor<DescribeFooRequest, DescribeFooResponse>>(
+            val acceptors = listOf<Acceptor<DescribeFooRequiredRequest, DescribeFooRequiredResponse>>(
                 SuccessAcceptor(RetryDirective.TerminateAndSucceed, true),
                 ErrorTypeAcceptor(RetryDirective.RetryError(RetryErrorType.ServerSide), "NotFound"),
             )
         """.formatForTest()
-        generated.shouldContainOnlyOnce(expected)
+        listOf(
+            generateService("simple-service-with-operation-waiter.smithy"),
+            generateService("simple-service-with-resource-waiter.smithy"),
+        ).forEach { generated ->
+            generated.shouldContainOnlyOnce(expected)
+        }
     }
 
     @Test
@@ -101,7 +116,12 @@ class ServiceWaitersGeneratorTest {
                 }
             }
         """.formatForTest()
-        generated.shouldContain(expected)
+        listOf(
+            generateService("simple-service-with-operation-waiter.smithy"),
+            generateService("simple-service-with-resource-waiter.smithy"),
+        ).forEach { generated ->
+            generated.shouldContain(expected)
+        }
     }
 
     private fun generateService(modelResourceName: String): String {

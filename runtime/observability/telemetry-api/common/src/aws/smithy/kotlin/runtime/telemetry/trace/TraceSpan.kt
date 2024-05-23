@@ -15,6 +15,13 @@ import aws.smithy.kotlin.runtime.telemetry.context.Scope
  * optionally one or more child spans.
  */
 public interface TraceSpan : Scope {
+    public companion object {
+        /**
+         * A [TraceSpan] that does nothing
+         */
+        public val None: TraceSpan = object : AbstractTraceSpan() { }
+    }
+
     /**
      * The immutable tracing context this span belongs to
      */

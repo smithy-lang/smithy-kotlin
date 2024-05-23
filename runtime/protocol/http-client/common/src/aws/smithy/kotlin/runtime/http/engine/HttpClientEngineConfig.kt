@@ -144,6 +144,7 @@ public interface HttpClientEngineConfig {
          * - `http.proxyPort`
          * - `https.proxyHost`
          * - `https.proxyPort`
+         * - `http.nonProxyHosts`
          * - `http.noProxyHosts`
          *
          * **Environment variables in the given order**:

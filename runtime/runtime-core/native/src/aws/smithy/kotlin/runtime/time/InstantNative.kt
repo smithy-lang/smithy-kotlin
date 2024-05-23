@@ -40,6 +40,10 @@ public actual class Instant : Comparable<Instant> {
         TODO("Not yet implemented")
     }
 
+    public actual operator fun minus(other: Instant): Duration {
+        TODO("Not yet implemented")
+    }
+
     public actual companion object {
         /**
          * Parse an ISO-8601 formatted string into an [Instant]

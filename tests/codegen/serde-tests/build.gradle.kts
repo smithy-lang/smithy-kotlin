@@ -83,6 +83,13 @@ val stageGeneratedSources = tasks.register("stageGeneratedSources") {
     }
 }
 
+tasks.kotlinSourcesJar {
+    dependsOn(
+        tasks.generateSmithyProjections,
+        stageGeneratedSources,
+    )
+}
+
 kotlin.sourceSets.getByName("main") {
     kotlin.srcDir(generatedSrcDir)
 }

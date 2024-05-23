@@ -13,7 +13,6 @@ import aws.smithy.kotlin.runtime.telemetry.context.Context
  * Callback parameter passed to record a gauge value
  */
 public interface AsyncMeasurement<T : Number> {
-
     /**
      * Record a gauge value
      * @param value the value to record
@@ -38,6 +37,13 @@ public typealias DoubleGaugeCallback = (DoubleAsyncMeasurement) -> Unit
  * A handle to a registered async measurement (e.g. Gauge or AsyncUpDownCounter)
  */
 public interface AsyncMeasurementHandle {
+    public companion object {
+        /**
+         * An [AsyncMeasurementHandle] that does nothing
+         */
+        public val None: AsyncMeasurementHandle = object : AbstractAsyncMeasurementHandle() { }
+    }
+
     /**
      * Stop recording this async value. The registered callback function will
      * stop being invoked after calling this function.

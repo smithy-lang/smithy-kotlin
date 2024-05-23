@@ -14,8 +14,10 @@ import aws.smithy.kotlin.runtime.net.TlsVersion
 import aws.smithy.kotlin.runtime.operation.ExecutionContext
 import aws.smithy.kotlin.runtime.time.Instant
 import aws.smithy.kotlin.runtime.time.fromEpochMilliseconds
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.job
 import okhttp3.*
+import okhttp3.coroutines.executeAsync
 import java.util.concurrent.TimeUnit
 import kotlin.time.toJavaDuration
 import aws.smithy.kotlin.runtime.net.TlsVersion as SdkTlsVersion
@@ -48,17 +50,23 @@ public class OkHttpEngine(
 
         val engineRequest = request.toOkHttpRequest(context, callContext, metrics)
         val engineCall = client.newCall(engineRequest)
-        val engineResponse = mapOkHttpExceptions { engineCall.executeAsync() }
 
-        callContext.job.invokeOnCompletion {
-            engineResponse.body.close()
-        }
+        @OptIn(ExperimentalCoroutinesApi::class)
+        val engineResponse = mapOkHttpExceptions { engineCall.executeAsync() }
 
         val response = engineResponse.toSdkResponse()
         val requestTime = Instant.fromEpochMilliseconds(engineResponse.sentRequestAtMillis)
         val responseTime = Instant.fromEpochMilliseconds(engineResponse.receivedResponseAtMillis)
 
-        return OkHttpCall(request, response, requestTime, responseTime, callContext, engineCall)
+        return OkHttpCall(request, response, requestTime, responseTime, callContext, engineCall).also { call ->
+            callContext.job.invokeOnCompletion { cause ->
+                // If cause is non-null that means the job was cancelled (CancellationException) or failed (anything
+                // else). In both cases we need to ensure that the engine-side resources are cleaned up completely
+                // since they wouldn't otherwise be. https://github.com/smithy-lang/smithy-kotlin/issues/1061
+                if (cause != null) call.cancelInFlight()
+                engineResponse.body.close()
+            }
+        }
     }
 
     override fun shutdown() {
