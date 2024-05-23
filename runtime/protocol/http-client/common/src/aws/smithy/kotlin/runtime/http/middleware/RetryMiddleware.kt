@@ -5,6 +5,8 @@
 
 package aws.smithy.kotlin.runtime.http.middleware
 
+import aws.smithy.kotlin.runtime.businessmetrics.BusinessMetrics
+import aws.smithy.kotlin.runtime.businessmetrics.emitBusinessMetric
 import aws.smithy.kotlin.runtime.http.interceptors.InterceptorExecutor
 import aws.smithy.kotlin.runtime.http.operation.*
 import aws.smithy.kotlin.runtime.http.operation.deepCopy
@@ -13,7 +15,9 @@ import aws.smithy.kotlin.runtime.http.request.immutableView
 import aws.smithy.kotlin.runtime.http.request.toBuilder
 import aws.smithy.kotlin.runtime.io.Handler
 import aws.smithy.kotlin.runtime.io.middleware.Middleware
+import aws.smithy.kotlin.runtime.retries.AdaptiveRetryStrategy
 import aws.smithy.kotlin.runtime.retries.RetryStrategy
+import aws.smithy.kotlin.runtime.retries.StandardRetryStrategy
 import aws.smithy.kotlin.runtime.retries.policy.RetryDirective
 import aws.smithy.kotlin.runtime.retries.policy.RetryPolicy
 import aws.smithy.kotlin.runtime.retries.toResult
@@ -47,6 +51,10 @@ internal class RetryMiddleware<I, O>(
                 withSpan<RetryMiddleware<*, *>, _>("Attempt-$attempt") {
                     if (attempt > 1) {
                         coroutineContext.debug<RetryMiddleware<*, *>> { "retrying request, attempt $attempt" }
+                        when (strategy::class) {
+                            StandardRetryStrategy::class -> modified.context.emitBusinessMetric(BusinessMetrics.RETRY_MODE_STANDARD)
+                            AdaptiveRetryStrategy::class -> modified.context.emitBusinessMetric(BusinessMetrics.RETRY_MODE_ADAPTIVE)
+                        }
                     }
 
                     // Deep copy the request because later middlewares (e.g., signing) mutate it

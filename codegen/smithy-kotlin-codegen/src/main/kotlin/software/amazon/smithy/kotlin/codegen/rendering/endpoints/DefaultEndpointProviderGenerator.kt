@@ -53,6 +53,21 @@ fun interface ExpressionRenderer {
 }
 
 /**
+ * Will be toggled to true if it is determined an endpoint is account ID based then to false again
+ */
+private var hasAccountIdBasedEndpoint = false
+
+/**
+ * Will be toggled to true if determined an endpoint comes from a service endpoint override then to false again
+ */
+private var hasServiceEndpointOverride = false
+
+/**
+ * Will be toggled to true when rendering an endpoint URL then to false again
+ */
+private var renderingEndpointUrl = false
+
+/**
  * Renders the default endpoint provider based on the provided rule set.
  */
 class DefaultEndpointProviderGenerator(
@@ -170,8 +185,12 @@ class DefaultEndpointProviderGenerator(
         withConditions(rule.conditions) {
             writer.withBlock("return #T(", ")", RuntimeTypes.SmithyClient.Endpoints.Endpoint) {
                 writeInline("#T.parse(", RuntimeTypes.Core.Net.Url.Url)
+                renderingEndpointUrl = true
                 renderExpression(rule.endpoint.url)
+                renderingEndpointUrl = false
                 write("),")
+
+                val needAdditionalEndpointProperties = hasAccountIdBasedEndpoint || hasServiceEndpointOverride
 
                 if (rule.endpoint.headers.isNotEmpty()) {
                     withBlock("headers = #T {", "},", RuntimeTypes.Http.Headers) {
@@ -185,7 +204,7 @@ class DefaultEndpointProviderGenerator(
                     }
                 }
 
-                if (rule.endpoint.properties.isNotEmpty()) {
+                if (rule.endpoint.properties.isNotEmpty() || needAdditionalEndpointProperties) {
                     withBlock("attributes = #T {", "},", RuntimeTypes.Core.Collections.attributesOf) {
                         rule.endpoint.properties.entries.forEach { (k, v) ->
                             val kStr = k.toString()
@@ -203,6 +222,15 @@ class DefaultEndpointProviderGenerator(
                             writeInline("#S to ", kStr)
                             renderExpression(v)
                             ensureNewline()
+                        }
+
+                        if (hasAccountIdBasedEndpoint) {
+                            writer.write("#T to true", RuntimeTypes.Core.BusinessMetrics.accountIdBasedEndPoint)
+                            hasAccountIdBasedEndpoint = false
+                        }
+                        if (hasServiceEndpointOverride) {
+                            writer.write("#T to true", RuntimeTypes.Core.BusinessMetrics.serviceEndpointOverride)
+                            hasServiceEndpointOverride = false
                         }
                     }
                 }
@@ -235,10 +263,18 @@ class ExpressionGenerator(
     }
 
     override fun visitRef(reference: Reference) {
-        if (isParamRef(reference)) {
+        val referenceName = reference.name.defaultName()
+        val isParamReference = isParamRef(reference)
+
+        if (isParamReference) {
             writer.writeInline("params.")
         }
-        writer.writeInline(reference.name.defaultName())
+        writer.writeInline(referenceName)
+
+        if (renderingEndpointUrl) {
+            if (isParamReference && referenceName == "accountId") hasAccountIdBasedEndpoint = true
+            if (isParamReference && referenceName == "endpoint") hasServiceEndpointOverride = true
+        }
     }
 
     override fun visitGetAttr(getAttr: GetAttr) {

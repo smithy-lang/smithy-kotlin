@@ -77,6 +77,28 @@ public final class aws/smithy/kotlin/runtime/ServiceException$ErrorType : java/l
 	public static fun values ()[Laws/smithy/kotlin/runtime/ServiceException$ErrorType;
 }
 
+public final class aws/smithy/kotlin/runtime/businessmetrics/BusinessMetrics : java/lang/Enum {
+	public static final field ACCOUNT_ID_BASED_ENDPOINT Laws/smithy/kotlin/runtime/businessmetrics/BusinessMetrics;
+	public static final field GZIP_REQUEST_COMPRESSION Laws/smithy/kotlin/runtime/businessmetrics/BusinessMetrics;
+	public static final field RETRY_MODE_ADAPTIVE Laws/smithy/kotlin/runtime/businessmetrics/BusinessMetrics;
+	public static final field RETRY_MODE_LEGACY Laws/smithy/kotlin/runtime/businessmetrics/BusinessMetrics;
+	public static final field RETRY_MODE_STANDARD Laws/smithy/kotlin/runtime/businessmetrics/BusinessMetrics;
+	public static final field S3_EXPRESS_BUCKET Laws/smithy/kotlin/runtime/businessmetrics/BusinessMetrics;
+	public static final field SERVICE_ENDPOINT_OVERRIDE Laws/smithy/kotlin/runtime/businessmetrics/BusinessMetrics;
+	public static final field SIGV4A_SIGNING Laws/smithy/kotlin/runtime/businessmetrics/BusinessMetrics;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public final fun getIdentifier ()Ljava/lang/String;
+	public static fun valueOf (Ljava/lang/String;)Laws/smithy/kotlin/runtime/businessmetrics/BusinessMetrics;
+	public static fun values ()[Laws/smithy/kotlin/runtime/businessmetrics/BusinessMetrics;
+}
+
+public final class aws/smithy/kotlin/runtime/businessmetrics/BusinessMetricsUtilsKt {
+	public static final fun emitBusinessMetric (Laws/smithy/kotlin/runtime/operation/ExecutionContext;Laws/smithy/kotlin/runtime/businessmetrics/BusinessMetrics;)V
+	public static final fun getAccountIdBasedEndPoint ()Laws/smithy/kotlin/runtime/collections/AttributeKey;
+	public static final fun getBusinessMetrics ()Laws/smithy/kotlin/runtime/collections/AttributeKey;
+	public static final fun getServiceEndpointOverride ()Laws/smithy/kotlin/runtime/collections/AttributeKey;
+}
+
 public final class aws/smithy/kotlin/runtime/collections/AttributeKey {
 	public fun <init> (Ljava/lang/String;)V
 	public final fun component1 ()Ljava/lang/String;

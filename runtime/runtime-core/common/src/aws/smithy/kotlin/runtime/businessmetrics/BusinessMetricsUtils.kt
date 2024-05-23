@@ -1,0 +1,55 @@
+/*
+ * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * SPDX-License-Identifier: Apache-2.0
+ */
+package aws.smithy.kotlin.runtime.businessmetrics
+
+import aws.smithy.kotlin.runtime.InternalApi
+import aws.smithy.kotlin.runtime.collections.AttributeKey
+import aws.smithy.kotlin.runtime.collections.get
+import aws.smithy.kotlin.runtime.operation.ExecutionContext
+
+/**
+ * Keeps track of all business metrics along an operations execution
+ */
+@InternalApi
+public val businessMetrics: AttributeKey<MutableSet<String>> = AttributeKey("aws.sdk.kotlin#BusinessMetrics")
+
+/**
+ * If an endpoint is account ID based
+ */
+@InternalApi
+public val accountIdBasedEndPoint: AttributeKey<Boolean> = AttributeKey("aws.smithy.kotlin#AccountIdBasedEndpoint")
+
+/**
+ * If an endpoint is service endpoint override based
+ */
+@InternalApi
+public val serviceEndpointOverride: AttributeKey<Boolean> = AttributeKey("aws.smithy.kotlin#ServiceEndpointOverride")
+
+/**
+ * Emit a business metric to the execution context attributes
+ */
+@InternalApi
+public fun ExecutionContext.emitBusinessMetric(metric: BusinessMetrics) {
+    if (this.attributes.contains(businessMetrics)) {
+        this.attributes[businessMetrics].add(metric.identifier)
+    } else {
+        this.attributes[businessMetrics] = mutableSetOf(metric.identifier)
+    }
+}
+
+/**
+ * All the valid business metrics along with their identifiers
+ */
+@InternalApi
+public enum class BusinessMetrics(public val identifier: String) {
+    S3_EXPRESS_BUCKET("A"),
+    GZIP_REQUEST_COMPRESSION("B"),
+    RETRY_MODE_LEGACY("C"),
+    RETRY_MODE_STANDARD("D"),
+    RETRY_MODE_ADAPTIVE("E"),
+    SIGV4A_SIGNING("F"),
+    SERVICE_ENDPOINT_OVERRIDE("G"),
+    ACCOUNT_ID_BASED_ENDPOINT("H"),
+}
