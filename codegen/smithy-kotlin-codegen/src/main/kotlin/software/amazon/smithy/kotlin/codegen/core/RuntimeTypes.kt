@@ -103,7 +103,7 @@ object RuntimeTypes {
         object BusinessMetrics : RuntimeTypePackage(KotlinDependency.CORE, "businessmetrics") {
             val accountIdBasedEndPoint = symbol("accountIdBasedEndPoint")
             val serviceEndpointOverride = symbol("serviceEndpointOverride")
-            val EmitBusinessMetrics = symbol("emitBusinessMetric")
+            val emitBusinessMetrics = symbol("emitBusinessMetric")
             val BusinessMetrics = symbol("BusinessMetrics")
         }
 
