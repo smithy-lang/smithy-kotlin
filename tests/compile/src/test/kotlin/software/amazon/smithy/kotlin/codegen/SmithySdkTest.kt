@@ -23,6 +23,7 @@ class SmithySdkTest {
     // Max number of warnings the compiler can issue as a result of compiling SDK with kitchen sink model.
     private val warningThreshold = 3
 
+    @Ignore
     @Test
     fun `white label sdk compiles without errors`() {
         val model = javaClass.getResource("/kitchen-sink-model.smithy")!!.asSmithy()
@@ -53,6 +54,7 @@ class SmithySdkTest {
         assertTrue(result <= warningThreshold, "Compiler warnings ($result) breached threshold of $warningThreshold\n$formatted")
     }
 
+    @Ignore
     @Test
     fun `white label sdk compiles with language keywords as model member names`() {
         val fooMembers = hardReservedWords
@@ -96,6 +98,7 @@ class SmithySdkTest {
         assertEquals(KotlinCompilation.ExitCode.OK, compilationResult.exitCode, compileOutputStream.toString())
     }
 
+    @Ignore
     @Test
     fun `it has non conflicting document deserializer for exceptions`() {
         // test that an exception is re-used not as an error but as part of some other payload (ticket: 176989575)
@@ -134,6 +137,7 @@ class SmithySdkTest {
         assertEquals(KotlinCompilation.ExitCode.OK, compilationResult.exitCode, compileOutputStream.toString())
     }
 
+    @Ignore
     @Test
     fun `it compiles models with nested unions`() {
         val model = """

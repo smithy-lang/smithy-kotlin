@@ -8,6 +8,11 @@ package aws.smithy.kotlin.runtime.http.test.util
 import aws.smithy.kotlin.runtime.http.engine.DefaultHttpEngine
 import aws.smithy.kotlin.runtime.http.engine.crt.CrtHttpEngine
 import aws.smithy.kotlin.runtime.net.url.Url
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withTimeout
+import kotlin.coroutines.CoroutineContext
+import kotlin.time.Duration
 
 internal actual fun engineFactories(): List<TestEngineFactory> =
     listOf(
@@ -25,3 +30,19 @@ internal actual val testServers = mapOf(
     ServerType.TLS_1_2 to Url.parse("https://127.0.0.1:8092"),
     ServerType.TLS_1_3 to Url.parse("https://127.0.0.1:8093"),
 )
+
+internal actual fun runBlockingTest(
+    context: CoroutineContext,
+    timeout: Duration?,
+    block: suspend CoroutineScope.() -> Unit,
+) {
+    runBlocking(context) {
+        if (timeout != null) {
+            withTimeout(timeout) {
+                block()
+            }
+        } else {
+            block()
+        }
+    }
+}

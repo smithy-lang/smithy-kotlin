@@ -2,7 +2,7 @@
 kotlin-version = "2.0.0"
 dokka-version = "1.9.10"
 
-aws-kotlin-repo-tools-version = "0.4.6"
+aws-kotlin-repo-tools-version = "0.4.7-SNAPSHOT"
 
 # libs
 coroutines-version = "1.7.3"
@@ -40,10 +40,6 @@ kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotl
 kotlin-test-junit5 = { module = "org.jetbrains.kotlin:kotlin-test-junit5", version.ref = "kotlin-version" }
 dokka-core = { module = "org.jetbrains.dokka:dokka-core", version.ref = "dokka-version" }
 dokka-base = { module = "org.jetbrains.dokka:dokka-base", version.ref = "dokka-version" }
-
-# FIXME kotlin-compiler-embeddable is declared to avoid getting an older version transitively.
-# using this older version causes binary version compatibility errors (2.0.0 vs 1.8.0)
-kotlin-compiler-embeddable = { module = "org.jetbrains.kotlin:kotlin-compiler-embeddable", version.ref = "kotlin-version"}
 
 kotlinx-atomicfu = { module = "org.jetbrains.kotlinx:atomicfu", version.ref = "atomicfu-version" }
 kotlinx-atomicfu-plugin = { module = "org.jetbrains.kotlinx:atomicfu-gradle-plugin", version.ref = "atomicfu-version" }

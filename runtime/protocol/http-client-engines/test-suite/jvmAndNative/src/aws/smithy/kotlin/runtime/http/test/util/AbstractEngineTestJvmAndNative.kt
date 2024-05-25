@@ -11,18 +11,19 @@ import kotlinx.coroutines.withTimeout
 import kotlin.coroutines.CoroutineContext
 import kotlin.time.Duration
 
-internal actual fun runBlockingTest(
-    context: CoroutineContext,
-    timeout: Duration?,
-    block: suspend CoroutineScope.() -> Unit,
-) {
-    runBlocking(context) {
-        if (timeout != null) {
-            withTimeout(timeout) {
-                block()
-            }
-        } else {
-            block()
-        }
-    }
-}
+// FIXME jvmAndNative source set is not being configured properly.
+//internal actual fun runBlockingTest(
+//    context: CoroutineContext,
+//    timeout: Duration?,
+//    block: suspend CoroutineScope.() -> Unit,
+//) {
+//    runBlocking(context) {
+//        if (timeout != null) {
+//            withTimeout(timeout) {
+//                block()
+//            }
+//        } else {
+//            block()
+//        }
+//    }
+//}
