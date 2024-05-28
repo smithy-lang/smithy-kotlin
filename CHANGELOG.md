@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.2.5] - 05/28/2024
+
+### Fixes
+* [#1314](https://github.com/awslabs/aws-sdk-kotlin/issues/1314) Fix serialization of URI-bound request parameters which are enums
+
 ## [1.2.4] - 05/16/2024
 
 ### Fixes
