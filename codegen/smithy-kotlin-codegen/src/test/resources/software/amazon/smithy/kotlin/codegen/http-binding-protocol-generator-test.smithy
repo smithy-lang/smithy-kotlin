@@ -1,40 +1,40 @@
-$version: "1.0"
+$version: "2"
 namespace com.test
 
 use aws.protocols#awsJson1_1
 
 @awsJson1_1
 service Test {
-    version: "1.0.0",
+    version: "1.0.0"
     operations: [
-        SmokeTest,
-        DuplicateInputTest,
-        ExplicitString,
-        ExplicitEnum,
-        ExplicitBlob,
-        ExplicitBlobStream,
-        ExplicitStruct,
-        ExplicitDocument,
-        ListInput,
-        MapInput,
-        EnumInput,
-        TimestampInput,
-        BlobInput,
-        ConstantQueryString,
-        PrefixHeaders,
-        UnionInput,
-        UnionAggregateInput,
-        UnionOutput,
-        UnionAggregateOutput,
-        PrimitiveShapesOperation,
+        SmokeTest
+        DuplicateInputTest
+        ExplicitString
+        ExplicitEnum
+        ExplicitBlob
+        ExplicitBlobStream
+        ExplicitStruct
+        ExplicitDocument
+        ListInput
+        MapInput
+        EnumInput
+        TimestampInput
+        BlobInput
+        ConstantQueryString
+        PrefixHeaders
+        UnionInput
+        UnionAggregateInput
+        UnionOutput
+        UnionAggregateOutput
+        PrimitiveShapesOperation
         HeaderListInput
     ]
 }
 
 @http(method: "POST", uri: "/smoketest/{label1+}/foo")
 operation SmokeTest {
-    input: SmokeTestRequest,
-    output: SmokeTestResponse,
+    input: SmokeTestRequest
+    output: SmokeTestResponse
     errors: [SmokeTestError]
 }
 
@@ -46,42 +46,42 @@ operation DuplicateInputTest {
 
 structure SmokeTestRequest {
     @httpHeader("X-Header1")
-    header1: String,
+    header1: String
 
     @httpHeader("X-Header2")
-    header2: String,
+    header2: String
 
     @httpQuery("Query1")
-    query1: String,
+    query1: String
 
     @required
     @httpLabel
-    label1: String,
+    label1: String
 
-    payload1: String,
-    payload2: Integer,
+    payload1: String
+    payload2: Integer
     payload3: Nested
 }
 
 structure Nested {
-    member1: String,
+    member1: String
     member2: String
 }
 
 structure SmokeTestResponse {
 
     @httpHeader("X-Header1")
-    strHeader: String,
+    strHeader: String
 
     @httpHeader("X-Header2")
-    intHeader: Integer,
+    intHeader: Integer
 
     @httpHeader("X-Header3")
-    tsListHeader: TimestampList,
+    tsListHeader: TimestampList
 
-    payload1: String,
-    payload2: Integer,
-    payload3: Nested,
+    payload1: String
+    payload2: Integer
+    payload3: Nested
     @timestampFormat("date-time")
     payload4: Timestamp
 }
@@ -99,7 +99,7 @@ structure NestedErrorData {
 
 @http(method: "POST", uri: "/explicit/string")
 operation ExplicitString {
-    input: ExplicitStringRequest,
+    input: ExplicitStringRequest
     output: ExplicitStringResponse
 }
 
@@ -115,7 +115,7 @@ structure ExplicitStringResponse {
 
 @http(method: "POST", uri: "/explicit/enum")
 operation ExplicitEnum {
-    input: ExplicitEnumRequest,
+    input: ExplicitEnumRequest
     output: ExplicitEnumResponse
 }
 
@@ -131,7 +131,7 @@ structure ExplicitEnumResponse {
 
 @http(method: "POST", uri: "/explicit/blob")
 operation ExplicitBlob {
-    input: ExplicitBlobRequest,
+    input: ExplicitBlobRequest
     output: ExplicitBlobResponse
 }
 
@@ -150,29 +150,31 @@ blob BodyStream
 
 @http(method: "POST", uri: "/explicit/blobstream")
 operation ExplicitBlobStream {
-    input: ExplicitBlobStreamRequest,
+    input: ExplicitBlobStreamRequest
     output: ExplicitBlobStreamResponse
 }
 
 structure ExplicitBlobStreamRequest {
     @httpPayload
+    @default(null)
     payload1: BodyStream
 }
 
 structure ExplicitBlobStreamResponse {
     @httpPayload
+    @default(null)
     payload1: BodyStream
 }
 
 @http(method: "POST", uri: "/explicit/struct")
 operation ExplicitStruct {
-    input: ExplicitStructRequest,
+    input: ExplicitStructRequest
     output: ExplicitStructResponse
 }
 
 @http(method: "POST", uri: "/explicit/document")
 operation ExplicitDocument {
-    input: ExplicitDocumentRequest,
+    input: ExplicitDocumentRequest
     output: ExplicitDocumentResponse
 }
 
@@ -187,15 +189,15 @@ structure ExplicitDocumentResponse {
 }
 
 structure Nested4 {
-    member1: Integer,
+    member1: Integer
     // sanity check, member serialization for non top-level (bound to the operation input) aggregate shapes
-    intList: IntList,
+    intList: IntList
     intMap: IntMap
 }
 
 structure Nested3 {
-    member1: String,
-    member2: String,
+    member1: String
+    member2: String
     member3: Nested4
 }
 
@@ -245,24 +247,24 @@ list BlobList {
 
 @http(method: "POST", uri: "/input/list")
 operation ListInput {
-    input: ListInputRequest,
+    input: ListInputRequest
     output: ListOutputResponse
 }
 
 structure ListInputRequest {
-    enumList: EnumList,
-    intList: IntList,
-    structList: StructList,
-    nestedIntList: NestedIntList,
-    nestedMapList: NestedMapList,
+    enumList: EnumList
+    intList: IntList
+    structList: StructList
+    nestedIntList: NestedIntList
+    nestedMapList: NestedMapList
     blobList: BlobList
 }
 
 structure ListOutputResponse {
-    enumList: EnumList,
-    intList: IntList,
-    structList: StructList,
-    nestedIntList: NestedIntList,
+    enumList: EnumList
+    intList: IntList
+    structList: StructList
+    nestedIntList: NestedIntList
     blobList: BlobList
 }
 
@@ -274,25 +276,25 @@ operation HeaderListInput {
 structure HeaderListInputRequest {
 
     @httpHeader("x-enumList")
-    enumList: EnumList,
+    enumList: EnumList
 
     @httpHeader("x-intList")
-    intList: IntList,
+    intList: IntList
 
     @httpHeader("x-strList")
-    strList: StringList,
+    strList: StringList
 
     @httpHeader("x-tsList")
     tsList: TimestampList
 }
 
 map IntMap {
-    key: String,
+    key: String
     value: Integer
 }
 
 map StringMap {
-    key: String,
+    key: String
     value: String
 }
 
@@ -302,77 +304,74 @@ structure ReachableOnlyThroughMap {
 }
 
 map StructMap {
-    key: String,
+    key: String
     value: ReachableOnlyThroughMap
 }
 
 map EnumMap {
-    key: String,
+    key: String
     value: MyEnum
 }
 
 map BlobMap {
-    key: String,
+    key: String
     value: Blob
 }
 
 map NestedMap {
-    key: String,
+    key: String
     value: IntMap
 }
 
 map MapOfLists {
-    key: String,
+    key: String
     value: IntList
 }
 
 @http(method: "POST", uri: "/input/map")
 operation MapInput {
-    input: MapInputRequest,
+    input: MapInputRequest
     output: MapOutputResponse
 }
 
 structure MapInputRequest {
-    intMap: IntMap,
-    structMap: StructMap,
-    enumMap: EnumMap,
-    blobMap: BlobMap,
-    mapOfLists: MapOfLists,
+    intMap: IntMap
+    structMap: StructMap
+    enumMap: EnumMap
+    blobMap: BlobMap
+    mapOfLists: MapOfLists
     nestedMap: NestedMap
 }
 
 structure MapOutputResponse {
-    intMap: IntMap,
-    structMap: StructMap,
-    enumMap: EnumMap,
-    blobMap: BlobMap,
+    intMap: IntMap
+    structMap: StructMap
+    enumMap: EnumMap
+    blobMap: BlobMap
     nestedMap: NestedMap
 }
 
 
-@http(method: "POST", uri: "/input/enum")
+@http(method: "POST", uri: "/input/enum/{enumUri}")
 operation EnumInput {
     input: EnumInputRequest
 }
 
-@enum([
-    {
-        value: "rawValue1",
-        name: "Variant1"
-    },
-    {
-        value: "rawValue2",
-        name: "Variant2"
-    }
-])
-string MyEnum
+enum MyEnum {
+    VARIANT_1 = "rawValue1"
+    VARIANT_2 = "rawValue2"
+}
 
 structure NestedEnum {
     myEnum: MyEnum
 }
 
 structure EnumInputRequest {
-    nestedWithEnum: NestedEnum,
+    nestedWithEnum: NestedEnum
+
+    @httpLabel
+    @required
+    enumUri: MyEnum
 
     @httpHeader("X-EnumHeader")
     enumHeader: MyEnum
@@ -389,37 +388,37 @@ list TimestampList {
 
 structure TimestampInputRequest {
     // (protocol default)
-    normal: Timestamp,
+    normal: Timestamp
 
     @timestampFormat("date-time")
-    dateTime: Timestamp,
+    dateTime: Timestamp
 
     @timestampFormat("epoch-seconds")
-    epochSeconds: Timestamp,
+    epochSeconds: Timestamp
 
     @timestampFormat("http-date")
-    httpDate: Timestamp,
+    httpDate: Timestamp
 
-    timestampList: TimestampList,
+    timestampList: TimestampList
 
     @httpHeader("X-Date")
     @timestampFormat("http-date")
-    headerHttpDate: Timestamp,
+    headerHttpDate: Timestamp
 
     @httpHeader("X-Epoch")
     @timestampFormat("epoch-seconds")
-    headerEpoch: Timestamp,
+    headerEpoch: Timestamp
 
     @httpHeader("X-DateTime")
     @timestampFormat("date-time")
-    headerDateTime: Timestamp,
+    headerDateTime: Timestamp
 
     @httpQuery("qtime")
     @timestampFormat("date-time")
-    queryTimestamp: Timestamp,
+    queryTimestamp: Timestamp
 
     @httpQuery("qtimeList")
-    queryTimestampList: TimestampList,
+    queryTimestampList: TimestampList
 
     @required
     @httpLabel
@@ -437,7 +436,7 @@ string MyMediaHeader
 structure BlobInputRequest {
     // smithy spec doesn't allow blobs for headers but strings with media type are also base64 encoded
     @httpHeader("X-Blob")
-    headerMediaType: MyMediaHeader,
+    headerMediaType: MyMediaHeader
 
     payloadBlob: Blob
 }
@@ -451,12 +450,12 @@ operation ConstantQueryString {
 structure ConstantQueryStringInput {
     @httpLabel
     @required
-    hello: String,
+    hello: String
 }
 
 @http(method: "POST", uri: "/prefix-headers")
 operation PrefixHeaders{
-    input: PrefixHeadersIO,
+    input: PrefixHeadersIO
     output: PrefixHeadersIO
 }
 
@@ -472,6 +471,7 @@ operation UnionInput {
 }
 
 @http(method: "GET", uri: "/input/union")
+@readonly
 operation UnionOutput {
     output: UnionRequest
 }
@@ -481,7 +481,7 @@ structure UnionRequest {
 }
 
 union MyUnion {
-    i32: Integer,
+    i32: Integer
     stringA: String
 }
 
@@ -491,6 +491,7 @@ operation UnionAggregateInput {
 }
 
 @http(method: "GET", uri: "/input/union2")
+@readonly
 operation UnionAggregateOutput {
     output: UnionAggregateRequest
 }
@@ -500,42 +501,55 @@ structure UnionAggregateRequest {
 }
 
 union MyAggregateUnion {
-    i32: Integer,
-    intList: IntList,
-    intMap: IntMap,
-    nested3: Nested,
+    i32: Integer
+    intList: IntList
+    intMap: IntMap
+    nested3: Nested
     @timestampFormat("date-time")
     timestamp4: Timestamp
 }
 
 @http(method: "POST", uri: "/primitiveshapes")
 operation PrimitiveShapesOperation {
-    input: PrimitiveShapes,
+    input: PrimitiveShapes
     output: PrimitiveShapes
 }
 
 structure PrimitiveShapes {
     @httpHeader("X-a")
-    hInt: PrimitiveInteger,
+    @default(0)
+    hInt: PrimitiveInteger
 
     @required
     @httpHeader("X-required")
-    hRequiredInt: PrimitiveInteger,
+    @default(0)
+    hRequiredInt: PrimitiveInteger
 
     @httpHeader("X-b")
-    hLong: PrimitiveLong,
+    @default(0)
+    hLong: PrimitiveLong
 
     @httpHeader("X-c")
-    hFloat: PrimitiveFloat,
+    @default(0)
+    hFloat: PrimitiveFloat
 
     @httpHeader("X-d")
-    hBool: PrimitiveBoolean,
+    @default(false)
+    hBool: PrimitiveBoolean
 
     @httpQuery("q-int")
-    qInt: PrimitiveInteger,
+    @default(0)
+    qInt: PrimitiveInteger
 
-    bInt: PrimitiveInteger,
-    bFloat: PrimitiveFloat,
-    bDouble: PrimitiveDouble,
+    @default(0)
+    bInt: PrimitiveInteger
+
+    @default(0)
+    bFloat: PrimitiveFloat
+
+    @default(0)
+    bDouble: PrimitiveDouble
+
+    @default(false)
     bBool: PrimitiveBoolean
 }

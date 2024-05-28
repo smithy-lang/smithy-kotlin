@@ -39,7 +39,6 @@ class HttpBindingProtocolGeneratorTest {
     fun itCreatesSmokeTestRequestSerializer() {
         val contents = getSerdeFileContents("SmokeTestOperationSerializer.kt")
         contents.assertBalancedBracesAndParens()
-        val label1 = "\${input.label1}" // workaround for raw strings not being able to contain escapes
         val expectedContents = """
 internal class SmokeTestOperationSerializer: HttpSerializer.NonStreaming<SmokeTestRequest> {
     override fun serialize(context: ExecutionContext, input: SmokeTestRequest): HttpRequestBuilder {
@@ -49,7 +48,7 @@ internal class SmokeTestOperationSerializer: HttpSerializer.NonStreaming<SmokeTe
         builder.url {
             path.encodedSegments {
                 add(PercentEncoding.Path.encode("smoketest"))
-                "$label1".split("/").mapTo(this) { PercentEncoding.SmithyLabel.encode(it) }
+                input.label1.split("/").mapTo(this) { PercentEncoding.SmithyLabel.encode(it) }
                 add(PercentEncoding.Path.encode("foo"))
             }
             parameters.decodedParameters(PercentEncoding.SmithyLabel) {
@@ -224,7 +223,11 @@ internal class EnumInputOperationSerializer: HttpSerializer.NonStreaming<EnumInp
         builder.method = HttpMethod.POST
 
         builder.url {
-            path.encoded = "/input/enum"
+            path.encodedSegments {
+                add(PercentEncoding.Path.encode("input"))
+                add(PercentEncoding.Path.encode("enum"))
+                add(PercentEncoding.SmithyLabel.encode(input.enumUri.value))
+            }
         }
 
         builder.headers {
@@ -247,7 +250,6 @@ internal class EnumInputOperationSerializer: HttpSerializer.NonStreaming<EnumInp
     fun itSerializesOperationInputsWithTimestamps() {
         val contents = getSerdeFileContents("TimestampInputOperationSerializer.kt")
         contents.assertBalancedBracesAndParens()
-        val tsLabel = "\${input.tsLabel.format(TimestampFormat.ISO_8601)}" // workaround for raw strings not being able to contain escapes
         val expectedContents = """
 internal class TimestampInputOperationSerializer: HttpSerializer.NonStreaming<TimestampInputRequest> {
     override fun serialize(context: ExecutionContext, input: TimestampInputRequest): HttpRequestBuilder {
@@ -258,7 +260,7 @@ internal class TimestampInputOperationSerializer: HttpSerializer.NonStreaming<Ti
             path.encodedSegments {
                 add(PercentEncoding.Path.encode("input"))
                 add(PercentEncoding.Path.encode("timestamp"))
-                add(PercentEncoding.SmithyLabel.encode("$tsLabel"))
+                add(PercentEncoding.SmithyLabel.encode(input.tsLabel.format(TimestampFormat.ISO_8601)))
             }
             parameters.decodedParameters(PercentEncoding.SmithyLabel) {
                 if (input.queryTimestamp != null) add("qtime", input.queryTimestamp.format(TimestampFormat.ISO_8601))
@@ -323,7 +325,6 @@ internal class BlobInputOperationSerializer: HttpSerializer.NonStreaming<BlobInp
     fun itHandlesQueryStringLiterals() {
         val contents = getSerdeFileContents("ConstantQueryStringOperationSerializer.kt")
         contents.assertBalancedBracesAndParens()
-        val label1 = "\${input.hello}" // workaround for raw strings not being able to contain escapes
         val expectedContents = """
 internal class ConstantQueryStringOperationSerializer: HttpSerializer.NonStreaming<ConstantQueryStringRequest> {
     override fun serialize(context: ExecutionContext, input: ConstantQueryStringRequest): HttpRequestBuilder {
@@ -333,7 +334,7 @@ internal class ConstantQueryStringOperationSerializer: HttpSerializer.NonStreami
         builder.url {
             path.encodedSegments {
                 add(PercentEncoding.Path.encode("ConstantQueryString"))
-                add(PercentEncoding.SmithyLabel.encode("$label1"))
+                add(PercentEncoding.SmithyLabel.encode(input.hello))
             }
             parameters.decodedParameters {
                 add("foo", "bar")
@@ -550,24 +551,21 @@ internal class SmokeTestOperationDeserializer: HttpDeserializer.NonStreaming<Smo
 
         val contents = getSerdeFileContents("FooOperationSerializer.kt", model)
 
-        val label1 = "\${input.bar}"
-        val label2 = "\${input.baz}"
-        val quux = "\${input.quux}"
         val expected = """
             requireNotNull(input.bar) { "bar is bound to the URI and must not be null" }
             require(input.bar?.isNotBlank() == true) { "bar is bound to the URI and must be a non-blank value" }
             requireNotNull(input.baz) { "baz is bound to the URI and must not be null" }
             path.encodedSegments {
                 add(PercentEncoding.Path.encode("foo"))
-                add(PercentEncoding.SmithyLabel.encode("$label1"))
-                add(PercentEncoding.SmithyLabel.encode("$label2"))
+                add(PercentEncoding.SmithyLabel.encode(input.bar))
+                add(PercentEncoding.SmithyLabel.encode(input.baz.toString()))
             }
             parameters.decodedParameters(PercentEncoding.SmithyLabel) {
                 require(input.garply?.isNotBlank() == true) { "garply is bound to the URI and must be a non-blank value" }
                 if (input.corge != null) add("corge", input.corge)
                 if (input.garply != null) add("garply", input.garply)
                 if (input.grault != null) add("grault", input.grault)
-                if (input.quux != null) add("quux", "$quux")
+                if (input.quux != null) add("quux", input.quux.toString())
             }
         """
 
