@@ -3,6 +3,7 @@ package software.amazon.smithy.kotlin.codegen.aws.protocols
 import CborParserGenerator
 import software.amazon.smithy.kotlin.codegen.aws.protocols.core.AwsHttpBindingProtocolGenerator
 import software.amazon.smithy.kotlin.codegen.core.KotlinWriter
+import software.amazon.smithy.kotlin.codegen.core.RuntimeTypes
 import software.amazon.smithy.kotlin.codegen.rendering.protocol.HttpBindingResolver
 import software.amazon.smithy.kotlin.codegen.rendering.protocol.HttpTraitResolver
 import software.amazon.smithy.kotlin.codegen.rendering.protocol.ProtocolContentTypes
@@ -37,11 +38,6 @@ class Rpcv2Cbor : AwsHttpBindingProtocolGenerator() {
         op: OperationShape,
         writer: KotlinWriter,
     ) {
-        TODO("Not yet implemented")
+        writer.write("#T.deserialize(payload)", RuntimeTypes.SmithyRpcv2Protocols.Cbor.Rpcv2CborErrorDeserializer)
     }
 }
-
-// FIXME Do we need to differentiate between CBOR and RPC v2 CBOR? Like we do for XML and RestXML?
-//class Rpcv2CborSerializerGenerator(
-//    protocolGenerator: Rpcv2Cbor
-//): CborSerializerGenerator(protocolGenerator)

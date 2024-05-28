@@ -126,6 +126,7 @@ data class KotlinDependency(
         val HTTP_AUTH = KotlinDependency(GradleConfiguration.Implementation, "$RUNTIME_ROOT_NS.http.auth", RUNTIME_GROUP, "http-auth", RUNTIME_VERSION)
         val HTTP_AUTH_AWS = KotlinDependency(GradleConfiguration.Implementation, "$RUNTIME_ROOT_NS.http.auth", RUNTIME_GROUP, "http-auth-aws", RUNTIME_VERSION)
         val IDENTITY_API = KotlinDependency(GradleConfiguration.Implementation, "$RUNTIME_ROOT_NS", RUNTIME_GROUP, "identity-api", RUNTIME_VERSION)
+        val SMITHY_RPCV2_PROTOCOLS = KotlinDependency(GradleConfiguration.Implementation, "$RUNTIME_ROOT_NS.awsprotocol.rpcv2", RUNTIME_GROUP, "smithy-rpcv2-protocols", RUNTIME_VERSION)
 
         // External third-party dependencies
         val KOTLIN_STDLIB = KotlinDependency(GradleConfiguration.Implementation, "kotlin", "org.jetbrains.kotlin", "kotlin-stdlib", KOTLIN_COMPILER_VERSION)

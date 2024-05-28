@@ -6,6 +6,7 @@ package aws.smithy.kotlin.runtime.awsprotocol.json
 
 import aws.smithy.kotlin.runtime.InternalApi
 import aws.smithy.kotlin.runtime.awsprotocol.ErrorDetails
+import aws.smithy.kotlin.runtime.awsprotocol.sanitizeErrorType
 import aws.smithy.kotlin.runtime.http.Headers
 import aws.smithy.kotlin.runtime.serde.*
 import aws.smithy.kotlin.runtime.serde.json.JsonDeserializer
@@ -76,21 +77,6 @@ public object RestJsonErrorDeserializer {
          *
          * Source: https://github.com/awslabs/aws-sdk-kotlin/issues/828
          */
-        return ErrorDetails(sanitize(headerCode ?: bodyCode ?: bodyType), message, requestId = null)
+        return ErrorDetails(sanitizeErrorType(headerCode ?: bodyCode ?: bodyType), message, requestId = null)
     }
 }
-
-/**
- * Sanitize the value to retrieve the disambiguated error type using the following steps:
- *
- * If a : character is present, then take only the contents before the first : character in the value.
- * If a # character is present, then take only the contents after the first # character in the value.
- *
- * All of the following error values resolve to FooError:
- *
- * FooError
- * FooError:http://amazon.com/smithy/com.amazon.smithy.validate/
- * aws.protocoltests.restjson#FooError
- * aws.protocoltests.restjson#FooError:http://amazon.com/smithy/com.amazon.smithy.validate/
- */
-private fun sanitize(code: String?): String? = code?.substringAfter("#")?.substringBefore(":")

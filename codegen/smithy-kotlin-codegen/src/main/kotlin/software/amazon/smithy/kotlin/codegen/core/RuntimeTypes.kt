@@ -6,6 +6,7 @@
 package software.amazon.smithy.kotlin.codegen.core
 
 import software.amazon.smithy.kotlin.codegen.model.toSymbol
+import kotlin.jvm.internal.Intrinsics.Kotlin
 
 /**
  * Commonly used runtime types. Provides a single definition of a runtime symbol such that codegen isn't littered
@@ -417,6 +418,12 @@ object RuntimeTypes {
     object AwsXmlProtocols : RuntimeTypePackage(KotlinDependency.AWS_XML_PROTOCOLS) {
         val parseRestXmlErrorResponseNoSuspend = symbol("parseRestXmlErrorResponseNoSuspend")
         val parseEc2QueryErrorResponseNoSuspend = symbol("parseEc2QueryErrorResponseNoSuspend")
+    }
+
+    object SmithyRpcv2Protocols : RuntimeTypePackage(KotlinDependency.SMITHY_RPCV2_PROTOCOLS) {
+        object Cbor {
+            val Rpcv2CborErrorDeserializer = symbol("Rpcv2CborErrorDeserializer")
+        }
     }
 
     object AwsEventStream : RuntimeTypePackage(KotlinDependency.AWS_EVENT_STREAM) {
