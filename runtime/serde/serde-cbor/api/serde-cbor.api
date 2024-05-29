@@ -1,0 +1,84 @@
+public final class aws/smithy/kotlin/runtime/serde/cbor/CborDeserializer : aws/smithy/kotlin/runtime/serde/Deserializer {
+	public fun <init> ([B)V
+	public fun deserializeList (Laws/smithy/kotlin/runtime/serde/SdkFieldDescriptor;)Laws/smithy/kotlin/runtime/serde/Deserializer$ElementIterator;
+	public fun deserializeMap (Laws/smithy/kotlin/runtime/serde/SdkFieldDescriptor;)Laws/smithy/kotlin/runtime/serde/Deserializer$EntryIterator;
+	public fun deserializeStruct (Laws/smithy/kotlin/runtime/serde/SdkObjectDescriptor;)Laws/smithy/kotlin/runtime/serde/Deserializer$FieldIterator;
+}
+
+public final class aws/smithy/kotlin/runtime/serde/cbor/CborErrorDeserializer {
+	public fun <init> ()V
+}
+
+public final class aws/smithy/kotlin/runtime/serde/cbor/CborFieldTraitsKt {
+	public static final fun getSerialName (Laws/smithy/kotlin/runtime/serde/SdkFieldDescriptor;)Ljava/lang/String;
+}
+
+public final class aws/smithy/kotlin/runtime/serde/cbor/CborSerialName : aws/smithy/kotlin/runtime/serde/FieldTrait {
+	public fun <init> (Ljava/lang/String;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun copy (Ljava/lang/String;)Laws/smithy/kotlin/runtime/serde/cbor/CborSerialName;
+	public static synthetic fun copy$default (Laws/smithy/kotlin/runtime/serde/cbor/CborSerialName;Ljava/lang/String;ILjava/lang/Object;)Laws/smithy/kotlin/runtime/serde/cbor/CborSerialName;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getName ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class aws/smithy/kotlin/runtime/serde/cbor/CborSerializer : aws/smithy/kotlin/runtime/serde/ListSerializer, aws/smithy/kotlin/runtime/serde/MapSerializer, aws/smithy/kotlin/runtime/serde/Serializer, aws/smithy/kotlin/runtime/serde/StructSerializer {
+	public fun <init> ()V
+	public fun beginList (Laws/smithy/kotlin/runtime/serde/SdkFieldDescriptor;)Laws/smithy/kotlin/runtime/serde/ListSerializer;
+	public fun beginMap (Laws/smithy/kotlin/runtime/serde/SdkFieldDescriptor;)Laws/smithy/kotlin/runtime/serde/MapSerializer;
+	public fun beginStruct (Laws/smithy/kotlin/runtime/serde/SdkFieldDescriptor;)Laws/smithy/kotlin/runtime/serde/StructSerializer;
+	public fun endList ()V
+	public fun endMap ()V
+	public fun endStruct ()V
+	public fun entry (Ljava/lang/String;Laws/smithy/kotlin/runtime/content/Document;)V
+	public fun entry (Ljava/lang/String;Laws/smithy/kotlin/runtime/serde/SdkSerializable;)V
+	public fun entry (Ljava/lang/String;Laws/smithy/kotlin/runtime/time/Instant;Laws/smithy/kotlin/runtime/time/TimestampFormat;)V
+	public fun entry (Ljava/lang/String;Ljava/lang/Boolean;)V
+	public fun entry (Ljava/lang/String;Ljava/lang/Byte;)V
+	public fun entry (Ljava/lang/String;Ljava/lang/Character;)V
+	public fun entry (Ljava/lang/String;Ljava/lang/Double;)V
+	public fun entry (Ljava/lang/String;Ljava/lang/Float;)V
+	public fun entry (Ljava/lang/String;Ljava/lang/Integer;)V
+	public fun entry (Ljava/lang/String;Ljava/lang/Long;)V
+	public fun entry (Ljava/lang/String;Ljava/lang/Short;)V
+	public fun entry (Ljava/lang/String;Ljava/lang/String;)V
+	public fun field (Laws/smithy/kotlin/runtime/serde/SdkFieldDescriptor;B)V
+	public fun field (Laws/smithy/kotlin/runtime/serde/SdkFieldDescriptor;C)V
+	public fun field (Laws/smithy/kotlin/runtime/serde/SdkFieldDescriptor;D)V
+	public fun field (Laws/smithy/kotlin/runtime/serde/SdkFieldDescriptor;F)V
+	public fun field (Laws/smithy/kotlin/runtime/serde/SdkFieldDescriptor;I)V
+	public fun field (Laws/smithy/kotlin/runtime/serde/SdkFieldDescriptor;J)V
+	public fun field (Laws/smithy/kotlin/runtime/serde/SdkFieldDescriptor;Laws/smithy/kotlin/runtime/content/Document;)V
+	public fun field (Laws/smithy/kotlin/runtime/serde/SdkFieldDescriptor;Laws/smithy/kotlin/runtime/serde/SdkSerializable;)V
+	public fun field (Laws/smithy/kotlin/runtime/serde/SdkFieldDescriptor;Laws/smithy/kotlin/runtime/time/Instant;Laws/smithy/kotlin/runtime/time/TimestampFormat;)V
+	public fun field (Laws/smithy/kotlin/runtime/serde/SdkFieldDescriptor;Ljava/lang/String;)V
+	public fun field (Laws/smithy/kotlin/runtime/serde/SdkFieldDescriptor;Ljava/math/BigDecimal;)V
+	public fun field (Laws/smithy/kotlin/runtime/serde/SdkFieldDescriptor;Ljava/math/BigInteger;)V
+	public fun field (Laws/smithy/kotlin/runtime/serde/SdkFieldDescriptor;S)V
+	public fun field (Laws/smithy/kotlin/runtime/serde/SdkFieldDescriptor;Z)V
+	public fun listEntry (Ljava/lang/String;Laws/smithy/kotlin/runtime/serde/SdkFieldDescriptor;Lkotlin/jvm/functions/Function1;)V
+	public fun listField (Laws/smithy/kotlin/runtime/serde/SdkFieldDescriptor;Lkotlin/jvm/functions/Function1;)V
+	public fun mapEntry (Ljava/lang/String;Laws/smithy/kotlin/runtime/serde/SdkFieldDescriptor;Lkotlin/jvm/functions/Function1;)V
+	public fun mapField (Laws/smithy/kotlin/runtime/serde/SdkFieldDescriptor;Lkotlin/jvm/functions/Function1;)V
+	public fun nullField (Laws/smithy/kotlin/runtime/serde/SdkFieldDescriptor;)V
+	public fun serializeBigDecimal (Ljava/math/BigDecimal;)V
+	public fun serializeBigInteger (Ljava/math/BigInteger;)V
+	public fun serializeBoolean (Z)V
+	public fun serializeByte (B)V
+	public fun serializeChar (C)V
+	public fun serializeDocument (Laws/smithy/kotlin/runtime/content/Document;)V
+	public fun serializeDouble (D)V
+	public fun serializeFloat (F)V
+	public fun serializeInstant (Laws/smithy/kotlin/runtime/time/Instant;Laws/smithy/kotlin/runtime/time/TimestampFormat;)V
+	public fun serializeInt (I)V
+	public fun serializeLong (J)V
+	public fun serializeNull ()V
+	public fun serializeSdkSerializable (Laws/smithy/kotlin/runtime/serde/SdkSerializable;)V
+	public fun serializeShort (S)V
+	public fun serializeString (Ljava/lang/String;)V
+	public fun structField (Laws/smithy/kotlin/runtime/serde/SdkFieldDescriptor;Lkotlin/jvm/functions/Function1;)V
+	public fun toByteArray ()[B
+}
+
