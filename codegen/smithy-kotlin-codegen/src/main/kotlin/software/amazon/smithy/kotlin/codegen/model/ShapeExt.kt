@@ -21,6 +21,7 @@ import software.amazon.smithy.rulesengine.language.EndpointRuleSet
 import software.amazon.smithy.rulesengine.traits.EndpointRuleSetTrait
 import software.amazon.smithy.rulesengine.traits.EndpointTestCase
 import software.amazon.smithy.rulesengine.traits.EndpointTestsTrait
+import java.util.stream.Collectors
 
 /**
  * Get all shapes of a particular type from the model.
