@@ -33,7 +33,7 @@ import java.util.stream.Collectors
  * shape's closure for example)
  */
 @Suppress("EXTENSION_SHADOWED_BY_MEMBER")
-inline fun <reified T : Shape> Model.shapes(): List<T> = shapes(T::class.java).toList()
+inline fun <reified T : Shape> Model.shapes(): List<T> = shapes(T::class.java).collect(Collectors.toList())
 
 /**
  * Extension function to return a shape of expected type.
