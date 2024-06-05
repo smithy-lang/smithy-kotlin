@@ -21,24 +21,34 @@ public class CborDeserializer(payload: ByteArray) : Deserializer {
 
     override fun deserializeList(descriptor: SdkFieldDescriptor): Deserializer.ElementIterator {
         val major = peekMajor(buffer)
-        check(major == Major.LIST) { "Expected major ${Major.LIST} for CBOR list, got $major." }
+        check(major == Major.LIST) { "Expected major ${Major.LIST} for CBOR list, got $major" }
 
-        deserializeArgument(buffer) // toss head + any following bytes which encode length
+        val expectedLength = if (peekMinorRaw(buffer) == Minor.INDEFINITE.value) {
+            buffer.readByte()
+            null
+        } else {
+            deserializeArgument(buffer)
+        }
 
-        return CborElementIterator(buffer)
+        return CborElementIterator(buffer, expectedLength)
     }
 
     override fun deserializeMap(descriptor: SdkFieldDescriptor): Deserializer.EntryIterator {
         val major = peekMajor(buffer)
-        check(major == Major.MAP) { "Expected major ${Major.MAP} for CBOR map, got $major." }
+        check(major == Major.MAP) { "Expected major ${Major.MAP} for CBOR map, got $major" }
 
-        deserializeArgument(buffer) // toss head + any following bytes which encode length
+        val expectedLength = if (peekMinorRaw(buffer) == Minor.INDEFINITE.value) {
+            buffer.readByte()
+            null
+        } else {
+            deserializeArgument(buffer)
+        }
 
-        return CborEntryIterator(buffer)
+        return CborEntryIterator(buffer, expectedLength)
     }
 }
 
-private class CborPrimitiveDeserializer(private val buffer: SdkBuffer) : PrimitiveDeserializer {
+internal class CborPrimitiveDeserializer(private val buffer: SdkBufferedSource) : PrimitiveDeserializer {
     override fun deserializeByte(): Byte = when (val major = peekMajor(buffer)) {
         Major.U_INT -> Cbor.Encoding.UInt.decode(buffer).value.toByte()
         Major.NEG_INT -> (0 - Cbor.Encoding.NegInt.decode(buffer).value.toByte()).toByte()
@@ -63,9 +73,19 @@ private class CborPrimitiveDeserializer(private val buffer: SdkBuffer) : Primiti
         else -> throw DeserializationException("Expected ${Major.U_INT} or ${Major.NEG_INT} for CBOR short, got $major.")
     }
 
-    override fun deserializeFloat(): Float = Cbor.Encoding.Float32.decode(buffer).value
+    override fun deserializeFloat(): Float = when(val minor = peekMinorRaw(buffer)) {
+        Minor.FLOAT16.value -> Cbor.Encoding.Float16.decode(buffer).value
+        Minor.FLOAT32.value -> Cbor.Encoding.Float32.decode(buffer).value
+        Minor.FLOAT64.value -> Cbor.Encoding.Float64.decode(buffer).value.toFloat()
+        else -> Float.fromBits(deserializeArgument(buffer).toInt())//throw DeserializationException("Received unexpected minor value $minor for float, expected ${Minor.FLOAT16}, ${Minor.FLOAT32}, or ${Minor.FLOAT64}.")
+    }
 
-    override fun deserializeDouble(): Double = Cbor.Encoding.Float64.decode(buffer).value
+    override fun deserializeDouble(): Double = when(peekMinorSafe(buffer)) {
+        Minor.FLOAT16 -> Cbor.Encoding.Float16.decode(buffer).value.toDouble()
+        Minor.FLOAT32 -> Cbor.Encoding.Float32.decode(buffer).value.toDouble()
+        Minor.FLOAT64 -> Cbor.Encoding.Float64.decode(buffer).value
+        else -> Double.fromBits(deserializeArgument(buffer).toLong())
+    }
 
     override fun deserializeBigInteger(): BigInteger = when(val tagId = peekTag(buffer).id.toUInt()) {
         2u -> Cbor.Encoding.BigNum.decode(buffer).value
@@ -86,26 +106,47 @@ private class CborPrimitiveDeserializer(private val buffer: SdkBuffer) : Primiti
         return null
     }
 
-    private fun deserializeBlob(): ByteArray = Cbor.Encoding.ByteString.decode(buffer).value
+    internal fun deserializeBlob(): ByteArray = Cbor.Encoding.ByteString.decode(buffer).value
 
-    private fun deserializeTimestamp(): Instant = Cbor.Encoding.Timestamp.decode(buffer).value
+    internal fun deserializeTimestamp(): Instant = Cbor.Encoding.Timestamp.decode(buffer).value
 }
 
 /**
  * Element iterator used for deserializing lists
  */
 private class CborElementIterator(
-    val buffer: SdkBuffer,
+    val buffer: SdkBufferedSource,
+    val expectedLength: ULong? = null
 ) : Deserializer.ElementIterator, PrimitiveDeserializer by CborPrimitiveDeserializer(buffer) {
+    val primitiveDeserializer = CborPrimitiveDeserializer(buffer)
+    var currentLength = 0uL
+
     override fun hasNextElement(): Boolean {
-        val value = decodeNextValue(buffer.peek().buffer)
-        return (value !is Cbor.Encoding.IndefiniteBreak)
+        if (expectedLength != null) {
+            return currentLength != expectedLength && !buffer.exhausted()
+        } else {
+            val peekedNextValue = decodeNextValue(buffer.peek())
+            return peekedNextValue !is Cbor.Encoding.IndefiniteBreak
+        }
     }
 
     override fun nextHasValue(): Boolean {
-        val value = decodeNextValue(buffer.peek().buffer)
+        val value = decodeNextValue(buffer.peek())
         return (value !is Cbor.Encoding.Null)
     }
+
+    override fun deserializeBoolean(): Boolean = primitiveDeserializer.deserializeBoolean().also { currentLength += 1u }
+    override fun deserializeBigInteger(): BigInteger = primitiveDeserializer.deserializeBigInteger().also { currentLength += 1u }
+    override fun deserializeBigDecimal(): BigDecimal = primitiveDeserializer.deserializeBigDecimal().also { currentLength += 1u }
+    override fun deserializeByte(): Byte = primitiveDeserializer.deserializeByte().also { currentLength += 1u }
+    override fun deserializeDocument(): Document = primitiveDeserializer.deserializeDocument().also { currentLength += 1u }
+    override fun deserializeDouble(): Double = primitiveDeserializer.deserializeDouble().also { currentLength += 1u }
+    override fun deserializeFloat(): Float = primitiveDeserializer.deserializeFloat().also { currentLength += 1u }
+    override fun deserializeInt(): Int = primitiveDeserializer.deserializeInt().also { currentLength += 1u }
+    override fun deserializeLong(): Long = primitiveDeserializer.deserializeLong().also { currentLength += 1u }
+    override fun deserializeNull(): Nothing? = primitiveDeserializer.deserializeNull().also { currentLength += 1u }
+    override fun deserializeShort(): Short = primitiveDeserializer.deserializeShort().also { currentLength += 1u }
+    override fun deserializeString(): String = primitiveDeserializer.deserializeString().also { currentLength += 1u }
 }
 
 /**
@@ -116,7 +157,7 @@ private class CborFieldIterator(
     val descriptor: SdkObjectDescriptor,
 ) : Deserializer.FieldIterator, PrimitiveDeserializer by CborPrimitiveDeserializer(buffer) {
     override fun findNextFieldIndex(): Int? {
-        val nextFieldName = Cbor.Encoding.String.decode(buffer.peek().buffer).value
+        val nextFieldName = Cbor.Encoding.String.decode(buffer.peek()).value
         return descriptor
             .fields
             .firstOrNull { it.serialName.equals(nextFieldName, ignoreCase = true) }
@@ -129,16 +170,39 @@ private class CborFieldIterator(
 /**
  * Entry iterator used for deserializing maps
  */
-private class CborEntryIterator(val buffer: SdkBuffer) : Deserializer.EntryIterator, PrimitiveDeserializer by CborPrimitiveDeserializer(buffer) {
+private class CborEntryIterator(
+    val buffer: SdkBufferedSource,
+    val expectedLength: ULong?
+) : Deserializer.EntryIterator, PrimitiveDeserializer {
+    private var currentLength = 0uL
+    private val primitiveDeserializer = CborPrimitiveDeserializer(buffer)
+
     override fun hasNextEntry(): Boolean {
-        val nextKey = decodeNextValue(buffer.peek().buffer)
-        return nextKey !is Cbor.Encoding.IndefiniteBreak && nextKey !is Cbor.Encoding.Null
+        if (expectedLength != null) {
+            return currentLength != expectedLength && !buffer.exhausted()
+        } else {
+            val peekedNextKey = decodeNextValue(buffer.peek())
+            return peekedNextKey !is Cbor.Encoding.IndefiniteBreak && peekedNextKey !is Cbor.Encoding.Null
+        }
     }
 
     override fun key(): String = Cbor.Encoding.String.decode(buffer).value
 
     override fun nextHasValue(): Boolean {
-        val value = decodeNextValue(buffer.peek().buffer)
-        return value !is Cbor.Encoding.Null
+        val peekedNextValue = decodeNextValue(buffer.peek())
+        return peekedNextValue !is Cbor.Encoding.Null
     }
+
+    override fun deserializeBoolean(): Boolean = primitiveDeserializer.deserializeBoolean().also { currentLength += 1u }
+    override fun deserializeBigInteger(): BigInteger = primitiveDeserializer.deserializeBigInteger().also { currentLength += 1u }
+    override fun deserializeBigDecimal(): BigDecimal = primitiveDeserializer.deserializeBigDecimal().also { currentLength += 1u }
+    override fun deserializeByte(): Byte = primitiveDeserializer.deserializeByte().also { currentLength += 1u }
+    override fun deserializeDocument(): Document = primitiveDeserializer.deserializeDocument().also { currentLength += 1u }
+    override fun deserializeDouble(): Double = primitiveDeserializer.deserializeDouble().also { currentLength += 1u }
+    override fun deserializeFloat(): Float = primitiveDeserializer.deserializeFloat().also { currentLength += 1u }
+    override fun deserializeInt(): Int = primitiveDeserializer.deserializeInt().also { currentLength += 1u }
+    override fun deserializeLong(): Long = primitiveDeserializer.deserializeLong().also { currentLength += 1u }
+    override fun deserializeNull(): Nothing? = primitiveDeserializer.deserializeNull().also { currentLength += 1u }
+    override fun deserializeShort(): Short = primitiveDeserializer.deserializeShort().also { currentLength += 1u }
+    override fun deserializeString(): String = primitiveDeserializer.deserializeString().also { currentLength += 1u }
 }

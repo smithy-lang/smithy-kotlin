@@ -2,23 +2,24 @@ package aws.smithy.kotlin.runtime.serde.cbor
 
 import aws.smithy.kotlin.runtime.content.BigInteger
 import aws.smithy.kotlin.runtime.io.SdkBuffer
+import aws.smithy.kotlin.runtime.io.SdkBufferedSource
 import kotlin.experimental.and
 
 /**
  * Represents CBOR major types (0 for unsigned integer, 1 for negative integer, etc.)
  */
-internal enum class Major(val value: Byte) {
-    U_INT(0),
-    NEG_INT(1),
-    BYTE_STRING(2),
-    STRING(3),
-    LIST(4),
-    MAP(5),
-    TAG(6),
-    TYPE_7(7);
+internal enum class Major(val value: UByte) {
+    U_INT(0u),
+    NEG_INT(1u),
+    BYTE_STRING(2u),
+    STRING(3u),
+    LIST(4u),
+    MAP(5u),
+    TAG(6u),
+    TYPE_7(7u);
 
     companion object {
-        fun fromValue(value: Byte): Major = entries.firstOrNull { it.value == value }
+        fun fromValue(value: UByte): Major = entries.firstOrNull { it.value == value }
             ?: throw IllegalArgumentException("$value is not a valid Major value.")
     }
 }
@@ -26,35 +27,71 @@ internal enum class Major(val value: Byte) {
 /**
  * Represents CBOR minor types (aka "additional information")
  */
-internal enum class Minor(val value: Byte) {
-    ARG_1(24),
-    ARG_2(25),
-    ARG_4(26),
-    ARG_8(27),
-    INDEFINITE(31),
+internal enum class Minor(val value: UByte) {
+    ARG_1(24u),
+    ARG_2(25u),
+    ARG_4(26u),
+    ARG_8(27u),
+    INDEFINITE(31u),
 
     // The following minor values are only to be used with major type 7
-    FALSE(20),
-    TRUE(21),
-    NULL(22),
-    FLOAT16(25),
-    FLOAT32(26),
-    FLOAT64(27);
+    FALSE(20u),
+    TRUE(21u),
+    NULL(22u),
+    UNDEFINED(23u), // undefined should be deserialized as `null`
+    FLOAT16(25u),
+    FLOAT32(26u),
+    FLOAT64(27u);
 
     companion object {
-        fun fromValue(value: Byte): Minor = Minor.entries.firstOrNull { it.value == value }
+        fun fromValue(value: UByte): Minor = Minor.entries.firstOrNull { it.value == value }
             ?: throw IllegalArgumentException("$value is not a valid Minor value.")
     }
 }
 
-internal const val MAJOR_MASK = (0b111 shl 5).toByte()
-internal const val MINOR_MASK = 0b11111.toByte()
+internal val MAJOR_MASK: UByte = 0b111u
+internal val MINOR_MASK: UByte = 0b11111u
 
-internal fun peekTag(buffer: SdkBuffer) = Cbor.Encoding.Tag.decode(buffer.peek().buffer)
+internal fun peekTag(buffer: SdkBufferedSource) = Cbor.Encoding.Tag.decode(buffer.peek())
 
-internal fun peekMajor(buffer: SdkBuffer) = Major.fromValue(buffer.readByte() and MAJOR_MASK)
+internal fun peekMajor(buffer: SdkBufferedSource): Major {
+    val majorByte = buffer.peek().readByte().toUByte()
+    val masked = ((majorByte.toUInt() shr 5).toUByte()) and MAJOR_MASK
+    return Major.fromValue(masked)
+}
 
-internal fun peekMinor(buffer: SdkBuffer) = Minor.fromValue(buffer.readByte() and MINOR_MASK)
+internal fun peekMinor(buffer: SdkBufferedSource): Minor {
+    val minorByte = buffer.peek().readByte().toUByte()
+    val masked = minorByte and MINOR_MASK
+    // 11110111
+    // AND
+    // 00011111
+    // =
+    // 0001 0111 -> 0x17 -> 23
+
+    return Minor.fromValue(masked)
+}
+
+internal fun peekMinorSafe(buffer: SdkBufferedSource): Minor? {
+    val minorByte = buffer.peek().readByte().toUByte()
+    val masked = minorByte and MINOR_MASK
+    // 11110111
+    // AND
+    // 00011111
+    // =
+    // 0001 0111 -> 0x17 -> 23
+
+    return try {
+        Minor.fromValue(masked)
+    } catch (e: Exception) {
+        null
+    }
+}
+
+internal fun peekMinorRaw(buffer: SdkBufferedSource): UByte {
+    val minorByte = buffer.peek().readByte().toUByte()
+    return minorByte and MINOR_MASK
+}
 
 
 // Subtracts one from the given BigInteger

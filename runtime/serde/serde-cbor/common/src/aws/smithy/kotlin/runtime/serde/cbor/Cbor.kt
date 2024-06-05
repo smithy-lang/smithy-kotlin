@@ -3,12 +3,12 @@ package aws.smithy.kotlin.runtime.serde.cbor
 import aws.smithy.kotlin.runtime.content.BigDecimal
 import aws.smithy.kotlin.runtime.content.BigInteger
 import aws.smithy.kotlin.runtime.io.SdkBuffer
+import aws.smithy.kotlin.runtime.io.SdkBufferedSource
 import aws.smithy.kotlin.runtime.io.use
 import aws.smithy.kotlin.runtime.serde.DeserializationException
 import aws.smithy.kotlin.runtime.time.Instant
 import aws.smithy.kotlin.runtime.time.epochMilliseconds
 import aws.smithy.kotlin.runtime.time.fromEpochMilliseconds
-import kotlin.experimental.and
 
 internal object Cbor {
     /**
@@ -36,7 +36,10 @@ internal object Cbor {
 
             override fun encode(): ByteArray = encodeArgument(Major.U_INT, value)
             internal companion object {
-                fun decode(buffer: SdkBuffer): UInt = UInt(deserializeArgument(buffer))
+                fun decode(buffer: SdkBufferedSource): UInt {
+                    val argument = deserializeArgument(buffer)
+                    return UInt(argument)
+                }
             }
         }
 
@@ -53,7 +56,10 @@ internal object Cbor {
             override fun encode(): ByteArray = encodeArgument(Major.NEG_INT, (value - 1u))
 
             internal companion object {
-                fun decode(buffer: SdkBuffer): NegInt = NegInt(deserializeArgument(buffer) + 1u)
+                fun decode(buffer: SdkBufferedSource): NegInt {
+                    val argument: ULong = deserializeArgument(buffer)
+                    return NegInt(argument + 1u)
+                }
             }
         }
 
@@ -70,14 +76,30 @@ internal object Cbor {
             }
 
             internal companion object {
-                fun decode(buffer: SdkBuffer): ByteString {
-                    val length = deserializeArgument(buffer).toInt()
-                    val bytes = ByteArray(length)
+                fun decode(buffer: SdkBufferedSource): ByteString {
+                    val minor = peekMinorSafe(buffer)
 
-                    val rc = buffer.read(bytes)
-                    check(rc == length) { "Unexpected end of CBOR byte string: expected $length bytes, got $rc." }
+                    return if (minor == Minor.INDEFINITE) {
+                        val list = IndefiniteList.decode(buffer).value
 
-                    return ByteString(bytes)
+                        val buffer = SdkBuffer()
+                        list.forEach {
+                            buffer.write((it as ByteString).value)
+                        }
+
+                        ByteString(buffer.readByteArray())
+                    } else {
+                        val length = deserializeArgument(buffer).toInt()
+                        val bytes = ByteArray(length)
+
+                        if (length > 0) {
+                            val rc = buffer.read(bytes)
+                            check(rc == length) { "Unexpected end of CBOR byte string: expected $length bytes, got $rc." }
+                        }
+
+                        ByteString(bytes)
+                    }
+
                 }
             }
         }
@@ -95,14 +117,30 @@ internal object Cbor {
             }
 
             internal companion object {
-                fun decode(buffer: SdkBuffer): String {
-                    val length = deserializeArgument(buffer).toInt()
-                    val bytes = ByteArray(length)
+                fun decode(buffer: SdkBufferedSource): String {
+                    val minor = peekMinorSafe(buffer)
 
-                    val rc = buffer.read(bytes)
-                    check(rc == length) { "Unexpected end of CBOR string: expected $length bytes, got $rc." }
+                    return if (minor == Minor.INDEFINITE) {
+                        val list = IndefiniteList.decode(buffer).value
 
-                    return String(bytes.decodeToString())
+                        val sb = StringBuilder()
+                        list.forEach {
+                            sb.append((it as String).value)
+                        }
+
+                        String(sb.toString())
+
+                    } else {
+                        val length = deserializeArgument(buffer).toInt()
+                        val bytes = ByteArray(length)
+
+                        if (length > 0) {
+                            val rc = buffer.read(bytes)
+                            check(rc == length) { "Unexpected end of CBOR string: expected $length bytes, got $rc." }
+                        }
+
+                        return String(bytes.decodeToString())
+                    }
                 }
             }
         }
@@ -128,7 +166,7 @@ internal object Cbor {
             }
 
             internal companion object {
-                internal fun decode(buffer: SdkBuffer): List {
+                internal fun decode(buffer: SdkBufferedSource): List {
                     val length = deserializeArgument(buffer).toInt()
                     val values = mutableListOf<Value>()
 
@@ -158,11 +196,11 @@ internal object Cbor {
             override fun encode(): ByteArray = byteArrayOf(encodeMajorMinor(Major.LIST, Minor.INDEFINITE))
 
             internal companion object {
-                internal fun decode(buffer: SdkBuffer): IndefiniteList {
+                internal fun decode(buffer: SdkBufferedSource): IndefiniteList {
                     buffer.readByte() // discard head
 
                     val list = mutableListOf<Value>()
-                    while (peekMajor(buffer) != Major.TYPE_7 && peekMinor(buffer) != Minor.INDEFINITE) {
+                    while (decodeNextValue(buffer.peek()) !is IndefiniteBreak) {
                         list.add(decodeNextValue(buffer))
                     }
                     return IndefiniteList(list)
@@ -190,7 +228,7 @@ internal object Cbor {
             }
 
             internal companion object {
-                internal fun decode(buffer: SdkBuffer) : Map {
+                internal fun decode(buffer: SdkBufferedSource) : Map {
                     val valueMap = mutableMapOf<String, Value>()
                     val length = deserializeArgument(buffer).toInt()
 
@@ -222,7 +260,7 @@ internal object Cbor {
             override fun encode(): ByteArray = byteArrayOf(encodeMajorMinor(Major.MAP, Minor.INDEFINITE))
 
             internal companion object {
-                internal fun decode(buffer: SdkBuffer): IndefiniteMap {
+                internal fun decode(buffer: SdkBufferedSource): IndefiniteMap {
                     buffer.readByte() // discard head byte
                     val valueMap = mutableMapOf<String, Value>()
 
@@ -250,12 +288,12 @@ internal object Cbor {
             override fun encode(): ByteArray = byteArrayOf(*encodeArgument(Major.TAG, id), *value.encode())
 
             internal companion object {
-                fun decode(buffer: SdkBuffer): Tag {
+                fun decode(buffer: SdkBufferedSource): Tag {
                     return when (val id = peekMinor(buffer).value.toInt()) {
-                        1 -> { Tag(id.toULong(), Null()) } // TODO Timestamp
-                        2 -> { Tag(id.toULong(), Null()) } // TODO unsigned big integer
-                        3 -> { Tag(id.toULong(), Null()) } // TODO negative big integer
-                        4 -> { Tag(id.toULong(), Null()) } // TODO BigDecimal (decimal fraction)
+                        1 -> { Tag(id.toULong(), Timestamp.decode(buffer)) } // TODO Timestamp
+                        2 -> { Tag(id.toULong(), BigNum.decode(buffer)) } // TODO unsigned big integer
+                        3 -> { Tag(id.toULong(), NegBigNum.decode(buffer)) } // TODO negative big integer
+                        4 -> { Tag(id.toULong(), DecimalFraction.decode(buffer)) } // TODO BigDecimal (decimal fraction)
                         else -> throw DeserializationException("Unknown tag ID $id")
                     }
                 }
@@ -275,7 +313,7 @@ internal object Cbor {
             })
 
             internal companion object {
-                internal fun decode(buffer: SdkBuffer): Boolean {
+                internal fun decode(buffer: SdkBufferedSource): Boolean {
                     val major = peekMajor(buffer)
                     check (major == Major.TYPE_7) { "Expected ${Major.TYPE_7} for CBOR boolean, got $major" }
 
@@ -283,6 +321,8 @@ internal object Cbor {
                         Minor.FALSE -> { Boolean(false) }
                         Minor.TRUE -> { Boolean(true) }
                         else -> throw DeserializationException("Unknown minor argument $minor for Boolean.")
+                    }.also {
+                        buffer.readByte()
                     }
                 }
             }
@@ -297,13 +337,14 @@ internal object Cbor {
             override fun encode(): ByteArray = byteArrayOf(encodeMajorMinor(Major.TYPE_7, Minor.NULL))
 
             internal companion object {
-                internal fun decode(buffer: SdkBuffer): Null {
+                internal fun decode(buffer: SdkBufferedSource): Null {
                     val major = peekMajor(buffer)
                     check (major == Major.TYPE_7) { "Expected ${Major.TYPE_7} for CBOR null, got $major" }
 
                     val minor = peekMinor(buffer)
-                    check (minor == Minor.NULL) { "Expected ${Minor.NULL} for CBOR null, got $minor" }
+                    check (minor == Minor.NULL || minor == Minor.UNDEFINED) { "Expected ${Minor.NULL} or ${Minor.UNDEFINED} for CBOR null, got $minor" }
 
+                    buffer.readByte() // consume the byte
                     return Null()
                 }
             }
@@ -311,7 +352,7 @@ internal object Cbor {
 
         /**
          * Represents a CBOR 16-bit float (major type 7, minor type 25).
-         * Note: This CBOR type is only used for *decoding*, it will never be encoded.
+         * Note: This CBOR type can only be *decoded*, it will never be encoded.
          * @param value the [Float] that this CBOR 16-bit float represents.
          */
         internal class Float16(val value: Float) : Value {
@@ -320,16 +361,39 @@ internal object Cbor {
             override fun encode(): ByteArray = TODO("Encoding for CBOR 16-bit floats is not supported")
 
             internal companion object {
-                fun decode(buffer: SdkBuffer): Float16 {
+                fun decode(buffer: SdkBufferedSource): Float16 {
                     buffer.readByte() // discard head byte
                     val bytes = buffer.readByteArray(2)
 
-                    val floatBits: Int = (
-                        bytes[0].toInt() shl 8 and 0xff or
-                        bytes[1].toInt() and 0xff
+                    val float16Bits: Int = (
+                        ((bytes[0].toInt() and 0xff) shl 8) or
+                        (bytes[1].toInt() and 0xff)
                     )
 
-                    return Float16(Float.fromBits(floatBits))
+                    val sign = (float16Bits and (0x1 shl 15)) shl 16 // top bit
+                    val exponent = (float16Bits and (0x1f shl 10)) shr 10 // next 5 bits
+                    val fraction = (float16Bits and 0x3ff) shl 13 // remaining 10 bits
+
+                    val float32: Int = if (exponent == 0x1f) { // Infinity / NaN
+                        sign or (0xff shl 23) or fraction
+                    } else if (exponent == 0) {
+                        if (fraction == 0) {
+                            sign
+                        } else { // handle subnormal
+                            var normalizedExponent: Int = -14 + 127
+                            var normalizedFraction: Int = fraction
+                            while (normalizedFraction and 0x800000 == 0) { // shift left until 24th bit of mantissa is '1'
+                                normalizedFraction = normalizedFraction shl 1
+                                normalizedExponent -= 1
+                            }
+                            normalizedFraction = normalizedFraction and 0x7fffff
+                            sign or (normalizedExponent shl 23) or normalizedFraction
+                        }
+                    } else {
+                        sign or ((exponent + 127 - 15) shl 23) or fraction
+                    }
+
+                    return Float16(Float.fromBits(float32))
                 }
             }
         }
@@ -353,18 +417,10 @@ internal object Cbor {
             }
 
             internal companion object {
-                fun decode(buffer: SdkBuffer): Float32 {
+                fun decode(buffer: SdkBufferedSource): Float32 {
                     buffer.readByte() // discard head byte
                     val bytes = buffer.readByteArray(4)
-
-                    val floatBits: Int = (
-                        bytes[0].toInt() shl 24 and 0xff or
-                        bytes[1].toInt() shl 16 and 0xff or
-                        bytes[2].toInt() shl 8 and 0xff or
-                        bytes[3].toInt() and 0xff
-                    )
-
-                    return Float32(Float.fromBits(floatBits))
+                    return Float32(Float.fromBits(bytes.toULong().toInt()))
                 }
             }
         }
@@ -392,22 +448,10 @@ internal object Cbor {
             }
 
             internal companion object {
-                fun decode(buffer: SdkBuffer): Float64 {
+                fun decode(buffer: SdkBufferedSource): Float64 {
                     buffer.readByte() // discard head byte
                     val bytes = buffer.readByteArray(8)
-
-                    val doubleBits: Long = (
-                        (bytes[0].toLong() shl 56 and 0xff) or
-                        (bytes[1].toLong() shl 48 and 0xff) or
-                        (bytes[2].toLong() shl 40 and 0xff) or
-                        (bytes[3].toLong() shl 32 and 0xff) or
-                        (bytes[4].toLong() shl 24 and 0xff) or
-                        (bytes[5].toLong() shl 16 and 0xff) or
-                        (bytes[6].toLong() shl 8 and 0xff) or
-                        (bytes[7].toLong() and 0xff)
-                    )
-
-                    return Float64(Double.fromBits(doubleBits))
+                    return Float64(Double.fromBits(bytes.toULong().toLong()))
                 }
             }
         }
@@ -418,7 +462,7 @@ internal object Cbor {
             override fun encode(): ByteArray = byteArrayOf(*Tag(1u, Float64(value.epochMilliseconds / 1000.toDouble())).encode())
 
             internal companion object {
-                internal fun decode(buffer: SdkBuffer) : Timestamp {
+                internal fun decode(buffer: SdkBufferedSource) : Timestamp {
                     val tagId = deserializeArgument(buffer).toInt()
                     check(tagId == 1) { "Expected tag ID 1 for CBOR timestamp, got $tagId" }
 
@@ -449,8 +493,6 @@ internal object Cbor {
                     return Timestamp(instant)
                 }
             }
-
-
         }
 
         /**
@@ -463,7 +505,7 @@ internal object Cbor {
             override fun encode(): ByteArray = byteArrayOf(*Tag(2u, ByteString(value.toByteArray())).encode())
 
             internal companion object {
-                internal fun decode(buffer: SdkBuffer): BigNum {
+                internal fun decode(buffer: SdkBufferedSource): BigNum {
                     val tagId = deserializeArgument(buffer).toInt()
                     check(tagId == 2) { "Expected tag ID 2 for CBOR bignum, got $tagId" }
 
@@ -485,7 +527,7 @@ internal object Cbor {
             override fun encode(): ByteArray = byteArrayOf(*Tag(3u, ByteString(value.minusOne().toByteArray())).encode())
 
             internal companion object {
-                internal fun decode(buffer: SdkBuffer): NegBigNum {
+                internal fun decode(buffer: SdkBufferedSource): NegBigNum {
                     val tagId = deserializeArgument(buffer).toInt()
                     check(tagId == 3) { "Expected tag ID 3 for CBOR negative bignum, got $tagId" }
 
@@ -525,7 +567,7 @@ internal object Cbor {
             }
 
             internal companion object {
-                internal fun decode(buffer: SdkBuffer): DecimalFraction {
+                internal fun decode(buffer: SdkBufferedSource): DecimalFraction {
                     val tagId = deserializeArgument(buffer).toInt()
                     check(tagId == 4) { "Expected tag ID 4 for CBOR decimal fraction, got $tagId" }
 
@@ -580,7 +622,7 @@ internal object Cbor {
 
             override fun encode(): ByteArray = byteArrayOf(encodeMajorMinor(Major.TYPE_7, Minor.INDEFINITE))
             internal companion object {
-                internal fun decode(buffer: SdkBuffer): IndefiniteBreak {
+                internal fun decode(buffer: SdkBufferedSource): IndefiniteBreak {
                     val major = peekMajor(buffer)
                     check(major == Major.TYPE_7) { "Expected CBOR indefinite break stop-code to be major ${Major.TYPE_7}, got $major."}
 
@@ -653,63 +695,48 @@ internal fun encodeArgument(major: Major, argument: ULong): ByteArray {
     }
 }
 
-internal fun deserializeArgument(buffer: SdkBuffer): ULong {
-    val minor = Minor.fromValue(buffer.readByte() and MINOR_MASK)
+internal fun deserializeArgument(buffer: SdkBufferedSource): ULong {
+    val minorByte = buffer.readByte().toUByte() and MINOR_MASK
 
-    if (minor.value < Minor.ARG_1.value) {
-        return minor.value.toULong()
+    if (minorByte < Minor.ARG_1.value) {
+        return minorByte.toULong()
     }
 
-    return when (minor) {
-        Minor.ARG_1 -> buffer.readByte().toULong()
+    return when (Minor.fromValue(minorByte)) {
+        Minor.ARG_1 -> buffer.readByte().toUByte().toULong()
         Minor.ARG_2 -> {
             val bytes = SdkBuffer().use {
                 if (buffer.read(it, 2) != 2L) { throw DeserializationException("Unexpected end of payload") }
                 it.readByteArray()
             }
-
-            return (
-                    (bytes[0].toULong() and 0xffu) shl 8 or
-                            (bytes[0].toULong() and 0xffu)
-                    )
+            return bytes.toULong()
         }
         Minor.ARG_4 -> {
             val bytes = SdkBuffer().use {
                 if (buffer.read(it, 4) != 4L) { throw DeserializationException("Unexpected end of payload") }
                 it.readByteArray()
             }
-
-            return (
-                    (bytes[0].toULong() and 0xffu) shl 24 or
-                            (bytes[0].toULong() and 0xffu) shl 16 or
-                            (bytes[0].toULong() and 0xffu) shl 8 or
-                            (bytes[0].toULong() and 0xffu)
-                    )
+            return bytes.toULong()
         }
         Minor.ARG_8 -> {
             val bytes = SdkBuffer().use {
                 if (buffer.read(it, 8) != 8L) { throw DeserializationException("Unexpected end of payload") }
                 it.readByteArray()
             }
-
-            return (
-                    (bytes[0].toULong() and 0xffu) shl 56 or
-                            (bytes[0].toULong() and 0xffu) shl 48 or
-                            (bytes[0].toULong() and 0xffu) shl 40 or
-                            (bytes[0].toULong() and 0xffu) shl 32 or
-                            (bytes[0].toULong() and 0xffu) shl 24 or
-                            (bytes[0].toULong() and 0xffu) shl 16 or
-                            (bytes[0].toULong() and 0xffu) shl 8 or
-                            (bytes[0].toULong() and 0xffu)
-                    )
+            return bytes.toULong()
         }
-        else -> throw DeserializationException("Unknown minor value ${minor.value.toULong()}")
+        else -> throw DeserializationException("Unsupported minor value ${Minor.fromValue(minorByte).value.toULong()}, expected one of ${Minor.ARG_1}, ${Minor.ARG_2}, ${Minor.ARG_4}, ${Minor.ARG_8}.")
     }
 }
 
-internal fun decodeNextValue(buffer: SdkBuffer): Cbor.Value {
+// Convert a ByteArray to a ULong by extracting each byte and left-shifting it appropriately.
+private fun ByteArray.toULong() = foldIndexed(0uL) { i, acc, byte ->
+    acc or (byte.toUByte().toULong() shl ((size - 1 - i) * 8))
+}
+
+internal fun decodeNextValue(buffer: SdkBufferedSource): Cbor.Value {
     val major = peekMajor(buffer)
-    val minor = peekMinor(buffer)
+    val minor = peekMinorSafe(buffer)
 
     return when (major) {
         Major.U_INT -> Cbor.Encoding.UInt.decode(buffer)
@@ -718,6 +745,8 @@ internal fun decodeNextValue(buffer: SdkBuffer): Cbor.Value {
         Major.STRING -> Cbor.Encoding.String.decode(buffer)
         Major.LIST -> {
             return if (minor == Minor.INDEFINITE) {
+//                buffer.readByte() // discard head
+//                decodeNextValue(buffer)
                 Cbor.Encoding.IndefiniteList.decode(buffer)
             } else {
                 Cbor.Encoding.List.decode(buffer)
@@ -725,19 +754,25 @@ internal fun decodeNextValue(buffer: SdkBuffer): Cbor.Value {
         }
         Major.MAP -> {
             if (minor == Minor.INDEFINITE) {
-                Cbor.Encoding.IndefiniteMap.decode(buffer)
+                buffer.readByte() // discard head
+                decodeNextValue(buffer)
+//                Cbor.Encoding.IndefiniteMap.decode(buffer)
             } else {
                 Cbor.Encoding.Map.decode(buffer)
             }
         }
         Major.TAG -> Cbor.Encoding.Tag.decode(buffer)
         Major.TYPE_7 -> {
-            val minor = peekMinor(buffer)
+            val minor = peekMinorRaw(buffer)
             when (minor) {
-                Minor.TRUE -> Cbor.Encoding.Boolean(true)
-                Minor.FALSE -> Cbor.Encoding.Boolean(false)
-                Minor.NULL -> Cbor.Encoding.Null()
-                Minor.INDEFINITE -> Cbor.Encoding.IndefiniteBreak()
+                Minor.TRUE.value -> Cbor.Encoding.Boolean.decode(buffer)
+                Minor.FALSE.value -> Cbor.Encoding.Boolean.decode(buffer)
+                Minor.NULL.value -> Cbor.Encoding.Null.decode(buffer)
+                Minor.UNDEFINED.value -> Cbor.Encoding.Null.decode(buffer)
+                Minor.FLOAT16.value -> Cbor.Encoding.Float16.decode(buffer)
+                Minor.FLOAT32.value -> Cbor.Encoding.Float32.decode(buffer)
+                Minor.FLOAT64.value -> Cbor.Encoding.Float64.decode(buffer)
+                Minor.INDEFINITE.value -> Cbor.Encoding.IndefiniteBreak.decode(buffer)
                 else -> throw DeserializationException("Unexpected type 7 minor value $minor")
             }
         }
