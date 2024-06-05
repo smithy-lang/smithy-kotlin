@@ -1,0 +1,8 @@
+{
+    "id": "7c1e4ec8-d975-498d-affa-ce470d268785",
+    "type": "bugfix",
+    "description": "Silently ignore empty/blank proxy host values from environment variables or system properties instead of throwing exceptions",
+    "issues": [
+        "smithy-lang/smithy-kotlin#1098"
+    ]
+}

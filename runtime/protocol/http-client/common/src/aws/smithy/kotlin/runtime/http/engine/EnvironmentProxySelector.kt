@@ -54,8 +54,8 @@ private fun resolveProxyByProperty(provider: PropertyProvider, scheme: Scheme): 
     val hostPropName = "${scheme.protocolName}.proxyHost"
     val hostPortPropName = "${scheme.protocolName}.proxyPort"
 
-    val proxyHostProp = provider.getProperty(hostPropName)
-    val proxyPortProp = provider.getProperty(hostPortPropName)
+    val proxyHostProp = provider.getProperty(hostPropName).takeUnless { it.isNullOrBlank() }
+    val proxyPortProp = provider.getProperty(hostPortPropName).takeUnless { it.isNullOrBlank() }
 
     return proxyHostProp?.let { hostName ->
         // we don't support connecting to the proxy over TLS, we expect engines would support
@@ -84,7 +84,7 @@ private fun resolveProxyByEnvironment(provider: EnvironmentProvider, scheme: Sch
     // lowercase takes precedence: https://about.gitlab.com/blog/2021/01/27/we-need-to-talk-no-proxy/
     listOf("${scheme.protocolName.lowercase()}_proxy", "${scheme.protocolName.uppercase()}_PROXY")
         .firstNotNullOfOrNull { envVar ->
-            provider.getenv(envVar)?.let { proxyUrlString ->
+            provider.getenv(envVar).takeUnless { it.isNullOrBlank() }?.let { proxyUrlString ->
                 val url = try {
                     Url.parse(proxyUrlString)
                 } catch (e: Exception) {

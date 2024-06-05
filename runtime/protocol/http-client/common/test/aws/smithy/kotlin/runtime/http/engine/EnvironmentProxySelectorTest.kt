@@ -49,6 +49,14 @@ class EnvironmentProxySelectorTest {
     private val tests = listOf(
         // no props
         TestCase(ProxyConfig.Direct),
+        TestCase(ProxyConfig.Direct, "http://aws.amazon.com", env = mapOf("http_proxy" to "")),
+        TestCase(ProxyConfig.Direct, "http://aws.amazon.com", env = mapOf("http_proxy" to " ")),
+        TestCase(ProxyConfig.Direct, "http://aws.amazon.com", props = mapOf("http.proxyHost" to "")),
+        TestCase(ProxyConfig.Direct, "http://aws.amazon.com", props = mapOf("http.proxyHost" to " ")),
+        TestCase(ProxyConfig.Direct, env = mapOf("https_proxy" to "")),
+        TestCase(ProxyConfig.Direct, env = mapOf("https_proxy" to " ")),
+        TestCase(ProxyConfig.Direct, props = mapOf("https.proxyHost" to "")),
+        TestCase(ProxyConfig.Direct, props = mapOf("https.proxyHost" to " ")),
 
         // no proxy
         TestCase(ProxyConfig.Direct, env = mapOf("no_proxy" to "aws.amazon.com") + httpsProxyEnv),
