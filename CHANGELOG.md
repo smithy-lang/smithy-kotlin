@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.2.6] - 06/05/2024
+
+### Fixes
+* [#1098](https://github.com/smithy-lang/smithy-kotlin/issues/1098) Silently ignore empty/blank proxy host values from environment variables or system properties instead of throwing exceptions
+
 ## [1.2.5] - 05/28/2024
 
 ### Fixes
