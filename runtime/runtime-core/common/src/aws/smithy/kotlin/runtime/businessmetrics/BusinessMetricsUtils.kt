@@ -16,10 +16,10 @@ import aws.smithy.kotlin.runtime.operation.ExecutionContext
 public val businessMetrics: AttributeKey<MutableSet<String>> = AttributeKey("aws.sdk.kotlin#BusinessMetrics")
 
 /**
- * If an endpoint is account ID based
+ * The account ID in an account ID based endpoint
  */
 @InternalApi
-public val accountIdBasedEndPoint: AttributeKey<Boolean> = AttributeKey("aws.smithy.kotlin#AccountIdBasedEndpoint")
+public val accountIdBasedEndPointAccountId: AttributeKey<String> = AttributeKey("aws.smithy.kotlin#AccountIdBasedEndpointAccountId")
 
 /**
  * If an endpoint is service endpoint override based
@@ -38,6 +38,23 @@ public fun ExecutionContext.emitBusinessMetric(metric: BusinessMetrics) {
         this.attributes[businessMetrics] = mutableSetOf(metric.identifier)
     }
 }
+
+/**
+ * Removes a business metric from the execution context attributes
+ */
+@InternalApi
+public fun ExecutionContext.removeBusinessMetric(metric: BusinessMetrics) {
+    if (this.attributes.contains(businessMetrics)) {
+        this.attributes[businessMetrics].remove(metric.identifier)
+    }
+}
+
+/**
+ * Checks if a business metric exists in the execution context attributes
+ */
+@InternalApi
+public fun ExecutionContext.containsBusinessMetric(metric: BusinessMetrics): Boolean =
+    (this.attributes.contains(businessMetrics)) && this.attributes[businessMetrics].contains(metric.identifier)
 
 /**
  * All the valid business metrics along with their identifiers

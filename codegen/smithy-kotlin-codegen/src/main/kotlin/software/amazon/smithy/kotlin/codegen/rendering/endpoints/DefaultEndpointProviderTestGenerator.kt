@@ -68,32 +68,32 @@ class DefaultEndpointProviderTestGenerator(
                 RuntimeTypes.SmithyClient.Endpoints.Endpoint,
                 RuntimeTypes.SmithyClient.Endpoints.Endpoint,
             ) {
-                // Make exceptions ONLY for business metrics attributes
+                // Remove ONLY business metrics endpoint attributes
                 writer.withBlock(
                     "if (actual.attributes.contains(#T) || actual.attributes.contains(#T)) {",
                     "} else { assertEquals(expected, actual) }",
                     RuntimeTypes.Core.BusinessMetrics.serviceEndpointOverride,
-                    RuntimeTypes.Core.BusinessMetrics.accountIdBasedEndPoint,
+                    RuntimeTypes.Core.BusinessMetrics.accountIdBasedEndPointAccountId,
                 ) {
                     writer.write(
-                        "val updatedAttributes = expected.attributes.#T()",
+                        "val newActualAttributes = actual.attributes.#T()",
                         RuntimeTypes.Core.Collections.toMutableAttributes,
                     )
                     writer.write(
-                        "if (actual.attributes.contains(#T)) updatedAttributes[#T] = true",
+                        "if (actual.attributes.contains(#T)) newActualAttributes.remove(#T)",
                         RuntimeTypes.Core.BusinessMetrics.serviceEndpointOverride,
                         RuntimeTypes.Core.BusinessMetrics.serviceEndpointOverride,
                     )
                     writer.write(
-                        "if (actual.attributes.contains(#T)) updatedAttributes[#T] = true",
-                        RuntimeTypes.Core.BusinessMetrics.accountIdBasedEndPoint,
-                        RuntimeTypes.Core.BusinessMetrics.accountIdBasedEndPoint,
+                        "if (actual.attributes.contains(#T)) newActualAttributes.remove(#T)",
+                        RuntimeTypes.Core.BusinessMetrics.accountIdBasedEndPointAccountId,
+                        RuntimeTypes.Core.BusinessMetrics.accountIdBasedEndPointAccountId,
                     )
                     writer.write(
-                        "val newExpected = #T(expected.uri, expected.headers, updatedAttributes)",
+                        "val newActual = #T(actual.uri, actual.headers, newActualAttributes)",
                         RuntimeTypes.SmithyClient.Endpoints.Endpoint,
                     )
-                    writer.write("assertEquals(newExpected, actual)")
+                    writer.write("assertEquals(expected, newActual)")
                 }
             }
             writer.write("")

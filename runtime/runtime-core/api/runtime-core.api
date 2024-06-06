@@ -93,10 +93,12 @@ public final class aws/smithy/kotlin/runtime/businessmetrics/BusinessMetrics : j
 }
 
 public final class aws/smithy/kotlin/runtime/businessmetrics/BusinessMetricsUtilsKt {
+	public static final fun containsBusinessMetric (Laws/smithy/kotlin/runtime/operation/ExecutionContext;Laws/smithy/kotlin/runtime/businessmetrics/BusinessMetrics;)Z
 	public static final fun emitBusinessMetric (Laws/smithy/kotlin/runtime/operation/ExecutionContext;Laws/smithy/kotlin/runtime/businessmetrics/BusinessMetrics;)V
-	public static final fun getAccountIdBasedEndPoint ()Laws/smithy/kotlin/runtime/collections/AttributeKey;
+	public static final fun getAccountIdBasedEndPointAccountId ()Laws/smithy/kotlin/runtime/collections/AttributeKey;
 	public static final fun getBusinessMetrics ()Laws/smithy/kotlin/runtime/collections/AttributeKey;
 	public static final fun getServiceEndpointOverride ()Laws/smithy/kotlin/runtime/collections/AttributeKey;
+	public static final fun removeBusinessMetric (Laws/smithy/kotlin/runtime/operation/ExecutionContext;Laws/smithy/kotlin/runtime/businessmetrics/BusinessMetrics;)V
 }
 
 public final class aws/smithy/kotlin/runtime/collections/AttributeKey {

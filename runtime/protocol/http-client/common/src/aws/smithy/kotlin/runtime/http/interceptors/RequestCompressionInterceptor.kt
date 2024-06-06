@@ -44,9 +44,9 @@ public class RequestCompressionInterceptor(
         }
 
         return if (algorithm != null && (context.protocolRequest.body.isStreaming || payloadSizeBytes?.let { it >= compressionThresholdBytes } == true)) {
-            val request = algorithm.compressRequest(context.protocolRequest)
-            context.executionContext.emitBusinessMetric(BusinessMetrics.GZIP_REQUEST_COMPRESSION)
-            request
+            algorithm.compressRequest(context.protocolRequest).also {
+                context.executionContext.emitBusinessMetric(BusinessMetrics.GZIP_REQUEST_COMPRESSION)
+            }
         } else {
             val logger = coroutineContext.logger<RequestCompressionInterceptor>()
             val skipCause = if (algorithm == null) "no modeled compression algorithms are supported by the client" else "request size threshold ($compressionThresholdBytes) was not met"
