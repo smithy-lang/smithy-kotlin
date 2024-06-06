@@ -650,7 +650,7 @@ internal fun getValueLength(value: ULong): Int = when {
 }
 
 // Encodes a major and minor type of CBOR value in a single byte
-internal fun encodeMajorMinor(major: Major, minor: Minor): Byte = (major.ordinal shl 5 or minor.ordinal).toByte()
+internal fun encodeMajorMinor(major: Major, minor: Minor): Byte = (major.value.toUInt() shl 5 or minor.value.toUInt()).toByte()
 
 internal fun encodeArgument(major: Major, argument: ULong): ByteArray {
     if (argument < 24u) {
@@ -745,8 +745,6 @@ internal fun decodeNextValue(buffer: SdkBufferedSource): Cbor.Value {
         Major.STRING -> Cbor.Encoding.String.decode(buffer)
         Major.LIST -> {
             return if (minor == Minor.INDEFINITE) {
-//                buffer.readByte() // discard head
-//                decodeNextValue(buffer)
                 Cbor.Encoding.IndefiniteList.decode(buffer)
             } else {
                 Cbor.Encoding.List.decode(buffer)
@@ -754,9 +752,7 @@ internal fun decodeNextValue(buffer: SdkBufferedSource): Cbor.Value {
         }
         Major.MAP -> {
             if (minor == Minor.INDEFINITE) {
-                buffer.readByte() // discard head
-                decodeNextValue(buffer)
-//                Cbor.Encoding.IndefiniteMap.decode(buffer)
+                Cbor.Encoding.IndefiniteMap.decode(buffer)
             } else {
                 Cbor.Encoding.Map.decode(buffer)
             }

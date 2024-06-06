@@ -22,7 +22,6 @@ class Rpcv2CborErrorDeserializerTest {
 
         val expected = "FooError"
 
-
         val errorTypeFieldDescriptor = SdkFieldDescriptor(SerialKind.String, CborSerialName("__type"))
         val errorResponseObjectDescriptor = SdkObjectDescriptor.build {
             field(errorTypeFieldDescriptor)

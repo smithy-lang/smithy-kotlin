@@ -8,7 +8,7 @@ import aws.smithy.kotlin.runtime.serde.deserializeList
 import aws.smithy.kotlin.runtime.serde.deserializeMap
 import kotlin.test.*
 
-class CborDeserializeSuccessTest {
+class CborDeserializerSuccessTest {
     private fun String.toByteArray(): ByteArray = this
         .removePrefix("0x")
         .replace(Regex("\\s"), "")

@@ -157,11 +157,16 @@ private class CborFieldIterator(
     val descriptor: SdkObjectDescriptor,
 ) : Deserializer.FieldIterator, PrimitiveDeserializer by CborPrimitiveDeserializer(buffer) {
     override fun findNextFieldIndex(): Int? {
-        val nextFieldName = Cbor.Encoding.String.decode(buffer.peek()).value
-        return descriptor
-            .fields
-            .firstOrNull { it.serialName.equals(nextFieldName, ignoreCase = true) }
-            ?.index
+        if (buffer.exhausted()) { return null }
+
+        val peekedNextValue = decodeNextValue(buffer.peek())
+        return if (peekedNextValue is Cbor.Encoding.IndefiniteBreak) { null } else {
+            val nextFieldName = Cbor.Encoding.String.decode(buffer.peek()).value
+            return descriptor
+                .fields
+                .firstOrNull { it.serialName.equals(nextFieldName, ignoreCase = true) }
+                ?.index
+        }
     }
 
     override fun skipValue() { decodeNextValue(buffer) }

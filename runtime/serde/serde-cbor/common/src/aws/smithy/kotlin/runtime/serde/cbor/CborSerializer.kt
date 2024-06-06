@@ -47,7 +47,7 @@ public class CborSerializer : Serializer, ListSerializer, MapSerializer, StructS
 
     override fun serializeByte(value: Byte) {
         if (value < 0) {
-            buffer.write(Cbor.Encoding.NegInt(value.toULong()).encode())
+            buffer.write(Cbor.Encoding.NegInt((0 - value).toULong()).encode())
         } else {
             buffer.write(Cbor.Encoding.UInt(value.toULong()).encode())
         }
@@ -55,7 +55,7 @@ public class CborSerializer : Serializer, ListSerializer, MapSerializer, StructS
 
     override fun serializeShort(value: Short) {
         if (value < 0) {
-            buffer.write(Cbor.Encoding.NegInt(value.toULong()).encode())
+            buffer.write(Cbor.Encoding.NegInt((0 - value).toULong()).encode())
         } else {
             buffer.write(Cbor.Encoding.UInt(value.toULong()).encode())
         }
@@ -67,7 +67,7 @@ public class CborSerializer : Serializer, ListSerializer, MapSerializer, StructS
 
     override fun serializeInt(value: Int) {
         if (value < 0) {
-            buffer.write(Cbor.Encoding.NegInt(value.toULong()).encode())
+            buffer.write(Cbor.Encoding.NegInt((0 -value).toULong()).encode())
         } else {
             buffer.write(Cbor.Encoding.UInt(value.toULong()).encode())
         }
@@ -75,17 +75,17 @@ public class CborSerializer : Serializer, ListSerializer, MapSerializer, StructS
 
     override fun serializeLong(value: Long) {
         if (value < 0) {
-            buffer.write(Cbor.Encoding.NegInt(value.toULong()).encode())
+            buffer.write(Cbor.Encoding.NegInt((0 - value).toULong()).encode())
         } else {
             buffer.write(Cbor.Encoding.UInt(value.toULong()).encode())
         }
     }
 
     override fun serializeFloat(value: Float) {
-        if (value == value.toLong().toFloat()) {
-            // Floating-point numeric types MAY be serialized into non-floating-point numeric types if and only if the conversion would not cause a loss of precision.
-            serializeLong(value.toLong())
-        } else {
+        // Floating-point numeric types MAY be serialized into non-floating-point numeric types if and only if the conversion would not cause a loss of precision.
+        if (value == value.toInt().toFloat()) { serializeInt(value.toInt()) }
+        else if (value == value.toLong().toFloat()) { serializeLong(value.toLong()) }
+        else {
             buffer.write(Cbor.Encoding.Float32(value).encode())
         }
     }
