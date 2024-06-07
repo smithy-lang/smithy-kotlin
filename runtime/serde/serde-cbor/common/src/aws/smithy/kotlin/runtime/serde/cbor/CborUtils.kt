@@ -140,16 +140,16 @@ internal fun BigInteger.plusOne(): BigInteger {
     }
 }
 
-
 // Converts a [BigInteger] to a [ByteArray].
-internal fun BigInteger.toByteArray(): ByteArray {
-    var decimal = this.toString()
+internal fun BigInteger.asBytes(): ByteArray {
+    var decimal = this.toString().removePrefix("-")
     val binary = StringBuilder()
+
     while (decimal != "0") {
         val temp = StringBuilder()
         var carry = 0
         for (c in decimal) {
-            val num = carry * 10 + c.code
+            val num = carry * 10 + c.digitToInt()
             temp.append(num / 2)
             carry = num % 2
         }
@@ -164,8 +164,8 @@ internal fun BigInteger.toByteArray(): ByteArray {
         if (decimal.all { it == '0' }) { decimal = "0" }
     }
 
-    return binary
-        .padStart(8 - binary.length % 8, '0') // ensure binary string is zero-padded
-        .chunked(8) { it.toString().toByte() } // convert each set of 8 bits to a byte
+    val zeroPrefixLength = 8 - binary.length % 8 // prepend with zeroes if the total string length is not divisible by 8
+    return ("0".repeat(zeroPrefixLength) + binary)
+        .chunked(8) { it.toString().toUByte(radix = 2).toByte() } // convert each set of 8 bits to a byte
         .toByteArray()
 }

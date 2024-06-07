@@ -81,14 +81,7 @@ public class CborSerializer : Serializer, ListSerializer, MapSerializer, StructS
         }
     }
 
-    override fun serializeFloat(value: Float) {
-        // Floating-point numeric types MAY be serialized into non-floating-point numeric types if and only if the conversion would not cause a loss of precision.
-        if (value == value.toInt().toFloat()) { serializeInt(value.toInt()) }
-        else if (value == value.toLong().toFloat()) { serializeLong(value.toLong()) }
-        else {
-            buffer.write(Cbor.Encoding.Float32(value).encode())
-        }
-    }
+    override fun serializeFloat(value: Float) { buffer.write(Cbor.Encoding.Float32(value).encode()) }
 
     override fun serializeDouble(value: Double) {
         if (value == value.toLong().toDouble()) {
@@ -100,10 +93,10 @@ public class CborSerializer : Serializer, ListSerializer, MapSerializer, StructS
     }
 
     override fun serializeBigInteger(value: BigInteger) {
-        if (value.toInt() >= 0) {
-            Cbor.Encoding.BigNum(value).encode()
+        if (value.toString().startsWith("-")) {
+            buffer.write(Cbor.Encoding.NegBigNum(value).encode())
         } else {
-            Cbor.Encoding.NegBigNum(value).encode()
+            buffer.write(Cbor.Encoding.BigNum(value).encode())
         }
     }
 
@@ -116,14 +109,9 @@ public class CborSerializer : Serializer, ListSerializer, MapSerializer, StructS
         buffer.write(Cbor.Encoding.String(value).encode())
     }
 
-    override fun serializeInstant(value: Instant, format: TimestampFormat) {
-        buffer.write(
-            Cbor.Encoding.Tag(
-                1u, // Tag ID 1 indicates the wrapped value is an epoch-seconds timestamp
-                Cbor.Encoding.Float64(value.epochMilliseconds / 1000.toDouble())
-            ).encode()
-        )
-    }
+    override fun serializeInstant(value: Instant, format: TimestampFormat): Unit = serializeInstant(value)
+
+    public fun serializeInstant(value: Instant): Unit = buffer.write(Cbor.Encoding.Timestamp(value).encode())
 
     override fun serializeSdkSerializable(value: SdkSerializable) {
         value.serialize(this)

@@ -71,6 +71,7 @@ public final class aws/smithy/kotlin/runtime/serde/cbor/CborSerializer : aws/smi
 	public fun serializeDocument (Laws/smithy/kotlin/runtime/content/Document;)V
 	public fun serializeDouble (D)V
 	public fun serializeFloat (F)V
+	public final fun serializeInstant (Laws/smithy/kotlin/runtime/time/Instant;)V
 	public fun serializeInstant (Laws/smithy/kotlin/runtime/time/Instant;Laws/smithy/kotlin/runtime/time/TimestampFormat;)V
 	public fun serializeInt (I)V
 	public fun serializeLong (J)V
