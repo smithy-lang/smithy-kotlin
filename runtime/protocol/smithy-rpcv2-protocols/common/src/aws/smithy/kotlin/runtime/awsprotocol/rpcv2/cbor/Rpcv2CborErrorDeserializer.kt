@@ -30,14 +30,8 @@ internal object Rpcv2CborErrorDeserializer {
             CborDeserializer(payload).deserializeStruct(OBJ_DESCRIPTOR) {
                 loop@ while (true) {
                     when (findNextFieldIndex()) {
-                        ERR_CODE_DESCRIPTOR.index -> {
-                            deserializeString()
-                            type = deserializeString()
-                        }
-                        MESSAGE_DESCRIPTOR.index -> {
-//                            deserializeString()
-                            message = deserializeString()
-                        }
+                        ERR_CODE_DESCRIPTOR.index -> type = deserializeString()
+                        MESSAGE_DESCRIPTOR.index -> message = deserializeString()
                         null -> break@loop
                         else -> skipValue()
                     }

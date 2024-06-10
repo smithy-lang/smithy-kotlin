@@ -14,9 +14,14 @@ public class CborDeserializer(payload: ByteArray) : Deserializer {
         val major = peekMajor(buffer)
         check(major == Major.MAP) { "Expected major ${Major.MAP} for structure, got $major." }
 
-        deserializeArgument(buffer) // toss head + any following bytes which encode length
+        val expectedLength = if (peekMinorRaw(buffer) == Minor.INDEFINITE.value) {
+            buffer.readByte() // no length encoded, discard head
+            null
+        } else {
+            deserializeArgument(buffer)
+        }
 
-        return CborFieldIterator(buffer, descriptor)
+        return CborFieldIterator(buffer, expectedLength, descriptor)
     }
 
     override fun deserializeList(descriptor: SdkFieldDescriptor): Deserializer.ElementIterator {
@@ -154,19 +159,21 @@ private class CborElementIterator(
  */
 private class CborFieldIterator(
     val buffer: SdkBuffer,
+    val expectedLength: ULong? = null,
     val descriptor: SdkObjectDescriptor,
 ) : Deserializer.FieldIterator, PrimitiveDeserializer by CborPrimitiveDeserializer(buffer) {
-    override fun findNextFieldIndex(): Int? {
-        if (buffer.exhausted()) { return null }
+    var currentLength: ULong = 0uL
 
+    override fun findNextFieldIndex(): Int? {
+        if (expectedLength  == currentLength || buffer.exhausted()) { return null }
         val peekedNextValue = decodeNextValue(buffer.peek())
         return if (peekedNextValue is Cbor.Encoding.IndefiniteBreak) { null } else {
-            val nextFieldName = Cbor.Encoding.String.decode(buffer.peek()).value
+            val nextFieldName = Cbor.Encoding.String.decode(buffer).value
             return descriptor
                 .fields
                 .firstOrNull { it.serialName.equals(nextFieldName, ignoreCase = true) }
                 ?.index
-        }
+        }.also { currentLength += 1uL }
     }
 
     override fun skipValue() { decodeNextValue(buffer) }
