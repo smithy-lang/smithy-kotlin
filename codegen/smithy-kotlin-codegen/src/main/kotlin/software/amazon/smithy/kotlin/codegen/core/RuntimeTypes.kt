@@ -6,7 +6,6 @@
 package software.amazon.smithy.kotlin.codegen.core
 
 import software.amazon.smithy.kotlin.codegen.model.toSymbol
-import kotlin.jvm.internal.Intrinsics.Kotlin
 
 /**
  * Commonly used runtime types. Provides a single definition of a runtime symbol such that codegen isn't littered

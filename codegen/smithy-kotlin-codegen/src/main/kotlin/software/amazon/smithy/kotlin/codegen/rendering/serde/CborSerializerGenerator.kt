@@ -1,13 +1,14 @@
+/*
+ * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * SPDX-License-Identifier: Apache-2.0
+ */
 package software.amazon.smithy.kotlin.codegen.rendering.serde
 
-import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.codegen.core.SymbolReference
 import software.amazon.smithy.kotlin.codegen.core.KotlinWriter
 import software.amazon.smithy.kotlin.codegen.core.RuntimeTypes
 import software.amazon.smithy.kotlin.codegen.core.withBlock
-import software.amazon.smithy.kotlin.codegen.model.getTrait
-import software.amazon.smithy.kotlin.codegen.model.isStringEnumShape
 import software.amazon.smithy.kotlin.codegen.model.knowledge.SerdeIndex
 import software.amazon.smithy.kotlin.codegen.model.targetOrSelf
 import software.amazon.smithy.kotlin.codegen.rendering.protocol.ProtocolGenerator
@@ -50,7 +51,7 @@ open class CborSerializerGenerator(
         members: List<MemberShape>,
         writer: KotlinWriter,
     ) {
-        descriptorGenerator(ctx, shape, members, writer).render()  // render the serde descriptors
+        descriptorGenerator(ctx, shape, members, writer).render() // render the serde descriptors
 
         when (shape) {
             is UnionShape -> SerializeUnionGenerator(ctx, shape, members, writer, TimestampFormatTrait.Format.EPOCH_SECONDS).render()
@@ -114,4 +115,3 @@ open class CborSerializerGenerator(
         }
     }
 }
-

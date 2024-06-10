@@ -4,10 +4,6 @@
  */
 package aws.smithy.kotlin.runtime.content
 
-import aws.smithy.kotlin.runtime.text.encoding.decodeHexBytes
-import aws.smithy.kotlin.runtime.text.encoding.encodeToHex
-import kotlinx.coroutines.test.runTest
-import kotlin.math.pow
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFails

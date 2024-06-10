@@ -1,17 +1,15 @@
+/*
+ * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * SPDX-License-Identifier: Apache-2.0
+ */
 package software.amazon.smithy.kotlin.codegen.rendering.serde
 
 import software.amazon.smithy.kotlin.codegen.core.RenderingContext
 import software.amazon.smithy.kotlin.codegen.core.RuntimeTypes
 import software.amazon.smithy.kotlin.codegen.core.defaultName
 import software.amazon.smithy.kotlin.codegen.model.expectShape
-import software.amazon.smithy.kotlin.codegen.model.expectTrait
-import software.amazon.smithy.kotlin.codegen.model.getTrait
-import software.amazon.smithy.kotlin.codegen.model.hasTrait
-import software.amazon.smithy.kotlin.codegen.model.traits.SyntheticClone
-import software.amazon.smithy.kotlin.codegen.model.traits.UnwrappedXmlOutput
 import software.amazon.smithy.kotlin.codegen.utils.dq
 import software.amazon.smithy.model.shapes.*
-import software.amazon.smithy.model.traits.*
 
 /**
  * Field descriptor generator for CBOR.

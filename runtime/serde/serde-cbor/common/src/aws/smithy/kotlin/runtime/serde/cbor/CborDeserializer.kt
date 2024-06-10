@@ -1,3 +1,7 @@
+/*
+ * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * SPDX-License-Identifier: Apache-2.0
+ */
 package aws.smithy.kotlin.runtime.serde.cbor
 
 import aws.smithy.kotlin.runtime.content.BigDecimal
@@ -78,21 +82,21 @@ internal class CborPrimitiveDeserializer(private val buffer: SdkBufferedSource) 
         else -> throw DeserializationException("Expected ${Major.U_INT} or ${Major.NEG_INT} for CBOR short, got $major.")
     }
 
-    override fun deserializeFloat(): Float = when(val minor = peekMinorRaw(buffer)) {
+    override fun deserializeFloat(): Float = when (val minor = peekMinorRaw(buffer)) {
         Minor.FLOAT16.value -> Cbor.Encoding.Float16.decode(buffer).value
         Minor.FLOAT32.value -> Cbor.Encoding.Float32.decode(buffer).value
         Minor.FLOAT64.value -> Cbor.Encoding.Float64.decode(buffer).value.toFloat()
-        else -> Float.fromBits(deserializeArgument(buffer).toInt())//throw DeserializationException("Received unexpected minor value $minor for float, expected ${Minor.FLOAT16}, ${Minor.FLOAT32}, or ${Minor.FLOAT64}.")
+        else -> Float.fromBits(deserializeArgument(buffer).toInt()) // throw DeserializationException("Received unexpected minor value $minor for float, expected ${Minor.FLOAT16}, ${Minor.FLOAT32}, or ${Minor.FLOAT64}.")
     }
 
-    override fun deserializeDouble(): Double = when(peekMinorSafe(buffer)) {
+    override fun deserializeDouble(): Double = when (peekMinorSafe(buffer)) {
         Minor.FLOAT16 -> Cbor.Encoding.Float16.decode(buffer).value.toDouble()
         Minor.FLOAT32 -> Cbor.Encoding.Float32.decode(buffer).value.toDouble()
         Minor.FLOAT64 -> Cbor.Encoding.Float64.decode(buffer).value
         else -> Double.fromBits(deserializeArgument(buffer).toLong())
     }
 
-    override fun deserializeBigInteger(): BigInteger = when(val tagId = peekTag(buffer).id.toUInt()) {
+    override fun deserializeBigInteger(): BigInteger = when (val tagId = peekTag(buffer).id.toUInt()) {
         2u -> Cbor.Encoding.BigNum.decode(buffer).value
         3u -> Cbor.Encoding.NegBigNum.decode(buffer).value
         else -> throw DeserializationException("Expected tag 2 or 3 for CBOR BigNum, got $tagId")
@@ -121,7 +125,7 @@ internal class CborPrimitiveDeserializer(private val buffer: SdkBufferedSource) 
  */
 private class CborElementIterator(
     val buffer: SdkBufferedSource,
-    val expectedLength: ULong? = null
+    val expectedLength: ULong? = null,
 ) : Deserializer.ElementIterator, PrimitiveDeserializer by CborPrimitiveDeserializer(buffer) {
     val primitiveDeserializer = CborPrimitiveDeserializer(buffer)
     var currentLength = 0uL
@@ -165,7 +169,7 @@ private class CborFieldIterator(
     var currentLength: ULong = 0uL
 
     override fun findNextFieldIndex(): Int? {
-        if (expectedLength  == currentLength || buffer.exhausted()) { return null }
+        if (expectedLength == currentLength || buffer.exhausted()) { return null }
         val peekedNextValue = decodeNextValue(buffer.peek())
         return if (peekedNextValue is Cbor.Encoding.IndefiniteBreak) { null } else {
             val nextFieldName = Cbor.Encoding.String.decode(buffer).value
@@ -184,7 +188,7 @@ private class CborFieldIterator(
  */
 private class CborEntryIterator(
     val buffer: SdkBufferedSource,
-    val expectedLength: ULong?
+    val expectedLength: ULong?,
 ) : Deserializer.EntryIterator, PrimitiveDeserializer {
     private var currentLength = 0uL
     private val primitiveDeserializer = CborPrimitiveDeserializer(buffer)

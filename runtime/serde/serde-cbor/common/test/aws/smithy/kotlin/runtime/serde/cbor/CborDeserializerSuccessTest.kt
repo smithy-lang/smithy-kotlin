@@ -1,3 +1,7 @@
+/*
+ * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * SPDX-License-Identifier: Apache-2.0
+ */
 package aws.smithy.kotlin.runtime.serde.cbor
 
 import aws.smithy.kotlin.runtime.content.BigInteger
@@ -192,7 +196,6 @@ class CborDeserializerSuccessTest {
         // Note: This value should be -18446744073709551615 (negative), but that does not fit in a Long, so using a BigInteger instead.
 //        assertEquals(18446744073709551615u, result)
         assertEquals("-18446744073709551615", BigInteger("$result").toString())
-
     }
 
     @Test
@@ -295,7 +298,6 @@ class CborDeserializerSuccessTest {
         assertEquals(Float.NaN, result)
     }
 
-
     @Test
     fun `atomic - float32 - +Inf`() {
         val payload = "0xfa7f800000".toByteArray()
@@ -339,7 +341,6 @@ class CborDeserializerSuccessTest {
 
     @Test
     fun `atomic - null`() {
-
         val payload = "0xf6".toByteArray()
 
         val buffer = SdkBuffer().apply { write(payload) }
@@ -422,7 +423,6 @@ class CborDeserializerSuccessTest {
 
     @Test
     fun `definite string - len greater than 0`() {
-
         val payload = "0x63666f6f".toByteArray()
 
         val buffer = SdkBuffer().apply { write(payload) }
@@ -500,7 +500,6 @@ class CborDeserializerSuccessTest {
 
     @Test
     fun `indefinite string - len = 0`() {
-
         val payload = "0x7fff".toByteArray()
 
         val buffer = SdkBuffer().apply { write(payload) }
@@ -512,7 +511,6 @@ class CborDeserializerSuccessTest {
 
     @Test
     fun `indefinite string - len = 0 - explicit`() {
-
         val payload = "0x7f60ff".toByteArray()
 
         val buffer = SdkBuffer().apply { write(payload) }
@@ -524,7 +522,6 @@ class CborDeserializerSuccessTest {
 
     @Test
     fun `indefinite string - len = 0 - len greater than 0`() {
-
         val payload = "0x7f6063666f6fff".toByteArray()
 
         val buffer = SdkBuffer().apply { write(payload) }
@@ -536,7 +533,6 @@ class CborDeserializerSuccessTest {
 
     @Test
     fun `indefinite string - len greater than 0 - len = 0`() {
-
         val payload = "0x7f63666f6f60ff".toByteArray()
 
         val buffer = SdkBuffer().apply { write(payload) }
@@ -548,7 +544,6 @@ class CborDeserializerSuccessTest {
 
     @Test
     fun `indefinite string - len greater than 0 - len greater than 0`() {
-
         val payload = "0x7f63666f6f63666f6fff".toByteArray()
 
         val buffer = SdkBuffer().apply { write(payload) }
@@ -625,7 +620,6 @@ class CborDeserializerSuccessTest {
         assertEquals(1, actual.size)
         assertEquals(UShort.MAX_VALUE, actual[0])
     }
-
 
     @Test
     fun `indefinite list of negint - 2 - min`() {
@@ -829,7 +823,6 @@ class CborDeserializerSuccessTest {
 
     @Test
     fun `indefinite list of negint - 0 - min`() {
-
         val payload = "0x9f20ff".toByteArray()
 
         val deserializer = CborDeserializer(payload)
@@ -1218,7 +1211,6 @@ class CborDeserializerSuccessTest {
 
     @Test
     fun `indefinite list of uint - 0 - min`() {
-
         val payload = "0x9f00ff".toByteArray()
 
         val deserializer = CborDeserializer(payload)
@@ -1236,7 +1228,6 @@ class CborDeserializerSuccessTest {
 
     @Test
     fun `indefinite list of negint - 4 - min`() {
-
         val payload = "0x9f3a00000000ff".toByteArray()
 
         val deserializer = CborDeserializer(payload)
@@ -1268,7 +1259,6 @@ class CborDeserializerSuccessTest {
         assertEquals(1, actual.size)
         assertEquals(-4294967296, actual[0])
     }
-
 
     @Test
     fun `indefinite list of float16 - +Inf`() {
@@ -1408,7 +1398,6 @@ class CborDeserializerSuccessTest {
 
     @Test
     fun `indefinite list of float64`() {
-
         val payload = "0x9ffb7ff0000000000000ff".toByteArray()
 
         val deserializer = CborDeserializer(payload)
@@ -1495,7 +1484,6 @@ class CborDeserializerSuccessTest {
     @Ignore
     @Test
     fun `list of negint - 8 - max`() {
-
         val payload = "0x813bfffffffffffffffe".toByteArray()
 
         val deserializer = CborDeserializer(payload)
@@ -1591,7 +1579,6 @@ class CborDeserializerSuccessTest {
         assertEquals(1, actual.size)
         assertEquals("foo", actual.entries.first().key)
         assertEquals(18446744073709551615u, actual.entries.first().value)
-
     }
 
     @Test
@@ -2127,7 +2114,6 @@ class CborDeserializerSuccessTest {
         assertEquals(1, actual.size)
         assertEquals("foo", actual.entries.first().key)
         assertEquals(Float.fromBits(2139095040), actual.entries.first().value)
-
     }
 
     @Test
@@ -2393,7 +2379,6 @@ class CborDeserializerSuccessTest {
         assertEquals(1, actual.size)
         assertEquals("foo", actual.entries.first().key)
         assertEquals(Float.fromBits(2139095040), actual.entries.first().value)
-
     }
 
     @Test
@@ -2466,7 +2451,6 @@ class CborDeserializerSuccessTest {
         assertEquals(1, actual.size)
         assertEquals("foo", actual.entries.first().key)
         assertEquals(Float.POSITIVE_INFINITY, actual.entries.first().value)
-
     }
 
     @Test
@@ -2485,7 +2469,6 @@ class CborDeserializerSuccessTest {
         assertEquals(1, actual.size)
         assertEquals("foo", actual.entries.first().key)
         assertEquals(Double.fromBits(9218868437227405312), actual.entries.first().value)
-
     }
 
     @Test

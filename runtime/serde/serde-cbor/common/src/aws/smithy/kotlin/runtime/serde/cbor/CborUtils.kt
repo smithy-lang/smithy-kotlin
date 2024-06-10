@@ -1,7 +1,10 @@
+/*
+ * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * SPDX-License-Identifier: Apache-2.0
+ */
 package aws.smithy.kotlin.runtime.serde.cbor
 
 import aws.smithy.kotlin.runtime.content.BigInteger
-import aws.smithy.kotlin.runtime.io.SdkBuffer
 import aws.smithy.kotlin.runtime.io.SdkBufferedSource
 import kotlin.experimental.and
 
@@ -16,7 +19,8 @@ internal enum class Major(val value: UByte) {
     LIST(4u),
     MAP(5u),
     TAG(6u),
-    TYPE_7(7u);
+    TYPE_7(7u),
+    ;
 
     companion object {
         fun fromValue(value: UByte): Major = entries.firstOrNull { it.value == value }
@@ -41,7 +45,8 @@ internal enum class Minor(val value: UByte) {
     UNDEFINED(23u), // undefined should be deserialized as `null`
     FLOAT16(25u),
     FLOAT32(26u),
-    FLOAT64(27u);
+    FLOAT64(27u),
+    ;
 
     companion object {
         fun fromValue(value: UByte): Minor = Minor.entries.firstOrNull { it.value == value }
@@ -92,7 +97,6 @@ internal fun peekMinorRaw(buffer: SdkBufferedSource): UByte {
     val minorByte = buffer.peek().readByte().toUByte()
     return minorByte and MINOR_MASK
 }
-
 
 // Subtracts one from the given BigInteger
 internal fun BigInteger.minusOne(): BigInteger {

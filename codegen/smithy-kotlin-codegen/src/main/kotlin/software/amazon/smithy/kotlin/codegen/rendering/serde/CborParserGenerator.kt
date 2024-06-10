@@ -1,9 +1,12 @@
+/*
+ * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * SPDX-License-Identifier: Apache-2.0
+ */
 import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.kotlin.codegen.core.KotlinWriter
 import software.amazon.smithy.kotlin.codegen.core.RuntimeTypes
 import software.amazon.smithy.kotlin.codegen.core.withBlock
-import software.amazon.smithy.kotlin.codegen.model.getTrait
 import software.amazon.smithy.kotlin.codegen.model.isStringEnumShape
 import software.amazon.smithy.kotlin.codegen.model.knowledge.SerdeIndex
 import software.amazon.smithy.kotlin.codegen.model.targetOrSelf
@@ -11,7 +14,6 @@ import software.amazon.smithy.kotlin.codegen.rendering.protocol.ProtocolGenerato
 import software.amazon.smithy.kotlin.codegen.rendering.serde.*
 import software.amazon.smithy.model.shapes.*
 import software.amazon.smithy.model.traits.TimestampFormatTrait
-
 
 open class CborParserGenerator : StructuredDataParserGenerator {
     override fun operationDeserializer(
@@ -185,7 +187,7 @@ private open class CborDeserializeStructGenerator(
             target.type == ShapeType.BIG_DECIMAL -> "deserializeBigDecimal()"
             target.type == ShapeType.DOCUMENT -> "deserializeDocument()"
 
-            target.type == ShapeType.BLOB -> "deserializeBlob()"  // note: custom function only present in CborDeserializer
+            target.type == ShapeType.BLOB -> "deserializeBlob()" // note: custom function only present in CborDeserializer
             target.type == ShapeType.TIMESTAMP -> "deserializeTimestamp()" // note: custom function only present in CborDeserializer
 
             target.isStringEnumShape -> {
@@ -213,7 +215,6 @@ private open class CborDeserializeStructGenerator(
     }
 }
 
-
 /**
  * Copy of [DeserializeUnionGenerator] which delegates to [CborDeserializeStructGenerator] instead of [DeserializeStructGenerator].
  */
@@ -222,7 +223,7 @@ private class CborDeserializeUnionGenerator(
     private val unionName: String,
     members: List<MemberShape>,
     writer: KotlinWriter,
-): CborDeserializeStructGenerator(ctx, members, writer) {
+) : CborDeserializeStructGenerator(ctx, members, writer) {
     /**
      * Iterate over all supplied [MemberShape]s to generate serializers.
      */

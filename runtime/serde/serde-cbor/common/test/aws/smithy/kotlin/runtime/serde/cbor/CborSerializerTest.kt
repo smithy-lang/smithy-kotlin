@@ -1,3 +1,7 @@
+/*
+ * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * SPDX-License-Identifier: Apache-2.0
+ */
 package aws.smithy.kotlin.runtime.serde.cbor
 
 import aws.smithy.kotlin.runtime.content.BigDecimal
@@ -12,7 +16,6 @@ import kotlin.test.assertFailsWith
 import kotlin.test.assertNull
 import kotlin.time.Duration.Companion.days
 import kotlin.time.Duration.Companion.seconds
-
 
 @OptIn(ExperimentalStdlibApi::class)
 class CborSerializerTest {
@@ -58,7 +61,7 @@ class CborSerializerTest {
             'A', 'Z', 'H', 'E', 'L', 'L', 'O',
             '1', '2', '3', '4', '5', '6', '7',
             '!', '@', '#', '$', '%', '^', '&', '*', '(', ')',
-            '\n', '\t', '\r', ' '
+            '\n', '\t', '\r', ' ',
         )
         val serializer = CborSerializer()
 
@@ -216,7 +219,7 @@ class CborSerializerTest {
             BigDecimal(".01"),
             BigDecimal(".0"),
             BigDecimal("13"),
-            BigDecimal(".439328490382490832409823409234324723895732984572389472389472398472398472398472")
+            BigDecimal(".439328490382490832409823409234324723895732984572389472389472398472398472398472"),
         )
 
         val serializer = CborSerializer()
@@ -233,12 +236,10 @@ class CborSerializerTest {
         }
         assertEquals(0, buffer.size)
 
-
         // Test taken from CBOR RFC: https://www.rfc-editor.org/rfc/rfc8949.html#section-3.4.4
         serializer.serializeBigDecimal(BigDecimal("273.15"))
         assertEquals("c48221196ab3", serializer.toByteArray().toHexString())
     }
-
 
     @Test
     fun testString() {
@@ -280,7 +281,7 @@ class CborSerializerTest {
             Instant.now() + 10.days,
             Instant.now() + 365.days,
             Instant.now() + 1825.days,
-            Instant.MAX_VALUE
+            Instant.MAX_VALUE,
         )
 
         val serializer = CborSerializer()

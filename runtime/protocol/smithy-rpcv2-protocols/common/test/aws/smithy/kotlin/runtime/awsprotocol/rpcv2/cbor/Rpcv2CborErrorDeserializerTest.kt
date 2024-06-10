@@ -1,5 +1,8 @@
+/*
+ * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * SPDX-License-Identifier: Apache-2.0
+ */
 import aws.smithy.kotlin.runtime.awsprotocol.rpcv2.cbor.Rpcv2CborErrorDeserializer
-import aws.smithy.kotlin.runtime.http.Headers
 import aws.smithy.kotlin.runtime.serde.SdkFieldDescriptor
 import aws.smithy.kotlin.runtime.serde.SdkObjectDescriptor
 import aws.smithy.kotlin.runtime.serde.SerialKind

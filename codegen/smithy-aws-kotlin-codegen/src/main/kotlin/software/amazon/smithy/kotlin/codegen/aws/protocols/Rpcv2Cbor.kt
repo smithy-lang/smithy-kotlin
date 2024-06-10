@@ -1,3 +1,7 @@
+/*
+ * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * SPDX-License-Identifier: Apache-2.0
+ */
 package software.amazon.smithy.kotlin.codegen.aws.protocols
 
 import CborParserGenerator
@@ -26,7 +30,7 @@ class Rpcv2Cbor : AwsHttpBindingProtocolGenerator() {
         HttpTraitResolver(
             model,
             serviceShape,
-            ProtocolContentTypes("application/cbor", "application/cbor", "application/vnd.amazon.eventstream")
+            ProtocolContentTypes("application/cbor", "application/cbor", "application/vnd.amazon.eventstream"),
         )
 
     override fun structuredDataSerializer(ctx: ProtocolGenerator.GenerationContext): StructuredDataSerializerGenerator = CborSerializerGenerator(this)
