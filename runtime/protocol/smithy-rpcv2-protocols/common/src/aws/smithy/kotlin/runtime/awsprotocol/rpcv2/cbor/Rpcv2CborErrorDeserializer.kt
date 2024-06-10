@@ -4,6 +4,7 @@
  */
 package aws.smithy.kotlin.runtime.awsprotocol.rpcv2.cbor
 
+import aws.smithy.kotlin.runtime.InternalApi
 import aws.smithy.kotlin.runtime.awsprotocol.ErrorDetails
 import aws.smithy.kotlin.runtime.awsprotocol.sanitizeErrorType
 import aws.smithy.kotlin.runtime.serde.SdkFieldDescriptor
@@ -17,7 +18,8 @@ import aws.smithy.kotlin.runtime.serde.deserializeStruct
  * Deserialize errors in the RPC V2 CBOR protocol according to the specification:
  * https://smithy.io/2.0/additional-specs/protocols/smithy-rpc-v2.html#operation-error-serialization
  */
-internal object Rpcv2CborErrorDeserializer {
+@InternalApi
+public object Rpcv2CborErrorDeserializer {
     private val ERR_CODE_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Integer, CborSerialName("__type"))
     private val MESSAGE_DESCRIPTOR = SdkFieldDescriptor(SerialKind.String, CborSerialName("message"))
 

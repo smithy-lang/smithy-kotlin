@@ -11,11 +11,14 @@ import software.amazon.smithy.kotlin.codegen.model.isStringEnumShape
 import software.amazon.smithy.kotlin.codegen.model.knowledge.SerdeIndex
 import software.amazon.smithy.kotlin.codegen.model.targetOrSelf
 import software.amazon.smithy.kotlin.codegen.rendering.protocol.ProtocolGenerator
+import software.amazon.smithy.kotlin.codegen.rendering.protocol.toRenderingContext
 import software.amazon.smithy.kotlin.codegen.rendering.serde.*
 import software.amazon.smithy.model.shapes.*
 import software.amazon.smithy.model.traits.TimestampFormatTrait
 
-open class CborParserGenerator : StructuredDataParserGenerator {
+open class CborParserGenerator(
+    private val protocolGenerator: ProtocolGenerator,
+) : StructuredDataParserGenerator {
     override fun operationDeserializer(
         ctx: ProtocolGenerator.GenerationContext,
         op: OperationShape,
@@ -100,6 +103,7 @@ open class CborParserGenerator : StructuredDataParserGenerator {
         members: List<MemberShape>,
         writer: KotlinWriter,
     ) {
+        descriptorGenerator(ctx, shape, members, writer).render()
         if (shape.isUnionShape) {
             val name = ctx.symbolProvider.toSymbol(shape).name
             CborDeserializeUnionGenerator(ctx, name, members, writer).render()
@@ -107,6 +111,13 @@ open class CborParserGenerator : StructuredDataParserGenerator {
             CborDeserializeStructGenerator(ctx, members, writer).render()
         }
     }
+
+    private fun descriptorGenerator(
+        ctx: ProtocolGenerator.GenerationContext,
+        shape: Shape,
+        members: List<MemberShape>,
+        writer: KotlinWriter,
+    ): CborSerdeDescriptorGenerator = CborSerdeDescriptorGenerator(ctx.toRenderingContext(protocolGenerator, shape, writer), members)
 
     override fun payloadDeserializer(
         ctx: ProtocolGenerator.GenerationContext,
