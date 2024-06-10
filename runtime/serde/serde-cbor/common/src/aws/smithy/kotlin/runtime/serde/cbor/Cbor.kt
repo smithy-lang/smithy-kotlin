@@ -48,18 +48,17 @@ internal object Cbor {
          * Represents a CBOR negative integer (major type 1) in the range [-2^64, -1].
          * @param value The [ULong] value which this unsigned integer represents.
          *
-         * Note: This class takes an *unsigned* long as input, the negative is implied.
          * Values will be properly encoded / decoded according to the CBOR specification (-1 minus $value)
          */
-        internal class NegInt(val value: ULong) : Value {
+        internal class NegInt(val value: Long) : Value {
             override val major = Major.NEG_INT
 
-            override fun encode(): ByteArray = encodeArgument(Major.NEG_INT, (value - 1u))
+            override fun encode(): ByteArray = encodeArgument(Major.NEG_INT, (value.absoluteValue - 1).toULong())
 
             internal companion object {
                 fun decode(buffer: SdkBufferedSource): NegInt {
                     val argument: ULong = deserializeArgument(buffer)
-                    return NegInt(argument + 1u)
+                    return NegInt(0 - (argument + 1u).toLong())
                 }
             }
         }
@@ -561,14 +560,14 @@ internal object Cbor {
                     .let { if (it == -1) str.lastIndex else it }
 
                 val exponentValue = (dotIndex - str.length + 1).toLong()
-                val exponent = if (exponentValue < 0) { NegInt(exponentValue.toULong()) } else { UInt(exponentValue.toULong()) }
+                val exponent = if (exponentValue < 0) { NegInt(exponentValue) } else { UInt(exponentValue.toULong()) }
 
                 val mantissaStr = str.replace(".", "")
                 // Check if the mantissa can be represented as a UInt without overflowing.
                 // If not, it will be sent as a Bignum.
                 val mantissa: Cbor.Value = try {
                     if (mantissaStr.startsWith("-")) {
-                        NegInt(mantissaStr.toLong().toULong())
+                        NegInt(mantissaStr.toLong())
                     } else {
                         UInt(mantissaStr.toULong())
                     }
@@ -606,7 +605,7 @@ internal object Cbor {
                     // append mantissa, prepend with '-' if negative.
                     when (mantissa) {
                         is UInt -> { sb.append(mantissa.value.toString()) }
-                        is NegInt -> { sb.append(mantissa.value.toLong().toString()) }
+                        is NegInt -> { sb.append(mantissa.value.toString()) }
                         is Tag -> when(mantissa.value) {
                             is NegBigNum -> { sb.append(mantissa.value.value.toString()) }
                             is BigNum -> { sb.append(mantissa.value.value.toString()) }

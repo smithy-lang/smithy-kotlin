@@ -234,12 +234,9 @@ class CborSerializerTest {
         assertEquals(0, buffer.size)
 
 
-//        // Tests taken from CBOR RFC: https://www.rfc-editor.org/rfc/rfc8949.html#section-3.4.4
-//        serializer.serializeBigDecimal(BigDecimal("273.15"))
-//        assertEquals("c48221196ab3", serializer.toByteArray().toHexString())
-//
-//        serializer.serializeBigDecimal(BigDecimal("1.5"))
-//        assertEquals("c5822003", serializer.toByteArray().toHexString())
+        // Test taken from CBOR RFC: https://www.rfc-editor.org/rfc/rfc8949.html#section-3.4.4
+        serializer.serializeBigDecimal(BigDecimal("273.15"))
+        assertEquals("c48221196ab3", serializer.toByteArray().toHexString())
     }
 
 

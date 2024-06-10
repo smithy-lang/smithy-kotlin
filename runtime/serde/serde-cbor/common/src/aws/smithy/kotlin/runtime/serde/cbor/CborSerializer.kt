@@ -47,7 +47,7 @@ public class CborSerializer : Serializer, ListSerializer, MapSerializer, StructS
 
     override fun serializeByte(value: Byte) {
         if (value < 0) {
-            buffer.write(Cbor.Encoding.NegInt((0 - value).toULong()).encode())
+            buffer.write(Cbor.Encoding.NegInt((0 - value).toLong()).encode())
         } else {
             buffer.write(Cbor.Encoding.UInt(value.toULong()).encode())
         }
@@ -55,7 +55,7 @@ public class CborSerializer : Serializer, ListSerializer, MapSerializer, StructS
 
     override fun serializeShort(value: Short) {
         if (value < 0) {
-            buffer.write(Cbor.Encoding.NegInt((0 - value).toULong()).encode())
+            buffer.write(Cbor.Encoding.NegInt((0 - value).toLong()).encode())
         } else {
             buffer.write(Cbor.Encoding.UInt(value.toULong()).encode())
         }
@@ -67,7 +67,7 @@ public class CborSerializer : Serializer, ListSerializer, MapSerializer, StructS
 
     override fun serializeInt(value: Int) {
         if (value < 0) {
-            buffer.write(Cbor.Encoding.NegInt((0 -value).toULong()).encode())
+            buffer.write(Cbor.Encoding.NegInt((0 - value).toLong()).encode())
         } else {
             buffer.write(Cbor.Encoding.UInt(value.toULong()).encode())
         }
@@ -75,7 +75,7 @@ public class CborSerializer : Serializer, ListSerializer, MapSerializer, StructS
 
     override fun serializeLong(value: Long) {
         if (value < 0) {
-            buffer.write(Cbor.Encoding.NegInt((0 - value).toULong()).encode())
+            buffer.write(Cbor.Encoding.NegInt(0 - value).encode())
         } else {
             buffer.write(Cbor.Encoding.UInt(value.toULong()).encode())
         }

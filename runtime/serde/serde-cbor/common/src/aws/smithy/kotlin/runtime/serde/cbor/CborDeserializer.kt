@@ -51,25 +51,25 @@ public class CborDeserializer(payload: ByteArray) : Deserializer {
 internal class CborPrimitiveDeserializer(private val buffer: SdkBufferedSource) : PrimitiveDeserializer {
     override fun deserializeByte(): Byte = when (val major = peekMajor(buffer)) {
         Major.U_INT -> Cbor.Encoding.UInt.decode(buffer).value.toByte()
-        Major.NEG_INT -> (0 - Cbor.Encoding.NegInt.decode(buffer).value.toByte()).toByte()
+        Major.NEG_INT -> Cbor.Encoding.NegInt.decode(buffer).value.toByte()
         else -> throw DeserializationException("Expected ${Major.U_INT} or ${Major.NEG_INT} for CBOR byte, got $major.")
     }
 
     override fun deserializeInt(): Int = when (val major = peekMajor(buffer)) {
         Major.U_INT -> Cbor.Encoding.UInt.decode(buffer).value.toInt()
-        Major.NEG_INT -> 0 - Cbor.Encoding.NegInt.decode(buffer).value.toInt()
+        Major.NEG_INT -> Cbor.Encoding.NegInt.decode(buffer).value.toInt()
         else -> throw DeserializationException("Expected ${Major.U_INT} or ${Major.NEG_INT} for CBOR integer, got $major.")
     }
 
     override fun deserializeShort(): Short = when (val major = peekMajor(buffer)) {
         Major.U_INT -> Cbor.Encoding.UInt.decode(buffer).value.toShort()
-        Major.NEG_INT -> (0 - Cbor.Encoding.NegInt.decode(buffer).value.toShort()).toShort()
+        Major.NEG_INT -> Cbor.Encoding.NegInt.decode(buffer).value.toShort()
         else -> throw DeserializationException("Expected ${Major.U_INT} or ${Major.NEG_INT} for CBOR short, got $major.")
     }
 
     override fun deserializeLong(): Long = when (val major = peekMajor(buffer)) {
         Major.U_INT -> Cbor.Encoding.UInt.decode(buffer).value.toLong()
-        Major.NEG_INT -> 0 - Cbor.Encoding.NegInt.decode(buffer).value.toLong()
+        Major.NEG_INT -> Cbor.Encoding.NegInt.decode(buffer).value
         else -> throw DeserializationException("Expected ${Major.U_INT} or ${Major.NEG_INT} for CBOR short, got $major.")
     }
 
