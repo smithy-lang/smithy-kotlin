@@ -132,10 +132,17 @@ private class CborElementIterator(
 
     override fun hasNextElement(): Boolean {
         if (expectedLength != null) {
-            return currentLength != expectedLength && !buffer.exhausted()
+            if (currentLength != expectedLength) {
+                check(!buffer.exhausted()) { "Buffer is unexpectedly exhausted, read $currentLength elements, expected $expectedLength." }
+                return true
+            } else {
+                return !buffer.exhausted()
+            }
         } else {
             val peekedNextValue = decodeNextValue(buffer.peek())
-            return peekedNextValue !is Cbor.Encoding.IndefiniteBreak
+            return (peekedNextValue !is Cbor.Encoding.IndefiniteBreak).also { hasNextElement ->
+                if (hasNextElement) { check(!buffer.exhausted()) { "Buffer is unexpectedly exhausted"} }
+            }
         }
     }
 
@@ -195,10 +202,16 @@ private class CborEntryIterator(
 
     override fun hasNextEntry(): Boolean {
         if (expectedLength != null) {
-            return currentLength != expectedLength && !buffer.exhausted()
-        } else {
-            val peekedNextKey = decodeNextValue(buffer.peek())
-            return peekedNextKey !is Cbor.Encoding.IndefiniteBreak && peekedNextKey !is Cbor.Encoding.Null
+            if (currentLength != expectedLength) {
+                check(!buffer.exhausted()) { "Buffer unexpectedly exhausted" }
+            } else {
+                return false
+            }
+        }
+
+        val peekedNextKey = decodeNextValue(buffer.peek())
+        return (peekedNextKey !is Cbor.Encoding.IndefiniteBreak && peekedNextKey !is Cbor.Encoding.Null).also { hasNextEntry ->
+            if (hasNextEntry) { check(peekedNextKey is Cbor.Encoding.String) { "Expected string type for CBOR map key, got $peekedNextKey" } }
         }
     }
 

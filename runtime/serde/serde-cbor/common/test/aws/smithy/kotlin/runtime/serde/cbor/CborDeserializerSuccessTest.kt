@@ -12,15 +12,19 @@ import aws.smithy.kotlin.runtime.serde.deserializeList
 import aws.smithy.kotlin.runtime.serde.deserializeMap
 import kotlin.test.*
 
-class CborDeserializerSuccessTest {
-    private fun String.toByteArray(): ByteArray = this
-        .removePrefix("0x")
-        .replace(Regex("\\s"), "")
-        .padStart(length % 2, '0')
-        .chunked(2)
-        .map { hex -> hex.toUByte(16).toByte() }
-        .toByteArray()
 
+/**
+ * Convert a string representation of a hexadecimal encoded byte sequence to a [ByteArray]
+ */
+internal fun String.toByteArray(): ByteArray = this
+    .removePrefix("0x")
+    .replace(Regex("\\s"), "")
+    .padStart(length % 2, '0')
+    .chunked(2)
+    .map { hex -> hex.toUByte(16).toByte() }
+    .toByteArray()
+
+class CborDeserializerSuccessTest {
     @Test
     fun `atomic - undefined`() {
         val payload = "0xf7".toByteArray()
