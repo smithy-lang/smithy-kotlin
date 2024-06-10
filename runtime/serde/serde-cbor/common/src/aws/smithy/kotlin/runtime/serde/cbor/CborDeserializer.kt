@@ -82,11 +82,11 @@ internal class CborPrimitiveDeserializer(private val buffer: SdkBufferedSource) 
         else -> throw DeserializationException("Expected ${Major.U_INT} or ${Major.NEG_INT} for CBOR short, got $major.")
     }
 
-    override fun deserializeFloat(): Float = when (val minor = peekMinorRaw(buffer)) {
+    override fun deserializeFloat(): Float = when (peekMinorRaw(buffer)) {
         Minor.FLOAT16.value -> Cbor.Encoding.Float16.decode(buffer).value
         Minor.FLOAT32.value -> Cbor.Encoding.Float32.decode(buffer).value
         Minor.FLOAT64.value -> Cbor.Encoding.Float64.decode(buffer).value.toFloat()
-        else -> Float.fromBits(deserializeArgument(buffer).toInt()) // throw DeserializationException("Received unexpected minor value $minor for float, expected ${Minor.FLOAT16}, ${Minor.FLOAT32}, or ${Minor.FLOAT64}.")
+        else -> Float.fromBits(deserializeArgument(buffer).toInt())
     }
 
     override fun deserializeDouble(): Double = when (peekMinorSafe(buffer)) {
