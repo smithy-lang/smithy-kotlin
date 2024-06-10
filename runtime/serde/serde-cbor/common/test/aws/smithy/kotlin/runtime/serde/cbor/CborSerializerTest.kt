@@ -7,13 +7,11 @@ package aws.smithy.kotlin.runtime.serde.cbor
 import aws.smithy.kotlin.runtime.content.BigDecimal
 import aws.smithy.kotlin.runtime.content.BigInteger
 import aws.smithy.kotlin.runtime.io.SdkBuffer
-import aws.smithy.kotlin.runtime.serde.SerializationException
+import aws.smithy.kotlin.runtime.serde.*
 import aws.smithy.kotlin.runtime.time.Instant
+import aws.smithy.kotlin.runtime.time.TimestampFormat
 import aws.smithy.kotlin.runtime.time.epochMilliseconds
-import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertFailsWith
-import kotlin.test.assertNull
+import kotlin.test.*
 import kotlin.time.Duration.Companion.days
 import kotlin.time.Duration.Companion.seconds
 
@@ -318,6 +316,90 @@ class CborSerializerTest {
         val serializer = CborSerializer()
         assertFailsWith<SerializationException> {
             serializer.serializeDocument(null)
+        }
+    }
+
+    @Test
+    fun testList() {
+        val serializer = CborSerializer()
+
+        serializer.serializeList(SdkFieldDescriptor(SerialKind.List)) {
+            serializeNull()
+            serializeFloat(143.434f)
+            serializeInt(Int.MIN_VALUE)
+            serializeLong(Long.MAX_VALUE)
+            serializeBoolean(true)
+            serializeChar('a')
+            serializeChar('z')
+            serializeString("bye!")
+            endList()
+        }
+
+        val bytes = serializer.toByteArray()
+        val deserializer = CborDeserializer(bytes)
+
+        deserializer.deserializeList(SdkFieldDescriptor(SerialKind.List)) {
+            deserializeNull()
+            assertEquals(143.434f, deserializeFloat())
+            assertEquals(Int.MIN_VALUE, deserializeInt())
+            assertEquals(Long.MAX_VALUE, deserializeLong())
+            assertTrue(deserializeBoolean())
+            assertEquals("a", deserializeString())
+            assertEquals("z", deserializeString())
+            assertEquals("bye!", deserializeString())
+
+            // end of list
+            assertFails {
+                deserializeInt()
+            }
+        }
+    }
+
+    @Test
+    fun testMap() {
+        val serializer = CborSerializer()
+
+        serializer.serializeMap(SdkFieldDescriptor(SerialKind.List)) {
+            entry("float", 143.434f)
+            entry("int", Int.MIN_VALUE)
+            entry("long", Long.MAX_VALUE)
+            entry("boolean", true)
+            entry("charA", 'a')
+            entry("charZ", 'z')
+            entry("string", "bye!")
+            entry("timestamp", Instant.now(), TimestampFormat.EPOCH_SECONDS)
+            endMap()
+        }
+
+        val bytes = serializer.toByteArray()
+        val deserializer = CborDeserializer(bytes)
+
+        deserializer.deserializeMap(SdkFieldDescriptor(SerialKind.Map)) {
+            assertEquals("float", deserializeString())
+            assertEquals(143.434f, deserializeFloat())
+
+            assertEquals("int", deserializeString())
+            assertEquals(Int.MIN_VALUE, deserializeInt())
+
+            assertEquals("long", deserializeString())
+            assertEquals(Long.MAX_VALUE, deserializeLong())
+
+            assertEquals("boolean", deserializeString())
+            assertEquals(true, deserializeBoolean())
+
+            assertEquals("charA", deserializeString())
+            assertEquals("a", deserializeString())
+
+            assertEquals("charZ", deserializeString())
+            assertEquals("z", deserializeString())
+
+            assertEquals("string", deserializeString())
+            assertEquals("bye!", deserializeString())
+
+            // end of list
+            assertFails {
+                deserializeInt()
+            }
         }
     }
 }
