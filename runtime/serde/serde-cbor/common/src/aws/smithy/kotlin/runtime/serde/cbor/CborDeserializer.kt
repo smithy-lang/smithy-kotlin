@@ -141,7 +141,7 @@ private class CborElementIterator(
         } else {
             val peekedNextValue = decodeNextValue(buffer.peek())
             return (peekedNextValue !is Cbor.Encoding.IndefiniteBreak).also { hasNextElement ->
-                if (hasNextElement) { check(!buffer.exhausted()) { "Buffer is unexpectedly exhausted"} }
+                if (hasNextElement) { check(!buffer.exhausted()) { "Buffer is unexpectedly exhausted" } }
             }
         }
     }

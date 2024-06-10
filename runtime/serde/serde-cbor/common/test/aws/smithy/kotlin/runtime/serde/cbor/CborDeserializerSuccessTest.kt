@@ -12,7 +12,6 @@ import aws.smithy.kotlin.runtime.serde.deserializeList
 import aws.smithy.kotlin.runtime.serde.deserializeMap
 import kotlin.test.*
 
-
 /**
  * Convert a string representation of a hexadecimal encoded byte sequence to a [ByteArray]
  */
