@@ -5,10 +5,6 @@ public final class aws/smithy/kotlin/runtime/serde/cbor/CborDeserializer : aws/s
 	public fun deserializeStruct (Laws/smithy/kotlin/runtime/serde/SdkObjectDescriptor;)Laws/smithy/kotlin/runtime/serde/Deserializer$FieldIterator;
 }
 
-public final class aws/smithy/kotlin/runtime/serde/cbor/CborErrorDeserializer {
-	public fun <init> ()V
-}
-
 public final class aws/smithy/kotlin/runtime/serde/cbor/CborFieldTraitsKt {
 	public static final fun getSerialName (Laws/smithy/kotlin/runtime/serde/SdkFieldDescriptor;)Ljava/lang/String;
 }
