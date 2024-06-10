@@ -82,12 +82,12 @@ internal object Cbor {
                     return if (minor == Minor.INDEFINITE) {
                         val list = IndefiniteList.decode(buffer).value
 
-                        val buffer = SdkBuffer()
+                        val tempBuffer = SdkBuffer()
                         list.forEach {
-                            buffer.write((it as ByteString).value)
+                            tempBuffer.write((it as ByteString).value)
                         }
 
-                        ByteString(buffer.readByteArray())
+                        ByteString(tempBuffer.readByteArray())
                     } else {
                         val length = deserializeArgument(buffer).toInt()
                         val bytes = ByteArray(length)
@@ -475,7 +475,7 @@ internal object Cbor {
                             Instant.fromEpochSeconds(timestamp)
                         }
                         Major.NEG_INT -> {
-                            val negativeTimestamp: Long = 0L - NegInt.decode(buffer).value.toLong() // note: possible truncation here because kotlin.time.Instant takes a Long, not a ULong
+                            val negativeTimestamp: Long = NegInt.decode(buffer).value // note: possible truncation here because kotlin.time.Instant takes a Long, not a ULong
                             Instant.fromEpochSeconds(negativeTimestamp)
                         }
                         Major.TYPE_7 -> {
@@ -565,7 +565,7 @@ internal object Cbor {
                 val mantissaStr = str.replace(".", "")
                 // Check if the mantissa can be represented as a UInt without overflowing.
                 // If not, it will be sent as a Bignum.
-                val mantissa: Cbor.Value = try {
+                val mantissa: Value = try {
                     if (mantissaStr.startsWith("-")) {
                         NegInt(mantissaStr.toLong())
                     } else {
@@ -658,18 +658,6 @@ internal object Cbor {
             }
         }
     }
-}
-
-/**
- * Returns the length of the CBOR value in bytes.
- * This includes the head (1 byte) and any additional bytes (1, 2, 4, or 8).
- */
-internal fun getValueLength(value: ULong): Int = when {
-    value < 24u -> 1
-    value < 0x100u -> 2
-    value < 0x10000u -> 3
-    value < 0x100000000u -> 5
-    else -> 9
 }
 
 // Encodes a major and minor type of CBOR value in a single byte
@@ -782,8 +770,8 @@ internal fun decodeNextValue(buffer: SdkBufferedSource): Cbor.Value {
         }
         Major.TAG -> Cbor.Encoding.Tag.decode(buffer)
         Major.TYPE_7 -> {
-            val minor = peekMinorRaw(buffer)
-            when (minor) {
+            val rawMinorValue = peekMinorRaw(buffer)
+            when (rawMinorValue) {
                 Minor.TRUE.value -> Cbor.Encoding.Boolean.decode(buffer)
                 Minor.FALSE.value -> Cbor.Encoding.Boolean.decode(buffer)
                 Minor.NULL.value -> Cbor.Encoding.Null.decode(buffer)

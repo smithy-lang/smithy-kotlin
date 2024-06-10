@@ -270,6 +270,7 @@ class CborSerializerTest {
     fun testInstant() {
         val tests = listOf(
             Instant.MIN_VALUE,
+            Instant.fromEpochSeconds(0) - 1825.days,
             Instant.fromEpochSeconds(0) - 365.days,
             Instant.fromEpochSeconds(0) - 5.days,
             Instant.fromEpochSeconds(0) - 5.seconds,
@@ -277,6 +278,8 @@ class CborSerializerTest {
             Instant.now() - 10.days,
             Instant.now(),
             Instant.now() + 10.days,
+            Instant.now() + 365.days,
+            Instant.now() + 1825.days,
             Instant.MAX_VALUE
         )
 
