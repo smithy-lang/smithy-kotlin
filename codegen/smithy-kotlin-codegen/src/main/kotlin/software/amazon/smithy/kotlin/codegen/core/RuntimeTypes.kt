@@ -101,10 +101,10 @@ object RuntimeTypes {
         val SdkDsl = symbol("SdkDsl")
 
         object BusinessMetrics : RuntimeTypePackage(KotlinDependency.CORE, "businessmetrics") {
-            val accountIdBasedEndPointAccountId = symbol("accountIdBasedEndPointAccountId")
-            val serviceEndpointOverride = symbol("serviceEndpointOverride")
+            val AccountIdBasedEndpointAccountId = symbol("AccountIdBasedEndpointAccountId")
+            val ServiceEndpointOverride = symbol("ServiceEndpointOverride")
             val emitBusinessMetrics = symbol("emitBusinessMetric")
-            val BusinessMetrics = symbol("BusinessMetrics")
+            val SmithyBusinessMetric = symbol("SmithyBusinessMetric")
         }
 
         object Collections : RuntimeTypePackage(KotlinDependency.CORE, "collections") {

@@ -225,11 +225,11 @@ class DefaultEndpointProviderGenerator(
                         }
 
                         if (hasAccountIdBasedEndpoint) {
-                            writer.write("#T to params.accountId", RuntimeTypes.Core.BusinessMetrics.accountIdBasedEndPointAccountId)
+                            writer.write("#T to params.accountId", RuntimeTypes.Core.BusinessMetrics.AccountIdBasedEndpointAccountId)
                             hasAccountIdBasedEndpoint = false
                         }
                         if (hasServiceEndpointOverride) {
-                            writer.write("#T to true", RuntimeTypes.Core.BusinessMetrics.serviceEndpointOverride)
+                            writer.write("#T to true", RuntimeTypes.Core.BusinessMetrics.ServiceEndpointOverride)
                             hasServiceEndpointOverride = false
                         }
                     }

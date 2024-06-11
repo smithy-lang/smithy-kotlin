@@ -63,31 +63,28 @@ class DefaultEndpointProviderTestGenerator(
         writer.withBlock("public class #L {", "}", CLASS_NAME) {
             writer.write("")
             writer.withBlock(
-                "private fun expectEqualEndpoints(expected: #T, actual: #T) {",
+                "private fun expectEqualEndpoints(expected: #1T, actual: #1T) {",
                 "}",
-                RuntimeTypes.SmithyClient.Endpoints.Endpoint,
                 RuntimeTypes.SmithyClient.Endpoints.Endpoint,
             ) {
                 // Remove ONLY business metrics endpoint attributes
                 writer.withBlock(
                     "if (actual.attributes.contains(#T) || actual.attributes.contains(#T)) {",
                     "} else { assertEquals(expected, actual) }",
-                    RuntimeTypes.Core.BusinessMetrics.serviceEndpointOverride,
-                    RuntimeTypes.Core.BusinessMetrics.accountIdBasedEndPointAccountId,
+                    RuntimeTypes.Core.BusinessMetrics.ServiceEndpointOverride,
+                    RuntimeTypes.Core.BusinessMetrics.AccountIdBasedEndpointAccountId,
                 ) {
                     writer.write(
                         "val newActualAttributes = actual.attributes.#T()",
                         RuntimeTypes.Core.Collections.toMutableAttributes,
                     )
                     writer.write(
-                        "if (actual.attributes.contains(#T)) newActualAttributes.remove(#T)",
-                        RuntimeTypes.Core.BusinessMetrics.serviceEndpointOverride,
-                        RuntimeTypes.Core.BusinessMetrics.serviceEndpointOverride,
+                        "if (actual.attributes.contains(#1T)) newActualAttributes.remove(#1T)",
+                        RuntimeTypes.Core.BusinessMetrics.ServiceEndpointOverride,
                     )
                     writer.write(
-                        "if (actual.attributes.contains(#T)) newActualAttributes.remove(#T)",
-                        RuntimeTypes.Core.BusinessMetrics.accountIdBasedEndPointAccountId,
-                        RuntimeTypes.Core.BusinessMetrics.accountIdBasedEndPointAccountId,
+                        "if (actual.attributes.contains(#1T)) newActualAttributes.remove(#1T)",
+                        RuntimeTypes.Core.BusinessMetrics.AccountIdBasedEndpointAccountId,
                     )
                     writer.write(
                         "val newActual = #T(actual.uri, actual.headers, newActualAttributes)",

@@ -6,7 +6,7 @@
 package aws.smithy.kotlin.runtime.http.operation
 
 import aws.smithy.kotlin.runtime.InternalApi
-import aws.smithy.kotlin.runtime.businessmetrics.BusinessMetrics
+import aws.smithy.kotlin.runtime.businessmetrics.SmithyBusinessMetric
 import aws.smithy.kotlin.runtime.businessmetrics.emitBusinessMetric
 import aws.smithy.kotlin.runtime.client.LogMode
 import aws.smithy.kotlin.runtime.client.endpoints.authOptions
@@ -312,9 +312,8 @@ internal class AuthHandler<Input, Output>(
             authScheme.signer.sign(signingRequest)
         }
 
-        when (authScheme.schemeId.id) {
-            "aws.auth#sigv4s3express" -> request.context.emitBusinessMetric(BusinessMetrics.S3_EXPRESS_BUCKET)
-            "aws.auth#sigv4a" -> request.context.emitBusinessMetric(BusinessMetrics.SIGV4A_SIGNING)
+        if (authScheme.schemeId.id == "aws.auth#sigv4a") {
+            request.context.emitBusinessMetric(SmithyBusinessMetric.SIGV4A_SIGNING)
         }
 
         interceptors.readAfterSigning(modified.subject.immutableView())

@@ -13,29 +13,29 @@ import aws.smithy.kotlin.runtime.operation.ExecutionContext
  * Keeps track of all business metrics along an operations execution
  */
 @InternalApi
-public val businessMetrics: AttributeKey<MutableSet<String>> = AttributeKey("aws.sdk.kotlin#BusinessMetrics")
+public val BusinessMetrics: AttributeKey<MutableSet<String>> = AttributeKey("aws.sdk.kotlin#BusinessMetrics")
 
 /**
  * The account ID in an account ID based endpoint
  */
 @InternalApi
-public val accountIdBasedEndPointAccountId: AttributeKey<String> = AttributeKey("aws.smithy.kotlin#AccountIdBasedEndpointAccountId")
+public val AccountIdBasedEndpointAccountId: AttributeKey<String> = AttributeKey("aws.smithy.kotlin#AccountIdBasedEndpointAccountId")
 
 /**
- * If an endpoint is service endpoint override based
+ * If an endpoint is "service endpoint override" based
  */
 @InternalApi
-public val serviceEndpointOverride: AttributeKey<Boolean> = AttributeKey("aws.smithy.kotlin#ServiceEndpointOverride")
+public val ServiceEndpointOverride: AttributeKey<Boolean> = AttributeKey("aws.smithy.kotlin#ServiceEndpointOverride")
 
 /**
  * Emit a business metric to the execution context attributes
  */
 @InternalApi
-public fun ExecutionContext.emitBusinessMetric(metric: BusinessMetrics) {
-    if (this.attributes.contains(businessMetrics)) {
-        this.attributes[businessMetrics].add(metric.identifier)
+public fun ExecutionContext.emitBusinessMetric(metric: BusinessMetric) {
+    if (this.attributes.contains(BusinessMetrics)) {
+        this.attributes[BusinessMetrics].add(metric.identifier)
     } else {
-        this.attributes[businessMetrics] = mutableSetOf(metric.identifier)
+        this.attributes[BusinessMetrics] = mutableSetOf(metric.identifier)
     }
 }
 
@@ -43,9 +43,9 @@ public fun ExecutionContext.emitBusinessMetric(metric: BusinessMetrics) {
  * Removes a business metric from the execution context attributes
  */
 @InternalApi
-public fun ExecutionContext.removeBusinessMetric(metric: BusinessMetrics) {
-    if (this.attributes.contains(businessMetrics)) {
-        this.attributes[businessMetrics].remove(metric.identifier)
+public fun ExecutionContext.removeBusinessMetric(metric: BusinessMetric) {
+    if (this.attributes.contains(BusinessMetrics)) {
+        this.attributes[BusinessMetrics].remove(metric.identifier)
     }
 }
 
@@ -53,20 +53,25 @@ public fun ExecutionContext.removeBusinessMetric(metric: BusinessMetrics) {
  * Checks if a business metric exists in the execution context attributes
  */
 @InternalApi
-public fun ExecutionContext.containsBusinessMetric(metric: BusinessMetrics): Boolean =
-    (this.attributes.contains(businessMetrics)) && this.attributes[businessMetrics].contains(metric.identifier)
+public fun ExecutionContext.containsBusinessMetric(metric: BusinessMetric): Boolean =
+    (this.attributes.contains(BusinessMetrics)) && this.attributes[BusinessMetrics].contains(metric.identifier)
 
 /**
- * All the valid business metrics along with their identifiers
+ * Valid business metrics
+ */
+public interface BusinessMetric {
+    public val identifier: String
+}
+
+/**
+ * Generic business metrics
  */
 @InternalApi
-public enum class BusinessMetrics(public val identifier: String) {
-    S3_EXPRESS_BUCKET("A"),
-    GZIP_REQUEST_COMPRESSION("B"),
-    RETRY_MODE_LEGACY("C"),
-    RETRY_MODE_STANDARD("D"),
-    RETRY_MODE_ADAPTIVE("E"),
-    SIGV4A_SIGNING("F"),
-    SERVICE_ENDPOINT_OVERRIDE("G"),
-    ACCOUNT_ID_BASED_ENDPOINT("H"),
+public enum class SmithyBusinessMetric(public override val identifier: String) : BusinessMetric {
+    RETRY_MODE_STANDARD("E"),
+    RETRY_MODE_ADAPTIVE("F"),
+    GZIP_REQUEST_COMPRESSION("L"),
+    SERVICE_ENDPOINT_OVERRIDE("N"),
+    SIGV4A_SIGNING("M"),
+    ACCOUNT_ID_BASED_ENDPOINT("O"),
 }

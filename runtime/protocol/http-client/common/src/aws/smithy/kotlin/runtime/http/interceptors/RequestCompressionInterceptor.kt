@@ -6,7 +6,7 @@
 package aws.smithy.kotlin.runtime.http.interceptors
 
 import aws.smithy.kotlin.runtime.InternalApi
-import aws.smithy.kotlin.runtime.businessmetrics.BusinessMetrics
+import aws.smithy.kotlin.runtime.businessmetrics.SmithyBusinessMetric
 import aws.smithy.kotlin.runtime.businessmetrics.emitBusinessMetric
 import aws.smithy.kotlin.runtime.client.ProtocolRequestInterceptorContext
 import aws.smithy.kotlin.runtime.compression.CompressionAlgorithm
@@ -45,7 +45,7 @@ public class RequestCompressionInterceptor(
 
         return if (algorithm != null && (context.protocolRequest.body.isStreaming || payloadSizeBytes?.let { it >= compressionThresholdBytes } == true)) {
             algorithm.compressRequest(context.protocolRequest).also {
-                context.executionContext.emitBusinessMetric(BusinessMetrics.GZIP_REQUEST_COMPRESSION)
+                context.executionContext.emitBusinessMetric(SmithyBusinessMetric.GZIP_REQUEST_COMPRESSION)
             }
         } else {
             val logger = coroutineContext.logger<RequestCompressionInterceptor>()
