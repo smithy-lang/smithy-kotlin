@@ -90,14 +90,6 @@ public final class aws/smithy/kotlin/runtime/businessmetrics/BusinessMetricsUtil
 	public static final fun removeBusinessMetric (Laws/smithy/kotlin/runtime/operation/ExecutionContext;Laws/smithy/kotlin/runtime/businessmetrics/BusinessMetric;)V
 }
 
-public final class aws/smithy/kotlin/runtime/businessmetrics/SdkBusinessMetric : java/lang/Enum, aws/smithy/kotlin/runtime/businessmetrics/BusinessMetric {
-	public static final field S3_EXPRESS_BUCKET Laws/smithy/kotlin/runtime/businessmetrics/SdkBusinessMetric;
-	public static fun getEntries ()Lkotlin/enums/EnumEntries;
-	public fun getIdentifier ()Ljava/lang/String;
-	public static fun valueOf (Ljava/lang/String;)Laws/smithy/kotlin/runtime/businessmetrics/SdkBusinessMetric;
-	public static fun values ()[Laws/smithy/kotlin/runtime/businessmetrics/SdkBusinessMetric;
-}
-
 public final class aws/smithy/kotlin/runtime/businessmetrics/SmithyBusinessMetric : java/lang/Enum, aws/smithy/kotlin/runtime/businessmetrics/BusinessMetric {
 	public static final field ACCOUNT_ID_BASED_ENDPOINT Laws/smithy/kotlin/runtime/businessmetrics/SmithyBusinessMetric;
 	public static final field GZIP_REQUEST_COMPRESSION Laws/smithy/kotlin/runtime/businessmetrics/SmithyBusinessMetric;
