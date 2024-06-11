@@ -42,11 +42,11 @@ class HttpStringValuesMapSerializerTest {
         contents.assertBalancedBracesAndParens()
 
         val expectedContents = """
-            append("X-d", "${'$'}{input.hBool}")
-            append("X-c", "${'$'}{input.hFloat}")
-            append("X-a", "${'$'}{input.hInt}")
-            append("X-b", "${'$'}{input.hLong}")
-            append("X-required", "${'$'}{input.hRequiredInt}")
+            append("X-d", input.hBool.toString())
+            append("X-c", input.hFloat.toString())
+            append("X-a", input.hInt.toString())
+            append("X-b", input.hLong.toString())
+            append("X-required", input.hRequiredInt.toString())
         """.trimIndent()
         contents.shouldContainOnlyOnceWithDiff(expectedContents)
     }
@@ -57,11 +57,11 @@ class HttpStringValuesMapSerializerTest {
         contents.assertBalancedBracesAndParens()
 
         val expectedContents = """
-            if (input.hBool != false) append("X-d", "${'$'}{input.hBool}")
-            if (input.hFloat != 0f) append("X-c", "${'$'}{input.hFloat}")
-            if (input.hInt != 0) append("X-a", "${'$'}{input.hInt}")
-            if (input.hLong != 0L) append("X-b", "${'$'}{input.hLong}")
-            append("X-required", "${'$'}{input.hRequiredInt}")
+            if (input.hBool != false) append("X-d", input.hBool.toString())
+            if (input.hFloat != 0f) append("X-c", input.hFloat.toString())
+            if (input.hInt != 0) append("X-a", input.hInt.toString())
+            if (input.hLong != 0L) append("X-b", input.hLong.toString())
+            append("X-required", input.hRequiredInt.toString())
         """.trimIndent()
         contents.shouldContainOnlyOnceWithDiff(expectedContents)
     }
@@ -72,7 +72,7 @@ class HttpStringValuesMapSerializerTest {
         contents.assertBalancedBracesAndParens()
 
         val expectedContents = """
-            if (input.qInt != 0) add("q-int", "${'$'}{input.qInt}")
+            if (input.qInt != 0) add("q-int", input.qInt.toString())
         """.trimIndent()
         contents.shouldContainOnlyOnceWithDiff(expectedContents)
     }
@@ -84,7 +84,7 @@ class HttpStringValuesMapSerializerTest {
         contents.assertBalancedBracesAndParens()
 
         val expectedContents = """
-            add("q-int", "${'$'}{input.qInt}")
+            add("q-int", input.qInt.toString())
         """.trimIndent()
         contents.shouldContainOnlyOnceWithDiff(expectedContents)
     }
@@ -132,10 +132,9 @@ class HttpStringValuesMapSerializerTest {
         val contents = getTestContents(model, "com.test#Foo", HttpBinding.Location.HEADER)
         contents.assertBalancedBracesAndParens()
 
-        val intEnumValue = "\${input.intEnumHeader.value}"
         val expectedContents = """
             if (input.enumHeader != com.test.model.MyEnum.fromValue("Variant1")) append("X-EnumHeader", input.enumHeader.value)
-            if (input.intEnumHeader != com.test.model.MyIntEnum.fromValue(2)) append("X-IntEnumHeader", "$intEnumValue")
+            if (input.intEnumHeader != com.test.model.MyIntEnum.fromValue(2)) append("X-IntEnumHeader", input.intEnumHeader.value.toString())
         """.trimIndent()
         contents.shouldContainOnlyOnceWithDiff(expectedContents)
     }
@@ -170,7 +169,7 @@ class HttpStringValuesMapSerializerTest {
 
         val expectedContents = """
             if (input.enumList?.isNotEmpty() == true) appendAll("x-enumList", input.enumList.map { quoteHeaderValue(it.value) })
-            if (input.intList?.isNotEmpty() == true) appendAll("x-intList", input.intList.map { "${'$'}it" })
+            if (input.intList?.isNotEmpty() == true) appendAll("x-intList", input.intList.map { it.toString() })
             if (input.strList?.isNotEmpty() == true) appendAll("x-strList", input.strList.map { quoteHeaderValue(it) })
             if (input.tsList?.isNotEmpty() == true) appendAll("x-tsList", input.tsList.map { it.format(TimestampFormat.RFC_5322) })
         """.trimIndent()
