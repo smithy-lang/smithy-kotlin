@@ -611,6 +611,7 @@ open class DeserializeStructGenerator(
             target.type == ShapeType.BLOB -> "deserializeBlob()"
             target.type == ShapeType.TIMESTAMP -> {
                 writer.addImport(RuntimeTypes.Core.Instant)
+                writer.addImport(RuntimeTypes.Core.TimestampFormat)
                 val trait = shape.getTrait<TimestampFormatTrait>() ?: target.getTrait()
                 val tsFormat = trait?.format ?: defaultTimestampFormat
                 "deserializeTimestamp(${tsFormat.toRuntimeEnum()})"
