@@ -10,6 +10,7 @@ import aws.smithy.kotlin.runtime.content.Document
 import aws.smithy.kotlin.runtime.io.*
 import aws.smithy.kotlin.runtime.serde.*
 import aws.smithy.kotlin.runtime.time.Instant
+import aws.smithy.kotlin.runtime.time.TimestampFormat
 
 public class CborDeserializer(payload: ByteArray) : Deserializer {
     private val buffer = SdkBuffer().apply { write(payload) }
@@ -18,7 +19,7 @@ public class CborDeserializer(payload: ByteArray) : Deserializer {
         val major = peekMajor(buffer)
         check(major == Major.MAP) { "Expected major ${Major.MAP} for structure, got $major." }
 
-        val expectedLength = if (peekMinorRaw(buffer) == Minor.INDEFINITE.value) {
+        val expectedLength = if (peekMinorByte(buffer) == Minor.INDEFINITE.value) {
             buffer.readByte() // no length encoded, discard head
             null
         } else {
@@ -32,7 +33,7 @@ public class CborDeserializer(payload: ByteArray) : Deserializer {
         val major = peekMajor(buffer)
         check(major == Major.LIST) { "Expected major ${Major.LIST} for CBOR list, got $major" }
 
-        val expectedLength = if (peekMinorRaw(buffer) == Minor.INDEFINITE.value) {
+        val expectedLength = if (peekMinorByte(buffer) == Minor.INDEFINITE.value) {
             buffer.readByte()
             null
         } else {
@@ -46,7 +47,7 @@ public class CborDeserializer(payload: ByteArray) : Deserializer {
         val major = peekMajor(buffer)
         check(major == Major.MAP) { "Expected major ${Major.MAP} for CBOR map, got $major" }
 
-        val expectedLength = if (peekMinorRaw(buffer) == Minor.INDEFINITE.value) {
+        val expectedLength = if (peekMinorByte(buffer) == Minor.INDEFINITE.value) {
             buffer.readByte()
             null
         } else {
@@ -82,17 +83,17 @@ internal class CborPrimitiveDeserializer(private val buffer: SdkBufferedSource) 
         else -> throw DeserializationException("Expected ${Major.U_INT} or ${Major.NEG_INT} for CBOR short, got $major.")
     }
 
-    override fun deserializeFloat(): Float = when (peekMinorRaw(buffer)) {
+    override fun deserializeFloat(): Float = when (peekMinorByte(buffer)) {
         Minor.FLOAT16.value -> Cbor.Encoding.Float16.decode(buffer).value
         Minor.FLOAT32.value -> Cbor.Encoding.Float32.decode(buffer).value
         Minor.FLOAT64.value -> Cbor.Encoding.Float64.decode(buffer).value.toFloat()
         else -> Float.fromBits(deserializeArgument(buffer).toInt())
     }
 
-    override fun deserializeDouble(): Double = when (peekMinorSafe(buffer)) {
-        Minor.FLOAT16 -> Cbor.Encoding.Float16.decode(buffer).value.toDouble()
-        Minor.FLOAT32 -> Cbor.Encoding.Float32.decode(buffer).value.toDouble()
-        Minor.FLOAT64 -> Cbor.Encoding.Float64.decode(buffer).value
+    override fun deserializeDouble(): Double = when (peekMinorByte(buffer)) {
+        Minor.FLOAT16.value -> Cbor.Encoding.Float16.decode(buffer).value.toDouble()
+        Minor.FLOAT32.value -> Cbor.Encoding.Float32.decode(buffer).value.toDouble()
+        Minor.FLOAT64.value -> Cbor.Encoding.Float64.decode(buffer).value
         else -> Double.fromBits(deserializeArgument(buffer).toLong())
     }
 
@@ -115,9 +116,9 @@ internal class CborPrimitiveDeserializer(private val buffer: SdkBufferedSource) 
         return null
     }
 
-    internal fun deserializeBlob(): ByteArray = Cbor.Encoding.ByteString.decode(buffer).value
+    override fun deserializeBlob(): ByteArray = Cbor.Encoding.ByteString.decode(buffer).value
 
-    internal fun deserializeTimestamp(): Instant = Cbor.Encoding.Timestamp.decode(buffer).value
+    override fun deserializeTimestamp(format: TimestampFormat): Instant = Cbor.Encoding.Timestamp.decode(buffer).value
 }
 
 /**
@@ -140,8 +141,12 @@ private class CborElementIterator(
             }
         } else {
             val peekedNextValue = decodeNextValue(buffer.peek())
-            return (peekedNextValue !is Cbor.Encoding.IndefiniteBreak).also { hasNextElement ->
-                if (hasNextElement) { check(!buffer.exhausted()) { "Buffer is unexpectedly exhausted" } }
+            return if (peekedNextValue is Cbor.Encoding.IndefiniteBreak) {
+                Cbor.Encoding.IndefiniteBreak.decode(buffer)
+                false
+            } else {
+                check(!buffer.exhausted()) { "Buffer is unexpectedly exhausted" }
+                true
             }
         }
     }
@@ -163,6 +168,8 @@ private class CborElementIterator(
     override fun deserializeNull(): Nothing? = primitiveDeserializer.deserializeNull().also { currentLength += 1u }
     override fun deserializeShort(): Short = primitiveDeserializer.deserializeShort().also { currentLength += 1u }
     override fun deserializeString(): String = primitiveDeserializer.deserializeString().also { currentLength += 1u }
+    override fun deserializeBlob(): ByteArray = primitiveDeserializer.deserializeBlob().also { currentLength += 1u }
+    override fun deserializeTimestamp(format: TimestampFormat): Instant = primitiveDeserializer.deserializeTimestamp(format).also { currentLength += 1u }
 }
 
 /**
@@ -178,7 +185,10 @@ private class CborFieldIterator(
     override fun findNextFieldIndex(): Int? {
         if (expectedLength == currentLength || buffer.exhausted()) { return null }
         val peekedNextValue = decodeNextValue(buffer.peek())
-        return if (peekedNextValue is Cbor.Encoding.IndefiniteBreak) { null } else {
+        return if (peekedNextValue is Cbor.Encoding.IndefiniteBreak) {
+            Cbor.Encoding.IndefiniteBreak.decode(buffer)
+            null
+        } else {
             val nextFieldName = Cbor.Encoding.String.decode(buffer).value
             return descriptor
                 .fields
@@ -210,8 +220,15 @@ private class CborEntryIterator(
         }
 
         val peekedNextKey = decodeNextValue(buffer.peek())
-        return (peekedNextKey !is Cbor.Encoding.IndefiniteBreak && peekedNextKey !is Cbor.Encoding.Null).also { hasNextEntry ->
-            if (hasNextEntry) { check(peekedNextKey is Cbor.Encoding.String) { "Expected string type for CBOR map key, got $peekedNextKey" } }
+        return if (peekedNextKey is Cbor.Encoding.IndefiniteBreak) {
+            Cbor.Encoding.IndefiniteBreak.decode(buffer)
+            false
+        } else if (peekedNextKey is Cbor.Encoding.Null) {
+            Cbor.Encoding.Null.decode(buffer)
+            false
+        } else {
+            check(peekedNextKey is Cbor.Encoding.String) { "Expected string type for CBOR map key, got $peekedNextKey" }
+            true
         }
     }
 
@@ -234,4 +251,6 @@ private class CborEntryIterator(
     override fun deserializeNull(): Nothing? = primitiveDeserializer.deserializeNull().also { currentLength += 1u }
     override fun deserializeShort(): Short = primitiveDeserializer.deserializeShort().also { currentLength += 1u }
     override fun deserializeString(): String = primitiveDeserializer.deserializeString().also { currentLength += 1u }
+    override fun deserializeTimestamp(format: TimestampFormat): Instant = primitiveDeserializer.deserializeTimestamp(format).also { currentLength += 1u }
+    override fun deserializeBlob(): ByteArray = primitiveDeserializer.deserializeBlob().also { currentLength += 1u }
 }

@@ -116,6 +116,8 @@ public class CborSerializer : Serializer, ListSerializer, MapSerializer, StructS
 
     public fun serializeInstant(value: Instant): Unit = buffer.write(Cbor.Encoding.Timestamp(value).encode())
 
+    override fun serializeByteArray(value: ByteArray): Unit = buffer.write(Cbor.Encoding.ByteString(value).encode())
+
     override fun serializeSdkSerializable(value: SdkSerializable) {
         value.serialize(this)
     }
@@ -127,77 +129,77 @@ public class CborSerializer : Serializer, ListSerializer, MapSerializer, StructS
     override fun serializeDocument(value: Document?) { throw SerializationException("Document is not a supported CBOR type.") }
 
     override fun entry(key: String, value: Boolean?) {
-        buffer.write(Cbor.Encoding.String(key).encode())
+        serializeString(key)
         value?.let {
             serializeBoolean(it)
         } ?: serializeNull()
     }
 
     override fun entry(key: String, value: Byte?) {
-        buffer.write(Cbor.Encoding.String(key).encode())
+        serializeString(key)
         value?.let {
             serializeByte(it)
         } ?: serializeNull()
     }
 
     override fun entry(key: String, value: Short?) {
-        buffer.write(Cbor.Encoding.String(key).encode())
+        serializeString(key)
         value?.let {
             serializeShort(it)
         } ?: serializeNull()
     }
 
     override fun entry(key: String, value: Char?) {
-        buffer.write(Cbor.Encoding.String(key).encode())
+        serializeString(key)
         value?.let {
             serializeChar(it)
         } ?: serializeNull()
     }
 
     override fun entry(key: String, value: Int?) {
-        buffer.write(Cbor.Encoding.String(key).encode())
+        serializeString(key)
         value?.let {
             serializeInt(it)
         } ?: serializeNull()
     }
 
     override fun entry(key: String, value: Long?) {
-        buffer.write(Cbor.Encoding.String(key).encode())
+        serializeString(key)
         value?.let {
             serializeLong(it)
         } ?: serializeNull()
     }
 
     override fun entry(key: String, value: Float?) {
-        buffer.write(Cbor.Encoding.String(key).encode())
+        serializeString(key)
         value?.let {
             serializeFloat(it)
         } ?: serializeNull()
     }
 
     override fun entry(key: String, value: Double?) {
-        buffer.write(Cbor.Encoding.String(key).encode())
+        serializeString(key)
         value?.let {
             serializeDouble(it)
         } ?: serializeNull()
     }
 
     override fun entry(key: String, value: String?) {
-        buffer.write(Cbor.Encoding.String(key).encode())
+        serializeString(key)
         value?.let {
             serializeString(it)
         } ?: serializeNull()
     }
 
     override fun entry(key: String, value: Instant?, format: TimestampFormat) {
-        buffer.write(Cbor.Encoding.String(key).encode())
+        serializeString(key)
         value?.let {
             serializeInstant(it, format)
         } ?: serializeNull()
     }
 
     override fun entry(key: String, value: SdkSerializable?) {
-        buffer.write(Cbor.Encoding.String(key).encode())
+        serializeString(key)
         value?.let {
             serializeSdkSerializable(value)
         } ?: serializeNull()
@@ -205,15 +207,22 @@ public class CborSerializer : Serializer, ListSerializer, MapSerializer, StructS
 
     override fun entry(key: String, value: Document?) { throw SerializationException("Document is not a supported CBOR type.") }
 
+    override fun entry(key: String, value: ByteArray?) {
+        serializeString(key)
+        value?.let {
+            buffer.write(Cbor.Encoding.ByteString(value).encode())
+        } ?: serializeNull()
+    }
+
     override fun listEntry(key: String, listDescriptor: SdkFieldDescriptor, block: ListSerializer.() -> Unit) {
-        buffer.write(Cbor.Encoding.String(key).encode())
+        serializeString(key)
         beginList(listDescriptor)
         block()
         endList()
     }
 
     override fun mapEntry(key: String, mapDescriptor: SdkFieldDescriptor, block: MapSerializer.() -> Unit) {
-        buffer.write(Cbor.Encoding.String(key).encode())
+        serializeString(key)
         beginMap(mapDescriptor)
         block()
         endMap()
@@ -274,6 +283,8 @@ public class CborSerializer : Serializer, ListSerializer, MapSerializer, StructS
     override fun field(descriptor: SdkFieldDescriptor, value: SdkSerializable) {
         entry(descriptor.serialName, value)
     }
+
+    override fun field(descriptor: SdkFieldDescriptor, value: ByteArray) { entry(descriptor.serialName, value) }
 
     override fun structField(descriptor: SdkFieldDescriptor, block: StructSerializer.() -> Unit) {
         buffer.write(Cbor.Encoding.String(descriptor.serialName).encode())

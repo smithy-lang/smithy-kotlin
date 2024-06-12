@@ -6,10 +6,10 @@ import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.kotlin.codegen.core.KotlinWriter
 import software.amazon.smithy.kotlin.codegen.core.RuntimeTypes
+import software.amazon.smithy.kotlin.codegen.core.RuntimeTypes.Core.TimestampFormat
 import software.amazon.smithy.kotlin.codegen.core.withBlock
-import software.amazon.smithy.kotlin.codegen.model.isStringEnumShape
+import software.amazon.smithy.kotlin.codegen.model.*
 import software.amazon.smithy.kotlin.codegen.model.knowledge.SerdeIndex
-import software.amazon.smithy.kotlin.codegen.model.targetOrSelf
 import software.amazon.smithy.kotlin.codegen.rendering.protocol.ProtocolGenerator
 import software.amazon.smithy.kotlin.codegen.rendering.protocol.toRenderingContext
 import software.amazon.smithy.kotlin.codegen.rendering.serde.*
@@ -170,58 +170,13 @@ private open class CborDeserializeStructGenerator(
     members: List<MemberShape>,
     writer: KotlinWriter,
 ) : DeserializeStructGenerator(ctx, members, writer, TimestampFormatTrait.Format.EPOCH_SECONDS) {
-
-    override fun renderShapeDeserializer(memberShape: MemberShape) {
-        val memberName = ctx.symbolProvider.toMemberName(memberShape)
-        val descriptorName = memberShape.descriptorName()
-        val deserialize = deserializeFnForShape(memberShape)
-        writer.write("$descriptorName.index -> builder.$memberName = $deserialize")
-    }
-
-    /**
-     * Return Kotlin function that deserializes a primitive value.
-     * @param shape primitive [Shape] associated with value.
-     */
-    private fun deserializeFnForShape(shape: Shape): String {
-        // target shape type to deserialize is either the shape itself or member.target
+    override fun deserializerForShape(shape: Shape): String {
         val target = shape.targetOrSelf(ctx.model)
 
-        return when {
-            target.type == ShapeType.BOOLEAN -> "deserializeBoolean()"
-            target.type == ShapeType.BYTE -> "deserializeByte()"
-            target.type == ShapeType.SHORT -> "deserializeShort()"
-            target.type == ShapeType.INTEGER -> "deserializeInt()"
-            target.type == ShapeType.LONG -> "deserializeLong()"
-            target.type == ShapeType.FLOAT -> "deserializeFloat()"
-            target.type == ShapeType.DOUBLE -> "deserializeDouble()"
-            target.type == ShapeType.BIG_INTEGER -> "deserializeBigInteger()"
-            target.type == ShapeType.BIG_DECIMAL -> "deserializeBigDecimal()"
-            target.type == ShapeType.DOCUMENT -> "deserializeDocument()"
-
-            target.type == ShapeType.BLOB -> "deserializeBlob()" // note: custom function only present in CborDeserializer
-            target.type == ShapeType.TIMESTAMP -> "deserializeTimestamp()" // note: custom function only present in CborDeserializer
-
-            target.isStringEnumShape -> {
-                val enumSymbol = ctx.symbolProvider.toSymbol(target)
-                writer.addImport(enumSymbol)
-                "deserializeString().let { ${enumSymbol.name}.fromValue(it) }"
-            }
-
-            target.isIntEnumShape -> {
-                val enumSymbol = ctx.symbolProvider.toSymbol(target)
-                writer.addImport(enumSymbol)
-                "deserializeInt().let { ${enumSymbol.name}.fromValue(it) }"
-            }
-
-            target.type == ShapeType.STRING -> "deserializeString()"
-
-            target.type == ShapeType.STRUCTURE || target.type == ShapeType.UNION -> {
-                val symbol = ctx.symbolProvider.toSymbol(target)
-                val deserializerName = symbol.documentDeserializerName()
-                "$deserializerName(deserializer)"
-            }
-
-            else -> throw CodegenException("unknown deserializer for member: $shape; target: $target")
+        return when (target.type) {
+            ShapeType.BLOB -> "deserializeBlob()"
+            ShapeType.TIMESTAMP -> writer.format("deserializeTimestamp(#T.EPOCH_SECONDS)", TimestampFormat)
+            else -> super.deserializerForShape(shape)
         }
     }
 }

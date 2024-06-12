@@ -40,6 +40,7 @@ public final class aws/smithy/kotlin/runtime/serde/cbor/CborSerializer : aws/smi
 	public fun entry (Ljava/lang/String;Ljava/lang/Long;)V
 	public fun entry (Ljava/lang/String;Ljava/lang/Short;)V
 	public fun entry (Ljava/lang/String;Ljava/lang/String;)V
+	public fun entry (Ljava/lang/String;[B)V
 	public fun field (Laws/smithy/kotlin/runtime/serde/SdkFieldDescriptor;B)V
 	public fun field (Laws/smithy/kotlin/runtime/serde/SdkFieldDescriptor;C)V
 	public fun field (Laws/smithy/kotlin/runtime/serde/SdkFieldDescriptor;D)V
@@ -54,6 +55,7 @@ public final class aws/smithy/kotlin/runtime/serde/cbor/CborSerializer : aws/smi
 	public fun field (Laws/smithy/kotlin/runtime/serde/SdkFieldDescriptor;Ljava/math/BigInteger;)V
 	public fun field (Laws/smithy/kotlin/runtime/serde/SdkFieldDescriptor;S)V
 	public fun field (Laws/smithy/kotlin/runtime/serde/SdkFieldDescriptor;Z)V
+	public fun field (Laws/smithy/kotlin/runtime/serde/SdkFieldDescriptor;[B)V
 	public fun listEntry (Ljava/lang/String;Laws/smithy/kotlin/runtime/serde/SdkFieldDescriptor;Lkotlin/jvm/functions/Function1;)V
 	public fun listField (Laws/smithy/kotlin/runtime/serde/SdkFieldDescriptor;Lkotlin/jvm/functions/Function1;)V
 	public fun mapEntry (Ljava/lang/String;Laws/smithy/kotlin/runtime/serde/SdkFieldDescriptor;Lkotlin/jvm/functions/Function1;)V
@@ -63,6 +65,7 @@ public final class aws/smithy/kotlin/runtime/serde/cbor/CborSerializer : aws/smi
 	public fun serializeBigInteger (Ljava/math/BigInteger;)V
 	public fun serializeBoolean (Z)V
 	public fun serializeByte (B)V
+	public fun serializeByteArray ([B)V
 	public fun serializeChar (C)V
 	public fun serializeDocument (Laws/smithy/kotlin/runtime/content/Document;)V
 	public fun serializeDouble (D)V

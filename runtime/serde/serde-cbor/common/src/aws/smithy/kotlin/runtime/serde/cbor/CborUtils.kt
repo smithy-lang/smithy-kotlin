@@ -65,35 +65,8 @@ internal fun peekMajor(buffer: SdkBufferedSource): Major {
     return Major.fromValue(masked)
 }
 
-internal fun peekMinor(buffer: SdkBufferedSource): Minor {
-    val minorByte = buffer.peek().readByte().toUByte()
-    val masked = minorByte and MINOR_MASK
-    // 11110111
-    // AND
-    // 00011111
-    // =
-    // 0001 0111 -> 0x17 -> 23
 
-    return Minor.fromValue(masked)
-}
-
-internal fun peekMinorSafe(buffer: SdkBufferedSource): Minor? {
-    val minorByte = buffer.peek().readByte().toUByte()
-    val masked = minorByte and MINOR_MASK
-    // 11110111
-    // AND
-    // 00011111
-    // =
-    // 0001 0111 -> 0x17 -> 23
-
-    return try {
-        Minor.fromValue(masked)
-    } catch (e: Exception) {
-        null
-    }
-}
-
-internal fun peekMinorRaw(buffer: SdkBufferedSource): UByte {
+internal fun peekMinorByte(buffer: SdkBufferedSource): UByte {
     val minorByte = buffer.peek().readByte().toUByte()
     return minorByte and MINOR_MASK
 }

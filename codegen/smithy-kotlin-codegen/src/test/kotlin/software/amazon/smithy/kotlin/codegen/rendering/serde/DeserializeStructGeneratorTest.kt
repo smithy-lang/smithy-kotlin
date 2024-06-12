@@ -1744,7 +1744,7 @@ deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
             deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
                 loop@while (true) {
                     when (findNextFieldIndex()) {
-                        FOOBLOB_DESCRIPTOR.index -> builder.fooBlob = deserializeString().decodeBase64Bytes()
+                        FOOBLOB_DESCRIPTOR.index -> builder.fooBlob = deserializeBlob()
                         null -> break@loop
                         else -> skipValue()
                     }
@@ -1813,7 +1813,7 @@ deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
                                 val map0 = mutableMapOf<String, ByteArray>()
                                 while (hasNextEntry()) {
                                     val k0 = key()
-                                    val v0 = if (nextHasValue()) { deserializeString().decodeBase64Bytes() } else { deserializeNull(); continue }
+                                    val v0 = if (nextHasValue()) { deserializeBlob() } else { deserializeNull(); continue }
                                     map0[k0] = v0
                                 }
                                 map0
@@ -1852,7 +1852,7 @@ deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
                             deserializer.deserializeList(FOOBLOBLIST_DESCRIPTOR) {
                                 val col0 = mutableListOf<ByteArray>()
                                 while (hasNextElement()) {
-                                    val el0 = if (nextHasValue()) { deserializeString().decodeBase64Bytes() } else { deserializeNull(); continue }
+                                    val el0 = if (nextHasValue()) { deserializeBlob() } else { deserializeNull(); continue }
                                     col0.add(el0)
                                 }
                                 col0

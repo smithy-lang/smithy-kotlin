@@ -4,6 +4,7 @@
  */
 package software.amazon.smithy.kotlin.codegen.rendering.serde
 
+import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.codegen.core.SymbolReference
 import software.amazon.smithy.kotlin.codegen.core.KotlinWriter
@@ -19,12 +20,12 @@ import software.amazon.smithy.model.traits.TimestampFormatTrait
 open class CborSerializerGenerator(
     private val protocolGenerator: ProtocolGenerator,
 ) : StructuredDataSerializerGenerator {
-
     override fun operationSerializer(ctx: ProtocolGenerator.GenerationContext, op: OperationShape, members: List<MemberShape>): Symbol {
         val input = op.input.get().let { ctx.model.expectShape(it) }
         val symbol = ctx.symbolProvider.toSymbol(input)
 
         return op.bodySerializer(ctx.settings) { writer ->
+            addNestedDocumentSerializers(ctx, op, writer)
             writer.withBlock("private fun #L(context: #T, input: #T): ByteArray {", "}", op.bodySerializerName(), RuntimeTypes.Core.ExecutionContext, symbol) {
                 call {
                     renderSerializeOperationBody(ctx, op, members, writer)
@@ -52,10 +53,10 @@ open class CborSerializerGenerator(
         writer: KotlinWriter,
     ) {
         descriptorGenerator(ctx, shape, members, writer).render() // render the serde descriptors
-
         when (shape) {
-            is UnionShape -> SerializeUnionGenerator(ctx, shape, members, writer, TimestampFormatTrait.Format.EPOCH_SECONDS).render()
-            else -> SerializeStructGenerator(ctx, members, writer, TimestampFormatTrait.Format.EPOCH_SECONDS).render()
+            is DocumentShape -> throw CodegenException("CBOR does not support Smithy documents.")
+            is UnionShape -> CborSerializeUnionGenerator(ctx, shape, members, writer, TimestampFormatTrait.Format.EPOCH_SECONDS).render()
+            else -> CborSerializeStructGenerator(ctx, members, writer, TimestampFormatTrait.Format.EPOCH_SECONDS).render()
         }
     }
 

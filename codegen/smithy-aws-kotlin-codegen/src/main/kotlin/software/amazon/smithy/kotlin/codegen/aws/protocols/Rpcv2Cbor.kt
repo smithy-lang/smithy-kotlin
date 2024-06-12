@@ -12,7 +12,9 @@ import software.amazon.smithy.kotlin.codegen.core.RuntimeTypes
 import software.amazon.smithy.kotlin.codegen.model.isInputEventStream
 import software.amazon.smithy.kotlin.codegen.model.isOutputEventStream
 import software.amazon.smithy.kotlin.codegen.rendering.protocol.HttpBindingResolver
+import software.amazon.smithy.kotlin.codegen.rendering.protocol.MutateHeadersMiddleware
 import software.amazon.smithy.kotlin.codegen.rendering.protocol.ProtocolGenerator
+import software.amazon.smithy.kotlin.codegen.rendering.protocol.ProtocolMiddleware
 import software.amazon.smithy.kotlin.codegen.rendering.serde.CborSerializerGenerator
 import software.amazon.smithy.kotlin.codegen.rendering.serde.StructuredDataParserGenerator
 import software.amazon.smithy.kotlin.codegen.rendering.serde.StructuredDataSerializerGenerator
@@ -43,15 +45,28 @@ class Rpcv2Cbor : AwsHttpBindingProtocolGenerator() {
         writer.write("#T.deserialize(payload)", RuntimeTypes.SmithyRpcv2Protocols.Cbor.Rpcv2CborErrorDeserializer)
     }
 
-    class Rpcv2CborHttpBindingResolver(model: Model, serviceShape: ServiceShape) : StaticHttpBindingResolver(model, serviceShape, Rpcv2CborHttpTrait, "application/cbor", TimestampFormatTrait.Format.EPOCH_SECONDS) {
+    override fun getDefaultHttpMiddleware(ctx: ProtocolGenerator.GenerationContext): List<ProtocolMiddleware> {
+         val smithyProtocolHeader = MutateHeadersMiddleware(overrideHeaders = mapOf("smithy-protocol" to "rpc-v2-cbor"))
+        return super.getDefaultHttpMiddleware(ctx) + smithyProtocolHeader
+    }
+
+
+    class Rpcv2CborHttpBindingResolver(model: Model, val serviceShape: ServiceShape) : StaticHttpBindingResolver(model, serviceShape, DefaultRpcv2CborHttpTrait, "application/cbor", TimestampFormatTrait.Format.EPOCH_SECONDS) {
         companion object {
-            val Rpcv2CborHttpTrait: HttpTrait = HttpTrait
+            val DefaultRpcv2CborHttpTrait: HttpTrait = HttpTrait
                 .builder()
                 .code(200)
                 .method("POST")
                 .uri(UriPattern.parse("/"))
                 .build()
         }
+
+        override fun httpTrait(operationShape: OperationShape): HttpTrait = HttpTrait
+            .builder()
+            .code(200)
+            .method("POST")
+            .uri(UriPattern.parse("/service/${serviceShape.id.name}/operation/${operationShape.id.name}"))
+            .build()
 
         override fun determineRequestContentType(operationShape: OperationShape): String =
             if (operationShape.isInputEventStream(model) || operationShape.isOutputEventStream(model)) {

@@ -10,6 +10,9 @@ import aws.smithy.kotlin.runtime.content.BigDecimal
 import aws.smithy.kotlin.runtime.content.BigInteger
 import aws.smithy.kotlin.runtime.content.Document
 import aws.smithy.kotlin.runtime.serde.*
+import aws.smithy.kotlin.runtime.text.encoding.decodeBase64Bytes
+import aws.smithy.kotlin.runtime.time.Instant
+import aws.smithy.kotlin.runtime.time.TimestampFormat
 
 private const val FIRST_FIELD_INDEX: Int = 0
 
@@ -320,6 +323,15 @@ private class XmlStructDeserializer(
 
     override fun deserializeDocument(): Document {
         throw DeserializationException("cannot deserialize unsupported Document type in xml")
+    }
+
+    override fun deserializeBlob(): ByteArray = deserializeString().decodeBase64Bytes()
+
+    override fun deserializeTimestamp(format: TimestampFormat): Instant = when(format) {
+        TimestampFormat.EPOCH_SECONDS -> deserializeString().let { Instant.fromEpochSeconds(it) }
+        TimestampFormat.ISO_8601 -> deserializeString().let { Instant.fromIso8601(it) }
+        TimestampFormat.RFC_5322 -> deserializeString().let { Instant.fromRfc5322(it) }
+        else -> throw DeserializationException("unknown timestamp format: $format")
     }
 
     override fun deserializeNull(): Nothing? {

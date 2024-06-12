@@ -8,6 +8,8 @@ import aws.smithy.kotlin.runtime.InternalApi
 import aws.smithy.kotlin.runtime.content.BigDecimal
 import aws.smithy.kotlin.runtime.content.BigInteger
 import aws.smithy.kotlin.runtime.content.Document
+import aws.smithy.kotlin.runtime.time.Instant
+import aws.smithy.kotlin.runtime.time.TimestampFormat
 
 /**
  * Deserializer is a format agnostic deserialization interface. Specific formats (e.g. JSON, XML, etc) implement
@@ -223,6 +225,17 @@ public interface PrimitiveDeserializer {
      * Consume the next token if represents a null value. Always returns null.
      */
     public fun deserializeNull(): Nothing?
+
+    /**
+     * Deserialize and return the next token as a [ByteArray].
+     */
+    public fun deserializeBlob(): ByteArray
+
+    /**
+     * Deserialize and return the next token as an [Instant].
+     * @param format The [TimestampFormat] that this timestamp is encoded in
+     */
+    public fun deserializeTimestamp(format: TimestampFormat): Instant
 }
 
 @InternalApi

@@ -174,6 +174,15 @@ public interface StructSerializer : PrimitiveSerializer {
 
     /**
      * Writes the field name given in the descriptor, and then
+     * serializes value.
+     *
+     * @param descriptor
+     * @param value
+     */
+    public fun field(descriptor: SdkFieldDescriptor, value: ByteArray)
+
+    /**
+     * Writes the field name given in the descriptor, and then
      * serializes the struct field using the given block.
      *
      * @param descriptor
@@ -337,6 +346,9 @@ public interface MapSerializer : PrimitiveSerializer {
      */
     public fun entry(key: String, value: Document?)
 
+
+    public fun entry(key: String, value: ByteArray?)
+
     /**
      * Writes the field name given in the descriptor, and then
      * serializes the list field using the given block.
@@ -452,6 +464,13 @@ public interface PrimitiveSerializer {
      * @param value
      */
     public fun serializeInstant(value: Instant, format: TimestampFormat)
+
+    /**
+     * Serializes the given value.
+     *
+     * @param value
+     */
+    public fun serializeByteArray(value: ByteArray)
 
     /**
      * Calls the serialize method on the given object.

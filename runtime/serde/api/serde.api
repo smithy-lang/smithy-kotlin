@@ -64,6 +64,7 @@ public abstract interface class aws/smithy/kotlin/runtime/serde/MapSerializer : 
 	public abstract fun entry (Ljava/lang/String;Ljava/lang/Long;)V
 	public abstract fun entry (Ljava/lang/String;Ljava/lang/Short;)V
 	public abstract fun entry (Ljava/lang/String;Ljava/lang/String;)V
+	public abstract fun entry (Ljava/lang/String;[B)V
 	public abstract fun listEntry (Ljava/lang/String;Laws/smithy/kotlin/runtime/serde/SdkFieldDescriptor;Lkotlin/jvm/functions/Function1;)V
 	public abstract fun mapEntry (Ljava/lang/String;Laws/smithy/kotlin/runtime/serde/SdkFieldDescriptor;Lkotlin/jvm/functions/Function1;)V
 }
@@ -96,6 +97,7 @@ public final class aws/smithy/kotlin/runtime/serde/ParsersKt {
 public abstract interface class aws/smithy/kotlin/runtime/serde/PrimitiveDeserializer {
 	public abstract fun deserializeBigDecimal ()Ljava/math/BigDecimal;
 	public abstract fun deserializeBigInteger ()Ljava/math/BigInteger;
+	public abstract fun deserializeBlob ()[B
 	public abstract fun deserializeBoolean ()Z
 	public abstract fun deserializeByte ()B
 	public abstract fun deserializeDocument ()Laws/smithy/kotlin/runtime/content/Document;
@@ -106,6 +108,7 @@ public abstract interface class aws/smithy/kotlin/runtime/serde/PrimitiveDeseria
 	public abstract fun deserializeNull ()Ljava/lang/Void;
 	public abstract fun deserializeShort ()S
 	public abstract fun deserializeString ()Ljava/lang/String;
+	public abstract fun deserializeTimestamp (Laws/smithy/kotlin/runtime/time/TimestampFormat;)Laws/smithy/kotlin/runtime/time/Instant;
 }
 
 public abstract interface class aws/smithy/kotlin/runtime/serde/PrimitiveSerializer {
@@ -113,6 +116,7 @@ public abstract interface class aws/smithy/kotlin/runtime/serde/PrimitiveSeriali
 	public abstract fun serializeBigInteger (Ljava/math/BigInteger;)V
 	public abstract fun serializeBoolean (Z)V
 	public abstract fun serializeByte (B)V
+	public abstract fun serializeByteArray ([B)V
 	public abstract fun serializeChar (C)V
 	public abstract fun serializeDocument (Laws/smithy/kotlin/runtime/content/Document;)V
 	public abstract fun serializeDouble (D)V
@@ -288,6 +292,7 @@ public abstract interface class aws/smithy/kotlin/runtime/serde/StructSerializer
 	public abstract fun field (Laws/smithy/kotlin/runtime/serde/SdkFieldDescriptor;Ljava/math/BigInteger;)V
 	public abstract fun field (Laws/smithy/kotlin/runtime/serde/SdkFieldDescriptor;S)V
 	public abstract fun field (Laws/smithy/kotlin/runtime/serde/SdkFieldDescriptor;Z)V
+	public abstract fun field (Laws/smithy/kotlin/runtime/serde/SdkFieldDescriptor;[B)V
 	public abstract fun listField (Laws/smithy/kotlin/runtime/serde/SdkFieldDescriptor;Lkotlin/jvm/functions/Function1;)V
 	public abstract fun mapField (Laws/smithy/kotlin/runtime/serde/SdkFieldDescriptor;Lkotlin/jvm/functions/Function1;)V
 	public abstract fun nullField (Laws/smithy/kotlin/runtime/serde/SdkFieldDescriptor;)V

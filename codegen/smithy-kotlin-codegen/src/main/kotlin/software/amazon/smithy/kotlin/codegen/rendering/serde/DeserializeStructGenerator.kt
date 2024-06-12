@@ -593,7 +593,7 @@ open class DeserializeStructGenerator(
      * Return Kotlin function that deserializes a primitive value.
      * @param shape primitive [Shape] associated with value.
      */
-    protected fun deserializerForShape(shape: Shape): String {
+    open fun deserializerForShape(shape: Shape): String {
         // target shape type to deserialize is either the shape itself or member.target
         val target = shape.targetOrSelf(ctx.model)
 
@@ -608,24 +608,12 @@ open class DeserializeStructGenerator(
             target.type == ShapeType.BIG_INTEGER -> "deserializeBigInteger()"
             target.type == ShapeType.BIG_DECIMAL -> "deserializeBigDecimal()"
             target.type == ShapeType.DOCUMENT -> "deserializeDocument()"
-
-            target.type == ShapeType.BLOB -> {
-                writer.addImport(RuntimeTypes.Core.Text.Encoding.decodeBase64Bytes)
-                "deserializeString().decodeBase64Bytes()"
-            }
-
+            target.type == ShapeType.BLOB -> "deserializeBlob()"
             target.type == ShapeType.TIMESTAMP -> {
-                // FIXME add a customization for CBOR
                 writer.addImport(RuntimeTypes.Core.Instant)
                 val trait = shape.getTrait<TimestampFormatTrait>() ?: target.getTrait()
                 val tsFormat = trait?.format ?: defaultTimestampFormat
-
-                when (tsFormat) {
-                    TimestampFormatTrait.Format.EPOCH_SECONDS -> "deserializeString().let { Instant.fromEpochSeconds(it) }"
-                    TimestampFormatTrait.Format.DATE_TIME -> "deserializeString().let { Instant.fromIso8601(it) }"
-                    TimestampFormatTrait.Format.HTTP_DATE -> "deserializeString().let { Instant.fromRfc5322(it) }"
-                    else -> throw CodegenException("unknown timestamp format: $tsFormat")
-                }
+                "deserializeTimestamp(${tsFormat.toRuntimeEnum()})"
             }
 
             target.isStringEnumShape -> {

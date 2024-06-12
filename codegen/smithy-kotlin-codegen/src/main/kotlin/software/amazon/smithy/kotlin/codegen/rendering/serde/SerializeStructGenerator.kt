@@ -174,7 +174,7 @@ open class SerializeStructGenerator(
     /**
      * Delegates to other functions based on the type of value target of map.
      */
-    protected fun delegateMapSerialization(rootMemberShape: MemberShape, mapShape: MapShape, nestingLevel: Int, parentMemberName: String) {
+    open fun delegateMapSerialization(rootMemberShape: MemberShape, mapShape: MapShape, nestingLevel: Int, parentMemberName: String) {
         val keyShape = ctx.model.expectShape(mapShape.key.target)
         val elementShape = ctx.model.expectShape(mapShape.value.target)
         val isSparse = mapShape.isSparse
@@ -237,7 +237,7 @@ open class SerializeStructGenerator(
     /**
      * Delegates to other functions based on the type of element.
      */
-    protected fun delegateListSerialization(rootMemberShape: MemberShape, listShape: CollectionShape, nestingLevel: Int, parentMemberName: String) {
+    open fun delegateListSerialization(rootMemberShape: MemberShape, listShape: CollectionShape, nestingLevel: Int, parentMemberName: String) {
         val elementShape = ctx.model.expectShape(listShape.member.target)
         val isSparse = listShape.isSparse
 
@@ -671,7 +671,7 @@ open class SerializeStructGenerator(
             require(target.type == ShapeType.STRUCTURE || target.type == ShapeType.UNION) { "Unexpected serializer for member: $member; target: $target" }
 
             val symbol = ctx.symbolProvider.toSymbol(target)
-            val memberSerializerName = symbol.documentSerializerName()
+            val memberSerializerName = symbol.documentSerializerName() // FIXME Matas: This is where the document function usage is being introduced
             val descriptor = member.descriptorName()
             // invoke the ctor of the serializer to delegate to and pass the value
             "field($descriptor, $identifier, ::$memberSerializerName)"
@@ -681,7 +681,7 @@ open class SerializeStructGenerator(
      * Get the serialization function and encoded value for the given [Shape], this only handles
      * [simple types](https://smithy.io/2.0/spec/simple-types.html),  collections should be handled separately.
      */
-    private val serializerForSimpleShape = SerializeFunction { member, identifier ->
+    open val serializerForSimpleShape = SerializeFunction { member, identifier ->
         // target shape type to deserialize is either the shape itself or member.target
         val target = member.targetOrSelf(ctx.model)
 
