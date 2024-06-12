@@ -55,3 +55,15 @@ public fun assertBytesEqual(expected: ByteArray?, actual: ByteArray?) {
             "actual: `${actual.decodeToString()}`",
     )
 }
+
+/**
+ * Check if the given [ExpectedHttpRequestBuilder.bodyMediaType] or [ExpectedHttpResponse.bodyMediaType]
+ * is a binary media type. This means that the content must be base64-encoded / decoded prior to validation.
+ *
+ * https://smithy.io/2.0/additional-specs/http-protocol-compliance-tests.html
+ * > Because the body parameter is a string, binary data MUST be represented in body by base64 encoding the data (for example, use "Zm9vCg==" and not "foo").
+ */
+public val String.isBinaryMediaType: Boolean
+    get() = listOf(
+        "application/cbor"
+    ).contains(this.lowercase())
