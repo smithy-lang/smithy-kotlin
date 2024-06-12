@@ -123,5 +123,4 @@ class CborSerializeUnionGenerator(
         val fn = serializerFn.format(memberShape, "input.value")
         writer.write("is $unionTypeName -> $fn")
     }
-
 }

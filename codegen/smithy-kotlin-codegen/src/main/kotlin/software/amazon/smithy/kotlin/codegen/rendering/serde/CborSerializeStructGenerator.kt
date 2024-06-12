@@ -22,14 +22,14 @@ open class CborSerializeStructGenerator(
     ctx: ProtocolGenerator.GenerationContext,
     members: List<MemberShape>,
     writer: KotlinWriter,
-    defaultTimestampFormat: TimestampFormatTrait.Format
+    defaultTimestampFormat: TimestampFormatTrait.Format,
 ) : SerializeStructGenerator(ctx, members, writer, defaultTimestampFormat) {
 
     override fun delegateMapSerialization(
         rootMemberShape: MemberShape,
         mapShape: MapShape,
         nestingLevel: Int,
-        parentMemberName: String
+        parentMemberName: String,
     ) {
         val keyShape = ctx.model.expectShape(mapShape.key.target)
         val elementShape = ctx.model.expectShape(mapShape.value.target)
@@ -59,6 +59,7 @@ open class CborSerializeStructGenerator(
             }
         }
     }
+
     /**
      * Generate key and value names for iteration based on nesting level
      * @param nestingLevel current level of nesting
@@ -77,7 +78,7 @@ open class CborSerializeStructGenerator(
         rootMemberShape: MemberShape,
         listShape: CollectionShape,
         nestingLevel: Int,
-        parentMemberName: String
+        parentMemberName: String,
     ) {
         val elementShape = ctx.model.expectShape(listShape.member.target)
         val isSparse = listShape.isSparse
@@ -132,5 +133,4 @@ open class CborSerializeStructGenerator(
         val descriptor = member.descriptorName()
         "field($descriptor, $encoded)"
     }
-
 }

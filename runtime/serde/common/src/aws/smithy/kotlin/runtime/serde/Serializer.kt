@@ -346,7 +346,6 @@ public interface MapSerializer : PrimitiveSerializer {
      */
     public fun entry(key: String, value: Document?)
 
-
     public fun entry(key: String, value: ByteArray?)
 
     /**

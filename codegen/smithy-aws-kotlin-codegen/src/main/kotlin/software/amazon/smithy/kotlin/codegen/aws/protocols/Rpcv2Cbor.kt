@@ -46,10 +46,9 @@ class Rpcv2Cbor : AwsHttpBindingProtocolGenerator() {
     }
 
     override fun getDefaultHttpMiddleware(ctx: ProtocolGenerator.GenerationContext): List<ProtocolMiddleware> {
-         val smithyProtocolHeader = MutateHeadersMiddleware(overrideHeaders = mapOf("smithy-protocol" to "rpc-v2-cbor"))
+        val smithyProtocolHeader = MutateHeadersMiddleware(overrideHeaders = mapOf("smithy-protocol" to "rpc-v2-cbor"))
         return super.getDefaultHttpMiddleware(ctx) + smithyProtocolHeader
     }
-
 
     class Rpcv2CborHttpBindingResolver(model: Model, val serviceShape: ServiceShape) : StaticHttpBindingResolver(model, serviceShape, DefaultRpcv2CborHttpTrait, "application/cbor", TimestampFormatTrait.Format.EPOCH_SECONDS) {
         companion object {

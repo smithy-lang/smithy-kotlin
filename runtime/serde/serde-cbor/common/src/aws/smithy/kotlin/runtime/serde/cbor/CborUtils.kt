@@ -65,7 +65,6 @@ internal fun peekMajor(buffer: SdkBufferedSource): Major {
     return Major.fromValue(masked)
 }
 
-
 internal fun peekMinorByte(buffer: SdkBufferedSource): UByte {
     val minorByte = buffer.peek().readByte().toUByte()
     return minorByte and MINOR_MASK
