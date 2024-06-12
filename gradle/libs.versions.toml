@@ -2,7 +2,7 @@
 kotlin-version = "1.9.23"
 dokka-version = "1.9.10"
 
-aws-kotlin-repo-tools-version = "0.4.5"
+aws-kotlin-repo-tools-version = "0.4.6"
 
 # libs
 coroutines-version = "1.7.3"
@@ -65,6 +65,7 @@ smithy-cli = { module = "software.amazon.smithy:smithy-cli", version.ref = "smit
 smithy-model = { module = "software.amazon.smithy:smithy-model", version.ref = "smithy-version" }
 smithy-waiters = { module = "software.amazon.smithy:smithy-waiters", version.ref = "smithy-version" }
 smithy-protocol-traits = { module = "software.amazon.smithy:smithy-protocol-traits", version.ref = "smithy-version" }
+smithy-protocol-tests = { module = "software.amazon.smithy:smithy-protocol-tests", version.ref = "smithy-version" }
 smithy-protocol-test-traits = { module = "software.amazon.smithy:smithy-protocol-test-traits", version.ref = "smithy-version" }
 smithy-aws-traits = { module = "software.amazon.smithy:smithy-aws-traits", version.ref = "smithy-version" }
 smithy-rules-engine = { module = "software.amazon.smithy:smithy-rules-engine", version.ref = "smithy-version" }
