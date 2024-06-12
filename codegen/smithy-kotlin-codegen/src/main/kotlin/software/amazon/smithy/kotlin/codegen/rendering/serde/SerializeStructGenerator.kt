@@ -738,6 +738,7 @@ open class SerializeStructGenerator(
             ShapeType.DOUBLE -> "Double"
             ShapeType.DOCUMENT -> "Document"
             ShapeType.STRUCTURE, ShapeType.UNION -> "SdkSerializable"
+            ShapeType.BLOB -> "ByteArray"
             else -> throw CodegenException("$this has no primitive serialize function on the Serializer interface")
         }
         return "serialize$suffix"
