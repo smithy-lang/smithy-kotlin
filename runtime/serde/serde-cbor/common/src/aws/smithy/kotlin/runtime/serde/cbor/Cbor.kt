@@ -81,9 +81,9 @@ internal object Cbor {
 
             internal companion object {
                 fun decode(buffer: SdkBufferedSource): ByteString {
-                    val minor = peekMinorSafe(buffer)
+                    val minor = peekMinorByte(buffer)
 
-                    return if (minor == Minor.INDEFINITE) {
+                    return if (minor == Minor.INDEFINITE.value) {
                         val list = IndefiniteList.decode(buffer).value
 
                         val tempBuffer = SdkBuffer()
@@ -121,9 +121,9 @@ internal object Cbor {
 
             internal companion object {
                 fun decode(buffer: SdkBufferedSource): String {
-                    val minor = peekMinorSafe(buffer)
+                    val minor = peekMinorByte(buffer)
 
-                    return if (minor == Minor.INDEFINITE) {
+                    return if (minor == Minor.INDEFINITE.value) {
                         val list = IndefiniteList.decode(buffer).value
 
                         val sb = StringBuilder()
@@ -266,7 +266,7 @@ internal object Cbor {
                     buffer.readByte() // discard head byte
                     val valueMap = mutableMapOf<String, Value>()
 
-                    while (peekMajor(buffer) != Major.TYPE_7 && peekMinor(buffer) != Minor.INDEFINITE) {
+                    while (peekMajor(buffer) != Major.TYPE_7 && peekMinorByte(buffer) != Minor.INDEFINITE.value) {
                         val key = String.decode(buffer)
                         val value = decodeNextValue(buffer)
                         valueMap[key] = value
@@ -290,7 +290,7 @@ internal object Cbor {
             override fun encode(): ByteArray = byteArrayOf(*encodeArgument(Major.TAG, id), *value.encode())
 
             internal companion object {
-                fun decode(buffer: SdkBufferedSource): Tag = when (val id = peekMinorRaw(buffer).toUInt()) {
+                fun decode(buffer: SdkBufferedSource): Tag = when (val id = peekMinorByte(buffer).toUInt()) {
                     1u -> { Tag(id.toULong(), Timestamp.decode(buffer)) }
                     2u -> { Tag(id.toULong(), BigNum.decode(buffer)) }
                     3u -> { Tag(id.toULong(), NegBigNum.decode(buffer)) }
@@ -319,9 +319,9 @@ internal object Cbor {
                     val major = peekMajor(buffer)
                     check(major == Major.TYPE_7) { "Expected ${Major.TYPE_7} for CBOR boolean, got $major" }
 
-                    return when (val minor = peekMinor(buffer)) {
-                        Minor.FALSE -> { Boolean(false) }
-                        Minor.TRUE -> { Boolean(true) }
+                    return when (val minor = peekMinorByte(buffer)) {
+                        Minor.FALSE.value -> { Boolean(false) }
+                        Minor.TRUE.value -> { Boolean(true) }
                         else -> throw DeserializationException("Unknown minor argument $minor for Boolean.")
                     }.also {
                         buffer.readByte()
@@ -343,8 +343,8 @@ internal object Cbor {
                     val major = peekMajor(buffer)
                     check(major == Major.TYPE_7) { "Expected ${Major.TYPE_7} for CBOR null, got $major" }
 
-                    val minor = peekMinor(buffer)
-                    check(minor == Minor.NULL || minor == Minor.UNDEFINED) { "Expected ${Minor.NULL} or ${Minor.UNDEFINED} for CBOR null, got $minor" }
+                    val minor = peekMinorByte(buffer)
+                    check(minor == Minor.NULL.value || minor == Minor.UNDEFINED.value) { "Expected ${Minor.NULL} or ${Minor.UNDEFINED} for CBOR null, got $minor" }
 
                     buffer.readByte() // consume the byte
                     return Null()
@@ -469,7 +469,7 @@ internal object Cbor {
                     check(tagId == 1) { "Expected tag ID 1 for CBOR timestamp, got $tagId" }
 
                     val major = peekMajor(buffer)
-                    val minor = peekMinorRaw(buffer)
+                    val minor = peekMinorByte(buffer)
 
                     val instant: Instant = when (major) {
                         Major.U_INT -> {
@@ -653,8 +653,8 @@ internal object Cbor {
                     val major = peekMajor(buffer)
                     check(major == Major.TYPE_7) { "Expected CBOR indefinite break stop-code to be major ${Major.TYPE_7}, got $major." }
 
-                    val minor = peekMinor(buffer)
-                    check(minor == Minor.INDEFINITE) { "Expected CBOR indefinite break stop-code to be minor ${Minor.INDEFINITE}, got $minor." }
+                    val minor = peekMinorByte(buffer)
+                    check(minor == Minor.INDEFINITE.value) { "Expected CBOR indefinite break stop-code to be minor ${Minor.INDEFINITE}, got $minor." }
 
                     buffer.readByte() // discard major/minor
                     return IndefiniteBreak()
@@ -752,7 +752,7 @@ private fun ByteArray.toULong() = foldIndexed(0uL) { i, acc, byte ->
 
 internal fun decodeNextValue(buffer: SdkBufferedSource): Cbor.Value {
     val major = peekMajor(buffer)
-    val minor = peekMinorSafe(buffer)
+    val minor = peekMinorByte(buffer)
 
     return when (major) {
         Major.U_INT -> Cbor.Encoding.UInt.decode(buffer)
@@ -760,14 +760,14 @@ internal fun decodeNextValue(buffer: SdkBufferedSource): Cbor.Value {
         Major.BYTE_STRING -> Cbor.Encoding.ByteString.decode(buffer)
         Major.STRING -> Cbor.Encoding.String.decode(buffer)
         Major.LIST -> {
-            return if (minor == Minor.INDEFINITE) {
+            return if (minor == Minor.INDEFINITE.value) {
                 Cbor.Encoding.IndefiniteList.decode(buffer)
             } else {
                 Cbor.Encoding.List.decode(buffer)
             }
         }
         Major.MAP -> {
-            if (minor == Minor.INDEFINITE) {
+            if (minor == Minor.INDEFINITE.value) {
                 Cbor.Encoding.IndefiniteMap.decode(buffer)
             } else {
                 Cbor.Encoding.Map.decode(buffer)
@@ -775,8 +775,7 @@ internal fun decodeNextValue(buffer: SdkBufferedSource): Cbor.Value {
         }
         Major.TAG -> Cbor.Encoding.Tag.decode(buffer)
         Major.TYPE_7 -> {
-            val rawMinorValue = peekMinorRaw(buffer)
-            when (rawMinorValue) {
+            when (minor) {
                 Minor.TRUE.value -> Cbor.Encoding.Boolean.decode(buffer)
                 Minor.FALSE.value -> Cbor.Encoding.Boolean.decode(buffer)
                 Minor.NULL.value -> Cbor.Encoding.Null.decode(buffer)
