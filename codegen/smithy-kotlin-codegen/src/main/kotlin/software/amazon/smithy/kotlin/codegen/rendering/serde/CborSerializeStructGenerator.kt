@@ -103,7 +103,7 @@ open class CborSerializeStructGenerator(
 
         writer.withBlock("for ($elementName in $containerName$listMemberName) {", "}") {
             writer.wrapBlockIf(isSparse, "if ($elementName != null) {", "} else serializeNull()") {
-                writer.write("serializeBlob($elementName)")
+                writer.write("serializeByteArray($elementName)")
             }
         }
     }
