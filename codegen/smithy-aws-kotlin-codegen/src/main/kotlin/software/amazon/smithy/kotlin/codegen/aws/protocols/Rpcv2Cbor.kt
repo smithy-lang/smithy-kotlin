@@ -11,10 +11,7 @@ import software.amazon.smithy.kotlin.codegen.core.KotlinWriter
 import software.amazon.smithy.kotlin.codegen.core.RuntimeTypes
 import software.amazon.smithy.kotlin.codegen.model.isInputEventStream
 import software.amazon.smithy.kotlin.codegen.model.isOutputEventStream
-import software.amazon.smithy.kotlin.codegen.rendering.protocol.HttpBindingResolver
-import software.amazon.smithy.kotlin.codegen.rendering.protocol.MutateHeadersMiddleware
-import software.amazon.smithy.kotlin.codegen.rendering.protocol.ProtocolGenerator
-import software.amazon.smithy.kotlin.codegen.rendering.protocol.ProtocolMiddleware
+import software.amazon.smithy.kotlin.codegen.rendering.protocol.*
 import software.amazon.smithy.kotlin.codegen.rendering.serde.CborSerializerGenerator
 import software.amazon.smithy.kotlin.codegen.rendering.serde.StructuredDataParserGenerator
 import software.amazon.smithy.kotlin.codegen.rendering.serde.StructuredDataSerializerGenerator
@@ -46,8 +43,19 @@ class Rpcv2Cbor : AwsHttpBindingProtocolGenerator() {
     }
 
     override fun getDefaultHttpMiddleware(ctx: ProtocolGenerator.GenerationContext): List<ProtocolMiddleware> {
-        val smithyProtocolHeader = MutateHeadersMiddleware(overrideHeaders = mapOf("smithy-protocol" to "rpc-v2-cbor"))
-        return super.getDefaultHttpMiddleware(ctx) + smithyProtocolHeader
+        // Every request for the rpcv2Cbor protocol MUST contain a `smithy-protocol` header with the value of `rpc-v2-cbor`
+        val smithyProtocolHeaderMiddleware = MutateHeadersMiddleware(overrideHeaders = mapOf("smithy-protocol" to "rpc-v2-cbor"))
+
+        // Requests with event stream responses for the rpcv2Cbor protocol MUST include an `Accept` header set to the value `application/vnd.amazon.eventstream`
+        val eventStreamsAcceptHeaderMiddleware = object: ProtocolMiddleware {
+            private val mutateHeadersMiddleware = MutateHeadersMiddleware(extraHeaders = mapOf("Accept" to "application/vnd.amazon.eventstream"))
+
+            override fun isEnabledFor(ctx: ProtocolGenerator.GenerationContext, op: OperationShape): Boolean = op.isOutputEventStream(ctx.model)
+            override val name: String = "Rpcv2CborEventStreamsAcceptHeaderMiddleware"
+            override fun render(ctx: ProtocolGenerator.GenerationContext, op: OperationShape, writer: KotlinWriter) = mutateHeadersMiddleware.render(ctx, op, writer)
+        }
+
+        return super.getDefaultHttpMiddleware(ctx) + listOf(smithyProtocolHeaderMiddleware, eventStreamsAcceptHeaderMiddleware)
     }
 
     class Rpcv2CborHttpBindingResolver(model: Model, val serviceShape: ServiceShape) : StaticHttpBindingResolver(model, serviceShape, DefaultRpcv2CborHttpTrait, "application/cbor", TimestampFormatTrait.Format.EPOCH_SECONDS) {
@@ -67,11 +75,10 @@ class Rpcv2Cbor : AwsHttpBindingProtocolGenerator() {
             .uri(UriPattern.parse("/service/${serviceShape.id.name}/operation/${operationShape.id.name}"))
             .build()
 
-        override fun determineRequestContentType(operationShape: OperationShape): String =
-            if (operationShape.isInputEventStream(model) || operationShape.isOutputEventStream(model)) {
-                "application/vnd.amazon.eventstream"
-            } else {
-                "application/cbor"
-            }
+        override fun determineRequestContentType(operationShape: OperationShape): String = when {
+            operationShape.isInputEventStream(model) -> "application/vnd.amazon.eventstream"
+            else -> "application/cbor"
+        }
     }
 }
+
