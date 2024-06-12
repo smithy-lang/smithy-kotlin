@@ -16,8 +16,9 @@ public class CborDeserializer(payload: ByteArray) : Deserializer {
     private val buffer = SdkBuffer().apply { write(payload) }
 
     override fun deserializeStruct(descriptor: SdkObjectDescriptor): Deserializer.FieldIterator {
-        val major = peekMajor(buffer)
-        check(major == Major.MAP) { "Expected major ${Major.MAP} for structure, got $major." }
+        peekMajor(buffer).let {
+            check(it == Major.MAP) { "Expected major ${Major.MAP} for structure, got $it." }
+        }
 
         val expectedLength = if (peekMinorByte(buffer) == Minor.INDEFINITE.value) {
             buffer.readByte() // no length encoded, discard head
