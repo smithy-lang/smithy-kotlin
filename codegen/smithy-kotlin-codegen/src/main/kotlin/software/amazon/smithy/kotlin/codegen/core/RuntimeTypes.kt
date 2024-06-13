@@ -103,7 +103,7 @@ object RuntimeTypes {
         object BusinessMetrics : RuntimeTypePackage(KotlinDependency.CORE, "businessmetrics") {
             val AccountIdBasedEndpointAccountId = symbol("AccountIdBasedEndpointAccountId")
             val ServiceEndpointOverride = symbol("ServiceEndpointOverride")
-            val emitBusinessMetrics = symbol("emitBusinessMetric")
+            val emitBusinessMetric = symbol("emitBusinessMetric")
             val SmithyBusinessMetric = symbol("SmithyBusinessMetric")
         }
 
@@ -118,6 +118,7 @@ object RuntimeTypes {
             val putIfAbsentNotNull = symbol("putIfAbsentNotNull")
             val ReadThroughCache = symbol("ReadThroughCache")
             val toMutableAttributes = symbol("toMutableAttributes")
+            val emptyAttributes = symbol("emptyAttributes")
         }
 
         object Content : RuntimeTypePackage(KotlinDependency.CORE, "content") {

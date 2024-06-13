@@ -87,7 +87,11 @@ class DefaultEndpointProviderTestGenerator(
                         RuntimeTypes.Core.BusinessMetrics.AccountIdBasedEndpointAccountId,
                     )
                     writer.write(
-                        "val newActual = #T(actual.uri, actual.headers, newActualAttributes)",
+                        "val newActualAttributesOrEmpty = if (newActualAttributes.isEmpty) #T() else newActualAttributes",
+                        RuntimeTypes.Core.Collections.emptyAttributes
+                    )
+                    writer.write(
+                        "val newActual = #T(actual.uri, actual.headers, newActualAttributesOrEmpty)",
                         RuntimeTypes.SmithyClient.Endpoints.Endpoint,
                     )
                     writer.write("assertEquals(expected, newActual)")
