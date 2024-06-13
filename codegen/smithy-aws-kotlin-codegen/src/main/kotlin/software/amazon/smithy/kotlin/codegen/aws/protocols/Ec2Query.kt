@@ -172,7 +172,7 @@ private class Ec2QueryParserGenerator(
 /**
  * An EC2 Query implementation of [SerializeStructGenerator] which ensures that empty lists are not serialized.
  */
-private open class Ec2QuerySerializeStructGenerator(
+private class Ec2QuerySerializeStructGenerator(
     ctx: ProtocolGenerator.GenerationContext,
     members: List<MemberShape>,
     writer: KotlinWriter,
