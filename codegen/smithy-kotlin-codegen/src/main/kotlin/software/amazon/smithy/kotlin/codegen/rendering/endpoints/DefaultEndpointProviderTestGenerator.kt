@@ -88,7 +88,7 @@ class DefaultEndpointProviderTestGenerator(
                     )
                     writer.write(
                         "val newActualAttributesOrEmpty = if (newActualAttributes.isEmpty) #T() else newActualAttributes",
-                        RuntimeTypes.Core.Collections.emptyAttributes
+                        RuntimeTypes.Core.Collections.emptyAttributes,
                     )
                     writer.write(
                         "val newActual = #T(actual.uri, actual.headers, newActualAttributesOrEmpty)",
