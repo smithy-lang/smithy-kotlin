@@ -32,8 +32,8 @@ fun ParameterType.toSymbol(): Symbol =
     when (this) {
         ParameterType.STRING -> KotlinTypes.String
         ParameterType.BOOLEAN -> KotlinTypes.Boolean
-    }
-        .asNullable()
+        ParameterType.STRING_ARRAY -> KotlinTypes.Collections.MutableList
+    }.asNullable()
 
 /**
  * Get the writable literal for a rules engine value.
