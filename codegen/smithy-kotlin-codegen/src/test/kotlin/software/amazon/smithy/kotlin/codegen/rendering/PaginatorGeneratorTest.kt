@@ -100,7 +100,7 @@ class PaginatorGeneratorTest {
             
                     while (hasNextPage) {
                         val req = initialRequest.copy {
-                            this.marker = cursor
+                            this.marker = this.marker ?: cursor
                         }
                         val result = this@listFunctionsPaginated.listFunctions(req)
                         cursor = result.nextMarker
@@ -211,7 +211,7 @@ class PaginatorGeneratorTest {
             
                     while (hasNextPage) {
                         val req = initialRequest.copy {
-                            this.marker = cursor
+                            this.marker = this.marker ?: cursor
                         }
                         val result = this@listFunctionsPaginated.listFunctions(req)
                         cursor = result.nextMarker
@@ -348,7 +348,7 @@ class PaginatorGeneratorTest {
             
                     while (hasNextPage) {
                         val req = initialRequest.copy {
-                            this.marker = cursor
+                            this.marker = this.marker ?: cursor
                         }
                         val result = this@listFunctionsPaginated.listFunctions(req)
                         cursor = result.nextMarker
@@ -477,7 +477,7 @@ class PaginatorGeneratorTest {
             
                     while (hasNextPage) {
                         val req = initialRequest.copy {
-                            this.marker = cursor
+                            this.marker = this.marker ?: cursor
                         }
                         val result = this@listFunctionsPaginated.listFunctions(req)
                         cursor = result.nextMarker
@@ -647,7 +647,7 @@ class PaginatorGeneratorTest {
             
                     while (hasNextPage) {
                         val req = initialRequest.copy {
-                            this.marker = cursor
+                            this.marker = this.marker ?: cursor
                         }
                         val result = this@listFunctionsPaginated.listFunctions(req)
                         cursor = result.nextMarker

@@ -148,7 +148,7 @@ class PaginatorGenerator : KotlinIntegration {
                     write("")
                     withBlock("while (hasNextPage) {", "}") {
                         withBlock("val req = initialRequest.copy {", "}") {
-                            write("this.$markerLiteral = cursor")
+                            write("this.$markerLiteral = this.$markerLiteral ?: cursor")
                         }
                         write(
                             "val result = this@#1LPaginated.#1L(req)",
