@@ -1,5 +1,20 @@
 # Changelog
 
+## [1.2.7] - 06/14/2024
+
+### Miscellaneous
+* Upgrade to Smithy 1.49.0
+
+## [1.2.6] - 06/05/2024
+
+### Fixes
+* [#1098](https://github.com/smithy-lang/smithy-kotlin/issues/1098) Silently ignore empty/blank proxy host values from environment variables or system properties instead of throwing exceptions
+
+## [1.2.5] - 05/28/2024
+
+### Fixes
+* [#1314](https://github.com/awslabs/aws-sdk-kotlin/issues/1314) Fix serialization of URI-bound request parameters which are enums
+
 ## [1.2.4] - 05/16/2024
 
 ### Fixes

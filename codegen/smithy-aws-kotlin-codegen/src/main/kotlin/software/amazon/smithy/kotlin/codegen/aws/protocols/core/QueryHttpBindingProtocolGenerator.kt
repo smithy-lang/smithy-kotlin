@@ -151,7 +151,7 @@ abstract class AbstractQueryFormUrlSerializerGenerator(
         }
     }
 
-    private fun renderSerializerBody(
+    open fun renderSerializerBody(
         ctx: ProtocolGenerator.GenerationContext,
         shape: Shape,
         members: List<MemberShape>,
