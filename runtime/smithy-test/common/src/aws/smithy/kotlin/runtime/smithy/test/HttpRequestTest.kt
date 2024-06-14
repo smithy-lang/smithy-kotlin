@@ -71,7 +71,9 @@ public fun httpRequestTest(block: HttpRequestTestBuilder.() -> Unit): TestResult
             runBlocking { request.body.readAll() }?.let {
                 HttpBody.fromBytes(it.encodeBase64())
             } ?: request.body
-        } else request.body
+        } else {
+            request.body
+        }
 
         actual = HttpRequest(method = request.method, url = request.url, headers = testHeaders.build(), body = body)
 

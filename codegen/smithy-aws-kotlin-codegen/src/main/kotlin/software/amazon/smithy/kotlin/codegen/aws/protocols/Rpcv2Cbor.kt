@@ -47,7 +47,7 @@ class Rpcv2Cbor : AwsHttpBindingProtocolGenerator() {
         val smithyProtocolHeaderMiddleware = MutateHeadersMiddleware(overrideHeaders = mapOf("smithy-protocol" to "rpc-v2-cbor"))
 
         // Requests with event stream responses for the rpcv2Cbor protocol MUST include an `Accept` header set to the value `application/vnd.amazon.eventstream`
-        val eventStreamsAcceptHeaderMiddleware = object: ProtocolMiddleware {
+        val eventStreamsAcceptHeaderMiddleware = object : ProtocolMiddleware {
             private val mutateHeadersMiddleware = MutateHeadersMiddleware(extraHeaders = mapOf("Accept" to "application/vnd.amazon.eventstream"))
 
             override fun isEnabledFor(ctx: ProtocolGenerator.GenerationContext, op: OperationShape): Boolean = op.isOutputEventStream(ctx.model)
@@ -81,4 +81,3 @@ class Rpcv2Cbor : AwsHttpBindingProtocolGenerator() {
         }
     }
 }
-

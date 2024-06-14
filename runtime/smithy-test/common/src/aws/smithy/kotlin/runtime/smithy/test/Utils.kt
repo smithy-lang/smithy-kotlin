@@ -82,5 +82,5 @@ public fun assertContentEquals(expected: List<ByteArray>?, actual: List<ByteArra
  */
 public val String.isBinaryMediaType: Boolean
     get() = listOf(
-        "application/cbor"
+        "application/cbor",
     ).contains(this.lowercase())
