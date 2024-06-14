@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.2.7] - 06/14/2024
+
+### Miscellaneous
+* Upgrade to Smithy 1.49.0
+
 ## [1.2.6] - 06/05/2024
 
 ### Fixes
