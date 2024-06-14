@@ -1,7 +1,7 @@
 {
     "id": "15fb7dc6-dee9-4f40-adba-a48183d4f432",
     "type": "bugfix",
-    "description": "Paginators not respecting start key",
+    "description": "Fix paginators not respecting start key",
     "issues": [
         "awslabs/aws-sdk-kotlin#1330"
     ]

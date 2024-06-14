@@ -95,12 +95,12 @@ class PaginatorGeneratorTest {
              */
             public fun TestClient.listFunctionsPaginated(initialRequest: ListFunctionsRequest = ListFunctionsRequest { }): Flow<ListFunctionsResponse> =
                 flow {
-                    var cursor: kotlin.String? = null
+                    var cursor: kotlin.String? = initialRequest.marker
                     var hasNextPage: Boolean = true
             
                     while (hasNextPage) {
                         val req = initialRequest.copy {
-                            this.marker = this.marker ?: cursor
+                            this.marker = cursor
                         }
                         val result = this@listFunctionsPaginated.listFunctions(req)
                         cursor = result.nextMarker
@@ -206,12 +206,12 @@ class PaginatorGeneratorTest {
              */
             public fun TestClient.listFunctionsPaginated(initialRequest: ListFunctionsRequest = ListFunctionsRequest { }): Flow<ListFunctionsResponse> =
                 flow {
-                    var cursor: kotlin.String? = null
+                    var cursor: kotlin.String? = initialRequest.marker
                     var hasNextPage: Boolean = true
             
                     while (hasNextPage) {
                         val req = initialRequest.copy {
-                            this.marker = this.marker ?: cursor
+                            this.marker = cursor
                         }
                         val result = this@listFunctionsPaginated.listFunctions(req)
                         cursor = result.nextMarker
@@ -343,12 +343,12 @@ class PaginatorGeneratorTest {
              */
             public fun TestClient.listFunctionsPaginated(initialRequest: ListFunctionsRequest = ListFunctionsRequest { }): Flow<ListFunctionsResponse> =
                 flow {
-                    var cursor: kotlin.String? = null
+                    var cursor: kotlin.String? = initialRequest.marker
                     var hasNextPage: Boolean = true
             
                     while (hasNextPage) {
                         val req = initialRequest.copy {
-                            this.marker = this.marker ?: cursor
+                            this.marker = cursor
                         }
                         val result = this@listFunctionsPaginated.listFunctions(req)
                         cursor = result.nextMarker
@@ -472,12 +472,12 @@ class PaginatorGeneratorTest {
         val expectedCode = """
             public fun TestClient.listFunctionsPaginated(initialRequest: ListFunctionsRequest = ListFunctionsRequest { }): Flow<ListFunctionsResponse> =
                 flow {
-                    var cursor: kotlin.String? = null
+                    var cursor: kotlin.String? = initialRequest.marker
                     var hasNextPage: Boolean = true
             
                     while (hasNextPage) {
                         val req = initialRequest.copy {
-                            this.marker = this.marker ?: cursor
+                            this.marker = cursor
                         }
                         val result = this@listFunctionsPaginated.listFunctions(req)
                         cursor = result.nextMarker
@@ -642,12 +642,12 @@ class PaginatorGeneratorTest {
              */
             public fun TestClient.listFunctionsPaginated(initialRequest: ListFunctionsRequest = ListFunctionsRequest { }): Flow<ListFunctionsResponse> =
                 flow {
-                    var cursor: kotlin.String? = null
+                    var cursor: kotlin.String? = initialRequest.marker
                     var hasNextPage: Boolean = true
             
                     while (hasNextPage) {
                         val req = initialRequest.copy {
-                            this.marker = this.marker ?: cursor
+                            this.marker = cursor
                         }
                         val result = this@listFunctionsPaginated.listFunctions(req)
                         cursor = result.nextMarker
