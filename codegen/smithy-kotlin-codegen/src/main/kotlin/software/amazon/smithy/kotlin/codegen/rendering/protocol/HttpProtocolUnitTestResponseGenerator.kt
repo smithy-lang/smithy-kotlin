@@ -12,6 +12,7 @@ import software.amazon.smithy.kotlin.codegen.integration.SectionKey
 import software.amazon.smithy.kotlin.codegen.model.hasStreamingMember
 import software.amazon.smithy.kotlin.codegen.model.hasTrait
 import software.amazon.smithy.kotlin.codegen.model.shape
+import software.amazon.smithy.kotlin.codegen.model.targetOrSelf
 import software.amazon.smithy.kotlin.codegen.rendering.ShapeValueGenerator
 import software.amazon.smithy.kotlin.codegen.rendering.endpoints.EndpointProviderGenerator
 import software.amazon.smithy.model.shapes.*
@@ -191,8 +192,8 @@ open class HttpProtocolUnitTestResponseGenerator protected constructor(builder: 
             val target = model.expectShape(member.target)
             val expMemberName = "expectedResult?.${member.defaultName()}"
             val actMemberName = "actualResult.${member.defaultName()}"
-            when (target) {
-                is BlobShape -> {
+            when {
+                target is BlobShape -> {
                     val suffix = if (target.hasTrait<StreamingTrait>()) {
                         writer.format("?.#T()", RuntimeTypes.Core.Content.toByteArray)
                     } else {
@@ -200,6 +201,7 @@ open class HttpProtocolUnitTestResponseGenerator protected constructor(builder: 
                     }
                     writer.write("assertBytesEqual($expMemberName$suffix, $actMemberName$suffix)")
                 }
+                target is ListShape && target.member.targetOrSelf(model).isBlobShape -> writer.write("assertContentEquals(#L, #L)", expMemberName, actMemberName)
                 else -> writer.write("assertEquals($expMemberName, $actMemberName)")
             }
         }

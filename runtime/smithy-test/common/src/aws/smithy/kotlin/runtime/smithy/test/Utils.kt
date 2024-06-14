@@ -6,6 +6,7 @@ package aws.smithy.kotlin.runtime.smithy.test
 
 import aws.smithy.kotlin.runtime.http.HttpBody
 import aws.smithy.kotlin.runtime.http.readAll
+import kotlin.test.assertEquals
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 import kotlin.test.fail
@@ -54,6 +55,22 @@ public fun assertBytesEqual(expected: ByteArray?, actual: ByteArray?) {
             "expected: `${expected.decodeToString()}`\n" +
             "actual: `${actual.decodeToString()}`",
     )
+}
+
+public fun assertContentEquals(expected: List<ByteArray>?, actual: List<ByteArray>?) {
+    if (expected == null) {
+        assertNull(actual, "expected no content, found list with ${actual?.size} elements")
+        return
+    }
+
+    if (actual == null) {
+        fail("Expected content, actual content was null")
+    }
+
+    assertEquals(expected.size, actual.size)
+    expected.zip(actual).forEach { (a, b) ->
+        assertBytesEqual(a, b)
+    }
 }
 
 /**

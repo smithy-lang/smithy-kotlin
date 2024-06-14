@@ -131,7 +131,8 @@ internal object Cbor {
                             sb.append((it as String).value)
                         }
 
-                        String(sb.toString())
+                        val str = sb.toString()
+                        String(str)
                     } else {
                         val length = deserializeArgument(buffer).toInt()
                         val bytes = ByteArray(length)
@@ -141,7 +142,8 @@ internal object Cbor {
                             check(rc == length) { "Unexpected end of CBOR string: expected $length bytes, got $rc." }
                         }
 
-                        return String(bytes.decodeToString())
+                        val str = bytes.decodeToString()
+                        String(str)
                     }
                 }
             }
@@ -202,9 +204,20 @@ internal object Cbor {
                     buffer.readByte() // discard head
 
                     val list = mutableListOf<Value>()
-                    while (decodeNextValue(buffer.peek()) !is IndefiniteBreak) {
-                        list.add(decodeNextValue(buffer))
+                    var peekedMajor = peekMajor(buffer)
+                    var peekedMinor = peekMinorByte(buffer)
+
+                    while (true) {
+                        if (peekedMajor == Major.TYPE_7 && peekedMinor == Minor.INDEFINITE.value) {
+                            IndefiniteBreak.decode(buffer)
+                            break
+                        } else {
+                            list.add(decodeNextValue(buffer))
+                            peekedMajor = peekMajor(buffer)
+                            peekedMinor = peekMinorByte(buffer)
+                        }
                     }
+
                     return IndefiniteList(list)
                 }
             }
@@ -266,10 +279,19 @@ internal object Cbor {
                     buffer.readByte() // discard head byte
                     val valueMap = mutableMapOf<String, Value>()
 
-                    while (peekMajor(buffer) != Major.TYPE_7 && peekMinorByte(buffer) != Minor.INDEFINITE.value) {
-                        val key = String.decode(buffer)
-                        val value = decodeNextValue(buffer)
-                        valueMap[key] = value
+                    var peekedMajor = peekMajor(buffer)
+                    var peekedMinor = peekMinorByte(buffer)
+                    while (true) {
+                        if (peekedMajor == Major.TYPE_7 && peekedMinor == Minor.INDEFINITE.value) {
+                            IndefiniteBreak.decode(buffer)
+                            break
+                        } else {
+                            val key = String.decode(buffer)
+                            val value = decodeNextValue(buffer)
+                            valueMap[key] = value
+                            peekedMajor = peekMajor(buffer)
+                            peekedMinor = peekMinorByte(buffer)
+                        }
                     }
 
                     return IndefiniteMap(valueMap)

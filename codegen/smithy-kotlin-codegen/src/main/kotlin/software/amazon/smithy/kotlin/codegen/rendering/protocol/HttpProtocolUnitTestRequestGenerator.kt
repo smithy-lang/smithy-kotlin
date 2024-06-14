@@ -77,6 +77,7 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
                                     "application/json" -> "::assertJsonBodiesEqual"
                                     "application/xml" -> "::assertXmlBodiesEqual"
                                     "application/x-www-form-urlencoded" -> "::assertFormUrlBodiesEqual"
+                                    "application/cbor" -> "::assertCborBodiesEqual"
                                     // compare reader bytes
                                     else -> "::assertBytesEqual"
                                 }

@@ -41,8 +41,20 @@ abstract class AwsHttpBindingProtocolGenerator : HttpBindingProtocolGenerator() 
 
         val ignoredTests = TestMemberDelta(
             setOf(
-                // This test requires populating blob members with a default value of "", which the sdk doesn't do
+                // These tests require populating blob members with a default value of "", which the sdk doesn't do
                 "AwsJson10ClientPopulatesDefaultValuesInInput",
+                "RpcV2CborClientPopulatesDefaultValuesInInput",
+
+                // Invalid test. Spec says "explicit null values shall not be conveyed on the wire" but this test does exactly that.
+                "RpcV2CborClientDoesntDeserializeNullStructureValues",
+
+                // Test fails due to missing Content-Type header, but the input is empty with no members bound to httpPayload,
+                // so no HTTP body OR Content-Type is sent.
+                "empty_input",
+
+                // FIXME Bug in protocol test. Temporarily disabled until the next release of smithy-lang/smithy
+                // https://github.com/smithy-lang/smithy/commit/a1642aef6c6e43e3192c4f4532f6f8cea45f2a0c
+                "RpcV2CborDeserializesDenseSetMapAndSkipsNull",
             ),
         )
 
