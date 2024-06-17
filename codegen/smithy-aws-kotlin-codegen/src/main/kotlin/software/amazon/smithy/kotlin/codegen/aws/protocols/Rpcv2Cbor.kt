@@ -9,19 +9,21 @@ import software.amazon.smithy.kotlin.codegen.aws.protocols.core.AwsHttpBindingPr
 import software.amazon.smithy.kotlin.codegen.aws.protocols.core.StaticHttpBindingResolver
 import software.amazon.smithy.kotlin.codegen.core.KotlinWriter
 import software.amazon.smithy.kotlin.codegen.core.RuntimeTypes
-import software.amazon.smithy.kotlin.codegen.model.isInputEventStream
-import software.amazon.smithy.kotlin.codegen.model.isOutputEventStream
+import software.amazon.smithy.kotlin.codegen.model.*
+import software.amazon.smithy.kotlin.codegen.model.traits.SyntheticClone
 import software.amazon.smithy.kotlin.codegen.rendering.protocol.*
 import software.amazon.smithy.kotlin.codegen.rendering.serde.CborSerializerGenerator
 import software.amazon.smithy.kotlin.codegen.rendering.serde.StructuredDataParserGenerator
 import software.amazon.smithy.kotlin.codegen.rendering.serde.StructuredDataSerializerGenerator
 import software.amazon.smithy.model.Model
+import software.amazon.smithy.model.knowledge.HttpBinding
 import software.amazon.smithy.model.pattern.UriPattern
 import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.shapes.ServiceShape
 import software.amazon.smithy.model.shapes.ShapeId
 import software.amazon.smithy.model.traits.HttpTrait
 import software.amazon.smithy.model.traits.TimestampFormatTrait
+import software.amazon.smithy.model.traits.UnitTypeTrait
 import software.amazon.smithy.protocol.traits.Rpcv2CborTrait
 
 class Rpcv2Cbor : AwsHttpBindingProtocolGenerator() {
@@ -56,6 +58,56 @@ class Rpcv2Cbor : AwsHttpBindingProtocolGenerator() {
         }
 
         return super.getDefaultHttpMiddleware(ctx) + listOf(smithyProtocolHeaderMiddleware, eventStreamsAcceptHeaderMiddleware)
+    }
+
+    override fun renderSerializeHttpBody(
+        ctx: ProtocolGenerator.GenerationContext,
+        op: OperationShape,
+        writer: KotlinWriter
+    ) {
+        val resolver = getProtocolHttpBindingResolver(ctx.model, ctx.service)
+        if (!op.hasHttpBody(ctx)) return
+
+        // payload member(s)
+        val requestBindings = resolver.requestBindings(op)
+        val httpPayload = requestBindings.firstOrNull { it.location == HttpBinding.Location.PAYLOAD }
+        if (httpPayload != null) {
+            renderExplicitHttpPayloadSerializer(ctx, httpPayload, writer)
+        } else {
+            val documentMembers = requestBindings.filterDocumentBoundMembers()
+            // Unbound document members that should be serialized into the document format for the protocol.
+            // delegate to the generate operation body serializer function
+            val sdg = structuredDataSerializer(ctx)
+            val opBodySerializerFn = sdg.operationSerializer(ctx, op, documentMembers)
+            writer.write("val payload = #T(context, input)", opBodySerializerFn)
+            writer.write("builder.body = #T.fromBytes(payload)", RuntimeTypes.Http.HttpBody)
+        }
+        renderContentTypeHeader(ctx, op, writer, resolver)
+    }
+
+    /**
+     * @return whether the operation input does _not_ target smithy.api#Unit
+     */
+    private fun OperationShape.hasHttpBody(ctx: ProtocolGenerator.GenerationContext): Boolean {
+        val input = ctx.model.expectShape(inputShape).targetOrSelf(ctx.model).let {
+            // If the input has been synthetically cloned from the original, pull the archetype and check _that_
+            it.getTrait<SyntheticClone>()?.let { clone ->
+                ctx.model.expectShape(clone.archetype).targetOrSelf(ctx.model)
+            } ?: it
+        }
+
+        return input.id != UnitTypeTrait.UNIT
+    }
+
+    override fun renderContentTypeHeader(
+        ctx: ProtocolGenerator.GenerationContext,
+        op: OperationShape,
+        writer: KotlinWriter,
+        resolver: HttpBindingResolver
+    ) {
+        resolver.determineRequestContentType(op)?.let { contentType ->
+            writer.write("builder.headers.setMissing(\"Content-Type\", #S)", contentType)
+        }
     }
 
     class Rpcv2CborHttpBindingResolver(model: Model, val serviceShape: ServiceShape) : StaticHttpBindingResolver(model, serviceShape, DefaultRpcv2CborHttpTrait, "application/cbor", TimestampFormatTrait.Format.EPOCH_SECONDS) {
