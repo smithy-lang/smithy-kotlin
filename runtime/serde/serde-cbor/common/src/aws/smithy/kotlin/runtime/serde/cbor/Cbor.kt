@@ -21,11 +21,6 @@ internal object Cbor {
      */
     internal interface Value {
         /**
-         * The [Major] value of the CBOR [Value]
-         */
-        val major: Major
-
-        /**
          * The bytes representing the encoded value
          */
         fun encode(): ByteArray
@@ -37,8 +32,6 @@ internal object Cbor {
          * @param value The [ULong] value which this unsigned integer represents.
          */
         internal class UInt(val value: ULong) : Value {
-            override val major = Major.U_INT
-
             override fun encode(): ByteArray = encodeArgument(Major.U_INT, value)
             internal companion object {
                 fun decode(buffer: SdkBufferedSource): UInt {
@@ -55,8 +48,6 @@ internal object Cbor {
          * Values will be properly encoded / decoded according to the CBOR specification (-1 minus $value)
          */
         internal class NegInt(val value: Long) : Value {
-            override val major = Major.NEG_INT
-
             override fun encode(): ByteArray = encodeArgument(Major.NEG_INT, (value.absoluteValue - 1).toULong())
 
             internal companion object {
@@ -72,8 +63,6 @@ internal object Cbor {
          * @param value The [ByteArray] which this CBOR byte string represents.
          */
         internal class ByteString(val value: ByteArray) : Value {
-            override val major = Major.BYTE_STRING
-
             override fun encode(): ByteArray {
                 val head = encodeArgument(Major.BYTE_STRING, value.size.toULong())
                 return byteArrayOf(*head, *value)
@@ -112,8 +101,6 @@ internal object Cbor {
          * @param value The [String] which this CBOR string represents.
          */
         internal class String(val value: kotlin.String) : Value {
-            override val major = Major.STRING
-
             override fun encode(): ByteArray {
                 val head = encodeArgument(Major.STRING, value.length.toULong())
                 return byteArrayOf(*head, *value.encodeToByteArray())
@@ -155,8 +142,6 @@ internal object Cbor {
          * @param value the [kotlin.collections.List<Value>] represented by this CBOR list.
          */
         internal class List(val value: kotlin.collections.List<Value>) : Value {
-            override val major = Major.LIST
-
             override fun encode(): ByteArray {
                 val byteBuffer = SdkBuffer()
 
@@ -195,8 +180,6 @@ internal object Cbor {
          * `decode` will consume list values until an [IndefiniteBreak] is encountered.
          */
         internal class IndefiniteList(val value: MutableList<Value> = mutableListOf()) : Value {
-            override val major = Major.TYPE_7
-
             override fun encode(): ByteArray = byteArrayOf(encodeMajorMinor(Major.LIST, Minor.INDEFINITE))
 
             internal companion object {
@@ -228,8 +211,6 @@ internal object Cbor {
          * @param value The [kotlin.collections.Map] that this CBOR map represents.
          */
         internal class Map(val value: kotlin.collections.Map<String, Value>) : Value {
-            override val major = Major.MAP
-
             override fun encode(): ByteArray {
                 val byteBuffer = SdkBuffer()
                 byteBuffer.write(encodeArgument(Major.MAP, value.size.toULong()))
@@ -270,8 +251,6 @@ internal object Cbor {
          * `decode` will consume map entries until an [IndefiniteBreak] is encountered.
          */
         internal class IndefiniteMap(val value: MutableMap<String, Value> = mutableMapOf()) : Value {
-            override val major = Major.TYPE_7
-
             override fun encode(): ByteArray = byteArrayOf(encodeMajorMinor(Major.MAP, Minor.INDEFINITE))
 
             internal companion object {
@@ -307,8 +286,6 @@ internal object Cbor {
          * - 4 -> Decimal fraction
          */
         internal class Tag(val id: ULong, val value: Value) : Value {
-            override val major = Major.TAG
-
             override fun encode(): ByteArray = byteArrayOf(*encodeArgument(Major.TAG, id), *value.encode())
 
             internal companion object {
@@ -327,8 +304,6 @@ internal object Cbor {
          * @param value the [kotlin.Boolean] this CBOR boolean represents.
          */
         internal class Boolean(val value: kotlin.Boolean) : Value {
-            override val major = Major.TYPE_7
-
             override fun encode(): ByteArray = byteArrayOf(
                 when (value) {
                     false -> encodeMajorMinor(Major.TYPE_7, Minor.FALSE)
@@ -356,8 +331,6 @@ internal object Cbor {
          * Represents a CBOR null value (major type 7, minor type 7).
          */
         internal class Null : Value {
-            override val major = Major.TYPE_7
-
             override fun encode(): ByteArray = byteArrayOf(encodeMajorMinor(Major.TYPE_7, Minor.NULL))
 
             internal companion object {
@@ -380,8 +353,6 @@ internal object Cbor {
          * @param value the [Float] that this CBOR 16-bit float represents.
          */
         internal class Float16(val value: Float) : Value {
-            override val major = Major.TYPE_7
-
             override fun encode(): ByteArray = TODO("Encoding for CBOR 16-bit floats is not supported")
 
             internal companion object {
@@ -427,8 +398,6 @@ internal object Cbor {
          * @param value the [Float] that this CBOR 32-bit float represents.
          */
         internal class Float32(val value: Float) : Value {
-            override val major = Major.TYPE_7
-
             override fun encode(): ByteArray {
                 val bits = value.toRawBits()
                 return byteArrayOf(
@@ -454,8 +423,6 @@ internal object Cbor {
          * @param value the [Double] that this CBOR 64-bit float represents
          */
         internal class Float64(val value: Double) : Value {
-            override val major = Major.TYPE_7
-
             override fun encode(): ByteArray {
                 val bits = value.toRawBits()
                 return byteArrayOf(
@@ -481,8 +448,6 @@ internal object Cbor {
         }
 
         internal class Timestamp(val value: Instant) : Value {
-            override val major: Major = Major.TAG
-
             override fun encode(): ByteArray = byteArrayOf(*Tag(1u, Float64(value.epochMilliseconds / 1000.toDouble())).encode())
 
             internal companion object {
@@ -524,8 +489,6 @@ internal object Cbor {
          * @param value the [BigInteger] that this CBOR bignum represents.
          */
         internal class BigNum(val value: BigInteger) : Value {
-            override val major = Major.TAG
-
             override fun encode(): ByteArray = byteArrayOf(*Tag(2u, ByteString(value.asBytes())).encode())
 
             internal companion object {
@@ -545,9 +508,6 @@ internal object Cbor {
          * Values will be properly encoded / decoded according to the CBOR specification (-1 minus $value)
          */
         internal class NegBigNum(val value: BigInteger) : Value {
-            override val major = Major.TAG
-
-            // TODO Ensure negative sign (-) is handled correctly.
             override fun encode(): ByteArray {
                 val subbed = value.minusOne()
                 val bytes = subbed.asBytes()
@@ -574,8 +534,6 @@ internal object Cbor {
          * @param value the [BigDecimal] that this decimal fraction represents.
          */
         internal class DecimalFraction(val value: BigDecimal) : Value {
-            override val major = Major.TAG
-
             override fun encode(): ByteArray {
                 val str = value.toPlainString()
 
@@ -637,7 +595,7 @@ internal object Cbor {
                             is BigNum -> { sb.append(mantissa.value.value.toString()) }
                             else -> throw DeserializationException("Expected negative bignum (id=3) or bignum (id=4) for CBOR tagged decimal fraction mantissa, got ${mantissa.id}.")
                         }
-                        else -> throw DeserializationException("Expected integer or tagged value (bignum) for CBOR decimal fraction mantissa, got ${mantissa.major}.")
+                        else -> throw DeserializationException("Expected integer or tagged value (bignum) for CBOR decimal fraction mantissa, got $mantissa.")
                     }
 
                     when (exponent) {
@@ -667,8 +625,6 @@ internal object Cbor {
          * Represents the "break" stop-code for lists/maps with an indefinite length (major type 7, minor type 31).
          */
         internal class IndefiniteBreak : Value {
-            override val major = Major.TYPE_7
-
             override fun encode(): ByteArray = byteArrayOf(encodeMajorMinor(Major.TYPE_7, Minor.INDEFINITE))
             internal companion object {
                 internal fun decode(buffer: SdkBufferedSource): IndefiniteBreak {
