@@ -125,4 +125,13 @@ class AttributesTest {
         assertEquals("foo", attrs[attr1])
         assertEquals(57, attrs[attr2])
     }
+
+    @Test
+    fun testEmptyEquals() {
+        val explicitlyEmpty = emptyAttributes()
+        val implicitlyEmpty = AttributesBuilder().attributes
+
+        assertEquals(implicitlyEmpty, explicitlyEmpty)
+        assertEquals(explicitlyEmpty, implicitlyEmpty)
+    }
 }
