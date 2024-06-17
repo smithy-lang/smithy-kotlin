@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.2.8] - 06/17/2024
+
+### Fixes
+* [#1330](https://github.com/awslabs/aws-sdk-kotlin/issues/1330) Fix paginators not respecting start key
+
 ## [1.2.7] - 06/14/2024
 
 ### Miscellaneous
