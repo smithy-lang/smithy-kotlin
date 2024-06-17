@@ -95,7 +95,7 @@ class PaginatorGeneratorTest {
              */
             public fun TestClient.listFunctionsPaginated(initialRequest: ListFunctionsRequest = ListFunctionsRequest { }): Flow<ListFunctionsResponse> =
                 flow {
-                    var cursor: kotlin.String? = null
+                    var cursor: kotlin.String? = initialRequest.marker
                     var hasNextPage: Boolean = true
             
                     while (hasNextPage) {
@@ -206,7 +206,7 @@ class PaginatorGeneratorTest {
              */
             public fun TestClient.listFunctionsPaginated(initialRequest: ListFunctionsRequest = ListFunctionsRequest { }): Flow<ListFunctionsResponse> =
                 flow {
-                    var cursor: kotlin.String? = null
+                    var cursor: kotlin.String? = initialRequest.marker
                     var hasNextPage: Boolean = true
             
                     while (hasNextPage) {
@@ -343,7 +343,7 @@ class PaginatorGeneratorTest {
              */
             public fun TestClient.listFunctionsPaginated(initialRequest: ListFunctionsRequest = ListFunctionsRequest { }): Flow<ListFunctionsResponse> =
                 flow {
-                    var cursor: kotlin.String? = null
+                    var cursor: kotlin.String? = initialRequest.marker
                     var hasNextPage: Boolean = true
             
                     while (hasNextPage) {
@@ -472,7 +472,7 @@ class PaginatorGeneratorTest {
         val expectedCode = """
             public fun TestClient.listFunctionsPaginated(initialRequest: ListFunctionsRequest = ListFunctionsRequest { }): Flow<ListFunctionsResponse> =
                 flow {
-                    var cursor: kotlin.String? = null
+                    var cursor: kotlin.String? = initialRequest.marker
                     var hasNextPage: Boolean = true
             
                     while (hasNextPage) {
@@ -642,7 +642,7 @@ class PaginatorGeneratorTest {
              */
             public fun TestClient.listFunctionsPaginated(initialRequest: ListFunctionsRequest = ListFunctionsRequest { }): Flow<ListFunctionsResponse> =
                 flow {
-                    var cursor: kotlin.String? = null
+                    var cursor: kotlin.String? = initialRequest.marker
                     var hasNextPage: Boolean = true
             
                     while (hasNextPage) {
