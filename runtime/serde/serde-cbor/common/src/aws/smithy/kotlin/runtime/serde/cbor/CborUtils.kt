@@ -6,7 +6,6 @@ package aws.smithy.kotlin.runtime.serde.cbor
 
 import aws.smithy.kotlin.runtime.content.BigInteger
 import aws.smithy.kotlin.runtime.io.SdkBufferedSource
-import kotlin.experimental.and
 
 /**
  * Represents CBOR major types (0 for unsigned integer, 1 for negative integer, etc.)
