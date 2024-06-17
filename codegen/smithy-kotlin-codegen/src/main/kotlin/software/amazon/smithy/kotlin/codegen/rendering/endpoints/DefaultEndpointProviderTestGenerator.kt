@@ -61,6 +61,44 @@ class DefaultEndpointProviderTestGenerator(
     fun render() {
         writer.addImport("*", namespace = "kotlin.test")
         writer.withBlock("public class #L {", "}", CLASS_NAME) {
+            writer.write("")
+            writer.withBlock(
+                "private fun expectEqualEndpoints(expected: #1T, actual: #1T) {",
+                "}",
+                RuntimeTypes.SmithyClient.Endpoints.Endpoint,
+            ) {
+                // Remove ONLY business metrics endpoint attributes
+                writer.withBlock(
+                    "if (actual.attributes.contains(#T) || actual.attributes.contains(#T)) {",
+                    "} else { assertEquals(expected, actual) }",
+                    RuntimeTypes.Core.BusinessMetrics.ServiceEndpointOverride,
+                    RuntimeTypes.Core.BusinessMetrics.AccountIdBasedEndpointAccountId,
+                ) {
+                    writer.write(
+                        "val newActualAttributes = actual.attributes.#T()",
+                        RuntimeTypes.Core.Collections.toMutableAttributes,
+                    )
+                    writer.write(
+                        "if (actual.attributes.contains(#1T)) newActualAttributes.remove(#1T)",
+                        RuntimeTypes.Core.BusinessMetrics.ServiceEndpointOverride,
+                    )
+                    writer.write(
+                        "if (actual.attributes.contains(#1T)) newActualAttributes.remove(#1T)",
+                        RuntimeTypes.Core.BusinessMetrics.AccountIdBasedEndpointAccountId,
+                    )
+                    writer.write(
+                        "val newActualAttributesOrEmpty = if (newActualAttributes.isEmpty) #T() else newActualAttributes",
+                        RuntimeTypes.Core.Collections.emptyAttributes,
+                    )
+                    writer.write(
+                        "val newActual = #T(actual.uri, actual.headers, newActualAttributesOrEmpty)",
+                        RuntimeTypes.SmithyClient.Endpoints.Endpoint,
+                    )
+                    writer.write("assertEquals(expected, newActual)")
+                }
+            }
+            writer.write("")
+
             cases.forEachIndexed { index, it ->
                 renderTestCase(index, it)
                 write("")
@@ -148,6 +186,6 @@ class DefaultEndpointProviderTestGenerator(
         }
 
         writer.write("val actual = #T().resolveEndpoint(params)", providerSymbol)
-        writer.write("assertEquals(expected, actual)")
+        writer.write("expectEqualEndpoints(expected, actual)")
     }
 }

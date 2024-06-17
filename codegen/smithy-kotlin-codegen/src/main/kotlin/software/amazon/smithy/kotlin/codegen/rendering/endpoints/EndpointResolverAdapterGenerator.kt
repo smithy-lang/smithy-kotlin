@@ -8,6 +8,7 @@ import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.kotlin.codegen.KotlinSettings
 import software.amazon.smithy.kotlin.codegen.core.*
+import software.amazon.smithy.kotlin.codegen.integration.SectionId
 import software.amazon.smithy.kotlin.codegen.model.*
 import software.amazon.smithy.kotlin.codegen.model.knowledge.EndpointParameterIndex
 import software.amazon.smithy.kotlin.codegen.rendering.protocol.ProtocolGenerator
@@ -16,6 +17,8 @@ import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.rulesengine.language.syntax.parameters.ParameterType
 import software.amazon.smithy.rulesengine.traits.ClientContextParamsTrait
 import software.amazon.smithy.utils.StringUtils
+
+object EndpointBusinessMetrics : SectionId
 
 /**
  * Generates resolver adapter for going from generic HTTP operation endpoint resolver to the generated
@@ -153,6 +156,9 @@ class EndpointResolverAdapterGenerator(
         ) {
             write("val params = resolveEndpointParams(config, request)")
             write("val endpoint = config.endpointProvider.resolveEndpoint(params)")
+
+            declareSection(EndpointBusinessMetrics)
+
             renderPostResolution()
             write("return endpoint")
         }

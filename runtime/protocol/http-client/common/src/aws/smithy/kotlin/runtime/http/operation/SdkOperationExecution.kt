@@ -6,19 +6,18 @@
 package aws.smithy.kotlin.runtime.http.operation
 
 import aws.smithy.kotlin.runtime.InternalApi
+import aws.smithy.kotlin.runtime.businessmetrics.SmithyBusinessMetric
+import aws.smithy.kotlin.runtime.businessmetrics.emitBusinessMetric
 import aws.smithy.kotlin.runtime.client.LogMode
 import aws.smithy.kotlin.runtime.client.endpoints.authOptions
 import aws.smithy.kotlin.runtime.client.logMode
 import aws.smithy.kotlin.runtime.collections.attributesOf
 import aws.smithy.kotlin.runtime.collections.emptyAttributes
 import aws.smithy.kotlin.runtime.collections.merge
-import aws.smithy.kotlin.runtime.http.HttpCall
-import aws.smithy.kotlin.runtime.http.HttpHandler
+import aws.smithy.kotlin.runtime.http.*
 import aws.smithy.kotlin.runtime.http.auth.SignHttpRequest
-import aws.smithy.kotlin.runtime.http.complete
 import aws.smithy.kotlin.runtime.http.interceptors.InterceptorExecutor
 import aws.smithy.kotlin.runtime.http.middleware.RetryMiddleware
-import aws.smithy.kotlin.runtime.http.readAll
 import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
 import aws.smithy.kotlin.runtime.http.request.dumpRequest
 import aws.smithy.kotlin.runtime.http.request.immutableView
@@ -311,6 +310,10 @@ internal class AuthHandler<Input, Output>(
 
         request.context.operationMetrics.signingDuration.measureSeconds(schemeAttr) {
             authScheme.signer.sign(signingRequest)
+        }
+
+        if (authScheme.schemeId.id == "aws.auth#sigv4a") {
+            request.context.emitBusinessMetric(SmithyBusinessMetric.SIGV4A_SIGNING)
         }
 
         interceptors.readAfterSigning(modified.subject.immutableView())
