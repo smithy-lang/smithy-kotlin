@@ -45,9 +45,6 @@ abstract class AwsHttpBindingProtocolGenerator : HttpBindingProtocolGenerator() 
                 "AwsJson10ClientPopulatesDefaultValuesInInput",
                 "RpcV2CborClientPopulatesDefaultValuesInInput",
 
-                // Invalid test. Spec says "explicit null values shall not be conveyed on the wire" but this test does exactly that.
-                "RpcV2CborClientDoesntDeserializeNullStructureValues",
-
                 // FIXME Bug in protocol test. Temporarily disabled until the next release of smithy-lang/smithy
                 // https://github.com/smithy-lang/smithy/commit/a1642aef6c6e43e3192c4f4532f6f8cea45f2a0c
                 "RpcV2CborDeserializesDenseSetMapAndSkipsNull",

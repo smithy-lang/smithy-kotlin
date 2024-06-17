@@ -188,16 +188,26 @@ private class CborFieldIterator(
         currentLength += 1uL
 
         val peekedNextValue = decodeNextValue(buffer.peek())
-        return if (peekedNextValue is Cbor.Encoding.IndefiniteBreak) {
+        val candidate: Int? = if (peekedNextValue is Cbor.Encoding.IndefiniteBreak) {
             Cbor.Encoding.IndefiniteBreak.decode(buffer)
             null
         } else {
             val nextFieldName = Cbor.Encoding.String.decode(buffer).value
-            return descriptor
+            descriptor
                 .fields
                 .firstOrNull { it.serialName.equals(nextFieldName, ignoreCase = true) }
                 ?.index ?: Deserializer.FieldIterator.UNKNOWN_FIELD
         }
+
+        if (candidate != null) {
+            // skip explicit null values
+            if (decodeNextValue(buffer.peek()) is Cbor.Encoding.Null) {
+                skipValue()
+                return findNextFieldIndex()
+            }
+        }
+
+        return candidate
     }
 
     override fun skipValue() {
