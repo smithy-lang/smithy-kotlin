@@ -206,6 +206,8 @@ class StructureGenerator(
                         .write("if (!#1L[i].contentEquals(other.#1L[i])) return false", memberName)
                         .closeBlock("}")
                         .closeBlock("} else if (other.#1L != null) return false", memberName)
+                } else if (target is DoubleShape || target is FloatShape) {
+                    write("if (#1L?.isNaN() == true && other.#1L?.isNaN() == true) { } else if (#1L != other.#1L) return false", memberName)
                 } else {
                     write("if (#1L != other.#1L) return false", memberName)
                 }
