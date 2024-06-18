@@ -1,5 +1,34 @@
 # Changelog
 
+## [1.2.9] - 06/18/2024
+
+## [1.2.8] - 06/17/2024
+
+### Fixes
+* [#1330](https://github.com/awslabs/aws-sdk-kotlin/issues/1330) Fix paginators not respecting start key
+
+## [1.2.7] - 06/14/2024
+
+### Miscellaneous
+* Upgrade to Smithy 1.49.0
+
+## [1.2.6] - 06/05/2024
+
+### Fixes
+* [#1098](https://github.com/smithy-lang/smithy-kotlin/issues/1098) Silently ignore empty/blank proxy host values from environment variables or system properties instead of throwing exceptions
+
+## [1.2.5] - 05/28/2024
+
+### Fixes
+* [#1314](https://github.com/awslabs/aws-sdk-kotlin/issues/1314) Fix serialization of URI-bound request parameters which are enums
+
+## [1.2.4] - 05/16/2024
+
+### Fixes
+* [#1092](https://github.com/smithy-lang/smithy-kotlin/issues/1092) Respect `*` wildcard in `http.nonProxyHosts` when used as prefix or suffix
+
+## [1.2.3] - 05/10/2024
+
 ## [1.2.2] - 04/30/2024
 
 ### Features

@@ -55,4 +55,16 @@ class HeadersTest {
         assertEquals(firstExpected.entries, first.entries())
         assertEquals(secondExpected.entries, second.entries())
     }
+
+    @Test
+    fun testEmptyEquals() {
+        val explicitlyEmpty = Headers.Empty
+        val implicitlyEmpty = HeadersBuilder().build()
+
+        assertEquals(implicitlyEmpty, explicitlyEmpty)
+        assertEquals(explicitlyEmpty, implicitlyEmpty)
+
+        assertEquals(explicitlyEmpty, explicitlyEmpty)
+        assertEquals(implicitlyEmpty, implicitlyEmpty)
+    }
 }

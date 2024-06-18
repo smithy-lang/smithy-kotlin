@@ -77,6 +77,34 @@ public final class aws/smithy/kotlin/runtime/ServiceException$ErrorType : java/l
 	public static fun values ()[Laws/smithy/kotlin/runtime/ServiceException$ErrorType;
 }
 
+public abstract interface class aws/smithy/kotlin/runtime/businessmetrics/BusinessMetric {
+	public abstract fun getIdentifier ()Ljava/lang/String;
+}
+
+public final class aws/smithy/kotlin/runtime/businessmetrics/BusinessMetricsUtilsKt {
+	public static final fun containsBusinessMetric (Laws/smithy/kotlin/runtime/operation/ExecutionContext;Laws/smithy/kotlin/runtime/businessmetrics/BusinessMetric;)Z
+	public static final fun emitBusinessMetric (Laws/smithy/kotlin/runtime/operation/ExecutionContext;Laws/smithy/kotlin/runtime/businessmetrics/BusinessMetric;)V
+	public static final fun getAccountIdBasedEndpointAccountId ()Laws/smithy/kotlin/runtime/collections/AttributeKey;
+	public static final fun getBusinessMetrics ()Laws/smithy/kotlin/runtime/collections/AttributeKey;
+	public static final fun getServiceEndpointOverride ()Laws/smithy/kotlin/runtime/collections/AttributeKey;
+	public static final fun removeBusinessMetric (Laws/smithy/kotlin/runtime/operation/ExecutionContext;Laws/smithy/kotlin/runtime/businessmetrics/BusinessMetric;)V
+}
+
+public final class aws/smithy/kotlin/runtime/businessmetrics/SmithyBusinessMetric : java/lang/Enum, aws/smithy/kotlin/runtime/businessmetrics/BusinessMetric {
+	public static final field ACCOUNT_ID_BASED_ENDPOINT Laws/smithy/kotlin/runtime/businessmetrics/SmithyBusinessMetric;
+	public static final field GZIP_REQUEST_COMPRESSION Laws/smithy/kotlin/runtime/businessmetrics/SmithyBusinessMetric;
+	public static final field PAGINATOR Laws/smithy/kotlin/runtime/businessmetrics/SmithyBusinessMetric;
+	public static final field RETRY_MODE_ADAPTIVE Laws/smithy/kotlin/runtime/businessmetrics/SmithyBusinessMetric;
+	public static final field RETRY_MODE_STANDARD Laws/smithy/kotlin/runtime/businessmetrics/SmithyBusinessMetric;
+	public static final field SERVICE_ENDPOINT_OVERRIDE Laws/smithy/kotlin/runtime/businessmetrics/SmithyBusinessMetric;
+	public static final field SIGV4A_SIGNING Laws/smithy/kotlin/runtime/businessmetrics/SmithyBusinessMetric;
+	public static final field WAITER Laws/smithy/kotlin/runtime/businessmetrics/SmithyBusinessMetric;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public fun getIdentifier ()Ljava/lang/String;
+	public static fun valueOf (Ljava/lang/String;)Laws/smithy/kotlin/runtime/businessmetrics/SmithyBusinessMetric;
+	public static fun values ()[Laws/smithy/kotlin/runtime/businessmetrics/SmithyBusinessMetric;
+}
+
 public final class aws/smithy/kotlin/runtime/collections/AttributeKey {
 	public fun <init> (Ljava/lang/String;)V
 	public final fun component1 ()Ljava/lang/String;

@@ -79,4 +79,16 @@ class HttpBodyTest {
 
         assertEquals(expected, body.readAll()!!.decodeToString())
     }
+
+    @Test
+    fun testEmptyEquals() {
+        val explicitlyEmpty = HttpBody.Empty
+        val implicitlyEmpty = HttpBody.fromBytes(byteArrayOf())
+
+        assertEquals(implicitlyEmpty, explicitlyEmpty)
+        assertEquals(explicitlyEmpty, implicitlyEmpty)
+
+        assertEquals(implicitlyEmpty, implicitlyEmpty)
+        assertEquals(explicitlyEmpty, explicitlyEmpty)
+    }
 }

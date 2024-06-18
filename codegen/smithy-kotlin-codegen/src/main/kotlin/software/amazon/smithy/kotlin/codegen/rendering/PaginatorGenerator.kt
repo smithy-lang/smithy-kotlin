@@ -143,7 +143,7 @@ class PaginatorGenerator : KotlinIntegration {
                 outputSymbol,
             ) {
                 withBlock("#T {", "}", ExternalTypes.KotlinxCoroutines.FlowGenerator) {
-                    write("var cursor: #F = null", cursorSymbol)
+                    write("var cursor: #F = initialRequest.$markerLiteral", cursorSymbol)
                     write("var hasNextPage: Boolean = true")
                     write("")
                     withBlock("while (hasNextPage) {", "}") {

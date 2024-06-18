@@ -4,7 +4,6 @@
  */
 package software.amazon.smithy.kotlin.codegen.model
 
-import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.kotlin.codegen.lang.KotlinTypes
 import software.amazon.smithy.kotlin.codegen.utils.doubleQuote
@@ -33,9 +32,8 @@ fun ParameterType.toSymbol(): Symbol =
     when (this) {
         ParameterType.STRING -> KotlinTypes.String
         ParameterType.BOOLEAN -> KotlinTypes.Boolean
-        ParameterType.STRING_ARRAY -> throw CodegenException("${ParameterType.STRING_ARRAY} is not a supported parameter type.")
-    }
-        .asNullable()
+        ParameterType.STRING_ARRAY -> KotlinTypes.Collections.MutableList
+    }.asNullable()
 
 /**
  * Get the writable literal for a rules engine value.

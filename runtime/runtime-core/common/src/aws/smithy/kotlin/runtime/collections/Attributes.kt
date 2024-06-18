@@ -172,6 +172,7 @@ private object EmptyAttributes : Attributes {
     override val keys: Set<AttributeKey<*>> = emptySet()
     override fun contains(key: AttributeKey<*>): Boolean = false
     override fun <T : Any> getOrNull(key: AttributeKey<T>): T? = null
+    override fun equals(other: Any?): Boolean = other is Attributes && other.isEmpty
 }
 
 /**

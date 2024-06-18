@@ -52,6 +52,7 @@ public final class aws/smithy/kotlin/runtime/http/HeadersBuilder : aws/smithy/ko
 
 public abstract class aws/smithy/kotlin/runtime/http/HttpBody {
 	public static final field Companion Laws/smithy/kotlin/runtime/http/HttpBody$Companion;
+	public fun equals (Ljava/lang/Object;)Z
 	public fun getContentLength ()Ljava/lang/Long;
 	public fun isDuplex ()Z
 	public fun isOneShot ()Z
@@ -74,6 +75,7 @@ public final class aws/smithy/kotlin/runtime/http/HttpBody$Companion {
 
 public final class aws/smithy/kotlin/runtime/http/HttpBody$Empty : aws/smithy/kotlin/runtime/http/HttpBody {
 	public static final field INSTANCE Laws/smithy/kotlin/runtime/http/HttpBody$Empty;
+	public fun equals (Ljava/lang/Object;)Z
 	public fun getContentLength ()Ljava/lang/Long;
 	public final fun isOneShot ()Z
 }
