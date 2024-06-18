@@ -671,7 +671,7 @@ open class SerializeStructGenerator(
             require(target.type == ShapeType.STRUCTURE || target.type == ShapeType.UNION) { "Unexpected serializer for member: $member; target: $target" }
 
             val symbol = ctx.symbolProvider.toSymbol(target)
-            val memberSerializerName = symbol.documentSerializerName() // FIXME Matas: This is where the document function usage is being introduced
+            val memberSerializerName = symbol.documentSerializerName()
             val descriptor = member.descriptorName()
             // invoke the ctor of the serializer to delegate to and pass the value
             "field($descriptor, $identifier, ::$memberSerializerName)"
