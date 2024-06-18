@@ -14,7 +14,6 @@ import software.amazon.smithy.kotlin.codegen.rendering.protocol.toRenderingConte
 import software.amazon.smithy.kotlin.codegen.rendering.serde.*
 import software.amazon.smithy.model.shapes.*
 import software.amazon.smithy.model.traits.TimestampFormatTrait
-import software.amazon.smithy.utils.SmithyInternalApi
 
 open class CborParserGenerator(
     private val protocolGenerator: ProtocolGenerator,

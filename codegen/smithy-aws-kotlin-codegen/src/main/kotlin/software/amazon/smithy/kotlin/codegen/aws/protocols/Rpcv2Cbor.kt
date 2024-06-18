@@ -63,7 +63,7 @@ class Rpcv2Cbor : AwsHttpBindingProtocolGenerator() {
     override fun renderSerializeHttpBody(
         ctx: ProtocolGenerator.GenerationContext,
         op: OperationShape,
-        writer: KotlinWriter
+        writer: KotlinWriter,
     ) {
         val resolver = getProtocolHttpBindingResolver(ctx.model, ctx.service)
         if (!op.hasHttpBody(ctx)) return
@@ -103,7 +103,7 @@ class Rpcv2Cbor : AwsHttpBindingProtocolGenerator() {
         ctx: ProtocolGenerator.GenerationContext,
         op: OperationShape,
         writer: KotlinWriter,
-        resolver: HttpBindingResolver
+        resolver: HttpBindingResolver,
     ) {
         resolver.determineRequestContentType(op)?.let { contentType ->
             writer.write("builder.headers.setMissing(\"Content-Type\", #S)", contentType)
