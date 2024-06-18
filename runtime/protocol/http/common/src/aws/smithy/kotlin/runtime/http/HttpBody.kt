@@ -35,12 +35,19 @@ public sealed class HttpBody {
      */
     public open val isDuplex: Boolean = false
 
+    override fun equals(other: Any?): Boolean =
+        other is HttpBody &&
+            other.contentLength == contentLength &&
+            other.isOneShot == isOneShot &&
+            other.isDuplex == isDuplex
+
     /**
      * Variant of a [HttpBody] without a payload
      */
     public object Empty : HttpBody() {
         final override val isOneShot: Boolean = false
         override val contentLength: Long = 0
+        override fun equals(other: Any?): Boolean = other is HttpBody && other.contentLength == contentLength
     }
 
     /**

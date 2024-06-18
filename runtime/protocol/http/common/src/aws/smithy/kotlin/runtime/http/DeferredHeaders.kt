@@ -35,6 +35,7 @@ private object EmptyDeferredHeaders : DeferredHeaders {
     override fun entries(): Set<Map.Entry<String, List<Deferred<String>>>> = emptySet()
     override fun contains(name: String): Boolean = false
     override fun isEmpty(): Boolean = true
+    override fun equals(other: Any?): Boolean = other is DeferredHeaders && other.isEmpty()
 }
 
 /**

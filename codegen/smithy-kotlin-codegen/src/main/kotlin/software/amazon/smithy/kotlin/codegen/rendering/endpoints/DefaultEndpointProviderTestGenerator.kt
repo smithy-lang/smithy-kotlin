@@ -61,7 +61,6 @@ class DefaultEndpointProviderTestGenerator(
     fun render() {
         writer.addImport("*", namespace = "kotlin.test")
         writer.withBlock("public class #L {", "}", CLASS_NAME) {
-            writer.write("")
             writer.withBlock(
                 "private fun expectEqualEndpoints(expected: #1T, actual: #1T) {",
                 "}",
@@ -79,19 +78,15 @@ class DefaultEndpointProviderTestGenerator(
                         RuntimeTypes.Core.Collections.toMutableAttributes,
                     )
                     writer.write(
-                        "if (actual.attributes.contains(#1T)) newActualAttributes.remove(#1T)",
+                        "newActualAttributes.remove(#T)",
                         RuntimeTypes.Core.BusinessMetrics.ServiceEndpointOverride,
                     )
                     writer.write(
-                        "if (actual.attributes.contains(#1T)) newActualAttributes.remove(#1T)",
+                        "newActualAttributes.remove(#T)",
                         RuntimeTypes.Core.BusinessMetrics.AccountIdBasedEndpointAccountId,
                     )
                     writer.write(
-                        "val newActualAttributesOrEmpty = if (newActualAttributes.isEmpty) #T() else newActualAttributes",
-                        RuntimeTypes.Core.Collections.emptyAttributes,
-                    )
-                    writer.write(
-                        "val newActual = #T(actual.uri, actual.headers, newActualAttributesOrEmpty)",
+                        "val newActual = #T(actual.uri, actual.headers, newActualAttributes)",
                         RuntimeTypes.SmithyClient.Endpoints.Endpoint,
                     )
                     writer.write("assertEquals(expected, newActual)")
