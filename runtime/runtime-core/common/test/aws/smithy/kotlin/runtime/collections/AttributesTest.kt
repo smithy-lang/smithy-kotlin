@@ -133,5 +133,8 @@ class AttributesTest {
 
         assertEquals(implicitlyEmpty, explicitlyEmpty)
         assertEquals(explicitlyEmpty, implicitlyEmpty)
+
+        assertEquals(explicitlyEmpty, explicitlyEmpty)
+        assertEquals(implicitlyEmpty, implicitlyEmpty)
     }
 }
