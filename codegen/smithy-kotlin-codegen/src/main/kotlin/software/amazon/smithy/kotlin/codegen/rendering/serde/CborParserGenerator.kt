@@ -14,6 +14,7 @@ import software.amazon.smithy.kotlin.codegen.rendering.protocol.toRenderingConte
 import software.amazon.smithy.kotlin.codegen.rendering.serde.*
 import software.amazon.smithy.model.shapes.*
 import software.amazon.smithy.model.traits.TimestampFormatTrait
+import software.amazon.smithy.utils.SmithyInternalApi
 
 open class CborParserGenerator(
     private val protocolGenerator: ProtocolGenerator,
@@ -164,7 +165,7 @@ open class CborParserGenerator(
 /**
  * An implementation of [DeserializeStructGenerator] which renders custom deserialization functions for CBOR types.
  */
-private open class CborDeserializeStructGenerator(
+open class CborDeserializeStructGenerator(
     ctx: ProtocolGenerator.GenerationContext,
     members: List<MemberShape>,
     writer: KotlinWriter,

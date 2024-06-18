@@ -129,13 +129,13 @@ private class CborElementIterator(
     val buffer: SdkBufferedSource,
     val expectedLength: ULong? = null,
 ) : Deserializer.ElementIterator, PrimitiveDeserializer by CborPrimitiveDeserializer(buffer) {
-    val primitiveDeserializer = CborPrimitiveDeserializer(buffer)
     var currentLength = 0uL
 
     override fun hasNextElement(): Boolean {
         if (expectedLength != null) {
             if (currentLength != expectedLength) {
                 check(!buffer.exhausted()) { "Buffer is unexpectedly exhausted, read $currentLength elements, expected $expectedLength." }
+                currentLength += 1u
                 return true
             } else {
                 return false
@@ -156,21 +156,6 @@ private class CborElementIterator(
         val value = decodeNextValue(buffer.peek())
         return (value !is Cbor.Encoding.Null)
     }
-
-    override fun deserializeBoolean(): Boolean = primitiveDeserializer.deserializeBoolean().also { currentLength += 1u }
-    override fun deserializeBigInteger(): BigInteger = primitiveDeserializer.deserializeBigInteger().also { currentLength += 1u }
-    override fun deserializeBigDecimal(): BigDecimal = primitiveDeserializer.deserializeBigDecimal().also { currentLength += 1u }
-    override fun deserializeByte(): Byte = primitiveDeserializer.deserializeByte().also { currentLength += 1u }
-    override fun deserializeDocument(): Document = primitiveDeserializer.deserializeDocument().also { currentLength += 1u }
-    override fun deserializeDouble(): Double = primitiveDeserializer.deserializeDouble().also { currentLength += 1u }
-    override fun deserializeFloat(): Float = primitiveDeserializer.deserializeFloat().also { currentLength += 1u }
-    override fun deserializeInt(): Int = primitiveDeserializer.deserializeInt().also { currentLength += 1u }
-    override fun deserializeLong(): Long = primitiveDeserializer.deserializeLong().also { currentLength += 1u }
-    override fun deserializeNull(): Nothing? = primitiveDeserializer.deserializeNull().also { currentLength += 1u }
-    override fun deserializeShort(): Short = primitiveDeserializer.deserializeShort().also { currentLength += 1u }
-    override fun deserializeString(): String = primitiveDeserializer.deserializeString().also { currentLength += 1u }
-    override fun deserializeBlob(): ByteArray = primitiveDeserializer.deserializeBlob().also { currentLength += 1u }
-    override fun deserializeTimestamp(format: TimestampFormat): Instant = primitiveDeserializer.deserializeTimestamp(format).also { currentLength += 1u }
 }
 
 /**
