@@ -198,6 +198,14 @@ class StructureGenerator(
                         .write("if (other.#1L == null) return false", memberName)
                         .write("if (!#1L.contentEquals(other.#1L)) return false", memberName)
                         .closeBlock("} else if (other.#1L != null) return false", memberName)
+                } else if (target is ListShape && target.member.targetOrSelf(model).isBlobShape) {
+                    openBlock("if (#L != null) {", memberName)
+                        .write("if (other.#L == null) return false", memberName)
+                        .write("if (#1L.size != other.#1L.size) return false", memberName)
+                        .openBlock("for (i in #L.indices) {", memberName)
+                        .write("if (!#1L[i].contentEquals(other.#1L[i])) return false", memberName)
+                        .closeBlock("}")
+                        .closeBlock("} else if (other.#1L != null) return false", memberName)
                 } else {
                     write("if (#1L != other.#1L) return false", memberName)
                 }
