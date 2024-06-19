@@ -12,10 +12,6 @@ import software.amazon.smithy.aws.traits.protocols.Ec2QueryTrait
 import software.amazon.smithy.aws.traits.protocols.RestJson1Trait
 import software.amazon.smithy.aws.traits.protocols.RestXmlTrait
 import software.amazon.smithy.codegen.core.CodegenException
-import software.amazon.smithy.kotlin.codegen.BuildSettings.Companion.ANNOTATIONS
-import software.amazon.smithy.kotlin.codegen.BuildSettings.Companion.GENERATE_DEFAULT_BUILD_FILES
-import software.amazon.smithy.kotlin.codegen.BuildSettings.Companion.GENERATE_MULTIPLATFORM_MODULE
-import software.amazon.smithy.kotlin.codegen.BuildSettings.Companion.ROOT_PROJECT
 import software.amazon.smithy.kotlin.codegen.lang.isValidPackageName
 import software.amazon.smithy.kotlin.codegen.utils.getOrNull
 import software.amazon.smithy.kotlin.codegen.utils.toCamelCase
@@ -157,9 +153,9 @@ data class KotlinSettings(
         val resolvedProtocols: Set<ShapeId> = serviceIndex.getProtocols(service).keys
         val protocol = api.protocolResolutionPriority.firstOrNull { it in resolvedProtocols && supportedProtocolTraits.contains(it) }
         return protocol ?: throw UnresolvableProtocolException(
-            "The ${service.id} service supports the following unsupported protocols $resolvedProtocols. "
-            + "They were evaluated using the prioritized list: ${api.protocolResolutionPriority.joinToString()}. "
-            + "The following protocol generators were found on the class path: $supportedProtocolTraits",
+            "The ${service.id} service supports the following unsupported protocols $resolvedProtocols. " +
+                "They were evaluated using the prioritized list: ${api.protocolResolutionPriority.joinToString()}. " +
+                "The following protocol generators were found on the class path: $supportedProtocolTraits",
         )
     }
 }
@@ -305,34 +301,32 @@ data class ApiSettings(
         const val ENABLE_ENDPOINT_AUTH_PROVIDER = "enableEndpointAuthProvider"
         const val PROTOCOL_RESOLUTION_PRIORITY = "protocolResolutionPriority"
 
-        fun fromNode(node: Optional<ObjectNode>): ApiSettings {
-            return node.map {
-                val visibility = node.get()
-                    .getStringMember(VISIBILITY)
-                    .map { Visibility.fromValue(it.value) }
-                    .getOrNull() ?: Visibility.PUBLIC
-                val checkMode = node.get()
-                    .getStringMember(NULLABILITY_CHECK_MODE)
-                    .map { checkModefromValue(it.value) }
-                    .getOrNull() ?: CheckMode.CLIENT_CAREFUL
-                val defaultValueSerializationMode = DefaultValueSerializationMode.fromValue(
-                    node.get()
-                        .getStringMemberOrDefault(
-                            DEFAULT_VALUE_SERIALIZATION_MODE,
-                            DefaultValueSerializationMode.WHEN_DIFFERENT.value,
-                        ),
-                )
-                val enableEndpointAuthProvider = node.get().getBooleanMemberOrDefault(ENABLE_ENDPOINT_AUTH_PROVIDER, false)
+        fun fromNode(node: Optional<ObjectNode>): ApiSettings = node.map {
+            val visibility = node.get()
+                .getStringMember(VISIBILITY)
+                .map { Visibility.fromValue(it.value) }
+                .getOrNull() ?: Visibility.PUBLIC
+            val checkMode = node.get()
+                .getStringMember(NULLABILITY_CHECK_MODE)
+                .map { checkModefromValue(it.value) }
+                .getOrNull() ?: CheckMode.CLIENT_CAREFUL
+            val defaultValueSerializationMode = DefaultValueSerializationMode.fromValue(
+                node.get()
+                    .getStringMemberOrDefault(
+                        DEFAULT_VALUE_SERIALIZATION_MODE,
+                        DefaultValueSerializationMode.WHEN_DIFFERENT.value,
+                    ),
+            )
+            val enableEndpointAuthProvider = node.get().getBooleanMemberOrDefault(ENABLE_ENDPOINT_AUTH_PROVIDER, false)
 
-                val protocolResolutionPriority = node.get()
-                    .getArrayMember(PROTOCOL_RESOLUTION_PRIORITY).getOrNull()
-                    ?.map { ShapeId.from(it.asStringNode().get().value) }?.toSet() ?: run {
-                    DEFAULT_PROTOCOL_RESOLUTION_PRIORITY
-                }
+            val protocolResolutionPriority = node.get()
+                .getArrayMember(PROTOCOL_RESOLUTION_PRIORITY).getOrNull()
+                ?.map { ShapeId.from(it.asStringNode().get().value) }?.toSet() ?: run {
+                DEFAULT_PROTOCOL_RESOLUTION_PRIORITY
+            }
 
-                ApiSettings(visibility, checkMode, defaultValueSerializationMode, enableEndpointAuthProvider, protocolResolutionPriority)
-            }.orElse(Default)
-        }
+            ApiSettings(visibility, checkMode, defaultValueSerializationMode, enableEndpointAuthProvider, protocolResolutionPriority)
+        }.orElse(Default)
 
         /**
          * Default build settings
