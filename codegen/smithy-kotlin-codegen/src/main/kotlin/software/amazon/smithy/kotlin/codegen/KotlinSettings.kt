@@ -5,6 +5,12 @@
 
 package software.amazon.smithy.kotlin.codegen
 
+import software.amazon.smithy.aws.traits.protocols.AwsJson1_0Trait
+import software.amazon.smithy.aws.traits.protocols.AwsJson1_1Trait
+import software.amazon.smithy.aws.traits.protocols.AwsQueryTrait
+import software.amazon.smithy.aws.traits.protocols.Ec2QueryTrait
+import software.amazon.smithy.aws.traits.protocols.RestJson1Trait
+import software.amazon.smithy.aws.traits.protocols.RestXmlTrait
 import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.kotlin.codegen.lang.isValidPackageName
 import software.amazon.smithy.kotlin.codegen.utils.getOrNull
@@ -17,6 +23,7 @@ import software.amazon.smithy.model.node.StringNode
 import software.amazon.smithy.model.shapes.ServiceShape
 import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.shapes.ShapeId
+import software.amazon.smithy.protocol.traits.Rpcv2CborTrait
 import java.util.Optional
 import java.util.logging.Logger
 import kotlin.IllegalArgumentException
@@ -33,6 +40,17 @@ private const val API_SETTINGS = "api"
 
 // Optional specification of sdkId for models that provide them, otherwise Service's shape id name is used
 private const val SDK_ID = "sdkId"
+
+// Prioritized list of protocols we support code generation for
+private val DEFAULT_PROTOCOL_RESOLUTION_PRIORITY = setOf<ShapeId>(
+    Rpcv2CborTrait.ID,
+    AwsJson1_0Trait.ID,
+    AwsJson1_1Trait.ID,
+    RestJson1Trait.ID,
+    RestXmlTrait.ID,
+    AwsQueryTrait.ID,
+    Ec2QueryTrait.ID,
+)
 
 /**
  * Settings used by [KotlinCodegenPlugin]
@@ -133,7 +151,7 @@ data class KotlinSettings(
         supportedProtocolTraits: Set<ShapeId>,
     ): ShapeId {
         val resolvedProtocols: Set<ShapeId> = serviceIndex.getProtocols(service).keys
-        val protocol = resolvedProtocols.firstOrNull(supportedProtocolTraits::contains)
+        val protocol = api.protocolResolutionPriority.firstOrNull { it in resolvedProtocols && supportedProtocolTraits.contains(it) }
         return protocol ?: throw UnresolvableProtocolException(
             "The ${service.id} service supports the following unsupported protocols $resolvedProtocols. " +
                 "The following protocol generators were found on the class path: $supportedProtocolTraits",
@@ -274,12 +292,14 @@ data class ApiSettings(
     val nullabilityCheckMode: CheckMode = CheckMode.CLIENT_CAREFUL,
     val defaultValueSerializationMode: DefaultValueSerializationMode = DefaultValueSerializationMode.WHEN_DIFFERENT,
     val enableEndpointAuthProvider: Boolean = false,
+    val protocolResolutionPriority: Set<ShapeId> = DEFAULT_PROTOCOL_RESOLUTION_PRIORITY,
 ) {
     companion object {
         const val VISIBILITY = "visibility"
         const val NULLABILITY_CHECK_MODE = "nullabilityCheckMode"
         const val DEFAULT_VALUE_SERIALIZATION_MODE = "defaultValueSerializationMode"
         const val ENABLE_ENDPOINT_AUTH_PROVIDER = "enableEndpointAuthProvider"
+        const val PROTOCOL_RESOLUTION_PRIORITY = "protocolResolutionPriority"
 
         fun fromNode(node: Optional<ObjectNode>): ApiSettings = node.map {
             val visibility = node.get()
@@ -298,7 +318,11 @@ data class ApiSettings(
                     ),
             )
             val enableEndpointAuthProvider = node.get().getBooleanMemberOrDefault(ENABLE_ENDPOINT_AUTH_PROVIDER, false)
-            ApiSettings(visibility, checkMode, defaultValueSerializationMode, enableEndpointAuthProvider)
+            val protocolResolutionPriority = node.get()
+                .getArrayMember(PROTOCOL_RESOLUTION_PRIORITY).getOrNull()
+                ?.map { ShapeId.from(it.asStringNode().get().value) }?.toSet() ?: DEFAULT_PROTOCOL_RESOLUTION_PRIORITY
+
+            ApiSettings(visibility, checkMode, defaultValueSerializationMode, enableEndpointAuthProvider, protocolResolutionPriority)
         }.orElse(Default)
 
         /**
