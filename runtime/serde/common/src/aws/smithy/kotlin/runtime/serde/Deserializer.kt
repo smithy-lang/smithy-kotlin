@@ -233,9 +233,9 @@ public interface PrimitiveDeserializer {
 
     /**
      * Deserialize and return the next token as an [Instant].
-     * @param format The [TimestampFormat] that this timestamp is encoded in
+     * @param format The [TimestampFormat] that the instant is encoded in
      */
-    public fun deserializeTimestamp(format: TimestampFormat): Instant
+    public fun deserializeInstant(format: TimestampFormat): Instant
 }
 
 @InternalApi

@@ -119,7 +119,7 @@ internal class CborPrimitiveDeserializer(private val buffer: SdkBufferedSource) 
 
     override fun deserializeBlob(): ByteArray = Cbor.Encoding.ByteString.decode(buffer).value
 
-    override fun deserializeTimestamp(format: TimestampFormat): Instant = Cbor.Encoding.Timestamp.decode(buffer).value
+    override fun deserializeInstant(format: TimestampFormat): Instant = Cbor.Encoding.Timestamp.decode(buffer).value
 }
 
 /**

@@ -255,9 +255,9 @@ open class SerializeStructGenerator(
             ShapeType.BIG_INTEGER,
             ShapeType.ENUM,
             ShapeType.INT_ENUM,
+            ShapeType.BLOB,
             -> renderPrimitiveElement(elementShape, nestingLevel, parentMemberName, isSparse)
 
-            ShapeType.BLOB -> renderBlobElement(nestingLevel, parentMemberName, isSparse)
             ShapeType.TIMESTAMP -> renderTimestampElement(listShape.member, elementShape, nestingLevel, parentMemberName, isSparse)
             ShapeType.LIST,
             ShapeType.SET,
@@ -469,25 +469,6 @@ open class SerializeStructGenerator(
     }
 
     /**
-     * Renders the serialization of a blob value contained by a map.  Example:
-     *
-     * ```
-     * input.fooBlobMap.forEach { (key, value) -> entry(key, value.encodeBase64String()) }
-     * ```
-     */
-    private fun renderBlobEntry(keyShape: Shape, nestingLevel: Int, listMemberName: String, isSparse: Boolean) {
-        val containerName = if (nestingLevel == 0) "input." else ""
-        val (keyName, valueName) = keyValueNames(nestingLevel)
-        val keyValue = keyValue(keyShape, keyName)
-
-        writer.withBlock("$containerName$listMemberName.forEach { ($keyName, $valueName) ->", "}") {
-            writer.wrapBlockIf(isSparse, "if ($valueName != null) {", "} else entry($keyValue, null as String?)") {
-                writer.write("entry($keyValue, $valueName.#T())", RuntimeTypes.Core.Text.Encoding.encodeBase64String)
-            }
-        }
-    }
-
-    /**
      * Renders the serialization of a timestamp value contained by a map.  Example:
      *
      * ```
@@ -557,25 +538,6 @@ open class SerializeStructGenerator(
             when (isSparse) {
                 true -> writer.write("if ($elementName != null) $serializerFnName($elementName) else serializeNull()")
                 false -> writer.write("$serializerFnName($elementName)")
-            }
-        }
-    }
-
-    /**
-     * Render a blob element of a list.  Example:
-     *
-     * ```
-     * for (c0 in input.fooBlobList) {
-     *      serializeString(c0.encodeBase64String())
-     * }
-     */
-    private fun renderBlobElement(nestingLevel: Int, listMemberName: String, isSparse: Boolean) {
-        val elementName = nestingLevel.variableNameFor(NestedIdentifierType.ELEMENT)
-        val containerName = if (nestingLevel == 0) "input." else ""
-
-        writer.withBlock("for ($elementName in $containerName$listMemberName) {", "}") {
-            writer.wrapBlockIf(isSparse, "if ($elementName != null) {", "} else serializeNull()") {
-                writer.write("serializeString($elementName.#T())", RuntimeTypes.Core.Text.Encoding.encodeBase64String)
             }
         }
     }

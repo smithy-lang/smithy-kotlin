@@ -292,11 +292,11 @@ class CborSerializerTest {
         val deserializer = CborPrimitiveDeserializer(buffer)
 
         tests.dropLast(1).forEach {
-            assertEquals(it.epochMilliseconds, deserializer.deserializeTimestamp(TimestampFormat.EPOCH_SECONDS).epochMilliseconds)
+            assertEquals(it.epochMilliseconds, deserializer.deserializeInstant(TimestampFormat.EPOCH_SECONDS).epochMilliseconds)
         }
 
         // FIXME Serializing -> deserializing Instant.MAX_VALUE results in a one millisecond offset...
-        assertEquals(Instant.MAX_VALUE.epochMilliseconds, deserializer.deserializeTimestamp(TimestampFormat.EPOCH_SECONDS).epochMilliseconds - 1)
+        assertEquals(Instant.MAX_VALUE.epochMilliseconds, deserializer.deserializeInstant(TimestampFormat.EPOCH_SECONDS).epochMilliseconds - 1)
         assertEquals(0, buffer.size)
     }
 

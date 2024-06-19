@@ -78,7 +78,7 @@ internal class XmlPrimitiveDeserializer(private val reader: XmlStreamReader, pri
 
     override fun deserializeBlob(): ByteArray = deserializeString().decodeBase64Bytes()
 
-    override fun deserializeTimestamp(format: TimestampFormat): Instant = when (format) {
+    override fun deserializeInstant(format: TimestampFormat): Instant = when (format) {
         TimestampFormat.EPOCH_SECONDS -> deserializeString().let { Instant.fromEpochSeconds(it) }
         TimestampFormat.ISO_8601 -> deserializeString().let { Instant.fromIso8601(it) }
         TimestampFormat.RFC_5322 -> deserializeString().let { Instant.fromRfc5322(it) }
