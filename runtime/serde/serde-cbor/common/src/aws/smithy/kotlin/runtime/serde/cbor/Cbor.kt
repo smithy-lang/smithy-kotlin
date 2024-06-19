@@ -15,6 +15,11 @@ import aws.smithy.kotlin.runtime.time.epochMilliseconds
 import aws.smithy.kotlin.runtime.time.fromEpochMilliseconds
 import kotlin.math.absoluteValue
 
+/**
+ * Encode and write a [Cbor.Value] to this [SdkBuffer]
+ */
+internal fun SdkBuffer.write(value: Cbor.Value) = write(value.encode())
+
 internal object Cbor {
     /**
      * Represents an encodable / decodable CBOR value.
