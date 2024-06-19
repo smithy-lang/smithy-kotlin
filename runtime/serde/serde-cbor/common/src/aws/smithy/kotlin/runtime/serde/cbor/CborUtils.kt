@@ -81,10 +81,9 @@ internal fun BigInteger.minusOne(): BigInteger {
         }
     }
 
-    // Remove leading zeros if necessary
+    // Remove leading zeroes
     val result = digits.concatToString().trimStart('0')
 
-    // Return the new BigInteger, handling the case where result might be empty
     return if (result.isEmpty()) BigInteger("0") else BigInteger(result)
 }
 
@@ -139,7 +138,6 @@ internal fun BigInteger.asBytes(): ByteArray {
         .map { it.toUByte(radix = 2).toByte() }
         .toByteArray()
 }
-
 
 /**
  * Encode and write a [Cbor.Value] to this [SdkBuffer]
