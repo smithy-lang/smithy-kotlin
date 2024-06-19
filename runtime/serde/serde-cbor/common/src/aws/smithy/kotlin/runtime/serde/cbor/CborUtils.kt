@@ -68,47 +68,44 @@ internal fun peekTag(buffer: SdkBufferedSource) = Cbor.Encoding.Tag.decode(buffe
 // Subtracts one from the given BigInteger
 internal fun BigInteger.minusOne(): BigInteger {
     val digits = toString().toCharArray()
-
     var index = digits.lastIndex
+
+    // Process the digits from right to left
     while (index >= 0) {
-        if (digits[index] == '0') {
-            digits[index] = '9'
-            index--
-        } else {
+        if (digits[index] > '0') {
             digits[index] = digits[index] - 1
             break
+        } else {
+            digits[index] = '9'
+            index--
         }
     }
 
-    val result = digits.concatToString()
+    // Remove leading zeros if necessary
+    val result = digits.concatToString().trimStart('0')
 
-    return if (result.startsWith("0") && result.length > 1) {
-        BigInteger(result.substring(1))
-    } else {
-        BigInteger(result)
-    }
+    // Return the new BigInteger, handling the case where result might be empty
+    return if (result.isEmpty()) BigInteger("0") else BigInteger(result)
 }
 
 // Adds one to the given BigInteger
 internal fun BigInteger.plusOne(): BigInteger {
     val digits = toString().toCharArray()
-
     var index = digits.lastIndex
+
+    // Process the digits from right to left
     while (index >= 0) {
         if (digits[index] == '9') {
             digits[index] = '0'
             index--
         } else {
             digits[index] = digits[index] + 1
-            break
+            return BigInteger(digits.concatToString())
         }
     }
 
-    return if (index == -1) {
-        BigInteger("1${digits.concatToString()}")
-    } else {
-        BigInteger(digits.concatToString())
-    }
+    // If all digits were '9', prepend '1'
+    return BigInteger("1${digits.concatToString()}")
 }
 
 // Converts a [BigInteger] to a [ByteArray].
@@ -116,6 +113,7 @@ internal fun BigInteger.asBytes(): ByteArray {
     var decimal = this.toString().removePrefix("-")
     val binary = StringBuilder()
 
+    // Convert decimal to binary
     while (decimal != "0") {
         val temp = StringBuilder()
         var carry = 0
@@ -126,20 +124,22 @@ internal fun BigInteger.asBytes(): ByteArray {
         }
         binary.insert(0, carry)
 
-        decimal = if (temp[0] == '0' && temp.length > 1) {
-            temp.substring(1)
-        } else {
-            temp.toString()
-        }
-
-        if (decimal.all { it == '0' }) { decimal = "0" }
+        decimal = temp
+            .dropWhile { it == '0' }
+            .ifEmpty { "0" }
+            .toString()
     }
 
-    val zeroPrefixLength = 8 - binary.length % 8 // prepend with zeroes if the total string length is not divisible by 8
-    return ("0".repeat(zeroPrefixLength) + binary)
-        .chunked(8) { it.toString().toUByte(radix = 2).toByte() } // convert each set of 8 bits to a byte
+    // Ensure the binary string length is a multiple of 8
+    val zeroPrefixLength = (8 - binary.length % 8) % 8
+    val paddedBinary = "0".repeat(zeroPrefixLength) + binary
+
+    // Convert each set of 8 bits to a byte
+    return paddedBinary.chunked(8)
+        .map { it.toUByte(radix = 2).toByte() }
         .toByteArray()
 }
+
 
 /**
  * Encode and write a [Cbor.Value] to this [SdkBuffer]
