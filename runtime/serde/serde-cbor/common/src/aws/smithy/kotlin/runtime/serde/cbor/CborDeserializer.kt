@@ -12,12 +12,16 @@ import aws.smithy.kotlin.runtime.serde.*
 import aws.smithy.kotlin.runtime.time.Instant
 import aws.smithy.kotlin.runtime.time.TimestampFormat
 
+/**
+ * Deserializer for CBOR byte payloads
+ * @param payload Bytes from which CBOR data is deserialized
+ */
 public class CborDeserializer(payload: ByteArray) : Deserializer {
     private val buffer = SdkBuffer().apply { write(payload) }
 
     override fun deserializeStruct(descriptor: SdkObjectDescriptor): Deserializer.FieldIterator {
-        peekMajor(buffer).let {
-            check(it == Major.MAP) { "Expected major ${Major.MAP} for structure, got $it." }
+        peekMajor(buffer).also {
+            check(it == Major.MAP) { "Expected major ${Major.MAP} for structure, got $it" }
         }
 
         val expectedLength = if (peekMinorByte(buffer) == Minor.INDEFINITE.value) {
@@ -30,23 +34,10 @@ public class CborDeserializer(payload: ByteArray) : Deserializer {
         return CborFieldIterator(buffer, expectedLength, descriptor)
     }
 
-    override fun deserializeList(descriptor: SdkFieldDescriptor): Deserializer.ElementIterator {
-        val major = peekMajor(buffer)
-        check(major == Major.LIST) { "Expected major ${Major.LIST} for CBOR list, got $major" }
-
-        val expectedLength = if (peekMinorByte(buffer) == Minor.INDEFINITE.value) {
-            buffer.readByte()
-            null
-        } else {
-            deserializeArgument(buffer)
-        }
-
-        return CborElementIterator(buffer, expectedLength)
-    }
-
     override fun deserializeMap(descriptor: SdkFieldDescriptor): Deserializer.EntryIterator {
-        val major = peekMajor(buffer)
-        check(major == Major.MAP) { "Expected major ${Major.MAP} for CBOR map, got $major" }
+        peekMajor(buffer).also {
+            check(it == Major.MAP) { "Expected major ${Major.MAP} for CBOR map, got $it" }
+        }
 
         val expectedLength = if (peekMinorByte(buffer) == Minor.INDEFINITE.value) {
             buffer.readByte()
@@ -57,50 +48,57 @@ public class CborDeserializer(payload: ByteArray) : Deserializer {
 
         return CborEntryIterator(buffer, expectedLength)
     }
+
+    override fun deserializeList(descriptor: SdkFieldDescriptor): Deserializer.ElementIterator {
+        peekMajor(buffer).also {
+            check(it == Major.LIST) { "Expected major ${Major.LIST} for CBOR list, got $it" }
+        }
+
+        val expectedLength = if (peekMinorByte(buffer) == Minor.INDEFINITE.value) {
+            buffer.readByte()
+            null
+        } else {
+            deserializeArgument(buffer)
+        }
+
+        return CborElementIterator(buffer, expectedLength)
+    }
 }
 
 internal class CborPrimitiveDeserializer(private val buffer: SdkBufferedSource) : PrimitiveDeserializer {
-    override fun deserializeByte(): Byte = when (val major = peekMajor(buffer)) {
-        Major.U_INT -> Cbor.Encoding.UInt.decode(buffer).value.toByte()
-        Major.NEG_INT -> Cbor.Encoding.NegInt.decode(buffer).value.toByte()
-        else -> throw DeserializationException("Expected ${Major.U_INT} or ${Major.NEG_INT} for CBOR byte, got $major.")
+    private inline fun <reified T : Number> deserializeNumber(cast: (Number) -> T): T {
+        return when (val major = peekMajor(buffer)) {
+            Major.U_INT -> cast(Cbor.Encoding.UInt.decode(buffer).value.toLong())
+            Major.NEG_INT -> cast(Cbor.Encoding.NegInt.decode(buffer).value)
+            else -> throw DeserializationException("Expected ${Major.U_INT} or ${Major.NEG_INT} for CBOR number, got $major.")
+        }
     }
 
-    override fun deserializeInt(): Int = when (val major = peekMajor(buffer)) {
-        Major.U_INT -> Cbor.Encoding.UInt.decode(buffer).value.toInt()
-        Major.NEG_INT -> Cbor.Encoding.NegInt.decode(buffer).value.toInt()
-        else -> throw DeserializationException("Expected ${Major.U_INT} or ${Major.NEG_INT} for CBOR integer, got $major.")
+    override fun deserializeByte(): Byte = deserializeNumber { it.toByte() }
+    override fun deserializeInt(): Int = deserializeNumber { it.toInt() }
+    override fun deserializeShort(): Short = deserializeNumber { it.toShort() }
+    override fun deserializeLong(): Long = deserializeNumber { it.toLong() }
+
+    private inline fun <reified T : Number> deserializeFloatingPoint(cast: (Number) -> T): T = when (peekMinorByte(buffer)) {
+        Minor.FLOAT16.value -> cast(Cbor.Encoding.Float16.decode(buffer).value)
+        Minor.FLOAT32.value -> cast(Cbor.Encoding.Float32.decode(buffer).value)
+        Minor.FLOAT64.value -> cast(Cbor.Encoding.Float64.decode(buffer).value)
+        else -> {
+            val value = when (T::class) {
+                Float::class -> Float.fromBits(deserializeArgument(buffer).toInt())
+                Double::class -> Double.fromBits(deserializeArgument(buffer).toLong())
+                else -> throw DeserializationException("Unsupported floating point type: ${T::class}")
+            }
+            cast(value)
+        }
     }
 
-    override fun deserializeShort(): Short = when (val major = peekMajor(buffer)) {
-        Major.U_INT -> Cbor.Encoding.UInt.decode(buffer).value.toShort()
-        Major.NEG_INT -> Cbor.Encoding.NegInt.decode(buffer).value.toShort()
-        else -> throw DeserializationException("Expected ${Major.U_INT} or ${Major.NEG_INT} for CBOR short, got $major.")
-    }
+    override fun deserializeFloat(): Float = deserializeFloatingPoint { it.toFloat() }
+    override fun deserializeDouble(): Double = deserializeFloatingPoint { it.toDouble() }
 
-    override fun deserializeLong(): Long = when (val major = peekMajor(buffer)) {
-        Major.U_INT -> Cbor.Encoding.UInt.decode(buffer).value.toLong()
-        Major.NEG_INT -> Cbor.Encoding.NegInt.decode(buffer).value
-        else -> throw DeserializationException("Expected ${Major.U_INT} or ${Major.NEG_INT} for CBOR short, got $major.")
-    }
-
-    override fun deserializeFloat(): Float = when (peekMinorByte(buffer)) {
-        Minor.FLOAT16.value -> Cbor.Encoding.Float16.decode(buffer).value
-        Minor.FLOAT32.value -> Cbor.Encoding.Float32.decode(buffer).value
-        Minor.FLOAT64.value -> Cbor.Encoding.Float64.decode(buffer).value.toFloat()
-        else -> Float.fromBits(deserializeArgument(buffer).toInt())
-    }
-
-    override fun deserializeDouble(): Double = when (peekMinorByte(buffer)) {
-        Minor.FLOAT16.value -> Cbor.Encoding.Float16.decode(buffer).value.toDouble()
-        Minor.FLOAT32.value -> Cbor.Encoding.Float32.decode(buffer).value.toDouble()
-        Minor.FLOAT64.value -> Cbor.Encoding.Float64.decode(buffer).value
-        else -> Double.fromBits(deserializeArgument(buffer).toLong())
-    }
-
-    override fun deserializeBigInteger(): BigInteger = when (val tagId = peekTag(buffer).id.toUInt()) {
-        2u -> Cbor.Encoding.BigNum.decode(buffer).value
-        3u -> Cbor.Encoding.NegBigNum.decode(buffer).value
+    override fun deserializeBigInteger(): BigInteger = when (val tagId = peekTag(buffer).id) {
+        2uL -> Cbor.Encoding.BigNum.decode(buffer).value
+        3uL -> Cbor.Encoding.NegBigNum.decode(buffer).value
         else -> throw DeserializationException("Expected tag 2 or 3 for CBOR BigNum, got $tagId")
     }
 
@@ -153,8 +151,9 @@ private class CborElementIterator(
     }
 
     override fun nextHasValue(): Boolean {
-        val value = decodeNextValue(buffer.peek())
-        return (value !is Cbor.Encoding.Null)
+        val peekedMajor = peekMajor(buffer)
+        val peekedMinor = peekMinorByte(buffer)
+        return !(peekedMajor == Major.TYPE_7 && (peekedMinor == Minor.NULL.value || peekedMinor == Minor.UNDEFINED.value))
     }
 }
 
@@ -172,8 +171,7 @@ private class CborFieldIterator(
         if (expectedLength == currentLength || buffer.exhausted()) { return null }
         currentLength += 1uL
 
-        val peekedNextValue = decodeNextValue(buffer.peek())
-        val candidate: Int? = if (peekedNextValue is Cbor.Encoding.IndefiniteBreak) {
+        val candidate: Int? = if (peekMajor(buffer) == Major.TYPE_7 && peekMinorByte(buffer) == Minor.INDEFINITE.value) {
             Cbor.Encoding.IndefiniteBreak.decode(buffer)
             null
         } else {
@@ -186,7 +184,7 @@ private class CborFieldIterator(
 
         if (candidate != null) {
             // skip explicit null values
-            if (decodeNextValue(buffer.peek()) is Cbor.Encoding.Null) {
+            if (peekMajor(buffer) == Major.TYPE_7 && (peekMinorByte(buffer) == Minor.NULL.value || peekMinorByte(buffer) == Minor.UNDEFINED.value)) {
                 skipValue()
                 return findNextFieldIndex()
             }
@@ -220,23 +218,21 @@ private class CborEntryIterator(
             }
         }
 
-        val peekedNextKey = decodeNextValue(buffer.peek())
-        return if (peekedNextKey is Cbor.Encoding.IndefiniteBreak) {
+        val peekedMajor = peekMajor(buffer)
+        val peekedMinor = peekMinorByte(buffer)
+        return if (peekedMajor == Major.TYPE_7 && peekedMinor == Minor.INDEFINITE.value) {
             Cbor.Encoding.IndefiniteBreak.decode(buffer)
             false
-        } else if (peekedNextKey is Cbor.Encoding.Null) {
+        } else if (peekedMajor == Major.TYPE_7 && (peekedMinor == Minor.NULL.value || peekMinorByte(buffer) == Minor.UNDEFINED.value)) {
             Cbor.Encoding.Null.decode(buffer)
             false
         } else {
-            check(peekedNextKey is Cbor.Encoding.String) { "Expected string type for CBOR map key, got $peekedNextKey" }
+            check(peekedMajor == Major.STRING) { "Expected string type for CBOR map key, got $peekedMajor" }
             true
         }
     }
 
     override fun key(): String = deserializeString().also { currentLength += 1uL }
 
-    override fun nextHasValue(): Boolean {
-        val peekedNextValue = decodeNextValue(buffer.peek())
-        return peekedNextValue !is Cbor.Encoding.Null
-    }
+    override fun nextHasValue(): Boolean = !(peekMajor(buffer) == Major.TYPE_7 && peekMinorByte(buffer) == Minor.NULL.value)
 }
