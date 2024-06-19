@@ -1,0 +1,8 @@
+{
+    "id": "4f6cf597-a267-4bca-a8b9-98aa055a9a72",
+    "type": "feature",
+    "description": "Add support for `smithy.protocols#rpcv2Cbor` protocol",
+    "issues": [
+        "https://github.com/awslabs/aws-sdk-kotlin/issues/1302"
+    ]
+}
