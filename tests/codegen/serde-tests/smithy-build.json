@@ -23,6 +23,9 @@
           "build": {
             "rootProject": false,
             "generateDefaultBuildFiles": false
+          },
+          "api": {
+            "protocolResolutionPriority": ["aws.serde.protocols#serdeJson", "aws.serde.protocols#serdeXml"]
           }
         }
       }
