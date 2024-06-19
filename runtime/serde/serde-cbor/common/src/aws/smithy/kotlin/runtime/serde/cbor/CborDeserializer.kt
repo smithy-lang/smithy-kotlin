@@ -179,9 +179,7 @@ private class CborFieldIterator(
         return candidate
     }
 
-    override fun skipValue() {
-        decodeNextValue(buffer)
-    }
+    override fun skipValue() { Cbor.Value.decode(buffer) }
 }
 
 /**
@@ -203,17 +201,14 @@ private class CborEntryIterator(
             }
         }
 
-        return if (buffer.nextValueIsIndefiniteBreak()) {
-            Cbor.Encoding.IndefiniteBreak.decode(buffer)
-            false
-        } else if (buffer.nextValueIsNull()) {
-            Cbor.Encoding.Null.decode(buffer)
-            false
-        } else {
-            peekMajor(buffer).also {
-                check(it == Major.STRING) { "Expected string type for CBOR map key, got $it" }
+        return when {
+            buffer.nextValueIsIndefiniteBreak() -> false.also { Cbor.Encoding.IndefiniteBreak.decode(buffer) }
+            buffer.nextValueIsNull() -> false.also { Cbor.Encoding.Null.decode(buffer) }
+            else -> true.also {
+                peekMajor(buffer).also {
+                    check(it == Major.STRING) { "Expected string type for CBOR map key, got $it" }
+                }
             }
-            true
         }
     }
 
@@ -221,11 +216,3 @@ private class CborEntryIterator(
 
     override fun nextHasValue(): Boolean = !buffer.nextValueIsNull()
 }
-
-// Peek at the head byte to determine if the next encoded value represents a break in an indefinite-length list/map
-private fun SdkBufferedSource.nextValueIsIndefiniteBreak(): Boolean =
-    peekMajor(this) == Major.TYPE_7 && peekMinorByte(this) == Minor.INDEFINITE.value
-
-// Peek at the head byte to determine if the next encoded value represents null
-private fun SdkBufferedSource.nextValueIsNull(): Boolean =
-    peekMajor(this) == Major.TYPE_7 && (peekMinorByte(this) == Minor.NULL.value || peekMinorByte(this) == Minor.UNDEFINED.value)

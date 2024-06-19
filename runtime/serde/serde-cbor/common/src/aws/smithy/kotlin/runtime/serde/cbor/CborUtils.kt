@@ -143,3 +143,11 @@ internal fun BigInteger.asBytes(): ByteArray {
  * Encode and write a [Cbor.Value] to this [SdkBuffer]
  */
 internal fun SdkBuffer.write(value: Cbor.Value) = write(value.encode())
+
+// Peek at the head byte to determine if the next encoded value represents a break in an indefinite-length list/map
+internal fun SdkBufferedSource.nextValueIsIndefiniteBreak(): Boolean =
+    peekMajor(this) == Major.TYPE_7 && peekMinorByte(this) == Minor.INDEFINITE.value
+
+// Peek at the head byte to determine if the next encoded value represents null
+internal fun SdkBufferedSource.nextValueIsNull(): Boolean =
+    peekMajor(this) == Major.TYPE_7 && (peekMinorByte(this) == Minor.NULL.value || peekMinorByte(this) == Minor.UNDEFINED.value)
