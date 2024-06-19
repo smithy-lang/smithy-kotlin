@@ -55,8 +55,8 @@ class CborSerializerGenerator(
         descriptorGenerator(ctx, shape, members, writer).render() // render the serde descriptors
         when (shape) {
             is DocumentShape -> throw CodegenException("CBOR does not support Smithy documents.")
-            is UnionShape -> CborSerializeUnionGenerator(ctx, shape, members, writer, TimestampFormatTrait.Format.EPOCH_SECONDS).render()
-            else -> CborSerializeStructGenerator(ctx, members, writer, TimestampFormatTrait.Format.EPOCH_SECONDS).render()
+            is UnionShape -> SerializeUnionGenerator(ctx, shape, members, writer, TimestampFormatTrait.Format.EPOCH_SECONDS).render()
+            else -> SerializeStructGenerator(ctx, members, writer, TimestampFormatTrait.Format.EPOCH_SECONDS).render()
         }
     }
 
