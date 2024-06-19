@@ -24,7 +24,6 @@ internal enum class Minor(val value: UByte) {
     FLOAT16(25u),
     FLOAT32(26u),
     FLOAT64(27u),
-    ;
 }
 
 internal val MINOR_BYTE_MASK: UByte = 0b11111u

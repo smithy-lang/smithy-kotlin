@@ -8,7 +8,6 @@ import aws.smithy.kotlin.runtime.content.BigDecimal
 import aws.smithy.kotlin.runtime.content.BigInteger
 import aws.smithy.kotlin.runtime.io.SdkBuffer
 import aws.smithy.kotlin.runtime.io.SdkBufferedSource
-import aws.smithy.kotlin.runtime.io.use
 import aws.smithy.kotlin.runtime.serde.DeserializationException
 import aws.smithy.kotlin.runtime.serde.SerializationException
 import aws.smithy.kotlin.runtime.time.Instant
@@ -65,7 +64,6 @@ internal object Cbor {
                         }
                     }
                 }
-
             }
         }
     }
@@ -331,7 +329,7 @@ internal object Cbor {
                 when (value) {
                     false -> encodeMajorMinor(Major.TYPE_7, Minor.FALSE)
                     true -> encodeMajorMinor(Major.TYPE_7, Minor.TRUE)
-                }
+                },
             )
 
             internal companion object {
@@ -393,8 +391,9 @@ internal object Cbor {
                     val float32 = when (exponent) {
                         0x1F -> sign or 0x7F800000 or fraction // Infinity / NaN
                         0 -> {
-                            if (fraction == 0) sign // Zero
-                            else {
+                            if (fraction == 0) {
+                                sign // Zero
+                            } else {
                                 // Subnormal numbers
                                 var subnormalFraction = fraction
                                 var e = -14 + 127
@@ -600,7 +599,7 @@ internal object Cbor {
                                 else -> throw DeserializationException("Expected BigNum or NegBigNum for CBOR tagged decimal fraction mantissa, got ${mantissa.id}")
                             }
                             else -> throw DeserializationException("Expected UInt, NegInt, or Tag for CBOR decimal fraction mantissa, got $mantissa")
-                        }
+                        },
                     )
 
                     when (exponent) {
