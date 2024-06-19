@@ -143,7 +143,7 @@ public class JsonDeserializer(payload: ByteArray) : Deserializer, Deserializer.E
         return token.value
     }
 
-    override fun deserializeBlob(): ByteArray = deserializeString().decodeBase64Bytes()
+    override fun deserializeByteArray(): ByteArray = deserializeString().decodeBase64Bytes()
 
     override fun deserializeInstant(format: TimestampFormat): Instant = when (format) {
         TimestampFormat.EPOCH_SECONDS -> deserializeString().let { Instant.fromEpochSeconds(it) }

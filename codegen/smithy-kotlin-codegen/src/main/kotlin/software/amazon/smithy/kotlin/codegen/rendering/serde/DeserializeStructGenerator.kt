@@ -608,13 +608,13 @@ open class DeserializeStructGenerator(
             target.type == ShapeType.BIG_INTEGER -> "deserializeBigInteger()"
             target.type == ShapeType.BIG_DECIMAL -> "deserializeBigDecimal()"
             target.type == ShapeType.DOCUMENT -> "deserializeDocument()"
-            target.type == ShapeType.BLOB -> "deserializeBlob()"
+            target.type == ShapeType.BLOB -> "deserializeByteArray()"
             target.type == ShapeType.TIMESTAMP -> {
                 writer.addImport(RuntimeTypes.Core.Instant)
                 writer.addImport(RuntimeTypes.Core.TimestampFormat)
                 val trait = shape.getTrait<TimestampFormatTrait>() ?: target.getTrait()
                 val tsFormat = trait?.format ?: defaultTimestampFormat
-                "deserializeTimestamp(${tsFormat.toRuntimeEnum()})"
+                "deserializeInstant(${tsFormat.toRuntimeEnum()})"
             }
 
             target.isStringEnumShape -> {

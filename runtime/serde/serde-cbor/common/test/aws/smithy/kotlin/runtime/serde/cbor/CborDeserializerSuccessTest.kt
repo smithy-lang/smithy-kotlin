@@ -393,7 +393,7 @@ class CborDeserializerSuccessTest {
         val buffer = SdkBuffer().apply { write(payload) }
         val deserializer = CborPrimitiveDeserializer(buffer)
 
-        val result = deserializer.deserializeBlob()
+        val result = deserializer.deserializeByteArray()
         assertEquals(0, result.size)
     }
 
@@ -404,7 +404,7 @@ class CborDeserializerSuccessTest {
         val buffer = SdkBuffer().apply { write(payload) }
         val deserializer = CborPrimitiveDeserializer(buffer)
 
-        val result = deserializer.deserializeBlob()
+        val result = deserializer.deserializeByteArray()
 
         val expectedBytes = byteArrayOf(102, 111, 111)
         expectedBytes.forEachIndexed { index, byte ->
@@ -442,7 +442,7 @@ class CborDeserializerSuccessTest {
         val buffer = SdkBuffer().apply { write(payload) }
         val deserializer = CborPrimitiveDeserializer(buffer)
 
-        val result = deserializer.deserializeBlob()
+        val result = deserializer.deserializeByteArray()
 
         val expectedBytes = byteArrayOf(102, 111, 111)
         expectedBytes.forEachIndexed { index, byte ->
@@ -458,7 +458,7 @@ class CborDeserializerSuccessTest {
         val buffer = SdkBuffer().apply { write(payload) }
         val deserializer = CborPrimitiveDeserializer(buffer)
 
-        val result = deserializer.deserializeBlob()
+        val result = deserializer.deserializeByteArray()
 
         val expected = byteArrayOf(102, 111, 111, 102, 111, 111)
         expected.forEachIndexed { index, byte -> assertEquals(byte, result[index]) }
@@ -472,7 +472,7 @@ class CborDeserializerSuccessTest {
         val buffer = SdkBuffer().apply { write(payload) }
         val deserializer = CborPrimitiveDeserializer(buffer)
 
-        val result = deserializer.deserializeBlob()
+        val result = deserializer.deserializeByteArray()
         assertEquals(0, result.size)
     }
 
@@ -483,7 +483,7 @@ class CborDeserializerSuccessTest {
         val buffer = SdkBuffer().apply { write(payload) }
         val deserializer = CborPrimitiveDeserializer(buffer)
 
-        val result = deserializer.deserializeBlob()
+        val result = deserializer.deserializeByteArray()
         assertEquals(0, result.size)
     }
 
@@ -494,7 +494,7 @@ class CborDeserializerSuccessTest {
         val buffer = SdkBuffer().apply { write(payload) }
         val deserializer = CborPrimitiveDeserializer(buffer)
 
-        val result = deserializer.deserializeBlob()
+        val result = deserializer.deserializeByteArray()
 
         val expected = byteArrayOf(102, 111, 111)
         expected.forEachIndexed { index, byte -> assertEquals(byte, result[index]) }

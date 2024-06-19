@@ -69,7 +69,7 @@ class CborDeserializeErrorTest {
         val deserializer = CborPrimitiveDeserializer(buffer)
 
         assertFails {
-            deserializer.deserializeBlob()
+            deserializer.deserializeByteArray()
         }
     }
 
@@ -81,7 +81,7 @@ class CborDeserializeErrorTest {
         val deserializer = CborPrimitiveDeserializer(buffer)
 
         assertFails {
-            deserializer.deserializeBlob()
+            deserializer.deserializeByteArray()
         }
     }
 
@@ -296,7 +296,7 @@ class CborDeserializeErrorTest {
         val deserializer = CborPrimitiveDeserializer(buffer)
 
         assertFails {
-            deserializer.deserializeBlob()
+            deserializer.deserializeByteArray()
         }
     }
 
@@ -308,7 +308,7 @@ class CborDeserializeErrorTest {
         val deserializer = CborPrimitiveDeserializer(buffer)
 
         assertFails {
-            deserializer.deserializeBlob()
+            deserializer.deserializeByteArray()
         }
     }
 
@@ -632,7 +632,7 @@ class CborDeserializeErrorTest {
         val deserializer = CborPrimitiveDeserializer(buffer)
 
         assertFails {
-            deserializer.deserializeBlob()
+            deserializer.deserializeByteArray()
         }
     }
 
@@ -692,7 +692,7 @@ class CborDeserializeErrorTest {
         val deserializer = CborPrimitiveDeserializer(buffer)
 
         assertFails {
-            deserializer.deserializeBlob()
+            deserializer.deserializeByteArray()
         }
     }
 
@@ -704,7 +704,7 @@ class CborDeserializeErrorTest {
         val deserializer = CborPrimitiveDeserializer(buffer)
 
         assertFails {
-            deserializer.deserializeBlob()
+            deserializer.deserializeByteArray()
         }
     }
 
@@ -716,7 +716,7 @@ class CborDeserializeErrorTest {
         val deserializer = CborPrimitiveDeserializer(buffer)
 
         assertFails {
-            deserializer.deserializeBlob()
+            deserializer.deserializeByteArray()
         }
     }
 
@@ -740,7 +740,7 @@ class CborDeserializeErrorTest {
         val deserializer = CborPrimitiveDeserializer(buffer)
 
         assertFails {
-            deserializer.deserializeBlob()
+            deserializer.deserializeByteArray()
         }
     }
 

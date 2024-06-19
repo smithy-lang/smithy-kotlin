@@ -229,7 +229,7 @@ public interface PrimitiveDeserializer {
     /**
      * Deserialize and return the next token as a [ByteArray].
      */
-    public fun deserializeBlob(): ByteArray
+    public fun deserializeByteArray(): ByteArray
 
     /**
      * Deserialize and return the next token as an [Instant].
