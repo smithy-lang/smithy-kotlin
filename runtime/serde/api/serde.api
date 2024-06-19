@@ -97,18 +97,18 @@ public final class aws/smithy/kotlin/runtime/serde/ParsersKt {
 public abstract interface class aws/smithy/kotlin/runtime/serde/PrimitiveDeserializer {
 	public abstract fun deserializeBigDecimal ()Ljava/math/BigDecimal;
 	public abstract fun deserializeBigInteger ()Ljava/math/BigInteger;
-	public abstract fun deserializeBlob ()[B
 	public abstract fun deserializeBoolean ()Z
 	public abstract fun deserializeByte ()B
+	public abstract fun deserializeByteArray ()[B
 	public abstract fun deserializeDocument ()Laws/smithy/kotlin/runtime/content/Document;
 	public abstract fun deserializeDouble ()D
 	public abstract fun deserializeFloat ()F
+	public abstract fun deserializeInstant (Laws/smithy/kotlin/runtime/time/TimestampFormat;)Laws/smithy/kotlin/runtime/time/Instant;
 	public abstract fun deserializeInt ()I
 	public abstract fun deserializeLong ()J
 	public abstract fun deserializeNull ()Ljava/lang/Void;
 	public abstract fun deserializeShort ()S
 	public abstract fun deserializeString ()Ljava/lang/String;
-	public abstract fun deserializeTimestamp (Laws/smithy/kotlin/runtime/time/TimestampFormat;)Laws/smithy/kotlin/runtime/time/Instant;
 }
 
 public abstract interface class aws/smithy/kotlin/runtime/serde/PrimitiveSerializer {

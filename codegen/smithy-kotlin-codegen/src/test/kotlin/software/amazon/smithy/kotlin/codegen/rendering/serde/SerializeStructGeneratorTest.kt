@@ -756,9 +756,7 @@ class SerializeStructGeneratorTest {
                 if (input.payload != null) {
                     listField(PAYLOAD_DESCRIPTOR) {
                         for (el0 in input.payload) {
-                            if (el0 != null) {
-                                serializeString(el0.encodeBase64String())
-                            } else serializeNull()
+                            if (el0 != null) serializeByteArray(el0) else serializeNull()
                         }
                     }
                 }
@@ -1397,7 +1395,7 @@ class SerializeStructGeneratorTest {
                     mapField(PAYLOAD_DESCRIPTOR) {
                         input.payload.forEach { (key, value) ->
                             if (value != null) {
-                                entry(key, value.encodeBase64String())
+                                entry(key, value)
                             } else entry(key, null as String?)
                         }
                     }
@@ -1853,7 +1851,7 @@ class SerializeStructGeneratorTest {
                 if (input.fooBlobMap != null) {
                     mapField(FOOBLOBMAP_DESCRIPTOR) {
                         input.fooBlobMap.forEach { (key, value) ->
-                            entry(key, value.encodeBase64String())
+                            entry(key, value)
                         }
                     }
                 }
@@ -1884,7 +1882,7 @@ class SerializeStructGeneratorTest {
                 if (input.fooBlobList != null) {
                     listField(FOOBLOBLIST_DESCRIPTOR) {
                         for (el0 in input.fooBlobList) {
-                            serializeString(el0.encodeBase64String())
+                            serializeByteArray(el0)
                         }
                     }
                 }

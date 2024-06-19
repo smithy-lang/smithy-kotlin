@@ -193,9 +193,8 @@ open class SerializeStructGenerator(
             ShapeType.BIG_INTEGER,
             ShapeType.ENUM,
             ShapeType.INT_ENUM,
+            ShapeType.BLOB,
             -> renderPrimitiveEntry(keyShape, elementShape, nestingLevel, parentMemberName, isSparse)
-
-            ShapeType.BLOB -> renderBlobEntry(keyShape, nestingLevel, parentMemberName, isSparse)
 
             ShapeType.TIMESTAMP -> renderTimestampEntry(
                 keyShape,

@@ -14,12 +14,13 @@ public final class aws/smithy/kotlin/runtime/serde/json/JsonDeserializer : aws/s
 	public fun <init> ([B)V
 	public fun deserializeBigDecimal ()Ljava/math/BigDecimal;
 	public fun deserializeBigInteger ()Ljava/math/BigInteger;
-	public fun deserializeBlob ()[B
 	public fun deserializeBoolean ()Z
 	public fun deserializeByte ()B
+	public fun deserializeByteArray ()[B
 	public fun deserializeDocument ()Laws/smithy/kotlin/runtime/content/Document;
 	public fun deserializeDouble ()D
 	public fun deserializeFloat ()F
+	public fun deserializeInstant (Laws/smithy/kotlin/runtime/time/TimestampFormat;)Laws/smithy/kotlin/runtime/time/Instant;
 	public fun deserializeInt ()I
 	public fun deserializeList (Laws/smithy/kotlin/runtime/serde/SdkFieldDescriptor;)Laws/smithy/kotlin/runtime/serde/Deserializer$ElementIterator;
 	public fun deserializeLong ()J
@@ -28,7 +29,6 @@ public final class aws/smithy/kotlin/runtime/serde/json/JsonDeserializer : aws/s
 	public fun deserializeShort ()S
 	public fun deserializeString ()Ljava/lang/String;
 	public fun deserializeStruct (Laws/smithy/kotlin/runtime/serde/SdkObjectDescriptor;)Laws/smithy/kotlin/runtime/serde/Deserializer$FieldIterator;
-	public fun deserializeTimestamp (Laws/smithy/kotlin/runtime/time/TimestampFormat;)Laws/smithy/kotlin/runtime/time/Instant;
 	public fun hasNextElement ()Z
 	public fun hasNextEntry ()Z
 	public fun key ()Ljava/lang/String;
