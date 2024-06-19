@@ -28,7 +28,7 @@ import software.amazon.smithy.protocol.traits.Rpcv2CborTrait
 
 class Rpcv2Cbor : AwsHttpBindingProtocolGenerator() {
     override val protocol: ShapeId = Rpcv2CborTrait.ID
-    override val defaultTimestampFormat = TimestampFormatTrait.Format.EPOCH_SECONDS
+    override val defaultTimestampFormat = TimestampFormatTrait.Format.UNKNOWN // not used in Rpcv2Cbor
 
     override fun getProtocolHttpBindingResolver(model: Model, serviceShape: ServiceShape): HttpBindingResolver =
         Rpcv2CborHttpBindingResolver(model, serviceShape)
