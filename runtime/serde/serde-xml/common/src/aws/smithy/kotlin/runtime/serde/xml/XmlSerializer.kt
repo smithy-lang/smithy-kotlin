@@ -131,7 +131,8 @@ public class XmlSerializer(private val xmlWriter: XmlStreamWriter = xmlStreamWri
     override fun field(descriptor: SdkFieldDescriptor, value: Instant, format: TimestampFormat): Unit =
         field(descriptor, value.format(format))
 
-    override fun field(descriptor: SdkFieldDescriptor, value: ByteArray): Unit = field(descriptor, value.encodeBase64String())
+    override fun field(descriptor: SdkFieldDescriptor, value: ByteArray): Unit =
+        field(descriptor, value)
 
     override fun field(descriptor: SdkFieldDescriptor, value: Document?) {
         throw SerializationException(
@@ -267,7 +268,7 @@ private class XmlMapSerializer(
     override fun entry(key: String, value: Document?) =
         throw SerializationException("document values not supported by xml serializer")
 
-    override fun entry(key: String, value: ByteArray?) { entry(key, value?.encodeBase64String()) }
+    override fun entry(key: String, value: ByteArray?): Unit = entry(key, value)
 
     override fun listEntry(key: String, listDescriptor: SdkFieldDescriptor, block: ListSerializer.() -> Unit) {
         writeEntry(key) {

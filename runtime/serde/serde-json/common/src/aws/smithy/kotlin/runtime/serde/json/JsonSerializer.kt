@@ -60,7 +60,7 @@ public class JsonSerializer : Serializer, ListSerializer, MapSerializer, StructS
 
     override fun field(descriptor: SdkFieldDescriptor, value: ByteArray) {
         jsonWriter.writeName(descriptor.serialName)
-        serializeString(value.encodeBase64String())
+        serializeByteArray(value)
     }
 
     override fun field(descriptor: SdkFieldDescriptor, value: Int) {
@@ -210,7 +210,7 @@ public class JsonSerializer : Serializer, ListSerializer, MapSerializer, StructS
 
     override fun entry(key: String, value: ByteArray?) {
         jsonWriter.writeName(key)
-        if (value != null) serializeString(value.encodeBase64String()) else jsonWriter.writeNull()
+        if (value != null) serializeByteArray(value) else jsonWriter.writeNull()
     }
 
     override fun listEntry(key: String, listDescriptor: SdkFieldDescriptor, block: ListSerializer.() -> Unit) {
@@ -298,7 +298,9 @@ public class JsonSerializer : Serializer, ListSerializer, MapSerializer, StructS
         }
     }
 
-    override fun serializeByteArray(value: ByteArray) { serializeString(value.encodeBase64String()) }
+    override fun serializeByteArray(value: ByteArray) {
+        serializeString(value.encodeBase64String())
+    }
 
     override fun serializeDocument(value: Document?) {
         when (value) {

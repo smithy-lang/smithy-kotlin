@@ -166,7 +166,7 @@ private class FormUrlStructSerializer(
     }
 
     override fun field(descriptor: SdkFieldDescriptor, value: ByteArray) = writeField(descriptor) {
-        serializeString(value.encodeBase64String())
+        serializeByteArray(value)
     }
 
     override fun structField(descriptor: SdkFieldDescriptor, block: StructSerializer.() -> Unit) {
@@ -345,7 +345,8 @@ private class FormUrlMapSerializer(
         throw SerializationException("document values not supported by form-url serializer")
 
     override fun entry(key: String, value: ByteArray?) {
-        entry(key, value?.encodeBase64String())
+        checkNotSparse(value)
+        serializeByteArray(value)
     }
 
     override fun listEntry(key: String, listDescriptor: SdkFieldDescriptor, block: ListSerializer.() -> Unit) {
