@@ -17,7 +17,7 @@ import software.amazon.smithy.kotlin.codegen.rendering.protocol.toRenderingConte
 import software.amazon.smithy.model.shapes.*
 import software.amazon.smithy.model.traits.TimestampFormatTrait
 
-open class CborSerializerGenerator(
+class CborSerializerGenerator(
     private val protocolGenerator: ProtocolGenerator,
 ) : StructuredDataSerializerGenerator {
     override fun operationSerializer(ctx: ProtocolGenerator.GenerationContext, op: OperationShape, members: List<MemberShape>): Symbol {

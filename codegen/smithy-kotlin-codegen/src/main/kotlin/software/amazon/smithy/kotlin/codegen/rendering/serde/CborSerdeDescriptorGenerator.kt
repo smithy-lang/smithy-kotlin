@@ -15,7 +15,7 @@ import software.amazon.smithy.model.shapes.*
  * Field descriptor generator for CBOR.
  * Adds the object's serial name as a value of the `CborSerialName` field trait to be used for serialization.
  */
-open class CborSerdeDescriptorGenerator(
+class CborSerdeDescriptorGenerator(
     ctx: RenderingContext<Shape>,
     memberShapes: List<MemberShape>? = null,
 ) : AbstractSerdeDescriptorGenerator(ctx, memberShapes) {
