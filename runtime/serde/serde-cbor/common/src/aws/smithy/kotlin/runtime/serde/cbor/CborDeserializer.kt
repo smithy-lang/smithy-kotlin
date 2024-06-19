@@ -130,7 +130,7 @@ private class CborElementIterator(
                 return false
             }
         } else {
-            return if (buffer.nextValueIsIndefiniteBreak()) {
+            return if (buffer.nextValueIsIndefiniteBreak) {
                 Cbor.Encoding.IndefiniteBreak.decode(buffer)
                 false
             } else {
@@ -140,7 +140,7 @@ private class CborElementIterator(
         }
     }
 
-    override fun nextHasValue(): Boolean = !buffer.nextValueIsNull()
+    override fun nextHasValue(): Boolean = !buffer.nextValueIsNull
 }
 
 /**
@@ -157,7 +157,7 @@ private class CborFieldIterator(
         if (expectedLength == currentLength || buffer.exhausted()) { return null }
         currentLength += 1uL
 
-        val candidate: Int? = if (buffer.nextValueIsIndefiniteBreak()) {
+        val candidate: Int? = if (buffer.nextValueIsIndefiniteBreak) {
             Cbor.Encoding.IndefiniteBreak.decode(buffer)
             null
         } else {
@@ -170,7 +170,7 @@ private class CborFieldIterator(
 
         if (candidate != null) {
             // skip explicit null values
-            if (buffer.nextValueIsNull()) {
+            if (buffer.nextValueIsNull) {
                 skipValue()
                 return findNextFieldIndex()
             }
@@ -202,8 +202,8 @@ private class CborEntryIterator(
         }
 
         return when {
-            buffer.nextValueIsIndefiniteBreak() -> false.also { Cbor.Encoding.IndefiniteBreak.decode(buffer) }
-            buffer.nextValueIsNull() -> false.also { Cbor.Encoding.Null.decode(buffer) }
+            buffer.nextValueIsIndefiniteBreak -> false.also { Cbor.Encoding.IndefiniteBreak.decode(buffer) }
+            buffer.nextValueIsNull -> false.also { Cbor.Encoding.Null.decode(buffer) }
             else -> true.also {
                 peekMajor(buffer).also {
                     check(it == Major.STRING) { "Expected string type for CBOR map key, got $it" }
@@ -214,5 +214,5 @@ private class CborEntryIterator(
 
     override fun key(): String = deserializeString().also { currentLength += 1uL }
 
-    override fun nextHasValue(): Boolean = !buffer.nextValueIsNull()
+    override fun nextHasValue(): Boolean = !buffer.nextValueIsNull
 }

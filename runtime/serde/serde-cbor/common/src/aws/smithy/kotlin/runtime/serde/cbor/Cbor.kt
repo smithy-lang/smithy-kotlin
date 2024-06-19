@@ -221,15 +221,11 @@ internal object Cbor {
 
                     val list = mutableListOf<Value>()
 
-                    while (true) {
-                        if (buffer.nextValueIsIndefiniteBreak()) {
-                            IndefiniteBreak.decode(buffer)
-                            break
-                        } else {
-                            list.add(Value.decode(buffer))
-                        }
+                    while (!buffer.nextValueIsIndefiniteBreak) {
+                        list.add(Value.decode(buffer))
                     }
 
+                    IndefiniteBreak.decode(buffer)
                     return IndefiniteList(list)
                 }
             }
@@ -287,17 +283,13 @@ internal object Cbor {
                     buffer.readByte() // discard head byte
                     val valueMap = mutableMapOf<String, Value>()
 
-                    while (true) {
-                        if (buffer.nextValueIsIndefiniteBreak()) {
-                            IndefiniteBreak.decode(buffer)
-                            break
-                        } else {
-                            val key = String.decode(buffer)
-                            val value = Value.decode(buffer)
-                            valueMap[key] = value
-                        }
+                    while (!buffer.nextValueIsIndefiniteBreak) {
+                        val key = String.decode(buffer)
+                        val value = Value.decode(buffer)
+                        valueMap[key] = value
                     }
 
+                    IndefiniteBreak.decode(buffer)
                     return IndefiniteMap(valueMap)
                 }
             }
@@ -653,127 +645,4 @@ internal object Cbor {
             }
         }
     }
-}
-
-// Encodes a major and minor type of CBOR value in a single byte
-internal fun encodeMajorMinor(major: Major, minor: Minor): Byte = (major.value.toUInt() shl 5 or minor.value.toUInt()).toByte()
-
-// Encode a [Major] value along with its additional information / argument.
-internal fun encodeArgument(major: Major, argument: ULong): ByteArray {
-    // Convert a ULong to a ByteArray by right-shifting it appropriately
-    fun ULong.toByteArray(): ByteArray {
-        val argumentByteLength = when {
-            this < 24u -> 0
-            this < 0x100u -> 1
-            this < 0x10000u -> 2
-            this < 0x100000000u -> 4
-            else -> 8
-        }
-
-        val argumentBytes = ((argumentByteLength - 1) downTo 0).map { index ->
-            (this shr (index * 8) and 0xffu).toByte()
-        }.toByteArray()
-        return argumentBytes
-    }
-
-    val head = when {
-        argument < 24u -> ((major.ordinal shl 5).toULong() or argument).toByte()
-        argument < 0x100u -> ((major.ordinal shl 5) or Minor.ARG_1.value.toInt()).toByte()
-        argument < 0x10000u -> ((major.ordinal shl 5) or Minor.ARG_2.value.toInt()).toByte()
-        argument < 0x100000000u -> ((major.ordinal shl 5) or Minor.ARG_4.value.toInt()).toByte()
-        else -> ((major.ordinal shl 5) or Minor.ARG_8.value.toInt()).toByte()
-    }
-
-    return byteArrayOf(head, *argument.toByteArray())
-}
-
-internal fun decodeArgument(buffer: SdkBufferedSource): ULong {
-    val minor = buffer.readByte().toUByte() and MINOR_BYTE_MASK
-
-    if (minor < Minor.ARG_1.value) {
-        return minor.toULong()
-    }
-
-    val numBytes = when (minor) {
-        Minor.ARG_1.value -> 1L
-        Minor.ARG_2.value -> 2L
-        Minor.ARG_4.value -> 4L
-        Minor.ARG_8.value -> 8L
-        else -> throw DeserializationException("Unsupported minor value $minor, expected one of ${Minor.ARG_1.value}, ${Minor.ARG_2.value}, ${Minor.ARG_4.value}, ${Minor.ARG_8.value}")
-    }
-
-    val bytes = SdkBuffer().use {
-        buffer.read(it, numBytes).also { rc ->
-            if (numBytes != rc) throw DeserializationException("Unexpected end of payload. Expected $numBytes, read $rc.")
-        }
-        it.readByteArray()
-    }
-    return bytes.toULong()
-}
-
-// Convert a ByteArray to a ULong by extracting each byte and left-shifting it appropriately.
-private fun ByteArray.toULong() = foldIndexed(0uL) { i, acc, byte ->
-    acc or (byte.toUByte().toULong() shl ((size - 1 - i) * 8))
-}
-
-// Converts a [ByteArray] to a [String] representing a BigInteger.
-private fun ByteArray.toBigInteger(): BigInteger {
-    var decimal = "0"
-
-    // Iterate through each byte in the array
-    for (byte in this) {
-        val binaryString = byte.toUByte().toString(2).padStart(8, '0') // Convert each byte to an 8-bit binary string
-
-        // For each bit, update the decimal string
-        for (bit in binaryString) {
-            decimal = decimal.multiplyByTwo() // Multiply current decimal by 2 (shift left)
-            if (bit == '1') {
-                decimal = decimal.addOne() // Add 1 if the bit is 1
-            }
-        }
-    }
-
-    return BigInteger(decimal)
-}
-
-// Helper function to multiply a decimal string by 2
-private fun String.multiplyByTwo(): String {
-    var carry = 0
-    val result = StringBuilder()
-
-    // Start from the least significant digit (rightmost)
-    for (i in this.lastIndex downTo 0) {
-        val digit = this[i] - '0'
-        val newDigit = digit * 2 + carry
-        result.insert(0, newDigit % 10) // Insert at the beginning of the result
-        carry = newDigit / 10
-    }
-
-    if (carry > 0) {
-        result.insert(0, carry)
-    }
-
-    return result.toString()
-}
-
-// Helper function to add 1 to a decimal string
-private fun String.addOne(): String {
-    var carry = 1
-    val result = StringBuilder(this)
-
-    // Start from the least significant digit (rightmost)
-    for (i in this.lastIndex downTo 0) {
-        if (carry == 0) break
-
-        val digit = result[i] - '0'
-        val newDigit = digit + carry
-        result[i] = (newDigit % 10 + '0'.code).toChar()
-        carry = newDigit / 10
-    }
-
-    if (carry > 0) {
-        result.insert(0, carry)
-    }
-
-    return result.toString()
 }

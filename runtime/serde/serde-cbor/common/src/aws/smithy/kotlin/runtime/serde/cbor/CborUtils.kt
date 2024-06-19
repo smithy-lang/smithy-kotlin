@@ -7,63 +7,84 @@ package aws.smithy.kotlin.runtime.serde.cbor
 import aws.smithy.kotlin.runtime.content.BigInteger
 import aws.smithy.kotlin.runtime.io.SdkBuffer
 import aws.smithy.kotlin.runtime.io.SdkBufferedSource
+import aws.smithy.kotlin.runtime.io.use
+import aws.smithy.kotlin.runtime.serde.DeserializationException
 
 /**
- * Represents CBOR major types (0 for unsigned integer, 1 for negative integer, etc...)
+ * Encode and write a [Cbor.Value] to this [SdkBuffer]
  */
-internal enum class Major(val value: UByte) {
-    U_INT(0u),
-    NEG_INT(1u),
-    BYTE_STRING(2u),
-    STRING(3u),
-    LIST(4u),
-    MAP(5u),
-    TAG(6u),
-    TYPE_7(7u),
-    ;
+internal fun SdkBuffer.write(value: Cbor.Value) = write(value.encode())
 
-    companion object {
-        fun fromValue(value: UByte): Major = entries.firstOrNull { it.value == value }
-            ?: throw IllegalArgumentException("$value is not a valid Major value.")
-    }
-}
+// Peek at the head byte to determine if the next encoded value represents a break in an indefinite-length list/map
+internal val SdkBufferedSource.nextValueIsIndefiniteBreak: Boolean
+    get() = peekMajor(this) == Major.TYPE_7 && peekMinorByte(this) == Minor.INDEFINITE.value
 
-/**
- * Represents CBOR minor types (aka "additional information")
- */
-internal enum class Minor(val value: UByte) {
-    ARG_1(24u),
-    ARG_2(25u),
-    ARG_4(26u),
-    ARG_8(27u),
-    INDEFINITE(31u),
-
-    // The following minor values are only to be used with major type 7
-    FALSE(20u),
-    TRUE(21u),
-    NULL(22u),
-    UNDEFINED(23u), // note: undefined should be deserialized to `null`
-    FLOAT16(25u),
-    FLOAT32(26u),
-    FLOAT64(27u),
-    ;
-}
-
-internal val MAJOR_BYTE_MASK: UByte = 0b111u
-internal val MINOR_BYTE_MASK: UByte = 0b11111u
-
-internal fun peekMajor(buffer: SdkBufferedSource): Major {
-    val byte = buffer.peek().readByte().toUByte()
-    val major = ((byte.toUInt() shr 5).toUByte()) and MAJOR_BYTE_MASK
-    return Major.fromValue(major)
-}
-
-internal fun peekMinorByte(buffer: SdkBufferedSource): UByte {
-    val byte = buffer.peek().readByte().toUByte()
-    return byte and MINOR_BYTE_MASK
-}
+// Peek at the head byte to determine if the next encoded value represents null
+internal val SdkBufferedSource.nextValueIsNull: Boolean
+    get() = peekMajor(this) == Major.TYPE_7 && (peekMinorByte(this) == Minor.NULL.value || peekMinorByte(this) == Minor.UNDEFINED.value)
 
 internal fun peekTag(buffer: SdkBufferedSource) = Cbor.Encoding.Tag.decode(buffer.peek())
+
+// Encodes a major and minor type of CBOR value in a single byte
+internal fun encodeMajorMinor(major: Major, minor: Minor): Byte = (major.value.toUInt() shl 5 or minor.value.toUInt()).toByte()
+
+// Encode a [Major] value along with its additional information / argument.
+internal fun encodeArgument(major: Major, argument: ULong): ByteArray {
+    // Convert a ULong to a ByteArray by right-shifting it appropriately
+    fun ULong.toByteArray(): ByteArray {
+        val argumentByteLength = when {
+            this < 24u -> 0
+            this < 0x100u -> 1
+            this < 0x10000u -> 2
+            this < 0x100000000u -> 4
+            else -> 8
+        }
+
+        val argumentBytes = ((argumentByteLength - 1) downTo 0).map { index ->
+            (this shr (index * 8) and 0xffu).toByte()
+        }.toByteArray()
+        return argumentBytes
+    }
+
+    val head = when {
+        argument < 24u -> ((major.ordinal shl 5).toULong() or argument).toByte()
+        argument < 0x100u -> ((major.ordinal shl 5) or Minor.ARG_1.value.toInt()).toByte()
+        argument < 0x10000u -> ((major.ordinal shl 5) or Minor.ARG_2.value.toInt()).toByte()
+        argument < 0x100000000u -> ((major.ordinal shl 5) or Minor.ARG_4.value.toInt()).toByte()
+        else -> ((major.ordinal shl 5) or Minor.ARG_8.value.toInt()).toByte()
+    }
+
+    return byteArrayOf(head, *argument.toByteArray())
+}
+
+internal fun decodeArgument(buffer: SdkBufferedSource): ULong {
+    val minor = buffer.readByte().toUByte() and MINOR_BYTE_MASK
+
+    if (minor < Minor.ARG_1.value) {
+        return minor.toULong()
+    }
+
+    val numBytes = when (minor) {
+        Minor.ARG_1.value -> 1L
+        Minor.ARG_2.value -> 2L
+        Minor.ARG_4.value -> 4L
+        Minor.ARG_8.value -> 8L
+        else -> throw DeserializationException("Unsupported minor value $minor, expected one of ${Minor.ARG_1.value}, ${Minor.ARG_2.value}, ${Minor.ARG_4.value}, ${Minor.ARG_8.value}")
+    }
+
+    val bytes = SdkBuffer().use {
+        buffer.read(it, numBytes).also { rc ->
+            if (numBytes != rc) throw DeserializationException("Unexpected end of payload. Expected $numBytes, read $rc.")
+        }
+        it.readByteArray()
+    }
+    return bytes.toULong()
+}
+
+// Convert a ByteArray to ULong by left-shifting each byte appropriately
+internal fun ByteArray.toULong() = foldIndexed(0uL) { i, acc, byte ->
+    acc or (byte.toUByte().toULong() shl ((size - 1 - i) * 8))
+}
 
 // Subtracts one from the given BigInteger
 internal fun BigInteger.minusOne(): BigInteger {
@@ -139,15 +160,64 @@ internal fun BigInteger.asBytes(): ByteArray {
         .toByteArray()
 }
 
-/**
- * Encode and write a [Cbor.Value] to this [SdkBuffer]
- */
-internal fun SdkBuffer.write(value: Cbor.Value) = write(value.encode())
+// Converts a [ByteArray] to a [String] representing a BigInteger.
+internal fun ByteArray.toBigInteger(): BigInteger {
+    var decimal = "0"
 
-// Peek at the head byte to determine if the next encoded value represents a break in an indefinite-length list/map
-internal fun SdkBufferedSource.nextValueIsIndefiniteBreak(): Boolean =
-    peekMajor(this) == Major.TYPE_7 && peekMinorByte(this) == Minor.INDEFINITE.value
+    // Iterate through each byte in the array
+    for (byte in this) {
+        val binaryString = byte.toUByte().toString(2).padStart(8, '0') // Convert each byte to an 8-bit binary string
 
-// Peek at the head byte to determine if the next encoded value represents null
-internal fun SdkBufferedSource.nextValueIsNull(): Boolean =
-    peekMajor(this) == Major.TYPE_7 && (peekMinorByte(this) == Minor.NULL.value || peekMinorByte(this) == Minor.UNDEFINED.value)
+        // For each bit, update the decimal string
+        for (bit in binaryString) {
+            decimal = decimal.multiplyByTwo() // Multiply current decimal by 2 (shift left)
+            if (bit == '1') {
+                decimal = decimal.addOne() // Add 1 if the bit is 1
+            }
+        }
+    }
+
+    return BigInteger(decimal)
+}
+
+// Helper function to multiply a decimal string by 2
+private fun String.multiplyByTwo(): String {
+    var carry = 0
+    val result = StringBuilder()
+
+    // Start from the least significant digit (rightmost)
+    for (i in this.lastIndex downTo 0) {
+        val digit = this[i] - '0'
+        val newDigit = digit * 2 + carry
+        result.insert(0, newDigit % 10) // Insert at the beginning of the result
+        carry = newDigit / 10
+    }
+
+    if (carry > 0) {
+        result.insert(0, carry)
+    }
+
+    return result.toString()
+}
+
+// Helper function to add 1 to a decimal string
+private fun String.addOne(): String {
+    var carry = 1
+    val result = StringBuilder(this)
+
+    // Start from the least significant digit (rightmost)
+    for (i in this.lastIndex downTo 0) {
+        if (carry == 0) break
+
+        val digit = result[i] - '0'
+        val newDigit = digit + carry
+        result[i] = (newDigit % 10 + '0'.code).toChar()
+        carry = newDigit / 10
+    }
+
+    if (carry > 0) {
+        result.insert(0, carry)
+    }
+
+    return result.toString()
+}
