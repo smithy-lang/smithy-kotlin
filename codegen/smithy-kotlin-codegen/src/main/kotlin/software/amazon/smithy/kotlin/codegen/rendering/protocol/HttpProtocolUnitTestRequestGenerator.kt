@@ -71,7 +71,7 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
                     ctx,
                     shape.members().toMutableList(),
                     blockWriter,
-                    TimestampFormatTrait.Format.EPOCH_SECONDS
+                    TimestampFormatTrait.Format.EPOCH_SECONDS,
                 )
 
                 blockWriter.write("val builder = #T.Builder()", symbol)

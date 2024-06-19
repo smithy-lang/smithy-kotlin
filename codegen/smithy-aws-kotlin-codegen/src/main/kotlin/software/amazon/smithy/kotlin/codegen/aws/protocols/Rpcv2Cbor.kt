@@ -11,8 +11,8 @@ import software.amazon.smithy.kotlin.codegen.core.RuntimeTypes
 import software.amazon.smithy.kotlin.codegen.model.*
 import software.amazon.smithy.kotlin.codegen.model.traits.SyntheticClone
 import software.amazon.smithy.kotlin.codegen.rendering.protocol.*
-import software.amazon.smithy.kotlin.codegen.rendering.serde.CborSerializerGenerator
 import software.amazon.smithy.kotlin.codegen.rendering.serde.CborParserGenerator
+import software.amazon.smithy.kotlin.codegen.rendering.serde.CborSerializerGenerator
 import software.amazon.smithy.kotlin.codegen.rendering.serde.StructuredDataParserGenerator
 import software.amazon.smithy.kotlin.codegen.rendering.serde.StructuredDataSerializerGenerator
 import software.amazon.smithy.model.Model
@@ -114,13 +114,13 @@ class Rpcv2Cbor : AwsHttpBindingProtocolGenerator() {
 
     class Rpcv2CborHttpBindingResolver(
         model: Model,
-        val serviceShape: ServiceShape
+        val serviceShape: ServiceShape,
     ) : StaticHttpBindingResolver(
         model,
         serviceShape,
         HttpTrait.builder().code(200).method("POST").uri(UriPattern.parse("/")).build(),
         "application/cbor",
-        TimestampFormatTrait.Format.EPOCH_SECONDS
+        TimestampFormatTrait.Format.EPOCH_SECONDS,
     ) {
 
         override fun httpTrait(operationShape: OperationShape): HttpTrait = HttpTrait

@@ -4,7 +4,6 @@
  */
 package software.amazon.smithy.kotlin.codegen.rendering.serde
 
-import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.codegen.core.SymbolReference
 import software.amazon.smithy.kotlin.codegen.core.KotlinWriter

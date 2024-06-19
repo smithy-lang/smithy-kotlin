@@ -47,7 +47,7 @@ public class CborSerializer : Serializer, ListSerializer, MapSerializer, StructS
             Cbor.Encoding.NegInt(-value.toLong())
         } else {
             Cbor.Encoding.UInt(value.toLong().toULong())
-        }
+        },
     )
     override fun serializeByte(value: Byte): Unit = serializeNumber(value)
     override fun serializeShort(value: Short): Unit = serializeNumber(value)
