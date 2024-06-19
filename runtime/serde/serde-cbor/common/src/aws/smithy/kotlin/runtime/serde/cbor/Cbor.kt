@@ -469,7 +469,7 @@ internal object Cbor {
         }
 
         internal class Timestamp(val value: Instant) : Value {
-            override fun encode(): ByteArray = byteArrayOf(*Tag(1u, Float64(value.epochMilliseconds / 1000.toDouble())).encode())
+            override fun encode(): ByteArray = Tag(1u, Float64(value.epochMilliseconds / 1000.toDouble())).encode()
 
             internal companion object {
                 internal fun decode(buffer: SdkBufferedSource): Timestamp {
@@ -510,7 +510,7 @@ internal object Cbor {
          * @param value the [BigInteger] that this CBOR bignum represents.
          */
         internal class BigNum(val value: BigInteger) : Value {
-            override fun encode(): ByteArray = byteArrayOf(*Tag(2u, ByteString(value.asBytes())).encode())
+            override fun encode(): ByteArray = Tag(2u, ByteString(value.asBytes())).encode()
 
             internal companion object {
                 internal fun decode(buffer: SdkBufferedSource): BigNum {
@@ -531,8 +531,7 @@ internal object Cbor {
         internal class NegBigNum(val value: BigInteger) : Value {
             override fun encode(): ByteArray {
                 val bytes = value.minusOne().asBytes()
-                val tagged = Tag(3u, ByteString(bytes))
-                return byteArrayOf(*tagged.encode())
+                return Tag(3u, ByteString(bytes)).encode()
             }
 
             internal companion object {
@@ -557,17 +556,13 @@ internal object Cbor {
         internal class DecimalFraction(val value: BigDecimal) : Value {
             override fun encode(): ByteArray {
                 val str = value.toPlainString()
-
-                val dotIndex = str
-                    .indexOf('.')
-                    .let { if (it == -1) str.lastIndex else it }
-
+                val dotIndex = str.indexOf('.').takeIf { it != -1 } ?: str.lastIndex
                 val exponentValue = (dotIndex - str.length + 1).toLong()
                 val exponent = if (exponentValue < 0) { NegInt(exponentValue) } else { UInt(exponentValue.toULong()) }
 
                 val mantissaStr = str.replace(".", "")
                 // Check if the mantissa can be represented as a UInt without overflowing.
-                // If not, it will be sent as a Bignum.
+                // If not, it will be encoded as a Bignum.
                 val mantissa: Value = try {
                     if (mantissaStr.startsWith("-")) {
                         NegInt(mantissaStr.toLong())
@@ -583,41 +578,38 @@ internal object Cbor {
                     }
                 }
 
-                return byteArrayOf(
-                    *Tag(
-                        4u,
-                        List(listOf(exponent, mantissa)),
-                    ).encode(),
-                )
+                return Tag(4u, List(listOf(exponent, mantissa))).encode()
             }
 
             internal companion object {
                 internal fun decode(buffer: SdkBufferedSource): DecimalFraction {
-                    val major = peekMajor(buffer)
-                    check(major == Major.TAG) { "Expected ${Major.TAG} for CBOR decimal fraction, got $major" }
+                    peekMajor(buffer).also {
+                        check(it == Major.TAG) { "Expected ${Major.TAG} for CBOR decimal fraction, got $it" }
+                    }
 
                     val tagId = decodeArgument(buffer)
                     check(tagId == 4uL) { "Expected tag ID 4 for CBOR decimal fraction, got $tagId" }
 
-                    val array = List.decode(buffer)
-                    check(array.value.size == 2) { "Expected array of length 2 for decimal fraction, got ${array.value.size}" }
+                    val list = List.decode(buffer).value
+                    check(list.size == 2) { "Expected array of length 2 for decimal fraction, got ${list.size}" }
 
-                    val exponent = array.value[0]
-                    val mantissa = array.value[1]
+                    val (exponent, mantissa) = list
 
                     val sb = StringBuilder()
 
-                    // append mantissa, prepend with '-' if negative.
-                    when (mantissa) {
-                        is UInt -> { sb.append(mantissa.value.toString()) }
-                        is NegInt -> { sb.append(mantissa.value.toString()) }
-                        is Tag -> when (mantissa.value) {
-                            is NegBigNum -> { sb.append(mantissa.value.value.toString()) }
-                            is BigNum -> { sb.append(mantissa.value.value.toString()) }
-                            else -> throw DeserializationException("Expected negative bignum (id=3) or bignum (id=4) for CBOR tagged decimal fraction mantissa, got ${mantissa.id}.")
+                    // Append mantissa
+                    sb.append(
+                        when (mantissa) {
+                            is UInt -> mantissa.value.toString()
+                            is NegInt -> mantissa.value.toString()
+                            is Tag -> when (mantissa.value) {
+                                is NegBigNum -> mantissa.value.value.toString()
+                                is BigNum -> mantissa.value.value.toString()
+                                else -> throw DeserializationException("Expected BigNum or NegBigNum for CBOR tagged decimal fraction mantissa, got ${mantissa.id}")
+                            }
+                            else -> throw DeserializationException("Expected UInt, NegInt, or Tag for CBOR decimal fraction mantissa, got $mantissa")
                         }
-                        else -> throw DeserializationException("Expected integer or tagged value (bignum) for CBOR decimal fraction mantissa, got $mantissa.")
-                    }
+                    )
 
                     when (exponent) {
                         is UInt -> { // Positive exponent, suffix with zeroes
