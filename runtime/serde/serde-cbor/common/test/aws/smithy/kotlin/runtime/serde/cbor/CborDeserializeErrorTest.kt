@@ -169,8 +169,8 @@ class CborDeserializeErrorTest {
         assertFails {
             deserializer.deserializeMap(SdkFieldDescriptor(SerialKind.Map)) {
                 while (hasNextEntry()) {
-                    val key = deserializeString()
-                    val value = deserializeString()
+                    deserializeString()
+                    deserializeString()
                 }
             }
         }
@@ -184,8 +184,8 @@ class CborDeserializeErrorTest {
         assertFails {
             deserializer.deserializeMap(SdkFieldDescriptor(SerialKind.Map)) {
                 while (hasNextEntry()) {
-                    val key = deserializeString()
-                    val value = deserializeString()
+                    deserializeString()
+                    deserializeString()
                 }
             }
         }
@@ -261,7 +261,7 @@ class CborDeserializeErrorTest {
         val deserializer = CborPrimitiveDeserializer(buffer)
 
         assertFails {
-            throw Exception()
+            deserializer.deserializeString()
         }
     }
 
@@ -320,8 +320,8 @@ class CborDeserializeErrorTest {
         assertFails {
             deserializer.deserializeMap(SdkFieldDescriptor(SerialKind.Map)) {
                 while (hasNextEntry()) {
-                    val key = deserializeString()
-                    val value = deserializeString()
+                    deserializeString()
+                    deserializeString()
                 }
             }
         }
@@ -335,8 +335,8 @@ class CborDeserializeErrorTest {
         assertFails {
             deserializer.deserializeMap(SdkFieldDescriptor(SerialKind.Map)) {
                 while (hasNextEntry()) {
-                    val key = deserializeString()
-                    val value = deserializeString()
+                    deserializeString()
+                    deserializeString()
                 }
             }
         }
@@ -512,8 +512,8 @@ class CborDeserializeErrorTest {
         assertFails {
             deserializer.deserializeMap(SdkFieldDescriptor(SerialKind.Map)) {
                 while (hasNextEntry()) {
-                    val key = deserializeString()
-                    val value = deserializeString()
+                    deserializeString()
+                    deserializeString()
                 }
             }
         }
@@ -527,8 +527,8 @@ class CborDeserializeErrorTest {
         assertFails {
             deserializer.deserializeMap(SdkFieldDescriptor(SerialKind.Map)) {
                 while (hasNextEntry()) {
-                    val key = deserializeString()
-                    val value = deserializeString()
+                    deserializeString()
+                    deserializeString()
                 }
             }
         }
@@ -542,8 +542,8 @@ class CborDeserializeErrorTest {
         assertFails {
             deserializer.deserializeMap(SdkFieldDescriptor(SerialKind.Map)) {
                 while (hasNextEntry()) {
-                    val key = deserializeString()
-                    val value = deserializeString()
+                    deserializeString()
+                    deserializeString()
                 }
             }
         }
@@ -557,8 +557,8 @@ class CborDeserializeErrorTest {
         assertFails {
             deserializer.deserializeMap(SdkFieldDescriptor(SerialKind.Map)) {
                 while (hasNextEntry()) {
-                    val key = deserializeString()
-                    val value = deserializeString()
+                    deserializeString()
+                    deserializeString()
                 }
             }
         }
@@ -572,8 +572,8 @@ class CborDeserializeErrorTest {
         assertFails {
             deserializer.deserializeMap(SdkFieldDescriptor(SerialKind.Map)) {
                 while (hasNextEntry()) {
-                    val key = deserializeString()
-                    val value = deserializeString()
+                    deserializeString()
+                    deserializeString()
                 }
             }
         }
@@ -587,8 +587,8 @@ class CborDeserializeErrorTest {
         assertFails {
             deserializer.deserializeMap(SdkFieldDescriptor(SerialKind.Map)) {
                 while (hasNextEntry()) {
-                    val key = deserializeString()
-                    val value = deserializeString()
+                    deserializeString()
+                    deserializeString()
                 }
             }
         }
@@ -602,8 +602,8 @@ class CborDeserializeErrorTest {
         assertFails {
             deserializer.deserializeMap(SdkFieldDescriptor(SerialKind.Map)) {
                 while (hasNextEntry()) {
-                    val key = deserializeString()
-                    val value = deserializeString()
+                    deserializeString()
+                    deserializeString()
                 }
             }
         }
@@ -617,8 +617,8 @@ class CborDeserializeErrorTest {
         assertFails {
             deserializer.deserializeMap(SdkFieldDescriptor(SerialKind.Map)) {
                 while (hasNextEntry()) {
-                    val key = deserializeString()
-                    val value = deserializeString()
+                    deserializeString()
+                    deserializeString()
                 }
             }
         }
