@@ -4,7 +4,6 @@
  */
 package software.amazon.smithy.kotlin.codegen.aws.protocols
 
-import CborParserGenerator
 import software.amazon.smithy.kotlin.codegen.aws.protocols.core.AwsHttpBindingProtocolGenerator
 import software.amazon.smithy.kotlin.codegen.aws.protocols.core.StaticHttpBindingResolver
 import software.amazon.smithy.kotlin.codegen.core.KotlinWriter
@@ -13,6 +12,7 @@ import software.amazon.smithy.kotlin.codegen.model.*
 import software.amazon.smithy.kotlin.codegen.model.traits.SyntheticClone
 import software.amazon.smithy.kotlin.codegen.rendering.protocol.*
 import software.amazon.smithy.kotlin.codegen.rendering.serde.CborSerializerGenerator
+import software.amazon.smithy.kotlin.codegen.rendering.serde.CborParserGenerator
 import software.amazon.smithy.kotlin.codegen.rendering.serde.StructuredDataParserGenerator
 import software.amazon.smithy.kotlin.codegen.rendering.serde.StructuredDataSerializerGenerator
 import software.amazon.smithy.model.Model
@@ -30,17 +30,16 @@ class Rpcv2Cbor : AwsHttpBindingProtocolGenerator() {
     override val protocol: ShapeId = Rpcv2CborTrait.ID
     override val defaultTimestampFormat = TimestampFormatTrait.Format.EPOCH_SECONDS
 
-    override fun getProtocolHttpBindingResolver(model: Model, serviceShape: ServiceShape): HttpBindingResolver = Rpcv2CborHttpBindingResolver(model, serviceShape)
+    override fun getProtocolHttpBindingResolver(model: Model, serviceShape: ServiceShape): HttpBindingResolver =
+        Rpcv2CborHttpBindingResolver(model, serviceShape)
 
-    override fun structuredDataSerializer(ctx: ProtocolGenerator.GenerationContext): StructuredDataSerializerGenerator = CborSerializerGenerator(this)
+    override fun structuredDataSerializer(ctx: ProtocolGenerator.GenerationContext): StructuredDataSerializerGenerator =
+        CborSerializerGenerator(this)
 
-    override fun structuredDataParser(ctx: ProtocolGenerator.GenerationContext): StructuredDataParserGenerator = CborParserGenerator(this)
+    override fun structuredDataParser(ctx: ProtocolGenerator.GenerationContext): StructuredDataParserGenerator =
+        CborParserGenerator(this)
 
-    override fun renderDeserializeErrorDetails(
-        ctx: ProtocolGenerator.GenerationContext,
-        op: OperationShape,
-        writer: KotlinWriter,
-    ) {
+    override fun renderDeserializeErrorDetails(ctx: ProtocolGenerator.GenerationContext, op: OperationShape, writer: KotlinWriter) {
         writer.write("#T.deserialize(payload)", RuntimeTypes.SmithyRpcv2Protocols.Cbor.Rpcv2CborErrorDeserializer)
     }
 
@@ -60,6 +59,10 @@ class Rpcv2Cbor : AwsHttpBindingProtocolGenerator() {
         return super.getDefaultHttpMiddleware(ctx) + listOf(smithyProtocolHeaderMiddleware, eventStreamsAcceptHeaderMiddleware)
     }
 
+    /**
+     * Exact copy of [AwsHttpBindingProtocolGenerator.renderSerializeHttpBody] but with a custom
+     * [OperationShape.hasHttpBody] function to handle protocol-specific serialization rules.
+     */
     override fun renderSerializeHttpBody(
         ctx: ProtocolGenerator.GenerationContext,
         op: OperationShape,
@@ -86,11 +89,12 @@ class Rpcv2Cbor : AwsHttpBindingProtocolGenerator() {
     }
 
     /**
-     * @return whether the operation input does _not_ target smithy.api#Unit
+     * @return whether the operation input does _not_ target the unit shape ([UnitTypeTrait.UNIT])
      */
     private fun OperationShape.hasHttpBody(ctx: ProtocolGenerator.GenerationContext): Boolean {
         val input = ctx.model.expectShape(inputShape).targetOrSelf(ctx.model).let {
-            // If the input has been synthetically cloned from the original, pull the archetype and check _that_
+            // If the input has been synthetically cloned from the original (most likely),
+            // pull the archetype and check _that_
             it.getTrait<SyntheticClone>()?.let { clone ->
                 ctx.model.expectShape(clone.archetype).targetOrSelf(ctx.model)
             } ?: it
@@ -105,20 +109,19 @@ class Rpcv2Cbor : AwsHttpBindingProtocolGenerator() {
         writer: KotlinWriter,
         resolver: HttpBindingResolver,
     ) {
-        resolver.determineRequestContentType(op)?.let { contentType ->
-            writer.write("builder.headers.setMissing(\"Content-Type\", #S)", contentType)
-        }
+        writer.write("builder.headers.setMissing(\"Content-Type\", #S)", resolver.determineRequestContentType(op))
     }
 
-    class Rpcv2CborHttpBindingResolver(model: Model, val serviceShape: ServiceShape) : StaticHttpBindingResolver(model, serviceShape, DefaultRpcv2CborHttpTrait, "application/cbor", TimestampFormatTrait.Format.EPOCH_SECONDS) {
-        companion object {
-            val DefaultRpcv2CborHttpTrait: HttpTrait = HttpTrait
-                .builder()
-                .code(200)
-                .method("POST")
-                .uri(UriPattern.parse("/"))
-                .build()
-        }
+    class Rpcv2CborHttpBindingResolver(
+        model: Model,
+        val serviceShape: ServiceShape
+    ) : StaticHttpBindingResolver(
+        model,
+        serviceShape,
+        HttpTrait.builder().code(200).method("POST").uri(UriPattern.parse("/")).build(),
+        "application/cbor",
+        TimestampFormatTrait.Format.EPOCH_SECONDS
+    ) {
 
         override fun httpTrait(operationShape: OperationShape): HttpTrait = HttpTrait
             .builder()

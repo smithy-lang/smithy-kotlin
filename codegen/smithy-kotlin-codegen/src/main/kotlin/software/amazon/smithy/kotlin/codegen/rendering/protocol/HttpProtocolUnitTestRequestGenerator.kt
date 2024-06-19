@@ -4,7 +4,6 @@
  */
 package software.amazon.smithy.kotlin.codegen.rendering.protocol
 
-import CborDeserializeStructGenerator
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.kotlin.codegen.core.*
 import software.amazon.smithy.kotlin.codegen.integration.SectionId
@@ -16,11 +15,13 @@ import software.amazon.smithy.kotlin.codegen.model.knowledge.SerdeIndex
 import software.amazon.smithy.kotlin.codegen.rendering.ShapeValueGenerator
 import software.amazon.smithy.kotlin.codegen.rendering.endpoints.EndpointProviderGenerator
 import software.amazon.smithy.kotlin.codegen.rendering.serde.CborSerdeDescriptorGenerator
+import software.amazon.smithy.kotlin.codegen.rendering.serde.DeserializeStructGenerator
 import software.amazon.smithy.kotlin.codegen.rendering.serde.documentDeserializer
 import software.amazon.smithy.kotlin.codegen.utils.getOrNull
 import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.shapes.StructureShape
+import software.amazon.smithy.model.traits.TimestampFormatTrait
 import software.amazon.smithy.protocoltests.traits.HttpRequestTestCase
 import software.amazon.smithy.rulesengine.traits.EndpointRuleSetTrait
 import software.amazon.smithy.utils.StringUtils
@@ -66,10 +67,11 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
                 val renderingCtx = RenderingContext(blockWriter, shape, model, symbolProvider, ctx.settings)
                 val descriptorGenerator = CborSerdeDescriptorGenerator(renderingCtx)
 
-                val deserializeStructGenerator = CborDeserializeStructGenerator(
+                val deserializeStructGenerator = DeserializeStructGenerator(
                     ctx,
                     shape.members().toMutableList(),
                     blockWriter,
+                    TimestampFormatTrait.Format.EPOCH_SECONDS
                 )
 
                 blockWriter.write("val builder = #T.Builder()", symbol)
@@ -79,6 +81,7 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
                 blockWriter.call { deserializeStructGenerator.render() }
 
                 blockWriter.write("")
+                blockWriter.write("builder.correctErrors()")
                 blockWriter.write("return builder.build()")
             }
         }.also {

@@ -41,7 +41,7 @@ private const val API_SETTINGS = "api"
 // Optional specification of sdkId for models that provide them, otherwise Service's shape id name is used
 private const val SDK_ID = "sdkId"
 
-// Prioritized list of protocols we support code generation for
+// Prioritized list of protocols supported for code generation
 private val DEFAULT_PROTOCOL_RESOLUTION_PRIORITY = setOf<ShapeId>(
     Rpcv2CborTrait.ID,
     AwsJson1_0Trait.ID,

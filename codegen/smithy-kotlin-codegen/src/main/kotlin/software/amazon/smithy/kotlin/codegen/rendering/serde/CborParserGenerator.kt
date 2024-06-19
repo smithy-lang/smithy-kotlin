@@ -2,28 +2,30 @@
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
  * SPDX-License-Identifier: Apache-2.0
  */
+package software.amazon.smithy.kotlin.codegen.rendering.serde
+
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.kotlin.codegen.core.KotlinWriter
 import software.amazon.smithy.kotlin.codegen.core.RuntimeTypes
-import software.amazon.smithy.kotlin.codegen.core.RuntimeTypes.Core.TimestampFormat
 import software.amazon.smithy.kotlin.codegen.core.withBlock
 import software.amazon.smithy.kotlin.codegen.model.*
 import software.amazon.smithy.kotlin.codegen.model.knowledge.SerdeIndex
 import software.amazon.smithy.kotlin.codegen.rendering.protocol.ProtocolGenerator
 import software.amazon.smithy.kotlin.codegen.rendering.protocol.toRenderingContext
-import software.amazon.smithy.kotlin.codegen.rendering.serde.*
 import software.amazon.smithy.model.shapes.*
 import software.amazon.smithy.model.traits.TimestampFormatTrait
 
-open class CborParserGenerator(
+class CborParserGenerator(
     private val protocolGenerator: ProtocolGenerator,
 ) : StructuredDataParserGenerator {
+
     override fun operationDeserializer(
         ctx: ProtocolGenerator.GenerationContext,
         op: OperationShape,
         members: List<MemberShape>,
     ): Symbol {
-        val outputSymbol = op.output.get().let { ctx.symbolProvider.toSymbol(ctx.model.expectShape(it)) }
+        val outputSymbol = ctx.symbolProvider.toSymbol(ctx.model.expectShape(op.outputShape))
+
         return op.bodyDeserializer(ctx.settings) { writer ->
             addNestedDocumentDeserializers(ctx, op, writer)
             val fnName = op.bodyDeserializerName()
@@ -45,8 +47,6 @@ open class CborParserGenerator(
         val serdeIndex = SerdeIndex.of(ctx.model)
         val shapesRequiringDocumentDeserializer = serdeIndex.requiresDocumentDeserializer(shape, members)
 
-        // register a dependency on each of the members that require a deserializer impl
-        // ensuring they get generated
         shapesRequiringDocumentDeserializer.forEach {
             val nestedStructOrUnionDeserializer = documentDeserializer(ctx, it)
             writer.addImport(nestedStructOrUnionDeserializer)
@@ -59,11 +59,12 @@ open class CborParserGenerator(
         members: Collection<MemberShape> = shape.members(),
     ): Symbol {
         val symbol = ctx.symbolProvider.toSymbol(shape)
+
         return shape.documentDeserializer(ctx.settings, symbol, members) { writer ->
             writer.withBlock("internal fun #identifier.name:L(deserializer: #T): #T {", "}", RuntimeTypes.Serde.SerdeCbor.CborDeserializer, symbol) {
                 call {
                     when (shape.type) {
-                        ShapeType.DOCUMENT -> writer.write("return deserializer.deserializeDocument()") // FIXME need to support documents?
+                        ShapeType.DOCUMENT -> writer.write("return deserializer.deserializeDocument()")
                         ShapeType.UNION -> {
                             writer.write("var value: #T? = null", symbol)
                             renderDeserializerBody(ctx, shape, members.toList(), writer)
@@ -92,6 +93,7 @@ open class CborParserGenerator(
         writer: KotlinWriter,
     ) {
         writer.write("val deserializer = #T(payload)", RuntimeTypes.Serde.SerdeCbor.CborDeserializer)
+
         val shape = ctx.model.expectShape(op.output.get())
         renderDeserializerBody(ctx, shape, documentMembers, writer)
     }
@@ -103,11 +105,12 @@ open class CborParserGenerator(
         writer: KotlinWriter,
     ) {
         descriptorGenerator(ctx, shape, members, writer).render()
+
         if (shape.isUnionShape) {
             val name = ctx.symbolProvider.toSymbol(shape).name
-            CborDeserializeUnionGenerator(ctx, name, members, writer).render()
+            DeserializeUnionGenerator(ctx, name, members, writer, TimestampFormatTrait.Format.EPOCH_SECONDS).render()
         } else {
-            CborDeserializeStructGenerator(ctx, members, writer).render()
+            DeserializeStructGenerator(ctx, members, writer, TimestampFormatTrait.Format.EPOCH_SECONDS).render()
         }
     }
 
@@ -116,7 +119,7 @@ open class CborParserGenerator(
         shape: Shape,
         members: List<MemberShape>,
         writer: KotlinWriter,
-    ): CborSerdeDescriptorGenerator = CborSerdeDescriptorGenerator(ctx.toRenderingContext(protocolGenerator, shape, writer), members)
+    ) = CborSerdeDescriptorGenerator(ctx.toRenderingContext(protocolGenerator, shape, writer), members)
 
     override fun payloadDeserializer(
         ctx: ProtocolGenerator.GenerationContext,
@@ -151,114 +154,10 @@ open class CborParserGenerator(
         return symbol.errorDeserializer(ctx.settings) { writer ->
             addNestedDocumentDeserializers(ctx, errorShape, writer)
             val fnName = symbol.errorDeserializerName()
-            writer.openBlock("private fun #L(builder: #T.Builder, payload: ByteArray) {", fnName, symbol)
-                .call {
-                    writer.write("val deserializer = #T(payload)", RuntimeTypes.Serde.SerdeCbor.CborDeserializer)
-                    renderDeserializerBody(ctx, errorShape, members, writer)
-                }
-                .closeBlock("}")
-        }
-    }
-}
-
-/**
- * An implementation of [DeserializeStructGenerator] which renders custom deserialization functions for CBOR types.
- */
-open class CborDeserializeStructGenerator(
-    ctx: ProtocolGenerator.GenerationContext,
-    members: List<MemberShape>,
-    writer: KotlinWriter,
-) : DeserializeStructGenerator(ctx, members, writer, TimestampFormatTrait.Format.EPOCH_SECONDS) {
-    override fun deserializerForShape(shape: Shape): String {
-        val target = shape.targetOrSelf(ctx.model)
-
-        return when (target.type) {
-            ShapeType.BLOB -> "deserializeBlob()"
-            ShapeType.TIMESTAMP -> writer.format("deserializeTimestamp(#T.EPOCH_SECONDS)", TimestampFormat)
-            else -> super.deserializerForShape(shape)
-        }
-    }
-}
-
-/**
- * Copy of [DeserializeUnionGenerator] which delegates to [CborDeserializeStructGenerator] instead of [DeserializeStructGenerator].
- */
-private class CborDeserializeUnionGenerator(
-    ctx: ProtocolGenerator.GenerationContext,
-    private val unionName: String,
-    members: List<MemberShape>,
-    writer: KotlinWriter,
-) : CborDeserializeStructGenerator(ctx, members, writer) {
-    /**
-     * Iterate over all supplied [MemberShape]s to generate serializers.
-     */
-    override fun render() {
-        // inline an empty object descriptor when the struct has no members
-        // otherwise use the one generated as part of the companion object
-        val objDescriptor = if (members.isNotEmpty()) "OBJ_DESCRIPTOR" else "SdkObjectDescriptor.build {}"
-        writer.withBlock("deserializer.deserializeStruct($objDescriptor) {", "}") {
-            // field iterators MUST be driven to completion so that underlying tokens are consumed
-            // and the deserializer state is maintained
-            withBlock("loop@while(true) {", "}") {
-                withBlock("when(findNextFieldIndex()) {", "}") {
-                    members
-                        .sortedBy { it.memberName }
-                        .forEach { memberShape -> renderMemberShape(memberShape) }
-                    write("null -> break@loop")
-                    write("else -> value = $unionName.SdkUnknown.also { skipValue() }")
-                }
+            writer.withBlock("private fun #L(builder: #T.Builder, payload: ByteArray) {", "}", fnName, symbol) {
+                writer.write("val deserializer = #T(payload)", RuntimeTypes.Serde.SerdeCbor.CborDeserializer)
+                call { renderDeserializerBody(ctx, errorShape, members, writer) }
             }
         }
-    }
-
-    /**
-     * Deserialize top-level members.
-     */
-    override fun renderMemberShape(memberShape: MemberShape) {
-        when (val targetShape = ctx.model.expectShape(memberShape.target)) {
-            is ListShape -> renderListMemberDeserializer(memberShape, targetShape as CollectionShape)
-            is MapShape -> renderMapMemberDeserializer(memberShape, targetShape)
-            is StructureShape,
-            is UnionShape,
-            -> renderShapeDeserializer(memberShape)
-            is BlobShape,
-            is BooleanShape,
-            is StringShape,
-            is TimestampShape,
-            is ByteShape,
-            is ShortShape,
-            is IntegerShape,
-            is LongShape,
-            is FloatShape,
-            is DoubleShape,
-            is BigDecimalShape,
-            is DocumentShape,
-            is BigIntegerShape,
-            -> renderShapeDeserializer(memberShape)
-            else -> error("Unexpected shape type: ${targetShape.type}")
-        }
-    }
-
-    /**
-     * Generate the union deserializer for a primitive member. Example:
-     * ```
-     * I32_DESCRIPTOR.index -> value = deserializeInt().let { PrimitiveUnion.I32(it) }
-     * ```
-     */
-    override fun renderShapeDeserializer(memberShape: MemberShape) {
-        val unionTypeName = memberShape.unionTypeName(ctx)
-        val descriptorName = memberShape.descriptorName()
-        val deserialize = deserializerForShape(memberShape)
-
-        writer.write("$descriptorName.index -> value = $unionTypeName($deserialize)")
-    }
-
-    // Union response types hold a single value for any variant
-    override fun deserializationResultName(defaultName: String): String = "value"
-
-    // Return the type that deserializes the incoming value.  Example: `MyAggregateUnion.IntList`
-    override fun collectionReturnExpression(memberShape: MemberShape, defaultCollectionName: String): String {
-        val unionTypeName = memberShape.unionTypeName(ctx)
-        return "$unionTypeName($defaultCollectionName)"
     }
 }
