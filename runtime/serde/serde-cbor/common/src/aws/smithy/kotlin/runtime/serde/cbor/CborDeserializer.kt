@@ -68,7 +68,7 @@ internal class CborPrimitiveDeserializer(private val buffer: SdkBufferedSource) 
     override fun deserializeShort(): Short = deserializeNumber { it.toShort() }
     override fun deserializeLong(): Long = deserializeNumber { it.toLong() }
 
-    private inline fun <reified T : Number> deserializeFloatingPoint(): T {
+    private inline fun <reified T : Number> deserializeFloatingPoint(cast: (Number) -> T): T {
         val number = when (peekMinorByte(buffer)) {
             Minor.FLOAT16.value -> Cbor.Encoding.Float16.decode(buffer).value
             Minor.FLOAT32.value -> Cbor.Encoding.Float32.decode(buffer).value
@@ -81,11 +81,11 @@ internal class CborPrimitiveDeserializer(private val buffer: SdkBufferedSource) 
                 }
             }
         }
-        return number as T
+        return cast(number)
     }
 
-    override fun deserializeFloat(): Float = deserializeFloatingPoint()
-    override fun deserializeDouble(): Double = deserializeFloatingPoint()
+    override fun deserializeFloat(): Float = deserializeFloatingPoint { it.toFloat() }
+    override fun deserializeDouble(): Double = deserializeFloatingPoint { it.toDouble() }
 
     override fun deserializeBigInteger(): BigInteger = when (val tagId = peekTag(buffer).id) {
         2uL -> Cbor.Encoding.BigNum.decode(buffer).value
