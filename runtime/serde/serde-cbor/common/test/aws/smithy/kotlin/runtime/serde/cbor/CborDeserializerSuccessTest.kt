@@ -189,16 +189,12 @@ class CborDeserializerSuccessTest {
         assertEquals(Float.NEGATIVE_INFINITY, result)
     }
 
-    @Ignore // FIXME NegInt max value overflows to +1
     @Test
     fun `atomic - negint - 8 - max`() {
         val payload = "0x3bfffffffffffffffe".toByteArray()
         val buffer = SdkBuffer().apply { write(payload) }
         val result = Cbor.Encoding.NegInt.decode(buffer).value
-
-        // Note: This value should be -18446744073709551615 (negative), but that does not fit in a Long, so using a BigInteger instead.
-//        assertEquals(18446744073709551615u, result)
-        assertEquals("-18446744073709551615", BigInteger("$result").toString())
+        assertEquals(ULong.MAX_VALUE, result)
     }
 
     @Test
@@ -328,7 +324,7 @@ class CborDeserializerSuccessTest {
         val payload = "0x39ffff".toByteArray()
         val buffer = SdkBuffer().apply { write(payload) }
         val result = Cbor.Encoding.NegInt.decode(buffer).value
-        assertEquals(-65536, result)
+        assertEquals(65536u, result)
     }
 
     @Test
@@ -1177,22 +1173,24 @@ class CborDeserializerSuccessTest {
         assertEquals(-1, actual[0])
     }
 
-    @Ignore
     @Test
     fun `indefinite list of negint - 8 - max`() {
         val payload = "0x9f3bfffffffffffffffeff".toByteArray()
 
         val deserializer = CborDeserializer(payload)
         val actual = deserializer.deserializeList(SdkFieldDescriptor(SerialKind.List)) {
-            val list = mutableListOf<ULong>()
+            val list = mutableListOf<Long>()
             while (hasNextElement()) {
-                list.add(deserializeLong().toULong())
+                list.add(deserializeLong())
             }
             return@deserializeList list
         }
-
         assertEquals(1, actual.size)
-        assertEquals(18446744073709551615u, actual[0])
+
+        val remainingBuffer = "0x3bfffffffffffffffe".toByteArray()
+        val buffer = SdkBuffer().apply { write(remainingBuffer) }
+        val result = Cbor.Encoding.NegInt.decode(buffer).value
+        assertEquals(ULong.MAX_VALUE, result)
     }
 
     @Test
@@ -1484,7 +1482,6 @@ class CborDeserializerSuccessTest {
         assertEquals(-1, actual[0])
     }
 
-    @Ignore
     @Test
     fun `list of negint - 8 - max`() {
         val payload = "0x813bfffffffffffffffe".toByteArray()
@@ -1497,9 +1494,12 @@ class CborDeserializerSuccessTest {
             }
             return@deserializeList list
         }
-
         assertEquals(1, actual.size)
-        assertEquals(ULong.MAX_VALUE, actual[0])
+
+        val remainingBuffer = "0x3bfffffffffffffffe".toByteArray()
+        val buffer = SdkBuffer().apply { write(remainingBuffer) }
+        val result = Cbor.Encoding.NegInt.decode(buffer).value
+        assertEquals(ULong.MAX_VALUE, result)
     }
 
     @Test
@@ -1764,17 +1764,26 @@ class CborDeserializerSuccessTest {
         assertEquals(ULong.MIN_VALUE, actual.entries.first().value)
     }
 
-    @Ignore
     @Test
     fun `indefinite map of negint - 8 - max`() {
         val payload = "0xbf63666f6f3bfffffffffffffffeff".toByteArray()
 
-//        val buffer = SdkBuffer().apply { write(payload) }
-//        val deserializer = CborPrimitiveDeserializer(buffer)
-//
-//        val result = deserializer.deserialize
-//        assertEquals(, result)
-        // -18446744073709551615
+        val deserializer = CborDeserializer(payload)
+
+        val actual = deserializer.deserializeMap(SdkFieldDescriptor(SerialKind.Map)) {
+            val map = mutableMapOf<String, ULong>()
+            while (hasNextEntry()) {
+                map[key()] = deserializeLong().toULong()
+            }
+            return@deserializeMap map
+        }
+        assertEquals(1, actual.size)
+        assertEquals("foo", actual.entries.first().key)
+
+        val remainingBuffer = "0x3bfffffffffffffffe".toByteArray()
+        val buffer = SdkBuffer().apply { write(remainingBuffer) }
+        val result = Cbor.Encoding.NegInt.decode(buffer).value
+        assertEquals(ULong.MAX_VALUE, result)
     }
 
     @Test
@@ -2209,18 +2218,27 @@ class CborDeserializerSuccessTest {
         assertEquals(ULong.MIN_VALUE, actual.entries.first().value)
     }
 
-    @Ignore
     @Test
-    fun `map - negint - 8 - max`() { }
-//
-//        val payload = "0xa163666f6f3bfffffffffffffffe".toByteArray()
-//
-//        val buffer = SdkBuffer().apply { write(payload) }
-//        val deserializer = CborPrimitiveDeserializer(buffer)
-//
-//        val result = deserializer.deserialize
-//        assertEquals(, result)
-//    }
+    fun `map - negint - 8 - max`() {
+        val payload = "0xa163666f6f3bfffffffffffffffe".toByteArray()
+
+        val deserializer = CborDeserializer(payload)
+
+        val actual = deserializer.deserializeMap(SdkFieldDescriptor(SerialKind.Map)) {
+            val map = mutableMapOf<String, Long>()
+            while (hasNextEntry()) {
+                map[key()] = deserializeLong()
+            }
+            return@deserializeMap map
+        }
+        assertEquals(1, actual.size)
+        assertEquals("foo", actual.entries.first().key)
+
+        val remainingBuffer = "0x3bfffffffffffffffe".toByteArray()
+        val buffer = SdkBuffer().apply { write(remainingBuffer) }
+        val result = Cbor.Encoding.NegInt.decode(buffer).value
+        assertEquals(ULong.MAX_VALUE, result)
+    }
 
     @Test
     fun `map of undefined`() {

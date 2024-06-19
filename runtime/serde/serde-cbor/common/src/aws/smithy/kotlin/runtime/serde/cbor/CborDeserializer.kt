@@ -59,7 +59,7 @@ internal class CborPrimitiveDeserializer(private val buffer: SdkBufferedSource) 
     private inline fun <reified T : Number> deserializeNumber(cast: (Number) -> T): T =
         when (val major = peekMajor(buffer)) {
             Major.U_INT -> cast(Cbor.Encoding.UInt.decode(buffer).value.toLong())
-            Major.NEG_INT -> cast(Cbor.Encoding.NegInt.decode(buffer).value)
+            Major.NEG_INT -> cast(-Cbor.Encoding.NegInt.decode(buffer).value.toLong())
             else -> throw DeserializationException("Expected ${Major.U_INT} or ${Major.NEG_INT} for CBOR number, got $major.")
         }
 

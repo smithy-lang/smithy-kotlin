@@ -12,6 +12,7 @@ import aws.smithy.kotlin.runtime.io.SdkBuffer
 import aws.smithy.kotlin.runtime.serde.*
 import aws.smithy.kotlin.runtime.time.Instant
 import aws.smithy.kotlin.runtime.time.TimestampFormat
+import kotlin.math.absoluteValue
 
 @InternalApi
 public class CborSerializer : Serializer, ListSerializer, MapSerializer, StructSerializer {
@@ -44,7 +45,7 @@ public class CborSerializer : Serializer, ListSerializer, MapSerializer, StructS
 
     private inline fun <reified T : Number> serializeNumber(value: T): Unit = buffer.write(
         if (value.toLong() < 0) {
-            Cbor.Encoding.NegInt(-value.toLong())
+            Cbor.Encoding.NegInt(value.toLong().absoluteValue.toULong())
         } else {
             Cbor.Encoding.UInt(value.toLong().toULong())
         },
