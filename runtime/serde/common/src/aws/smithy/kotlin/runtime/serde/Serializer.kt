@@ -346,6 +346,13 @@ public interface MapSerializer : PrimitiveSerializer {
      */
     public fun entry(key: String, value: Document?)
 
+    /**
+     * Writes the key given in the descriptor, and then
+     * serializes value.
+     *
+     * @param key
+     * @param value
+     */
     public fun entry(key: String, value: ByteArray?)
 
     /**
