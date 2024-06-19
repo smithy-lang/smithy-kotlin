@@ -5,10 +5,11 @@
 package aws.smithy.kotlin.runtime.serde.cbor
 
 import aws.smithy.kotlin.runtime.content.BigInteger
+import aws.smithy.kotlin.runtime.io.SdkBuffer
 import aws.smithy.kotlin.runtime.io.SdkBufferedSource
 
 /**
- * Represents CBOR major types (0 for unsigned integer, 1 for negative integer, etc.)
+ * Represents CBOR major types (0 for unsigned integer, 1 for negative integer, etc...)
  */
 internal enum class Major(val value: UByte) {
     U_INT(0u),
@@ -41,33 +42,28 @@ internal enum class Minor(val value: UByte) {
     FALSE(20u),
     TRUE(21u),
     NULL(22u),
-    UNDEFINED(23u), // undefined should be deserialized as `null`
+    UNDEFINED(23u), // note: undefined should be deserialized to `null`
     FLOAT16(25u),
     FLOAT32(26u),
     FLOAT64(27u),
     ;
-
-    companion object {
-        fun fromValue(value: UByte): Minor = Minor.entries.firstOrNull { it.value == value }
-            ?: throw IllegalArgumentException("$value is not a valid Minor value.")
-    }
 }
 
-internal val MAJOR_MASK: UByte = 0b111u
-internal val MINOR_MASK: UByte = 0b11111u
-
-internal fun peekTag(buffer: SdkBufferedSource) = Cbor.Encoding.Tag.decode(buffer.peek())
+internal val MAJOR_BYTE_MASK: UByte = 0b111u
+internal val MINOR_BYTE_MASK: UByte = 0b11111u
 
 internal fun peekMajor(buffer: SdkBufferedSource): Major {
-    val majorByte = buffer.peek().readByte().toUByte()
-    val masked = ((majorByte.toUInt() shr 5).toUByte()) and MAJOR_MASK
-    return Major.fromValue(masked)
+    val byte = buffer.peek().readByte().toUByte()
+    val major = ((byte.toUInt() shr 5).toUByte()) and MAJOR_BYTE_MASK
+    return Major.fromValue(major)
 }
 
 internal fun peekMinorByte(buffer: SdkBufferedSource): UByte {
-    val minorByte = buffer.peek().readByte().toUByte()
-    return minorByte and MINOR_MASK
+    val byte = buffer.peek().readByte().toUByte()
+    return byte and MINOR_BYTE_MASK
 }
+
+internal fun peekTag(buffer: SdkBufferedSource) = Cbor.Encoding.Tag.decode(buffer.peek())
 
 // Subtracts one from the given BigInteger
 internal fun BigInteger.minusOne(): BigInteger {
@@ -144,3 +140,8 @@ internal fun BigInteger.asBytes(): ByteArray {
         .chunked(8) { it.toString().toUByte(radix = 2).toByte() } // convert each set of 8 bits to a byte
         .toByteArray()
 }
+
+/**
+ * Encode and write a [Cbor.Value] to this [SdkBuffer]
+ */
+internal fun SdkBuffer.write(value: Cbor.Value) = write(value.encode())

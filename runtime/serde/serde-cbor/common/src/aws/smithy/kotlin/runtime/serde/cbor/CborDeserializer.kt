@@ -51,7 +51,7 @@ public class CborDeserializer(payload: ByteArray) : Deserializer {
         buffer.readByte() // no length encoded, discard head
         null
     } else {
-        deserializeArgument(buffer)
+        decodeArgument(buffer)
     }
 }
 
@@ -75,8 +75,8 @@ internal class CborPrimitiveDeserializer(private val buffer: SdkBufferedSource) 
             Minor.FLOAT64.value -> Cbor.Encoding.Float64.decode(buffer).value
             else -> {
                 when (T::class) {
-                    Float::class -> Float.fromBits(deserializeArgument(buffer).toInt())
-                    Double::class -> Double.fromBits(deserializeArgument(buffer).toLong())
+                    Float::class -> Float.fromBits(decodeArgument(buffer).toInt())
+                    Double::class -> Double.fromBits(decodeArgument(buffer).toLong())
                     else -> throw DeserializationException("Unsupported floating point type: ${T::class}")
                 }
             }
