@@ -174,7 +174,7 @@ open class SerializeStructGenerator(
     /**
      * Delegates to other functions based on the type of value target of map.
      */
-    open fun delegateMapSerialization(rootMemberShape: MemberShape, mapShape: MapShape, nestingLevel: Int, parentMemberName: String) {
+    protected fun delegateMapSerialization(rootMemberShape: MemberShape, mapShape: MapShape, nestingLevel: Int, parentMemberName: String) {
         val keyShape = ctx.model.expectShape(mapShape.key.target)
         val elementShape = ctx.model.expectShape(mapShape.value.target)
         val isSparse = mapShape.isSparse
@@ -236,7 +236,7 @@ open class SerializeStructGenerator(
     /**
      * Delegates to other functions based on the type of element.
      */
-    open fun delegateListSerialization(rootMemberShape: MemberShape, listShape: CollectionShape, nestingLevel: Int, parentMemberName: String) {
+    protected fun delegateListSerialization(rootMemberShape: MemberShape, listShape: CollectionShape, nestingLevel: Int, parentMemberName: String) {
         val elementShape = ctx.model.expectShape(listShape.member.target)
         val isSparse = listShape.isSparse
 
@@ -642,7 +642,7 @@ open class SerializeStructGenerator(
      * Get the serialization function and encoded value for the given [Shape], this only handles
      * [simple types](https://smithy.io/2.0/spec/simple-types.html),  collections should be handled separately.
      */
-    open val serializerForSimpleShape = SerializeFunction { member, identifier ->
+    protected val serializerForSimpleShape = SerializeFunction { member, identifier ->
         // target shape type to deserialize is either the shape itself or member.target
         val target = member.targetOrSelf(ctx.model)
 

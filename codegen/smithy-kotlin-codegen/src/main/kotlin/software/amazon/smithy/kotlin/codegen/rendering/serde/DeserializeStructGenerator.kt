@@ -593,7 +593,7 @@ open class DeserializeStructGenerator(
      * Return Kotlin function that deserializes a primitive value.
      * @param shape primitive [Shape] associated with value.
      */
-    open fun deserializerForShape(shape: Shape): String {
+    protected fun deserializerForShape(shape: Shape): String {
         // target shape type to deserialize is either the shape itself or member.target
         val target = shape.targetOrSelf(ctx.model)
 

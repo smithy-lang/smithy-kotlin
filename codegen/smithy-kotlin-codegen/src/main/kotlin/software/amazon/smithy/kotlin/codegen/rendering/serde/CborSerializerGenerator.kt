@@ -34,7 +34,7 @@ class CborSerializerGenerator(
         }
     }
 
-    protected open fun renderSerializeOperationBody(
+    private fun renderSerializeOperationBody(
         ctx: ProtocolGenerator.GenerationContext,
         op: OperationShape,
         documentMembers: List<MemberShape>,
@@ -52,9 +52,9 @@ class CborSerializerGenerator(
         members: List<MemberShape>,
         writer: KotlinWriter,
     ) {
-        descriptorGenerator(ctx, shape, members, writer).render() // render the serde descriptors
+        descriptorGenerator(ctx, shape, members, writer).render()
         when (shape) {
-            is DocumentShape -> throw CodegenException("CBOR does not support Smithy documents.")
+            is DocumentShape -> writer.write("serializer.serializeDocument(input)")
             is UnionShape -> SerializeUnionGenerator(ctx, shape, members, writer, TimestampFormatTrait.Format.EPOCH_SECONDS).render()
             else -> SerializeStructGenerator(ctx, members, writer, TimestampFormatTrait.Format.EPOCH_SECONDS).render()
         }
@@ -65,7 +65,7 @@ class CborSerializerGenerator(
         shape: Shape,
         members: List<MemberShape>,
         writer: KotlinWriter,
-    ): CborSerdeDescriptorGenerator = CborSerdeDescriptorGenerator(ctx.toRenderingContext(protocolGenerator, shape, writer), members)
+    ) = CborSerdeDescriptorGenerator(ctx.toRenderingContext(protocolGenerator, shape, writer), members)
 
     override fun payloadSerializer(
         ctx: ProtocolGenerator.GenerationContext,
@@ -97,9 +97,7 @@ class CborSerializerGenerator(
         SerdeIndex.of(ctx.model)
             .requiresDocumentSerializer(shape)
             .forEach {
-                val nestedStructOrUnionSerializer = documentSerializer(ctx, it)
-                // register an import dependency on each of the members that require a serializer implementation, ensuring they get generated
-                writer.addImport(nestedStructOrUnionSerializer)
+                writer.addImport(documentSerializer(ctx, it))
             }
     }
 
