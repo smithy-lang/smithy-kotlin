@@ -15,11 +15,6 @@ import aws.smithy.kotlin.runtime.time.epochMilliseconds
 import aws.smithy.kotlin.runtime.time.fromEpochMilliseconds
 import kotlin.math.absoluteValue
 
-/**
- * Encode and write a [Cbor.Value] to this [SdkBuffer]
- */
-internal fun SdkBuffer.write(value: Cbor.Value) = write(value.encode())
-
 internal object Cbor {
     /**
      * Represents an encodable / decodable CBOR value.
@@ -40,7 +35,7 @@ internal object Cbor {
             override fun encode(): ByteArray = encodeArgument(Major.U_INT, value)
             internal companion object {
                 fun decode(buffer: SdkBufferedSource): UInt {
-                    val argument = deserializeArgument(buffer)
+                    val argument = decodeArgument(buffer)
                     return UInt(argument)
                 }
             }
@@ -57,7 +52,7 @@ internal object Cbor {
 
             internal companion object {
                 fun decode(buffer: SdkBufferedSource): NegInt {
-                    val argument: ULong = deserializeArgument(buffer)
+                    val argument: ULong = decodeArgument(buffer)
                     return NegInt(0 - (argument + 1u).toLong())
                 }
             }
@@ -87,7 +82,7 @@ internal object Cbor {
 
                         ByteString(tempBuffer.readByteArray())
                     } else {
-                        val length = deserializeArgument(buffer).toInt()
+                        val length = decodeArgument(buffer).toInt()
                         val bytes = ByteArray(length)
 
                         if (length > 0) {
@@ -126,7 +121,7 @@ internal object Cbor {
                         val str = sb.toString()
                         String(str)
                     } else {
-                        val length = deserializeArgument(buffer).toInt()
+                        val length = decodeArgument(buffer).toInt()
                         val bytes = ByteArray(length)
 
                         if (length > 0) {
@@ -161,7 +156,7 @@ internal object Cbor {
 
             internal companion object {
                 internal fun decode(buffer: SdkBufferedSource): List {
-                    val length = deserializeArgument(buffer).toInt()
+                    val length = decodeArgument(buffer).toInt()
                     val values = mutableListOf<Value>()
 
                     for (i in 0 until length) {
@@ -231,7 +226,7 @@ internal object Cbor {
             internal companion object {
                 internal fun decode(buffer: SdkBufferedSource): Map {
                     val valueMap = mutableMapOf<String, Value>()
-                    val length = deserializeArgument(buffer).toInt()
+                    val length = decodeArgument(buffer).toInt()
 
                     for (i in 0 until length) {
                         val key = String.decode(buffer)
@@ -457,7 +452,7 @@ internal object Cbor {
 
             internal companion object {
                 internal fun decode(buffer: SdkBufferedSource): Timestamp {
-                    val tagId = deserializeArgument(buffer).toInt()
+                    val tagId = decodeArgument(buffer).toInt()
                     check(tagId == 1) { "Expected tag ID 1 for CBOR timestamp, got $tagId" }
 
                     val major = peekMajor(buffer)
@@ -498,7 +493,7 @@ internal object Cbor {
 
             internal companion object {
                 internal fun decode(buffer: SdkBufferedSource): BigNum {
-                    val tagId = deserializeArgument(buffer).toInt()
+                    val tagId = decodeArgument(buffer).toInt()
                     check(tagId == 2) { "Expected tag ID 2 for CBOR bignum, got $tagId" }
 
                     val bytes = ByteString.decode(buffer).value
@@ -522,7 +517,7 @@ internal object Cbor {
 
             internal companion object {
                 internal fun decode(buffer: SdkBufferedSource): NegBigNum {
-                    val tagId = deserializeArgument(buffer).toInt()
+                    val tagId = decodeArgument(buffer).toInt()
                     check(tagId == 3) { "Expected tag ID 3 for CBOR negative bignum, got $tagId" }
 
                     val bytes = ByteString.decode(buffer).value
@@ -580,7 +575,7 @@ internal object Cbor {
                     val major = peekMajor(buffer)
                     check(major == Major.TAG) { "Expected ${Major.TAG} for CBOR decimal fraction, got $major" }
 
-                    val tagId = deserializeArgument(buffer)
+                    val tagId = decodeArgument(buffer)
                     check(tagId == 4uL) { "Expected tag ID 4 for CBOR decimal fraction, got $tagId" }
 
                     val array = List.decode(buffer)
@@ -650,82 +645,57 @@ internal object Cbor {
 // Encodes a major and minor type of CBOR value in a single byte
 internal fun encodeMajorMinor(major: Major, minor: Minor): Byte = (major.value.toUInt() shl 5 or minor.value.toUInt()).toByte()
 
+// Encode a [Major] value along with its additional information / argument.
 internal fun encodeArgument(major: Major, argument: ULong): ByteArray {
-    if (argument < 24u) {
-        // entire argument fits in the single head byte
-        val head = ((major.ordinal shl 5).toULong() or argument).toByte()
-        return byteArrayOf(head)
-    } else if (argument < 0x100u) {
-        // head + 1 byte
-        val head = ((major.ordinal shl 5) or Minor.ARG_1.value.toInt()).toByte()
-        return byteArrayOf(head, argument.toByte())
-    } else if (argument < 0x10000u) {
-        // head + 2 bytes
-        val head = ((major.ordinal shl 5) or Minor.ARG_2.value.toInt()).toByte()
-        return byteArrayOf(
-            head,
-            (argument shr 8 and 0xffu).toByte(),
-            (argument and 0xffu).toByte(),
-        )
-    } else if (argument < 0x100000000u) {
-        // head + 4 bytes
-        val head = ((major.ordinal shl 5) or Minor.ARG_4.value.toInt()).toByte()
-        return byteArrayOf(
-            head,
-            (argument shr 24 and 0xffu).toByte(),
-            (argument shr 16 and 0xffu).toByte(),
-            (argument shr 8 and 0xffu).toByte(),
-            (argument and 0xffu).toByte(),
-        )
-    } else {
-        // head + 8 bytes
-        val head = ((major.ordinal shl 5) or Minor.ARG_8.value.toInt()).toByte()
-        return byteArrayOf(
-            head,
-            (argument shr 56 and 0xffu).toByte(),
-            (argument shr 48 and 0xffu).toByte(),
-            (argument shr 40 and 0xffu).toByte(),
-            (argument shr 32 and 0xffu).toByte(),
-            (argument shr 24 and 0xffu).toByte(),
-            (argument shr 16 and 0xffu).toByte(),
-            (argument shr 8 and 0xffu).toByte(),
-            (argument and 0xffu).toByte(),
-        )
+    // Convert a ULong to a ByteArray by right-shifting it appropriately
+    fun ULong.toByteArray(): ByteArray {
+        val argumentByteLength = when {
+            this < 24u -> 0
+            this < 0x100u -> 1
+            this < 0x10000u -> 2
+            this < 0x100000000u -> 4
+            else -> 8
+        }
+
+        val argumentBytes = ((argumentByteLength - 1) downTo 0).map { index ->
+            (this shr (index * 8) and 0xffu).toByte()
+        }.toByteArray()
+        return argumentBytes
     }
+
+    val head = when {
+        argument < 24u -> ((major.ordinal shl 5).toULong() or argument).toByte()
+        argument < 0x100u -> ((major.ordinal shl 5) or Minor.ARG_1.value.toInt()).toByte()
+        argument < 0x10000u -> ((major.ordinal shl 5) or Minor.ARG_2.value.toInt()).toByte()
+        argument < 0x100000000u -> ((major.ordinal shl 5) or Minor.ARG_4.value.toInt()).toByte()
+        else -> ((major.ordinal shl 5) or Minor.ARG_8.value.toInt()).toByte()
+    }
+
+    return byteArrayOf(head, *argument.toByteArray())
 }
 
-internal fun deserializeArgument(buffer: SdkBufferedSource): ULong {
-    val minorByte = buffer.readByte().toUByte() and MINOR_MASK
+internal fun decodeArgument(buffer: SdkBufferedSource): ULong {
+    val minor = buffer.readByte().toUByte() and MINOR_BYTE_MASK
 
-    if (minorByte < Minor.ARG_1.value) {
-        return minorByte.toULong()
+    if (minor < Minor.ARG_1.value) {
+        return minor.toULong()
     }
 
-    return when (Minor.fromValue(minorByte)) {
-        Minor.ARG_1 -> buffer.readByte().toUByte().toULong()
-        Minor.ARG_2 -> {
-            val bytes = SdkBuffer().use {
-                if (buffer.read(it, 2) != 2L) { throw DeserializationException("Unexpected end of payload") }
-                it.readByteArray()
-            }
-            return bytes.toULong()
-        }
-        Minor.ARG_4 -> {
-            val bytes = SdkBuffer().use {
-                if (buffer.read(it, 4) != 4L) { throw DeserializationException("Unexpected end of payload") }
-                it.readByteArray()
-            }
-            return bytes.toULong()
-        }
-        Minor.ARG_8 -> {
-            val bytes = SdkBuffer().use {
-                if (buffer.read(it, 8) != 8L) { throw DeserializationException("Unexpected end of payload") }
-                it.readByteArray()
-            }
-            return bytes.toULong()
-        }
-        else -> throw DeserializationException("Unsupported minor value ${Minor.fromValue(minorByte).value.toULong()}, expected one of ${Minor.ARG_1}, ${Minor.ARG_2}, ${Minor.ARG_4}, ${Minor.ARG_8}.")
+    val numBytes = when (minor) {
+        Minor.ARG_1.value -> 1L
+        Minor.ARG_2.value -> 2L
+        Minor.ARG_4.value -> 4L
+        Minor.ARG_8.value -> 8L
+        else -> throw DeserializationException("Unsupported minor value $minor, expected one of ${Minor.ARG_1.value}, ${Minor.ARG_2.value}, ${Minor.ARG_4.value}, ${Minor.ARG_8.value}")
     }
+
+    val bytes = SdkBuffer().use {
+        buffer.read(it, numBytes).also { rc ->
+            if (numBytes != rc) throw DeserializationException("Unexpected end of payload. Expected $numBytes, read $rc.")
+        }
+        it.readByteArray()
+    }
+    return bytes.toULong()
 }
 
 // Convert a ByteArray to a ULong by extracting each byte and left-shifting it appropriately.
