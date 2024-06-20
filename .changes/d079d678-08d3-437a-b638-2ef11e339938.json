@@ -1,0 +1,8 @@
+{
+    "id": "d079d678-08d3-437a-b638-2ef11e339938",
+    "type": "feature",
+    "description": "Add support for prioritized protocol resolution",
+    "issues": [
+        "https://github.com/smithy-lang/smithy-kotlin/issues/843"
+    ]
+}
