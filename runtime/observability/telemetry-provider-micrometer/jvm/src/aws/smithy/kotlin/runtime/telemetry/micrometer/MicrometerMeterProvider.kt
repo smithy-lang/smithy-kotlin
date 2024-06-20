@@ -22,18 +22,17 @@ import io.micrometer.core.instrument.Tags
 import io.micrometer.core.instrument.Counter as MicrometerCounter
 import io.micrometer.core.instrument.Gauge as MicrometerGauge
 
-internal class MicrometerMeterProvider(meterRegistry: MeterRegistry) : MeterProvider {
-    private val meter = MicrometerMeter(meterRegistry)
-
-    override fun getOrCreateMeter(scope: String): Meter = meter
+internal class MicrometerMeterProvider(private val meterRegistry: MeterRegistry) : MeterProvider {
+    override fun getOrCreateMeter(scope: String): Meter = MicrometerMeter(meterRegistry, Tags.of(Tag.of("scope", scope)))
 }
 
 private class MicrometerMeter(
     private val meterRegistry: MeterRegistry,
+    private val extraTags: Tags,
 ) : Meter {
     override fun createUpDownCounter(name: String, units: String?, description: String?): UpDownCounter =
         MicrometerUpDownCounter(
-            meterMetadata = MeterMetadata(name, units, description),
+            meterMetadata = MeterMetadata(name, units, description, extraTags),
             meterRegistry = meterRegistry,
         )
 
@@ -45,27 +44,27 @@ private class MicrometerMeter(
     ): AsyncMeasurementHandle =
         MicrometerLongGauge(
             callback = callback,
-            meterMetadata = MeterMetadata(name, units, description),
+            meterMetadata = MeterMetadata(name, units, description, extraTags),
             meterRegistry = meterRegistry,
         )
 
     override fun createMonotonicCounter(name: String, units: String?, description: String?): MonotonicCounter =
         MicrometerMonotonicCounter(
-            meterMetadata = MeterMetadata(name, units, description),
+            meterMetadata = MeterMetadata(name, units, description, extraTags),
             meterRegistry = meterRegistry,
         )
 
     override fun createLongHistogram(name: String, units: String?, description: String?): LongHistogram =
         MicrometerLongHistogram(
             MicrometerDoubleHistogram(
-                meterMetadata = MeterMetadata(name, units, description),
+                meterMetadata = MeterMetadata(name, units, description, extraTags),
                 meterRegistry = meterRegistry,
             )
         )
 
     override fun createDoubleHistogram(name: String, units: String?, description: String?): DoubleHistogram =
         MicrometerDoubleHistogram(
-            meterMetadata = MeterMetadata(name, units, description),
+            meterMetadata = MeterMetadata(name, units, description, extraTags),
             meterRegistry = meterRegistry,
         )
 
@@ -76,7 +75,7 @@ private class MicrometerMeter(
         description: String?,
     ): AsyncMeasurementHandle = MicrometerLongGauge(
         callback = callback,
-        meterMetadata = MeterMetadata(name, units, description),
+        meterMetadata = MeterMetadata(name, units, description, extraTags),
         meterRegistry = meterRegistry,
     )
 
@@ -87,13 +86,18 @@ private class MicrometerMeter(
         description: String?,
     ): AsyncMeasurementHandle = MicrometerDoubleGauge(
         callback = callback,
-        meterMetadata = MeterMetadata(name, units, description),
+        meterMetadata = MeterMetadata(name, units, description, extraTags),
         meterRegistry = meterRegistry,
     )
 
 }
 
-private data class MeterMetadata(val meterName: String, val units: String?, val description: String?)
+private data class MeterMetadata(
+    val meterName: String,
+    val units: String?,
+    val description: String?,
+    val extraTags: Tags,
+)
 
 private class MicrometerUpDownCounter(
     private val meterMetadata: MeterMetadata,
@@ -129,6 +133,7 @@ private class MicrometerDoubleHistogram(
         DistributionSummary.builder(meterMetadata.meterName)
             .baseUnit(meterMetadata.units)
             .description(meterMetadata.description)
+            .tags(meterMetadata.extraTags)
             .tags(attributes.toTags())
             .publishPercentileHistogram()
             .register(meterRegistry)
@@ -168,6 +173,7 @@ private class MicrometerDoubleGauge(
                 .builder(meterMetadata.meterName) { measurement.apply(callback).value }
                 .baseUnit(meterMetadata.units)
                 .description(meterMetadata.description)
+                .tags(meterMetadata.extraTags)
                 .tags(measurement.tags)
                 .strongReference(true)
                 .register(meterRegistry)
@@ -203,6 +209,7 @@ private class MicrometerLongGauge(
 private fun MeterMetadata.counter() = MicrometerCounter.builder(meterName)
     .baseUnit(units)
     .description(description)
+    .tags(extraTags)
 
 @Suppress("UNCHECKED_CAST")
 private fun Attributes.toTags() = keys.mapNotNull {
