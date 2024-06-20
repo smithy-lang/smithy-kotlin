@@ -3,8 +3,6 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-apply(plugin = "kotlinx-atomicfu")
-
 description = "Utilities for working with AWS CRT Kotlin"
 extra["displayName"] = "Smithy :: Kotlin :: CRT :: Util"
 extra["moduleName"] = "aws.smithy.kotlin.runtime.crt"
