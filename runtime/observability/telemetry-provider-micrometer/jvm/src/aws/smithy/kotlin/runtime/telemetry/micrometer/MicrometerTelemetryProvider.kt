@@ -8,10 +8,11 @@ import aws.smithy.kotlin.runtime.telemetry.logging.LoggerProvider
 import aws.smithy.kotlin.runtime.telemetry.metrics.MeterProvider
 import aws.smithy.kotlin.runtime.telemetry.trace.TracerProvider
 import io.micrometer.core.instrument.MeterRegistry
+import io.micrometer.core.instrument.Metrics
 
 @ExperimentalApi
 public class MicrometerTelemetryProvider(
-    meterRegistry: MeterRegistry,
+    meterRegistry: MeterRegistry = Metrics.globalRegistry,
     override val loggerProvider: LoggerProvider = GlobalTelemetryProvider.instance.loggerProvider,
 ) : TelemetryProvider {
     override val meterProvider: MeterProvider = MicrometerMeterProvider(meterRegistry)
