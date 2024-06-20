@@ -1,0 +1,5 @@
+{
+    "id": "cf234bd8-b75a-48bb-8bc8-122c30abf723",
+    "type": "bugfix",
+    "description": "Remove global booleans previously used for emitting business metrics"
+}
