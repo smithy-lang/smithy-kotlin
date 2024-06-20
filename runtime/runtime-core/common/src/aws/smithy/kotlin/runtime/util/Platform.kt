@@ -46,7 +46,6 @@ internal expect object SystemDefaultProvider : PlatformProvider {
     override val isNative: Boolean
 }
 
-
 public data class OperatingSystem(val family: OsFamily, val version: String?)
 
 public enum class OsFamily {

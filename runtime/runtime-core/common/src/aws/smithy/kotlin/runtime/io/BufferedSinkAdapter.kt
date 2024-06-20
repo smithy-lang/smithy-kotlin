@@ -91,6 +91,4 @@ internal abstract class AbstractBufferedSinkAdapter(
     }
 
     override fun close() = delegate.close()
-
-
 }

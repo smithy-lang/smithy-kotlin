@@ -18,4 +18,3 @@ public expect class Gzip() : CompressionAlgorithm {
     override val contentEncoding: String
     override fun compress(stream: ByteStream): ByteStream
 }
-

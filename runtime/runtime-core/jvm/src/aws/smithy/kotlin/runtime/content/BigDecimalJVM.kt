@@ -4,7 +4,7 @@
  */
 package aws.smithy.kotlin.runtime.content
 
-public actual class BigDecimal actual constructor(public val value: String): Number() {
+public actual class BigDecimal actual constructor(public val value: String) : Number() {
     private val delegate = java.math.BigDecimal(value)
 
     public actual fun toPlainString(): String = delegate.toPlainString()
@@ -31,4 +31,4 @@ public actual class BigDecimal actual constructor(public val value: String): Num
  *         fun toShort(): Short
  *
  */
-//public actual typealias BigDecimal = java.math.BigDecimal
+// public actual typealias BigDecimal = java.math.BigDecimal
