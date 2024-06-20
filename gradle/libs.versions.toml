@@ -5,8 +5,8 @@ dokka-version = "1.9.10"
 aws-kotlin-repo-tools-version = "0.4.7"
 
 # libs
-coroutines-version = "1.7.3"
-atomicfu-version = "0.23.1"
+coroutines-version = "1.8.1"
+atomicfu-version = "0.24.0"
 okhttp-version = "5.0.0-alpha.14"
 okio-version = "3.9.0"
 otel-version = "1.32.0"
@@ -28,8 +28,6 @@ docker-java-version = "3.3.6"
 ktor-version = "2.3.6"
 kaml-version = "0.55.0"
 jsoup-version = "1.16.2"
-
-
 
 [libraries]
 aws-kotlin-repo-tools-build-support = { module="aws.sdk.kotlin.gradle:build-support", version.ref = "aws-kotlin-repo-tools-version" }
