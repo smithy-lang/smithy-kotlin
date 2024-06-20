@@ -49,23 +49,8 @@ typealias EndpointPropertyRenderer = (KotlinWriter, Expression, ExpressionRender
  * An expression renderer generates code for an endpoint expression construct.
  */
 fun interface ExpressionRenderer {
-    fun renderExpression(expr: Expression)
+    fun renderExpression(expr: Expression): EndpointInfo
 }
-
-/**
- * Will be toggled to true if it is determined an endpoint is account ID based then to false again
- */
-private var hasAccountIdBasedEndpoint = false
-
-/**
- * Will be toggled to true if determined an endpoint comes from a service endpoint override then to false again
- */
-private var hasServiceEndpointOverride = false
-
-/**
- * Will be toggled to true when rendering an endpoint URL then to false again
- */
-private var renderingEndpointUrl = false
 
 /**
  * Renders the default endpoint provider based on the provided rule set.
@@ -121,9 +106,7 @@ class DefaultEndpointProviderGenerator(
         }
     }
 
-    override fun renderExpression(expr: Expression) {
-        expr.accept(expressionGenerator)
-    }
+    override fun renderExpression(expr: Expression): EndpointInfo = expr.accept(expressionGenerator) ?: EndpointInfo.Empty
 
     private fun renderDocumentation() {
         writer.dokka {
@@ -185,11 +168,11 @@ class DefaultEndpointProviderGenerator(
         withConditions(rule.conditions) {
             writer.withBlock("return #T(", ")", RuntimeTypes.SmithyClient.Endpoints.Endpoint) {
                 writeInline("#T.parse(", RuntimeTypes.Core.Net.Url.Url)
-                renderingEndpointUrl = true
-                renderExpression(rule.endpoint.url)
-                renderingEndpointUrl = false
+                val endpointInfo = renderExpression(rule.endpoint.url)
                 write("),")
 
+                val hasAccountIdBasedEndpoint = "accountId" in endpointInfo.params
+                val hasServiceEndpointOverride = "endpoint" in endpointInfo.params
                 val needAdditionalEndpointProperties = hasAccountIdBasedEndpoint || hasServiceEndpointOverride
 
                 if (rule.endpoint.headers.isNotEmpty()) {
@@ -226,11 +209,9 @@ class DefaultEndpointProviderGenerator(
 
                         if (hasAccountIdBasedEndpoint) {
                             writer.write("#T to params.accountId", RuntimeTypes.Core.BusinessMetrics.AccountIdBasedEndpointAccountId)
-                            hasAccountIdBasedEndpoint = false
                         }
                         if (hasServiceEndpointOverride) {
                             writer.write("#T to true", RuntimeTypes.Core.BusinessMetrics.ServiceEndpointOverride)
-                            hasServiceEndpointOverride = false
                         }
                     }
                 }
@@ -253,16 +234,27 @@ class DefaultEndpointProviderGenerator(
     }
 }
 
+data class EndpointInfo(val params: MutableSet<String>) {
+    companion object {
+        val Empty = EndpointInfo(params = mutableSetOf())
+    }
+
+    operator fun plus(other: EndpointInfo) = EndpointInfo(
+        params = (this.params + other.params).toMutableSet(),
+    )
+}
+
 class ExpressionGenerator(
     private val writer: KotlinWriter,
     private val rules: EndpointRuleSet,
     private val functions: Map<String, Symbol>,
-) : ExpressionVisitor<Unit>, LiteralVisitor<Unit>, TemplateVisitor<Unit> {
-    override fun visitLiteral(literal: Literal) {
+) : ExpressionVisitor<EndpointInfo>, LiteralVisitor<Unit>, TemplateVisitor<Unit> {
+    override fun visitLiteral(literal: Literal): EndpointInfo? {
         literal.accept(this as LiteralVisitor<Unit>)
+        return null
     }
 
-    override fun visitRef(reference: Reference) {
+    override fun visitRef(reference: Reference): EndpointInfo {
         val referenceName = reference.name.defaultName()
         val isParamReference = isParamRef(reference)
 
@@ -271,13 +263,14 @@ class ExpressionGenerator(
         }
         writer.writeInline(referenceName)
 
-        if (renderingEndpointUrl) {
-            if (isParamReference && referenceName == "accountId") hasAccountIdBasedEndpoint = true
-            if (isParamReference && referenceName == "endpoint") hasServiceEndpointOverride = true
+        return if (isParamReference) {
+            EndpointInfo(params = mutableSetOf(referenceName))
+        } else {
+            EndpointInfo.Empty
         }
     }
 
-    override fun visitGetAttr(getAttr: GetAttr) {
+    override fun visitGetAttr(getAttr: GetAttr): EndpointInfo? {
         getAttr.target.accept(this)
         getAttr.path.forEach {
             when (it) {
@@ -286,25 +279,30 @@ class ExpressionGenerator(
                 else -> throw CodegenException("unexpected path")
             }
         }
+        return null
     }
 
-    override fun visitIsSet(target: Expression) {
+    override fun visitIsSet(target: Expression): EndpointInfo? {
         target.accept(this)
         writer.writeInline(" != null")
+        return null
     }
 
-    override fun visitNot(target: Expression) {
+    override fun visitNot(target: Expression): EndpointInfo? {
         writer.writeInline("!(")
         target.accept(this)
         writer.writeInline(")")
+        return null
     }
 
-    override fun visitBoolEquals(left: Expression, right: Expression) {
+    override fun visitBoolEquals(left: Expression, right: Expression): EndpointInfo? {
         visitEquals(left, right)
+        return null
     }
 
-    override fun visitStringEquals(left: Expression, right: Expression) {
+    override fun visitStringEquals(left: Expression, right: Expression): EndpointInfo? {
         visitEquals(left, right)
+        return null
     }
 
     private fun visitEquals(left: Expression, right: Expression) {
@@ -313,7 +311,7 @@ class ExpressionGenerator(
         right.accept(this)
     }
 
-    override fun visitLibraryFunction(fn: FunctionDefinition, args: MutableList<Expression>) {
+    override fun visitLibraryFunction(fn: FunctionDefinition, args: MutableList<Expression>): EndpointInfo? {
         writer.writeInline("#T(", functions.getValue(fn.id))
         args.forEachIndexed { index, it ->
             it.accept(this)
@@ -322,6 +320,7 @@ class ExpressionGenerator(
             }
         }
         writer.writeInline(")")
+        return null
     }
 
     override fun visitInteger(value: Int) {

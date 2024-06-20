@@ -101,9 +101,7 @@ class DefaultEndpointProviderTestGenerator(
         }
     }
 
-    override fun renderExpression(expr: Expression) {
-        expr.accept(expressionGenerator)
-    }
+    override fun renderExpression(expr: Expression): EndpointInfo = expr.accept(expressionGenerator) ?: EndpointInfo.Empty
 
     private fun renderTestCase(index: Int, case: EndpointTestCase) {
         case.documentation.ifPresent {
