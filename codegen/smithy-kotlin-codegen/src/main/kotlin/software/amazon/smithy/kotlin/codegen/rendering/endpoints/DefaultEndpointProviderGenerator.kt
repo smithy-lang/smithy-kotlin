@@ -24,6 +24,7 @@ import software.amazon.smithy.rulesengine.language.syntax.rule.EndpointRule
 import software.amazon.smithy.rulesengine.language.syntax.rule.ErrorRule
 import software.amazon.smithy.rulesengine.language.syntax.rule.Rule
 import software.amazon.smithy.rulesengine.language.syntax.rule.TreeRule
+import java.util.stream.Collectors
 
 /**
  * The core set of standard library functions available to the rules language.
@@ -248,11 +249,8 @@ class ExpressionGenerator(
     private val writer: KotlinWriter,
     private val rules: EndpointRuleSet,
     private val functions: Map<String, Symbol>,
-) : ExpressionVisitor<EndpointInfo>, LiteralVisitor<Unit>, TemplateVisitor<Unit> {
-    override fun visitLiteral(literal: Literal): EndpointInfo? {
-        literal.accept(this as LiteralVisitor<Unit>)
-        return null
-    }
+) : ExpressionVisitor<EndpointInfo?>, LiteralVisitor<EndpointInfo?>, TemplateVisitor<EndpointInfo?> {
+    override fun visitLiteral(literal: Literal): EndpointInfo? = literal.accept(this as LiteralVisitor<EndpointInfo?>)
 
     override fun visitRef(reference: Reference): EndpointInfo {
         val referenceName = reference.name.defaultName()
@@ -271,7 +269,7 @@ class ExpressionGenerator(
     }
 
     override fun visitGetAttr(getAttr: GetAttr): EndpointInfo? {
-        getAttr.target.accept(this)
+        val endpointInfo = getAttr.target.accept(this)
         getAttr.path.forEach {
             when (it) {
                 is GetAttr.Part.Key -> writer.writeInline("?.#L", it.key().toString())
@@ -279,81 +277,96 @@ class ExpressionGenerator(
                 else -> throw CodegenException("unexpected path")
             }
         }
-        return null
+        return endpointInfo
     }
 
     override fun visitIsSet(target: Expression): EndpointInfo? {
-        target.accept(this)
+        val endpointInfo = target.accept(this)
         writer.writeInline(" != null")
-        return null
+        return endpointInfo
     }
 
     override fun visitNot(target: Expression): EndpointInfo? {
         writer.writeInline("!(")
-        target.accept(this)
+        val endpointInfo = target.accept(this)
         writer.writeInline(")")
-        return null
+        return endpointInfo
     }
 
-    override fun visitBoolEquals(left: Expression, right: Expression): EndpointInfo? {
-        visitEquals(left, right)
-        return null
-    }
+    override fun visitBoolEquals(left: Expression, right: Expression): EndpointInfo? = visitEquals(left, right)
 
-    override fun visitStringEquals(left: Expression, right: Expression): EndpointInfo? {
-        visitEquals(left, right)
-        return null
-    }
+    override fun visitStringEquals(left: Expression, right: Expression): EndpointInfo? = visitEquals(left, right)
 
-    private fun visitEquals(left: Expression, right: Expression) {
-        left.accept(this)
+    private fun visitEquals(left: Expression, right: Expression): EndpointInfo? {
+        val leftEndpointInfo = left.accept(this)
         writer.writeInline(" == ")
-        right.accept(this)
+        val rightEndpointInfo = right.accept(this)
+
+        return when {
+            leftEndpointInfo != null && rightEndpointInfo != null -> leftEndpointInfo + rightEndpointInfo
+            leftEndpointInfo != null -> leftEndpointInfo
+            else -> rightEndpointInfo
+        }
     }
 
     override fun visitLibraryFunction(fn: FunctionDefinition, args: MutableList<Expression>): EndpointInfo? {
         writer.writeInline("#T(", functions.getValue(fn.id))
-        args.forEachIndexed { index, it ->
-            it.accept(this)
+
+        val endpointInfo = args.foldIndexed(EndpointInfo.Empty) { index, acc, curr ->
+            val currEndpointInfo = curr.accept(this)
             if (index < args.lastIndex) {
                 writer.writeInline(", ")
             }
+            currEndpointInfo?.let { acc + it } ?: acc
         }
         writer.writeInline(")")
+        return endpointInfo
+    }
+
+    override fun visitInteger(value: Int): EndpointInfo? {
+        writer.writeInline("#L", value)
         return null
     }
 
-    override fun visitInteger(value: Int) {
-        writer.writeInline("#L", value)
-    }
-
-    override fun visitString(value: Template) {
+    override fun visitString(value: Template): EndpointInfo? {
         writer.writeInline("\"")
-        value.accept(this).forEach {} // must "consume" the stream to actually generate everything
+        val endpointInfo = value.accept(this)
+            .collect(Collectors.toList())
+            .fold(EndpointInfo.Empty) { acc, curr ->
+                curr?.let { acc + it } ?: acc
+            }
         writer.writeInline("\"")
+        return endpointInfo
     }
 
-    override fun visitBoolean(value: Boolean) {
+    override fun visitBoolean(value: Boolean): EndpointInfo? {
         writer.writeInline("#L", value)
+        return null
     }
 
-    override fun visitRecord(value: MutableMap<Identifier, Literal>) {
+    override fun visitRecord(value: MutableMap<Identifier, Literal>): EndpointInfo? {
+        var endpointInfo: EndpointInfo? = null
         writer.withInlineBlock("#T {", "}", RuntimeTypes.Core.Content.buildDocument) {
-            value.entries.forEachIndexed { index, (k, v) ->
+            endpointInfo = value.entries.foldIndexed(EndpointInfo.Empty) { index, acc, (k, v) ->
                 writeInline("#S to ", k.toString())
-                v.accept(this@ExpressionGenerator as LiteralVisitor<Unit>)
+                val currInfo = v.accept(this@ExpressionGenerator as LiteralVisitor<EndpointInfo?>)
                 if (index < value.size - 1) write("")
+                currInfo?.let { acc + it } ?: acc
             }
         }
+        return endpointInfo
     }
 
-    override fun visitTuple(value: MutableList<Literal>) {
+    override fun visitTuple(value: MutableList<Literal>): EndpointInfo? {
+        var endpointInfo: EndpointInfo? = null
         writer.withInlineBlock("listOf(", ")") {
-            value.forEachIndexed { index, it ->
-                it.accept(this@ExpressionGenerator as LiteralVisitor<Unit>)
+            endpointInfo = value.foldIndexed(EndpointInfo.Empty) { index, acc, curr ->
+                val localInfo = curr.accept(this@ExpressionGenerator as LiteralVisitor<EndpointInfo?>)
                 if (index < value.size - 1) write(",") else writeInline(",")
+                localInfo?.let { acc + it } ?: acc
             }
         }
+        return endpointInfo
     }
 
     override fun visitStaticTemplate(value: String) = writeTemplateString(value)
@@ -362,17 +375,19 @@ class ExpressionGenerator(
     override fun visitDynamicElement(value: Expression) = writeTemplateExpression(value)
 
     // no-ops for kotlin codegen
-    override fun startMultipartTemplate() {}
-    override fun finishMultipartTemplate() {}
+    override fun startMultipartTemplate(): EndpointInfo? = null
+    override fun finishMultipartTemplate(): EndpointInfo? = null
 
-    private fun writeTemplateString(value: String) {
+    private fun writeTemplateString(value: String): EndpointInfo? {
         writer.writeInline(value.replace("\"", "\\\""))
+        return null
     }
 
-    private fun writeTemplateExpression(expr: Expression) {
+    private fun writeTemplateExpression(expr: Expression): EndpointInfo? {
         writer.writeInline("\${")
-        expr.accept(this)
+        val endpointInfo = expr.accept(this)
         writer.writeInline("}")
+        return endpointInfo
     }
 
     private fun isParamRef(ref: Reference): Boolean = rules.parameters.toList().any { it.name == ref.name }
