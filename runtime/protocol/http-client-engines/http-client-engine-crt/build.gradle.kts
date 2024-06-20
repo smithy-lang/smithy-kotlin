@@ -2,9 +2,10 @@
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
  * SPDX-License-Identifier: Apache-2.0
  */
+apply(plugin = "kotlinx-atomicfu")
 
 description = "HTTP client engine backed by CRT"
-extra["displayName"] = "AWS :: Smithy :: Kotlin :: HTTP"
+extra["displayName"] = "AWS :: SDK :: Kotlin :: HTTP"
 extra["moduleName"] = "aws.smithy.kotlin.runtime.http.engine.crt"
 
 kotlin {

@@ -14,9 +14,6 @@ plugins {
 
 val sdkVersion: String by project
 
-// atomicfu plugin only needs to be applied in the top-level build file
-apply(plugin = "kotlinx-atomicfu")
-
 // capture locally - scope issue with custom KMP plugin
 val libraries = libs
 

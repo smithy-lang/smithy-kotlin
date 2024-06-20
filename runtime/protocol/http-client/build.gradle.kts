@@ -6,6 +6,8 @@ description = "HTTP client abstractions"
 extra["displayName"] = "Smithy :: Kotlin :: HTTP Client"
 extra["moduleName"] = "aws.smithy.kotlin.runtime.http"
 
+apply(plugin = "kotlinx-atomicfu")
+
 kotlin {
     sourceSets {
         commonMain {

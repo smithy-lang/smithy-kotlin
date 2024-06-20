@@ -7,6 +7,8 @@ description = "Types for AWS credentials"
 extra["displayName"] = "Smithy :: Kotlin :: AWS Credentials"
 extra["moduleName"] = "aws.smithy.kotlin.runtime.auth.awscredentials"
 
+apply(plugin = "kotlinx-atomicfu")
+
 kotlin {
     sourceSets {
         commonMain {
