@@ -32,6 +32,7 @@ private object EmptyHeaders : Headers {
     override fun entries(): Set<Map.Entry<String, List<String>>> = emptySet()
     override fun contains(name: String): Boolean = false
     override fun isEmpty(): Boolean = true
+    override fun equals(other: Any?): Boolean = other is Headers && other.isEmpty()
 }
 
 /**

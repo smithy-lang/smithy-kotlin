@@ -61,6 +61,39 @@ class DefaultEndpointProviderTestGenerator(
     fun render() {
         writer.addImport("*", namespace = "kotlin.test")
         writer.withBlock("public class #L {", "}", CLASS_NAME) {
+            writer.withBlock(
+                "private fun expectEqualEndpoints(expected: #1T, actual: #1T) {",
+                "}",
+                RuntimeTypes.SmithyClient.Endpoints.Endpoint,
+            ) {
+                // Remove ONLY business metrics endpoint attributes
+                writer.withBlock(
+                    "if (actual.attributes.contains(#T) || actual.attributes.contains(#T)) {",
+                    "} else { assertEquals(expected, actual) }",
+                    RuntimeTypes.Core.BusinessMetrics.ServiceEndpointOverride,
+                    RuntimeTypes.Core.BusinessMetrics.AccountIdBasedEndpointAccountId,
+                ) {
+                    writer.write(
+                        "val newActualAttributes = actual.attributes.#T()",
+                        RuntimeTypes.Core.Collections.toMutableAttributes,
+                    )
+                    writer.write(
+                        "newActualAttributes.remove(#T)",
+                        RuntimeTypes.Core.BusinessMetrics.ServiceEndpointOverride,
+                    )
+                    writer.write(
+                        "newActualAttributes.remove(#T)",
+                        RuntimeTypes.Core.BusinessMetrics.AccountIdBasedEndpointAccountId,
+                    )
+                    writer.write(
+                        "val newActual = #T(actual.uri, actual.headers, newActualAttributes)",
+                        RuntimeTypes.SmithyClient.Endpoints.Endpoint,
+                    )
+                    writer.write("assertEquals(expected, newActual)")
+                }
+            }
+            writer.write("")
+
             cases.forEachIndexed { index, it ->
                 renderTestCase(index, it)
                 write("")
@@ -68,9 +101,7 @@ class DefaultEndpointProviderTestGenerator(
         }
     }
 
-    override fun renderExpression(expr: Expression) {
-        expr.accept(expressionGenerator)
-    }
+    override fun renderExpression(expr: Expression): EndpointInfo = expr.accept(expressionGenerator) ?: EndpointInfo.Empty
 
     private fun renderTestCase(index: Int, case: EndpointTestCase) {
         case.documentation.ifPresent {
@@ -148,6 +179,6 @@ class DefaultEndpointProviderTestGenerator(
         }
 
         writer.write("val actual = #T().resolveEndpoint(params)", providerSymbol)
-        writer.write("assertEquals(expected, actual)")
+        writer.write("expectEqualEndpoints(expected, actual)")
     }
 }
