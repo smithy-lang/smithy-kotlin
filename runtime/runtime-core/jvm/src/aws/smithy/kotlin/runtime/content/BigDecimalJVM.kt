@@ -15,20 +15,3 @@ public actual class BigDecimal actual constructor(public val value: String) : Nu
     actual override fun toLong(): Long = delegate.toLong()
     actual override fun toShort(): Short = delegate.toShort()
 }
-
-/**
- * FIXME typealias does not work ...
- * e: file:///Users/lauzmata/smithy-kotlin/runtime/runtime-core/jvm/src/aws/smithy/kotlin/runtime/content/BigDecimalJVM.kt:7:25 Actual class 'actual typealias BigDecimal = BigDecimal' has no corresponding members for expected class members:
- *
- *     expect fun toByte(): Byte
- *
- *     The following declaration is incompatible because modality is different:
- *         fun toByte(): Byte
- *
- *     expect fun toShort(): Short
- *
- *     The following declaration is incompatible because modality is different:
- *         fun toShort(): Short
- *
- */
-// public actual typealias BigDecimal = java.math.BigDecimal
