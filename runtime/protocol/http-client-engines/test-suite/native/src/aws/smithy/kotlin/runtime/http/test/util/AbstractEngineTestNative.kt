@@ -18,19 +18,3 @@ internal actual fun engineFactories(): List<TestEngineFactory> =
 
 // FIXME add servers to test
 internal actual val testServers = mapOf<ServerType, Url>()
-
-internal actual fun runBlockingTest(
-    context: CoroutineContext,
-    timeout: Duration?,
-    block: suspend CoroutineScope.() -> Unit,
-) {
-    runBlocking(context) {
-        if (timeout != null) {
-            withTimeout(timeout) {
-                block()
-            }
-        } else {
-            block()
-        }
-    }
-}
