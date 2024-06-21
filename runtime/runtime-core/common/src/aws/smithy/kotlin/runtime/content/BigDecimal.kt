@@ -12,4 +12,5 @@ public expect class BigDecimal(value: String) : Number {
     override fun toInt(): Int
     override fun toLong(): Long
     public fun toPlainString(): String
+    override fun equals(other: Any?): Boolean
 }

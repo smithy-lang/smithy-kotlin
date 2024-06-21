@@ -14,4 +14,5 @@ public actual class BigDecimal actual constructor(public val value: String) : Nu
     actual override fun toInt(): Int = delegate.toInt()
     actual override fun toLong(): Long = delegate.toLong()
     actual override fun toShort(): Short = delegate.toShort()
+    actual override fun equals(other: Any?): Boolean = (other is BigDecimal) && (value == other.value)
 }

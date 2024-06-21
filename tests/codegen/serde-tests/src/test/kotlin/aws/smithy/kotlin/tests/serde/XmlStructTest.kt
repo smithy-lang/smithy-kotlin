@@ -17,7 +17,6 @@ import kotlin.test.Ignore
 import kotlin.test.Test
 
 class XmlStructTest : AbstractXmlTest() {
-    @Ignore
     @Test
     fun testStructPrimitives() {
         val expected = StructType {
