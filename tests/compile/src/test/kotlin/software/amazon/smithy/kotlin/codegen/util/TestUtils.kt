@@ -3,6 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 @file:OptIn(ExperimentalCompilerApi::class) // Note: kotlin-compile-testing marks KotlinCompiler as experimental since 1.6.0
+
 package software.amazon.smithy.kotlin.codegen.util
 
 import com.tschuchort.compiletesting.KotlinCompilation

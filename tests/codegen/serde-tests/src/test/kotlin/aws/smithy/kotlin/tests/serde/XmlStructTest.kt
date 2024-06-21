@@ -13,7 +13,6 @@ import aws.smithy.kotlin.tests.serde.xml.model.IntegerEnum
 import aws.smithy.kotlin.tests.serde.xml.model.StructType
 import aws.smithy.kotlin.tests.serde.xml.serde.deserializeStructTypeDocument
 import aws.smithy.kotlin.tests.serde.xml.serde.serializeStructTypeDocument
-import kotlin.test.Ignore
 import kotlin.test.Test
 
 class XmlStructTest : AbstractXmlTest() {

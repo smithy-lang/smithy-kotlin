@@ -6,7 +6,6 @@ package software.amazon.smithy.kotlin.codegen
 
 import software.amazon.smithy.kotlin.codegen.util.asSmithy
 import software.amazon.smithy.kotlin.codegen.util.testModelChangeAgainstSource
-import kotlin.test.Ignore
 import kotlin.test.Test
 import kotlin.test.assertTrue
 
