@@ -14,7 +14,7 @@ import aws.smithy.kotlin.runtime.content.ByteStream
  * See: https://en.wikipedia.org/wiki/Gzip
  */
 public expect class Gzip() : CompressionAlgorithm {
-    override val id: String // expect class members must be explicitly overridden in K2: https://kotlinlang.slack.com/archives/C03PK0PE257/p1700127129049459?thread_ts=1700121556.811959&cid=C03PK0PE257
+    override val id: String // expect class members must be explicitly overridden in K2:
     override val contentEncoding: String
     override fun compress(stream: ByteStream): ByteStream
 }
