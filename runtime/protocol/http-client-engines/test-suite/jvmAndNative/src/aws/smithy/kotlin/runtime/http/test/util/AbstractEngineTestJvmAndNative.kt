@@ -9,12 +9,11 @@ import kotlinx.coroutines.*
 import kotlin.coroutines.CoroutineContext
 import kotlin.time.Duration
 
-
 internal actual fun runBlockingTest(
     context: CoroutineContext,
     timeout: Duration?,
     block: suspend CoroutineScope.() -> Unit,
- ) {
+) {
     runBlocking(context) {
         if (timeout != null) {
             withTimeout(timeout) {
@@ -24,4 +23,4 @@ internal actual fun runBlockingTest(
             block()
         }
     }
- }
+}
