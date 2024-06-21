@@ -15,5 +15,5 @@ public actual class BigInteger actual constructor(public val value: String) : Nu
     public actual override fun toDouble(): Double = delegate.toDouble()
     public actual override fun toString(): String = delegate.toString()
     public actual override fun hashCode(): Int = delegate.hashCode()
-    public actual override fun equals(other: Any?): Boolean = delegate.equals(other)
+    public actual override fun equals(other: Any?): Boolean = other is BigInteger && value == other.value
 }
