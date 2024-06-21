@@ -24,8 +24,6 @@ class SdkSourceExtensionsTest {
         assertContentEquals(file.readBytes(), actual)
     }
 
-    @Ignore // fails on JVM
-    // java.lang.NoSuchMethodError: 'java.lang.Object aws.smithy.kotlin.runtime.io.internal.JobChannel.write$default(aws.smithy.kotlin.runtime.io.internal.JobChannel, aws.smithy.kotlin.runtime.io.SdkBuffer, long, kotlin.coroutines.Continuation, int, java.lang.Object)'
     @Test
     fun testToByteReadChannel() = runTest {
         val file = RandomTempFile(1024)
