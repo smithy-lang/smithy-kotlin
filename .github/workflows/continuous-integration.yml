@@ -59,9 +59,9 @@ jobs:
           cache: 'gradle'
       - name: Test
         shell: bash
-        # FIXME K2. Insert the following run step after warning is removed: https://youtrack.jetbrains.com/issue/KT-68532
-        # echo "kotlinWarningsAsErrors=true" >> $GITHUB_WORKSPACE/local.properties
         run: |
+          # FIXME K2. Re-enable warnings as errors after this warning is removed: https://youtrack.jetbrains.com/issue/KT-68532
+          # echo "kotlinWarningsAsErrors=true" >> $GITHUB_WORKSPACE/local.properties              
           ./gradlew apiCheck
           ./gradlew test jvmTest
       - name: Save Test Reports
