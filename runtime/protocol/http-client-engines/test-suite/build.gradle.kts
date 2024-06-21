@@ -99,7 +99,7 @@ val startTestServers = task<LocalTestServers>("startTestServers") {
 
     main = "aws.smithy.kotlin.runtime.http.test.util.TestServersKt"
     val kotlinCompilation = kotlin.targets.getByName("jvm").compilations["test"]
-    classpath = (kotlinCompilation as org.jetbrains.kotlin.gradle.plugin.KotlinCompilationToRunnableFiles<*>).runtimeDependencyFiles
+    classpath = kotlinCompilation.runtimeDependencyFiles!!
     sslConfigPath = File.createTempFile("ssl-", ".cfg").absolutePath
 }
 
