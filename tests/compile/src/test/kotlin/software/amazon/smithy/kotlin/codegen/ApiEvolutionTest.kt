@@ -21,7 +21,6 @@ import kotlin.test.assertTrue
  * Example: "Wrote generated SDK to /tmp/sdk-codegen-1606867139716"
  */
 class ApiEvolutionTest {
-    @Ignore
     @Test
     fun `client calling operation with no input to operation with empty input compiles`() {
         val modelV1 = """
@@ -81,7 +80,6 @@ class ApiEvolutionTest {
         }
     }
 
-    @Ignore
     @Test
     fun `client calling operation with empty input to operation with input containing members compiles`() {
         val modelV1 = """
@@ -147,7 +145,6 @@ class ApiEvolutionTest {
         }
     }
 
-    @Ignore
     @Test
     fun `client calling operation with no output to operation with empty output compiles`() {
         val modelV1 = """
@@ -207,7 +204,6 @@ class ApiEvolutionTest {
         }
     }
 
-    @Ignore
     @Test
     fun `client calling operation with empty output to operation with output containing members compiles`() {
         val modelV1 = """
