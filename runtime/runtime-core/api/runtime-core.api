@@ -94,6 +94,7 @@ public final class aws/smithy/kotlin/runtime/businessmetrics/SmithyBusinessMetri
 	public static final field ACCOUNT_ID_BASED_ENDPOINT Laws/smithy/kotlin/runtime/businessmetrics/SmithyBusinessMetric;
 	public static final field GZIP_REQUEST_COMPRESSION Laws/smithy/kotlin/runtime/businessmetrics/SmithyBusinessMetric;
 	public static final field PAGINATOR Laws/smithy/kotlin/runtime/businessmetrics/SmithyBusinessMetric;
+	public static final field PROTOCOL_RPC_V2_CBOR Laws/smithy/kotlin/runtime/businessmetrics/SmithyBusinessMetric;
 	public static final field RETRY_MODE_ADAPTIVE Laws/smithy/kotlin/runtime/businessmetrics/SmithyBusinessMetric;
 	public static final field RETRY_MODE_STANDARD Laws/smithy/kotlin/runtime/businessmetrics/SmithyBusinessMetric;
 	public static final field SERVICE_ENDPOINT_OVERRIDE Laws/smithy/kotlin/runtime/businessmetrics/SmithyBusinessMetric;
