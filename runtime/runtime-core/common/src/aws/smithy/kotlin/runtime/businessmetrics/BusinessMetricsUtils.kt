@@ -73,7 +73,8 @@ public enum class SmithyBusinessMetric(public override val identifier: String) :
     RETRY_MODE_STANDARD("E"),
     RETRY_MODE_ADAPTIVE("F"),
     GZIP_REQUEST_COMPRESSION("L"),
+    PROTOCOL_RPC_V2_CBOR("M"),
     SERVICE_ENDPOINT_OVERRIDE("N"),
-    SIGV4A_SIGNING("M"),
     ACCOUNT_ID_BASED_ENDPOINT("O"),
+    SIGV4A_SIGNING("P"),
 }
