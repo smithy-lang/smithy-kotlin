@@ -56,7 +56,19 @@ class Rpcv2Cbor : AwsHttpBindingProtocolGenerator() {
             override fun render(ctx: ProtocolGenerator.GenerationContext, op: OperationShape, writer: KotlinWriter) = mutateHeadersMiddleware.render(ctx, op, writer)
         }
 
-        return super.getDefaultHttpMiddleware(ctx) + listOf(smithyProtocolHeaderMiddleware, eventStreamsAcceptHeaderMiddleware)
+        // Emit a metric to track usage of Rpcv2Cbor
+        val businessMetricsMiddleware = object : ProtocolMiddleware {
+            override val name: String = "Rpcv2CborBusinessMetricsMiddleware"
+            override fun render(ctx: ProtocolGenerator.GenerationContext, op: OperationShape, writer: KotlinWriter) {
+                writer.write("op.context.#T(#T.PROTOCOL_RPC_V2_CBOR)", RuntimeTypes.Core.BusinessMetrics.emitBusinessMetric, RuntimeTypes.Core.BusinessMetrics.SmithyBusinessMetric)
+            }
+        }
+
+        return super.getDefaultHttpMiddleware(ctx) + listOf(
+            smithyProtocolHeaderMiddleware,
+            eventStreamsAcceptHeaderMiddleware,
+            businessMetricsMiddleware
+        )
     }
 
     /**
