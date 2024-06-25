@@ -43,6 +43,9 @@ kotlin {
         jvmTest {
             dependencies {
                 implementation(libs.docker.core)
+                // Fixing a CVE https://github.com/docker-java/docker-java/issues/2177
+                implementation("com.fasterxml.jackson.core:jackson-databind:2.12.7.1")
+
                 implementation(libs.docker.transport.zerodep)
             }
         }
