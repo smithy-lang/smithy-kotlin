@@ -28,27 +28,43 @@ public object SparseValues : FieldTrait
  */
 @InternalApi
 public sealed class SerialKind {
-    /* ktlint-disable spacing-between-declarations-with-annotations */
     @InternalApi public object Unit : SerialKind()
+
     @InternalApi public object Integer : SerialKind()
+
     @InternalApi public object Long : SerialKind()
+
     @InternalApi public object Double : SerialKind()
+
     @InternalApi public object String : SerialKind()
+
     @InternalApi public object Boolean : SerialKind()
+
     @InternalApi public object Byte : SerialKind()
+
     @InternalApi public object Char : SerialKind()
+
     @InternalApi public object Short : SerialKind()
+
     @InternalApi public object Float : SerialKind()
+
     @InternalApi public object Enum : SerialKind()
+
     @InternalApi public object IntEnum : SerialKind()
+
     @InternalApi public object Map : SerialKind()
+
     @InternalApi public object List : SerialKind()
+
     @InternalApi public object Struct : SerialKind()
+
     @InternalApi public object Timestamp : SerialKind()
+
     @InternalApi public object Blob : SerialKind()
+
     @InternalApi public object Document : SerialKind()
+
     @InternalApi public object BigNumber : SerialKind()
-    /* ktlint-enable spacing-between-declarations-with-annotations */
 
     override fun toString(): kotlin.String = this::class.simpleName ?: "SerialKind"
 }
