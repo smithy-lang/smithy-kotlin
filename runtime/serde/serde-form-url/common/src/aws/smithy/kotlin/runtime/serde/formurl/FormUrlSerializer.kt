@@ -18,12 +18,13 @@ import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.contract
 
 @InternalApi
-public class FormUrlSerializer(
-    public val buffer: SdkBuffer,
-    public val prefix: String = "",
+@Suppress("ktlint:standard:function-naming")
+public fun FormUrlSerializer(): Serializer = FormUrlSerializer(SdkBuffer())
+
+private class FormUrlSerializer(
+    val buffer: SdkBuffer,
+    val prefix: String = "",
 ) : Serializer {
-    @InternalApi
-    public constructor() : this(SdkBuffer())
 
     override fun beginStruct(descriptor: SdkFieldDescriptor): StructSerializer =
         FormUrlStructSerializer(this, descriptor, prefix)
@@ -42,18 +43,18 @@ public class FormUrlSerializer(
 
     private fun write(value: String) = write { writeUtf8(value.encode()) }
 
-    override fun serializeBoolean(value: Boolean): Unit = write("$value")
-    override fun serializeByte(value: Byte): Unit = write { commonWriteNumber(value) }
-    override fun serializeChar(value: Char): Unit = write(value.toString())
-    override fun serializeShort(value: Short): Unit = write { commonWriteNumber(value) }
-    override fun serializeInt(value: Int): Unit = write { commonWriteNumber(value) }
-    override fun serializeLong(value: Long): Unit = write { commonWriteNumber(value) }
-    override fun serializeFloat(value: Float): Unit = write { commonWriteNumber(value) }
-    override fun serializeDouble(value: Double): Unit = write { commonWriteNumber(value) }
-    override fun serializeBigInteger(value: BigInteger): Unit = write { commonWriteNumber(value) }
-    override fun serializeBigDecimal(value: BigDecimal): Unit = write(value.toPlainString())
+    override fun serializeBoolean(value: Boolean) = write("$value")
+    override fun serializeByte(value: Byte) = write { commonWriteNumber(value) }
+    override fun serializeChar(value: Char) = write(value.toString())
+    override fun serializeShort(value: Short) = write { commonWriteNumber(value) }
+    override fun serializeInt(value: Int) = write { commonWriteNumber(value) }
+    override fun serializeLong(value: Long) = write { commonWriteNumber(value) }
+    override fun serializeFloat(value: Float) = write { commonWriteNumber(value) }
+    override fun serializeDouble(value: Double) = write { commonWriteNumber(value) }
+    override fun serializeBigInteger(value: BigInteger) = write { commonWriteNumber(value) }
+    override fun serializeBigDecimal(value: BigDecimal) = write(value.toPlainString())
 
-    override fun serializeString(value: String): Unit = write(value)
+    override fun serializeString(value: String) = write(value)
 
     override fun serializeInstant(value: Instant, format: TimestampFormat) {
         serializeString(value.format(format))
