@@ -55,8 +55,6 @@ fun AwsChunkedReaderFactory.create(
 abstract class AwsChunkedTestBase(
     val factory: AwsChunkedReaderFactory,
 ) : HasSigner {
-    val CHUNK_SIGNATURE_REGEX =
-
     val testChunkSigningConfig = AwsSigningConfig {
         region = "foo"
         service = "bar"

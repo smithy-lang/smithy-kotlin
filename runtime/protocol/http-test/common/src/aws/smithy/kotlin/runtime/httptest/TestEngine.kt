@@ -24,6 +24,7 @@ import aws.smithy.kotlin.runtime.time.Instant
  * @param roundTripImpl A lambda which specifies the result of a call to `roundTrip`. By default, this returns an
  * HTTP 200 response with no headers and no body.
  */
+@Suppress("ktlint:standard:function-naming")
 public fun TestEngine(
     name: String = "test",
     roundTripImpl: (ExecutionContext, HttpRequest) -> HttpCall = { _, request ->
