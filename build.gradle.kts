@@ -17,6 +17,12 @@ buildscript {
     }
 }
 
+dependencies {
+    dokkaRuntime(enforcedPlatform("com.fasterxml.jackson:jackson-bom:2.13.5"))
+    dokkaPlugin(enforcedPlatform("com.fasterxml.jackson:jackson-bom:2.13.5"))
+}
+
+
 plugins {
     alias(libs.plugins.dokka)
     alias(libs.plugins.kotlinx.binary.compatibility.validator)
