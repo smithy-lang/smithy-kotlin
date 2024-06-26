@@ -60,7 +60,9 @@ public class DslBuilderProperty<SuperBuilder, SuperBuilt>(
                     factory = defaultFactory
                     { managedTransform(factory { }) }
                 }
-                else -> { { value } }
+                else -> {
+                    { value }
+                }
             }
 
             configApplicator = value?.toBuilderApplicator() ?: { }

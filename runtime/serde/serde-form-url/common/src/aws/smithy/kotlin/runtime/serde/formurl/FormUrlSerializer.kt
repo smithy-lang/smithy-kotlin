@@ -18,12 +18,12 @@ import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.contract
 
 @InternalApi
-public fun FormUrlSerializer(): Serializer = FormUrlSerializer(SdkBuffer())
-
-private class FormUrlSerializer(
-    val buffer: SdkBuffer,
-    val prefix: String = "",
+public class FormUrlSerializer(
+    public val buffer: SdkBuffer,
+    public val prefix: String = "",
 ) : Serializer {
+    @InternalApi
+    public constructor() : this(SdkBuffer())
 
     override fun beginStruct(descriptor: SdkFieldDescriptor): StructSerializer =
         FormUrlStructSerializer(this, descriptor, prefix)
@@ -42,18 +42,18 @@ private class FormUrlSerializer(
 
     private fun write(value: String) = write { writeUtf8(value.encode()) }
 
-    override fun serializeBoolean(value: Boolean) = write("$value")
-    override fun serializeByte(value: Byte) = write { commonWriteNumber(value) }
-    override fun serializeChar(value: Char) = write(value.toString())
-    override fun serializeShort(value: Short) = write { commonWriteNumber(value) }
-    override fun serializeInt(value: Int) = write { commonWriteNumber(value) }
-    override fun serializeLong(value: Long) = write { commonWriteNumber(value) }
-    override fun serializeFloat(value: Float) = write { commonWriteNumber(value) }
-    override fun serializeDouble(value: Double) = write { commonWriteNumber(value) }
-    override fun serializeBigInteger(value: BigInteger) = write { commonWriteNumber(value) }
-    override fun serializeBigDecimal(value: BigDecimal) = write(value.toPlainString())
+    override fun serializeBoolean(value: Boolean): Unit = write("$value")
+    override fun serializeByte(value: Byte): Unit = write { commonWriteNumber(value) }
+    override fun serializeChar(value: Char): Unit = write(value.toString())
+    override fun serializeShort(value: Short): Unit = write { commonWriteNumber(value) }
+    override fun serializeInt(value: Int): Unit = write { commonWriteNumber(value) }
+    override fun serializeLong(value: Long): Unit = write { commonWriteNumber(value) }
+    override fun serializeFloat(value: Float): Unit = write { commonWriteNumber(value) }
+    override fun serializeDouble(value: Double): Unit = write { commonWriteNumber(value) }
+    override fun serializeBigInteger(value: BigInteger): Unit = write { commonWriteNumber(value) }
+    override fun serializeBigDecimal(value: BigDecimal): Unit = write(value.toPlainString())
 
-    override fun serializeString(value: String) = write(value)
+    override fun serializeString(value: String): Unit = write(value)
 
     override fun serializeInstant(value: Instant, format: TimestampFormat) {
         serializeString(value.format(format))
@@ -63,13 +63,9 @@ private class FormUrlSerializer(
         value.serialize(this)
     }
 
-    override fun serializeNull() {
-        throw SerializationException("null values not supported by form-url serializer")
-    }
+    override fun serializeNull(): Unit = throw SerializationException("null values not supported by form-url serializer")
 
-    override fun serializeDocument(value: Document?) {
-        throw SerializationException("document values not supported by form-url serializer")
-    }
+    override fun serializeDocument(value: Document?): Unit = throw SerializationException("document values not supported by form-url serializer")
 }
 
 private class FormUrlStructSerializer(
@@ -77,7 +73,8 @@ private class FormUrlStructSerializer(
     private val structDescriptor: SdkFieldDescriptor,
     // field prefix (e.g. nested structures, list elements, etc)
     private val prefix: String,
-) : StructSerializer, PrimitiveSerializer by parent {
+) : StructSerializer,
+    PrimitiveSerializer by parent {
     private val buffer
         get() = parent.buffer
 
@@ -148,11 +145,9 @@ private class FormUrlStructSerializer(
         serializeInstant(value, format)
     }
 
-    override fun field(descriptor: SdkFieldDescriptor, value: Document?) {
-        throw SerializationException(
-            "cannot serialize field ${descriptor.serialName}; Document type is not supported by form-url encoding",
-        )
-    }
+    override fun field(descriptor: SdkFieldDescriptor, value: Document?): Unit = throw SerializationException(
+        "cannot serialize field ${descriptor.serialName}; Document type is not supported by form-url encoding",
+    )
 
     override fun field(descriptor: SdkFieldDescriptor, value: SdkSerializable) {
         val nestedPrefix = "${prefix}${descriptor.serialName}."
@@ -243,15 +238,14 @@ private class FormUrlListSerializer(
     }
 
     override fun serializeNull() {}
-    override fun serializeDocument(value: Document?) {
-        throw SerializationException("document values not supported by form-url serializer")
-    }
+    override fun serializeDocument(value: Document?): Unit = throw SerializationException("document values not supported by form-url serializer")
 }
 
 private class FormUrlMapSerializer(
     private val parent: FormUrlSerializer,
     private val descriptor: SdkFieldDescriptor,
-) : MapSerializer, PrimitiveSerializer by parent {
+) : MapSerializer,
+    PrimitiveSerializer by parent {
     private val buffer = parent.buffer
     private var idx = 0
     private val mapName = descriptor.findTrait<FormUrlMapName>() ?: FormUrlMapName.Default

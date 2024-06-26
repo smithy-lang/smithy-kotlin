@@ -106,8 +106,26 @@ class SubFieldProjectionTest {
         GetSubFieldProjectionResponse {
             lists = EntityLists {
                 structs = listOf(
-                    Struct { subStructs = listOf(SubStruct { subStructPrimitives = EntityPrimitives { string = "foo"; integer = -1 } }) },
-                    Struct { subStructs = listOf(SubStruct { subStructPrimitives = EntityPrimitives { string = "bar"; integer = 2 } }) },
+                    Struct {
+                        subStructs = listOf(
+                            SubStruct {
+                                subStructPrimitives = EntityPrimitives {
+                                    string = "foo"
+                                    integer = -1
+                                }
+                            },
+                        )
+                    },
+                    Struct {
+                        subStructs = listOf(
+                            SubStruct {
+                                subStructPrimitives = EntityPrimitives {
+                                    string = "bar"
+                                    integer = 2
+                                }
+                            },
+                        )
+                    },
                 )
             }
         },
@@ -116,13 +134,28 @@ class SubFieldProjectionTest {
                 structs = listOf(
                     Struct {
                         subStructs = listOf(
-                            SubStruct { subStructPrimitives = EntityPrimitives { string = "foo"; integer = -1 } },
-                            SubStruct { subStructPrimitives = EntityPrimitives { string = "bar"; integer = 2 } },
+                            SubStruct {
+                                subStructPrimitives = EntityPrimitives {
+                                    string = "foo"
+                                    integer = -1
+                                }
+                            },
+                            SubStruct {
+                                subStructPrimitives = EntityPrimitives {
+                                    string = "bar"
+                                    integer = 2
+                                }
+                            },
                         )
                     },
                     Struct {
                         subStructs = listOf(
-                            SubStruct { subStructPrimitives = EntityPrimitives { string = "foo"; integer = 2 } },
+                            SubStruct {
+                                subStructPrimitives = EntityPrimitives {
+                                    string = "foo"
+                                    integer = 2
+                                }
+                            },
                         )
                     },
                 )

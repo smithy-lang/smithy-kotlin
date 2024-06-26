@@ -59,7 +59,7 @@ class BuiltinPreprocessor : KotlinIntegration {
 
                 `FooString` is fine here though and need not be renamed as no type is
                 generated for it (it will end up as `kotlin.String`).
-                */
+                 */
                 val shape = model.expectShape(it)
                 shape.isStructureShape || shape.isUnionShape || shape.isEnum
             }.associate {

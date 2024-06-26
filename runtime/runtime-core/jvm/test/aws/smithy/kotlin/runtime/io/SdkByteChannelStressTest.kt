@@ -30,7 +30,9 @@ class SdkByteChannelStressTest {
         private val bytes: ByteArray,
     ) : SdkSource {
         private var closed = false
-        override fun close() { closed = true }
+        override fun close() {
+            closed = true
+        }
         override fun read(sink: SdkBuffer, limit: Long): Long {
             if (closed) return -1L
             sink.write(bytes, 0, bytes.size)

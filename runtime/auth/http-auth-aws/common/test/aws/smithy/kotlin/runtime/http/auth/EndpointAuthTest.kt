@@ -14,18 +14,37 @@ class EndpointAuthTest {
     @Test
     fun testMerge() {
         val modeledOptions = listOf(
-            AuthOption(AuthSchemeId.AwsSigV4, attributesOf { "k1" to "v1"; "k4" to "v4" }),
+            AuthOption(
+                AuthSchemeId.AwsSigV4,
+                attributesOf {
+                    "k1" to "v1"
+                    "k4" to "v4"
+                },
+            ),
         )
 
         val endpointOptions = listOf(
             AuthOption(AuthSchemeId.AwsSigV4Asymmetric),
-            AuthOption(AuthSchemeId.AwsSigV4, attributesOf { "k1" to "v2"; "k2" to "v3" }),
+            AuthOption(
+                AuthSchemeId.AwsSigV4,
+                attributesOf {
+                    "k1" to "v2"
+                    "k2" to "v3"
+                },
+            ),
         )
 
         val actual = mergeAuthOptions(modeledOptions, endpointOptions)
         val expected = listOf(
             AuthOption(AuthSchemeId.AwsSigV4Asymmetric),
-            AuthOption(AuthSchemeId.AwsSigV4, attributesOf { "k1" to "v2"; "k2" to "v3"; "k4" to "v4" }),
+            AuthOption(
+                AuthSchemeId.AwsSigV4,
+                attributesOf {
+                    "k1" to "v2"
+                    "k2" to "v3"
+                    "k4" to "v4"
+                },
+            ),
         )
 
         assertEquals(expected.size, actual.size)

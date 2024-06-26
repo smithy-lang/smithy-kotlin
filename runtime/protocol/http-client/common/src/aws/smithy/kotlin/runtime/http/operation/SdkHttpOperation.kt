@@ -61,14 +61,24 @@ public class SdkHttpOperation<I, O> internal constructor(
     /**
      * Install a middleware into this operation's execution stack
      */
-    public fun install(middleware: ModifyRequestMiddleware) { middleware.install(this) }
+    public fun install(middleware: ModifyRequestMiddleware) {
+        middleware.install(this)
+    }
 
     // Convenience overloads for various types of middleware that target different phases
     // NOTE: Using install isn't strictly necessary, it's just a pattern for self registration
-    public fun install(middleware: InitializeMiddleware<I, O>) { middleware.install(this) }
-    public fun install(middleware: MutateMiddleware<O>) { middleware.install(this) }
-    public fun install(middleware: ReceiveMiddleware) { middleware.install(this) }
-    public fun install(middleware: InlineMiddleware<I, O>) { middleware.install(this) }
+    public fun install(middleware: InitializeMiddleware<I, O>) {
+        middleware.install(this)
+    }
+    public fun install(middleware: MutateMiddleware<O>) {
+        middleware.install(this)
+    }
+    public fun install(middleware: ReceiveMiddleware) {
+        middleware.install(this)
+    }
+    public fun install(middleware: InlineMiddleware<I, O>) {
+        middleware.install(this)
+    }
 
     @InternalApi
     public companion object {
@@ -127,7 +137,7 @@ internal data class OperationTypeInfo(
 )
 
 @InternalApi
-public class SdkHttpOperationBuilder<I, O> (
+public class SdkHttpOperationBuilder<I, O>(
     private val inputType: KClass<*>,
     private val outputType: KClass<*>,
 ) {

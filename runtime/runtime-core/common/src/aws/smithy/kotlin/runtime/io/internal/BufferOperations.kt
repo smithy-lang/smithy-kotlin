@@ -66,20 +66,38 @@ internal inline fun SdkBuffer.commonWriteUtf8(string: String, start: Int, endExc
     inner.writeUtf8(string, start, endExclusive)
 }
 
-internal inline fun SdkBuffer.commonWriteByte(x: Byte) { inner.writeByte(x.toInt()) }
+internal inline fun SdkBuffer.commonWriteByte(x: Byte) {
+    inner.writeByte(x.toInt())
+}
 
-internal inline fun SdkBuffer.commonWriteShort(x: Short) { inner.writeShort(x.toInt()) }
+internal inline fun SdkBuffer.commonWriteShort(x: Short) {
+    inner.writeShort(x.toInt())
+}
 
-internal inline fun SdkBuffer.commonWriteShortLe(x: Short) { inner.writeShortLe(x.toInt()) }
+internal inline fun SdkBuffer.commonWriteShortLe(x: Short) {
+    inner.writeShortLe(x.toInt())
+}
 
-internal inline fun SdkBuffer.commonWriteInt(x: Int) { inner.writeInt(x) }
+internal inline fun SdkBuffer.commonWriteInt(x: Int) {
+    inner.writeInt(x)
+}
 
-internal inline fun SdkBuffer.commonWriteIntLe(x: Int) { inner.writeIntLe(x) }
+internal inline fun SdkBuffer.commonWriteIntLe(x: Int) {
+    inner.writeIntLe(x)
+}
 
-internal inline fun SdkBuffer.commonWriteLong(x: Long) { inner.writeLong(x) }
+internal inline fun SdkBuffer.commonWriteLong(x: Long) {
+    inner.writeLong(x)
+}
 
-internal inline fun SdkBuffer.commonWriteLongLe(x: Long) { inner.writeLongLe(x) }
+internal inline fun SdkBuffer.commonWriteLongLe(x: Long) {
+    inner.writeLongLe(x)
+}
 
-internal inline fun SdkBuffer.commonFlush() { inner.flush() }
+internal inline fun SdkBuffer.commonFlush() {
+    inner.flush()
+}
 
-internal inline fun SdkBuffer.commonClose() { inner.close() }
+internal inline fun SdkBuffer.commonClose() {
+    inner.close()
+}

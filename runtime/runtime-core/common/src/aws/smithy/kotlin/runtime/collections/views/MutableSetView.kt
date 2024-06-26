@@ -8,7 +8,8 @@ internal open class MutableSetView<Src, Dest>(
     private val src: MutableSet<Src>,
     private val src2Dest: (Src) -> Dest,
     private val dest2Src: (Dest) -> Src,
-) : MutableSet<Dest>, SetView<Src, Dest>(src, src2Dest, dest2Src) {
+) : SetView<Src, Dest>(src, src2Dest, dest2Src),
+    MutableSet<Dest> {
     override fun add(element: Dest): Boolean = src.add(dest2Src(element))
 
     override fun addAll(elements: Collection<Dest>): Boolean = src.addAll(elements.asView(dest2Src, src2Dest))

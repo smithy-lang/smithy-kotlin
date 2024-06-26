@@ -20,7 +20,8 @@ import aws.smithy.kotlin.runtime.io.Handler
 public class Phase<Request, Response> : Middleware<Request, Response> {
     @InternalApi
     public enum class Order {
-        Before, After
+        Before,
+        After,
     }
 
     private val middlewares = ArrayDeque<Middleware<Request, Response>>()

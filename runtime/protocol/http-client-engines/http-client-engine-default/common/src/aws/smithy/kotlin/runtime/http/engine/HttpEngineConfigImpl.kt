@@ -35,7 +35,9 @@ public class HttpEngineConfigImpl private constructor(override val httpClient: H
                         engineConstructor = ::DefaultHttpEngine
                         { engineConstructor {}.manage() }
                     }
-                    else -> { { value } }
+                    else -> {
+                        { value }
+                    }
                 }
                 configApplicator = value?.config?.toBuilderApplicator() ?: {}
             }

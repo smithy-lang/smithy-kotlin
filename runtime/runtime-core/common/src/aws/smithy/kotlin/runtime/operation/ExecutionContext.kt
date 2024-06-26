@@ -13,7 +13,9 @@ import kotlin.coroutines.CoroutineContext
 /**
  * Per operation metadata a service client uses to drive the execution of a single request/response
  */
-public class ExecutionContext private constructor(builder: ExecutionContextBuilder) : MutableAttributes by builder.attributes, CoroutineScope {
+public class ExecutionContext private constructor(builder: ExecutionContextBuilder) :
+    MutableAttributes by builder.attributes,
+    CoroutineScope {
     /**
      * Default construct an [ExecutionContext]. Note: this is not usually useful without configuring the call attributes
      */

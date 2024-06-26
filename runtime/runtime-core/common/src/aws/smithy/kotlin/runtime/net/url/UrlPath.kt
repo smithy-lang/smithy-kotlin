@@ -105,14 +105,18 @@ public class UrlPath private constructor(
          */
         public var decoded: String
             get() = asDecoded(segments, trailingSlash)
-            set(value) { parseDecoded(value) }
+            set(value) {
+                parseDecoded(value)
+            }
 
         /**
          * Get or set the URL path as an **encoded** string.
          */
         public var encoded: String
             get() = asEncoded(segments, trailingSlash)
-            set(value) { parseEncoded(value) }
+            set(value) {
+                parseEncoded(value)
+            }
 
         /**
          * Gets the segments of this URL path

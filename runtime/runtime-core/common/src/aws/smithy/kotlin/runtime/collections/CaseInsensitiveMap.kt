@@ -20,7 +20,7 @@ private fun String.toInsensitive(): CaseInsensitiveString =
  * Map of case-insensitive [String] to [Value]
  */
 @InternalApi
-internal class CaseInsensitiveMap<Value>() : MutableMap<String, Value> {
+internal class CaseInsensitiveMap<Value> : MutableMap<String, Value> {
     private val impl: MutableMap<CaseInsensitiveString, Value> = mutableMapOf()
 
     override val size: Int

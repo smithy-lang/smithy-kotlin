@@ -8,7 +8,8 @@ internal open class ListView<Src, Dest>(
     private val src: List<Src>,
     private val src2Dest: (Src) -> Dest,
     private val dest2Src: (Dest) -> Src,
-) : List<Dest>, CollectionView<Src, Dest>(src, src2Dest, dest2Src) {
+) : CollectionView<Src, Dest>(src, src2Dest, dest2Src),
+    List<Dest> {
     override fun get(index: Int): Dest = src2Dest(src[index])
 
     override fun indexOf(element: Dest): Int = src.indexOf(dest2Src(element))

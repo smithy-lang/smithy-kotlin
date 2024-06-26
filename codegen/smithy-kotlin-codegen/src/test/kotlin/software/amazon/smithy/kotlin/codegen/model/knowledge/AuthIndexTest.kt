@@ -27,15 +27,21 @@ class AuthIndexTest {
         override val authSchemeId: ShapeId,
         val testId: String? = null,
     ) : AuthSchemeHandler {
-        override fun instantiateAuthSchemeExpr(ctx: ProtocolGenerator.GenerationContext, writer: KotlinWriter) { error("not needed for test") }
+        override fun instantiateAuthSchemeExpr(ctx: ProtocolGenerator.GenerationContext, writer: KotlinWriter) {
+            error("not needed for test")
+        }
 
-        override fun identityProviderAdapterExpression(writer: KotlinWriter) { error("not needed for test") }
+        override fun identityProviderAdapterExpression(writer: KotlinWriter) {
+            error("not needed for test")
+        }
 
         override fun authSchemeProviderInstantiateAuthOptionExpr(
             ctx: ProtocolGenerator.GenerationContext,
             op: OperationShape?,
             writer: KotlinWriter,
-        ) { error("not needed for test") }
+        ) {
+            error("not needed for test")
+        }
     }
 
     // mock out the http auth integrations

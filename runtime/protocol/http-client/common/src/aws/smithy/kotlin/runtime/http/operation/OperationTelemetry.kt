@@ -41,7 +41,7 @@ public class SdkOperationTelemetry {
  * Configure operation telemetry parameters
  */
 @InternalApi
-public inline fun<I, O> SdkHttpOperationBuilder<I, O>.telemetry(block: SdkOperationTelemetry.() -> Unit) {
+public inline fun <I, O> SdkHttpOperationBuilder<I, O>.telemetry(block: SdkOperationTelemetry.() -> Unit) {
     telemetry.apply(block)
 }
 
@@ -52,7 +52,7 @@ public inline fun<I, O> SdkHttpOperationBuilder<I, O>.telemetry(block: SdkOperat
  * telemetry elements.
  */
 @OptIn(ExperimentalApi::class)
-internal fun<I, O> SdkHttpOperation<I, O>.instrument(): Pair<TraceSpan, CoroutineContext> {
+internal fun <I, O> SdkHttpOperation<I, O>.instrument(): Pair<TraceSpan, CoroutineContext> {
     val serviceName = checkNotNull(context.serviceName)
     val opName = checkNotNull(context.operationName)
 

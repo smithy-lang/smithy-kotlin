@@ -13,7 +13,9 @@ import kotlin.jvm.Throws
  * A sink that keeps a buffer internally so that callers can do small writes without
  * a performance penalty.
  */
-public actual sealed interface SdkBufferedSink : SdkSink, WritableByteChannel {
+public actual sealed interface SdkBufferedSink :
+    SdkSink,
+    WritableByteChannel {
     /**
      * The underlying buffer for this sink
      */

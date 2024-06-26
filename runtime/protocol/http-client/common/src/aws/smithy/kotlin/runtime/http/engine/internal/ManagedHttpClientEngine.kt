@@ -11,7 +11,8 @@ import aws.smithy.kotlin.runtime.io.SdkManagedCloseable
 
 private class ManagedHttpClientEngine(
     private val delegate: CloseableHttpClientEngine,
-) : SdkManagedCloseable(delegate), CloseableHttpClientEngine by delegate
+) : SdkManagedCloseable(delegate),
+    CloseableHttpClientEngine by delegate
 
 /**
  * Wraps an [HttpClientEngine] for internal runtime management by the SDK if possible.

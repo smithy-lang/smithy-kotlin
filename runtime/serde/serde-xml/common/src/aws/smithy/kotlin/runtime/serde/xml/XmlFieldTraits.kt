@@ -104,7 +104,9 @@ public open class AbstractXmlNamespaceTrait(public val uri: String, public val p
  * See https://awslabs.github.io/smithy/spec/xml.html#xmlnamespace-trait
  */
 @InternalApi
-public class XmlNamespace(uri: String, prefix: String? = null) : AbstractXmlNamespaceTrait(uri, prefix), FieldTrait
+public class XmlNamespace(uri: String, prefix: String? = null) :
+    AbstractXmlNamespaceTrait(uri, prefix),
+    FieldTrait
 
 /**
  * Describes the namespace of a list or map's value element
@@ -112,7 +114,8 @@ public class XmlNamespace(uri: String, prefix: String? = null) : AbstractXmlName
  */
 @InternalApi
 public class XmlCollectionValueNamespace(uri: String, prefix: String? = null) :
-    AbstractXmlNamespaceTrait(uri, prefix), FieldTrait
+    AbstractXmlNamespaceTrait(uri, prefix),
+    FieldTrait
 
 /**
  * Describes the namespace associated with a map's key element
@@ -120,7 +123,8 @@ public class XmlCollectionValueNamespace(uri: String, prefix: String? = null) :
  */
 @InternalApi
 public class XmlMapKeyNamespace(uri: String, prefix: String? = null) :
-    AbstractXmlNamespaceTrait(uri, prefix), FieldTrait
+    AbstractXmlNamespaceTrait(uri, prefix),
+    FieldTrait
 
 /**
  * Specifies the name that a field is encoded into for Xml nodes.

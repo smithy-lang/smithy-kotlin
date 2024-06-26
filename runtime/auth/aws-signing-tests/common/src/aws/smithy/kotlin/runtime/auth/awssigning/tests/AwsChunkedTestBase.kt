@@ -55,9 +55,7 @@ fun AwsChunkedReaderFactory.create(
 abstract class AwsChunkedTestBase(
     val factory: AwsChunkedReaderFactory,
 ) : HasSigner {
-    val CHUNK_SIGNATURE_REGEX = Regex("chunk-signature=[a-zA-Z0-9]{64}") // alphanumeric, length of 64
-    val CHUNK_SIZE_REGEX = Regex("[0-9a-f]+;chunk-signature=") // hexadecimal, any length, immediately followed by the chunk signature
-    val UNSIGNED_CHUNK_SIZE_REGEX = Regex("[0-9a-f]+\r\n")
+    val CHUNK_SIGNATURE_REGEX =
 
     val testChunkSigningConfig = AwsSigningConfig {
         region = "foo"
@@ -91,10 +89,10 @@ abstract class AwsChunkedTestBase(
      * Chunk signatures are defined by the following grammar:
      * chunk-signature=<64 alphanumeric characters>
      */
-    fun getChunkSignatures(bytes: String): List<String> = CHUNK_SIGNATURE_REGEX.findAll(bytes).map {
-            result ->
-        result.value.split("=")[1]
-    }.toList()
+    fun getChunkSignatures(bytes: String): List<String> = Regex("chunk-signature=[a-zA-Z0-9]{64}") // alphanumeric, length of 64
+        .findAll(bytes).map { result ->
+            result.value.split("=")[1]
+        }.toList()
 
     /**
      * Given a string representation of aws-chunked encoded bytes, returns a list of the chunk sizes as integers.
@@ -103,12 +101,12 @@ abstract class AwsChunkedTestBase(
      */
     fun getChunkSizes(bytes: String, isUnsignedChunk: Boolean = false): List<Int> =
         if (isUnsignedChunk) {
-            UNSIGNED_CHUNK_SIZE_REGEX
+            Regex("[0-9a-f]+\r\n")
                 .findAll(bytes)
                 .map { result -> result.value.split("\r\n")[0].toInt(16) }
                 .toList()
         } else {
-            CHUNK_SIZE_REGEX
+            Regex("[0-9a-f]+;chunk-signature=") // hexadecimal, any length, immediately followed by the chunk signature
                 .findAll(bytes)
                 .map { result -> result.value.split(";")[0].toInt(16) }
                 .toList()
@@ -128,8 +126,7 @@ abstract class AwsChunkedTestBase(
      * Calculates the `aws-chunked` encoded trailing header length
      * Used to calculate how many bytes should be read for all the trailing headers to be consumed
      */
-    suspend fun getTrailingHeadersLength(trailingHeaders: DeferredHeaders, isUnsignedChunk: Boolean = false) = trailingHeaders.toHeaders().entries().map {
-            entry ->
+    suspend fun getTrailingHeadersLength(trailingHeaders: DeferredHeaders, isUnsignedChunk: Boolean = false) = trailingHeaders.toHeaders().entries().map { entry ->
         buildString {
             append(entry.key)
             append(":")

@@ -12,8 +12,7 @@ import aws.smithy.kotlin.runtime.serde.*
 /**
  * Deserialize primitive values for single values, lists, and maps
  */
-internal class XmlPrimitiveDeserializer(private val reader: XmlStreamReader, private val fieldDescriptor: SdkFieldDescriptor) :
-    PrimitiveDeserializer {
+internal class XmlPrimitiveDeserializer(private val reader: XmlStreamReader, private val fieldDescriptor: SdkFieldDescriptor) : PrimitiveDeserializer {
 
     constructor(input: ByteArray, fieldDescriptor: SdkFieldDescriptor) : this(xmlStreamReader(input), fieldDescriptor)
 
@@ -61,9 +60,7 @@ internal class XmlPrimitiveDeserializer(private val reader: XmlStreamReader, pri
 
     override fun deserializeBoolean(): Boolean = deserializeValue { it.toBoolean() }
 
-    override fun deserializeDocument(): Document {
-        throw DeserializationException("cannot deserialize unsupported Document type in xml")
-    }
+    override fun deserializeDocument(): Document = throw DeserializationException("cannot deserialize unsupported Document type in xml")
 
     override fun deserializeNull(): Nothing? {
         reader.nextToken() ?: throw DeserializationException("Unexpected end of stream")

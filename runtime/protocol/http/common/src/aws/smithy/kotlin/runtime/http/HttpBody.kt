@@ -120,18 +120,24 @@ private interface ByteStreamHttpBody {
     val stream: ByteStream
 }
 
-private class ByteStreamBufferHttpBody(override val stream: ByteStream.Buffer) : ByteStreamHttpBody, HttpBody.Bytes() {
+private class ByteStreamBufferHttpBody(override val stream: ByteStream.Buffer) :
+    HttpBody.Bytes(),
+    ByteStreamHttpBody {
     override val contentLength: Long? = stream.contentLength
     override fun bytes(): ByteArray = stream.bytes()
 }
 
-private class ByteStreamChannelHttpBody(override val stream: ByteStream.ChannelStream) : ByteStreamHttpBody, HttpBody.ChannelContent() {
+private class ByteStreamChannelHttpBody(override val stream: ByteStream.ChannelStream) :
+    HttpBody.ChannelContent(),
+    ByteStreamHttpBody {
     override val contentLength: Long? = stream.contentLength
     override val isOneShot: Boolean = stream.isOneShot
     override fun readFrom(): SdkByteReadChannel = stream.readFrom()
 }
 
-private class ByteStreamSourceHttpBody(override val stream: ByteStream.SourceStream) : ByteStreamHttpBody, HttpBody.SourceContent() {
+private class ByteStreamSourceHttpBody(override val stream: ByteStream.SourceStream) :
+    HttpBody.SourceContent(),
+    ByteStreamHttpBody {
     override val contentLength: Long? = stream.contentLength
     override val isOneShot: Boolean = stream.isOneShot
     override fun readFrom(): SdkSource = stream.readFrom()

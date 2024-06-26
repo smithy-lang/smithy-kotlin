@@ -8,7 +8,8 @@ internal open class MutableCollectionView<Src, Dest>(
     private val src: MutableCollection<Src>,
     private val src2Dest: (Src) -> Dest,
     private val dest2Src: (Dest) -> Src,
-) : MutableCollection<Dest>, CollectionView<Src, Dest>(src, src2Dest, dest2Src) {
+) : CollectionView<Src, Dest>(src, src2Dest, dest2Src),
+    MutableCollection<Dest> {
     override fun add(element: Dest): Boolean = src.add(dest2Src(element))
 
     override fun addAll(elements: Collection<Dest>): Boolean = src.addAll(elements.asView(dest2Src, src2Dest))

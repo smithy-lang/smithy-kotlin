@@ -187,7 +187,10 @@ class HttpStringValuesMapSerializer(
         } else {
             val nullCheck =
                 if (location == HttpBinding.Location.QUERY ||
-                    memberTarget.hasTrait<@Suppress("DEPRECATION") software.amazon.smithy.model.traits.EnumTrait>()
+                    memberTarget.hasTrait<
+                        @Suppress("DEPRECATION")
+                        software.amazon.smithy.model.traits.EnumTrait,
+                        >()
                 ) {
                     if (memberSymbol.isNullable) "input.$memberName != null" else ""
                 } else {
@@ -198,7 +201,10 @@ class HttpStringValuesMapSerializer(
             val cond = defaultCheck(binding.member) ?: nullCheck
 
             val suffix = when {
-                memberTarget.hasTrait<@Suppress("DEPRECATION") software.amazon.smithy.model.traits.EnumTrait>() -> {
+                memberTarget.hasTrait<
+                    @Suppress("DEPRECATION")
+                    software.amazon.smithy.model.traits.EnumTrait,
+                    >() -> {
                     ".value"
                 }
                 memberTarget.hasTrait<MediaTypeTrait>() -> {

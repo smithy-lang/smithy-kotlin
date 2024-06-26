@@ -41,7 +41,9 @@ private object EmptyDeferredHeaders : DeferredHeaders {
 /**
  * Build an immutable HTTP deferred header map
  */
-public class DeferredHeadersBuilder : ValuesMapBuilder<Deferred<String>>(true, 8), CanDeepCopy<DeferredHeadersBuilder> {
+public class DeferredHeadersBuilder :
+    ValuesMapBuilder<Deferred<String>>(true, 8),
+    CanDeepCopy<DeferredHeadersBuilder> {
     override fun build(): DeferredHeaders = DeferredHeadersImpl(values)
     override fun deepCopy(): DeferredHeadersBuilder {
         val originalValues = values.deepCopy()
@@ -52,7 +54,8 @@ public class DeferredHeadersBuilder : ValuesMapBuilder<Deferred<String>>(true, 8
 
 private class DeferredHeadersImpl(
     values: Map<String, List<Deferred<String>>>,
-) : DeferredHeaders, ValuesMapImpl<Deferred<String>>(true, values)
+) : ValuesMapImpl<Deferred<String>>(true, values),
+    DeferredHeaders
 
 /**
  * Convert a [DeferredHeaders] instance to [Headers]. This will block while awaiting all [Deferred] header values.
