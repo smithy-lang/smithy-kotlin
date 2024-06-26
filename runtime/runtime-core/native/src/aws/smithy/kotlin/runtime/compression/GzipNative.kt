@@ -13,12 +13,12 @@ import aws.smithy.kotlin.runtime.content.ByteStream
  * See: https://en.wikipedia.org/wiki/Gzip
  */
 public actual class Gzip : CompressionAlgorithm {
-    override val id: String
+    actual override val id: String
         get() = TODO("Not yet implemented")
-    override val contentEncoding: String
+    actual override val contentEncoding: String
         get() = TODO("Not yet implemented")
 
-    override fun compress(stream: ByteStream): ByteStream {
+    actual override fun compress(stream: ByteStream): ByteStream {
         TODO("Not yet implemented")
     }
 }

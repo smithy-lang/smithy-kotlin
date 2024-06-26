@@ -20,4 +20,10 @@ class BigDecimalTest {
     fun testBadBigDecimal() {
         assertFails { BigDecimal("1234567890.1234567890foo") }
     }
+
+    @Test
+    fun testEquals() {
+        val value = "0.340282366920938463463374607431768211456"
+        assertEquals(BigDecimal(value), BigDecimal(value))
+    }
 }

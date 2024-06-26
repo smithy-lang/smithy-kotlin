@@ -5,49 +5,49 @@
 package aws.smithy.kotlin.runtime.util
 
 internal actual object SystemDefaultProvider : PlatformProvider {
-    override fun getAllEnvVars(): Map<String, String> {
+    actual override fun getAllEnvVars(): Map<String, String> {
         TODO("Not yet implemented")
     }
 
-    override fun getenv(key: String): String? {
+    actual override fun getenv(key: String): String? {
         TODO("Not yet implemented")
     }
 
-    override val filePathSeparator: String
+    actual override val filePathSeparator: String
         get() = TODO("Not yet implemented")
 
-    override suspend fun readFileOrNull(path: String): ByteArray? {
+    actual override suspend fun readFileOrNull(path: String): ByteArray? {
         TODO("Not yet implemented")
     }
 
-    override suspend fun writeFile(path: String, data: ByteArray) {
+    actual override suspend fun writeFile(path: String, data: ByteArray) {
         TODO("Not yet implemented")
     }
 
-    override fun fileExists(path: String): Boolean {
+    actual override fun fileExists(path: String): Boolean {
         TODO("Not yet implemented")
     }
 
-    override fun osInfo(): OperatingSystem {
+    actual override fun osInfo(): OperatingSystem {
         TODO("Not yet implemented")
     }
 
-    override val isJvm: Boolean
+    actual override val isJvm: Boolean
         get() = TODO("Not yet implemented")
-    override val isAndroid: Boolean
+    actual override val isAndroid: Boolean
         get() = TODO("Not yet implemented")
-    override val isBrowser: Boolean
+    actual override val isBrowser: Boolean
         get() = TODO("Not yet implemented")
-    override val isNode: Boolean
+    actual override val isNode: Boolean
         get() = TODO("Not yet implemented")
-    override val isNative: Boolean
+    actual override val isNative: Boolean
         get() = TODO("Not yet implemented")
 
-    override fun getAllProperties(): Map<String, String> {
+    actual override fun getAllProperties(): Map<String, String> {
         TODO("Not yet implemented")
     }
 
-    override fun getProperty(key: String): String? {
+    actual override fun getProperty(key: String): String? {
         TODO("Not yet implemented")
     }
 }

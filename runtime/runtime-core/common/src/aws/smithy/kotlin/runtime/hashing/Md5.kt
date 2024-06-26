@@ -16,7 +16,13 @@ public abstract class Md5Base : HashFunction {
  * Implementation of RFC1321 MD5 digest
  */
 @InternalApi
-public expect class Md5() : Md5Base
+public expect class Md5() : Md5Base {
+    override fun update(input: ByteArray, offset: Int, length: Int)
+    override fun digest(): ByteArray
+    override fun reset()
+    override val blockSizeBytes: Int
+    override val digestSizeBytes: Int
+}
 
 /**
  * Compute the MD5 hash of the current [ByteArray]

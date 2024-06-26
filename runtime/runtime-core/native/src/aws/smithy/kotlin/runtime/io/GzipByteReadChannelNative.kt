@@ -11,20 +11,20 @@ import aws.smithy.kotlin.runtime.InternalApi
  */
 @InternalApi
 public actual class GzipByteReadChannel actual constructor(channel: SdkByteReadChannel) : SdkByteReadChannel {
-    override val availableForRead: Int
+    actual override val availableForRead: Int
         get() = TODO("Not yet implemented")
-    override val isClosedForRead: Boolean
+    actual override val isClosedForRead: Boolean
         get() = TODO("Not yet implemented")
-    override val isClosedForWrite: Boolean
+    actual override val isClosedForWrite: Boolean
         get() = TODO("Not yet implemented")
-    override val closedCause: Throwable?
+    actual override val closedCause: Throwable?
         get() = TODO("Not yet implemented")
 
-    override suspend fun read(sink: SdkBuffer, limit: Long): Long {
+    actual override suspend fun read(sink: SdkBuffer, limit: Long): Long {
         TODO("Not yet implemented")
     }
 
-    override fun cancel(cause: Throwable?): Boolean {
+    actual override fun cancel(cause: Throwable?): Boolean {
         TODO("Not yet implemented")
     }
 }

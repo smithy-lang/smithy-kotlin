@@ -90,7 +90,7 @@ public interface MutableMultiMap<K, V> : MutableMap<K, MutableList<V>> {
      * @param value The value to disassociate
      * @return True if the given value was previously associated with the given key; otherwise, false.
      */
-    @Suppress("INAPPLICABLE_JVM_NAME")
+    @Suppress("INAPPLICABLE_JVM_NAME") // https://youtrack.jetbrains.com/issue/KT-68532
     @JvmName("removeElement")
     public fun remove(key: K, value: V): Boolean
 
@@ -169,7 +169,7 @@ internal class SimpleMutableMultiMap<K, V>(
 
     override fun hashCode(): Int = delegate.hashCode()
 
-    @Suppress("INAPPLICABLE_JVM_NAME")
+    @Suppress("INAPPLICABLE_JVM_NAME") // https://youtrack.jetbrains.com/issue/KT-68532
     @JvmName("removeElement")
     override fun remove(key: K, value: V): Boolean = this[key]?.remove(value) ?: false
 

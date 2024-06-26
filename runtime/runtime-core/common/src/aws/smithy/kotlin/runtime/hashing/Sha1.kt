@@ -16,7 +16,13 @@ public abstract class Sha1Base : HashFunction {
  * Implementation of SHA-1 (Secure Hash Algorithm 1) hash function. See: https://csrc.nist.gov/projects/hash-functions
  */
 @InternalApi
-public expect class Sha1() : Sha1Base
+public expect class Sha1() : Sha1Base {
+    override fun update(input: ByteArray, offset: Int, length: Int)
+    override fun digest(): ByteArray
+    override fun reset()
+    override val blockSizeBytes: Int
+    override val digestSizeBytes: Int
+}
 
 /**
  * Compute the SHA-1 hash of the current [ByteArray]

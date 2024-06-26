@@ -11,15 +11,15 @@ import aws.smithy.kotlin.runtime.InternalApi
  */
 @InternalApi
 public actual class Md5 actual constructor() : Md5Base() {
-    override fun update(input: ByteArray, offset: Int, length: Int) {
+    actual override fun update(input: ByteArray, offset: Int, length: Int) {
         TODO("Not yet implemented")
     }
 
-    override fun digest(): ByteArray {
+    actual override fun digest(): ByteArray {
         TODO("Not yet implemented")
     }
 
-    override fun reset() {
+    actual override fun reset() {
         TODO("Not yet implemented")
     }
 }

@@ -54,4 +54,8 @@ public interface HostResolver {
     public fun purgeCache(addr: HostAddress? = null): Unit
 }
 
-internal expect object DefaultHostResolver : HostResolver
+internal expect object DefaultHostResolver : HostResolver {
+    override suspend fun resolve(hostname: String): List<HostAddress>
+    override fun reportFailure(addr: HostAddress)
+    override fun purgeCache(addr: HostAddress?)
+}

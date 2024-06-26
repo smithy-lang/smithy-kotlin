@@ -20,4 +20,10 @@ class BigIntegerTest {
     fun testBadBigInteger() {
         assertFails { BigInteger("1234567890foo1234567890") }
     }
+
+    @Test
+    fun testEquals() {
+        val value = "340282366920938463463374607431768211456"
+        assertEquals(BigInteger(value), BigInteger(value))
+    }
 }

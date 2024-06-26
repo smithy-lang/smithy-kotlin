@@ -17,7 +17,7 @@ public actual class GzipSdkSource actual constructor(
     private val gzipBuffer = SdkBuffer()
     private val gzipOutputStream = GZIPOutputStream(gzipBuffer.outputStream(), true)
 
-    override fun read(sink: SdkBuffer, limit: Long): Long {
+    actual override fun read(sink: SdkBuffer, limit: Long): Long {
         require(limit >= 0L)
         if (limit == 0L) return 0L
 
@@ -43,7 +43,7 @@ public actual class GzipSdkSource actual constructor(
         return gzipBuffer.read(sink, limit)
     }
 
-    override fun close() {
+    actual override fun close() {
         gzipOutputStream.close()
         source.close()
     }

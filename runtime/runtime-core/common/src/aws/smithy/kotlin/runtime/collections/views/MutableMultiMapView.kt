@@ -89,7 +89,7 @@ internal class MutableMultiMapView<KSrc, KDest, VSrc, VDest>(
     }
     override fun remove(key: KDest): MutableList<VDest>? = src.remove(kDest2Src(key))?.let(vListSrc2Dest)
 
-    @Suppress("INAPPLICABLE_JVM_NAME")
+    @Suppress("INAPPLICABLE_JVM_NAME") // https://youtrack.jetbrains.com/issue/KT-68532
     @JvmName("removeElement")
     override fun remove(key: KDest, value: VDest): Boolean = src.remove(kDest2Src(key), vDest2Src(value))
 
