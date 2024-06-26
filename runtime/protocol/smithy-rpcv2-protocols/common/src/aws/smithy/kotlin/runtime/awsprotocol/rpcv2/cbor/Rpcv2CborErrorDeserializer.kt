@@ -20,7 +20,7 @@ import aws.smithy.kotlin.runtime.serde.deserializeStruct
  */
 @InternalApi
 public object Rpcv2CborErrorDeserializer {
-    private val ERR_CODE_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Integer, CborSerialName("__type"))
+    private val ERR_CODE_DESCRIPTOR = SdkFieldDescriptor(SerialKind.String, CborSerialName("__type"))
     private val MESSAGE_DESCRIPTOR = SdkFieldDescriptor(SerialKind.String, CborSerialName("message"))
 
     private val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {
