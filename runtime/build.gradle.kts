@@ -81,22 +81,3 @@ subprojects {
         }
     }
 }
-
-allprojects {
-    tasks.withType<DokkaMultiModuleTask>().configureEach {
-        dependencies {
-            dokkaRuntime(enforcedPlatform("com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.13.5"))
-            dokkaPlugin(enforcedPlatform("com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.13.5"))
-        }
-    }
-
-    tasks.withType<AbstractDokkaTask>().configureEach {
-        dependencies {
-            dokkaRuntime(enforcedPlatform("com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.13.5"))
-            dokkaPlugin(enforcedPlatform("com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.13.5"))
-        }
-    }
-
-    println("tasks: ${tasks.joinToString { it.name }}") // load-bearing print statement. remove this, and the woodstox 6.2.4 dependency comes back...
-}
-

@@ -17,12 +17,6 @@ buildscript {
     }
 }
 
-dependencies {
-    dokkaRuntime(enforcedPlatform("com.fasterxml.jackson:jackson-bom:2.13.5"))
-    dokkaPlugin(enforcedPlatform("com.fasterxml.jackson:jackson-bom:2.13.5"))
-}
-
-
 plugins {
     alias(libs.plugins.dokka)
     alias(libs.plugins.kotlinx.binary.compatibility.validator)
@@ -158,4 +152,14 @@ apiValidation {
             "slf4j-2x-consumer",
         ),
     )
+}
+
+// FIXME Fix a vulnerable dependency pulled in transitively through Dokka
+// https://github.com/Kotlin/dokka/issues/3194
+allprojects {
+    configurations.all {
+        resolutionStrategy {
+            force("com.fasterxml.woodstox:woodstox-core:6.4.0")
+        }
+    }
 }
