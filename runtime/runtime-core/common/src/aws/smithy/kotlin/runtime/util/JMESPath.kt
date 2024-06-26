@@ -62,7 +62,8 @@ public fun Any?.type(): String = when (this) {
     is List<*>, is Array<*> -> "array"
     is Number -> "number"
     is Any -> "object"
-    else -> "null"
+    null -> "null"
+    else -> throw Exception("Undetected type for: $this")
 }
 
 @InternalApi
