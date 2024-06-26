@@ -67,7 +67,7 @@ class Rpcv2Cbor : AwsHttpBindingProtocolGenerator() {
         return super.getDefaultHttpMiddleware(ctx) + listOf(
             smithyProtocolHeaderMiddleware,
             eventStreamsAcceptHeaderMiddleware,
-            businessMetricsMiddleware
+            businessMetricsMiddleware,
         )
     }
 
