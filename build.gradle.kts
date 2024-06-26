@@ -154,7 +154,7 @@ apiValidation {
     )
 }
 
-// FIXME Fix a vulnerable dependency pulled in transitively through Dokka
+// FIXME We are getting a vulnerable dependency pulled in transitively through Dokka
 // https://github.com/Kotlin/dokka/issues/3194
 allprojects {
     configurations.all {
