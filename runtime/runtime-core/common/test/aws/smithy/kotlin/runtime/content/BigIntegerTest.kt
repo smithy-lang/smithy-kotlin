@@ -23,6 +23,7 @@ class BigIntegerTest {
 
     @Test
     fun testEquals() {
-        assertEquals(BigInteger("340282366920938463463374607431768211456"), BigInteger("340282366920938463463374607431768211456"))
+        val value = "340282366920938463463374607431768211456"
+        assertEquals(BigInteger(value), BigInteger(value))
     }
 }
