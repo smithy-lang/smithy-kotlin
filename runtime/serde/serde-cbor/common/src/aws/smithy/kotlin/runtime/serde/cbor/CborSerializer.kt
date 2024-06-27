@@ -15,7 +15,11 @@ import aws.smithy.kotlin.runtime.time.TimestampFormat
 import kotlin.math.absoluteValue
 
 @InternalApi
-public class CborSerializer : Serializer, ListSerializer, MapSerializer, StructSerializer {
+public class CborSerializer :
+    Serializer,
+    ListSerializer,
+    MapSerializer,
+    StructSerializer {
     private val buffer = SdkBuffer()
 
     override fun toByteArray(): ByteArray = buffer.readByteArray()

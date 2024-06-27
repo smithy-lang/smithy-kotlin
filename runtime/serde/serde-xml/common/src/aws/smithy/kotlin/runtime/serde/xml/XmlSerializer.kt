@@ -200,7 +200,9 @@ public class XmlSerializer(private val xmlWriter: XmlStreamWriter = xmlStreamWri
         xmlWriter.text(value.format(format))
     }
 
-    override fun serializeByteArray(value: ByteArray) { serializeString(value.encodeBase64String()) }
+    override fun serializeByteArray(value: ByteArray) {
+        serializeString(value.encodeBase64String())
+    }
 
     override fun serializeSdkSerializable(value: SdkSerializable): Unit = value.serialize(this)
 }
@@ -315,7 +317,9 @@ private class XmlMapSerializer(
 
     override fun serializeInstant(value: Instant, format: TimestampFormat): Unit = serializeString(value.format(format))
 
-    override fun serializeByteArray(value: ByteArray) { serializeString(value.encodeBase64String()) }
+    override fun serializeByteArray(value: ByteArray) {
+        serializeString(value.encodeBase64String())
+    }
 
     override fun serializeNull() {
         val tagName = descriptor.findTrait<XmlMapName>()?.value ?: XmlMapName.Default.value
@@ -391,7 +395,9 @@ private class XmlListSerializer(
 
     override fun serializeInstant(value: Instant, format: TimestampFormat): Unit = serializeString(value.format(format))
 
-    override fun serializeByteArray(value: ByteArray) { serializeString(value.encodeBase64String()) }
+    override fun serializeByteArray(value: ByteArray) {
+        serializeString(value.encodeBase64String())
+    }
 
     private fun serializePrimitive(value: Any) {
         val ns = descriptor.findTrait<XmlCollectionValueNamespace>()

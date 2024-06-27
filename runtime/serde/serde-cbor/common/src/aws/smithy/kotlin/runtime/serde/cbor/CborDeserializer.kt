@@ -99,7 +99,7 @@ internal class CborPrimitiveDeserializer(private val buffer: SdkBufferedSource) 
 
     override fun deserializeBoolean(): Boolean = Cbor.Encoding.Boolean.decode(buffer).value
 
-    override fun deserializeDocument(): Document { throw DeserializationException("Document is not a supported CBOR type.") }
+    override fun deserializeDocument(): Document = throw DeserializationException("Document is not a supported CBOR type.")
 
     override fun deserializeNull(): Nothing? {
         Cbor.Encoding.Null.decode(buffer)
@@ -117,7 +117,8 @@ internal class CborPrimitiveDeserializer(private val buffer: SdkBufferedSource) 
 private class CborElementIterator(
     val buffer: SdkBufferedSource,
     val expectedLength: ULong? = null,
-) : Deserializer.ElementIterator, PrimitiveDeserializer by CborPrimitiveDeserializer(buffer) {
+) : Deserializer.ElementIterator,
+    PrimitiveDeserializer by CborPrimitiveDeserializer(buffer) {
     var currentLength = 0uL
 
     override fun hasNextElement(): Boolean {
@@ -150,11 +151,14 @@ private class CborFieldIterator(
     val buffer: SdkBuffer,
     val expectedLength: ULong? = null,
     val descriptor: SdkObjectDescriptor,
-) : Deserializer.FieldIterator, PrimitiveDeserializer by CborPrimitiveDeserializer(buffer) {
+) : Deserializer.FieldIterator,
+    PrimitiveDeserializer by CborPrimitiveDeserializer(buffer) {
     var currentLength: ULong = 0uL
 
     override fun findNextFieldIndex(): Int? {
-        if (expectedLength == currentLength || buffer.exhausted()) { return null }
+        if (expectedLength == currentLength || buffer.exhausted()) {
+            return null
+        }
         currentLength += 1uL
 
         val candidate: Int? = if (buffer.nextValueIsIndefiniteBreak) {
@@ -179,7 +183,9 @@ private class CborFieldIterator(
         return candidate
     }
 
-    override fun skipValue() { Cbor.Value.decode(buffer) }
+    override fun skipValue() {
+        Cbor.Value.decode(buffer)
+    }
 }
 
 /**
@@ -188,7 +194,8 @@ private class CborFieldIterator(
 private class CborEntryIterator(
     val buffer: SdkBufferedSource,
     val expectedLength: ULong?,
-) : Deserializer.EntryIterator, PrimitiveDeserializer by CborPrimitiveDeserializer(buffer) {
+) : Deserializer.EntryIterator,
+    PrimitiveDeserializer by CborPrimitiveDeserializer(buffer) {
     private var currentLength = 0uL
 
     override fun hasNextEntry(): Boolean {

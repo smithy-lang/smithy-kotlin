@@ -52,7 +52,9 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
         writer.addImport(KotlinDependency.KOTLIN_TEST.namespace, "*")
         writer.dependencies.addAll(KotlinDependency.SMITHY_TEST.dependencies)
         writer.dependencies.addAll(KotlinDependency.KOTLIN_TEST.dependencies)
-        if (test.body.isPresent) { renderBodyAssertFn(test) }
+        if (test.body.isPresent) {
+            renderBodyAssertFn(test)
+        }
         renderExpectedBlock(test)
         writer.write("")
         renderOperationBlock(test)
@@ -93,7 +95,9 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
      * This is useful when your body equality assertion needs to deserialize the raw bytes into real types.
      */
     private fun renderBodyAssertFn(test: HttpRequestTestCase) {
-        if (!test.bodyMediaType.isPresent) { return }
+        if (!test.bodyMediaType.isPresent) {
+            return
+        }
 
         when (test.bodyMediaType.get()) {
             "application/cbor" -> {

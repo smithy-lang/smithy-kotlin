@@ -339,8 +339,12 @@ internal object Cbor {
                     }
 
                     return when (val minor = peekMinorByte(buffer)) {
-                        Minor.FALSE.value -> { Boolean(false) }
-                        Minor.TRUE.value -> { Boolean(true) }
+                        Minor.FALSE.value -> {
+                            Boolean(false)
+                        }
+                        Minor.TRUE.value -> {
+                            Boolean(true)
+                        }
                         else -> throw DeserializationException("Unknown minor argument $minor for Boolean")
                     }.also {
                         buffer.readByte()
@@ -481,9 +485,15 @@ internal object Cbor {
                         }
                         Major.TYPE_7 -> {
                             val doubleTimestamp: Double = when (minor) {
-                                Minor.FLOAT16.value -> { Float16.decode(buffer).value.toDouble() }
-                                Minor.FLOAT32.value -> { Float32.decode(buffer).value.toDouble() }
-                                Minor.FLOAT64.value -> { Float64.decode(buffer).value }
+                                Minor.FLOAT16.value -> {
+                                    Float16.decode(buffer).value.toDouble()
+                                }
+                                Minor.FLOAT32.value -> {
+                                    Float32.decode(buffer).value.toDouble()
+                                }
+                                Minor.FLOAT64.value -> {
+                                    Float64.decode(buffer).value
+                                }
                                 else -> throw DeserializationException("Unexpected minor type $minor for CBOR floating point timestamp, expected ${Minor.FLOAT16}, ${Minor.FLOAT32}, or ${Minor.FLOAT64}.")
                             }
                             Instant.fromEpochMilliseconds((doubleTimestamp * 1000).toLong())
@@ -549,7 +559,11 @@ internal object Cbor {
                 val str = value.toPlainString()
                 val dotIndex = str.indexOf('.').takeIf { it != -1 } ?: str.lastIndex
                 val exponentValue = (dotIndex - str.length + 1).toLong()
-                val exponent = if (exponentValue < 0) { NegInt(exponentValue.absoluteValue.toULong()) } else { UInt(exponentValue.toULong()) }
+                val exponent = if (exponentValue < 0) {
+                    NegInt(exponentValue.absoluteValue.toULong())
+                } else {
+                    UInt(exponentValue.toULong())
+                }
 
                 val mantissaStr = str.replace(".", "")
                 // Check if the mantissa can be represented as a UInt without overflowing.
@@ -609,7 +623,11 @@ internal object Cbor {
                         }
                         is NegInt -> { // Negative exponent, prefix with zeroes if necessary
                             val exponentValue = exponent.value.toInt().absoluteValue
-                            val insertIndex = if (sb[0] == '-') { 1 } else { 0 }
+                            val insertIndex = if (sb[0] == '-') {
+                                1
+                            } else {
+                                0
+                            }
                             if (exponentValue > sb.length - insertIndex) {
                                 sb.insert(insertIndex, "0".repeat(exponentValue - sb.length + insertIndex))
                                 sb.insert(insertIndex, '.')

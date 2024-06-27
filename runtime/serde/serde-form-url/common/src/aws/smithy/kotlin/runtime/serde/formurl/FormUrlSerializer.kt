@@ -61,7 +61,9 @@ private class FormUrlSerializer(
         serializeString(value.format(format))
     }
 
-    override fun serializeByteArray(value: ByteArray) { serializeString(value.encodeBase64String()) }
+    override fun serializeByteArray(value: ByteArray) {
+        serializeString(value.encodeBase64String())
+    }
 
     override fun serializeSdkSerializable(value: SdkSerializable) {
         value.serialize(this)
@@ -238,7 +240,9 @@ private class FormUrlListSerializer(
     override fun serializeBigDecimal(value: BigDecimal) = writePrefixed { writeUtf8(value.toPlainString()) }
     override fun serializeString(value: String) = writePrefixed { writeUtf8(value.encode()) }
     override fun serializeInstant(value: Instant, format: TimestampFormat) = writePrefixed { writeUtf8(value.format(format)) }
-    override fun serializeByteArray(value: ByteArray) { serializeString(value.encodeBase64String()) }
+    override fun serializeByteArray(value: ByteArray) {
+        serializeString(value.encodeBase64String())
+    }
 
     override fun serializeSdkSerializable(value: SdkSerializable) {
         idx++
