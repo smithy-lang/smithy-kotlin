@@ -32,16 +32,19 @@ public interface LazyAsyncValue<out T> {
 @InternalApi
 public fun <T> asyncLazy(initializer: suspend () -> T): LazyAsyncValue<T> = LazyAsyncValueImpl(initializer)
 
+@Suppress("ktlint:standard:class-naming")
+internal object UNINITIALIZED_VALUE
+
 /**
  * A value that is initialized asynchronously and cached after it is initialized. Loading/access is thread safe.
  */
 private class LazyAsyncValueImpl<out T>(initializer: suspend () -> T) : LazyAsyncValue<T> {
     private val mu = Mutex()
     private var initializer: (suspend () -> T)? = initializer
-    private var value: Any? = null
+    private var value: Any? = UNINITIALIZED_VALUE
 
     override suspend fun get(): T = mu.withLock {
-        if (value === null) {
+        if (value === UNINITIALIZED_VALUE) {
             value = initializer!!()
             initializer = null
         }
