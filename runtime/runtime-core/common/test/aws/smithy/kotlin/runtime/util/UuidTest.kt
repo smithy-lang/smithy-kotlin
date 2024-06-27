@@ -13,7 +13,8 @@ class UuidTest {
     fun `it should generate random UUIDs`() {
         var seenUuids = mutableSetOf<Uuid>()
 
-        repeat(100) { // randomness is unpredictable so do this a bunch to lower risk of false positive
+        repeat(100) {
+            // randomness is unpredictable so do this a bunch to lower risk of false positive
             val uuid = Uuid.random()
 
             // Check that v4 flag is set

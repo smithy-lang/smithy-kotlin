@@ -147,6 +147,7 @@ class ConfigProperty private constructor(builder: Builder) {
          * @param baseClass Base class the config class should inherit from (assumes this property
          * stems from this type)
          */
+        @Suppress("ktlint:standard:function-naming")
         fun Int(
             name: String,
             defaultValue: Int? = null,
@@ -164,6 +165,7 @@ class ConfigProperty private constructor(builder: Builder) {
          * @param baseClass Base class the config class should inherit from (assumes this property
          * stems from this type)
          */
+        @Suppress("ktlint:standard:function-naming")
         fun Boolean(
             name: String,
             defaultValue: Boolean? = null,
@@ -181,6 +183,7 @@ class ConfigProperty private constructor(builder: Builder) {
          * @param baseClass Base class the config class should inherit from (assumes this property
          * stems from this type)
          */
+        @Suppress("ktlint:standard:function-naming")
         fun String(
             name: String,
             defaultValue: String? = null,

@@ -38,7 +38,9 @@ private object EmptyHeaders : Headers {
 /**
  * Build an immutable HTTP header map
  */
-public class HeadersBuilder : ValuesMapBuilder<String>(true, 8), CanDeepCopy<HeadersBuilder> {
+public class HeadersBuilder :
+    ValuesMapBuilder<String>(true, 8),
+    CanDeepCopy<HeadersBuilder> {
     override fun toString(): String = "HeadersBuilder ${entries()} "
     override fun build(): Headers = HeadersImpl(values)
 
@@ -50,6 +52,7 @@ public class HeadersBuilder : ValuesMapBuilder<String>(true, 8), CanDeepCopy<Hea
 
 private class HeadersImpl(
     values: Map<String, List<String>>,
-) : Headers, ValuesMapImpl<String>(true, values) {
+) : ValuesMapImpl<String>(true, values),
+    Headers {
     override fun toString(): String = "Headers ${entries()}"
 }

@@ -19,9 +19,10 @@ import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
+private val CHECKSUM_TEST_HEADER = "x-amz-kotlin-sdk-test-checksum-header"
+
 class AbstractChecksumInterceptorTest {
     private val client = SdkHttpClient(TestEngine())
-    private val CHECKSUM_TEST_HEADER = "x-amz-kotlin-sdk-test-checksum-header"
 
     @Test
     fun testChecksumIsCalculatedAndApplied() = runTest {

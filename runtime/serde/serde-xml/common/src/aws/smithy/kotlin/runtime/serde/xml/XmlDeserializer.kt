@@ -109,7 +109,8 @@ internal class XmlMapDeserializer(
     private val reader: XmlStreamReader,
     private val descriptor: SdkFieldDescriptor,
     private val primitiveDeserializer: PrimitiveDeserializer = XmlPrimitiveDeserializer(reader, descriptor),
-) : PrimitiveDeserializer by primitiveDeserializer, Deserializer.EntryIterator {
+) : PrimitiveDeserializer by primitiveDeserializer,
+    Deserializer.EntryIterator {
     private val mapTrait = descriptor.findTrait<XmlMapName>() ?: XmlMapName.Default
 
     override fun hasNextEntry(): Boolean {
@@ -158,7 +159,8 @@ internal class XmlListDeserializer(
     private val reader: XmlStreamReader,
     private val descriptor: SdkFieldDescriptor,
     private val primitiveDeserializer: PrimitiveDeserializer = XmlPrimitiveDeserializer(reader, descriptor),
-) : PrimitiveDeserializer by primitiveDeserializer, Deserializer.ElementIterator {
+) : PrimitiveDeserializer by primitiveDeserializer,
+    Deserializer.ElementIterator {
     private var firstCall = true
     private val flattened = descriptor.hasTrait<Flattened>()
     private val elementName = (descriptor.findTrait<XmlCollectionName>() ?: XmlCollectionName.Default).element
@@ -321,9 +323,7 @@ private class XmlStructDeserializer(
 
     override fun deserializeBoolean(): Boolean = deserializeValue { it.toBoolean() }
 
-    override fun deserializeDocument(): Document {
-        throw DeserializationException("cannot deserialize unsupported Document type in xml")
-    }
+    override fun deserializeDocument(): Document = throw DeserializationException("cannot deserialize unsupported Document type in xml")
 
     override fun deserializeByteArray(): ByteArray = deserializeString().decodeBase64Bytes()
 
@@ -350,7 +350,10 @@ private class XmlStructDeserializer(
     // which are never consumed by the (missing) call to deserialize<SomePrimitiveType>()
     private fun inNestedMode(): Boolean = when (reentryFlag) {
         true -> true
-        false -> { reentryFlag = true; false }
+        false -> {
+            reentryFlag = true
+            false
+        }
     }
 }
 

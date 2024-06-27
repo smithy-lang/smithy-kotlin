@@ -20,7 +20,7 @@ import kotlin.time.Duration
  * A value with an expiration
  */
 @InternalApi
-public data class ExpiringValue<T> (val value: T, val expiresAt: Instant)
+public data class ExpiringValue<T>(val value: T, val expiresAt: Instant)
 
 /**
  * Expiry aware value
@@ -32,7 +32,7 @@ public data class ExpiringValue<T> (val value: T, val expiresAt: Instant)
  * @param clock The clock to use for system time
  */
 @InternalApi
-public class CachedValue<T> (
+public class CachedValue<T>(
     private var value: ExpiringValue<T>? = null,
     private val bufferTime: Duration = Duration.ZERO,
     private val clock: Clock = Clock.System,
@@ -86,7 +86,9 @@ public class CachedValue<T> (
     }
 
     override fun close() {
-        if (!closed.compareAndSet(false, true)) { return }
+        if (!closed.compareAndSet(false, true)) {
+            return
+        }
         _ref.update { null }
     }
 }

@@ -41,7 +41,8 @@ public fun <K, V> multiMapOf(vararg pairs: Pair<K, V>): MultiMap<K, V> =
 
 internal class SimpleMultiMap<K, V>(
     private val delegate: Map<K, List<V>>,
-) : MultiMap<K, V>, Map<K, List<V>> by delegate {
+) : MultiMap<K, V>,
+    Map<K, List<V>> by delegate {
     override val entryValues: Sequence<Map.Entry<K, V>>
         get() = sequence {
             entries.forEach { (key, values) ->

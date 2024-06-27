@@ -34,8 +34,8 @@ class XmlStreamWriterTest {
     @Test
     fun checkCloseIsIdempotent() {
         val writer = generateSimpleDocument()
-        assertEquals(expectedIdempotent, writer.bytes.decodeToString())
-        assertEquals(expectedIdempotent, writer.bytes.decodeToString())
+        assertEquals(EXPECTED_IDEMPOTENT, writer.bytes.decodeToString())
+        assertEquals(EXPECTED_IDEMPOTENT, writer.bytes.decodeToString())
     }
 
     private fun generateSimpleDocument() = xmlStreamWriter().apply {
@@ -49,7 +49,7 @@ class XmlStreamWriterTest {
     @Test
     fun checkNonHumanReadable() {
         val writer = generateSimpleDocument()
-        assertEquals(expectedNoIndent, writer.bytes.decodeToString())
+        assertEquals(EXPECTED_NO_INDENT, writer.bytes.decodeToString())
     }
 
     @Test
@@ -143,9 +143,8 @@ class XmlStreamWriterTest {
     }
 }
 
-const val expectedIdempotent = """<?xml version="1.0"?><id>912345678901</id>"""
-
-const val expectedNoIndent = """<?xml version="1.0"?><id>912345678901</id>"""
+const val EXPECTED_IDEMPOTENT = """<?xml version="1.0"?><id>912345678901</id>"""
+const val EXPECTED_NO_INDENT = """<?xml version="1.0"?><id>912345678901</id>"""
 
 fun writeXmlStream(messages: List<Message>): ByteArray? {
     val writer = xmlStreamWriter(true)

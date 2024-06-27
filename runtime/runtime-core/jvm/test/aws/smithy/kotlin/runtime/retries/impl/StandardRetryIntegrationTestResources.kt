@@ -191,8 +191,6 @@ val standardRetryIntegrationTestCases = mapOf(
         """.trimIndent(),
 )
 
-/* ktlint-disable annotation spacing-between-declarations-with-annotations */
-
 @Serializable
 data class StandardRetryTestCase(val given: Given, val responses: List<ResponseAndExpectation>)
 
@@ -216,10 +214,15 @@ data class Expectation(val outcome: TestOutcome, @SerialName("retry_quota") val 
 
 @Serializable
 enum class TestOutcome {
-    @SerialName("max_attempts_exceeded") MaxAttemptsExceeded,
-    @SerialName("retry_quota_exceeded") RetryQuotaExceeded,
-    @SerialName("retry_request") RetryRequest,
-    @SerialName("success") Success,
-}
+    @SerialName("max_attempts_exceeded")
+    MaxAttemptsExceeded,
 
-/* ktlint-enable annotation spacing-between-declarations-with-annotations */
+    @SerialName("retry_quota_exceeded")
+    RetryQuotaExceeded,
+
+    @SerialName("retry_request")
+    RetryRequest,
+
+    @SerialName("success")
+    Success,
+}

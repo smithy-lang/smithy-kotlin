@@ -33,7 +33,7 @@ import java.util.logging.Logger
  */
 class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Unit>() {
 
-    private val LOGGER = Logger.getLogger(javaClass.name)
+    private val logger = Logger.getLogger(javaClass.name)
     private val model: Model
     private val settings = KotlinSettings.from(context.model, context.settings)
     private val service: ServiceShape
@@ -47,16 +47,16 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Unit>() {
 
     init {
         val classLoader = context.pluginClassLoader.orElse(javaClass.classLoader)
-        LOGGER.info("Discovering KotlinIntegration providers...")
+        logger.info("Discovering KotlinIntegration providers...")
         integrations = ServiceLoader.load(KotlinIntegration::class.java, classLoader)
-            .onEach { integration -> LOGGER.info("Loaded KotlinIntegration: ${integration.javaClass.name}") }
+            .onEach { integration -> logger.info("Loaded KotlinIntegration: ${integration.javaClass.name}") }
             .sortedBy(KotlinIntegration::order)
             .toMutableList()
 
         var resolvedModel = context.model
         val disabledIntegrations = mutableListOf<KotlinIntegration>()
 
-        LOGGER.info("Preprocessing model")
+        logger.info("Preprocessing model")
 
         // Model pre-processing:
         // 1. Start with the model from the plugin context
@@ -65,7 +65,7 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Unit>() {
         // 4. Normalize the operations
         for (integration in integrations) {
             if (integration.enabledForService(resolvedModel, settings)) {
-                LOGGER.info("Enabled KotlinIntegration: ${integration.javaClass.name}")
+                logger.info("Enabled KotlinIntegration: ${integration.javaClass.name}")
                 resolvedModel = integration.preprocessModel(resolvedModel, settings)
             } else {
                 disabledIntegrations.add(integration)
@@ -108,15 +108,15 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Unit>() {
             val protocolTrait = settings.resolveServiceProtocol(serviceIndex, service, generators.keys)
             return generators[protocolTrait]
         } catch (ex: UnresolvableProtocolException) {
-            LOGGER.warning("Unable to find protocol generator for ${service.id}: ${ex.message}")
+            logger.warning("Unable to find protocol generator for ${service.id}: ${ex.message}")
         }
         return null
     }
 
     fun execute() {
-        LOGGER.info("Generating Kotlin client for service ${settings.service}")
+        logger.info("Generating Kotlin client for service ${settings.service}")
 
-        LOGGER.info("Walking shapes from ${settings.service} to find shapes to generate")
+        logger.info("Walking shapes from ${settings.service} to find shapes to generate")
         val modelWithoutTraits = ModelTransformer.create().getModelWithoutTraitShapes(model)
         val serviceShapes = Walker(modelWithoutTraits).walkShapes(service)
         serviceShapes.forEach { it.accept(this) }
@@ -132,16 +132,16 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Unit>() {
                 writers,
             )
 
-            LOGGER.info("[${service.id}] Generating unit tests for protocol $protocol")
+            logger.info("[${service.id}] Generating unit tests for protocol $protocol")
             generateProtocolUnitTests(ctx)
 
-            LOGGER.info("[${service.id}] Generating service client for protocol $protocol")
+            logger.info("[${service.id}] Generating service client for protocol $protocol")
             generateProtocolClient(ctx)
 
-            LOGGER.info("[${service.id}] Generating endpoint provider for protocol $protocol")
+            logger.info("[${service.id}] Generating endpoint provider for protocol $protocol")
             generateEndpointsSources(ctx)
 
-            LOGGER.info("[${service.id}] Generating auth scheme provider for protocol $protocol")
+            logger.info("[${service.id}] Generating auth scheme provider for protocol $protocol")
             generateAuthSchemeProvider(ctx)
         }
 
@@ -171,7 +171,11 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Unit>() {
 
     override fun stringShape(shape: StringShape) {
         // smithy will present both strings with legacy enum trait AND explicit (non-int) enum shapes in this manner
-        if (shape.hasTrait<@Suppress("DEPRECATION") software.amazon.smithy.model.traits.EnumTrait>()) {
+        if (shape.hasTrait<
+                @Suppress("DEPRECATION")
+                software.amazon.smithy.model.traits.EnumTrait,
+                >()
+        ) {
             writers.useShapeWriter(shape) { EnumGenerator(shape, symbolProvider.toSymbol(shape), it).render() }
         }
     }
@@ -186,7 +190,7 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Unit>() {
 
     override fun serviceShape(shape: ServiceShape) {
         if (service != shape) {
-            LOGGER.fine("Skipping `${shape.id}` because it is not `${service.id}`")
+            logger.fine("Skipping `${shape.id}` because it is not `${service.id}`")
             return
         }
 

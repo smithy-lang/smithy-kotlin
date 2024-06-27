@@ -38,7 +38,7 @@ class Utf8Test {
 
         assertContentEquals(charArrayOf('A'), Char.codePointToChars(65))
 
-        assertFailsWith<IllegalArgumentException>() {
+        assertFailsWith<IllegalArgumentException> {
             Char.codePointToChars(Int.MAX_VALUE)
         }
     }

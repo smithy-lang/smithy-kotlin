@@ -18,9 +18,13 @@ class SendChunkedBodyTest {
         var closed: Boolean = false
         var numChunksWritten = 0
         override fun activate() {}
-        override fun close() { closed = true }
+        override fun close() {
+            closed = true
+        }
         override fun incrementWindow(size: Int) {}
-        override fun writeChunk(chunkData: ByteArray, isFinalChunk: Boolean) { numChunksWritten += 1 }
+        override fun writeChunk(chunkData: ByteArray, isFinalChunk: Boolean) {
+            numChunksWritten += 1
+        }
     }
 
     @Test

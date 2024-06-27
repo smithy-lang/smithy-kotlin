@@ -14,7 +14,11 @@ import aws.smithy.kotlin.runtime.time.Instant
 import aws.smithy.kotlin.runtime.time.TimestampFormat
 
 @InternalApi
-public class JsonSerializer : Serializer, ListSerializer, MapSerializer, StructSerializer {
+public class JsonSerializer :
+    Serializer,
+    ListSerializer,
+    MapSerializer,
+    StructSerializer {
     @InternalApi
     public companion object {
         private val doublesToStringify = setOf(Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, Double.NaN)

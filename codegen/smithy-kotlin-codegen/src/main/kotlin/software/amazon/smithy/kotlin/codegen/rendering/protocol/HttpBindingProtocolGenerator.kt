@@ -27,7 +27,7 @@ import java.util.logging.Logger
  * Abstract implementation useful for all HTTP protocols
  */
 abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
-    private val LOGGER = Logger.getLogger(javaClass.name)
+    private val logger = Logger.getLogger(javaClass.name)
 
     override val applicationProtocol: ApplicationProtocol = ApplicationProtocol.createDefaultHttpApplicationProtocol()
 

@@ -104,7 +104,9 @@ internal suspend fun HttpStream.sendChunkedBody(body: HttpBody) {
 
             while (!chan.isClosedForRead) {
                 val bytesRead = chan.read(buffer, CHUNK_BUFFER_SIZE)
-                if (!sentFirstChunk && bytesRead == -1L) { throw RuntimeException("CRT does not support empty chunked bodies.") }
+                if (!sentFirstChunk && bytesRead == -1L) {
+                    throw RuntimeException("CRT does not support empty chunked bodies.")
+                }
 
                 val isFinalChunk = chan.read(nextBuffer, CHUNK_BUFFER_SIZE) == -1L
 

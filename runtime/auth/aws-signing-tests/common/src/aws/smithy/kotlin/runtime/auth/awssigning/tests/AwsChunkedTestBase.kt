@@ -52,13 +52,14 @@ fun AwsChunkedReaderFactory.create(
     previousSignature: ByteArray,
 ): AwsChunkedTestReader = create(data, signer, signingConfig, previousSignature, DeferredHeaders.Empty)
 
+private val CHUNK_SIGNATURE_REGEX = Regex("chunk-signature=[a-zA-Z0-9]{64}") // alphanumeric, length of 64
+private val CHUNK_SIZE_REGEX = Regex("[0-9a-f]+;chunk-signature=") // hexadecimal, any length, immediately followed by the chunk signature
+private val UNSIGNED_CHUNK_SIZE_REGEX = Regex("[0-9a-f]+\r\n")
+private val CHUNK_TRAILER_REGEX = Regex("x-amz-trailer-signature:[a-zA-Z0-9]{64}")
+
 abstract class AwsChunkedTestBase(
     val factory: AwsChunkedReaderFactory,
 ) : HasSigner {
-    val CHUNK_SIGNATURE_REGEX = Regex("chunk-signature=[a-zA-Z0-9]{64}") // alphanumeric, length of 64
-    val CHUNK_SIZE_REGEX = Regex("[0-9a-f]+;chunk-signature=") // hexadecimal, any length, immediately followed by the chunk signature
-    val UNSIGNED_CHUNK_SIZE_REGEX = Regex("[0-9a-f]+\r\n")
-
     val testChunkSigningConfig = AwsSigningConfig {
         region = "foo"
         service = "bar"
@@ -91,10 +92,10 @@ abstract class AwsChunkedTestBase(
      * Chunk signatures are defined by the following grammar:
      * chunk-signature=<64 alphanumeric characters>
      */
-    fun getChunkSignatures(bytes: String): List<String> = CHUNK_SIGNATURE_REGEX.findAll(bytes).map {
-            result ->
-        result.value.split("=")[1]
-    }.toList()
+    fun getChunkSignatures(bytes: String): List<String> = CHUNK_SIGNATURE_REGEX
+        .findAll(bytes).map { result ->
+            result.value.split("=")[1]
+        }.toList()
 
     /**
      * Given a string representation of aws-chunked encoded bytes, returns a list of the chunk sizes as integers.
@@ -117,19 +118,18 @@ abstract class AwsChunkedTestBase(
     /**
      * Given a string representation of aws-chunked encoded bytes, return the value of the x-amz-trailer-signature trailing header.
      */
-    fun getChunkTrailerSignature(bytes: String): String? {
-        val re = Regex("x-amz-trailer-signature:[a-zA-Z0-9]{64}")
-        return re.findAll(bytes).map { result ->
+    fun getChunkTrailerSignature(bytes: String): String? = CHUNK_TRAILER_REGEX
+        .findAll(bytes).map { result ->
             result.value.split(":")[1]
-        }.toList().firstOrNull()
-    }
+        }
+        .toList()
+        .firstOrNull()
 
     /**
      * Calculates the `aws-chunked` encoded trailing header length
      * Used to calculate how many bytes should be read for all the trailing headers to be consumed
      */
-    suspend fun getTrailingHeadersLength(trailingHeaders: DeferredHeaders, isUnsignedChunk: Boolean = false) = trailingHeaders.toHeaders().entries().map {
-            entry ->
+    suspend fun getTrailingHeadersLength(trailingHeaders: DeferredHeaders, isUnsignedChunk: Boolean = false) = trailingHeaders.toHeaders().entries().map { entry ->
         buildString {
             append(entry.key)
             append(":")

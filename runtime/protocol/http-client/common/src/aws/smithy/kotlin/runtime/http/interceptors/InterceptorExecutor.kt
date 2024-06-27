@@ -183,8 +183,7 @@ internal class InterceptorExecutor<I, O>(
         return modified.getOrThrow().protocolRequest
     }
 
-    fun readAfterSerialization(request: HttpRequest) = readHttpHook(request) {
-            interceptor, context ->
+    fun readAfterSerialization(request: HttpRequest) = readHttpHook(request) { interceptor, context ->
         interceptor.readAfterSerialization(context)
     }
 

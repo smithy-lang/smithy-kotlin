@@ -20,7 +20,9 @@ import software.amazon.smithy.protocoltests.traits.HttpMessageTestCase
  * @param T Specific HttpMessageTestCase the protocol test generator is for.
  */
 abstract class HttpProtocolUnitTestGenerator<T : HttpMessageTestCase>
-protected constructor(builder: Builder<T>) {
+protected constructor(
+    builder: Builder<T>,
+) {
 
     protected val ctx: ProtocolGenerator.GenerationContext = requireNotNull(builder.ctx) { "protocol generator ctx is required" }
     protected val symbolProvider: SymbolProvider = requireNotNull(builder.symbolProvider) { "symbol provider is required" }

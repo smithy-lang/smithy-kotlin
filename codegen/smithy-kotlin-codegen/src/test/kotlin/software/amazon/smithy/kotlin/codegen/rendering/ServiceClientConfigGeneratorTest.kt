@@ -291,11 +291,17 @@ public class Config private constructor(builder: Builder) {
                     name = "ComplexType"
                     namespace = "test.complex"
                     reference(
-                        buildSymbol { name = "SubTypeA"; namespace = "test.complex" },
+                        buildSymbol {
+                            name = "SubTypeA"
+                            namespace = "test.complex"
+                        },
                         SymbolReference.ContextOption.USE,
                     )
                     reference(
-                        buildSymbol { name = "SubTypeB"; namespace = "test.complex" },
+                        buildSymbol {
+                            name = "SubTypeB"
+                            namespace = "test.complex"
+                        },
                         SymbolReference.ContextOption.USE,
                     )
                 }
@@ -354,7 +360,11 @@ public class Config private constructor(builder: Builder) {
             },
             ConfigProperty {
                 name = "defaultFoo"
-                symbol = buildSymbol { name = "Foo"; defaultValue = "DefaultFoo"; nullable = false }
+                symbol = buildSymbol {
+                    name = "Foo"
+                    defaultValue = "DefaultFoo"
+                    nullable = false
+                }
             },
             ConfigProperty {
                 name = "constFoo"

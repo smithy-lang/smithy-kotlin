@@ -25,15 +25,14 @@ const val SYNTHETIC_NAMESPACE: String = "smithy.kotlin.synthetic"
  * Must only be used as a runtime trait-only applied to shapes based on model processing
  */
 class SyntheticClone private constructor(builder: Builder) :
-    AbstractTrait(ID, builder.sourceLocation), ToSmithyBuilder<SyntheticClone> {
+    AbstractTrait(ID, builder.sourceLocation),
+    ToSmithyBuilder<SyntheticClone> {
     /**
      * The original shape ID cloned from
      */
     val archetype: ShapeId = requireNotNull(builder.archetype) { "Original ShapeId is required for SyntheticClone trait" }
 
-    override fun createNode(): Node {
-        throw CodegenException("attempted to serialize runtime only trait")
-    }
+    override fun createNode(): Node = throw CodegenException("attempted to serialize runtime only trait")
 
     override fun toBuilder(): SmithyBuilder<SyntheticClone> {
         val builder = Builder()

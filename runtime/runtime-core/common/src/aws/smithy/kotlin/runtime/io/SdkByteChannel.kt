@@ -20,7 +20,9 @@ public const val DEFAULT_BYTE_CHANNEL_MAX_BUFFER_SIZE: Int = 8192 * 2
  * cannot be invoked concurrently with themselves. Exceptions are [close] and [flush] which can be invoked
  * concurrently with other operations including between themselves at any time.
  */
-public interface SdkByteChannel : SdkByteReadChannel, SdkByteWriteChannel {
+public interface SdkByteChannel :
+    SdkByteReadChannel,
+    SdkByteWriteChannel {
     override fun close() {
         close(null)
     }

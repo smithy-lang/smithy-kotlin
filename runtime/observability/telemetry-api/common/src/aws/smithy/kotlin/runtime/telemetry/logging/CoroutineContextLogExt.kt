@@ -49,7 +49,7 @@ public val CoroutineContext.loggingContext: Map<String, Any>
  * @return returns the result of executing [block]
  */
 @InternalApi
-public suspend inline fun<R> withLogCtx(
+public suspend inline fun <R> withLogCtx(
     vararg kvPairs: Pair<String, Any>,
     crossinline block: suspend () -> R,
 ): R {

@@ -50,7 +50,9 @@ public class AwsChunkedSource(
         return chunkReader.chunk.read(sink, limit)
     }
 
-    override fun close() { delegate.close() }
+    override fun close() {
+        delegate.close()
+    }
 }
 
 private fun SdkSource.asStream(): AwsChunkedReader.Stream = object : AwsChunkedReader.Stream {

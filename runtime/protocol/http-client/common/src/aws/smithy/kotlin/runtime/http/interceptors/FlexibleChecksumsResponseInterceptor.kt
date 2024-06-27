@@ -60,7 +60,9 @@ public class FlexibleChecksumsResponseInterceptor<I>(
     }
 
     override suspend fun modifyBeforeDeserialization(context: ProtocolResponseInterceptorContext<Any, HttpRequest, HttpResponse>): HttpResponse {
-        if (!shouldValidateResponseChecksum) { return context.protocolResponse }
+        if (!shouldValidateResponseChecksum) {
+            return context.protocolResponse
+        }
 
         val logger = coroutineContext.logger<FlexibleChecksumsResponseInterceptor<I>>()
 

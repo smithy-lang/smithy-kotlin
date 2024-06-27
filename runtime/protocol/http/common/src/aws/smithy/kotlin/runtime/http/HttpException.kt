@@ -41,10 +41,11 @@ public class HttpException : SdkBaseException {
     }
 
     private fun setRetryable(retryable: Boolean) {
-        sdkErrorMetadata.attributes[ErrorMetadata.Retryable] = retryable || when (errorCode) {
-            HttpErrorCode.CONNECT_TIMEOUT, HttpErrorCode.TLS_NEGOTIATION_TIMEOUT -> true
-            else -> false
-        }
+        sdkErrorMetadata.attributes[ErrorMetadata.Retryable] = retryable ||
+            when (errorCode) {
+                HttpErrorCode.CONNECT_TIMEOUT, HttpErrorCode.TLS_NEGOTIATION_TIMEOUT -> true
+                else -> false
+            }
     }
 
     override fun toString(): String {

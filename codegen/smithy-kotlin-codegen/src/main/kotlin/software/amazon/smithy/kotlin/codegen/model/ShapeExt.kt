@@ -166,7 +166,12 @@ val Shape.isEnum: Boolean
  * 2. The [legacy enum trait](https://awslabs.github.io/smithy/1.0/spec/core/constraint-traits.html#enum-trait) applied to a string shape
  */
 val Shape.isStringEnumShape: Boolean
-    get() = isEnumShape || isStringShape && hasTrait<@Suppress("DEPRECATION") software.amazon.smithy.model.traits.EnumTrait>()
+    get() = isEnumShape ||
+        isStringShape &&
+        hasTrait<
+            @Suppress("DEPRECATION")
+            software.amazon.smithy.model.traits.EnumTrait,
+            >()
 
 /**
  * Test if a shape is an error.
