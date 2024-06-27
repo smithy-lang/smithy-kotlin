@@ -109,7 +109,7 @@ abstract class AwsChunkedTestBase(
                 .map { result -> result.value.split("\r\n")[0].toInt(16) }
                 .toList()
         } else {
-            CHUNK_SIZE_REGEX // hexadecimal, any length, immediately followed by the chunk signature
+            CHUNK_SIZE_REGEX
                 .findAll(bytes)
                 .map { result -> result.value.split(";")[0].toInt(16) }
                 .toList()
