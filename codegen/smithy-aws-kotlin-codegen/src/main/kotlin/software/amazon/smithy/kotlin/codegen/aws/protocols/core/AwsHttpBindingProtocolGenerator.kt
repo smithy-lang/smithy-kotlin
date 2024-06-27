@@ -44,10 +44,6 @@ abstract class AwsHttpBindingProtocolGenerator : HttpBindingProtocolGenerator() 
                 // These tests require populating blob members with a default value of "", which the sdk doesn't do
                 "AwsJson10ClientPopulatesDefaultValuesInInput",
                 "RpcV2CborClientPopulatesDefaultValuesInInput",
-
-                // FIXME Bug in protocol test. Temporarily disabled until the next release of smithy
-                // https://github.com/smithy-lang/smithy/commit/a1642aef6c6e43e3192c4f4532f6f8cea45f2a0c
-                "RpcV2CborDeserializesDenseSetMapAndSkipsNull",
             ),
         )
 
