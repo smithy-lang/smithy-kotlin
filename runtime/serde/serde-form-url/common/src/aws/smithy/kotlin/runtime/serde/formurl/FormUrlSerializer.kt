@@ -18,6 +18,7 @@ import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.contract
 
 @InternalApi
+@Suppress("ktlint:standard:function-naming")
 public fun FormUrlSerializer(): Serializer = FormUrlSerializer(SdkBuffer())
 
 private class FormUrlSerializer(
@@ -63,13 +64,9 @@ private class FormUrlSerializer(
         value.serialize(this)
     }
 
-    override fun serializeNull() {
-        throw SerializationException("null values not supported by form-url serializer")
-    }
+    override fun serializeNull(): Unit = throw SerializationException("null values not supported by form-url serializer")
 
-    override fun serializeDocument(value: Document?) {
-        throw SerializationException("document values not supported by form-url serializer")
-    }
+    override fun serializeDocument(value: Document?): Unit = throw SerializationException("document values not supported by form-url serializer")
 }
 
 private class FormUrlStructSerializer(
@@ -77,7 +74,8 @@ private class FormUrlStructSerializer(
     private val structDescriptor: SdkFieldDescriptor,
     // field prefix (e.g. nested structures, list elements, etc)
     private val prefix: String,
-) : StructSerializer, PrimitiveSerializer by parent {
+) : StructSerializer,
+    PrimitiveSerializer by parent {
     private val buffer
         get() = parent.buffer
 
@@ -148,11 +146,9 @@ private class FormUrlStructSerializer(
         serializeInstant(value, format)
     }
 
-    override fun field(descriptor: SdkFieldDescriptor, value: Document?) {
-        throw SerializationException(
-            "cannot serialize field ${descriptor.serialName}; Document type is not supported by form-url encoding",
-        )
-    }
+    override fun field(descriptor: SdkFieldDescriptor, value: Document?): Unit = throw SerializationException(
+        "cannot serialize field ${descriptor.serialName}; Document type is not supported by form-url encoding",
+    )
 
     override fun field(descriptor: SdkFieldDescriptor, value: SdkSerializable) {
         val nestedPrefix = "${prefix}${descriptor.serialName}."
@@ -243,15 +239,14 @@ private class FormUrlListSerializer(
     }
 
     override fun serializeNull() {}
-    override fun serializeDocument(value: Document?) {
-        throw SerializationException("document values not supported by form-url serializer")
-    }
+    override fun serializeDocument(value: Document?): Unit = throw SerializationException("document values not supported by form-url serializer")
 }
 
 private class FormUrlMapSerializer(
     private val parent: FormUrlSerializer,
     private val descriptor: SdkFieldDescriptor,
-) : MapSerializer, PrimitiveSerializer by parent {
+) : MapSerializer,
+    PrimitiveSerializer by parent {
     private val buffer = parent.buffer
     private var idx = 0
     private val mapName = descriptor.findTrait<FormUrlMapName>() ?: FormUrlMapName.Default

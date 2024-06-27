@@ -18,7 +18,9 @@ import aws.smithy.kotlin.runtime.time.TimestampFormat
  * @param xmlWriter where content is serialize to
  */
 @InternalApi
-public class XmlSerializer(private val xmlWriter: XmlStreamWriter = xmlStreamWriter()) : Serializer, StructSerializer {
+public class XmlSerializer(private val xmlWriter: XmlStreamWriter = xmlStreamWriter()) :
+    Serializer,
+    StructSerializer {
 
     // FIXME - clean up stack to distinguish between mutable/immutable and move to utils? (e.g. MutableStack<T> = mutableStackOf())
     private var nodeStack: ListStack<String> = mutableListOf()
@@ -130,11 +132,9 @@ public class XmlSerializer(private val xmlWriter: XmlStreamWriter = xmlStreamWri
     override fun field(descriptor: SdkFieldDescriptor, value: Instant, format: TimestampFormat): Unit =
         field(descriptor, value.format(format))
 
-    override fun field(descriptor: SdkFieldDescriptor, value: Document?) {
-        throw SerializationException(
-            "cannot serialize field ${descriptor.serialName}; Document type is not supported by xml encoding",
-        )
-    }
+    override fun field(descriptor: SdkFieldDescriptor, value: Document?): Unit = throw SerializationException(
+        "cannot serialize field ${descriptor.serialName}; Document type is not supported by xml encoding",
+    )
 
     override fun nullField(descriptor: SdkFieldDescriptor) {
         xmlWriter.writeTag(descriptor.serialName.name) {
@@ -158,15 +158,17 @@ public class XmlSerializer(private val xmlWriter: XmlStreamWriter = xmlStreamWri
         // NOP
     }
 
-    override fun serializeDocument(value: Document?) {
-        throw SerializationException("document values not supported by xml serializer")
-    }
+    override fun serializeDocument(value: Document?): Unit = throw SerializationException("document values not supported by xml serializer")
 
-    override fun serializeBoolean(value: Boolean) { xmlWriter.text(value.toString()) }
+    override fun serializeBoolean(value: Boolean) {
+        xmlWriter.text(value.toString())
+    }
 
     override fun serializeByte(value: Byte): Unit = serializeNumber(value)
 
-    override fun serializeChar(value: Char) { xmlWriter.text(value.toString()) }
+    override fun serializeChar(value: Char) {
+        xmlWriter.text(value.toString())
+    }
 
     override fun serializeShort(value: Short): Unit = serializeNumber(value)
 
@@ -311,9 +313,7 @@ private class XmlMapSerializer(
         xmlWriter.writeTag(tagName, ns)
     }
 
-    override fun serializeDocument(value: Document?) {
-        throw SerializationException("document values not supported by xml serializer")
-    }
+    override fun serializeDocument(value: Document?): Unit = throw SerializationException("document values not supported by xml serializer")
 
     private fun serializePrimitive(value: Any) {
         val tagName = descriptor.findTrait<XmlMapName>()?.value ?: XmlMapName.Default.value
@@ -377,9 +377,7 @@ private class XmlListSerializer(
         xmlWriter.writeTag(memberTagName, ns)
     }
 
-    override fun serializeDocument(value: Document?) {
-        throw SerializationException("document values not supported by xml serializer")
-    }
+    override fun serializeDocument(value: Document?): Unit = throw SerializationException("document values not supported by xml serializer")
 
     override fun serializeInstant(value: Instant, format: TimestampFormat): Unit = serializeString(value.format(format))
 

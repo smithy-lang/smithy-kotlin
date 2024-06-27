@@ -24,6 +24,7 @@ import software.amazon.smithy.model.shapes.ShapeId
  * @inheritDoc
  * @see AwsHttpBindingProtocolGenerator
  */
+@Suppress("ktlint:standard:class-naming")
 class AwsJson1_0 : JsonHttpBindingProtocolGenerator() {
     override val protocol: ShapeId = AwsJson1_0Trait.ID
     override val supportsJsonNameTrait: Boolean = false

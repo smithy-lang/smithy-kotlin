@@ -15,6 +15,7 @@ import software.amazon.smithy.kotlin.codegen.model.buildSymbol
 /**
  * Common client runtime related config properties
  */
+@Suppress("ktlint:standard:property-naming")
 object RuntimeConfigProperty {
     val ClientName = ConfigProperty {
         name = "clientName"

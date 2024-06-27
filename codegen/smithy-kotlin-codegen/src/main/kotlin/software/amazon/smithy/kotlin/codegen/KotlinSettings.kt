@@ -252,6 +252,7 @@ enum class DefaultValueSerializationMode(val value: String) {
      */
     WHEN_DIFFERENT("whenDifferent"),
     ;
+
     override fun toString(): String = value
     companion object {
         fun fromValue(value: String): DefaultValueSerializationMode =

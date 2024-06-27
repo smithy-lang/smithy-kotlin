@@ -227,7 +227,7 @@ private class InitializeHandler<Input, Output>(
     override suspend fun call(request: Input): Output = inner.call(request)
 }
 
-private class SerializeHandler<Input, Output> (
+private class SerializeHandler<Input, Output>(
     private val inner: Handler<SdkHttpRequest, Output>,
     private val serializer: HttpSerializer<Input>,
     private val interceptors: InterceptorExecutor<Input, Output>,
@@ -252,7 +252,7 @@ private class SerializeHandler<Input, Output> (
     }
 }
 
-private class MutateHandler<Output> (
+private class MutateHandler<Output>(
     private val inner: Handler<SdkHttpRequest, Output>,
 ) : Handler<SdkHttpRequest, Output> {
     override suspend fun call(request: SdkHttpRequest): Output = inner.call(request)

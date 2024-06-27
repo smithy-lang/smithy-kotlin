@@ -303,14 +303,18 @@ public class Url private constructor(
          */
         public var decodedFragment: String?
             get() = fragment?.decoded
-            set(value) { fragment = value?.let(PercentEncoding.Fragment::encodableFromDecoded) }
+            set(value) {
+                fragment = value?.let(PercentEncoding.Fragment::encodableFromDecoded)
+            }
 
         /**
          * Get or set the fragment as an **encoded** string
          */
         public var encodedFragment: String?
             get() = fragment?.encoded
-            set(value) { fragment = value?.let(PercentEncoding.Fragment::encodableFromEncoded) }
+            set(value) {
+                fragment = value?.let(PercentEncoding.Fragment::encodableFromEncoded)
+            }
 
         // Build method
 

@@ -140,14 +140,18 @@ public class QueryParameters private constructor(
          */
         public var decoded: String
             get() = asDecoded(delegate.entryValues, forceQuerySeparator)
-            set(value) { parseDecoded(value) }
+            set(value) {
+                parseDecoded(value)
+            }
 
         /**
          * Get or set the query parameters as an **encoded** string.
          */
         public var encoded: String
             get() = asEncoded(delegate.entryValues, forceQuerySeparator)
-            set(value) { parseEncoded(value) }
+            set(value) {
+                parseEncoded(value)
+            }
 
         internal fun parse(value: String, encoding: UrlEncoding): Unit =
             if (UrlEncoding.QueryParameters in encoding) parseEncoded(value) else parseDecoded(value)

@@ -12,6 +12,7 @@ import aws.smithy.kotlin.runtime.serde.deserializeStruct
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
+@Suppress("ktlint:standard:property-naming")
 class JsonDeserializerIgnoresKeysTest {
     private val X_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Integer, JsonSerialName("x"))
     private val Y_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Integer, JsonSerialName("y"))

@@ -25,7 +25,9 @@ class SdkStreamResponseHandlerTest {
     private class MockHttpStream(override val responseStatusCode: Int) : HttpStream {
         var closed: Boolean = false
         override fun activate() {}
-        override fun close() { closed = true }
+        override fun close() {
+            closed = true
+        }
         override fun incrementWindow(size: Int) {}
         override fun writeChunk(chunkData: ByteArray, isFinalChunk: Boolean) {}
     }
@@ -33,8 +35,10 @@ class SdkStreamResponseHandlerTest {
     private class MockHttpClientConnection : HttpClientConnection {
         override val id: String = "<mock connection>"
         var isClosed: Boolean = false
-        override fun close() { isClosed = true }
-        override fun makeRequest(httpReq: HttpRequest, handler: HttpStreamResponseHandler): HttpStream { throw UnsupportedOperationException("not implemented for test") }
+        override fun close() {
+            isClosed = true
+        }
+        override fun makeRequest(httpReq: HttpRequest, handler: HttpStreamResponseHandler): HttpStream = throw UnsupportedOperationException("not implemented for test")
         override fun shutdown() { }
     }
 

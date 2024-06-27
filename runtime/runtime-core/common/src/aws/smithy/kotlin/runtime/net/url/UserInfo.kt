@@ -101,14 +101,18 @@ public class UserInfo private constructor(public val userName: Encodable, public
          */
         public var decodedUserName: String
             get() = userName.decoded
-            set(value) { userName = PercentEncoding.UserInfo.encodableFromDecoded(value) }
+            set(value) {
+                userName = PercentEncoding.UserInfo.encodableFromDecoded(value)
+            }
 
         /**
          * Gets or sets the username as an **encoded** string
          */
         public var encodedUserName: String
             get() = userName.encoded
-            set(value) { userName = PercentEncoding.UserInfo.encodableFromEncoded(value) }
+            set(value) {
+                userName = PercentEncoding.UserInfo.encodableFromEncoded(value)
+            }
 
         private var password = userInfo?.password ?: Encodable.Empty
 
@@ -117,14 +121,18 @@ public class UserInfo private constructor(public val userName: Encodable, public
          */
         public var decodedPassword: String
             get() = password.decoded
-            set(value) { password = PercentEncoding.UserInfo.encodableFromDecoded(value) }
+            set(value) {
+                password = PercentEncoding.UserInfo.encodableFromDecoded(value)
+            }
 
         /**
          * Gets or sets the password as an **encoded** string
          */
         public var encodedPassword: String
             get() = password.encoded
-            set(value) { password = PercentEncoding.UserInfo.encodableFromEncoded(value) }
+            set(value) {
+                password = PercentEncoding.UserInfo.encodableFromEncoded(value)
+            }
 
         internal fun parseDecoded(decoded: String) = parse(decoded, PercentEncoding.UserInfo::encodableFromDecoded)
         internal fun parseEncoded(encoded: String) = parse(encoded, PercentEncoding.UserInfo::encodableFromEncoded)

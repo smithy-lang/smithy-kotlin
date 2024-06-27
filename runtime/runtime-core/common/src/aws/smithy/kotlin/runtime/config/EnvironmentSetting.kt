@@ -50,12 +50,13 @@ public fun <T> EnvironmentSetting<T>.resolve(platform: PlatformEnvironProvider =
     return stringValue?.let(parse) ?: defaultValue
 }
 
-/* ktlint-disable spacing-between-declarations-with-annotations */
 @InternalApi public val boolEnvSetting: EnvSettingFactory<Boolean> = EnvironmentSetting(String::toBoolean)
+
 @InternalApi public val intEnvSetting: EnvSettingFactory<Int> = EnvironmentSetting(String::toInt)
+
 @InternalApi public val longEnvSetting: EnvSettingFactory<Long> = EnvironmentSetting(String::toLong)
+
 @InternalApi public val strEnvSetting: EnvSettingFactory<String> = EnvironmentSetting { it }
-/* ktlint-enable spacing-between-declarations-with-annotations */
 
 @InternalApi
 public inline fun <reified T : Enum<T>> enumEnvSetting(sysProp: String, envVar: String): EnvironmentSetting<T> {

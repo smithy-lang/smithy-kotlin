@@ -10,7 +10,8 @@ import java.nio.ByteBuffer
 
 internal actual class BufferedSinkAdapter actual constructor(
     sink: okio.BufferedSink,
-) : AbstractBufferedSinkAdapter(sink), SdkBufferedSink {
+) : AbstractBufferedSinkAdapter(sink),
+    SdkBufferedSink {
     override fun write(src: ByteBuffer): Int = delegate.write(src)
 
     override fun isOpen(): Boolean = delegate.isOpen

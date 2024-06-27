@@ -34,11 +34,9 @@ class TestLambdaClient : LambdaClient {
 
     override suspend fun listFunctions(input: ListFunctionsRequest) = ListFunctionsResponse {
         nextMarker = when {
-            /* ktlint-disable no-multi-spaces */
             input.marker.toIntOrZero() == pageCount - 1 -> exhaustedVal // Exhausted pages
-            input.marker == null -> "1"                                 // First page
-            else -> (input.marker.toInt() + 1).toString()               // Next page
-            /* ktlint-enable no-multi-spaces */
+            input.marker == null -> "1" // First page
+            else -> (input.marker.toInt() + 1).toString() // Next page
         }
 
         functions = generateFunctions(input.marker.toIntOrZero())

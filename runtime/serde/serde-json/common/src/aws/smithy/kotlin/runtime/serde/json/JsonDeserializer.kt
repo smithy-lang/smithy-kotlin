@@ -16,7 +16,11 @@ import aws.smithy.kotlin.runtime.serde.*
  * @param payload underlying document from which tokens are read
  */
 @InternalApi
-public class JsonDeserializer(payload: ByteArray) : Deserializer, Deserializer.ElementIterator, Deserializer.EntryIterator, PrimitiveDeserializer {
+public class JsonDeserializer(payload: ByteArray) :
+    Deserializer,
+    Deserializer.ElementIterator,
+    Deserializer.EntryIterator,
+    PrimitiveDeserializer {
     @InternalApi
     public companion object {
         private val validNumberStrings = setOf("Infinity", "-Infinity", "NaN")
@@ -168,19 +172,22 @@ public class JsonDeserializer(payload: ByteArray) : Deserializer, Deserializer.E
 }
 
 // Represents the deserialization of a null object.
-private class JsonNullFieldIterator(deserializer: JsonDeserializer) : Deserializer.FieldIterator, Deserializer by deserializer, PrimitiveDeserializer by deserializer {
+private class JsonNullFieldIterator(deserializer: JsonDeserializer) :
+    Deserializer.FieldIterator,
+    Deserializer by deserializer,
+    PrimitiveDeserializer by deserializer {
     override fun findNextFieldIndex(): Int? = null
 
-    override fun skipValue() {
-        throw DeserializationException("This should not be called during deserialization.")
-    }
+    override fun skipValue(): Unit = throw DeserializationException("This should not be called during deserialization.")
 }
 
 private class JsonFieldIterator(
     private val reader: JsonStreamReader,
     private val descriptor: SdkObjectDescriptor,
     deserializer: JsonDeserializer,
-) : Deserializer.FieldIterator, Deserializer by deserializer, PrimitiveDeserializer by deserializer {
+) : Deserializer.FieldIterator,
+    Deserializer by deserializer,
+    PrimitiveDeserializer by deserializer {
 
     override fun findNextFieldIndex(): Int? {
         val candidate = when (reader.peek()) {

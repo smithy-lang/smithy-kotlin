@@ -103,7 +103,8 @@ class DslBuilderPropertyTest {
 
         prop.instance = OrangeMtnBike // SupplierState.EXPLICIT_INSTANCE
 
-        assertFailsWith<ClientException> { // Cannot switch from EXPLICIT_INSTANCE to EXPLICIT_CONFIG
+        assertFailsWith<ClientException> {
+            // Cannot switch from EXPLICIT_INSTANCE to EXPLICIT_CONFIG
             prop.dsl(Bike) { }
         }
     }
@@ -118,7 +119,8 @@ class DslBuilderPropertyTest {
 
         prop.instance = OrangeMtnBike // SupplierState.EXPLICIT_INSTANCE
 
-        assertFailsWith<ClientException> { // Cannot switch from EXPLICIT_INSTANCE to EXPLICIT_CONFIG
+        assertFailsWith<ClientException> {
+            // Cannot switch from EXPLICIT_INSTANCE to EXPLICIT_CONFIG
             prop.dsl(Car) { }
         }
     }
@@ -162,7 +164,10 @@ private class Car(val config: Config) : Vehicle {
         }
     }
 }
-private val BlueCoupe = Car { color = "blue"; doors = 2 }
+private val BlueCoupe = Car {
+    color = "blue"
+    doors = 2
+}
 
 private class Bike(val config: Config) : Vehicle {
     companion object : DslFactory<Config.Builder, Bike> {
@@ -186,4 +191,7 @@ private class Bike(val config: Config) : Vehicle {
         }
     }
 }
-private val OrangeMtnBike = Bike { color = "orange"; gears = 9 }
+private val OrangeMtnBike = Bike {
+    color = "orange"
+    gears = 9
+}

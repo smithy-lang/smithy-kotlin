@@ -28,4 +28,6 @@ public interface IdentityProvider {
  *
  * Implementations MUST evict any previously-retrieved or stored identity when the provider is closed.
  */
-public interface CloseableIdentityProvider : IdentityProvider, Closeable
+public interface CloseableIdentityProvider :
+    IdentityProvider,
+    Closeable

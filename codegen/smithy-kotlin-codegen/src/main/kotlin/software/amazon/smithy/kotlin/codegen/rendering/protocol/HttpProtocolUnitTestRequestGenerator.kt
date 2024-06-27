@@ -21,8 +21,7 @@ import software.amazon.smithy.rulesengine.traits.EndpointRuleSetTrait
 /**
  * Generates HTTP protocol unit tests for `httpRequestTest` cases
  */
-open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: Builder) :
-    HttpProtocolUnitTestGenerator<HttpRequestTestCase>(builder) {
+open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: Builder) : HttpProtocolUnitTestGenerator<HttpRequestTestCase>(builder) {
 
     object ConfigureServiceClient : SectionId {
         val Test: SectionKey<HttpRequestTestCase> = SectionKey("Test")

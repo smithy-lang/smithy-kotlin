@@ -50,8 +50,7 @@ public data class RequestComparands(public val expected: HttpRequest?, public va
  * NOTE: This engine is only capable of modeling request/response pairs. More complicated interactions such as duplex
  * streaming are not implemented.
  */
-public class TestConnection(private val expected: List<MockRoundTrip> = emptyList()) :
-    HttpClientEngineBase("TestConnection") {
+public class TestConnection(private val expected: List<MockRoundTrip> = emptyList()) : HttpClientEngineBase("TestConnection") {
 
     // expected is mutated in-flight, store original size
     private val iter = expected.iterator()

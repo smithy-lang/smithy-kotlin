@@ -8,7 +8,9 @@ package aws.smithy.kotlin.runtime.io
 import java.io.InputStream
 import java.nio.channels.ReadableByteChannel
 
-public actual sealed interface SdkBufferedSource : SdkSource, ReadableByteChannel {
+public actual sealed interface SdkBufferedSource :
+    SdkSource,
+    ReadableByteChannel {
 
     /**
      * The underlying buffer for this source
