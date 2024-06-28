@@ -44,6 +44,10 @@ abstract class AwsHttpBindingProtocolGenerator : HttpBindingProtocolGenerator() 
                 // These tests require populating blob members with a default value of "", which the sdk doesn't do
                 "AwsJson10ClientPopulatesDefaultValuesInInput",
                 "RpcV2CborClientPopulatesDefaultValuesInInput",
+                "RestJsonClientPopulatesDefaultValuesInInput",
+
+                // FIXME Typo in protocol test, will likely be fixed in the next version 1.51.0
+                "RestJsonClientIgnoresDefaultValuesIfMemberValuesArePresentInResponse",
             ),
         )
 
