@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.2.11] - 06/28/2024
+
+### Miscellaneous
+* Upgrade to aws-crt-kotlin v0.8.6
+* Upgrade to ktlint v1.3.0
+
 ## [1.2.10] - 06/21/2024
 
 ## [1.2.9] - 06/18/2024
