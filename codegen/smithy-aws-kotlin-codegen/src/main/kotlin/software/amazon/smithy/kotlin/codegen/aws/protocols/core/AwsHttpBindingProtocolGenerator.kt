@@ -47,6 +47,7 @@ abstract class AwsHttpBindingProtocolGenerator : HttpBindingProtocolGenerator() 
                 "RestJsonClientPopulatesDefaultValuesInInput",
 
                 // FIXME Typo in protocol test, will likely be fixed in the next version 1.51.0
+                // https://github.com/smithy-lang/smithy/pull/2341
                 "RestJsonClientIgnoresDefaultValuesIfMemberValuesArePresentInResponse",
             ),
         )
