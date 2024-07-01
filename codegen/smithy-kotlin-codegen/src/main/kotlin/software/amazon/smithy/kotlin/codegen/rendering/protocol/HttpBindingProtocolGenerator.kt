@@ -475,7 +475,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
      * @param binding The explicit payload binding
      * @param writer The code writer to render to
      */
-    private fun renderExplicitHttpPayloadSerializer(
+    protected fun renderExplicitHttpPayloadSerializer(
         ctx: ProtocolGenerator.GenerationContext,
         binding: HttpBindingDescriptor,
         writer: KotlinWriter,

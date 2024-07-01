@@ -68,7 +68,7 @@ class DeserializeStructGeneratorTest {
             deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
                 loop@while (true) {
                     when (findNextFieldIndex()) {
-                        PAYLOAD_DESCRIPTOR.index -> builder.payload = deserializeString().let { Instant.fromEpochSeconds(it) }
+                        PAYLOAD_DESCRIPTOR.index -> builder.payload = deserializeInstant(TimestampFormat.EPOCH_SECONDS)
                         null -> break@loop
                         else -> skipValue()
                     }
@@ -103,7 +103,7 @@ class DeserializeStructGeneratorTest {
                             deserializer.deserializeList(PAYLOAD_DESCRIPTOR) {
                                 val col0 = mutableListOf<Instant>()
                                 while (hasNextElement()) {
-                                    val el0 = if (nextHasValue()) { deserializeString().let { Instant.fromEpochSeconds(it) } } else { deserializeNull(); continue }
+                                    val el0 = if (nextHasValue()) { deserializeInstant(TimestampFormat.EPOCH_SECONDS) } else { deserializeNull(); continue }
                                     col0.add(el0)
                                 }
                                 col0
@@ -1744,7 +1744,7 @@ deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
             deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
                 loop@while (true) {
                     when (findNextFieldIndex()) {
-                        FOOBLOB_DESCRIPTOR.index -> builder.fooBlob = deserializeString().decodeBase64Bytes()
+                        FOOBLOB_DESCRIPTOR.index -> builder.fooBlob = deserializeByteArray()
                         null -> break@loop
                         else -> skipValue()
                     }
@@ -1813,7 +1813,7 @@ deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
                                 val map0 = mutableMapOf<String, ByteArray>()
                                 while (hasNextEntry()) {
                                     val k0 = key()
-                                    val v0 = if (nextHasValue()) { deserializeString().decodeBase64Bytes() } else { deserializeNull(); continue }
+                                    val v0 = if (nextHasValue()) { deserializeByteArray() } else { deserializeNull(); continue }
                                     map0[k0] = v0
                                 }
                                 map0
@@ -1852,7 +1852,7 @@ deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
                             deserializer.deserializeList(FOOBLOBLIST_DESCRIPTOR) {
                                 val col0 = mutableListOf<ByteArray>()
                                 while (hasNextElement()) {
-                                    val el0 = if (nextHasValue()) { deserializeString().decodeBase64Bytes() } else { deserializeNull(); continue }
+                                    val el0 = if (nextHasValue()) { deserializeByteArray() } else { deserializeNull(); continue }
                                     col0.add(el0)
                                 }
                                 col0
@@ -1883,7 +1883,7 @@ deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
             deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
                 loop@while (true) {
                     when (findNextFieldIndex()) {
-                        FOOTIME_DESCRIPTOR.index -> builder.fooTime = deserializeString().let { Instant.fromEpochSeconds(it) }
+                        FOOTIME_DESCRIPTOR.index -> builder.fooTime = deserializeInstant(TimestampFormat.EPOCH_SECONDS)
                         null -> break@loop
                         else -> skipValue()
                     }
@@ -1920,7 +1920,7 @@ deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
                                 val map0 = mutableMapOf<String, Instant>()
                                 while (hasNextEntry()) {
                                     val k0 = key()
-                                    val v0 = if (nextHasValue()) { deserializeString().let { Instant.fromEpochSeconds(it) } } else { deserializeNull(); continue }
+                                    val v0 = if (nextHasValue()) { deserializeInstant(TimestampFormat.EPOCH_SECONDS) } else { deserializeNull(); continue }
                                     map0[k0] = v0
                                 }
                                 map0

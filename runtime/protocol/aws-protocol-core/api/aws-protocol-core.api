@@ -82,6 +82,7 @@ public final class aws/smithy/kotlin/runtime/awsprotocol/ProtocolErrorsKt {
 public final class aws/smithy/kotlin/runtime/awsprotocol/ResponseUtilsKt {
 	public static final field X_AMZN_REQUEST_ID_HEADER Ljava/lang/String;
 	public static final fun matches (Laws/smithy/kotlin/runtime/http/HttpStatusCode;Laws/smithy/kotlin/runtime/http/HttpStatusCode;)Z
+	public static final fun sanitizeErrorType (Ljava/lang/String;)Ljava/lang/String;
 	public static final fun withPayload (Laws/smithy/kotlin/runtime/http/response/HttpResponse;[B)Laws/smithy/kotlin/runtime/http/response/HttpResponse;
 }
 

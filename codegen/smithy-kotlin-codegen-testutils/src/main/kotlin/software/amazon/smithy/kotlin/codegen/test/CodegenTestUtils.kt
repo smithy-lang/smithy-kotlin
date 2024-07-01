@@ -26,6 +26,7 @@ import software.amazon.smithy.model.knowledge.HttpBindingIndex
 import software.amazon.smithy.model.shapes.*
 import software.amazon.smithy.model.traits.TimestampFormatTrait
 import software.amazon.smithy.model.traits.Trait
+import software.amazon.smithy.protocol.traits.Rpcv2CborTrait
 import software.amazon.smithy.utils.StringUtils
 
 // This file houses test classes and functions relating to the code generator (protocols, serializers, etc)
@@ -150,6 +151,7 @@ private val allProtocols = setOf(
     Ec2QueryTrait.ID,
     RestJson1Trait.ID,
     RestXmlTrait.ID,
+    Rpcv2CborTrait.ID,
 )
 
 /** An HttpBindingProtocolGenerator for testing (nothing is rendered for serializing/deserializing payload bodies) */

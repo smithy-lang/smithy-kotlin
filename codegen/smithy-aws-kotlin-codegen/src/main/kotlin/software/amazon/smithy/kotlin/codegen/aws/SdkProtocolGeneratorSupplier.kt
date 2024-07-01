@@ -28,5 +28,6 @@ class SdkProtocolGeneratorSupplier : KotlinIntegration {
             RestXml(),
             AwsQuery(),
             Ec2Query(),
+            Rpcv2Cbor(),
         )
 }

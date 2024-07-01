@@ -30,6 +30,7 @@ val enabledProtocols = listOf(
     ProtocolTest("aws-restxml", "aws.protocoltests.restxml#RestXml"),
     ProtocolTest("aws-restxml-xmlns", "aws.protocoltests.restxml.xmlns#RestXmlWithNamespace"),
     ProtocolTest("aws-query", "aws.protocoltests.query#AwsQuery"),
+    ProtocolTest("smithy-rpcv2-cbor", "smithy.protocoltests.rpcv2Cbor#RpcV2Protocol"),
 
     // Custom hand written tests
     ProtocolTest("error-correction-json", "aws.protocoltests.errorcorrection#RequiredValueJson"),
@@ -82,6 +83,7 @@ dependencies {
     // the aws-protocol-tests dependency is found when generating code such that the `includeServices` transform
     // actually works
     codegen(libs.smithy.aws.protocol.tests)
+    codegen(libs.smithy.protocol.tests)
 }
 
 tasks.generateSmithyProjections {

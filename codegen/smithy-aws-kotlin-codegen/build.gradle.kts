@@ -28,6 +28,7 @@ dependencies {
     api(libs.smithy.aws.iam.traits)
     api(libs.smithy.aws.cloudformation.traits)
     api(libs.smithy.protocol.test.traits)
+    api(libs.smithy.protocol.traits)
     implementation(libs.smithy.aws.endpoints)
 
     testImplementation(libs.junit.jupiter)

@@ -6,7 +6,6 @@
 package software.amazon.smithy.kotlin.codegen.model
 
 import software.amazon.smithy.codegen.core.CodegenException
-import software.amazon.smithy.kotlin.codegen.*
 import software.amazon.smithy.kotlin.codegen.core.KotlinSymbolProvider
 import software.amazon.smithy.kotlin.codegen.model.traits.*
 import software.amazon.smithy.kotlin.codegen.utils.getOrNull
@@ -15,6 +14,7 @@ import software.amazon.smithy.model.knowledge.TopDownIndex
 import software.amazon.smithy.model.neighbor.Walker
 import software.amazon.smithy.model.shapes.*
 import software.amazon.smithy.model.traits.Trait
+import software.amazon.smithy.model.traits.UnitTypeTrait
 
 /**
  * Generate synthetic input and output shapes for a operations as needed and normalize the names.
@@ -111,7 +111,7 @@ object OperationNormalizer {
         StructureShape
             .builder()
             .id(syntheticShapeId(opShapeId, suffix))
-            .addTrait(SyntheticClone.build { archetype = opShapeId })
+            .addTrait(SyntheticClone.build { archetype = UnitTypeTrait.UNIT })
             .addTrait(if (suffix == REQUEST_SUFFIX) OperationInput() else OperationOutput())
             .build()
 

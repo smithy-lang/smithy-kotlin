@@ -197,6 +197,12 @@ class InstantTest {
         assertEquals(expected2, Instant.fromEpochMilliseconds(ts2))
     }
 
+    @Test
+    fun testNegativeFromEpochSeconds() {
+        val timestamp = Instant.fromEpochSeconds(-806976000L)
+        assertEquals("1944-06-06T00:00:00Z", timestamp.toString())
+    }
+
     // Select tests pulled from edge cases/tickets in the V2 Java SDK.
     // Always good to learn from others...
     class V2JavaSdkTests {

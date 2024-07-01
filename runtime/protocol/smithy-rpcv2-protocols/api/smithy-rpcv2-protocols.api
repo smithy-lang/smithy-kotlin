@@ -1,0 +1,5 @@
+public final class aws/smithy/kotlin/runtime/awsprotocol/rpcv2/cbor/Rpcv2CborErrorDeserializer {
+	public static final field INSTANCE Laws/smithy/kotlin/runtime/awsprotocol/rpcv2/cbor/Rpcv2CborErrorDeserializer;
+	public final fun deserialize ([B)Laws/smithy/kotlin/runtime/awsprotocol/ErrorDetails;
+}
+

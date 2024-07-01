@@ -12,6 +12,7 @@ import aws.smithy.kotlin.runtime.content.Document
 import aws.smithy.kotlin.runtime.io.SdkBuffer
 import aws.smithy.kotlin.runtime.serde.*
 import aws.smithy.kotlin.runtime.text.encoding.PercentEncoding
+import aws.smithy.kotlin.runtime.text.encoding.encodeBase64String
 import aws.smithy.kotlin.runtime.time.Instant
 import aws.smithy.kotlin.runtime.time.TimestampFormat
 import kotlin.contracts.ExperimentalContracts
@@ -58,6 +59,10 @@ private class FormUrlSerializer(
 
     override fun serializeInstant(value: Instant, format: TimestampFormat) {
         serializeString(value.format(format))
+    }
+
+    override fun serializeByteArray(value: ByteArray) {
+        serializeString(value.encodeBase64String())
     }
 
     override fun serializeSdkSerializable(value: SdkSerializable) {
@@ -158,6 +163,10 @@ private class FormUrlStructSerializer(
         )
     }
 
+    override fun field(descriptor: SdkFieldDescriptor, value: ByteArray) = writeField(descriptor) {
+        serializeByteArray(value)
+    }
+
     override fun structField(descriptor: SdkFieldDescriptor, block: StructSerializer.() -> Unit) {
         // FIXME - do we even use this function in any of the formats? It seems like we go through `field(.., SdkSerializable)` ??
         // https://github.com/awslabs/smithy-kotlin/issues/314
@@ -231,6 +240,9 @@ private class FormUrlListSerializer(
     override fun serializeBigDecimal(value: BigDecimal) = writePrefixed { writeUtf8(value.toPlainString()) }
     override fun serializeString(value: String) = writePrefixed { writeUtf8(value.encode()) }
     override fun serializeInstant(value: Instant, format: TimestampFormat) = writePrefixed { writeUtf8(value.format(format)) }
+    override fun serializeByteArray(value: ByteArray) {
+        serializeString(value.encodeBase64String())
+    }
 
     override fun serializeSdkSerializable(value: SdkSerializable) {
         idx++
@@ -330,6 +342,11 @@ private class FormUrlMapSerializer(
 
     override fun entry(key: String, value: Document?) =
         throw SerializationException("document values not supported by form-url serializer")
+
+    override fun entry(key: String, value: ByteArray?) {
+        checkNotSparse(value)
+        serializeByteArray(value)
+    }
 
     override fun listEntry(key: String, listDescriptor: SdkFieldDescriptor, block: ListSerializer.() -> Unit) {
         writeKey(key)
