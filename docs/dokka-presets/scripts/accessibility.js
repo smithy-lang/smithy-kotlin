@@ -1,6 +1,13 @@
-// Fix for accessibiliy violation: "Provide a mechanism for skipping past repetitive content"
-document.addEventListener('DOMContentLoaded', function() {
+/**
+ * Apply "skip to main content" buttons after each active left sidebar `sideMenuPart`.
+ * These are invisible and only accessible via keyboard
+ * Fix for accessibility violation: "Provide a mechanism for skipping past repetitive content"
+ */
+function applySkipLinks() {
+    console.log("DOMContentLoaded")
     function insertSkipLink(element) {
+        if (element.querySelectorAll(".skip-to-content").length > 0) { return }
+
         const skipLink = document.createElement('div');
         // Create an anchor element with the href pointing to the main content
         const anchor = document.createElement('a');
@@ -18,19 +25,15 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function handleChanges(mutationsList) {
         for (const mutation of mutationsList) {
-            if (mutation.type === 'childList' && mutation.addedNodes.length > 0) {
-                // Check added nodes for elements with class 'sideMenuPart' and without class 'hidden'
-                mutation.addedNodes.forEach(function(node) {
-                    if (node.nodeType === 1 && node.classList.contains('sideMenuPart') && !node.classList.contains('hidden')) {
-                        insertSkipLink(node);
-                    }
-                });
-            } else if (mutation.type === 'attributes' && mutation.target.classList.contains('sideMenuPart') && !mutation.target.classList.contains('hidden')) {
-                // Handle changes in the 'class' attribute of existing elements
-                // Check if the element is 'sideMenuPart' and not 'hidden'
+            if (mutation.type === 'attributes' && mutation.target.classList.contains('sideMenuPart') && !mutation.target.classList.contains('hidden')) {
                 insertSkipLink(mutation.target);
             }
         }
+
+        // Insert a skip link on all sideMenuParts with [data-active] property
+        document.querySelectorAll('.sideMenuPart[data-active]').forEach(function(sideMenuPart) {
+            insertSkipLink(sideMenuPart)
+        });
     }
 
     const observer = new MutationObserver(handleChanges);
@@ -41,10 +44,16 @@ document.addEventListener('DOMContentLoaded', function() {
         attributeFilter: ['class']
     };
     observer.observe(document.body, observerConfig);
-});
+}
+document.addEventListener('DOMContentLoaded', applySkipLinks);
+if (document.readyState === "interactive" || document.readyState === "complete" ) { applySkipLinks() }
 
-// Fix for accessibilty violation: "Ensure all interactive functionality is operable with the keyboard"
-window.onload = function() {
+
+/**
+ * Ensure `navButton` elements are interactable and have proper accessibility properties
+ * Fix for accessibilty violation: "Ensure all interactive functionality is operable with the keyboard"
+ */
+function ensureNavButtonInteractable() {
     const navButtons = document.querySelectorAll('.navButton');
 
     navButtons.forEach(function(navButton) {
@@ -78,8 +87,16 @@ window.onload = function() {
     });
 }
 
-// Fix for accessibility violation: "Ensure pages reflow without requiring two-dimensional scrolling without loss of content or functionality"
-document.addEventListener('DOMContentLoaded', function() {
+window.onload = function() {
+    ensureNavButtonInteractable()
+}
+
+//
+/**
+ * Ensure that content (specifically, code blocks) reflows on small page sizes.
+ * Fix for accessibility violation: "Ensure pages reflow without requiring two-dimensional scrolling without loss of content or functionality"
+ */
+function ensureContentReflow() {
     const MIN_WINDOW_SIZE = 550
 
     // Function to insert 'toggle content' button
@@ -122,4 +139,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     });
-});
+}
+
+document.addEventListener('DOMContentLoaded', ensureContentReflow)
+if (document.readyState === "interactive" || document.readyState === "complete" ) { applySkipLinks() }
