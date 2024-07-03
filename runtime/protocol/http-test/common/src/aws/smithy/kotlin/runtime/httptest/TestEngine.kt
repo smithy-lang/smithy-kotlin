@@ -27,7 +27,7 @@ import aws.smithy.kotlin.runtime.time.Instant
 @Suppress("ktlint:standard:function-naming")
 public fun TestEngine(
     name: String = "test",
-    roundTripImpl: (ExecutionContext, HttpRequest) -> HttpCall = { _, request ->
+    roundTripImpl: suspend (ExecutionContext, HttpRequest) -> HttpCall = { _, request ->
         val resp = HttpResponse(HttpStatusCode.OK, Headers.Empty, HttpBody.Empty)
         val now = Instant.now()
         HttpCall(request, resp, now, now)

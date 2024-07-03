@@ -68,7 +68,7 @@ public fun httpRequestTest(block: HttpRequestTestBuilder.() -> Unit): TestResult
         }
 
         val body = if (testBuilder.expected.bodyMediaType?.isBinaryMediaType == true) {
-            runBlocking { request.body.readAll() }?.let {
+            request.body.readAll()?.let {
                 HttpBody.fromBytes(it.encodeBase64())
             } ?: request.body
         } else {
