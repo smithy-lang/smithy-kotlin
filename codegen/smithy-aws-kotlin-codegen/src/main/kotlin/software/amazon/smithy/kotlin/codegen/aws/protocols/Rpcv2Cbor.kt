@@ -47,6 +47,15 @@ class Rpcv2Cbor : AwsHttpBindingProtocolGenerator() {
         // Every request for the rpcv2Cbor protocol MUST contain a `smithy-protocol` header with the value of `rpc-v2-cbor`
         val smithyProtocolHeaderMiddleware = MutateHeadersMiddleware(overrideHeaders = mapOf("smithy-protocol" to "rpc-v2-cbor"))
 
+        // Every response MUST contain the same `smithy-protocol` header, otherwise it's considered invalid
+        val validateSmithyProtocolHeaderMiddleware = object : ProtocolMiddleware {
+            override val name: String = "Rpcv2CborValidateSmithyProtocolResponseHeader"
+            override fun render(ctx: ProtocolGenerator.GenerationContext, op: OperationShape, writer: KotlinWriter) {
+                val interceptorSymbol = RuntimeTypes.SmithyRpcv2Protocols.Cbor.RpcV2CborSmithyProtocolResponseHeaderInterceptor
+                writer.write("op.interceptors.add(#T())", interceptorSymbol)
+            }
+        }
+
         // Requests with event stream responses for the rpcv2Cbor protocol MUST include an `Accept` header set to the value `application/vnd.amazon.eventstream`
         val eventStreamsAcceptHeaderMiddleware = object : ProtocolMiddleware {
             private val mutateHeadersMiddleware = MutateHeadersMiddleware(extraHeaders = mapOf("Accept" to "application/vnd.amazon.eventstream"))
@@ -66,13 +75,14 @@ class Rpcv2Cbor : AwsHttpBindingProtocolGenerator() {
 
         return super.getDefaultHttpMiddleware(ctx) + listOf(
             smithyProtocolHeaderMiddleware,
+            validateSmithyProtocolHeaderMiddleware,
             eventStreamsAcceptHeaderMiddleware,
             businessMetricsMiddleware,
         )
     }
 
     /**
-     * Exact copy of [AwsHttpBindingProtocolGenerator.renderSerializeHttpBody] but with a custom
+     * Exact copy of [HttpBindingProtocolGenerator.renderSerializeHttpBody] but with a custom
      * [OperationShape.hasHttpBody] function to handle protocol-specific serialization rules.
      */
     override fun renderSerializeHttpBody(
