@@ -343,13 +343,13 @@ internal class InterceptorExecutor<I, O>(
     ) {
         if (modifiedRequest.url != request.url) {
             if (
-                context.executionContext.containsBusinessMetric(SmithyBusinessMetric.ACCOUNT_ID_BASED_ENDPOINT) &&
+                context.executionContext.containsBusinessMetric(SmithyBusinessMetric.ACCOUNT_ID_ENDPOINT) &&
                 !modifiedRequest.url.toString().contains(context.executionContext.attributes[AccountIdBasedEndpointAccountId])
             ) {
-                context.executionContext.removeBusinessMetric(SmithyBusinessMetric.ACCOUNT_ID_BASED_ENDPOINT)
+                context.executionContext.removeBusinessMetric(SmithyBusinessMetric.ACCOUNT_ID_ENDPOINT)
             }
-            if (context.executionContext.containsBusinessMetric(SmithyBusinessMetric.SERVICE_ENDPOINT_OVERRIDE)) {
-                context.executionContext.removeBusinessMetric(SmithyBusinessMetric.SERVICE_ENDPOINT_OVERRIDE)
+            if (context.executionContext.containsBusinessMetric(SmithyBusinessMetric.ENDPOINT_OVERRIDE)) {
+                context.executionContext.removeBusinessMetric(SmithyBusinessMetric.ENDPOINT_OVERRIDE)
             }
         }
     }
