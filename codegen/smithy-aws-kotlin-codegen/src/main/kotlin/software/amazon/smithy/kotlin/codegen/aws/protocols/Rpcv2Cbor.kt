@@ -52,7 +52,7 @@ class Rpcv2Cbor : AwsHttpBindingProtocolGenerator() {
             override val name: String = "Rpcv2CborValidateSmithyProtocolResponseHeader"
             override fun render(ctx: ProtocolGenerator.GenerationContext, op: OperationShape, writer: KotlinWriter) {
                 val interceptorSymbol = RuntimeTypes.SmithyRpcv2Protocols.Cbor.RpcV2CborSmithyProtocolResponseHeaderInterceptor
-                writer.write("op.interceptors.add(#T())", interceptorSymbol)
+                writer.write("op.interceptors.add(#T)", interceptorSymbol)
             }
         }
 

@@ -233,7 +233,7 @@ internal object Cbor {
          * Represents a CBOR map (major type 5).
          * @param value The [kotlin.collections.Map] that this CBOR map represents.
          */
-        internal class Map(val value: kotlin.collections.Map<String, Value>) : Value {
+        internal class Map(val value: kotlin.collections.Map<Value, Value>) : Value {
             override fun encode(): ByteArray {
                 val byteBuffer = SdkBuffer()
                 byteBuffer.write(encodeArgument(Major.MAP, value.size.toULong()))
@@ -248,11 +248,11 @@ internal object Cbor {
 
             internal companion object {
                 internal fun decode(buffer: SdkBufferedSource): Map {
-                    val valueMap = mutableMapOf<String, Value>()
+                    val valueMap = mutableMapOf<Value, Value>()
                     val length = decodeArgument(buffer).toInt()
 
                     for (i in 0 until length) {
-                        val key = String.decode(buffer)
+                        val key = Value.decode(buffer)
                         val value = Value.decode(buffer)
                         valueMap[key] = value
                     }
@@ -339,12 +339,8 @@ internal object Cbor {
                     }
 
                     return when (val minor = peekMinorByte(buffer)) {
-                        Minor.FALSE.value -> {
-                            Boolean(false)
-                        }
-                        Minor.TRUE.value -> {
-                            Boolean(true)
-                        }
+                        Minor.FALSE.value -> Boolean(false)
+                        Minor.TRUE.value -> Boolean(true)
                         else -> throw DeserializationException("Unknown minor argument $minor for Boolean")
                     }.also {
                         buffer.readByte()
@@ -485,15 +481,9 @@ internal object Cbor {
                         }
                         Major.TYPE_7 -> {
                             val doubleTimestamp: Double = when (minor) {
-                                Minor.FLOAT16.value -> {
-                                    Float16.decode(buffer).value.toDouble()
-                                }
-                                Minor.FLOAT32.value -> {
-                                    Float32.decode(buffer).value.toDouble()
-                                }
-                                Minor.FLOAT64.value -> {
-                                    Float64.decode(buffer).value
-                                }
+                                Minor.FLOAT16.value -> Float16.decode(buffer).value.toDouble()
+                                Minor.FLOAT32.value -> Float32.decode(buffer).value.toDouble()
+                                Minor.FLOAT64.value -> Float64.decode(buffer).value
                                 else -> throw DeserializationException("Unexpected minor type $minor for CBOR floating point timestamp, expected ${Minor.FLOAT16}, ${Minor.FLOAT32}, or ${Minor.FLOAT64}.")
                             }
                             Instant.fromEpochMilliseconds((doubleTimestamp * 1000).toLong())
@@ -623,11 +613,7 @@ internal object Cbor {
                         }
                         is NegInt -> { // Negative exponent, prefix with zeroes if necessary
                             val exponentValue = exponent.value.toInt().absoluteValue
-                            val insertIndex = if (sb[0] == '-') {
-                                1
-                            } else {
-                                0
-                            }
+                            val insertIndex = if (sb[0] == '-') 1 else 0
                             if (exponentValue > sb.length - insertIndex) {
                                 sb.insert(insertIndex, "0".repeat(exponentValue - sb.length + insertIndex))
                                 sb.insert(insertIndex, '.')
@@ -646,19 +632,17 @@ internal object Cbor {
         /**
          * Represents the "break" stop-code for lists/maps with an indefinite length (major type 7, minor type 31).
          */
-        internal class IndefiniteBreak : Value {
+        internal object IndefiniteBreak : Value {
             override fun encode(): ByteArray = byteArrayOf(encodeMajorMinor(Major.TYPE_7, Minor.INDEFINITE))
-            internal companion object {
-                internal fun decode(buffer: SdkBufferedSource): IndefiniteBreak {
-                    val major = peekMajor(buffer)
-                    check(major == Major.TYPE_7) { "Expected CBOR indefinite break stop-code to be major ${Major.TYPE_7}, got $major." }
+            internal fun decode(buffer: SdkBufferedSource): IndefiniteBreak {
+                val major = peekMajor(buffer)
+                check(major == Major.TYPE_7) { "Expected CBOR indefinite break stop-code to be major ${Major.TYPE_7}, got $major." }
 
-                    val minor = peekMinorByte(buffer)
-                    check(minor == Minor.INDEFINITE.value) { "Expected CBOR indefinite break stop-code to be minor ${Minor.INDEFINITE}, got $minor." }
+                val minor = peekMinorByte(buffer)
+                check(minor == Minor.INDEFINITE.value) { "Expected CBOR indefinite break stop-code to be minor ${Minor.INDEFINITE}, got $minor." }
 
-                    buffer.readByte() // discard major/minor
-                    return IndefiniteBreak()
-                }
+                buffer.readByte() // discard major/minor
+                return IndefiniteBreak
             }
         }
     }

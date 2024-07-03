@@ -29,14 +29,14 @@ public class CborSerializer :
         return this
     }
 
-    override fun endMap(): Unit = buffer.write(Cbor.Encoding.IndefiniteBreak())
+    override fun endMap(): Unit = buffer.write(Cbor.Encoding.IndefiniteBreak)
 
     override fun beginList(descriptor: SdkFieldDescriptor): ListSerializer {
         buffer.write(Cbor.Encoding.IndefiniteList())
         return this
     }
 
-    override fun endList(): Unit = buffer.write(Cbor.Encoding.IndefiniteBreak())
+    override fun endList(): Unit = buffer.write(Cbor.Encoding.IndefiniteBreak)
 
     override fun beginStruct(descriptor: SdkFieldDescriptor): StructSerializer {
         beginMap(descriptor)
