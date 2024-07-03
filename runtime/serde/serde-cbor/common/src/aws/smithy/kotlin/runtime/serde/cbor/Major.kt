@@ -26,7 +26,7 @@ internal enum class Major(val value: UByte) {
     }
 }
 
-internal val MAJOR_BYTE_MASK: UByte = 0b111u
+private val MAJOR_BYTE_MASK: UByte = 0b111u
 
 internal fun peekMajor(buffer: SdkBufferedSource): Major {
     val byte = buffer.peek().readByte().toUByte()
