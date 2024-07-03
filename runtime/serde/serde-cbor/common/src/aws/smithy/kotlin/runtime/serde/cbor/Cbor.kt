@@ -308,10 +308,10 @@ internal object Cbor {
                     val id = peekMinorByte(buffer).toULong()
 
                     val value: Value = when (id) {
-                        1uL -> Timestamp.decode(buffer)
-                        2uL -> BigNum.decode(buffer)
-                        3uL -> NegBigNum.decode(buffer)
-                        4uL -> DecimalFraction.decode(buffer)
+                        TagId.TIMESTAMP.value -> Timestamp.decode(buffer)
+                        TagId.BIG_NUM.value -> BigNum.decode(buffer)
+                        TagId.NEG_BIG_NUM.value -> NegBigNum.decode(buffer)
+                        TagId.DECIMAL_FRACTION.value -> DecimalFraction.decode(buffer)
                         else -> throw DeserializationException("Unsupported tag ID $id")
                     }
 
@@ -573,7 +573,7 @@ internal object Cbor {
                     }
                 }
 
-                return Tag(4u, List(listOf(exponent, mantissa))).encode()
+                return Tag(TagId.DECIMAL_FRACTION.value, List(listOf(exponent, mantissa))).encode()
             }
 
             internal companion object {
@@ -583,7 +583,7 @@ internal object Cbor {
                     }
 
                     val tagId = decodeArgument(buffer)
-                    check(tagId == 4uL) { "Expected tag ID 4 for CBOR decimal fraction, got $tagId" }
+                    check(tagId == TagId.DECIMAL_FRACTION.value) { "Expected tag ID ${TagId.DECIMAL_FRACTION.value} for CBOR decimal fraction, got $tagId" }
 
                     val list = List.decode(buffer).value
                     check(list.size == 2) { "Expected array of length 2 for decimal fraction, got ${list.size}" }

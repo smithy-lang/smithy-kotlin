@@ -23,8 +23,6 @@ internal val SdkBufferedSource.nextValueIsIndefiniteBreak: Boolean
 internal val SdkBufferedSource.nextValueIsNull: Boolean
     get() = peekMajor(this) == Major.TYPE_7 && (peekMinorByte(this) == Minor.NULL.value || peekMinorByte(this) == Minor.UNDEFINED.value)
 
-internal fun peekTag(buffer: SdkBufferedSource) = Cbor.Encoding.Tag.decode(buffer.peek())
-
 // Encodes a major and minor type of CBOR value in a single byte
 internal fun encodeMajorMinor(major: Major, minor: Minor): Byte = (major.value.toUInt() shl 5 or minor.value.toUInt()).toByte()
 

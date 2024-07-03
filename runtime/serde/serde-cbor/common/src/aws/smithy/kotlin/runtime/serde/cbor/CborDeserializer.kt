@@ -88,9 +88,9 @@ internal class CborPrimitiveDeserializer(private val buffer: SdkBufferedSource) 
     override fun deserializeDouble(): Double = deserializeFloatingPoint { it.toDouble() }
 
     override fun deserializeBigInteger(): BigInteger = when (val tagId = peekTag(buffer).id) {
-        2uL -> Cbor.Encoding.BigNum.decode(buffer).value
-        3uL -> Cbor.Encoding.NegBigNum.decode(buffer).value
-        else -> throw DeserializationException("Expected tag 2 or 3 for CBOR BigNum, got $tagId")
+        TagId.BIG_NUM.value -> Cbor.Encoding.BigNum.decode(buffer).value
+        TagId.NEG_BIG_NUM.value -> Cbor.Encoding.NegBigNum.decode(buffer).value
+        else -> throw DeserializationException("Expected tag ${TagId.BIG_NUM.value} or ${TagId.NEG_BIG_NUM.value} for CBOR bignum, got $tagId")
     }
 
     override fun deserializeBigDecimal(): BigDecimal = Cbor.Encoding.DecimalFraction.decode(buffer).value
