@@ -6,8 +6,7 @@ package aws.smithy.kotlin.runtime.serde.cbor
 
 import aws.smithy.kotlin.runtime.content.BigDecimal
 import aws.smithy.kotlin.runtime.content.BigInteger
-import aws.smithy.kotlin.runtime.io.SdkBuffer
-import aws.smithy.kotlin.runtime.io.SdkBufferedSource
+import aws.smithy.kotlin.runtime.io.*
 import aws.smithy.kotlin.runtime.serde.DeserializationException
 import aws.smithy.kotlin.runtime.serde.SerializationException
 import aws.smithy.kotlin.runtime.time.Instant
@@ -121,11 +120,10 @@ internal object Cbor {
                         ByteString(tempBuffer.readByteArray())
                     } else {
                         val length = decodeArgument(buffer).toInt()
-                        val bytes = ByteArray(length)
 
-                        if (length > 0) {
-                            val rc = buffer.read(bytes)
-                            check(rc == length) { "Unexpected end of CBOR byte string: expected $length bytes, got $rc." }
+                        val bytes = SdkBuffer().use {
+                            buffer.readFully(it, length.toLong())
+                            it.readByteArray()
                         }
 
                         ByteString(bytes)
@@ -156,11 +154,10 @@ internal object Cbor {
                         String(sb.toString())
                     } else {
                         val length = decodeArgument(buffer).toInt()
-                        val bytes = ByteArray(length)
 
-                        if (length > 0) {
-                            val rc = buffer.read(bytes)
-                            check(rc == length) { "Unexpected end of CBOR string: expected $length bytes, got $rc." }
+                        val bytes = SdkBuffer().use {
+                            buffer.readFully(it, length.toLong())
+                            it.readByteArray()
                         }
 
                         String(bytes.decodeToString())

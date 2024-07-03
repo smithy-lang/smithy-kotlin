@@ -55,30 +55,6 @@ internal fun encodeArgument(major: Major, argument: ULong): ByteArray {
     return byteArrayOf(head, *argument.toByteArray())
 }
 
-internal fun decodeArgument(buffer: SdkBufferedSource): ULong {
-    val minor = buffer.readByte().toUByte() and MINOR_BYTE_MASK
-
-    if (minor < Minor.ARG_1.value) {
-        return minor.toULong()
-    }
-
-    val numBytes = when (minor) {
-        Minor.ARG_1.value -> 1L
-        Minor.ARG_2.value -> 2L
-        Minor.ARG_4.value -> 4L
-        Minor.ARG_8.value -> 8L
-        else -> throw DeserializationException("Unsupported minor value $minor, expected one of ${Minor.ARG_1.value}, ${Minor.ARG_2.value}, ${Minor.ARG_4.value}, ${Minor.ARG_8.value}")
-    }
-
-    val bytes = SdkBuffer().use {
-        buffer.read(it, numBytes).also { rc ->
-            if (numBytes != rc) throw DeserializationException("Unexpected end of payload. Expected $numBytes, read $rc.")
-        }
-        it.readByteArray()
-    }
-    return bytes.toULong()
-}
-
 // Convert a ByteArray to ULong by left-shifting each byte appropriately
 internal fun ByteArray.toULong() = foldIndexed(0uL) { i, acc, byte ->
     acc or (byte.toUByte().toULong() shl ((size - 1 - i) * 8))
