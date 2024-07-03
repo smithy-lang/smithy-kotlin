@@ -168,7 +168,7 @@ private class CborFieldIterator(
             val nextFieldName = Cbor.Encoding.String.decode(buffer).value
             descriptor
                 .fields
-                .firstOrNull { it.serialName.equals(nextFieldName, ignoreCase = true) }
+                .firstOrNull { it.serialName == nextFieldName }
                 ?.index ?: Deserializer.FieldIterator.UNKNOWN_FIELD
         }
 
