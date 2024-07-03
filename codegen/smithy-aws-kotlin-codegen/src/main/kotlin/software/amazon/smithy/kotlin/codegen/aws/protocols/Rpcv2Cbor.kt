@@ -142,7 +142,7 @@ class Rpcv2Cbor : AwsHttpBindingProtocolGenerator() {
         serviceShape,
         HttpTrait.builder().code(200).method("POST").uri(UriPattern.parse("/")).build(),
         "application/cbor",
-        TimestampFormatTrait.Format.EPOCH_SECONDS,
+        TimestampFormatTrait.Format.UNKNOWN,
     ) {
 
         override fun httpTrait(operationShape: OperationShape): HttpTrait = HttpTrait
