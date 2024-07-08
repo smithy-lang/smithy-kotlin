@@ -162,12 +162,17 @@ private class CborFieldIterator(
     var currentLength: ULong = 0uL
 
     override fun findNextFieldIndex(): Int? {
-        if (expectedLength == currentLength || buffer.exhausted()) {
+        if (buffer.exhausted() && expectedLength != currentLength) {
+            throw DeserializationException("Buffer is unexpectedly exhausted, expected $expectedLength elements, got $currentLength")
+        } else if (expectedLength == currentLength) {
             return null
         }
         currentLength += 1uL
 
         val candidate: Int? = if (buffer.nextValueIsIndefiniteBreak) {
+            if (expectedLength != null) {
+                throw DeserializationException("Received unexpected indefinite break while deserializing structure, expected $expectedLength elements, got $currentLength")
+            }
             Cbor.Encoding.IndefiniteBreak.decode(buffer)
             null
         } else {
@@ -214,14 +219,12 @@ private class CborEntryIterator(
             }
         }
 
-        return when {
-            buffer.nextValueIsIndefiniteBreak -> false.also { Cbor.Encoding.IndefiniteBreak.decode(buffer) }
-            buffer.nextValueIsNull -> false.also { Cbor.Encoding.Null.decode(buffer) }
-            else -> true.also {
-                peekMajor(buffer).also {
-                    check(it == Major.STRING) { "Expected string type for CBOR map key, got $it" }
-                }
-            }
+        return if (buffer.nextValueIsIndefiniteBreak) {
+            Cbor.Encoding.IndefiniteBreak.decode(buffer)
+            false
+        } else {
+            check(!buffer.exhausted()) { "Buffer is unexpectedly exhausted" }
+            true
         }
     }
 
