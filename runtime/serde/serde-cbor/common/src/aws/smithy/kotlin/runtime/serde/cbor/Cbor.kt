@@ -295,7 +295,7 @@ internal object Cbor {
 
             internal companion object {
                 fun decode(buffer: SdkBufferedSource): Tag {
-                    val id = peekMinorByte(buffer).toULong()
+                    val id = decodeArgument(buffer)
 
                     val value: Value = when (id) {
                         TagId.TIMESTAMP.value -> Timestamp.decode(buffer)
@@ -323,18 +323,12 @@ internal object Cbor {
             )
 
             internal companion object {
-                internal fun decode(buffer: SdkBufferedSource): Boolean {
-                    peekMajor(buffer).also {
-                        check(it == Major.TYPE_7) { "Expected ${Major.TYPE_7} for CBOR boolean, got $it" }
-                    }
-
-                    return when (val minor = peekMinorByte(buffer)) {
-                        Minor.FALSE.value -> Boolean(false)
-                        Minor.TRUE.value -> Boolean(true)
-                        else -> throw DeserializationException("Unknown minor argument $minor for Boolean")
-                    }.also {
-                        buffer.readByte()
-                    }
+                internal fun decode(buffer: SdkBufferedSource): Boolean = when (val minor = peekMinorByte(buffer)) {
+                    Minor.FALSE.value -> Boolean(false)
+                    Minor.TRUE.value -> Boolean(true)
+                    else -> throw DeserializationException("Unknown minor argument $minor for Boolean")
+                }.also {
+                    buffer.readByte()
                 }
             }
         }
@@ -347,12 +341,6 @@ internal object Cbor {
 
             internal companion object {
                 internal fun decode(buffer: SdkBufferedSource): Null {
-                    val major = peekMajor(buffer)
-                    check(major == Major.TYPE_7) { "Expected ${Major.TYPE_7} for CBOR null, got $major" }
-
-                    val minor = peekMinorByte(buffer)
-                    check(minor == Minor.NULL.value || minor == Minor.UNDEFINED.value) { "Expected ${Minor.NULL} or ${Minor.UNDEFINED} for CBOR null, got $minor" }
-
                     buffer.readByte() // consume the byte
                     return Null()
                 }
@@ -456,9 +444,6 @@ internal object Cbor {
 
             internal companion object {
                 internal fun decode(buffer: SdkBufferedSource): Timestamp {
-                    val tagId = decodeArgument(buffer).toInt()
-                    check(tagId == 1) { "Expected tag ID 1 for CBOR timestamp, got $tagId" }
-
                     val major = peekMajor(buffer)
                     val minor = peekMinorByte(buffer)
 
@@ -497,9 +482,6 @@ internal object Cbor {
 
             internal companion object {
                 internal fun decode(buffer: SdkBufferedSource): BigNum {
-                    val tagId = decodeArgument(buffer).toInt()
-                    check(tagId == 2) { "Expected tag ID 2 for CBOR bignum, got $tagId" }
-
                     val bytes = ByteString.decode(buffer).value
                     return BigNum(BigInteger(bytes))
                 }
@@ -519,9 +501,6 @@ internal object Cbor {
 
             internal companion object {
                 internal fun decode(buffer: SdkBufferedSource): NegBigNum {
-                    val tagId = decodeArgument(buffer).toInt()
-                    check(tagId == 3) { "Expected tag ID 3 for CBOR negative bignum, got $tagId" }
-
                     val bytes = ByteString.decode(buffer).value
 
                     // note: CBOR encoding implies (-1 - $value), add one to get the real value.
@@ -569,13 +548,6 @@ internal object Cbor {
 
             internal companion object {
                 internal fun decode(buffer: SdkBufferedSource): DecimalFraction {
-                    peekMajor(buffer).also {
-                        check(it == Major.TAG) { "Expected ${Major.TAG} for CBOR decimal fraction, got $it" }
-                    }
-
-                    val tagId = decodeArgument(buffer)
-                    check(tagId == TagId.DECIMAL_FRACTION.value) { "Expected tag ID ${TagId.DECIMAL_FRACTION.value} for CBOR decimal fraction, got $tagId" }
-
                     val list = List.decode(buffer).value
                     check(list.size == 2) { "Expected array of length 2 for decimal fraction, got ${list.size}" }
 
@@ -627,13 +599,7 @@ internal object Cbor {
             override fun encode(into: SdkBufferedSink) = into.writeByte(encodeMajorMinor(Major.TYPE_7, Minor.INDEFINITE))
 
             internal fun decode(buffer: SdkBufferedSource): IndefiniteBreak {
-                val major = peekMajor(buffer)
-                check(major == Major.TYPE_7) { "Expected CBOR indefinite break stop-code to be major ${Major.TYPE_7}, got $major." }
-
-                val minor = peekMinorByte(buffer)
-                check(minor == Minor.INDEFINITE.value) { "Expected CBOR indefinite break stop-code to be minor ${Minor.INDEFINITE}, got $minor." }
-
-                buffer.readByte() // discard major/minor
+                buffer.readByte()
                 return IndefiniteBreak
             }
         }

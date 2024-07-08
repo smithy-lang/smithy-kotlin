@@ -87,13 +87,16 @@ internal class CborPrimitiveDeserializer(private val buffer: SdkBufferedSource) 
     override fun deserializeFloat(): Float = deserializeFloatingPoint { it.toFloat() }
     override fun deserializeDouble(): Double = deserializeFloatingPoint { it.toDouble() }
 
-    override fun deserializeBigInteger(): BigInteger = when (val tagId = peekTag(buffer).id) {
-        TagId.BIG_NUM.value -> Cbor.Encoding.BigNum.decode(buffer).value
-        TagId.NEG_BIG_NUM.value -> Cbor.Encoding.NegBigNum.decode(buffer).value
-        else -> throw DeserializationException("Expected tag ${TagId.BIG_NUM.value} or ${TagId.NEG_BIG_NUM.value} for CBOR bignum, got $tagId")
+    override fun deserializeBigInteger(): BigInteger = when (val tag = Cbor.Encoding.Tag.decode(buffer).value) {
+        is Cbor.Encoding.BigNum -> tag.value
+        is Cbor.Encoding.NegBigNum -> tag.value
+        else -> throw DeserializationException("Expected tag ${TagId.BIG_NUM.value} or ${TagId.NEG_BIG_NUM.value} for CBOR bignum, got $tag")
     }
 
-    override fun deserializeBigDecimal(): BigDecimal = Cbor.Encoding.DecimalFraction.decode(buffer).value
+    override fun deserializeBigDecimal(): BigDecimal {
+        val tag = Cbor.Encoding.Tag.decode(buffer)
+        return (tag.value as Cbor.Encoding.DecimalFraction).value
+    }
 
     override fun deserializeString(): String = Cbor.Encoding.String.decode(buffer).value
 
@@ -108,7 +111,10 @@ internal class CborPrimitiveDeserializer(private val buffer: SdkBufferedSource) 
 
     override fun deserializeByteArray(): ByteArray = Cbor.Encoding.ByteString.decode(buffer).value
 
-    override fun deserializeInstant(format: TimestampFormat): Instant = Cbor.Encoding.Timestamp.decode(buffer).value
+    override fun deserializeInstant(format: TimestampFormat): Instant {
+        val tag = Cbor.Encoding.Tag.decode(buffer)
+        return (tag.value as Cbor.Encoding.Timestamp).value
+    }
 }
 
 /**
