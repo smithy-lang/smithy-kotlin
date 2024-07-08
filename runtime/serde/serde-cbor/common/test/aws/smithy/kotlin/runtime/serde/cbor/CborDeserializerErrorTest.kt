@@ -12,7 +12,7 @@ import aws.smithy.kotlin.runtime.serde.deserializeMap
 import kotlin.test.Test
 import kotlin.test.assertFails
 
-class CborDeserializeErrorTest {
+class CborDeserializerErrorTest {
     @Test
     fun `TestDecode_InvalidArgument - major7 - float64 - incomplete float64 at end of buf`() {
         val payload = "0xfb00000000000000".toByteArray()
