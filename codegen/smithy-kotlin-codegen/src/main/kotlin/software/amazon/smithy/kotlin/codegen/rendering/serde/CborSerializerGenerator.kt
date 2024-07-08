@@ -25,7 +25,7 @@ class CborSerializerGenerator(
 
         return op.bodySerializer(ctx.settings) { writer ->
             addNestedDocumentSerializers(ctx, op, writer)
-            writer.withBlock("private fun #L(context: #T, input: #T): ByteArray {", "}", op.bodySerializerName(), RuntimeTypes.Core.ExecutionContext, symbol) {
+            writer.withBlock("private fun #L(context: #T, input: #T): #T {", "}", op.bodySerializerName(), RuntimeTypes.Core.ExecutionContext, symbol, RuntimeTypes.Http.HttpBody) {
                 call {
                     renderSerializeOperationBody(ctx, op, members, writer)
                 }
@@ -42,7 +42,7 @@ class CborSerializerGenerator(
         val shape = ctx.model.expectShape(op.input.get())
         writer.write("val serializer = #T()", RuntimeTypes.Serde.SerdeCbor.CborSerializer)
         renderSerializerBody(ctx, shape, documentMembers, writer)
-        writer.write("return serializer.toByteArray()")
+        writer.write("return serializer.toHttpBody()")
     }
 
     private fun renderSerializerBody(

@@ -80,5 +80,6 @@ public final class aws/smithy/kotlin/runtime/serde/cbor/CborSerializer : aws/smi
 	public fun serializeString (Ljava/lang/String;)V
 	public fun structField (Laws/smithy/kotlin/runtime/serde/SdkFieldDescriptor;Lkotlin/jvm/functions/Function1;)V
 	public fun toByteArray ()[B
+	public final fun toHttpBody ()Laws/smithy/kotlin/runtime/http/HttpBody;
 }
 

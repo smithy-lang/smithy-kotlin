@@ -8,6 +8,8 @@ import aws.smithy.kotlin.runtime.InternalApi
 import aws.smithy.kotlin.runtime.content.BigDecimal
 import aws.smithy.kotlin.runtime.content.BigInteger
 import aws.smithy.kotlin.runtime.content.Document
+import aws.smithy.kotlin.runtime.http.HttpBody
+import aws.smithy.kotlin.runtime.http.toHttpBody
 import aws.smithy.kotlin.runtime.io.SdkBuffer
 import aws.smithy.kotlin.runtime.serde.*
 import aws.smithy.kotlin.runtime.time.Instant
@@ -21,6 +23,8 @@ public class CborSerializer :
     MapSerializer,
     StructSerializer {
     private val buffer = SdkBuffer()
+
+    public fun toHttpBody(): HttpBody = buffer.toHttpBody(contentLength = buffer.size)
 
     override fun toByteArray(): ByteArray = buffer.readByteArray()
 

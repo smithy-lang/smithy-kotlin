@@ -12,6 +12,7 @@ kotlin {
         commonMain {
             dependencies {
                 api(project(":runtime:serde"))
+                api(project(":runtime:protocol:http"))
             }
         }
 

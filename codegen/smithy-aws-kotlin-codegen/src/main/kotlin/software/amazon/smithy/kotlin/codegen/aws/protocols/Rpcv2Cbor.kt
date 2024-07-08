@@ -104,8 +104,7 @@ class Rpcv2Cbor : AwsHttpBindingProtocolGenerator() {
             // delegate to the generate operation body serializer function
             val sdg = structuredDataSerializer(ctx)
             val opBodySerializerFn = sdg.operationSerializer(ctx, op, documentMembers)
-            writer.write("val payload = #T(context, input)", opBodySerializerFn)
-            writer.write("builder.body = #T.fromBytes(payload)", RuntimeTypes.Http.HttpBody)
+            writer.write("builder.body = #T(context, input)", opBodySerializerFn)
         }
         renderContentTypeHeader(ctx, op, writer, resolver)
     }
