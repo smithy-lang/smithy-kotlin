@@ -201,8 +201,13 @@ internal object Cbor {
          *
          * `decode` will consume list values until an [IndefiniteBreak] is encountered.
          */
-        internal class IndefiniteList(val value: MutableList<Value> = mutableListOf()) : Value {
-            override fun encode(into: SdkBufferedSink) = into.writeByte(encodeMajorMinor(Major.LIST, Minor.INDEFINITE))
+        internal class IndefiniteList(val value: Collection<Value> = listOf()) : Value {
+            override fun encode(into: SdkBufferedSink) {
+                into.writeByte(encodeMajorMinor(Major.LIST, Minor.INDEFINITE))
+                value.forEach {
+                    it.encode(into)
+                }
+            }
 
             internal companion object {
                 internal fun decode(buffer: SdkBufferedSource): IndefiniteList {
@@ -227,8 +232,8 @@ internal object Cbor {
         internal class Map(val value: kotlin.collections.Map<Value, Value>) : Value {
             override fun encode(into: SdkBufferedSink) {
                 into.write(encodeArgument(Major.MAP, value.size.toULong()))
-                value.forEach { (key, v) ->
-                    key.encode(into)
+                value.forEach { (k, v) ->
+                    k.encode(into)
                     v.encode(into)
                 }
             }
@@ -260,16 +265,22 @@ internal object Cbor {
          *
          * `decode` will consume map entries until an [IndefiniteBreak] is encountered.
          */
-        internal class IndefiniteMap(val value: MutableMap<String, Value> = mutableMapOf()) : Value {
-            override fun encode(into: SdkBufferedSink) = into.writeByte(encodeMajorMinor(Major.MAP, Minor.INDEFINITE))
+        internal class IndefiniteMap(val value: kotlin.collections.Map<Value, Value> = mapOf()) : Value {
+            override fun encode(into: SdkBufferedSink) {
+                into.writeByte(encodeMajorMinor(Major.MAP, Minor.INDEFINITE))
+                value.entries.forEach { (k, v) ->
+                    k.encode(into)
+                    v.encode(into)
+                }
+            }
 
             internal companion object {
                 internal fun decode(buffer: SdkBufferedSource): IndefiniteMap {
                     buffer.readByte() // discard head byte
-                    val valueMap = mutableMapOf<String, Value>()
+                    val valueMap = mutableMapOf<Value, Value>()
 
                     while (!buffer.nextValueIsIndefiniteBreak) {
-                        val key = String.decode(buffer)
+                        val key = Value.decode(buffer)
                         val value = Value.decode(buffer)
                         valueMap[key] = value
                     }
