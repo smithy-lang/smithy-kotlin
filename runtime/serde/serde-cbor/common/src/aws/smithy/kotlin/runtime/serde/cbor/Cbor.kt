@@ -23,7 +23,7 @@ internal object Cbor {
          * Encode this [Value] by writing its bytes [into] an [SdkBuffer]
          * @param into the SdkBuffer to encode into
          */
-        fun encode(into: SdkBuffer)
+        fun encode(into: SdkBufferedSink)
 
         companion object {
             fun decode(buffer: SdkBufferedSource): Value {
@@ -74,7 +74,7 @@ internal object Cbor {
          * @param value The [ULong] value which this unsigned integer represents.
          */
         internal class UInt(val value: ULong) : Value {
-            override fun encode(into: SdkBuffer) = into.write(encodeArgument(Major.U_INT, value))
+            override fun encode(into: SdkBufferedSink) = into.write(encodeArgument(Major.U_INT, value))
 
             internal companion object {
                 fun decode(buffer: SdkBufferedSource) = UInt(decodeArgument(buffer))
@@ -88,7 +88,7 @@ internal object Cbor {
          * Values will be properly encoded / decoded according to the CBOR specification (-1 minus $value)
          */
         internal class NegInt(val value: ULong) : Value {
-            override fun encode(into: SdkBuffer) = into.write(encodeArgument(Major.NEG_INT, value - 1u))
+            override fun encode(into: SdkBufferedSink) = into.write(encodeArgument(Major.NEG_INT, value - 1u))
 
             internal companion object {
                 fun decode(buffer: SdkBufferedSource): NegInt {
@@ -103,7 +103,7 @@ internal object Cbor {
          * @param value The [ByteArray] which this CBOR byte string represents.
          */
         internal class ByteString(val value: ByteArray) : Value {
-            override fun encode(into: SdkBuffer) {
+            override fun encode(into: SdkBufferedSink) {
                 into.write(encodeArgument(Major.BYTE_STRING, value.size.toULong()))
                 into.write(value)
             }
@@ -137,7 +137,7 @@ internal object Cbor {
          * @param value The [String] which this CBOR string represents.
          */
         internal class String(val value: kotlin.String) : Value {
-            override fun encode(into: SdkBuffer) {
+            override fun encode(into: SdkBufferedSink) {
                 into.write(encodeArgument(Major.STRING, value.length.toULong()))
                 into.write(value.encodeToByteArray())
             }
@@ -171,7 +171,7 @@ internal object Cbor {
          * @param value the [kotlin.collections.List<Value>] represented by this CBOR list.
          */
         internal class List(val value: kotlin.collections.List<Value>) : Value {
-            override fun encode(into: SdkBuffer) {
+            override fun encode(into: SdkBufferedSink) {
                 into.write(encodeArgument(Major.LIST, value.size.toULong()))
                 value.forEach { it.encode(into) }
             }
@@ -202,7 +202,7 @@ internal object Cbor {
          * `decode` will consume list values until an [IndefiniteBreak] is encountered.
          */
         internal class IndefiniteList(val value: MutableList<Value> = mutableListOf()) : Value {
-            override fun encode(into: SdkBuffer) = into.writeByte(encodeMajorMinor(Major.LIST, Minor.INDEFINITE))
+            override fun encode(into: SdkBufferedSink) = into.writeByte(encodeMajorMinor(Major.LIST, Minor.INDEFINITE))
 
             internal companion object {
                 internal fun decode(buffer: SdkBufferedSource): IndefiniteList {
@@ -225,7 +225,7 @@ internal object Cbor {
          * @param value The [kotlin.collections.Map] that this CBOR map represents.
          */
         internal class Map(val value: kotlin.collections.Map<Value, Value>) : Value {
-            override fun encode(into: SdkBuffer) {
+            override fun encode(into: SdkBufferedSink) {
                 into.write(encodeArgument(Major.MAP, value.size.toULong()))
                 value.forEach { (key, v) ->
                     key.encode(into)
@@ -261,7 +261,7 @@ internal object Cbor {
          * `decode` will consume map entries until an [IndefiniteBreak] is encountered.
          */
         internal class IndefiniteMap(val value: MutableMap<String, Value> = mutableMapOf()) : Value {
-            override fun encode(into: SdkBuffer) = into.writeByte(encodeMajorMinor(Major.MAP, Minor.INDEFINITE))
+            override fun encode(into: SdkBufferedSink) = into.writeByte(encodeMajorMinor(Major.MAP, Minor.INDEFINITE))
 
             internal companion object {
                 internal fun decode(buffer: SdkBufferedSource): IndefiniteMap {
@@ -288,7 +288,7 @@ internal object Cbor {
          * - 4 -> Decimal fraction
          */
         internal class Tag(val id: ULong, val value: Value) : Value {
-            override fun encode(into: SdkBuffer) {
+            override fun encode(into: SdkBufferedSink) {
                 into.write(encodeArgument(Major.TAG, id))
                 value.encode(into)
             }
@@ -315,7 +315,7 @@ internal object Cbor {
          * @param value the [kotlin.Boolean] this CBOR boolean represents.
          */
         internal class Boolean(val value: kotlin.Boolean) : Value {
-            override fun encode(into: SdkBuffer) = into.writeByte(
+            override fun encode(into: SdkBufferedSink) = into.writeByte(
                 when (value) {
                     false -> encodeMajorMinor(Major.TYPE_7, Minor.FALSE)
                     true -> encodeMajorMinor(Major.TYPE_7, Minor.TRUE)
@@ -343,7 +343,7 @@ internal object Cbor {
          * Represents a CBOR null value (major type 7, minor type 7).
          */
         internal class Null : Value {
-            override fun encode(into: SdkBuffer) = into.writeByte(encodeMajorMinor(Major.TYPE_7, Minor.NULL))
+            override fun encode(into: SdkBufferedSink) = into.writeByte(encodeMajorMinor(Major.TYPE_7, Minor.NULL))
 
             internal companion object {
                 internal fun decode(buffer: SdkBufferedSource): Null {
@@ -365,7 +365,7 @@ internal object Cbor {
          * @param value the [Float] that this CBOR 16-bit float represents.
          */
         internal class Float16(val value: Float) : Value {
-            override fun encode(into: SdkBuffer) = throw SerializationException("Encoding of CBOR 16-bit floats is not supported")
+            override fun encode(into: SdkBufferedSink) = throw SerializationException("Encoding of CBOR 16-bit floats is not supported")
 
             internal companion object {
                 fun decode(buffer: SdkBufferedSource): Float16 {
@@ -407,7 +407,7 @@ internal object Cbor {
          * @param value the [Float] that this CBOR 32-bit float represents.
          */
         internal class Float32(val value: Float) : Value {
-            override fun encode(into: SdkBuffer) {
+            override fun encode(into: SdkBufferedSink) {
                 val bits: Int = value.toRawBits()
 
                 val bytes = (24 downTo 0 step 8).map { shiftAmount ->
@@ -432,7 +432,7 @@ internal object Cbor {
          * @param value the [Double] that this CBOR 64-bit float represents
          */
         internal class Float64(val value: Double) : Value {
-            override fun encode(into: SdkBuffer) {
+            override fun encode(into: SdkBufferedSink) {
                 val bits: Long = value.toRawBits()
                 val bytes = (56 downTo 0 step 8).map { shiftAmount ->
                     (bits shr shiftAmount and 0xff).toByte()
@@ -452,7 +452,7 @@ internal object Cbor {
         }
 
         internal class Timestamp(val value: Instant) : Value {
-            override fun encode(into: SdkBuffer) = Tag(1u, Float64(value.epochMilliseconds / 1000.toDouble())).encode(into)
+            override fun encode(into: SdkBufferedSink) = Tag(1u, Float64(value.epochMilliseconds / 1000.toDouble())).encode(into)
 
             internal companion object {
                 internal fun decode(buffer: SdkBufferedSource): Timestamp {
@@ -493,7 +493,7 @@ internal object Cbor {
          * @param value the [BigInteger] that this CBOR bignum represents.
          */
         internal class BigNum(val value: BigInteger) : Value {
-            override fun encode(into: SdkBuffer) = Tag(2u, ByteString(value.toByteArray())).encode(into)
+            override fun encode(into: SdkBufferedSink) = Tag(2u, ByteString(value.toByteArray())).encode(into)
 
             internal companion object {
                 internal fun decode(buffer: SdkBufferedSource): BigNum {
@@ -512,7 +512,7 @@ internal object Cbor {
          * Values will be properly encoded / decoded according to the CBOR specification (-1 minus $value)
          */
         internal class NegBigNum(val value: BigInteger) : Value {
-            override fun encode(into: SdkBuffer) {
+            override fun encode(into: SdkBufferedSink) {
                 val bytes = (value - BigInteger("1")).toByteArray()
                 Tag(3u, ByteString(bytes)).encode(into)
             }
@@ -536,7 +536,7 @@ internal object Cbor {
          * @param value the [BigDecimal] that this decimal fraction represents.
          */
         internal class DecimalFraction(val value: BigDecimal) : Value {
-            override fun encode(into: SdkBuffer) {
+            override fun encode(into: SdkBufferedSink) {
                 val str = value.toPlainString()
                 val dotIndex = str.indexOf('.').takeIf { it != -1 } ?: str.lastIndex
                 val exponentValue = (dotIndex - str.length + 1).toLong()
@@ -624,7 +624,7 @@ internal object Cbor {
          * Represents the "break" stop-code for lists/maps with an indefinite length (major type 7, minor type 31).
          */
         internal object IndefiniteBreak : Value {
-            override fun encode(into: SdkBuffer) = into.writeByte(encodeMajorMinor(Major.TYPE_7, Minor.INDEFINITE))
+            override fun encode(into: SdkBufferedSink) = into.writeByte(encodeMajorMinor(Major.TYPE_7, Minor.INDEFINITE))
 
             internal fun decode(buffer: SdkBufferedSource): IndefiniteBreak {
                 val major = peekMajor(buffer)
