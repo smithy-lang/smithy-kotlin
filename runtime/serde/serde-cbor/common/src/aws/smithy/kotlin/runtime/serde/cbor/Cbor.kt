@@ -518,7 +518,7 @@ internal object Cbor {
          */
         internal class NegBigNum(val value: BigInteger) : Value {
             override fun encode(): ByteArray {
-                val bytes = value.minusOne().asBytes()
+                val bytes = (value - BigInteger("1")).asBytes()
                 return Tag(3u, ByteString(bytes)).encode()
             }
 
@@ -530,8 +530,8 @@ internal object Cbor {
                     val bytes = ByteString.decode(buffer).value
 
                     // note: encoding implies (-1 - $value).
-                    // add one to get the real value. prepend with minus to correctly set up the negative BigInteger
-                    val bigInteger = BigInteger("-" + bytes.toBigInteger().plusOne().toString())
+                    // prepend with minus to correctly set up the negative BigInteger, and add one to get the real value.
+                    val bigInteger = BigInteger("-" + bytes.toBigInteger().toString()) + BigInteger("1")
                     return NegBigNum(bigInteger)
                 }
             }

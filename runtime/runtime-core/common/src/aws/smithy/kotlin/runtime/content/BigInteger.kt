@@ -4,4 +4,16 @@
  */
 package aws.smithy.kotlin.runtime.content
 
-public expect class BigInteger(value: String) : Number
+public expect class BigInteger(value: String) : Number {
+    override fun toByte(): Byte
+    override fun toLong(): Long
+    override fun toShort(): Short
+    override fun toInt(): Int
+    override fun toFloat(): Float
+    override fun toDouble(): Double
+    override fun toString(): String
+    override fun hashCode(): Int
+    override fun equals(other: Any?): Boolean
+    public operator fun plus(other: BigInteger): BigInteger
+    public operator fun minus(other: BigInteger): BigInteger
+}

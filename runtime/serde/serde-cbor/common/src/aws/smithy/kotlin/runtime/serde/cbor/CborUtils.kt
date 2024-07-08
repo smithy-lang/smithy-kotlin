@@ -60,48 +60,6 @@ internal fun ByteArray.toULong() = foldIndexed(0uL) { i, acc, byte ->
     acc or (byte.toUByte().toULong() shl ((size - 1 - i) * 8))
 }
 
-// Subtracts one from the given BigInteger
-internal fun BigInteger.minusOne(): BigInteger {
-    val digits = toString().toCharArray()
-    var index = digits.lastIndex
-
-    // Process the digits from right to left
-    while (index >= 0) {
-        if (digits[index] > '0') {
-            digits[index] = digits[index] - 1
-            break
-        } else {
-            digits[index] = '9'
-            index--
-        }
-    }
-
-    // Remove leading zeroes
-    val result = digits.concatToString().trimStart('0')
-
-    return if (result.isEmpty()) BigInteger("0") else BigInteger(result)
-}
-
-// Adds one to the given BigInteger
-internal fun BigInteger.plusOne(): BigInteger {
-    val digits = toString().toCharArray()
-    var index = digits.lastIndex
-
-    // Process the digits from right to left
-    while (index >= 0) {
-        if (digits[index] == '9') {
-            digits[index] = '0'
-            index--
-        } else {
-            digits[index] = digits[index] + 1
-            return BigInteger(digits.concatToString())
-        }
-    }
-
-    // If all digits were '9', prepend '1'
-    return BigInteger("1${digits.concatToString()}")
-}
-
 // Converts a [BigInteger] to a [ByteArray].
 internal fun BigInteger.asBytes(): ByteArray {
     var decimal = this.toString().removePrefix("-")
