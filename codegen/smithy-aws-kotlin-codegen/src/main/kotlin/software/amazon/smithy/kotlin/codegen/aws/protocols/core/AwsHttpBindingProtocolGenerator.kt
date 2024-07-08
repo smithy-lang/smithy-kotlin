@@ -41,8 +41,6 @@ abstract class AwsHttpBindingProtocolGenerator : HttpBindingProtocolGenerator() 
 
         val ignoredTests = TestMemberDelta(
             setOf(
-                // This test requires populating blob members with a default value of "", which the sdk doesn't do
-                "AwsJson10ClientPopulatesDefaultValuesInInput",
             ),
         )
 

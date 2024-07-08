@@ -222,7 +222,7 @@ class KotlinSymbolProvider(private val model: Model, private val settings: Kotli
     private fun DefaultTrait.getDefaultValue(targetShape: Shape): String? {
         val node = toNode()
         return when {
-            node.toString() == "null" || targetShape is BlobShape && node.toString() == "" -> null
+            node.toString() == "null" -> null
 
             // Check if target is an enum before treating the default like a regular number/string
             targetShape.isEnum -> {
@@ -235,7 +235,12 @@ class KotlinSymbolProvider(private val model: Model, private val settings: Kotli
                 "${enumSymbol.fullName}.fromValue($arg)"
             }
 
+            targetShape.isBlobShape && targetShape.isStreaming -> when(node.toString()) {
+                "" -> null
+                else -> "ByteStream.fromString(${node.toString().dq()})"
+            }
             targetShape.isBlobShape -> "${node.toString().dq()}.encodeToByteArray()"
+
             targetShape.isDocumentShape -> getDefaultValueForDocument(node)
             targetShape.isTimestampShape -> getDefaultValueForTimestamp(node.asNumberNode().get())
 
