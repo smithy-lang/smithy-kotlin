@@ -4,7 +4,17 @@
  */
 package aws.smithy.kotlin.runtime.content
 
+/**
+ * An arbitrarily large signed integer
+ * @param value the string representation of this large integer
+ */
 public expect class BigInteger(value: String) : Number {
+    /**
+     * Create an instance of [BigInteger] from a [ByteArray]
+     * @param bytes ByteArray representing the large integer
+     */
+    public constructor(bytes: ByteArray)
+
     override fun toByte(): Byte
     override fun toLong(): Long
     override fun toShort(): Short
@@ -16,4 +26,5 @@ public expect class BigInteger(value: String) : Number {
     override fun equals(other: Any?): Boolean
     public operator fun plus(other: BigInteger): BigInteger
     public operator fun minus(other: BigInteger): BigInteger
+    public fun toByteArray(): ByteArray
 }

@@ -498,7 +498,7 @@ internal object Cbor {
          * @param value the [BigInteger] that this CBOR bignum represents.
          */
         internal class BigNum(val value: BigInteger) : Value {
-            override fun encode(): ByteArray = Tag(2u, ByteString(value.asBytes())).encode()
+            override fun encode(): ByteArray = Tag(2u, ByteString(value.toByteArray())).encode()
 
             internal companion object {
                 internal fun decode(buffer: SdkBufferedSource): BigNum {
@@ -506,7 +506,7 @@ internal object Cbor {
                     check(tagId == 2) { "Expected tag ID 2 for CBOR bignum, got $tagId" }
 
                     val bytes = ByteString.decode(buffer).value
-                    return BigNum(bytes.toBigInteger())
+                    return BigNum(BigInteger(bytes))
                 }
             }
         }
@@ -518,7 +518,7 @@ internal object Cbor {
          */
         internal class NegBigNum(val value: BigInteger) : Value {
             override fun encode(): ByteArray {
-                val bytes = (value - BigInteger("1")).asBytes()
+                val bytes = (value - BigInteger("1")).toByteArray()
                 return Tag(3u, ByteString(bytes)).encode()
             }
 
@@ -531,7 +531,7 @@ internal object Cbor {
 
                     // note: encoding implies (-1 - $value).
                     // prepend with minus to correctly set up the negative BigInteger, and add one to get the real value.
-                    val bigInteger = BigInteger("-" + bytes.toBigInteger().toString()) + BigInteger("1")
+                    val bigInteger = BigInteger(bytes) + BigInteger("1")
                     return NegBigNum(bigInteger)
                 }
             }

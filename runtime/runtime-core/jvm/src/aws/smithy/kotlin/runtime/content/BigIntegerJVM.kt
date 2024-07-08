@@ -7,6 +7,8 @@ package aws.smithy.kotlin.runtime.content
 public actual class BigInteger actual constructor(public val value: String) : Number() {
     private val delegate = java.math.BigInteger(value)
 
+    public actual constructor(bytes: ByteArray) : this(java.math.BigInteger(bytes).toString())
+
     public actual override fun toByte(): Byte = delegate.toByte()
     public actual override fun toLong(): Long = delegate.toLong()
     public actual override fun toShort(): Short = delegate.toShort()
@@ -19,4 +21,5 @@ public actual class BigInteger actual constructor(public val value: String) : Nu
 
     public actual operator fun plus(other: BigInteger): BigInteger = BigInteger((delegate + other.delegate).toString())
     public actual operator fun minus(other: BigInteger): BigInteger = BigInteger((delegate -  other.delegate).toString())
+    public actual fun toByteArray(): ByteArray = delegate.toByteArray()
 }
