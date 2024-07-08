@@ -19,7 +19,7 @@ import aws.smithy.kotlin.runtime.serde.deserializeStruct
  * https://smithy.io/2.0/additional-specs/protocols/smithy-rpc-v2.html#operation-error-serialization
  */
 @InternalApi
-public object Rpcv2CborErrorDeserializer {
+public object RpcV2CborErrorDeserializer {
     private val ERR_CODE_DESCRIPTOR = SdkFieldDescriptor(SerialKind.String, CborSerialName("__type"))
     private val MESSAGE_DESCRIPTOR = SdkFieldDescriptor(SerialKind.String, CborSerialName("message"))
 

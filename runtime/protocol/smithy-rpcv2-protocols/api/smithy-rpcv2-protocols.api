@@ -1,3 +1,8 @@
+public final class aws/smithy/kotlin/runtime/awsprotocol/rpcv2/cbor/RpcV2CborErrorDeserializer {
+	public static final field INSTANCE Laws/smithy/kotlin/runtime/awsprotocol/rpcv2/cbor/RpcV2CborErrorDeserializer;
+	public final fun deserialize ([B)Laws/smithy/kotlin/runtime/awsprotocol/ErrorDetails;
+}
+
 public final class aws/smithy/kotlin/runtime/awsprotocol/rpcv2/cbor/RpcV2CborSmithyProtocolResponseHeaderInterceptor : aws/smithy/kotlin/runtime/client/Interceptor {
 	public static final field INSTANCE Laws/smithy/kotlin/runtime/awsprotocol/rpcv2/cbor/RpcV2CborSmithyProtocolResponseHeaderInterceptor;
 	public fun modifyBeforeAttemptCompletion-gIAlu-s (Laws/smithy/kotlin/runtime/client/ResponseInterceptorContext;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
@@ -19,10 +24,5 @@ public final class aws/smithy/kotlin/runtime/awsprotocol/rpcv2/cbor/RpcV2CborSmi
 	public fun readBeforeSerialization (Laws/smithy/kotlin/runtime/client/RequestInterceptorContext;)V
 	public fun readBeforeSigning (Laws/smithy/kotlin/runtime/client/ProtocolRequestInterceptorContext;)V
 	public fun readBeforeTransmit (Laws/smithy/kotlin/runtime/client/ProtocolRequestInterceptorContext;)V
-}
-
-public final class aws/smithy/kotlin/runtime/awsprotocol/rpcv2/cbor/Rpcv2CborErrorDeserializer {
-	public static final field INSTANCE Laws/smithy/kotlin/runtime/awsprotocol/rpcv2/cbor/Rpcv2CborErrorDeserializer;
-	public final fun deserialize ([B)Laws/smithy/kotlin/runtime/awsprotocol/ErrorDetails;
 }
 

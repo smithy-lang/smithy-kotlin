@@ -430,7 +430,7 @@ object RuntimeTypes {
 
     object SmithyRpcv2Protocols : RuntimeTypePackage(KotlinDependency.SMITHY_RPCV2_PROTOCOLS) {
         object Cbor : RuntimeTypePackage(KotlinDependency.SMITHY_RPCV2_PROTOCOLS_CBOR) {
-            val Rpcv2CborErrorDeserializer = symbol("Rpcv2CborErrorDeserializer")
+            val RpcV2CborErrorDeserializer = symbol("RpcV2CborErrorDeserializer")
             val RpcV2CborSmithyProtocolResponseHeaderInterceptor = symbol("RpcV2CborSmithyProtocolResponseHeaderInterceptor")
         }
     }

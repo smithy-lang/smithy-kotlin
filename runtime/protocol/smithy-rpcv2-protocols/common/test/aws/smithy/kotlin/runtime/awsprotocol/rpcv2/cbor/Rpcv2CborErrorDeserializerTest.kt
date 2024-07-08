@@ -2,7 +2,7 @@
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
  * SPDX-License-Identifier: Apache-2.0
  */
-import aws.smithy.kotlin.runtime.awsprotocol.rpcv2.cbor.Rpcv2CborErrorDeserializer
+import aws.smithy.kotlin.runtime.awsprotocol.rpcv2.cbor.RpcV2CborErrorDeserializer
 import aws.smithy.kotlin.runtime.serde.SdkFieldDescriptor
 import aws.smithy.kotlin.runtime.serde.SdkObjectDescriptor
 import aws.smithy.kotlin.runtime.serde.SerialKind
@@ -13,7 +13,7 @@ import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
-class Rpcv2CborErrorDeserializerTest {
+class RpcV2CborErrorDeserializerTest {
     @Test
     fun testDeserializeErrorType() = runTest {
         val tests = listOf(
@@ -39,7 +39,7 @@ class Rpcv2CborErrorDeserializerTest {
 
             val bytes = serializer.toByteArray()
 
-            val actual = Rpcv2CborErrorDeserializer.deserialize(bytes)
+            val actual = RpcV2CborErrorDeserializer.deserialize(bytes)
             assertEquals(expected, actual.code)
         }
     }

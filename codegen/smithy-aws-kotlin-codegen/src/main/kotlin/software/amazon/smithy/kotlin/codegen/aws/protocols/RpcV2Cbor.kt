@@ -26,12 +26,12 @@ import software.amazon.smithy.model.traits.TimestampFormatTrait
 import software.amazon.smithy.model.traits.UnitTypeTrait
 import software.amazon.smithy.protocol.traits.Rpcv2CborTrait
 
-class Rpcv2Cbor : AwsHttpBindingProtocolGenerator() {
+class RpcV2Cbor : AwsHttpBindingProtocolGenerator() {
     override val protocol: ShapeId = Rpcv2CborTrait.ID
-    override val defaultTimestampFormat = TimestampFormatTrait.Format.UNKNOWN // not used in Rpcv2Cbor
+    override val defaultTimestampFormat = TimestampFormatTrait.Format.UNKNOWN // not used in RpcV2Cbor
 
     override fun getProtocolHttpBindingResolver(model: Model, serviceShape: ServiceShape): HttpBindingResolver =
-        Rpcv2CborHttpBindingResolver(model, serviceShape)
+        RpcV2CborHttpBindingResolver(model, serviceShape)
 
     override fun structuredDataSerializer(ctx: ProtocolGenerator.GenerationContext): StructuredDataSerializerGenerator =
         CborSerializerGenerator(this)
@@ -40,7 +40,7 @@ class Rpcv2Cbor : AwsHttpBindingProtocolGenerator() {
         CborParserGenerator(this)
 
     override fun renderDeserializeErrorDetails(ctx: ProtocolGenerator.GenerationContext, op: OperationShape, writer: KotlinWriter) {
-        writer.write("#T.deserialize(payload)", RuntimeTypes.SmithyRpcv2Protocols.Cbor.Rpcv2CborErrorDeserializer)
+        writer.write("#T.deserialize(payload)", RuntimeTypes.SmithyRpcv2Protocols.Cbor.RpcV2CborErrorDeserializer)
     }
 
     override fun getDefaultHttpMiddleware(ctx: ProtocolGenerator.GenerationContext): List<ProtocolMiddleware> {
@@ -49,7 +49,7 @@ class Rpcv2Cbor : AwsHttpBindingProtocolGenerator() {
 
         // Every response MUST contain the same `smithy-protocol` header, otherwise it's considered invalid
         val validateSmithyProtocolHeaderMiddleware = object : ProtocolMiddleware {
-            override val name: String = "Rpcv2CborValidateSmithyProtocolResponseHeader"
+            override val name: String = "RpcV2CborValidateSmithyProtocolResponseHeader"
             override fun render(ctx: ProtocolGenerator.GenerationContext, op: OperationShape, writer: KotlinWriter) {
                 val interceptorSymbol = RuntimeTypes.SmithyRpcv2Protocols.Cbor.RpcV2CborSmithyProtocolResponseHeaderInterceptor
                 writer.write("op.interceptors.add(#T)", interceptorSymbol)
@@ -61,13 +61,13 @@ class Rpcv2Cbor : AwsHttpBindingProtocolGenerator() {
             private val mutateHeadersMiddleware = MutateHeadersMiddleware(extraHeaders = mapOf("Accept" to "application/vnd.amazon.eventstream"))
 
             override fun isEnabledFor(ctx: ProtocolGenerator.GenerationContext, op: OperationShape): Boolean = op.isOutputEventStream(ctx.model)
-            override val name: String = "Rpcv2CborEventStreamsAcceptHeaderMiddleware"
+            override val name: String = "RpcV2CborEventStreamsAcceptHeaderMiddleware"
             override fun render(ctx: ProtocolGenerator.GenerationContext, op: OperationShape, writer: KotlinWriter) = mutateHeadersMiddleware.render(ctx, op, writer)
         }
 
-        // Emit a metric to track usage of Rpcv2Cbor
+        // Emit a metric to track usage of RpcV2Cbor
         val businessMetricsMiddleware = object : ProtocolMiddleware {
-            override val name: String = "Rpcv2CborBusinessMetricsMiddleware"
+            override val name: String = "RpcV2CborBusinessMetricsMiddleware"
             override fun render(ctx: ProtocolGenerator.GenerationContext, op: OperationShape, writer: KotlinWriter) {
                 writer.write("op.context.#T(#T.PROTOCOL_RPC_V2_CBOR)", RuntimeTypes.Core.BusinessMetrics.emitBusinessMetric, RuntimeTypes.Core.BusinessMetrics.SmithyBusinessMetric)
             }
@@ -133,7 +133,7 @@ class Rpcv2Cbor : AwsHttpBindingProtocolGenerator() {
         writer.write("builder.headers.setMissing(\"Content-Type\", #S)", resolver.determineRequestContentType(op))
     }
 
-    class Rpcv2CborHttpBindingResolver(
+    class RpcV2CborHttpBindingResolver(
         model: Model,
         val serviceShape: ServiceShape,
     ) : StaticHttpBindingResolver(
