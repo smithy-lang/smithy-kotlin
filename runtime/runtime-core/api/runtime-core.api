@@ -340,6 +340,7 @@ public final class aws/smithy/kotlin/runtime/config/EnvironmentSettingKt {
 
 public final class aws/smithy/kotlin/runtime/content/BigInteger : java/lang/Number {
 	public fun <init> (Ljava/lang/String;)V
+	public fun <init> ([B)V
 	public final fun byteValue ()B
 	public final fun doubleValue ()D
 	public fun equals (Ljava/lang/Object;)Z
@@ -352,6 +353,7 @@ public final class aws/smithy/kotlin/runtime/content/BigInteger : java/lang/Numb
 	public final fun plus (Laws/smithy/kotlin/runtime/content/BigInteger;)Laws/smithy/kotlin/runtime/content/BigInteger;
 	public final fun shortValue ()S
 	public fun toByte ()B
+	public final fun toByteArray ()[B
 	public fun toDouble ()D
 	public fun toFloat ()F
 	public fun toInt ()I

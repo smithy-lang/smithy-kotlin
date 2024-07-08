@@ -4,16 +4,13 @@
  */
 package aws.smithy.kotlin.runtime.serde.cbor
 
-import aws.smithy.kotlin.runtime.content.BigInteger
 import aws.smithy.kotlin.runtime.io.SdkBuffer
 import aws.smithy.kotlin.runtime.io.SdkBufferedSource
-import aws.smithy.kotlin.runtime.io.use
-import aws.smithy.kotlin.runtime.serde.DeserializationException
 
 /**
  * Encode and write a [Cbor.Value] to this [SdkBuffer]
  */
-internal fun SdkBuffer.write(value: Cbor.Value) = write(value.encode())
+internal fun SdkBuffer.write(value: Cbor.Value) = value.encode(this)
 
 // Peek at the head byte to determine if the next encoded value represents a break in an indefinite-length list/map
 internal val SdkBufferedSource.nextValueIsIndefiniteBreak: Boolean
