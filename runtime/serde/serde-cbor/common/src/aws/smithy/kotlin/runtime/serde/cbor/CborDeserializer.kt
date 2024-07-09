@@ -60,19 +60,30 @@ public class CborDeserializer(payload: ByteArray) : Deserializer {
 
 internal class CborPrimitiveDeserializer(private val buffer: SdkBufferedSource) : PrimitiveDeserializer {
     private inline fun <reified T : Number> deserializeNumber(cast: (Number) -> T): T {
-        val longValue: Long = when (val major = peekMajor(buffer)) {
-            Major.U_INT -> UInt.decode(buffer).value.toLong()
-            Major.NEG_INT -> -NegInt.decode(buffer).value.toLong()
+        val major = peekMajor(buffer)
+
+        val unsigned: ULong = when (major) {
+            Major.U_INT -> UInt.decode(buffer).value
+            Major.NEG_INT -> NegInt.decode(buffer).value
             else -> throw DeserializationException("Expected ${Major.U_INT} or ${Major.NEG_INT} for CBOR number, got $major.")
         }
 
-        when (T::class) {
-            Byte::class -> check(longValue in (Byte.MIN_VALUE .. Byte.MAX_VALUE)) { "$longValue out of range for Byte" }
-            Short::class -> check(longValue in (Short.MIN_VALUE .. Short.MAX_VALUE)) { "$longValue out of range for Short" }
-            Int::class -> check(longValue in (Int.MIN_VALUE .. Int.MAX_VALUE)) { "$longValue out of range for Int" }
+        // Convert ULong -> Long, handling potential overflow
+        val signed: Long = if (major == Major.NEG_INT) {
+            check(unsigned <= Long.MAX_VALUE.toULong() + 1u) { "CBOR number $unsigned exceeds minimum value ${Long.MIN_VALUE}" }
+            -(unsigned.toLong())
+        } else {
+            check(unsigned <= Long.MAX_VALUE.toULong()) { "CBOR number $unsigned exceeds maximum value ${Long.MAX_VALUE}" }
+            unsigned.toLong()
         }
 
-        return cast(longValue)
+        when (T::class) {
+            Byte::class -> check(signed in (Byte.MIN_VALUE .. Byte.MAX_VALUE)) { "$signed out of range for Byte" }
+            Short::class -> check(signed in (Short.MIN_VALUE .. Short.MAX_VALUE)) { "$signed out of range for Short" }
+            Int::class -> check(signed in (Int.MIN_VALUE .. Int.MAX_VALUE)) { "$signed out of range for Int" }
+        }
+
+        return cast(signed)
     }
 
     override fun deserializeByte(): Byte = deserializeNumber { it.toByte() }
@@ -143,7 +154,7 @@ private class CborElementIterator(
         if (expectedLength != null) {
             if (currentLength != expectedLength) {
                 check(!buffer.exhausted()) { "Buffer is unexpectedly exhausted, read $currentLength elements, expected $expectedLength." }
-                currentLength += 1u
+                currentLength += 1u // FIXME hasNextElement should be treated as a read-only operation, free from side effects
                 return true
             } else {
                 return false

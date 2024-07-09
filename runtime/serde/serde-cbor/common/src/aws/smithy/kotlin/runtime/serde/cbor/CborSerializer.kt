@@ -32,6 +32,8 @@ public class CborSerializer :
     override fun toByteArray(): ByteArray = buffer.readByteArray()
 
     override fun beginMap(descriptor: SdkFieldDescriptor): MapSerializer {
+        // TODO Encoding indefinite maps comes with some performance overhead, see if we can refactor mapEntry interface to
+        // pass additional information such as the map length. That way we can serialize a definite-length map.
         buffer.write(IndefiniteMap())
         return this
     }
@@ -39,6 +41,8 @@ public class CborSerializer :
     override fun endMap(): Unit = buffer.write(IndefiniteBreak)
 
     override fun beginList(descriptor: SdkFieldDescriptor): ListSerializer {
+        // TODO Encoding indefinite lists comes with some performance overhead, see if we can refactor listEntry interface to
+        // pass additional information such as the list length. That way we can serialize a definite-length list.
         buffer.write(IndefiniteList())
         return this
     }

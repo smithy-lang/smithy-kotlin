@@ -28,7 +28,10 @@ import software.amazon.smithy.protocol.traits.Rpcv2CborTrait
 
 class RpcV2Cbor : AwsHttpBindingProtocolGenerator() {
     override val protocol: ShapeId = Rpcv2CborTrait.ID
-    override val defaultTimestampFormat = TimestampFormatTrait.Format.UNKNOWN // not used in RpcV2Cbor
+
+    // TODO Timestamp format is not used in RpcV2Cbor since it's a binary protocol. We seem to be missing an abstraction
+    // between text-based and binary-based protocols
+    override val defaultTimestampFormat = TimestampFormatTrait.Format.UNKNOWN
 
     override fun getProtocolHttpBindingResolver(model: Model, serviceShape: ServiceShape): HttpBindingResolver =
         RpcV2CborHttpBindingResolver(model, serviceShape)

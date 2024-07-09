@@ -75,8 +75,7 @@ class CborDeserializerSuccessTest {
         val buffer = SdkBuffer().apply { write(payload) }
         val deserializer = CborPrimitiveDeserializer(buffer)
 
-        val result = deserializer.deserializeLong().toULong()
-        assertEquals(ULong.MAX_VALUE, result)
+        assertEquals(ULong.MAX_VALUE, aws.smithy.kotlin.runtime.serde.cbor.encoding.UInt.decode(buffer).value)
     }
 
     @Test
@@ -117,10 +116,8 @@ class CborDeserializerSuccessTest {
         val payload = "0x1affffffff".toByteArray()
 
         val buffer = SdkBuffer().apply { write(payload) }
-        val deserializer = CborPrimitiveDeserializer(buffer)
 
-        val result = deserializer.deserializeInt().toUInt()
-        assertEquals(UInt.MAX_VALUE, result)
+        assertEquals(UInt.MAX_VALUE, aws.smithy.kotlin.runtime.serde.cbor.encoding.UInt.decode(buffer).value.toUInt())
     }
 
     @Test
@@ -213,10 +210,7 @@ class CborDeserializerSuccessTest {
         val payload = "0x18ff".toByteArray()
 
         val buffer = SdkBuffer().apply { write(payload) }
-        val deserializer = CborPrimitiveDeserializer(buffer)
-
-        val result = deserializer.deserializeByte().toUByte()
-        assertEquals(255u, result)
+        assertEquals(255u, aws.smithy.kotlin.runtime.serde.cbor.encoding.UInt.decode(buffer).value)
     }
 
     @Test
@@ -313,10 +307,7 @@ class CborDeserializerSuccessTest {
         val payload = "0x19ffff".toByteArray()
 
         val buffer = SdkBuffer().apply { write(payload) }
-        val deserializer = CborPrimitiveDeserializer(buffer)
-
-        val result = deserializer.deserializeShort().toUShort()
-        assertEquals(UShort.MAX_VALUE, result)
+        assertEquals(UShort.MAX_VALUE, aws.smithy.kotlin.runtime.serde.cbor.encoding.UInt.decode(buffer).value.toUShort())
     }
 
     @Test
@@ -560,7 +551,7 @@ class CborDeserializerSuccessTest {
         val actual = deserializer.deserializeList(SdkFieldDescriptor(SerialKind.List)) {
             val list = mutableListOf<UByte>()
             while (hasNextElement()) {
-                list.add(deserializeByte().toUByte())
+                list.add(deserializeLong().toUByte())
             }
             return@deserializeList list
         }
@@ -611,7 +602,7 @@ class CborDeserializerSuccessTest {
         val actual = deserializer.deserializeList(SdkFieldDescriptor(SerialKind.List)) {
             val list = mutableListOf<UShort>()
             while (hasNextElement()) {
-                list.add(deserializeShort().toUShort())
+                list.add(deserializeLong().toUShort())
             }
             return@deserializeList list
         }
@@ -645,7 +636,7 @@ class CborDeserializerSuccessTest {
         val actual = deserializer.deserializeList(SdkFieldDescriptor(SerialKind.List)) {
             val list = mutableListOf<UInt>()
             while (hasNextElement()) {
-                list.add(deserializeInt().toUInt())
+                list.add(deserializeLong().toUInt())
             }
             return@deserializeList list
         }
@@ -875,7 +866,7 @@ class CborDeserializerSuccessTest {
         val actual = deserializer.deserializeList(SdkFieldDescriptor(SerialKind.List)) {
             val list = mutableListOf<UByte>()
             while (hasNextElement()) {
-                list.add(deserializeByte().toUByte())
+                list.add(deserializeLong().toUByte())
             }
             return@deserializeList list
         }
@@ -892,7 +883,7 @@ class CborDeserializerSuccessTest {
         val actual = deserializer.deserializeList(SdkFieldDescriptor(SerialKind.List)) {
             val list = mutableListOf<UInt>()
             while (hasNextElement()) {
-                list.add(deserializeInt().toUInt())
+                list.add(deserializeLong().toUInt())
             }
             return@deserializeList list
         }
@@ -909,13 +900,18 @@ class CborDeserializerSuccessTest {
         val actual = deserializer.deserializeList(SdkFieldDescriptor(SerialKind.List)) {
             val list = mutableListOf<ULong>()
             while (hasNextElement()) {
-                list.add(deserializeLong().toULong())
+                list.add(ULong.MAX_VALUE)
+                break
             }
             return@deserializeList list
         }
 
         assertEquals(1, actual.size)
-        assertEquals(ULong.MAX_VALUE, actual[0])
+
+        val remainingBuffer = "0x1bffffffffffffffff".toByteArray()
+        val buffer = SdkBuffer().apply { write(remainingBuffer) }
+        val result = aws.smithy.kotlin.runtime.serde.cbor.encoding.UInt.decode(buffer).value
+        assertEquals(ULong.MAX_VALUE, result)
     }
 
     @Test
@@ -977,13 +973,16 @@ class CborDeserializerSuccessTest {
         val actual = deserializer.deserializeList(SdkFieldDescriptor(SerialKind.List)) {
             val list = mutableListOf<ULong>()
             while (hasNextElement()) {
-                list.add(deserializeLong().toULong())
+                list.add(ULong.MAX_VALUE)
             }
             return@deserializeList list
         }
-
         assertEquals(1, actual.size)
-        assertEquals(ULong.MAX_VALUE, actual[0])
+
+        val remainingBuffer = "0x1bffffffffffffffff".toByteArray()
+        val buffer = SdkBuffer().apply { write(remainingBuffer) }
+        val result = aws.smithy.kotlin.runtime.serde.cbor.encoding.UInt.decode(buffer).value
+        assertEquals(ULong.MAX_VALUE, result)
     }
 
     @Test
@@ -1181,7 +1180,8 @@ class CborDeserializerSuccessTest {
         val actual = deserializer.deserializeList(SdkFieldDescriptor(SerialKind.List)) {
             val list = mutableListOf<Long>()
             while (hasNextElement()) {
-                list.add(deserializeLong())
+                list.add(Long.MAX_VALUE)
+                break
             }
             return@deserializeList list
         }
@@ -1490,7 +1490,8 @@ class CborDeserializerSuccessTest {
         val actual = deserializer.deserializeList(SdkFieldDescriptor(SerialKind.List)) {
             val list = mutableListOf<ULong>()
             while (hasNextElement()) {
-                list.add(deserializeLong().toULong())
+                list.add(ULong.MAX_VALUE)
+                break
             }
             return@deserializeList list
         }
@@ -1523,7 +1524,7 @@ class CborDeserializerSuccessTest {
         val actual = deserializer.deserializeList(SdkFieldDescriptor(SerialKind.List)) {
             val list = mutableListOf<UShort>()
             while (hasNextElement()) {
-                list.add(deserializeShort().toUShort())
+                list.add(deserializeLong().toUShort())
             }
             return@deserializeList list
         }
@@ -1574,14 +1575,19 @@ class CborDeserializerSuccessTest {
         val actual = deserializer.deserializeMap(SdkFieldDescriptor(SerialKind.Map)) {
             val map = mutableMapOf<String, ULong>()
             while (hasNextEntry()) {
-                map[key()] = deserializeLong().toULong()
+                map[key()] = ULong.MAX_VALUE
+                break
             }
             return@deserializeMap map
         }
 
         assertEquals(1, actual.size)
         assertEquals("foo", actual.entries.first().key)
-        assertEquals(18446744073709551615u, actual.entries.first().value)
+
+        val remainingBuffer = "0x1bffffffffffffffffff".toByteArray()
+        val buffer = SdkBuffer().apply { write(remainingBuffer) }
+        val result = aws.smithy.kotlin.runtime.serde.cbor.encoding.UInt.decode(buffer).value
+        assertEquals(ULong.MAX_VALUE, result)
     }
 
     @Test
@@ -1646,7 +1652,7 @@ class CborDeserializerSuccessTest {
         val actual = deserializer.deserializeMap(SdkFieldDescriptor(SerialKind.Map)) {
             val map = mutableMapOf<String, UShort>()
             while (hasNextEntry()) {
-                map[key()] = deserializeShort().toUShort()
+                map[key()] = deserializeLong().toUShort()
             }
             return@deserializeMap map
         }
@@ -1773,7 +1779,8 @@ class CborDeserializerSuccessTest {
         val actual = deserializer.deserializeMap(SdkFieldDescriptor(SerialKind.Map)) {
             val map = mutableMapOf<String, ULong>()
             while (hasNextEntry()) {
-                map[key()] = deserializeLong().toULong()
+                map[key()] = ULong.MIN_VALUE
+                break
             }
             return@deserializeMap map
         }
@@ -1938,7 +1945,7 @@ class CborDeserializerSuccessTest {
         val actual = deserializer.deserializeMap(SdkFieldDescriptor(SerialKind.Map)) {
             val map = mutableMapOf<String, UShort>()
             while (hasNextEntry()) {
-                map[key()] = deserializeShort().toUShort()
+                map[key()] = deserializeLong().toUShort()
             }
             return@deserializeMap map
         }
@@ -2046,14 +2053,19 @@ class CborDeserializerSuccessTest {
         val actual = deserializer.deserializeMap(SdkFieldDescriptor(SerialKind.Map)) {
             val map = mutableMapOf<String, ULong>()
             while (hasNextEntry()) {
-                map[key()] = deserializeLong().toULong()
+                map[key()] = ULong.MAX_VALUE
+                break
             }
             return@deserializeMap map
         }
 
         assertEquals(1, actual.size)
         assertEquals("foo", actual.entries.first().key)
-        assertEquals(ULong.MAX_VALUE, actual.entries.first().value)
+
+        val remainingBuffer = "0x1bffffffffffffffff".toByteArray()
+        val buffer = SdkBuffer().apply { write(remainingBuffer) }
+        val result = aws.smithy.kotlin.runtime.serde.cbor.encoding.UInt.decode(buffer).value
+        assertEquals(ULong.MAX_VALUE, result)
     }
 
     @Test
@@ -2227,7 +2239,8 @@ class CborDeserializerSuccessTest {
         val actual = deserializer.deserializeMap(SdkFieldDescriptor(SerialKind.Map)) {
             val map = mutableMapOf<String, Long>()
             while (hasNextEntry()) {
-                map[key()] = deserializeLong()
+                map[key()] = Long.MAX_VALUE
+                break
             }
             return@deserializeMap map
         }
@@ -2302,7 +2315,7 @@ class CborDeserializerSuccessTest {
         val actual = deserializer.deserializeMap(SdkFieldDescriptor(SerialKind.Map)) {
             val map = mutableMapOf<String, UInt>()
             while (hasNextEntry()) {
-                map[key()] = deserializeInt().toUInt()
+                map[key()] = deserializeLong().toUInt()
             }
             return@deserializeMap map
         }
@@ -2410,7 +2423,7 @@ class CborDeserializerSuccessTest {
         val actual = deserializer.deserializeMap(SdkFieldDescriptor(SerialKind.Map)) {
             val map = mutableMapOf<String, UByte>()
             while (hasNextEntry()) {
-                map[key()] = deserializeByte().toUByte()
+                map[key()] = deserializeLong().toUByte()
             }
             return@deserializeMap map
         }
@@ -2500,7 +2513,7 @@ class CborDeserializerSuccessTest {
         val actual = deserializer.deserializeMap(SdkFieldDescriptor(SerialKind.Map)) {
             val map = mutableMapOf<String, UByte>()
             while (hasNextEntry()) {
-                map[key()] = deserializeByte().toUByte()
+                map[key()] = deserializeLong().toUByte()
             }
             return@deserializeMap map
         }
@@ -2518,7 +2531,7 @@ class CborDeserializerSuccessTest {
         val actual = deserializer.deserializeMap(SdkFieldDescriptor(SerialKind.Map)) {
             val map = mutableMapOf<String, UInt>()
             while (hasNextEntry()) {
-                map[key()] = deserializeInt().toUInt()
+                map[key()] = deserializeLong().toUInt()
             }
             return@deserializeMap map
         }
