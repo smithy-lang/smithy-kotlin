@@ -13,11 +13,11 @@ import aws.smithy.kotlin.runtime.http.toHttpBody
 import aws.smithy.kotlin.runtime.io.SdkBuffer
 import aws.smithy.kotlin.runtime.serde.*
 import aws.smithy.kotlin.runtime.serde.cbor.encoding.*
-import aws.smithy.kotlin.runtime.serde.cbor.encoding.Boolean as cborBoolean
-import aws.smithy.kotlin.runtime.serde.cbor.encoding.String as cborString
 import aws.smithy.kotlin.runtime.time.Instant
 import aws.smithy.kotlin.runtime.time.TimestampFormat
 import kotlin.math.absoluteValue
+import aws.smithy.kotlin.runtime.serde.cbor.encoding.Boolean as cborBoolean
+import aws.smithy.kotlin.runtime.serde.cbor.encoding.String as cborString
 
 @InternalApi
 public class CborSerializer :

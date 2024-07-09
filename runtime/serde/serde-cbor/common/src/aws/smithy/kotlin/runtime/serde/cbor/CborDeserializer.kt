@@ -10,10 +10,10 @@ import aws.smithy.kotlin.runtime.content.Document
 import aws.smithy.kotlin.runtime.io.*
 import aws.smithy.kotlin.runtime.serde.*
 import aws.smithy.kotlin.runtime.serde.cbor.encoding.*
-import aws.smithy.kotlin.runtime.serde.cbor.encoding.String as cborString
-import aws.smithy.kotlin.runtime.serde.cbor.encoding.Boolean as cborBoolean
 import aws.smithy.kotlin.runtime.time.Instant
 import aws.smithy.kotlin.runtime.time.TimestampFormat
+import aws.smithy.kotlin.runtime.serde.cbor.encoding.Boolean as cborBoolean
+import aws.smithy.kotlin.runtime.serde.cbor.encoding.String as cborString
 
 /**
  * Deserializer for CBOR byte payloads
