@@ -6,24 +6,29 @@ package aws.smithy.kotlin.runtime.serde.cbor
 
 import aws.smithy.kotlin.runtime.io.SdkBuffer
 import aws.smithy.kotlin.runtime.io.SdkBufferedSource
+import aws.smithy.kotlin.runtime.serde.cbor.encoding.*
+import aws.smithy.kotlin.runtime.serde.cbor.encoding.Major
+import aws.smithy.kotlin.runtime.serde.cbor.encoding.Minor
+import aws.smithy.kotlin.runtime.serde.cbor.encoding.peekMajor
+import aws.smithy.kotlin.runtime.serde.cbor.encoding.peekMinorByte
 
 /**
- * Encode and write a [Cbor.Value] to this [SdkBuffer]
+ * Encode and write a CBOR [Value] to this [SdkBuffer]
  */
-internal fun SdkBuffer.write(value: Cbor.Value) = value.encode(this)
+internal fun SdkBuffer.write(value: Value) = value.encode(this)
 
 // Peek at the head byte to determine if the next encoded value represents a break in an indefinite-length list/map
-internal val SdkBufferedSource.nextValueIsIndefiniteBreak: Boolean
+internal val SdkBufferedSource.nextValueIsIndefiniteBreak: kotlin.Boolean
     get() = peekMajor(this) == Major.TYPE_7 && peekMinorByte(this) == Minor.INDEFINITE.value
 
 // Peek at the head byte to determine if the next encoded value represents null
-internal val SdkBufferedSource.nextValueIsNull: Boolean
+internal val SdkBufferedSource.nextValueIsNull: kotlin.Boolean
     get() = peekMajor(this) == Major.TYPE_7 && (peekMinorByte(this) == Minor.NULL.value || peekMinorByte(this) == Minor.UNDEFINED.value)
 
-// Encodes a major and minor type of CBOR value in a single byte
+// Encodes a [Major] and [Minor] value in a single byte
 internal fun encodeMajorMinor(major: Major, minor: Minor): Byte = (major.value.toUInt() shl 5 or minor.value.toUInt()).toByte()
 
-// Encode a [Major] value along with its additional information / argument.
+// Encode a [Major] value along with its additional information / argument
 internal fun encodeArgument(major: Major, argument: ULong): ByteArray {
     // Convert a ULong to a ByteArray by right-shifting it appropriately
     fun ULong.toByteArray(): ByteArray {
@@ -52,7 +57,7 @@ internal fun encodeArgument(major: Major, argument: ULong): ByteArray {
     return byteArrayOf(head, *argument.toByteArray())
 }
 
-// Convert a ByteArray to ULong by left-shifting each byte appropriately
+// Convert a ByteArray to a ULong by left-shifting each byte appropriately
 internal fun ByteArray.toULong() = foldIndexed(0uL) { i, acc, byte ->
     acc or (byte.toUByte().toULong() shl ((size - 1 - i) * 8))
 }

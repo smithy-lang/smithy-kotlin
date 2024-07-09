@@ -7,6 +7,7 @@ package aws.smithy.kotlin.runtime.serde.cbor
 import aws.smithy.kotlin.runtime.io.SdkBuffer
 import aws.smithy.kotlin.runtime.serde.SdkFieldDescriptor
 import aws.smithy.kotlin.runtime.serde.SerialKind
+import aws.smithy.kotlin.runtime.serde.cbor.encoding.Tag
 import aws.smithy.kotlin.runtime.serde.deserializeList
 import aws.smithy.kotlin.runtime.serde.deserializeMap
 import kotlin.test.Test
@@ -92,7 +93,7 @@ class CborDeserializerErrorTest {
         val buffer = SdkBuffer().apply { write(payload) }
 
         assertFails {
-            Cbor.Encoding.Tag.decode(buffer)
+            Tag.decode(buffer)
         }
     }
 
@@ -103,7 +104,7 @@ class CborDeserializerErrorTest {
         val buffer = SdkBuffer().apply { write(payload) }
 
         assertFails {
-            Cbor.Encoding.Tag.decode(buffer)
+            Tag.decode(buffer)
         }
     }
 
@@ -284,7 +285,7 @@ class CborDeserializerErrorTest {
         val buffer = SdkBuffer().apply { write(payload) }
 
         assertFails {
-            Cbor.Encoding.Tag.decode(buffer)
+            Tag.decode(buffer)
         }
     }
 
@@ -349,7 +350,7 @@ class CborDeserializerErrorTest {
         val buffer = SdkBuffer().apply { write(payload) }
 
         assertFails {
-            Cbor.Encoding.Tag.decode(buffer)
+            Tag.decode(buffer)
         }
     }
 
@@ -444,7 +445,7 @@ class CborDeserializerErrorTest {
         val buffer = SdkBuffer().apply { write(payload) }
 
         assertFails {
-            Cbor.Encoding.Tag.decode(buffer)
+            Tag.decode(buffer)
         }
     }
 
@@ -751,7 +752,7 @@ class CborDeserializerErrorTest {
         val buffer = SdkBuffer().apply { write(payload) }
 
         assertFails {
-            Cbor.Encoding.Tag.decode(buffer)
+            Tag.decode(buffer)
         }
     }
 
@@ -762,7 +763,7 @@ class CborDeserializerErrorTest {
         val buffer = SdkBuffer().apply { write(payload) }
 
         assertFails {
-            Cbor.Encoding.Tag.decode(buffer)
+            Tag.decode(buffer)
         }
     }
 }
