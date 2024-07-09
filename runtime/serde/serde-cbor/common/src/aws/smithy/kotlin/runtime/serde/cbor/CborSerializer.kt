@@ -27,7 +27,7 @@ public class CborSerializer :
     StructSerializer {
     private val buffer = SdkBuffer()
 
-    public fun toHttpBody(): HttpBody = buffer.toHttpBody(contentLength = buffer.size)
+    public fun toHttpBody(): HttpBody = buffer.readByteArray().toHttpBody()
 
     override fun toByteArray(): ByteArray = buffer.readByteArray()
 
