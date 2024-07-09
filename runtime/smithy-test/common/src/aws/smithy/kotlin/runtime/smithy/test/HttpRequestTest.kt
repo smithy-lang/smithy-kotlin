@@ -12,7 +12,6 @@ import aws.smithy.kotlin.runtime.http.readAll
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.httptest.TestEngine
 import aws.smithy.kotlin.runtime.text.encoding.encodeBase64
-import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.TestResult
 import kotlinx.coroutines.test.runTest
 import kotlin.test.assertEquals

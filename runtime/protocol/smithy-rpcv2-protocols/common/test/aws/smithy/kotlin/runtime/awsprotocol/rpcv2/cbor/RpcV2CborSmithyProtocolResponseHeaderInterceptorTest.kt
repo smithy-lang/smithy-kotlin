@@ -54,8 +54,7 @@ internal fun getMockClient(response: ByteArray, responseHeaders: Headers = Heade
 
 internal val RESPONSE = "abc".repeat(1024).encodeToByteArray()
 
-
-class RpcV2CborSmithyProtocolResponseHeaderInterceptorTest  {
+class RpcV2CborSmithyProtocolResponseHeaderInterceptorTest {
     @Test
     fun testThrowsOnMissingHeader() = runTest {
         val req = HttpRequestBuilder()

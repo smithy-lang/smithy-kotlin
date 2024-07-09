@@ -20,6 +20,6 @@ public actual class BigInteger actual constructor(public val value: String) : Nu
     public actual override fun equals(other: Any?): Boolean = other is BigInteger && value == other.value
 
     public actual operator fun plus(other: BigInteger): BigInteger = BigInteger((delegate + other.delegate).toString())
-    public actual operator fun minus(other: BigInteger): BigInteger = BigInteger((delegate -  other.delegate).toString())
+    public actual operator fun minus(other: BigInteger): BigInteger = BigInteger((delegate - other.delegate).toString())
     public actual fun toByteArray(): ByteArray = delegate.toByteArray()
 }

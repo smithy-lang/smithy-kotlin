@@ -5,7 +5,7 @@
 package aws.smithy.kotlin.runtime.content
 
 public actual class BigInteger actual constructor(value: String) : Number() {
-    public actual constructor(bytes: ByteArray): this("Not yet implemented")
+    public actual constructor(bytes: ByteArray) : this("Not yet implemented")
 
     actual override fun toByte(): Byte {
         TODO("Not yet implemented")
