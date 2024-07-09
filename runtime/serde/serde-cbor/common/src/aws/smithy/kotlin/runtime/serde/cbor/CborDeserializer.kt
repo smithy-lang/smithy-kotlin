@@ -78,9 +78,9 @@ internal class CborPrimitiveDeserializer(private val buffer: SdkBufferedSource) 
         }
 
         when (T::class) {
-            Byte::class -> check(signed in (Byte.MIN_VALUE .. Byte.MAX_VALUE)) { "$signed out of range for Byte" }
-            Short::class -> check(signed in (Short.MIN_VALUE .. Short.MAX_VALUE)) { "$signed out of range for Short" }
-            Int::class -> check(signed in (Int.MIN_VALUE .. Int.MAX_VALUE)) { "$signed out of range for Int" }
+            Byte::class -> check(signed in (Byte.MIN_VALUE..Byte.MAX_VALUE)) { "$signed out of range for Byte" }
+            Short::class -> check(signed in (Short.MIN_VALUE..Short.MAX_VALUE)) { "$signed out of range for Short" }
+            Int::class -> check(signed in (Int.MIN_VALUE..Int.MAX_VALUE)) { "$signed out of range for Int" }
         }
 
         return cast(signed)
