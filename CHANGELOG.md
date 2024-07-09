@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.2.12] - 07/09/2024
+
+### Miscellaneous
+* Upgrade Smithy to version **1.50.0**
+
 ## [1.2.11] - 06/28/2024
 
 ### Miscellaneous
