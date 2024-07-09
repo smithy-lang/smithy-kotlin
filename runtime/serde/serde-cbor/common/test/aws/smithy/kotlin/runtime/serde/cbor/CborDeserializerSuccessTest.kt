@@ -73,8 +73,6 @@ class CborDeserializerSuccessTest {
         val payload = "0x1bffffffffffffffff".toByteArray()
 
         val buffer = SdkBuffer().apply { write(payload) }
-        val deserializer = CborPrimitiveDeserializer(buffer)
-
         assertEquals(ULong.MAX_VALUE, aws.smithy.kotlin.runtime.serde.cbor.encoding.UInt.decode(buffer).value)
     }
 
