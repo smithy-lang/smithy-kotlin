@@ -41,8 +41,8 @@ abstract class AwsHttpBindingProtocolGenerator : HttpBindingProtocolGenerator() 
 
         val ignoredTests = TestMemberDelta(
             setOf(
-                // This test requires populating blob members with a default value of "", which the sdk doesn't do
-                "AwsJson10ClientPopulatesDefaultValuesInInput",
+                // Test broken in Smithy 1.50.0, should be fixed by https://github.com/smithy-lang/smithy/pull/2341
+                "RestJsonClientIgnoresDefaultValuesIfMemberValuesArePresentInResponse",
             ),
         )
 
