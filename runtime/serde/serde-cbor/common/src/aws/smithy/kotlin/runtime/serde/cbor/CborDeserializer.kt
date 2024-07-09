@@ -59,12 +59,21 @@ public class CborDeserializer(payload: ByteArray) : Deserializer {
 }
 
 internal class CborPrimitiveDeserializer(private val buffer: SdkBufferedSource) : PrimitiveDeserializer {
-    private inline fun <reified T : Number> deserializeNumber(cast: (Number) -> T): T =
-        when (val major = peekMajor(buffer)) {
-            Major.U_INT -> cast(UInt.decode(buffer).value.toLong())
-            Major.NEG_INT -> cast(-NegInt.decode(buffer).value.toLong())
+    private inline fun <reified T : Number> deserializeNumber(cast: (Number) -> T): T {
+        val longValue: Long = when (val major = peekMajor(buffer)) {
+            Major.U_INT -> UInt.decode(buffer).value.toLong()
+            Major.NEG_INT -> -NegInt.decode(buffer).value.toLong()
             else -> throw DeserializationException("Expected ${Major.U_INT} or ${Major.NEG_INT} for CBOR number, got $major.")
         }
+
+        when (T::class) {
+            Byte::class -> check(longValue in (Byte.MIN_VALUE .. Byte.MAX_VALUE)) { "$longValue out of range for Byte" }
+            Short::class -> check(longValue in (Short.MIN_VALUE .. Short.MAX_VALUE)) { "$longValue out of range for Short" }
+            Int::class -> check(longValue in (Int.MIN_VALUE .. Int.MAX_VALUE)) { "$longValue out of range for Int" }
+        }
+
+        return cast(longValue)
+    }
 
     override fun deserializeByte(): Byte = deserializeNumber { it.toByte() }
     override fun deserializeInt(): Int = deserializeNumber { it.toInt() }
