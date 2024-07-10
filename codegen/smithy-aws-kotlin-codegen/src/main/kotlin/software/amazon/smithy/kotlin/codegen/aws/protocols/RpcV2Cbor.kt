@@ -43,7 +43,7 @@ class RpcV2Cbor : AwsHttpBindingProtocolGenerator() {
         CborParserGenerator(this)
 
     override fun renderDeserializeErrorDetails(ctx: ProtocolGenerator.GenerationContext, op: OperationShape, writer: KotlinWriter) {
-        writer.write("#T.deserialize(payload)", RuntimeTypes.SmithyRpcv2Protocols.Cbor.RpcV2CborErrorDeserializer)
+        writer.write("#T.deserialize(payload)", RuntimeTypes.SmithyRpcV2Protocols.Cbor.RpcV2CborErrorDeserializer)
     }
 
     override fun getDefaultHttpMiddleware(ctx: ProtocolGenerator.GenerationContext): List<ProtocolMiddleware> {
@@ -54,7 +54,7 @@ class RpcV2Cbor : AwsHttpBindingProtocolGenerator() {
         val validateSmithyProtocolHeaderMiddleware = object : ProtocolMiddleware {
             override val name: String = "RpcV2CborValidateSmithyProtocolResponseHeader"
             override fun render(ctx: ProtocolGenerator.GenerationContext, op: OperationShape, writer: KotlinWriter) {
-                val interceptorSymbol = RuntimeTypes.SmithyRpcv2Protocols.Cbor.RpcV2CborSmithyProtocolResponseHeaderInterceptor
+                val interceptorSymbol = RuntimeTypes.SmithyRpcV2Protocols.Cbor.RpcV2CborSmithyProtocolResponseHeaderInterceptor
                 writer.write("op.interceptors.add(#T)", interceptorSymbol)
             }
         }

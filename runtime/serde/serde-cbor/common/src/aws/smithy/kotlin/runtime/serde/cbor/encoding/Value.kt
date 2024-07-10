@@ -32,7 +32,7 @@ internal interface Value {
                 Major.U_INT -> UInt.decode(buffer)
                 Major.NEG_INT -> NegInt.decode(buffer)
                 Major.BYTE_STRING -> ByteString.decode(buffer)
-                Major.STRING -> String.decode(buffer)
+                Major.STRING -> TextString.decode(buffer)
                 Major.LIST -> {
                     return if (minor == Minor.INDEFINITE.value) {
                         IndefiniteList.decode(buffer)

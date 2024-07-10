@@ -13,7 +13,6 @@ import aws.smithy.kotlin.runtime.serde.cbor.encoding.*
 import aws.smithy.kotlin.runtime.time.Instant
 import aws.smithy.kotlin.runtime.time.TimestampFormat
 import aws.smithy.kotlin.runtime.serde.cbor.encoding.Boolean as cborBoolean
-import aws.smithy.kotlin.runtime.serde.cbor.encoding.String as cborString
 
 /**
  * Deserializer for CBOR byte payloads
@@ -121,7 +120,7 @@ internal class CborPrimitiveDeserializer(private val buffer: SdkBufferedSource) 
         return (tag.value as DecimalFraction).value
     }
 
-    override fun deserializeString(): String = cborString.decode(buffer).value
+    override fun deserializeString(): String = TextString.decode(buffer).value
 
     override fun deserializeBoolean(): Boolean = cborBoolean.decode(buffer).value
 
@@ -199,7 +198,7 @@ private class CborFieldIterator(
             IndefiniteBreak.decode(buffer)
             null
         } else {
-            val nextFieldName = cborString.decode(buffer).value
+            val nextFieldName = TextString.decode(buffer).value
             descriptor
                 .fields
                 .firstOrNull { it.serialName == nextFieldName }

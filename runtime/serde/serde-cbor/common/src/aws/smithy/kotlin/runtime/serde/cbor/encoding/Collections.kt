@@ -10,6 +10,40 @@ import aws.smithy.kotlin.runtime.serde.cbor.encodeArgument
 import aws.smithy.kotlin.runtime.serde.cbor.encodeMajorMinor
 
 /**
+ * Represents a CBOR text string (major type 3) encoded as a UTF-8 byte array.
+ * @param value The [TextString] which this CBOR string represents.
+ */
+internal class TextString(val value: String) : Value {
+    override fun encode(into: SdkBufferedSink) {
+        into.write(encodeArgument(Major.STRING, value.length.toULong()))
+        into.write(value.encodeToByteArray())
+    }
+
+    internal companion object {
+        fun decode(buffer: SdkBufferedSource): TextString =
+            if (peekMinorByte(buffer) == Minor.INDEFINITE.value) {
+                val list = IndefiniteList.decode(buffer).value
+
+                val sb = StringBuilder()
+                list.forEach {
+                    sb.append((it as TextString).value)
+                }
+
+                TextString(sb.toString())
+            } else {
+                val length = decodeArgument(buffer).toInt()
+
+                val bytes = SdkBuffer().use {
+                    buffer.readFully(it, length.toLong())
+                    it.readByteArray()
+                }
+
+                TextString(bytes.decodeToString())
+            }
+    }
+}
+
+/**
  * Represents a CBOR byte string (major type 2).
  * @param value The [ByteArray] which this CBOR byte string represents.
  */
@@ -137,7 +171,7 @@ internal class Map(val value: kotlin.collections.Map<Value, Value>) : Value {
  * used for storing the decoded entries of the map.
  *
  * Note: `encode` will just *begin* encoding the map, callers are expected to:
- * - call `encode` for each [String]/[Value] value pair in the map
+ * - call `encode` for each [TextString]/[Value] value pair in the map
  * - end the map by sending an [IndefiniteBreak]
  *
  * `decode` will consume map entries until an [IndefiniteBreak] is encountered.

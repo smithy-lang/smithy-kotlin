@@ -17,7 +17,6 @@ import aws.smithy.kotlin.runtime.time.Instant
 import aws.smithy.kotlin.runtime.time.TimestampFormat
 import kotlin.math.absoluteValue
 import aws.smithy.kotlin.runtime.serde.cbor.encoding.Boolean as cborBoolean
-import aws.smithy.kotlin.runtime.serde.cbor.encoding.String as cborString
 
 @InternalApi
 public class CborSerializer :
@@ -84,9 +83,9 @@ public class CborSerializer :
 
     override fun serializeBigDecimal(value: BigDecimal): Unit = buffer.write(DecimalFraction(value))
 
-    override fun serializeChar(value: Char): Unit = buffer.write(cborString(value.toString()))
+    override fun serializeChar(value: Char): Unit = buffer.write(TextString(value.toString()))
 
-    override fun serializeString(value: String): Unit = buffer.write(cborString(value))
+    override fun serializeString(value: String): Unit = buffer.write(TextString(value))
 
     // Note: CBOR does not use [TimestampFormat]
     override fun serializeInstant(value: Instant, format: TimestampFormat): Unit = serializeInstant(value)
@@ -96,7 +95,7 @@ public class CborSerializer :
 
     override fun serializeSdkSerializable(value: SdkSerializable): Unit = value.serialize(this)
 
-    override fun serializeNull(): Unit = buffer.write(Null())
+    override fun serializeNull(): Unit = buffer.write(Null)
 
     override fun serializeDocument(value: Document?): Unit = throw SerializationException("Document is not a supported CBOR type")
 
@@ -159,32 +158,32 @@ public class CborSerializer :
     override fun field(descriptor: SdkFieldDescriptor, value: ByteArray): Unit = entry(descriptor.serialName, value)
 
     override fun field(descriptor: SdkFieldDescriptor, value: BigInteger) {
-        buffer.write(cborString(descriptor.serialName))
+        buffer.write(TextString(descriptor.serialName))
         serializeBigInteger(value)
     }
 
     override fun field(descriptor: SdkFieldDescriptor, value: BigDecimal) {
-        buffer.write(cborString(descriptor.serialName))
+        buffer.write(TextString(descriptor.serialName))
         serializeBigDecimal(value)
     }
 
     override fun structField(descriptor: SdkFieldDescriptor, block: StructSerializer.() -> Unit) {
-        buffer.write(cborString(descriptor.serialName))
+        buffer.write(TextString(descriptor.serialName))
         serializeStruct(descriptor, block)
     }
 
     override fun listField(descriptor: SdkFieldDescriptor, block: ListSerializer.() -> Unit) {
-        buffer.write(cborString(descriptor.serialName))
+        buffer.write(TextString(descriptor.serialName))
         serializeList(descriptor, block)
     }
 
     override fun mapField(descriptor: SdkFieldDescriptor, block: MapSerializer.() -> Unit) {
-        buffer.write(cborString(descriptor.serialName))
+        buffer.write(TextString(descriptor.serialName))
         serializeMap(descriptor, block)
     }
 
     override fun nullField(descriptor: SdkFieldDescriptor) {
-        buffer.write(cborString(descriptor.serialName))
+        buffer.write(TextString(descriptor.serialName))
         serializeNull()
     }
 }
