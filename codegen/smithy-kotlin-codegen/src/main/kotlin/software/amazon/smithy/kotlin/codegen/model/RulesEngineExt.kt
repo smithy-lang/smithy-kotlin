@@ -8,6 +8,7 @@ import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.kotlin.codegen.lang.KotlinTypes
 import software.amazon.smithy.kotlin.codegen.utils.doubleQuote
 import software.amazon.smithy.kotlin.codegen.utils.toCamelCase
+import software.amazon.smithy.rulesengine.language.evaluation.value.ArrayValue
 import software.amazon.smithy.rulesengine.language.evaluation.value.BooleanValue
 import software.amazon.smithy.rulesengine.language.evaluation.value.StringValue
 import software.amazon.smithy.rulesengine.language.evaluation.value.Value
@@ -32,7 +33,7 @@ fun ParameterType.toSymbol(): Symbol =
     when (this) {
         ParameterType.STRING -> KotlinTypes.String
         ParameterType.BOOLEAN -> KotlinTypes.Boolean
-        ParameterType.STRING_ARRAY -> KotlinTypes.Collections.MutableList
+        ParameterType.STRING_ARRAY -> KotlinTypes.Collections.mutableList(KotlinTypes.String)
     }.asNullable()
 
 /**
@@ -42,5 +43,8 @@ fun Value.toLiteral(): String =
     when (this) {
         is StringValue -> value.doubleQuote()
         is BooleanValue -> value.toString()
+        is ArrayValue -> values.joinToString(",", "mutableListOf(", ")") { value ->
+            value.expectStringValue().value.doubleQuote()
+        }
         else -> throw IllegalArgumentException("unrecognized parameter value type $type")
     }

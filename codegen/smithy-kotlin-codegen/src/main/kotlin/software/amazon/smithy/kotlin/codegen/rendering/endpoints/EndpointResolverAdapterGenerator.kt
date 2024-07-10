@@ -12,6 +12,7 @@ import software.amazon.smithy.kotlin.codegen.integration.SectionId
 import software.amazon.smithy.kotlin.codegen.model.*
 import software.amazon.smithy.kotlin.codegen.model.knowledge.EndpointParameterIndex
 import software.amazon.smithy.kotlin.codegen.rendering.protocol.ProtocolGenerator
+import software.amazon.smithy.kotlin.codegen.utils.doubleQuote
 import software.amazon.smithy.model.knowledge.TopDownIndex
 import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.rulesengine.language.syntax.parameters.ParameterType
@@ -192,6 +193,11 @@ class EndpointResolverAdapterGenerator(
                 when (param.type) {
                     ParameterType.STRING -> writer.write("#S", staticParam.value.expectStringNode().value)
                     ParameterType.BOOLEAN -> writer.write("#L", staticParam.value.expectBooleanNode().value)
+                    ParameterType.STRING_ARRAY -> writer.write(
+                        staticParam.value.expectArrayNode().elements.joinToString(",", "mutableListOf(", ")") { element ->
+                            element.expectStringNode().value.doubleQuote()
+                        },
+                    )
                     else -> throw CodegenException("unexpected static context param type ${param.type}")
                 }
                 continue
