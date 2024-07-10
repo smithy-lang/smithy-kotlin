@@ -17,7 +17,6 @@ class CborDeserializerTest {
         serializer.serializeLong(Long.MAX_VALUE)
         serializer.serializeLong(Long.MAX_VALUE)
         serializer.serializeLong(Long.MAX_VALUE)
-        serializer.serializeLong(Long.MAX_VALUE)
 
         val buffer = SdkBuffer().apply { write(serializer.toByteArray()) }
 
@@ -25,7 +24,6 @@ class CborDeserializerTest {
 
         assertFails { deserializer.deserializeInt() }
         assertFails { deserializer.deserializeShort() }
-        assertFails { deserializer.deserializeByte() }
         assertFails { deserializer.deserializeByte() }
         assertEquals(Long.MAX_VALUE, deserializer.deserializeLong())
     }
