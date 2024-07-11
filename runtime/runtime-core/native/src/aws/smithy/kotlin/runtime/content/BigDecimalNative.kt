@@ -4,32 +4,47 @@
  */
 package aws.smithy.kotlin.runtime.content
 
-public actual class BigDecimal actual constructor(value: String) : Number() {
+public actual class BigDecimal actual constructor(value: String) : Number(), Comparable<BigDecimal> {
     public actual fun toPlainString(): String {
         TODO("Not yet implemented")
     }
 
-    override fun toByte(): Byte {
+    actual override fun toByte(): Byte {
         TODO("Not yet implemented")
     }
 
-    override fun toDouble(): Double {
+    actual override fun toDouble(): Double {
         TODO("Not yet implemented")
     }
 
-    override fun toFloat(): Float {
+    actual override fun toFloat(): Float {
         TODO("Not yet implemented")
     }
 
-    override fun toInt(): Int {
+    actual override fun toInt(): Int {
         TODO("Not yet implemented")
     }
 
-    override fun toLong(): Long {
+    actual override fun toLong(): Long {
         TODO("Not yet implemented")
     }
 
-    override fun toShort(): Short {
+    actual override fun toShort(): Short {
         TODO("Not yet implemented")
     }
+
+
+    public actual val mantissa: BigInteger
+        get() = TODO("Not yet implemented")
+
+
+    public actual val exponent: Int
+        get() = TODO("Not yet implemented")
+
+
+    public actual constructor(mantissa: BigInteger, exponent: Int) : this("TODO(Not yet implemented)") {
+        TODO("Not yet implemented")
+    }
+
+    actual override fun compareTo(other: BigDecimal): Int = TODO("Not yet implemented")
 }
