@@ -95,7 +95,7 @@ public final class aws/smithy/kotlin/runtime/serde/ParsersKt {
 }
 
 public abstract interface class aws/smithy/kotlin/runtime/serde/PrimitiveDeserializer {
-	public abstract fun deserializeBigDecimal ()Ljava/math/BigDecimal;
+	public abstract fun deserializeBigDecimal ()Laws/smithy/kotlin/runtime/content/BigDecimal;
 	public abstract fun deserializeBigInteger ()Laws/smithy/kotlin/runtime/content/BigInteger;
 	public abstract fun deserializeBoolean ()Z
 	public abstract fun deserializeByte ()B
@@ -112,7 +112,7 @@ public abstract interface class aws/smithy/kotlin/runtime/serde/PrimitiveDeseria
 }
 
 public abstract interface class aws/smithy/kotlin/runtime/serde/PrimitiveSerializer {
-	public abstract fun serializeBigDecimal (Ljava/math/BigDecimal;)V
+	public abstract fun serializeBigDecimal (Laws/smithy/kotlin/runtime/content/BigDecimal;)V
 	public abstract fun serializeBigInteger (Laws/smithy/kotlin/runtime/content/BigInteger;)V
 	public abstract fun serializeBoolean (Z)V
 	public abstract fun serializeByte (B)V
@@ -284,12 +284,12 @@ public abstract interface class aws/smithy/kotlin/runtime/serde/StructSerializer
 	public abstract fun field (Laws/smithy/kotlin/runtime/serde/SdkFieldDescriptor;F)V
 	public abstract fun field (Laws/smithy/kotlin/runtime/serde/SdkFieldDescriptor;I)V
 	public abstract fun field (Laws/smithy/kotlin/runtime/serde/SdkFieldDescriptor;J)V
+	public abstract fun field (Laws/smithy/kotlin/runtime/serde/SdkFieldDescriptor;Laws/smithy/kotlin/runtime/content/BigDecimal;)V
 	public abstract fun field (Laws/smithy/kotlin/runtime/serde/SdkFieldDescriptor;Laws/smithy/kotlin/runtime/content/BigInteger;)V
 	public abstract fun field (Laws/smithy/kotlin/runtime/serde/SdkFieldDescriptor;Laws/smithy/kotlin/runtime/content/Document;)V
 	public abstract fun field (Laws/smithy/kotlin/runtime/serde/SdkFieldDescriptor;Laws/smithy/kotlin/runtime/serde/SdkSerializable;)V
 	public abstract fun field (Laws/smithy/kotlin/runtime/serde/SdkFieldDescriptor;Laws/smithy/kotlin/runtime/time/Instant;Laws/smithy/kotlin/runtime/time/TimestampFormat;)V
 	public abstract fun field (Laws/smithy/kotlin/runtime/serde/SdkFieldDescriptor;Ljava/lang/String;)V
-	public abstract fun field (Laws/smithy/kotlin/runtime/serde/SdkFieldDescriptor;Ljava/math/BigDecimal;)V
 	public abstract fun field (Laws/smithy/kotlin/runtime/serde/SdkFieldDescriptor;S)V
 	public abstract fun field (Laws/smithy/kotlin/runtime/serde/SdkFieldDescriptor;Z)V
 	public abstract fun field (Laws/smithy/kotlin/runtime/serde/SdkFieldDescriptor;[B)V

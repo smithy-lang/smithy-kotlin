@@ -47,12 +47,12 @@ public final class aws/smithy/kotlin/runtime/serde/cbor/CborSerializer : aws/smi
 	public fun field (Laws/smithy/kotlin/runtime/serde/SdkFieldDescriptor;F)V
 	public fun field (Laws/smithy/kotlin/runtime/serde/SdkFieldDescriptor;I)V
 	public fun field (Laws/smithy/kotlin/runtime/serde/SdkFieldDescriptor;J)V
+	public fun field (Laws/smithy/kotlin/runtime/serde/SdkFieldDescriptor;Laws/smithy/kotlin/runtime/content/BigDecimal;)V
 	public fun field (Laws/smithy/kotlin/runtime/serde/SdkFieldDescriptor;Laws/smithy/kotlin/runtime/content/BigInteger;)V
 	public fun field (Laws/smithy/kotlin/runtime/serde/SdkFieldDescriptor;Laws/smithy/kotlin/runtime/content/Document;)V
 	public fun field (Laws/smithy/kotlin/runtime/serde/SdkFieldDescriptor;Laws/smithy/kotlin/runtime/serde/SdkSerializable;)V
 	public fun field (Laws/smithy/kotlin/runtime/serde/SdkFieldDescriptor;Laws/smithy/kotlin/runtime/time/Instant;Laws/smithy/kotlin/runtime/time/TimestampFormat;)V
 	public fun field (Laws/smithy/kotlin/runtime/serde/SdkFieldDescriptor;Ljava/lang/String;)V
-	public fun field (Laws/smithy/kotlin/runtime/serde/SdkFieldDescriptor;Ljava/math/BigDecimal;)V
 	public fun field (Laws/smithy/kotlin/runtime/serde/SdkFieldDescriptor;S)V
 	public fun field (Laws/smithy/kotlin/runtime/serde/SdkFieldDescriptor;Z)V
 	public fun field (Laws/smithy/kotlin/runtime/serde/SdkFieldDescriptor;[B)V
@@ -61,7 +61,7 @@ public final class aws/smithy/kotlin/runtime/serde/cbor/CborSerializer : aws/smi
 	public fun mapEntry (Ljava/lang/String;Laws/smithy/kotlin/runtime/serde/SdkFieldDescriptor;Lkotlin/jvm/functions/Function1;)V
 	public fun mapField (Laws/smithy/kotlin/runtime/serde/SdkFieldDescriptor;Lkotlin/jvm/functions/Function1;)V
 	public fun nullField (Laws/smithy/kotlin/runtime/serde/SdkFieldDescriptor;)V
-	public fun serializeBigDecimal (Ljava/math/BigDecimal;)V
+	public fun serializeBigDecimal (Laws/smithy/kotlin/runtime/content/BigDecimal;)V
 	public fun serializeBigInteger (Laws/smithy/kotlin/runtime/content/BigInteger;)V
 	public fun serializeBoolean (Z)V
 	public fun serializeByte (B)V

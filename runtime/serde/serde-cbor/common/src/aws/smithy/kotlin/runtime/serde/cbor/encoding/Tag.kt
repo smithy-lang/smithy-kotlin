@@ -134,30 +134,25 @@ internal class NegBigNum(val value: BigInteger) : Value {
  */
 internal class DecimalFraction(val value: BigDecimal) : Value {
     override fun encode(into: SdkBufferedSink) {
-        val str = value.toPlainString()
-        val dotIndex = str.indexOf('.').takeIf { it != -1 } ?: str.lastIndex
-        val exponentValue = (dotIndex - str.length + 1).toLong()
-        val exponent = if (exponentValue < 0) {
-            NegInt(exponentValue.absoluteValue.toULong())
+        val cborExponent = -value.exponent // CBOR has inverted exponent semantics
+
+        val exponent = if (cborExponent < 0) {
+            NegInt(cborExponent.absoluteValue.toULong())
         } else {
-            UInt(exponentValue.toULong())
+            UInt(cborExponent.toULong())
         }
 
-        val mantissaStr = str.replace(".", "")
-        // Check if the mantissa can be represented as a UInt without overflowing.
-        // If not, it will be encoded as a Bignum.
-        val mantissa: Value = try {
-            if (mantissaStr.startsWith("-")) {
-                NegInt(mantissaStr.toLong().absoluteValue.toULong())
+        val mantissa = if (value.mantissa > BigInteger(Long.MIN_VALUE.toString()) && value.mantissa < BigInteger(Long.MAX_VALUE.toString())) {
+            if (value.mantissa.toString().startsWith("-")) {
+                NegInt(value.mantissa.toLong().absoluteValue.toULong())
             } else {
-                UInt(mantissaStr.toULong())
+                UInt(value.mantissa.toLong().toULong())
             }
-        } catch (e: NumberFormatException) {
-            val bigMantissa = BigInteger(mantissaStr)
-            if (mantissaStr.startsWith("-")) {
-                NegBigNum(bigMantissa)
+        } else {
+            if (value.mantissa.toString().startsWith("-")) {
+                NegBigNum(value.mantissa)
             } else {
-                BigNum(bigMantissa)
+                BigNum(value.mantissa)
             }
         }
 
@@ -169,43 +164,26 @@ internal class DecimalFraction(val value: BigDecimal) : Value {
             val list = List.decode(buffer).value
             check(list.size == 2) { "Expected array of length 2 for decimal fraction, got ${list.size}" }
 
-            val (exponent, mantissa) = list
+            val (exponentValue, mantissaValue) = list
 
-            val sb = StringBuilder()
-
-            // Append mantissa
-            sb.append(
-                when (mantissa) {
-                    is UInt -> mantissa.value.toString()
-                    is NegInt -> "-${mantissa.value}"
-                    is Tag -> when (mantissa.value) {
-                        is NegBigNum -> mantissa.value.value.toString()
-                        is BigNum -> mantissa.value.value.toString()
-                        else -> throw DeserializationException("Expected BigNum or NegBigNum for CBOR tagged decimal fraction mantissa, got ${mantissa.id}")
-                    }
-                    else -> throw DeserializationException("Expected UInt, NegInt, or Tag for CBOR decimal fraction mantissa, got $mantissa")
-                },
-            )
-
-            when (exponent) {
-                is UInt -> { // Positive exponent, suffix with zeroes
-                    sb.append("0".repeat(exponent.value.toInt()))
-                    sb.append(".")
+            val mantissa = when(mantissaValue) {
+                is UInt -> BigInteger(mantissaValue.value.toString())
+                is NegInt -> BigInteger("-" + mantissaValue.value.toString())
+                is Tag -> when(mantissaValue.value) {
+                    is NegBigNum -> mantissaValue.value.value
+                    is BigNum -> mantissaValue.value.value
+                    else -> throw DeserializationException("Expected BigNum or NegBigNum for CBOR tagged decimal fraction mantissa, got ${mantissaValue.id}")
                 }
-                is NegInt -> { // Negative exponent, prefix with zeroes if necessary
-                    val exponentValue = exponent.value.toInt().absoluteValue
-                    val insertIndex = if (sb[0] == '-') 1 else 0
-                    if (exponentValue > sb.length - insertIndex) {
-                        sb.insert(insertIndex, "0".repeat(exponentValue - sb.length + insertIndex))
-                        sb.insert(insertIndex, '.')
-                    } else {
-                        sb.insert(sb.length - exponentValue, '.')
-                    }
-                }
-                else -> throw DeserializationException("Expected integer for CBOR decimal fraction exponent value, got $exponent.")
+                else -> throw DeserializationException("Expected UInt, NegInt, or Tag for CBOR decimal fraction mantissa, got $mantissaValue")
             }
 
-            return DecimalFraction(BigDecimal(sb.toString()))
+            val exponent = when(exponentValue) {
+                is UInt -> exponentValue.value.toInt()
+                is NegInt -> -exponentValue.value.toInt()
+                else -> throw DeserializationException("Expected integer for CBOR decimal fraction exponent value, got $exponentValue.")
+            }
+
+            return DecimalFraction(BigDecimal(mantissa, -exponent))
         }
     }
 }
