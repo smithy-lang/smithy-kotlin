@@ -166,10 +166,10 @@ internal class DecimalFraction(val value: BigDecimal) : Value {
 
             val (exponentValue, mantissaValue) = list
 
-            val mantissa = when(mantissaValue) {
+            val mantissa = when (mantissaValue) {
                 is UInt -> BigInteger(mantissaValue.value.toString())
                 is NegInt -> BigInteger("-" + mantissaValue.value.toString())
-                is Tag -> when(mantissaValue.value) {
+                is Tag -> when (mantissaValue.value) {
                     is NegBigNum -> mantissaValue.value.value
                     is BigNum -> mantissaValue.value.value
                     else -> throw DeserializationException("Expected BigNum or NegBigNum for CBOR tagged decimal fraction mantissa, got ${mantissaValue.id}")
@@ -177,7 +177,7 @@ internal class DecimalFraction(val value: BigDecimal) : Value {
                 else -> throw DeserializationException("Expected UInt, NegInt, or Tag for CBOR decimal fraction mantissa, got $mantissaValue")
             }
 
-            val exponent = when(exponentValue) {
+            val exponent = when (exponentValue) {
                 is UInt -> exponentValue.value.toInt()
                 is NegInt -> -exponentValue.value.toInt()
                 else -> throw DeserializationException("Expected integer for CBOR decimal fraction exponent value, got $exponentValue.")

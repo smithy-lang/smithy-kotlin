@@ -6,7 +6,6 @@ package aws.smithy.kotlin.runtime.serde.cbor.encoding
 
 import aws.smithy.kotlin.runtime.io.*
 import aws.smithy.kotlin.runtime.serde.DeserializationException
-import aws.smithy.kotlin.runtime.serde.cbor.encodeArgument
 import aws.smithy.kotlin.runtime.serde.cbor.encodeMajorMinor
 
 /**

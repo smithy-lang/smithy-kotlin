@@ -4,14 +4,16 @@
  */
 package aws.smithy.kotlin.runtime.content
 
-public actual class BigDecimal actual constructor(public val value: String) : Number(), Comparable<BigDecimal> {
+public actual class BigDecimal actual constructor(public val value: String) :
+    Number(),
+    Comparable<BigDecimal> {
     private val delegate = java.math.BigDecimal(value)
 
     public actual constructor(mantissa: BigInteger, exponent: Int) : this(
         java.math.BigDecimal(
             java.math.BigInteger(mantissa.toString()),
-            exponent
-        ).toPlainString()
+            exponent,
+        ).toPlainString(),
     )
 
     public actual fun toPlainString(): String = delegate.toPlainString()

@@ -4,7 +4,6 @@
  */
 package aws.smithy.kotlin.runtime.awsprotocol.rpcv2.cbor
 
-import aws.smithy.kotlin.runtime.ClientException
 import aws.smithy.kotlin.runtime.ServiceException
 import aws.smithy.kotlin.runtime.http.*
 import aws.smithy.kotlin.runtime.http.operation.*

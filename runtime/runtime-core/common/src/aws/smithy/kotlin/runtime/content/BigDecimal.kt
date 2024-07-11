@@ -8,7 +8,9 @@ package aws.smithy.kotlin.runtime.content
  * A floating point decimal number with arbitrary precision.
  * @param value the [String] representation of this decimal number
  */
-public expect class BigDecimal(value: String) : Number, Comparable<BigDecimal> {
+public expect class BigDecimal(value: String) :
+    Number,
+    Comparable<BigDecimal> {
     /**
      * Create an instance of [BigDecimal] from a mantissa and exponent.
      * @param mantissa a [BigInteger] representing the mantissa of this big decimal

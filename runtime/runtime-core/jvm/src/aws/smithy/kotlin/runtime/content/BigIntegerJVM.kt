@@ -4,7 +4,9 @@
  */
 package aws.smithy.kotlin.runtime.content
 
-public actual class BigInteger actual constructor(public val value: String) : Number(), Comparable<BigInteger> {
+public actual class BigInteger actual constructor(public val value: String) :
+    Number(),
+    Comparable<BigInteger> {
     private val delegate = java.math.BigInteger(value)
 
     public actual constructor(bytes: ByteArray) : this(java.math.BigInteger(bytes).toString())

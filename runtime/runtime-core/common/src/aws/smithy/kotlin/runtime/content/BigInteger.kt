@@ -8,7 +8,9 @@ package aws.smithy.kotlin.runtime.content
  * An arbitrarily large signed integer
  * @param value the string representation of this large integer
  */
-public expect class BigInteger(value: String) : Number, Comparable<BigInteger> {
+public expect class BigInteger(value: String) :
+    Number,
+    Comparable<BigInteger> {
     /**
      * Create an instance of [BigInteger] from a [ByteArray]
      * @param bytes ByteArray representing the large integer
