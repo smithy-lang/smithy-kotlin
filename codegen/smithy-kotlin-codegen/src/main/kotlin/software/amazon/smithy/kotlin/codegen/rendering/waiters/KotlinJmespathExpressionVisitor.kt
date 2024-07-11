@@ -40,11 +40,13 @@ private val suffixSequence = sequenceOf("") + generateSequence(2) { it + 1 }.map
  * @param ctx The surrounding [CodegenContext].
  * @param writer The [KotlinWriter] to generate code into.
  * @param shape The modeled [Shape] on which this JMESPath expression is operating.
+ * @param parentName The name used to reference the "parent" of an expression during codegen. Defaults to `it`. E.g. `it.field`.
  */
 class KotlinJmespathExpressionVisitor(
     val ctx: CodegenContext,
     val writer: KotlinWriter,
     shape: Shape,
+    private val parentName: String = "it",
 ) : ExpressionVisitor<VisitedExpression> {
     private val tempVars = mutableSetOf<String>()
 
@@ -172,7 +174,7 @@ class KotlinJmespathExpressionVisitor(
 
     override fun visitExpressionType(expression: ExpressionTypeExpression): VisitedExpression = throw CodegenException("ExpressionTypeExpression is unsupported")
 
-    override fun visitField(expression: FieldExpression): VisitedExpression = subfield(expression, "it")
+    override fun visitField(expression: FieldExpression): VisitedExpression = subfield(expression, parentName)
 
     override fun visitFilterProjection(expression: FilterProjectionExpression): VisitedExpression {
         val left = expression.left.accept(this)

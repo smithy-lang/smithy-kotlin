@@ -6,12 +6,14 @@ package software.amazon.smithy.kotlin.codegen.rendering.endpoints
 
 import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.codegen.core.Symbol
+import software.amazon.smithy.jmespath.JmespathExpression
 import software.amazon.smithy.kotlin.codegen.KotlinSettings
 import software.amazon.smithy.kotlin.codegen.core.*
 import software.amazon.smithy.kotlin.codegen.integration.SectionId
 import software.amazon.smithy.kotlin.codegen.model.*
 import software.amazon.smithy.kotlin.codegen.model.knowledge.EndpointParameterIndex
 import software.amazon.smithy.kotlin.codegen.rendering.protocol.ProtocolGenerator
+import software.amazon.smithy.kotlin.codegen.rendering.waiters.KotlinJmespathExpressionVisitor
 import software.amazon.smithy.kotlin.codegen.utils.doubleQuote
 import software.amazon.smithy.model.knowledge.TopDownIndex
 import software.amazon.smithy.model.shapes.OperationShape
@@ -120,14 +122,21 @@ class EndpointResolverAdapterGenerator(
         ) {
             writer.addImport(RuntimeTypes.Core.Collections.get)
             withBlock("return #T {", "}", EndpointParametersGenerator.getSymbol(ctx.settings)) {
-                // The SEP dictates a specific source order to use when binding parameters (from most specific to least):
-                // 1. staticContextParams (from operation shape)
-                // 2. contextParam (from member of operation input shape)
-                // 3. clientContextParams (from service shape)
-                // 4. builtin binding
-                // 5. builtin default
-                // Sources 4 and 5 are SDK-specific, builtin bindings are plugged in and rendered beforehand such that any bindings
-                // from source 1 or 2 can supersede them.
+                /*
+                The spec dictates a specific source order to use when binding parameters (from most specific to least):
+
+                1. staticContextParams (from operation shape)
+                2. contextParam (from member of operation input shape)
+                3. operationContextParams (from operation shape)
+                4. clientContextParams (from service shape)
+                5. builtin binding
+                6. builtin default
+
+                Sources 5 and 6 are SDK-specific
+
+                Builtin bindings are plugged in and rendered beforehand such that any bindings from source 1, 2, or 3
+                can supersede them.
+                 */
 
                 // Render builtins
                 if (rules != null) {
@@ -141,7 +150,7 @@ class EndpointResolverAdapterGenerator(
                 // Render client context
                 renderBindClientContextParams(ctx, writer)
 
-                // Render operation static/input context (if any)
+                // Render operation static/input/operation context (if any)
                 write("val opName = request.context[#T.OperationName]", RuntimeTypes.SmithyClient.SdkClientOption)
                 write("opContextBindings[opName]?.invoke(this, request)")
             }
@@ -173,6 +182,7 @@ class EndpointResolverAdapterGenerator(
         if (rules == null) return
         val staticContextParams = epParameterIndex.staticContextParams(op)
         val inputContextParams = epParameterIndex.inputContextParams(op)
+        val operationContextParams = epParameterIndex.operationContextParams(op)
 
         if (inputContextParams.isNotEmpty()) {
             writer.addImport(RuntimeTypes.Core.Collections.get)
@@ -186,8 +196,8 @@ class EndpointResolverAdapterGenerator(
             val paramName = param.name.toString()
             val paramDefaultName = param.defaultName()
 
+            // Look at static params
             val staticParam = staticContextParams?.parameters?.get(paramName)
-
             if (staticParam != null) {
                 writer.writeInline("builder.#L = ", paramDefaultName)
                 when (param.type) {
@@ -203,8 +213,31 @@ class EndpointResolverAdapterGenerator(
                 continue
             }
 
-            inputContextParams[paramName]?.let {
-                writer.write("builder.#L = input.#L", paramDefaultName, it.defaultName())
+            // Look at input params
+            val inputParam = inputContextParams[paramName]
+            if (inputParam != null) {
+                writer.write("builder.#L = input.#L", paramDefaultName, inputParam.defaultName())
+                continue
+            }
+
+            // Look at operation params
+            val operationParam = operationContextParams?.get(paramName)
+            if (operationParam != null) {
+                val codegenContext = GenerationContext(
+                    ctx.model,
+                    ctx.symbolProvider,
+                    ctx.settings,
+                )
+                val jmespathVisitor = KotlinJmespathExpressionVisitor(
+                    codegenContext,
+                    writer,
+                    ctx.service,
+                    "builder",
+                )
+                val expression = JmespathExpression.parse(operationParam.path)
+                val expressionResult = expression.accept(jmespathVisitor)
+
+                writer.write("builder.#L = #L", paramDefaultName, expressionResult.identifier)
             }
         }
     }
