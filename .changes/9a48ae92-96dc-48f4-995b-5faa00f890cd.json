@@ -1,8 +1,0 @@
-{
-    "id": "9a48ae92-96dc-48f4-995b-5faa00f890cd",
-    "type": "feature",
-    "description": "Add new Kotlin/JVM methods for converting `InputStream` to `ByteStream` and for writing `ByteStream` to `OutputStream`",
-    "issues": [
-        "awslabs/aws-sdk-kotlin#1352"
-    ]
-}
