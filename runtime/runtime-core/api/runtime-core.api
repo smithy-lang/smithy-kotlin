@@ -418,14 +418,19 @@ public abstract class aws/smithy/kotlin/runtime/content/ByteStream$SourceStream 
 public final class aws/smithy/kotlin/runtime/content/ByteStreamJVMKt {
 	public static final fun asByteStream (Ljava/io/File;JJ)Laws/smithy/kotlin/runtime/content/ByteStream;
 	public static final fun asByteStream (Ljava/io/File;Lkotlin/ranges/LongRange;)Laws/smithy/kotlin/runtime/content/ByteStream;
+	public static final fun asByteStream (Ljava/io/InputStream;Ljava/lang/Long;)Laws/smithy/kotlin/runtime/content/ByteStream$SourceStream;
 	public static final fun asByteStream (Ljava/nio/file/Path;JJ)Laws/smithy/kotlin/runtime/content/ByteStream;
 	public static final fun asByteStream (Ljava/nio/file/Path;Lkotlin/ranges/LongRange;)Laws/smithy/kotlin/runtime/content/ByteStream;
 	public static synthetic fun asByteStream$default (Ljava/io/File;JJILjava/lang/Object;)Laws/smithy/kotlin/runtime/content/ByteStream;
+	public static synthetic fun asByteStream$default (Ljava/io/InputStream;Ljava/lang/Long;ILjava/lang/Object;)Laws/smithy/kotlin/runtime/content/ByteStream$SourceStream;
 	public static synthetic fun asByteStream$default (Ljava/nio/file/Path;JJILjava/lang/Object;)Laws/smithy/kotlin/runtime/content/ByteStream;
 	public static final fun fromFile (Laws/smithy/kotlin/runtime/content/ByteStream$Companion;Ljava/io/File;)Laws/smithy/kotlin/runtime/content/ByteStream;
+	public static final fun fromInputStream (Laws/smithy/kotlin/runtime/content/ByteStream$Companion;Ljava/io/InputStream;Ljava/lang/Long;)Laws/smithy/kotlin/runtime/content/ByteStream$SourceStream;
+	public static synthetic fun fromInputStream$default (Laws/smithy/kotlin/runtime/content/ByteStream$Companion;Ljava/io/InputStream;Ljava/lang/Long;ILjava/lang/Object;)Laws/smithy/kotlin/runtime/content/ByteStream$SourceStream;
 	public static final fun toInputStream (Laws/smithy/kotlin/runtime/content/ByteStream;)Ljava/io/InputStream;
 	public static final fun writeToFile (Laws/smithy/kotlin/runtime/content/ByteStream;Ljava/io/File;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public static final fun writeToFile (Laws/smithy/kotlin/runtime/content/ByteStream;Ljava/nio/file/Path;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static final fun writeToOutputStream (Laws/smithy/kotlin/runtime/content/ByteStream;Ljava/io/OutputStream;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
 public final class aws/smithy/kotlin/runtime/content/ByteStreamKt {
