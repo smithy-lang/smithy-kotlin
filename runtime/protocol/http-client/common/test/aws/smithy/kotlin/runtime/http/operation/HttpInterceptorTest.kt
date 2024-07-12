@@ -243,9 +243,7 @@ class HttpInterceptorTest {
                 return super.modifyBeforeCompletion(context)
             }
 
-            override fun readAfterExecution(context: ResponseInterceptorContext<Any, Any, HttpRequest?, HttpResponse?>) {
-                throw IllegalStateException("modified exception")
-            }
+            override fun readAfterExecution(context: ResponseInterceptorContext<Any, Any, HttpRequest?, HttpResponse?>): Unit = throw IllegalStateException("modified exception")
         }
 
         val serialized = HttpRequestBuilder()

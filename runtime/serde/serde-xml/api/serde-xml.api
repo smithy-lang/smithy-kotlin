@@ -127,6 +127,7 @@ public final class aws/smithy/kotlin/runtime/serde/xml/XmlSerializer : aws/smith
 	public fun field (Laws/smithy/kotlin/runtime/serde/SdkFieldDescriptor;Ljava/lang/String;)V
 	public fun field (Laws/smithy/kotlin/runtime/serde/SdkFieldDescriptor;S)V
 	public fun field (Laws/smithy/kotlin/runtime/serde/SdkFieldDescriptor;Z)V
+	public fun field (Laws/smithy/kotlin/runtime/serde/SdkFieldDescriptor;[B)V
 	public fun listField (Laws/smithy/kotlin/runtime/serde/SdkFieldDescriptor;Lkotlin/jvm/functions/Function1;)V
 	public fun mapField (Laws/smithy/kotlin/runtime/serde/SdkFieldDescriptor;Lkotlin/jvm/functions/Function1;)V
 	public fun nullField (Laws/smithy/kotlin/runtime/serde/SdkFieldDescriptor;)V
@@ -134,6 +135,7 @@ public final class aws/smithy/kotlin/runtime/serde/xml/XmlSerializer : aws/smith
 	public fun serializeBigInteger (Laws/smithy/kotlin/runtime/content/BigInteger;)V
 	public fun serializeBoolean (Z)V
 	public fun serializeByte (B)V
+	public fun serializeByteArray ([B)V
 	public fun serializeChar (C)V
 	public fun serializeDocument (Laws/smithy/kotlin/runtime/content/Document;)V
 	public fun serializeDouble (D)V

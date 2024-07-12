@@ -266,7 +266,7 @@ class StructureGeneratorTest {
 
             the effective documentation of Foo$baz resolves to "Member documentation", Foo$bar resolves to "Shape documentation",
             Foo$qux is not documented, Baz resolves to "Shape documentation", and Foo is not documented.
-        */
+         */
 
         val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model)
         val writer = KotlinWriter(TestModelDefault.NAMESPACE)

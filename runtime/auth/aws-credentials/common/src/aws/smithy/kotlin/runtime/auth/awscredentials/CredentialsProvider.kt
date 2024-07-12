@@ -24,4 +24,6 @@ public interface CredentialsProvider : IdentityProvider {
  *
  * Implementations MUST evict any previously-retrieved or stored credentials when the provider is closed.
 */
-public interface CloseableCredentialsProvider : CredentialsProvider, Closeable
+public interface CloseableCredentialsProvider :
+    CredentialsProvider,
+    Closeable

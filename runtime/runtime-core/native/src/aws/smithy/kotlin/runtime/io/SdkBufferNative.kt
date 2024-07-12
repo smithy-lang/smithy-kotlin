@@ -6,7 +6,9 @@ package aws.smithy.kotlin.runtime.io
 
 import okio.Buffer
 
-public actual class SdkBuffer : SdkBufferedSource, SdkBufferedSink {
+public actual class SdkBuffer :
+    SdkBufferedSource,
+    SdkBufferedSink {
     public actual val size: Long
         get() = TODO("Not yet implemented")
 

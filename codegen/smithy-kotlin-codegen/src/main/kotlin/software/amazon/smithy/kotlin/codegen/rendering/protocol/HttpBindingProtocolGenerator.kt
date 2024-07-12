@@ -27,7 +27,7 @@ import java.util.logging.Logger
  * Abstract implementation useful for all HTTP protocols
  */
 abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
-    private val LOGGER = Logger.getLogger(javaClass.name)
+    private val logger = Logger.getLogger(javaClass.name)
 
     override val applicationProtocol: ApplicationProtocol = ApplicationProtocol.createDefaultHttpApplicationProtocol()
 
@@ -475,7 +475,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
      * @param binding The explicit payload binding
      * @param writer The code writer to render to
      */
-    private fun renderExplicitHttpPayloadSerializer(
+    protected fun renderExplicitHttpPayloadSerializer(
         ctx: ProtocolGenerator.GenerationContext,
         binding: HttpBindingDescriptor,
         writer: KotlinWriter,

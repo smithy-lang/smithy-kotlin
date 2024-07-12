@@ -20,7 +20,8 @@ public class TestPlatformProvider(
     private val props: Map<String, String> = emptyMap(),
     private val fs: Map<String, String> = emptyMap(),
     private val os: OperatingSystem = OperatingSystem(OsFamily.Linux, "test"),
-) : PlatformProvider, Filesystem by Filesystem.fromMap(fs.mapValues { it.value.encodeToByteArray() }) {
+) : PlatformProvider,
+    Filesystem by Filesystem.fromMap(fs.mapValues { it.value.encodeToByteArray() }) {
 
     public companion object;
 

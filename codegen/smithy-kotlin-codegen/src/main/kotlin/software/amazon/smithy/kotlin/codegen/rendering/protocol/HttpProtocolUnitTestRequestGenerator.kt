@@ -4,31 +4,45 @@
  */
 package software.amazon.smithy.kotlin.codegen.rendering.protocol
 
+import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.kotlin.codegen.core.*
 import software.amazon.smithy.kotlin.codegen.integration.SectionId
 import software.amazon.smithy.kotlin.codegen.integration.SectionKey
 import software.amazon.smithy.kotlin.codegen.model.expectShape
 import software.amazon.smithy.kotlin.codegen.model.hasStreamingMember
 import software.amazon.smithy.kotlin.codegen.model.hasTrait
+import software.amazon.smithy.kotlin.codegen.model.knowledge.SerdeIndex
 import software.amazon.smithy.kotlin.codegen.rendering.ShapeValueGenerator
 import software.amazon.smithy.kotlin.codegen.rendering.endpoints.EndpointProviderGenerator
+import software.amazon.smithy.kotlin.codegen.rendering.serde.CborSerdeDescriptorGenerator
+import software.amazon.smithy.kotlin.codegen.rendering.serde.DeserializeStructGenerator
+import software.amazon.smithy.kotlin.codegen.rendering.serde.documentDeserializer
 import software.amazon.smithy.kotlin.codegen.utils.getOrNull
 import software.amazon.smithy.model.shapes.OperationShape
+import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.shapes.StructureShape
+import software.amazon.smithy.model.traits.TimestampFormatTrait
 import software.amazon.smithy.protocoltests.traits.HttpRequestTestCase
 import software.amazon.smithy.rulesengine.traits.EndpointRuleSetTrait
+import software.amazon.smithy.utils.StringUtils
 
 /**
  * Generates HTTP protocol unit tests for `httpRequestTest` cases
  */
-open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: Builder) :
-    HttpProtocolUnitTestGenerator<HttpRequestTestCase>(builder) {
+open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: Builder) : HttpProtocolUnitTestGenerator<HttpRequestTestCase>(builder) {
 
     object ConfigureServiceClient : SectionId {
         val Test: SectionKey<HttpRequestTestCase> = SectionKey("Test")
         val Context: SectionKey<ProtocolGenerator.GenerationContext> = SectionKey("Context")
         val Operation: SectionKey<OperationShape> = SectionKey("Operation")
     }
+
+    protected open val inputShape: Shape?
+        get() {
+            return operation.input.map {
+                model.expectShape(it)
+            }.orElse(null)
+        }
 
     override fun openTestFunctionBlock(): String = "= httpRequestTest {"
 
@@ -38,9 +52,82 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
         writer.addImport(KotlinDependency.KOTLIN_TEST.namespace, "*")
         writer.dependencies.addAll(KotlinDependency.SMITHY_TEST.dependencies)
         writer.dependencies.addAll(KotlinDependency.KOTLIN_TEST.dependencies)
+        if (test.body.isPresent) {
+            renderBodyAssertFn(test)
+        }
         renderExpectedBlock(test)
         writer.write("")
         renderOperationBlock(test)
+    }
+
+    private fun renderStructDeserializer(writer: KotlinWriter, shape: Shape): Symbol {
+        val symbol = ctx.symbolProvider.toSymbol(shape)
+        val deserializeFnName = "deserialize" + StringUtils.capitalize(symbol.name) + "Document"
+        return shape.documentDeserializer(ctx.settings, symbol) { blockWriter ->
+            blockWriter.withBlock("internal fun #L(deserializer: #T): #T {", "}", deserializeFnName, RuntimeTypes.Serde.Deserializer, symbol) {
+                val renderingCtx = RenderingContext(blockWriter, shape, model, symbolProvider, ctx.settings)
+                val descriptorGenerator = CborSerdeDescriptorGenerator(renderingCtx)
+
+                val deserializeStructGenerator = DeserializeStructGenerator(
+                    ctx,
+                    shape.members().toMutableList(),
+                    blockWriter,
+                    TimestampFormatTrait.Format.EPOCH_SECONDS,
+                )
+
+                blockWriter.write("val builder = #T.Builder()", symbol)
+                blockWriter.write("")
+
+                blockWriter.call { descriptorGenerator.render() }
+                blockWriter.call { deserializeStructGenerator.render() }
+
+                blockWriter.write("")
+                blockWriter.write("builder.correctErrors()")
+                blockWriter.write("return builder.build()")
+            }
+        }.also {
+            writer.addImport(it)
+        }
+    }
+
+    /**
+     * Render a custom bodyAssertFn rather than using a statically-defined one (such as `assertBytesEqual`).
+     * This is useful when your body equality assertion needs to deserialize the raw bytes into real types.
+     */
+    private fun renderBodyAssertFn(test: HttpRequestTestCase) {
+        if (!test.bodyMediaType.isPresent) {
+            return
+        }
+
+        when (test.bodyMediaType.get()) {
+            "application/cbor" -> {
+                val inputShape = inputShape ?: return
+
+                val serdeIndex = SerdeIndex.of(ctx.model)
+                serdeIndex.requiresDocumentDeserializer(inputShape).forEach {
+                    renderStructDeserializer(writer, it)
+                }
+                val inputDeserializer = renderStructDeserializer(writer, inputShape)
+
+                writer.write("")
+                writer.withBlock("suspend fun assertCborBodiesEqual(expected: #1T?, actual: #1T?) {", "}", RuntimeTypes.Http.HttpBody) {
+                    write("val expectedBytes = expected?.#T()?.#T()", RuntimeTypes.Http.readAll, RuntimeTypes.Core.Text.Encoding.decodeBase64)
+                    write("val actualBytes = actual?.#T()?.#T()", RuntimeTypes.Http.readAll, RuntimeTypes.Core.Text.Encoding.decodeBase64)
+                    writer.withBlock("if (expectedBytes == null && actualBytes == null) {", "}") {
+                        write("return")
+                    }
+                    write("requireNotNull(expectedBytes) { #S }", "expected application/cbor body cannot be null")
+                    write("requireNotNull(expectedBytes) { #S }", "actual application/cbor body cannot be null")
+
+                    write("")
+                    write("val expectedRequest = #L(#T(expectedBytes))", inputDeserializer.name, RuntimeTypes.Serde.SerdeCbor.CborDeserializer)
+                    write("val actualRequest = #L(#T(expectedBytes))", inputDeserializer.name, RuntimeTypes.Serde.SerdeCbor.CborDeserializer)
+                    write("assertEquals(expectedRequest, actualRequest)")
+                }
+                writer.write("")
+            }
+            else -> {}
+        }
     }
 
     private fun renderExpectedBlock(test: HttpRequestTestCase) {
@@ -77,6 +164,7 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
                                     "application/json" -> "::assertJsonBodiesEqual"
                                     "application/xml" -> "::assertXmlBodiesEqual"
                                     "application/x-www-form-urlencoded" -> "::assertFormUrlBodiesEqual"
+                                    "application/cbor" -> "::assertCborBodiesEqual"
                                     // compare reader bytes
                                     else -> "::assertBytesEqual"
                                 }

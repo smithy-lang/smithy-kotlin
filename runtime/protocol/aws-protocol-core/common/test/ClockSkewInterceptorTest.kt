@@ -26,11 +26,11 @@ import kotlin.test.*
 import kotlin.time.Duration.Companion.days
 import kotlin.time.Duration.Companion.seconds
 
-class ClockSkewInterceptorTest {
-    val SKEWED_RESPONSE_CODE_DESCRIPTION = "RequestTimeTooSkewed"
-    val POSSIBLE_SKEWED_RESPONSE_CODE_DESCRIPTION = "InvalidSignatureException"
-    val NOT_SKEWED_RESPONSE_CODE_DESCRIPTION = "RequestThrottled"
+private val SKEWED_RESPONSE_CODE_DESCRIPTION = "RequestTimeTooSkewed"
+private val POSSIBLE_SKEWED_RESPONSE_CODE_DESCRIPTION = "InvalidSignatureException"
+private val NOT_SKEWED_RESPONSE_CODE_DESCRIPTION = "RequestThrottled"
 
+class ClockSkewInterceptorTest {
     @Test
     fun testNotSkewed() {
         val clientTime = Instant.fromRfc5322("Wed, 6 Oct 2023 16:20:50 -0400")

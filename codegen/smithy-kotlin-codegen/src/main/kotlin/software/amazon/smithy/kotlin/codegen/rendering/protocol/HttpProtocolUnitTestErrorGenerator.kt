@@ -11,8 +11,7 @@ import software.amazon.smithy.kotlin.codegen.model.hasStreamingMember
 import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.protocoltests.traits.HttpResponseTestCase
 
-open class HttpProtocolUnitTestErrorGenerator protected constructor(builder: Builder) :
-    HttpProtocolUnitTestResponseGenerator(builder) {
+open class HttpProtocolUnitTestErrorGenerator protected constructor(builder: Builder) : HttpProtocolUnitTestResponseGenerator(builder) {
     val error: Shape = builder.error ?: throw CodegenException("builder did not set an error shape")
 
     override val outputShape: Shape? = error

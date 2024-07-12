@@ -105,7 +105,9 @@ public inline fun <reified T : XmlToken> XmlStreamReader.peekSeek(selectionPredi
             } else {
                 null
             }
-        } else { nextToken() }
+        } else {
+            nextToken()
+        }
         token = peek()
     } while (token != null)
 

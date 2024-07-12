@@ -57,7 +57,7 @@ open class XmlParserGenerator(
     }
 
     /**
-     * Register nested structure/map shapes reachable from the operation input shape that require a "document" deserializer
+     * Register nested structure/map shapes reachable from the operation output shape that require a "document" deserializer
      * implementation
      */
     protected fun addNestedDocumentDeserializers(ctx: ProtocolGenerator.GenerationContext, shape: Shape, writer: KotlinWriter) {

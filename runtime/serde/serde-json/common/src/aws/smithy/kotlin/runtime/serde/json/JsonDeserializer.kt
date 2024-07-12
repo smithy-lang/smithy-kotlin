@@ -9,6 +9,9 @@ import aws.smithy.kotlin.runtime.content.BigDecimal
 import aws.smithy.kotlin.runtime.content.BigInteger
 import aws.smithy.kotlin.runtime.content.Document
 import aws.smithy.kotlin.runtime.serde.*
+import aws.smithy.kotlin.runtime.text.encoding.decodeBase64Bytes
+import aws.smithy.kotlin.runtime.time.Instant
+import aws.smithy.kotlin.runtime.time.TimestampFormat
 
 /**
  * Provides a deserializer for JSON documents
@@ -16,7 +19,11 @@ import aws.smithy.kotlin.runtime.serde.*
  * @param payload underlying document from which tokens are read
  */
 @InternalApi
-public class JsonDeserializer(payload: ByteArray) : Deserializer, Deserializer.ElementIterator, Deserializer.EntryIterator, PrimitiveDeserializer {
+public class JsonDeserializer(payload: ByteArray) :
+    Deserializer,
+    Deserializer.ElementIterator,
+    Deserializer.EntryIterator,
+    PrimitiveDeserializer {
     @InternalApi
     public companion object {
         private val validNumberStrings = setOf("Infinity", "-Infinity", "NaN")
@@ -140,6 +147,15 @@ public class JsonDeserializer(payload: ByteArray) : Deserializer, Deserializer.E
         return token.value
     }
 
+    override fun deserializeByteArray(): ByteArray = deserializeString().decodeBase64Bytes()
+
+    override fun deserializeInstant(format: TimestampFormat): Instant = when (format) {
+        TimestampFormat.EPOCH_SECONDS -> deserializeString().let { Instant.fromEpochSeconds(it) }
+        TimestampFormat.ISO_8601 -> deserializeString().let { Instant.fromIso8601(it) }
+        TimestampFormat.RFC_5322 -> deserializeString().let { Instant.fromRfc5322(it) }
+        else -> throw DeserializationException("unknown timestamp format: $format")
+    }
+
     override fun nextHasValue(): Boolean = reader.peek() != JsonToken.Null
 
     override fun hasNextEntry(): Boolean =
@@ -168,19 +184,22 @@ public class JsonDeserializer(payload: ByteArray) : Deserializer, Deserializer.E
 }
 
 // Represents the deserialization of a null object.
-private class JsonNullFieldIterator(deserializer: JsonDeserializer) : Deserializer.FieldIterator, Deserializer by deserializer, PrimitiveDeserializer by deserializer {
+private class JsonNullFieldIterator(deserializer: JsonDeserializer) :
+    Deserializer.FieldIterator,
+    Deserializer by deserializer,
+    PrimitiveDeserializer by deserializer {
     override fun findNextFieldIndex(): Int? = null
 
-    override fun skipValue() {
-        throw DeserializationException("This should not be called during deserialization.")
-    }
+    override fun skipValue(): Unit = throw DeserializationException("This should not be called during deserialization.")
 }
 
 private class JsonFieldIterator(
     private val reader: JsonStreamReader,
     private val descriptor: SdkObjectDescriptor,
     deserializer: JsonDeserializer,
-) : Deserializer.FieldIterator, Deserializer by deserializer, PrimitiveDeserializer by deserializer {
+) : Deserializer.FieldIterator,
+    Deserializer by deserializer,
+    PrimitiveDeserializer by deserializer {
 
     override fun findNextFieldIndex(): Int? {
         val candidate = when (reader.peek()) {

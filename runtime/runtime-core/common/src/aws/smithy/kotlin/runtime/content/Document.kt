@@ -43,7 +43,8 @@ public sealed class Document {
      * Wraps a [kotlin.collections.List].
      */
     public data class List(val value: kotlin.collections.List<Document?>) :
-        Document(), kotlin.collections.List<Document?> by value {
+        Document(),
+        kotlin.collections.List<Document?> by value {
         override fun toString(): kotlin.String = value.joinToString(separator = ",", prefix = "[", postfix = "]")
     }
 
@@ -51,7 +52,8 @@ public sealed class Document {
      * Wraps a [kotlin.collections.Map].
      */
     public data class Map(val value: kotlin.collections.Map<kotlin.String, Document?>) :
-        Document(), kotlin.collections.Map<kotlin.String, Document?> by value {
+        Document(),
+        kotlin.collections.Map<kotlin.String, Document?> by value {
         override fun toString(): kotlin.String = value
             .entries
             .joinToString(

@@ -10,7 +10,9 @@ package aws.smithy.kotlin.runtime.http
 public data class HttpStatusCode(public val value: Int, public val description: String) {
     // NOTE: data class over enum here to be forward compatible with potentially unknown status codes
 
-    public enum class Category(private val range: IntRange) : Comparable<Category>, ClosedRange<Int> by range {
+    public enum class Category(private val range: IntRange) :
+        Comparable<Category>,
+        ClosedRange<Int> by range {
         INFORMATION(IntRange(100, 199)),
         SUCCESS(IntRange(200, 299)),
         REDIRECT(IntRange(300, 399)),

@@ -69,7 +69,7 @@ class RestXmlErrorDeserializerTest {
         )
 
         for (payload in tests) {
-            assertFailsWith<DeserializationException>() {
+            assertFailsWith<DeserializationException> {
                 parseRestXmlErrorResponseNoSuspend(payload)
             }
         }

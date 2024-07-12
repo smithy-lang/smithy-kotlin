@@ -17,7 +17,8 @@ import java.util.*
 import java.util.logging.Logger
 
 enum class TestContainmentMode {
-    RUN_TESTS, EXCLUDE_TESTS
+    RUN_TESTS,
+    EXCLUDE_TESTS,
 }
 
 /**
@@ -36,7 +37,7 @@ class HttpProtocolTestGenerator(
     // list of test ID's to ignore/skip
     private val testDelta: TestMemberDelta = TestMemberDelta(setOf()),
 ) {
-    private val LOGGER = Logger.getLogger(javaClass.name)
+    private val logger = Logger.getLogger(javaClass.name)
 
     /**
      * Generates the API HTTP protocol tests defined in the smithy model.
@@ -56,7 +57,7 @@ class HttpProtocolTestGenerator(
                 val testClassName = "${testOperationName}RequestTest"
                 val testFilename = "$testClassName.kt"
                 ctx.delegator.useTestFileWriter(testFilename, ctx.settings.pkg.name) { writer ->
-                    LOGGER.fine("Generating request protocol test cases for ${operation.id}")
+                    logger.fine("Generating request protocol test cases for ${operation.id}")
 
                     // import package.models.*
                     writer.addImport("${ctx.settings.pkg.name}.model", "*")
@@ -84,7 +85,7 @@ class HttpProtocolTestGenerator(
                 val testClassName = "${testOperationName}ResponseTest"
                 val testFilename = "$testClassName.kt"
                 ctx.delegator.useTestFileWriter(testFilename, ctx.settings.pkg.name) { writer ->
-                    LOGGER.fine("Generating response protocol test cases for ${operation.id}")
+                    logger.fine("Generating response protocol test cases for ${operation.id}")
 
                     writer.addImport("${ctx.settings.pkg.name}.model", "*")
                     responseTestBuilder
@@ -114,7 +115,7 @@ class HttpProtocolTestGenerator(
                     // use the operation name + error name as the class name
                     val testClassName = "${opName}${error.defaultName(ctx.service)}Test"
                     ctx.delegator.useTestFileWriter(testFilename, ctx.settings.pkg.name) { writer ->
-                        LOGGER.fine("Generating error protocol test cases for ${operation.id}")
+                        logger.fine("Generating error protocol test cases for ${operation.id}")
 
                         writer.addImport("${ctx.settings.pkg.name}.model", "*")
                         errorTestBuilder

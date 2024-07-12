@@ -2,7 +2,7 @@
 kotlin-version = "2.0.0"
 dokka-version = "1.9.10"
 
-aws-kotlin-repo-tools-version = "0.4.8"
+aws-kotlin-repo-tools-version = "0.4.9"
 
 # libs
 coroutines-version = "1.8.1"
@@ -12,10 +12,10 @@ okio-version = "3.9.0"
 otel-version = "1.32.0"
 slf4j-version = "2.0.9"
 slf4j-v1x-version = "1.7.36"
-crt-kotlin-version = "0.8.5"
+crt-kotlin-version = "0.8.6"
 
 # codegen
-smithy-version = "1.49.0"
+smithy-version = "1.50.0"
 smithy-gradle-version = "0.9.0"
 
 # testing
@@ -25,7 +25,7 @@ kotlin-compile-testing-version = "1.6.0"
 kotlinx-benchmark-version = "0.4.9"
 kotlinx-serialization-version = "1.6.0"
 docker-java-version = "3.3.6"
-ktor-version = "2.3.6"
+ktor-version = "2.3.12"
 kaml-version = "0.55.0"
 jsoup-version = "1.16.2"
 
@@ -62,6 +62,8 @@ smithy-codegen-core = { module = "software.amazon.smithy:smithy-codegen-core", v
 smithy-cli = { module = "software.amazon.smithy:smithy-cli", version.ref = "smithy-version" }
 smithy-model = { module = "software.amazon.smithy:smithy-model", version.ref = "smithy-version" }
 smithy-waiters = { module = "software.amazon.smithy:smithy-waiters", version.ref = "smithy-version" }
+smithy-protocol-traits = { module = "software.amazon.smithy:smithy-protocol-traits", version.ref = "smithy-version" }
+smithy-protocol-tests = { module = "software.amazon.smithy:smithy-protocol-tests", version.ref = "smithy-version" }
 smithy-protocol-test-traits = { module = "software.amazon.smithy:smithy-protocol-test-traits", version.ref = "smithy-version" }
 smithy-aws-traits = { module = "software.amazon.smithy:smithy-aws-traits", version.ref = "smithy-version" }
 smithy-rules-engine = { module = "software.amazon.smithy:smithy-rules-engine", version.ref = "smithy-version" }

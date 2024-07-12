@@ -37,7 +37,7 @@ abstract class ByteStreamFlowTest(
             val expectedFullBuffers = data.size / bufferSize
             for (i in 0 until expectedFullBuffers) {
                 val b = buffers[i]
-                val expected = data.sliceArray((i * bufferSize)until (i * bufferSize + bufferSize))
+                val expected = data.sliceArray((i * bufferSize) until (i * bufferSize + bufferSize))
                 assertEquals(bufferSize, b.size)
                 assertContentEquals(expected, b)
             }

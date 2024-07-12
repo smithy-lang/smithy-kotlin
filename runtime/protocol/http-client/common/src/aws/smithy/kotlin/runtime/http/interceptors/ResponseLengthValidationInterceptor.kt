@@ -72,7 +72,9 @@ private class LengthValidatingByteReadChannel(
 
     override suspend fun read(sink: SdkBuffer, limit: Long): Long = chan.read(sink, limit).also {
         if (chan.isClosedForRead || bytesReceived > expectedContentLength) {
-            if (it != -1L) { bytesReceived += it }
+            if (it != -1L) {
+                bytesReceived += it
+            }
             validateContentLength(expectedContentLength, bytesReceived)
         } else {
             bytesReceived += it

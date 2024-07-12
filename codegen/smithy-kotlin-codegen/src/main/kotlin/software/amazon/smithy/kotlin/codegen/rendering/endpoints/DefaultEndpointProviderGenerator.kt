@@ -249,7 +249,9 @@ class ExpressionGenerator(
     private val writer: KotlinWriter,
     private val rules: EndpointRuleSet,
     private val functions: Map<String, Symbol>,
-) : ExpressionVisitor<EndpointInfo?>, LiteralVisitor<EndpointInfo?>, TemplateVisitor<EndpointInfo?> {
+) : ExpressionVisitor<EndpointInfo?>,
+    LiteralVisitor<EndpointInfo?>,
+    TemplateVisitor<EndpointInfo?> {
     override fun visitLiteral(literal: Literal): EndpointInfo? = literal.accept(this as LiteralVisitor<EndpointInfo?>)
 
     override fun visitRef(reference: Reference): EndpointInfo {

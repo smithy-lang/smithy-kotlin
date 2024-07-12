@@ -7,7 +7,8 @@ package aws.smithy.kotlin.runtime.collections.views
 internal open class ListIteratorView<Src, Dest>(
     private val src: ListIterator<Src>,
     private val src2Dest: (Src) -> Dest,
-) : ListIterator<Dest>, IteratorView<Src, Dest>(src, src2Dest) {
+) : IteratorView<Src, Dest>(src, src2Dest),
+    ListIterator<Dest> {
     override fun hasPrevious(): Boolean = src.hasPrevious()
 
     override fun nextIndex(): Int = src.nextIndex()

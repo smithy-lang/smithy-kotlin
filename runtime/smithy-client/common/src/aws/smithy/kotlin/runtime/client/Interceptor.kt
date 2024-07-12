@@ -358,8 +358,7 @@ public interface ProtocolRequestInterceptorContext<I, ProtocolRequest> : Request
  * [Interceptor] context used for all phases that have access to the operation input (request), the
  * serialized protocol specific request (e.g. HttpRequest), and the protocol specific response (e.g. HttpResponse).
  */
-public interface ProtocolResponseInterceptorContext<I, ProtocolRequest, ProtocolResponse> :
-    ProtocolRequestInterceptorContext<I, ProtocolRequest> {
+public interface ProtocolResponseInterceptorContext<I, ProtocolRequest, ProtocolResponse> : ProtocolRequestInterceptorContext<I, ProtocolRequest> {
     /**
      * Retrieve the protocol specific response for the operation being invoked.
      */
@@ -371,8 +370,7 @@ public interface ProtocolResponseInterceptorContext<I, ProtocolRequest, Protocol
  * serialized protocol specific request (e.g. HttpRequest), the protocol specific response (e.g. HttpResponse),
  * and the deserialized operation output (response).
  */
-public interface ResponseInterceptorContext<I, O, ProtocolRequest, ProtocolResponse> :
-    ProtocolResponseInterceptorContext<I, ProtocolRequest, ProtocolResponse> {
+public interface ResponseInterceptorContext<I, O, ProtocolRequest, ProtocolResponse> : ProtocolResponseInterceptorContext<I, ProtocolRequest, ProtocolResponse> {
     /**
      * Retrieve the modeled response or exception for the operation being invoked
      */

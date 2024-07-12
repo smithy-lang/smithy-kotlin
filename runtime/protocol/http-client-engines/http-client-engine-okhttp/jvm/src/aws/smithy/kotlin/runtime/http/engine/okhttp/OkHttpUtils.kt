@@ -64,7 +64,9 @@ internal fun HttpRequest.toOkHttpRequest(
                             is HttpBody.ChannelContent -> body.readFrom().toHttpBody(it.toLong())
                             else -> null
                         }
-                    } else { null }
+                    } else {
+                        null
+                    }
                 } ?: body
                 StreamingRequestBody(updatedBody, callContext)
             }
@@ -221,7 +223,7 @@ private fun URI.toUrl(): Url {
     }
 }
 
-internal inline fun<T> mapOkHttpExceptions(block: () -> T): T =
+internal inline fun <T> mapOkHttpExceptions(block: () -> T): T =
     try {
         block()
     } catch (ex: IOException) {

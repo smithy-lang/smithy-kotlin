@@ -138,7 +138,8 @@ public fun <K, V> mutableMultiMapOf(vararg pairs: Pair<K, V>): MutableMultiMap<K
 
 internal class SimpleMutableMultiMap<K, V>(
     private val delegate: MutableMap<K, MutableList<V>>,
-) : MutableMap<K, MutableList<V>> by delegate, MutableMultiMap<K, V> {
+) : MutableMap<K, MutableList<V>> by delegate,
+    MutableMultiMap<K, V> {
     private fun ensureKey(key: K) = getOrPut(key, ::mutableListOf)
 
     override fun add(key: K, value: V): Boolean = ensureKey(key).add(value)

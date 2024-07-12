@@ -410,7 +410,7 @@ class JsonDeserializerTest {
         companion object {
             val LIST2_FIELD_DESCRIPTOR = SdkFieldDescriptor(SerialKind.List, JsonSerialName("list2"))
             val INT2_FIELD_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Integer, JsonSerialName("int2"))
-            val OBJ_DESCRIPTOR = SdkObjectDescriptor.build() {
+            val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {
                 field(LIST2_FIELD_DESCRIPTOR)
                 field(INT2_FIELD_DESCRIPTOR)
             }
@@ -446,7 +446,7 @@ class JsonDeserializerTest {
         companion object {
             val NESTED2_FIELD_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Struct, JsonSerialName("nested2"))
             val BOOL2_FIELD_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Boolean, JsonSerialName("bool2"))
-            val OBJ_DESCRIPTOR = SdkObjectDescriptor.build() {
+            val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {
                 field(NESTED2_FIELD_DESCRIPTOR)
                 field(BOOL2_FIELD_DESCRIPTOR)
             }
@@ -496,7 +496,7 @@ class JsonDeserializerTest {
             val FLOAT_FIELD_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Float, JsonSerialName("float"))
             val MAP_FIELD_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Map, JsonSerialName("map"))
 
-            val OBJ_DESCRIPTOR = SdkObjectDescriptor.build() {
+            val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {
                 field(INT_FIELD_DESCRIPTOR)
                 field(LONG_FIELD_DESCRIPTOR)
                 field(SHORT_FIELD_DESCRIPTOR)
@@ -600,6 +600,7 @@ class JsonDeserializerTest {
     }
 
     @Test
+    @Suppress("ktlint:standard:property-naming")
     fun itSkipsExplicitNulls() {
         val payload = """
          {

@@ -22,7 +22,7 @@ import aws.smithy.kotlin.runtime.telemetry.trace.withSpan
  * @param providers the list of providers to delegate to
  */
 @InternalApi
-public abstract class IdentityProviderChain<P : IdentityProvider, I : Identity> (
+public abstract class IdentityProviderChain<P : IdentityProvider, I : Identity>(
     protected vararg val providers: P,
 ) : CloseableIdentityProvider {
     init {

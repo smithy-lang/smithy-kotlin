@@ -7,8 +7,12 @@ package aws.smithy.kotlin.runtime.util
 
 import aws.smithy.kotlin.runtime.InternalApi
 
-public interface PlatformEnvironProvider : EnvironmentProvider, PropertyProvider
-public interface PlatformProvider : PlatformEnvironProvider, Filesystem {
+public interface PlatformEnvironProvider :
+    EnvironmentProvider,
+    PropertyProvider
+public interface PlatformProvider :
+    PlatformEnvironProvider,
+    Filesystem {
     public companion object {
         /**
          * System default implementation of [PlatformProvider]

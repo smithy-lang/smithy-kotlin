@@ -34,7 +34,9 @@ public interface HttpClientEngine : CoroutineScope {
  * An [HttpClientEngine] with [Closeable] resources. Users SHOULD call [close] when done with the engine to ensure
  * any held resources are properly released.
  */
-public interface CloseableHttpClientEngine : HttpClientEngine, Closeable
+public interface CloseableHttpClientEngine :
+    HttpClientEngine,
+    Closeable
 
 /**
  * Base class that SDK [HttpClientEngine]s SHOULD inherit from rather than implementing directly.

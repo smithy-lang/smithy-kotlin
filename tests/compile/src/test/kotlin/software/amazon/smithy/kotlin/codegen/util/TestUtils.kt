@@ -19,13 +19,13 @@ import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.OutputStream
 
-private const val SmithyVersion = "2.0"
+private const val SMITHY_VERSION = "2.0"
 
 /**
  * Load and initialize a model from a Java resource URL
  */
 fun String.asSmithy(sourceLocation: String = "test.smithy"): Model {
-    val processed = if (!this.startsWith("\$version")) "\$version: ${SmithyVersion.doubleQuote()}\n$this" else this
+    val processed = if (!this.startsWith("\$version")) "\$version: ${SMITHY_VERSION.doubleQuote()}\n$this" else this
     return Model.assembler().discoverModels().addUnparsedModel(sourceLocation, processed).assemble().unwrap()
 }
 

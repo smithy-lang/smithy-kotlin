@@ -157,7 +157,9 @@ class GzipByteReadChannelTest {
         val tempBuffer = SdkBuffer()
         val limit = 1L
 
-        do { gzipByteReadChannel.read(tempBuffer, limit) } while (!gzipByteReadChannel.isClosedForRead)
+        do {
+            gzipByteReadChannel.read(tempBuffer, limit)
+        } while (!gzipByteReadChannel.isClosedForRead)
         gzipByteReadChannel.cancel(null)
 
         val compressedBytes = tempBuffer.readByteArray()
@@ -177,7 +179,9 @@ class GzipByteReadChannelTest {
         val tempBuffer = SdkBuffer()
         val limit = 1L
 
-        do { gzipByteReadChannel.read(tempBuffer, limit) } while (!gzipByteReadChannel.isClosedForRead)
+        do {
+            gzipByteReadChannel.read(tempBuffer, limit)
+        } while (!gzipByteReadChannel.isClosedForRead)
         gzipByteReadChannel.cancel(null)
 
         val compressedBytes = tempBuffer.readByteArray()
@@ -197,7 +201,9 @@ class GzipByteReadChannelTest {
         val tempBuffer = SdkBuffer()
         val limit = 1_000L
 
-        do { gzipByteReadChannel.read(tempBuffer, limit) } while (!gzipByteReadChannel.isClosedForRead)
+        do {
+            gzipByteReadChannel.read(tempBuffer, limit)
+        } while (!gzipByteReadChannel.isClosedForRead)
         gzipByteReadChannel.cancel(null)
 
         val compressedBytes = tempBuffer.readByteArray()
@@ -217,7 +223,9 @@ class GzipByteReadChannelTest {
         val tempBuffer = SdkBuffer()
         val limit = 1_000L
 
-        do { gzipByteReadChannel.read(tempBuffer, limit) } while (!gzipByteReadChannel.isClosedForRead)
+        do {
+            gzipByteReadChannel.read(tempBuffer, limit)
+        } while (!gzipByteReadChannel.isClosedForRead)
         gzipByteReadChannel.cancel(null)
 
         val compressedBytes = tempBuffer.readByteArray()

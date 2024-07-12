@@ -11,7 +11,9 @@ package aws.smithy.kotlin.runtime.io
  * **Thread Safety** Buffer is NOT thread safe and should not be shared between threads without
  * external synchronization.
  */
-public expect class SdkBuffer : SdkBufferedSource, SdkBufferedSink {
+public expect class SdkBuffer :
+    SdkBufferedSource,
+    SdkBufferedSink {
     public val size: Long
 
     public constructor()

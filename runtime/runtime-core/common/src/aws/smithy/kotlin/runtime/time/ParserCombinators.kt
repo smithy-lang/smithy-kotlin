@@ -24,8 +24,7 @@ internal typealias Parser<T> = (str: String, pos: Int) -> ParseResult<T>
  * @param message Additional contextual message around what the failure was
  * @param position The position where the parse failure happened
  */
-public open class ParseException(input: String, message: String, position: Int) :
-    SdkBaseException("parse `$input`: error at $position: $message")
+public open class ParseException(input: String, message: String, position: Int) : SdkBaseException("parse `$input`: error at $position: $message")
 
 // internal marker exception
 internal class TakeWhileMNException(
@@ -124,7 +123,9 @@ internal fun tag(match: String): Parser<String> = { str, pos ->
 internal fun takeTill(predicate: (Char) -> Boolean): Parser<IntRange> = { str, pos ->
     precond(str, pos)
     var i = pos
-    while (i < str.length && !predicate(str[i])) { i++ }
+    while (i < str.length && !predicate(str[i])) {
+        i++
+    }
 
     if (i == str.length) throw IncompleteException(str, Needed.Unknown)
 
@@ -141,7 +142,9 @@ internal fun takeWhileMN(m: Int, n: Int, predicate: (Char) -> Boolean): Parser<I
     precond(str, pos)
 
     var i = pos
-    while (i < str.length && (i - pos < n) && predicate(str[i])) { i++ }
+    while (i < str.length && (i - pos < n) && predicate(str[i])) {
+        i++
+    }
 
     val cnt = i - pos
     if (cnt < m) {

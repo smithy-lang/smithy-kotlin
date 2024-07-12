@@ -39,4 +39,6 @@ public interface BearerToken : Identity {
  *
  * Implementations MUST evict any previously-retrieved or stored credentials when the provider is closed.
  */
-public interface CloseableBearerTokenProvider : BearerTokenProvider, Closeable
+public interface CloseableBearerTokenProvider :
+    BearerTokenProvider,
+    Closeable

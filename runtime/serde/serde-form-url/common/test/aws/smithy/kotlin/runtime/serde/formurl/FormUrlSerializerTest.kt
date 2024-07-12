@@ -11,6 +11,7 @@ import aws.smithy.kotlin.runtime.time.TimestampFormat
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
+@Suppress("ktlint:standard:property-naming")
 class FormUrlSerializerTest {
 
     data class PrimitiveStructTest(

@@ -10,7 +10,9 @@ import java.io.InputStream
 import java.io.OutputStream
 import java.nio.ByteBuffer
 
-public actual class SdkBuffer : SdkBufferedSource, SdkBufferedSink {
+public actual class SdkBuffer :
+    SdkBufferedSource,
+    SdkBufferedSink {
     public actual constructor() : this(okio.Buffer())
 
     internal actual val inner: okio.Buffer

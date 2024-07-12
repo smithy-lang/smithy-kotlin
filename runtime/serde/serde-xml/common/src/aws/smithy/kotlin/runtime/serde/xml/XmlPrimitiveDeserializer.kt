@@ -8,12 +8,14 @@ import aws.smithy.kotlin.runtime.content.BigDecimal
 import aws.smithy.kotlin.runtime.content.BigInteger
 import aws.smithy.kotlin.runtime.content.Document
 import aws.smithy.kotlin.runtime.serde.*
+import aws.smithy.kotlin.runtime.text.encoding.decodeBase64Bytes
+import aws.smithy.kotlin.runtime.time.Instant
+import aws.smithy.kotlin.runtime.time.TimestampFormat
 
 /**
  * Deserialize primitive values for single values, lists, and maps
  */
-internal class XmlPrimitiveDeserializer(private val reader: XmlStreamReader, private val fieldDescriptor: SdkFieldDescriptor) :
-    PrimitiveDeserializer {
+internal class XmlPrimitiveDeserializer(private val reader: XmlStreamReader, private val fieldDescriptor: SdkFieldDescriptor) : PrimitiveDeserializer {
 
     constructor(input: ByteArray, fieldDescriptor: SdkFieldDescriptor) : this(xmlStreamReader(input), fieldDescriptor)
 
@@ -61,9 +63,7 @@ internal class XmlPrimitiveDeserializer(private val reader: XmlStreamReader, pri
 
     override fun deserializeBoolean(): Boolean = deserializeValue { it.toBoolean() }
 
-    override fun deserializeDocument(): Document {
-        throw DeserializationException("cannot deserialize unsupported Document type in xml")
-    }
+    override fun deserializeDocument(): Document = throw DeserializationException("cannot deserialize unsupported Document type in xml")
 
     override fun deserializeNull(): Nothing? {
         reader.nextToken() ?: throw DeserializationException("Unexpected end of stream")
@@ -71,5 +71,14 @@ internal class XmlPrimitiveDeserializer(private val reader: XmlStreamReader, pri
         reader.nextToken() ?: throw DeserializationException("Unexpected end of stream")
 
         return null
+    }
+
+    override fun deserializeByteArray(): ByteArray = deserializeString().decodeBase64Bytes()
+
+    override fun deserializeInstant(format: TimestampFormat): Instant = when (format) {
+        TimestampFormat.EPOCH_SECONDS -> deserializeString().let { Instant.fromEpochSeconds(it) }
+        TimestampFormat.ISO_8601 -> deserializeString().let { Instant.fromIso8601(it) }
+        TimestampFormat.RFC_5322 -> deserializeString().let { Instant.fromRfc5322(it) }
+        else -> throw DeserializationException("unknown timestamp format: $format")
     }
 }

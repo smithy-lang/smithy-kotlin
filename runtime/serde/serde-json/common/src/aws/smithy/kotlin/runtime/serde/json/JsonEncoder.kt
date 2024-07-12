@@ -56,7 +56,9 @@ internal class JsonEncoder(private val pretty: Boolean = false) : JsonStreamWrit
         }
     }
 
-    private fun writeNewline() { if (pretty) buffer.append('\n') }
+    private fun writeNewline() {
+        if (pretty) buffer.append('\n')
+    }
     private fun writeComma() {
         buffer.append(",")
         writeNewline()

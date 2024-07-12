@@ -180,7 +180,10 @@ private fun Shape.asKotlinEnum(): KotlinEnum = when {
         KotlinEnum(KotlinTypes.Int, variants)
     }
     isStringEnumShape -> {
-        val variants = expectTrait<@Suppress("DEPRECATION") software.amazon.smithy.model.traits.EnumTrait>()
+        val variants = expectTrait<
+            @Suppress("DEPRECATION")
+            software.amazon.smithy.model.traits.EnumTrait,
+            >()
             .values
             .sortedBy { it.name.orElse(it.value) }
             .map {

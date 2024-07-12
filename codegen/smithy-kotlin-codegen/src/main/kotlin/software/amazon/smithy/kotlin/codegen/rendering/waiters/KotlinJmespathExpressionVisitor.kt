@@ -168,13 +168,9 @@ class KotlinJmespathExpressionVisitor(
         return VisitedExpression(identifier)
     }
 
-    override fun visitCurrentNode(expression: CurrentExpression): VisitedExpression {
-        throw CodegenException("Unexpected current expression outside of flatten expression: $expression")
-    }
+    override fun visitCurrentNode(expression: CurrentExpression): VisitedExpression = throw CodegenException("Unexpected current expression outside of flatten expression: $expression")
 
-    override fun visitExpressionType(expression: ExpressionTypeExpression): VisitedExpression {
-        throw CodegenException("ExpressionTypeExpression is unsupported")
-    }
+    override fun visitExpressionType(expression: ExpressionTypeExpression): VisitedExpression = throw CodegenException("ExpressionTypeExpression is unsupported")
 
     override fun visitField(expression: FieldExpression): VisitedExpression = subfield(expression, "it")
 
@@ -360,9 +356,7 @@ class KotlinJmespathExpressionVisitor(
         else -> throw CodegenException("Unknown function type in $expression")
     }
 
-    override fun visitIndex(expression: IndexExpression): VisitedExpression {
-        throw CodegenException("IndexExpression is unsupported")
-    }
+    override fun visitIndex(expression: IndexExpression): VisitedExpression = throw CodegenException("IndexExpression is unsupported")
 
     override fun visitLiteral(expression: LiteralExpression): VisitedExpression {
         val ident = when (expression.type) {
@@ -456,9 +450,7 @@ class KotlinJmespathExpressionVisitor(
         return flatMappingBlock(expression.right, left.identifier, left.shape, left.projected)
     }
 
-    override fun visitSlice(expression: SliceExpression): VisitedExpression {
-        throw CodegenException("SliceExpression is unsupported")
-    }
+    override fun visitSlice(expression: SliceExpression): VisitedExpression = throw CodegenException("SliceExpression is unsupported")
 
     private fun slice(expression: SliceExpression, parentName: String): VisitedExpression {
         val startIndex = if (!expression.start.isPresent) {

@@ -1,5 +1,24 @@
 # Changelog
 
+## [1.2.14] - 07/12/2024
+
+### Features
+* [#843](https://github.com/smithy-lang/smithy-kotlin/issues/843) Add support for prioritized protocol resolution
+* [#1302](https://github.com/awslabs/aws-sdk-kotlin/issues/1302) Add support for `smithy.protocols#rpcv2Cbor` protocol
+
+## [1.2.13] - 07/10/2024
+
+## [1.2.12] - 07/09/2024
+
+### Miscellaneous
+* Upgrade Smithy to version **1.50.0**
+
+## [1.2.11] - 06/28/2024
+
+### Miscellaneous
+* Upgrade to aws-crt-kotlin v0.8.6
+* Upgrade to ktlint v1.3.0
+
 ## [1.2.10] - 06/21/2024
 
 ## [1.2.9] - 06/18/2024

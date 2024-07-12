@@ -13,7 +13,9 @@ import kotlin.coroutines.CoroutineContext
 @InternalApi
 public actual class TelemetryContextElement public actual constructor(
     public actual val context: Context,
-) : CoroutineContext.Element, ThreadContextElement<Scope>, AbstractCoroutineContextElement(TelemetryContextElement) {
+) : AbstractCoroutineContextElement(TelemetryContextElement),
+    CoroutineContext.Element,
+    ThreadContextElement<Scope> {
 
     public actual companion object Key : CoroutineContext.Key<TelemetryContextElement>
 
