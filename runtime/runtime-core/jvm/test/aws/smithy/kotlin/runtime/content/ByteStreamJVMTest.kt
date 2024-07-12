@@ -7,8 +7,11 @@ package aws.smithy.kotlin.runtime.content
 
 import aws.smithy.kotlin.runtime.testing.RandomTempFile
 import kotlinx.coroutines.test.runTest
+import java.io.ByteArrayOutputStream
 import java.nio.file.Files
 import kotlin.test.*
+
+private val binaryData = ByteArray(1024) { it.toByte() }
 
 class ByteStreamJVMTest {
     @Test
@@ -148,5 +151,39 @@ class ByteStreamJVMTest {
 
         val byteStreamFromPath = file.toPath().asByteStream()
         assertEquals(0, byteStreamFromPath.contentLength)
+    }
+
+    @Test
+    fun testInputStreamAsByteStream() = runTest {
+        binaryData.inputStream().use { inputStream ->
+            val byteStream = inputStream.asByteStream()
+            assertNull(byteStream.contentLength)
+            assertTrue(byteStream.isOneShot)
+
+            val output = byteStream.toByteArray()
+            assertContentEquals(binaryData, output)
+        }
+    }
+
+    @Test
+    fun testInputStreamAsByteStreamWithLength() = runTest {
+        binaryData.inputStream().use { inputStream ->
+            val byteStream = inputStream.asByteStream(binaryData.size.toLong())
+            assertEquals(binaryData.size.toLong(), byteStream.contentLength)
+            assertTrue(byteStream.isOneShot)
+
+            val output = byteStream.toByteArray()
+            assertContentEquals(binaryData, output)
+        }
+    }
+
+    @Test
+    fun testByteStreamToOutputStream() = runTest {
+        val byteStream = ByteStream.fromBytes(binaryData)
+        ByteArrayOutputStream().use { outputStream ->
+            byteStream.writeToOutputStream(outputStream)
+            val output = outputStream.toByteArray()
+            assertContentEquals(binaryData, output)
+        }
     }
 }

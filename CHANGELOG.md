@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.2.15] - 07/12/2024
+
+### Features
+* [#1352](https://github.com/awslabs/aws-sdk-kotlin/issues/1352) Add new Kotlin/JVM methods for converting `InputStream` to `ByteStream` and for writing `ByteStream` to `OutputStream`
+
 ## [1.2.14] - 07/12/2024
 
 ### Features
