@@ -9,6 +9,7 @@ import aws.smithy.kotlin.runtime.content.BigDecimal
 import aws.smithy.kotlin.runtime.content.BigInteger
 import aws.smithy.kotlin.runtime.content.Document
 import aws.smithy.kotlin.runtime.serde.*
+import aws.smithy.kotlin.runtime.text.encoding.encodeBase64String
 import aws.smithy.kotlin.runtime.time.Instant
 import aws.smithy.kotlin.runtime.time.TimestampFormat
 
@@ -59,6 +60,11 @@ public class JsonSerializer :
     override fun field(descriptor: SdkFieldDescriptor, value: SdkSerializable) {
         jsonWriter.writeName(descriptor.serialName)
         value.serialize(this)
+    }
+
+    override fun field(descriptor: SdkFieldDescriptor, value: ByteArray) {
+        jsonWriter.writeName(descriptor.serialName)
+        serializeByteArray(value)
     }
 
     override fun field(descriptor: SdkFieldDescriptor, value: Int) {
@@ -206,6 +212,11 @@ public class JsonSerializer :
         serializeDocument(value)
     }
 
+    override fun entry(key: String, value: ByteArray?) {
+        jsonWriter.writeName(key)
+        if (value != null) serializeByteArray(value) else jsonWriter.writeNull()
+    }
+
     override fun listEntry(key: String, listDescriptor: SdkFieldDescriptor, block: ListSerializer.() -> Unit) {
         jsonWriter.writeName(key)
         beginList(listDescriptor)
@@ -289,6 +300,10 @@ public class JsonSerializer :
             TimestampFormat.RFC_5322,
             -> jsonWriter.writeValue(value.format(format))
         }
+    }
+
+    override fun serializeByteArray(value: ByteArray) {
+        serializeString(value.encodeBase64String())
     }
 
     override fun serializeDocument(value: Document?) {

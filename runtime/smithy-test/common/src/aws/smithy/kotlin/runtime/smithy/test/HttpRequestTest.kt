@@ -8,8 +8,10 @@ import aws.smithy.kotlin.runtime.http.HeadersBuilder
 import aws.smithy.kotlin.runtime.http.HttpBody
 import aws.smithy.kotlin.runtime.http.HttpMethod
 import aws.smithy.kotlin.runtime.http.engine.HttpClientEngine
+import aws.smithy.kotlin.runtime.http.readAll
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.httptest.TestEngine
+import aws.smithy.kotlin.runtime.text.encoding.encodeBase64
 import kotlinx.coroutines.test.TestResult
 import kotlinx.coroutines.test.runTest
 import kotlin.test.assertEquals
@@ -64,7 +66,15 @@ public fun httpRequestTest(block: HttpRequestTestBuilder.() -> Unit): TestResult
             testHeaders["Content-Length"] = contentLength.toString()
         }
 
-        actual = HttpRequest(method = request.method, url = request.url, headers = testHeaders.build(), body = request.body)
+        val body = if (testBuilder.expected.bodyMediaType?.isBinaryMediaType == true) {
+            request.body.readAll()?.let {
+                HttpBody.fromBytes(it.encodeBase64())
+            } ?: request.body
+        } else {
+            request.body
+        }
+
+        actual = HttpRequest(method = request.method, url = request.url, headers = testHeaders.build(), body = body)
 
         // this control flow requires the service call (or whatever calls the mock engine) to be the last
         // statement in the operation{} block...

@@ -12,6 +12,7 @@ import aws.smithy.kotlin.runtime.http.engine.HttpClientEngine
 import aws.smithy.kotlin.runtime.http.response.HttpResponse
 import aws.smithy.kotlin.runtime.httptest.TestEngine
 import aws.smithy.kotlin.runtime.io.SdkByteReadChannel
+import aws.smithy.kotlin.runtime.text.encoding.decodeBase64Bytes
 import aws.smithy.kotlin.runtime.time.Instant
 import kotlinx.coroutines.test.TestResult
 import kotlinx.coroutines.test.runTest
@@ -91,7 +92,11 @@ public fun <T> httpResponseTest(block: HttpResponseTestBuilder<T>.() -> Unit): T
             object : HttpBody.ChannelContent() {
                 private var consumed = false
                 override fun readFrom(): SdkByteReadChannel {
-                    val content = if (consumed) ByteArray(0) else it.encodeToByteArray()
+                    val content = when {
+                        consumed -> ByteArray(0)
+                        testBuilder.expected.bodyMediaType?.isBinaryMediaType == true -> it.decodeBase64Bytes()
+                        else -> it.encodeToByteArray()
+                    }
                     consumed = true
                     return SdkByteReadChannel(content)
                 }

@@ -302,6 +302,12 @@ object RuntimeTypes {
             val QueryLiteral = symbol("QueryLiteral")
             val FormUrlSerializer = symbol("FormUrlSerializer")
         }
+
+        object SerdeCbor : RuntimeTypePackage(KotlinDependency.SERDE_CBOR) {
+            val CborSerializer = symbol("CborSerializer")
+            val CborDeserializer = symbol("CborDeserializer")
+            val CborSerialName = symbol("CborSerialName")
+        }
     }
 
     object Auth {
@@ -420,6 +426,13 @@ object RuntimeTypes {
     object AwsXmlProtocols : RuntimeTypePackage(KotlinDependency.AWS_XML_PROTOCOLS) {
         val parseRestXmlErrorResponseNoSuspend = symbol("parseRestXmlErrorResponseNoSuspend")
         val parseEc2QueryErrorResponseNoSuspend = symbol("parseEc2QueryErrorResponseNoSuspend")
+    }
+
+    object SmithyRpcV2Protocols : RuntimeTypePackage(KotlinDependency.SMITHY_RPCV2_PROTOCOLS) {
+        object Cbor : RuntimeTypePackage(KotlinDependency.SMITHY_RPCV2_PROTOCOLS_CBOR) {
+            val RpcV2CborErrorDeserializer = symbol("RpcV2CborErrorDeserializer")
+            val RpcV2CborSmithyProtocolResponseHeaderInterceptor = symbol("RpcV2CborSmithyProtocolResponseHeaderInterceptor")
+        }
     }
 
     object AwsEventStream : RuntimeTypePackage(KotlinDependency.AWS_EVENT_STREAM) {

@@ -11,7 +11,6 @@ import kotlin.test.assertEquals
 
 @Suppress("HttpUrlsUsage")
 class RestJsonErrorDeserializerTest {
-
     @Test
     fun `it deserializes aws restJson error codes`() = runTest {
         val tests = listOf(

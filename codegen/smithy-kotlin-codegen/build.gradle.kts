@@ -29,6 +29,7 @@ dependencies {
     api(libs.smithy.waiters)
     implementation(libs.smithy.rules.engine)
     implementation(libs.smithy.aws.traits)
+    implementation(libs.smithy.protocol.traits)
     implementation(libs.smithy.protocol.test.traits)
     implementation(libs.jsoup)
 
