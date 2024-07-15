@@ -10,8 +10,11 @@ import software.amazon.smithy.kotlin.codegen.core.*
 import software.amazon.smithy.kotlin.codegen.lang.KotlinTypes
 import software.amazon.smithy.kotlin.codegen.model.*
 import software.amazon.smithy.kotlin.codegen.rendering.serde.ClientErrorCorrection
+import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.*
 import software.amazon.smithy.model.traits.*
+
+private const val REDACTED_VALUE = "*** Sensitive Data Redacted ***"
 
 /**
  * Renders Smithy structure shapes
@@ -105,18 +108,15 @@ class StructureGenerator(
             write("append(\"#T(\")", symbol)
 
             when {
-                shape.hasTrait<SensitiveTrait>() -> write("append(#S)", "*** Sensitive Data Redacted ***")
+                shape.isSensitive(model) -> write("append(#S)", REDACTED_VALUE)
                 else -> {
                     sortedMembers.forEachIndexed { index, memberShape ->
                         val (memberName, _) = memberNameSymbolIndex[memberShape]!!
+                        val isSensitive = memberShape.isSensitive(model)
+                        val value = if (isSensitive) REDACTED_VALUE else "\$$memberName"
                         val separator = if (index < sortedMembers.size - 1) "," else ""
 
-                        val targetShape = model.expectShape(memberShape.target)
-                        if (targetShape.hasTrait<SensitiveTrait>()) {
-                            write("append(\"#1L=*** Sensitive Data Redacted ***$separator\")", memberName)
-                        } else {
-                            write("append(\"#1L=\$#2L$separator\")", memberShape.defaultName(), memberName)
-                        }
+                        write("append(\"#L=#L#L\")", memberShape.defaultName(), value, separator)
                     }
                 }
             }
@@ -384,4 +384,12 @@ class StructureGenerator(
 
         if (hasConflictWithBaseClass) throw CodegenException("`sdkErrorMetadata` conflicts with property of same name inherited from SdkBaseException. Apply a rename customization/projection to fix.")
     }
+}
+
+private fun Shape.isSensitive(model: Model): Boolean = when {
+    this is MemberShape -> model.expectShape(target).isSensitive(model)
+    hasTrait<SensitiveTrait>() -> true
+    this is ListShape -> member.isSensitive(model)
+    this is MapShape -> key.isSensitive(model) || value.isSensitive(model)
+    else -> false
 }
