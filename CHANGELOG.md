@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.2.16] - 07/15/2024
+
+### Fixes
+* Correctly redact sensitive data in lists and maps
+
 ## [1.2.15] - 07/12/2024
 
 ### Features
