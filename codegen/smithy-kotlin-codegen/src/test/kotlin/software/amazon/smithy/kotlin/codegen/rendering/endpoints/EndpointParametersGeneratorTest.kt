@@ -166,7 +166,7 @@ class EndpointParametersGeneratorTest {
          
             public val requiredStringField: String? = requireNotNull(builder.requiredStringField) { "endpoint provider parameter #requiredStringField is required" }
             
-            public val stringArrayField: kotlin.collections.MutableList<kotlin.String>? = builder.stringArrayField
+            public val stringArrayField: kotlin.collections.List<kotlin.String>? = builder.stringArrayField
          
             public val stringField: String? = builder.stringField
         """.formatForTest()
@@ -315,7 +315,7 @@ class EndpointParametersGeneratorTest {
          
                 public var requiredStringField: String? = null
                 
-                public var stringArrayField: kotlin.collections.MutableList<kotlin.String>? = null
+                public var stringArrayField: kotlin.collections.List<kotlin.String>? = null
          
                 public var stringField: String? = null
          
