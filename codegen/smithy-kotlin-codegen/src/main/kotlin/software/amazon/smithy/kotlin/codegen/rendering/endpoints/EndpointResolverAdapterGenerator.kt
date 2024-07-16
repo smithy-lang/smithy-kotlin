@@ -208,11 +208,7 @@ class EndpointResolverAdapterGenerator(
                 when (param.type) {
                     ParameterType.STRING -> writer.write("#S", staticParam.value.expectStringNode().value)
                     ParameterType.BOOLEAN -> writer.write("#L", staticParam.value.expectBooleanNode().value)
-                    ParameterType.STRING_ARRAY -> writer.write(
-                        staticParam.value.expectArrayNode().elements.joinToString(",", "mutableListOf(", ")") { element ->
-                            element.expectStringNode().value.doubleQuote()
-                        },
-                    )
+                    ParameterType.STRING_ARRAY -> writer.write("#L", staticParam.value.expectArrayNode().elements.format())
                     else -> throw CodegenException("unexpected static context param type ${param.type}")
                 }
                 continue
