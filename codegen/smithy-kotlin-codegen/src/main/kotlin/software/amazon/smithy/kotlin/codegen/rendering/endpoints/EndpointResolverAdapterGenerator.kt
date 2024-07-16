@@ -80,6 +80,7 @@ class EndpointResolverAdapterGenerator(
         val topDownIndex = TopDownIndex.of(ctx.model)
         val operations = topDownIndex.getContainedOperations(ctx.service)
         val epParameterIndex = EndpointParameterIndex.of(ctx.model)
+        val operationsWithContextBindings = operations.filter { epParameterIndex.hasContextParams(it) }
 
         writer.write(
             "private typealias BindOperationContextParamsFn = (#T.Builder, #T) -> Unit",
@@ -91,23 +92,27 @@ class EndpointResolverAdapterGenerator(
                 "private val opContextBindings = mapOf<String, BindOperationContextParamsFn> (",
                 ")",
             ) {
-                val operationsWithContextBindings = operations.filter { epParameterIndex.hasContextParams(it) }
                 operationsWithContextBindings.forEach { op ->
-                    val bindFn = op.bindEndpointContextFn(ctx.settings) { fnWriter ->
-                        fnWriter.withBlock(
-                            "private fun #L(builder: #T.Builder, request: #T): Unit {",
-                            "}",
-                            op.bindEndpointContextFnName(),
-                            EndpointParametersGenerator.getSymbol(ctx.settings),
-                            RuntimeTypes.HttpClient.Operation.ResolveEndpointRequest,
-                        ) {
-                            renderBindOperationContextParams(epParameterIndex, op, fnWriter)
-                        }
-                    }
-                    write("#S to ::#T,", op.id.name, bindFn)
+                    write("#S to ::#L,", op.id.name, op.bindEndpointContextFnName())
                 }
             }
+
+        operationsWithContextBindings.forEach { op ->
+            renderBindOperationContextFunction(op, epParameterIndex)
+        }
     }
+
+    private fun renderBindOperationContextFunction(op: OperationShape, epParameterIndex: EndpointParameterIndex) =
+        writer.write("")
+            .withBlock(
+                "private fun #L(builder: #T.Builder, request: #T): Unit {",
+                "}",
+                op.bindEndpointContextFnName(),
+                EndpointParametersGenerator.getSymbol(ctx.settings),
+                RuntimeTypes.HttpClient.Operation.ResolveEndpointRequest,
+            ) {
+                renderBindOperationContextParams(epParameterIndex, op, writer)
+            }
 
     private fun renderResolveEndpointParams() {
         // NOTE: this is internal as it's re-used for auth scheme resolver generators in specific instances where they
@@ -223,16 +228,23 @@ class EndpointResolverAdapterGenerator(
             // Look at operation params
             val operationParam = operationContextParams?.get(paramName)
             if (operationParam != null) {
-                val codegenContext = GenerationContext(
-                    ctx.model,
-                    ctx.symbolProvider,
-                    ctx.settings,
-                )
+                val opInputShape = ctx.model.expectShape(op.inputShape)
+                val inputSymbol = ctx.symbolProvider.toSymbol(opInputShape)
+
+                if (inputContextParams.isEmpty()) {
+                    // This will already be rendered in the block if inputContextParams is not empty
+                    writer.write("val input = request.context[#T.OperationInput] as #T", RuntimeTypes.HttpClient.Operation.HttpOperationContext, inputSymbol)
+                }
+
                 val jmespathVisitor = KotlinJmespathExpressionVisitor(
-                    codegenContext,
+                    GenerationContext(
+                        ctx.model,
+                        ctx.symbolProvider,
+                        ctx.settings,
+                    ),
                     writer,
-                    ctx.service,
-                    "builder",
+                    opInputShape,
+                    "input", // reference the operation input during jmespath codegen
                 )
                 val expression = JmespathExpression.parse(operationParam.path)
                 val expressionResult = expression.accept(jmespathVisitor)

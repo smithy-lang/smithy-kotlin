@@ -19,7 +19,7 @@ import software.amazon.smithy.rulesengine.traits.StaticContextParamsTrait
 /**
  * Provides endpoint parameter binding knowledge index
  */
-class EndpointParameterIndex private constructor(private val model: Model) : KnowledgeIndex {
+class EndpointParameterIndex private constructor(model: Model) : KnowledgeIndex {
     private val opIndex = OperationIndex.of(model)
 
     /**
@@ -53,7 +53,7 @@ class EndpointParameterIndex private constructor(private val model: Model) : Kno
      * @param op the operation shape to get context params for.
      */
     fun operationContextParams(op: OperationShape): MutableMap<String, OperationContextParamDefinition>? =
-        model.operationShapes.find { op.id == it.id }?.getTrait<OperationContextParamsTrait>()?.parameters
+        op.getTrait<OperationContextParamsTrait>()?.parameters
 
     /**
      * Check if there are any context parameters bound to an operation
