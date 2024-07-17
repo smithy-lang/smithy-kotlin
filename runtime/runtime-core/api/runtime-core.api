@@ -86,16 +86,20 @@ public final class aws/smithy/kotlin/runtime/businessmetrics/BusinessMetricsUtil
 	public static final fun emitBusinessMetric (Laws/smithy/kotlin/runtime/operation/ExecutionContext;Laws/smithy/kotlin/runtime/businessmetrics/BusinessMetric;)V
 	public static final fun getAccountIdBasedEndpointAccountId ()Laws/smithy/kotlin/runtime/collections/AttributeKey;
 	public static final fun getBusinessMetrics ()Laws/smithy/kotlin/runtime/collections/AttributeKey;
-	public static final fun getServiceEndpointOverride ()Laws/smithy/kotlin/runtime/collections/AttributeKey;
+	public static final fun getEndpointOverride ()Laws/smithy/kotlin/runtime/collections/AttributeKey;
 	public static final fun removeBusinessMetric (Laws/smithy/kotlin/runtime/operation/ExecutionContext;Laws/smithy/kotlin/runtime/businessmetrics/BusinessMetric;)V
 }
 
 public final class aws/smithy/kotlin/runtime/businessmetrics/SmithyBusinessMetric : java/lang/Enum, aws/smithy/kotlin/runtime/businessmetrics/BusinessMetric {
 	public static final field ACCOUNT_ID_ENDPOINT Laws/smithy/kotlin/runtime/businessmetrics/SmithyBusinessMetric;
+	public static final field ACCOUNT_ID_MODE_DISABLED Laws/smithy/kotlin/runtime/businessmetrics/SmithyBusinessMetric;
+	public static final field ACCOUNT_ID_MODE_PREFERRED Laws/smithy/kotlin/runtime/businessmetrics/SmithyBusinessMetric;
+	public static final field ACCOUNT_ID_MODE_REQUIRED Laws/smithy/kotlin/runtime/businessmetrics/SmithyBusinessMetric;
 	public static final field ENDPOINT_OVERRIDE Laws/smithy/kotlin/runtime/businessmetrics/SmithyBusinessMetric;
 	public static final field GZIP_REQUEST_COMPRESSION Laws/smithy/kotlin/runtime/businessmetrics/SmithyBusinessMetric;
 	public static final field PAGINATOR Laws/smithy/kotlin/runtime/businessmetrics/SmithyBusinessMetric;
 	public static final field PROTOCOL_RPC_V2_CBOR Laws/smithy/kotlin/runtime/businessmetrics/SmithyBusinessMetric;
+	public static final field RESOLVED_ACCOUNT_ID Laws/smithy/kotlin/runtime/businessmetrics/SmithyBusinessMetric;
 	public static final field RETRY_MODE_ADAPTIVE Laws/smithy/kotlin/runtime/businessmetrics/SmithyBusinessMetric;
 	public static final field RETRY_MODE_STANDARD Laws/smithy/kotlin/runtime/businessmetrics/SmithyBusinessMetric;
 	public static final field SIGV4A_SIGNING Laws/smithy/kotlin/runtime/businessmetrics/SmithyBusinessMetric;
