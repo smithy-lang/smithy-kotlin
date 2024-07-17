@@ -285,7 +285,7 @@ class DefaultEndpointProviderGeneratorTest {
                 Url.parse("https://$moneySign{params.accountId}.$moneySign{params.endpoint}"),
                 attributes = attributesOf {
                     AccountIdBasedEndpointAccountId to params.accountId
-                    ServiceEndpointOverride to true
+                    EndpointOverride to true
                 },
             )
         """
@@ -303,7 +303,7 @@ class DefaultEndpointProviderGeneratorTest {
             return Endpoint(
                 Url.parse("https://$moneySign{params.endpoint}"),
                 attributes = attributesOf {
-                    ServiceEndpointOverride to true
+                    EndpointOverride to true
                 },
             )
         """
