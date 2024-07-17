@@ -25,7 +25,7 @@ public val AccountIdBasedEndpointAccountId: AttributeKey<String> = AttributeKey(
  * If an endpoint is "service endpoint override" based
  */
 @InternalApi
-public val ServiceEndpointOverride: AttributeKey<Boolean> = AttributeKey("aws.smithy.kotlin#ServiceEndpointOverride")
+public val EndpointOverride: AttributeKey<Boolean> = AttributeKey("aws.smithy.kotlin#EndpointOverride")
 
 /**
  * Emit a business metric to the execution context attributes
@@ -76,5 +76,9 @@ public enum class SmithyBusinessMetric(public override val identifier: String) :
     PROTOCOL_RPC_V2_CBOR("M"),
     ENDPOINT_OVERRIDE("N"),
     ACCOUNT_ID_ENDPOINT("O"),
+    ACCOUNT_ID_MODE_PREFERRED("P"), // TODO: Emit this metric
+    ACCOUNT_ID_MODE_DISABLED("Q"), // TODO: Emit this metric
+    ACCOUNT_ID_MODE_REQUIRED("R"), // TODO: Emit this metric
     SIGV4A_SIGNING("S"),
+    RESOLVED_ACCOUNT_ID("T"), // TODO: Emit this metric
 }

@@ -173,8 +173,8 @@ class DefaultEndpointProviderGenerator(
                 write("),")
 
                 val hasAccountIdBasedEndpoint = "accountId" in endpointInfo.params
-                val hasServiceEndpointOverride = "endpoint" in endpointInfo.params
-                val needAdditionalEndpointProperties = hasAccountIdBasedEndpoint || hasServiceEndpointOverride
+                val hasEndpointOverride = "endpoint" in endpointInfo.params
+                val needAdditionalEndpointProperties = hasAccountIdBasedEndpoint || hasEndpointOverride
 
                 if (rule.endpoint.headers.isNotEmpty()) {
                     withBlock("headers = #T {", "},", RuntimeTypes.Http.Headers) {
@@ -211,8 +211,8 @@ class DefaultEndpointProviderGenerator(
                         if (hasAccountIdBasedEndpoint) {
                             writer.write("#T to params.accountId", RuntimeTypes.Core.BusinessMetrics.AccountIdBasedEndpointAccountId)
                         }
-                        if (hasServiceEndpointOverride) {
-                            writer.write("#T to true", RuntimeTypes.Core.BusinessMetrics.ServiceEndpointOverride)
+                        if (hasEndpointOverride) {
+                            writer.write("#T to true", RuntimeTypes.Core.BusinessMetrics.EndpointOverride)
                         }
                     }
                 }
