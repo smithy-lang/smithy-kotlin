@@ -111,6 +111,7 @@ class EndpointResolverAdapterTest {
     fun testOpContextBindingsFunction() {
         val expected = """
             private fun bindDeleteObjectsEndpointContext(builder: TestEndpointParameters.Builder, request: ResolveEndpointRequest): Unit {
+                @Suppress("UNCHECKED_CAST")
                 val input = request.context[HttpOperationContext.OperationInput] as DeleteObjectsRequest
                 val delete = input.delete
                 val objects = delete?.objects

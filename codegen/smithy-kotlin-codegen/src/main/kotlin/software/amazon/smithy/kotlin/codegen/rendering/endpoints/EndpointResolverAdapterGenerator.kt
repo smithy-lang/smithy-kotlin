@@ -15,9 +15,13 @@ import software.amazon.smithy.kotlin.codegen.model.knowledge.EndpointParameterIn
 import software.amazon.smithy.kotlin.codegen.rendering.protocol.ProtocolGenerator
 import software.amazon.smithy.kotlin.codegen.rendering.waiters.KotlinJmespathExpressionVisitor
 import software.amazon.smithy.model.knowledge.TopDownIndex
+import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.shapes.OperationShape
+import software.amazon.smithy.rulesengine.language.syntax.parameters.Parameter
 import software.amazon.smithy.rulesengine.language.syntax.parameters.ParameterType
 import software.amazon.smithy.rulesengine.traits.ClientContextParamsTrait
+import software.amazon.smithy.rulesengine.traits.OperationContextParamDefinition
+import software.amazon.smithy.rulesengine.traits.StaticContextParamDefinition
 import software.amazon.smithy.utils.StringUtils
 
 object EndpointBusinessMetrics : SectionId
@@ -110,7 +114,7 @@ class EndpointResolverAdapterGenerator(
                 EndpointParametersGenerator.getSymbol(ctx.settings),
                 RuntimeTypes.HttpClient.Operation.ResolveEndpointRequest,
             ) {
-                renderBindOperationContextParams(epParameterIndex, op, writer)
+                renderBindOperationContextParams(epParameterIndex, op)
             }
 
     private fun renderResolveEndpointParams() {
@@ -181,72 +185,85 @@ class EndpointResolverAdapterGenerator(
     private fun renderBindOperationContextParams(
         epParameterIndex: EndpointParameterIndex,
         op: OperationShape,
-        writer: KotlinWriter,
     ) {
         if (rules == null) return
+
         val staticContextParams = epParameterIndex.staticContextParams(op)
         val inputContextParams = epParameterIndex.inputContextParams(op)
         val operationContextParams = epParameterIndex.operationContextParams(op)
 
-        if (inputContextParams.isNotEmpty()) {
-            writer.addImport(RuntimeTypes.Core.Collections.get)
-            writer.write("@Suppress(#S)", "UNCHECKED_CAST")
-            val opInputShape = ctx.model.expectShape(op.inputShape)
-            val inputSymbol = ctx.symbolProvider.toSymbol(opInputShape)
-            writer.write("val input = request.context[#T.OperationInput] as #T", RuntimeTypes.HttpClient.Operation.HttpOperationContext, inputSymbol)
-        }
+        if (inputContextParams.isNotEmpty()) renderInput(op)
 
         for (param in rules.parameters.toList()) {
             val paramName = param.name.toString()
             val paramDefaultName = param.defaultName()
 
-            // Look at static params
+            // Check static params
             val staticParam = staticContextParams?.parameters?.get(paramName)
             if (staticParam != null) {
-                writer.writeInline("builder.#L = ", paramDefaultName)
-                when (param.type) {
-                    ParameterType.STRING -> writer.write("#S", staticParam.value.expectStringNode().value)
-                    ParameterType.BOOLEAN -> writer.write("#L", staticParam.value.expectBooleanNode().value)
-                    ParameterType.STRING_ARRAY -> writer.write("#L", staticParam.value.expectArrayNode().elements.format())
-                    else -> throw CodegenException("unexpected static context param type ${param.type}")
-                }
+                renderStaticParam(staticParam, paramDefaultName, param)
                 continue
             }
 
-            // Look at input params
+            // Check input params
             val inputParam = inputContextParams[paramName]
             if (inputParam != null) {
-                writer.write("builder.#L = input.#L", paramDefaultName, inputParam.defaultName())
+                renderInputParam(inputParam, paramDefaultName)
                 continue
             }
 
-            // Look at operation params
+            // Check operation params
             val operationParam = operationContextParams?.get(paramName)
             if (operationParam != null) {
-                val opInputShape = ctx.model.expectShape(op.inputShape)
-                val inputSymbol = ctx.symbolProvider.toSymbol(opInputShape)
-
-                if (inputContextParams.isEmpty()) {
-                    // This will already be rendered in the block if inputContextParams is not empty
-                    writer.write("val input = request.context[#T.OperationInput] as #T", RuntimeTypes.HttpClient.Operation.HttpOperationContext, inputSymbol)
-                }
-
-                val jmespathVisitor = KotlinJmespathExpressionVisitor(
-                    GenerationContext(
-                        ctx.model,
-                        ctx.symbolProvider,
-                        ctx.settings,
-                    ),
-                    writer,
-                    opInputShape,
-                    "input", // reference the operation input during jmespath codegen
-                )
-                val expression = JmespathExpression.parse(operationParam.path)
-                val expressionResult = expression.accept(jmespathVisitor)
-
-                writer.write("builder.#L = #L", paramDefaultName, expressionResult.identifier)
+                renderOperationParam(operationParam, paramDefaultName, op, inputContextParams)
             }
         }
+    }
+
+    private fun renderInput(op: OperationShape) {
+        writer.addImport(RuntimeTypes.Core.Collections.get)
+        writer.write("@Suppress(#S)", "UNCHECKED_CAST")
+        val opInputShape = ctx.model.expectShape(op.inputShape)
+        val inputSymbol = ctx.symbolProvider.toSymbol(opInputShape)
+        writer.write("val input = request.context[#T.OperationInput] as #T", RuntimeTypes.HttpClient.Operation.HttpOperationContext, inputSymbol)
+    }
+
+    private fun renderStaticParam(staticParam: StaticContextParamDefinition, paramDefaultName: String, param: Parameter) {
+        writer.writeInline("builder.#L = ", paramDefaultName)
+        when (param.type) {
+            ParameterType.STRING -> writer.write("#S", staticParam.value.expectStringNode().value)
+            ParameterType.BOOLEAN -> writer.write("#L", staticParam.value.expectBooleanNode().value)
+            ParameterType.STRING_ARRAY -> writer.write("#L", staticParam.value.expectArrayNode().elements.format())
+            else -> throw CodegenException("unexpected static context param type ${param.type}")
+        }
+    }
+
+    private fun renderInputParam(inputParam: MemberShape, paramDefaultName: String) {
+        writer.write("builder.#L = input.#L", paramDefaultName, inputParam.defaultName())
+    }
+
+    private fun renderOperationParam(operationParam: OperationContextParamDefinition, paramDefaultName: String, op: OperationShape, inputContextParams: Map<String, MemberShape>) {
+        val opInputShape = ctx.model.expectShape(op.inputShape)
+
+        if (inputContextParams.isEmpty()) {
+            // This will already be rendered in the block if inputContextParams is not empty
+            renderInput(op)
+        }
+
+        val jmespathVisitor = KotlinJmespathExpressionVisitor(
+            GenerationContext(
+                ctx.model,
+                ctx.symbolProvider,
+                ctx.settings,
+            ),
+            writer,
+            opInputShape,
+            "input", // reference the operation input during jmespath codegen
+        )
+        val expression = JmespathExpression.parse(operationParam.path)
+        val expressionResult = expression.accept(jmespathVisitor)
+
+        writer.write("builder.#L = #L", paramDefaultName, expressionResult.identifier)
     }
 
     private fun renderBindClientContextParams(ctx: ProtocolGenerator.GenerationContext, writer: KotlinWriter) {

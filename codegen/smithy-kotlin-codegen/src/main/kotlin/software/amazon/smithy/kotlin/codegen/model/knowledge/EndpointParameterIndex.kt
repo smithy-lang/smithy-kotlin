@@ -52,7 +52,7 @@ class EndpointParameterIndex private constructor(model: Model) : KnowledgeIndex 
      *
      * @param op the operation shape to get context params for.
      */
-    fun operationContextParams(op: OperationShape): MutableMap<String, OperationContextParamDefinition>? =
+    fun operationContextParams(op: OperationShape): Map<String, OperationContextParamDefinition>? =
         op.getTrait<OperationContextParamsTrait>()?.parameters
 
     /**

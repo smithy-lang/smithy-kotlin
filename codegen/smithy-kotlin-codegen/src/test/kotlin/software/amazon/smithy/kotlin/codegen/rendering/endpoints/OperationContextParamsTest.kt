@@ -73,6 +73,7 @@ class OperationContextParamsTest {
         val pathResultType = "stringArray"
 
         val expected = """
+            @Suppress("UNCHECKED_CAST")
             val input = request.context[HttpOperationContext.OperationInput] as TestOperationRequest
             val delete = input.delete
             val objects = delete?.objects
@@ -104,6 +105,7 @@ class OperationContextParamsTest {
         val pathResultType = "stringArray"
 
         val expected = """
+            @Suppress("UNCHECKED_CAST")
             val input = request.context[HttpOperationContext.OperationInput] as TestOperationRequest
             val object = input.object
             val keys = listOf("Key1", "Key2", "Key3")
