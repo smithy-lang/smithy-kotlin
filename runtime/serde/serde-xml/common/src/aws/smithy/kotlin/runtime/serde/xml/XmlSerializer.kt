@@ -10,6 +10,7 @@ import aws.smithy.kotlin.runtime.content.BigDecimal
 import aws.smithy.kotlin.runtime.content.BigInteger
 import aws.smithy.kotlin.runtime.content.Document
 import aws.smithy.kotlin.runtime.serde.*
+import aws.smithy.kotlin.runtime.text.encoding.encodeBase64String
 import aws.smithy.kotlin.runtime.time.Instant
 import aws.smithy.kotlin.runtime.time.TimestampFormat
 
@@ -132,6 +133,9 @@ public class XmlSerializer(private val xmlWriter: XmlStreamWriter = xmlStreamWri
     override fun field(descriptor: SdkFieldDescriptor, value: Instant, format: TimestampFormat): Unit =
         field(descriptor, value.format(format))
 
+    override fun field(descriptor: SdkFieldDescriptor, value: ByteArray): Unit =
+        field(descriptor, value)
+
     override fun field(descriptor: SdkFieldDescriptor, value: Document?): Unit = throw SerializationException(
         "cannot serialize field ${descriptor.serialName}; Document type is not supported by xml encoding",
     )
@@ -194,6 +198,10 @@ public class XmlSerializer(private val xmlWriter: XmlStreamWriter = xmlStreamWri
 
     override fun serializeInstant(value: Instant, format: TimestampFormat) {
         xmlWriter.text(value.format(format))
+    }
+
+    override fun serializeByteArray(value: ByteArray) {
+        serializeString(value.encodeBase64String())
     }
 
     override fun serializeSdkSerializable(value: SdkSerializable): Unit = value.serialize(this)
@@ -264,6 +272,8 @@ private class XmlMapSerializer(
     override fun entry(key: String, value: Document?) =
         throw SerializationException("document values not supported by xml serializer")
 
+    override fun entry(key: String, value: ByteArray?): Unit = entry(key, value)
+
     override fun listEntry(key: String, listDescriptor: SdkFieldDescriptor, block: ListSerializer.() -> Unit) {
         writeEntry(key) {
             val ls = xmlSerializer.beginList(listDescriptor)
@@ -306,6 +316,10 @@ private class XmlMapSerializer(
     override fun serializeSdkSerializable(value: SdkSerializable): Unit = value.serialize(xmlSerializer)
 
     override fun serializeInstant(value: Instant, format: TimestampFormat): Unit = serializeString(value.format(format))
+
+    override fun serializeByteArray(value: ByteArray) {
+        serializeString(value.encodeBase64String())
+    }
 
     override fun serializeNull() {
         val tagName = descriptor.findTrait<XmlMapName>()?.value ?: XmlMapName.Default.value
@@ -380,6 +394,10 @@ private class XmlListSerializer(
     override fun serializeDocument(value: Document?): Unit = throw SerializationException("document values not supported by xml serializer")
 
     override fun serializeInstant(value: Instant, format: TimestampFormat): Unit = serializeString(value.format(format))
+
+    override fun serializeByteArray(value: ByteArray) {
+        serializeString(value.encodeBase64String())
+    }
 
     private fun serializePrimitive(value: Any) {
         val ns = descriptor.findTrait<XmlCollectionValueNamespace>()

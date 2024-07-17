@@ -11,6 +11,7 @@ import kotlinx.coroutines.withContext
 import java.io.ByteArrayInputStream
 import java.io.File
 import java.io.InputStream
+import java.io.OutputStream
 import java.nio.file.Path
 import kotlin.io.use
 
@@ -97,3 +98,49 @@ public fun ByteStream.toInputStream(): InputStream = when (this) {
     is ByteStream.ChannelStream -> readFrom().toInputStream()
     is ByteStream.SourceStream -> readFrom().buffer().inputStream()
 }
+
+/**
+ * Create a [ByteStream.SourceStream] that reads from the given [InputStream]
+ * @param inputStream The [InputStream] from which to create a [ByteStream]
+ * @param contentLength If specified, indicates how many bytes remain in the input stream. Defaults to `null`.
+ */
+public fun ByteStream.Companion.fromInputStream(
+    inputStream: InputStream,
+    contentLength: Long? = null,
+): ByteStream.SourceStream = inputStream.asByteStream(contentLength)
+
+/**
+ * Create a [ByteStream.SourceStream] that reads from this [InputStream]
+ * @param contentLength If specified, indicates how many bytes remain in this stream. Defaults to `null`.
+ */
+public fun InputStream.asByteStream(contentLength: Long? = null): ByteStream.SourceStream {
+    val source = source()
+    return object : ByteStream.SourceStream() {
+        override val contentLength: Long? = contentLength
+        override val isOneShot: Boolean = true
+        override fun readFrom(): SdkSource = source
+    }
+}
+
+/**
+ * Writes this stream to the given [OutputStream]. This method does not flush or close the given [OutputStream].
+ * @param outputStream The [OutputStream] to which the contents of this stream will be written
+ */
+public suspend fun ByteStream.writeToOutputStream(outputStream: OutputStream): Long = withContext(Dispatchers.IO) {
+    val src = when (val stream = this@writeToOutputStream) {
+        is ByteStream.ChannelStream -> return@withContext outputStream.writeAll(stream.readFrom())
+        is ByteStream.Buffer -> stream.bytes().source()
+        is ByteStream.SourceStream -> stream.readFrom()
+    }
+
+    outputStream.sink().use {
+        it.buffer().use { bufferedSink ->
+            bufferedSink.writeAll(src)
+        }
+    }
+}
+
+private suspend fun OutputStream.writeAll(chan: SdkByteReadChannel): Long =
+    sink().use {
+        chan.readAll(it)
+    }

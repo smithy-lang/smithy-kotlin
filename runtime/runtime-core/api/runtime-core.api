@@ -338,6 +338,56 @@ public final class aws/smithy/kotlin/runtime/config/EnvironmentSettingKt {
 	public static synthetic fun resolve$default (Laws/smithy/kotlin/runtime/config/EnvironmentSetting;Laws/smithy/kotlin/runtime/util/PlatformEnvironProvider;ILjava/lang/Object;)Ljava/lang/Object;
 }
 
+public final class aws/smithy/kotlin/runtime/content/BigDecimal : java/lang/Number, java/lang/Comparable {
+	public fun <init> (Laws/smithy/kotlin/runtime/content/BigInteger;I)V
+	public fun <init> (Ljava/lang/String;)V
+	public final fun byteValue ()B
+	public fun compareTo (Laws/smithy/kotlin/runtime/content/BigDecimal;)I
+	public synthetic fun compareTo (Ljava/lang/Object;)I
+	public final fun doubleValue ()D
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun floatValue ()F
+	public final fun getExponent ()I
+	public final fun getMantissa ()Laws/smithy/kotlin/runtime/content/BigInteger;
+	public final fun getValue ()Ljava/lang/String;
+	public final fun intValue ()I
+	public final fun longValue ()J
+	public final fun shortValue ()S
+	public fun toByte ()B
+	public fun toDouble ()D
+	public fun toFloat ()F
+	public fun toInt ()I
+	public fun toLong ()J
+	public final fun toPlainString ()Ljava/lang/String;
+	public fun toShort ()S
+}
+
+public final class aws/smithy/kotlin/runtime/content/BigInteger : java/lang/Number, java/lang/Comparable {
+	public fun <init> (Ljava/lang/String;)V
+	public fun <init> ([B)V
+	public final fun byteValue ()B
+	public fun compareTo (Laws/smithy/kotlin/runtime/content/BigInteger;)I
+	public synthetic fun compareTo (Ljava/lang/Object;)I
+	public final fun doubleValue ()D
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun floatValue ()F
+	public final fun getValue ()Ljava/lang/String;
+	public fun hashCode ()I
+	public final fun intValue ()I
+	public final fun longValue ()J
+	public final fun minus (Laws/smithy/kotlin/runtime/content/BigInteger;)Laws/smithy/kotlin/runtime/content/BigInteger;
+	public final fun plus (Laws/smithy/kotlin/runtime/content/BigInteger;)Laws/smithy/kotlin/runtime/content/BigInteger;
+	public final fun shortValue ()S
+	public fun toByte ()B
+	public final fun toByteArray ()[B
+	public fun toDouble ()D
+	public fun toFloat ()F
+	public fun toInt ()I
+	public fun toLong ()J
+	public fun toShort ()S
+	public fun toString ()Ljava/lang/String;
+}
+
 public abstract class aws/smithy/kotlin/runtime/content/ByteStream {
 	public static final field Companion Laws/smithy/kotlin/runtime/content/ByteStream$Companion;
 	public fun getContentLength ()Ljava/lang/Long;
@@ -368,14 +418,19 @@ public abstract class aws/smithy/kotlin/runtime/content/ByteStream$SourceStream 
 public final class aws/smithy/kotlin/runtime/content/ByteStreamJVMKt {
 	public static final fun asByteStream (Ljava/io/File;JJ)Laws/smithy/kotlin/runtime/content/ByteStream;
 	public static final fun asByteStream (Ljava/io/File;Lkotlin/ranges/LongRange;)Laws/smithy/kotlin/runtime/content/ByteStream;
+	public static final fun asByteStream (Ljava/io/InputStream;Ljava/lang/Long;)Laws/smithy/kotlin/runtime/content/ByteStream$SourceStream;
 	public static final fun asByteStream (Ljava/nio/file/Path;JJ)Laws/smithy/kotlin/runtime/content/ByteStream;
 	public static final fun asByteStream (Ljava/nio/file/Path;Lkotlin/ranges/LongRange;)Laws/smithy/kotlin/runtime/content/ByteStream;
 	public static synthetic fun asByteStream$default (Ljava/io/File;JJILjava/lang/Object;)Laws/smithy/kotlin/runtime/content/ByteStream;
+	public static synthetic fun asByteStream$default (Ljava/io/InputStream;Ljava/lang/Long;ILjava/lang/Object;)Laws/smithy/kotlin/runtime/content/ByteStream$SourceStream;
 	public static synthetic fun asByteStream$default (Ljava/nio/file/Path;JJILjava/lang/Object;)Laws/smithy/kotlin/runtime/content/ByteStream;
 	public static final fun fromFile (Laws/smithy/kotlin/runtime/content/ByteStream$Companion;Ljava/io/File;)Laws/smithy/kotlin/runtime/content/ByteStream;
+	public static final fun fromInputStream (Laws/smithy/kotlin/runtime/content/ByteStream$Companion;Ljava/io/InputStream;Ljava/lang/Long;)Laws/smithy/kotlin/runtime/content/ByteStream$SourceStream;
+	public static synthetic fun fromInputStream$default (Laws/smithy/kotlin/runtime/content/ByteStream$Companion;Ljava/io/InputStream;Ljava/lang/Long;ILjava/lang/Object;)Laws/smithy/kotlin/runtime/content/ByteStream$SourceStream;
 	public static final fun toInputStream (Laws/smithy/kotlin/runtime/content/ByteStream;)Ljava/io/InputStream;
 	public static final fun writeToFile (Laws/smithy/kotlin/runtime/content/ByteStream;Ljava/io/File;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public static final fun writeToFile (Laws/smithy/kotlin/runtime/content/ByteStream;Ljava/nio/file/Path;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static final fun writeToOutputStream (Laws/smithy/kotlin/runtime/content/ByteStream;Ljava/io/OutputStream;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
 public final class aws/smithy/kotlin/runtime/content/ByteStreamKt {

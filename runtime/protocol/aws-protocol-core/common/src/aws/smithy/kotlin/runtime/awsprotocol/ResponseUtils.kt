@@ -30,3 +30,19 @@ public fun HttpResponse.withPayload(payload: ByteArray?): HttpResponse {
 @InternalApi
 public fun HttpStatusCode.matches(expected: HttpStatusCode?): Boolean =
     expected == this || (expected == null && this.isSuccess()) || expected?.category() == this.category()
+
+/**
+ * Sanitize the value to retrieve the disambiguated error type using the following steps:
+ *
+ * If a : character is present, then take only the contents before the first : character in the value.
+ * If a # character is present, then take only the contents after the first # character in the value.
+ *
+ * All of the following error values resolve to FooError:
+ *
+ * FooError
+ * FooError:http://amazon.com/smithy/com.amazon.smithy.validate/
+ * aws.protocoltests.restjson#FooError
+ * aws.protocoltests.restjson#FooError:http://amazon.com/smithy/com.amazon.smithy.validate/
+ */
+@InternalApi
+public fun sanitizeErrorType(code: String?): String? = code?.substringAfter("#")?.substringBefore(":")
