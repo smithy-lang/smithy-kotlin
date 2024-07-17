@@ -14,7 +14,6 @@ import software.amazon.smithy.kotlin.codegen.model.*
 import software.amazon.smithy.kotlin.codegen.model.knowledge.EndpointParameterIndex
 import software.amazon.smithy.kotlin.codegen.rendering.protocol.ProtocolGenerator
 import software.amazon.smithy.kotlin.codegen.rendering.waiters.KotlinJmespathExpressionVisitor
-import software.amazon.smithy.kotlin.codegen.utils.doubleQuote
 import software.amazon.smithy.model.knowledge.TopDownIndex
 import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.rulesengine.language.syntax.parameters.ParameterType
