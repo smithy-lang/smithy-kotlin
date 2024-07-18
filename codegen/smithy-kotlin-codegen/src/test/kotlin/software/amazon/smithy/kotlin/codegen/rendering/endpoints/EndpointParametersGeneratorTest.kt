@@ -29,6 +29,10 @@ class EndpointParametersGeneratorTest {
                         "type": "Boolean",
                         "required": false
                     },
+                    "StringArrayField": {
+                        "type": "stringArray",
+                        "required": false
+                    },
                     "RequiredStringField": {
                         "type": "String",
                         "required": true
@@ -161,6 +165,8 @@ class EndpointParametersGeneratorTest {
             public val requiredBooleanField: Boolean? = requireNotNull(builder.requiredBooleanField) { "endpoint provider parameter #requiredBooleanField is required" }
          
             public val requiredStringField: String? = requireNotNull(builder.requiredStringField) { "endpoint provider parameter #requiredStringField is required" }
+            
+            public val stringArrayField: kotlin.collections.List<kotlin.String>? = builder.stringArrayField
          
             public val stringField: String? = builder.stringField
         """.formatForTest()
@@ -195,6 +201,7 @@ class EndpointParametersGeneratorTest {
                 if (this.documentedField != other.documentedField) return false
                 if (this.requiredBooleanField != other.requiredBooleanField) return false
                 if (this.requiredStringField != other.requiredStringField) return false
+                if (this.stringArrayField != other.stringArrayField) return false
                 if (this.stringField != other.stringField) return false
                 return true
             }
@@ -218,6 +225,7 @@ class EndpointParametersGeneratorTest {
                 result = 31 * result + (documentedField?.hashCode() ?: 0)
                 result = 31 * result + (requiredBooleanField?.hashCode() ?: 0)
                 result = 31 * result + (requiredStringField?.hashCode() ?: 0)
+                result = 31 * result + (stringArrayField?.hashCode() ?: 0)
                 result = 31 * result + (stringField?.hashCode() ?: 0)
                 return result
             }
@@ -242,6 +250,7 @@ class EndpointParametersGeneratorTest {
                 append("documentedField=${'$'}documentedField,")
                 append("requiredBooleanField=${'$'}requiredBooleanField,")
                 append("requiredStringField=${'$'}requiredStringField,")
+                append("stringArrayField=${'$'}stringArrayField,")
                 append("stringField=${'$'}stringField)")
             }
         """.formatForTest()
@@ -265,6 +274,7 @@ class EndpointParametersGeneratorTest {
                     documentedField = this@TestEndpointParameters.documentedField
                     requiredBooleanField = this@TestEndpointParameters.requiredBooleanField
                     requiredStringField = this@TestEndpointParameters.requiredStringField
+                    stringArrayField = this@TestEndpointParameters.stringArrayField
                     stringField = this@TestEndpointParameters.stringField
                     block()
                 }
@@ -304,6 +314,8 @@ class EndpointParametersGeneratorTest {
                 public var requiredBooleanField: Boolean? = null
          
                 public var requiredStringField: String? = null
+                
+                public var stringArrayField: kotlin.collections.List<kotlin.String>? = null
          
                 public var stringField: String? = null
          
