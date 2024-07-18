@@ -41,7 +41,7 @@ private val suffixSequence = sequenceOf("") + generateSequence(2) { it + 1 }.map
  * @param writer The [KotlinWriter] to generate code into.
  * @param shape The modeled [Shape] on which this JMESPath expression is operating.
  * @param topLevelParentName The name used to reference the top level "parent" of an expression during codegen.
- * Defaults to `it`. E.g. `it.field`. Won't be used otherwise.
+ * Defaults to `it`. E.g. `it.field`.
  */
 class KotlinJmespathExpressionVisitor(
     val ctx: CodegenContext,
