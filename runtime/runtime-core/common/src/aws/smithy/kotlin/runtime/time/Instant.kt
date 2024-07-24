@@ -44,6 +44,12 @@ public expect class Instant : Comparable<Instant> {
      */
     public operator fun minus(duration: Duration): Instant
 
+    /**
+     * Returns the duration between [other] and this instant. NOTE: The duration will be negative if [other] occurred
+     * after this instant.
+     */
+    public operator fun minus(other: Instant): Duration
+
     public companion object {
         /**
          * Parse an ISO-8601 formatted string into an [Instant]

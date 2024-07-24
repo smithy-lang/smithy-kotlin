@@ -8,7 +8,8 @@ internal open class MutableListIteratorView<Src, Dest>(
     private val src: MutableListIterator<Src>,
     src2Dest: (Src) -> Dest,
     private val dest2Src: (Dest) -> Src,
-) : MutableListIterator<Dest>, ListIteratorView<Src, Dest>(src, src2Dest) {
+) : ListIteratorView<Src, Dest>(src, src2Dest),
+    MutableListIterator<Dest> {
     override fun add(element: Dest) {
         src.add(dest2Src(element))
     }

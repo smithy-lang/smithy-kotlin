@@ -42,8 +42,14 @@ kotlin {
 
         jvmTest {
             dependencies {
-                implementation(libs.testcontainers)
-                implementation(libs.testcontainers.junit.jupiter)
+                implementation(libs.docker.core)
+                // FIXME docker-java has a ton of dependencies with vulnerabilities, and they don't seem motivated to fix them.
+                // So we must override their dependencies with the latest patched versions. https://github.com/docker-java/docker-java/issues/1974
+                implementation("com.fasterxml.jackson.core:jackson-databind:2.12.7.1") // https://github.com/docker-java/docker-java/issues/2177
+                implementation("org.apache.commons:commons-compress:1.26.0") // https://github.com/docker-java/docker-java/pull/2256
+                implementation("org.bouncycastle:bcpkix-jdk18on:1.78") // https://github.com/docker-java/docker-java/pull/2326
+
+                implementation(libs.docker.transport.zerodep)
             }
         }
 
@@ -114,9 +120,13 @@ tasks.jvmTest {
     // set test environment for proxy tests
     systemProperty("MITM_PROXY_SCRIPTS_ROOT", projectDir.resolve("proxy-scripts").absolutePath)
     systemProperty("SSL_CONFIG_PATH", startTestServers.sslConfigPath)
+
     val enableProxyTestsProp = "aws.test.http.enableProxyTests"
     val runningInCodeBuild = System.getenv().containsKey("CODEBUILD_BUILD_ID")
-    systemProperty(enableProxyTestsProp, System.getProperties().getOrDefault(enableProxyTestsProp, !runningInCodeBuild))
+    val runningInLinux = System.getProperty("os.name").contains("Linux", ignoreCase = true)
+    val shouldRunProxyTests = !runningInCodeBuild && runningInLinux
+
+    systemProperty(enableProxyTestsProp, System.getProperties().getOrDefault(enableProxyTestsProp, shouldRunProxyTests))
 }
 
 gradle.buildFinished {

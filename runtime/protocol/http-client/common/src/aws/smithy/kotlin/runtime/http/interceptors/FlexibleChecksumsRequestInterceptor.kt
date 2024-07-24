@@ -134,7 +134,8 @@ public class FlexibleChecksumsRequestInterceptor<I>(
 
     // FIXME this duplicates the logic from aws-signing-common, but can't import from there due to circular import.
     private val HttpBody.isEligibleForAwsChunkedStreaming: Boolean
-        get() = (this is HttpBody.SourceContent || this is HttpBody.ChannelContent) && contentLength != null &&
+        get() = (this is HttpBody.SourceContent || this is HttpBody.ChannelContent) &&
+            contentLength != null &&
             (isOneShot || contentLength!! > 65536 * 16)
 
     /**

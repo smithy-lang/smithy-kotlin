@@ -15,7 +15,8 @@ import aws.smithy.kotlin.runtime.identity.IdentityProviderChain
  * individual exception is available as a suppressed exception.
  */
 public class CredentialsProviderChain(vararg providers: CredentialsProvider) :
-    IdentityProviderChain<CredentialsProvider, Credentials>(*providers), CredentialsProvider {
+    IdentityProviderChain<CredentialsProvider, Credentials>(*providers),
+    CredentialsProvider {
 
     public constructor(providers: List<CredentialsProvider>) : this(*providers.toTypedArray())
 

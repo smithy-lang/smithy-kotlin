@@ -148,12 +148,13 @@ val adaptiveRetryE2eTestCases = mapOf(
         """.trimIndent(),
 )
 
-/* ktlint-disable annotation spacing-between-declarations-with-annotations */
-
 @Serializable
 enum class ResponseType(val errorType: RetryErrorType?) {
-    @SerialName("success") Success(null),
-    @SerialName("throttle") Throttle(RetryErrorType.Throttling),
+    @SerialName("success")
+    Success(null),
+
+    @SerialName("throttle")
+    Throttle(RetryErrorType.Throttling),
 }
 
 @Serializable
@@ -182,5 +183,3 @@ data class E2eTestCase(val cases: List<Case>) {
         @SerialName("new_token_bucket_rate") val newTokenBucketRate: Double,
     )
 }
-
-/* ktlint-enable annotation spacing-between-declarations-with-annotations */

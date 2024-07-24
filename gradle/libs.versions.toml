@@ -2,7 +2,7 @@
 kotlin-version = "1.9.23"
 dokka-version = "1.9.10"
 
-aws-kotlin-repo-tools-version = "0.4.5"
+aws-kotlin-repo-tools-version = "0.4.9"
 
 # libs
 coroutines-version = "1.7.3"
@@ -12,11 +12,11 @@ okio-version = "3.9.0"
 otel-version = "1.32.0"
 slf4j-version = "2.0.9"
 slf4j-v1x-version = "1.7.36"
-crt-kotlin-version = "0.8.5"
+crt-kotlin-version = "0.8.6"
 micrometer-version = "1.12.5"
 
 # codegen
-smithy-version = "1.47.0"
+smithy-version = "1.50.0"
 smithy-gradle-version = "0.9.0"
 
 # testing
@@ -25,8 +25,8 @@ kotest-version = "5.8.0"
 kotlin-compile-testing-version = "1.5.0"
 kotlinx-benchmark-version = "0.4.9"
 kotlinx-serialization-version = "1.6.0"
-testcontainers-version = "1.19.1"
-ktor-version = "2.3.6"
+docker-java-version = "3.3.6"
+ktor-version = "2.3.12"
 kaml-version = "0.55.0"
 jsoup-version = "1.16.2"
 
@@ -66,6 +66,8 @@ smithy-codegen-core = { module = "software.amazon.smithy:smithy-codegen-core", v
 smithy-cli = { module = "software.amazon.smithy:smithy-cli", version.ref = "smithy-version" }
 smithy-model = { module = "software.amazon.smithy:smithy-model", version.ref = "smithy-version" }
 smithy-waiters = { module = "software.amazon.smithy:smithy-waiters", version.ref = "smithy-version" }
+smithy-protocol-traits = { module = "software.amazon.smithy:smithy-protocol-traits", version.ref = "smithy-version" }
+smithy-protocol-tests = { module = "software.amazon.smithy:smithy-protocol-tests", version.ref = "smithy-version" }
 smithy-protocol-test-traits = { module = "software.amazon.smithy:smithy-protocol-test-traits", version.ref = "smithy-version" }
 smithy-aws-traits = { module = "software.amazon.smithy:smithy-aws-traits", version.ref = "smithy-version" }
 smithy-rules-engine = { module = "software.amazon.smithy:smithy-rules-engine", version.ref = "smithy-version" }
@@ -83,8 +85,8 @@ kotest-assertions-core = { module = "io.kotest:kotest-assertions-core", version.
 kotest-assertions-core-jvm = { module = "io.kotest:kotest-assertions-core-jvm", version.ref = "kotest-version" }
 kotlinx-benchmark-runtime = { module = "org.jetbrains.kotlinx:kotlinx-benchmark-runtime", version.ref = "kotlinx-benchmark-version" }
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinx-serialization-version" }
-testcontainers = { module = "org.testcontainers:testcontainers", version.ref = "testcontainers-version" }
-testcontainers-junit-jupiter = { module = "org.testcontainers:junit-jupiter", version.ref = "testcontainers-version" }
+docker-core = { module = "com.github.docker-java:docker-java-core", version.ref = "docker-java-version" }
+docker-transport-zerodep = { module = "com.github.docker-java:docker-java-transport-zerodep", version.ref = "docker-java-version" }
 
 ktor-http-cio = { module = "io.ktor:ktor-http-cio", version.ref = "ktor-version" }
 ktor-utils = { module = "io.ktor:ktor-utils", version.ref = "ktor-version" }

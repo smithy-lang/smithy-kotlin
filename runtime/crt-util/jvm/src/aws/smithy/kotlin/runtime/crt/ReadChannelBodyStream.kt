@@ -31,7 +31,8 @@ public class ReadChannelBodyStream(
     // the request body channel
     private val bodyChan: SdkByteReadChannel,
     private val callContext: CoroutineContext,
-) : HttpRequestBodyStream, CoroutineScope {
+) : HttpRequestBodyStream,
+    CoroutineScope {
 
     private val producerJob = Job(callContext.job)
     override val coroutineContext: CoroutineContext = callContext + producerJob

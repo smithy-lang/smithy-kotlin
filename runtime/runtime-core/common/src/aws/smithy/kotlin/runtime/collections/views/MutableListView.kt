@@ -8,7 +8,8 @@ internal open class MutableListView<Src, Dest>(
     internal val src: MutableList<Src>,
     private val src2Dest: (Src) -> Dest,
     private val dest2Src: (Dest) -> Src,
-) : MutableList<Dest>, ListView<Src, Dest>(src, src2Dest, dest2Src) {
+) : ListView<Src, Dest>(src, src2Dest, dest2Src),
+    MutableList<Dest> {
     override fun add(element: Dest): Boolean = src.add(dest2Src(element))
 
     override fun add(index: Int, element: Dest) {

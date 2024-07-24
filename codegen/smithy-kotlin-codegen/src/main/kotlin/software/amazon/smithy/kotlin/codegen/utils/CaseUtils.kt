@@ -37,9 +37,12 @@ fun String.splitOnWordBoundaries(): List<String> {
         val peek = getOrNull(index + 1)
         val doublePeek = getOrNull(index + 2)
         val completeWordInProgress = {
-            val result = computeWordInProgress && currentWord.isNotEmpty() && completeWords.any {
-                (currentWord + substring(index)).startsWith(it, ignoreCase = true)
-            } && !completeWords.contains(currentWord.lowercase())
+            val result = computeWordInProgress &&
+                currentWord.isNotEmpty() &&
+                completeWords.any {
+                    (currentWord + substring(index)).startsWith(it, ignoreCase = true)
+                } &&
+                !completeWords.contains(currentWord.lowercase())
             computeWordInProgress = result
             result
         }

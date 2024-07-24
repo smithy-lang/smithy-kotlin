@@ -57,14 +57,18 @@ private class Slf4j1xLogRecordBuilderAdapter(
         }
 
         if (kvp.isNotEmpty()) {
-            val prevCtx = MDC.getCopyOfContextMap()
+            val prevCtx: Map<String, String>? = MDC.getCopyOfContextMap()
             try {
                 kvp.forEach { (k, v) ->
                     MDC.put(k, v.toString())
                 }
                 logMethod(cause, message)
             } finally {
-                MDC.setContextMap(prevCtx)
+                if (prevCtx == null) {
+                    MDC.clear()
+                } else {
+                    MDC.setContextMap(prevCtx)
+                }
             }
         } else {
             logMethod(cause, message)

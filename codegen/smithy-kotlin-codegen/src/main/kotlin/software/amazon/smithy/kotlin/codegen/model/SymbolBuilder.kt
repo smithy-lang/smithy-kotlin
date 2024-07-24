@@ -59,8 +59,12 @@ open class SymbolBuilder {
         reference(refSymbol)
     }
 
-    fun setProperty(key: String, value: Any) { builder.putProperty(key, value) }
-    fun removeProperty(key: String) { builder.removeProperty(key) }
+    fun setProperty(key: String, value: Any) {
+        builder.putProperty(key, value)
+    }
+    fun removeProperty(key: String) {
+        builder.removeProperty(key)
+    }
     fun properties(block: PropertiesBuilder.() -> Unit) {
         val propBuilder = object : PropertiesBuilder {
             override fun set(key: String, value: Any) = setProperty(key, value)

@@ -27,7 +27,7 @@ import java.util.logging.Logger
  * Abstract implementation useful for all HTTP protocols
  */
 abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
-    private val LOGGER = Logger.getLogger(javaClass.name)
+    private val logger = Logger.getLogger(javaClass.name)
 
     override val applicationProtocol: ApplicationProtocol = ApplicationProtocol.createDefaultHttpApplicationProtocol()
 
@@ -335,31 +335,38 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                             // shape must be string, number, boolean, or timestamp
                             val targetShape = ctx.model.expectShape(binding.member.target)
                             val memberSymbol = ctx.symbolProvider.toSymbol(binding.member)
-                            val identifier = if (targetShape.isTimestampShape) {
-                                addImport(RuntimeTypes.Core.TimestampFormat)
-                                val tsFormat = resolver.determineTimestampFormat(
-                                    binding.member,
-                                    HttpBinding.Location.LABEL,
-                                    defaultTimestampFormat,
-                                )
-                                val nullCheck = if (memberSymbol.isNullable) "?" else ""
-                                val tsLabel = formatInstant(
-                                    "input.${binding.member.defaultName()}$nullCheck",
-                                    tsFormat,
-                                    forceString = true,
-                                )
-                                tsLabel
-                            } else {
-                                "input.${binding.member.defaultName()}"
+                            val identifier = when {
+                                targetShape.isTimestampShape -> {
+                                    addImport(RuntimeTypes.Core.TimestampFormat)
+                                    val tsFormat = resolver.determineTimestampFormat(
+                                        binding.member,
+                                        HttpBinding.Location.LABEL,
+                                        defaultTimestampFormat,
+                                    )
+                                    val nullCheck = if (memberSymbol.isNullable) "?" else ""
+                                    val tsLabel = formatInstant(
+                                        "input.${binding.member.defaultName()}$nullCheck",
+                                        tsFormat,
+                                        forceString = true,
+                                    )
+                                    tsLabel
+                                }
+
+                                targetShape.isStringEnumShape -> "input.${binding.member.defaultName()}.value"
+                                targetShape.isIntEnumShape -> "input.${binding.member.defaultName()}.value.toString()"
+
+                                targetShape.isStringShape -> "input.${binding.member.defaultName()}"
+
+                                else -> "input.${binding.member.defaultName()}.toString()"
                             }
 
                             val encodeFn =
                                 format("#T.SmithyLabel.encode", RuntimeTypes.Core.Text.Encoding.PercentEncoding)
 
                             if (segment.isGreedyLabel) {
-                                write("#S.split(#S).mapTo(this) { #L(it) }", "\${$identifier}", '/', encodeFn)
+                                write("#L.split(#S).mapTo(this) { #L(it) }", identifier, '/', encodeFn)
                             } else {
-                                write("add(#L(#S))", encodeFn, "\${$identifier}")
+                                write("add(#L(#L))", encodeFn, identifier)
                             }
                         } else {
                             // literal
@@ -468,7 +475,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
      * @param binding The explicit payload binding
      * @param writer The code writer to render to
      */
-    private fun renderExplicitHttpPayloadSerializer(
+    protected fun renderExplicitHttpPayloadSerializer(
         ctx: ProtocolGenerator.GenerationContext,
         binding: HttpBindingDescriptor,
         writer: KotlinWriter,

@@ -27,8 +27,8 @@ public object SparseValues : FieldTrait
  * A protocol-agnostic type description of a field.
  */
 @InternalApi
+@Suppress("ktlint:standard:spacing-between-declarations-with-annotations")
 public sealed class SerialKind {
-    /* ktlint-disable spacing-between-declarations-with-annotations */
     @InternalApi public object Unit : SerialKind()
     @InternalApi public object Integer : SerialKind()
     @InternalApi public object Long : SerialKind()
@@ -48,7 +48,6 @@ public sealed class SerialKind {
     @InternalApi public object Blob : SerialKind()
     @InternalApi public object Document : SerialKind()
     @InternalApi public object BigNumber : SerialKind()
-    /* ktlint-enable spacing-between-declarations-with-annotations */
 
     override fun toString(): kotlin.String = this::class.simpleName ?: "SerialKind"
 }

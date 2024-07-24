@@ -31,6 +31,14 @@ class DefaultEndpointProviderGeneratorTest {
                         "QuxName": {
                             "type": "string",
                             "required": false
+                        },
+                        "accountId": {
+                            "type": "string",
+                            "required": false
+                        },
+                        "endpoint": {
+                            "type": "string",
+                            "required": false
                         }
                     },
                     "rules": [
@@ -117,6 +125,57 @@ class DefaultEndpointProviderGeneratorTest {
                                 "headers": {
                                     "fooheader": ["barheader"]
                                 }
+                            }
+                        },
+                        {
+                            "documentation": "account id based endpoint and service endpoint override",
+                            "type": "endpoint",
+                            "conditions": [
+                                {
+                                    "fn": "isSet",
+                                    "argv": [
+                                        {"ref": "accountId"}
+                                    ]
+                                },
+                                {
+                                    "fn": "isSet",
+                                    "argv": [
+                                        {"ref": "endpoint"}
+                                    ]
+                                }
+                            ],
+                            "endpoint": {
+                                "url": "https://{accountId}.{endpoint}"
+                            }
+                        },
+                        {
+                            "documentation": "service endpoint override",
+                            "type": "endpoint",
+                            "conditions": [
+                                {
+                                    "fn": "isSet",
+                                    "argv": [
+                                        {"ref": "endpoint"}
+                                    ]
+                                }
+                            ],
+                            "endpoint": {
+                                "url": "https://{endpoint}"
+                            }
+                        },
+                        {
+                            "documentation": "account id based endpoint",
+                            "type": "endpoint",
+                            "conditions": [
+                                {
+                                    "fn": "isSet",
+                                    "argv": [
+                                        {"ref": "accountId"}
+                                    ]
+                                }
+                            ],
+                            "endpoint": {
+                                "url": "https://{accountId}"
                             }
                         }
                     ]
@@ -215,5 +274,42 @@ class DefaultEndpointProviderGeneratorTest {
             )
         """.formatForTest(indent = "        ")
         generatedClass.shouldContainOnlyOnceWithDiff(expected)
+    }
+
+    @Test
+    fun testBusinessMetrics() {
+        val moneySign = "$"
+
+        val accountIdAndEndpoint = """
+            return Endpoint(
+                Url.parse("https://$moneySign{params.accountId}.$moneySign{params.endpoint}"),
+                attributes = attributesOf {
+                    AccountIdBasedEndpointAccountId to params.accountId
+                    ServiceEndpointOverride to true
+                },
+            )
+        """
+
+        val accountId = """
+            return Endpoint(
+                Url.parse("https://$moneySign{params.accountId}"),
+                attributes = attributesOf {
+                    AccountIdBasedEndpointAccountId to params.accountId
+                },
+            )
+        """
+
+        val endpoint = """
+            return Endpoint(
+                Url.parse("https://$moneySign{params.endpoint}"),
+                attributes = attributesOf {
+                    ServiceEndpointOverride to true
+                },
+            )
+        """
+
+        generatedClass.shouldContainOnlyOnceWithDiff(accountIdAndEndpoint)
+        generatedClass.shouldContainOnlyOnceWithDiff(accountId)
+        generatedClass.shouldContainOnlyOnceWithDiff(endpoint)
     }
 }

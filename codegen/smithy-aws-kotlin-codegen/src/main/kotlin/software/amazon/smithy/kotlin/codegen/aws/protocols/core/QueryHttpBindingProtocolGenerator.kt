@@ -22,7 +22,7 @@ import software.amazon.smithy.model.shapes.*
 import software.amazon.smithy.model.traits.HttpTrait
 import software.amazon.smithy.model.traits.TimestampFormatTrait
 
-private const val QueryContentType: String = "application/x-www-form-urlencoded"
+private const val QUERY_CONTENT_TYPE: String = "application/x-www-form-urlencoded"
 
 abstract class QueryHttpBindingProtocolGenerator : AwsHttpBindingProtocolGenerator() {
     override val defaultTimestampFormat: TimestampFormatTrait.Format = TimestampFormatTrait.Format.DATE_TIME
@@ -33,7 +33,7 @@ abstract class QueryHttpBindingProtocolGenerator : AwsHttpBindingProtocolGenerat
         val queryMiddleware = listOf(
             // ensure content-type gets set
             // see: https://awslabs.github.io/smithy/1.0/spec/aws/aws-query-protocol.html#protocol-behavior
-            MutateHeadersMiddleware(addMissingHeaders = mapOf("Content-Type" to QueryContentType)),
+            MutateHeadersMiddleware(addMissingHeaders = mapOf("Content-Type" to QUERY_CONTENT_TYPE)),
         )
 
         return middleware + queryMiddleware
@@ -69,7 +69,7 @@ abstract class QueryHttpBindingProtocolGenerator : AwsHttpBindingProtocolGenerat
 class QueryBindingResolver(
     model: Model,
     service: ServiceShape,
-) : StaticHttpBindingResolver(model, service, QueryHttpTrait, QueryContentType, TimestampFormatTrait.Format.DATE_TIME) {
+) : StaticHttpBindingResolver(model, service, QueryHttpTrait, QUERY_CONTENT_TYPE, TimestampFormatTrait.Format.DATE_TIME) {
     constructor(ctx: ProtocolGenerator.GenerationContext) : this(ctx.model, ctx.service)
 
     companion object {
@@ -151,7 +151,7 @@ abstract class AbstractQueryFormUrlSerializerGenerator(
         }
     }
 
-    private fun renderSerializerBody(
+    open fun renderSerializerBody(
         ctx: ProtocolGenerator.GenerationContext,
         shape: Shape,
         members: List<MemberShape>,

@@ -64,7 +64,9 @@ private class CRC32CImpl {
     /** the current CRC value, bit-flipped */
     var crc = 0xffffffff.toInt()
 
-    fun reset() { crc = 0xffffffff.toInt() }
+    fun reset() {
+        crc = 0xffffffff.toInt()
+    }
 
     fun update(b: ByteArray, offset: Int, length: Int) {
         var localCrc = crc
@@ -102,6 +104,7 @@ private class CRC32CImpl {
 
     fun getValue(): Int = crc.inv()
 
+    @Suppress("ktlint:standard:property-naming")
     companion object {
         private const val T8_0_start: Int = 0 * 256
 

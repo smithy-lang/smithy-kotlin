@@ -1,5 +1,73 @@
 # Changelog
 
+## [1.2.18] - 07/23/2024
+
+## [1.2.17] - 07/18/2024
+
+### Features
+* Add support for string arrays in rules engine parameters
+* Add support for operationContextParams trait
+
+## [1.2.16] - 07/15/2024
+
+### Fixes
+* Correctly redact sensitive data in lists and maps
+
+## [1.2.15] - 07/12/2024
+
+### Features
+* [#1352](https://github.com/awslabs/aws-sdk-kotlin/issues/1352) Add new Kotlin/JVM methods for converting `InputStream` to `ByteStream` and for writing `ByteStream` to `OutputStream`
+
+## [1.2.14] - 07/12/2024
+
+### Features
+* [#843](https://github.com/smithy-lang/smithy-kotlin/issues/843) Add support for prioritized protocol resolution
+* [#1302](https://github.com/awslabs/aws-sdk-kotlin/issues/1302) Add support for `smithy.protocols#rpcv2Cbor` protocol
+
+## [1.2.13] - 07/10/2024
+
+## [1.2.12] - 07/09/2024
+
+### Miscellaneous
+* Upgrade Smithy to version **1.50.0**
+
+## [1.2.11] - 06/28/2024
+
+### Miscellaneous
+* Upgrade to aws-crt-kotlin v0.8.6
+* Upgrade to ktlint v1.3.0
+
+## [1.2.10] - 06/21/2024
+
+## [1.2.9] - 06/18/2024
+
+## [1.2.8] - 06/17/2024
+
+### Fixes
+* [#1330](https://github.com/awslabs/aws-sdk-kotlin/issues/1330) Fix paginators not respecting start key
+
+## [1.2.7] - 06/14/2024
+
+### Miscellaneous
+* Upgrade to Smithy 1.49.0
+
+## [1.2.6] - 06/05/2024
+
+### Fixes
+* [#1098](https://github.com/smithy-lang/smithy-kotlin/issues/1098) Silently ignore empty/blank proxy host values from environment variables or system properties instead of throwing exceptions
+
+## [1.2.5] - 05/28/2024
+
+### Fixes
+* [#1314](https://github.com/awslabs/aws-sdk-kotlin/issues/1314) Fix serialization of URI-bound request parameters which are enums
+
+## [1.2.4] - 05/16/2024
+
+### Fixes
+* [#1092](https://github.com/smithy-lang/smithy-kotlin/issues/1092) Respect `*` wildcard in `http.nonProxyHosts` when used as prefix or suffix
+
+## [1.2.3] - 05/10/2024
+
 ## [1.2.2] - 04/30/2024
 
 ### Features

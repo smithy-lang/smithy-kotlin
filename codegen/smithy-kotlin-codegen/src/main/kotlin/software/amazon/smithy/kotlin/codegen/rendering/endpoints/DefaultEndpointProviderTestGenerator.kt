@@ -9,8 +9,10 @@ import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.kotlin.codegen.KotlinSettings
 import software.amazon.smithy.kotlin.codegen.core.*
 import software.amazon.smithy.kotlin.codegen.model.buildSymbol
+import software.amazon.smithy.kotlin.codegen.model.format
 import software.amazon.smithy.kotlin.codegen.rendering.protocol.ProtocolGenerator
 import software.amazon.smithy.kotlin.codegen.utils.toCamelCase
+import software.amazon.smithy.model.node.ArrayNode
 import software.amazon.smithy.model.node.BooleanNode
 import software.amazon.smithy.model.node.Node
 import software.amazon.smithy.model.node.StringNode
@@ -61,6 +63,39 @@ class DefaultEndpointProviderTestGenerator(
     fun render() {
         writer.addImport("*", namespace = "kotlin.test")
         writer.withBlock("public class #L {", "}", CLASS_NAME) {
+            writer.withBlock(
+                "private fun expectEqualEndpoints(expected: #1T, actual: #1T) {",
+                "}",
+                RuntimeTypes.SmithyClient.Endpoints.Endpoint,
+            ) {
+                // Remove ONLY business metrics endpoint attributes
+                writer.withBlock(
+                    "if (actual.attributes.contains(#T) || actual.attributes.contains(#T)) {",
+                    "} else { assertEquals(expected, actual) }",
+                    RuntimeTypes.Core.BusinessMetrics.ServiceEndpointOverride,
+                    RuntimeTypes.Core.BusinessMetrics.AccountIdBasedEndpointAccountId,
+                ) {
+                    writer.write(
+                        "val newActualAttributes = actual.attributes.#T()",
+                        RuntimeTypes.Core.Collections.toMutableAttributes,
+                    )
+                    writer.write(
+                        "newActualAttributes.remove(#T)",
+                        RuntimeTypes.Core.BusinessMetrics.ServiceEndpointOverride,
+                    )
+                    writer.write(
+                        "newActualAttributes.remove(#T)",
+                        RuntimeTypes.Core.BusinessMetrics.AccountIdBasedEndpointAccountId,
+                    )
+                    writer.write(
+                        "val newActual = #T(actual.uri, actual.headers, newActualAttributes)",
+                        RuntimeTypes.SmithyClient.Endpoints.Endpoint,
+                    )
+                    writer.write("assertEquals(expected, newActual)")
+                }
+            }
+            writer.write("")
+
             cases.forEachIndexed { index, it ->
                 renderTestCase(index, it)
                 write("")
@@ -68,9 +103,7 @@ class DefaultEndpointProviderTestGenerator(
         }
     }
 
-    override fun renderExpression(expr: Expression) {
-        expr.accept(expressionGenerator)
-    }
+    override fun renderExpression(expr: Expression): EndpointInfo = expr.accept(expressionGenerator) ?: EndpointInfo.Empty
 
     private fun renderTestCase(index: Int, case: EndpointTestCase) {
         case.documentation.ifPresent {
@@ -99,6 +132,7 @@ class DefaultEndpointProviderTestGenerator(
         when (v) {
             is StringNode -> writer.writeInline("#S", v.value)
             is BooleanNode -> writer.writeInline("#L", v.value)
+            is ArrayNode -> writer.writeInline("#L", v.elements.format())
             else -> throw IllegalArgumentException("unexpected test case param value")
         }
     }
@@ -148,6 +182,6 @@ class DefaultEndpointProviderTestGenerator(
         }
 
         writer.write("val actual = #T().resolveEndpoint(params)", providerSymbol)
-        writer.write("assertEquals(expected, actual)")
+        writer.write("expectEqualEndpoints(expected, actual)")
     }
 }

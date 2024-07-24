@@ -61,9 +61,9 @@ class HttpStringValuesMapSerializer(
             val addFnName = location.addFnName
             val member = it.member
             val memberSymbol = symbolProvider.toSymbol(member)
-            when (memberTarget) {
-                is CollectionShape -> renderCollectionShape(it, memberTarget, writer)
-                is TimestampShape -> {
+            when {
+                memberTarget is CollectionShape -> renderCollectionShape(it, memberTarget, writer)
+                memberTarget is TimestampShape -> {
                     val tsFormat = resolver.determineTimestampFormat(member, location, defaultTimestampFormat)
                     // headers/query params need to be a string
                     val formatted = formatInstant("input.$memberName", tsFormat, forceString = true)
@@ -71,7 +71,7 @@ class HttpStringValuesMapSerializer(
                     writer.addImport(RuntimeTypes.Core.TimestampFormat)
                     writer.writeWithCondIfCheck(memberSymbol.isNullable, "input.$memberName != null", addFn)
                 }
-                is BlobShape -> {
+                memberTarget is BlobShape -> {
                     val addFn = writer.format(
                         "#L(#S, input.#L.#T())",
                         addFnName,
@@ -81,9 +81,9 @@ class HttpStringValuesMapSerializer(
                     )
                     writer.writeWithCondIfCheck(memberSymbol.isNullable, "input.$memberName?.isNotEmpty() == true", addFn)
                 }
-                is StringShape -> renderStringShape(it, memberTarget, writer)
-                is IntEnumShape -> {
-                    val addFn = writer.format("#L(#S, \"\${input.#L.value}\")", addFnName, paramName, memberName)
+                memberTarget.isEnum -> {
+                    val toString = if (memberTarget.isIntEnumShape) ".toString()" else ""
+                    val addFn = writer.format("#L(#S, input.#L.value#L)", addFnName, paramName, memberName, toString)
                     if (memberSymbol.isNullable) {
                         writer.write("if (input.$memberName != null) $addFn")
                     } else {
@@ -91,9 +91,10 @@ class HttpStringValuesMapSerializer(
                         writer.writeWithCondIfCheck(defaultCheck.isNotEmpty(), defaultCheck, addFn)
                     }
                 }
+                memberTarget is StringShape -> renderStringShape(it, memberTarget, writer)
                 else -> {
                     // encode to string
-                    val encodedValue = "\"\${input.$memberName}\""
+                    val encodedValue = "input.$memberName.toString()"
                     val addFn = writer.format("#L(#S, #L)", addFnName, paramName, encodedValue)
                     if (memberSymbol.isNullable) {
                         writer.write("if (input.$memberName != null) $addFn")
@@ -125,15 +126,15 @@ class HttpStringValuesMapSerializer(
 
     private fun renderCollectionShape(binding: HttpBindingDescriptor, memberTarget: CollectionShape, writer: KotlinWriter) {
         val collectionMemberTarget = model.expectShape(memberTarget.member.target)
-        val mapFnContents = when (collectionMemberTarget.type) {
-            ShapeType.TIMESTAMP -> {
+        val mapFnContents = when (collectionMemberTarget) {
+            is TimestampShape -> {
                 // special case of timestamp list
                 val tsFormat = resolver.determineTimestampFormat(binding.member, binding.location, defaultTimestampFormat)
                 writer.addImport(RuntimeTypes.Core.TimestampFormat)
                 // headers/query params need to be a string
                 formatInstant("it", tsFormat, forceString = true)
             }
-            ShapeType.STRING -> {
+            is StringShape -> {
                 when (binding.location) {
                     HttpBinding.Location.QUERY -> if (collectionMemberTarget.isEnum) "it.value" else ""
                     else -> {
@@ -146,9 +147,9 @@ class HttpStringValuesMapSerializer(
                     }
                 }
             }
-            ShapeType.INT_ENUM -> "\"\${it.value}\""
+            is IntEnumShape -> "\"\${it.value}\""
             // default to "toString"
-            else -> "\"\$it\""
+            else -> "it.toString()"
         }
 
         val memberName = symbolProvider.toMemberName(binding.member)
@@ -186,7 +187,10 @@ class HttpStringValuesMapSerializer(
         } else {
             val nullCheck =
                 if (location == HttpBinding.Location.QUERY ||
-                    memberTarget.hasTrait<@Suppress("DEPRECATION") software.amazon.smithy.model.traits.EnumTrait>()
+                    memberTarget.hasTrait<
+                        @Suppress("DEPRECATION")
+                        software.amazon.smithy.model.traits.EnumTrait,
+                        >()
                 ) {
                     if (memberSymbol.isNullable) "input.$memberName != null" else ""
                 } else {
@@ -197,7 +201,10 @@ class HttpStringValuesMapSerializer(
             val cond = defaultCheck(binding.member) ?: nullCheck
 
             val suffix = when {
-                memberTarget.hasTrait<@Suppress("DEPRECATION") software.amazon.smithy.model.traits.EnumTrait>() -> {
+                memberTarget.hasTrait<
+                    @Suppress("DEPRECATION")
+                    software.amazon.smithy.model.traits.EnumTrait,
+                    >() -> {
                     ".value"
                 }
                 memberTarget.hasTrait<MediaTypeTrait>() -> {

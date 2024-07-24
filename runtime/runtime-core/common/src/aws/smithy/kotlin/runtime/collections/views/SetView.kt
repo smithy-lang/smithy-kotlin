@@ -8,4 +8,5 @@ internal open class SetView<Src, Dest>(
     src: Set<Src>,
     src2Dest: (Src) -> Dest,
     dest2Src: (Dest) -> Src,
-) : Set<Dest>, CollectionView<Src, Dest>(src, src2Dest, dest2Src)
+) : CollectionView<Src, Dest>(src, src2Dest, dest2Src),
+    Set<Dest>

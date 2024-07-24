@@ -49,7 +49,9 @@ private data class StateManager(
     /**
      * Push a pending mutation
      */
-    fun mutate(mutation: StateMutation) { pendingMutations.add(mutation) }
+    fun mutate(mutation: StateMutation) {
+        pendingMutations.add(mutation)
+    }
 }
 
 /**
@@ -352,9 +354,7 @@ internal class JsonLexer(
         fail("found `$found`, expected$pluralModifier $formatted")
     }
 
-    private fun fail(message: String, offset: Int = idx, cause: Throwable? = null): Nothing {
-        throw DeserializationException("Unexpected JSON token at offset $offset; $message", cause)
-    }
+    private fun fail(message: String, offset: Int = idx, cause: Throwable? = null): Nothing = throw DeserializationException("Unexpected JSON token at offset $offset; $message", cause)
 
     private inline fun lexerCheck(value: Boolean, offset: Int = idx, lazyMessage: () -> Any) {
         if (!value) {

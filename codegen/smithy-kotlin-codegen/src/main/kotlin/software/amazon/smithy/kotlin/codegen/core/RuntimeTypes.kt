@@ -100,6 +100,13 @@ object RuntimeTypes {
         val ClientException = symbol("ClientException")
         val SdkDsl = symbol("SdkDsl")
 
+        object BusinessMetrics : RuntimeTypePackage(KotlinDependency.CORE, "businessmetrics") {
+            val AccountIdBasedEndpointAccountId = symbol("AccountIdBasedEndpointAccountId")
+            val ServiceEndpointOverride = symbol("ServiceEndpointOverride")
+            val emitBusinessMetric = symbol("emitBusinessMetric")
+            val SmithyBusinessMetric = symbol("SmithyBusinessMetric")
+        }
+
         object Collections : RuntimeTypePackage(KotlinDependency.CORE, "collections") {
             val Attributes = symbol("Attributes")
             val attributesOf = symbol("attributesOf")
@@ -110,6 +117,8 @@ object RuntimeTypes {
             val putIfAbsent = symbol("putIfAbsent")
             val putIfAbsentNotNull = symbol("putIfAbsentNotNull")
             val ReadThroughCache = symbol("ReadThroughCache")
+            val toMutableAttributes = symbol("toMutableAttributes")
+            val emptyAttributes = symbol("emptyAttributes")
         }
 
         object Content : RuntimeTypePackage(KotlinDependency.CORE, "content") {
@@ -293,6 +302,12 @@ object RuntimeTypes {
             val QueryLiteral = symbol("QueryLiteral")
             val FormUrlSerializer = symbol("FormUrlSerializer")
         }
+
+        object SerdeCbor : RuntimeTypePackage(KotlinDependency.SERDE_CBOR) {
+            val CborSerializer = symbol("CborSerializer")
+            val CborDeserializer = symbol("CborDeserializer")
+            val CborSerialName = symbol("CborSerialName")
+        }
     }
 
     object Auth {
@@ -411,6 +426,13 @@ object RuntimeTypes {
     object AwsXmlProtocols : RuntimeTypePackage(KotlinDependency.AWS_XML_PROTOCOLS) {
         val parseRestXmlErrorResponseNoSuspend = symbol("parseRestXmlErrorResponseNoSuspend")
         val parseEc2QueryErrorResponseNoSuspend = symbol("parseEc2QueryErrorResponseNoSuspend")
+    }
+
+    object SmithyRpcV2Protocols : RuntimeTypePackage(KotlinDependency.SMITHY_RPCV2_PROTOCOLS) {
+        object Cbor : RuntimeTypePackage(KotlinDependency.SMITHY_RPCV2_PROTOCOLS_CBOR) {
+            val RpcV2CborErrorDeserializer = symbol("RpcV2CborErrorDeserializer")
+            val RpcV2CborSmithyProtocolResponseHeaderInterceptor = symbol("RpcV2CborSmithyProtocolResponseHeaderInterceptor")
+        }
     }
 
     object AwsEventStream : RuntimeTypePackage(KotlinDependency.AWS_EVENT_STREAM) {

@@ -40,11 +40,14 @@ private val suffixSequence = sequenceOf("") + generateSequence(2) { it + 1 }.map
  * @param ctx The surrounding [CodegenContext].
  * @param writer The [KotlinWriter] to generate code into.
  * @param shape The modeled [Shape] on which this JMESPath expression is operating.
+ * @param topLevelParentName The name used to reference the top level "parent" of an expression during codegen.
+ * Defaults to `it`. E.g. `it.field`.
  */
 class KotlinJmespathExpressionVisitor(
     val ctx: CodegenContext,
     val writer: KotlinWriter,
     shape: Shape,
+    private val topLevelParentName: String = "it",
 ) : ExpressionVisitor<VisitedExpression> {
     private val tempVars = mutableSetOf<String>()
 
@@ -168,15 +171,12 @@ class KotlinJmespathExpressionVisitor(
         return VisitedExpression(identifier)
     }
 
-    override fun visitCurrentNode(expression: CurrentExpression): VisitedExpression {
-        throw CodegenException("Unexpected current expression outside of flatten expression: $expression")
-    }
+    override fun visitCurrentNode(expression: CurrentExpression): VisitedExpression = throw CodegenException("Unexpected current expression outside of flatten expression: $expression")
 
-    override fun visitExpressionType(expression: ExpressionTypeExpression): VisitedExpression {
-        throw CodegenException("ExpressionTypeExpression is unsupported")
-    }
+    override fun visitExpressionType(expression: ExpressionTypeExpression): VisitedExpression = throw CodegenException("ExpressionTypeExpression is unsupported")
 
-    override fun visitField(expression: FieldExpression): VisitedExpression = subfield(expression, "it")
+    override fun visitField(expression: FieldExpression): VisitedExpression =
+        if (shapeCursor.size == 1) subfield(expression, topLevelParentName) else subfield(expression, "it")
 
     override fun visitFilterProjection(expression: FilterProjectionExpression): VisitedExpression {
         val left = expression.left.accept(this)
@@ -360,9 +360,7 @@ class KotlinJmespathExpressionVisitor(
         else -> throw CodegenException("Unknown function type in $expression")
     }
 
-    override fun visitIndex(expression: IndexExpression): VisitedExpression {
-        throw CodegenException("IndexExpression is unsupported")
-    }
+    override fun visitIndex(expression: IndexExpression): VisitedExpression = throw CodegenException("IndexExpression is unsupported")
 
     override fun visitLiteral(expression: LiteralExpression): VisitedExpression {
         val ident = when (expression.type) {
@@ -450,15 +448,17 @@ class KotlinJmespathExpressionVisitor(
     private fun projection(expression: ProjectionExpression, parentName: String): VisitedExpression {
         val left = when (expression.left) {
             is SliceExpression -> slice(expression.left as SliceExpression, parentName)
+            is FieldExpression -> subfield(expression.left as FieldExpression, parentName)
+            is IndexExpression -> index(expression.left as IndexExpression, parentName)
+            is Subexpression -> subexpression(expression.left as Subexpression, parentName)
+            is ProjectionExpression -> projection(expression.left as ProjectionExpression, parentName)
             else -> expression.left.accept(this)
         }
         requireNotNull(left.shape) { "projection is operating on nothing" }
         return flatMappingBlock(expression.right, left.identifier, left.shape, left.projected)
     }
 
-    override fun visitSlice(expression: SliceExpression): VisitedExpression {
-        throw CodegenException("SliceExpression is unsupported")
-    }
+    override fun visitSlice(expression: SliceExpression): VisitedExpression = throw CodegenException("SliceExpression is unsupported")
 
     private fun slice(expression: SliceExpression, parentName: String): VisitedExpression {
         val startIndex = if (!expression.start.isPresent) {

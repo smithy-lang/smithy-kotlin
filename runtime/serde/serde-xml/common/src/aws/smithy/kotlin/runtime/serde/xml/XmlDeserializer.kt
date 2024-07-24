@@ -10,6 +10,9 @@ import aws.smithy.kotlin.runtime.content.BigDecimal
 import aws.smithy.kotlin.runtime.content.BigInteger
 import aws.smithy.kotlin.runtime.content.Document
 import aws.smithy.kotlin.runtime.serde.*
+import aws.smithy.kotlin.runtime.text.encoding.decodeBase64Bytes
+import aws.smithy.kotlin.runtime.time.Instant
+import aws.smithy.kotlin.runtime.time.TimestampFormat
 
 private const val FIRST_FIELD_INDEX: Int = 0
 
@@ -106,7 +109,8 @@ internal class XmlMapDeserializer(
     private val reader: XmlStreamReader,
     private val descriptor: SdkFieldDescriptor,
     private val primitiveDeserializer: PrimitiveDeserializer = XmlPrimitiveDeserializer(reader, descriptor),
-) : PrimitiveDeserializer by primitiveDeserializer, Deserializer.EntryIterator {
+) : PrimitiveDeserializer by primitiveDeserializer,
+    Deserializer.EntryIterator {
     private val mapTrait = descriptor.findTrait<XmlMapName>() ?: XmlMapName.Default
 
     override fun hasNextEntry(): Boolean {
@@ -155,7 +159,8 @@ internal class XmlListDeserializer(
     private val reader: XmlStreamReader,
     private val descriptor: SdkFieldDescriptor,
     private val primitiveDeserializer: PrimitiveDeserializer = XmlPrimitiveDeserializer(reader, descriptor),
-) : PrimitiveDeserializer by primitiveDeserializer, Deserializer.ElementIterator {
+) : PrimitiveDeserializer by primitiveDeserializer,
+    Deserializer.ElementIterator {
     private var firstCall = true
     private val flattened = descriptor.hasTrait<Flattened>()
     private val elementName = (descriptor.findTrait<XmlCollectionName>() ?: XmlCollectionName.Default).element
@@ -318,8 +323,15 @@ private class XmlStructDeserializer(
 
     override fun deserializeBoolean(): Boolean = deserializeValue { it.toBoolean() }
 
-    override fun deserializeDocument(): Document {
-        throw DeserializationException("cannot deserialize unsupported Document type in xml")
+    override fun deserializeDocument(): Document = throw DeserializationException("cannot deserialize unsupported Document type in xml")
+
+    override fun deserializeByteArray(): ByteArray = deserializeString().decodeBase64Bytes()
+
+    override fun deserializeInstant(format: TimestampFormat): Instant = when (format) {
+        TimestampFormat.EPOCH_SECONDS -> deserializeString().let { Instant.fromEpochSeconds(it) }
+        TimestampFormat.ISO_8601 -> deserializeString().let { Instant.fromIso8601(it) }
+        TimestampFormat.RFC_5322 -> deserializeString().let { Instant.fromRfc5322(it) }
+        else -> throw DeserializationException("unknown timestamp format: $format")
     }
 
     override fun deserializeNull(): Nothing? {
@@ -338,7 +350,10 @@ private class XmlStructDeserializer(
     // which are never consumed by the (missing) call to deserialize<SomePrimitiveType>()
     private fun inNestedMode(): Boolean = when (reentryFlag) {
         true -> true
-        false -> { reentryFlag = true; false }
+        false -> {
+            reentryFlag = true
+            false
+        }
     }
 }
 

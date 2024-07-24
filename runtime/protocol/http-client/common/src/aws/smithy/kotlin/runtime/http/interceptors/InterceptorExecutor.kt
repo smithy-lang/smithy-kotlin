@@ -5,7 +5,9 @@
 
 package aws.smithy.kotlin.runtime.http.interceptors
 
+import aws.smithy.kotlin.runtime.businessmetrics.*
 import aws.smithy.kotlin.runtime.client.*
+import aws.smithy.kotlin.runtime.collections.get
 import aws.smithy.kotlin.runtime.http.HttpCall
 import aws.smithy.kotlin.runtime.http.operation.OperationTypeInfo
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
@@ -181,14 +183,15 @@ internal class InterceptorExecutor<I, O>(
         return modified.getOrThrow().protocolRequest
     }
 
-    fun readAfterSerialization(request: HttpRequest) = readHttpHook(request) {
-            interceptor, context ->
+    fun readAfterSerialization(request: HttpRequest) = readHttpHook(request) { interceptor, context ->
         interceptor.readAfterSerialization(context)
     }
 
     suspend fun modifyBeforeRetryLoop(request: HttpRequest): HttpRequest =
         modifyHttpRequestHook(request) { interceptor, context ->
-            interceptor.modifyBeforeRetryLoop(context)
+            interceptor.modifyBeforeRetryLoop(context).also { modifiedRequest ->
+                updateBusinessMetrics(request, modifiedRequest, context)
+            }
         }
 
     fun readBeforeAttempt(request: HttpRequest): Result<Unit> {
@@ -203,7 +206,9 @@ internal class InterceptorExecutor<I, O>(
 
     suspend fun modifyBeforeSigning(request: HttpRequest): HttpRequest =
         modifyHttpRequestHook(request) { interceptor, context ->
-            interceptor.modifyBeforeSigning(context)
+            interceptor.modifyBeforeSigning(context).also { modifiedRequest ->
+                updateBusinessMetrics(request, modifiedRequest, context)
+            }
         }
 
     fun readBeforeSigning(request: HttpRequest) = readHttpHook(request) { interceptor, context ->
@@ -216,7 +221,9 @@ internal class InterceptorExecutor<I, O>(
 
     suspend fun modifyBeforeTransmit(request: HttpRequest): HttpRequest =
         modifyHttpRequestHook(request) { interceptor, context ->
-            interceptor.modifyBeforeTransmit(context)
+            interceptor.modifyBeforeTransmit(context).also { modifiedRequest ->
+                updateBusinessMetrics(request, modifiedRequest, context)
+            }
         }
 
     fun readBeforeTransmit(request: HttpRequest) = readHttpHook(request) { interceptor, context ->
@@ -327,5 +334,23 @@ internal class InterceptorExecutor<I, O>(
                 Result.failure(currEx)
             },
         )
+    }
+
+    private fun updateBusinessMetrics(
+        request: HttpRequest,
+        modifiedRequest: HttpRequest,
+        context: HttpProtocolRequestInterceptorContext<Any>,
+    ) {
+        if (modifiedRequest.url != request.url) {
+            if (
+                context.executionContext.containsBusinessMetric(SmithyBusinessMetric.ACCOUNT_ID_BASED_ENDPOINT) &&
+                !modifiedRequest.url.toString().contains(context.executionContext.attributes[AccountIdBasedEndpointAccountId])
+            ) {
+                context.executionContext.removeBusinessMetric(SmithyBusinessMetric.ACCOUNT_ID_BASED_ENDPOINT)
+            }
+            if (context.executionContext.containsBusinessMetric(SmithyBusinessMetric.SERVICE_ENDPOINT_OVERRIDE)) {
+                context.executionContext.removeBusinessMetric(SmithyBusinessMetric.SERVICE_ENDPOINT_OVERRIDE)
+            }
+        }
     }
 }

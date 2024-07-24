@@ -10,10 +10,11 @@ import aws.smithy.kotlin.runtime.InternalApi
  * Metadata container for all fields of an object/class
  */
 @InternalApi
-public class SdkObjectDescriptor private constructor(builder: Builder) : SdkFieldDescriptor(
-    kind = SerialKind.Struct,
-    traits = builder.traits,
-) {
+public class SdkObjectDescriptor private constructor(builder: Builder) :
+    SdkFieldDescriptor(
+        kind = SerialKind.Struct,
+        traits = builder.traits,
+    ) {
     public val fields: List<SdkFieldDescriptor> = builder.fields
 
     @InternalApi

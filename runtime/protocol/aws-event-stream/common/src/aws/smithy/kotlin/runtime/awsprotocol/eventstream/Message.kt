@@ -144,8 +144,12 @@ public class MessageBuilder {
     public val headers: MutableList<Header> = mutableListOf()
     public var payload: ByteArray? = null
 
-    public fun addHeader(header: Header) { headers.add(header) }
-    public fun addHeader(name: String, value: HeaderValue) { headers.add(Header(name, value)) }
+    public fun addHeader(header: Header) {
+        headers.add(header)
+    }
+    public fun addHeader(name: String, value: HeaderValue) {
+        headers.add(Header(name, value))
+    }
 
     public fun build(): Message = Message(headers, payload ?: emptyByteArray())
 }

@@ -10,16 +10,15 @@ import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.kotlin.codegen.aws.protocols.core.AbstractQueryFormUrlSerializerGenerator
 import software.amazon.smithy.kotlin.codegen.aws.protocols.core.QueryHttpBindingProtocolGenerator
 import software.amazon.smithy.kotlin.codegen.aws.protocols.formurl.QuerySerdeFormUrlDescriptorGenerator
-import software.amazon.smithy.kotlin.codegen.core.KotlinWriter
-import software.amazon.smithy.kotlin.codegen.core.RenderingContext
-import software.amazon.smithy.kotlin.codegen.core.RuntimeTypes
-import software.amazon.smithy.kotlin.codegen.core.withBlock
+import software.amazon.smithy.kotlin.codegen.core.*
 import software.amazon.smithy.kotlin.codegen.model.buildSymbol
 import software.amazon.smithy.kotlin.codegen.model.getTrait
+import software.amazon.smithy.kotlin.codegen.model.isNullable
 import software.amazon.smithy.kotlin.codegen.rendering.protocol.ProtocolGenerator
 import software.amazon.smithy.kotlin.codegen.rendering.protocol.toRenderingContext
 import software.amazon.smithy.kotlin.codegen.rendering.serde.*
 import software.amazon.smithy.model.shapes.*
+import software.amazon.smithy.model.traits.TimestampFormatTrait
 import software.amazon.smithy.model.traits.XmlNameTrait
 
 /**
@@ -75,6 +74,20 @@ private class Ec2QuerySerdeFormUrlDescriptorGenerator(
 private class Ec2QuerySerializerGenerator(
     private val protocolGenerator: Ec2Query,
 ) : AbstractQueryFormUrlSerializerGenerator(protocolGenerator, protocolGenerator.defaultTimestampFormat) {
+
+    override fun renderSerializerBody(
+        ctx: ProtocolGenerator.GenerationContext,
+        shape: Shape,
+        members: List<MemberShape>,
+        writer: KotlinWriter,
+    ) {
+        // render the serde descriptors
+        descriptorGenerator(ctx, shape, members, writer).render()
+        when (shape) {
+            is UnionShape -> SerializeUnionGenerator(ctx, shape, members, writer, protocolGenerator.defaultTimestampFormat).render()
+            else -> Ec2QuerySerializeStructGenerator(ctx, members, writer, protocolGenerator.defaultTimestampFormat).render()
+        }
+    }
 
     override fun descriptorGenerator(
         ctx: ProtocolGenerator.GenerationContext,
@@ -151,6 +164,37 @@ private class Ec2QueryParserGenerator(
                 }
 
                 write("return errTag")
+            }
+        }
+    }
+}
+
+/**
+ * An EC2 Query implementation of [SerializeStructGenerator] which ensures that empty lists are not serialized.
+ */
+private class Ec2QuerySerializeStructGenerator(
+    ctx: ProtocolGenerator.GenerationContext,
+    members: List<MemberShape>,
+    writer: KotlinWriter,
+    defaultTimestampFormat: TimestampFormatTrait.Format,
+) : SerializeStructGenerator(ctx, members, writer, defaultTimestampFormat) {
+    override fun renderListMemberSerializer(memberShape: MemberShape, targetShape: CollectionShape) {
+        val memberName = ctx.symbolProvider.toMemberName(memberShape)
+        val descriptorName = memberShape.descriptorName()
+        val nestingLevel = 0
+        val memberSymbol = ctx.symbolProvider.toSymbol(memberShape)
+
+        if (memberSymbol.isNullable) {
+            writer.withBlock("if (!input.$memberName.isNullOrEmpty()) {", "}") {
+                writer.withBlock("listField($descriptorName) {", "}") {
+                    delegateListSerialization(memberShape, targetShape, nestingLevel, memberName)
+                }
+            }
+        } else {
+            writer.withBlock("if (input.$memberName.isNotEmpty()) {", "}") {
+                writer.withBlock("listField($descriptorName) {", "}") {
+                    delegateListSerialization(memberShape, targetShape, nestingLevel, memberName)
+                }
             }
         }
     }

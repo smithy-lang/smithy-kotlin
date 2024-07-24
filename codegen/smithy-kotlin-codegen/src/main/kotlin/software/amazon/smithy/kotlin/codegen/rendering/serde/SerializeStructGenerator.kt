@@ -193,9 +193,8 @@ open class SerializeStructGenerator(
             ShapeType.BIG_INTEGER,
             ShapeType.ENUM,
             ShapeType.INT_ENUM,
-            -> renderPrimitiveEntry(keyShape, elementShape, nestingLevel, parentMemberName)
-
-            ShapeType.BLOB -> renderBlobEntry(keyShape, nestingLevel, parentMemberName)
+            ShapeType.BLOB,
+            -> renderPrimitiveEntry(keyShape, elementShape, nestingLevel, parentMemberName, isSparse)
 
             ShapeType.TIMESTAMP -> renderTimestampEntry(
                 keyShape,
@@ -203,6 +202,7 @@ open class SerializeStructGenerator(
                 elementShape,
                 nestingLevel,
                 parentMemberName,
+                isSparse,
             )
 
             ShapeType.SET,
@@ -254,18 +254,18 @@ open class SerializeStructGenerator(
             ShapeType.BIG_INTEGER,
             ShapeType.ENUM,
             ShapeType.INT_ENUM,
+            ShapeType.BLOB,
             -> renderPrimitiveElement(elementShape, nestingLevel, parentMemberName, isSparse)
 
-            ShapeType.BLOB -> renderBlobElement(nestingLevel, parentMemberName)
-            ShapeType.TIMESTAMP -> renderTimestampElement(listShape.member, elementShape, nestingLevel, parentMemberName)
+            ShapeType.TIMESTAMP -> renderTimestampElement(listShape.member, elementShape, nestingLevel, parentMemberName, isSparse)
             ShapeType.LIST,
             ShapeType.SET,
-            -> renderListElement(rootMemberShape, elementShape as CollectionShape, nestingLevel, parentMemberName)
+            -> renderListElement(rootMemberShape, elementShape as CollectionShape, nestingLevel, parentMemberName, isSparse)
 
-            ShapeType.MAP -> renderMapElement(rootMemberShape, elementShape as MapShape, nestingLevel, parentMemberName)
+            ShapeType.MAP -> renderMapElement(rootMemberShape, elementShape as MapShape, nestingLevel, parentMemberName, isSparse)
             ShapeType.UNION,
             ShapeType.STRUCTURE,
-            -> renderNestedStructureElement(elementShape, nestingLevel, parentMemberName)
+            -> renderNestedStructureElement(elementShape, nestingLevel, parentMemberName, isSparse)
 
             else -> error("Unhandled type ${elementShape.type}")
         }
@@ -280,7 +280,7 @@ open class SerializeStructGenerator(
      * }
      * ```
      */
-    private fun renderNestedStructureElement(structureShape: Shape, nestingLevel: Int, parentMemberName: String) {
+    private fun renderNestedStructureElement(structureShape: Shape, nestingLevel: Int, parentMemberName: String, isSparse: Boolean) {
         val serializerFnName = structureShape.type.primitiveSerializerFunctionName()
         val serializerTypeName = ctx.symbolProvider.toSymbol(structureShape).documentSerializerName()
         val elementName = nestingLevel.variableNameFor(NestedIdentifierType.ELEMENT)
@@ -288,7 +288,9 @@ open class SerializeStructGenerator(
         val valueToSerializeName = valueToSerializeName(elementName)
 
         writer.withBlock("for ($elementName in $containerName$parentMemberName) {", "}") {
-            writer.write("$serializerFnName(#T($valueToSerializeName, ::$serializerTypeName))", RuntimeTypes.Serde.asSdkSerializable)
+            writer.wrapBlockIf(isSparse, "if ($elementName != null) {", "} else serializeNull()") {
+                writer.write("$serializerFnName(#T($valueToSerializeName, ::$serializerTypeName))", RuntimeTypes.Serde.asSdkSerializable)
+            }
         }
     }
 
@@ -336,6 +338,7 @@ open class SerializeStructGenerator(
         mapShape: MapShape,
         nestingLevel: Int,
         parentMemberName: String,
+        isSparse: Boolean,
     ) {
         val descriptorName = rootMemberShape.descriptorName(nestingLevel.nestedDescriptorName())
         val elementName = nestingLevel.variableNameFor(NestedIdentifierType.ELEMENT)
@@ -344,7 +347,9 @@ open class SerializeStructGenerator(
 
         writer.withBlock("for ($elementName in $containerName$parentMemberName) {", "}") {
             writer.withBlock("serializer.#T($descriptorName) {", "}", RuntimeTypes.Serde.serializeMap) {
-                delegateMapSerialization(rootMemberShape, mapShape, nestingLevel + 1, parentName)
+                writer.wrapBlockIf(isSparse, "if ($elementName != null) {", "} else serializeNull()") {
+                    delegateMapSerialization(rootMemberShape, mapShape, nestingLevel + 1, parentName)
+                }
             }
         }
     }
@@ -428,14 +433,16 @@ open class SerializeStructGenerator(
      *   }
      * }
      */
-    private fun renderListElement(rootMemberShape: MemberShape, elementShape: CollectionShape, nestingLevel: Int, parentListMemberName: String) {
+    private fun renderListElement(rootMemberShape: MemberShape, elementShape: CollectionShape, nestingLevel: Int, parentListMemberName: String, isSparse: Boolean) {
         val descriptorName = rootMemberShape.descriptorName(nestingLevel.nestedDescriptorName())
         val elementName = nestingLevel.variableNameFor(NestedIdentifierType.ELEMENT)
         val containerName = if (nestingLevel == 0) "input." else ""
 
         writer.withBlock("for ($elementName in $containerName$parentListMemberName) {", "}") {
             writer.withBlock("serializer.#T($descriptorName) {", "}", RuntimeTypes.Serde.serializeList) {
-                delegateListSerialization(rootMemberShape, elementShape, nestingLevel + 1, elementName)
+                writer.wrapBlockIf(isSparse, "if ($elementName != null) {", "} else serializeNull()") {
+                    delegateListSerialization(rootMemberShape, elementShape, nestingLevel + 1, elementName)
+                }
             }
         }
     }
@@ -447,31 +454,17 @@ open class SerializeStructGenerator(
      * c0.forEach { (key1, value1) -> entry(key1, value1) }
      * ```
      */
-    private fun renderPrimitiveEntry(keyShape: Shape, elementShape: Shape, nestingLevel: Int, listMemberName: String) {
+    private fun renderPrimitiveEntry(keyShape: Shape, elementShape: Shape, nestingLevel: Int, listMemberName: String, isSparse: Boolean) {
         val containerName = if (nestingLevel == 0) "input." else ""
         val enumPostfix = if (elementShape.isEnum) ".value" else ""
         val (keyName, valueName) = keyValueNames(nestingLevel)
         val keyValue = keyValue(keyShape, keyName)
 
-        writer.write("$containerName$listMemberName.forEach { ($keyName, $valueName) -> entry($keyValue, $valueName$enumPostfix) }")
-    }
-
-    /**
-     * Renders the serialization of a blob value contained by a map.  Example:
-     *
-     * ```
-     * input.fooBlobMap.forEach { (key, value) -> entry(key, value.encodeBase64String()) }
-     * ```
-     */
-    private fun renderBlobEntry(keyShape: Shape, nestingLevel: Int, listMemberName: String) {
-        val containerName = if (nestingLevel == 0) "input." else ""
-        val (keyName, valueName) = keyValueNames(nestingLevel)
-        val keyValue = keyValue(keyShape, keyName)
-
-        writer.write(
-            "$containerName$listMemberName.forEach { ($keyName, $valueName) -> entry($keyValue, $valueName.#T()) }",
-            RuntimeTypes.Core.Text.Encoding.encodeBase64String,
-        )
+        writer.withBlock("$containerName$listMemberName.forEach { ($keyName, $valueName) ->", "}") {
+            writer.wrapBlockIf(isSparse, "if ($valueName != null) {", "} else entry($keyValue, null as String?)") {
+                writer.write("entry($keyValue, $valueName$enumPostfix)")
+            }
+        }
     }
 
     /**
@@ -487,6 +480,7 @@ open class SerializeStructGenerator(
         elementShape: Shape,
         nestingLevel: Int,
         listMemberName: String,
+        isSparse: Boolean,
     ) {
         writer.addImport(RuntimeTypes.Core.TimestampFormat)
 
@@ -507,7 +501,11 @@ open class SerializeStructGenerator(
         val keyValue = keyValue(keyShape, keyName)
         val containerName = if (nestingLevel == 0) "input." else ""
 
-        writer.write("$containerName$listMemberName.forEach { ($keyName, $valueName) -> entry($keyValue, it, $tsFormat) }")
+        writer.withBlock("$containerName$listMemberName.forEach { ($keyName, $valueName) ->", "}") {
+            writer.wrapBlockIf(isSparse, "if ($valueName != null) {", "} else entry($keyValue, null as String?)") {
+                writer.write("entry($keyValue, it, $tsFormat)")
+            }
+        }
     }
 
     /**
@@ -544,23 +542,6 @@ open class SerializeStructGenerator(
     }
 
     /**
-     * Render a blob element of a list.  Example:
-     *
-     * ```
-     * for (c0 in input.fooBlobList) {
-     *      serializeString(c0.encodeBase64String())
-     * }
-     */
-    private fun renderBlobElement(nestingLevel: Int, listMemberName: String) {
-        val elementName = nestingLevel.variableNameFor(NestedIdentifierType.ELEMENT)
-        val containerName = if (nestingLevel == 0) "input." else ""
-
-        writer.withBlock("for ($elementName in $containerName$listMemberName) {", "}") {
-            writer.write("serializeString($elementName.#T())", RuntimeTypes.Core.Text.Encoding.encodeBase64String)
-        }
-    }
-
-    /**
      * Render a timestamp value of a list.  Example:
      *
      * ```
@@ -568,7 +549,7 @@ open class SerializeStructGenerator(
      *      serializeInstant(c0, TimestampFormat.EPOCH_SECONDS)
      * }
      */
-    private fun renderTimestampElement(memberShape: Shape, elementShape: Shape, nestingLevel: Int, listMemberName: String) {
+    private fun renderTimestampElement(memberShape: Shape, elementShape: Shape, nestingLevel: Int, listMemberName: String, isSparse: Boolean) {
         // :test(timestamp, member > timestamp)
         writer.addImport(RuntimeTypes.Core.TimestampFormat)
 
@@ -589,7 +570,9 @@ open class SerializeStructGenerator(
         val containerName = if (nestingLevel == 0) "input." else ""
 
         writer.withBlock("for ($elementName in $containerName$listMemberName) {", "}") {
-            writer.write("serializeInstant($elementName, $tsFormat)")
+            writer.wrapBlockIf(isSparse, "if ($elementName != null) {", "} else serializeNull()") {
+                writer.write("serializeInstant($elementName, $tsFormat)")
+            }
         }
     }
 
@@ -659,7 +642,7 @@ open class SerializeStructGenerator(
      * Get the serialization function and encoded value for the given [Shape], this only handles
      * [simple types](https://smithy.io/2.0/spec/simple-types.html),  collections should be handled separately.
      */
-    private val serializerForSimpleShape = SerializeFunction { member, identifier ->
+    protected val serializerForSimpleShape = SerializeFunction { member, identifier ->
         // target shape type to deserialize is either the shape itself or member.target
         val target = member.targetOrSelf(ctx.model)
 
@@ -716,6 +699,7 @@ open class SerializeStructGenerator(
             ShapeType.DOUBLE -> "Double"
             ShapeType.DOCUMENT -> "Document"
             ShapeType.STRUCTURE, ShapeType.UNION -> "SdkSerializable"
+            ShapeType.BLOB -> "ByteArray"
             else -> throw CodegenException("$this has no primitive serialize function on the Serializer interface")
         }
         return "serialize$suffix"

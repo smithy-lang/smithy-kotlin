@@ -32,12 +32,15 @@ private object EmptyHeaders : Headers {
     override fun entries(): Set<Map.Entry<String, List<String>>> = emptySet()
     override fun contains(name: String): Boolean = false
     override fun isEmpty(): Boolean = true
+    override fun equals(other: Any?): Boolean = other is Headers && other.isEmpty()
 }
 
 /**
  * Build an immutable HTTP header map
  */
-public class HeadersBuilder : ValuesMapBuilder<String>(true, 8), CanDeepCopy<HeadersBuilder> {
+public class HeadersBuilder :
+    ValuesMapBuilder<String>(true, 8),
+    CanDeepCopy<HeadersBuilder> {
     override fun toString(): String = "HeadersBuilder ${entries()} "
     override fun build(): Headers = HeadersImpl(values)
 
@@ -49,6 +52,7 @@ public class HeadersBuilder : ValuesMapBuilder<String>(true, 8), CanDeepCopy<Hea
 
 private class HeadersImpl(
     values: Map<String, List<String>>,
-) : Headers, ValuesMapImpl<String>(true, values) {
+) : ValuesMapImpl<String>(true, values),
+    Headers {
     override fun toString(): String = "Headers ${entries()}"
 }

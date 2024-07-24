@@ -15,6 +15,7 @@ kotlin {
                 implementation(project(":runtime:protocol:http-test"))
 
                 implementation(project(":runtime:serde:serde-xml"))
+                implementation(project(":runtime:serde:serde-cbor"))
 
                 implementation(libs.kotlinx.coroutines.test)
                 implementation(libs.kotlin.test)

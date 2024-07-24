@@ -9,6 +9,7 @@ internal class MutableEntryView<KSrc, KDest, VSrc, VDest>(
     private val kSrc2Dest: (KSrc) -> KDest,
     private val vSrc2Dest: (VSrc) -> VDest,
     private val vDest2Src: (VDest) -> VSrc,
-) : MutableMap.MutableEntry<KDest, VDest>, EntryView<KSrc, KDest, VSrc, VDest>(src, kSrc2Dest, vSrc2Dest) {
+) : EntryView<KSrc, KDest, VSrc, VDest>(src, kSrc2Dest, vSrc2Dest),
+    MutableMap.MutableEntry<KDest, VDest> {
     override fun setValue(newValue: VDest): VDest = vSrc2Dest(src.setValue(vDest2Src(newValue)))
 }

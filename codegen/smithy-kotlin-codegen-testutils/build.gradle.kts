@@ -23,6 +23,7 @@ version = codegenVersion
 dependencies {
     implementation(kotlin("stdlib-jdk8"))
     implementation(libs.smithy.aws.traits)
+    implementation(libs.smithy.protocol.traits)
     api(project(":codegen:smithy-kotlin-codegen"))
 
     // Test dependencies

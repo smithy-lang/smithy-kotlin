@@ -10,7 +10,8 @@ import java.nio.ByteBuffer
 
 internal actual class BufferedSourceAdapter actual constructor(
     source: okio.BufferedSource,
-) : AbstractBufferedSourceAdapter(source), SdkBufferedSource {
+) : AbstractBufferedSourceAdapter(source),
+    SdkBufferedSource {
 
     override fun read(dst: ByteBuffer): Int = delegate.read(dst)
 
