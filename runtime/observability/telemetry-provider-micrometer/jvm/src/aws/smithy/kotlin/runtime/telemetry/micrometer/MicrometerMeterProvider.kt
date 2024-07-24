@@ -137,6 +137,7 @@ private class MicrometerDoubleHistogram(
             .tags(attributes.toTags())
             .publishPercentileHistogram()
             .register(meterRegistry)
+            .record(value)
     }
 }
 
