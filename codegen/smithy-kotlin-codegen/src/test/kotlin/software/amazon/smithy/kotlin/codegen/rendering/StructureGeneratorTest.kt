@@ -285,11 +285,38 @@ class StructureGeneratorTest {
             @sensitive
             string Baz
             
+            list BazList {
+                member: Baz
+            }
+            
+            map BazToStringMap {
+                key: Baz
+                value: String
+            }
+            
+            map StringToBazMap {
+                key: String
+                value: Baz
+            }
+            
+            map StringToBazList {
+                key: String
+                value: BazList
+            }
+            
+            list StringToBazListList {
+                member: StringToBazList
+            }
+            
             structure Foo {
                 bar: Baz,
-                @documentation("Member documentation")
                 baz: Baz,
-                qux: String
+                qux: String,
+                quux: BazList,
+                corge: BazToStringMap,
+                grault: StringToBazMap,
+                garply: StringToBazList,
+                waldo: StringToBazListList,
             }
             
         """.prependNamespaceAndService().toSmithyModel()
@@ -306,7 +333,12 @@ class StructureGeneratorTest {
                 append("Foo(")
                 append("bar=*** Sensitive Data Redacted ***,")
                 append("baz=*** Sensitive Data Redacted ***,")
-                append("qux=${'$'}qux")
+                append("corge=*** Sensitive Data Redacted ***,")
+                append("garply=*** Sensitive Data Redacted ***,")
+                append("grault=*** Sensitive Data Redacted ***,")
+                append("quux=*** Sensitive Data Redacted ***,")
+                append("qux=${'$'}qux,")
+                append("waldo=*** Sensitive Data Redacted ***")
                 append(")")
             }
         """.formatForTest()

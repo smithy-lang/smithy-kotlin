@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.2.18] - 07/23/2024
+
+## [1.2.17] - 07/18/2024
+
+### Features
+* Add support for string arrays in rules engine parameters
+* Add support for operationContextParams trait
+
+## [1.2.16] - 07/15/2024
+
+### Fixes
+* Correctly redact sensitive data in lists and maps
+
 ## [1.2.15] - 07/12/2024
 
 ### Features
