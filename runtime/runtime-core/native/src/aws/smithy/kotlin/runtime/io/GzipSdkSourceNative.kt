@@ -11,11 +11,11 @@ import aws.smithy.kotlin.runtime.InternalApi
  */
 @InternalApi
 public actual class GzipSdkSource actual constructor(source: SdkSource) : SdkSource {
-    override fun read(sink: SdkBuffer, limit: Long): Long {
+    actual override fun read(sink: SdkBuffer, limit: Long): Long {
         TODO("Not yet implemented")
     }
 
-    override fun close() {
+    actual override fun close() {
         TODO("Not yet implemented")
     }
 }

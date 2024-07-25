@@ -13,11 +13,11 @@ import java.net.Inet6Address
 import java.net.InetAddress
 
 internal actual object DefaultHostResolver : HostResolver {
-    override suspend fun resolve(hostname: String): List<HostAddress> = withContext(Dispatchers.IO) {
+    actual override suspend fun resolve(hostname: String): List<HostAddress> = withContext(Dispatchers.IO) {
         InetAddress.getAllByName(hostname).map { it.toHostAddress() }
     }
-    override fun reportFailure(addr: HostAddress) { }
-    override fun purgeCache(addr: HostAddress?) { }
+    actual override fun reportFailure(addr: HostAddress) { }
+    actual override fun purgeCache(addr: HostAddress?) { }
 }
 
 /**

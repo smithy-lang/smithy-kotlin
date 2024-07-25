@@ -12,15 +12,15 @@ import aws.smithy.kotlin.runtime.InternalApi
  */
 @InternalApi
 public actual class Crc32 actual constructor() : Crc32Base() {
-    override fun digestValue(): UInt {
+    actual override fun digestValue(): UInt {
         TODO("Not yet implemented")
     }
 
-    override fun update(input: ByteArray, offset: Int, length: Int) {
+    actual override fun update(input: ByteArray, offset: Int, length: Int) {
         TODO("Not yet implemented")
     }
 
-    override fun reset() {
+    actual override fun reset() {
         TODO("Not yet implemented")
     }
 }

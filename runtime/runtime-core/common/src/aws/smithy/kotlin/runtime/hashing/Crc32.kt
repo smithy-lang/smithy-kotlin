@@ -30,7 +30,14 @@ public abstract class Crc32Base : HashFunction {
  * directly to avoid doing the integer conversion yourself.
  */
 @InternalApi
-public expect class Crc32() : Crc32Base
+public expect class Crc32() : Crc32Base {
+    override fun update(input: ByteArray, offset: Int, length: Int)
+    override fun digest(): ByteArray
+    override fun digestValue(): UInt
+    override fun reset()
+    override val blockSizeBytes: Int
+    override val digestSizeBytes: Int
+}
 
 /**
  * Compute the CRC32 checksum of the given [ByteArray]

@@ -1,12 +1,12 @@
 [versions]
-kotlin-version = "1.9.23"
+kotlin-version = "2.0.0"
 dokka-version = "1.9.10"
 
 aws-kotlin-repo-tools-version = "0.4.9"
 
 # libs
-coroutines-version = "1.7.3"
-atomicfu-version = "0.23.1"
+coroutines-version = "1.8.1"
+atomicfu-version = "0.24.0"
 okhttp-version = "5.0.0-alpha.14"
 okio-version = "3.9.0"
 otel-version = "1.32.0"
@@ -21,15 +21,13 @@ smithy-gradle-version = "0.9.0"
 # testing
 junit-version = "5.10.1"
 kotest-version = "5.8.0"
-kotlin-compile-testing-version = "1.5.0"
+kotlin-compile-testing-version = "1.6.0"
 kotlinx-benchmark-version = "0.4.9"
 kotlinx-serialization-version = "1.6.0"
 docker-java-version = "3.3.6"
 ktor-version = "2.3.12"
 kaml-version = "0.55.0"
 jsoup-version = "1.16.2"
-
-
 
 [libraries]
 aws-kotlin-repo-tools-build-support = { module="aws.sdk.kotlin.gradle:build-support", version.ref = "aws-kotlin-repo-tools-version" }

@@ -5,86 +5,86 @@
 package aws.smithy.kotlin.runtime.io
 
 internal actual class BufferedSourceAdapter actual constructor(source: okio.BufferedSource) : SdkBufferedSource {
-    override val buffer: SdkBuffer
+    actual override val buffer: SdkBuffer
         get() = TODO("Not yet implemented")
 
-    override fun skip(byteCount: Long) {
+    actual override fun skip(byteCount: Long) {
         TODO("Not yet implemented")
     }
 
-    override fun readByte(): Byte {
+    actual override fun readByte(): Byte {
         TODO("Not yet implemented")
     }
 
-    override fun readShort(): Short {
+    actual override fun readShort(): Short {
         TODO("Not yet implemented")
     }
 
-    override fun readShortLe(): Short {
+    actual override fun readShortLe(): Short {
         TODO("Not yet implemented")
     }
 
-    override fun readLong(): Long {
+    actual override fun readLong(): Long {
         TODO("Not yet implemented")
     }
 
-    override fun readLongLe(): Long {
+    actual override fun readLongLe(): Long {
         TODO("Not yet implemented")
     }
 
-    override fun readInt(): Int {
+    actual override fun readInt(): Int {
         TODO("Not yet implemented")
     }
 
-    override fun readIntLe(): Int {
+    actual override fun readIntLe(): Int {
         TODO("Not yet implemented")
     }
 
-    override fun readAll(sink: SdkSink): Long {
+    actual override fun readAll(sink: SdkSink): Long {
         TODO("Not yet implemented")
     }
 
-    override fun read(sink: ByteArray, offset: Int, limit: Int): Int {
+    actual override fun read(sink: ByteArray, offset: Int, limit: Int): Int {
         TODO("Not yet implemented")
     }
 
-    override fun readByteArray(): ByteArray {
+    actual override fun readByteArray(): ByteArray {
         TODO("Not yet implemented")
     }
 
-    override fun readByteArray(byteCount: Long): ByteArray {
+    actual override fun readByteArray(byteCount: Long): ByteArray {
         TODO("Not yet implemented")
     }
 
-    override fun readUtf8(): String {
+    actual override fun readUtf8(): String {
         TODO("Not yet implemented")
     }
 
-    override fun readUtf8(byteCount: Long): String {
+    actual override fun readUtf8(byteCount: Long): String {
         TODO("Not yet implemented")
     }
 
-    override fun peek(): SdkBufferedSource {
+    actual override fun peek(): SdkBufferedSource {
         TODO("Not yet implemented")
     }
 
-    override fun exhausted(): Boolean {
+    actual override fun exhausted(): Boolean {
         TODO("Not yet implemented")
     }
 
-    override fun request(byteCount: Long): Boolean {
+    actual override fun request(byteCount: Long): Boolean {
         TODO("Not yet implemented")
     }
 
-    override fun require(byteCount: Long) {
+    actual override fun require(byteCount: Long) {
         TODO("Not yet implemented")
     }
 
-    override fun read(sink: SdkBuffer, limit: Long): Long {
+    actual override fun read(sink: SdkBuffer, limit: Long): Long {
         TODO("Not yet implemented")
     }
 
-    override fun close() {
+    actual override fun close() {
         TODO("Not yet implemented")
     }
 }
