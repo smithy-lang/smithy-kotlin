@@ -18,13 +18,13 @@ public actual class GzipByteReadChannel actual constructor(
     private val gzipOutputStream = GZIPOutputStream(gzipBuffer.outputStream(), true)
     private var gzipOutputStreamClosed = false
 
-    override val availableForRead: Int
+    actual override val availableForRead: Int
         get() = gzipBuffer.size.toInt()
 
-    override val isClosedForRead: Boolean
+    actual override val isClosedForRead: Boolean
         get() = channel.isClosedForRead && gzipBuffer.exhausted() && gzipOutputStreamClosed
 
-    override suspend fun read(sink: SdkBuffer, limit: Long): Long {
+    actual override suspend fun read(sink: SdkBuffer, limit: Long): Long {
         require(limit >= 0L)
         if (limit == 0L) return 0L
 
@@ -52,7 +52,7 @@ public actual class GzipByteReadChannel actual constructor(
         return gzipBuffer.read(sink, limit)
     }
 
-    override fun cancel(cause: Throwable?): Boolean {
+    actual override fun cancel(cause: Throwable?): Boolean {
         gzipOutputStream.close()
         return channel.cancel(cause)
     }

@@ -5,6 +5,7 @@
 package software.amazon.smithy.kotlin.codegen
 
 import com.tschuchort.compiletesting.KotlinCompilation
+import org.jetbrains.kotlin.compiler.plugin.ExperimentalCompilerApi
 import software.amazon.smithy.kotlin.codegen.lang.hardReservedWords
 import software.amazon.smithy.kotlin.codegen.util.asSmithy
 import software.amazon.smithy.kotlin.codegen.util.compileSdkAndTest
@@ -19,6 +20,7 @@ import kotlin.test.assertTrue
 /**
  * Tests that validate the generated source for a white-label SDK
  */
+@OptIn(ExperimentalCompilerApi::class)
 class SmithySdkTest {
     // Max number of warnings the compiler can issue as a result of compiling SDK with kitchen sink model.
     private val warningThreshold = 3
