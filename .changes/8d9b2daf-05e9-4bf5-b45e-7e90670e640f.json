@@ -1,0 +1,8 @@
+{
+    "id": "8d9b2daf-05e9-4bf5-b45e-7e90670e640f",
+    "type": "feature",
+    "description": "Introduce new Micrometer telemetry provider. **Note**: This new provider (like the rest of the telemetry system) is marked `@ExperimentalApi` and could see backwards-incompatible API changes in future releases.",
+    "issues": [
+        "awslabs/smithy-kotlin#1087"
+    ]
+}
