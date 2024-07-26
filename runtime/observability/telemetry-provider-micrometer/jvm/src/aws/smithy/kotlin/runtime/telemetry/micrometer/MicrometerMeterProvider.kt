@@ -64,7 +64,7 @@ private class MicrometerMeter(
             MicrometerDoubleHistogram(
                 meterMetadata = MeterMetadata(name, units, description, extraTags),
                 meterRegistry = meterRegistry,
-            )
+            ),
         )
 
     override fun createDoubleHistogram(name: String, units: String?, description: String?): DoubleHistogram =
@@ -94,7 +94,6 @@ private class MicrometerMeter(
         meterMetadata = MeterMetadata(name, units, description, extraTags),
         meterRegistry = meterRegistry,
     )
-
 }
 
 private data class MeterMetadata(
