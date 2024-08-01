@@ -166,9 +166,11 @@ internal class SdkStreamResponseHandler(
         // stream is only valid until the end of this callback, ensure any further data being read downstream
         // doesn't call incrementWindow on a resource that has been free'd
         lock.withLock {
+            crtStream?.close()
             crtStream = null
             streamCompleted = true
         }
+        stream.close()
 
         // close the body channel
         if (errorCode != 0) {
