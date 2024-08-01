@@ -149,7 +149,11 @@ internal class SdkStreamResponseHandler(
         }
 
         // short circuit, stop buffering data and discard remaining incoming bytes
-        if (isCancelled) return bodyBytesIn.len
+        if (isCancelled) {
+            crtStream?.close()
+            stream.close()
+            return bodyBytesIn.len
+        }
 
         val buffer = SdkBuffer().apply {
             val bytes = bodyBytesIn.readAll()
