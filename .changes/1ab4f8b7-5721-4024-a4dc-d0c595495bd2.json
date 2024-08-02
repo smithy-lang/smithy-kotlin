@@ -1,5 +1,0 @@
-{
-    "id": "1ab4f8b7-5721-4024-a4dc-d0c595495bd2",
-    "type": "bugfix",
-    "description": "Close HttpStreams in CrtHttpEngine after call completion"
-}

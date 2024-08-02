@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.3.2] - 08/02/2024
+
+### Fixes
+* Close HttpStreams in CrtHttpEngine after call completion
+
 ## [1.3.1] - 07/26/2024
 
 ## [1.3.0] - 07/25/2024
