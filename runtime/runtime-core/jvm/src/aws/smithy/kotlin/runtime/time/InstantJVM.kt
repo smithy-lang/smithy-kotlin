@@ -69,6 +69,7 @@ public actual class Instant(internal val value: jtInstant) : Comparable<Instant>
         TimestampFormat.ISO_8601 -> ISO_INSTANT.format(value.truncatedTo(ChronoUnit.MICROS))
         TimestampFormat.ISO_8601_CONDENSED -> ISO_8601_CONDENSED.format(value)
         TimestampFormat.ISO_8601_CONDENSED_DATE -> ISO_8601_CONDENSED_DATE.format(value)
+        TimestampFormat.ISO_8601_FULL -> ISO_INSTANT.format(value)
         TimestampFormat.RFC_5322 -> RFC_5322_FIXED_DATE_TIME.format(ZonedDateTime.ofInstant(value, ZoneOffset.UTC))
         TimestampFormat.EPOCH_SECONDS -> {
             val sb = StringBuffer("$epochSeconds")
