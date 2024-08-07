@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.3.3] - 08/07/2024
+
+### Miscellaneous
+* Upgrade to Kotlin 2.0.10
+
 ## [1.3.2] - 08/02/2024
 
 ### Fixes
