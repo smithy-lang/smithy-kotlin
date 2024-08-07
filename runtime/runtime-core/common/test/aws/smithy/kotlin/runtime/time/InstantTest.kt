@@ -37,6 +37,7 @@ class InstantTest {
         val expectedIso8601: String,
         val expectedIso8601Cond: String,
         val expectedIso8601CondDate: String,
+        val expectedIso8601Full: String = expectedIso8601,
     )
 
     private val iso8601Tests = listOf(
@@ -80,6 +81,16 @@ class InstantTest {
         Iso8601FmtTest(1604605357, 0, "2020-11-05T19:42:37Z", "20201105T194237Z", "20201105"),
         Iso8601FmtTest(1604558257, 0, "2020-11-05T06:37:37Z", "20201105T063737Z", "20201105"),
         Iso8601FmtTest(1604650057, 0, "2020-11-06T08:07:37Z", "20201106T080737Z", "20201106"),
+
+        // Test full-precision ISO 8601
+        Iso8601FmtTest(
+            1604604157,
+            123_456_789,
+            "2020-11-05T19:22:37.123456Z",
+            "20201105T192237Z",
+            "20201105",
+            "2020-11-05T19:22:37.123456789Z",
+        ),
     )
 
     private val iso8601Forms = mapOf(

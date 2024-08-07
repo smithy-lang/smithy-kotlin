@@ -1,0 +1,5 @@
+{
+    "id": "29e93882-7346-4a2f-bbcd-1cdf478a3b10",
+    "type": "feature",
+    "description": "Add new `ISO_8601_FULL` timestamp format for untruncated precision"
+}

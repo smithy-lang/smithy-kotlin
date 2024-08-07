@@ -297,6 +297,7 @@ public class JsonSerializer :
             TimestampFormat.ISO_8601,
             TimestampFormat.ISO_8601_CONDENSED,
             TimestampFormat.ISO_8601_CONDENSED_DATE,
+            TimestampFormat.ISO_8601_FULL,
             TimestampFormat.RFC_5322,
             -> jsonWriter.writeValue(value.format(format))
         }
