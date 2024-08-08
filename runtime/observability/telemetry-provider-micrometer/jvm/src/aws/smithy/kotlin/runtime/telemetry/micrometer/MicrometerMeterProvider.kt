@@ -121,6 +121,10 @@ private class MicrometerMonotonicCounter(
     private val meterRegistry: MeterRegistry,
 ) : MonotonicCounter {
     override fun add(value: Long, attributes: Attributes, context: Context?) {
+        if (value < 0) {
+            // do nothing on negative value
+            return
+        }
         meterMetadata
             .counter()
             .tags(attributes.toTags())
