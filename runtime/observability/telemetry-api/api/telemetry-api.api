@@ -53,7 +53,7 @@ public abstract class aws/smithy/kotlin/runtime/telemetry/context/AbstractContex
 
 public abstract class aws/smithy/kotlin/runtime/telemetry/context/AbstractContextManager : aws/smithy/kotlin/runtime/telemetry/context/ContextManager {
 	public fun <init> ()V
-	public fun current ()Laws/smithy/kotlin/runtime/telemetry/context/Context;
+	public fun current (Lkotlin/coroutines/CoroutineContext;)Laws/smithy/kotlin/runtime/telemetry/context/Context;
 }
 
 public abstract class aws/smithy/kotlin/runtime/telemetry/context/AbstractScope : aws/smithy/kotlin/runtime/telemetry/context/Scope {
@@ -72,7 +72,7 @@ public final class aws/smithy/kotlin/runtime/telemetry/context/Context$Companion
 
 public abstract interface class aws/smithy/kotlin/runtime/telemetry/context/ContextManager {
 	public static final field Companion Laws/smithy/kotlin/runtime/telemetry/context/ContextManager$Companion;
-	public abstract fun current ()Laws/smithy/kotlin/runtime/telemetry/context/Context;
+	public abstract fun current (Lkotlin/coroutines/CoroutineContext;)Laws/smithy/kotlin/runtime/telemetry/context/Context;
 }
 
 public final class aws/smithy/kotlin/runtime/telemetry/context/ContextManager$Companion {

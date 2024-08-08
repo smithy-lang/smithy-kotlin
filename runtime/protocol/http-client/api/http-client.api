@@ -542,6 +542,13 @@ public final class aws/smithy/kotlin/runtime/http/operation/MutateMiddleware$Def
 	public static fun install (Laws/smithy/kotlin/runtime/http/operation/MutateMiddleware;Laws/smithy/kotlin/runtime/http/operation/SdkHttpOperation;)V
 }
 
+public final class aws/smithy/kotlin/runtime/http/operation/OperationAttributes {
+	public static final field INSTANCE Laws/smithy/kotlin/runtime/http/operation/OperationAttributes;
+	public final fun getAwsInvocationId ()Laws/smithy/kotlin/runtime/collections/AttributeKey;
+	public final fun getRpcOperation ()Laws/smithy/kotlin/runtime/collections/AttributeKey;
+	public final fun getRpcService ()Laws/smithy/kotlin/runtime/collections/AttributeKey;
+}
+
 public final class aws/smithy/kotlin/runtime/http/operation/OperationAuthConfig {
 	public static final field Companion Laws/smithy/kotlin/runtime/http/operation/OperationAuthConfig$Companion;
 	public fun <init> (Laws/smithy/kotlin/runtime/http/operation/AuthSchemeResolver;Ljava/util/Map;Laws/smithy/kotlin/runtime/identity/IdentityProviderConfig;)V

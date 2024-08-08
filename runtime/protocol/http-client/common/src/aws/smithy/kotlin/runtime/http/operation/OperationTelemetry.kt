@@ -59,7 +59,7 @@ internal fun <I, O> SdkHttpOperation<I, O>.instrument(): Pair<TraceSpan, Corouti
     val scope = telemetry.scope ?: serviceName
 
     val tracer = telemetry.provider.tracerProvider.getOrCreateTracer(scope)
-    val parentCtx = telemetry.provider.contextManager.current()
+    val parentCtx = telemetry.provider.contextManager.current(context.coroutineContext)
 
     val opAttributes = attributesOf {
         OperationAttributes.RpcService to serviceName

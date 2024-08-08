@@ -5,6 +5,8 @@
 
 package aws.smithy.kotlin.runtime.telemetry.context
 
+import kotlin.coroutines.CoroutineContext
+
 /**
  * Responsible for managing the current context with callers current execution unit. For example, some implementations
  * use Thread Local storage for managing the current context.
@@ -20,5 +22,5 @@ public interface ContextManager {
     /**
      * Return the current [Context]
      */
-    public fun current(): Context
+    public fun current(ctx: CoroutineContext): Context
 }

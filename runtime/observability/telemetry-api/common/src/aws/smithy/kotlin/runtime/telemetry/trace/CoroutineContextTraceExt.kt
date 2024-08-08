@@ -9,6 +9,7 @@ import aws.smithy.kotlin.runtime.ExperimentalApi
 import aws.smithy.kotlin.runtime.InternalApi
 import aws.smithy.kotlin.runtime.collections.Attributes
 import aws.smithy.kotlin.runtime.collections.emptyAttributes
+import aws.smithy.kotlin.runtime.operation.ExecutionContext
 import aws.smithy.kotlin.runtime.telemetry.TelemetryProviderContext
 import aws.smithy.kotlin.runtime.telemetry.context.TelemetryContextElement
 import aws.smithy.kotlin.runtime.telemetry.context.telemetryContext
@@ -69,7 +70,7 @@ public suspend inline fun <R> withSpan(
 ): R = try {
     // after a span is created the current telemetry context may be updated, ensure the new coroutine gets the latest
     // or else traces may be disconnected from their parent
-    val updatedCtx = coroutineContext[TelemetryProviderContext]?.provider?.contextManager?.current()
+    val updatedCtx = coroutineContext[TelemetryProviderContext]?.provider?.contextManager?.current(coroutineContext)
     val telemetryCtxElement = (updatedCtx?.let { TelemetryContextElement(it) } ?: coroutineContext[TelemetryContextElement]) ?: EmptyCoroutineContext
     withContext(context + TraceSpanContext(span) + telemetryCtxElement) {
         block(span)

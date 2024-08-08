@@ -2,28 +2,20 @@
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
  * SPDX-License-Identifier: Apache-2.0
  */
-package aws.smithy.kotlin.runtime.telemetry.ism.context
+package aws.smithy.kotlin.runtime.telemetry.ism
 
 import aws.smithy.kotlin.runtime.collections.Attributes
 import aws.smithy.kotlin.runtime.http.operation.OperationAttributes
 import aws.smithy.kotlin.runtime.telemetry.context.Context
 import aws.smithy.kotlin.runtime.telemetry.context.ContextManager
 import aws.smithy.kotlin.runtime.telemetry.context.Scope
-import aws.smithy.kotlin.runtime.telemetry.ism.metrics.MetricRecord
-import aws.smithy.kotlin.runtime.telemetry.ism.metrics.ScopeMetrics
+import aws.smithy.kotlin.runtime.telemetry.context.telemetryContext
+import kotlin.coroutines.CoroutineContext
 
 public interface SpanListener {
     public fun onNewSpan(parentContext: Context?, name: String, attributes: Attributes): Context
     public fun onCloseSpan(context: Context)
 }
-
-internal interface ContextStorage {
-    fun get(): Context
-    fun getAndSet(value: Context): Context
-    fun requireAndSet(expect: Context, update: Context)
-}
-
-internal expect fun ContextStorage(initialContext: Context): ContextStorage
 
 public class IsmContextManager private constructor() : ContextManager {
     public companion object {
@@ -40,9 +32,8 @@ public class IsmContextManager private constructor() : ContextManager {
     }
 
     private val rootContext = object : HierarchicalContext(null) { }
-    private val storage = ContextStorage(rootContext)
 
-    override fun current(): Context = storage.get()
+    override fun current(ctx: CoroutineContext): Context = ctx.telemetryContext ?: rootContext
 
     private fun onNewSpan(parentContext: Context?, name: String, attributes: Attributes): Context =
         when (parentContext) {
@@ -62,13 +53,10 @@ public class IsmContextManager private constructor() : ContextManager {
             else -> OtherContext(parentContext)
         }
 
-    private fun onCloseSpan(context: Context) {
-        TODO()
-    }
+    private fun onCloseSpan(context: Context) = Unit
 
     private abstract inner class HierarchicalContext(val parent: Context?) : Context {
         override fun makeCurrent(): Scope {
-            storage.requireAndSet(parent ?: Context.None, this)
             return IsmScope(this)
         }
     }
@@ -90,8 +78,6 @@ public class IsmContextManager private constructor() : ContextManager {
     private inner class OtherContext(parent: Context?) : HierarchicalContext(parent)
 
     private inner class IsmScope(val context: Context) : Scope {
-        override fun close() {
-            storage.requireAndSet(context, Context.None)
-        }
+        override fun close() = Unit
     }
 }

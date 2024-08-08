@@ -2,7 +2,7 @@
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
  * SPDX-License-Identifier: Apache-2.0
  */
-package aws.smithy.kotlin.runtime.telemetry.ism.metrics
+package aws.smithy.kotlin.runtime.telemetry.ism
 
 import aws.smithy.kotlin.runtime.ExperimentalApi
 import aws.smithy.kotlin.runtime.collections.Attributes
@@ -57,8 +57,7 @@ private data class ScopeMetricsImpl(
 public fun ScopeMetrics(
     records: Map<String, List<MetricRecord<*>>>,
     childScopes: Map<String, ScopeMetrics>,
-): ScopeMetrics =
-    ScopeMetricsImpl(records, childScopes)
+): ScopeMetrics = ScopeMetricsImpl(records, childScopes)
 
 public interface OperationMetrics : ScopeMetrics {
     public val service: String
