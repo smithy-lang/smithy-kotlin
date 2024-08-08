@@ -43,6 +43,7 @@ public fun String.parseBigDecimal(): Result<BigDecimal> = parse(::BigDecimal)
 private fun String.toTimestamp(fmt: TimestampFormat): Instant = when (fmt) {
     TimestampFormat.ISO_8601_CONDENSED,
     TimestampFormat.ISO_8601_CONDENSED_DATE,
+    TimestampFormat.ISO_8601_FULL,
     TimestampFormat.ISO_8601,
     -> Instant.fromIso8601(this)
 

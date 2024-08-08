@@ -2211,6 +2211,7 @@ public final class aws/smithy/kotlin/runtime/time/TimestampFormat : java/lang/En
 	public static final field ISO_8601 Laws/smithy/kotlin/runtime/time/TimestampFormat;
 	public static final field ISO_8601_CONDENSED Laws/smithy/kotlin/runtime/time/TimestampFormat;
 	public static final field ISO_8601_CONDENSED_DATE Laws/smithy/kotlin/runtime/time/TimestampFormat;
+	public static final field ISO_8601_FULL Laws/smithy/kotlin/runtime/time/TimestampFormat;
 	public static final field RFC_5322 Laws/smithy/kotlin/runtime/time/TimestampFormat;
 	public static fun getEntries ()Lkotlin/enums/EnumEntries;
 	public static fun valueOf (Ljava/lang/String;)Laws/smithy/kotlin/runtime/time/TimestampFormat;
