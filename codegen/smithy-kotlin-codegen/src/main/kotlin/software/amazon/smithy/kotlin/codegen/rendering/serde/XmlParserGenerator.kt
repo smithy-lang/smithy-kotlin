@@ -580,7 +580,6 @@ open class XmlParserGenerator(
             target.type == ShapeType.BLOB -> writer.format("#T { it.#T() } ", RuntimeTypes.Serde.parse, RuntimeTypes.Core.Text.Encoding.decodeBase64Bytes)
             target.type == ShapeType.BOOLEAN -> writer.format("#T()", RuntimeTypes.Serde.parseBoolean)
             target.type == ShapeType.STRING && !target.hasTrait<EnumTrait>() -> {
-                println("Shape ${member.defaultName()} is a string! textExprIsResult is $textExprIsResult")
                 if (!textExprIsResult) {
                     writer.write(textExpr)
                     return
@@ -603,14 +602,11 @@ open class XmlParserGenerator(
             target.type == ShapeType.BIG_DECIMAL -> writer.format("#T()", RuntimeTypes.Serde.parseBigDecimal)
             target.type == ShapeType.BIG_INTEGER -> writer.format("#T()", RuntimeTypes.Serde.parseBigInteger)
             target.type == ShapeType.ENUM || (target.type == ShapeType.STRING && target.hasTrait<EnumTrait>()) -> {
-                println("Shape ${member.defaultName()} is an enum! textExprIsResult is $textExprIsResult")
                 if (!textExprIsResult) {
                     writer.write("#T.fromValue(#L)", ctx.symbolProvider.toSymbol(target), textExpr)
                     return
                 } else {
-                    writer.format("#T { #T.fromValue(it) } ", RuntimeTypes.Serde.parse, ctx.symbolProvider.toSymbol(target)).also {
-                        println("Shape ${member.defaultName()} is an enum, parseFn is $it")
-                    }
+                    writer.format("#T { #T.fromValue(it) } ", RuntimeTypes.Serde.parse, ctx.symbolProvider.toSymbol(target))
                 }
             }
             target.type == ShapeType.INT_ENUM -> {
@@ -618,7 +614,6 @@ open class XmlParserGenerator(
             }
             else -> error("unknown primitive member shape $member")
         }
-        println("parseFn for ${member.defaultName()}: $parseFn")
 
         val escapedErrMessage = "expected $target".replace("$", "$$")
         writer.write(textExpr)
