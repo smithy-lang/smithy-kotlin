@@ -23,7 +23,7 @@ import software.amazon.smithy.model.traits.TimestampFormatTrait
 class CodegenTestIntegration : KotlinIntegration {
     override val protocolGenerators: List<ProtocolGenerator> = listOf(
         RestJsonTestProtocolGenerator(),
-        RestXmlTestProtocolGenerator()
+        RestXmlTestProtocolGenerator(),
     )
 }
 
@@ -118,4 +118,3 @@ class MockRestXmlProtocolClientGenerator(
     middleware: List<ProtocolMiddleware>,
     httpBindingResolver: HttpBindingResolver,
 ) : HttpProtocolClientGenerator(ctx, middleware, httpBindingResolver)
-
