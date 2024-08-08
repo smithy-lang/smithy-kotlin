@@ -5,6 +5,7 @@
 package software.amazon.smithy.kotlin.codegen.util
 
 import software.amazon.smithy.aws.traits.protocols.RestJson1Trait
+import software.amazon.smithy.aws.traits.protocols.RestXmlTrait
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.kotlin.codegen.core.RuntimeTypes
 import software.amazon.smithy.kotlin.codegen.core.withBlock
@@ -20,7 +21,10 @@ import software.amazon.smithy.model.traits.TimestampFormatTrait
  * Integration that registers protocol generators this package provides
  */
 class CodegenTestIntegration : KotlinIntegration {
-    override val protocolGenerators: List<ProtocolGenerator> = listOf(RestJsonTestProtocolGenerator())
+    override val protocolGenerators: List<ProtocolGenerator> = listOf(
+        RestJsonTestProtocolGenerator(),
+        RestXmlTestProtocolGenerator(),
+    )
 }
 
 /**
@@ -66,6 +70,50 @@ class RestJsonTestProtocolGenerator(
 }
 
 class MockRestJsonProtocolClientGenerator(
+    ctx: ProtocolGenerator.GenerationContext,
+    middleware: List<ProtocolMiddleware>,
+    httpBindingResolver: HttpBindingResolver,
+) : HttpProtocolClientGenerator(ctx, middleware, httpBindingResolver)
+
+/**
+ * A partial ProtocolGenerator to generate minimal sdks for tests of restXml models.
+ */
+class RestXmlTestProtocolGenerator(
+    override val defaultTimestampFormat: TimestampFormatTrait.Format = TimestampFormatTrait.Format.EPOCH_SECONDS,
+    override val protocol: ShapeId = RestXmlTrait.ID,
+) : HttpBindingProtocolGenerator() {
+
+    override fun getProtocolHttpBindingResolver(model: Model, serviceShape: ServiceShape): HttpBindingResolver =
+        HttpTraitResolver(model, serviceShape, ProtocolContentTypes.consistent("application/xml"))
+
+    override fun generateProtocolUnitTests(ctx: ProtocolGenerator.GenerationContext) {
+        // NOOP
+    }
+
+    override fun getHttpProtocolClientGenerator(ctx: ProtocolGenerator.GenerationContext): HttpProtocolClientGenerator =
+        MockRestXmlProtocolClientGenerator(ctx, getHttpMiddleware(ctx), getProtocolHttpBindingResolver(ctx.model, ctx.service))
+
+    override fun structuredDataSerializer(ctx: ProtocolGenerator.GenerationContext): StructuredDataSerializerGenerator =
+        XmlSerializerGenerator(this, TimestampFormatTrait.Format.EPOCH_SECONDS)
+
+    override fun structuredDataParser(ctx: ProtocolGenerator.GenerationContext): StructuredDataParserGenerator =
+        XmlParserGenerator(TimestampFormatTrait.Format.EPOCH_SECONDS)
+
+    override fun operationErrorHandler(ctx: ProtocolGenerator.GenerationContext, op: OperationShape): Symbol =
+        op.errorHandler(ctx.settings) { writer ->
+            writer.withBlock(
+                "private fun ${op.errorHandlerName()}(context: #T, call: #T, payload: #T?): Nothing {",
+                "}",
+                RuntimeTypes.Core.ExecutionContext,
+                RuntimeTypes.Http.HttpCall,
+                KotlinTypes.ByteArray,
+            ) {
+                write("error(\"not needed for compile tests\")")
+            }
+        }
+}
+
+class MockRestXmlProtocolClientGenerator(
     ctx: ProtocolGenerator.GenerationContext,
     middleware: List<ProtocolMiddleware>,
     httpBindingResolver: HttpBindingResolver,

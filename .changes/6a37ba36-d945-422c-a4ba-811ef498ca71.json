@@ -1,0 +1,8 @@
+{
+    "id": "6a37ba36-d945-422c-a4ba-811ef498ca71",
+    "type": "bugfix",
+    "description": "Correctly deserialize string-based enums in XML protocols",
+    "issues": [
+        "https://github.com/smithy-lang/smithy-kotlin/issues/1125"
+    ]
+}

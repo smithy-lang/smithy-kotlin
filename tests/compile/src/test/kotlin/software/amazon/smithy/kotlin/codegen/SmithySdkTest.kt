@@ -175,6 +175,55 @@ class SmithySdkTest {
 
         assertEquals(KotlinCompilation.ExitCode.OK, compilationResult.exitCode, compileOutputStream.toString())
     }
+
+    // https://github.com/smithy-lang/smithy-kotlin/issues/1125
+    @Test
+    fun `it compiles models with string enums`() {
+        val model = """
+            namespace com.test
+
+            use aws.protocols#restXml
+
+            @restXml
+            service Example {
+                version: "1.0.0",
+                operations: [
+                    Foo,
+                ]
+            }
+
+            @http(method: "POST", uri: "/foo-no-input")
+            operation Foo {
+                output: FooResponse
+            }
+
+            structure FooResponse {
+                payload: StringBasedEnumList
+            }
+            
+            @enum([
+                {
+                    value: "blarg",
+                    name: "Blarg"
+                },
+                {
+                    value: "blergh",
+                    name: "Blergh"
+                }
+            ])
+            string StringBasedEnum
+            
+            list StringBasedEnumList {
+                member: StringBasedEnum
+            }
+        """.asSmithy()
+
+        val compileOutputStream = ByteArrayOutputStream()
+        val compilationResult = compileSdkAndTest(model = model, outputSink = compileOutputStream, emitSourcesToTmp = Debug.emitSourcesToTemp)
+        compileOutputStream.flush()
+
+        assertEquals(KotlinCompilation.ExitCode.OK, compilationResult.exitCode, compileOutputStream.toString())
+    }
 }
 
 /**
