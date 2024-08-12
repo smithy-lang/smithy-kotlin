@@ -25,6 +25,7 @@
     "ignore": [
       "aws.smithy.kotlin:http-test",
       "aws.smithy.kotlin:smithy-test",
+      "aws.smithy.kotlin:telemetry-provider-micrometer",
       "aws.smithy.kotlin:testing",
       "aws.smithy.kotlin:bom",
       "aws.smithy.kotlin:version-catalog"
