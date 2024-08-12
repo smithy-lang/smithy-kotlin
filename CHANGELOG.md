@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.3.4] - 08/12/2024
+
+### Features
+* [#1087](https://github.com/awslabs/smithy-kotlin/issues/1087) Introduce new Micrometer telemetry provider. **Note**: This new provider (like the rest of the telemetry system) is marked `@ExperimentalApi` and could see backwards-incompatible API changes in future releases.
+* Add new `ISO_8601_FULL` timestamp format for untruncated precision
+
+### Fixes
+* [#1125](https://github.com/smithy-lang/smithy-kotlin/issues/1125) Correctly deserialize string-based enums in XML protocols
+
 ## [1.3.3] - 08/07/2024
 
 ### Miscellaneous
