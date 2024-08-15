@@ -162,7 +162,7 @@ class PaginatorGenerator : KotlinIntegration {
 
                         val hasNextPageFlag = when (endBehavior) {
                             PaginationEndBehavior.OutputTokenEmpty -> "cursor?.isNotEmpty() == true"
-                            PaginationEndBehavior.IdenticalToken -> "cursor != null && cursor == req.$markerLiteral"
+                            PaginationEndBehavior.IdenticalToken -> "cursor != null && cursor != req.$markerLiteral"
                             is PaginationEndBehavior.TruncationMember -> {
                                 val member = outputShape.allMembers.getValue(endBehavior.memberName).defaultName()
                                 "result.$member == true" // $member will be a boolean flag
