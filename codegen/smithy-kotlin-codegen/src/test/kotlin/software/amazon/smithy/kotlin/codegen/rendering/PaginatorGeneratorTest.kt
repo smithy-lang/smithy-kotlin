@@ -408,7 +408,7 @@ class PaginatorGeneratorTest {
             use aws.protocols#restJson1
             
             @trait(selector: "*")
-            structure paginationTruncationMember { }
+            string paginationEndBehavior
             
             service Lambda {
                 operations: [ListFunctions]
@@ -419,6 +419,7 @@ class PaginatorGeneratorTest {
                 outputToken: "NextMarker",
                 pageSize: "MaxItems"
             )
+            @paginationEndBehavior("TruncationMember:IsTruncated")
             @readonly
             @http(method: "GET", uri: "/functions", code: 200)
             operation ListFunctions {
@@ -439,7 +440,6 @@ class PaginatorGeneratorTest {
             
             structure ListFunctionsResponse {
                 Functions: FunctionConfigurationList,
-                @paginationTruncationMember
                 IsTruncated: Boolean,
                 NextMarker: String
             }
@@ -482,6 +482,95 @@ class PaginatorGeneratorTest {
                         val result = this@listFunctionsPaginated.listFunctions(req)
                         cursor = result.nextMarker
                         hasNextPage = result.isTruncated == true
+                        emit(result)
+                    }
+                }
+        """.trimIndent()
+
+        actual.shouldContainOnlyOnceWithDiff(expectedCode)
+    }
+
+    @Test
+    fun testRenderPaginatorWithIdenticalTokenTerminator() {
+        val testModel = """
+            namespace smithy.kotlin.traits
+            
+            use aws.protocols#restJson1
+            
+            @trait(selector: "*")
+            string paginationEndBehavior
+            
+            service Lambda {
+                operations: [ListFunctions]
+            }
+            
+            @paginated(
+                inputToken: "Marker",
+                outputToken: "NextMarker",
+                pageSize: "MaxItems"
+            )
+            @paginationEndBehavior("IdenticalToken")
+            @readonly
+            @http(method: "GET", uri: "/functions", code: 200)
+            operation ListFunctions {
+                input: ListFunctionsRequest,
+                output: ListFunctionsResponse
+            }
+            
+            structure ListFunctionsRequest {
+                @httpQuery("FunctionVersion")
+                FunctionVersion: String,
+                @httpQuery("Marker")
+                Marker: String,
+                @httpQuery("MasterRegion")
+                MasterRegion: String,
+                @httpQuery("MaxItems")
+                MaxItems: Integer,
+            }
+            
+            structure ListFunctionsResponse {
+                Functions: FunctionConfigurationList,
+                NextMarker: String
+            }
+            
+            list FunctionConfigurationList {
+                member: FunctionConfiguration
+            }
+            
+            structure FunctionConfiguration {
+                FunctionName: String
+            }
+        """.toSmithyModel()
+        val testContext = testModel.newTestContext("Lambda", "smithy.kotlin.traits")
+
+        val codegenContext = object : CodegenContext {
+            override val model = testContext.generationCtx.model
+            override val symbolProvider = testContext.generationCtx.symbolProvider
+            override val settings = testContext.generationCtx.settings
+            override val protocolGenerator = testContext.generator
+            override val integrations = testContext.generationCtx.integrations
+        }
+
+        val unit = PaginatorGenerator()
+        unit.writeAdditionalFiles(codegenContext, testContext.generationCtx.delegator)
+
+        testContext.generationCtx.delegator.flushWriters()
+        val testManifest = testContext.generationCtx.delegator.fileManifest as MockManifest
+        val actual = testManifest.expectFileString("src/main/kotlin/smithy/kotlin/traits/paginators/Paginators.kt")
+
+        val expectedCode = """
+            public fun TestClient.listFunctionsPaginated(initialRequest: ListFunctionsRequest = ListFunctionsRequest { }): Flow<ListFunctionsResponse> =
+                flow {
+                    var cursor: kotlin.String? = initialRequest.marker
+                    var hasNextPage: Boolean = true
+            
+                    while (hasNextPage) {
+                        val req = initialRequest.copy {
+                            this.marker = cursor
+                        }
+                        val result = this@listFunctionsPaginated.listFunctions(req)
+                        cursor = result.nextMarker
+                        hasNextPage = cursor != null && cursor != req.marker
                         emit(result)
                     }
                 }

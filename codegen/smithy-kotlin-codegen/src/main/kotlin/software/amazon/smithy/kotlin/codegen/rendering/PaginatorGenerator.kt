@@ -17,7 +17,8 @@ import software.amazon.smithy.kotlin.codegen.core.withBlock
 import software.amazon.smithy.kotlin.codegen.integration.KotlinIntegration
 import software.amazon.smithy.kotlin.codegen.lang.KotlinTypes
 import software.amazon.smithy.kotlin.codegen.model.*
-import software.amazon.smithy.kotlin.codegen.model.traits.PaginationTruncationMember
+import software.amazon.smithy.kotlin.codegen.model.traits.PaginationEndBehavior
+import software.amazon.smithy.kotlin.codegen.model.traits.PaginationEndBehaviorTrait
 import software.amazon.smithy.kotlin.codegen.utils.getOrNull
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.knowledge.PaginatedIndex
@@ -156,14 +157,19 @@ class PaginatorGenerator : KotlinIntegration {
                         )
                         write("cursor = result.$nextMarkerLiteral")
 
-                        val hasNextPageFlag = outputShape
-                            .members()
-                            .singleOrNull { it.hasTrait(PaginationTruncationMember.ID) }
-                            ?.defaultName()
-                            ?.let { "result.$it" }
-                            ?: "cursor?.isNotEmpty()"
+                        val endBehavior = operationShape.getTrait<PaginationEndBehaviorTrait>()?.value
+                            ?: PaginationEndBehavior.Default
 
-                        write("hasNextPage = #L == true", hasNextPageFlag)
+                        val hasNextPageFlag = when (endBehavior) {
+                            PaginationEndBehavior.OutputTokenEmpty -> "cursor?.isNotEmpty() == true"
+                            PaginationEndBehavior.IdenticalToken -> "cursor != null && cursor != req.$markerLiteral"
+                            is PaginationEndBehavior.TruncationMember -> {
+                                val member = outputShape.allMembers.getValue(endBehavior.memberName).defaultName()
+                                "result.$member == true" // $member will be a boolean flag
+                            }
+                        }
+
+                        write("hasNextPage = #L", hasNextPageFlag)
                         write("emit(result)")
                     }
                 }
