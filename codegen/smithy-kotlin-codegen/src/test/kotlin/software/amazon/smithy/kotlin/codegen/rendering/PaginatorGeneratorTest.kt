@@ -570,7 +570,7 @@ class PaginatorGeneratorTest {
                         }
                         val result = this@listFunctionsPaginated.listFunctions(req)
                         cursor = result.nextMarker
-                        hasNextPage = cursor != null && cursor == req.marker
+                        hasNextPage = cursor != null && cursor != req.marker
                         emit(result)
                     }
                 }
