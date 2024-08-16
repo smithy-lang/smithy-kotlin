@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.3.5] - 08/16/2024
+
+### Fixes
+* [#1326](https://github.com/awslabs/aws-sdk-kotlin/issues/1326) Add missing support for pagination which terminates by repeating the token (instead of returning no token)
+
 ## [1.3.4] - 08/12/2024
 
 ### Features
