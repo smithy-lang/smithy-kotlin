@@ -89,7 +89,8 @@ public class ClockSkewInterceptor : HttpInterceptor {
             try {
                 Instant.fromRfc5322(it)
             } catch (e: ParseException) {
-                logger.warn(e) { "Service returned malformed \"Date\" header value \"$it\", skipping skew calculation" }
+                logger.warn { "Service returned malformed \"Date\" header value \"$it\", skipping skew calculation" }
+                logger.debug(e) { e.message.toString() }
                 return context.response
             }
         } ?: run {
