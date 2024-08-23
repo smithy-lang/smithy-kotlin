@@ -451,10 +451,6 @@ public final class aws/smithy/kotlin/runtime/http/interceptors/SmokeTestsInterce
 	public fun readBeforeTransmit (Laws/smithy/kotlin/runtime/client/ProtocolRequestInterceptorContext;)V
 }
 
-public final class aws/smithy/kotlin/runtime/http/interceptors/SmokeTestsInterceptorKt {
-	public static final fun exitProcess (I)Ljava/lang/Void;
-}
-
 public final class aws/smithy/kotlin/runtime/http/interceptors/SmokeTestsSuccessException : java/lang/Exception {
 	public fun <init> ()V
 }
