@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.3.6] - 08/23/2024
+
+### Fixes
+* Correctly mark more CRT exceptions as retriable
+
 ## [1.3.5] - 08/16/2024
 
 ### Fixes
