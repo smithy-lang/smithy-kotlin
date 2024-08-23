@@ -1,5 +1,44 @@
 # Changelog
 
+## [1.3.5] - 08/16/2024
+
+### Fixes
+* [#1326](https://github.com/awslabs/aws-sdk-kotlin/issues/1326) Add missing support for pagination which terminates by repeating the token (instead of returning no token)
+
+## [1.3.4] - 08/12/2024
+
+### Features
+* [#1087](https://github.com/awslabs/smithy-kotlin/issues/1087) Introduce new Micrometer telemetry provider. **Note**: This new provider (like the rest of the telemetry system) is marked `@ExperimentalApi` and could see backwards-incompatible API changes in future releases.
+* Add new `ISO_8601_FULL` timestamp format for untruncated precision
+
+### Fixes
+* [#1125](https://github.com/smithy-lang/smithy-kotlin/issues/1125) Correctly deserialize string-based enums in XML protocols
+
+## [1.3.3] - 08/07/2024
+
+### Miscellaneous
+* Upgrade to Kotlin 2.0.10
+
+## [1.3.2] - 08/02/2024
+
+### Fixes
+* Close HttpStreams in CrtHttpEngine after call completion
+
+## [1.3.1] - 07/26/2024
+
+## [1.3.0] - 07/25/2024
+
+### Miscellaneous
+* ⚠️ **IMPORTANT**: Upgrade to Kotlin 2.0.0
+
+## [1.2.18] - 07/23/2024
+
+## [1.2.17] - 07/18/2024
+
+### Features
+* Add support for string arrays in rules engine parameters
+* Add support for operationContextParams trait
+
 ## [1.2.16] - 07/15/2024
 
 ### Fixes

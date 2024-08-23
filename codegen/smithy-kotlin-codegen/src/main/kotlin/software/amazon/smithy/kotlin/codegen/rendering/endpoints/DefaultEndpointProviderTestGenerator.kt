@@ -9,8 +9,10 @@ import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.kotlin.codegen.KotlinSettings
 import software.amazon.smithy.kotlin.codegen.core.*
 import software.amazon.smithy.kotlin.codegen.model.buildSymbol
+import software.amazon.smithy.kotlin.codegen.model.format
 import software.amazon.smithy.kotlin.codegen.rendering.protocol.ProtocolGenerator
 import software.amazon.smithy.kotlin.codegen.utils.toCamelCase
+import software.amazon.smithy.model.node.ArrayNode
 import software.amazon.smithy.model.node.BooleanNode
 import software.amazon.smithy.model.node.Node
 import software.amazon.smithy.model.node.StringNode
@@ -130,6 +132,7 @@ class DefaultEndpointProviderTestGenerator(
         when (v) {
             is StringNode -> writer.writeInline("#S", v.value)
             is BooleanNode -> writer.writeInline("#L", v.value)
+            is ArrayNode -> writer.writeInline("#L", v.elements.format())
             else -> throw IllegalArgumentException("unexpected test case param value")
         }
     }

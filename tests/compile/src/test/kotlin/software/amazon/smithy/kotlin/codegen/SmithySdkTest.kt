@@ -5,6 +5,7 @@
 package software.amazon.smithy.kotlin.codegen
 
 import com.tschuchort.compiletesting.KotlinCompilation
+import org.jetbrains.kotlin.compiler.plugin.ExperimentalCompilerApi
 import software.amazon.smithy.kotlin.codegen.lang.hardReservedWords
 import software.amazon.smithy.kotlin.codegen.util.asSmithy
 import software.amazon.smithy.kotlin.codegen.util.compileSdkAndTest
@@ -19,6 +20,7 @@ import kotlin.test.assertTrue
 /**
  * Tests that validate the generated source for a white-label SDK
  */
+@OptIn(ExperimentalCompilerApi::class)
 class SmithySdkTest {
     // Max number of warnings the compiler can issue as a result of compiling SDK with kitchen sink model.
     private val warningThreshold = 3
@@ -164,6 +166,55 @@ class SmithySdkTest {
             
             union Union2 {
                 fooMember: String
+            }
+        """.asSmithy()
+
+        val compileOutputStream = ByteArrayOutputStream()
+        val compilationResult = compileSdkAndTest(model = model, outputSink = compileOutputStream, emitSourcesToTmp = Debug.emitSourcesToTemp)
+        compileOutputStream.flush()
+
+        assertEquals(KotlinCompilation.ExitCode.OK, compilationResult.exitCode, compileOutputStream.toString())
+    }
+
+    // https://github.com/smithy-lang/smithy-kotlin/issues/1125
+    @Test
+    fun `it compiles models with string enums`() {
+        val model = """
+            namespace com.test
+
+            use aws.protocols#restXml
+
+            @restXml
+            service Example {
+                version: "1.0.0",
+                operations: [
+                    Foo,
+                ]
+            }
+
+            @http(method: "POST", uri: "/foo-no-input")
+            operation Foo {
+                output: FooResponse
+            }
+
+            structure FooResponse {
+                payload: StringBasedEnumList
+            }
+            
+            @enum([
+                {
+                    value: "blarg",
+                    name: "Blarg"
+                },
+                {
+                    value: "blergh",
+                    name: "Blergh"
+                }
+            ])
+            string StringBasedEnum
+            
+            list StringBasedEnumList {
+                member: StringBasedEnum
             }
         """.asSmithy()
 

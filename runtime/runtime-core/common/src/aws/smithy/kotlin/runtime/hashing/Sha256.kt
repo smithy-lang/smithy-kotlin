@@ -17,7 +17,13 @@ public abstract class Sha256Base : HashFunction {
 
  */
 @InternalApi
-public expect class Sha256() : Sha256Base
+public expect class Sha256() : Sha256Base {
+    override fun update(input: ByteArray, offset: Int, length: Int)
+    override fun digest(): ByteArray
+    override fun reset()
+    override val blockSizeBytes: Int
+    override val digestSizeBytes: Int
+}
 
 /**
  * Compute the SHA-256 hash of the current [ByteArray]

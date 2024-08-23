@@ -13,20 +13,20 @@ import java.nio.file.Path
 import java.util.*
 
 internal actual object SystemDefaultProvider : PlatformProvider {
-    override fun getAllEnvVars(): Map<String, String> = System.getenv()
+    actual override fun getAllEnvVars(): Map<String, String> = System.getenv()
 
     /**
      * Get an environment variable or null
      */
-    override fun getenv(key: String): String? = System.getenv()[key]
+    actual override fun getenv(key: String): String? = System.getenv()[key]
 
-    override val isJvm: Boolean = true
-    override val isAndroid: Boolean by lazy { isAndroid() }
-    override val isBrowser: Boolean = false
-    override val isNode: Boolean = false
-    override val isNative: Boolean = false
+    actual override val isJvm: Boolean = true
+    actual override val isAndroid: Boolean by lazy { isAndroid() }
+    actual override val isBrowser: Boolean = false
+    actual override val isNode: Boolean = false
+    actual override val isNative: Boolean = false
 
-    override fun osInfo(): OperatingSystem = getOsInfo()
+    actual override fun osInfo(): OperatingSystem = getOsInfo()
 
     /**
      * Read the contents of a file as a [String] or return null on any IO error.
@@ -34,7 +34,7 @@ internal actual object SystemDefaultProvider : PlatformProvider {
      * @param path fully qualified path encoded specifically to the target platform's filesystem.
      * @return contents of file or null if error (file does not exist, etc.)
      */
-    override suspend fun readFileOrNull(path: String): ByteArray? = try {
+    actual override suspend fun readFileOrNull(path: String): ByteArray? = try {
         withContext(Dispatchers.IO) {
             File(path).readBytes()
         }
@@ -42,18 +42,18 @@ internal actual object SystemDefaultProvider : PlatformProvider {
         null
     }
 
-    override suspend fun writeFile(path: String, data: ByteArray) {
+    actual override suspend fun writeFile(path: String, data: ByteArray) {
         withContext(Dispatchers.IO) {
             File(path).writeBytes(data)
         }
     }
 
-    override fun fileExists(path: String): Boolean = File(path).exists()
+    actual override fun fileExists(path: String): Boolean = File(path).exists()
 
     public suspend fun readFileOrNull(path: Path): ByteArray? = readFileOrNull(path.toAbsolutePath().toString())
     public suspend fun readFileOrNull(file: File): ByteArray? = readFileOrNull(file.absolutePath)
 
-    override fun getAllProperties(): Map<String, String> = System
+    actual override fun getAllProperties(): Map<String, String> = System
         .getProperties()
         .entries
         .associate { (key, value) -> key.toString() to value.toString() }
@@ -64,13 +64,13 @@ internal actual object SystemDefaultProvider : PlatformProvider {
      * @param key name of environment variable
      * @return value of system property or null if undefined or platform does not support properties
      */
-    override fun getProperty(key: String): String? = System.getProperty(key)
+    actual override fun getProperty(key: String): String? = System.getProperty(key)
 
     /**
      * return the platform-specific file path separator char.  Eg on Linux a path may be '/root` and the path
      * segment char is '/'.
      */
-    override val filePathSeparator: String by lazy { File.separator }
+    actual override val filePathSeparator: String by lazy { File.separator }
 }
 
 private fun isAndroid(): Boolean = try {

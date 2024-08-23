@@ -28,6 +28,11 @@ public enum class TimestampFormat {
     ISO_8601_CONDENSED_DATE,
 
     /**
+     * ISO-8601/RFC5399 timestamp including fractional seconds at arbitrary (i.e., untruncated) precision
+     */
+    ISO_8601_FULL,
+
+    /**
      * RFC-5322/2822/822 IMF timestamp
      * See: https://tools.ietf.org/html/rfc5322
      */

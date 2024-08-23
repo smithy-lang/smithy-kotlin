@@ -76,5 +76,5 @@ public enum class SmithyBusinessMetric(public override val identifier: String) :
     PROTOCOL_RPC_V2_CBOR("M"),
     SERVICE_ENDPOINT_OVERRIDE("N"),
     ACCOUNT_ID_BASED_ENDPOINT("O"),
-    SIGV4A_SIGNING("P"),
+    SIGV4A_SIGNING("S"),
 }

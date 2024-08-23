@@ -24,6 +24,12 @@ class BigIntegerTest {
     }
 
     @Test
+    fun testEquals() {
+        val value = "340282366920938463463374607431768211456"
+        assertEquals(BigInteger(value), BigInteger(value))
+    }
+
+    @Test
     fun testPlusOperator() {
         // Map of an expected value to a pair of two values that should sum to get that expected value
         val tests = mapOf<String, Pair<String, String>>(

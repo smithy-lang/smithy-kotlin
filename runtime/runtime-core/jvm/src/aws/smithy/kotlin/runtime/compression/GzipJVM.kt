@@ -19,10 +19,10 @@ import java.util.zip.GZIPOutputStream
  * See: https://en.wikipedia.org/wiki/Gzip
  */
 public actual class Gzip : CompressionAlgorithm {
-    override val id: String = "gzip"
-    override val contentEncoding: String = "gzip"
+    actual override val id: String = "gzip"
+    actual override val contentEncoding: String = "gzip"
 
-    override fun compress(stream: ByteStream): ByteStream =
+    actual override fun compress(stream: ByteStream): ByteStream =
         when (stream) {
             is ByteStream.Buffer ->
                 object : ByteStream.Buffer() {
