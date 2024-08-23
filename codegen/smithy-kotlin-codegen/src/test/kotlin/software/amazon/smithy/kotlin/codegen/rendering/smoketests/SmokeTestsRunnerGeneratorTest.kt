@@ -105,7 +105,7 @@ class SmokeTestsRunnerGeneratorTest {
                     successTest()
                     invalidMessageErrorTest()
                     failureTest()
-                    aws.smithy.kotlin.runtime.http.interceptors.exitProcess(exitCode)
+                    exitProcess(exitCode)
                 }
             """.trimIndent(),
         )

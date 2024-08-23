@@ -4,7 +4,6 @@ import aws.smithy.kotlin.runtime.InternalApi
 import aws.smithy.kotlin.runtime.client.ProtocolResponseInterceptorContext
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.http.response.HttpResponse
-import kotlin.system.exitProcess
 
 /**
  * Interceptor for smoke test runner clients.
@@ -32,8 +31,3 @@ public class SmokeTestsInterceptor(
 @InternalApi public class SmokeTestsSuccessException : Exception()
 
 @InternalApi public class SmokeTestsUnexpectedException : Exception()
-
-/**
- * Runtime function to exit smoke test runners with a specific status code.
- */
-@InternalApi public fun exitProcess(status: Int): Nothing = exitProcess(status)

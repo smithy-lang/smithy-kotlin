@@ -90,7 +90,6 @@ object RuntimeTypes {
             val SmokeTestsFailureException = symbol("SmokeTestsFailureException")
             val SmokeTestsSuccessException = symbol("SmokeTestsSuccessException")
             val SmokeTestsUnexpectedException = symbol("SmokeTestsUnexpectedException")
-            val exitProcess = symbol("exitProcess")
         }
     }
 

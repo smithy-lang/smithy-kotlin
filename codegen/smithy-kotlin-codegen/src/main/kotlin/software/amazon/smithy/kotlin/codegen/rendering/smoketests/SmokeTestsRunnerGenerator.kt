@@ -26,13 +26,15 @@ class SmokeTestsRunnerGenerator(
     private val sdkId: String,
 ) {
     internal fun render() {
+        writer.write("import kotlin.system.exitProcess")
+        writer.emptyLine()
         writer.write("private var exitCode = 0")
         writer.write("private val regionOverride = System.getenv(\"AWS_SMOKE_TEST_REGION\")")
         writer.write("private val skipTags = System.getenv(\"AWS_SMOKE_TEST_SKIP_TAGS\")?.let { it.split(\",\").map { it.trim() }.toSet() }")
         writer.emptyLine()
         writer.withBlock("public suspend fun main() {", "}") {
             renderFunctionCalls()
-            write("#L(exitCode)", RuntimeTypes.HttpClient.Interceptors.exitProcess)
+            write("exitProcess(exitCode)")
         }
         writer.emptyLine()
         renderFunctions()
