@@ -1,0 +1,5 @@
+{
+    "id": "1d38a75d-17ac-4e03-b287-f937356bd525",
+    "type": "bugfix",
+    "description": "Correctly mark more CRT exceptions as retriable"
+}
