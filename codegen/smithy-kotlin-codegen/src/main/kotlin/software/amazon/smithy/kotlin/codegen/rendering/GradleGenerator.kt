@@ -250,4 +250,6 @@ class GradleWriter(parent: GradleWriter? = null) : AbstractCodeWriter<GradleWrit
         expressionStart = parent?.expressionStart ?: '#'
         putFormatter('W', InlineCodeWriterFormatter(::GradleWriter))
     }
+
+    fun emptyLine(): GradleWriter = this.write("")
 }

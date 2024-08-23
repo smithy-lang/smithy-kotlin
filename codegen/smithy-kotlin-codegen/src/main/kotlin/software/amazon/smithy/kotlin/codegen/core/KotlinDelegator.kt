@@ -121,9 +121,10 @@ class KotlinDelegator(
      *
      * @param filename Name of the file to create.
      * @param block Lambda that accepts and works with the file.
+     * @param sourceSetRoot Root directory for source set
      */
-    fun useFileWriter(filename: String, namespace: String, block: (KotlinWriter) -> Unit) {
-        val writer: KotlinWriter = checkoutWriter(filename, namespace)
+    fun useFileWriter(filename: String, namespace: String, sourceSetRoot: String = DEFAULT_SOURCE_SET_ROOT, block: (KotlinWriter) -> Unit) {
+        val writer: KotlinWriter = checkoutWriter(filename, namespace, sourceSetRoot)
         block(writer)
     }
 
@@ -205,6 +206,6 @@ internal data class GeneratedDependency(
 }
 
 fun KotlinDelegator.useFileWriter(symbol: Symbol, block: (KotlinWriter) -> Unit) =
-    useFileWriter("${symbol.name}.kt", symbol.namespace, block)
+    useFileWriter("${symbol.name}.kt", symbol.namespace, DEFAULT_SOURCE_SET_ROOT, block)
 
 fun KotlinDelegator.applyFileWriter(symbol: Symbol, block: KotlinWriter.() -> Unit) = useFileWriter(symbol, block)

@@ -86,6 +86,11 @@ object RuntimeTypes {
             val FlexibleChecksumsResponseInterceptor = symbol("FlexibleChecksumsResponseInterceptor")
             val ResponseLengthValidationInterceptor = symbol("ResponseLengthValidationInterceptor")
             val RequestCompressionInterceptor = symbol("RequestCompressionInterceptor")
+            val SmokeTestsInterceptor = symbol("SmokeTestsInterceptor")
+            val SmokeTestsFailureException = symbol("SmokeTestsFailureException")
+            val SmokeTestsSuccessException = symbol("SmokeTestsSuccessException")
+            val SmokeTestsUnexpectedException = symbol("SmokeTestsUnexpectedException")
+            val exitProcess = symbol("exitProcess")
         }
     }
 
