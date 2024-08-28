@@ -10,20 +10,20 @@ import software.amazon.smithy.model.node.ObjectNode
 import software.amazon.smithy.model.node.StringNode
 
 /**
- * Renders a [Node] into String format for codegen.
+ * Formats a [Node] into a String for codegen.
  */
-fun Node.render(): String = when (this) {
+fun Node.format(): String = when (this) {
     is NullNode -> "null"
     is StringNode -> value.dq()
     is BooleanNode -> value.toString()
     is NumberNode -> value.toString()
     is ArrayNode -> elements.joinToString(",", "listOf(", ")") { element ->
-        element.render()
+        element.format()
     }
     is ObjectNode -> buildString {
         append("mapOf(")
         stringMap.forEach { (key, value) ->
-            append("\t${key.dq()} to ${value.render()}")
+            append("\t${key.dq()} to ${value.format()}")
         }
         append(")")
     }

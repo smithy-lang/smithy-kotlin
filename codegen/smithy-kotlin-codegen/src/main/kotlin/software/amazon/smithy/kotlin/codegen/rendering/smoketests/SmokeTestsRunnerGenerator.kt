@@ -1,49 +1,58 @@
 package software.amazon.smithy.kotlin.codegen.rendering.smoketests
 
 import software.amazon.smithy.codegen.core.Symbol
-import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.kotlin.codegen.core.*
+import software.amazon.smithy.kotlin.codegen.integration.SectionId
 import software.amazon.smithy.kotlin.codegen.model.getTrait
-import software.amazon.smithy.kotlin.codegen.rendering.util.render
+import software.amazon.smithy.kotlin.codegen.model.hasTrait
+import software.amazon.smithy.kotlin.codegen.rendering.util.format
 import software.amazon.smithy.kotlin.codegen.utils.dq
 import software.amazon.smithy.kotlin.codegen.utils.getOrNull
+import software.amazon.smithy.kotlin.codegen.utils.operations
 import software.amazon.smithy.kotlin.codegen.utils.toCamelCase
-import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.smoketests.traits.SmokeTestCase
 import software.amazon.smithy.smoketests.traits.SmokeTestsTrait
 import kotlin.jvm.optionals.getOrNull
+
+object SmokeTestsRunner : SectionId
 
 /**
  * Renders smoke tests runner for a service
  */
 class SmokeTestsRunnerGenerator(
     private val writer: KotlinWriter,
-    private val service: Symbol,
-    private val operations: List<OperationShape>,
-    private val model: Model,
-    private val symbolProvider: SymbolProvider,
-    private val sdkId: String,
+    ctx: CodegenContext,
+//    private val testing: Boolean = false, TODO: Implement tests
 ) {
+    private val model = ctx.model
+    private val sdkId = ctx.settings.sdkId
+    private val symbolProvider = ctx.symbolProvider
+    private val service = symbolProvider.toSymbol(model.expectShape(ctx.settings.service))
+    private val operations = ctx.model.operations(ctx.settings.service).filter { it.hasTrait<SmokeTestsTrait>() }
+
     internal fun render() {
-        writer.write("import kotlin.system.exitProcess")
-        writer.emptyLine()
-        writer.write("private var exitCode = 0")
-        writer.write("private val regionOverride = System.getenv(\"AWS_SMOKE_TEST_REGION\")")
-        writer.write("private val skipTags = System.getenv(\"AWS_SMOKE_TEST_SKIP_TAGS\")?.let { it.split(\",\").map { it.trim() }.toSet() }")
-        writer.emptyLine()
-        writer.withBlock("public suspend fun main() {", "}") {
-            renderFunctionCalls()
-            write("exitProcess(exitCode)")
+        writer.declareSection(SmokeTestsRunner) {
+            writer.write("import kotlin.system.exitProcess")
+            writer.emptyLine()
+            writer.write("private var exitCode = 0")
+            writer.write("private val regionOverride = System.getenv(#S)", "AWS_SMOKE_TEST_REGION")
+            writer.write("private val skipTags = System.getenv(#S)?.let { it.split(\",\").map { it.trim() }.toSet() } ?: emptySet()", "AWS_SMOKE_TEST_SKIP_TAGS")
+            writer.write("private val serviceFilter = System.getenv(#S)?.let { it.split(\",\").map { it.trim() }.toSet() }", "AWS_SMOKE_TEST_SERVICE_IDS")
+            writer.emptyLine()
+            writer.withBlock("public suspend fun main() {", "}") {
+                renderFunctionCalls()
+                write("exitProcess(exitCode)")
+            }
+            writer.emptyLine()
+            renderFunctions()
         }
-        writer.emptyLine()
-        renderFunctions()
     }
 
     private fun renderFunctionCalls() {
         operations.forEach { operation ->
             operation.getTrait<SmokeTestsTrait>()?.testCases?.forEach { testCase ->
-                writer.write("${testCase.id.toCamelCase()}()")
+                writer.write("${testCase.functionName}()")
             }
         }
     }
@@ -58,9 +67,19 @@ class SmokeTestsRunnerGenerator(
     }
 
     private fun renderFunction(operation: OperationShape, testCase: SmokeTestCase) {
-        writer.withBlock("private suspend fun ${testCase.id.toCamelCase()}() {", "}") {
+        writer.withBlock("private suspend fun ${testCase.functionName}() {", "}") {
             write("val tags = setOf<String>(${testCase.tags.joinToString(",") { it.dq()} })")
-            write("if (skipTags != null && tags.any { it in skipTags }) return")
+            writer.withBlock("if ((serviceFilter != null && #S !in serviceFilter) || tags.any { it in skipTags }) {", "}", sdkId) {
+                printTestResult(
+                    sdkId.filter { !it.isWhitespace() },
+                    testCase.id,
+                    testCase.expectation.isFailure,
+                    writer,
+                    "ok",
+                    "# skip",
+                )
+                writer.write("return")
+            }
             emptyLine()
             withInlineBlock("try {", "} ") {
                 renderClient(testCase)
@@ -77,33 +96,17 @@ class SmokeTestsRunnerGenerator(
             if (testCase.vendorParams.isPresent) {
                 testCase.vendorParams.get().members.forEach { vendorParam ->
                     if (vendorParam.key.value == "region") {
-                        write("region = regionOverride ?: #L", vendorParam.value.render())
+                        write("region = regionOverride ?: #L", vendorParam.value.format())
                     } else {
-                        write("#L = #L", vendorParam.key.value.toCamelCase(), vendorParam.value.render())
+                        write("#L = #L", vendorParam.key.value.toCamelCase(), vendorParam.value.format())
                     }
                 }
             } else {
                 write("region = regionOverride")
             }
             val expectingSpecificError = testCase.expectation.failure.getOrNull()?.errorId?.getOrNull() != null
-            write("interceptors.add(#T($expectingSpecificError))", RuntimeTypes.HttpClient.Interceptors.SmokeTestsInterceptor)
-        }
-        checkVendorParamsAreCorrect(testCase)
-    }
-
-    /**
-     * Smithy IDL doesn't check that vendor params are found in vendor params shape so we have to check here.
-     */
-    private fun checkVendorParamsAreCorrect(testCase: SmokeTestCase) {
-        if (testCase.vendorParamsShape.isPresent && testCase.vendorParams.isPresent) {
-            val vendorParamsShape = model.getShape(testCase.vendorParamsShape.get()).get()
-            val validVendorParams = vendorParamsShape.members().map { it.memberName }
-            val vendorParams = testCase.vendorParams.get().members.map { it.key.value }
-
-            vendorParams.forEach { vendorParam ->
-                check(validVendorParams.contains(vendorParam)) {
-                    "Smithy smoke test \"${testCase.id}\" contains invalid vendor param \"$vendorParam\", it was not found in vendor params shape \"${testCase.vendorParamsShape}\""
-                }
+            if (!expectingSpecificError) {
+                write("interceptors.add(#T())", RuntimeTypes.HttpClient.Interceptors.SmokeTestsInterceptor)
             }
         }
     }
@@ -111,12 +114,11 @@ class SmokeTestsRunnerGenerator(
     private fun renderOperation(operation: OperationShape, testCase: SmokeTestCase) {
         val operationSymbol = symbolProvider.toSymbol(model.getShape(operation.input.get()).get())
 
-        writer.addImport(operationSymbol)
         writer.withBlock(".use { client ->", "}") {
             withBlock("client.#L(", ")", operation.defaultName()) {
-                withBlock("#L {", "}", operationSymbol.name) {
+                withBlock("#L {", "}", operationSymbol) {
                     testCase.params.get().members.forEach { member ->
-                        write("#L = #L", member.key.value.toCamelCase(), member.value.render())
+                        write("#L = #L", member.key.value.toCamelCase(), member.value.format())
                     }
                 }
             }
@@ -146,17 +148,11 @@ class SmokeTestsRunnerGenerator(
     /**
      * Tries to get the specific exception required in the failure criterion of a test.
      * If no specific exception is required we default to the generic smoke tests failure exception.
-     *
-     * Some smoke tests model exceptions not found in the model, in that case we default to the generic smoke tests
-     * failure exception.
      */
-    private fun getFailureCriterion(testCase: SmokeTestCase): Symbol = testCase.expectation.failure.getOrNull()?.errorId?.let {
-        try {
-            symbolProvider.toSymbol(model.getShape(it.get()).get())
-        } catch (e: Exception) {
-            RuntimeTypes.HttpClient.Interceptors.SmokeTestsFailureException
-        }
-    } ?: RuntimeTypes.HttpClient.Interceptors.SmokeTestsFailureException
+    private fun getFailureCriterion(testCase: SmokeTestCase): Symbol =
+        testCase.expectation.failure.getOrNull()?.errorId?.getOrNull()?.let {
+            symbolProvider.toSymbol(model.getShape(it).get())
+        } ?: RuntimeTypes.HttpClient.Interceptors.SmokeTestsFailureException
 
     /**
      * Renders print statement for smoke test result in accordance to design doc & test anything protocol (TAP)
@@ -166,9 +162,18 @@ class SmokeTestsRunnerGenerator(
         testCase: String,
         errorExpected: Boolean,
         writer: KotlinWriter,
+        statusOverride: String? = null,
+        directive: String? = "",
     ) {
         val expectation = if (errorExpected) "error expected from service" else "no error expected from service"
-        val testResult = "\$status $service $testCase - $expectation"
+        val status = statusOverride ?: "\$status"
+        val testResult = "$status $service $testCase - $expectation $directive"
         writer.write("println(#S)", testResult)
     }
 }
+
+/**
+ * Derives a function name for a [SmokeTestCase]
+ */
+private val SmokeTestCase.functionName: String
+    get() = this.id.toCamelCase()

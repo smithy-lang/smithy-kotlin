@@ -10,30 +10,21 @@ import software.amazon.smithy.model.Model
 import software.amazon.smithy.smoketests.traits.SmokeTestsTrait
 
 /**
- * Renders smoke test runner for a service if any of the operations has the smoke test trait.
+ * Renders smoke test runner for a service if any of the operations have the [SmokeTestsTrait].
  */
 class SmokeTestsIntegration : KotlinIntegration {
     override fun enabledForService(model: Model, settings: KotlinSettings): Boolean =
-        model.operations(settings.service).any { it.hasTrait<SmokeTestsTrait>() } && !smokeTestDenyList.contains(settings.sdkId)
+        model.operations(settings.service).any { it.hasTrait<SmokeTestsTrait>() }
 
     override fun writeAdditionalFiles(ctx: CodegenContext, delegator: KotlinDelegator) =
-        delegator.useFileWriter("SmokeTests.kt", "smoketests", "./jvm-src/main/java/") { writer ->
+        delegator.useFileWriter(
+            "SmokeTests.kt",
+            "${ctx.settings.pkg.name}.smoketests",
+            "./jvm-src/test/java/",
+        ) { writer ->
             SmokeTestsRunnerGenerator(
                 writer,
-                ctx.symbolProvider.toSymbol(ctx.model.expectShape(ctx.settings.service)),
-                ctx.model.operations(ctx.settings.service).filter { it.hasTrait<SmokeTestsTrait>() },
-                ctx.model,
-                ctx.symbolProvider,
-                ctx.settings.sdkId,
+                ctx,
             ).render()
         }
 }
-
-/**
- * SDK ID's of services that model smoke tests incorrectly
- */
-val smokeTestDenyList = setOf(
-    "Application Auto Scaling",
-    "SWF",
-    "WAFV2",
-)

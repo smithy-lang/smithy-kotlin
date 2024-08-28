@@ -1,5 +1,5 @@
 {
     "id": "756754c3-f6e1-4ff2-ae31-08b3b67b6750",
     "type": "feature",
-    "description": "Add support for smoke tests"
+    "description": "Add support for [smoke tests](https://smithy.io/2.0/additional-specs/smoke-tests.html)"
 }

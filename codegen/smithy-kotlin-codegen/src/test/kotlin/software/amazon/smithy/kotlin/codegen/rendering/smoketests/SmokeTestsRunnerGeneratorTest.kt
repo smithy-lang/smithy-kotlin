@@ -1,35 +1,13 @@
 package software.amazon.smithy.kotlin.codegen.rendering.smoketests
 
-import software.amazon.smithy.kotlin.codegen.model.hasTrait
 import software.amazon.smithy.kotlin.codegen.test.*
-import software.amazon.smithy.kotlin.codegen.utils.operations
 import software.amazon.smithy.model.Model
-import software.amazon.smithy.smoketests.traits.SmokeTestsTrait
 import kotlin.test.Test
 
 class SmokeTestsRunnerGeneratorTest {
-    private val moneySign = "$"
-
-    private fun codegen(model: Model): String {
-        val testCtx = model.newTestContext()
-        val codegenCtx = testCtx.toCodegenContext()
-        val writer = testCtx.newWriter()
-        SmokeTestsRunnerGenerator(
-            writer,
-            codegenCtx.symbolProvider.toSymbol(codegenCtx.model.expectShape(codegenCtx.settings.service)),
-            codegenCtx.model.operations(codegenCtx.settings.service).filter { it.hasTrait<SmokeTestsTrait>() },
-            codegenCtx.model,
-            codegenCtx.symbolProvider,
-            codegenCtx.settings.sdkId,
-        ).render()
-        return writer.toString()
-    }
-
-    @Test
-    fun codegenTest() {
-        val model =
-            """
-            ${moneySign}version: "2"
+    val model =
+        """
+            ${'$'}version: "2"
             namespace com.test
             
             use smithy.test#smokeTests
@@ -89,16 +67,22 @@ class SmokeTestsRunnerGeneratorTest {
             }
         """.toSmithyModel()
 
-        val generatedCode = codegen(model)
+    private val generatedCode = generateSmokeTests(model)
 
+    @Test
+    fun variablesTest() {
         generatedCode.shouldContainOnlyOnceWithDiff(
             """
                 private var exitCode = 0
                 private val regionOverride = System.getenv("AWS_SMOKE_TEST_REGION")
-                private val skipTags = System.getenv("AWS_SMOKE_TEST_SKIP_TAGS")?.let { it.split(",").map { it.trim() }.toSet() }
+                private val skipTags = System.getenv("AWS_SMOKE_TEST_SKIP_TAGS")?.let { it.split(",").map { it.trim() }.toSet() } ?: emptySet()
+                private val serviceFilter = System.getenv("AWS_SMOKE_TEST_SERVICE_IDS")?.let { it.split(",").map { it.trim() }.toSet() }
             """.trimIndent(),
         )
+    }
 
+    @Test
+    fun mainTest() {
         generatedCode.shouldContainOnlyOnceWithDiff(
             """
                 public suspend fun main() {
@@ -109,21 +93,27 @@ class SmokeTestsRunnerGeneratorTest {
                 }
             """.trimIndent(),
         )
+    }
 
+    @Test
+    fun successTest() {
         generatedCode.shouldContainOnlyOnceWithDiff(
             """
                 private suspend fun successTest() {
                     val tags = setOf<String>("success")
-                    if (skipTags != null && tags.any { it in skipTags }) return
+                    if ((serviceFilter != null && "Test" !in serviceFilter) || tags.any { it in skipTags }) {
+                        println("ok Test SuccessTest - no error expected from service # skip")
+                        return
+                    }
 
                     try {
                         com.test.TestClient {
                             region = regionOverride ?: "eu-central-1"
-                            interceptors.add(SmokeTestsInterceptor(false))
+                            interceptors.add(SmokeTestsInterceptor())
 
                         }.use { client ->
                             client.testOperation(
-                                TestOperationRequest {
+                                com.test.model.TestOperationRequest {
                                     bar = "2"
                                 }
                             )
@@ -132,69 +122,91 @@ class SmokeTestsRunnerGeneratorTest {
                     } catch (e: Exception) {
                         val success = e is aws.smithy.kotlin.runtime.http.interceptors.SmokeTestsSuccessException
                         val status = if (success) "ok" else "not ok"
-                        println("${moneySign}status Test SuccessTest - no error expected from service")
+                        println("${'$'}status Test SuccessTest - no error expected from service ")
                         if (!success) exitCode = 1
                     }
                 }
             """.trimIndent(),
         )
+    }
 
+    @Test
+    fun invalidMessageErrorTest() {
         generatedCode.shouldContainOnlyOnceWithDiff(
             """
                 private suspend fun invalidMessageErrorTest() {
                     val tags = setOf<String>()
-                    if (skipTags != null && tags.any { it in skipTags }) return
-
+                    if ((serviceFilter != null && "Test" !in serviceFilter) || tags.any { it in skipTags }) {
+                        println("ok Test InvalidMessageErrorTest - error expected from service # skip")
+                        return
+                    }
+                
                     try {
                         com.test.TestClient {
                             region = regionOverride
-                            interceptors.add(SmokeTestsInterceptor(true))
-
+                
                         }.use { client ->
                             client.testOperation(
-                                TestOperationRequest {
+                                com.test.model.TestOperationRequest {
                                     bar = "föö"
                                 }
                             )
                         }
-
+                
                     } catch (e: Exception) {
                         val success = e is com.test.model.InvalidMessageError
                         val status = if (success) "ok" else "not ok"
-                        println("${moneySign}status Test InvalidMessageErrorTest - error expected from service")
+                        println("${'$'}status Test InvalidMessageErrorTest - error expected from service ")
                         if (!success) exitCode = 1
                     }
                 }
             """.trimIndent(),
         )
+    }
 
+    @Test
+    fun failureTest() {
         generatedCode.shouldContainOnlyOnceWithDiff(
             """
                 private suspend fun failureTest() {
                     val tags = setOf<String>()
-                    if (skipTags != null && tags.any { it in skipTags }) return
-
+                    if ((serviceFilter != null && "Test" !in serviceFilter) || tags.any { it in skipTags }) {
+                        println("ok Test FailureTest - error expected from service # skip")
+                        return
+                    }
+                
                     try {
                         com.test.TestClient {
                             region = regionOverride
-                            interceptors.add(SmokeTestsInterceptor(false))
-
+                            interceptors.add(SmokeTestsInterceptor())
+                
                         }.use { client ->
                             client.testOperation(
-                                TestOperationRequest {
+                                com.test.model.TestOperationRequest {
                                     bar = "föö"
                                 }
                             )
                         }
-
+                
                     } catch (e: Exception) {
                         val success = e is aws.smithy.kotlin.runtime.http.interceptors.SmokeTestsFailureException
                         val status = if (success) "ok" else "not ok"
-                        println("${moneySign}status Test FailureTest - error expected from service")
+                        println("${'$'}status Test FailureTest - error expected from service ")
                         if (!success) exitCode = 1
                     }
                 }
             """.trimIndent(),
         )
+    }
+
+    private fun generateSmokeTests(model: Model): String {
+        val testCtx = model.newTestContext()
+        val codegenCtx = testCtx.toCodegenContext()
+        val writer = testCtx.newWriter()
+        SmokeTestsRunnerGenerator(
+            writer,
+            codegenCtx,
+        ).render()
+        return writer.toString()
     }
 }

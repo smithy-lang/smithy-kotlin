@@ -12,11 +12,8 @@ import aws.smithy.kotlin.runtime.http.response.HttpResponse
  * response’s HTTP status code UNLESS we're expecting a specific error.
  */
 @InternalApi
-public class SmokeTestsInterceptor(
-    private val expectingSpecificError: Boolean,
-) : HttpInterceptor {
+public class SmokeTestsInterceptor : HttpInterceptor {
     override fun readBeforeDeserialization(context: ProtocolResponseInterceptorContext<Any, HttpRequest, HttpResponse>) {
-        if (expectingSpecificError) return
         val status = context.protocolResponse.status.value
         when (status) {
             in 400..599 -> throw SmokeTestsFailureException()
