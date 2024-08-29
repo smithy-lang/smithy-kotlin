@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.3.8] - 08/29/2024
+
+### Fixes
+* [#1126](https://github.com/awslabs/smithy-kotlin/issues/1126) Correct deserialization of nested map/list types in unions
+
 ## [1.3.7] - 08/26/2024
 
 ## [1.3.6] - 08/23/2024
