@@ -1,0 +1,8 @@
+{
+    "id": "b786851c-9427-40cd-b3fa-ee375011d931",
+    "type": "bugfix",
+    "description": "Correct deserialization of nested map/list types in unions",
+    "issues": [
+        "awslabs/smithy-kotlin#1126"
+    ]
+}

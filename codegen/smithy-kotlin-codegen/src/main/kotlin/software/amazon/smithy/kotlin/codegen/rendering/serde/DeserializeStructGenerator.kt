@@ -40,10 +40,11 @@ open class DeserializeStructGenerator(
     /**
      * Enables overriding the codegen output of the final value resulting
      * from the deserialization of a non-primitive type.
-     * @param memberShape [MemberShape] associated with entry
+     * @param forMemberShape [MemberShape] associated with entry, if any
      * @param defaultCollectionName the default value produced by this class.
      */
-    open fun collectionReturnExpression(memberShape: MemberShape, defaultCollectionName: String): String = defaultCollectionName
+    open fun collectionReturnExpression(forMemberShape: MemberShape?, defaultCollectionName: String): String =
+        defaultCollectionName
 
     /**
      * Enables overriding of the lhs expression into which a deserialization operation's
@@ -292,7 +293,7 @@ open class DeserializeStructGenerator(
         val descriptorName = rootMemberShape.descriptorName(nestingLevel.nestedDescriptorName())
         val nextNestingLevel = nestingLevel + 1
         val memberName = nextNestingLevel.variableNameFor(NestedIdentifierType.MAP)
-        val collectionReturnExpression = collectionReturnExpression(rootMemberShape, memberName)
+        val collectionReturnExpression = collectionReturnExpression(null, memberName)
 
         writeKeyVal(keyShape, keySymbol, keyName)
         writer.withBlock("val $valueName =", "") {
@@ -346,7 +347,7 @@ open class DeserializeStructGenerator(
         val descriptorName = rootMemberShape.descriptorName(nestingLevel.nestedDescriptorName())
         val nextNestingLevel = nestingLevel + 1
         val memberName = nextNestingLevel.variableNameFor(NestedIdentifierType.COLLECTION)
-        val collectionReturnExpression = collectionReturnExpression(rootMemberShape, memberName)
+        val collectionReturnExpression = collectionReturnExpression(null, memberName)
 
         writeKeyVal(keyShape, keySymbol, keyName)
         writer.withBlock("val $valueName =", "") {
@@ -516,7 +517,7 @@ open class DeserializeStructGenerator(
         val elementName = nestingLevel.variableNameFor(NestedIdentifierType.ELEMENT)
         val nextNestingLevel = nestingLevel + 1
         val mapName = nextNestingLevel.variableNameFor(NestedIdentifierType.MAP)
-        val collectionReturnExpression = collectionReturnExpression(rootMemberShape, mapName)
+        val collectionReturnExpression = collectionReturnExpression(null, mapName)
 
         writer.withBlock("val $elementName = deserializer.#T($descriptorName) {", "}", RuntimeTypes.Serde.deserializeMap) {
             write(
@@ -555,7 +556,7 @@ open class DeserializeStructGenerator(
         val elementName = nestingLevel.variableNameFor(NestedIdentifierType.ELEMENT)
         val nextNestingLevel = nestingLevel + 1
         val listName = nextNestingLevel.variableNameFor(NestedIdentifierType.COLLECTION)
-        val collectionReturnExpression = collectionReturnExpression(rootMemberShape, listName)
+        val collectionReturnExpression = collectionReturnExpression(null, listName)
 
         writer.withBlock("val $elementName = deserializer.#T($descriptorName) {", "}", RuntimeTypes.Serde.deserializeList) {
             write(
