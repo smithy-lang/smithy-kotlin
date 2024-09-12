@@ -5,6 +5,7 @@
 
 package aws.smithy.kotlin.runtime.http.engine.okhttp
 
+import aws.smithy.kotlin.runtime.InternalApi
 import aws.smithy.kotlin.runtime.http.engine.HttpClientEngineConfig
 import aws.smithy.kotlin.runtime.http.engine.HttpClientEngineConfigImpl
 import aws.smithy.kotlin.runtime.telemetry.Global
@@ -13,7 +14,7 @@ import aws.smithy.kotlin.runtime.telemetry.TelemetryProvider
 /**
  * The configuration parameters for an OkHttp HTTP client engine.
  */
-public class OkHttpEngineConfig private constructor(builder: Builder) : HttpClientEngineConfigImpl(builder) {
+public class OkHttpEngineConfig @InternalApi public constructor(builder: Builder) : HttpClientEngineConfigImpl(builder) {
     public companion object {
         /**
          * Initializes a new [OkHttpEngineConfig] via a DSL builder block

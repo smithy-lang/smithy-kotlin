@@ -5,13 +5,15 @@
 
 package aws.smithy.kotlin.runtime.http.engine.okhttp
 
+import aws.smithy.kotlin.runtime.InternalApi
 import aws.smithy.kotlin.runtime.http.Headers as SdkHeaders
 import okhttp3.Headers as OkHttpHeaders
 
 /**
  * Proxy [okhttp3.Headers] as [aws.smithy.kotlin.runtime.http.Headers]
  */
-internal class OkHttpHeadersAdapter(private val headers: OkHttpHeaders) : SdkHeaders {
+@InternalApi
+public class OkHttpHeadersAdapter(private val headers: OkHttpHeaders) : SdkHeaders {
     override val caseInsensitiveName: Boolean = true
 
     override fun getAll(name: String): List<String>? =

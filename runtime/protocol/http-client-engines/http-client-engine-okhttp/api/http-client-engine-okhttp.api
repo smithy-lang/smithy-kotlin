@@ -1,3 +1,54 @@
+public final class aws/smithy/kotlin/runtime/http/engine/okhttp/HttpEngineEventListener : okhttp3/EventListener {
+	public fun <init> (Lokhttp3/ConnectionPool;Laws/smithy/kotlin/runtime/net/HostResolver;Lokhttp3/Dispatcher;Laws/smithy/kotlin/runtime/http/engine/internal/HttpClientMetrics;Lokhttp3/Call;)V
+	public fun cacheConditionalHit (Lokhttp3/Call;Lokhttp3/Response;)V
+	public fun cacheHit (Lokhttp3/Call;Lokhttp3/Response;)V
+	public fun cacheMiss (Lokhttp3/Call;)V
+	public fun callEnd (Lokhttp3/Call;)V
+	public fun callFailed (Lokhttp3/Call;Ljava/io/IOException;)V
+	public fun callStart (Lokhttp3/Call;)V
+	public fun canceled (Lokhttp3/Call;)V
+	public fun connectEnd (Lokhttp3/Call;Ljava/net/InetSocketAddress;Ljava/net/Proxy;Lokhttp3/Protocol;)V
+	public fun connectFailed (Lokhttp3/Call;Ljava/net/InetSocketAddress;Ljava/net/Proxy;Lokhttp3/Protocol;Ljava/io/IOException;)V
+	public fun connectStart (Lokhttp3/Call;Ljava/net/InetSocketAddress;Ljava/net/Proxy;)V
+	public fun connectionAcquired (Lokhttp3/Call;Lokhttp3/Connection;)V
+	public fun connectionReleased (Lokhttp3/Call;Lokhttp3/Connection;)V
+	public fun dnsEnd (Lokhttp3/Call;Ljava/lang/String;Ljava/util/List;)V
+	public fun dnsStart (Lokhttp3/Call;Ljava/lang/String;)V
+	public fun proxySelectEnd (Lokhttp3/Call;Lokhttp3/HttpUrl;Ljava/util/List;)V
+	public fun proxySelectStart (Lokhttp3/Call;Lokhttp3/HttpUrl;)V
+	public fun requestBodyEnd (Lokhttp3/Call;J)V
+	public fun requestBodyStart (Lokhttp3/Call;)V
+	public fun requestFailed (Lokhttp3/Call;Ljava/io/IOException;)V
+	public fun requestHeadersEnd (Lokhttp3/Call;Lokhttp3/Request;)V
+	public fun requestHeadersStart (Lokhttp3/Call;)V
+	public fun responseBodyEnd (Lokhttp3/Call;J)V
+	public fun responseBodyStart (Lokhttp3/Call;)V
+	public fun responseFailed (Lokhttp3/Call;Ljava/io/IOException;)V
+	public fun responseHeadersEnd (Lokhttp3/Call;Lokhttp3/Response;)V
+	public fun responseHeadersStart (Lokhttp3/Call;)V
+	public fun satisfactionFailure (Lokhttp3/Call;Lokhttp3/Response;)V
+	public fun secureConnectEnd (Lokhttp3/Call;Lokhttp3/Handshake;)V
+	public fun secureConnectStart (Lokhttp3/Call;)V
+}
+
+public final class aws/smithy/kotlin/runtime/http/engine/okhttp/MetricsInterceptor : okhttp3/Interceptor {
+	public static final field INSTANCE Laws/smithy/kotlin/runtime/http/engine/okhttp/MetricsInterceptor;
+	public fun intercept (Lokhttp3/Interceptor$Chain;)Lokhttp3/Response;
+}
+
+public final class aws/smithy/kotlin/runtime/http/engine/okhttp/OkHttpCall : aws/smithy/kotlin/runtime/http/HttpCall {
+	public fun <init> (Laws/smithy/kotlin/runtime/http/request/HttpRequest;Laws/smithy/kotlin/runtime/http/response/HttpResponse;Laws/smithy/kotlin/runtime/time/Instant;Laws/smithy/kotlin/runtime/time/Instant;Lkotlin/coroutines/CoroutineContext;Lokhttp3/Call;)V
+	public synthetic fun <init> (Laws/smithy/kotlin/runtime/http/request/HttpRequest;Laws/smithy/kotlin/runtime/http/response/HttpResponse;Laws/smithy/kotlin/runtime/time/Instant;Laws/smithy/kotlin/runtime/time/Instant;Lkotlin/coroutines/CoroutineContext;Lokhttp3/Call;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun cancelInFlight ()V
+	public fun copy (Laws/smithy/kotlin/runtime/http/request/HttpRequest;Laws/smithy/kotlin/runtime/http/response/HttpResponse;)Laws/smithy/kotlin/runtime/http/HttpCall;
+	public final fun getCall ()Lokhttp3/Call;
+}
+
+public final class aws/smithy/kotlin/runtime/http/engine/okhttp/OkHttpDns : okhttp3/Dns {
+	public fun <init> (Laws/smithy/kotlin/runtime/net/HostResolver;)V
+	public fun lookup (Ljava/lang/String;)Ljava/util/List;
+}
+
 public final class aws/smithy/kotlin/runtime/http/engine/okhttp/OkHttpEngine : aws/smithy/kotlin/runtime/http/engine/HttpClientEngineBase {
 	public static final field Companion Laws/smithy/kotlin/runtime/http/engine/okhttp/OkHttpEngine$Companion;
 	public fun <init> ()V
@@ -14,7 +65,7 @@ public final class aws/smithy/kotlin/runtime/http/engine/okhttp/OkHttpEngine$Com
 
 public final class aws/smithy/kotlin/runtime/http/engine/okhttp/OkHttpEngineConfig : aws/smithy/kotlin/runtime/http/engine/HttpClientEngineConfigImpl {
 	public static final field Companion Laws/smithy/kotlin/runtime/http/engine/okhttp/OkHttpEngineConfig$Companion;
-	public synthetic fun <init> (Laws/smithy/kotlin/runtime/http/engine/okhttp/OkHttpEngineConfig$Builder;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Laws/smithy/kotlin/runtime/http/engine/okhttp/OkHttpEngineConfig$Builder;)V
 	public final fun getMaxConcurrencyPerHost-pVg5ArA ()I
 	public fun toBuilderApplicator ()Lkotlin/jvm/functions/Function1;
 }
@@ -30,5 +81,53 @@ public final class aws/smithy/kotlin/runtime/http/engine/okhttp/OkHttpEngineConf
 public final class aws/smithy/kotlin/runtime/http/engine/okhttp/OkHttpEngineConfig$Companion {
 	public final fun getDefault ()Laws/smithy/kotlin/runtime/http/engine/okhttp/OkHttpEngineConfig;
 	public final fun invoke (Lkotlin/jvm/functions/Function1;)Laws/smithy/kotlin/runtime/http/engine/okhttp/OkHttpEngineConfig;
+}
+
+public final class aws/smithy/kotlin/runtime/http/engine/okhttp/OkHttpEngineKt {
+	public static final fun buildClient (Laws/smithy/kotlin/runtime/http/engine/okhttp/OkHttpEngineConfig;Laws/smithy/kotlin/runtime/http/engine/internal/HttpClientMetrics;)Lokhttp3/OkHttpClient;
+}
+
+public final class aws/smithy/kotlin/runtime/http/engine/okhttp/OkHttpHeadersAdapter : aws/smithy/kotlin/runtime/http/Headers {
+	public fun <init> (Lokhttp3/Headers;)V
+	public fun contains (Ljava/lang/String;)Z
+	public synthetic fun contains (Ljava/lang/String;Ljava/lang/Object;)Z
+	public fun contains (Ljava/lang/String;Ljava/lang/String;)Z
+	public fun entries ()Ljava/util/Set;
+	public fun forEach (Lkotlin/jvm/functions/Function2;)V
+	public synthetic fun get (Ljava/lang/String;)Ljava/lang/Object;
+	public fun get (Ljava/lang/String;)Ljava/lang/String;
+	public fun getAll (Ljava/lang/String;)Ljava/util/List;
+	public fun getCaseInsensitiveName ()Z
+	public fun isEmpty ()Z
+	public fun names ()Ljava/util/Set;
+}
+
+public final class aws/smithy/kotlin/runtime/http/engine/okhttp/OkHttpProxyAuthenticator : okhttp3/Authenticator {
+	public fun <init> (Laws/smithy/kotlin/runtime/http/engine/ProxySelector;)V
+	public fun authenticate (Lokhttp3/Route;Lokhttp3/Response;)Lokhttp3/Request;
+}
+
+public final class aws/smithy/kotlin/runtime/http/engine/okhttp/OkHttpProxySelector : java/net/ProxySelector {
+	public fun <init> (Laws/smithy/kotlin/runtime/http/engine/ProxySelector;)V
+	public fun connectFailed (Ljava/net/URI;Ljava/net/SocketAddress;Ljava/io/IOException;)V
+	public fun select (Ljava/net/URI;)Ljava/util/List;
+}
+
+public final class aws/smithy/kotlin/runtime/http/engine/okhttp/OkHttpUtilsKt {
+	public static final fun errCode (Ljava/lang/Exception;)Laws/smithy/kotlin/runtime/http/HttpErrorCode;
+	public static final fun mapOkHttpExceptions (Lkotlin/jvm/functions/Function0;)Ljava/lang/Object;
+	public static final fun toOkHttpHeaders (Laws/smithy/kotlin/runtime/http/Headers;)Lokhttp3/Headers;
+	public static final fun toOkHttpRequest (Laws/smithy/kotlin/runtime/http/request/HttpRequest;Laws/smithy/kotlin/runtime/operation/ExecutionContext;Lkotlin/coroutines/CoroutineContext;Laws/smithy/kotlin/runtime/http/engine/internal/HttpClientMetrics;)Lokhttp3/Request;
+	public static final fun toSdkResponse (Lokhttp3/Response;)Laws/smithy/kotlin/runtime/http/response/HttpResponse;
+	public static final fun toUrl (Ljava/net/URI;)Laws/smithy/kotlin/runtime/net/url/Url;
+}
+
+public final class aws/smithy/kotlin/runtime/http/engine/okhttp/StreamingRequestBody : okhttp3/RequestBody {
+	public fun <init> (Laws/smithy/kotlin/runtime/http/HttpBody;Lkotlin/coroutines/CoroutineContext;)V
+	public fun contentLength ()J
+	public fun contentType ()Lokhttp3/MediaType;
+	public fun isDuplex ()Z
+	public fun isOneShot ()Z
+	public fun writeTo (Lokio/BufferedSink;)V
 }
 

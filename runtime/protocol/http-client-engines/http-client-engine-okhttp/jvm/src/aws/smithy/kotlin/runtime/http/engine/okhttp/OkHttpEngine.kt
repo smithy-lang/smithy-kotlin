@@ -5,6 +5,7 @@
 
 package aws.smithy.kotlin.runtime.http.engine.okhttp
 
+import aws.smithy.kotlin.runtime.InternalApi
 import aws.smithy.kotlin.runtime.http.HttpCall
 import aws.smithy.kotlin.runtime.http.config.EngineFactory
 import aws.smithy.kotlin.runtime.http.engine.*
@@ -64,7 +65,7 @@ public class OkHttpEngine(
                 // else). In both cases we need to ensure that the engine-side resources are cleaned up completely
                 // since they wouldn't otherwise be. https://github.com/smithy-lang/smithy-kotlin/issues/1061
                 if (cause != null) call.cancelInFlight()
-                engineResponse.body.close()
+                engineResponse.body?.close()
             }
         }
     }
@@ -79,7 +80,8 @@ public class OkHttpEngine(
 /**
  * Convert SDK version of HTTP configuration to OkHttp specific configuration and return the configured client
  */
-private fun OkHttpEngineConfig.buildClient(metrics: HttpClientMetrics): OkHttpClient {
+@InternalApi
+public fun OkHttpEngineConfig.buildClient(metrics: HttpClientMetrics): OkHttpClient {
     val config = this
 
     return OkHttpClient.Builder().apply {
@@ -159,3 +161,4 @@ private fun toOkHttpTlsVersion(sdkTlsVersion: SdkTlsVersion): OkHttpTlsVersion =
     SdkTlsVersion.TLS_1_2 -> OkHttpTlsVersion.TLS_1_2
     SdkTlsVersion.TLS_1_3 -> OkHttpTlsVersion.TLS_1_3
 }
+

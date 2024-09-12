@@ -29,6 +29,7 @@ kotlin {
 
                 implementation(project(":runtime:protocol:http-client-engines:http-client-engine-default"))
                 implementation(project(":runtime:protocol:http-client-engines:http-client-engine-crt"))
+                implementation(project(":runtime:protocol:http-client-engines:http-client-engine-okhttp4"))
 
                 implementation(libs.slf4j.simple)
             }

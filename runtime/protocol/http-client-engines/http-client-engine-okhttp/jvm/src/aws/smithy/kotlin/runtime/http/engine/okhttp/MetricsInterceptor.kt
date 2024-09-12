@@ -4,6 +4,7 @@
  */
 package aws.smithy.kotlin.runtime.http.engine.okhttp
 
+import aws.smithy.kotlin.runtime.InternalApi
 import aws.smithy.kotlin.runtime.collections.Attributes
 import aws.smithy.kotlin.runtime.collections.attributesOf
 import aws.smithy.kotlin.runtime.telemetry.metrics.MonotonicCounter
@@ -13,10 +14,11 @@ import okio.*
 /**
  * Instrument the HTTP throughput metrics (e.g. bytes rcvd/sent)
  */
-internal object MetricsInterceptor : Interceptor {
+@InternalApi
+public object MetricsInterceptor : Interceptor {
     override fun intercept(chain: Interceptor.Chain): Response {
         val originalRequest = chain.request()
-        val metrics = originalRequest.tag<SdkRequestTag>()?.metrics ?: return chain.proceed(originalRequest)
+        val metrics = originalRequest.tag(SdkRequestTag::class.java)?.metrics ?: return chain.proceed(originalRequest)
 
         val attrs = attributesOf { "server.address" to "${originalRequest.url.host}:${originalRequest.url.port}" }
         val request = if (originalRequest.body != null) {
@@ -28,7 +30,7 @@ internal object MetricsInterceptor : Interceptor {
         }
 
         val originalResponse = chain.proceed(request)
-        val response = if (originalResponse.body.contentLength() != 0L) {
+        val response = if (originalResponse.body?.contentLength() != 0L) {
             originalResponse.newBuilder()
                 .body(originalResponse.body.instrument(metrics.bytesReceived, attrs))
                 .build()
