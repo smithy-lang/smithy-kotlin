@@ -161,4 +161,3 @@ private fun toOkHttpTlsVersion(sdkTlsVersion: SdkTlsVersion): OkHttpTlsVersion =
     SdkTlsVersion.TLS_1_2 -> OkHttpTlsVersion.TLS_1_2
     SdkTlsVersion.TLS_1_3 -> OkHttpTlsVersion.TLS_1_3
 }
-
