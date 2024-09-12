@@ -25,6 +25,9 @@ import kotlin.coroutines.resumeWithException
 
 internal const val TELEMETRY_SCOPE = "aws.smithy.kotlin.runtime.http.engine.okhttp4"
 
+/**
+ * [aws.smithy.kotlin.runtime.http.engine.HttpClientEngine] based on OkHttp3-4.x.
+ */
 public class OkHttp4Engine(
     override val config: OkHttpEngineConfig,
 ) : HttpClientEngineBase("OkHttp4") {

@@ -11,9 +11,7 @@ kotlin {
     sourceSets {
         commonMain {
             dependencies {
-                implementation(project(":runtime:runtime-core"))
                 api(project(":runtime:protocol:http-client"))
-                implementation(project(":runtime:observability:telemetry-defaults"))
                 implementation(project(":runtime:protocol:http-client-engines:http-client-engine-okhttp"))
                 implementation(libs.okhttp4)
             }
