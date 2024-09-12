@@ -5,6 +5,7 @@
 
 package aws.smithy.kotlin.dokka
 
+import org.jetbrains.dokka.CoreExtensions
 import org.jetbrains.dokka.base.DokkaBase
 import org.jetbrains.dokka.plugability.DokkaPlugin
 import org.jetbrains.dokka.plugability.DokkaPluginApiPreview
@@ -28,6 +29,12 @@ class SmithyDokkaPlugin : DokkaPlugin() {
     // https://github.com/Kotlin/dokka/issues/2741
     val disableSearch by extending {
         dokkaBase.htmlPreprocessors providing ::NoOpSearchbarDataInstaller override dokkaBase.baseSearchbarDataInstaller
+    }
+
+    val disablePlaygroundIntegration by extending {
+        CoreExtensions.pageTransformer providing ::DisablePlaygroundIntegration order {
+            after(dokkaBase.defaultSamplesTransformer)
+        }
     }
 
     @OptIn(DokkaPluginApiPreview::class)
