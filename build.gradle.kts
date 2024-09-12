@@ -129,7 +129,6 @@ configureLinting(lintPaths)
 apiValidation {
     ignoredProjects.addAll(
         setOf(
-            "dokka-smithy",
             "aws-signing-tests",
             "test-suite",
             "http-test",

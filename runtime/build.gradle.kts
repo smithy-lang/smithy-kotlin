@@ -64,7 +64,7 @@ subprojects {
     }
 
     dependencies {
-        dokkaPlugin(project(":dokka-smithy"))
+        dokkaPlugin(libraries.aws.kotlin.repo.tools.build.support)
     }
 
     tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {

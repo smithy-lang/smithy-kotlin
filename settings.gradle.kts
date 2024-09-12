@@ -28,8 +28,6 @@ dependencyResolutionManagement {
 
 rootProject.name = "smithy-kotlin"
 
-include(":dokka-smithy")
-
 include(":bom")
 include(":runtime")
 include(":runtime:auth:aws-credentials")
