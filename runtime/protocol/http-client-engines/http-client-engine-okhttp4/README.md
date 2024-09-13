@@ -37,10 +37,12 @@ import aws.smithy.kotlin.runtime.http.engine.okhttp4.OkHttp4Engine
 import kotlinx.coroutines.runBlocking
 
 fun main() = runBlocking {
-    S3Client.fromEnvironment {
-        httpClient = OkHttp4Engine()
-    }.use {
-        // use the client!
+    OkHttp4Engine().use { okHttp4Engine ->
+        S3Client.fromEnvironment {
+            httpClient = okHttp4Engine
+        }.use {
+            // use the client!
+        }
     }
 }
 ```
