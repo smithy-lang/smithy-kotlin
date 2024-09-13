@@ -16,20 +16,6 @@ kotlin {
                 implementation(libs.okhttp4)
             }
         }
-        commonTest {
-            dependencies {
-                implementation(libs.kotlinx.coroutines.test)
-            }
-        }
-
-        jvmTest {
-            dependencies {
-                implementation(project(":runtime:testing"))
-                // use otel testing capabilities
-                implementation(project(":runtime:observability:telemetry-provider-otel"))
-                implementation(libs.opentelemetry.sdk.testing)
-            }
-        }
 
         all {
             languageSettings.optIn("aws.smithy.kotlin.runtime.InternalApi")
@@ -39,6 +25,7 @@ kotlin {
 
 configurations.all {
     resolutionStrategy {
-        force("com.squareup.okhttp3:okhttp:4.12.0")
+//        force("com.squareup.okhttp3:okhttp:4.12.0") // FIXME use version from gradle/libs.versions.toml
+        force(libs.okhttp4)
     }
 }
