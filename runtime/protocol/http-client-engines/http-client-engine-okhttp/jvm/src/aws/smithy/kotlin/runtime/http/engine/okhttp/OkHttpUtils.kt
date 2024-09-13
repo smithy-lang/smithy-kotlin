@@ -60,7 +60,7 @@ public fun HttpRequest.toOkHttpRequest(
             is HttpBody.Bytes -> body.bytes().let { it.toRequestBody(null, 0, it.size) }
             is HttpBody.SourceContent, is HttpBody.ChannelContent -> {
                 val updatedBody: HttpBody = headers["Content-Length"]?.let {
-                    if (body?.contentLength == null || body?.contentLength == -1L) {
+                    if (body.contentLength == null || body.contentLength == -1L) {
                         when (body) {
                             is HttpBody.SourceContent -> body.readFrom().toHttpBody(it.toLong())
                             is HttpBody.ChannelContent -> body.readFrom().toHttpBody(it.toLong())
@@ -104,7 +104,9 @@ public fun Headers.toOkHttpHeaders(): OkHttpHeaders = OkHttpHeaders.Builder().al
 @InternalApi
 public fun OkHttpResponse.toSdkResponse(): HttpResponse {
     val sdkHeaders = OkHttpHeadersAdapter(headers)
-    val httpBody = if (body!!.contentLength() != 0L) {
+    val httpBody = if (body == null || body!!.contentLength() == 0L) {
+        HttpBody.Empty
+    } else {
         object : HttpBody.SourceContent() {
             override val isOneShot: Boolean = true
 
@@ -112,8 +114,6 @@ public fun OkHttpResponse.toSdkResponse(): HttpResponse {
             override val contentLength: Long? = if (body!!.contentLength() >= 0L) body!!.contentLength() else null
             override fun readFrom(): SdkSource = body!!.source().toSdk()
         }
-    } else {
-        HttpBody.Empty
     }
 
     return HttpResponse(HttpStatusCode.fromValue(code), sdkHeaders, httpBody)
