@@ -30,12 +30,12 @@ public object MetricsInterceptor : Interceptor {
         }
 
         val originalResponse = chain.proceed(request)
-        val response = if (originalResponse.body?.contentLength() != 0L) {
+        val response = if (originalResponse.body == null || originalResponse.body?.contentLength() == 0L) {
+            originalResponse
+        } else {
             originalResponse.newBuilder()
                 .body(originalResponse.body.instrument(metrics.bytesReceived, attrs))
                 .build()
-        } else {
-            originalResponse
         }
 
         return response
