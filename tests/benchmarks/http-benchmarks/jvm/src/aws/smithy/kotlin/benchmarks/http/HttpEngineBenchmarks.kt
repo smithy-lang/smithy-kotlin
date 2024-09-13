@@ -10,6 +10,7 @@ import aws.smithy.kotlin.runtime.http.complete
 import aws.smithy.kotlin.runtime.http.engine.CloseableHttpClientEngine
 import aws.smithy.kotlin.runtime.http.engine.crt.CrtHttpEngine
 import aws.smithy.kotlin.runtime.http.engine.okhttp.OkHttpEngine
+import aws.smithy.kotlin.runtime.http.engine.okhttp4.OkHttp4Engine
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.http.request.headers
 import aws.smithy.kotlin.runtime.http.request.url
@@ -37,6 +38,7 @@ private const val MB_PER_THROUGHPUT_OP = 12
 // TODO - add TLS tests to benchmarks (or just move existing tests to use TLS since we expect that to be the norm)
 private const val OKHTTP_ENGINE = "OkHttp"
 private const val CRT_ENGINE = "CRT"
+private const val OKHTTP4_ENGINE = "OkHttp4"
 
 fun interface BenchmarkEngineFactory {
     fun create(): CloseableHttpClientEngine
@@ -45,6 +47,7 @@ fun interface BenchmarkEngineFactory {
 private val engines = mapOf(
     OKHTTP_ENGINE to BenchmarkEngineFactory { OkHttpEngine() },
     CRT_ENGINE to BenchmarkEngineFactory { CrtHttpEngine() },
+    OKHTTP4_ENGINE to BenchmarkEngineFactory { OkHttp4Engine() },
 )
 
 // 12MB
@@ -54,7 +57,7 @@ private val largeData = ByteArray(MB_PER_THROUGHPUT_OP * 1024 * 1024)
 @State(Scope.Benchmark)
 @OutputTimeUnit(TimeUnit.SECONDS)
 open class HttpEngineBenchmarks {
-    @Param(OKHTTP_ENGINE, CRT_ENGINE)
+    @Param(OKHTTP_ENGINE, CRT_ENGINE, OKHTTP4_ENGINE)
     var httpClientName: String = ""
 
     lateinit var engine: CloseableHttpClientEngine

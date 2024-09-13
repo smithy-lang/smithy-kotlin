@@ -5,6 +5,7 @@
 
 package aws.smithy.kotlin.runtime.http.engine.okhttp
 
+import aws.smithy.kotlin.runtime.InternalApi
 import aws.smithy.kotlin.runtime.http.*
 import aws.smithy.kotlin.runtime.http.HttpCall
 import aws.smithy.kotlin.runtime.http.engine.ProxyConfig
@@ -42,13 +43,14 @@ internal data class SdkRequestTag(val execContext: ExecutionContext, val callCon
 /**
  * Convert SDK [HttpRequest] to an [okhttp3.Request] instance
  */
-internal fun HttpRequest.toOkHttpRequest(
+@InternalApi
+public fun HttpRequest.toOkHttpRequest(
     execContext: ExecutionContext,
     callContext: CoroutineContext,
     metrics: HttpClientMetrics,
 ): OkHttpRequest {
     val builder = OkHttpRequest.Builder()
-    builder.tag(SdkRequestTag::class, SdkRequestTag(execContext, callContext, metrics))
+    builder.tag(SdkRequestTag::class.java, SdkRequestTag(execContext, callContext, metrics))
     builder.url(url.toString())
     builder.headers(headers.toOkHttpHeaders())
 
@@ -82,7 +84,8 @@ internal fun HttpRequest.toOkHttpRequest(
     return builder.build()
 }
 
-private fun Headers.toOkHttpHeaders(): OkHttpHeaders = OkHttpHeaders.Builder().also { okHeaders ->
+@InternalApi
+public fun Headers.toOkHttpHeaders(): OkHttpHeaders = OkHttpHeaders.Builder().also { okHeaders ->
     forEach { key, values ->
         values.forEach { value ->
             okHeaders.addUnsafeNonAscii(key, value)
@@ -98,24 +101,26 @@ private fun Headers.toOkHttpHeaders(): OkHttpHeaders = OkHttpHeaders.Builder().a
 /**
  * Convert an [okhttp3.Response] to an SDK [HttpResponse]
  */
-internal fun OkHttpResponse.toSdkResponse(): HttpResponse {
+@InternalApi
+public fun OkHttpResponse.toSdkResponse(): HttpResponse {
     val sdkHeaders = OkHttpHeadersAdapter(headers)
-    val httpBody = if (body.contentLength() != 0L) {
+    val httpBody = if (body == null || body!!.contentLength() == 0L) {
+        HttpBody.Empty
+    } else {
         object : HttpBody.SourceContent() {
             override val isOneShot: Boolean = true
 
             // -1 is used by okhttp as transfer-encoding chunked
-            override val contentLength: Long? = if (body.contentLength() >= 0L) body.contentLength() else null
-            override fun readFrom(): SdkSource = body.source().toSdk()
+            override val contentLength: Long? = if (body!!.contentLength() >= 0L) body!!.contentLength() else null
+            override fun readFrom(): SdkSource = body!!.source().toSdk()
         }
-    } else {
-        HttpBody.Empty
     }
 
     return HttpResponse(HttpStatusCode.fromValue(code), sdkHeaders, httpBody)
 }
 
-internal class OkHttpProxyAuthenticator(
+@InternalApi
+public class OkHttpProxyAuthenticator(
     private val selector: SdkProxySelector,
 ) : Authenticator {
     override fun authenticate(route: Route?, response: okhttp3.Response): okhttp3.Request? {
@@ -156,7 +161,8 @@ internal class OkHttpProxyAuthenticator(
     }
 }
 
-internal class OkHttpDns(
+@InternalApi
+public class OkHttpDns(
     private val hr: HostResolver,
 ) : Dns {
     // we assume OkHttp is calling us on an IO thread already
@@ -166,7 +172,8 @@ internal class OkHttpDns(
     }
 }
 
-internal class OkHttpProxySelector(
+@InternalApi
+public class OkHttpProxySelector(
     private val sdkSelector: SdkProxySelector,
 ) : ProxySelector() {
     override fun select(uri: URI?): List<Proxy> {
@@ -184,13 +191,14 @@ internal class OkHttpProxySelector(
     override fun connectFailed(uri: URI?, sa: SocketAddress?, ioe: IOException?) {}
 }
 
-internal class OkHttpCall(
+@InternalApi
+public class OkHttpCall(
     request: HttpRequest,
     response: HttpResponse,
     requestTime: Instant,
     responseTime: Instant,
     coroutineContext: CoroutineContext = EmptyCoroutineContext,
-    val call: Call,
+    public val call: Call,
 ) : HttpCall(request, response, requestTime, responseTime, coroutineContext) {
     override fun copy(request: HttpRequest, response: HttpResponse): HttpCall =
         OkHttpCall(request, response, requestTime, responseTime, coroutineContext, call)
@@ -200,7 +208,8 @@ internal class OkHttpCall(
     }
 }
 
-private fun URI.toUrl(): Url {
+@InternalApi
+public fun URI.toUrl(): Url {
     val uri = this
     return Url {
         scheme = Scheme.parse(uri.scheme)
@@ -223,14 +232,16 @@ private fun URI.toUrl(): Url {
     }
 }
 
-internal inline fun <T> mapOkHttpExceptions(block: () -> T): T =
+@InternalApi
+public inline fun <T> mapOkHttpExceptions(block: () -> T): T =
     try {
         block()
     } catch (ex: IOException) {
         throw HttpException(ex, ex.errCode(), retryable = true) // All IOExceptions are retryable
     }
 
-private fun Exception.errCode(): HttpErrorCode = when {
+@InternalApi
+public fun Exception.errCode(): HttpErrorCode = when {
     isConnectTimeoutException() -> HttpErrorCode.CONNECT_TIMEOUT
     isConnectionClosedException() -> HttpErrorCode.CONNECTION_CLOSED
     isCauseOrSuppressed<SocketTimeoutException>() -> HttpErrorCode.SOCKET_TIMEOUT

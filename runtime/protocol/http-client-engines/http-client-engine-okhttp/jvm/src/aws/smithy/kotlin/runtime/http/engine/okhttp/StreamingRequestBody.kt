@@ -5,6 +5,7 @@
 
 package aws.smithy.kotlin.runtime.http.engine.okhttp
 
+import aws.smithy.kotlin.runtime.InternalApi
 import aws.smithy.kotlin.runtime.http.HttpBody
 import aws.smithy.kotlin.runtime.io.internal.toOkio
 import aws.smithy.kotlin.runtime.io.internal.toSdk
@@ -22,7 +23,8 @@ import kotlin.coroutines.CoroutineContext
  * OkHttp [RequestBody] that reads from [body] channel or source
  */
 @OptIn(DelicateCoroutinesApi::class, ExperimentalStdlibApi::class)
-internal class StreamingRequestBody(
+@InternalApi
+public class StreamingRequestBody(
     private val body: HttpBody,
     private val callContext: CoroutineContext,
 ) : RequestBody() {
