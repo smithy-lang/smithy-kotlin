@@ -25,7 +25,6 @@ kotlin {
 
 configurations.all {
     resolutionStrategy {
-//        force("com.squareup.okhttp3:okhttp:4.12.0") // FIXME use version from gradle/libs.versions.toml
         force(libs.okhttp4)
     }
 }
