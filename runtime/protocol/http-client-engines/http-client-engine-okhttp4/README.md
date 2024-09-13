@@ -46,3 +46,44 @@ fun main() = runBlocking {
 ```
 
 For more tips on configuring the HTTP client, [see our developer guide entry](https://docs.aws.amazon.com/sdk-for-kotlin/latest/developer-guide/http-client-config.html).
+
+## Troubleshooting
+
+### java.lang.NoClassDefFoundError
+If you see an exception similar to this...
+```
+java.lang.NoClassDefFoundError: okhttp3/coroutines/ExecuteAsyncKt
+	at aws.smithy.kotlin.runtime.http.engine.okhttp.OkHttpEngine.roundTrip(OkHttpEngine.kt:56) ~[http-client-engine-okhttp-jvm-1.3.9-SNAPSHOT.jar:?]
+	at aws.smithy.kotlin.runtime.http.engine.internal.ManagedHttpClientEngine.roundTrip(ManagedHttpClientEngine.kt) ~[http-client-jvm-1.3.9-SNAPSHOT.jar:?]
+	at aws.smithy.kotlin.runtime.http.SdkHttpClient$executeWithCallContext$2.invokeSuspend(SdkHttpClient.kt:44) ~[http-client-jvm-1.3.9-SNAPSHOT.jar:?]
+	at kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:33) ~[kotlin-stdlib-2.0.10.jar:2.0.10-release-540]
+	at kotlinx.coroutines.DispatchedTask.run(DispatchedTask.kt:104) ~[kotlinx-coroutines-core-jvm-1.8.1.jar:?]
+	at kotlinx.coroutines.scheduling.CoroutineScheduler.runSafely(CoroutineScheduler.kt:584) ~[kotlinx-coroutines-core-jvm-1.8.1.jar:?]
+	at kotlinx.coroutines.scheduling.CoroutineScheduler$Worker.executeTask(CoroutineScheduler.kt:811) ~[kotlinx-coroutines-core-jvm-1.8.1.jar:?]
+	at kotlinx.coroutines.scheduling.CoroutineScheduler$Worker.runWorker(CoroutineScheduler.kt:715) ~[kotlinx-coroutines-core-jvm-1.8.1.jar:?]
+	at kotlinx.coroutines.scheduling.CoroutineScheduler$Worker.run(CoroutineScheduler.kt:702) ~[kotlinx-coroutines-core-jvm-1.8.1.jar:?]
+Caused by: java.lang.ClassNotFoundException: okhttp3.coroutines.ExecuteAsyncKt
+	at jdk.internal.loader.BuiltinClassLoader.loadClass(BuiltinClassLoader.java:641) ~[?:?]
+	at jdk.internal.loader.ClassLoaders$AppClassLoader.loadClass(ClassLoaders.java:188) ~[?:?]
+	at java.lang.ClassLoader.loadClass(ClassLoader.java:525) ~[?:?]
+	... 9 more
+Exception in thread "main" java.lang.NoClassDefFoundError: okhttp3/coroutines/ExecuteAsyncKt
+	at aws.smithy.kotlin.runtime.http.engine.okhttp.OkHttpEngine.roundTrip(OkHttpEngine.kt:56)
+	at aws.smithy.kotlin.runtime.http.engine.internal.ManagedHttpClientEngine.roundTrip(ManagedHttpClientEngine.kt)
+	at aws.smithy.kotlin.runtime.http.SdkHttpClient$executeWithCallContext$2.invokeSuspend(SdkHttpClient.kt:44)
+	at kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:33)
+	at kotlinx.coroutines.DispatchedTask.run(DispatchedTask.kt:104)
+	at kotlinx.coroutines.scheduling.CoroutineScheduler.runSafely(CoroutineScheduler.kt:584)
+	at kotlinx.coroutines.scheduling.CoroutineScheduler$Worker.executeTask(CoroutineScheduler.kt:811)
+	at kotlinx.coroutines.scheduling.CoroutineScheduler$Worker.runWorker(CoroutineScheduler.kt:715)
+	at kotlinx.coroutines.scheduling.CoroutineScheduler$Worker.run(CoroutineScheduler.kt:702)
+Caused by: java.lang.ClassNotFoundException: okhttp3.coroutines.ExecuteAsyncKt
+	at java.base/jdk.internal.loader.BuiltinClassLoader.loadClass(BuiltinClassLoader.java:641)
+	at java.base/jdk.internal.loader.ClassLoaders$AppClassLoader.loadClass(ClassLoaders.java:188)
+	at java.base/java.lang.ClassLoader.loadClass(ClassLoader.java:525)
+	... 9 more
+```
+
+It likely means you failed to configure the SDK client to use the `OkHttpEngine4`. 
+Please double-check all of your SDK client configurations to ensure `httpClient = OkHttpEngine4()` is configured,
+and if the problem persists, [open an issue](https://github.com/smithy-lang/smithy-kotlin/issues/new/choose).
