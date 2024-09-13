@@ -5,7 +5,6 @@
 
 package aws.smithy.kotlin.runtime.http.engine.okhttp
 
-import aws.smithy.kotlin.runtime.InternalApi
 import aws.smithy.kotlin.runtime.http.engine.HttpClientEngineConfig
 import aws.smithy.kotlin.runtime.http.engine.HttpClientEngineConfigImpl
 import aws.smithy.kotlin.runtime.telemetry.Global
