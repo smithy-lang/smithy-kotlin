@@ -14,7 +14,7 @@ internal actual fun engineFactories(): List<TestEngineFactory> =
     listOf(
         TestEngineFactory("DefaultHttpEngine", ::DefaultHttpEngine),
         TestEngineFactory("CrtHttpEngine") { CrtHttpEngine(it) },
-        TestEngineFactory("OkHttp4Engine") { OkHttp4Engine(it) }
+        TestEngineFactory("OkHttp4Engine") { OkHttp4Engine(it) },
     )
 
 internal actual val testServers = mapOf(
