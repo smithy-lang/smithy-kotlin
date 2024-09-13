@@ -57,7 +57,7 @@ private val largeData = ByteArray(MB_PER_THROUGHPUT_OP * 1024 * 1024)
 @State(Scope.Benchmark)
 @OutputTimeUnit(TimeUnit.SECONDS)
 open class HttpEngineBenchmarks {
-    @Param(OKHTTP_ENGINE, CRT_ENGINE)
+    @Param(OKHTTP_ENGINE, CRT_ENGINE, OKHTTP4_ENGINE)
     var httpClientName: String = ""
 
     lateinit var engine: CloseableHttpClientEngine
