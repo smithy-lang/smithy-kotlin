@@ -89,8 +89,11 @@ object RuntimeTypes {
             val SmokeTestsInterceptor = symbol("SmokeTestsInterceptor")
             val SmokeTestsFailureException = symbol("SmokeTestsFailureException")
             val SmokeTestsSuccessException = symbol("SmokeTestsSuccessException")
-            val SmokeTestsUnexpectedException = symbol("SmokeTestsUnexpectedException")
         }
+    }
+
+    object HttpTest : RuntimeTypePackage(KotlinDependency.HTTP_TEST) {
+        val TestEngine = symbol("TestEngine")
     }
 
     object Core : RuntimeTypePackage(KotlinDependency.CORE) {

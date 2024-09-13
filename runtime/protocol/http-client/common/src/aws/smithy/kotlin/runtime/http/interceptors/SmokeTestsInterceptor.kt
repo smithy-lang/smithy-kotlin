@@ -9,7 +9,7 @@ import aws.smithy.kotlin.runtime.http.response.HttpResponse
  * Interceptor for smoke test runner clients.
  *
  * A passing test is not predicated on an SDK being able to parse the server response received, it’s based on the
- * response’s HTTP status code UNLESS we're expecting a specific error.
+ * response’s HTTP status code.
  */
 @InternalApi
 public class SmokeTestsInterceptor : HttpInterceptor {
@@ -26,5 +26,4 @@ public class SmokeTestsInterceptor : HttpInterceptor {
 @InternalApi public class SmokeTestsFailureException : Exception()
 
 @InternalApi public class SmokeTestsSuccessException : Exception()
-
-@InternalApi public class SmokeTestsUnexpectedException : Exception()
+private class SmokeTestsUnexpectedException : Exception()

@@ -3,19 +3,26 @@ package software.amazon.smithy.kotlin.codegen.rendering.smoketests
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.kotlin.codegen.core.*
 import software.amazon.smithy.kotlin.codegen.integration.SectionId
+import software.amazon.smithy.kotlin.codegen.model.expectShape
 import software.amazon.smithy.kotlin.codegen.model.getTrait
 import software.amazon.smithy.kotlin.codegen.model.hasTrait
+import software.amazon.smithy.kotlin.codegen.model.traits.FailedResponseTrait
+import software.amazon.smithy.kotlin.codegen.model.traits.SuccessResponseTrait
 import software.amazon.smithy.kotlin.codegen.rendering.util.format
 import software.amazon.smithy.kotlin.codegen.utils.dq
-import software.amazon.smithy.kotlin.codegen.utils.getOrNull
 import software.amazon.smithy.kotlin.codegen.utils.operations
 import software.amazon.smithy.kotlin.codegen.utils.toCamelCase
 import software.amazon.smithy.model.shapes.OperationShape
+import software.amazon.smithy.model.shapes.ServiceShape
 import software.amazon.smithy.smoketests.traits.SmokeTestCase
 import software.amazon.smithy.smoketests.traits.SmokeTestsTrait
 import kotlin.jvm.optionals.getOrNull
 
 object SmokeTestsRunner : SectionId
+
+// Env var constants
+const val SKIP_TAGS = "AWS_SMOKE_TEST_SKIP_TAGS"
+const val SERVICE_FILTER = "AWS_SMOKE_TEST_SERVICE_IDS"
 
 /**
  * Renders smoke tests runner for a service
@@ -23,13 +30,22 @@ object SmokeTestsRunner : SectionId
 class SmokeTestsRunnerGenerator(
     private val writer: KotlinWriter,
     ctx: CodegenContext,
-//    private val testing: Boolean = false, TODO: Implement tests
 ) {
+    // Generator config
     private val model = ctx.model
     private val sdkId = ctx.settings.sdkId
     private val symbolProvider = ctx.symbolProvider
     private val service = symbolProvider.toSymbol(model.expectShape(ctx.settings.service))
     private val operations = ctx.model.operations(ctx.settings.service).filter { it.hasTrait<SmokeTestsTrait>() }
+
+    // Test config
+    private val hasSuccessResponseTrait = ctx.model.expectShape<ServiceShape>(ctx.settings.service).hasTrait(SuccessResponseTrait.ID)
+    private val hasFailedResponseTrait = ctx.model.expectShape<ServiceShape>(ctx.settings.service).hasTrait(FailedResponseTrait.ID)
+    init {
+        check(!(hasSuccessResponseTrait && hasFailedResponseTrait)) {
+            "A service can't have both the success response trait and the failed response trait."
+        }
+    }
 
     internal fun render() {
         writer.declareSection(SmokeTestsRunner) {
@@ -37,8 +53,8 @@ class SmokeTestsRunnerGenerator(
             writer.emptyLine()
             writer.write("private var exitCode = 0")
             writer.write("private val regionOverride = System.getenv(#S)", "AWS_SMOKE_TEST_REGION")
-            writer.write("private val skipTags = System.getenv(#S)?.let { it.split(\",\").map { it.trim() }.toSet() } ?: emptySet()", "AWS_SMOKE_TEST_SKIP_TAGS")
-            writer.write("private val serviceFilter = System.getenv(#S)?.let { it.split(\",\").map { it.trim() }.toSet() }", "AWS_SMOKE_TEST_SERVICE_IDS")
+            writer.write("private val skipTags = System.getenv(#S)?.let { it.split(\",\").map { it.trim() }.toSet() } ?: emptySet()", SKIP_TAGS)
+            writer.write("private val serviceFilter = System.getenv(#S)?.let { it.split(\",\").map { it.trim() }.toSet() }", SERVICE_FILTER)
             writer.emptyLine()
             writer.withBlock("public suspend fun main() {", "}") {
                 renderFunctionCalls()
@@ -93,6 +109,7 @@ class SmokeTestsRunnerGenerator(
 
     private fun renderClient(testCase: SmokeTestCase) {
         writer.withInlineBlock("#L {", "}", service) {
+            // Client config
             if (testCase.vendorParams.isPresent) {
                 testCase.vendorParams.get().members.forEach { vendorParam ->
                     if (vendorParam.key.value == "region") {
@@ -107,6 +124,26 @@ class SmokeTestsRunnerGenerator(
             val expectingSpecificError = testCase.expectation.failure.getOrNull()?.errorId?.getOrNull() != null
             if (!expectingSpecificError) {
                 write("interceptors.add(#T())", RuntimeTypes.HttpClient.Interceptors.SmokeTestsInterceptor)
+            }
+
+            // Test config
+            if (hasSuccessResponseTrait) {
+                write("httpClient = #T()", RuntimeTypes.HttpTest.TestEngine)
+            }
+            if (hasFailedResponseTrait) {
+                withBlock("httpClient = #T(", ")", RuntimeTypes.HttpTest.TestEngine) {
+                    withBlock("roundTripImpl = { _, request ->", "}") {
+                        write(
+                            "val resp = #T(#T.BadRequest, #T.Empty, #T.Empty)",
+                            RuntimeTypes.Http.Response.HttpResponse,
+                            RuntimeTypes.Http.StatusCode,
+                            RuntimeTypes.Http.Headers,
+                            RuntimeTypes.Http.HttpBody,
+                        )
+                        write("val now = #T.now()", RuntimeTypes.Core.Instant)
+                        write("#T(request, resp, now, now)", RuntimeTypes.Http.HttpCall)
+                    }
+                }
             }
         }
     }
