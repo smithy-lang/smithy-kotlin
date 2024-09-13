@@ -72,7 +72,8 @@ public class OkHttp4Engine(
     }
 }
 
-// Copied from okhttp3 5.0.0-alpha.14
+// Copied from okhttp3 5.x:
+// https://github.com/square/okhttp/blob/d58da0a65b7f9cdbdf25b198e804153164ae729f/okhttp-coroutines/src/main/kotlin/okhttp3/coroutines/ExecuteAsync.kt
 @ExperimentalCoroutinesApi // resume with a resource cleanup.
 private suspend fun Call.executeAsync(): Response =
     suspendCancellableCoroutine { continuation ->
