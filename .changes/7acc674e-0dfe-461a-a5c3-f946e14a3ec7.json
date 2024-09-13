@@ -1,5 +1,0 @@
-{
-    "id": "7acc674e-0dfe-461a-a5c3-f946e14a3ec7",
-    "type": "feature",
-    "description": "Add OkHttp4Engine, an HTTP engine which uses okhttp3:4.x"
-}

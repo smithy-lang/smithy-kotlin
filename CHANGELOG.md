@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.3.9] - 09/13/2024
+
+### Features
+* Add OkHttp4Engine, an HTTP engine which uses okhttp3:4.x
+
 ## [1.3.8] - 08/29/2024
 
 ### Fixes
