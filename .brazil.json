@@ -43,6 +43,9 @@
       ],
       "com.squareup.okio:okio-jvm:3.*": [
         "KotlinStdlib-2.x"
+      ],
+      "com.squareup.okhttp3:okhttp:4.*": [
+        "OkHttp3-4.x"
       ]
     }
   }
