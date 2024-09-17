@@ -39,8 +39,8 @@ class SmokeTestsRunnerGenerator(
     private val operations = ctx.model.operations(ctx.settings.service).filter { it.hasTrait<SmokeTestsTrait>() }
 
     // Test config
-    private val hasSuccessResponseTrait = ctx.model.expectShape<ServiceShape>(ctx.settings.service).hasTrait(SuccessResponseTrait.ID)
-    private val hasFailedResponseTrait = ctx.model.expectShape<ServiceShape>(ctx.settings.service).hasTrait(FailedResponseTrait.ID)
+    private val hasSuccessResponseTrait = model.expectShape<ServiceShape>(ctx.settings.service).hasTrait(SuccessResponseTrait.ID)
+    private val hasFailedResponseTrait = model.expectShape<ServiceShape>(ctx.settings.service).hasTrait(FailedResponseTrait.ID)
     init {
         check(!(hasSuccessResponseTrait && hasFailedResponseTrait)) {
             "A service can't have both the success response trait and the failed response trait."
