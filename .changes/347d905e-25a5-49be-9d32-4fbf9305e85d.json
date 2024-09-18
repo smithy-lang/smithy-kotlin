@@ -1,0 +1,5 @@
+{
+    "id": "347d905e-25a5-49be-9d32-4fbf9305e85d",
+    "type": "misc",
+    "description": "Upgrade to kotlinx.coroutines 1.9.0"
+}
