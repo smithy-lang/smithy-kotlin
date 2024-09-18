@@ -32,6 +32,9 @@
       "aws.smithy.kotlin:version-catalog"
     ],
     "resolvesConflictDependencies": {
+      "org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm:1.*": [
+        "KotlinxCoroutinesCoreJvm-1.x"
+      ],
       "com.squareup.okhttp3:okhttp-coroutines:5.*": [
         "KotlinStdlib-2.x",
         "KotlinxCoroutinesCoreJvm-1.x",
