@@ -5,7 +5,7 @@ import software.amazon.smithy.kotlin.codegen.core.CodegenContext
 import software.amazon.smithy.kotlin.codegen.core.KotlinDelegator
 import software.amazon.smithy.kotlin.codegen.integration.KotlinIntegration
 import software.amazon.smithy.kotlin.codegen.model.hasTrait
-import software.amazon.smithy.kotlin.codegen.utils.operations
+import software.amazon.smithy.kotlin.codegen.utils.topDownOperations
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.smoketests.traits.SmokeTestsTrait
 
@@ -14,7 +14,7 @@ import software.amazon.smithy.smoketests.traits.SmokeTestsTrait
  */
 class SmokeTestsIntegration : KotlinIntegration {
     override fun enabledForService(model: Model, settings: KotlinSettings): Boolean =
-        model.operations(settings.service).any { it.hasTrait<SmokeTestsTrait>() }
+        model.topDownOperations(settings.service).any { it.hasTrait<SmokeTestsTrait>() }
 
     override fun writeAdditionalFiles(ctx: CodegenContext, delegator: KotlinDelegator) =
         delegator.useFileWriter(

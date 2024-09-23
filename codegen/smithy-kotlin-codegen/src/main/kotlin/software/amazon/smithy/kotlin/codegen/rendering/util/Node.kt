@@ -20,12 +20,8 @@ fun Node.format(): String = when (this) {
     is ArrayNode -> elements.joinToString(",", "listOf(", ")") { element ->
         element.format()
     }
-    is ObjectNode -> buildString {
-        append("mapOf(")
-        stringMap.forEach { (key, value) ->
-            append("\t${key.dq()} to ${value.format()}")
-        }
-        append(")")
+    is ObjectNode -> stringMap.entries.joinToString(", ", "mapOf(", ")") { (key, value) ->
+        "${key.dq()} to ${value.format()}"
     }
     else -> throw Exception("Unexpected node type: $this")
 }

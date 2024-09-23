@@ -74,7 +74,6 @@ class SmokeTestsRunnerGeneratorTest {
         generatedCode.shouldContainOnlyOnceWithDiff(
             """
                 private var exitCode = 0
-                private val regionOverride = System.getenv("AWS_SMOKE_TEST_REGION")
                 private val skipTags = System.getenv("AWS_SMOKE_TEST_SKIP_TAGS")?.let { it.split(",").map { it.trim() }.toSet() } ?: emptySet()
                 private val serviceFilter = System.getenv("AWS_SMOKE_TEST_SERVICE_IDS")?.let { it.split(",").map { it.trim() }.toSet() }
             """.trimIndent(),
@@ -101,14 +100,14 @@ class SmokeTestsRunnerGeneratorTest {
             """
                 private suspend fun successTest() {
                     val tags = setOf<String>("success")
-                    if ((serviceFilter != null && "Test" !in serviceFilter) || tags.any { it in skipTags }) {
+                    if ((serviceFilter.isNotEmpty() && "Test" !in serviceFilter) || tags.any { it in skipTags }) {
                         println("ok Test SuccessTest - no error expected from service # skip")
                         return
                     }
 
                     try {
                         com.test.TestClient {
-                            region = regionOverride ?: "eu-central-1"
+                            region = "eu-central-1"
                             interceptors.add(SmokeTestsInterceptor())
 
                         }.use { client ->
@@ -120,7 +119,7 @@ class SmokeTestsRunnerGeneratorTest {
                         }
 
                     } catch (e: Exception) {
-                        val success = e is aws.smithy.kotlin.runtime.http.interceptors.SmokeTestsSuccessException
+                        val success = e is SmokeTestsSuccessException
                         val status = if (success) "ok" else "not ok"
                         println("${'$'}status Test SuccessTest - no error expected from service ")
                         if (!success) exitCode = 1
@@ -136,14 +135,13 @@ class SmokeTestsRunnerGeneratorTest {
             """
                 private suspend fun invalidMessageErrorTest() {
                     val tags = setOf<String>()
-                    if ((serviceFilter != null && "Test" !in serviceFilter) || tags.any { it in skipTags }) {
+                    if ((serviceFilter.isNotEmpty() && "Test" !in serviceFilter) || tags.any { it in skipTags }) {
                         println("ok Test InvalidMessageErrorTest - error expected from service # skip")
                         return
                     }
                 
                     try {
                         com.test.TestClient {
-                            region = regionOverride
                 
                         }.use { client ->
                             client.testOperation(
@@ -154,7 +152,7 @@ class SmokeTestsRunnerGeneratorTest {
                         }
                 
                     } catch (e: Exception) {
-                        val success = e is com.test.model.InvalidMessageError
+                        val success = e is InvalidMessageError
                         val status = if (success) "ok" else "not ok"
                         println("${'$'}status Test InvalidMessageErrorTest - error expected from service ")
                         if (!success) exitCode = 1
@@ -170,14 +168,13 @@ class SmokeTestsRunnerGeneratorTest {
             """
                 private suspend fun failureTest() {
                     val tags = setOf<String>()
-                    if ((serviceFilter != null && "Test" !in serviceFilter) || tags.any { it in skipTags }) {
+                    if ((serviceFilter.isNotEmpty() && "Test" !in serviceFilter) || tags.any { it in skipTags }) {
                         println("ok Test FailureTest - error expected from service # skip")
                         return
                     }
                 
                     try {
                         com.test.TestClient {
-                            region = regionOverride
                             interceptors.add(SmokeTestsInterceptor())
                 
                         }.use { client ->
@@ -189,7 +186,7 @@ class SmokeTestsRunnerGeneratorTest {
                         }
                 
                     } catch (e: Exception) {
-                        val success = e is aws.smithy.kotlin.runtime.http.interceptors.SmokeTestsFailureException
+                        val success = e is SmokeTestsFailureException
                         val status = if (success) "ok" else "not ok"
                         println("${'$'}status Test FailureTest - error expected from service ")
                         if (!success) exitCode = 1

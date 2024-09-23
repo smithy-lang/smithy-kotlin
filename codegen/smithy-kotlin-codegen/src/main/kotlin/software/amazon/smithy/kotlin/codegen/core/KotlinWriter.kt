@@ -198,8 +198,6 @@ class KotlinWriter(
             )
         }
 
-    fun emptyLine(): KotlinWriter = this.write("")
-
     /**
      * Clean/escape any content from the doc that would invalidate the Kotlin output.
      */
