@@ -11,10 +11,9 @@ import kotlinx.coroutines.test.currentTime
 import kotlinx.coroutines.test.testTimeSource
 import kotlin.test.assertEquals
 import kotlin.time.Duration
-import kotlin.time.ExperimentalTime
 import kotlin.time.measureTimedValue
 
-@OptIn(ExperimentalCoroutinesApi::class, ExperimentalTime::class)
+@OptIn(ExperimentalCoroutinesApi::class)
 suspend fun <T> TestScope.assertTime(expectedDuration: Duration, block: suspend () -> T): T {
     val (result, actualDuration) = testTimeSource.measureTimedValue { block() }
 

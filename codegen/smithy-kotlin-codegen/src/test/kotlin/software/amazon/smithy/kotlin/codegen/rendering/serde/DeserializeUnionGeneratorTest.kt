@@ -187,11 +187,11 @@ class DeserializeUnionGeneratorTest {
                                                             val v2 = if (nextHasValue()) { deserializeBarUnionDocument(deserializer) } else { deserializeNull(); continue }
                                                             map2[k2] = v2
                                                         }
-                                                        FooUnion.StrMapVal(map2)
+                                                        map2
                                                     }
                                                     col1.add(el1)
                                                 }
-                                                FooUnion.StrMapVal(col1)
+                                                col1
                                             }
                                         } else { deserializeNull(); continue }
             
@@ -269,7 +269,7 @@ class DeserializeUnionGeneratorTest {
                                             val el1 = if (nextHasValue()) { deserializeInt() } else { deserializeNull(); continue }
                                             col1.add(el1)
                                         }
-                                        MyAggregateUnion.ListOfIntList(col1)
+                                        col1
                                     }
                                     col0.add(el0)
                                 }
@@ -288,7 +288,7 @@ class DeserializeUnionGeneratorTest {
                                                     val el1 = if (nextHasValue()) { deserializeInt() } else { deserializeNull(); continue }
                                                     col1.add(el1)
                                                 }
-                                                MyAggregateUnion.MapOfLists(col1)
+                                                col1
                                             }
                                         } else { deserializeNull(); continue }
             

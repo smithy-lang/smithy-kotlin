@@ -1,5 +1,31 @@
 # Changelog
 
+## [1.3.12] - 09/18/2024
+
+## [1.3.11] - 09/18/2024
+
+### Miscellaneous
+* Upgrade to kotlinx.coroutines 1.9.0
+
+## [1.3.10] - 09/16/2024
+
+## [1.3.9] - 09/13/2024
+
+### Features
+* Add OkHttp4Engine, an HTTP engine which uses okhttp3:4.x
+
+## [1.3.8] - 08/29/2024
+
+### Fixes
+* [#1126](https://github.com/awslabs/smithy-kotlin/issues/1126) Correct deserialization of nested map/list types in unions
+
+## [1.3.7] - 08/26/2024
+
+## [1.3.6] - 08/23/2024
+
+### Fixes
+* Correctly mark more CRT exceptions as retriable
+
 ## [1.3.5] - 08/16/2024
 
 ### Fixes

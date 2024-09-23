@@ -1,14 +1,15 @@
 {
   "dependencies": {
     "org.jetbrains.kotlin:kotlin-stdlib:2.0.*": "KotlinStdlib-2.x",
-    "org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm:1.8.*": "KotlinxCoroutinesCoreJvm-1.8.x",
+    "org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm:1.*": "KotlinxCoroutinesCoreJvm-1.x",
 
     "com.squareup.okhttp3:okhttp-coroutines:5.*": "OkHttp3Coroutines-5.x",
     "com.squareup.okhttp3:okhttp:5.*": "OkHttp3-5.x",
     "com.squareup.okio:okio-jvm:3.*": "OkioJvm-3.x",
     "io.opentelemetry:opentelemetry-api:1.*": "Maven-io-opentelemetry_opentelemetry-api-1.x",
     "org.slf4j:slf4j-api:2.*": "Maven-org-slf4j_slf4j-api-2.x",
-    "aws.sdk.kotlin.crt:aws-crt-kotlin:0.8.*": "AwsCrtKotlin-0.8.x"
+    "aws.sdk.kotlin.crt:aws-crt-kotlin:0.8.*": "AwsCrtKotlin-0.8.x",
+    "com.squareup.okhttp3:okhttp:4.*": "OkHttp3-4.x"
   },
   "packageHandlingRules": {
     "versioning": {
@@ -31,9 +32,12 @@
       "aws.smithy.kotlin:version-catalog"
     ],
     "resolvesConflictDependencies": {
+      "org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm:1.*": [
+        "KotlinxCoroutinesCoreJvm-1.x"
+      ],
       "com.squareup.okhttp3:okhttp-coroutines:5.*": [
         "KotlinStdlib-2.x",
-        "KotlinxCoroutinesCoreJvm-1.8.x",
+        "KotlinxCoroutinesCoreJvm-1.x",
         "KotlinStdlibJdk7-2.x",
         "KotlinStdlibJdk8-2.x"
       ],
@@ -42,6 +46,9 @@
       ],
       "com.squareup.okio:okio-jvm:3.*": [
         "KotlinStdlib-2.x"
+      ],
+      "com.squareup.okhttp3:okhttp:4.*": [
+        "OkHttp3-4.x"
       ]
     }
   }

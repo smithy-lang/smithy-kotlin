@@ -14,11 +14,10 @@ import kotlinx.coroutines.test.testTimeSource
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.time.Duration.Companion.seconds
-import kotlin.time.ExperimentalTime
 
 private const val TOLERANCE = 0.0000005
 
-@OptIn(ExperimentalTime::class, ExperimentalCoroutinesApi::class)
+@OptIn(ExperimentalCoroutinesApi::class)
 class AdaptiveRetryIntegrationTest {
     @Test
     fun testCubicCases() = runTest {
