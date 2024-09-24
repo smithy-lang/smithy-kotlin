@@ -39,13 +39,23 @@ class SmokeTestsRunnerGenerator(
     internal fun render() {
         writer.declareSection(SmokeTestsRunner) {
             write("private var exitCode = 0")
-            write("private val skipTags = System.getenv(#S)?.let { it.split(#S).map { it.trim() }.toSet() } ?: emptySet()", SKIP_TAGS, ",")
-            write("private val serviceFilter = System.getenv(#S)?.let { it.split(#S).map { it.trim() }.toSet() } ?: emptySet()", SERVICE_FILTER, ",")
+            write(
+                "private val skipTags = #T(#S)?.let { it.split(#S).map { it.trim() }.toSet() } ?: emptySet()",
+                RuntimeTypes.Core.SmokeTests.getEnv,
+                SKIP_TAGS,
+                ",",
+            )
+            write(
+                "private val serviceFilter = #T(#S)?.let { it.split(#S).map { it.trim() }.toSet() } ?: emptySet()",
+                RuntimeTypes.Core.SmokeTests.getEnv,
+                SERVICE_FILTER,
+                ",",
+            )
             declareSection(SmokeTestAdditionalEnvVars)
             write("")
             withBlock("public suspend fun main() {", "}") {
                 renderFunctionCalls()
-                write("#T(exitCode)", RuntimeTypes.Core.SmokeTests.ExitProcess)
+                write("#T(exitCode)", RuntimeTypes.Core.SmokeTests.exitProcess)
             }
             write("")
             renderFunctions()
@@ -120,7 +130,7 @@ class SmokeTestsRunnerGenerator(
     private fun renderOperation(operation: OperationShape, testCase: SmokeTestCase) {
         val operationSymbol = symbolProvider.toSymbol(model.getShape(operation.input.get()).get())
 
-        writer.withBlock(".use { client ->", "}") {
+        writer.withBlock(".#T { client ->", "}", RuntimeTypes.Core.IO.use) {
             withBlock("client.#L(", ")", operation.defaultName()) {
                 withBlock("#L {", "}", operationSymbol) {
                     testCase.params.get().members.forEach { member ->

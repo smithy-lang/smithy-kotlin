@@ -115,7 +115,8 @@ object RuntimeTypes {
         }
 
         object SmokeTests : RuntimeTypePackage(KotlinDependency.CORE, "smoketests") {
-            val ExitProcess = symbol("exitProcess")
+            val exitProcess = symbol("exitProcess")
+            val getEnv = symbol("getEnv")
         }
 
         object Collections : RuntimeTypePackage(KotlinDependency.CORE, "collections") {
@@ -174,6 +175,7 @@ object RuntimeTypes {
             val Closeable = symbol("Closeable")
             val SdkManagedGroup = symbol("SdkManagedGroup")
             val addIfManaged = symbol("addIfManaged", isExtension = true)
+            val use = symbol("use")
         }
 
         object Text : RuntimeTypePackage(KotlinDependency.CORE, "text") {
