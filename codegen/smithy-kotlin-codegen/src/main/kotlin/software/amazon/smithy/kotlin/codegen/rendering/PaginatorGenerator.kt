@@ -272,18 +272,21 @@ private fun getItemDescriptorOrNull(paginationInfo: PaginationInfo, ctx: Codegen
     val itemMember = ctx.model.expectShape(itemMemberId)
     val isSparse = itemMember.isSparse
     val (collectionLiteral, targetMember) = when (itemMember) {
-        is MapShape ->
-            ctx.symbolProvider.toSymbol(itemMember)
-                .expectProperty(SymbolProperty.ENTRY_EXPRESSION) as String to itemMember
-        is CollectionShape ->
-            ctx.symbolProvider.toSymbol(ctx.model.expectShape(itemMember.member.target)).name to ctx.model.expectShape(
-                itemMember.member.target,
-            )
+        is MapShape -> {
+            val literal = ctx.symbolProvider.toSymbol(itemMember)
+                .expectProperty(SymbolProperty.ENTRY_EXPRESSION) as String + if (isSparse) "?" else ""
+            literal to itemMember
+        }
+        is CollectionShape -> {
+            val symbol = ctx.symbolProvider.toSymbol(ctx.model.expectShape(itemMember.member.target))
+            val literal = symbol.name + if (symbol.isNullable || isSparse) "?" else ""
+            literal to ctx.model.expectShape(itemMember.member.target)
+        }
         else -> error("Unexpected shape type ${itemMember.type}")
     }
 
     return ItemDescriptor(
-        collectionLiteral + if (isSparse) "?" else "",
+        collectionLiteral,
         targetMember,
         itemLiteral,
         itemPathLiteral,

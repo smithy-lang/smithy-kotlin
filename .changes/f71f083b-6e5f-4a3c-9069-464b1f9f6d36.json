@@ -1,0 +1,5 @@
+{
+    "id": "f71f083b-6e5f-4a3c-9069-464b1f9f6d36",
+    "type": "bugfix",
+    "description": "Fix paginator generator nullability unreliablity when collecting flows of collection types like map or list"
+}
