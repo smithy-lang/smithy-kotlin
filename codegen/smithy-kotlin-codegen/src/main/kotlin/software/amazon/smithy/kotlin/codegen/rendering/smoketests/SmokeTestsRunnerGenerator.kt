@@ -7,8 +7,8 @@ import software.amazon.smithy.kotlin.codegen.model.getTrait
 import software.amazon.smithy.kotlin.codegen.model.hasTrait
 import software.amazon.smithy.kotlin.codegen.rendering.util.format
 import software.amazon.smithy.kotlin.codegen.utils.dq
-import software.amazon.smithy.kotlin.codegen.utils.topDownOperations
 import software.amazon.smithy.kotlin.codegen.utils.toCamelCase
+import software.amazon.smithy.kotlin.codegen.utils.topDownOperations
 import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.smoketests.traits.SmokeTestCase
 import software.amazon.smithy.smoketests.traits.SmokeTestsTrait
@@ -16,9 +16,9 @@ import kotlin.jvm.optionals.getOrNull
 
 object SmokeTestsRunner : SectionId
 object SmokeTestAdditionalEnvVars : SectionId
-object SmokeTestDefaultConfig: SectionId
-object SmokeTestRegionDefault: SectionId
-object SmokeTestHttpEngineOverride: SectionId
+object SmokeTestDefaultConfig : SectionId
+object SmokeTestRegionDefault : SectionId
+object SmokeTestHttpEngineOverride : SectionId
 
 const val SKIP_TAGS = "AWS_SMOKE_TEST_SKIP_TAGS"
 const val SERVICE_FILTER = "AWS_SMOKE_TEST_SERVICE_IDS"
