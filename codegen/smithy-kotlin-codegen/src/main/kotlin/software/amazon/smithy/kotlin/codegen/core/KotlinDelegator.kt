@@ -15,7 +15,7 @@ import software.amazon.smithy.model.shapes.Shape
 import java.nio.file.Paths
 
 const val DEFAULT_SOURCE_SET_ROOT = "./src/main/kotlin/"
-private const val DEFAULT_TEST_SOURCE_SET_ROOT = "./src/test/kotlin/"
+const val DEFAULT_TEST_SOURCE_SET_ROOT = "./src/test/kotlin/"
 
 /**
  * Manages writers for Kotlin files.

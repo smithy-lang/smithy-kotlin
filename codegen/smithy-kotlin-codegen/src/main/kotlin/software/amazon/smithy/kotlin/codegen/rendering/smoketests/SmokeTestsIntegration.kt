@@ -2,6 +2,7 @@ package software.amazon.smithy.kotlin.codegen.rendering.smoketests
 
 import software.amazon.smithy.kotlin.codegen.KotlinSettings
 import software.amazon.smithy.kotlin.codegen.core.CodegenContext
+import software.amazon.smithy.kotlin.codegen.core.DEFAULT_TEST_SOURCE_SET_ROOT
 import software.amazon.smithy.kotlin.codegen.core.KotlinDelegator
 import software.amazon.smithy.kotlin.codegen.integration.KotlinIntegration
 import software.amazon.smithy.kotlin.codegen.model.hasTrait
@@ -20,7 +21,7 @@ class SmokeTestsIntegration : KotlinIntegration {
         delegator.useFileWriter(
             "SmokeTests.kt",
             "${ctx.settings.pkg.name}.smoketests",
-            "./jvm-src/test/java/",
+            DEFAULT_TEST_SOURCE_SET_ROOT,
         ) { writer ->
             SmokeTestsRunnerGenerator(
                 writer,

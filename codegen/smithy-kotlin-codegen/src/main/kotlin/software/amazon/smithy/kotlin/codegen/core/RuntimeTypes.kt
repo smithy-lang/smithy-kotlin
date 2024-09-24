@@ -114,6 +114,10 @@ object RuntimeTypes {
             val SmithyBusinessMetric = symbol("SmithyBusinessMetric")
         }
 
+        object SmokeTests : RuntimeTypePackage(KotlinDependency.CORE, "smoketests") {
+            val ExitProcess = symbol("exitProcess")
+        }
+
         object Collections : RuntimeTypePackage(KotlinDependency.CORE, "collections") {
             val Attributes = symbol("Attributes")
             val attributesOf = symbol("attributesOf")

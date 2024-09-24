@@ -38,8 +38,6 @@ class SmokeTestsRunnerGenerator(
 
     internal fun render() {
         writer.declareSection(SmokeTestsRunner) {
-            write("import kotlin.system.exitProcess")
-            write("")
             write("private var exitCode = 0")
             write("private val skipTags = System.getenv(#S)?.let { it.split(#S).map { it.trim() }.toSet() } ?: emptySet()", SKIP_TAGS, ",")
             write("private val serviceFilter = System.getenv(#S)?.let { it.split(#S).map { it.trim() }.toSet() } ?: emptySet()", SERVICE_FILTER, ",")
@@ -47,7 +45,7 @@ class SmokeTestsRunnerGenerator(
             write("")
             withBlock("public suspend fun main() {", "}") {
                 renderFunctionCalls()
-                write("exitProcess(exitCode)")
+                write("#T(exitCode)", RuntimeTypes.Core.SmokeTests.ExitProcess)
             }
             write("")
             renderFunctions()
