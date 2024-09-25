@@ -116,7 +116,6 @@ object RuntimeTypes {
 
         object SmokeTests : RuntimeTypePackage(KotlinDependency.CORE, "smoketests") {
             val exitProcess = symbol("exitProcess")
-            val getEnv = symbol("getEnv")
         }
 
         object Collections : RuntimeTypePackage(KotlinDependency.CORE, "collections") {
@@ -197,6 +196,7 @@ object RuntimeTypes {
             val truthiness = symbol("truthiness")
             val toNumber = symbol("toNumber")
             val type = symbol("type")
+            val PlatformProvider = symbol("PlatformProvider")
         }
 
         object Net : RuntimeTypePackage(KotlinDependency.CORE, "net") {

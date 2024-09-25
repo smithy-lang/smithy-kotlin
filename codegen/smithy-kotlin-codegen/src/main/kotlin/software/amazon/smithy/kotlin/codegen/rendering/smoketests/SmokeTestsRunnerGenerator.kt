@@ -40,14 +40,14 @@ class SmokeTestsRunnerGenerator(
         writer.declareSection(SmokeTestsRunner) {
             write("private var exitCode = 0")
             write(
-                "private val skipTags = #T(#S)?.let { it.split(#S).map { it.trim() }.toSet() } ?: emptySet()",
-                RuntimeTypes.Core.SmokeTests.getEnv,
+                "private val skipTags = #T.System.getenv(#S)?.let { it.split(#S).map { it.trim() }.toSet() } ?: emptySet()",
+                RuntimeTypes.Core.Utils.PlatformProvider,
                 SKIP_TAGS,
                 ",",
             )
             write(
-                "private val serviceFilter = #T(#S)?.let { it.split(#S).map { it.trim() }.toSet() } ?: emptySet()",
-                RuntimeTypes.Core.SmokeTests.getEnv,
+                "private val serviceFilter = #T.System.getenv(#S)?.let { it.split(#S).map { it.trim() }.toSet() } ?: emptySet()",
+                RuntimeTypes.Core.Utils.PlatformProvider,
                 SERVICE_FILTER,
                 ",",
             )

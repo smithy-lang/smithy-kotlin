@@ -74,8 +74,8 @@ class SmokeTestsRunnerGeneratorTest {
         generatedCode.shouldContainOnlyOnceWithDiff(
             """
                 private var exitCode = 0
-                private val skipTags = getEnv("AWS_SMOKE_TEST_SKIP_TAGS")?.let { it.split(",").map { it.trim() }.toSet() } ?: emptySet()
-                private val serviceFilter = getEnv("AWS_SMOKE_TEST_SERVICE_IDS")?.let { it.split(",").map { it.trim() }.toSet() }
+                private val skipTags = PlatformProvider.System.getenv("AWS_SMOKE_TEST_SKIP_TAGS")?.let { it.split(",").map { it.trim() }.toSet() } ?: emptySet()
+                private val serviceFilter = PlatformProvider.System.getenv("AWS_SMOKE_TEST_SERVICE_IDS")?.let { it.split(",").map { it.trim() }.toSet() }
             """.trimIndent(),
         )
     }
