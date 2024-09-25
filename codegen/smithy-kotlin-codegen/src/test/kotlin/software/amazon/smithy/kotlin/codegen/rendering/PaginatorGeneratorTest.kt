@@ -950,11 +950,11 @@ class PaginatorGeneratorTest {
             }
             
             structure ListFunctionsResponse {
-                Functions: FunctionConfigurationList,
+                Functions: FunctionConfigurationMap,
                 NextMarker: String
             }
             
-            map FunctionConfigurationList {
+            map FunctionConfigurationMap {
                 key: String
                 value: FunctionConfiguration
             }
@@ -979,7 +979,7 @@ class PaginatorGeneratorTest {
         val actual = testManifest.expectFileString("src/main/kotlin/com/test/paginators/Paginators.kt")
 
         val expectedCode = """
-            @JvmName("listFunctionsResponseFunctionConfigurationList")
+            @JvmName("listFunctionsResponseFunctionConfigurationMap")
             public fun Flow<ListFunctionsResponse>.functions(): Flow<Map.Entry<String, Document?>> =
                 transform() { response ->
                     response.functions?.forEach {
@@ -1026,12 +1026,12 @@ class PaginatorGeneratorTest {
             }
 
             structure ListFunctionsResponse {
-                Functions: FunctionConfigurationList,
+                Functions: FunctionConfigurationMap,
                 NextMarker: String
             }
 
             @sparse
-            map FunctionConfigurationList {
+            map FunctionConfigurationMap {
                 key: String
                 value: FunctionConfiguration
             }
@@ -1056,7 +1056,7 @@ class PaginatorGeneratorTest {
         val actual = testManifest.expectFileString("src/main/kotlin/com/test/paginators/Paginators.kt")
 
         val expectedCode = """
-            @JvmName("listFunctionsResponseFunctionConfigurationList")
+            @JvmName("listFunctionsResponseFunctionConfigurationMap")
             public fun Flow<ListFunctionsResponse>.functions(): Flow<Map.Entry<String, Document?>?> =
                 transform() { response ->
                     response.functions?.forEach {
