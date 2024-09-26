@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.3.13] - 09/26/2024
+
+### Features
+* Add support for [smoke tests](https://smithy.io/2.0/additional-specs/smoke-tests.html)
+
 ## [1.3.12] - 09/18/2024
 
 ## [1.3.11] - 09/18/2024
