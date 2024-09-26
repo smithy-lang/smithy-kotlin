@@ -86,7 +86,14 @@ object RuntimeTypes {
             val FlexibleChecksumsResponseInterceptor = symbol("FlexibleChecksumsResponseInterceptor")
             val ResponseLengthValidationInterceptor = symbol("ResponseLengthValidationInterceptor")
             val RequestCompressionInterceptor = symbol("RequestCompressionInterceptor")
+            val SmokeTestsInterceptor = symbol("SmokeTestsInterceptor")
+            val SmokeTestsFailureException = symbol("SmokeTestsFailureException")
+            val SmokeTestsSuccessException = symbol("SmokeTestsSuccessException")
         }
+    }
+
+    object HttpTest : RuntimeTypePackage(KotlinDependency.HTTP_TEST) {
+        val TestEngine = symbol("TestEngine")
     }
 
     object Core : RuntimeTypePackage(KotlinDependency.CORE) {
@@ -105,6 +112,10 @@ object RuntimeTypes {
             val ServiceEndpointOverride = symbol("ServiceEndpointOverride")
             val emitBusinessMetric = symbol("emitBusinessMetric")
             val SmithyBusinessMetric = symbol("SmithyBusinessMetric")
+        }
+
+        object SmokeTests : RuntimeTypePackage(KotlinDependency.CORE, "smoketests") {
+            val exitProcess = symbol("exitProcess")
         }
 
         object Collections : RuntimeTypePackage(KotlinDependency.CORE, "collections") {
@@ -163,6 +174,7 @@ object RuntimeTypes {
             val Closeable = symbol("Closeable")
             val SdkManagedGroup = symbol("SdkManagedGroup")
             val addIfManaged = symbol("addIfManaged", isExtension = true)
+            val use = symbol("use")
         }
 
         object Text : RuntimeTypePackage(KotlinDependency.CORE, "text") {
@@ -184,6 +196,7 @@ object RuntimeTypes {
             val truthiness = symbol("truthiness")
             val toNumber = symbol("toNumber")
             val type = symbol("type")
+            val PlatformProvider = symbol("PlatformProvider")
         }
 
         object Net : RuntimeTypePackage(KotlinDependency.CORE, "net") {

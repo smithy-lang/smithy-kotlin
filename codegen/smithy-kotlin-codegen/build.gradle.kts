@@ -31,6 +31,7 @@ dependencies {
     implementation(libs.smithy.aws.traits)
     implementation(libs.smithy.protocol.traits)
     implementation(libs.smithy.protocol.test.traits)
+    implementation(libs.smithy.smoke.test.traits)
     implementation(libs.jsoup)
 
     // Test dependencies
