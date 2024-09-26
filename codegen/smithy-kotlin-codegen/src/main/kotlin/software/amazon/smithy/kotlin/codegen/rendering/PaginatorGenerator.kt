@@ -274,7 +274,7 @@ private fun getItemDescriptorOrNull(paginationInfo: PaginationInfo, ctx: Codegen
     val (collectionLiteral, targetMember) = when (itemMember) {
         is MapShape -> {
             val symbol = ctx.symbolProvider.toSymbol(itemMember)
-            val entryExpression = symbol.expectProperty(SymbolProperty.ENTRY_EXPRESSION) as String + if (isSparse) "?" else ""
+            val entryExpression = symbol.expectProperty(SymbolProperty.ENTRY_EXPRESSION) as String
             entryExpression to itemMember
         }
         is CollectionShape -> {
