@@ -1143,4 +1143,80 @@ class PaginatorGeneratorTest {
         """.trimIndent()
         actual.shouldContainOnlyOnceWithDiff(expectedCode)
     }
+
+    @Test
+    fun testRenderPaginatorWithStringMap() {
+        val testModelWithItems = """
+            namespace com.test
+
+            use aws.protocols#restJson1
+
+            service Lambda {
+                operations: [ListFunctions]
+            }
+
+            @paginated(
+                inputToken: "Marker",
+                outputToken: "NextMarker",
+                pageSize: "MaxItems",
+                items: "Functions"
+            )
+            @readonly
+            @http(method: "GET", uri: "/functions", code: 200)
+            operation ListFunctions {
+                input: ListFunctionsRequest,
+                output: ListFunctionsResponse
+            }
+
+            structure ListFunctionsRequest {
+                @httpQuery("FunctionVersion")
+                FunctionVersion: String,
+                @httpQuery("Marker")
+                Marker: String,
+                @httpQuery("MasterRegion")
+                MasterRegion: String,
+                @httpQuery("MaxItems")
+                MaxItems: Integer
+            }
+
+            structure ListFunctionsResponse {
+                Functions: FunctionConfigurationMap,
+                NextMarker: String
+            }
+
+            map FunctionConfigurationMap {
+                key: String
+                value: FunctionConfiguration
+            }
+
+            string FunctionConfiguration
+        """.toSmithyModel()
+        val testContextWithItems = testModelWithItems.newTestContext("Lambda", "com.test")
+
+        val codegenContextWithItems = object : CodegenContext {
+            override val model: Model = testContextWithItems.generationCtx.model
+            override val symbolProvider: SymbolProvider = testContextWithItems.generationCtx.symbolProvider
+            override val settings: KotlinSettings = testContextWithItems.generationCtx.settings
+            override val protocolGenerator: ProtocolGenerator = testContextWithItems.generator
+            override val integrations: List<KotlinIntegration> = testContextWithItems.generationCtx.integrations
+        }
+
+        val unit = PaginatorGenerator()
+        unit.writeAdditionalFiles(codegenContextWithItems, testContextWithItems.generationCtx.delegator)
+
+        testContextWithItems.generationCtx.delegator.flushWriters()
+        val testManifest = testContextWithItems.generationCtx.delegator.fileManifest as MockManifest
+        val actual = testManifest.expectFileString("src/main/kotlin/com/test/paginators/Paginators.kt")
+
+        val expectedCode = """
+            @JvmName("listFunctionsResponseFunctionConfigurationMap")
+            public fun Flow<ListFunctionsResponse>.functions(): Flow<Map.Entry<String, String>> =
+                transform() { response ->
+                    response.functions?.forEach {
+                        emit(it)
+                    }
+                }
+        """.trimIndent()
+        actual.shouldContainOnlyOnceWithDiff(expectedCode)
+    }
 }
