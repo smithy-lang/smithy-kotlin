@@ -166,7 +166,7 @@ class KotlinSymbolProvider(private val model: Model, private val settings: Kotli
         val fullyQualifiedKeyType = keyReference.fullName
 
         val valueReference = toSymbol(shape.value)
-        val valueSuffix = if (valueReference.isNullable) "?" else ""
+        val valueSuffix = if (valueReference.isNullable || shape.isSparse) "?" else ""
         val valueType = "${valueReference.name}$valueSuffix"
         val fullyQualifiedValueType = "${valueReference.fullName}$valueSuffix"
 
