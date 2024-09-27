@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.3.14] - 09/27/2024
+
+### Fixes
+* Fix paginator generator `List<*>` & `Map.Entry<String, *>` nullability
+
 ## [1.3.13] - 09/26/2024
 
 ### Features
