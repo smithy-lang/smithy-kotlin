@@ -3,8 +3,13 @@ package software.amazon.smithy.kotlin.codegen.rendering.smoketests
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.kotlin.codegen.core.*
 import software.amazon.smithy.kotlin.codegen.integration.SectionId
+import software.amazon.smithy.kotlin.codegen.integration.SectionKey
 import software.amazon.smithy.kotlin.codegen.model.getTrait
 import software.amazon.smithy.kotlin.codegen.model.hasTrait
+import software.amazon.smithy.kotlin.codegen.rendering.endpoints.EndpointParametersGenerator
+import software.amazon.smithy.kotlin.codegen.rendering.endpoints.EndpointProviderGenerator
+import software.amazon.smithy.kotlin.codegen.rendering.smoketests.SmokeTestUriValue.EndpointParameters
+import software.amazon.smithy.kotlin.codegen.rendering.smoketests.SmokeTestUriValue.EndpointProvider
 import software.amazon.smithy.kotlin.codegen.rendering.util.format
 import software.amazon.smithy.kotlin.codegen.utils.dq
 import software.amazon.smithy.kotlin.codegen.utils.toCamelCase
@@ -18,7 +23,21 @@ object SmokeTestsRunner : SectionId
 object SmokeTestAdditionalEnvVars : SectionId
 object SmokeTestDefaultConfig : SectionId
 object SmokeTestRegionDefault : SectionId
+object SmokeTestUseDualStackKey : SectionId
+object SmokeTestSigv4aRegionSetKey : SectionId
+object SmokeTestSigv4aRegionSetValue : SectionId
+object SmokeTestAccountIdBasedRoutingKey : SectionId
+object SmokeTestAccountIdBasedRoutingValue : SectionId
 object SmokeTestHttpEngineOverride : SectionId
+object SmokeTestUseAccelerateKey : SectionId
+object SmokeTestUseMultiRegionAccessPointsKey : SectionId
+object SmokeTestUseMultiRegionAccessPointsValue : SectionId
+object SmokeTestUseGlobalEndpoint : SectionId
+object SmokeTestUriKey : SectionId
+object SmokeTestUriValue : SectionId {
+    val EndpointProvider: SectionKey<Symbol> = SectionKey("EndpointProvider")
+    val EndpointParameters: SectionKey<Symbol> = SectionKey("EndpointParameters")
+}
 
 const val SKIP_TAGS = "AWS_SMOKE_TEST_SKIP_TAGS"
 const val SERVICE_FILTER = "AWS_SMOKE_TEST_SERVICE_IDS"
@@ -31,10 +50,11 @@ class SmokeTestsRunnerGenerator(
     ctx: CodegenContext,
 ) {
     private val model = ctx.model
-    private val sdkId = ctx.settings.sdkId
+    private val settings = ctx.settings
+    private val sdkId = settings.sdkId
     private val symbolProvider = ctx.symbolProvider
-    private val service = symbolProvider.toSymbol(model.expectShape(ctx.settings.service))
-    private val operations = ctx.model.topDownOperations(ctx.settings.service).filter { it.hasTrait<SmokeTestsTrait>() }
+    private val service = symbolProvider.toSymbol(model.expectShape(settings.service))
+    private val operations = model.topDownOperations(settings.service).filter { it.hasTrait<SmokeTestsTrait>() }
 
     internal fun render() {
         writer.declareSection(SmokeTestsRunner) {
@@ -108,12 +128,72 @@ class SmokeTestsRunnerGenerator(
         writer.withInlineBlock("#L {", "}", service) {
             if (testCase.vendorParams.isPresent) {
                 testCase.vendorParams.get().members.forEach { vendorParam ->
-                    if (vendorParam.key.value == "region") {
-                        writeInline("#L = ", vendorParam.key.value.toCamelCase())
-                        declareSection(SmokeTestRegionDefault)
-                        write("#L", vendorParam.value.format())
-                    } else {
-                        write("#L = #L", vendorParam.key.value.toCamelCase(), vendorParam.value.format())
+                    when (vendorParam.key.value) {
+                        "region" -> {
+                            writeInline("#L = ", vendorParam.key.value.toCamelCase())
+                            declareSection(SmokeTestRegionDefault)
+                            write("#L", vendorParam.value.format())
+                        }
+                        "sigv4aRegionSet" -> {
+                            declareSection(SmokeTestSigv4aRegionSetKey) {
+                                writeInline("#L", vendorParam.key.value.toCamelCase())
+                            }
+                            writeInline(" = ")
+                            declareSection(SmokeTestSigv4aRegionSetValue) {
+                                write("#L", vendorParam.value.format())
+                            }
+                        }
+                        "uri" -> {
+                            declareSection(SmokeTestUriKey) {
+                                writeInline("#L", vendorParam.key.value.toCamelCase())
+                            }
+                            writeInline(" = ")
+                            declareSection(
+                                SmokeTestUriValue,
+                                mapOf(
+                                    EndpointProvider to EndpointProviderGenerator.getSymbol(settings),
+                                    EndpointParameters to EndpointParametersGenerator.getSymbol(settings),
+                                ),
+                            ) {
+                                write("#L", vendorParam.value.format())
+                            }
+                        }
+                        "useDualstack" -> {
+                            declareSection(SmokeTestUseDualStackKey) {
+                                writeInline("#L", vendorParam.key.value.toCamelCase())
+                            }
+                            write(" = #L", vendorParam.value.format())
+                        }
+                        "useAccountIdRouting" -> {
+                            declareSection(SmokeTestAccountIdBasedRoutingKey) {
+                                writeInline("#L", vendorParam.key.value.toCamelCase())
+                            }
+                            writeInline(" = ")
+                            declareSection(SmokeTestAccountIdBasedRoutingValue) {
+                                write("#L", vendorParam.value.format())
+                            }
+                        }
+                        "useAccelerate" -> {
+                            declareSection(SmokeTestUseAccelerateKey) {
+                                writeInline("#L", vendorParam.key.value.toCamelCase())
+                            }
+                            write(" = #L", vendorParam.value.format())
+                        }
+                        "useMultiRegionAccessPoints" -> {
+                            declareSection(SmokeTestUseMultiRegionAccessPointsKey) {
+                                writeInline("#L", vendorParam.key.value.toCamelCase())
+                            }
+                            writeInline(" = ")
+                            declareSection(SmokeTestUseMultiRegionAccessPointsValue) {
+                                write("#L", vendorParam.value.format())
+                            }
+                        }
+                        "useGlobalEndpoint" -> {
+                            declareSection(SmokeTestUseGlobalEndpoint) {
+                                write("#L = #L", vendorParam.key.value.toCamelCase(), vendorParam.value.format())
+                            }
+                        }
+                        else -> write("#L = #L", vendorParam.key.value.toCamelCase(), vendorParam.value.format())
                     }
                 }
             } else {
