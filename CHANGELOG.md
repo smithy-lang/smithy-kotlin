@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.3.15] - 10/08/2024
+
+### Miscellaneous
+* Upgrade to Smithy 1.51.0
+
 ## [1.3.14] - 09/27/2024
 
 ### Fixes
