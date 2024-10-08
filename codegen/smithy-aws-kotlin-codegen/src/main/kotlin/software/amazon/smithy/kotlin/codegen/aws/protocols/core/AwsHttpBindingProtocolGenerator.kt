@@ -39,12 +39,7 @@ abstract class AwsHttpBindingProtocolGenerator : HttpBindingProtocolGenerator() 
         // The following can be used to generate only a specific test by name.
         // val targetedTest = TestMemberDelta(setOf("RestJsonComplexErrorWithNoMessage"), TestContainmentMode.RUN_TESTS)
 
-        val ignoredTests = TestMemberDelta(
-            setOf(
-                // Test broken in Smithy 1.50.0, should be fixed by https://github.com/smithy-lang/smithy/pull/2341
-                "RestJsonClientIgnoresDefaultValuesIfMemberValuesArePresentInResponse",
-            ),
-        )
+        val ignoredTests = TestMemberDelta(setOf())
 
         val requestTestBuilder = HttpProtocolUnitTestRequestGenerator.Builder()
         val responseTestBuilder = HttpProtocolUnitTestResponseGenerator.Builder()
