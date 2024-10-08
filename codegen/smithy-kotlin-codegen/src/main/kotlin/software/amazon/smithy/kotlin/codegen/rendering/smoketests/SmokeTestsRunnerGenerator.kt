@@ -236,6 +236,7 @@ class SmokeTestsRunnerGenerator(
             testCase.expectation.isFailure,
             writer,
         )
+        writer.write("if (!success) #T(e)", RuntimeTypes.Core.SmokeTests.printExceptionStackTrace)
         writer.write("if (!success) exitCode = 1")
     }
 
