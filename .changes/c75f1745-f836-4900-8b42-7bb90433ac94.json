@@ -1,8 +1,0 @@
-{
-    "id": "c75f1745-f836-4900-8b42-7bb90433ac94",
-    "type": "bugfix",
-    "description": "Remove Route53 InvalidChangeBatch customization",
-    "issues": [
-        "https://github.com/awslabs/aws-sdk-kotlin/issues/1433"
-    ]
-}
