@@ -213,8 +213,10 @@ class SmokeTestsRunnerGenerator(
         writer.withBlock(".#T { client ->", "}", RuntimeTypes.Core.IO.use) {
             withBlock("client.#L(", ")", operation.defaultName()) {
                 withBlock("#L {", "}", operationSymbol) {
-                    testCase.params.get().members.forEach { member ->
-                        write("#L = #L", member.key.value.toCamelCase(), member.value.format())
+                    if (testCase.params.isPresent) {
+                        testCase.params.get().members.forEach { member ->
+                            write("#L = #L", member.key.value.toCamelCase(), member.value.format())
+                        }
                     }
                 }
             }
