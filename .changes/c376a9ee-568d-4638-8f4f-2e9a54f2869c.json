@@ -1,5 +1,5 @@
 {
     "id": "c376a9ee-568d-4638-8f4f-2e9a54f2869c",
     "type": "misc",
-    "description": "Better smoke tests runner logging - Failed smoke tests now print exception stack trace"
+    "description": "Failed smoke tests now print exception stack trace"
 }
