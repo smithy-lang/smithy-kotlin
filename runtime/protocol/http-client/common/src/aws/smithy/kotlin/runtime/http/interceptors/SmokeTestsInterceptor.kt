@@ -23,7 +23,12 @@ public class SmokeTestsInterceptor : HttpInterceptor {
     }
 }
 
-@InternalApi public class SmokeTestsFailureException(message: String) : Exception(message)
+@InternalApi public class SmokeTestsFailureException(message: String) : Exception(message) {
+    public constructor() : this("Smoke test failed with HTTP status code in the inclusive range: 400-599")
+}
 
-@InternalApi public class SmokeTestsSuccessException(message: String) : Exception(message)
+@InternalApi public class SmokeTestsSuccessException(message: String) : Exception(message) {
+    public constructor() : this("Smoke test succeeded with HTTP status code in the inclusive range: 200-599")
+}
+
 private class SmokeTestsUnexpectedException(message: String) : Exception(message)
