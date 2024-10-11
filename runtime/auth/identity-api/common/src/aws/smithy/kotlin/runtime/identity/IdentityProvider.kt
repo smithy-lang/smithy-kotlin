@@ -20,15 +20,6 @@ public interface IdentityProvider {
      * @return An [Identity] that can be used to connect to the service
      */
     public suspend fun resolve(attributes: Attributes = emptyAttributes()): Identity
-
-    /**
-     * The name of the identity provider.
-     *
-     * It ensures that the name is still available even if the identity provider is wrapped or decorated.
-     * By default, it returns `null`, but implementations can override it to provide a meaningful name.
-     */
-    public val providerName: String?
-        get() = null
 }
 
 /**

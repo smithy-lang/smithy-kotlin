@@ -29,7 +29,7 @@ public abstract class IdentityProviderChain<P : IdentityProvider, I : Identity>(
         require(providers.isNotEmpty()) { "at least one provider must be in the chain" }
     }
     override fun toString(): String =
-        (listOf(this) + providers).map { it.providerName ?: it::class.simpleName }.joinToString(" -> ")
+        (listOf(this) + providers).map { it::class.simpleName }.joinToString(" -> ")
 
     override suspend fun resolve(attributes: Attributes): I = withSpan<IdentityProviderChain<*, *>, I>("ResolveIdentityChain") {
         val logger = coroutineContext.logger<IdentityProviderChain<*, *>>()
