@@ -18,6 +18,7 @@ public final class aws/smithy/kotlin/runtime/http/auth/AnonymousIdentity : aws/s
 
 public final class aws/smithy/kotlin/runtime/http/auth/AnonymousIdentityProvider : aws/smithy/kotlin/runtime/identity/IdentityProvider {
 	public static final field INSTANCE Laws/smithy/kotlin/runtime/http/auth/AnonymousIdentityProvider;
+	public fun getProviderName ()Ljava/lang/String;
 	public fun resolve (Laws/smithy/kotlin/runtime/collections/Attributes;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
@@ -34,6 +35,10 @@ public final class aws/smithy/kotlin/runtime/http/auth/BearerTokenAuthScheme : a
 
 public abstract interface class aws/smithy/kotlin/runtime/http/auth/BearerTokenProvider : aws/smithy/kotlin/runtime/identity/IdentityProvider {
 	public abstract fun resolve (Laws/smithy/kotlin/runtime/collections/Attributes;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
+public final class aws/smithy/kotlin/runtime/http/auth/BearerTokenProvider$DefaultImpls {
+	public static fun getProviderName (Laws/smithy/kotlin/runtime/http/auth/BearerTokenProvider;)Ljava/lang/String;
 }
 
 public final class aws/smithy/kotlin/runtime/http/auth/BearerTokenProviderChain : aws/smithy/kotlin/runtime/identity/IdentityProviderChain, aws/smithy/kotlin/runtime/http/auth/BearerTokenProvider {
@@ -57,5 +62,9 @@ public final class aws/smithy/kotlin/runtime/http/auth/BearerTokenSigner : aws/s
 }
 
 public abstract interface class aws/smithy/kotlin/runtime/http/auth/CloseableBearerTokenProvider : aws/smithy/kotlin/runtime/http/auth/BearerTokenProvider, java/io/Closeable {
+}
+
+public final class aws/smithy/kotlin/runtime/http/auth/CloseableBearerTokenProvider$DefaultImpls {
+	public static fun getProviderName (Laws/smithy/kotlin/runtime/http/auth/CloseableBearerTokenProvider;)Ljava/lang/String;
 }
 
