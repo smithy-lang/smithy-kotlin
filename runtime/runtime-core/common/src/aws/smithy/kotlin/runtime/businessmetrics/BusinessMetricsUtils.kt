@@ -77,3 +77,10 @@ public enum class SmithyBusinessMetric(public override val identifier: String) :
     ACCOUNT_ID_BASED_ENDPOINT("O"),
     SIGV4A_SIGNING("S"),
 }
+
+/**
+ * Emits a business metric if the current [Attributes] instance is of type [ExecutionContext].
+ */
+public fun Attributes.emitBusinessMetric(metric: BusinessMetric) {
+    if (this is ExecutionContext) this.emitBusinessMetric(metric)
+}
