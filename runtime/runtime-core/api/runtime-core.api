@@ -133,6 +133,7 @@ public final class aws/smithy/kotlin/runtime/collections/AttributesBuilder {
 
 public final class aws/smithy/kotlin/runtime/collections/AttributesKt {
 	public static final fun attributesOf (Lkotlin/jvm/functions/Function1;)Laws/smithy/kotlin/runtime/collections/Attributes;
+	public static final fun copy (Laws/smithy/kotlin/runtime/collections/Attributes;)Laws/smithy/kotlin/runtime/collections/Attributes;
 	public static final fun emptyAttributes ()Laws/smithy/kotlin/runtime/collections/Attributes;
 	public static final fun get (Laws/smithy/kotlin/runtime/collections/Attributes;Laws/smithy/kotlin/runtime/collections/AttributeKey;)Ljava/lang/Object;
 	public static final fun isNotEmpty (Laws/smithy/kotlin/runtime/collections/Attributes;)Z
@@ -141,6 +142,7 @@ public final class aws/smithy/kotlin/runtime/collections/AttributesKt {
 	public static final fun mutableAttributesOf (Lkotlin/jvm/functions/Function1;)Laws/smithy/kotlin/runtime/collections/MutableAttributes;
 	public static final fun putIfAbsent (Laws/smithy/kotlin/runtime/collections/MutableAttributes;Laws/smithy/kotlin/runtime/collections/AttributeKey;Ljava/lang/Object;)V
 	public static final fun putIfAbsentNotNull (Laws/smithy/kotlin/runtime/collections/MutableAttributes;Laws/smithy/kotlin/runtime/collections/AttributeKey;Ljava/lang/Object;)V
+	public static final fun resetTo (Laws/smithy/kotlin/runtime/collections/MutableAttributes;Laws/smithy/kotlin/runtime/collections/Attributes;)V
 	public static final fun setIfValueNotNull (Laws/smithy/kotlin/runtime/collections/MutableAttributes;Laws/smithy/kotlin/runtime/collections/AttributeKey;Ljava/lang/Object;)V
 	public static final fun take (Laws/smithy/kotlin/runtime/collections/MutableAttributes;Laws/smithy/kotlin/runtime/collections/AttributeKey;)Ljava/lang/Object;
 	public static final fun takeOrNull (Laws/smithy/kotlin/runtime/collections/MutableAttributes;Laws/smithy/kotlin/runtime/collections/AttributeKey;)Ljava/lang/Object;
