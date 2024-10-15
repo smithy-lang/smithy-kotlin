@@ -235,27 +235,3 @@ public inline fun attributesOf(block: AttributesBuilder.() -> Unit): Attributes 
  * Returns a new [MutableAttributes] instance with elements from this set of attributes.
  */
 public fun Attributes.toMutableAttributes(): MutableAttributes = AttributesImpl(this)
-
-/**
- * Creates a copy of this [Attributes] instance.
- *
- * This function generates a new [Attributes] instance containing all the key-value pairs
- * from the current set of attributes. The new instance is independent of the original,
- * meaning changes to the copied attributes will not affect the original set.
- */
-public fun Attributes.copy(): Attributes {
-    val copy = mutableAttributes()
-    (this.keys as Set<AttributeKey<Any>>).forEach { key ->
-        copy[key] = this[key]
-    }
-    return copy
-}
-
-/**
- * Resets this [MutableAttributes] instance to the state of the specified [Attributes].
- */
-public fun MutableAttributes.resetTo(attributes: Attributes) {
-    val obsoleteKeys = this.keys.subtract(attributes.keys)
-    obsoleteKeys.forEach { key -> this.remove(key as AttributeKey<Any>) }
-    this.merge(attributes)
-}
