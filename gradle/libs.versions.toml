@@ -13,7 +13,7 @@ okio-version = "3.9.1"
 otel-version = "1.43.0"
 slf4j-version = "2.0.16"
 slf4j-v1x-version = "1.7.36"
-crt-kotlin-version = "0.8.9"
+crt-kotlin-version = "0.8.10"
 micrometer-version = "1.13.6"
 
 # codegen
@@ -28,7 +28,7 @@ kotlinx-benchmark-version = "0.4.12"
 kotlinx-serialization-version = "1.7.3"
 docker-java-version = "3.4.0"
 ktor-version = "2.3.12"
-kaml-version = "0.61.0"
+kaml-version = "0.55.0"
 jsoup-version = "1.18.1"
 
 [libraries]
