@@ -27,3 +27,14 @@ public interface CredentialsProvider : IdentityProvider {
 public interface CloseableCredentialsProvider :
     CredentialsProvider,
     Closeable
+
+/**
+ * Retrieves the simple name of the class implementing [CredentialsProvider].
+ *
+ * This property uses Kotlin reflection to obtain the simple class name of
+ * the current instance of [CredentialsProvider]. The simple class name is
+ * the name of the class without the package qualification (e.g., "MyCredentialsProvider"
+ * instead of "com.example.MyCredentialsProvider").
+ */
+public val CredentialsProvider.simpleClassName: String
+    get() = this::class.simpleName ?: "AnonymousCredentialsProvider"

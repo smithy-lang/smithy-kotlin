@@ -73,6 +73,8 @@ public class CachedCredentialsProvider(
         cachedCredentials.close()
         source.closeIfCloseable()
     }
+
+    override fun toString(): String = this.simpleClassName + ": " + this.source.simpleClassName
 }
 
 /**
