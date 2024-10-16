@@ -116,6 +116,7 @@ object RuntimeTypes {
 
         object SmokeTests : RuntimeTypePackage(KotlinDependency.CORE, "smoketests") {
             val exitProcess = symbol("exitProcess")
+            val printExceptionStackTrace = symbol("printExceptionStackTrace")
         }
 
         object Collections : RuntimeTypePackage(KotlinDependency.CORE, "collections") {
@@ -377,6 +378,10 @@ object RuntimeTypes {
             val mergeAuthOptions = symbol("mergeAuthOptions")
             val sigV4 = symbol("sigV4")
             val sigV4A = symbol("sigV4A")
+        }
+
+        object AwsSigningCrt : RuntimeTypePackage(KotlinDependency.AWS_SIGNING_CRT) {
+            val CrtAwsSigner = symbol("CrtAwsSigner")
         }
     }
 
