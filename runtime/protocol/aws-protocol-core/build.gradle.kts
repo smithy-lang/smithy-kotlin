@@ -7,9 +7,7 @@ description = "Common AWS protocol support"
 extra["displayName"] = "AWS :: Smithy :: Kotlin :: AWS Protocols"
 extra["moduleName"] = "aws.smithy.kotlin.runtime.awsprotocol"
 
-val coroutinesVersion: String by project
-
-apply(plugin = "kotlinx-atomicfu")
+apply(plugin = "org.jetbrains.kotlinx.atomicfu")
 
 kotlin {
     sourceSets {

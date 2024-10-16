@@ -1,35 +1,35 @@
 [versions]
-kotlin-version = "2.0.10"
+kotlin-version = "2.0.21"
 dokka-version = "1.9.10"
 
-aws-kotlin-repo-tools-version = "0.4.10"
+aws-kotlin-repo-tools-version = "0.4.13"
 
 # libs
 coroutines-version = "1.9.0"
-atomicfu-version = "0.24.0"
+atomicfu-version = "0.25.0"
 okhttp-version = "5.0.0-alpha.14"
 okhttp4-version = "4.12.0"
-okio-version = "3.9.0"
-otel-version = "1.32.0"
-slf4j-version = "2.0.9"
+okio-version = "3.9.1"
+otel-version = "1.43.0"
+slf4j-version = "2.0.16"
 slf4j-v1x-version = "1.7.36"
-crt-kotlin-version = "0.8.9"
-micrometer-version = "1.13.2"
+crt-kotlin-version = "0.8.10"
+micrometer-version = "1.13.6"
 
 # codegen
 smithy-version = "1.51.0"
 smithy-gradle-version = "0.9.0"
 
 # testing
-junit-version = "5.10.1"
-kotest-version = "5.8.0"
+junit-version = "5.10.5"
+kotest-version = "5.9.1"
 kotlin-compile-testing-version = "1.6.0"
-kotlinx-benchmark-version = "0.4.9"
-kotlinx-serialization-version = "1.6.0"
-docker-java-version = "3.3.6"
+kotlinx-benchmark-version = "0.4.12"
+kotlinx-serialization-version = "1.7.3"
+docker-java-version = "3.4.0"
 ktor-version = "2.3.12"
 kaml-version = "0.55.0"
-jsoup-version = "1.16.2"
+jsoup-version = "1.18.1"
 
 [libraries]
 aws-kotlin-repo-tools-build-support = { module="aws.sdk.kotlin.gradle:build-support", version.ref = "aws-kotlin-repo-tools-version" }
