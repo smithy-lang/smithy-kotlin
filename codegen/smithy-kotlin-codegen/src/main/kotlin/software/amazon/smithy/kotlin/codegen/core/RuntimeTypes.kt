@@ -330,7 +330,6 @@ object RuntimeTypes {
                 val CredentialsProvider = symbol("CredentialsProvider")
                 val CredentialsProviderConfig = symbol("CredentialsProviderConfig")
                 val SigV4aClientConfig = symbol("SigV4aClientConfig")
-                val simpleClassName = symbol("simpleClassName")
             }
         }
 
