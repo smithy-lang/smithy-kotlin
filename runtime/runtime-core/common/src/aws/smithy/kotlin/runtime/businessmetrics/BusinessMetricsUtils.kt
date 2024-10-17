@@ -98,3 +98,10 @@ public fun Attributes.copyBusinessMetrics(): MutableSet<String> {
     }
     return copy
 }
+
+/**
+ * Merges another [Attributes] business metrics into this instance of [MutableAttributes].
+ */
+public fun MutableAttributes.mergeBusinessMetrics(other: Attributes) {
+    this[BusinessMetrics] = this[BusinessMetrics].union(other[BusinessMetrics]).toMutableSet()
+}

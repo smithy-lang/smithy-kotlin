@@ -115,6 +115,18 @@ public fun MutableAttributes.merge(other: Attributes) {
     }
 }
 
+/**
+ * Merge another attributes instance into this set of attributes favoring [other] except for any keys that are
+ * specified in the [exceptions] set
+ */
+public fun MutableAttributes.mergeExcept(other: Attributes, exceptions: Set<AttributeKey<*>>) {
+    other.keys.forEach {
+        if (it in exceptions) return@forEach
+        @Suppress("UNCHECKED_CAST")
+        set(it as AttributeKey<Any>, other[it])
+    }
+}
+
 private class AttributesImpl constructor(seed: Attributes) : MutableAttributes {
     private val map: MutableMap<AttributeKey<*>, Any> = mutableMapOf()
     constructor() : this(emptyAttributes())
