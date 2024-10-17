@@ -5,8 +5,7 @@
 package aws.smithy.kotlin.runtime.businessmetrics
 
 import aws.smithy.kotlin.runtime.InternalApi
-import aws.smithy.kotlin.runtime.collections.AttributeKey
-import aws.smithy.kotlin.runtime.collections.get
+import aws.smithy.kotlin.runtime.collections.*
 import aws.smithy.kotlin.runtime.operation.ExecutionContext
 
 /**
@@ -77,4 +76,32 @@ public enum class SmithyBusinessMetric(public override val identifier: String) :
     SERVICE_ENDPOINT_OVERRIDE("N"),
     ACCOUNT_ID_BASED_ENDPOINT("O"),
     SIGV4A_SIGNING("S"),
+}
+
+/**
+ * Emits a business metric if the current [Attributes] instance is of type [ExecutionContext].
+ */
+public fun Attributes.emitBusinessMetric(metric: BusinessMetric) {
+    if (this is ExecutionContext) this.emitBusinessMetric(metric)
+}
+
+/**
+ * Creates a copy of an [Attributes] business metrics.
+ * Returns an empty set if no business metrics are available.
+ */
+public fun Attributes.copyBusinessMetrics(): MutableSet<String> {
+    val copy = mutableSetOf<String>()
+    if (!this.contains(BusinessMetrics)) return copy
+
+    this[BusinessMetrics].forEach { metric ->
+        copy.add(metric)
+    }
+    return copy
+}
+
+/**
+ * Merges another [Attributes] business metrics into this instance of [MutableAttributes].
+ */
+public fun MutableAttributes.mergeBusinessMetrics(other: Attributes) {
+    this[BusinessMetrics] = this[BusinessMetrics].union(other[BusinessMetrics]).toMutableSet()
 }
