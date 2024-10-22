@@ -12,6 +12,7 @@ import aws.smithy.kotlin.runtime.hashing.sha256
 import aws.smithy.kotlin.runtime.http.*
 import aws.smithy.kotlin.runtime.http.complete
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
+import aws.smithy.kotlin.runtime.http.test.suite.DOWNLOAD_SIZE
 import aws.smithy.kotlin.runtime.http.test.util.AbstractEngineTest
 import aws.smithy.kotlin.runtime.http.test.util.test
 import aws.smithy.kotlin.runtime.http.test.util.testSetup
@@ -62,16 +63,17 @@ class FileUploadDownloadTest : AbstractEngineTest() {
 
                 val expectedSha256 = call.response.headers["expected-sha256"] ?: fail("missing expected-sha256 header")
                 val contentLength = call.response.body.contentLength ?: fail("expected Content-Length")
-                check(contentLength < Int.MAX_VALUE)
+                assertEquals(DOWNLOAD_SIZE, contentLength)
 
                 val body = call.response.body
                 val stream = checkNotNull(body.toByteStream())
 
                 val file = RandomTempFile(0)
                 stream.writeToFile(file)
+                assertEquals(DOWNLOAD_SIZE, file.length())
+
                 val readSha256 = file.readBytes().sha256().encodeToHex()
                 assertEquals(expectedSha256, readSha256)
-                assertEquals(contentLength, file.length())
             } finally {
                 call.complete()
             }

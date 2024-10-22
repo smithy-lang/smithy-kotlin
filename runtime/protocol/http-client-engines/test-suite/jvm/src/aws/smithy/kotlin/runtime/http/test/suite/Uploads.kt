@@ -11,6 +11,8 @@ import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import io.ktor.utils.io.availableForRead
+import io.ktor.utils.io.readAvailable
 
 private const val CHUNK_SIZE = 1024 * 8
 
