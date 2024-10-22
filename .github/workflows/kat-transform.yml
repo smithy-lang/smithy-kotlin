@@ -22,13 +22,6 @@ jobs:
   verify-transform:
     runs-on: ubuntu-latest
     steps:
-      - name: Configure JDK
-        uses: actions/setup-java@v3
-        with:
-          distribution: 'corretto'
-          java-version: 17
-          cache: 'gradle'
-
       - name: Checkout sources
         uses: actions/checkout@v4
         with:
@@ -42,6 +35,13 @@ jobs:
 
       - name: Setup kat
         uses: awslabs/aws-kotlin-repo-tools/.github/actions/setup-kat@main
+
+      - name: Configure JDK
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'corretto'
+          java-version: 17
+          cache: 'gradle'
 
       - name: Build
         working-directory: ./smithy-kotlin
