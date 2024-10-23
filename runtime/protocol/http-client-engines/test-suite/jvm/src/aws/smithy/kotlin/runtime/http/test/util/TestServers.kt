@@ -88,10 +88,13 @@ internal fun startServers(sslConfigPath: String): Closeable {
     return servers
 }
 
-private fun tlsServer(instance: TestServer, sslConfig: SslConfig): ApplicationEngine {
+private fun tlsServer(instance: TestServer, sslConfig: SslConfig): EmbeddedServer<*, *> {
     val description = "${instance.type.name} server on port ${instance.port}"
     println("Starting $description...")
-    val environment = applicationEngineEnvironment {
+    val rootConfig = serverConfig {
+        module(instance.initializer)
+    }
+    val engineConfig: ApplicationEngine.Configuration.() -> Unit = {
         when (instance.type) {
             ConnectorType.HTTP -> connector { port = instance.port }
 
@@ -106,11 +109,10 @@ private fun tlsServer(instance: TestServer, sslConfig: SslConfig): ApplicationEn
                 enabledProtocols = instance.protocolName?.let(::listOf)
             }
         }
-
-        modules.add(instance.initializer)
     }
+
     return try {
-        embeddedServer(Jetty, environment).start()
+        embeddedServer(Jetty, rootConfig, engineConfig).start()
     } catch (e: Exception) {
         println("$description failed to start with exception $e")
         throw e
