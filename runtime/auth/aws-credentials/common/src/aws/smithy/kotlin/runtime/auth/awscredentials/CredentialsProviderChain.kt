@@ -21,4 +21,6 @@ public class CredentialsProviderChain(vararg providers: CredentialsProvider) :
     public constructor(providers: List<CredentialsProvider>) : this(*providers.toTypedArray())
 
     override suspend fun resolve(attributes: Attributes): Credentials = super.resolve(attributes)
+
+    override fun toString(): String = providers.joinToString(" -> ")
 }
