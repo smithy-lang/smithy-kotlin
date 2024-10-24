@@ -6,8 +6,6 @@
 package aws.smithy.kotlin.runtime.identity
 
 import aws.smithy.kotlin.runtime.InternalApi
-import aws.smithy.kotlin.runtime.businessmetrics.BusinessMetrics
-import aws.smithy.kotlin.runtime.businessmetrics.copyBusinessMetrics
 import aws.smithy.kotlin.runtime.collections.*
 import aws.smithy.kotlin.runtime.io.Closeable
 import aws.smithy.kotlin.runtime.telemetry.logging.logger
@@ -39,15 +37,11 @@ public abstract class IdentityProviderChain<P : IdentityProvider, I : Identity>(
         val chainException = lazy { IdentityProviderException("No identity could be resolved from the chain: $chain") }
         for (provider in providers) {
             logger.trace { "Attempting to resolve identity from $provider" }
-
-            val businessMetricsSnapshot = attributes.copyBusinessMetrics()
-
             try {
                 @Suppress("UNCHECKED_CAST")
                 return@withSpan provider.resolve(attributes) as I
             } catch (ex: Exception) {
                 logger.debug { "unable to resolve identity from $provider: ${ex.message}" }
-                if (attributes is MutableAttributes) attributes[BusinessMetrics] = businessMetricsSnapshot
                 chainException.value.addSuppressed(ex)
             }
         }

@@ -81,27 +81,9 @@ public enum class SmithyBusinessMetric(public override val identifier: String) :
 /**
  * Emits a business metric if the current [Attributes] instance is of type [ExecutionContext].
  */
-public fun Attributes.emitBusinessMetric(metric: BusinessMetric) {
-    if (this is ExecutionContext) this.emitBusinessMetric(metric)
-}
-
-/**
- * Creates a copy of an [Attributes] business metrics.
- * Returns an empty set if no business metrics are available.
- */
-public fun Attributes.copyBusinessMetrics(): MutableSet<String> {
-    val copy = mutableSetOf<String>()
-    if (!this.contains(BusinessMetrics)) return copy
-
-    this[BusinessMetrics].forEach { metric ->
-        copy.add(metric)
+@InternalApi
+public fun Attributes.emitBusinessMetric(metric: BusinessMetric): Unit =
+    when (this) {
+        is ExecutionContext -> this.emitBusinessMetric(metric)
+        else -> throw UnsupportedOperationException("Business metric emission is supported only for attributes of type 'execution context'")
     }
-    return copy
-}
-
-/**
- * Merges another [Attributes] business metrics into this instance of [MutableAttributes].
- */
-public fun MutableAttributes.mergeBusinessMetrics(other: Attributes) {
-    this[BusinessMetrics] = this[BusinessMetrics].union(other[BusinessMetrics]).toMutableSet()
-}
