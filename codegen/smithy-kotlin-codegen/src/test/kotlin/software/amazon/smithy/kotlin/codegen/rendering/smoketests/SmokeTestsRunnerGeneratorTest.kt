@@ -122,6 +122,7 @@ class SmokeTestsRunnerGeneratorTest {
                         val success = e is SmokeTestsSuccessException
                         val status = if (success) "ok" else "not ok"
                         println("${'$'}status Test SuccessTest - no error expected from service ")
+                        if (!success) printExceptionStackTrace(e)
                         if (!success) exitCode = 1
                     }
                 }
@@ -155,6 +156,7 @@ class SmokeTestsRunnerGeneratorTest {
                         val success = e is InvalidMessageError
                         val status = if (success) "ok" else "not ok"
                         println("${'$'}status Test InvalidMessageErrorTest - error expected from service ")
+                        if (!success) printExceptionStackTrace(e)
                         if (!success) exitCode = 1
                     }
                 }
@@ -189,6 +191,7 @@ class SmokeTestsRunnerGeneratorTest {
                         val success = e is SmokeTestsFailureException
                         val status = if (success) "ok" else "not ok"
                         println("${'$'}status Test FailureTest - error expected from service ")
+                        if (!success) printExceptionStackTrace(e)
                         if (!success) exitCode = 1
                     }
                 }
