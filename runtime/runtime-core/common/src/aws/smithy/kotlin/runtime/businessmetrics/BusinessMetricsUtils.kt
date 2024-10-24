@@ -82,8 +82,6 @@ public enum class SmithyBusinessMetric(public override val identifier: String) :
  * Emits a business metric if the current [Attributes] instance is of type [ExecutionContext].
  */
 @InternalApi
-public fun Attributes.emitBusinessMetric(metric: BusinessMetric): Unit =
-    when (this) {
-        is ExecutionContext -> this.emitBusinessMetric(metric)
-        else -> throw UnsupportedOperationException("Business metric emission is supported only for attributes of type 'execution context'")
-    }
+public fun Attributes.emitBusinessMetric(metric: BusinessMetric) {
+    if (this is ExecutionContext) this.emitBusinessMetric(metric)
+}
