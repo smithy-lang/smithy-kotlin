@@ -84,6 +84,7 @@ class ConnectionTest : AbstractEngineTest() {
     @Test
     fun testMinTls1_3() = testMinTlsVersion(TlsVersion.TLS_1_3, ServerType.TLS_1_3)
 
+    // See https://github.com/awslabs/aws-sdk-kotlin/issues/1214
     @Test
     fun testShortLivedConnections() = testEngines(
         // Only run this test on OkHttp

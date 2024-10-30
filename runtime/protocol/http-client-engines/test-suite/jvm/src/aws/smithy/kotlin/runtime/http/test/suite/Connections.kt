@@ -27,7 +27,7 @@ internal fun Application.connectionTests() {
                 val jettyCall = routingCall.engineCall as JettyApplicationCall
 
                 launch {
-                    delay(4.seconds)
+                    delay(4.seconds) // Close the connection ~4 seconds after the call ends
                     jettyCall.response.responseChannel().close()
                 }
 
