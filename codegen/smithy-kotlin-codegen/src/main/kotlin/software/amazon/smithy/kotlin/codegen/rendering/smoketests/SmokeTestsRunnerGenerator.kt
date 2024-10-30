@@ -8,17 +8,24 @@ import software.amazon.smithy.kotlin.codegen.model.getTrait
 import software.amazon.smithy.kotlin.codegen.model.hasTrait
 import software.amazon.smithy.kotlin.codegen.rendering.endpoints.EndpointParametersGenerator
 import software.amazon.smithy.kotlin.codegen.rendering.endpoints.EndpointProviderGenerator
+import software.amazon.smithy.kotlin.codegen.rendering.smoketests.Param.ParamName
+import software.amazon.smithy.kotlin.codegen.rendering.smoketests.Param.ParamShape
+import software.amazon.smithy.kotlin.codegen.rendering.smoketests.Param.Parameter
 import software.amazon.smithy.kotlin.codegen.rendering.smoketests.SmokeTestUriValue.EndpointParameters
 import software.amazon.smithy.kotlin.codegen.rendering.smoketests.SmokeTestUriValue.EndpointProvider
 import software.amazon.smithy.kotlin.codegen.rendering.util.format
 import software.amazon.smithy.kotlin.codegen.utils.dq
 import software.amazon.smithy.kotlin.codegen.utils.toCamelCase
 import software.amazon.smithy.kotlin.codegen.utils.topDownOperations
+import software.amazon.smithy.model.node.Node
+import software.amazon.smithy.model.node.StringNode
 import software.amazon.smithy.model.shapes.OperationShape
+import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.smoketests.traits.SmokeTestCase
 import software.amazon.smithy.smoketests.traits.SmokeTestsTrait
 import kotlin.jvm.optionals.getOrNull
 
+// TODO: Organize all these section IDs
 object SmokeTestsRunner : SectionId
 object SmokeTestAdditionalEnvVars : SectionId
 object SmokeTestDefaultConfig : SectionId
@@ -37,6 +44,12 @@ object SmokeTestUriKey : SectionId
 object SmokeTestUriValue : SectionId {
     val EndpointProvider: SectionKey<Symbol> = SectionKey("EndpointProvider")
     val EndpointParameters: SectionKey<Symbol> = SectionKey("EndpointParameters")
+}
+
+object Param : SectionId {
+    val ParamShape: SectionKey<Shape?> = SectionKey("SmokeTestsOperationParamKey2") // TODO: Rename section keys
+    val Parameter: SectionKey<Node> = SectionKey("SmokeTestsOperationParamKey3")
+    val ParamName: SectionKey<String> = SectionKey("SmokeTestsOperationParamKey4")
 }
 
 const val SKIP_TAGS = "AWS_SMOKE_TEST_SKIP_TAGS"
@@ -118,7 +131,7 @@ class SmokeTestsRunnerGenerator(
                 renderClient(testCase)
                 renderOperation(operation, testCase)
             }
-            withBlock("catch (e: Exception) {", "}") {
+            withBlock("catch (exception: Exception) {", "}") {
                 renderCatchBlock(testCase)
             }
         }
@@ -128,6 +141,7 @@ class SmokeTestsRunnerGenerator(
         writer.withInlineBlock("#L {", "}", service) {
             if (testCase.vendorParams.isPresent) {
                 testCase.vendorParams.get().members.forEach { vendorParam ->
+                    // TODO: Fix this to only use two sections
                     when (vendorParam.key.value) {
                         "region" -> {
                             writeInline("#L = ", vendorParam.key.value.toCamelCase())
@@ -213,33 +227,56 @@ class SmokeTestsRunnerGenerator(
         writer.withBlock(".#T { client ->", "}", RuntimeTypes.Core.IO.use) {
             withBlock("client.#L(", ")", operation.defaultName()) {
                 withBlock("#L {", "}", operationSymbol) {
-                    if (testCase.params.isPresent) {
-                        testCase.params.get().members.forEach { member ->
-                            write("#L = #L", member.key.value.toCamelCase(), member.value.format())
-                        }
-                    }
+                    renderOperationParameters(operation, testCase)
                 }
             }
         }
     }
 
+    private fun renderOperationParameters(operation: OperationShape, testCase: SmokeTestCase) {
+        if (!testCase.operationParametersArePresent) return
+
+        val paramsToShapes = mapOperationParametersToModeledShapes(operation)
+
+        testCase.operationParameters.forEach { param ->
+            val name = param.key.value.toCamelCase()
+            val value = param.value.format()
+
+            writer.writeInline("#S = ", name)
+            writer.declareSection(
+                Param,
+                mapOf(
+                    ParamName to name,
+                    ParamShape to paramsToShapes[name],
+                    Parameter to param.value,
+                ),
+            ) {
+                writer.write("#L", value )
+            }
+        }
+    }
+
     private fun renderCatchBlock(testCase: SmokeTestCase) {
-        val expected = if (testCase.expectation.isFailure) {
+        val expectedException = if (testCase.expectation.isFailure) {
             getFailureCriterion(testCase)
         } else {
             RuntimeTypes.HttpClient.Interceptors.SmokeTestsSuccessException
         }
 
-        writer.write("val success = e is #T", expected)
-        writer.write("val status = if (success) #S else #S", "ok", "not ok")
+        writer.write("val success: Boolean = exception is #T", expectedException)
+        writer.write("val status: String = if (success) #S else #S", "ok", "not ok")
+
         printTestResult(
             sdkId.filter { !it.isWhitespace() },
             testCase.id,
             testCase.expectation.isFailure,
             writer,
         )
-        writer.write("if (!success) #T(e)", RuntimeTypes.Core.SmokeTests.printExceptionStackTrace)
-        writer.write("if (!success) exitCode = 1")
+
+        writer.withBlock("if (!success) {", "}") {
+            write("#T(exception)", RuntimeTypes.Core.SmokeTests.printExceptionStackTrace)
+            write("exitCode = 1")
+        }
     }
 
     /**
@@ -267,10 +304,30 @@ class SmokeTestsRunnerGenerator(
         val testResult = "$status $service $testCase - $expectation $directive"
         writer.write("println(#S)", testResult)
     }
-}
 
-/**
- * Derives a function name for a [SmokeTestCase]
- */
-private val SmokeTestCase.functionName: String
-    get() = this.id.toCamelCase()
+    /**
+     * TODO:
+     */
+    private fun mapOperationParametersToModeledShapes(operation: OperationShape): Map<String, Shape> =
+        model.getShape(operation.inputShape).get().allMembers.map { (key, value) ->
+            key.toCamelCase() to model.getShape(value.target).get()
+        }.toMap()
+
+    /**
+     * Derives a function name for a [SmokeTestCase]
+     */
+    private val SmokeTestCase.functionName: String
+        get() = this.id.toCamelCase()
+
+    /**
+     * TODO:
+     */
+    private val SmokeTestCase.operationParameters: Map<StringNode, Node>
+        get() = this.params.get().members
+
+    /**
+     * TODO:
+     */
+    private val SmokeTestCase.operationParametersArePresent: Boolean
+        get() = this.params.isPresent
+}
