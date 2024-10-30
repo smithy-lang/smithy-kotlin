@@ -27,7 +27,7 @@ kotlin-compile-testing-version = "1.6.0"
 kotlinx-benchmark-version = "0.4.12"
 kotlinx-serialization-version = "1.7.3"
 docker-java-version = "3.4.0"
-ktor-version = "2.3.12"
+ktor-version = "3.0.0"
 kaml-version = "0.55.0"
 jsoup-version = "1.18.1"
 
