@@ -6,8 +6,10 @@
 package aws.smithy.kotlin.runtime.content
 
 import aws.smithy.kotlin.runtime.testing.RandomTempFile
+import jdk.jshell.Snippet.Status
 import kotlinx.coroutines.test.runTest
 import java.io.ByteArrayOutputStream
+import java.io.OutputStream
 import java.nio.file.Files
 import kotlin.test.*
 
@@ -184,6 +186,40 @@ class ByteStreamJVMTest {
             byteStream.writeToOutputStream(outputStream)
             val output = outputStream.toByteArray()
             assertContentEquals(binaryData, output)
+        }
+    }
+
+    @Test
+    fun testWriteToByteStreamClosesOutput() = runTest {
+        val byteStream = ByteStream.fromString("Hello")
+
+        val sos = StatusTrackingOutputStream(ByteArrayOutputStream())
+
+        assertFalse(sos.closed)
+        byteStream.writeToOutputStream(sos)
+        assertTrue(sos.closed)
+    }
+
+    @Test
+    fun testAppendToByteStreamDoesNotCloseOutput() = runTest {
+        val byteStream = ByteStream.fromString("Don't close me!")
+
+        val sos = StatusTrackingOutputStream(ByteArrayOutputStream())
+
+        assertFalse(sos.closed)
+        byteStream.appendToOutputStream(sos)
+        assertFalse(sos.closed)
+    }
+
+    private class StatusTrackingOutputStream(val os: OutputStream) : OutputStream() {
+        var closed: Boolean = false
+
+        override fun write(b: Int) {
+            os.write(b)
+        }
+
+        override fun close() {
+            closed = true
         }
     }
 }
