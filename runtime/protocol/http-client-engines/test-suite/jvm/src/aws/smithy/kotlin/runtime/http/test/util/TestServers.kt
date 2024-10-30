@@ -124,6 +124,7 @@ internal fun Application.testRoutes() {
     uploadTests()
     concurrentTests()
     headerTests()
+    connectionTests()
 }
 
 // configure SSL-only routes
