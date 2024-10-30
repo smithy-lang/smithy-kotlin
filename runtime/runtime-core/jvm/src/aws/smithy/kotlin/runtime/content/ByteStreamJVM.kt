@@ -152,9 +152,7 @@ public suspend fun ByteStream.appendToOutputStream(outputStream: OutputStream): 
     }
 
     val out = outputStream.sink().buffer()
-    out.writeAll(src).also {
-        out.flush()
-    }
+    out.writeAll(src)
 }
 
 private suspend fun OutputStream.writeAll(chan: SdkByteReadChannel): Long =
