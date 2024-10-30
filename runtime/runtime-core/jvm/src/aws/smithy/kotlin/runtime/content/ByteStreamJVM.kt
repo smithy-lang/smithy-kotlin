@@ -123,7 +123,7 @@ public fun InputStream.asByteStream(contentLength: Long? = null): ByteStream.Sou
 }
 
 /**
- * Writes this stream to the given [OutputStream].
+ * Writes this stream to the given [OutputStream], then closes it.
  * @param outputStream The [OutputStream] to which the contents of this stream will be written
  */
 public suspend fun ByteStream.writeToOutputStream(outputStream: OutputStream): Long = withContext(Dispatchers.IO) {
