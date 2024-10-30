@@ -40,7 +40,7 @@ jobs:
       - name: Test
         shell: bash
         run: |
-          ./gradlew -Ptest.java.version=${{ matrix.java-version }} jvmTest --stacktrace --debug
+          ./gradlew -Ptest.java.version=${{ matrix.java-version }} jvmTest --stacktrace
 
   all-platforms:
     runs-on: ${{ matrix.os }}
