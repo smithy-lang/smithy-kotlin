@@ -64,7 +64,6 @@ class RpcV2CborTest {
         ctx.generationCtx.delegator.flushWriters()
 
         val actual = ctx.manifest.expectFileString("/src/main/kotlin/com/test/DefaultTestClient.kt")
-        println(actual)
         val getFooMethod = actual.lines("    override suspend fun getFoo(input: GetFooRequest): GetFooResponse {", "    }")
 
         val expectedHeaderMutation = """
@@ -88,7 +87,6 @@ class RpcV2CborTest {
         ctx.generationCtx.delegator.flushWriters()
 
         val actual = ctx.manifest.expectFileString("/src/main/kotlin/com/test/DefaultTestClient.kt")
-        println(actual)
         val getFooMethod = actual.lines("    override suspend fun <T> getFooStreaming(input: GetFooStreamingRequest, block: suspend (GetFooStreamingResponse) -> T): T {", "    }")
 
         val expectedHeaderMutation = """
