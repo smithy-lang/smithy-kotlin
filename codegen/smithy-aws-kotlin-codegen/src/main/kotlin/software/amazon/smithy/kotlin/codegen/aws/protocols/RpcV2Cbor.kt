@@ -69,7 +69,7 @@ class RpcV2Cbor : AwsHttpBindingProtocolGenerator() {
             override fun render(ctx: ProtocolGenerator.GenerationContext, op: OperationShape, writer: KotlinWriter) {
                 val acceptHeaderValue = if (op.isOutputEventStream(ctx.model)) ACCEPT_HEADER_EVENT_STREAM else ACCEPT_HEADER
                 MutateHeadersMiddleware(
-                    extraHeaders = mapOf("Accept" to acceptHeaderValue)
+                    extraHeaders = mapOf("Accept" to acceptHeaderValue),
                 ).render(ctx, op, writer)
             }
         }
