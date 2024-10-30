@@ -26,6 +26,9 @@ import software.amazon.smithy.model.traits.TimestampFormatTrait
 import software.amazon.smithy.model.traits.UnitTypeTrait
 import software.amazon.smithy.protocol.traits.Rpcv2CborTrait
 
+private const val ACCEPT_HEADER = "application/cbor"
+private const val ACCEPT_HEADER_EVENT_STREAM = "application/vnd.amazon.eventstream"
+
 class RpcV2Cbor : AwsHttpBindingProtocolGenerator() {
     override val protocol: ShapeId = Rpcv2CborTrait.ID
 
@@ -59,13 +62,16 @@ class RpcV2Cbor : AwsHttpBindingProtocolGenerator() {
             }
         }
 
-        // Requests with event stream responses MUST include an `Accept` header set to the value `application/vnd.amazon.eventstream`
-        val eventStreamsAcceptHeaderMiddleware = object : ProtocolMiddleware {
-            private val mutateHeadersMiddleware = MutateHeadersMiddleware(extraHeaders = mapOf("Accept" to "application/vnd.amazon.eventstream"))
-
-            override fun isEnabledFor(ctx: ProtocolGenerator.GenerationContext, op: OperationShape): Boolean = op.isOutputEventStream(ctx.model)
-            override val name: String = "RpcV2CborEventStreamsAcceptHeaderMiddleware"
-            override fun render(ctx: ProtocolGenerator.GenerationContext, op: OperationShape, writer: KotlinWriter) = mutateHeadersMiddleware.render(ctx, op, writer)
+        // Add `Accept` header with value `application/cbor` for standard responses
+        // and `application/vnd.amazon.eventstream` for event stream responses
+        val acceptHeaderMiddleware = object : ProtocolMiddleware {
+            override val name: String = "RpcV2CborAcceptHeaderMiddleware"
+            override fun render(ctx: ProtocolGenerator.GenerationContext, op: OperationShape, writer: KotlinWriter) {
+                val acceptHeaderValue = if (op.isOutputEventStream(ctx.model)) ACCEPT_HEADER_EVENT_STREAM else ACCEPT_HEADER
+                MutateHeadersMiddleware(
+                    extraHeaders = mapOf("Accept" to acceptHeaderValue),
+                ).render(ctx, op, writer)
+            }
         }
 
         // Emit a metric to track usage of RpcV2Cbor
@@ -79,7 +85,7 @@ class RpcV2Cbor : AwsHttpBindingProtocolGenerator() {
         return super.getDefaultHttpMiddleware(ctx) + listOf(
             smithyProtocolHeaderMiddleware,
             validateSmithyProtocolHeaderMiddleware,
-            eventStreamsAcceptHeaderMiddleware,
+            acceptHeaderMiddleware,
             businessMetricsMiddleware,
         )
     }
