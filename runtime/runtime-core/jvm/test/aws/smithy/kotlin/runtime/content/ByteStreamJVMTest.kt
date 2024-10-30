@@ -6,7 +6,6 @@
 package aws.smithy.kotlin.runtime.content
 
 import aws.smithy.kotlin.runtime.testing.RandomTempFile
-import jdk.jshell.Snippet.Status
 import kotlinx.coroutines.test.runTest
 import java.io.ByteArrayOutputStream
 import java.io.OutputStream

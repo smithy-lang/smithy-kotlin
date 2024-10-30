@@ -157,7 +157,6 @@ public suspend fun ByteStream.appendToOutputStream(outputStream: OutputStream): 
     }
 }
 
-
 private suspend fun OutputStream.writeAll(chan: SdkByteReadChannel): Long =
     sink().use {
         chan.readAll(it)
