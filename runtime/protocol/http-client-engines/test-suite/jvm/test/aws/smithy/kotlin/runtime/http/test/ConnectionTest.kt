@@ -109,7 +109,7 @@ class ConnectionTest : AbstractEngineTest() {
             val initialResp = initialCall.response.body.toByteStream()?.decodeToString()
             assertEquals("Bar", initialResp)
 
-            delay(5.seconds) // Shorter than the client-side timeout
+            delay(5.seconds) // Longer than the service side timeout, shorter than the client-side timeout
 
             val subsequentReq = HttpRequest {
                 testSetup()

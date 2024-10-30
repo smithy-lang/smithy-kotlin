@@ -4,7 +4,6 @@
  */
 package aws.smithy.kotlin.runtime.http.engine.okhttp
 
-import aws.smithy.kotlin.runtime.telemetry.logging.Logger
 import aws.smithy.kotlin.runtime.telemetry.logging.logger
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
@@ -63,11 +62,10 @@ internal class ConnectionIdleMonitor(val pollInterval: Duration) : ConnectionLis
         val connId = System.identityHashCode(connection)
         val context = call.callContext()
         val scope = CoroutineScope(context)
-        val logger = context.logger<ConnectionIdleMonitor>()
         val monitor = scope.launch(CoroutineName("okhttp-conn-monitor-for-$connId")) {
-            doMonitor(connection, logger)
+            doMonitor(connection)
         }
-        logger.trace { "Launched coroutine $monitor to monitor $connection" }
+        context.logger<ConnectionIdleMonitor>().trace { "Launched coroutine $monitor to monitor $connection" }
 
         // Non-locking map access is okay here because this code will only execute synchronously as part of a
         // `connectionReleased` event and will be complete before any future `connectionAcquired` event could fire for
@@ -75,7 +73,9 @@ internal class ConnectionIdleMonitor(val pollInterval: Duration) : ConnectionLis
         monitors[connection] = monitor
     }
 
-    private suspend fun doMonitor(conn: Connection, logger: Logger) {
+    private suspend fun doMonitor(conn: Connection) {
+        val logger = coroutineContext.logger<ConnectionIdleMonitor>()
+
         val socket = conn.socket()
         val source = try {
             socket.source()
@@ -93,16 +93,20 @@ internal class ConnectionIdleMonitor(val pollInterval: Duration) : ConnectionLis
 
             while (coroutineContext.isActive) {
                 try {
+                    logger.trace { "Polling socket for $conn" }
                     source.readByte() // Blocking read; will take up to READ_TIMEOUT_MS to complete
                 } catch (_: SocketTimeoutException) {
+                    logger.trace { "Socket still alive for $conn" }
                     // Socket is still alive
                 } catch (_: EOFException) {
-                    logger.trace { "Socket for $conn was closed remotely" }
+                    logger.trace { "Socket closed remotely for $conn" }
                     socket.closeQuietly()
                     resetTimeout = false
                     return
                 }
             }
+
+            logger.trace { "Monitoring coroutine has been cancelled. Ending polling loop." }
         } catch (e: Throwable) {
             logger.warn(e) { "Failed to poll $conn. Ending polling loop. Connection may be unstable now." }
         } finally {
