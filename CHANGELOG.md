@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.3.18] - 10/31/2024
+
+### Fixes
+* [#1214](https://github.com/awslabs/aws-sdk-kotlin/issues/1214) Add support for connection idle monitoring for OkHttp via the engine config parameter `connectionIdlePollingInterval`. Monitoring is disabled by default to match previous behavior. This monitoring will switch to enabled by default in an upcoming minor version release.
+
+### Miscellaneous
+* Add `Accept` header to all RpcV2Cbor requests
+* Correct documentation for `ByteStream.writeToOutputStream`, add `ByteStream.appendToOutputStream`
+
 ## [1.3.17] - 10/16/2024
 
 ### Miscellaneous

@@ -1,5 +1,0 @@
-{
-    "id": "cda907f0-b704-42de-a50f-dad204dacbfb",
-    "type": "misc",
-    "description": "Correct documentation for `ByteStream.writeToOutputStream`, add `ByteStream.appendToOutputStream`"
-}

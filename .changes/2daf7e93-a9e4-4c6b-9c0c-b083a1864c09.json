@@ -1,5 +1,0 @@
-{
-    "id": "2daf7e93-a9e4-4c6b-9c0c-b083a1864c09",
-    "type": "misc",
-    "description": "Add `Accept` header to all RpcV2Cbor requests"
-}
