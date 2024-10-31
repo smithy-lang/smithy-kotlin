@@ -416,6 +416,7 @@ public abstract class aws/smithy/kotlin/runtime/content/ByteStream$SourceStream 
 }
 
 public final class aws/smithy/kotlin/runtime/content/ByteStreamJVMKt {
+	public static final fun appendToOutputStream (Laws/smithy/kotlin/runtime/content/ByteStream;Ljava/io/OutputStream;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public static final fun asByteStream (Ljava/io/File;JJ)Laws/smithy/kotlin/runtime/content/ByteStream;
 	public static final fun asByteStream (Ljava/io/File;Lkotlin/ranges/LongRange;)Laws/smithy/kotlin/runtime/content/ByteStream;
 	public static final fun asByteStream (Ljava/io/InputStream;Ljava/lang/Long;)Laws/smithy/kotlin/runtime/content/ByteStream$SourceStream;
