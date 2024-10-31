@@ -419,7 +419,7 @@ private class InterceptorTransmitMiddleware<I, O>(
 /**
  * Emits an [Identity]'s attributes [BusinessMetrics] into an [ExecutionContext]
  */
-private fun emitIdentityBusinessMetrics(identity: Identity, context: ExecutionContext) { // TODO: Add some E2E tests for this !
+private fun emitIdentityBusinessMetrics(identity: Identity, context: ExecutionContext) {
     val identityAttributes = identity.attributes
 
     if (identityAttributes.contains(BusinessMetrics)) {
