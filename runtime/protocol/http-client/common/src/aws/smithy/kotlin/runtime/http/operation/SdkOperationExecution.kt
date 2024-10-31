@@ -423,8 +423,11 @@ private fun emitIdentityBusinessMetrics(identity: Identity, context: ExecutionCo
     val identityAttributes = identity.attributes
 
     if (identityAttributes.contains(BusinessMetrics)) {
-        identityAttributes[BusinessMetrics].forEach { metric ->
-            context.emitBusinessMetric(metric)
-        }
+        identityAttributes[BusinessMetrics]
+            .toList()
+            .reversed()
+            .forEach { metric ->
+                context.emitBusinessMetric(metric)
+            }
     }
 }
