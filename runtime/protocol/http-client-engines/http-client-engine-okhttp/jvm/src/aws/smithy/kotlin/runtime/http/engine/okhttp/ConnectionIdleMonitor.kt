@@ -95,7 +95,6 @@ internal class ConnectionIdleMonitor(val pollInterval: Duration) : ConnectionLis
                     source.readByte() // Blocking read; will take up to `pollInterval` time to complete
                 } catch (_: SocketTimeoutException) {
                     logger.trace { "Socket still alive for $conn" }
-                    // Socket is still alive
                 } catch (_: EOFException) {
                     logger.trace { "Socket closed remotely for $conn" }
                     socket.closeQuietly()
