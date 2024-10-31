@@ -82,13 +82,14 @@ public abstract interface class aws/smithy/kotlin/runtime/businessmetrics/Busine
 }
 
 public final class aws/smithy/kotlin/runtime/businessmetrics/BusinessMetricsUtilsKt {
-	public static final fun containsBusinessMetric (Laws/smithy/kotlin/runtime/operation/ExecutionContext;Laws/smithy/kotlin/runtime/businessmetrics/BusinessMetric;)Z
-	public static final fun emitBusinessMetric (Laws/smithy/kotlin/runtime/collections/Attributes;Laws/smithy/kotlin/runtime/businessmetrics/BusinessMetric;)V
-	public static final fun emitBusinessMetric (Laws/smithy/kotlin/runtime/operation/ExecutionContext;Laws/smithy/kotlin/runtime/businessmetrics/BusinessMetric;)V
+	public static final fun containsBusinessMetric (Laws/smithy/kotlin/runtime/collections/Attributes;Laws/smithy/kotlin/runtime/businessmetrics/BusinessMetric;)Z
+	public static final fun emitBusinessMetric (Laws/smithy/kotlin/runtime/collections/MutableAttributes;Laws/smithy/kotlin/runtime/businessmetrics/BusinessMetric;)V
+	public static final fun emitBusinessMetric (Laws/smithy/kotlin/runtime/collections/MutableAttributes;Ljava/lang/String;)V
+	public static final fun emitBusinessMetrics (Laws/smithy/kotlin/runtime/collections/MutableAttributes;Ljava/util/Set;)V
 	public static final fun getAccountIdBasedEndpointAccountId ()Laws/smithy/kotlin/runtime/collections/AttributeKey;
 	public static final fun getBusinessMetrics ()Laws/smithy/kotlin/runtime/collections/AttributeKey;
 	public static final fun getServiceEndpointOverride ()Laws/smithy/kotlin/runtime/collections/AttributeKey;
-	public static final fun removeBusinessMetric (Laws/smithy/kotlin/runtime/operation/ExecutionContext;Laws/smithy/kotlin/runtime/businessmetrics/BusinessMetric;)V
+	public static final fun removeBusinessMetric (Laws/smithy/kotlin/runtime/collections/MutableAttributes;Laws/smithy/kotlin/runtime/businessmetrics/BusinessMetric;)V
 }
 
 public final class aws/smithy/kotlin/runtime/businessmetrics/SmithyBusinessMetric : java/lang/Enum, aws/smithy/kotlin/runtime/businessmetrics/BusinessMetric {
@@ -2047,6 +2048,10 @@ public final class aws/smithy/kotlin/runtime/retries/policy/SuccessAcceptor : aw
 
 public final class aws/smithy/kotlin/runtime/smoketests/SmokeTestsFunctionsJVMKt {
 	public static final fun exitProcess (I)Ljava/lang/Void;
+}
+
+public final class aws/smithy/kotlin/runtime/smoketests/SmokeTestsFunctionsKt {
+	public static final fun printExceptionStackTrace (Ljava/lang/Exception;)V
 }
 
 public final class aws/smithy/kotlin/runtime/text/Scanner {
