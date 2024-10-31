@@ -2050,10 +2050,6 @@ public final class aws/smithy/kotlin/runtime/smoketests/SmokeTestsFunctionsJVMKt
 	public static final fun exitProcess (I)Ljava/lang/Void;
 }
 
-public final class aws/smithy/kotlin/runtime/smoketests/SmokeTestsFunctionsKt {
-	public static final fun printExceptionStackTrace (Ljava/lang/Exception;)V
-}
-
 public final class aws/smithy/kotlin/runtime/text/Scanner {
 	public fun <init> (Ljava/lang/String;)V
 	public final fun getText ()Ljava/lang/String;
