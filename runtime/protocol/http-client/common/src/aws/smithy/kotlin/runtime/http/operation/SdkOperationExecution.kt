@@ -14,7 +14,6 @@ import aws.smithy.kotlin.runtime.client.endpoints.authOptions
 import aws.smithy.kotlin.runtime.client.logMode
 import aws.smithy.kotlin.runtime.collections.attributesOf
 import aws.smithy.kotlin.runtime.collections.emptyAttributes
-import aws.smithy.kotlin.runtime.collections.get
 import aws.smithy.kotlin.runtime.collections.merge
 import aws.smithy.kotlin.runtime.http.*
 import aws.smithy.kotlin.runtime.http.auth.SignHttpRequest
@@ -419,15 +418,5 @@ private class InterceptorTransmitMiddleware<I, O>(
 /**
  * Emits an [Identity]'s attributes [BusinessMetrics] into an [ExecutionContext]
  */
-private fun emitIdentityBusinessMetrics(identity: Identity, context: ExecutionContext) {
-    val identityAttributes = identity.attributes
-
-    if (identityAttributes.contains(BusinessMetrics)) {
-        identityAttributes[BusinessMetrics]
-            .toList()
-            .reversed()
-            .forEach { metric ->
-                context.emitBusinessMetric(metric)
-            }
-    }
-}
+private fun emitIdentityBusinessMetrics(identity: Identity, context: ExecutionContext) =
+        identity.attributes.getOrNull(BusinessMetrics)?.toList()?.reversed()?.forEach(context::emitBusinessMetric)
