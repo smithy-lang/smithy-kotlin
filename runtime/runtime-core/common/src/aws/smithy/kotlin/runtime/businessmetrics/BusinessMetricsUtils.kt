@@ -5,7 +5,10 @@
 package aws.smithy.kotlin.runtime.businessmetrics
 
 import aws.smithy.kotlin.runtime.InternalApi
-import aws.smithy.kotlin.runtime.collections.*
+import aws.smithy.kotlin.runtime.collections.AttributeKey
+import aws.smithy.kotlin.runtime.collections.MutableAttributes
+import aws.smithy.kotlin.runtime.collections.get
+import aws.smithy.kotlin.runtime.operation.ExecutionContext
 
 /**
  * Keeps track of all business metrics along an operations execution
@@ -26,8 +29,31 @@ public val AccountIdBasedEndpointAccountId: AttributeKey<String> = AttributeKey(
 public val ServiceEndpointOverride: AttributeKey<Boolean> = AttributeKey("aws.smithy.kotlin#ServiceEndpointOverride")
 
 /**
- * Emits a business metric into [MutableAttributes]
- * @param identifier The identifier of the [BusinessMetric] to be emitted.
+ * Emit a business metric to the execution context attributes
+ */
+@InternalApi
+public fun ExecutionContext.emitBusinessMetric(metric: BusinessMetric) {
+    if (this.attributes.contains(BusinessMetrics)) {
+        this.attributes[BusinessMetrics].add(metric.identifier)
+    } else {
+        this.attributes[BusinessMetrics] = mutableSetOf(metric.identifier)
+    }
+}
+
+/**
+ * Emit a business metric to the execution context attributes using its identifier
+ */
+@InternalApi
+public fun ExecutionContext.emitBusinessMetric(identifier: String) {
+    if (this.attributes.contains(BusinessMetrics)) {
+        this.attributes[BusinessMetrics].add(identifier)
+    } else {
+        this.attributes[BusinessMetrics] = mutableSetOf(identifier)
+    }
+}
+
+/**
+ * Emit a business metric to the mutable attributes
  */
 @InternalApi
 public fun MutableAttributes.emitBusinessMetric(identifier: String) {
@@ -39,36 +65,21 @@ public fun MutableAttributes.emitBusinessMetric(identifier: String) {
 }
 
 /**
- * Emits a business metric into [MutableAttributes]
- * @param metric The [BusinessMetric] to be emitted.
+ * Removes a business metric from the execution context attributes
  */
 @InternalApi
-public fun MutableAttributes.emitBusinessMetric(metric: BusinessMetric): Unit = this.emitBusinessMetric(metric.identifier)
-
-/**
- * Emits business metrics into [MutableAttributes]
- * @param metrics The [BusinessMetric]s to be emitted.
- */
-@InternalApi
-public fun MutableAttributes.emitBusinessMetrics(metrics: Set<BusinessMetric>): Unit =
-    metrics.forEach { emitBusinessMetric(it) }
-
-/**
- * Removes a business metric from the [MutableAttributes]
- */
-@InternalApi
-public fun MutableAttributes.removeBusinessMetric(metric: BusinessMetric) {
-    if (this.contains(BusinessMetrics)) {
-        this[BusinessMetrics].remove(metric.identifier)
+public fun ExecutionContext.removeBusinessMetric(metric: BusinessMetric) {
+    if (this.attributes.contains(BusinessMetrics)) {
+        this.attributes[BusinessMetrics].remove(metric.identifier)
     }
 }
 
 /**
- * Checks if a business metric exists in the [Attributes]
+ * Checks if a business metric exists in the execution context attributes
  */
 @InternalApi
-public fun Attributes.containsBusinessMetric(metric: BusinessMetric): Boolean =
-    (this.contains(BusinessMetrics)) && this[BusinessMetrics].contains(metric.identifier)
+public fun ExecutionContext.containsBusinessMetric(metric: BusinessMetric): Boolean =
+    (this.attributes.contains(BusinessMetrics)) && this.attributes[BusinessMetrics].contains(metric.identifier)
 
 /**
  * Valid business metrics
