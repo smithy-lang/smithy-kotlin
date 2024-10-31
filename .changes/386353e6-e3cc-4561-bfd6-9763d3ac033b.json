@@ -1,0 +1,8 @@
+{
+    "id": "386353e6-e3cc-4561-bfd6-9763d3ac033b",
+    "type": "bugfix",
+    "description": "Add support for connection idle monitoring for OkHttp via the engine config parameter `connectionIdlePollingInterval`. Monitoring is disabled by default to match previous behavior. This monitoring will switch to enabled by default in an upcoming minor version release.",
+    "issues": [
+        "awslabs/aws-sdk-kotlin#1214"
+    ]
+}
