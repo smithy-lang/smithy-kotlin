@@ -26,7 +26,6 @@ import java.net.SocketTimeoutException
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.coroutines.coroutineContext
 import kotlin.time.Duration
-import kotlin.time.Duration.Companion.seconds
 import kotlin.time.measureTime
 
 @OptIn(ExperimentalOkHttpApi::class)
@@ -44,7 +43,6 @@ internal class ConnectionIdleMonitor(val pollInterval: Duration) : ConnectionLis
         // `connectionAcquired` event and will be complete before any future `connectionReleased` event could fire for
         // the same connection.
         monitors.remove(connection)?.let { monitor ->
-            5.seconds
             val context = call.callContext()
             val logger = context.logger<ConnectionIdleMonitor>()
             logger.trace { "Cancel monitoring for $connection" }
@@ -94,7 +92,7 @@ internal class ConnectionIdleMonitor(val pollInterval: Duration) : ConnectionLis
             while (coroutineContext.isActive) {
                 try {
                     logger.trace { "Polling socket for $conn" }
-                    source.readByte() // Blocking read; will take up to READ_TIMEOUT_MS to complete
+                    source.readByte() // Blocking read; will take up to `pollInterval` time to complete
                 } catch (_: SocketTimeoutException) {
                     logger.trace { "Socket still alive for $conn" }
                     // Socket is still alive
