@@ -14,7 +14,7 @@ import aws.smithy.kotlin.runtime.operation.ExecutionContext
  * Keeps track of all business metrics along an operations execution
  */
 @InternalApi
-public val BusinessMetrics: AttributeKey<MutableSet<String>> = AttributeKey("aws.sdk.kotlin#BusinessMetrics")
+public val BusinessMetrics: AttributeKey<MutableSet<BusinessMetric>> = AttributeKey("aws.sdk.kotlin#BusinessMetrics")
 
 /**
  * The account ID in an account ID based endpoint
@@ -34,21 +34,9 @@ public val ServiceEndpointOverride: AttributeKey<Boolean> = AttributeKey("aws.sm
 @InternalApi
 public fun ExecutionContext.emitBusinessMetric(metric: BusinessMetric) {
     if (this.attributes.contains(BusinessMetrics)) {
-        this.attributes[BusinessMetrics].add(metric.identifier)
+        this.attributes[BusinessMetrics].add(metric)
     } else {
-        this.attributes[BusinessMetrics] = mutableSetOf(metric.identifier)
-    }
-}
-
-/**
- * Emit a business metric to the execution context attributes using its identifier
- */
-@InternalApi
-public fun ExecutionContext.emitBusinessMetric(identifier: String) {
-    if (this.attributes.contains(BusinessMetrics)) {
-        this.attributes[BusinessMetrics].add(identifier)
-    } else {
-        this.attributes[BusinessMetrics] = mutableSetOf(identifier)
+        this.attributes[BusinessMetrics] = mutableSetOf(metric)
     }
 }
 
@@ -56,11 +44,11 @@ public fun ExecutionContext.emitBusinessMetric(identifier: String) {
  * Emit a business metric to the mutable attributes
  */
 @InternalApi
-public fun MutableAttributes.emitBusinessMetric(identifier: String) {
+public fun MutableAttributes.emitBusinessMetric(metric: BusinessMetric) {
     if (this.contains(BusinessMetrics)) {
-        this[BusinessMetrics].add(identifier)
+        this[BusinessMetrics].add(metric)
     } else {
-        this[BusinessMetrics] = mutableSetOf(identifier)
+        this[BusinessMetrics] = mutableSetOf(metric)
     }
 }
 
@@ -70,7 +58,7 @@ public fun MutableAttributes.emitBusinessMetric(identifier: String) {
 @InternalApi
 public fun ExecutionContext.removeBusinessMetric(metric: BusinessMetric) {
     if (this.attributes.contains(BusinessMetrics)) {
-        this.attributes[BusinessMetrics].remove(metric.identifier)
+        this.attributes[BusinessMetrics].remove(metric)
     }
 }
 
@@ -79,7 +67,7 @@ public fun ExecutionContext.removeBusinessMetric(metric: BusinessMetric) {
  */
 @InternalApi
 public fun ExecutionContext.containsBusinessMetric(metric: BusinessMetric): Boolean =
-    (this.attributes.contains(BusinessMetrics)) && this.attributes[BusinessMetrics].contains(metric.identifier)
+    (this.attributes.contains(BusinessMetrics)) && this.attributes[BusinessMetrics].contains(metric)
 
 /**
  * Valid business metrics
