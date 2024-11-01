@@ -416,7 +416,7 @@ private class InterceptorTransmitMiddleware<I, O>(
 }
 
 /**
- * Emits an [Identity]'s attributes [BusinessMetrics] into an [ExecutionContext]
+ * Emits an [Identity]'s attributes' [BusinessMetrics] into the [ExecutionContext]
  */
 private fun emitIdentityBusinessMetrics(identity: Identity, context: ExecutionContext) =
     identity.attributes.getOrNull(BusinessMetrics)?.toList()?.reversed()?.forEach(context::emitBusinessMetric)
