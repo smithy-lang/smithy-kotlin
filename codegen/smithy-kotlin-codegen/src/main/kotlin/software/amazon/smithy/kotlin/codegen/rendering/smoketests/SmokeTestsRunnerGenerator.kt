@@ -1,6 +1,7 @@
 package software.amazon.smithy.kotlin.codegen.rendering.smoketests
 
 import software.amazon.smithy.codegen.core.Symbol
+import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.kotlin.codegen.core.*
 import software.amazon.smithy.kotlin.codegen.integration.SectionId
 import software.amazon.smithy.kotlin.codegen.integration.SectionKey
@@ -11,6 +12,7 @@ import software.amazon.smithy.kotlin.codegen.rendering.endpoints.EndpointProvide
 import software.amazon.smithy.kotlin.codegen.rendering.smoketests.Param.ParamName
 import software.amazon.smithy.kotlin.codegen.rendering.smoketests.Param.ParamShape
 import software.amazon.smithy.kotlin.codegen.rendering.smoketests.Param.Parameter
+import software.amazon.smithy.kotlin.codegen.rendering.smoketests.Param.SymbolProvider
 import software.amazon.smithy.kotlin.codegen.rendering.smoketests.SmokeTestUriValue.EndpointParameters
 import software.amazon.smithy.kotlin.codegen.rendering.smoketests.SmokeTestUriValue.EndpointProvider
 import software.amazon.smithy.kotlin.codegen.rendering.util.format
@@ -50,6 +52,7 @@ object Param : SectionId {
     val ParamShape: SectionKey<Shape?> = SectionKey("SmokeTestsOperationParamKey2") // TODO: Rename section keys
     val Parameter: SectionKey<Node> = SectionKey("SmokeTestsOperationParamKey3")
     val ParamName: SectionKey<String> = SectionKey("SmokeTestsOperationParamKey4")
+    val SymbolProvider: SectionKey<SymbolProvider> = SectionKey("SmokeTestsOperationParamKey5")
 }
 
 const val SKIP_TAGS = "AWS_SMOKE_TEST_SKIP_TAGS"
@@ -242,13 +245,15 @@ class SmokeTestsRunnerGenerator(
             val name = param.key.value.toCamelCase()
             val value = param.value.format()
 
-            writer.writeInline("#S = ", name)
-            writer.declareSection(
+            writer.writeInline("#L = ", name)
+
+            writer.declareSection( // TODO: Finish this
                 Param,
                 mapOf(
                     ParamName to name,
                     ParamShape to paramsToShapes[name],
                     Parameter to param.value,
+                    SymbolProvider to symbolProvider,
                 ),
             ) {
                 writer.write("#L", value )
@@ -306,7 +311,7 @@ class SmokeTestsRunnerGenerator(
     }
 
     /**
-     * TODO:
+     * Maps an operations parameters to their shapes
      */
     private fun mapOperationParametersToModeledShapes(operation: OperationShape): Map<String, Shape> =
         model.getShape(operation.inputShape).get().allMembers.map { (key, value) ->
@@ -319,15 +324,9 @@ class SmokeTestsRunnerGenerator(
     private val SmokeTestCase.functionName: String
         get() = this.id.toCamelCase()
 
-    /**
-     * TODO:
-     */
     private val SmokeTestCase.operationParameters: Map<StringNode, Node>
         get() = this.params.get().members
 
-    /**
-     * TODO:
-     */
     private val SmokeTestCase.operationParametersArePresent: Boolean
         get() = this.params.isPresent
 }
