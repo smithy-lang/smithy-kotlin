@@ -14,7 +14,7 @@ import aws.smithy.kotlin.runtime.operation.ExecutionContext
  * Keeps track of all business metrics along an operations execution
  */
 @InternalApi
-public val BusinessMetrics: AttributeKey<MutableSet<BusinessMetric>> = AttributeKey("aws.sdk.kotlin#BusinessMetrics")
+public val BusinessMetrics: AttributeKey<MutableSet<BusinessMetric>> = AttributeKey("aws.smithy.kotlin#BusinessMetrics")
 
 /**
  * The account ID in an account ID based endpoint
