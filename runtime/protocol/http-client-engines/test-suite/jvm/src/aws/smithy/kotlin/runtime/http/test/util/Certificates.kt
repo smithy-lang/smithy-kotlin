@@ -15,7 +15,7 @@ private const val DEFAULT_CERTIFICATE_PASSWORD = "certificate pass"
 private val DEFAULT_HOSTS = listOf("localhost", "127.0.0.1")
 private const val DEFAULT_KEY_STORE_PASSWORD = "key store pass"
 
-internal data class SslConfig private constructor(
+internal data class SslConfig(
     val keyStore: KeyStore,
     val keyStoreFile: File,
     val keyStorePassword: String,

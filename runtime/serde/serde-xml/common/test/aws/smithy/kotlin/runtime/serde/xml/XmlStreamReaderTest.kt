@@ -108,7 +108,6 @@ class XmlStreamReaderTest {
         """.trimIndent().encodeToByteArray()
 
         val actual = xmlStreamReader(payload).allTokens()
-        println(actual)
 
         assertEquals(6, actual.size)
         assertIs<XmlToken.BeginElement>(actual.first())
