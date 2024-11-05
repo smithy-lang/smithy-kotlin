@@ -4,6 +4,7 @@ import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.kotlin.codegen.core.*
 import software.amazon.smithy.kotlin.codegen.integration.SectionId
 import software.amazon.smithy.kotlin.codegen.integration.SectionKey
+import software.amazon.smithy.kotlin.codegen.model.expectShape
 import software.amazon.smithy.kotlin.codegen.model.getTrait
 import software.amazon.smithy.kotlin.codegen.model.hasTrait
 import software.amazon.smithy.kotlin.codegen.model.isStringEnumShape
@@ -207,8 +208,9 @@ class SmokeTestsRunnerGenerator(
         node: Node,
         shapes: Map<String, Shape>,
         testCase: SmokeTestCase,
-    ): String {
-        val shape = shapes[paramName] ?: throw Exception("Unable to find shape for operation parameter '$paramName' in smoke test '${testCase.functionName}'")
+        shapeOverride: Shape? = null,
+    ) {
+        val shape = shapeOverride ?: shapes[paramName] ?: throw Exception("Unable to find shape for operation parameter '$paramName' in smoke test '${testCase.functionName}'.")
         when {
             // String enum
             node is StringNode && shape.isStringEnumShape -> {
@@ -224,10 +226,30 @@ class SmokeTestsRunnerGenerator(
             }
             // Number
             node is NumberNode && shape is NumberShape -> writer.write("#L.#L", node.format(), stringToNumber(shape))
+            // Object
+            node is ObjectNode -> {
+                val shapeSymbol = symbolProvider.toSymbol(shape)
+                writer.withBlock("#T {", "}", shapeSymbol) {
+                    node.members.forEach { member ->
+                        val memberName = member.key.value.toCamelCase()
+                        val memberShape = shape.allMembers[member.key.value] ?: throw Exception("Unable to find shape for operation parameter '$paramName' in smoke test '${testCase.functionName}'.")
+                        writer.writeInline("#L = ", memberName)
+                        renderOperationParameter(memberName, member.value, mapOf(memberName to memberShape), testCase)
+                    }
+                }
+            }
+            // List
+            node is ArrayNode && shape is CollectionShape -> {
+                writer.withBlock("listOf(", ")") {
+                    node.elements.forEach { element ->
+                        renderOperationParameter(paramName, element, mapOf(), testCase, model.expectShape(shape.member.target))
+                        writer.write(",")
+                    }
+                }
+            }
             // Everything else
             else -> writer.write("#L", node.format())
         }
-        return writer.rawString()
     }
 
     /**
