@@ -1,62 +1,28 @@
 package software.amazon.smithy.kotlin.codegen.rendering.smoketests
 
 import software.amazon.smithy.codegen.core.Symbol
-import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.kotlin.codegen.core.*
 import software.amazon.smithy.kotlin.codegen.integration.SectionId
 import software.amazon.smithy.kotlin.codegen.integration.SectionKey
 import software.amazon.smithy.kotlin.codegen.model.getTrait
 import software.amazon.smithy.kotlin.codegen.model.hasTrait
+import software.amazon.smithy.kotlin.codegen.model.isStringEnumShape
 import software.amazon.smithy.kotlin.codegen.rendering.endpoints.EndpointParametersGenerator
 import software.amazon.smithy.kotlin.codegen.rendering.endpoints.EndpointProviderGenerator
-import software.amazon.smithy.kotlin.codegen.rendering.smoketests.Param.ParamName
-import software.amazon.smithy.kotlin.codegen.rendering.smoketests.Param.ParamShape
-import software.amazon.smithy.kotlin.codegen.rendering.smoketests.Param.Parameter
-import software.amazon.smithy.kotlin.codegen.rendering.smoketests.Param.SymbolProvider
-import software.amazon.smithy.kotlin.codegen.rendering.smoketests.SmokeTestUriValue.EndpointParameters
-import software.amazon.smithy.kotlin.codegen.rendering.smoketests.SmokeTestUriValue.EndpointProvider
+import software.amazon.smithy.kotlin.codegen.rendering.protocol.stringToNumber
+import software.amazon.smithy.kotlin.codegen.rendering.smoketests.SmokeTestsRunnerGenerator.ClientConfig.EndpointParams
+import software.amazon.smithy.kotlin.codegen.rendering.smoketests.SmokeTestsRunnerGenerator.ClientConfig.EndpointProvider
+import software.amazon.smithy.kotlin.codegen.rendering.smoketests.SmokeTestsRunnerGenerator.ClientConfig.Name
+import software.amazon.smithy.kotlin.codegen.rendering.smoketests.SmokeTestsRunnerGenerator.ClientConfig.Value
 import software.amazon.smithy.kotlin.codegen.rendering.util.format
 import software.amazon.smithy.kotlin.codegen.utils.dq
 import software.amazon.smithy.kotlin.codegen.utils.toCamelCase
 import software.amazon.smithy.kotlin.codegen.utils.topDownOperations
-import software.amazon.smithy.model.node.Node
-import software.amazon.smithy.model.node.StringNode
-import software.amazon.smithy.model.shapes.OperationShape
-import software.amazon.smithy.model.shapes.Shape
+import software.amazon.smithy.model.node.*
+import software.amazon.smithy.model.shapes.*
 import software.amazon.smithy.smoketests.traits.SmokeTestCase
 import software.amazon.smithy.smoketests.traits.SmokeTestsTrait
 import kotlin.jvm.optionals.getOrNull
-
-// TODO: Organize all these section IDs
-object SmokeTestsRunner : SectionId
-object SmokeTestAdditionalEnvVars : SectionId
-object SmokeTestDefaultConfig : SectionId
-object SmokeTestRegionDefault : SectionId
-object SmokeTestUseDualStackKey : SectionId
-object SmokeTestSigv4aRegionSetKey : SectionId
-object SmokeTestSigv4aRegionSetValue : SectionId
-object SmokeTestAccountIdBasedRoutingKey : SectionId
-object SmokeTestAccountIdBasedRoutingValue : SectionId
-object SmokeTestHttpEngineOverride : SectionId
-object SmokeTestUseAccelerateKey : SectionId
-object SmokeTestUseMultiRegionAccessPointsKey : SectionId
-object SmokeTestUseMultiRegionAccessPointsValue : SectionId
-object SmokeTestUseGlobalEndpoint : SectionId
-object SmokeTestUriKey : SectionId
-object SmokeTestUriValue : SectionId {
-    val EndpointProvider: SectionKey<Symbol> = SectionKey("EndpointProvider")
-    val EndpointParameters: SectionKey<Symbol> = SectionKey("EndpointParameters")
-}
-
-object Param : SectionId {
-    val ParamShape: SectionKey<Shape?> = SectionKey("SmokeTestsOperationParamKey2") // TODO: Rename section keys
-    val Parameter: SectionKey<Node> = SectionKey("SmokeTestsOperationParamKey3")
-    val ParamName: SectionKey<String> = SectionKey("SmokeTestsOperationParamKey4")
-    val SymbolProvider: SectionKey<SymbolProvider> = SectionKey("SmokeTestsOperationParamKey5")
-}
-
-const val SKIP_TAGS = "AWS_SMOKE_TEST_SKIP_TAGS"
-const val SERVICE_FILTER = "AWS_SMOKE_TEST_SERVICE_IDS"
 
 /**
  * Renders smoke tests runner for a service
@@ -65,37 +31,45 @@ class SmokeTestsRunnerGenerator(
     private val writer: KotlinWriter,
     ctx: CodegenContext,
 ) {
-    private val model = ctx.model
-    private val settings = ctx.settings
-    private val sdkId = settings.sdkId
-    private val symbolProvider = ctx.symbolProvider
-    private val service = symbolProvider.toSymbol(model.expectShape(settings.service))
-    private val operations = model.topDownOperations(settings.service).filter { it.hasTrait<SmokeTestsTrait>() }
-
     internal fun render() {
-        writer.declareSection(SmokeTestsRunner) {
-            write("private var exitCode = 0")
-            write(
-                "private val skipTags = #T.System.getenv(#S)?.let { it.split(#S).map { it.trim() }.toSet() } ?: emptySet()",
-                RuntimeTypes.Core.Utils.PlatformProvider,
-                SKIP_TAGS,
-                ",",
-            )
-            write(
-                "private val serviceFilter = #T.System.getenv(#S)?.let { it.split(#S).map { it.trim() }.toSet() } ?: emptySet()",
-                RuntimeTypes.Core.Utils.PlatformProvider,
-                SERVICE_FILTER,
-                ",",
-            )
-            declareSection(SmokeTestAdditionalEnvVars)
-            write("")
-            withBlock("public suspend fun main() {", "}") {
-                renderFunctionCalls()
-                write("#T(exitCode)", RuntimeTypes.Core.SmokeTests.exitProcess)
-            }
-            write("")
-            renderFunctions()
+        writer.write("private var exitCode = 0")
+        renderEnvironmentVariables()
+        writer.declareSection(AdditionalEnvironmentVariables)
+        writer.write("")
+        writer.withBlock("public suspend fun main() {", "}") {
+            renderFunctionCalls()
+            write("#T(exitCode)", RuntimeTypes.Core.SmokeTests.exitProcess)
         }
+        writer.write("")
+        renderFunctions()
+    }
+
+    private fun renderEnvironmentVariables() {
+        // Skip tags
+        writer.writeInline(
+            "private val skipTags = #T.System.getenv(",
+            RuntimeTypes.Core.Utils.PlatformProvider,
+        )
+        writer.declareSection(SkipTags) {
+            writer.writeInline("#S", SKIP_TAGS)
+        }
+        writer.write(
+            ")?.let { it.split(#S).map { it.trim() }.toSet() } ?: emptySet()",
+            ",",
+        )
+
+        // Service filter
+        writer.writeInline(
+            "private val serviceFilter = #T.System.getenv(",
+            RuntimeTypes.Core.Utils.PlatformProvider,
+        )
+        writer.declareSection(ServiceFilter) {
+            writer.writeInline("#S", SERVICE_FILTER)
+        }
+        writer.write(
+            ")?.let { it.split(#S).map { it.trim() }.toSet() } ?: emptySet()",
+            ",",
+        )
     }
 
     private fun renderFunctionCalls() {
@@ -142,85 +116,37 @@ class SmokeTestsRunnerGenerator(
 
     private fun renderClient(testCase: SmokeTestCase) {
         writer.withInlineBlock("#L {", "}", service) {
-            if (testCase.vendorParams.isPresent) {
-                testCase.vendorParams.get().members.forEach { vendorParam ->
-                    // TODO: Fix this to only use two sections
-                    when (vendorParam.key.value) {
-                        "region" -> {
-                            writeInline("#L = ", vendorParam.key.value.toCamelCase())
-                            declareSection(SmokeTestRegionDefault)
-                            write("#L", vendorParam.value.format())
-                        }
-                        "sigv4aRegionSet" -> {
-                            declareSection(SmokeTestSigv4aRegionSetKey) {
-                                writeInline("#L", vendorParam.key.value.toCamelCase())
-                            }
-                            writeInline(" = ")
-                            declareSection(SmokeTestSigv4aRegionSetValue) {
-                                write("#L", vendorParam.value.format())
-                            }
-                        }
-                        "uri" -> {
-                            declareSection(SmokeTestUriKey) {
-                                writeInline("#L", vendorParam.key.value.toCamelCase())
-                            }
-                            writeInline(" = ")
-                            declareSection(
-                                SmokeTestUriValue,
-                                mapOf(
-                                    EndpointProvider to EndpointProviderGenerator.getSymbol(settings),
-                                    EndpointParameters to EndpointParametersGenerator.getSymbol(settings),
-                                ),
-                            ) {
-                                write("#L", vendorParam.value.format())
-                            }
-                        }
-                        "useDualstack" -> {
-                            declareSection(SmokeTestUseDualStackKey) {
-                                writeInline("#L", vendorParam.key.value.toCamelCase())
-                            }
-                            write(" = #L", vendorParam.value.format())
-                        }
-                        "useAccountIdRouting" -> {
-                            declareSection(SmokeTestAccountIdBasedRoutingKey) {
-                                writeInline("#L", vendorParam.key.value.toCamelCase())
-                            }
-                            writeInline(" = ")
-                            declareSection(SmokeTestAccountIdBasedRoutingValue) {
-                                write("#L", vendorParam.value.format())
-                            }
-                        }
-                        "useAccelerate" -> {
-                            declareSection(SmokeTestUseAccelerateKey) {
-                                writeInline("#L", vendorParam.key.value.toCamelCase())
-                            }
-                            write(" = #L", vendorParam.value.format())
-                        }
-                        "useMultiRegionAccessPoints" -> {
-                            declareSection(SmokeTestUseMultiRegionAccessPointsKey) {
-                                writeInline("#L", vendorParam.key.value.toCamelCase())
-                            }
-                            writeInline(" = ")
-                            declareSection(SmokeTestUseMultiRegionAccessPointsValue) {
-                                write("#L", vendorParam.value.format())
-                            }
-                        }
-                        "useGlobalEndpoint" -> {
-                            declareSection(SmokeTestUseGlobalEndpoint) {
-                                write("#L = #L", vendorParam.key.value.toCamelCase(), vendorParam.value.format())
-                            }
-                        }
-                        else -> write("#L = #L", vendorParam.key.value.toCamelCase(), vendorParam.value.format())
-                    }
-                }
-            } else {
-                declareSection(SmokeTestDefaultConfig)
+            renderClientConfig(testCase)
+        }
+    }
+
+    private fun renderClientConfig(testCase: SmokeTestCase) {
+        if (!testCase.expectingSpecificError) {
+            writer.write("interceptors.add(#T())", RuntimeTypes.HttpClient.Interceptors.SmokeTestsInterceptor)
+        }
+
+        writer.declareSection(HttpEngineOverride)
+
+        if (!testCase.hasClientConfig) {
+            writer.declareSection(DefaultClientConfig)
+            return
+        }
+
+        testCase.clientConfig!!.forEach { config ->
+            val name = config.key.value.toCamelCase()
+            val value = config.value.format()
+
+            writer.declareSection(
+                ClientConfig,
+                mapOf(
+                    Name to name,
+                    Value to value,
+                    EndpointProvider to EndpointProviderGenerator.getSymbol(settings),
+                    EndpointParams to EndpointParametersGenerator.getSymbol(settings),
+                ),
+            ) {
+                writer.writeInline("#L = #L", name, value)
             }
-            val expectingSpecificError = testCase.expectation.failure.getOrNull()?.errorId?.getOrNull() != null
-            if (!expectingSpecificError) {
-                write("interceptors.add(#T())", RuntimeTypes.HttpClient.Interceptors.SmokeTestsInterceptor)
-            }
-            declareSection(SmokeTestHttpEngineOverride)
         }
     }
 
@@ -237,27 +163,14 @@ class SmokeTestsRunnerGenerator(
     }
 
     private fun renderOperationParameters(operation: OperationShape, testCase: SmokeTestCase) {
-        if (!testCase.operationParametersArePresent) return
+        if (!testCase.hasOperationParameters) return
 
         val paramsToShapes = mapOperationParametersToModeledShapes(operation)
 
         testCase.operationParameters.forEach { param ->
-            val name = param.key.value.toCamelCase()
-            val value = param.value.format()
-
-            writer.writeInline("#L = ", name)
-
-            writer.declareSection( // TODO: Finish this
-                Param,
-                mapOf(
-                    ParamName to name,
-                    ParamShape to paramsToShapes[name],
-                    Parameter to param.value,
-                    SymbolProvider to symbolProvider,
-                ),
-            ) {
-                writer.write("#L", value )
-            }
+            val paramName = param.key.value.toCamelCase()
+            writer.writeInline("#L = ", paramName)
+            renderOperationParameter(paramName, param.value, paramsToShapes, testCase)
         }
     }
 
@@ -282,6 +195,38 @@ class SmokeTestsRunnerGenerator(
             write("#T(exception)", RuntimeTypes.Core.SmokeTests.printExceptionStackTrace)
             write("exitCode = 1")
         }
+    }
+
+    // Helpers
+    /**
+     * Renders a [SmokeTestCase] operation parameter
+     */
+    private fun renderOperationParameter(
+        paramName: String,
+        node: Node,
+        shapes: Map<String, Shape>,
+        testCase: SmokeTestCase,
+    ): String {
+        val shape = shapes[paramName] ?: throw Exception("Unable to find shape for operation parameter '$paramName' in smoke test '${testCase.functionName}'")
+        when {
+            // String enum
+            node is StringNode && shape.isStringEnumShape -> {
+                val enumSymbol = symbolProvider.toSymbol(shape)
+                val enumValue = node.value
+                writer.write("#T.#L", enumSymbol, enumValue)
+            }
+            // Int enum
+            node is NumberNode && shape is IntEnumShape -> {
+                val enumSymbol = symbolProvider.toSymbol(shape)
+                val enumValue = node.format()
+                writer.write("#T.fromValue(#L.toInt())", enumSymbol, enumValue)
+            }
+            // Number
+            node is NumberNode && shape is NumberShape -> writer.write("#L.#L", node.format(), stringToNumber(shape))
+            // Everything else
+            else -> writer.write("#L", node.format())
+        }
+        return writer.rawString()
     }
 
     /**
@@ -324,9 +269,67 @@ class SmokeTestsRunnerGenerator(
     private val SmokeTestCase.functionName: String
         get() = this.id.toCamelCase()
 
+    /**
+     * Get the operation parameters for a [SmokeTestCase]
+     */
     private val SmokeTestCase.operationParameters: Map<StringNode, Node>
         get() = this.params.get().members
 
-    private val SmokeTestCase.operationParametersArePresent: Boolean
+    /**
+     * Checks if there are operation parameters for a [SmokeTestCase]
+     */
+    private val SmokeTestCase.hasOperationParameters: Boolean
         get() = this.params.isPresent
+
+    /**
+     * Check if a [SmokeTestCase] is expecting a specific error
+     */
+    private val SmokeTestCase.expectingSpecificError: Boolean
+        get() = this.expectation.failure.getOrNull()?.errorId?.getOrNull() != null
+
+    /**
+     * Checks if a [SmokeTestCase] requires client configuration
+     */
+    private val SmokeTestCase.hasClientConfig: Boolean
+        get() = this.vendorParams.isPresent
+
+    /**
+     * Get the client configuration required for a [SmokeTestCase]
+     */
+    private val SmokeTestCase.clientConfig: MutableMap<StringNode, Node>?
+        get() = this.vendorParams.get().members
+
+    // Section IDs
+    object AdditionalEnvironmentVariables : SectionId
+    object DefaultClientConfig : SectionId
+    object HttpEngineOverride : SectionId
+    object ServiceFilter : SectionId
+    object SkipTags : SectionId
+    object ClientConfig : SectionId {
+        val Name: SectionKey<String> = SectionKey("aws.smithy.kotlin#SmokeTestClientConfigName")
+        val Value: SectionKey<String> = SectionKey("aws.smithy.kotlin#SmokeTestClientConfigValue")
+        val EndpointProvider: SectionKey<Symbol> = SectionKey("aws.smithy.kotlin#SmokeTestEndpointProvider")
+        val EndpointParams: SectionKey<Symbol> = SectionKey("aws.smithy.kotlin#SmokeTestClientEndpointParams")
+    }
+
+    // Constants
+    private val model = ctx.model
+    private val settings = ctx.settings
+    private val sdkId = settings.sdkId
+    private val symbolProvider = ctx.symbolProvider
+    private val service = symbolProvider.toSymbol(model.expectShape(settings.service))
+    private val operations = model.topDownOperations(settings.service).filter { it.hasTrait<SmokeTestsTrait>() }
 }
+
+/**
+ * Env var for smoke test runners.
+ * Should be a comma-delimited list of strings that correspond to tags on the test cases.
+ * If a test case is tagged with one of the tags indicated by SMOKE_TEST_SKIP_TAGS, it MUST be skipped by the smoke test runner.
+ */
+const val SKIP_TAGS = "SMOKE_TEST_SKIP_TAGS"
+
+/**
+ * Env var for smoke test runners.
+ * Should be a comma-separated list of service identifiers to test.
+ */
+const val SERVICE_FILTER = "SMOKE_TEST_SERVICE_IDS"
