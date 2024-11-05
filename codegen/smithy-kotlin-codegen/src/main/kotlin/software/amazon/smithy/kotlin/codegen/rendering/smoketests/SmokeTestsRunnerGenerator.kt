@@ -17,6 +17,7 @@ import software.amazon.smithy.kotlin.codegen.rendering.smoketests.SmokeTestsRunn
 import software.amazon.smithy.kotlin.codegen.rendering.util.format
 import software.amazon.smithy.kotlin.codegen.utils.dq
 import software.amazon.smithy.kotlin.codegen.utils.toCamelCase
+import software.amazon.smithy.kotlin.codegen.utils.toPascalCase
 import software.amazon.smithy.kotlin.codegen.utils.topDownOperations
 import software.amazon.smithy.model.node.*
 import software.amazon.smithy.model.shapes.*
@@ -212,7 +213,7 @@ class SmokeTestsRunnerGenerator(
             // String enum
             node is StringNode && shape.isStringEnumShape -> {
                 val enumSymbol = symbolProvider.toSymbol(shape)
-                val enumValue = node.value
+                val enumValue = node.value.toPascalCase()
                 writer.write("#T.#L", enumSymbol, enumValue)
             }
             // Int enum
