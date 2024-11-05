@@ -6,6 +6,7 @@
 package aws.smithy.kotlin.runtime.http.operation
 
 import aws.smithy.kotlin.runtime.InternalApi
+import aws.smithy.kotlin.runtime.businessmetrics.BusinessMetrics
 import aws.smithy.kotlin.runtime.businessmetrics.SmithyBusinessMetric
 import aws.smithy.kotlin.runtime.businessmetrics.emitBusinessMetric
 import aws.smithy.kotlin.runtime.client.LogMode
@@ -23,9 +24,11 @@ import aws.smithy.kotlin.runtime.http.request.dumpRequest
 import aws.smithy.kotlin.runtime.http.request.immutableView
 import aws.smithy.kotlin.runtime.http.request.toBuilder
 import aws.smithy.kotlin.runtime.http.response.dumpResponse
+import aws.smithy.kotlin.runtime.identity.Identity
 import aws.smithy.kotlin.runtime.io.Handler
 import aws.smithy.kotlin.runtime.io.middleware.Middleware
 import aws.smithy.kotlin.runtime.io.middleware.Phase
+import aws.smithy.kotlin.runtime.operation.ExecutionContext
 import aws.smithy.kotlin.runtime.retries.RetryStrategy
 import aws.smithy.kotlin.runtime.retries.StandardRetryStrategy
 import aws.smithy.kotlin.runtime.retries.policy.RetryPolicy
@@ -285,6 +288,9 @@ internal class AuthHandler<Input, Output>(
             identityProvider.resolve(request.context)
         }
 
+        // emit identity business metrics
+        emitIdentityBusinessMetrics(identity, request.context)
+
         val resolveEndpointReq = ResolveEndpointRequest(request.context, request.subject.immutableView(), identity)
 
         if (endpointResolver != null) {
@@ -408,3 +414,9 @@ private class InterceptorTransmitMiddleware<I, O>(
         return call
     }
 }
+
+/**
+ * Emits an [Identity]'s attributes' [BusinessMetrics] into the [ExecutionContext]
+ */
+private fun emitIdentityBusinessMetrics(identity: Identity, context: ExecutionContext) =
+    identity.attributes.getOrNull(BusinessMetrics)?.toList()?.reversed()?.forEach(context::emitBusinessMetric)
