@@ -4,17 +4,16 @@ import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.kotlin.codegen.core.*
 import software.amazon.smithy.kotlin.codegen.integration.SectionId
 import software.amazon.smithy.kotlin.codegen.integration.SectionKey
-import software.amazon.smithy.kotlin.codegen.model.expectShape
 import software.amazon.smithy.kotlin.codegen.model.getTrait
 import software.amazon.smithy.kotlin.codegen.model.hasTrait
 import software.amazon.smithy.kotlin.codegen.model.isStringEnumShape
 import software.amazon.smithy.kotlin.codegen.rendering.endpoints.EndpointParametersGenerator
 import software.amazon.smithy.kotlin.codegen.rendering.endpoints.EndpointProviderGenerator
 import software.amazon.smithy.kotlin.codegen.rendering.protocol.stringToNumber
-import software.amazon.smithy.kotlin.codegen.rendering.smoketests.SmokeTestsRunnerGenerator.ClientConfig.EndpointParams
-import software.amazon.smithy.kotlin.codegen.rendering.smoketests.SmokeTestsRunnerGenerator.ClientConfig.EndpointProvider
-import software.amazon.smithy.kotlin.codegen.rendering.smoketests.SmokeTestsRunnerGenerator.ClientConfig.Name
-import software.amazon.smithy.kotlin.codegen.rendering.smoketests.SmokeTestsRunnerGenerator.ClientConfig.Value
+import software.amazon.smithy.kotlin.codegen.rendering.smoketests.ClientConfig.EndpointParams
+import software.amazon.smithy.kotlin.codegen.rendering.smoketests.ClientConfig.EndpointProvider
+import software.amazon.smithy.kotlin.codegen.rendering.smoketests.ClientConfig.Name
+import software.amazon.smithy.kotlin.codegen.rendering.smoketests.ClientConfig.Value
 import software.amazon.smithy.kotlin.codegen.rendering.util.format
 import software.amazon.smithy.kotlin.codegen.utils.dq
 import software.amazon.smithy.kotlin.codegen.utils.toCamelCase
@@ -25,6 +24,32 @@ import software.amazon.smithy.model.shapes.*
 import software.amazon.smithy.smoketests.traits.SmokeTestCase
 import software.amazon.smithy.smoketests.traits.SmokeTestsTrait
 import kotlin.jvm.optionals.getOrNull
+
+// Section IDs
+object AdditionalEnvironmentVariables : SectionId
+object DefaultClientConfig : SectionId
+object HttpEngineOverride : SectionId
+object ServiceFilter : SectionId
+object SkipTags : SectionId
+object ClientConfig : SectionId {
+    val Name: SectionKey<String> = SectionKey("aws.smithy.kotlin#SmokeTestClientConfigName")
+    val Value: SectionKey<String> = SectionKey("aws.smithy.kotlin#SmokeTestClientConfigValue")
+    val EndpointProvider: SectionKey<Symbol> = SectionKey("aws.smithy.kotlin#SmokeTestEndpointProvider")
+    val EndpointParams: SectionKey<Symbol> = SectionKey("aws.smithy.kotlin#SmokeTestClientEndpointParams")
+}
+
+/**
+ * Env var for smoke test runners.
+ * Should be a comma-delimited list of strings that correspond to tags on the test cases.
+ * If a test case is tagged with one of the tags indicated by SMOKE_TEST_SKIP_TAGS, it MUST be skipped by the smoke test runner.
+ */
+const val SKIP_TAGS = "SMOKE_TEST_SKIP_TAGS"
+
+/**
+ * Env var for smoke test runners.
+ * Should be a comma-separated list of service identifiers to test.
+ */
+const val SERVICE_FILTER = "SMOKE_TEST_SERVICE_IDS"
 
 /**
  * Renders smoke tests runner for a service
@@ -172,7 +197,8 @@ class SmokeTestsRunnerGenerator(
         testCase.operationParameters.forEach { param ->
             val paramName = param.key.value.toCamelCase()
             writer.writeInline("#L = ", paramName)
-            renderOperationParameter(paramName, param.value, paramsToShapes, testCase)
+            val paramShape = paramsToShapes[paramName] ?: throw IllegalArgumentException("Unable to find shape for operation parameter '$paramName' in smoke test '${testCase.functionName}'.")
+            renderOperationParameter(paramName, param.value, paramShape, testCase)
         }
     }
 
@@ -206,11 +232,9 @@ class SmokeTestsRunnerGenerator(
     private fun renderOperationParameter(
         paramName: String,
         node: Node,
-        shapes: Map<String, Shape>,
+        shape: Shape,
         testCase: SmokeTestCase,
-        shapeOverride: Shape? = null,
     ) {
-        val shape = shapeOverride ?: shapes[paramName] ?: throw Exception("Unable to find shape for operation parameter '$paramName' in smoke test '${testCase.functionName}'.")
         when {
             // String enum
             node is StringNode && shape.isStringEnumShape -> {
@@ -232,9 +256,9 @@ class SmokeTestsRunnerGenerator(
                 writer.withBlock("#T {", "}", shapeSymbol) {
                     node.members.forEach { member ->
                         val memberName = member.key.value.toCamelCase()
-                        val memberShape = shape.allMembers[member.key.value] ?: throw Exception("Unable to find shape for operation parameter '$paramName' in smoke test '${testCase.functionName}'.")
+                        val memberShape = shape.allMembers[member.key.value] ?: throw IllegalArgumentException("Unable to find shape for operation parameter '$paramName' in smoke test '${testCase.functionName}'.")
                         writer.writeInline("#L = ", memberName)
-                        renderOperationParameter(memberName, member.value, mapOf(memberName to memberShape), testCase)
+                        renderOperationParameter(memberName, member.value, memberShape, testCase)
                     }
                 }
             }
@@ -242,7 +266,7 @@ class SmokeTestsRunnerGenerator(
             node is ArrayNode && shape is CollectionShape -> {
                 writer.withBlock("listOf(", ")") {
                     node.elements.forEach { element ->
-                        renderOperationParameter(paramName, element, mapOf(), testCase, model.expectShape(shape.member.target))
+                        renderOperationParameter(paramName, element, model.expectShape(shape.member.target), testCase)
                         writer.write(",")
                     }
                 }
@@ -322,19 +346,6 @@ class SmokeTestsRunnerGenerator(
     private val SmokeTestCase.clientConfig: MutableMap<StringNode, Node>?
         get() = this.vendorParams.get().members
 
-    // Section IDs
-    object AdditionalEnvironmentVariables : SectionId
-    object DefaultClientConfig : SectionId
-    object HttpEngineOverride : SectionId
-    object ServiceFilter : SectionId
-    object SkipTags : SectionId
-    object ClientConfig : SectionId {
-        val Name: SectionKey<String> = SectionKey("aws.smithy.kotlin#SmokeTestClientConfigName")
-        val Value: SectionKey<String> = SectionKey("aws.smithy.kotlin#SmokeTestClientConfigValue")
-        val EndpointProvider: SectionKey<Symbol> = SectionKey("aws.smithy.kotlin#SmokeTestEndpointProvider")
-        val EndpointParams: SectionKey<Symbol> = SectionKey("aws.smithy.kotlin#SmokeTestClientEndpointParams")
-    }
-
     // Constants
     private val model = ctx.model
     private val settings = ctx.settings
@@ -343,16 +354,3 @@ class SmokeTestsRunnerGenerator(
     private val service = symbolProvider.toSymbol(model.expectShape(settings.service))
     private val operations = model.topDownOperations(settings.service).filter { it.hasTrait<SmokeTestsTrait>() }
 }
-
-/**
- * Env var for smoke test runners.
- * Should be a comma-delimited list of strings that correspond to tags on the test cases.
- * If a test case is tagged with one of the tags indicated by SMOKE_TEST_SKIP_TAGS, it MUST be skipped by the smoke test runner.
- */
-const val SKIP_TAGS = "SMOKE_TEST_SKIP_TAGS"
-
-/**
- * Env var for smoke test runners.
- * Should be a comma-separated list of service identifiers to test.
- */
-const val SERVICE_FILTER = "SMOKE_TEST_SERVICE_IDS"
