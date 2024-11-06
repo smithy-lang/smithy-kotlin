@@ -26,13 +26,6 @@ kotlin {
             }
         }
 
-//        nativeMain {
-//            dependencies {
-//                api(project(":runtime:runtime-core"))
-//                api(libs.crt.kotlin)
-//            }
-//        }
-
         jvmAndNativeTest {
             dependencies {
                 implementation(libs.kotlinx.coroutines.test)
