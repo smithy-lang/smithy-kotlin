@@ -53,6 +53,7 @@ internal fun Application.downloadTests() {
                 call.response.header("x-bar", "bar")
             }
 
+            // FIXME This is the only thing keeping this directory in `jvm`, could be `jvmAndNative`
             get("/gzipped") {
                 val uncompressed = ByteArray(1024) { it.toByte() }
                 val compressed = ByteArrayOutputStream().use { baStream ->

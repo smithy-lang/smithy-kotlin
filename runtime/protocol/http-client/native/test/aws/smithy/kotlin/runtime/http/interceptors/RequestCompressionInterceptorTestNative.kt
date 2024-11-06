@@ -5,5 +5,5 @@
 package aws.smithy.kotlin.runtime.http.interceptors
 
 internal actual fun decompressGzipBytes(bytes: ByteArray): ByteArray {
-    TODO("Not yet implemented")
+    TODO("Not yet implemented. Can we write a pure Kotlin implementation?")
 }

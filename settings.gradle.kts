@@ -26,6 +26,13 @@ dependencyResolutionManagement {
     }
 }
 
+// Set up aws-crt-kotlin as a composite build
+val localAwsCrtKotlin = file("../aws-crt-kotlin")
+if(localAwsCrtKotlin.exists()) {
+    println("Including aws-crt-kotlin as a composite build")
+    includeBuild(localAwsCrtKotlin)
+}
+
 rootProject.name = "smithy-kotlin"
 
 include(":dokka-smithy")

@@ -7,6 +7,7 @@ package aws.smithy.kotlin.runtime.time
 
 import kotlin.time.Duration
 
+// FIXME Consider making this multiplatform (`common`) using kotlinx.datetime
 public actual class Instant : Comparable<Instant> {
     actual override fun compareTo(other: Instant): Int {
         TODO("Not yet implemented")

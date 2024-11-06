@@ -26,6 +26,7 @@ import kotlin.time.toKotlinDuration
 import java.time.Duration as jtDuration
 import java.time.Instant as jtInstant
 
+// FIXME Consider making this multiplatform (`common`) using kotlinx.datetime
 public actual class Instant(internal val value: jtInstant) : Comparable<Instant> {
     public actual val epochSeconds: Long
         get() = value.epochSecond

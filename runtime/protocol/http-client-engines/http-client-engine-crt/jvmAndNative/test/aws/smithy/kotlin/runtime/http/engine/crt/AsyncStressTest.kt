@@ -25,6 +25,7 @@ import kotlinx.coroutines.yield
 import kotlin.test.Test
 import kotlin.time.Duration.Companion.seconds
 
+// FIXME This test implements [TestWithLocalServer] which is JVM-only.
 class AsyncStressTest : TestWithLocalServer() {
 
     override val server = embeddedServer(CIO, serverPort) {
