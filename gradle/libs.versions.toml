@@ -92,7 +92,7 @@ ktor-http-cio = { module = "io.ktor:ktor-http-cio", version.ref = "ktor-version"
 ktor-utils = { module = "io.ktor:ktor-utils", version.ref = "ktor-version" }
 ktor-io = { module = "io.ktor:ktor-io", version.ref = "ktor-version" }
 ktor-server-netty = { module = "io.ktor:ktor-server-netty", version.ref = "ktor-version" }
-ktor-server-jetty = { module = "io.ktor:ktor-server-jetty", version.ref = "ktor-version" }
+ktor-server-jetty-jakarta = { module = "io.ktor:ktor-server-jetty-jakarta", version.ref = "ktor-version" }
 ktor-server-cio = { module = "io.ktor:ktor-server-cio", version.ref = "ktor-version" }
 ktor-network-tls-certificates = { module = "io.ktor:ktor-network-tls-certificates", version.ref = "ktor-version" }
 

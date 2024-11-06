@@ -6,13 +6,17 @@ package aws.smithy.kotlin.runtime.http.test
 
 import aws.smithy.kotlin.runtime.content.decodeToString
 import aws.smithy.kotlin.runtime.http.*
+import aws.smithy.kotlin.runtime.http.engine.okhttp.OkHttpEngineConfig
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.http.request.url
 import aws.smithy.kotlin.runtime.http.test.util.*
 import aws.smithy.kotlin.runtime.http.test.util.testServers
 import aws.smithy.kotlin.runtime.net.TlsVersion
+import kotlinx.coroutines.delay
 import java.nio.file.Paths
 import kotlin.test.*
+import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.Duration.Companion.seconds
 
 class ConnectionTest : AbstractEngineTest() {
     private fun testMinTlsVersion(version: TlsVersion, serverType: ServerType) {
@@ -79,4 +83,45 @@ class ConnectionTest : AbstractEngineTest() {
 
     @Test
     fun testMinTls1_3() = testMinTlsVersion(TlsVersion.TLS_1_3, ServerType.TLS_1_3)
+
+    // See https://github.com/awslabs/aws-sdk-kotlin/issues/1214
+    @Test
+    fun testShortLivedConnections() = testEngines(
+        // Only run this test on OkHttp
+        skipEngines = setOf("CrtHttpEngine", "OkHttp4Engine"),
+    ) {
+        engineConfig {
+            this as OkHttpEngineConfig.Builder
+            connectionIdlePollingInterval = 200.milliseconds
+            connectionIdleTimeout = 10.seconds // Longer than the server-side timeout
+        }
+
+        test { _, client ->
+            val initialReq = HttpRequest {
+                testSetup()
+                method = HttpMethod.POST
+                url {
+                    path.decoded = "/connectionDrop"
+                }
+                body = "Foo".toHttpBody()
+            }
+            val initialCall = client.call(initialReq)
+            val initialResp = initialCall.response.body.toByteStream()?.decodeToString()
+            assertEquals("Bar", initialResp)
+
+            delay(5.seconds) // Longer than the service side timeout, shorter than the client-side timeout
+
+            val subsequentReq = HttpRequest {
+                testSetup()
+                method = HttpMethod.POST
+                url {
+                    path.decoded = "/connectionDrop"
+                }
+                body = "Foo".toHttpBody()
+            }
+            val subsequentCall = client.call(subsequentReq)
+            val subsequentResp = subsequentCall.response.body.toByteStream()?.decodeToString()
+            assertEquals("Bar", subsequentResp)
+        }
+    }
 }

@@ -13,10 +13,13 @@ import aws.smithy.kotlin.runtime.http.test.suite.uploadTests
 import io.ktor.server.application.*
 import io.ktor.server.engine.*
 import io.ktor.server.jetty.*
+import io.ktor.server.jetty.jakarta.Jetty
+import io.ktor.server.jetty.jakarta.JettyApplicationEngineBase
 import redirectTests
 import java.io.Closeable
 import java.nio.file.Paths
 import java.util.concurrent.TimeUnit
+import kotlin.time.Duration.Companion.seconds
 
 private data class TestServer(
     val port: Int,
@@ -94,7 +97,7 @@ private fun tlsServer(instance: TestServer, sslConfig: SslConfig): EmbeddedServe
     val rootConfig = serverConfig {
         module(instance.initializer)
     }
-    val engineConfig: ApplicationEngine.Configuration.() -> Unit = {
+    val engineConfig: JettyApplicationEngineBase.Configuration.() -> Unit = {
         when (instance.type) {
             ConnectorType.HTTP -> connector { port = instance.port }
 
@@ -109,6 +112,8 @@ private fun tlsServer(instance: TestServer, sslConfig: SslConfig): EmbeddedServe
                 enabledProtocols = instance.protocolName?.let(::listOf)
             }
         }
+
+        idleTimeout = 3.seconds // Required for ConnectionTest.testShortLivedConnections
     }
 
     return try {
@@ -126,6 +131,7 @@ internal fun Application.testRoutes() {
     uploadTests()
     concurrentTests()
     headerTests()
+    connectionTests()
 }
 
 // configure SSL-only routes
