@@ -14,7 +14,6 @@ import aws.smithy.kotlin.runtime.httptest.TestWithLocalServer
 import aws.smithy.kotlin.runtime.net.Host
 import aws.smithy.kotlin.runtime.net.Scheme
 import aws.smithy.kotlin.runtime.testing.IgnoreWindows
-import io.ktor.server.application.*
 import io.ktor.server.cio.*
 import io.ktor.server.engine.*
 import io.ktor.server.response.*

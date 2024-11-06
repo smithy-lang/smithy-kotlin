@@ -28,6 +28,7 @@ import software.amazon.smithy.model.traits.TimestampFormatTrait
 import software.amazon.smithy.model.traits.Trait
 import software.amazon.smithy.protocol.traits.Rpcv2CborTrait
 import software.amazon.smithy.utils.StringUtils
+import kotlin.test.assertNotEquals
 
 // This file houses test classes and functions relating to the code generator (protocols, serializers, etc)
 // Items contained here should be relatively high-level, utilizing all members of codegen classes, Smithy, and
@@ -274,3 +275,19 @@ fun KotlinCodegenPlugin.Companion.createSymbolProvider(
  * create a new [KotlinWriter] using the test context package name
  */
 fun TestContext.newWriter(): KotlinWriter = KotlinWriter(generationCtx.settings.pkg.name)
+
+/**
+ * Get all the lines between [fromLine] and [toLine]
+ */
+fun String.lines(fromLine: String, toLine: String): String {
+    val allLines = lines()
+
+    val fromIdx = allLines.indexOf(fromLine)
+    assertNotEquals(-1, fromIdx, """Could not find from line "$fromLine" in all lines""")
+
+    val toIdxOffset = allLines.drop(fromIdx + 1).indexOf(toLine)
+    assertNotEquals(-1, toIdxOffset, """Could not find to line "$toLine" in all lines""")
+
+    val toIdx = toIdxOffset + fromIdx + 1
+    return allLines.subList(fromIdx, toIdx + 1).joinToString("\n")
+}

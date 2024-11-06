@@ -19,11 +19,12 @@ import aws.smithy.kotlin.runtime.io.SdkSource
 import aws.smithy.kotlin.runtime.io.source
 import aws.smithy.kotlin.runtime.net.Host
 import aws.smithy.kotlin.runtime.net.Scheme
-import io.ktor.server.application.*
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import io.ktor.utils.io.core.remaining
+import io.ktor.utils.io.readRemaining
 import kotlinx.benchmark.Blackhole
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking

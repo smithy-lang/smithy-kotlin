@@ -13,10 +13,13 @@ import aws.smithy.kotlin.runtime.http.test.suite.uploadTests
 import io.ktor.server.application.*
 import io.ktor.server.engine.*
 import io.ktor.server.jetty.*
+import io.ktor.server.jetty.jakarta.Jetty
+import io.ktor.server.jetty.jakarta.JettyApplicationEngineBase
 import redirectTests
 import java.io.Closeable
 import java.nio.file.Paths
 import java.util.concurrent.TimeUnit
+import kotlin.time.Duration.Companion.seconds
 
 private data class TestServer(
     val port: Int,
@@ -88,10 +91,13 @@ internal fun startServers(sslConfigPath: String): Closeable {
     return servers
 }
 
-private fun tlsServer(instance: TestServer, sslConfig: SslConfig): ApplicationEngine {
+private fun tlsServer(instance: TestServer, sslConfig: SslConfig): EmbeddedServer<*, *> {
     val description = "${instance.type.name} server on port ${instance.port}"
     println("Starting $description...")
-    val environment = applicationEngineEnvironment {
+    val rootConfig = serverConfig {
+        module(instance.initializer)
+    }
+    val engineConfig: JettyApplicationEngineBase.Configuration.() -> Unit = {
         when (instance.type) {
             ConnectorType.HTTP -> connector { port = instance.port }
 
@@ -107,10 +113,11 @@ private fun tlsServer(instance: TestServer, sslConfig: SslConfig): ApplicationEn
             }
         }
 
-        modules.add(instance.initializer)
+        idleTimeout = 3.seconds // Required for ConnectionTest.testShortLivedConnections
     }
+
     return try {
-        embeddedServer(Jetty, environment).start()
+        embeddedServer(Jetty, rootConfig, engineConfig).start()
     } catch (e: Exception) {
         println("$description failed to start with exception $e")
         throw e
@@ -124,6 +131,7 @@ internal fun Application.testRoutes() {
     uploadTests()
     concurrentTests()
     headerTests()
+    connectionTests()
 }
 
 // configure SSL-only routes

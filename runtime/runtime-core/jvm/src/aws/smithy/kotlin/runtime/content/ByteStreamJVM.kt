@@ -123,7 +123,7 @@ public fun InputStream.asByteStream(contentLength: Long? = null): ByteStream.Sou
 }
 
 /**
- * Writes this stream to the given [OutputStream]. This method does not flush or close the given [OutputStream].
+ * Writes this stream to the given [OutputStream], then closes it.
  * @param outputStream The [OutputStream] to which the contents of this stream will be written
  */
 public suspend fun ByteStream.writeToOutputStream(outputStream: OutputStream): Long = withContext(Dispatchers.IO) {
@@ -138,6 +138,21 @@ public suspend fun ByteStream.writeToOutputStream(outputStream: OutputStream): L
             bufferedSink.writeAll(src)
         }
     }
+}
+
+/**
+ * Writes this stream to the given [OutputStream]. This method does not flush or close the given [OutputStream].
+ * @param outputStream The [OutputStream] to which the contents of this stream will be written
+ */
+public suspend fun ByteStream.appendToOutputStream(outputStream: OutputStream): Long = withContext(Dispatchers.IO) {
+    val src = when (val stream = this@appendToOutputStream) {
+        is ByteStream.ChannelStream -> return@withContext outputStream.writeAll(stream.readFrom())
+        is ByteStream.Buffer -> stream.bytes().source()
+        is ByteStream.SourceStream -> stream.readFrom()
+    }
+
+    val out = outputStream.sink().buffer()
+    out.writeAll(src)
 }
 
 private suspend fun OutputStream.writeAll(chan: SdkByteReadChannel): Long =

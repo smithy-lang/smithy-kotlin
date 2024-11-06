@@ -22,7 +22,7 @@ public abstract class TestWithLocalServer {
     protected val serverPort: Int = ServerSocket(0).use { it.localPort }
     protected val testHost: String = "localhost"
 
-    public abstract val server: ApplicationEngine
+    public abstract val server: EmbeddedServer<*, *>
 
     @BeforeTest
     public fun startServer(): Unit = runBlocking {

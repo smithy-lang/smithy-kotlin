@@ -17,7 +17,7 @@ class BusinessMetricsUtilsTest {
         executionContext.emitBusinessMetric(SmithyBusinessMetric.GZIP_REQUEST_COMPRESSION)
 
         assertTrue(executionContext.attributes.contains(BusinessMetrics))
-        assertTrue(executionContext.attributes[BusinessMetrics].contains(SmithyBusinessMetric.GZIP_REQUEST_COMPRESSION.identifier))
+        assertTrue(executionContext.attributes[BusinessMetrics].contains(SmithyBusinessMetric.GZIP_REQUEST_COMPRESSION))
     }
 
     @Test
@@ -27,8 +27,8 @@ class BusinessMetricsUtilsTest {
         executionContext.emitBusinessMetric(SmithyBusinessMetric.SIGV4A_SIGNING)
 
         assertTrue(executionContext.attributes.contains(BusinessMetrics))
-        assertTrue(executionContext.attributes[BusinessMetrics].contains(SmithyBusinessMetric.GZIP_REQUEST_COMPRESSION.identifier))
-        assertTrue(executionContext.attributes[BusinessMetrics].contains(SmithyBusinessMetric.SIGV4A_SIGNING.identifier))
+        assertTrue(executionContext.attributes[BusinessMetrics].contains(SmithyBusinessMetric.GZIP_REQUEST_COMPRESSION))
+        assertTrue(executionContext.attributes[BusinessMetrics].contains(SmithyBusinessMetric.SIGV4A_SIGNING))
     }
 
     @Test
@@ -37,12 +37,12 @@ class BusinessMetricsUtilsTest {
         executionContext.emitBusinessMetric(SmithyBusinessMetric.GZIP_REQUEST_COMPRESSION)
 
         assertTrue(executionContext.attributes.contains(BusinessMetrics))
-        assertTrue(executionContext.attributes[BusinessMetrics].contains(SmithyBusinessMetric.GZIP_REQUEST_COMPRESSION.identifier))
+        assertTrue(executionContext.attributes[BusinessMetrics].contains(SmithyBusinessMetric.GZIP_REQUEST_COMPRESSION))
 
         executionContext.removeBusinessMetric(SmithyBusinessMetric.GZIP_REQUEST_COMPRESSION)
 
         assertTrue(executionContext.attributes.contains(BusinessMetrics))
-        assertFalse(executionContext.attributes[BusinessMetrics].contains(SmithyBusinessMetric.GZIP_REQUEST_COMPRESSION.identifier))
+        assertFalse(executionContext.attributes[BusinessMetrics].contains(SmithyBusinessMetric.GZIP_REQUEST_COMPRESSION))
     }
 
     @Test
