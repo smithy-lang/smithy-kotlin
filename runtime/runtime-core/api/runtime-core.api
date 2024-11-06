@@ -2046,6 +2046,10 @@ public final class aws/smithy/kotlin/runtime/retries/policy/SuccessAcceptor : aw
 	public final fun getSuccess ()Z
 }
 
+public final class aws/smithy/kotlin/runtime/smoketests/SmokeTestsException : java/lang/Exception {
+	public fun <init> (Ljava/lang/String;)V
+}
+
 public final class aws/smithy/kotlin/runtime/smoketests/SmokeTestsFunctionsJVMKt {
 	public static final fun exitProcess (I)Ljava/lang/Void;
 }

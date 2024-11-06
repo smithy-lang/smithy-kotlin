@@ -10,10 +10,10 @@ import software.amazon.smithy.kotlin.codegen.model.isStringEnumShape
 import software.amazon.smithy.kotlin.codegen.rendering.endpoints.EndpointParametersGenerator
 import software.amazon.smithy.kotlin.codegen.rendering.endpoints.EndpointProviderGenerator
 import software.amazon.smithy.kotlin.codegen.rendering.protocol.stringToNumber
-import software.amazon.smithy.kotlin.codegen.rendering.smoketests.ClientConfig.EndpointParams
-import software.amazon.smithy.kotlin.codegen.rendering.smoketests.ClientConfig.EndpointProvider
-import software.amazon.smithy.kotlin.codegen.rendering.smoketests.ClientConfig.Name
-import software.amazon.smithy.kotlin.codegen.rendering.smoketests.ClientConfig.Value
+import software.amazon.smithy.kotlin.codegen.rendering.smoketests.SmokeTestSectionIds.ClientConfig.EndpointParams
+import software.amazon.smithy.kotlin.codegen.rendering.smoketests.SmokeTestSectionIds.ClientConfig.EndpointProvider
+import software.amazon.smithy.kotlin.codegen.rendering.smoketests.SmokeTestSectionIds.ClientConfig.Name
+import software.amazon.smithy.kotlin.codegen.rendering.smoketests.SmokeTestSectionIds.ClientConfig.Value
 import software.amazon.smithy.kotlin.codegen.rendering.util.format
 import software.amazon.smithy.kotlin.codegen.utils.dq
 import software.amazon.smithy.kotlin.codegen.utils.toCamelCase
@@ -26,16 +26,18 @@ import software.amazon.smithy.smoketests.traits.SmokeTestsTrait
 import kotlin.jvm.optionals.getOrNull
 
 // Section IDs
-object AdditionalEnvironmentVariables : SectionId
-object DefaultClientConfig : SectionId
-object HttpEngineOverride : SectionId
-object ServiceFilter : SectionId
-object SkipTags : SectionId
-object ClientConfig : SectionId {
-    val Name: SectionKey<String> = SectionKey("aws.smithy.kotlin#SmokeTestClientConfigName")
-    val Value: SectionKey<String> = SectionKey("aws.smithy.kotlin#SmokeTestClientConfigValue")
-    val EndpointProvider: SectionKey<Symbol> = SectionKey("aws.smithy.kotlin#SmokeTestEndpointProvider")
-    val EndpointParams: SectionKey<Symbol> = SectionKey("aws.smithy.kotlin#SmokeTestClientEndpointParams")
+object SmokeTestSectionIds {
+    object AdditionalEnvironmentVariables : SectionId
+    object DefaultClientConfig : SectionId
+    object HttpEngineOverride : SectionId
+    object ServiceFilter : SectionId
+    object SkipTags : SectionId
+    object ClientConfig : SectionId {
+        val Name: SectionKey<String> = SectionKey("aws.smithy.kotlin#SmokeTestClientConfigName")
+        val Value: SectionKey<String> = SectionKey("aws.smithy.kotlin#SmokeTestClientConfigValue")
+        val EndpointProvider: SectionKey<Symbol> = SectionKey("aws.smithy.kotlin#SmokeTestEndpointProvider")
+        val EndpointParams: SectionKey<Symbol> = SectionKey("aws.smithy.kotlin#SmokeTestClientEndpointParams")
+    }
 }
 
 /**
@@ -61,7 +63,7 @@ class SmokeTestsRunnerGenerator(
     internal fun render() {
         writer.write("private var exitCode = 0")
         renderEnvironmentVariables()
-        writer.declareSection(AdditionalEnvironmentVariables)
+        writer.declareSection(SmokeTestSectionIds.AdditionalEnvironmentVariables)
         writer.write("")
         writer.withBlock("public suspend fun main() {", "}") {
             renderFunctionCalls()
@@ -77,7 +79,7 @@ class SmokeTestsRunnerGenerator(
             "private val skipTags = #T.System.getenv(",
             RuntimeTypes.Core.Utils.PlatformProvider,
         )
-        writer.declareSection(SkipTags) {
+        writer.declareSection(SmokeTestSectionIds.SkipTags) {
             writer.writeInline("#S", SKIP_TAGS)
         }
         writer.write(
@@ -90,7 +92,7 @@ class SmokeTestsRunnerGenerator(
             "private val serviceFilter = #T.System.getenv(",
             RuntimeTypes.Core.Utils.PlatformProvider,
         )
-        writer.declareSection(ServiceFilter) {
+        writer.declareSection(SmokeTestSectionIds.ServiceFilter) {
             writer.writeInline("#S", SERVICE_FILTER)
         }
         writer.write(
@@ -152,10 +154,10 @@ class SmokeTestsRunnerGenerator(
             writer.write("interceptors.add(#T())", RuntimeTypes.HttpClient.Interceptors.SmokeTestsInterceptor)
         }
 
-        writer.declareSection(HttpEngineOverride)
+        writer.declareSection(SmokeTestSectionIds.HttpEngineOverride)
 
         if (!testCase.hasClientConfig) {
-            writer.declareSection(DefaultClientConfig)
+            writer.declareSection(SmokeTestSectionIds.DefaultClientConfig)
             return
         }
 
@@ -164,7 +166,7 @@ class SmokeTestsRunnerGenerator(
             val value = config.value.format()
 
             writer.declareSection(
-                ClientConfig,
+                SmokeTestSectionIds.ClientConfig,
                 mapOf(
                     Name to name,
                     Value to value,

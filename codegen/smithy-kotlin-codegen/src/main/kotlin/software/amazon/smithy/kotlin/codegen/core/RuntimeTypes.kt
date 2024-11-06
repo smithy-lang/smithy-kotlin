@@ -117,6 +117,7 @@ object RuntimeTypes {
         object SmokeTests : RuntimeTypePackage(KotlinDependency.CORE, "smoketests") {
             val exitProcess = symbol("exitProcess")
             val printExceptionStackTrace = symbol("printExceptionStackTrace")
+            val SmokeTestsException = symbol("SmokeTestsException")
         }
 
         object Collections : RuntimeTypePackage(KotlinDependency.CORE, "collections") {

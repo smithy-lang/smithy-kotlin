@@ -17,3 +17,5 @@ public expect fun exitProcess(status: Int): Nothing
  */
 public fun printExceptionStackTrace(exception: Exception): Unit =
     println(exception.stackTraceToString().split("\n").joinToString("\n") { "#$it" })
+
+public class SmokeTestsException(message: String) : Exception(message)
