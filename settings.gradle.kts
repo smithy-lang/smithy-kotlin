@@ -31,6 +31,8 @@ val localAwsCrtKotlin = file("../aws-crt-kotlin")
 if (localAwsCrtKotlin.exists()) {
     println("Including aws-crt-kotlin as a composite build")
     includeBuild(localAwsCrtKotlin)
+} else {
+    println("Could not find aws-crt-kotlin in a sibling directory, not including it")
 }
 
 rootProject.name = "smithy-kotlin"
