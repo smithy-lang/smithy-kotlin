@@ -39,7 +39,7 @@ jobs:
         working-directory: ./smithy-kotlin
         shell: bash
         run: |
-          ./gradlew -Ptest.java.version=${{ matrix.java-version }} jvmTest --stacktrace
+          ./gradlew -Paws.kotlin.native=false -Ptest.java.version=${{ matrix.java-version }} jvmTest --stacktrace
 
   all-platforms:
     runs-on: ${{ matrix.os }}
