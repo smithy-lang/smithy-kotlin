@@ -95,6 +95,17 @@ class DocumentationPreprocessorTest {
     }
 
     @Test
+    fun `it renders lists with empty list items`() {
+        val input = "<p>an unordered list with empty list items:</p><ul><li></li><li></li></ul>"
+        val expected = """
+        an unordered list with empty list items:
+        + 
+        +
+        """.trimIndent()
+        inputTest(input, expected)
+    }
+
+    @Test
     fun `it renders basic formatters`() {
         val input = "<strong>bold text</strong><br/><em>italic text</em>"
         val expected = """
