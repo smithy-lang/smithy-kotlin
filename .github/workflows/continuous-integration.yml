@@ -31,6 +31,8 @@ jobs:
     steps:
       - name: Checkout sources
         uses: actions/checkout@v4
+        with:
+          path: 'smithy-kotlin'
       - name: Setup build
         uses: ./.github/actions/setup-build
       - name: Test
@@ -47,6 +49,8 @@ jobs:
     steps:
       - name: Checkout sources
         uses: actions/checkout@v4
+        with:
+          path: 'smithy-kotlin'
       - name: Setup build
         uses: ./.github/actions/setup-build
       - name: Test
@@ -68,6 +72,8 @@ jobs:
     steps:
       - name: Checkout sources
         uses: actions/checkout@v4
+        with:
+          path: 'smithy-kotlin'
       - name: Setup build
         uses: ./.github/actions/setup-build
       - name: Test
