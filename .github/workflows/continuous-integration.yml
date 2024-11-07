@@ -86,10 +86,14 @@ jobs:
     - name: Debug
       run: |
         echo "Debugging local situation"
+        echo "pwd" 
         pwd
-        ls .
-        ls ./smithy-kotlin
-        ls ./smithy-kotlin/.github
+        echo "ls -a ."
+        ls -a .
+        echo "ls -a ./smithy-kotlin"
+        ls -a ./smithy-kotlin
+        echo "ls -a ./smithy-kotlin/.github"
+        ls -a ./smithy-kotlin/.github
     - name: Setup build
       uses: ./../.github/actions/setup-build
     - name: Checkout aws-sdk-kotlin
