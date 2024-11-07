@@ -21,15 +21,17 @@ import kotlinx.coroutines.yield
 import kotlin.test.*
 
 class SdkStreamResponseHandlerTest {
-
     private class MockHttpStream(override val responseStatusCode: Int) : HttpStream {
         var closed: Boolean = false
         override fun activate() {}
+        override suspend fun writeChunk(chunkData: ByteArray, isFinalChunk: Boolean) {
+            TODO("Not yet implemented")
+        }
+
         override fun close() {
             closed = true
         }
         override fun incrementWindow(size: Int) {}
-        override fun writeChunk(chunkData: ByteArray, isFinalChunk: Boolean) {}
     }
 
     private class MockHttpClientConnection : HttpClientConnection {
