@@ -31,12 +31,8 @@ jobs:
     steps:
       - name: Checkout sources
         uses: actions/checkout@v4
-      - name: Configure JDK
-        uses: actions/setup-java@v3
-        with:
-          distribution: 'corretto'
-          java-version: 17
-          cache: 'gradle'
+      - name: Setup build
+        uses: ./smithy-kotlin/.github/actions/setup-build
       - name: Test
         shell: bash
         run: |
@@ -51,12 +47,8 @@ jobs:
     steps:
       - name: Checkout sources
         uses: actions/checkout@v4
-      - name: Configure JDK
-        uses: actions/setup-java@v3
-        with:
-          distribution: 'corretto'
-          java-version: 17
-          cache: 'gradle'
+      - name: Setup build
+        uses: ./smithy-kotlin/.github/actions/setup-build
       - name: Test
         shell: bash
         run: |
@@ -76,12 +68,8 @@ jobs:
     steps:
       - name: Checkout sources
         uses: actions/checkout@v4
-      - name: Configure JDK
-        uses: actions/setup-java@v3
-        with:
-          distribution: 'corretto'
-          java-version: 17
-          cache: 'gradle'
+      - name: Setup build
+        uses: ./smithy-kotlin/.github/actions/setup-build
       - name: Test
         shell: bash
         run: |
@@ -95,26 +83,14 @@ jobs:
       uses: actions/checkout@v4
       with:
         path: 'smithy-kotlin'
-    - name: Checkout tools
-      uses: actions/checkout@v4
-      with:
-        path: 'aws-kotlin-repo-tools'
-        repository: 'awslabs/aws-kotlin-repo-tools'
-        ref: '0.2.3'
-        sparse-checkout: |
-          .github
+    - name: Setup build
+      uses: ./smithy-kotlin/.github/actions/setup-build
     - name: Checkout aws-sdk-kotlin
       uses: ./aws-kotlin-repo-tools/.github/actions/checkout-head
       with:
         # smithy-kotlin is checked out as a sibling dir which will automatically make it an included build
         path: 'aws-sdk-kotlin'
         repository: 'awslabs/aws-sdk-kotlin'
-    - name: Configure JDK
-      uses: actions/setup-java@v3
-      with:
-        distribution: 'corretto'
-        java-version: 17
-        cache: 'gradle'
     - name: Build and Test aws-sdk-kotlin downstream
       run: |
         # TODO - JVM only
