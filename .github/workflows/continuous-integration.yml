@@ -88,7 +88,8 @@ jobs:
         echo "Debugging local situation"
         pwd
         ls .
-        ls ./../.github/
+        ls ./smithy-kotlin
+        ls ./smithy-kotlin/.github
     - name: Setup build
       uses: ./../.github/actions/setup-build
     - name: Checkout aws-sdk-kotlin
