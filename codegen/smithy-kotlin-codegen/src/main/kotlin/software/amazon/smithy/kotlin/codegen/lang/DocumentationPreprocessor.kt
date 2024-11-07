@@ -39,7 +39,11 @@ class DocumentationPreprocessor : KotlinIntegration {
         val parsed = parseClean(doc)
 
         val renderer = MarkdownRenderer()
-        parsed.body().traverse(renderer)
+        try {
+            parsed.body().traverse(renderer)
+        } catch (e: IndexOutOfBoundsException) {
+            throw Exception("These are the docs causing issues: \n" + doc)
+        }
         return renderer.text()
     }
 
@@ -102,9 +106,11 @@ class DocumentationPreprocessor : KotlinIntegration {
                     }
                 }
                 "li" -> {
+                    val childNode = if (node.childNodes().isNotEmpty()) node.childNode(0) else null
+
                     // If this list item holds a sublist, then we essentially just want to line break right away and
                     // render the nested list as normal.
-                    val prefix = if (node.childNode(0).nodeName() == "ul") "\n" else ""
+                    val prefix = if (childNode?.nodeName() == "ul") "\n" else ""
                     builder.append("$listPrefix+ $prefix")
                 }
                 "ul", "ol" -> {
