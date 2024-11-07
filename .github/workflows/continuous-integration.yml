@@ -94,8 +94,10 @@ jobs:
         ls -a ./smithy-kotlin
         echo "ls -a ./smithy-kotlin/.github"
         ls -a ./smithy-kotlin/.github
+        echo "ls -a ./smithy-kotlin/.github/actions"
+        ls -a ./smithy-kotlin/.github/actions
     - name: Setup build
-      uses: ./../.github/actions/setup-build
+      uses: ./smithy-kotlin/.github/actions/setup-build
     - name: Checkout aws-sdk-kotlin
       uses: ./aws-kotlin-repo-tools/.github/actions/checkout-head
       with:
