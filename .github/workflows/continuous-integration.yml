@@ -32,7 +32,7 @@ jobs:
       - name: Checkout sources
         uses: actions/checkout@v4
       - name: Setup build
-        uses: ./smithy-kotlin/.github/actions/setup-build
+        uses: ./.github/actions/setup-build
       - name: Test
         shell: bash
         run: |
@@ -48,7 +48,7 @@ jobs:
       - name: Checkout sources
         uses: actions/checkout@v4
       - name: Setup build
-        uses: ./smithy-kotlin/.github/actions/setup-build
+        uses: ./.github/actions/setup-build
       - name: Test
         shell: bash
         run: |
@@ -69,7 +69,7 @@ jobs:
       - name: Checkout sources
         uses: actions/checkout@v4
       - name: Setup build
-        uses: ./smithy-kotlin/.github/actions/setup-build
+        uses: ./.github/actions/setup-build
       - name: Test
         shell: bash
         run: |
@@ -84,7 +84,7 @@ jobs:
       with:
         path: 'smithy-kotlin'
     - name: Setup build
-      uses: ./smithy-kotlin/.github/actions/setup-build
+      uses: ./.github/actions/setup-build
     - name: Checkout aws-sdk-kotlin
       uses: ./aws-kotlin-repo-tools/.github/actions/checkout-head
       with:
