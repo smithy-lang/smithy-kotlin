@@ -23,5 +23,5 @@ fun Node.format(): String = when (this) {
     is ObjectNode -> stringMap.entries.joinToString(", ", "mapOf(", ")") { (key, value) ->
         "${key.dq()} to ${value.format()}"
     }
-    else -> throw Exception("Unexpected node type: $this")
+    else -> throw IllegalStateException("Unexpected node type: $this")
 }
