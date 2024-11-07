@@ -36,6 +36,7 @@ jobs:
       - name: Setup build
         uses: ./smithy-kotlin/.github/actions/setup-build
       - name: Test
+        working-directory: ./smithy-kotlin
         shell: bash
         run: |
           ./gradlew -Ptest.java.version=${{ matrix.java-version }} jvmTest --stacktrace
@@ -54,6 +55,7 @@ jobs:
       - name: Setup build
         uses: ./smithy-kotlin/.github/actions/setup-build
       - name: Test
+        working-directory: ./smithy-kotlin
         shell: bash
         run: |
           # FIXME K2. Re-enable warnings as errors after this warning is removed: https://youtrack.jetbrains.com/issue/KT-68532
@@ -77,6 +79,7 @@ jobs:
       - name: Setup build
         uses: ./smithy-kotlin/.github/actions/setup-build
       - name: Test
+        working-directory: ./smithy-kotlin
         shell: bash
         run: |
           ./gradlew publishToMavenLocal
@@ -98,6 +101,7 @@ jobs:
         path: 'aws-sdk-kotlin'
         repository: 'awslabs/aws-sdk-kotlin'
     - name: Build and Test aws-sdk-kotlin downstream
+      working-directory: ./smithy-kotlin
       run: |
         # TODO - JVM only
         cd $GITHUB_WORKSPACE/smithy-kotlin
