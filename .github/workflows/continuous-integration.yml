@@ -83,19 +83,6 @@ jobs:
       uses: actions/checkout@v4
       with:
         path: 'smithy-kotlin'
-    - name: Debug
-      run: |
-        echo "Debugging local situation"
-        echo "pwd" 
-        pwd
-        echo "ls -a ."
-        ls -a .
-        echo "ls -a ./smithy-kotlin"
-        ls -a ./smithy-kotlin
-        echo "ls -a ./smithy-kotlin/.github"
-        ls -a ./smithy-kotlin/.github
-        echo "ls -a ./smithy-kotlin/.github/actions"
-        ls -a ./smithy-kotlin/.github/actions
     - name: Setup build
       uses: ./smithy-kotlin/.github/actions/setup-build
     - name: Checkout aws-sdk-kotlin
