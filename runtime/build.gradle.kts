@@ -36,17 +36,6 @@ subprojects {
     kotlin {
         explicitApi()
 
-        // FIXME -- Move to build plugin
-        macosX64()
-        macosArm64()
-        iosSimulatorArm64()
-        iosArm64()
-        iosX64()
-        linuxX64()
-        linuxArm64()
-        // FIXME - Setup docker files and cmake tasks
-        // mingwX64()
-
         sourceSets {
             // dependencies available for all subprojects
             named("commonMain") {
