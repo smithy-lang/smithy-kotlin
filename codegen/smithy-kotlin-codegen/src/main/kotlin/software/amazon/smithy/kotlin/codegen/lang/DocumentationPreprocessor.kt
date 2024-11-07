@@ -39,11 +39,7 @@ class DocumentationPreprocessor : KotlinIntegration {
         val parsed = parseClean(doc)
 
         val renderer = MarkdownRenderer()
-        try {
-            parsed.body().traverse(renderer)
-        } catch (e: IndexOutOfBoundsException) {
-            throw Exception("These are the docs causing issues: \n" + doc)
-        }
+        parsed.body().traverse(renderer)
         return renderer.text()
     }
 
