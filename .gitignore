@@ -47,3 +47,5 @@ gradle-app.setting
 
 # MacOS
 .DS_Store
+
+*.cinteropLibraries.json
