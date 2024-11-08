@@ -74,8 +74,8 @@ class SmokeTestsRunnerGeneratorTest {
         generatedCode.shouldContainOnlyOnceWithDiff(
             """
                 private var exitCode = 0
-                private val skipTags = PlatformProvider.System.getenv("AWS_SMOKE_TEST_SKIP_TAGS")?.let { it.split(",").map { it.trim() }.toSet() } ?: emptySet()
-                private val serviceFilter = PlatformProvider.System.getenv("AWS_SMOKE_TEST_SERVICE_IDS")?.let { it.split(",").map { it.trim() }.toSet() }
+                private val skipTags = PlatformProvider.System.getenv("SMOKE_TEST_SKIP_TAGS")?.let { it.split(",").map { it.trim() }.toSet() } ?: emptySet()
+                private val serviceFilter = PlatformProvider.System.getenv("SMOKE_TEST_SERVICE_IDS")?.let { it.split(",").map { it.trim() }.toSet() }
             """.trimIndent(),
         )
     }
@@ -107,9 +107,8 @@ class SmokeTestsRunnerGeneratorTest {
 
                     try {
                         com.test.TestClient {
-                            region = "eu-central-1"
                             interceptors.add(SmokeTestsInterceptor())
-
+                            region = "eu-central-1"
                         }.use { client ->
                             client.testOperation(
                                 com.test.model.TestOperationRequest {
@@ -118,11 +117,14 @@ class SmokeTestsRunnerGeneratorTest {
                             )
                         }
 
-                    } catch (e: Exception) {
-                        val success = e is SmokeTestsSuccessException
-                        val status = if (success) "ok" else "not ok"
+                    } catch (exception: Exception) {
+                        val success: Boolean = exception is SmokeTestsSuccessException
+                        val status: String = if (success) "ok" else "not ok"
                         println("${'$'}status Test SuccessTest - no error expected from service ")
-                        if (!success) exitCode = 1
+                        if (!success) {
+                            printExceptionStackTrace(exception)
+                            exitCode = 1
+                        }
                     }
                 }
             """.trimIndent(),
@@ -151,11 +153,14 @@ class SmokeTestsRunnerGeneratorTest {
                             )
                         }
                 
-                    } catch (e: Exception) {
-                        val success = e is InvalidMessageError
-                        val status = if (success) "ok" else "not ok"
+                    } catch (exception: Exception) {
+                        val success: Boolean = exception is InvalidMessageError
+                        val status: String = if (success) "ok" else "not ok"
                         println("${'$'}status Test InvalidMessageErrorTest - error expected from service ")
-                        if (!success) exitCode = 1
+                        if (!success) {
+                            printExceptionStackTrace(exception)
+                            exitCode = 1
+                        }
                     }
                 }
             """.trimIndent(),
@@ -185,11 +190,14 @@ class SmokeTestsRunnerGeneratorTest {
                             )
                         }
                 
-                    } catch (e: Exception) {
-                        val success = e is SmokeTestsFailureException
-                        val status = if (success) "ok" else "not ok"
+                    } catch (exception: Exception) {
+                        val success: Boolean = exception is SmokeTestsFailureException
+                        val status: String = if (success) "ok" else "not ok"
                         println("${'$'}status Test FailureTest - error expected from service ")
-                        if (!success) exitCode = 1
+                        if (!success) {
+                            printExceptionStackTrace(exception)
+                            exitCode = 1
+                        }
                     }
                 }
             """.trimIndent(),
