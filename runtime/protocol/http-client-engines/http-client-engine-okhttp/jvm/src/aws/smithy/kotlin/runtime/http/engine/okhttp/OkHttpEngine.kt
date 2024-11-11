@@ -80,7 +80,7 @@ public class OkHttpEngine(
 
 private fun OkHttpEngineConfig.buildClientFromConfig(
     metrics: HttpClientMetrics,
-    poolOverride: ConnectionPool? = null
+    poolOverride: ConnectionPool? = null,
 ): OkHttpClient {
     val config = this
 
@@ -145,7 +145,7 @@ private fun OkHttpEngineConfig.buildClientFromConfig(
 // TODO - Refactor in next minor version - Move this to OkHttp4Engine and make it private
 @InternalApi
 public fun OkHttpEngineConfig.buildClient(
-    metrics: HttpClientMetrics
+    metrics: HttpClientMetrics,
 ): OkHttpClient = this.buildClientFromConfig(metrics)
 
 /**
@@ -154,7 +154,7 @@ public fun OkHttpEngineConfig.buildClient(
 // Used by OkHttpEngine - OkHttp5 does have `connectionListener`
 private fun OkHttpEngineConfig.buildClientWithConnectionListener(
     metrics: HttpClientMetrics,
-    connectionListener: ConnectionIdleMonitor?
+    connectionListener: ConnectionIdleMonitor?,
 ): OkHttpClient = this.buildClientFromConfig(
     metrics,
     ConnectionPool(
@@ -162,7 +162,7 @@ private fun OkHttpEngineConfig.buildClientWithConnectionListener(
         keepAliveDuration = this.connectionIdleTimeout.inWholeMilliseconds,
         timeUnit = TimeUnit.MILLISECONDS,
         connectionListener = connectionListener ?: ConnectionListener.NONE,
-    )
+    ),
 )
 
 private fun minTlsConnectionSpec(tlsContext: TlsContext): ConnectionSpec {
