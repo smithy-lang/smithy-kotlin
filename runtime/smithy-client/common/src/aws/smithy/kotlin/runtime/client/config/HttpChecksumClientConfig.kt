@@ -4,21 +4,32 @@ public interface HttpChecksumClientConfig {
     /**
      * todo
      */
-    public val requestChecksumCalculation: RequestChecksumCalculation?
+    public val requestChecksumCalculation: ChecksumConfigOption?
+
+    /**
+     * todo
+     */
+    public val responseChecksumValidation: ChecksumConfigOption?
 
     public interface Builder {
         /**
          * todo
          */
-        public var requestChecksumCalculation: RequestChecksumCalculation?
+        public var requestChecksumCalculation: ChecksumConfigOption?
+
+        /**
+         * todo
+         */
+        public var responseChecksumValidation: ChecksumConfigOption?
     }
 }
 
-public enum class RequestChecksumCalculation {
+public enum class ChecksumConfigOption {
     /**
      * todo
      */
     WHEN_SUPPORTED,
+
     /**
      * todo
      */
