@@ -36,6 +36,7 @@ kotlin {
 
         all {
             languageSettings.optIn("aws.smithy.kotlin.runtime.InternalApi")
+            languageSettings.optIn("okhttp3.ExperimentalOkHttpApi")
         }
     }
 }
