@@ -68,6 +68,7 @@ public class FlexibleChecksumsRequestInterceptor<I>(
         // this handles the case where a user inputs a precalculated checksum, but it doesn't match the input checksum algorithm
         req.headers.removeAllChecksumHeadersExcept(headerName)
 
+        // TODO - business metric
         val checksumAlgorithm = checksumAlgorithmName?.toHashFunction() ?: throw ClientException("Could not parse checksum algorithm $checksumAlgorithmName")
 
         if (!checksumAlgorithm.isSupported) {
