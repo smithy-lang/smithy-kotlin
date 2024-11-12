@@ -130,7 +130,6 @@ jobs:
 
       - name: Build and Test ${{ env.PACKAGE_NAME }} on Windows JVM
         run: |
-          ./gradlew apiCheck
           ./gradlew -P"aws.sdk.kotlin.crt.disableCrossCompile"=true build
           ./gradlew -P"aws.sdk.kotlin.crt.disableCrossCompile"=true allTests
 
