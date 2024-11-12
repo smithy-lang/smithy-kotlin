@@ -41,7 +41,7 @@ jobs:
       - name: Setup build
         uses: ./smithy-kotlin/.github/actions/setup-build
 
-      - name: Test
+      - name: Build and Test ${{ env.PACKAGE_NAME }} on JVM
         working-directory: ./smithy-kotlin
         shell: bash
         run: |
@@ -64,7 +64,7 @@ jobs:
       - name: Setup build
         uses: ./smithy-kotlin/.github/actions/setup-build
 
-      - name: Test
+      - name: Build and Test ${{ env.PACKAGE_NAME }} on Apple platforms
         working-directory: ./smithy-kotlin
         shell: bash
         run: |
@@ -85,7 +85,7 @@ jobs:
   # cross compile for: linuxX64, linuxArm64
   # TODO - add mingw as cross compile target
   linux:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout sources
         uses: actions/checkout@v4
@@ -99,7 +99,7 @@ jobs:
         run: |
           ./aws-crt-kotlin/docker-images/build-all.sh
 
-      - name: Test
+      - name: Build and Test ${{ env.PACKAGE_NAME }} on Linux with Cross-Compile
         working-directory: ./smithy-kotlin
         shell: bash
         run: |
@@ -116,33 +116,30 @@ jobs:
           name: test-reports-${{ matrix.os }}
           path: '**/build/reports'
 
-#  all-platforms:
-#    runs-on: ${{ matrix.os }}
-#    strategy:
-#      fail-fast: false
-#      matrix:
-#        os: [ ubuntu-latest, macos-latest, windows-latest ]
-#    steps:
-#      - name: Checkout sources
-#        uses: actions/checkout@v4
-#        with:
-#          path: 'smithy-kotlin'
-#      - name: Setup build
-#        uses: ./smithy-kotlin/.github/actions/setup-build
-#      - name: Test
-#        working-directory: ./smithy-kotlin
-#        shell: bash
-#        run: |
-#          # FIXME K2. Re-enable warnings as errors after this warning is removed: https://youtrack.jetbrains.com/issue/KT-68532
-#          # echo "kotlinWarningsAsErrors=true" >> $GITHUB_WORKSPACE/local.properties
-#          ./gradlew apiCheck
-#          ./gradlew allTests
-#      - name: Save Test Reports
-#        if: failure()
-#        uses: actions/upload-artifact@v3
-#        with:
-#          name: test-reports-${{ matrix.os }}
-#          path: '**/build/reports'
+  # windows JVM
+  windows:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v4
+        with:
+          path: 'smithy-kotlin'
+
+      - name: Setup build
+        uses: ./smithy-kotlin/.github/actions/setup-build
+
+      - name: Build and Test ${{ env.PACKAGE_NAME }} on Windows JVM
+        run: |
+          ./gradlew apiCheck
+          ./gradlew -P"aws.sdk.kotlin.crt.disableCrossCompile"=true build
+          ./gradlew -P"aws.sdk.kotlin.crt.disableCrossCompile"=true allTests
+
+      - name: Save Test Reports
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-reports-windows
+          path: '**/build/reports'
 
   protocol-tests:
     runs-on: ubuntu-latest
