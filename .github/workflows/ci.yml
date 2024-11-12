@@ -14,6 +14,10 @@ concurrency:
 env:
   RUN: ${{ github.run_id }}-${{ github.run_number }}
   GRADLE_OPTS: "-Dorg.gradle.daemon=false -Dkotlin.incremental=false"
+  # generated dockcross scripts default to `podman` when installed which
+  # has issues when building with docker then executing via dockcross script which
+  # picks up `podman` instead.
+  OCI_EXE: docker
 
 jobs:
   jvm:
@@ -41,12 +45,14 @@ jobs:
         run: |
           ./gradlew -Paws.kotlin.native=false -Ptest.java.version=${{ matrix.java-version }} jvmTest --stacktrace
 
-  all-platforms:
-    runs-on: ${{ matrix.os }}
+  # macos-14 build and test for targets: jvm, macoArm64, iosSimulatorArm64, watchosSimulatorArm65, tvosSimulatorArm64
+  # macos-13 build and test for targets: jvm, macoX64, iosX64, tvosX64, watchosX64
+  macos:
     strategy:
       fail-fast: false
       matrix:
-        os: [ ubuntu-latest, macos-latest, windows-latest ]
+        os: [macos-14, macos-13]
+    runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout sources
         uses: actions/checkout@v4
@@ -61,13 +67,77 @@ jobs:
           # FIXME K2. Re-enable warnings as errors after this warning is removed: https://youtrack.jetbrains.com/issue/KT-68532
           # echo "kotlinWarningsAsErrors=true" >> $GITHUB_WORKSPACE/local.properties              
           ./gradlew apiCheck
-          ./gradlew allTests
+          ./gradlew -Paws.sdk.kotlin.crt.disableCrossCompile=true build
+          ./gradlew -Paws.sdk.kotlin.crt.disableCrossCompile=true allTests
       - name: Save Test Reports
         if: failure()
         uses: actions/upload-artifact@v3
         with:
           name: test-reports-${{ matrix.os }}
           path: '**/build/reports'
+
+#  # build and test for targets: jvm, linuxX64
+#  # cross compile for: linuxX64, linuxArm64
+#  # TODO - add mingw as cross compile target
+#  linux:
+#    runs-on: ubuntu-22.04
+#    steps:
+#      - name: Checkout sources
+#        uses: actions/checkout@v4
+#        with:
+#          path: 'smithy-kotlin'
+#
+#      - name: Setup build
+#        uses: ./smithy-kotlin/.github/actions/setup-build
+#
+#      - name: Configure CRT Docker Images
+#        run: |
+#          ./aws-crt-kotlin/docker-images/build-all.sh
+#
+#      - name: Test
+#        working-directory: ./smithy-kotlin
+#        shell: bash
+#        run: |
+#          # FIXME K2. Re-enable warnings as errors after this warning is removed: https://youtrack.jetbrains.com/issue/KT-68532
+#          # echo "kotlinWarningsAsErrors=true" >> $GITHUB_WORKSPACE/local.properties
+#          ./gradlew apiCheck
+#          ./gradlew build
+#          ./gradlew allTests
+#
+#      - name: Save Test Reports
+#        if: failure()
+#        uses: actions/upload-artifact@v3
+#        with:
+#          name: test-reports-${{ matrix.os }}
+#          path: '**/build/reports'
+
+#  all-platforms:
+#    runs-on: ${{ matrix.os }}
+#    strategy:
+#      fail-fast: false
+#      matrix:
+#        os: [ ubuntu-latest, macos-latest, windows-latest ]
+#    steps:
+#      - name: Checkout sources
+#        uses: actions/checkout@v4
+#        with:
+#          path: 'smithy-kotlin'
+#      - name: Setup build
+#        uses: ./smithy-kotlin/.github/actions/setup-build
+#      - name: Test
+#        working-directory: ./smithy-kotlin
+#        shell: bash
+#        run: |
+#          # FIXME K2. Re-enable warnings as errors after this warning is removed: https://youtrack.jetbrains.com/issue/KT-68532
+#          # echo "kotlinWarningsAsErrors=true" >> $GITHUB_WORKSPACE/local.properties
+#          ./gradlew apiCheck
+#          ./gradlew allTests
+#      - name: Save Test Reports
+#        if: failure()
+#        uses: actions/upload-artifact@v3
+#        with:
+#          name: test-reports-${{ matrix.os }}
+#          path: '**/build/reports'
 
   protocol-tests:
     runs-on: ubuntu-latest
