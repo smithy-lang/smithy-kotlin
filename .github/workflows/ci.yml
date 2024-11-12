@@ -129,6 +129,7 @@ jobs:
         uses: ./smithy-kotlin/.github/actions/setup-build
 
       - name: Build and Test ${{ env.PACKAGE_NAME }} on Windows JVM
+        working-directory: ./smithy-kotlin
         run: |
           ./gradlew apiCheck
           ./gradlew -P"aws.sdk.kotlin.crt.disableCrossCompile"=true build
