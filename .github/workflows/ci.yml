@@ -37,7 +37,7 @@ jobs:
       - name: Setup build
         uses: ./smithy-kotlin/.github/actions/setup-build
 
-      - name: Build and Test ${{ env.PACKAGE_NAME }} on JVM
+      - name: Build and Test on JVM
         working-directory: ./smithy-kotlin
         shell: bash
         run: |
@@ -60,7 +60,7 @@ jobs:
       - name: Setup build
         uses: ./smithy-kotlin/.github/actions/setup-build
 
-      - name: Build and Test ${{ env.PACKAGE_NAME }} on Apple platforms
+      - name: Build and Test on Apple platforms
         working-directory: ./smithy-kotlin
         shell: bash
         run: |
@@ -95,7 +95,7 @@ jobs:
         run: |
           ./aws-crt-kotlin/docker-images/build-all.sh
 
-      - name: Build and Test ${{ env.PACKAGE_NAME }} on Linux with Cross-Compile
+      - name: Build and Test on Linux with Cross-Compile
         working-directory: ./smithy-kotlin
         shell: bash
         run: |
@@ -124,7 +124,7 @@ jobs:
       - name: Setup build
         uses: ./smithy-kotlin/.github/actions/setup-build
 
-      - name: Build and Test ${{ env.PACKAGE_NAME }} on Windows JVM
+      - name: Build and Test on Windows JVM
         working-directory: ./smithy-kotlin
         run: |
           ./gradlew apiCheck
