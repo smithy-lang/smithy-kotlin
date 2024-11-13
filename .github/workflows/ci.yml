@@ -68,7 +68,6 @@ jobs:
           # echo "kotlinWarningsAsErrors=true" >> $GITHUB_WORKSPACE/local.properties              
           ./gradlew apiCheck
           ./gradlew -Paws.sdk.kotlin.crt.disableCrossCompile=true build
-          ./gradlew -Paws.sdk.kotlin.crt.disableCrossCompile=true allTests
 
       - name: Save Test Reports
         if: failure()
@@ -103,7 +102,6 @@ jobs:
           # echo "kotlinWarningsAsErrors=true" >> $GITHUB_WORKSPACE/local.properties
           ./gradlew apiCheck
           ./gradlew build
-          ./gradlew allTests
 
       - name: Save Test Reports
         if: failure()
@@ -129,7 +127,6 @@ jobs:
         run: |
           ./gradlew apiCheck
           ./gradlew -P"aws.sdk.kotlin.crt.disableCrossCompile"=true build
-          ./gradlew -P"aws.sdk.kotlin.crt.disableCrossCompile"=true allTests
 
       - name: Save Test Reports
         if: failure()
