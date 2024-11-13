@@ -44,7 +44,7 @@ public class OkHttpEngine(
     }
 
     private val metrics = HttpClientMetrics(TELEMETRY_SCOPE, config.telemetryProvider)
-    private val connectionIdleMonitor = if (config.connectionIdlePollingInterval != null) ConnectionIdleMonitor(config.connectionIdlePollingInterval) else null
+    private val connectionIdleMonitor = config.connectionIdlePollingInterval?.let { ConnectionIdleMonitor(it) }
     private val client = config.buildClientWithConnectionListener(metrics, connectionIdleMonitor)
 
     override suspend fun roundTrip(context: ExecutionContext, request: HttpRequest): HttpCall {
@@ -100,12 +100,12 @@ private fun OkHttpEngineConfig.buildClientFromConfig(
         writeTimeout(config.socketWriteTimeout.toJavaDuration())
 
         // use our own pool configured with the timeout settings taken from config
-        val pool = ConnectionPool(
+        val pool = poolOverride ?: ConnectionPool(
             maxIdleConnections = 5, // The default from the no-arg ConnectionPool() constructor
             keepAliveDuration = config.connectionIdleTimeout.inWholeMilliseconds,
             TimeUnit.MILLISECONDS,
         )
-        connectionPool(poolOverride ?: pool)
+        connectionPool(pool)
 
         val dispatcher = Dispatcher().apply {
             maxRequests = config.maxConcurrency.toInt()
@@ -152,6 +152,7 @@ public fun OkHttpEngineConfig.buildClient(
  * Convert SDK version of HTTP configuration to OkHttp specific configuration and return the configured client
  */
 // Used by OkHttpEngine - OkHttp5 does have `connectionListener`
+@OptIn(ExperimentalOkHttpApi::class)
 private fun OkHttpEngineConfig.buildClientWithConnectionListener(
     metrics: HttpClientMetrics,
     connectionListener: ConnectionIdleMonitor?,

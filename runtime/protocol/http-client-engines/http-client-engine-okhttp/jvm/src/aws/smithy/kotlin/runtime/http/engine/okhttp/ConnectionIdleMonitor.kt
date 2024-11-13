@@ -9,6 +9,7 @@ import kotlinx.coroutines.*
 import okhttp3.Call
 import okhttp3.Connection
 import okhttp3.ConnectionListener
+import okhttp3.ExperimentalOkHttpApi
 import okhttp3.internal.closeQuietly
 import okio.EOFException
 import okio.buffer
@@ -21,13 +22,13 @@ import kotlin.coroutines.coroutineContext
 import kotlin.time.Duration
 import kotlin.time.measureTime
 
+@OptIn(ExperimentalOkHttpApi::class)
 internal class ConnectionIdleMonitor(val pollInterval: Duration) : ConnectionListener() {
     private val monitorScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
     private val monitors = ConcurrentHashMap<Connection, Job>()
 
     fun close(): Unit = runBlocking {
         monitors.values.forEach { it.cancelAndJoin() }
-        monitorScope.cancel()
     }
 
     private fun Call.callContext() =
