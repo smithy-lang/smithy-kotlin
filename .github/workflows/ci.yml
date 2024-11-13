@@ -14,10 +14,6 @@ concurrency:
 env:
   RUN: ${{ github.run_id }}-${{ github.run_number }}
   GRADLE_OPTS: "-Dorg.gradle.daemon=false -Dkotlin.incremental=false"
-  # generated dockcross scripts default to `podman` when installed which
-  # has issues when building with docker then executing via dockcross script which
-  # picks up `podman` instead.
-  OCI_EXE: docker
 
 jobs:
   jvm:
