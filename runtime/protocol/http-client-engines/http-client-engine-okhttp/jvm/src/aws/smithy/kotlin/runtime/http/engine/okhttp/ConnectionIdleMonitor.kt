@@ -109,7 +109,7 @@ internal class ConnectionIdleMonitor(val pollInterval: Duration) : ConnectionLis
                 logger.trace { "Attempting to reset soTimeout..." }
                 try {
                     conn.socket().soTimeout = oldTimeout
-                    logger.trace { "SoTimeout reset." }
+                    logger.trace { "soTimeout reset." }
                 } catch (e: Throwable) {
                     logger.warn(e) { "Failed to reset socket timeout on $conn. Connection may be unstable now." }
                 }
