@@ -135,9 +135,11 @@ class RpcV2CborTest {
 
         // Event stream messages should have `:content-type: application/cbor`
         val encodeMessage = serializer.lines("private fun encodePutFooStreamingPublishEventsEventMessage(input: PublishEvents): Message = buildMessage {", "}")
-        encodeMessage.shouldContainOnlyOnceWithDiff("""
+        encodeMessage.shouldContainOnlyOnceWithDiff(
+            """
             addHeader(":content-type", HeaderValue.String("application/cbor"))
-        """.trimIndent())
+            """.trimIndent(),
+        )
 
         // Event stream requests should have Content-Type=application/vnd.amazon.eventstream
         val serializeBody = serializer.lines("    override suspend fun serialize(context: ExecutionContext, input: PutFooStreamingRequest): HttpRequestBuilder {", "}")
