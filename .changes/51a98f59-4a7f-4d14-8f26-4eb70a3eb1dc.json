@@ -1,0 +1,5 @@
+{
+    "id": "51a98f59-4a7f-4d14-8f26-4eb70a3eb1dc",
+    "type": "bugfix",
+    "description": "Fix application of `:content-type` for event stream inputs in the `smithy.protocols#rpcv2Cbor` protocol"
+}
