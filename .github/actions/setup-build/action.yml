@@ -20,6 +20,17 @@ runs:
         path: 'aws-crt-kotlin'
         repository: 'awslabs/aws-crt-kotlin'
 
+    # Cache the Kotlin/Native toolchain based on the input Kotlin version from version catalog
+    # see https://kotlinlang.org/docs/native-improving-compilation-time.html
+    - name: Cache Kotlin Native toolchain
+      uses: actions/cache@v4
+      with:
+        path: |
+          ~/.konan
+        key: ${{ runner.os }}-konan-${{ hashFiles('gradle/libs.versions.toml') }}
+        restore-keys: |
+          ${{ runner.os }}-konan-
+
     - name: Configure JDK
       uses: actions/setup-java@v3
       with:
