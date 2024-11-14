@@ -106,12 +106,12 @@ class SmokeTestsRunnerGeneratorTest {
                     }
 
                     try {
-                        com.test.TestClient {
+                        TestClient {
                             interceptors.add(SmokeTestsInterceptor())
                             region = "eu-central-1"
                         }.use { client ->
                             client.testOperation(
-                                com.test.model.TestOperationRequest {
+                                TestOperationRequest {
                                     bar = "2"
                                 }
                             )
@@ -143,11 +143,11 @@ class SmokeTestsRunnerGeneratorTest {
                     }
                 
                     try {
-                        com.test.TestClient {
+                        TestClient {
                 
                         }.use { client ->
                             client.testOperation(
-                                com.test.model.TestOperationRequest {
+                                TestOperationRequest {
                                     bar = "föö"
                                 }
                             )
@@ -179,12 +179,12 @@ class SmokeTestsRunnerGeneratorTest {
                     }
                 
                     try {
-                        com.test.TestClient {
+                        TestClient {
                             interceptors.add(SmokeTestsInterceptor())
                 
                         }.use { client ->
                             client.testOperation(
-                                com.test.model.TestOperationRequest {
+                                TestOperationRequest {
                                     bar = "föö"
                                 }
                             )
