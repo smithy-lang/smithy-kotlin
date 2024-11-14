@@ -249,6 +249,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                 if (op.isInputEventStream(ctx.model)) {
                     val eventStreamSerializeFn = eventStreamRequestHandler(ctx, op)
                     writer.write("builder.body = #T(context, input)", eventStreamSerializeFn)
+                    renderContentTypeHeader(ctx, op, writer, resolver)
                 } else {
                     renderSerializeHttpBody(ctx, op, writer)
                 }
