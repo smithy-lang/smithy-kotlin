@@ -8,6 +8,7 @@ package aws.smithy.kotlin.runtime.http.test.suite
 import io.ktor.server.application.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import io.ktor.utils.io.writeFully
 import kotlinx.coroutines.delay
 import kotlin.time.Duration.Companion.milliseconds
 
@@ -24,10 +25,10 @@ internal fun Application.concurrentTests() {
         route("slow") {
             get {
                 val chunk = ByteArray(256) { it.toByte() }
-                call.respondOutputStream {
+                call.respondBytesWriter {
                     repeat(10) {
                         delay(200.milliseconds)
-                        write(chunk)
+                        writeFully(chunk)
                     }
                 }
             }

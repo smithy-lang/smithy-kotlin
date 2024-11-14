@@ -2,7 +2,7 @@
 kotlin-version = "2.0.21"
 dokka-version = "1.9.10"
 
-aws-kotlin-repo-tools-version = "0.4.13"
+aws-kotlin-repo-tools-version = "0.4.15-kn"
 
 # libs
 coroutines-version = "1.9.0"
@@ -91,6 +91,7 @@ docker-transport-zerodep = { module = "com.github.docker-java:docker-java-transp
 ktor-http-cio = { module = "io.ktor:ktor-http-cio", version.ref = "ktor-version" }
 ktor-utils = { module = "io.ktor:ktor-utils", version.ref = "ktor-version" }
 ktor-io = { module = "io.ktor:ktor-io", version.ref = "ktor-version" }
+ktor-server-core = { module = "io.ktor:ktor-server-core", version.ref = "ktor-version" }
 ktor-server-netty = { module = "io.ktor:ktor-server-netty", version.ref = "ktor-version" }
 ktor-server-jetty-jakarta = { module = "io.ktor:ktor-server-jetty-jakarta", version.ref = "ktor-version" }
 ktor-server-cio = { module = "io.ktor:ktor-server-cio", version.ref = "ktor-version" }

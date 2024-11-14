@@ -6,6 +6,9 @@
 package aws.smithy.kotlin.runtime.http.test.suite
 
 import aws.smithy.kotlin.runtime.hashing.sha256
+import aws.smithy.kotlin.runtime.io.GzipSdkSource
+import aws.smithy.kotlin.runtime.io.readToByteArray
+import aws.smithy.kotlin.runtime.io.source
 import aws.smithy.kotlin.runtime.text.encoding.encodeToHex
 import io.ktor.http.*
 import io.ktor.server.application.*
@@ -13,8 +16,6 @@ import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.ktor.utils.io.*
 import kotlinx.coroutines.delay
-import java.io.ByteArrayOutputStream
-import java.util.zip.GZIPOutputStream
 import kotlin.random.Random
 
 internal const val DOWNLOAD_SIZE = 16L * 1024 * 1024 // 16MB
@@ -55,15 +56,7 @@ internal fun Application.downloadTests() {
 
             get("/gzipped") {
                 val uncompressed = ByteArray(1024) { it.toByte() }
-                val compressed = ByteArrayOutputStream().use { baStream ->
-                    GZIPOutputStream(baStream).use { gzStream ->
-                        gzStream.write(uncompressed)
-                        gzStream.flush()
-                    }
-                    baStream.flush()
-                    baStream.toByteArray()
-                }
-
+                val compressed = GzipSdkSource(uncompressed.source()).readToByteArray()
                 call.response.header("Content-Encoding", "gzip")
                 call.respondBytes(compressed)
             }

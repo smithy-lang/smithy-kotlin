@@ -14,6 +14,9 @@ plugins {
 
 val sdkVersion: String by project
 
+// Apply KMP configuration from build plugin
+configureKmpTargets()
+
 // capture locally - scope issue with custom KMP plugin
 val libraries = libs
 
@@ -60,7 +63,7 @@ subprojects {
     kotlin.sourceSets.all {
         // Allow subprojects to use internal APIs
         // See https://kotlinlang.org/docs/reference/opt-in-requirements.html#opting-in-to-using-api
-        listOf("kotlin.RequiresOptIn").forEach { languageSettings.optIn(it) }
+        listOf("kotlin.RequiresOptIn", "kotlinx.cinterop.ExperimentalForeignApi").forEach { languageSettings.optIn(it) }
     }
 
     dependencies {

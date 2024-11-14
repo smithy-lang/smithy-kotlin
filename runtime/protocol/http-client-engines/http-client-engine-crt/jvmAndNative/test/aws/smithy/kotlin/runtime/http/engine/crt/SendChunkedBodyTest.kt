@@ -22,7 +22,7 @@ class SendChunkedBodyTest {
             closed = true
         }
         override fun incrementWindow(size: Int) {}
-        override fun writeChunk(chunkData: ByteArray, isFinalChunk: Boolean) {
+        override suspend fun writeChunk(chunkData: ByteArray, isFinalChunk: Boolean) {
             numChunksWritten += 1
         }
     }
