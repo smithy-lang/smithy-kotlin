@@ -28,7 +28,10 @@ internal class ConnectionIdleMonitor(val pollInterval: Duration) : ConnectionLis
     private val monitors = ConcurrentHashMap<Connection, Job>()
 
     fun close(): Unit = runBlocking {
-        monitors.values.forEach { it.cancelAndJoin() }
+        val monitorJob = requireNotNull(monitorScope.coroutineContext[Job]) {
+            "Connection idle monitor scope cannot be cancelled because it does not have a job: $this"
+        }
+        monitorJob.cancelAndJoin()
     }
 
     private fun Call.callContext() =
