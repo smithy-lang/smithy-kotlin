@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.3.23] - 11/14/2024
+
+### Fixes
+* Fix application of `:content-type` for event stream inputs in the `smithy.protocols#rpcv2Cbor` protocol
+
 ## [1.3.22] - 11/14/2024
 
 ## [1.3.21] - 11/13/2024
