@@ -139,7 +139,12 @@ class RpcV2Cbor : AwsHttpBindingProtocolGenerator() {
         writer: KotlinWriter,
         resolver: HttpBindingResolver,
     ) {
-        writer.write("builder.headers.setMissing(\"Content-Type\", #S)", resolver.determineRequestContentType(op))
+        val contentTypeHeader = when {
+            op.isInputEventStream(ctx.model) -> "application/vnd.amazon.eventstream"
+            else -> "application/cbor"
+        }
+
+        writer.write("builder.headers.setMissing(\"Content-Type\", #S)", contentTypeHeader)
     }
 
     class RpcV2CborHttpBindingResolver(
@@ -152,7 +157,6 @@ class RpcV2Cbor : AwsHttpBindingProtocolGenerator() {
         "application/cbor",
         TimestampFormatTrait.Format.UNKNOWN,
     ) {
-
         override fun httpTrait(operationShape: OperationShape): HttpTrait = HttpTrait
             .builder()
             .code(200)
@@ -160,9 +164,6 @@ class RpcV2Cbor : AwsHttpBindingProtocolGenerator() {
             .uri(UriPattern.parse("/service/${serviceShape.id.name}/operation/${operationShape.id.name}"))
             .build()
 
-        override fun determineRequestContentType(operationShape: OperationShape): String = when {
-            operationShape.isInputEventStream(model) -> "application/vnd.amazon.eventstream"
-            else -> "application/cbor"
-        }
+        override fun determineRequestContentType(operationShape: OperationShape): String = "application/cbor"
     }
 }
