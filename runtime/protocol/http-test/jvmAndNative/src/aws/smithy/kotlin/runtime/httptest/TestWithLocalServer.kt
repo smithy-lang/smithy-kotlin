@@ -5,7 +5,6 @@
 
 package aws.smithy.kotlin.runtime.httptest
 
-import io.ktor.client.request.get
 import io.ktor.server.engine.EmbeddedServer
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
