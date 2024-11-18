@@ -19,6 +19,7 @@ runs:
         # checkout aws-crt-kotlin as a sibling which will automatically make it an included build
         path: 'aws-crt-kotlin'
         repository: 'awslabs/aws-crt-kotlin'
+        submodules: 'true'
 
     - name: Debug!
       working-directory: ./aws-crt-kotlin
