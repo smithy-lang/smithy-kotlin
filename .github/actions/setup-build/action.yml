@@ -24,10 +24,12 @@ runs:
       working-directory: ./aws-crt-kotlin
       shell: bash
       run: |
+        echo "ls -a ."
         ls -a .
+        echo "ls -a ./crt" 
         ls -a ./crt
+        echo "ls -a ./crt/aws-c-common"
         ls -a ./crt/aws-c-common
-        ls -a ./crt/aws-c-common/cmake
 
     # Cache the Kotlin/Native toolchain based on the input Kotlin version from version catalog
     # see https://kotlinlang.org/docs/native-improving-compilation-time.html
