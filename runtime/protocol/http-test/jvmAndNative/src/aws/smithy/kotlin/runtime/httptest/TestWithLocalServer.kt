@@ -10,10 +10,10 @@ import io.ktor.client.request.get
 import io.ktor.client.statement.HttpResponse
 import io.ktor.http.isSuccess
 import io.ktor.server.engine.EmbeddedServer
-import kotlinx.io.IOException
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeout
+import kotlinx.io.IOException
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.time.Duration.Companion.milliseconds
@@ -70,5 +70,4 @@ public abstract class TestWithLocalServer {
             client.close()
         }
     }
-
 }
