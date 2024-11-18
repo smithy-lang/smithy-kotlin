@@ -5,18 +5,13 @@
 
 package aws.smithy.kotlin.runtime.httptest
 
-import io.ktor.client.HttpClient
 import io.ktor.client.request.get
-import io.ktor.client.statement.HttpResponse
-import io.ktor.http.isSuccess
 import io.ktor.server.engine.EmbeddedServer
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeout
-import kotlinx.io.IOException
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
-import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
 
 /**
