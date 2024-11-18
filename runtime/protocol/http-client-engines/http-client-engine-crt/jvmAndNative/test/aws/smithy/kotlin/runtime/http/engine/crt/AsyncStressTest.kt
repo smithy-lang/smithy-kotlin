@@ -34,7 +34,7 @@ class AsyncStressTest : TestWithLocalServer() {
                 call.respondText(text.repeat(respSize / text.length))
             }
         }
-    }
+    }.start(wait = true)
 
     @Test
     fun testStreamNotConsumed() = runBlocking {

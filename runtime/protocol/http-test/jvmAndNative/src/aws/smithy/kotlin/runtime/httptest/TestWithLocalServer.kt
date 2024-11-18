@@ -44,8 +44,6 @@ public abstract class TestWithLocalServer {
                     delay(250L * attempt)
                 }
             } while (true)
-
-            ensureServerRunning()
         }
     }
 
@@ -53,21 +51,5 @@ public abstract class TestWithLocalServer {
     public fun stopServer() {
         server.stop(0, 0)
         println("test server stopped")
-    }
-
-    private suspend fun ensureServerRunning() {
-        val client = HttpClient()
-        try {
-            do {
-                try {
-                    val response: HttpResponse = client.get("http://localhost:$serverPort")
-                    if (response.status.isSuccess()) break
-                } catch (_: IOException) {
-                    delay(100.milliseconds)
-                }
-            } while (true)
-        } finally {
-            client.close()
-        }
     }
 }
