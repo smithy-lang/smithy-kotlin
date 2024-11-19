@@ -27,7 +27,6 @@ class ReadChannelBodyStreamTest {
         return MutableBuffer.of(dest) to dest
     }
 
-    @Ignore
     @Test
     fun testClose() = runTest {
         val chan = SdkByteChannel()
@@ -59,7 +58,6 @@ class ReadChannelBodyStreamTest {
         }
     }
 
-    @Ignore
     @Test
     fun testReadFully() = runTest {
         val data = byteArrayOf(1, 2, 3, 4, 5)
@@ -75,7 +73,6 @@ class ReadChannelBodyStreamTest {
         }
     }
 
-    @Ignore
     @Test
     fun testPartialRead() = runTest {
         val chan = SdkByteReadChannel("123456".encodeToByteArray())
@@ -94,7 +91,6 @@ class ReadChannelBodyStreamTest {
         assertEquals("456", sent2.decodeToString())
     }
 
-    @Ignore
     @Test
     fun testLargeTransfer() = runTest {
         val chan = SdkByteChannel()

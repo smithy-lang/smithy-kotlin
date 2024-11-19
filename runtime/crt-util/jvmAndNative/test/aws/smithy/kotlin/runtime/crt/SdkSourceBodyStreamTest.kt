@@ -22,7 +22,6 @@ class SdkSourceBodyStreamTest {
         return MutableBuffer.of(dest) to dest
     }
 
-    @Ignore
     @Test
     fun testReadFully() = runTest {
         val data = byteArrayOf(1, 2, 3, 4, 5)
@@ -37,7 +36,6 @@ class SdkSourceBodyStreamTest {
         }
     }
 
-    @Ignore
     @Test
     fun testPartialRead() = runTest {
         val source = "123456".encodeToByteArray().source()
@@ -55,7 +53,6 @@ class SdkSourceBodyStreamTest {
         assertEquals("456", sent2.decodeToString())
     }
 
-    @Ignore
     @Test
     fun testLargeTransfer() = runTest {
         val data = "foobar"
