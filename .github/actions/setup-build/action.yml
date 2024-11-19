@@ -7,6 +7,7 @@ runs:
   steps:
     - name: Extract aws-kotlin-repo-tools version
       working-directory: ./smithy-kotlin
+      shell: bash
       run: |
         export AWS_KOTLIN_REPO_TOOLS_VERSION=$(grep '^aws-kotlin-repo-tools-version' ./gradle/libs.versions.toml | sed -E 's/.*= "(.*)"/\1/')
         echo "Using aws-kotlin-repo-tools version $AWS_KOTLIN_REPO_TOOLS_VERSION"
