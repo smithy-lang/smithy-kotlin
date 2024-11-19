@@ -46,7 +46,7 @@ val compositeProjectList = try {
         }
     }
 } catch (e: Throwable) {
-    logger.error("Failed to load composite project paths from local.properties")
+    logger.error("Could not load composite project paths from local.properties")
     listOf(file("../aws-crt-kotlin"))
 }
 

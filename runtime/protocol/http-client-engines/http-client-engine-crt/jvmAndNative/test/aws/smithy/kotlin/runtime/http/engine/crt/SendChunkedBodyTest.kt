@@ -33,7 +33,7 @@ class SendChunkedBodyTest {
 
         val chunkedBytes = """
            100;chunk-signature=${"0".repeat(64)}\r\n${"0".repeat(256)}\r\n\r\n 
-        """.trimIndent().toByteArray()
+        """.trimIndent().encodeToByteArray()
 
         val source = chunkedBytes.source()
 
@@ -52,7 +52,7 @@ class SendChunkedBodyTest {
 
         val chunkedBytes = """
            ${chunkSize.toString(16)};chunk-signature=${"0".repeat(64)}\r\n${"0".repeat(chunkSize)}\r\n\r\n 
-        """.trimIndent().toByteArray()
+        """.trimIndent().encodeToByteArray()
 
         val source = chunkedBytes.source()
 
@@ -71,7 +71,7 @@ class SendChunkedBodyTest {
 
         val chunkedBytes = """
            100;chunk-signature=${"0".repeat(64)}\r\n${"0".repeat(256)}\r\n\r\n 
-        """.trimIndent().toByteArray()
+        """.trimIndent().encodeToByteArray()
 
         val channel = SdkByteReadChannel(chunkedBytes)
 
@@ -91,7 +91,7 @@ class SendChunkedBodyTest {
 
         val chunkedBytes = """
            ${chunkSize.toString(16)};chunk-signature=${"0".repeat(64)}\r\n${"0".repeat(chunkSize)}\r\n\r\n 
-        """.trimIndent().toByteArray()
+        """.trimIndent().encodeToByteArray()
 
         val channel = SdkByteReadChannel(chunkedBytes)
 
