@@ -73,7 +73,7 @@ class XmlStreamWriterTest {
     }
 
     // The following escape tests were adapted from
-    // https://github.com/awslabs/smithy-rs/blob/c15289a7163cb6344b088a0ee39244df2967070a/rust-runtime/smithy-xml/src/unescape.rs
+    // https://github.com/smithy-lang/smithy-rs/blob/c15289a7163cb6344b088a0ee39244df2967070a/rust-runtime/smithy-xml/src/unescape.rs
     @Test
     fun itHandlesEscaping() {
         val testCases = mapOf(
