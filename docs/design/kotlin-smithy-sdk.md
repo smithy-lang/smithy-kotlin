@@ -543,7 +543,7 @@ use the provided enum name.
 
 The value will be stored as an abstract property on the sealed class and each variant will have to override it. This
 allows enums to be applied to other types in the future if Smithy
-[evolves to allow it](https://github.com/awslabs/smithy/issues/98).
+[evolves to allow it](https://github.com/smithy-lang/smithy/issues/98).
 
 ```
 @enum("YES": {}, "NO": {})

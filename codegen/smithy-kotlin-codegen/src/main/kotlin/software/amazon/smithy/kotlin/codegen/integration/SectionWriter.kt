@@ -28,7 +28,7 @@ fun interface SectionWriter {
      *  evaluated [SectionWriter] associated with the same [SectionId]. For writers that wish to
      *  append to any pre-existing codegen strings in the section, they must explicitly write
      *  the contents of previousValue to the writer.  See the
-     *  [CodeWriter](https://github.com/awslabs/smithy/blob/main/smithy-utils/src/main/java/software/amazon/smithy/utils/CodeWriter.java)
+     *  [CodeWriter](https://github.com/smithy-lang/smithy/blob/main/smithy-utils/src/main/java/software/amazon/smithy/utils/CodeWriter.java)
      *  documentation for more details
      */
     fun write(writer: KotlinWriter, previousValue: String?)

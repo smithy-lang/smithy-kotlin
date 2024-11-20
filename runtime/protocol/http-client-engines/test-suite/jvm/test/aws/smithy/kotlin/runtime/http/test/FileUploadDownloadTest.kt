@@ -80,7 +80,7 @@ class FileUploadDownloadTest : AbstractEngineTest() {
         }
     }
 
-    // https://github.com/awslabs/smithy-kotlin/issues/1041
+    // https://github.com/smithy-lang/smithy-kotlin/issues/1041
     @Test
     fun testDownloadCompressedPayload() = testEngines {
         test { _, client ->

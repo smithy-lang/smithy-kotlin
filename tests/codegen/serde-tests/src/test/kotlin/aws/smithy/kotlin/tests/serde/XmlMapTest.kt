@@ -246,7 +246,7 @@ class XmlMapTest : AbstractXmlTest() {
 
     @Test
     fun testEnumKeyMap() {
-        // see also https://github.com/awslabs/smithy-kotlin/issues/1045
+        // see also https://github.com/smithy-lang/smithy-kotlin/issues/1045
         val expected = StructType {
             enumKeyMap = mapOf(
                 FooEnum.Foo to 1,

@@ -179,11 +179,11 @@ public open class AwsServiceException : ServiceException {
 These two fields `requestId` and `errorCode` both result in conflicts in a handful of models (and subsequently fails to compile) because the errors themselves have fields with matching names.
 
 
-See: https://github.com/awslabs/smithy-kotlin/issues/110
+See: https://github.com/smithy-lang/smithy-kotlin/issues/110
 
 As you can see this inherits from another type `ServiceException` which defines several other (un-modeled) fields further increasing the chance of a conflict. This also means that future modifications to the hierarchy could be difficult due to possible conflicts.
 
-The exception hierarchy is defined [here](https://github.com/awslabs/smithy-kotlin/blob/v0.1.0-M0/client-runtime/client-rt-core/common/src/software/aws/clientrt/Exceptions.kt) and further extended [here](https://github.com/awslabs/aws-sdk-kotlin/blob/v0.1.0-M0/client-runtime/aws-client-rt/common/src/aws/sdk/kotlin/runtime/Exceptions.kt).
+The exception hierarchy is defined [here](https://github.com/smithy-lang/smithy-kotlin/blob/v0.1.0-M0/client-runtime/client-rt-core/common/src/software/aws/clientrt/Exceptions.kt) and further extended [here](https://github.com/awslabs/aws-sdk-kotlin/blob/v0.1.0-M0/client-runtime/aws-client-rt/common/src/aws/sdk/kotlin/runtime/Exceptions.kt).
 
 
 #### 2. A desire to remove mutability
