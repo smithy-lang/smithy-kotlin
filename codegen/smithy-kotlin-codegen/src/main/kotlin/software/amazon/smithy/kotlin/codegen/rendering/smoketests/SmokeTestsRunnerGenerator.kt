@@ -6,10 +6,9 @@ import software.amazon.smithy.kotlin.codegen.integration.SectionId
 import software.amazon.smithy.kotlin.codegen.integration.SectionKey
 import software.amazon.smithy.kotlin.codegen.model.getTrait
 import software.amazon.smithy.kotlin.codegen.model.hasTrait
-import software.amazon.smithy.kotlin.codegen.model.isStringEnumShape
+import software.amazon.smithy.kotlin.codegen.rendering.ShapeValueGenerator
 import software.amazon.smithy.kotlin.codegen.rendering.endpoints.EndpointParametersGenerator
 import software.amazon.smithy.kotlin.codegen.rendering.endpoints.EndpointProviderGenerator
-import software.amazon.smithy.kotlin.codegen.rendering.protocol.stringToNumber
 import software.amazon.smithy.kotlin.codegen.rendering.smoketests.SmokeTestSectionIds.ClientConfig.EndpointParams
 import software.amazon.smithy.kotlin.codegen.rendering.smoketests.SmokeTestSectionIds.ClientConfig.EndpointProvider
 import software.amazon.smithy.kotlin.codegen.rendering.smoketests.SmokeTestSectionIds.ClientConfig.Name
@@ -17,7 +16,6 @@ import software.amazon.smithy.kotlin.codegen.rendering.smoketests.SmokeTestSecti
 import software.amazon.smithy.kotlin.codegen.rendering.util.format
 import software.amazon.smithy.kotlin.codegen.utils.dq
 import software.amazon.smithy.kotlin.codegen.utils.toCamelCase
-import software.amazon.smithy.kotlin.codegen.utils.toPascalCase
 import software.amazon.smithy.kotlin.codegen.utils.topDownOperations
 import software.amazon.smithy.model.node.*
 import software.amazon.smithy.model.shapes.*
@@ -134,8 +132,7 @@ class SmokeTestsRunnerGenerator(
             }
             write("")
             withInlineBlock("try {", "} ") {
-                renderClient(testCase)
-                renderOperation(operation, testCase)
+                renderTestCase(operation, testCase)
             }
             withBlock("catch (exception: Exception) {", "}") {
                 renderCatchBlock(testCase)
@@ -143,9 +140,11 @@ class SmokeTestsRunnerGenerator(
         }
     }
 
-    private fun renderClient(testCase: SmokeTestCase) {
-        writer.withInlineBlock("#L {", "}", service) {
+    private fun renderTestCase(operation: OperationShape, testCase: SmokeTestCase) {
+        writer.withBlock("#T {", "}", service) {
             renderClientConfig(testCase)
+            closeAndOpenBlock("}.#T { client ->", RuntimeTypes.Core.IO.use)
+            renderOperation(operation, testCase)
         }
     }
 
@@ -161,10 +160,8 @@ class SmokeTestsRunnerGenerator(
             return
         }
 
-        testCase.clientConfig!!.forEach { config ->
-            val name = config.key.value.toCamelCase()
-            val value = config.value.format()
-
+        testCase.clientConfig.forEach { (name, unformattedValue) ->
+            val value = unformattedValue.format()
             writer.declareSection(
                 SmokeTestSectionIds.ClientConfig,
                 mapOf(
@@ -174,33 +171,23 @@ class SmokeTestsRunnerGenerator(
                     EndpointParams to EndpointParametersGenerator.getSymbol(settings),
                 ),
             ) {
-                writer.writeInline("#L = #L", name, value)
+                writer.write("#L = #L", name, value)
             }
         }
     }
 
     private fun renderOperation(operation: OperationShape, testCase: SmokeTestCase) {
-        val operationSymbol = symbolProvider.toSymbol(model.getShape(operation.input.get()).get())
+        val inputParams = testCase.params.getOrNull()
 
-        writer.withBlock(".#T { client ->", "}", RuntimeTypes.Core.IO.use) {
-            withBlock("client.#L(", ")", operation.defaultName()) {
-                withBlock("#L {", "}", operationSymbol) {
-                    renderOperationParameters(operation, testCase)
-                }
+        writer.writeInline("client.#L", operation.defaultName())
+
+        if (inputParams == null) {
+            writer.write("()")
+        } else {
+            writer.withBlock("(", ")") {
+                val inputShape = model.expectShape(operation.input.get())
+                ShapeValueGenerator(model, symbolProvider).instantiateShapeInline(writer, inputShape, inputParams)
             }
-        }
-    }
-
-    private fun renderOperationParameters(operation: OperationShape, testCase: SmokeTestCase) {
-        if (!testCase.hasOperationParameters) return
-
-        val paramsToShapes = mapOperationParametersToModeledShapes(operation)
-
-        testCase.operationParameters.forEach { param ->
-            val paramName = param.key.value.toCamelCase()
-            writer.writeInline("#L = ", paramName)
-            val paramShape = paramsToShapes[paramName] ?: throw IllegalArgumentException("Unable to find shape for operation parameter '$paramName' in smoke test '${testCase.functionName}'.")
-            renderOperationParameter(paramName, param.value, paramShape, testCase)
         }
     }
 
@@ -229,56 +216,6 @@ class SmokeTestsRunnerGenerator(
 
     // Helpers
     /**
-     * Renders a [SmokeTestCase] operation parameter
-     */
-    private fun renderOperationParameter(
-        paramName: String,
-        node: Node,
-        shape: Shape,
-        testCase: SmokeTestCase,
-    ) {
-        when {
-            // String enum
-            node is StringNode && shape.isStringEnumShape -> {
-                val enumSymbol = symbolProvider.toSymbol(shape)
-                val enumValue = node.value.toPascalCase()
-                writer.write("#T.#L", enumSymbol, enumValue)
-            }
-            // Int enum
-            node is NumberNode && shape is IntEnumShape -> {
-                val enumSymbol = symbolProvider.toSymbol(shape)
-                val enumValue = node.format()
-                writer.write("#T.fromValue(#L.toInt())", enumSymbol, enumValue)
-            }
-            // Number
-            node is NumberNode && shape is NumberShape -> writer.write("#L.#L", node.format(), stringToNumber(shape))
-            // Object
-            node is ObjectNode -> {
-                val shapeSymbol = symbolProvider.toSymbol(shape)
-                writer.withBlock("#T {", "}", shapeSymbol) {
-                    node.members.forEach { member ->
-                        val memberName = member.key.value.toCamelCase()
-                        val memberShape = shape.allMembers[member.key.value] ?: throw IllegalArgumentException("Unable to find shape for operation parameter '$paramName' in smoke test '${testCase.functionName}'.")
-                        writer.writeInline("#L = ", memberName)
-                        renderOperationParameter(memberName, member.value, memberShape, testCase)
-                    }
-                }
-            }
-            // List
-            node is ArrayNode && shape is CollectionShape -> {
-                writer.withBlock("listOf(", ")") {
-                    node.elements.forEach { element ->
-                        renderOperationParameter(paramName, element, model.expectShape(shape.member.target), testCase)
-                        writer.write(",")
-                    }
-                }
-            }
-            // Everything else
-            else -> writer.write("#L", node.format())
-        }
-    }
-
-    /**
      * Tries to get the specific exception required in the failure criterion of a test.
      * If no specific exception is required we default to the generic smoke tests failure exception.
      */
@@ -303,14 +240,6 @@ class SmokeTestsRunnerGenerator(
         val testResult = "$status $service $testCase - $expectation $directive"
         writer.write("println(#S)", testResult)
     }
-
-    /**
-     * Maps an operations parameters to their shapes
-     */
-    private fun mapOperationParametersToModeledShapes(operation: OperationShape): Map<String, Shape> =
-        model.getShape(operation.inputShape).get().allMembers.map { (key, value) ->
-            key.toCamelCase() to model.getShape(value.target).get()
-        }.toMap()
 
     /**
      * Derives a function name for a [SmokeTestCase]
@@ -345,8 +274,12 @@ class SmokeTestsRunnerGenerator(
     /**
      * Get the client configuration required for a [SmokeTestCase]
      */
-    private val SmokeTestCase.clientConfig: MutableMap<StringNode, Node>?
-        get() = this.vendorParams.get().members
+    private val SmokeTestCase.clientConfig: Map<String, Node>
+        get() = vendorParams
+            .getOrNull()
+            ?.members
+            ?.mapKeys { (key, _) -> key.value }
+            .orEmpty()
 
     // Constants
     private val model = ctx.model
