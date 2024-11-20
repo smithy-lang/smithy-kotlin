@@ -222,7 +222,7 @@ class ShapeValueGenerator(
                         val currSymbol = generator.symbolProvider.toSymbol(currShape)
                         val memberName = generator.symbolProvider.toMemberName(member)
                         val variantName = memberName.replaceFirstChar { c -> c.uppercaseChar() }
-                        writer.writeInline("${currSymbol.name}.$variantName(")
+                        writer.writeInline("#T.#L(", currSymbol, variantName)
                         generator.instantiateShapeInline(writer, memberShape, valueNode)
                         writer.writeInline(")")
                     }

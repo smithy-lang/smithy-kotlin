@@ -30,7 +30,8 @@ class SmokeTestsRunnerGeneratorTest {
                         }
                         vendorParamsShape: AwsVendorParams,
                         vendorParams: {
-                            region: "eu-central-1"
+                            region: "eu-central-1",
+                            uri: "https://foo.amazon.com"
                         }
                     }
                     {
@@ -109,6 +110,7 @@ class SmokeTestsRunnerGeneratorTest {
                         TestClient {
                             interceptors.add(SmokeTestsInterceptor())
                             region = "eu-central-1"
+                            uri = "https://foo.amazon.com"
                         }.use { client ->
                             client.testOperation(
                                 TestOperationRequest {
@@ -144,7 +146,6 @@ class SmokeTestsRunnerGeneratorTest {
                 
                     try {
                         TestClient {
-                
                         }.use { client ->
                             client.testOperation(
                                 TestOperationRequest {
@@ -181,7 +182,6 @@ class SmokeTestsRunnerGeneratorTest {
                     try {
                         TestClient {
                             interceptors.add(SmokeTestsInterceptor())
-                
                         }.use { client ->
                             client.testOperation(
                                 TestOperationRequest {

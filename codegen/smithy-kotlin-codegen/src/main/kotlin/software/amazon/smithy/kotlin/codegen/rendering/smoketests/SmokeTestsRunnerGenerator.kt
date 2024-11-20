@@ -132,8 +132,7 @@ class SmokeTestsRunnerGenerator(
             }
             write("")
             withInlineBlock("try {", "} ") {
-                renderClient(testCase)
-                renderOperation(operation, testCase)
+                renderTestCase(operation, testCase)
             }
             withBlock("catch (exception: Exception) {", "}") {
                 renderCatchBlock(testCase)
@@ -141,9 +140,11 @@ class SmokeTestsRunnerGenerator(
         }
     }
 
-    private fun renderClient(testCase: SmokeTestCase) {
-        writer.withInlineBlock("#T {", "}", service) {
+    private fun renderTestCase(operation: OperationShape, testCase: SmokeTestCase) {
+        writer.withBlock("#T {", "}", service) {
             renderClientConfig(testCase)
+            closeAndOpenBlock("}.#T { client ->", RuntimeTypes.Core.IO.use)
+            renderOperation(operation, testCase)
         }
     }
 
@@ -159,10 +160,8 @@ class SmokeTestsRunnerGenerator(
             return
         }
 
-        testCase.clientConfig!!.forEach { config ->
-            val name = config.key.value.toCamelCase()
-            val value = config.value.format()
-
+        testCase.clientConfig.forEach { (name, unformattedValue) ->
+            val value = unformattedValue.format()
             writer.declareSection(
                 SmokeTestSectionIds.ClientConfig,
                 mapOf(
@@ -172,24 +171,22 @@ class SmokeTestsRunnerGenerator(
                     EndpointParams to EndpointParametersGenerator.getSymbol(settings),
                 ),
             ) {
-                writer.writeInline("#L = #L", name, value)
+                writer.write("#L = #L", name, value)
             }
         }
     }
 
     private fun renderOperation(operation: OperationShape, testCase: SmokeTestCase) {
-        writer.withBlock(".#T { client ->", "}", RuntimeTypes.Core.IO.use) {
-            val inputParams = testCase.params.getOrNull()
+        val inputParams = testCase.params.getOrNull()
 
-            writeInline("client.#L", operation.defaultName())
+        writer.writeInline("client.#L", operation.defaultName())
 
-            if (inputParams == null) {
-                write("()")
-            } else {
-                withBlock("(", ")") {
-                    val inputShape = model.expectShape(operation.input.get())
-                    ShapeValueGenerator(model, symbolProvider).instantiateShapeInline(writer, inputShape, inputParams)
-                }
+        if (inputParams == null) {
+            writer.write("()")
+        } else {
+            writer.withBlock("(", ")") {
+                val inputShape = model.expectShape(operation.input.get())
+                ShapeValueGenerator(model, symbolProvider).instantiateShapeInline(writer, inputShape, inputParams)
             }
         }
     }
@@ -277,8 +274,12 @@ class SmokeTestsRunnerGenerator(
     /**
      * Get the client configuration required for a [SmokeTestCase]
      */
-    private val SmokeTestCase.clientConfig: MutableMap<StringNode, Node>?
-        get() = this.vendorParams.get().members
+    private val SmokeTestCase.clientConfig: Map<String, Node>
+        get() = vendorParams
+            .getOrNull()
+            ?.members
+            ?.mapKeys { (key, _) -> key.value }
+            .orEmpty()
 
     // Constants
     private val model = ctx.model
