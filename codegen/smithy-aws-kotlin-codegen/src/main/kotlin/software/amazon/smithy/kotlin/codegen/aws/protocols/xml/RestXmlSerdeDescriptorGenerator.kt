@@ -34,7 +34,7 @@ class RestXmlSerdeDescriptorGenerator(
             val serialName = getSerialName(member, nameSuffix)
             if (serialName.equals("message", ignoreCase = true)) {
                 // Need to be able to read error messages from "Message" or "message"
-                // https://github.com/awslabs/smithy-kotlin/issues/352
+                // https://github.com/smithy-lang/smithy-kotlin/issues/352
                 traitList.add(RuntimeTypes.Serde.SerdeXml.XmlAliasName, serialName.toggleFirstCharacterCase().dq())
             }
         }

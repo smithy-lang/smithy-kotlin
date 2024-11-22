@@ -114,7 +114,7 @@ class StreamingRequestBodyTest {
 
         job.cancel()
         withTimeout(2.seconds) {
-            // See https://github.com/awslabs/smithy-kotlin/issues/739
+            // See https://github.com/smithy-lang/smithy-kotlin/issues/739
             // writeTo() should end up blocked waiting for data that will never come.
             // If the job used in the implementation isn't tied to the parent coroutine correctly
             // it will block forever

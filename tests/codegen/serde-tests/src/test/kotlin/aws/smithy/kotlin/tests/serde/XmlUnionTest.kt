@@ -266,7 +266,7 @@ class XmlUnionTest : AbstractXmlTest() {
         testRoundTrip(expected, payload, ::serializeStructTypeDocument, ::deserializeStructTypeDocument)
     }
 
-    // FIXME - https://github.com/awslabs/smithy-kotlin/issues/1040
+    // FIXME - https://github.com/smithy-lang/smithy-kotlin/issues/1040
     // @Test
     // fun testUnitField() { }
 

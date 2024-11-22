@@ -18,9 +18,9 @@ used by the SDK. It is meant to be a living document and provide additional cont
 
 The SDK has three implementations of `CoroutineScope`:
 
-1. [ExecutionContext](https://github.com/awslabs/smithy-kotlin/blob/main/runtime/runtime-core/common/src/aws/smithy/kotlin/runtime/operation/ExecutionContext.kt)
-2. [HttpClientEngine](https://github.com/awslabs/smithy-kotlin/blob/main/runtime/protocol/http-client/common/src/aws/smithy/kotlin/runtime/http/engine/HttpClientEngine.kt)
-3. [HttpCall](https://github.com/awslabs/smithy-kotlin/blob/main/runtime/protocol/http/common/src/aws/smithy/kotlin/runtime/http/response/HttpCall.kt)
+1. [ExecutionContext](https://github.com/smithy-lang/smithy-kotlin/blob/main/runtime/runtime-core/common/src/aws/smithy/kotlin/runtime/operation/ExecutionContext.kt)
+2. [HttpClientEngine](https://github.com/smithy-lang/smithy-kotlin/blob/main/runtime/protocol/http-client/common/src/aws/smithy/kotlin/runtime/http/engine/HttpClientEngine.kt)
+3. [HttpCall](https://github.com/smithy-lang/smithy-kotlin/blob/main/runtime/protocol/http/common/src/aws/smithy/kotlin/runtime/http/response/HttpCall.kt)
     
 
 `ExecutionContext` implements `CoroutineScope` to provide a place for any background work to be done as part of implementing an operation. 

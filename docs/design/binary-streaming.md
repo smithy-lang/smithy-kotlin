@@ -628,7 +628,7 @@ The issue with going that route is two fold:
 
 # Revision history
 
-* 11/29/2022 - SDK I/O refactor (see [#751](https://github.com/awslabs/smithy-kotlin/pull/751))
+* 11/29/2022 - SDK I/O refactor (see [#751](https://github.com/smithy-lang/smithy-kotlin/pull/751))
 * 11/15/2021 - Update code snippets from builder refactoring
 * 6/03/2021 - Initial upload
 * 6/11/2020 - Created
