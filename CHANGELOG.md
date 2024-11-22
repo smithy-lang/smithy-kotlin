@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.3.26] - 11/22/2024
+
+### Fixes
+* Infer the replayability of `InputStream` using `markSupported()` when setting `isOneShot`
+
 ## [1.3.25] - 11/20/2024
 
 ## [1.3.23] - 11/14/2024
