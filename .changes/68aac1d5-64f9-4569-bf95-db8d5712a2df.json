@@ -1,0 +1,5 @@
+{
+    "id": "68aac1d5-64f9-4569-bf95-db8d5712a2df",
+    "type": "bugfix",
+    "description": "Infer the replayability of `InputStream` using `markSupported()` when setting `isOneShot`"
+}
