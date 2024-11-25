@@ -1,0 +1,5 @@
+{
+    "id": "d3a7a353-019d-470c-9c46-f802a67eea0d",
+    "type": "bugfix",
+    "description": "Stop using `GlobalScope` for event streaming handlers to improve resource handling"
+}

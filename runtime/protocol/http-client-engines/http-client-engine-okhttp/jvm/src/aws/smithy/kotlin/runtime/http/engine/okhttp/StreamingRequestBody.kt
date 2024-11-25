@@ -26,8 +26,14 @@ import kotlin.coroutines.CoroutineContext
 @InternalApi
 public class StreamingRequestBody(
     private val body: HttpBody,
-    private val callContext: CoroutineContext,
+    callContext: CoroutineContext,
 ) : RequestBody() {
+    private val producerJob = Job(callContext[Job])
+
+    private val context: CoroutineContext = callContext +
+        producerJob +
+        callContext.derivedName("send-request-body") +
+        Dispatchers.IO
 
     init {
         require(body is HttpBody.ChannelContent || body is HttpBody.SourceContent) { "Invalid streaming body $body" }
@@ -41,26 +47,24 @@ public class StreamingRequestBody(
     override fun writeTo(sink: BufferedSink) {
         try {
             doWriteTo(sink)
-        } catch (ex: Exception) {
-            when (ex) {
+        } catch (t: Throwable) {
+            when (t) {
                 is CancellationException -> {
-                    callContext.trace<StreamingRequestBody> { "request cancelled" }
-                    // shouldn't need to propagate the exception because okhttp is cancellation aware via executeAsync()
-                    return
+                    context.trace<StreamingRequestBody> { "request cancelled" }
+                    throw t
                 }
-                is IOException -> throw ex
+                is IOException -> throw t
                 // wrap all exceptions thrown from inside `okhttp3.RequestBody#writeTo(..)` as an IOException
                 // see https://github.com/awslabs/aws-sdk-kotlin/issues/733
-                else -> throw IOException(ex)
+                else -> throw IOException(t)
             }
         }
     }
 
     private fun doWriteTo(sink: BufferedSink) {
-        val context = callContext + callContext.derivedName("send-request-body")
         if (isDuplex()) {
             // launch coroutine that writes to sink in the background
-            GlobalScope.launch(context + Dispatchers.IO) {
+            CoroutineScope(context).launch {
                 sink.use { transferBody(it) }
             }
         } else {
@@ -78,7 +82,7 @@ public class StreamingRequestBody(
         }
     }
 
-    private suspend fun transferBody(sink: BufferedSink) {
+    private suspend fun transferBody(sink: BufferedSink) = withJob(producerJob) {
         when (body) {
             is HttpBody.ChannelContent -> {
                 val chan = body.readFrom()
@@ -95,5 +99,19 @@ public class StreamingRequestBody(
             // should never hit - all other body types are handled elsewhere
             else -> error("unexpected HttpBody type $body")
         }
+    }
+}
+
+/**
+ * Completes the given job when the block returns calling either `complete()` when the block runs
+ * successfully or `completeExceptionally()` on exception.
+ * @return the result of calling [block]
+ */
+private inline fun <T> withJob(job: CompletableJob, block: () -> T): T {
+    try {
+        return block().also { job.complete() }
+    } catch (t: Throwable) {
+        job.completeExceptionally(t)
+        throw t
     }
 }
