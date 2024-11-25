@@ -332,18 +332,15 @@ public final class aws/smithy/kotlin/runtime/http/interceptors/DiscoveredEndpoin
 }
 
 public final class aws/smithy/kotlin/runtime/http/interceptors/FlexibleChecksumsRequestInterceptor : aws/smithy/kotlin/runtime/http/interceptors/AbstractChecksumInterceptor {
-	public fun <init> ()V
-	public fun <init> (Lkotlin/jvm/functions/Function1;)V
-	public synthetic fun <init> (Lkotlin/jvm/functions/Function1;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (ZLaws/smithy/kotlin/runtime/client/config/ChecksumConfigOption;Ljava/lang/String;Z)V
 	public fun applyChecksum (Laws/smithy/kotlin/runtime/client/ProtocolRequestInterceptorContext;Ljava/lang/String;)Laws/smithy/kotlin/runtime/http/request/HttpRequest;
 	public fun calculateChecksum (Laws/smithy/kotlin/runtime/client/ProtocolRequestInterceptorContext;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun modifyBeforeSigning (Laws/smithy/kotlin/runtime/client/ProtocolRequestInterceptorContext;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public fun readAfterSerialization (Laws/smithy/kotlin/runtime/client/ProtocolRequestInterceptorContext;)V
 }
 
 public final class aws/smithy/kotlin/runtime/http/interceptors/FlexibleChecksumsResponseInterceptor : aws/smithy/kotlin/runtime/client/Interceptor {
 	public static final field Companion Laws/smithy/kotlin/runtime/http/interceptors/FlexibleChecksumsResponseInterceptor$Companion;
-	public fun <init> (Lkotlin/jvm/functions/Function1;)V
+	public fun <init> (ZLaws/smithy/kotlin/runtime/client/config/ChecksumConfigOption;)V
 	public fun modifyBeforeAttemptCompletion-gIAlu-s (Laws/smithy/kotlin/runtime/client/ResponseInterceptorContext;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun modifyBeforeCompletion-gIAlu-s (Laws/smithy/kotlin/runtime/client/ResponseInterceptorContext;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun modifyBeforeDeserialization (Laws/smithy/kotlin/runtime/client/ProtocolResponseInterceptorContext;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;

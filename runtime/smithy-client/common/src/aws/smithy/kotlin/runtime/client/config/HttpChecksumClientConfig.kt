@@ -1,5 +1,8 @@
 package aws.smithy.kotlin.runtime.client.config
 
+/**
+ * todo
+ */
 public interface HttpChecksumClientConfig {
     /**
      * todo

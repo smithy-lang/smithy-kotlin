@@ -93,6 +93,14 @@ public final class aws/smithy/kotlin/runtime/businessmetrics/BusinessMetricsUtil
 
 public final class aws/smithy/kotlin/runtime/businessmetrics/SmithyBusinessMetric : java/lang/Enum, aws/smithy/kotlin/runtime/businessmetrics/BusinessMetric {
 	public static final field ACCOUNT_ID_BASED_ENDPOINT Laws/smithy/kotlin/runtime/businessmetrics/SmithyBusinessMetric;
+	public static final field FLEXIBLE_CHECKSUMS_REQ_CRC32 Laws/smithy/kotlin/runtime/businessmetrics/SmithyBusinessMetric;
+	public static final field FLEXIBLE_CHECKSUMS_REQ_CRC32C Laws/smithy/kotlin/runtime/businessmetrics/SmithyBusinessMetric;
+	public static final field FLEXIBLE_CHECKSUMS_REQ_SHA1 Laws/smithy/kotlin/runtime/businessmetrics/SmithyBusinessMetric;
+	public static final field FLEXIBLE_CHECKSUMS_REQ_SHA256 Laws/smithy/kotlin/runtime/businessmetrics/SmithyBusinessMetric;
+	public static final field FLEXIBLE_CHECKSUMS_REQ_WHEN_REQUIRED Laws/smithy/kotlin/runtime/businessmetrics/SmithyBusinessMetric;
+	public static final field FLEXIBLE_CHECKSUMS_REQ_WHEN_SUPPORTED Laws/smithy/kotlin/runtime/businessmetrics/SmithyBusinessMetric;
+	public static final field FLEXIBLE_CHECKSUMS_RES_WHEN_REQUIRED Laws/smithy/kotlin/runtime/businessmetrics/SmithyBusinessMetric;
+	public static final field FLEXIBLE_CHECKSUMS_RES_WHEN_SUPPORTED Laws/smithy/kotlin/runtime/businessmetrics/SmithyBusinessMetric;
 	public static final field GZIP_REQUEST_COMPRESSION Laws/smithy/kotlin/runtime/businessmetrics/SmithyBusinessMetric;
 	public static final field PAGINATOR Laws/smithy/kotlin/runtime/businessmetrics/SmithyBusinessMetric;
 	public static final field PROTOCOL_RPC_V2_CBOR Laws/smithy/kotlin/runtime/businessmetrics/SmithyBusinessMetric;
@@ -687,6 +695,11 @@ public final class aws/smithy/kotlin/runtime/hashing/HashFunctionKt {
 	public static final fun hash ([BLaws/smithy/kotlin/runtime/hashing/HashFunction;)[B
 	public static final fun hash ([BLkotlin/jvm/functions/Function0;)[B
 	public static final fun toHashFunction (Ljava/lang/String;)Laws/smithy/kotlin/runtime/hashing/HashFunction;
+}
+
+public final class aws/smithy/kotlin/runtime/hashing/HashingAttributes {
+	public static final field INSTANCE Laws/smithy/kotlin/runtime/hashing/HashingAttributes;
+	public final fun getChecksumStreamingRequest ()Laws/smithy/kotlin/runtime/collections/AttributeKey;
 }
 
 public final class aws/smithy/kotlin/runtime/hashing/HmacKt {
