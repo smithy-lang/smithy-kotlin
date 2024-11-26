@@ -70,6 +70,12 @@ public class OkHttp4Engine(
             }
         }
     }
+
+    override fun shutdown() {
+        client.connectionPool.evictAll()
+        client.dispatcher.executorService.shutdown()
+        metrics.close()
+    }
 }
 
 // Copied from okhttp3 5.x:

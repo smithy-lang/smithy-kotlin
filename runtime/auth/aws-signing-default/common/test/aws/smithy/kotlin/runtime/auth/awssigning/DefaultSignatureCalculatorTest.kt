@@ -84,7 +84,7 @@ class DefaultSignatureCalculatorTest {
     fun testChunkStringToSign() {
         // Test event stream signing
         // https://docs.aws.amazon.com/transcribe/latest/dg/streaming-http2.html
-        // Adapted from: https://github.com/awslabs/smithy-rs/blob/v0.38.0/aws/rust-runtime/aws-sigv4/src/event_stream.rs#L166
+        // Adapted from: https://github.com/smithy-lang/smithy-rs/blob/v0.38.0/aws/rust-runtime/aws-sigv4/src/event_stream.rs#L166
         val tests = listOf(
             ChunkStringToSignTest(AwsSignatureType.HTTP_REQUEST_CHUNK, HashSpecification.EmptyBody.hash),
             ChunkStringToSignTest(

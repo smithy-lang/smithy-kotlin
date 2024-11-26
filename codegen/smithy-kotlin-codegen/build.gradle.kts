@@ -122,4 +122,4 @@ publishing {
     }
 }
 
-configurePublishing("smithy-kotlin")
+configurePublishing("smithy-kotlin", "smithy-lang")
