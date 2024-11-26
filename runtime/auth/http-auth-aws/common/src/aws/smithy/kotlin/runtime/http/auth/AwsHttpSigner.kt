@@ -14,7 +14,6 @@ import aws.smithy.kotlin.runtime.auth.awssigning.internal.useAwsChunkedEncoding
 import aws.smithy.kotlin.runtime.client.LogMode
 import aws.smithy.kotlin.runtime.client.SdkClientOption
 import aws.smithy.kotlin.runtime.collections.get
-import aws.smithy.kotlin.runtime.hashing.HashingAttributes.ChecksumStreamingRequest
 import aws.smithy.kotlin.runtime.http.HttpBody
 import aws.smithy.kotlin.runtime.http.operation.HttpOperationContext
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
@@ -129,7 +128,6 @@ public class AwsHttpSigner(private val config: Config) : HttpSigner {
         val contextOmitSessionToken = attributes.getOrNull(AwsSigningAttributes.OmitSessionToken)
 
         val enableAwsChunked = attributes.getOrNull(AwsSigningAttributes.EnableAwsChunked) ?: false
-        val checksumStreamingRequest = attributes.getOrNull(ChecksumStreamingRequest) ?: false
 
         // operation signing config is baseConfig + operation specific config/overrides
         val signingConfig = AwsSigningConfig {
@@ -166,7 +164,7 @@ public class AwsHttpSigner(private val config: Config) : HttpSigner {
             hashSpecification = when {
                 contextHashSpecification != null -> contextHashSpecification
                 body is HttpBody.Empty -> HashSpecification.EmptyBody
-                ((body.isEligibleForAwsChunkedStreaming && enableAwsChunked) || checksumStreamingRequest) -> {
+                (body.isEligibleForAwsChunkedStreaming && enableAwsChunked) -> { // TODO: Enable AWS chunked for all ?!
                     if (request.headers.contains("x-amz-trailer")) {
                         if (config.isUnsignedPayload) HashSpecification.StreamingUnsignedPayloadWithTrailers else HashSpecification.StreamingAws4HmacSha256PayloadWithTrailers
                     } else {

@@ -46,7 +46,6 @@ class FlexibleChecksumsRequestInterceptorTest {
                     userSelectedChecksumAlgorithm = checksumAlgorithmName,
                     requestChecksumRequired = true,
                     requestChecksumCalculation = ChecksumConfigOption.WHEN_SUPPORTED,
-                    streamingPayload = false,
                 ),
             )
 
@@ -74,7 +73,6 @@ class FlexibleChecksumsRequestInterceptorTest {
                 userSelectedChecksumAlgorithm = checksumAlgorithmName,
                 requestChecksumRequired = true,
                 requestChecksumCalculation = ChecksumConfigOption.WHEN_SUPPORTED,
-                streamingPayload = false,
             ),
         )
 
@@ -100,7 +98,6 @@ class FlexibleChecksumsRequestInterceptorTest {
                     userSelectedChecksumAlgorithm = unsupportedChecksumAlgorithmName,
                     requestChecksumRequired = true,
                     requestChecksumCalculation = ChecksumConfigOption.WHEN_SUPPORTED,
-                    streamingPayload = false,
                 ),
             )
         }
@@ -127,7 +124,6 @@ class FlexibleChecksumsRequestInterceptorTest {
                 userSelectedChecksumAlgorithm = checksumAlgorithmName,
                 requestChecksumRequired = true,
                 requestChecksumCalculation = ChecksumConfigOption.WHEN_SUPPORTED,
-                streamingPayload = false,
             ),
         )
 
@@ -196,7 +192,6 @@ class FlexibleChecksumsRequestInterceptorTest {
                 userSelectedChecksumAlgorithm = checksumAlgorithmName,
                 requestChecksumRequired = true,
                 requestChecksumCalculation = ChecksumConfigOption.WHEN_SUPPORTED,
-                streamingPayload = false,
             ),
         )
 

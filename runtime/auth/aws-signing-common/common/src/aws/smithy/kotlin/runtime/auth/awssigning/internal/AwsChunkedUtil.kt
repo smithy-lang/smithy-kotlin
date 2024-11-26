@@ -95,8 +95,6 @@ public fun HttpRequestBuilder.setAwsChunkedBody(signer: AwsSigner, signingConfig
             trailingHeaders,
         ).toHttpBody(-1)
 
-        is HttpBody.Bytes -> this.body // TODO: Might need a bit more work here
-
         else -> throw ClientException("HttpBody type is not supported")
     }
 }

@@ -12,9 +12,7 @@ import aws.smithy.kotlin.runtime.businessmetrics.SmithyBusinessMetric
 import aws.smithy.kotlin.runtime.businessmetrics.emitBusinessMetric
 import aws.smithy.kotlin.runtime.client.ProtocolRequestInterceptorContext
 import aws.smithy.kotlin.runtime.client.config.ChecksumConfigOption
-import aws.smithy.kotlin.runtime.collections.putIfAbsent
 import aws.smithy.kotlin.runtime.hashing.*
-import aws.smithy.kotlin.runtime.hashing.HashingAttributes.ChecksumStreamingRequest
 import aws.smithy.kotlin.runtime.http.*
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.http.request.header
@@ -34,7 +32,6 @@ public class FlexibleChecksumsRequestInterceptor(
     requestChecksumRequired: Boolean,
     requestChecksumCalculation: ChecksumConfigOption?,
     private val userSelectedChecksumAlgorithm: String?,
-    private val streamingPayload: Boolean,
 ) : AbstractChecksumInterceptor() {
     private val forcedToCalculateChecksum = requestChecksumRequired || requestChecksumCalculation == ChecksumConfigOption.WHEN_SUPPORTED
     private val checksumHeader = StringBuilder("x-amz-checksum-")
@@ -75,31 +72,22 @@ public class FlexibleChecksumsRequestInterceptor(
 
         val request = context.protocolRequest.toBuilder()
 
-        if (request.body.isEligibleForAwsChunkedStreaming || streamingPayload) {
+//        throw Exception("\nBody type: ${request.body::class.simpleName}\nEligible for chunked streaming: ${request.body.isEligibleForAwsChunkedStreaming}\nContent Length: ${request.body.contentLength}\nIs one shot: ${request.body.isOneShot}")
+
+        if (request.body.isEligibleForAwsChunkedStreaming) {
             val deferredChecksum = CompletableDeferred<String>(context.executionContext.coroutineContext.job)
 
-            if (request.body is HttpBody.Bytes) {
-                checksumAlgorithm.update(
-                    request.body.readAll() ?: byteArrayOf(),
+            request.body = request.body
+                .toHashingBody(
+                    checksumAlgorithm,
+                    request.body.contentLength,
                 )
-                deferredChecksum.complete(
-                    checksumAlgorithm.digest().encodeBase64String(),
+                .toCompletingBody(
+                    deferredChecksum,
                 )
-            } else {
-                request.body = request.body
-                    .toHashingBody(
-                        checksumAlgorithm,
-                        request.body.contentLength,
-                    )
-                    .toCompletingBody(
-                        deferredChecksum,
-                    )
-            }
 
             request.headers.append("x-amz-trailer", checksumHeader.toString())
             request.trailingHeaders.append(checksumHeader.toString(), deferredChecksum)
-
-            context.executionContext.putIfAbsent(ChecksumStreamingRequest, true)
         } else {
             checksumAlgorithm.update(
                 request.body.readAll() ?: byteArrayOf(),
