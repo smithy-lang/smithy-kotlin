@@ -1,4 +1,4 @@
-# <img alt="Smithy" src="https://github.com/smithy-lang/smithy/blob/main/docs/_static/favicon.png?raw=true" width="28"> Smithy Kotlin
+# <img alt="Smithy" src="https://github.com/smithy-lang/smithy/blob/main/docs/_static/smithy-anvil.svg?raw=true" width="32"> Smithy Kotlin
 
 [Smithy](https://smithy.io/2.0/index.html) code generators for [Kotlin](https://kotlinlang.org/).
 
