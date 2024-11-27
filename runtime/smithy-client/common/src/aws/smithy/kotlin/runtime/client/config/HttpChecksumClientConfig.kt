@@ -1,27 +1,27 @@
 package aws.smithy.kotlin.runtime.client.config
 
 /**
- * todo
+ * Client config for HTTP checksums
  */
 public interface HttpChecksumClientConfig {
     /**
-     * todo
+     * Configures request checksum calculation
      */
     public val requestChecksumCalculation: ChecksumConfigOption?
 
     /**
-     * todo
+     * Configures response checksum validation
      */
     public val responseChecksumValidation: ChecksumConfigOption?
 
     public interface Builder {
         /**
-         * todo
+         * Configures request checksum calculation
          */
         public var requestChecksumCalculation: ChecksumConfigOption?
 
         /**
-         * todo
+         * Configures response checksum validation
          */
         public var responseChecksumValidation: ChecksumConfigOption?
     }
@@ -29,12 +29,12 @@ public interface HttpChecksumClientConfig {
 
 public enum class ChecksumConfigOption {
     /**
-     * todo
+     * SDK will create/validate checksum if the service marks it as required or if this is set.
      */
     WHEN_SUPPORTED,
 
     /**
-     * todo
+     * SDK will only create/validate checksum if the service marks it as required.
      */
     WHEN_REQUIRED,
 }

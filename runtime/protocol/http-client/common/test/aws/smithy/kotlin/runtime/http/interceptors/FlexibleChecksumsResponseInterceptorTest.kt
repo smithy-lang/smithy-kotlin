@@ -75,7 +75,7 @@ class FlexibleChecksumsResponseInterceptorTest {
 
             op.interceptors.add(
                 FlexibleChecksumsResponseInterceptor(
-                    responseValidation = true,
+                    responseValidationRequired = true,
                     responseChecksumValidation = ChecksumConfigOption.WHEN_SUPPORTED,
                 ),
             )
@@ -102,7 +102,7 @@ class FlexibleChecksumsResponseInterceptorTest {
 
             op.interceptors.add(
                 FlexibleChecksumsResponseInterceptor(
-                    responseValidation = true,
+                    responseValidationRequired = true,
                     responseChecksumValidation = ChecksumConfigOption.WHEN_SUPPORTED,
                 ),
             )
@@ -130,7 +130,7 @@ class FlexibleChecksumsResponseInterceptorTest {
 
         op.interceptors.add(
             FlexibleChecksumsResponseInterceptor(
-                responseValidation = true,
+                responseValidationRequired = true,
                 responseChecksumValidation = ChecksumConfigOption.WHEN_SUPPORTED,
             ),
         )
@@ -155,7 +155,7 @@ class FlexibleChecksumsResponseInterceptorTest {
 
         op.interceptors.add(
             FlexibleChecksumsResponseInterceptor(
-                responseValidation = true,
+                responseValidationRequired = true,
                 responseChecksumValidation = ChecksumConfigOption.WHEN_SUPPORTED,
             ),
         )

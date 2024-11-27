@@ -164,7 +164,7 @@ public class AwsHttpSigner(private val config: Config) : HttpSigner {
             hashSpecification = when {
                 contextHashSpecification != null -> contextHashSpecification
                 body is HttpBody.Empty -> HashSpecification.EmptyBody
-                (body.isEligibleForAwsChunkedStreaming && enableAwsChunked) -> { // TODO: Enable AWS chunked for all ?!
+                body.isEligibleForAwsChunkedStreaming && enableAwsChunked -> {
                     if (request.headers.contains("x-amz-trailer")) {
                         if (config.isUnsignedPayload) HashSpecification.StreamingUnsignedPayloadWithTrailers else HashSpecification.StreamingAws4HmacSha256PayloadWithTrailers
                     } else {

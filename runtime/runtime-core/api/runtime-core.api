@@ -697,11 +697,6 @@ public final class aws/smithy/kotlin/runtime/hashing/HashFunctionKt {
 	public static final fun toHashFunction (Ljava/lang/String;)Laws/smithy/kotlin/runtime/hashing/HashFunction;
 }
 
-public final class aws/smithy/kotlin/runtime/hashing/HashingAttributes {
-	public static final field INSTANCE Laws/smithy/kotlin/runtime/hashing/HashingAttributes;
-	public final fun getChecksumStreamingRequest ()Laws/smithy/kotlin/runtime/collections/AttributeKey;
-}
-
 public final class aws/smithy/kotlin/runtime/hashing/HmacKt {
 	public static final fun hmac ([B[BLaws/smithy/kotlin/runtime/hashing/HashFunction;)[B
 	public static final fun hmac ([B[BLkotlin/jvm/functions/Function0;)[B

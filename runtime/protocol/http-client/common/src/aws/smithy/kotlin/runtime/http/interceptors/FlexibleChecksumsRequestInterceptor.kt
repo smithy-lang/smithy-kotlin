@@ -18,6 +18,8 @@ import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.http.request.header
 import aws.smithy.kotlin.runtime.http.request.toBuilder
 import aws.smithy.kotlin.runtime.io.*
+import aws.smithy.kotlin.runtime.telemetry.logging.Logger
+import aws.smithy.kotlin.runtime.telemetry.logging.debug
 import aws.smithy.kotlin.runtime.telemetry.logging.logger
 import aws.smithy.kotlin.runtime.text.encoding.encodeBase64String
 import kotlinx.coroutines.CompletableDeferred
@@ -25,13 +27,34 @@ import kotlinx.coroutines.job
 import kotlin.coroutines.coroutineContext
 
 /**
- * TODO -
+ * Calculates a request's checksum.
+ *
+ * If a user supplies a checksum via an HTTP header no calculation will be done. The exception is MD5, if a user
+ * supplies an MD5 checksum header it will be ignored.
+ *
+ * If the request configuration and model requires checksum calculation:
+ * - Check if the user configured a checksum algorithm for the request and attempt to use that.
+ * - If no checksum is configured for the request then use the default checksum algorithm to calculate a checksum.
+ *
+ * If the request will be streamed:
+ * - The checksum calculation is done asynchronously using a hashing & completing body.
+ * - The checksum will be sent in a trailing header, once the request is consumed.
+ *
+ * If the request will not be streamed:
+ * - The checksum calculation is done synchronously
+ * - The checksum will be sent in a header
+ *
+ * Business metrics MUST be emitted for the checksum algorithm used.
+ *
+ * @param requestChecksumRequired Model sourced flag indicating if checksum calculation is mandatory.
+ * @param requestChecksumCalculation Configuration option that determines when checksum calculation should be done.
+ * @param userSelectedChecksumAlgorithm The checksum algorithm that the user selected for the request, may be null.
  */
 @InternalApi
 public class FlexibleChecksumsRequestInterceptor(
     requestChecksumRequired: Boolean,
     requestChecksumCalculation: ChecksumConfigOption?,
-    private val userSelectedChecksumAlgorithm: String?,
+    userSelectedChecksumAlgorithm: String?,
 ) : AbstractChecksumInterceptor() {
     private val forcedToCalculateChecksum = requestChecksumRequired || requestChecksumCalculation == ChecksumConfigOption.WHEN_SUPPORTED
     private val checksumHeader = StringBuilder("x-amz-checksum-")
@@ -55,7 +78,7 @@ public class FlexibleChecksumsRequestInterceptor(
     override suspend fun modifyBeforeSigning(context: ProtocolRequestInterceptorContext<Any, HttpRequest>): HttpRequest {
         val logger = coroutineContext.logger<FlexibleChecksumsRequestInterceptor>()
 
-        userProviderChecksumHeader(context.protocolRequest)?.let {
+        userProviderChecksumHeader(context.protocolRequest, logger)?.let {
             logger.debug { "User supplied a checksum via header, skipping checksum calculation" }
 
             val request = context.protocolRequest.toBuilder()
@@ -71,8 +94,6 @@ public class FlexibleChecksumsRequestInterceptor(
         logger.debug { "Calculating checksum using '$checksumAlgorithm'" }
 
         val request = context.protocolRequest.toBuilder()
-
-//        throw Exception("\nBody type: ${request.body::class.simpleName}\nEligible for chunked streaming: ${request.body.isEligibleForAwsChunkedStreaming}\nContent Length: ${request.body.contentLength}\nIs one shot: ${request.body.isOneShot}")
 
         if (request.body.isEligibleForAwsChunkedStreaming) {
             val deferredChecksum = CompletableDeferred<String>(context.executionContext.coroutineContext.job)
@@ -216,11 +237,17 @@ public class FlexibleChecksumsRequestInterceptor(
      * The header must start with "x-amz-checksum-" followed by the checksum algorithm's name.
      * MD5 is not considered a valid checksum algorithm.
      */
-    private fun userProviderChecksumHeader(request: HttpRequest): String? {
+    private fun userProviderChecksumHeader(request: HttpRequest, logger: Logger): String? {
         request.headers.entries().forEach { header ->
             val headerName = header.key.lowercase()
-            if (headerName.startsWith("x-amz-checksum-") && !headerName.endsWith("md5")) {
-                return headerName
+            if (headerName.startsWith("x-amz-checksum-")) {
+                if (headerName.endsWith("md5")) {
+                    logger.debug {
+                        "User provided md5 request checksum via headers, md5 is not a valid algorithm, ignoring header"
+                    }
+                } else {
+                    return headerName
+                }
             }
         }
         return null

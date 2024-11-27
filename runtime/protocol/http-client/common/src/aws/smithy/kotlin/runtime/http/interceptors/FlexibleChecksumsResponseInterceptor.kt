@@ -19,7 +19,6 @@ import aws.smithy.kotlin.runtime.http.response.copy
 import aws.smithy.kotlin.runtime.http.toHashingBody
 import aws.smithy.kotlin.runtime.http.toHttpBody
 import aws.smithy.kotlin.runtime.io.*
-import aws.smithy.kotlin.runtime.telemetry.logging.debug
 import aws.smithy.kotlin.runtime.telemetry.logging.logger
 import aws.smithy.kotlin.runtime.text.encoding.encodeBase64String
 import kotlin.coroutines.coroutineContext
@@ -41,12 +40,12 @@ internal val CHECKSUM_HEADER_VALIDATION_PRIORITY_LIST: List<String> = listOf(
  *
  * Users can check which checksum was validated by referencing the `ResponseChecksumValidated` execution context variable.
  *
- * @param responseValidation Flag indicating if the checksum validation is mandatory.
+ * @param responseValidationRequired Flag indicating if the checksum validation is mandatory.
  * @param responseChecksumValidation Configuration option that determines when checksum validation should be done.
  */
 @InternalApi
 public class FlexibleChecksumsResponseInterceptor(
-    private val responseValidation: Boolean,
+    private val responseValidationRequired: Boolean,
     private val responseChecksumValidation: ChecksumConfigOption?,
 ) : HttpInterceptor {
     @InternalApi
@@ -58,7 +57,7 @@ public class FlexibleChecksumsResponseInterceptor(
     override suspend fun modifyBeforeDeserialization(context: ProtocolResponseInterceptorContext<Any, HttpRequest, HttpResponse>): HttpResponse {
         val logger = coroutineContext.logger<FlexibleChecksumsResponseInterceptor>()
 
-        val forcedToVerifyChecksum = responseValidation || responseChecksumValidation == ChecksumConfigOption.WHEN_SUPPORTED
+        val forcedToVerifyChecksum = responseValidationRequired || responseChecksumValidation == ChecksumConfigOption.WHEN_SUPPORTED
         if (!forcedToVerifyChecksum) return context.protocolResponse
 
         val checksumHeader = CHECKSUM_HEADER_VALIDATION_PRIORITY_LIST
@@ -66,10 +65,9 @@ public class FlexibleChecksumsResponseInterceptor(
             logger.warn { "User requested checksum validation, but the response headers did not contain any valid checksums" }
             return context.protocolResponse
         }
-        val checksumAlgorithm = checksumHeader.removePrefix("x-amz-checksum-").toHashFunction() ?: throw ClientException("Could not parse checksum algorithm from header $checksumHeader")
-        val checksumValue = context.protocolResponse.headers[checksumHeader]!!
+        val serviceChecksumValue = context.protocolResponse.headers[checksumHeader]!!
 
-        if (checksumValue.isCompositeChecksum()) {
+        if (serviceChecksumValue.isCompositeChecksum()) {
             logger.debug { "Service returned composite checksum. Skipping validation." }
             return context.protocolResponse
         }
@@ -77,21 +75,29 @@ public class FlexibleChecksumsResponseInterceptor(
         logger.debug { "Validating checksum from $checksumHeader" }
         context.executionContext[ChecksumHeaderValidated] = checksumHeader
 
+        val checksumAlgorithm = checksumHeader
+            .removePrefix("x-amz-checksum-")
+            .toHashFunction() ?: throw ClientException("Could not parse checksum algorithm from header $checksumHeader")
+
         if (context.protocolResponse.body is HttpBody.Bytes) {
+            // Calculate checksum
             checksumAlgorithm.update(
                 context.protocolResponse.body.readAll() ?: byteArrayOf(),
             )
+            val sdkChecksumValue = checksumAlgorithm.digest().encodeBase64String()
+
             validateAndThrow(
-                checksumValue,
-                checksumAlgorithm.digest().encodeBase64String(),
+                serviceChecksumValue,
+                sdkChecksumValue,
             )
+
             return context.protocolResponse
         } else {
             // Wrap the response body in a hashing body
             return context.protocolResponse.copy(
                 body = context.protocolResponse.body
                     .toHashingBody(checksumAlgorithm, context.protocolResponse.body.contentLength)
-                    .toChecksumValidatingBody(checksumValue),
+                    .toChecksumValidatingBody(serviceChecksumValue),
             )
         }
     }
