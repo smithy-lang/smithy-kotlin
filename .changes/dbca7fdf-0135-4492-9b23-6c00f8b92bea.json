@@ -1,0 +1,5 @@
+{
+    "id": "dbca7fdf-0135-4492-9b23-6c00f8b92bea",
+    "type": "bugfix",
+    "description": "Remove usage of `java.time.Duration` from `OkHttpEngineConfig.buildClientFromConfig`"
+}
