@@ -5,7 +5,7 @@
 
 package aws.smithy.kotlin.runtime.http.interceptors
 
-import aws.smithy.kotlin.runtime.client.config.ChecksumConfigOption
+import aws.smithy.kotlin.runtime.client.config.HttpChecksumConfigOption
 import aws.smithy.kotlin.runtime.collections.get
 import aws.smithy.kotlin.runtime.http.*
 import aws.smithy.kotlin.runtime.http.HttpCall
@@ -76,7 +76,7 @@ class FlexibleChecksumsResponseInterceptorTest {
             op.interceptors.add(
                 FlexibleChecksumsResponseInterceptor(
                     responseValidationRequired = true,
-                    responseChecksumValidation = ChecksumConfigOption.WHEN_SUPPORTED,
+                    responseChecksumValidation = HttpChecksumConfigOption.WHEN_SUPPORTED,
                 ),
             )
 
@@ -103,7 +103,7 @@ class FlexibleChecksumsResponseInterceptorTest {
             op.interceptors.add(
                 FlexibleChecksumsResponseInterceptor(
                     responseValidationRequired = true,
-                    responseChecksumValidation = ChecksumConfigOption.WHEN_SUPPORTED,
+                    responseChecksumValidation = HttpChecksumConfigOption.WHEN_SUPPORTED,
                 ),
             )
 
@@ -131,7 +131,7 @@ class FlexibleChecksumsResponseInterceptorTest {
         op.interceptors.add(
             FlexibleChecksumsResponseInterceptor(
                 responseValidationRequired = true,
-                responseChecksumValidation = ChecksumConfigOption.WHEN_SUPPORTED,
+                responseChecksumValidation = HttpChecksumConfigOption.WHEN_SUPPORTED,
             ),
         )
 
@@ -156,7 +156,7 @@ class FlexibleChecksumsResponseInterceptorTest {
         op.interceptors.add(
             FlexibleChecksumsResponseInterceptor(
                 responseValidationRequired = true,
-                responseChecksumValidation = ChecksumConfigOption.WHEN_SUPPORTED,
+                responseChecksumValidation = HttpChecksumConfigOption.WHEN_SUPPORTED,
             ),
         )
 

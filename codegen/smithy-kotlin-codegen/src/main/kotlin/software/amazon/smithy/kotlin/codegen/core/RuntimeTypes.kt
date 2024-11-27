@@ -232,7 +232,7 @@ object RuntimeTypes {
             val RequestCompressionConfig = symbol("RequestCompressionConfig")
             val CompressionClientConfig = symbol("CompressionClientConfig")
             val HttpChecksumClientConfig = symbol("HttpChecksumClientConfig")
-            val ChecksumConfigOption = symbol("ChecksumConfigOption")
+            val HttpChecksumConfigOption = symbol("HttpChecksumConfigOption")
         }
 
         object Endpoints : RuntimeTypePackage(KotlinDependency.SMITHY_CLIENT, "endpoints") {

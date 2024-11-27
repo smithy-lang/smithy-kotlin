@@ -7,27 +7,27 @@ public interface HttpChecksumClientConfig {
     /**
      * Configures request checksum calculation
      */
-    public val requestChecksumCalculation: ChecksumConfigOption?
+    public val requestChecksumCalculation: HttpChecksumConfigOption?
 
     /**
      * Configures response checksum validation
      */
-    public val responseChecksumValidation: ChecksumConfigOption?
+    public val responseChecksumValidation: HttpChecksumConfigOption?
 
     public interface Builder {
         /**
          * Configures request checksum calculation
          */
-        public var requestChecksumCalculation: ChecksumConfigOption?
+        public var requestChecksumCalculation: HttpChecksumConfigOption?
 
         /**
          * Configures response checksum validation
          */
-        public var responseChecksumValidation: ChecksumConfigOption?
+        public var responseChecksumValidation: HttpChecksumConfigOption?
     }
 }
 
-public enum class ChecksumConfigOption {
+public enum class HttpChecksumConfigOption {
     /**
      * SDK will create/validate checksum if the service marks it as required or if this is set.
      */

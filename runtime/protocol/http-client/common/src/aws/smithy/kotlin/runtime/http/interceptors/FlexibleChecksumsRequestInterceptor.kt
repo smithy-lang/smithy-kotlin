@@ -11,7 +11,7 @@ import aws.smithy.kotlin.runtime.businessmetrics.BusinessMetric
 import aws.smithy.kotlin.runtime.businessmetrics.SmithyBusinessMetric
 import aws.smithy.kotlin.runtime.businessmetrics.emitBusinessMetric
 import aws.smithy.kotlin.runtime.client.ProtocolRequestInterceptorContext
-import aws.smithy.kotlin.runtime.client.config.ChecksumConfigOption
+import aws.smithy.kotlin.runtime.client.config.HttpChecksumConfigOption
 import aws.smithy.kotlin.runtime.hashing.*
 import aws.smithy.kotlin.runtime.http.*
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
@@ -19,7 +19,6 @@ import aws.smithy.kotlin.runtime.http.request.header
 import aws.smithy.kotlin.runtime.http.request.toBuilder
 import aws.smithy.kotlin.runtime.io.*
 import aws.smithy.kotlin.runtime.telemetry.logging.Logger
-import aws.smithy.kotlin.runtime.telemetry.logging.debug
 import aws.smithy.kotlin.runtime.telemetry.logging.logger
 import aws.smithy.kotlin.runtime.text.encoding.encodeBase64String
 import kotlinx.coroutines.CompletableDeferred
@@ -53,10 +52,10 @@ import kotlin.coroutines.coroutineContext
 @InternalApi
 public class FlexibleChecksumsRequestInterceptor(
     requestChecksumRequired: Boolean,
-    requestChecksumCalculation: ChecksumConfigOption?,
+    requestChecksumCalculation: HttpChecksumConfigOption?,
     userSelectedChecksumAlgorithm: String?,
 ) : AbstractChecksumInterceptor() {
-    private val forcedToCalculateChecksum = requestChecksumRequired || requestChecksumCalculation == ChecksumConfigOption.WHEN_SUPPORTED
+    private val forcedToCalculateChecksum = requestChecksumRequired || requestChecksumCalculation == HttpChecksumConfigOption.WHEN_SUPPORTED
     private val checksumHeader = StringBuilder("x-amz-checksum-")
     private val defaultChecksumAlgorithm = lazy { Crc32() }
     private val defaultChecksumAlgorithmHeaderPostfix = "crc32"

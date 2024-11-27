@@ -8,7 +8,7 @@ package aws.smithy.kotlin.runtime.http.interceptors
 import aws.smithy.kotlin.runtime.ClientException
 import aws.smithy.kotlin.runtime.InternalApi
 import aws.smithy.kotlin.runtime.client.ProtocolResponseInterceptorContext
-import aws.smithy.kotlin.runtime.client.config.ChecksumConfigOption
+import aws.smithy.kotlin.runtime.client.config.HttpChecksumConfigOption
 import aws.smithy.kotlin.runtime.collections.AttributeKey
 import aws.smithy.kotlin.runtime.hashing.toHashFunction
 import aws.smithy.kotlin.runtime.http.HttpBody
@@ -46,7 +46,7 @@ internal val CHECKSUM_HEADER_VALIDATION_PRIORITY_LIST: List<String> = listOf(
 @InternalApi
 public class FlexibleChecksumsResponseInterceptor(
     private val responseValidationRequired: Boolean,
-    private val responseChecksumValidation: ChecksumConfigOption?,
+    private val responseChecksumValidation: HttpChecksumConfigOption?,
 ) : HttpInterceptor {
     @InternalApi
     public companion object {
@@ -57,7 +57,7 @@ public class FlexibleChecksumsResponseInterceptor(
     override suspend fun modifyBeforeDeserialization(context: ProtocolResponseInterceptorContext<Any, HttpRequest, HttpResponse>): HttpResponse {
         val logger = coroutineContext.logger<FlexibleChecksumsResponseInterceptor>()
 
-        val forcedToVerifyChecksum = responseValidationRequired || responseChecksumValidation == ChecksumConfigOption.WHEN_SUPPORTED
+        val forcedToVerifyChecksum = responseValidationRequired || responseChecksumValidation == HttpChecksumConfigOption.WHEN_SUPPORTED
         if (!forcedToVerifyChecksum) return context.protocolResponse
 
         val checksumHeader = CHECKSUM_HEADER_VALIDATION_PRIORITY_LIST

@@ -211,14 +211,6 @@ public final class aws/smithy/kotlin/runtime/client/SdkClientOptionKt {
 	public static final fun getServiceName (Laws/smithy/kotlin/runtime/operation/ExecutionContext;)Ljava/lang/String;
 }
 
-public final class aws/smithy/kotlin/runtime/client/config/ChecksumConfigOption : java/lang/Enum {
-	public static final field WHEN_REQUIRED Laws/smithy/kotlin/runtime/client/config/ChecksumConfigOption;
-	public static final field WHEN_SUPPORTED Laws/smithy/kotlin/runtime/client/config/ChecksumConfigOption;
-	public static fun getEntries ()Lkotlin/enums/EnumEntries;
-	public static fun valueOf (Ljava/lang/String;)Laws/smithy/kotlin/runtime/client/config/ChecksumConfigOption;
-	public static fun values ()[Laws/smithy/kotlin/runtime/client/config/ChecksumConfigOption;
-}
-
 public final class aws/smithy/kotlin/runtime/client/config/ClientSettings {
 	public static final field INSTANCE Laws/smithy/kotlin/runtime/client/config/ClientSettings;
 	public final fun getLogMode ()Laws/smithy/kotlin/runtime/config/EnvironmentSetting;
@@ -244,15 +236,23 @@ public abstract interface annotation class aws/smithy/kotlin/runtime/client/conf
 }
 
 public abstract interface class aws/smithy/kotlin/runtime/client/config/HttpChecksumClientConfig {
-	public abstract fun getRequestChecksumCalculation ()Laws/smithy/kotlin/runtime/client/config/ChecksumConfigOption;
-	public abstract fun getResponseChecksumValidation ()Laws/smithy/kotlin/runtime/client/config/ChecksumConfigOption;
+	public abstract fun getRequestChecksumCalculation ()Laws/smithy/kotlin/runtime/client/config/HttpChecksumConfigOption;
+	public abstract fun getResponseChecksumValidation ()Laws/smithy/kotlin/runtime/client/config/HttpChecksumConfigOption;
 }
 
 public abstract interface class aws/smithy/kotlin/runtime/client/config/HttpChecksumClientConfig$Builder {
-	public abstract fun getRequestChecksumCalculation ()Laws/smithy/kotlin/runtime/client/config/ChecksumConfigOption;
-	public abstract fun getResponseChecksumValidation ()Laws/smithy/kotlin/runtime/client/config/ChecksumConfigOption;
-	public abstract fun setRequestChecksumCalculation (Laws/smithy/kotlin/runtime/client/config/ChecksumConfigOption;)V
-	public abstract fun setResponseChecksumValidation (Laws/smithy/kotlin/runtime/client/config/ChecksumConfigOption;)V
+	public abstract fun getRequestChecksumCalculation ()Laws/smithy/kotlin/runtime/client/config/HttpChecksumConfigOption;
+	public abstract fun getResponseChecksumValidation ()Laws/smithy/kotlin/runtime/client/config/HttpChecksumConfigOption;
+	public abstract fun setRequestChecksumCalculation (Laws/smithy/kotlin/runtime/client/config/HttpChecksumConfigOption;)V
+	public abstract fun setResponseChecksumValidation (Laws/smithy/kotlin/runtime/client/config/HttpChecksumConfigOption;)V
+}
+
+public final class aws/smithy/kotlin/runtime/client/config/HttpChecksumConfigOption : java/lang/Enum {
+	public static final field WHEN_REQUIRED Laws/smithy/kotlin/runtime/client/config/HttpChecksumConfigOption;
+	public static final field WHEN_SUPPORTED Laws/smithy/kotlin/runtime/client/config/HttpChecksumConfigOption;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Laws/smithy/kotlin/runtime/client/config/HttpChecksumConfigOption;
+	public static fun values ()[Laws/smithy/kotlin/runtime/client/config/HttpChecksumConfigOption;
 }
 
 public final class aws/smithy/kotlin/runtime/client/config/RequestCompressionConfig {

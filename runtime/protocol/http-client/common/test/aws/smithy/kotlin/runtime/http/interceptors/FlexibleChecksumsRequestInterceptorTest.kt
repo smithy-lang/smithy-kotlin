@@ -6,7 +6,7 @@
 package aws.smithy.kotlin.runtime.http.interceptors
 
 import aws.smithy.kotlin.runtime.ClientException
-import aws.smithy.kotlin.runtime.client.config.ChecksumConfigOption
+import aws.smithy.kotlin.runtime.client.config.HttpChecksumConfigOption
 import aws.smithy.kotlin.runtime.collections.get
 import aws.smithy.kotlin.runtime.hashing.toHashFunction
 import aws.smithy.kotlin.runtime.http.*
@@ -45,7 +45,7 @@ class FlexibleChecksumsRequestInterceptorTest {
                 FlexibleChecksumsRequestInterceptor(
                     userSelectedChecksumAlgorithm = checksumAlgorithmName,
                     requestChecksumRequired = true,
-                    requestChecksumCalculation = ChecksumConfigOption.WHEN_SUPPORTED,
+                    requestChecksumCalculation = HttpChecksumConfigOption.WHEN_SUPPORTED,
                 ),
             )
 
@@ -72,7 +72,7 @@ class FlexibleChecksumsRequestInterceptorTest {
             FlexibleChecksumsRequestInterceptor(
                 userSelectedChecksumAlgorithm = checksumAlgorithmName,
                 requestChecksumRequired = true,
-                requestChecksumCalculation = ChecksumConfigOption.WHEN_SUPPORTED,
+                requestChecksumCalculation = HttpChecksumConfigOption.WHEN_SUPPORTED,
             ),
         )
 
@@ -97,7 +97,7 @@ class FlexibleChecksumsRequestInterceptorTest {
                 FlexibleChecksumsRequestInterceptor(
                     userSelectedChecksumAlgorithm = unsupportedChecksumAlgorithmName,
                     requestChecksumRequired = true,
-                    requestChecksumCalculation = ChecksumConfigOption.WHEN_SUPPORTED,
+                    requestChecksumCalculation = HttpChecksumConfigOption.WHEN_SUPPORTED,
                 ),
             )
         }
@@ -123,7 +123,7 @@ class FlexibleChecksumsRequestInterceptorTest {
             FlexibleChecksumsRequestInterceptor(
                 userSelectedChecksumAlgorithm = checksumAlgorithmName,
                 requestChecksumRequired = true,
-                requestChecksumCalculation = ChecksumConfigOption.WHEN_SUPPORTED,
+                requestChecksumCalculation = HttpChecksumConfigOption.WHEN_SUPPORTED,
             ),
         )
 
@@ -191,7 +191,7 @@ class FlexibleChecksumsRequestInterceptorTest {
             FlexibleChecksumsRequestInterceptor(
                 userSelectedChecksumAlgorithm = checksumAlgorithmName,
                 requestChecksumRequired = true,
-                requestChecksumCalculation = ChecksumConfigOption.WHEN_SUPPORTED,
+                requestChecksumCalculation = HttpChecksumConfigOption.WHEN_SUPPORTED,
             ),
         )
 
