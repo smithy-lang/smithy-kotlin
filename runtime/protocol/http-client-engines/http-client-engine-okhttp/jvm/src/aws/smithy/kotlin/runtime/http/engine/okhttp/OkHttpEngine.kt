@@ -20,7 +20,6 @@ import okhttp3.*
 import okhttp3.ConnectionPool
 import okhttp3.coroutines.executeAsync
 import java.util.concurrent.TimeUnit
-import kotlin.time.toJavaDuration
 import aws.smithy.kotlin.runtime.net.TlsVersion as SdkTlsVersion
 import okhttp3.TlsVersion as OkHttpTlsVersion
 
@@ -95,9 +94,9 @@ private fun OkHttpEngineConfig.buildClientFromConfig(
         // appropriately internally). We don't want inner retry logic that inflates the number of retries.
         retryOnConnectionFailure(false)
 
-        connectTimeout(config.connectTimeout.toJavaDuration())
-        readTimeout(config.socketReadTimeout.toJavaDuration())
-        writeTimeout(config.socketWriteTimeout.toJavaDuration())
+        connectTimeout(config.connectTimeout.inWholeNanoseconds, TimeUnit.NANOSECONDS)
+        readTimeout(config.socketReadTimeout.inWholeNanoseconds, TimeUnit.NANOSECONDS)
+        writeTimeout(config.socketWriteTimeout.inWholeNanoseconds, TimeUnit.NANOSECONDS)
 
         // use our own pool configured with the timeout settings taken from config
         val pool = poolOverride ?: ConnectionPool(
