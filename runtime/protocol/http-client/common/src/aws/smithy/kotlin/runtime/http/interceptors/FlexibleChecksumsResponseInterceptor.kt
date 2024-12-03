@@ -44,11 +44,22 @@ internal val CHECKSUM_HEADER_VALIDATION_PRIORITY_LIST: List<String> = listOf(
  * @param responseChecksumValidation Configuration option that determines when checksum validation should be done.
  */
 @InternalApi
-public class FlexibleChecksumsResponseInterceptor(
+public class FlexibleChecksumsResponseInterceptor<I>(
     private val responseValidationRequired: Boolean,
     private val responseChecksumValidation: HttpChecksumConfigOption?,
     private val serviceUsesCompositeChecksums: Boolean,
 ) : HttpInterceptor {
+
+    // FIXME: Remove in next minor version bump
+    @Deprecated("Old constructor is no longer used but it's kept for backwards compatibility")
+    public constructor(
+        shouldValidateResponseChecksumInitializer: (input: I) -> Boolean,
+    ) : this(
+        false,
+        HttpChecksumConfigOption.WHEN_REQUIRED,
+        false,
+    )
+
     @InternalApi
     public companion object {
         // The name of the checksum header which was validated. If `null`, validation was not performed.
@@ -56,7 +67,7 @@ public class FlexibleChecksumsResponseInterceptor(
     }
 
     override suspend fun modifyBeforeDeserialization(context: ProtocolResponseInterceptorContext<Any, HttpRequest, HttpResponse>): HttpResponse {
-        val logger = coroutineContext.logger<FlexibleChecksumsResponseInterceptor>()
+        val logger = coroutineContext.logger<FlexibleChecksumsResponseInterceptor<I>>()
 
         val forcedToVerifyChecksum = responseValidationRequired || responseChecksumValidation == HttpChecksumConfigOption.WHEN_SUPPORTED
         if (!forcedToVerifyChecksum) return context.protocolResponse

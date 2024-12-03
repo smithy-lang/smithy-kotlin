@@ -42,7 +42,7 @@ class FlexibleChecksumsRequestInterceptorTest {
             val op = newTestOperation<Unit, Unit>(req, Unit)
 
             op.interceptors.add(
-                FlexibleChecksumsRequestInterceptor(
+                FlexibleChecksumsRequestInterceptor<Unit>(
                     requestChecksumAlgorithm = checksumAlgorithmName,
                     requestChecksumRequired = true,
                     requestChecksumCalculation = HttpChecksumConfigOption.WHEN_SUPPORTED,
@@ -69,7 +69,7 @@ class FlexibleChecksumsRequestInterceptorTest {
         val op = newTestOperation<Unit, Unit>(req, Unit)
 
         op.interceptors.add(
-            FlexibleChecksumsRequestInterceptor(
+            FlexibleChecksumsRequestInterceptor<Unit>(
                 requestChecksumAlgorithm = checksumAlgorithmName,
                 requestChecksumRequired = true,
                 requestChecksumCalculation = HttpChecksumConfigOption.WHEN_SUPPORTED,
@@ -94,7 +94,7 @@ class FlexibleChecksumsRequestInterceptorTest {
 
         assertFailsWith<ClientException> {
             op.interceptors.add(
-                FlexibleChecksumsRequestInterceptor(
+                FlexibleChecksumsRequestInterceptor<Unit>(
                     requestChecksumAlgorithm = unsupportedChecksumAlgorithmName,
                     requestChecksumRequired = true,
                     requestChecksumCalculation = HttpChecksumConfigOption.WHEN_SUPPORTED,
@@ -120,7 +120,7 @@ class FlexibleChecksumsRequestInterceptorTest {
         val op = newTestOperation<Unit, Unit>(req, Unit)
 
         op.interceptors.add(
-            FlexibleChecksumsRequestInterceptor(
+            FlexibleChecksumsRequestInterceptor<Unit>(
                 requestChecksumAlgorithm = checksumAlgorithmName,
                 requestChecksumRequired = true,
                 requestChecksumCalculation = HttpChecksumConfigOption.WHEN_SUPPORTED,
@@ -188,7 +188,7 @@ class FlexibleChecksumsRequestInterceptorTest {
         val op = newTestOperation<Unit, Unit>(req, Unit)
 
         op.interceptors.add(
-            FlexibleChecksumsRequestInterceptor(
+            FlexibleChecksumsRequestInterceptor<Unit>(
                 requestChecksumAlgorithm = checksumAlgorithmName,
                 requestChecksumRequired = true,
                 requestChecksumCalculation = HttpChecksumConfigOption.WHEN_SUPPORTED,

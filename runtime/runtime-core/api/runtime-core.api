@@ -111,6 +111,7 @@ public final class aws/smithy/kotlin/runtime/businessmetrics/SmithyBusinessMetri
 	public static final field WAITER Laws/smithy/kotlin/runtime/businessmetrics/SmithyBusinessMetric;
 	public static fun getEntries ()Lkotlin/enums/EnumEntries;
 	public fun getIdentifier ()Ljava/lang/String;
+	public fun toString ()Ljava/lang/String;
 	public static fun valueOf (Ljava/lang/String;)Laws/smithy/kotlin/runtime/businessmetrics/SmithyBusinessMetric;
 	public static fun values ()[Laws/smithy/kotlin/runtime/businessmetrics/SmithyBusinessMetric;
 }

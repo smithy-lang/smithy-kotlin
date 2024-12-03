@@ -50,11 +50,30 @@ import kotlin.coroutines.coroutineContext
  * @param requestChecksumAlgorithm The checksum algorithm that the user selected for the request, may be null.
  */
 @InternalApi
-public class FlexibleChecksumsRequestInterceptor(
+public class FlexibleChecksumsRequestInterceptor<I>(
     requestChecksumRequired: Boolean,
     requestChecksumCalculation: HttpChecksumConfigOption?,
     requestChecksumAlgorithm: String?,
 ) : AbstractChecksumInterceptor() {
+
+    // FIXME: Remove in next minor version bump
+    @Deprecated("Old constructor is no longer used but it's kept for backwards compatibility")
+    public constructor() : this(
+        false,
+        HttpChecksumConfigOption.WHEN_REQUIRED,
+        null,
+    )
+
+    // FIXME: Remove in next minor version bump
+    @Deprecated("Old constructor is no longer used but it's kept for backwards compatibility")
+    public constructor(
+        checksumAlgorithmNameInitializer: ((I) -> String?)? = null,
+    ) : this(
+        false,
+        HttpChecksumConfigOption.WHEN_REQUIRED,
+        null,
+    )
+
     private val checksumHeader = buildString {
         append("x-amz-checksum-")
         append(requestChecksumAlgorithm?.lowercase() ?: "crc32")
@@ -71,8 +90,12 @@ public class FlexibleChecksumsRequestInterceptor(
         null
     }
 
+    // TODO: Remove in next minor version bump
+    @Deprecated("readAfterSerialization is no longer used but can't be removed due to backwards incompatibility")
+    override fun readAfterSerialization(context: ProtocolRequestInterceptorContext<Any, HttpRequest>) { }
+
     override suspend fun modifyBeforeSigning(context: ProtocolRequestInterceptorContext<Any, HttpRequest>): HttpRequest {
-        val logger = coroutineContext.logger<FlexibleChecksumsRequestInterceptor>()
+        val logger = coroutineContext.logger<FlexibleChecksumsRequestInterceptor<I>>()
 
         context.protocolRequest.userProvidedChecksumHeader(logger)?.let {
             logger.debug { "Checksum was supplied via header, skipping checksum calculation" }
