@@ -43,7 +43,7 @@ class FlexibleChecksumsRequestInterceptorTest {
 
             op.interceptors.add(
                 FlexibleChecksumsRequestInterceptor(
-                    userSelectedChecksumAlgorithm = checksumAlgorithmName,
+                    requestChecksumAlgorithm = checksumAlgorithmName,
                     requestChecksumRequired = true,
                     requestChecksumCalculation = HttpChecksumConfigOption.WHEN_SUPPORTED,
                 ),
@@ -70,7 +70,7 @@ class FlexibleChecksumsRequestInterceptorTest {
 
         op.interceptors.add(
             FlexibleChecksumsRequestInterceptor(
-                userSelectedChecksumAlgorithm = checksumAlgorithmName,
+                requestChecksumAlgorithm = checksumAlgorithmName,
                 requestChecksumRequired = true,
                 requestChecksumCalculation = HttpChecksumConfigOption.WHEN_SUPPORTED,
             ),
@@ -95,7 +95,7 @@ class FlexibleChecksumsRequestInterceptorTest {
         assertFailsWith<ClientException> {
             op.interceptors.add(
                 FlexibleChecksumsRequestInterceptor(
-                    userSelectedChecksumAlgorithm = unsupportedChecksumAlgorithmName,
+                    requestChecksumAlgorithm = unsupportedChecksumAlgorithmName,
                     requestChecksumRequired = true,
                     requestChecksumCalculation = HttpChecksumConfigOption.WHEN_SUPPORTED,
                 ),
@@ -121,7 +121,7 @@ class FlexibleChecksumsRequestInterceptorTest {
 
         op.interceptors.add(
             FlexibleChecksumsRequestInterceptor(
-                userSelectedChecksumAlgorithm = checksumAlgorithmName,
+                requestChecksumAlgorithm = checksumAlgorithmName,
                 requestChecksumRequired = true,
                 requestChecksumCalculation = HttpChecksumConfigOption.WHEN_SUPPORTED,
             ),
@@ -189,7 +189,7 @@ class FlexibleChecksumsRequestInterceptorTest {
 
         op.interceptors.add(
             FlexibleChecksumsRequestInterceptor(
-                userSelectedChecksumAlgorithm = checksumAlgorithmName,
+                requestChecksumAlgorithm = checksumAlgorithmName,
                 requestChecksumRequired = true,
                 requestChecksumCalculation = HttpChecksumConfigOption.WHEN_SUPPORTED,
             ),

@@ -32,7 +32,7 @@ internal val CHECKSUM_HEADER_VALIDATION_PRIORITY_LIST: List<String> = listOf(
 )
 
 /**
- * Validate a response's checksum.
+ * Handles response checksums.
  *
  * If it's a streaming response, it wraps the response in a hashing body, calculating the checksum as the response is
  * streamed to the user. The checksum is validated after the user has consumed the entire body using a checksum validating body.
@@ -40,13 +40,14 @@ internal val CHECKSUM_HEADER_VALIDATION_PRIORITY_LIST: List<String> = listOf(
  *
  * Users can check which checksum was validated by referencing the `ResponseChecksumValidated` execution context variable.
  *
- * @param responseValidationRequired Flag indicating if the checksum validation is mandatory.
+ * @param responseValidationRequired Model sourced flag indicating if the checksum validation is mandatory.
  * @param responseChecksumValidation Configuration option that determines when checksum validation should be done.
  */
 @InternalApi
 public class FlexibleChecksumsResponseInterceptor(
     private val responseValidationRequired: Boolean,
     private val responseChecksumValidation: HttpChecksumConfigOption?,
+    private val serviceUsesCompositeChecksums: Boolean,
 ) : HttpInterceptor {
     @InternalApi
     public companion object {
@@ -62,17 +63,16 @@ public class FlexibleChecksumsResponseInterceptor(
 
         val checksumHeader = CHECKSUM_HEADER_VALIDATION_PRIORITY_LIST
             .firstOrNull { context.protocolResponse.headers.contains(it) } ?: run {
-            logger.warn { "User requested checksum validation, but the response headers did not contain any valid checksums" }
+            logger.warn { "Checksum validation was requested but the response headers didn't contain a valid checksum." }
             return context.protocolResponse
         }
         val serviceChecksumValue = context.protocolResponse.headers[checksumHeader]!!
 
-        if (serviceChecksumValue.isCompositeChecksum()) {
+        if (serviceUsesCompositeChecksums && serviceChecksumValue.isCompositeChecksum()) {
             logger.debug { "Service returned composite checksum. Skipping validation." }
             return context.protocolResponse
         }
 
-        logger.debug { "Validating checksum from $checksumHeader" }
         context.executionContext[ChecksumHeaderValidated] = checksumHeader
 
         val checksumAlgorithm = checksumHeader
@@ -80,6 +80,8 @@ public class FlexibleChecksumsResponseInterceptor(
             .toHashFunction() ?: throw ClientException("Could not parse checksum algorithm from header $checksumHeader")
 
         if (context.protocolResponse.body is HttpBody.Bytes) {
+            logger.debug { "Validating checksum before deserialization from $checksumHeader" }
+
             // Calculate checksum
             checksumAlgorithm.update(
                 context.protocolResponse.body.readAll() ?: byteArrayOf(),
@@ -93,6 +95,8 @@ public class FlexibleChecksumsResponseInterceptor(
 
             return context.protocolResponse
         } else {
+            logger.debug { "Validating checksum during deserialization from $checksumHeader" }
+
             // Wrap the response body in a hashing body
             return context.protocolResponse.copy(
                 body = context.protocolResponse.body
@@ -157,7 +161,7 @@ private fun validateAndThrow(expected: String, actual: String) {
  * Composite checksums are used for multipart uploads.
  */
 private fun String.isCompositeChecksum(): Boolean {
-    // Ends with "-#" where "#" is a number between 1-1000
-    val regex = Regex("-([1-9][0-9]{0,2}|1000)$")
+    // Ends with "-#" where "#" is a number
+    val regex = Regex("-(\\d)+$")
     return regex.containsMatchIn(this)
 }

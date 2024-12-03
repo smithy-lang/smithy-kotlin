@@ -77,6 +77,7 @@ class FlexibleChecksumsResponseInterceptorTest {
                 FlexibleChecksumsResponseInterceptor(
                     responseValidationRequired = true,
                     responseChecksumValidation = HttpChecksumConfigOption.WHEN_SUPPORTED,
+                    serviceUsesCompositeChecksums = false,
                 ),
             )
 
@@ -104,6 +105,7 @@ class FlexibleChecksumsResponseInterceptorTest {
                 FlexibleChecksumsResponseInterceptor(
                     responseValidationRequired = true,
                     responseChecksumValidation = HttpChecksumConfigOption.WHEN_SUPPORTED,
+                    serviceUsesCompositeChecksums = false,
                 ),
             )
 
@@ -132,6 +134,7 @@ class FlexibleChecksumsResponseInterceptorTest {
             FlexibleChecksumsResponseInterceptor(
                 responseValidationRequired = true,
                 responseChecksumValidation = HttpChecksumConfigOption.WHEN_SUPPORTED,
+                serviceUsesCompositeChecksums = false,
             ),
         )
 
@@ -157,6 +160,7 @@ class FlexibleChecksumsResponseInterceptorTest {
             FlexibleChecksumsResponseInterceptor(
                 responseValidationRequired = true,
                 responseChecksumValidation = HttpChecksumConfigOption.WHEN_SUPPORTED,
+                serviceUsesCompositeChecksums = false,
             ),
         )
 
@@ -167,5 +171,32 @@ class FlexibleChecksumsResponseInterceptorTest {
         val client = getMockClient(response, responseHeaders)
 
         op.roundTrip(client, TestInput("input"))
+    }
+
+    @Test
+    fun testSkipsValidationWhenDisabled() = runTest {
+        val req = HttpRequestBuilder()
+        val op = newTestOperation<TestInput>(req)
+
+        op.interceptors.add(
+            FlexibleChecksumsResponseInterceptor (
+                responseValidationRequired = false,
+                responseChecksumValidation = HttpChecksumConfigOption.WHEN_REQUIRED,
+                serviceUsesCompositeChecksums = false,
+            )
+        )
+
+        val responseChecksumHeaderName = "x-amz-checksum-crc32"
+
+        val responseHeaders = Headers {
+            append(responseChecksumHeaderName, "incorrect-checksum-would-throw-if-validated")
+        }
+
+        val client = getMockClient(response, responseHeaders)
+
+        val output = op.roundTrip(client, TestInput("input"))
+        output.body.readAll()
+
+        assertNull(op.context.getOrNull(ChecksumHeaderValidated))
     }
 }

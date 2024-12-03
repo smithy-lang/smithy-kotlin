@@ -29,12 +29,12 @@ public interface HttpChecksumClientConfig {
 
 public enum class HttpChecksumConfigOption {
     /**
-     * SDK will create/validate checksum if the service marks it as required or if this is set.
+     * SDK will calculate/validate checksum if the service marks it as required or if the service offers optional checksums.
      */
     WHEN_SUPPORTED,
 
     /**
-     * SDK will only create/validate checksum if the service marks it as required.
+     * SDK will only calculate/validate checksum if the service marks it as required.
      */
     WHEN_REQUIRED,
 }
