@@ -4,7 +4,6 @@
  */
 package software.amazon.smithy.kotlin.codegen.rendering.protocol
 
-import software.amazon.smithy.aws.traits.HttpChecksumTrait
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.kotlin.codegen.core.*
 import software.amazon.smithy.kotlin.codegen.integration.SectionId
@@ -338,21 +337,14 @@ open class HttpProtocolClientGenerator(
 
     /**
      * Render optionally installing Md5ChecksumMiddleware.
-     * The Md5 middleware will only be installed if the operation requires a checksum and the user has not opted-in to flexible checksums.
+     * The Md5 middleware will only be installed if the operation requires a checksum.
      */
     private fun OperationShape.renderIsMd5ChecksumRequired(writer: KotlinWriter) {
-        val httpChecksumTrait = getTrait<HttpChecksumTrait>()
-
-        // the checksum requirement can be modeled in either HttpChecksumTrait's `requestChecksumRequired` or the HttpChecksumRequired trait
-        if (!hasTrait<HttpChecksumRequiredTrait>() && httpChecksumTrait == null) {
-            return
-        }
-
-        if (hasTrait<HttpChecksumRequiredTrait>() || httpChecksumTrait?.isRequestChecksumRequired == true) {
+        if (hasTrait<HttpChecksumRequiredTrait>()) {
             val interceptorSymbol = RuntimeTypes.HttpClient.Interceptors.Md5ChecksumInterceptor
             val inputSymbol = ctx.symbolProvider.toSymbol(ctx.model.expectShape(inputShape))
             writer.withBlock("op.interceptors.add(#T<#T> {", "})", interceptorSymbol, inputSymbol) {
-                writer.write("op.context.getOrNull(#T.ChecksumAlgorithm) == null", RuntimeTypes.HttpClient.Operation.HttpOperationContext)
+                writer.write("true", RuntimeTypes.HttpClient.Operation.HttpOperationContext)
             }
         }
     }
