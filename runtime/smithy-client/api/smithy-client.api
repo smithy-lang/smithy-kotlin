@@ -235,6 +235,26 @@ public final class aws/smithy/kotlin/runtime/client/config/CompressionClientConf
 public abstract interface annotation class aws/smithy/kotlin/runtime/client/config/CompressionClientConfigDsl : java/lang/annotation/Annotation {
 }
 
+public abstract interface class aws/smithy/kotlin/runtime/client/config/HttpChecksumClientConfig {
+	public abstract fun getRequestChecksumCalculation ()Laws/smithy/kotlin/runtime/client/config/HttpChecksumConfigOption;
+	public abstract fun getResponseChecksumValidation ()Laws/smithy/kotlin/runtime/client/config/HttpChecksumConfigOption;
+}
+
+public abstract interface class aws/smithy/kotlin/runtime/client/config/HttpChecksumClientConfig$Builder {
+	public abstract fun getRequestChecksumCalculation ()Laws/smithy/kotlin/runtime/client/config/HttpChecksumConfigOption;
+	public abstract fun getResponseChecksumValidation ()Laws/smithy/kotlin/runtime/client/config/HttpChecksumConfigOption;
+	public abstract fun setRequestChecksumCalculation (Laws/smithy/kotlin/runtime/client/config/HttpChecksumConfigOption;)V
+	public abstract fun setResponseChecksumValidation (Laws/smithy/kotlin/runtime/client/config/HttpChecksumConfigOption;)V
+}
+
+public final class aws/smithy/kotlin/runtime/client/config/HttpChecksumConfigOption : java/lang/Enum {
+	public static final field WHEN_REQUIRED Laws/smithy/kotlin/runtime/client/config/HttpChecksumConfigOption;
+	public static final field WHEN_SUPPORTED Laws/smithy/kotlin/runtime/client/config/HttpChecksumConfigOption;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Laws/smithy/kotlin/runtime/client/config/HttpChecksumConfigOption;
+	public static fun values ()[Laws/smithy/kotlin/runtime/client/config/HttpChecksumConfigOption;
+}
+
 public final class aws/smithy/kotlin/runtime/client/config/RequestCompressionConfig {
 	public static final field Companion Laws/smithy/kotlin/runtime/client/config/RequestCompressionConfig$Companion;
 	public fun <init> (Laws/smithy/kotlin/runtime/client/config/RequestCompressionConfig$Builder;)V

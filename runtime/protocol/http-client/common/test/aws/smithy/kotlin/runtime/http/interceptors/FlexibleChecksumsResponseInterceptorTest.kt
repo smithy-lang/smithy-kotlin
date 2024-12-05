@@ -5,6 +5,7 @@
 
 package aws.smithy.kotlin.runtime.http.interceptors
 
+import aws.smithy.kotlin.runtime.client.config.HttpChecksumConfigOption
 import aws.smithy.kotlin.runtime.collections.get
 import aws.smithy.kotlin.runtime.http.*
 import aws.smithy.kotlin.runtime.http.HttpCall
@@ -73,9 +74,11 @@ class FlexibleChecksumsResponseInterceptorTest {
             val op = newTestOperation<TestInput>(req)
 
             op.interceptors.add(
-                FlexibleChecksumsResponseInterceptor<TestInput> {
-                    true
-                },
+                FlexibleChecksumsResponseInterceptor<TestInput>(
+                    responseValidationRequired = true,
+                    responseChecksumValidation = HttpChecksumConfigOption.WHEN_SUPPORTED,
+                    serviceUsesCompositeChecksums = false,
+                ),
             )
 
             val responseChecksumHeaderName = "x-amz-checksum-$checksumAlgorithmName"
@@ -99,9 +102,11 @@ class FlexibleChecksumsResponseInterceptorTest {
             val op = newTestOperation<TestInput>(req)
 
             op.interceptors.add(
-                FlexibleChecksumsResponseInterceptor<TestInput> {
-                    true
-                },
+                FlexibleChecksumsResponseInterceptor<TestInput>(
+                    responseValidationRequired = true,
+                    responseChecksumValidation = HttpChecksumConfigOption.WHEN_SUPPORTED,
+                    serviceUsesCompositeChecksums = false,
+                ),
             )
 
             val responseChecksumHeaderName = "x-amz-checksum-$checksumAlgorithmName"
@@ -126,9 +131,11 @@ class FlexibleChecksumsResponseInterceptorTest {
         val op = newTestOperation<TestInput>(req)
 
         op.interceptors.add(
-            FlexibleChecksumsResponseInterceptor<TestInput> {
-                true
-            },
+            FlexibleChecksumsResponseInterceptor<TestInput>(
+                responseValidationRequired = true,
+                responseChecksumValidation = HttpChecksumConfigOption.WHEN_SUPPORTED,
+                serviceUsesCompositeChecksums = false,
+            ),
         )
 
         val responseHeaders = Headers {
@@ -150,9 +157,11 @@ class FlexibleChecksumsResponseInterceptorTest {
         val op = newTestOperation<TestInput>(req)
 
         op.interceptors.add(
-            FlexibleChecksumsResponseInterceptor<TestInput> {
-                true
-            },
+            FlexibleChecksumsResponseInterceptor<TestInput>(
+                responseValidationRequired = true,
+                responseChecksumValidation = HttpChecksumConfigOption.WHEN_SUPPORTED,
+                serviceUsesCompositeChecksums = false,
+            ),
         )
 
         val responseHeaders = Headers {
@@ -170,9 +179,11 @@ class FlexibleChecksumsResponseInterceptorTest {
         val op = newTestOperation<TestInput>(req)
 
         op.interceptors.add(
-            FlexibleChecksumsResponseInterceptor<TestInput> {
-                false
-            },
+            FlexibleChecksumsResponseInterceptor<TestInput>(
+                responseValidationRequired = false,
+                responseChecksumValidation = HttpChecksumConfigOption.WHEN_REQUIRED,
+                serviceUsesCompositeChecksums = false,
+            ),
         )
 
         val responseChecksumHeaderName = "x-amz-checksum-crc32"
