@@ -344,7 +344,7 @@ open class HttpProtocolClientGenerator(
             val interceptorSymbol = RuntimeTypes.HttpClient.Interceptors.Md5ChecksumInterceptor
             val inputSymbol = ctx.symbolProvider.toSymbol(ctx.model.expectShape(inputShape))
             writer.withBlock("op.interceptors.add(#T<#T> {", "})", interceptorSymbol, inputSymbol) {
-                writer.write("true", RuntimeTypes.HttpClient.Operation.HttpOperationContext)
+                writer.write("true")
             }
         }
     }
