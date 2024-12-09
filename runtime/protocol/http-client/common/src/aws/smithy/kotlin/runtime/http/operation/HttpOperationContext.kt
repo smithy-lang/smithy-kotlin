@@ -68,6 +68,8 @@ public object HttpOperationContext {
     /**
      * The name of the algorithm to be used for computing a checksum of the request.
      */
+    @Deprecated("This execution context attribute is no longer supported.")
+    // FIXME: Remove in next minor version bump
     public val ChecksumAlgorithm: AttributeKey<String> = AttributeKey("aws.smithy.kotlin#ChecksumAlgorithm")
 }
 
