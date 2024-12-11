@@ -7,7 +7,6 @@ plugins {
 dokka {
     val sdkVersion: String by project
     moduleVersion.set(sdkVersion)
-    moduleName.set("Smithy Kotlin")
 
     pluginsConfiguration.html {
         customStyleSheets.from(
@@ -25,20 +24,6 @@ dokka {
         separateInheritedMembers.set(true)
         templatesDir.set(rootProject.file("docs/dokka-presets/templates"))
     }
-
-    dokkaPublications.html {
-        includes.from(
-            rootProject.file("docs/dokka-presets/README.md")
-        )
-    }
-
-//    // Output subprojects' docs to <docs-base>/project-name/* instead of <docs-base>/path/to/project-name/*
-//    // This is especially important for inter-repo linking (e.g., via externalDocumentationLink) because the
-//    // package-list doesn't contain enough project path information to indicate where modules' documentation are
-//    // located.
-//    fileLayout.set { parent, child ->
-//        parent.outputDirectory.dir(child.moduleName)
-//    }
 }
 
 dependencies {
