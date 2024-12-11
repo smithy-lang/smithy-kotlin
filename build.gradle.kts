@@ -69,7 +69,7 @@ dokka {
 
     dokkaPublications.html {
         includes.from(
-            rootProject.file("docs/dokka-presets/README.md")
+            rootProject.file("docs/dokka-presets/README.md"),
         )
     }
 
