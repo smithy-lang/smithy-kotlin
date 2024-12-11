@@ -80,14 +80,9 @@ val excludeFromDocumentation = listOf(
     ":runtime:smithy-test",
 )
 
-subprojects
-    .filterNot { excludeFromDocumentation.contains(it.path) }
-    .forEach {
-        it.plugins.apply("dokka-convention")
-    }
-
 dependencies {
     subprojects.filterNot { excludeFromDocumentation.contains(it.path) }.forEach {
-        dokka(project(it.path))
+        it.plugins.apply("dokka-convention") // Apply the Dokka conventions plugin to the submodule
+        dokka(project(it.path)) // Aggregate the submodule's generated documentation
     }
 }
