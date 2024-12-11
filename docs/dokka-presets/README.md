@@ -1,1 +1,1 @@
-# Module Smithy Kotlin API Reference
+# Smithy Kotlin API Reference
