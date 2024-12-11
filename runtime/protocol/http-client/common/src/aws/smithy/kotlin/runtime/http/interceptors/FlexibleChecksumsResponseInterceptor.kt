@@ -46,7 +46,6 @@ internal val CHECKSUM_HEADER_VALIDATION_PRIORITY_LIST: List<String> = listOf(
 public class FlexibleChecksumsResponseInterceptor<I>(
     private val responseValidationRequired: Boolean,
     private val responseChecksumValidation: HttpChecksumConfigOption?,
-    private val serviceUsesCompositeChecksums: Boolean,
 ) : HttpInterceptor {
 
     // FIXME: Remove in next minor version bump
@@ -56,7 +55,6 @@ public class FlexibleChecksumsResponseInterceptor<I>(
     ) : this(
         false,
         HttpChecksumConfigOption.WHEN_REQUIRED,
-        false,
     )
 
     @InternalApi
@@ -77,11 +75,6 @@ public class FlexibleChecksumsResponseInterceptor<I>(
             return context.protocolResponse
         }
         val serviceChecksumValue = context.protocolResponse.headers[checksumHeader]!!
-
-        if (serviceUsesCompositeChecksums && serviceChecksumValue.isCompositeChecksum()) {
-            logger.debug { "Service returned composite checksum. Skipping validation." }
-            return context.protocolResponse
-        }
 
         context.executionContext[ChecksumHeaderValidated] = checksumHeader
 
@@ -147,14 +140,4 @@ private fun validateAndThrow(expected: String, actual: String) {
     if (expected != actual) {
         throw ChecksumMismatchException("Checksum mismatch. Expected $expected but was $actual")
     }
-}
-
-/**
- * Verifies if a checksum is composite.
- * Composite checksums are used for multipart uploads.
- */
-private fun String.isCompositeChecksum(): Boolean {
-    // Ends with "-#" where "#" is a number
-    val regex = Regex("-(\\d)+$")
-    return regex.containsMatchIn(this)
 }

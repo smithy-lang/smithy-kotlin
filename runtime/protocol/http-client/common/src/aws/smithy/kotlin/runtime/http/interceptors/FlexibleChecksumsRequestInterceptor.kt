@@ -26,7 +26,7 @@ import kotlinx.coroutines.job
 import kotlin.coroutines.coroutineContext
 
 /**
- * Handles request checksums.
+ * Handles request checksums for operations with the [HttpChecksumTrait] applied.
  *
  * If a user supplies a checksum via an HTTP header no calculation will be done. The exception is MD5, if a user
  * supplies an MD5 checksum header it will be ignored.
@@ -78,17 +78,11 @@ public class FlexibleChecksumsRequestInterceptor<I>(
         append("x-amz-checksum-")
         append(requestChecksumAlgorithm?.lowercase() ?: "crc32")
     }
-    private val checksumAlgorithm = requestChecksumAlgorithm?.let {
-        val hashFunction = requestChecksumAlgorithm.toHashFunction()
-        if (hashFunction == null || !hashFunction.isSupported) {
-            throw ClientException("Checksum algorithm '$requestChecksumAlgorithm' is not supported for flexible checksums")
-        }
-        hashFunction
-    } ?: if (requestChecksumRequired || requestChecksumCalculation == HttpChecksumConfigOption.WHEN_SUPPORTED) {
-        Crc32()
-    } else {
-        null
-    }
+
+    private val checksumAlgorithm = requestChecksumAlgorithm
+        ?.toHashFunctionOrThrow()
+        ?.takeIf { it.isSupported }
+        ?: (Crc32().takeIf { requestChecksumRequired || requestChecksumCalculation == HttpChecksumConfigOption.WHEN_SUPPORTED })
 
     // TODO: Remove in next minor version bump
     @Deprecated("readAfterSerialization is no longer used but can't be removed due to backwards incompatibility")
@@ -118,13 +112,8 @@ public class FlexibleChecksumsRequestInterceptor<I>(
             val deferredChecksum = CompletableDeferred<String>(context.executionContext.coroutineContext.job)
 
             request.body = request.body
-                .toHashingBody(
-                    checksumAlgorithm,
-                    request.body.contentLength,
-                )
-                .toCompletingBody(
-                    deferredChecksum,
-                )
+                .toHashingBody(checksumAlgorithm, request.body.contentLength)
+                .toCompletingBody(deferredChecksum)
 
             request.headers.append("x-amz-trailer", checksumHeader)
             request.trailingHeaders.append(checksumHeader, deferredChecksum)
@@ -258,21 +247,15 @@ public class FlexibleChecksumsRequestInterceptor<I>(
      * The header must start with "x-amz-checksum-" followed by the checksum algorithm's name.
      * MD5 is not considered a supported checksum algorithm.
      */
-    private fun HttpRequest.userProvidedChecksumHeader(logger: Logger): String? {
-        this.headers.entries().forEach { header ->
-            val headerName = header.key.lowercase()
-            if (headerName.startsWith("x-amz-checksum-")) {
-                if (headerName == "x-amz-checksum-md5") {
-                    logger.debug {
-                        "MD5 checksum was supplied via header, MD5 is not a supported algorithm, ignoring header"
-                    }
-                } else {
-                    return headerName
-                }
-            }
+    private fun HttpRequest.userProvidedChecksumHeader(logger: Logger) = headers
+        .names()
+        .filter { it.startsWith("x-amz-checksum-", ignoreCase = true) }
+        .filterNot { key ->
+            key
+                .equals("x-amz-checksum-md5", ignoreCase = true)
+                .also { if (it) logger.debug { "MD5 checksum was supplied via header, MD5 is not a supported algorithm, ignoring header" } }
         }
-        return null
-    }
+        .firstOrNull()
 
     /**
      * Maps supported hash functions to business metrics.

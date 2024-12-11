@@ -202,5 +202,50 @@ class FlexibleChecksumsRequestInterceptorTest {
         assertEquals(precalculatedChecksumValue, call.request.headers["x-amz-checksum-sha256"])
     }
 
+    @Test
+    fun testDefaultChecksumConfiguration() = runTest {
+        setOf(
+            DefaultChecksumTest(true, HttpChecksumConfigOption.WHEN_SUPPORTED, true),
+            DefaultChecksumTest(true, HttpChecksumConfigOption.WHEN_REQUIRED, true),
+            DefaultChecksumTest(false, HttpChecksumConfigOption.WHEN_SUPPORTED, true),
+            DefaultChecksumTest(false, HttpChecksumConfigOption.WHEN_REQUIRED, false),
+        ).forEach { runDefaultChecksumTest(it) }
+    }
+
     private fun Headers.getNumChecksumHeaders(): Int = entries().count { (name, _) -> name.startsWith("x-amz-checksum-") }
+
+    private data class DefaultChecksumTest(
+        val requestChecksumRequired: Boolean,
+        val requestChecksumCalculation: HttpChecksumConfigOption,
+        val defaultChecksumExpected: Boolean,
+    )
+
+    private fun runDefaultChecksumTest(
+        testCase: DefaultChecksumTest,
+    ) = runTest {
+        val defaultChecksumAlgorithmName = "crc32"
+        val expectedChecksumValue = "WdqXHQ=="
+
+        val req = HttpRequestBuilder().apply {
+            body = HttpBody.fromBytes("<Foo>bar</Foo>".encodeToByteArray())
+        }
+
+        val op = newTestOperation<Unit, Unit>(req, Unit)
+
+        op.interceptors.add(
+            FlexibleChecksumsRequestInterceptor<Unit>(
+                requestChecksumAlgorithm = null, // See if default checksum is applied
+                requestChecksumRequired = testCase.requestChecksumRequired,
+                requestChecksumCalculation = testCase.requestChecksumCalculation,
+            ),
+        )
+
+        op.roundTrip(client, Unit)
+        val call = op.context.attributes[HttpOperationContext.HttpCallList].first()
+
+        when (testCase.defaultChecksumExpected) {
+            true -> assertEquals(expectedChecksumValue, call.request.headers["x-amz-checksum-$defaultChecksumAlgorithmName"])
+            false -> assertFalse { call.request.headers.contains("x-amz-checksum-$defaultChecksumAlgorithmName") }
+        }
+    }
 }

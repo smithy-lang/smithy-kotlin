@@ -77,7 +77,6 @@ class FlexibleChecksumsResponseInterceptorTest {
                 FlexibleChecksumsResponseInterceptor<TestInput>(
                     responseValidationRequired = true,
                     responseChecksumValidation = HttpChecksumConfigOption.WHEN_SUPPORTED,
-                    serviceUsesCompositeChecksums = false,
                 ),
             )
 
@@ -105,7 +104,6 @@ class FlexibleChecksumsResponseInterceptorTest {
                 FlexibleChecksumsResponseInterceptor<TestInput>(
                     responseValidationRequired = true,
                     responseChecksumValidation = HttpChecksumConfigOption.WHEN_SUPPORTED,
-                    serviceUsesCompositeChecksums = false,
                 ),
             )
 
@@ -134,7 +132,6 @@ class FlexibleChecksumsResponseInterceptorTest {
             FlexibleChecksumsResponseInterceptor<TestInput>(
                 responseValidationRequired = true,
                 responseChecksumValidation = HttpChecksumConfigOption.WHEN_SUPPORTED,
-                serviceUsesCompositeChecksums = false,
             ),
         )
 
@@ -160,7 +157,6 @@ class FlexibleChecksumsResponseInterceptorTest {
             FlexibleChecksumsResponseInterceptor<TestInput>(
                 responseValidationRequired = true,
                 responseChecksumValidation = HttpChecksumConfigOption.WHEN_SUPPORTED,
-                serviceUsesCompositeChecksums = false,
             ),
         )
 
@@ -182,7 +178,6 @@ class FlexibleChecksumsResponseInterceptorTest {
             FlexibleChecksumsResponseInterceptor<TestInput>(
                 responseValidationRequired = false,
                 responseChecksumValidation = HttpChecksumConfigOption.WHEN_REQUIRED,
-                serviceUsesCompositeChecksums = false,
             ),
         )
 
@@ -198,5 +193,53 @@ class FlexibleChecksumsResponseInterceptorTest {
         output.body.readAll()
 
         assertNull(op.context.getOrNull(ChecksumHeaderValidated))
+    }
+
+    @Test
+    fun testResponseValidationConfiguration() = runTest {
+        setOf(
+            ResponseChecksumValidationTest(true, HttpChecksumConfigOption.WHEN_SUPPORTED, true),
+            ResponseChecksumValidationTest(true, HttpChecksumConfigOption.WHEN_REQUIRED, true),
+            ResponseChecksumValidationTest(false, HttpChecksumConfigOption.WHEN_SUPPORTED, true),
+            ResponseChecksumValidationTest(false, HttpChecksumConfigOption.WHEN_REQUIRED, false),
+        ).forEach { runResponseChecksumValidationTest(it) }
+    }
+
+    private data class ResponseChecksumValidationTest(
+        val responseValidationRequired: Boolean,
+        val responseChecksumValidation: HttpChecksumConfigOption,
+        val checksumValidationExpected: Boolean,
+    )
+
+    private fun runResponseChecksumValidationTest(
+        testCase: ResponseChecksumValidationTest,
+    ) = runTest {
+        checksums.forEach { (checksumAlgorithmName, expectedChecksum) ->
+            val req = HttpRequestBuilder()
+            val op = newTestOperation<TestInput>(req)
+
+            op.interceptors.add(
+                FlexibleChecksumsResponseInterceptor<TestInput>(
+                    responseValidationRequired = testCase.responseValidationRequired,
+                    responseChecksumValidation = testCase.responseChecksumValidation,
+                ),
+            )
+
+            val responseChecksumHeaderName = "x-amz-checksum-$checksumAlgorithmName"
+
+            val responseHeaders = Headers {
+                append(responseChecksumHeaderName, expectedChecksum)
+            }
+
+            val client = getMockClient(response, responseHeaders)
+
+            val output = op.roundTrip(client, TestInput("input"))
+            output.body.readAll()
+
+            when (testCase.checksumValidationExpected) {
+                true -> assertEquals(responseChecksumHeaderName, op.context[ChecksumHeaderValidated])
+                false -> assertNull(op.context.getOrNull(ChecksumHeaderValidated))
+            }
+        }
     }
 }

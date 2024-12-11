@@ -4,6 +4,7 @@
  */
 package aws.smithy.kotlin.runtime.hashing
 
+import aws.smithy.kotlin.runtime.ClientException
 import aws.smithy.kotlin.runtime.InternalApi
 
 /**
@@ -70,3 +71,10 @@ public fun String.toHashFunction(): HashFunction? = when (this.lowercase()) {
     "md5" -> Md5()
     else -> null
 }
+
+/**
+ * Return the [HashFunction] which is represented by this string, or an exception if none match.
+ */
+@InternalApi
+public fun String.toHashFunctionOrThrow(): HashFunction =
+    toHashFunction() ?: throw ClientException("Checksum algorithm '$this' is not supported")

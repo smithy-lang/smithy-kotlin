@@ -696,6 +696,7 @@ public final class aws/smithy/kotlin/runtime/hashing/HashFunctionKt {
 	public static final fun hash ([BLaws/smithy/kotlin/runtime/hashing/HashFunction;)[B
 	public static final fun hash ([BLkotlin/jvm/functions/Function0;)[B
 	public static final fun toHashFunction (Ljava/lang/String;)Laws/smithy/kotlin/runtime/hashing/HashFunction;
+	public static final fun toHashFunctionOrThrow (Ljava/lang/String;)Laws/smithy/kotlin/runtime/hashing/HashFunction;
 }
 
 public final class aws/smithy/kotlin/runtime/hashing/HmacKt {
