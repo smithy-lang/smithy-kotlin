@@ -30,6 +30,7 @@ object SmokeTestSectionIds {
     object HttpEngineOverride : SectionId
     object ServiceFilter : SectionId
     object SkipTags : SectionId
+    object SmokeTestsFile : SectionId
     object ClientConfig : SectionId {
         val Name: SectionKey<String> = SectionKey("aws.smithy.kotlin#SmokeTestClientConfigName")
         val Value: SectionKey<String> = SectionKey("aws.smithy.kotlin#SmokeTestClientConfigValue")
@@ -59,16 +60,18 @@ class SmokeTestsRunnerGenerator(
     ctx: CodegenContext,
 ) {
     internal fun render() {
-        writer.write("private var exitCode = 0")
-        renderEnvironmentVariables()
-        writer.declareSection(SmokeTestSectionIds.AdditionalEnvironmentVariables)
-        writer.write("")
-        writer.withBlock("public suspend fun main() {", "}") {
-            renderFunctionCalls()
-            write("#T(exitCode)", RuntimeTypes.Core.SmokeTests.exitProcess)
+        writer.declareSection(SmokeTestSectionIds.SmokeTestsFile) {
+            writer.write("private var exitCode = 0")
+            renderEnvironmentVariables()
+            writer.declareSection(SmokeTestSectionIds.AdditionalEnvironmentVariables)
+            writer.write("")
+            writer.withBlock("public suspend fun main() {", "}") {
+                renderFunctionCalls()
+                write("#T(exitCode)", RuntimeTypes.Core.SmokeTests.exitProcess)
+            }
+            writer.write("")
+            renderFunctions()
         }
-        writer.write("")
-        renderFunctions()
     }
 
     private fun renderEnvironmentVariables() {
