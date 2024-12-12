@@ -11,8 +11,10 @@ import io.ktor.http.HttpStatusCode
 import io.ktor.network.selector.SelectorManager
 import io.ktor.network.sockets.InetSocketAddress
 import io.ktor.network.sockets.aSocket
+import io.ktor.server.application.ApplicationStarted
 import io.ktor.server.engine.EmbeddedServer
 import io.ktor.utils.io.core.use
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeout
@@ -25,15 +27,14 @@ import kotlin.time.Duration.Companion.seconds
  * mocking an HTTP client engine is difficult.
  */
 public abstract class TestWithLocalServer {
-    protected val serverPort: Int
-        get() = runBlocking {
-            SelectorManager(this.coroutineContext).use {
-                aSocket(it)
-                    .tcp()
-                    .bind()
-                    .use { (it.localAddress as InetSocketAddress).port }
-            }
+    protected val serverPort: Int = runBlocking {
+        SelectorManager(this.coroutineContext).use {
+            aSocket(it)
+                .tcp()
+                .bind()
+                .use { (it.localAddress as InetSocketAddress).port }
         }
+    }
 
     protected val testHost: String = "localhost"
 
@@ -41,6 +42,12 @@ public abstract class TestWithLocalServer {
 
     @BeforeTest
     public fun startServer(): Unit = runBlocking {
+        val serverStarted = CompletableDeferred<Unit>()
+
+        server.monitor.subscribe(ApplicationStarted) {
+            serverStarted.complete(Unit)
+        }
+
         withTimeout(5.seconds) {
             var attempt = 0
 
@@ -55,7 +62,7 @@ public abstract class TestWithLocalServer {
                 }
             } while (true)
 
-            ensureServerRunning()
+            serverStarted.await()
         }
     }
 
@@ -63,22 +70,5 @@ public abstract class TestWithLocalServer {
     public fun stopServer() {
         server.stop(0, 0)
         println("test server stopped")
-    }
-
-    private fun ensureServerRunning() = runBlocking {
-        val client = HttpClient()
-        val url = "http://$testHost:$serverPort"
-        try {
-            while (true) {
-                try {
-                    val response = client.get(url)
-                    if (response.status == HttpStatusCode.OK) break
-                } catch (_: Exception) {
-                    delay(100)
-                }
-            }
-        } finally {
-            client.close()
-        }
     }
 }
