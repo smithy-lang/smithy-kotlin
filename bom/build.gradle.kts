@@ -66,8 +66,7 @@ fun DependencyConstraintHandler.api(constraintNotation: Any) =
 
 createBomConstraintsAndVersionCatalog()
 
-configurePublishing("smithy-kotlin")
-
+configurePublishing("smithy-kotlin", "smithy-lang")
 publishing {
     publications {
         create("bom", MavenPublication::class) {

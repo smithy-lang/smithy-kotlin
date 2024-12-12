@@ -84,7 +84,7 @@ of your request may disagree and ask that you add one anyway.
   "type": "feature",
   "description": "Add multiplatform support for URL parsing",
   "issues": [
-    "awslabs/smithy-kotlin#12345"
+    "smithy-lang/smithy-kotlin#12345"
   ]
 }
 ```

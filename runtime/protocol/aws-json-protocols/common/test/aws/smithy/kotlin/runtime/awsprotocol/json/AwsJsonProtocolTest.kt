@@ -36,7 +36,7 @@ class AwsJsonProtocolTest {
 
         assertEquals("application/x-amz-json-1.1", request.headers["Content-Type"])
         // ensure we use the original shape id name, NOT the one from the context
-        // see: https://github.com/awslabs/smithy-kotlin/issues/316
+        // see: https://github.com/smithy-lang/smithy-kotlin/issues/316
         assertEquals("FooService_blah.Bar", request.headers["X-Amz-Target"])
     }
 

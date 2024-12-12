@@ -11,7 +11,7 @@ private val completeWords = listOf("ipv4", "ipv6", "sigv4", "mib", "gib", "kib",
  * Split a string on word boundaries
  */
 fun String.splitOnWordBoundaries(): List<String> {
-    // This is taken from Rust: https://github.com/awslabs/smithy-rs/pull/3037/files#diff-4175c66ee81a450fcf1cd3e256f36ae2c8e0b30b910be8ca505135fbe215144d
+    // This is taken from Rust: https://github.com/smithy-lang/smithy-rs/pull/3037/files#diff-4175c66ee81a450fcf1cd3e256f36ae2c8e0b30b910be8ca505135fbe215144d
     // with minor changes (s3 and iot as whole words). Previously we used the Java v2 implementation
     // https://github.com/aws/aws-sdk-java-v2/blob/2.20.162/utils/src/main/java/software/amazon/awssdk/utils/internal/CodegenNamingUtils.java#L36
     // but this has some edge cases it doesn't handle well

@@ -78,7 +78,7 @@ class ShapeValueGenerator(
     private fun classDeclaration(writer: KotlinWriter, shape: StructureShape, block: () -> Unit) {
         val symbol = symbolProvider.toSymbol(shape)
         // invoke the generated DSL builder for the class
-        writer.writeInline("#L {", symbol.name)
+        writer.writeInline("#T {", symbol)
             .ensureNewline()
             .indent()
             .call { block() }
@@ -129,7 +129,7 @@ class ShapeValueGenerator(
         val suffix = when {
             shape.isEnum -> {
                 val symbol = symbolProvider.toSymbol(shape)
-                writer.writeInline("#L.fromValue(", symbol.name)
+                writer.writeInline("#T.fromValue(", symbol)
                 ")"
             }
 
@@ -222,7 +222,7 @@ class ShapeValueGenerator(
                         val currSymbol = generator.symbolProvider.toSymbol(currShape)
                         val memberName = generator.symbolProvider.toMemberName(member)
                         val variantName = memberName.replaceFirstChar { c -> c.uppercaseChar() }
-                        writer.writeInline("${currSymbol.name}.$variantName(")
+                        writer.writeInline("#T.#L(", currSymbol, variantName)
                         generator.instantiateShapeInline(writer, memberShape, valueNode)
                         writer.writeInline(")")
                     }
@@ -243,14 +243,14 @@ class ShapeValueGenerator(
                 ShapeType.DOUBLE,
                 ShapeType.FLOAT,
                 -> {
-                    val symbolName = generator.symbolProvider.toSymbol(currShape).name
+                    val symbol = generator.symbolProvider.toSymbol(currShape)
                     val symbolMember = when (node.value) {
                         "Infinity" -> "POSITIVE_INFINITY"
                         "-Infinity" -> "NEGATIVE_INFINITY"
                         "NaN" -> "NaN"
-                        else -> throw CodegenException("""Cannot interpret $symbolName value "${node.value}".""")
+                        else -> throw CodegenException("""Cannot interpret $symbol value "${node.value}".""")
                     }
-                    writer.writeInline("#L", "$symbolName.$symbolMember")
+                    writer.writeInline("#T.#L", symbol, symbolMember)
                 }
 
                 ShapeType.BIG_INTEGER -> writer.writeInline("#T(#S)", RuntimeTypes.Core.Content.BigInteger, node.value)

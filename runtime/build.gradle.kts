@@ -31,8 +31,7 @@ subprojects {
         plugin(libraries.plugins.aws.kotlin.repo.tools.kmp.get().pluginId)
     }
 
-    configurePublishing("smithy-kotlin")
-
+    configurePublishing("smithy-kotlin", "smithy-lang")
     kotlin {
         explicitApi()
 
