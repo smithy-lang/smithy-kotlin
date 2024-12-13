@@ -120,6 +120,11 @@ internal class DefaultCanonicalizer(private val sha256Supplier: HashSupplier = :
         param("X-Amz-Expires", config.expiresAfter?.inWholeSeconds?.toString(), signViaQueryParams)
         param("X-Amz-Security-Token", sessionToken, !config.omitSessionToken) // Add pre-sig if omitSessionToken=false
 
+        // Add checksum as query param
+        if (config.signatureType == AwsSignatureType.HTTP_REQUEST_VIA_QUERY_PARAMS && config.checksum != null) {
+            param(config.checksum!!.first, config.checksum!!.second)
+        }
+
         val headers = builder
             .headers
             .entries()

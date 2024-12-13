@@ -81,7 +81,7 @@ public class FlexibleChecksumsRequestInterceptor<I>(
 
     private val checksumAlgorithm = requestChecksumAlgorithm
         ?.toHashFunctionOrThrow()
-        ?.takeIf { it.isSupported }
+        ?.takeIf { it.isSupportedForFlexibleChecksums }
         ?: (Crc32().takeIf { requestChecksumRequired || requestChecksumCalculation == HttpChecksumConfigOption.WHEN_SUPPORTED })
 
     // TODO: Remove in next minor version bump
@@ -168,14 +168,6 @@ public class FlexibleChecksumsRequestInterceptor<I>(
         get() = (this is HttpBody.SourceContent || this is HttpBody.ChannelContent) &&
             contentLength != null &&
             (isOneShot || contentLength!! > 65536 * 16)
-
-    /**
-     * @return if the [HashFunction] is supported by flexible checksums
-     */
-    private val HashFunction.isSupported: Boolean get() = when (this) {
-        is Crc32, is Crc32c, is Sha256, is Sha1 -> true
-        else -> false
-    }
 
     /**
      * Removes all checksum headers except [headerName]

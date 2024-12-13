@@ -71,6 +71,7 @@ public final class aws/smithy/kotlin/runtime/auth/awssigning/AwsSigningConfig {
 	public static final field Companion Laws/smithy/kotlin/runtime/auth/awssigning/AwsSigningConfig$Companion;
 	public fun <init> (Laws/smithy/kotlin/runtime/auth/awssigning/AwsSigningConfig$Builder;)V
 	public final fun getAlgorithm ()Laws/smithy/kotlin/runtime/auth/awssigning/AwsSigningAlgorithm;
+	public final fun getChecksum ()Lkotlin/Pair;
 	public final fun getCredentials ()Laws/smithy/kotlin/runtime/auth/awscredentials/Credentials;
 	public final fun getExpiresAfter-FghU774 ()Lkotlin/time/Duration;
 	public final fun getHashSpecification ()Laws/smithy/kotlin/runtime/auth/awssigning/HashSpecification;
@@ -91,6 +92,7 @@ public final class aws/smithy/kotlin/runtime/auth/awssigning/AwsSigningConfig$Bu
 	public fun <init> ()V
 	public final fun build ()Laws/smithy/kotlin/runtime/auth/awssigning/AwsSigningConfig;
 	public final fun getAlgorithm ()Laws/smithy/kotlin/runtime/auth/awssigning/AwsSigningAlgorithm;
+	public final fun getChecksum ()Lkotlin/Pair;
 	public final fun getCredentials ()Laws/smithy/kotlin/runtime/auth/awscredentials/Credentials;
 	public final fun getExpiresAfter-FghU774 ()Lkotlin/time/Duration;
 	public final fun getHashSpecification ()Laws/smithy/kotlin/runtime/auth/awssigning/HashSpecification;
@@ -105,6 +107,7 @@ public final class aws/smithy/kotlin/runtime/auth/awssigning/AwsSigningConfig$Bu
 	public final fun getSigningDate ()Laws/smithy/kotlin/runtime/time/Instant;
 	public final fun getUseDoubleUriEncode ()Z
 	public final fun setAlgorithm (Laws/smithy/kotlin/runtime/auth/awssigning/AwsSigningAlgorithm;)V
+	public final fun setChecksum (Lkotlin/Pair;)V
 	public final fun setCredentials (Laws/smithy/kotlin/runtime/auth/awscredentials/Credentials;)V
 	public final fun setExpiresAfter-BwNAW2A (Lkotlin/time/Duration;)V
 	public final fun setHashSpecification (Laws/smithy/kotlin/runtime/auth/awssigning/HashSpecification;)V

@@ -106,6 +106,7 @@ object RuntimeTypes {
         val TimestampFormat = symbol("TimestampFormat", "time")
         val ClientException = symbol("ClientException")
         val SdkDsl = symbol("SdkDsl")
+        val IllegalStateException = symbol("IllegalStateException")
 
         object BusinessMetrics : RuntimeTypePackage(KotlinDependency.CORE, "businessmetrics") {
             val AccountIdBasedEndpointAccountId = symbol("AccountIdBasedEndpointAccountId")
@@ -170,6 +171,8 @@ object RuntimeTypes {
 
         object Hashing : RuntimeTypePackage(KotlinDependency.CORE, "hashing") {
             val Sha256 = symbol("Sha256")
+            val toHashFunctionOrThrow = symbol("toHashFunctionOrThrow")
+            val isSupportedForFlexibleChecksums = symbol("isSupportedForFlexibleChecksums")
         }
 
         object IO : RuntimeTypePackage(KotlinDependency.CORE, "io") {
@@ -180,6 +183,7 @@ object RuntimeTypes {
         }
 
         object Text : RuntimeTypePackage(KotlinDependency.CORE, "text") {
+            val lowercase = symbol("lowercase")
             object Encoding : RuntimeTypePackage(KotlinDependency.CORE, "text.encoding") {
                 val decodeBase64 = symbol("decodeBase64")
                 val decodeBase64Bytes = symbol("decodeBase64Bytes")
@@ -199,6 +203,7 @@ object RuntimeTypes {
             val toNumber = symbol("toNumber")
             val type = symbol("type")
             val PlatformProvider = symbol("PlatformProvider")
+            val runBlocking = symbol("runBlocking")
         }
 
         object Net : RuntimeTypePackage(KotlinDependency.CORE, "net") {
@@ -397,6 +402,7 @@ object RuntimeTypes {
             val TelemetryContextElement = symbol("TelemetryContextElement", "context")
             val TraceSpan = symbol("TraceSpan", "trace")
             val withSpan = symbol("withSpan", "trace")
+            val warn = symbol("warn", "logging")
         }
         object TelemetryDefaults : RuntimeTypePackage(KotlinDependency.TELEMETRY_DEFAULTS) {
             val Global = symbol("Global")

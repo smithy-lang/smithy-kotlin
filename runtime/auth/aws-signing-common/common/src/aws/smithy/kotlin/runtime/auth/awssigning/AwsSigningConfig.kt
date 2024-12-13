@@ -172,6 +172,11 @@ public class AwsSigningConfig(builder: Builder) {
      */
     public val logRequest: Boolean = builder.logRequest
 
+    /**
+     * Determines the checksum to add to the canonical request query parameters before signing.
+     */
+    public val checksum: Pair<String, String>? = builder.checksum
+
     public fun toBuilder(): Builder = Builder().also {
         it.region = region
         it.service = service
@@ -187,6 +192,7 @@ public class AwsSigningConfig(builder: Builder) {
         it.credentials = credentials
         it.expiresAfter = expiresAfter
         it.logRequest = logRequest
+        it.checksum = checksum
     }
 
     public class Builder {
@@ -204,6 +210,7 @@ public class AwsSigningConfig(builder: Builder) {
         public var credentials: Credentials? = null
         public var expiresAfter: Duration? = null
         public var logRequest: Boolean = false
+        public var checksum: Pair<String, String>? = null
 
         public fun build(): AwsSigningConfig = AwsSigningConfig(this)
     }

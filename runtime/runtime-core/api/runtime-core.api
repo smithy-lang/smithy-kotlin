@@ -21,6 +21,10 @@ public final class aws/smithy/kotlin/runtime/ErrorMetadata$Companion {
 public abstract interface annotation class aws/smithy/kotlin/runtime/ExperimentalApi : java/lang/annotation/Annotation {
 }
 
+public final class aws/smithy/kotlin/runtime/IllegalStateException : java/lang/IllegalStateException {
+	public fun <init> (Ljava/lang/String;)V
+}
+
 public abstract interface annotation class aws/smithy/kotlin/runtime/InternalApi : java/lang/annotation/Annotation {
 }
 
@@ -695,6 +699,7 @@ public final class aws/smithy/kotlin/runtime/hashing/HashFunction$DefaultImpls {
 public final class aws/smithy/kotlin/runtime/hashing/HashFunctionKt {
 	public static final fun hash ([BLaws/smithy/kotlin/runtime/hashing/HashFunction;)[B
 	public static final fun hash ([BLkotlin/jvm/functions/Function0;)[B
+	public static final fun isSupportedForFlexibleChecksums (Laws/smithy/kotlin/runtime/hashing/HashFunction;)Z
 	public static final fun toHashFunction (Ljava/lang/String;)Laws/smithy/kotlin/runtime/hashing/HashFunction;
 	public static final fun toHashFunctionOrThrow (Ljava/lang/String;)Laws/smithy/kotlin/runtime/hashing/HashFunction;
 }
@@ -2083,6 +2088,7 @@ public final class aws/smithy/kotlin/runtime/text/Scanner {
 public final class aws/smithy/kotlin/runtime/text/TextKt {
 	public static final fun ensurePrefix (Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;
 	public static final fun ensureSuffix (Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;
+	public static final fun lowercase (Ljava/lang/String;)Ljava/lang/String;
 }
 
 public final class aws/smithy/kotlin/runtime/text/Utf8Kt {
@@ -2259,6 +2265,10 @@ public final class aws/smithy/kotlin/runtime/util/CachedValue : java/io/Closeabl
 
 public abstract interface class aws/smithy/kotlin/runtime/util/CanDeepCopy {
 	public abstract fun deepCopy ()Ljava/lang/Object;
+}
+
+public final class aws/smithy/kotlin/runtime/util/ConcurrencyKt {
+	public static final fun runBlocking (Lkotlin/jvm/functions/Function1;)V
 }
 
 public final class aws/smithy/kotlin/runtime/util/CoroutineUtilsKt {

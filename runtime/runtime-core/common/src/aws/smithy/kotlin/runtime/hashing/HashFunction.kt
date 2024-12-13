@@ -78,3 +78,12 @@ public fun String.toHashFunction(): HashFunction? = when (this.lowercase()) {
 @InternalApi
 public fun String.toHashFunctionOrThrow(): HashFunction =
     toHashFunction() ?: throw ClientException("Checksum algorithm '$this' is not supported")
+
+/**
+ * @return if the [HashFunction] is supported by flexible checksums
+ */
+@InternalApi
+public val HashFunction.isSupportedForFlexibleChecksums: Boolean get() = when (this) {
+    is Crc32, is Crc32c, is Sha256, is Sha1 -> true
+    else -> false
+}
