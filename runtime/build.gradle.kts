@@ -4,6 +4,7 @@
  */
 import aws.sdk.kotlin.gradle.dsl.configurePublishing
 import aws.sdk.kotlin.gradle.kmp.*
+import aws.sdk.kotlin.gradle.util.typedProp
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
@@ -16,6 +17,15 @@ val sdkVersion: String by project
 
 // Apply KMP configuration from build plugin
 configureKmpTargets()
+
+// Disable cross compilation if flag is set
+val disableCrossCompile = typedProp<Boolean>("aws.kotlin.native.disableCrossCompile") == true
+if (disableCrossCompile) {
+    logger.warn("aws.kotlin.native.disableCrossCompile=true: Cross compilation is disabled.")
+    allprojects {
+        disableCrossCompileTargets()
+    }
+}
 
 // capture locally - scope issue with custom KMP plugin
 val libraries = libs

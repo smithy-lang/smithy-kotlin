@@ -5,11 +5,6 @@
 import aws.sdk.kotlin.gradle.dsl.configureLinting
 import aws.sdk.kotlin.gradle.dsl.configureNexus
 import aws.sdk.kotlin.gradle.util.typedProp
-import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
-import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
-import org.jetbrains.kotlin.konan.target.Family
-import org.jetbrains.kotlin.konan.target.HostManager
-import kotlin.apply
 
 buildscript {
     // NOTE: buildscript classpath for the root project is the parent classloader for the subprojects, we
@@ -158,70 +153,4 @@ apiValidation {
             "slf4j-2x-consumer",
         ),
     )
-}
-
-val disableCrossCompile = typedProp<Boolean>("aws.kotlin.native.disableCrossCompile") == true
-
-if (disableCrossCompile) {
-    logger.warn("aws.kotlin.native.disableCrossCompile=true: Cross compilation is disabled.")
-    disableCrossCompileTargets()
-}
-
-private val KotlinNativeTarget.isLinux: Boolean
-    get() = konanTarget.family == Family.LINUX
-
-private val KotlinNativeTarget.isApple: Boolean
-    get() = konanTarget.family.isAppleFamily
-
-private val KotlinNativeTarget.isWindows: Boolean
-    get() = konanTarget.family == Family.MINGW
-
-/**
- * Kotlin/Native Linux and Windows targets are generally enabled on all hosts since
- * the Kotlin toolchain and backend compilers support cross compilation. We
- * are using cinterop and have to compile CRT for those platforms which sometimes
- * requires using docker which isn't always available in CI or setup in users environment.
- *
- * See [KT-30498](https://youtrack.jetbrains.com/issue/KT-30498)
- */
-fun Project.disableCrossCompileTargets() {
-    allprojects {
-        plugins.withId("org.jetbrains.kotlin.multiplatform") {
-            configure<KotlinMultiplatformExtension> {
-                targets.withType<KotlinNativeTarget> {
-                    val knTarget = this
-                    when {
-                        HostManager.hostIsMac && (knTarget.isLinux || knTarget.isWindows) -> disable(knTarget)
-                        HostManager.hostIsLinux && knTarget.isApple -> disable(knTarget)
-                        HostManager.hostIsMingw && (knTarget.isLinux || knTarget.isApple) -> disable(knTarget)
-                    }
-                }
-            }
-        }
-    }
-}
-
-internal fun Project.disable(knTarget: KotlinNativeTarget) {
-    logger.warn("disabling Kotlin/Native target: ${knTarget.name}")
-    knTarget.apply {
-        compilations.all {
-            cinterops.all {
-                tasks.named(interopProcessingTaskName).configure { enabled = false }
-            }
-            compileTaskProvider.configure { enabled = false }
-        }
-
-        binaries.all {
-            linkTaskProvider.configure { enabled = false }
-        }
-
-        mavenPublication {
-            tasks.withType<AbstractPublishToMaven>().configureEach {
-                onlyIf { publication != this@mavenPublication }
-            }
-            tasks.withType<GenerateModuleMetadata>().configureEach {
-                onlyIf { publication != this@mavenPublication }
-            }
-        }
-    }
 }
