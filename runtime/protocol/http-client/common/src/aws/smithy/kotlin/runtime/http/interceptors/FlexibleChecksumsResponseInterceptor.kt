@@ -12,6 +12,7 @@ import aws.smithy.kotlin.runtime.client.config.HttpChecksumConfigOption
 import aws.smithy.kotlin.runtime.collections.AttributeKey
 import aws.smithy.kotlin.runtime.hashing.toHashFunction
 import aws.smithy.kotlin.runtime.http.HttpBody
+import aws.smithy.kotlin.runtime.http.readAll
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.http.response.HttpResponse
 import aws.smithy.kotlin.runtime.http.response.copy
@@ -82,14 +83,33 @@ public class FlexibleChecksumsResponseInterceptor<I>(
             .removePrefix("x-amz-checksum-")
             .toHashFunction() ?: throw ClientException("Could not parse checksum algorithm from header $checksumHeader")
 
-        logger.debug { "Validating checksum during deserialization from $checksumHeader" }
+        when (val bodyType = context.protocolResponse.body) {
+            is HttpBody.Bytes -> {
+                logger.debug { "Validating checksum before deserialization from $checksumHeader" }
 
-        // Wrap the response body in a hashing body
-        return context.protocolResponse.copy(
-            body = context.protocolResponse.body
-                .toHashingBody(checksumAlgorithm, context.protocolResponse.body.contentLength)
-                .toChecksumValidatingBody(serviceChecksumValue),
-        )
+                checksumAlgorithm.update(
+                    context.protocolResponse.body.readAll() ?: byteArrayOf(),
+                )
+                val sdkChecksumValue = checksumAlgorithm.digest().encodeBase64String()
+
+                validateAndThrow(
+                    serviceChecksumValue,
+                    sdkChecksumValue,
+                )
+
+                return context.protocolResponse
+            }
+            is HttpBody.SourceContent, is HttpBody.ChannelContent -> {
+                logger.debug { "Validating checksum during deserialization from $checksumHeader" }
+
+                return context.protocolResponse.copy(
+                    body = context.protocolResponse.body
+                        .toHashingBody(checksumAlgorithm, context.protocolResponse.body.contentLength)
+                        .toChecksumValidatingBody(serviceChecksumValue),
+                )
+            }
+            else -> throw IllegalStateException("Http body type '$bodyType' is not supported for flexible checksums.")
+        }
     }
 }
 
