@@ -126,7 +126,7 @@ jobs:
         working-directory: ./smithy-kotlin
         run: |
           ./gradlew apiCheck
-          ./gradlew -P"aws.sdk.kotlin.crt.disableCrossCompile"=true -P"aws.kotlin.native.disableCrossCompile"=true build
+          ./gradlew -P"aws.kotlin.native=false" build
 
       - name: Save Test Reports
         if: failure()
