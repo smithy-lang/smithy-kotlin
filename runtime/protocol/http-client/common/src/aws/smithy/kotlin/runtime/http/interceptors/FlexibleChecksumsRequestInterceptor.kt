@@ -100,7 +100,7 @@ public class FlexibleChecksumsRequestInterceptor<I>(
         }
 
         if (checksumAlgorithm == null) {
-            logger.debug { "A checksum algorithm isn't selected and checksum calculation isn't required, skipping checksum calculation" }
+            logger.debug { "A checksum algorithm isn't selected or checksum calculation isn't required, skipping checksum calculation" }
             return context.protocolRequest
         }
 

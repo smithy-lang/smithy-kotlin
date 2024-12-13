@@ -106,7 +106,6 @@ object RuntimeTypes {
         val TimestampFormat = symbol("TimestampFormat", "time")
         val ClientException = symbol("ClientException")
         val SdkDsl = symbol("SdkDsl")
-        val IllegalStateException = symbol("IllegalStateException")
 
         object BusinessMetrics : RuntimeTypePackage(KotlinDependency.CORE, "businessmetrics") {
             val AccountIdBasedEndpointAccountId = symbol("AccountIdBasedEndpointAccountId")
@@ -183,7 +182,6 @@ object RuntimeTypes {
         }
 
         object Text : RuntimeTypePackage(KotlinDependency.CORE, "text") {
-            val lowercase = symbol("lowercase")
             object Encoding : RuntimeTypePackage(KotlinDependency.CORE, "text.encoding") {
                 val decodeBase64 = symbol("decodeBase64")
                 val decodeBase64Bytes = symbol("decodeBase64Bytes")

@@ -6,13 +6,9 @@
 package aws.smithy.kotlin.runtime.text
 
 import aws.smithy.kotlin.runtime.InternalApi
-import java.util.*
 
 @InternalApi
 public fun String.ensurePrefix(prefix: String): String = if (startsWith(prefix)) this else prefix + this
 
 @InternalApi
 public fun String.ensureSuffix(suffix: String): String = if (endsWith(suffix)) this else plus(suffix)
-
-@InternalApi
-public fun String.lowercase(): String = this.lowercase(Locale.getDefault())

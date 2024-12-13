@@ -21,10 +21,6 @@ public final class aws/smithy/kotlin/runtime/ErrorMetadata$Companion {
 public abstract interface annotation class aws/smithy/kotlin/runtime/ExperimentalApi : java/lang/annotation/Annotation {
 }
 
-public final class aws/smithy/kotlin/runtime/IllegalStateException : java/lang/IllegalStateException {
-	public fun <init> (Ljava/lang/String;)V
-}
-
 public abstract interface annotation class aws/smithy/kotlin/runtime/InternalApi : java/lang/annotation/Annotation {
 }
 
@@ -2088,7 +2084,6 @@ public final class aws/smithy/kotlin/runtime/text/Scanner {
 public final class aws/smithy/kotlin/runtime/text/TextKt {
 	public static final fun ensurePrefix (Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;
 	public static final fun ensureSuffix (Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;
-	public static final fun lowercase (Ljava/lang/String;)Ljava/lang/String;
 }
 
 public final class aws/smithy/kotlin/runtime/text/Utf8Kt {

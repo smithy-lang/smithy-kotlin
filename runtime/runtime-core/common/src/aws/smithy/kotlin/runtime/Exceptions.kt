@@ -7,7 +7,6 @@ package aws.smithy.kotlin.runtime
 import aws.smithy.kotlin.runtime.collections.AttributeKey
 import aws.smithy.kotlin.runtime.collections.MutableAttributes
 import aws.smithy.kotlin.runtime.collections.mutableAttributes
-import kotlin.IllegalStateException
 
 /**
  * Additional metadata about an error
@@ -175,9 +174,3 @@ public open class ServiceException : SdkBaseException {
 
     override val sdkErrorMetadata: ServiceErrorMetadata = ServiceErrorMetadata()
 }
-
-/**
- * Runtime accessible version of the [IllegalStateException]
- */
-@InternalApi
-public class IllegalStateException(message: String) : IllegalStateException(message)

@@ -10,7 +10,7 @@ import aws.smithy.kotlin.runtime.InternalApi
 import aws.smithy.kotlin.runtime.client.ProtocolResponseInterceptorContext
 import aws.smithy.kotlin.runtime.client.config.HttpChecksumConfigOption
 import aws.smithy.kotlin.runtime.collections.AttributeKey
-import aws.smithy.kotlin.runtime.hashing.toHashFunction
+import aws.smithy.kotlin.runtime.hashing.toHashFunctionOrThrow
 import aws.smithy.kotlin.runtime.http.HttpBody
 import aws.smithy.kotlin.runtime.http.readAll
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
@@ -81,7 +81,7 @@ public class FlexibleChecksumsResponseInterceptor<I>(
 
         val checksumAlgorithm = checksumHeader
             .removePrefix("x-amz-checksum-")
-            .toHashFunction() ?: throw ClientException("Could not parse checksum algorithm from header $checksumHeader")
+            .toHashFunctionOrThrow()
 
         when (val bodyType = context.protocolResponse.body) {
             is HttpBody.Bytes -> {
@@ -108,7 +108,7 @@ public class FlexibleChecksumsResponseInterceptor<I>(
                         .toChecksumValidatingBody(serviceChecksumValue),
                 )
             }
-            else -> throw IllegalStateException("Http body type '$bodyType' is not supported for flexible checksums.")
+            else -> throw IllegalStateException("HTTP body type '$bodyType' is not supported for flexible checksums.")
         }
     }
 }
