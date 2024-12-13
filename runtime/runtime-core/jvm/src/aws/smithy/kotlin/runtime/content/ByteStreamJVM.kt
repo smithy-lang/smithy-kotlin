@@ -117,7 +117,7 @@ public fun InputStream.asByteStream(contentLength: Long? = null): ByteStream.Sou
     val source = source()
     return object : ByteStream.SourceStream() {
         override val contentLength: Long? = contentLength
-        override val isOneShot: Boolean = true
+        override val isOneShot: Boolean = !markSupported()
         override fun readFrom(): SdkSource = source
     }
 }

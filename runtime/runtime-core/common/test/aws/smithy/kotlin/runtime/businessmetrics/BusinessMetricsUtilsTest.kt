@@ -7,6 +7,7 @@ package aws.smithy.kotlin.runtime.businessmetrics
 import aws.smithy.kotlin.runtime.collections.get
 import aws.smithy.kotlin.runtime.operation.ExecutionContext
 import kotlin.test.Test
+import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
@@ -54,5 +55,13 @@ class BusinessMetricsUtilsTest {
 
         executionContext.removeBusinessMetric(SmithyBusinessMetric.GZIP_REQUEST_COMPRESSION)
         assertFalse(executionContext.containsBusinessMetric(SmithyBusinessMetric.GZIP_REQUEST_COMPRESSION))
+    }
+
+    @Test
+    fun businessMetricToString() {
+        val businessMetricToString = SmithyBusinessMetric.GZIP_REQUEST_COMPRESSION.toString()
+        val businessMetricIdentifier = SmithyBusinessMetric.GZIP_REQUEST_COMPRESSION.identifier
+
+        assertEquals(businessMetricIdentifier, businessMetricToString)
     }
 }

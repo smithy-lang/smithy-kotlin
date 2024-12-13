@@ -169,7 +169,7 @@ private class FormUrlStructSerializer(
 
     override fun structField(descriptor: SdkFieldDescriptor, block: StructSerializer.() -> Unit) {
         // FIXME - do we even use this function in any of the formats? It seems like we go through `field(.., SdkSerializable)` ??
-        // https://github.com/awslabs/smithy-kotlin/issues/314
+        // https://github.com/smithy-lang/smithy-kotlin/issues/314
         TODO("Not yet implemented")
     }
 

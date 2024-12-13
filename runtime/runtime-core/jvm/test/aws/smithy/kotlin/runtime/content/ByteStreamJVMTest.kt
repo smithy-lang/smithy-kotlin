@@ -8,6 +8,7 @@ package aws.smithy.kotlin.runtime.content
 import aws.smithy.kotlin.runtime.testing.RandomTempFile
 import kotlinx.coroutines.test.runTest
 import java.io.ByteArrayOutputStream
+import java.io.InputStream
 import java.io.OutputStream
 import java.nio.file.Files
 import kotlin.test.*
@@ -159,7 +160,7 @@ class ByteStreamJVMTest {
         binaryData.inputStream().use { inputStream ->
             val byteStream = inputStream.asByteStream()
             assertNull(byteStream.contentLength)
-            assertTrue(byteStream.isOneShot)
+            assertFalse(byteStream.isOneShot)
 
             val output = byteStream.toByteArray()
             assertContentEquals(binaryData, output)
@@ -169,6 +170,23 @@ class ByteStreamJVMTest {
     @Test
     fun testInputStreamAsByteStreamWithLength() = runTest {
         binaryData.inputStream().use { inputStream ->
+            val byteStream = inputStream.asByteStream(binaryData.size.toLong())
+            assertEquals(binaryData.size.toLong(), byteStream.contentLength)
+            assertFalse(byteStream.isOneShot)
+
+            val output = byteStream.toByteArray()
+            assertContentEquals(binaryData, output)
+        }
+    }
+
+    @Test
+    fun testOneShotInputStream() = runTest {
+        class NonReplayableInputStream(val delegate: InputStream) : InputStream() {
+            override fun read(): Int = delegate.read()
+            override fun markSupported(): Boolean = false
+        }
+
+        NonReplayableInputStream(binaryData.inputStream()).use { inputStream ->
             val byteStream = inputStream.asByteStream(binaryData.size.toLong())
             assertEquals(binaryData.size.toLong(), byteStream.contentLength)
             assertTrue(byteStream.isOneShot)

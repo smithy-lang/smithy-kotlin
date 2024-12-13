@@ -93,7 +93,7 @@ public fun Headers.toOkHttpHeaders(): OkHttpHeaders = OkHttpHeaders.Builder().al
     }
 
     if ("Accept-Encoding" !in this) {
-        // Disable OkHttp transparent response decompression. See https://github.com/awslabs/smithy-kotlin/issues/1041
+        // Disable OkHttp transparent response decompression. See https://github.com/smithy-lang/smithy-kotlin/issues/1041
         okHeaders.addUnsafeNonAscii("Accept-Encoding", "identity")
     }
 }.build()

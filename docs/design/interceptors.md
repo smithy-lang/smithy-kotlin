@@ -599,9 +599,9 @@ require an explicit `copy` to mutate. The assumption of immutability of these ty
 ### Retry and Signing Middleware
 
 Every hook defined in the `Interceptor` interface can be implemented as part of 
-[SdkOperationExecution](https://github.com/awslabs/smithy-kotlin/blob/v0.14.0/runtime/protocol/http/common/src/aws/smithy/kotlin/runtime/http/operation/SdkOperationExecution.kt#L36)
+[SdkOperationExecution](https://github.com/smithy-lang/smithy-kotlin/blob/v0.14.0/runtime/protocol/http/common/src/aws/smithy/kotlin/runtime/http/operation/SdkOperationExecution.kt#L36)
 with the exception of the retry (attempt) and signing related hooks. These two capabilities are currently implemented in
-terms of [Middleware](https://github.com/awslabs/smithy-kotlin/blob/v0.14.0/runtime/io/common/src/aws/smithy/kotlin/runtime/io/middleware/Middleware.kt#L13). 
+terms of [Middleware](https://github.com/smithy-lang/smithy-kotlin/blob/v0.14.0/runtime/io/common/src/aws/smithy/kotlin/runtime/io/middleware/Middleware.kt#L13). 
 The anticipation is that these middleware components will be pulled into `SdkOperationExecution` as explicit phases 
 (similar to serialization and deserialization). The middleware as it exists today will be removed and relocated to these
 new explicit phases. This should be safe to do as every operation typically has a retry and signing middleware and those
