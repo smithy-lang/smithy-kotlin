@@ -185,14 +185,16 @@ private val KotlinNativeTarget.isWindows: Boolean
  * See [KT-30498](https://youtrack.jetbrains.com/issue/KT-30498)
  */
 fun Project.disableCrossCompileTargets() {
-    plugins.withId("org.jetbrains.kotlin.multiplatform") {
-        configure<KotlinMultiplatformExtension> {
-            targets.withType<KotlinNativeTarget> {
-                val knTarget = this
-                when {
-                    HostManager.hostIsMac && (knTarget.isLinux || knTarget.isWindows) -> disable(knTarget)
-                    HostManager.hostIsLinux && knTarget.isApple -> disable(knTarget)
-                    HostManager.hostIsMingw && (knTarget.isLinux || knTarget.isApple) -> disable(knTarget)
+    allprojects {
+        plugins.withId("org.jetbrains.kotlin.multiplatform") {
+            configure<KotlinMultiplatformExtension> {
+                targets.withType<KotlinNativeTarget> {
+                    val knTarget = this
+                    when {
+                        HostManager.hostIsMac && (knTarget.isLinux || knTarget.isWindows) -> disable(knTarget)
+                        HostManager.hostIsLinux && knTarget.isApple -> disable(knTarget)
+                        HostManager.hostIsMingw && (knTarget.isLinux || knTarget.isApple) -> disable(knTarget)
+                    }
                 }
             }
         }
