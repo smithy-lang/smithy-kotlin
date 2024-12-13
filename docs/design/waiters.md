@@ -376,7 +376,7 @@ val matcher: (DescribeBatchPredictionsOutput) -> Boolean = {
 ```
 
 Smithy provides
-[a JMESPath parser](https://github.com/awslabs/smithy/tree/main/smithy-jmespath/src/main/java/software/amazon/smithy/jmespath)
+[a JMESPath parser](https://github.com/smithy-lang/smithy/tree/main/smithy-jmespath/src/main/java/software/amazon/smithy/jmespath)
 with visitor pattern that can be used for codegenning path-based matchers.
 
 #### Rejected alternatives

@@ -61,7 +61,7 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Unit>() {
         // Model pre-processing:
         // 1. Start with the model from the plugin context
         // 2. Apply integrations
-        // 3. Flatten error shapes (see: https://github.com/awslabs/smithy/pull/919)
+        // 3. Flatten error shapes (see: https://github.com/smithy-lang/smithy/pull/919)
         // 4. Normalize the operations
         for (integration in integrations) {
             if (integration.enabledForService(resolvedModel, settings)) {

@@ -5,14 +5,7 @@
 package aws.smithy.kotlin.runtime.http.engine.okhttp
 
 import aws.smithy.kotlin.runtime.telemetry.logging.logger
-import kotlinx.coroutines.CoroutineName
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.cancelAndJoin
-import kotlinx.coroutines.isActive
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.*
 import okhttp3.Call
 import okhttp3.Connection
 import okhttp3.ConnectionListener
@@ -24,13 +17,22 @@ import okio.source
 import java.net.SocketException
 import java.net.SocketTimeoutException
 import java.util.concurrent.ConcurrentHashMap
+import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.coroutineContext
 import kotlin.time.Duration
 import kotlin.time.measureTime
 
 @OptIn(ExperimentalOkHttpApi::class)
 internal class ConnectionIdleMonitor(val pollInterval: Duration) : ConnectionListener() {
+    private val monitorScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
     private val monitors = ConcurrentHashMap<Connection, Job>()
+
+    fun close(): Unit = runBlocking {
+        val monitorJob = requireNotNull(monitorScope.coroutineContext[Job]) {
+            "Connection idle monitor scope cannot be cancelled because it does not have a job: $this"
+        }
+        monitorJob.cancelAndJoin()
+    }
 
     private fun Call.callContext() =
         request()
@@ -58,12 +60,11 @@ internal class ConnectionIdleMonitor(val pollInterval: Duration) : ConnectionLis
 
     override fun connectionReleased(connection: Connection, call: Call) {
         val connId = System.identityHashCode(connection)
-        val context = call.callContext()
-        val scope = CoroutineScope(context)
-        val monitor = scope.launch(CoroutineName("okhttp-conn-monitor-for-$connId")) {
-            doMonitor(connection)
+        val callContext = call.callContext()
+        val monitor = monitorScope.launch(CoroutineName("okhttp-conn-monitor-for-$connId")) {
+            doMonitor(connection, callContext)
         }
-        context.logger<ConnectionIdleMonitor>().trace { "Launched coroutine $monitor to monitor $connection" }
+        callContext.logger<ConnectionIdleMonitor>().trace { "Launched coroutine $monitor to monitor $connection" }
 
         // Non-locking map access is okay here because this code will only execute synchronously as part of a
         // `connectionReleased` event and will be complete before any future `connectionAcquired` event could fire for
@@ -71,8 +72,8 @@ internal class ConnectionIdleMonitor(val pollInterval: Duration) : ConnectionLis
         monitors[connection] = monitor
     }
 
-    private suspend fun doMonitor(conn: Connection) {
-        val logger = coroutineContext.logger<ConnectionIdleMonitor>()
+    private suspend fun doMonitor(conn: Connection, callContext: CoroutineContext) {
+        val logger = callContext.logger<ConnectionIdleMonitor>()
 
         val socket = conn.socket()
         val source = try {
@@ -111,6 +112,7 @@ internal class ConnectionIdleMonitor(val pollInterval: Duration) : ConnectionLis
                 logger.trace { "Attempting to reset soTimeout..." }
                 try {
                     conn.socket().soTimeout = oldTimeout
+                    logger.trace { "soTimeout reset." }
                 } catch (e: Throwable) {
                     logger.warn(e) { "Failed to reset socket timeout on $conn. Connection may be unstable now." }
                 }

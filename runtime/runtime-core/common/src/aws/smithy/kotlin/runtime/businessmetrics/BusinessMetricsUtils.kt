@@ -90,4 +90,7 @@ public enum class SmithyBusinessMetric(public override val identifier: String) :
     SERVICE_ENDPOINT_OVERRIDE("N"),
     ACCOUNT_ID_BASED_ENDPOINT("O"),
     SIGV4A_SIGNING("S"),
+    ;
+
+    override fun toString(): String = identifier
 }

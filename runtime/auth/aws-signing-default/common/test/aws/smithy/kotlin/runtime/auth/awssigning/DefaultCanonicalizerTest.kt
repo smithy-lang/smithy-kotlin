@@ -77,7 +77,7 @@ class DefaultCanonicalizerTest {
         assertEquals(expectedHeaders, actual.request.headers.entries())
     }
 
-    // Targeted test for proper URI path escaping. See https://github.com/awslabs/smithy-kotlin/issues/657
+    // Targeted test for proper URI path escaping. See https://github.com/smithy-lang/smithy-kotlin/issues/657
     @Test
     fun testEscapablePath() {
         val uri = Url.Builder()
