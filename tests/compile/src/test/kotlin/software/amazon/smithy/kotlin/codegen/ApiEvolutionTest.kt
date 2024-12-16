@@ -6,6 +6,7 @@ package software.amazon.smithy.kotlin.codegen
 
 import software.amazon.smithy.kotlin.codegen.util.asSmithy
 import software.amazon.smithy.kotlin.codegen.util.testModelChangeAgainstSource
+import kotlin.test.Ignore
 import kotlin.test.Test
 import kotlin.test.assertTrue
 
@@ -20,6 +21,7 @@ import kotlin.test.assertTrue
  * Example: "Wrote generated SDK to /tmp/sdk-codegen-1606867139716"
  */
 class ApiEvolutionTest {
+    @Ignore // Disabled until kotlin-compile-testing supports Kotlin 2.1.0
     @Test
     fun `client calling operation with no input to operation with empty input compiles`() {
         val modelV1 = """
@@ -79,6 +81,7 @@ class ApiEvolutionTest {
         }
     }
 
+    @Ignore // Disabled until kotlin-compile-testing supports Kotlin 2.1.0
     @Test
     fun `client calling operation with empty input to operation with input containing members compiles`() {
         val modelV1 = """
@@ -144,6 +147,7 @@ class ApiEvolutionTest {
         }
     }
 
+    @Ignore // Disabled until kotlin-compile-testing supports Kotlin 2.1.0
     @Test
     fun `client calling operation with no output to operation with empty output compiles`() {
         val modelV1 = """
@@ -203,6 +207,7 @@ class ApiEvolutionTest {
         }
     }
 
+    @Ignore // Disabled until kotlin-compile-testing supports Kotlin 2.1.0
     @Test
     fun `client calling operation with empty output to operation with output containing members compiles`() {
         val modelV1 = """
