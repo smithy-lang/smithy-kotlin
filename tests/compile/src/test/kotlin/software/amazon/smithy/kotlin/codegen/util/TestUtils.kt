@@ -70,7 +70,7 @@ fun testModelChangeAgainstSource(
         originalModelCompilationResult,
         updatedModelCompilationResult,
         originalModelCompilationResult.exitCode == KotlinCompilation.ExitCode.OK &&
-        updatedModelCompilationResult.exitCode == KotlinCompilation.ExitCode.OK,
+            updatedModelCompilationResult.exitCode == KotlinCompilation.ExitCode.OK,
         compileOutputStream.toString(),
     )
 }
