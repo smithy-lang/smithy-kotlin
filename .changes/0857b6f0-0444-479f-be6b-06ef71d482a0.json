@@ -1,0 +1,9 @@
+{
+    "id": "0857b6f0-0444-479f-be6b-06ef71d482a0",
+    "type": "feature",
+    "description": "⚠️ **IMPORTANT**: Add `retryStrategy` configuration option for waiters",
+    "issues": [
+        "https://github.com/awslabs/aws-sdk-kotlin/issues/1431"
+    ],
+    "requiresMinorVersionBump": true
+}
