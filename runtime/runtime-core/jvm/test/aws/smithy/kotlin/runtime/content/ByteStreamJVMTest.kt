@@ -243,7 +243,7 @@ class ByteStreamJVMTest {
 
         val byteStream = bufferedIns.asByteStream(content.size.toLong())
 
-        // Test that it can be read at least twice (once for hashing the body, once for transmitting the body)
+        // Test that it can be read at least twice (e.g. once for hashing the body, once for transmitting the body)
         assertContentEquals(content, byteStream.readFrom().use { it.readToByteArray() })
         assertContentEquals(content, byteStream.readFrom().use { it.readToByteArray() })
     }
