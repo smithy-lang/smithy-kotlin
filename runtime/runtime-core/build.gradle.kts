@@ -1,3 +1,5 @@
+import org.gradle.api.tasks.testing.logging.TestExceptionFormat
+
 /*
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
  * SPDX-License-Identifier: Apache-2.0
@@ -40,6 +42,12 @@ kotlin {
         jvmTest {
             dependencies {
                 implementation(libs.kaml)
+            }
+        }
+
+        nativeMain {
+            dependencies {
+                implementation(libs.kotlin.multiplatform.bignum)
             }
         }
 

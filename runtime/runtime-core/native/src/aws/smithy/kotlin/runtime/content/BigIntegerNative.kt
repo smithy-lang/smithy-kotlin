@@ -4,37 +4,38 @@
  */
 package aws.smithy.kotlin.runtime.content
 
-public actual class BigInteger actual constructor(value: String) :
+import com.ionspin.kotlin.bignum.integer.util.fromTwosComplementByteArray
+import com.ionspin.kotlin.bignum.integer.util.toTwosComplementByteArray
+import com.ionspin.kotlin.bignum.integer.BigInteger as IonSpinBigInteger
+
+public actual class BigInteger private constructor(private val delegate: IonSpinBigInteger) :
     Number(),
     Comparable<BigInteger> {
-    public actual constructor(bytes: ByteArray) : this("Not yet implemented")
 
-    actual override fun toByte(): Byte {
-        TODO("Not yet implemented")
+    private companion object {
+        fun coalesceOrCreate(value: IonSpinBigInteger, left: BigInteger, right: BigInteger): BigInteger = when (value) {
+            left.delegate -> left
+            right.delegate -> right
+            else -> BigInteger(value)
+        }
     }
 
-    actual override fun toDouble(): Double {
-        TODO("Not yet implemented")
-    }
+    public actual constructor(value: String) : this(IonSpinBigInteger.parseString(value, 10))
+    public actual constructor(bytes: ByteArray) : this(IonSpinBigInteger.fromTwosComplementByteArray(bytes))
 
-    actual override fun toFloat(): Float {
-        TODO("Not yet implemented")
-    }
+    actual override fun toByte(): Byte = delegate.byteValue(exactRequired = false)
+    actual override fun toDouble(): Double = delegate.doubleValue(exactRequired = false)
+    actual override fun toFloat(): Float = delegate.floatValue(exactRequired = false)
+    actual override fun toInt(): Int = delegate.intValue(exactRequired = false)
+    actual override fun toLong(): Long = delegate.longValue(exactRequired = false)
+    actual override fun toShort(): Short = delegate.shortValue(exactRequired = false)
 
-    actual override fun toInt(): Int {
-        TODO("Not yet implemented")
-    }
+    public actual operator fun plus(other: BigInteger): BigInteger =
+        coalesceOrCreate(delegate + other.delegate, this, other)
 
-    actual override fun toLong(): Long {
-        TODO("Not yet implemented")
-    }
+    public actual operator fun minus(other: BigInteger): BigInteger =
+        coalesceOrCreate(delegate - other.delegate, this, other)
 
-    actual override fun toShort(): Short {
-        TODO("Not yet implemented")
-    }
-
-    public actual operator fun plus(other: BigInteger): BigInteger = TODO("Not yet implemented")
-    public actual operator fun minus(other: BigInteger): BigInteger = TODO("Not yet implemented")
-    public actual fun toByteArray(): ByteArray = TODO("Not yet implemented")
-    actual override fun compareTo(other: BigInteger): Int = TODO("Not yet implemented")
+    public actual fun toByteArray(): ByteArray = delegate.toTwosComplementByteArray()
+    actual override fun compareTo(other: BigInteger): Int = delegate.compare(other.delegate)
 }
