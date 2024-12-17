@@ -2,7 +2,7 @@
 kotlin-version = "2.0.21"
 dokka-version = "1.9.10"
 
-aws-kotlin-repo-tools-version = "0.4.15-kn"
+aws-kotlin-repo-tools-version = "0.4.20-kn"
 
 # libs
 coroutines-version = "1.9.0"
@@ -96,6 +96,7 @@ ktor-server-netty = { module = "io.ktor:ktor-server-netty", version.ref = "ktor-
 ktor-server-jetty-jakarta = { module = "io.ktor:ktor-server-jetty-jakarta", version.ref = "ktor-version" }
 ktor-server-cio = { module = "io.ktor:ktor-server-cio", version.ref = "ktor-version" }
 ktor-network-tls-certificates = { module = "io.ktor:ktor-network-tls-certificates", version.ref = "ktor-version" }
+ktor-client-core = { module = "io.ktor:ktor-client-core", version.ref = "ktor-version" }
 
 kaml = { module = "com.charleskorn.kaml:kaml", version.ref = "kaml-version" }
 jsoup = { module = "org.jsoup:jsoup", version.ref = "jsoup-version" }

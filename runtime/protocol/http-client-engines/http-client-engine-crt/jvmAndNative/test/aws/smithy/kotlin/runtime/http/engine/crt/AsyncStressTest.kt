@@ -13,7 +13,6 @@ import aws.smithy.kotlin.runtime.http.request.url
 import aws.smithy.kotlin.runtime.httptest.TestWithLocalServer
 import aws.smithy.kotlin.runtime.net.Host
 import aws.smithy.kotlin.runtime.net.Scheme
-import aws.smithy.kotlin.runtime.testing.IgnoreWindows
 import io.ktor.server.cio.*
 import io.ktor.server.engine.*
 import io.ktor.server.response.*
@@ -25,9 +24,7 @@ import kotlinx.coroutines.yield
 import kotlin.test.Test
 import kotlin.time.Duration.Companion.seconds
 
-// FIXME This test implements [TestWithLocalServer] which is JVM-only.
 class AsyncStressTest : TestWithLocalServer() {
-
     override val server = embeddedServer(CIO, serverPort) {
         routing {
             get("/largeResponse") {
@@ -37,9 +34,8 @@ class AsyncStressTest : TestWithLocalServer() {
                 call.respondText(text.repeat(respSize / text.length))
             }
         }
-    }
+    }.start()
 
-    @IgnoreWindows("FIXME - times out after upgrade to kotlinx.coroutines 1.6.0")
     @Test
     fun testStreamNotConsumed() = runBlocking {
         // test that filling the stream window and not consuming the body stream still cleans up resources

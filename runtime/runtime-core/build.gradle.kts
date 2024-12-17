@@ -23,6 +23,12 @@ kotlin {
             }
         }
 
+        nativeMain {
+            dependencies {
+                api(libs.crt.kotlin)
+            }
+        }
+
         commonTest {
             dependencies {
                 // Coroutines' locking features are used in retry token bucket implementations
