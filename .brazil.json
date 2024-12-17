@@ -1,6 +1,6 @@
 {
   "dependencies": {
-    "org.jetbrains.kotlin:kotlin-stdlib:2.0.*": "KotlinStdlib-2.x",
+    "org.jetbrains.kotlin:kotlin-stdlib:2.*": "KotlinStdlib-2.x",
     "org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm:1.*": "KotlinxCoroutinesCoreJvm-1.x",
 
     "com.squareup.okhttp3:okhttp-coroutines:5.*": "OkHttp3Coroutines-5.x",
