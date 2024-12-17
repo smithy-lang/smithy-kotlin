@@ -114,11 +114,25 @@ public fun ByteStream.Companion.fromInputStream(
  * @param contentLength If specified, indicates how many bytes remain in this stream. Defaults to `null`.
  */
 public fun InputStream.asByteStream(contentLength: Long? = null): ByteStream.SourceStream {
-    val source = source()
+    if (markSupported() && contentLength != null) {
+        mark(contentLength.toInt())
+    }
+
     return object : ByteStream.SourceStream() {
         override val contentLength: Long? = contentLength
         override val isOneShot: Boolean = !markSupported()
-        override fun readFrom(): SdkSource = source
+        override fun readFrom(): SdkSource {
+            if (markSupported() && contentLength != null) {
+                reset()
+                mark(contentLength.toInt())
+                return object : SdkSource by source() {
+                    // no-op close
+                    override fun close() { }
+                }
+            }
+
+            return source()
+        }
     }
 }
 
