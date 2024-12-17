@@ -126,7 +126,12 @@ public fun InputStream.asByteStream(contentLength: Long? = null): ByteStream.Sou
                 reset()
                 mark(contentLength.toInt())
                 return object : SdkSource by source() {
-                    // no-op close
+                    /**
+                     * This is a no-op close to prevent body hashing from closing the underlying InputStream, which causes
+                     * `IOException: Stream closed` on subsequent reads. Consider making [ByteStream.ChannelStream]/[ByteStream.SourceStream]
+                     * (or possibly even [ByteStream] itself) implement [Closeable] to better handle closing streams.
+                     * This should allow us to clean up our usage of [ByteStream.cancel()].
+                     */
                     override fun close() { }
                 }
             }
