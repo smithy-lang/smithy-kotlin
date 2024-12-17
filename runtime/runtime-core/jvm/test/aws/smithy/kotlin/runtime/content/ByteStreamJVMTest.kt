@@ -252,7 +252,7 @@ class ByteStreamJVMTest {
         override fun markSupported(): Boolean = false // not replayable
 
         override fun read(): Int = inputStream.read()
-        override fun mark(readlimit: Int)= inputStream.mark(readlimit)
+        override fun mark(readlimit: Int) = inputStream.mark(readlimit)
         override fun reset() = inputStream.reset()
     }
 
