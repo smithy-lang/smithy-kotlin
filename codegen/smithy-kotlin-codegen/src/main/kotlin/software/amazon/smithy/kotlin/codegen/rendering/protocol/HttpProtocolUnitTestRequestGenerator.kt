@@ -117,7 +117,7 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
                         write("return")
                     }
                     write("requireNotNull(expectedBytes) { #S }", "expected application/cbor body cannot be null")
-                    write("requireNotNull(expectedBytes) { #S }", "actual application/cbor body cannot be null")
+                    write("requireNotNull(actualBytes) { #S }", "actual application/cbor body cannot be null")
 
                     write("")
                     write("val expectedRequest = #L(#T(expectedBytes))", inputDeserializer.name, RuntimeTypes.Serde.SerdeCbor.CborDeserializer)
