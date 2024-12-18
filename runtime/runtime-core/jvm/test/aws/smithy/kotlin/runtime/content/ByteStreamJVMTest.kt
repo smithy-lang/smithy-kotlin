@@ -5,8 +5,11 @@
 
 package aws.smithy.kotlin.runtime.content
 
+import aws.smithy.kotlin.runtime.io.readToByteArray
 import aws.smithy.kotlin.runtime.testing.RandomTempFile
 import kotlinx.coroutines.test.runTest
+import java.io.BufferedInputStream
+import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.InputStream
 import java.io.OutputStream
@@ -226,6 +229,31 @@ class ByteStreamJVMTest {
         assertFalse(sos.closed)
         byteStream.appendToOutputStream(sos)
         assertFalse(sos.closed)
+    }
+
+    // https://github.com/awslabs/aws-sdk-kotlin/issues/1473
+    @Test
+    fun testReplayableInputStreamAsByteStream() = runTest {
+        val content = "Hello, Bytes!".encodeToByteArray()
+        val byteArrayIns = ByteArrayInputStream(content)
+        val nonReplayableIns = NonReplayableInputStream(byteArrayIns)
+
+        // buffer the non-replayable stream, making it replayable...
+        val bufferedIns = BufferedInputStream(nonReplayableIns)
+
+        val byteStream = bufferedIns.asByteStream(content.size.toLong())
+
+        // Test that it can be read at least twice (e.g. once for hashing the body, once for transmitting the body)
+        assertContentEquals(content, byteStream.readFrom().use { it.readToByteArray() })
+        assertContentEquals(content, byteStream.readFrom().use { it.readToByteArray() })
+    }
+
+    private class NonReplayableInputStream(val inputStream: InputStream) : InputStream() {
+        override fun markSupported(): Boolean = false // not replayable
+
+        override fun read(): Int = inputStream.read()
+        override fun mark(readlimit: Int) = inputStream.mark(readlimit)
+        override fun reset() = inputStream.reset()
     }
 
     private class StatusTrackingOutputStream(val os: OutputStream) : OutputStream() {
