@@ -121,7 +121,7 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
 
                     write("")
                     write("val expectedRequest = #L(#T(expectedBytes))", inputDeserializer.name, RuntimeTypes.Serde.SerdeCbor.CborDeserializer)
-                    write("val actualRequest = #L(#T(expectedBytes))", inputDeserializer.name, RuntimeTypes.Serde.SerdeCbor.CborDeserializer)
+                    write("val actualRequest = #L(#T(actualBytes))", inputDeserializer.name, RuntimeTypes.Serde.SerdeCbor.CborDeserializer)
                     write("assertEquals(expectedRequest, actualRequest)")
                 }
                 writer.write("")
