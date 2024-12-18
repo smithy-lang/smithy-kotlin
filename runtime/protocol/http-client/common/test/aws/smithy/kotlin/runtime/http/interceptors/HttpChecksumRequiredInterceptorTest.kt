@@ -19,7 +19,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
 
-class Md5ChecksumInterceptorTest {
+class HttpChecksumRequiredInterceptorTest {
     private val client = SdkHttpClient(TestEngine())
 
     @Test
@@ -30,7 +30,7 @@ class Md5ChecksumInterceptorTest {
         val op = newTestOperation<Unit, Unit>(req, Unit)
 
         op.interceptors.add(
-            Md5ChecksumInterceptor<Unit> {
+            HttpChecksumRequiredInterceptor<Unit> {
                 true
             },
         )
@@ -51,7 +51,7 @@ class Md5ChecksumInterceptorTest {
         val op = newTestOperation<Unit, Unit>(req, Unit)
 
         op.interceptors.add(
-            Md5ChecksumInterceptor<Unit> {
+            HttpChecksumRequiredInterceptor<Unit> {
                 true
             },
         )
@@ -69,7 +69,7 @@ class Md5ChecksumInterceptorTest {
         val op = newTestOperation<Unit, Unit>(req, Unit)
 
         op.interceptors.add(
-            Md5ChecksumInterceptor<Unit> {
+            HttpChecksumRequiredInterceptor<Unit> {
                 false // interceptor disabled
             },
         )

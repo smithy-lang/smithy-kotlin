@@ -77,7 +77,7 @@ public fun String.toHashFunction(): HashFunction? = when (this.lowercase()) {
  */
 @InternalApi
 public fun String.toHashFunctionOrThrow(): HashFunction =
-    toHashFunction() ?: throw ClientException("Checksum algorithm '$this' is not supported")
+    toHashFunction() ?: throw ClientException("Checksum algorithm is not supported: $this")
 
 /**
  * @return if the [HashFunction] is supported by flexible checksums
@@ -86,4 +86,36 @@ public fun String.toHashFunctionOrThrow(): HashFunction =
 public val HashFunction.isSupportedForFlexibleChecksums: Boolean get() = when (this) {
     is Crc32, is Crc32c, is Sha256, is Sha1 -> true
     else -> false
+}
+
+/**
+ * @return The checksum algorithm header used depending on the checksum algorithm name
+ */
+@InternalApi
+public fun checksumAlgorithmHeader(checksumAlgorithm: String): String {
+    val prefix = "x-amz-checksum"
+    return when (checksumAlgorithm.lowercase()) {
+        "crc32" -> prefix + "crc32"
+        "crc32c" -> prefix + "crc32c"
+        "sha1" -> prefix + "sha1"
+        "sha256" -> prefix + "sha256"
+        "md5" -> "Content-MD5"
+        else -> throw ClientException("Checksum algorithm is not supported: ${checksumAlgorithm::class.simpleName}")
+    }
+}
+
+/**
+ * @return The checksum algorithm header used depending on the checksum algorithm
+ */
+@InternalApi
+public fun checksumAlgorithmHeader(checksumAlgorithm: HashFunction): String {
+    val prefix = "x-amz-checksum"
+    return when (checksumAlgorithm) {
+        is Crc32 -> prefix + "crc32"
+        is Crc32c -> prefix + "crc32c"
+        is Sha1 -> prefix + "sha1"
+        is Sha256 -> prefix + "sha256"
+        is Md5 -> "Content-MD5"
+        else -> throw ClientException("Checksum algorithm is not supported: ${checksumAlgorithm::class.simpleName}")
+    }
 }
