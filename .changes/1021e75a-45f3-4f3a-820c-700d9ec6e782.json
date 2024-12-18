@@ -1,0 +1,5 @@
+{
+    "id": "1021e75a-45f3-4f3a-820c-700d9ec6e782",
+    "type": "bugfix",
+    "description": "Fix serialization of CBOR blobs"
+}
