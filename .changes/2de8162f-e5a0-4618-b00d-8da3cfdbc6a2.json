@@ -1,8 +1,0 @@
-{
-    "id": "2de8162f-e5a0-4618-b00d-8da3cfdbc6a2",
-    "type": "feature",
-    "description": "Enhance support for replayable instances of `InputStream`",
-    "issues": [
-        "https://github.com/awslabs/aws-sdk-kotlin/issues/1473"
-    ]
-}
