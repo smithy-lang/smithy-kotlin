@@ -21,6 +21,7 @@ import software.amazon.smithy.rulesengine.language.EndpointRuleSet
 import software.amazon.smithy.rulesengine.traits.EndpointRuleSetTrait
 import software.amazon.smithy.rulesengine.traits.EndpointTestCase
 import software.amazon.smithy.rulesengine.traits.EndpointTestsTrait
+import kotlin.streams.toList as kotlinToList // Gave this import a unique name because the Java one was being preferred
 
 /**
  * Get all shapes of a particular type from the model.
@@ -32,7 +33,7 @@ import software.amazon.smithy.rulesengine.traits.EndpointTestsTrait
  * shape's closure for example)
  */
 @Suppress("EXTENSION_SHADOWED_BY_MEMBER")
-inline fun <reified T : Shape> Model.shapes(): List<T> = shapes(T::class.java).toList()
+inline fun <reified T : Shape> Model.shapes(): List<T> = shapes(T::class.java).kotlinToList()
 
 /**
  * Extension function to return a shape of expected type.
