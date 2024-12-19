@@ -37,7 +37,11 @@ operation SayHello { output: TestOutputDocument, errors: [Error] }
 @http(method: "POST", uri: "/")
 operation SayHelloXml { output: TestOutput, errors: [Error] }
 
-structure TestOutputDocument with [TestStruct] { innerField: Nested, @required document: Document }
+structure TestOutputDocument with [TestStruct] {
+    innerField: Nested,
+    // @required
+    document: Document
+}
 structure TestOutput with [TestStruct] { innerField: Nested }
 
 @mixin
@@ -60,7 +64,7 @@ structure TestStruct {
     @required
     nestedListValue: NestedList
 
-    @required
+    // @required
     nested: Nested
 
     @required
@@ -91,7 +95,7 @@ union MyUnion {
 }
 
 structure Nested {
-    @required
+    // @required
     a: String
 }
 

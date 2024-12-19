@@ -81,7 +81,7 @@ object RuntimeTypes {
         object Interceptors : RuntimeTypePackage(KotlinDependency.HTTP, "interceptors") {
             val ContinueInterceptor = symbol("ContinueInterceptor")
             val HttpInterceptor = symbol("HttpInterceptor")
-            val Md5ChecksumInterceptor = symbol("Md5ChecksumInterceptor")
+            val HttpChecksumRequiredInterceptor = symbol("HttpChecksumRequiredInterceptor")
             val FlexibleChecksumsRequestInterceptor = symbol("FlexibleChecksumsRequestInterceptor")
             val FlexibleChecksumsResponseInterceptor = symbol("FlexibleChecksumsResponseInterceptor")
             val ResponseLengthValidationInterceptor = symbol("ResponseLengthValidationInterceptor")
@@ -170,6 +170,8 @@ object RuntimeTypes {
 
         object Hashing : RuntimeTypePackage(KotlinDependency.CORE, "hashing") {
             val Sha256 = symbol("Sha256")
+            val toHashFunctionOrThrow = symbol("toHashFunctionOrThrow")
+            val isSupportedForFlexibleChecksums = symbol("isSupportedForFlexibleChecksums")
         }
 
         object IO : RuntimeTypePackage(KotlinDependency.CORE, "io") {
@@ -199,6 +201,7 @@ object RuntimeTypes {
             val toNumber = symbol("toNumber")
             val type = symbol("type")
             val PlatformProvider = symbol("PlatformProvider")
+            val runBlocking = symbol("runBlocking")
         }
 
         object Net : RuntimeTypePackage(KotlinDependency.CORE, "net") {
@@ -231,6 +234,8 @@ object RuntimeTypes {
         object Config : RuntimeTypePackage(KotlinDependency.SMITHY_CLIENT, "config") {
             val RequestCompressionConfig = symbol("RequestCompressionConfig")
             val CompressionClientConfig = symbol("CompressionClientConfig")
+            val HttpChecksumClientConfig = symbol("HttpChecksumClientConfig")
+            val HttpChecksumConfigOption = symbol("HttpChecksumConfigOption")
         }
 
         object Endpoints : RuntimeTypePackage(KotlinDependency.SMITHY_CLIENT, "endpoints") {
@@ -395,6 +400,7 @@ object RuntimeTypes {
             val TelemetryContextElement = symbol("TelemetryContextElement", "context")
             val TraceSpan = symbol("TraceSpan", "trace")
             val withSpan = symbol("withSpan", "trace")
+            val warn = symbol("warn", "logging")
         }
         object TelemetryDefaults : RuntimeTypePackage(KotlinDependency.TELEMETRY_DEFAULTS) {
             val Global = symbol("Global")

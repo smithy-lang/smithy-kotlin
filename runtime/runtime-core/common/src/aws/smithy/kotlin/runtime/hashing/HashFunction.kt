@@ -4,6 +4,7 @@
  */
 package aws.smithy.kotlin.runtime.hashing
 
+import aws.smithy.kotlin.runtime.ClientException
 import aws.smithy.kotlin.runtime.InternalApi
 
 /**
@@ -69,4 +70,61 @@ public fun String.toHashFunction(): HashFunction? = when (this.lowercase()) {
     "sha256" -> Sha256()
     "md5" -> Md5()
     else -> null
+}
+
+/**
+ * @return The [HashFunction] which is represented by this string, or an exception if none match.
+ */
+@InternalApi
+public fun String.toHashFunctionOrThrow(): HashFunction =
+    toHashFunction() ?: throw ClientException("Checksum algorithm is not supported: $this")
+
+/**
+ * @return If the [HashFunction] is supported by flexible checksums
+ */
+@InternalApi
+public val HashFunction.isSupportedForFlexibleChecksums: Boolean get() =
+    algorithmsSupportedForFlexibleChecksums.contains(this::class.simpleName)
+
+/**
+ * The class names of checksum algorithms supported for flexible checksums
+ */
+// This is shown to users in exception messages to let them know which algorithms are supported
+public val algorithmsSupportedForFlexibleChecksums: Set<String> = setOf(
+    "Crc32",
+    "Crc32c",
+    "Sha1",
+    "Sha256",
+)
+
+/**
+ * @return The checksum algorithm header used depending on the checksum algorithm name
+ */
+@InternalApi
+public fun checksumAlgorithmHeader(checksumAlgorithm: String): String {
+    val prefix = "x-amz-checksum-"
+    return when (checksumAlgorithm.lowercase()) {
+        "crc32" -> prefix + "crc32"
+        "crc32c" -> prefix + "crc32c"
+        "sha1" -> prefix + "sha1"
+        "sha256" -> prefix + "sha256"
+        "md5" -> "Content-MD5"
+        else -> throw ClientException("Checksum algorithm is not supported: ${checksumAlgorithm::class.simpleName}")
+    }
+}
+
+/**
+ * @return The checksum algorithm header used depending on the checksum algorithm
+ */
+@InternalApi
+public fun checksumAlgorithmHeader(checksumAlgorithm: HashFunction): String {
+    val prefix = "x-amz-checksum-"
+    return when (checksumAlgorithm) {
+        is Crc32 -> prefix + "crc32"
+        is Crc32c -> prefix + "crc32c"
+        is Sha1 -> prefix + "sha1"
+        is Sha256 -> prefix + "sha256"
+        is Md5 -> "Content-MD5"
+        else -> throw ClientException("Checksum algorithm is not supported: ${checksumAlgorithm::class.simpleName}")
+    }
 }
