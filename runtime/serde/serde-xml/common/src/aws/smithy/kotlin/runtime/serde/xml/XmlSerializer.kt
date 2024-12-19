@@ -134,7 +134,7 @@ public class XmlSerializer(private val xmlWriter: XmlStreamWriter = xmlStreamWri
         field(descriptor, value.format(format))
 
     override fun field(descriptor: SdkFieldDescriptor, value: ByteArray): Unit =
-        field(descriptor, value)
+        field(descriptor, value.encodeBase64String())
 
     override fun field(descriptor: SdkFieldDescriptor, value: Document?): Unit = throw SerializationException(
         "cannot serialize field ${descriptor.serialName}; Document type is not supported by xml encoding",
