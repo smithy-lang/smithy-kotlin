@@ -145,7 +145,7 @@ abstract class AbstractQueryFormUrlSerializerGenerator(
         return shape.documentSerializer(ctx.settings, symbol, members) { writer ->
             writer.openBlock("internal fun #identifier.name:L(serializer: #T, input: #T) {", RuntimeTypes.Serde.Serializer, symbol)
                 .call {
-                    renderSerializerBody(ctx, shape, shape.members().toList(), writer)
+                    renderSerializerBody(ctx, shape, members.toList(), writer)
                 }
                 .closeBlock("}")
         }
