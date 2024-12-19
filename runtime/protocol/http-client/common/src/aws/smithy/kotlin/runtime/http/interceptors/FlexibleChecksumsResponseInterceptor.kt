@@ -44,20 +44,10 @@ internal val CHECKSUM_HEADER_VALIDATION_PRIORITY_LIST: List<String> = listOf(
  * @param responseChecksumValidation Configuration option that determines when checksum validation should be done.
  */
 @InternalApi
-public class FlexibleChecksumsResponseInterceptor<I>(
+public open class FlexibleChecksumsResponseInterceptor(
     private val responseValidationRequired: Boolean,
     private val responseChecksumValidation: HttpChecksumConfigOption?,
 ) : HttpInterceptor {
-
-    // FIXME: Remove in next minor version bump
-    @Deprecated("Old constructor is no longer used but it's kept for backwards compatibility")
-    public constructor(
-        shouldValidateResponseChecksumInitializer: (input: I) -> Boolean,
-    ) : this(
-        false,
-        HttpChecksumConfigOption.WHEN_REQUIRED,
-    )
-
     @InternalApi
     public companion object {
         // The name of the checksum header which was validated. If `null`, validation was not performed.
@@ -65,17 +55,22 @@ public class FlexibleChecksumsResponseInterceptor<I>(
     }
 
     override suspend fun modifyBeforeDeserialization(context: ProtocolResponseInterceptorContext<Any, HttpRequest, HttpResponse>): HttpResponse {
-        val logger = coroutineContext.logger<FlexibleChecksumsResponseInterceptor<I>>()
+        val logger = coroutineContext.logger<FlexibleChecksumsResponseInterceptor>()
 
-        val forcedToVerifyChecksum = responseValidationRequired || responseChecksumValidation == HttpChecksumConfigOption.WHEN_SUPPORTED
-        if (!forcedToVerifyChecksum) return context.protocolResponse
+        val configuredToVerifyChecksum = responseValidationRequired || responseChecksumValidation == HttpChecksumConfigOption.WHEN_SUPPORTED
+        if (!configuredToVerifyChecksum) return context.protocolResponse
 
         val checksumHeader = CHECKSUM_HEADER_VALIDATION_PRIORITY_LIST
             .firstOrNull { context.protocolResponse.headers.contains(it) } ?: run {
-            logger.warn { "Checksum validation was requested but the response headers didn't contain a valid checksum." }
+                logger.warn { "Checksum validation was requested but the response headers didn't contain a valid checksum." }
+                return context.protocolResponse
+            }
+
+        val serviceChecksumValue = context.protocolResponse.headers[checksumHeader]!!
+        if (ignoreChecksum(serviceChecksumValue)) {
+            logger.warn { "Checksum detected but validation was skipped." }
             return context.protocolResponse
         }
-        val serviceChecksumValue = context.protocolResponse.headers[checksumHeader]!!
 
         context.executionContext[ChecksumHeaderValidated] = checksumHeader
 
@@ -111,6 +106,11 @@ public class FlexibleChecksumsResponseInterceptor<I>(
             else -> throw IllegalStateException("HTTP body type '$bodyType' is not supported for flexible checksums.")
         }
     }
+
+    /**
+     * Additional check on the checksum itself to see if it should be validated
+     */
+    public open fun ignoreChecksum(checksum: String): Boolean = false
 }
 
 public class ChecksumMismatchException(message: String?) : ClientException(message)

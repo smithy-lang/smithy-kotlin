@@ -174,6 +174,7 @@ public class AwsSigningConfig(builder: Builder) {
 
     /**
      * Determines the checksum to add to the canonical request query parameters before signing.
+     * The first element of the pair represents the checksum name, the second represents the checksum value.
      */
     public val checksum: Pair<String, String>? = builder.checksum
 

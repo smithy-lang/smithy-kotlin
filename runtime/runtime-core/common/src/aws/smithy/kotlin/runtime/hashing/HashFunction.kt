@@ -73,20 +73,29 @@ public fun String.toHashFunction(): HashFunction? = when (this.lowercase()) {
 }
 
 /**
- * Return the [HashFunction] which is represented by this string, or an exception if none match.
+ * @return The [HashFunction] which is represented by this string, or an exception if none match.
  */
 @InternalApi
 public fun String.toHashFunctionOrThrow(): HashFunction =
     toHashFunction() ?: throw ClientException("Checksum algorithm is not supported: $this")
 
 /**
- * @return if the [HashFunction] is supported by flexible checksums
+ * @return If the [HashFunction] is supported by flexible checksums
  */
 @InternalApi
-public val HashFunction.isSupportedForFlexibleChecksums: Boolean get() = when (this) {
-    is Crc32, is Crc32c, is Sha256, is Sha1 -> true
-    else -> false
-}
+public val HashFunction.isSupportedForFlexibleChecksums: Boolean get() =
+    algorithmsSupportedForFlexibleChecksums.contains(this::class.simpleName)
+
+/**
+ * The class names of checksum algorithms supported for flexible checksums
+ */
+// This is shown to users in exception messages to let them know which algorithms are supported
+public val algorithmsSupportedForFlexibleChecksums: Set<String> = setOf(
+    "Crc32",
+    "Crc32c",
+    "Sha1",
+    "Sha256",
+)
 
 /**
  * @return The checksum algorithm header used depending on the checksum algorithm name
