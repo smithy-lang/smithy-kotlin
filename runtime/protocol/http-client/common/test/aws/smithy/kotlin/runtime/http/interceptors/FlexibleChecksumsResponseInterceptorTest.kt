@@ -74,7 +74,7 @@ class FlexibleChecksumsResponseInterceptorTest {
             val op = newTestOperation<TestInput>(req)
 
             op.interceptors.add(
-                FlexibleChecksumsResponseInterceptor<TestInput>(
+                FlexibleChecksumsResponseInterceptor(
                     responseValidationRequired = true,
                     responseChecksumValidation = HttpChecksumConfigOption.WHEN_SUPPORTED,
                 ),
@@ -101,7 +101,7 @@ class FlexibleChecksumsResponseInterceptorTest {
             val op = newTestOperation<TestInput>(req)
 
             op.interceptors.add(
-                FlexibleChecksumsResponseInterceptor<TestInput>(
+                FlexibleChecksumsResponseInterceptor(
                     responseValidationRequired = true,
                     responseChecksumValidation = HttpChecksumConfigOption.WHEN_SUPPORTED,
                 ),
@@ -129,7 +129,7 @@ class FlexibleChecksumsResponseInterceptorTest {
         val op = newTestOperation<TestInput>(req)
 
         op.interceptors.add(
-            FlexibleChecksumsResponseInterceptor<TestInput>(
+            FlexibleChecksumsResponseInterceptor(
                 responseValidationRequired = true,
                 responseChecksumValidation = HttpChecksumConfigOption.WHEN_SUPPORTED,
             ),
@@ -154,7 +154,7 @@ class FlexibleChecksumsResponseInterceptorTest {
         val op = newTestOperation<TestInput>(req)
 
         op.interceptors.add(
-            FlexibleChecksumsResponseInterceptor<TestInput>(
+            FlexibleChecksumsResponseInterceptor(
                 responseValidationRequired = true,
                 responseChecksumValidation = HttpChecksumConfigOption.WHEN_SUPPORTED,
             ),
@@ -175,7 +175,7 @@ class FlexibleChecksumsResponseInterceptorTest {
         val op = newTestOperation<TestInput>(req)
 
         op.interceptors.add(
-            FlexibleChecksumsResponseInterceptor<TestInput>(
+            FlexibleChecksumsResponseInterceptor(
                 responseValidationRequired = false,
                 responseChecksumValidation = HttpChecksumConfigOption.WHEN_REQUIRED,
             ),
@@ -219,7 +219,7 @@ class FlexibleChecksumsResponseInterceptorTest {
             val op = newTestOperation<TestInput>(req)
 
             op.interceptors.add(
-                FlexibleChecksumsResponseInterceptor<TestInput>(
+                FlexibleChecksumsResponseInterceptor(
                     responseValidationRequired = testCase.responseValidationRequired,
                     responseChecksumValidation = testCase.responseChecksumValidation,
                 ),

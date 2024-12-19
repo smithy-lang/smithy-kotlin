@@ -102,7 +102,7 @@ public val algorithmsSupportedForFlexibleChecksums: Set<String> = setOf(
  */
 @InternalApi
 public fun checksumAlgorithmHeader(checksumAlgorithm: String): String {
-    val prefix = "x-amz-checksum"
+    val prefix = "x-amz-checksum-"
     return when (checksumAlgorithm.lowercase()) {
         "crc32" -> prefix + "crc32"
         "crc32c" -> prefix + "crc32c"
@@ -118,7 +118,7 @@ public fun checksumAlgorithmHeader(checksumAlgorithm: String): String {
  */
 @InternalApi
 public fun checksumAlgorithmHeader(checksumAlgorithm: HashFunction): String {
-    val prefix = "x-amz-checksum"
+    val prefix = "x-amz-checksum-"
     return when (checksumAlgorithm) {
         is Crc32 -> prefix + "crc32"
         is Crc32c -> prefix + "crc32c"

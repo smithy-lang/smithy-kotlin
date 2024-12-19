@@ -42,7 +42,7 @@ class FlexibleChecksumsRequestInterceptorTest {
             val op = newTestOperation<Unit, Unit>(req, Unit)
 
             op.interceptors.add(
-                FlexibleChecksumsRequestInterceptor<Unit>(
+                FlexibleChecksumsRequestInterceptor(
                     requestChecksumAlgorithm = checksumAlgorithmName,
                     requestChecksumRequired = true,
                     requestChecksumCalculation = HttpChecksumConfigOption.WHEN_SUPPORTED,
@@ -68,8 +68,9 @@ class FlexibleChecksumsRequestInterceptorTest {
 
         val op = newTestOperation<Unit, Unit>(req, Unit)
 
+        op.context.attributes[HttpOperationContext.DefaultChecksumAlgorithm] = "CRC32"
         op.interceptors.add(
-            FlexibleChecksumsRequestInterceptor<Unit>(
+            FlexibleChecksumsRequestInterceptor(
                 requestChecksumAlgorithm = checksumAlgorithmName,
                 requestChecksumRequired = true,
                 requestChecksumCalculation = HttpChecksumConfigOption.WHEN_SUPPORTED,
@@ -94,12 +95,13 @@ class FlexibleChecksumsRequestInterceptorTest {
 
         assertFailsWith<ClientException> {
             op.interceptors.add(
-                FlexibleChecksumsRequestInterceptor<Unit>(
+                FlexibleChecksumsRequestInterceptor(
                     requestChecksumAlgorithm = unsupportedChecksumAlgorithmName,
                     requestChecksumRequired = true,
                     requestChecksumCalculation = HttpChecksumConfigOption.WHEN_SUPPORTED,
                 ),
             )
+            op.roundTrip(client, Unit)
         }
     }
 
@@ -120,7 +122,7 @@ class FlexibleChecksumsRequestInterceptorTest {
         val op = newTestOperation<Unit, Unit>(req, Unit)
 
         op.interceptors.add(
-            FlexibleChecksumsRequestInterceptor<Unit>(
+            FlexibleChecksumsRequestInterceptor(
                 requestChecksumAlgorithm = checksumAlgorithmName,
                 requestChecksumRequired = true,
                 requestChecksumCalculation = HttpChecksumConfigOption.WHEN_SUPPORTED,
@@ -141,7 +143,7 @@ class FlexibleChecksumsRequestInterceptorTest {
         val source = byteArray.source()
         val completableDeferred = CompletableDeferred<String>()
         val hashingSource = HashingSource(hashFunctionName.toHashFunction()!!, source)
-        val completingSource = FlexibleChecksumsRequestInterceptor.CompletingSource(completableDeferred, hashingSource)
+        val completingSource = CompletingSource(completableDeferred, hashingSource)
 
         completingSource.read(SdkBuffer(), 1L)
         assertFalse(completableDeferred.isCompleted) // deferred value should not be completed because the source is not exhausted
@@ -162,7 +164,7 @@ class FlexibleChecksumsRequestInterceptorTest {
         val channel = SdkByteReadChannel(byteArray)
         val completableDeferred = CompletableDeferred<String>()
         val hashingChannel = HashingByteReadChannel(hashFunctionName.toHashFunction()!!, channel)
-        val completingChannel = FlexibleChecksumsRequestInterceptor.CompletingByteReadChannel(completableDeferred, hashingChannel)
+        val completingChannel = CompletingByteReadChannel(completableDeferred, hashingChannel)
 
         completingChannel.read(SdkBuffer(), 1L)
         assertFalse(completableDeferred.isCompleted)
@@ -188,7 +190,7 @@ class FlexibleChecksumsRequestInterceptorTest {
         val op = newTestOperation<Unit, Unit>(req, Unit)
 
         op.interceptors.add(
-            FlexibleChecksumsRequestInterceptor<Unit>(
+            FlexibleChecksumsRequestInterceptor(
                 requestChecksumAlgorithm = checksumAlgorithmName,
                 requestChecksumRequired = true,
                 requestChecksumCalculation = HttpChecksumConfigOption.WHEN_SUPPORTED,
@@ -232,8 +234,9 @@ class FlexibleChecksumsRequestInterceptorTest {
 
         val op = newTestOperation<Unit, Unit>(req, Unit)
 
+        op.context.attributes[HttpOperationContext.DefaultChecksumAlgorithm] = "CRC32"
         op.interceptors.add(
-            FlexibleChecksumsRequestInterceptor<Unit>(
+            FlexibleChecksumsRequestInterceptor(
                 requestChecksumAlgorithm = null, // See if default checksum is applied
                 requestChecksumRequired = testCase.requestChecksumRequired,
                 requestChecksumCalculation = testCase.requestChecksumCalculation,

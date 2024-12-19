@@ -52,4 +52,3 @@ public class HttpChecksumRequiredInterceptor : AbstractChecksumInterceptor() {
         return request.build()
     }
 }
-

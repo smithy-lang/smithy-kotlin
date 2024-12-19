@@ -60,7 +60,7 @@ private val httpChecksumRequiredMiddleware = object : ProtocolMiddleware {
     override fun render(ctx: ProtocolGenerator.GenerationContext, op: OperationShape, writer: KotlinWriter) {
         writer.write(
             "op.interceptors.add(#T())",
-            RuntimeTypes.HttpClient.Interceptors.HttpChecksumRequiredInterceptor
+            RuntimeTypes.HttpClient.Interceptors.HttpChecksumRequiredInterceptor,
         )
     }
 }

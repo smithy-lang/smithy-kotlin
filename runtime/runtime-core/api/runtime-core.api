@@ -693,6 +693,9 @@ public final class aws/smithy/kotlin/runtime/hashing/HashFunction$DefaultImpls {
 }
 
 public final class aws/smithy/kotlin/runtime/hashing/HashFunctionKt {
+	public static final fun checksumAlgorithmHeader (Laws/smithy/kotlin/runtime/hashing/HashFunction;)Ljava/lang/String;
+	public static final fun checksumAlgorithmHeader (Ljava/lang/String;)Ljava/lang/String;
+	public static final fun getAlgorithmsSupportedForFlexibleChecksums ()Ljava/util/Set;
 	public static final fun hash ([BLaws/smithy/kotlin/runtime/hashing/HashFunction;)[B
 	public static final fun hash ([BLkotlin/jvm/functions/Function0;)[B
 	public static final fun isSupportedForFlexibleChecksums (Laws/smithy/kotlin/runtime/hashing/HashFunction;)Z

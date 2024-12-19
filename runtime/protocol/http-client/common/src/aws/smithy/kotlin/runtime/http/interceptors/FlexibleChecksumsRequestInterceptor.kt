@@ -58,6 +58,9 @@ public class FlexibleChecksumsRequestInterceptor(
 
         context.protocolRequest.userProvidedChecksumHeader(logger)?.let {
             logger.debug { "Checksum was supplied via header: skipping checksum calculation" }
+
+            val request = context.protocolRequest.toBuilder()
+            request.headers.removeAllChecksumHeadersExcept(it)
             return context.protocolRequest
         }
 
@@ -65,7 +68,7 @@ public class FlexibleChecksumsRequestInterceptor(
             requestChecksumRequired,
             requestChecksumCalculation,
             requestChecksumAlgorithm,
-            context
+            context,
         )?.let { checksumAlgorithm ->
             if (context.protocolRequest.body.isEligibleForAwsChunkedStreaming) { // Handle checksum calculation here
                 logger.debug { "Calculating checksum during transmission using: ${checksumAlgorithm::class.simpleName}" }
@@ -97,7 +100,7 @@ public class FlexibleChecksumsRequestInterceptor(
         requestChecksumRequired: Boolean,
         requestChecksumCalculation: HttpChecksumConfigOption?,
         requestChecksumAlgorithm: String?,
-        context: ProtocolRequestInterceptorContext<Any, HttpRequest>
+        context: ProtocolRequestInterceptorContext<Any, HttpRequest>,
     ): HashFunction? =
         requestChecksumAlgorithm
             ?.toHashFunctionOrThrow()
@@ -116,7 +119,7 @@ public class FlexibleChecksumsRequestInterceptor(
             requestChecksumRequired,
             requestChecksumCalculation,
             requestChecksumAlgorithm,
-            context
+            context,
         )!!
 
         return when {
@@ -135,18 +138,19 @@ public class FlexibleChecksumsRequestInterceptor(
     // Handles applying checksum for non-aws-chunked requests
     override fun applyChecksum(
         context: ProtocolRequestInterceptorContext<Any, HttpRequest>,
-        checksum: String
+        checksum: String,
     ): HttpRequest {
         val request = context.protocolRequest.toBuilder()
         val checksumAlgorithm = checksumAlgorithm(
             requestChecksumRequired,
             requestChecksumCalculation,
             requestChecksumAlgorithm,
-            context
+            context,
         )!!
         val checksumHeader = checksumAlgorithmHeader(checksumAlgorithm)
 
         request.headers[checksumHeader] = checksum
+        request.headers.removeAllChecksumHeadersExcept(checksumHeader)
         context.executionContext.emitBusinessMetric(checksumAlgorithm.toBusinessMetric())
 
         return request.build()
@@ -197,4 +201,12 @@ public class FlexibleChecksumsRequestInterceptor(
         is Sha256 -> SmithyBusinessMetric.FLEXIBLE_CHECKSUMS_REQ_SHA256
         else -> throw IllegalStateException("Checksum was calculated using an unsupported hash function: ${this::class.simpleName}")
     }
+
+    /**
+     * Removes all checksum headers except specified header
+     */
+    private fun HeadersBuilder.removeAllChecksumHeadersExcept(checksumHeader: String) =
+        names()
+            .filter { it.startsWith("x-amz-checksum-", ignoreCase = true) && !it.equals(checksumHeader, ignoreCase = true) }
+            .forEach { remove(it) }
 }
