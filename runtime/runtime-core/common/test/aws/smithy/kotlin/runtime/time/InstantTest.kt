@@ -229,7 +229,7 @@ class InstantTest {
     // Always good to learn from others...
     class V2JavaSdkTests {
         @Ignore // FIXME Re-enable after Kotlin/Native implementation
-    @Test
+        @Test
         fun v2JavaSdkTt0031561767() {
             val input = "Fri, 16 May 2014 23:56:46 GMT"
             val instant: Instant = Instant.fromRfc5322(input)
@@ -241,7 +241,7 @@ class InstantTest {
          * same before and after marshalling/unmarshalling
          */
         @Ignore // FIXME Re-enable after Kotlin/Native implementation
-    @Test
+        @Test
         fun v2JavaSdkUnixTimestampRoundtrip() {
             // v2 sdk used currentTimeMillis(), instead we just hard code a value here
             // otherwise that would be a JVM specific test since since we do not (yet) have

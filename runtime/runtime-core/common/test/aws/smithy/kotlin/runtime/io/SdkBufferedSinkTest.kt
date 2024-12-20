@@ -56,7 +56,6 @@ abstract class AbstractBufferedSinkTest(
 
     @Ignore // FIXME Re-enable after Kotlin/Native implementation
     @Test
-
     fun testWriteInt() {
         sink.writeInt(0xdeadbeef.toInt())
         sink.flush()
