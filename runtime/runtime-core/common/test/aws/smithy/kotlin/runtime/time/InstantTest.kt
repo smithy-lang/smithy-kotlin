@@ -120,6 +120,7 @@ class InstantTest {
         FromTest("Thu, 05 Nov 2020 19:22:37 +1245", 1604558257, 0),
         FromTest("Thu, 05 Nov 2020 19:22:37 -1245", 1604650057, 0),
     )
+
     @Test
     fun testFromRfc5322() {
         for ((idx, test) in rfc5322Tests.withIndex()) {
@@ -299,4 +300,3 @@ class V2JavaSdkTests {
     // (2) - The input year in those tests is NOT valid and should never have
     //       been accepted by the parser.
 }
-

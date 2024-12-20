@@ -32,17 +32,17 @@ public actual class Instant(internal val delegate: ktInstant) : Comparable<Insta
     /**
      * Encode the [Instant] as a string into the format specified by [TimestampFormat]
      */
-    public actual fun format(fmt: TimestampFormat): String {
-        return when (fmt) {
-            TimestampFormat.EPOCH_SECONDS -> {
-                val s = delegate.epochSeconds.toString()
-                val ns = if (delegate.nanosecondsOfSecond != 0) {
-                    ".${delegate.nanosecondsOfSecond.toString().padStart(9, '0').trimEnd('0')}"
-                } else ""
-                s + ns
+    public actual fun format(fmt: TimestampFormat): String = when (fmt) {
+        TimestampFormat.EPOCH_SECONDS -> {
+            val s = delegate.epochSeconds.toString()
+            val ns = if (delegate.nanosecondsOfSecond != 0) {
+                ".${delegate.nanosecondsOfSecond.toString().padStart(9, '0').trimEnd('0')}"
+            } else {
+                ""
             }
-            else -> delegate.format(fmt.asDateTimeFormat())
+            s + ns
         }
+        else -> delegate.format(fmt.asDateTimeFormat())
     }
 
     /**

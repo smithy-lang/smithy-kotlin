@@ -18,21 +18,39 @@ internal object DateTimeFormats {
     // e.g. "2020-11-05T19:22:37+00:00"
     val ISO_8601 = DateTimeComponents.Format {
         // Two possible date formats: YYYY-MM-DD or YYYYMMDD
-        alternativeParsing ({
-            date(LocalDate.Format { year(); monthNumber(); dayOfMonth() })
+        alternativeParsing({
+            date(
+                LocalDate.Format {
+                    year()
+                    monthNumber()
+                    dayOfMonth()
+                },
+            )
         }) {
-            date(LocalDate.Format {
-                year(); char('-'); monthNumber(); char('-'); dayOfMonth()
-            })
+            date(
+                LocalDate.Format {
+                    year()
+                    char('-')
+                    monthNumber()
+                    char('-')
+                    dayOfMonth()
+                },
+            )
         }
 
         char('T')
 
         // Two possible time formats: HH:MM:SS or HHMMSS
         alternativeParsing({
-            hour(); minute(); second()
+            hour()
+            minute()
+            second()
         }) {
-            hour(); char(':'); minute(); char(':'); second()
+            hour()
+            char(':')
+            minute()
+            char(':')
+            second()
         }
 
         // Fractional seconds (up to 6 digits)
