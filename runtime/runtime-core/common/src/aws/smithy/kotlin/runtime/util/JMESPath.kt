@@ -66,6 +66,7 @@ public fun Any?.type(): String = when (this) {
     else -> throw Exception("Undetected type for: $this")
 }
 
+// Collection `flattenIfPossible` functions
 @InternalApi
 @JvmName("noOpUnnestedCollection")
 public inline fun <reified T> Collection<T>.flattenIfPossible(): Collection<T> = this
@@ -73,3 +74,12 @@ public inline fun <reified T> Collection<T>.flattenIfPossible(): Collection<T> =
 @InternalApi
 @JvmName("flattenNestedCollection")
 public inline fun <reified T> Collection<Collection<T>>.flattenIfPossible(): Collection<T> = flatten()
+
+// List `flattenIfPossible` functions
+@InternalApi
+@JvmName("noOpUnnestedCollection")
+public inline fun <reified T> List<T>.flattenIfPossible(): List<T> = this
+
+@InternalApi
+@JvmName("flattenNestedCollection")
+public inline fun <reified T> List<List<T>>.flattenIfPossible(): List<T> = flatten()
