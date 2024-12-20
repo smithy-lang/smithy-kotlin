@@ -14,8 +14,15 @@ import kotlinx.datetime.format.alternativeParsing
 import kotlinx.datetime.format.char
 import kotlinx.datetime.format.optional
 
+/**
+ * [DateTimeFormat<DateTimeComponents>] for use with [kotlinx.datetime.Instant]
+ */
 internal object DateTimeFormats {
-    // e.g. "2020-11-05T19:22:37+00:00"
+
+    /**
+     * ISO8601, full precision. Corresponds to [TimestampFormat.ISO_8601_FULL]. Truncate to microseconds for [TimestampFormat.ISO_8601].
+     * e.g. "2020-11-05T19:22:37+00:00"
+     */
     val ISO_8601 = DateTimeComponents.Format {
         // Two possible date formats: YYYY-MM-DD or YYYYMMDD
         alternativeParsing({
@@ -53,10 +60,10 @@ internal object DateTimeFormats {
             second()
         }
 
-        // Fractional seconds (up to 6 digits)
+        // Fractional seconds
         optional {
             char('.')
-            secondFraction(1, 6)
+            secondFraction(1, 9)
         }
 
         // Offsets
@@ -67,6 +74,9 @@ internal object DateTimeFormats {
         }
     }
 
+    /**
+     * ISO8601 condensed. Corresponds to [TimestampFormat.ISO_8601_CONDENSED].
+     */
     val ISO_8601_CONDENSED = DateTimeComponents.Format {
         year()
         monthNumber()
@@ -79,13 +89,19 @@ internal object DateTimeFormats {
         char('Z')
     }
 
+    /**
+     * ISO8601 condensed, date only. Corresponds to [TimestampFormat.ISO_8601_CONDENSED_DATE]
+     */
     val ISO_8601_CONDENSED_DATE = DateTimeComponents.Format {
         year()
         monthNumber()
         dayOfMonth()
     }
 
-    // e.g. "Thu, 05 Nov 2020 19:22:37 +0000"
+    /**
+     * [RFC-5322/2822/822 IMF timestamp](https://tools.ietf.org/html/rfc5322). Corresponds to [TimestampFormat.RFC_5322].
+     * e.g. "Thu, 05 Nov 2020 19:22:37 +0000"
+     */
     val RFC_5322 = DateTimeComponents.Format {
         dayOfWeek(DayOfWeekNames.ENGLISH_ABBREVIATED)
         chars(", ")
