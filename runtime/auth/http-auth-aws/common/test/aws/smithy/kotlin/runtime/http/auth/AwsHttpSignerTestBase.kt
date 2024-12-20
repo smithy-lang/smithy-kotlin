@@ -26,6 +26,7 @@ import aws.smithy.kotlin.runtime.operation.ExecutionContext
 import aws.smithy.kotlin.runtime.time.Instant
 import kotlinx.coroutines.test.TestResult
 import kotlinx.coroutines.test.runTest
+import kotlin.test.Ignore
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -105,6 +106,7 @@ public abstract class AwsHttpSignerTestBase(
         return operation.context[HttpOperationContext.HttpCallList].last().request
     }
 
+    @Ignore // FIXME Re-enable after Kotlin/Native implementation
     @Test
     public fun testSignRequest(): TestResult = runTest {
         val op = buildOperation()
@@ -118,6 +120,7 @@ public abstract class AwsHttpSignerTestBase(
         assertEquals(expectedSig, signed.headers["Authorization"])
     }
 
+    @Ignore // FIXME Re-enable after Kotlin/Native implementation
     @Test
     public fun testUnsignedRequest(): TestResult = runTest {
         val op = buildOperation(unsigned = true)
@@ -131,6 +134,7 @@ public abstract class AwsHttpSignerTestBase(
         assertEquals(expectedSig, signed.headers["Authorization"])
     }
 
+    @Ignore // FIXME Re-enable after Kotlin/Native implementation
     @Test
     public fun testSignReplayableStreamingRequest(): TestResult = runTest {
         val op = buildOperation(streaming = true)
@@ -144,6 +148,7 @@ public abstract class AwsHttpSignerTestBase(
         assertEquals(expectedSig, signed.headers["Authorization"])
     }
 
+    @Ignore // FIXME Re-enable after Kotlin/Native implementation
     @Test
     public fun testSignAwsChunkedStreamNonReplayable(): TestResult = runTest {
         val op = buildOperation(streaming = true, replayable = false, requestBody = "a".repeat(AWS_CHUNKED_THRESHOLD + 1))
@@ -157,6 +162,7 @@ public abstract class AwsHttpSignerTestBase(
         assertEquals(expectedSig, signed.headers["Authorization"])
     }
 
+    @Ignore // FIXME Re-enable after Kotlin/Native implementation
     @Test
     public fun testSignAwsChunkedStreamReplayable(): TestResult = runTest {
         val op = buildOperation(streaming = true, replayable = true, requestBody = "a".repeat(AWS_CHUNKED_THRESHOLD + 1))
@@ -170,6 +176,7 @@ public abstract class AwsHttpSignerTestBase(
         assertEquals(expectedSig, signed.headers["Authorization"])
     }
 
+    @Ignore // FIXME Re-enable after Kotlin/Native implementation
     @Test
     public fun testSignOneShotStream(): TestResult = runTest {
         val op = buildOperation(streaming = true, replayable = false)

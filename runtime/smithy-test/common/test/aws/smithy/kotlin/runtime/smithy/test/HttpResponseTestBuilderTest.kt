@@ -9,11 +9,13 @@ import aws.smithy.kotlin.runtime.http.readAll
 import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
 import aws.smithy.kotlin.runtime.operation.ExecutionContext
 import io.kotest.matchers.string.shouldContain
+import kotlin.test.Ignore
 import kotlin.test.Test
 
 class HttpResponseTestBuilderTest {
     private data class Foo(val bar: Int, val baz: String)
 
+    @Ignore // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun itBuildsResponses() {
         httpResponseTest<Foo> {

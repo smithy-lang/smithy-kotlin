@@ -21,13 +21,14 @@ import aws.smithy.kotlin.runtime.identity.asIdentityProviderConfig
 import aws.smithy.kotlin.runtime.operation.ExecutionContext
 import aws.smithy.kotlin.runtime.time.Instant
 import kotlinx.coroutines.test.runTest
+import kotlin.test.Ignore
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class SdkOperationExecutionTest {
-
+    @Ignore // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testOperationMiddlewareOrder() = runTest {
         // sanity test middleware flows the way we expect

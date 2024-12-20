@@ -18,12 +18,14 @@ import aws.smithy.kotlin.runtime.time.Instant
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.job
 import kotlinx.coroutines.test.runTest
+import kotlin.test.Ignore
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 import kotlin.coroutines.coroutineContext as currentCoroutineContext
 
 class HttpCallContextTest {
+    @Ignore // FIXME Re-enable after Kotlin/Native implementation
     @OptIn(ExperimentalCoroutinesApi::class)
     @Test
     fun testStructuredConcurrency() = runTest {

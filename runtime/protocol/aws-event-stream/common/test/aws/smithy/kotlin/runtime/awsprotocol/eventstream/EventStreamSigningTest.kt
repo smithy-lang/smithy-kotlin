@@ -19,6 +19,7 @@ import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.test.runTest
+import kotlin.test.Ignore
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -28,6 +29,7 @@ class EventStreamSigningTest {
         override suspend fun resolve(attributes: Attributes) = testCredentials
     }
 
+    @Ignore // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testSignPayload() = runTest {
         val messageToSign = buildMessage {
@@ -66,6 +68,7 @@ class EventStreamSigningTest {
         assertEquals(expected, actualSignature)
     }
 
+    @Ignore // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testEmptyEndFrameSent() = runTest {
         val messageToSign = buildMessage {

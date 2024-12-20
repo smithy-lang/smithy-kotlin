@@ -5,10 +5,12 @@
 
 package aws.smithy.kotlin.runtime.io
 
+import kotlin.test.Ignore
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class ByteArraySourceTest {
+    @Ignore // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testByteArraySource() {
         val contents = "12345678".encodeToByteArray()

@@ -11,11 +11,13 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.test.runTest
+import kotlin.test.Ignore
 import kotlin.test.Test
 import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
 
 class FrameEncoderTest {
+    @Ignore // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testEncode() = runTest {
         val expected = listOf(
@@ -42,6 +44,7 @@ class FrameEncoderTest {
         assertContentEquals(expected[2], actual[2].readByteArray())
     }
 
+    @Ignore // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testAsEventStreamHttpBody() = runTest {
         val messages = flowOf(

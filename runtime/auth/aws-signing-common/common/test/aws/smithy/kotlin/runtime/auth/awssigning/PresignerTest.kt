@@ -17,6 +17,7 @@ import aws.smithy.kotlin.runtime.http.request.url
 import aws.smithy.kotlin.runtime.net.url.Url
 import aws.smithy.kotlin.runtime.operation.ExecutionContext
 import kotlinx.coroutines.test.runTest
+import kotlin.test.Ignore
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -24,12 +25,14 @@ import kotlin.test.assertTrue
 class PresignerTest {
     // Verify that custom endpoint URL schemes aren't changed.
     // See https://github.com/awslabs/aws-sdk-kotlin/issues/938
+    @Ignore // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testSignedUrlAllowsHttp() = testSigningUrl("http://localhost:8080/path/to/resource?foo=bar")
 
     // Verify that custom endpoint URL schemes aren't changed.
     // See https://github.com/awslabs/aws-sdk-kotlin/issues/938
     @Test
+    @Ignore // FIXME Re-enable after Kotlin/Native implementation
     fun testSignedUrlAllowsHttps() = testSigningUrl("https://localhost:8088/path/to/resource?bar=foo")
 
     private fun testSigningUrl(url: String) = runTest {

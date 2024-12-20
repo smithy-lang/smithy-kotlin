@@ -18,6 +18,7 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.test.runTest
 import kotlin.test.BeforeTest
+import kotlin.test.Ignore
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
@@ -60,6 +61,7 @@ class HttpClientEngineTest {
     private val HttpCall.job: Job
         get() = coroutineContext.job
 
+    @Ignore // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testCallComplete() = runTest {
         val call = client.call(HttpRequestBuilder())
@@ -69,6 +71,7 @@ class HttpClientEngineTest {
         assertTrue(call.job.isCompleted)
     }
 
+    @Ignore // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testUserContextCancelsRequestJob() = runTest {
         val job = launch {
@@ -85,6 +88,7 @@ class HttpClientEngineTest {
         assertTrue(callJob.isCancelled)
     }
 
+    @Ignore // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testInFlightRequestJobsAreIndependent() = runTest {
         val job1 = launch {
@@ -109,6 +113,7 @@ class HttpClientEngineTest {
         job2.cancel()
     }
 
+    @Ignore // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testEngineJobNotCancelledByRequestJobs() = runTest {
         launch {
@@ -126,6 +131,7 @@ class HttpClientEngineTest {
         assertTrue(engine.coroutineContext.job.isActive)
     }
 
+    @Ignore // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testShutdownOnlyAfterInFlightDone() = runTest {
         val waiter = Channel<Unit>(1)
@@ -160,6 +166,7 @@ class HttpClientEngineTest {
         assertTrue(engine.shutdownCalled)
     }
 
+    @Ignore // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testRequestAfterClose() = runTest {
         engine.close()

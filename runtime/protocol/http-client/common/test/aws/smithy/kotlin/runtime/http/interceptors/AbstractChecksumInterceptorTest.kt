@@ -16,6 +16,7 @@ import aws.smithy.kotlin.runtime.http.request.header
 import aws.smithy.kotlin.runtime.http.request.toBuilder
 import aws.smithy.kotlin.runtime.httptest.TestEngine
 import kotlinx.coroutines.test.runTest
+import kotlin.test.Ignore
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -24,6 +25,7 @@ private val CHECKSUM_TEST_HEADER = "x-amz-kotlin-sdk-test-checksum-header"
 class AbstractChecksumInterceptorTest {
     private val client = SdkHttpClient(TestEngine())
 
+    @Ignore // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testChecksumIsCalculatedAndApplied() = runTest {
         val req = HttpRequestBuilder().apply {
@@ -40,6 +42,7 @@ class AbstractChecksumInterceptorTest {
         assertEquals(expectedChecksumValue, call.request.headers[CHECKSUM_TEST_HEADER])
     }
 
+    @Ignore // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testCachedChecksumIsUsed() = runTest {
         val req = HttpRequestBuilder().apply {

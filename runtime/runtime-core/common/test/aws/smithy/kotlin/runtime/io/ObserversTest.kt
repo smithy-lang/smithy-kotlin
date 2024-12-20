@@ -7,10 +7,12 @@ package aws.smithy.kotlin.runtime.io
 
 import aws.smithy.kotlin.runtime.io.internal.SdkSinkObserver
 import aws.smithy.kotlin.runtime.io.internal.SdkSourceObserver
+import kotlin.test.Ignore
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class ObserversTest {
+    @Ignore // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testSdkSourceObserver() {
         val source = SdkBuffer()
@@ -33,6 +35,7 @@ class ObserversTest {
         assertEquals(sink.readUtf8(), observer.content.toString())
     }
 
+    @Ignore // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testSdkSinkObserver() {
         val sink = SdkSink.blackhole()

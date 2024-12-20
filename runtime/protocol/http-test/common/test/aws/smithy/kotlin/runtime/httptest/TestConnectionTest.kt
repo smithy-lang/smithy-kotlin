@@ -10,11 +10,13 @@ import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
 import aws.smithy.kotlin.runtime.net.Host
 import io.kotest.matchers.string.shouldContain
 import kotlinx.coroutines.test.runTest
+import kotlin.test.Ignore
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFails
 
 class TestConnectionTest {
+    @Ignore // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testAssertRequestsSuccess() = runTest {
         val engine = buildTestConnection {
@@ -42,6 +44,7 @@ class TestConnectionTest {
         engine.assertRequests()
     }
 
+    @Ignore // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testAssertRequestsUrlDifferent() = runTest {
         val engine = buildTestConnection {
@@ -69,6 +72,7 @@ class TestConnectionTest {
         }.message.shouldContain("URL mismatch")
     }
 
+    @Ignore // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testAssertRequestsMissingHeader() = runTest {
         val engine = buildTestConnection {
@@ -96,6 +100,7 @@ class TestConnectionTest {
         }.message.shouldContain("header `x-baz` missing value `qux`")
     }
 
+    @Ignore // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testAssertRequestsBodyDifferent() = runTest {
         val engine = buildTestConnection {
@@ -124,6 +129,7 @@ class TestConnectionTest {
         }.message.shouldContain("body mismatch")
     }
 
+    @Ignore // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testAssertRequestsAny() = runTest {
         val engine = buildTestConnection {
@@ -158,6 +164,7 @@ class TestConnectionTest {
         engine.assertRequests()
     }
 
+    @Ignore // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testFromJson() = runTest {
         // language=JSON

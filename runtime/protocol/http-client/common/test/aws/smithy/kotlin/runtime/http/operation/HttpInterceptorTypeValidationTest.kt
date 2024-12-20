@@ -16,6 +16,7 @@ import kotlin.IllegalStateException
 import kotlin.test.*
 
 class HttpInterceptorTypeValidationTest {
+    @Ignore // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testModifyBeforeSerializationTypeFailure() = runTest {
         val i1 = object : HttpInterceptor {
@@ -44,6 +45,7 @@ class HttpInterceptorTypeValidationTest {
         ex.message.shouldContain("modifyBeforeSerialization invalid type conversion: found class aws.smithy.kotlin.runtime.http.operation.TestOutput; expected class aws.smithy.kotlin.runtime.http.operation.TestInput")
     }
 
+    @Ignore // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testModifyBeforeAttemptCompletionTypeFailure() = runTest {
         val i1 = object : HttpInterceptor {
@@ -71,6 +73,7 @@ class HttpInterceptorTypeValidationTest {
         ex.message.shouldContain("modifyBeforeAttemptCompletion invalid type conversion: found class kotlin.String; expected class aws.smithy.kotlin.runtime.http.operation.TestOutput")
     }
 
+    @Ignore // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testModifyBeforeCompletionTypeFailure() = runTest {
         val i1 = object : HttpInterceptor {

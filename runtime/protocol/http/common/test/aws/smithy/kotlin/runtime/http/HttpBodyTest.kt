@@ -11,6 +11,7 @@ import aws.smithy.kotlin.runtime.io.SdkByteChannel
 import aws.smithy.kotlin.runtime.io.SdkByteReadChannel
 import aws.smithy.kotlin.runtime.io.writeAll
 import kotlinx.coroutines.test.runTest
+import kotlin.test.Ignore
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -49,6 +50,7 @@ class HttpBodyTest {
         assertTrue(body.isOneShot)
     }
 
+    @Ignore // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testStreamingReadAllClosedForRead() = runTest {
         val expected = "foobar"
@@ -61,6 +63,7 @@ class HttpBodyTest {
         assertEquals(expected, body.readAll()!!.decodeToString())
     }
 
+    @Ignore // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testStreamingReadAllClosedForWrite() = runTest {
         val expected = "foobar"

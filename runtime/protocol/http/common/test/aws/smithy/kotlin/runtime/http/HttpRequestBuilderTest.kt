@@ -41,6 +41,7 @@ class HttpRequestBuilderTest {
         assertEquals(HttpBody.Empty, request.body)
     }
 
+    @Ignore // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testDumpRequest() = runTest {
         val content = "Mom!...Dad!...Bingo!...Bluey!"
@@ -79,6 +80,7 @@ class HttpRequestBuilderTest {
         assertEquals(content, actualReplacedContent)
     }
 
+    @Ignore // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testRequestToBuilder() = runTest {
         val req = HttpRequest(

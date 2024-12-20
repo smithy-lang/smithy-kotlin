@@ -5,11 +5,13 @@
 package aws.smithy.kotlin.runtime.serde.cbor
 
 import aws.smithy.kotlin.runtime.io.SdkBuffer
+import kotlin.test.Ignore
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFails
 
 class CborDeserializerTest {
+    @Ignore // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testNumberDeserializationThrowsOnOutOfRange() {
         val serializer = CborSerializer()

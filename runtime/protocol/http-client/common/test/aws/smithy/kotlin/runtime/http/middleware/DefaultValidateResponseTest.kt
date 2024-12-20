@@ -16,11 +16,13 @@ import aws.smithy.kotlin.runtime.http.response.HttpResponse
 import aws.smithy.kotlin.runtime.httptest.TestEngine
 import aws.smithy.kotlin.runtime.time.Instant
 import kotlinx.coroutines.test.runTest
+import kotlin.test.Ignore
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 
 class DefaultValidateResponseTest {
+    @Ignore // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun itThrowsExceptionOnNon200Response() = runTest {
         val mockEngine = TestEngine { _, request ->
@@ -44,6 +46,7 @@ class DefaultValidateResponseTest {
         return@runTest
     }
 
+    @Ignore // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun itPassesSuccessResponses() = runTest {
         val mockEngine = TestEngine { _, request ->

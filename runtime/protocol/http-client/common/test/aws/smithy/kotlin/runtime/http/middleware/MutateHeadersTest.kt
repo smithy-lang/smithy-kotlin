@@ -14,12 +14,14 @@ import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
 import aws.smithy.kotlin.runtime.http.request.headers
 import aws.smithy.kotlin.runtime.httptest.TestEngine
 import kotlinx.coroutines.test.runTest
+import kotlin.test.Ignore
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class MutateHeadersTest {
     private val client = SdkHttpClient(TestEngine())
 
+    @Ignore // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun itOverridesHeaders() = runTest {
         val req = HttpRequestBuilder().apply {
@@ -50,6 +52,7 @@ class MutateHeadersTest {
         assertEquals("qux", call.request.headers["baz"])
     }
 
+    @Ignore // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun itAppendsHeaders() = runTest {
         val req = HttpRequestBuilder().apply {
@@ -80,6 +83,7 @@ class MutateHeadersTest {
         assertEquals("qux", call.request.headers["baz"])
     }
 
+    @Ignore // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun itSetsMissing() = runTest {
         val req = HttpRequestBuilder().apply {

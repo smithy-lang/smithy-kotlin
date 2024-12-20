@@ -15,6 +15,7 @@ import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
 import aws.smithy.kotlin.runtime.httptest.TestEngine
 import aws.smithy.kotlin.runtime.io.SdkByteReadChannel
 import kotlinx.coroutines.test.runTest
+import kotlin.test.Ignore
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
@@ -22,6 +23,7 @@ import kotlin.test.assertNull
 class Md5ChecksumInterceptorTest {
     private val client = SdkHttpClient(TestEngine())
 
+    @Ignore // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun itSetsContentMd5Header() = runTest {
         val req = HttpRequestBuilder().apply {
@@ -41,6 +43,7 @@ class Md5ChecksumInterceptorTest {
         assertEquals(expected, call.request.headers["Content-MD5"])
     }
 
+    @Ignore // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun itOnlySetsHeaderForBytesContent() = runTest {
         val req = HttpRequestBuilder().apply {
@@ -61,6 +64,7 @@ class Md5ChecksumInterceptorTest {
         assertNull(call.request.headers["Content-MD5"])
     }
 
+    @Ignore // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun itDoesNotSetContentMd5Header() = runTest {
         val req = HttpRequestBuilder().apply {

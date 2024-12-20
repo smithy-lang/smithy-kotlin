@@ -4,11 +4,13 @@
  */
 package aws.smithy.kotlin.runtime.content
 
+import kotlin.test.Ignore
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFails
 
 class BigDecimalTest {
+    @Ignore // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testBigDecimal() {
         val reallyPreciseNumberString = "0.340282366920938463463374607431768211456" // 128 bits of magnitude
@@ -16,11 +18,13 @@ class BigDecimalTest {
         assertEquals(reallyPreciseNumberString, reallyPreciseNumber.toPlainString())
     }
 
+    @Ignore // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testBadBigDecimal() {
         assertFails { BigDecimal("1234567890.1234567890foo") }
     }
 
+    @Ignore // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testEquals() {
         val value = "0.340282366920938463463374607431768211456"

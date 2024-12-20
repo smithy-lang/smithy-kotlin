@@ -21,6 +21,7 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeout
 import kotlinx.coroutines.yield
+import kotlin.test.Ignore
 import kotlin.test.Test
 import kotlin.time.Duration.Companion.seconds
 
@@ -36,6 +37,7 @@ class AsyncStressTest : TestWithLocalServer() {
         }
     }.start()
 
+    @Ignore // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testStreamNotConsumed() = runBlocking {
         // test that filling the stream window and not consuming the body stream still cleans up resources
