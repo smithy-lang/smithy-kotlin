@@ -7,22 +7,22 @@ package aws.smithy.kotlin.runtime.time
 
 import kotlinx.datetime.Clock
 import kotlinx.datetime.format
-import kotlinx.datetime.format.DateTimeComponents
 import kotlinx.datetime.format.FormatStringsInDatetimeFormats
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.days
-import kotlinx.datetime.Instant as ktInstant
+import kotlinx.datetime.Instant as KtInstant
 
 private fun TimestampFormat.asDateTimeFormat() = when (this) {
-    TimestampFormat.ISO_8601 -> DateTimeFormats.ISO_8601
     TimestampFormat.RFC_5322 -> DateTimeFormats.RFC_5322
-    TimestampFormat.ISO_8601_FULL -> DateTimeComponents.Format { }
+    TimestampFormat.ISO_8601_FULL -> DateTimeFormats.ISO_8601
     TimestampFormat.ISO_8601_CONDENSED -> DateTimeFormats.ISO_8601_CONDENSED
     TimestampFormat.ISO_8601_CONDENSED_DATE -> DateTimeFormats.ISO_8601_CONDENSED_DATE
     else -> throw IllegalArgumentException("TimestampFormat $this could not be converted to a DateTimeFormat")
 }
 
-public actual class Instant(internal val delegate: ktInstant) : Comparable<Instant> {
+private fun KtInstant.truncateToMicros(): KtInstant = KtInstant.fromEpochSeconds(epochSeconds, nanosecondsOfSecond / 1_000 * 1_000)
+
+public actual class Instant(internal val delegate: KtInstant) : Comparable<Instant> {
 
     actual override fun compareTo(other: Instant): Int = delegate.compareTo(other.delegate)
 
@@ -33,6 +33,7 @@ public actual class Instant(internal val delegate: ktInstant) : Comparable<Insta
      * Encode the [Instant] as a string into the format specified by [TimestampFormat]
      */
     public actual fun format(fmt: TimestampFormat): String = when (fmt) {
+        TimestampFormat.ISO_8601 -> delegate.truncateToMicros().format(DateTimeFormats.ISO_8601)
         TimestampFormat.EPOCH_SECONDS -> {
             val s = delegate.epochSeconds.toString()
             val ns = if (delegate.nanosecondsOfSecond != 0) {
@@ -81,12 +82,12 @@ public actual class Instant(internal val delegate: ktInstant) : Comparable<Insta
         /**
          * Parse an RFC5322/RFC-822 formatted string into an [Instant]
          */
-        public actual fun fromRfc5322(ts: String): Instant = Instant(ktInstant.parse(ts, DateTimeFormats.RFC_5322))
+        public actual fun fromRfc5322(ts: String): Instant = Instant(KtInstant.parse(ts, DateTimeFormats.RFC_5322))
 
         /**
          * Create an [Instant] from its parts
          */
-        public actual fun fromEpochSeconds(seconds: Long, ns: Int): Instant = Instant(ktInstant.fromEpochSeconds(seconds, ns))
+        public actual fun fromEpochSeconds(seconds: Long, ns: Int): Instant = Instant(KtInstant.fromEpochSeconds(seconds, ns))
 
         /**
          * Parse a string formatted as epoch-seconds into an [Instant]
@@ -102,12 +103,12 @@ public actual class Instant(internal val delegate: ktInstant) : Comparable<Insta
         /**
          * Create an [Instant] with the minimum possible value
          */
-        public actual val MIN_VALUE: Instant = Instant(ktInstant.DISTANT_PAST)
+        public actual val MIN_VALUE: Instant = Instant(KtInstant.DISTANT_PAST)
 
         /**
          * Create an [Instant] with the maximum possible value
          */
-        public actual val MAX_VALUE: Instant = Instant(ktInstant.DISTANT_FUTURE)
+        public actual val MAX_VALUE: Instant = Instant(KtInstant.DISTANT_FUTURE)
     }
 
     public override fun equals(other: Any?): Boolean = other is Instant && delegate == other.delegate
