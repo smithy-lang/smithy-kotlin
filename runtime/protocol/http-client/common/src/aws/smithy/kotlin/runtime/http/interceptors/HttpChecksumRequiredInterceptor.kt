@@ -20,7 +20,7 @@ import aws.smithy.kotlin.runtime.text.encoding.encodeBase64String
 @InternalApi
 public class HttpChecksumRequiredInterceptor : AbstractChecksumInterceptor() {
     override suspend fun modifyBeforeSigning(context: ProtocolRequestInterceptorContext<Any, HttpRequest>): HttpRequest =
-        if (defaultChecksumAlgorithmName(context) == null) {
+        if (context.defaultChecksumAlgorithmName == null) {
             // Don't calculate checksum
             context.protocolRequest
         } else {
@@ -29,7 +29,7 @@ public class HttpChecksumRequiredInterceptor : AbstractChecksumInterceptor() {
         }
 
     public override suspend fun calculateChecksum(context: ProtocolRequestInterceptorContext<Any, HttpRequest>): String? {
-        val checksumAlgorithmName = defaultChecksumAlgorithmName(context)!!
+        val checksumAlgorithmName = context.defaultChecksumAlgorithmName!!
         val checksumAlgorithm = checksumAlgorithmName.toHashFunctionOrThrow()
 
         return when (val body = context.protocolRequest.body) {
@@ -44,8 +44,8 @@ public class HttpChecksumRequiredInterceptor : AbstractChecksumInterceptor() {
     }
 
     public override fun applyChecksum(context: ProtocolRequestInterceptorContext<Any, HttpRequest>, checksum: String): HttpRequest {
-        val checksumAlgorithmName = defaultChecksumAlgorithmName(context)!!
-        val checksumHeader = checksumAlgorithmHeader(checksumAlgorithmName)
+        val checksumAlgorithmName = context.defaultChecksumAlgorithmName!!
+        val checksumHeader = checksumAlgorithmName.resolveChecksumAlgorithmHeaderName()
         val request = context.protocolRequest.toBuilder()
 
         request.header(checksumHeader, checksum)

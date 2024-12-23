@@ -39,6 +39,7 @@ operation SayHelloXml { output: TestOutput, errors: [Error] }
 
 structure TestOutputDocument with [TestStruct] {
     innerField: Nested,
+    // FIXME: Enable trait
     // @required
     document: Document
 }
@@ -64,6 +65,7 @@ structure TestStruct {
     @required
     nestedListValue: NestedList
 
+    // FIXME: Enable trait
     // @required
     nested: Nested
 
@@ -95,6 +97,7 @@ union MyUnion {
 }
 
 structure Nested {
+    // FIXME: Enable trait
     // @required
     a: String
 }

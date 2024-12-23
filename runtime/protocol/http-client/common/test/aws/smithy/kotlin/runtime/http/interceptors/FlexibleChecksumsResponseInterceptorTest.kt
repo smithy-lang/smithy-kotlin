@@ -5,7 +5,7 @@
 
 package aws.smithy.kotlin.runtime.http.interceptors
 
-import aws.smithy.kotlin.runtime.client.config.HttpChecksumConfigOption
+import aws.smithy.kotlin.runtime.client.config.ResponseHttpChecksumConfig
 import aws.smithy.kotlin.runtime.collections.get
 import aws.smithy.kotlin.runtime.http.*
 import aws.smithy.kotlin.runtime.http.HttpCall
@@ -76,7 +76,7 @@ class FlexibleChecksumsResponseInterceptorTest {
             op.interceptors.add(
                 FlexibleChecksumsResponseInterceptor(
                     responseValidationRequired = true,
-                    responseChecksumValidation = HttpChecksumConfigOption.WHEN_SUPPORTED,
+                    responseChecksumValidation = ResponseHttpChecksumConfig.WHEN_SUPPORTED,
                 ),
             )
 
@@ -103,7 +103,7 @@ class FlexibleChecksumsResponseInterceptorTest {
             op.interceptors.add(
                 FlexibleChecksumsResponseInterceptor(
                     responseValidationRequired = true,
-                    responseChecksumValidation = HttpChecksumConfigOption.WHEN_SUPPORTED,
+                    responseChecksumValidation = ResponseHttpChecksumConfig.WHEN_SUPPORTED,
                 ),
             )
 
@@ -131,7 +131,7 @@ class FlexibleChecksumsResponseInterceptorTest {
         op.interceptors.add(
             FlexibleChecksumsResponseInterceptor(
                 responseValidationRequired = true,
-                responseChecksumValidation = HttpChecksumConfigOption.WHEN_SUPPORTED,
+                responseChecksumValidation = ResponseHttpChecksumConfig.WHEN_SUPPORTED,
             ),
         )
 
@@ -156,7 +156,7 @@ class FlexibleChecksumsResponseInterceptorTest {
         op.interceptors.add(
             FlexibleChecksumsResponseInterceptor(
                 responseValidationRequired = true,
-                responseChecksumValidation = HttpChecksumConfigOption.WHEN_SUPPORTED,
+                responseChecksumValidation = ResponseHttpChecksumConfig.WHEN_SUPPORTED,
             ),
         )
 
@@ -177,7 +177,7 @@ class FlexibleChecksumsResponseInterceptorTest {
         op.interceptors.add(
             FlexibleChecksumsResponseInterceptor(
                 responseValidationRequired = false,
-                responseChecksumValidation = HttpChecksumConfigOption.WHEN_REQUIRED,
+                responseChecksumValidation = ResponseHttpChecksumConfig.WHEN_REQUIRED,
             ),
         )
 
@@ -198,16 +198,16 @@ class FlexibleChecksumsResponseInterceptorTest {
     @Test
     fun testResponseValidationConfiguration() = runTest {
         setOf(
-            ResponseChecksumValidationTest(true, HttpChecksumConfigOption.WHEN_SUPPORTED, true),
-            ResponseChecksumValidationTest(true, HttpChecksumConfigOption.WHEN_REQUIRED, true),
-            ResponseChecksumValidationTest(false, HttpChecksumConfigOption.WHEN_SUPPORTED, true),
-            ResponseChecksumValidationTest(false, HttpChecksumConfigOption.WHEN_REQUIRED, false),
+            ResponseChecksumValidationTest(true, ResponseHttpChecksumConfig.WHEN_SUPPORTED, true),
+            ResponseChecksumValidationTest(true, ResponseHttpChecksumConfig.WHEN_REQUIRED, true),
+            ResponseChecksumValidationTest(false, ResponseHttpChecksumConfig.WHEN_SUPPORTED, true),
+            ResponseChecksumValidationTest(false, ResponseHttpChecksumConfig.WHEN_REQUIRED, false),
         ).forEach { runResponseChecksumValidationTest(it) }
     }
 
     private data class ResponseChecksumValidationTest(
         val responseValidationRequired: Boolean,
-        val responseChecksumValidation: HttpChecksumConfigOption,
+        val responseChecksumValidation: ResponseHttpChecksumConfig,
         val checksumValidationExpected: Boolean,
     )
 

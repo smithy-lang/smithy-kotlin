@@ -693,12 +693,11 @@ public final class aws/smithy/kotlin/runtime/hashing/HashFunction$DefaultImpls {
 }
 
 public final class aws/smithy/kotlin/runtime/hashing/HashFunctionKt {
-	public static final fun checksumAlgorithmHeader (Laws/smithy/kotlin/runtime/hashing/HashFunction;)Ljava/lang/String;
-	public static final fun checksumAlgorithmHeader (Ljava/lang/String;)Ljava/lang/String;
-	public static final fun getAlgorithmsSupportedForFlexibleChecksums ()Ljava/util/Set;
 	public static final fun hash ([BLaws/smithy/kotlin/runtime/hashing/HashFunction;)[B
 	public static final fun hash ([BLkotlin/jvm/functions/Function0;)[B
 	public static final fun isSupportedForFlexibleChecksums (Laws/smithy/kotlin/runtime/hashing/HashFunction;)Z
+	public static final fun resolveChecksumAlgorithmHeaderName (Laws/smithy/kotlin/runtime/hashing/HashFunction;)Ljava/lang/String;
+	public static final fun resolveChecksumAlgorithmHeaderName (Ljava/lang/String;)Ljava/lang/String;
 	public static final fun toHashFunction (Ljava/lang/String;)Laws/smithy/kotlin/runtime/hashing/HashFunction;
 	public static final fun toHashFunctionOrThrow (Ljava/lang/String;)Laws/smithy/kotlin/runtime/hashing/HashFunction;
 }
@@ -2263,10 +2262,6 @@ public final class aws/smithy/kotlin/runtime/util/CachedValue : java/io/Closeabl
 
 public abstract interface class aws/smithy/kotlin/runtime/util/CanDeepCopy {
 	public abstract fun deepCopy ()Ljava/lang/Object;
-}
-
-public final class aws/smithy/kotlin/runtime/util/ConcurrencyKt {
-	public static final fun runBlocking (Lkotlin/jvm/functions/Function1;)V
 }
 
 public final class aws/smithy/kotlin/runtime/util/CoroutineUtilsKt {

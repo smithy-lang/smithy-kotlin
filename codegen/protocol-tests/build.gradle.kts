@@ -24,27 +24,17 @@ data class ProtocolTest(val projectionName: String, val serviceShapeId: String, 
 // for the configured protocols in [enabledProtocols].
 val enabledProtocols = listOf(
     ProtocolTest("aws-ec2-query", "aws.protocoltests.ec2#AwsEc2"),
-
-    // FIXME: Re-enable. This test is broken after a smithy update: https://github.com/smithy-lang/smithy/pull/2467
-    // ProtocolTest("aws-json-10", "aws.protocoltests.json10#JsonRpc10"),
-
+    ProtocolTest("aws-json-10", "aws.protocoltests.json10#JsonRpc10"),
     ProtocolTest("aws-json-11", "aws.protocoltests.json#JsonProtocol"),
-
-    // FIXME: Re-enable. These tests are broken after a smithy update: https://github.com/smithy-lang/smithy/pull/2403
-    // ProtocolTest("aws-restjson", "aws.protocoltests.restjson#RestJson"),
-    // ProtocolTest("aws-restxml", "aws.protocoltests.restxml#RestXml"),
-
+    ProtocolTest("aws-restjson", "aws.protocoltests.restjson#RestJson"),
+    ProtocolTest("aws-restxml", "aws.protocoltests.restxml#RestXml"),
     ProtocolTest("aws-restxml-xmlns", "aws.protocoltests.restxml.xmlns#RestXmlWithNamespace"),
     ProtocolTest("aws-query", "aws.protocoltests.query#AwsQuery"),
-
-    // FIXME: Re-enable. This test is broken after a smithy update: https://github.com/smithy-lang/smithy/pull/2467
-    // ProtocolTest("smithy-rpcv2-cbor", "smithy.protocoltests.rpcv2Cbor#RpcV2Protocol"),
+    ProtocolTest("smithy-rpcv2-cbor", "smithy.protocoltests.rpcv2Cbor#RpcV2Protocol"),
 
     // Custom hand written tests
-    // FIXME: Re-enable. These tests were relying on a smithy bug that has since been fixed.
-    // https://github.com/smithy-lang/smithy/pull/2393
-    // ProtocolTest("error-correction-json", "aws.protocoltests.errorcorrection#RequiredValueJson"),
-    // ProtocolTest("error-correction-xml", "aws.protocoltests.errorcorrection#RequiredValueXml"),
+    ProtocolTest("error-correction-json", "aws.protocoltests.errorcorrection#RequiredValueJson"),
+    ProtocolTest("error-correction-xml", "aws.protocoltests.errorcorrection#RequiredValueXml"),
 )
 
 smithyBuild {

@@ -83,48 +83,31 @@ public fun String.toHashFunctionOrThrow(): HashFunction =
  * @return If the [HashFunction] is supported by flexible checksums
  */
 @InternalApi
-public val HashFunction.isSupportedForFlexibleChecksums: Boolean get() =
-    algorithmsSupportedForFlexibleChecksums.contains(this::class.simpleName)
-
-/**
- * The class names of checksum algorithms supported for flexible checksums
- */
-// This is shown to users in exception messages to let them know which algorithms are supported
-public val algorithmsSupportedForFlexibleChecksums: Set<String> = setOf(
-    "Crc32",
-    "Crc32c",
-    "Sha1",
-    "Sha256",
-)
+public val HashFunction.isSupportedForFlexibleChecksums: Boolean
+    get() = when (this) {
+        is Crc32, is Crc32c, is Sha1, is Sha256 -> true
+        else -> false
+    }
 
 /**
  * @return The checksum algorithm header used depending on the checksum algorithm name
  */
 @InternalApi
-public fun checksumAlgorithmHeader(checksumAlgorithm: String): String {
-    val prefix = "x-amz-checksum-"
-    return when (checksumAlgorithm.lowercase()) {
-        "crc32" -> prefix + "crc32"
-        "crc32c" -> prefix + "crc32c"
-        "sha1" -> prefix + "sha1"
-        "sha256" -> prefix + "sha256"
-        "md5" -> "Content-MD5"
-        else -> throw ClientException("Checksum algorithm is not supported: ${checksumAlgorithm::class.simpleName}")
-    }
-}
+public fun String.resolveChecksumAlgorithmHeaderName(): String =
+    this.toHashFunctionOrThrow().resolveChecksumAlgorithmHeaderName()
 
 /**
  * @return The checksum algorithm header used depending on the checksum algorithm
  */
 @InternalApi
-public fun checksumAlgorithmHeader(checksumAlgorithm: HashFunction): String {
+public fun HashFunction.resolveChecksumAlgorithmHeaderName(): String {
     val prefix = "x-amz-checksum-"
-    return when (checksumAlgorithm) {
+    return when (this) {
         is Crc32 -> prefix + "crc32"
         is Crc32c -> prefix + "crc32c"
         is Sha1 -> prefix + "sha1"
         is Sha256 -> prefix + "sha256"
         is Md5 -> "Content-MD5"
-        else -> throw ClientException("Checksum algorithm is not supported: ${checksumAlgorithm::class.simpleName}")
+        else -> throw ClientException("Checksum algorithm is not supported: ${this::class.simpleName}")
     }
 }

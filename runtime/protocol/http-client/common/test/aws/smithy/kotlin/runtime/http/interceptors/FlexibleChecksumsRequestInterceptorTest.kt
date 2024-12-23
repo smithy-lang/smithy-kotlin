@@ -6,7 +6,7 @@
 package aws.smithy.kotlin.runtime.http.interceptors
 
 import aws.smithy.kotlin.runtime.ClientException
-import aws.smithy.kotlin.runtime.client.config.HttpChecksumConfigOption
+import aws.smithy.kotlin.runtime.client.config.RequestHttpChecksumConfig
 import aws.smithy.kotlin.runtime.collections.get
 import aws.smithy.kotlin.runtime.hashing.toHashFunction
 import aws.smithy.kotlin.runtime.http.*
@@ -45,7 +45,7 @@ class FlexibleChecksumsRequestInterceptorTest {
                 FlexibleChecksumsRequestInterceptor(
                     requestChecksumAlgorithm = checksumAlgorithmName,
                     requestChecksumRequired = true,
-                    requestChecksumCalculation = HttpChecksumConfigOption.WHEN_SUPPORTED,
+                    requestChecksumCalculation = RequestHttpChecksumConfig.WHEN_SUPPORTED,
                 ),
             )
 
@@ -73,7 +73,7 @@ class FlexibleChecksumsRequestInterceptorTest {
             FlexibleChecksumsRequestInterceptor(
                 requestChecksumAlgorithm = checksumAlgorithmName,
                 requestChecksumRequired = true,
-                requestChecksumCalculation = HttpChecksumConfigOption.WHEN_SUPPORTED,
+                requestChecksumCalculation = RequestHttpChecksumConfig.WHEN_SUPPORTED,
             ),
         )
 
@@ -98,7 +98,7 @@ class FlexibleChecksumsRequestInterceptorTest {
                 FlexibleChecksumsRequestInterceptor(
                     requestChecksumAlgorithm = unsupportedChecksumAlgorithmName,
                     requestChecksumRequired = true,
-                    requestChecksumCalculation = HttpChecksumConfigOption.WHEN_SUPPORTED,
+                    requestChecksumCalculation = RequestHttpChecksumConfig.WHEN_SUPPORTED,
                 ),
             )
             op.roundTrip(client, Unit)
@@ -125,7 +125,7 @@ class FlexibleChecksumsRequestInterceptorTest {
             FlexibleChecksumsRequestInterceptor(
                 requestChecksumAlgorithm = checksumAlgorithmName,
                 requestChecksumRequired = true,
-                requestChecksumCalculation = HttpChecksumConfigOption.WHEN_SUPPORTED,
+                requestChecksumCalculation = RequestHttpChecksumConfig.WHEN_SUPPORTED,
             ),
         )
 
@@ -143,7 +143,7 @@ class FlexibleChecksumsRequestInterceptorTest {
         val source = byteArray.source()
         val completableDeferred = CompletableDeferred<String>()
         val hashingSource = HashingSource(hashFunctionName.toHashFunction()!!, source)
-        val completingSource = CompletingSource(completableDeferred, hashingSource)
+        val completingSource = FlexibleChecksumsRequestInterceptor.CompletingSource(completableDeferred, hashingSource)
 
         completingSource.read(SdkBuffer(), 1L)
         assertFalse(completableDeferred.isCompleted) // deferred value should not be completed because the source is not exhausted
@@ -164,7 +164,8 @@ class FlexibleChecksumsRequestInterceptorTest {
         val channel = SdkByteReadChannel(byteArray)
         val completableDeferred = CompletableDeferred<String>()
         val hashingChannel = HashingByteReadChannel(hashFunctionName.toHashFunction()!!, channel)
-        val completingChannel = CompletingByteReadChannel(completableDeferred, hashingChannel)
+        val completingChannel =
+            FlexibleChecksumsRequestInterceptor.CompletingByteReadChannel(completableDeferred, hashingChannel)
 
         completingChannel.read(SdkBuffer(), 1L)
         assertFalse(completableDeferred.isCompleted)
@@ -193,7 +194,7 @@ class FlexibleChecksumsRequestInterceptorTest {
             FlexibleChecksumsRequestInterceptor(
                 requestChecksumAlgorithm = checksumAlgorithmName,
                 requestChecksumRequired = true,
-                requestChecksumCalculation = HttpChecksumConfigOption.WHEN_SUPPORTED,
+                requestChecksumCalculation = RequestHttpChecksumConfig.WHEN_SUPPORTED,
             ),
         )
 
@@ -207,10 +208,10 @@ class FlexibleChecksumsRequestInterceptorTest {
     @Test
     fun testDefaultChecksumConfiguration() = runTest {
         setOf(
-            DefaultChecksumTest(true, HttpChecksumConfigOption.WHEN_SUPPORTED, true),
-            DefaultChecksumTest(true, HttpChecksumConfigOption.WHEN_REQUIRED, true),
-            DefaultChecksumTest(false, HttpChecksumConfigOption.WHEN_SUPPORTED, true),
-            DefaultChecksumTest(false, HttpChecksumConfigOption.WHEN_REQUIRED, false),
+            DefaultChecksumTest(true, RequestHttpChecksumConfig.WHEN_SUPPORTED, true),
+            DefaultChecksumTest(true, RequestHttpChecksumConfig.WHEN_REQUIRED, true),
+            DefaultChecksumTest(false, RequestHttpChecksumConfig.WHEN_SUPPORTED, true),
+            DefaultChecksumTest(false, RequestHttpChecksumConfig.WHEN_REQUIRED, false),
         ).forEach { runDefaultChecksumTest(it) }
     }
 
@@ -218,7 +219,7 @@ class FlexibleChecksumsRequestInterceptorTest {
 
     private data class DefaultChecksumTest(
         val requestChecksumRequired: Boolean,
-        val requestChecksumCalculation: HttpChecksumConfigOption,
+        val requestChecksumCalculation: RequestHttpChecksumConfig,
         val defaultChecksumExpected: Boolean,
     )
 

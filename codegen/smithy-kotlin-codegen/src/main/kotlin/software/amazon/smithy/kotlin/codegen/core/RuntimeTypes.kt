@@ -201,7 +201,6 @@ object RuntimeTypes {
             val toNumber = symbol("toNumber")
             val type = symbol("type")
             val PlatformProvider = symbol("PlatformProvider")
-            val runBlocking = symbol("runBlocking")
         }
 
         object Net : RuntimeTypePackage(KotlinDependency.CORE, "net") {
@@ -234,8 +233,9 @@ object RuntimeTypes {
         object Config : RuntimeTypePackage(KotlinDependency.SMITHY_CLIENT, "config") {
             val RequestCompressionConfig = symbol("RequestCompressionConfig")
             val CompressionClientConfig = symbol("CompressionClientConfig")
-            val HttpChecksumClientConfig = symbol("HttpChecksumClientConfig")
-            val HttpChecksumConfigOption = symbol("HttpChecksumConfigOption")
+            val HttpChecksumConfig = symbol("HttpChecksumConfig")
+            val RequestHttpChecksumConfig = symbol("RequestHttpChecksumConfig")
+            val ResponseHttpChecksumConfig = symbol("ResponseHttpChecksumConfig")
         }
 
         object Endpoints : RuntimeTypePackage(KotlinDependency.SMITHY_CLIENT, "endpoints") {
@@ -415,6 +415,7 @@ object RuntimeTypes {
 
         val CompletableDeferred = "kotlinx.coroutines.CompletableDeferred".toSymbol()
         val job = "kotlinx.coroutines.job".toSymbol()
+        val runBlocking = "kotlinx.coroutines.runBlocking".toSymbol()
 
         object Flow {
             // NOTE: smithy-kotlin core has an API dependency on this already

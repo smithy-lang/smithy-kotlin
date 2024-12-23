@@ -35,5 +35,5 @@ public abstract class AbstractChecksumInterceptor : HttpInterceptor {
 /**
  * @return The default checksum algorithm name, null if default checksums are disabled.
  */
-internal fun defaultChecksumAlgorithmName(context: ProtocolRequestInterceptorContext<Any, HttpRequest>): String? =
-    context.executionContext.getOrNull(HttpOperationContext.DefaultChecksumAlgorithm)
+internal val ProtocolRequestInterceptorContext<Any, HttpRequest>.defaultChecksumAlgorithmName: String?
+    get() = executionContext.getOrNull(HttpOperationContext.DefaultChecksumAlgorithm)

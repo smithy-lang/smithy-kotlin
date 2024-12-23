@@ -8,7 +8,7 @@ package aws.smithy.kotlin.runtime.http.interceptors
 import aws.smithy.kotlin.runtime.ClientException
 import aws.smithy.kotlin.runtime.InternalApi
 import aws.smithy.kotlin.runtime.client.ProtocolResponseInterceptorContext
-import aws.smithy.kotlin.runtime.client.config.HttpChecksumConfigOption
+import aws.smithy.kotlin.runtime.client.config.ResponseHttpChecksumConfig
 import aws.smithy.kotlin.runtime.collections.AttributeKey
 import aws.smithy.kotlin.runtime.hashing.toHashFunctionOrThrow
 import aws.smithy.kotlin.runtime.http.HttpBody
@@ -46,7 +46,7 @@ internal val CHECKSUM_HEADER_VALIDATION_PRIORITY_LIST: List<String> = listOf(
 @InternalApi
 public open class FlexibleChecksumsResponseInterceptor(
     private val responseValidationRequired: Boolean,
-    private val responseChecksumValidation: HttpChecksumConfigOption?,
+    private val responseChecksumValidation: ResponseHttpChecksumConfig?,
 ) : HttpInterceptor {
     @InternalApi
     public companion object {
@@ -57,7 +57,7 @@ public open class FlexibleChecksumsResponseInterceptor(
     override suspend fun modifyBeforeDeserialization(context: ProtocolResponseInterceptorContext<Any, HttpRequest, HttpResponse>): HttpResponse {
         val logger = coroutineContext.logger<FlexibleChecksumsResponseInterceptor>()
 
-        val configuredToVerifyChecksum = responseValidationRequired || responseChecksumValidation == HttpChecksumConfigOption.WHEN_SUPPORTED
+        val configuredToVerifyChecksum = responseValidationRequired || responseChecksumValidation == ResponseHttpChecksumConfig.WHEN_SUPPORTED
         if (!configuredToVerifyChecksum) return context.protocolResponse
 
         val checksumHeader = CHECKSUM_HEADER_VALIDATION_PRIORITY_LIST
@@ -68,7 +68,7 @@ public open class FlexibleChecksumsResponseInterceptor(
 
         val serviceChecksumValue = context.protocolResponse.headers[checksumHeader]!!
         if (ignoreChecksum(serviceChecksumValue)) {
-            logger.warn { "Checksum detected but validation was skipped." }
+            logger.info { "Checksum detected but validation was skipped." }
             return context.protocolResponse
         }
 
@@ -95,7 +95,7 @@ public open class FlexibleChecksumsResponseInterceptor(
                 return context.protocolResponse
             }
             is HttpBody.SourceContent, is HttpBody.ChannelContent -> {
-                logger.debug { "Validating checksum during deserialization from $checksumHeader" }
+                logger.debug { "Validating checksum after deserialization from $checksumHeader" }
 
                 return context.protocolResponse.copy(
                     body = context.protocolResponse.body
