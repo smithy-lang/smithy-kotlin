@@ -24,7 +24,7 @@ public class HttpChecksumRequiredInterceptor : AbstractChecksumInterceptor() {
             // Don't calculate checksum
             context.protocolRequest
         } else {
-            // Delegate checksum calculation to super class
+            // Delegate checksum calculation to super class, calculateChecksum, and applyChecksum
             super.modifyBeforeSigning(context)
         }
 
