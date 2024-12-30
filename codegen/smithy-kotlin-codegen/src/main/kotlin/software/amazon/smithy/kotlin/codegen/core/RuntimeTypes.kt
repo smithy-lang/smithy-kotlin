@@ -170,8 +170,6 @@ object RuntimeTypes {
 
         object Hashing : RuntimeTypePackage(KotlinDependency.CORE, "hashing") {
             val Sha256 = symbol("Sha256")
-            val toHashFunctionOrThrow = symbol("toHashFunctionOrThrow")
-            val isSupportedForFlexibleChecksums = symbol("isSupportedForFlexibleChecksums")
         }
 
         object IO : RuntimeTypePackage(KotlinDependency.CORE, "io") {
