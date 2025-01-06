@@ -647,7 +647,6 @@ open class SerializeStructGenerator(
         val target = member.targetOrSelf(ctx.model)
 
         val encoded = when {
-            target.type == ShapeType.BLOB -> writer.format("#L.#T()", identifier, RuntimeTypes.Core.Text.Encoding.encodeBase64String)
             target.type == ShapeType.TIMESTAMP -> {
                 writer.addImport(RuntimeTypes.Core.TimestampFormat)
                 val tsFormat = member
