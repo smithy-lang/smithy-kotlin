@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.3.32] - 01/06/2025
+
+### Fixes
+* Fix serialization of CBOR blobs
+
 ## [1.3.31] - 12/18/2024
 
 ### Features
