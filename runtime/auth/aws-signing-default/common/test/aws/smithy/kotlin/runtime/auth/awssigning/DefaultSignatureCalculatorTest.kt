@@ -12,7 +12,6 @@ import aws.smithy.kotlin.runtime.text.encoding.decodeHexBytes
 import aws.smithy.kotlin.runtime.text.encoding.encodeToHex
 import aws.smithy.kotlin.runtime.time.Instant
 import kotlinx.coroutines.test.runTest
-import kotlin.test.Ignore
 import kotlin.test.Test
 import kotlin.test.assertEquals
 

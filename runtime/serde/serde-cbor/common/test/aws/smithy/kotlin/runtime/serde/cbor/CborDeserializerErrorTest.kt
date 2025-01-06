@@ -11,7 +11,6 @@ import aws.smithy.kotlin.runtime.serde.SerialKind
 import aws.smithy.kotlin.runtime.serde.cbor.encoding.Tag
 import aws.smithy.kotlin.runtime.serde.deserializeList
 import aws.smithy.kotlin.runtime.serde.deserializeMap
-import kotlin.test.Ignore
 import kotlin.test.Test
 import kotlin.test.assertFails
 

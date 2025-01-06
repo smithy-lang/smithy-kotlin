@@ -13,7 +13,6 @@ import aws.smithy.kotlin.runtime.http.request.url
 import aws.smithy.kotlin.runtime.net.Host
 import aws.smithy.kotlin.runtime.operation.ExecutionContext
 import io.kotest.matchers.string.shouldContain
-import kotlin.test.Ignore
 import kotlin.test.Test
 import kotlin.test.assertFails
 

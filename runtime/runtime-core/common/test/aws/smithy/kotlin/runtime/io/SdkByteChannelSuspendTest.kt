@@ -11,7 +11,6 @@ import io.kotest.matchers.string.shouldContain
 import kotlinx.coroutines.*
 import kotlinx.coroutines.test.runTest
 import kotlin.test.AfterTest
-import kotlin.test.Ignore
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith

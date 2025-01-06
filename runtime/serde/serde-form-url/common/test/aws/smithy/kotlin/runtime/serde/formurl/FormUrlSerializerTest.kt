@@ -9,7 +9,6 @@ import aws.smithy.kotlin.runtime.IgnoreNative
 import aws.smithy.kotlin.runtime.serde.*
 import aws.smithy.kotlin.runtime.time.Instant
 import aws.smithy.kotlin.runtime.time.TimestampFormat
-import kotlin.test.Ignore
 import kotlin.test.Test
 import kotlin.test.assertEquals
 

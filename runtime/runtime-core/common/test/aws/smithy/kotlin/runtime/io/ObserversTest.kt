@@ -8,7 +8,6 @@ package aws.smithy.kotlin.runtime.io
 import aws.smithy.kotlin.runtime.IgnoreNative
 import aws.smithy.kotlin.runtime.io.internal.SdkSinkObserver
 import aws.smithy.kotlin.runtime.io.internal.SdkSourceObserver
-import kotlin.test.Ignore
 import kotlin.test.Test
 import kotlin.test.assertEquals
 

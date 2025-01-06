@@ -11,7 +11,6 @@ import aws.smithy.kotlin.runtime.serde.cbor.CborSerialName
 import aws.smithy.kotlin.runtime.serde.cbor.CborSerializer
 import aws.smithy.kotlin.runtime.serde.serializeStruct
 import kotlinx.coroutines.test.runTest
-import kotlin.test.Ignore
 import kotlin.test.Test
 import kotlin.test.assertEquals
 

@@ -9,7 +9,6 @@ import aws.smithy.kotlin.runtime.IgnoreNative
 import aws.smithy.kotlin.runtime.time.Instant
 import aws.smithy.kotlin.runtime.util.Uuid
 import io.kotest.matchers.string.shouldContain
-import kotlin.test.Ignore
 import kotlin.test.Test
 import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals

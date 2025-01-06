@@ -9,7 +9,6 @@ import aws.smithy.kotlin.runtime.IgnoreNative
 import aws.smithy.kotlin.runtime.hashing.toHashFunction
 import kotlinx.coroutines.test.runTest
 import kotlin.random.Random
-import kotlin.test.Ignore
 import kotlin.test.Test
 import kotlin.test.assertContentEquals
 

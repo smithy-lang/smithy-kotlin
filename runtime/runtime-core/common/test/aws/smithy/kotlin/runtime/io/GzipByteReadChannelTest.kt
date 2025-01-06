@@ -7,7 +7,6 @@ package aws.smithy.kotlin.runtime.io
 import aws.smithy.kotlin.runtime.IgnoreNative
 import aws.smithy.kotlin.runtime.hashing.crc32
 import kotlinx.coroutines.test.runTest
-import kotlin.test.Ignore
 import kotlin.test.Test
 import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals

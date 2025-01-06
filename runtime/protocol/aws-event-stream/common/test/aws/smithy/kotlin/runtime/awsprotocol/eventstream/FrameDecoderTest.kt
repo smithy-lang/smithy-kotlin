@@ -10,7 +10,6 @@ import aws.smithy.kotlin.runtime.io.*
 import io.kotest.matchers.string.shouldContain
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.test.runTest
-import kotlin.test.Ignore
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith

@@ -10,7 +10,6 @@ import aws.smithy.kotlin.runtime.http.readAll
 import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
 import aws.smithy.kotlin.runtime.operation.ExecutionContext
 import io.kotest.matchers.string.shouldContain
-import kotlin.test.Ignore
 import kotlin.test.Test
 
 class HttpResponseTestBuilderTest {

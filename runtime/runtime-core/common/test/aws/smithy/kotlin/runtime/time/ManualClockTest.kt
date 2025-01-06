@@ -6,7 +6,6 @@
 package aws.smithy.kotlin.runtime.time
 
 import aws.smithy.kotlin.runtime.IgnoreNative
-import kotlin.test.Ignore
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.time.Duration.Companion.milliseconds

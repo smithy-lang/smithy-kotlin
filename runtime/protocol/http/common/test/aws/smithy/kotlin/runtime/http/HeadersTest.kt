@@ -5,7 +5,6 @@
 package aws.smithy.kotlin.runtime.http
 
 import aws.smithy.kotlin.runtime.IgnoreNative
-import kotlin.test.Ignore
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse

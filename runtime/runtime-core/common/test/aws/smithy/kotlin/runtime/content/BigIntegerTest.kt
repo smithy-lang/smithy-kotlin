@@ -6,7 +6,6 @@ package aws.smithy.kotlin.runtime.content
 
 import aws.smithy.kotlin.runtime.IgnoreNative
 import aws.smithy.kotlin.runtime.text.encoding.decodeHexBytes
-import kotlin.test.Ignore
 import kotlin.test.Test
 import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals

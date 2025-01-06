@@ -13,7 +13,6 @@ import aws.smithy.kotlin.runtime.telemetry.logging.loggingContext
 import aws.smithy.kotlin.runtime.telemetry.trace.traceSpan
 import io.kotest.matchers.string.shouldContain
 import kotlinx.coroutines.test.runTest
-import kotlin.test.Ignore
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
