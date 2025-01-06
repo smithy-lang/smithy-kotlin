@@ -4,6 +4,7 @@
  */
 package aws.smithy.kotlin.runtime.awsprotocol
 
+import aws.smithy.kotlin.runtime.IgnoreNative
 import aws.smithy.kotlin.runtime.SdkBaseException
 import aws.smithy.kotlin.runtime.ServiceErrorMetadata
 import aws.smithy.kotlin.runtime.awsprotocol.ClockSkewInterceptor.Companion.CLOCK_SKEW_THRESHOLD
@@ -31,7 +32,7 @@ private val POSSIBLE_SKEWED_RESPONSE_CODE_DESCRIPTION = "InvalidSignatureExcepti
 private val NOT_SKEWED_RESPONSE_CODE_DESCRIPTION = "RequestThrottled"
 
 class ClockSkewInterceptorTest {
-    @Ignore // FIXME Re-enable after Kotlin/Native implementation
+    @IgnoreNative // FIXME Re-enable after Kotlin/Native Implementation
     @Test
     fun testNotSkewed() {
         val clientTime = Instant.fromRfc5322("Wed, 6 Oct 2023 16:20:50 -0400")

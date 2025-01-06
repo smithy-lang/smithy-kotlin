@@ -5,6 +5,7 @@
 
 package aws.smithy.kotlin.runtime.auth.awscredentials
 
+import aws.smithy.kotlin.runtime.IgnoreNative
 import aws.smithy.kotlin.runtime.collections.Attributes
 import aws.smithy.kotlin.runtime.time.Instant
 import aws.smithy.kotlin.runtime.time.ManualClock
@@ -37,7 +38,7 @@ class CachedCredentialsProviderTest {
         }
     }
 
-    @Ignore // FIXME Re-enable after Kotlin/Native implementation
+    @IgnoreNative // FIXME Re-enable after Kotlin/Native Implementation
     @Test
     fun testLoadFirstCall() = runTest {
         // explicit expiration
@@ -52,7 +53,7 @@ class CachedCredentialsProviderTest {
         assertEquals(1, source.callCount)
     }
 
-    @Ignore // FIXME Re-enable after Kotlin/Native implementation
+    @IgnoreNative // FIXME Re-enable after Kotlin/Native Implementation
     @Test
     fun testDefaultExpiration() = runTest {
         // expiration should come from the cached provider

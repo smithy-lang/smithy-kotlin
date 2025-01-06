@@ -4,6 +4,7 @@
  */
 package aws.smithy.kotlin.runtime.http.interceptors
 
+import aws.smithy.kotlin.runtime.IgnoreNative
 import aws.smithy.kotlin.runtime.http.*
 import aws.smithy.kotlin.runtime.http.HttpCall
 import aws.smithy.kotlin.runtime.http.operation.*
@@ -77,7 +78,7 @@ class ResponseLengthValidationInterceptorTest {
 
     private fun allBodies() = nonEmptyBodies() + HttpBody.Empty
 
-    @Ignore // FIXME Re-enable after Kotlin/Native implementation
+    @IgnoreNative // FIXME Re-enable after Kotlin/Native Implementation
     @Test
     fun testCorrectLengthReturned() = runTest {
         nonEmptyBodies().forEach { body ->

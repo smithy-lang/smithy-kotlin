@@ -4,6 +4,7 @@
  */
 package aws.smithy.kotlin.runtime.auth.awssigning.tests
 
+import aws.smithy.kotlin.runtime.IgnoreNative
 import aws.smithy.kotlin.runtime.auth.awscredentials.Credentials
 import aws.smithy.kotlin.runtime.auth.awssigning.*
 import aws.smithy.kotlin.runtime.http.HttpBody
@@ -18,7 +19,6 @@ import aws.smithy.kotlin.runtime.net.url.Url
 import aws.smithy.kotlin.runtime.time.Instant
 import kotlinx.coroutines.test.TestResult
 import kotlinx.coroutines.test.runTest
-import kotlin.test.Ignore
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -56,7 +56,7 @@ public abstract class BasicSigningTestBase : HasSigner {
         credentials = DEFAULT_TEST_CREDENTIALS
     }
 
-    @Ignore // FIXME Re-enable after Kotlin/Native implementation
+    @IgnoreNative // FIXME Re-enable after Kotlin/Native Implementation
     @Test
     public fun testSignRequestSigV4(): TestResult = runTest {
         // sanity test
@@ -85,7 +85,7 @@ public abstract class BasicSigningTestBase : HasSigner {
         assertEquals(expectedSig, result.signature.decodeToString())
     }
 
-    @Ignore // FIXME Re-enable after Kotlin/Native implementation
+    @IgnoreNative // FIXME Re-enable after Kotlin/Native Implementation
     @Test
     public open fun testSignRequestSigV4Asymmetric(): TestResult = runTest {
         // sanity test
@@ -168,7 +168,7 @@ public abstract class BasicSigningTestBase : HasSigner {
         return chunk
     }
 
-    @Ignore // FIXME Re-enable after Kotlin/Native implementation
+    @IgnoreNative // FIXME Re-enable after Kotlin/Native Implementation
     @Test
     public fun testSignChunks(): TestResult = runTest {
         val request = createChunkedTestRequest()
@@ -192,7 +192,7 @@ public abstract class BasicSigningTestBase : HasSigner {
         assertEquals(EXPECTED_FINAL_CHUNK_SIGNATURE, finalChunkResult.signature.decodeToString())
     }
 
-    @Ignore // FIXME Re-enable after Kotlin/Native implementation
+    @IgnoreNative // FIXME Re-enable after Kotlin/Native Implementation
     @Test
     public fun testSigningCopiesInput(): TestResult = runTest {
         // sanity test the signer doesn't mutate the input and instead copies to a new request

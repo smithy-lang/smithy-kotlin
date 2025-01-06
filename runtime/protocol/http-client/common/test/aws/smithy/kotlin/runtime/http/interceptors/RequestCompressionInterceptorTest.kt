@@ -5,6 +5,7 @@
 
 package aws.smithy.kotlin.runtime.http.interceptors
 
+import aws.smithy.kotlin.runtime.IgnoreNative
 import aws.smithy.kotlin.runtime.collections.get
 import aws.smithy.kotlin.runtime.compression.CompressionAlgorithm
 import aws.smithy.kotlin.runtime.compression.Gzip
@@ -60,7 +61,7 @@ class RequestCompressionInterceptorTest {
         return op.context.attributes[HttpOperationContext.HttpCallList].first()
     }
 
-    @Ignore // FIXME Re-enable after Kotlin/Native implementation
+    @IgnoreNative // FIXME Re-enable after Kotlin/Native Implementation
     @Test
     fun testCompressionThresholdTooHigh() = runTest {
         val payload = "<Foo>bar</Foo>"
@@ -80,7 +81,7 @@ class RequestCompressionInterceptorTest {
         assertEquals(bytes, sentBytes)
     }
 
-    @Ignore // FIXME Re-enable after Kotlin/Native implementation
+    @IgnoreNative // FIXME Re-enable after Kotlin/Native Implementation
     @Test
     fun testCompression() = runTest {
         val payload = "<Foo>bar</Foo>"

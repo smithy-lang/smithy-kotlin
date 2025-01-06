@@ -5,6 +5,7 @@
 
 package aws.smithy.kotlin.runtime.http.interceptors
 
+import aws.smithy.kotlin.runtime.IgnoreNative
 import aws.smithy.kotlin.runtime.collections.get
 import aws.smithy.kotlin.runtime.http.*
 import aws.smithy.kotlin.runtime.http.HttpCall
@@ -66,7 +67,7 @@ class FlexibleChecksumsResponseInterceptorTest {
         return SdkHttpClient(mockEngine)
     }
 
-    @Ignore // FIXME Re-enable after Kotlin/Native implementation
+    @IgnoreNative // FIXME Re-enable after Kotlin/Native Implementation
     @Test
     fun testResponseChecksumValid() = runTest {
         checksums.forEach { (checksumAlgorithmName, expectedChecksum) ->
@@ -93,7 +94,7 @@ class FlexibleChecksumsResponseInterceptorTest {
         }
     }
 
-    @Ignore // FIXME Re-enable after Kotlin/Native implementation
+    @IgnoreNative // FIXME Re-enable after Kotlin/Native Implementation
     @Test
     fun testResponseServiceChecksumInvalid() = runTest {
         checksums.forEach { (checksumAlgorithmName, _) ->
@@ -122,7 +123,7 @@ class FlexibleChecksumsResponseInterceptorTest {
         }
     }
 
-    @Ignore // FIXME Re-enable after Kotlin/Native implementation
+    @IgnoreNative // FIXME Re-enable after Kotlin/Native Implementation
     @Test
     fun testMultipleChecksumsReturned() = runTest {
         val req = HttpRequestBuilder()
@@ -147,7 +148,7 @@ class FlexibleChecksumsResponseInterceptorTest {
         assertEquals("x-amz-checksum-crc32c", op.context[ChecksumHeaderValidated])
     }
 
-    @Ignore // FIXME Re-enable after Kotlin/Native implementation
+    @IgnoreNative // FIXME Re-enable after Kotlin/Native Implementation
     @Test
     fun testSkipsValidationOfMultipartChecksum() = runTest {
         val req = HttpRequestBuilder()
@@ -168,7 +169,7 @@ class FlexibleChecksumsResponseInterceptorTest {
         op.roundTrip(client, TestInput("input"))
     }
 
-    @Ignore // FIXME Re-enable after Kotlin/Native implementation
+    @IgnoreNative // FIXME Re-enable after Kotlin/Native Implementation
     @Test
     fun testSkipsValidationWhenDisabled() = runTest {
         val req = HttpRequestBuilder()

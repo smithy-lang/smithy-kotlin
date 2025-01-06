@@ -4,6 +4,7 @@
  */
 package aws.smithy.kotlin.runtime.http.auth
 
+import aws.smithy.kotlin.runtime.IgnoreNative
 import aws.smithy.kotlin.runtime.auth.awscredentials.Credentials
 import aws.smithy.kotlin.runtime.auth.awscredentials.CredentialsProvider
 import aws.smithy.kotlin.runtime.auth.awssigning.AwsSigner
@@ -106,7 +107,7 @@ public abstract class AwsHttpSignerTestBase(
         return operation.context[HttpOperationContext.HttpCallList].last().request
     }
 
-    @Ignore // FIXME Re-enable after Kotlin/Native implementation
+    @IgnoreNative // FIXME Re-enable after Kotlin/Native Implementation
     @Test
     public fun testSignRequest(): TestResult = runTest {
         val op = buildOperation()
@@ -120,7 +121,7 @@ public abstract class AwsHttpSignerTestBase(
         assertEquals(expectedSig, signed.headers["Authorization"])
     }
 
-    @Ignore // FIXME Re-enable after Kotlin/Native implementation
+    @IgnoreNative // FIXME Re-enable after Kotlin/Native Implementation
     @Test
     public fun testUnsignedRequest(): TestResult = runTest {
         val op = buildOperation(unsigned = true)
@@ -134,7 +135,7 @@ public abstract class AwsHttpSignerTestBase(
         assertEquals(expectedSig, signed.headers["Authorization"])
     }
 
-    @Ignore // FIXME Re-enable after Kotlin/Native implementation
+    @IgnoreNative // FIXME Re-enable after Kotlin/Native Implementation
     @Test
     public fun testSignReplayableStreamingRequest(): TestResult = runTest {
         val op = buildOperation(streaming = true)
@@ -148,7 +149,7 @@ public abstract class AwsHttpSignerTestBase(
         assertEquals(expectedSig, signed.headers["Authorization"])
     }
 
-    @Ignore // FIXME Re-enable after Kotlin/Native implementation
+    @IgnoreNative // FIXME Re-enable after Kotlin/Native Implementation
     @Test
     public fun testSignAwsChunkedStreamNonReplayable(): TestResult = runTest {
         val op = buildOperation(streaming = true, replayable = false, requestBody = "a".repeat(AWS_CHUNKED_THRESHOLD + 1))

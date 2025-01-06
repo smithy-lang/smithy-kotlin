@@ -5,6 +5,7 @@
 
 package aws.smithy.kotlin.runtime.http.operation
 
+import aws.smithy.kotlin.runtime.IgnoreNative
 import aws.smithy.kotlin.runtime.http.SdkHttpClient
 import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
 import aws.smithy.kotlin.runtime.httptest.TestEngine
@@ -19,7 +20,7 @@ import kotlin.test.assertFailsWith
 import kotlin.test.assertNotNull
 
 class SdkHttpOperationTest {
-    @Ignore // FIXME Re-enable after Kotlin/Native implementation
+    @IgnoreNative // FIXME Re-enable after Kotlin/Native Implementation
     @Test
     fun testTelemetryInstrumentation() = runTest {
         val op = newTestOperation<Unit, Unit>(HttpRequestBuilder(), Unit)
@@ -33,7 +34,7 @@ class SdkHttpOperationTest {
         }
     }
 
-    @Ignore // FIXME Re-enable after Kotlin/Native implementation
+    @IgnoreNative // FIXME Re-enable after Kotlin/Native Implementation
     @Test
     fun testMissingRequiredProperties() = runTest {
         val ex = assertFailsWith<IllegalArgumentException> {
