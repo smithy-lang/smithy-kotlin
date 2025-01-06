@@ -4,6 +4,7 @@
  */
 package aws.smithy.kotlin.runtime.collections
 
+import aws.smithy.kotlin.runtime.IgnoreNative
 import aws.smithy.kotlin.runtime.time.ManualClock
 import aws.smithy.kotlin.runtime.util.ExpiringValue
 import kotlinx.coroutines.test.runTest
@@ -14,7 +15,7 @@ import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 
 class ReadThroughCacheTest {
-    @Ignore // FIXME Re-enable after Kotlin/Native implementation
+    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testReadThrough() = runTest {
         val clock = ManualClock()
@@ -38,7 +39,7 @@ class ReadThroughCacheTest {
         assertEquals(3, cache.get("b") { uncachedValue() })
     }
 
-    @Ignore // FIXME Re-enable after Kotlin/Native implementation
+    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testSweep() = runTest {
         val clock = ManualClock()

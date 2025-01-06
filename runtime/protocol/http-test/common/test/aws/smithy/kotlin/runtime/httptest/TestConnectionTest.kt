@@ -130,7 +130,7 @@ class TestConnectionTest {
         }.message.shouldContain("body mismatch")
     }
 
-    @Ignore // FIXME Re-enable after Kotlin/Native implementation
+    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testAssertRequestsAny() = runTest {
         val engine = buildTestConnection {
@@ -165,7 +165,7 @@ class TestConnectionTest {
         engine.assertRequests()
     }
 
-    @Ignore // FIXME Re-enable after Kotlin/Native implementation
+    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testFromJson() = runTest {
         // language=JSON

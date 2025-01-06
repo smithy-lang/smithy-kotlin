@@ -118,7 +118,7 @@ class JsonDeserializerTest {
         }
     }
 
-    @Ignore // FIXME Re-enable after Kotlin/Native implementation
+    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun itHandlesBigDecimal() {
         val tests = listOf(

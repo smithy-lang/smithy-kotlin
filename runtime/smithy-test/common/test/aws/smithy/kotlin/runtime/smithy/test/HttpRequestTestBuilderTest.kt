@@ -4,6 +4,7 @@
  */
 package aws.smithy.kotlin.runtime.smithy.test
 
+import aws.smithy.kotlin.runtime.IgnoreNative
 import aws.smithy.kotlin.runtime.http.HttpBody
 import aws.smithy.kotlin.runtime.http.HttpMethod
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
@@ -20,7 +21,7 @@ class HttpRequestTestBuilderTest {
 
     private val execContext = ExecutionContext()
 
-    @Ignore // FIXME Re-enable after Kotlin/Native implementation
+    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun itAssertsHttpMethod() {
         val ex = assertFails {
@@ -39,7 +40,7 @@ class HttpRequestTestBuilderTest {
         ex.message.shouldContain("expected method: `POST`; got: `GET`")
     }
 
-    @Ignore // FIXME Re-enable after Kotlin/Native implementation
+    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun itAssertsUri() {
         val ex = assertFails {
@@ -60,7 +61,7 @@ class HttpRequestTestBuilderTest {
         ex.message.shouldContain("expected path: `/foo`; got: `/bar`")
     }
 
-    @Ignore // FIXME Re-enable after Kotlin/Native implementation
+    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun itAssertsQueryParameters() {
         val ex = assertFails {
@@ -89,7 +90,7 @@ class HttpRequestTestBuilderTest {
         ex.message.shouldContain("Query parameter `Hi` does not contain expected value `Hello%20there`. Actual values: [Hello]")
     }
 
-    @Ignore // FIXME Re-enable after Kotlin/Native implementation
+    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun itAssertsForbiddenQueryParameters() {
         val ex = assertFails {
@@ -120,7 +121,7 @@ class HttpRequestTestBuilderTest {
         ex.message.shouldContain("forbidden query parameter found: `foobar`")
     }
 
-    @Ignore // FIXME Re-enable after Kotlin/Native implementation
+    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun itAssertsRequiredQueryParameters() {
         val ex = assertFails {
@@ -152,7 +153,7 @@ class HttpRequestTestBuilderTest {
         ex.message.shouldContain("required query parameter not found: `requiredQuery`")
     }
 
-    @Ignore // FIXME Re-enable after Kotlin/Native implementation
+    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun itAssertsHeaders() {
         val ex = assertFails {
@@ -193,7 +194,7 @@ class HttpRequestTestBuilderTest {
         ex.message.shouldContain("expected header `k2` has no actual values")
     }
 
-    @Ignore // FIXME Re-enable after Kotlin/Native implementation
+    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun itAssertsListsOfHeaders() {
         val ex = assertFails {
@@ -222,7 +223,7 @@ class HttpRequestTestBuilderTest {
         ex.message.shouldContain("expected header name value pair not equal: `k2:v3, v4, v5`; found: `k2:v3, v4")
     }
 
-    @Ignore // FIXME Re-enable after Kotlin/Native implementation
+    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun itAssertsForbiddenHeaders() {
         val ex = assertFails {
@@ -266,7 +267,7 @@ class HttpRequestTestBuilderTest {
         ex.message.shouldContain("forbidden header found: `forbiddenHeader`")
     }
 
-    @Ignore // FIXME Re-enable after Kotlin/Native implementation
+    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun itAssertsRequiredHeaders() {
         val ex = assertFails {
@@ -311,7 +312,7 @@ class HttpRequestTestBuilderTest {
         ex.message.shouldContain("expected required header not found: `requiredHeader`")
     }
 
-    @Ignore // FIXME Re-enable after Kotlin/Native implementation
+    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun itFailsWhenBodyAssertFunctionIsMissing() {
         val ex = assertFails {
@@ -331,7 +332,7 @@ class HttpRequestTestBuilderTest {
         ex.message.shouldContain("body assertion function is required if an expected body is defined")
     }
 
-    @Ignore // FIXME Re-enable after Kotlin/Native implementation
+    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun itCallsBodyAssertFunction() {
         val ex = assertFails {
@@ -352,7 +353,7 @@ class HttpRequestTestBuilderTest {
         ex.message.shouldContain("actual bytes read does not match expected")
     }
 
-    @Ignore // FIXME Re-enable after Kotlin/Native implementation
+    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun itAssertsHostWhenSet() {
         val ex = assertFails {

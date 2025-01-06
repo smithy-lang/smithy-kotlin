@@ -4,12 +4,13 @@
  */
 package aws.smithy.kotlin.runtime.time
 
+import aws.smithy.kotlin.runtime.IgnoreNative
 import kotlin.test.Ignore
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class ParseEpochTest {
-    @Ignore // FIXME Re-enable after Kotlin/Native implementation
+    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun itParsesEpochTimestamps() {
         val tests = listOf(

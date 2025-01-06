@@ -2,6 +2,7 @@
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
  * SPDX-License-Identifier: Apache-2.0
  */
+import aws.smithy.kotlin.runtime.IgnoreNative
 import aws.smithy.kotlin.runtime.awsprotocol.rpcv2.cbor.RpcV2CborErrorDeserializer
 import aws.smithy.kotlin.runtime.serde.SdkFieldDescriptor
 import aws.smithy.kotlin.runtime.serde.SdkObjectDescriptor
@@ -15,7 +16,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class RpcV2CborErrorDeserializerTest {
-    @Ignore // FIXME Re-enable after Kotlin/Native implementation
+    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testDeserializeErrorType() = runTest {
         val tests = listOf(

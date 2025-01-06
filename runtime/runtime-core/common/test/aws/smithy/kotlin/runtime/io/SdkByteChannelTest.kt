@@ -5,20 +5,21 @@
 
 package aws.smithy.kotlin.runtime.io
 
+import aws.smithy.kotlin.runtime.IgnoreNative
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.yield
 import kotlin.test.*
 
 class SdkByteChannelTest {
-    @Ignore // FIXME Re-enable after Kotlin/Native implementation
+    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testCreateAndClose() {
         val chan = SdkByteChannel(false)
         chan.close()
     }
 
-    @Ignore // FIXME Re-enable after Kotlin/Native implementation
+    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testAutoFlush() = runTest {
         SdkByteChannel(false).use { chan ->
@@ -43,7 +44,7 @@ class SdkByteChannelTest {
         }
     }
 
-    @Ignore // FIXME Re-enable after Kotlin/Native implementation
+    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testClose() = runTest {
         val chan = SdkByteChannel(false)
@@ -88,7 +89,7 @@ class SdkByteChannelTest {
         }
     }
 
-    @Ignore // FIXME Re-enable after Kotlin/Native implementation
+    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testReadFromClosedChannel() = runTest {
         val chan = SdkByteReadChannel(byteArrayOf(1, 2, 3, 4, 5))
@@ -102,7 +103,7 @@ class SdkByteChannelTest {
         assertTrue { chan.isClosedForRead }
     }
 
-    @Ignore // FIXME Re-enable after Kotlin/Native implementation
+    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testReadAvailableNoSuspend() = runTest {
         val chan = SdkByteReadChannel("world!".encodeToByteArray())
@@ -115,7 +116,7 @@ class SdkByteChannelTest {
         assertEquals("hello, world!", buffer.readUtf8())
     }
 
-    @Ignore // FIXME Re-enable after Kotlin/Native implementation
+    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testReadAvailableSuspend() = runTest {
         val chan = SdkByteChannel()
@@ -138,7 +139,7 @@ class SdkByteChannelTest {
         job.join()
     }
 
-    @Ignore // FIXME Re-enable after Kotlin/Native implementation
+    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testCloseableUse() = runTest {
         val chan = SdkByteChannel(true)
@@ -160,7 +161,7 @@ class SdkByteChannelTest {
         assertTrue(chan.isClosedForRead)
     }
 
-    @Ignore // FIXME Re-enable after Kotlin/Native implementation
+    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testReadFullyFromFailedChannel() = runTest {
         // ensure that we attempt reading such that failures are propagate to caller
@@ -173,7 +174,7 @@ class SdkByteChannelTest {
         }
     }
 
-    @Ignore // FIXME Re-enable after Kotlin/Native implementation
+    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testReadRemainingFromFailedChannel() = runTest {
         // ensure that we attempt reading such that failures are propagate to caller

@@ -4,6 +4,7 @@
  */
 package aws.smithy.kotlin.runtime.content
 
+import aws.smithy.kotlin.runtime.IgnoreNative
 import io.kotest.matchers.string.shouldContain
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
@@ -18,7 +19,7 @@ class ByteStreamChannelSourceFlowTest : ByteStreamFlowTest(ByteStreamFactory.SDK
 abstract class ByteStreamFlowTest(
     private val factory: ByteStreamFactory,
 ) {
-    @Ignore // FIXME Re-enable after Kotlin/Native implementation
+    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testToFlowWithSizeHint() = runTest {
         val data = "a korf is a tiger".repeat(1024).encodeToByteArray()
@@ -58,7 +59,7 @@ abstract class ByteStreamFlowTest(
             testByteArray(3278),
         )
 
-        @Ignore // FIXME Re-enable after Kotlin/Native implementation
+        @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
         @Test
         fun testFlowToByteStreamReadAll() = runTest {
             val flow = data.asFlow()
@@ -139,7 +140,7 @@ abstract class ByteStreamFlowTest(
             ch.closedCause?.message.shouldContain("scope cancelled")
         }
 
-        @Ignore // FIXME Re-enable after Kotlin/Native implementation
+        @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
         @Test
         fun testChannelCancellation() = runTest {
             // cancelling the channel should cancel the scope (via write failing)

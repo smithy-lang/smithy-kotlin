@@ -6,6 +6,7 @@
 package aws.smithy.kotlin.runtime.http.engine.crt
 
 import aws.sdk.kotlin.crt.http.HttpStream
+import aws.smithy.kotlin.runtime.IgnoreNative
 import aws.smithy.kotlin.runtime.http.toHttpBody
 import aws.smithy.kotlin.runtime.io.SdkByteReadChannel
 import aws.smithy.kotlin.runtime.io.readToByteArray
@@ -27,7 +28,7 @@ class SendChunkedBodyTest {
         }
     }
 
-    @Ignore // FIXME Re-enable after Kotlin/Native implementation
+    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testSourceContent() = runTest {
         val stream = MockHttpStream(200)
@@ -45,7 +46,7 @@ class SendChunkedBodyTest {
         assertEquals(1, stream.numChunksWritten)
     }
 
-    @Ignore // FIXME Re-enable after Kotlin/Native implementation
+    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testChannelContentMultipleChunks() = runTest {
         val stream = MockHttpStream(200)
@@ -67,7 +68,7 @@ class SendChunkedBodyTest {
         assertTrue(stream.numChunksWritten > 1)
     }
 
-    @Ignore // FIXME Re-enable after Kotlin/Native implementation
+    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testChannelContent() = runTest {
         val stream = MockHttpStream(200)
@@ -86,7 +87,7 @@ class SendChunkedBodyTest {
         assertEquals(1, stream.numChunksWritten)
     }
 
-    @Ignore // FIXME Re-enable after Kotlin/Native implementation
+    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testSourceContentMultipleChunks() = runTest {
         val stream = MockHttpStream(200)

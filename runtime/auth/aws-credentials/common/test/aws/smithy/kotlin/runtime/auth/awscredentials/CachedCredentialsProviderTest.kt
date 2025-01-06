@@ -66,7 +66,7 @@ class CachedCredentialsProviderTest {
         assertEquals(1, source.callCount)
     }
 
-    @Ignore // FIXME Re-enable after Kotlin/Native implementation
+    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testReloadExpiredCredentials() = runTest {
         val source = TestCredentialsProvider(expiration = testExpiration)
@@ -82,7 +82,7 @@ class CachedCredentialsProviderTest {
         assertEquals(2, source.callCount)
     }
 
-    @Ignore // FIXME Re-enable after Kotlin/Native implementation
+    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testRefreshBufferWindow() = runTest {
         val source = TestCredentialsProvider(expiration = testExpiration)
@@ -104,7 +104,7 @@ class CachedCredentialsProviderTest {
         assertEquals(2, source.callCount)
     }
 
-    @Ignore // FIXME Re-enable after Kotlin/Native implementation
+    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testLoadFailed() = runTest {
         val source = object : CredentialsProvider {
@@ -127,7 +127,7 @@ class CachedCredentialsProviderTest {
         provider.resolve()
     }
 
-    @Ignore // FIXME Re-enable after Kotlin/Native implementation
+    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testItThrowsOnGetCredentialsAfterClose() = runTest {
         val source = TestCredentialsProvider(expiration = testExpiration)
@@ -145,7 +145,7 @@ class CachedCredentialsProviderTest {
         assertEquals(1, source.callCount)
     }
 
-    @Ignore // FIXME Re-enable after Kotlin/Native implementation
+    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testCachedConvenienceFunction() = runTest {
         val source = TestCredentialsProvider(expiration = testExpiration)

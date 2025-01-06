@@ -4,6 +4,7 @@
  */
 package aws.smithy.kotlin.runtime.content
 
+import aws.smithy.kotlin.runtime.IgnoreNative
 import aws.smithy.kotlin.runtime.text.encoding.decodeHexBytes
 import kotlin.test.Ignore
 import kotlin.test.Test
@@ -12,7 +13,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFails
 
 class BigIntegerTest {
-    @Ignore // FIXME Re-enable after Kotlin/Native implementation
+    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testBigInteger() {
         val reallyBigNumberString = "340282366920938463463374607431768211456" // 128-bit number
@@ -20,20 +21,20 @@ class BigIntegerTest {
         assertEquals(reallyBigNumberString, reallyBigNumber.toString())
     }
 
-    @Ignore // FIXME Re-enable after Kotlin/Native implementation
+    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testBadBigInteger() {
         assertFails { BigInteger("1234567890foo1234567890") }
     }
 
-    @Ignore // FIXME Re-enable after Kotlin/Native implementation
+    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testEquals() {
         val value = "340282366920938463463374607431768211456"
         assertEquals(BigInteger(value), BigInteger(value))
     }
 
-    @Ignore // FIXME Re-enable after Kotlin/Native implementation
+    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testPlusOperator() {
         // Map of an expected value to a pair of two values that should sum to get that expected value
@@ -52,7 +53,7 @@ class BigIntegerTest {
         }
     }
 
-    @Ignore // FIXME Re-enable after Kotlin/Native implementation
+    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testMinusOperator() {
         // Map of an expected value to a pair of two values that should subtract to get that expected value
@@ -71,7 +72,7 @@ class BigIntegerTest {
         }
     }
 
-    @Ignore // FIXME Re-enable after Kotlin/Native implementation
+    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testByteOperations() {
         // Map of hexadecimal encoding of a big integer to the expected string representation of that big integer

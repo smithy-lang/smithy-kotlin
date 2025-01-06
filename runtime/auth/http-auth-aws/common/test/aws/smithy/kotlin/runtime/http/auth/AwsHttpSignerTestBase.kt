@@ -163,7 +163,7 @@ public abstract class AwsHttpSignerTestBase(
         assertEquals(expectedSig, signed.headers["Authorization"])
     }
 
-    @Ignore // FIXME Re-enable after Kotlin/Native implementation
+    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     public fun testSignAwsChunkedStreamReplayable(): TestResult = runTest {
         val op = buildOperation(streaming = true, replayable = true, requestBody = "a".repeat(AWS_CHUNKED_THRESHOLD + 1))
@@ -177,7 +177,7 @@ public abstract class AwsHttpSignerTestBase(
         assertEquals(expectedSig, signed.headers["Authorization"])
     }
 
-    @Ignore // FIXME Re-enable after Kotlin/Native implementation
+    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     public fun testSignOneShotStream(): TestResult = runTest {
         val op = buildOperation(streaming = true, replayable = false)

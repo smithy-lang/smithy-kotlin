@@ -5,6 +5,7 @@
 
 package aws.smithy.kotlin.runtime.io
 
+import aws.smithy.kotlin.runtime.IgnoreNative
 import aws.smithy.kotlin.runtime.hashing.*
 import kotlin.test.Ignore
 import kotlin.test.Test
@@ -14,7 +15,7 @@ class HashingSourceTest {
 
     private val hashFunctionNames = listOf("crc32", "crc32c", "md5", "sha1", "sha256")
 
-    @Ignore // FIXME Re-enable after Kotlin/Native implementation
+    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testHashingSourceDigest() = run {
         hashFunctionNames.forEach { hashFunctionName ->
@@ -34,7 +35,7 @@ class HashingSourceTest {
         }
     }
 
-    @Ignore // FIXME Re-enable after Kotlin/Native implementation
+    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testHashingSourcePartialRead() = run {
         hashFunctionNames.forEach { hashFunctionName ->

@@ -88,7 +88,7 @@ class ResponseLengthValidationInterceptorTest {
         }
     }
 
-    @Ignore // FIXME Re-enable after Kotlin/Native implementation
+    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testNotEnoughBytesReturned() = runTest {
         nonEmptyBodies().forEach { body ->
@@ -100,7 +100,7 @@ class ResponseLengthValidationInterceptorTest {
         }
     }
 
-    @Ignore // FIXME Re-enable after Kotlin/Native implementation
+    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testTooManyBytesReturned() = runTest {
         allBodies().forEach { body ->
@@ -112,7 +112,7 @@ class ResponseLengthValidationInterceptorTest {
         }
     }
 
-    @Ignore // FIXME Re-enable after Kotlin/Native implementation
+    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testNoContentLengthSkipsValidation() = runTest {
         allBodies().forEach { body ->
@@ -122,7 +122,7 @@ class ResponseLengthValidationInterceptorTest {
         }
     }
 
-    @Ignore // FIXME Re-enable after Kotlin/Native implementation
+    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testEmptyBodyCorrectLengthReturned() = runTest {
         val client = client(HttpBody.Empty, 0) // expect correct content length

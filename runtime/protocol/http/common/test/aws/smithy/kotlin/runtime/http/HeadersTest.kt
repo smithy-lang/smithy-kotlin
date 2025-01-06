@@ -4,6 +4,7 @@
  */
 package aws.smithy.kotlin.runtime.http
 
+import aws.smithy.kotlin.runtime.IgnoreNative
 import kotlin.test.Ignore
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -29,7 +30,7 @@ class HeadersTest {
         assertEquals("Headers [key=[value]]", "$actual2")
     }
 
-    @Ignore // FIXME Re-enable after Kotlin/Native implementation
+    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testSubsequentModificationsDontAffectOriginal() {
         val builder = HeadersBuilder()

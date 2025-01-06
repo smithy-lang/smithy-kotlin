@@ -5,6 +5,7 @@
 
 package aws.smithy.kotlin.runtime.awsprotocol.eventstream
 
+import aws.smithy.kotlin.runtime.IgnoreNative
 import aws.smithy.kotlin.runtime.io.EOFException
 import aws.smithy.kotlin.runtime.io.SdkBuffer
 import aws.smithy.kotlin.runtime.time.Instant
@@ -52,7 +53,7 @@ fun validMessageNoHeaders(): ByteArray = byteArrayFrom(
 
 class MessageTest {
 
-    @Ignore // FIXME Re-enable after Kotlin/Native implementation
+    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testMessageNoHeaders() {
         // Test message taken from the CRT:
@@ -69,7 +70,7 @@ class MessageTest {
         assertEquals(expectedPayload, actual.payload.decodeToString())
     }
 
-    @Ignore // FIXME Re-enable after Kotlin/Native implementation
+    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testMessageOneHeader() {
         // Test message taken from the CRT:
@@ -91,7 +92,7 @@ class MessageTest {
         assertEquals(expectedHeaders, actual.headers)
     }
 
-    @Ignore // FIXME Re-enable after Kotlin/Native implementation
+    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testRoundTripAllHeadersPayload() {
         val encoded = validMessageWithAllHeaders()
@@ -121,7 +122,7 @@ class MessageTest {
         assertContentEquals(message.payload, result.payload)
     }
 
-    @Ignore // FIXME Re-enable after Kotlin/Native implementation
+    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testInvalidHeaderStringValueLength() {
         // header length = -1
@@ -143,7 +144,7 @@ class MessageTest {
         }.message.shouldContain("Invalid HeaderValue; type=STRING, len=65535")
     }
 
-    @Ignore // FIXME Re-enable after Kotlin/Native implementation
+    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testInvalidHeaderStringLengthCutoff() {
         val encoded = byteArrayFrom(
@@ -160,7 +161,7 @@ class MessageTest {
         }
     }
 
-    @Ignore // FIXME Re-enable after Kotlin/Native implementation
+    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testInvalidHeaderValueType() {
         val encoded = byteArrayFrom(
@@ -181,7 +182,7 @@ class MessageTest {
         }.message.shouldContain("Unknown HeaderType: 96")
     }
 
-    @Ignore // FIXME Re-enable after Kotlin/Native implementation
+    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testInvalidHeaderNameLength() {
         val encoded = byteArrayFrom(
@@ -202,7 +203,7 @@ class MessageTest {
         }.message.shouldContain("Invalid header name length")
     }
 
-    @Ignore // FIXME Re-enable after Kotlin/Native implementation
+    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testInvalidHeadersLength() {
         val encoded = byteArrayFrom(
@@ -219,7 +220,7 @@ class MessageTest {
         }.message.shouldContain("Not enough bytes to read header name; needed: 3; remaining: 1")
     }
 
-    @Ignore // FIXME Re-enable after Kotlin/Native implementation
+    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testInvalidPreludeChecksum() {
         val encoded = byteArrayFrom(
@@ -240,7 +241,7 @@ class MessageTest {
         }.message.shouldContain("Prelude checksum mismatch; expected=0xdeadbeef; calculated=0x8bb495fb")
     }
 
-    @Ignore // FIXME Re-enable after Kotlin/Native implementation
+    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testInvalidMessageChecksum() {
         val encoded = byteArrayFrom(
@@ -261,7 +262,7 @@ class MessageTest {
         }.message.shouldContain("Message checksum mismatch; expected=0xdeadbeef; calculated=0x01a05860")
     }
 
-    @Ignore // FIXME Re-enable after Kotlin/Native implementation
+    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testInvalidHeaderNameLengthTooLong() {
         val encoded = byteArrayFrom(

@@ -102,7 +102,7 @@ class RequestCompressionInterceptorTest {
         assertContentEquals(bytes, decompressedBytes)
     }
 
-    @Ignore // FIXME Re-enable after Kotlin/Native implementation
+    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testSdkSource() = runTest {
         val payload = "<Foo>bar</Foo>"
@@ -123,7 +123,7 @@ class RequestCompressionInterceptorTest {
         assertContentEquals(bytes, decompressedBytes)
     }
 
-    @Ignore // FIXME Re-enable after Kotlin/Native implementation
+    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testSdkByteReadChannel() = runTest {
         val payload = "<Foo>bar</Foo>"
@@ -144,7 +144,7 @@ class RequestCompressionInterceptorTest {
         assertContentEquals(bytes, decompressedBytes)
     }
 
-    @Ignore // FIXME Re-enable after Kotlin/Native implementation
+    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testHeaderAlreadySet() = runTest {
         val payload = "<Foo>bar</Foo>"
@@ -166,7 +166,7 @@ class RequestCompressionInterceptorTest {
         assertContentEquals(bytes, decompressedBytes)
     }
 
-    @Ignore // FIXME Re-enable after Kotlin/Native implementation
+    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testNoSupportedAlgorithms() = runTest {
         val payload = "<Foo>bar</Foo>"
@@ -186,7 +186,7 @@ class RequestCompressionInterceptorTest {
         assertEquals(bytes, sentBytes)
     }
 
-    @Ignore // FIXME Re-enable after Kotlin/Native implementation
+    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testInvalidCompressionThreshold() = runTest {
         val payload = "<Foo>bar</Foo>"

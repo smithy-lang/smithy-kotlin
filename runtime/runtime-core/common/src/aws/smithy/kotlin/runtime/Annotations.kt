@@ -63,4 +63,4 @@ public annotation class SdkDsl
  * Marks a test that should be ignored on Native platforms
  */
 @Target(AnnotationTarget.CLASS, AnnotationTarget.FUNCTION)
-public expect annotation class IgnoreNative
+public expect annotation class IgnoreNative()

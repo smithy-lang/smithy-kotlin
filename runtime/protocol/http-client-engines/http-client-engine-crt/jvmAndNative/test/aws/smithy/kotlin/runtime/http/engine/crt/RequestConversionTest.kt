@@ -5,6 +5,7 @@
 
 package aws.smithy.kotlin.runtime.http.engine.crt
 
+import aws.smithy.kotlin.runtime.IgnoreNative
 import aws.smithy.kotlin.runtime.content.ByteStream
 import aws.smithy.kotlin.runtime.crt.ReadChannelBodyStream
 import aws.smithy.kotlin.runtime.http.*
@@ -53,7 +54,7 @@ class RequestConversionTest {
         assertFalse(crtRequest.body is ReadChannelBodyStream)
     }
 
-    @Ignore // FIXME Re-enable after Kotlin/Native implementation
+    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testSdkToCrtRequestStreamingBody() {
         val stream = byteStreamFromContents("foobar")
@@ -72,7 +73,7 @@ class RequestConversionTest {
         crtBody.cancel()
     }
 
-    @Ignore // FIXME Re-enable after Kotlin/Native implementation
+    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testEngineAddsContentLengthHeader() {
         val stream = byteStreamFromContents("foobar")

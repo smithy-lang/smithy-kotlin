@@ -401,7 +401,7 @@ class FormUrlSerializerTest {
         }
     }
 
-    @Ignore // FIXME Re-enable after Kotlin/Native implementation
+    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun itSerializesMapOfMapOfPrimitive() {
         val expected = """
@@ -423,7 +423,7 @@ class FormUrlSerializerTest {
         assertEquals(expected, actual)
     }
 
-    @Ignore // FIXME Re-enable after Kotlin/Native implementation
+    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun itSerializesFlattenedMaps() {
         val input = MapInput(
@@ -492,7 +492,7 @@ class FormUrlSerializerTest {
         }
     }
 
-    @Ignore // FIXME Re-enable after Kotlin/Native implementation
+    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun itSerializesNestedMaps() {
         val input = NestedStructureInput(
@@ -512,7 +512,7 @@ class FormUrlSerializerTest {
         assertEquals(expected, actual)
     }
 
-    @Ignore // FIXME Re-enable after Kotlin/Native implementation
+    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun itSerializesNestedLists() {
         val input = NestedStructureInput(
@@ -530,7 +530,7 @@ class FormUrlSerializerTest {
         assertEquals(expected, actual)
     }
 
-    @Ignore // FIXME Re-enable after Kotlin/Native implementation
+    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun itSerializesRenamedMaps() {
         // map with xmlName key/value overrides
@@ -568,7 +568,7 @@ class FormUrlSerializerTest {
         assertEquals(expected, actual)
     }
 
-    @Ignore // FIXME Re-enable after Kotlin/Native implementation
+    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun itSerializesQueryLiterals() {
         // test SdkObjectDescriptor with query literals trait
@@ -600,7 +600,7 @@ class FormUrlSerializerTest {
         assertEquals(expected, actual)
     }
 
-    @Ignore // FIXME Re-enable after Kotlin/Native implementation
+    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun itEncodesWhitespace() {
         val input = MapInput(
@@ -625,7 +625,7 @@ class FormUrlSerializerTest {
         assertEquals(expected, actual)
     }
 
-    @Ignore // FIXME Re-enable after Kotlin/Native implementation
+    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun itSerializesEmptyList() {
         val input = ListInput(
@@ -643,7 +643,7 @@ class FormUrlSerializerTest {
         assertEquals(expected, actual)
     }
 
-    @Ignore // FIXME Re-enable after Kotlin/Native implementation
+    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun itSerializesEmptyListInMap() {
         val input = MapInput(
