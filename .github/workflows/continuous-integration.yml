@@ -158,6 +158,7 @@ jobs:
           cache: 'gradle'
 
       - name: Test
+        working-directory: ./smithy-kotlin
         shell: bash
         run: |
           # FIXME K2. Re-enable warnings as errors after this warning is removed: https://youtrack.jetbrains.com/issue/KT-68532
