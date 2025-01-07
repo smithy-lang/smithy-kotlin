@@ -18,7 +18,7 @@ private fun TimestampFormat.asDateTimeFormat() = when (this) {
     else -> throw IllegalArgumentException("TimestampFormat $this could not be converted to a DateTimeFormat")
 }
 
-private fun KtInstant.truncateToMicros(): KtInstant = KtInstant.fromEpochSeconds(epochSeconds, nanosecondsOfSecond / 1000 * 1000)
+private fun KtInstant.truncateToMicros(): KtInstant = KtInstant.fromEpochSeconds(epochSeconds, nanosecondsOfSecond / 1_000 * 1_000)
 
 public actual class Instant(internal val delegate: KtInstant) : Comparable<Instant> {
 
