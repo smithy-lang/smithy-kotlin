@@ -65,18 +65,14 @@ public actual class Instant(internal val delegate: KtInstant) : Comparable<Insta
          * Parse an ISO-8601 formatted string into an [Instant]
          */
         public actual fun fromIso8601(ts: String): Instant {
-            var parsed = DateTimeFormats.ISO_8601.parse(ts)
-
-            // Handle leap seconds (23:59:59)
-            parsed.second = parsed.second?.coerceAtMost(59)
-
-            // Handle leap hours (24:00:00)
-            return if (parsed.hour == 24) {
-                parsed.hour = 0
-                Instant(parsed.toInstantUsingOffset() + 1.days)
-            } else {
-                Instant(parsed.toInstantUsingOffset())
+            var parsed = DateTimeFormats.ISO_8601.parse(ts).apply {
+                // Handle leap seconds (23:59:60 becomes 23:59:59)
+                if (second == 60) {
+                    second = 59
+                }
             }
+
+            return Instant(parsed.toInstantUsingOffset())
         }
 
         /**

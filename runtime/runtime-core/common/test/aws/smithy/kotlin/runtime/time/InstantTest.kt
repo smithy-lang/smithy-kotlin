@@ -56,8 +56,6 @@ class InstantTest {
 
         // leap second - dropped to: 2020-12-31T23:59:59
         FromTest("2020-12-31T23:59:60Z", 1609459199, 0),
-        // midnight - should be 11/5 12AM
-        FromTest("2020-11-04T24:00:00Z", 1604534400, 0),
     )
 
     @Test
@@ -106,7 +104,7 @@ class InstantTest {
                     .fromEpochSeconds(test.sec, test.ns)
                     .format(format)
                 val expected = getter(test)
-                assertEquals(expected, actual, "test[$idx]: failed to correctly format Instant.fromEpochSeconds(${test.sec}, ${test.ns})  as $format")
+                assertEquals(expected, actual, "test[$idx]: failed to correctly format Instant.fromEpochSeconds(${test.sec}, ${test.ns}) as $format")
             }
         }
     }
