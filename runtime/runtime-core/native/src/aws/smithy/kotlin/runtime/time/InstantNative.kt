@@ -7,7 +7,6 @@ package aws.smithy.kotlin.runtime.time
 
 import kotlinx.datetime.Clock
 import kotlinx.datetime.format
-import kotlinx.datetime.format.FormatStringsInDatetimeFormats
 import kotlin.time.Duration
 import kotlinx.datetime.Instant as KtInstant
 
