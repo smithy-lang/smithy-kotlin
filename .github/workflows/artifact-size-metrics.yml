@@ -2,7 +2,7 @@ name: Artifact Size Metrics
 on:
   pull_request:
     types: [ opened, synchronize, reopened, labeled, unlabeled ]
-    branches: [ main ]
+    branches: [ '*-main' ]
   release:
     types: [published]
 

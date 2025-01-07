@@ -3,7 +3,7 @@ name: Changelog verification
 on:
   pull_request:
     types: [ opened, synchronize, reopened, labeled, unlabeled ]
-    branches: [ main ]
+    branches: [ '*-main' ]
 
 jobs:
   changelog-verification:
