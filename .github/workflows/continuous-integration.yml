@@ -144,12 +144,17 @@ jobs:
     steps:
       - name: Checkout sources
         uses: actions/checkout@v4
+
+      - name: Setup build
+        uses: ./smithy-kotlin/.github/actions/setup-build
+
       - name: Configure JDK
         uses: actions/setup-java@v3
         with:
           distribution: 'corretto'
           java-version: 17
           cache: 'gradle'
+
       - name: Test
         shell: bash
         run: |
@@ -157,6 +162,7 @@ jobs:
           # echo "kotlinWarningsAsErrors=true" >> $GITHUB_WORKSPACE/local.properties              
           ./gradlew -Paws.kotlin.native=false apiCheck
           ./gradlew -Paws.kotlin.native=false test jvmTest
+
       - name: Save Test Reports
         if: failure()
         uses: actions/upload-artifact@v3
