@@ -135,6 +135,35 @@ jobs:
           name: test-reports-windows
           path: '**/build/reports'
 
+  all-platforms:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ ubuntu-latest, macos-latest, windows-latest ]
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v4
+      - name: Configure JDK
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'corretto'
+          java-version: 17
+          cache: 'gradle'
+      - name: Test
+        shell: bash
+        run: |
+          # FIXME K2. Re-enable warnings as errors after this warning is removed: https://youtrack.jetbrains.com/issue/KT-68532
+          # echo "kotlinWarningsAsErrors=true" >> $GITHUB_WORKSPACE/local.properties              
+          ./gradlew apiCheck
+          ./gradlew test jvmTest
+      - name: Save Test Reports
+        if: failure()
+        uses: actions/upload-artifact@v3
+        with:
+          name: test-reports-${{ matrix.os }}
+          path: '**/build/reports'
+
   protocol-tests:
     runs-on: ubuntu-latest
     steps:
