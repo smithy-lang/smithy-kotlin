@@ -18,7 +18,9 @@ import platform.zlib.*
  * Decompresses a byte array compressed using the gzip format
  */
 internal actual fun decompressGzipBytes(bytes: ByteArray): ByteArray {
-    if (bytes.isEmpty()) { return bytes }
+    if (bytes.isEmpty()) {
+        return bytes
+    }
 
     val decompressedBuffer = UByteArray(bytes.size * 2) // Initial guess for decompressed size (may expand)
 
@@ -34,9 +36,11 @@ internal actual fun decompressGzipBytes(bytes: ByteArray): ByteArray {
             strm = zStream.ptr,
             windowBits = 31,
             version = ZLIB_VERSION,
-            stream_size = sizeOf<z_stream>().toInt()
+            stream_size = sizeOf<z_stream>().toInt(),
         )
-        if (result != Z_OK) { throw IllegalStateException("inflateInit2_ failed with error code $result") }
+        if (result != Z_OK) {
+            throw IllegalStateException("inflateInit2_ failed with error code $result")
+        }
 
         try {
             zStream.next_in = bytes.refTo(0).getPointer(memScope).reinterpret()
@@ -44,7 +48,6 @@ internal actual fun decompressGzipBytes(bytes: ByteArray): ByteArray {
 
             val output = mutableListOf<UByte>()
             while (zStream.avail_in > 0u) {
-
                 decompressedBuffer.usePinned { pinnedBuffer ->
                     zStream.next_out = pinnedBuffer.addressOf(0)
                     zStream.avail_out = decompressedBuffer.size.toUInt()

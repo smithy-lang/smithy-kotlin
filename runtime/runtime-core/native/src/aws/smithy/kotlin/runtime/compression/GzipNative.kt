@@ -75,7 +75,7 @@ internal fun gzipCompressBytes(bytes: ByteArray): ByteArray {
             memLevel = 9,
             strategy = Z_DEFAULT_STRATEGY,
             version = ZLIB_VERSION,
-            stream_size = sizeOf<z_stream>().toInt()
+            stream_size = sizeOf<z_stream>().toInt(),
         )
         if (initResult != Z_OK) {
             throw IllegalStateException("Failed to initialize zlib with error code $initResult")

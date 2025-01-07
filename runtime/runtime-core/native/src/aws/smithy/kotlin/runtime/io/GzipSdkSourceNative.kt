@@ -20,7 +20,9 @@ public actual class GzipSdkSource actual constructor(public val source: SdkSourc
         val temp = SdkBuffer()
         val rc = source.read(temp, limit)
 
-        if (rc <= 0L) { return rc }
+        if (rc <= 0L) {
+            return rc
+        }
 
         val compressed = gzipCompressBytes(temp.readByteArray())
         sink.write(compressed)

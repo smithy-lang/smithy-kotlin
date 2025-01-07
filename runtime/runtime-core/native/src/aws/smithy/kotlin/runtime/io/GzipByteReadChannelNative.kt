@@ -32,7 +32,9 @@ public actual class GzipByteReadChannel actual constructor(public val channel: S
         val temp = SdkBuffer()
         val rc = channel.read(temp, limit)
 
-        if (rc <= 0) { return rc }
+        if (rc <= 0) {
+            return rc
+        }
 
         val compressed = gzipCompressBytes(temp.readByteArray())
         sink.write(compressed)
