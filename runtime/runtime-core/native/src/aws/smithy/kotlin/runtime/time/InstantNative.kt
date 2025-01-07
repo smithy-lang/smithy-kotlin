@@ -106,4 +106,5 @@ public actual class Instant(internal val delegate: KtInstant) : Comparable<Insta
 
     public override fun equals(other: Any?): Boolean = other is Instant && delegate == other.delegate
     public override fun toString(): String = delegate.toString()
+    public override fun hashCode(): Int = delegate.hashCode()
 }
