@@ -155,7 +155,7 @@ jobs:
         run: |
           # FIXME K2. Re-enable warnings as errors after this warning is removed: https://youtrack.jetbrains.com/issue/KT-68532
           # echo "kotlinWarningsAsErrors=true" >> $GITHUB_WORKSPACE/local.properties              
-          ./gradlew -Paws.kotlin.native apiCheck
+          ./gradlew -Paws.kotlin.native=false apiCheck
           ./gradlew -Paws.kotlin.native=false test jvmTest
       - name: Save Test Reports
         if: failure()
