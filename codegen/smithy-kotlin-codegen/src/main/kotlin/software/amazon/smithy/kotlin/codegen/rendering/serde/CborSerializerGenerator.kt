@@ -108,7 +108,7 @@ class CborSerializerGenerator(
         val symbol = ctx.symbolProvider.toSymbol(shape)
         return shape.documentSerializer(ctx.settings, symbol, members) { writer ->
             writer.withBlock("internal fun #identifier.name:L(serializer: #T, input: #T) {", "}", RuntimeTypes.Serde.Serializer, symbol) {
-                call { renderSerializerBody(ctx, shape, shape.members().toList(), writer) }
+                call { renderSerializerBody(ctx, shape, members.toList(), writer) }
             }
         }
     }
