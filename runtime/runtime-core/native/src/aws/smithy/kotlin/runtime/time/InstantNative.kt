@@ -9,7 +9,6 @@ import kotlinx.datetime.Clock
 import kotlinx.datetime.format
 import kotlinx.datetime.format.FormatStringsInDatetimeFormats
 import kotlin.time.Duration
-import kotlin.time.Duration.Companion.days
 import kotlinx.datetime.Instant as KtInstant
 
 private fun TimestampFormat.asDateTimeFormat() = when (this) {
