@@ -4,9 +4,82 @@
  */
 package aws.smithy.kotlin.runtime.io
 
+import kotlinx.cinterop.addressOf
+import kotlinx.cinterop.alloc
+import kotlinx.cinterop.memScoped
+import kotlinx.cinterop.ptr
+import kotlinx.cinterop.refTo
+import kotlinx.cinterop.reinterpret
+import kotlinx.cinterop.sizeOf
+import kotlinx.cinterop.usePinned
+import platform.zlib.*
+
 /**
  * Decompresses a byte array compressed using the gzip format
  */
 internal actual fun decompressGzipBytes(bytes: ByteArray): ByteArray {
-    TODO("Not yet implemented")
+    if (bytes.isEmpty()) { return bytes }
+
+    val decompressedBuffer = UByteArray(bytes.size * 2) // Initial guess for decompressed size (may expand)
+
+    memScoped {
+        val zStream = alloc<z_stream>().apply {
+            zalloc = null
+            zfree = null
+            opaque = null
+        }
+
+        println("inflateInit2_")
+        // Initialize the inflate context for gzip decoding
+        val result = inflateInit2_(
+            strm = zStream.ptr,
+            windowBits = 31,
+            version = ZLIB_VERSION,
+            stream_size = sizeOf<z_stream>().toInt()
+        )
+        if (result != Z_OK) { throw IllegalStateException("inflateInit2_ failed with error code $result") }
+
+        try {
+            zStream.next_in = bytes.refTo(0).getPointer(memScope).reinterpret()
+            zStream.avail_in = bytes.size.toUInt()
+            println("zStream.next_in = ${zStream.next_in}, zStream.avail_in = ${zStream.avail_in}")
+
+            val output = mutableListOf<UByte>()
+            while (zStream.avail_in > 0u) {
+                println("loop zStream.avail_in = ${zStream.avail_in}")
+
+                decompressedBuffer.usePinned { pinnedBuffer ->
+                    zStream.next_out = pinnedBuffer.addressOf(0)
+                    zStream.avail_out = decompressedBuffer.size.toUInt()
+                    println("zStream.next_out = ${zStream.next_out}, zStream.avail_out = ${zStream.avail_out}")
+
+                    val inflateResult = inflate(zStream.ptr, Z_NO_FLUSH)
+                    println("inflate result: $inflateResult")
+
+                    when (inflateResult) {
+                        Z_STREAM_END -> {
+                            println("Z_STREAM_END")
+                            val chunkSize = decompressedBuffer.size.toUInt() - zStream.avail_out
+                            println("Z_STREAM_END chunkSize: ${decompressedBuffer.size.toUInt() - zStream.avail_out}")
+                            output.addAll(decompressedBuffer.copyOf(chunkSize.toInt()))
+                            return@usePinned true // Decompression complete
+                        }
+                        Z_OK -> {
+                            println("Z_OK")
+                            val chunkSize = decompressedBuffer.size.toUInt() - zStream.avail_out
+                            println("Z_OK chunkSize: ${decompressedBuffer.size.toUInt() - zStream.avail_out}")
+                            output.addAll(decompressedBuffer.copyOf(chunkSize.toInt()))
+                        }
+                        else -> throw IllegalStateException("Decompression failed with error code $inflateResult")
+                    }
+                }
+            }
+
+            println("output.size: ${output.size}")
+            return output.toUByteArray().toByteArray()
+
+        } finally {
+            inflateEnd(zStream.ptr)
+        }
+    }
 }
