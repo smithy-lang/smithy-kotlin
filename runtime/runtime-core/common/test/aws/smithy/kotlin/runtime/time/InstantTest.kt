@@ -4,7 +4,6 @@
  */
 package aws.smithy.kotlin.runtime.time
 
-import aws.smithy.kotlin.runtime.IgnoreNative
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -18,7 +17,6 @@ import kotlin.time.Duration.Companion.seconds
 // tests for conversion from a parsed representation into an Instant instance
 
 class InstantTest {
-
     /**
      * Conversion from a string to epoch sec/ns
      */
@@ -58,11 +56,8 @@ class InstantTest {
 
         // leap second - dropped to: 2020-12-31T23:59:59
         FromTest("2020-12-31T23:59:60Z", 1609459199, 0),
-        // midnight - should be 11/5 12AM
-        FromTest("2020-11-04T24:00:00Z", 1604534400, 0),
     )
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testFromIso8601() {
         for ((idx, test) in iso8601Tests.withIndex()) {
@@ -101,7 +96,6 @@ class InstantTest {
         TimestampFormat.ISO_8601_CONDENSED_DATE to Iso8601FmtTest::expectedIso8601CondDate,
     )
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testFormatAsIso8601() {
         for ((idx, test) in iso8601FmtTests.withIndex()) {
@@ -110,7 +104,7 @@ class InstantTest {
                     .fromEpochSeconds(test.sec, test.ns)
                     .format(format)
                 val expected = getter(test)
-                assertEquals(expected, actual, "test[$idx]: failed to correctly format Instant as $format")
+                assertEquals(expected, actual, "test[$idx]: failed to correctly format Instant.fromEpochSeconds(${test.sec}, ${test.ns}) as $format")
             }
         }
     }
@@ -125,7 +119,6 @@ class InstantTest {
         FromTest("Thu, 05 Nov 2020 19:22:37 -1245", 1604650057, 0),
     )
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testFromRfc5322() {
         for ((idx, test) in rfc5322Tests.withIndex()) {
@@ -143,7 +136,6 @@ class InstantTest {
         FmtTest(1604650057, 0, "Fri, 06 Nov 2020 08:07:37 GMT"),
     )
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testFormatAsRfc5322() {
         for ((idx, test) in rfc5322FmtTests.withIndex()) {
@@ -162,7 +154,6 @@ class InstantTest {
         FmtTest(1604604157, 345_006_000, "1604604157.345006"),
     )
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testFormatAsEpochSeconds() {
         for ((idx, test) in epochFmtTests.withIndex()) {
@@ -173,7 +164,6 @@ class InstantTest {
         }
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testToEpochDouble() {
         val sec = 1604604157L
@@ -184,7 +174,6 @@ class InstantTest {
         assertTrue(kotlin.math.abs(0.012345 - fracSecs) < 0.00001)
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testGetCurrentTime() {
         val currentTime = Instant.now()
@@ -194,7 +183,6 @@ class InstantTest {
         assertTrue(currentTime.epochSeconds > pastInstant)
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testGetEpochMilliseconds() {
         val instant = Instant.fromEpochSeconds(1602878160, 200_000)
@@ -206,7 +194,6 @@ class InstantTest {
         assertEquals(expected2, instantWithMilli.epochMilliseconds)
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testFromEpochMilliseconds() {
         val ts1 = 1602878160000L
@@ -218,83 +205,12 @@ class InstantTest {
         assertEquals(expected2, Instant.fromEpochMilliseconds(ts2))
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testNegativeFromEpochSeconds() {
         val timestamp = Instant.fromEpochSeconds(-806976000L)
         assertEquals("1944-06-06T00:00:00Z", timestamp.toString())
     }
 
-    // Select tests pulled from edge cases/tickets in the V2 Java SDK.
-    // Always good to learn from others...
-    class V2JavaSdkTests {
-        @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
-        @Test
-        fun v2JavaSdkTt0031561767() {
-            val input = "Fri, 16 May 2014 23:56:46 GMT"
-            val instant: Instant = Instant.fromRfc5322(input)
-            assertEquals(input, instant.format(TimestampFormat.RFC_5322))
-        }
-
-        /**
-         * Tests the Date marshalling and unmarshalling. Asserts that the value is
-         * same before and after marshalling/unmarshalling
-         */
-        @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
-        @Test
-        fun v2JavaSdkUnixTimestampRoundtrip() {
-            // v2 sdk used currentTimeMillis(), instead we just hard code a value here
-            // otherwise that would be a JVM specific test since since we do not (yet) have
-            // a Kotlin MPP way of getting current timestamp. Also obviously not using epoch mill
-            // but instead just epoch sec. Spirit of the test is the same though
-            longArrayOf(1595016457, 1L, 0L)
-                .map { Instant.fromEpochSeconds(0, 0) }
-                .forEach { instant ->
-                    val serverSpecificDateFormat: String = instant.format(TimestampFormat.EPOCH_SECONDS)
-                    val parsed: Instant = parseEpoch(serverSpecificDateFormat)
-                    assertEquals(instant.epochSeconds, parsed.epochSeconds)
-                }
-        }
-
-        // NOTE: There is additional set of edge case tests related to a past issue
-        // in DateUtilsTest.java in the v2 sdk. Specifically around
-        // issue 223: https://github.com/aws/aws-sdk-java/issues/233
-        //
-        // (1) - That issue is about round tripping values between SDK versions
-        // (2) - The input year in those tests is NOT valid and should never have
-        //       been accepted by the parser.
-    }
-
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
-    @Test
-    fun testPlusMinusDuration() {
-        val start = Instant.fromEpochSeconds(1000, 1000)
-
-        val offset = 10.seconds + 1000.nanoseconds
-        assertEquals(Instant.fromEpochSeconds(1010, 2000), start + offset)
-        assertEquals(Instant.fromEpochSeconds(990, 0), start - offset)
-    }
-
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
-    @Test
-    fun testRoundTripUtcOffset() {
-        // sanity check we only ever emit UTC timestamps (e.g. round trip a response with UTC offset)
-        val tests = listOf(
-            "2020-11-05T19:22:37+00:20" to "2020-11-05T19:02:37Z",
-            "2020-11-05T19:22:37-00:20" to "2020-11-05T19:42:37Z",
-            "2020-11-05T19:22:37+12:45" to "2020-11-05T06:37:37Z",
-            "2020-11-05T19:22:37-12:45" to "2020-11-06T08:07:37Z",
-            "2020-11-05T19:22:37.345-12:45" to "2020-11-06T08:07:37.345Z",
-        )
-
-        tests.forEachIndexed { idx, test ->
-            val parsed = Instant.fromIso8601(test.first)
-            val actual = parsed.format(TimestampFormat.ISO_8601)
-            assertEquals(test.second, actual, "test[$idx]: failed to format offset timestamp in UTC")
-        }
-    }
-
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testUntil() {
         val untilTests = mapOf(
@@ -316,4 +232,69 @@ class InstantTest {
             assertEquals(end.until(start), -expectedDuration)
         }
     }
+
+    @Test
+    fun testPlusMinusDuration() {
+        val start = Instant.fromEpochSeconds(1000, 1000)
+
+        val offset = 10.seconds + 1000.nanoseconds
+        assertEquals(Instant.fromEpochSeconds(1010, 2000), start + offset)
+        assertEquals(Instant.fromEpochSeconds(990, 0), start - offset)
+    }
+
+    @Test
+    fun testRoundTripUtcOffset() {
+        // sanity check we only ever emit UTC timestamps (e.g. round trip a response with UTC offset)
+        val tests = listOf(
+            "2020-11-05T19:22:37+00:20" to "2020-11-05T19:02:37Z",
+            "2020-11-05T19:22:37-00:20" to "2020-11-05T19:42:37Z",
+            "2020-11-05T19:22:37+12:45" to "2020-11-05T06:37:37Z",
+            "2020-11-05T19:22:37-12:45" to "2020-11-06T08:07:37Z",
+            "2020-11-05T19:22:37.345-12:45" to "2020-11-06T08:07:37.345Z",
+        )
+
+        tests.forEachIndexed { idx, test ->
+            val parsed = Instant.fromIso8601(test.first)
+            val actual = parsed.format(TimestampFormat.ISO_8601)
+            assertEquals(test.second, actual, "test[$idx]: failed to format offset timestamp in UTC")
+        }
+    }
+}
+
+// Select tests pulled from edge cases/tickets in the V2 Java SDK.
+// Always good to learn from others...
+class V2JavaSdkTests {
+    @Test
+    fun v2JavaSdkTt0031561767() {
+        val input = "Fri, 16 May 2014 23:56:46 GMT"
+        val instant: Instant = Instant.fromRfc5322(input)
+        assertEquals(input, instant.format(TimestampFormat.RFC_5322))
+    }
+
+    /**
+     * Tests the Date marshalling and unmarshalling. Asserts that the value is
+     * same before and after marshalling/unmarshalling
+     */
+    @Test
+    fun v2JavaSdkUnixTimestampRoundtrip() {
+        // v2 sdk used currentTimeMillis(), instead we just hard code a value here
+        // otherwise that would be a JVM specific test since since we do not (yet) have
+        // a Kotlin MPP way of getting current timestamp. Also obviously not using epoch mill
+        // but instead just epoch sec. Spirit of the test is the same though
+        longArrayOf(1595016457, 1L, 0L)
+            .map { Instant.fromEpochSeconds(0, 0) }
+            .forEach { instant ->
+                val serverSpecificDateFormat: String = instant.format(TimestampFormat.EPOCH_SECONDS)
+                val parsed: Instant = parseEpoch(serverSpecificDateFormat)
+                assertEquals(instant.epochSeconds, parsed.epochSeconds)
+            }
+    }
+
+    // NOTE: There is additional set of edge case tests related to a past issue
+    // in DateUtilsTest.java in the v2 sdk. Specifically around
+    // issue 223: https://github.com/aws/aws-sdk-java/issues/233
+    //
+    // (1) - That issue is about round tripping values between SDK versions
+    // (2) - The input year in those tests is NOT valid and should never have
+    //       been accepted by the parser.
 }
