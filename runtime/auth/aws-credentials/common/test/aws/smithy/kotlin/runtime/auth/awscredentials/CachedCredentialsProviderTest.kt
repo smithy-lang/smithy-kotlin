@@ -5,6 +5,7 @@
 
 package aws.smithy.kotlin.runtime.auth.awscredentials
 
+import aws.smithy.kotlin.runtime.IgnoreNative
 import aws.smithy.kotlin.runtime.collections.Attributes
 import aws.smithy.kotlin.runtime.time.Instant
 import aws.smithy.kotlin.runtime.time.ManualClock
@@ -36,6 +37,7 @@ class CachedCredentialsProviderTest {
         }
     }
 
+    @IgnoreNative // FIXME Re-enable after Kotlin/Native Implementation
     @Test
     fun testLoadFirstCall() = runTest {
         // explicit expiration
@@ -50,6 +52,7 @@ class CachedCredentialsProviderTest {
         assertEquals(1, source.callCount)
     }
 
+    @IgnoreNative // FIXME Re-enable after Kotlin/Native Implementation
     @Test
     fun testDefaultExpiration() = runTest {
         // expiration should come from the cached provider
@@ -62,6 +65,7 @@ class CachedCredentialsProviderTest {
         assertEquals(1, source.callCount)
     }
 
+    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testReloadExpiredCredentials() = runTest {
         val source = TestCredentialsProvider(expiration = testExpiration)
@@ -77,6 +81,7 @@ class CachedCredentialsProviderTest {
         assertEquals(2, source.callCount)
     }
 
+    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testRefreshBufferWindow() = runTest {
         val source = TestCredentialsProvider(expiration = testExpiration)
@@ -98,6 +103,7 @@ class CachedCredentialsProviderTest {
         assertEquals(2, source.callCount)
     }
 
+    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testLoadFailed() = runTest {
         val source = object : CredentialsProvider {
@@ -120,6 +126,7 @@ class CachedCredentialsProviderTest {
         provider.resolve()
     }
 
+    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testItThrowsOnGetCredentialsAfterClose() = runTest {
         val source = TestCredentialsProvider(expiration = testExpiration)
@@ -137,6 +144,7 @@ class CachedCredentialsProviderTest {
         assertEquals(1, source.callCount)
     }
 
+    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testCachedConvenienceFunction() = runTest {
         val source = TestCredentialsProvider(expiration = testExpiration)

@@ -5,6 +5,7 @@
 
 package aws.smithy.kotlin.runtime.http
 
+import aws.smithy.kotlin.runtime.IgnoreNative
 import aws.smithy.kotlin.runtime.content.ByteStream
 import aws.smithy.kotlin.runtime.io.SdkBuffer
 import aws.smithy.kotlin.runtime.io.SdkByteChannel
@@ -49,6 +50,7 @@ class HttpBodyTest {
         assertTrue(body.isOneShot)
     }
 
+    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testStreamingReadAllClosedForRead() = runTest {
         val expected = "foobar"
@@ -61,6 +63,7 @@ class HttpBodyTest {
         assertEquals(expected, body.readAll()!!.decodeToString())
     }
 
+    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testStreamingReadAllClosedForWrite() = runTest {
         val expected = "foobar"

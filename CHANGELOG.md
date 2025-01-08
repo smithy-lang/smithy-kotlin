@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.3.31] - 12/18/2024
+
+### Features
+* [#1473](https://github.com/awslabs/aws-sdk-kotlin/issues/1473) Enhance support for replayable instances of `InputStream`
+
+## [1.3.30] - 12/16/2024
+
 ## [1.3.29] - 12/12/2024
 
 ## [1.3.28] - 12/03/2024

@@ -5,6 +5,7 @@
 
 package aws.smithy.kotlin.runtime.http.engine
 
+import aws.smithy.kotlin.runtime.IgnoreNative
 import aws.smithy.kotlin.runtime.http.*
 import aws.smithy.kotlin.runtime.http.HttpCall
 import aws.smithy.kotlin.runtime.http.complete
@@ -60,6 +61,7 @@ class HttpClientEngineTest {
     private val HttpCall.job: Job
         get() = coroutineContext.job
 
+    @IgnoreNative // FIXME Re-enable after Kotlin/Native Implementation
     @Test
     fun testCallComplete() = runTest {
         val call = client.call(HttpRequestBuilder())
@@ -69,6 +71,7 @@ class HttpClientEngineTest {
         assertTrue(call.job.isCompleted)
     }
 
+    @IgnoreNative // FIXME Re-enable after Kotlin/Native Implementation
     @Test
     fun testUserContextCancelsRequestJob() = runTest {
         val job = launch {
@@ -85,6 +88,7 @@ class HttpClientEngineTest {
         assertTrue(callJob.isCancelled)
     }
 
+    @IgnoreNative // FIXME Re-enable after Kotlin/Native Implementation
     @Test
     fun testInFlightRequestJobsAreIndependent() = runTest {
         val job1 = launch {
@@ -109,6 +113,7 @@ class HttpClientEngineTest {
         job2.cancel()
     }
 
+    @IgnoreNative // FIXME Re-enable after Kotlin/Native Implementation
     @Test
     fun testEngineJobNotCancelledByRequestJobs() = runTest {
         launch {
@@ -126,6 +131,7 @@ class HttpClientEngineTest {
         assertTrue(engine.coroutineContext.job.isActive)
     }
 
+    @IgnoreNative // FIXME Re-enable after Kotlin/Native Implementation
     @Test
     fun testShutdownOnlyAfterInFlightDone() = runTest {
         val waiter = Channel<Unit>(1)
@@ -160,6 +166,7 @@ class HttpClientEngineTest {
         assertTrue(engine.shutdownCalled)
     }
 
+    @IgnoreNative // FIXME Re-enable after Kotlin/Native Implementation
     @Test
     fun testRequestAfterClose() = runTest {
         engine.close()

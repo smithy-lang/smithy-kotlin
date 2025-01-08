@@ -5,6 +5,7 @@
 
 package aws.smithy.kotlin.runtime.awsprotocol.eventstream
 
+import aws.smithy.kotlin.runtime.IgnoreNative
 import aws.smithy.kotlin.runtime.auth.awscredentials.Credentials
 import aws.smithy.kotlin.runtime.auth.awscredentials.CredentialsProvider
 import aws.smithy.kotlin.runtime.auth.awssigning.*
@@ -28,6 +29,7 @@ class EventStreamSigningTest {
         override suspend fun resolve(attributes: Attributes) = testCredentials
     }
 
+    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testSignPayload() = runTest {
         val messageToSign = buildMessage {
@@ -66,6 +68,7 @@ class EventStreamSigningTest {
         assertEquals(expected, actualSignature)
     }
 
+    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testEmptyEndFrameSent() = runTest {
         val messageToSign = buildMessage {

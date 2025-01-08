@@ -5,12 +5,14 @@
 
 package aws.smithy.kotlin.runtime.time
 
+import aws.smithy.kotlin.runtime.IgnoreNative
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
 
 class ManualClockTest {
+    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testAdvance() {
         val epoch = 1634413920L
