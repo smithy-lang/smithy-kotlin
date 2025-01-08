@@ -5,11 +5,11 @@
 
 package aws.smithy.kotlin.runtime.io
 
-import aws.smithy.kotlin.runtime.IgnoreNative
 import kotlin.test.Test
 import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
+import okio.EOFException // FIXME Leaking abstraction. Should we be catching okio.EOFException and throwing aws.smithy.kotlin.runtime.io.EOFException in our I/O implementations?
 
 // Test SdkBuffer implementation of SdkBufferedSink interface
 class SdkBufferSinkTest : AbstractBufferedSinkTest({ buffer -> buffer })
@@ -117,7 +117,6 @@ abstract class AbstractBufferedSinkTest(
         assertEquals("12341234", data.readUtf8())
     }
 
-    @IgnoreNative // FIXME "Expected an exception of aws.smithy.kotlin.runtime.io.EOFException to be thrown, but was okio.EOFException"
     @Test
     fun testWriteEof() {
         val source: SdkSource = SdkBuffer().apply { writeUtf8("1234") }

@@ -5,7 +5,6 @@
 
 package aws.smithy.kotlin.runtime.io
 
-import aws.smithy.kotlin.runtime.IgnoreNative
 import aws.smithy.kotlin.runtime.hashing.toHashFunction
 import kotlinx.coroutines.test.runTest
 import kotlin.random.Random
@@ -16,7 +15,6 @@ class HashingByteReadChannelTest {
 
     private val hashFunctionNames = listOf("crc32", "crc32c", "md5", "sha1", "sha256")
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testReadAll() = runTest {
         hashFunctionNames.forEach { hashFunctionName ->
@@ -37,7 +35,6 @@ class HashingByteReadChannelTest {
         }
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testReadToBuffer() = runTest {
         hashFunctionNames.forEach { hashFunctionName ->
@@ -56,7 +53,6 @@ class HashingByteReadChannelTest {
         }
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testReadFully() = runTest {
         hashFunctionNames.forEach { hashFunctionName ->
@@ -76,7 +72,6 @@ class HashingByteReadChannelTest {
         }
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testReadRemaining() = runTest {
         hashFunctionNames.forEach { hashFunctionName ->
@@ -96,7 +91,6 @@ class HashingByteReadChannelTest {
         }
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testRead() = runTest {
         hashFunctionNames.forEach { hashFunctionName ->

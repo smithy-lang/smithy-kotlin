@@ -30,7 +30,6 @@ class SdkByteChannelSuspendTest : ManualDispatchTestBase() {
         ch.cancel(CancellationException("Test finished"))
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testReadBeforeAvailable() = runTest {
         // test readAvailable() suspends when no data is available
@@ -61,7 +60,6 @@ class SdkByteChannelSuspendTest : ManualDispatchTestBase() {
         finish(6)
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testReadAfterAvailable() = runTest {
         // test readAvailable() does NOT suspend when data is available
@@ -89,7 +87,6 @@ class SdkByteChannelSuspendTest : ManualDispatchTestBase() {
         finish(6)
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testReadFullySuspends() = runTest {
         // test readFully() suspends when not enough data is available to satisfy the request
@@ -119,7 +116,6 @@ class SdkByteChannelSuspendTest : ManualDispatchTestBase() {
         finish(7)
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testReadAfterAvailableFully() = runTest {
         // test readFully() does NOT suspend when data is available to satisfy the request
@@ -144,7 +140,6 @@ class SdkByteChannelSuspendTest : ManualDispatchTestBase() {
         finish(5)
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testReadToEmpty() = runTest {
         // test read() does not suspend when length is zero
@@ -158,7 +153,6 @@ class SdkByteChannelSuspendTest : ManualDispatchTestBase() {
         finish(3)
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testReadToEmptyFromFailedChannel() = runTest {
         expect(1)
@@ -170,7 +164,6 @@ class SdkByteChannelSuspendTest : ManualDispatchTestBase() {
         finish(2)
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testReadToEmptyFromClosedChannel() = runTest {
         expect(1)
@@ -182,7 +175,6 @@ class SdkByteChannelSuspendTest : ManualDispatchTestBase() {
         finish(3)
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testReadFromFailedChannel() = runTest {
         expect(1)
@@ -194,7 +186,6 @@ class SdkByteChannelSuspendTest : ManualDispatchTestBase() {
         finish(2)
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testReadFromClosedChannelNoSuspend() = runTest {
         expect(1)
@@ -204,7 +195,6 @@ class SdkByteChannelSuspendTest : ManualDispatchTestBase() {
         finish(2)
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testReadFromClosedChannelSuspend() = runTest {
         expect(1)
@@ -224,7 +214,6 @@ class SdkByteChannelSuspendTest : ManualDispatchTestBase() {
         finish(5)
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testReadFullyFromFailedChannel() = runTest {
         expect(1)
@@ -236,7 +225,6 @@ class SdkByteChannelSuspendTest : ManualDispatchTestBase() {
         finish(2)
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testReadFullyFromClosedChannel() = runTest {
         expect(1)
@@ -248,7 +236,6 @@ class SdkByteChannelSuspendTest : ManualDispatchTestBase() {
         finish(2)
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testReadState() = runTest {
         assertFalse(ch.isClosedForWrite)
@@ -268,7 +255,6 @@ class SdkByteChannelSuspendTest : ManualDispatchTestBase() {
         assertTrue(ch.isClosedForRead)
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testReadRemaining() = runTest {
         expect(1)
@@ -289,7 +275,6 @@ class SdkByteChannelSuspendTest : ManualDispatchTestBase() {
         finish(6)
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testReadInProgress() = runTest {
         expect(1)
@@ -311,7 +296,6 @@ class SdkByteChannelSuspendTest : ManualDispatchTestBase() {
         finish(5)
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testWriteInProgress() = runTest {
         val chan = SdkByteChannel(true, 8)
@@ -338,7 +322,6 @@ class SdkByteChannelSuspendTest : ManualDispatchTestBase() {
         finish(5)
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testReadFullyEof() = runTest {
         expect(1)
@@ -358,7 +341,6 @@ class SdkByteChannelSuspendTest : ManualDispatchTestBase() {
         finish(5)
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testResumeReadFromFailedChannel() = runTest {
         expect(1)
@@ -377,7 +359,6 @@ class SdkByteChannelSuspendTest : ManualDispatchTestBase() {
         finish(4)
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testResumeReadFromClosedChannelNoContent() = runTest {
         expect(1)
@@ -394,7 +375,6 @@ class SdkByteChannelSuspendTest : ManualDispatchTestBase() {
         finish(4)
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testLargeTransfer() = runTest {
         val data = "a".repeat(262144) + "b".repeat(512)
@@ -409,7 +389,6 @@ class SdkByteChannelSuspendTest : ManualDispatchTestBase() {
         assertEquals(data.length.toLong(), ch.totalBytesWritten)
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testWriteNoSuspend() = runTest {
         val chan = SdkByteChannel(false, 8)
@@ -420,7 +399,6 @@ class SdkByteChannelSuspendTest : ManualDispatchTestBase() {
         finish(2)
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testWriteSuspend() = runTest {
         val chan = SdkByteChannel(false, 8)
