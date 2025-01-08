@@ -21,7 +21,6 @@ import software.amazon.smithy.rulesengine.language.EndpointRuleSet
 import software.amazon.smithy.rulesengine.traits.EndpointRuleSetTrait
 import software.amazon.smithy.rulesengine.traits.EndpointTestCase
 import software.amazon.smithy.rulesengine.traits.EndpointTestsTrait
-import java.util.stream.Collectors
 
 /**
  * Get all shapes of a particular type from the model.
@@ -33,7 +32,7 @@ import java.util.stream.Collectors
  * shape's closure for example)
  */
 @Suppress("EXTENSION_SHADOWED_BY_MEMBER")
-inline fun <reified T : Shape> Model.shapes(): List<T> = shapes(T::class.java).collect(Collectors.toList())
+inline fun <reified T : Shape> Model.shapes(): List<T> = shapes(T::class.java).toList()
 
 /**
  * Extension function to return a shape of expected type.
