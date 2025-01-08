@@ -4,6 +4,7 @@
  */
 package aws.smithy.kotlin.runtime.serde.json
 
+import aws.smithy.kotlin.runtime.IgnoreNative
 import aws.smithy.kotlin.runtime.content.Document
 import aws.smithy.kotlin.runtime.content.buildDocument
 import aws.smithy.kotlin.runtime.serde.*
@@ -99,6 +100,7 @@ class JsonDeserializerTest {
         assertEquals(expected, actual)
     }
 
+    @IgnoreNative // FIXME Re-enable after Kotlin/Native Implementation
     @Test
     fun itHandlesBigInteger() {
         val tests = listOf(
@@ -116,6 +118,7 @@ class JsonDeserializerTest {
         }
     }
 
+    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun itHandlesBigDecimal() {
         val tests = listOf(

@@ -4,6 +4,7 @@
  */
 package aws.smithy.kotlin.runtime.io
 
+import aws.smithy.kotlin.runtime.IgnoreNative
 import aws.smithy.kotlin.runtime.hashing.crc32
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
@@ -11,6 +12,7 @@ import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
 
 class GzipByteReadChannelTest {
+    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testReadAll() = runTest {
         val payload = "Hello World"
@@ -30,6 +32,7 @@ class GzipByteReadChannelTest {
         assertEquals(bytesHash, decompressedBytes.crc32())
     }
 
+    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testReadToBuffer() = runTest {
         val payload = "Hello World".repeat(1600)
@@ -48,6 +51,7 @@ class GzipByteReadChannelTest {
         assertEquals(bytesHash, decompressedBytes.crc32())
     }
 
+    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testReadRemaining() = runTest {
         val payload = "Hello World".repeat(1600)
@@ -67,6 +71,7 @@ class GzipByteReadChannelTest {
         assertEquals(bytesHash, decompressedBytes.crc32())
     }
 
+    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testRead() = runTest {
         val payload = "Hello World"
@@ -87,6 +92,7 @@ class GzipByteReadChannelTest {
         assertEquals(bytesHash, decompressedBytes.crc32())
     }
 
+    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testReadLargeBody() = runTest {
         val payload = "Hello World".repeat(1600)
@@ -107,6 +113,7 @@ class GzipByteReadChannelTest {
         assertEquals(bytesHash, decompressedBytes.crc32())
     }
 
+    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testReadLargeLimit() = runTest {
         val payload = "Hello World"
@@ -127,6 +134,7 @@ class GzipByteReadChannelTest {
         assertEquals(bytesHash, decompressedBytes.crc32())
     }
 
+    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testReadLargeBodyLargeLimit() = runTest {
         val payload = "Hello World".repeat(1600)
@@ -147,6 +155,7 @@ class GzipByteReadChannelTest {
         assertEquals(bytesHash, decompressedBytes.crc32())
     }
 
+    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testIsClosedForRead() = runTest {
         val payload = "Hello World"
@@ -169,6 +178,7 @@ class GzipByteReadChannelTest {
         assertEquals(bytesHash, decompressedBytes.crc32())
     }
 
+    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testIsClosedForReadLargeBody() = runTest {
         val payload = "Hello World".repeat(1600)
@@ -191,6 +201,7 @@ class GzipByteReadChannelTest {
         assertEquals(bytesHash, decompressedBytes.crc32())
     }
 
+    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testIsClosedForReadLargeLimit() = runTest {
         val payload = "Hello World"
@@ -213,6 +224,7 @@ class GzipByteReadChannelTest {
         assertEquals(bytesHash, decompressedBytes.crc32())
     }
 
+    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testIsClosedForReadLargeBodyLargeLimit() = runTest {
         val payload = "Hello World".repeat(1600)

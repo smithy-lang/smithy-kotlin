@@ -5,6 +5,7 @@
 
 package aws.smithy.kotlin.runtime.http.response
 
+import aws.smithy.kotlin.runtime.IgnoreNative
 import aws.smithy.kotlin.runtime.content.ByteStream
 import aws.smithy.kotlin.runtime.http.Headers
 import aws.smithy.kotlin.runtime.http.HttpBody
@@ -36,6 +37,7 @@ class HttpResponseTest {
         assertEquals(HttpStatusCode.BadRequest, resp.statusCode())
     }
 
+    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testDumpResponse() = runTest {
         val content = "Mom!...Dad!...Bingo!...Bluey!"

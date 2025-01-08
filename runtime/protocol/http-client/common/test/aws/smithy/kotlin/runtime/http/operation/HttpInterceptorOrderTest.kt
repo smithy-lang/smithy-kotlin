@@ -5,6 +5,7 @@
 
 package aws.smithy.kotlin.runtime.http.operation
 
+import aws.smithy.kotlin.runtime.IgnoreNative
 import aws.smithy.kotlin.runtime.http.*
 import aws.smithy.kotlin.runtime.http.interceptors.HttpInterceptor
 import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
@@ -135,6 +136,7 @@ class HttpInterceptorOrderTest {
         hooksFired.shouldContainInOrder(expected)
     }
 
+    @IgnoreNative // FIXME Re-enable after Kotlin/Native Implementation
     @Test
     fun testInterceptorOrderSuccess() = runTest {
         // sanity test all hooks fire in order
@@ -151,91 +153,109 @@ class HttpInterceptorOrderTest {
         assertEquals(expected, hooksFired)
     }
 
+    @IgnoreNative // FIXME Re-enable after Kotlin/Native Implementation
     @Test
     fun testReadBeforeExecutionErrors() = runTest {
         simpleFailOrderTest("readBeforeExecution")
     }
 
+    @IgnoreNative // FIXME Re-enable after Kotlin/Native Implementation
     @Test
     fun testModifyBeforeSerializationErrors() = runTest {
         simpleFailOrderTest("modifyBeforeSerialization")
     }
 
+    @IgnoreNative // FIXME Re-enable after Kotlin/Native Implementation
     @Test
     fun testReadBeforeSerializationErrors() = runTest {
         simpleFailOrderTest("readBeforeSerialization")
     }
 
+    @IgnoreNative // FIXME Re-enable after Kotlin/Native Implementation
     @Test
     fun testReadAfterSerializationErrors() = runTest {
         simpleFailOrderTest("readAfterSerialization")
     }
 
+    @IgnoreNative // FIXME Re-enable after Kotlin/Native Implementation
     @Test
     fun testModifyBeforeRetryLoopErrors() = runTest {
         simpleFailOrderTest("modifyBeforeRetryLoop")
     }
 
+    @IgnoreNative // FIXME Re-enable after Kotlin/Native Implementation
     @Test
     fun testReadBeforeAttemptErrors() = runTest {
         simpleFailOrderTest("readBeforeAttempt")
     }
 
+    @IgnoreNative // FIXME Re-enable after Kotlin/Native Implementation
     @Test
     fun testModifyBeforeSigningErrors() = runTest {
         simpleFailOrderTest("modifyBeforeSigning")
     }
 
+    @IgnoreNative // FIXME Re-enable after Kotlin/Native Implementation
     @Test
     fun testReadBeforeSigningErrors() = runTest {
         simpleFailOrderTest("readBeforeSigning")
     }
 
+    @IgnoreNative // FIXME Re-enable after Kotlin/Native Implementation
     @Test
     fun testReadAfterSigningErrors() = runTest {
         simpleFailOrderTest("readAfterSigning")
     }
 
+    @IgnoreNative // FIXME Re-enable after Kotlin/Native Implementation
     @Test
     fun testModifyBeforeTransmitErrors() = runTest {
         simpleFailOrderTest("modifyBeforeTransmit")
     }
 
+    @IgnoreNative // FIXME Re-enable after Kotlin/Native Implementation
     @Test
     fun testReadBeforeTransmitErrors() = runTest {
         simpleFailOrderTest("readBeforeTransmit")
     }
 
+    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testReadAfterTransmitErrors() = runTest {
         simpleFailOrderTest("readAfterTransmit")
     }
 
+    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testReadBeforeDeserializationErrors() = runTest {
         simpleFailOrderTest("readBeforeDeserialization")
     }
 
+    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testReadAfterDeserializationErrors() = runTest {
         simpleFailOrderTest("readAfterDeserialization")
     }
 
+    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testReadAfterAttemptErrors() = runTest {
         simpleFailOrderTest("readAfterAttempt")
     }
 
+    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testModifyBeforeAttemptCompletionErrors() = runTest {
         simpleFailOrderTest("modifyBeforeAttemptCompletion")
     }
 
+    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testModifyBeforeCompletionErrors() = runTest {
         simpleFailOrderTest("modifyBeforeCompletion")
     }
 
+    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testReadAfterExecutionErrors() = runTest {
         simpleFailOrderTest("readAfterExecution")
