@@ -25,7 +25,6 @@ abstract class AbstractBufferedSinkTest(
     private val data = SdkBuffer()
     private val sink = factory(data)
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testWriteByte() {
         sink.writeByte(0xDE.toByte())
@@ -36,7 +35,6 @@ abstract class AbstractBufferedSinkTest(
         assertEquals("[hex=deadbeef]", data.toString())
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testWriteShort() {
         sink.writeShort(0xdead.toShort())
@@ -45,7 +43,6 @@ abstract class AbstractBufferedSinkTest(
         assertEquals("[hex=deadbeef]", data.toString())
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testWriteShortLe() {
         sink.writeShortLe(0xdead.toShort())
@@ -54,7 +51,6 @@ abstract class AbstractBufferedSinkTest(
         assertEquals("[hex=addeefbe]", data.toString())
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testWriteInt() {
         sink.writeInt(0xdeadbeef.toInt())
@@ -62,7 +58,6 @@ abstract class AbstractBufferedSinkTest(
         assertEquals("[hex=deadbeef]", data.toString())
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testWriteLe() {
         sink.writeIntLe(0xdeadbeef.toInt())
@@ -70,7 +65,6 @@ abstract class AbstractBufferedSinkTest(
         assertEquals("[hex=efbeadde]", data.toString())
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testWriteLong() {
         sink.writeLong(-2401053092341600192)
@@ -78,7 +72,6 @@ abstract class AbstractBufferedSinkTest(
         assertEquals("[hex=deadbeef10203040]", data.toString())
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testWriteLongLe() {
         sink.writeLongLe(4625232074423315934)
@@ -86,7 +79,6 @@ abstract class AbstractBufferedSinkTest(
         assertEquals("[hex=deadbeef10203040]", data.toString())
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testWriteString() {
         sink.writeUtf8("レップはボールです")
@@ -94,7 +86,6 @@ abstract class AbstractBufferedSinkTest(
         assertEquals("[text=レップはボールです]", data.toString())
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testWriteSubstring() {
         sink.writeUtf8("a lep is a ball", start = 2, endExclusive = 10)
@@ -102,7 +93,6 @@ abstract class AbstractBufferedSinkTest(
         assertEquals("lep is a", data.readUtf8())
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testWriteAll() {
         val contents = "a tay is a hammer"
@@ -113,7 +103,6 @@ abstract class AbstractBufferedSinkTest(
         assertEquals(contents.length.toLong(), rc)
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testReadSourceFully() {
         val source = object : SdkSource by SdkBuffer() {
@@ -128,7 +117,7 @@ abstract class AbstractBufferedSinkTest(
         assertEquals("12341234", data.readUtf8())
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
+    @IgnoreNative // FIXME "Expected an exception of aws.smithy.kotlin.runtime.io.EOFException to be thrown, but was okio.EOFException"
     @Test
     fun testWriteEof() {
         val source: SdkSource = SdkBuffer().apply { writeUtf8("1234") }
@@ -137,7 +126,6 @@ abstract class AbstractBufferedSinkTest(
         assertEquals("1234", data.readUtf8())
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testWriteExhausted() {
         val source: SdkSource = SdkBuffer()
@@ -145,7 +133,6 @@ abstract class AbstractBufferedSinkTest(
         assertEquals(0, data.size)
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testWriteExplicitZero() {
         val source = object : SdkSource by SdkBuffer() {
@@ -156,7 +143,6 @@ abstract class AbstractBufferedSinkTest(
         assertEquals(0, data.size)
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testCloseFlushes() {
         sink.writeUtf8("a flix is a comb")
@@ -164,7 +150,6 @@ abstract class AbstractBufferedSinkTest(
         assertEquals("a flix is a comb", data.readUtf8())
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testWriteByteArray() {
         val expected = bytes(0xde, 0xad, 0xbe, 0xef)
@@ -174,7 +159,6 @@ abstract class AbstractBufferedSinkTest(
         assertContentEquals(expected, actual)
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testWriteByteArrayOffset() {
         val expected = bytes(0xde, 0xad, 0xbe, 0xef)
@@ -184,7 +168,6 @@ abstract class AbstractBufferedSinkTest(
         assertContentEquals(expected.sliceArray(2..3), actual)
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testWriteByteArrayOffsetAndLimit() {
         val expected = bytes(0xde, 0xad, 0xbe, 0xef)
