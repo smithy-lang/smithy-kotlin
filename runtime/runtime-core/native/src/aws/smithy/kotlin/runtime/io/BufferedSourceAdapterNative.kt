@@ -4,4 +4,6 @@
  */
 package aws.smithy.kotlin.runtime.io
 
-internal actual class BufferedSourceAdapter actual constructor(source: okio.BufferedSource) : SdkBufferedSource, AbstractBufferedSourceAdapter(source)
+internal actual class BufferedSourceAdapter actual constructor(source: okio.BufferedSource) :
+    AbstractBufferedSourceAdapter(source),
+    SdkBufferedSource

@@ -4,4 +4,6 @@
  */
 package aws.smithy.kotlin.runtime.io
 
-internal actual class BufferedSinkAdapter actual constructor(sink: okio.BufferedSink) : SdkBufferedSink, AbstractBufferedSinkAdapter(sink)
+internal actual class BufferedSinkAdapter actual constructor(sink: okio.BufferedSink) :
+    AbstractBufferedSinkAdapter(sink),
+    SdkBufferedSink

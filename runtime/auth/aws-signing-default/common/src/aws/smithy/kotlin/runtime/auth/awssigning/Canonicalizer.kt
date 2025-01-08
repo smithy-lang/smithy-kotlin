@@ -12,7 +12,6 @@ import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
 import aws.smithy.kotlin.runtime.http.request.toBuilder
 import aws.smithy.kotlin.runtime.io.*
-import aws.smithy.kotlin.runtime.io.internal.SdkDispatchers
 import aws.smithy.kotlin.runtime.net.url.QueryParameters
 import aws.smithy.kotlin.runtime.net.url.Url
 import aws.smithy.kotlin.runtime.net.url.UrlPath
@@ -20,6 +19,8 @@ import aws.smithy.kotlin.runtime.text.encoding.Encodable
 import aws.smithy.kotlin.runtime.text.encoding.PercentEncoding
 import aws.smithy.kotlin.runtime.text.encoding.encodeToHex
 import aws.smithy.kotlin.runtime.time.TimestampFormat
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.IO
 import kotlinx.coroutines.withContext
 
 /**
@@ -162,7 +163,7 @@ internal class DefaultCanonicalizer(private val sha256Supplier: HashSupplier = :
             }
             is HttpBody.SourceContent -> {
                 val source = readFrom()
-                withContext(SdkDispatchers.IO) {
+                withContext(Dispatchers.IO) {
                     source.sha256().encodeToHex()
                 }
             }

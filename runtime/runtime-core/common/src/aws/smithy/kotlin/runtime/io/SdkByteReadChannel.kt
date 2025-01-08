@@ -4,7 +4,8 @@
  */
 package aws.smithy.kotlin.runtime.io
 
-import aws.smithy.kotlin.runtime.io.internal.SdkDispatchers
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.IO
 import kotlinx.coroutines.withContext
 
 /**
@@ -104,7 +105,7 @@ public suspend fun SdkByteReadChannel.readToBuffer(): SdkBuffer {
 /**
  * Read all bytes from this channel into [sink]. Returns the total number of bytes written.
  */
-public suspend fun SdkByteReadChannel.readAll(sink: SdkSink): Long = withContext(SdkDispatchers.IO) {
+public suspend fun SdkByteReadChannel.readAll(sink: SdkSink): Long = withContext(Dispatchers.IO) {
     val bufferedSink = sink.buffer()
     var totalWritten = 0L
     while (true) {
@@ -120,7 +121,7 @@ public suspend fun SdkByteReadChannel.readAll(sink: SdkSink): Long = withContext
 /**
  * Removes all bytes from [source] and writes them to this channel. Returns the total number of bytes read.
  */
-public suspend fun SdkByteWriteChannel.writeAll(source: SdkSource): Long = withContext(SdkDispatchers.IO) {
+public suspend fun SdkByteWriteChannel.writeAll(source: SdkSource): Long = withContext(Dispatchers.IO) {
     val buffer = SdkBuffer()
     var totalRead = 0L
     while (true) {
