@@ -15,9 +15,9 @@ import aws.smithy.kotlin.runtime.io.*
 internal inline fun <T> SdkBuffer.wrapOkio(block: SdkBuffer.() -> T): T = try {
     block()
 } catch (e: okio.EOFException) {
-    throw EOFException("Okio operation failed", e)
+    throw EOFException("Okio operation failed: ${e.message}", e)
 } catch (e: okio.IOException) {
-    throw IOException("Okio operation failed", e)
+    throw IOException("Okio operation failed: ${e.message}", e)
 }
 
 internal inline fun SdkBuffer.commonSkip(byteCount: Long) = wrapOkio { inner.skip(byteCount) }

@@ -38,9 +38,9 @@ internal expect class BufferedSourceAdapter(source: okio.BufferedSource) : SdkBu
 internal inline fun <T> SdkBufferedSource.wrapOkio(block: SdkBufferedSource.() -> T): T = try {
     block()
 } catch (e: okio.EOFException) {
-    throw EOFException("Okio operation failed", e)
+    throw EOFException("Okio operation failed: ${e.message}", e)
 } catch (e: okio.IOException) {
-    throw IOException("Okio operation failed", e)
+    throw IOException("Okio operation failed: ${e.message}", e)
 }
 
 // base class that fills in most of the common implementation, platforms just need to implement the platform specific
