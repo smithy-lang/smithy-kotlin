@@ -9,7 +9,7 @@ public actual typealias IOException = java.io.IOException
 
 public actual open class EOFException actual constructor(
     message: String?,
-    cause: Throwable?
+    cause: Throwable?,
 ) : java.io.EOFException(message) {
     init {
         initCause(cause)

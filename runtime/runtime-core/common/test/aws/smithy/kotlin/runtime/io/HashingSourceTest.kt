@@ -5,7 +5,6 @@
 
 package aws.smithy.kotlin.runtime.io
 
-import aws.smithy.kotlin.runtime.IgnoreNative
 import aws.smithy.kotlin.runtime.hashing.*
 import kotlin.test.Test
 import kotlin.test.assertEquals

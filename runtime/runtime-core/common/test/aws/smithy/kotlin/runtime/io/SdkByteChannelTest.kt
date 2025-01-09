@@ -5,7 +5,6 @@
 
 package aws.smithy.kotlin.runtime.io
 
-import aws.smithy.kotlin.runtime.IgnoreNative
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.yield
