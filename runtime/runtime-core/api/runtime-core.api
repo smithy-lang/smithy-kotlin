@@ -1029,12 +1029,6 @@ public abstract interface class aws/smithy/kotlin/runtime/io/SdkSource : java/io
 	public abstract fun read (Laws/smithy/kotlin/runtime/io/SdkBuffer;J)J
 }
 
-public final class aws/smithy/kotlin/runtime/io/SdkSourceJVMKt {
-	public static final fun readToByteArray (Laws/smithy/kotlin/runtime/io/SdkSource;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public static final fun toSdkByteReadChannel (Laws/smithy/kotlin/runtime/io/SdkSource;Lkotlinx/coroutines/CoroutineScope;)Laws/smithy/kotlin/runtime/io/SdkByteReadChannel;
-	public static synthetic fun toSdkByteReadChannel$default (Laws/smithy/kotlin/runtime/io/SdkSource;Lkotlinx/coroutines/CoroutineScope;ILjava/lang/Object;)Laws/smithy/kotlin/runtime/io/SdkByteReadChannel;
-}
-
 public final class aws/smithy/kotlin/runtime/io/SdkSourceKt {
 	public static final fun readFully (Laws/smithy/kotlin/runtime/io/SdkSource;Laws/smithy/kotlin/runtime/io/SdkBuffer;J)V
 	public static final fun readToByteArray (Laws/smithy/kotlin/runtime/io/SdkSource;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
@@ -1069,11 +1063,6 @@ public final class aws/smithy/kotlin/runtime/io/internal/JobChannel : aws/smithy
 	public fun isClosedForWrite ()Z
 	public fun read (Laws/smithy/kotlin/runtime/io/SdkBuffer;JLkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun write (Laws/smithy/kotlin/runtime/io/SdkBuffer;JLkotlin/coroutines/Continuation;)Ljava/lang/Object;
-}
-
-public final class aws/smithy/kotlin/runtime/io/internal/SdkDispatchers {
-	public static final field INSTANCE Laws/smithy/kotlin/runtime/io/internal/SdkDispatchers;
-	public final fun getIO ()Lkotlinx/coroutines/CoroutineDispatcher;
 }
 
 public abstract class aws/smithy/kotlin/runtime/io/internal/SdkSinkObserver : aws/smithy/kotlin/runtime/io/SdkSink {
