@@ -1065,6 +1065,11 @@ public final class aws/smithy/kotlin/runtime/io/internal/JobChannel : aws/smithy
 	public fun write (Laws/smithy/kotlin/runtime/io/SdkBuffer;JLkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
+public final class aws/smithy/kotlin/runtime/io/internal/SdkDispatchers {
+	public static final field INSTANCE Laws/smithy/kotlin/runtime/io/internal/SdkDispatchers;
+	public final fun getIO ()Lkotlinx/coroutines/CoroutineDispatcher;
+}
+
 public abstract class aws/smithy/kotlin/runtime/io/internal/SdkSinkObserver : aws/smithy/kotlin/runtime/io/SdkSink {
 	public fun <init> (Laws/smithy/kotlin/runtime/io/SdkSink;)V
 	public fun close ()V
