@@ -61,7 +61,7 @@ public actual class SdkBuffer :
     actual override fun read(sink: SdkBuffer, limit: Long): Long =
         commonRead(sink, limit)
 
-    override fun read(dst: ByteBuffer): Int = inner.read(dst)
+    override fun read(dst: ByteBuffer): Int = wrapOkio { inner.read(dst) }
 
     actual override fun readByteArray(): ByteArray = commonReadByteArray()
 
@@ -87,7 +87,7 @@ public actual class SdkBuffer :
     actual override fun write(source: SdkBuffer, byteCount: Long): Unit =
         commonWrite(source, byteCount)
 
-    override fun write(src: ByteBuffer): Int = inner.write(src)
+    override fun write(src: ByteBuffer): Int = wrapOkio { inner.write(src) }
 
     actual override fun writeAll(source: SdkSource): Long = commonWriteAll(source)
 
@@ -111,7 +111,7 @@ public actual class SdkBuffer :
     actual override fun flush(): Unit = commonFlush()
 
     actual override fun emit() {
-        inner.emit()
+        wrapOkio { inner.emit() }
     }
     actual override fun close(): Unit = commonClose()
     override fun isOpen(): Boolean = inner.isOpen

@@ -60,7 +60,7 @@ public actual class SdkBuffer :
     actual override fun flush(): Unit = commonFlush()
 
     actual override fun emit() {
-        inner.emit()
+        wrapOkio { inner.emit() }
     }
 
     actual override fun skip(byteCount: Long): Unit = commonSkip(byteCount)
