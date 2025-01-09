@@ -760,6 +760,12 @@ public final class aws/smithy/kotlin/runtime/io/ClosedWriteChannelException : ja
 	public synthetic fun <init> (Ljava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 }
 
+public class aws/smithy/kotlin/runtime/io/EOFException : java/io/EOFException {
+	public fun <init> ()V
+	public fun <init> (Ljava/lang/String;)V
+	public fun <init> (Ljava/lang/String;Ljava/lang/Throwable;)V
+}
+
 public final class aws/smithy/kotlin/runtime/io/GzipByteReadChannel : aws/smithy/kotlin/runtime/io/SdkByteReadChannel {
 	public fun <init> (Laws/smithy/kotlin/runtime/io/SdkByteReadChannel;)V
 	public fun cancel (Ljava/lang/Throwable;)Z

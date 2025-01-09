@@ -12,6 +12,7 @@ public actual open class IOException actual constructor(
     public actual constructor(message: String?) : this(message, null)
 }
 
-public actual open class EOFException actual constructor(message: String?) : IOException(message) {
-    public actual constructor() : this(null)
+public actual open class EOFException actual constructor(message: String?, cause: Throwable?) : IOException(message) {
+    public actual constructor() : this(null, null)
+    public actual constructor(message: String?) : this(message, null)
 }
