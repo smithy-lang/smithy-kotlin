@@ -9,7 +9,6 @@ import kotlin.test.Test
 import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
-import okio.EOFException // FIXME Leaking abstraction. Should we be catching okio.EOFException and throwing aws.smithy.kotlin.runtime.io.EOFException in our I/O implementations?
 
 // Test SdkBuffer implementation of SdkBufferedSink interface
 class SdkBufferSinkTest : AbstractBufferedSinkTest({ buffer -> buffer })

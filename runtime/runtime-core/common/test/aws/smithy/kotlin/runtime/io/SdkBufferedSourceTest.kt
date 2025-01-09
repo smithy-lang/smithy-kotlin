@@ -6,7 +6,6 @@
 package aws.smithy.kotlin.runtime.io
 
 import kotlin.test.*
-import okio.EOFException
 
 /**
  * A (source, sink) connected pair. Writes to [sink] are read from [source]
