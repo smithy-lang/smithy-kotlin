@@ -7,12 +7,11 @@ package aws.smithy.kotlin.runtime.io
 
 import aws.smithy.kotlin.runtime.InternalApi
 import aws.smithy.kotlin.runtime.io.internal.JobChannel
+import aws.smithy.kotlin.runtime.io.internal.SdkDispatchers
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.DelicateCoroutinesApi
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.IO
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -52,7 +51,7 @@ public interface SdkSource : Closeable {
  * Consume the [SdkSource] and pull the entire contents into memory as a [ByteArray].
  */
 @InternalApi
-public suspend fun SdkSource.readToByteArray(): ByteArray = withContext(Dispatchers.IO) {
+public suspend fun SdkSource.readToByteArray(): ByteArray = withContext(SdkDispatchers.IO) {
     use { it.buffer().readByteArray() }
 }
 
@@ -68,7 +67,7 @@ public fun SdkSource.toSdkByteReadChannel(coroutineScope: CoroutineScope? = null
     val source = this
     val ch = JobChannel()
     val scope = coroutineScope ?: GlobalScope
-    val job = scope.launch(Dispatchers.IO + CoroutineName("sdk-source-reader")) {
+    val job = scope.launch(SdkDispatchers.IO + CoroutineName("sdk-source-reader")) {
         val buffer = SdkBuffer()
         val result = runCatching {
             source.use {
