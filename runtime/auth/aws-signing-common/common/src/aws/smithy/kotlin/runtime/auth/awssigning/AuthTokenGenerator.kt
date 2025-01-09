@@ -4,23 +4,18 @@
 */
 package aws.smithy.kotlin.runtime.auth.awssigning
 
-import aws.smithy.kotlin.runtime.auth.awscredentials.Credentials
 import aws.smithy.kotlin.runtime.auth.awscredentials.CredentialsProvider
 import aws.smithy.kotlin.runtime.auth.awssigning.AwsSigningConfig.Companion.invoke
 import aws.smithy.kotlin.runtime.http.HttpMethod
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.net.url.Url
 import aws.smithy.kotlin.runtime.time.Clock
-import aws.smithy.kotlin.runtime.util.ExpiringValue
 import kotlin.time.Duration
-import kotlin.time.Duration.Companion.minutes
-import kotlin.time.Duration.Companion.seconds
 
 /**
  * Generates an authentication token, which is a SigV4-signed URL with the HTTP scheme removed.
  * @param service The name of the service the token is being generated for
  * @param credentialsProvider The [CredentialsProvider] which will provide credentials to use when generating the auth token
- * @param credentialsRefreshBuffer The amount of time before the resolved [Credentials] expire in which they are considered expired, defaults to 10 seconds.
  * @param signer The [AwsSigner] implementation to use when creating the authentication token
  * @param clock The [Clock] implementation to use
  */
