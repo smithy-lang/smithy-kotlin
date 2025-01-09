@@ -143,7 +143,7 @@ class FlexibleChecksumsRequestInterceptorTest {
         val source = byteArray.source()
         val completableDeferred = CompletableDeferred<String>()
         val hashingSource = HashingSource(hashFunctionName.toHashFunction()!!, source)
-        val completingSource = FlexibleChecksumsRequestInterceptor.CompletingSource(completableDeferred, hashingSource)
+        val completingSource = CompletingSource(completableDeferred, hashingSource)
 
         completingSource.read(SdkBuffer(), 1L)
         assertFalse(completableDeferred.isCompleted) // deferred value should not be completed because the source is not exhausted
@@ -165,7 +165,7 @@ class FlexibleChecksumsRequestInterceptorTest {
         val completableDeferred = CompletableDeferred<String>()
         val hashingChannel = HashingByteReadChannel(hashFunctionName.toHashFunction()!!, channel)
         val completingChannel =
-            FlexibleChecksumsRequestInterceptor.CompletingByteReadChannel(completableDeferred, hashingChannel)
+            CompletingByteReadChannel(completableDeferred, hashingChannel)
 
         completingChannel.read(SdkBuffer(), 1L)
         assertFalse(completableDeferred.isCompleted)

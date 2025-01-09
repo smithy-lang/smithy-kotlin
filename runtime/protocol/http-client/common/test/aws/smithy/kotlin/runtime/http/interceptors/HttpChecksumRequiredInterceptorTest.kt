@@ -66,7 +66,7 @@ class HttpChecksumRequiredInterceptorTest {
     }
 
     @Test
-    fun itOnlySetsHeaderForBytesContent() = runTest {
+    fun itSetsHeaderForNonBytesContent() = runTest {
         val req = HttpRequestBuilder().apply {
             body = object : HttpBody.ChannelContent() {
                 override fun readFrom(): SdkByteReadChannel = SdkByteReadChannel("fooey".encodeToByteArray())
@@ -79,9 +79,10 @@ class HttpChecksumRequiredInterceptorTest {
             HttpChecksumRequiredInterceptor(),
         )
 
+        val expected = "vJLiaOiNxaxdWfYAYzdzFQ=="
         op.roundTrip(client, Unit)
         val call = op.context.attributes[HttpOperationContext.HttpCallList].first()
-        assertNull(call.request.headers["Content-MD5"])
+        assertEquals(expected, call.request.headers["Content-MD5"])
     }
 
     @Test

@@ -5,10 +5,7 @@
 
 package aws.smithy.kotlin.runtime.http.interceptors
 
-import aws.smithy.kotlin.runtime.ClientException
 import aws.smithy.kotlin.runtime.InternalApi
-import aws.smithy.kotlin.runtime.businessmetrics.BusinessMetric
-import aws.smithy.kotlin.runtime.businessmetrics.SmithyBusinessMetric
 import aws.smithy.kotlin.runtime.businessmetrics.emitBusinessMetric
 import aws.smithy.kotlin.runtime.client.ProtocolRequestInterceptorContext
 import aws.smithy.kotlin.runtime.client.config.RequestHttpChecksumConfig
@@ -84,7 +81,10 @@ public class FlexibleChecksumsRequestInterceptor(
 
                 request.headers.append("x-amz-trailer", checksumHeader)
                 request.trailingHeaders.append(checksumHeader, deferredChecksum)
+
                 context.executionContext.emitBusinessMetric(checksumAlgorithm.toBusinessMetric())
+
+                return request.build()
             } else { // Delegate checksum calculation to super class, calculateChecksum, and applyChecksum
                 return super.modifyBeforeSigning(context)
             }
@@ -157,25 +157,6 @@ public class FlexibleChecksumsRequestInterceptor(
         return request.build()
     }
 
-    // FIXME this duplicates the logic from aws-signing-common, but can't import from there due to circular import.
-    private val HttpBody.isEligibleForAwsChunkedStreaming: Boolean
-        get() = (this is HttpBody.SourceContent || this is HttpBody.ChannelContent) &&
-            contentLength != null &&
-            (isOneShot || contentLength!! > 65536 * 16)
-
-    /**
-     * Compute the rolling hash of an [SdkByteReadChannel] using [hashFunction], reading up-to [bufferSize] bytes into memory
-     * @return a ByteArray of the hash function's digest
-     */
-    private suspend fun SdkByteReadChannel.rollingHash(hashFunction: HashFunction, bufferSize: Long = 8192): ByteArray {
-        val buffer = SdkBuffer()
-        while (!isClosedForRead) {
-            read(buffer, bufferSize)
-            hashFunction.update(buffer.readToByteArray())
-        }
-        return hashFunction.digest()
-    }
-
     /**
      * Checks if a user provided a checksum for a request via an HTTP header.
      * The header must start with "x-amz-checksum-" followed by the checksum algorithm's name.
@@ -193,17 +174,6 @@ public class FlexibleChecksumsRequestInterceptor(
         }
 
     /**
-     * Maps supported hash functions to business metrics.
-     */
-    private fun HashFunction.toBusinessMetric(): BusinessMetric = when (this) {
-        is Crc32 -> SmithyBusinessMetric.FLEXIBLE_CHECKSUMS_REQ_CRC32
-        is Crc32c -> SmithyBusinessMetric.FLEXIBLE_CHECKSUMS_REQ_CRC32C
-        is Sha1 -> SmithyBusinessMetric.FLEXIBLE_CHECKSUMS_REQ_SHA1
-        is Sha256 -> SmithyBusinessMetric.FLEXIBLE_CHECKSUMS_REQ_SHA256
-        else -> throw IllegalStateException("Checksum was calculated using an unsupported hash function: ${this::class.simpleName}")
-    }
-
-    /**
      * Removes all checksum headers except [headerName]
      * @param headerName the checksum header name to keep
      */
@@ -211,44 +181,4 @@ public class FlexibleChecksumsRequestInterceptor(
         names()
             .filter { it.startsWith("x-amz-checksum-", ignoreCase = true) && !it.equals(headerName, ignoreCase = true) }
             .forEach { remove(it) }
-
-    /**
-     * Convert an [HttpBody] with an underlying [HashingSource] or [HashingByteReadChannel]
-     * to a [CompletingSource] or [CompletingByteReadChannel], respectively.
-     */
-    private fun HttpBody.toCompletingBody(deferred: CompletableDeferred<String>): HttpBody = when (this) {
-        is HttpBody.SourceContent -> CompletingSource(deferred, (readFrom() as HashingSource)).toHttpBody(contentLength)
-        is HttpBody.ChannelContent -> CompletingByteReadChannel(deferred, (readFrom() as HashingByteReadChannel)).toHttpBody(contentLength)
-        else -> throw ClientException("HttpBody type is not supported")
-    }
-
-    /**
-     * An [SdkSource] which uses the underlying [hashingSource]'s checksum to complete a [CompletableDeferred] value.
-     */
-    internal class CompletingSource(
-        private val deferred: CompletableDeferred<String>,
-        private val hashingSource: HashingSource,
-    ) : SdkSource by hashingSource {
-        override fun read(sink: SdkBuffer, limit: Long): Long = hashingSource.read(sink, limit)
-            .also {
-                if (it == -1L) {
-                    deferred.complete(hashingSource.digest().encodeBase64String())
-                }
-            }
-    }
-
-    /**
-     * An [SdkByteReadChannel] which uses the underlying [hashingChannel]'s checksum to complete a [CompletableDeferred] value.
-     */
-    internal class CompletingByteReadChannel(
-        private val deferred: CompletableDeferred<String>,
-        private val hashingChannel: HashingByteReadChannel,
-    ) : SdkByteReadChannel by hashingChannel {
-        override suspend fun read(sink: SdkBuffer, limit: Long): Long = hashingChannel.read(sink, limit)
-            .also {
-                if (it == -1L) {
-                    deferred.complete(hashingChannel.digest().encodeBase64String())
-                }
-            }
-    }
 }

@@ -6,6 +6,8 @@ package aws.smithy.kotlin.runtime.hashing
 
 import aws.smithy.kotlin.runtime.ClientException
 import aws.smithy.kotlin.runtime.InternalApi
+import aws.smithy.kotlin.runtime.businessmetrics.BusinessMetric
+import aws.smithy.kotlin.runtime.businessmetrics.SmithyBusinessMetric
 
 /**
  * A cryptographic hash function (algorithm)
@@ -110,4 +112,16 @@ public fun HashFunction.resolveChecksumAlgorithmHeaderName(): String {
         is Md5 -> "Content-MD5"
         else -> throw ClientException("Checksum algorithm is not supported: ${this::class.simpleName}")
     }
+}
+
+/**
+ * Maps supported hash functions to business metrics.
+ */
+@InternalApi
+public fun HashFunction.toBusinessMetric(): BusinessMetric = when (this) {
+    is Crc32 -> SmithyBusinessMetric.FLEXIBLE_CHECKSUMS_REQ_CRC32
+    is Crc32c -> SmithyBusinessMetric.FLEXIBLE_CHECKSUMS_REQ_CRC32C
+    is Sha1 -> SmithyBusinessMetric.FLEXIBLE_CHECKSUMS_REQ_SHA1
+    is Sha256 -> SmithyBusinessMetric.FLEXIBLE_CHECKSUMS_REQ_SHA256
+    else -> throw IllegalStateException("Checksum was calculated using an unsupported hash function: ${this::class.simpleName}")
 }

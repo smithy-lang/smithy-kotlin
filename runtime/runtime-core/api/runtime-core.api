@@ -698,6 +698,7 @@ public final class aws/smithy/kotlin/runtime/hashing/HashFunctionKt {
 	public static final fun isSupportedForFlexibleChecksums (Laws/smithy/kotlin/runtime/hashing/HashFunction;)Z
 	public static final fun resolveChecksumAlgorithmHeaderName (Laws/smithy/kotlin/runtime/hashing/HashFunction;)Ljava/lang/String;
 	public static final fun resolveChecksumAlgorithmHeaderName (Ljava/lang/String;)Ljava/lang/String;
+	public static final fun toBusinessMetric (Laws/smithy/kotlin/runtime/hashing/HashFunction;)Laws/smithy/kotlin/runtime/businessmetrics/BusinessMetric;
 	public static final fun toHashFunction (Ljava/lang/String;)Laws/smithy/kotlin/runtime/hashing/HashFunction;
 	public static final fun toHashFunctionOrThrow (Ljava/lang/String;)Laws/smithy/kotlin/runtime/hashing/HashFunction;
 }
@@ -958,6 +959,8 @@ public final class aws/smithy/kotlin/runtime/io/SdkByteReadChannelKt {
 	public static final fun readFully (Laws/smithy/kotlin/runtime/io/SdkByteReadChannel;Laws/smithy/kotlin/runtime/io/SdkBuffer;JLkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public static final fun readRemaining (Laws/smithy/kotlin/runtime/io/SdkByteReadChannel;Laws/smithy/kotlin/runtime/io/SdkBuffer;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public static final fun readToBuffer (Laws/smithy/kotlin/runtime/io/SdkByteReadChannel;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static final fun rollingHash (Laws/smithy/kotlin/runtime/io/SdkByteReadChannel;Laws/smithy/kotlin/runtime/hashing/HashFunction;JLkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static synthetic fun rollingHash$default (Laws/smithy/kotlin/runtime/io/SdkByteReadChannel;Laws/smithy/kotlin/runtime/hashing/HashFunction;JLkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
 	public static final fun writeAll (Laws/smithy/kotlin/runtime/io/SdkByteWriteChannel;Laws/smithy/kotlin/runtime/io/SdkSource;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 

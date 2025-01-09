@@ -19,6 +19,7 @@ import aws.smithy.kotlin.runtime.http.response.copy
 import aws.smithy.kotlin.runtime.http.toHashingBody
 import aws.smithy.kotlin.runtime.http.toHttpBody
 import aws.smithy.kotlin.runtime.io.*
+import aws.smithy.kotlin.runtime.telemetry.logging.Logger
 import aws.smithy.kotlin.runtime.telemetry.logging.logger
 import aws.smithy.kotlin.runtime.text.encoding.encodeBase64String
 import kotlin.coroutines.coroutineContext
@@ -55,10 +56,10 @@ public open class FlexibleChecksumsResponseInterceptor(
     }
 
     override suspend fun modifyBeforeDeserialization(context: ProtocolResponseInterceptorContext<Any, HttpRequest, HttpResponse>): HttpResponse {
-        val logger = coroutineContext.logger<FlexibleChecksumsResponseInterceptor>()
-
         val configuredToVerifyChecksum = responseValidationRequired || responseChecksumValidation == ResponseHttpChecksumConfig.WHEN_SUPPORTED
         if (!configuredToVerifyChecksum) return context.protocolResponse
+
+        val logger = coroutineContext.logger<FlexibleChecksumsResponseInterceptor>()
 
         val checksumHeader = CHECKSUM_HEADER_VALIDATION_PRIORITY_LIST
             .firstOrNull { context.protocolResponse.headers.contains(it) } ?: run {
@@ -67,8 +68,7 @@ public open class FlexibleChecksumsResponseInterceptor(
         }
 
         val serviceChecksumValue = context.protocolResponse.headers[checksumHeader]!!
-        if (ignoreChecksum(serviceChecksumValue)) {
-            logger.info { "Checksum detected but validation was skipped." }
+        if (ignoreChecksum(serviceChecksumValue, logger)) {
             return context.protocolResponse
         }
 
@@ -110,7 +110,7 @@ public open class FlexibleChecksumsResponseInterceptor(
     /**
      * Additional check on the checksum itself to see if it should be validated
      */
-    public open fun ignoreChecksum(checksum: String): Boolean = false
+    public open fun ignoreChecksum(checksum: String, logger: Logger): Boolean = false
 }
 
 public class ChecksumMismatchException(message: String?) : ClientException(message)
