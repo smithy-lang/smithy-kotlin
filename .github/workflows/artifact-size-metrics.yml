@@ -2,7 +2,9 @@ name: Artifact Size Metrics
 on:
   pull_request:
     types: [ opened, synchronize, reopened, labeled, unlabeled ]
-    branches: [ main, '*-main' ]
+    branches:
+      - main
+      - '*-main'
   release:
     types: [published]
 
@@ -53,9 +55,9 @@ jobs:
           role-to-assume: ${{ secrets.CI_AWS_ROLE_ARN }}
           aws-region: us-west-2
       - name: Generate Artifact Size Metrics
-        run: ./gradlew -Paws.kotlin.native=false artifactSizeMetrics
+        run: ./gradlew artifactSizeMetrics
       - name: Analyze Artifact Size Metrics
-        run: ./gradlew -Paws.kotlin.native=false analyzeArtifactSizeMetrics
+        run: ./gradlew analyzeArtifactSizeMetrics
       - name: Show Results
         uses: actions/github-script@v7
         with:
