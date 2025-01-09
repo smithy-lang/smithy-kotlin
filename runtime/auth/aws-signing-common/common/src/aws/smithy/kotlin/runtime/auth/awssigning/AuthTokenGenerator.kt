@@ -16,9 +16,6 @@ import kotlin.time.Duration
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 
-// The default expiration value to use for [Credentials] when none is provided.
-private val DEFAULT_CREDENTIALS_EXPIRATION = 10.minutes
-
 /**
  * Generates an authentication token, which is a SigV4-signed URL with the HTTP scheme removed.
  * @param service The name of the service the token is being generated for
@@ -30,27 +27,18 @@ private val DEFAULT_CREDENTIALS_EXPIRATION = 10.minutes
 public class AuthTokenGenerator(
     public val service: String,
     public val credentialsProvider: CredentialsProvider,
-    public val credentialsRefreshBuffer: Duration = 10.seconds,
     public val signer: AwsSigner,
     public val clock: Clock = Clock.System,
 ) {
-    private lateinit var credentials: ExpiringValue<Credentials>
-
     private fun Url.trimScheme(): String = toString().removePrefix(scheme.protocolName).removePrefix("://")
 
     public suspend fun generateAuthToken(endpoint: Url, region: String, expiration: Duration): String {
-        if (!::credentials.isInitialized || (credentials.expiresAt - clock.now()).absoluteValue <= credentialsRefreshBuffer) {
-            val resolved = credentialsProvider.resolve()
-            credentials = ExpiringValue(resolved, resolved.expiration ?: (clock.now() + DEFAULT_CREDENTIALS_EXPIRATION))
-        }
-
         val req = HttpRequest(HttpMethod.GET, endpoint)
 
-        val creds = credentials.value
         val serv = service
 
         val config = AwsSigningConfig {
-            credentials = creds
+            credentials = credentialsProvider.resolve()
             this.region = region
             service = serv
             signingDate = clock.now()
