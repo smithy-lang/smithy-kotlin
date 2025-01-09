@@ -339,7 +339,7 @@ abstract class BufferedSourceTest(
         sink.flush()
 
         val dest = SdkBuffer()
-        assertFailsWith<aws.smithy.kotlin.runtime.io.EOFException> {
+        assertFailsWith<EOFException> {
             source.readFully(dest, data.length.toLong() + 1)
         }
     }
