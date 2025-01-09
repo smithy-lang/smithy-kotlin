@@ -38,7 +38,6 @@ class AuthTokenGeneratorTest {
 
         val generator = AuthTokenGenerator("foo", credentialsProvider, TEST_SIGNER, clock = clock)
 
-
         val endpoint = Url { host = Host.parse("foo.bar.us-east-1.baz") }
         val token = generator.generateAuthToken(endpoint, "us-east-1", 333.seconds)
 
@@ -66,12 +65,7 @@ private val TEST_SIGNER = object : AwsSigner {
         return AwsSigningResult<HttpRequest>(builder.build(), "signature".encodeToByteArray())
     }
 
-    override suspend fun signChunk(chunkBody: ByteArray, prevSignature: ByteArray, config: AwsSigningConfig): AwsSigningResult<Unit> {
-        throw IllegalStateException("signChunk unexpectedly invoked")
-    }
+    override suspend fun signChunk(chunkBody: ByteArray, prevSignature: ByteArray, config: AwsSigningConfig): AwsSigningResult<Unit> = throw IllegalStateException("signChunk unexpectedly invoked")
 
-    override suspend fun signChunkTrailer(trailingHeaders: Headers, prevSignature: ByteArray, config: AwsSigningConfig): AwsSigningResult<Unit> {
-        throw IllegalStateException("signChunkTrailer unexpectedly invoked")
-    }
-
+    override suspend fun signChunkTrailer(trailingHeaders: Headers, prevSignature: ByteArray, config: AwsSigningConfig): AwsSigningResult<Unit> = throw IllegalStateException("signChunkTrailer unexpectedly invoked")
 }
