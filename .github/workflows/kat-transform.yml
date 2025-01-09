@@ -54,7 +54,7 @@ jobs:
           kat bump-version  # Bump from `vNext-SNAPSHOT` to `vNext`. kat transform only works on non-SNAPSHOT versions
           kat bump-version --property codegenVersion
           ./gradlew build
-          ./gradlew publishAllPublicationsToTestLocalRepository
+          ./gradlew -Paws.kotlin.native=false publishAllPublicationsToTestLocalRepository
 
       - name: Transform
         working-directory: ./smithy-kotlin
