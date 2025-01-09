@@ -5,6 +5,7 @@
 package aws.smithy.kotlin.runtime.content
 
 import aws.smithy.kotlin.runtime.io.*
+import aws.smithy.kotlin.runtime.io.internal.SdkDispatchers
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
@@ -120,7 +121,7 @@ public fun ByteStream.cancel() {
 public fun ByteStream.toFlow(bufferSize: Long = 8192): Flow<ByteArray> = when (this) {
     is ByteStream.Buffer -> flowOf(bytes())
     is ByteStream.ChannelStream -> readFrom().toFlow(bufferSize)
-    is ByteStream.SourceStream -> readFrom().toFlow(bufferSize).flowOn(Dispatchers.IO)
+    is ByteStream.SourceStream -> readFrom().toFlow(bufferSize).flowOn(SdkDispatchers.IO)
 }
 
 /**

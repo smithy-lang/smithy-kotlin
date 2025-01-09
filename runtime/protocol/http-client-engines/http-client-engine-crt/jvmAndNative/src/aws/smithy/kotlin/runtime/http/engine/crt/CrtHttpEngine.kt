@@ -11,6 +11,7 @@ import aws.smithy.kotlin.runtime.http.engine.HttpClientEngine
 import aws.smithy.kotlin.runtime.http.engine.HttpClientEngineBase
 import aws.smithy.kotlin.runtime.http.engine.callContext
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
+import aws.smithy.kotlin.runtime.io.internal.SdkDispatchers
 import aws.smithy.kotlin.runtime.operation.ExecutionContext
 import aws.smithy.kotlin.runtime.telemetry.logging.logger
 import aws.smithy.kotlin.runtime.time.Instant
@@ -83,7 +84,7 @@ public class CrtHttpEngine(public override val config: CrtHttpEngineConfig) : Ht
         }
 
         if (request.isChunked) {
-            withContext(Dispatchers.IO) {
+            withContext(SdkDispatchers.IO) {
                 stream.sendChunkedBody(request.body)
             }
         }
