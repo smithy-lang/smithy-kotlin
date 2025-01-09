@@ -37,7 +37,12 @@ operation SayHello { output: TestOutputDocument, errors: [Error] }
 @http(method: "POST", uri: "/")
 operation SayHelloXml { output: TestOutput, errors: [Error] }
 
-structure TestOutputDocument with [TestStruct] { innerField: Nested, @required document: Document }
+structure TestOutputDocument with [TestStruct] {
+    innerField: Nested,
+    // FIXME: This trait fails smithy validator
+    // @required
+    document: Document
+}
 structure TestOutput with [TestStruct] { innerField: Nested }
 
 @mixin
@@ -60,7 +65,8 @@ structure TestStruct {
     @required
     nestedListValue: NestedList
 
-    @required
+    // FIXME: This trait fails smithy validator
+    // @required
     nested: Nested
 
     @required
@@ -91,7 +97,8 @@ union MyUnion {
 }
 
 structure Nested {
-    @required
+    // FIXME: This trait fails smithy validator
+    // @required
     a: String
 }
 
