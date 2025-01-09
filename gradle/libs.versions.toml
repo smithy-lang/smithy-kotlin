@@ -15,6 +15,7 @@ slf4j-version = "2.0.16"
 slf4j-v1x-version = "1.7.36"
 crt-kotlin-version = "0.8.10"
 micrometer-version = "1.13.6"
+kotlinx-datetime-version = "0.6.1"
 
 # codegen
 smithy-version = "1.51.0"
@@ -61,6 +62,7 @@ slf4j-api-v1x = { module = "org.slf4j:slf4j-api", version.ref = "slf4j-v1x-versi
 slf4j-simple = { module = "org.slf4j:slf4j-simple", version.ref = "slf4j-version" }
 crt-kotlin = { module = "aws.sdk.kotlin.crt:aws-crt-kotlin", version.ref = "crt-kotlin-version" }
 micrometer-core = { module = "io.micrometer:micrometer-core", version.ref = "micrometer-version" }
+kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "kotlinx-datetime-version" }
 
 smithy-codegen-core = { module = "software.amazon.smithy:smithy-codegen-core", version.ref = "smithy-version" }
 smithy-cli = { module = "software.amazon.smithy:smithy-cli", version.ref = "smithy-version" }

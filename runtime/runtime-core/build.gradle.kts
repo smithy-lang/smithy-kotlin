@@ -26,6 +26,7 @@ kotlin {
         nativeMain {
             dependencies {
                 api(libs.crt.kotlin)
+                implementation(libs.kotlinx.datetime)
             }
         }
 
