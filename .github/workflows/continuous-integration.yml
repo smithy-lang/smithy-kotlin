@@ -31,6 +31,8 @@ jobs:
     steps:
       - name: Checkout sources
         uses: actions/checkout@v4
+        with:
+          path: 'smithy-kotlin'
       - name: Configure JDK
         uses: actions/setup-java@v3
         with:
@@ -53,6 +55,8 @@ jobs:
     steps:
       - name: Checkout sources
         uses: actions/checkout@v4
+        with:
+          path: 'smithy-kotlin'
       - name: Configure JDK
         uses: actions/setup-java@v3
         with:
@@ -80,6 +84,8 @@ jobs:
     steps:
       - name: Checkout sources
         uses: actions/checkout@v4
+        with:
+          path: 'smithy-kotlin'
       - name: Configure JDK
         uses: actions/setup-java@v3
         with:
@@ -115,8 +121,10 @@ jobs:
         # smithy-kotlin is checked out as a sibling dir which will automatically make it an included build
         path: 'aws-sdk-kotlin'
         repository: 'awslabs/aws-sdk-kotlin'
-    - name: Configure Gradle
+    - name: Configure Gradle for smithy-kotlin
       uses: ./smithy-kotlin/.github/actions/custom-gradle-distribution-url
+    - name: Configure Gradle for aws-sdk-kotlin
+      uses: ./aws-sdk-kotlin/.github/actions/custom-gradle-distribution-url
     - name: Configure JDK
       uses: actions/setup-java@v3
       with:

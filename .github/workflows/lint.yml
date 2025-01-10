@@ -18,6 +18,8 @@ jobs:
     steps:
     - name: Checkout sources
       uses: actions/checkout@v4
+      with:
+        path: 'smithy-kotlin'
     - name: Configure Gradle
       uses: ./smithy-kotlin/.github/actions/custom-gradle-distribution-url
     - name: Lint ${{ env.PACKAGE_NAME }}

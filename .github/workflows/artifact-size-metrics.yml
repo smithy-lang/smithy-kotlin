@@ -18,6 +18,8 @@ jobs:
     steps:
       - name: Checkout Sources
         uses: actions/checkout@v4
+        with:
+          path: 'smithy-kotlin'
       - name: Configure JDK
         uses: actions/setup-java@v3
         with:
@@ -43,6 +45,8 @@ jobs:
     steps:
       - name: Checkout Sources
         uses: actions/checkout@v4
+        with:
+          path: 'smithy-kotlin'
       - name: Configure JDK
         uses: actions/setup-java@v3
         with:
