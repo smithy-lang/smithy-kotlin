@@ -118,8 +118,7 @@ object KotlinTypes {
         val minutes = stdlibSymbol("minutes", "time.Duration.Companion")
     }
 
-    object Coroutines : RuntimeTypePackage(KotlinDependency.KOTLINX_COROUTINES) {
-        val runBlocking = symbol("runBlocking")
+    object Coroutines {
         val CoroutineContext = "kotlin.coroutines.CoroutineContext".toSymbol()
     }
 

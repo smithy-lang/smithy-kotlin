@@ -325,3 +325,7 @@ public final class aws/smithy/kotlin/runtime/client/endpoints/functions/Url {
 	public fun toString ()Ljava/lang/String;
 }
 
+public abstract interface class aws/smithy/kotlin/runtime/client/region/RegionProvider {
+	public abstract fun getRegion (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+

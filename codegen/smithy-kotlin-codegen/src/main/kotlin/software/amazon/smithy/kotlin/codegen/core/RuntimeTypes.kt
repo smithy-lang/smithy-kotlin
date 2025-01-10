@@ -247,6 +247,10 @@ object RuntimeTypes {
                 val Url = symbol("Url")
             }
         }
+
+        object Region : RuntimeTypePackage(KotlinDependency.SMITHY_CLIENT, "region") {
+            val RegionProvider = symbol("RegionProvider")
+        }
     }
 
     object Serde : RuntimeTypePackage(KotlinDependency.SERDE) {
@@ -409,6 +413,7 @@ object RuntimeTypes {
 
         val CompletableDeferred = "kotlinx.coroutines.CompletableDeferred".toSymbol()
         val job = "kotlinx.coroutines.job".toSymbol()
+        val runBlocking = "kotlinx.coroutines.runBlocking".toSymbol()
 
         object Flow {
             // NOTE: smithy-kotlin core has an API dependency on this already
