@@ -46,7 +46,7 @@ internal inline fun <T> SdkBufferedSource.wrapOkio(block: SdkBufferedSource.() -
 // base class that fills in most of the common implementation, platforms just need to implement the platform specific
 // part of the interface
 internal abstract class AbstractBufferedSourceAdapter(
-    protected val delegate: okio.BufferedSource,
+    internal val delegate: okio.BufferedSource,
 ) : SdkBufferedSource {
     override val buffer: SdkBuffer
         get() = delegate.buffer.toSdk()
