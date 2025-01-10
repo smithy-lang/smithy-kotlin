@@ -34,7 +34,6 @@ jobs:
           aws-region: us-west-2
 
       - name: Configure Gradle
-        working-directory: ./smithy-kotlin
         uses: ./smithy-kotlin/.github/actions/custom-gradle-distribution-url
 
       - name: Setup kat
