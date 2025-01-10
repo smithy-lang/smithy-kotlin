@@ -4,6 +4,7 @@
  */
 package aws.smithy.kotlin.runtime.http
 
+import aws.smithy.kotlin.runtime.IgnoreNative
 import aws.smithy.kotlin.runtime.content.ByteStream
 import aws.smithy.kotlin.runtime.http.content.ByteArrayContent
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
@@ -41,6 +42,7 @@ class HttpRequestBuilderTest {
         assertEquals(HttpBody.Empty, request.body)
     }
 
+    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testDumpRequest() = runTest {
         val content = "Mom!...Dad!...Bingo!...Bluey!"
@@ -79,6 +81,7 @@ class HttpRequestBuilderTest {
         assertEquals(content, actualReplacedContent)
     }
 
+    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testRequestToBuilder() = runTest {
         val req = HttpRequest(

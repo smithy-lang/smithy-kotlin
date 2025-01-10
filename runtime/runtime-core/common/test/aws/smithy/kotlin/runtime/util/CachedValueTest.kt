@@ -5,6 +5,7 @@
 
 package aws.smithy.kotlin.runtime.util
 
+import aws.smithy.kotlin.runtime.IgnoreNative
 import aws.smithy.kotlin.runtime.time.Instant
 import aws.smithy.kotlin.runtime.time.ManualClock
 import kotlinx.coroutines.*
@@ -15,6 +16,7 @@ import kotlin.test.*
 import kotlin.time.Duration.Companion.seconds
 
 class CachedValueTest {
+    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testNull() = runTest {
         val epoch = Instant.fromEpochSeconds(0)
@@ -25,6 +27,7 @@ class CachedValueTest {
         assertNull(value.get())
     }
 
+    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testExpiration() = runTest {
         val epoch = Instant.fromEpochSeconds(0)
@@ -41,6 +44,7 @@ class CachedValueTest {
         assertNull(value.get())
     }
 
+    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testExpirationBuffer() = runTest {
         val epoch = Instant.fromEpochSeconds(0)
@@ -57,6 +61,7 @@ class CachedValueTest {
         assertNull(value.get())
     }
 
+    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testGetOrLoad() = runTest {
         val epoch = Instant.fromEpochSeconds(0)
@@ -93,6 +98,7 @@ class CachedValueTest {
         assertEquals(2, count)
     }
 
+    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testClose() = runTest {
         val epoch = Instant.fromEpochSeconds(0)
@@ -107,6 +113,7 @@ class CachedValueTest {
         assertFailsWith<IllegalStateException> { value.get() }
     }
 
+    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun throwsAfterCloseDuringGetOrLoad() = runTest {
         val epoch = Instant.fromEpochSeconds(0)

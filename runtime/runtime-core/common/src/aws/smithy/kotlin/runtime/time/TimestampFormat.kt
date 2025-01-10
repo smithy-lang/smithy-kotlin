@@ -9,10 +9,10 @@ package aws.smithy.kotlin.runtime.time
  */
 public enum class TimestampFormat {
     /**
-     * ISO-8601/RFC5399 timestamp including fractional seconds at microsecond precision (e.g.,
+     * ISO-8601/RFC3339 timestamp including fractional seconds at microsecond precision (e.g.,
      * "2022-04-25T16:44:13.667307Z")
      *
-     * Prefers RFC5399 when formatting
+     * Prefers RFC3339 when formatting
      */
     ISO_8601,
 
@@ -28,7 +28,7 @@ public enum class TimestampFormat {
     ISO_8601_CONDENSED_DATE,
 
     /**
-     * ISO-8601/RFC5399 timestamp including fractional seconds at arbitrary (i.e., untruncated) precision
+     * ISO-8601/RFC3339 timestamp including fractional seconds at arbitrary (i.e., untruncated) precision
      */
     ISO_8601_FULL,
 

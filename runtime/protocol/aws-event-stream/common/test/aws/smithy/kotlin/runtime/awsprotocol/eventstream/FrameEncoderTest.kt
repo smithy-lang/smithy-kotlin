@@ -5,6 +5,7 @@
 
 package aws.smithy.kotlin.runtime.awsprotocol.eventstream
 
+import aws.smithy.kotlin.runtime.IgnoreNative
 import aws.smithy.kotlin.runtime.http.readAll
 import aws.smithy.kotlin.runtime.io.SdkBuffer
 import kotlinx.coroutines.flow.flowOf
@@ -16,6 +17,7 @@ import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
 
 class FrameEncoderTest {
+    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testEncode() = runTest {
         val expected = listOf(
@@ -42,6 +44,7 @@ class FrameEncoderTest {
         assertContentEquals(expected[2], actual[2].readByteArray())
     }
 
+    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testAsEventStreamHttpBody() = runTest {
         val messages = flowOf(

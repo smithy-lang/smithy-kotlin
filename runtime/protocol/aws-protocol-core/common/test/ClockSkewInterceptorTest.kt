@@ -4,6 +4,7 @@
  */
 package aws.smithy.kotlin.runtime.awsprotocol
 
+import aws.smithy.kotlin.runtime.IgnoreNative
 import aws.smithy.kotlin.runtime.SdkBaseException
 import aws.smithy.kotlin.runtime.ServiceErrorMetadata
 import aws.smithy.kotlin.runtime.awsprotocol.ClockSkewInterceptor.Companion.CLOCK_SKEW_THRESHOLD
@@ -31,6 +32,7 @@ private val POSSIBLE_SKEWED_RESPONSE_CODE_DESCRIPTION = "InvalidSignatureExcepti
 private val NOT_SKEWED_RESPONSE_CODE_DESCRIPTION = "RequestThrottled"
 
 class ClockSkewInterceptorTest {
+    @IgnoreNative // FIXME Re-enable after Kotlin/Native Implementation
     @Test
     fun testNotSkewed() {
         val clientTime = Instant.fromRfc5322("Wed, 6 Oct 2023 16:20:50 -0400")
@@ -39,6 +41,7 @@ class ClockSkewInterceptorTest {
         assertFalse(clientTime.isSkewed(serverTime, NOT_SKEWED_RESPONSE_CODE_DESCRIPTION))
     }
 
+    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testSkewedByResponseCode() {
         // clocks are exactly the same, but service returned skew error
@@ -48,6 +51,7 @@ class ClockSkewInterceptorTest {
         assertEquals(0.days, clientTime.until(serverTime))
     }
 
+    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testSkewedByTime() {
         val clientTime = Instant.fromRfc5322("Wed, 6 Oct 2023 16:20:50 -0400")
@@ -56,6 +60,7 @@ class ClockSkewInterceptorTest {
         assertEquals(1.days, clientTime.until(serverTime))
     }
 
+    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testNegativeSkewedByTime() {
         val clientTime = Instant.fromRfc5322("Wed, 7 Oct 2023 16:20:50 -0400")
@@ -64,6 +69,7 @@ class ClockSkewInterceptorTest {
         assertEquals(-1.days, clientTime.until(serverTime))
     }
 
+    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testSkewThreshold() {
         val minute = 20
@@ -125,6 +131,7 @@ class ClockSkewInterceptorTest {
         }
     }
 
+    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testClockSkewApplied() = runTest {
         testRoundTrip(
@@ -135,6 +142,7 @@ class ClockSkewInterceptorTest {
         )
     }
 
+    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testClockSkewNotApplied_NoSkew() = runTest {
         testRoundTrip(
@@ -145,6 +153,7 @@ class ClockSkewInterceptorTest {
         )
     }
 
+    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testClockSkewNotApplied_BadDate() = runTest {
         testRoundTrip(

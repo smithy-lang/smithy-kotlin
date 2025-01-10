@@ -7,6 +7,7 @@ package aws.smithy.kotlin.runtime.http.engine.crt
 
 import aws.sdk.kotlin.crt.http.*
 import aws.sdk.kotlin.crt.io.byteArrayBuffer
+import aws.smithy.kotlin.runtime.IgnoreNative
 import aws.smithy.kotlin.runtime.http.HttpBody
 import aws.smithy.kotlin.runtime.http.HttpErrorCode
 import aws.smithy.kotlin.runtime.http.HttpException
@@ -124,6 +125,7 @@ class SdkStreamResponseHandlerTest {
         assertTrue(respChan.isClosedForWrite)
     }
 
+    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testRespBody() = runTest {
         val handler = SdkStreamResponseHandler(mockConn, coroutineContext)
@@ -152,6 +154,7 @@ class SdkStreamResponseHandlerTest {
         assertEquals(data, respChan.readToBuffer().readUtf8())
     }
 
+    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testStreamError() = runTest {
         val handler = SdkStreamResponseHandler(mockConn, coroutineContext)
