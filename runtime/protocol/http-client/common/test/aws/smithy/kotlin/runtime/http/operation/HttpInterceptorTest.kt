@@ -5,6 +5,7 @@
 
 package aws.smithy.kotlin.runtime.http.operation
 
+import aws.smithy.kotlin.runtime.IgnoreNative
 import aws.smithy.kotlin.runtime.client.*
 import aws.smithy.kotlin.runtime.http.Headers
 import aws.smithy.kotlin.runtime.http.interceptors.HttpInterceptor
@@ -151,6 +152,7 @@ class HttpInterceptorTest {
         }
     }
 
+    @IgnoreNative // FIXME Re-enable after Kotlin/Native Implementation
     @Test
     fun testInterceptorModifications() = runTest {
         val serialized = HttpRequestBuilder().apply {
@@ -173,6 +175,7 @@ class HttpInterceptorTest {
         assertEquals("final", output.value)
     }
 
+    @IgnoreNative // FIXME Re-enable after Kotlin/Native Implementation
     @Test
     fun testInterceptorModificationsWithRetries() = runTest {
         val serialized = HttpRequestBuilder().apply {
@@ -211,6 +214,7 @@ class HttpInterceptorTest {
         assertEquals("ignore-failure", output.value)
     }
 
+    @IgnoreNative // FIXME Re-enable after Kotlin/Native Implementation
     @Test
     fun testMapFailureOnAttempt() = runTest {
         val interceptor = object : HttpInterceptor {
@@ -223,6 +227,7 @@ class HttpInterceptorTest {
         testMapFailure(interceptor)
     }
 
+    @IgnoreNative // FIXME Re-enable after Kotlin/Native Implementation
     @Test
     fun testMapFailureOnCompletion() = runTest {
         val interceptor = object : HttpInterceptor {
@@ -235,6 +240,7 @@ class HttpInterceptorTest {
         testMapFailure(interceptor)
     }
 
+    @IgnoreNative // FIXME Re-enable after Kotlin/Native Implementation
     @Test
     fun testReadAfterExecutionSuppressedException() = runTest {
         val interceptor = object : HttpInterceptor {

@@ -6,7 +6,15 @@
 package aws.smithy.kotlin.runtime.io
 
 import aws.smithy.kotlin.runtime.InternalApi
+import aws.smithy.kotlin.runtime.io.internal.JobChannel
+import aws.smithy.kotlin.runtime.io.internal.SdkDispatchers
+import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.ensureActive
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 /**
  * A source for reading a stream of bytes (e.g. from file, network, or in-memory buffer). Sources may
@@ -43,7 +51,9 @@ public interface SdkSource : Closeable {
  * Consume the [SdkSource] and pull the entire contents into memory as a [ByteArray].
  */
 @InternalApi
-public expect suspend fun SdkSource.readToByteArray(): ByteArray
+public suspend fun SdkSource.readToByteArray(): ByteArray = withContext(SdkDispatchers.IO) {
+    use { it.buffer().readByteArray() }
+}
 
 /**
  * Convert the [SdkSource] to an [SdkByteReadChannel]. Content is read from the source and forwarded
@@ -51,8 +61,32 @@ public expect suspend fun SdkSource.readToByteArray(): ByteArray
  * @param coroutineScope the coroutine scope to use to launch a background reader channel responsible for propagating data
  * between source and the returned channel
  */
+@OptIn(DelicateCoroutinesApi::class)
 @InternalApi
-public expect fun SdkSource.toSdkByteReadChannel(coroutineScope: CoroutineScope? = null): SdkByteReadChannel
+public fun SdkSource.toSdkByteReadChannel(coroutineScope: CoroutineScope? = null): SdkByteReadChannel {
+    val source = this
+    val ch = JobChannel()
+    val scope = coroutineScope ?: GlobalScope
+    val job = scope.launch(SdkDispatchers.IO + CoroutineName("sdk-source-reader")) {
+        val buffer = SdkBuffer()
+        val result = runCatching {
+            source.use {
+                while (true) {
+                    ensureActive()
+                    val rc = source.read(buffer, DEFAULT_BYTE_CHANNEL_MAX_BUFFER_SIZE.toLong())
+                    if (rc == -1L) break
+                    ch.write(buffer)
+                }
+            }
+        }
+
+        ch.close(result.exceptionOrNull())
+    }
+
+    ch.attachJob(job)
+
+    return ch
+}
 
 /**
  * Remove exactly [byteCount] bytes from this source and appends them to [sink].

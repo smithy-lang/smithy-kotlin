@@ -1822,7 +1822,7 @@ class SerializeStructGeneratorTest {
 
         val expected = """
             serializer.serializeStruct(OBJ_DESCRIPTOR) {
-                input.fooBlob?.let { field(FOOBLOB_DESCRIPTOR, it.encodeBase64String()) }
+                input.fooBlob?.let { field(FOOBLOB_DESCRIPTOR, it) }
             }
         """.trimIndent()
 

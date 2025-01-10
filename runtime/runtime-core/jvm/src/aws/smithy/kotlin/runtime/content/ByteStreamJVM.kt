@@ -96,7 +96,14 @@ public suspend fun ByteStream.writeToFile(path: Path): Long = writeToFile(path.t
 public fun ByteStream.toInputStream(): InputStream = when (this) {
     is ByteStream.Buffer -> ByteArrayInputStream(bytes())
     is ByteStream.ChannelStream -> readFrom().toInputStream()
-    is ByteStream.SourceStream -> readFrom().buffer().inputStream()
+    is ByteStream.SourceStream -> {
+        val buffer = (readFrom().buffer())
+        when (buffer) {
+            is SdkBuffer -> buffer.inputStream()
+            is BufferedSourceAdapter -> buffer.inputStream()
+            else -> throw IllegalStateException("Buffer class ${buffer::class.simpleName} could not be converted to an InputStream")
+        }
+    }
 }
 
 /**
@@ -114,11 +121,30 @@ public fun ByteStream.Companion.fromInputStream(
  * @param contentLength If specified, indicates how many bytes remain in this stream. Defaults to `null`.
  */
 public fun InputStream.asByteStream(contentLength: Long? = null): ByteStream.SourceStream {
-    val source = source()
+    if (markSupported() && contentLength != null) {
+        mark(contentLength.toInt())
+    }
+
     return object : ByteStream.SourceStream() {
         override val contentLength: Long? = contentLength
         override val isOneShot: Boolean = !markSupported()
-        override fun readFrom(): SdkSource = source
+        override fun readFrom(): SdkSource {
+            if (markSupported() && contentLength != null) {
+                reset()
+                mark(contentLength.toInt())
+                return object : SdkSource by source() {
+                    /*
+                     * This is a no-op close to prevent body hashing from closing the underlying InputStream, which causes
+                     * `IOException: Stream closed` on subsequent reads. Consider making [ByteStream.ChannelStream]/[ByteStream.SourceStream]
+                     * (or possibly even [ByteStream] itself) implement [Closeable] to better handle closing streams.
+                     * This should allow us to clean up our usage of [ByteStream.cancel()].
+                     */
+                    override fun close() { }
+                }
+            }
+
+            return source()
+        }
     }
 }
 

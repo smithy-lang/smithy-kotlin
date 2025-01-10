@@ -5,6 +5,7 @@
 package aws.smithy.kotlin.runtime.io
 
 import aws.smithy.kotlin.runtime.io.internal.SdkDispatchers
+import kotlinx.coroutines.IO
 import kotlinx.coroutines.withContext
 
 /**
