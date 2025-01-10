@@ -29,6 +29,8 @@ jobs:
         with:
           role-to-assume: ${{ secrets.CI_AWS_ROLE_ARN }}
           aws-region: us-west-2
+      - name: Configure Gradle
+        uses: ./aws-sdk-kotlin/.github/actions/custom-gradle-distribution-url
       - name: Generate Artifact Size Metrics
         run: ./gradlew artifactSizeMetrics
       - name: Save Artifact Size Metrics
@@ -52,6 +54,8 @@ jobs:
         with:
           role-to-assume: ${{ secrets.CI_AWS_ROLE_ARN }}
           aws-region: us-west-2
+      - name: Configure Gradle
+        uses: ./aws-sdk-kotlin/.github/actions/custom-gradle-distribution-url
       - name: Generate Artifact Size Metrics
         run: ./gradlew artifactSizeMetrics
       - name: Analyze Artifact Size Metrics

@@ -33,6 +33,9 @@ jobs:
           role-to-assume: ${{ secrets.CI_AWS_ROLE_ARN }}
           aws-region: us-west-2
 
+      - name: Configure Gradle
+        uses: ./aws-sdk-kotlin/.github/actions/custom-gradle-distribution-url
+
       - name: Setup kat
         uses: awslabs/aws-kotlin-repo-tools/.github/actions/setup-kat@main
 
