@@ -30,12 +30,10 @@ public class AuthTokenGenerator(
     public suspend fun generateAuthToken(endpoint: Url, region: String, expiration: Duration): String {
         val req = HttpRequest(HttpMethod.GET, endpoint)
 
-        val serv = service
-
         val config = AwsSigningConfig {
             credentials = credentialsProvider.resolve()
             this.region = region
-            service = serv
+            service = this@AuthTokenGenerator.service
             signingDate = clock.now()
             expiresAfter = expiration
             signatureType = AwsSignatureType.HTTP_REQUEST_VIA_QUERY_PARAMS
