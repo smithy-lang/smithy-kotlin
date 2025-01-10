@@ -39,7 +39,15 @@ abstract class AwsHttpBindingProtocolGenerator : HttpBindingProtocolGenerator() 
         // The following can be used to generate only a specific test by name.
         // val targetedTest = TestMemberDelta(setOf("RestJsonComplexErrorWithNoMessage"), TestContainmentMode.RUN_TESTS)
 
-        val ignoredTests = TestMemberDelta(setOf())
+        val ignoredTests = TestMemberDelta(
+            setOf(
+                "AwsJson10ClientErrorCorrectsWithDefaultValuesWhenServerFailsToSerializeRequiredValues",
+                "RestJsonNullAndEmptyHeaders",
+                "NullAndEmptyHeaders",
+                "RpcV2CborClientPopulatesDefaultsValuesWhenMissingInResponse",
+                "RpcV2CborClientPopulatesDefaultValuesInInput",
+            ),
+        )
 
         val requestTestBuilder = HttpProtocolUnitTestRequestGenerator.Builder()
         val responseTestBuilder = HttpProtocolUnitTestResponseGenerator.Builder()

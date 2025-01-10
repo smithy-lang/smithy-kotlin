@@ -8,6 +8,7 @@ out/
 # Compiled class file
 *.class
 *.klib
+.kotlin/
 
 # Log file
 *.log

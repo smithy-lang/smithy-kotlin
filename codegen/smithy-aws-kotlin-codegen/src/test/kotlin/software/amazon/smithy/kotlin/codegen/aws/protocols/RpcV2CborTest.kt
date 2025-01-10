@@ -4,6 +4,7 @@
  */
 package software.amazon.smithy.kotlin.codegen.aws.protocols
 
+import io.kotest.matchers.string.shouldNotContain
 import software.amazon.smithy.kotlin.codegen.test.*
 import kotlin.test.Test
 
@@ -144,5 +145,21 @@ class RpcV2CborTest {
         // Event stream requests should have Content-Type=application/vnd.amazon.eventstream
         val serializeBody = serializer.lines("    override suspend fun serialize(context: ExecutionContext, input: PutFooStreamingRequest): HttpRequestBuilder {", "}")
         serializeBody.shouldContainOnlyOnceWithDiff("""builder.headers.setMissing("Content-Type", "application/vnd.amazon.eventstream")""")
+    }
+
+    @Test
+    fun testEventStreamInitialRequestDoesNotSerializeStreamMember() {
+        val ctx = model.newTestContext("CborExample")
+
+        val generator = RpcV2Cbor()
+        generator.generateProtocolClient(ctx.generationCtx)
+
+        ctx.generationCtx.delegator.finalize()
+        ctx.generationCtx.delegator.flushWriters()
+
+        val documentSerializer = ctx.manifest.expectFileString("/src/main/kotlin/com/test/serde/PutFooStreamingRequestDocumentSerializer.kt")
+
+        val serializeBody = documentSerializer.lines("    serializer.serializeStruct(OBJ_DESCRIPTOR) {", "}")
+        serializeBody.shouldNotContain("input.messages") // `messages` is the stream member and should not be serialized in the initial request
     }
 }
