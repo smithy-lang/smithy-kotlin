@@ -53,7 +53,7 @@ jobs:
           ls -lsa
           kat bump-version  # Bump from `vNext-SNAPSHOT` to `vNext`. kat transform only works on non-SNAPSHOT versions
           kat bump-version --property codegenVersion
-          ./gradlew build
+          ./gradlew -Paws.kotlin.native=false build
           ./gradlew -Paws.kotlin.native=false publishAllPublicationsToTestLocalRepository
 
       - name: Transform
