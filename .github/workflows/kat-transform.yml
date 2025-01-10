@@ -41,13 +41,6 @@ jobs:
       - name: Setup kat
         uses: awslabs/aws-kotlin-repo-tools/.github/actions/setup-kat@main
 
-      - name: Configure JDK
-        uses: actions/setup-java@v3
-        with:
-          distribution: 'corretto'
-          java-version: 17
-          cache: 'gradle'
-
       - name: Build
         working-directory: ./smithy-kotlin
         shell: bash
