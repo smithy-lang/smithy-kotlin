@@ -32,53 +32,76 @@ internal expect class BufferedSourceAdapter(source: okio.BufferedSource) : SdkBu
     override fun close()
 }
 
+/**
+ * Used to wrap calls to Okio, catching Okio exceptions (e.g. okio.EOFException) and throwing our own (e.g. aws.smithy.kotlin.runtime.io.EOFException).
+ */
+internal inline fun <T> SdkBufferedSource.wrapOkio(block: SdkBufferedSource.() -> T): T = try {
+    block()
+} catch (e: okio.EOFException) {
+    throw EOFException("Okio operation failed: ${e.message}", e)
+} catch (e: okio.IOException) {
+    throw IOException("Okio operation failed: ${e.message}", e)
+}
+
 // base class that fills in most of the common implementation, platforms just need to implement the platform specific
 // part of the interface
 internal abstract class AbstractBufferedSourceAdapter(
-    protected val delegate: okio.BufferedSource,
+    internal val delegate: okio.BufferedSource,
 ) : SdkBufferedSource {
     override val buffer: SdkBuffer
         get() = delegate.buffer.toSdk()
 
-    override fun skip(byteCount: Long): Unit = delegate.skip(byteCount)
+    override fun skip(byteCount: Long): Unit = wrapOkio { delegate.skip(byteCount) }
 
-    override fun readByte(): Byte = delegate.readByte()
+    override fun readByte(): Byte = wrapOkio { delegate.readByte() }
 
-    override fun readShort(): Short = delegate.readShort()
+    override fun readShort(): Short = wrapOkio { delegate.readShort() }
 
-    override fun readShortLe(): Short = delegate.readShortLe()
+    override fun readShortLe(): Short = wrapOkio { delegate.readShortLe() }
 
-    override fun readLong(): Long = delegate.readLong()
+    override fun readLong(): Long = wrapOkio { delegate.readLong() }
 
-    override fun readLongLe(): Long = delegate.readLongLe()
+    override fun readLongLe(): Long = wrapOkio { delegate.readLongLe() }
 
-    override fun readInt(): Int = delegate.readInt()
+    override fun readInt(): Int = wrapOkio { delegate.readInt() }
 
-    override fun readIntLe(): Int = delegate.readIntLe()
+    override fun readIntLe(): Int = wrapOkio { delegate.readIntLe() }
 
-    override fun readAll(sink: SdkSink): Long =
+    override fun readAll(sink: SdkSink): Long = wrapOkio {
         delegate.readAll(sink.toOkio())
+    }
 
-    override fun read(sink: ByteArray, offset: Int, limit: Int): Int =
+    override fun read(sink: ByteArray, offset: Int, limit: Int): Int = wrapOkio {
         delegate.read(sink, offset, limit)
+    }
 
-    override fun read(sink: SdkBuffer, limit: Long): Long =
+    override fun read(sink: SdkBuffer, limit: Long): Long = wrapOkio {
         delegate.read(sink.toOkio(), limit)
+    }
 
-    override fun readByteArray(): ByteArray = delegate.readByteArray()
+    override fun readByteArray(): ByteArray = wrapOkio { delegate.readByteArray() }
 
-    override fun readByteArray(byteCount: Long): ByteArray = delegate.readByteArray(byteCount)
+    override fun readByteArray(byteCount: Long): ByteArray = wrapOkio {
+        delegate.readByteArray(byteCount)
+    }
 
-    override fun readUtf8(): String = delegate.readUtf8()
+    override fun readUtf8(): String = wrapOkio { delegate.readUtf8() }
 
-    override fun readUtf8(byteCount: Long): String = delegate.readUtf8(byteCount)
+    override fun readUtf8(byteCount: Long): String = wrapOkio {
+        delegate.readUtf8(byteCount)
+    }
 
-    override fun peek(): SdkBufferedSource =
+    override fun peek(): SdkBufferedSource = wrapOkio {
         delegate.peek().toSdk().buffer()
-    override fun exhausted(): Boolean = delegate.exhausted()
-    override fun request(byteCount: Long): Boolean = delegate.request(byteCount)
+    }
 
-    override fun require(byteCount: Long): Unit = delegate.require(byteCount)
+    override fun exhausted(): Boolean = wrapOkio { delegate.exhausted() }
 
-    override fun close() = delegate.close()
+    override fun request(byteCount: Long): Boolean = wrapOkio {
+        delegate.request(byteCount)
+    }
+
+    override fun require(byteCount: Long): Unit = wrapOkio { delegate.require(byteCount) }
+
+    override fun close() = wrapOkio { delegate.close() }
 }

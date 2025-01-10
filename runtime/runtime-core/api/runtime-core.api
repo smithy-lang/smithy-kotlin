@@ -760,6 +760,12 @@ public final class aws/smithy/kotlin/runtime/io/ClosedWriteChannelException : ja
 	public synthetic fun <init> (Ljava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 }
 
+public class aws/smithy/kotlin/runtime/io/EOFException : java/io/EOFException {
+	public fun <init> ()V
+	public fun <init> (Ljava/lang/String;)V
+	public fun <init> (Ljava/lang/String;Ljava/lang/Throwable;)V
+}
+
 public final class aws/smithy/kotlin/runtime/io/GzipByteReadChannel : aws/smithy/kotlin/runtime/io/SdkByteReadChannel {
 	public fun <init> (Laws/smithy/kotlin/runtime/io/SdkByteReadChannel;)V
 	public fun cancel (Ljava/lang/Throwable;)Z
@@ -805,6 +811,10 @@ public final class aws/smithy/kotlin/runtime/io/HashingSource : aws/smithy/kotli
 }
 
 public final class aws/smithy/kotlin/runtime/io/JavaIOKt {
+	public static final fun inputStream (Laws/smithy/kotlin/runtime/io/SdkBuffer;)Ljava/io/InputStream;
+	public static final fun isOpen (Laws/smithy/kotlin/runtime/io/SdkBuffer;)Z
+	public static final fun outputStream (Laws/smithy/kotlin/runtime/io/SdkBuffer;)Ljava/io/OutputStream;
+	public static final fun read (Laws/smithy/kotlin/runtime/io/SdkBuffer;Ljava/nio/ByteBuffer;)I
 	public static final fun sink (Ljava/io/File;)Laws/smithy/kotlin/runtime/io/SdkSink;
 	public static final fun sink (Ljava/io/OutputStream;)Laws/smithy/kotlin/runtime/io/SdkSink;
 	public static final fun sink (Ljava/nio/file/Path;)Laws/smithy/kotlin/runtime/io/SdkSink;
@@ -815,6 +825,7 @@ public final class aws/smithy/kotlin/runtime/io/JavaIOKt {
 	public static final fun source (Ljava/nio/file/Path;Lkotlin/ranges/LongRange;)Laws/smithy/kotlin/runtime/io/SdkSource;
 	public static synthetic fun source$default (Ljava/io/File;JJILjava/lang/Object;)Laws/smithy/kotlin/runtime/io/SdkSource;
 	public static synthetic fun source$default (Ljava/nio/file/Path;JJILjava/lang/Object;)Laws/smithy/kotlin/runtime/io/SdkSource;
+	public static final fun write (Laws/smithy/kotlin/runtime/io/SdkBuffer;Ljava/nio/ByteBuffer;)I
 }
 
 public final class aws/smithy/kotlin/runtime/io/SdkBuffer : aws/smithy/kotlin/runtime/io/SdkBufferedSink, aws/smithy/kotlin/runtime/io/SdkBufferedSource {
@@ -827,12 +838,8 @@ public final class aws/smithy/kotlin/runtime/io/SdkBuffer : aws/smithy/kotlin/ru
 	public fun getBuffer ()Laws/smithy/kotlin/runtime/io/SdkBuffer;
 	public final fun getSize ()J
 	public fun hashCode ()I
-	public fun inputStream ()Ljava/io/InputStream;
-	public fun isOpen ()Z
-	public fun outputStream ()Ljava/io/OutputStream;
 	public fun peek ()Laws/smithy/kotlin/runtime/io/SdkBufferedSource;
 	public fun read (Laws/smithy/kotlin/runtime/io/SdkBuffer;J)J
-	public fun read (Ljava/nio/ByteBuffer;)I
 	public fun read ([BII)I
 	public fun readAll (Laws/smithy/kotlin/runtime/io/SdkSink;)J
 	public fun readByte ()B
@@ -852,7 +859,6 @@ public final class aws/smithy/kotlin/runtime/io/SdkBuffer : aws/smithy/kotlin/ru
 	public fun toString ()Ljava/lang/String;
 	public fun write (Laws/smithy/kotlin/runtime/io/SdkBuffer;J)V
 	public fun write (Laws/smithy/kotlin/runtime/io/SdkSource;J)V
-	public fun write (Ljava/nio/ByteBuffer;)I
 	public fun write ([BII)V
 	public fun writeAll (Laws/smithy/kotlin/runtime/io/SdkSource;)J
 	public fun writeByte (B)V
@@ -865,11 +871,9 @@ public final class aws/smithy/kotlin/runtime/io/SdkBuffer : aws/smithy/kotlin/ru
 	public fun writeUtf8 (Ljava/lang/String;II)V
 }
 
-public abstract interface class aws/smithy/kotlin/runtime/io/SdkBufferedSink : aws/smithy/kotlin/runtime/io/SdkSink, java/nio/channels/WritableByteChannel {
+public abstract interface class aws/smithy/kotlin/runtime/io/SdkBufferedSink : aws/smithy/kotlin/runtime/io/SdkSink {
 	public abstract fun emit ()V
-	public abstract fun flush ()V
 	public abstract fun getBuffer ()Laws/smithy/kotlin/runtime/io/SdkBuffer;
-	public abstract fun outputStream ()Ljava/io/OutputStream;
 	public abstract fun write (Laws/smithy/kotlin/runtime/io/SdkSource;J)V
 	public abstract fun write ([BII)V
 	public abstract fun writeAll (Laws/smithy/kotlin/runtime/io/SdkSource;)J
@@ -888,10 +892,9 @@ public final class aws/smithy/kotlin/runtime/io/SdkBufferedSink$DefaultImpls {
 	public static synthetic fun writeUtf8$default (Laws/smithy/kotlin/runtime/io/SdkBufferedSink;Ljava/lang/String;IIILjava/lang/Object;)V
 }
 
-public abstract interface class aws/smithy/kotlin/runtime/io/SdkBufferedSource : aws/smithy/kotlin/runtime/io/SdkSource, java/nio/channels/ReadableByteChannel {
+public abstract interface class aws/smithy/kotlin/runtime/io/SdkBufferedSource : aws/smithy/kotlin/runtime/io/SdkSource {
 	public abstract fun exhausted ()Z
 	public abstract fun getBuffer ()Laws/smithy/kotlin/runtime/io/SdkBuffer;
-	public abstract fun inputStream ()Ljava/io/InputStream;
 	public abstract fun peek ()Laws/smithy/kotlin/runtime/io/SdkBufferedSource;
 	public abstract fun read ([BII)I
 	public abstract fun readAll (Laws/smithy/kotlin/runtime/io/SdkSink;)J
@@ -1023,14 +1026,11 @@ public abstract interface class aws/smithy/kotlin/runtime/io/SdkSource : java/io
 	public abstract fun read (Laws/smithy/kotlin/runtime/io/SdkBuffer;J)J
 }
 
-public final class aws/smithy/kotlin/runtime/io/SdkSourceJVMKt {
+public final class aws/smithy/kotlin/runtime/io/SdkSourceKt {
+	public static final fun readFully (Laws/smithy/kotlin/runtime/io/SdkSource;Laws/smithy/kotlin/runtime/io/SdkBuffer;J)V
 	public static final fun readToByteArray (Laws/smithy/kotlin/runtime/io/SdkSource;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public static final fun toSdkByteReadChannel (Laws/smithy/kotlin/runtime/io/SdkSource;Lkotlinx/coroutines/CoroutineScope;)Laws/smithy/kotlin/runtime/io/SdkByteReadChannel;
 	public static synthetic fun toSdkByteReadChannel$default (Laws/smithy/kotlin/runtime/io/SdkSource;Lkotlinx/coroutines/CoroutineScope;ILjava/lang/Object;)Laws/smithy/kotlin/runtime/io/SdkByteReadChannel;
-}
-
-public final class aws/smithy/kotlin/runtime/io/SdkSourceKt {
-	public static final fun readFully (Laws/smithy/kotlin/runtime/io/SdkSource;Laws/smithy/kotlin/runtime/io/SdkBuffer;J)V
 }
 
 public final class aws/smithy/kotlin/runtime/io/internal/ConvertKt {
