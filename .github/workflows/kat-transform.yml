@@ -24,8 +24,6 @@ jobs:
     steps:
       - name: Checkout sources
         uses: actions/checkout@v4
-        with:
-          path: 'smithy-kotlin'
 
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
@@ -34,7 +32,7 @@ jobs:
           aws-region: us-west-2
 
       - name: Configure Gradle
-        uses: ./smithy-kotlin/.github/actions/custom-gradle-distribution-url
+        uses: .github/actions/smithy-kotlin-custom-gradle-distribution-url
 
       - name: Setup kat
         uses: awslabs/aws-kotlin-repo-tools/.github/actions/setup-kat@main

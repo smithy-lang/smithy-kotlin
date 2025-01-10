@@ -31,8 +31,6 @@ jobs:
     steps:
       - name: Checkout sources
         uses: actions/checkout@v4
-        with:
-          path: 'smithy-kotlin'
       - name: Configure JDK
         uses: actions/setup-java@v3
         with:
@@ -40,7 +38,7 @@ jobs:
           java-version: 17
           cache: 'gradle'
       - name: Configure Gradle
-        uses: ./smithy-kotlin/.github/actions/custom-gradle-distribution-url
+        uses: .github/actions/smithy-kotlin-custom-gradle-distribution-url
       - name: Test
         shell: bash
         run: |
@@ -55,8 +53,6 @@ jobs:
     steps:
       - name: Checkout sources
         uses: actions/checkout@v4
-        with:
-          path: 'smithy-kotlin'
       - name: Configure JDK
         uses: actions/setup-java@v3
         with:
@@ -64,9 +60,10 @@ jobs:
           java-version: 17
           cache: 'gradle'
       - name: Configure Gradle
-        uses: ./smithy-kotlin/.github/actions/custom-gradle-distribution-url
+        uses: .github/actions/smithy-kotlin-custom-gradle-distribution-url
       - name: Test
         shell: bash
+        working-directory: ./smithy-kotlin
         run: |
           # FIXME K2. Re-enable warnings as errors after this warning is removed: https://youtrack.jetbrains.com/issue/KT-68532
           # echo "kotlinWarningsAsErrors=true" >> $GITHUB_WORKSPACE/local.properties              
@@ -84,8 +81,6 @@ jobs:
     steps:
       - name: Checkout sources
         uses: actions/checkout@v4
-        with:
-          path: 'smithy-kotlin'
       - name: Configure JDK
         uses: actions/setup-java@v3
         with:
@@ -93,7 +88,7 @@ jobs:
           java-version: 17
           cache: 'gradle'
       - name: Configure Gradle
-        uses: ./smithy-kotlin/.github/actions/custom-gradle-distribution-url
+        uses: .github/actions/smithy-kotlin-custom-gradle-distribution-url
       - name: Test
         shell: bash
         run: |
@@ -105,8 +100,6 @@ jobs:
     steps:
     - name: Checkout sources
       uses: actions/checkout@v4
-      with:
-        path: 'smithy-kotlin'
     - name: Checkout tools
       uses: actions/checkout@v4
       with:
@@ -122,9 +115,10 @@ jobs:
         path: 'aws-sdk-kotlin'
         repository: 'awslabs/aws-sdk-kotlin'
     - name: Configure Gradle for smithy-kotlin
-      uses: ./smithy-kotlin/.github/actions/custom-gradle-distribution-url
+      uses: .github/actions/smithy-kotlin-custom-gradle-distribution-url
+      # TODO: CONFIGURE THIS PROPERLY
     - name: Configure Gradle for aws-sdk-kotlin
-      uses: ./aws-sdk-kotlin/.github/actions/custom-gradle-distribution-url
+      uses: .github/actions/smithy-kotlin-custom-gradle-distribution-url
     - name: Configure JDK
       uses: actions/setup-java@v3
       with:
