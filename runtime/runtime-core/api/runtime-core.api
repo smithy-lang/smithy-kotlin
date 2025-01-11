@@ -1,3 +1,13 @@
+public final class aws/smithy/kotlin/runtime/ClientErrorContext {
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;)V
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getFormatted ()Ljava/lang/String;
+	public final fun getKey ()Ljava/lang/String;
+	public final fun getValue ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
 public class aws/smithy/kotlin/runtime/ClientException : aws/smithy/kotlin/runtime/SdkBaseException {
 	public fun <init> ()V
 	public fun <init> (Ljava/lang/String;)V
@@ -8,12 +18,14 @@ public class aws/smithy/kotlin/runtime/ClientException : aws/smithy/kotlin/runti
 public class aws/smithy/kotlin/runtime/ErrorMetadata {
 	public static final field Companion Laws/smithy/kotlin/runtime/ErrorMetadata$Companion;
 	public fun <init> ()V
+	public final fun getAdditionalClientContext ()Ljava/util/List;
 	public final fun getAttributes ()Laws/smithy/kotlin/runtime/collections/MutableAttributes;
 	public final fun isRetryable ()Z
 	public final fun isThrottling ()Z
 }
 
 public final class aws/smithy/kotlin/runtime/ErrorMetadata$Companion {
+	public final fun getAdditionalClientContext ()Laws/smithy/kotlin/runtime/collections/AttributeKey;
 	public final fun getRetryable ()Laws/smithy/kotlin/runtime/collections/AttributeKey;
 	public final fun getThrottlingError ()Laws/smithy/kotlin/runtime/collections/AttributeKey;
 }
@@ -62,7 +74,6 @@ public class aws/smithy/kotlin/runtime/ServiceException : aws/smithy/kotlin/runt
 	public fun <init> (Ljava/lang/String;)V
 	public fun <init> (Ljava/lang/String;Ljava/lang/Throwable;)V
 	public fun <init> (Ljava/lang/Throwable;)V
-	protected fun getDisplayMetadata ()Ljava/util/List;
 	public fun getMessage ()Ljava/lang/String;
 	public synthetic fun getSdkErrorMetadata ()Laws/smithy/kotlin/runtime/ErrorMetadata;
 	public fun getSdkErrorMetadata ()Laws/smithy/kotlin/runtime/ServiceErrorMetadata;
@@ -134,6 +145,7 @@ public final class aws/smithy/kotlin/runtime/collections/AttributesBuilder {
 }
 
 public final class aws/smithy/kotlin/runtime/collections/AttributesKt {
+	public static final fun appendValue (Laws/smithy/kotlin/runtime/collections/MutableAttributes;Laws/smithy/kotlin/runtime/collections/AttributeKey;Ljava/lang/Object;)V
 	public static final fun attributesOf (Lkotlin/jvm/functions/Function1;)Laws/smithy/kotlin/runtime/collections/Attributes;
 	public static final fun emptyAttributes ()Laws/smithy/kotlin/runtime/collections/Attributes;
 	public static final fun get (Laws/smithy/kotlin/runtime/collections/Attributes;Laws/smithy/kotlin/runtime/collections/AttributeKey;)Ljava/lang/Object;
@@ -1685,6 +1697,7 @@ public abstract class aws/smithy/kotlin/runtime/retries/RetryException : aws/smi
 	public final fun getAttempts ()I
 	public final fun getLastException ()Ljava/lang/Throwable;
 	public final fun getLastResponse ()Ljava/lang/Object;
+	public fun toString ()Ljava/lang/String;
 }
 
 public final class aws/smithy/kotlin/runtime/retries/RetryFailureException : aws/smithy/kotlin/runtime/retries/RetryException {

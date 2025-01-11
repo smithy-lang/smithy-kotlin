@@ -9,6 +9,41 @@ import aws.smithy.kotlin.runtime.collections.MutableAttributes
 import aws.smithy.kotlin.runtime.collections.mutableAttributes
 
 /**
+ * Describes additional context about an error which may be useful in client-side debugging. This information will be
+ * included in exception messages. This contrasts with [ErrorMetadata] which is not _necessarily_ included in messages
+ * and not _necessarily_ client-related.
+ * @param key A header or key for the information
+ * @param value A value for the information
+ */
+public class ClientErrorContext(public val key: String, public val value: String) {
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other == null || this::class != other::class) return false
+
+        other as ClientErrorContext
+
+        if (key != other.key) return false
+        if (value != other.value) return false
+
+        return true
+    }
+
+    /**
+     * Gets a formatted representation of this error context suitable for inclusion in a message. This format is
+     * generally `"$key: $value"`.
+     */
+    public val formatted: String = "$key: $value"
+
+    override fun hashCode(): Int {
+        var result = key.hashCode()
+        result = 31 * result + value.hashCode()
+        return result
+    }
+
+    override fun toString(): String = "ClientErrorContext(key='$key', value='$value')"
+}
+
+/**
  * Additional metadata about an error
  */
 public open class ErrorMetadata {
@@ -16,6 +51,12 @@ public open class ErrorMetadata {
     public val attributes: MutableAttributes = mutableAttributes()
 
     public companion object {
+        /**
+         * Set if there are additional context elements about the error
+         */
+        public val AdditionalClientContext: AttributeKey<List<ClientErrorContext>> =
+            AttributeKey("aws.smithy.kotlin#AdditionalClientContext")
+
         /**
          * Set if an error is retryable
          */
@@ -32,6 +73,9 @@ public open class ErrorMetadata {
 
     public val isThrottling: Boolean
         get() = attributes.getOrNull(ThrottlingError) ?: false
+
+    public val additionalClientContext: List<ClientErrorContext>
+        get() = attributes.getOrNull(AdditionalClientContext).orEmpty()
 }
 
 /**
@@ -156,7 +200,7 @@ public open class ServiceException : SdkBaseException {
 
     public constructor(cause: Throwable?) : super(cause)
 
-    protected open val displayMetadata: List<String>
+    private val displayMetadata: List<String>
         get() = buildList {
             val serviceProvidedMessage = super.message ?: sdkErrorMetadata.errorMessage
             if (serviceProvidedMessage == null) {
@@ -166,7 +210,10 @@ public open class ServiceException : SdkBaseException {
             } else {
                 add(serviceProvidedMessage)
             }
+
             sdkErrorMetadata.requestId?.let { add("Request ID: $it") }
+
+            sdkErrorMetadata.additionalClientContext.mapTo(this@buildList) { it.formatted }
         }
 
     override val message: String

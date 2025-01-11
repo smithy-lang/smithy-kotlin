@@ -5,6 +5,10 @@
 
 package aws.smithy.kotlin.runtime.retries
 
+import aws.smithy.kotlin.runtime.ClientErrorContext
+import aws.smithy.kotlin.runtime.ErrorMetadata
+import aws.smithy.kotlin.runtime.ServiceException
+import aws.smithy.kotlin.runtime.collections.appendValue
 import aws.smithy.kotlin.runtime.retries.delay.*
 import aws.smithy.kotlin.runtime.retries.policy.RetryDirective
 import aws.smithy.kotlin.runtime.retries.policy.RetryPolicy
@@ -129,17 +133,35 @@ public open class StandardRetryStrategy(override val config: Config = Config.def
         }
     }
 
-    private fun <R> throwCapacityExceeded(cause: Throwable, attempt: Int, result: Result<R>?): Nothing =
-        when (val ex = result?.exceptionOrNull()) {
+    private fun <R> throwCapacityExceeded(
+        cause: RetryCapacityExceededException,
+        attempt: Int,
+        result: Result<R>?,
+    ): Nothing {
+        val capacityMessage = buildString {
+            append("Insufficient client capacity to attempt retry, halting on attempt ")
+            append(attempt)
+            append(" of ")
+            append(config.maxAttempts)
+        }
+
+        throw when (val retryableException = result?.exceptionOrNull()) {
             null -> throw TooManyAttemptsException(
-                cause.message!!,
+                capacityMessage,
                 cause,
                 attempt,
                 result?.getOrNull(),
                 result?.exceptionOrNull(),
             )
-            else -> throw ex
+
+            is ServiceException -> retryableException.apply {
+                val addCtx = ClientErrorContext("Early retry termination", capacityMessage)
+                sdkErrorMetadata.attributes.appendValue(ErrorMetadata.AdditionalClientContext, addCtx)
+            }
+
+            else -> retryableException
         }
+    }
 
     /**
      * Handles the termination of the retry loop because of a non-retryable failure by throwing a
