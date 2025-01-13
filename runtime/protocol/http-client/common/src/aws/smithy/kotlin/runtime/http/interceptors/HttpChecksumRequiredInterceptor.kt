@@ -6,7 +6,6 @@
 package aws.smithy.kotlin.runtime.http.interceptors
 
 import aws.smithy.kotlin.runtime.InternalApi
-import aws.smithy.kotlin.runtime.businessmetrics.emitBusinessMetric
 import aws.smithy.kotlin.runtime.client.ProtocolRequestInterceptorContext
 import aws.smithy.kotlin.runtime.hashing.*
 import aws.smithy.kotlin.runtime.http.*
@@ -16,15 +15,13 @@ import aws.smithy.kotlin.runtime.http.request.toBuilder
 import aws.smithy.kotlin.runtime.io.rollingHash
 import aws.smithy.kotlin.runtime.telemetry.logging.logger
 import aws.smithy.kotlin.runtime.text.encoding.encodeBase64String
-import kotlinx.coroutines.CompletableDeferred
-import kotlinx.coroutines.job
 import kotlin.coroutines.coroutineContext
 
 /**
  * Handles checksum request calculation from the `httpChecksumRequired` trait.
  */
 @InternalApi
-public class HttpChecksumRequiredInterceptor : AbstractChecksumInterceptor() {
+public class HttpChecksumRequiredInterceptor : CachingChecksumInterceptor() {
     override suspend fun modifyBeforeSigning(context: ProtocolRequestInterceptorContext<Any, HttpRequest>): HttpRequest {
         if (context.defaultChecksumAlgorithmName == null) {
             // Don't calculate checksum
@@ -34,31 +31,28 @@ public class HttpChecksumRequiredInterceptor : AbstractChecksumInterceptor() {
         val checksumAlgorithmName = context.defaultChecksumAlgorithmName!!
         val checksumAlgorithm = checksumAlgorithmName.toHashFunctionOrThrow()
 
-        val logger = coroutineContext.logger<HttpChecksumRequiredInterceptor>()
-
-        if (context.protocolRequest.body.isEligibleForAwsChunkedStreaming) { // Handle checksum calculation here
-            logger.debug { "Calculating checksum during transmission using: ${checksumAlgorithm::class.simpleName}" }
-
-            val request = context.protocolRequest.toBuilder()
-            val deferredChecksum = CompletableDeferred<String>(context.executionContext.coroutineContext.job)
-            val checksumHeader = checksumAlgorithm.resolveChecksumAlgorithmHeaderName()
-
-            request.body = request.body
-                .toHashingBody(checksumAlgorithm, request.body.contentLength)
-                .toCompletingBody(deferredChecksum)
-
-            request.headers.append("x-amz-trailer", checksumHeader)
-            request.trailingHeaders.append(checksumHeader, deferredChecksum)
-
-            context.executionContext.emitBusinessMetric(checksumAlgorithm.toBusinessMetric())
-
-            return request.build()
-        } else { // Delegate checksum calculation to super class, calculateChecksum, and applyChecksum
-            return super.modifyBeforeSigning(context)
+        return if (context.protocolRequest.body.isEligibleForAwsChunkedStreaming) {
+            coroutineContext.logger<HttpChecksumRequiredInterceptor>().debug {
+                "Calculating checksum during transmission using: ${checksumAlgorithm::class.simpleName}"
+            }
+            calculateAwsChunkedStreamingChecksum(context, checksumAlgorithm)
+        } else {
+            if (context.protocolRequest.body is HttpBody.Bytes) {
+                // Cache checksum
+                super.modifyBeforeSigning(context)
+            } else {
+                val checksum = calculateHttpChecksumRequiredChecksum(context)
+                applyHttpChecksumRequiredChecksum(context, checksum)
+            }
         }
     }
 
-    public override suspend fun calculateChecksum(context: ProtocolRequestInterceptorContext<Any, HttpRequest>): String? {
+    /**
+     * Calculates a checksum based on the requirements and limitations of [HttpChecksumRequiredInterceptor]
+     */
+    private suspend fun calculateHttpChecksumRequiredChecksum(
+        context: ProtocolRequestInterceptorContext<Any, HttpRequest>,
+    ): String {
         val req = context.protocolRequest.toBuilder()
         val checksumAlgorithmName = context.defaultChecksumAlgorithmName!!
         val checksumAlgorithm = checksumAlgorithmName.toHashFunctionOrThrow()
@@ -76,7 +70,18 @@ public class HttpChecksumRequiredInterceptor : AbstractChecksumInterceptor() {
         }
     }
 
-    public override fun applyChecksum(context: ProtocolRequestInterceptorContext<Any, HttpRequest>, checksum: String): HttpRequest {
+    public override suspend fun calculateChecksum(
+        context: ProtocolRequestInterceptorContext<Any, HttpRequest>,
+    ): String? =
+        calculateHttpChecksumRequiredChecksum(context)
+
+    /**
+     * Applies a checksum based on the requirements and limitations of [HttpChecksumRequiredInterceptor]
+     */
+    private fun applyHttpChecksumRequiredChecksum(
+        context: ProtocolRequestInterceptorContext<Any, HttpRequest>,
+        checksum: String,
+    ): HttpRequest {
         val checksumAlgorithmName = context.defaultChecksumAlgorithmName!!
         val checksumHeader = checksumAlgorithmName.resolveChecksumAlgorithmHeaderName()
         val request = context.protocolRequest.toBuilder()
@@ -84,4 +89,10 @@ public class HttpChecksumRequiredInterceptor : AbstractChecksumInterceptor() {
         request.header(checksumHeader, checksum)
         return request.build()
     }
+
+    public override fun applyChecksum(
+        context: ProtocolRequestInterceptorContext<Any, HttpRequest>,
+        checksum: String,
+    ): HttpRequest =
+        applyHttpChecksumRequiredChecksum(context, checksum)
 }

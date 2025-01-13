@@ -7,14 +7,13 @@ package aws.smithy.kotlin.runtime.http.interceptors
 
 import aws.smithy.kotlin.runtime.InternalApi
 import aws.smithy.kotlin.runtime.client.ProtocolRequestInterceptorContext
-import aws.smithy.kotlin.runtime.http.operation.HttpOperationContext
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
 
 /**
- * Handles checksum calculation so that checksums will be cached during retry loop
+ * Enables inheriting [HttpInterceptor]s to use checksums caching
  */
 @InternalApi
-public abstract class AbstractChecksumInterceptor : HttpInterceptor {
+public abstract class CachingChecksumInterceptor : HttpInterceptor {
     private var cachedChecksum: String? = null
 
     override suspend fun modifyBeforeSigning(context: ProtocolRequestInterceptorContext<Any, HttpRequest>): HttpRequest {
@@ -31,9 +30,3 @@ public abstract class AbstractChecksumInterceptor : HttpInterceptor {
 
     public abstract fun applyChecksum(context: ProtocolRequestInterceptorContext<Any, HttpRequest>, checksum: String): HttpRequest
 }
-
-/**
- * @return The default checksum algorithm name, null if default checksums are disabled.
- */
-internal val ProtocolRequestInterceptorContext<Any, HttpRequest>.defaultChecksumAlgorithmName: String?
-    get() = executionContext.getOrNull(HttpOperationContext.DefaultChecksumAlgorithm)

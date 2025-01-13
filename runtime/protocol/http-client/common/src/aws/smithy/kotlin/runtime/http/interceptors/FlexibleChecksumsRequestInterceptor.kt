@@ -17,8 +17,6 @@ import aws.smithy.kotlin.runtime.io.*
 import aws.smithy.kotlin.runtime.telemetry.logging.Logger
 import aws.smithy.kotlin.runtime.telemetry.logging.logger
 import aws.smithy.kotlin.runtime.text.encoding.encodeBase64String
-import kotlinx.coroutines.CompletableDeferred
-import kotlinx.coroutines.job
 import kotlin.coroutines.coroutineContext
 
 /**
@@ -50,7 +48,7 @@ public class FlexibleChecksumsRequestInterceptor(
     private val requestChecksumRequired: Boolean,
     private val requestChecksumCalculation: RequestHttpChecksumConfig?,
     private val requestChecksumAlgorithm: String?,
-) : AbstractChecksumInterceptor() {
+) : CachingChecksumInterceptor() {
     override suspend fun modifyBeforeSigning(context: ProtocolRequestInterceptorContext<Any, HttpRequest>): HttpRequest {
         val logger = coroutineContext.logger<FlexibleChecksumsRequestInterceptor>()
 
@@ -68,25 +66,17 @@ public class FlexibleChecksumsRequestInterceptor(
             requestChecksumAlgorithm,
             context,
         )?.let { checksumAlgorithm ->
-            if (context.protocolRequest.body.isEligibleForAwsChunkedStreaming) { // Handle checksum calculation here
+            return if (context.protocolRequest.body.isEligibleForAwsChunkedStreaming) {
                 logger.debug { "Calculating checksum during transmission using: ${checksumAlgorithm::class.simpleName}" }
-
-                val request = context.protocolRequest.toBuilder()
-                val deferredChecksum = CompletableDeferred<String>(context.executionContext.coroutineContext.job)
-                val checksumHeader = checksumAlgorithm.resolveChecksumAlgorithmHeaderName()
-
-                request.body = request.body
-                    .toHashingBody(checksumAlgorithm, request.body.contentLength)
-                    .toCompletingBody(deferredChecksum)
-
-                request.headers.append("x-amz-trailer", checksumHeader)
-                request.trailingHeaders.append(checksumHeader, deferredChecksum)
-
-                context.executionContext.emitBusinessMetric(checksumAlgorithm.toBusinessMetric())
-
-                return request.build()
-            } else { // Delegate checksum calculation to super class, calculateChecksum, and applyChecksum
-                return super.modifyBeforeSigning(context)
+                calculateAwsChunkedStreamingChecksum(context, checksumAlgorithm)
+            } else {
+                if (context.protocolRequest.body is HttpBody.Bytes) {
+                    // Cache checksum
+                    super.modifyBeforeSigning(context)
+                } else {
+                    val checksum = calculateFlexibleChecksumsChecksum(context)
+                    applyFlexibleChecksumsChecksum(context, checksum)
+                }
             }
         }
 
@@ -113,8 +103,12 @@ public class FlexibleChecksumsRequestInterceptor(
                         it.isSupportedForFlexibleChecksums
                 }
 
-    // Handles calculating checksum for non-aws-chunked requests
-    override suspend fun calculateChecksum(context: ProtocolRequestInterceptorContext<Any, HttpRequest>): String? {
+    /**
+     * Calculates a checksum based on the requirements and limitations of [FlexibleChecksumsRequestInterceptor]
+     */
+    private suspend fun calculateFlexibleChecksumsChecksum(
+        context: ProtocolRequestInterceptorContext<Any, HttpRequest>,
+    ): String {
         val req = context.protocolRequest.toBuilder()
         val checksumAlgorithm = resolveChecksumAlgorithm(
             requestChecksumRequired,
@@ -136,8 +130,13 @@ public class FlexibleChecksumsRequestInterceptor(
         }
     }
 
-    // Handles applying checksum for non-aws-chunked requests
-    override fun applyChecksum(
+    override suspend fun calculateChecksum(context: ProtocolRequestInterceptorContext<Any, HttpRequest>): String? =
+        calculateFlexibleChecksumsChecksum(context)
+
+    /**
+     * Applies a checksum based on the requirements and limitations of [FlexibleChecksumsRequestInterceptor]
+     */
+    private fun applyFlexibleChecksumsChecksum(
         context: ProtocolRequestInterceptorContext<Any, HttpRequest>,
         checksum: String,
     ): HttpRequest {
@@ -156,6 +155,11 @@ public class FlexibleChecksumsRequestInterceptor(
 
         return request.build()
     }
+
+    override fun applyChecksum(
+        context: ProtocolRequestInterceptorContext<Any, HttpRequest>,
+        checksum: String,
+    ): HttpRequest = applyFlexibleChecksumsChecksum(context, checksum)
 
     /**
      * Checks if a user provided a checksum for a request via an HTTP header.
