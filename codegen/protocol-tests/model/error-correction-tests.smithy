@@ -39,7 +39,7 @@ operation SayHelloXml { output: TestOutput, errors: [Error] }
 
 structure TestOutputDocument with [TestStruct] {
     innerField: Nested,
-    // FIXME: Enable trait
+    // FIXME: This trait fails smithy validator
     // @required
     document: Document
 }
@@ -65,7 +65,7 @@ structure TestStruct {
     @required
     nestedListValue: NestedList
 
-    // FIXME: Enable trait
+    // FIXME: This trait fails smithy validator
     // @required
     nested: Nested
 
@@ -97,7 +97,7 @@ union MyUnion {
 }
 
 structure Nested {
-    // FIXME: Enable trait
+    // FIXME: This trait fails smithy validator
     // @required
     a: String
 }
