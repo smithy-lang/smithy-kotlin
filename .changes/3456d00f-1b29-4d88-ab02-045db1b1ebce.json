@@ -1,7 +1,7 @@
 {
     "id": "3456d00f-1b29-4d88-ab02-045db1b1ebce",
     "type": "bugfix",
-    "description": "Include more information when retry strategy halts early due to capacity errors",
+    "description": "Include more information when retry strategy halts early due to token bucket capacity errors",
     "issues": [
         "awslabs/aws-sdk-kotlin#1321"
     ]

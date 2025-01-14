@@ -156,7 +156,7 @@ public open class StandardRetryStrategy(override val config: Config = Config.def
 
             is ServiceException -> retryableException.apply {
                 val addCtx = ClientErrorContext("Early retry termination", capacityMessage)
-                sdkErrorMetadata.attributes.appendValue(ErrorMetadata.AdditionalClientContext, addCtx)
+                sdkErrorMetadata.attributes.appendValue(ErrorMetadata.ClientContext, addCtx)
             }
 
             else -> retryableException

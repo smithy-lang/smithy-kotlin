@@ -54,8 +54,8 @@ public open class ErrorMetadata {
         /**
          * Set if there are additional context elements about the error
          */
-        public val AdditionalClientContext: AttributeKey<List<ClientErrorContext>> =
-            AttributeKey("aws.smithy.kotlin#AdditionalClientContext")
+        public val ClientContext: AttributeKey<List<ClientErrorContext>> =
+            AttributeKey("aws.smithy.kotlin#ClientContext")
 
         /**
          * Set if an error is retryable
@@ -74,8 +74,8 @@ public open class ErrorMetadata {
     public val isThrottling: Boolean
         get() = attributes.getOrNull(ThrottlingError) ?: false
 
-    public val additionalClientContext: List<ClientErrorContext>
-        get() = attributes.getOrNull(AdditionalClientContext).orEmpty()
+    public val clientContext: List<ClientErrorContext>
+        get() = attributes.getOrNull(ClientContext).orEmpty()
 }
 
 /**
@@ -213,7 +213,7 @@ public open class ServiceException : SdkBaseException {
 
             sdkErrorMetadata.requestId?.let { add("Request ID: $it") }
 
-            sdkErrorMetadata.additionalClientContext.mapTo(this@buildList) { it.formatted }
+            sdkErrorMetadata.clientContext.mapTo(this@buildList) { it.formatted }
         }
 
     override val message: String

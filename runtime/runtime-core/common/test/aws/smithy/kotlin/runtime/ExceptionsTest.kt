@@ -113,8 +113,8 @@ class ExceptionsTest {
     @Test
     fun testNoMessageWithClientContext() {
         val e = FooServiceException {
-            appendValue(ErrorMetadata.AdditionalClientContext, ClientErrorContext(CTX_KEY_1, CTX_VALUE_1))
-            appendValue(ErrorMetadata.AdditionalClientContext, ClientErrorContext(CTX_KEY_2, CTX_VALUE_2))
+            appendValue(ErrorMetadata.ClientContext, ClientErrorContext(CTX_KEY_1, CTX_VALUE_1))
+            appendValue(ErrorMetadata.ClientContext, ClientErrorContext(CTX_KEY_2, CTX_VALUE_2))
         }
         assertEquals(
             buildList {
@@ -130,8 +130,8 @@ class ExceptionsTest {
     @Test
     fun testMessageWithClientContext() {
         val e = FooServiceException(SERVICE_MESSAGE) {
-            appendValue(ErrorMetadata.AdditionalClientContext, ClientErrorContext(CTX_KEY_1, CTX_VALUE_1))
-            appendValue(ErrorMetadata.AdditionalClientContext, ClientErrorContext(CTX_KEY_2, CTX_VALUE_2))
+            appendValue(ErrorMetadata.ClientContext, ClientErrorContext(CTX_KEY_1, CTX_VALUE_1))
+            appendValue(ErrorMetadata.ClientContext, ClientErrorContext(CTX_KEY_2, CTX_VALUE_2))
         }
         assertEquals(
             "$SERVICE_MESSAGE, $CTX_KEY_1: $CTX_VALUE_1, $CTX_KEY_2: $CTX_VALUE_2",
