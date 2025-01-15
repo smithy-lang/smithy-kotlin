@@ -43,7 +43,7 @@ class ServiceWaitersGeneratorTest {
             /**
              * Wait until a foo exists with optional input
              */
-            public suspend fun TestClient.waitUntilFooOptionalExists(request: DescribeFooOptionalRequest = DescribeFooOptionalRequest { }): Outcome<DescribeFooOptionalResponse> {
+            public suspend fun TestClient.waitUntilFooOptionalExists(request: DescribeFooOptionalRequest = DescribeFooOptionalRequest { }, retryStrategy: RetryStrategy? = null): Outcome<DescribeFooOptionalResponse> {
         """.trimIndent()
         val methodFooter = """
                 val policy = AcceptorRetryPolicy(request, acceptors)
@@ -59,7 +59,7 @@ class ServiceWaitersGeneratorTest {
             /**
              * Wait until a foo exists with required input
              */
-            public suspend fun TestClient.waitUntilFooRequiredExists(request: DescribeFooRequiredRequest): Outcome<DescribeFooRequiredResponse> {
+            public suspend fun TestClient.waitUntilFooRequiredExists(request: DescribeFooRequiredRequest, retryStrategy: RetryStrategy? = null): Outcome<DescribeFooRequiredResponse> {
         """.trimIndent()
         listOf(
             generateService("simple-service-with-operation-waiter.smithy"),
@@ -105,7 +105,7 @@ class ServiceWaitersGeneratorTest {
     @Test
     fun testRetryStrategy() {
         val expected = """
-            val strategy = StandardRetryStrategy {
+            val strategy = retryStrategy ?: StandardRetryStrategy {
                 maxAttempts = 20
                 tokenBucket = InfiniteTokenBucket
                 delayProvider {
