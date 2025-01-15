@@ -341,7 +341,7 @@ public final class aws/smithy/kotlin/runtime/http/interceptors/FlexibleChecksums
 public class aws/smithy/kotlin/runtime/http/interceptors/FlexibleChecksumsResponseInterceptor : aws/smithy/kotlin/runtime/client/Interceptor {
 	public static final field Companion Laws/smithy/kotlin/runtime/http/interceptors/FlexibleChecksumsResponseInterceptor$Companion;
 	public fun <init> (ZLaws/smithy/kotlin/runtime/client/config/ResponseHttpChecksumConfig;)V
-	public fun ignoreChecksum (Ljava/lang/String;Laws/smithy/kotlin/runtime/telemetry/logging/Logger;)Z
+	public fun ignoreChecksum (Ljava/lang/String;Laws/smithy/kotlin/runtime/client/ProtocolResponseInterceptorContext;)Z
 	public fun modifyBeforeAttemptCompletion-gIAlu-s (Laws/smithy/kotlin/runtime/client/ResponseInterceptorContext;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun modifyBeforeCompletion-gIAlu-s (Laws/smithy/kotlin/runtime/client/ResponseInterceptorContext;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun modifyBeforeDeserialization (Laws/smithy/kotlin/runtime/client/ProtocolResponseInterceptorContext;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;

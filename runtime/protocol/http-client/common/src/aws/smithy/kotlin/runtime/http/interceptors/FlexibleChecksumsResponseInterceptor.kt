@@ -19,7 +19,6 @@ import aws.smithy.kotlin.runtime.http.response.copy
 import aws.smithy.kotlin.runtime.http.toHashingBody
 import aws.smithy.kotlin.runtime.http.toHttpBody
 import aws.smithy.kotlin.runtime.io.*
-import aws.smithy.kotlin.runtime.telemetry.logging.Logger
 import aws.smithy.kotlin.runtime.telemetry.logging.logger
 import aws.smithy.kotlin.runtime.text.encoding.encodeBase64String
 import kotlin.coroutines.coroutineContext
@@ -68,7 +67,7 @@ public open class FlexibleChecksumsResponseInterceptor(
         }
 
         val serviceChecksumValue = context.protocolResponse.headers[checksumHeader]!!
-        if (ignoreChecksum(serviceChecksumValue, logger)) {
+        if (ignoreChecksum(serviceChecksumValue, context)) {
             return context.protocolResponse
         }
 
@@ -110,7 +109,10 @@ public open class FlexibleChecksumsResponseInterceptor(
     /**
      * Additional check on the checksum itself to see if it should be validated
      */
-    public open fun ignoreChecksum(checksum: String, logger: Logger): Boolean = false
+    public open fun ignoreChecksum(
+        checksum: String,
+        context: ProtocolResponseInterceptorContext<Any, HttpRequest, HttpResponse>,
+    ): Boolean = false
 }
 
 public class ChecksumMismatchException(message: String?) : ClientException(message)
