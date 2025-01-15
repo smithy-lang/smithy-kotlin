@@ -4,7 +4,10 @@
  */
 package aws.smithy.kotlin.runtime.hashing
 
+import aws.smithy.kotlin.runtime.ClientException
 import aws.smithy.kotlin.runtime.InternalApi
+import aws.smithy.kotlin.runtime.businessmetrics.BusinessMetric
+import aws.smithy.kotlin.runtime.businessmetrics.SmithyBusinessMetric
 
 /**
  * A cryptographic hash function (algorithm)
@@ -69,4 +72,56 @@ public fun String.toHashFunction(): HashFunction? = when (this.lowercase()) {
     "sha256" -> Sha256()
     "md5" -> Md5()
     else -> null
+}
+
+/**
+ * @return The [HashFunction] which is represented by this string, or an exception if none match.
+ */
+@InternalApi
+public fun String.toHashFunctionOrThrow(): HashFunction =
+    toHashFunction() ?: throw ClientException("Checksum algorithm is not supported: $this")
+
+/**
+ * @return If the [HashFunction] is supported by flexible checksums
+ */
+@InternalApi
+public val HashFunction.isSupportedForFlexibleChecksums: Boolean
+    get() = when (this) {
+        is Crc32, is Crc32c, is Sha1, is Sha256 -> true
+        else -> false
+    }
+
+/**
+ * @return The checksum algorithm header used depending on the checksum algorithm name
+ */
+@InternalApi
+public fun String.resolveChecksumAlgorithmHeaderName(): String =
+    this.toHashFunctionOrThrow().resolveChecksumAlgorithmHeaderName()
+
+/**
+ * @return The checksum algorithm header used depending on the checksum algorithm
+ */
+@InternalApi
+public fun HashFunction.resolveChecksumAlgorithmHeaderName(): String {
+    val prefix = "x-amz-checksum-"
+    return when (this) {
+        is Crc32 -> prefix + "crc32"
+        is Crc32c -> prefix + "crc32c"
+        is Sha1 -> prefix + "sha1"
+        is Sha256 -> prefix + "sha256"
+        is Md5 -> "Content-MD5"
+        else -> throw ClientException("Checksum algorithm is not supported: ${this::class.simpleName}")
+    }
+}
+
+/**
+ * Maps supported hash functions to business metrics.
+ */
+@InternalApi
+public fun HashFunction.toBusinessMetric(): BusinessMetric = when (this) {
+    is Crc32 -> SmithyBusinessMetric.FLEXIBLE_CHECKSUMS_REQ_CRC32
+    is Crc32c -> SmithyBusinessMetric.FLEXIBLE_CHECKSUMS_REQ_CRC32C
+    is Sha1 -> SmithyBusinessMetric.FLEXIBLE_CHECKSUMS_REQ_SHA1
+    is Sha256 -> SmithyBusinessMetric.FLEXIBLE_CHECKSUMS_REQ_SHA256
+    else -> throw IllegalStateException("Checksum was calculated using an unsupported hash function: ${this::class.simpleName}")
 }
