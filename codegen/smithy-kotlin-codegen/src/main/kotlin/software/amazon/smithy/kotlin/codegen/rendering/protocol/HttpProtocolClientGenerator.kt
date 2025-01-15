@@ -4,7 +4,6 @@
  */
 package software.amazon.smithy.kotlin.codegen.rendering.protocol
 
-import software.amazon.smithy.aws.traits.HttpChecksumTrait
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.kotlin.codegen.core.*
 import software.amazon.smithy.kotlin.codegen.integration.SectionId
@@ -22,7 +21,6 @@ import software.amazon.smithy.model.knowledge.OperationIndex
 import software.amazon.smithy.model.knowledge.TopDownIndex
 import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.traits.EndpointTrait
-import software.amazon.smithy.model.traits.HttpChecksumRequiredTrait
 
 /**
  * Renders an implementation of a service interface for HTTP protocol
@@ -318,8 +316,6 @@ open class HttpProtocolClientGenerator(
             .forEach { middleware ->
                 middleware.render(ctx, op, writer)
             }
-
-        op.renderIsMd5ChecksumRequired(writer)
     }
 
     /**
@@ -335,27 +331,6 @@ open class HttpProtocolClientGenerator(
      * Render any additional methods to support client operation
      */
     protected open fun renderAdditionalMethods(writer: KotlinWriter) { }
-
-    /**
-     * Render optionally installing Md5ChecksumMiddleware.
-     * The Md5 middleware will only be installed if the operation requires a checksum and the user has not opted-in to flexible checksums.
-     */
-    private fun OperationShape.renderIsMd5ChecksumRequired(writer: KotlinWriter) {
-        val httpChecksumTrait = getTrait<HttpChecksumTrait>()
-
-        // the checksum requirement can be modeled in either HttpChecksumTrait's `requestChecksumRequired` or the HttpChecksumRequired trait
-        if (!hasTrait<HttpChecksumRequiredTrait>() && httpChecksumTrait == null) {
-            return
-        }
-
-        if (hasTrait<HttpChecksumRequiredTrait>() || httpChecksumTrait?.isRequestChecksumRequired == true) {
-            val interceptorSymbol = RuntimeTypes.HttpClient.Interceptors.Md5ChecksumInterceptor
-            val inputSymbol = ctx.symbolProvider.toSymbol(ctx.model.expectShape(inputShape))
-            writer.withBlock("op.interceptors.add(#T<#T> {", "})", interceptorSymbol, inputSymbol) {
-                writer.write("op.context.getOrNull(#T.ChecksumAlgorithm) == null", RuntimeTypes.HttpClient.Operation.HttpOperationContext)
-            }
-        }
-    }
 
     /**
      * render a utility function to populate an operation's ExecutionContext with defaults from service config, environment, etc

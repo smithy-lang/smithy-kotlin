@@ -6,6 +6,7 @@
 
 package software.amazon.smithy.kotlin.codegen.util
 
+import com.tschuchort.compiletesting.JvmCompilationResult
 import com.tschuchort.compiletesting.KotlinCompilation
 import com.tschuchort.compiletesting.SourceFile
 import org.jetbrains.kotlin.compiler.plugin.ExperimentalCompilerApi
@@ -36,8 +37,8 @@ private fun String.slashEscape(char: Char) = this.replace(char.toString(), """\$
  * Captures the result of a model transformation test
  */
 data class ModelChangeTestResult(
-    val originalModelCompilationResult: KotlinCompilation.Result,
-    val updatedModelCompilationResult: KotlinCompilation.Result,
+    val originalModelCompilationResult: JvmCompilationResult,
+    val updatedModelCompilationResult: JvmCompilationResult,
     val compileSuccess: Boolean,
     val compileOutput: String,
 )
@@ -88,7 +89,7 @@ fun compileSdkAndTest(
     testSource: String? = null,
     outputSink: OutputStream = System.out,
     emitSourcesToTmp: Boolean = false,
-): KotlinCompilation.Result {
+): JvmCompilationResult {
     val sdkFileManifest = generateSdk(model)
 
     if (emitSourcesToTmp) {

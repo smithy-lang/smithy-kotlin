@@ -1,5 +1,25 @@
 # Changelog
 
+## [1.4.0] - 01/15/2025
+
+### Features
+* [#1431](https://github.com/awslabs/aws-sdk-kotlin/issues/1431) ⚠️ **IMPORTANT**: Add `retryStrategy` configuration option for waiters
+
+### Fixes
+* [#1321](https://github.com/awslabs/aws-sdk-kotlin/issues/1321) Include more information when retry strategy halts early due to token bucket capacity errors
+
+### Miscellaneous
+* ⚠️ **IMPORTANT**: Upgrade to Kotlin 2.1.0
+
+## [1.3.34] - 01/10/2025
+
+## [1.3.33] - 01/10/2025
+
+## [1.3.32] - 01/06/2025
+
+### Fixes
+* Fix serialization of CBOR blobs
+
 ## [1.3.31] - 12/18/2024
 
 ### Features

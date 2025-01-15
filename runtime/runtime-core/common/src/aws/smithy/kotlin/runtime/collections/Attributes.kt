@@ -115,6 +115,17 @@ public fun MutableAttributes.merge(other: Attributes) {
     }
 }
 
+/**
+ * Appends a value to a list-typed attribute. If the attribute does not exist, it will be created.
+ * @param key The key for the attribute
+ * @param element The element to append to the existing (or new) list value of the attribute
+ */
+public fun <E> MutableAttributes.appendValue(key: AttributeKey<List<E>>, element: E) {
+    val existingList = getOrNull(key).orEmpty()
+    val newList = existingList + element
+    set(key, newList)
+}
+
 private class AttributesImpl constructor(seed: Attributes) : MutableAttributes {
     private val map: MutableMap<AttributeKey<*>, Any> = mutableMapOf()
     constructor() : this(emptyAttributes())

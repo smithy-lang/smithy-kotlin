@@ -28,6 +28,7 @@ import io.ktor.util.*
 import io.ktor.utils.io.*
 import io.ktor.utils.io.core.*
 import kotlinx.coroutines.runBlocking
+import kotlinx.io.readByteArray
 import kotlinx.serialization.json.*
 import org.junit.jupiter.api.Assumptions.assumeTrue
 import org.junit.jupiter.api.Test
@@ -383,7 +384,7 @@ public actual abstract class SigningSuiteTestBase : HasSigner {
         }
 
         if (hasBody) {
-            val bytes = runBlocking { chan.readRemaining().readBytes() }
+            val bytes = runBlocking { chan.readRemaining().readByteArray() }
             builder.body = HttpBody.fromBytes(bytes)
         }
 

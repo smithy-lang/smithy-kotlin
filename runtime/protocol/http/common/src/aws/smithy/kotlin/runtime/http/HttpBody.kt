@@ -10,6 +10,8 @@ import aws.smithy.kotlin.runtime.content.ByteStream
 import aws.smithy.kotlin.runtime.hashing.HashFunction
 import aws.smithy.kotlin.runtime.http.content.ByteArrayContent
 import aws.smithy.kotlin.runtime.io.*
+import aws.smithy.kotlin.runtime.text.encoding.encodeBase64String
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 
 /**
@@ -191,6 +193,49 @@ public fun HttpBody.toHashingBody(
     else -> throw ClientException("HttpBody type is not supported")
 }
 
+/**
+ * Convert an [HttpBody] with an underlying [HashingSource] or [HashingByteReadChannel]
+ * to a [CompletingSource] or [CompletingByteReadChannel], respectively.
+ */
+@InternalApi
+public fun HttpBody.toCompletingBody(deferred: CompletableDeferred<String>): HttpBody = when (this) {
+    is HttpBody.SourceContent -> CompletingSource(deferred, (readFrom() as HashingSource)).toHttpBody(contentLength)
+    is HttpBody.ChannelContent -> CompletingByteReadChannel(deferred, (readFrom() as HashingByteReadChannel)).toHttpBody(contentLength)
+    else -> throw ClientException("HttpBody type is not supported")
+}
+
+/**
+ * An [SdkSource] which uses the underlying [hashingSource]'s checksum to complete a [CompletableDeferred] value.
+ */
+@InternalApi
+public class CompletingSource(
+    private val deferred: CompletableDeferred<String>,
+    private val hashingSource: HashingSource,
+) : SdkSource by hashingSource {
+    override fun read(sink: SdkBuffer, limit: Long): Long = hashingSource.read(sink, limit)
+        .also {
+            if (it == -1L) {
+                deferred.complete(hashingSource.digest().encodeBase64String())
+            }
+        }
+}
+
+/**
+ * An [SdkByteReadChannel] which uses the underlying [hashingChannel]'s checksum to complete a [CompletableDeferred] value.
+ */
+@InternalApi
+public class CompletingByteReadChannel(
+    private val deferred: CompletableDeferred<String>,
+    private val hashingChannel: HashingByteReadChannel,
+) : SdkByteReadChannel by hashingChannel {
+    override suspend fun read(sink: SdkBuffer, limit: Long): Long = hashingChannel.read(sink, limit)
+        .also {
+            if (it == -1L) {
+                deferred.complete(hashingChannel.digest().encodeBase64String())
+            }
+        }
+}
+
 // FIXME - replace/move to reading to SdkBuffer instead
 /**
  * Consume the [HttpBody] and pull the entire contents into memory as a [ByteArray].
@@ -244,3 +289,10 @@ public fun HttpBody.toSdkByteReadChannel(scope: CoroutineScope? = null): SdkByte
     is HttpBody.ChannelContent -> body.readFrom()
     is HttpBody.SourceContent -> body.readFrom().toSdkByteReadChannel(scope)
 }
+
+// FIXME this duplicates the logic from aws-signing-common
+@InternalApi
+public val HttpBody.isEligibleForAwsChunkedStreaming: Boolean
+    get() = (this is HttpBody.SourceContent || this is HttpBody.ChannelContent) &&
+        contentLength != null &&
+        (isOneShot || contentLength!! > 65536 * 16)

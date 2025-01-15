@@ -6,7 +6,7 @@ import aws.smithy.kotlin.runtime.client.ProtocolRequestInterceptorContext
 import aws.smithy.kotlin.runtime.collections.get
 import aws.smithy.kotlin.runtime.http.HttpBody
 import aws.smithy.kotlin.runtime.http.SdkHttpClient
-import aws.smithy.kotlin.runtime.http.interceptors.AbstractChecksumInterceptor
+import aws.smithy.kotlin.runtime.http.interceptors.CachingChecksumInterceptor
 import aws.smithy.kotlin.runtime.http.operation.HttpOperationContext
 import aws.smithy.kotlin.runtime.http.operation.newTestOperation
 import aws.smithy.kotlin.runtime.http.operation.roundTrip
@@ -21,7 +21,7 @@ import kotlin.test.assertEquals
 
 private val CHECKSUM_TEST_HEADER = "x-amz-kotlin-sdk-test-checksum-header"
 
-class AbstractChecksumInterceptorTest {
+class CachingChecksumInterceptorTest {
     private val client = SdkHttpClient(TestEngine())
 
     @Test
@@ -33,7 +33,7 @@ class AbstractChecksumInterceptorTest {
 
         val op = newTestOperation<Unit, Unit>(req, Unit)
 
-        op.interceptors.add(TestAbstractChecksumInterceptor(expectedChecksumValue))
+        op.interceptors.add(TestCachingChecksumInterceptor(expectedChecksumValue))
 
         op.roundTrip(client, Unit)
         val call = op.context.attributes[HttpOperationContext.HttpCallList].first()
@@ -49,16 +49,16 @@ class AbstractChecksumInterceptorTest {
 
         val op = newTestOperation<Unit, Unit>(req, Unit)
 
-        op.interceptors.add(TestAbstractChecksumInterceptor(expectedChecksumValue))
+        op.interceptors.add(TestCachingChecksumInterceptor(expectedChecksumValue))
 
         // the TestAbstractChecksumInterceptor will throw an exception if calculateChecksum is called more than once.
         op.roundTrip(client, Unit)
         op.roundTrip(client, Unit)
     }
 
-    inner class TestAbstractChecksumInterceptor(
+    inner class TestCachingChecksumInterceptor(
         private val expectedChecksum: String?,
-    ) : AbstractChecksumInterceptor() {
+    ) : CachingChecksumInterceptor() {
         private var alreadyCalculatedChecksum = false
 
         override suspend fun calculateChecksum(context: ProtocolRequestInterceptorContext<Any, HttpRequest>): String? {

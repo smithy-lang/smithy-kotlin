@@ -66,9 +66,9 @@ public object HttpOperationContext {
     public val ClockSkewApproximateSigningTime: AttributeKey<Instant> = AttributeKey("aws.smithy.kotlin#ClockSkewApproximateSigningTime")
 
     /**
-     * The name of the algorithm to be used for computing a checksum of the request.
+     * The name of the default algorithm to be used for computing a checksum of the request.
      */
-    public val ChecksumAlgorithm: AttributeKey<String> = AttributeKey("aws.smithy.kotlin#ChecksumAlgorithm")
+    public val DefaultChecksumAlgorithm: AttributeKey<String> = AttributeKey("aws.smithy.kotlin#DefaultChecksumAlgorithm")
 }
 
 internal val ExecutionContext.operationMetrics: OperationMetrics

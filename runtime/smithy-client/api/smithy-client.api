@@ -235,6 +235,18 @@ public final class aws/smithy/kotlin/runtime/client/config/CompressionClientConf
 public abstract interface annotation class aws/smithy/kotlin/runtime/client/config/CompressionClientConfigDsl : java/lang/annotation/Annotation {
 }
 
+public abstract interface class aws/smithy/kotlin/runtime/client/config/HttpChecksumConfig {
+	public abstract fun getRequestChecksumCalculation ()Laws/smithy/kotlin/runtime/client/config/RequestHttpChecksumConfig;
+	public abstract fun getResponseChecksumValidation ()Laws/smithy/kotlin/runtime/client/config/ResponseHttpChecksumConfig;
+}
+
+public abstract interface class aws/smithy/kotlin/runtime/client/config/HttpChecksumConfig$Builder {
+	public abstract fun getRequestChecksumCalculation ()Laws/smithy/kotlin/runtime/client/config/RequestHttpChecksumConfig;
+	public abstract fun getResponseChecksumValidation ()Laws/smithy/kotlin/runtime/client/config/ResponseHttpChecksumConfig;
+	public abstract fun setRequestChecksumCalculation (Laws/smithy/kotlin/runtime/client/config/RequestHttpChecksumConfig;)V
+	public abstract fun setResponseChecksumValidation (Laws/smithy/kotlin/runtime/client/config/ResponseHttpChecksumConfig;)V
+}
+
 public final class aws/smithy/kotlin/runtime/client/config/RequestCompressionConfig {
 	public static final field Companion Laws/smithy/kotlin/runtime/client/config/RequestCompressionConfig$Companion;
 	public fun <init> (Laws/smithy/kotlin/runtime/client/config/RequestCompressionConfig$Builder;)V
@@ -256,6 +268,22 @@ public final class aws/smithy/kotlin/runtime/client/config/RequestCompressionCon
 
 public final class aws/smithy/kotlin/runtime/client/config/RequestCompressionConfig$Companion {
 	public final fun invoke (Lkotlin/jvm/functions/Function1;)Laws/smithy/kotlin/runtime/client/config/RequestCompressionConfig;
+}
+
+public final class aws/smithy/kotlin/runtime/client/config/RequestHttpChecksumConfig : java/lang/Enum {
+	public static final field WHEN_REQUIRED Laws/smithy/kotlin/runtime/client/config/RequestHttpChecksumConfig;
+	public static final field WHEN_SUPPORTED Laws/smithy/kotlin/runtime/client/config/RequestHttpChecksumConfig;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Laws/smithy/kotlin/runtime/client/config/RequestHttpChecksumConfig;
+	public static fun values ()[Laws/smithy/kotlin/runtime/client/config/RequestHttpChecksumConfig;
+}
+
+public final class aws/smithy/kotlin/runtime/client/config/ResponseHttpChecksumConfig : java/lang/Enum {
+	public static final field WHEN_REQUIRED Laws/smithy/kotlin/runtime/client/config/ResponseHttpChecksumConfig;
+	public static final field WHEN_SUPPORTED Laws/smithy/kotlin/runtime/client/config/ResponseHttpChecksumConfig;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Laws/smithy/kotlin/runtime/client/config/ResponseHttpChecksumConfig;
+	public static fun values ()[Laws/smithy/kotlin/runtime/client/config/ResponseHttpChecksumConfig;
 }
 
 public final class aws/smithy/kotlin/runtime/client/config/RetryMode : java/lang/Enum {
