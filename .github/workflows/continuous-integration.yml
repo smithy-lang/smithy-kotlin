@@ -64,7 +64,6 @@ jobs:
           java-version: 17
           cache: 'gradle'
       - name: Configure Gradle
-        working-directory: ./smithy-kotlin
         run: |
           # Keep gradle version in sync with smithy-kotlin/gradle/wrapper/gradle-wrapper.properties
           gradle wrapper --gradle-distribution-url https://d2pjps8lqszrgq.cloudfront.net/gradle-8.12-bin.zip
