@@ -34,7 +34,10 @@ jobs:
           aws-region: us-west-2
 
       - name: Configure Gradle
-        uses: .github/actions/smithy-kotlin-custom-gradle-distribution-url
+        working-directory: ./smithy-kotlin
+        run: |
+          # Keep gradle version in sync with smithy-kotlin/gradle/wrapper/gradle-wrapper.properties
+          gradle wrapper --gradle-distribution-url https://d2pjps8lqszrgq.cloudfront.net/gradle-8.12-bin.zip
 
       - name: Setup kat
         uses: awslabs/aws-kotlin-repo-tools/.github/actions/setup-kat@main

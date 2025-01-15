@@ -32,7 +32,9 @@ jobs:
           role-to-assume: ${{ secrets.CI_AWS_ROLE_ARN }}
           aws-region: us-west-2
       - name: Configure Gradle
-        uses: .github/actions/smithy-kotlin-custom-gradle-distribution-url
+        run: |
+          # Keep gradle version in sync with smithy-kotlin/gradle/wrapper/gradle-wrapper.properties
+          gradle wrapper --gradle-distribution-url https://d2pjps8lqszrgq.cloudfront.net/gradle-8.12-bin.zip
       - name: Generate Artifact Size Metrics
         run: ./gradlew artifactSizeMetrics
       - name: Save Artifact Size Metrics
@@ -57,7 +59,9 @@ jobs:
           role-to-assume: ${{ secrets.CI_AWS_ROLE_ARN }}
           aws-region: us-west-2
       - name: Configure Gradle
-        uses: .github/actions/smithy-kotlin-custom-gradle-distribution-url
+        run: |
+          # Keep gradle version in sync with smithy-kotlin/gradle/wrapper/gradle-wrapper.properties
+          gradle wrapper --gradle-distribution-url https://d2pjps8lqszrgq.cloudfront.net/gradle-8.12-bin.zip
       - name: Generate Artifact Size Metrics
         run: ./gradlew artifactSizeMetrics
       - name: Analyze Artifact Size Metrics

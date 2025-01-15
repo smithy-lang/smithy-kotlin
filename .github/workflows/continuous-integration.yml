@@ -40,7 +40,9 @@ jobs:
           java-version: 17
           cache: 'gradle'
       - name: Configure Gradle
-        uses: .github/actions/smithy-kotlin-custom-gradle-distribution-url
+        run: |
+          # Keep gradle version in sync with smithy-kotlin/gradle/wrapper/gradle-wrapper.properties
+          gradle wrapper --gradle-distribution-url https://d2pjps8lqszrgq.cloudfront.net/gradle-8.12-bin.zip
       - name: Test
         shell: bash
         run: |
@@ -62,7 +64,10 @@ jobs:
           java-version: 17
           cache: 'gradle'
       - name: Configure Gradle
-        uses: .github/actions/smithy-kotlin-custom-gradle-distribution-url
+        working-directory: ./smithy-kotlin
+        run: |
+          # Keep gradle version in sync with smithy-kotlin/gradle/wrapper/gradle-wrapper.properties
+          gradle wrapper --gradle-distribution-url https://d2pjps8lqszrgq.cloudfront.net/gradle-8.12-bin.zip
       - name: Test
         shell: bash
         working-directory: ./smithy-kotlin
@@ -90,7 +95,9 @@ jobs:
           java-version: 17
           cache: 'gradle'
       - name: Configure Gradle
-        uses: .github/actions/smithy-kotlin-custom-gradle-distribution-url
+        run: |
+          # Keep gradle version in sync with smithy-kotlin/gradle/wrapper/gradle-wrapper.properties
+          gradle wrapper --gradle-distribution-url https://d2pjps8lqszrgq.cloudfront.net/gradle-8.12-bin.zip
       - name: Test
         shell: bash
         run: |
@@ -117,10 +124,15 @@ jobs:
         path: 'aws-sdk-kotlin'
         repository: 'awslabs/aws-sdk-kotlin'
     - name: Configure Gradle for smithy-kotlin
-      uses: .github/actions/smithy-kotlin-custom-gradle-distribution-url
-      # TODO: CONFIGURE THIS PROPERLY
+      working-directory: ./smithy-kotlin
+      run: |
+        # Keep gradle version in sync with smithy-kotlin/gradle/wrapper/gradle-wrapper.properties
+        gradle wrapper --gradle-distribution-url https://d2pjps8lqszrgq.cloudfront.net/gradle-8.12-bin.zip
     - name: Configure Gradle for aws-sdk-kotlin
-      uses: .github/actions/smithy-kotlin-custom-gradle-distribution-url
+      working-directory: ./aws-sdk-kotlin
+      run: |
+        # Keep gradle version in sync with smithy-kotlin/gradle/wrapper/gradle-wrapper.properties
+        gradle wrapper --gradle-distribution-url https://d2pjps8lqszrgq.cloudfront.net/gradle-8.12-bin.zip
     - name: Configure JDK
       uses: actions/setup-java@v3
       with:
