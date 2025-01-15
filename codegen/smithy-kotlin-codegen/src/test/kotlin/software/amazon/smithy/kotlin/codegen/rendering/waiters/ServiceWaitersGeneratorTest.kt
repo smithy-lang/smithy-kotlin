@@ -11,13 +11,10 @@ import software.amazon.smithy.build.MockManifest
 import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.kotlin.codegen.KotlinCodegenPlugin
 import software.amazon.smithy.kotlin.codegen.KotlinSettings
-import software.amazon.smithy.kotlin.codegen.core.CodegenContext
+import software.amazon.smithy.kotlin.codegen.core.GenerationContext
 import software.amazon.smithy.kotlin.codegen.core.KotlinDelegator
-import software.amazon.smithy.kotlin.codegen.integration.KotlinIntegration
 import software.amazon.smithy.kotlin.codegen.loadModelFromResource
-import software.amazon.smithy.kotlin.codegen.rendering.protocol.ProtocolGenerator
 import software.amazon.smithy.kotlin.codegen.test.*
-import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.ShapeId
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -130,16 +127,9 @@ class ServiceWaitersGeneratorTest {
         val service = model.getShape(ShapeId.from(TestModelDefault.SERVICE_SHAPE_ID)).get().asServiceShape().get()
         val settings = KotlinSettings(service.id, KotlinSettings.PackageSettings(TestModelDefault.NAMESPACE, TestModelDefault.MODEL_VERSION), sdkId = service.id.name)
 
-        val ctx = object : CodegenContext {
-            override val model: Model = model
-            override val symbolProvider: SymbolProvider = provider
-            override val settings: KotlinSettings = settings
-            override val protocolGenerator: ProtocolGenerator? = null
-            override val integrations: List<KotlinIntegration> = listOf()
-        }
-
         val manifest = MockManifest()
-        val delegator = KotlinDelegator(settings, model, manifest, provider)
+        val ctx = GenerationContext(model, provider, settings, protocolGenerator = null)
+        val delegator = KotlinDelegator(ctx, manifest)
 
         val generator = ServiceWaitersGenerator()
         generator.writeAdditionalFiles(ctx, delegator)

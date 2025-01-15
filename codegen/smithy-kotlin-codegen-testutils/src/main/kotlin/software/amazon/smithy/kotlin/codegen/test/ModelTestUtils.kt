@@ -8,6 +8,7 @@ import software.amazon.smithy.build.MockManifest
 import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.kotlin.codegen.*
 import software.amazon.smithy.kotlin.codegen.core.CodegenContext
+import software.amazon.smithy.kotlin.codegen.core.GenerationContext
 import software.amazon.smithy.kotlin.codegen.core.KotlinDelegator
 import software.amazon.smithy.kotlin.codegen.integration.KotlinIntegration
 import software.amazon.smithy.kotlin.codegen.model.OperationNormalizer
@@ -122,9 +123,11 @@ fun Model.newTestContext(
     val manifest = MockManifest()
     val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model = this, rootNamespace = packageName, serviceName = serviceName, settings = settings)
     val service = this.getShape(ShapeId.from("$packageName#$serviceName")).get().asServiceShape().get()
-    val delegator = KotlinDelegator(settings, this, manifest, provider, integrations)
 
-    val ctx = ProtocolGenerator.GenerationContext(
+    val codegenCtx = GenerationContext(this, provider, settings, generator, integrations)
+    val delegator = KotlinDelegator(codegenCtx, manifest, integrations)
+
+    val generationCtx = ProtocolGenerator.GenerationContext(
         settings,
         this,
         service,
@@ -133,7 +136,8 @@ fun Model.newTestContext(
         generator.protocol,
         delegator,
     )
-    return TestContext(ctx, manifest, generator)
+
+    return TestContext(generationCtx, manifest, generator)
 }
 
 fun TestContext.toCodegenContext() = object : CodegenContext {
