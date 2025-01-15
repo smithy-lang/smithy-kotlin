@@ -109,6 +109,8 @@ jobs:
     steps:
     - name: Checkout sources
       uses: actions/checkout@v4
+      with:
+        path: 'smithy-kotlin'
     - name: Checkout tools
       uses: actions/checkout@v4
       with:

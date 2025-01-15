@@ -26,6 +26,8 @@ jobs:
     steps:
       - name: Checkout sources
         uses: actions/checkout@v4
+        with:
+          path: 'smithy-kotlin'
 
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4

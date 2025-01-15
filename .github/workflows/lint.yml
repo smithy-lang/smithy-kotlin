@@ -20,13 +20,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout sources
-      uses: actions/checkout@v4
+      uses: actions/checkout@v2
     - name: Configure Gradle
-      working-directory: ./smithy-kotlin
       run: |
         # Keep gradle version in sync with smithy-kotlin/gradle/wrapper/gradle-wrapper.properties
         gradle wrapper --gradle-distribution-url https://d2pjps8lqszrgq.cloudfront.net/gradle-8.12-bin.zip
     - name: Lint ${{ env.PACKAGE_NAME }}
-      working-directory: ./smithy-kotlin
       run: |
         ./gradlew ktlint
