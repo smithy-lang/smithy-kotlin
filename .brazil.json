@@ -8,6 +8,7 @@
     "com.squareup.okio:okio-jvm:3.*": "OkioJvm-3.x",
     "io.opentelemetry:opentelemetry-api:1.*": "Maven-io-opentelemetry_opentelemetry-api-1.x",
     "org.slf4j:slf4j-api:2.*": "Maven-org-slf4j_slf4j-api-2.x",
+    "aws.sdk.kotlin.crt:aws-crt-kotlin:0.9.*": "AwsCrtKotlin-0.9.x",
     "aws.sdk.kotlin.crt:aws-crt-kotlin:0.8.*": "AwsCrtKotlin-0.8.x",
     "com.squareup.okhttp3:okhttp:4.*": "OkHttp3-4.x"
   },
