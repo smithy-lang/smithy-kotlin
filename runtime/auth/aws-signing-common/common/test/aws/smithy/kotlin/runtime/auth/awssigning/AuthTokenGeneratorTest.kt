@@ -45,6 +45,7 @@ class AuthTokenGeneratorTest {
         assertContains(token, "X-Amz-Credential=signature") // test custom signer was invoked
         assertContains(token, "X-Amz-Expires=333") // expiration
         assertContains(token, "X-Amz-SigningDate=0") // clock
+        assertContains(token, "X-Amz-SignedHeaders=host")
 
         assertTrue(credentialsProvider.credentialsResolved)
     }
@@ -60,6 +61,7 @@ private val TEST_SIGNER = object : AwsSigner {
             put("X-Amz-Credential", "signature")
             put("X-Amz-Expires", (config.expiresAfter?.toLong(DurationUnit.SECONDS) ?: 900).toString())
             put("X-Amz-SigningDate", config.signingDate.epochSeconds.toString())
+            put("X-Amz-SignedHeaders", request.headers.names().map { it.lowercase() }.joinToString())
         }
 
         return AwsSigningResult<HttpRequest>(builder.build(), "signature".encodeToByteArray())
