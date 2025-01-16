@@ -255,7 +255,7 @@ public final class aws/smithy/kotlin/runtime/http/engine/internal/ManagedHttpCli
 	public static final fun manage (Laws/smithy/kotlin/runtime/http/engine/HttpClientEngine;)Laws/smithy/kotlin/runtime/http/engine/HttpClientEngine;
 }
 
-public abstract class aws/smithy/kotlin/runtime/http/interceptors/AbstractChecksumInterceptor : aws/smithy/kotlin/runtime/client/Interceptor {
+public abstract class aws/smithy/kotlin/runtime/http/interceptors/CachingChecksumInterceptor : aws/smithy/kotlin/runtime/client/Interceptor {
 	public fun <init> ()V
 	public abstract fun applyChecksum (Laws/smithy/kotlin/runtime/client/ProtocolRequestInterceptorContext;Ljava/lang/String;)Laws/smithy/kotlin/runtime/http/request/HttpRequest;
 	public abstract fun calculateChecksum (Laws/smithy/kotlin/runtime/client/ProtocolRequestInterceptorContext;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
@@ -331,19 +331,17 @@ public final class aws/smithy/kotlin/runtime/http/interceptors/DiscoveredEndpoin
 	public fun readBeforeTransmit (Laws/smithy/kotlin/runtime/client/ProtocolRequestInterceptorContext;)V
 }
 
-public final class aws/smithy/kotlin/runtime/http/interceptors/FlexibleChecksumsRequestInterceptor : aws/smithy/kotlin/runtime/http/interceptors/AbstractChecksumInterceptor {
-	public fun <init> ()V
-	public fun <init> (Lkotlin/jvm/functions/Function1;)V
-	public synthetic fun <init> (Lkotlin/jvm/functions/Function1;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+public final class aws/smithy/kotlin/runtime/http/interceptors/FlexibleChecksumsRequestInterceptor : aws/smithy/kotlin/runtime/http/interceptors/CachingChecksumInterceptor {
+	public fun <init> (ZLaws/smithy/kotlin/runtime/client/config/RequestHttpChecksumConfig;Ljava/lang/String;)V
 	public fun applyChecksum (Laws/smithy/kotlin/runtime/client/ProtocolRequestInterceptorContext;Ljava/lang/String;)Laws/smithy/kotlin/runtime/http/request/HttpRequest;
 	public fun calculateChecksum (Laws/smithy/kotlin/runtime/client/ProtocolRequestInterceptorContext;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun modifyBeforeSigning (Laws/smithy/kotlin/runtime/client/ProtocolRequestInterceptorContext;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public fun readAfterSerialization (Laws/smithy/kotlin/runtime/client/ProtocolRequestInterceptorContext;)V
 }
 
-public final class aws/smithy/kotlin/runtime/http/interceptors/FlexibleChecksumsResponseInterceptor : aws/smithy/kotlin/runtime/client/Interceptor {
+public class aws/smithy/kotlin/runtime/http/interceptors/FlexibleChecksumsResponseInterceptor : aws/smithy/kotlin/runtime/client/Interceptor {
 	public static final field Companion Laws/smithy/kotlin/runtime/http/interceptors/FlexibleChecksumsResponseInterceptor$Companion;
-	public fun <init> (Lkotlin/jvm/functions/Function1;)V
+	public fun <init> (ZLaws/smithy/kotlin/runtime/client/config/ResponseHttpChecksumConfig;)V
+	public fun ignoreChecksum (Ljava/lang/String;Laws/smithy/kotlin/runtime/client/ProtocolResponseInterceptorContext;)Z
 	public fun modifyBeforeAttemptCompletion-gIAlu-s (Laws/smithy/kotlin/runtime/client/ResponseInterceptorContext;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun modifyBeforeCompletion-gIAlu-s (Laws/smithy/kotlin/runtime/client/ResponseInterceptorContext;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun modifyBeforeDeserialization (Laws/smithy/kotlin/runtime/client/ProtocolResponseInterceptorContext;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
@@ -369,10 +367,8 @@ public final class aws/smithy/kotlin/runtime/http/interceptors/FlexibleChecksums
 	public final fun getChecksumHeaderValidated ()Laws/smithy/kotlin/runtime/collections/AttributeKey;
 }
 
-public final class aws/smithy/kotlin/runtime/http/interceptors/Md5ChecksumInterceptor : aws/smithy/kotlin/runtime/http/interceptors/AbstractChecksumInterceptor {
+public final class aws/smithy/kotlin/runtime/http/interceptors/HttpChecksumRequiredInterceptor : aws/smithy/kotlin/runtime/http/interceptors/CachingChecksumInterceptor {
 	public fun <init> ()V
-	public fun <init> (Lkotlin/jvm/functions/Function1;)V
-	public synthetic fun <init> (Lkotlin/jvm/functions/Function1;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public fun applyChecksum (Laws/smithy/kotlin/runtime/client/ProtocolRequestInterceptorContext;Ljava/lang/String;)Laws/smithy/kotlin/runtime/http/request/HttpRequest;
 	public fun calculateChecksum (Laws/smithy/kotlin/runtime/client/ProtocolRequestInterceptorContext;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun modifyBeforeSigning (Laws/smithy/kotlin/runtime/client/ProtocolRequestInterceptorContext;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
@@ -516,9 +512,9 @@ public abstract interface class aws/smithy/kotlin/runtime/http/operation/HttpDes
 
 public final class aws/smithy/kotlin/runtime/http/operation/HttpOperationContext {
 	public static final field INSTANCE Laws/smithy/kotlin/runtime/http/operation/HttpOperationContext;
-	public final fun getChecksumAlgorithm ()Laws/smithy/kotlin/runtime/collections/AttributeKey;
 	public final fun getClockSkew ()Laws/smithy/kotlin/runtime/collections/AttributeKey;
 	public final fun getClockSkewApproximateSigningTime ()Laws/smithy/kotlin/runtime/collections/AttributeKey;
+	public final fun getDefaultChecksumAlgorithm ()Laws/smithy/kotlin/runtime/collections/AttributeKey;
 	public final fun getHostPrefix ()Laws/smithy/kotlin/runtime/collections/AttributeKey;
 	public final fun getHttpCallList ()Laws/smithy/kotlin/runtime/collections/AttributeKey;
 	public final fun getOperationAttributes ()Laws/smithy/kotlin/runtime/collections/AttributeKey;

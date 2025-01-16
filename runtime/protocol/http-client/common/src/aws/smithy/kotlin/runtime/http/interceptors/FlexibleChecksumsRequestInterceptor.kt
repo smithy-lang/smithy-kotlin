@@ -5,104 +5,117 @@
 
 package aws.smithy.kotlin.runtime.http.interceptors
 
-import aws.smithy.kotlin.runtime.ClientException
 import aws.smithy.kotlin.runtime.InternalApi
+import aws.smithy.kotlin.runtime.businessmetrics.emitBusinessMetric
 import aws.smithy.kotlin.runtime.client.ProtocolRequestInterceptorContext
+import aws.smithy.kotlin.runtime.client.config.RequestHttpChecksumConfig
 import aws.smithy.kotlin.runtime.hashing.*
 import aws.smithy.kotlin.runtime.http.*
-import aws.smithy.kotlin.runtime.http.operation.HttpOperationContext
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
-import aws.smithy.kotlin.runtime.http.request.header
 import aws.smithy.kotlin.runtime.http.request.toBuilder
 import aws.smithy.kotlin.runtime.io.*
+import aws.smithy.kotlin.runtime.telemetry.logging.Logger
 import aws.smithy.kotlin.runtime.telemetry.logging.logger
 import aws.smithy.kotlin.runtime.text.encoding.encodeBase64String
-import aws.smithy.kotlin.runtime.util.LazyAsyncValue
-import kotlinx.coroutines.CompletableDeferred
-import kotlinx.coroutines.job
 import kotlin.coroutines.coroutineContext
 
 /**
- * Mutate a request to enable flexible checksums.
+ * Handles request checksums for operations with the [HttpChecksumTrait] applied.
  *
- * If the checksum will be sent as a header, calculate the checksum.
+ * If a user supplies a checksum via an HTTP header no calculation will be done. The exception is MD5, if a user
+ * supplies an MD5 checksum header it will be ignored.
  *
- * Otherwise, if it will be sent as a trailing header, calculate the checksum as asynchronously as the body is streamed.
- * In this case, a [LazyAsyncValue] will be added to the execution context which allows the trailing checksum to be sent
- * after the entire body has been streamed.
+ * If the request configuration and model requires checksum calculation:
+ * - Check if the user configured a checksum algorithm for the request and attempt to use that.
+ * - If no checksum is configured for the request then use the default checksum algorithm to calculate a checksum.
  *
- * @param checksumAlgorithmNameInitializer an optional function which parses the input [I] to return the checksum algorithm name.
- * if not set, then the [HttpOperationContext.ChecksumAlgorithm] execution context attribute will be used.
+ * If the request will be streamed:
+ * - The checksum calculation is done during transmission using a hashing & completing body.
+ * - The checksum will be sent in a trailing header, once the request is consumed.
+ *
+ * If the request will not be streamed:
+ * - The checksum calculation is done before transmission
+ * - The checksum will be sent in a header
+ *
+ * Business metrics MUST be emitted for the checksum algorithm used.
+ *
+ * @param requestChecksumRequired Model sourced flag indicating if checksum calculation is mandatory.
+ * @param requestChecksumCalculation Configuration option that determines when checksum calculation should be done.
+ * @param requestChecksumAlgorithm The checksum algorithm that the user selected for the request, may be null.
  */
 @InternalApi
-public class FlexibleChecksumsRequestInterceptor<I>(
-    private val checksumAlgorithmNameInitializer: ((I) -> String?)? = null,
-) : AbstractChecksumInterceptor() {
-    private var checksumAlgorithmName: String? = null
-
-    @Deprecated("readAfterSerialization is no longer used")
-    override fun readAfterSerialization(context: ProtocolRequestInterceptorContext<Any, HttpRequest>) { }
-
+public class FlexibleChecksumsRequestInterceptor(
+    private val requestChecksumRequired: Boolean,
+    private val requestChecksumCalculation: RequestHttpChecksumConfig?,
+    private val requestChecksumAlgorithm: String?,
+) : CachingChecksumInterceptor() {
     override suspend fun modifyBeforeSigning(context: ProtocolRequestInterceptorContext<Any, HttpRequest>): HttpRequest {
-        val logger = coroutineContext.logger<FlexibleChecksumsRequestInterceptor<I>>()
+        val logger = coroutineContext.logger<FlexibleChecksumsRequestInterceptor>()
 
-        @Suppress("UNCHECKED_CAST")
-        val input = context.request as I
-        checksumAlgorithmName = checksumAlgorithmNameInitializer?.invoke(input) ?: context.executionContext.getOrNull(HttpOperationContext.ChecksumAlgorithm)
+        context.protocolRequest.userProvidedChecksumHeader(logger)?.let {
+            logger.debug { "Checksum was supplied via header: skipping checksum calculation" }
 
-        checksumAlgorithmName ?: run {
-            logger.debug { "no checksum algorithm specified, skipping flexible checksums processing" }
+            val request = context.protocolRequest.toBuilder()
+            request.headers.removeAllChecksumHeadersExcept(it)
             return context.protocolRequest
         }
 
-        val req = context.protocolRequest.toBuilder()
-
-        check(context.protocolRequest.body !is HttpBody.Empty) {
-            "Can't calculate the checksum of an empty body"
-        }
-
-        val headerName = "x-amz-checksum-$checksumAlgorithmName".lowercase()
-        logger.debug { "Resolved checksum header name: $headerName" }
-
-        // remove all checksum headers except for $headerName
-        // this handles the case where a user inputs a precalculated checksum, but it doesn't match the input checksum algorithm
-        req.headers.removeAllChecksumHeadersExcept(headerName)
-
-        val checksumAlgorithm = checksumAlgorithmName?.toHashFunction() ?: throw ClientException("Could not parse checksum algorithm $checksumAlgorithmName")
-
-        if (!checksumAlgorithm.isSupported) {
-            throw ClientException("Checksum algorithm $checksumAlgorithmName is not supported for flexible checksums")
-        }
-
-        if (req.body.isEligibleForAwsChunkedStreaming) {
-            req.header("x-amz-trailer", headerName)
-
-            val deferredChecksum = CompletableDeferred<String>(context.executionContext.coroutineContext.job)
-
-            if (req.headers[headerName] != null) {
-                logger.debug { "User supplied a checksum, skipping asynchronous calculation" }
-
-                val checksum = req.headers[headerName]!!
-                req.headers.remove(headerName) // remove the checksum header because it will be sent as a trailing header
-
-                deferredChecksum.complete(checksum)
+        resolveChecksumAlgorithm(
+            requestChecksumRequired,
+            requestChecksumCalculation,
+            requestChecksumAlgorithm,
+            context,
+        )?.let { checksumAlgorithm ->
+            return if (context.protocolRequest.body.isEligibleForAwsChunkedStreaming) {
+                logger.debug { "Calculating checksum during transmission using: ${checksumAlgorithm::class.simpleName}" }
+                calculateAwsChunkedStreamingChecksum(context, checksumAlgorithm)
             } else {
-                logger.debug { "Calculating checksum asynchronously" }
-                req.body = req.body
-                    .toHashingBody(checksumAlgorithm, req.body.contentLength)
-                    .toCompletingBody(deferredChecksum)
+                if (context.protocolRequest.body is HttpBody.Bytes) {
+                    // Cache checksum
+                    super.modifyBeforeSigning(context)
+                } else {
+                    val checksum = calculateFlexibleChecksumsChecksum(context)
+                    applyFlexibleChecksumsChecksum(context, checksum)
+                }
             }
-
-            req.trailingHeaders.append(headerName, deferredChecksum)
-            return req.build()
-        } else {
-            return super.modifyBeforeSigning(context)
         }
+
+        logger.debug { "Checksum wasn't provided, selected, or isn't required: skipping checksum calculation" }
+        return context.protocolRequest
     }
 
-    override suspend fun calculateChecksum(context: ProtocolRequestInterceptorContext<Any, HttpRequest>): String? {
+    /**
+     * Determines what checksum algorithm to use, null if none is required
+     */
+    private fun resolveChecksumAlgorithm(
+        requestChecksumRequired: Boolean,
+        requestChecksumCalculation: RequestHttpChecksumConfig?,
+        requestChecksumAlgorithm: String?,
+        context: ProtocolRequestInterceptorContext<Any, HttpRequest>,
+    ): HashFunction? =
+        requestChecksumAlgorithm
+            ?.toHashFunctionOrThrow()
+            ?.takeIf { it.isSupportedForFlexibleChecksums }
+            ?: context.defaultChecksumAlgorithmName
+                ?.toHashFunctionOrThrow()
+                ?.takeIf {
+                    (requestChecksumRequired || requestChecksumCalculation == RequestHttpChecksumConfig.WHEN_SUPPORTED) &&
+                        it.isSupportedForFlexibleChecksums
+                }
+
+    /**
+     * Calculates a checksum based on the requirements and limitations of [FlexibleChecksumsRequestInterceptor]
+     */
+    private suspend fun calculateFlexibleChecksumsChecksum(
+        context: ProtocolRequestInterceptorContext<Any, HttpRequest>,
+    ): String {
         val req = context.protocolRequest.toBuilder()
-        val checksumAlgorithm = checksumAlgorithmName?.toHashFunction() ?: return null
+        val checksumAlgorithm = resolveChecksumAlgorithm(
+            requestChecksumRequired,
+            requestChecksumCalculation,
+            requestChecksumAlgorithm,
+            context,
+        )!!
 
         return when {
             req.body.contentLength == null && !req.body.isOneShot -> {
@@ -110,104 +123,66 @@ public class FlexibleChecksumsRequestInterceptor<I>(
                 channel.rollingHash(checksumAlgorithm).encodeBase64String()
             }
             else -> {
-                val bodyBytes = req.body.readAll()!!
-                req.body = bodyBytes.toHttpBody()
+                val bodyBytes = req.body.readAll() ?: byteArrayOf()
+                if (req.body.isOneShot) req.body = bodyBytes.toHttpBody()
                 bodyBytes.hash(checksumAlgorithm).encodeBase64String()
             }
         }
     }
 
-    override fun applyChecksum(
+    override suspend fun calculateChecksum(context: ProtocolRequestInterceptorContext<Any, HttpRequest>): String? =
+        calculateFlexibleChecksumsChecksum(context)
+
+    /**
+     * Applies a checksum based on the requirements and limitations of [FlexibleChecksumsRequestInterceptor]
+     */
+    private fun applyFlexibleChecksumsChecksum(
         context: ProtocolRequestInterceptorContext<Any, HttpRequest>,
         checksum: String,
     ): HttpRequest {
-        val headerName = "x-amz-checksum-$checksumAlgorithmName".lowercase()
+        val request = context.protocolRequest.toBuilder()
+        val checksumAlgorithm = resolveChecksumAlgorithm(
+            requestChecksumRequired,
+            requestChecksumCalculation,
+            requestChecksumAlgorithm,
+            context,
+        )!!
+        val checksumHeader = checksumAlgorithm.resolveChecksumAlgorithmHeaderName()
 
-        val req = context.protocolRequest.toBuilder()
+        request.headers[checksumHeader] = checksum
+        request.headers.removeAllChecksumHeadersExcept(checksumHeader)
+        context.executionContext.emitBusinessMetric(checksumAlgorithm.toBusinessMetric())
 
-        if (!req.headers.contains(headerName)) {
-            req.header(headerName, checksum)
-        }
-
-        return req.build()
+        return request.build()
     }
 
-    // FIXME this duplicates the logic from aws-signing-common, but can't import from there due to circular import.
-    private val HttpBody.isEligibleForAwsChunkedStreaming: Boolean
-        get() = (this is HttpBody.SourceContent || this is HttpBody.ChannelContent) &&
-            contentLength != null &&
-            (isOneShot || contentLength!! > 65536 * 16)
+    override fun applyChecksum(
+        context: ProtocolRequestInterceptorContext<Any, HttpRequest>,
+        checksum: String,
+    ): HttpRequest = applyFlexibleChecksumsChecksum(context, checksum)
 
     /**
-     * @return if the [HashFunction] is supported by flexible checksums
+     * Checks if a user provided a checksum for a request via an HTTP header.
+     * The header must start with "x-amz-checksum-" followed by the checksum algorithm's name.
+     * MD5 is not considered a supported checksum algorithm.
      */
-    private val HashFunction.isSupported: Boolean get() = when (this) {
-        is Crc32, is Crc32c, is Sha256, is Sha1 -> true
-        else -> false
-    }
+    private fun HttpRequest.userProvidedChecksumHeader(logger: Logger) = headers
+        .names()
+        .firstOrNull {
+            it.startsWith("x-amz-checksum-", ignoreCase = true) &&
+                !it.equals("x-amz-checksum-md5", ignoreCase = true).also { isMd5 ->
+                    if (isMd5) {
+                        logger.debug { "MD5 checksum was supplied via header, MD5 is not a supported algorithm, ignoring header" }
+                    }
+                }
+        }
 
     /**
      * Removes all checksum headers except [headerName]
      * @param headerName the checksum header name to keep
      */
-    private fun HeadersBuilder.removeAllChecksumHeadersExcept(headerName: String) {
-        names().forEach { name ->
-            if (name.startsWith("x-amz-checksum-") && name != headerName) {
-                remove(name)
-            }
-        }
-    }
-
-    /**
-     * Convert an [HttpBody] with an underlying [HashingSource] or [HashingByteReadChannel]
-     * to a [CompletingSource] or [CompletingByteReadChannel], respectively.
-     */
-    private fun HttpBody.toCompletingBody(deferred: CompletableDeferred<String>) = when (this) {
-        is HttpBody.SourceContent -> CompletingSource(deferred, (readFrom() as HashingSource)).toHttpBody(contentLength)
-        is HttpBody.ChannelContent -> CompletingByteReadChannel(deferred, (readFrom() as HashingByteReadChannel)).toHttpBody(contentLength)
-        else -> throw ClientException("HttpBody type is not supported")
-    }
-
-    /**
-     * An [SdkSource] which uses the underlying [hashingSource]'s checksum to complete a [CompletableDeferred] value.
-     */
-    internal class CompletingSource(
-        private val deferred: CompletableDeferred<String>,
-        private val hashingSource: HashingSource,
-    ) : SdkSource by hashingSource {
-        override fun read(sink: SdkBuffer, limit: Long): Long = hashingSource.read(sink, limit)
-            .also {
-                if (it == -1L) {
-                    deferred.complete(hashingSource.digest().encodeBase64String())
-                }
-            }
-    }
-
-    /**
-     * An [SdkByteReadChannel] which uses the underlying [hashingChannel]'s checksum to complete a [CompletableDeferred] value.
-     */
-    internal class CompletingByteReadChannel(
-        private val deferred: CompletableDeferred<String>,
-        private val hashingChannel: HashingByteReadChannel,
-    ) : SdkByteReadChannel by hashingChannel {
-        override suspend fun read(sink: SdkBuffer, limit: Long): Long = hashingChannel.read(sink, limit)
-            .also {
-                if (it == -1L) {
-                    deferred.complete(hashingChannel.digest().encodeBase64String())
-                }
-            }
-    }
-
-    /**
-     * Compute the rolling hash of an [SdkByteReadChannel] using [hashFunction], reading up-to [bufferSize] bytes into memory
-     * @return a ByteArray of the hash function's digest
-     */
-    private suspend fun SdkByteReadChannel.rollingHash(hashFunction: HashFunction, bufferSize: Long = 8192): ByteArray {
-        val buffer = SdkBuffer()
-        while (!isClosedForRead) {
-            read(buffer, bufferSize)
-            hashFunction.update(buffer.readToByteArray())
-        }
-        return hashFunction.digest()
-    }
+    private fun HeadersBuilder.removeAllChecksumHeadersExcept(headerName: String) =
+        names()
+            .filter { it.startsWith("x-amz-checksum-", ignoreCase = true) && !it.equals(headerName, ignoreCase = true) }
+            .forEach { remove(it) }
 }

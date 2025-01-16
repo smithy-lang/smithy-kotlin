@@ -82,7 +82,7 @@ object RuntimeTypes {
             val ContinueInterceptor = symbol("ContinueInterceptor")
             val DiscoveredEndpointErrorInterceptor = symbol("DiscoveredEndpointErrorInterceptor")
             val HttpInterceptor = symbol("HttpInterceptor")
-            val Md5ChecksumInterceptor = symbol("Md5ChecksumInterceptor")
+            val HttpChecksumRequiredInterceptor = symbol("HttpChecksumRequiredInterceptor")
             val FlexibleChecksumsRequestInterceptor = symbol("FlexibleChecksumsRequestInterceptor")
             val FlexibleChecksumsResponseInterceptor = symbol("FlexibleChecksumsResponseInterceptor")
             val ResponseLengthValidationInterceptor = symbol("ResponseLengthValidationInterceptor")
@@ -233,6 +233,9 @@ object RuntimeTypes {
         object Config : RuntimeTypePackage(KotlinDependency.SMITHY_CLIENT, "config") {
             val RequestCompressionConfig = symbol("RequestCompressionConfig")
             val CompressionClientConfig = symbol("CompressionClientConfig")
+            val HttpChecksumConfig = symbol("HttpChecksumConfig")
+            val RequestHttpChecksumConfig = symbol("RequestHttpChecksumConfig")
+            val ResponseHttpChecksumConfig = symbol("ResponseHttpChecksumConfig")
         }
 
         object Endpoints : RuntimeTypePackage(KotlinDependency.SMITHY_CLIENT, "endpoints") {
@@ -397,6 +400,7 @@ object RuntimeTypes {
             val TelemetryContextElement = symbol("TelemetryContextElement", "context")
             val TraceSpan = symbol("TraceSpan", "trace")
             val withSpan = symbol("withSpan", "trace")
+            val warn = symbol("warn", "logging")
         }
         object TelemetryDefaults : RuntimeTypePackage(KotlinDependency.TELEMETRY_DEFAULTS) {
             val Global = symbol("Global")
@@ -411,6 +415,7 @@ object RuntimeTypes {
 
         val CompletableDeferred = "kotlinx.coroutines.CompletableDeferred".toSymbol()
         val job = "kotlinx.coroutines.job".toSymbol()
+        val runBlocking = "kotlinx.coroutines.runBlocking".toSymbol()
 
         object Flow {
             // NOTE: smithy-kotlin core has an API dependency on this already
