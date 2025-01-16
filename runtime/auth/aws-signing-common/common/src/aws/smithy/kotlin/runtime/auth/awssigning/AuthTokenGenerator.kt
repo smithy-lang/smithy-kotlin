@@ -29,9 +29,13 @@ public class AuthTokenGenerator(
     private fun Url.trimScheme(): String = toString().removePrefix(scheme.protocolName).removePrefix("://")
 
     public suspend fun generateAuthToken(endpoint: Url, region: String, expiration: Duration): String {
-        val req = HttpRequest(HttpMethod.GET, endpoint, headers = Headers {
-            append("Host", endpoint.hostAndPort)
-        })
+        val req = HttpRequest(
+            HttpMethod.GET,
+            endpoint,
+            headers = Headers {
+                append("Host", endpoint.hostAndPort)
+            },
+        )
 
         val config = AwsSigningConfig {
             credentials = credentialsProvider.resolve()
