@@ -157,9 +157,8 @@ class HttpStringValuesMapSerializer(
         val paramName = binding.locationName
         // addAll collection parameter 2
         val param2 = if (mapFnContents.isEmpty()) "input.$memberName" else "input.$memberName.map { $mapFnContents }"
-        val nullCheck = if (memberSymbol.isNullable) "?" else ""
         writer.write(
-            "if (input.#L$nullCheck.isNotEmpty() == true) #L(#S, #L)",
+            "if (input.#L != null) #L(#S, #L)",
             memberName,
             binding.location.addAllFnName,
             paramName,
@@ -174,8 +173,7 @@ class HttpStringValuesMapSerializer(
         val paramName = binding.locationName
         val memberSymbol = symbolProvider.toSymbol(binding.member)
 
-        // NOTE: query parameters are allowed to be empty, whereas headers should omit empty string
-        // values from serde
+        // NOTE: query parameters are allowed to be empty
         if ((location == HttpBinding.Location.QUERY || location == HttpBinding.Location.HEADER) && binding.member.hasTrait<IdempotencyTokenTrait>()) {
             // Call the idempotency token function if no supplied value.
             writer.addImport(RuntimeTypes.SmithyClient.IdempotencyTokenProviderExt)
@@ -185,18 +183,7 @@ class HttpStringValuesMapSerializer(
                 paramName,
             )
         } else {
-            val nullCheck =
-                if (location == HttpBinding.Location.QUERY ||
-                    memberTarget.hasTrait<
-                        @Suppress("DEPRECATION")
-                        software.amazon.smithy.model.traits.EnumTrait,
-                        >()
-                ) {
-                    if (memberSymbol.isNullable) "input.$memberName != null" else ""
-                } else {
-                    val nullCheck = if (memberSymbol.isNullable) "?" else ""
-                    "input.$memberName$nullCheck.isNotEmpty() == true"
-                }
+            val nullCheck = if (memberSymbol.isNullable) "input.$memberName != null" else ""
 
             val cond = defaultCheck(binding.member) ?: nullCheck
 

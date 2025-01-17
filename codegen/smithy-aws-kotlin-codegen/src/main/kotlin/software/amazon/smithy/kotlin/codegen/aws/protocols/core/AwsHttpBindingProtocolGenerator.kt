@@ -42,8 +42,6 @@ abstract class AwsHttpBindingProtocolGenerator : HttpBindingProtocolGenerator() 
         val ignoredTests = TestMemberDelta(
             setOf(
                 "AwsJson10ClientErrorCorrectsWithDefaultValuesWhenServerFailsToSerializeRequiredValues",
-                "RestJsonNullAndEmptyHeaders",
-                "NullAndEmptyHeaders",
                 "RpcV2CborClientPopulatesDefaultsValuesWhenMissingInResponse",
                 "RpcV2CborClientPopulatesDefaultValuesInInput",
             ),
