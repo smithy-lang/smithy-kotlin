@@ -62,7 +62,7 @@ class EndpointDiscoveryIntegration : KotlinIntegration {
     override fun customizeMiddleware(
         ctx: ProtocolGenerator.GenerationContext,
         resolved: List<ProtocolMiddleware>,
-    ): List<ProtocolMiddleware> = super.customizeMiddleware(ctx, resolved) + listOf(DiscoveredEndpointErrorMiddleware)
+    ): List<ProtocolMiddleware> = resolved + DiscoveredEndpointErrorMiddleware
 
     override fun enabledForService(model: Model, settings: KotlinSettings): Boolean = isEnabledFor(model, settings)
 

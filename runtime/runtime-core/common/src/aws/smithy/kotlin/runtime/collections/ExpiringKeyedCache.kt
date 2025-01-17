@@ -11,7 +11,7 @@ import aws.smithy.kotlin.runtime.util.ExpiringValue
  * [invalidate] methods are `suspend` functions to allow for cross-context synchronization and potentially-expensive
  * value lookup.
  *
- * Values in the cache _may_ expire and are retrieved as [ExpiringValue]. When a value absent/expired in the cache,
+ * Values in the cache _may_ expire and are retrieved as [ExpiringValue]. When a value is absent/expired in the cache,
  * invoking [get] will cause a lookup to occur via the function's `valueLookup` parameter.
  *
  * @param K The type of the keys of this cache
@@ -29,7 +29,7 @@ public interface ExpiringKeyedCache<K, V> {
      * exceptions, fall back to other caches, etc.
      * @param key The key for which to look up a value
      * @param valueLookup A possibly-suspending function which returns the read-through value associated with a given
-     * key. This function is invoked when the cache, for a given key, does not contain a value or the value is expired.
+     * key. This function is invoked when the cache does not contain the given [key] or when the value is expired.
      */
     public suspend fun get(key: K, valueLookup: suspend (K) -> ExpiringValue<V>): V
 

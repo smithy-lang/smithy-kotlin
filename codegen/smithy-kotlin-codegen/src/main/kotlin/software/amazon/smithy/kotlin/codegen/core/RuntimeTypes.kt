@@ -98,7 +98,6 @@ object RuntimeTypes {
     }
 
     object Core : RuntimeTypePackage(KotlinDependency.CORE) {
-        val Clock = symbol("Clock", "time")
         val ExecutionContext = symbol("ExecutionContext", "operation")
         val ErrorMetadata = symbol("ErrorMetadata")
         val ServiceErrorMetadata = symbol("ServiceErrorMetadata")

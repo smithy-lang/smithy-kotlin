@@ -36,16 +36,17 @@ class DefaultEndpointDiscovererGenerator(private val ctx: CodegenContext, privat
 
     fun render() {
         delegator.applyFileWriter(symbol) {
+            val service = clientName(ctx.settings.sdkId)
             dokka(
                 """
-                    A class which looks up specific endpoints for ${ctx.settings.sdkId} calls via the `$operationName`
-                    API. These unique endpoints are cached as appropriate to avoid unnecessary latency in subsequent
-                    calls.
+                    A class which looks up specific endpoints for $service calls via the `$operationName` API. These
+                    unique endpoints are cached as appropriate to avoid unnecessary latency in subsequent calls.
                     @param cache An [ExpiringKeyedCache] implementation used to cache discovered hosts
                 """.trimIndent(),
             )
+
             withBlock(
-                "#1L class #2T(#1L val cache: #3T<DiscoveryParams, #4T> = #5T(10.#6T, #7T.System)) : #8T {",
+                "#1L class #2T(#1L val cache: #3T<DiscoveryParams, #4T> = #5T(10.#6T)) : #7T {",
                 "}",
                 ctx.settings.api.visibility,
                 symbol,
@@ -53,7 +54,6 @@ class DefaultEndpointDiscovererGenerator(private val ctx: CodegenContext, privat
                 RuntimeTypes.Core.Net.Host,
                 RuntimeTypes.Core.Collections.PeriodicSweepCache,
                 KotlinTypes.Time.minutes,
-                RuntimeTypes.Core.Clock,
                 EndpointDiscovererInterfaceGenerator.symbolFor(ctx.settings),
             ) {
                 renderAsEndpointResolver()

@@ -10,11 +10,11 @@ fun model() =
     // language=smithy
     """
         namespace com.test
-
+        
         use aws.protocols#awsJson1_1
         use aws.api#service
         use aws.auth#sigv4
-
+        
         @service(sdkId: "test")
         @sigv4(name: "test")
         @awsJson1_1
@@ -30,7 +30,7 @@ fun model() =
         @error("client")
         @httpError(421)
         structure BadEndpointError { }
-
+        
         @http(method: "GET", uri: "/endpoints")
         operation GetEndpoints {
             input: GetEndpointsInput

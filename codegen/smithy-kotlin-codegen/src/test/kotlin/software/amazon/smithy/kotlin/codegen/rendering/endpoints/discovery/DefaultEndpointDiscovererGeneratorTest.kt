@@ -12,28 +12,35 @@ import software.amazon.smithy.kotlin.codegen.test.shouldContainOnlyOnceWithDiff
 import software.amazon.smithy.kotlin.codegen.test.toCodegenContext
 
 class DefaultEndpointDiscovererGeneratorTest {
+    private val renderedCodegen: String = run {
+        val model = model()
+        val testCtx = model.newTestContext()
+        val delegator = testCtx.generationCtx.delegator
+        val generator = DefaultEndpointDiscovererGenerator(testCtx.toCodegenContext(), delegator)
+        generator.render()
+
+        delegator.flushWriters()
+        val testManifest = delegator.fileManifest as MockManifest
+        testManifest.expectFileString("/src/main/kotlin/com/test/endpoints/DefaultTestEndpointDiscoverer.kt")
+    }
+
     @Test
     fun testClass() {
-        val actual = render()
-
-        actual.shouldContainOnlyOnceWithDiff(
+        renderedCodegen.shouldContainOnlyOnceWithDiff(
             """
                 /**
-                 * A class which looks up specific endpoints for Test calls via the `getEndpoints`
-                 * API. These unique endpoints are cached as appropriate to avoid unnecessary latency in subsequent
-                 * calls.
+                 * A class which looks up specific endpoints for Test calls via the `getEndpoints` API. These
+                 * unique endpoints are cached as appropriate to avoid unnecessary latency in subsequent calls.
                  * @param cache An [ExpiringKeyedCache] implementation used to cache discovered hosts
                  */
-                public class DefaultTestEndpointDiscoverer(public val cache: ExpiringKeyedCache<DiscoveryParams, Host> = PeriodicSweepCache(10.minutes, Clock.System)) : TestEndpointDiscoverer {
+                public class DefaultTestEndpointDiscoverer(public val cache: ExpiringKeyedCache<DiscoveryParams, Host> = PeriodicSweepCache(10.minutes)) : TestEndpointDiscoverer {
             """.trimIndent(),
         )
     }
 
     @Test
     fun testAsEndpointResolver() {
-        val actual = render()
-
-        actual.shouldContainOnlyOnceWithDiff(
+        renderedCodegen.shouldContainOnlyOnceWithDiff(
             """
                 override fun asEndpointResolver(client: TestClient, delegate: EndpointResolver): EndpointResolver = EndpointResolver { request ->
                     if (client.config.endpointUrl == null) {
@@ -60,26 +67,12 @@ class DefaultEndpointDiscovererGeneratorTest {
 
     @Test
     fun testInvalidate() {
-        val actual = render()
-
-        actual.shouldContainOnlyOnceWithDiff(
+        renderedCodegen.shouldContainOnlyOnceWithDiff(
             """
                 override public suspend fun invalidate(context: ExecutionContext) {
                     context.getOrNull(DiscoveryParamsKey)?.let { cache.invalidate(it) }
                 }
             """.formatForTest(),
         )
-    }
-
-    private fun render(): String {
-        val model = model()
-        val testCtx = model.newTestContext()
-        val delegator = testCtx.generationCtx.delegator
-        val generator = DefaultEndpointDiscovererGenerator(testCtx.toCodegenContext(), delegator)
-        generator.render()
-
-        delegator.flushWriters()
-        val testManifest = delegator.fileManifest as MockManifest
-        return testManifest.expectFileString("/src/main/kotlin/com/test/endpoints/DefaultTestEndpointDiscoverer.kt")
     }
 }
