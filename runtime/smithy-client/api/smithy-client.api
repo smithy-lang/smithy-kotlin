@@ -353,3 +353,15 @@ public final class aws/smithy/kotlin/runtime/client/endpoints/functions/Url {
 	public fun toString ()Ljava/lang/String;
 }
 
+public abstract interface class aws/smithy/kotlin/runtime/client/region/RegionProvider {
+	public abstract fun getRegion (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
+public class aws/smithy/kotlin/runtime/client/region/RegionProviderChain : aws/smithy/kotlin/runtime/client/region/RegionProvider {
+	public fun <init> (Ljava/util/List;)V
+	public fun <init> ([Laws/smithy/kotlin/runtime/client/region/RegionProvider;)V
+	protected final fun getProviders ()[Laws/smithy/kotlin/runtime/client/region/RegionProvider;
+	public fun getRegion (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun toString ()Ljava/lang/String;
+}
+
