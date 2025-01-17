@@ -23,7 +23,7 @@ import kotlin.reflect.KClass
 @InternalApi
 public class DiscoveredEndpointErrorInterceptor(
     private val errorType: KClass<out ServiceException>,
-    private val invalidate: (ExecutionContext) -> Unit,
+    private val invalidate: suspend (ExecutionContext) -> Unit,
 ) : HttpInterceptor {
     override suspend fun modifyBeforeAttemptCompletion(
         context: ResponseInterceptorContext<Any, Any, HttpRequest, HttpResponse?>,
