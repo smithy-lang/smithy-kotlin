@@ -54,13 +54,13 @@ class RegionSupport : KotlinIntegration {
             name = "regionProvider"
             symbol = RuntimeTypes.SmithyClient.Region.RegionProvider
             documentation = """
-              An optional region provider that determines the AWS region for client operations. When specified, this provider
-              takes precedence over the default region provider chain, unless a static region is explicitly configured.
+                An optional region provider that determines the AWS region for client operations. When specified, this provider
+                takes precedence over the default region provider chain, unless a static region is explicitly configured.
               
-              The region resolution order is:
-              1. Static region (if specified)
-              2. Custom region provider (if configured)
-              3. Default region provider chain
+                The region resolution order is:
+                1. Static region (if specified)
+                2. Custom region provider (if configured)
+                3. Default region provider chain
             """.trimIndent()
         }
     }
@@ -77,10 +77,7 @@ class RegionSupport : KotlinIntegration {
         return supportsSigv4 || hasRegionBuiltin || isAwsSdk
     }
 
-    override fun additionalServiceConfigProps(ctx: CodegenContext): List<ConfigProperty> = buildList {
-        add(RegionProp)
-        add(RegionProviderProp)
-    }
+    override fun additionalServiceConfigProps(ctx: CodegenContext): List<ConfigProperty> = listOf(RegionProp, RegionProviderProp)
 
     override fun customizeEndpointResolution(ctx: ProtocolGenerator.GenerationContext): EndpointCustomization =
         object : EndpointCustomization {
