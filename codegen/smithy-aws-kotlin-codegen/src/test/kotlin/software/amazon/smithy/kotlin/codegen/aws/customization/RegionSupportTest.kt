@@ -74,4 +74,3 @@ class RegionSupportTest {
         contents.shouldContainOnlyOnceWithDiff(expectedImpl)
     }
 }
-
