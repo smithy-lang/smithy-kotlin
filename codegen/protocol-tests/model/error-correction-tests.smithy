@@ -128,8 +128,8 @@ apply SayHello @httpResponseTests([
             listValue: [],
             mapValue: {},
             nestedListValue: [],
-            document: null,
-            nested: null,
+            document: {},
+            nested: { a: "" },
             timestampValue: 0
         },
         code: 200,
@@ -151,7 +151,7 @@ apply SayHelloXml @httpResponseTests([
             listValue: [],
             mapValue: {},
             nestedListValue: [],
-            nested: null,
+            nested: { a: "" },
             timestampValue: 0
         },
         code: 200,
