@@ -84,7 +84,6 @@ class BigIntegerTest {
             "0x123456789abcdef0" to "1311768467463790320",
             "0x00ffffffffffffffffffffffffffffffec" to "340282366920938463463374607431768211436",
             "0x81445edf51ddc07216da5621c727bfd379d400f3da08018d45749a" to "-52134902384590238490284023839028330923830129830129301234239834982",
-
         )
 
         tests.forEach { (hex, expected) ->

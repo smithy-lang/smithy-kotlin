@@ -1,3 +1,13 @@
+public final class aws/smithy/kotlin/runtime/ClientErrorContext {
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;)V
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getFormatted ()Ljava/lang/String;
+	public final fun getKey ()Ljava/lang/String;
+	public final fun getValue ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
 public class aws/smithy/kotlin/runtime/ClientException : aws/smithy/kotlin/runtime/SdkBaseException {
 	public fun <init> ()V
 	public fun <init> (Ljava/lang/String;)V
@@ -9,11 +19,13 @@ public class aws/smithy/kotlin/runtime/ErrorMetadata {
 	public static final field Companion Laws/smithy/kotlin/runtime/ErrorMetadata$Companion;
 	public fun <init> ()V
 	public final fun getAttributes ()Laws/smithy/kotlin/runtime/collections/MutableAttributes;
+	public final fun getClientContext ()Ljava/util/List;
 	public final fun isRetryable ()Z
 	public final fun isThrottling ()Z
 }
 
 public final class aws/smithy/kotlin/runtime/ErrorMetadata$Companion {
+	public final fun getClientContext ()Laws/smithy/kotlin/runtime/collections/AttributeKey;
 	public final fun getRetryable ()Laws/smithy/kotlin/runtime/collections/AttributeKey;
 	public final fun getThrottlingError ()Laws/smithy/kotlin/runtime/collections/AttributeKey;
 }
@@ -65,7 +77,6 @@ public class aws/smithy/kotlin/runtime/ServiceException : aws/smithy/kotlin/runt
 	public fun <init> (Ljava/lang/String;)V
 	public fun <init> (Ljava/lang/String;Ljava/lang/Throwable;)V
 	public fun <init> (Ljava/lang/Throwable;)V
-	protected fun getDisplayMetadata ()Ljava/util/List;
 	public fun getMessage ()Ljava/lang/String;
 	public synthetic fun getSdkErrorMetadata ()Laws/smithy/kotlin/runtime/ErrorMetadata;
 	public fun getSdkErrorMetadata ()Laws/smithy/kotlin/runtime/ServiceErrorMetadata;
@@ -96,6 +107,14 @@ public final class aws/smithy/kotlin/runtime/businessmetrics/BusinessMetricsUtil
 
 public final class aws/smithy/kotlin/runtime/businessmetrics/SmithyBusinessMetric : java/lang/Enum, aws/smithy/kotlin/runtime/businessmetrics/BusinessMetric {
 	public static final field ACCOUNT_ID_BASED_ENDPOINT Laws/smithy/kotlin/runtime/businessmetrics/SmithyBusinessMetric;
+	public static final field FLEXIBLE_CHECKSUMS_REQ_CRC32 Laws/smithy/kotlin/runtime/businessmetrics/SmithyBusinessMetric;
+	public static final field FLEXIBLE_CHECKSUMS_REQ_CRC32C Laws/smithy/kotlin/runtime/businessmetrics/SmithyBusinessMetric;
+	public static final field FLEXIBLE_CHECKSUMS_REQ_SHA1 Laws/smithy/kotlin/runtime/businessmetrics/SmithyBusinessMetric;
+	public static final field FLEXIBLE_CHECKSUMS_REQ_SHA256 Laws/smithy/kotlin/runtime/businessmetrics/SmithyBusinessMetric;
+	public static final field FLEXIBLE_CHECKSUMS_REQ_WHEN_REQUIRED Laws/smithy/kotlin/runtime/businessmetrics/SmithyBusinessMetric;
+	public static final field FLEXIBLE_CHECKSUMS_REQ_WHEN_SUPPORTED Laws/smithy/kotlin/runtime/businessmetrics/SmithyBusinessMetric;
+	public static final field FLEXIBLE_CHECKSUMS_RES_WHEN_REQUIRED Laws/smithy/kotlin/runtime/businessmetrics/SmithyBusinessMetric;
+	public static final field FLEXIBLE_CHECKSUMS_RES_WHEN_SUPPORTED Laws/smithy/kotlin/runtime/businessmetrics/SmithyBusinessMetric;
 	public static final field GZIP_REQUEST_COMPRESSION Laws/smithy/kotlin/runtime/businessmetrics/SmithyBusinessMetric;
 	public static final field PAGINATOR Laws/smithy/kotlin/runtime/businessmetrics/SmithyBusinessMetric;
 	public static final field PROTOCOL_RPC_V2_CBOR Laws/smithy/kotlin/runtime/businessmetrics/SmithyBusinessMetric;
@@ -137,6 +156,7 @@ public final class aws/smithy/kotlin/runtime/collections/AttributesBuilder {
 }
 
 public final class aws/smithy/kotlin/runtime/collections/AttributesKt {
+	public static final fun appendValue (Laws/smithy/kotlin/runtime/collections/MutableAttributes;Laws/smithy/kotlin/runtime/collections/AttributeKey;Ljava/lang/Object;)V
 	public static final fun attributesOf (Lkotlin/jvm/functions/Function1;)Laws/smithy/kotlin/runtime/collections/Attributes;
 	public static final fun emptyAttributes ()Laws/smithy/kotlin/runtime/collections/Attributes;
 	public static final fun get (Laws/smithy/kotlin/runtime/collections/Attributes;Laws/smithy/kotlin/runtime/collections/AttributeKey;)Ljava/lang/Object;
@@ -346,6 +366,7 @@ public final class aws/smithy/kotlin/runtime/config/EnvironmentSettingKt {
 public final class aws/smithy/kotlin/runtime/content/BigDecimal : java/lang/Number, java/lang/Comparable {
 	public fun <init> (Laws/smithy/kotlin/runtime/content/BigInteger;I)V
 	public fun <init> (Ljava/lang/String;)V
+	public synthetic fun <init> (Ljava/math/BigDecimal;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun byteValue ()B
 	public fun compareTo (Laws/smithy/kotlin/runtime/content/BigDecimal;)I
 	public synthetic fun compareTo (Ljava/lang/Object;)I
@@ -354,9 +375,11 @@ public final class aws/smithy/kotlin/runtime/content/BigDecimal : java/lang/Numb
 	public final fun floatValue ()F
 	public final fun getExponent ()I
 	public final fun getMantissa ()Laws/smithy/kotlin/runtime/content/BigInteger;
-	public final fun getValue ()Ljava/lang/String;
+	public fun hashCode ()I
 	public final fun intValue ()I
 	public final fun longValue ()J
+	public final fun minus (Laws/smithy/kotlin/runtime/content/BigDecimal;)Laws/smithy/kotlin/runtime/content/BigDecimal;
+	public final fun plus (Laws/smithy/kotlin/runtime/content/BigDecimal;)Laws/smithy/kotlin/runtime/content/BigDecimal;
 	public final fun shortValue ()S
 	public fun toByte ()B
 	public fun toDouble ()D
@@ -365,6 +388,7 @@ public final class aws/smithy/kotlin/runtime/content/BigDecimal : java/lang/Numb
 	public fun toLong ()J
 	public final fun toPlainString ()Ljava/lang/String;
 	public fun toShort ()S
+	public fun toString ()Ljava/lang/String;
 }
 
 public final class aws/smithy/kotlin/runtime/content/BigInteger : java/lang/Number, java/lang/Comparable {
@@ -376,7 +400,6 @@ public final class aws/smithy/kotlin/runtime/content/BigInteger : java/lang/Numb
 	public final fun doubleValue ()D
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun floatValue ()F
-	public final fun getValue ()Ljava/lang/String;
 	public fun hashCode ()I
 	public final fun intValue ()I
 	public final fun longValue ()J
@@ -391,6 +414,8 @@ public final class aws/smithy/kotlin/runtime/content/BigInteger : java/lang/Numb
 	public fun toLong ()J
 	public fun toShort ()S
 	public fun toString ()Ljava/lang/String;
+	public final fun toString (I)Ljava/lang/String;
+	public static synthetic fun toString$default (Laws/smithy/kotlin/runtime/content/BigInteger;IILjava/lang/Object;)Ljava/lang/String;
 }
 
 public abstract class aws/smithy/kotlin/runtime/content/ByteStream {
@@ -690,7 +715,12 @@ public final class aws/smithy/kotlin/runtime/hashing/HashFunction$DefaultImpls {
 public final class aws/smithy/kotlin/runtime/hashing/HashFunctionKt {
 	public static final fun hash ([BLaws/smithy/kotlin/runtime/hashing/HashFunction;)[B
 	public static final fun hash ([BLkotlin/jvm/functions/Function0;)[B
+	public static final fun isSupportedForFlexibleChecksums (Laws/smithy/kotlin/runtime/hashing/HashFunction;)Z
+	public static final fun resolveChecksumAlgorithmHeaderName (Laws/smithy/kotlin/runtime/hashing/HashFunction;)Ljava/lang/String;
+	public static final fun resolveChecksumAlgorithmHeaderName (Ljava/lang/String;)Ljava/lang/String;
+	public static final fun toBusinessMetric (Laws/smithy/kotlin/runtime/hashing/HashFunction;)Laws/smithy/kotlin/runtime/businessmetrics/BusinessMetric;
 	public static final fun toHashFunction (Ljava/lang/String;)Laws/smithy/kotlin/runtime/hashing/HashFunction;
+	public static final fun toHashFunctionOrThrow (Ljava/lang/String;)Laws/smithy/kotlin/runtime/hashing/HashFunction;
 }
 
 public final class aws/smithy/kotlin/runtime/hashing/HmacKt {
@@ -760,6 +790,12 @@ public final class aws/smithy/kotlin/runtime/io/ClosedWriteChannelException : ja
 	public synthetic fun <init> (Ljava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 }
 
+public class aws/smithy/kotlin/runtime/io/EOFException : java/io/EOFException {
+	public fun <init> ()V
+	public fun <init> (Ljava/lang/String;)V
+	public fun <init> (Ljava/lang/String;Ljava/lang/Throwable;)V
+}
+
 public final class aws/smithy/kotlin/runtime/io/GzipByteReadChannel : aws/smithy/kotlin/runtime/io/SdkByteReadChannel {
 	public fun <init> (Laws/smithy/kotlin/runtime/io/SdkByteReadChannel;)V
 	public fun cancel (Ljava/lang/Throwable;)Z
@@ -805,6 +841,10 @@ public final class aws/smithy/kotlin/runtime/io/HashingSource : aws/smithy/kotli
 }
 
 public final class aws/smithy/kotlin/runtime/io/JavaIOKt {
+	public static final fun inputStream (Laws/smithy/kotlin/runtime/io/SdkBuffer;)Ljava/io/InputStream;
+	public static final fun isOpen (Laws/smithy/kotlin/runtime/io/SdkBuffer;)Z
+	public static final fun outputStream (Laws/smithy/kotlin/runtime/io/SdkBuffer;)Ljava/io/OutputStream;
+	public static final fun read (Laws/smithy/kotlin/runtime/io/SdkBuffer;Ljava/nio/ByteBuffer;)I
 	public static final fun sink (Ljava/io/File;)Laws/smithy/kotlin/runtime/io/SdkSink;
 	public static final fun sink (Ljava/io/OutputStream;)Laws/smithy/kotlin/runtime/io/SdkSink;
 	public static final fun sink (Ljava/nio/file/Path;)Laws/smithy/kotlin/runtime/io/SdkSink;
@@ -815,6 +855,7 @@ public final class aws/smithy/kotlin/runtime/io/JavaIOKt {
 	public static final fun source (Ljava/nio/file/Path;Lkotlin/ranges/LongRange;)Laws/smithy/kotlin/runtime/io/SdkSource;
 	public static synthetic fun source$default (Ljava/io/File;JJILjava/lang/Object;)Laws/smithy/kotlin/runtime/io/SdkSource;
 	public static synthetic fun source$default (Ljava/nio/file/Path;JJILjava/lang/Object;)Laws/smithy/kotlin/runtime/io/SdkSource;
+	public static final fun write (Laws/smithy/kotlin/runtime/io/SdkBuffer;Ljava/nio/ByteBuffer;)I
 }
 
 public final class aws/smithy/kotlin/runtime/io/SdkBuffer : aws/smithy/kotlin/runtime/io/SdkBufferedSink, aws/smithy/kotlin/runtime/io/SdkBufferedSource {
@@ -827,12 +868,8 @@ public final class aws/smithy/kotlin/runtime/io/SdkBuffer : aws/smithy/kotlin/ru
 	public fun getBuffer ()Laws/smithy/kotlin/runtime/io/SdkBuffer;
 	public final fun getSize ()J
 	public fun hashCode ()I
-	public fun inputStream ()Ljava/io/InputStream;
-	public fun isOpen ()Z
-	public fun outputStream ()Ljava/io/OutputStream;
 	public fun peek ()Laws/smithy/kotlin/runtime/io/SdkBufferedSource;
 	public fun read (Laws/smithy/kotlin/runtime/io/SdkBuffer;J)J
-	public fun read (Ljava/nio/ByteBuffer;)I
 	public fun read ([BII)I
 	public fun readAll (Laws/smithy/kotlin/runtime/io/SdkSink;)J
 	public fun readByte ()B
@@ -852,7 +889,6 @@ public final class aws/smithy/kotlin/runtime/io/SdkBuffer : aws/smithy/kotlin/ru
 	public fun toString ()Ljava/lang/String;
 	public fun write (Laws/smithy/kotlin/runtime/io/SdkBuffer;J)V
 	public fun write (Laws/smithy/kotlin/runtime/io/SdkSource;J)V
-	public fun write (Ljava/nio/ByteBuffer;)I
 	public fun write ([BII)V
 	public fun writeAll (Laws/smithy/kotlin/runtime/io/SdkSource;)J
 	public fun writeByte (B)V
@@ -865,11 +901,9 @@ public final class aws/smithy/kotlin/runtime/io/SdkBuffer : aws/smithy/kotlin/ru
 	public fun writeUtf8 (Ljava/lang/String;II)V
 }
 
-public abstract interface class aws/smithy/kotlin/runtime/io/SdkBufferedSink : aws/smithy/kotlin/runtime/io/SdkSink, java/nio/channels/WritableByteChannel {
+public abstract interface class aws/smithy/kotlin/runtime/io/SdkBufferedSink : aws/smithy/kotlin/runtime/io/SdkSink {
 	public abstract fun emit ()V
-	public abstract fun flush ()V
 	public abstract fun getBuffer ()Laws/smithy/kotlin/runtime/io/SdkBuffer;
-	public abstract fun outputStream ()Ljava/io/OutputStream;
 	public abstract fun write (Laws/smithy/kotlin/runtime/io/SdkSource;J)V
 	public abstract fun write ([BII)V
 	public abstract fun writeAll (Laws/smithy/kotlin/runtime/io/SdkSource;)J
@@ -888,10 +922,9 @@ public final class aws/smithy/kotlin/runtime/io/SdkBufferedSink$DefaultImpls {
 	public static synthetic fun writeUtf8$default (Laws/smithy/kotlin/runtime/io/SdkBufferedSink;Ljava/lang/String;IIILjava/lang/Object;)V
 }
 
-public abstract interface class aws/smithy/kotlin/runtime/io/SdkBufferedSource : aws/smithy/kotlin/runtime/io/SdkSource, java/nio/channels/ReadableByteChannel {
+public abstract interface class aws/smithy/kotlin/runtime/io/SdkBufferedSource : aws/smithy/kotlin/runtime/io/SdkSource {
 	public abstract fun exhausted ()Z
 	public abstract fun getBuffer ()Laws/smithy/kotlin/runtime/io/SdkBuffer;
-	public abstract fun inputStream ()Ljava/io/InputStream;
 	public abstract fun peek ()Laws/smithy/kotlin/runtime/io/SdkBufferedSource;
 	public abstract fun read ([BII)I
 	public abstract fun readAll (Laws/smithy/kotlin/runtime/io/SdkSink;)J
@@ -949,6 +982,8 @@ public final class aws/smithy/kotlin/runtime/io/SdkByteReadChannelKt {
 	public static final fun readFully (Laws/smithy/kotlin/runtime/io/SdkByteReadChannel;Laws/smithy/kotlin/runtime/io/SdkBuffer;JLkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public static final fun readRemaining (Laws/smithy/kotlin/runtime/io/SdkByteReadChannel;Laws/smithy/kotlin/runtime/io/SdkBuffer;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public static final fun readToBuffer (Laws/smithy/kotlin/runtime/io/SdkByteReadChannel;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static final fun rollingHash (Laws/smithy/kotlin/runtime/io/SdkByteReadChannel;Laws/smithy/kotlin/runtime/hashing/HashFunction;JLkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static synthetic fun rollingHash$default (Laws/smithy/kotlin/runtime/io/SdkByteReadChannel;Laws/smithy/kotlin/runtime/hashing/HashFunction;JLkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
 	public static final fun writeAll (Laws/smithy/kotlin/runtime/io/SdkByteWriteChannel;Laws/smithy/kotlin/runtime/io/SdkSource;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
@@ -1023,14 +1058,11 @@ public abstract interface class aws/smithy/kotlin/runtime/io/SdkSource : java/io
 	public abstract fun read (Laws/smithy/kotlin/runtime/io/SdkBuffer;J)J
 }
 
-public final class aws/smithy/kotlin/runtime/io/SdkSourceJVMKt {
+public final class aws/smithy/kotlin/runtime/io/SdkSourceKt {
+	public static final fun readFully (Laws/smithy/kotlin/runtime/io/SdkSource;Laws/smithy/kotlin/runtime/io/SdkBuffer;J)V
 	public static final fun readToByteArray (Laws/smithy/kotlin/runtime/io/SdkSource;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public static final fun toSdkByteReadChannel (Laws/smithy/kotlin/runtime/io/SdkSource;Lkotlinx/coroutines/CoroutineScope;)Laws/smithy/kotlin/runtime/io/SdkByteReadChannel;
 	public static synthetic fun toSdkByteReadChannel$default (Laws/smithy/kotlin/runtime/io/SdkSource;Lkotlinx/coroutines/CoroutineScope;ILjava/lang/Object;)Laws/smithy/kotlin/runtime/io/SdkByteReadChannel;
-}
-
-public final class aws/smithy/kotlin/runtime/io/SdkSourceKt {
-	public static final fun readFully (Laws/smithy/kotlin/runtime/io/SdkSource;Laws/smithy/kotlin/runtime/io/SdkBuffer;J)V
 }
 
 public final class aws/smithy/kotlin/runtime/io/internal/ConvertKt {
@@ -1688,6 +1720,7 @@ public abstract class aws/smithy/kotlin/runtime/retries/RetryException : aws/smi
 	public final fun getAttempts ()I
 	public final fun getLastException ()Ljava/lang/Throwable;
 	public final fun getLastResponse ()Ljava/lang/Object;
+	public fun toString ()Ljava/lang/String;
 }
 
 public final class aws/smithy/kotlin/runtime/retries/RetryFailureException : aws/smithy/kotlin/runtime/retries/RetryException {

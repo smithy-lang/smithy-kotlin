@@ -4,7 +4,10 @@
  */
 package aws.smithy.kotlin.runtime.io
 
+import aws.smithy.kotlin.runtime.InternalApi
+import aws.smithy.kotlin.runtime.hashing.HashFunction
 import aws.smithy.kotlin.runtime.io.internal.SdkDispatchers
+import kotlinx.coroutines.IO
 import kotlinx.coroutines.withContext
 
 /**
@@ -130,4 +133,18 @@ public suspend fun SdkByteWriteChannel.writeAll(source: SdkSource): Long = withC
         write(buffer)
     }
     totalRead
+}
+
+/**
+ * Compute the rolling hash of an [SdkByteReadChannel] using [hashFunction], reading up-to [bufferSize] bytes into memory
+ * @return a ByteArray of the hash function's digest
+ */
+@InternalApi
+public suspend fun SdkByteReadChannel.rollingHash(hashFunction: HashFunction, bufferSize: Long = 8192): ByteArray {
+    val buffer = SdkBuffer()
+    while (!isClosedForRead) {
+        read(buffer, bufferSize)
+        hashFunction.update(buffer.readToByteArray())
+    }
+    return hashFunction.digest()
 }

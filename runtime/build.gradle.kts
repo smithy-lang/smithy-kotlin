@@ -88,6 +88,27 @@ subprojects {
     tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinNativeCompile> {
         compilerOptions {
             freeCompilerArgs.add("-Xexpect-actual-classes")
+
+            // FIXME When building LinuxX64 on AL2 the linker inclues a bunch of dynamic links to unavailable versions
+            //  of zlib. The below workaround forces the linker to statically link zlib but it's a hack because the
+            //  linker will still dynamically link zlib (although the executable will no longer fail at runtime due to
+            //  link resolution failures). The correct solution for this is probably containerized builds similar to
+            //  what we do in aws-crt-kotlin. The following compiler args were helpful in debugging this issue:
+            //  * Enable verbose compiler output                        : -verbose
+            //  * Increase verbosity during the compiler's linker phase : -Xverbose-phases=Linker
+            //  * Enable verbose linker output from gold                : -linker-option --verbose
+            if (target.contains("linux", ignoreCase = true)) {
+                freeCompilerArgs.addAll(
+                    listOf(
+                        "-linker-option", // The subsequent argument is for the linker
+                        "-Bstatic", // Enable static linking for the libraries that follow
+                        "-linker-option", // The subsequent argument is for the linker
+                        "-lz", // Link zlib statically (because of -Bstatic above)
+                        "-linker-option", // The subsequent argument is for the linker
+                        "-Bdynamic", // Restore dynamic linking, which is the default
+                    ),
+                )
+            }
         }
     }
 }

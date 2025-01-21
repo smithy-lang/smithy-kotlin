@@ -6,6 +6,7 @@ package aws.smithy.kotlin.runtime.auth.awssigning
 
 import aws.smithy.kotlin.runtime.auth.awscredentials.CredentialsProvider
 import aws.smithy.kotlin.runtime.auth.awssigning.AwsSigningConfig.Companion.invoke
+import aws.smithy.kotlin.runtime.http.Headers
 import aws.smithy.kotlin.runtime.http.HttpMethod
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.net.url.Url
@@ -28,7 +29,13 @@ public class AuthTokenGenerator(
     private fun Url.trimScheme(): String = toString().removePrefix(scheme.protocolName).removePrefix("://")
 
     public suspend fun generateAuthToken(endpoint: Url, region: String, expiration: Duration): String {
-        val req = HttpRequest(HttpMethod.GET, endpoint)
+        val req = HttpRequest(
+            HttpMethod.GET,
+            endpoint,
+            headers = Headers {
+                append("Host", endpoint.hostAndPort)
+            },
+        )
 
         val config = AwsSigningConfig {
             credentials = credentialsProvider.resolve()
