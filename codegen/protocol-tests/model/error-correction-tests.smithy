@@ -39,9 +39,7 @@ operation SayHelloXml { output: TestOutput, errors: [Error] }
 
 structure TestOutputDocument with [TestStruct] {
     innerField: Nested,
-
-    // Note: This shape _should_ be @required, but causes Smithy httpResponseTests validation to fail.
-    // We expect `nested` to be deserialized as `null` and enforce @required using a runtime check, but Smithy validator doesn't recognize / allow this.
+    @required
     document: Document
 }
 structure TestOutput with [TestStruct] { innerField: Nested }
@@ -66,8 +64,7 @@ structure TestStruct {
     @required
     nestedListValue: NestedList
 
-    // Note: This shape _should_ be @required, but causes Smithy httpResponseTests validation to fail.
-    // We expect `nested` to be deserialized as `null` and enforce @required using a runtime check, but Smithy validator doesn't recognize / allow this.
+    @required
     nested: Nested
 
     @required
