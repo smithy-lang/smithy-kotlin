@@ -5,7 +5,6 @@
 
 package aws.smithy.kotlin.runtime.io
 
-import aws.smithy.kotlin.runtime.IgnoreNative
 import kotlin.test.*
 
 /**
@@ -57,7 +56,6 @@ abstract class BufferedSourceTest(
         source = pipe.source
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testReadBytes() {
         sink.write(bytes(0xde, 0xad, 0xbe, 0xef))
@@ -70,7 +68,6 @@ abstract class BufferedSourceTest(
         assertTrue(source.exhausted())
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testReadEmpty() {
         assertFailsWith<EOFException> {
@@ -78,7 +75,6 @@ abstract class BufferedSourceTest(
         }
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testReadShort() {
         sink.write(bytes(0xde, 0xad, 0xbe, 0xef))
@@ -87,7 +83,6 @@ abstract class BufferedSourceTest(
         assertEquals(0xbeef.toShort(), source.readShort())
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testReadShortLe() {
         sink.write(bytes(0xde, 0xad, 0xbe, 0xef))
@@ -96,7 +91,6 @@ abstract class BufferedSourceTest(
         assertEquals(0xefbe.toShort(), source.readShortLe())
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testReadInt() {
         sink.write(bytes(0x0b, 0xad, 0xca, 0xfe))
@@ -104,7 +98,6 @@ abstract class BufferedSourceTest(
         assertEquals(0x0badcafe, source.readInt())
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testReadIntLe() {
         sink.write(bytes(0x0b, 0xad, 0xca, 0xfe))
@@ -112,7 +105,6 @@ abstract class BufferedSourceTest(
         assertEquals(-20271861, source.readIntLe())
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testReadLong() {
         sink.write(bytes(0xde, 0xad, 0xbe, 0xef, 0x10, 0x20, 0x30, 0x40))
@@ -120,7 +112,6 @@ abstract class BufferedSourceTest(
         assertEquals(-2401053092341600192, source.readLong())
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testReadLongLe() {
         sink.write(bytes(0xde, 0xad, 0xbe, 0xef, 0x10, 0x20, 0x30, 0x40))
@@ -128,7 +119,6 @@ abstract class BufferedSourceTest(
         assertEquals(4625232074423315934, source.readLongLe())
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testReadAll() {
         val content = "a lep is a ball"
@@ -140,14 +130,12 @@ abstract class BufferedSourceTest(
         assertEquals(content, testSink.readUtf8())
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testReadAllExhaustedSource() {
         val testSink: SdkSink = SdkBuffer()
         assertEquals(0, source.readAll(testSink))
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testReadExhausted() {
         val testSink = SdkBuffer()
@@ -157,7 +145,6 @@ abstract class BufferedSourceTest(
         assertEquals(sizeBefore, testSink.size)
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testReadByteArray() {
         val expected = bytes(0xde, 0xad, 0xbe, 0xef)
@@ -166,7 +153,6 @@ abstract class BufferedSourceTest(
         assertContentEquals(expected, actual)
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testReadByteArrayLimit() {
         val expected = bytes(0xde, 0xad, 0xbe, 0xef)
@@ -175,7 +161,6 @@ abstract class BufferedSourceTest(
         assertContentEquals(expected.sliceArray(0..1), actual)
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testReadByteArrayOffset() {
         val content = bytes(0xde, 0xad, 0xbe, 0xef)
@@ -187,7 +172,6 @@ abstract class BufferedSourceTest(
         assertContentEquals(expected, actual)
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testReadByteArrayOffsetAndLimit() {
         val content = bytes(0xde, 0xad, 0xbe, 0xef)
@@ -199,7 +183,6 @@ abstract class BufferedSourceTest(
         assertContentEquals(expected, actual)
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testReadByteArrayTooSmall() {
         // read into a byte array that is smaller than the available data which should result in a "short" read
@@ -210,7 +193,6 @@ abstract class BufferedSourceTest(
         assertContentEquals(expected.sliceArray(0..2), testSink)
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testReadByteArrayEOF() {
         // read into a byte array that is smaller than the available data which should result in a "short" read
@@ -220,7 +202,6 @@ abstract class BufferedSourceTest(
         }
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testSkip() {
         val content = ByteArray(16 * 1024) { it.toByte() }
@@ -232,7 +213,6 @@ abstract class BufferedSourceTest(
         assertContentEquals(content.sliceArray(8192 until content.size), actual)
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testSkipNotEnoughData() {
         val content = ByteArray(1024) { it.toByte() }
@@ -244,7 +224,6 @@ abstract class BufferedSourceTest(
         }
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testPeek() {
         sink.writeUtf8("a flix is a comb")
@@ -258,7 +237,6 @@ abstract class BufferedSourceTest(
         assertEquals(" is a comb", source.readUtf8(10))
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testMultiplePeek() {
         sink.writeUtf8("a flix is a comb")
@@ -276,7 +254,6 @@ abstract class BufferedSourceTest(
         assertEquals(" is a comb", source.readUtf8(10))
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testLargePeek() {
         sink.writeUtf8("123456")
@@ -297,7 +274,6 @@ abstract class BufferedSourceTest(
         assertTrue(source.exhausted())
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testInvalidatedPeek() {
         // peek is invalid after first call to source
@@ -316,7 +292,6 @@ abstract class BufferedSourceTest(
         }
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testRequest() {
         sink.writeUtf8("123456789".repeat(1024))
@@ -327,7 +302,6 @@ abstract class BufferedSourceTest(
         assertFalse(source.request(1024 * 9 + 1))
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testRequire() {
         sink.writeUtf8("123456789".repeat(1024))
@@ -339,7 +313,6 @@ abstract class BufferedSourceTest(
         }
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testReadFully() {
         val data = "123456789".repeat(1024)
@@ -351,7 +324,6 @@ abstract class BufferedSourceTest(
         assertEquals(data, dest.readUtf8())
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testReadFullyIllegalArgumentException() {
         val dest = SdkBuffer()
@@ -360,7 +332,6 @@ abstract class BufferedSourceTest(
         }
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testReadFullyEOFException() {
         val data = "123456789".repeat(1024)

@@ -44,6 +44,12 @@ kotlin {
             }
         }
 
+        nativeMain {
+            dependencies {
+                implementation(libs.kotlin.multiplatform.bignum)
+            }
+        }
+
         all {
             languageSettings.optIn("aws.smithy.kotlin.runtime.InternalApi")
         }
