@@ -1,5 +1,5 @@
 [versions]
-kotlin-version = "2.0.21"
+kotlin-version = "2.1.0"
 dokka-version = "1.9.10"
 
 aws-kotlin-repo-tools-version = "0.4.20-kn"
@@ -10,22 +10,23 @@ atomicfu-version = "0.25.0"
 okhttp-version = "5.0.0-alpha.14"
 okhttp4-version = "4.12.0"
 okio-version = "3.9.1"
-otel-version = "1.43.0"
+otel-version = "1.45.0"
 slf4j-version = "2.0.16"
 slf4j-v1x-version = "1.7.36"
-crt-kotlin-version = "0.8.10"
-micrometer-version = "1.13.6"
+crt-kotlin-version = "0.9.0"
+micrometer-version = "1.14.2"
 kotlin-multiplatform-bignum-version = "0.3.10"
 kotlinx-datetime-version = "0.6.1"
+binary-compatibility-validator-version = "0.16.3"
 
 # codegen
-smithy-version = "1.51.0"
+smithy-version = "1.53.0"
 smithy-gradle-version = "0.9.0"
 
 # testing
 junit-version = "5.10.5"
 kotest-version = "5.9.1"
-kotlin-compile-testing-version = "1.6.0"
+kotlin-compile-testing-version = "0.7.0"
 kotlinx-benchmark-version = "0.4.12"
 kotlinx-serialization-version = "1.7.3"
 docker-java-version = "3.4.0"
@@ -83,7 +84,7 @@ smithy-smoke-test-traits = { module = "software.amazon.smithy:smithy-smoke-test-
 junit-jupiter = { module = "org.junit.jupiter:junit-jupiter", version.ref = "junit-version" }
 junit-jupiter-params = { module = "org.junit.jupiter:junit-jupiter-params", version.ref = "junit-version" }
 
-kotlin-compile-testing = {module = "com.github.tschuchortdev:kotlin-compile-testing", version.ref = "kotlin-compile-testing-version" }
+kotlin-compile-testing = {module = "dev.zacsweers.kctfork:core", version.ref = "kotlin-compile-testing-version" }
 kotest-assertions-core = { module = "io.kotest:kotest-assertions-core", version.ref = "kotest-version" }
 kotest-assertions-core-jvm = { module = "io.kotest:kotest-assertions-core-jvm", version.ref = "kotest-version" }
 kotlinx-benchmark-runtime = { module = "org.jetbrains.kotlinx:kotlinx-benchmark-runtime", version.ref = "kotlinx-benchmark-version" }
@@ -111,7 +112,7 @@ dokka = { id = "org.jetbrains.dokka", version.ref = "dokka-version"}
 kotlin-jvm = {id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin-version" }
 kotlin-multiplatform = {id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin-version" }
 kotlinx-benchmark = { id = "org.jetbrains.kotlinx.benchmark", version.ref = "kotlinx-benchmark-version" }
-kotlinx-binary-compatibility-validator = { id = "org.jetbrains.kotlinx.binary-compatibility-validator", version = "0.13.2" }
+kotlinx-binary-compatibility-validator = { id = "org.jetbrains.kotlinx.binary-compatibility-validator", version.ref = "binary-compatibility-validator-version" }
 kotlinx-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin-version"}
 aws-kotlin-repo-tools-kmp = { id = "aws.sdk.kotlin.gradle.kmp", version.ref = "aws-kotlin-repo-tools-version" }
 aws-kotlin-repo-tools-smithybuild = { id = "aws.sdk.kotlin.gradle.smithybuild", version.ref = "aws-kotlin-repo-tools-version" }

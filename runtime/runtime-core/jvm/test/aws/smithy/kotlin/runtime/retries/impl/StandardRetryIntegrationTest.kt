@@ -5,8 +5,8 @@
 
 package aws.smithy.kotlin.runtime.retries.impl
 
+import aws.smithy.kotlin.runtime.ServiceException
 import aws.smithy.kotlin.runtime.retries.StandardRetryStrategy
-import aws.smithy.kotlin.runtime.retries.TooManyAttemptsException
 import aws.smithy.kotlin.runtime.retries.delay.StandardRetryTokenBucket
 import aws.smithy.kotlin.runtime.retries.getOrThrow
 import aws.smithy.kotlin.runtime.retries.policy.RetryDirective
@@ -15,6 +15,7 @@ import aws.smithy.kotlin.runtime.retries.policy.RetryPolicy
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.currentTime
 import kotlinx.coroutines.test.runTest
+import org.junit.jupiter.api.assertThrows
 import kotlin.test.*
 import kotlin.time.Duration.Companion.milliseconds
 
@@ -38,7 +39,7 @@ class StandardRetryIntegrationTest {
 
             val block = object {
                 var index = 0
-                suspend fun doIt() = tc.responses[index++].response.statusCode
+                suspend fun doIt() = tc.responses[index++].response.getOrThrow()
             }::doIt
 
             val startTimeMs = currentTime
@@ -47,9 +48,29 @@ class StandardRetryIntegrationTest {
 
             val finalState = tc.responses.last().expected
             when (finalState.outcome) {
-                TestOutcome.Success -> assertEquals(200, result.getOrNull()?.getOrThrow(), "Unexpected outcome for $name")
-                TestOutcome.MaxAttemptsExceeded -> assertIs<TooManyAttemptsException>(result.exceptionOrNull())
-                TestOutcome.RetryQuotaExceeded -> assertIs<TooManyAttemptsException>(result.exceptionOrNull())
+                TestOutcome.Success ->
+                    assertEquals(Ok, result.getOrThrow().getOrThrow(), "Unexpected outcome for $name")
+
+                TestOutcome.MaxAttemptsExceeded -> {
+                    val e = assertThrows<HttpCodeException>("Expected exception for $name") {
+                        result.getOrThrow()
+                    }
+
+                    assertEquals(tc.responses.last().response.statusCode, e.code, "Unexpected error code for $name")
+                }
+
+                TestOutcome.RetryQuotaExceeded -> {
+                    val e = assertThrows<HttpCodeException>("Expected exception for $name") {
+                        result.getOrThrow()
+                    }
+
+                    assertEquals(tc.responses.last().response.statusCode, e.code, "Unexpected error code for $name")
+
+                    assertTrue("Expected retry capacity message in exception for $name") {
+                        "Insufficient client capacity to attempt retry" in e.message
+                    }
+                }
+
                 else -> fail("Unexpected outcome for $name: ${finalState.outcome}")
             }
 
@@ -72,10 +93,19 @@ class StandardRetryIntegrationTest {
     }
 }
 
-object IntegrationTestPolicy : RetryPolicy<Int> {
-    override fun evaluate(result: Result<Int>): RetryDirective = when (val code = result.getOrNull()!!) {
-        200 -> RetryDirective.TerminateAndSucceed
-        500, 502 -> RetryDirective.RetryError(RetryErrorType.ServerSide)
-        else -> fail("Unexpected status code: $code")
+object IntegrationTestPolicy : RetryPolicy<Ok> {
+    override fun evaluate(result: Result<Ok>): RetryDirective = when {
+        result.isSuccess -> RetryDirective.TerminateAndSucceed
+        result.isFailure -> RetryDirective.RetryError(RetryErrorType.ServerSide)
+        else -> fail("Unexpected result condition")
     }
+}
+
+data object Ok
+
+class HttpCodeException(val code: Int) : ServiceException()
+
+fun Response.getOrThrow() = when (statusCode) {
+    200 -> Ok
+    else -> throw HttpCodeException(statusCode)
 }

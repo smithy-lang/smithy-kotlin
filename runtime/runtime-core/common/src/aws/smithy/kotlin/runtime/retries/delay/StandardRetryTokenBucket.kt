@@ -60,7 +60,7 @@ public class StandardRetryTokenBucket internal constructor(
             capacity -= size
         } else {
             if (config.useCircuitBreakerMode) {
-                throw RetryCapacityExceededException("Insufficient capacity to attempt another retry")
+                throw RetryCapacityExceededException("Insufficient capacity to attempt retry")
             }
 
             val extraRequiredCapacity = size - capacity
