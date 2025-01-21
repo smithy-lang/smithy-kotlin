@@ -99,7 +99,6 @@ public fun String.decodeBase64Bytes(): ByteArray = encodeToByteArray().decodeBas
  * Decode [ByteArray] from base64 format
  */
 public fun ByteArray.decodeBase64(): ByteArray {
-
     // Calculate the padding needed to make the length a multiple of 4
     val remainder = size % 4
     val encoded: ByteArray = if (remainder == 0) {
