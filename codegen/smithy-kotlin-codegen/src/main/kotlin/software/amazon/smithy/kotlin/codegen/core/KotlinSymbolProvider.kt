@@ -241,7 +241,7 @@ class KotlinSymbolProvider(private val model: Model, private val settings: Kotli
                     .takeUnless { it.isEmpty() }
                     ?.let { "ByteStream.fromString(${it.dq()})" }
 
-            targetShape.isBlobShape -> "${node.toString().dq()}.encodeToByteArray()"
+            targetShape.isBlobShape -> "${node.toString().dq()}.decodeBase64().encodeToByteArray()"
 
             targetShape.isDocumentShape -> getDefaultValueForDocument(node)
             targetShape.isTimestampShape -> getDefaultValueForTimestamp(node.asNumberNode().get())

@@ -41,8 +41,6 @@ abstract class AwsHttpBindingProtocolGenerator : HttpBindingProtocolGenerator() 
 
         val ignoredTests = TestMemberDelta(
             setOf(
-                "AwsJson10ClientErrorCorrectsWithDefaultValuesWhenServerFailsToSerializeRequiredValues", // FIXME Protocol test seems to be wrong. Default value of the member is "YmxvYg==" but they are expecting it to be decoded "blob".
-                "RpcV2CborClientPopulatesDefaultsValuesWhenMissingInResponse", // FIXME Protocol test seems to be wrong. Default value of member is "YWJj" but they are expecting it to be decoded "abc".
                 "RpcV2CborClientPopulatesDefaultValuesInInput", // FIXME Bug in protocol test, malformed Base64 body. Fix will be in the next Smithy release: https://github.com/smithy-lang/smithy/pull/2502
             ),
         )
