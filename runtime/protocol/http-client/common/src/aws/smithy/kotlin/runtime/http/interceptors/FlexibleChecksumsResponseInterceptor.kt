@@ -8,10 +8,11 @@ package aws.smithy.kotlin.runtime.http.interceptors
 import aws.smithy.kotlin.runtime.ClientException
 import aws.smithy.kotlin.runtime.InternalApi
 import aws.smithy.kotlin.runtime.client.ProtocolResponseInterceptorContext
-import aws.smithy.kotlin.runtime.client.RequestInterceptorContext
+import aws.smithy.kotlin.runtime.client.config.ResponseHttpChecksumConfig
 import aws.smithy.kotlin.runtime.collections.AttributeKey
-import aws.smithy.kotlin.runtime.hashing.toHashFunction
+import aws.smithy.kotlin.runtime.hashing.toHashFunctionOrThrow
 import aws.smithy.kotlin.runtime.http.HttpBody
+import aws.smithy.kotlin.runtime.http.readAll
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.http.response.HttpResponse
 import aws.smithy.kotlin.runtime.http.response.copy
@@ -31,60 +32,87 @@ internal val CHECKSUM_HEADER_VALIDATION_PRIORITY_LIST: List<String> = listOf(
 )
 
 /**
- * Validate a response's checksum.
+ * Handles response checksums.
  *
- * Wraps the response in a hashing body, calculating the checksum as the response is streamed to the user.
- * The checksum is validated after the user has consumed the entire body using a checksum validating body.
+ * If it's a streaming response, it wraps the response in a hashing body, calculating the checksum as the response is
+ * streamed to the user. The checksum is validated after the user has consumed the entire body using a checksum validating body.
+ * Otherwise, the checksum if calculated all at once.
+ *
  * Users can check which checksum was validated by referencing the `ResponseChecksumValidated` execution context variable.
  *
- * @param shouldValidateResponseChecksumInitializer A function which uses the input [I] to return whether response checksum validation should occur
+ * @param responseValidationRequired Model sourced flag indicating if the checksum validation is mandatory.
+ * @param responseChecksumValidation Configuration option that determines when checksum validation should be done.
  */
-
 @InternalApi
-public class FlexibleChecksumsResponseInterceptor<I>(
-    private val shouldValidateResponseChecksumInitializer: (input: I) -> Boolean,
+public open class FlexibleChecksumsResponseInterceptor(
+    private val responseValidationRequired: Boolean,
+    private val responseChecksumValidation: ResponseHttpChecksumConfig?,
 ) : HttpInterceptor {
-
-    private var shouldValidateResponseChecksum: Boolean = false
-
     @InternalApi
     public companion object {
         // The name of the checksum header which was validated. If `null`, validation was not performed.
         public val ChecksumHeaderValidated: AttributeKey<String> = AttributeKey("ChecksumHeaderValidated")
     }
 
-    override fun readBeforeSerialization(context: RequestInterceptorContext<Any>) {
-        @Suppress("UNCHECKED_CAST")
-        val input = context.request as I
-        shouldValidateResponseChecksum = shouldValidateResponseChecksumInitializer(input)
-    }
-
     override suspend fun modifyBeforeDeserialization(context: ProtocolResponseInterceptorContext<Any, HttpRequest, HttpResponse>): HttpResponse {
-        if (!shouldValidateResponseChecksum) {
-            return context.protocolResponse
-        }
+        val configuredToVerifyChecksum = responseValidationRequired || responseChecksumValidation == ResponseHttpChecksumConfig.WHEN_SUPPORTED
+        if (!configuredToVerifyChecksum) return context.protocolResponse
 
-        val logger = coroutineContext.logger<FlexibleChecksumsResponseInterceptor<I>>()
+        val logger = coroutineContext.logger<FlexibleChecksumsResponseInterceptor>()
 
         val checksumHeader = CHECKSUM_HEADER_VALIDATION_PRIORITY_LIST
             .firstOrNull { context.protocolResponse.headers.contains(it) } ?: run {
-            logger.warn { "User requested checksum validation, but the response headers did not contain any valid checksums" }
+            logger.warn { "Checksum validation was requested but the response headers didn't contain a valid checksum." }
             return context.protocolResponse
         }
 
-        // let the user know which checksum will be validated
-        logger.debug { "Validating checksum from $checksumHeader" }
+        val serviceChecksumValue = context.protocolResponse.headers[checksumHeader]!!
+        if (ignoreChecksum(serviceChecksumValue, context)) {
+            return context.protocolResponse
+        }
+
         context.executionContext[ChecksumHeaderValidated] = checksumHeader
 
-        val checksumAlgorithm = checksumHeader.removePrefix("x-amz-checksum-").toHashFunction() ?: throw ClientException("could not parse checksum algorithm from header $checksumHeader")
+        val checksumAlgorithm = checksumHeader
+            .removePrefix("x-amz-checksum-")
+            .toHashFunctionOrThrow()
 
-        // Wrap the response body in a hashing body
-        return context.protocolResponse.copy(
-            body = context.protocolResponse.body
-                .toHashingBody(checksumAlgorithm, context.protocolResponse.body.contentLength)
-                .toChecksumValidatingBody(context.protocolResponse.headers[checksumHeader]!!),
-        )
+        when (val bodyType = context.protocolResponse.body) {
+            is HttpBody.Bytes -> {
+                logger.debug { "Validating checksum before deserialization from $checksumHeader" }
+
+                checksumAlgorithm.update(
+                    context.protocolResponse.body.readAll() ?: byteArrayOf(),
+                )
+                val sdkChecksumValue = checksumAlgorithm.digest().encodeBase64String()
+
+                validateAndThrow(
+                    serviceChecksumValue,
+                    sdkChecksumValue,
+                )
+
+                return context.protocolResponse
+            }
+            is HttpBody.SourceContent, is HttpBody.ChannelContent -> {
+                logger.debug { "Validating checksum after deserialization from $checksumHeader" }
+
+                return context.protocolResponse.copy(
+                    body = context.protocolResponse.body
+                        .toHashingBody(checksumAlgorithm, context.protocolResponse.body.contentLength)
+                        .toChecksumValidatingBody(serviceChecksumValue),
+                )
+            }
+            else -> throw IllegalStateException("HTTP body type '$bodyType' is not supported for flexible checksums.")
+        }
     }
+
+    /**
+     * Additional check on the checksum itself to see if it should be validated
+     */
+    public open fun ignoreChecksum(
+        checksum: String,
+        context: ProtocolResponseInterceptorContext<Any, HttpRequest, HttpResponse>,
+    ): Boolean = false
 }
 
 public class ChecksumMismatchException(message: String?) : ClientException(message)

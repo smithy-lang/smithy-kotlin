@@ -12,11 +12,10 @@ import software.amazon.smithy.kotlin.codegen.lang.KotlinTypes
 import software.amazon.smithy.kotlin.codegen.model.buildSymbol
 import software.amazon.smithy.kotlin.codegen.model.expectShape
 import software.amazon.smithy.kotlin.codegen.model.expectTrait
-import software.amazon.smithy.kotlin.codegen.rendering.endpoints.EndpointResolverAdapterGenerator
 import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.shapes.ServiceShape
 
-class EndpointDiscovererGenerator(private val ctx: CodegenContext, private val delegator: KotlinDelegator) {
+class EndpointDiscovererInterfaceGenerator(private val ctx: CodegenContext, private val delegator: KotlinDelegator) {
     private val symbol = symbolFor(ctx.settings)
     private val service = ctx.model.expectShape<ServiceShape>(ctx.settings.service)
     private val clientSymbol = ctx.symbolProvider.toSymbol(service)
@@ -36,72 +35,41 @@ class EndpointDiscovererGenerator(private val ctx: CodegenContext, private val d
 
     fun render() {
         delegator.applyFileWriter(symbol) {
-            dokka(
-                """
-                    A class which looks up specific endpoints for ${ctx.settings.sdkId} calls via the `$operationName`
-                    API. These unique endpoints are cached as appropriate to avoid unnecessary latency in subsequent
-                    calls.
-                """.trimIndent(),
-            )
+            dokka("Represents the logic for automatically discovering endpoints for ${ctx.settings.sdkId} calls")
             withBlock(
-                "#L class #T {",
+                "#L interface #T {",
                 "}",
                 ctx.settings.api.visibility,
                 symbol,
             ) {
                 write(
-                    "private val cache = #T<DiscoveryParams, #T>(10.#T, #T.System)",
-                    RuntimeTypes.Core.Collections.ReadThroughCache,
-                    RuntimeTypes.Core.Net.Host,
-                    KotlinTypes.Time.minutes,
-                    RuntimeTypes.Core.Clock,
+                    "#1L fun asEndpointResolver(client: #2T, delegate: #3T): #3T",
+                    ctx.settings.api.visibility,
+                    clientSymbol,
+                    RuntimeTypes.HttpClient.Operation.EndpointResolver,
                 )
-                write("")
-                renderAsEndpointResolver()
                 write("")
                 renderDiscoverHost()
                 write("")
-                renderInvalidate()
+                write("public suspend fun invalidate(context: #T)", RuntimeTypes.Core.ExecutionContext)
             }
             write("")
             write(
-                """private val discoveryParamsKey = #T<DiscoveryParams>("DiscoveryParams")""",
+                "#L data class DiscoveryParams(private val region: String?, private val identity: String)",
+                ctx.settings.api.visibility,
+            )
+            write(
+                """#1L val DiscoveryParamsKey: #2T<DiscoveryParams> = #2T("DiscoveryParams")""",
+                ctx.settings.api.visibility,
                 RuntimeTypes.Core.Collections.AttributeKey,
             )
-            write("private data class DiscoveryParams(private val region: String?, private val identity: String)")
-        }
-    }
-
-    private fun KotlinWriter.renderAsEndpointResolver() {
-        withBlock(
-            "internal fun asEndpointResolver(client: #T, delegate: #T) = #T { request ->",
-            "}",
-            clientSymbol,
-            EndpointResolverAdapterGenerator.getSymbol(ctx.settings),
-            RuntimeTypes.HttpClient.Operation.EndpointResolver,
-        ) {
-            write("val identity = request.identity")
-            write(
-                """require(identity is #T) { "Endpoint discovery requires AWS credentials" }""",
-                RuntimeTypes.Auth.Credentials.AwsCredentials.Credentials,
-            )
-            write("")
-            write("val cacheKey = DiscoveryParams(client.config.region, identity.accessKeyId)")
-            write("request.context[discoveryParamsKey] = cacheKey")
-            write("val discoveredHost = cache.get(cacheKey) { discoverHost(client) }")
-            write("")
-            write("val originalEndpoint = delegate.resolve(request)")
-            withBlock("#T(", ")", RuntimeTypes.SmithyClient.Endpoints.Endpoint) {
-                write("originalEndpoint.uri.copy { host = discoveredHost },")
-                write("originalEndpoint.headers,")
-                write("originalEndpoint.attributes,")
-            }
         }
     }
 
     private fun KotlinWriter.renderDiscoverHost() {
         openBlock(
-            "private suspend fun discoverHost(client: #T): #T<#T> =",
+            "#L suspend fun discoverHost(client: #T): #T<#T> =",
+            ctx.settings.api.visibility,
             clientSymbol,
             RuntimeTypes.Core.Utils.ExpiringValue,
             RuntimeTypes.Core.Net.Host,
@@ -122,11 +90,5 @@ class EndpointDiscovererGenerator(private val ctx: CodegenContext, private val d
             operationName,
         )
         dedent(2)
-    }
-
-    private fun KotlinWriter.renderInvalidate() {
-        withBlock("internal suspend fun invalidate(context: #T) {", "}", RuntimeTypes.Core.ExecutionContext) {
-            write("context.getOrNull(discoveryParamsKey)?.let { cache.invalidate(it) }")
-        }
     }
 }

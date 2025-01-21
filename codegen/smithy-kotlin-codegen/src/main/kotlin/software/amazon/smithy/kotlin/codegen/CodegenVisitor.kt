@@ -87,12 +87,12 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Unit>() {
             integration.decorateSymbolProvider(settings, model, provider)
         }
 
-        writers = KotlinDelegator(settings, model, fileManifest, symbolProvider, integrations)
-
         protocolGenerator = resolveProtocolGenerator(integrations, model, service, settings)
-        applicationProtocol = protocolGenerator?.applicationProtocol ?: ApplicationProtocol.createDefaultHttpApplicationProtocol()
-
         baseGenerationContext = GenerationContext(model, symbolProvider, settings, protocolGenerator, integrations)
+
+        writers = KotlinDelegator(baseGenerationContext, fileManifest, integrations)
+
+        applicationProtocol = protocolGenerator?.applicationProtocol ?: ApplicationProtocol.createDefaultHttpApplicationProtocol()
     }
 
     private fun resolveProtocolGenerator(
