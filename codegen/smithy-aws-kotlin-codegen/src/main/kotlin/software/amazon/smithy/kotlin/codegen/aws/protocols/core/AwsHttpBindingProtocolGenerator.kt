@@ -40,9 +40,7 @@ abstract class AwsHttpBindingProtocolGenerator : HttpBindingProtocolGenerator() 
         // val targetedTest = TestMemberDelta(setOf("RestJsonComplexErrorWithNoMessage"), TestContainmentMode.RUN_TESTS)
 
         val ignoredTests = TestMemberDelta(
-            setOf(
-                "RpcV2CborClientPopulatesDefaultValuesInInput", // FIXME Bug in protocol test, malformed Base64 body. Fix will be in the next Smithy release: https://github.com/smithy-lang/smithy/pull/2502
-            ),
+            setOf(),
         )
 
         val requestTestBuilder = HttpProtocolUnitTestRequestGenerator.Builder()
