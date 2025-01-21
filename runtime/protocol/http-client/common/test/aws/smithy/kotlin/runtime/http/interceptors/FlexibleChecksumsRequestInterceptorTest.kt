@@ -140,6 +140,7 @@ class FlexibleChecksumsRequestInterceptorTest {
         assertEquals(0, call.request.headers.getNumChecksumHeaders())
     }
 
+    @IgnoreNative // FIXME Re-enable after Kotlin/Native Implementation
     @Test
     fun testCompletingSource() = runTest {
         val hashFunctionName = "crc32"
@@ -212,6 +213,7 @@ class FlexibleChecksumsRequestInterceptorTest {
         assertEquals(precalculatedChecksumValue, call.request.headers["x-amz-checksum-sha256"])
     }
 
+    @IgnoreNative // FIXME Re-enable after Kotlin/Native Implementation
     @Test
     fun testDefaultChecksumConfiguration() = runTest {
         setOf(

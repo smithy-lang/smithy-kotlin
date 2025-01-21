@@ -201,6 +201,7 @@ class FlexibleChecksumsResponseInterceptorTest {
         assertNull(op.context.getOrNull(ChecksumHeaderValidated))
     }
 
+    @IgnoreNative // FIXME Re-enable after Kotlin/Native Implementation
     @Test
     fun testResponseValidationConfiguration() = runTest {
         setOf(

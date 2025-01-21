@@ -68,6 +68,7 @@ class HttpChecksumRequiredInterceptorTest {
         assertEquals(expected, call.request.headers["x-amz-checksum-crc32"])
     }
 
+    @IgnoreNative // FIXME Re-enable after Kotlin/Native Implementation
     @Test
     fun itSetsHeaderForNonBytesContent() = runTest {
         val req = HttpRequestBuilder().apply {
