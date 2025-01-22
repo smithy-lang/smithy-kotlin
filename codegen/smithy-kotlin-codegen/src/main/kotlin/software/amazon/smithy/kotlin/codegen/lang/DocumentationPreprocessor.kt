@@ -104,7 +104,7 @@ class DocumentationPreprocessor : KotlinIntegration {
                 "li" -> {
                     // If this list item holds a sublist, then we essentially just want to line break right away and
                     // render the nested list as normal.
-                    val prefix = if (node.childNode(0).nodeName() == "ul") "\n" else ""
+                    val prefix = if (node.childNodes().firstOrNull()?.nodeName() == "ul") "\n" else ""
                     builder.append("$listPrefix+ $prefix")
                 }
                 "ul", "ol" -> {

@@ -35,7 +35,7 @@ open class XmlSerdeDescriptorGenerator(
         val objTraits = mutableListOf<SdkFieldDescriptorTrait>()
         val serialName = when {
             // FIXME - we should be able to remove special casing of errors here which is protocol specific
-            // see https://github.com/awslabs/smithy-kotlin/issues/350
+            // see https://github.com/smithy-lang/smithy-kotlin/issues/350
             objectShape.hasTrait<ErrorTrait>() -> "Error"
             objectShape.hasTrait<XmlNameTrait>() -> objectShape.expectTrait<XmlNameTrait>().value
             objectShape.hasTrait<SyntheticClone>() -> objectShape.expectTrait<SyntheticClone>().archetype.name

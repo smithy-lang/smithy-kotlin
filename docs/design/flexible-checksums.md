@@ -33,9 +33,9 @@ of injecting the `Content-MD5` header.
 
 ## Checksum Algorithms
 
-The SDK needs to support the following checksum algorithms: CRC32C, CRC32, SHA-1, SHA-256. All of them are [already implemented for JVM](https://github.com/awslabs/smithy-kotlin/tree/5773afb348c779b9e4aa9689836844f21a571908/runtime/hashing/jvm/src/aws/smithy/kotlin/runtime/hashing).
+The SDK needs to support the following checksum algorithms: CRC32C, CRC32, SHA-1, SHA-256. All of them are [already implemented for JVM](https://github.com/smithy-lang/smithy-kotlin/tree/5773afb348c779b9e4aa9689836844f21a571908/runtime/hashing/jvm/src/aws/smithy/kotlin/runtime/hashing).
 
-As part of this feature, CRC32C was implemented in **smithy-kotlin** [PR#724](https://github.com/awslabs/smithy-kotlin/pull/724). 
+As part of this feature, CRC32C was implemented in **smithy-kotlin** [PR#724](https://github.com/smithy-lang/smithy-kotlin/pull/724). 
 This algorithm is essentially the same as CRC32, but uses a different polynomial under the hood. 
 The SDK uses [`java.util.zip`'s implementation of CRC32](https://docs.oracle.com/javase/8/docs/api/java/util/zip/CRC32.html), 
 but this package only began shipping CRC32C in Java 9. The SDK requires Java 8, so this was implemented rather than importing it as a dependency.
@@ -47,7 +47,7 @@ using SHA-256, the header containing the checksum will be `x-amz-checksum-sha256
 
 # Implementation
 
-This feature can be implemented by adding two new [interceptors](https://github.com/awslabs/smithy-kotlin/blob/5773afb348c779b9e4aa9689836844f21a571908/docs/design/interceptors.md):
+This feature can be implemented by adding two new [interceptors](https://github.com/smithy-lang/smithy-kotlin/blob/5773afb348c779b9e4aa9689836844f21a571908/docs/design/interceptors.md):
 one for calculating checksums for requests, and one for validating checksums present in responses.
 
 ## Requests
@@ -104,7 +104,7 @@ and the checksum will be calculated internally using the selected checksum algor
 When a user sets the member represented by the `requestAlgorithmMember` property, they are opting-in to sending request checksums. 
 
 This property is modeled as an enum value, so validation needs to be done prior to using it. The enum is generated from the service model,
-but the set of possible enum values is constrained by the [`httpChecksum` trait specification](#checksum-algorithms). The following code will match a `String` to a [`HashFunction`](https://github.com/awslabs/smithy-kotlin/blob/5773afb348c779b9e4aa9689836844f21a571908/runtime/hashing/common/src/aws/smithy/kotlin/runtime/hashing/HashFunction.kt).
+but the set of possible enum values is constrained by the [`httpChecksum` trait specification](#checksum-algorithms). The following code will match a `String` to a [`HashFunction`](https://github.com/smithy-lang/smithy-kotlin/blob/5773afb348c779b9e4aa9689836844f21a571908/runtime/hashing/common/src/aws/smithy/kotlin/runtime/hashing/HashFunction.kt).
 ```kotlin
 public fun String.toHashFunction(): HashFunction? {
     return when (this.lowercase()) {
@@ -131,7 +131,7 @@ An exception will be thrown if the algorithm can't be parsed or if it's not supp
 Note that because users select an algorithm from a code-generated enum, accidentally selecting an unsupported algorithm is unlikely.
 
 ### Computing and Injecting Checksums
-Next the SDK will compute and inject the checksum. If the body is smaller than the `aws-chunked` threshold ([1MB today](https://github.com/awslabs/smithy-kotlin/blob/9b9297c690d9a01777447f437f0e91562e146bf9/runtime/auth/aws-signing-common/common/src/aws/smithy/kotlin/runtime/auth/awssigning/middleware/AwsSigningMiddleware.kt#L38)), 
+Next the SDK will compute and inject the checksum. If the body is smaller than the `aws-chunked` threshold ([1MB today](https://github.com/smithy-lang/smithy-kotlin/blob/9b9297c690d9a01777447f437f0e91562e146bf9/runtime/auth/aws-signing-common/common/src/aws/smithy/kotlin/runtime/auth/awssigning/middleware/AwsSigningMiddleware.kt#L38)), 
 the checksum will be immediately computed and injected under the appropriate header name.
 
 Otherwise, if the request body is large enough to be uploaded with `aws-chunked`, the SDK will append the checksum header name to the `x-amz-trailer` header.
@@ -152,10 +152,10 @@ x-amz-trailer-signature:<trailer-signature> + \r\n
 \r\n
 ```
 
-To calculate the checksum while the payload is being written, the body will be wrapped in either a [`HashingSource`](https://github.com/awslabs/smithy-kotlin/blob/354c6cf011190bb4dff349d0c4a812c1de609d18/runtime/io/common/src/aws/smithy/kotlin/runtime/io/HashingSource.kt)
-or a [`HashingByteReadChannel`](https://github.com/awslabs/smithy-kotlin/blob/354c6cf011190bb4dff349d0c4a812c1de609d18/runtime/io/common/src/aws/smithy/kotlin/runtime/io/HashingByteReadChannel.kt), 
-depending on its type. These are new types which are constructed with an [`SdkSource`](https://github.com/awslabs/smithy-kotlin/blob/5773afb348c779b9e4aa9689836844f21a571908/runtime/io/common/src/aws/smithy/kotlin/runtime/io/SdkSource.kt) or 
-[`SdkByteReadChannel`](https://github.com/awslabs/smithy-kotlin/blob/5773afb348c779b9e4aa9689836844f21a571908/runtime/io/common/src/aws/smithy/kotlin/runtime/io/SdkByteReadChannel.kt),
+To calculate the checksum while the payload is being written, the body will be wrapped in either a [`HashingSource`](https://github.com/smithy-lang/smithy-kotlin/blob/354c6cf011190bb4dff349d0c4a812c1de609d18/runtime/io/common/src/aws/smithy/kotlin/runtime/io/HashingSource.kt)
+or a [`HashingByteReadChannel`](https://github.com/smithy-lang/smithy-kotlin/blob/354c6cf011190bb4dff349d0c4a812c1de609d18/runtime/io/common/src/aws/smithy/kotlin/runtime/io/HashingByteReadChannel.kt), 
+depending on its type. These are new types which are constructed with an [`SdkSource`](https://github.com/smithy-lang/smithy-kotlin/blob/5773afb348c779b9e4aa9689836844f21a571908/runtime/io/common/src/aws/smithy/kotlin/runtime/io/SdkSource.kt) or 
+[`SdkByteReadChannel`](https://github.com/smithy-lang/smithy-kotlin/blob/5773afb348c779b9e4aa9689836844f21a571908/runtime/io/common/src/aws/smithy/kotlin/runtime/io/SdkByteReadChannel.kt),
 respectively, along with a `HashFunction`. These constructs will use the provided hash function to compute the checksum as the data is being read.
 
 Later in the request's lifecycle, this hashing body will be wrapped once more in an `aws-chunked` body. This body is used to format the 
@@ -211,7 +211,7 @@ The same is done for `HashingByteReadChannel` using a `CompletingByteReadChannel
 
 There are many places during the request's lifecycle where trailing headers could be mutated.
 
-The trailing headers will be added as a member in the [`HttpRequestBuilder`](https://github.com/awslabs/smithy-kotlin/blob/a250c3e3e3e54ef35990a1609fb380a91b70cf4b/runtime/protocol/http/common/src/aws/smithy/kotlin/runtime/http/request/HttpRequestBuilder.kt) 
+The trailing headers will be added as a member in the [`HttpRequestBuilder`](https://github.com/smithy-lang/smithy-kotlin/blob/a250c3e3e3e54ef35990a1609fb380a91b70cf4b/runtime/protocol/http/common/src/aws/smithy/kotlin/runtime/http/request/HttpRequestBuilder.kt) 
 , which is where `Headers` are already stored. This will enable the trailing headers to be modified wherever the `HttpRequest` is accessible.
 
 The `HttpRequestBuilder` signature is updated to the following:
@@ -252,8 +252,8 @@ This allows users to add custom interceptors which modify the validation opt-in 
 The `modifyBeforeDeserialization` hook's purpose is to validate the checksum before the response is deserialized into its output type. 
 
 First, the body will be wrapped in a `HashingSource`/`HashingByteReadChannel`. This will calculate the checksum as the body is being consumed.
-The response body will also be wrapped in a [`ChecksumValidatingSource`](https://github.com/awslabs/smithy-kotlin/blob/354c6cf011190bb4dff349d0c4a812c1de609d18/runtime/protocol/http/common/src/aws/smithy/kotlin/runtime/http/interceptors/FlexibleChecksumsResponseInterceptor.kt#L88-L100)
-/[`ChecksumValidatingByteReadChannel`](https://github.com/awslabs/smithy-kotlin/blob/354c6cf011190bb4dff349d0c4a812c1de609d18/runtime/protocol/http/common/src/aws/smithy/kotlin/runtime/http/interceptors/FlexibleChecksumsResponseInterceptor.kt#L102-L114). 
+The response body will also be wrapped in a [`ChecksumValidatingSource`](https://github.com/smithy-lang/smithy-kotlin/blob/354c6cf011190bb4dff349d0c4a812c1de609d18/runtime/protocol/http/common/src/aws/smithy/kotlin/runtime/http/interceptors/FlexibleChecksumsResponseInterceptor.kt#L88-L100)
+/[`ChecksumValidatingByteReadChannel`](https://github.com/smithy-lang/smithy-kotlin/blob/354c6cf011190bb4dff349d0c4a812c1de609d18/runtime/protocol/http/common/src/aws/smithy/kotlin/runtime/http/interceptors/FlexibleChecksumsResponseInterceptor.kt#L102-L114). 
 This is a new type which takes an expected checksum and an underlying hashing data source. After the underlying data is fully consumed, the checksum is digested and validated.
 
 Below is the implementation of the `ChecksumValidatingSource`, which performs checksum validation after the underlying `HashingSource` is fully consumed:
@@ -370,7 +370,7 @@ The accepted design choice is to store trailing headers in the `HttpRequest`.
 Alternatively, the trailing headers could have been stored in the `ExecutionContext` or `HttpBody`.
 
 ### ExecutionContext
-The SDK uses [`ExecutionContext`](https://github.com/awslabs/smithy-kotlin/blob/a250c3e3e3e54ef35990a1609fb380a91b70cf4b/runtime/runtime-core/common/src/aws/smithy/kotlin/runtime/client/ExecutionContext.kt) 
+The SDK uses [`ExecutionContext`](https://github.com/smithy-lang/smithy-kotlin/blob/a250c3e3e3e54ef35990a1609fb380a91b70cf4b/runtime/runtime-core/common/src/aws/smithy/kotlin/runtime/client/ExecutionContext.kt) 
 as a property bag, storing a variety of properties related to the execution of a request.
 
 To add the trailing headers to this property bag, a new `AttributeKey` would be added. This can then be used to lookup 
@@ -386,7 +386,7 @@ Cons:
 
 ### HttpBody
 
-By adding the trailing headers to [HttpBody](https://github.com/awslabs/smithy-kotlin/blob/5773afb348c779b9e4aa9689836844f21a571908/runtime/protocol/http/common/src/aws/smithy/kotlin/runtime/http/HttpBody.kt), 
+By adding the trailing headers to [HttpBody](https://github.com/smithy-lang/smithy-kotlin/blob/5773afb348c779b9e4aa9689836844f21a571908/runtime/protocol/http/common/src/aws/smithy/kotlin/runtime/http/HttpBody.kt), 
 users can modify the trailing headers anywhere they have access to the request body.
 
 Pros:
@@ -397,7 +397,7 @@ Cons:
 and headers don't really fit in here
 
 Ultimately, it was decided to store trailing headers in the `HttpRequest` (specifically, 
-[`HttpRequestBuilder`](https://github.com/awslabs/smithy-kotlin/blob/a250c3e3e3e54ef35990a1609fb380a91b70cf4b/runtime/protocol/http/common/src/aws/smithy/kotlin/runtime/http/request/HttpRequestBuilder.kt)
+[`HttpRequestBuilder`](https://github.com/smithy-lang/smithy-kotlin/blob/a250c3e3e3e54ef35990a1609fb380a91b70cf4b/runtime/protocol/http/common/src/aws/smithy/kotlin/runtime/http/request/HttpRequestBuilder.kt)
 ) because that is where regular headers are already stored.
 
 ## Synchronous Checksum Validation

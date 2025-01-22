@@ -81,12 +81,19 @@ object RuntimeTypes {
         object Interceptors : RuntimeTypePackage(KotlinDependency.HTTP, "interceptors") {
             val ContinueInterceptor = symbol("ContinueInterceptor")
             val HttpInterceptor = symbol("HttpInterceptor")
-            val Md5ChecksumInterceptor = symbol("Md5ChecksumInterceptor")
+            val HttpChecksumRequiredInterceptor = symbol("HttpChecksumRequiredInterceptor")
             val FlexibleChecksumsRequestInterceptor = symbol("FlexibleChecksumsRequestInterceptor")
             val FlexibleChecksumsResponseInterceptor = symbol("FlexibleChecksumsResponseInterceptor")
             val ResponseLengthValidationInterceptor = symbol("ResponseLengthValidationInterceptor")
             val RequestCompressionInterceptor = symbol("RequestCompressionInterceptor")
+            val SmokeTestsInterceptor = symbol("SmokeTestsInterceptor")
+            val SmokeTestsFailureException = symbol("SmokeTestsFailureException")
+            val SmokeTestsSuccessException = symbol("SmokeTestsSuccessException")
         }
+    }
+
+    object HttpTest : RuntimeTypePackage(KotlinDependency.HTTP_TEST) {
+        val TestEngine = symbol("TestEngine")
     }
 
     object Core : RuntimeTypePackage(KotlinDependency.CORE) {
@@ -105,6 +112,12 @@ object RuntimeTypes {
             val ServiceEndpointOverride = symbol("ServiceEndpointOverride")
             val emitBusinessMetric = symbol("emitBusinessMetric")
             val SmithyBusinessMetric = symbol("SmithyBusinessMetric")
+        }
+
+        object SmokeTests : RuntimeTypePackage(KotlinDependency.CORE, "smoketests") {
+            val exitProcess = symbol("exitProcess")
+            val printExceptionStackTrace = symbol("printExceptionStackTrace")
+            val SmokeTestsException = symbol("SmokeTestsException")
         }
 
         object Collections : RuntimeTypePackage(KotlinDependency.CORE, "collections") {
@@ -163,6 +176,7 @@ object RuntimeTypes {
             val Closeable = symbol("Closeable")
             val SdkManagedGroup = symbol("SdkManagedGroup")
             val addIfManaged = symbol("addIfManaged", isExtension = true)
+            val use = symbol("use")
         }
 
         object Text : RuntimeTypePackage(KotlinDependency.CORE, "text") {
@@ -184,6 +198,7 @@ object RuntimeTypes {
             val truthiness = symbol("truthiness")
             val toNumber = symbol("toNumber")
             val type = symbol("type")
+            val PlatformProvider = symbol("PlatformProvider")
         }
 
         object Net : RuntimeTypePackage(KotlinDependency.CORE, "net") {
@@ -216,6 +231,9 @@ object RuntimeTypes {
         object Config : RuntimeTypePackage(KotlinDependency.SMITHY_CLIENT, "config") {
             val RequestCompressionConfig = symbol("RequestCompressionConfig")
             val CompressionClientConfig = symbol("CompressionClientConfig")
+            val HttpChecksumConfig = symbol("HttpChecksumConfig")
+            val RequestHttpChecksumConfig = symbol("RequestHttpChecksumConfig")
+            val ResponseHttpChecksumConfig = symbol("ResponseHttpChecksumConfig")
         }
 
         object Endpoints : RuntimeTypePackage(KotlinDependency.SMITHY_CLIENT, "endpoints") {
@@ -365,6 +383,10 @@ object RuntimeTypes {
             val sigV4 = symbol("sigV4")
             val sigV4A = symbol("sigV4A")
         }
+
+        object AwsSigningCrt : RuntimeTypePackage(KotlinDependency.AWS_SIGNING_CRT) {
+            val CrtAwsSigner = symbol("CrtAwsSigner")
+        }
     }
 
     object Observability {
@@ -376,6 +398,7 @@ object RuntimeTypes {
             val TelemetryContextElement = symbol("TelemetryContextElement", "context")
             val TraceSpan = symbol("TraceSpan", "trace")
             val withSpan = symbol("withSpan", "trace")
+            val warn = symbol("warn", "logging")
         }
         object TelemetryDefaults : RuntimeTypePackage(KotlinDependency.TELEMETRY_DEFAULTS) {
             val Global = symbol("Global")
@@ -390,6 +413,7 @@ object RuntimeTypes {
 
         val CompletableDeferred = "kotlinx.coroutines.CompletableDeferred".toSymbol()
         val job = "kotlinx.coroutines.job".toSymbol()
+        val runBlocking = "kotlinx.coroutines.runBlocking".toSymbol()
 
         object Flow {
             // NOTE: smithy-kotlin core has an API dependency on this already

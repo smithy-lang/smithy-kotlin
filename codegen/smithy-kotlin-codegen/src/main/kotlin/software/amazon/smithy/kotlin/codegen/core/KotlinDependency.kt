@@ -37,7 +37,7 @@ private fun getDefaultRuntimeVersion(): String {
 // publishing info
 const val RUNTIME_GROUP: String = "aws.smithy.kotlin"
 val RUNTIME_VERSION: String = System.getProperty("smithy.kotlin.codegen.clientRuntimeVersion", getDefaultRuntimeVersion())
-val KOTLIN_COMPILER_VERSION: String = System.getProperty("smithy.kotlin.codegen.kotlinCompilerVersion", "2.0.10")
+val KOTLIN_COMPILER_VERSION: String = System.getProperty("smithy.kotlin.codegen.kotlinCompilerVersion", "2.1.0")
 
 enum class SourceSet {
     CommonMain,
@@ -104,6 +104,7 @@ data class KotlinDependency(
         val CORE = KotlinDependency(GradleConfiguration.Api, RUNTIME_ROOT_NS, RUNTIME_GROUP, "runtime-core", RUNTIME_VERSION)
         val HTTP = KotlinDependency(GradleConfiguration.Implementation, "$RUNTIME_ROOT_NS.http", RUNTIME_GROUP, "http", RUNTIME_VERSION)
         val HTTP_CLIENT = KotlinDependency(GradleConfiguration.Api, "$RUNTIME_ROOT_NS.http", RUNTIME_GROUP, "http-client", RUNTIME_VERSION)
+        val HTTP_TEST = KotlinDependency(GradleConfiguration.Api, "$RUNTIME_ROOT_NS.httptest", RUNTIME_GROUP, "http-test", RUNTIME_VERSION)
         val SERDE = KotlinDependency(GradleConfiguration.Implementation, "$RUNTIME_ROOT_NS.serde", RUNTIME_GROUP, "serde", RUNTIME_VERSION)
         val SERDE_JSON = KotlinDependency(GradleConfiguration.Implementation, "$RUNTIME_ROOT_NS.serde.json", RUNTIME_GROUP, "serde-json", RUNTIME_VERSION)
         val SERDE_XML = KotlinDependency(GradleConfiguration.Implementation, "$RUNTIME_ROOT_NS.serde.xml", RUNTIME_GROUP, "serde-xml", RUNTIME_VERSION)
@@ -128,6 +129,7 @@ data class KotlinDependency(
         val IDENTITY_API = KotlinDependency(GradleConfiguration.Implementation, "$RUNTIME_ROOT_NS", RUNTIME_GROUP, "identity-api", RUNTIME_VERSION)
         val SMITHY_RPCV2_PROTOCOLS = KotlinDependency(GradleConfiguration.Implementation, "$RUNTIME_ROOT_NS.awsprotocol.rpcv2", RUNTIME_GROUP, "smithy-rpcv2-protocols", RUNTIME_VERSION)
         val SMITHY_RPCV2_PROTOCOLS_CBOR = KotlinDependency(GradleConfiguration.Implementation, "$RUNTIME_ROOT_NS.awsprotocol.rpcv2.cbor", RUNTIME_GROUP, "smithy-rpcv2-protocols", RUNTIME_VERSION)
+        val AWS_SIGNING_CRT = KotlinDependency(GradleConfiguration.Implementation, "$RUNTIME_ROOT_NS.auth.awssigning.crt", RUNTIME_GROUP, "aws-signing-crt", RUNTIME_VERSION)
 
         // External third-party dependencies
         val KOTLIN_STDLIB = KotlinDependency(GradleConfiguration.Implementation, "kotlin", "org.jetbrains.kotlin", "kotlin-stdlib", KOTLIN_COMPILER_VERSION)

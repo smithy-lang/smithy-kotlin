@@ -24,11 +24,13 @@ kotlin {
 
         jvmMain {
             dependencies {
-                implementation(libs.ktor.server.jetty)
+                implementation(libs.ktor.server.jetty.jakarta)
                 implementation(libs.ktor.network.tls.certificates)
 
                 implementation(project(":runtime:protocol:http-client-engines:http-client-engine-default"))
                 implementation(project(":runtime:protocol:http-client-engines:http-client-engine-crt"))
+                implementation(project(":runtime:protocol:http-client-engines:http-client-engine-okhttp"))
+                implementation(project(":runtime:protocol:http-client-engines:http-client-engine-okhttp4"))
 
                 implementation(libs.slf4j.simple)
             }
@@ -50,6 +52,8 @@ kotlin {
                 implementation("org.bouncycastle:bcpkix-jdk18on:1.78") // https://github.com/docker-java/docker-java/pull/2326
 
                 implementation(libs.docker.transport.zerodep)
+
+                implementation(project(":runtime:observability:telemetry-defaults"))
             }
         }
 

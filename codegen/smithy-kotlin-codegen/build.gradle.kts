@@ -24,13 +24,13 @@ val sdkVersion: String by project
 val runtimeVersion = sdkVersion
 
 dependencies {
-    implementation(kotlin("stdlib-jdk8"))
     api(libs.smithy.codegen.core)
     api(libs.smithy.waiters)
     implementation(libs.smithy.rules.engine)
     implementation(libs.smithy.aws.traits)
     implementation(libs.smithy.protocol.traits)
     implementation(libs.smithy.protocol.test.traits)
+    implementation(libs.smithy.smoke.test.traits)
     implementation(libs.jsoup)
 
     // Test dependencies
@@ -122,4 +122,4 @@ publishing {
     }
 }
 
-configurePublishing("smithy-kotlin")
+configurePublishing("smithy-kotlin", "smithy-lang")

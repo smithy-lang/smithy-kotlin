@@ -18,6 +18,7 @@ dependencies {
     testImplementation(project(":runtime:protocol:http"))
     testImplementation(project(":runtime:protocol:http-client-engines:http-client-engine-default"))
     testImplementation(project(":runtime:serde:serde-json"))
+    testImplementation(project(":runtime:serde:serde-xml"))
     testImplementation(project(":runtime:observability:telemetry-api"))
     testImplementation(project(":runtime:observability:telemetry-defaults"))
 

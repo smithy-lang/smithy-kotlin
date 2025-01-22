@@ -17,7 +17,8 @@ import software.amazon.smithy.kotlin.codegen.core.withBlock
 import software.amazon.smithy.kotlin.codegen.integration.KotlinIntegration
 import software.amazon.smithy.kotlin.codegen.lang.KotlinTypes
 import software.amazon.smithy.kotlin.codegen.model.*
-import software.amazon.smithy.kotlin.codegen.model.traits.PaginationTruncationMember
+import software.amazon.smithy.kotlin.codegen.model.traits.PaginationEndBehavior
+import software.amazon.smithy.kotlin.codegen.model.traits.PaginationEndBehaviorTrait
 import software.amazon.smithy.kotlin.codegen.utils.getOrNull
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.knowledge.PaginatedIndex
@@ -156,14 +157,19 @@ class PaginatorGenerator : KotlinIntegration {
                         )
                         write("cursor = result.$nextMarkerLiteral")
 
-                        val hasNextPageFlag = outputShape
-                            .members()
-                            .singleOrNull { it.hasTrait(PaginationTruncationMember.ID) }
-                            ?.defaultName()
-                            ?.let { "result.$it" }
-                            ?: "cursor?.isNotEmpty()"
+                        val endBehavior = operationShape.getTrait<PaginationEndBehaviorTrait>()?.value
+                            ?: PaginationEndBehavior.Default
 
-                        write("hasNextPage = #L == true", hasNextPageFlag)
+                        val hasNextPageFlag = when (endBehavior) {
+                            PaginationEndBehavior.OutputTokenEmpty -> "cursor?.isNotEmpty() == true"
+                            PaginationEndBehavior.IdenticalToken -> "cursor != null && cursor != req.$markerLiteral"
+                            is PaginationEndBehavior.TruncationMember -> {
+                                val member = outputShape.allMembers.getValue(endBehavior.memberName).defaultName()
+                                "result.$member == true" // $member will be a boolean flag
+                            }
+                        }
+
+                        write("hasNextPage = #L", hasNextPageFlag)
                         write("emit(result)")
                     }
                 }
@@ -266,18 +272,22 @@ private fun getItemDescriptorOrNull(paginationInfo: PaginationInfo, ctx: Codegen
     val itemMember = ctx.model.expectShape(itemMemberId)
     val isSparse = itemMember.isSparse
     val (collectionLiteral, targetMember) = when (itemMember) {
-        is MapShape ->
-            ctx.symbolProvider.toSymbol(itemMember)
-                .expectProperty(SymbolProperty.ENTRY_EXPRESSION) as String to itemMember
-        is CollectionShape ->
-            ctx.symbolProvider.toSymbol(ctx.model.expectShape(itemMember.member.target)).name to ctx.model.expectShape(
-                itemMember.member.target,
-            )
+        is MapShape -> {
+            val symbol = ctx.symbolProvider.toSymbol(itemMember)
+            val entryExpression = symbol.expectProperty(SymbolProperty.ENTRY_EXPRESSION) as String
+            entryExpression to itemMember
+        }
+        is CollectionShape -> {
+            val target = ctx.model.expectShape(itemMember.member.target)
+            val symbol = ctx.symbolProvider.toSymbol(target)
+            val literal = symbol.name + if (symbol.isNullable || isSparse) "?" else ""
+            literal to target
+        }
         else -> error("Unexpected shape type ${itemMember.type}")
     }
 
     return ItemDescriptor(
-        collectionLiteral + if (isSparse) "?" else "",
+        collectionLiteral,
         targetMember,
         itemLiteral,
         itemPathLiteral,

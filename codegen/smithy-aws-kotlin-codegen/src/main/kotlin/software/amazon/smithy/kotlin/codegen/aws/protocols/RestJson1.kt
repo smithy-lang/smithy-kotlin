@@ -46,7 +46,7 @@ class RestJson1 : JsonHttpBindingProtocolGenerator() {
 
         // restjson1 has some different semantics and expectations around empty structures bound via @httpPayload trait
         //   * empty structures get serialized to `{}`
-        // see: https://github.com/awslabs/smithy/pull/924
+        // see: https://github.com/smithy-lang/smithy/pull/924
         val requestBindings = resolver.requestBindings(op)
         val httpPayload = requestBindings.firstOrNull { it.location == HttpBinding.Location.PAYLOAD }
         if (httpPayload != null) {
@@ -58,7 +58,7 @@ class RestJson1 : JsonHttpBindingProtocolGenerator() {
                     write("builder.body = #T.fromBytes(#S.encodeToByteArray())", RuntimeTypes.Http.HttpBody, "{}")
                 }
                 // Content-Type still needs to be set for non-structured payloads
-                // https://github.com/awslabs/smithy/blob/main/smithy-aws-protocol-tests/model/restJson1/http-content-type.smithy#L174
+                // https://github.com/smithy-lang/smithy/blob/main/smithy-aws-protocol-tests/model/restJson1/http-content-type.smithy#L174
                 write("builder.headers.setMissing(\"Content-Type\", #S)", resolver.determineRequestContentType(op))
             }
         }

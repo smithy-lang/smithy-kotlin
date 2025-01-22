@@ -575,10 +575,18 @@ open class XmlParserGenerator(
     ) {
         val target = ctx.model.expectShape(member.target)
 
-        val parseFn = when (target.type) {
-            ShapeType.BLOB -> writer.format("#T { it.#T() } ", RuntimeTypes.Serde.parse, RuntimeTypes.Core.Text.Encoding.decodeBase64Bytes)
-            ShapeType.BOOLEAN -> writer.format("#T()", RuntimeTypes.Serde.parseBoolean)
-            ShapeType.STRING -> {
+        val parseFn = when {
+            target.type == ShapeType.BLOB -> writer.format("#T { it.#T() } ", RuntimeTypes.Serde.parse, RuntimeTypes.Core.Text.Encoding.decodeBase64Bytes)
+            target.type == ShapeType.BOOLEAN -> writer.format("#T()", RuntimeTypes.Serde.parseBoolean)
+            target.isStringEnumShape -> {
+                if (!textExprIsResult) {
+                    writer.write("#T.fromValue(#L)", ctx.symbolProvider.toSymbol(target), textExpr)
+                    return
+                } else {
+                    writer.format("#T { #T.fromValue(it) } ", RuntimeTypes.Serde.parse, ctx.symbolProvider.toSymbol(target))
+                }
+            }
+            target.type == ShapeType.STRING -> {
                 if (!textExprIsResult) {
                     writer.write(textExpr)
                     return
@@ -586,28 +594,21 @@ open class XmlParserGenerator(
                     null
                 }
             }
-            ShapeType.TIMESTAMP -> {
+            target.type == ShapeType.TIMESTAMP -> {
                 val trait = member.getTrait<TimestampFormatTrait>() ?: target.getTrait()
                 val tsFormat = trait?.format ?: defaultTimestampFormat
                 val runtimeEnum = tsFormat.toRuntimeEnum(writer)
                 writer.format("#T(#L)", RuntimeTypes.Serde.parseTimestamp, runtimeEnum)
             }
-            ShapeType.BYTE -> writer.format("#T()", RuntimeTypes.Serde.parseByte)
-            ShapeType.SHORT -> writer.format("#T()", RuntimeTypes.Serde.parseShort)
-            ShapeType.INTEGER -> writer.format("#T()", RuntimeTypes.Serde.parseInt)
-            ShapeType.LONG -> writer.format("#T()", RuntimeTypes.Serde.parseLong)
-            ShapeType.FLOAT -> writer.format("#T()", RuntimeTypes.Serde.parseFloat)
-            ShapeType.DOUBLE -> writer.format("#T()", RuntimeTypes.Serde.parseDouble)
-            ShapeType.BIG_DECIMAL -> writer.format("#T()", RuntimeTypes.Serde.parseBigDecimal)
-            ShapeType.BIG_INTEGER -> writer.format("#T()", RuntimeTypes.Serde.parseBigInteger)
-            ShapeType.ENUM -> {
-                if (!textExprIsResult) {
-                    writer.write("#T.fromValue(#L)", ctx.symbolProvider.toSymbol(target), textExpr)
-                    return
-                }
-                writer.format("#T { #T.fromValue(it) } ", RuntimeTypes.Serde.parse, ctx.symbolProvider.toSymbol(target))
-            }
-            ShapeType.INT_ENUM -> {
+            target.type == ShapeType.BYTE -> writer.format("#T()", RuntimeTypes.Serde.parseByte)
+            target.type == ShapeType.SHORT -> writer.format("#T()", RuntimeTypes.Serde.parseShort)
+            target.type == ShapeType.INTEGER -> writer.format("#T()", RuntimeTypes.Serde.parseInt)
+            target.type == ShapeType.LONG -> writer.format("#T()", RuntimeTypes.Serde.parseLong)
+            target.type == ShapeType.FLOAT -> writer.format("#T()", RuntimeTypes.Serde.parseFloat)
+            target.type == ShapeType.DOUBLE -> writer.format("#T()", RuntimeTypes.Serde.parseDouble)
+            target.type == ShapeType.BIG_DECIMAL -> writer.format("#T()", RuntimeTypes.Serde.parseBigDecimal)
+            target.type == ShapeType.BIG_INTEGER -> writer.format("#T()", RuntimeTypes.Serde.parseBigInteger)
+            target.type == ShapeType.INT_ENUM -> {
                 writer.format("#T { #T.fromValue(it.toInt()) } ", RuntimeTypes.Serde.parse, ctx.symbolProvider.toSymbol(target))
             }
             else -> error("unknown primitive member shape $member")

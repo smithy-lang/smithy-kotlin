@@ -5,6 +5,7 @@
 
 package aws.smithy.kotlin.runtime.http.engine.okhttp
 
+import aws.smithy.kotlin.runtime.InternalApi
 import aws.smithy.kotlin.runtime.http.HttpCall
 import aws.smithy.kotlin.runtime.http.config.EngineFactory
 import aws.smithy.kotlin.runtime.http.engine.*
@@ -14,9 +15,9 @@ import aws.smithy.kotlin.runtime.net.TlsVersion
 import aws.smithy.kotlin.runtime.operation.ExecutionContext
 import aws.smithy.kotlin.runtime.time.Instant
 import aws.smithy.kotlin.runtime.time.fromEpochMilliseconds
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.job
 import okhttp3.*
+import okhttp3.ConnectionPool
 import okhttp3.coroutines.executeAsync
 import java.util.concurrent.TimeUnit
 import kotlin.time.toJavaDuration
@@ -43,7 +44,8 @@ public class OkHttpEngine(
     }
 
     private val metrics = HttpClientMetrics(TELEMETRY_SCOPE, config.telemetryProvider)
-    private val client = config.buildClient(metrics)
+    private val connectionIdleMonitor = config.connectionIdlePollingInterval?.let { ConnectionIdleMonitor(it) }
+    private val client = config.buildClientWithConnectionListener(metrics, connectionIdleMonitor)
 
     override suspend fun roundTrip(context: ExecutionContext, request: HttpRequest): HttpCall {
         val callContext = callContext()
@@ -51,7 +53,6 @@ public class OkHttpEngine(
         val engineRequest = request.toOkHttpRequest(context, callContext, metrics)
         val engineCall = client.newCall(engineRequest)
 
-        @OptIn(ExperimentalCoroutinesApi::class)
         val engineResponse = mapOkHttpExceptions { engineCall.executeAsync() }
 
         val response = engineResponse.toSdkResponse()
@@ -64,22 +65,23 @@ public class OkHttpEngine(
                 // else). In both cases we need to ensure that the engine-side resources are cleaned up completely
                 // since they wouldn't otherwise be. https://github.com/smithy-lang/smithy-kotlin/issues/1061
                 if (cause != null) call.cancelInFlight()
-                engineResponse.body.close()
+                engineResponse.body?.close()
             }
         }
     }
 
     override fun shutdown() {
+        connectionIdleMonitor?.close()
         client.connectionPool.evictAll()
         client.dispatcher.executorService.shutdown()
         metrics.close()
     }
 }
 
-/**
- * Convert SDK version of HTTP configuration to OkHttp specific configuration and return the configured client
- */
-private fun OkHttpEngineConfig.buildClient(metrics: HttpClientMetrics): OkHttpClient {
+private fun OkHttpEngineConfig.buildClientFromConfig(
+    metrics: HttpClientMetrics,
+    poolOverride: ConnectionPool? = null,
+): OkHttpClient {
     val config = this
 
     return OkHttpClient.Builder().apply {
@@ -97,11 +99,8 @@ private fun OkHttpEngineConfig.buildClient(metrics: HttpClientMetrics): OkHttpCl
         readTimeout(config.socketReadTimeout.toJavaDuration())
         writeTimeout(config.socketWriteTimeout.toJavaDuration())
 
-        // FIXME - register a [ConnectionListener](https://github.com/square/okhttp/blob/master/okhttp/src/jvmMain/kotlin/okhttp3/ConnectionListener.kt#L27)
-        // when a new okhttp release is cut that contains this abstraction and wireup connection uptime metrics
-
         // use our own pool configured with the timeout settings taken from config
-        val pool = ConnectionPool(
+        val pool = poolOverride ?: ConnectionPool(
             maxIdleConnections = 5, // The default from the no-arg ConnectionPool() constructor
             keepAliveDuration = config.connectionIdleTimeout.inWholeMilliseconds,
             TimeUnit.MILLISECONDS,
@@ -138,6 +137,34 @@ private fun OkHttpEngineConfig.buildClient(metrics: HttpClientMetrics): OkHttpCl
         addInterceptor(MetricsInterceptor)
     }.build()
 }
+
+/**
+ * Convert SDK version of HTTP configuration to OkHttp specific configuration and return the configured client
+ */
+// Used by OkHttp4Engine - OkHttp4 does NOT have `connectionListener`
+// TODO - Refactor in next minor version - Move this to OkHttp4Engine and make it private
+@InternalApi
+public fun OkHttpEngineConfig.buildClient(
+    metrics: HttpClientMetrics,
+): OkHttpClient = this.buildClientFromConfig(metrics)
+
+/**
+ * Convert SDK version of HTTP configuration to OkHttp specific configuration and return the configured client
+ */
+// Used by OkHttpEngine - OkHttp5 does have `connectionListener`
+@OptIn(ExperimentalOkHttpApi::class)
+private fun OkHttpEngineConfig.buildClientWithConnectionListener(
+    metrics: HttpClientMetrics,
+    connectionListener: ConnectionIdleMonitor?,
+): OkHttpClient = this.buildClientFromConfig(
+    metrics,
+    ConnectionPool(
+        maxIdleConnections = 5, // The default from the no-arg ConnectionPool() constructor
+        keepAliveDuration = this.connectionIdleTimeout.inWholeMilliseconds,
+        timeUnit = TimeUnit.MILLISECONDS,
+        connectionListener = connectionListener ?: ConnectionListener.NONE,
+    ),
+)
 
 private fun minTlsConnectionSpec(tlsContext: TlsContext): ConnectionSpec {
     val minVersion = tlsContext.minVersion ?: TlsVersion.TLS_1_2

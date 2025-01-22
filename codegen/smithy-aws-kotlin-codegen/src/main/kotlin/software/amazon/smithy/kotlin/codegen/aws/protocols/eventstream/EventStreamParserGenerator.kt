@@ -28,6 +28,7 @@ val RPC_BOUND_PROTOCOLS = setOf(
     "awsJson1_1",
     "awsQuery",
     "ec2Query",
+    "rpcv2Cbor",
 )
 
 /**

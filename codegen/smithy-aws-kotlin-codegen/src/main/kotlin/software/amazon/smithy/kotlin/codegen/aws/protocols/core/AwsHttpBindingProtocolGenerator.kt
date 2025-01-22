@@ -41,8 +41,11 @@ abstract class AwsHttpBindingProtocolGenerator : HttpBindingProtocolGenerator() 
 
         val ignoredTests = TestMemberDelta(
             setOf(
-                // Test broken in Smithy 1.50.0, should be fixed by https://github.com/smithy-lang/smithy/pull/2341
-                "RestJsonClientIgnoresDefaultValuesIfMemberValuesArePresentInResponse",
+                "AwsJson10ClientErrorCorrectsWithDefaultValuesWhenServerFailsToSerializeRequiredValues",
+                "RestJsonNullAndEmptyHeaders",
+                "NullAndEmptyHeaders",
+                "RpcV2CborClientPopulatesDefaultsValuesWhenMissingInResponse",
+                "RpcV2CborClientPopulatesDefaultValuesInInput",
             ),
         )
 

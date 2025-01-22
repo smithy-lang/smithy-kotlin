@@ -488,8 +488,8 @@ internal class SmokeTestOperationDeserializer: HttpDeserializer.NonStreaming<Smo
 
     @Test
     fun itEscapesUriLiterals() {
-        // https://github.com/awslabs/smithy-kotlin/issues/65
-        // https://github.com/awslabs/smithy-kotlin/issues/395
+        // https://github.com/smithy-lang/smithy-kotlin/issues/65
+        // https://github.com/smithy-lang/smithy-kotlin/issues/395
         val uri = "/test/\$LATEST"
         val model = """
             @http(method: "PUT", uri: "$uri", code: 200)

@@ -5,9 +5,14 @@
 package aws.smithy.kotlin.runtime
 
 import aws.smithy.kotlin.runtime.collections.MutableAttributes
+import aws.smithy.kotlin.runtime.collections.appendValue
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
+private const val CTX_KEY_1 = "Color"
+private const val CTX_VALUE_1 = "blue"
+private const val CTX_KEY_2 = "Shape"
+private const val CTX_VALUE_2 = "square"
 private const val ERROR_CODE = "ErrorWithNoMessage"
 private const val METADATA_MESSAGE = "This is a message included in metadata but not the regular response"
 private const val PROTOCOL_RESPONSE_SUMMARY = "HTTP 418 I'm a teapot"
@@ -101,6 +106,35 @@ class ExceptionsTest {
         }
         assertEquals(
             "Error type: $ERROR_TYPE, Protocol response: $PROTOCOL_RESPONSE_SUMMARY, Request ID: $REQUEST_ID",
+            e.message,
+        )
+    }
+
+    @Test
+    fun testNoMessageWithClientContext() {
+        val e = FooServiceException {
+            appendValue(ErrorMetadata.ClientContext, ClientErrorContext(CTX_KEY_1, CTX_VALUE_1))
+            appendValue(ErrorMetadata.ClientContext, ClientErrorContext(CTX_KEY_2, CTX_VALUE_2))
+        }
+        assertEquals(
+            buildList {
+                add("Error type: Unknown")
+                add("Protocol response: (empty response)")
+                add("$CTX_KEY_1: $CTX_VALUE_1")
+                add("$CTX_KEY_2: $CTX_VALUE_2")
+            }.joinToString(),
+            e.message,
+        )
+    }
+
+    @Test
+    fun testMessageWithClientContext() {
+        val e = FooServiceException(SERVICE_MESSAGE) {
+            appendValue(ErrorMetadata.ClientContext, ClientErrorContext(CTX_KEY_1, CTX_VALUE_1))
+            appendValue(ErrorMetadata.ClientContext, ClientErrorContext(CTX_KEY_2, CTX_VALUE_2))
+        }
+        assertEquals(
+            "$SERVICE_MESSAGE, $CTX_KEY_1: $CTX_VALUE_1, $CTX_KEY_2: $CTX_VALUE_2",
             e.message,
         )
     }

@@ -77,8 +77,12 @@ internal class ConnectionManager(
             }
             val httpEx = when (ex) {
                 is HttpException -> ex
-                is TimeoutCancellationException -> HttpException("timed out waiting for an HTTP connection to be acquired from the pool", errorCode = HttpErrorCode.CONNECTION_ACQUIRE_TIMEOUT)
-                else -> HttpException(ex)
+                is TimeoutCancellationException -> HttpException(
+                    "timed out waiting for an HTTP connection to be acquired from the pool",
+                    errorCode = HttpErrorCode.CONNECTION_ACQUIRE_TIMEOUT,
+                    retryable = true,
+                )
+                else -> HttpException(ex, retryable = true)
             }
 
             throw httpEx

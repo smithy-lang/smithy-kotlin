@@ -137,7 +137,7 @@ class UploadTest : AbstractEngineTest() {
     @Test
     fun testUploadWithWrappedStream() = testEngines {
         // test custom ByteStream behavior
-        // see https://github.com/awslabs/smithy-kotlin/issues/613
+        // see https://github.com/smithy-lang/smithy-kotlin/issues/613
         test { _, client ->
             val data = ByteArray(1024 * 1024) { it.toByte() }
             val sha = data.sha256().encodeToHex()

@@ -7,10 +7,7 @@ description = "Default telemetry provider"
 extra["displayName"] = "Smithy :: Kotlin :: Observability :: Telemetry Defaults"
 extra["moduleName"] = "aws.smithy.kotlin.runtime.telemetry"
 
-val coroutinesVersion: String by project
-val slf4jVersion: String by project
-val atomicFuVersion: String by project
-apply(plugin = "kotlinx-atomicfu")
+apply(plugin = "org.jetbrains.kotlinx.atomicfu")
 
 kotlin {
     sourceSets {

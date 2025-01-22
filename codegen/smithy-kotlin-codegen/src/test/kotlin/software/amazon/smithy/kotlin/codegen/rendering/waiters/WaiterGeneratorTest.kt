@@ -28,7 +28,7 @@ class WaiterGeneratorTest {
     @Test
     fun testDefaultDelays() {
         val expected = """
-            val strategy = StandardRetryStrategy {
+            val strategy = retryStrategy ?: StandardRetryStrategy {
                 maxAttempts = 20
                 tokenBucket = InfiniteTokenBucket
                 delayProvider {
@@ -45,7 +45,7 @@ class WaiterGeneratorTest {
     @Test
     fun testCustomDelays() {
         val expected = """
-            val strategy = StandardRetryStrategy {
+            val strategy = retryStrategy ?: StandardRetryStrategy {
                 maxAttempts = 20
                 tokenBucket = InfiniteTokenBucket
                 delayProvider {

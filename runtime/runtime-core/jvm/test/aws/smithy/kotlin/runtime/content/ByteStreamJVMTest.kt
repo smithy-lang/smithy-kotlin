@@ -5,9 +5,14 @@
 
 package aws.smithy.kotlin.runtime.content
 
+import aws.smithy.kotlin.runtime.io.readToByteArray
 import aws.smithy.kotlin.runtime.testing.RandomTempFile
 import kotlinx.coroutines.test.runTest
+import java.io.BufferedInputStream
+import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
+import java.io.InputStream
+import java.io.OutputStream
 import java.nio.file.Files
 import kotlin.test.*
 
@@ -158,7 +163,7 @@ class ByteStreamJVMTest {
         binaryData.inputStream().use { inputStream ->
             val byteStream = inputStream.asByteStream()
             assertNull(byteStream.contentLength)
-            assertTrue(byteStream.isOneShot)
+            assertFalse(byteStream.isOneShot)
 
             val output = byteStream.toByteArray()
             assertContentEquals(binaryData, output)
@@ -168,6 +173,23 @@ class ByteStreamJVMTest {
     @Test
     fun testInputStreamAsByteStreamWithLength() = runTest {
         binaryData.inputStream().use { inputStream ->
+            val byteStream = inputStream.asByteStream(binaryData.size.toLong())
+            assertEquals(binaryData.size.toLong(), byteStream.contentLength)
+            assertFalse(byteStream.isOneShot)
+
+            val output = byteStream.toByteArray()
+            assertContentEquals(binaryData, output)
+        }
+    }
+
+    @Test
+    fun testOneShotInputStream() = runTest {
+        class NonReplayableInputStream(val delegate: InputStream) : InputStream() {
+            override fun read(): Int = delegate.read()
+            override fun markSupported(): Boolean = false
+        }
+
+        NonReplayableInputStream(binaryData.inputStream()).use { inputStream ->
             val byteStream = inputStream.asByteStream(binaryData.size.toLong())
             assertEquals(binaryData.size.toLong(), byteStream.contentLength)
             assertTrue(byteStream.isOneShot)
@@ -184,6 +206,65 @@ class ByteStreamJVMTest {
             byteStream.writeToOutputStream(outputStream)
             val output = outputStream.toByteArray()
             assertContentEquals(binaryData, output)
+        }
+    }
+
+    @Test
+    fun testWriteToByteStreamClosesOutput() = runTest {
+        val byteStream = ByteStream.fromString("Hello")
+
+        val sos = StatusTrackingOutputStream(ByteArrayOutputStream())
+
+        assertFalse(sos.closed)
+        byteStream.writeToOutputStream(sos)
+        assertTrue(sos.closed)
+    }
+
+    @Test
+    fun testAppendToByteStreamDoesNotCloseOutput() = runTest {
+        val byteStream = ByteStream.fromString("Don't close me!")
+
+        val sos = StatusTrackingOutputStream(ByteArrayOutputStream())
+
+        assertFalse(sos.closed)
+        byteStream.appendToOutputStream(sos)
+        assertFalse(sos.closed)
+    }
+
+    // https://github.com/awslabs/aws-sdk-kotlin/issues/1473
+    @Test
+    fun testReplayableInputStreamAsByteStream() = runTest {
+        val content = "Hello, Bytes!".encodeToByteArray()
+        val byteArrayIns = ByteArrayInputStream(content)
+        val nonReplayableIns = NonReplayableInputStream(byteArrayIns)
+
+        // buffer the non-replayable stream, making it replayable...
+        val bufferedIns = BufferedInputStream(nonReplayableIns)
+
+        val byteStream = bufferedIns.asByteStream(content.size.toLong())
+
+        // Test that it can be read at least twice (e.g. once for hashing the body, once for transmitting the body)
+        assertContentEquals(content, byteStream.readFrom().use { it.readToByteArray() })
+        assertContentEquals(content, byteStream.readFrom().use { it.readToByteArray() })
+    }
+
+    private class NonReplayableInputStream(val inputStream: InputStream) : InputStream() {
+        override fun markSupported(): Boolean = false // not replayable
+
+        override fun read(): Int = inputStream.read()
+        override fun mark(readlimit: Int) = inputStream.mark(readlimit)
+        override fun reset() = inputStream.reset()
+    }
+
+    private class StatusTrackingOutputStream(val os: OutputStream) : OutputStream() {
+        var closed: Boolean = false
+
+        override fun write(b: Int) {
+            os.write(b)
+        }
+
+        override fun close() {
+            closed = true
         }
     }
 }

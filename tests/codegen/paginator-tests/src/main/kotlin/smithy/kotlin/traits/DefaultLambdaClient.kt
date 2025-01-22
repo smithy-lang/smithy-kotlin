@@ -33,23 +33,41 @@ class TestLambdaClient : LambdaClient {
     var exhaustedVal: String? = null
 
     override suspend fun listFunctions(input: ListFunctionsRequest) = ListFunctionsResponse {
-        nextMarker = when {
-            input.marker.toIntOrZero() == pageCount - 1 -> exhaustedVal // Exhausted pages
-            input.marker == null -> "1" // First page
-            else -> (input.marker.toInt() + 1).toString() // Next page
+        val inputMarker = input.marker.toIntOrZero()
+
+        nextMarker = when (inputMarker) {
+            pageCount - 1 -> exhaustedVal // Exhausted pages
+            else -> (inputMarker + 1).toString() // Next page
         }
 
-        functions = generateFunctions(input.marker.toIntOrZero())
+        functions = generateFunctions(inputMarker)
     }
 
     override suspend fun truncatedListFunctions(input: TruncatedListFunctionsRequest) = TruncatedListFunctionsResponse {
-        nextMarker = (input.marker.toIntOrZero() + 1).toString()
-        isTruncated = input.marker.toIntOrZero() < pageCount - 1
-        functions = generateFunctions(input.marker.toIntOrZero())
+        val inputMarker = input.marker.toIntOrZero()
+
+        nextMarker = (inputMarker + 1).toString()
+        isTruncated = inputMarker < pageCount - 1
+        functions = generateFunctions(inputMarker)
     }
 
-    private fun generateFunctions(page: Int) = (0 until itemsPerPage).map { idx ->
-        FunctionConfiguration { functionName = "Function page($page) item($idx)" }
+    override suspend fun identicalTokenListFunctions(input: IdenticalTokenListFunctionsRequest) =
+        IdenticalTokenListFunctionsResponse {
+            val inputMarker = input.marker.toIntOrZero()
+
+            nextMarker = when (inputMarker) {
+                pageCount - 1 -> input.marker // Exhausted pages, return identical input marker
+                else -> (inputMarker + 1).toString() // Next page
+            }
+
+            functions = generateFunctions(inputMarker)
+        }
+
+    private fun generateFunctions(page: Int): List<FunctionConfiguration> {
+        require(page < pageCount) { "Paginator tried to seek beyond max page $pageCount" }
+        return (0 until itemsPerPage).map { idx ->
+            FunctionConfiguration { functionName = "Function page($page) item($idx)" }
+        }
     }
 }
 

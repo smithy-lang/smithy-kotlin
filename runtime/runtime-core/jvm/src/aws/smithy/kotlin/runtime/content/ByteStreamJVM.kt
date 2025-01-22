@@ -114,16 +114,35 @@ public fun ByteStream.Companion.fromInputStream(
  * @param contentLength If specified, indicates how many bytes remain in this stream. Defaults to `null`.
  */
 public fun InputStream.asByteStream(contentLength: Long? = null): ByteStream.SourceStream {
-    val source = source()
+    if (markSupported() && contentLength != null) {
+        mark(contentLength.toInt())
+    }
+
     return object : ByteStream.SourceStream() {
         override val contentLength: Long? = contentLength
-        override val isOneShot: Boolean = true
-        override fun readFrom(): SdkSource = source
+        override val isOneShot: Boolean = !markSupported()
+        override fun readFrom(): SdkSource {
+            if (markSupported() && contentLength != null) {
+                reset()
+                mark(contentLength.toInt())
+                return object : SdkSource by source() {
+                    /*
+                     * This is a no-op close to prevent body hashing from closing the underlying InputStream, which causes
+                     * `IOException: Stream closed` on subsequent reads. Consider making [ByteStream.ChannelStream]/[ByteStream.SourceStream]
+                     * (or possibly even [ByteStream] itself) implement [Closeable] to better handle closing streams.
+                     * This should allow us to clean up our usage of [ByteStream.cancel()].
+                     */
+                    override fun close() { }
+                }
+            }
+
+            return source()
+        }
     }
 }
 
 /**
- * Writes this stream to the given [OutputStream]. This method does not flush or close the given [OutputStream].
+ * Writes this stream to the given [OutputStream], then closes it.
  * @param outputStream The [OutputStream] to which the contents of this stream will be written
  */
 public suspend fun ByteStream.writeToOutputStream(outputStream: OutputStream): Long = withContext(Dispatchers.IO) {
@@ -138,6 +157,21 @@ public suspend fun ByteStream.writeToOutputStream(outputStream: OutputStream): L
             bufferedSink.writeAll(src)
         }
     }
+}
+
+/**
+ * Writes this stream to the given [OutputStream]. This method does not flush or close the given [OutputStream].
+ * @param outputStream The [OutputStream] to which the contents of this stream will be written
+ */
+public suspend fun ByteStream.appendToOutputStream(outputStream: OutputStream): Long = withContext(Dispatchers.IO) {
+    val src = when (val stream = this@appendToOutputStream) {
+        is ByteStream.ChannelStream -> return@withContext outputStream.writeAll(stream.readFrom())
+        is ByteStream.Buffer -> stream.bytes().source()
+        is ByteStream.SourceStream -> stream.readFrom()
+    }
+
+    val out = outputStream.sink().buffer()
+    out.writeAll(src)
 }
 
 private suspend fun OutputStream.writeAll(chan: SdkByteReadChannel): Long =

@@ -28,6 +28,7 @@ import io.ktor.util.*
 import io.ktor.utils.io.*
 import io.ktor.utils.io.core.*
 import kotlinx.coroutines.runBlocking
+import kotlinx.io.readByteArray
 import kotlinx.serialization.json.*
 import org.junit.jupiter.api.Assumptions.assumeTrue
 import org.junit.jupiter.api.Test
@@ -103,7 +104,7 @@ public actual abstract class SigningSuiteTestBase : HasSigner {
     }
 
     protected open val disabledTests: Set<String> = setOf(
-        // TODO https://github.com/awslabs/smithy-kotlin/issues/653
+        // TODO https://github.com/smithy-lang/smithy-kotlin/issues/653
         // ktor-http-cio parser doesn't support parsing multiline headers since they are deprecated in RFC7230
         "get-header-value-multiline",
         // ktor fails to parse with space in it (expects it to be a valid request already encoded)
@@ -383,7 +384,7 @@ public actual abstract class SigningSuiteTestBase : HasSigner {
         }
 
         if (hasBody) {
-            val bytes = runBlocking { chan.readRemaining().readBytes() }
+            val bytes = runBlocking { chan.readRemaining().readByteArray() }
             builder.body = HttpBody.fromBytes(bytes)
         }
 

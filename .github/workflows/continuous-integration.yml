@@ -2,7 +2,9 @@ name: CI
 
 on:
   push:
-    branches: [ main ]
+    branches:
+      - main
+      - '*-main'
   pull_request:
   workflow_dispatch:
 
@@ -66,7 +68,7 @@ jobs:
           ./gradlew test jvmTest
       - name: Save Test Reports
         if: failure()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: test-reports-${{ matrix.os }}
           path: '**/build/reports'

@@ -15,7 +15,6 @@ import kotlin.test.assertEquals
 import kotlin.test.assertIs
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
-import kotlin.time.ExperimentalTime
 import kotlin.time.TestTimeSource
 import kotlin.time.TimeSource
 
@@ -107,7 +106,7 @@ class StandardRetryTokenBucketTest {
     }
 }
 
-@OptIn(ExperimentalCoroutinesApi::class, ExperimentalTime::class)
+@OptIn(ExperimentalCoroutinesApi::class)
 private fun TestScope.tokenBucket(
     useCircuitBreakerMode: Boolean = false,
     initialTryCost: Int = 0,
