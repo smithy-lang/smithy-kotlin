@@ -15,6 +15,7 @@ import aws.smithy.kotlin.runtime.net.TlsVersion
 import aws.smithy.kotlin.runtime.operation.ExecutionContext
 import aws.smithy.kotlin.runtime.time.Instant
 import aws.smithy.kotlin.runtime.time.fromEpochMilliseconds
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.job
 import okhttp3.*
 import okhttp3.ConnectionPool
@@ -47,6 +48,7 @@ public class OkHttpEngine(
     private val connectionIdleMonitor = config.connectionIdlePollingInterval?.let { ConnectionIdleMonitor(it) }
     private val client = config.buildClientWithConnectionListener(metrics, connectionIdleMonitor)
 
+    @OptIn(ExperimentalCoroutinesApi::class)
     override suspend fun roundTrip(context: ExecutionContext, request: HttpRequest): HttpCall {
         val callContext = callContext()
 

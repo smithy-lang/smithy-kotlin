@@ -104,7 +104,7 @@ public fun Headers.toOkHttpHeaders(): OkHttpHeaders = OkHttpHeaders.Builder().al
 @InternalApi
 public fun OkHttpResponse.toSdkResponse(): HttpResponse {
     val sdkHeaders = OkHttpHeadersAdapter(headers)
-    val httpBody = if (body == null || body!!.contentLength() == 0L) {
+    val httpBody = if (body.contentLength() == 0L) {
         HttpBody.Empty
     } else {
         object : HttpBody.SourceContent() {
