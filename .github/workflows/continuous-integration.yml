@@ -62,6 +62,7 @@ jobs:
       - name: Test
         shell: bash
         run: |
+          echo "kotlinWarningsAsErrors=true" >> $GITHUB_WORKSPACE/local.properties
           ./gradlew apiCheck
           ./gradlew test jvmTest
       - name: Save Test Reports
