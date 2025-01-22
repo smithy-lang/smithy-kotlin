@@ -249,10 +249,6 @@ class StructureGenerator(
                         memberSymbol
                     }
 
-                    if (builderMemberSymbol.shape is BlobShape && builderMemberSymbol.isNotNullable) {
-                        writer.addImport(RuntimeTypes.Core.Text.Encoding.decodeBase64)
-                    }
-
                     write("public var #L: #E", memberName, builderMemberSymbol)
                 }
                 write("")
