@@ -248,6 +248,7 @@ class StructureGenerator(
                     } else {
                         memberSymbol
                     }
+
                     write("public var #L: #E", memberName, builderMemberSymbol)
                 }
                 write("")

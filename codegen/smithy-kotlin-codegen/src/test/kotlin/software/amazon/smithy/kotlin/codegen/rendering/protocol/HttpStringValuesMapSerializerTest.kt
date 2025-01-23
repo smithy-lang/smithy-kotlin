@@ -145,8 +145,8 @@ class HttpStringValuesMapSerializerTest {
         contents.assertBalancedBracesAndParens()
 
         val expectedContents = """
-            if (input.header1?.isNotEmpty() == true) append("X-Header1", input.header1)
-            if (input.header2?.isNotEmpty() == true) append("X-Header2", input.header2)
+            if (input.header1 != null) append("X-Header1", input.header1)
+            if (input.header2 != null) append("X-Header2", input.header2)
         """.trimIndent()
         contents.shouldContainOnlyOnceWithDiff(expectedContents)
     }
@@ -157,7 +157,7 @@ class HttpStringValuesMapSerializerTest {
         contents.assertBalancedBracesAndParens()
 
         val expectedContents = """
-            if (input.headerMediaType?.isNotEmpty() == true) append("X-Blob", input.headerMediaType.encodeBase64())
+            if (input.headerMediaType != null) append("X-Blob", input.headerMediaType.encodeBase64())
         """.trimIndent()
         contents.shouldContainOnlyOnceWithDiff(expectedContents)
     }
@@ -168,10 +168,10 @@ class HttpStringValuesMapSerializerTest {
         contents.assertBalancedBracesAndParens()
 
         val expectedContents = """
-            if (input.enumList?.isNotEmpty() == true) appendAll("x-enumList", input.enumList.map { quoteHeaderValue(it.value) })
-            if (input.intList?.isNotEmpty() == true) appendAll("x-intList", input.intList.map { it.toString() })
-            if (input.strList?.isNotEmpty() == true) appendAll("x-strList", input.strList.map { quoteHeaderValue(it) })
-            if (input.tsList?.isNotEmpty() == true) appendAll("x-tsList", input.tsList.map { it.format(TimestampFormat.RFC_5322) })
+            if (input.enumList != null) appendAll("x-enumList", input.enumList.map { quoteHeaderValue(it.value) })
+            if (input.intList != null) appendAll("x-intList", input.intList.map { it.toString() })
+            if (input.strList != null) appendAll("x-strList", input.strList.map { quoteHeaderValue(it) })
+            if (input.tsList != null) appendAll("x-tsList", input.tsList.map { it.format(TimestampFormat.RFC_5322) })
         """.trimIndent()
         contents.shouldContainOnlyOnceWithDiff(expectedContents)
     }
@@ -190,7 +190,7 @@ class HttpStringValuesMapSerializerTest {
         val queryContents = getTestContents(defaultModel, "com.test#TimestampInput", HttpBinding.Location.QUERY)
         val expectedQueryContents = """
             if (input.queryTimestamp != null) add("qtime", input.queryTimestamp.format(TimestampFormat.ISO_8601))
-            if (input.queryTimestampList?.isNotEmpty() == true) addAll("qtimeList", input.queryTimestampList.map { it.format(TimestampFormat.ISO_8601) })
+            if (input.queryTimestampList != null) addAll("qtimeList", input.queryTimestampList.map { it.format(TimestampFormat.ISO_8601) })
         """.trimIndent()
         queryContents.shouldContainOnlyOnceWithDiff(expectedQueryContents)
     }
