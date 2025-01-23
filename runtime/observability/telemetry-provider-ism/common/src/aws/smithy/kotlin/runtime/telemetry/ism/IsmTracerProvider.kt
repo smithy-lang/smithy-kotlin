@@ -6,47 +6,48 @@ package aws.smithy.kotlin.runtime.telemetry.ism
 
 import aws.smithy.kotlin.runtime.collections.AttributeKey
 import aws.smithy.kotlin.runtime.collections.Attributes
+import aws.smithy.kotlin.runtime.collections.merge
+import aws.smithy.kotlin.runtime.collections.toMutableAttributes
 import aws.smithy.kotlin.runtime.telemetry.context.Context
 import aws.smithy.kotlin.runtime.telemetry.trace.*
 
-public class IsmTracerProvider : TracerProvider {
-    override fun getOrCreateTracer(scope: String): Tracer {
-        TODO("Not yet implemented")
-    }
+internal class IsmTracerProvider(val spanListener: SpanListener) : TracerProvider {
+    override fun getOrCreateTracer(scope: String): Tracer = IsmTracer(spanListener, scope)
 }
 
-public class IsmTracer : Tracer {
+private class IsmTracer(val spanListener: SpanListener, val scope: String) : Tracer {
     override fun createSpan(
         name: String,
         initialAttributes: Attributes,
         spanKind: SpanKind,
         parentContext: Context?
-    ): TraceSpan {
-        TODO("Not yet implemented")
-    }
+    ): TraceSpan = IsmTraceSpan(spanListener, scope, name, initialAttributes, spanKind, parentContext)
 }
 
-public class IsmTraceSpan : TraceSpan {
-    override val spanContext: SpanContext
-        get() = TODO("Not yet implemented")
+private class IsmTraceSpan(
+    private val spanListener: SpanListener,
+    private val scope: String,
+    private val name: String,
+    initialAttributes: Attributes,
+    private val spanKind: SpanKind,
+    parentContext: Context?
+) : TraceSpan {
+    private val attributes = initialAttributes.toMutableAttributes()
+    private val selfContext: Context = spanListener.onNewSpan(parentContext, name, initialAttributes)
+
+    override val spanContext: SpanContext = (selfContext as? HierarchicalContext)?.spanContext ?: SpanContext.Invalid
 
     override fun <T : Any> set(key: AttributeKey<T>, value: T) {
-        TODO("Not yet implemented")
+        attributes[key] = value
     }
 
     override fun mergeAttributes(attributes: Attributes) {
-        TODO("Not yet implemented")
+        this.attributes.merge(attributes)
     }
 
-    override fun emitEvent(name: String, attributes: Attributes) {
-        TODO("Not yet implemented")
-    }
+    override fun emitEvent(name: String, attributes: Attributes) = TODO("Not yet implemented")
 
-    override fun setStatus(status: SpanStatus) {
-        TODO("Not yet implemented")
-    }
+    override fun setStatus(status: SpanStatus) = TODO("Not yet implemented")
 
-    override fun close() {
-        TODO("Not yet implemented")
-    }
+    override fun close() = spanListener.onCloseSpan(selfContext)
 }

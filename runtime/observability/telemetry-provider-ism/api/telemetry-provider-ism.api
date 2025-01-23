@@ -1,10 +1,5 @@
-public final class aws/smithy/kotlin/runtime/telemetry/ism/IsmContextManager : aws/smithy/kotlin/runtime/telemetry/context/ContextManager {
-	public static final field Companion Laws/smithy/kotlin/runtime/telemetry/ism/IsmContextManager$Companion;
-	public fun current (Lkotlin/coroutines/CoroutineContext;)Laws/smithy/kotlin/runtime/telemetry/context/Context;
-}
-
-public final class aws/smithy/kotlin/runtime/telemetry/ism/IsmContextManager$Companion {
-	public final fun createWithScopeListener ()Lkotlin/Pair;
+public abstract interface class aws/smithy/kotlin/runtime/telemetry/ism/IsmMetricSink {
+	public abstract fun onInvocationComplete (Laws/smithy/kotlin/runtime/telemetry/ism/OperationMetrics;)V
 }
 
 public final class aws/smithy/kotlin/runtime/telemetry/ism/IsmMetricsProvider : aws/smithy/kotlin/runtime/telemetry/metrics/MeterProvider {
@@ -18,9 +13,23 @@ public final class aws/smithy/kotlin/runtime/telemetry/ism/IsmMetricsProviderKt 
 	public static final fun ScopeMetrics (Ljava/util/Map;Ljava/util/Map;)Laws/smithy/kotlin/runtime/telemetry/ism/ScopeMetrics;
 }
 
+public final class aws/smithy/kotlin/runtime/telemetry/ism/IsmTelemetryProvider : aws/smithy/kotlin/runtime/telemetry/TelemetryProvider {
+	public fun <init> (Laws/smithy/kotlin/runtime/telemetry/ism/IsmMetricSink;Laws/smithy/kotlin/runtime/telemetry/logging/LoggerProvider;)V
+	public synthetic fun <init> (Laws/smithy/kotlin/runtime/telemetry/ism/IsmMetricSink;Laws/smithy/kotlin/runtime/telemetry/logging/LoggerProvider;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun getContextManager ()Laws/smithy/kotlin/runtime/telemetry/context/ContextManager;
+	public fun getLoggerProvider ()Laws/smithy/kotlin/runtime/telemetry/logging/LoggerProvider;
+	public fun getMeterProvider ()Laws/smithy/kotlin/runtime/telemetry/metrics/MeterProvider;
+	public fun getTracerProvider ()Laws/smithy/kotlin/runtime/telemetry/trace/TracerProvider;
+}
+
+public final class aws/smithy/kotlin/runtime/telemetry/ism/MetricHoldersKt {
+	public static final fun MetricRecord (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/Object;Laws/smithy/kotlin/runtime/collections/Attributes;Laws/smithy/kotlin/runtime/time/Instant;)Laws/smithy/kotlin/runtime/telemetry/ism/MetricRecord;
+	public static final fun OperationMetrics (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/util/List;Ljava/util/Map;)Laws/smithy/kotlin/runtime/telemetry/ism/OperationMetrics;
+	public static final fun ScopeMetrics (Ljava/util/List;Ljava/util/Map;)Laws/smithy/kotlin/runtime/telemetry/ism/ScopeMetrics;
+}
+
 public abstract interface class aws/smithy/kotlin/runtime/telemetry/ism/MetricRecord {
 	public abstract fun getAttributes ()Laws/smithy/kotlin/runtime/collections/Attributes;
-	public abstract fun getContext ()Laws/smithy/kotlin/runtime/telemetry/context/Context;
 	public abstract fun getDescription ()Ljava/lang/String;
 	public abstract fun getName ()Ljava/lang/String;
 	public abstract fun getTimestamp ()Laws/smithy/kotlin/runtime/time/Instant;
@@ -40,11 +49,6 @@ public abstract interface class aws/smithy/kotlin/runtime/telemetry/ism/Operatio
 
 public abstract interface class aws/smithy/kotlin/runtime/telemetry/ism/ScopeMetrics {
 	public abstract fun getChildScopes ()Ljava/util/Map;
-	public abstract fun getRecords ()Ljava/util/Map;
-}
-
-public abstract interface class aws/smithy/kotlin/runtime/telemetry/ism/SpanListener {
-	public abstract fun onCloseSpan (Laws/smithy/kotlin/runtime/telemetry/context/Context;)V
-	public abstract fun onNewSpan (Laws/smithy/kotlin/runtime/telemetry/context/Context;Ljava/lang/String;Laws/smithy/kotlin/runtime/collections/Attributes;)Laws/smithy/kotlin/runtime/telemetry/context/Context;
+	public abstract fun getRecords ()Ljava/util/List;
 }
 

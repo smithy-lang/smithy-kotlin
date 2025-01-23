@@ -6,7 +6,7 @@ description = "Telemetry provider for invocation-scoped metrics"
 extra["displayName"] = "Smithy :: Kotlin :: Observability :: Invocation-scoped Metrics Provider"
 extra["moduleName"] = "aws.smithy.kotlin.runtime.telemetry.ism"
 
-apply(plugin = "kotlinx-atomicfu")
+apply(plugin = "org.jetbrains.kotlinx.atomicfu")
 
 kotlin {
     sourceSets {

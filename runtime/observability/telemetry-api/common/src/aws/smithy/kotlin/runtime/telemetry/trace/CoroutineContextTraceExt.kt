@@ -9,7 +9,6 @@ import aws.smithy.kotlin.runtime.ExperimentalApi
 import aws.smithy.kotlin.runtime.InternalApi
 import aws.smithy.kotlin.runtime.collections.Attributes
 import aws.smithy.kotlin.runtime.collections.emptyAttributes
-import aws.smithy.kotlin.runtime.operation.ExecutionContext
 import aws.smithy.kotlin.runtime.telemetry.TelemetryProviderContext
 import aws.smithy.kotlin.runtime.telemetry.context.TelemetryContextElement
 import aws.smithy.kotlin.runtime.telemetry.context.telemetryContext
@@ -45,6 +44,7 @@ public val CoroutineContext.traceSpan: TraceSpan?
  * created span set.
  */
 @InternalApi
+@OptIn(ExperimentalApi::class)
 public suspend inline fun <R> Tracer.withSpan(
     name: String,
     initialAttributes: Attributes = emptyAttributes(),
@@ -52,7 +52,7 @@ public suspend inline fun <R> Tracer.withSpan(
     context: CoroutineContext = EmptyCoroutineContext,
     crossinline block: suspend CoroutineScope.(span: TraceSpan) -> R,
 ): R {
-    val parent = coroutineContext.telemetryContext
+    val parent = coroutineContext.telemetryContext ?: coroutineContext.telemetryProvider.contextManager.current(coroutineContext)
     val span = createSpan(name, initialAttributes, spanKind, parent)
     return withSpan(span, context, block)
 }
