@@ -22,7 +22,28 @@ public sealed class RetryException(
     public val attempts: Int,
     public val lastResponse: Any?,
     public val lastException: Throwable?,
-) : ClientException(message, cause)
+) : ClientException(message, cause) {
+    override fun toString(): String = buildString {
+        append(this@RetryException::class.simpleName)
+        append("(")
+
+        append("message=")
+        append(message)
+
+        append(",attempts=")
+        append(attempts)
+
+        if (lastException != null) {
+            append(",lastException=")
+            append(lastException)
+        } else if (lastResponse != null) {
+            append(",lastResponse=")
+            append(lastResponse)
+        }
+
+        append(")")
+    }
+}
 
 /**
  * Indicates that retrying has failed because too many attempts have completed unsuccessfully.
