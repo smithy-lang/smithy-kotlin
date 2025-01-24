@@ -39,8 +39,9 @@ operation SayHelloXml { output: TestOutput, errors: [Error] }
 
 structure TestOutputDocument with [TestStruct] {
     innerField: Nested,
-    // FIXME: This trait fails smithy validator
-    // @required
+
+    // Note: This shape _should_ be @required, but causes Smithy httpResponseTests validation to fail.
+    // We expect `document` to be deserialized as `null` and enforce @required using a runtime check, but Smithy validator doesn't recognize / allow this.
     document: Document
 }
 structure TestOutput with [TestStruct] { innerField: Nested }
@@ -65,8 +66,8 @@ structure TestStruct {
     @required
     nestedListValue: NestedList
 
-    // FIXME: This trait fails smithy validator
-    // @required
+    // Note: This shape _should_ be @required, but causes Smithy httpResponseTests validation to fail.
+    // We expect `nested` to be deserialized as `null` and enforce @required using a runtime check, but Smithy validator doesn't recognize / allow this.
     nested: Nested
 
     @required
@@ -97,8 +98,7 @@ union MyUnion {
 }
 
 structure Nested {
-    // FIXME: This trait fails smithy validator
-    // @required
+    @required
     a: String
 }
 
