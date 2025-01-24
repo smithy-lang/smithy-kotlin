@@ -23,15 +23,13 @@ public fun defaultAwsSigner(block: DefaultAwsSignerBuilder.() -> Unit): AwsSigne
 public class DefaultAwsSignerBuilder {
     private var telemetryProvider: TelemetryProvider? = null
 
-    public fun withTelemetryProvider(provider: TelemetryProvider) : DefaultAwsSignerBuilder = apply {
+    public fun withTelemetryProvider(provider: TelemetryProvider): DefaultAwsSignerBuilder = apply {
         this.telemetryProvider = provider
     }
 
-    public fun build(): AwsSigner {
-        return DefaultAwsSignerImpl(
-            telemetryProvider = telemetryProvider,
-        )
-    }
+    public fun build(): AwsSigner = DefaultAwsSignerImpl(
+        telemetryProvider = telemetryProvider,
+    )
 }
 
 @OptIn(ExperimentalApi::class)
