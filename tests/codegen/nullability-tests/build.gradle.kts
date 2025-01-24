@@ -46,7 +46,7 @@ kotlin.sourceSets.getByName("main") {
 tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
     dependsOn(tasks.generateSmithyProjections)
     // FIXME - generated code has warnings unfortunately, see https://github.com/awslabs/aws-sdk-kotlin/issues/1169
-    kotlinOptions.allWarningsAsErrors = false
+    compilerOptions.allWarningsAsErrors = false
 }
 
 tasks.test {
