@@ -10,19 +10,16 @@ dokka {
 
     pluginsConfiguration.html {
         customStyleSheets.from(
-            rootProject.file("docs/dokka-presets/css/logo-styles.css"),
             rootProject.file("docs/dokka-presets/css/aws-styles.css"),
         )
 
         customAssets.from(
             rootProject.file("docs/dokka-presets/assets/logo-icon.svg"),
-            rootProject.file("docs/dokka-presets/assets/aws_logo_white_59x35.png"),
             rootProject.file("docs/dokka-presets/scripts/accessibility.js"),
         )
 
         footerMessage.set("© ${java.time.LocalDate.now().year}, Amazon Web Services, Inc. or its affiliates. All rights reserved.")
         separateInheritedMembers.set(true)
-        templatesDir.set(rootProject.file("docs/dokka-presets/templates"))
     }
 }
 
