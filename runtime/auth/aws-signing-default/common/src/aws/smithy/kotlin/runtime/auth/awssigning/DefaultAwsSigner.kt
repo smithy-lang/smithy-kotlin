@@ -15,17 +15,14 @@ import kotlin.coroutines.coroutineContext
 /** The default implementation of [AwsSigner] */
 public val DefaultAwsSigner: AwsSigner = DefaultAwsSignerImpl()
 
-public fun defaultAwsSigner(block: DefaultAwsSignerBuilder.() -> Unit): AwsSigner = DefaultAwsSignerBuilder().apply(block).build()
+/** Creates a customized instance of [AwsSigner] */
+@Suppress("ktlint:standard:function-naming")
+public fun DefaultAwsSigner(block: DefaultAwsSignerBuilder.() -> Unit): AwsSigner =
+    DefaultAwsSignerBuilder().apply(block).build()
 
-/**
- * Builder class allows customers to configure telemetry provider for observability when using the signer as a standalone component.
- **/
+/** A builder class for creating instances of [AwsSigner] using the default implementation */
 public class DefaultAwsSignerBuilder {
-    private var telemetryProvider: TelemetryProvider? = null
-
-    public fun withTelemetryProvider(provider: TelemetryProvider): DefaultAwsSignerBuilder = apply {
-        this.telemetryProvider = provider
-    }
+    public var telemetryProvider: TelemetryProvider? = null
 
     public fun build(): AwsSigner = DefaultAwsSignerImpl(
         telemetryProvider = telemetryProvider,

@@ -1,11 +1,12 @@
 public final class aws/smithy/kotlin/runtime/auth/awssigning/DefaultAwsSignerBuilder {
 	public fun <init> ()V
 	public final fun build ()Laws/smithy/kotlin/runtime/auth/awssigning/AwsSigner;
-	public final fun withTelemetryProvider (Laws/smithy/kotlin/runtime/telemetry/TelemetryProvider;)Laws/smithy/kotlin/runtime/auth/awssigning/DefaultAwsSignerBuilder;
+	public final fun getTelemetryProvider ()Laws/smithy/kotlin/runtime/telemetry/TelemetryProvider;
+	public final fun setTelemetryProvider (Laws/smithy/kotlin/runtime/telemetry/TelemetryProvider;)V
 }
 
 public final class aws/smithy/kotlin/runtime/auth/awssigning/DefaultAwsSignerKt {
-	public static final fun defaultAwsSigner (Lkotlin/jvm/functions/Function1;)Laws/smithy/kotlin/runtime/auth/awssigning/AwsSigner;
+	public static final fun DefaultAwsSigner (Lkotlin/jvm/functions/Function1;)Laws/smithy/kotlin/runtime/auth/awssigning/AwsSigner;
 	public static final fun getDefaultAwsSigner ()Laws/smithy/kotlin/runtime/auth/awssigning/AwsSigner;
 }
 
