@@ -17,7 +17,7 @@ import java.text.DecimalFormatSymbols
  * Renders the top-level retry strategy for a waiter.
  */
 private fun KotlinWriter.renderRetryStrategy(wi: WaiterInfo, asValName: String) {
-    withBlock("val #L = #T {", "}", asValName, RuntimeTypes.Core.Retries.StandardRetryStrategy) {
+    withBlock("val #L = retryStrategy ?: #T {", "}", asValName, RuntimeTypes.Core.Retries.StandardRetryStrategy) {
         write("maxAttempts = 20")
         write("tokenBucket = #T", RuntimeTypes.Core.Retries.Delay.InfiniteTokenBucket)
         withBlock("delayProvider {", "}") {
@@ -35,18 +35,21 @@ private fun KotlinWriter.renderRetryStrategy(wi: WaiterInfo, asValName: String) 
 internal fun KotlinWriter.renderWaiter(wi: WaiterInfo) {
     write("")
     wi.waiter.documentation.ifPresent(::dokka)
-    val inputParameter = if (wi.input.hasAllOptionalMembers) {
-        format("request: #1T = #1T { }", wi.inputSymbol)
+
+    val requestType = if (wi.input.hasAllOptionalMembers) {
+        format("#1T = #1T { }", wi.inputSymbol)
     } else {
-        format("request: #T", wi.inputSymbol)
+        format("#T", wi.inputSymbol)
     }
+
     withBlock(
-        "#L suspend fun #T.#L(#L): #T<#T> {",
+        "#L suspend fun #T.#L(request: #L, retryStrategy: #T? = null): #T<#T> {",
         "}",
         wi.ctx.settings.api.visibility,
         wi.serviceSymbol,
         wi.methodName,
-        inputParameter,
+        requestType,
+        RuntimeTypes.Core.Retries.RetryStrategy,
         RuntimeTypes.Core.Retries.Outcome,
         wi.outputSymbol,
     ) {
