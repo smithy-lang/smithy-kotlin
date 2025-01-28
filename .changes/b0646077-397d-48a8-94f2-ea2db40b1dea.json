@@ -1,5 +1,0 @@
-{
-    "id": "b0646077-397d-48a8-94f2-ea2db40b1dea",
-    "type": "bugfix",
-    "description": "Ignore hop-by-hop headers when signing requests"
-}
