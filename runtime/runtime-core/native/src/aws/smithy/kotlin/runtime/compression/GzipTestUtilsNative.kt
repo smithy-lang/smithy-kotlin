@@ -2,8 +2,9 @@
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
  * SPDX-License-Identifier: Apache-2.0
  */
-package aws.smithy.kotlin.runtime.io
+package aws.smithy.kotlin.runtime.compression
 
+import aws.smithy.kotlin.runtime.InternalApi
 import kotlinx.cinterop.addressOf
 import kotlinx.cinterop.alloc
 import kotlinx.cinterop.memScoped
@@ -17,7 +18,8 @@ import platform.zlib.*
 /**
  * Decompresses a byte array compressed using the gzip format
  */
-internal actual fun decompressGzipBytes(bytes: ByteArray): ByteArray {
+@InternalApi
+public actual fun decompressGzipBytes(bytes: ByteArray): ByteArray {
     if (bytes.isEmpty()) {
         return bytes
     }

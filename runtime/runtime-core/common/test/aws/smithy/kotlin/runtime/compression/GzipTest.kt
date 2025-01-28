@@ -7,7 +7,6 @@ package aws.smithy.kotlin.runtime.compression
 
 import aws.smithy.kotlin.runtime.content.ByteStream
 import aws.smithy.kotlin.runtime.content.toByteArray
-import aws.smithy.kotlin.runtime.io.decompressGzipBytes
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertContentEquals
