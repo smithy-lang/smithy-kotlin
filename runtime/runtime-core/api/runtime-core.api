@@ -330,6 +330,10 @@ public final class aws/smithy/kotlin/runtime/compression/Gzip : aws/smithy/kotli
 	public fun getId ()Ljava/lang/String;
 }
 
+public final class aws/smithy/kotlin/runtime/compression/GzipTestUtilsJvmKt {
+	public static final fun decompressGzipBytes ([B)[B
+}
+
 public final class aws/smithy/kotlin/runtime/config/EnvironmentSetting {
 	public static final field Companion Laws/smithy/kotlin/runtime/config/EnvironmentSetting$Companion;
 	public fun <init> (Lkotlin/jvm/functions/Function1;Ljava/lang/String;Ljava/lang/String;Ljava/lang/Object;)V
