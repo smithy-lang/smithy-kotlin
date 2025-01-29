@@ -24,7 +24,7 @@ public actual fun decompressGzipBytes(bytes: ByteArray): ByteArray {
         return bytes
     }
 
-    val decompressedBuffer = UByteArray(bytes.size * 2).pin() // Initial guess for decompressed size (may expand)
+    val decompressedBuffer = UByteArray(bytes.size * 2).pin()
 
     memScoped {
         val zStream = alloc<z_stream>()
