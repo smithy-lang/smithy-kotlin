@@ -8,10 +8,6 @@ import kotlinx.atomicfu.atomic
 import kotlinx.cinterop.*
 import platform.zlib.*
 
-private const val DEFAULT_WINDOW_BITS = 15
-private const val GZIP_ENCODING = 16 // Add this to windowBits for gzip encoding
-private const val COMPRESSION_LEVEL = Z_BEST_COMPRESSION
-
 /**
  * Streaming-style gzip compressor, implemented using zlib bindings
  */
@@ -35,9 +31,9 @@ internal class GzipCompressor {
         // Initialize deflate with gzip encoding
         val initResult = deflateInit2_(
             stream.ptr,
-            COMPRESSION_LEVEL,
+            Z_BEST_COMPRESSION,
             Z_DEFLATED,
-            DEFAULT_WINDOW_BITS + GZIP_ENCODING, // Add 16 for gzip encoding
+            15 + 16, // Default windows bits (15) plus 16 for gzip encoding
             8, // Default memory level
             Z_DEFAULT_STRATEGY,
             ZLIB_VERSION,
