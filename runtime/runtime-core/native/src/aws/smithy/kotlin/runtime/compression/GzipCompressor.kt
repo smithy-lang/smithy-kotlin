@@ -94,7 +94,9 @@ internal class GzipCompressor {
      * that represent the end of the gzip compression.
      */
     fun close(): ByteArray {
-        if (isClosed) { return byteArrayOf() }
+        if (isClosed) {
+            return byteArrayOf()
+        }
 
         memScoped {
             var finished = false
