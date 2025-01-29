@@ -59,7 +59,7 @@ class RequestCompressionInterceptorTest {
         return op.context.attributes[HttpOperationContext.HttpCallList].first()
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
+    @IgnoreNative // FIXME Re-enable after Kotlin/Native Implementation
     @Test
     fun testCompressionThresholdTooHigh() = runTest {
         val payload = "<Foo>bar</Foo>"
@@ -79,7 +79,7 @@ class RequestCompressionInterceptorTest {
         assertEquals(bytes, sentBytes)
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
+    @IgnoreNative // FIXME Re-enable after Kotlin/Native Implementation
     @Test
     fun testCompression() = runTest {
         val payload = "<Foo>bar</Foo>"
