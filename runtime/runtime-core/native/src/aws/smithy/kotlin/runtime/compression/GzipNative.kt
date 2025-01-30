@@ -45,9 +45,7 @@ public actual class Gzip : CompressionAlgorithm {
                     }.flush()
                 }
 
-                object : ByteStream.Buffer() {
-                    override fun bytes(): ByteArray = compressed
-                }
+                ByteStream.fromBytes(compressed)
             }
         }
     }
