@@ -32,6 +32,12 @@ public interface Filesystem {
     public suspend fun writeFile(path: String, data: ByteArray)
 
     /**
+     * Delete the file, if it exists.
+     * @param path fully qualified path encoded specifically to the target platform's filesystem
+     */
+    public suspend fun deleteFile(path: String)
+
+    /**
      * Check if a file exists at the [path].
      * @param path fully qualified path encoded specifically to the target platform's filesystem
      */
@@ -54,5 +60,7 @@ internal class MapFilesystem(
     override suspend fun writeFile(path: String, data: ByteArray) {
         memFs[path] = data
     }
+
+    override suspend fun deleteFile(path: String) { memFs.remove(path) }
     override fun fileExists(path: String): Boolean = memFs[path] != null
 }
