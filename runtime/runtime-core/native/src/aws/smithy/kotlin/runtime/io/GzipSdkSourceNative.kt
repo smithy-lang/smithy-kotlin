@@ -35,7 +35,9 @@ public actual class GzipSdkSource actual constructor(public val source: SdkSourc
         if (compressor.availableForRead == 0) {
             val terminationBytes = compressor.flush()
             sink.write(terminationBytes)
-            return terminationBytes.size.toLong()
+            return terminationBytes.size.toLong().also {
+                compressor.close()
+            }
         }
 
         // Read compressed bytes from the compressor
@@ -46,7 +48,7 @@ public actual class GzipSdkSource actual constructor(public val source: SdkSourc
     }
 
     actual override fun close() {
-        compressor.flush()
+        compressor.close()
         source.close()
     }
 }

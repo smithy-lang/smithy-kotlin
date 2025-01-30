@@ -4,13 +4,14 @@
  */
 package aws.smithy.kotlin.runtime.compression
 
+import aws.sdk.kotlin.crt.Closeable
 import kotlinx.cinterop.*
 import platform.zlib.*
 
 /**
  * Streaming-style gzip compressor, implemented using zlib bindings
  */
-internal class GzipCompressor {
+internal class GzipCompressor : Closeable {
     companion object {
         internal const val BUFFER_SIZE = 16384
     }
@@ -106,11 +107,15 @@ internal class GzipCompressor {
                 outputPin.unpin()
             }
 
-            deflateEnd(stream.ptr)
-            nativeHeap.free(stream.ptr)
-            isClosed = true
-
             return outputBuffer.toByteArray()
         }
+    }
+
+    override fun close() {
+        if (isClosed) { return }
+
+        deflateEnd(stream.ptr)
+        nativeHeap.free(stream.ptr)
+        isClosed = true
     }
 }

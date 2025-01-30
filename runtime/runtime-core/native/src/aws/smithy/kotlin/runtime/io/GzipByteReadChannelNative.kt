@@ -47,7 +47,9 @@ public actual class GzipByteReadChannel actual constructor(public val channel: S
         if (compressor.availableForRead == 0 && channel.isClosedForRead) {
             val terminationBytes = compressor.flush()
             sink.write(terminationBytes)
-            return terminationBytes.size.toLong()
+            return terminationBytes.size.toLong().also {
+                compressor.close()
+            }
         }
 
         // Read compressed bytes from the compressor
@@ -58,7 +60,7 @@ public actual class GzipByteReadChannel actual constructor(public val channel: S
     }
 
     actual override fun cancel(cause: Throwable?): Boolean {
-        compressor.flush()
+        compressor.close()
         return channel.cancel(cause)
     }
 }
