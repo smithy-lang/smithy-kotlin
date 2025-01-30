@@ -100,9 +100,7 @@ internal class GzipCompressor : Closeable {
                 stream.avail_out = BUFFER_SIZE.toUInt()
 
                 val deflateResult = deflate(stream.ptr, Z_FINISH)
-                if (deflateResult != Z_STREAM_END && deflateResult != Z_OK) {
-                    throw RuntimeException("Deflate failed during finish with error code $deflateResult")
-                }
+                check(deflateResult == Z_OK || deflateResult == Z_STREAM_END) { "Deflate failed during finish with error code $deflateResult" }
 
                 val bytesWritten = BUFFER_SIZE - stream.avail_out.toInt()
                 outputBuffer.addAll(buffer.take(bytesWritten))
