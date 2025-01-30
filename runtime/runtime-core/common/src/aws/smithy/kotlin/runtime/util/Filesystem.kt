@@ -61,6 +61,8 @@ internal class MapFilesystem(
         memFs[path] = data
     }
 
-    override suspend fun deleteFile(path: String) { memFs.remove(path) }
+    override suspend fun deleteFile(path: String) {
+        memFs.remove(path)
+    }
     override fun fileExists(path: String): Boolean = memFs[path] != null
 }

@@ -53,7 +53,9 @@ internal actual object SystemDefaultProvider : PlatformProvider {
         }
     }
 
-    actual override suspend fun deleteFile(path: String) { remove(path) }
+    actual override suspend fun deleteFile(path: String) {
+        remove(path)
+    }
 
     actual override fun fileExists(path: String): Boolean = access(path, F_OK) == 0
 
