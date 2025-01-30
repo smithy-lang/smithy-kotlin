@@ -33,7 +33,10 @@ class SystemPlatformProviderTest {
 
     @Test
     fun testGetEnv() = runTest {
-        assertNotNull(PlatformProvider.System.getenv("PATH"))
+        val envVarKeys = listOf("PATH", "USERPROFILE") // PATH is not set on Windows CI...
+        val result: String? = envVarKeys.fold(null) { acc, curr -> acc ?: PlatformProvider.System.getenv(curr) }
+        assertNotNull(result)
+
         assertNull(PlatformProvider.System.getenv("THIS_ENV_VAR_IS_NOT_SET"))
     }
 
