@@ -12,7 +12,7 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
-class PlatformTest {
+class SystemPlatformProviderTest {
     @Test
     fun testReadWriteFile() = runTest {
         val ps = PlatformProvider.System
