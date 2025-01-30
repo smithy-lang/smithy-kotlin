@@ -33,7 +33,7 @@ public actual class GzipSdkSource actual constructor(public val source: SdkSourc
 
         // If still no data is available, we've hit EOF. Close the compressor and write the remaining bytes
         if (compressor.availableForRead == 0) {
-            val terminationBytes = compressor.close()
+            val terminationBytes = compressor.flush()
             sink.write(terminationBytes)
             return terminationBytes.size.toLong()
         }
@@ -46,7 +46,7 @@ public actual class GzipSdkSource actual constructor(public val source: SdkSourc
     }
 
     actual override fun close() {
-        compressor.close()
+        compressor.flush()
         source.close()
     }
 }

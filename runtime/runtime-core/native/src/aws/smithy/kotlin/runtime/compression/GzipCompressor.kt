@@ -4,7 +4,6 @@
  */
 package aws.smithy.kotlin.runtime.compression
 
-import kotlinx.atomicfu.atomic
 import kotlinx.cinterop.*
 import platform.zlib.*
 
@@ -19,10 +18,7 @@ internal class GzipCompressor {
     private val buffer = ByteArray(BUFFER_SIZE)
     private val stream = nativeHeap.alloc<z_stream>()
     private val outputBuffer = ArrayList<Byte>()
-    private val _isClosed = atomic(false)
-
-    internal val isClosed
-        get() = _isClosed.value
+    internal var isClosed = false
 
     internal val availableForRead: Int
         get() = outputBuffer.size
@@ -40,9 +36,7 @@ internal class GzipCompressor {
             sizeOf<z_stream>().toInt(),
         )
 
-        if (initResult != Z_OK) {
-            throw RuntimeException("Failed to initialize zlib deflate with error code $initResult: ${zError(initResult)!!.toKString()}")
-        }
+        check(initResult == Z_OK) { "Failed to initialize zlib deflate with error code $initResult: ${zError(initResult)!!.toKString()}" }
     }
 
     /**
@@ -60,9 +54,7 @@ internal class GzipCompressor {
             stream.avail_out = BUFFER_SIZE.toUInt()
 
             val deflateResult = deflate(stream.ptr, Z_NO_FLUSH)
-            if (deflateResult != Z_OK) {
-                throw RuntimeException("Deflate failed: $deflateResult")
-            }
+            check(deflateResult == Z_OK) { "Deflate failed with error code $deflateResult" }
 
             val bytesWritten = BUFFER_SIZE - stream.avail_out.toInt()
             outputBuffer.addAll(buffer.take(bytesWritten))
@@ -77,11 +69,8 @@ internal class GzipCompressor {
      * Consume [count] gzip-compressed bytes.
      */
     fun consume(count: Int): ByteArray {
-        if (count < 0) {
-            throw IllegalArgumentException("Requested bytes must be at least 0, got $count")
-        }
-        if (count > availableForRead) {
-            throw IllegalArgumentException("Requested more bytes than available, $count > ${outputBuffer.size}")
+        require(count in 0..availableForRead) {
+            "Count must be between 0 and $availableForRead, got $count"
         }
 
         val result = outputBuffer.take(count).toByteArray()
@@ -90,10 +79,9 @@ internal class GzipCompressor {
     }
 
     /**
-     * Close the compressor, clean up all resources, and return the terminal sequence of bytes
-     * that represent the end of the gzip compression.
+     * Flush the compressor and return the terminal sequence of bytes that represent the end of the gzip compression.
      */
-    fun close(): ByteArray {
+    fun flush(): ByteArray {
         if (isClosed) {
             return byteArrayOf()
         }
@@ -108,7 +96,7 @@ internal class GzipCompressor {
 
                 val deflateResult = deflate(stream.ptr, Z_FINISH)
                 if (deflateResult != Z_STREAM_END && deflateResult != Z_OK) {
-                    throw RuntimeException("Deflate failed during finish: $deflateResult")
+                    throw RuntimeException("Deflate failed during finish with error code $deflateResult")
                 }
 
                 val bytesWritten = BUFFER_SIZE - stream.avail_out.toInt()
@@ -120,7 +108,7 @@ internal class GzipCompressor {
 
             deflateEnd(stream.ptr)
             nativeHeap.free(stream.ptr)
-            _isClosed.value = true
+            isClosed = true
 
             return outputBuffer.toByteArray()
         }

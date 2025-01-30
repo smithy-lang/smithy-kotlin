@@ -45,7 +45,7 @@ public actual class GzipByteReadChannel actual constructor(public val channel: S
 
         // If still no data is available and the channel is closed, we've hit EOF. Close the compressor and write the remaining bytes
         if (compressor.availableForRead == 0 && channel.isClosedForRead) {
-            val terminationBytes = compressor.close()
+            val terminationBytes = compressor.flush()
             sink.write(terminationBytes)
             return terminationBytes.size.toLong()
         }
@@ -58,7 +58,7 @@ public actual class GzipByteReadChannel actual constructor(public val channel: S
     }
 
     actual override fun cancel(cause: Throwable?): Boolean {
-        compressor.close()
+        compressor.flush()
         return channel.cancel(cause)
     }
 }

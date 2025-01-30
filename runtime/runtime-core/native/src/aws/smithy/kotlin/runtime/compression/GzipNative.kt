@@ -40,7 +40,7 @@ public actual class Gzip : CompressionAlgorithm {
             } else {
                 val compressed = GzipCompressor().apply {
                     update(sourceBytes)
-                }.close()
+                }.flush()
 
                 object : ByteStream.Buffer() {
                     override fun bytes(): ByteArray = compressed
