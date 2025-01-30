@@ -66,8 +66,7 @@ jobs:
         working-directory: ./smithy-kotlin
         shell: bash
         run: |
-          # FIXME K2. Re-enable warnings as errors after this warning is removed: https://youtrack.jetbrains.com/issue/KT-68532
-          # echo "kotlinWarningsAsErrors=true" >> $GITHUB_WORKSPACE/local.properties              
+          echo "kotlinWarningsAsErrors=true" >> $GITHUB_WORKSPACE/local.properties              
           ./gradlew -Paws.sdk.kotlin.crt.disableCrossCompile=true -Paws.kotlin.native.disableCrossCompile=true apiCheck
           ./gradlew -Paws.sdk.kotlin.crt.disableCrossCompile=true -Paws.kotlin.native.disableCrossCompile=true build
 
@@ -100,8 +99,7 @@ jobs:
         working-directory: ./smithy-kotlin
         shell: bash
         run: |
-          # FIXME K2. Re-enable warnings as errors after this warning is removed: https://youtrack.jetbrains.com/issue/KT-68532
-          # echo "kotlinWarningsAsErrors=true" >> $GITHUB_WORKSPACE/local.properties
+          echo "kotlinWarningsAsErrors=true" >> $GITHUB_WORKSPACE/local.properties
           ./gradlew apiCheck
           ./gradlew build
 
@@ -163,8 +161,7 @@ jobs:
         working-directory: ./smithy-kotlin
         shell: bash
         run: |
-          # FIXME K2. Re-enable warnings as errors after this warning is removed: https://youtrack.jetbrains.com/issue/KT-68532
-          # echo "kotlinWarningsAsErrors=true" >> $GITHUB_WORKSPACE/local.properties              
+          echo "kotlinWarningsAsErrors=true" >> $GITHUB_WORKSPACE/local.properties              
           ./gradlew -Paws.kotlin.native=false apiCheck
           ./gradlew -Paws.kotlin.native=false test jvmTest
 

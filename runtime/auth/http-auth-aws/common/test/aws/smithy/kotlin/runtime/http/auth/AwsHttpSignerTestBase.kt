@@ -13,7 +13,9 @@ import aws.smithy.kotlin.runtime.auth.awssigning.DefaultAwsSigner
 import aws.smithy.kotlin.runtime.auth.awssigning.internal.AWS_CHUNKED_THRESHOLD
 import aws.smithy.kotlin.runtime.collections.Attributes
 import aws.smithy.kotlin.runtime.collections.get
-import aws.smithy.kotlin.runtime.http.*
+import aws.smithy.kotlin.runtime.http.HttpBody
+import aws.smithy.kotlin.runtime.http.HttpMethod
+import aws.smithy.kotlin.runtime.http.SdkHttpClient
 import aws.smithy.kotlin.runtime.http.operation.*
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
@@ -154,8 +156,8 @@ public abstract class AwsHttpSignerTestBase(
         val op = buildOperation(streaming = true, replayable = false, requestBody = "a".repeat(AWS_CHUNKED_THRESHOLD + 1))
         val expectedDate = "20201016T195600Z"
         val expectedSig = "AWS4-HMAC-SHA256 Credential=AKID/20201016/us-east-1/demo/aws4_request, " +
-            "SignedHeaders=content-encoding;host;transfer-encoding;x-amz-archive-description;x-amz-date;x-amz-decoded-content-length;x-amz-security-token, " +
-            "Signature=ac341b9b248a0b23d2fcd9f7e805f4eb0b8a1b789bb23a8ec6adc6c48dd084ad"
+            "SignedHeaders=content-encoding;host;x-amz-archive-description;x-amz-date;x-amz-decoded-content-length;x-amz-security-token, " +
+            "Signature=ef06c95647c4d2daa6c89ac90274f1c780777cba8eaab772df6d8009def3eb8f"
 
         val signed = getSignedRequest(op)
         assertEquals(expectedDate, signed.headers["X-Amz-Date"])
@@ -168,8 +170,8 @@ public abstract class AwsHttpSignerTestBase(
         val op = buildOperation(streaming = true, replayable = true, requestBody = "a".repeat(AWS_CHUNKED_THRESHOLD + 1))
         val expectedDate = "20201016T195600Z"
         val expectedSig = "AWS4-HMAC-SHA256 Credential=AKID/20201016/us-east-1/demo/aws4_request, " +
-            "SignedHeaders=content-encoding;host;transfer-encoding;x-amz-archive-description;x-amz-date;x-amz-decoded-content-length;x-amz-security-token, " +
-            "Signature=ac341b9b248a0b23d2fcd9f7e805f4eb0b8a1b789bb23a8ec6adc6c48dd084ad"
+            "SignedHeaders=content-encoding;host;x-amz-archive-description;x-amz-date;x-amz-decoded-content-length;x-amz-security-token, " +
+            "Signature=ef06c95647c4d2daa6c89ac90274f1c780777cba8eaab772df6d8009def3eb8f"
 
         val signed = getSignedRequest(op)
         assertEquals(expectedDate, signed.headers["X-Amz-Date"])
@@ -183,8 +185,8 @@ public abstract class AwsHttpSignerTestBase(
         val expectedDate = "20201016T195600Z"
         // should have same signature as testSignAwsChunkedStreamNonReplayable(), except for the hash, since the body is different
         val expectedSig = "AWS4-HMAC-SHA256 Credential=AKID/20201016/us-east-1/demo/aws4_request, " +
-            "SignedHeaders=content-encoding;host;transfer-encoding;x-amz-archive-description;x-amz-date;x-amz-decoded-content-length;x-amz-security-token, " +
-            "Signature=3f0277123c9ed8a8858f793886a0ac0fcb457bc54401ffc22d470f373397cff0"
+            "SignedHeaders=content-encoding;host;x-amz-archive-description;x-amz-date;x-amz-decoded-content-length;x-amz-security-token, " +
+            "Signature=a902702b57057a864bf41cc22ee846a1b7bd047e22784367ec6a459f6791330e"
 
         val signed = getSignedRequest(op)
         assertEquals(expectedDate, signed.headers["X-Amz-Date"])

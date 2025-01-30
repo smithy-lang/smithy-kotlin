@@ -193,7 +193,7 @@ class KotlinSymbolProvider(private val model: Model, private val settings: Kotli
                 } else {
                     // only use @default if type is `T`
                     shape.getTrait<DefaultTrait>()?.let {
-                        defaultValue(it.getDefaultValue(targetShape))
+                        setDefaultValue(it, targetShape)
                     }
                 }
             }
@@ -219,9 +219,10 @@ class KotlinSymbolProvider(private val model: Model, private val settings: Kotli
         }
     }
 
-    private fun DefaultTrait.getDefaultValue(targetShape: Shape): String? {
-        val node = toNode()
-        return when {
+    private fun Symbol.Builder.setDefaultValue(defaultTrait: DefaultTrait, targetShape: Shape) {
+        val node = defaultTrait.toNode()
+
+        val defaultValue = when {
             node.toString() == "null" -> null
 
             // Check if target is an enum before treating the default like a regular number/string
@@ -235,13 +236,20 @@ class KotlinSymbolProvider(private val model: Model, private val settings: Kotli
                 "${enumSymbol.fullName}.fromValue($arg)"
             }
 
-            targetShape.isBlobShape && targetShape.isStreaming ->
-                node
-                    .toString()
-                    .takeUnless { it.isEmpty() }
-                    ?.let { "ByteStream.fromString(${it.dq()})" }
+            targetShape.isBlobShape -> {
+                addReferences(RuntimeTypes.Core.Text.Encoding.decodeBase64)
 
-            targetShape.isBlobShape -> "${node.toString().dq()}.encodeToByteArray()"
+                if (targetShape.isStreaming) {
+                    node.toString()
+                        .takeUnless { it.isEmpty() }
+                        ?.let {
+                            addReferences(RuntimeTypes.Core.Content.ByteStream)
+                            "ByteStream.fromString(${it.dq()}.decodeBase64())"
+                        }
+                } else {
+                    "${node.toString().dq()}.decodeBase64().encodeToByteArray()"
+                }
+            }
 
             targetShape.isDocumentShape -> getDefaultValueForDocument(node)
             targetShape.isTimestampShape -> getDefaultValueForTimestamp(node.asNumberNode().get())
@@ -252,6 +260,8 @@ class KotlinSymbolProvider(private val model: Model, private val settings: Kotli
             node.isStringNode -> node.toString().dq()
             else -> node.toString()
         }
+
+        defaultValue(defaultValue)
     }
 
     private fun getDefaultValueForTimestamp(node: NumberNode): String {

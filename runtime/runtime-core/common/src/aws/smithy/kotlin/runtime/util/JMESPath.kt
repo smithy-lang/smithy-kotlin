@@ -62,8 +62,7 @@ public fun Any?.type(): String = when (this) {
     is List<*>, is Array<*> -> "array"
     is Number -> "number"
     is Any -> "object"
-    null -> "null"
-    else -> throw Exception("Undetected type for: $this")
+    else -> "null"
 }
 
 // Collection `flattenIfPossible` functions
