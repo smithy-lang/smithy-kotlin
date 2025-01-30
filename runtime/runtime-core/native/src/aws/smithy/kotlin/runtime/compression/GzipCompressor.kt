@@ -8,6 +8,10 @@ import aws.sdk.kotlin.crt.Closeable
 import kotlinx.cinterop.*
 import platform.zlib.*
 
+private const val DEFAULT_WINDOW_BITS = 15 // Default window bits
+private const val WINDOW_BITS_GZIP_OFFSET = 16 // Gzip offset for window bits
+private const val MEM_LEVEL = 8 // Default memory level
+
 /**
  * Streaming-style gzip compressor, implemented using zlib bindings
  */
@@ -30,8 +34,8 @@ internal class GzipCompressor : Closeable {
             stream.ptr,
             Z_BEST_COMPRESSION,
             Z_DEFLATED,
-            15 + 16, // Default windows bits (15) plus 16 for gzip encoding
-            8, // Default memory level
+            DEFAULT_WINDOW_BITS + WINDOW_BITS_GZIP_OFFSET, // Default windows bits (15) plus 16 for gzip encoding
+            MEM_LEVEL,
             Z_DEFAULT_STRATEGY,
             ZLIB_VERSION,
             sizeOf<z_stream>().toInt(),
@@ -112,7 +116,9 @@ internal class GzipCompressor : Closeable {
     }
 
     override fun close() {
-        if (isClosed) { return }
+        if (isClosed) {
+            return
+        }
 
         deflateEnd(stream.ptr)
         nativeHeap.free(stream.ptr)
