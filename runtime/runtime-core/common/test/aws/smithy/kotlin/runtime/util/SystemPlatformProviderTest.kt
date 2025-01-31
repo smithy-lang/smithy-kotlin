@@ -16,7 +16,12 @@ class SystemPlatformProviderTest {
     @Test
     fun testReadWriteFile() = runTest {
         val ps = PlatformProvider.System
-        val path = "/tmp/testReadWriteFile-${Uuid.random()}.txt"
+
+        val tempDir = if (ps.osInfo().family == OsFamily.Windows) {
+            ps.getenv("TEMP") ?: "C:\\Windows\\Temp"
+        } else { "/tmp" }
+        val path = "$tempDir/testReadWriteFile-${Uuid.random()}.txt"
+
         val expected = "Hello, File!".encodeToByteArray()
 
         ps.writeFile(path, expected)
