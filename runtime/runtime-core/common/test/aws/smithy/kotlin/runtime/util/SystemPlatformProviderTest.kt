@@ -16,7 +16,7 @@ class SystemPlatformProviderTest {
     @Test
     fun testReadWriteFile() = runTest {
         val ps = PlatformProvider.System
-        val path = "file.txt"
+        val path = "/tmp/testReadWriteFile-${Uuid.random()}.txt"
         val expected = "Hello, File!".encodeToByteArray()
 
         try {

@@ -48,12 +48,6 @@ internal actual object SystemDefaultProvider : PlatformProvider {
         }
     }
 
-    actual override suspend fun deleteFile(path: String) {
-        withContext(Dispatchers.IO) {
-            File(path).delete()
-        }
-    }
-
     actual override fun fileExists(path: String): Boolean = File(path).exists()
 
     public suspend fun readFileOrNull(path: Path): ByteArray? = readFileOrNull(path.toAbsolutePath().toString())

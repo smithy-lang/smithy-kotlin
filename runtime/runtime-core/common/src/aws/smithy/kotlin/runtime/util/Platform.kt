@@ -43,7 +43,6 @@ internal expect object SystemDefaultProvider : PlatformProvider {
     override fun getenv(key: String): String?
     override suspend fun readFileOrNull(path: String): ByteArray?
     override suspend fun writeFile(path: String, data: ByteArray)
-    override suspend fun deleteFile(path: String)
     override val isJvm: Boolean
     override val isAndroid: Boolean
     override val isBrowser: Boolean
