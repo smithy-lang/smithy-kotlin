@@ -10,6 +10,7 @@ import aws.smithy.kotlin.runtime.io.GzipByteReadChannel
 import aws.smithy.kotlin.runtime.io.GzipSdkSource
 import aws.smithy.kotlin.runtime.io.SdkByteReadChannel
 import aws.smithy.kotlin.runtime.io.SdkSource
+import kotlinx.coroutines.runBlocking
 
 /**
  * The gzip compression algorithm.
@@ -39,10 +40,12 @@ public actual class Gzip : CompressionAlgorithm {
             if (sourceBytes.isEmpty()) {
                 stream
             } else {
-                val compressed = GzipCompressor().use {
-                    it.apply {
-                        update(sourceBytes)
-                    }.flush()
+                val compressed = runBlocking {
+                    GzipCompressor().use {
+                        it.apply {
+                            update(sourceBytes)
+                        }.flush()
+                    }
                 }
 
                 ByteStream.fromBytes(compressed)
