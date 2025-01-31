@@ -182,7 +182,7 @@ class SymbolProviderTest {
         "double,2.71828,2.71828",
         "byte,10,10.toByte()",
         "string,\"hello\",\"hello\"",
-        "blob,\"abcdefg\",\"abcdefg\".encodeToByteArray()",
+        "blob,\"abcdefg\",\"abcdefg\".decodeBase64().encodeToByteArray()",
         "boolean,true,true",
         "bigInteger,5,5",
         "bigDecimal,9.0123456789,9.0123456789",

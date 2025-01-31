@@ -77,14 +77,6 @@ class Base64Test {
     }
 
     @Test
-    fun decodeNonMultipleOf4() {
-        val ex = assertFails {
-            "Zm9vY=".decodeBase64()
-        }
-        ex.message!!.shouldContain("invalid base64 string of length 6; not a multiple of 4")
-    }
-
-    @Test
     fun decodeInvalidPadding() {
         val ex = assertFails {
             "Zm9vY===".decodeBase64()
@@ -115,5 +107,25 @@ class Base64Test {
         val encoded = "aGVsbG8Jd29ybGQK"
         assertEquals(encoded, decoded.encodeBase64())
         assertEquals(decoded, encoded.decodeBase64())
+    }
+
+    @Test
+    fun testUnpaddedInputs() {
+        // from https://github.com/smithy-lang/smithy/pull/2502
+        val input = "v2hkZWZhdWx0c79tZGVmYXVsdFN0cmluZ2JoaW5kZWZhdWx0Qm9vbGVhbvVrZGVmYXVsdExpc3Sf/3BkZWZhdWx0VGltZXN0YW1wwQBrZGVmYXVsdEJsb2JDYWJja2RlZmF1bHRCeXRlAWxkZWZhdWx0U2hvcnQBbmRlZmF1bHRJbnRlZ2VyCmtkZWZhdWx0TG9uZxhkbGRlZmF1bHRGbG9hdPo/gAAAbWRlZmF1bHREb3VibGX6P4AAAGpkZWZhdWx0TWFwv/9rZGVmYXVsdEVudW1jRk9PbmRlZmF1bHRJbnRFbnVtAWtlbXB0eVN0cmluZ2BsZmFsc2VCb29sZWFu9GllbXB0eUJsb2JAaHplcm9CeXRlAGl6ZXJvU2hvcnQAa3plcm9JbnRlZ2VyAGh6ZXJvTG9uZwBpemVyb0Zsb2F0+gAAAABqemVyb0RvdWJsZfoAAAAA//8"
+        input.decodeBase64()
+
+        val inputs = mapOf<String, String>(
+            "YQ" to "a",
+            "Yg" to "b",
+            "YWI" to "ab",
+            "YWJj" to "abc",
+            "SGVsbG8gd29ybGQ" to "Hello world",
+        )
+
+        inputs.forEach { (encoded, expected) ->
+            val actual = encoded.decodeBase64()
+            assertEquals(expected, actual)
+        }
     }
 }
