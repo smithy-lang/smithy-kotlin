@@ -19,7 +19,9 @@ class SystemPlatformProviderTest {
 
         val tempDir = if (ps.osInfo().family == OsFamily.Windows) {
             ps.getenv("TEMP") ?: "C:\\Windows\\Temp"
-        } else { "/tmp" }
+        } else {
+            "/tmp"
+        }
         val path = "$tempDir/testReadWriteFile-${Uuid.random()}.txt"
 
         val expected = "Hello, File!".encodeToByteArray()
