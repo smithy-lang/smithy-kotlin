@@ -6,8 +6,12 @@ package aws.smithy.kotlin.runtime.auth.awssigning
 
 import aws.smithy.kotlin.runtime.auth.awscredentials.Credentials
 import aws.smithy.kotlin.runtime.auth.awssigning.tests.DEFAULT_TEST_CREDENTIALS
-import aws.smithy.kotlin.runtime.http.*
-import aws.smithy.kotlin.runtime.http.request.*
+import aws.smithy.kotlin.runtime.http.Headers
+import aws.smithy.kotlin.runtime.http.HttpBody
+import aws.smithy.kotlin.runtime.http.HttpMethod
+import aws.smithy.kotlin.runtime.http.request.HttpRequest
+import aws.smithy.kotlin.runtime.http.request.headers
+import aws.smithy.kotlin.runtime.http.request.url
 import aws.smithy.kotlin.runtime.net.Host
 import aws.smithy.kotlin.runtime.net.url.Url
 import aws.smithy.kotlin.runtime.time.Instant
@@ -136,6 +140,7 @@ class DefaultCanonicalizerTest {
                 // These should not be signed
                 set("Expect", "100-continue")
                 set("X-Amzn-Trace-Id", "qux")
+                set("Transfer-Encoding", "chunked")
             }
             body = HttpBody.Empty
         }

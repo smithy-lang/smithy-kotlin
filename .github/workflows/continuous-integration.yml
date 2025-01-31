@@ -62,13 +62,12 @@ jobs:
       - name: Test
         shell: bash
         run: |
-          # FIXME K2. Re-enable warnings as errors after this warning is removed: https://youtrack.jetbrains.com/issue/KT-68532
-          # echo "kotlinWarningsAsErrors=true" >> $GITHUB_WORKSPACE/local.properties              
+          echo "kotlinWarningsAsErrors=true" >> $GITHUB_WORKSPACE/local.properties
           ./gradlew apiCheck
           ./gradlew test jvmTest
       - name: Save Test Reports
         if: failure()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: test-reports-${{ matrix.os }}
           path: '**/build/reports'

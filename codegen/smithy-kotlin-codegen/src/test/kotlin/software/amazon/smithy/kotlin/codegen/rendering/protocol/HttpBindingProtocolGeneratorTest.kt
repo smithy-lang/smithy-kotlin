@@ -57,8 +57,8 @@ internal class SmokeTestOperationSerializer: HttpSerializer.NonStreaming<SmokeTe
         }
 
         builder.headers {
-            if (input.header1?.isNotEmpty() == true) append("X-Header1", input.header1)
-            if (input.header2?.isNotEmpty() == true) append("X-Header2", input.header2)
+            if (input.header1 != null) append("X-Header1", input.header1)
+            if (input.header2 != null) append("X-Header2", input.header2)
         }
 
         val payload = serializeSmokeTestOperationBody(context, input)
@@ -264,7 +264,7 @@ internal class TimestampInputOperationSerializer: HttpSerializer.NonStreaming<Ti
             }
             parameters.decodedParameters(PercentEncoding.SmithyLabel) {
                 if (input.queryTimestamp != null) add("qtime", input.queryTimestamp.format(TimestampFormat.ISO_8601))
-                if (input.queryTimestampList?.isNotEmpty() == true) addAll("qtimeList", input.queryTimestampList.map { it.format(TimestampFormat.ISO_8601) })
+                if (input.queryTimestampList != null) addAll("qtimeList", input.queryTimestampList.map { it.format(TimestampFormat.ISO_8601) })
             }
         }
 
@@ -304,7 +304,7 @@ internal class BlobInputOperationSerializer: HttpSerializer.NonStreaming<BlobInp
         }
 
         builder.headers {
-            if (input.headerMediaType?.isNotEmpty() == true) append("X-Blob", input.headerMediaType.encodeBase64())
+            if (input.headerMediaType != null) append("X-Blob", input.headerMediaType.encodeBase64())
         }
 
         val payload = serializeBlobInputOperationBody(context, input)
