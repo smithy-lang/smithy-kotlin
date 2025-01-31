@@ -19,16 +19,11 @@ class SystemPlatformProviderTest {
         val path = "/tmp/testReadWriteFile-${Uuid.random()}.txt"
         val expected = "Hello, File!".encodeToByteArray()
 
-        try {
-            ps.writeFile(path, expected)
+        ps.writeFile(path, expected)
+        assertTrue(ps.fileExists(path))
 
-            assertTrue(ps.fileExists(path))
-
-            val actual = ps.readFileOrNull(path)
-            assertContentEquals(expected, actual)
-        } finally {
-            ps.deleteFile(path)
-        }
+        val actual = ps.readFileOrNull(path)
+        assertContentEquals(expected, actual)
     }
 
     @Test
