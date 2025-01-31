@@ -15,20 +15,12 @@ class HostResolverTest {
 
         addresses.forEach { addr ->
             assertEquals("localhost", addr.hostname)
-            when (val ip = addr.address) {
-                is IpV4Addr -> {
-                    assertEquals(4, ip.octets.size)
-                    // localhost should resolve to 127.0.0.1
-                    assertContentEquals(byteArrayOf(127, 0, 0, 1), ip.octets)
-                }
-                is IpV6Addr -> {
-                    assertEquals(16, ip.octets.size)
-                    // ::1 in IPv6
-                    val expectedIpv6 = ByteArray(16) { 0 }
-                    expectedIpv6[15] = 1
-                    assertContentEquals(expectedIpv6, ip.octets)
-                }
+
+            val localHostAddr = when (addr.address) {
+                is IpV4Addr -> IpV4Addr.LOCALHOST
+                is IpV6Addr -> IpV6Addr.LOCALHOST
             }
+            assertEquals(addr.address, localHostAddr)
         }
     }
 

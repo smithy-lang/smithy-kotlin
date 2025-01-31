@@ -17,51 +17,39 @@ internal actual object DefaultHostResolver : HostResolver {
 
         val result = allocPointerTo<addrinfo>()
 
-        // Perform the DNS lookup
-        val status = getaddrinfo(hostname, null, hints.ptr, result.ptr)
-        if (status != 0) {
-            throw RuntimeException("Failed to resolve host $hostname: ${gai_strerror(status)?.toKString()}")
+        try {
+            // Perform the DNS lookup
+            val status = getaddrinfo(hostname, null, hints.ptr, result.ptr)
+            check (status == 0) { "Failed to resolve host $hostname: ${gai_strerror(status)?.toKString()}" }
+
+            return generateSequence(result.value) { it.pointed.ai_next }
+                .map { it.pointed.ai_addr!!.pointed.toIpAddr() }
+                .map { HostAddress(hostname, it) }
+                .toList()
+        } finally {
+            freeaddrinfo(result.value)
+        }
+    }
+
+    @OptIn(UnsafeNumber::class)
+    private fun sockaddr.toIpAddr(): IpAddr {
+        val (size, addrPtr, constructor) = when (sa_family.toInt()) {
+            AF_INET -> Triple(
+                4,
+                reinterpret<sockaddr_in>().sin_addr.ptr,
+                { bytes: ByteArray -> IpV4Addr(bytes) },
+            )
+            AF_INET6 -> Triple(
+                16,
+                reinterpret<sockaddr_in6>().sin6_addr.ptr,
+                { bytes: ByteArray -> IpV6Addr(bytes) },
+            )
+            else -> throw IllegalArgumentException("Unsupported sockaddr family $sa_family")
         }
 
-        val addresses = mutableListOf<HostAddress>()
-        var current = result.value
-
-        while (current != null) {
-            val sockaddr = current.pointed.ai_addr!!.pointed
-
-            @OptIn(UnsafeNumber::class)
-            when (sockaddr.sa_family.toInt()) {
-                AF_INET -> {
-                    val addr = sockaddr.reinterpret<sockaddr_in>()
-                    val ipBytes = ByteArray(4)
-                    memcpy(ipBytes.refTo(0), addr.sin_addr.ptr, 4uL)
-
-                    addresses.add(
-                        HostAddress(
-                            hostname = hostname,
-                            address = IpV4Addr(ipBytes),
-                        ),
-                    )
-                }
-                AF_INET6 -> {
-                    val addr = sockaddr.reinterpret<sockaddr_in6>()
-                    val ipBytes = ByteArray(16)
-                    memcpy(ipBytes.refTo(0), addr.sin6_addr.ptr, 16.convert())
-                    addresses.add(
-                        HostAddress(
-                            hostname = hostname,
-                            address = IpV6Addr(ipBytes),
-                        ),
-                    )
-                }
-            }
-            current = current.pointed.ai_next
-        }
-
-        // Free the getaddrinfo results
-        freeaddrinfo(result.value)
-
-        addresses
+        val ipBytes = ByteArray(size)
+        memcpy(ipBytes.refTo(0), addrPtr, size.toULong())
+        return constructor(ipBytes)
     }
 
     actual override fun reportFailure(addr: HostAddress) {
