@@ -10,7 +10,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFails
 
-class AwsRegionProviderChainTest {
+class RegionProviderChainTest {
     @Test
     fun testNoProviders() {
         assertFails("at least one provider") {
