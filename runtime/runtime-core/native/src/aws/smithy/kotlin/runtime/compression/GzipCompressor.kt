@@ -5,14 +5,14 @@
 package aws.smithy.kotlin.runtime.compression
 
 import aws.sdk.kotlin.crt.Closeable
+import aws.smithy.kotlin.runtime.io.SdkBuffer
 import aws.smithy.kotlin.runtime.io.SdkByteChannel
 import aws.smithy.kotlin.runtime.io.readFully
+import aws.smithy.kotlin.runtime.io.readToByteArray
+import aws.smithy.kotlin.runtime.io.use
 import aws.smithy.kotlin.runtime.io.write
 import kotlinx.cinterop.*
 import platform.zlib.*
-import aws.smithy.kotlin.runtime.io.SdkBuffer
-import aws.smithy.kotlin.runtime.io.readToByteArray
-import aws.smithy.kotlin.runtime.io.use
 
 private const val DEFAULT_WINDOW_BITS = 15 // Default window bits
 private const val WINDOW_BITS_GZIP_OFFSET = 16 // Gzip offset for window bits
@@ -53,7 +53,7 @@ internal class GzipCompressor : Closeable {
      * Update the compressor with [input] bytes
      */
     suspend fun update(input: ByteArray) = memScoped {
-        check (!isClosed) { "Compressor is closed" }
+        check(!isClosed) { "Compressor is closed" }
 
         val inputPin = input.pin()
 
@@ -83,7 +83,7 @@ internal class GzipCompressor : Closeable {
      * Consume [count] gzip-compressed bytes.
      */
     suspend fun consume(count: Int): ByteArray {
-        check (!isClosed) { "Compressor is closed" }
+        check(!isClosed) { "Compressor is closed" }
         require(count in 0..availableForRead) {
             "Count must be between 0 and $availableForRead, got $count"
         }
@@ -98,7 +98,7 @@ internal class GzipCompressor : Closeable {
      * Flush the compressor and return the terminal sequence of bytes that represent the end of the gzip compression.
      */
     suspend fun flush(): ByteArray {
-        check (!isClosed) { "Compressor is closed" }
+        check(!isClosed) { "Compressor is closed" }
 
         memScoped {
             val compressionBuffer = ByteArray(BUFFER_SIZE)

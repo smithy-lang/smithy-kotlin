@@ -29,7 +29,6 @@ public actual class GzipSdkSource actual constructor(public val source: SdkSourc
             if (rc > 0) {
                 val input = temp.readByteArray(rc)
                 runBlocking { compressor.update(input) }
-
             }
         }
 
