@@ -39,7 +39,7 @@ internal class GzipCompressor : Closeable {
             stream.ptr,
             Z_BEST_COMPRESSION,
             Z_DEFLATED,
-            DEFAULT_WINDOW_BITS + WINDOW_BITS_GZIP_OFFSET, // Default windows bits (15) plus 16 for gzip encoding
+            DEFAULT_WINDOW_BITS + WINDOW_BITS_GZIP_OFFSET,
             MEM_LEVEL,
             Z_DEFAULT_STRATEGY,
             ZLIB_VERSION,
