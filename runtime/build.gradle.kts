@@ -71,7 +71,6 @@ subprojects {
             }
         }
 
-
         // disable "standalone" mode in simulator tests since it causes TLS issues. this means we need to manage the simulator
         // ourselves (booting / shutting down). FIXME: https://youtrack.jetbrains.com/issue/KT-38317
         val simulatorDeviceName = project.findProperty("iosSimulatorDevice") as? String ?: "iPhone 15"
@@ -96,7 +95,10 @@ subprojects {
             commandLine(xcrun, "simctl", "shutdown", simulatorDeviceName)
 
             doLast {
-                executionResult.get().assertNormalExitValue()
+                val result = executionResult.get()
+                if (result.exitValue != 405) {
+                    result.assertNormalExitValue()
+                }
             }
         }
 
