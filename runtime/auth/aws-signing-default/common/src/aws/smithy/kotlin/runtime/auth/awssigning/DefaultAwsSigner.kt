@@ -4,8 +4,10 @@
  */
 package aws.smithy.kotlin.runtime.auth.awssigning
 
+import aws.smithy.kotlin.runtime.ExperimentalApi
 import aws.smithy.kotlin.runtime.http.Headers
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
+import aws.smithy.kotlin.runtime.telemetry.TelemetryProvider
 import aws.smithy.kotlin.runtime.telemetry.logging.logger
 import aws.smithy.kotlin.runtime.time.TimestampFormat
 import kotlin.coroutines.coroutineContext
@@ -13,13 +15,30 @@ import kotlin.coroutines.coroutineContext
 /** The default implementation of [AwsSigner] */
 public val DefaultAwsSigner: AwsSigner = DefaultAwsSignerImpl()
 
+/** Creates a customized instance of [AwsSigner] */
+@Suppress("ktlint:standard:function-naming")
+public fun DefaultAwsSigner(block: DefaultAwsSignerBuilder.() -> Unit): AwsSigner =
+    DefaultAwsSignerBuilder().apply(block).build()
+
+/** A builder class for creating instances of [AwsSigner] using the default implementation */
+public class DefaultAwsSignerBuilder {
+    public var telemetryProvider: TelemetryProvider? = null
+
+    public fun build(): AwsSigner = DefaultAwsSignerImpl(
+        telemetryProvider = telemetryProvider,
+    )
+}
+
+@OptIn(ExperimentalApi::class)
 internal class DefaultAwsSignerImpl(
     private val canonicalizer: Canonicalizer = Canonicalizer.Default,
     private val signatureCalculator: SignatureCalculator = SignatureCalculator.Default,
     private val requestMutator: RequestMutator = RequestMutator.Default,
+    private val telemetryProvider: TelemetryProvider? = null,
 ) : AwsSigner {
     override suspend fun sign(request: HttpRequest, config: AwsSigningConfig): AwsSigningResult<HttpRequest> {
-        val logger = coroutineContext.logger<DefaultAwsSignerImpl>()
+        val logger = telemetryProvider?.loggerProvider?.getOrCreateLogger("DefaultAwsSigner")
+            ?: coroutineContext.logger<DefaultAwsSignerImpl>()
 
         // TODO: implement SigV4a
         if (config.algorithm != AwsSigningAlgorithm.SIGV4) {
@@ -52,7 +71,8 @@ internal class DefaultAwsSignerImpl(
         prevSignature: ByteArray,
         config: AwsSigningConfig,
     ): AwsSigningResult<Unit> {
-        val logger = coroutineContext.logger<DefaultAwsSignerImpl>()
+        val logger = telemetryProvider?.loggerProvider?.getOrCreateLogger("DefaultAwsSigner")
+            ?: coroutineContext.logger<DefaultAwsSignerImpl>()
 
         val stringToSign = signatureCalculator.chunkStringToSign(chunkBody, prevSignature, config)
         logger.trace { "Chunk string to sign:\n$stringToSign" }
@@ -70,7 +90,8 @@ internal class DefaultAwsSignerImpl(
         prevSignature: ByteArray,
         config: AwsSigningConfig,
     ): AwsSigningResult<Unit> {
-        val logger = coroutineContext.logger<DefaultAwsSignerImpl>()
+        val logger = telemetryProvider?.loggerProvider?.getOrCreateLogger("DefaultAwsSigner")
+            ?: coroutineContext.logger<DefaultAwsSignerImpl>()
 
         // FIXME - can we share canonicalization code more than we are..., also this reduce is inefficient.
         // canonicalize the headers
