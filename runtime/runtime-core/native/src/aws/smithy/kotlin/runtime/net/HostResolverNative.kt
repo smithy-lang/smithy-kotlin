@@ -20,7 +20,7 @@ internal actual object DefaultHostResolver : HostResolver {
         try {
             // Perform the DNS lookup
             val status = getaddrinfo(hostname, null, hints.ptr, result.ptr)
-            check (status == 0) { "Failed to resolve host $hostname: ${gai_strerror(status)?.toKString()}" }
+            check(status == 0) { "Failed to resolve host $hostname: ${gai_strerror(status)?.toKString()}" }
 
             return generateSequence(result.value) { it.pointed.ai_next }
                 .map { it.pointed.ai_addr!!.pointed.toIpAddr() }
