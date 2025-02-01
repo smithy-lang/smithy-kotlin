@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.4.2] - 01/28/2025
+
+### Fixes
+* Ignore hop-by-hop headers when signing requests
+
 ## [1.4.1] - 01/16/2025
 
 ## [1.4.0] - 01/15/2025
