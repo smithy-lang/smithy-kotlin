@@ -5,12 +5,11 @@
 import aws.sdk.kotlin.gradle.dsl.configurePublishing
 import aws.sdk.kotlin.gradle.kmp.*
 import aws.sdk.kotlin.gradle.util.typedProp
-import org.gradle.kotlin.dsl.withType
 import org.gradle.api.Project
 import org.gradle.api.tasks.Exec
 import org.gradle.kotlin.dsl.withType
-import org.jetbrains.kotlin.gradle.targets.native.tasks.KotlinNativeSimulatorTest
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.jetbrains.kotlin.gradle.targets.native.tasks.KotlinNativeSimulatorTest
 import org.jetbrains.kotlin.konan.target.HostManager
 
 plugins {
@@ -120,7 +119,6 @@ subprojects {
 
     smithyConfigureIosSimulatorTasks()
 }
-
 
 /**
  * Disables standalone mode in simulator tests since it causes issues with TLS.
