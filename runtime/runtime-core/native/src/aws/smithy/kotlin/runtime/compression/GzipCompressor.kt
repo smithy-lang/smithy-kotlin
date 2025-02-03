@@ -6,11 +6,6 @@ package aws.smithy.kotlin.runtime.compression
 
 import aws.sdk.kotlin.crt.Closeable
 import aws.smithy.kotlin.runtime.io.SdkBuffer
-import aws.smithy.kotlin.runtime.io.SdkByteChannel
-import aws.smithy.kotlin.runtime.io.readFully
-import aws.smithy.kotlin.runtime.io.readToByteArray
-import aws.smithy.kotlin.runtime.io.use
-import aws.smithy.kotlin.runtime.io.write
 import kotlinx.cinterop.*
 import platform.zlib.*
 
@@ -27,11 +22,11 @@ internal class GzipCompressor : Closeable {
     }
 
     private val stream = nativeHeap.alloc<z_stream>()
-    private val outputBuffer = SdkByteChannel()
+    private val outputBuffer = SdkBuffer()
     internal var isClosed = false
 
     internal val availableForRead: Int
-        get() = outputBuffer.availableForRead
+        get() = outputBuffer.size.toInt()
 
     init {
         // Initialize deflate with gzip encoding
@@ -52,7 +47,7 @@ internal class GzipCompressor : Closeable {
     /**
      * Update the compressor with [input] bytes
      */
-    suspend fun update(input: ByteArray) = memScoped {
+    fun update(input: ByteArray) = memScoped {
         check(!isClosed) { "Compressor is closed" }
 
         val inputPin = input.pin()
@@ -82,22 +77,19 @@ internal class GzipCompressor : Closeable {
     /**
      * Consume [count] gzip-compressed bytes.
      */
-    suspend fun consume(count: Int): ByteArray {
+    fun consume(count: Int): ByteArray {
         check(!isClosed) { "Compressor is closed" }
         require(count in 0..availableForRead) {
             "Count must be between 0 and $availableForRead, got $count"
         }
 
-        return SdkBuffer().use {
-            outputBuffer.readFully(it, count.toLong())
-            it.readToByteArray()
-        }
+        return outputBuffer.readByteArray(count.toLong())
     }
 
     /**
      * Flush the compressor and return the terminal sequence of bytes that represent the end of the gzip compression.
      */
-    suspend fun flush(): ByteArray {
+    fun flush(): ByteArray {
         check(!isClosed) { "Compressor is closed" }
 
         memScoped {
@@ -120,10 +112,7 @@ internal class GzipCompressor : Closeable {
                 outputPin.unpin()
             } while (deflateResult != Z_STREAM_END)
 
-            return SdkBuffer().use {
-                outputBuffer.readFully(it, outputLength)
-                it.readByteArray()
-            }
+            return outputBuffer.readByteArray(outputLength)
         }
     }
 
