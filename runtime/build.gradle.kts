@@ -6,7 +6,12 @@ import aws.sdk.kotlin.gradle.dsl.configurePublishing
 import aws.sdk.kotlin.gradle.kmp.*
 import aws.sdk.kotlin.gradle.util.typedProp
 import org.gradle.kotlin.dsl.withType
+import org.gradle.api.Project
+import org.gradle.api.tasks.Exec
+import org.gradle.kotlin.dsl.withType
+import org.jetbrains.kotlin.gradle.targets.native.tasks.KotlinNativeSimulatorTest
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.jetbrains.kotlin.konan.target.HostManager
 
 plugins {
     alias(libs.plugins.dokka)
@@ -113,5 +118,56 @@ subprojects {
         }
     }
 
-    configureIosSimulatorTasks()
+    smithyConfigureIosSimulatorTasks()
+}
+
+
+/**
+ * Disables standalone mode in simulator tests since it causes issues with TLS.
+ * This means we need to manage the simulator state ourselves (booting, shutting down).
+ * https://youtrack.jetbrains.com/issue/KT-38317
+ */
+public fun Project.smithyConfigureIosSimulatorTasks() {
+    val simulatorDeviceName = project.findProperty("iosSimulatorDevice") as? String ?: "iPhone 15"
+
+    val xcrun = "/usr/bin/xcrun"
+
+    tasks.register("bootIosSimulatorDevice", Exec::class.java) {
+        isIgnoreExitValue = true
+        commandLine(xcrun, "simctl", "boot", simulatorDeviceName)
+
+        doLast {
+            val result = executionResult.get()
+            val code = result.exitValue
+            if (code != 148 && code != 149) { // ignore "simulator already running" errors
+                result.assertNormalExitValue()
+            }
+        }
+    }
+
+    tasks.register("shutdownIosSimulatorDevice", Exec::class.java) {
+        isIgnoreExitValue = true
+        mustRunAfter(tasks.withType<KotlinNativeSimulatorTest>())
+        commandLine(xcrun, "simctl", "shutdown", simulatorDeviceName)
+
+        doLast {
+            val result = executionResult.get()
+            val code = result.exitValue
+            if (code != 148 && code != 149) { // ignore "simulator already shutdown" errors
+                result.assertNormalExitValue()
+            }
+        }
+    }
+
+    tasks.withType<KotlinNativeSimulatorTest>().configureEach {
+        if (!HostManager.hostIsMac) {
+            return@configureEach
+        }
+
+        dependsOn("bootIosSimulatorDevice")
+        finalizedBy("shutdownIosSimulatorDevice")
+
+        standalone.set(false)
+        device.set(simulatorDeviceName)
+    }
 }
