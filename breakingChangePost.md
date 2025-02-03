@@ -1,51 +1,40 @@
-An upcoming release of the **AWS SDK for Kotlin** will introduce an optional region provider parameter that determines the AWS region when configuring a client
+An upcoming release of the **AWS SDK for Kotlin** will move several region-related classes into different namespaces and modules as part of an internal refactoring.
+This change was necessary to support adding `regionProvider` client config property, see https://github.com/awslabs/aws-sdk-kotlin/issues/1478 for more details.
 
 # Release date
 
-This change will be included in the upcoming **v1.5.0** release,
+This change will be included in the upcoming **v1.5.0** release.
 
 # What's changing
-Adding an optional `regionProvider` parameter to provide more flexibility in how regions are specified.
-This affects the configuration of AWS service clients.
 
-The SDK will resolve the region in the following priority order:
-1. Static region (if specified using `region = "..."`)
-2. Custom region provider (if specified using `regionProvider = ...`)
-3. Default region provider chain
-
-Example usage:
-```kotlin
-val myRegionProvider = RegionProviderChain(src1, src2, src3, ...)
-
-val s3 = S3Client.fromEnvironment {
-    regionProvider = myRegionProvider
-}
-```
-If a static region is specified, the value of regionProvider will not be used:
-
-```kotlin
-val myRegionProvider = ...
-
-val s3 = S3Client.fromEnvironment {
-    regionProvider = myRegionProvider // Ignored since `region` is also set
-    region = "moon-east-1"
-}
-```
+The `RegionProvider` and `RegionProviderChain` classes are now available from different modules than before. **This will affect your build if you're using these classes**.
 
 # How to migrate
-Update your imports to reflect the new file locations:
+
+## 1. Update build dependencies 
+If your code uses region-related classes, you may need to add a new dependency in your `build.gradle.kts`:
 
 ```kotlin
-//old imports
+implementation("aws.smithy.kotlin:smithy-client:<version>")
+```
+
+## 2. Update import statements
+After updating the dependencies, you'll need to modify your import statements:
+
+Replace these imports:
+
+```kotlin
 import aws.sdk.kotlin.runtime.region.RegionProvider
 import aws.sdk.kotlin.runtime.region.RegionProviderChain
 ```
+With:
 
 ```kotlin
-//new imports
 import aws.smithy.kotlin.runtime.client.region.RegionProvider
 import aws.smithy.kotlin.runtime.client.region.RegionProviderChain
 ```
+
+No changes to your existing implementation code are required beyond updating the dependencies and imports. Your code should continue to function as before once the dependencies and imports are updated.
 
 # Additional information
 
