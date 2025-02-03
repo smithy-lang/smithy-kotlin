@@ -167,4 +167,3 @@ public fun Project.smithyConfigureIosSimulatorTasks() {
         shutdownTask.mustRunAfter(simulatorTasks)
     }
 }
-
