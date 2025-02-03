@@ -251,6 +251,10 @@ object RuntimeTypes {
                 val Url = symbol("Url")
             }
         }
+
+        object Region : RuntimeTypePackage(KotlinDependency.SMITHY_CLIENT, "region") {
+            val RegionProvider = symbol("RegionProvider")
+        }
     }
 
     object Serde : RuntimeTypePackage(KotlinDependency.SERDE) {
