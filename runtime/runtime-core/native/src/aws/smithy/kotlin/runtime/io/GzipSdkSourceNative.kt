@@ -6,7 +6,6 @@ package aws.smithy.kotlin.runtime.io
 
 import aws.smithy.kotlin.runtime.InternalApi
 import aws.smithy.kotlin.runtime.compression.GzipCompressor
-import kotlinx.coroutines.runBlocking
 
 /**
  * Wraps an [SdkSource], compressing bytes read into GZIP format.
@@ -28,13 +27,13 @@ public actual class GzipSdkSource actual constructor(public val source: SdkSourc
 
             if (rc > 0) {
                 val input = temp.readByteArray(rc)
-                runBlocking { compressor.update(input) }
+                compressor.update(input)
             }
         }
 
         // If still no data is available, we've hit EOF. Close the compressor and write the remaining bytes
         if (compressor.availableForRead == 0) {
-            val terminationBytes = runBlocking { compressor.flush() }
+            val terminationBytes = compressor.flush()
             sink.write(terminationBytes)
             return terminationBytes.size.toLong().also {
                 compressor.close()
@@ -43,7 +42,7 @@ public actual class GzipSdkSource actual constructor(public val source: SdkSourc
 
         // Read compressed bytes from the compressor
         val bytesToRead = minOf(limit, compressor.availableForRead.toLong())
-        val compressed = runBlocking { compressor.consume(bytesToRead.toInt()) }
+        val compressed = compressor.consume(bytesToRead.toInt())
         sink.write(compressed)
         return compressed.size.toLong()
     }
