@@ -25,7 +25,10 @@ internal actual object SystemDefaultProvider : PlatformProvider {
     actual override fun getenv(key: String): String? = platform.posix.getenv(key)?.toKString()
 
     actual override val filePathSeparator: String
-        get() = "/" // Unix-style separator is used in Native
+        get() = when (osInfo().family) {
+            OsFamily.Windows -> "\\"
+            else -> "/"
+        }
 
     actual override suspend fun readFileOrNull(path: String): ByteArray? {
         return try {
