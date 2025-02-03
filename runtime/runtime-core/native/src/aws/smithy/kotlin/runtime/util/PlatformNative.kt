@@ -47,7 +47,7 @@ internal actual object SystemDefaultProvider : PlatformProvider {
             } finally {
                 fclose(file)
             }
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             null
         }
     }
