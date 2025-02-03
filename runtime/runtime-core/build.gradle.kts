@@ -1,3 +1,5 @@
+import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
+
 /*
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
  * SPDX-License-Identifier: Apache-2.0
@@ -52,6 +54,17 @@ kotlin {
 
         all {
             languageSettings.optIn("aws.smithy.kotlin.runtime.InternalApi")
+        }
+    }
+
+    targets.withType<KotlinNativeTarget> {
+        compilations["main"].cinterops {
+            val interopDir = "$projectDir/native/src/nativeInterop/cinterop"
+            create("environ") {
+                includeDirs(interopDir)
+                packageName("aws.smithy.platform.posix")
+                headers(listOf("$interopDir/environ.h"))
+            }
         }
     }
 }

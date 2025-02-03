@@ -5,14 +5,22 @@
 package aws.smithy.kotlin.runtime.util
 
 import aws.smithy.kotlin.runtime.io.IOException
+import aws.smithy.platform.posix.get_environ_ptr
 import kotlinx.cinterop.*
 import platform.posix.*
 
 internal actual object SystemDefaultProvider : PlatformProvider {
-    // FIXME How to get all environment variables on Native?
-    // See if it's possible to get extern char **environ loaded... is not available by default in platform.posix.*
-    // https://man7.org/linux/man-pages/man7/environ.7.html
-    actual override fun getAllEnvVars(): Map<String, String> = mapOf<String, String>()
+    actual override fun getAllEnvVars(): Map<String, String> = memScoped {
+        val environ = get_environ_ptr()
+        generateSequence(0) { it + 1 }
+            .map { idx -> environ?.get(idx)?.toKString() }
+            .takeWhile { it != null }
+            .associate { env ->
+                val parts = env?.split("=", limit = 2)
+                check(parts?.size == 2) { "Environment entry $env is malformed" }
+                parts[0] to parts[1]
+            }
+    }
 
     actual override fun getenv(key: String): String? = platform.posix.getenv(key)?.toKString()
 
