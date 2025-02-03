@@ -4,7 +4,7 @@
  */
 package aws.smithy.kotlin.runtime.io
 
-import aws.smithy.kotlin.runtime.IgnoreNative
+import aws.smithy.kotlin.runtime.compression.decompressGzipBytes
 import aws.smithy.kotlin.runtime.hashing.crc32
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
@@ -12,7 +12,6 @@ import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
 
 class GzipSdkSourceTest {
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testReadToByteArray() = runTest {
         val payload = "Hello World"
@@ -30,7 +29,6 @@ class GzipSdkSourceTest {
         assertEquals(bytesHash, decompressedBytes.crc32())
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testRead() = runTest {
         val payload = "Hello World"
@@ -51,7 +49,6 @@ class GzipSdkSourceTest {
         assertEquals(bytesHash, decompressedBytes.crc32())
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testReadLargeBody() = runTest {
         val payload = "Hello World".repeat(1600)
@@ -73,7 +70,6 @@ class GzipSdkSourceTest {
         assertEquals(bytesHash, decompressedBytes.crc32())
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testReadLargeLimit() = runTest {
         val payload = "Hello World"
@@ -94,7 +90,6 @@ class GzipSdkSourceTest {
         assertEquals(bytesHash, decompressedBytes.crc32())
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testReadLargeBodyLargeLimit() = runTest {
         val payload = "Hello World".repeat(1600)

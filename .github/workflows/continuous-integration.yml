@@ -73,7 +73,7 @@ jobs:
 
       - name: Save Test Reports
         if: failure()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: test-reports-${{ matrix.os }}
           path: '**/build/reports'
@@ -107,7 +107,7 @@ jobs:
 
       - name: Save Test Reports
         if: failure()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: test-reports-${{ matrix.os }}
           path: '**/build/reports'
