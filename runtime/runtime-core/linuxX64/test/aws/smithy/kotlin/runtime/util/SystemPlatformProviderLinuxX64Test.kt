@@ -8,10 +8,15 @@ import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
-class SystemPlatformProviderTestLinux {
+class SystemPlatformProviderLinuxX64Test {
     @Test
     fun testOsInfo() = runTest {
         val osInfo = PlatformProvider.System.osInfo()
         assertEquals(OsFamily.Linux, osInfo.family)
+    }
+
+    @Test
+    fun definitelyShouldFail() = runTest {
+        assertEquals(1, 2)
     }
 }
