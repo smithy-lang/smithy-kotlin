@@ -16,7 +16,6 @@ import kotlin.test.assertFails
 
 class HeaderValueTest {
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testExpectAs() {
         assertEquals(true, HeaderValue.Bool(true).expectBool())
