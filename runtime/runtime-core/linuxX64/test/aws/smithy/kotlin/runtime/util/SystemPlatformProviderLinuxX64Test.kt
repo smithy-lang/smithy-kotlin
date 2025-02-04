@@ -14,9 +14,4 @@ class SystemPlatformProviderLinuxX64Test {
         val osInfo = PlatformProvider.System.osInfo()
         assertEquals(OsFamily.Linux, osInfo.family)
     }
-
-    @Test
-    fun definitelyShouldFail() = runTest {
-        assertEquals(1, 2)
-    }
 }
