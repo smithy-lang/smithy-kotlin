@@ -18,7 +18,7 @@ class SystemPlatformProviderTest {
         val ps = PlatformProvider.System
 
         val tempDir = if (ps.osInfo().family == OsFamily.Windows) {
-            ps.getenv("TEMP") ?: "C:\\Windows\\Temp"
+            requireNotNull(ps.getenv("TEMP")) { "%TEMP% unexpectedly null" }
         } else {
             "/tmp"
         }
@@ -36,8 +36,9 @@ class SystemPlatformProviderTest {
     @Test
     fun testGetEnv() = runTest {
         val envVarKeys = listOf("PATH", "USERPROFILE") // PATH is not set on Windows CI
-        val result: String? = envVarKeys.fold(null) { acc, curr -> acc ?: PlatformProvider.System.getenv(curr) }
-        assertNotNull(result)
+        assertNotNull(
+            envVarKeys.firstNotNullOfOrNull { PlatformProvider.System.getenv(it) }
+        )
 
         assertNull(PlatformProvider.System.getenv("THIS_ENV_VAR_IS_NOT_SET"))
     }
@@ -48,12 +49,9 @@ class SystemPlatformProviderTest {
         assertTrue(allEnv.isNotEmpty())
 
         val envVarKeys = listOf("PATH", "USERPROFILE") // PATH is not set on Windows CI
-
-        var envContainsKey = false
-        envVarKeys.forEach { key ->
-            envContainsKey = envContainsKey || allEnv.contains(key)
-        }
-        assertTrue(envContainsKey)
+        assertTrue(
+            envVarKeys.any { allEnv.contains(it) }
+        )
     }
 
     @Test

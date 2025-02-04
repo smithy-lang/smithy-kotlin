@@ -5,8 +5,10 @@
 package aws.smithy.kotlin.runtime.util
 
 import aws.smithy.kotlin.runtime.io.IOException
+import aws.smithy.kotlin.runtime.io.internal.SdkDispatchers
 import aws.smithy.platform.posix.get_environ_ptr
 import kotlinx.cinterop.*
+import kotlinx.coroutines.withContext
 import platform.posix.*
 
 internal actual object SystemDefaultProvider : PlatformProvider {
@@ -17,7 +19,7 @@ internal actual object SystemDefaultProvider : PlatformProvider {
             .takeWhile { it != null }
             .associate { env ->
                 val parts = env?.split("=", limit = 2)
-                check(parts?.size == 2) { "Environment entry $env is malformed" }
+                check(parts?.size == 2) { "Environment entry \"$env\" is malformed" }
                 parts[0] to parts[1]
             }
     }
@@ -30,9 +32,9 @@ internal actual object SystemDefaultProvider : PlatformProvider {
             else -> "/"
         }
 
-    actual override suspend fun readFileOrNull(path: String): ByteArray? {
-        return try {
-            val file = fopen(path, "rb") ?: return null
+    actual override suspend fun readFileOrNull(path: String): ByteArray? = withContext(SdkDispatchers.IO) {
+        try {
+            val file = fopen(path, "rb") ?: return@withContext null
 
             try {
                 // Get file size
@@ -42,7 +44,7 @@ internal actual object SystemDefaultProvider : PlatformProvider {
 
                 // Read file content
                 val buffer = ByteArray(size.toInt()).pin()
-                val rc = fread(buffer.addressOf(0), 1.toULong(), size.toULong(), file)
+                val rc = fread(buffer.addressOf(0), 1uL, size.toULong(), file)
                 if (rc == size.toULong()) buffer.get() else null
             } finally {
                 fclose(file)
@@ -52,10 +54,10 @@ internal actual object SystemDefaultProvider : PlatformProvider {
         }
     }
 
-    actual override suspend fun writeFile(path: String, data: ByteArray) {
+    actual override suspend fun writeFile(path: String, data: ByteArray) = withContext(SdkDispatchers.IO) {
         val file = fopen(path, "wb") ?: throw IOException("Cannot open file for writing: $path")
         try {
-            val wc = fwrite(data.refTo(0), 1.toULong(), data.size.toULong(), file)
+            val wc = fwrite(data.refTo(0), 1uL, data.size.toULong(), file)
             if (wc != data.size.toULong()) {
                 throw IOException("Failed to write all bytes to file $path, expected ${data.size.toLong()}, wrote $wc")
             }
