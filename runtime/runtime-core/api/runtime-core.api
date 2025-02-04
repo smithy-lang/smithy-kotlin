@@ -2383,9 +2383,12 @@ public final class aws/smithy/kotlin/runtime/util/OperatingSystem {
 public final class aws/smithy/kotlin/runtime/util/OsFamily : java/lang/Enum {
 	public static final field Android Laws/smithy/kotlin/runtime/util/OsFamily;
 	public static final field Ios Laws/smithy/kotlin/runtime/util/OsFamily;
+	public static final field IpadOs Laws/smithy/kotlin/runtime/util/OsFamily;
 	public static final field Linux Laws/smithy/kotlin/runtime/util/OsFamily;
 	public static final field MacOs Laws/smithy/kotlin/runtime/util/OsFamily;
+	public static final field TvOs Laws/smithy/kotlin/runtime/util/OsFamily;
 	public static final field Unknown Laws/smithy/kotlin/runtime/util/OsFamily;
+	public static final field WatchOs Laws/smithy/kotlin/runtime/util/OsFamily;
 	public static final field Windows Laws/smithy/kotlin/runtime/util/OsFamily;
 	public static fun getEntries ()Lkotlin/enums/EnumEntries;
 	public fun toString ()Ljava/lang/String;
