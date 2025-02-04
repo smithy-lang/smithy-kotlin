@@ -6,6 +6,7 @@
 package aws.smithy.kotlin.runtime.util
 
 import aws.smithy.kotlin.runtime.InternalApi
+import kotlinx.coroutines.awaitAll
 
 public interface PlatformEnvironProvider :
     EnvironmentProvider,
@@ -58,6 +59,9 @@ public enum class OsFamily {
     Windows,
     Android,
     Ios,
+    IpadOs,
+    TvOs,
+    WatchOs,
     Unknown,
     ;
 
@@ -67,6 +71,9 @@ public enum class OsFamily {
         Windows -> "windows"
         Android -> "android"
         Ios -> "ios"
+        IpadOs -> "ipados"
+        TvOs -> "tvos"
+        WatchOs -> "watchos"
         Unknown -> "unknown"
     }
 }

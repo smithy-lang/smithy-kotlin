@@ -74,14 +74,17 @@ internal actual object SystemDefaultProvider : PlatformProvider {
 
         val sysName = utsname.sysname.toKString().lowercase()
         val version = utsname.release.toKString()
-        val machine = utsname.machine.toKString() // Helps differentiate iOS/macOS
+        val machine = utsname.machine.toKString().lowercase() // Helps differentiate Apple platforms
 
         val family = when {
             sysName.contains("darwin") -> {
-                if (machine.startsWith("iPhone") || machine.startsWith("iPad")) {
-                    OsFamily.Ios
-                } else {
-                    OsFamily.MacOs
+                when {
+                    machine.startsWith("iphone") -> OsFamily.Ios
+                    // TODO Validate that iPadOS/tvOS/watchOS resolves correctly on each of these devices
+                    machine.startsWith("ipad") -> OsFamily.IpadOs
+                    machine.startsWith("tv") -> OsFamily.TvOs
+                    machine.startsWith("watch") -> OsFamily.WatchOs
+                    else -> OsFamily.MacOs
                 }
             }
             sysName.contains("linux") -> OsFamily.Linux
