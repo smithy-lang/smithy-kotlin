@@ -15,7 +15,6 @@ public class CrtLogRecordBuilder(
 ) : LogRecordBuilder {
     private var cause: Throwable? = null
     private var msg: (() -> String)? = null
-    private val kvp by lazy { mutableMapOf<String, Any>() }
 
     override fun setCause(ex: Throwable) {
         cause = ex
@@ -29,9 +28,8 @@ public class CrtLogRecordBuilder(
         msg = message
     }
 
-    override fun setKeyValuePair(key: String, value: Any) {
-        kvp[key] = value
-    }
+    // CRT logger does not support setting key-value pairs
+    override fun setKeyValuePair(key: String, value: Any) { }
 
     override fun emit() {
         val message = requireNotNull(msg) { "no message provided to LogRecordBuilder" }

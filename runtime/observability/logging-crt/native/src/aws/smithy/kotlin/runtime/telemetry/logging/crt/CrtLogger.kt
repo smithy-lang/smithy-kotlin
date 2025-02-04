@@ -14,7 +14,9 @@ import aws.smithy.kotlin.runtime.telemetry.logging.MessageSupplier
 import aws.sdk.kotlin.crt.Config as CrtConfig
 import aws.sdk.kotlin.crt.LogLevel as CrtLogLevel
 
-public class CrtLogger(public val name: String, public val config: CrtConfig) : Logger, WithCrt() {
+public class CrtLogger(public val name: String, public val config: CrtConfig) :
+    WithCrt(),
+    Logger {
     override fun trace(t: Throwable?, msg: MessageSupplier) {
         log(CrtLogLevel.Trace, msg())
     }

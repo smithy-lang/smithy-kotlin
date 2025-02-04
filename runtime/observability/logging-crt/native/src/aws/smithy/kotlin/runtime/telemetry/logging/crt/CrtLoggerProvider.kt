@@ -5,11 +5,10 @@
 
 package aws.smithy.kotlin.runtime.telemetry.logging.crt
 
-import aws.sdk.kotlin.crt.Config as CrtConfig
 import aws.smithy.kotlin.runtime.telemetry.logging.*
+import aws.sdk.kotlin.crt.Config as CrtConfig
 
 public class CrtLoggerProvider : LoggerProvider {
     override fun getOrCreateLogger(name: String): Logger = CrtLogger(name, CrtConfig())
     public fun getOrCreateLogger(name: String, config: CrtConfig): Logger = CrtLogger(name, config)
 }
-
