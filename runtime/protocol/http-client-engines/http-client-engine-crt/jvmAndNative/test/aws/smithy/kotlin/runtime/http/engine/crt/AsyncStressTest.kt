@@ -37,7 +37,7 @@ class AsyncStressTest : TestWithLocalServer() {
         }
     }.start()
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
+//    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testStreamNotConsumed() = runBlocking {
         // test that filling the stream window and not consuming the body stream still cleans up resources

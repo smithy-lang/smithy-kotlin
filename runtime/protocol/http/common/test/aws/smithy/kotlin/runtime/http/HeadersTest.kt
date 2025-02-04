@@ -29,7 +29,6 @@ class HeadersTest {
         assertEquals("Headers [key=[value]]", "$actual2")
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testSubsequentModificationsDontAffectOriginal() {
         val builder = HeadersBuilder()
@@ -53,8 +52,8 @@ class HeadersTest {
             "c" to listOf("crocodile"),
         )
 
-        assertEquals(firstExpected.entries, first.entries())
-        assertEquals(secondExpected.entries, second.entries())
+        assertEquals(firstExpected.entries.toList(), first.entries().toList())
+        assertEquals(secondExpected.entries.toList(), second.entries().toList())
     }
 
     @Test

@@ -50,7 +50,6 @@ class HttpBodyTest {
         assertTrue(body.isOneShot)
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testStreamingReadAllClosedForRead() = runTest {
         val expected = "foobar"
@@ -63,7 +62,6 @@ class HttpBodyTest {
         assertEquals(expected, body.readAll()!!.decodeToString())
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testStreamingReadAllClosedForWrite() = runTest {
         val expected = "foobar"

@@ -19,7 +19,6 @@ import kotlin.test.assertFailsWith
 import kotlin.test.assertNotNull
 
 class SdkHttpOperationTest {
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native Implementation
     @Test
     fun testTelemetryInstrumentation() = runTest {
         val op = newTestOperation<Unit, Unit>(HttpRequestBuilder(), Unit)
@@ -33,7 +32,6 @@ class SdkHttpOperationTest {
         }
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native Implementation
     @Test
     fun testMissingRequiredProperties() = runTest {
         val ex = assertFailsWith<IllegalArgumentException> {

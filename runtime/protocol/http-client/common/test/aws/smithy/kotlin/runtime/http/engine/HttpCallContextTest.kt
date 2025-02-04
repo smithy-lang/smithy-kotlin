@@ -25,7 +25,6 @@ import kotlin.test.assertTrue
 import kotlin.coroutines.coroutineContext as currentCoroutineContext
 
 class HttpCallContextTest {
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native Implementation
     @OptIn(ExperimentalCoroutinesApi::class)
     @Test
     fun testStructuredConcurrency() = runTest {

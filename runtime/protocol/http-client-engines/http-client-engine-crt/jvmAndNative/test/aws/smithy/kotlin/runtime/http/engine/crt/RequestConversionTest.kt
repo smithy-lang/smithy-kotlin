@@ -54,7 +54,6 @@ class RequestConversionTest {
         assertFalse(crtRequest.body is ReadChannelBodyStream)
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testSdkToCrtRequestStreamingBody() {
         val stream = byteStreamFromContents("foobar")
@@ -73,7 +72,6 @@ class RequestConversionTest {
         crtBody.cancel()
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testEngineAddsContentLengthHeader() {
         val stream = byteStreamFromContents("foobar")

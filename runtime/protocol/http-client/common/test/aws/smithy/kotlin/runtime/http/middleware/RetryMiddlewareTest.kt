@@ -35,7 +35,6 @@ class RetryMiddlewareTest {
             }
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native Implementation
     @Test
     fun testRetryMiddleware() = runTest {
         val req = HttpRequestBuilder()

@@ -28,7 +28,6 @@ import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class SdkOperationExecutionTest {
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native Implementation
     @Test
     fun testOperationMiddlewareOrder() = runTest {
         // sanity test middleware flows the way we expect

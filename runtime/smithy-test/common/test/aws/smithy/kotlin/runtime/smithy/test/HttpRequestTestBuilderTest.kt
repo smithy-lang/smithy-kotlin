@@ -20,7 +20,6 @@ class HttpRequestTestBuilderTest {
 
     private val execContext = ExecutionContext()
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun itAssertsHttpMethod() {
         val ex = assertFails {
@@ -39,7 +38,6 @@ class HttpRequestTestBuilderTest {
         ex.message.shouldContain("expected method: `POST`; got: `GET`")
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun itAssertsUri() {
         val ex = assertFails {
@@ -60,7 +58,6 @@ class HttpRequestTestBuilderTest {
         ex.message.shouldContain("expected path: `/foo`; got: `/bar`")
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun itAssertsQueryParameters() {
         val ex = assertFails {
@@ -89,7 +86,6 @@ class HttpRequestTestBuilderTest {
         ex.message.shouldContain("Query parameter `Hi` does not contain expected value `Hello%20there`. Actual values: [Hello]")
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun itAssertsForbiddenQueryParameters() {
         val ex = assertFails {
@@ -120,7 +116,6 @@ class HttpRequestTestBuilderTest {
         ex.message.shouldContain("forbidden query parameter found: `foobar`")
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun itAssertsRequiredQueryParameters() {
         val ex = assertFails {
@@ -152,7 +147,6 @@ class HttpRequestTestBuilderTest {
         ex.message.shouldContain("required query parameter not found: `requiredQuery`")
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun itAssertsHeaders() {
         val ex = assertFails {
@@ -193,7 +187,6 @@ class HttpRequestTestBuilderTest {
         ex.message.shouldContain("expected header `k2` has no actual values")
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun itAssertsListsOfHeaders() {
         val ex = assertFails {
@@ -222,7 +215,6 @@ class HttpRequestTestBuilderTest {
         ex.message.shouldContain("expected header name value pair not equal: `k2:v3, v4, v5`; found: `k2:v3, v4")
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun itAssertsForbiddenHeaders() {
         val ex = assertFails {
@@ -266,7 +258,6 @@ class HttpRequestTestBuilderTest {
         ex.message.shouldContain("forbidden header found: `forbiddenHeader`")
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun itAssertsRequiredHeaders() {
         val ex = assertFails {
@@ -311,7 +302,6 @@ class HttpRequestTestBuilderTest {
         ex.message.shouldContain("expected required header not found: `requiredHeader`")
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun itFailsWhenBodyAssertFunctionIsMissing() {
         val ex = assertFails {
@@ -331,7 +321,6 @@ class HttpRequestTestBuilderTest {
         ex.message.shouldContain("body assertion function is required if an expected body is defined")
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun itCallsBodyAssertFunction() {
         val ex = assertFails {
@@ -352,7 +341,6 @@ class HttpRequestTestBuilderTest {
         ex.message.shouldContain("actual bytes read does not match expected")
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun itAssertsHostWhenSet() {
         val ex = assertFails {

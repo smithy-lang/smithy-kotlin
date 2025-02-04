@@ -21,7 +21,6 @@ import kotlin.test.assertEquals
 class MutateHeadersTest {
     private val client = SdkHttpClient(TestEngine())
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native Implementation
     @Test
     fun itOverridesHeaders() = runTest {
         val req = HttpRequestBuilder().apply {
@@ -52,7 +51,6 @@ class MutateHeadersTest {
         assertEquals("qux", call.request.headers["baz"])
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native Implementation
     @Test
     fun itAppendsHeaders() = runTest {
         val req = HttpRequestBuilder().apply {
@@ -83,7 +81,6 @@ class MutateHeadersTest {
         assertEquals("qux", call.request.headers["baz"])
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native Implementation
     @Test
     fun itSetsMissing() = runTest {
         val req = HttpRequestBuilder().apply {

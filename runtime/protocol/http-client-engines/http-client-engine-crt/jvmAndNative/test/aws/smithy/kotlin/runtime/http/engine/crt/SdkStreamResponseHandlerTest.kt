@@ -125,7 +125,6 @@ class SdkStreamResponseHandlerTest {
         assertTrue(respChan.isClosedForWrite)
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testRespBody() = runTest {
         val handler = SdkStreamResponseHandler(mockConn, coroutineContext)
@@ -154,7 +153,6 @@ class SdkStreamResponseHandlerTest {
         assertEquals(data, respChan.readToBuffer().readUtf8())
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testStreamError() = runTest {
         val handler = SdkStreamResponseHandler(mockConn, coroutineContext)

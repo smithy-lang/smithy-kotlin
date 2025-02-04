@@ -25,7 +25,6 @@ private val CHECKSUM_TEST_HEADER = "x-amz-kotlin-sdk-test-checksum-header"
 class CachingChecksumInterceptorTest {
     private val client = SdkHttpClient(TestEngine())
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native Implementation
     @Test
     fun testChecksumIsCalculatedAndApplied() = runTest {
         val req = HttpRequestBuilder().apply {
@@ -42,7 +41,6 @@ class CachingChecksumInterceptorTest {
         assertEquals(expectedChecksumValue, call.request.headers[CHECKSUM_TEST_HEADER])
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native Implementation
     @Test
     fun testCachedChecksumIsUsed() = runTest {
         val req = HttpRequestBuilder().apply {

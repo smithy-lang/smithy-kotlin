@@ -15,7 +15,6 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class RpcV2CborErrorDeserializerTest {
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testDeserializeErrorType() = runTest {
         val tests = listOf(

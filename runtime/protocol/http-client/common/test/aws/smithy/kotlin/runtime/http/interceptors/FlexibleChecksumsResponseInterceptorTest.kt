@@ -68,7 +68,6 @@ class FlexibleChecksumsResponseInterceptorTest {
         return SdkHttpClient(mockEngine)
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native Implementation
     @Test
     fun testResponseChecksumValid() = runTest {
         checksums.forEach { (checksumAlgorithmName, expectedChecksum) ->
@@ -96,7 +95,6 @@ class FlexibleChecksumsResponseInterceptorTest {
         }
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native Implementation
     @Test
     fun testResponseServiceChecksumInvalid() = runTest {
         checksums.forEach { (checksumAlgorithmName, _) ->
@@ -126,7 +124,6 @@ class FlexibleChecksumsResponseInterceptorTest {
         }
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native Implementation
     @Test
     fun testMultipleChecksumsReturned() = runTest {
         val req = HttpRequestBuilder()
@@ -152,7 +149,6 @@ class FlexibleChecksumsResponseInterceptorTest {
         assertEquals("x-amz-checksum-crc32c", op.context[ChecksumHeaderValidated])
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native Implementation
     @Test
     fun testSkipsValidationOfMultipartChecksum() = runTest {
         val req = HttpRequestBuilder()
@@ -174,7 +170,6 @@ class FlexibleChecksumsResponseInterceptorTest {
         op.roundTrip(client, TestInput("input"))
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native Implementation
     @Test
     fun testSkipsValidationWhenDisabled() = runTest {
         val req = HttpRequestBuilder()
@@ -201,7 +196,6 @@ class FlexibleChecksumsResponseInterceptorTest {
         assertNull(op.context.getOrNull(ChecksumHeaderValidated))
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native Implementation
     @Test
     fun testResponseValidationConfiguration() = runTest {
         setOf(

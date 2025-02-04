@@ -11,7 +11,6 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFails
 
 class CborDeserializerTest {
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testNumberDeserializationThrowsOnOutOfRange() {
         val serializer = CborSerializer()

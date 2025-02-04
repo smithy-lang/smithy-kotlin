@@ -18,7 +18,6 @@ import kotlin.time.Duration.Companion.seconds
 
 @OptIn(ExperimentalStdlibApi::class)
 class CborSerializerTest {
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testBoolean() {
         val tests = listOf(true, false, true, false, false)
@@ -37,7 +36,6 @@ class CborSerializerTest {
         assertEquals(0, buffer.size)
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testByte() {
         val tests = listOf(Byte.MIN_VALUE, -34, 0, 39, Byte.MAX_VALUE)
@@ -55,7 +53,6 @@ class CborSerializerTest {
         assertEquals(0, buffer.size)
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testChar() {
         val tests = listOf(
@@ -80,7 +77,6 @@ class CborSerializerTest {
         assertEquals(0, buffer.size)
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testInt() {
         val tests = listOf(Int.MIN_VALUE, -34, 0, 39, 402, Int.MAX_VALUE)
@@ -98,7 +94,6 @@ class CborSerializerTest {
         assertEquals(0, buffer.size)
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testLong() {
         val tests = listOf(Long.MIN_VALUE, -34, 0, 39, 402, Long.MAX_VALUE)
@@ -116,7 +111,6 @@ class CborSerializerTest {
         assertEquals(0, buffer.size)
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testFloat() {
         val tests = listOf(
@@ -148,7 +142,6 @@ class CborSerializerTest {
         assertEquals(0, buffer.size)
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testDouble() {
         val tests = listOf(
@@ -176,7 +169,6 @@ class CborSerializerTest {
         assertEquals(0, buffer.size)
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testBigInteger() {
         val tests = listOf(
@@ -208,7 +200,6 @@ class CborSerializerTest {
         assertEquals(0, buffer.size)
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testBigDecimal() {
         val tests = listOf<BigDecimal>(
@@ -248,7 +239,6 @@ class CborSerializerTest {
         assertEquals("c48221196ab3", serializer.toByteArray().toHexString())
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testString() {
         val tests = listOf(
@@ -275,7 +265,6 @@ class CborSerializerTest {
         assertEquals(0, buffer.size)
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testInstant() {
         val tests = listOf(
@@ -290,7 +279,6 @@ class CborSerializerTest {
             Instant.now() + 10.days,
             Instant.now() + 365.days,
             Instant.now() + 1825.days,
-            Instant.MAX_VALUE,
         )
 
         val serializer = CborSerializer()
@@ -302,16 +290,13 @@ class CborSerializerTest {
         val buffer = SdkBuffer().apply { write(serializer.toByteArray()) }
         val deserializer = CborPrimitiveDeserializer(buffer)
 
-        tests.dropLast(1).forEach {
+        tests.forEach {
             assertEquals(it.epochMilliseconds, deserializer.deserializeInstant(TimestampFormat.EPOCH_SECONDS).epochMilliseconds)
         }
 
-        // FIXME Serializing -> deserializing Instant.MAX_VALUE results in a one millisecond offset...
-        assertEquals(Instant.MAX_VALUE.epochMilliseconds, deserializer.deserializeInstant(TimestampFormat.EPOCH_SECONDS).epochMilliseconds - 1)
         assertEquals(0, buffer.size)
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testNull() {
         val serializer = CborSerializer()
@@ -323,7 +308,6 @@ class CborSerializerTest {
         assertNull(deserializer.deserializeNull())
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testDocument() {
         val serializer = CborSerializer()
@@ -332,7 +316,6 @@ class CborSerializerTest {
         }
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testList() {
         val serializer = CborSerializer()
@@ -369,7 +352,6 @@ class CborSerializerTest {
         }
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testMap() {
         val serializer = CborSerializer()

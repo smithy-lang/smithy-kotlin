@@ -56,7 +56,6 @@ internal fun getMockClient(response: ByteArray, responseHeaders: Headers = Heade
 internal val RESPONSE = "abc".repeat(1024).encodeToByteArray()
 
 class RpcV2CborSmithyProtocolResponseHeaderInterceptorTest {
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testThrowsOnMissingHeader() = runTest {
         val req = HttpRequestBuilder()
@@ -71,7 +70,6 @@ class RpcV2CborSmithyProtocolResponseHeaderInterceptorTest {
         }
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testSucceedsOnPresentHeader() = runTest {
         val req = HttpRequestBuilder()

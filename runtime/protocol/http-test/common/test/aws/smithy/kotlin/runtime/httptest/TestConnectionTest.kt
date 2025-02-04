@@ -16,7 +16,6 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFails
 
 class TestConnectionTest {
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native Implementation
     @Test
     fun testAssertRequestsSuccess() = runTest {
         val engine = buildTestConnection {
@@ -44,7 +43,6 @@ class TestConnectionTest {
         engine.assertRequests()
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native Implementation
     @Test
     fun testAssertRequestsUrlDifferent() = runTest {
         val engine = buildTestConnection {
@@ -72,7 +70,6 @@ class TestConnectionTest {
         }.message.shouldContain("URL mismatch")
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native Implementation
     @Test
     fun testAssertRequestsMissingHeader() = runTest {
         val engine = buildTestConnection {
@@ -100,7 +97,6 @@ class TestConnectionTest {
         }.message.shouldContain("header `x-baz` missing value `qux`")
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native Implementation
     @Test
     fun testAssertRequestsBodyDifferent() = runTest {
         val engine = buildTestConnection {
@@ -129,7 +125,6 @@ class TestConnectionTest {
         }.message.shouldContain("body mismatch")
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testAssertRequestsAny() = runTest {
         val engine = buildTestConnection {
@@ -164,7 +159,6 @@ class TestConnectionTest {
         engine.assertRequests()
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testFromJson() = runTest {
         // language=JSON

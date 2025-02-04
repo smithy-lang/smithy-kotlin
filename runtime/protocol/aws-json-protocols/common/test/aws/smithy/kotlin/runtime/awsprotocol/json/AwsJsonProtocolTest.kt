@@ -18,7 +18,6 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class AwsJsonProtocolTest {
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testSetJsonProtocolHeaders() = runTest {
         @Suppress("DEPRECATION")
@@ -41,7 +40,6 @@ class AwsJsonProtocolTest {
         assertEquals("FooService_blah.Bar", request.headers["X-Amz-Target"])
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testEmptyBody() = runTest {
         @Suppress("DEPRECATION")
@@ -61,7 +59,6 @@ class AwsJsonProtocolTest {
         assertEquals("{}", actual)
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testDoesNotOverride() = runTest {
         @Suppress("DEPRECATION")

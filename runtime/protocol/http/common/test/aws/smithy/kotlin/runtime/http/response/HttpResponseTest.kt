@@ -37,7 +37,6 @@ class HttpResponseTest {
         assertEquals(HttpStatusCode.BadRequest, resp.statusCode())
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testDumpResponse() = runTest {
         val content = "Mom!...Dad!...Bingo!...Bluey!"

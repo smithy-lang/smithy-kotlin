@@ -100,7 +100,6 @@ class JsonDeserializerTest {
         assertEquals(expected, actual)
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native Implementation
     @Test
     fun itHandlesBigInteger() {
         val tests = listOf(
@@ -118,7 +117,6 @@ class JsonDeserializerTest {
         }
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun itHandlesBigDecimal() {
         val tests = listOf(

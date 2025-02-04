@@ -59,7 +59,6 @@ class RequestCompressionInterceptorTest {
         return op.context.attributes[HttpOperationContext.HttpCallList].first()
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native Implementation
     @Test
     fun testCompressionThresholdTooHigh() = runTest {
         val payload = "<Foo>bar</Foo>"
@@ -79,7 +78,6 @@ class RequestCompressionInterceptorTest {
         assertEquals(bytes, sentBytes)
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native Implementation
     @Test
     fun testCompression() = runTest {
         val payload = "<Foo>bar</Foo>"
@@ -100,7 +98,6 @@ class RequestCompressionInterceptorTest {
         assertContentEquals(bytes, decompressedBytes)
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testSdkSource() = runTest {
         val payload = "<Foo>bar</Foo>"
@@ -121,7 +118,6 @@ class RequestCompressionInterceptorTest {
         assertContentEquals(bytes, decompressedBytes)
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testSdkByteReadChannel() = runTest {
         val payload = "<Foo>bar</Foo>"
@@ -142,7 +138,6 @@ class RequestCompressionInterceptorTest {
         assertContentEquals(bytes, decompressedBytes)
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testHeaderAlreadySet() = runTest {
         val payload = "<Foo>bar</Foo>"
@@ -164,7 +159,6 @@ class RequestCompressionInterceptorTest {
         assertContentEquals(bytes, decompressedBytes)
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testNoSupportedAlgorithms() = runTest {
         val payload = "<Foo>bar</Foo>"
@@ -184,7 +178,6 @@ class RequestCompressionInterceptorTest {
         assertEquals(bytes, sentBytes)
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testInvalidCompressionThreshold() = runTest {
         val payload = "<Foo>bar</Foo>"

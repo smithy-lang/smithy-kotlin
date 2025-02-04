@@ -33,7 +33,6 @@ class FlexibleChecksumsRequestInterceptorTest {
         "sha256" to "1dXchshIKqXiaKCqueqR7AOz1qLpiqayo7gbnaxzaQo=",
     )
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native Implementation
     @Test
     fun itSetsChecksumHeader() = runTest {
         checksums.forEach { (checksumAlgorithmName, expectedChecksumValue) ->
@@ -57,7 +56,6 @@ class FlexibleChecksumsRequestInterceptorTest {
         }
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native Implementation
     @Test
     fun itAllowsOnlyOneChecksumHeader() = runTest {
         val req = HttpRequestBuilder().apply {
@@ -86,7 +84,6 @@ class FlexibleChecksumsRequestInterceptorTest {
         assertEquals(1, call.request.headers.getNumChecksumHeaders())
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native Implementation
     @Test
     fun itThrowsOnUnsupportedChecksumAlgorithm() = runTest {
         val req = HttpRequestBuilder().apply {
@@ -109,7 +106,6 @@ class FlexibleChecksumsRequestInterceptorTest {
         }
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native Implementation
     @Test
     fun itRemovesChecksumHeadersForAwsChunked() = runTest {
         val data = ByteArray(65536 * 32) { 'a'.code.toByte() }
@@ -140,7 +136,6 @@ class FlexibleChecksumsRequestInterceptorTest {
         assertEquals(0, call.request.headers.getNumChecksumHeaders())
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native Implementation
     @Test
     fun testCompletingSource() = runTest {
         val hashFunctionName = "crc32"
@@ -162,7 +157,6 @@ class FlexibleChecksumsRequestInterceptorTest {
         assertEquals(expectedHash.digest().encodeBase64String(), completableDeferred.await())
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native Implementation
     @Test
     fun testCompletingByteReadChannel() = runTest {
         val hashFunctionName = "sha256"
@@ -186,7 +180,6 @@ class FlexibleChecksumsRequestInterceptorTest {
         assertEquals(expectedHash.digest().encodeBase64String(), completableDeferred.await())
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native Implementation
     @Test
     fun itUsesPrecalculatedChecksum() = runTest {
         val req = HttpRequestBuilder().apply {
@@ -213,7 +206,6 @@ class FlexibleChecksumsRequestInterceptorTest {
         assertEquals(precalculatedChecksumValue, call.request.headers["x-amz-checksum-sha256"])
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native Implementation
     @Test
     fun testDefaultChecksumConfiguration() = runTest {
         setOf(

@@ -15,7 +15,6 @@ import kotlin.test.Test
 class HttpResponseTestBuilderTest {
     private data class Foo(val bar: Int, val baz: String)
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun itBuildsResponses() {
         httpResponseTest<Foo> {
