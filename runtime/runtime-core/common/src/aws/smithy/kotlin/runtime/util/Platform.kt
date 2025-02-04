@@ -6,7 +6,6 @@
 package aws.smithy.kotlin.runtime.util
 
 import aws.smithy.kotlin.runtime.InternalApi
-import kotlinx.coroutines.awaitAll
 
 public interface PlatformEnvironProvider :
     EnvironmentProvider,
