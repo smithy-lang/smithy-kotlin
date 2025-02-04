@@ -5,6 +5,7 @@
 import aws.sdk.kotlin.gradle.dsl.configurePublishing
 import aws.sdk.kotlin.gradle.kmp.*
 import aws.sdk.kotlin.gradle.util.typedProp
+import org.gradle.kotlin.dsl.withType
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
@@ -112,3 +113,5 @@ subprojects {
         }
     }
 }
+
+configureIosSimulatorTasks()
