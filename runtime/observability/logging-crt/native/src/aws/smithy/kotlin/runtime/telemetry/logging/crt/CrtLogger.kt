@@ -17,27 +17,11 @@ import aws.sdk.kotlin.crt.LogLevel as CrtLogLevel
 public class CrtLogger(public val name: String, public val config: CrtConfig) :
     WithCrt(),
     Logger {
-    override fun trace(t: Throwable?, msg: MessageSupplier) {
-        log(CrtLogLevel.Trace, msg())
-    }
-
-    override fun debug(t: Throwable?, msg: MessageSupplier) {
-        log(CrtLogLevel.Debug, msg())
-    }
-
-    override fun info(t: Throwable?, msg: MessageSupplier) {
-        log(CrtLogLevel.Info, msg())
-    }
-
-    override fun warn(t: Throwable?, msg: MessageSupplier) {
-        log(CrtLogLevel.Warn, msg())
-    }
-
-    override fun error(t: Throwable?, msg: MessageSupplier) {
-        log(CrtLogLevel.Error, msg())
-    }
-
+    override fun trace(t: Throwable?, msg: MessageSupplier): Unit = log(CrtLogLevel.Trace, msg())
+    override fun debug(t: Throwable?, msg: MessageSupplier): Unit = log(CrtLogLevel.Debug, msg())
+    override fun info(t: Throwable?, msg: MessageSupplier): Unit = log(CrtLogLevel.Info, msg())
+    override fun warn(t: Throwable?, msg: MessageSupplier): Unit = log(CrtLogLevel.Warn, msg())
+    override fun error(t: Throwable?, msg: MessageSupplier): Unit = log(CrtLogLevel.Error, msg())
     override fun isEnabledFor(level: LogLevel): Boolean = config.logLevel.ordinal >= level.ordinal
-
     override fun atLevel(level: LogLevel): LogRecordBuilder = CrtLogRecordBuilder(this, level)
 }
