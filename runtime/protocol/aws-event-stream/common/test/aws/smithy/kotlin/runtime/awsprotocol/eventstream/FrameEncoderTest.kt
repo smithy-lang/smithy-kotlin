@@ -5,7 +5,6 @@
 
 package aws.smithy.kotlin.runtime.awsprotocol.eventstream
 
-import aws.smithy.kotlin.runtime.IgnoreNative
 import aws.smithy.kotlin.runtime.http.readAll
 import aws.smithy.kotlin.runtime.io.SdkBuffer
 import kotlinx.coroutines.flow.flowOf

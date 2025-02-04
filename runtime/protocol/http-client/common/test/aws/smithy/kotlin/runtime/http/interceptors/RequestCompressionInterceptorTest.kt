@@ -5,7 +5,6 @@
 
 package aws.smithy.kotlin.runtime.http.interceptors
 
-import aws.smithy.kotlin.runtime.IgnoreNative
 import aws.smithy.kotlin.runtime.collections.get
 import aws.smithy.kotlin.runtime.compression.CompressionAlgorithm
 import aws.smithy.kotlin.runtime.compression.Gzip

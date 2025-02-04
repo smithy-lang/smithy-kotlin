@@ -5,7 +5,6 @@
 
 package aws.smithy.kotlin.runtime.awsprotocol.json
 
-import aws.smithy.kotlin.runtime.IgnoreNative
 import aws.smithy.kotlin.runtime.collections.get
 import aws.smithy.kotlin.runtime.http.*
 import aws.smithy.kotlin.runtime.http.operation.*

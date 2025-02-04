@@ -4,7 +4,6 @@
  */
 package aws.smithy.kotlin.runtime.serde.json
 
-import aws.smithy.kotlin.runtime.IgnoreNative
 import aws.smithy.kotlin.runtime.content.Document
 import aws.smithy.kotlin.runtime.content.buildDocument
 import aws.smithy.kotlin.runtime.serde.*

@@ -5,7 +5,6 @@
 
 package aws.smithy.kotlin.runtime.httptest
 
-import aws.smithy.kotlin.runtime.IgnoreNative
 import aws.smithy.kotlin.runtime.http.*
 import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
 import aws.smithy.kotlin.runtime.net.Host

@@ -4,7 +4,6 @@
  */
 package aws.smithy.kotlin.runtime.serde.cbor
 
-import aws.smithy.kotlin.runtime.IgnoreNative
 import aws.smithy.kotlin.runtime.content.BigDecimal
 import aws.smithy.kotlin.runtime.content.BigInteger
 import aws.smithy.kotlin.runtime.io.SdkBuffer

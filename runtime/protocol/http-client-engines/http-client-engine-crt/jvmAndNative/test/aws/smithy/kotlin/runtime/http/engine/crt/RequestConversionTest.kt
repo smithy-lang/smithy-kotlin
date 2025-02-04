@@ -5,7 +5,6 @@
 
 package aws.smithy.kotlin.runtime.http.engine.crt
 
-import aws.smithy.kotlin.runtime.IgnoreNative
 import aws.smithy.kotlin.runtime.content.ByteStream
 import aws.smithy.kotlin.runtime.crt.ReadChannelBodyStream
 import aws.smithy.kotlin.runtime.http.*

@@ -5,7 +5,6 @@
 
 package aws.smithy.kotlin.runtime.awsprotocol.eventstream
 
-import aws.smithy.kotlin.runtime.IgnoreNative
 import aws.smithy.kotlin.runtime.io.EOFException
 import aws.smithy.kotlin.runtime.io.SdkBuffer
 import aws.smithy.kotlin.runtime.time.Instant

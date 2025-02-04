@@ -5,7 +5,6 @@
 
 package aws.smithy.kotlin.runtime.awsprotocol.eventstream
 
-import aws.smithy.kotlin.runtime.IgnoreNative
 import aws.smithy.kotlin.runtime.io.*
 import io.kotest.matchers.string.shouldContain
 import kotlinx.coroutines.flow.*
