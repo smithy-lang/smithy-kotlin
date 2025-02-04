@@ -16,6 +16,7 @@ import kotlin.time.Duration.Companion.milliseconds
 
 class AsyncStressTest : AbstractEngineTest() {
 
+    @Ignore // FIXME Flaky test on JVM: aws.smithy.kotlin.runtime.http.HttpException: java.io.IOException: unexpected end of stream on http://127.0.0.1:8082/...; HttpErrorCode(CONNECTION_CLOSED)
     @Test
     fun testConcurrentRequests() = testEngines {
         // https://github.com/awslabs/aws-sdk-kotlin/issues/170
