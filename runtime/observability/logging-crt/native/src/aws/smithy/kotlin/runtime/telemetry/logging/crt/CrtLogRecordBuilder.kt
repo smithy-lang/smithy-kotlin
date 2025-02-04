@@ -11,7 +11,7 @@ import aws.smithy.kotlin.runtime.telemetry.logging.MessageSupplier
 
 public class CrtLogRecordBuilder(
     private val delegate: CrtLogger,
-    private val level: LogLevel
+    private val level: LogLevel,
 ) : LogRecordBuilder {
     private var cause: Throwable? = null
     private var msg: (() -> String)? = null
@@ -34,7 +34,7 @@ public class CrtLogRecordBuilder(
     override fun emit() {
         val message = requireNotNull(msg) { "no message provided to LogRecordBuilder" }
 
-        val logMethod = when(level) {
+        val logMethod = when (level) {
             LogLevel.Trace -> delegate::trace
             LogLevel.Debug -> delegate::debug
             LogLevel.Info -> delegate::info
