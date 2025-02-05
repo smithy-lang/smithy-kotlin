@@ -5,6 +5,7 @@
 
 package aws.smithy.kotlin.runtime.time
 
+import aws.smithy.kotlin.runtime.SdkBaseException
 import kotlinx.datetime.Clock
 import kotlinx.datetime.format
 import kotlin.time.Duration
@@ -62,7 +63,7 @@ public actual class Instant(internal val delegate: KtInstant) : Comparable<Insta
         /**
          * Parse an ISO-8601 formatted string into an [Instant]
          */
-        public actual fun fromIso8601(ts: String): Instant {
+        public actual fun fromIso8601(ts: String): Instant = try {
             var parsed = DateTimeFormats.ISO_8601.parse(ts).apply {
                 // Handle leap seconds (23:59:60 becomes 23:59:59)
                 if (second == 60) {
@@ -70,18 +71,28 @@ public actual class Instant(internal val delegate: KtInstant) : Comparable<Insta
                 }
             }
 
-            return Instant(parsed.toInstantUsingOffset())
+            Instant(parsed.toInstantUsingOffset())
+        } catch (e: IllegalArgumentException) {
+            throw ParseException(ts, "Failed to parse $ts into an ISO-8601 timestamp", 0)
         }
 
         /**
          * Parse an RFC5322/RFC-822 formatted string into an [Instant]
          */
-        public actual fun fromRfc5322(ts: String): Instant = Instant(KtInstant.parse(ts, DateTimeFormats.RFC_5322))
+        public actual fun fromRfc5322(ts: String): Instant = try {
+            Instant(KtInstant.parse(ts, DateTimeFormats.RFC_5322))
+        } catch (e: IllegalArgumentException) {
+            throw ParseException(ts, "Failed to parse $ts into an RFC-5322 timestamp", 0)
+        }
 
         /**
          * Create an [Instant] from its parts
          */
-        public actual fun fromEpochSeconds(seconds: Long, ns: Int): Instant = Instant(KtInstant.fromEpochSeconds(seconds, ns))
+        public actual fun fromEpochSeconds(seconds: Long, ns: Int): Instant = try {
+            Instant(KtInstant.fromEpochSeconds(seconds, ns))
+        } catch (e: IllegalArgumentException) {
+            throw ParseException("${seconds}s, ${ns}ns", "Failed to parse (${seconds}s, ${ns}ns) into an epoch seconds timestamp", 0)
+        }
 
         /**
          * Parse a string formatted as epoch-seconds into an [Instant]

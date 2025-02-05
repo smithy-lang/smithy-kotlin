@@ -108,7 +108,7 @@ class ClockSkewInterceptorTest {
         op.interceptors.add(ClockSkewInterceptor())
 
         if (expectException) {
-            assertFails {
+            assertFailsWith<SdkBaseException> {
                 op.roundTrip(client, Unit)
             }
 
