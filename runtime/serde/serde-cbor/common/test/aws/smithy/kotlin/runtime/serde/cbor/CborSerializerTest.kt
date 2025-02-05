@@ -278,6 +278,7 @@ class CborSerializerTest {
             Instant.now() + 10.days,
             Instant.now() + 365.days,
             Instant.now() + 1825.days,
+            Instant.MAX_VALUE,
         )
 
         val serializer = CborSerializer()
