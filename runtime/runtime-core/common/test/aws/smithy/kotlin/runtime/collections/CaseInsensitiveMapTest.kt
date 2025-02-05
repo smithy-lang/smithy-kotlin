@@ -18,4 +18,43 @@ class CaseInsensitiveMapTest {
         assertEquals("json", map["content-type"])
         assertEquals("json", map["CONTENT-TYPE"])
     }
+
+    @Test
+    fun testEquality() {
+        val left = CaseInsensitiveMap<String>()
+        left["A"] = "apple"
+        left["B"] = "banana"
+        left["C"] = "cherry"
+
+        val right = CaseInsensitiveMap<String>()
+        right["c"] = "cherry"
+        right["b"] = "banana"
+        right["a"] = "apple"
+
+        assertEquals(left, right)
+    }
+
+    @Test
+    fun testEntriesEquality() {
+        val left = CaseInsensitiveMap<String>()
+        left["A"] = "apple"
+        left["B"] = "banana"
+        left["C"] = "cherry"
+
+        val right = CaseInsensitiveMap<String>()
+        right["c"] = "cherry"
+        right["b"] = "banana"
+        right["a"] = "apple"
+
+        assertEquals(left.entries, right.entries)
+    }
+
+    @Test
+    fun testToString() {
+        val map = CaseInsensitiveMap<String>()
+        map["A"] = "apple"
+        map["B"] = "banana"
+        map["C"] = "cherry"
+        assertEquals("{A=apple, B=banana, C=cherry}", map.toString())
+    }
 }
