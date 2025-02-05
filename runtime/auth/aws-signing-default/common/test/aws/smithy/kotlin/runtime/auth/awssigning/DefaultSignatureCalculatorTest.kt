@@ -33,7 +33,6 @@ class DefaultSignatureCalculatorTest {
     }
 
     // Test adapted from https://docs.aws.amazon.com/general/latest/gr/sigv4-calculate-signature.html
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native Implementation. Need to fix parsing ISO 8601 to try all possible formats
     @Test
     fun testSigningKey() = runTest {
         val config = AwsSigningConfig {

@@ -6,7 +6,13 @@
 package aws.smithy.kotlin.runtime.time
 
 import kotlinx.datetime.Clock
+import kotlinx.datetime.LocalDate
+import kotlinx.datetime.LocalDateTime
+import kotlinx.datetime.LocalTime
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.atStartOfDayIn
 import kotlinx.datetime.format
+import kotlinx.datetime.toInstant
 import kotlin.time.Duration
 import kotlinx.datetime.Instant as KtInstant
 
@@ -62,17 +68,22 @@ public actual class Instant(internal val delegate: KtInstant) : Comparable<Insta
         /**
          * Parse an ISO-8601 formatted string into an [Instant]
          */
-        public actual fun fromIso8601(ts: String): Instant = try {
-            var parsed = DateTimeFormats.ISO_8601.parse(ts).apply {
-                // Handle leap seconds (23:59:60 becomes 23:59:59)
-                if (second == 60) {
-                    second = 59
+        public actual fun fromIso8601(ts: String): Instant {
+            val parseException = lazy { ParseException(ts, "Failed to parse $ts into an ISO-8601 timestamp", 0) }
+
+            listOf(
+                { DateTimeFormats.ISO_8601.parse(ts).apply { if (second == 60) second = 59 }.toInstantUsingOffset() },
+                { KtInstant.parse(ts, DateTimeFormats.ISO_8601_CONDENSED) },
+                { LocalDate.parse(ts, ISO_8601_CONDENSED_DATE_LOCALDATE).atStartOfDayIn(TimeZone.UTC) },
+            ).forEach { parseFn ->
+                try {
+                    return Instant(parseFn())
+                } catch (e: IllegalArgumentException) {
+                    parseException.value.addSuppressed(e)
                 }
             }
 
-            Instant(parsed.toInstantUsingOffset())
-        } catch (e: IllegalArgumentException) {
-            throw ParseException(ts, "Failed to parse $ts into an ISO-8601 timestamp", 0)
+            throw parseException.value
         }
 
         /**
