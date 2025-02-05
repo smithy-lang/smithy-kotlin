@@ -1,10 +1,6 @@
 package aws.smithy.kotlin.runtime.collections
 
-import org.junit.jupiter.api.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertFalse
-import kotlin.test.assertNotEquals
-import kotlin.test.assertTrue
+import kotlin.test.*
 
 private val input = setOf("APPLE", "banana", "cHeRrY")
 private val variations = (input + input.map { it.lowercase() } + input.map { it.uppercase() })
