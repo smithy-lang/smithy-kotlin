@@ -7,12 +7,9 @@ package aws.smithy.kotlin.runtime.time
 
 import kotlinx.datetime.Clock
 import kotlinx.datetime.LocalDate
-import kotlinx.datetime.LocalDateTime
-import kotlinx.datetime.LocalTime
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.atStartOfDayIn
 import kotlinx.datetime.format
-import kotlinx.datetime.toInstant
 import kotlin.time.Duration
 import kotlinx.datetime.Instant as KtInstant
 

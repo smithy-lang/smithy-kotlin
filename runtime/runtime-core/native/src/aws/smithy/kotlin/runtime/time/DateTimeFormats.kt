@@ -139,7 +139,7 @@ internal object DateTimeFormats {
  * because that is a [DateTimeFormat] which requires a time component to be present.
  */
 internal val ISO_8601_CONDENSED_DATE_LOCALDATE = LocalDate.Format {
-        year()
-        monthNumber()
-        dayOfMonth()
-    }
+    year()
+    monthNumber()
+    dayOfMonth()
+}

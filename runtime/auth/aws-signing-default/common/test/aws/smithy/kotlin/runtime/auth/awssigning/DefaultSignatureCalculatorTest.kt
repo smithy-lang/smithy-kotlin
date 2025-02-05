@@ -4,7 +4,6 @@
  */
 package aws.smithy.kotlin.runtime.auth.awssigning
 
-import aws.smithy.kotlin.runtime.IgnoreNative
 import aws.smithy.kotlin.runtime.auth.awscredentials.Credentials
 import aws.smithy.kotlin.runtime.auth.awssigning.tests.DEFAULT_TEST_CREDENTIALS
 import aws.smithy.kotlin.runtime.hashing.sha256
