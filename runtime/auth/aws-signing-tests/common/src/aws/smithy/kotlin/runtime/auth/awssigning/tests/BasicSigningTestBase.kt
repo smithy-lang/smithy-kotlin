@@ -4,6 +4,7 @@
  */
 package aws.smithy.kotlin.runtime.auth.awssigning.tests
 
+import aws.smithy.kotlin.runtime.IgnoreNative
 import aws.smithy.kotlin.runtime.auth.awscredentials.Credentials
 import aws.smithy.kotlin.runtime.auth.awssigning.*
 import aws.smithy.kotlin.runtime.http.HttpBody
@@ -55,6 +56,7 @@ public abstract class BasicSigningTestBase : HasSigner {
         credentials = DEFAULT_TEST_CREDENTIALS
     }
 
+    @IgnoreNative // FIXME Re-enable after Kotlin/Native Implementation
     @Test
     public fun testSignRequestSigV4(): TestResult = runTest {
         // sanity test
@@ -83,6 +85,7 @@ public abstract class BasicSigningTestBase : HasSigner {
         assertEquals(expectedSig, result.signature.decodeToString())
     }
 
+    @IgnoreNative // FIXME Re-enable after Kotlin/Native Implementation
     @Test
     public open fun testSignRequestSigV4Asymmetric(): TestResult = runTest {
         // sanity test
@@ -165,6 +168,7 @@ public abstract class BasicSigningTestBase : HasSigner {
         return chunk
     }
 
+    @IgnoreNative // FIXME Re-enable after Kotlin/Native Implementation
     @Test
     public fun testSignChunks(): TestResult = runTest {
         val request = createChunkedTestRequest()
@@ -188,6 +192,7 @@ public abstract class BasicSigningTestBase : HasSigner {
         assertEquals(EXPECTED_FINAL_CHUNK_SIGNATURE, finalChunkResult.signature.decodeToString())
     }
 
+    @IgnoreNative // FIXME Re-enable after Kotlin/Native Implementation
     @Test
     public fun testSigningCopiesInput(): TestResult = runTest {
         // sanity test the signer doesn't mutate the input and instead copies to a new request
