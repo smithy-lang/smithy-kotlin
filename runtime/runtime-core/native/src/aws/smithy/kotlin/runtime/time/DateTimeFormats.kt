@@ -107,7 +107,12 @@ internal object DateTimeFormats {
         dayOfWeek(DayOfWeekNames.ENGLISH_ABBREVIATED)
         chars(", ")
 
-        dayOfMonth(padding = Padding.NONE)
+        alternativeParsing({
+            dayOfMonth(padding = Padding.NONE)
+        }) {
+            dayOfMonth()
+        }
+
         char(' ')
         monthName(MonthNames.ENGLISH_ABBREVIATED)
         char(' ')
