@@ -4,6 +4,7 @@
  */
 package aws.smithy.kotlin.runtime.auth.awssigning
 
+import aws.smithy.kotlin.runtime.IgnoreNative
 import aws.smithy.kotlin.runtime.auth.awscredentials.Credentials
 import aws.smithy.kotlin.runtime.auth.awssigning.tests.DEFAULT_TEST_CREDENTIALS
 import aws.smithy.kotlin.runtime.hashing.sha256
@@ -32,6 +33,7 @@ class DefaultSignatureCalculatorTest {
     }
 
     // Test adapted from https://docs.aws.amazon.com/general/latest/gr/sigv4-calculate-signature.html
+    @IgnoreNative // FIXME Re-enable after Kotlin/Native Implementation. Need to fix parsing ISO 8601 to try all possible formats
     @Test
     fun testSigningKey() = runTest {
         val config = AwsSigningConfig {
