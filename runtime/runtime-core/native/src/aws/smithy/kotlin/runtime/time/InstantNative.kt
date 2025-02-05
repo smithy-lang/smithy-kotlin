@@ -5,7 +5,6 @@
 
 package aws.smithy.kotlin.runtime.time
 
-import aws.smithy.kotlin.runtime.SdkBaseException
 import kotlinx.datetime.Clock
 import kotlinx.datetime.format
 import kotlin.time.Duration
