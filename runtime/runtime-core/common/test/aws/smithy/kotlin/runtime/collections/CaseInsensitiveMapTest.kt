@@ -4,8 +4,10 @@
  */
 package aws.smithy.kotlin.runtime.collections
 
+import org.junit.jupiter.api.Assertions.assertFalse
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 
 class CaseInsensitiveMapTest {
     @Test
@@ -17,6 +19,31 @@ class CaseInsensitiveMapTest {
         assertEquals("json", map["Content-Type"])
         assertEquals("json", map["content-type"])
         assertEquals("json", map["CONTENT-TYPE"])
+    }
+
+    @Test
+    fun testContains() {
+        val map = CaseInsensitiveMap<String>()
+        map["A"] = "apple"
+        map["B"] = "banana"
+        map["C"] = "cherry"
+
+        assertTrue("C" in map)
+        assertTrue("c" in map)
+        assertFalse("D" in map)
+    }
+
+    @Test
+    fun testKeysContains() {
+        val map = CaseInsensitiveMap<String>()
+        map["A"] = "apple"
+        map["B"] = "banana"
+        map["C"] = "cherry"
+        val keys = map.keys
+
+        assertTrue("C" in keys)
+        assertTrue("c" in keys)
+        assertFalse("D" in keys)
     }
 
     @Test

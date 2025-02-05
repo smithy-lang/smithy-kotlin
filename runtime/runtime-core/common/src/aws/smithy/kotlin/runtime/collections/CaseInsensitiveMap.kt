@@ -6,16 +6,6 @@ package aws.smithy.kotlin.runtime.collections
 
 import aws.smithy.kotlin.runtime.InternalApi
 
-private class CaseInsensitiveString(val original: String) {
-    val normalized = original.lowercase()
-    override fun hashCode() = normalized.hashCode()
-    override fun equals(other: Any?) = other is CaseInsensitiveString && normalized == other.normalized
-    override fun toString() = original
-}
-
-private fun String.toInsensitive(): CaseInsensitiveString =
-    CaseInsensitiveString(this)
-
 /**
  * Map of case-insensitive [String] to [Value]
  */
@@ -30,7 +20,7 @@ internal class CaseInsensitiveMap<Value> : MutableMap<String, Value> {
 
     override fun containsValue(value: Value): Boolean = impl.containsValue(value)
 
-    override fun get(key: String): Value? = impl.get(key.toInsensitive())
+    override fun get(key: String): Value? = impl[key.toInsensitive()]
 
     override fun isEmpty(): Boolean = impl.isEmpty()
 
@@ -40,7 +30,7 @@ internal class CaseInsensitiveMap<Value> : MutableMap<String, Value> {
         }.toMutableSet()
 
     override val keys: MutableSet<String>
-        get() = impl.keys.map { it.normalized }.toMutableSet()
+        get() = CaseInsensitiveMutableStringSet(impl.keys)
 
     override val values: MutableCollection<Value>
         get() = impl.values
