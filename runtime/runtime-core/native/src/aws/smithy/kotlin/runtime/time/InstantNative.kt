@@ -66,7 +66,7 @@ public actual class Instant(internal val delegate: KtInstant) : Comparable<Insta
          * Parse an ISO-8601 formatted string into an [Instant]
          */
         public actual fun fromIso8601(ts: String): Instant {
-            val parseException = lazy { ParseException(ts, "Failed to parse $ts into an ISO-8601 timestamp", 0) }
+            val parseException =  ParseException(ts, "Failed to parse $ts into an ISO-8601 timestamp", 0)
 
             listOf(
                 { DateTimeFormats.ISO_8601.parse(ts).apply { if (second == 60) second = 59 }.toInstantUsingOffset() },
@@ -76,11 +76,11 @@ public actual class Instant(internal val delegate: KtInstant) : Comparable<Insta
                 try {
                     return Instant(parseFn())
                 } catch (e: IllegalArgumentException) {
-                    parseException.value.addSuppressed(e)
+                    parseException.addSuppressed(e)
                 }
             }
 
-            throw parseException.value
+            throw parseException
         }
 
         /**
