@@ -306,6 +306,7 @@ public class aws/smithy/kotlin/runtime/collections/ValuesMapImpl : aws/smithy/ko
 	public fun getAll (Ljava/lang/String;)Ljava/util/List;
 	public fun getCaseInsensitiveName ()Z
 	protected final fun getValues ()Ljava/util/Map;
+	public fun hashCode ()I
 	public fun isEmpty ()Z
 	public fun names ()Ljava/util/Set;
 }
