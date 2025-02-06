@@ -91,6 +91,8 @@ jobs:
 
       - name: Configure Gradle
         uses: awslabs/aws-kotlin-repo-tools/.github/actions/configure-gradle@main
+        with:
+          working-directory: 'smithy-kotlin'
 
       - name: Setup build
         uses: ./smithy-kotlin/.github/actions/setup-build
@@ -157,6 +159,8 @@ jobs:
 
       - name: Configure Gradle
         uses: awslabs/aws-kotlin-repo-tools/.github/actions/configure-gradle@main
+        with:
+          working-directory: 'smithy-kotlin'
 
       - name: Test
         working-directory: ./smithy-kotlin
@@ -187,6 +191,8 @@ jobs:
 
       - name: Configure Gradle
         uses: awslabs/aws-kotlin-repo-tools/.github/actions/configure-gradle@main
+        with:
+          working-directory: 'smithy-kotlin'
 
       - name: Test
         working-directory: ./smithy-kotlin
