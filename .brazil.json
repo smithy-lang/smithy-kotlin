@@ -10,7 +10,7 @@
     "aws.sdk.kotlin.crt:aws-crt-kotlin:0.9.*": "AwsCrtKotlin-0.9.x",
     "aws.sdk.kotlin.crt:aws-crt-kotlin:0.8.*": "AwsCrtKotlin-0.8.x",
     "com.squareup.okhttp3:okhttp:4.*": "OkHttp3-4.x",
-    "org.jetbrains.kotlinx:kotlinx-datetime:0.*": "KotlinxDatetimeJvm-0.x"
+    "org.jetbrains.kotlinx:kotlinx-datetime-jvm:0.*": "KotlinxDatetimeJvm-0.x"
   },
   "packageHandlingRules": {
     "versioning": {
