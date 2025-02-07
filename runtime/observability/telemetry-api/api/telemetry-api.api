@@ -439,6 +439,7 @@ public final class aws/smithy/kotlin/runtime/telemetry/trace/TraceSpan$Companion
 }
 
 public final class aws/smithy/kotlin/runtime/telemetry/trace/TraceSpan$DefaultImpls {
+	public static fun asContextElement (Laws/smithy/kotlin/runtime/telemetry/trace/TraceSpan;)Lkotlin/coroutines/CoroutineContext;
 	public static synthetic fun emitEvent$default (Laws/smithy/kotlin/runtime/telemetry/trace/TraceSpan;Ljava/lang/String;Laws/smithy/kotlin/runtime/collections/Attributes;ILjava/lang/Object;)V
 }
 
