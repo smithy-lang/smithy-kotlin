@@ -364,6 +364,7 @@ public final class aws/smithy/kotlin/runtime/telemetry/metrics/UpDownCounter$Def
 
 public abstract class aws/smithy/kotlin/runtime/telemetry/trace/AbstractTraceSpan : aws/smithy/kotlin/runtime/telemetry/trace/TraceSpan {
 	public fun <init> ()V
+	public fun asContextElement ()Lkotlin/coroutines/CoroutineContext;
 	public fun close ()V
 	public fun emitEvent (Ljava/lang/String;Laws/smithy/kotlin/runtime/collections/Attributes;)V
 	public fun getSpanContext ()Laws/smithy/kotlin/runtime/telemetry/trace/SpanContext;
@@ -424,6 +425,7 @@ public final class aws/smithy/kotlin/runtime/telemetry/trace/SpanStatus : java/l
 
 public abstract interface class aws/smithy/kotlin/runtime/telemetry/trace/TraceSpan : aws/smithy/kotlin/runtime/telemetry/context/Scope {
 	public static final field Companion Laws/smithy/kotlin/runtime/telemetry/trace/TraceSpan$Companion;
+	public abstract fun asContextElement ()Lkotlin/coroutines/CoroutineContext;
 	public abstract fun close ()V
 	public abstract fun emitEvent (Ljava/lang/String;Laws/smithy/kotlin/runtime/collections/Attributes;)V
 	public abstract fun getSpanContext ()Laws/smithy/kotlin/runtime/telemetry/trace/SpanContext;

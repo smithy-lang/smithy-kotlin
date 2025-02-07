@@ -6,6 +6,8 @@ package aws.smithy.kotlin.runtime.telemetry.trace
 
 import aws.smithy.kotlin.runtime.collections.AttributeKey
 import aws.smithy.kotlin.runtime.collections.Attributes
+import kotlin.coroutines.CoroutineContext
+import kotlin.coroutines.EmptyCoroutineContext
 
 /**
  * An abstract implementation of a trace span. By default, this class uses no-op implementations for all members unless
@@ -18,4 +20,5 @@ public abstract class AbstractTraceSpan : TraceSpan {
     override operator fun <T : Any> set(key: AttributeKey<T>, value: T) { }
     override fun mergeAttributes(attributes: Attributes) { }
     override fun close() { }
+    override fun asContextElement(): CoroutineContext = EmptyCoroutineContext
 }
