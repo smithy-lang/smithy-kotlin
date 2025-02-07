@@ -10,6 +10,7 @@ import aws.smithy.kotlin.runtime.collections.Attributes
 import aws.smithy.kotlin.runtime.collections.emptyAttributes
 import aws.smithy.kotlin.runtime.telemetry.context.Scope
 import kotlin.coroutines.CoroutineContext
+import kotlin.coroutines.EmptyCoroutineContext
 
 /**
  * Represents a single operation/task within a trace. Each trace contains a root span and
@@ -28,7 +29,10 @@ public interface TraceSpan : Scope {
      */
     public val spanContext: SpanContext
 
-    public fun asContextElement(): CoroutineContext
+    /**
+     * A representation of this span as a [CoroutineContext] element
+     */
+    public fun asContextElement(): CoroutineContext = EmptyCoroutineContext
 
     /**
      * Set an attribute on the span
