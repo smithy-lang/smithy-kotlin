@@ -63,7 +63,7 @@ internal class CaseInsensitiveMap<Value> : MutableMap<String, Value> {
             return value
         }
 
-        override fun hashCode(): Int = 17 * 31 + key!!.hashCode() + value!!.hashCode()
+        override fun hashCode(): Int = key.hashCode() xor value.hashCode() // Match JVM & K/N stdlib implementations
 
         override fun equals(other: Any?): Boolean {
             if (other == null || other !is Map.Entry<*, *>) return false

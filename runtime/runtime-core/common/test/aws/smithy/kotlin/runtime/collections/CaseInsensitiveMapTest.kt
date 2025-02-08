@@ -77,6 +77,22 @@ class CaseInsensitiveMapTest {
     }
 
     @Test
+    fun testEntriesEqualityWithNormalMap() {
+        val left = CaseInsensitiveMap<String>()
+        left["A"] = "apple"
+        left["B"] = "banana"
+        left["C"] = "cherry"
+
+        val right = mutableMapOf(
+            "c" to "cherry",
+            "b" to "banana",
+            "a" to "apple",
+        )
+
+        assertEquals(left.entries, right.entries)
+    }
+
+    @Test
     fun testToString() {
         val map = CaseInsensitiveMap<String>()
         map["A"] = "apple"
