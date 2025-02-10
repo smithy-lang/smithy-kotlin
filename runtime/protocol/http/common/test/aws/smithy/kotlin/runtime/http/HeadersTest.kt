@@ -51,8 +51,8 @@ class HeadersTest {
             "c" to listOf("crocodile"),
         )
 
-        assertEquals(firstExpected.entries.toList(), first.entries().toList())
-        assertEquals(secondExpected.entries.toList(), second.entries().toList())
+        assertEquals(firstExpected.entries, first.entries())
+        assertEquals(secondExpected.entries, second.entries())
     }
 
     @Test
