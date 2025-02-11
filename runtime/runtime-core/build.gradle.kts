@@ -22,13 +22,13 @@ kotlin {
                 implementation(libs.okio)
                 // Coroutines' locking features are used in retry token bucket implementations
                 api(libs.kotlinx.coroutines.core)
+                implementation(libs.kotlinx.datetime)
             }
         }
 
         nativeMain {
             dependencies {
                 api(libs.crt.kotlin)
-                implementation(libs.kotlinx.datetime)
             }
         }
 

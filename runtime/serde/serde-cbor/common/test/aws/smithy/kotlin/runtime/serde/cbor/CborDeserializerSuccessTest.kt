@@ -4,7 +4,6 @@
  */
 package aws.smithy.kotlin.runtime.serde.cbor
 
-import aws.smithy.kotlin.runtime.IgnoreNative
 import aws.smithy.kotlin.runtime.io.SdkBuffer
 import aws.smithy.kotlin.runtime.serde.SdkFieldDescriptor
 import aws.smithy.kotlin.runtime.serde.SerialKind
@@ -25,7 +24,6 @@ internal fun String.toByteArray(): ByteArray = this
     .toByteArray()
 
 class CborDeserializerSuccessTest {
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun `atomic - undefined`() {
         val payload = "0xf7".toByteArray()
@@ -37,7 +35,6 @@ class CborDeserializerSuccessTest {
         assertEquals(null, result)
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun `atomic - float64 - 1dot625`() {
         val payload = "0xfb3ffa000000000000".toByteArray()
@@ -49,7 +46,6 @@ class CborDeserializerSuccessTest {
         assertEquals(1.625, result)
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun `atomic - uint - 0 - max`() {
         val payload = "0x17".toByteArray()
@@ -61,7 +57,6 @@ class CborDeserializerSuccessTest {
         assertEquals(23, result)
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun `atomic - uint - 8 - min`() {
         val payload = "0x1b0000000000000000".toByteArray()
@@ -73,7 +68,6 @@ class CborDeserializerSuccessTest {
         assertEquals(0uL, result)
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun `atomic - uint - 8 - max`() {
         val payload = "0x1bffffffffffffffff".toByteArray()
@@ -82,7 +76,6 @@ class CborDeserializerSuccessTest {
         assertEquals(ULong.MAX_VALUE, aws.smithy.kotlin.runtime.serde.cbor.encoding.UInt.decode(buffer).value)
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun `atomic - negint - 8 - min`() {
         val payload = "0x3b0000000000000000".toByteArray()
@@ -94,7 +87,6 @@ class CborDeserializerSuccessTest {
         assertEquals(-1, result)
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun `atomic - true`() {
         val payload = "0xf5".toByteArray()
@@ -106,7 +98,6 @@ class CborDeserializerSuccessTest {
         assertEquals(true, result)
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun `atomic - uint - 4 - min`() {
         val payload = "0x1a00000000".toByteArray()
@@ -118,7 +109,6 @@ class CborDeserializerSuccessTest {
         assertEquals(0, result)
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun `atomic - uint - 4 - max`() {
         val payload = "0x1affffffff".toByteArray()
@@ -128,7 +118,6 @@ class CborDeserializerSuccessTest {
         assertEquals(UInt.MAX_VALUE, aws.smithy.kotlin.runtime.serde.cbor.encoding.UInt.decode(buffer).value.toUInt())
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun `atomic - negint - 1 - min`() {
         val payload = "0x3800".toByteArray()
@@ -140,7 +129,6 @@ class CborDeserializerSuccessTest {
         assertEquals(-1, result)
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun `atomic - float16 - subnormal`() {
         val payload = "0xf90050".toByteArray()
@@ -152,7 +140,6 @@ class CborDeserializerSuccessTest {
         assertEquals(4.7683716E-6f, result)
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun `atomic - float16 - NaN - LSB`() {
         val payload = "0xf97c01".toByteArray()
@@ -164,7 +151,6 @@ class CborDeserializerSuccessTest {
         assertEquals(Float.NaN, result)
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun `atomic - uint - 1 - min`() {
         val payload = "0x1800".toByteArray()
@@ -176,7 +162,6 @@ class CborDeserializerSuccessTest {
         assertEquals(UByte.MIN_VALUE, result)
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun `atomic - negint - 0 - min`() {
         val payload = "0x20".toByteArray()
@@ -188,7 +173,6 @@ class CborDeserializerSuccessTest {
         assertEquals(-1, result)
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun `atomic - float16 - -Inf`() {
         val payload = "0xf9fc00".toByteArray()
@@ -200,7 +184,6 @@ class CborDeserializerSuccessTest {
         assertEquals(Float.NEGATIVE_INFINITY, result)
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun `atomic - negint - 8 - max`() {
         val payload = "0x3bfffffffffffffffe".toByteArray()
@@ -209,7 +192,6 @@ class CborDeserializerSuccessTest {
         assertEquals(ULong.MAX_VALUE, result)
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun `atomic - uint - 0 - min`() {
         val payload = "0x00".toByteArray()
@@ -221,7 +203,6 @@ class CborDeserializerSuccessTest {
         assertEquals(0u, result)
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun `atomic - uint - 1 - max`() {
         val payload = "0x18ff".toByteArray()
@@ -230,7 +211,6 @@ class CborDeserializerSuccessTest {
         assertEquals(255u, aws.smithy.kotlin.runtime.serde.cbor.encoding.UInt.decode(buffer).value)
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun `atomic - uint - 2 - min`() {
         val payload = "0x190000".toByteArray()
@@ -242,7 +222,6 @@ class CborDeserializerSuccessTest {
         assertEquals(0u, result)
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun `atomic - negint - 1 - max`() {
         val payload = "0x38ff".toByteArray()
@@ -254,7 +233,6 @@ class CborDeserializerSuccessTest {
         assertEquals(-256, result)
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun `atomic - negint - 2 - min`() {
         val payload = "0x390000".toByteArray()
@@ -266,7 +244,6 @@ class CborDeserializerSuccessTest {
         assertEquals(-1, result)
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun `atomic - float64 - +Inf`() {
         val payload = "0xfb7ff0000000000000".toByteArray()
@@ -278,7 +255,6 @@ class CborDeserializerSuccessTest {
         assertEquals(Double.fromBits(9218868437227405312), result)
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun `atomic - negint - 4 - min`() {
         val payload = "0x3a00000000".toByteArray()
@@ -290,7 +266,6 @@ class CborDeserializerSuccessTest {
         assertEquals(-1, result)
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun `atomic - negint - 4 - max`() {
         val payload = "0x3affffffff".toByteArray()
@@ -303,7 +278,6 @@ class CborDeserializerSuccessTest {
         assertEquals(res, result)
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun `atomic - float16 - NaN - MSB`() {
         val payload = "0xf97e00".toByteArray()
@@ -315,7 +289,6 @@ class CborDeserializerSuccessTest {
         assertEquals(Float.NaN, result)
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun `atomic - float32 - +Inf`() {
         val payload = "0xfa7f800000".toByteArray()
@@ -327,7 +300,6 @@ class CborDeserializerSuccessTest {
         assertEquals(Float.POSITIVE_INFINITY, result)
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun `atomic - uint - 2 - max`() {
         val payload = "0x19ffff".toByteArray()
@@ -336,7 +308,6 @@ class CborDeserializerSuccessTest {
         assertEquals(UShort.MAX_VALUE, aws.smithy.kotlin.runtime.serde.cbor.encoding.UInt.decode(buffer).value.toUShort())
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun `atomic - negint - 2 - max`() {
         val payload = "0x39ffff".toByteArray()
@@ -345,7 +316,6 @@ class CborDeserializerSuccessTest {
         assertEquals(65536u, result)
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun `atomic - false`() {
         val payload = "0xf4".toByteArray()
@@ -357,7 +327,6 @@ class CborDeserializerSuccessTest {
         assertEquals(false, result)
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun `atomic - null`() {
         val payload = "0xf6".toByteArray()
@@ -369,7 +338,6 @@ class CborDeserializerSuccessTest {
         assertEquals(null, result)
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun `atomic - negint - 0 - max`() {
         val payload = "0x37".toByteArray()
@@ -381,7 +349,6 @@ class CborDeserializerSuccessTest {
         assertEquals(-24, result)
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun `atomic - float16 - +Inf`() {
         val payload = "0xf97c00".toByteArray()
@@ -393,7 +360,6 @@ class CborDeserializerSuccessTest {
         assertEquals(Float.POSITIVE_INFINITY, result)
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun `atomic - float32 - 1dot625`() {
         val payload = "0xfa3fd00000".toByteArray()
@@ -405,7 +371,6 @@ class CborDeserializerSuccessTest {
         assertEquals(1.625f, result)
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun `definite slice - len = 0`() {
         val payload = "0x40".toByteArray()
@@ -417,7 +382,6 @@ class CborDeserializerSuccessTest {
         assertEquals(0, result.size)
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun `definite slice - len greater than 0`() {
         val payload = "0x43666f6f".toByteArray()
@@ -434,7 +398,6 @@ class CborDeserializerSuccessTest {
         assertEquals(3, result.size)
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun `definite string - len = 0`() {
         val payload = "0x60".toByteArray()
@@ -446,7 +409,6 @@ class CborDeserializerSuccessTest {
         assertEquals("", result)
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun `definite string - len greater than 0`() {
         val payload = "0x63666f6f".toByteArray()
@@ -458,7 +420,6 @@ class CborDeserializerSuccessTest {
         assertEquals("foo", result)
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun `indefinite slice - len greater than 0`() {
         val payload = "0x5f43666f6f40ff".toByteArray()
@@ -475,7 +436,6 @@ class CborDeserializerSuccessTest {
         assertEquals(3, result.size)
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun `indefinite slice - len greater than 0 - len greater than 0`() {
         val payload = "0x5f43666f6f43666f6fff".toByteArray()
@@ -490,7 +450,6 @@ class CborDeserializerSuccessTest {
         assertEquals(expected.size, result.size)
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun `indefinite slice - len = 0`() {
         val payload = "0x5fff".toByteArray()
@@ -502,7 +461,6 @@ class CborDeserializerSuccessTest {
         assertEquals(0, result.size)
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun `indefinite slice - len = 0 explicit`() {
         val payload = "0x5f40ff".toByteArray()
@@ -514,7 +472,6 @@ class CborDeserializerSuccessTest {
         assertEquals(0, result.size)
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun `indefinite slice - len = 0 - len greater than 0`() {
         val payload = "0x5f4043666f6fff".toByteArray()
@@ -529,7 +486,6 @@ class CborDeserializerSuccessTest {
         assertEquals(expected.size, result.size)
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun `indefinite string - len = 0`() {
         val payload = "0x7fff".toByteArray()
@@ -541,7 +497,6 @@ class CborDeserializerSuccessTest {
         assertEquals("", result)
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun `indefinite string - len = 0 - explicit`() {
         val payload = "0x7f60ff".toByteArray()
@@ -553,7 +508,6 @@ class CborDeserializerSuccessTest {
         assertEquals("", result)
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun `indefinite string - len = 0 - len greater than 0`() {
         val payload = "0x7f6063666f6fff".toByteArray()
@@ -565,7 +519,6 @@ class CborDeserializerSuccessTest {
         assertEquals("foo", result)
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun `indefinite string - len greater than 0 - len = 0`() {
         val payload = "0x7f63666f6f60ff".toByteArray()
@@ -577,7 +530,6 @@ class CborDeserializerSuccessTest {
         assertEquals("foo", result)
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun `indefinite string - len greater than 0 - len greater than 0`() {
         val payload = "0x7f63666f6f63666f6fff".toByteArray()
@@ -589,7 +541,6 @@ class CborDeserializerSuccessTest {
         assertEquals("foofoo", result)
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun `list of one uint - 1 - max`() {
         val payload = "0x8118ff".toByteArray()
@@ -607,7 +558,6 @@ class CborDeserializerSuccessTest {
         assertEquals(255u, actual[0])
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun `list of one uint - 8 - min`() {
         val payload = "0x811b0000000000000000".toByteArray()
@@ -625,7 +575,6 @@ class CborDeserializerSuccessTest {
         assertEquals(0, actual[0])
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun `indefinite list of uint - 1 - min`() {
         val payload = "0x9f1800ff".toByteArray()
@@ -643,7 +592,6 @@ class CborDeserializerSuccessTest {
         assertEquals(0u, actual[0])
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun `indefinite list of uint - 2 - max`() {
         val payload = "0x9f19ffffff".toByteArray()
@@ -661,7 +609,6 @@ class CborDeserializerSuccessTest {
         assertEquals(UShort.MAX_VALUE, actual[0])
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun `indefinite list of negint - 2 - min`() {
         val payload = "0x9f390000ff".toByteArray()
@@ -679,7 +626,6 @@ class CborDeserializerSuccessTest {
         assertEquals(-1, actual[0])
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun `list of uint - 4 - max`() {
         val payload = "0x811affffffff".toByteArray()
@@ -697,7 +643,6 @@ class CborDeserializerSuccessTest {
         assertEquals(UInt.MAX_VALUE, actual[0])
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun `indefinite list of uint - 8 - min`() {
         val payload = "0x9f1b0000000000000000ff".toByteArray()
@@ -715,7 +660,6 @@ class CborDeserializerSuccessTest {
         assertEquals(ULong.MIN_VALUE, actual[0])
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun `indefinite list of negint - 2 - max`() {
         val payload = "0x9f39ffffff".toByteArray()
@@ -733,7 +677,6 @@ class CborDeserializerSuccessTest {
         assertEquals(-65536, actual[0])
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun `indefinite list of float16 - NaN - LSB`() {
         val payload = "0x9ff97c01ff".toByteArray()
@@ -751,7 +694,6 @@ class CborDeserializerSuccessTest {
         assertEquals(Float.NaN, actual[0])
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun `list of negint - 1 - max`() {
         val payload = "0x8138ff".toByteArray()
@@ -769,7 +711,6 @@ class CborDeserializerSuccessTest {
         assertEquals(-256, actual[0])
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun `list of negint - 2 - min`() {
         val payload = "0x81390000".toByteArray()
@@ -787,7 +728,6 @@ class CborDeserializerSuccessTest {
         assertEquals(-1, actual[0])
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun `list of null`() {
         val payload = "0x81f6".toByteArray()
@@ -801,7 +741,6 @@ class CborDeserializerSuccessTest {
         }
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun `list of float16 -Inf`() {
         val payload = "0x81f9fc00".toByteArray()
@@ -819,7 +758,6 @@ class CborDeserializerSuccessTest {
         assertEquals(Float.NEGATIVE_INFINITY, actual[0])
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun `indefinite list of uint - 4 - min`() {
         val payload = "0x9f1a00000000ff".toByteArray()
@@ -837,7 +775,6 @@ class CborDeserializerSuccessTest {
         assertEquals(UInt.MIN_VALUE, actual[0])
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun `list of uint - 1 - min`() {
         val payload = "0x811800".toByteArray()
@@ -855,7 +792,6 @@ class CborDeserializerSuccessTest {
         assertEquals(UByte.MIN_VALUE, actual[0])
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun `indefinite list of uint - 0 - max`() {
         val payload = "0x9f17ff".toByteArray()
@@ -873,7 +809,6 @@ class CborDeserializerSuccessTest {
         assertEquals(23u, actual[0])
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun `indefinite list of negint - 0 - min`() {
         val payload = "0x9f20ff".toByteArray()
@@ -891,7 +826,6 @@ class CborDeserializerSuccessTest {
         assertEquals(-1, actual[0])
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun `indefinite list of negint - 1 - max`() {
         val payload = "0x9f38ffff".toByteArray()
@@ -909,7 +843,6 @@ class CborDeserializerSuccessTest {
         assertEquals(-256, actual[0])
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun `indefinite list of null`() {
         val payload = "0x9ff6ff".toByteArray()
@@ -923,7 +856,6 @@ class CborDeserializerSuccessTest {
         }
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun `indefinite list of uint - 1 - max`() {
         val payload = "0x9f18ffff".toByteArray()
@@ -941,7 +873,6 @@ class CborDeserializerSuccessTest {
         assertEquals(UByte.MAX_VALUE, actual[0])
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun `indefinite list of uint - 4 - max`() {
         val payload = "0x9f1affffffffff".toByteArray()
@@ -959,7 +890,6 @@ class CborDeserializerSuccessTest {
         assertEquals(UInt.MAX_VALUE, actual[0])
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun `indefinite list of _ uint - 8 - max`() {
         val payload = "0x9f1bffffffffffffffffff".toByteArray()
@@ -982,7 +912,6 @@ class CborDeserializerSuccessTest {
         assertEquals(ULong.MAX_VALUE, result)
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun `indefinite list of boolean true`() {
         val payload = "0x9ff5ff".toByteArray()
@@ -1000,7 +929,6 @@ class CborDeserializerSuccessTest {
         assertEquals(true, actual[0])
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun `indefinite list of undefined`() {
         val payload = "0x9ff7ff".toByteArray()
@@ -1018,7 +946,6 @@ class CborDeserializerSuccessTest {
         assertEquals(0, actual.size)
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun `list of uint - 0 - max`() {
         val payload = "0x8117".toByteArray()
@@ -1036,7 +963,6 @@ class CborDeserializerSuccessTest {
         assertEquals(23u, actual[0])
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun `list of uint - 8 - max`() {
         val payload = "0x811bffffffffffffffff".toByteArray()
@@ -1057,7 +983,6 @@ class CborDeserializerSuccessTest {
         assertEquals(ULong.MAX_VALUE, result)
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun `list of negint - 0 - min`() {
         val payload = "0x8120".toByteArray()
@@ -1075,7 +1000,6 @@ class CborDeserializerSuccessTest {
         assertEquals(-1, actual[0])
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun `list of negint - 0 - max`() {
         val payload = "0x8137".toByteArray()
@@ -1093,7 +1017,6 @@ class CborDeserializerSuccessTest {
         assertEquals(-24, actual[0])
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun `list of negint - 4 - min`() {
         val payload = "0x813a00000000".toByteArray()
@@ -1111,7 +1034,6 @@ class CborDeserializerSuccessTest {
         assertEquals(-1, actual[0])
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun `list of boolean true`() {
         val payload = "0x81f5".toByteArray()
@@ -1129,7 +1051,6 @@ class CborDeserializerSuccessTest {
         assertEquals(true, actual[0])
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun `list of float32`() {
         val payload = "0x81fa7f800000".toByteArray()
@@ -1147,7 +1068,6 @@ class CborDeserializerSuccessTest {
         assertEquals(Float.fromBits(2139095040), actual[0])
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun `list of float64`() {
         val payload = "0x81fb7ff0000000000000".toByteArray()
@@ -1165,7 +1085,6 @@ class CborDeserializerSuccessTest {
         assertEquals(Double.fromBits(9218868437227405312), actual[0])
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun `indefinite list of uint - 2 - min`() {
         val payload = "0x9f190000ff".toByteArray()
@@ -1183,7 +1102,6 @@ class CborDeserializerSuccessTest {
         assertEquals(UShort.MIN_VALUE, actual[0])
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun `indefinite list of float16 - NaN - MSB`() {
         val payload = "0x9ff97e00ff".toByteArray()
@@ -1201,7 +1119,6 @@ class CborDeserializerSuccessTest {
         assertEquals(Float.NaN, actual[0])
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun `indefinite list of negint - 0 - max`() {
         val payload = "0x9f37ff".toByteArray()
@@ -1219,7 +1136,6 @@ class CborDeserializerSuccessTest {
         assertEquals(-24, actual[0])
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun `indefinite list of negint - 1 - min`() {
         val payload = "0x9f3800ff".toByteArray()
@@ -1237,7 +1153,6 @@ class CborDeserializerSuccessTest {
         assertEquals(-1, actual[0])
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun `indefinite list of negint - 8 - min`() {
         val payload = "0x9f3b0000000000000000ff".toByteArray()
@@ -1255,7 +1170,6 @@ class CborDeserializerSuccessTest {
         assertEquals(-1, actual[0])
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun `indefinite list of negint - 8 - max`() {
         val payload = "0x9f3bfffffffffffffffeff".toByteArray()
@@ -1277,7 +1191,6 @@ class CborDeserializerSuccessTest {
         assertEquals(ULong.MAX_VALUE, result)
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun `list of boolean false`() {
         val payload = "0x81f4".toByteArray()
@@ -1295,7 +1208,6 @@ class CborDeserializerSuccessTest {
         assertEquals(false, actual[0])
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun `indefinite list of uint - 0 - min`() {
         val payload = "0x9f00ff".toByteArray()
@@ -1313,7 +1225,6 @@ class CborDeserializerSuccessTest {
         assertEquals(0, actual[0])
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun `indefinite list of negint - 4 - min`() {
         val payload = "0x9f3a00000000ff".toByteArray()
@@ -1331,7 +1242,6 @@ class CborDeserializerSuccessTest {
         assertEquals(-1, actual[0])
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun `indefinite list of negint - 4 - max`() {
         val payload = "0x9f3affffffffff".toByteArray()
@@ -1349,7 +1259,6 @@ class CborDeserializerSuccessTest {
         assertEquals(-4294967296, actual[0])
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun `indefinite list of float16 - +Inf`() {
         val payload = "0x9ff97c00ff".toByteArray()
@@ -1367,7 +1276,6 @@ class CborDeserializerSuccessTest {
         assertEquals(Float.POSITIVE_INFINITY, actual[0])
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun `list of uint - 0 - min`() {
         val payload = "0x8100".toByteArray()
@@ -1385,7 +1293,6 @@ class CborDeserializerSuccessTest {
         assertEquals(0u, actual[0])
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun `list of negint - 1 - min`() {
         val payload = "0x813800".toByteArray()
@@ -1403,7 +1310,6 @@ class CborDeserializerSuccessTest {
         assertEquals(-1, actual[0])
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun `indefinite list of float16 - -Inf`() {
         val payload = "0x9ff9fc00ff".toByteArray()
@@ -1421,7 +1327,6 @@ class CborDeserializerSuccessTest {
         assertEquals(Float.NEGATIVE_INFINITY, actual[0])
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun `indefinite list of float32`() {
         val payload = "0x9ffa7f800000ff".toByteArray()
@@ -1439,7 +1344,6 @@ class CborDeserializerSuccessTest {
         assertEquals(Float.fromBits(2139095040), actual[0])
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun `list of uint - 2 - min`() {
         val payload = "0x81190000".toByteArray()
@@ -1457,7 +1361,6 @@ class CborDeserializerSuccessTest {
         assertEquals(UShort.MIN_VALUE, actual[0])
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun `list of uint - 4 - min`() {
         val payload = "0x811a00000000".toByteArray()
@@ -1475,7 +1378,6 @@ class CborDeserializerSuccessTest {
         assertEquals(UInt.MIN_VALUE, actual[0])
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun `list of float16 - +Inf`() {
         val payload = "0x81f97c00".toByteArray()
@@ -1493,7 +1395,6 @@ class CborDeserializerSuccessTest {
         assertEquals(Float.POSITIVE_INFINITY, actual[0])
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun `indefinite list of float64`() {
         val payload = "0x9ffb7ff0000000000000ff".toByteArray()
@@ -1511,7 +1412,6 @@ class CborDeserializerSuccessTest {
         assertEquals(Double.fromBits(9218868437227405312), actual[0])
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun `list of float16 - NaN - MSB`() {
         val payload = "0x81f97e00".toByteArray()
@@ -1529,7 +1429,6 @@ class CborDeserializerSuccessTest {
         assertEquals(Float.NaN, actual[0])
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun `list of float16 - NaN - LSB`() {
         val payload = "0x81f97c01".toByteArray()
@@ -1547,7 +1446,6 @@ class CborDeserializerSuccessTest {
         assertEquals(Float.NaN, actual[0])
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun `indefinite list of boolean false`() {
         val payload = "0x9ff4ff".toByteArray()
@@ -1565,7 +1463,6 @@ class CborDeserializerSuccessTest {
         assertEquals(false, actual[0])
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun `list of negint - 8 - min`() {
         val payload = "0x813b0000000000000000".toByteArray()
@@ -1583,7 +1480,6 @@ class CborDeserializerSuccessTest {
         assertEquals(-1, actual[0])
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun `list of negint - 8 - max`() {
         val payload = "0x813bfffffffffffffffe".toByteArray()
@@ -1605,7 +1501,6 @@ class CborDeserializerSuccessTest {
         assertEquals(ULong.MAX_VALUE, result)
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun `list of undefined`() {
         val payload = "0x81f7".toByteArray()
@@ -1619,7 +1514,6 @@ class CborDeserializerSuccessTest {
         }
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun `list of uint - 2 - max`() {
         val payload = "0x8119ffff".toByteArray()
@@ -1637,7 +1531,6 @@ class CborDeserializerSuccessTest {
         assertEquals(UShort.MAX_VALUE, actual[0])
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun `list of negint - 2 - max`() {
         val payload = "0x8139ffff".toByteArray()
@@ -1655,7 +1548,6 @@ class CborDeserializerSuccessTest {
         assertEquals(-65536, actual[0])
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun `list of negint - 4 - max`() {
         val payload = "0x813affffffff".toByteArray()
@@ -1673,7 +1565,6 @@ class CborDeserializerSuccessTest {
         assertEquals(-4294967296, actual[0])
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun `map - _ uint - 8 - max`() {
         val payload = "0xbf63666f6f1bffffffffffffffffff".toByteArray()
@@ -1697,7 +1588,6 @@ class CborDeserializerSuccessTest {
         assertEquals(ULong.MAX_VALUE, result)
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun `map of null`() {
         val payload = "0xa163666f6ff6".toByteArray()
@@ -1716,7 +1606,6 @@ class CborDeserializerSuccessTest {
         assertEquals(null, actual.entries.first().value)
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun `map - _ negint - 4 - max`() {
         val payload = "0xbf63666f6f3affffffffff".toByteArray()
@@ -1735,7 +1624,6 @@ class CborDeserializerSuccessTest {
         assertEquals(-4294967296, actual.entries.first().value)
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun `map - _ float16 - -Inf`() {
         val payload = "0xbf63666f6ff9fc00ff".toByteArray()
@@ -1754,7 +1642,6 @@ class CborDeserializerSuccessTest {
         assertEquals(Float.NEGATIVE_INFINITY, actual.entries.first().value)
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun `map - uint - 2 - max`() {
         val payload = "0xa163666f6f19ffff".toByteArray()
@@ -1773,7 +1660,6 @@ class CborDeserializerSuccessTest {
         assertEquals(UShort.MAX_VALUE, actual.entries.first().value)
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun `map - negint - 1 - min`() {
         val payload = "0xa163666f6f3800".toByteArray()
@@ -1792,7 +1678,6 @@ class CborDeserializerSuccessTest {
         assertEquals(-1, actual.entries.first().value)
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun `indefinite map of undefined`() {
         val payload = "0xbf63666f6ff7ff".toByteArray()
@@ -1811,7 +1696,6 @@ class CborDeserializerSuccessTest {
         assertEquals(null, actual.entries.first().value)
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun `map - uint - 0 - max`() {
         val payload = "0xa163666f6f17".toByteArray()
@@ -1830,7 +1714,6 @@ class CborDeserializerSuccessTest {
         assertEquals(23, actual.entries.first().value)
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun `indefinite map of uint - 0 - max`() {
         val payload = "0xbf63666f6f17ff".toByteArray()
@@ -1849,7 +1732,6 @@ class CborDeserializerSuccessTest {
         assertEquals(23, actual.entries.first().value)
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun `indefinite map of uint - 1 - min`() {
         val payload = "0xbf63666f6f1800ff".toByteArray()
@@ -1868,7 +1750,6 @@ class CborDeserializerSuccessTest {
         assertEquals(UByte.MIN_VALUE, actual.entries.first().value)
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun `indefinite map of uint - 8 - min`() {
         val payload = "0xbf63666f6f1b0000000000000000ff".toByteArray()
@@ -1887,7 +1768,6 @@ class CborDeserializerSuccessTest {
         assertEquals(ULong.MIN_VALUE, actual.entries.first().value)
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun `indefinite map of negint - 8 - max`() {
         val payload = "0xbf63666f6f3bfffffffffffffffeff".toByteArray()
@@ -1911,7 +1791,6 @@ class CborDeserializerSuccessTest {
         assertEquals(ULong.MAX_VALUE, result)
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun `map - uint - 2 - min`() {
         val payload = "0xa163666f6f190000".toByteArray()
@@ -1930,7 +1809,6 @@ class CborDeserializerSuccessTest {
         assertEquals(UShort.MIN_VALUE, actual.entries.first().value)
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun `indefinite map of float16 - NaN - MSB`() {
         val payload = "0xbf63666f6ff97e00ff".toByteArray()
@@ -1949,7 +1827,6 @@ class CborDeserializerSuccessTest {
         assertEquals(Float.NaN, actual.entries.first().value)
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun `map - negint - 0 - min`() {
         val payload = "0xa163666f6f20".toByteArray()
@@ -1968,7 +1845,6 @@ class CborDeserializerSuccessTest {
         assertEquals(-1, actual.entries.first().value)
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun `map - float16 - -Inf`() {
         val payload = "0xa163666f6ff9fc00".toByteArray()
@@ -1987,7 +1863,6 @@ class CborDeserializerSuccessTest {
         assertEquals(Float.NEGATIVE_INFINITY, actual.entries.first().value)
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun `indefinite map of negint - 1 - max`() {
         val payload = "0xbf63666f6f38ffff".toByteArray()
@@ -2006,7 +1881,6 @@ class CborDeserializerSuccessTest {
         assertEquals(-256, actual.entries.first().value)
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun `indefinite map of negint - 8 - min`() {
         val payload = "0xbf63666f6f3b0000000000000000ff".toByteArray()
@@ -2025,7 +1899,6 @@ class CborDeserializerSuccessTest {
         assertEquals(-1, actual.entries.first().value)
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun `map - uint - 1 - min`() {
         val payload = "0xa163666f6f1800".toByteArray()
@@ -2044,7 +1917,6 @@ class CborDeserializerSuccessTest {
         assertEquals(UByte.MIN_VALUE, actual.entries.first().value)
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun `indefinite map of uint - 2 - min`() {
         val payload = "0xbf63666f6f190000ff".toByteArray()
@@ -2063,7 +1935,6 @@ class CborDeserializerSuccessTest {
         assertEquals(UShort.MIN_VALUE, actual.entries.first().value)
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun `indefinite map of uint - 2 - max`() {
         val payload = "0xbf63666f6f19ffffff".toByteArray()
@@ -2082,7 +1953,6 @@ class CborDeserializerSuccessTest {
         assertEquals(UShort.MAX_VALUE, actual.entries.first().value)
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun `indefinite map of negint - 0 - max`() {
         val payload = "0xbf63666f6f37ff".toByteArray()
@@ -2101,7 +1971,6 @@ class CborDeserializerSuccessTest {
         assertEquals(-24, actual.entries.first().value)
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun `indefinite map of negint - 2 - max`() {
         val payload = "0xbf63666f6f39ffffff".toByteArray()
@@ -2120,7 +1989,6 @@ class CborDeserializerSuccessTest {
         assertEquals(-65536, actual.entries.first().value)
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun `map of boolean true`() {
         val payload = "0xa163666f6ff5".toByteArray()
@@ -2139,7 +2007,6 @@ class CborDeserializerSuccessTest {
         assertEquals(true, actual.entries.first().value)
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun `indefinite map of boolean true`() {
         val payload = "0xbf63666f6ff5ff".toByteArray()
@@ -2158,7 +2025,6 @@ class CborDeserializerSuccessTest {
         assertEquals(true, actual.entries.first().value)
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun `indefinite map of boolean false`() {
         val payload = "0xbf63666f6ff4ff".toByteArray()
@@ -2177,7 +2043,6 @@ class CborDeserializerSuccessTest {
         assertEquals(false, actual.entries.first().value)
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun `map - uint - 8 - max`() {
         val payload = "0xa163666f6f1bffffffffffffffff".toByteArray()
@@ -2201,7 +2066,6 @@ class CborDeserializerSuccessTest {
         assertEquals(ULong.MAX_VALUE, result)
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun `map - float16 - NaN - LSB`() {
         val payload = "0xa163666f6ff97c01".toByteArray()
@@ -2220,7 +2084,6 @@ class CborDeserializerSuccessTest {
         assertEquals(Float.NaN, actual.entries.first().value)
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun `indefinite map of uint - 0 - min`() {
         val payload = "0xbf63666f6f00ff".toByteArray()
@@ -2239,7 +2102,6 @@ class CborDeserializerSuccessTest {
         assertEquals(UInt.MIN_VALUE, actual.entries.first().value)
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun `indefinite map of negint - 4 - min`() {
         val payload = "0xbf63666f6f3a00000000ff".toByteArray()
@@ -2258,7 +2120,6 @@ class CborDeserializerSuccessTest {
         assertEquals(-1, actual.entries.first().value)
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun `indefinite map of float32`() {
         val payload = "0xbf63666f6ffa7f800000ff".toByteArray()
@@ -2277,7 +2138,6 @@ class CborDeserializerSuccessTest {
         assertEquals(Float.fromBits(2139095040), actual.entries.first().value)
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun `map of uint - 0 - min`() {
         val payload = "0xa163666f6f00".toByteArray()
@@ -2296,7 +2156,6 @@ class CborDeserializerSuccessTest {
         assertEquals(UByte.MIN_VALUE, actual.entries.first().value)
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun `map - negint - 1 - max`() {
         val payload = "0xa163666f6f38ff".toByteArray()
@@ -2315,7 +2174,6 @@ class CborDeserializerSuccessTest {
         assertEquals(-256, actual.entries.first().value)
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun `map - float64`() {
         val payload = "0xa163666f6ffb7ff0000000000000".toByteArray()
@@ -2334,7 +2192,6 @@ class CborDeserializerSuccessTest {
         assertEquals(Double.fromBits(9218868437227405312), actual.entries.first().value)
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun `indefinite map of float16 - NaN - LSB`() {
         val payload = "0xbf63666f6ff97c01ff".toByteArray()
@@ -2353,7 +2210,6 @@ class CborDeserializerSuccessTest {
         assertEquals(Float.NaN, actual.entries.first().value)
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun `map - uint - 8 - min`() {
         val payload = "0xa163666f6f1b0000000000000000".toByteArray()
@@ -2372,7 +2228,6 @@ class CborDeserializerSuccessTest {
         assertEquals(ULong.MIN_VALUE, actual.entries.first().value)
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun `map - negint - 8 - max`() {
         val payload = "0xa163666f6f3bfffffffffffffffe".toByteArray()
@@ -2396,7 +2251,6 @@ class CborDeserializerSuccessTest {
         assertEquals(ULong.MAX_VALUE, result)
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun `map of undefined`() {
         val payload = "0xa163666f6ff7".toByteArray()
@@ -2415,7 +2269,6 @@ class CborDeserializerSuccessTest {
         assertEquals(null, actual.entries.first().value)
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun `map of float16 - NaN - MSB`() {
         val payload = "0xa163666f6ff97e00".toByteArray()
@@ -2434,7 +2287,6 @@ class CborDeserializerSuccessTest {
         assertEquals(Float.NaN, actual.entries.first().value)
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun `map of negint - 8 - min`() {
         val payload = "0xa163666f6f3b0000000000000000".toByteArray()
@@ -2453,7 +2305,6 @@ class CborDeserializerSuccessTest {
         assertEquals(-1, actual.entries.first().value)
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun `indefinite map of uint - 4 - max`() {
         val payload = "0xbf63666f6f1affffffffff".toByteArray()
@@ -2472,7 +2323,6 @@ class CborDeserializerSuccessTest {
         assertEquals(UInt.MAX_VALUE, actual.entries.first().value)
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun `indefinite map of negint - 1 - min`() {
         val payload = "0xbf63666f6f3800ff".toByteArray()
@@ -2491,7 +2341,6 @@ class CborDeserializerSuccessTest {
         assertEquals(-1, actual.entries.first().value)
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun `indefinite map of float16 - +Inf`() {
         val payload = "0xbf63666f6ff97c00ff".toByteArray()
@@ -2510,7 +2359,6 @@ class CborDeserializerSuccessTest {
         assertEquals(Float.POSITIVE_INFINITY, actual.entries.first().value)
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun `map - negint - 2 - min`() {
         val payload = "0xa163666f6f390000".toByteArray()
@@ -2529,7 +2377,6 @@ class CborDeserializerSuccessTest {
         assertEquals(-1, actual.entries.first().value)
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun `map of false`() {
         val payload = "0xa163666f6ff4".toByteArray()
@@ -2548,7 +2395,6 @@ class CborDeserializerSuccessTest {
         assertEquals(false, actual.entries.first().value)
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun `map of float32`() {
         val payload = "0xa163666f6ffa7f800000".toByteArray()
@@ -2567,7 +2413,6 @@ class CborDeserializerSuccessTest {
         assertEquals(Float.fromBits(2139095040), actual.entries.first().value)
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun `indefinite map of uint - 1 - max`() {
         val payload = "0xbf63666f6f18ffff".toByteArray()
@@ -2586,7 +2431,6 @@ class CborDeserializerSuccessTest {
         assertEquals(UByte.MAX_VALUE, actual.entries.first().value)
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun `map of negint - 0 - max`() {
         val payload = "0xa163666f6f37".toByteArray()
@@ -2605,7 +2449,6 @@ class CborDeserializerSuccessTest {
         assertEquals(-24, actual.entries.first().value)
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun `map of negint - 4 - max`() {
         val payload = "0xa163666f6f3affffffff".toByteArray()
@@ -2624,7 +2467,6 @@ class CborDeserializerSuccessTest {
         assertEquals(-4294967296, actual.entries.first().value)
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun `map of float16 - +Inf`() {
         val payload = "0xa163666f6ff97c00".toByteArray()
@@ -2643,7 +2485,6 @@ class CborDeserializerSuccessTest {
         assertEquals(Float.POSITIVE_INFINITY, actual.entries.first().value)
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun `indefinite map of float64`() {
         val payload = "0xbf63666f6ffb7ff0000000000000ff".toByteArray()
@@ -2662,7 +2503,6 @@ class CborDeserializerSuccessTest {
         assertEquals(Double.fromBits(9218868437227405312), actual.entries.first().value)
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun `map of uint - 1 - max`() {
         val payload = "0xa163666f6f18ff".toByteArray()
@@ -2681,7 +2521,6 @@ class CborDeserializerSuccessTest {
         assertEquals(UByte.MAX_VALUE, actual.entries.first().value)
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun `map - uint - 4 - max`() {
         val payload = "0xa163666f6f1affffffff".toByteArray()
@@ -2700,7 +2539,6 @@ class CborDeserializerSuccessTest {
         assertEquals(UInt.MAX_VALUE, actual.entries.first().value)
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun `map of negint - 2 - max`() {
         val payload = "0xa163666f6f39ffff".toByteArray()
@@ -2719,7 +2557,6 @@ class CborDeserializerSuccessTest {
         assertEquals(-65536, actual.entries.first().value)
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun `indefinite map of uint - 4 - min`() {
         val payload = "0xbf63666f6f1a00000000ff".toByteArray()
@@ -2738,7 +2575,6 @@ class CborDeserializerSuccessTest {
         assertEquals(UInt.MIN_VALUE, actual.entries.first().value)
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun `indefinite map of negint - 0 - min`() {
         val payload = "0xbf63666f6f20ff".toByteArray()
@@ -2757,7 +2593,6 @@ class CborDeserializerSuccessTest {
         assertEquals(-1, actual.entries.first().value)
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun `indefinite map of null`() {
         val payload = "0xbf63666f6ff6ff".toByteArray()
@@ -2776,7 +2611,6 @@ class CborDeserializerSuccessTest {
         assertEquals(null, actual.entries.first().value)
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun `map of uint - 4 - min`() {
         val payload = "0xa163666f6f1a00000000".toByteArray()
@@ -2795,7 +2629,6 @@ class CborDeserializerSuccessTest {
         assertEquals(UInt.MIN_VALUE, actual.entries.first().value)
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun `map of negint - 4 - min`() {
         val payload = "0xa163666f6f3a00000000".toByteArray()
@@ -2814,7 +2647,6 @@ class CborDeserializerSuccessTest {
         assertEquals(-1, actual.entries.first().value)
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun `indefinite map of negint - 2 - min`() {
         val payload = "0xbf63666f6f390000ff".toByteArray()

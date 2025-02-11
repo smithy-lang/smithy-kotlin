@@ -4,7 +4,6 @@
  */
 package aws.smithy.kotlin.runtime.auth.awssigning
 
-import aws.smithy.kotlin.runtime.IgnoreNative
 import aws.smithy.kotlin.runtime.auth.awscredentials.Credentials
 import aws.smithy.kotlin.runtime.auth.awscredentials.CredentialsProvider
 import aws.smithy.kotlin.runtime.client.endpoints.Endpoint
@@ -25,14 +24,12 @@ import kotlin.test.assertTrue
 class PresignerTest {
     // Verify that custom endpoint URL schemes aren't changed.
     // See https://github.com/awslabs/aws-sdk-kotlin/issues/938
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native Implementation
     @Test
     fun testSignedUrlAllowsHttp() = testSigningUrl("http://localhost:8080/path/to/resource?foo=bar")
 
     // Verify that custom endpoint URL schemes aren't changed.
     // See https://github.com/awslabs/aws-sdk-kotlin/issues/938
     @Test
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native Implementation
     fun testSignedUrlAllowsHttps() = testSigningUrl("https://localhost:8088/path/to/resource?bar=foo")
 
     private fun testSigningUrl(url: String) = runTest {

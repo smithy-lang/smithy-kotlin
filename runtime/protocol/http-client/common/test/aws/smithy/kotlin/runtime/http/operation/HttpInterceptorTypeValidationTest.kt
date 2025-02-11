@@ -5,7 +5,6 @@
 
 package aws.smithy.kotlin.runtime.http.operation
 
-import aws.smithy.kotlin.runtime.IgnoreNative
 import aws.smithy.kotlin.runtime.client.*
 import aws.smithy.kotlin.runtime.http.interceptors.HttpInterceptor
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
@@ -17,7 +16,6 @@ import kotlin.IllegalStateException
 import kotlin.test.*
 
 class HttpInterceptorTypeValidationTest {
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native Implementation
     @Test
     fun testModifyBeforeSerializationTypeFailure() = runTest {
         val i1 = object : HttpInterceptor {
@@ -46,7 +44,6 @@ class HttpInterceptorTypeValidationTest {
         ex.message.shouldContain("modifyBeforeSerialization invalid type conversion: found class aws.smithy.kotlin.runtime.http.operation.TestOutput; expected class aws.smithy.kotlin.runtime.http.operation.TestInput")
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native Implementation
     @Test
     fun testModifyBeforeAttemptCompletionTypeFailure() = runTest {
         val i1 = object : HttpInterceptor {
@@ -74,7 +71,6 @@ class HttpInterceptorTypeValidationTest {
         ex.message.shouldContain("modifyBeforeAttemptCompletion invalid type conversion: found class kotlin.String; expected class aws.smithy.kotlin.runtime.http.operation.TestOutput")
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native Implementation
     @Test
     fun testModifyBeforeCompletionTypeFailure() = runTest {
         val i1 = object : HttpInterceptor {

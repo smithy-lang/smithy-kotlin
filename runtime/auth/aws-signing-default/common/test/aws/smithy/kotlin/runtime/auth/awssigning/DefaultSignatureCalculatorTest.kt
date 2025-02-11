@@ -4,7 +4,6 @@
  */
 package aws.smithy.kotlin.runtime.auth.awssigning
 
-import aws.smithy.kotlin.runtime.IgnoreNative
 import aws.smithy.kotlin.runtime.auth.awscredentials.Credentials
 import aws.smithy.kotlin.runtime.auth.awssigning.tests.DEFAULT_TEST_CREDENTIALS
 import aws.smithy.kotlin.runtime.hashing.sha256
@@ -17,7 +16,6 @@ import kotlin.test.assertEquals
 
 class DefaultSignatureCalculatorTest {
     // Test adapted from https://docs.aws.amazon.com/general/latest/gr/sigv4-calculate-signature.html
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native Implementation
     @Test
     fun testCalculate() {
         val signingKey = "c4afb1cc5771d871763a393e44b703571b55cc28424d1a5e86da6ed3c154a4b9".decodeHexBytes()
@@ -34,7 +32,6 @@ class DefaultSignatureCalculatorTest {
     }
 
     // Test adapted from https://docs.aws.amazon.com/general/latest/gr/sigv4-calculate-signature.html
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native Implementation
     @Test
     fun testSigningKey() = runTest {
         val config = AwsSigningConfig {
@@ -50,7 +47,6 @@ class DefaultSignatureCalculatorTest {
     }
 
     // Test adapted from https://docs.aws.amazon.com/general/latest/gr/sigv4-create-string-to-sign.html
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native Implementation
     @Test
     fun testStringToSign() {
         val canonicalRequest = """
@@ -84,7 +80,6 @@ class DefaultSignatureCalculatorTest {
 
     private data class ChunkStringToSignTest(val signatureType: AwsSignatureType, val expectedNonSignatureHeaderHash: String)
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native Implementation
     @Test
     fun testChunkStringToSign() {
         // Test event stream signing

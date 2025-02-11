@@ -5,7 +5,6 @@
 
 package aws.smithy.kotlin.runtime.http.interceptors
 
-import aws.smithy.kotlin.runtime.IgnoreNative
 import aws.smithy.kotlin.runtime.collections.get
 import aws.smithy.kotlin.runtime.hashing.Crc32
 import aws.smithy.kotlin.runtime.http.HttpBody
@@ -25,7 +24,6 @@ import kotlin.test.assertNull
 class HttpChecksumRequiredInterceptorTest {
     private val client = SdkHttpClient(TestEngine())
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native Implementation
     @Test
     fun itSetsContentMd5Header() = runTest {
         val req = HttpRequestBuilder().apply {
@@ -44,7 +42,6 @@ class HttpChecksumRequiredInterceptorTest {
         assertEquals(expected, call.request.headers["Content-MD5"])
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native Implementation
     @Test
     fun itSetsContentCrc32Header() = runTest {
         val testBody = "<Foo>bar</Foo>".encodeToByteArray()
@@ -68,7 +65,6 @@ class HttpChecksumRequiredInterceptorTest {
         assertEquals(expected, call.request.headers["x-amz-checksum-crc32"])
     }
 
-    @IgnoreNative
     @Test
     fun itSetsHeaderForNonBytesContent() = runTest {
         val req = HttpRequestBuilder().apply {
@@ -89,7 +85,6 @@ class HttpChecksumRequiredInterceptorTest {
         assertEquals(expected, call.request.headers["Content-MD5"])
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native Implementation
     @Test
     fun itDoesNotSetContentMd5Header() = runTest {
         val req = HttpRequestBuilder().apply {

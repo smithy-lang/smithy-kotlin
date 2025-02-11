@@ -6,7 +6,6 @@
 package aws.smithy.kotlin.runtime.crt
 
 import aws.sdk.kotlin.crt.io.MutableBuffer
-import aws.smithy.kotlin.runtime.IgnoreNative
 import aws.smithy.kotlin.runtime.io.SdkBuffer
 import aws.smithy.kotlin.runtime.io.SdkSource
 import aws.smithy.kotlin.runtime.io.source
@@ -22,7 +21,6 @@ class SdkSourceBodyStreamTest {
         return MutableBuffer.of(dest) to dest
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testReadFully() = runTest {
         val data = byteArrayOf(1, 2, 3, 4, 5)
@@ -37,7 +35,6 @@ class SdkSourceBodyStreamTest {
         }
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testPartialRead() = runTest {
         val source = "123456".encodeToByteArray().source()
@@ -55,7 +52,6 @@ class SdkSourceBodyStreamTest {
         assertEquals("456", sent2.decodeToString())
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testLargeTransfer() = runTest {
         val data = "foobar"

@@ -5,7 +5,6 @@
 
 package aws.smithy.kotlin.runtime.serde.formurl
 
-import aws.smithy.kotlin.runtime.IgnoreNative
 import aws.smithy.kotlin.runtime.serde.*
 import aws.smithy.kotlin.runtime.time.Instant
 import aws.smithy.kotlin.runtime.time.TimestampFormat
@@ -100,7 +99,6 @@ class FormUrlSerializerTest {
         }
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native Implementation
     @Test
     fun itSerializesStructs() {
         val struct = PrimitiveStructTest()
@@ -125,7 +123,6 @@ class FormUrlSerializerTest {
         assertEquals(expected, actual)
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native Implementation
     @Test
     fun itSerializesEmptyStrings() {
         // see `string` from https://awslabs.github.io/smithy/1.0/spec/aws/aws-query-protocol.html#x-www-form-urlencoded-shape-serialization
@@ -188,7 +185,6 @@ class FormUrlSerializerTest {
         }
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native Implementation
     @Test
     fun itSerializesLists() {
         val input = ListInput(
@@ -210,7 +206,6 @@ class FormUrlSerializerTest {
         assertEquals(expected, actual)
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native Implementation
     @Test
     fun itSerializesFlattenedLists() {
         // xmlFlattened() lists
@@ -235,7 +230,6 @@ class FormUrlSerializerTest {
         assertEquals(expected, actual)
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native Implementation
     @Test
     fun itSerializesListsWithRenamedMember() {
         // xmlName() trait on list member
@@ -257,7 +251,6 @@ class FormUrlSerializerTest {
         assertEquals(expected, actual)
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native Implementation
     @Test
     fun itSerializesClassWithNestedClassField() {
         val a = A(
@@ -317,7 +310,6 @@ class FormUrlSerializerTest {
         }
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native Implementation
     @Test
     fun itSerializesMaps() {
         val input = MapInput(
@@ -351,7 +343,6 @@ class FormUrlSerializerTest {
         assertEquals(expected, actual)
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native Implementation
     @Test
     fun itSerializesMapOfLists() {
         val input = MapInput(
@@ -400,7 +391,6 @@ class FormUrlSerializerTest {
         }
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun itSerializesMapOfMapOfPrimitive() {
         val expected = """
@@ -422,7 +412,6 @@ class FormUrlSerializerTest {
         assertEquals(expected, actual)
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun itSerializesFlattenedMaps() {
         val input = MapInput(
@@ -491,7 +480,6 @@ class FormUrlSerializerTest {
         }
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun itSerializesNestedMaps() {
         val input = NestedStructureInput(
@@ -511,7 +499,6 @@ class FormUrlSerializerTest {
         assertEquals(expected, actual)
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun itSerializesNestedLists() {
         val input = NestedStructureInput(
@@ -529,7 +516,6 @@ class FormUrlSerializerTest {
         assertEquals(expected, actual)
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun itSerializesRenamedMaps() {
         // map with xmlName key/value overrides
@@ -567,7 +553,6 @@ class FormUrlSerializerTest {
         assertEquals(expected, actual)
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun itSerializesQueryLiterals() {
         // test SdkObjectDescriptor with query literals trait
@@ -599,7 +584,6 @@ class FormUrlSerializerTest {
         assertEquals(expected, actual)
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun itEncodesWhitespace() {
         val input = MapInput(
@@ -624,7 +608,6 @@ class FormUrlSerializerTest {
         assertEquals(expected, actual)
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun itSerializesEmptyList() {
         val input = ListInput(
@@ -642,7 +625,6 @@ class FormUrlSerializerTest {
         assertEquals(expected, actual)
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun itSerializesEmptyListInMap() {
         val input = MapInput(

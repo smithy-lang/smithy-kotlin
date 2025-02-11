@@ -152,7 +152,6 @@ class HttpInterceptorTest {
         }
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native Implementation
     @Test
     fun testInterceptorModifications() = runTest {
         val serialized = HttpRequestBuilder().apply {
@@ -175,7 +174,6 @@ class HttpInterceptorTest {
         assertEquals("final", output.value)
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native Implementation
     @Test
     fun testInterceptorModificationsWithRetries() = runTest {
         val serialized = HttpRequestBuilder().apply {
@@ -214,7 +212,6 @@ class HttpInterceptorTest {
         assertEquals("ignore-failure", output.value)
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native Implementation
     @Test
     fun testMapFailureOnAttempt() = runTest {
         val interceptor = object : HttpInterceptor {
@@ -227,7 +224,6 @@ class HttpInterceptorTest {
         testMapFailure(interceptor)
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native Implementation
     @Test
     fun testMapFailureOnCompletion() = runTest {
         val interceptor = object : HttpInterceptor {
