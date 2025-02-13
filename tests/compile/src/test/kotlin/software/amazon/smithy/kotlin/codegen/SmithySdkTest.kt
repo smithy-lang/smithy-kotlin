@@ -224,6 +224,17 @@ class SmithySdkTest {
 
         assertEquals(KotlinCompilation.ExitCode.OK, compilationResult.exitCode, compileOutputStream.toString())
     }
+
+    @Test
+    fun `it compiles models with unions with members that have the same name as the union`() {
+        val model = javaClass.getResource("/kitchen-sink-model.smithy")!!.asSmithy()
+
+        val compileOutputStream = ByteArrayOutputStream()
+        val compilationResult = compileSdkAndTest(model = model, outputSink = compileOutputStream, emitSourcesToTmp = Debug.emitSourcesToTemp)
+        compileOutputStream.flush()
+
+        assertEquals(KotlinCompilation.ExitCode.OK, compilationResult.exitCode, compileOutputStream.toString())
+    }
 }
 
 /**

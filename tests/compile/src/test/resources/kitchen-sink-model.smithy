@@ -59,7 +59,13 @@ structure SmokeTestRequest {
 
     payload1: String,
     payload2: Integer,
-    payload3: Nested
+    payload3: Nested,
+
+    nestedUnion: NestedUnion
+}
+
+union NestedUnion {
+    nestedUnion: Boolean
 }
 
 structure Nested {
