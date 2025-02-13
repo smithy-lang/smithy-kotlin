@@ -225,6 +225,7 @@ class SmithySdkTest {
         assertEquals(KotlinCompilation.ExitCode.OK, compilationResult.exitCode, compileOutputStream.toString())
     }
 
+    // https://github.com/smithy-lang/smithy-kotlin/issues/1129
     @Test
     fun `it compiles models with unions with members that have the same name as the union`() {
         val model = """
