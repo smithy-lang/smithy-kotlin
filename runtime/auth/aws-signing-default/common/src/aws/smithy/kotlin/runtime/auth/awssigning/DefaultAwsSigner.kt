@@ -32,7 +32,7 @@ public class DefaultAwsSignerBuilder {
 @OptIn(ExperimentalApi::class)
 internal class DefaultAwsSignerImpl(
     private val canonicalizer: Canonicalizer = Canonicalizer.Default,
-    private val signatureCalculator: SignatureCalculator = SignatureCalculator.Default,
+    private val signatureCalculator: SignatureCalculator = SignatureCalculator.SigV4,
     private val requestMutator: RequestMutator = RequestMutator.Default,
     private val telemetryProvider: TelemetryProvider? = null,
 ) : AwsSigner {

@@ -27,7 +27,7 @@ class DefaultSignatureCalculatorTest {
         """.trimIndent()
 
         val expected = "5d672d79c15b13162d9279b0855cfba6789a8edb4c82c400e06b5924a6f2b5d7"
-        val actual = SignatureCalculator.Default.calculate(signingKey, stringToSign)
+        val actual = SignatureCalculator.SigV4.calculate(signingKey, stringToSign)
         assertEquals(expected, actual)
     }
 
@@ -42,7 +42,7 @@ class DefaultSignatureCalculatorTest {
         }
 
         val expected = "c4afb1cc5771d871763a393e44b703571b55cc28424d1a5e86da6ed3c154a4b9"
-        val actual = SignatureCalculator.Default.signingKey(config).encodeToHex()
+        val actual = SignatureCalculator.SigV4.signingKey(config).encodeToHex()
         assertEquals(expected, actual)
     }
 
@@ -74,7 +74,7 @@ class DefaultSignatureCalculatorTest {
             20150830/us-east-1/iam/aws4_request
             f536975d06c0309214f805bb90ccff089219ecd68b2577efef23edd43b7e1a59
         """.trimIndent()
-        val actual = SignatureCalculator.Default.stringToSign(canonicalRequest, config)
+        val actual = SignatureCalculator.SigV4.stringToSign(canonicalRequest, config)
         assertEquals(expected, actual)
     }
 
@@ -114,7 +114,7 @@ class DefaultSignatureCalculatorTest {
             813ca5285c28ccee5cab8b10ebda9c908fd6d78ed9dc94cc65ea6cb67a7f13ae
             """.trimIndent()
 
-            val actual = SignatureCalculator.Default.chunkStringToSign(chunkBody, prevSignature, config)
+            val actual = SignatureCalculator.SigV4.chunkStringToSign(chunkBody, prevSignature, config)
             assertEquals(expected, actual)
         }
     }

@@ -111,6 +111,61 @@ internal class DefaultSignatureCalculator(private val sha256Provider: HashSuppli
         }
 }
 
+// FIXME Copied a lot of functions from SigV4SignatureCalculator, refactor to share
+internal class SigV4aSignatureCalculator(
+    val sha256Provider: HashSupplier = ::Sha256
+): SignatureCalculator {
+    override fun calculate(signingKey: ByteArray, stringToSign: String): String {
+        ecdsasecp256r1(signingKey, stringToSign.encodeToByteArray(), sha256Provider).encodeToHex()
+    }
+
+    override fun stringToSign(
+        canonicalRequest: String,
+        config: AwsSigningConfig,
+    ): String = buildString {
+        appendLine("AWS4-ECDSA-P256-SHA256")
+        appendLine(config.signingDate.format(TimestampFormat.ISO_8601_CONDENSED))
+        appendLine(config.credentialScope)
+        append(canonicalRequest.encodeToByteArray().hash(sha256Provider).encodeToHex())
+    }
+
+    // FIXME SigV4a doesn't need a signingKey
+    override fun signingKey(config: AwsSigningConfig): ByteArray {
+        return byteArrayOf()
+    }
+
+    override fun chunkStringToSign(
+        chunkBody: ByteArray,
+        prevSignature: ByteArray,
+        config: AwsSigningConfig,
+    ): String = buildString {
+        appendLine("AWS4-ECDSA-P256-SHA256-PAYLOAD")
+        appendLine(config.signingDate.format(TimestampFormat.ISO_8601_CONDENSED))
+        appendLine(config.credentialScope)
+        appendLine(prevSignature.decodeToString()) // Should already be a byte array of ASCII hex chars
+
+        val nonSignatureHeadersHash = when (config.signatureType) {
+            AwsSignatureType.HTTP_REQUEST_EVENT -> eventStreamNonSignatureHeaders(config.signingDate)
+            else -> HashSpecification.EmptyBody.hash
+        }
+
+        appendLine(nonSignatureHeadersHash)
+        append(chunkBody.hash(sha256Provider).encodeToHex())
+    }
+
+    override fun chunkTrailerStringToSign(
+        trailingHeaders: ByteArray,
+        prevSignature: ByteArray,
+        config: AwsSigningConfig,
+    ): String = buildString {
+        appendLine("AWS4-ECDSA-P256-SHA256-TRAILER")
+        appendLine(config.signingDate.format(TimestampFormat.ISO_8601_CONDENSED))
+        appendLine(config.credentialScope)
+        appendLine(prevSignature.decodeToString())
+        append(trailingHeaders.hash(sha256Provider).encodeToHex())
+    }
+}
+
 private const val HEADER_TIMESTAMP_TYPE: Byte = 8
 
 /**
