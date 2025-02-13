@@ -13,6 +13,7 @@ import software.amazon.smithy.kotlin.codegen.model.buildSymbol
 import software.amazon.smithy.kotlin.codegen.model.expectShape
 import software.amazon.smithy.kotlin.codegen.model.expectTrait
 import software.amazon.smithy.kotlin.codegen.rendering.endpoints.EndpointResolverAdapterGenerator
+import software.amazon.smithy.kotlin.codegen.rendering.endpoints.SdkEndpointBuiltinIntegration
 import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.shapes.ServiceShape
 
@@ -80,21 +81,27 @@ class EndpointDiscovererGenerator(private val ctx: CodegenContext, private val d
             EndpointResolverAdapterGenerator.getSymbol(ctx.settings),
             RuntimeTypes.HttpClient.Operation.EndpointResolver,
         ) {
-            write("val identity = request.identity")
-            write(
-                """require(identity is #T) { "Endpoint discovery requires AWS credentials" }""",
-                RuntimeTypes.Auth.Credentials.AwsCredentials.Credentials,
-            )
-            write("")
-            write("val cacheKey = DiscoveryParams(client.config.region, identity.accessKeyId)")
-            write("request.context[discoveryParamsKey] = cacheKey")
-            write("val discoveredHost = cache.get(cacheKey) { discoverHost(client) }")
-            write("")
-            write("val originalEndpoint = delegate.resolve(request)")
-            withBlock("#T(", ")", RuntimeTypes.SmithyClient.Endpoints.Endpoint) {
-                write("originalEndpoint.uri.copy { host = discoveredHost },")
-                write("originalEndpoint.headers,")
-                write("originalEndpoint.attributes,")
+            // Backported from https://github.com/smithy-lang/smithy-kotlin/pull/1221; replace when merging v1.5 to main
+            withBlock("if (client.config.#L == null) {", "}", SdkEndpointBuiltinIntegration.EndpointUrlProp.propertyName) {
+                write("val identity = request.identity")
+                write(
+                    """require(identity is #T) { "Endpoint discovery requires AWS credentials" }""",
+                    RuntimeTypes.Auth.Credentials.AwsCredentials.Credentials,
+                )
+                write("")
+                write("val cacheKey = DiscoveryParams(client.config.region, identity.accessKeyId)")
+                write("request.context[discoveryParamsKey] = cacheKey")
+                write("val discoveredHost = cache.get(cacheKey) { discoverHost(client) }")
+                write("")
+                write("val originalEndpoint = delegate.resolve(request)")
+                withBlock("#T(", ")", RuntimeTypes.SmithyClient.Endpoints.Endpoint) {
+                    write("originalEndpoint.uri.copy { host = discoveredHost },")
+                    write("originalEndpoint.headers,")
+                    write("originalEndpoint.attributes,")
+                }
+                // If user manually specifies endpointUrl, skip endpoint discovery
+                closeAndOpenBlock("} else {")
+                write("delegate.resolve(request)")
             }
         }
     }
