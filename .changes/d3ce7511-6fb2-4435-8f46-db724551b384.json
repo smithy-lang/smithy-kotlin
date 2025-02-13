@@ -1,5 +1,0 @@
-{
-    "id": "d3ce7511-6fb2-4435-8f46-db724551b384",
-    "type": "misc",
-    "description": "Add telemetry provider configuration to `DefaultAwsSigner`"
-}
