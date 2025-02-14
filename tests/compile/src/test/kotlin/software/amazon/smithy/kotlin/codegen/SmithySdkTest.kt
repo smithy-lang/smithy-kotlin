@@ -224,6 +224,45 @@ class SmithySdkTest {
 
         assertEquals(KotlinCompilation.ExitCode.OK, compilationResult.exitCode, compileOutputStream.toString())
     }
+
+    // https://github.com/smithy-lang/smithy-kotlin/issues/1129
+    @Test
+    fun `it compiles models with unions with members that have the same name as the union`() {
+        val model = """
+            namespace aws.sdk.kotlin.test
+
+            use aws.protocols#awsJson1_0
+            use smithy.rules#operationContextParams
+            use smithy.rules#endpointRuleSet
+            use aws.api#service
+            
+            @awsJson1_0
+            @service(sdkId: "UnionOperationTest")
+            service TestService {
+                operations: [UnionOperation],
+                version: "1"
+            }
+            
+            operation UnionOperation {
+                input: UnionOperationRequest
+            }
+            
+            structure UnionOperationRequest {
+                Union: Foo
+            }
+            
+            union Foo {
+                foo: Boolean
+            }
+
+        """.asSmithy()
+
+        val compileOutputStream = ByteArrayOutputStream()
+        val compilationResult = compileSdkAndTest(model = model, outputSink = compileOutputStream, emitSourcesToTmp = Debug.emitSourcesToTemp)
+        compileOutputStream.flush()
+
+        assertEquals(KotlinCompilation.ExitCode.OK, compilationResult.exitCode, compileOutputStream.toString())
+    }
 }
 
 /**
