@@ -4,7 +4,9 @@
  */
 package aws.smithy.kotlin.runtime.auth.awssigning
 
+import aws.smithy.kotlin.runtime.content.BigInteger
 import aws.smithy.kotlin.runtime.hashing.*
+import aws.smithy.kotlin.runtime.text.encoding.decodeHexBytes
 import aws.smithy.kotlin.runtime.text.encoding.encodeToHex
 import aws.smithy.kotlin.runtime.time.Instant
 import aws.smithy.kotlin.runtime.time.TimestampFormat
@@ -16,9 +18,14 @@ import aws.smithy.kotlin.runtime.time.epochMilliseconds
 internal interface SignatureCalculator {
     companion object {
         /**
-         * The default implementation of [SignatureCalculator].
+         * The SigV4 implementation of [SignatureCalculator].
          */
-        val Default = DefaultSignatureCalculator()
+        val SigV4 = SigV4SignatureCalculator()
+
+        /**
+         * The SigV4a implementation of [SignatureCalculator].
+         */
+        val SigV4a = SigV4aSignatureCalculator()
     }
 
     /**
@@ -63,7 +70,7 @@ internal interface SignatureCalculator {
     fun chunkTrailerStringToSign(trailingHeaders: ByteArray, prevSignature: ByteArray, config: AwsSigningConfig): String
 }
 
-internal class DefaultSignatureCalculator(private val sha256Provider: HashSupplier = ::Sha256) : SignatureCalculator {
+internal class SigV4SignatureCalculator(private val sha256Provider: HashSupplier = ::Sha256) : SignatureCalculator {
     override fun calculate(signingKey: ByteArray, stringToSign: String): String =
         hmac(signingKey, stringToSign.encodeToByteArray(), sha256Provider).encodeToHex()
 
@@ -111,13 +118,12 @@ internal class DefaultSignatureCalculator(private val sha256Provider: HashSuppli
         }
 }
 
-// FIXME Copied a lot of functions from SigV4SignatureCalculator, refactor to share
+// FIXME Copied a few functions from SigV4SignatureCalculator, refactor to share
 internal class SigV4aSignatureCalculator(
     val sha256Provider: HashSupplier = ::Sha256
 ): SignatureCalculator {
-    override fun calculate(signingKey: ByteArray, stringToSign: String): String {
-        ecdsasecp256r1(signingKey, stringToSign.encodeToByteArray(), sha256Provider).encodeToHex()
-    }
+    override fun calculate(signingKey: ByteArray, stringToSign: String): String =
+        ecdsasecp256r1(signingKey, stringToSign.encodeToByteArray()).encodeToHex()
 
     override fun stringToSign(
         canonicalRequest: String,
@@ -129,9 +135,37 @@ internal class SigV4aSignatureCalculator(
         append(canonicalRequest.encodeToByteArray().hash(sha256Provider).encodeToHex())
     }
 
-    // FIXME SigV4a doesn't need a signingKey
     override fun signingKey(config: AwsSigningConfig): ByteArray {
-        return byteArrayOf()
+        // 1.1: Compute fixed input string
+        val label = "AWS4-ECDSA-P256-SHA256".encodeToByteArray()
+        var counter: Byte = 0x01
+        var privateKey: ByteArray
+
+        do {
+            val context = config.credentials.accessKeyId.encodeToByteArray() + byteArrayOf(counter)
+            val length = byteArrayOf(0x01, 0x00) // "256"
+            val fixedInputString: ByteArray = label + byteArrayOf(0x00) + context + length
+
+            // 1.2: Compute K0
+            val inputKey = ("AWS4A" + config.credentials.secretAccessKey).encodeToByteArray()
+            val k0 = hmac(inputKey, byteArrayOf(0x01) + fixedInputString, sha256Provider)
+
+            // 2: Compute the ECC key pair
+            val c = BigInteger(k0)
+
+            val nBytes = "FFFFFFFF00000000FFFFFFFFFFFFFFFFBCE6FAADA7179E84F3B9CAC2FC632551".decodeHexBytes()
+            val n = BigInteger(nBytes)
+
+            privateKey = (n + BigInteger("1")).toByteArray()
+
+            if (counter == Byte.MAX_VALUE && c <= n - BigInteger("2")) {
+                throw IllegalStateException("Counter exceeded maximum length")
+            }
+
+            counter = (counter + 0x01).toByte()
+        } while (c <= n - BigInteger("2"))
+
+        return privateKey
     }
 
     override fun chunkStringToSign(

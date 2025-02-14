@@ -29,10 +29,15 @@ public class DefaultAwsSignerBuilder {
     )
 }
 
+private val AwsSigningAlgorithm.signatureCalculator
+    get() = when (this) {
+        AwsSigningAlgorithm.SIGV4 -> SignatureCalculator.SigV4
+        AwsSigningAlgorithm.SIGV4_ASYMMETRIC -> SignatureCalculator.SigV4a
+    }
+
 @OptIn(ExperimentalApi::class)
 internal class DefaultAwsSignerImpl(
     private val canonicalizer: Canonicalizer = Canonicalizer.Default,
-    private val signatureCalculator: SignatureCalculator = SignatureCalculator.SigV4,
     private val requestMutator: RequestMutator = RequestMutator.Default,
     private val telemetryProvider: TelemetryProvider? = null,
 ) : AwsSigner {
@@ -40,18 +45,12 @@ internal class DefaultAwsSignerImpl(
         val logger = telemetryProvider?.loggerProvider?.getOrCreateLogger("DefaultAwsSigner")
             ?: coroutineContext.logger<DefaultAwsSignerImpl>()
 
-        // TODO: implement SigV4a
-        if (config.algorithm != AwsSigningAlgorithm.SIGV4) {
-            throw UnsupportedSigningAlgorithmException(
-                "${config.algorithm} support is not yet implemented for the default signer.",
-                config.algorithm,
-            )
-        }
-
         val canonical = canonicalizer.canonicalRequest(request, config)
         if (config.logRequest) {
             logger.trace { "Canonical request:\n${canonical.requestString}" }
         }
+
+        val signatureCalculator = config.algorithm.signatureCalculator
 
         val stringToSign = signatureCalculator.stringToSign(canonical.requestString, config)
         logger.trace { "String to sign:\n$stringToSign" }
@@ -74,6 +73,8 @@ internal class DefaultAwsSignerImpl(
         val logger = telemetryProvider?.loggerProvider?.getOrCreateLogger("DefaultAwsSigner")
             ?: coroutineContext.logger<DefaultAwsSignerImpl>()
 
+        val signatureCalculator = config.algorithm.signatureCalculator
+
         val stringToSign = signatureCalculator.chunkStringToSign(chunkBody, prevSignature, config)
         logger.trace { "Chunk string to sign:\n$stringToSign" }
 
@@ -92,6 +93,8 @@ internal class DefaultAwsSignerImpl(
     ): AwsSigningResult<Unit> {
         val logger = telemetryProvider?.loggerProvider?.getOrCreateLogger("DefaultAwsSigner")
             ?: coroutineContext.logger<DefaultAwsSignerImpl>()
+
+        val signatureCalculator = config.algorithm.signatureCalculator
 
         // FIXME - can we share canonicalization code more than we are..., also this reduce is inefficient.
         // canonicalize the headers
