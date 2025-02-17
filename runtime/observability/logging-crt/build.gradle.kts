@@ -2,9 +2,9 @@
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
  * SPDX-License-Identifier: Apache-2.0
  */
-description = "Logging provider based on SLF4J"
-extra["displayName"] = "Smithy :: Kotlin :: Observability :: SLF4J binding"
-extra["moduleName"] = "aws.smithy.kotlin.runtime.telemetry.slf4j"
+description = "Logging provider based on CRT"
+extra["displayName"] = "Smithy :: Kotlin :: Observability :: CRT"
+extra["moduleName"] = "aws.smithy.kotlin.runtime.telemetry.logging.crt"
 
 kotlin {
     sourceSets {
@@ -14,9 +14,9 @@ kotlin {
             }
         }
 
-        jvmMain {
+        nativeMain {
             dependencies {
-                implementation(libs.slf4j.api)
+                api(libs.crt.kotlin)
             }
         }
 
