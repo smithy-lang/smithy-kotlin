@@ -120,16 +120,17 @@ internal class DefaultAwsSignerImpl(
     }
 }
 
-/** The name of the SigV4 algorithm. */
-internal const val ALGORITHM_NAME = "AWS4-HMAC-SHA256"
 
 /**
- * Formats a credential scope consisting of a signing date, region, service, and a signature type
+ * Formats a credential scope consisting of a signing date, region (SigV4 only), service, and a signature type
  */
 internal val AwsSigningConfig.credentialScope: String
-    get() {
+    get() = run {
         val signingDate = signingDate.format(TimestampFormat.ISO_8601_CONDENSED_DATE)
-        return "$signingDate/$region/$service/aws4_request"
+        return when (algorithm) {
+            AwsSigningAlgorithm.SIGV4 -> "$signingDate/$region/$service/aws4_request"
+            AwsSigningAlgorithm.SIGV4_ASYMMETRIC -> "$signingDate/$service/aws4_request"
+        }
     }
 
 /**

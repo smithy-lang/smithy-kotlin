@@ -137,33 +137,49 @@ internal class SigV4aSignatureCalculator(
 
     override fun signingKey(config: AwsSigningConfig): ByteArray {
         // 1.1: Compute fixed input string
-        val label = "AWS4-ECDSA-P256-SHA256".encodeToByteArray()
-        var counter: Byte = 0x01
+        var counter: UByte = 1u
         var privateKey: ByteArray
 
+        // N value from NIST P-256 curve
+        // FIXME optimization: n is never used by itself, only n-2. Subtract two from the const.
+        val nBytes = "FFFFFFFF00000000FFFFFFFFFFFFFFFFBCE6FAADA7179E84F3B9CAC2FC632551".decodeHexBytes()
+        val n = BigInteger(nBytes)
+
+        // FIXME Public docs say secret access key needs to be Base64 encoded, that's not right.
+        val inputKey = ("AWS4A" + config.credentials.secretAccessKey).encodeToByteArray()
+
         do {
-            val context = config.credentials.accessKeyId.encodeToByteArray() + byteArrayOf(counter)
-            val length = byteArrayOf(0x01, 0x00) // "256"
-            val fixedInputString: ByteArray = label + byteArrayOf(0x00) + context + length
+            // See https://github.com/awslabs/aws-c-auth/blob/e8360a65e0f3337d4ac827945e00c3b55a641a5f/source/key_derivation.c#L70 for
+            // more details of derivation process
+
+            // FIXME CRT implementation (4 bytes) and internal docs (1 byte) conflict.
+            val headerBytes = byteArrayOf(0x00, 0x00, 0x00, 0x01)
+
+            // 256 big endian
+            // FIXME CRT implementation (4 bytes) and internal docs (2 bytes) conflict.
+            val lengthBytes = byteArrayOf(0x00, 0x00, 0x01, 0x00)
+
+            val fixedInputString: ByteArray = headerBytes +
+                "AWS4-ECDSA-P256-SHA256".encodeToByteArray() +
+                byteArrayOf(0x00) +
+                config.credentials.accessKeyId.encodeToByteArray() +
+                counter.toByte() +
+                lengthBytes
 
             // 1.2: Compute K0
-            val inputKey = ("AWS4A" + config.credentials.secretAccessKey).encodeToByteArray()
-            val k0 = hmac(inputKey, byteArrayOf(0x01) + fixedInputString, sha256Provider)
+            val k0 = hmac(inputKey, fixedInputString, sha256Provider)
 
             // 2: Compute the ECC key pair
             val c = BigInteger(k0)
 
-            val nBytes = "FFFFFFFF00000000FFFFFFFFFFFFFFFFBCE6FAADA7179E84F3B9CAC2FC632551".decodeHexBytes()
-            val n = BigInteger(nBytes)
+            privateKey = (c + BigInteger("1")).toByteArray()
 
-            privateKey = (n + BigInteger("1")).toByteArray()
-
-            if (counter == Byte.MAX_VALUE && c <= n - BigInteger("2")) {
+            if (counter.toByte() == 254.toByte() && c > n - BigInteger("2")) {
                 throw IllegalStateException("Counter exceeded maximum length")
+            } else {
+                counter++
             }
-
-            counter = (counter + 0x01).toByte()
-        } while (c <= n - BigInteger("2"))
+        } while (c > n - BigInteger("2"))
 
         return privateKey
     }

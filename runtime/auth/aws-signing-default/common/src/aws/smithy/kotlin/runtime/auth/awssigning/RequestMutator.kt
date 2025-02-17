@@ -43,7 +43,7 @@ internal class DefaultRequestMutator : RequestMutator {
                 val credential = "Credential=${credentialValue(config)}"
                 val signedHeaders = "SignedHeaders=${canonical.signedHeaders}"
                 val signature = "Signature=$signatureHex"
-                canonical.request.headers["Authorization"] = "$ALGORITHM_NAME $credential, $signedHeaders, $signature"
+                canonical.request.headers["Authorization"] = "${config.algorithm.authorizationName} $credential, $signedHeaders, $signature"
             }
 
             AwsSignatureType.HTTP_REQUEST_VIA_QUERY_PARAMS ->
@@ -55,3 +55,9 @@ internal class DefaultRequestMutator : RequestMutator {
         return canonical.request.build()
     }
 }
+
+internal val AwsSigningAlgorithm.authorizationName: String
+    get() = when (this) {
+        AwsSigningAlgorithm.SIGV4 -> "AWS4-HMAC-SHA256"
+        AwsSigningAlgorithm.SIGV4_ASYMMETRIC -> "AWS4-ECDSA-P256-SHA256"
+    }
