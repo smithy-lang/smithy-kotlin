@@ -124,7 +124,7 @@ internal class DefaultCanonicalizer(private val sha256Supplier: HashSupplier = :
         }
 
         param("Host", builder.url.hostAndPort, !signViaQueryParams, overwrite = false)
-        param("X-Amz-Algorithm", config.algorithm.authorizationName , signViaQueryParams)
+        param("X-Amz-Algorithm", config.algorithm.authorizationName, signViaQueryParams)
         param("X-Amz-Credential", credentialValue(config), signViaQueryParams)
         param("X-Amz-Content-Sha256", hash, addHashHeader)
         param("X-Amz-Date", config.signingDate.format(TimestampFormat.ISO_8601_CONDENSED))

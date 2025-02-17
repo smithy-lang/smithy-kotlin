@@ -7,8 +7,8 @@ package aws.smithy.kotlin.runtime.hashing
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
 import java.security.*
-import java.security.spec.*
 import java.security.interfaces.*
+import java.security.spec.*
 import kotlin.test.Test
 import kotlin.test.assertNotNull
 

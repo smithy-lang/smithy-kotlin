@@ -6,8 +6,8 @@ package aws.smithy.kotlin.runtime.hashing
 
 import aws.smithy.kotlin.runtime.content.BigInteger
 import java.security.*
-import java.security.spec.*
 import java.security.interfaces.*
+import java.security.spec.*
 
 /**
  * ECDSA on the SECP256R1 curve.

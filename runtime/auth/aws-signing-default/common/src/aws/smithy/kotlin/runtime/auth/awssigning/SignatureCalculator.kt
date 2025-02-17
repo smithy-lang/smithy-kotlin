@@ -120,8 +120,8 @@ internal class SigV4SignatureCalculator(private val sha256Provider: HashSupplier
 
 // FIXME Copied a few functions from SigV4SignatureCalculator, refactor to share
 internal class SigV4aSignatureCalculator(
-    val sha256Provider: HashSupplier = ::Sha256
-): SignatureCalculator {
+    val sha256Provider: HashSupplier = ::Sha256,
+) : SignatureCalculator {
     override fun calculate(signingKey: ByteArray, stringToSign: String): String =
         ecdsasecp256r1(signingKey, stringToSign.encodeToByteArray()).encodeToHex()
 

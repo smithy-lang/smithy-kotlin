@@ -120,7 +120,6 @@ internal class DefaultAwsSignerImpl(
     }
 }
 
-
 /**
  * Formats a credential scope consisting of a signing date, region (SigV4 only), service, and a signature type
  */
