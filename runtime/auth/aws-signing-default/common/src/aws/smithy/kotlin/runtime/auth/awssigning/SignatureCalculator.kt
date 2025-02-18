@@ -152,10 +152,8 @@ internal class SigV4aSignatureCalculator(override val sha256Provider: HashSuppli
         var counter: Byte = 1
         var privateKey: ByteArray
 
-        // N value from NIST P-256 curve
-        // FIXME optimization: n is never used by itself, only n-2. Subtract two from the const.
-        val nBytes = "FFFFFFFF00000000FFFFFFFFFFFFFFFFBCE6FAADA7179E84F3B9CAC2FC632551".decodeHexBytes()
-        val n = BigInteger(nBytes)
+        // N value from NIST P-256 curve, minus two.
+        val nMinusTwo = BigInteger("FFFFFFFF00000000FFFFFFFFFFFFFFFFBCE6FAADA7179E84F3B9CAC2FC63254f".decodeHexBytes())
 
         // FIXME Public docs say secret access key needs to be Base64 encoded, that's not right.
         // (or maybe it's already base64-encoded, and they are just repeating it)
@@ -170,18 +168,18 @@ internal class SigV4aSignatureCalculator(override val sha256Provider: HashSuppli
 
             privateKey = (c + BigInteger("1")).toByteArray()
 
-            if (counter == MAX_KDF_COUNTER_ITERATIONS && c > n - BigInteger("2")) {
+            if (counter == MAX_KDF_COUNTER_ITERATIONS && c > nMinusTwo) {
                 throw IllegalStateException("Counter exceeded maximum length")
             } else {
                 counter++
             }
-        } while (c > n - BigInteger("2"))
+        } while (c > nMinusTwo)
 
         return privateKey
     }
 
     /**
-     * Computes the fixed input string used for KDF
+     * Computes the fixed input string used for ECDSA private key derivation
      * The final output looks like:
      * 0x00000001 || "AWS4-ECDSA-P256-SHA256" || 0x00 || AccessKeyId || counter || 0x00000100
      */
