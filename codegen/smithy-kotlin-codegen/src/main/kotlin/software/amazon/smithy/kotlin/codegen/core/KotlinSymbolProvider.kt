@@ -154,7 +154,7 @@ class KotlinSymbolProvider(private val model: Model, private val settings: Kotli
         val fullyQualifiedValueType = "${reference.fullName}$valueSuffix"
         return createSymbolBuilder(shape, "List<$valueType>")
             .addReferences(reference)
-            .putProperty(SymbolProperty.FULLY_QUALIFIED_NAME_HINT, "List<$fullyQualifiedValueType>")
+            .putProperty(SymbolProperty.FULLY_QUALIFIED_NAME_HINT, "kotlin.collections.List<$fullyQualifiedValueType>")
             .putProperty(SymbolProperty.MUTABLE_COLLECTION_FUNCTION, "mutableListOf<$valueType>")
             .putProperty(SymbolProperty.IMMUTABLE_COLLECTION_FUNCTION, "listOf<$valueType>")
             .build()
@@ -173,7 +173,7 @@ class KotlinSymbolProvider(private val model: Model, private val settings: Kotli
         return createSymbolBuilder(shape, "Map<$keyType, $valueType>")
             .addReferences(keyReference)
             .addReferences(valueReference)
-            .putProperty(SymbolProperty.FULLY_QUALIFIED_NAME_HINT, "Map<$fullyQualifiedKeyType, $fullyQualifiedValueType>")
+            .putProperty(SymbolProperty.FULLY_QUALIFIED_NAME_HINT, "kotlin.collections.Map<$fullyQualifiedKeyType, $fullyQualifiedValueType>")
             .putProperty(SymbolProperty.MUTABLE_COLLECTION_FUNCTION, "mutableMapOf<$keyType, $valueType>")
             .putProperty(SymbolProperty.IMMUTABLE_COLLECTION_FUNCTION, "mapOf<$keyType, $valueType>")
             .putProperty(SymbolProperty.ENTRY_EXPRESSION, "Map.Entry<$keyType, $valueType>")

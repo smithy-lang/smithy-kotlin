@@ -1,5 +1,20 @@
 # Changelog
 
+## [1.4.4] - 02/18/2025
+
+### Miscellaneous
+* Increase maximum event stream message length to 24MB
+
+## [1.4.3] - 02/13/2025
+
+### Fixes
+* Fix errors in equality checks for `CaseInsensitiveMap` which affect `Headers` and `ValuesMap` implementations
+* fix: correct hash code calculation for case-insensitive map entries
+* [#1413](https://github.com/awslabs/aws-sdk-kotlin/issues/1413) Favor `endpointUrl` over endpoint discovery when provided
+
+### Miscellaneous
+* Add telemetry provider configuration to `DefaultAwsSigner`
+
 ## [1.4.2] - 01/28/2025
 
 ### Fixes
