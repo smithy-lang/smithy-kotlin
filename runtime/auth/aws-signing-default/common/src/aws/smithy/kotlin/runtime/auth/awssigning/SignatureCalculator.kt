@@ -146,6 +146,7 @@ internal class SigV4aSignatureCalculator(
         val n = BigInteger(nBytes)
 
         // FIXME Public docs say secret access key needs to be Base64 encoded, that's not right.
+        // (or maybe it's already base64-encoded, and they are just repeating it)
         val inputKey = ("AWS4A" + config.credentials.secretAccessKey).encodeToByteArray()
 
         do {
