@@ -70,127 +70,29 @@ internal interface SignatureCalculator {
     fun chunkTrailerStringToSign(trailingHeaders: ByteArray, prevSignature: ByteArray, config: AwsSigningConfig): String
 }
 
-internal class SigV4SignatureCalculator(private val sha256Provider: HashSupplier = ::Sha256) : SignatureCalculator {
-    override fun calculate(signingKey: ByteArray, stringToSign: String): String =
-        hmac(signingKey, stringToSign.encodeToByteArray(), sha256Provider).encodeToHex()
-
-    override fun chunkStringToSign(chunkBody: ByteArray, prevSignature: ByteArray, config: AwsSigningConfig): String =
-        buildString {
-            appendLine("AWS4-HMAC-SHA256-PAYLOAD")
-            appendLine(config.signingDate.format(TimestampFormat.ISO_8601_CONDENSED))
-            appendLine(config.credentialScope)
-            appendLine(prevSignature.decodeToString()) // Should already be a byte array of ASCII hex chars
-
-            val nonSignatureHeadersHash = when (config.signatureType) {
-                AwsSignatureType.HTTP_REQUEST_EVENT -> eventStreamNonSignatureHeaders(config.signingDate)
-                else -> HashSpecification.EmptyBody.hash
-            }
-
-            appendLine(nonSignatureHeadersHash)
-            append(chunkBody.hash(sha256Provider).encodeToHex())
+/**
+ * Common signature implementation used for SigV4 and SigV4a, primarily for forming the strings-to-sign which don't differ
+ * between the two signing algorithms (besides their names).
+ */
+internal abstract class SigV4xSignatureCalculator(
+    val algorithm: AwsSigningAlgorithm,
+    open val sha256Provider: HashSupplier = ::Sha256,
+) : SignatureCalculator {
+    init {
+        check (algorithm == AwsSigningAlgorithm.SIGV4 || algorithm == AwsSigningAlgorithm.SIGV4_ASYMMETRIC) {
+            "This class should only be used for the ${AwsSigningAlgorithm.SIGV4} or ${AwsSigningAlgorithm.SIGV4_ASYMMETRIC} algorithms, got $algorithm"
         }
-
-    override fun chunkTrailerStringToSign(trailingHeaders: ByteArray, prevSignature: ByteArray, config: AwsSigningConfig): String =
-        buildString {
-            appendLine("AWS4-HMAC-SHA256-TRAILER")
-            appendLine(config.signingDate.format(TimestampFormat.ISO_8601_CONDENSED))
-            appendLine(config.credentialScope)
-            appendLine(prevSignature.decodeToString())
-            append(trailingHeaders.hash(sha256Provider).encodeToHex())
-        }
-
-    override fun signingKey(config: AwsSigningConfig): ByteArray {
-        fun hmac(key: ByteArray, message: String) = hmac(key, message.encodeToByteArray(), sha256Provider)
-
-        val initialKey = ("AWS4" + config.credentials.secretAccessKey).encodeToByteArray()
-        val kDate = hmac(initialKey, config.signingDate.format(TimestampFormat.ISO_8601_CONDENSED_DATE))
-        val kRegion = hmac(kDate, config.region)
-        val kService = hmac(kRegion, config.service)
-        return hmac(kService, "aws4_request")
     }
 
-    override fun stringToSign(canonicalRequest: String, config: AwsSigningConfig): String =
-        buildString {
-            appendLine("AWS4-HMAC-SHA256")
-            appendLine(config.signingDate.format(TimestampFormat.ISO_8601_CONDENSED))
-            appendLine(config.credentialScope)
-            append(canonicalRequest.encodeToByteArray().hash(sha256Provider).encodeToHex())
-        }
-}
-
-// FIXME Copied a few functions from SigV4SignatureCalculator, refactor to share
-internal class SigV4aSignatureCalculator(
-    val sha256Provider: HashSupplier = ::Sha256,
-) : SignatureCalculator {
-    override fun calculate(signingKey: ByteArray, stringToSign: String): String =
-        ecdsasecp256r1(signingKey, stringToSign.encodeToByteArray()).encodeToHex()
-
-    override fun stringToSign(
-        canonicalRequest: String,
-        config: AwsSigningConfig,
-    ): String = buildString {
-        appendLine("AWS4-ECDSA-P256-SHA256")
+    override fun stringToSign(canonicalRequest: String, config: AwsSigningConfig): String = buildString {
+        appendLine(algorithm.signingName)
         appendLine(config.signingDate.format(TimestampFormat.ISO_8601_CONDENSED))
         appendLine(config.credentialScope)
         append(canonicalRequest.encodeToByteArray().hash(sha256Provider).encodeToHex())
     }
 
-    override fun signingKey(config: AwsSigningConfig): ByteArray {
-        // 1.1: Compute fixed input string
-        var counter: UByte = 1u
-        var privateKey: ByteArray
-
-        // N value from NIST P-256 curve
-        // FIXME optimization: n is never used by itself, only n-2. Subtract two from the const.
-        val nBytes = "FFFFFFFF00000000FFFFFFFFFFFFFFFFBCE6FAADA7179E84F3B9CAC2FC632551".decodeHexBytes()
-        val n = BigInteger(nBytes)
-
-        // FIXME Public docs say secret access key needs to be Base64 encoded, that's not right.
-        // (or maybe it's already base64-encoded, and they are just repeating it)
-        val inputKey = ("AWS4A" + config.credentials.secretAccessKey).encodeToByteArray()
-
-        do {
-            // See https://github.com/awslabs/aws-c-auth/blob/e8360a65e0f3337d4ac827945e00c3b55a641a5f/source/key_derivation.c#L70 for
-            // more details of derivation process
-
-            // FIXME CRT implementation (4 bytes) and internal docs (1 byte) conflict.
-            val headerBytes = byteArrayOf(0x00, 0x00, 0x00, 0x01)
-
-            // 256 big endian
-            // FIXME CRT implementation (4 bytes) and internal docs (2 bytes) conflict.
-            val lengthBytes = byteArrayOf(0x00, 0x00, 0x01, 0x00)
-
-            val fixedInputString: ByteArray = headerBytes +
-                "AWS4-ECDSA-P256-SHA256".encodeToByteArray() +
-                byteArrayOf(0x00) +
-                config.credentials.accessKeyId.encodeToByteArray() +
-                counter.toByte() +
-                lengthBytes
-
-            // 1.2: Compute K0
-            val k0 = hmac(inputKey, fixedInputString, sha256Provider)
-
-            // 2: Compute the ECC key pair
-            val c = BigInteger(k0)
-
-            privateKey = (c + BigInteger("1")).toByteArray()
-
-            if (counter.toByte() == 254.toByte() && c > n - BigInteger("2")) {
-                throw IllegalStateException("Counter exceeded maximum length")
-            } else {
-                counter++
-            }
-        } while (c > n - BigInteger("2"))
-
-        return privateKey
-    }
-
-    override fun chunkStringToSign(
-        chunkBody: ByteArray,
-        prevSignature: ByteArray,
-        config: AwsSigningConfig,
-    ): String = buildString {
-        appendLine("AWS4-ECDSA-P256-SHA256-PAYLOAD")
+    override fun chunkStringToSign(chunkBody: ByteArray, prevSignature: ByteArray, config: AwsSigningConfig): String = buildString {
+        appendLine("${algorithm.signingName}-PAYLOAD")
         appendLine(config.signingDate.format(TimestampFormat.ISO_8601_CONDENSED))
         appendLine(config.credentialScope)
         appendLine(prevSignature.decodeToString()) // Should already be a byte array of ASCII hex chars
@@ -204,17 +106,93 @@ internal class SigV4aSignatureCalculator(
         append(chunkBody.hash(sha256Provider).encodeToHex())
     }
 
-    override fun chunkTrailerStringToSign(
-        trailingHeaders: ByteArray,
-        prevSignature: ByteArray,
-        config: AwsSigningConfig,
-    ): String = buildString {
-        appendLine("AWS4-ECDSA-P256-SHA256-TRAILER")
-        appendLine(config.signingDate.format(TimestampFormat.ISO_8601_CONDENSED))
-        appendLine(config.credentialScope)
-        appendLine(prevSignature.decodeToString())
-        append(trailingHeaders.hash(sha256Provider).encodeToHex())
+    override fun chunkTrailerStringToSign(trailingHeaders: ByteArray, prevSignature: ByteArray, config: AwsSigningConfig): String =
+        buildString {
+            appendLine("${algorithm.signingName}-TRAILER")
+            appendLine(config.signingDate.format(TimestampFormat.ISO_8601_CONDENSED))
+            appendLine(config.credentialScope)
+            appendLine(prevSignature.decodeToString())
+            append(trailingHeaders.hash(sha256Provider).encodeToHex())
+        }
+}
+
+internal val AwsSigningAlgorithm.signingName: String
+    get() = when (this) {
+        AwsSigningAlgorithm.SIGV4 -> "AWS4-HMAC-SHA256"
+        AwsSigningAlgorithm.SIGV4_ASYMMETRIC -> "AWS4-ECDSA-P256-SHA256"
     }
+
+
+internal class SigV4SignatureCalculator(override val sha256Provider: HashSupplier = ::Sha256) : SigV4xSignatureCalculator(AwsSigningAlgorithm.SIGV4, sha256Provider) {
+    override fun calculate(signingKey: ByteArray, stringToSign: String): String =
+        hmac(signingKey, stringToSign.encodeToByteArray(), sha256Provider).encodeToHex()
+
+    override fun signingKey(config: AwsSigningConfig): ByteArray {
+        fun hmac(key: ByteArray, message: String) = hmac(key, message.encodeToByteArray(), sha256Provider)
+
+        val initialKey = ("AWS4" + config.credentials.secretAccessKey).encodeToByteArray()
+        val kDate = hmac(initialKey, config.signingDate.format(TimestampFormat.ISO_8601_CONDENSED_DATE))
+        val kRegion = hmac(kDate, config.region)
+        val kService = hmac(kRegion, config.service)
+        return hmac(kService, "aws4_request")
+    }
+}
+
+/**
+ * The maximum number of iterations to attempt private key derivation using KDF in counter mode
+ * Taken from CRT: https://github.com/awslabs/aws-c-auth/blob/e8360a65e0f3337d4ac827945e00c3b55a641a5f/source/key_derivation.c#L22
+ */
+internal const val MAX_KDF_COUNTER_ITERATIONS = 254.toByte()
+
+internal class SigV4aSignatureCalculator(override val sha256Provider: HashSupplier = ::Sha256) : SigV4xSignatureCalculator(AwsSigningAlgorithm.SIGV4_ASYMMETRIC, sha256Provider) {
+    override fun calculate(signingKey: ByteArray, stringToSign: String): String = ecdsasecp256r1(signingKey, stringToSign.encodeToByteArray()).encodeToHex()
+
+    // See https://github.com/awslabs/aws-c-auth/blob/e8360a65e0f3337d4ac827945e00c3b55a641a5f/source/key_derivation.c#L70 for more details of derivation process
+    override fun signingKey(config: AwsSigningConfig): ByteArray {
+        var counter: Byte = 1
+        var privateKey: ByteArray
+
+        // N value from NIST P-256 curve
+        // FIXME optimization: n is never used by itself, only n-2. Subtract two from the const.
+        val nBytes = "FFFFFFFF00000000FFFFFFFFFFFFFFFFBCE6FAADA7179E84F3B9CAC2FC632551".decodeHexBytes()
+        val n = BigInteger(nBytes)
+
+        // FIXME Public docs say secret access key needs to be Base64 encoded, that's not right.
+        // (or maybe it's already base64-encoded, and they are just repeating it)
+        val inputKey = ("AWS4A" + config.credentials.secretAccessKey).encodeToByteArray()
+
+        do {
+            // 1.2: Compute K0
+            val k0 = hmac(inputKey, fixedInputString(config.credentials.accessKeyId, counter), sha256Provider)
+
+            // 2: Compute the ECC key pair
+            val c = BigInteger(k0)
+
+            privateKey = (c + BigInteger("1")).toByteArray()
+
+            if (counter == MAX_KDF_COUNTER_ITERATIONS && c > n - BigInteger("2")) {
+                throw IllegalStateException("Counter exceeded maximum length")
+            } else {
+                counter++
+            }
+        } while (c > n - BigInteger("2"))
+
+        return privateKey
+    }
+
+    /**
+     * Computes the fixed input string used for KDF
+     * The final output looks like:
+     * 0x00000001 || "AWS4-ECDSA-P256-SHA256" || 0x00 || AccessKeyId || counter || 0x00000100
+     */
+    private fun fixedInputString(accessKeyId: String, counter: Byte): ByteArray =
+        byteArrayOf(0x00, 0x00, 0x00, 0x01) + // FIXME CRT implementation (4 bytes) and internal docs (1 byte) conflict.
+        "AWS4-ECDSA-P256-SHA256".encodeToByteArray() +
+        byteArrayOf(0x00) +
+        accessKeyId.encodeToByteArray() +
+        counter +
+        byteArrayOf(0x00, 0x00, 0x01, 0x00) // FIXME CRT implementation (4 bytes) and internal docs (2 bytes) conflict.
+
 }
 
 private const val HEADER_TIMESTAMP_TYPE: Byte = 8
