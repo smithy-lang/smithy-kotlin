@@ -152,7 +152,7 @@ internal class SigV4aSignatureCalculator(override val sha256Provider: HashSuppli
         var privateKey: ByteArray
 
         // N value from NIST P-256 curve, minus two.
-        val nMinusTwo = BigInteger("FFFFFFFF00000000FFFFFFFFFFFFFFFFBCE6FAADA7179E84F3B9CAC2FC63254f".decodeHexBytes())
+        val nMinusTwo = BigInteger("FFFFFFFF00000000FFFFFFFFFFFFFFFFBCE6FAADA7179E84F3B9CAC2FC63254F".decodeHexBytes())
 
         // FIXME Public docs say secret access key needs to be Base64 encoded, that's not right.
         // (or maybe it's already base64-encoded, and they are just repeating it)
