@@ -79,7 +79,7 @@ internal abstract class SigV4xSignatureCalculator(
     open val sha256Provider: HashSupplier = ::Sha256,
 ) : SignatureCalculator {
     init {
-        check (algorithm == AwsSigningAlgorithm.SIGV4 || algorithm == AwsSigningAlgorithm.SIGV4_ASYMMETRIC) {
+        check(algorithm == AwsSigningAlgorithm.SIGV4 || algorithm == AwsSigningAlgorithm.SIGV4_ASYMMETRIC) {
             "This class should only be used for the ${AwsSigningAlgorithm.SIGV4} or ${AwsSigningAlgorithm.SIGV4_ASYMMETRIC} algorithms, got $algorithm"
         }
     }
@@ -121,7 +121,6 @@ internal val AwsSigningAlgorithm.signingName: String
         AwsSigningAlgorithm.SIGV4 -> "AWS4-HMAC-SHA256"
         AwsSigningAlgorithm.SIGV4_ASYMMETRIC -> "AWS4-ECDSA-P256-SHA256"
     }
-
 
 internal class SigV4SignatureCalculator(override val sha256Provider: HashSupplier = ::Sha256) : SigV4xSignatureCalculator(AwsSigningAlgorithm.SIGV4, sha256Provider) {
     override fun calculate(signingKey: ByteArray, stringToSign: String): String =
@@ -185,12 +184,11 @@ internal class SigV4aSignatureCalculator(override val sha256Provider: HashSuppli
      */
     private fun fixedInputString(accessKeyId: String, counter: Byte): ByteArray =
         byteArrayOf(0x00, 0x00, 0x00, 0x01) + // FIXME CRT implementation (4 bytes) and internal docs (1 byte) conflict.
-        "AWS4-ECDSA-P256-SHA256".encodeToByteArray() +
-        byteArrayOf(0x00) +
-        accessKeyId.encodeToByteArray() +
-        counter +
-        byteArrayOf(0x00, 0x00, 0x01, 0x00) // FIXME CRT implementation (4 bytes) and internal docs (2 bytes) conflict.
-
+            "AWS4-ECDSA-P256-SHA256".encodeToByteArray() +
+            byteArrayOf(0x00) +
+            accessKeyId.encodeToByteArray() +
+            counter +
+            byteArrayOf(0x00, 0x00, 0x01, 0x00) // FIXME CRT implementation (4 bytes) and internal docs (2 bytes) conflict.
 }
 
 private const val HEADER_TIMESTAMP_TYPE: Byte = 8
