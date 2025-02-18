@@ -1,5 +1,0 @@
-{
-    "id": "ba71e47f-d546-45f2-bf44-aedaab74a966",
-    "type": "misc",
-    "description": "Increase maximum event stream message length to 24MB"
-}

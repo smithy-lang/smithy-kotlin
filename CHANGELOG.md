@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.4.4] - 02/18/2025
+
+### Miscellaneous
+* Increase maximum event stream message length to 24MB
+
 ## [1.4.3] - 02/13/2025
 
 ### Fixes
