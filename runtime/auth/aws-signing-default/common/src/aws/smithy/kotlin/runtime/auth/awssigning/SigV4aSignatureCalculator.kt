@@ -59,18 +59,16 @@ internal class SigV4aSignatureCalculator(override val sha256Provider: HashSuppli
      */
     private fun fixedInputString(accessKeyId: String, counter: Byte): ByteArray =
         byteArrayOf(0x00, 0x00, 0x00, 0x01) + // FIXME CRT implementation (4 bytes) and internal docs (1 byte) conflict.
-                "AWS4-ECDSA-P256-SHA256".encodeToByteArray() +
-                byteArrayOf(0x00) +
-                accessKeyId.encodeToByteArray() +
-                counter +
-                byteArrayOf(0x00, 0x00, 0x01, 0x00) // FIXME CRT implementation (4 bytes) and internal docs (2 bytes) conflict.
+            "AWS4-ECDSA-P256-SHA256".encodeToByteArray() +
+            byteArrayOf(0x00) +
+            accessKeyId.encodeToByteArray() +
+            counter +
+            byteArrayOf(0x00, 0x00, 0x01, 0x00) // FIXME CRT implementation (4 bytes) and internal docs (2 bytes) conflict.
 }
 
 // Convert [this] [ByteArray] to a positive [BigInteger]
-private fun ByteArray.toPositiveBigInteger(): BigInteger {
-    return if (isNotEmpty() && (get(0).toInt() and 0x80) != 0) {
-        BigInteger(byteArrayOf(0x00) + this) // Prepend 0x00 to ensure positive value
-    } else {
-        BigInteger(this)
-    }
+private fun ByteArray.toPositiveBigInteger(): BigInteger = if (isNotEmpty() && (get(0).toInt() and 0x80) != 0) {
+    BigInteger(byteArrayOf(0x00) + this) // Prepend 0x00 to ensure positive value
+} else {
+    BigInteger(this)
 }

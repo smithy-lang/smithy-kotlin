@@ -65,7 +65,6 @@ internal val AwsSigningAlgorithm.signingName: String
         AwsSigningAlgorithm.SIGV4_ASYMMETRIC -> "AWS4-ECDSA-P256-SHA256"
     }
 
-
 private const val HEADER_TIMESTAMP_TYPE: Byte = 8
 
 /**
