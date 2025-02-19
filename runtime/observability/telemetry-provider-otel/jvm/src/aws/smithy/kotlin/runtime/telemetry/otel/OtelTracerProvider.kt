@@ -10,6 +10,8 @@ import aws.smithy.kotlin.runtime.collections.Attributes
 import aws.smithy.kotlin.runtime.telemetry.context.Context
 import aws.smithy.kotlin.runtime.telemetry.trace.*
 import io.opentelemetry.api.OpenTelemetry
+import io.opentelemetry.extension.kotlin.asContextElement
+import kotlin.coroutines.CoroutineContext
 import io.opentelemetry.api.trace.Span as OtelSpan
 import io.opentelemetry.api.trace.SpanContext as OtelSpanContext
 import io.opentelemetry.api.trace.SpanKind as OtelSpanKind
@@ -62,11 +64,11 @@ private class OtelSpanContextImpl(private val otelSpanContext: OtelSpanContext) 
 internal class OtelTraceSpanImpl(
     private val otelSpan: OtelSpan,
 ) : TraceSpan {
-
-    private val spanScope = otelSpan.makeCurrent()
-
     override val spanContext: SpanContext
         get() = OtelSpanContextImpl(otelSpan.spanContext)
+
+    override fun asContextElement(): CoroutineContext = otelSpan.asContextElement()
+
     override fun <T : Any> set(key: AttributeKey<T>, value: T) {
         key.otelAttrKeyOrNull(value)?.let { otelKey ->
             otelSpan.setAttribute(otelKey, value)
@@ -90,7 +92,6 @@ internal class OtelTraceSpanImpl(
 
     override fun close() {
         otelSpan.end()
-        spanScope.close()
     }
 }
 

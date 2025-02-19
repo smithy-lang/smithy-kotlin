@@ -18,6 +18,7 @@ kotlin {
         jvmMain {
             dependencies {
                 api(libs.opentelemetry.api)
+                api(libs.opentelemetry.kotlin.extension)
             }
         }
         all {
