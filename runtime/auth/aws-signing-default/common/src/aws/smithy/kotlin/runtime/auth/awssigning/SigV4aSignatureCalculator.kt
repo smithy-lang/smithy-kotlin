@@ -27,7 +27,7 @@ internal class SigV4aSignatureCalculator(override val sha256Provider: HashSuppli
         var privateKey: ByteArray
 
         // N value from NIST P-256 curve, minus two.
-        val nMinusTwo = BigInteger("FFFFFFFF00000000FFFFFFFFFFFFFFFFBCE6FAADA7179E84F3B9CAC2FC63254F".decodeHexBytes())
+        val nMinusTwo = "FFFFFFFF00000000FFFFFFFFFFFFFFFFBCE6FAADA7179E84F3B9CAC2FC63254F".decodeHexBytes().toPositiveBigInteger()
 
         // FIXME Public docs say secret access key needs to be Base64 encoded, that's not right.
         // (or maybe it's already base64-encoded, and they are just repeating it)
@@ -38,7 +38,7 @@ internal class SigV4aSignatureCalculator(override val sha256Provider: HashSuppli
             val k0 = hmac(inputKey, fixedInputString(config.credentials.accessKeyId, counter), sha256Provider)
 
             // 2: Compute the ECC key pair
-            val c = BigInteger(k0)
+            val c = k0.toPositiveBigInteger()
 
             privateKey = (c + BigInteger("1")).toByteArray()
 
@@ -64,4 +64,13 @@ internal class SigV4aSignatureCalculator(override val sha256Provider: HashSuppli
                 accessKeyId.encodeToByteArray() +
                 counter +
                 byteArrayOf(0x00, 0x00, 0x01, 0x00) // FIXME CRT implementation (4 bytes) and internal docs (2 bytes) conflict.
+}
+
+// Convert [this] [ByteArray] to a positive [BigInteger]
+private fun ByteArray.toPositiveBigInteger(): BigInteger {
+    return if (isNotEmpty() && (get(0).toInt() and 0x80) != 0) {
+        BigInteger(byteArrayOf(0x00) + this) // Prepend 0x00 to ensure positive value
+    } else {
+        BigInteger(this)
+    }
 }
