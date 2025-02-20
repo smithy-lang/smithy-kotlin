@@ -130,7 +130,7 @@ internal class DefaultCanonicalizer(private val sha256Supplier: HashSupplier = :
         param("X-Amz-Date", config.signingDate.format(TimestampFormat.ISO_8601_CONDENSED))
         param("X-Amz-Expires", config.expiresAfter?.inWholeSeconds?.toString(), signViaQueryParams)
         param("X-Amz-Security-Token", sessionToken, !config.omitSessionToken) // Add pre-sig if omitSessionToken=false
-        param("X-Amz-Region-Set", config.region, config.algorithm == AwsSigningAlgorithm.SIGV4_ASYMMETRIC) // FIXME Route through sigV4aSigningRegionSet to this config?
+        param("X-Amz-Region-Set", config.region, config.algorithm == AwsSigningAlgorithm.SIGV4_ASYMMETRIC)
 
         val headers = builder
             .headers
