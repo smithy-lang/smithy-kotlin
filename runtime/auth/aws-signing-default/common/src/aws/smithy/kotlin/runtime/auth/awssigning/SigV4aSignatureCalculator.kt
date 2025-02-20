@@ -24,6 +24,9 @@ import kotlin.time.Duration.Companion.hours
  */
 internal const val MAX_KDF_COUNTER_ITERATIONS = 254.toByte()
 
+// N value from NIST P-256 curve, minus two.
+internal val N_MINUS_TWO = "FFFFFFFF00000000FFFFFFFFFFFFFFFFBCE6FAADA7179E84F3B9CAC2FC63254F".decodeHexBytes().toPositiveBigInteger()
+
 /**
  * A [SignatureCalculator] for the SigV4a ("AWS4-ECDSA-P256-SHA256") algorithm.
  * @param sha256Provider the [HashSupplier] to use for computing SHA-256 hashes
@@ -48,9 +51,6 @@ internal class SigV4aSignatureCalculator(override val sha256Provider: HashSuppli
             var counter: Byte = 1
             var privateKey: ByteArray
 
-            // N value from NIST P-256 curve, minus two.
-            val nMinusTwo = "FFFFFFFF00000000FFFFFFFFFFFFFFFFBCE6FAADA7179E84F3B9CAC2FC63254F".decodeHexBytes().toPositiveBigInteger()
-
             val inputKey = ("AWS4A" + config.credentials.secretAccessKey).encodeToByteArray()
 
             do {
@@ -59,12 +59,12 @@ internal class SigV4aSignatureCalculator(override val sha256Provider: HashSuppli
                 val c = k0.toPositiveBigInteger()
                 privateKey = (c + BigInteger("1")).toByteArray()
 
-                if (counter == MAX_KDF_COUNTER_ITERATIONS && c > nMinusTwo) {
+                if (counter == MAX_KDF_COUNTER_ITERATIONS && c > N_MINUS_TWO) {
                     throw IllegalStateException("Counter exceeded maximum length")
                 } else {
                     counter++
                 }
-            } while (c > nMinusTwo)
+            } while (c > N_MINUS_TWO)
 
             ExpiringValue<ByteArray>(privateKey, Instant.MAX_VALUE)
         }
