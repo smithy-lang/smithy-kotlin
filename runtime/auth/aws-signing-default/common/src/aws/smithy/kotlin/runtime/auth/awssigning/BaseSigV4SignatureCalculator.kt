@@ -21,9 +21,11 @@ internal abstract class BaseSigV4SignatureCalculator(
     val algorithm: AwsSigningAlgorithm,
     open val sha256Provider: HashSupplier = ::Sha256,
 ) : SignatureCalculator {
+    private val supportedAlgorithms = setOf(AwsSigningAlgorithm.SIGV4, AwsSigningAlgorithm.SIGV4_ASYMMETRIC)
+
     init {
-        check(algorithm == AwsSigningAlgorithm.SIGV4 || algorithm == AwsSigningAlgorithm.SIGV4_ASYMMETRIC) {
-            "This class should only be used for the ${AwsSigningAlgorithm.SIGV4} or ${AwsSigningAlgorithm.SIGV4_ASYMMETRIC} algorithms, got $algorithm"
+        check(algorithm in supportedAlgorithms) {
+            "This class should only be used for ${supportedAlgorithms.joinToString()}, got $algorithm"
         }
     }
 
