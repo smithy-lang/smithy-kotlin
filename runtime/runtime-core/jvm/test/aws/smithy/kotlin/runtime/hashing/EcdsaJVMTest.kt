@@ -10,7 +10,6 @@ import java.security.*
 import java.security.interfaces.*
 import java.security.spec.*
 import kotlin.test.Test
-import kotlin.test.assertNotNull
 
 class EcdsaJVMTest {
     // Helper function to generate valid test key
@@ -29,21 +28,8 @@ class EcdsaJVMTest {
 
         val signature = ecdsasecp256r1(privateKey, message)
 
-        assertNotNull(signature)
+        assertTrue(signature.isNotEmpty())
         assertTrue(signature.size >= 64) // ECDSA signatures are typically 70-72 bytes in DER format
-    }
-
-    @Test
-    fun testSignatureDeterminism() {
-        val privateKey = generateValidPrivateKey()
-        val message = "Hello, World!".toByteArray()
-
-        val signature1 = ecdsasecp256r1(privateKey, message)
-        val signature2 = ecdsasecp256r1(privateKey, message)
-
-        // Note: ECDSA is not deterministic by default, so signatures will be different
-        assertNotNull(signature1)
-        assertNotNull(signature2)
     }
 
     @Test
@@ -55,8 +41,8 @@ class EcdsaJVMTest {
         val signature1 = ecdsasecp256r1(privateKey, message1)
         val signature2 = ecdsasecp256r1(privateKey, message2)
 
-        assertNotNull(signature1)
-        assertNotNull(signature2)
+        assertTrue(signature1.isNotEmpty())
+        assertTrue(signature2.isNotEmpty())
         assertFalse(signature1.contentEquals(signature2))
     }
 
@@ -66,7 +52,7 @@ class EcdsaJVMTest {
         val message = ByteArray(0)
 
         val signature = ecdsasecp256r1(privateKey, message)
-        assertNotNull(signature)
+        assertTrue(signature.isNotEmpty())
     }
 
     @Test
@@ -75,7 +61,7 @@ class EcdsaJVMTest {
         val largeMessage = ByteArray(1000000) { it.toByte() }
 
         val signature = ecdsasecp256r1(privateKey, largeMessage)
-        assertNotNull(signature)
+        assertTrue(signature.isNotEmpty())
     }
 
     @Test
