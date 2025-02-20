@@ -36,7 +36,7 @@ Specifically it's the keys function
 Smithy spec: https://smithy.io/2.0/additional-specs/rules-engine/parameters.html#smithy-rules-operationcontextparams-trait
 JMESPath spec: https://jmespath.org/specification.html#keys
 
-TODO: Proactively support JMESPath objects as Kotlin maps throughout thr entire visitor if more instances of this behavior start popping up
+TODO: Test relevant uses of JMESPath to determine if we should support JMESPath objects as Kotlin maps throughout the entire visitor
  */
 
 /**
