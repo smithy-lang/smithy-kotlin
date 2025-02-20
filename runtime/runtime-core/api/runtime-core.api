@@ -694,7 +694,7 @@ public final class aws/smithy/kotlin/runtime/hashing/Crc32cKt {
 }
 
 public final class aws/smithy/kotlin/runtime/hashing/EcdsaJVMKt {
-	public static final fun ecdsasecp256r1 ([B[B)[B
+	public static final fun ecdsaSecp256r1 ([B[B)[B
 }
 
 public abstract interface class aws/smithy/kotlin/runtime/hashing/HashFunction {

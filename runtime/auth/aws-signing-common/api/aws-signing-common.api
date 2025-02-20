@@ -55,6 +55,7 @@ public final class aws/smithy/kotlin/runtime/auth/awssigning/AwsSigningAlgorithm
 	public static final field SIGV4 Laws/smithy/kotlin/runtime/auth/awssigning/AwsSigningAlgorithm;
 	public static final field SIGV4_ASYMMETRIC Laws/smithy/kotlin/runtime/auth/awssigning/AwsSigningAlgorithm;
 	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public final fun getSigningName ()Ljava/lang/String;
 	public static fun valueOf (Ljava/lang/String;)Laws/smithy/kotlin/runtime/auth/awssigning/AwsSigningAlgorithm;
 	public static fun values ()[Laws/smithy/kotlin/runtime/auth/awssigning/AwsSigningAlgorithm;
 }
