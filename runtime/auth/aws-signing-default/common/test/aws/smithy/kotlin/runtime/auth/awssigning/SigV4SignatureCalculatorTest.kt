@@ -14,7 +14,7 @@ import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
-class DefaultSignatureCalculatorTest {
+class SigV4SignatureCalculatorTest {
     // Test adapted from https://docs.aws.amazon.com/general/latest/gr/sigv4-calculate-signature.html
     @Test
     fun testCalculate() {

@@ -4,6 +4,9 @@
  */
 package aws.smithy.kotlin.runtime.auth.awssigning
 
+import aws.smithy.kotlin.runtime.auth.awscredentials.Credentials
+import aws.smithy.kotlin.runtime.collections.LruCache
+import aws.smithy.kotlin.runtime.collections.ReadThroughCache
 import aws.smithy.kotlin.runtime.content.BigInteger
 import aws.smithy.kotlin.runtime.hashing.HashSupplier
 import aws.smithy.kotlin.runtime.hashing.Sha256
@@ -11,6 +14,10 @@ import aws.smithy.kotlin.runtime.hashing.ecdsasecp256r1
 import aws.smithy.kotlin.runtime.hashing.hmac
 import aws.smithy.kotlin.runtime.text.encoding.decodeHexBytes
 import aws.smithy.kotlin.runtime.text.encoding.encodeToHex
+import aws.smithy.kotlin.runtime.time.Instant
+import aws.smithy.kotlin.runtime.util.ExpiringValue
+import kotlinx.coroutines.runBlocking
+import kotlin.time.Duration.Companion.hours
 
 /**
  * The maximum number of iterations to attempt private key derivation using KDF in counter mode
@@ -19,37 +26,43 @@ import aws.smithy.kotlin.runtime.text.encoding.encodeToHex
 internal const val MAX_KDF_COUNTER_ITERATIONS = 254.toByte()
 
 internal class SigV4aSignatureCalculator(override val sha256Provider: HashSupplier = ::Sha256) : SigV4xSignatureCalculator(AwsSigningAlgorithm.SIGV4_ASYMMETRIC, sha256Provider) {
+    private val privateKeyCache = ReadThroughCache<Credentials, ByteArray>(
+        minimumSweepPeriod = 1.hours // note: Sweeps are effectively a no-op because expiration is [Instant.MAX_VALUE]
+    )
+
     override fun calculate(signingKey: ByteArray, stringToSign: String): String = ecdsasecp256r1(signingKey, stringToSign.encodeToByteArray()).encodeToHex()
 
     // See https://github.com/awslabs/aws-c-auth/blob/e8360a65e0f3337d4ac827945e00c3b55a641a5f/source/key_derivation.c#L70 for more details of derivation process
-    override fun signingKey(config: AwsSigningConfig): ByteArray {
-        var counter: Byte = 1
-        var privateKey: ByteArray
+    override fun signingKey(config: AwsSigningConfig): ByteArray = runBlocking {
+        privateKeyCache.get(config.credentials) {
+            var counter: Byte = 1
+            var privateKey: ByteArray
 
-        // N value from NIST P-256 curve, minus two.
-        val nMinusTwo = "FFFFFFFF00000000FFFFFFFFFFFFFFFFBCE6FAADA7179E84F3B9CAC2FC63254F".decodeHexBytes().toPositiveBigInteger()
+            // N value from NIST P-256 curve, minus two.
+            val nMinusTwo = "FFFFFFFF00000000FFFFFFFFFFFFFFFFBCE6FAADA7179E84F3B9CAC2FC63254F".decodeHexBytes().toPositiveBigInteger()
 
-        // FIXME Public docs say secret access key needs to be Base64 encoded, that's not right.
-        // (or maybe it's already base64-encoded, and they are just repeating it)
-        val inputKey = ("AWS4A" + config.credentials.secretAccessKey).encodeToByteArray()
+            // FIXME Public docs say secret access key needs to be Base64 encoded, that's not right.
+            // (or maybe it's already base64-encoded, and they are just repeating it)
+            val inputKey = ("AWS4A" + config.credentials.secretAccessKey).encodeToByteArray()
 
-        do {
-            // 1.2: Compute K0
-            val k0 = hmac(inputKey, fixedInputString(config.credentials.accessKeyId, counter), sha256Provider)
+            do {
+                // 1.2: Compute K0
+                val k0 = hmac(inputKey, fixedInputString(config.credentials.accessKeyId, counter), sha256Provider)
 
-            // 2: Compute the ECC key pair
-            val c = k0.toPositiveBigInteger()
+                // 2: Compute the ECC key pair
+                val c = k0.toPositiveBigInteger()
 
-            privateKey = (c + BigInteger("1")).toByteArray()
+                privateKey = (c + BigInteger("1")).toByteArray()
 
-            if (counter == MAX_KDF_COUNTER_ITERATIONS && c > nMinusTwo) {
-                throw IllegalStateException("Counter exceeded maximum length")
-            } else {
-                counter++
-            }
-        } while (c > nMinusTwo)
+                if (counter == MAX_KDF_COUNTER_ITERATIONS && c > nMinusTwo) {
+                    throw IllegalStateException("Counter exceeded maximum length")
+                } else {
+                    counter++
+                }
+            } while (c > nMinusTwo)
 
-        return privateKey
+            ExpiringValue<ByteArray>(privateKey, Instant.MAX_VALUE)
+        }
     }
 
     /**
