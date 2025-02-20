@@ -19,13 +19,11 @@ import software.amazon.smithy.kotlin.codegen.model.isEnum
 import software.amazon.smithy.kotlin.codegen.model.targetOrSelf
 import software.amazon.smithy.kotlin.codegen.model.traits.OperationInput
 import software.amazon.smithy.kotlin.codegen.model.traits.OperationOutput
+import software.amazon.smithy.kotlin.codegen.utils.doubleQuote
 import software.amazon.smithy.kotlin.codegen.utils.dq
 import software.amazon.smithy.kotlin.codegen.utils.getOrNull
 import software.amazon.smithy.kotlin.codegen.utils.toCamelCase
-import software.amazon.smithy.model.shapes.ListShape
-import software.amazon.smithy.model.shapes.MapShape
-import software.amazon.smithy.model.shapes.MemberShape
-import software.amazon.smithy.model.shapes.Shape
+import software.amazon.smithy.model.shapes.*
 
 private val suffixSequence = sequenceOf("") + generateSequence(2) { it + 1 }.map(Int::toString) // "", "2", "3", etc.
 
@@ -526,11 +524,20 @@ class KotlinJmespathExpressionVisitor(
             ".$expr"
         }
 
-    private fun VisitedExpression.getKeys(): String {
-        val keys = this.shape?.targetOrSelf(ctx.model)?.allMembers
-            ?.keys?.joinToString(", ", "listOf(", ")") { "\"$it\"" }
-        return keys ?: "listOf<String>()"
-    }
+    // TODO: Support maps as objects throughout the visitor
+    // This visitor assumes JMESPath 'objects' will be classes. DDB assumes JMESPath 'objects' will be maps
+    private fun VisitedExpression.getKeys(): String =
+        if (this.shape?.targetOrSelf(ctx.model)?.type == ShapeType.MAP) {
+            "${this.identifier}?.keys?.toList()"
+        } else {
+            this
+                .shape
+                ?.targetOrSelf(ctx.model)
+                ?.allMembers
+                ?.keys
+                ?.joinToString(", ", "listOf(", ")") { it.doubleQuote() }
+                ?: "listOf<String>()"
+        }
 
     private fun VisitedExpression.getValues(): String {
         val values = this.shape?.targetOrSelf(ctx.model)?.allMembers?.keys

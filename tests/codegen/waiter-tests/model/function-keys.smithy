@@ -18,14 +18,14 @@ use smithy.waiters#waitable
             }
         ]
     },
-    KeysFunctionPrimitivesIntegerEquals: {
+    KeysFunctionMapStringEquals: {
         acceptors: [
             {
                 state: "success",
                 matcher: {
                     output: {
-                        path: "keys(primitives)",
-                        expected: "integer",
+                        path: "keys(maps.strings)",
+                        expected: "key",
                         comparator: "anyStringEquals"
                     }
                 }

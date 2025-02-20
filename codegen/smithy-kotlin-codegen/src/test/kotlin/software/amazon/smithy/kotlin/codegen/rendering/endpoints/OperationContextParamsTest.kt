@@ -88,7 +88,7 @@ class OperationContextParamsTest {
     }
 
     @Test
-    fun testKeysFunctionPath() {
+    fun testKeysFunctionPathWithStructure() {
         val input = """
             structure TestOperationRequest {
                 Object: Object
@@ -109,6 +109,33 @@ class OperationContextParamsTest {
             val input = request.context[HttpOperationContext.OperationInput] as TestOperationRequest
             val object = input.object
             val keys = listOf("Key1", "Key2", "Key3")
+            builder.foo = keys
+        """.formatForTest("    ")
+
+        codegen(pathResultType, path, input).shouldContainOnlyOnceWithDiff(expected)
+    }
+
+    @Test
+    fun testKeysFunctionPathWithMap() {
+        val input = """
+            structure TestOperationRequest {
+                Object: StringMap
+            }
+            
+            map StringMap {
+                key: String
+                value: String
+            }
+        """.trimIndent()
+
+        val path = "keys(Object)"
+        val pathResultType = "stringArray"
+
+        val expected = """
+            @Suppress("UNCHECKED_CAST")
+            val input = request.context[HttpOperationContext.OperationInput] as TestOperationRequest
+            val object = input.object
+            val keys = object?.keys?.toList()
             builder.foo = keys
         """.formatForTest("    ")
 
