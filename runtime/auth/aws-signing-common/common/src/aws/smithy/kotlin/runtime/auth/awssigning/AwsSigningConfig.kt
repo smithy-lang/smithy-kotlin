@@ -23,7 +23,16 @@ public enum class AwsSigningAlgorithm {
     /**
      * AWS Signature Version 4 Asymmetric
      */
-    SIGV4_ASYMMETRIC,
+    SIGV4_ASYMMETRIC;
+
+    /**
+     * The name of this algorithm to use when signing requests.
+     */
+    public val signingName: String
+        get() = when (this) {
+            SIGV4 -> "AWS4-HMAC-SHA256"
+            SIGV4_ASYMMETRIC -> "AWS4-ECDSA-P256-SHA256"
+        }
 }
 
 /**

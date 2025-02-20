@@ -61,12 +61,6 @@ internal abstract class BaseSigV4SignatureCalculator(
         }
 }
 
-internal val AwsSigningAlgorithm.signingName: String
-    get() = when (this) {
-        AwsSigningAlgorithm.SIGV4 -> "AWS4-HMAC-SHA256"
-        AwsSigningAlgorithm.SIGV4_ASYMMETRIC -> "AWS4-ECDSA-P256-SHA256"
-    }
-
 private const val HEADER_TIMESTAMP_TYPE: Byte = 8
 
 /**
