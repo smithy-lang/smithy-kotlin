@@ -23,7 +23,9 @@ public enum class AwsSigningAlgorithm {
     /**
      * AWS Signature Version 4 Asymmetric
      */
-    SIGV4_ASYMMETRIC;
+    SIGV4_ASYMMETRIC,
+
+    ;
 
     /**
      * The name of this algorithm to use when signing requests.
