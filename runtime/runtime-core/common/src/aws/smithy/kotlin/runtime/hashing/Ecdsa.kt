@@ -7,4 +7,4 @@ package aws.smithy.kotlin.runtime.hashing
 /**
  * ECDSA on the SECP256R1 curve.
  */
-public expect fun ecdsasecp256r1(key: ByteArray, message: ByteArray): ByteArray
+public expect fun ecdsaSecp256r1(key: ByteArray, message: ByteArray): ByteArray

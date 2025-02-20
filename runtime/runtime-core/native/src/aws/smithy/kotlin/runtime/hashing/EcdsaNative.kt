@@ -13,4 +13,4 @@ package aws.smithy.kotlin.runtime.hashing
  * Or maybe we can _only_ offer the CRT signer on Native?
  * Will require updating DefaultAwsSigner to be expect/actual and set to CrtSigner on Native.
  */
-public actual fun ecdsasecp256r1(key: ByteArray, message: ByteArray): ByteArray = TODO("Not yet implemented")
+public actual fun ecdsaSecp256r1(key: ByteArray, message: ByteArray): ByteArray = TODO("Not yet implemented")

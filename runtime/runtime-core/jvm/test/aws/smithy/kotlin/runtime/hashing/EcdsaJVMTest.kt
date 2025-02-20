@@ -26,7 +26,7 @@ class EcdsaJVMTest {
         val privateKey = generateValidPrivateKey()
         val message = "Hello, World!".toByteArray()
 
-        val signature = ecdsasecp256r1(privateKey, message)
+        val signature = ecdsaSecp256r1(privateKey, message)
 
         assertTrue(signature.isNotEmpty())
         assertTrue(signature.size >= 64) // ECDSA signatures are typically 70-72 bytes in DER format
@@ -38,8 +38,8 @@ class EcdsaJVMTest {
         val message1 = "Hello, World!".toByteArray()
         val message2 = "Different message".toByteArray()
 
-        val signature1 = ecdsasecp256r1(privateKey, message1)
-        val signature2 = ecdsasecp256r1(privateKey, message2)
+        val signature1 = ecdsaSecp256r1(privateKey, message1)
+        val signature2 = ecdsaSecp256r1(privateKey, message2)
 
         assertTrue(signature1.isNotEmpty())
         assertTrue(signature2.isNotEmpty())
@@ -51,7 +51,7 @@ class EcdsaJVMTest {
         val privateKey = generateValidPrivateKey()
         val message = ByteArray(0)
 
-        val signature = ecdsasecp256r1(privateKey, message)
+        val signature = ecdsaSecp256r1(privateKey, message)
         assertTrue(signature.isNotEmpty())
     }
 
@@ -60,7 +60,7 @@ class EcdsaJVMTest {
         val privateKey = generateValidPrivateKey()
         val largeMessage = ByteArray(1000000) { it.toByte() }
 
-        val signature = ecdsasecp256r1(privateKey, largeMessage)
+        val signature = ecdsaSecp256r1(privateKey, largeMessage)
         assertTrue(signature.isNotEmpty())
     }
 
@@ -73,7 +73,7 @@ class EcdsaJVMTest {
         val publicKey = keyPair.public
 
         val message = "Hello, World!".toByteArray()
-        val signature = ecdsasecp256r1(privateKey, message)
+        val signature = ecdsaSecp256r1(privateKey, message)
 
         val verifier = Signature.getInstance("SHA256withECDSA")
         verifier.initVerify(publicKey)

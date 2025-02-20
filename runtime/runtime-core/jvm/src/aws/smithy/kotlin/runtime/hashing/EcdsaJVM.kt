@@ -12,7 +12,7 @@ import java.security.spec.*
 /**
  * ECDSA on the SECP256R1 curve.
  */
-public actual fun ecdsasecp256r1(key: ByteArray, message: ByteArray): ByteArray {
+public actual fun ecdsaSecp256r1(key: ByteArray, message: ByteArray): ByteArray {
     // Convert private key to BigInteger
     val d = BigInteger(key)
 

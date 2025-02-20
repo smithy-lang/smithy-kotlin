@@ -9,7 +9,7 @@ import aws.smithy.kotlin.runtime.collections.ReadThroughCache
 import aws.smithy.kotlin.runtime.content.BigInteger
 import aws.smithy.kotlin.runtime.hashing.HashSupplier
 import aws.smithy.kotlin.runtime.hashing.Sha256
-import aws.smithy.kotlin.runtime.hashing.ecdsasecp256r1
+import aws.smithy.kotlin.runtime.hashing.ecdsaSecp256r1
 import aws.smithy.kotlin.runtime.hashing.hmac
 import aws.smithy.kotlin.runtime.text.encoding.decodeHexBytes
 import aws.smithy.kotlin.runtime.text.encoding.encodeToHex
@@ -36,7 +36,7 @@ internal class SigV4aSignatureCalculator(override val sha256Provider: HashSuppli
         minimumSweepPeriod = 1.hours, // note: Sweeps are effectively a no-op because expiration is [Instant.MAX_VALUE]
     )
 
-    override fun calculate(signingKey: ByteArray, stringToSign: String): String = ecdsasecp256r1(signingKey, stringToSign.encodeToByteArray()).encodeToHex()
+    override fun calculate(signingKey: ByteArray, stringToSign: String): String = ecdsaSecp256r1(signingKey, stringToSign.encodeToByteArray()).encodeToHex()
 
     /**
      * Retrieve a signing key based on the signing credentials. If not cached, the key will be derived using a counter-based key derivation function (KDF)
