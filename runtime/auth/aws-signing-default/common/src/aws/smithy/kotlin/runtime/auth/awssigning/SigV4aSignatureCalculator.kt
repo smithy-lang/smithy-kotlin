@@ -71,7 +71,7 @@ internal class SigV4aSignatureCalculator(override val sha256Provider: HashSuppli
     }
 
     /**
-     * Forms the fixed input string used for ECDS private key derivation
+     * Forms the fixed input string used for ECDSA private key derivation
      * The final output looks like:
      * 0x00000001 || "AWS4-ECDSA-P256-SHA256" || 0x00 || AccessKeyId || counter || 0x00000100
      */
