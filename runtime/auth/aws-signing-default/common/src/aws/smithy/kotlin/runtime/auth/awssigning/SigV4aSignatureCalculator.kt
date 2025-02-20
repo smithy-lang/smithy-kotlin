@@ -84,9 +84,5 @@ internal class SigV4aSignatureCalculator(override val sha256Provider: HashSuppli
             byteArrayOf(0x00, 0x00, 0x01, 0x00)
 }
 
-// Convert [this] [ByteArray] to a positive [BigInteger]
-private fun ByteArray.toPositiveBigInteger(): BigInteger = if (isNotEmpty() && (get(0).toInt() and 0x80) != 0) {
-    BigInteger(byteArrayOf(0x00) + this) // Prepend 0x00 to ensure positive value
-} else {
-    BigInteger(this)
-}
+// Convert [this] [ByteArray] to a positive [BigInteger] by prepending 0x00.
+private fun ByteArray.toPositiveBigInteger() = BigInteger(byteArrayOf(0x00) + this)
