@@ -31,7 +31,7 @@ internal val N_MINUS_TWO = "FFFFFFFF00000000FFFFFFFFFFFFFFFFBCE6FAADA7179E84F3B9
  * A [SignatureCalculator] for the SigV4a ("AWS4-ECDSA-P256-SHA256") algorithm.
  * @param sha256Provider the [HashSupplier] to use for computing SHA-256 hashes
  */
-internal class SigV4aSignatureCalculator(override val sha256Provider: HashSupplier = ::Sha256) : SigV4xSignatureCalculator(AwsSigningAlgorithm.SIGV4_ASYMMETRIC, sha256Provider) {
+internal class SigV4aSignatureCalculator(override val sha256Provider: HashSupplier = ::Sha256) : BaseSigV4SignatureCalculator(AwsSigningAlgorithm.SIGV4_ASYMMETRIC, sha256Provider) {
     private val privateKeyCache = ReadThroughCache<Credentials, ByteArray>(
         minimumSweepPeriod = 1.hours, // note: Sweeps are effectively a no-op because expiration is [Instant.MAX_VALUE]
     )

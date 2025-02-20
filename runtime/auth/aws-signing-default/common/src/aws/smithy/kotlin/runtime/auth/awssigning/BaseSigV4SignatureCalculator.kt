@@ -17,7 +17,7 @@ import aws.smithy.kotlin.runtime.time.epochMilliseconds
  * Common signature implementation used for SigV4 and SigV4a, primarily for forming the strings-to-sign which don't differ
  * between the two signing algorithms (besides their names).
  */
-internal abstract class SigV4xSignatureCalculator(
+internal abstract class BaseSigV4SignatureCalculator(
     val algorithm: AwsSigningAlgorithm,
     open val sha256Provider: HashSupplier = ::Sha256,
 ) : SignatureCalculator {
