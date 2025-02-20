@@ -5,7 +5,6 @@
 package aws.smithy.kotlin.runtime.auth.awssigning
 
 import aws.smithy.kotlin.runtime.auth.awscredentials.Credentials
-import aws.smithy.kotlin.runtime.collections.LruCache
 import aws.smithy.kotlin.runtime.collections.ReadThroughCache
 import aws.smithy.kotlin.runtime.content.BigInteger
 import aws.smithy.kotlin.runtime.hashing.HashSupplier
@@ -27,7 +26,7 @@ internal const val MAX_KDF_COUNTER_ITERATIONS = 254.toByte()
 
 internal class SigV4aSignatureCalculator(override val sha256Provider: HashSupplier = ::Sha256) : SigV4xSignatureCalculator(AwsSigningAlgorithm.SIGV4_ASYMMETRIC, sha256Provider) {
     private val privateKeyCache = ReadThroughCache<Credentials, ByteArray>(
-        minimumSweepPeriod = 1.hours // note: Sweeps are effectively a no-op because expiration is [Instant.MAX_VALUE]
+        minimumSweepPeriod = 1.hours, // note: Sweeps are effectively a no-op because expiration is [Instant.MAX_VALUE]
     )
 
     override fun calculate(signingKey: ByteArray, stringToSign: String): String = ecdsasecp256r1(signingKey, stringToSign.encodeToByteArray()).encodeToHex()
