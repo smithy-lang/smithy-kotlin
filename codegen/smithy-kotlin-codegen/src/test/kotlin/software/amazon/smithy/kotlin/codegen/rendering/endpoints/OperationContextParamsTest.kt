@@ -135,7 +135,7 @@ class OperationContextParamsTest {
             @Suppress("UNCHECKED_CAST")
             val input = request.context[HttpOperationContext.OperationInput] as TestOperationRequest
             val object = input.object
-            val keys = object?.keys?.toList()
+            val keys = object?.keys?.map { it.toString() }?.toList()
             builder.foo = keys
         """.formatForTest("    ")
 
