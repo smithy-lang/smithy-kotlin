@@ -5,10 +5,12 @@
 
 package com.test
 
+import com.test.model.EntityMaps
 import com.test.model.EntityPrimitives
 import com.test.model.GetFunctionKeysEqualsRequest
 import com.test.model.GetFunctionKeysEqualsResponse
 import com.test.utils.successTest
+import com.test.waiters.waitUntilKeysFunctionMapStringEquals
 import com.test.waiters.waitUntilKeysFunctionPrimitivesIntegerEquals
 import com.test.waiters.waitUntilKeysFunctionPrimitivesStringEquals
 import kotlin.test.Test
@@ -26,5 +28,12 @@ class FunctionKeysTest {
         GetFunctionKeysEqualsRequest { name = "test" },
         WaitersTestClient::waitUntilKeysFunctionPrimitivesIntegerEquals,
         GetFunctionKeysEqualsResponse { primitives = EntityPrimitives { } },
+    )
+
+    @Test
+    fun testKeysFunctionMapStringEquals() = successTest(
+        GetFunctionKeysEqualsRequest { name = "test" },
+        WaitersTestClient::waitUntilKeysFunctionMapStringEquals,
+        GetFunctionKeysEqualsResponse { maps = EntityMaps { strings = mapOf("key" to "value") } },
     )
 }
