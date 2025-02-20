@@ -77,7 +77,7 @@ internal class SigV4aSignatureCalculator(override val sha256Provider: HashSuppli
      */
     private fun fixedInputString(accessKeyId: String, counter: Byte): ByteArray =
         byteArrayOf(0x00, 0x00, 0x00, 0x01) +
-            "AWS4-ECDSA-P256-SHA256".encodeToByteArray() +
+            AwsSigningAlgorithm.SIGV4_ASYMMETRIC.signingName.encodeToByteArray() +
             byteArrayOf(0x00) +
             accessKeyId.encodeToByteArray() +
             counter +
