@@ -73,7 +73,7 @@ private const val HEADER_TIMESTAMP_TYPE: Byte = 8
  * NOTE: This duplicates parts of the event stream encoding implementation here to avoid a direct dependency.
  * Should this become more involved than encoding a single date header we should reconsider this choice.
  *
- * see [Event Stream implementation](https://github.com/awslabs/aws-sdk-kotlin/blob/v0.16.4-beta/aws-runtime/protocols/aws-event-stream/common/src/aws/sdk/kotlin/runtime/protocol/eventstream/Header.kt#L51)
+ * see [Event Stream implementation](https://github.com/smithy-lang/smithy-kotlin/blob/612c39ba446e6403ea2bd9a51c4d1db111b6e26f/runtime/protocol/aws-event-stream/common/src/aws/smithy/kotlin/runtime/awsprotocol/eventstream/Header.kt#L52)
  */
 private fun eventStreamNonSignatureHeaders(date: Instant): String {
     val bytes = ByteArray(15)
