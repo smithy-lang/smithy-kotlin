@@ -18,7 +18,9 @@ import kotlin.test.assertTrue
 private const val SIGV4A_RESOURCES_BASE = "common/test/resources/sigv4a"
 
 /**
- * Tests which are defined in resources/sigv4a
+ * Tests which are defined in resources/sigv4a.
+ * Copied directly from https://github.com/awslabs/aws-c-auth/tree/e8360a65e0f3337d4ac827945e00c3b55a641a5f/tests/aws-signing-test-suite/v4a.
+ * get-vanilla-query-order-key and get-vanilla-query-order-value were deleted since they are not complete tests.
  */
 private val TESTS = listOf(
     "get-header-key-duplicate",
@@ -61,6 +63,12 @@ private val TESTS = listOf(
     "post-x-www-form-urlencoded-parameters",
 )
 
+/**
+ * Tests for [SigV4aSignatureCalculator]. Currently only tests forming the string-to-sign.
+ *
+ * TODO Add tests against header-signature.txt when java.security implements RFC 6979 / deterministic ECDSA.
+ * https://bugs.openjdk.org/browse/JDK-8239382
+ */
 class SigV4aSignatureCalculatorTest {
     @Test
     fun testStringToSign() = TESTS.forEach { testId ->
