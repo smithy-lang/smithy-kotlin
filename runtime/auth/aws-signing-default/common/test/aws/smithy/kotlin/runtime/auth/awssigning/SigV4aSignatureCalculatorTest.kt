@@ -15,7 +15,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
-private const val SIGV4A_RESOURCES_BASE = "common/test/resources/sigv4a"
+private const val SIGV4A_RESOURCES_BASE = "../aws-signing-tests/common/resources/aws-signing-test-suite/v4a"
 
 /**
  * Tests which are defined in resources/sigv4a.
