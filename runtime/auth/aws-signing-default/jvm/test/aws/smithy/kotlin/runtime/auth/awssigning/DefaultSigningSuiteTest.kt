@@ -17,13 +17,13 @@ class DefaultSigningSuiteTest : SigningSuiteTestBase() {
 
     override val signatureProvider: SigningStateProvider = { request, config ->
         val canonical = Canonicalizer.Default.canonicalRequest(request, config)
-        val stringToSign = SignatureCalculator.Default.stringToSign(canonical.requestString, config)
-        val signingKey = SignatureCalculator.Default.signingKey(config)
-        SignatureCalculator.Default.calculate(signingKey, stringToSign)
+        val stringToSign = SignatureCalculator.SigV4.stringToSign(canonical.requestString, config)
+        val signingKey = SignatureCalculator.SigV4.signingKey(config)
+        SignatureCalculator.SigV4.calculate(signingKey, stringToSign)
     }
 
     override val stringToSignProvider: SigningStateProvider = { request, config ->
         val canonical = Canonicalizer.Default.canonicalRequest(request, config)
-        SignatureCalculator.Default.stringToSign(canonical.requestString, config)
+        SignatureCalculator.SigV4.stringToSign(canonical.requestString, config)
     }
 }

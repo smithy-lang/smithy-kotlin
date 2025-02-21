@@ -124,12 +124,13 @@ internal class DefaultCanonicalizer(private val sha256Supplier: HashSupplier = :
         }
 
         param("Host", builder.url.hostAndPort, !signViaQueryParams, overwrite = false)
-        param("X-Amz-Algorithm", ALGORITHM_NAME, signViaQueryParams)
+        param("X-Amz-Algorithm", config.algorithm.signingName, signViaQueryParams)
         param("X-Amz-Credential", credentialValue(config), signViaQueryParams)
         param("X-Amz-Content-Sha256", hash, addHashHeader)
         param("X-Amz-Date", config.signingDate.format(TimestampFormat.ISO_8601_CONDENSED))
         param("X-Amz-Expires", config.expiresAfter?.inWholeSeconds?.toString(), signViaQueryParams)
         param("X-Amz-Security-Token", sessionToken, !config.omitSessionToken) // Add pre-sig if omitSessionToken=false
+        param("X-Amz-Region-Set", config.region, config.algorithm == AwsSigningAlgorithm.SIGV4_ASYMMETRIC)
 
         val headers = builder
             .headers

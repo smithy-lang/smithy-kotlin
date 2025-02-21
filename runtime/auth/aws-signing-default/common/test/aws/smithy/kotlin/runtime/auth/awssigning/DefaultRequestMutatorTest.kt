@@ -16,11 +16,12 @@ import kotlin.test.assertEquals
 
 class DefaultRequestMutatorTest {
     @Test
-    fun testAppendAuthHeader() {
+    fun testSigV4AppendAuthHeader() {
         val canonical = CanonicalRequest(baseRequest.toBuilder(), "", "action;host;x-amz-date", "")
         val signature = "0123456789abcdef"
 
         val config = AwsSigningConfig {
+            algorithm = AwsSigningAlgorithm.SIGV4
             region = "us-west-2"
             service = "fooservice"
             signingDate = Instant.fromIso8601("20220427T012345Z")
@@ -38,6 +39,41 @@ class DefaultRequestMutatorTest {
         val expectedAuthValue =
             "AWS4-HMAC-SHA256 Credential=${config.credentials.accessKeyId}/$expectedCredentialScope, " +
                 "SignedHeaders=${canonical.signedHeaders}, Signature=$signature"
+        val expectedHeaders = Headers {
+            appendAll(baseRequest.headers)
+            append("Authorization", expectedAuthValue)
+        }.entries()
+
+        assertEquals(expectedHeaders, mutated.headers.entries())
+    }
+
+    @Test
+    fun testSigV4aAppendAuthHeader() {
+        val canonical = CanonicalRequest(baseRequest.toBuilder(), "", "action;host;x-amz-date", "")
+        val signature = "0123456789abcdef"
+
+        val config = AwsSigningConfig {
+            algorithm = AwsSigningAlgorithm.SIGV4_ASYMMETRIC
+            region = "us-west-2"
+            service = "fooservice"
+            signingDate = Instant.fromIso8601("20220427T012345Z")
+            credentials = Credentials("", "secret key")
+            omitSessionToken = true
+        }
+
+        val mutated = RequestMutator.Default.appendAuth(config, canonical, signature)
+
+        assertEquals(baseRequest.method, mutated.method)
+        assertEquals(baseRequest.url.toString(), mutated.url.toString())
+        assertEquals(baseRequest.body, mutated.body)
+
+        val expectedCredentialScope = "20220427/fooservice/aws4_request"
+        val expectedAuthValue = buildString {
+            append("AWS4-ECDSA-P256-SHA256 ")
+            append("Credential=${config.credentials.accessKeyId}/$expectedCredentialScope, ")
+            append("SignedHeaders=${canonical.signedHeaders}, ")
+            append("Signature=$signature")
+        }
         val expectedHeaders = Headers {
             appendAll(baseRequest.headers)
             append("Authorization", expectedAuthValue)

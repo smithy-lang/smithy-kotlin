@@ -1,0 +1,5 @@
+{
+    "id": "4b6debe1-7706-484a-8599-ef8c14cecde2",
+    "type": "feature",
+    "description": "Add SigV4a support to the default AWS signer"
+}
