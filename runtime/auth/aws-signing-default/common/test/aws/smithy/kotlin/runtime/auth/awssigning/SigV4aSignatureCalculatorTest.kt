@@ -63,11 +63,9 @@ private val TESTS = listOf(
     "post-x-www-form-urlencoded-parameters",
 )
 
+// TODO Add tests against header-signature.txt when java.security implements RFC 6979 / deterministic ECDSA. https://bugs.openjdk.org/browse/JDK-8239382
 /**
  * Tests for [SigV4aSignatureCalculator]. Currently only tests forming the string-to-sign.
- *
- * TODO Add tests against header-signature.txt when java.security implements RFC 6979 / deterministic ECDSA.
- * https://bugs.openjdk.org/browse/JDK-8239382
  */
 class SigV4aSignatureCalculatorTest {
     @Test
