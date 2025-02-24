@@ -116,7 +116,7 @@ class SigV4aSignatureCalculatorTest {
     private suspend fun String.fileContents(path: String): String = checkNotNull(
         PlatformProvider.System.readFileOrNull(this + path)
             ?.decodeToString()
-            ?.replace("\\r\\n", "\\n"),
+            ?.replace("\r\n", "\n"),
     ) {
         "Unable to read contents at ${this + path}"
     }
