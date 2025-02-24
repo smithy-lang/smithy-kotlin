@@ -83,7 +83,7 @@ class SigV4aSignatureCalculatorTest {
             val canonicalRequest = testDir.fileContents("header-canonical-request.txt")
             val actualStringToSign = SignatureCalculator.SigV4a.stringToSign(canonicalRequest, signingConfig)
 
-            assertEquals(expectedStringToSign, actualStringToSign)
+            assertEquals(expectedStringToSign, actualStringToSign, "$testId failed")
         }
     }
 
@@ -113,7 +113,11 @@ class SigV4aSignatureCalculatorTest {
         }
     }
 
-    private suspend fun String.fileContents(path: String): String = checkNotNull(PlatformProvider.System.readFileOrNull(this + path)?.decodeToString()) {
+    private suspend fun String.fileContents(path: String): String = checkNotNull(
+        PlatformProvider.System.readFileOrNull(this + path)
+            ?.decodeToString()
+            ?.replace("\\r\\n", "\\n")
+    ) {
         "Unable to read contents at ${this + path}"
     }
 }
