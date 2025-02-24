@@ -63,8 +63,8 @@ fun codegenSerializerForShape(
     val resolvedSettings = settings ?: model.defaultSettings(TestModelDefault.SERVICE_NAME, TestModelDefault.NAMESPACE)
     val ctx = model.newTestContext(settings = resolvedSettings)
 
-    val op = ctx.generationCtx.model.expectShape(ShapeId.from(shapeId))
-    return testRender(ctx.requestMembers(op, location)) { members, writer ->
+    val shape = ctx.generationCtx.model.expectShape(ShapeId.from(shapeId))
+    return testRender(ctx.shapeMembers(shape, location)) { members, writer ->
         SerializeStructGenerator(
             ctx.generationCtx,
             members,
@@ -121,15 +121,30 @@ fun TestContext.responseMembers(shape: Shape, location: HttpBinding.Location = H
         .map { it.member }
 }
 
-/** Retrieves Request Document members for HttpTrait-enabled protocols */
-fun TestContext.requestMembers(shape: Shape, location: HttpBinding.Location = HttpBinding.Location.DOCUMENT): List<MemberShape> {
-    val bindingIndex = HttpBindingIndex.of(this.generationCtx.model)
-    val responseBindings = bindingIndex.getRequestBindings(shape)
+/**
+ * If the shape is an operation:
+ * Attempts to retrieve request document members for HttpTrait-enabled protocols.
+ *
+ * Otherwise:
+ * Retrieves shape members
+ *
+ * TODO: Make this nicer
+ * */
+fun TestContext.shapeMembers(shape: Shape, location: HttpBinding.Location = HttpBinding.Location.DOCUMENT): List<MemberShape> {
+    when (shape) {
+        is OperationShape -> {
+            val bindingIndex = HttpBindingIndex.of(this.generationCtx.model)
+            val responseBindings = bindingIndex.getRequestBindings(shape)
 
-    return responseBindings.values
-        .filter { it.location == location }
-        .sortedBy { it.memberName }
-        .map { it.member }
+            return responseBindings.values
+                .filter { it.location == location }
+                .sortedBy { it.memberName }
+                .map { it.member }
+        }
+        else -> {
+            return shape.members().toList()
+        }
+    }
 }
 
 fun TestContext.toGenerationContext(): GenerationContext =

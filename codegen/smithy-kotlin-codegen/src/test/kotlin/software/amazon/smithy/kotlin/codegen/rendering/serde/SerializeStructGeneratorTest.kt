@@ -2027,4 +2027,52 @@ class SerializeStructGeneratorTest {
 
         actual.shouldContainOnlyOnceWithDiff(expected)
     }
+
+    @Test
+    fun `it serializes an un-nested idempotency token`() {
+        val model = (
+            modelPrefix + """            
+            structure FooRequest { 
+                @idempotencyToken
+                bar: String
+            }
+        """
+            ).toSmithyModel()
+
+        val expected = """
+            serializer.serializeStruct(OBJ_DESCRIPTOR) {
+                input.bar?.let { field(BAR_DESCRIPTOR, it) } ?: field(BAR_DESCRIPTOR, context.idempotencyTokenProvider.generateToken())
+            }
+        """.trimIndent()
+
+        val actual = codegenSerializerForShape(model, "com.test#Foo").stripCodegenPrefix()
+
+        actual.shouldContainOnlyOnceWithDiff(expected)
+    }
+
+    @Test
+    fun `it serializes a nested idempotency token`() {
+        val model = (
+            modelPrefix + """            
+            structure FooRequest { 
+                bar: Bar
+            }
+            
+            structure Bar {
+                @idempotencyToken
+                baz: String
+            }
+        """
+            ).toSmithyModel()
+
+        val expected = """
+            serializer.serializeStruct(OBJ_DESCRIPTOR) {
+                input.baz?.let { field(BAZ_DESCRIPTOR, it) } ?: field(BAZ_DESCRIPTOR, context.idempotencyTokenProvider.generateToken())
+            }
+        """.trimIndent()
+
+        val actual = codegenSerializerForShape(model, "com.test#Bar").stripCodegenPrefix()
+
+        actual.shouldContainOnlyOnceWithDiff(expected)
+    }
 }
