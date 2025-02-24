@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.4.5] - 02/24/2025
+
+### Features
+* Add SigV4a support to the default AWS signer
+
 ## [1.4.4] - 02/18/2025
 
 ### Miscellaneous
