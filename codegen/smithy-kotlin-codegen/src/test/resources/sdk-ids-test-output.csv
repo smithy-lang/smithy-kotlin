@@ -113,7 +113,6 @@ ECS,Ecs
 EFS,Efs
 EKS,Eks
 Elastic Beanstalk,ElasticBeanstalk
-Elastic Inference,ElasticInference
 Elastic Load Balancing v2,ElasticLoadBalancingV2
 Elastic Load Balancing,ElasticLoadBalancing
 Elastic Transcoder,ElasticTranscoder
