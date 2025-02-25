@@ -1,0 +1,5 @@
+{
+    "id": "a928feea-f455-4263-8bae-cf50676a551a",
+    "type": "bugfix",
+    "description": "Idempotency tokens are no longer code-generated for nested structures. See: https://smithy.io/2.0/spec/behavior-traits.html#smithy-api-idempotencytoken-trait"
+}

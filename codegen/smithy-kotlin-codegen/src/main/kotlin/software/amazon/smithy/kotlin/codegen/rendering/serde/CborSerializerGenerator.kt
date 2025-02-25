@@ -41,7 +41,7 @@ class CborSerializerGenerator(
     ) {
         val shape = ctx.model.expectShape(op.input.get())
         writer.write("val serializer = #T()", RuntimeTypes.Serde.SerdeCbor.CborSerializer)
-        renderSerializerBody(ctx, shape, documentMembers, writer)
+        renderSerializerBody(ctx, shape, documentMembers, writer, idempotencyTokenEligible = true)
         writer.write("return serializer.toHttpBody()")
     }
 
@@ -50,12 +50,13 @@ class CborSerializerGenerator(
         shape: Shape,
         members: List<MemberShape>,
         writer: KotlinWriter,
+        idempotencyTokenEligible: Boolean = false,
     ) {
         descriptorGenerator(ctx, shape, members, writer).render()
         when (shape) {
             is DocumentShape -> writer.write("serializer.serializeDocument(input)")
             is UnionShape -> SerializeUnionGenerator(ctx, shape, members, writer, TimestampFormatTrait.Format.EPOCH_SECONDS).render()
-            else -> SerializeStructGenerator(ctx, members, writer, TimestampFormatTrait.Format.EPOCH_SECONDS).render()
+            else -> SerializeStructGenerator(ctx, members, writer, TimestampFormatTrait.Format.EPOCH_SECONDS, idempotencyTokenEligible).render()
         }
     }
 

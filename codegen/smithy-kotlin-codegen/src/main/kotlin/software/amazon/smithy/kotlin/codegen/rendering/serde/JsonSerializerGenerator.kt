@@ -63,7 +63,7 @@ open class JsonSerializerGenerator(
     ) {
         val shape = ctx.model.expectShape(op.input.get())
         writer.write("val serializer = #T()", RuntimeTypes.Serde.SerdeJson.JsonSerializer)
-        renderSerializerBody(ctx, shape, documentMembers, writer)
+        renderSerializerBody(ctx, shape, documentMembers, writer, idempotencyTokenEligible = true)
         writer.write("return serializer.toByteArray()")
     }
 
@@ -88,13 +88,14 @@ open class JsonSerializerGenerator(
         shape: Shape,
         members: List<MemberShape>,
         writer: KotlinWriter,
+        idempotencyTokenEligible: Boolean = false,
     ) {
         // render the serde descriptors
         JsonSerdeDescriptorGenerator(ctx.toRenderingContext(protocolGenerator, shape, writer), members, supportsJsonNameTrait).render()
         when (shape) {
             is DocumentShape -> writer.write("serializer.serializeDocument(input)")
             is UnionShape -> SerializeUnionGenerator(ctx, shape, members, writer, defaultTimestampFormat).render()
-            else -> SerializeStructGenerator(ctx, members, writer, defaultTimestampFormat).render()
+            else -> SerializeStructGenerator(ctx, members, writer, defaultTimestampFormat, idempotencyTokenEligible).render()
         }
     }
 

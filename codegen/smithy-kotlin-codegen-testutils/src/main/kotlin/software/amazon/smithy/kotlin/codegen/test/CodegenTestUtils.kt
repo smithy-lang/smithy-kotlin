@@ -59,17 +59,19 @@ fun codegenSerializerForShape(
     shapeId: String,
     location: HttpBinding.Location = HttpBinding.Location.DOCUMENT,
     settings: KotlinSettings? = null,
+    idempotencyTokenEligible: Boolean = false,
 ): String {
     val resolvedSettings = settings ?: model.defaultSettings(TestModelDefault.SERVICE_NAME, TestModelDefault.NAMESPACE)
     val ctx = model.newTestContext(settings = resolvedSettings)
 
-    val op = ctx.generationCtx.model.expectShape(ShapeId.from(shapeId))
-    return testRender(ctx.requestMembers(op, location)) { members, writer ->
+    val shape = ctx.generationCtx.model.expectShape(ShapeId.from(shapeId))
+    return testRender(ctx.shapeMembers(shape, location)) { members, writer ->
         SerializeStructGenerator(
             ctx.generationCtx,
             members,
             writer,
             TimestampFormatTrait.Format.EPOCH_SECONDS,
+            idempotencyTokenEligible,
         ).render()
     }
 }
@@ -121,16 +123,25 @@ fun TestContext.responseMembers(shape: Shape, location: HttpBinding.Location = H
         .map { it.member }
 }
 
-/** Retrieves Request Document members for HttpTrait-enabled protocols */
-fun TestContext.requestMembers(shape: Shape, location: HttpBinding.Location = HttpBinding.Location.DOCUMENT): List<MemberShape> {
-    val bindingIndex = HttpBindingIndex.of(this.generationCtx.model)
-    val responseBindings = bindingIndex.getRequestBindings(shape)
+/**
+ * If the shape represents an operation, it attempts to retrieve the request document members for protocols enabled with HttpTrait.
+ * Otherwise, it retrieves the shape's members.
+ * */
+fun TestContext.shapeMembers(shape: Shape, location: HttpBinding.Location = HttpBinding.Location.DOCUMENT): List<MemberShape> =
+    when (shape) {
+        is OperationShape -> {
+            val bindingIndex = HttpBindingIndex.of(this.generationCtx.model)
+            val responseBindings = bindingIndex.getRequestBindings(shape)
 
-    return responseBindings.values
-        .filter { it.location == location }
-        .sortedBy { it.memberName }
-        .map { it.member }
-}
+            responseBindings.values
+                .filter { it.location == location }
+                .sortedBy { it.memberName }
+                .map { it.member }
+        }
+        else -> {
+            shape.members().toList()
+        }
+    }
 
 fun TestContext.toGenerationContext(): GenerationContext =
     GenerationContext(generationCtx.model, generationCtx.symbolProvider, generationCtx.settings, generator)
