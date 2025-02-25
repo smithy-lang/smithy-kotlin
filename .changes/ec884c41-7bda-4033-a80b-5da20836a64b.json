@@ -1,8 +1,0 @@
-{
-    "id": "ec884c41-7bda-4033-a80b-5da20836a64b",
-    "type": "bugfix",
-    "description": "Fix OpenTelemetry span concurrency by using Span.asContextElement() instead of Span.makeCurrent()",
-    "issues": [
-        "https://github.com/smithy-lang/smithy-kotlin/issues/1211"
-    ]
-}
