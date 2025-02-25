@@ -124,7 +124,8 @@ fun TestContext.responseMembers(shape: Shape, location: HttpBinding.Location = H
 }
 
 /**
- * Attempts to retrieve the request document members for HttpTrait-enabled protocols for operations, otherwise the shape members
+ * If the shape represents an operation, it attempts to retrieve the request document members for protocols enabled with HttpTrait.
+ * Otherwise, it retrieves the shape's members.
  * */
 fun TestContext.shapeMembers(shape: Shape, location: HttpBinding.Location = HttpBinding.Location.DOCUMENT): List<MemberShape> =
     when (shape) {
