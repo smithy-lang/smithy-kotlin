@@ -59,6 +59,7 @@ fun codegenSerializerForShape(
     shapeId: String,
     location: HttpBinding.Location = HttpBinding.Location.DOCUMENT,
     settings: KotlinSettings? = null,
+    idempotencyTokenEligible: Boolean = false,
 ): String {
     val resolvedSettings = settings ?: model.defaultSettings(TestModelDefault.SERVICE_NAME, TestModelDefault.NAMESPACE)
     val ctx = model.newTestContext(settings = resolvedSettings)
@@ -70,6 +71,7 @@ fun codegenSerializerForShape(
             members,
             writer,
             TimestampFormatTrait.Format.EPOCH_SECONDS,
+            idempotencyTokenEligible,
         ).render()
     }
 }
@@ -122,30 +124,23 @@ fun TestContext.responseMembers(shape: Shape, location: HttpBinding.Location = H
 }
 
 /**
- * If the shape is an operation:
- * Attempts to retrieve request document members for HttpTrait-enabled protocols.
- *
- * Otherwise:
- * Retrieves shape members
- *
- * TODO: Make this nicer
+ * Attempts to retrieve the request document members for HttpTrait-enabled protocols for operations, otherwise the shape members
  * */
-fun TestContext.shapeMembers(shape: Shape, location: HttpBinding.Location = HttpBinding.Location.DOCUMENT): List<MemberShape> {
+fun TestContext.shapeMembers(shape: Shape, location: HttpBinding.Location = HttpBinding.Location.DOCUMENT): List<MemberShape> =
     when (shape) {
         is OperationShape -> {
             val bindingIndex = HttpBindingIndex.of(this.generationCtx.model)
             val responseBindings = bindingIndex.getRequestBindings(shape)
 
-            return responseBindings.values
+            responseBindings.values
                 .filter { it.location == location }
                 .sortedBy { it.memberName }
                 .map { it.member }
         }
         else -> {
-            return shape.members().toList()
+            shape.members().toList()
         }
     }
-}
 
 fun TestContext.toGenerationContext(): GenerationContext =
     GenerationContext(generationCtx.model, generationCtx.symbolProvider, generationCtx.settings, generator)

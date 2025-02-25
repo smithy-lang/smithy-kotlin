@@ -2045,9 +2045,15 @@ class SerializeStructGeneratorTest {
             }
         """.trimIndent()
 
-        val actual = codegenSerializerForShape(model, "com.test#Foo").stripCodegenPrefix()
+        val actual = codegenSerializerForShape(
+            model,
+            "com.test#Foo",
+            idempotencyTokenEligible = true,
+        )
 
-        actual.shouldContainOnlyOnceWithDiff(expected)
+        actual
+            .stripCodegenPrefix()
+            .shouldContainOnlyOnceWithDiff(expected)
     }
 
     @Test
@@ -2067,12 +2073,18 @@ class SerializeStructGeneratorTest {
 
         val expected = """
             serializer.serializeStruct(OBJ_DESCRIPTOR) {
-                input.baz?.let { field(BAZ_DESCRIPTOR, it) } ?: field(BAZ_DESCRIPTOR, context.idempotencyTokenProvider.generateToken())
+                input.baz?.let { field(BAZ_DESCRIPTOR, it) }
             }
         """.trimIndent()
 
-        val actual = codegenSerializerForShape(model, "com.test#Bar").stripCodegenPrefix()
+        val actual = codegenSerializerForShape(
+            model,
+            "com.test#Bar",
+            idempotencyTokenEligible = false,
+        )
 
-        actual.shouldContainOnlyOnceWithDiff(expected)
+        actual
+            .stripCodegenPrefix()
+            .shouldContainOnlyOnceWithDiff(expected)
     }
 }

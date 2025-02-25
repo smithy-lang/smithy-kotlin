@@ -42,6 +42,7 @@ open class SerializeStructGenerator(
     protected val members: List<MemberShape>,
     protected val writer: KotlinWriter,
     protected val defaultTimestampFormat: TimestampFormatTrait.Format,
+    private val idempotencyTokenEligible: Boolean = true,
 ) {
     /**
      * Container for serialization information for a particular shape being serialized to
@@ -614,7 +615,7 @@ open class SerializeStructGenerator(
      * @return string intended for codegen output
      */
     private fun idempotencyTokenPostfix(memberShape: MemberShape): String =
-        if (memberShape.hasTrait<IdempotencyTokenTrait>()) {
+        if (memberShape.hasTrait<IdempotencyTokenTrait>() && idempotencyTokenEligible) {
             writer.addImport(RuntimeTypes.SmithyClient.IdempotencyTokenProviderExt)
             " ?: field(${memberShape.descriptorName()}, context.idempotencyTokenProvider.generateToken())"
         } else {

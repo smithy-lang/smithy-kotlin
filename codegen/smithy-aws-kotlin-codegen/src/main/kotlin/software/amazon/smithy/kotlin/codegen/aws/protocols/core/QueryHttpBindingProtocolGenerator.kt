@@ -132,7 +132,7 @@ abstract class AbstractQueryFormUrlSerializerGenerator(
     ) {
         val shape = ctx.model.expectShape(op.input.get())
         writer.write("val serializer = #T()", RuntimeTypes.Serde.SerdeFormUrl.FormUrlSerializer)
-        renderSerializerBody(ctx, shape, documentMembers, writer)
+        renderSerializerBody(ctx, shape, documentMembers, writer, true)
         writer.write("return serializer.toByteArray()")
     }
 
@@ -156,12 +156,13 @@ abstract class AbstractQueryFormUrlSerializerGenerator(
         shape: Shape,
         members: List<MemberShape>,
         writer: KotlinWriter,
+        idempotencyTokenEligible: Boolean = false,
     ) {
         // render the serde descriptors
         descriptorGenerator(ctx, shape, members, writer).render()
         when (shape) {
             is UnionShape -> SerializeUnionGenerator(ctx, shape, members, writer, defaultTimestampFormat).render()
-            else -> SerializeStructGenerator(ctx, members, writer, defaultTimestampFormat).render()
+            else -> SerializeStructGenerator(ctx, members, writer, defaultTimestampFormat, idempotencyTokenEligible).render()
         }
     }
 
