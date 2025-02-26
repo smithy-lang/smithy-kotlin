@@ -8,10 +8,12 @@ import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.kotlin.codegen.DefaultValueSerializationMode
 import software.amazon.smithy.kotlin.codegen.core.*
 import software.amazon.smithy.kotlin.codegen.model.*
+import software.amazon.smithy.kotlin.codegen.model.knowledge.TopLevelIndex
 import software.amazon.smithy.kotlin.codegen.model.targetOrSelf
 import software.amazon.smithy.kotlin.codegen.rendering.protocol.ProtocolGenerator
 import software.amazon.smithy.model.shapes.*
 import software.amazon.smithy.model.traits.*
+import java.util.logging.Logger
 
 /**
  * Generate serialization for members bound to the payload.
@@ -42,8 +44,10 @@ open class SerializeStructGenerator(
     protected val members: List<MemberShape>,
     protected val writer: KotlinWriter,
     protected val defaultTimestampFormat: TimestampFormatTrait.Format,
-    private val idempotencyTokenEligible: Boolean = true,
 ) {
+    private val logger = Logger.getLogger(javaClass.name)
+    private val topLevelIndex = TopLevelIndex(ctx.model, ctx.service)
+
     /**
      * Container for serialization information for a particular shape being serialized to
      */
@@ -588,7 +592,7 @@ open class SerializeStructGenerator(
      * @param serializerFn [SerializeFunction] the serializer responsible for returning the function to invoke
      */
     open fun renderShapeSerializer(memberShape: MemberShape, serializerFn: SerializeFunction) {
-        val postfix = idempotencyTokenPostfix(memberShape)
+        val postfix = if (memberShape.hasTrait<IdempotencyTokenTrait>()) idempotencyTokenPostfix(memberShape) else ""
         val memberSymbol = ctx.symbolProvider.toSymbol(memberShape)
         val memberName = ctx.symbolProvider.toMemberName(memberShape)
         if (memberSymbol.isNullable) {
@@ -615,10 +619,15 @@ open class SerializeStructGenerator(
      * @return string intended for codegen output
      */
     private fun idempotencyTokenPostfix(memberShape: MemberShape): String =
-        if (memberShape.hasTrait<IdempotencyTokenTrait>() && idempotencyTokenEligible) {
+        // https://github.com/smithy-lang/smithy-kotlin/issues/1128
+        if (topLevelIndex.isTopLevelInputMember(memberShape)) {
             writer.addImport(RuntimeTypes.SmithyClient.IdempotencyTokenProviderExt)
             " ?: field(${memberShape.descriptorName()}, context.idempotencyTokenProvider.generateToken())"
         } else {
+            logger.warning(
+                "$memberShape has the idempotency token trait but is not eligible to be used as an idempotency token. " +
+                    "It must be a top-level structure member within the input of an operation. ",
+            )
             ""
         }
 

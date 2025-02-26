@@ -63,42 +63,42 @@ class RestXmlTest {
     }
 
     private val model = """
-    ${"$"}version: "2"
-
-    namespace com.test
+        ${"$"}version: "2"
     
-    use aws.protocols#restXml
-    use aws.api#service
-
-    @restXml
-    @service(sdkId: "Example")
-    service Example {
-        version: "1.0.0",
-        operations: [GetBarUnNested, GetBarNested]
-    }
-
-    @http(method: "POST", uri: "/get-bar-un-nested")
-    operation GetBarUnNested {
-        input: BarUnNested
-    }
+        namespace com.test
+        
+        use aws.protocols#restXml
+        use aws.api#service
     
-    structure BarUnNested {
-        @idempotencyToken
-        bar: String
-    }
+        @restXml
+        @service(sdkId: "Example")
+        service Example {
+            version: "1.0.0",
+            operations: [GetBarUnNested, GetBarNested]
+        }
     
-    @http(method: "POST", uri: "/get-bar-nested")
-    operation GetBarNested {
-        input: BarNested
-    }
-    
-    structure BarNested {
-        bar: Nest
-    }
-    
-    structure Nest {
-        @idempotencyToken
-        baz: String
-    }
+        @http(method: "POST", uri: "/get-bar-un-nested")
+        operation GetBarUnNested {
+            input: BarUnNested
+        }
+        
+        structure BarUnNested {
+            @idempotencyToken
+            bar: String
+        }
+        
+        @http(method: "POST", uri: "/get-bar-nested")
+        operation GetBarNested {
+            input: BarNested
+        }
+        
+        structure BarNested {
+            bar: Nest
+        }
+        
+        structure Nest {
+            @idempotencyToken
+            baz: String
+        }
     """.toSmithyModel()
 }

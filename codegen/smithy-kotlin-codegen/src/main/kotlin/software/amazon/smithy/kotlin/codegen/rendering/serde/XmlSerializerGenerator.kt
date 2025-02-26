@@ -75,7 +75,7 @@ open class XmlSerializerGenerator(
     ) {
         val shape = ctx.model.expectShape(op.input.get())
         writer.write("val serializer = #T()", RuntimeTypes.Serde.SerdeXml.XmlSerializer)
-        renderSerializerBody(ctx, shape, documentMembers, writer, idempotencyTokenEligible = true)
+        renderSerializerBody(ctx, shape, documentMembers, writer)
         writer.write("return serializer.toByteArray()")
     }
 
@@ -99,7 +99,6 @@ open class XmlSerializerGenerator(
         shape: Shape,
         members: List<MemberShape>,
         writer: KotlinWriter,
-        idempotencyTokenEligible: Boolean = false,
     ) {
         // order is important due to attributes
         val sortedMembers = sortMembersForSerialization(members)
@@ -107,7 +106,7 @@ open class XmlSerializerGenerator(
         // render the serde descriptors
         when (shape) {
             is UnionShape -> SerializeUnionGenerator(ctx, shape, sortedMembers, writer, defaultTimestampFormat).render()
-            else -> SerializeStructGenerator(ctx, sortedMembers, writer, defaultTimestampFormat, idempotencyTokenEligible).render()
+            else -> SerializeStructGenerator(ctx, sortedMembers, writer, defaultTimestampFormat).render()
         }
     }
 

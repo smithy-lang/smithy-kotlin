@@ -80,7 +80,6 @@ private class Ec2QuerySerializerGenerator(
         shape: Shape,
         members: List<MemberShape>,
         writer: KotlinWriter,
-        idempotencyTokenEligible: Boolean,
     ) {
         // render the serde descriptors
         descriptorGenerator(ctx, shape, members, writer).render()
