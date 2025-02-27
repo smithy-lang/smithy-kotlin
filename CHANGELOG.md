@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.4.8] - 02/27/2025
+
+### Fixes
+* Idempotency tokens are no longer code-generated for nested structures. See: https://smithy.io/2.0/spec/behavior-traits.html#smithy-api-idempotencytoken-trait
+
 ## [1.4.7] - 02/25/2025
 
 ### Fixes
