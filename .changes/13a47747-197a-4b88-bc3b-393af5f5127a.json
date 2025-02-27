@@ -1,5 +1,0 @@
-{
-    "id": "13a47747-197a-4b88-bc3b-393af5f5127a",
-    "type": "bugfix",
-    "description": "Correctly generate paginators for item type names which collide with other used types (e.g., an item type `com.foo.Flow` which conflicts with `kotlinx.coroutines.flow.Flow`)"
-}

@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.4.9] - 02/27/2025
+
+### Fixes
+* Correctly generate paginators for item type names which collide with other used types (e.g., an item type `com.foo.Flow` which conflicts with `kotlinx.coroutines.flow.Flow`)
+
 ## [1.4.8] - 02/27/2025
 
 ### Fixes
