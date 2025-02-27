@@ -8,12 +8,7 @@ import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.codegen.core.SymbolReference
 import software.amazon.smithy.kotlin.codegen.KotlinSettings
-import software.amazon.smithy.kotlin.codegen.core.CodegenContext
-import software.amazon.smithy.kotlin.codegen.core.ExternalTypes
-import software.amazon.smithy.kotlin.codegen.core.KotlinDelegator
-import software.amazon.smithy.kotlin.codegen.core.KotlinWriter
-import software.amazon.smithy.kotlin.codegen.core.defaultName
-import software.amazon.smithy.kotlin.codegen.core.withBlock
+import software.amazon.smithy.kotlin.codegen.core.*
 import software.amazon.smithy.kotlin.codegen.integration.KotlinIntegration
 import software.amazon.smithy.kotlin.codegen.lang.KotlinTypes
 import software.amazon.smithy.kotlin.codegen.model.*
@@ -54,7 +49,7 @@ class PaginatorGenerator : KotlinIntegration {
             paginatedOperations.forEach { paginatedOperation ->
                 val paginationInfo = paginatedIndex.getPaginationInfo(service, paginatedOperation).getOrNull()
                     ?: throw CodegenException("Unexpectedly unable to get PaginationInfo from $service $paginatedOperation")
-                val paginationItemInfo = getItemDescriptorOrNull(paginationInfo, ctx)
+                val paginationItemInfo = getItemDescriptorOrNull(paginationInfo, ctx, writer)
 
                 renderPaginatorForOperation(ctx, writer, paginatedOperation, paginationInfo, paginationItemInfo)
             }
@@ -264,7 +259,11 @@ private data class ItemDescriptor(
 /**
  * Return an [ItemDescriptor] if model supplies, otherwise null
  */
-private fun getItemDescriptorOrNull(paginationInfo: PaginationInfo, ctx: CodegenContext): ItemDescriptor? {
+private fun getItemDescriptorOrNull(
+    paginationInfo: PaginationInfo,
+    ctx: CodegenContext,
+    writer: KotlinWriter,
+): ItemDescriptor? {
     val itemMemberId = paginationInfo.itemsMemberPath?.lastOrNull()?.target ?: return null
 
     val itemLiteral = paginationInfo.itemsMemberPath!!.last()!!.defaultName()
@@ -273,15 +272,18 @@ private fun getItemDescriptorOrNull(paginationInfo: PaginationInfo, ctx: Codegen
     val isSparse = itemMember.isSparse
     val (collectionLiteral, targetMember) = when (itemMember) {
         is MapShape -> {
-            val symbol = ctx.symbolProvider.toSymbol(itemMember)
-            val entryExpression = symbol.expectProperty(SymbolProperty.ENTRY_EXPRESSION) as String
-            entryExpression to itemMember
+            val keySymbol = ctx.symbolProvider.toSymbol(itemMember.key)
+            val valueSymbol = ctx.symbolProvider.toSymbol(itemMember.value)
+            val valueSuffix = if (isSparse || valueSymbol.isNullable) "?" else ""
+            val elementExpression = writer.format("Map.Entry<#T, #T#L>", keySymbol, valueSymbol, valueSuffix)
+            elementExpression to itemMember
         }
         is CollectionShape -> {
             val target = ctx.model.expectShape(itemMember.member.target)
             val symbol = ctx.symbolProvider.toSymbol(target)
-            val literal = symbol.name + if (symbol.isNullable || isSparse) "?" else ""
-            literal to target
+            val suffix = if (isSparse || symbol.isNullable) "?" else ""
+            val elementExpression = writer.format("#T#L", symbol, suffix)
+            elementExpression to target
         }
         else -> error("Unexpected shape type ${itemMember.type}")
     }
