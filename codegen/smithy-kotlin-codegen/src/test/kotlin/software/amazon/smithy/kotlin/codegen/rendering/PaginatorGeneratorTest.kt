@@ -264,7 +264,7 @@ class PaginatorGeneratorTest {
     }
 
     @Test
-    fun testRenderPaginatorWithItemRequiringFqName() {
+    fun testRenderPaginatorWithItemRequiringFullName() {
         val testModelWithItems = """
             namespace com.test
             
