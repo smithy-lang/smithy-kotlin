@@ -109,4 +109,14 @@ class SingleFlightGroupTest {
             }
         }
     }
+
+    @Test
+    fun testSequential() = runTest {
+        val group = SingleFlightGroup<String>()
+        val first = group.singleFlight { "Foo" }
+        assertEquals("Foo", first)
+
+        val second = group.singleFlight { "Bar" }
+        assertEquals("Bar", second) // Fails; second == "Foo"
+    }
 }

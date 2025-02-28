@@ -52,6 +52,6 @@ public class SingleFlightGroup<T> {
         inFlight = deferred
         mu.unlock()
         runCatching { block() }.let { deferred.complete(it) }
-        return deferred.await().getOrThrow()
+        return deferred.await().also { inFlight = null }.getOrThrow()
     }
 }
