@@ -117,6 +117,6 @@ class SingleFlightGroupTest {
         assertEquals("Foo", first)
 
         val second = group.singleFlight { "Bar" }
-        assertEquals("Bar", second) // Fails; second == "Foo"
+        assertEquals("Bar", second)
     }
 }
