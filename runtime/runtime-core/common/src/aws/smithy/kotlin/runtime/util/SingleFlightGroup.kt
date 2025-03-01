@@ -30,7 +30,7 @@ public class SingleFlightGroup<T> {
     public suspend fun singleFlight(block: suspend () -> T): T {
         mu.lock()
         val job = inFlight
-        if (job != null) {
+        if (job?.isActive == true) {
             waitCount++
             mu.unlock()
 
@@ -52,6 +52,6 @@ public class SingleFlightGroup<T> {
         inFlight = deferred
         mu.unlock()
         runCatching { block() }.let { deferred.complete(it) }
-        return deferred.await().also { inFlight = null }.getOrThrow()
+        return deferred.await().getOrThrow()
     }
 }
