@@ -1,0 +1,5 @@
+{
+    "id": "065e6349-8e2a-403b-b588-067161f260fd",
+    "type": "bugfix",
+    "description": "Correctly handle sequential calls to `SingleFlightGroup`"
+}
