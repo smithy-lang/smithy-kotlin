@@ -18,7 +18,6 @@ public abstract class Md5Base : HashFunction {
 @InternalApi
 public expect class Md5() : Md5Base {
     override fun update(input: ByteArray, offset: Int, length: Int)
-    public fun update(input: Byte)
     override fun digest(): ByteArray
     override fun reset()
     override val blockSizeBytes: Int
