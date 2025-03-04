@@ -79,7 +79,7 @@ public inline fun <reified T : Enum<T>> enumSetEnvSetting(sysProp: String, envVa
                 enumValues<T>()
                     .firstOrNull { it.name.equals(enumValue, ignoreCase = true) }
                     ?: throw ClientException(
-                        "Value $enumValue is not supported, should be one of ${enumValues<T>().joinToString(", ")}"
+                        "Value $enumValue is not supported, should be one of ${enumValues<T>().joinToString(", ")}",
                     )
             }
             .toSet()
