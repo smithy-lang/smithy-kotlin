@@ -11,6 +11,7 @@ import java.security.MessageDigest
 public actual class Md5 : Md5Base() {
     private val md = MessageDigest.getInstance("MD5")
     actual override fun update(input: ByteArray, offset: Int, length: Int): Unit = md.update(input, offset, length)
+    public actual fun update(input: Byte): Unit = md.update(input)
     actual override fun digest(): ByteArray = md.digest()
     actual override fun reset(): Unit = md.reset()
 }

@@ -15,6 +15,10 @@ public actual class Md5 actual constructor() : Md5Base() {
         TODO("Not yet implemented")
     }
 
+    public actual fun update(input: Byte) {
+        TODO("Not yet implemented")
+    }
+
     actual override fun digest(): ByteArray {
         TODO("Not yet implemented")
     }

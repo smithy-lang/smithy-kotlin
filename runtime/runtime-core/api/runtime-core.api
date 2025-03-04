@@ -725,6 +725,7 @@ public final class aws/smithy/kotlin/runtime/hashing/Md5 : aws/smithy/kotlin/run
 	public fun <init> ()V
 	public fun digest ()[B
 	public fun reset ()V
+	public final fun update (B)V
 	public fun update ([BII)V
 }
 
