@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.4.10] - 03/06/2025
+
+### Fixes
+* Correctly handle sequential calls to `SingleFlightGroup`
+
 ## [1.4.9] - 02/27/2025
 
 ### Fixes
