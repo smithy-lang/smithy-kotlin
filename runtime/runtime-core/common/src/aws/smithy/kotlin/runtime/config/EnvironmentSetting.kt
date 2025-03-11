@@ -83,7 +83,6 @@ public inline fun <reified T : Enum<T>> enumSetEnvSetting(sysProp: String, envVa
                     )
             }
             .toSet()
-            .takeIf { it.isNotEmpty() }
     }
     return EnvironmentSetting(parse, sysProp, envVar)
 }
