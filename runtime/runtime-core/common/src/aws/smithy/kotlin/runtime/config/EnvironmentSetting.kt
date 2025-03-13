@@ -68,22 +68,3 @@ public inline fun <reified T : Enum<T>> enumEnvSetting(sysProp: String, envVar: 
     }
     return EnvironmentSetting(parse, sysProp, envVar)
 }
-
-@InternalApi
-public inline fun <reified T : Enum<T>> enumSetEnvSetting(sysProp: String, envVar: String): EnvironmentSetting<Set<T>?> {
-    val parse = { strValue: String ->
-        strValue.split(",")
-            .map { it.trim() }
-            .filter { it.isNotEmpty() }
-            .map { enumValue ->
-                enumValues<T>()
-                    .firstOrNull { it.name.equals(enumValue, ignoreCase = true) }
-                    ?: throw ClientException(
-                        "Value $enumValue is not supported, should be one of ${enumValues<T>().joinToString(", ")}"
-                    )
-            }
-            .toSet()
-            .takeIf { it.isNotEmpty() }
-    }
-    return EnvironmentSetting(parse, sysProp, envVar)
-}
