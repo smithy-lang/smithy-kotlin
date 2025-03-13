@@ -13,7 +13,6 @@ kotlin {
                 api(project(":runtime:observability:telemetry-api"))
                 api(libs.crt.kotlin)
             }
-
         }
     }
 }
