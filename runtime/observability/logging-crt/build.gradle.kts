@@ -8,20 +8,12 @@ extra["moduleName"] = "aws.smithy.kotlin.runtime.telemetry.logging.crt"
 
 kotlin {
     sourceSets {
-        commonMain {
-            dependencies {
-                api(project(":runtime:observability:telemetry-api"))
-            }
-        }
-
         nativeMain {
             dependencies {
+                api(project(":runtime:observability:telemetry-api"))
                 api(libs.crt.kotlin)
             }
-        }
 
-        all {
-            languageSettings.optIn("aws.smithy.kotlin.runtime.InternalApi")
         }
     }
 }
