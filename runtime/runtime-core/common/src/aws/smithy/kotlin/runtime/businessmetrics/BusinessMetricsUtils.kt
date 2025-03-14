@@ -88,7 +88,7 @@ public enum class SmithyBusinessMetric(public override val identifier: String) :
     GZIP_REQUEST_COMPRESSION("L"),
     PROTOCOL_RPC_V2_CBOR("M"),
     SERVICE_ENDPOINT_OVERRIDE("N"),
-    ACCOUNT_ID_BASED_ENDPOINT("O"), // Should this be Removed?: https://code.amazon.com/packages/AwsDrSeps/blobs/main/--/FEATURES.md
+    ACCOUNT_ID_BASED_ENDPOINT("O"),
     ACCOUNT_ID_MODE_PREFERRED("P"),
     ACCOUNT_ID_MODE_DISABLED("Q"),
     ACCOUNT_ID_MODE_REQUIRED("R"),
