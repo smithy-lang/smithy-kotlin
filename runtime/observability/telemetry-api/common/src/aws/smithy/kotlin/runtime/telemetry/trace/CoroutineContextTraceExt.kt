@@ -71,7 +71,7 @@ public suspend inline fun <R> withSpan(
     // or else traces may be disconnected from their parent
     val updatedCtx = coroutineContext[TelemetryProviderContext]?.provider?.contextManager?.current()
     val telemetryCtxElement = (updatedCtx?.let { TelemetryContextElement(it) } ?: coroutineContext[TelemetryContextElement]) ?: EmptyCoroutineContext
-    withContext(context + TraceSpanContext(span) + telemetryCtxElement) {
+    withContext(context + TraceSpanContext(span) + telemetryCtxElement + span.asContextElement()) {
         block(span)
     }
 } catch (ex: Exception) {

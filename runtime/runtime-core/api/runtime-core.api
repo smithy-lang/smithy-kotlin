@@ -697,6 +697,10 @@ public final class aws/smithy/kotlin/runtime/hashing/Crc32cKt {
 	public static final fun crc32c ([B)I
 }
 
+public final class aws/smithy/kotlin/runtime/hashing/EcdsaJVMKt {
+	public static final fun ecdsaSecp256r1 ([B[B)[B
+}
+
 public abstract interface class aws/smithy/kotlin/runtime/hashing/HashFunction {
 	public abstract fun digest ()[B
 	public abstract fun getBlockSizeBytes ()I
