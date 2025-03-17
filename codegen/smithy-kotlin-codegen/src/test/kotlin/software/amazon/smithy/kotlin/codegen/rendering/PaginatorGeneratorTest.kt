@@ -264,6 +264,130 @@ class PaginatorGeneratorTest {
     }
 
     @Test
+    fun testRenderPaginatorWithItemRequiringFullName() {
+        val testModelWithItems = """
+            namespace com.test
+            
+            use aws.protocols#restJson1
+            
+            service FlowService {
+                operations: [ListFlows]
+            }
+            
+            @paginated(
+                inputToken: "Marker",
+                outputToken: "NextMarker",
+                pageSize: "MaxItems",
+                items: "Flows"
+            )
+            @readonly
+            @http(method: "GET", uri: "/flows", code: 200)
+            operation ListFlows {
+                input: ListFlowsRequest,
+                output: ListFlowsResponse
+            }
+            
+            structure ListFlowsRequest {
+                @httpQuery("FlowVersion")
+                FlowVersion: String,
+                @httpQuery("Marker")
+                Marker: String,
+                @httpQuery("MasterRegion")
+                MasterRegion: String,
+                @httpQuery("MaxItems")
+                MaxItems: Integer
+            }
+            
+            structure ListFlowsResponse {
+                Flows: FlowList,
+                NextMarker: String
+            }
+            
+            list FlowList {
+                member: Flow
+            }
+            
+            structure Flow {
+                Name: String
+            }
+        """.toSmithyModel()
+        val testContextWithItems = testModelWithItems.newTestContext("FlowService", "com.test")
+
+        val codegenContextWithItems = object : CodegenContext {
+            override val model: Model = testContextWithItems.generationCtx.model
+            override val symbolProvider: SymbolProvider = testContextWithItems.generationCtx.symbolProvider
+            override val settings: KotlinSettings = testContextWithItems.generationCtx.settings
+            override val protocolGenerator: ProtocolGenerator = testContextWithItems.generator
+            override val integrations: List<KotlinIntegration> = testContextWithItems.generationCtx.integrations
+        }
+
+        val unit = PaginatorGenerator()
+        unit.writeAdditionalFiles(codegenContextWithItems, testContextWithItems.generationCtx.delegator)
+
+        testContextWithItems.generationCtx.delegator.flushWriters()
+        val testManifest = testContextWithItems.generationCtx.delegator.fileManifest as MockManifest
+        val actual = testManifest.expectFileString("src/main/kotlin/com/test/paginators/Paginators.kt")
+
+        val expectedCode = """
+            /**
+             * Paginate over [ListFlowsResponse] results.
+             *
+             * When this operation is called, a [kotlinx.coroutines.Flow] is created. Flows are lazy (cold) so no service
+             * calls are made until the flow is collected. This also means there is no guarantee that the request is valid
+             * until then. Once you start collecting the flow, the SDK will lazily load response pages by making service
+             * calls until there are no pages left or the flow is cancelled. If there are errors in your request, you will
+             * see the failures only after you start collection.
+             * @param initialRequest A [ListFlowsRequest] to start pagination
+             * @return A [kotlinx.coroutines.flow.Flow] that can collect [ListFlowsResponse]
+             */
+            public fun TestClient.listFlowsPaginated(initialRequest: ListFlowsRequest = ListFlowsRequest { }): kotlinx.coroutines.flow.Flow<ListFlowsResponse> =
+                flow {
+                    var cursor: kotlin.String? = initialRequest.marker
+                    var hasNextPage: Boolean = true
+            
+                    while (hasNextPage) {
+                        val req = initialRequest.copy {
+                            this.marker = cursor
+                        }
+                        val result = this@listFlowsPaginated.listFlows(req)
+                        cursor = result.nextMarker
+                        hasNextPage = cursor?.isNotEmpty() == true
+                        emit(result)
+                    }
+                }
+            
+            /**
+             * Paginate over [ListFlowsResponse] results.
+             *
+             * When this operation is called, a [kotlinx.coroutines.Flow] is created. Flows are lazy (cold) so no service
+             * calls are made until the flow is collected. This also means there is no guarantee that the request is valid
+             * until then. Once you start collecting the flow, the SDK will lazily load response pages by making service
+             * calls until there are no pages left or the flow is cancelled. If there are errors in your request, you will
+             * see the failures only after you start collection.
+             * @param block A builder block used for DSL-style invocation of the operation
+             * @return A [kotlinx.coroutines.flow.Flow] that can collect [ListFlowsResponse]
+             */
+            public fun TestClient.listFlowsPaginated(block: ListFlowsRequest.Builder.() -> Unit): kotlinx.coroutines.flow.Flow<ListFlowsResponse> =
+                listFlowsPaginated(ListFlowsRequest.Builder().apply(block).build())
+            
+            /**
+             * This paginator transforms the flow returned by [listFlowsPaginated]
+             * to access the nested member [Flow]
+             * @return A [kotlinx.coroutines.flow.Flow] that can collect [Flow]
+             */
+            @JvmName("listFlowsResponseFlow")
+            public fun kotlinx.coroutines.flow.Flow<ListFlowsResponse>.flows(): kotlinx.coroutines.flow.Flow<Flow> =
+                transform() { response ->
+                    response.flows?.forEach {
+                        emit(it)
+                    }
+                }
+        """.trimIndent()
+
+        actual.shouldContainOnlyOnceWithDiff(expectedCode)
+    }
+
+    @Test
     fun testRenderPaginatorWithSparseItem() {
         val testModelWithItems = """
             namespace com.test
