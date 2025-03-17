@@ -71,6 +71,7 @@ jobs:
           /usr/bin/xcrun simctl shutdown all
           /usr/bin/xcrun simctl erase all
           killall -9 com.apple.CoreSimulator.CoreSimulatorService
+          xcrun simctl list devices
           ./gradlew -Paws.sdk.kotlin.crt.disableCrossCompile=true -Paws.kotlin.native.disableCrossCompile=true apiCheck
           ./gradlew -Paws.sdk.kotlin.crt.disableCrossCompile=true -Paws.kotlin.native.disableCrossCompile=true build
 
