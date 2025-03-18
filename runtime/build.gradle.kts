@@ -131,4 +131,4 @@ Underlying error (domain=com.apple.SimLaunchHostService.RequestError, code=3):
 tasks.withType<KotlinNativeSimulatorTest> {
     enabled = false
 }
-//configureIosSimulatorTasks()
+// configureIosSimulatorTasks()
