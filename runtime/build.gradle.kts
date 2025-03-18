@@ -132,5 +132,4 @@ subprojects {
     }
 }
 
-
 // configureIosSimulatorTasks()
