@@ -45,13 +45,13 @@ jobs:
         run: |
           ./gradlew -Paws.kotlin.native=false -Ptest.java.version=${{ matrix.java-version }} jvmTest --stacktrace
 
-  # macos-14 build and test for targets: jvm, macoArm64, iosSimulatorArm64, watchosSimulatorArm65, tvosSimulatorArm64
-  # macos-13 build and test for targets: jvm, macoX64, iosX64, tvosX64, watchosX64
+  # macos-15 build and test for targets: jvm, macosArm64, iosSimulatorArm64, watchosSimulatorArm65, tvosSimulatorArm64: https://github.com/actions/runner-images/blob/main/images/macos/macos-15-arm64-Readme.md
+  # macos-15-large build and test for targets: jvm, macosX64, iosX64, tvosX64, watchosX64: https://github.com/actions/runner-images/blob/main/images/macos/macos-15-Readme.md
   macos:
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-14, macos-13]
+        os: [macos-15, macos-15-large]
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout sources
@@ -72,8 +72,8 @@ jobs:
           /usr/bin/xcrun simctl erase all
           killall -9 com.apple.CoreSimulator.CoreSimulatorService
           xcrun simctl list devices
-          ./gradlew -PiosSimulatorDevice="iPhone 15 Pro" -Paws.sdk.kotlin.crt.disableCrossCompile=true -Paws.kotlin.native.disableCrossCompile=true apiCheck
-          ./gradlew -PiosSimulatorDevice="iPhone 15 Pro" -Paws.sdk.kotlin.crt.disableCrossCompile=true -Paws.kotlin.native.disableCrossCompile=true build
+          ./gradlew -PiosSimulatorDevice="iPhone 16" -Paws.sdk.kotlin.crt.disableCrossCompile=true -Paws.kotlin.native.disableCrossCompile=true apiCheck
+          ./gradlew -PiosSimulatorDevice="iPhone 16" -Paws.sdk.kotlin.crt.disableCrossCompile=true -Paws.kotlin.native.disableCrossCompile=true build
 
       - name: Save Test Reports
         if: failure()
