@@ -115,8 +115,6 @@ subprojects {
     }
 }
 
-configureIosSimulatorTasks()
-
 /*
 FIXME iOS simulator tests fail on GitHub CI with "Bad or unknown session":
 > Task :runtime:runtime-core:linkDebugTestIosSimulatorArm64
@@ -133,3 +131,4 @@ Underlying error (domain=com.apple.SimLaunchHostService.RequestError, code=3):
 tasks.withType<KotlinNativeSimulatorTest> {
     enabled = false
 }
+//configureIosSimulatorTasks()
