@@ -72,8 +72,8 @@ jobs:
           /usr/bin/xcrun simctl erase all
           killall -9 com.apple.CoreSimulator.CoreSimulatorService
           xcrun simctl list devices
-          ./gradlew -PiosSimulatorDevice="iPhone 16" -Paws.sdk.kotlin.crt.disableCrossCompile=true -Paws.kotlin.native.disableCrossCompile=true apiCheck
-          ./gradlew -PiosSimulatorDevice="iPhone 16" -Paws.sdk.kotlin.crt.disableCrossCompile=true -Paws.kotlin.native.disableCrossCompile=true build
+          ./gradlew -PiosSimulatorDevice="iPhone 15 Pro" -Paws.sdk.kotlin.crt.disableCrossCompile=true -Paws.kotlin.native.disableCrossCompile=true apiCheck
+          ./gradlew -PiosSimulatorDevice="iPhone 15 Pro" -Paws.sdk.kotlin.crt.disableCrossCompile=true -Paws.kotlin.native.disableCrossCompile=true build
 
       - name: Save Test Reports
         if: failure()
