@@ -4,7 +4,6 @@
  */
 package aws.smithy.kotlin.runtime.awsprotocol.rpcv2.cbor
 
-import aws.smithy.kotlin.runtime.IgnoreNative
 import aws.smithy.kotlin.runtime.ServiceException
 import aws.smithy.kotlin.runtime.http.*
 import aws.smithy.kotlin.runtime.http.operation.*
@@ -56,7 +55,6 @@ internal fun getMockClient(response: ByteArray, responseHeaders: Headers = Heade
 internal val RESPONSE = "abc".repeat(1024).encodeToByteArray()
 
 class RpcV2CborSmithyProtocolResponseHeaderInterceptorTest {
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testThrowsOnMissingHeader() = runTest {
         val req = HttpRequestBuilder()
@@ -71,7 +69,6 @@ class RpcV2CborSmithyProtocolResponseHeaderInterceptorTest {
         }
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testSucceedsOnPresentHeader() = runTest {
         val req = HttpRequestBuilder()

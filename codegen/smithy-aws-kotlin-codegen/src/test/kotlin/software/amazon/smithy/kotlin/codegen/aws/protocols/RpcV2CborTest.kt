@@ -21,7 +21,7 @@ class RpcV2CborTest {
         @service(sdkId: "CborExample")
         service CborExample {
             version: "1.0.0",
-            operations: [GetFoo, GetFooStreaming, PutFooStreaming]
+            operations: [GetFoo, GetFooStreaming, PutFooStreaming, GetBarUnNested, GetBarNested]
         }
 
         @http(method: "POST", uri: "/foo")
@@ -74,6 +74,30 @@ class RpcV2CborTest {
         @error("client")
         @retryable(throttling: true)
         structure ThrottlingError {}
+
+        @http(method: "POST", uri: "/get-bar-un-nested")
+        operation GetBarUnNested {
+            input: BarUnNested
+        }
+        
+        structure BarUnNested {
+            @idempotencyToken
+            bar: String
+        }
+        
+        @http(method: "POST", uri: "/get-bar-nested")
+        operation GetBarNested {
+            input: BarNested
+        }
+        
+        structure BarNested {
+            bar: Nest
+        }
+        
+        structure Nest {
+            @idempotencyToken
+            baz: String
+        }
         """.toSmithyModel()
 
     @Test
@@ -161,5 +185,63 @@ class RpcV2CborTest {
 
         val serializeBody = documentSerializer.lines("    serializer.serializeStruct(OBJ_DESCRIPTOR) {", "}")
         serializeBody.shouldNotContain("input.messages") // `messages` is the stream member and should not be serialized in the initial request
+    }
+
+    @Test
+    fun testNonNestedIdempotencyToken() {
+        val ctx = model.newTestContext("CborExample")
+
+        val generator = RpcV2Cbor()
+        generator.generateProtocolClient(ctx.generationCtx)
+
+        ctx.generationCtx.delegator.finalize()
+        ctx.generationCtx.delegator.flushWriters()
+
+        val expected = """
+            serializer.serializeStruct(OBJ_DESCRIPTOR) {
+                input.bar?.let { field(BAR_DESCRIPTOR, it) } ?: field(BAR_DESCRIPTOR, context.idempotencyTokenProvider.generateToken())
+            }
+        """.trimIndent()
+
+        val actual = ctx
+            .manifest
+            .expectFileString("/src/main/kotlin/com/test/serde/GetBarUnNestedOperationSerializer.kt")
+            .lines("    serializer.serializeStruct(OBJ_DESCRIPTOR) {", "    }")
+            .trimIndent()
+
+        actual.shouldContainOnlyOnceWithDiff(expected)
+    }
+
+    @Test
+    fun testNestedIdempotencyToken() {
+        val ctx = model.newTestContext("CborExample")
+
+        val generator = RpcV2Cbor()
+        generator.generateProtocolClient(ctx.generationCtx)
+
+        ctx.generationCtx.delegator.finalize()
+        ctx.generationCtx.delegator.flushWriters()
+
+        val expected = """
+            serializer.serializeStruct(OBJ_DESCRIPTOR) {
+                input.baz?.let { field(BAZ_DESCRIPTOR, it) }
+            }
+        """.trimIndent()
+
+        val actual = ctx
+            .manifest
+            .expectFileString("/src/main/kotlin/com/test/serde/NestDocumentSerializer.kt")
+            .lines("    serializer.serializeStruct(OBJ_DESCRIPTOR) {", "    }")
+            .trimIndent()
+
+        actual.shouldContainOnlyOnceWithDiff(expected)
+
+        val unexpected = """
+            serializer.serializeStruct(OBJ_DESCRIPTOR) {
+                input.baz?.let { field(BAZ_DESCRIPTOR, it) } ?: field(BAR_DESCRIPTOR, context.idempotencyTokenProvider.generateToken())
+            }
+        """.trimIndent()
+
+        actual.shouldNotContainOnlyOnceWithDiff(unexpected)
     }
 }

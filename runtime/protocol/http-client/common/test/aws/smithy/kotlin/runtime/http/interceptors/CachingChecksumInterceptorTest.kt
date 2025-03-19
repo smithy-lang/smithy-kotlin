@@ -2,7 +2,6 @@
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
  * SPDX-License-Identifier: Apache-2.0
  */
-import aws.smithy.kotlin.runtime.IgnoreNative
 import aws.smithy.kotlin.runtime.client.ProtocolRequestInterceptorContext
 import aws.smithy.kotlin.runtime.collections.get
 import aws.smithy.kotlin.runtime.http.HttpBody
@@ -25,7 +24,6 @@ private val CHECKSUM_TEST_HEADER = "x-amz-kotlin-sdk-test-checksum-header"
 class CachingChecksumInterceptorTest {
     private val client = SdkHttpClient(TestEngine())
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native Implementation
     @Test
     fun testChecksumIsCalculatedAndApplied() = runTest {
         val req = HttpRequestBuilder().apply {
@@ -42,7 +40,6 @@ class CachingChecksumInterceptorTest {
         assertEquals(expectedChecksumValue, call.request.headers[CHECKSUM_TEST_HEADER])
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native Implementation
     @Test
     fun testCachedChecksumIsUsed() = runTest {
         val req = HttpRequestBuilder().apply {

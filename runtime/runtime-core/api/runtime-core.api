@@ -107,6 +107,9 @@ public final class aws/smithy/kotlin/runtime/businessmetrics/BusinessMetricsUtil
 
 public final class aws/smithy/kotlin/runtime/businessmetrics/SmithyBusinessMetric : java/lang/Enum, aws/smithy/kotlin/runtime/businessmetrics/BusinessMetric {
 	public static final field ACCOUNT_ID_BASED_ENDPOINT Laws/smithy/kotlin/runtime/businessmetrics/SmithyBusinessMetric;
+	public static final field ACCOUNT_ID_MODE_DISABLED Laws/smithy/kotlin/runtime/businessmetrics/SmithyBusinessMetric;
+	public static final field ACCOUNT_ID_MODE_PREFERRED Laws/smithy/kotlin/runtime/businessmetrics/SmithyBusinessMetric;
+	public static final field ACCOUNT_ID_MODE_REQUIRED Laws/smithy/kotlin/runtime/businessmetrics/SmithyBusinessMetric;
 	public static final field FLEXIBLE_CHECKSUMS_REQ_CRC32 Laws/smithy/kotlin/runtime/businessmetrics/SmithyBusinessMetric;
 	public static final field FLEXIBLE_CHECKSUMS_REQ_CRC32C Laws/smithy/kotlin/runtime/businessmetrics/SmithyBusinessMetric;
 	public static final field FLEXIBLE_CHECKSUMS_REQ_SHA1 Laws/smithy/kotlin/runtime/businessmetrics/SmithyBusinessMetric;
@@ -118,6 +121,7 @@ public final class aws/smithy/kotlin/runtime/businessmetrics/SmithyBusinessMetri
 	public static final field GZIP_REQUEST_COMPRESSION Laws/smithy/kotlin/runtime/businessmetrics/SmithyBusinessMetric;
 	public static final field PAGINATOR Laws/smithy/kotlin/runtime/businessmetrics/SmithyBusinessMetric;
 	public static final field PROTOCOL_RPC_V2_CBOR Laws/smithy/kotlin/runtime/businessmetrics/SmithyBusinessMetric;
+	public static final field RESOLVED_ACCOUNT_ID Laws/smithy/kotlin/runtime/businessmetrics/SmithyBusinessMetric;
 	public static final field RETRY_MODE_ADAPTIVE Laws/smithy/kotlin/runtime/businessmetrics/SmithyBusinessMetric;
 	public static final field RETRY_MODE_STANDARD Laws/smithy/kotlin/runtime/businessmetrics/SmithyBusinessMetric;
 	public static final field SERVICE_ENDPOINT_OVERRIDE Laws/smithy/kotlin/runtime/businessmetrics/SmithyBusinessMetric;
@@ -309,6 +313,7 @@ public class aws/smithy/kotlin/runtime/collections/ValuesMapImpl : aws/smithy/ko
 	public fun getAll (Ljava/lang/String;)Ljava/util/List;
 	public fun getCaseInsensitiveName ()Z
 	protected final fun getValues ()Ljava/util/Map;
+	public fun hashCode ()I
 	public fun isEmpty ()Z
 	public fun names ()Ljava/util/Set;
 }
@@ -704,6 +709,10 @@ public final class aws/smithy/kotlin/runtime/hashing/Crc32c : aws/smithy/kotlin/
 
 public final class aws/smithy/kotlin/runtime/hashing/Crc32cKt {
 	public static final fun crc32c ([B)I
+}
+
+public final class aws/smithy/kotlin/runtime/hashing/EcdsaJVMKt {
+	public static final fun ecdsaSecp256r1 ([B[B)[B
 }
 
 public abstract interface class aws/smithy/kotlin/runtime/hashing/HashFunction {
@@ -2383,9 +2392,12 @@ public final class aws/smithy/kotlin/runtime/util/OperatingSystem {
 public final class aws/smithy/kotlin/runtime/util/OsFamily : java/lang/Enum {
 	public static final field Android Laws/smithy/kotlin/runtime/util/OsFamily;
 	public static final field Ios Laws/smithy/kotlin/runtime/util/OsFamily;
+	public static final field IpadOs Laws/smithy/kotlin/runtime/util/OsFamily;
 	public static final field Linux Laws/smithy/kotlin/runtime/util/OsFamily;
 	public static final field MacOs Laws/smithy/kotlin/runtime/util/OsFamily;
+	public static final field TvOs Laws/smithy/kotlin/runtime/util/OsFamily;
 	public static final field Unknown Laws/smithy/kotlin/runtime/util/OsFamily;
+	public static final field WatchOs Laws/smithy/kotlin/runtime/util/OsFamily;
 	public static final field Windows Laws/smithy/kotlin/runtime/util/OsFamily;
 	public static fun getEntries ()Lkotlin/enums/EnumEntries;
 	public fun toString ()Ljava/lang/String;

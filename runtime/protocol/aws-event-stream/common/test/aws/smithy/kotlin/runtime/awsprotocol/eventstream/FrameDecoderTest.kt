@@ -5,7 +5,6 @@
 
 package aws.smithy.kotlin.runtime.awsprotocol.eventstream
 
-import aws.smithy.kotlin.runtime.IgnoreNative
 import aws.smithy.kotlin.runtime.io.*
 import io.kotest.matchers.string.shouldContain
 import kotlinx.coroutines.flow.*
@@ -15,7 +14,6 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 
 class FrameDecoderTest {
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testFrameStreamSingleMessage() = runTest {
         val encoded = validMessageWithAllHeaders()
@@ -29,7 +27,6 @@ class FrameDecoderTest {
         assertEquals(expected, actual.first())
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testFrameStreamMultipleMessagesChunked() = runTest {
         val encoded = SdkBuffer().apply {
@@ -53,7 +50,6 @@ class FrameDecoderTest {
         assertEquals(expected3, actual[2])
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testChannelClosed() = runTest {
         // contents don't matter

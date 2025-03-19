@@ -4,7 +4,6 @@
  */
 package aws.smithy.kotlin.runtime.http.engine
 
-import aws.smithy.kotlin.runtime.IgnoreNative
 import aws.smithy.kotlin.runtime.http.Headers
 import aws.smithy.kotlin.runtime.http.HttpBody
 import aws.smithy.kotlin.runtime.http.HttpCall
@@ -25,7 +24,6 @@ import kotlin.test.assertTrue
 import kotlin.coroutines.coroutineContext as currentCoroutineContext
 
 class HttpCallContextTest {
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native Implementation
     @OptIn(ExperimentalCoroutinesApi::class)
     @Test
     fun testStructuredConcurrency() = runTest {

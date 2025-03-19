@@ -4,7 +4,6 @@
  */
 package aws.smithy.kotlin.runtime.awsprotocol
 
-import aws.smithy.kotlin.runtime.IgnoreNative
 import aws.smithy.kotlin.runtime.SdkBaseException
 import aws.smithy.kotlin.runtime.ServiceErrorMetadata
 import aws.smithy.kotlin.runtime.awsprotocol.ClockSkewInterceptor.Companion.CLOCK_SKEW_THRESHOLD
@@ -32,50 +31,45 @@ private val POSSIBLE_SKEWED_RESPONSE_CODE_DESCRIPTION = "InvalidSignatureExcepti
 private val NOT_SKEWED_RESPONSE_CODE_DESCRIPTION = "RequestThrottled"
 
 class ClockSkewInterceptorTest {
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native Implementation
     @Test
     fun testNotSkewed() {
-        val clientTime = Instant.fromRfc5322("Wed, 6 Oct 2023 16:20:50 -0400")
-        val serverTime = Instant.fromRfc5322("Wed, 6 Oct 2023 16:20:50 -0400")
+        val clientTime = Instant.fromRfc5322("Fri, 6 Oct 2023 16:20:50 -0400")
+        val serverTime = Instant.fromRfc5322("Fri, 6 Oct 2023 16:20:50 -0400")
         assertEquals(clientTime, serverTime)
         assertFalse(clientTime.isSkewed(serverTime, NOT_SKEWED_RESPONSE_CODE_DESCRIPTION))
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testSkewedByResponseCode() {
         // clocks are exactly the same, but service returned skew error
-        val clientTime = Instant.fromRfc5322("Wed, 6 Oct 2023 16:20:50 -0400")
-        val serverTime = Instant.fromRfc5322("Wed, 6 Oct 2023 16:20:50 -0400")
+        val clientTime = Instant.fromRfc5322("Fri, 6 Oct 2023 16:20:50 -0400")
+        val serverTime = Instant.fromRfc5322("Fri, 6 Oct 2023 16:20:50 -0400")
         assertTrue(clientTime.isSkewed(serverTime, SKEWED_RESPONSE_CODE_DESCRIPTION))
         assertEquals(0.days, clientTime.until(serverTime))
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testSkewedByTime() {
-        val clientTime = Instant.fromRfc5322("Wed, 6 Oct 2023 16:20:50 -0400")
-        val serverTime = Instant.fromRfc5322("Wed, 7 Oct 2023 16:20:50 -0400")
+        val clientTime = Instant.fromRfc5322("Fri, 6 Oct 2023 16:20:50 -0400")
+        val serverTime = Instant.fromRfc5322("Sat, 7 Oct 2023 16:20:50 -0400")
         assertTrue(clientTime.isSkewed(serverTime, POSSIBLE_SKEWED_RESPONSE_CODE_DESCRIPTION))
         assertEquals(1.days, clientTime.until(serverTime))
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testNegativeSkewedByTime() {
-        val clientTime = Instant.fromRfc5322("Wed, 7 Oct 2023 16:20:50 -0400")
-        val serverTime = Instant.fromRfc5322("Wed, 6 Oct 2023 16:20:50 -0400")
+        val clientTime = Instant.fromRfc5322("Sat, 7 Oct 2023 16:20:50 -0400")
+        val serverTime = Instant.fromRfc5322("Fri, 6 Oct 2023 16:20:50 -0400")
         assertTrue(clientTime.isSkewed(serverTime, POSSIBLE_SKEWED_RESPONSE_CODE_DESCRIPTION))
         assertEquals(-1.days, clientTime.until(serverTime))
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testSkewThreshold() {
         val minute = 20
         var clientTime =
-            Instant.fromRfc5322("Wed, 6 Oct 2023 16:${minute - CLOCK_SKEW_THRESHOLD.inWholeMinutes}:50 -0400")
-        val serverTime = Instant.fromRfc5322("Wed, 6 Oct 2023 16:$minute:50 -0400")
+            Instant.fromRfc5322("Fri, 6 Oct 2023 16:${minute - CLOCK_SKEW_THRESHOLD.inWholeMinutes}:50 -0400")
+        val serverTime = Instant.fromRfc5322("Fri, 6 Oct 2023 16:$minute:50 -0400")
         assertTrue(clientTime.isSkewed(serverTime, POSSIBLE_SKEWED_RESPONSE_CODE_DESCRIPTION))
         assertEquals(CLOCK_SKEW_THRESHOLD, clientTime.until(serverTime))
 
@@ -131,18 +125,16 @@ class ClockSkewInterceptorTest {
         }
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testClockSkewApplied() = runTest {
         testRoundTrip(
-            serverTimeString = "Wed, 14 Sep 2023 16:20:50 -0400", // Big skew
+            serverTimeString = "Thu, 14 Sep 2023 16:20:50 -0400", // Big skew
             clientTimeString = "20231006T131604Z",
             httpStatusCode = HttpStatusCode.Forbidden,
             expectException = false,
         )
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testClockSkewNotApplied_NoSkew() = runTest {
         testRoundTrip(
@@ -153,7 +145,6 @@ class ClockSkewInterceptorTest {
         )
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation
     @Test
     fun testClockSkewNotApplied_BadDate() = runTest {
         testRoundTrip(

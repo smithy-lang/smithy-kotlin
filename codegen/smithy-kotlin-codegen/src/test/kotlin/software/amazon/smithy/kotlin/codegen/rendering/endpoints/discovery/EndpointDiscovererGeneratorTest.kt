@@ -37,19 +37,23 @@ class EndpointDiscovererGeneratorTest {
         actual.shouldContainOnlyOnceWithDiff(
             """
                 internal fun asEndpointResolver(client: TestClient, delegate: EndpointResolverAdapter) = EndpointResolver { request ->
-                    val identity = request.identity
-                    require(identity is Credentials) { "Endpoint discovery requires AWS credentials" }
-            
-                    val cacheKey = DiscoveryParams(client.config.region, identity.accessKeyId)
-                    request.context[discoveryParamsKey] = cacheKey
-                    val discoveredHost = cache.get(cacheKey) { discoverHost(client) }
-            
-                    val originalEndpoint = delegate.resolve(request)
-                    Endpoint(
-                        originalEndpoint.uri.copy { host = discoveredHost },
-                        originalEndpoint.headers,
-                        originalEndpoint.attributes,
-                    )
+                    if (client.config.endpointUrl == null) {
+                        val identity = request.identity
+                        require(identity is Credentials) { "Endpoint discovery requires AWS credentials" }
+                
+                        val cacheKey = DiscoveryParams(client.config.region, identity.accessKeyId)
+                        request.context[discoveryParamsKey] = cacheKey
+                        val discoveredHost = cache.get(cacheKey) { discoverHost(client) }
+                
+                        val originalEndpoint = delegate.resolve(request)
+                        Endpoint(
+                            originalEndpoint.uri.copy { host = discoveredHost },
+                            originalEndpoint.headers,
+                            originalEndpoint.attributes,
+                        )
+                    } else {
+                        delegate.resolve(request)
+                    }
                 }
             """.formatForTest(),
         )

@@ -56,6 +56,10 @@ class InstantTest {
 
         // leap second - dropped to: 2020-12-31T23:59:59
         FromTest("2020-12-31T23:59:60Z", 1609459199, 0),
+
+        // condensed, date only
+        FromTest("20250205", 1738713600, 0),
+        FromTest("20231127", 1701043200, 0),
     )
 
     @Test

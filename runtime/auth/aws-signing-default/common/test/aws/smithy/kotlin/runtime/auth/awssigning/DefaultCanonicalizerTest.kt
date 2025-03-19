@@ -4,7 +4,6 @@
  */
 package aws.smithy.kotlin.runtime.auth.awssigning
 
-import aws.smithy.kotlin.runtime.IgnoreNative
 import aws.smithy.kotlin.runtime.auth.awscredentials.Credentials
 import aws.smithy.kotlin.runtime.auth.awssigning.tests.DEFAULT_TEST_CREDENTIALS
 import aws.smithy.kotlin.runtime.http.Headers
@@ -23,7 +22,6 @@ import kotlin.test.assertEquals
 
 class DefaultCanonicalizerTest {
     // Test adapted from https://docs.aws.amazon.com/general/latest/gr/sigv4-create-canonical-request.html
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native Implementation
     @Test
     fun testCanonicalize() = runTest {
         val request = HttpRequest {
@@ -84,7 +82,6 @@ class DefaultCanonicalizerTest {
     }
 
     // Targeted test for proper URI path escaping. See https://github.com/smithy-lang/smithy-kotlin/issues/657
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native Implementation
     @Test
     fun testEscapablePath() {
         val uri = Url.Builder()
@@ -101,7 +98,6 @@ class DefaultCanonicalizerTest {
         assertEquals("/2013-04-01/healthcheck/foo%253Cbar%253Ebaz%253C%252Fbar%253E", uri.canonicalPath(config))
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native Implementation
     @Test
     fun testCanonicalPath() {
         val config = AwsSigningConfig {
@@ -117,7 +113,6 @@ class DefaultCanonicalizerTest {
         assertEquals("/foo/%40bar/baz%253Cqux%253Aquux", uri.canonicalPath(config))
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native Implementation
     @Test
     fun testCanonicalQueryParams() {
         Url.Builder().apply {
@@ -132,7 +127,6 @@ class DefaultCanonicalizerTest {
         }
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native Implementation
     @Test
     fun testUnsignedHeaders() = runTest {
         val request = HttpRequest {
@@ -166,7 +160,6 @@ class DefaultCanonicalizerTest {
         assertEquals(expectedSignedHeaders, actual.signedHeaders)
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native Implementation
     @Test
     fun testCustomPort() = runTest {
         val request = HttpRequest {

@@ -8,8 +8,10 @@ package aws.smithy.kotlin.runtime.time
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.UtcOffset
 import kotlinx.datetime.format.DateTimeComponents
+import kotlinx.datetime.format.DateTimeFormat
 import kotlinx.datetime.format.DayOfWeekNames
 import kotlinx.datetime.format.MonthNames
+import kotlinx.datetime.format.Padding
 import kotlinx.datetime.format.alternativeParsing
 import kotlinx.datetime.format.char
 import kotlinx.datetime.format.optional
@@ -106,7 +108,12 @@ internal object DateTimeFormats {
         dayOfWeek(DayOfWeekNames.ENGLISH_ABBREVIATED)
         chars(", ")
 
-        dayOfMonth()
+        alternativeParsing({
+            dayOfMonth(padding = Padding.NONE)
+        }) {
+            dayOfMonth()
+        }
+
         char(' ')
         monthName(MonthNames.ENGLISH_ABBREVIATED)
         char(' ')
@@ -124,4 +131,15 @@ internal object DateTimeFormats {
             offset(UtcOffset.Formats.FOUR_DIGITS)
         }
     }
+}
+
+/**
+ * ISO8601 condensed, date only. Corresponds to [TimestampFormat.ISO_8601_CONDENSED_DATE].
+ * Used only for _parsing_ ISO8601 condensed strings. Instant.parse() will fail if using [DateTimeFormats.ISO_8601_CONDENSED_DATE]
+ * because that is a [DateTimeFormat] which requires a time component to be present.
+ */
+internal val ISO_8601_CONDENSED_DATE_LOCALDATE = LocalDate.Format {
+    year()
+    monthNumber()
+    dayOfMonth()
 }
