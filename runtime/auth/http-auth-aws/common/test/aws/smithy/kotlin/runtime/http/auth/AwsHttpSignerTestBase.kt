@@ -134,7 +134,6 @@ public abstract class AwsHttpSignerTestBase(
         assertEquals(expectedSig, signed.headers["Authorization"])
     }
 
-    @IgnoreNative // FIXME Native signed request has additional `transfer-encoding` header
     @Test
     public fun testSignReplayableStreamingRequest(): TestResult = runTest {
         val op = buildOperation(streaming = true)
