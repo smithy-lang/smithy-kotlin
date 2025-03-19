@@ -21,10 +21,11 @@ import aws.sdk.kotlin.crt.auth.signing.AwsSigner as CrtSigner
 import aws.sdk.kotlin.crt.auth.signing.AwsSigningAlgorithm as CrtSigningAlgorithm
 import aws.sdk.kotlin.crt.auth.signing.AwsSigningConfig as CrtSigningConfig
 import aws.sdk.kotlin.crt.http.Headers as CrtHeaders
+import aws.sdk.kotlin.crt.WithCrt
 
 private const val S3_EXPRESS_HEADER_NAME = "X-Amz-S3session-Token"
 
-public object CrtAwsSigner : AwsSigner {
+public object CrtAwsSigner : AwsSigner, WithCrt() {
     override suspend fun sign(request: HttpRequest, config: AwsSigningConfig): AwsSigningResult<HttpRequest> {
         val isUnsigned = config.hashSpecification is HashSpecification.UnsignedPayload
         val isAwsChunked = request.headers.contains("Content-Encoding", "aws-chunked")
