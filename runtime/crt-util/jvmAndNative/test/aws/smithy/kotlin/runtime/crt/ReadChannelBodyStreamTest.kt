@@ -6,7 +6,6 @@
 package aws.smithy.kotlin.runtime.crt
 
 import aws.sdk.kotlin.crt.io.MutableBuffer
-import aws.smithy.kotlin.runtime.IgnoreNative
 import aws.smithy.kotlin.runtime.io.SdkBuffer
 import aws.smithy.kotlin.runtime.io.SdkByteChannel
 import aws.smithy.kotlin.runtime.io.SdkByteReadChannel
@@ -57,7 +56,6 @@ class ReadChannelBodyStreamTest {
         }
     }
 
-    @IgnoreNative // FIXME Need to implement transferRequestBody
     @Test
     fun testReadFully() = runTest {
         val data = byteArrayOf(1, 2, 3, 4, 5)
@@ -73,7 +71,6 @@ class ReadChannelBodyStreamTest {
         }
     }
 
-    @IgnoreNative // FIXME Need to implement transferRequestBody
     @Test
     fun testPartialRead() = runTest {
         val chan = SdkByteReadChannel("123456".encodeToByteArray())
@@ -92,7 +89,6 @@ class ReadChannelBodyStreamTest {
         assertEquals("456", sent2.decodeToString())
     }
 
-    @IgnoreNative // FIXME Need to implement transferRequestBody
     @Test
     fun testLargeTransfer() = runTest {
         val chan = SdkByteChannel()
