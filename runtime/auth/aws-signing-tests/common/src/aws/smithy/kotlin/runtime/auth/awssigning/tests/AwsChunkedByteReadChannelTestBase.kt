@@ -18,7 +18,6 @@ import kotlin.test.*
 import kotlin.time.Duration.Companion.milliseconds
 
 abstract class AwsChunkedByteReadChannelTestBase : AwsChunkedTestBase(AwsChunkedReaderFactory.Channel) {
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native Implementation
     @Test
     fun testSlowProducerMultipleChunksPartialLast(): TestResult = runTest {
         val numChunks = 6
