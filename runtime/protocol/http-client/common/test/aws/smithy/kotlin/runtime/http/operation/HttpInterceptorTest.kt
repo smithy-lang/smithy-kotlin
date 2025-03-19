@@ -13,7 +13,6 @@ import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
 import aws.smithy.kotlin.runtime.http.request.toBuilder
 import aws.smithy.kotlin.runtime.http.response.HttpResponse
 import aws.smithy.kotlin.runtime.http.response.copy
-import io.ktor.util.internal.initCauseBridge
 import kotlinx.coroutines.test.runTest
 import kotlin.IllegalStateException
 import kotlin.test.*

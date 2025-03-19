@@ -4,6 +4,7 @@
  */
 package aws.smithy.kotlin.runtime.auth.awssigning.crt
 
+import aws.sdk.kotlin.crt.WithCrt
 import aws.smithy.kotlin.runtime.auth.awscredentials.Credentials
 import aws.smithy.kotlin.runtime.auth.awssigning.*
 import aws.smithy.kotlin.runtime.crt.toSignableCrtRequest
@@ -21,7 +22,6 @@ import aws.sdk.kotlin.crt.auth.signing.AwsSigner as CrtSigner
 import aws.sdk.kotlin.crt.auth.signing.AwsSigningAlgorithm as CrtSigningAlgorithm
 import aws.sdk.kotlin.crt.auth.signing.AwsSigningConfig as CrtSigningConfig
 import aws.sdk.kotlin.crt.http.Headers as CrtHeaders
-import aws.sdk.kotlin.crt.WithCrt
 
 private const val S3_EXPRESS_HEADER_NAME = "X-Amz-S3session-Token"
 
