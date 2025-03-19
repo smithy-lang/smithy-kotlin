@@ -84,8 +84,6 @@ public abstract class BasicSigningTestBase : HasSigner {
         assertEquals(expectedSig, result.signature.decodeToString())
     }
 
-    @IgnoreNative // ecdsaSecp256r1 not implemented on Native. Can we make the signer implementation expect/actual and
-    // use CRT signer on Native?
     @Test
     public open fun testSignRequestSigV4Asymmetric(): TestResult = runTest {
         // sanity test
