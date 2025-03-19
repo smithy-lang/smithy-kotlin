@@ -27,7 +27,6 @@ class ReadChannelBodyStreamTest {
         return MutableBuffer.of(dest) to dest
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation. kotlin.native.internal.FileFailedToInitializeException at null:-1
     @Test
     fun testClose() = runTest {
         val chan = SdkByteChannel()
@@ -44,7 +43,6 @@ class ReadChannelBodyStreamTest {
         assertTrue(stream.sendRequestBody(sendBuffer))
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation. kotlin.native.internal.FileFailedToInitializeException at null:-1
     @Test
     fun testCancellation() = runTest {
         val chan = SdkByteChannel()
@@ -59,7 +57,7 @@ class ReadChannelBodyStreamTest {
         }
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation. kotlin.NotImplementedError at null:-1
+    @IgnoreNative // FIXME Need to implement transferRequestBody
     @Test
     fun testReadFully() = runTest {
         val data = byteArrayOf(1, 2, 3, 4, 5)
@@ -75,7 +73,7 @@ class ReadChannelBodyStreamTest {
         }
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation. kotlin.NotImplementedError at null:-1
+    @IgnoreNative // FIXME Need to implement transferRequestBody
     @Test
     fun testPartialRead() = runTest {
         val chan = SdkByteReadChannel("123456".encodeToByteArray())
@@ -94,7 +92,7 @@ class ReadChannelBodyStreamTest {
         assertEquals("456", sent2.decodeToString())
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation. kotlin.native.internal.FileFailedToInitializeException at null:-1
+    @IgnoreNative // FIXME Need to implement transferRequestBody
     @Test
     fun testLargeTransfer() = runTest {
         val chan = SdkByteChannel()
