@@ -7,6 +7,7 @@ import aws.sdk.kotlin.gradle.kmp.*
 import aws.sdk.kotlin.gradle.util.typedProp
 import org.gradle.kotlin.dsl.withType
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.jetbrains.kotlin.gradle.targets.native.tasks.KotlinNativeSimulatorTest
 
 plugins {
     alias(libs.plugins.dokka)
@@ -112,6 +113,23 @@ subprojects {
             }
         }
     }
+
+    /*
+        FIXME iOS simulator tests fail on GitHub CI with "Bad or unknown session":
+        > Task :runtime:runtime-core:linkDebugTestIosSimulatorArm64
+        java.lang.IllegalStateException: You have standalone simulator tests run mode disabled and tests have failed to run.
+
+        The problem can be that you have not booted the required device or have configured the task to a different simulator. Please check the task output and its device configuration.
+        > Task :runtime:runtime-core:iosSimulatorArm64Test
+        If you are sure that your setup is correct, please file an issue: https://kotl.in/issue
+        An error was encountered processing the command (domain=com.apple.CoreSimulator.SimError, code=405):
+        Process spawn via launchd failed because device is not booted.
+        Underlying error (domain=com.apple.SimLaunchHostService.RequestError, code=3):
+            Bad or unknown session: com.apple.CoreSimulator.SimDevice.C120BDE1-C108-4759-842F-7D82B4E71E8C
+     */
+    tasks.withType<KotlinNativeSimulatorTest> {
+        enabled = false
+    }
 }
 
-configureIosSimulatorTasks()
+// configureIosSimulatorTasks()

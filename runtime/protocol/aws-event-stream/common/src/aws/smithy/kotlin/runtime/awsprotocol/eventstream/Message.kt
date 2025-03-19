@@ -12,15 +12,15 @@ import aws.smithy.kotlin.runtime.text.encoding.encodeToHex
 
 internal const val MESSAGE_CRC_BYTE_LEN = 4
 
-// max message size is 16 MB
-internal const val MAX_MESSAGE_SIZE = 16 * 1024 * 1024
+// max message size is 24 MB
+internal const val MAX_MESSAGE_SIZE = 24 * 1024 * 1024
 
 // max header size is 128 KB
 internal const val MAX_HEADER_SIZE = 128 * 1024
 
 /*
     Message Wire Format
-    See also: https://docs.aws.amazon.com/transcribe/latest/dg/event-stream-med.html
+    See also: https://docs.aws.amazon.com/transcribe/latest/dg/streaming-setting-up.html
 
     +--------------------------------------------------------------------+   --
     |                            Total Len (32)                          |     |
