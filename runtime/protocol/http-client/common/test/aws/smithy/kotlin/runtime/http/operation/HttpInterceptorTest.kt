@@ -5,7 +5,6 @@
 
 package aws.smithy.kotlin.runtime.http.operation
 
-import aws.smithy.kotlin.runtime.IgnoreNative
 import aws.smithy.kotlin.runtime.client.*
 import aws.smithy.kotlin.runtime.http.Headers
 import aws.smithy.kotlin.runtime.http.interceptors.HttpInterceptor
@@ -14,6 +13,7 @@ import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
 import aws.smithy.kotlin.runtime.http.request.toBuilder
 import aws.smithy.kotlin.runtime.http.response.HttpResponse
 import aws.smithy.kotlin.runtime.http.response.copy
+import io.ktor.util.internal.initCauseBridge
 import kotlinx.coroutines.test.runTest
 import kotlin.IllegalStateException
 import kotlin.test.*
@@ -236,7 +236,6 @@ class HttpInterceptorTest {
         testMapFailure(interceptor)
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native Implementation
     @Test
     fun testReadAfterExecutionSuppressedException() = runTest {
         val interceptor = object : HttpInterceptor {
@@ -261,7 +260,7 @@ class HttpInterceptorTest {
             op.roundTrip(client, Unit)
         }
 
-        val cause = assertNotNull(ex.cause)
+        val cause = assertNotNull(ex.cause ?: ex)
         assertEquals(1, cause.suppressedExceptions.size)
         assertIs<TestException>(cause.suppressedExceptions.last())
     }
