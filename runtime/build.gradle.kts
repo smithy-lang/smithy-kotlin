@@ -62,7 +62,7 @@ subprojects {
                 }
             }
 
-            named("jvmTest") {
+            findByName("jvmTest")?.run {
                 dependencies {
                     implementation(libraries.kotlinx.coroutines.debug)
                     implementation(libraries.kotest.assertions.core.jvm)
