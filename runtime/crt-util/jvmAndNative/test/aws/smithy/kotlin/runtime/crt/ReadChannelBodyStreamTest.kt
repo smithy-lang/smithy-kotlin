@@ -6,7 +6,6 @@
 package aws.smithy.kotlin.runtime.crt
 
 import aws.sdk.kotlin.crt.io.MutableBuffer
-import aws.smithy.kotlin.runtime.IgnoreNative
 import aws.smithy.kotlin.runtime.io.SdkBuffer
 import aws.smithy.kotlin.runtime.io.SdkByteChannel
 import aws.smithy.kotlin.runtime.io.SdkByteReadChannel
@@ -27,7 +26,6 @@ class ReadChannelBodyStreamTest {
         return MutableBuffer.of(dest) to dest
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation. kotlin.native.internal.FileFailedToInitializeException at null:-1
     @Test
     fun testClose() = runTest {
         val chan = SdkByteChannel()
@@ -44,7 +42,6 @@ class ReadChannelBodyStreamTest {
         assertTrue(stream.sendRequestBody(sendBuffer))
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation. kotlin.native.internal.FileFailedToInitializeException at null:-1
     @Test
     fun testCancellation() = runTest {
         val chan = SdkByteChannel()
@@ -59,7 +56,6 @@ class ReadChannelBodyStreamTest {
         }
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation. kotlin.NotImplementedError at null:-1
     @Test
     fun testReadFully() = runTest {
         val data = byteArrayOf(1, 2, 3, 4, 5)
@@ -75,7 +71,6 @@ class ReadChannelBodyStreamTest {
         }
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation. kotlin.NotImplementedError at null:-1
     @Test
     fun testPartialRead() = runTest {
         val chan = SdkByteReadChannel("123456".encodeToByteArray())
@@ -94,7 +89,6 @@ class ReadChannelBodyStreamTest {
         assertEquals("456", sent2.decodeToString())
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native implementation. kotlin.native.internal.FileFailedToInitializeException at null:-1
     @Test
     fun testLargeTransfer() = runTest {
         val chan = SdkByteChannel()
