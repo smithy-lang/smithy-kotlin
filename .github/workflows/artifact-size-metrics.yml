@@ -45,23 +45,27 @@ jobs:
     steps:
       - name: Checkout Sources
         uses: actions/checkout@v4
-      - name: Configure JDK
-        uses: actions/setup-java@v3
         with:
-          distribution: 'corretto'
-          java-version: 17
-          cache: 'gradle'
+          path: 'smithy-kotlin'
+
+      - name: Setup build
+        uses: ./smithy-kotlin/.github/actions/setup-build
+
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ secrets.CI_AWS_ROLE_ARN }}
           aws-region: us-west-2
+
       - name: Configure Gradle
         uses: awslabs/aws-kotlin-repo-tools/.github/actions/configure-gradle@main
+
       - name: Generate Artifact Size Metrics
         run: ./gradlew -Paws.kotlin.native=false artifactSizeMetrics
+
       - name: Analyze Artifact Size Metrics
         run: ./gradlew analyzeArtifactSizeMetrics
+
       - name: Show Results
         uses: actions/github-script@v7
         with:
