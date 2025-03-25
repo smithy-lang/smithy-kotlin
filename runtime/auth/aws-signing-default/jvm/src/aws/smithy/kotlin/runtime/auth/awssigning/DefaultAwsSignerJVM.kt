@@ -12,8 +12,7 @@ import aws.smithy.kotlin.runtime.telemetry.logging.logger
 import kotlin.coroutines.coroutineContext
 
 /** The default implementation of [AwsSigner] */
-public actual val DefaultAwsSigner: AwsSigner
-    get() = DefaultAwsSignerImpl()
+public actual val DefaultAwsSigner: AwsSigner = DefaultAwsSignerImpl()
 
 /** Creates a customized instance of [AwsSigner] */
 @Suppress("ktlint:standard:function-naming")

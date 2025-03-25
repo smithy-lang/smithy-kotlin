@@ -7,5 +7,4 @@ package aws.smithy.kotlin.runtime.auth.awssigning
 import aws.smithy.kotlin.runtime.auth.awssigning.crt.CrtAwsSigner
 
 /** The default implementation of [AwsSigner] */
-public actual val DefaultAwsSigner: AwsSigner
-    get() = CrtAwsSigner
+public actual val DefaultAwsSigner: AwsSigner = CrtAwsSigner
