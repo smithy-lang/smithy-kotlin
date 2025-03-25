@@ -61,7 +61,7 @@ internal class DefaultRequestMutator : RequestMutator {
  * Formats a credential scope consisting of a signing date, region (SigV4 only), service, and a signature type
  */
 internal val AwsSigningConfig.credentialScope: String
-    get() = run {
+    get() {
         val signingDate = signingDate.format(TimestampFormat.ISO_8601_CONDENSED_DATE)
         return when (algorithm) {
             AwsSigningAlgorithm.SIGV4 -> "$signingDate/$region/$service/aws4_request"
