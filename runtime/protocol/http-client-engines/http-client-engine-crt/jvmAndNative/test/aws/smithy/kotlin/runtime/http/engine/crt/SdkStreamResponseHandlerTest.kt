@@ -155,7 +155,7 @@ class SdkStreamResponseHandlerTest {
 
     @Test
     fun testStreamError() = runTest {
-        CRT.initRuntime()
+        CRT.initRuntime() // CRT needs to be initialized for human-readable error codes
         val handler = SdkStreamResponseHandler(mockConn, coroutineContext)
         val stream = MockHttpStream(200)
         val data = "foo bar"
