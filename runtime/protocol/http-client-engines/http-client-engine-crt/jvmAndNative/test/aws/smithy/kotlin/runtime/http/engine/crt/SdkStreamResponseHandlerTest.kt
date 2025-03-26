@@ -5,9 +5,9 @@
 
 package aws.smithy.kotlin.runtime.http.engine.crt
 
+import aws.sdk.kotlin.crt.CRT
 import aws.sdk.kotlin.crt.http.*
 import aws.sdk.kotlin.crt.io.byteArrayBuffer
-import aws.smithy.kotlin.runtime.IgnoreNative
 import aws.smithy.kotlin.runtime.http.HttpBody
 import aws.smithy.kotlin.runtime.http.HttpErrorCode
 import aws.smithy.kotlin.runtime.http.HttpException
@@ -153,9 +153,9 @@ class SdkStreamResponseHandlerTest {
         assertEquals(data, respChan.readToBuffer().readUtf8())
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native Implementation.
     @Test
     fun testStreamError() = runTest {
+        CRT.initRuntime() // CRT needs to be initialized for human-readable error codes
         val handler = SdkStreamResponseHandler(mockConn, coroutineContext)
         val stream = MockHttpStream(200)
         val data = "foo bar"

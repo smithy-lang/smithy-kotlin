@@ -4,6 +4,7 @@
  */
 package aws.smithy.kotlin.runtime.auth.awssigning.crt
 
+import aws.sdk.kotlin.crt.WithCrt
 import aws.smithy.kotlin.runtime.auth.awscredentials.Credentials
 import aws.smithy.kotlin.runtime.auth.awssigning.*
 import aws.smithy.kotlin.runtime.crt.toSignableCrtRequest
@@ -24,7 +25,7 @@ import aws.sdk.kotlin.crt.http.Headers as CrtHeaders
 
 private const val S3_EXPRESS_HEADER_NAME = "X-Amz-S3session-Token"
 
-public object CrtAwsSigner : AwsSigner {
+public object CrtAwsSigner : AwsSigner, WithCrt() {
     override suspend fun sign(request: HttpRequest, config: AwsSigningConfig): AwsSigningResult<HttpRequest> {
         val isUnsigned = config.hashSpecification is HashSpecification.UnsignedPayload
         val isAwsChunked = request.headers.contains("Content-Encoding", "aws-chunked")

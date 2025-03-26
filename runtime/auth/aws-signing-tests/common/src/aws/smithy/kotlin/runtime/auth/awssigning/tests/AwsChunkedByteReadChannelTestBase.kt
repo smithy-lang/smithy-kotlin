@@ -5,7 +5,6 @@
 
 package aws.smithy.kotlin.runtime.auth.awssigning.tests
 
-import aws.smithy.kotlin.runtime.IgnoreNative
 import aws.smithy.kotlin.runtime.auth.awssigning.*
 import aws.smithy.kotlin.runtime.auth.awssigning.internal.CHUNK_SIZE_BYTES
 import aws.smithy.kotlin.runtime.io.*
@@ -18,7 +17,6 @@ import kotlin.test.*
 import kotlin.time.Duration.Companion.milliseconds
 
 abstract class AwsChunkedByteReadChannelTestBase : AwsChunkedTestBase(AwsChunkedReaderFactory.Channel) {
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native Implementation
     @Test
     fun testSlowProducerMultipleChunksPartialLast(): TestResult = runTest {
         val numChunks = 6

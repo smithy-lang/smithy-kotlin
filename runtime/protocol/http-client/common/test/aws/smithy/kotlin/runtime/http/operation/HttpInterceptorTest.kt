@@ -5,7 +5,6 @@
 
 package aws.smithy.kotlin.runtime.http.operation
 
-import aws.smithy.kotlin.runtime.IgnoreNative
 import aws.smithy.kotlin.runtime.client.*
 import aws.smithy.kotlin.runtime.http.Headers
 import aws.smithy.kotlin.runtime.http.interceptors.HttpInterceptor
@@ -236,7 +235,6 @@ class HttpInterceptorTest {
         testMapFailure(interceptor)
     }
 
-    @IgnoreNative // FIXME Re-enable after Kotlin/Native Implementation
     @Test
     fun testReadAfterExecutionSuppressedException() = runTest {
         val interceptor = object : HttpInterceptor {
@@ -261,7 +259,9 @@ class HttpInterceptorTest {
             op.roundTrip(client, Unit)
         }
 
-        val cause = assertNotNull(ex.cause)
+        // FIXME Investigate why the exception `ex` and its cause are duplicated on JVM.
+        // On JVM, `ex.cause` has the suppressed exceptions. On Native, `ex` has the suppressed exceptions and it has no cause.
+        val cause = assertNotNull(ex.cause ?: ex)
         assertEquals(1, cause.suppressedExceptions.size)
         assertIs<TestException>(cause.suppressedExceptions.last())
     }
