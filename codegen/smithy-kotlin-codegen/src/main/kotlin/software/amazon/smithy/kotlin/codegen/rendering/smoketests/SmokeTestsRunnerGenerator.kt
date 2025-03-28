@@ -4,6 +4,7 @@ import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.kotlin.codegen.core.*
 import software.amazon.smithy.kotlin.codegen.integration.SectionId
 import software.amazon.smithy.kotlin.codegen.integration.SectionKey
+import software.amazon.smithy.kotlin.codegen.lang.KotlinTypes
 import software.amazon.smithy.kotlin.codegen.model.getTrait
 import software.amazon.smithy.kotlin.codegen.model.hasTrait
 import software.amazon.smithy.kotlin.codegen.rendering.ShapeValueGenerator
@@ -17,8 +18,8 @@ import software.amazon.smithy.kotlin.codegen.rendering.util.format
 import software.amazon.smithy.kotlin.codegen.utils.dq
 import software.amazon.smithy.kotlin.codegen.utils.toCamelCase
 import software.amazon.smithy.kotlin.codegen.utils.topDownOperations
-import software.amazon.smithy.model.node.*
-import software.amazon.smithy.model.shapes.*
+import software.amazon.smithy.model.node.Node
+import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.smoketests.traits.SmokeTestCase
 import software.amazon.smithy.smoketests.traits.SmokeTestsTrait
 import kotlin.jvm.optionals.getOrNull
@@ -61,25 +62,47 @@ class SmokeTestsRunnerGenerator(
 ) {
     internal fun render() {
         writer.declareSection(SmokeTestSectionIds.SmokeTestsFile) {
-            writer.write("private var exitCode = 0")
-            renderEnvironmentVariables()
-            writer.declareSection(SmokeTestSectionIds.AdditionalEnvironmentVariables)
-            writer.write("")
-            writer.withBlock("public suspend fun main() {", "}") {
-                renderFunctionCalls()
-                write("#T(exitCode)", RuntimeTypes.Core.SmokeTests.exitProcess)
+            write("")
+
+            withBlock("public suspend fun main() {", "}") {
+                write("val success = SmokeTestRunner().runAllTests()")
+                withBlock("if (!success) {", "}") {
+                    write("#T(1)", RuntimeTypes.Core.SmokeTests.exitProcess)
+                }
             }
-            writer.write("")
+            write("")
+            renderRunnerClass()
+        }
+    }
+
+    private fun renderRunnerClass() {
+        writer.withBlock(
+            "public class SmokeTestRunner(private val platform: #1T = #1T.System, private val printer: #2T = #3T) {",
+            "}",
+            RuntimeTypes.Core.Utils.PlatformProvider,
+            KotlinTypes.Text.Appendable,
+            RuntimeTypes.Core.SmokeTests.DefaultPrinter,
+        ) {
+            renderEnvironmentVariables()
+            declareSection(SmokeTestSectionIds.AdditionalEnvironmentVariables)
+            write("")
+
+            withBlock("public suspend fun runAllTests(): Boolean =", "") {
+                withBlock("listOf<suspend () -> Boolean>(", ")") {
+                    renderFunctionReferences()
+                }
+                indent()
+                write(".map { it() }")
+                write(".none { !it }")
+                dedent()
+            }
             renderFunctions()
         }
     }
 
     private fun renderEnvironmentVariables() {
         // Skip tags
-        writer.writeInline(
-            "private val skipTags = #T.System.getenv(",
-            RuntimeTypes.Core.Utils.PlatformProvider,
-        )
+        writer.writeInline("private val skipTags = platform.getenv(")
         writer.declareSection(SmokeTestSectionIds.SkipTags) {
             writer.writeInline("#S", SKIP_TAGS)
         }
@@ -89,10 +112,7 @@ class SmokeTestsRunnerGenerator(
         )
 
         // Service filter
-        writer.writeInline(
-            "private val serviceFilter = #T.System.getenv(",
-            RuntimeTypes.Core.Utils.PlatformProvider,
-        )
+        writer.writeInline("private val serviceFilter = platform.getenv(")
         writer.declareSection(SmokeTestSectionIds.ServiceFilter) {
             writer.writeInline("#S", SERVICE_FILTER)
         }
@@ -102,10 +122,10 @@ class SmokeTestsRunnerGenerator(
         )
     }
 
-    private fun renderFunctionCalls() {
+    private fun renderFunctionReferences() {
         operations.forEach { operation ->
             operation.getTrait<SmokeTestsTrait>()?.testCases?.forEach { testCase ->
-                writer.write("${testCase.functionName}()")
+                writer.write("::${testCase.functionName},")
             }
         }
     }
@@ -120,7 +140,7 @@ class SmokeTestsRunnerGenerator(
     }
 
     private fun renderFunction(operation: OperationShape, testCase: SmokeTestCase) {
-        writer.withBlock("private suspend fun ${testCase.functionName}() {", "}") {
+        writer.withBlock("private suspend fun ${testCase.functionName}(): Boolean {", "}") {
             write("val tags = setOf<String>(${testCase.tags.joinToString(",") { it.dq()} })")
             writer.withBlock("if ((serviceFilter.isNotEmpty() && #S !in serviceFilter) || tags.any { it in skipTags }) {", "}", sdkId) {
                 printTestResult(
@@ -131,10 +151,10 @@ class SmokeTestsRunnerGenerator(
                     "ok",
                     "# skip",
                 )
-                writer.write("return")
+                writer.write("return true")
             }
             write("")
-            withInlineBlock("try {", "} ") {
+            withInlineBlock("return try {", "} ") {
                 renderTestCase(operation, testCase)
             }
             withBlock("catch (exception: Exception) {", "}") {
@@ -149,6 +169,8 @@ class SmokeTestsRunnerGenerator(
             closeAndOpenBlock("}.#T { client ->", RuntimeTypes.Core.IO.use)
             renderOperation(operation, testCase)
         }
+        writer.write("")
+        writer.write("error(#S)", "Unexpectedly completed smoke test operation without throwing exception")
     }
 
     private fun renderClientConfig(testCase: SmokeTestCase) {
@@ -212,9 +234,11 @@ class SmokeTestsRunnerGenerator(
         )
 
         writer.withBlock("if (!success) {", "}") {
-            write("#T(exception)", RuntimeTypes.Core.SmokeTests.printExceptionStackTrace)
-            write("exitCode = 1")
+            write("printer.appendLine(exception.stackTraceToString().prependIndent(#S))", "#")
         }
+
+        writer.write("")
+        writer.write("success")
     }
 
     // Helpers
@@ -241,7 +265,7 @@ class SmokeTestsRunnerGenerator(
         val expectation = if (errorExpected) "error expected from service" else "no error expected from service"
         val status = statusOverride ?: "\$status"
         val testResult = "$status $service $testCase - $expectation $directive"
-        writer.write("println(#S)", testResult)
+        writer.write("printer.appendLine(#S)", testResult)
     }
 
     /**
@@ -249,18 +273,6 @@ class SmokeTestsRunnerGenerator(
      */
     private val SmokeTestCase.functionName: String
         get() = this.id.toCamelCase()
-
-    /**
-     * Get the operation parameters for a [SmokeTestCase]
-     */
-    private val SmokeTestCase.operationParameters: Map<StringNode, Node>
-        get() = this.params.get().members
-
-    /**
-     * Checks if there are operation parameters for a [SmokeTestCase]
-     */
-    private val SmokeTestCase.hasOperationParameters: Boolean
-        get() = this.params.isPresent
 
     /**
      * Check if a [SmokeTestCase] is expecting a specific error
