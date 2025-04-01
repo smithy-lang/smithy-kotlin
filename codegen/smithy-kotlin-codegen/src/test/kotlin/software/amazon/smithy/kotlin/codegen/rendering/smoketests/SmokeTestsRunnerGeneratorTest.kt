@@ -113,7 +113,7 @@ class SmokeTestsRunnerGeneratorTest {
                     )
                         .map { it() }
                         .none { !it }
-            """.formatForTest()
+            """.formatForTest(),
         )
     }
 
