@@ -112,7 +112,7 @@ class SmokeTestsRunnerGeneratorTest {
                         ::failureTest,
                     )
                         .map { it() }
-                        .none { !it }
+                        .all { it }
             """.formatForTest(),
         )
     }
@@ -148,7 +148,7 @@ class SmokeTestsRunnerGeneratorTest {
                         val status: String = if (success) "ok" else "not ok"
                         printer.appendLine("${'$'}status Test SuccessTest - no error expected from service ")
                         if (!success) {
-                            printer.appendLine(exception.stackTraceToString().prependIndent("#"))
+                            printer.appendLine(exception.stackTraceToString().prependIndent("# "))
                         }
                 
                         success
@@ -186,7 +186,7 @@ class SmokeTestsRunnerGeneratorTest {
                         val status: String = if (success) "ok" else "not ok"
                         printer.appendLine("${'$'}status Test InvalidMessageErrorTest - error expected from service ")
                         if (!success) {
-                            printer.appendLine(exception.stackTraceToString().prependIndent("#"))
+                            printer.appendLine(exception.stackTraceToString().prependIndent("# "))
                         }
                 
                         success
@@ -225,7 +225,7 @@ class SmokeTestsRunnerGeneratorTest {
                         val status: String = if (success) "ok" else "not ok"
                         printer.appendLine("${'$'}status Test FailureTest - error expected from service ")
                         if (!success) {
-                            printer.appendLine(exception.stackTraceToString().prependIndent("#"))
+                            printer.appendLine(exception.stackTraceToString().prependIndent("# "))
                         }
                 
                         success

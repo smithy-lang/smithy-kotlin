@@ -93,7 +93,7 @@ class SmokeTestsRunnerGenerator(
                 }
                 indent()
                 write(".map { it() }")
-                write(".none { !it }")
+                write(".all { it }")
                 dedent()
             }
             renderFunctions()
@@ -234,7 +234,7 @@ class SmokeTestsRunnerGenerator(
         )
 
         writer.withBlock("if (!success) {", "}") {
-            write("printer.appendLine(exception.stackTraceToString().prependIndent(#S))", "#")
+            write("printer.appendLine(exception.stackTraceToString().prependIndent(#S))", "# ")
         }
 
         writer.write("")
