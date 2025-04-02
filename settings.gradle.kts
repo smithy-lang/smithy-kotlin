@@ -59,7 +59,6 @@ compositeProjectList.forEach {
     }
 }
 
-
 rootProject.name = "smithy-kotlin"
 
 include(":dokka-smithy")
