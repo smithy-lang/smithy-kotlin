@@ -26,6 +26,7 @@ dependencyResolutionManagement {
     }
 }
 
+// TODO This is largely shared with aws-sdk-kotlin, consider commonizing
 // Set up a sibling directory aws-crt-kotlin as a composite build, if it exists.
 // Allows overrides via local.properties:
 // compositeProjects=~/repos/aws-crt-kotlin,/tmp/some/other/thing,../../another/project
