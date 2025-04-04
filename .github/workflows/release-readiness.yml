@@ -6,7 +6,6 @@ name: Release readiness (snapshot dependency)
 on:
   pull_request:
     branches: [ main ]
-  workflow_dispatch:
 
 jobs:
   release-readiness:
@@ -22,4 +21,4 @@ jobs:
         run: echo "ERROR_MESSAGE=WARNING aws-crt-kotlin release and version bump might be required before merging!" >> $GITHUB_ENV
 
       - name: Build smithy-kotlin
-        run: ./gradlew test jvmTest || echo $ERROR_MESSAGE
+        run: ./gradlew test jvmTest || { echo "$ERROR_MESSAGE"; exit 1; }
