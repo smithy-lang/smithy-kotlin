@@ -18,7 +18,7 @@ jobs:
         uses: awslabs/aws-kotlin-repo-tools/.github/actions/configure-gradle@main
 
       - name: Configure error message
-        run: echo "ERROR_MESSAGE=WARNING aws-crt-kotlin release and version bump might be required before merging!" >> $GITHUB_ENV
+        run: echo "ERROR_MESSAGE=WARNING aws-crt-kotlin release and version bump might be required before merging" >> $GITHUB_ENV
 
       - name: Build smithy-kotlin
         run: ./gradlew test jvmTest || { echo "$ERROR_MESSAGE"; exit 1; }

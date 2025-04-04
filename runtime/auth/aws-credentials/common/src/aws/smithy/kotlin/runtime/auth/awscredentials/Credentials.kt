@@ -9,8 +9,6 @@ import aws.smithy.kotlin.runtime.identity.Identity
 import aws.smithy.kotlin.runtime.identity.IdentityAttributes
 import aws.smithy.kotlin.runtime.time.Instant
 
-wrench
-
 /**
  * Represents a set of AWS credentials
  *
