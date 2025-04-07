@@ -34,8 +34,6 @@ import software.amazon.smithy.rulesengine.language.syntax.parameters.Parameter
  */
 class RegionSupport : KotlinIntegration {
 
-    wrench
-
     companion object {
         const val BUILTIN_NAME = "AWS::Region"
 
