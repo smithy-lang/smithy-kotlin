@@ -33,6 +33,9 @@ import software.amazon.smithy.rulesengine.language.syntax.parameters.Parameter
  * Region is enabled IFF sigv4(a) is enabled or an AWS SDK service is targeted
  */
 class RegionSupport : KotlinIntegration {
+
+    wrench
+
     companion object {
         const val BUILTIN_NAME = "AWS::Region"
 
