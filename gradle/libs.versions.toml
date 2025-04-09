@@ -30,7 +30,7 @@ kotlinx-serialization-version = "1.7.3"
 docker-java-version = "3.4.0"
 ktor-version = "3.1.1"
 kaml-version = "0.55.0"
-jsoup-version = "1.18.1"
+jsoup-version = "1.19.1"
 
 [libraries]
 aws-kotlin-repo-tools-build-support = { module="aws.sdk.kotlin.gradle:build-support", version.ref = "aws-kotlin-repo-tools-version" }
