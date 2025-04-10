@@ -36,6 +36,7 @@ public interface PlatformProvider :
 internal expect object SystemDefaultProvider : PlatformProvider {
     override fun osInfo(): OperatingSystem
     override val filePathSeparator: String
+    override val lineSeparator: String
     override fun fileExists(path: String): Boolean
     override fun getAllEnvVars(): Map<String, String>
     override fun getAllProperties(): Map<String, String>
@@ -49,6 +50,12 @@ internal expect object SystemDefaultProvider : PlatformProvider {
     override val isNode: Boolean
     override val isNative: Boolean
 }
+
+internal val OperatingSystem.lineSeparator: String
+    get() = when {
+        family == OsFamily.Windows -> "\r\n"
+        else -> "\n"
+    }
 
 public data class OperatingSystem(val family: OsFamily, val version: String?)
 
