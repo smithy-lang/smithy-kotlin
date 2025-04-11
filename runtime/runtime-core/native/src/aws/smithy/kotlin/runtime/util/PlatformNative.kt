@@ -16,6 +16,9 @@ internal actual object SystemDefaultProvider : PlatformProvider {
     actual override val filePathSeparator: String
         get() = TODO("Not yet implemented")
 
+    actual override val lineSeparator: String
+        get() = TODO("Not yet implemented")
+
     actual override suspend fun readFileOrNull(path: String): ByteArray? {
         TODO("Not yet implemented")
     }
