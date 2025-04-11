@@ -26,6 +26,40 @@ dependencyResolutionManagement {
     }
 }
 
+// TODO This is largely shared with aws-sdk-kotlin, consider commonizing
+// Set up a sibling directory aws-crt-kotlin as a composite build, if it exists.
+// Allows overrides via local.properties:
+// compositeProjects=~/repos/aws-crt-kotlin,/tmp/some/other/thing,../../another/project
+val compositeProjectList = try {
+    val localProperties = java.util.Properties().also {
+        it.load(File(rootProject.projectDir, "local.properties").inputStream())
+    }
+    val compositeProjects = localProperties.getProperty("compositeProjects") ?: "../aws-crt-kotlin"
+
+    val compositeProjectPaths = compositeProjects.split(",")
+        .map { it.replaceFirst("^~".toRegex(), System.getProperty("user.home")) } // expand ~ to user's home directory
+        .filter { it.isNotBlank() }
+        .map { file(it) }
+
+    compositeProjectPaths.also {
+        if (it.isNotEmpty()) {
+            println("Adding composite build projects from local.properties: ${compositeProjectPaths.joinToString { it.name }}")
+        }
+    }
+} catch (_: Throwable) {
+    logger.error("Could not load composite project paths from local.properties")
+    listOf(file("../aws-crt-kotlin"))
+}
+
+compositeProjectList.forEach {
+    if (it.exists()) {
+        println("Including build '$it'")
+        includeBuild(it)
+    } else {
+        println("Ignoring invalid build directory '$it'")
+    }
+}
+
 rootProject.name = "smithy-kotlin"
 
 include(":dokka-smithy")

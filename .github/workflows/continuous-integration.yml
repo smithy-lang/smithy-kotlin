@@ -39,6 +39,8 @@ jobs:
           distribution: 'corretto'
           java-version: 17
           cache: 'gradle'
+      - name: Configure Gradle
+        uses: awslabs/aws-kotlin-repo-tools/.github/actions/configure-gradle@main
       - name: Test
         shell: bash
         run: |
@@ -59,6 +61,8 @@ jobs:
           distribution: 'corretto'
           java-version: 17
           cache: 'gradle'
+      - name: Configure Gradle
+        uses: awslabs/aws-kotlin-repo-tools/.github/actions/configure-gradle@main
       - name: Test
         shell: bash
         run: |
@@ -83,6 +87,8 @@ jobs:
           distribution: 'corretto'
           java-version: 17
           cache: 'gradle'
+      - name: Configure Gradle
+        uses: awslabs/aws-kotlin-repo-tools/.github/actions/configure-gradle@main
       - name: Test
         shell: bash
         run: |
@@ -110,6 +116,14 @@ jobs:
         # smithy-kotlin is checked out as a sibling dir which will automatically make it an included build
         path: 'aws-sdk-kotlin'
         repository: 'awslabs/aws-sdk-kotlin'
+    - name: Configure Gradle - smithy-kotlin
+      uses: awslabs/aws-kotlin-repo-tools/.github/actions/configure-gradle@main
+      with:
+        working-directory: ./smithy-kotlin
+    - name: Configure Gradle - aws-sdk-kotlin
+      uses: awslabs/aws-kotlin-repo-tools/.github/actions/configure-gradle@main
+      with:
+        working-directory: ./aws-sdk-kotlin
     - name: Configure JDK
       uses: actions/setup-java@v3
       with:

@@ -12,18 +12,19 @@ public typealias ShouldSignHeaderPredicate = (String) -> Boolean
 
 /**
  * Defines the AWS signature version to use
+ * @param signingName The name of this algorithm to use when signing requests.
  */
-public enum class AwsSigningAlgorithm {
+public enum class AwsSigningAlgorithm(public val signingName: String) {
     /**
      * AWS Signature Version 4
      * see: https://docs.aws.amazon.com/general/latest/gr/signature-version-4.html
      */
-    SIGV4,
+    SIGV4("AWS4-HMAC-SHA256"),
 
     /**
      * AWS Signature Version 4 Asymmetric
      */
-    SIGV4_ASYMMETRIC,
+    SIGV4_ASYMMETRIC("AWS4-ECDSA-P256-SHA256"),
 }
 
 /**

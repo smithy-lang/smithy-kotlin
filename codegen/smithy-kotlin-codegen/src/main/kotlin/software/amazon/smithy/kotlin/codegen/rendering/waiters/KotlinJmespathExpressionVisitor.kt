@@ -19,15 +19,25 @@ import software.amazon.smithy.kotlin.codegen.model.isEnum
 import software.amazon.smithy.kotlin.codegen.model.targetOrSelf
 import software.amazon.smithy.kotlin.codegen.model.traits.OperationInput
 import software.amazon.smithy.kotlin.codegen.model.traits.OperationOutput
+import software.amazon.smithy.kotlin.codegen.utils.doubleQuote
 import software.amazon.smithy.kotlin.codegen.utils.dq
 import software.amazon.smithy.kotlin.codegen.utils.getOrNull
 import software.amazon.smithy.kotlin.codegen.utils.toCamelCase
-import software.amazon.smithy.model.shapes.ListShape
-import software.amazon.smithy.model.shapes.MapShape
-import software.amazon.smithy.model.shapes.MemberShape
-import software.amazon.smithy.model.shapes.Shape
+import software.amazon.smithy.model.shapes.*
 
 private val suffixSequence = sequenceOf("") + generateSequence(2) { it + 1 }.map(Int::toString) // "", "2", "3", etc.
+
+/*
+JMESPath has the concept of objects.
+This visitor assumes JMESPath objects will be Kotlin objects/classes.
+The smithy spec contains an instance where it's assumed a JMESPath object will be a Kotlin map.
+
+Specifically it's the keys function
+Smithy spec: https://smithy.io/2.0/additional-specs/rules-engine/parameters.html#smithy-rules-operationcontextparams-trait
+JMESPath spec: https://jmespath.org/specification.html#keys
+
+TODO: Test relevant uses of JMESPath to determine if we should support JMESPath objects as Kotlin maps throughout the entire visitor
+ */
 
 /**
  * An [ExpressionVisitor] used for traversing a JMESPath expression to generate code for traversing an equivalent
@@ -526,11 +536,22 @@ class KotlinJmespathExpressionVisitor(
             ".$expr"
         }
 
-    private fun VisitedExpression.getKeys(): String {
-        val keys = this.shape?.targetOrSelf(ctx.model)?.allMembers
-            ?.keys?.joinToString(", ", "listOf(", ")") { "\"$it\"" }
-        return keys ?: "listOf<String>()"
-    }
+    /*
+    Smithy spec expects a map, JMESPath spec expects an object
+    Smithy spec: https://smithy.io/2.0/additional-specs/rules-engine/parameters.html#smithy-rules-operationcontextparams-trait
+    JMESPath spec: https://jmespath.org/specification.html#keys
+     */
+    private fun VisitedExpression.getKeys(): String =
+        if (shape?.targetOrSelf(ctx.model)?.type == ShapeType.MAP) {
+            "$identifier?.keys?.map { it.toString() }?.toList()"
+        } else {
+            shape
+                ?.targetOrSelf(ctx.model)
+                ?.allMembers
+                ?.keys
+                ?.joinToString(", ", "listOf(", ")") { it.doubleQuote() }
+                ?: "listOf<String>()"
+        }
 
     private fun VisitedExpression.getValues(): String {
         val values = this.shape?.targetOrSelf(ctx.model)?.allMembers?.keys

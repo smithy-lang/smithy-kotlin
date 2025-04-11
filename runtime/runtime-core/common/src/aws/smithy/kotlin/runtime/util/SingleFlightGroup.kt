@@ -30,7 +30,7 @@ public class SingleFlightGroup<T> {
     public suspend fun singleFlight(block: suspend () -> T): T {
         mu.lock()
         val job = inFlight
-        if (job != null) {
+        if (job?.isActive == true) {
             waitCount++
             mu.unlock()
 

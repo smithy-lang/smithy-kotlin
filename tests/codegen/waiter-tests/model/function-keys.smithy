@@ -32,6 +32,20 @@ use smithy.waiters#waitable
             }
         ]
     },
+    KeysFunctionMapStringEquals: {
+        acceptors: [
+            {
+                state: "success",
+                matcher: {
+                    output: {
+                        path: "keys(maps.strings)",
+                        expected: "key",
+                        comparator: "anyStringEquals"
+                    }
+                }
+            }
+        ]
+    },
 )
 @readonly
 @http(method: "GET", uri: "/keys/{name}", code: 200)
