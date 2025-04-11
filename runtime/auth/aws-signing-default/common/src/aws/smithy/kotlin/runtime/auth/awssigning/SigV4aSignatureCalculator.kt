@@ -5,7 +5,7 @@
 package aws.smithy.kotlin.runtime.auth.awssigning
 
 import aws.smithy.kotlin.runtime.auth.awscredentials.Credentials
-import aws.smithy.kotlin.runtime.collections.ReadThroughCache
+import aws.smithy.kotlin.runtime.collections.PeriodicSweepCache
 import aws.smithy.kotlin.runtime.content.BigInteger
 import aws.smithy.kotlin.runtime.hashing.HashSupplier
 import aws.smithy.kotlin.runtime.hashing.Sha256
@@ -32,7 +32,7 @@ internal val N_MINUS_TWO = "FFFFFFFF00000000FFFFFFFFFFFFFFFFBCE6FAADA7179E84F3B9
  * @param sha256Provider the [HashSupplier] to use for computing SHA-256 hashes
  */
 internal class SigV4aSignatureCalculator(override val sha256Provider: HashSupplier = ::Sha256) : BaseSigV4SignatureCalculator(AwsSigningAlgorithm.SIGV4_ASYMMETRIC, sha256Provider) {
-    private val privateKeyCache = ReadThroughCache<Credentials, ByteArray>(
+    private val privateKeyCache = PeriodicSweepCache<Credentials, ByteArray>(
         minimumSweepPeriod = 1.hours, // note: Sweeps are effectively a no-op because expiration is [Instant.MAX_VALUE]
     )
 
