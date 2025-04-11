@@ -309,7 +309,7 @@ public final class aws/smithy/kotlin/runtime/http/interceptors/ContinueIntercept
 }
 
 public final class aws/smithy/kotlin/runtime/http/interceptors/DiscoveredEndpointErrorInterceptor : aws/smithy/kotlin/runtime/client/Interceptor {
-	public fun <init> (Lkotlin/reflect/KClass;Lkotlin/jvm/functions/Function1;)V
+	public fun <init> (Lkotlin/reflect/KClass;Lkotlin/jvm/functions/Function2;)V
 	public fun modifyBeforeAttemptCompletion-gIAlu-s (Laws/smithy/kotlin/runtime/client/ResponseInterceptorContext;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun modifyBeforeCompletion-gIAlu-s (Laws/smithy/kotlin/runtime/client/ResponseInterceptorContext;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun modifyBeforeDeserialization (Laws/smithy/kotlin/runtime/client/ProtocolResponseInterceptorContext;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
