@@ -2338,10 +2338,6 @@ public final class aws/smithy/kotlin/runtime/util/Filesystem$Companion {
 	public static synthetic fun fromMap$default (Laws/smithy/kotlin/runtime/util/Filesystem$Companion;Ljava/util/Map;Ljava/lang/String;ILjava/lang/Object;)Laws/smithy/kotlin/runtime/util/Filesystem;
 }
 
-public final class aws/smithy/kotlin/runtime/util/Filesystem$DefaultImpls {
-	public static fun getLineSeparator (Laws/smithy/kotlin/runtime/util/Filesystem;)Ljava/lang/String;
-}
-
 public final class aws/smithy/kotlin/runtime/util/FlowUtilKt {
 	public static final fun mergeSequential ([Lkotlinx/coroutines/flow/Flow;)Lkotlinx/coroutines/flow/Flow;
 }
@@ -2396,10 +2392,6 @@ public final class aws/smithy/kotlin/runtime/util/OsFamily : java/lang/Enum {
 public abstract interface class aws/smithy/kotlin/runtime/util/PlatformEnvironProvider : aws/smithy/kotlin/runtime/util/EnvironmentProvider, aws/smithy/kotlin/runtime/util/PropertyProvider {
 }
 
-public final class aws/smithy/kotlin/runtime/util/PlatformKt {
-	public static final fun getLineSeparator (Laws/smithy/kotlin/runtime/util/OperatingSystem;)Ljava/lang/String;
-}
-
 public abstract interface class aws/smithy/kotlin/runtime/util/PlatformProvider : aws/smithy/kotlin/runtime/util/Filesystem, aws/smithy/kotlin/runtime/util/PlatformEnvironProvider {
 	public static final field Companion Laws/smithy/kotlin/runtime/util/PlatformProvider$Companion;
 	public abstract fun isAndroid ()Z
@@ -2412,10 +2404,6 @@ public abstract interface class aws/smithy/kotlin/runtime/util/PlatformProvider 
 
 public final class aws/smithy/kotlin/runtime/util/PlatformProvider$Companion {
 	public final fun getSystem ()Laws/smithy/kotlin/runtime/util/PlatformProvider;
-}
-
-public final class aws/smithy/kotlin/runtime/util/PlatformProvider$DefaultImpls {
-	public static fun getLineSeparator (Laws/smithy/kotlin/runtime/util/PlatformProvider;)Ljava/lang/String;
 }
 
 public abstract interface class aws/smithy/kotlin/runtime/util/PropertyProvider {
