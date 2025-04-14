@@ -67,3 +67,9 @@ public inline fun <T> DoubleHistogram.measureSeconds(attributes: Attributes = em
     recordSeconds(tv.duration, attributes, context)
     return tv.value
 }
+
+@InternalApi
+public fun DoubleHistogram.recordPayloadSize(value: Long?, attributes: Attributes = emptyAttributes(), context: Context? = null) {
+    val bytes = value?.toDouble() ?: 0.0
+    record(bytes, attributes, context)
+}

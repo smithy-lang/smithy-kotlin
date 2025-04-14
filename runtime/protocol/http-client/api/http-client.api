@@ -601,8 +601,10 @@ public final class aws/smithy/kotlin/runtime/http/operation/OperationMetrics {
 	public fun <init> (Ljava/lang/String;Laws/smithy/kotlin/runtime/telemetry/TelemetryProvider;)V
 	public final fun getDeserializationDuration ()Laws/smithy/kotlin/runtime/telemetry/metrics/Histogram;
 	public final fun getProvider ()Laws/smithy/kotlin/runtime/telemetry/TelemetryProvider;
+	public final fun getRequestPayloadSize ()Laws/smithy/kotlin/runtime/telemetry/metrics/Histogram;
 	public final fun getResolveEndpointDuration ()Laws/smithy/kotlin/runtime/telemetry/metrics/Histogram;
 	public final fun getResolveIdentityDuration ()Laws/smithy/kotlin/runtime/telemetry/metrics/Histogram;
+	public final fun getResponsePayloadSize ()Laws/smithy/kotlin/runtime/telemetry/metrics/Histogram;
 	public final fun getRpcAttemptDuration ()Laws/smithy/kotlin/runtime/telemetry/metrics/Histogram;
 	public final fun getRpcAttemptOverheadDuration ()Laws/smithy/kotlin/runtime/telemetry/metrics/Histogram;
 	public final fun getRpcAttempts ()Laws/smithy/kotlin/runtime/telemetry/metrics/MonotonicCounter;
