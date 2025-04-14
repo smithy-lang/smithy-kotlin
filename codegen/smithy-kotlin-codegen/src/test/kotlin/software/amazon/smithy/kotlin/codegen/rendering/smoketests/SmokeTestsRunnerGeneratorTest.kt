@@ -74,10 +74,9 @@ class SmokeTestsRunnerGeneratorTest {
     fun variablesTest() {
         generatedCode.shouldContainOnlyOnceWithDiff(
             """
-                private var exitCode = 0
-                private val skipTags = PlatformProvider.System.getenv("SMOKE_TEST_SKIP_TAGS")?.let { it.split(",").map { it.trim() }.toSet() } ?: emptySet()
-                private val serviceFilter = PlatformProvider.System.getenv("SMOKE_TEST_SERVICE_IDS")?.let { it.split(",").map { it.trim() }.toSet() }
-            """.trimIndent(),
+                private val skipTags = platform.getenv("SMOKE_TEST_SKIP_TAGS")?.let { it.split(",").map { it.trim() }.toSet() } ?: emptySet()
+                private val serviceFilter = platform.getenv("SMOKE_TEST_SERVICE_IDS")?.let { it.split(",").map { it.trim() }.toSet() }
+            """.formatForTest(),
         )
     }
 
@@ -86,12 +85,35 @@ class SmokeTestsRunnerGeneratorTest {
         generatedCode.shouldContainOnlyOnceWithDiff(
             """
                 public suspend fun main() {
-                    successTest()
-                    invalidMessageErrorTest()
-                    failureTest()
-                    exitProcess(exitCode)
+                    val success = SmokeTestRunner().runAllTests()
+                    if (!success) {
+                        exitProcess(1)
+                    }
                 }
             """.trimIndent(),
+        )
+    }
+
+    @Test
+    fun runnerClassTest() {
+        generatedCode.shouldContainOnlyOnceWithDiff(
+            "public class SmokeTestRunner(private val platform: PlatformProvider = PlatformProvider.System, private val printer: Appendable = DefaultPrinter) {",
+        )
+    }
+
+    @Test
+    fun runAllTestsTest() {
+        generatedCode.shouldContainOnlyOnceWithDiff(
+            """
+                public suspend fun runAllTests(): Boolean =
+                    listOf<suspend () -> Boolean>(
+                        ::successTest,
+                        ::invalidMessageErrorTest,
+                        ::failureTest,
+                    )
+                        .map { it() }
+                        .all { it }
+            """.formatForTest(),
         )
     }
 
@@ -99,14 +121,14 @@ class SmokeTestsRunnerGeneratorTest {
     fun successTest() {
         generatedCode.shouldContainOnlyOnceWithDiff(
             """
-                private suspend fun successTest() {
+                private suspend fun successTest(): Boolean {
                     val tags = setOf<String>("success")
                     if ((serviceFilter.isNotEmpty() && "Test" !in serviceFilter) || tags.any { it in skipTags }) {
-                        println("ok Test SuccessTest - no error expected from service # skip")
-                        return
+                        printer.appendLine("ok Test SuccessTest - no error expected from service # skip")
+                        return true
                     }
-
-                    try {
+                
+                    return try {
                         TestClient {
                             interceptors.add(SmokeTestsInterceptor())
                             region = "eu-central-1"
@@ -118,18 +140,21 @@ class SmokeTestsRunnerGeneratorTest {
                                 }
                             )
                         }
-
+                
+                        error("Unexpectedly completed smoke test operation without throwing exception")
+                
                     } catch (exception: Exception) {
                         val success: Boolean = exception is SmokeTestsSuccessException
                         val status: String = if (success) "ok" else "not ok"
-                        println("${'$'}status Test SuccessTest - no error expected from service ")
+                        printer.appendLine("${'$'}status Test SuccessTest - no error expected from service ")
                         if (!success) {
-                            printExceptionStackTrace(exception)
-                            exitCode = 1
+                            printer.appendLine(exception.stackTraceToString().prependIndent("# "))
                         }
+                
+                        success
                     }
                 }
-            """.trimIndent(),
+            """.formatForTest(),
         )
     }
 
@@ -137,14 +162,14 @@ class SmokeTestsRunnerGeneratorTest {
     fun invalidMessageErrorTest() {
         generatedCode.shouldContainOnlyOnceWithDiff(
             """
-                private suspend fun invalidMessageErrorTest() {
+                private suspend fun invalidMessageErrorTest(): Boolean {
                     val tags = setOf<String>()
                     if ((serviceFilter.isNotEmpty() && "Test" !in serviceFilter) || tags.any { it in skipTags }) {
-                        println("ok Test InvalidMessageErrorTest - error expected from service # skip")
-                        return
+                        printer.appendLine("ok Test InvalidMessageErrorTest - error expected from service # skip")
+                        return true
                     }
                 
-                    try {
+                    return try {
                         TestClient {
                         }.use { client ->
                             client.testOperation(
@@ -154,17 +179,20 @@ class SmokeTestsRunnerGeneratorTest {
                             )
                         }
                 
+                        error("Unexpectedly completed smoke test operation without throwing exception")
+                
                     } catch (exception: Exception) {
                         val success: Boolean = exception is InvalidMessageError
                         val status: String = if (success) "ok" else "not ok"
-                        println("${'$'}status Test InvalidMessageErrorTest - error expected from service ")
+                        printer.appendLine("${'$'}status Test InvalidMessageErrorTest - error expected from service ")
                         if (!success) {
-                            printExceptionStackTrace(exception)
-                            exitCode = 1
+                            printer.appendLine(exception.stackTraceToString().prependIndent("# "))
                         }
+                
+                        success
                     }
                 }
-            """.trimIndent(),
+            """.formatForTest(),
         )
     }
 
@@ -172,14 +200,14 @@ class SmokeTestsRunnerGeneratorTest {
     fun failureTest() {
         generatedCode.shouldContainOnlyOnceWithDiff(
             """
-                private suspend fun failureTest() {
+                private suspend fun failureTest(): Boolean {
                     val tags = setOf<String>()
                     if ((serviceFilter.isNotEmpty() && "Test" !in serviceFilter) || tags.any { it in skipTags }) {
-                        println("ok Test FailureTest - error expected from service # skip")
-                        return
+                        printer.appendLine("ok Test FailureTest - error expected from service # skip")
+                        return true
                     }
                 
-                    try {
+                    return try {
                         TestClient {
                             interceptors.add(SmokeTestsInterceptor())
                         }.use { client ->
@@ -190,17 +218,20 @@ class SmokeTestsRunnerGeneratorTest {
                             )
                         }
                 
+                        error("Unexpectedly completed smoke test operation without throwing exception")
+                
                     } catch (exception: Exception) {
                         val success: Boolean = exception is SmokeTestsFailureException
                         val status: String = if (success) "ok" else "not ok"
-                        println("${'$'}status Test FailureTest - error expected from service ")
+                        printer.appendLine("${'$'}status Test FailureTest - error expected from service ")
                         if (!success) {
-                            printExceptionStackTrace(exception)
-                            exitCode = 1
+                            printer.appendLine(exception.stackTraceToString().prependIndent("# "))
                         }
+                
+                        success
                     }
                 }
-            """.trimIndent(),
+            """.formatForTest(),
         )
     }
 

@@ -109,6 +109,7 @@ object KotlinTypes {
     }
 
     object Text : RuntimeTypePackage(KotlinDependency.KOTLIN_STDLIB, "text") {
+        val Appendable = stdlibSymbol("Appendable")
         val encodeToByteArray = stdlibSymbol("encodeToByteArray")
     }
 
