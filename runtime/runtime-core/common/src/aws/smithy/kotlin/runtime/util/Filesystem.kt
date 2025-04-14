@@ -17,12 +17,6 @@ public interface Filesystem {
     public val filePathSeparator: String
 
     /**
-     * The string which represents a line separator on this file system. For example, on Windows, this is CRLF.
-     */
-    public val lineSeparator: String
-        get() = "\n"
-
-    /**
      * Read the contents of a file as a [String] or return null on any error.
      *
      * @param path fully qualified path encoded specifically to the target platform's filesystem.

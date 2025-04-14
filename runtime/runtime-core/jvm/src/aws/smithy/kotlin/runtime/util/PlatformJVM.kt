@@ -71,8 +71,6 @@ internal actual object SystemDefaultProvider : PlatformProvider {
      * segment char is '/'.
      */
     actual override val filePathSeparator: String by lazy { File.separator }
-
-    actual override val lineSeparator: String by lazy { osInfo().lineSeparator }
 }
 
 private fun isAndroid(): Boolean = try {
