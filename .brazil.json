@@ -11,19 +11,31 @@
     "org.slf4j:slf4j-api:2.*": "Maven-org-slf4j_slf4j-api-2.x",
     "aws.sdk.kotlin.crt:aws-crt-kotlin:0.9.*": "AwsCrtKotlin-0.9.x",
     "aws.sdk.kotlin.crt:aws-crt-kotlin:0.8.*": "AwsCrtKotlin-0.8.x",
-    "com.squareup.okhttp3:okhttp:4.*": "OkHttp3-4.x"
+    "com.squareup.okhttp3:okhttp:4.*": "OkHttp3-4.x",
+
+    "software.amazon.smithy:smithy-aws-traits:1.*": "Maven-software-amazon-smithy_smithy-aws-traits-1.x",
+    "software.amazon.smithy:smithy-aws-iam-traits:1.*": "Maven-software-amazon-smithy_smithy-aws-iam-traits-1.x",
+    "software.amazon.smithy:smithy-aws-cloudformation-traits:1.*": "Maven-software-amazon-smithy_smithy-aws-cloudformation-traits-1.x",
+    "software.amazon.smithy:smithy-protocol-test-traits:1.*": "Maven-software-amazon-smithy_smithy-protocol-test-traits-1.x",
+    "software.amazon.smithy:smithy-protocol-traits:1.*": "Maven-software-amazon-smithy_smithy-protocol-traits-1.x",
+    "software.amazon.smithy:smithy-aws-endpoints:1.*": "Maven-software-amazon-smithy_smithy-aws-endpoints-1.x",
+    "software.amazon.smithy:smithy-codegen-core:1.*": "Maven-software-amazon-smithy_smithy-codegen-core-1.x",
+    "software.amazon.smithy:smithy-waiters:1.*": "Maven-software-amazon-smithy_smithy-waiters-1.x",
+    "software.amazon.smithy:smithy-rules-engine:1.*": "Maven-software-amazon-smithy_smithy-rules-engine-1.x",
+    "software.amazon.smithy:smithy-smoke-test-traits:1.*": "Maven-software-amazon-smithy_smithy-smoke-test-traits-1.x",
+    "org.jsoup:jsoup:1.19.*": "Maven-jsoup-1.19.x"
   },
   "packageHandlingRules": {
     "versioning": {
       "defaultVersionLayout": "{MAJOR}.0.x",
       "overrides": {
-        "software.amazon.smithy.kotlin:smithy-kotlin-codegen": "{MAJOR}.{MINOR}.x",
-        "software.amazon.smithy.kotlin:smithy-kotlin-codegen-testutils": "{MAJOR}.{MINOR}.x"
+        "software.amazon.smithy.kotlin:smithy-aws-kotlin-codegen": "{MAJOR}.x",
+        "software.amazon.smithy.kotlin:smithy-kotlin-codegen": "{MAJOR}.x"
       }
     },
     "rename": {
-        "software.amazon.smithy.kotlin:smithy-kotlin-codegen": "SmithyKotlinCodegen",
-        "software.amazon.smithy.kotlin:smithy-kotlin-codegen-testutils": "SmithyKotlinCodegenTestUtils"
+        "software.amazon.smithy.kotlin:smithy-aws-kotlin-codegen": "AwsSmithyAwsKotlinCodegen",
+        "software.amazon.smithy.kotlin:smithy-kotlin-codegen": "AwsSmithyKotlinCodegen"
     },
     "ignore": [
       "aws.smithy.kotlin:http-test",
@@ -31,7 +43,8 @@
       "aws.smithy.kotlin:telemetry-provider-micrometer",
       "aws.smithy.kotlin:testing",
       "aws.smithy.kotlin:bom",
-      "aws.smithy.kotlin:version-catalog"
+      "aws.smithy.kotlin:version-catalog",
+      "software.amazon.smithy.kotlin:smithy-kotlin-codegen-testutils"
     ],
     "resolvesConflictDependencies": {
       "org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm:1.*": [
