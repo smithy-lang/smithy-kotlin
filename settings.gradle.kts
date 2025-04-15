@@ -26,6 +26,7 @@ dependencyResolutionManagement {
     }
 }
 
+// TODO This is largely shared with aws-sdk-kotlin, consider commonizing
 // Set up a sibling directory aws-crt-kotlin as a composite build, if it exists.
 // Allows overrides via local.properties:
 // compositeProjects=~/repos/aws-crt-kotlin,/tmp/some/other/thing,../../another/project
@@ -45,7 +46,7 @@ val compositeProjectList = try {
             println("Adding composite build projects from local.properties: ${compositeProjectPaths.joinToString { it.name }}")
         }
     }
-} catch (e: Throwable) {
+} catch (_: Throwable) {
     logger.error("Could not load composite project paths from local.properties")
     listOf(file("../aws-crt-kotlin"))
 }
