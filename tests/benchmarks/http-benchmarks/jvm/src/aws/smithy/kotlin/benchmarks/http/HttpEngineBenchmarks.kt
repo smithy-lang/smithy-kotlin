@@ -6,11 +6,9 @@
 package aws.smithy.kotlin.benchmarks.http
 
 import aws.smithy.kotlin.runtime.http.*
-import aws.smithy.kotlin.runtime.http.complete
 import aws.smithy.kotlin.runtime.http.engine.CloseableHttpClientEngine
 import aws.smithy.kotlin.runtime.http.engine.crt.CrtHttpEngine
 import aws.smithy.kotlin.runtime.http.engine.okhttp.OkHttpEngine
-import aws.smithy.kotlin.runtime.http.engine.okhttp4.OkHttp4Engine
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.http.request.headers
 import aws.smithy.kotlin.runtime.http.request.url
@@ -23,15 +21,15 @@ import io.ktor.server.engine.*
 import io.ktor.server.netty.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import io.ktor.utils.io.*
 import io.ktor.utils.io.core.remaining
-import io.ktor.utils.io.readRemaining
 import kotlinx.benchmark.Blackhole
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.openjdk.jmh.annotations.*
-import org.openjdk.jmh.annotations.Level
 import java.net.ServerSocket
 import java.util.concurrent.TimeUnit
+import kotlin.io.use
 
 private const val CONCURRENT_CALLS = 50
 private const val MB_PER_THROUGHPUT_OP = 12
@@ -39,7 +37,6 @@ private const val MB_PER_THROUGHPUT_OP = 12
 // TODO - add TLS tests to benchmarks (or just move existing tests to use TLS since we expect that to be the norm)
 private const val OKHTTP_ENGINE = "OkHttp"
 private const val CRT_ENGINE = "CRT"
-private const val OKHTTP4_ENGINE = "OkHttp4"
 
 fun interface BenchmarkEngineFactory {
     fun create(): CloseableHttpClientEngine
@@ -48,7 +45,6 @@ fun interface BenchmarkEngineFactory {
 private val engines = mapOf(
     OKHTTP_ENGINE to BenchmarkEngineFactory { OkHttpEngine() },
     CRT_ENGINE to BenchmarkEngineFactory { CrtHttpEngine() },
-    OKHTTP4_ENGINE to BenchmarkEngineFactory { OkHttp4Engine() },
 )
 
 // 12MB
@@ -58,7 +54,7 @@ private val largeData = ByteArray(MB_PER_THROUGHPUT_OP * 1024 * 1024)
 @State(Scope.Benchmark)
 @OutputTimeUnit(TimeUnit.SECONDS)
 open class HttpEngineBenchmarks {
-    @Param(OKHTTP_ENGINE, CRT_ENGINE, OKHTTP4_ENGINE)
+    @Param(OKHTTP_ENGINE, CRT_ENGINE)
     var httpClientName: String = ""
 
     lateinit var engine: CloseableHttpClientEngine

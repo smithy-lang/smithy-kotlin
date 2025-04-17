@@ -8,20 +8,58 @@ extra["displayName"] = "Smithy :: Kotlin :: HTTP :: Engine :: OkHttp"
 extra["moduleName"] = "aws.smithy.kotlin.runtime.http.engine.okhttp"
 
 kotlin {
+    jvm {
+        compilations {
+            val okHttp4Main by creating
+            val okHttp5Main by creating
+
+            val main by getting {
+                tasks[compileKotlinTaskName].dependsOn(
+                    okHttp4Main.compileKotlinTaskName,
+                    okHttp5Main.compileKotlinTaskName,
+                )
+            }
+        }
+    }
+
     sourceSets {
-        commonMain {
+        val commonMain by getting {
             dependencies {
                 implementation(project(":runtime:runtime-core"))
                 api(project(":runtime:protocol:http-client"))
                 implementation(project(":runtime:observability:telemetry-defaults"))
-
-                implementation(libs.okhttp)
-                implementation(libs.okhttp.coroutines)
             }
         }
+
+        val jvmOkHttp4Main by getting {
+            dependsOn(commonMain)
+            dependencies {
+                compileOnly(libs.okhttp4)
+            }
+        }
+
+        val jvmOkHttp5Main by getting {
+            dependsOn(commonMain)
+            dependsOn(jvmOkHttp4Main) // API is forward-compatible so reuse as much as possible from the OkHttp4 adapter
+            dependencies {
+                compileOnly(libs.okhttp)
+                compileOnly(libs.okhttp.coroutines)
+            }
+        }
+
         commonTest {
             dependencies {
                 implementation(libs.kotlinx.coroutines.test)
+            }
+        }
+
+        jvmMain {
+            dependencies {
+                dependsOn(jvmOkHttp4Main)
+                dependsOn(jvmOkHttp5Main)
+
+                runtimeOnly(libs.okhttp)
+                runtimeOnly(libs.okhttp.coroutines)
             }
         }
 

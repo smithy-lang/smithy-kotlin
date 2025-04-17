@@ -28,7 +28,7 @@ kotlin {
         val jvmMain by getting {
             dependencies {
                 implementation(project(":runtime:protocol:http-client-engines:http-client-engine-okhttp"))
-                implementation(project(":runtime:protocol:http-client-engines:http-client-engine-okhttp4"))
+                // implementation(project(":runtime:protocol:http-client-engines:http-client-engine-okhttp4"))
                 implementation(project(":runtime:protocol:http-client-engines:http-client-engine-crt"))
 
                 // mock/embedded server

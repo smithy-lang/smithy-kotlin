@@ -149,6 +149,8 @@ apiValidation {
             "paginator-tests",
             "waiter-tests",
             "compile",
+            "okhttp4-consumer",
+            "okhttp5-consumer",
             "slf4j-1x-consumer",
             "slf4j-2x-consumer",
         ),

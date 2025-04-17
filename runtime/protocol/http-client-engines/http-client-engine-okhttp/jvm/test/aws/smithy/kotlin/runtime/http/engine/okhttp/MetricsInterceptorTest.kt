@@ -12,9 +12,12 @@ import aws.smithy.kotlin.runtime.telemetry.otel.OpenTelemetryProvider
 import io.opentelemetry.api.common.AttributeKey
 import io.opentelemetry.sdk.metrics.data.MetricData
 import io.opentelemetry.sdk.testing.junit5.OpenTelemetryExtension
-import okhttp3.*
 import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.OkHttpClient
+import okhttp3.Protocol
+import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
+import okhttp3.Response
 import okhttp3.ResponseBody.Companion.toResponseBody
 import okio.blackholeSink
 import okio.buffer

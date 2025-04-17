@@ -5,11 +5,15 @@
 
 package aws.smithy.kotlin.runtime.http.engine.okhttp
 
-import aws.smithy.kotlin.runtime.http.*
+import aws.smithy.kotlin.runtime.http.Headers
+import aws.smithy.kotlin.runtime.http.HeadersBuilder
+import aws.smithy.kotlin.runtime.http.HttpBody
+import aws.smithy.kotlin.runtime.http.HttpMethod
 import aws.smithy.kotlin.runtime.http.engine.internal.HttpClientMetrics
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.io.SdkByteReadChannel
-import aws.smithy.kotlin.runtime.net.*
+import aws.smithy.kotlin.runtime.net.Host
+import aws.smithy.kotlin.runtime.net.Scheme
 import aws.smithy.kotlin.runtime.net.url.Url
 import aws.smithy.kotlin.runtime.operation.ExecutionContext
 import aws.smithy.kotlin.runtime.telemetry.TelemetryProvider
