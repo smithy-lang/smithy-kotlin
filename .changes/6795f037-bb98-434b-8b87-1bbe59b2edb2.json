@@ -1,8 +1,0 @@
-{
-    "id": "6795f037-bb98-434b-8b87-1bbe59b2edb2",
-    "type": "bugfix",
-    "description": "Improve handling of excepted socket exceptions when using connection polling",
-    "issues": [
-        "awslabs/aws-sdk-kotlin#1214"
-    ]
-}
