@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.4.15] - 04/21/2025
+
+### Fixes
+* [#1214](https://github.com/awslabs/aws-sdk-kotlin/issues/1214) Improve handling of excepted socket exceptions when using connection polling
+
 ## [1.4.14] - 04/18/2025
 
 ## [1.4.13] - 04/10/2025
