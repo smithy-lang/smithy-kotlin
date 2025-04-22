@@ -19,7 +19,6 @@ import software.amazon.smithy.kotlin.codegen.rendering.util.RuntimeConfigPropert
 import software.amazon.smithy.kotlin.codegen.test.*
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.ServiceShape
-import kotlin.test.Ignore
 import kotlin.test.Test
 
 class ServiceClientConfigGeneratorTest {
@@ -219,7 +218,6 @@ public class Config private constructor(builder: Builder) {
         contents.shouldContain(expectedProps)
     }
 
-    @Ignore
     @Test
     fun `it overrides props by name`() {
         val model = getModel()
@@ -247,7 +245,7 @@ public class Config private constructor(builder: Builder) {
         // Expect logMode config value to override default to LogMode.Request
         val expectedConfigValues = """
     override val clientName: String = builder.clientName
-    override val authSchemePreference: kotlin.collections.List<aws.smithy.kotlin.runtime.auth.AuthSchemeId> = builder.authSchemePreference
+    override val authSchemePreference: kotlin.collections.List<aws.smithy.kotlin.runtime.auth.AuthSchemeId>? = builder.authSchemePreference
     override val authSchemes: kotlin.collections.List<aws.smithy.kotlin.runtime.http.auth.AuthScheme> = builder.authSchemes
     public val customProp: Int? = builder.customProp
     public val endpointProvider: TestEndpointProvider = requireNotNull(builder.endpointProvider) { "endpointProvider is a required configuration property" }

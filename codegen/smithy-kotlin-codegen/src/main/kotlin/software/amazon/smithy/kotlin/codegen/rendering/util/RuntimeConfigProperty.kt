@@ -177,12 +177,7 @@ object RuntimeConfigProperty {
 
     val AuthSchemePreference = ConfigProperty {
         name = "authSchemePreference"
-
-        val target = RuntimeTypes.Auth.Identity.AuthSchemeId
-
-        symbol = KotlinTypes.Collections.list(target, isNullable = true)
-        builderSymbol = KotlinTypes.Collections.list(target, isNullable = true)
-
+        symbol = KotlinTypes.Collections.list(RuntimeTypes.Auth.Identity.AuthSchemeId, isNullable = true)
         baseClass = RuntimeTypes.Auth.HttpAuth.HttpAuthConfig
         useNestedBuilderBaseClass()
 
