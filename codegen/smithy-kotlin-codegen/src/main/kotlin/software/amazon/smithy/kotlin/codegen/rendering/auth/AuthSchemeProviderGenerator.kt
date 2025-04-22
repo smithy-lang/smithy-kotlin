@@ -113,7 +113,7 @@ open class AuthSchemeProviderGenerator {
                 paramsSymbol,
                 RuntimeTypes.Auth.Identity.AuthOption,
             ) {
-                write("val modeledAuthOptions = operationOverrides.getOrDefault(params.operationName, serviceDefaults)")
+                write("val modeledAuthOptions = operationOverrides.getOrElse(params.operationName) { serviceDefaults }")
                 write("")
 
                 if (ctx.settings.api.enableEndpointAuthProvider) {
