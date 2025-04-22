@@ -381,6 +381,7 @@ object RuntimeTypes {
             val SigV4AuthScheme = symbol("SigV4AuthScheme")
             val SigV4AsymmetricAuthScheme = symbol("SigV4AsymmetricAuthScheme")
             val mergeAuthOptions = symbol("mergeAuthOptions")
+            val reprioritizeAuthOptions = symbol("reprioritizeAuthOptions")
             val sigV4 = symbol("sigV4")
             val sigV4A = symbol("sigV4A")
         }

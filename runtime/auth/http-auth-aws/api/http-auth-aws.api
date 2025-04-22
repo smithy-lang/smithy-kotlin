@@ -36,6 +36,7 @@ public final class aws/smithy/kotlin/runtime/http/auth/AwsHttpSigner$Config {
 
 public final class aws/smithy/kotlin/runtime/http/auth/EndpointAuthKt {
 	public static final fun mergeAuthOptions (Ljava/util/List;Ljava/util/List;)Ljava/util/List;
+	public static final fun reprioritizeAuthOptions (Ljava/util/List;Ljava/util/List;)Ljava/util/List;
 }
 
 public final class aws/smithy/kotlin/runtime/http/auth/SigV4AsymmetricAuthScheme : aws/smithy/kotlin/runtime/http/auth/AuthScheme {

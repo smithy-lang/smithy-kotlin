@@ -131,23 +131,7 @@ open class AuthSchemeProviderGenerator {
                 }
                 write("")
 
-                // reprioritize auth options based on user's preference
-                withInlineBlock("return authSchemePreference?.let {", "} ") {
-                    // add preferred candidates first
-                    withBlock("val preferredAuthOptions = it.mapNotNull { preferredSchemeId ->", "}") {
-                        writeWithNoFormatting("val preferredSchemeName = preferredSchemeId.id.substringAfter('#')")
-                        withBlock("authOptions.singleOrNull {", "}") {
-                            writeWithNoFormatting("it.schemeId.id.substringAfter('#') == preferredSchemeName")
-                        }
-                    }
-
-                    // add any remaining candidates that weren't in the preference list
-                    write("val nonPreferredAuthOptions = authOptions.filterNot { it in preferredAuthOptions }")
-                    write("")
-
-                    write("preferredAuthOptions + nonPreferredAuthOptions")
-                }
-                write("?: authOptions")
+                write("return authSchemePreference?.let { #T(it, authOptions) } ?: authOptions", RuntimeTypes.Auth.HttpAuthAws.reprioritizeAuthOptions)
             }
 
             // render any helper methods
