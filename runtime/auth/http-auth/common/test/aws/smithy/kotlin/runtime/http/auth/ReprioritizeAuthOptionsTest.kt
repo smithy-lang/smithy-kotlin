@@ -76,5 +76,4 @@ class ReprioritizeAuthOptionsTest {
 
         assertEquals(expected, reprioritizeAuthOptions(preference, authOptions))
     }
-
 }
