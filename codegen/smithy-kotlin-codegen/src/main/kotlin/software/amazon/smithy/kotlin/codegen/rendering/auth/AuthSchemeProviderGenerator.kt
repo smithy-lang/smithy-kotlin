@@ -14,6 +14,7 @@ import software.amazon.smithy.kotlin.codegen.model.buildSymbol
 import software.amazon.smithy.kotlin.codegen.model.knowledge.AuthIndex
 import software.amazon.smithy.kotlin.codegen.rendering.endpoints.EndpointProviderGenerator
 import software.amazon.smithy.kotlin.codegen.rendering.protocol.ProtocolGenerator
+import software.amazon.smithy.kotlin.codegen.rendering.util.RuntimeConfigProperty
 import software.amazon.smithy.model.shapes.OperationShape
 
 /**
@@ -36,7 +37,7 @@ open class AuthSchemeProviderGenerator {
         }
     }
 
-    fun render(ctx: ProtocolGenerator.GenerationContext) {
+    open fun render(ctx: ProtocolGenerator.GenerationContext) {
         ctx.delegator.useSymbolWriter(getSymbol(ctx.settings)) { writer ->
             renderInterface(ctx, writer)
         }
@@ -65,11 +66,12 @@ open class AuthSchemeProviderGenerator {
 
     private fun renderDefaultImpl(ctx: ProtocolGenerator.GenerationContext, writer: KotlinWriter) {
         writer.withBlock(
-            "#L class #T(private val endpointProvider: #T? = null) : #T {",
+            "#L class #T(private val endpointProvider: #T? = null, private val authSchemePreference: #T? = null) : #T {",
             "}",
             ctx.settings.api.visibility,
             getDefaultSymbol(ctx.settings),
             EndpointProviderGenerator.getSymbol(ctx.settings),
+            RuntimeConfigProperty.AuthSchemePreference.symbol,
             getSymbol(ctx.settings),
         ) {
             val paramsSymbol = AuthSchemeParametersGenerator.getSymbol(ctx.settings)
@@ -87,6 +89,7 @@ open class AuthSchemeProviderGenerator {
                     renderAuthOptionsListOverrideForOperation(ctx, "\"${op.id.name}\"", authHandlersForOperation, writer, op)
                 }
             }
+            write("")
 
             withBlock(
                 "private val serviceDefaults = listOf<#T>(",
@@ -102,6 +105,7 @@ open class AuthSchemeProviderGenerator {
                     write("#W,", inlineWriter)
                 }
             }
+            write("")
 
             withBlock(
                 "override suspend fun resolveAuthScheme(params: #T): List<#T> {",
@@ -109,24 +113,47 @@ open class AuthSchemeProviderGenerator {
                 paramsSymbol,
                 RuntimeTypes.Auth.Identity.AuthOption,
             ) {
-                withBlock("val modeledAuthOptions = operationOverrides.getOrElse(params.operationName) {", "}") {
-                    write("serviceDefaults")
-                }
+                write("val modeledAuthOptions = operationOverrides.getOrDefault(params.operationName, serviceDefaults)")
+                write("")
 
                 if (ctx.settings.api.enableEndpointAuthProvider) {
                     write("")
-                    write("val endpointParams = params.endpointParameters")
-                    openBlock("val endpointAuthOptions = if (endpointProvider != null && endpointParams != null) {")
-                        .write("val endpoint = endpointProvider.resolveEndpoint(endpointParams)")
-                        .write("endpoint.#T", RuntimeTypes.SmithyClient.Endpoints.authOptions)
-                        .closeAndOpenBlock("} else {")
-                        .write("emptyList()")
-                        .closeBlock("}")
-                    write("")
-                    write("return #T(modeledAuthOptions, endpointAuthOptions)", RuntimeTypes.Auth.HttpAuthAws.mergeAuthOptions)
+                    withBlock("val authOptions: List<#T> = run {", "}", RuntimeTypes.Auth.Identity.AuthOption) {
+                        write("val endpointParams = params.endpointParameters")
+
+                        withInlineBlock("val endpointAuthOptions = if (endpointProvider != null && endpointParams != null) {", "} ") {
+                            write("val endpoint = endpointProvider.resolveEndpoint(endpointParams)")
+                            write("endpoint.#T", RuntimeTypes.SmithyClient.Endpoints.authOptions)
+                        }
+                        withInlineBlock("else {", "}") {
+                            write("emptyList()")
+                        }
+
+                        write("")
+                        write("#T(modeledAuthOptions, endpointAuthOptions)", RuntimeTypes.Auth.HttpAuthAws.mergeAuthOptions)
+                    }
                 } else {
-                    write("return modeledAuthOptions")
+                    write("val authOptions: List<#T> = modeledAuthOptions", RuntimeTypes.Auth.Identity.AuthOption)
                 }
+                write("")
+
+                // reprioritize auth options based on user's preference
+                withInlineBlock("return authSchemePreference?.let {", "} ") {
+                    // add preferred candidates first
+                    withBlock("val preferredAuthOptions = it.mapNotNull { preferredSchemeId ->", "}") {
+                        writeWithNoFormatting("val preferredSchemeName = preferredSchemeId.id.substringAfter('#')")
+                        withBlock("authOptions.singleOrNull {", "}") {
+                            writeWithNoFormatting("it.schemeId.id.substringAfter('#') == preferredSchemeName")
+                        }
+                    }
+
+                    // add any remaining candidates that weren't in the preference list
+                    write("val nonPreferredAuthOptions = authOptions.filterNot { it in preferredAuthOptions }")
+                    write("")
+
+                    write("preferredAuthOptions + nonPreferredAuthOptions")
+                }
+                write("?: authOptions")
             }
 
             // render any helper methods

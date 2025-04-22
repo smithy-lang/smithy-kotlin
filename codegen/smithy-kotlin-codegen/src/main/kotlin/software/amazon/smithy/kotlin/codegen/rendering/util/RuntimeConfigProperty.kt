@@ -174,6 +174,23 @@ object RuntimeConfigProperty {
             authentication schemes.
         """.trimIndent()
     }
+
+    val AuthSchemePreference = ConfigProperty {
+        name = "authSchemePreference"
+
+        val target = RuntimeTypes.Auth.Identity.AuthSchemeId
+
+        symbol = KotlinTypes.Collections.list(target, isNullable = true)
+        builderSymbol = KotlinTypes.Collections.list(target, isNullable = true)
+//        toBuilderExpression = ""
+
+        baseClass = RuntimeTypes.Auth.HttpAuth.HttpAuthConfig
+        useNestedBuilderBaseClass()
+
+        documentation = """
+            The ordered preference of [AuthScheme] that this client will use. 
+        """.trimIndent()
+    }
 }
 
 internal val Symbol.nestedBuilder: Symbol
