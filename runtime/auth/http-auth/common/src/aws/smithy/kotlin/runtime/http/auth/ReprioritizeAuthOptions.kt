@@ -22,6 +22,7 @@ public fun reprioritizeAuthOptions(authSchemePreference: List<AuthSchemeId>, aut
         }
     }
 
+    // add any remaining candidates that weren't in the preference list
     val nonPreferredAuthOptions = authOptions.filterNot { it in preferredAuthOptions }
 
     return preferredAuthOptions + nonPreferredAuthOptions
