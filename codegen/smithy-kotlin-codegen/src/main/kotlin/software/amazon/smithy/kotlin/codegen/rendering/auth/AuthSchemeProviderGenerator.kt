@@ -37,7 +37,7 @@ open class AuthSchemeProviderGenerator {
         }
     }
 
-    open fun render(ctx: ProtocolGenerator.GenerationContext) {
+    fun render(ctx: ProtocolGenerator.GenerationContext) {
         ctx.delegator.useSymbolWriter(getSymbol(ctx.settings)) { writer ->
             renderInterface(ctx, writer)
         }
