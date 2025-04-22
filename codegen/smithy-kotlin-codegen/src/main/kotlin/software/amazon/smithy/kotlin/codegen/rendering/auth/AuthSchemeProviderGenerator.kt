@@ -131,7 +131,7 @@ open class AuthSchemeProviderGenerator {
                 }
                 write("")
 
-                write("return authSchemePreference?.let { #T(it, authOptions) } ?: authOptions", RuntimeTypes.Auth.HttpAuthAws.reprioritizeAuthOptions)
+                write("return authSchemePreference?.let { #T(it, authOptions) } ?: authOptions", RuntimeTypes.Auth.HttpAuth.reprioritizeAuthOptions)
             }
 
             // render any helper methods

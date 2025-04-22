@@ -374,6 +374,8 @@ object RuntimeTypes {
             val BearerTokenAuthScheme = symbol("BearerTokenAuthScheme")
             val BearerTokenProviderConfig = symbol("BearerTokenProviderConfig")
             val BearerTokenProvider = symbol("BearerTokenProvider")
+
+            val reprioritizeAuthOptions = symbol("reprioritizeAuthOptions")
         }
 
         object HttpAuthAws : RuntimeTypePackage(KotlinDependency.HTTP_AUTH_AWS) {
@@ -381,7 +383,6 @@ object RuntimeTypes {
             val SigV4AuthScheme = symbol("SigV4AuthScheme")
             val SigV4AsymmetricAuthScheme = symbol("SigV4AsymmetricAuthScheme")
             val mergeAuthOptions = symbol("mergeAuthOptions")
-            val reprioritizeAuthOptions = symbol("reprioritizeAuthOptions")
             val sigV4 = symbol("sigV4")
             val sigV4A = symbol("sigV4A")
         }
