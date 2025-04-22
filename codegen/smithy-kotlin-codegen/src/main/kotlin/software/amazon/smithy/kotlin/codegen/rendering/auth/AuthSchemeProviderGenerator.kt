@@ -120,11 +120,12 @@ open class AuthSchemeProviderGenerator {
                     write("")
 
                     write("val endpointParams = params.endpointParameters")
-                    withInlineBlock("val endpointAuthOptions = if (endpointProvider != null && endpointParams != null) {", "} ") {
-                        write("val endpoint = endpointProvider.resolveEndpoint(endpointParams)")
-                        write("endpoint.#T", RuntimeTypes.SmithyClient.Endpoints.authOptions)
-                    }
-                    write("else { emptyList() }")
+                    openBlock("val endpointAuthOptions = if (endpointProvider != null && endpointParams != null) {")
+                        .write("val endpoint = endpointProvider.resolveEndpoint(endpointParams)")
+                        .write("endpoint.#T", RuntimeTypes.SmithyClient.Endpoints.authOptions)
+                        .closeAndOpenBlock("} else {")
+                        .write("emptyList()")
+                        .closeBlock("}")
                     write("val authOptions = #T(modeledAuthOptions, endpointAuthOptions)", RuntimeTypes.Auth.HttpAuthAws.mergeAuthOptions)
                 } else {
                     write("val authOptions = modeledAuthOptions")
