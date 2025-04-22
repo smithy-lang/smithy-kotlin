@@ -24,7 +24,7 @@ class ReprioritizeAuthOptionsTest {
 
     @Test
     fun testReprioritizeAuthOptionsNoOp() = runTest {
-        val preference = listOf(AuthSchemeId.HttpBearer)
+        val preference = listOf(AuthSchemeId.AwsSigV4)
         val authOptions = listOf(
             AuthOption(AuthSchemeId.AwsSigV4),
             AuthOption(AuthSchemeId.AwsSigV4Asymmetric),
