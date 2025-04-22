@@ -126,6 +126,7 @@ open class AuthSchemeProviderGenerator {
                         .closeAndOpenBlock("} else {")
                         .write("emptyList()")
                         .closeBlock("}")
+                    write("")
                     write("val authOptions = #T(modeledAuthOptions, endpointAuthOptions)", RuntimeTypes.Auth.HttpAuthAws.mergeAuthOptions)
                 } else {
                     write("val authOptions = modeledAuthOptions")
