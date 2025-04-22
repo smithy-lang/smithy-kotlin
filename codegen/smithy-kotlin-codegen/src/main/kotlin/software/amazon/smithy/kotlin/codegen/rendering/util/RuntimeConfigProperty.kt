@@ -182,7 +182,6 @@ object RuntimeConfigProperty {
 
         symbol = KotlinTypes.Collections.list(target, isNullable = true)
         builderSymbol = KotlinTypes.Collections.list(target, isNullable = true)
-//        toBuilderExpression = ""
 
         baseClass = RuntimeTypes.Auth.HttpAuth.HttpAuthConfig
         useNestedBuilderBaseClass()
