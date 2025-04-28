@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.4.16] - 04/28/2025
+
+### Features
+* Add `authSchemePreference` configuration
+
 ## [1.4.15] - 04/21/2025
 
 ### Fixes
