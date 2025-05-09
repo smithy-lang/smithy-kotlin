@@ -6,6 +6,7 @@ package software.amazon.smithy.kotlin.codegen.rendering
 
 import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.codegen.core.SymbolProvider
+import software.amazon.smithy.codegen.core.SymbolReference
 import software.amazon.smithy.kotlin.codegen.core.*
 import software.amazon.smithy.kotlin.codegen.model.SymbolProperty
 import software.amazon.smithy.kotlin.codegen.model.hasTrait
@@ -90,9 +91,9 @@ class ShapeValueGenerator(
     private fun mapDeclaration(writer: KotlinWriter, shape: MapShape, block: () -> Unit) {
         writer.pushState()
         writer.trimTrailingSpaces(false)
-
-        val collectionGeneratorFunction = symbolProvider.toSymbol(shape).expectProperty(SymbolProperty.IMMUTABLE_COLLECTION_FUNCTION)
-
+        val mapSymbol = symbolProvider.toSymbol(shape)
+        writer.addImportReferences(mapSymbol, SymbolReference.ContextOption.USE)
+        val collectionGeneratorFunction = mapSymbol.expectProperty(SymbolProperty.IMMUTABLE_COLLECTION_FUNCTION)
         writer.writeInline("$collectionGeneratorFunction(")
             .ensureNewline()
             .indent()
@@ -109,11 +110,8 @@ class ShapeValueGenerator(
         writer.trimTrailingSpaces(false)
 
         val collectionSymbol = symbolProvider.toSymbol(shape)
+        writer.addImportReferences(collectionSymbol, SymbolReference.ContextOption.USE)
         val generatorFn = collectionSymbol.expectProperty(SymbolProperty.IMMUTABLE_COLLECTION_FUNCTION)
-
-        collectionSymbol.references.forEach {
-            writer.addImport(it.symbol)
-        }
         writer.writeInline("$generatorFn(")
             .ensureNewline()
             .indent()
