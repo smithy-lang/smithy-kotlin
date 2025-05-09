@@ -95,7 +95,7 @@ fun renderKmpGradleBuild(
             #W
         }  
         #W
-        
+
         kotlin {
             #W
             #W
@@ -165,14 +165,17 @@ fun renderJvmGradleBuild(
         plugins {
             #W
         }
+
         #W
 
         dependencies {
             #W
         }
+
         val optInAnnotations = listOf(
             #W
         )
+
         kotlin {
             #W
             sourceSets.all {
@@ -223,7 +226,7 @@ private fun renderDependencies(writer: GradleWriter, scope: Scope, isKmp: Boolea
         }
         .forEach { dependency ->
             writer.write(
-                "${dependency.config}(\"#L:#L:#L\")",
+                "${writer.indentText}${dependency.config}(\"#L:#L:#L\")",
                 dependency.group,
                 dependency.artifact,
                 dependency.version,
