@@ -1,5 +1,0 @@
-{
-  "id": "14965afd-c9f4-48b0-a053-de860b81ecd2",
-  "type": "style",
-  "description": "Properly indent the dependencies in the gradle file and add some new lines to separate sections"
-}
