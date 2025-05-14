@@ -129,8 +129,6 @@ tasks.jvmTest {
     val runningInCodeBuild = System.getenv().containsKey("CODEBUILD_BUILD_ID")
     val runningInLinux = System.getProperty("os.name").contains("Linux", ignoreCase = true)
     val shouldRunProxyTests = !runningInCodeBuild && runningInLinux
-    println("runningInCodeBuild: $runningInCodeBuild, runningInLinux: $runningInLinux, shouldRunProxyTests: $shouldRunProxyTests")
-
     systemProperty(enableProxyTestsProp, System.getProperties().getOrDefault(enableProxyTestsProp, shouldRunProxyTests))
 }
 
