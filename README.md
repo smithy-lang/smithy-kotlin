@@ -9,7 +9,7 @@
 
 ## Development
 
-### Module Structure
+### Modulee Structure
 
 * `codegen` - module(s) for generating Kotlin code from Smithy models
     * `protocol-tests` - module for generating Smithy protocol tests 
