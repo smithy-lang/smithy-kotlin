@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.4.x] - 05/22/2025
+
+### Fixes
+* [#324](https://github.com/smithy-lang/smithy-kotlin/pull/324) Fix code-generation of structures with nested map types 
+
 ## [1.4.16] - 04/28/2025
 
 ### Features
