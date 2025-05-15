@@ -58,16 +58,27 @@ internal interface Canonicalizer {
     ): CanonicalRequest
 }
 
-// Taken from https://github.com/awslabs/aws-c-auth/blob/dd505b55fd46222834f35c6e54165d8cbebbfaaa/source/aws_signing.c#L118-L156
 private val skipHeaders = setOf(
-    "connection",
     "expect", // https://github.com/awslabs/aws-sdk-kotlin/issues/862
+
+    // Taken from https://github.com/awslabs/aws-c-auth/blob/274a1d21330731cc51bb742794adc70ada5f4380/source/aws_signing.c#L121-L164
     "sec-websocket-key",
     "sec-websocket-protocol",
     "sec-websocket-version",
-    "upgrade",
     "user-agent",
     "x-amzn-trace-id",
+
+    // Taken from https://datatracker.ietf.org/doc/html/rfc2616#section-13.5.1. These are "hop-by-hop" headers which may
+    // be modified/removed by intervening proxies or caches. These are unsafe to sign because if they change they render
+    // the signature invalid.
+    "connection",
+    "keep-alive",
+    "proxy-authenticate",
+    "proxy-authorization",
+    "te",
+    "trailers",
+    "transfer-encoding",
+    "upgrade",
 )
 
 internal class DefaultCanonicalizer(private val sha256Supplier: HashSupplier = ::Sha256) : Canonicalizer {
@@ -113,12 +124,13 @@ internal class DefaultCanonicalizer(private val sha256Supplier: HashSupplier = :
         }
 
         param("Host", builder.url.hostAndPort, !signViaQueryParams, overwrite = false)
-        param("X-Amz-Algorithm", ALGORITHM_NAME, signViaQueryParams)
+        param("X-Amz-Algorithm", config.algorithm.signingName, signViaQueryParams)
         param("X-Amz-Credential", credentialValue(config), signViaQueryParams)
         param("X-Amz-Content-Sha256", hash, addHashHeader)
         param("X-Amz-Date", config.signingDate.format(TimestampFormat.ISO_8601_CONDENSED))
         param("X-Amz-Expires", config.expiresAfter?.inWholeSeconds?.toString(), signViaQueryParams)
         param("X-Amz-Security-Token", sessionToken, !config.omitSessionToken) // Add pre-sig if omitSessionToken=false
+        param("X-Amz-Region-Set", config.region, config.algorithm == AwsSigningAlgorithm.SIGV4_ASYMMETRIC)
 
         val headers = builder
             .headers

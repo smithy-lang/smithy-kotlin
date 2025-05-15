@@ -89,15 +89,13 @@ public open class ValuesMapImpl<T>(
 
     override fun isEmpty(): Boolean = values.isEmpty()
 
-    override fun equals(other: Any?): Boolean =
-        other is ValuesMap<*> &&
-            caseInsensitiveName == other.caseInsensitiveName &&
-            names().let { names ->
-                if (names.size != other.names().size) {
-                    return false
-                }
-                names.all { getAll(it) == other.getAll(it) }
-            }
+    override fun equals(other: Any?): Boolean = when (other) {
+        is ValuesMapImpl<*> -> caseInsensitiveName == other.caseInsensitiveName && values == other.values
+        is ValuesMap<*> -> caseInsensitiveName == other.caseInsensitiveName && entries() == other.entries()
+        else -> false
+    }
+
+    override fun hashCode(): Int = values.hashCode()
 
     private fun Map<String, List<T>>.deepCopyValues(): Map<String, List<T>> = mapValues { (_, v) -> v.toList() }
 }

@@ -481,8 +481,8 @@ class SymbolProviderTest {
         assertEquals("Record", sparseListSymbol.references[0].symbol.name)
 
         // check the fully qualified name hint is set
-        assertEquals("List<foo.bar.model.Record>", listSymbol.fullNameHint)
-        assertEquals("List<foo.bar.model.Record?>", sparseListSymbol.fullNameHint)
+        assertEquals("kotlin.collections.List<foo.bar.model.Record>", listSymbol.fullNameHint)
+        assertEquals("kotlin.collections.List<foo.bar.model.Record?>", sparseListSymbol.fullNameHint)
     }
 
     @Test
@@ -544,8 +544,8 @@ class SymbolProviderTest {
         assertTrue("com.test.model.Record" in sparseRefNames)
 
         // check the fully qualified name hint is set
-        assertEquals("Map<kotlin.String, com.test.model.Record>", mapSymbol.fullNameHint)
-        assertEquals("Map<kotlin.String, com.test.model.Record?>", sparseMapSymbol.fullNameHint)
+        assertEquals("kotlin.collections.Map<kotlin.String, com.test.model.Record>", mapSymbol.fullNameHint)
+        assertEquals("kotlin.collections.Map<kotlin.String, com.test.model.Record?>", sparseMapSymbol.fullNameHint)
     }
 
     @Test

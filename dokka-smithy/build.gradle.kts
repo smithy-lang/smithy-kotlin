@@ -2,6 +2,7 @@
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
  * SPDX-License-Identifier: Apache-2.0
  */
+import org.jetbrains.dokka.gradle.tasks.DokkaGenerateTask
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 /*
@@ -9,6 +10,7 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
  * SPDX-License-Identifier: Apache-2.0
  */
 plugins {
+    `dokka-convention`
     id(libs.plugins.kotlin.jvm.get().pluginId)
 }
 
@@ -17,6 +19,16 @@ description = "Custom Dokka plugin for Kotlin Smithy SDK API docs"
 dependencies {
     compileOnly(libs.dokka.base)
     compileOnly(libs.dokka.core)
+
+    testImplementation(libs.jsoup)
+    testImplementation(libs.junit.jupiter)
+    testImplementation(libs.kotest.assertions.core.jvm)
+    testImplementation(libs.kotlin.test.junit5)
+}
+
+tasks.test {
+    useJUnitPlatform()
+    dependsOn(tasks.withType<DokkaGenerateTask>())
 }
 
 tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {

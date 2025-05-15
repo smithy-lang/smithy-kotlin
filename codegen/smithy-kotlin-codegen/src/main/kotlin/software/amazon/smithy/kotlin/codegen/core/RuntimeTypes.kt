@@ -115,6 +115,7 @@ object RuntimeTypes {
         }
 
         object SmokeTests : RuntimeTypePackage(KotlinDependency.CORE, "smoketests") {
+            val DefaultPrinter = symbol("DefaultPrinter")
             val exitProcess = symbol("exitProcess")
             val printExceptionStackTrace = symbol("printExceptionStackTrace")
             val SmokeTestsException = symbol("SmokeTestsException")
@@ -373,6 +374,8 @@ object RuntimeTypes {
             val BearerTokenAuthScheme = symbol("BearerTokenAuthScheme")
             val BearerTokenProviderConfig = symbol("BearerTokenProviderConfig")
             val BearerTokenProvider = symbol("BearerTokenProvider")
+
+            val reprioritizeAuthOptions = symbol("reprioritizeAuthOptions")
         }
 
         object HttpAuthAws : RuntimeTypePackage(KotlinDependency.HTTP_AUTH_AWS) {

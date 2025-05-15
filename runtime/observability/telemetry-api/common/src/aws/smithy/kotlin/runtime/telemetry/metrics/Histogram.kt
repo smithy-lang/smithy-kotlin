@@ -67,3 +67,16 @@ public inline fun <T> DoubleHistogram.measureSeconds(attributes: Attributes = em
     recordSeconds(tv.duration, attributes, context)
     return tv.value
 }
+
+/**
+ * Records the size of a payload in bytes to this histogram.
+ *
+ * @param value The payload size in bytes, or null if no payload
+ * @param attributes attributes to associate with this measurement
+ * @param context (Optional) trace context to associate with this measurement
+ */
+@InternalApi
+public fun DoubleHistogram.recordPayloadSize(value: Long?, attributes: Attributes = emptyAttributes(), context: Context? = null) {
+    val bytes = value?.toDouble() ?: 0.0
+    record(bytes, attributes, context)
+}

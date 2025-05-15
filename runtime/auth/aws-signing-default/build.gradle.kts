@@ -18,6 +18,7 @@ kotlin {
             dependencies {
                 implementation(project(":runtime:auth:aws-signing-tests"))
                 implementation(libs.kotlinx.coroutines.test)
+                implementation(libs.kotlinx.serialization.json)
             }
         }
 

@@ -6,16 +6,6 @@ package aws.smithy.kotlin.runtime.collections
 
 import aws.smithy.kotlin.runtime.InternalApi
 
-private class CaseInsensitiveString(val s: String) {
-    val hash: Int = s.lowercase().hashCode()
-    override fun hashCode(): Int = hash
-    override fun equals(other: Any?): Boolean = other is CaseInsensitiveString && other.s.equals(s, ignoreCase = true)
-    override fun toString(): String = s
-}
-
-private fun String.toInsensitive(): CaseInsensitiveString =
-    CaseInsensitiveString(this)
-
 /**
  * Map of case-insensitive [String] to [Value]
  */
@@ -30,17 +20,17 @@ internal class CaseInsensitiveMap<Value> : MutableMap<String, Value> {
 
     override fun containsValue(value: Value): Boolean = impl.containsValue(value)
 
-    override fun get(key: String): Value? = impl.get(key.toInsensitive())
+    override fun get(key: String): Value? = impl[key.toInsensitive()]
 
     override fun isEmpty(): Boolean = impl.isEmpty()
 
     override val entries: MutableSet<MutableMap.MutableEntry<String, Value>>
         get() = impl.entries.map {
-            Entry(it.key.s, it.value)
+            Entry(it.key.normalized, it.value)
         }.toMutableSet()
 
     override val keys: MutableSet<String>
-        get() = impl.keys.map { it.s }.toMutableSet()
+        get() = CaseInsensitiveMutableStringSet(impl.keys)
 
     override val values: MutableCollection<Value>
         get() = impl.values
@@ -57,6 +47,12 @@ internal class CaseInsensitiveMap<Value> : MutableMap<String, Value> {
 
     override fun remove(key: String): Value? = impl.remove(key.toInsensitive())
 
+    override fun hashCode() = impl.hashCode()
+
+    override fun equals(other: Any?) = other is CaseInsensitiveMap<*> && impl == other.impl
+
+    override fun toString() = impl.toString()
+
     private class Entry<Key, Value>(
         override val key: Key,
         override var value: Value,
@@ -67,7 +63,7 @@ internal class CaseInsensitiveMap<Value> : MutableMap<String, Value> {
             return value
         }
 
-        override fun hashCode(): Int = 17 * 31 + key!!.hashCode() + value!!.hashCode()
+        override fun hashCode(): Int = key.hashCode() xor value.hashCode() // Match JVM & K/N stdlib implementations
 
         override fun equals(other: Any?): Boolean {
             if (other == null || other !is Map.Entry<*, *>) return false

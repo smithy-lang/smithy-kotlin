@@ -1,5 +1,70 @@
 # Changelog
 
+## [1.4.16] - 04/28/2025
+
+### Features
+* Add `authSchemePreference` configuration
+
+## [1.4.15] - 04/21/2025
+
+### Fixes
+* [#1214](https://github.com/awslabs/aws-sdk-kotlin/issues/1214) Improve handling of excepted socket exceptions when using connection polling
+
+## [1.4.14] - 04/18/2025
+
+## [1.4.13] - 04/10/2025
+
+## [1.4.12] - 04/04/2025
+
+## [1.4.11] - 03/14/2025
+
+## [1.4.10] - 03/06/2025
+
+### Fixes
+* Correctly handle sequential calls to `SingleFlightGroup`
+
+## [1.4.9] - 02/27/2025
+
+### Fixes
+* Correctly generate paginators for item type names which collide with other used types (e.g., an item type `com.foo.Flow` which conflicts with `kotlinx.coroutines.flow.Flow`)
+
+## [1.4.8] - 02/27/2025
+
+### Fixes
+* Idempotency tokens are no longer code-generated for nested structures. See: https://smithy.io/2.0/spec/behavior-traits.html#smithy-api-idempotencytoken-trait
+
+## [1.4.7] - 02/25/2025
+
+### Fixes
+* [#1211](https://github.com/smithy-lang/smithy-kotlin/issues/1211) Fix OpenTelemetry span concurrency by using Span.asContextElement() instead of Span.makeCurrent()
+
+## [1.4.6] - 02/25/2025
+
+## [1.4.5] - 02/24/2025
+
+### Features
+* Add SigV4a support to the default AWS signer
+
+## [1.4.4] - 02/18/2025
+
+### Miscellaneous
+* Increase maximum event stream message length to 24MB
+
+## [1.4.3] - 02/13/2025
+
+### Fixes
+* Fix errors in equality checks for `CaseInsensitiveMap` which affect `Headers` and `ValuesMap` implementations
+* fix: correct hash code calculation for case-insensitive map entries
+* [#1413](https://github.com/awslabs/aws-sdk-kotlin/issues/1413) Favor `endpointUrl` over endpoint discovery when provided
+
+### Miscellaneous
+* Add telemetry provider configuration to `DefaultAwsSigner`
+
+## [1.4.2] - 01/28/2025
+
+### Fixes
+* Ignore hop-by-hop headers when signing requests
+
 ## [1.4.1] - 01/16/2025
 
 ## [1.4.0] - 01/15/2025

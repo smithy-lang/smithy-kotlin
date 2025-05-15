@@ -17,6 +17,7 @@ import aws.smithy.kotlin.runtime.InternalApi
  * @param cause The cause of the exception
  */
 @InternalApi
+@Deprecated("This exception is no longer thrown. It will be removed in the next minor version, v1.5.x.")
 public class UnsupportedSigningAlgorithmException(
     message: String,
     public val signingAlgorithm: AwsSigningAlgorithm,
