@@ -6,7 +6,7 @@ import aws.sdk.kotlin.gradle.codegen.smithyKotlinProjectionSrcDir
 import aws.sdk.kotlin.gradle.dsl.skipPublishing
 
 plugins {
-    alias(libs.plugins.kotlin.jvm)
+    id(libs.plugins.kotlin.jvm.get().pluginId)
     alias(libs.plugins.aws.kotlin.repo.tools.smithybuild)
 }
 
@@ -97,7 +97,7 @@ kotlin.sourceSets.getByName("main") {
 tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
     dependsOn(stageGeneratedSources)
     // generated code has warnings unfortunately, see https://github.com/awslabs/aws-sdk-kotlin/issues/1169
-    kotlinOptions.allWarningsAsErrors = false
+    compilerOptions.allWarningsAsErrors = false
 }
 
 tasks.clean.configure {
