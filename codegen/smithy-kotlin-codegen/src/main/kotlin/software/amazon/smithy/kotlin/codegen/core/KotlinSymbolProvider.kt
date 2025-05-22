@@ -267,13 +267,10 @@ class KotlinSymbolProvider(private val model: Model, private val settings: Kotli
     private fun getDefaultValueForTimestamp(builder: Symbol.Builder, node: NumberNode): String {
         builder.addReferences(RuntimeTypes.Core.Instant)
         return if (node.isFloatingPointNumber) {
-            builder.addReferences(RuntimeTypes.Core.fromEpochMilliseconds)
-
             val value = node.value as Double
             val ms = round(value * 1e3).toLong()
             "Instant.fromEpochMilliseconds($ms)"
         } else {
-            builder.addReferences(RuntimeTypes.Core.Instant)
             "Instant.fromEpochSeconds(${node.value}, 0)"
         }
     }
