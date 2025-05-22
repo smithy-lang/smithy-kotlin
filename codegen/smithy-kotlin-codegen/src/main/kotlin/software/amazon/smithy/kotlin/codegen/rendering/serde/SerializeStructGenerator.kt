@@ -5,6 +5,7 @@
 package software.amazon.smithy.kotlin.codegen.rendering.serde
 
 import software.amazon.smithy.codegen.core.CodegenException
+import software.amazon.smithy.codegen.core.SymbolReference
 import software.amazon.smithy.kotlin.codegen.DefaultValueSerializationMode
 import software.amazon.smithy.kotlin.codegen.core.*
 import software.amazon.smithy.kotlin.codegen.model.*
@@ -595,6 +596,7 @@ open class SerializeStructGenerator(
         val postfix = if (memberShape.hasTrait<IdempotencyTokenTrait>()) idempotencyTokenPostfix(memberShape) else ""
         val memberSymbol = ctx.symbolProvider.toSymbol(memberShape)
         val memberName = ctx.symbolProvider.toMemberName(memberShape)
+        writer.addImportReferences(memberSymbol, SymbolReference.ContextOption.USE)
         if (memberSymbol.isNullable) {
             val identifier = valueToSerializeName("it")
             val fn = serializerFn.format(memberShape, identifier)
