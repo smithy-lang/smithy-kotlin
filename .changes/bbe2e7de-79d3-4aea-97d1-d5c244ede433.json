@@ -1,0 +1,5 @@
+{
+  "id": "bbe2e7de-79d3-4aea-97d1-d5c244ede433",
+  "type": "bugfix",
+  "description": "Adds import to the symbols references when needed. This issue surfaced when building the protocol tests with the latest Smithy release"
+}
