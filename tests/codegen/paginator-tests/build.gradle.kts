@@ -6,7 +6,7 @@ import aws.sdk.kotlin.gradle.codegen.smithyKotlinProjectionSrcDir
 import aws.sdk.kotlin.gradle.dsl.skipPublishing
 
 plugins {
-    alias(libs.plugins.kotlin.jvm)
+    id(libs.plugins.kotlin.jvm.get().pluginId)
     alias(libs.plugins.aws.kotlin.repo.tools.smithybuild)
 }
 
