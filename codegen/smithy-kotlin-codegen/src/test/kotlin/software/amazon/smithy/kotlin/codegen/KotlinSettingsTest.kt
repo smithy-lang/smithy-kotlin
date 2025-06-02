@@ -5,20 +5,22 @@
 
 package software.amazon.smithy.kotlin.codegen
 
+import org.junit.jupiter.api.extension.ExtensionContext
 import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.Arguments
+import org.junit.jupiter.params.provider.ArgumentsProvider
+import org.junit.jupiter.params.provider.ArgumentsSource
 import org.junit.jupiter.params.provider.CsvSource
 import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.kotlin.codegen.test.TestModelDefault
 import software.amazon.smithy.kotlin.codegen.test.toSmithyModel
+import software.amazon.smithy.kotlin.codegen.utils.dq
 import software.amazon.smithy.model.knowledge.NullableIndex.CheckMode
+import software.amazon.smithy.model.knowledge.ServiceIndex
 import software.amazon.smithy.model.node.Node
 import software.amazon.smithy.model.shapes.ShapeId
-import java.lang.IllegalArgumentException
-import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertFailsWith
-import kotlin.test.assertFalse
-import kotlin.test.assertTrue
+import java.util.stream.Stream
+import kotlin.test.*
 
 class KotlinSettingsTest {
     @Test
@@ -330,4 +332,80 @@ class KotlinSettingsTest {
 
         assertEquals(expected, apiSettings.defaultValueSerializationMode)
     }
+
+    @ParameterizedTest
+    @ArgumentsSource(TestProtocolSelectionArgumentProvider::class)
+    fun testProtocolSelection(
+        protocolPriorityCsv: String,
+        serviceProtocolsCsv: String,
+        expectedProtocolName: String?,
+    ) {
+        val serviceProtocols = serviceProtocolsCsv.csvToProtocolList()
+        val serviceProtocolImports = serviceProtocols.joinToString("\n") { "use $it" }
+        val serviceProtocolTraits = serviceProtocols.joinToString("\n") { "@${it.name}" }
+        val supportedProtocols = protocolPriorityCsv.csvToProtocolList().toSet()
+        val protocolPriorityList = supportedProtocols.joinToString(", ") { it.toString().dq() }
+
+        val model = """
+            |namespace com.test
+            |
+            |$serviceProtocolImports
+            |
+            |$serviceProtocolTraits
+            |@xmlNamespace(uri: "http://test.com") // required for @awsQuery
+            |service Test {
+            |    version: "1.0.0"
+            |}
+        """.trimMargin().toSmithyModel()
+        val service = model.serviceShapes.single()
+        val serviceIndex = ServiceIndex.of(model)
+
+        val contents = """
+            {
+                "package": {
+                    "name": "name",
+                    "version": "1.0.0"
+                },
+                "api": {
+                    "protocolResolutionPriority": [ $protocolPriorityList ]
+                }
+            }
+        """.trimIndent()
+        val settings = KotlinSettings.from(model, Node.parse(contents).expectObjectNode())
+
+        val expectedProtocol = expectedProtocolName?.nameToProtocol()
+        val actualProtocol = runCatching {
+            settings.resolveServiceProtocol(serviceIndex, service, supportedProtocols)
+        }.getOrElse { null }
+
+        assertEquals(expectedProtocol, actualProtocol)
+    }
 }
+
+/**
+ * A junit [ArgumentsProvider] which supplies protocol selection parameterized test values sourced from the Smithy RPCv2
+ * CBOR Support SEP § Smithy protocol selection tests.
+ */
+class TestProtocolSelectionArgumentProvider : ArgumentsProvider {
+    companion object {
+        private const val ALL_PROTOCOLS = "rpcv2Cbor, awsJson1_0, awsJson1_1, restJson1, restXml, awsQuery, ec2Query"
+        private const val NO_CBOR = "awsJson1_0, awsJson1_1, restJson1, restXml, awsQuery, ec2Query"
+    }
+
+    override fun provideArguments(context: ExtensionContext?): Stream<out Arguments> = Stream.of(
+        Arguments.of(ALL_PROTOCOLS, "rpcv2Cbor, awsJson1_0", "rpcv2Cbor"),
+        Arguments.of(ALL_PROTOCOLS, "rpcv2Cbor", "rpcv2Cbor"),
+        Arguments.of(ALL_PROTOCOLS, "rpcv2Cbor, awsJson1_0, awsQuery", "rpcv2Cbor"),
+        Arguments.of(ALL_PROTOCOLS, "awsJson1_0, awsQuery", "awsJson1_0"),
+        Arguments.of(ALL_PROTOCOLS, "awsQuery", "awsQuery"),
+        Arguments.of(NO_CBOR, "rpcv2Cbor, awsJson1_0", "awsJson1_0"),
+        Arguments.of(NO_CBOR, "rpcv2Cbor", null),
+        Arguments.of(NO_CBOR, "rpcv2Cbor, awsJson1_0, awsQuery", "awsJson1_0"),
+        Arguments.of(NO_CBOR, "awsJson1_0, awsQuery", "awsJson1_0"),
+        Arguments.of(NO_CBOR, "awsQuery", "awsQuery"),
+    )
+}
+
+private val allProtocols = ApiSettings().protocolResolutionPriority
+private fun String.nameToProtocol() = allProtocols.single { protocol -> protocol.name == this }
+private fun String.csvToProtocolList() = split(",").map(String::trim).map(String::nameToProtocol)
