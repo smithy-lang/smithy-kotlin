@@ -393,16 +393,56 @@ class TestProtocolSelectionArgumentProvider : ArgumentsProvider {
     }
 
     override fun provideArguments(context: ExtensionContext?): Stream<out Arguments> = Stream.of(
-        Arguments.of(ALL_PROTOCOLS, "rpcv2Cbor, awsJson1_0", "rpcv2Cbor"),
-        Arguments.of(ALL_PROTOCOLS, "rpcv2Cbor", "rpcv2Cbor"),
-        Arguments.of(ALL_PROTOCOLS, "rpcv2Cbor, awsJson1_0, awsQuery", "rpcv2Cbor"),
-        Arguments.of(ALL_PROTOCOLS, "awsJson1_0, awsQuery", "awsJson1_0"),
-        Arguments.of(ALL_PROTOCOLS, "awsQuery", "awsQuery"),
-        Arguments.of(NO_CBOR, "rpcv2Cbor, awsJson1_0", "awsJson1_0"),
-        Arguments.of(NO_CBOR, "rpcv2Cbor", null),
-        Arguments.of(NO_CBOR, "rpcv2Cbor, awsJson1_0, awsQuery", "awsJson1_0"),
-        Arguments.of(NO_CBOR, "awsJson1_0, awsQuery", "awsJson1_0"),
-        Arguments.of(NO_CBOR, "awsQuery", "awsQuery"),
+        Arguments.of(
+            ALL_PROTOCOLS,
+            "rpcv2Cbor, awsJson1_0",
+            "rpcv2Cbor",
+        ),
+        Arguments.of(
+            ALL_PROTOCOLS,
+            "rpcv2Cbor",
+            "rpcv2Cbor",
+        ),
+        Arguments.of(
+            ALL_PROTOCOLS,
+            "rpcv2Cbor, awsJson1_0, awsQuery",
+            "rpcv2Cbor",
+        ),
+        Arguments.of(
+            ALL_PROTOCOLS,
+            "awsJson1_0, awsQuery",
+            "awsJson1_0",
+        ),
+        Arguments.of(
+            ALL_PROTOCOLS,
+            "awsQuery",
+            "awsQuery",
+        ),
+        Arguments.of(
+            NO_CBOR,
+            "rpcv2Cbor, awsJson1_0",
+            "awsJson1_0",
+        ),
+        Arguments.of(
+            NO_CBOR,
+            "rpcv2Cbor",
+            null,
+        ),
+        Arguments.of(
+            NO_CBOR,
+            "rpcv2Cbor, awsJson1_0, awsQuery",
+            "awsJson1_0",
+        ),
+        Arguments.of(
+            NO_CBOR,
+            "awsJson1_0, awsQuery",
+            "awsJson1_0",
+        ),
+        Arguments.of(
+            NO_CBOR,
+            "awsQuery",
+            "awsQuery",
+        ),
     )
 }
 
