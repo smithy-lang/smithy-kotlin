@@ -69,7 +69,6 @@ private val TESTS = listOf(
  * Tests for [SigV4aSignatureCalculator]. Currently only tests forming the string-to-sign.
  */
 class SigV4aSignatureCalculatorTest {
-    @IgnoreNative // FIXME test resources are not loadable on iOS: https://youtrack.jetbrains.com/issue/KT-49981/
     @Test
     fun testStringToSign() = TESTS.forEach { testId ->
         runTest {

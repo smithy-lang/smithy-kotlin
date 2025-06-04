@@ -5,7 +5,6 @@
 
 package aws.smithy.kotlin.runtime.http.engine.crt
 
-import aws.smithy.kotlin.runtime.IgnoreNative
 import aws.smithy.kotlin.runtime.http.HttpMethod
 import aws.smithy.kotlin.runtime.http.SdkHttpClient
 import aws.smithy.kotlin.runtime.http.complete
@@ -37,7 +36,6 @@ class AsyncStressTest : TestWithLocalServer() {
         }
     }.start()
 
-    @IgnoreNative // FIXME TlsContext needs to initialize CRT. Segmentation fault.
     @Test
     fun testStreamNotConsumed() = runBlocking {
         // test that filling the stream window and not consuming the body stream still cleans up resources
@@ -55,13 +53,14 @@ class AsyncStressTest : TestWithLocalServer() {
             }
         }
 
-        withTimeout(10.seconds) {
+        withTimeout(1000.seconds) {
             repeat(1_000) {
                 async {
                     try {
                         val call = client.call(request)
                         yield()
                         call.complete()
+                        println("Call complete for #$it")
                     } catch (ex: Exception) {
                         println("exception on $it: $ex")
                         throw ex

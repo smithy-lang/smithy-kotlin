@@ -4,7 +4,6 @@
  */
 package aws.smithy.kotlin.runtime.http.auth
 
-import aws.smithy.kotlin.runtime.IgnoreNative
 import aws.smithy.kotlin.runtime.auth.awscredentials.Credentials
 import aws.smithy.kotlin.runtime.auth.awscredentials.CredentialsProvider
 import aws.smithy.kotlin.runtime.auth.awssigning.AwsSigner
@@ -147,7 +146,6 @@ public abstract class AwsHttpSignerTestBase(
         assertEquals(expectedSig, signed.headers["Authorization"])
     }
 
-    @IgnoreNative // FIXME Our JVM implementation does not sign `transfer-encoding`, but CRT does, causing a signature mismatch. Upgrade to latest version of aws-c-auth to get the fix.
     @Test
     public fun testSignAwsChunkedStreamNonReplayable(): TestResult = runTest {
         val op = buildOperation(streaming = true, replayable = false, requestBody = "a".repeat(AWS_CHUNKED_THRESHOLD + 1))
@@ -161,7 +159,6 @@ public abstract class AwsHttpSignerTestBase(
         assertEquals(expectedSig, signed.headers["Authorization"])
     }
 
-    @IgnoreNative // FIXME Our JVM implementation does not sign `transfer-encoding`, but CRT does, causing a signature mismatch. Upgrade to latest version of aws-c-auth to get the fix.
     @Test
     public fun testSignAwsChunkedStreamReplayable(): TestResult = runTest {
         val op = buildOperation(streaming = true, replayable = true, requestBody = "a".repeat(AWS_CHUNKED_THRESHOLD + 1))
@@ -175,7 +172,6 @@ public abstract class AwsHttpSignerTestBase(
         assertEquals(expectedSig, signed.headers["Authorization"])
     }
 
-    @IgnoreNative // FIXME Our JVM implementation does not sign `transfer-encoding`, but CRT does, causing a signature mismatch. Upgrade to latest version of aws-c-auth to get the fix.
     @Test
     public fun testSignOneShotStream(): TestResult = runTest {
         val op = buildOperation(streaming = true, replayable = false)
