@@ -40,9 +40,7 @@ protected constructor(
     /**
      * Render a test class and unit tests for the specified [testCases]
      */
-    fun renderTestClass(testClassName: String) {
-        writer.addImport(KotlinDependency.KOTLIN_TEST.namespace, "Test")
-
+    open fun renderTestClass(testClassName: String) {
         writer.write("")
             .openBlock("class $testClassName {")
             .call {
@@ -58,7 +56,7 @@ protected constructor(
     /**
      * Write a single unit test function using the given [writer]
      */
-    private fun renderTestFunction(test: T) {
+    protected open fun renderTestFunction(test: T) {
         test.documentation.ifPresent {
             writer.dokka(it)
         }

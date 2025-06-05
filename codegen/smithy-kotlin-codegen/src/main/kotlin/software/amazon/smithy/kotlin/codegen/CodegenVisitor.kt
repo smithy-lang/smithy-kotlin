@@ -114,6 +114,13 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Unit>() {
     }
 
     fun execute() {
+        generateShapes()
+        generateNonShapes()
+        writers.flushWriters()
+    }
+
+
+    fun generateShapes() {
         logger.info("Generating Kotlin client for service ${settings.service}")
 
         logger.info("Walking shapes from ${settings.service} to find shapes to generate")
@@ -122,15 +129,7 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Unit>() {
         serviceShapes.forEach { it.accept(this) }
 
         protocolGenerator?.apply {
-            val ctx = ProtocolGenerator.GenerationContext(
-                settings,
-                model,
-                service,
-                symbolProvider,
-                integrations,
-                protocol,
-                writers,
-            )
+            val ctx = generationContext()
 
             logger.info("[${service.id}] Generating unit tests for protocol $protocol")
             generateProtocolUnitTests(ctx)
@@ -144,7 +143,9 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Unit>() {
             logger.info("[${service.id}] Generating auth scheme provider for protocol $protocol")
             generateAuthSchemeProvider(ctx)
         }
+    }
 
+    fun generateNonShapes() {
         writers.finalize()
 
         if (settings.build.generateDefaultBuildFiles) {
@@ -156,8 +157,18 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Unit>() {
 
         // write files defined by integrations
         integrations.forEach { it.writeAdditionalFiles(baseGenerationContext, writers) }
+    }
 
-        writers.flushWriters()
+    fun generationContext(): ProtocolGenerator.GenerationContext {
+        return ProtocolGenerator.GenerationContext(
+            settings,
+            model,
+            service,
+            symbolProvider,
+            integrations,
+            protocolGenerator!!.protocol,
+            writers,
+        )
     }
 
     override fun getDefault(shape: Shape?) { }

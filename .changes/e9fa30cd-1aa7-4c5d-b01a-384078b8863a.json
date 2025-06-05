@@ -1,0 +1,5 @@
+{
+    "id": "e9fa30cd-1aa7-4c5d-b01a-384078b8863a",
+    "type": "feature",
+    "description": "Added a protocol tests runner, a new mechanism to run the tests and report the results in JSON format detached from the test phase of a regular build."
+}
