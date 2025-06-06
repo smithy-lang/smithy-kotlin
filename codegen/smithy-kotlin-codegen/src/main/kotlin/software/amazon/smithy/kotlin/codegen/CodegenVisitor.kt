@@ -119,7 +119,6 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Unit>() {
         writers.flushWriters()
     }
 
-
     fun generateShapes() {
         logger.info("Generating Kotlin client for service ${settings.service}")
 
@@ -159,17 +158,15 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Unit>() {
         integrations.forEach { it.writeAdditionalFiles(baseGenerationContext, writers) }
     }
 
-    fun generationContext(): ProtocolGenerator.GenerationContext {
-        return ProtocolGenerator.GenerationContext(
-            settings,
-            model,
-            service,
-            symbolProvider,
-            integrations,
-            protocolGenerator!!.protocol,
-            writers,
-        )
-    }
+    fun generationContext(): ProtocolGenerator.GenerationContext = ProtocolGenerator.GenerationContext(
+        settings,
+        model,
+        service,
+        symbolProvider,
+        integrations,
+        protocolGenerator!!.protocol,
+        writers,
+    )
 
     override fun getDefault(shape: Shape?) { }
 

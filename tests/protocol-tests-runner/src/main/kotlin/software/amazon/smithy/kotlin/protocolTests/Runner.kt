@@ -49,7 +49,7 @@ fun main(args: Array<String>) {
                 // Build the client and protocol tests
                 buildProtocolTests(codegenPath)
                 // Run the protocol tests and get the results
-                val results = runProtocolTests(codegenPath);
+                val results = runProtocolTests(codegenPath)
                 // Add the result to the final report
                 jsonWriter.writeEncodedValue(results)
             }
@@ -73,8 +73,8 @@ private fun hasStandardProtocolTests(service: ServiceShape, model: Model): Boole
     // Check that at least one operation in the service has a test trait, either for
     // requests or for responses.
     TopDownIndex.of(model).getContainedOperations(service).forEach { operation ->
-        if (operation.hasTrait(HttpResponseTestsTrait.ID)
-            || operation.hasTrait(HttpRequestTestsTrait.ID)
+        if (operation.hasTrait(HttpResponseTestsTrait.ID) ||
+            operation.hasTrait(HttpRequestTestsTrait.ID)
         ) {
             return true
         }
@@ -103,8 +103,8 @@ private fun buildProtocolTests(codegenPath: Path) {
  * to fill up the final report.
  */
 private fun runProtocolTests(codegenPath: Path): String {
-    val name = codegenPath.toFile().name;
-    val process = ProcessBuilder("java", "-jar", "build/libs/${name}-all.jar")
+    val name = codegenPath.toFile().name
+    val process = ProcessBuilder("java", "-jar", "build/libs/$name-all.jar")
         .directory(codegenPath.toFile())
         .start()
     val writer = StringWriter()

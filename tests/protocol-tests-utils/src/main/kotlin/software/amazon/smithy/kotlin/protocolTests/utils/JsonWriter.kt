@@ -8,9 +8,14 @@ import java.io.Writer
  */
 class JsonWriter(private val writer: Writer) : Closeable {
     internal enum class State {
-        Start, End,
-        ObjectStart, ObjectFirstKey, ObjectAfterFirstKey, ObjectValue,
-        ArrayStart, ArrayValue
+        Start,
+        End,
+        ObjectStart,
+        ObjectFirstKey,
+        ObjectAfterFirstKey,
+        ObjectValue,
+        ArrayStart,
+        ArrayValue,
     }
 
     private val stack = ArrayDeque<State>()
@@ -25,7 +30,7 @@ class JsonWriter(private val writer: Writer) : Closeable {
     fun startObject(): JsonWriter {
         pushTransition(State.ObjectStart)
         writer.write("{")
-        return this;
+        return this
     }
 
     /**
@@ -55,7 +60,7 @@ class JsonWriter(private val writer: Writer) : Closeable {
         }
         writeString(key)
         writer.write(":")
-        return this;
+        return this
     }
 
     /**
@@ -73,7 +78,7 @@ class JsonWriter(private val writer: Writer) : Closeable {
     fun startArray(): JsonWriter {
         pushTransition(State.ArrayStart)
         writer.write("[")
-        return this;
+        return this
     }
 
     /**
@@ -108,7 +113,7 @@ class JsonWriter(private val writer: Writer) : Closeable {
             is Boolean -> writer.write(input.toString())
             else -> throw Exception("Unsupported input type: $input")
         }
-        return this;
+        return this
     }
 
     /**
@@ -118,7 +123,7 @@ class JsonWriter(private val writer: Writer) : Closeable {
         val current = stack.last()
         transitionForValue(current)
         writer.write(input)
-        return this;
+        return this
     }
 
     /**
@@ -155,7 +160,6 @@ class JsonWriter(private val writer: Writer) : Closeable {
                 throw Exception("The current state $current cannot precede an structured of type $state")
             }
         }
-
     }
 
     /**

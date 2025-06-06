@@ -2,7 +2,7 @@
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
  * SPDX-License-Identifier: Apache-2.0
  */
-package software.amazon.smithy.kotlin.codegen.pt;
+package software.amazon.smithy.kotlin.codegen.pt
 
 import software.amazon.smithy.kotlin.codegen.rendering.protocol.HttpProtocolUnitTestGenerator
 import software.amazon.smithy.kotlin.codegen.rendering.protocol.HttpProtocolUnitTestRequestGenerator
@@ -13,8 +13,7 @@ import software.amazon.smithy.protocoltests.traits.HttpRequestTestCase
 /**
  * Renders a class with all the defined protocol tests for requests.
  */
-open class ProtocolTestRequestGenerator protected constructor(builder: Builder) :
-    HttpProtocolUnitTestRequestGenerator(builder) {
+open class ProtocolTestRequestGenerator protected constructor(builder: Builder) : HttpProtocolUnitTestRequestGenerator(builder) {
 
     /**
      * Render a test class and unit tests for the specified [testCases]
@@ -24,7 +23,6 @@ open class ProtocolTestRequestGenerator protected constructor(builder: Builder) 
 
         writer.write("")
             .openBlock("internal class $testClassName(val results: MutableList<TestResult>) {")
-
             .openBlock("public fun runAll() {")
             .call {
                 for (test in testCases) {

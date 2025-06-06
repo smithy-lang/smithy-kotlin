@@ -77,7 +77,6 @@ class JsonWriterTest {
         assertEquals("[[\"foo bar\",123]]", result)
     }
 
-
     @Test
     fun `write nested empty object array`() {
         var result = setup {

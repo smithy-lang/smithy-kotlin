@@ -1,6 +1,5 @@
 package software.amazon.smithy.kotlin.protocolTests
 
-import jdk.internal.net.http.common.Log.errors
 import software.amazon.smithy.build.FileManifest
 import software.amazon.smithy.build.PluginContext
 import software.amazon.smithy.kotlin.codegen.pt.KotlinProtocolTestCodegenPlugin
@@ -29,14 +28,12 @@ fun generateProtocolTests(model: Model, service: ServiceShape, codegenPath: Path
  * Creates the `Node` instance that represents the configuration used to run the
  * `KotlinProtocolTestCodegenPlugin` plugin.
  */
-private fun settingsForService(service: ServiceShape): ObjectNode {
-    return ObjectNode.builder()
-        .withMember("service", service.id.toString())
-        .withMember("package", packageSettings(service))
-        .withMember("build", buildSettings())
-        .withMember("api", apiSettings())
-        .build()
-}
+private fun settingsForService(service: ServiceShape): ObjectNode = ObjectNode.builder()
+    .withMember("service", service.id.toString())
+    .withMember("package", packageSettings(service))
+    .withMember("build", buildSettings())
+    .withMember("api", apiSettings())
+    .build()
 
 /**
  * Crates the `Node` instance that defines the package settings.
@@ -52,23 +49,19 @@ private fun packageSettings(service: ServiceShape): ObjectNode {
 /**
  * Creates the `Node` instance that defines the build settings.
  */
-private fun buildSettings(): ObjectNode {
-    return ObjectNode.builder()
-        .withMember("generateFullProject", true)
-        .withMember(
-            "optInAnnotations",
-            ArrayNode.arrayNode(StringNode.from("aws.smithy.kotlin.runtime.InternalApi")),
-        )
-        .withMember("rootProject", true)
-        .build()
-}
+private fun buildSettings(): ObjectNode = ObjectNode.builder()
+    .withMember("generateFullProject", true)
+    .withMember(
+        "optInAnnotations",
+        ArrayNode.arrayNode(StringNode.from("aws.smithy.kotlin.runtime.InternalApi")),
+    )
+    .withMember("rootProject", true)
+    .build()
 
 /**
  * Creates the `Node` instance that defines the api settings.
  */
-private fun apiSettings(): ObjectNode {
-    return ObjectNode.builder()
-        // By default, this value is WHEN_DIFFERENT, which is incorrect for all protocols
-        .withMember("defaultValueSerializationMode", "always")
-        .build()
-}
+private fun apiSettings(): ObjectNode = ObjectNode.builder()
+    // By default, this value is WHEN_DIFFERENT, which is incorrect for all protocols
+    .withMember("defaultValueSerializationMode", "always")
+    .build()

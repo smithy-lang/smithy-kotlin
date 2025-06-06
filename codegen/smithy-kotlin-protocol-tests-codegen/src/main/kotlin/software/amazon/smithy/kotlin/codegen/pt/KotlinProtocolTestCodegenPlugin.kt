@@ -14,22 +14,28 @@ import software.amazon.smithy.kotlin.codegen.rendering.protocol.TestMemberDelta
 import software.amazon.smithy.kotlin.codegen.rendering.protocol.pt.ProtocolTestGenerator
 import software.amazon.smithy.kotlin.codegen.rendering.writeGradleBuild
 
+// We redefine the kotlin-test and smithy-tests dependencies since for this use case
+// we need them in the implementation scope instead of just in the test scope.
+val KOTLIN_TEST_RT = KotlinDependency(
+    GradleConfiguration.Implementation,
+    "kotlin.test",
+    "org.jetbrains.kotlin",
+    "kotlin-test",
+    KOTLIN_COMPILER_VERSION,
+)
+val SMITHY_TEST_RT = KotlinDependency(
+    GradleConfiguration.Implementation,
+    KotlinDependency.SMITHY_TEST.namespace,
+    KotlinDependency.SMITHY_TEST.group,
+    KotlinDependency.SMITHY_TEST.artifact,
+    KotlinDependency.SMITHY_TEST.version,
+)
+
 /**
  * Plugin to trigger Kotlin protocol tests code generation. This plugin also generates the client and the
  * request/response shapes.
  */
 public class KotlinProtocolTestCodegenPlugin : SmithyBuildPlugin {
-
-    // We redefine the kotlin-test and smithy-tests dependencies since for this use case
-    // we need them in the implementation scope instead of just in the test scope.
-    val KOTLIN_TEST_RT = KotlinDependency(
-        GradleConfiguration.Implementation, "kotlin.test", "org.jetbrains.kotlin", "kotlin-test",
-        KOTLIN_COMPILER_VERSION,
-    )
-    val SMITHY_TEST_RT = KotlinDependency(
-        GradleConfiguration.Implementation, KotlinDependency.SMITHY_TEST.namespace,
-        KotlinDependency.SMITHY_TEST.group, KotlinDependency.SMITHY_TEST.artifact, KotlinDependency.SMITHY_TEST.version,
-    )
 
     override fun getName(): String = "kotlin-protocol-tests-codegen"
 
@@ -39,7 +45,7 @@ public class KotlinProtocolTestCodegenPlugin : SmithyBuildPlugin {
         codegen.generateShapes()
 
         // Generate the protocol tests
-        val ctx = codegen.generationContext();
+        val ctx = codegen.generationContext()
         val requestTestBuilder = ProtocolTestRequestGenerator.Builder()
         val responseTestBuilder = ProtocolTestResponseGenerator.Builder()
         val errorTestBuilder = ProtocolTestErrorGenerator.Builder()
@@ -54,7 +60,7 @@ public class KotlinProtocolTestCodegenPlugin : SmithyBuildPlugin {
             ignoredTests,
         ).generateProtocolTests()
 
-        val writers = ctx.delegator;
+        val writers = ctx.delegator
         writers.finalize()
         val settings = ctx.settings
 

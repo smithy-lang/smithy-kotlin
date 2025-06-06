@@ -13,8 +13,7 @@ import software.amazon.smithy.protocoltests.traits.HttpResponseTestCase
 /**
  * Renders a class with all the defined protocol tests for responses.
  */
-open class ProtocolTestResponseGenerator protected constructor(builder: Builder) :
-    HttpProtocolUnitTestResponseGenerator(builder) {
+open class ProtocolTestResponseGenerator protected constructor(builder: Builder) : HttpProtocolUnitTestResponseGenerator(builder) {
 
     /**
      * Render a test class and unit tests for the specified [testCases]

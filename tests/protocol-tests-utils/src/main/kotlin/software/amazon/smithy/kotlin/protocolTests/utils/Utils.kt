@@ -3,11 +3,15 @@ package software.amazon.smithy.kotlin.protocolTests.utils
 import java.io.OutputStreamWriter
 
 enum class Result(val value: String) {
-    PASSED("passed"), FAILED("failed"), ERRORED("errored"), SKIPPED("skipped")
+    PASSED("passed"),
+    FAILED("failed"),
+    ERRORED("errored"),
+    SKIPPED("skipped"),
 }
 
 enum class TestType(val value: String) {
-    REQUEST("request"), RESPONSE("response")
+    REQUEST("request"),
+    RESPONSE("response"),
 }
 
 data class TestResult(
@@ -33,16 +37,16 @@ fun writeResults(
     protocolId: String,
     results: List<TestResult>,
 ) {
-    writer.startObject();
+    writer.startObject()
     writer.writeKvp("service", serviceId)
     writer.writeKvp("protocol", protocolId)
     writer.writeKey("results")
-    writer.startArray();
+    writer.startArray()
     for (result in results) {
         writeTestResult(writer, result)
     }
-    writer.endArray();
-    writer.endObject();
+    writer.endArray()
+    writer.endObject()
 }
 
 internal fun writeTestResult(writer: JsonWriter, result: TestResult) {
@@ -51,7 +55,7 @@ internal fun writeTestResult(writer: JsonWriter, result: TestResult) {
         .writeKvp("type", result.testType.value)
         .writeKvp("result", result.result.value)
     result.log?.let {
-        writer.writeKvp("log", it);
+        writer.writeKvp("log", it)
     }
     writer.endObject()
 }

@@ -3,7 +3,6 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 import aws.sdk.kotlin.gradle.dsl.skipPublishing
-import com.github.jengelman.gradle.plugins.shadow.transformers.AppendingTransformer
 
 plugins {
     alias(libs.plugins.kotlin.jvm)
@@ -37,7 +36,6 @@ dependencies {
 application {
     mainClass.set("software.amazon.smithy.kotlin.protocolTests.RunnerKt")
 }
-
 
 tasks {
     shadowJar {

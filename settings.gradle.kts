@@ -126,4 +126,3 @@ include(":tests:integration:slf4j-2x-consumer")
 include(":tests:integration:slf4j-hybrid-consumer")
 include(":tests:protocol-tests-runner")
 include(":tests:protocol-tests-utils")
-

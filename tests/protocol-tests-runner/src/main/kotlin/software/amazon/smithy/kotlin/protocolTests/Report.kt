@@ -15,7 +15,7 @@ fun writeReportStart(writer: JsonWriter) {
     writer.writeKvp("product", "AWS SDK for Kotlin")
     writer.writeKvp("model", "smithy")
     writer.writeKvp("sdkVersion", sdkVersion(writer))
-    writer.writeKvp("date", Instant.now().toString());
+    writer.writeKvp("date", Instant.now().toString())
     writer.writeKey("tags")
     writeTags(writer)
     writer.writeKey("suites")

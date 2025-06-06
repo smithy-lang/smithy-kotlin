@@ -39,7 +39,6 @@ class ProtocolTestGenerator(
 ) {
     private val logger = Logger.getLogger(javaClass.name)
 
-
     /**
      * Generates the API HTTP protocol tests defined in the smithy model.
      */
@@ -74,7 +73,7 @@ class ProtocolTestGenerator(
             ?.filter(::isTestCaseAllowedForRunMode)
 
         if (requestTests?.isEmpty() != false) {
-            return;
+            return
         }
         requestTests.let { testCases ->
             val testOperationName = operation.id.name.replaceFirstChar { c -> c.uppercaseChar() }
@@ -103,7 +102,7 @@ class ProtocolTestGenerator(
             ?.filter(::isTestCaseAllowedForRunMode)
 
         if (responseTests?.isEmpty() != false) {
-            return;
+            return
         }
         responseTests.let { testCases ->
             val testOperationName = operation.id.name.replaceFirstChar { c -> c.uppercaseChar() }
@@ -170,7 +169,7 @@ class ProtocolTestGenerator(
         ctx.delegator.useFileWriter(testFilename, ctx.settings.pkg.name + ".pt") { writer ->
             logger.fine("Generating protocol test runner")
             writer.openBlock("public fun main() {")
-                .write("val results = ArrayList<#T>()", ProtocolTestsUtils.TestResult);
+                .write("val results = ArrayList<#T>()", ProtocolTestsUtils.TestResult)
             for (testClass in classes) {
                 writer.write("#L(results).runAll()", testClass)
             }
