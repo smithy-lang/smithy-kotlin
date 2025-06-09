@@ -73,7 +73,7 @@ internal class AwsChunkedReader(
     internal suspend fun ensureValidChunk(): Boolean {
         // check if the current chunk is still valid
         if (chunk.size > 0L) {
-            // // Reset metadata bytes counter as only first read of a chunk contains metadata
+            // reset metadata bytes counter as only first read of a chunk contains metadata
             chunkMetadataBytes = 0L
             return true
         }

@@ -40,7 +40,10 @@ public class AwsChunkedSource(
         trailingHeaders,
     )
 
-    // The number of bytes transferred without chunk metadata
+    /**
+     * Tracks the content bytes transferred, excluding chunk metadata.
+     * This public property can be accessed to monitor file transfer progress.
+     */
     public var contentBytesTransferred: Long = 0L
 
     override fun read(sink: SdkBuffer, limit: Long): Long {
