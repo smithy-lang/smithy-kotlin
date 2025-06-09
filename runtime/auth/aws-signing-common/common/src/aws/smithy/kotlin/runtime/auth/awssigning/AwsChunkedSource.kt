@@ -54,10 +54,10 @@ public class AwsChunkedSource(
         }
         if (!isChunkValid) return -1L
 
-        val actualBytesTransferred = chunkReader.chunk.read(sink, limit)
-        contentBytesTransferred = actualBytesTransferred - chunkReader.chunkMetadataBytes
+        val totalBytesTransferred = chunkReader.chunk.read(sink, limit)
+        contentBytesTransferred = totalBytesTransferred - chunkReader.chunkMetadataBytes
 
-        return actualBytesTransferred
+        return totalBytesTransferred
     }
 
     override fun close() {
