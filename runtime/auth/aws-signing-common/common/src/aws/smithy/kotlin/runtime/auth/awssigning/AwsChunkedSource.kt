@@ -40,6 +40,9 @@ public class AwsChunkedSource(
         trailingHeaders,
     )
 
+    // The number of bytes transferred without chunk metadata
+    public var contentBytesTransferred: Long = 0L
+
     override fun read(sink: SdkBuffer, limit: Long): Long {
         require(limit >= 0L) { "Invalid limit ($limit) must be >= 0L" }
         // COROUTINE SAFETY: runBlocking is allowed here because SdkSource is a synchronous blocking interface
@@ -47,7 +50,11 @@ public class AwsChunkedSource(
             chunkReader.ensureValidChunk()
         }
         if (!isChunkValid) return -1L
-        return chunkReader.chunk.read(sink, limit)
+
+        val actualBytesTransferred = chunkReader.chunk.read(sink, limit)
+        contentBytesTransferred = actualBytesTransferred - chunkReader.chunkMetadataBytes
+
+        return actualBytesTransferred
     }
 
     override fun close() {

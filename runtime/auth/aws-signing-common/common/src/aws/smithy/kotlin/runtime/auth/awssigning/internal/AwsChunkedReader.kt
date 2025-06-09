@@ -58,6 +58,13 @@ internal class AwsChunkedReader(
     internal var hasLastChunkBeenSent: Boolean = false
 
     /**
+     * Tracks the number of bytes used for chunk metadata.
+     * This includes chunk headers, terminators (CRLF), and trailers.
+     * Used to calculate the actual payload bytes transferred by subtracting metadata bytes from the total bytes read.
+     */
+    internal var chunkMetadataBytes: Long = 0L
+
+    /**
      * Ensures that the internal [chunk] is valid for reading. If it's not valid, try to load the next chunk. Note that
      * this function will suspend until the whole chunk has been loaded.
      *
@@ -65,7 +72,11 @@ internal class AwsChunkedReader(
      */
     internal suspend fun ensureValidChunk(): Boolean {
         // check if the current chunk is still valid
-        if (chunk.size > 0L) return true
+        if (chunk.size > 0L) {
+            // // Reset metadata bytes counter as only first read of a chunk contains metadata
+            chunkMetadataBytes = 0L
+            return true
+        }
 
         // if not, try to fetch a new chunk
         val nextChunk = when {
@@ -80,9 +91,10 @@ internal class AwsChunkedReader(
                 next
             }
         }
-
+        val preTerminatorChunkSize = nextChunk?.size ?: 0L
         nextChunk?.writeUtf8("\r\n") // terminating CRLF to signal end of chunk
-
+        val chunkSizeWithTerminator = nextChunk?.size ?: 0L
+        chunkMetadataBytes += chunkSizeWithTerminator - preTerminatorChunkSize
         // transfer all segments to the working chunk
         nextChunk?.let { chunk.writeAll(it) }
 
@@ -96,12 +108,14 @@ internal class AwsChunkedReader(
     private suspend fun getFinalChunk(): SdkBuffer {
         // empty chunk
         val lastChunk = checkNotNull(if (signingConfig.isUnsigned) getUnsignedChunk(SdkBuffer()) else getSignedChunk(SdkBuffer()))
-
+        val preTrailerChunkSize = lastChunk.size
         // + any trailers
         if (!trailingHeaders.isEmpty()) {
             val trailingHeaderChunk = getTrailingHeadersChunk(trailingHeaders.toHeaders())
             lastChunk.writeAll(trailingHeaderChunk)
         }
+        val trailersSize = lastChunk.size - preTrailerChunkSize
+        chunkMetadataBytes += trailersSize
         return lastChunk
     }
 
@@ -155,7 +169,7 @@ internal class AwsChunkedReader(
             write(chunkSignature)
             writeUtf8("\r\n")
         }
-
+        chunkMetadataBytes += signedChunk.size
         // append the body
         signedChunk.write(chunkBody)
 
@@ -183,7 +197,7 @@ internal class AwsChunkedReader(
             writeUtf8("\r\n")
             writeAll(bodyBuffer) // append the body
         }
-
+        chunkMetadataBytes += unsignedChunk.size - bodyBuffer.size
         return unsignedChunk
     }
 
