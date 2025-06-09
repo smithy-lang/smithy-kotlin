@@ -60,7 +60,7 @@ internal class AwsChunkedReader(
     /**
      * Tracks the number of bytes used for chunk metadata.
      * This includes chunk headers, terminators (CRLF), and trailers.
-     * Used to calculate the actual payload bytes transferred by subtracting metadata bytes from the total bytes read.
+     * Used to calculate the content bytes transferred by subtracting metadata bytes from the total bytes read.
      */
     internal var chunkMetadataBytes: Long = 0L
 
