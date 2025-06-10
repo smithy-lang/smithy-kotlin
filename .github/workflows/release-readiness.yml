@@ -1,7 +1,7 @@
 name: Release readiness (snapshot dependency)
-
-# Makes sure that we aren't relying on SNAPSHOT/dev versions of aws-crt-kotlin before merging
-# Otherwise we could forget because the rest of CI is masking it
+description: >
+  Makes sure that we aren't relying on SNAPSHOT/dev versions of aws-crt-kotlin before merging
+  Otherwise we could forget because the rest of CI is masking it
 
 on:
   pull_request:
@@ -9,6 +9,7 @@ on:
 
 jobs:
   release-readiness:
+    if: ${{ !contains(github.event.pull_request.labels.*.name, 'ready-for-release') }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout sources
