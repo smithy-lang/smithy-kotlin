@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.4.17] - 06/11/2025
+
+### Fixes
+* Adds import to the symbols references when needed. This issue surfaced when building the protocol tests with the latest Smithy release
+
 ## [1.4.16] - 04/28/2025
 
 ### Features
