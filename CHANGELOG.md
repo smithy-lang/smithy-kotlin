@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.4.18] - 06/13/2025
+
+### Miscellaneous
+* Upgrade to Dokka 2.0.0
+
 ## [1.4.17] - 06/11/2025
 
 ### Fixes
