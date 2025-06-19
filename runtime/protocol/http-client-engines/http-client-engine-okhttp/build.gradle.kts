@@ -39,3 +39,7 @@ kotlin {
         }
     }
 }
+
+dokka {
+    modulePath = "http-client-engine-okhttp"
+}

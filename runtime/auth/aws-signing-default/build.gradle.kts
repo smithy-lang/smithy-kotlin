@@ -27,3 +27,7 @@ kotlin {
         }
     }
 }
+
+dokka {
+    modulePath = "aws-signing-default"
+}

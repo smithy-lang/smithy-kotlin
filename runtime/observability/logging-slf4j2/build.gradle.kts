@@ -25,3 +25,7 @@ kotlin {
         }
     }
 }
+
+dokka {
+    modulePath = "logging-slf4j2"
+}

@@ -21,3 +21,7 @@ kotlin {
         }
     }
 }
+
+dokka {
+    modulePath = "serde-cbor"
+}

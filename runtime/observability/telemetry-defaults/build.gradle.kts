@@ -29,3 +29,7 @@ kotlin {
         }
     }
 }
+
+dokka {
+    modulePath = "telemetry-defaults"
+}
