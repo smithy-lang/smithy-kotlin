@@ -26,3 +26,7 @@ kotlin {
         }
     }
 }
+
+dokka {
+    modulePath = "aws-signing-crt"
+}

@@ -36,3 +36,7 @@ kotlin {
         }
     }
 }
+
+dokka {
+    modulePath = "http-client"
+}

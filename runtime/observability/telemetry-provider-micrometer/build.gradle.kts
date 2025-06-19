@@ -25,3 +25,7 @@ kotlin {
         }
     }
 }
+
+dokka {
+    modulePath = "telemetry-provider-micrometer"
+}
