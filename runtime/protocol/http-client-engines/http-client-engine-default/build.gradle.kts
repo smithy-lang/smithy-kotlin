@@ -32,7 +32,3 @@ kotlin {
         }
     }
 }
-
-dokka {
-    modulePath = "http-client-engine-default"
-}

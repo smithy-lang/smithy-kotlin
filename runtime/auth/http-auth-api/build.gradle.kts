@@ -16,7 +16,3 @@ kotlin {
         }
     }
 }
-
-dokka {
-    modulePath = "http-auth-api"
-}

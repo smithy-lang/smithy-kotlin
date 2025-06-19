@@ -33,7 +33,3 @@ kotlin {
         }
     }
 }
-
-dokka {
-    modulePath = "http-test"
-}

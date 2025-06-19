@@ -42,7 +42,3 @@ kotlin {
         }
     }
 }
-
-dokka {
-    modulePath = "runtime-core"
-}
