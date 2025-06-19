@@ -26,3 +26,7 @@ kotlin {
         }
     }
 }
+
+dokka {
+    modulePath = "telemetry-provider-otel"
+}

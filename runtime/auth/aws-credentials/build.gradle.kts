@@ -30,3 +30,7 @@ kotlin {
         }
     }
 }
+
+dokka {
+    modulePath = "aws-credentials"
+}

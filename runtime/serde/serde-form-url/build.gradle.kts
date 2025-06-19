@@ -20,3 +20,7 @@ kotlin {
         }
     }
 }
+
+dokka {
+    modulePath = "serde-form-url"
+}

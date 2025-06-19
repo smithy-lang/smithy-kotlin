@@ -28,3 +28,7 @@ kotlin {
         }
     }
 }
+
+dokka {
+    modulePath = "smithy-client"
+}
