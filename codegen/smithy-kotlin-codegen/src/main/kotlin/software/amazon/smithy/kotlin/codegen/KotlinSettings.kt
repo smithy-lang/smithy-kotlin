@@ -21,6 +21,7 @@ import software.amazon.smithy.model.shapes.ShapeId
 import software.amazon.smithy.protocol.traits.Rpcv2CborTrait
 import java.util.*
 import java.util.logging.Logger
+import java.util.stream.Collectors
 
 // shapeId of service from which to generate an SDK
 private const val SERVICE = "service"
@@ -157,7 +158,7 @@ fun Model.inferService(): ShapeId {
     val services = shapes(ServiceShape::class.java)
         .map(Shape::getId)
         .sorted()
-        .toList()
+        .collect(Collectors.toList())
 
     return when {
         services.isEmpty() -> {
