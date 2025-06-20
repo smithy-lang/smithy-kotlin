@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.4.20] - 06/20/2025
+
+### Fixes
+* Explicitly qualify shape member names in smoke tests and protocol tests
+* [#1295](https://github.com/smithy-lang/smithy-kotlin/issues/1295) Enable building this project on JDK21 by setting -Xjdk-release flag
+
 ## [1.4.19] - 06/19/2025
 
 ## [1.4.18] - 06/13/2025
