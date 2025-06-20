@@ -1,5 +1,5 @@
 {
     "id": "d69eeb99-a09b-4554-8fa1-6b67207e8156",
     "type": "bugfix",
-    "description": "Prefix all smoke test values with smokeTest to prevent name clash with service models"
+    "description": "Prefix all smoke test values with `smokeTest` to prevent name clash with service models"
 }
