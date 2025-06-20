@@ -1,5 +1,0 @@
-{
-    "id": "bdcf7bc9-094c-4434-aa34-1df7f4f4c936",
-    "type": "bugfix",
-    "description": "Explicitly qualify shape member names in smoke tests and protocol tests"
-}
