@@ -134,6 +134,7 @@ data class KotlinDependency(
         // External third-party dependencies
         val KOTLIN_STDLIB = KotlinDependency(GradleConfiguration.Implementation, "kotlin", "org.jetbrains.kotlin", "kotlin-stdlib", KOTLIN_COMPILER_VERSION)
         val KOTLIN_TEST = KotlinDependency(GradleConfiguration.TestImplementation, "kotlin.test", "org.jetbrains.kotlin", "kotlin-test", KOTLIN_COMPILER_VERSION)
+        val KOTLIN_TEST_IMPL = KOTLIN_TEST.copy(config = GradleConfiguration.Implementation)
     }
 
     override fun getDependencies(): List<SymbolDependency> {
