@@ -33,7 +33,3 @@ kotlin {
         }
     }
 }
-
-dokka {
-    modulePath = "smithy-rpcv2-protocols"
-}

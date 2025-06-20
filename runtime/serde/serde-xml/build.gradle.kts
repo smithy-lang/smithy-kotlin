@@ -22,7 +22,3 @@ kotlin {
         }
     }
 }
-
-dokka {
-    modulePath = "serde-xml"
-}

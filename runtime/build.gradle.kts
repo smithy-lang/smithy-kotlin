@@ -85,4 +85,14 @@ dependencies {
         it.plugins.apply("dokka-convention") // Apply the Dokka conventions plugin to the submodule
         dokka(project(it.path)) // Aggregate the submodule's generated documentation
     }
+
+    subprojects {
+        if (excludeFromDocumentation.contains(this@subprojects.path)) {
+            return@subprojects
+        }
+
+        dokka {
+            modulePath = this@subprojects.name
+        }
+    }
 }

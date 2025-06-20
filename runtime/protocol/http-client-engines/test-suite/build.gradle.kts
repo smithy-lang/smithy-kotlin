@@ -136,7 +136,3 @@ tasks.jvmTest {
 gradle.buildFinished {
     startTestServers.stop()
 }
-
-dokka {
-    modulePath = "test-suite"
-}

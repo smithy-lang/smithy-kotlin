@@ -33,7 +33,3 @@ kotlin {
         }
     }
 }
-
-dokka {
-    modulePath = "aws-json-protocols"
-}

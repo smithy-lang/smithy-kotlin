@@ -29,7 +29,3 @@ kotlin {
         }
     }
 }
-
-dokka {
-    modulePath = "crt-util"
-}
