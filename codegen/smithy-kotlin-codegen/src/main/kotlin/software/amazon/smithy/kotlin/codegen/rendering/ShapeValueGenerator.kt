@@ -26,7 +26,7 @@ import kotlin.math.round
 class ShapeValueGenerator(
     internal val model: Model,
     internal val symbolProvider: SymbolProvider,
-    internal val explicitReceiver: Boolean = false
+    internal val explicitReceiver: Boolean = false,
 ) {
 
     /**

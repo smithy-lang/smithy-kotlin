@@ -214,7 +214,6 @@ listOf<List<String>>(
         contents.shouldContainOnlyOnceWithDiff(expected)
     }
 
-
     fun renderTestStruct(explicitReceiver: Boolean = false): String {
         val model = """
             structure MyStruct {
@@ -265,7 +264,6 @@ listOf<List<String>>(
         ShapeValueGenerator(model, provider, explicitReceiver).instantiateShapeInline(writer, structShape, params)
         return writer.toString()
     }
-
 
     @Test
     fun `it renders null structs`() {
