@@ -22,6 +22,7 @@ fun writeGradleBuild(
     settings: KotlinSettings,
     manifest: FileManifest,
     dependencies: List<KotlinDependency>,
+    enableApplication: Boolean = false,
 ) {
     val writer = GradleWriter()
 
@@ -53,6 +54,12 @@ fun writeGradleBuild(
                 }
             },
         )
+        if (enableApplication) {
+            indent()
+            write("application")
+            write("id(\"com.github.johnrengelman.shadow\") version #S", SHADOW_JAR_VERSION)
+            dedent()
+        }
     }
 
     when {
@@ -72,6 +79,13 @@ fun writeGradleBuild(
             repositoryRenderer,
             annotationRenderer,
         )
+    }
+
+    if (enableApplication) {
+        writer.write("")
+        writer.openBlock("application {")
+        writer.write("mainClass.set(\"${settings.pkg.name}.pt.RunnerKt\")")
+        writer.closeBlock("}")
     }
 
     val contents = writer.toString()
