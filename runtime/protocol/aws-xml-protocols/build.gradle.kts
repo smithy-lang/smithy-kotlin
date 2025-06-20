@@ -31,7 +31,3 @@ kotlin {
         }
     }
 }
-
-dokka {
-    modulePath = "aws-xml-protocols"
-}

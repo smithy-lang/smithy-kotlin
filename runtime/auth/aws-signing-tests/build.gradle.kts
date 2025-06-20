@@ -39,7 +39,3 @@ kotlin {
         }
     }
 }
-
-dokka {
-    modulePath = "aws-signing-tests"
-}
