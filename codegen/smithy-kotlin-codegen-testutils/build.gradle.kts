@@ -40,8 +40,7 @@ tasks.withType<KotlinCompile> {
 }
 
 tasks.withType<JavaCompile> {
-    sourceCompatibility = JavaVersion.VERSION_1_8.toString()
-    targetCompatibility = JavaVersion.VERSION_1_8.toString()
+    options.release = 8
 }
 
 // Reusable license copySpec
