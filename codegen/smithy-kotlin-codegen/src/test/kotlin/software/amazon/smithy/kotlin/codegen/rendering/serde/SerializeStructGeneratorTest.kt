@@ -72,7 +72,8 @@ class SerializeStructGeneratorTest {
             }
         """.trimIndent()
 
-        val actual = codegenSerializerForShape(model, "com.test#Foo")
+        val settings = model.defaultSettings(defaultValueSerializationMode = DefaultValueSerializationMode.WHEN_DIFFERENT)
+        val actual = codegenSerializerForShape(model, "com.test#Foo", settings = settings)
         actual.shouldContainOnlyOnceWithDiff(expected)
     }
 

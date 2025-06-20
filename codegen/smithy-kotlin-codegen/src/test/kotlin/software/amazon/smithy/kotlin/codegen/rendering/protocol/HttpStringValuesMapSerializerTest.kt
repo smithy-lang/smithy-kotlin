@@ -53,7 +53,8 @@ class HttpStringValuesMapSerializerTest {
 
     @Test
     fun `it handles primitive header shapes when different mode`() {
-        val contents = getTestContents(defaultModel, "com.test#PrimitiveShapesOperation", HttpBinding.Location.HEADER)
+        val settings = defaultModel.defaultSettings(defaultValueSerializationMode = DefaultValueSerializationMode.WHEN_DIFFERENT)
+        val contents = getTestContents(defaultModel, "com.test#PrimitiveShapesOperation", HttpBinding.Location.HEADER, settings)
         contents.assertBalancedBracesAndParens()
 
         val expectedContents = """
@@ -68,7 +69,8 @@ class HttpStringValuesMapSerializerTest {
 
     @Test
     fun `it handles primitive query shapes when different mode`() {
-        val contents = getTestContents(defaultModel, "com.test#PrimitiveShapesOperation", HttpBinding.Location.QUERY)
+        val settings = defaultModel.defaultSettings(defaultValueSerializationMode = DefaultValueSerializationMode.WHEN_DIFFERENT)
+        val contents = getTestContents(defaultModel, "com.test#PrimitiveShapesOperation", HttpBinding.Location.QUERY, settings)
         contents.assertBalancedBracesAndParens()
 
         val expectedContents = """
@@ -129,7 +131,8 @@ class HttpStringValuesMapSerializerTest {
             }
         """.prependNamespaceAndService(operations = listOf("Foo")).toSmithyModel()
 
-        val contents = getTestContents(model, "com.test#Foo", HttpBinding.Location.HEADER)
+        val settings = defaultModel.defaultSettings(defaultValueSerializationMode = DefaultValueSerializationMode.WHEN_DIFFERENT)
+        val contents = getTestContents(model, "com.test#Foo", HttpBinding.Location.HEADER, settings)
         contents.assertBalancedBracesAndParens()
 
         val expectedContents = """
