@@ -35,7 +35,6 @@ dependencies {
 tasks.withType<KotlinCompile> {
     compilerOptions {
         jvmTarget.set(JvmTarget.JVM_1_8)
-        freeCompilerArgs.add("-Xjdk-release=1.8")
         freeCompilerArgs.add("-opt-in=kotlin.RequiresOptIn")
     }
 }
