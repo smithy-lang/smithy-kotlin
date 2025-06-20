@@ -65,8 +65,8 @@ class SmokeTestsRunnerGenerator(
             write("")
 
             withBlock("public suspend fun main() {", "}") {
-                write("val success = SmokeTestRunner().runAllTests()")
-                withBlock("if (!success) {", "}") {
+                write("val smokeTestsSuccess = SmokeTestRunner().runAllTests()")
+                withBlock("if (!smokeTestsSuccess) {", "}") {
                     write("#T(1)", RuntimeTypes.Core.SmokeTests.exitProcess)
                 }
             }
@@ -77,7 +77,7 @@ class SmokeTestsRunnerGenerator(
 
     private fun renderRunnerClass() {
         writer.withBlock(
-            "public class SmokeTestRunner(private val platform: #1T = #1T.System, private val printer: #2T = #3T) {",
+            "public class SmokeTestRunner(private val smokeTestPlatform: #1T = #1T.System, private val smokeTestPrinter: #2T = #3T) {",
             "}",
             RuntimeTypes.Core.Utils.PlatformProvider,
             KotlinTypes.Text.Appendable,
@@ -102,7 +102,7 @@ class SmokeTestsRunnerGenerator(
 
     private fun renderEnvironmentVariables() {
         // Skip tags
-        writer.writeInline("private val skipTags = platform.getenv(")
+        writer.writeInline("private val smokeTestSkipTags = smokeTestPlatform.getenv(")
         writer.declareSection(SmokeTestSectionIds.SkipTags) {
             writer.writeInline("#S", SKIP_TAGS)
         }
@@ -112,7 +112,7 @@ class SmokeTestsRunnerGenerator(
         )
 
         // Service filter
-        writer.writeInline("private val serviceFilter = platform.getenv(")
+        writer.writeInline("private val smokeTestServiceFilter = smokeTestPlatform.getenv(")
         writer.declareSection(SmokeTestSectionIds.ServiceFilter) {
             writer.writeInline("#S", SERVICE_FILTER)
         }
@@ -141,8 +141,8 @@ class SmokeTestsRunnerGenerator(
 
     private fun renderFunction(operation: OperationShape, testCase: SmokeTestCase) {
         writer.withBlock("private suspend fun ${testCase.functionName}(): Boolean {", "}") {
-            write("val tags = setOf<String>(${testCase.tags.joinToString(",") { it.dq()} })")
-            writer.withBlock("if ((serviceFilter.isNotEmpty() && #S !in serviceFilter) || tags.any { it in skipTags }) {", "}", sdkId) {
+            write("val smokeTestTags = setOf<String>(${testCase.tags.joinToString(",") { it.dq()} })")
+            writer.withBlock("if ((smokeTestServiceFilter.isNotEmpty() && #S !in smokeTestServiceFilter) || smokeTestTags.any { it in smokeTestSkipTags }) {", "}", sdkId) {
                 printTestResult(
                     sdkId.filter { !it.isWhitespace() },
                     testCase.id,
@@ -223,8 +223,8 @@ class SmokeTestsRunnerGenerator(
             RuntimeTypes.HttpClient.Interceptors.SmokeTestsSuccessException
         }
 
-        writer.write("val success: Boolean = exception is #T", expectedException)
-        writer.write("val status: String = if (success) #S else #S", "ok", "not ok")
+        writer.write("val smokeTestSuccess: Boolean = exception is #T", expectedException)
+        writer.write("val smokeTestStatus: String = if (smokeTestSuccess) #S else #S", "ok", "not ok")
 
         printTestResult(
             sdkId.filter { !it.isWhitespace() },
@@ -233,12 +233,12 @@ class SmokeTestsRunnerGenerator(
             writer,
         )
 
-        writer.withBlock("if (!success) {", "}") {
-            write("printer.appendLine(exception.stackTraceToString().prependIndent(#S))", "# ")
+        writer.withBlock("if (!smokeTestSuccess) {", "}") {
+            write("smokeTestPrinter.appendLine(exception.stackTraceToString().prependIndent(#S))", "# ")
         }
 
         writer.write("")
-        writer.write("success")
+        writer.write("smokeTestSuccess")
     }
 
     // Helpers
@@ -263,9 +263,9 @@ class SmokeTestsRunnerGenerator(
         directive: String? = "",
     ) {
         val expectation = if (errorExpected) "error expected from service" else "no error expected from service"
-        val status = statusOverride ?: "\$status"
+        val status = statusOverride ?: "\$smokeTestStatus"
         val testResult = "$status $service $testCase - $expectation $directive"
-        writer.write("printer.appendLine(#S)", testResult)
+        writer.write("smokeTestPrinter.appendLine(#S)", testResult)
     }
 
     /**

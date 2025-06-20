@@ -74,8 +74,8 @@ class SmokeTestsRunnerGeneratorTest {
     fun variablesTest() {
         generatedCode.shouldContainOnlyOnceWithDiff(
             """
-                private val skipTags = platform.getenv("SMOKE_TEST_SKIP_TAGS")?.let { it.split(",").map { it.trim() }.toSet() } ?: emptySet()
-                private val serviceFilter = platform.getenv("SMOKE_TEST_SERVICE_IDS")?.let { it.split(",").map { it.trim() }.toSet() }
+                private val smokeTestSkipTags = smokeTestPlatform.getenv("SMOKE_TEST_SKIP_TAGS")?.let { it.split(",").map { it.trim() }.toSet() } ?: emptySet()
+                private val smokeTestServiceFilter = smokeTestPlatform.getenv("SMOKE_TEST_SERVICE_IDS")?.let { it.split(",").map { it.trim() }.toSet() }
             """.formatForTest(),
         )
     }
@@ -85,8 +85,8 @@ class SmokeTestsRunnerGeneratorTest {
         generatedCode.shouldContainOnlyOnceWithDiff(
             """
                 public suspend fun main() {
-                    val success = SmokeTestRunner().runAllTests()
-                    if (!success) {
+                    val smokeTestsSuccess = SmokeTestRunner().runAllTests()
+                    if (!smokeTestsSuccess) {
                         exitProcess(1)
                     }
                 }
@@ -97,7 +97,7 @@ class SmokeTestsRunnerGeneratorTest {
     @Test
     fun runnerClassTest() {
         generatedCode.shouldContainOnlyOnceWithDiff(
-            "public class SmokeTestRunner(private val platform: PlatformProvider = PlatformProvider.System, private val printer: Appendable = DefaultPrinter) {",
+            "public class SmokeTestRunner(private val smokeTestPlatform: PlatformProvider = PlatformProvider.System, private val smokeTestPrinter: Appendable = DefaultPrinter) {",
         )
     }
 
@@ -122,9 +122,9 @@ class SmokeTestsRunnerGeneratorTest {
         generatedCode.shouldContainOnlyOnceWithDiff(
             """
                 private suspend fun successTest(): Boolean {
-                    val tags = setOf<String>("success")
-                    if ((serviceFilter.isNotEmpty() && "Test" !in serviceFilter) || tags.any { it in skipTags }) {
-                        printer.appendLine("ok Test SuccessTest - no error expected from service # skip")
+                    val smokeTestTags = setOf<String>("success")
+                    if ((smokeTestServiceFilter.isNotEmpty() && "Test" !in smokeTestServiceFilter) || smokeTestTags.any { it in smokeTestSkipTags }) {
+                        smokeTestPrinter.appendLine("ok Test SuccessTest - no error expected from service # skip")
                         return true
                     }
                 
@@ -144,14 +144,14 @@ class SmokeTestsRunnerGeneratorTest {
                         error("Unexpectedly completed smoke test operation without throwing exception")
                 
                     } catch (exception: Exception) {
-                        val success: Boolean = exception is SmokeTestsSuccessException
-                        val status: String = if (success) "ok" else "not ok"
-                        printer.appendLine("${'$'}status Test SuccessTest - no error expected from service ")
-                        if (!success) {
-                            printer.appendLine(exception.stackTraceToString().prependIndent("# "))
+                        val smokeTestSuccess: Boolean = exception is SmokeTestsSuccessException
+                        val smokeTestStatus: String = if (smokeTestSuccess) "ok" else "not ok"
+                        smokeTestPrinter.appendLine("${'$'}smokeTestStatus Test SuccessTest - no error expected from service ")
+                        if (!smokeTestSuccess) {
+                            smokeTestPrinter.appendLine(exception.stackTraceToString().prependIndent("# "))
                         }
                 
-                        success
+                        smokeTestSuccess
                     }
                 }
             """.formatForTest(),
@@ -163,9 +163,9 @@ class SmokeTestsRunnerGeneratorTest {
         generatedCode.shouldContainOnlyOnceWithDiff(
             """
                 private suspend fun invalidMessageErrorTest(): Boolean {
-                    val tags = setOf<String>()
-                    if ((serviceFilter.isNotEmpty() && "Test" !in serviceFilter) || tags.any { it in skipTags }) {
-                        printer.appendLine("ok Test InvalidMessageErrorTest - error expected from service # skip")
+                    val smokeTestTags = setOf<String>()
+                    if ((smokeTestServiceFilter.isNotEmpty() && "Test" !in smokeTestServiceFilter) || smokeTestTags.any { it in smokeTestSkipTags }) {
+                        smokeTestPrinter.appendLine("ok Test InvalidMessageErrorTest - error expected from service # skip")
                         return true
                     }
                 
@@ -182,14 +182,14 @@ class SmokeTestsRunnerGeneratorTest {
                         error("Unexpectedly completed smoke test operation without throwing exception")
                 
                     } catch (exception: Exception) {
-                        val success: Boolean = exception is InvalidMessageError
-                        val status: String = if (success) "ok" else "not ok"
-                        printer.appendLine("${'$'}status Test InvalidMessageErrorTest - error expected from service ")
-                        if (!success) {
-                            printer.appendLine(exception.stackTraceToString().prependIndent("# "))
+                        val smokeTestSuccess: Boolean = exception is InvalidMessageError
+                        val smokeTestStatus: String = if (smokeTestSuccess) "ok" else "not ok"
+                        smokeTestPrinter.appendLine("${'$'}smokeTestStatus Test InvalidMessageErrorTest - error expected from service ")
+                        if (!smokeTestSuccess) {
+                            smokeTestPrinter.appendLine(exception.stackTraceToString().prependIndent("# "))
                         }
                 
-                        success
+                        smokeTestSuccess
                     }
                 }
             """.formatForTest(),
@@ -201,9 +201,9 @@ class SmokeTestsRunnerGeneratorTest {
         generatedCode.shouldContainOnlyOnceWithDiff(
             """
                 private suspend fun failureTest(): Boolean {
-                    val tags = setOf<String>()
-                    if ((serviceFilter.isNotEmpty() && "Test" !in serviceFilter) || tags.any { it in skipTags }) {
-                        printer.appendLine("ok Test FailureTest - error expected from service # skip")
+                    val smokeTestTags = setOf<String>()
+                    if ((smokeTestServiceFilter.isNotEmpty() && "Test" !in smokeTestServiceFilter) || smokeTestTags.any { it in smokeTestSkipTags }) {
+                        smokeTestPrinter.appendLine("ok Test FailureTest - error expected from service # skip")
                         return true
                     }
                 
@@ -221,14 +221,14 @@ class SmokeTestsRunnerGeneratorTest {
                         error("Unexpectedly completed smoke test operation without throwing exception")
                 
                     } catch (exception: Exception) {
-                        val success: Boolean = exception is SmokeTestsFailureException
-                        val status: String = if (success) "ok" else "not ok"
-                        printer.appendLine("${'$'}status Test FailureTest - error expected from service ")
-                        if (!success) {
-                            printer.appendLine(exception.stackTraceToString().prependIndent("# "))
+                        val smokeTestSuccess: Boolean = exception is SmokeTestsFailureException
+                        val smokeTestStatus: String = if (smokeTestSuccess) "ok" else "not ok"
+                        smokeTestPrinter.appendLine("${'$'}smokeTestStatus Test FailureTest - error expected from service ")
+                        if (!smokeTestSuccess) {
+                            smokeTestPrinter.appendLine(exception.stackTraceToString().prependIndent("# "))
                         }
                 
-                        success
+                        smokeTestSuccess
                     }
                 }
             """.formatForTest(),
