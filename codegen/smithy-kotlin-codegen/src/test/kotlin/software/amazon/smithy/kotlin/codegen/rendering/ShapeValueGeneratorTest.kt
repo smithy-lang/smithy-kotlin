@@ -172,6 +172,50 @@ listOf<List<String>>(
 
     @Test
     fun `it renders structs`() {
+        val contents = renderTestStruct()
+
+        val expected = """
+            MyStruct {
+                stringMember = "v1"
+                boolMember = true
+                intMember = 1
+                structMember = Nested {
+                    tsMember = Instant.fromEpochSeconds(11223344, 0)
+                }
+                enumMember = MyEnum.fromValue("fooey")
+                floatMember = 2.toFloat()
+                doubleMember = 3.0.toDouble()
+                nullMember = null
+            }
+        """.trimIndent()
+
+        contents.shouldContainOnlyOnceWithDiff(expected)
+    }
+
+    @Test
+    fun `it renders structs with an explicit receiver`() {
+        val contents = renderTestStruct(explicitReceiver = true)
+
+        val expected = """
+            MyStruct {
+                this.stringMember = "v1"
+                this.boolMember = true
+                this.intMember = 1
+                this.structMember = Nested {
+                    this.tsMember = Instant.fromEpochSeconds(11223344, 0)
+                }
+                this.enumMember = MyEnum.fromValue("fooey")
+                this.floatMember = 2.toFloat()
+                this.doubleMember = 3.0.toDouble()
+                this.nullMember = null
+            }
+        """.trimIndent()
+
+        contents.shouldContainOnlyOnceWithDiff(expected)
+    }
+
+
+    fun renderTestStruct(explicitReceiver: Boolean = false): String {
         val model = """
             structure MyStruct {
                 stringMember: String,
@@ -218,26 +262,10 @@ listOf<List<String>>(
             .withMember("nullMember", Node.nullNode())
             .build()
 
-        ShapeValueGenerator(model, provider).instantiateShapeInline(writer, structShape, params)
-        val contents = writer.toString()
-
-        val expected = """
-MyStruct {
-    stringMember = "v1"
-    boolMember = true
-    intMember = 1
-    structMember = Nested {
-        tsMember = Instant.fromEpochSeconds(11223344, 0)
+        ShapeValueGenerator(model, provider, explicitReceiver).instantiateShapeInline(writer, structShape, params)
+        return writer.toString()
     }
-    enumMember = MyEnum.fromValue("fooey")
-    floatMember = 2.toFloat()
-    doubleMember = 3.0.toDouble()
-    nullMember = null
-}
-        """.trimIndent()
 
-        contents.shouldContainOnlyOnceWithDiff(expected)
-    }
 
     @Test
     fun `it renders null structs`() {
