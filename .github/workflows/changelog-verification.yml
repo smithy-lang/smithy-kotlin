@@ -11,12 +11,20 @@ jobs:
   changelog-verification:
     runs-on: ubuntu-latest
     steps:
+      - name: Setup kat
+        uses: awslabs/aws-kotlin-repo-tools/.github/actions/setup-kat@main
+
       - uses: actions/checkout@v2
-      - name: Check for changelog entry
+      - name: Check for new changelog entry
         if: ${{ !contains(github.event.pull_request.labels.*.name, 'no-changelog') }}
         run: |
           git fetch origin ${{ github.base_ref }} --depth 1 && \
           git diff remotes/origin/${{ github.base_ref }} --name-only | grep -P "\.changes/[0-9a-f-]+\.json"
+
+      - name: Verify all changelogs
+        run: |
+          kat changelog ls
+
       - name: Error message
         if: ${{ failure() }}
         run: |
