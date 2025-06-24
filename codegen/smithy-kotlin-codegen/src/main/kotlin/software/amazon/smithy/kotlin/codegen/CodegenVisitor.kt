@@ -160,6 +160,53 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Unit>() {
         writers.flushWriters()
     }
 
+    fun serviceExecute() {
+        logger.info("Generating Kotlin server for service ${settings.service}")
+
+        logger.info("Walking shapes from ${settings.service} to find shapes to generate")
+        val modelWithoutTraits = ModelTransformer.create().getModelWithoutTraitShapes(model)
+        val serviceShapes = Walker(modelWithoutTraits).walkShapes(service)
+        serviceShapes.forEach { it.accept(this) }
+
+        protocolGenerator?.apply {
+            val ctx = ProtocolGenerator.GenerationContext(
+                settings,
+                model,
+                service,
+                symbolProvider,
+                integrations,
+                protocol,
+                writers,
+            )
+
+            logger.info("[${service.id}] Generating unit tests for protocol $protocol")
+            generateProtocolUnitTests(ctx)
+
+            logger.info("[${service.id}] Generating service client for protocol $protocol")
+            generateProtocolClient(ctx)
+//
+//            logger.info("[${service.id}] Generating endpoint provider for protocol $protocol")
+//            generateEndpointsSources(ctx)
+//
+//            logger.info("[${service.id}] Generating auth scheme provider for protocol $protocol")
+//            generateAuthSchemeProvider(ctx)
+        }
+
+        writers.finalize()
+
+        if (settings.build.generateDefaultBuildFiles) {
+            val dependencies = writers.dependencies
+                .mapNotNull { it.properties["dependency"] as? KotlinDependency }
+                .distinct()
+            writeGradleBuild(settings, fileManifest, dependencies)
+        }
+
+        // write files defined by integrations
+        integrations.forEach { it.writeAdditionalFiles(baseGenerationContext, writers) }
+
+        writers.flushWriters()
+    }
+
     override fun getDefault(shape: Shape?) { }
 
     override fun structureShape(shape: StructureShape) {
