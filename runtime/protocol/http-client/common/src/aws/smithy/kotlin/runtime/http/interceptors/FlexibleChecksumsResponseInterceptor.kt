@@ -62,7 +62,7 @@ public open class FlexibleChecksumsResponseInterceptor(
 
         val checksumHeader = CHECKSUM_HEADER_VALIDATION_PRIORITY_LIST
             .firstOrNull { context.protocolResponse.headers.contains(it) } ?: run {
-            logger.warn { "Checksum validation was requested but the response headers didn't contain a valid checksum." }
+            logger.info { "Checksum validation was requested but the response headers didn't contain a valid checksum." }
             return context.protocolResponse
         }
 

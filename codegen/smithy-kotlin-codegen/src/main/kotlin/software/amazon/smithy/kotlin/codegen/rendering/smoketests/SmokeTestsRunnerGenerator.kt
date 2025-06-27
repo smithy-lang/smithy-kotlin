@@ -211,7 +211,7 @@ class SmokeTestsRunnerGenerator(
         } else {
             writer.withBlock("(", ")") {
                 val inputShape = model.expectShape(operation.input.get())
-                ShapeValueGenerator(model, symbolProvider).instantiateShapeInline(writer, inputShape, inputParams)
+                ShapeValueGenerator(model, symbolProvider, explicitReceiver = true).instantiateShapeInline(writer, inputShape, inputParams)
             }
         }
     }

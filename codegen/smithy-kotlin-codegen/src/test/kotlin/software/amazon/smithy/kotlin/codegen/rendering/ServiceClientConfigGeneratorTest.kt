@@ -48,6 +48,7 @@ public class Config private constructor(builder: Builder) : HttpAuthConfig, Http
 
         val expectedProps = """
     override val clientName: String = builder.clientName
+    override val authSchemePreference: kotlin.collections.List<aws.smithy.kotlin.runtime.auth.AuthSchemeId>? = builder.authSchemePreference
     override val authSchemes: kotlin.collections.List<aws.smithy.kotlin.runtime.http.auth.AuthScheme> = builder.authSchemes
     public val endpointProvider: TestEndpointProvider = requireNotNull(builder.endpointProvider) { "endpointProvider is a required configuration property" }
     override val idempotencyTokenProvider: IdempotencyTokenProvider = builder.idempotencyTokenProvider ?: IdempotencyTokenProvider.Default
@@ -64,6 +65,11 @@ public class Config private constructor(builder: Builder) : HttpAuthConfig, Http
          * A reader-friendly name for the client.
          */
         override var clientName: String = "Test"
+
+        /**
+         * The ordered preference of [AuthScheme] that this client will use.
+         */
+        override var authSchemePreference: kotlin.collections.List<aws.smithy.kotlin.runtime.auth.AuthSchemeId>? = null
 
         /**
          * Register new or override default [AuthScheme]s configured for this client. By default, the set
@@ -239,6 +245,7 @@ public class Config private constructor(builder: Builder) {
         // Expect logMode config value to override default to LogMode.Request
         val expectedConfigValues = """
     override val clientName: String = builder.clientName
+    override val authSchemePreference: kotlin.collections.List<aws.smithy.kotlin.runtime.auth.AuthSchemeId>? = builder.authSchemePreference
     override val authSchemes: kotlin.collections.List<aws.smithy.kotlin.runtime.http.auth.AuthScheme> = builder.authSchemes
     public val customProp: Int? = builder.customProp
     public val endpointProvider: TestEndpointProvider = requireNotNull(builder.endpointProvider) { "endpointProvider is a required configuration property" }

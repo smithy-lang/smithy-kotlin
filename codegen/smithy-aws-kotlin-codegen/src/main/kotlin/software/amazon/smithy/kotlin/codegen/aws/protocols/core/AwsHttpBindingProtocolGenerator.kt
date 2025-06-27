@@ -40,7 +40,11 @@ abstract class AwsHttpBindingProtocolGenerator : HttpBindingProtocolGenerator() 
         // val targetedTest = TestMemberDelta(setOf("RestJsonComplexErrorWithNoMessage"), TestContainmentMode.RUN_TESTS)
 
         val ignoredTests = TestMemberDelta(
-            setOf(),
+            setOf(
+                // likely bug in Smithy's HTTP header traits spec
+                "RestJsonHttpEmptyPrefixHeadersRequestClient",
+                "HttpEmptyPrefixHeadersRequestClient",
+            ),
         )
 
         val requestTestBuilder = HttpProtocolUnitTestRequestGenerator.Builder()

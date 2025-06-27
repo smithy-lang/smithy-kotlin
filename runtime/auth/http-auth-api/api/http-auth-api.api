@@ -9,11 +9,14 @@ public final class aws/smithy/kotlin/runtime/http/auth/AuthScheme$DefaultImpls {
 }
 
 public abstract interface class aws/smithy/kotlin/runtime/http/auth/HttpAuthConfig {
+	public abstract fun getAuthSchemePreference ()Ljava/util/List;
 	public abstract fun getAuthSchemes ()Ljava/util/List;
 }
 
 public abstract interface class aws/smithy/kotlin/runtime/http/auth/HttpAuthConfig$Builder {
+	public abstract fun getAuthSchemePreference ()Ljava/util/List;
 	public abstract fun getAuthSchemes ()Ljava/util/List;
+	public abstract fun setAuthSchemePreference (Ljava/util/List;)V
 	public abstract fun setAuthSchemes (Ljava/util/List;)V
 }
 

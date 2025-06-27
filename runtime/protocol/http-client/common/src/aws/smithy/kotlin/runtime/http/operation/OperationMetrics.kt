@@ -37,4 +37,6 @@ public class OperationMetrics(
     public val resolveEndpointDuration: DoubleHistogram = meter.createDoubleHistogram("smithy.client.call.resolve_endpoint_duration", "s", "The time it takes to resolve an endpoint for a request")
     public val resolveIdentityDuration: DoubleHistogram = meter.createDoubleHistogram("smithy.client.call.auth.resolve_identity_duration", "s", "The time it takes to resolve an identity for signing a request")
     public val signingDuration: DoubleHistogram = meter.createDoubleHistogram("smithy.client.call.auth.signing_duration", "s", "The time it takes to sign a request")
+    public val requestPayloadSize: DoubleHistogram = meter.createDoubleHistogram("smithy.client.call.request_payload_size", "bytes", "The payload size of a request")
+    public val responsePayloadSize: DoubleHistogram = meter.createDoubleHistogram("smithy.client.call.response_payload_size", "bytes", "The payload size of a response")
 }

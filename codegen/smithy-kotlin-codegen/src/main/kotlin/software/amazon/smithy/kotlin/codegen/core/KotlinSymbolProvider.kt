@@ -252,7 +252,7 @@ class KotlinSymbolProvider(private val model: Model, private val settings: Kotli
             }
 
             targetShape.isDocumentShape -> getDefaultValueForDocument(node)
-            targetShape.isTimestampShape -> getDefaultValueForTimestamp(node.asNumberNode().get())
+            targetShape.isTimestampShape -> getDefaultValueForTimestamp(this, node.asNumberNode().get())
 
             node.isNumberNode -> getDefaultValueForNumber(targetShape.type, node.toString())
             node.isArrayNode -> "listOf()"
@@ -264,17 +264,14 @@ class KotlinSymbolProvider(private val model: Model, private val settings: Kotli
         defaultValue(defaultValue)
     }
 
-    private fun getDefaultValueForTimestamp(node: NumberNode): String {
-        val instant = RuntimeTypes.Core.Instant
-
+    private fun getDefaultValueForTimestamp(builder: Symbol.Builder, node: NumberNode): String {
+        builder.addReferences(RuntimeTypes.Core.Instant)
         return if (node.isFloatingPointNumber) {
-            val fromEpochMilliseconds = RuntimeTypes.Core.fromEpochMilliseconds
-
             val value = node.value as Double
             val ms = round(value * 1e3).toLong()
-            "$fromEpochMilliseconds.invoke($instant, $ms)"
+            "Instant.fromEpochMilliseconds($ms)"
         } else {
-            "$instant.fromEpochSeconds(${node.value}, 0)"
+            "Instant.fromEpochSeconds(${node.value}, 0)"
         }
     }
 

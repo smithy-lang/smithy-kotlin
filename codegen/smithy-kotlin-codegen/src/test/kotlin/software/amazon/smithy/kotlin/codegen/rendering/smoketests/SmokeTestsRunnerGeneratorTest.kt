@@ -136,7 +136,7 @@ class SmokeTestsRunnerGeneratorTest {
                         }.use { client ->
                             client.testOperation(
                                 TestOperationRequest {
-                                    bar = "2"
+                                    this.bar = "2"
                                 }
                             )
                         }
@@ -174,7 +174,7 @@ class SmokeTestsRunnerGeneratorTest {
                         }.use { client ->
                             client.testOperation(
                                 TestOperationRequest {
-                                    bar = "föö"
+                                    this.bar = "föö"
                                 }
                             )
                         }
@@ -213,7 +213,7 @@ class SmokeTestsRunnerGeneratorTest {
                         }.use { client ->
                             client.testOperation(
                                 TestOperationRequest {
-                                    bar = "föö"
+                                    this.bar = "föö"
                                 }
                             )
                         }

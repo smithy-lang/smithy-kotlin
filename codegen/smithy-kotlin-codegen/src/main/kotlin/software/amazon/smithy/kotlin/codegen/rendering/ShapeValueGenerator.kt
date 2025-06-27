@@ -6,6 +6,7 @@ package software.amazon.smithy.kotlin.codegen.rendering
 
 import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.codegen.core.SymbolProvider
+import software.amazon.smithy.codegen.core.SymbolReference
 import software.amazon.smithy.kotlin.codegen.core.*
 import software.amazon.smithy.kotlin.codegen.model.SymbolProperty
 import software.amazon.smithy.kotlin.codegen.model.hasTrait
@@ -18,10 +19,14 @@ import kotlin.math.round
 
 /**
  * Generates a shape type declaration based on the parameters provided.
+ * @param model the model which contains the shape being generated
+ * @param symbolProvider the symbol provider for the model
+ * @param explicitReceiver Whether shape members should be fully qualified, prefixed with `this.`
  */
 class ShapeValueGenerator(
     internal val model: Model,
     internal val symbolProvider: SymbolProvider,
+    internal val explicitReceiver: Boolean = false,
 ) {
 
     /**
@@ -60,7 +65,7 @@ class ShapeValueGenerator(
     }
 
     private fun writeShapeValuesInline(writer: KotlinWriter, shape: Shape, params: Node) {
-        val nodeVisitor = ShapeValueNodeVisitor(writer, this, shape)
+        val nodeVisitor = ShapeValueNodeVisitor(writer, this, shape, explicitReceiver)
         when (shape.type) {
             ShapeType.STRUCTURE -> params.accept(nodeVisitor)
             ShapeType.MAP -> mapDeclaration(writer, shape.asMapShape().get()) {
@@ -90,9 +95,9 @@ class ShapeValueGenerator(
     private fun mapDeclaration(writer: KotlinWriter, shape: MapShape, block: () -> Unit) {
         writer.pushState()
         writer.trimTrailingSpaces(false)
-
-        val collectionGeneratorFunction = symbolProvider.toSymbol(shape).expectProperty(SymbolProperty.IMMUTABLE_COLLECTION_FUNCTION)
-
+        val mapSymbol = symbolProvider.toSymbol(shape)
+        writer.addImportReferences(mapSymbol, SymbolReference.ContextOption.USE)
+        val collectionGeneratorFunction = mapSymbol.expectProperty(SymbolProperty.IMMUTABLE_COLLECTION_FUNCTION)
         writer.writeInline("$collectionGeneratorFunction(")
             .ensureNewline()
             .indent()
@@ -109,11 +114,8 @@ class ShapeValueGenerator(
         writer.trimTrailingSpaces(false)
 
         val collectionSymbol = symbolProvider.toSymbol(shape)
+        writer.addImportReferences(collectionSymbol, SymbolReference.ContextOption.USE)
         val generatorFn = collectionSymbol.expectProperty(SymbolProperty.IMMUTABLE_COLLECTION_FUNCTION)
-
-        collectionSymbol.references.forEach {
-            writer.addImport(it.symbol)
-        }
         writer.writeInline("$generatorFn(")
             .ensureNewline()
             .indent()
@@ -160,6 +162,7 @@ class ShapeValueGenerator(
         val writer: KotlinWriter,
         val generator: ShapeValueGenerator,
         val currShape: Shape,
+        val explicitReceiver: Boolean = false,
     ) : NodeVisitor<Unit> {
 
         override fun objectNode(node: ObjectNode) {
@@ -180,7 +183,10 @@ class ShapeValueGenerator(
                         }
                         memberShape = generator.model.expectShape(member.target)
                         val memberName = generator.symbolProvider.toMemberName(member)
-                        writer.writeInline("#L = ", memberName)
+                        val memberPrefix = if (explicitReceiver) "this." else ""
+
+                        writer.writeInline("#L#L = ", memberPrefix, memberName)
+
                         generator.instantiateShapeInline(writer, memberShape, valueNode)
                         if (i < node.members.size - 1) {
                             writer.ensureNewline()
