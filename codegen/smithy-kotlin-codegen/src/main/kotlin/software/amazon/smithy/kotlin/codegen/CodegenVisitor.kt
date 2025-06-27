@@ -168,6 +168,8 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Unit>() {
         val serviceShapes = Walker(modelWithoutTraits).walkShapes(service)
         serviceShapes.forEach { it.accept(this) }
 
+        val serviceStubGenerator = ServiceStubGenerator(settings.pkg.name, writers)
+
         protocolGenerator?.apply {
             val ctx = ProtocolGenerator.GenerationContext(
                 settings,
@@ -180,10 +182,11 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Unit>() {
             )
 
             logger.info("[${service.id}] Generating smithy service")
+//            serviceStubGenerator.renderCustomProtocolModule(protocolGenerator)
 
         }
         logger.info("[${service.id}] Generating server...")
-        val serviceStubGenerator = ServiceStubGenerator(settings.pkg.name, writers)
+
         serviceStubGenerator.render()
 
         writers.finalize()

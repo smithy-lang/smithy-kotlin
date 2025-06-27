@@ -18,8 +18,13 @@ class KotlinCodegenPlugin : SmithyBuildPlugin {
     override fun getName(): String = "kotlin-codegen"
 
     override fun execute(context: PluginContext?) {
-        CodegenVisitor(context ?: error("context was null")).serviceExecute()
-//        CodegenVisitor(context ?: error("context was null")).execute()
+        val buildType =context?.settings?.getStringMemberOrDefault("type", "client")
+        println("Kotlin codegen plugin triggered with build type: $buildType")
+        if (buildType == "service") {
+            CodegenVisitor(context ?: error("context was null")).serviceExecute()
+        } else {
+            CodegenVisitor(context ?: error("context was null")).execute()
+        }
 
     }
 
