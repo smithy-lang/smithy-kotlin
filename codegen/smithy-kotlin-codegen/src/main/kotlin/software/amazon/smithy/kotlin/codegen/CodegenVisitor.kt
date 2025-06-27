@@ -20,6 +20,7 @@ import software.amazon.smithy.kotlin.codegen.model.hasTrait
 import software.amazon.smithy.kotlin.codegen.rendering.*
 import software.amazon.smithy.kotlin.codegen.rendering.protocol.ApplicationProtocol
 import software.amazon.smithy.kotlin.codegen.rendering.protocol.ProtocolGenerator
+import software.amazon.smithy.kotlin.codegen.service.ServiceStubGenerator
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.knowledge.ServiceIndex
 import software.amazon.smithy.model.neighbor.Walker
@@ -88,7 +89,6 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Unit>() {
         }
 
         writers = KotlinDelegator(settings, model, fileManifest, symbolProvider, integrations)
-
         protocolGenerator = resolveProtocolGenerator(integrations, model, service, settings)
         applicationProtocol = protocolGenerator?.applicationProtocol ?: ApplicationProtocol.createDefaultHttpApplicationProtocol()
 
@@ -156,6 +156,49 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Unit>() {
 
         // write files defined by integrations
         integrations.forEach { it.writeAdditionalFiles(baseGenerationContext, writers) }
+
+        writers.flushWriters()
+    }
+
+    fun serviceExecute() {
+        logger.info("Generating Kotlin server for service ${settings.service}")
+
+        logger.info("Walking shapes from ${settings.service} to find shapes to generate")
+        val modelWithoutTraits = ModelTransformer.create().getModelWithoutTraitShapes(model)
+        val serviceShapes = Walker(modelWithoutTraits).walkShapes(service)
+        serviceShapes.forEach { it.accept(this) }
+
+        val serviceStubGenerator = ServiceStubGenerator(settings.pkg.name, writers)
+
+        protocolGenerator?.apply {
+            val ctx = ProtocolGenerator.GenerationContext(
+                settings,
+                model,
+                service,
+                symbolProvider,
+                integrations,
+                protocol,
+                writers,
+            )
+
+            logger.info("[${service.id}] Generating smithy service")
+        }
+        logger.info("[${service.id}] Generating server...")
+
+        serviceStubGenerator.render()
+
+        writers.finalize()
+
+        if (settings.build.generateDefaultBuildFiles) {
+            val dependencies = writers.dependencies
+                .mapNotNull { it.properties["dependency"] as? KotlinDependency }
+                .distinct()
+            writeGradleBuild(settings, fileManifest, dependencies)
+        }
+
+        // write files defined by integrations
+        integrations.forEach { it.writeAdditionalFiles(baseGenerationContext, writers) }
+        logger.info("Generating endpoint tests done")
 
         writers.flushWriters()
     }

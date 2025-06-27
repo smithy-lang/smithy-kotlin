@@ -27,6 +27,7 @@ fun writeGradleBuild(
 
     val isKmp = settings.build.generateMultiplatformProject
     val isRootModule = settings.build.generateFullProject
+    val enableApplications = settings.build.enableApplications
 
     val annotationRenderer: InlineCodeWriter = {
         val annotations = settings.build.optInAnnotations ?: emptyList()
@@ -53,6 +54,9 @@ fun writeGradleBuild(
                 }
             },
         )
+        if (enableApplications) {
+            write("application")
+        }
     }
 
     when {
@@ -67,10 +71,12 @@ fun writeGradleBuild(
         else -> renderJvmGradleBuild(
             writer,
             isRootModule,
+            enableApplications,
             dependencies,
             pluginsBodyRenderer,
             repositoryRenderer,
             annotationRenderer,
+            applicationRenderer("${settings.pkg.name}.MainKt"),
         )
     }
 
@@ -155,10 +161,12 @@ fun renderRootJvmPluginConfig(writer: GradleWriter) {
 fun renderJvmGradleBuild(
     writer: GradleWriter,
     isRootModule: Boolean,
+    enableApplications: Boolean,
     dependencies: List<KotlinDependency>,
     pluginsRenderer: InlineCodeWriter,
     repositoryRenderer: InlineCodeWriter,
     annotationRenderer: InlineCodeWriter,
+    applicationRenderer: InlineCodeWriter,
 ) {
     writer.write(
         """
@@ -166,6 +174,8 @@ fun renderJvmGradleBuild(
             #W
         }
 
+        #W
+        
         #W
 
         dependencies {
@@ -196,6 +206,7 @@ fun renderJvmGradleBuild(
         """.trimIndent(),
         pluginsRenderer,
         { w: GradleWriter -> if (isRootModule) repositoryRenderer(w) },
+        { w: GradleWriter -> if (enableApplications) applicationRenderer(w) },
         { w: GradleWriter -> renderDependencies(w, scope = Scope.SOURCE, isKmp = false, dependencies = dependencies) },
         annotationRenderer,
         { w: GradleWriter -> if (isRootModule) w.write("explicitApi()") },
@@ -240,6 +251,16 @@ private val repositoryRenderer: InlineCodeWriter = {
             repositories {
                 mavenLocal()
                 mavenCentral()
+            }
+        """.trimIndent(),
+    )
+}
+
+private fun applicationRenderer(mainClass: String): InlineCodeWriter = {
+    write(
+        """
+            application {
+                mainClass.set("$mainClass")
             }
         """.trimIndent(),
     )
