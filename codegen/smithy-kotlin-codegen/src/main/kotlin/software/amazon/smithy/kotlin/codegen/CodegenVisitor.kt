@@ -20,12 +20,12 @@ import software.amazon.smithy.kotlin.codegen.model.hasTrait
 import software.amazon.smithy.kotlin.codegen.rendering.*
 import software.amazon.smithy.kotlin.codegen.rendering.protocol.ApplicationProtocol
 import software.amazon.smithy.kotlin.codegen.rendering.protocol.ProtocolGenerator
+import software.amazon.smithy.kotlin.codegen.service.ServiceStubGenerator
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.knowledge.ServiceIndex
 import software.amazon.smithy.model.neighbor.Walker
 import software.amazon.smithy.model.shapes.*
 import software.amazon.smithy.model.transform.ModelTransformer
-import software.amazon.smithy.kotlin.codegen.service.ServiceStubGenerator
 import java.util.*
 import java.util.logging.Logger
 
@@ -182,7 +182,6 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Unit>() {
             )
 
             logger.info("[${service.id}] Generating smithy service")
-
         }
         logger.info("[${service.id}] Generating server...")
 
@@ -190,14 +189,12 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Unit>() {
 
         writers.finalize()
 
-
         if (settings.build.generateDefaultBuildFiles) {
             val dependencies = writers.dependencies
                 .mapNotNull { it.properties["dependency"] as? KotlinDependency }
                 .distinct()
             writeGradleBuild(settings, fileManifest, dependencies)
         }
-
 
         // write files defined by integrations
         integrations.forEach { it.writeAdditionalFiles(baseGenerationContext, writers) }

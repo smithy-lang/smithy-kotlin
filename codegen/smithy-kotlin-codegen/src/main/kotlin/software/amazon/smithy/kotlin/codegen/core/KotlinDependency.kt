@@ -42,7 +42,6 @@ val KTOR_VERSION: String = System.getProperty("smithy.kotlin.codegen.ktorVersion
 val COROUTINES_VERSION: String = System.getProperty("smithy.kotlin.codegen.coroutinesVersion", "1.10.2")
 val KTOR_LOGGING_BACKEND_VERSION: String = System.getProperty("smithy.kotlin.codegen.ktorLoggingBackendVersion", "1.4.14")
 
-
 enum class SourceSet {
     CommonMain,
     CommonTest,
@@ -145,7 +144,6 @@ data class KotlinDependency(
         val KTOR_LOGGING_BACKEND = KotlinDependency(GradleConfiguration.Implementation, "ch.qos.logback", "ch.qos.logback", "logback-classic", KTOR_LOGGING_BACKEND_VERSION)
         val KTOR_SERVER_CONTENT_NEGOTIATION = KotlinDependency(GradleConfiguration.Implementation, "io.ktor.server.plugins.contentnegotiation", "io.ktor", "ktor-server-content-negotiation", KTOR_VERSION)
         val KTOR_SERVER_CBOR_SERDE = KotlinDependency(GradleConfiguration.Implementation, "io.ktor.serialization.kotlinx.cbor", "io.ktor", "ktor-serialization-kotlinx-cbor", KTOR_VERSION)
-
     }
 
     override fun getDependencies(): List<SymbolDependency> {

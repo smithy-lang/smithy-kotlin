@@ -491,7 +491,6 @@ object RuntimeTypes {
         val embeddedServer = symbol("embeddedServer", "engine")
         val application = symbol("Application", "application")
         val install = symbol("install", "application")
-
     }
     object KtorServerNetty : RuntimeTypePackage(KotlinDependency.KTOR_SERVER_NETTY) {
         val Netty = symbol("Netty")
@@ -503,5 +502,4 @@ object RuntimeTypes {
     object KtorServerCbor : RuntimeTypePackage(KotlinDependency.KTOR_SERVER_CBOR_SERDE) {
         val all = symbol("*")
     }
-
 }

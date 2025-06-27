@@ -76,7 +76,7 @@ fun writeGradleBuild(
             pluginsBodyRenderer,
             repositoryRenderer,
             annotationRenderer,
-            applicationRenderer("${settings.pkg.name}.MainKt")
+            applicationRenderer("${settings.pkg.name}.MainKt"),
         )
     }
 
@@ -262,7 +262,7 @@ private fun applicationRenderer(mainClass: String): InlineCodeWriter = {
             application {
                 mainClass.set("$mainClass")
             }
-        """.trimIndent()
+        """.trimIndent(),
     )
 }
 
