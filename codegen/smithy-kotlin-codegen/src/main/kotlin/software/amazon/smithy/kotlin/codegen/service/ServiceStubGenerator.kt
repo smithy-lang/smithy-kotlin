@@ -3,9 +3,6 @@ package software.amazon.smithy.kotlin.codegen.service
 import software.amazon.smithy.kotlin.codegen.core.KotlinDelegator
 import software.amazon.smithy.kotlin.codegen.core.KotlinDependency
 import software.amazon.smithy.kotlin.codegen.core.RuntimeTypes
-import software.amazon.smithy.kotlin.codegen.rendering.protocol.ProtocolGenerator
-import software.amazon.smithy.kotlin.codegen.rendering.serde.CborParserGenerator
-import software.amazon.smithy.kotlin.codegen.rendering.serde.CborSerializerGenerator
 
 class ServiceStubGenerator (
     private val packageName: String,
@@ -43,49 +40,7 @@ class ServiceStubGenerator (
         }
     }
 
-    // Emits `ProtocolModule.kt` containing content-negotiation install logic.
-    fun renderCustomProtocolModule(protocolGenerator: ProtocolGenerator) {
-        delegator.useFileWriter("ProtocolModule.kt", packageName) { writer ->
-            // Add necessary imports
-            writer.addImport(RuntimeTypes.KtorServerCore.application)
-            writer.addImport(RuntimeTypes.KtorServerCore.install)
-            writer.addImport(RuntimeTypes.KtorServerContentNegotiation.all)
-            writer.addImport(RuntimeTypes.KtorServerCbor.all)
 
-            writer.openBlock("internal fun Application.configureContentNegotiation() {")
-                .openBlock("install(ContentNegotiation) {")
-                .write("cbor()")
-                .closeBlock("}")
-                .closeBlock("}")
-
-            // Generate CBOR serialization/deserialization code
-            val cborSerializer = CborSerializerGenerator(protocolGenerator)
-            val cborParser = CborParserGenerator(protocolGenerator)
-
-            // For each model shape that needs serialization/deserialization
-//            for (shape in getShapesRequiringSerDe()) { // You'll need to implement this method
-//                val members = shape.members().toList()
-//
-//                // Generate serializer
-//                val serializerSymbol = cborSerializer.payloadSerializer(
-//                    getGenerationContext(), // You'll need to implement this method
-//                    shape,
-//                    members
-//                )
-//
-//                // Generate deserializer
-//                val deserializerSymbol = cborParser.payloadDeserializer(
-//                    getGenerationContext(),
-//                    shape,
-//                    members
-//                )
-//
-//                // Add the generated symbols to imports
-//                writer.addImport(serializerSymbol)
-//                writer.addImport(deserializerSymbol)
-//            }
-        }
-    }
 
     private fun renderProtocolModule() {
         delegator.useFileWriter("ProtocolModule.kt", packageName) { writer ->

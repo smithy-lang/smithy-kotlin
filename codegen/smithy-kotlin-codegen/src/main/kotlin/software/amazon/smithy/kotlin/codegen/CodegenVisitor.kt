@@ -182,7 +182,6 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Unit>() {
             )
 
             logger.info("[${service.id}] Generating smithy service")
-//            serviceStubGenerator.renderCustomProtocolModule(protocolGenerator)
 
         }
         logger.info("[${service.id}] Generating server...")
