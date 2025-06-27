@@ -484,4 +484,11 @@ object RuntimeTypes {
 
         val sign = symbol("sign")
     }
+
+    object KtorServerCore : RuntimeTypePackage(KotlinDependency.KTOR_SERVER_CORE) {
+        val embeddedServer = symbol("embeddedServer")
+    }
+    object KtorServerNetty : RuntimeTypePackage(KotlinDependency.KTOR_SERVER_NETTY) {
+        val Netty = symbol("Netty")
+    }
 }

@@ -10,7 +10,6 @@ import software.amazon.smithy.build.SmithyBuildPlugin
 import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.kotlin.codegen.core.KotlinSymbolProvider
 import software.amazon.smithy.model.Model
-import software.amazon.smithy.kotlin.codegen.CODEGEN_TARGET
 
 /**
  * Plugin to trigger Kotlin code generation.
@@ -19,13 +18,8 @@ class KotlinCodegenPlugin : SmithyBuildPlugin {
     override fun getName(): String = "kotlin-codegen"
 
     override fun execute(context: PluginContext?) {
-
-        val codegenTarget = CODEGEN_TARGET
-        if (codegenTarget == "service") {
-            CodegenVisitor(context ?: error("context was null")).serviceExecute()
-        } else {
-            CodegenVisitor(context ?: error("context was null")).execute()
-        }
+        CodegenVisitor(context ?: error("context was null")).serviceExecute()
+//        CodegenVisitor(context ?: error("context was null")).execute()
 
     }
 

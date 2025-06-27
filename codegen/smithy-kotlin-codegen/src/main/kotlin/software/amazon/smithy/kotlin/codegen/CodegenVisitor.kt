@@ -25,6 +25,7 @@ import software.amazon.smithy.model.knowledge.ServiceIndex
 import software.amazon.smithy.model.neighbor.Walker
 import software.amazon.smithy.model.shapes.*
 import software.amazon.smithy.model.transform.ModelTransformer
+import software.amazon.smithy.kotlin.codegen.service.ServiceStubGenerator
 import java.util.*
 import java.util.logging.Logger
 
@@ -88,7 +89,6 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Unit>() {
         }
 
         writers = KotlinDelegator(settings, model, fileManifest, symbolProvider, integrations)
-
         protocolGenerator = resolveProtocolGenerator(integrations, model, service, settings)
         applicationProtocol = protocolGenerator?.applicationProtocol ?: ApplicationProtocol.createDefaultHttpApplicationProtocol()
 
@@ -179,20 +179,15 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Unit>() {
                 writers,
             )
 
-            logger.info("[${service.id}] Generating unit tests for protocol $protocol")
-            generateProtocolUnitTests(ctx)
+            logger.info("[${service.id}] Generating smithy service")
 
-            logger.info("[${service.id}] Generating service client for protocol $protocol")
-            generateProtocolClient(ctx)
-//
-//            logger.info("[${service.id}] Generating endpoint provider for protocol $protocol")
-//            generateEndpointsSources(ctx)
-//
-//            logger.info("[${service.id}] Generating auth scheme provider for protocol $protocol")
-//            generateAuthSchemeProvider(ctx)
         }
+        logger.info("[${service.id}] Generating server...")
+        val serviceStubGenerator = ServiceStubGenerator(settings.pkg.name, writers)
+        serviceStubGenerator.render()
 
         writers.finalize()
+
 
         if (settings.build.generateDefaultBuildFiles) {
             val dependencies = writers.dependencies
@@ -201,8 +196,10 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Unit>() {
             writeGradleBuild(settings, fileManifest, dependencies)
         }
 
+
         // write files defined by integrations
         integrations.forEach { it.writeAdditionalFiles(baseGenerationContext, writers) }
+        logger.info("Generating endpoint tests done")
 
         writers.flushWriters()
     }

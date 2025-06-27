@@ -55,50 +55,13 @@ val generateSdkRuntimeVersion by tasks.registering {
     }
 }
 
-val codegenTarget: String? = project.findProperty("codegenTarget") as String?
-
-val buildConfigRoot = if (codegenTarget == "service")
-    "generated/buildconfig-service/src"
-else
-    "generated/buildconfig/src"
-
-val generateBuildConfig by tasks.registering {
-    val pkg = "software.amazon.smithy.kotlin.codegen"
-    val outDir = layout.buildDirectory.dir(buildConfigRoot)
-    val outFile = outDir.map { it.file("${pkg.replace('.', '/')}/BuildConfig.kt") }
-
-    inputs.property("codegenTarget", codegenTarget ?: "")
-    outputs.file(outFile)
-
-    doLast {
-        if (codegenTarget == "service") {
-            println("Generating SERVICE build config")
-        } else {
-            println("Generating CLIENT build config")
-        }
-        outFile.get().asFile.apply {
-            parentFile.mkdirs()
-            writeText(
-                """
-                package $pkg
-                internal const val CODEGEN_TARGET: String = "${codegenTarget ?: ""}"
-                """.trimIndent()
-            )
-        }
-    }
-}
-
-kotlin.sourceSets["main"].kotlin.srcDir(
-    layout.buildDirectory.dir(buildConfigRoot)
-)
-
 tasks.withType<KotlinCompile> {
     compilerOptions {
         jvmTarget.set(JvmTarget.JVM_1_8)
         freeCompilerArgs.add("-Xjdk-release=1.8")
         freeCompilerArgs.add("-opt-in=kotlin.RequiresOptIn")
     }
-    dependsOn(generateSdkRuntimeVersion, generateBuildConfig)
+    dependsOn(generateSdkRuntimeVersion)
 }
 
 tasks.withType<JavaCompile> {
