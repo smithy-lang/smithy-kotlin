@@ -76,6 +76,7 @@ fun writeGradleBuild(
             pluginsBodyRenderer,
             repositoryRenderer,
             annotationRenderer,
+            applicationRenderer("${settings.pkg.name}.MainKt")
         )
     }
 
@@ -165,6 +166,7 @@ fun renderJvmGradleBuild(
     pluginsRenderer: InlineCodeWriter,
     repositoryRenderer: InlineCodeWriter,
     annotationRenderer: InlineCodeWriter,
+    applicationRenderer: InlineCodeWriter,
 ) {
     writer.write(
         """
@@ -204,7 +206,7 @@ fun renderJvmGradleBuild(
         """.trimIndent(),
         pluginsRenderer,
         { w: GradleWriter -> if (isRootModule) repositoryRenderer(w) },
-        { w: GradleWriter -> if (enableApplications) applicationRenderer("com.example.server.MainKt")(w) },
+        { w: GradleWriter -> if (enableApplications) applicationRenderer(w) },
         { w: GradleWriter -> renderDependencies(w, scope = Scope.SOURCE, isKmp = false, dependencies = dependencies) },
         annotationRenderer,
         { w: GradleWriter -> if (isRootModule) w.write("explicitApi()") },
