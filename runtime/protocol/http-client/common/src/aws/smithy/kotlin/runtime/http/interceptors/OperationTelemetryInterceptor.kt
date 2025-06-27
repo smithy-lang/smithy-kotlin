@@ -17,6 +17,7 @@ import aws.smithy.kotlin.runtime.http.engine.EngineAttributes
 import aws.smithy.kotlin.runtime.http.operation.OperationMetrics
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.http.response.HttpResponse
+import aws.smithy.kotlin.runtime.telemetry.metrics.recordPayloadSize
 import aws.smithy.kotlin.runtime.telemetry.metrics.recordSeconds
 import kotlin.time.TimeMark
 import kotlin.time.TimeSource
@@ -104,5 +105,13 @@ internal class OperationTelemetryInterceptor(
 
     override fun readBeforeAttempt(context: ProtocolRequestInterceptorContext<Any, HttpRequest>) {
         attemptStart = timeSource.markNow()
+    }
+
+    override fun readBeforeTransmit(context: ProtocolRequestInterceptorContext<Any, HttpRequest>) {
+        metrics.requestPayloadSize.recordPayloadSize(context.protocolRequest.body.contentLength)
+    }
+
+    override fun readAfterTransmit(context: ProtocolResponseInterceptorContext<Any, HttpRequest, HttpResponse>) {
+        metrics.responsePayloadSize.recordPayloadSize(context.protocolResponse.body.contentLength)
     }
 }
