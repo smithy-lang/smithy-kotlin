@@ -17,9 +17,7 @@ import software.amazon.smithy.model.Model
 class KotlinCodegenPlugin : SmithyBuildPlugin {
     override fun getName(): String = "kotlin-codegen"
 
-    override fun execute(context: PluginContext?) {
-        CodegenVisitor(context ?: error("context was null")).execute()
-    }
+    override fun execute(context: PluginContext?) = CodegenVisitor(context ?: error("context was null")).execute()
 
     companion object {
         /**
