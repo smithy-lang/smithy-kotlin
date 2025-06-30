@@ -126,8 +126,6 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Unit>() {
         val serviceShapes = Walker(modelWithoutTraits).walkShapes(service)
         serviceShapes.forEach { it.accept(this) }
 
-        val serviceStubGenerator = ServiceStubGenerator(settings, writers)
-
         protocolGenerator?.apply {
             val ctx = ProtocolGenerator.GenerationContext(
                 settings,
@@ -152,6 +150,7 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Unit>() {
             generateAuthSchemeProvider(ctx)
         }
         if (generateServiceProject) {
+            val serviceStubGenerator = ServiceStubGenerator(settings, writers)
             serviceStubGenerator.render()
         }
 
