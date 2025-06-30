@@ -151,7 +151,7 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Unit>() {
             logger.info("[${service.id}] Generating auth scheme provider for protocol $protocol")
             generateAuthSchemeProvider(ctx)
         }
-        if (generateServiceProject){
+        if (generateServiceProject) {
             serviceStubGenerator.render()
         }
 
@@ -169,7 +169,6 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Unit>() {
 
         writers.flushWriters()
     }
-
 
     override fun getDefault(shape: Shape?) { }
 

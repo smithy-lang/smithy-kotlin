@@ -30,7 +30,6 @@ class ServiceStubGenerator(
                     write("configureContentNegotiation()")
                 }
             }
-
         }
     }
 
@@ -58,7 +57,6 @@ class ServiceStubGenerator(
         delegator.useFileWriter("Routing.kt", packageName) { writer ->
             writer.addImport(RuntimeTypes.KtorServerCore.applicationCall)
             writer.addImport(RuntimeTypes.KtorServerCore.responseText)
-
 
             writer.withBlock("internal fun #T.configureRouting(): Unit {", "}", RuntimeTypes.KtorServerCore.Application) {
                 withBlock("#T {", "}", RuntimeTypes.KtorServerRouting.routing) {

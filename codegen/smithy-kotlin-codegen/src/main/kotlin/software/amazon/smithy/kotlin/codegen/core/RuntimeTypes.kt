@@ -496,7 +496,6 @@ object RuntimeTypes {
     object KtorServerRouting : RuntimeTypePackage(KotlinDependency.KTOR_SERVER_CORE) {
         val routing = symbol("routing", "routing")
         val get = symbol("get", "routing")
-
     }
 
     object KtorServerNetty : RuntimeTypePackage(KotlinDependency.KTOR_SERVER_NETTY) {
