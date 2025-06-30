@@ -27,7 +27,7 @@ fun writeGradleBuild(
 
     val isKmp = settings.build.generateMultiplatformProject
     val isRootModule = settings.build.generateFullProject
-    val enableApplications = settings.build.enableApplications
+    val generateServiceProject = settings.build.generateServiceProject
 
     val annotationRenderer: InlineCodeWriter = {
         val annotations = settings.build.optInAnnotations ?: emptyList()
@@ -47,16 +47,18 @@ fun writeGradleBuild(
         val pluginName = if (isKmp) "multiplatform" else "jvm"
 
         write(
-            "kotlin(\"$pluginName\") #W",
+            "kotlin(\"$pluginName\") #W \n #W",
             { w: AbstractCodeWriter<*> ->
                 if (isRootModule) {
                     w.write("version #S", KOTLIN_COMPILER_VERSION)
                 }
             },
+            { w: AbstractCodeWriter<*> ->
+                if (generateServiceProject) {
+                    w.write("application")
+                }
+            },
         )
-        if (enableApplications) {
-            write("application")
-        }
     }
 
     when {
@@ -71,7 +73,7 @@ fun writeGradleBuild(
         else -> renderJvmGradleBuild(
             writer,
             isRootModule,
-            enableApplications,
+            generateServiceProject,
             dependencies,
             pluginsBodyRenderer,
             repositoryRenderer,
@@ -161,7 +163,7 @@ fun renderRootJvmPluginConfig(writer: GradleWriter) {
 fun renderJvmGradleBuild(
     writer: GradleWriter,
     isRootModule: Boolean,
-    enableApplications: Boolean,
+    generateServiceProject: Boolean,
     dependencies: List<KotlinDependency>,
     pluginsRenderer: InlineCodeWriter,
     repositoryRenderer: InlineCodeWriter,
@@ -206,7 +208,7 @@ fun renderJvmGradleBuild(
         """.trimIndent(),
         pluginsRenderer,
         { w: GradleWriter -> if (isRootModule) repositoryRenderer(w) },
-        { w: GradleWriter -> if (enableApplications) applicationRenderer(w) },
+        { w: GradleWriter -> if (generateServiceProject) applicationRenderer(w) },
         { w: GradleWriter -> renderDependencies(w, scope = Scope.SOURCE, isKmp = false, dependencies = dependencies) },
         annotationRenderer,
         { w: GradleWriter -> if (isRootModule) w.write("explicitApi()") },

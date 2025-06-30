@@ -139,6 +139,7 @@ data class KotlinDependency(
         val KOTLIN_TEST = KotlinDependency(GradleConfiguration.TestImplementation, "kotlin.test", "org.jetbrains.kotlin", "kotlin-test", KOTLIN_COMPILER_VERSION)
 
         // Ktor server dependencies
+        // FIXME: version numbers should not be hardcoded, they should be setting dynamically based on the Gradle library versions
         val KTOR_SERVER_CORE = KotlinDependency(GradleConfiguration.Implementation, "io.ktor.server", "io.ktor", "ktor-server-core", KTOR_VERSION)
         val KTOR_SERVER_NETTY = KotlinDependency(GradleConfiguration.Implementation, "io.ktor.server.netty", "io.ktor", "ktor-server-netty", KTOR_VERSION)
         val KTOR_LOGGING_BACKEND = KotlinDependency(GradleConfiguration.Implementation, "ch.qos.logback", "ch.qos.logback", "logback-classic", KTOR_LOGGING_BACKEND_VERSION)

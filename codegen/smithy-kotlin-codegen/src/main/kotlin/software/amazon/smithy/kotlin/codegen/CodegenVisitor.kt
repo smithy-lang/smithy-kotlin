@@ -114,12 +114,19 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Unit>() {
     }
 
     fun execute() {
-        logger.info("Generating Kotlin client for service ${settings.service}")
+        val generateServiceProject = settings.build.generateServiceProject
+        if (generateServiceProject) {
+            logger.info("Generating Kotlin service ${settings.service}")
+        } else {
+            logger.info("Generating Kotlin client for service ${settings.service}")
+        }
 
         logger.info("Walking shapes from ${settings.service} to find shapes to generate")
         val modelWithoutTraits = ModelTransformer.create().getModelWithoutTraitShapes(model)
         val serviceShapes = Walker(modelWithoutTraits).walkShapes(service)
         serviceShapes.forEach { it.accept(this) }
+
+        val serviceStubGenerator = ServiceStubGenerator(settings.pkg.name, writers)
 
         protocolGenerator?.apply {
             val ctx = ProtocolGenerator.GenerationContext(
@@ -144,6 +151,9 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Unit>() {
             logger.info("[${service.id}] Generating auth scheme provider for protocol $protocol")
             generateAuthSchemeProvider(ctx)
         }
+        if (generateServiceProject){
+            serviceStubGenerator.render()
+        }
 
         writers.finalize()
 
@@ -160,48 +170,6 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Unit>() {
         writers.flushWriters()
     }
 
-    fun serviceExecute() {
-        logger.info("Generating Kotlin server for service ${settings.service}")
-
-        logger.info("Walking shapes from ${settings.service} to find shapes to generate")
-        val modelWithoutTraits = ModelTransformer.create().getModelWithoutTraitShapes(model)
-        val serviceShapes = Walker(modelWithoutTraits).walkShapes(service)
-        serviceShapes.forEach { it.accept(this) }
-
-        val serviceStubGenerator = ServiceStubGenerator(settings.pkg.name, writers)
-
-        protocolGenerator?.apply {
-            val ctx = ProtocolGenerator.GenerationContext(
-                settings,
-                model,
-                service,
-                symbolProvider,
-                integrations,
-                protocol,
-                writers,
-            )
-
-            logger.info("[${service.id}] Generating smithy service")
-        }
-        logger.info("[${service.id}] Generating server...")
-
-        serviceStubGenerator.render()
-
-        writers.finalize()
-
-        if (settings.build.generateDefaultBuildFiles) {
-            val dependencies = writers.dependencies
-                .mapNotNull { it.properties["dependency"] as? KotlinDependency }
-                .distinct()
-            writeGradleBuild(settings, fileManifest, dependencies)
-        }
-
-        // write files defined by integrations
-        integrations.forEach { it.writeAdditionalFiles(baseGenerationContext, writers) }
-        logger.info("Generating endpoint tests done")
-
-        writers.flushWriters()
-    }
 
     override fun getDefault(shape: Shape?) { }
 

@@ -190,26 +190,27 @@ fun Model.inferService(): ShapeId {
  * @param optInAnnotations Kotlin opt-in annotations. See:
  * https://kotlinlang.org/docs/reference/opt-in-requirements.html
  * @param generateMultiplatformProject Flag indicating to generate a Kotlin multiplatform or JVM project
+ * @param generateServiceProject Flag indicating to generate a Kotlin service project
  */
 data class BuildSettings(
     val generateFullProject: Boolean = false,
     val generateDefaultBuildFiles: Boolean = true,
     val optInAnnotations: List<String>? = null,
     val generateMultiplatformProject: Boolean = false,
-    val enableApplications: Boolean = false,
+    val generateServiceProject: Boolean = false,
 ) {
     companion object {
         const val ROOT_PROJECT = "rootProject"
         const val GENERATE_DEFAULT_BUILD_FILES = "generateDefaultBuildFiles"
         const val ANNOTATIONS = "optInAnnotations"
         const val GENERATE_MULTIPLATFORM_MODULE = "multiplatform"
-        const val ENABLE_APPLICATIONS = "enableApplications"
+        const val GENERATE_SERVICE_PROJECT = "generateServiceProject"
 
         fun fromNode(node: Optional<ObjectNode>): BuildSettings = node.map {
             val generateFullProject = node.get().getBooleanMemberOrDefault(ROOT_PROJECT, false)
             val generateBuildFiles = node.get().getBooleanMemberOrDefault(GENERATE_DEFAULT_BUILD_FILES, true)
             val generateMultiplatformProject = node.get().getBooleanMemberOrDefault(GENERATE_MULTIPLATFORM_MODULE, false)
-            val enableApplications = node.get().getBooleanMemberOrDefault(ENABLE_APPLICATIONS, false)
+            val generateServiceProject = node.get().getBooleanMemberOrDefault(GENERATE_SERVICE_PROJECT, false)
             val annotations = node.get().getArrayMember(ANNOTATIONS).map {
                 it.elements.mapNotNull { node ->
                     node.asStringNode().map { stringNode ->
@@ -217,7 +218,7 @@ data class BuildSettings(
                     }.orNull()
                 }
             }.orNull()
-            BuildSettings(generateFullProject, generateBuildFiles, annotations, generateMultiplatformProject, enableApplications)
+            BuildSettings(generateFullProject, generateBuildFiles, annotations, generateMultiplatformProject, generateServiceProject)
         }.orElse(Default)
 
         /**
