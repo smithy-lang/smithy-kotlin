@@ -4,10 +4,11 @@
  */
 import aws.sdk.kotlin.gradle.dsl.configurePublishing
 import aws.sdk.kotlin.gradle.kmp.*
+import org.gradle.kotlin.dsl.apply
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
-    alias(libs.plugins.dokka)
+    `dokka-convention`
     alias(libs.plugins.aws.kotlin.repo.tools.kmp) apply false
     jacoco
 }
@@ -24,7 +25,6 @@ subprojects {
 
     apply {
         plugin("org.jetbrains.kotlin.multiplatform")
-        plugin("org.jetbrains.dokka")
         plugin(libraries.plugins.aws.kotlin.repo.tools.kmp.get().pluginId)
     }
 
@@ -62,19 +62,38 @@ subprojects {
         listOf("kotlin.RequiresOptIn").forEach { languageSettings.optIn(it) }
     }
 
-    dependencies {
-        dokkaPlugin(project(":dokka-smithy"))
-    }
-
     tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
         compilerOptions {
             jvmTarget.set(JvmTarget.JVM_1_8)
+            freeCompilerArgs.add("-Xjdk-release=1.8")
             freeCompilerArgs.add("-Xexpect-actual-classes")
         }
     }
     tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinNativeCompile> {
         compilerOptions {
             freeCompilerArgs.add("-Xexpect-actual-classes")
+        }
+    }
+}
+
+val excludeFromDocumentation = listOf(
+    ":runtime:testing",
+    ":runtime:smithy-test",
+)
+
+dependencies {
+    subprojects.filterNot { excludeFromDocumentation.contains(it.path) }.forEach {
+        it.plugins.apply("dokka-convention") // Apply the Dokka conventions plugin to the submodule
+        dokka(project(it.path)) // Aggregate the submodule's generated documentation
+    }
+
+    subprojects {
+        if (excludeFromDocumentation.contains(this@subprojects.path)) {
+            return@subprojects
+        }
+
+        dokka {
+            modulePath = this@subprojects.name
         }
     }
 }
