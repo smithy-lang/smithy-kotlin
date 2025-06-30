@@ -20,6 +20,7 @@ import software.amazon.smithy.kotlin.codegen.model.hasTrait
 import software.amazon.smithy.kotlin.codegen.rendering.*
 import software.amazon.smithy.kotlin.codegen.rendering.protocol.ApplicationProtocol
 import software.amazon.smithy.kotlin.codegen.rendering.protocol.ProtocolGenerator
+import software.amazon.smithy.kotlin.codegen.service.ServiceStubGenerator
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.knowledge.ServiceIndex
 import software.amazon.smithy.model.neighbor.Walker
@@ -88,7 +89,6 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Unit>() {
         }
 
         writers = KotlinDelegator(settings, model, fileManifest, symbolProvider, integrations)
-
         protocolGenerator = resolveProtocolGenerator(integrations, model, service, settings)
         applicationProtocol = protocolGenerator?.applicationProtocol ?: ApplicationProtocol.createDefaultHttpApplicationProtocol()
 
@@ -114,7 +114,12 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Unit>() {
     }
 
     fun execute() {
-        logger.info("Generating Kotlin client for service ${settings.service}")
+        val generateServiceProject = settings.build.generateServiceProject
+        if (generateServiceProject) {
+            logger.info("Generating Kotlin service ${settings.service}")
+        } else {
+            logger.info("Generating Kotlin client for service ${settings.service}")
+        }
 
         logger.info("Walking shapes from ${settings.service} to find shapes to generate")
         val modelWithoutTraits = ModelTransformer.create().getModelWithoutTraitShapes(model)
@@ -143,6 +148,10 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Unit>() {
 
             logger.info("[${service.id}] Generating auth scheme provider for protocol $protocol")
             generateAuthSchemeProvider(ctx)
+        }
+        if (generateServiceProject) {
+            val serviceStubGenerator = ServiceStubGenerator(settings, writers)
+            serviceStubGenerator.render()
         }
 
         writers.finalize()
