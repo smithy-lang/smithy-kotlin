@@ -13,6 +13,8 @@ import software.amazon.smithy.aws.traits.protocols.RestJson1Trait
 import software.amazon.smithy.aws.traits.protocols.RestXmlTrait
 import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.kotlin.codegen.lang.isValidPackageName
+import software.amazon.smithy.kotlin.codegen.service.ServiceEngine
+import software.amazon.smithy.kotlin.codegen.service.ServiceFramework
 import software.amazon.smithy.kotlin.codegen.utils.getOrNull
 import software.amazon.smithy.kotlin.codegen.utils.toCamelCase
 import software.amazon.smithy.model.Model
@@ -37,6 +39,7 @@ private const val PACKAGE_VERSION = "version"
 private const val PACKAGE_DESCRIPTION = "description"
 private const val BUILD_SETTINGS = "build"
 private const val API_SETTINGS = "api"
+private const val SERVICE_STUB_SETTINGS = "serviceStub"
 
 // Optional specification of sdkId for models that provide them, otherwise Service's shape id name is used
 private const val SDK_ID = "sdkId"
@@ -61,6 +64,7 @@ data class KotlinSettings(
     val sdkId: String,
     val build: BuildSettings = BuildSettings.Default,
     val api: ApiSettings = ApiSettings.Default,
+    val serviceStub: ServiceStubSettings = ServiceStubSettings.Default,
     val debug: Boolean = false,
 ) {
 
@@ -123,6 +127,7 @@ data class KotlinSettings(
             val sdkId = config.getStringMemberOrDefault(SDK_ID, serviceId.name)
             val build = config.getObjectMember(BUILD_SETTINGS)
             val api = config.getObjectMember(API_SETTINGS)
+            val serviceStub = config.getObjectMember(SERVICE_STUB_SETTINGS)
             val debug = config.getBooleanMemberOrDefault("debug", false)
             return KotlinSettings(
                 serviceId,
@@ -130,6 +135,7 @@ data class KotlinSettings(
                 sdkId,
                 BuildSettings.fromNode(build),
                 ApiSettings.fromNode(api),
+                ServiceStubSettings.fromNode(serviceStub),
                 debug,
             )
         }
@@ -337,5 +343,41 @@ data class ApiSettings(
          * Default build settings
          */
         val Default: ApiSettings = ApiSettings()
+    }
+}
+
+/**
+ * Contains configurations settings for a Kotlin service project
+ * @param framework Enum representing the server framework of the service.
+ * @param engine Enum representing the server engine of the service.
+ * @param port Int representing the port which the service will be exposed.
+ */
+data class ServiceStubSettings(
+    val framework: ServiceFramework = ServiceFramework.KTOR,
+    val engine: ServiceEngine = ServiceEngine.NETTY,
+    val port: Int = 8080,
+) {
+    companion object {
+        const val SERVER_FRAMEWORK = "serverFramework"
+        const val SERVER_ENGINE = "serverEngine"
+        const val PORT = "port"
+
+        fun fromNode(node: Optional<ObjectNode>): ServiceStubSettings = node.map {
+            val serverFramework = node.get()
+                .getStringMember(SERVER_FRAMEWORK)
+                .map { ServiceFramework.fromValue(it.value) }
+                .getOrNull() ?: ServiceFramework.KTOR
+            val serverEngine = node.get()
+                .getStringMember(SERVER_ENGINE)
+                .map { ServiceEngine.fromValue(it.value) }
+                .getOrNull() ?: ServiceEngine.NETTY
+            val port = node.get().getNumberMemberOrDefault(PORT, 8080).toInt()
+            ServiceStubSettings(serverFramework, serverEngine, port)
+        }.orElse(Default)
+
+        /**
+         * Default service stub settings
+         */
+        val Default: ServiceStubSettings = ServiceStubSettings()
     }
 }
