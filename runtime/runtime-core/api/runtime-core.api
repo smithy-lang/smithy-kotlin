@@ -2100,7 +2100,6 @@ public final class aws/smithy/kotlin/runtime/smoketests/SmokeTestsFunctionsJVMKt
 
 public final class aws/smithy/kotlin/runtime/smoketests/SmokeTestsFunctionsKt {
 	public static final fun getDefaultPrinter ()Ljava/lang/Appendable;
-	public static final fun printExceptionStackTrace (Ljava/lang/Exception;)V
 }
 
 public final class aws/smithy/kotlin/runtime/text/Scanner {
