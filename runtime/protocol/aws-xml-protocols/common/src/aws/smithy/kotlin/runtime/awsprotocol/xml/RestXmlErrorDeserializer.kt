@@ -4,6 +4,7 @@
  */
 package aws.smithy.kotlin.runtime.awsprotocol.xml
 
+import aws.smithy.kotlin.runtime.InternalApi
 import aws.smithy.kotlin.runtime.awsprotocol.ErrorDetails
 import aws.smithy.kotlin.runtime.serde.getOrDeserializeErr
 import aws.smithy.kotlin.runtime.serde.xml.XmlTagReader
@@ -25,7 +26,8 @@ internal data class XmlError(
     override val message: String?,
 ) : RestXmlErrorDetails
 
-public fun parseRestXmlErrorResponseNoSuspend(payload: ByteArray): ErrorDetails {
+@InternalApi
+public fun parseRestXmlErrorResponse(payload: ByteArray): ErrorDetails {
     val details = XmlErrorDeserializer.deserialize(xmlTagReader(payload))
     return ErrorDetails(details.code, details.message, details.requestId)
 }

@@ -4,6 +4,7 @@
  */
 package aws.smithy.kotlin.runtime.awsprotocol.xml
 
+import aws.smithy.kotlin.runtime.InternalApi
 import aws.smithy.kotlin.runtime.awsprotocol.ErrorDetails
 import aws.smithy.kotlin.runtime.serde.getOrDeserializeErr
 import aws.smithy.kotlin.runtime.serde.xml.XmlTagReader
@@ -14,7 +15,8 @@ internal data class Ec2QueryErrorResponse(val errors: List<Ec2QueryError>, val r
 
 internal data class Ec2QueryError(val code: String?, val message: String?)
 
-public fun parseEc2QueryErrorResponseNoSuspend(payload: ByteArray): ErrorDetails {
+@InternalApi
+public fun parseEc2QueryErrorResponse(payload: ByteArray): ErrorDetails {
     val response = Ec2QueryErrorResponseDeserializer.deserialize(xmlTagReader(payload))
     val firstError = response.errors.firstOrNull()
     return ErrorDetails(firstError?.code, firstError?.message, response.requestId)
