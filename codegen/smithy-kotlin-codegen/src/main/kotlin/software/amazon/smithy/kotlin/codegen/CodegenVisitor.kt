@@ -155,6 +155,10 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Unit>() {
             val serviceStubGenerator = ServiceStubGenerator(settings, writers)
             serviceStubGenerator.render()
         }
+        if (generateServiceProject) {
+            val serviceStubGenerator = ServiceStubGenerator(settings, writers)
+            serviceStubGenerator.render()
+        }
 
         writers.finalize()
 

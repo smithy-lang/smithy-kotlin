@@ -2,7 +2,7 @@
 kotlin-version = "2.1.0"
 dokka-version = "2.0.0"
 
-aws-kotlin-repo-tools-version = "0.4.25"
+aws-kotlin-repo-tools-version = "0.4.32"
 
 # libs
 coroutines-version = "1.9.0"
@@ -18,8 +18,7 @@ micrometer-version = "1.14.2"
 binary-compatibility-validator-version = "0.16.3"
 
 # codegen
-smithy-version = "1.54.0"
-smithy-gradle-version = "0.9.0"
+smithy-version = "1.60.2"
 
 # testing
 junit-version = "5.10.5"
