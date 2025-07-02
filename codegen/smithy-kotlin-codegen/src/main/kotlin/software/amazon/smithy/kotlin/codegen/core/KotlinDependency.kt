@@ -37,7 +37,7 @@ private fun getDefaultRuntimeVersion(): String {
 // publishing info
 const val RUNTIME_GROUP: String = "aws.smithy.kotlin"
 val RUNTIME_VERSION: String = System.getProperty("smithy.kotlin.codegen.clientRuntimeVersion", getDefaultRuntimeVersion())
-val KOTLIN_COMPILER_VERSION: String = System.getProperty("smithy.kotlin.codegen.kotlinCompilerVersion", "2.1.0")
+val KOTLIN_COMPILER_VERSION: String = System.getProperty("smithy.kotlin.codegen.kotlinCompilerVersion", "2.2.0")
 
 enum class SourceSet {
     CommonMain,

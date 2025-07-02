@@ -93,12 +93,7 @@ public final class aws/smithy/kotlin/runtime/http/engine/okhttp/OkHttpEngineKt {
 public final class aws/smithy/kotlin/runtime/http/engine/okhttp/OkHttpHeadersAdapter : aws/smithy/kotlin/runtime/http/Headers {
 	public fun <init> (Lokhttp3/Headers;)V
 	public fun contains (Ljava/lang/String;)Z
-	public synthetic fun contains (Ljava/lang/String;Ljava/lang/Object;)Z
-	public fun contains (Ljava/lang/String;Ljava/lang/String;)Z
 	public fun entries ()Ljava/util/Set;
-	public fun forEach (Lkotlin/jvm/functions/Function2;)V
-	public synthetic fun get (Ljava/lang/String;)Ljava/lang/Object;
-	public fun get (Ljava/lang/String;)Ljava/lang/String;
 	public fun getAll (Ljava/lang/String;)Ljava/util/List;
 	public fun getCaseInsensitiveName ()Z
 	public fun isEmpty ()Z
