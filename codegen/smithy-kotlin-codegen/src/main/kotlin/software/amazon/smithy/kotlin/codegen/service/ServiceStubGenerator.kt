@@ -5,10 +5,13 @@ import software.amazon.smithy.kotlin.codegen.core.KotlinDelegator
 import software.amazon.smithy.kotlin.codegen.core.KotlinDependency
 import software.amazon.smithy.kotlin.codegen.core.RuntimeTypes
 import software.amazon.smithy.kotlin.codegen.core.withBlock
+import software.amazon.smithy.model.shapes.Shape
+import software.amazon.smithy.model.shapes.ShapeType
 
 class ServiceStubGenerator(
     private val settings: KotlinSettings,
     private val delegator: KotlinDelegator,
+    private val serviceShapes: Set<Shape>,
 ) {
 
     fun render() {
@@ -69,19 +72,17 @@ class ServiceStubGenerator(
         delegator.useFileWriter("Routing.kt", settings.pkg.name) { writer ->
             writer.addImport(RuntimeTypes.KtorServerCore.applicationCall)
             writer.addImport(RuntimeTypes.KtorServerRouting.responseText)
-            writer.addImport(RuntimeTypes.KtorServerRouting.post)
             writer.addImport(RuntimeTypes.KtorServerRouting.requestReceive)
             writer.addImport(RuntimeTypes.KtorServerRouting.requestRespondBytes)
-
             writer.addImport(RuntimeTypes.KtorServerHTTP.ContentType)
-            writer.addImport(RuntimeTypes.KtorServerHTTP.HttpStatusCode)
-            writer.addImport(RuntimeTypes.KtorServerHTTP.Cbor)
 
-            writer.write("import com.example.server.serde.SayHelloOperationDeserializer")
-            writer.write("import com.example.server.serde.SayHelloOperationSerializer")
-            writer.write("import com.example.server.model.SayHelloRequest")
-            writer.write("import com.example.server.model.SayHelloResponse")
-            writer.write("import aws.smithy.kotlin.runtime.http.readAll")
+            serviceShapes.filter { it.type == ShapeType.OPERATION }
+                .forEach { shape ->
+                    writer.addImport("com.example.server.serde", "${shape.id.name}OperationDeserializer")
+                    writer.addImport("com.example.server.serde", "${shape.id.name}OperationSerializer")
+                    writer.addImport("com.example.server.model", "${shape.id.name}Request")
+                    writer.addImport("com.example.server.model", "${shape.id.name}Response")
+                }
 
             writer.write(
                 "public fun handleRequest(req: SayHelloRequest): SayHelloResponse { \n" +
@@ -107,7 +108,7 @@ class ServiceStubGenerator(
                         withBlock("call.respondBytes(", ")") {
                             write("bytes = responseBytes.body.#T() ?:  ByteArray(0),", RuntimeTypes.Http.readAll)
                             write("contentType = #T,", RuntimeTypes.KtorServerHTTP.Cbor)
-                            write("status = HttpStatusCode.OK,")
+                            write("status = #T.OK,", RuntimeTypes.KtorServerHTTP.HttpStatusCode)
                         }
                     }
                 }
