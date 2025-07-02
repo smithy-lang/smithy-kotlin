@@ -151,10 +151,7 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Unit>() {
                 generateAuthSchemeProvider(ctx)
             }
         }
-        if (generateServiceProject) {
-            val serviceStubGenerator = ServiceStubGenerator(settings, writers)
-            serviceStubGenerator.render()
-        }
+
         if (generateServiceProject) {
             val serviceStubGenerator = ServiceStubGenerator(settings, writers)
             serviceStubGenerator.render()
