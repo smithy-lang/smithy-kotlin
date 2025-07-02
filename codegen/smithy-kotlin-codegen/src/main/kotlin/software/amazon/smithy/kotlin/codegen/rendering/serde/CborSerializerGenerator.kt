@@ -20,8 +20,9 @@ class CborSerializerGenerator(
     private val protocolGenerator: ProtocolGenerator,
 ) : StructuredDataSerializerGenerator {
     override fun operationSerializer(ctx: ProtocolGenerator.GenerationContext, op: OperationShape, members: List<MemberShape>): Symbol {
-        val input = op.input.get().let { ctx.model.expectShape(it) }
-        val symbol = ctx.symbolProvider.toSymbol(input)
+        val operationData = if (ctx.settings.build.generateServiceProject) { op.output } else { op.input }
+        val shape = operationData.get().let { ctx.model.expectShape(it) }
+        val symbol = ctx.symbolProvider.toSymbol(shape)
 
         return op.bodySerializer(ctx.settings) { writer ->
             addNestedDocumentSerializers(ctx, op, writer)
@@ -39,7 +40,8 @@ class CborSerializerGenerator(
         documentMembers: List<MemberShape>,
         writer: KotlinWriter,
     ) {
-        val shape = ctx.model.expectShape(op.input.get())
+        val operationData = if (ctx.settings.build.generateServiceProject) { op.output } else { op.input }
+        val shape = ctx.model.expectShape(operationData.get())
         writer.write("val serializer = #T()", RuntimeTypes.Serde.SerdeCbor.CborSerializer)
         renderSerializerBody(ctx, shape, documentMembers, writer)
         writer.write("return serializer.toHttpBody()")

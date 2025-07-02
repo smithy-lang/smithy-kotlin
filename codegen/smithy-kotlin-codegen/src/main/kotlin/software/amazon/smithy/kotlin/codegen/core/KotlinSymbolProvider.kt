@@ -332,6 +332,9 @@ class KotlinSymbolProvider(private val model: Model, private val settings: Kotli
     }
 
     override fun serviceShape(shape: ServiceShape): Symbol {
+        if (settings.build.generateServiceProject) {
+            return RuntimeTypes.Core.Content.Document.asNullable()
+        }
         val serviceName = clientName(settings.sdkId)
         return createSymbolBuilder(shape, "${serviceName}Client")
             .namespace(rootNamespace, ".")

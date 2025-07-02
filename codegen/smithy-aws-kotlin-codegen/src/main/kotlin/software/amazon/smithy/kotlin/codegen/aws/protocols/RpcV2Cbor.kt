@@ -103,12 +103,16 @@ class RpcV2Cbor : AwsHttpBindingProtocolGenerator() {
         if (!op.hasHttpBody(ctx)) return
 
         // payload member(s)
-        val requestBindings = resolver.requestBindings(op)
-        val httpPayload = requestBindings.firstOrNull { it.location == HttpBinding.Location.PAYLOAD }
+        val binding = if (ctx.settings.build.generateServiceProject) {
+            resolver.responseBindings(op)
+        } else {
+            resolver.requestBindings(op)
+        }
+        val httpPayload = binding.firstOrNull { it.location == HttpBinding.Location.PAYLOAD }
         if (httpPayload != null) {
             renderExplicitHttpPayloadSerializer(ctx, httpPayload, writer)
         } else {
-            val documentMembers = requestBindings.filterDocumentBoundMembers()
+            val documentMembers = binding.filterDocumentBoundMembers()
             // Unbound document members that should be serialized into the document format for the protocol.
             // delegate to the generate operation body serializer function
             val sdg = structuredDataSerializer(ctx)

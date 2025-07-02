@@ -56,10 +56,17 @@ open class StaticHttpBindingResolver(
     /**
      * By default returns all inputs as [HttpBinding.Location.DOCUMENT]
      */
-    override fun requestBindings(operationShape: OperationShape): List<HttpBindingDescriptor> {
-        if (!operationShape.input.isPresent) return emptyList()
-        val input = model.expectShape(operationShape.input.get())
-        return input.members().map { member -> HttpBindingDescriptor(member, HttpBinding.Location.DOCUMENT) }.toList()
+    override fun requestBindings(shape: Shape): List<HttpBindingDescriptor> {
+        when (shape) {
+            is OperationShape -> {
+                if (!shape.input.isPresent) return emptyList()
+                val input = model.expectShape(shape.input.get())
+                return input.members().map { member -> HttpBindingDescriptor(member, HttpBinding.Location.DOCUMENT) }.toList()
+            }
+            is StructureShape -> return shape.members().map { member -> member.toHttpBindingDescriptor() }.toList()
+            else -> error("unimplemented shape type for http response bindings: $shape")
+        }
+
     }
 
     /**
