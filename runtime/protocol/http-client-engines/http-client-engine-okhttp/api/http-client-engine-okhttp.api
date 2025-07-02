@@ -1,4 +1,4 @@
-public final class aws/smithy/kotlin/runtime/http/engine/okhttp/HttpEngineEventListener : okhttp3/EventListener {
+public class aws/smithy/kotlin/runtime/http/engine/okhttp/HttpEngineEventListener : okhttp3/EventListener {
 	public fun <init> (Lokhttp3/ConnectionPool;Laws/smithy/kotlin/runtime/net/HostResolver;Lokhttp3/Dispatcher;Laws/smithy/kotlin/runtime/http/engine/internal/HttpClientMetrics;Lokhttp3/Call;)V
 	public fun cacheConditionalHit (Lokhttp3/Call;Lokhttp3/Response;)V
 	public fun cacheHit (Lokhttp3/Call;Lokhttp3/Response;)V
@@ -87,7 +87,8 @@ public final class aws/smithy/kotlin/runtime/http/engine/okhttp/OkHttpEngineConf
 }
 
 public final class aws/smithy/kotlin/runtime/http/engine/okhttp/OkHttpEngineKt {
-	public static final fun buildClient (Laws/smithy/kotlin/runtime/http/engine/okhttp/OkHttpEngineConfig;Laws/smithy/kotlin/runtime/http/engine/internal/HttpClientMetrics;)Lokhttp3/OkHttpClient;
+	public static final fun buildClient (Laws/smithy/kotlin/runtime/http/engine/okhttp/OkHttpEngineConfig;Laws/smithy/kotlin/runtime/http/engine/internal/HttpClientMetrics;Lokhttp3/ConnectionPool;)Lokhttp3/OkHttpClient;
+	public static synthetic fun buildClient$default (Laws/smithy/kotlin/runtime/http/engine/okhttp/OkHttpEngineConfig;Laws/smithy/kotlin/runtime/http/engine/internal/HttpClientMetrics;Lokhttp3/ConnectionPool;ILjava/lang/Object;)Lokhttp3/OkHttpClient;
 }
 
 public final class aws/smithy/kotlin/runtime/http/engine/okhttp/OkHttpHeadersAdapter : aws/smithy/kotlin/runtime/http/Headers {

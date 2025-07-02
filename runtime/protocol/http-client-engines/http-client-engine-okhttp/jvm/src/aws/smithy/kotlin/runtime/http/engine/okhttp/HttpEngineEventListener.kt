@@ -33,7 +33,7 @@ internal const val TELEMETRY_SCOPE = "aws.smithy.kotlin.runtime.http.engine.okht
 // see https://square.github.io/okhttp/features/events/#eventlistener for example callback flow
 @OptIn(ExperimentalApi::class)
 @InternalApi
-public class HttpEngineEventListener(
+public open class HttpEngineEventListener(
     private val pool: ConnectionPool,
     private val hr: HostResolver,
     private val dispatcher: Dispatcher,

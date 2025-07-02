@@ -45,8 +45,7 @@ public class OkHttpEngine(
     }
 
     private val metrics = HttpClientMetrics(TELEMETRY_SCOPE, config.telemetryProvider)
-    private val connectionIdleMonitor = config.connectionIdlePollingInterval?.let { ConnectionIdleMonitor(it) }
-    private val client = config.buildClientWithConnectionListener(metrics, connectionIdleMonitor)
+    private val client = config.buildClient(metrics)
 
     @OptIn(ExperimentalCoroutinesApi::class)
     override suspend fun roundTrip(context: ExecutionContext, request: HttpRequest): HttpCall {
@@ -73,14 +72,17 @@ public class OkHttpEngine(
     }
 
     override fun shutdown() {
-        connectionIdleMonitor?.close()
         client.connectionPool.evictAll()
         client.dispatcher.executorService.shutdown()
         metrics.close()
     }
 }
 
-private fun OkHttpEngineConfig.buildClientFromConfig(
+/**
+ * Convert SDK version of HTTP configuration to OkHttp specific configuration and return the configured client
+ */
+@InternalApi
+public fun OkHttpEngineConfig.buildClient(
     metrics: HttpClientMetrics,
     poolOverride: ConnectionPool? = null,
 ): OkHttpClient {
@@ -116,7 +118,21 @@ private fun OkHttpEngineConfig.buildClientFromConfig(
         dispatcher(dispatcher)
 
         // Log events coming from okhttp. Allocate a new listener per-call to facilitate dedicated trace spans.
-        eventListenerFactory { call -> HttpEngineEventListener(pool, config.hostResolver, dispatcher, metrics, call) }
+        // If connection idle polling is enabled, use ConnectionMonitoringEventListener
+        eventListenerFactory { call ->
+            if (config.connectionIdlePollingInterval != null) {
+                ConnectionMonitoringEventListener(
+                    pool,
+                    config.hostResolver,
+                    dispatcher,
+                    metrics,
+                    config.connectionIdlePollingInterval!!,
+                    call,
+                )
+            } else {
+                HttpEngineEventListener(pool, config.hostResolver, dispatcher, metrics, call)
+            }
+        }
 
         // map protocols
         if (config.tlsContext.alpn.isNotEmpty()) {
@@ -139,34 +155,6 @@ private fun OkHttpEngineConfig.buildClientFromConfig(
         addInterceptor(MetricsInterceptor)
     }.build()
 }
-
-/**
- * Convert SDK version of HTTP configuration to OkHttp specific configuration and return the configured client
- */
-// Used by OkHttp4Engine - OkHttp4 does NOT have `connectionListener`
-// TODO - Refactor in next minor version - Move this to OkHttp4Engine and make it private
-@InternalApi
-public fun OkHttpEngineConfig.buildClient(
-    metrics: HttpClientMetrics,
-): OkHttpClient = this.buildClientFromConfig(metrics)
-
-/**
- * Convert SDK version of HTTP configuration to OkHttp specific configuration and return the configured client
- */
-// Used by OkHttpEngine - OkHttp5 does have `connectionListener`
-@OptIn(ExperimentalOkHttpApi::class)
-private fun OkHttpEngineConfig.buildClientWithConnectionListener(
-    metrics: HttpClientMetrics,
-    connectionListener: ConnectionIdleMonitor?,
-): OkHttpClient = this.buildClientFromConfig(
-    metrics,
-    ConnectionPool(
-        maxIdleConnections = 5, // The default from the no-arg ConnectionPool() constructor
-        keepAliveDuration = this.connectionIdleTimeout.inWholeMilliseconds,
-        timeUnit = TimeUnit.MILLISECONDS,
-        connectionListener = connectionListener ?: ConnectionListener.NONE,
-    ),
-)
 
 private fun minTlsConnectionSpec(tlsContext: TlsContext): ConnectionSpec {
     val minVersion = tlsContext.minVersion ?: TlsVersion.TLS_1_2
