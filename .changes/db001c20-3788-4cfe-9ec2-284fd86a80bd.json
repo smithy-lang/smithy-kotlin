@@ -1,0 +1,8 @@
+{
+    "id": "db001c20-3788-4cfe-9ec2-284fd86a80bd",
+    "type": "bugfix",
+    "description": "Reimplement idle connection monitoring using okhttp3.EventListener instead of now-internal okhttp3.ConnectionListener",
+    "issues": [
+        "https://github.com/smithy-lang/smithy-kotlin/issues/1311"
+    ]
+}
