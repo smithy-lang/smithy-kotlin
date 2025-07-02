@@ -902,11 +902,13 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             } else {
                 ""
             }
-            val message = if (ctx.settings.build.generateServiceProject) {
-                "request"
-            } else {
-                "response"
-            }
+//            FIXME: Service supports only CBOR now. Modify this part to support service for other data format.
+//            val message = if (ctx.settings.build.generateServiceProject) {
+//                "request"
+//            } else {
+//                "response"
+//            }
+            val message = "response"
             when (memberTarget) {
                 is NumberShape -> {
                     if (memberTarget is IntEnumShape) {
@@ -1052,11 +1054,13 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         } else {
             ""
         }
-        val message = if (ctx.settings.build.generateServiceProject) {
-            "request"
-        } else {
-            "response"
-        }
+//        FIXME: Service supports only CBOR now. Modify this part to support service for other data format.
+//        val message = if (ctx.settings.build.generateServiceProject) {
+//            "request"
+//        } else {
+//            "response"
+//        }
+        val message = "response"
         writer.write("val $keyCollName = $message.headers.names()$filter")
         writer.openBlock("if ($keyCollName.isNotEmpty()) {")
             .write("val map = mutableMapOf<String, #T>()", targetValueSymbol)
