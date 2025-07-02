@@ -82,12 +82,14 @@ class ServiceStubGenerator(
             writer.write("import com.example.server.model.SayHelloResponse")
             writer.write("import aws.smithy.kotlin.runtime.http.readAll")
 
-
-            writer.write("public fun handleRequest(req: SayHelloRequest): SayHelloResponse { \n" +
+            writer.write(
+                "public fun handleRequest(req: SayHelloRequest): SayHelloResponse { \n" +
                     "val builder = SayHelloResponse.Builder() \n" +
                     "builder.greeting = #S \n" +
                     "return builder.build() \n" +
-                    "}", "Hello Luigi")
+                    "}",
+                "Hello Luigi",
+            )
 
             writer.withBlock("internal fun #T.configureRouting(): Unit {", "}", RuntimeTypes.KtorServerCore.Application) {
                 withBlock("#T {", "}", RuntimeTypes.KtorServerRouting.routing) {

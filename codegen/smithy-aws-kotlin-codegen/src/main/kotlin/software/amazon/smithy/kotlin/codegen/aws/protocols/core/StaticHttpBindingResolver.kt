@@ -66,7 +66,6 @@ open class StaticHttpBindingResolver(
             is StructureShape -> return shape.members().map { member -> member.toHttpBindingDescriptor() }.toList()
             else -> error("unimplemented shape type for http response bindings: $shape")
         }
-
     }
 
     /**
