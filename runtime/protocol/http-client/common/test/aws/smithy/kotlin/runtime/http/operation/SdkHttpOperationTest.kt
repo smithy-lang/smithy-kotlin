@@ -36,8 +36,8 @@ class SdkHttpOperationTest {
         val ex = assertFailsWith<IllegalArgumentException> {
             @Suppress("DEPRECATION")
             SdkHttpOperation.build<Unit, Unit> {
-                serializer = UnitSerializer
-                deserializer = UnitDeserializer
+                serializeWith = HttpSerializer.Unit
+                deserializeWith = HttpDeserializer.Unit
             }
         }
 

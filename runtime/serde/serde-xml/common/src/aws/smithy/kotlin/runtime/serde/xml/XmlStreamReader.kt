@@ -6,6 +6,7 @@
 package aws.smithy.kotlin.runtime.serde.xml
 
 import aws.smithy.kotlin.runtime.InternalApi
+import aws.smithy.kotlin.runtime.serde.DeserializationException
 import aws.smithy.kotlin.runtime.serde.xml.deserialization.LexingXmlStreamReader
 import aws.smithy.kotlin.runtime.serde.xml.deserialization.StringTextStream
 import aws.smithy.kotlin.runtime.serde.xml.deserialization.XmlLexer
@@ -112,6 +113,24 @@ public inline fun <reified T : XmlToken> XmlStreamReader.peekSeek(selectionPredi
     } while (token != null)
 
     return null
+}
+
+/**
+ * Return the next token of the specified type or throw [DeserializationException] if incorrect type.
+ */
+internal inline fun <reified TExpected : XmlToken> XmlStreamReader.takeNextAs(): TExpected {
+    val token = this.nextToken() ?: throw DeserializationException("Expected ${TExpected::class} but instead found null")
+    requireToken<TExpected>(token)
+    return token as TExpected
+}
+
+/**
+ * Require that the given token be of type [TExpected] or else throw an exception
+ */
+private inline fun <reified TExpected> requireToken(token: XmlToken) {
+    if (token::class != TExpected::class) {
+        throw DeserializationException("Expected ${TExpected::class}; found ${token::class} ($token)")
+    }
 }
 
 /**

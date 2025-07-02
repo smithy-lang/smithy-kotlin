@@ -11,13 +11,23 @@ import software.amazon.smithy.kotlin.codegen.aws.protocols.core.AbstractQueryFor
 import software.amazon.smithy.kotlin.codegen.aws.protocols.core.AwsHttpBindingProtocolGenerator
 import software.amazon.smithy.kotlin.codegen.aws.protocols.core.QueryHttpBindingProtocolGenerator
 import software.amazon.smithy.kotlin.codegen.aws.protocols.formurl.QuerySerdeFormUrlDescriptorGenerator
-import software.amazon.smithy.kotlin.codegen.core.*
+import software.amazon.smithy.kotlin.codegen.core.KotlinWriter
+import software.amazon.smithy.kotlin.codegen.core.RenderingContext
+import software.amazon.smithy.kotlin.codegen.core.RuntimeTypes
+import software.amazon.smithy.kotlin.codegen.core.withBlock
 import software.amazon.smithy.kotlin.codegen.lang.KotlinTypes
-import software.amazon.smithy.kotlin.codegen.model.*
-import software.amazon.smithy.kotlin.codegen.rendering.protocol.*
-import software.amazon.smithy.kotlin.codegen.rendering.serde.*
+import software.amazon.smithy.kotlin.codegen.model.buildSymbol
+import software.amazon.smithy.kotlin.codegen.model.getTrait
+import software.amazon.smithy.kotlin.codegen.model.hasTrait
+import software.amazon.smithy.kotlin.codegen.rendering.protocol.ProtocolGenerator
+import software.amazon.smithy.kotlin.codegen.rendering.protocol.toRenderingContext
+import software.amazon.smithy.kotlin.codegen.rendering.serde.FormUrlSerdeDescriptorGenerator
+import software.amazon.smithy.kotlin.codegen.rendering.serde.StructuredDataParserGenerator
+import software.amazon.smithy.kotlin.codegen.rendering.serde.StructuredDataSerializerGenerator
+import software.amazon.smithy.kotlin.codegen.rendering.serde.XmlParserGenerator
 import software.amazon.smithy.model.shapes.*
-import software.amazon.smithy.model.traits.*
+import software.amazon.smithy.model.traits.XmlFlattenedTrait
+import software.amazon.smithy.model.traits.XmlNameTrait
 
 /**
  * Handles generating the aws.protocols#awsQuery protocol for services.
@@ -45,7 +55,7 @@ class AwsQuery : QueryHttpBindingProtocolGenerator() {
         writer: KotlinWriter,
     ) {
         writer.write("""checkNotNull(payload){ "unable to parse error from empty response" }""")
-        writer.write("#T(payload)", RuntimeTypes.AwsXmlProtocols.parseRestXmlErrorResponseNoSuspend)
+        writer.write("#T(payload)", RuntimeTypes.AwsXmlProtocols.parseRestXmlErrorResponse)
     }
 }
 

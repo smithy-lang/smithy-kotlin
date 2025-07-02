@@ -36,17 +36,6 @@ public class SdkHttpOperation<I, O> internal constructor(
     internal val typeInfo: OperationTypeInfo,
     internal val telemetry: SdkOperationTelemetry,
 ) {
-
-    @Suppress("DEPRECATION")
-    internal constructor(
-        execution: SdkOperationExecution<I, O>,
-        context: ExecutionContext,
-        serializer: HttpSerialize<I>,
-        deserializer: HttpDeserialize<O>,
-        typeInfo: OperationTypeInfo,
-        telemetry: SdkOperationTelemetry,
-    ) : this(execution, context, serializer.intoSerializer(), deserializer.intoDeserializer(), typeInfo, telemetry)
-
     init {
         context[HttpOperationContext.SdkInvocationId] = Uuid.random().toString()
     }
@@ -142,27 +131,8 @@ public class SdkHttpOperationBuilder<I, O>(
     private val outputType: KClass<*>,
 ) {
     public val telemetry: SdkOperationTelemetry = SdkOperationTelemetry()
-
-    @Suppress("DEPRECATION")
-    @Deprecated("use serializeWith")
-    public var serializer: HttpSerialize<I>? = null
-        set(value) {
-            field = value
-            serializeWith = value?.intoSerializer()
-        }
-
     public var serializeWith: HttpSerializer<I>? = null
-
-    @Suppress("DEPRECATION")
-    @Deprecated("use deserializeWith")
-    public var deserializer: HttpDeserialize<O>? = null
-        set(value) {
-            field = value
-            deserializeWith = value?.intoDeserializer()
-        }
-
     public var deserializeWith: HttpDeserializer<O>? = null
-
     public val execution: SdkOperationExecution<I, O> = SdkOperationExecution()
     public val context: ExecutionContext = ExecutionContext()
 

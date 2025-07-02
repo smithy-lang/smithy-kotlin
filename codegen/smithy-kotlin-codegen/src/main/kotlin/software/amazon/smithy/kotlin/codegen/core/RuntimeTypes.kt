@@ -456,8 +456,8 @@ object RuntimeTypes {
         val RestJsonErrorDeserializer = symbol("RestJsonErrorDeserializer")
     }
     object AwsXmlProtocols : RuntimeTypePackage(KotlinDependency.AWS_XML_PROTOCOLS) {
-        val parseRestXmlErrorResponseNoSuspend = symbol("parseRestXmlErrorResponseNoSuspend")
-        val parseEc2QueryErrorResponseNoSuspend = symbol("parseEc2QueryErrorResponseNoSuspend")
+        val parseRestXmlErrorResponse = symbol("parseRestXmlErrorResponse")
+        val parseEc2QueryErrorResponse = symbol("parseEc2QueryErrorResponse")
     }
 
     object SmithyRpcV2Protocols : RuntimeTypePackage(KotlinDependency.SMITHY_RPCV2_PROTOCOLS) {
