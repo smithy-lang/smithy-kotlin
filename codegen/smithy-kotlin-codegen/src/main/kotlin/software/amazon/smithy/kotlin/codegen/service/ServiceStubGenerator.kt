@@ -6,8 +6,8 @@ import software.amazon.smithy.kotlin.codegen.core.KotlinDependency
 import software.amazon.smithy.kotlin.codegen.core.RuntimeTypes
 import software.amazon.smithy.kotlin.codegen.core.withBlock
 import software.amazon.smithy.kotlin.codegen.model.getTrait
-import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.shapes.OperationShape
+import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.shapes.ShapeType
 import software.amazon.smithy.model.traits.HttpTrait
 
@@ -109,9 +109,9 @@ class ServiceStubGenerator(
                                     write("bytes = response.body.#T() ?:  ByteArray(0),", RuntimeTypes.Http.readAll)
                                     write("contentType = #T,", RuntimeTypes.KtorServerHTTP.Cbor)
                                     write("status = #T.OK,", RuntimeTypes.KtorServerHTTP.HttpStatusCode)
+                                }
                             }
                         }
-                    }
                 }
             }
         }
