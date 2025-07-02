@@ -65,6 +65,7 @@ class ServiceStubGenerator(
 
     // Writes `Routing.kt` that maps Smithy operations → Ktor routes.
     private fun renderRouting() {
+        // FIXME: currently it is hardcoded for testing. This part will be generated once I'm working on the routing.
         delegator.useFileWriter("Routing.kt", settings.pkg.name) { writer ->
             writer.addImport(RuntimeTypes.KtorServerCore.applicationCall)
             writer.addImport(RuntimeTypes.KtorServerRouting.responseText)
