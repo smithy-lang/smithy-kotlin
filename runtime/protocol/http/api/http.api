@@ -23,12 +23,6 @@ public final class aws/smithy/kotlin/runtime/http/DeferredHeaders$Companion {
 	public final fun invoke (Lkotlin/jvm/functions/Function1;)Laws/smithy/kotlin/runtime/http/DeferredHeaders;
 }
 
-public final class aws/smithy/kotlin/runtime/http/DeferredHeaders$DefaultImpls {
-	public static fun contains (Laws/smithy/kotlin/runtime/http/DeferredHeaders;Ljava/lang/String;Lkotlinx/coroutines/Deferred;)Z
-	public static fun forEach (Laws/smithy/kotlin/runtime/http/DeferredHeaders;Lkotlin/jvm/functions/Function2;)V
-	public static fun get (Laws/smithy/kotlin/runtime/http/DeferredHeaders;Ljava/lang/String;)Lkotlinx/coroutines/Deferred;
-}
-
 public final class aws/smithy/kotlin/runtime/http/DeferredHeadersBuilder : aws/smithy/kotlin/runtime/collections/ValuesMapBuilder, aws/smithy/kotlin/runtime/util/CanDeepCopy {
 	public fun <init> ()V
 	public final fun add (Ljava/lang/String;Ljava/lang/String;)V
@@ -49,12 +43,6 @@ public abstract interface class aws/smithy/kotlin/runtime/http/Headers : aws/smi
 public final class aws/smithy/kotlin/runtime/http/Headers$Companion {
 	public final fun getEmpty ()Laws/smithy/kotlin/runtime/http/Headers;
 	public final fun invoke (Lkotlin/jvm/functions/Function1;)Laws/smithy/kotlin/runtime/http/Headers;
-}
-
-public final class aws/smithy/kotlin/runtime/http/Headers$DefaultImpls {
-	public static fun contains (Laws/smithy/kotlin/runtime/http/Headers;Ljava/lang/String;Ljava/lang/String;)Z
-	public static fun forEach (Laws/smithy/kotlin/runtime/http/Headers;Lkotlin/jvm/functions/Function2;)V
-	public static fun get (Laws/smithy/kotlin/runtime/http/Headers;Ljava/lang/String;)Ljava/lang/String;
 }
 
 public final class aws/smithy/kotlin/runtime/http/HeadersBuilder : aws/smithy/kotlin/runtime/collections/ValuesMapBuilder, aws/smithy/kotlin/runtime/util/CanDeepCopy {

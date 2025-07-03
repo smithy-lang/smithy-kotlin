@@ -38,7 +38,7 @@ kotlin.sourceSets.getByName("main") {
 
 tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
     dependsOn(tasks.generateSmithyProjections)
-    kotlinOptions {
+    compilerOptions {
         // generated code has warnings unfortunately
         allWarningsAsErrors = false
     }
