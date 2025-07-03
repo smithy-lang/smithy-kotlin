@@ -13,7 +13,7 @@ import java.net.Proxy
 
 /**
  * An [okhttp3.EventListener] that delegates to a chain of EventListeners.
- * Start event are sent in forward order, terminal events are sent in reverse order
+ * Start events are sent in forward order, terminal events are sent in reverse order
  */
 internal class EventListenerChain(
     private val listeners: List<EventListener>,
