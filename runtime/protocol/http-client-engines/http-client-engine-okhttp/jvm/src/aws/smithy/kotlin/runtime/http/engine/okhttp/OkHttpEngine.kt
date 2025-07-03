@@ -51,7 +51,7 @@ public class OkHttpEngine(
         }
 
     private val metrics = HttpClientMetrics(TELEMETRY_SCOPE, config.telemetryProvider)
-    private val client = config.buildClient(metrics, connectionMonitoringListener = connectionMonitoringListener)
+    private val client = config.buildClient(metrics, connectionMonitoringListener)
 
     @OptIn(ExperimentalCoroutinesApi::class)
     override suspend fun roundTrip(context: ExecutionContext, request: HttpRequest): HttpCall {
@@ -91,7 +91,6 @@ public class OkHttpEngine(
 @InternalApi
 public fun OkHttpEngineConfig.buildClient(
     metrics: HttpClientMetrics,
-    poolOverride: ConnectionPool? = null,
     connectionMonitoringListener: ConnectionMonitoringEventListener? = null,
 ): OkHttpClient {
     val config = this
@@ -112,7 +111,7 @@ public fun OkHttpEngineConfig.buildClient(
         writeTimeout(config.socketWriteTimeout.toJavaDuration())
 
         // use our own pool configured with the timeout settings taken from config
-        val pool = poolOverride ?: ConnectionPool(
+        val pool = ConnectionPool(
             maxIdleConnections = 5, // The default from the no-arg ConnectionPool() constructor
             keepAliveDuration = config.connectionIdleTimeout.inWholeMilliseconds,
             TimeUnit.MILLISECONDS,
