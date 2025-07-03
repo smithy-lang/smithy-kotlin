@@ -4,7 +4,6 @@
  */
 package aws.smithy.kotlin.runtime.http.engine.okhttp
 
-import aws.smithy.kotlin.runtime.InternalApi
 import aws.smithy.kotlin.runtime.io.closeIfCloseable
 import okhttp3.*
 import java.io.IOException
@@ -14,15 +13,14 @@ import java.net.Proxy
 
 /**
  * An [okhttp3.EventListener] that delegates to a chain of EventListeners.
- * Forward events are sent in order, reverse events are sent in reverse order.
+ * Start event are sent in forward order, terminal events are sent in reverse order
  */
-@InternalApi
-public class EventListenerChain(
+internal class EventListenerChain(
     private val listeners: List<EventListener>,
 ) : EventListener() {
     private val reverseListeners = listeners.reversed()
 
-    public fun close() {
+    fun close() {
         listeners.forEach {
             it.closeIfCloseable()
         }
