@@ -5,6 +5,7 @@
 package aws.smithy.kotlin.runtime.http.engine.okhttp
 
 import aws.smithy.kotlin.runtime.InternalApi
+import aws.smithy.kotlin.runtime.io.closeIfCloseable
 import okhttp3.*
 import java.io.IOException
 import java.net.InetAddress

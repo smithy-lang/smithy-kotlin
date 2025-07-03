@@ -4,6 +4,7 @@
  */
 package aws.smithy.kotlin.runtime.http.engine.okhttp
 
+import aws.smithy.kotlin.runtime.InternalApi
 import aws.smithy.kotlin.runtime.http.engine.internal.HttpClientMetrics
 import aws.smithy.kotlin.runtime.net.HostResolver
 import aws.smithy.kotlin.runtime.telemetry.logging.logger
@@ -25,21 +26,15 @@ import kotlin.time.measureTime
  * An [okhttp3.EventListener] implementation that monitors connections for remote closure.
  * This replaces the functionality previously provided by the now-internal [okhttp3.ConnectionListener].
  */
-internal class ConnectionMonitoringEventListener(
-    pool: ConnectionPool,
-    hr: HostResolver,
-    dispatcher: Dispatcher,
-    metrics: HttpClientMetrics,
-    private val pollInterval: Duration,
-    call: Call,
-) : HttpEngineEventListener(pool, hr, dispatcher, metrics, call) {
+@InternalApi
+public class ConnectionMonitoringEventListener(private val pollInterval: Duration): EventListener() {
     private val monitorScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
     private val monitors = ConcurrentHashMap<Int, Job>()
 
     /**
      * Close all active connection monitors.
      */
-    fun close(): Unit = runBlocking {
+    public fun close(): Unit = runBlocking {
         val monitorJob = requireNotNull(monitorScope.coroutineContext[Job]) {
             "Connection idle monitor scope cannot be cancelled because it does not have a job: $this"
         }
