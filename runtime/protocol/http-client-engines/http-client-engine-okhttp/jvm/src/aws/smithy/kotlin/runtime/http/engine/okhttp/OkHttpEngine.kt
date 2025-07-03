@@ -127,10 +127,12 @@ public fun OkHttpEngineConfig.buildClient(
 
         // Log events coming from okhttp. Allocate a new listener per-call to facilitate dedicated trace spans.
         eventListenerFactory { call ->
-            EventListenerChain(listOfNotNull(
-                HttpEngineEventListener(pool, config.hostResolver, dispatcher, metrics, call),
-                connectionMonitoringListener
-            ))
+            EventListenerChain(
+                listOfNotNull(
+                    HttpEngineEventListener(pool, config.hostResolver, dispatcher, metrics, call),
+                    connectionMonitoringListener,
+                ),
+            )
         }
 
         // map protocols
