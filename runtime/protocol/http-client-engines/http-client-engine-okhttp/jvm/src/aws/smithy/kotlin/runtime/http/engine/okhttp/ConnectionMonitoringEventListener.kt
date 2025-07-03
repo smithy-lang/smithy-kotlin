@@ -56,7 +56,6 @@ internal class ConnectionMonitoringEventListener(
     override fun connectionAcquired(call: Call, connection: Connection) {
         super.connectionAcquired(call, connection)
 
-        // Get connection ID
         val connId = System.identityHashCode(connection)
 
         // Non-locking map access is okay here because this code will only execute synchronously as part of a
