@@ -23,11 +23,16 @@ import kotlin.time.measureTime
 
 /**
  * An [okhttp3.EventListener] implementation that monitors connections for remote closure.
- * This replaces the functionality previously provided by the now-internal [ConnectionListener].
+ * This replaces the functionality previously provided by the now-internal [okhttp3.ConnectionListener].
  */
 internal class ConnectionMonitoringEventListener(
+    pool: ConnectionPool,
+    hr: HostResolver,
+    dispatcher: Dispatcher,
+    metrics: HttpClientMetrics,
     private val pollInterval: Duration,
-) : EventListener(), Closeable {
+    call: Call,
+) : HttpEngineEventListener(pool, hr, dispatcher, metrics, call) {
     private val monitorScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
     private val monitors = ConcurrentHashMap<Int, Job>()
 
@@ -49,6 +54,7 @@ internal class ConnectionMonitoringEventListener(
 
     // Cancel monitoring when a connection is acquired
     override fun connectionAcquired(call: Call, connection: Connection) {
+        super.connectionAcquired(call, connection)
 
         // Get connection ID
         val connId = System.identityHashCode(connection)
@@ -72,6 +78,7 @@ internal class ConnectionMonitoringEventListener(
 
     // Start monitoring when a connection is released
     override fun connectionReleased(call: Call, connection: Connection) {
+        super.connectionReleased(call, connection)
 
         val connId = System.identityHashCode(connection)
         val callContext = call.callContext()
