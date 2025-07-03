@@ -78,11 +78,11 @@ class ServiceStubGenerator(
         delegator.useFileWriter("ServiceFrameworkConfig.kt", "${settings.pkg.name}.configurations") { writer ->
             writer.write(
                 "internal data class ServiceFrameworkConfig ( \n" +
-                        "    val port: Int, \n" +
-                        "    val engineFactory: #T<*, *>, \n" +
-                        "    val closeGracePeriodMillis: Long, \n" +
-                        "    val closeTimeoutMillis: Long, \n" +
-                        ") {}",
+                    "    val port: Int, \n" +
+                    "    val engineFactory: #T<*, *>, \n" +
+                    "    val closeGracePeriodMillis: Long, \n" +
+                    "    val closeTimeoutMillis: Long, \n" +
+                    ") {}",
                 RuntimeTypes.KtorServerCore.ApplicationEngineFactory,
             )
         }
