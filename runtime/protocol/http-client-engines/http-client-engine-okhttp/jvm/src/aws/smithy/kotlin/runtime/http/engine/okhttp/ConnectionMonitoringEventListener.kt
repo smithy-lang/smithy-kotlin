@@ -27,7 +27,7 @@ import kotlin.time.measureTime
 @InternalApi
 public class ConnectionMonitoringEventListener(private val pollInterval: Duration) : EventListener() {
     private val monitorScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
-    private val monitors = ConcurrentHashMap<Int, Job>()
+    private val monitors = ConcurrentHashMap<Connection, Job>()
 
     /**
      * Close all active connection monitors.
@@ -49,22 +49,20 @@ public class ConnectionMonitoringEventListener(private val pollInterval: Duratio
     override fun connectionAcquired(call: Call, connection: Connection) {
         super.connectionAcquired(call, connection)
 
-        val connId = System.identityHashCode(connection)
-
         // Non-locking map access is okay here because this code will only execute synchronously as part of a
         // `connectionAcquired` event and will be complete before any future `connectionReleased` event could fire for
         // the same connection.
-        monitors.remove(connId)?.let { monitor ->
+        monitors.remove(connection)?.let { monitor ->
             val context = call.callContext()
             val logger = context.logger<ConnectionMonitoringEventListener>()
-            logger.trace { "Cancel monitoring for $connId" }
+            logger.trace { "Cancel monitoring for $connection" }
 
             // Use `runBlocking` because this _must_ finish before OkHttp goes to use the connection
             val cancelTime = measureTime {
                 runBlocking(context) { monitor.cancelAndJoin() }
             }
 
-            logger.trace { "Monitoring canceled for $connId in $cancelTime" }
+            logger.trace { "Monitoring canceled for $connection in $cancelTime" }
         }
     }
 
@@ -79,27 +77,26 @@ public class ConnectionMonitoringEventListener(private val pollInterval: Duratio
         val monitor = monitorScope.launch(CoroutineName("okhttp-conn-monitor-for-$connId")) {
             doMonitor(connection, callContext)
         }
-        callContext.logger<ConnectionMonitoringEventListener>().trace { "Launched coroutine $monitor to monitor $connId" }
+        callContext.logger<ConnectionMonitoringEventListener>().trace { "Launched coroutine $monitor to monitor $connection" }
 
         // Non-locking map access is okay here because this code will only execute synchronously as part of a
         // `connectionReleased` event and will be complete before any future `connectionAcquired` event could fire for
         // the same connection.
-        monitors[connId] = monitor
+        monitors[connection] = monitor
     }
 
     private suspend fun doMonitor(conn: Connection, callContext: CoroutineContext) {
         val logger = callContext.logger<ConnectionMonitoringEventListener>()
-        val connId = System.identityHashCode(conn)
 
         val socket = conn.socket()
         val source = try {
             socket.source()
         } catch (_: SocketException) {
-            logger.trace { "Socket for $connId closed before monitoring started. Skipping polling loop." }
+            logger.trace { "Socket for $conn closed before monitoring started. Skipping polling loop." }
             return
         }.buffer().peek()
 
-        logger.trace { "Commence socket monitoring for $connId" }
+        logger.trace { "Commence socket monitoring for $conn" }
         var resetTimeout = true
         val oldTimeout = socket.soTimeout
 
@@ -108,12 +105,12 @@ public class ConnectionMonitoringEventListener(private val pollInterval: Duratio
 
             while (coroutineContext.isActive) {
                 try {
-                    logger.trace { "Polling socket for $connId" }
+                    logger.trace { "Polling socket for $conn" }
                     source.readByte() // Blocking read; will take up to `pollInterval` time to complete
                 } catch (_: SocketTimeoutException) {
-                    logger.trace { "Socket still alive for $connId" }
+                    logger.trace { "Socket still alive for $conn" }
                 } catch (_: IOException) {
-                    logger.trace { "Socket closed remotely for $connId" }
+                    logger.trace { "Socket closed remotely for $conn" }
                     socket.closeQuietly()
                     resetTimeout = false
                     return
@@ -122,7 +119,7 @@ public class ConnectionMonitoringEventListener(private val pollInterval: Duratio
 
             logger.trace { "Monitoring coroutine has been cancelled. Ending polling loop." }
         } catch (e: Throwable) {
-            logger.warn(e) { "Failed to poll $connId. Ending polling loop. Connection may be unstable now." }
+            logger.warn(e) { "Failed to poll $conn. Ending polling loop. Connection may be unstable now." }
         } finally {
             if (resetTimeout) {
                 logger.trace { "Attempting to reset soTimeout..." }
@@ -130,7 +127,7 @@ public class ConnectionMonitoringEventListener(private val pollInterval: Duratio
                     socket.soTimeout = oldTimeout
                     logger.trace { "soTimeout reset." }
                 } catch (e: Throwable) {
-                    logger.warn(e) { "Failed to reset socket timeout on $connId. Connection may be unstable now." }
+                    logger.warn(e) { "Failed to reset socket timeout on $conn. Connection may be unstable now." }
                 }
             }
         }
