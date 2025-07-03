@@ -125,7 +125,7 @@ internal class ConnectionMonitoringEventListener(private val pollInterval: Durat
             if (resetTimeout) {
                 logger.trace { "Attempting to reset soTimeout..." }
                 try {
-                    socket.soTimeout = oldTimeout
+                    conn.socket().soTimeout = oldTimeout
                     logger.trace { "soTimeout reset." }
                 } catch (e: Throwable) {
                     logger.warn(e) { "Failed to reset socket timeout on $conn. Connection may be unstable now." }
