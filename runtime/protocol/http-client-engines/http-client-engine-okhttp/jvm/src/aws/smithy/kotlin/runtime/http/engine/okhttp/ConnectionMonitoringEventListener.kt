@@ -4,12 +4,10 @@
  */
 package aws.smithy.kotlin.runtime.http.engine.okhttp
 
+import aws.smithy.kotlin.runtime.io.Closeable
 import aws.smithy.kotlin.runtime.telemetry.logging.logger
 import kotlinx.coroutines.*
-import okhttp3.Call
-import okhttp3.Connection
-import okhttp3.ConnectionListener
-import okhttp3.ExperimentalOkHttpApi
+import okhttp3.*
 import okhttp3.internal.closeQuietly
 import okio.IOException
 import okio.buffer
@@ -22,12 +20,20 @@ import kotlin.coroutines.coroutineContext
 import kotlin.time.Duration
 import kotlin.time.measureTime
 
-@OptIn(ExperimentalOkHttpApi::class)
-internal class ConnectionIdleMonitor(val pollInterval: Duration) : ConnectionListener() {
+/**
+ * An [okhttp3.EventListener] implementation that monitors connections for remote closure.
+ * This replaces the functionality previously provided by the now-internal [okhttp3.ConnectionListener].
+ */
+internal class ConnectionMonitoringEventListener(private val pollInterval: Duration) :
+    EventListener(),
+    Closeable {
     private val monitorScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
     private val monitors = ConcurrentHashMap<Connection, Job>()
 
-    fun close(): Unit = runBlocking {
+    /**
+     * Close all active connection monitors.
+     */
+    override fun close(): Unit = runBlocking {
         val monitorJob = requireNotNull(monitorScope.coroutineContext[Job]) {
             "Connection idle monitor scope cannot be cancelled because it does not have a job: $this"
         }
@@ -40,13 +46,16 @@ internal class ConnectionIdleMonitor(val pollInterval: Duration) : ConnectionLis
             ?.callContext
             ?: Dispatchers.IO
 
-    override fun connectionAcquired(connection: Connection, call: Call) {
+    // Cancel monitoring when a connection is acquired
+    override fun connectionAcquired(call: Call, connection: Connection) {
+        super.connectionAcquired(call, connection)
+
         // Non-locking map access is okay here because this code will only execute synchronously as part of a
         // `connectionAcquired` event and will be complete before any future `connectionReleased` event could fire for
         // the same connection.
         monitors.remove(connection)?.let { monitor ->
             val context = call.callContext()
-            val logger = context.logger<ConnectionIdleMonitor>()
+            val logger = context.logger<ConnectionMonitoringEventListener>()
             logger.trace { "Cancel monitoring for $connection" }
 
             // Use `runBlocking` because this _must_ finish before OkHttp goes to use the connection
@@ -58,13 +67,18 @@ internal class ConnectionIdleMonitor(val pollInterval: Duration) : ConnectionLis
         }
     }
 
-    override fun connectionReleased(connection: Connection, call: Call) {
+    // Start monitoring when a connection is released
+    override fun connectionReleased(call: Call, connection: Connection) {
+        super.connectionReleased(call, connection)
+
         val connId = System.identityHashCode(connection)
         val callContext = call.callContext()
+
+        // Start monitoring
         val monitor = monitorScope.launch(CoroutineName("okhttp-conn-monitor-for-$connId")) {
             doMonitor(connection, callContext)
         }
-        callContext.logger<ConnectionIdleMonitor>().trace { "Launched coroutine $monitor to monitor $connection" }
+        callContext.logger<ConnectionMonitoringEventListener>().trace { "Launched coroutine $monitor to monitor $connection" }
 
         // Non-locking map access is okay here because this code will only execute synchronously as part of a
         // `connectionReleased` event and will be complete before any future `connectionAcquired` event could fire for
@@ -73,7 +87,7 @@ internal class ConnectionIdleMonitor(val pollInterval: Duration) : ConnectionLis
     }
 
     private suspend fun doMonitor(conn: Connection, callContext: CoroutineContext) {
-        val logger = callContext.logger<ConnectionIdleMonitor>()
+        val logger = callContext.logger<ConnectionMonitoringEventListener>()
 
         val socket = conn.socket()
         val source = try {
