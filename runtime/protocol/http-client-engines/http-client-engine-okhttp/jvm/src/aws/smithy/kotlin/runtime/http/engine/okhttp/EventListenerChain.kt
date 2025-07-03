@@ -105,11 +105,11 @@ internal class EventListenerChain(
         reverseListeners.forEach { it.satisfactionFailure(call, response) }
 
     override fun cacheConditionalHit(call: Call, cachedResponse: Response): Unit =
-        reverseListeners.forEach { it.cacheConditionalHit(call, cachedResponse) }
+        listeners.forEach { it.cacheConditionalHit(call, cachedResponse) }
 
     override fun cacheHit(call: Call, response: Response): Unit =
-        reverseListeners.forEach { it.cacheHit(call, response) }
+        listeners.forEach { it.cacheHit(call, response) }
 
     override fun cacheMiss(call: Call): Unit =
-        reverseListeners.forEach { it.cacheMiss(call) }
+        listeners.forEach { it.cacheMiss(call) }
 }
