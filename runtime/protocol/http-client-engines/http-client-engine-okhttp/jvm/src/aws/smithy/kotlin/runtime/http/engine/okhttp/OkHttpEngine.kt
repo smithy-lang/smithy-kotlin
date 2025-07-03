@@ -126,16 +126,11 @@ public fun OkHttpEngineConfig.buildClient(
         dispatcher(dispatcher)
 
         // Log events coming from okhttp. Allocate a new listener per-call to facilitate dedicated trace spans.
-        // If connection idle polling is enabled, use an EventListenerChain to combine the base HttpEngineEventListener
-        // and the ConnectionMonitoringEventListener
         eventListenerFactory { call ->
-            val baseListener = HttpEngineEventListener(pool, config.hostResolver, dispatcher, metrics, call)
-
-            if (connectionMonitoringListener != null) {
-                EventListenerChain(listOf(baseListener, connectionMonitoringListener))
-            } else {
-                baseListener
-            }
+            EventListenerChain(listOfNotNull(
+                HttpEngineEventListener(pool, config.hostResolver, dispatcher, metrics, call),
+                connectionMonitoringListener
+            ))
         }
 
         // map protocols
