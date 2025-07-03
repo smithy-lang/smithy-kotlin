@@ -5,8 +5,6 @@
 package aws.smithy.kotlin.runtime.http.engine.okhttp
 
 import aws.smithy.kotlin.runtime.InternalApi
-import aws.smithy.kotlin.runtime.http.engine.internal.HttpClientMetrics
-import aws.smithy.kotlin.runtime.net.HostResolver
 import aws.smithy.kotlin.runtime.telemetry.logging.logger
 import kotlinx.coroutines.*
 import okhttp3.*
@@ -27,7 +25,7 @@ import kotlin.time.measureTime
  * This replaces the functionality previously provided by the now-internal [okhttp3.ConnectionListener].
  */
 @InternalApi
-public class ConnectionMonitoringEventListener(private val pollInterval: Duration): EventListener() {
+public class ConnectionMonitoringEventListener(private val pollInterval: Duration) : EventListener() {
     private val monitorScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
     private val monitors = ConcurrentHashMap<Int, Job>()
 
