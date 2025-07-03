@@ -1,6 +1,8 @@
 package software.amazon.smithy.kotlin.codegen.service
 
+import software.amazon.smithy.build.FileManifest
 import software.amazon.smithy.kotlin.codegen.KotlinSettings
+import software.amazon.smithy.kotlin.codegen.core.InlineCodeWriterFormatter
 import software.amazon.smithy.kotlin.codegen.core.KotlinDelegator
 import software.amazon.smithy.kotlin.codegen.core.KotlinDependency
 import software.amazon.smithy.kotlin.codegen.core.KotlinWriter
@@ -11,10 +13,23 @@ import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.shapes.ShapeType
 import software.amazon.smithy.model.traits.HttpTrait
+import software.amazon.smithy.utils.AbstractCodeWriter
+
+
+class LoggingWriter(parent: LoggingWriter? = null) : AbstractCodeWriter<LoggingWriter>() {
+    init {
+        trimBlankLines(parent?.trimBlankLines ?: 1)
+        trimTrailingSpaces(parent?.trimTrailingSpaces ?: true)
+        indentText = parent?.indentText ?: "    "
+        expressionStart = parent?.expressionStart ?: '#'
+        putFormatter('W', InlineCodeWriterFormatter(::LoggingWriter))
+    }
+}
 
 class ServiceStubGenerator(
     private val settings: KotlinSettings,
     private val delegator: KotlinDelegator,
+    private val fileManifest: FileManifest,
     private val serviceShapes: Set<Shape>,
 ) {
 
@@ -22,6 +37,7 @@ class ServiceStubGenerator(
         // FIXME: check server framework here and render according to the chosen server framework
         renderMainFile()
         renderServiceFramework()
+        renderLogging()
         renderProtocolModule()
         renderAuthModule()
         renderConstraintValidators()
@@ -90,7 +106,8 @@ class ServiceStubGenerator(
 
     private fun renderKTORServiceFramework(writer: KotlinWriter, serviceFrameworkConfigName: String) {
         writer.addImport(RuntimeTypes.KtorServerNetty.Netty)
-        writer.addImport("${settings.pkg.name}", "configureRouting")
+        writer.addImport(settings.pkg.name, "configureRouting")
+        writer.addImport(settings.pkg.name, "configureLogging")
 
         writer.withBlock("internal class KTORServiceFramework : ServiceFramework {", "}") {
             write("private var engine: #T<*, *>? = null", RuntimeTypes.KtorServerCore.EmbeddedServerType)
@@ -98,10 +115,11 @@ class ServiceStubGenerator(
             withBlock("override fun start() {", "}") {
                 withBlock(
                     "engine = #T($serviceFrameworkConfigName.engineFactory, port = $serviceFrameworkConfigName.port) {",
-                    "}.also { it.start(wait = true) }",
+                    "}.apply { start(wait = true) }",
                     RuntimeTypes.KtorServerCore.embeddedServer,
                 ) {
                     write("configureRouting()")
+                    write("configureLogging()")
 //                    write("configureContentNegotiation()")
                 }
             }
@@ -110,6 +128,56 @@ class ServiceStubGenerator(
                 write("engine?.stop($serviceFrameworkConfigName.closeGracePeriodMillis, $serviceFrameworkConfigName.closeTimeoutMillis)")
                 write("engine = null")
             }
+        }
+    }
+
+    private fun renderLogging() {
+        delegator.useFileWriter("Logging.kt", settings.pkg.name) { writer ->
+
+            writer.withBlock("internal fun #T.configureLogging() {", "}", RuntimeTypes.KtorServerCore.Application) {
+                withBlock("#T(#T) {", "}", RuntimeTypes.KtorServerCore.install, RuntimeTypes.KtorServerLogging.CallLogging) {
+                    write("level = #T.INFO", RuntimeTypes.KtorLoggingBackend.Level)
+                    withBlock("format { call ->", "}") {
+                        write("val status = call.response.status()")
+                        write("\"\${call.request.#T.value} \${call.request.#T} → \$status\"",  RuntimeTypes.KtorServerRouting.requestHttpMethod, RuntimeTypes.KtorServerRouting.requestUri)
+                    }
+                }
+                write("val log = #T.getLogger(#S)", RuntimeTypes.KtorLoggingBackend.LoggerFactory, settings.pkg.name)
+
+                withBlock("monitor.subscribe(#T) {", "}", RuntimeTypes.KtorServerCore.ApplicationStopping) {
+                    write("log.warn(#S)", "▶ Server is stopping – waiting for in-flight requests...")
+                }
+
+                withBlock("monitor.subscribe(#T) {", "}", RuntimeTypes.KtorServerCore.ApplicationStopped) {
+                    write("log.info(#S)", "⏹ Server stopped cleanly.")
+                }
+            }
+        }
+        val loggingWriter = LoggingWriter()
+        loggingWriter.withBlock("<configuration>", "</configuration>") {
+            withBlock("<appender name=#S class=#S>", "</appender>", "STDOUT", "ch.qos.logback.core.ConsoleAppender") {
+                withBlock("<encoder>", "</encoder>") {
+                    withBlock("<pattern>", "</pattern>") {
+                        write("%d{yyyy-MM-dd'T'HH:mm:ss.SSSXXX} %-5level %logger{36} - %msg%n")
+                    }
+                }
+            }
+            renderLoggingLevel(loggingWriter)
+        }
+        val contents = loggingWriter.toString()
+        fileManifest.writeFile("src/main/resources/logback.xml", contents)
+    }
+
+    private fun renderLoggingLevel(w: LoggingWriter) {
+        val loggingLevel = settings.serviceStub.logLevel
+        when (loggingLevel) {
+            LogLevel.OFF ->
+                w.write("<root level=#S>", "OFF")
+            else ->
+                w.withBlock("<root level=#S>", "</root>", loggingLevel.value.uppercase()) {
+                    write("<appender-ref ref=#S/>", "STDOUT")
+                }
+
         }
     }
 

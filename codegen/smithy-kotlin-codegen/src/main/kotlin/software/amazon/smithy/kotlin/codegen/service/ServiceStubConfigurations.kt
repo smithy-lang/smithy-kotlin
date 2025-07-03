@@ -27,3 +27,27 @@ enum class ServiceEngine(val value: String) {
         }
     }
 }
+
+enum class LogLevel(val value: String) {
+    INFO("INFO"),
+    WARNING("WARN"),
+    DEBUG("DEBUG"),
+    ERROR("ERROR"),
+    OFF("OFF"),
+    ALL("ALL"),
+    ;
+
+    override fun toString(): String = value
+
+    companion object {
+        fun fromValue(value: String): LogLevel = when (value.lowercase()) {
+            "info" -> INFO
+            "warning" -> WARNING
+            "debug" -> DEBUG
+            "error" -> ERROR
+            "off" -> OFF
+            "all" -> ALL
+            else -> throw IllegalArgumentException("$value is not a valid LogLevel value, expected one of these: $INFO, $WARNING, $DEBUG, $ERROR, $OFF, $ALL")
+        }
+    }
+}

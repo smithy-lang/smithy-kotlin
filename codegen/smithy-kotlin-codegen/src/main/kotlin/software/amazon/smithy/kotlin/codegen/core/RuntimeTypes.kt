@@ -491,6 +491,8 @@ object RuntimeTypes {
         val ApplicationEngine = symbol("ApplicationEngine", "engine")
         val ApplicationEngineFactory = symbol("ApplicationEngineFactory", "engine")
         val Application = symbol("Application", "application")
+        val ApplicationStopping = symbol("ApplicationStopping", "application")
+        val ApplicationStopped = symbol("ApplicationStopped", "application")
         val applicationCall = symbol("call", "application")
         val install = symbol("install", "application")
     }
@@ -502,6 +504,8 @@ object RuntimeTypes {
 
         val responseText = symbol("respondText", "response")
         val requestReceive = symbol("receive", "request")
+        val requestUri = symbol("uri", "request")
+        val requestHttpMethod = symbol("httpMethod", "request")
         val requestRespondBytes = symbol("respondBytes", "response")
     }
 
@@ -513,5 +517,14 @@ object RuntimeTypes {
         val ContentType = symbol("ContentType")
         val HttpStatusCode = symbol("HttpStatusCode")
         val Cbor = symbol("Cbor", "ContentType.Application")
+    }
+
+    object KtorServerLogging : RuntimeTypePackage(KotlinDependency.KTOR_SERVER_LOGGING) {
+        val CallLogging = symbol("CallLogging")
+    }
+
+    object KtorLoggingBackend : RuntimeTypePackage(KotlinDependency.KTOR_LOGGING_BACKEND) {
+        val Level = symbol("Level", "event")
+        val LoggerFactory = symbol("LoggerFactory")
     }
 }
