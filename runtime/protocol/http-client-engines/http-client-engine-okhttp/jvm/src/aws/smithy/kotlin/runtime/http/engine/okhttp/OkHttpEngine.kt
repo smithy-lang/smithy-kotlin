@@ -45,8 +45,14 @@ public class OkHttpEngine(
         override val engineConstructor: (OkHttpEngineConfig.Builder.() -> Unit) -> OkHttpEngine = ::invoke
     }
 
+    // Create a single shared connection monitoring listener if idle polling is enabled
+    private val connectionMonitoringListener: ConnectionMonitoringEventListener? = 
+        config.connectionIdlePollingInterval?.let { 
+            ConnectionMonitoringEventListener(it) 
+        }
+
     private val metrics = HttpClientMetrics(TELEMETRY_SCOPE, config.telemetryProvider)
-    private val client = config.buildClient(metrics)
+    private val client = config.buildClient(metrics, connectionMonitoringListener = connectionMonitoringListener)
 
     @OptIn(ExperimentalCoroutinesApi::class)
     override suspend fun roundTrip(context: ExecutionContext, request: HttpRequest): HttpCall {
@@ -73,9 +79,7 @@ public class OkHttpEngine(
     }
 
     override fun shutdown() {
-        client.dispatcher.runningCalls().forEach { call ->
-            call.request().eventListener.closeIfCloseable()
-        }
+        connectionMonitoringListener?.close()
         client.connectionPool.evictAll()
         client.dispatcher.executorService.shutdown()
         metrics.close()
@@ -89,6 +93,7 @@ public class OkHttpEngine(
 public fun OkHttpEngineConfig.buildClient(
     metrics: HttpClientMetrics,
     poolOverride: ConnectionPool? = null,
+    connectionMonitoringListener: ConnectionMonitoringEventListener? = null,
 ): OkHttpClient {
     val config = this
 
@@ -122,13 +127,12 @@ public fun OkHttpEngineConfig.buildClient(
         dispatcher(dispatcher)
 
         // Log events coming from okhttp. Allocate a new listener per-call to facilitate dedicated trace spans.
-        // If connection idle polling is enabled, use EventListenerChain to combine HttpEngineEventListener
-        // and ConnectionMonitoringEventListener
+        // If connection idle polling is enabled, use an EventListenerChain to combine the base HttpEngineEventListener
+        // and the ConnectionMonitoringEventListener
         eventListenerFactory { call ->
             val baseListener = HttpEngineEventListener(pool, config.hostResolver, dispatcher, metrics, call)
             
-            if (config.connectionIdlePollingInterval != null) {
-                val connectionMonitoringListener = ConnectionMonitoringEventListener(config.connectionIdlePollingInterval!!)
+            if (connectionMonitoringListener != null) {
                 EventListenerChain(listOf(baseListener, connectionMonitoringListener))
             } else {
                 baseListener
