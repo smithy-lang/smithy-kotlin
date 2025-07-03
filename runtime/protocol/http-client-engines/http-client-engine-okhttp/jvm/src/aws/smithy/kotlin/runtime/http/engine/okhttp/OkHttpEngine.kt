@@ -11,6 +11,7 @@ import aws.smithy.kotlin.runtime.http.config.EngineFactory
 import aws.smithy.kotlin.runtime.http.engine.*
 import aws.smithy.kotlin.runtime.http.engine.internal.HttpClientMetrics
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
+import aws.smithy.kotlin.runtime.io.closeIfCloseable
 import aws.smithy.kotlin.runtime.net.TlsVersion
 import aws.smithy.kotlin.runtime.operation.ExecutionContext
 import aws.smithy.kotlin.runtime.time.Instant
@@ -45,7 +46,7 @@ public class OkHttpEngine(
     }
 
     // Create a single shared connection monitoring listener if idle polling is enabled
-    private val connectionMonitoringListener: ConnectionMonitoringEventListener? =
+    private val connectionMonitoringListener: EventListener? =
         config.connectionIdlePollingInterval?.let {
             ConnectionMonitoringEventListener(it)
         }
@@ -78,7 +79,7 @@ public class OkHttpEngine(
     }
 
     override fun shutdown() {
-        connectionMonitoringListener?.close()
+        connectionMonitoringListener?.closeIfCloseable()
         client.connectionPool.evictAll()
         client.dispatcher.executorService.shutdown()
         metrics.close()
@@ -91,7 +92,7 @@ public class OkHttpEngine(
 @InternalApi
 public fun OkHttpEngineConfig.buildClient(
     metrics: HttpClientMetrics,
-    connectionMonitoringListener: ConnectionMonitoringEventListener? = null,
+    vararg clientScopedEventListeners: EventListener?,
 ): OkHttpClient {
     val config = this
 
@@ -129,7 +130,7 @@ public fun OkHttpEngineConfig.buildClient(
             EventListenerChain(
                 listOfNotNull(
                     HttpEngineEventListener(pool, config.hostResolver, dispatcher, metrics, call),
-                    connectionMonitoringListener,
+                    *clientScopedEventListeners,
                 ),
             )
         }
