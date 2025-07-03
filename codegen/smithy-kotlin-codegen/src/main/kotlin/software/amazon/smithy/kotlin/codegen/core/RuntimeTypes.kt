@@ -487,6 +487,9 @@ object RuntimeTypes {
 
     object KtorServerCore : RuntimeTypePackage(KotlinDependency.KTOR_SERVER_CORE) {
         val embeddedServer = symbol("embeddedServer", "engine")
+        val EmbeddedServerType = symbol("EmbeddedServer", "engine")
+        val ApplicationEngine = symbol("ApplicationEngine", "engine")
+        val ApplicationEngineFactory = symbol("ApplicationEngineFactory", "engine")
         val Application = symbol("Application", "application")
         val applicationCall = symbol("call", "application")
         val install = symbol("install", "application")
@@ -510,13 +513,5 @@ object RuntimeTypes {
         val ContentType = symbol("ContentType")
         val HttpStatusCode = symbol("HttpStatusCode")
         val Cbor = symbol("Cbor", "ContentType.Application")
-    }
-
-    object KtorServerContentNegotiation : RuntimeTypePackage(KotlinDependency.KTOR_SERVER_CONTENT_NEGOTIATION) {
-        val ContentNegotiation = symbol("ContentNegotiation")
-    }
-
-    object KtorServerCbor : RuntimeTypePackage(KotlinDependency.KTOR_SERVER_CBOR_SERDE) {
-        val cbor = symbol("cbor")
     }
 }

@@ -3,6 +3,7 @@ package software.amazon.smithy.kotlin.codegen.service
 import software.amazon.smithy.kotlin.codegen.KotlinSettings
 import software.amazon.smithy.kotlin.codegen.core.KotlinDelegator
 import software.amazon.smithy.kotlin.codegen.core.KotlinDependency
+import software.amazon.smithy.kotlin.codegen.core.KotlinWriter
 import software.amazon.smithy.kotlin.codegen.core.RuntimeTypes
 import software.amazon.smithy.kotlin.codegen.core.withBlock
 import software.amazon.smithy.kotlin.codegen.model.getTrait
@@ -20,6 +21,7 @@ class ServiceStubGenerator(
     fun render() {
         // FIXME: check server framework here and render according to the chosen server framework
         renderMainFile()
+        renderServiceFramework()
         renderProtocolModule()
         renderAuthModule()
         renderConstraintValidators()
@@ -29,23 +31,84 @@ class ServiceStubGenerator(
 
     // Writes `Main.kt` that boots the embedded Ktor service.
     private fun renderMainFile() {
+        delegator.useFileWriter("Main.kt", settings.pkg.name) { writer ->
+            writer.dependencies.addAll(KotlinDependency.KTOR_LOGGING_BACKEND.dependencies)
+            writer.addImport("com.example.server.configurations", "KTORServiceFramework")
+
+            writer.withBlock("public fun main(): Unit {", "}") {
+                write("val service = KTORServiceFramework()")
+                write("service.start()")
+            }
+        }
+    }
+
+    // Writes `Main.kt` that boots the embedded Ktor service.
+    private fun renderServiceFramework() {
         val port = settings.serviceStub.port
         val engine = when (settings.serviceStub.engine) {
             ServiceEngine.NETTY -> RuntimeTypes.KtorServerNetty.Netty
         }
-        delegator.useFileWriter("Main.kt", settings.pkg.name) { writer ->
-            writer.dependencies.addAll(KotlinDependency.KTOR_LOGGING_BACKEND.dependencies)
+        val closeGracePeriodMillis = 1000
+        val closeTimeoutMillis = 5000
 
-            writer.withBlock("public fun main(): Unit {", "}") {
+        val serviceFrameworkConfigName = "serviceFrameworkConfig"
+
+        renderServiceFrameworkConfig()
+
+        delegator.useFileWriter("ServiceFramework.kt", "${settings.pkg.name}.configurations") { writer ->
+            writer.dependencies.addAll(KotlinDependency.KTOR_LOGGING_BACKEND.dependencies)
+            writer.addImport("${settings.pkg.name}.configurations", "ServiceFrameworkConfig")
+
+            writer
+                .write("internal val $serviceFrameworkConfigName: ServiceFrameworkConfig = ServiceFrameworkConfig(port= $port, engineFactory = $engine, closeGracePeriodMillis = $closeGracePeriodMillis, closeTimeoutMillis = $closeTimeoutMillis)")
+                .write("")
+                .withBlock("public interface ServiceFramework: #T {", "}", RuntimeTypes.Core.IO.Closeable) {
+                    write("// start the service and begin accepting connections")
+                    write("public fun start()")
+                }
+                .write("")
+
+            when (settings.serviceStub.framework) {
+                ServiceFramework.KTOR -> renderKTORServiceFramework(writer, serviceFrameworkConfigName)
+            }
+        }
+    }
+
+    private fun renderServiceFrameworkConfig() {
+        delegator.useFileWriter("ServiceFrameworkConfig.kt", "${settings.pkg.name}.configurations") { writer ->
+            writer.write(
+                "internal data class ServiceFrameworkConfig ( \n" +
+                        "    val port: Int, \n" +
+                        "    val engineFactory: #T<*, *>, \n" +
+                        "    val closeGracePeriodMillis: Long, \n" +
+                        "    val closeTimeoutMillis: Long, \n" +
+                        ") {}",
+                RuntimeTypes.KtorServerCore.ApplicationEngineFactory,
+            )
+        }
+    }
+
+    private fun renderKTORServiceFramework(writer: KotlinWriter, serviceFrameworkConfigName: String) {
+        writer.addImport(RuntimeTypes.KtorServerNetty.Netty)
+        writer.addImport("${settings.pkg.name}", "configureRouting")
+
+        writer.withBlock("internal class KTORServiceFramework : ServiceFramework {", "}") {
+            write("private var engine: #T<*, *>? = null", RuntimeTypes.KtorServerCore.EmbeddedServerType)
+            write("")
+            withBlock("override fun start() {", "}") {
                 withBlock(
-                    "#T(#T, port = $port) {",
-                    "}.start(wait = true)",
+                    "engine = #T($serviceFrameworkConfigName.engineFactory, port = $serviceFrameworkConfigName.port) {",
+                    "}.also { it.start(wait = true) }",
                     RuntimeTypes.KtorServerCore.embeddedServer,
-                    engine,
                 ) {
                     write("configureRouting()")
 //                    write("configureContentNegotiation()")
                 }
+            }
+            write("")
+            withBlock("final override fun close() {", "}") {
+                write("engine?.stop($serviceFrameworkConfigName.closeGracePeriodMillis, $serviceFrameworkConfigName.closeTimeoutMillis)")
+                write("engine = null")
             }
         }
     }
@@ -77,11 +140,11 @@ class ServiceStubGenerator(
         delegator.useFileWriter("Routing.kt", settings.pkg.name) { writer ->
 
             operationShapes.forEach { shape ->
-                writer.addImport("com.example.server.serde", "${shape.id.name}OperationDeserializer")
-                writer.addImport("com.example.server.serde", "${shape.id.name}OperationSerializer")
-                writer.addImport("com.example.server.model", "${shape.id.name}Request")
-                writer.addImport("com.example.server.model", "${shape.id.name}Response")
-                writer.addImport("com.example.server.operations", "${shape.id.name}HandleRequest")
+                writer.addImport("${settings.pkg.name}.serde", "${shape.id.name}OperationDeserializer")
+                writer.addImport("${settings.pkg.name}.serde", "${shape.id.name}OperationSerializer")
+                writer.addImport("${settings.pkg.name}.model", "${shape.id.name}Request")
+                writer.addImport("${settings.pkg.name}.model", "${shape.id.name}Response")
+                writer.addImport("${settings.pkg.name}.operations", "${shape.id.name}HandleRequest")
             }
 
             writer.withBlock("internal fun #T.configureRouting(): Unit {", "}", RuntimeTypes.KtorServerCore.Application) {
@@ -123,8 +186,8 @@ class ServiceStubGenerator(
         operationShapes.forEach { shape ->
             val name = shape.id.name
             delegator.useFileWriter("${name}Operation.kt", "${settings.pkg.name}.operations") { writer ->
-                writer.addImport("com.example.server.model", "${shape.id.name}Request")
-                writer.addImport("com.example.server.model", "${shape.id.name}Response")
+                writer.addImport("${settings.pkg.name}.model", "${shape.id.name}Request")
+                writer.addImport("${settings.pkg.name}.model", "${shape.id.name}Response")
 
                 writer.withBlock("public fun ${name}HandleRequest(req: ${name}Request): ${name}Response {", "}") {
                     write("// TODO: implement me")
