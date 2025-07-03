@@ -15,7 +15,6 @@ import software.amazon.smithy.model.shapes.ShapeType
 import software.amazon.smithy.model.traits.HttpTrait
 import software.amazon.smithy.utils.AbstractCodeWriter
 
-
 class LoggingWriter(parent: LoggingWriter? = null) : AbstractCodeWriter<LoggingWriter>() {
     init {
         trimBlankLines(parent?.trimBlankLines ?: 1)
@@ -139,7 +138,7 @@ class ServiceStubGenerator(
                     write("level = #T.INFO", RuntimeTypes.KtorLoggingBackend.Level)
                     withBlock("format { call ->", "}") {
                         write("val status = call.response.status()")
-                        write("\"\${call.request.#T.value} \${call.request.#T} → \$status\"",  RuntimeTypes.KtorServerRouting.requestHttpMethod, RuntimeTypes.KtorServerRouting.requestUri)
+                        write("\"\${call.request.#T.value} \${call.request.#T} → \$status\"", RuntimeTypes.KtorServerRouting.requestHttpMethod, RuntimeTypes.KtorServerRouting.requestUri)
                     }
                 }
                 write("val log = #T.getLogger(#S)", RuntimeTypes.KtorLoggingBackend.LoggerFactory, settings.pkg.name)
@@ -177,7 +176,6 @@ class ServiceStubGenerator(
                 w.withBlock("<root level=#S>", "</root>", loggingLevel.value.uppercase()) {
                     write("<appender-ref ref=#S/>", "STDOUT")
                 }
-
         }
     }
 

@@ -357,7 +357,7 @@ data class ServiceStubSettings(
     val framework: ServiceFramework = ServiceFramework.KTOR,
     val engine: ServiceEngine = ServiceEngine.NETTY,
     val port: Int = 8080,
-    val logLevel: LogLevel = LogLevel.INFO
+    val logLevel: LogLevel = LogLevel.INFO,
 ) {
     companion object {
         const val SERVER_FRAMEWORK = "serverFramework"
