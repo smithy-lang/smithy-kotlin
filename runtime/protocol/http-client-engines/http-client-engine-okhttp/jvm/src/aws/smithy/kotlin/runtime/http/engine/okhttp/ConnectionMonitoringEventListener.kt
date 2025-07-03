@@ -26,13 +26,8 @@ import kotlin.time.measureTime
  * This replaces the functionality previously provided by the now-internal [ConnectionListener].
  */
 internal class ConnectionMonitoringEventListener(
-    pool: ConnectionPool,
-    hr: HostResolver,
-    dispatcher: Dispatcher,
-    metrics: HttpClientMetrics,
     private val pollInterval: Duration,
-    call: Call,
-) : HttpEngineEventListener(pool, hr, dispatcher, metrics, call) {
+) : EventListener(), Closeable {
     private val monitorScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
     private val monitors = ConcurrentHashMap<Int, Job>()
 
@@ -54,7 +49,6 @@ internal class ConnectionMonitoringEventListener(
 
     // Cancel monitoring when a connection is acquired
     override fun connectionAcquired(call: Call, connection: Connection) {
-        super.connectionAcquired(call, connection)
 
         // Get connection ID
         val connId = System.identityHashCode(connection)
@@ -78,7 +72,6 @@ internal class ConnectionMonitoringEventListener(
 
     // Start monitoring when a connection is released
     override fun connectionReleased(call: Call, connection: Connection) {
-        super.connectionReleased(call, connection)
 
         val connId = System.identityHashCode(connection)
         val callContext = call.callContext()

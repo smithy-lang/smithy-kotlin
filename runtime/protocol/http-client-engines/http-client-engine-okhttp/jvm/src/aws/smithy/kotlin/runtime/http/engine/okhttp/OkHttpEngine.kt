@@ -11,6 +11,7 @@ import aws.smithy.kotlin.runtime.http.config.EngineFactory
 import aws.smithy.kotlin.runtime.http.engine.*
 import aws.smithy.kotlin.runtime.http.engine.internal.HttpClientMetrics
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
+import aws.smithy.kotlin.runtime.io.closeIfCloseable
 import aws.smithy.kotlin.runtime.net.TlsVersion
 import aws.smithy.kotlin.runtime.operation.ExecutionContext
 import aws.smithy.kotlin.runtime.time.Instant
@@ -72,6 +73,9 @@ public class OkHttpEngine(
     }
 
     override fun shutdown() {
+        client.dispatcher.runningCalls().forEach { call ->
+            call.request().eventListener.closeIfCloseable()
+        }
         client.connectionPool.evictAll()
         client.dispatcher.executorService.shutdown()
         metrics.close()
@@ -118,19 +122,16 @@ public fun OkHttpEngineConfig.buildClient(
         dispatcher(dispatcher)
 
         // Log events coming from okhttp. Allocate a new listener per-call to facilitate dedicated trace spans.
-        // If connection idle polling is enabled, use ConnectionMonitoringEventListener
+        // If connection idle polling is enabled, use EventListenerChain to combine HttpEngineEventListener
+        // and ConnectionMonitoringEventListener
         eventListenerFactory { call ->
+            val baseListener = HttpEngineEventListener(pool, config.hostResolver, dispatcher, metrics, call)
+            
             if (config.connectionIdlePollingInterval != null) {
-                ConnectionMonitoringEventListener(
-                    pool,
-                    config.hostResolver,
-                    dispatcher,
-                    metrics,
-                    config.connectionIdlePollingInterval!!,
-                    call,
-                )
+                val connectionMonitoringListener = ConnectionMonitoringEventListener(config.connectionIdlePollingInterval!!)
+                EventListenerChain(listOf(baseListener, connectionMonitoringListener))
             } else {
-                HttpEngineEventListener(pool, config.hostResolver, dispatcher, metrics, call)
+                baseListener
             }
         }
 
