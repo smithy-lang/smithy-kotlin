@@ -23,7 +23,9 @@ public final class aws/smithy/kotlin/runtime/auth/awssigning/AwsChunkedSource : 
 	public fun <init> (Laws/smithy/kotlin/runtime/io/SdkSource;Laws/smithy/kotlin/runtime/auth/awssigning/AwsSigner;Laws/smithy/kotlin/runtime/auth/awssigning/AwsSigningConfig;[BLaws/smithy/kotlin/runtime/http/DeferredHeaders;)V
 	public synthetic fun <init> (Laws/smithy/kotlin/runtime/io/SdkSource;Laws/smithy/kotlin/runtime/auth/awssigning/AwsSigner;Laws/smithy/kotlin/runtime/auth/awssigning/AwsSigningConfig;[BLaws/smithy/kotlin/runtime/http/DeferredHeaders;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public fun close ()V
+	public final fun getContentBytesTransferred ()J
 	public fun read (Laws/smithy/kotlin/runtime/io/SdkBuffer;J)J
+	public final fun setContentBytesTransferred (J)V
 }
 
 public final class aws/smithy/kotlin/runtime/auth/awssigning/AwsSignatureType : java/lang/Enum {
