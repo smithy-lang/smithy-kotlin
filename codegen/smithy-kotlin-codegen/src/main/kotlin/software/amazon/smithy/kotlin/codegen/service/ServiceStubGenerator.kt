@@ -266,14 +266,14 @@ class ServiceStubGenerator(
                 withBlock("public fun cbor(): Unit {", "}") {
                     write("allow = listOf(#T)", RuntimeTypes.KtorServerHTTP.Cbor)
                 }
-
-
             }
 
-
-            writer.withBlock("public val ContentTypeGuard: #T<ContentTypeGuardConfig> = #T(", ")",
+            writer.withBlock(
+                "public val ContentTypeGuard: #T<ContentTypeGuardConfig> = #T(",
+                ")",
                 RuntimeTypes.KtorServerCore.ApplicationRouteScopedPlugin,
-                RuntimeTypes.KtorServerCore.ApplicationCreateRouteScopedPlugin) {
+                RuntimeTypes.KtorServerCore.ApplicationCreateRouteScopedPlugin,
+            ) {
                 write("name = #S,", "ContentTypeGuard")
                 write("createConfiguration = ::ContentTypeGuardConfig,")
             }
