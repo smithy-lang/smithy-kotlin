@@ -36,6 +36,7 @@ class ServiceStubGenerator(
         // FIXME: check server framework here and render according to the chosen server framework
         renderMainFile()
         renderServiceFramework()
+        renderPlugins()
         renderLogging()
         renderProtocolModule()
         renderAuthModule()
@@ -44,7 +45,7 @@ class ServiceStubGenerator(
         renderPerOperationHandlers()
     }
 
-    // Writes `Main.kt` that boots the embedded Ktor service.
+    // Writes `Main.kt` that launch the server.
     private fun renderMainFile() {
         delegator.useFileWriter("Main.kt", settings.pkg.name) { writer ->
             writer.dependencies.addAll(KotlinDependency.KTOR_LOGGING_BACKEND.dependencies)
@@ -57,7 +58,7 @@ class ServiceStubGenerator(
         }
     }
 
-    // Writes `Main.kt` that boots the embedded Ktor service.
+    // Writes `ServiceFramework.kt` that boots the embedded Ktor service.
     private fun renderServiceFramework() {
         val port = settings.serviceStub.port
         val engine = when (settings.serviceStub.engine) {
@@ -91,15 +92,12 @@ class ServiceStubGenerator(
 
     private fun renderServiceFrameworkConfig() {
         delegator.useFileWriter("ServiceFrameworkConfig.kt", "${settings.pkg.name}.configurations") { writer ->
-            writer.write(
-                "internal data class ServiceFrameworkConfig ( \n" +
-                    "    val port: Int, \n" +
-                    "    val engineFactory: #T<*, *>, \n" +
-                    "    val closeGracePeriodMillis: Long, \n" +
-                    "    val closeTimeoutMillis: Long, \n" +
-                    ") {}",
-                RuntimeTypes.KtorServerCore.ApplicationEngineFactory,
-            )
+            writer.withBlock("internal data class ServiceFrameworkConfig (", ")") {
+                write("val port: Int,")
+                write("val engineFactory: #T<*, *>,", RuntimeTypes.KtorServerCore.ApplicationEngineFactory)
+                write("val closeGracePeriodMillis: Long,")
+                write("val closeTimeoutMillis: Long,")
+            }
         }
     }
 
@@ -119,7 +117,6 @@ class ServiceStubGenerator(
                 ) {
                     write("configureRouting()")
                     write("configureLogging()")
-//                    write("configureContentNegotiation()")
                 }
             }
             write("")
@@ -200,8 +197,6 @@ class ServiceStubGenerator(
 
     // Writes `Routing.kt` that maps Smithy operations → Ktor routes.
     private fun renderRouting() {
-        // FIXME: currently it is hardcoded for testing. This part will be generated once I'm working on the routing.
-
         val operationShapes = serviceShapes.filter { it.type == ShapeType.OPERATION }.map { it as OperationShape }
         delegator.useFileWriter("Routing.kt", settings.pkg.name) { writer ->
 
@@ -212,6 +207,7 @@ class ServiceStubGenerator(
                 writer.addImport("${settings.pkg.name}.model", "${shape.id.name}Response")
                 writer.addImport("${settings.pkg.name}.operations", "${shape.id.name}HandleRequest")
             }
+            writer.addImport("${settings.pkg.name}.plugins", "ContentTypeGuard")
 
             writer.withBlock("internal fun #T.configureRouting(): Unit {", "}", RuntimeTypes.KtorServerCore.Application) {
                 withBlock("#T {", "}", RuntimeTypes.KtorServerRouting.routing) {
@@ -225,24 +221,77 @@ class ServiceStubGenerator(
                             val method = when (httpTrait.method) {
                                 "GET" -> RuntimeTypes.KtorServerRouting.get
                                 "POST" -> RuntimeTypes.KtorServerRouting.post
+                                "PUT" -> RuntimeTypes.KtorServerRouting.put
+                                "PATCH" -> RuntimeTypes.KtorServerRouting.patch
+                                "DELETE" -> RuntimeTypes.KtorServerRouting.delete
+                                "HEAD" -> RuntimeTypes.KtorServerRouting.head
+                                "OPTIONS" -> RuntimeTypes.KtorServerRouting.options
                                 else -> error("Unsupported http trait ${httpTrait.method}")
                             }
-                            withBlock("#T(#S) {", "}", method, uri) {
-                                write("val request = #T.#T<ByteArray>()", RuntimeTypes.KtorServerCore.applicationCall, RuntimeTypes.KtorServerRouting.requestReceive)
-                                write("val deserializer = ${shape.id.name}OperationDeserializer()")
-                                write("val requestObj = deserializer.deserialize(#T(), request)", RuntimeTypes.Core.ExecutionContext)
-                                write("val responseObj = ${shape.id.name}HandleRequest(requestObj)")
-                                write("val serializer = ${shape.id.name}OperationSerializer()")
-                                write("val response = serializer.serialize(#T(), responseObj)", RuntimeTypes.Core.ExecutionContext)
-                                withBlock("#T.#T(", ")", RuntimeTypes.KtorServerCore.applicationCall, RuntimeTypes.KtorServerRouting.requestRespondBytes) {
-                                    write("bytes = response.body.#T() ?:  ByteArray(0),", RuntimeTypes.Http.readAll)
-                                    write("contentType = #T,", RuntimeTypes.KtorServerHTTP.Cbor)
-                                    write("status = #T.OK,", RuntimeTypes.KtorServerHTTP.HttpStatusCode)
+                            withBlock("#T (#S) {", "}", RuntimeTypes.KtorServerRouting.route, uri) {
+                                write("#T(ContentTypeGuard) { cbor() }", RuntimeTypes.KtorServerCore.install)
+                                withBlock("#T {", "}", method) {
+                                    write("val request = #T.#T<ByteArray>()", RuntimeTypes.KtorServerCore.applicationCall, RuntimeTypes.KtorServerRouting.requestReceive)
+                                    write("val deserializer = ${shape.id.name}OperationDeserializer()")
+                                    write("val requestObj = deserializer.deserialize(#T(), request)", RuntimeTypes.Core.ExecutionContext)
+                                    write("val responseObj = ${shape.id.name}HandleRequest(requestObj)")
+                                    write("val serializer = ${shape.id.name}OperationSerializer()")
+                                    write("val response = serializer.serialize(#T(), responseObj)", RuntimeTypes.Core.ExecutionContext)
+                                    withBlock("#T.#T(", ")", RuntimeTypes.KtorServerCore.applicationCall, RuntimeTypes.KtorServerRouting.responseRespondBytes) {
+                                        write("bytes = response.body.#T() ?:  ByteArray(0),", RuntimeTypes.Http.readAll)
+                                        write("contentType = #T,", RuntimeTypes.KtorServerHTTP.Cbor)
+                                        write("status = #T.OK,", RuntimeTypes.KtorServerHTTP.HttpStatusCode)
+                                    }
                                 }
                             }
                         }
                 }
             }
+        }
+    }
+
+    private fun renderPlugins() {
+        renderContentTypeGuard()
+    }
+
+    private fun renderContentTypeGuard() {
+        delegator.useFileWriter("ContentTypeGuard.kt", "${settings.pkg.name}.plugins") { writer ->
+            writer.withBlock("public class ContentTypeGuardConfig {", "}") {
+                write("public var allow: List<#T> = emptyList()", RuntimeTypes.KtorServerHTTP.ContentType)
+                write("")
+                withBlock("public fun json(): Unit {", "}") {
+                    write("allow = listOf(#T)", RuntimeTypes.KtorServerHTTP.Json)
+                }
+                write("")
+                withBlock("public fun cbor(): Unit {", "}") {
+                    write("allow = listOf(#T)", RuntimeTypes.KtorServerHTTP.Cbor)
+                }
+
+
+            }
+
+
+            writer.withBlock("public val ContentTypeGuard: #T<ContentTypeGuardConfig> = #T(", ")",
+                RuntimeTypes.KtorServerCore.ApplicationRouteScopedPlugin,
+                RuntimeTypes.KtorServerCore.ApplicationCreateRouteScopedPlugin) {
+                write("name = #S,", "ContentTypeGuard")
+                write("createConfiguration = ::ContentTypeGuardConfig,")
+            }
+                .withBlock("{", "}") {
+                    write("val allowed: List<#T> = pluginConfig.allow", RuntimeTypes.KtorServerHTTP.ContentType)
+                    write("require(allowed.isNotEmpty()) { #S }", "ContentTypeGuard installed with empty allow-list.")
+                    write("")
+                    withBlock("onCall { call ->", "}") {
+                        write("val incoming = call.request.#T()", RuntimeTypes.KtorServerRouting.requestContentType)
+                        withBlock("if (incoming == #T.Any || allowed.none { incoming.match(it) }) {", "}", RuntimeTypes.KtorServerHTTP.ContentType) {
+                            withBlock("call.#T(", ")", RuntimeTypes.KtorServerRouting.responseRespond) {
+                                write("#T.UnsupportedMediaType,", RuntimeTypes.KtorServerHTTP.HttpStatusCode)
+                                write("#S", "Allowed Content-Type(s): \${allowed.joinToString()}")
+                            }
+                            write("return@onCall")
+                        }
+                    }
+                }
         }
     }
 

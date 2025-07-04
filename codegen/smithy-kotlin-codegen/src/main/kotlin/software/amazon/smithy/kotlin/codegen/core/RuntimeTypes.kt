@@ -488,25 +488,36 @@ object RuntimeTypes {
     object KtorServerCore : RuntimeTypePackage(KotlinDependency.KTOR_SERVER_CORE) {
         val embeddedServer = symbol("embeddedServer", "engine")
         val EmbeddedServerType = symbol("EmbeddedServer", "engine")
+        val Application = symbol("Application", "application")
         val ApplicationEngine = symbol("ApplicationEngine", "engine")
         val ApplicationEngineFactory = symbol("ApplicationEngineFactory", "engine")
-        val Application = symbol("Application", "application")
         val ApplicationStopping = symbol("ApplicationStopping", "application")
         val ApplicationStopped = symbol("ApplicationStopped", "application")
+        val ApplicationCreateRouteScopedPlugin = symbol("createRouteScopedPlugin", "application")
+        val ApplicationRouteScopedPlugin = symbol("RouteScopedPlugin", "application")
         val applicationCall = symbol("call", "application")
         val install = symbol("install", "application")
     }
 
     object KtorServerRouting : RuntimeTypePackage(KotlinDependency.KTOR_SERVER_CORE) {
         val routing = symbol("routing", "routing")
+        val route = symbol("route", "routing")
         val get = symbol("get", "routing")
         val post = symbol("post", "routing")
+        val put = symbol("put", "routing")
+        val delete = symbol("delete", "routing")
+        val patch = symbol("patch", "routing")
+        val head = symbol("head", "routing")
+        val options = symbol("options", "routing")
 
-        val responseText = symbol("respondText", "response")
         val requestReceive = symbol("receive", "request")
         val requestUri = symbol("uri", "request")
         val requestHttpMethod = symbol("httpMethod", "request")
-        val requestRespondBytes = symbol("respondBytes", "response")
+
+        val responseText = symbol("respondText", "response")
+        val responseRespond = symbol("respond", "response")
+        val responseRespondBytes = symbol("respondBytes", "response")
+        val requestContentType = symbol("contentType", "request")
     }
 
     object KtorServerNetty : RuntimeTypePackage(KotlinDependency.KTOR_SERVER_NETTY) {
@@ -517,6 +528,7 @@ object RuntimeTypes {
         val ContentType = symbol("ContentType")
         val HttpStatusCode = symbol("HttpStatusCode")
         val Cbor = symbol("Cbor", "ContentType.Application")
+        val Json = symbol("Json", "ContentType.Application")
     }
 
     object KtorServerLogging : RuntimeTypePackage(KotlinDependency.KTOR_SERVER_LOGGING) {
