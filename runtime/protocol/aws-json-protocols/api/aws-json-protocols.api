@@ -1,5 +1,6 @@
 public final class aws/smithy/kotlin/runtime/awsprotocol/json/AwsJsonProtocol : aws/smithy/kotlin/runtime/http/operation/ModifyRequestMiddleware {
 	public fun <init> (Ljava/lang/String;Ljava/lang/String;)V
+	public fun install (Laws/smithy/kotlin/runtime/http/operation/SdkHttpOperation;)V
 	public fun modifyRequest (Laws/smithy/kotlin/runtime/http/operation/OperationRequest;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public synthetic fun modifyRequest (Ljava/lang/Object;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }

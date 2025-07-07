@@ -199,6 +199,11 @@ public abstract interface class aws/smithy/kotlin/runtime/collections/MultiMap :
 	public fun toMutableMultiMap ()Laws/smithy/kotlin/runtime/collections/MutableMultiMap;
 }
 
+public final class aws/smithy/kotlin/runtime/collections/MultiMap$DefaultImpls {
+	public static fun contains (Laws/smithy/kotlin/runtime/collections/MultiMap;Ljava/lang/Object;Ljava/lang/Object;)Z
+	public static fun toMutableMultiMap (Laws/smithy/kotlin/runtime/collections/MultiMap;)Laws/smithy/kotlin/runtime/collections/MutableMultiMap;
+}
+
 public final class aws/smithy/kotlin/runtime/collections/MultiMapKt {
 	public static final fun multiMapOf ([Lkotlin/Pair;)Laws/smithy/kotlin/runtime/collections/MultiMap;
 }
@@ -223,6 +228,13 @@ public abstract interface class aws/smithy/kotlin/runtime/collections/MutableMul
 	public abstract fun removeElement (Ljava/lang/Object;Ljava/lang/Object;)Z
 	public abstract fun retainAll (Ljava/lang/Object;Ljava/util/Collection;)Ljava/lang/Boolean;
 	public fun toMultiMap ()Laws/smithy/kotlin/runtime/collections/MultiMap;
+}
+
+public final class aws/smithy/kotlin/runtime/collections/MutableMultiMap$DefaultImpls {
+	public static fun addAll (Laws/smithy/kotlin/runtime/collections/MutableMultiMap;Ljava/util/Map;)V
+	public static fun contains (Laws/smithy/kotlin/runtime/collections/MutableMultiMap;Ljava/lang/Object;Ljava/lang/Object;)Z
+	public static fun put (Laws/smithy/kotlin/runtime/collections/MutableMultiMap;Ljava/lang/Object;Ljava/lang/Object;)Ljava/util/List;
+	public static fun toMultiMap (Laws/smithy/kotlin/runtime/collections/MutableMultiMap;)Laws/smithy/kotlin/runtime/collections/MultiMap;
 }
 
 public final class aws/smithy/kotlin/runtime/collections/MutableMultiMapKt {
@@ -256,6 +268,12 @@ public abstract interface class aws/smithy/kotlin/runtime/collections/ValuesMap 
 	public abstract fun getCaseInsensitiveName ()Z
 	public abstract fun isEmpty ()Z
 	public abstract fun names ()Ljava/util/Set;
+}
+
+public final class aws/smithy/kotlin/runtime/collections/ValuesMap$DefaultImpls {
+	public static fun contains (Laws/smithy/kotlin/runtime/collections/ValuesMap;Ljava/lang/String;Ljava/lang/Object;)Z
+	public static fun forEach (Laws/smithy/kotlin/runtime/collections/ValuesMap;Lkotlin/jvm/functions/Function2;)V
+	public static fun get (Laws/smithy/kotlin/runtime/collections/ValuesMap;Ljava/lang/String;)Ljava/lang/Object;
 }
 
 public class aws/smithy/kotlin/runtime/collections/ValuesMapBuilder {
@@ -293,6 +311,8 @@ public class aws/smithy/kotlin/runtime/collections/ValuesMapImpl : aws/smithy/ko
 	public fun contains (Ljava/lang/String;Ljava/lang/Object;)Z
 	public fun entries ()Ljava/util/Set;
 	public fun equals (Ljava/lang/Object;)Z
+	public fun forEach (Lkotlin/jvm/functions/Function2;)V
+	public fun get (Ljava/lang/String;)Ljava/lang/Object;
 	public fun getAll (Ljava/lang/String;)Ljava/util/List;
 	public fun getCaseInsensitiveName ()Z
 	protected final fun getValues ()Ljava/util/Map;
@@ -696,6 +716,10 @@ public abstract interface class aws/smithy/kotlin/runtime/hashing/HashFunction {
 	public static synthetic fun update$default (Laws/smithy/kotlin/runtime/hashing/HashFunction;[BIIILjava/lang/Object;)V
 }
 
+public final class aws/smithy/kotlin/runtime/hashing/HashFunction$DefaultImpls {
+	public static synthetic fun update$default (Laws/smithy/kotlin/runtime/hashing/HashFunction;[BIIILjava/lang/Object;)V
+}
+
 public final class aws/smithy/kotlin/runtime/hashing/HashFunctionKt {
 	public static final fun hash ([BLaws/smithy/kotlin/runtime/hashing/HashFunction;)[B
 	public static final fun hash ([BLkotlin/jvm/functions/Function0;)[B
@@ -899,6 +923,11 @@ public abstract interface class aws/smithy/kotlin/runtime/io/SdkBufferedSink : a
 	public static synthetic fun writeUtf8$default (Laws/smithy/kotlin/runtime/io/SdkBufferedSink;Ljava/lang/String;IIILjava/lang/Object;)V
 }
 
+public final class aws/smithy/kotlin/runtime/io/SdkBufferedSink$DefaultImpls {
+	public static synthetic fun write$default (Laws/smithy/kotlin/runtime/io/SdkBufferedSink;[BIIILjava/lang/Object;)V
+	public static synthetic fun writeUtf8$default (Laws/smithy/kotlin/runtime/io/SdkBufferedSink;Ljava/lang/String;IIILjava/lang/Object;)V
+}
+
 public abstract interface class aws/smithy/kotlin/runtime/io/SdkBufferedSource : aws/smithy/kotlin/runtime/io/SdkSource, java/nio/channels/ReadableByteChannel {
 	public abstract fun exhausted ()Z
 	public abstract fun getBuffer ()Laws/smithy/kotlin/runtime/io/SdkBuffer;
@@ -923,8 +952,16 @@ public abstract interface class aws/smithy/kotlin/runtime/io/SdkBufferedSource :
 	public abstract fun skip (J)V
 }
 
+public final class aws/smithy/kotlin/runtime/io/SdkBufferedSource$DefaultImpls {
+	public static synthetic fun read$default (Laws/smithy/kotlin/runtime/io/SdkBufferedSource;[BIIILjava/lang/Object;)I
+}
+
 public abstract interface class aws/smithy/kotlin/runtime/io/SdkByteChannel : aws/smithy/kotlin/runtime/io/SdkByteReadChannel, aws/smithy/kotlin/runtime/io/SdkByteWriteChannel {
 	public fun close ()V
+}
+
+public final class aws/smithy/kotlin/runtime/io/SdkByteChannel$DefaultImpls {
+	public static fun close (Laws/smithy/kotlin/runtime/io/SdkByteChannel;)V
 }
 
 public final class aws/smithy/kotlin/runtime/io/SdkByteChannelKt {
@@ -967,6 +1004,10 @@ public abstract interface class aws/smithy/kotlin/runtime/io/SdkByteWriteChannel
 	public abstract fun getTotalBytesWritten ()J
 	public abstract fun isClosedForWrite ()Z
 	public abstract fun write (Laws/smithy/kotlin/runtime/io/SdkBuffer;JLkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static synthetic fun write$default (Laws/smithy/kotlin/runtime/io/SdkByteWriteChannel;Laws/smithy/kotlin/runtime/io/SdkBuffer;JLkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
+}
+
+public final class aws/smithy/kotlin/runtime/io/SdkByteWriteChannel$DefaultImpls {
 	public static synthetic fun write$default (Laws/smithy/kotlin/runtime/io/SdkByteWriteChannel;Laws/smithy/kotlin/runtime/io/SdkBuffer;JLkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
 }
 
@@ -1194,6 +1235,10 @@ public abstract interface class aws/smithy/kotlin/runtime/net/HostResolver {
 
 public final class aws/smithy/kotlin/runtime/net/HostResolver$Companion {
 	public final fun getDefault ()Laws/smithy/kotlin/runtime/net/HostResolver;
+}
+
+public final class aws/smithy/kotlin/runtime/net/HostResolver$DefaultImpls {
+	public static synthetic fun purgeCache$default (Laws/smithy/kotlin/runtime/net/HostResolver;Laws/smithy/kotlin/runtime/net/HostAddress;ILjava/lang/Object;)V
 }
 
 public abstract class aws/smithy/kotlin/runtime/net/IpAddr {
@@ -2125,6 +2170,11 @@ public abstract interface class aws/smithy/kotlin/runtime/text/encoding/Encoding
 public final class aws/smithy/kotlin/runtime/text/encoding/Encoding$Companion {
 }
 
+public final class aws/smithy/kotlin/runtime/text/encoding/Encoding$DefaultImpls {
+	public static fun encodableFromDecoded (Laws/smithy/kotlin/runtime/text/encoding/Encoding;Ljava/lang/String;)Laws/smithy/kotlin/runtime/text/encoding/Encodable;
+	public static fun encodableFromEncoded (Laws/smithy/kotlin/runtime/text/encoding/Encoding;Ljava/lang/String;)Laws/smithy/kotlin/runtime/text/encoding/Encodable;
+}
+
 public final class aws/smithy/kotlin/runtime/text/encoding/HexKt {
 	public static final fun decodeHex (Ljava/lang/String;)[B
 	public static final fun decodeHexBytes (Ljava/lang/String;)[B
@@ -2137,6 +2187,8 @@ public final class aws/smithy/kotlin/runtime/text/encoding/PercentEncoding : aws
 	public fun <init> (Ljava/lang/String;Ljava/util/Set;Ljava/util/Map;)V
 	public synthetic fun <init> (Ljava/lang/String;Ljava/util/Set;Ljava/util/Map;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public fun decode (Ljava/lang/String;)Ljava/lang/String;
+	public fun encodableFromDecoded (Ljava/lang/String;)Laws/smithy/kotlin/runtime/text/encoding/Encodable;
+	public fun encodableFromEncoded (Ljava/lang/String;)Laws/smithy/kotlin/runtime/text/encoding/Encodable;
 	public fun encode (Ljava/lang/String;)Ljava/lang/String;
 	public fun getName ()Ljava/lang/String;
 	public final fun getSpecialMapping ()Ljava/util/Map;
