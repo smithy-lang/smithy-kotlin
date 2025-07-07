@@ -680,7 +680,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                     writer
                         .addImport(exceptionDeserializerSymbols)
                         .write("")
-                        .openBlock("internal class #T: #T.NonStreaming<#T> {", deserializerSymbol, RuntimeTypes.HttpClient.Operation.HttpDeserializer, symbol)
+                        .openBlock("internal class #T: #T.NonStreaming<#T> {", deserializerSymbol, RuntimeTypes.HttpClient.Operation.HttpDeserializer, deserializationSymbol)
                         .write("")
                         .call { renderHttpDeserialize(ctx, deserializationSymbol, bindings, serdeMeta, null, writer) }
                         .closeBlock("}")
