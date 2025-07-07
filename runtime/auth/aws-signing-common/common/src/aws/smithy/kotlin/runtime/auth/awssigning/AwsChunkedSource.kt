@@ -49,6 +49,9 @@ public class AwsChunkedSource(
     override fun read(sink: SdkBuffer, limit: Long): Long {
         require(limit >= 0L) { "Invalid limit ($limit) must be >= 0L" }
         // COROUTINE SAFETY: runBlocking is allowed here because SdkSource is a synchronous blocking interface
+
+        // reset metadata bytes counter
+        chunkReader.chunkMetadataBytes = 0
         val isChunkValid = runBlocking {
             chunkReader.ensureValidChunk()
         }

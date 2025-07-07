@@ -73,8 +73,6 @@ internal class AwsChunkedReader(
     internal suspend fun ensureValidChunk(): Boolean {
         // check if the current chunk is still valid
         if (chunk.size > 0L) {
-            // reset metadata bytes counter as only first read of a chunk contains metadata
-            chunkMetadataBytes = 0L
             return true
         }
 
@@ -188,7 +186,7 @@ internal class AwsChunkedReader(
      */
     private suspend fun getUnsignedChunk(data: SdkBuffer? = null): SdkBuffer? {
         val bodyBuffer = data ?: stream.readChunk() ?: return null
-
+        val bodyBytes = bodyBuffer.size
         val unsignedChunk = SdkBuffer()
 
         // headers
@@ -197,7 +195,7 @@ internal class AwsChunkedReader(
             writeUtf8("\r\n")
             writeAll(bodyBuffer) // append the body
         }
-        chunkMetadataBytes += unsignedChunk.size - bodyBuffer.size
+        chunkMetadataBytes += unsignedChunk.size - bodyBytes
         return unsignedChunk
     }
 
