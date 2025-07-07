@@ -6,6 +6,7 @@
 package aws.smithy.kotlin.runtime.client
 
 import aws.smithy.kotlin.runtime.operation.ExecutionContext
+import kotlin.jvm.JvmDefaultWithoutCompatibility
 
 /**
  * An interceptor allows injecting code into the request execution pipeline of a generated SDK client.
@@ -20,6 +21,7 @@ import aws.smithy.kotlin.runtime.operation.ExecutionContext
  * **MUST** not modify state even if it is possible to do so (it is not always possible or performant to provide an
  * immutable view of every type).
  */
+@JvmDefaultWithoutCompatibility
 public interface Interceptor<
     Input,
     Output,
