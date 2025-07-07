@@ -334,7 +334,7 @@ class KotlinSymbolProvider(private val model: Model, private val settings: Kotli
 
     override fun serviceShape(shape: ServiceShape): Symbol {
         if (settings.build.generateServiceProject) {
-            // Intentionally not generating a class for the service
+            // Intentionally not generating a *client symbol* for the service
             return KotlinTypes.Nothing
         }
         val serviceName = clientName(settings.sdkId)
