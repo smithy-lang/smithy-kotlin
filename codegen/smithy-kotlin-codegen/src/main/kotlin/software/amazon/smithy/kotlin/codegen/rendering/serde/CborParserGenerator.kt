@@ -29,12 +29,12 @@ class CborParserGenerator(
         } else {
             op.outputShape
         }
-        val symbol = ctx.symbolProvider.toSymbol(ctx.model.expectShape(deserializationShape))
+        val deserializationsymbol = ctx.symbolProvider.toSymbol(ctx.model.expectShape(deserializationShape))
 
         return op.bodyDeserializer(ctx.settings) { writer ->
             addNestedDocumentDeserializers(ctx, op, writer)
             val fnName = op.bodyDeserializerName()
-            writer.withBlock("private fun #L(builder: #T.Builder, payload: ByteArray) {", "}", fnName, symbol) {
+            writer.withBlock("private fun #L(builder: #T.Builder, payload: ByteArray) {", "}", fnName, deserializationsymbol) {
                 call { renderDeserializeOperationBody(ctx, op, members, writer) }
             }
         }
@@ -101,8 +101,8 @@ class CborParserGenerator(
         } else {
             op.output
         }
-        val shape = ctx.model.expectShape(deserializationTarget.get())
-        renderDeserializerBody(ctx, shape, documentMembers, writer)
+        val deserializationShape = ctx.model.expectShape(deserializationTarget.get())
+        renderDeserializerBody(ctx, deserializationShape, documentMembers, writer)
     }
 
     private fun renderDeserializerBody(
