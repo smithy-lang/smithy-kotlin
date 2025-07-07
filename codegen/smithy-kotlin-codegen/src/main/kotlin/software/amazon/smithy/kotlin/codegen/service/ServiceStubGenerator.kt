@@ -10,9 +10,12 @@ import software.amazon.smithy.kotlin.codegen.core.RuntimeTypes
 import software.amazon.smithy.kotlin.codegen.core.withBlock
 import software.amazon.smithy.kotlin.codegen.model.getTrait
 import software.amazon.smithy.model.shapes.OperationShape
+import software.amazon.smithy.model.shapes.ServiceShape
 import software.amazon.smithy.model.shapes.Shape
+import software.amazon.smithy.model.shapes.ShapeId
 import software.amazon.smithy.model.shapes.ShapeType
 import software.amazon.smithy.model.traits.HttpTrait
+import software.amazon.smithy.protocol.traits.Rpcv2CborTrait
 import software.amazon.smithy.utils.AbstractCodeWriter
 
 class LoggingWriter(parent: LoggingWriter? = null) : AbstractCodeWriter<LoggingWriter>() {
@@ -29,7 +32,7 @@ class ServiceStubGenerator(
     private val settings: KotlinSettings,
     private val delegator: KotlinDelegator,
     private val fileManifest: FileManifest,
-    private val serviceShapes: Set<Shape>,
+    private val shapes: Set<Shape>,
 ) {
 
     fun render() {
@@ -197,7 +200,15 @@ class ServiceStubGenerator(
 
     // Writes `Routing.kt` that maps Smithy operations → Ktor routes.
     private fun renderRouting() {
-        val operationShapes = serviceShapes.filter { it.type == ShapeType.OPERATION }.map { it as OperationShape }
+        val serviceShapes = shapes.filter { it.type == ShapeType.SERVICE }.map { it as ServiceShape }
+        val cborShapeIds = mutableListOf<ShapeId>()
+        serviceShapes.forEach { shape ->
+            val protocolTrait = shape.getTrait<Rpcv2CborTrait>()
+            if (protocolTrait != null) {
+                cborShapeIds.addAll(shape.operations)
+            }
+        }
+        val operationShapes = shapes.filter { it.type == ShapeType.OPERATION }.map { it as OperationShape }
         delegator.useFileWriter("Routing.kt", settings.pkg.name) { writer ->
 
             operationShapes.forEach { shape ->
@@ -228,8 +239,13 @@ class ServiceStubGenerator(
                                 "OPTIONS" -> RuntimeTypes.KtorServerRouting.options
                                 else -> error("Unsupported http trait ${httpTrait.method}")
                             }
+                            val contentType = if (shape.id in cborShapeIds) {
+                                "cbor()"
+                            } else {
+                                error("Unsupported content type")
+                            }
                             withBlock("#T (#S) {", "}", RuntimeTypes.KtorServerRouting.route, uri) {
-                                write("#T(ContentTypeGuard) { cbor() }", RuntimeTypes.KtorServerCore.install)
+                                write("#T(ContentTypeGuard) { $contentType }", RuntimeTypes.KtorServerCore.install)
                                 withBlock("#T {", "}", method) {
                                     write("val request = #T.#T<ByteArray>()", RuntimeTypes.KtorServerCore.applicationCall, RuntimeTypes.KtorServerRouting.requestReceive)
                                     write("val deserializer = ${shape.id.name}OperationDeserializer()")
@@ -297,7 +313,7 @@ class ServiceStubGenerator(
 
     // Emits one stub handler per Smithy operation (`OperationNameHandler.kt`).
     private fun renderPerOperationHandlers() {
-        val operationShapes = serviceShapes.filter { it.type == ShapeType.OPERATION }.map { it as OperationShape }
+        val operationShapes = shapes.filter { it.type == ShapeType.OPERATION }.map { it as OperationShape }
         operationShapes.forEach { shape ->
             val name = shape.id.name
             delegator.useFileWriter("${name}Operation.kt", "${settings.pkg.name}.operations") { writer ->
