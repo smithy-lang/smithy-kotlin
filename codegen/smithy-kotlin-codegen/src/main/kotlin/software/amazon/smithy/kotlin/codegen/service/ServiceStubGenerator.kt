@@ -1,18 +1,24 @@
 package software.amazon.smithy.kotlin.codegen.service
 
-import software.amazon.smithy.kotlin.codegen.KotlinSettings
+import software.amazon.smithy.kotlin.codegen.core.GenerationContext
 import software.amazon.smithy.kotlin.codegen.core.KotlinDelegator
 import software.amazon.smithy.kotlin.codegen.core.KotlinDependency
 import software.amazon.smithy.kotlin.codegen.core.RuntimeTypes
+import software.amazon.smithy.kotlin.codegen.core.defaultName
 import software.amazon.smithy.kotlin.codegen.core.withBlock
-import software.amazon.smithy.model.shapes.Shape
-import software.amazon.smithy.model.shapes.ShapeType
+import software.amazon.smithy.model.knowledge.TopDownIndex
+import software.amazon.smithy.model.shapes.OperationShape
 
 class ServiceStubGenerator(
-    private val settings: KotlinSettings,
+    private val ctx: GenerationContext,
     private val delegator: KotlinDelegator,
-    private val serviceShapes: Set<Shape>,
 ) {
+    private val serviceShape = ctx.settings.getService(ctx.model)
+
+    private val operations: List<OperationShape> = TopDownIndex
+        .of(ctx.model)
+        .getContainedOperations(serviceShape)
+        .sortedBy { it.defaultName() }
 
     fun render() {
         // FIXME: check server framework here and render according to the chosen server framework
@@ -26,11 +32,11 @@ class ServiceStubGenerator(
 
     // Writes `Main.kt` that boots the embedded Ktor service.
     private fun renderMainFile() {
-        val port = settings.serviceStub.port
-        val engine = when (settings.serviceStub.engine) {
+        val port = ctx.settings.serviceStub.port
+        val engine = when (ctx.settings.serviceStub.engine) {
             ServiceEngine.NETTY -> RuntimeTypes.KtorServerNetty.Netty
         }
-        delegator.useFileWriter("Main.kt", settings.pkg.name) { writer ->
+        delegator.useFileWriter("Main.kt", ctx.settings.pkg.name) { writer ->
             writer.dependencies.addAll(KotlinDependency.KTOR_LOGGING_BACKEND.dependencies)
 
             writer.withBlock("public fun main(): Unit {", "}") {
@@ -48,7 +54,7 @@ class ServiceStubGenerator(
     }
 
     private fun renderProtocolModule() {
-        delegator.useFileWriter("ProtocolModule.kt", settings.pkg.name) { writer ->
+        delegator.useFileWriter("ProtocolModule.kt", ctx.settings.pkg.name) { writer ->
 
             writer.withBlock("internal fun #T.configureContentNegotiation() {", "}", RuntimeTypes.KtorServerCore.Application) {
                 withBlock("#T(#T) {", "}", RuntimeTypes.KtorServerCore.install, RuntimeTypes.KtorServerContentNegotiation.ContentNegotiation) {
@@ -69,14 +75,14 @@ class ServiceStubGenerator(
     // Writes `Routing.kt` that maps Smithy operations → Ktor routes.
     private fun renderRouting() {
         // FIXME: currently it is hardcoded for testing. This part will be generated once I'm working on the routing.
-        delegator.useFileWriter("Routing.kt", settings.pkg.name) { writer ->
+        delegator.useFileWriter("Routing.kt", ctx.settings.pkg.name) { writer ->
             writer.addImport(RuntimeTypes.KtorServerCore.applicationCall)
             writer.addImport(RuntimeTypes.KtorServerRouting.responseText)
             writer.addImport(RuntimeTypes.KtorServerRouting.requestReceive)
             writer.addImport(RuntimeTypes.KtorServerRouting.requestRespondBytes)
             writer.addImport(RuntimeTypes.KtorServerHttp.ContentType)
 
-            serviceShapes.filter { it.type == ShapeType.OPERATION }
+            operations
                 .forEach { shape ->
                     writer.addImport("com.example.server.serde", "${shape.id.name}OperationDeserializer")
                     writer.addImport("com.example.server.serde", "${shape.id.name}OperationSerializer")

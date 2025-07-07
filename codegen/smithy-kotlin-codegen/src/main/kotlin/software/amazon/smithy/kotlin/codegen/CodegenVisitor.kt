@@ -153,7 +153,7 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Unit>() {
         }
 
         if (generateServiceProject) {
-            val serviceStubGenerator = ServiceStubGenerator(settings, writers, serviceShapes)
+            val serviceStubGenerator = ServiceStubGenerator(baseGenerationContext, writers)
             serviceStubGenerator.render()
         }
 
