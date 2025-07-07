@@ -506,7 +506,7 @@ object RuntimeTypes {
         val Netty = symbol("Netty")
     }
 
-    object KtorServerHTTP : RuntimeTypePackage(KotlinDependency.KTOR_SERVER_HTTP) {
+    object KtorServerHttp : RuntimeTypePackage(KotlinDependency.KTOR_SERVER_HTTP) {
         val ContentType = symbol("ContentType")
         val HttpStatusCode = symbol("HttpStatusCode")
         val Cbor = symbol("Cbor", "ContentType.Application")

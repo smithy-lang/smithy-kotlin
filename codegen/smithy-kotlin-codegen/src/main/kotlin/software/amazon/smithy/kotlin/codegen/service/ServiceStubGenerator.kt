@@ -74,7 +74,7 @@ class ServiceStubGenerator(
             writer.addImport(RuntimeTypes.KtorServerRouting.responseText)
             writer.addImport(RuntimeTypes.KtorServerRouting.requestReceive)
             writer.addImport(RuntimeTypes.KtorServerRouting.requestRespondBytes)
-            writer.addImport(RuntimeTypes.KtorServerHTTP.ContentType)
+            writer.addImport(RuntimeTypes.KtorServerHttp.ContentType)
 
             serviceShapes.filter { it.type == ShapeType.OPERATION }
                 .forEach { shape ->
@@ -107,8 +107,8 @@ class ServiceStubGenerator(
                         write("val responseBytes = serializer.serialize(#T(), responseObj)", RuntimeTypes.Core.ExecutionContext)
                         withBlock("call.respondBytes(", ")") {
                             write("bytes = responseBytes.body.#T() ?:  ByteArray(0),", RuntimeTypes.Http.readAll)
-                            write("contentType = #T,", RuntimeTypes.KtorServerHTTP.Cbor)
-                            write("status = #T.OK,", RuntimeTypes.KtorServerHTTP.HttpStatusCode)
+                            write("contentType = #T,", RuntimeTypes.KtorServerHttp.Cbor)
+                            write("status = #T.OK,", RuntimeTypes.KtorServerHttp.HttpStatusCode)
                         }
                     }
                 }

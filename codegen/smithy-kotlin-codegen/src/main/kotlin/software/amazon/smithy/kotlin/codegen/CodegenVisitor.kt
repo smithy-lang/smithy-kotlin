@@ -143,7 +143,7 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Unit>() {
             logger.info("[${service.id}] Generating service client for protocol $protocol")
             generateProtocolClient(ctx)
 
-            if (!ctx.settings.build.generateServiceProject) {
+            if (!generateServiceProject) {
                 logger.info("[${service.id}] Generating endpoint provider for protocol $protocol")
                 generateEndpointsSources(ctx)
 

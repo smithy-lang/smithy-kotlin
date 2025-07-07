@@ -213,7 +213,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
     ) {
         val resolver = getProtocolHttpBindingResolver(ctx.model, ctx.service)
         val httpTrait = resolver.httpTrait(op)
-        val binding = if (ctx.settings.build.generateServiceProject) {
+        val bindings = if (ctx.settings.build.generateServiceProject) {
             resolver.responseBindings(op)
         } else {
             resolver.requestBindings(op)
@@ -229,17 +229,17 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                     renderUri(ctx, op, writer)
 
                     // Query Parameters
-                    renderQueryParameters(ctx, httpTrait, binding, writer)
+                    renderQueryParameters(ctx, httpTrait, bindings, writer)
                 }
             }
             .write("")
             .call {
                 // headers
-                val headerBindings = binding
+                val headerBindings = bindings
                     .filter { it.location == HttpBinding.Location.HEADER }
                     .sortedBy { it.memberName }
 
-                val prefixHeaderBindings = binding
+                val prefixHeaderBindings = bindings
                     .filter { it.location == HttpBinding.Location.PREFIX_HEADERS }
 
                 if (headerBindings.isNotEmpty() || prefixHeaderBindings.isNotEmpty()) {
@@ -277,16 +277,16 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         if (!resolver.hasHttpBody(op)) return
 
         // payload member(s)
-        val binding = if (ctx.settings.build.generateServiceProject) {
+        val bindings = if (ctx.settings.build.generateServiceProject) {
             resolver.responseBindings(op)
         } else {
             resolver.requestBindings(op)
         }
-        val httpPayload = binding.firstOrNull { it.location == HttpBinding.Location.PAYLOAD }
+        val httpPayload = bindings.firstOrNull { it.location == HttpBinding.Location.PAYLOAD }
         if (httpPayload != null) {
             renderExplicitHttpPayloadSerializer(ctx, httpPayload, writer)
         } else {
-            val documentMembers = binding.filterDocumentBoundMembers()
+            val documentMembers = bindings.filterDocumentBoundMembers()
             // Unbound document members that should be serialized into the document format for the protocol.
             // delegate to the generate operation body serializer function
             val sdg = structuredDataSerializer(ctx)
@@ -318,28 +318,28 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
     ) {
         val resolver = getProtocolHttpBindingResolver(ctx.model, ctx.service)
         val httpTrait = resolver.httpTrait(op)
-        val binding = if (ctx.settings.build.generateServiceProject) {
+        val bindings = if (ctx.settings.build.generateServiceProject) {
             resolver.responseBindings(op)
         } else {
             resolver.requestBindings(op)
         }
-        val pathBindings = binding.filter { it.location == HttpBinding.Location.LABEL }
+        val pathBindings = bindings.filter { it.location == HttpBinding.Location.LABEL }
 
         if (pathBindings.isNotEmpty()) {
             // One of the few places we generate client side validation
             // httpLabel bindings must be non-null
             httpTrait.uri.segments.filter { it.isLabel || it.isGreedyLabel }.forEach { segment ->
-                val binding = pathBindings.find {
+                val bindings = pathBindings.find {
                     it.memberName == segment.content
                 } ?: throw CodegenException("failed to find corresponding member for httpLabel `${segment.content}`")
 
-                val memberSymbol = ctx.symbolProvider.toSymbol(binding.member)
+                val memberSymbol = ctx.symbolProvider.toSymbol(bindings.member)
                 if (memberSymbol.isNullable) {
-                    writer.write("""requireNotNull(input.#1L) { "#1L is bound to the URI and must not be null" }""", binding.member.defaultName())
+                    writer.write("""requireNotNull(input.#1L) { "#1L is bound to the URI and must not be null" }""", bindings.member.defaultName())
                 }
 
                 // check length trait if applicable
-                renderNonBlankGuard(ctx, binding.member, writer)
+                renderNonBlankGuard(ctx, bindings.member, writer)
             }
 
             if (httpTrait.uri.segments.isNotEmpty()) {
@@ -347,37 +347,37 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                     httpTrait.uri.segments.forEach { segment ->
                         if (segment.isLabel || segment.isGreedyLabel) {
                             // spec dictates member name and label name MUST be the same
-                            val binding = pathBindings.find { binding ->
+                            val bindings = pathBindings.find { binding ->
                                 binding.memberName == segment.content
                             }
                                 ?: throw CodegenException("failed to find corresponding member for httpLabel `${segment.content}")
 
                             // shape must be string, number, boolean, or timestamp
-                            val targetShape = ctx.model.expectShape(binding.member.target)
-                            val memberSymbol = ctx.symbolProvider.toSymbol(binding.member)
+                            val targetShape = ctx.model.expectShape(bindings.member.target)
+                            val memberSymbol = ctx.symbolProvider.toSymbol(bindings.member)
                             val identifier = when {
                                 targetShape.isTimestampShape -> {
                                     addImport(RuntimeTypes.Core.TimestampFormat)
                                     val tsFormat = resolver.determineTimestampFormat(
-                                        binding.member,
+                                        bindings.member,
                                         HttpBinding.Location.LABEL,
                                         defaultTimestampFormat,
                                     )
                                     val nullCheck = if (memberSymbol.isNullable) "?" else ""
                                     val tsLabel = formatInstant(
-                                        "input.${binding.member.defaultName()}$nullCheck",
+                                        "input.${bindings.member.defaultName()}$nullCheck",
                                         tsFormat,
                                         forceString = true,
                                     )
                                     tsLabel
                                 }
 
-                                targetShape.isStringEnumShape -> "input.${binding.member.defaultName()}.value"
-                                targetShape.isIntEnumShape -> "input.${binding.member.defaultName()}.value.toString()"
+                                targetShape.isStringEnumShape -> "input.${bindings.member.defaultName()}.value"
+                                targetShape.isIntEnumShape -> "input.${bindings.member.defaultName()}.value.toString()"
 
-                                targetShape.isStringShape -> "input.${binding.member.defaultName()}"
+                                targetShape.isStringShape -> "input.${bindings.member.defaultName()}"
 
-                                else -> "input.${binding.member.defaultName()}.toString()"
+                                else -> "input.${bindings.member.defaultName()}.toString()"
                             }
 
                             val encodeFn =
@@ -416,17 +416,17 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
     private fun renderQueryParameters(
         ctx: ProtocolGenerator.GenerationContext,
         httpTrait: HttpTrait,
-        binding: List<HttpBindingDescriptor>,
+        bindings: List<HttpBindingDescriptor>,
         writer: KotlinWriter,
     ) {
         // literals in the URI
         val queryLiterals = httpTrait.uri.queryLiterals
 
         // shape bindings
-        val queryBindings = binding.filter { it.location == HttpBinding.Location.QUERY }
+        val queryBindings = bindings.filter { it.location == HttpBinding.Location.QUERY }
 
         // maps bound via httpQueryParams trait
-        val queryMapBindings = binding.filter { it.location == HttpBinding.Location.QUERY_PARAMS }
+        val queryMapBindings = bindings.filter { it.location == HttpBinding.Location.QUERY_PARAMS }
 
         if (queryBindings.isEmpty() && queryLiterals.isEmpty() && queryMapBindings.isEmpty()) return
 
@@ -581,7 +581,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         }
 
         val resolver = getProtocolHttpBindingResolver(ctx.model, ctx.service)
-        val binding = if (ctx.settings.build.generateServiceProject) {
+        val bindings = if (ctx.settings.build.generateServiceProject) {
             resolver.requestBindings(op)
         } else {
             resolver.responseBindings(op)
@@ -599,7 +599,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                             deserializerSymbol,
                         )
                         .write("")
-                        .call { renderServiceHttpDeserialize(ctx, symbol, binding, serdeMeta, op, writer) }
+                        .call { renderServiceHttpDeserialize(ctx, symbol, bindings, serdeMeta, op, writer) }
                         .closeBlock("}")
                 false ->
                     writer
@@ -612,7 +612,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                             symbol,
                         )
                         .write("")
-                        .call { renderHttpDeserialize(ctx, symbol, binding, serdeMeta, op, writer) }
+                        .call { renderHttpDeserialize(ctx, symbol, bindings, serdeMeta, op, writer) }
                         .closeBlock("}")
             }
         }
@@ -661,7 +661,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
 
         ctx.delegator.useSymbolWriter(deserializerSymbol) { writer ->
             val resolver = getProtocolHttpBindingResolver(ctx.model, ctx.service)
-            val binding = if (ctx.settings.build.generateServiceProject) {
+            val bindings = if (ctx.settings.build.generateServiceProject) {
                 resolver.requestBindings(shape)
             } else {
                 resolver.responseBindings(shape)
@@ -674,7 +674,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                         .write("")
                         .openBlock("internal class #T {", deserializerSymbol)
                         .write("")
-                        .call { renderServiceHttpDeserialize(ctx, symbol, binding, serdeMeta, null, writer) }
+                        .call { renderServiceHttpDeserialize(ctx, symbol, bindings, serdeMeta, null, writer) }
                         .closeBlock("}")
                 false ->
                     writer
@@ -682,7 +682,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                         .write("")
                         .openBlock("internal class #T: #T.NonStreaming<#T> {", deserializerSymbol, RuntimeTypes.HttpClient.Operation.HttpDeserializer, symbol)
                         .write("")
-                        .call { renderHttpDeserialize(ctx, symbol, binding, serdeMeta, null, writer) }
+                        .call { renderHttpDeserialize(ctx, symbol, bindings, serdeMeta, null, writer) }
                         .closeBlock("}")
             }
         }
@@ -691,7 +691,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
     private fun renderHttpDeserialize(
         ctx: ProtocolGenerator.GenerationContext,
         symbol: Symbol,
-        binding: List<HttpBindingDescriptor>,
+        bindings: List<HttpBindingDescriptor>,
         serdeMeta: HttpSerdeMeta,
         // this method is shared between operation and exception deserialization. In the case of operations this MUST be set
         op: OperationShape?,
@@ -727,7 +727,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             .write("")
             .call {
                 // headers
-                val headerBindings = binding
+                val headerBindings = bindings
                     .filter { it.location == HttpBinding.Location.HEADER }
                     .sortedBy { it.memberName }
 
@@ -735,7 +735,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
 
                 // prefix headers
                 // spec: "Only a single structure member can be bound to httpPrefixHeaders"
-                binding.firstOrNull { it.location == HttpBinding.Location.PREFIX_HEADERS }
+                bindings.firstOrNull { it.location == HttpBinding.Location.PREFIX_HEADERS }
                     ?.let {
                         renderDeserializePrefixHeaders(ctx, it, writer)
                     }
@@ -745,11 +745,11 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                 if (op != null && op.isOutputEventStream(ctx.model)) {
                     deserializeViaEventStream(ctx, op, writer)
                 } else {
-                    deserializeViaPayload(ctx, symbol, binding, serdeMeta, op, writer)
+                    deserializeViaPayload(ctx, symbol, bindings, serdeMeta, op, writer)
                 }
             }
             .call {
-                binding.firstOrNull { it.location == HttpBinding.Location.RESPONSE_CODE }
+                bindings.firstOrNull { it.location == HttpBinding.Location.RESPONSE_CODE }
                     ?.let {
                         renderDeserializeResponseCode(ctx, it, writer)
                     }
@@ -765,7 +765,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
     private fun renderServiceHttpDeserialize(
         ctx: ProtocolGenerator.GenerationContext,
         symbol: Symbol,
-        binding: List<HttpBindingDescriptor>,
+        bindings: List<HttpBindingDescriptor>,
         serdeMeta: HttpSerdeMeta,
         // this method is shared between operation and exception deserialization. In the case of operations this MUST be set
         op: OperationShape?,
@@ -783,7 +783,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             .write("")
             .call {
                 // headers
-                val headerBindings = binding
+                val headerBindings = bindings
                     .filter { it.location == HttpBinding.Location.HEADER }
                     .sortedBy { it.memberName }
 
@@ -791,7 +791,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
 
                 // prefix headers
                 // spec: "Only a single structure member can be bound to httpPrefixHeaders"
-                binding.firstOrNull { it.location == HttpBinding.Location.PREFIX_HEADERS }
+                bindings.firstOrNull { it.location == HttpBinding.Location.PREFIX_HEADERS }
                     ?.let {
                         renderDeserializePrefixHeaders(ctx, it, writer)
                     }
@@ -802,11 +802,11 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                 if (!ctx.settings.build.generateServiceProject && op != null && op.isOutputEventStream(ctx.model)) {
                     deserializeViaEventStream(ctx, op, writer)
                 } else {
-                    deserializeViaPayload(ctx, symbol, binding, serdeMeta, op, writer)
+                    deserializeViaPayload(ctx, symbol, bindings, serdeMeta, op, writer)
                 }
             }
             .call {
-                binding.firstOrNull { it.location == HttpBinding.Location.RESPONSE_CODE }
+                bindings.firstOrNull { it.location == HttpBinding.Location.RESPONSE_CODE }
                     ?.let {
                         renderDeserializeResponseCode(ctx, it, writer)
                     }
@@ -825,19 +825,19 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
     private fun deserializeViaPayload(
         ctx: ProtocolGenerator.GenerationContext,
         symbol: Symbol,
-        binding: List<HttpBindingDescriptor>,
+        bindings: List<HttpBindingDescriptor>,
         serdeMeta: HttpSerdeMeta,
         // this method is shared between operation and exception deserialization. In the case of operations this MUST be set
         op: OperationShape?,
         writer: KotlinWriter,
     ) {
         // payload member(s)
-        val httpPayload = binding.firstOrNull { it.location == HttpBinding.Location.PAYLOAD }
+        val httpPayload = bindings.firstOrNull { it.location == HttpBinding.Location.PAYLOAD }
         if (httpPayload != null) {
             renderExplicitHttpPayloadDeserializer(ctx, httpPayload, writer)
         } else {
             // Unbound document members that should be deserialized from the document format for the protocol.
-            val documentMembers = binding
+            val documentMembers = bindings
                 .filter { it.location == HttpBinding.Location.DOCUMENT }
                 .sortedBy { it.memberName }
                 .map { it.member }
