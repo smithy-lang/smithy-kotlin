@@ -177,7 +177,7 @@ fun Model.defaultSettings(
     sdkId: String = TestModelDefault.SDK_ID,
     generateDefaultBuildFiles: Boolean = false,
     nullabilityCheckMode: CheckMode = CheckMode.CLIENT_CAREFUL,
-    defaultValueSerializationMode: DefaultValueSerializationMode = DefaultValueSerializationMode.WHEN_DIFFERENT,
+    defaultValueSerializationMode: DefaultValueSerializationMode = DefaultValueSerializationMode.DEFAULT,
 ): KotlinSettings {
     val serviceId = if (serviceName == null) {
         this.inferService()
