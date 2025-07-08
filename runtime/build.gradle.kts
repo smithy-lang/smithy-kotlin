@@ -4,7 +4,6 @@
  */
 import aws.sdk.kotlin.gradle.dsl.configurePublishing
 import aws.sdk.kotlin.gradle.kmp.*
-import org.gradle.kotlin.dsl.apply
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
@@ -69,6 +68,7 @@ subprojects {
             freeCompilerArgs.add("-Xexpect-actual-classes")
         }
     }
+
     tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinNativeCompile> {
         compilerOptions {
             freeCompilerArgs.add("-Xexpect-actual-classes")

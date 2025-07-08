@@ -145,8 +145,10 @@ public abstract interface class aws/smithy/kotlin/runtime/serde/xml/XmlStreamRea
 	public abstract fun getLastToken ()Laws/smithy/kotlin/runtime/serde/xml/XmlToken;
 	public abstract fun nextToken ()Laws/smithy/kotlin/runtime/serde/xml/XmlToken;
 	public abstract fun peek (I)Laws/smithy/kotlin/runtime/serde/xml/XmlToken;
+	public static synthetic fun peek$default (Laws/smithy/kotlin/runtime/serde/xml/XmlStreamReader;IILjava/lang/Object;)Laws/smithy/kotlin/runtime/serde/xml/XmlToken;
 	public abstract fun skipNext ()V
 	public abstract fun subTreeReader (Laws/smithy/kotlin/runtime/serde/xml/XmlStreamReader$SubtreeStartDepth;)Laws/smithy/kotlin/runtime/serde/xml/XmlStreamReader;
+	public static synthetic fun subTreeReader$default (Laws/smithy/kotlin/runtime/serde/xml/XmlStreamReader;Laws/smithy/kotlin/runtime/serde/xml/XmlStreamReader$SubtreeStartDepth;ILjava/lang/Object;)Laws/smithy/kotlin/runtime/serde/xml/XmlStreamReader;
 }
 
 public final class aws/smithy/kotlin/runtime/serde/xml/XmlStreamReader$DefaultImpls {
@@ -168,13 +170,17 @@ public final class aws/smithy/kotlin/runtime/serde/xml/XmlStreamReaderKt {
 
 public abstract interface class aws/smithy/kotlin/runtime/serde/xml/XmlStreamWriter {
 	public abstract fun attribute (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Laws/smithy/kotlin/runtime/serde/xml/XmlStreamWriter;
+	public static synthetic fun attribute$default (Laws/smithy/kotlin/runtime/serde/xml/XmlStreamWriter;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Object;)Laws/smithy/kotlin/runtime/serde/xml/XmlStreamWriter;
 	public abstract fun endDocument ()V
 	public abstract fun endTag (Ljava/lang/String;Ljava/lang/String;)Laws/smithy/kotlin/runtime/serde/xml/XmlStreamWriter;
+	public static synthetic fun endTag$default (Laws/smithy/kotlin/runtime/serde/xml/XmlStreamWriter;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Object;)Laws/smithy/kotlin/runtime/serde/xml/XmlStreamWriter;
 	public abstract fun getBytes ()[B
 	public abstract fun getText ()Ljava/lang/String;
 	public abstract fun namespacePrefix (Ljava/lang/String;Ljava/lang/String;)V
+	public static synthetic fun namespacePrefix$default (Laws/smithy/kotlin/runtime/serde/xml/XmlStreamWriter;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Object;)V
 	public abstract fun startDocument ()V
 	public abstract fun startTag (Ljava/lang/String;Ljava/lang/String;)Laws/smithy/kotlin/runtime/serde/xml/XmlStreamWriter;
+	public static synthetic fun startTag$default (Laws/smithy/kotlin/runtime/serde/xml/XmlStreamWriter;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Object;)Laws/smithy/kotlin/runtime/serde/xml/XmlStreamWriter;
 	public abstract fun text (Ljava/lang/String;)Laws/smithy/kotlin/runtime/serde/xml/XmlStreamWriter;
 }
 

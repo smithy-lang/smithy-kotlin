@@ -29,6 +29,8 @@ public abstract interface class aws/smithy/kotlin/runtime/http/config/HttpEngine
 	public abstract fun getHttpClient ()Laws/smithy/kotlin/runtime/http/engine/HttpClientEngine;
 	public abstract fun httpClient (Laws/smithy/kotlin/runtime/http/config/EngineFactory;Lkotlin/jvm/functions/Function1;)V
 	public abstract fun httpClient (Lkotlin/jvm/functions/Function1;)V
+	public static synthetic fun httpClient$default (Laws/smithy/kotlin/runtime/http/config/HttpEngineConfig$Builder;Laws/smithy/kotlin/runtime/http/config/EngineFactory;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)V
+	public static synthetic fun httpClient$default (Laws/smithy/kotlin/runtime/http/config/HttpEngineConfig$Builder;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)V
 	public abstract fun setHttpClient (Laws/smithy/kotlin/runtime/http/engine/HttpClientEngine;)V
 }
 
@@ -542,7 +544,7 @@ public abstract interface class aws/smithy/kotlin/runtime/http/operation/HttpSer
 }
 
 public abstract interface class aws/smithy/kotlin/runtime/http/operation/InitializeMiddleware : aws/smithy/kotlin/runtime/io/middleware/Middleware {
-	public abstract fun install (Laws/smithy/kotlin/runtime/http/operation/SdkHttpOperation;)V
+	public fun install (Laws/smithy/kotlin/runtime/http/operation/SdkHttpOperation;)V
 }
 
 public final class aws/smithy/kotlin/runtime/http/operation/InitializeMiddleware$DefaultImpls {
@@ -554,7 +556,7 @@ public abstract interface class aws/smithy/kotlin/runtime/http/operation/InlineM
 }
 
 public abstract interface class aws/smithy/kotlin/runtime/http/operation/ModifyRequestMiddleware : aws/smithy/kotlin/runtime/io/middleware/ModifyRequest {
-	public abstract fun install (Laws/smithy/kotlin/runtime/http/operation/SdkHttpOperation;)V
+	public fun install (Laws/smithy/kotlin/runtime/http/operation/SdkHttpOperation;)V
 }
 
 public final class aws/smithy/kotlin/runtime/http/operation/ModifyRequestMiddleware$DefaultImpls {
@@ -562,7 +564,7 @@ public final class aws/smithy/kotlin/runtime/http/operation/ModifyRequestMiddlew
 }
 
 public abstract interface class aws/smithy/kotlin/runtime/http/operation/MutateMiddleware : aws/smithy/kotlin/runtime/io/middleware/Middleware {
-	public abstract fun install (Laws/smithy/kotlin/runtime/http/operation/SdkHttpOperation;)V
+	public fun install (Laws/smithy/kotlin/runtime/http/operation/SdkHttpOperation;)V
 }
 
 public final class aws/smithy/kotlin/runtime/http/operation/MutateMiddleware$DefaultImpls {
@@ -631,7 +633,7 @@ public final class aws/smithy/kotlin/runtime/http/operation/OperationTelemetryKt
 }
 
 public abstract interface class aws/smithy/kotlin/runtime/http/operation/ReceiveMiddleware : aws/smithy/kotlin/runtime/io/middleware/Middleware {
-	public abstract fun install (Laws/smithy/kotlin/runtime/http/operation/SdkHttpOperation;)V
+	public fun install (Laws/smithy/kotlin/runtime/http/operation/SdkHttpOperation;)V
 }
 
 public final class aws/smithy/kotlin/runtime/http/operation/ReceiveMiddleware$DefaultImpls {
