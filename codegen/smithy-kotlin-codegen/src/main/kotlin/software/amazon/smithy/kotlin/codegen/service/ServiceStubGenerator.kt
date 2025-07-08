@@ -325,16 +325,25 @@ class ServiceStubGenerator(
                             withBlock("#T (#S) {", "}", RuntimeTypes.KtorServerRouting.route, uri) {
                                 write("#T(ContentTypeGuard) { $contentType }", RuntimeTypes.KtorServerCore.install)
                                 withBlock("#T {", "}", method) {
-                                    write("val request = #T.#T<ByteArray>()", RuntimeTypes.KtorServerCore.applicationCall, RuntimeTypes.KtorServerRouting.requestReceive)
-                                    write("val deserializer = ${shape.id.name}OperationDeserializer()")
-                                    write("val requestObj = deserializer.deserialize(#T(), request)", RuntimeTypes.Core.ExecutionContext)
-                                    write("val responseObj = ${shape.id.name}HandleRequest(requestObj)")
-                                    write("val serializer = ${shape.id.name}OperationSerializer()")
-                                    write("val response = serializer.serialize(#T(), responseObj)", RuntimeTypes.Core.ExecutionContext)
-                                    withBlock("#T.#T(", ")", RuntimeTypes.KtorServerCore.applicationCall, RuntimeTypes.KtorServerRouting.responseRespondBytes) {
-                                        write("bytes = response.body.#T() ?:  ByteArray(0),", RuntimeTypes.Http.readAll)
-                                        write("contentType = #T,", RuntimeTypes.KtorServerHttp.Cbor)
-                                        write("status = #T.OK,", RuntimeTypes.KtorServerHttp.HttpStatusCode)
+                                    withInlineBlock("try {", "}") {
+                                        write("val request = #T.#T<ByteArray>()", RuntimeTypes.KtorServerCore.applicationCall, RuntimeTypes.KtorServerRouting.requestReceive)
+                                        write("val deserializer = ${shape.id.name}OperationDeserializer()")
+                                        withBlock("val requestObj = try { deserializer.deserialize(#T(), request) } catch (ex: Exception) {", "}", RuntimeTypes.Core.ExecutionContext) {
+                                            write("throw #T(#S, ex)", RuntimeTypes.KtorServerCore.BadRequestException, "Malformed CBOR input")
+                                        }
+                                        write("val responseObj = ${shape.id.name}HandleRequest(requestObj)")
+                                        write("val serializer = ${shape.id.name}OperationSerializer()")
+                                        withBlock("val response = try { serializer.serialize(#T(), responseObj) } catch (ex: Exception) {", "}", RuntimeTypes.Core.ExecutionContext) {
+                                            write("throw #T(#S, ex)", RuntimeTypes.KtorServerCore.BadRequestException, "Malformed CBOR output")
+                                        }
+                                        withBlock("#T.#T(", ")", RuntimeTypes.KtorServerCore.applicationCall, RuntimeTypes.KtorServerRouting.responseRespondBytes) {
+                                            write("bytes = response.body.#T() ?:  ByteArray(0),", RuntimeTypes.Http.readAll)
+                                            write("contentType = #T,", RuntimeTypes.KtorServerHttp.Cbor)
+                                            write("status = #T.OK,", RuntimeTypes.KtorServerHttp.HttpStatusCode)
+                                        }
+                                    }
+                                    withBlock(" catch (t: Throwable) {", "}") {
+                                        write("throw t")
                                     }
                                 }
                             }
@@ -345,7 +354,123 @@ class ServiceStubGenerator(
     }
 
     private fun renderPlugins() {
+
+        renderErrorHandler()
         renderContentTypeGuard()
+    }
+
+    private fun renderErrorHandler() {
+        delegator.useFileWriter("ErrorHandler.kt", "${ctx.settings.pkg.name}.plugins") { writer ->
+            writer.withBlock(
+                "internal class ErrorEnvelope(val code: Int, val msg: String, cause: Throwable? = null): RuntimeException(msg, cause) {",
+                "}"
+            ) {
+                withBlock(
+                    "fun toJson(json: #T = #T) : String {",
+                    "}",
+                    RuntimeTypes.KtorServerJsonSerde.Json,
+                    RuntimeTypes.KtorServerJsonSerde.Json
+                ) {
+                    withInlineBlock("return #T {", "}", RuntimeTypes.KtorServerJsonSerde.buildJsonObject) {
+                        write("put(#S, #T(code))", "code", RuntimeTypes.KtorServerJsonSerde.JsonPrimitive)
+                        write(
+                            "put(#S, #T(message ?: #S))",
+                            "message",
+                            RuntimeTypes.KtorServerJsonSerde.JsonPrimitive,
+                            "Unknown error"
+                        )
+                    }
+                        .write(
+                            ".let { json.encodeToString(#T.serializer(), it) }",
+                            RuntimeTypes.KtorServerJsonSerde.JsonElement
+                        )
+                }
+                write("")
+                withBlock(
+                    "fun toCbor(cbor: #T = #T {}) : ByteArray {",
+                    "}",
+                    RuntimeTypes.KtorServerCborSerde.Cbor,
+                    RuntimeTypes.KtorServerCborSerde.Cbor
+                ) {
+                    withInlineBlock("return #T {", "}", RuntimeTypes.KtorServerJsonSerde.buildJsonObject) {
+                        write("put(#S, #T(code))", "code", RuntimeTypes.KtorServerJsonSerde.JsonPrimitive)
+                        write(
+                            "put(#S, #T(message ?: #S))",
+                            "message",
+                            RuntimeTypes.KtorServerJsonSerde.JsonPrimitive,
+                            "Unknown error"
+                        )
+                    }
+                        .write(
+                            ".let { cbor.#T(#T.serializer(), it) }",
+                            RuntimeTypes.KtorServerCborSerde.encodeToByteArray,
+                            RuntimeTypes.KtorServerJsonSerde.JsonElement
+                        )
+                }
+            }
+                .write("")
+                .withBlock("internal fun #T.configureErrorHandling() {", "}", RuntimeTypes.KtorServerCore.Application) {
+                    write("")
+                    withBlock(
+                        "#T(#T) {",
+                        "}",
+                        RuntimeTypes.KtorServerCore.install,
+                        RuntimeTypes.KtorServerStatusPage.StatusPages
+                    ) {
+                        withBlock("#T<Throwable> { call, cause ->", "}", RuntimeTypes.KtorServerStatusPage.exception) {
+                            withBlock("val status = when (cause) {", "}") {
+                                write(
+                                    "is #T -> #T.BadRequest",
+                                    RuntimeTypes.KtorServerCore.BadRequestException,
+                                    RuntimeTypes.KtorServerHttp.HttpStatusCode
+                                )
+                                write("else -> #T.InternalServerError", RuntimeTypes.KtorServerHttp.HttpStatusCode)
+                            }
+                            write("")
+
+                            withBlock("val contentType =", "") {
+                                write(
+                                    "if (call.request.#T().any { it.value == #S }) { #S }",
+                                    RuntimeTypes.KtorServerRouting.requestacceptItems,
+                                    "application/cbor",
+                                    "cbor"
+                                )
+                                write(
+                                    "else if (call.request.#T().any { it.value == #S }) { #S }",
+                                    RuntimeTypes.KtorServerRouting.requestacceptItems,
+                                    "application/json",
+                                    "json"
+                                )
+                                write("else { #S }", "text")
+                            }
+
+                            write("val envelope = ErrorEnvelope(status.value, cause.message ?: #S)", "Unexpected error")
+                            withBlock("when (contentType) {", "}") {
+                                withBlock("#S -> {", "}", "cbor") {
+                                    withBlock("call.#T(", ")", RuntimeTypes.KtorServerRouting.responseRespondBytes) {
+                                        write("bytes = envelope.toCbor(),")
+                                        write("status = status,")
+                                        write("contentType = #T", RuntimeTypes.KtorServerHttp.Cbor)
+                                    }
+                                }
+                                withBlock("#S -> {", "}", "json") {
+                                    withBlock("call.#T(", ")", RuntimeTypes.KtorServerRouting.responseText) {
+                                        write("envelope.toJson(),")
+                                        write("status = status,")
+                                        write("contentType = #T", RuntimeTypes.KtorServerHttp.Json)
+                                    }
+                                }
+                                withBlock("#S -> {", "}", "text") {
+                                    withBlock("call.#T(", ")", RuntimeTypes.KtorServerRouting.responseText) {
+                                        write("envelope.msg,")
+                                        write("status = status")
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+        }
     }
 
     private fun renderContentTypeGuard() {

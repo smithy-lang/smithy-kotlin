@@ -497,6 +497,8 @@ object RuntimeTypes {
         val ApplicationRouteScopedPlugin = symbol("RouteScopedPlugin", "application")
         val applicationCall = symbol("call", "application")
         val install = symbol("install", "application")
+
+        val BadRequestException = symbol("BadRequestException", "plugins")
     }
 
     object KtorServerRouting : RuntimeTypePackage(KotlinDependency.KTOR_SERVER_CORE) {
@@ -518,6 +520,7 @@ object RuntimeTypes {
         val responseRespond = symbol("respond", "response")
         val responseRespondBytes = symbol("respondBytes", "response")
         val requestContentType = symbol("contentType", "request")
+        val requestacceptItems = symbol("acceptItems", "request")
     }
 
     object KtorServerNetty : RuntimeTypePackage(KotlinDependency.KTOR_SERVER_NETTY) {
@@ -544,5 +547,22 @@ object RuntimeTypes {
     object KtorLoggingLogback : RuntimeTypePackage(KotlinDependency.KTOR_LOGGING_LOGBACK) {
         val Level = symbol("Level", "classic")
         val LoggerContext = symbol("LoggerContext", "classic")
+    }
+
+    object KtorServerStatusPage : RuntimeTypePackage(KotlinDependency.KTOR_SERVER_STATUS_PAGE) {
+        val StatusPages = symbol("StatusPages")
+        val exception = symbol("exception")
+    }
+
+    object KtorServerCborSerde : RuntimeTypePackage(KotlinDependency.KTOR_SERVER_CBOR_SERDE) {
+        val Cbor = symbol("Cbor", "cbor")
+        val encodeToByteArray = symbol("encodeToByteArray")
+    }
+
+    object KtorServerJsonSerde : RuntimeTypePackage(KotlinDependency.KTOR_SERVER_JSON_SERDE) {
+        val Json = symbol("Json")
+        val JsonElement = symbol("JsonElement")
+        val JsonPrimitive = symbol("JsonPrimitive")
+        val buildJsonObject = symbol("buildJsonObject")
     }
 }
