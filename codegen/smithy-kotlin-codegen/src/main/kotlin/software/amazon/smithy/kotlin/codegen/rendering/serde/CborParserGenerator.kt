@@ -24,17 +24,17 @@ class CborParserGenerator(
         op: OperationShape,
         members: List<MemberShape>,
     ): Symbol {
-        val operationShape = if (ctx.settings.build.generateServiceProject) {
+        val deserializationShape = if (ctx.settings.build.generateServiceProject) {
             op.inputShape
         } else {
             op.outputShape
         }
-        val symbol = ctx.symbolProvider.toSymbol(ctx.model.expectShape(operationShape))
+        val deserializationsymbol = ctx.symbolProvider.toSymbol(ctx.model.expectShape(deserializationShape))
 
         return op.bodyDeserializer(ctx.settings) { writer ->
             addNestedDocumentDeserializers(ctx, op, writer)
             val fnName = op.bodyDeserializerName()
-            writer.withBlock("private fun #L(builder: #T.Builder, payload: ByteArray) {", "}", fnName, symbol) {
+            writer.withBlock("private fun #L(builder: #T.Builder, payload: ByteArray) {", "}", fnName, deserializationsymbol) {
                 call { renderDeserializeOperationBody(ctx, op, members, writer) }
             }
         }
@@ -96,13 +96,13 @@ class CborParserGenerator(
         writer: KotlinWriter,
     ) {
         writer.write("val deserializer = #T(payload)", RuntimeTypes.Serde.SerdeCbor.CborDeserializer)
-        val operationData = if (ctx.settings.build.generateServiceProject) {
+        val deserializationTarget = if (ctx.settings.build.generateServiceProject) {
             op.input
         } else {
             op.output
         }
-        val shape = ctx.model.expectShape(operationData.get())
-        renderDeserializerBody(ctx, shape, documentMembers, writer)
+        val deserializationShape = ctx.model.expectShape(deserializationTarget.get())
+        renderDeserializerBody(ctx, deserializationShape, documentMembers, writer)
     }
 
     private fun renderDeserializerBody(

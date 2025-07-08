@@ -6,6 +6,7 @@ package software.amazon.smithy.kotlin.codegen.core
 
 import software.amazon.smithy.codegen.core.*
 import software.amazon.smithy.kotlin.codegen.KotlinSettings
+import software.amazon.smithy.kotlin.codegen.lang.KotlinTypes
 import software.amazon.smithy.kotlin.codegen.lang.kotlinReservedWords
 import software.amazon.smithy.kotlin.codegen.model.*
 import software.amazon.smithy.kotlin.codegen.utils.dq
@@ -333,7 +334,8 @@ class KotlinSymbolProvider(private val model: Model, private val settings: Kotli
 
     override fun serviceShape(shape: ServiceShape): Symbol {
         if (settings.build.generateServiceProject) {
-            return RuntimeTypes.Core.Content.Document.asNullable()
+            // Intentionally not generating a *client symbol* for the service
+            return KotlinTypes.Nothing
         }
         val serviceName = clientName(settings.sdkId)
         return createSymbolBuilder(shape, "${serviceName}Client")
