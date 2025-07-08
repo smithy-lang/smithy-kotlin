@@ -4,7 +4,6 @@ import software.amazon.smithy.build.FileManifest
 import software.amazon.smithy.kotlin.codegen.core.GenerationContext
 import software.amazon.smithy.kotlin.codegen.core.InlineCodeWriterFormatter
 import software.amazon.smithy.kotlin.codegen.core.KotlinDelegator
-import software.amazon.smithy.kotlin.codegen.core.KotlinDependency
 import software.amazon.smithy.kotlin.codegen.core.KotlinWriter
 import software.amazon.smithy.kotlin.codegen.core.RuntimeTypes
 import software.amazon.smithy.kotlin.codegen.core.defaultName
@@ -41,16 +40,15 @@ class ServiceStubGenerator(
         .sortedBy { it.defaultName() }
 
     fun render() {
-        // FIXME: check server framework here and render according to the chosen server framework
-        renderMainFile()
+        renderServiceFrameworkConfig()
         renderServiceFramework()
         renderPlugins()
         renderLogging()
-        renderProtocolModule()
         renderAuthModule()
         renderConstraintValidators()
-        renderRouting()
         renderPerOperationHandlers()
+        renderRouting()
+        renderMainFile()
     }
 
     // Writes `Main.kt` that launch the server.
@@ -68,7 +66,7 @@ class ServiceStubGenerator(
 
             writer.withBlock("public fun main(args: Array<String>): Unit {", "}") {
                 write("val argMap: Map<String, String> = args.asList().chunked(2).associate { (k, v) -> k.removePrefix(#S) to v }", "--")
-                write("println(argMap)")
+                write("")
                 withBlock("ServiceFrameworkConfig.init(", ")") {
                     write("port = argMap[#S]?.toInt() ?: 8080, ", portName)
                     write("engine = ServiceEngine.fromValue(argMap[#S] ?: ServiceEngine.NETTY.value), ", engineFactoryName)
@@ -76,6 +74,7 @@ class ServiceStubGenerator(
                     write("closeTimeoutMillis = argMap[#S]?.toLong() ?: 5000, ", closeTimeoutMillisName)
                     write("logLevel = LogLevel.fromValue(argMap[#S] ?: LogLevel.INFO.value), ", logLevelName)
                 }
+                write("")
                 write("val service = KTORServiceFramework()")
                 write("service.start()")
             }
@@ -84,23 +83,17 @@ class ServiceStubGenerator(
 
     // Writes `ServiceFramework.kt` that boots the embedded Ktor service.
     private fun renderServiceFramework() {
-        renderServiceFrameworkConfig()
+        delegator.useFileWriter("ServiceFramework.kt", "${ctx.settings.pkg.name}.configurations") { writer ->
+            writer.addImport("${ctx.settings.pkg.name}.configurations", "ServiceFrameworkConfig")
 
-        delegator.useFileWriter("Main.kt", ctx.settings.pkg.name) { writer ->
+            writer.withBlock("internal interface ServiceFramework: #T {", "}", RuntimeTypes.Core.IO.Closeable) {
+                write("// start the service and begin accepting connections")
+                write("public fun start()")
+            }
+                .write("")
 
-            delegator.useFileWriter("ServiceFramework.kt", "${ctx.settings.pkg.name}.configurations") { writer ->
-                writer.dependencies.addAll(KotlinDependency.KTOR_LOGGING_SLF4J.dependencies)
-                writer.addImport("${ctx.settings.pkg.name}.configurations", "ServiceFrameworkConfig")
-
-                writer.withBlock("internal interface ServiceFramework: #T {", "}", RuntimeTypes.Core.IO.Closeable) {
-                    write("// start the service and begin accepting connections")
-                    write("public fun start()")
-                }
-                    .write("")
-
-                when (ctx.settings.serviceStub.framework) {
-                    ServiceFramework.KTOR -> renderKTORServiceFramework(writer)
-                }
+            when (ctx.settings.serviceStub.framework) {
+                ServiceFramework.KTOR -> renderKTORServiceFramework(writer)
             }
         }
     }
@@ -278,17 +271,6 @@ class ServiceStubGenerator(
         fileManifest.writeFile("src/main/resources/logback.xml", contents)
     }
 
-    private fun renderProtocolModule() {
-//        delegator.useFileWriter("ProtocolModule.kt", settings.pkg.name) { writer ->
-//
-//            writer.withBlock("internal fun #T.configureContentNegotiation() {", "}", RuntimeTypes.KtorServerCore.Application) {
-//                withBlock("#T(#T) {", "}", RuntimeTypes.KtorServerCore.install, RuntimeTypes.KtorServerContentNegotiation.ContentNegotiation) {
-//                    write("#T()", RuntimeTypes.KtorServerCbor.cbor)
-//                }
-//            }
-//        }
-    }
-
     // Generates `Authentication.kt` with Authenticator interface + configureSecurity().
     private fun renderAuthModule() {
     }
@@ -379,8 +361,9 @@ class ServiceStubGenerator(
                     write("allow = listOf(#T)", RuntimeTypes.KtorServerHttp.Cbor)
                 }
             }
+                .write("")
 
-            writer.withBlock(
+            writer.withInlineBlock(
                 "public val ContentTypeGuard: #T<ContentTypeGuardConfig> = #T(",
                 ")",
                 RuntimeTypes.KtorServerCore.ApplicationRouteScopedPlugin,

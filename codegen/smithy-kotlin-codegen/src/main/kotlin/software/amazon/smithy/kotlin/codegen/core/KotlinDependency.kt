@@ -145,7 +145,7 @@ data class KotlinDependency(
         val KTOR_SERVER_HTTP = KotlinDependency(GradleConfiguration.Implementation, "io.ktor.http", "io.ktor", "ktor-http-jvm", KTOR_VERSION)
         val KTOR_SERVER_LOGGING = KotlinDependency(GradleConfiguration.Implementation, "io.ktor.server.plugins.calllogging", "io.ktor", "ktor-server-call-logging", KTOR_VERSION)
         val KTOR_LOGGING_SLF4J = KotlinDependency(GradleConfiguration.Implementation, "org.slf4j", "ch.qos.logback", "logback-classic", KTOR_LOGGING_BACKEND_VERSION)
-        val KTOR_LOGGING_LOGBACK = KotlinDependency(GradleConfiguration.Implementation, "ch.qos.logback.classic", "ch.qos.logback", "logback-classic", KTOR_LOGGING_BACKEND_VERSION)
+        val KTOR_LOGGING_LOGBACK = KotlinDependency(GradleConfiguration.Implementation, "ch.qos.logback", "ch.qos.logback", "logback-classic", KTOR_LOGGING_BACKEND_VERSION)
         val KTOR_SERVER_CONTENT_NEGOTIATION = KotlinDependency(GradleConfiguration.Implementation, "io.ktor.server.plugins.contentnegotiation", "io.ktor", "ktor-server-content-negotiation", KTOR_VERSION)
         val KTOR_SERVER_CBOR_SERDE = KotlinDependency(GradleConfiguration.Implementation, "io.ktor.serialization.kotlinx.cbor", "io.ktor", "ktor-serialization-kotlinx-cbor", KTOR_VERSION)
     }

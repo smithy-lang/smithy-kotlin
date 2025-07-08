@@ -488,9 +488,9 @@ object RuntimeTypes {
     object KtorServerCore : RuntimeTypePackage(KotlinDependency.KTOR_SERVER_CORE) {
         val embeddedServer = symbol("embeddedServer", "engine")
         val EmbeddedServerType = symbol("EmbeddedServer", "engine")
-        val Application = symbol("Application", "application")
-        val ApplicationEngine = symbol("ApplicationEngine", "engine")
         val ApplicationEngineFactory = symbol("ApplicationEngineFactory", "engine")
+
+        val Application = symbol("Application", "application")
         val ApplicationStopping = symbol("ApplicationStopping", "application")
         val ApplicationStopped = symbol("ApplicationStopped", "application")
         val ApplicationCreateRouteScopedPlugin = symbol("createRouteScopedPlugin", "application")
@@ -542,7 +542,7 @@ object RuntimeTypes {
     }
 
     object KtorLoggingLogback : RuntimeTypePackage(KotlinDependency.KTOR_LOGGING_LOGBACK) {
-        val Level = symbol("Level")
-        val LoggerContext = symbol("LoggerContext")
+        val Level = symbol("Level", "classic")
+        val LoggerContext = symbol("LoggerContext", "classic")
     }
 }
