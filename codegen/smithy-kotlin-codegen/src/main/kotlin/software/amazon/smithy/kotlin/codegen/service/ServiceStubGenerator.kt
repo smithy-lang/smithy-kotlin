@@ -55,11 +55,11 @@ class ServiceStubGenerator(
 
     // Writes `Main.kt` that launch the server.
     private fun renderMainFile() {
-        val PORT_NAME = "port"
-        val ENGINE_FACGORY_NAME = "engineFactory"
-        val CLOSE_GRACE_PERIOD_MILLIS_NAME = "closeGracePeriodMillis"
-        val CLOSE_TIMEOUT_MILLIS_NAME = "closeTimeoutMillis"
-        val LOG_LEVEL_NAME = "logLevel"
+        val portName = "port"
+        val engineFactoryName = "engineFactory"
+        val closeGracePeriodMillisName = "closeGracePeriodMillis"
+        val closeTimeoutMillisName = "closeTimeoutMillis"
+        val logLevelName = "logLevel"
         delegator.useFileWriter("Main.kt", ctx.settings.pkg.name) { writer ->
             writer.addImport("${ctx.settings.pkg.name}.configurations", "LogLevel")
             writer.addImport("${ctx.settings.pkg.name}.configurations", "ServiceEngine")
@@ -70,11 +70,11 @@ class ServiceStubGenerator(
                 write("val argMap: Map<String, String> = args.asList().chunked(2).associate { (k, v) -> k.removePrefix(#S) to v }", "--")
                 write("println(argMap)")
                 withBlock("ServiceFrameworkConfig.init(", ")") {
-                    write("port = argMap[#S]?.toInt() ?: 8080, ", PORT_NAME)
-                    write("engine = ServiceEngine.fromValue(argMap[#S] ?: ServiceEngine.NETTY.value), ", ENGINE_FACGORY_NAME)
-                    write("closeGracePeriodMillis = argMap[#S]?.toLong() ?: 1000, ", CLOSE_GRACE_PERIOD_MILLIS_NAME)
-                    write("closeTimeoutMillis = argMap[#S]?.toLong() ?: 5000, ", CLOSE_TIMEOUT_MILLIS_NAME)
-                    write("logLevel = LogLevel.fromValue(argMap[#S] ?: LogLevel.INFO.value), ", LOG_LEVEL_NAME)
+                    write("port = argMap[#S]?.toInt() ?: 8080, ", portName)
+                    write("engine = ServiceEngine.fromValue(argMap[#S] ?: ServiceEngine.NETTY.value), ", engineFactoryName)
+                    write("closeGracePeriodMillis = argMap[#S]?.toLong() ?: 1000, ", closeGracePeriodMillisName)
+                    write("closeTimeoutMillis = argMap[#S]?.toLong() ?: 5000, ", closeTimeoutMillisName)
+                    write("logLevel = LogLevel.fromValue(argMap[#S] ?: LogLevel.INFO.value), ", logLevelName)
                 }
                 write("val service = KTORServiceFramework()")
                 write("service.start()")
