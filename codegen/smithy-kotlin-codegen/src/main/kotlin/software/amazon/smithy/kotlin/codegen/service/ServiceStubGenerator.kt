@@ -1,22 +1,18 @@
 package software.amazon.smithy.kotlin.codegen.service
 
 import software.amazon.smithy.build.FileManifest
-import software.amazon.smithy.kotlin.codegen.KotlinSettings
-import software.amazon.smithy.kotlin.codegen.core.InlineCodeWriterFormatter
 import software.amazon.smithy.kotlin.codegen.core.GenerationContext
+import software.amazon.smithy.kotlin.codegen.core.InlineCodeWriterFormatter
 import software.amazon.smithy.kotlin.codegen.core.KotlinDelegator
 import software.amazon.smithy.kotlin.codegen.core.KotlinDependency
 import software.amazon.smithy.kotlin.codegen.core.KotlinWriter
 import software.amazon.smithy.kotlin.codegen.core.RuntimeTypes
 import software.amazon.smithy.kotlin.codegen.core.defaultName
 import software.amazon.smithy.kotlin.codegen.core.withBlock
+import software.amazon.smithy.kotlin.codegen.model.getTrait
 import software.amazon.smithy.model.knowledge.TopDownIndex
 import software.amazon.smithy.model.shapes.OperationShape
-import software.amazon.smithy.kotlin.codegen.model.getTrait
-import software.amazon.smithy.model.shapes.ServiceShape
-import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.shapes.ShapeId
-import software.amazon.smithy.model.shapes.ShapeType
 import software.amazon.smithy.model.traits.HttpTrait
 import software.amazon.smithy.protocol.traits.Rpcv2CborTrait
 import software.amazon.smithy.utils.AbstractCodeWriter
@@ -210,13 +206,11 @@ class ServiceStubGenerator(
 
     // Writes `Routing.kt` that maps Smithy operations → Ktor routes.
     private fun renderRouting() {
-
         val cborShapeIds = mutableListOf<ShapeId>()
         val protocolTrait = serviceShape.getTrait<Rpcv2CborTrait>()
         if (protocolTrait != null) {
             cborShapeIds.addAll(serviceShape.operations)
         }
-
 
         delegator.useFileWriter("Routing.kt", ctx.settings.pkg.name) { writer ->
 
@@ -322,7 +316,6 @@ class ServiceStubGenerator(
 
     // Emits one stub handler per Smithy operation (`OperationNameHandler.kt`).
     private fun renderPerOperationHandlers() {
-
         operations.forEach { shape ->
             val name = shape.id.name
             delegator.useFileWriter("${name}Operation.kt", "${ctx.settings.pkg.name}.operations") { writer ->
