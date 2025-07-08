@@ -535,8 +535,14 @@ object RuntimeTypes {
         val CallLogging = symbol("CallLogging")
     }
 
-    object KtorLoggingBackend : RuntimeTypePackage(KotlinDependency.KTOR_LOGGING_BACKEND) {
+    object KtorLoggingSlf4j : RuntimeTypePackage(KotlinDependency.KTOR_LOGGING_SLF4J) {
         val Level = symbol("Level", "event")
         val LoggerFactory = symbol("LoggerFactory")
+        val ROOT_LOGGER_NAME = symbol("ROOT_LOGGER_NAME", "Logger")
+    }
+
+    object KtorLoggingLogback : RuntimeTypePackage(KotlinDependency.KTOR_LOGGING_LOGBACK) {
+        val Level = symbol("Level")
+        val LoggerContext = symbol("LoggerContext")
     }
 }

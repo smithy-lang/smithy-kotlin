@@ -13,8 +13,6 @@ import software.amazon.smithy.aws.traits.protocols.RestJson1Trait
 import software.amazon.smithy.aws.traits.protocols.RestXmlTrait
 import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.kotlin.codegen.lang.isValidPackageName
-import software.amazon.smithy.kotlin.codegen.service.LogLevel
-import software.amazon.smithy.kotlin.codegen.service.ServiceEngine
 import software.amazon.smithy.kotlin.codegen.service.ServiceFramework
 import software.amazon.smithy.kotlin.codegen.utils.getOrNull
 import software.amazon.smithy.kotlin.codegen.utils.toCamelCase
@@ -356,31 +354,17 @@ data class ApiSettings(
  */
 data class ServiceStubSettings(
     val framework: ServiceFramework = ServiceFramework.KTOR,
-    val engine: ServiceEngine = ServiceEngine.NETTY,
-    val port: Int = 8080,
-    val logLevel: LogLevel = LogLevel.INFO,
 ) {
     companion object {
         const val SERVER_FRAMEWORK = "serverFramework"
-        const val SERVER_ENGINE = "serverEngine"
-        const val LOG_LEVEL = "logLevel"
-        const val PORT = "port"
 
         fun fromNode(node: Optional<ObjectNode>): ServiceStubSettings = node.map {
             val serverFramework = node.get()
                 .getStringMember(SERVER_FRAMEWORK)
                 .map { ServiceFramework.fromValue(it.value) }
                 .getOrNull() ?: ServiceFramework.KTOR
-            val serverEngine = node.get()
-                .getStringMember(SERVER_ENGINE)
-                .map { ServiceEngine.fromValue(it.value) }
-                .getOrNull() ?: ServiceEngine.NETTY
-            val port = node.get().getNumberMemberOrDefault(PORT, 8080).toInt()
-            val logLevel = node.get()
-                .getStringMember(LOG_LEVEL)
-                .map { LogLevel.fromValue(it.value) }
-                .getOrNull() ?: LogLevel.INFO
-            ServiceStubSettings(serverFramework, serverEngine, port, logLevel)
+
+            ServiceStubSettings(serverFramework)
         }.orElse(Default)
 
         /**
