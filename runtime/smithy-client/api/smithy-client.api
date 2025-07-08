@@ -51,28 +51,6 @@ public abstract interface class aws/smithy/kotlin/runtime/client/Interceptor {
 	public fun readBeforeTransmit (Laws/smithy/kotlin/runtime/client/ProtocolRequestInterceptorContext;)V
 }
 
-public final class aws/smithy/kotlin/runtime/client/Interceptor$DefaultImpls {
-	public static fun modifyBeforeAttemptCompletion-gIAlu-s (Laws/smithy/kotlin/runtime/client/Interceptor;Laws/smithy/kotlin/runtime/client/ResponseInterceptorContext;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public static fun modifyBeforeCompletion-gIAlu-s (Laws/smithy/kotlin/runtime/client/Interceptor;Laws/smithy/kotlin/runtime/client/ResponseInterceptorContext;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public static fun modifyBeforeDeserialization (Laws/smithy/kotlin/runtime/client/Interceptor;Laws/smithy/kotlin/runtime/client/ProtocolResponseInterceptorContext;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public static fun modifyBeforeRetryLoop (Laws/smithy/kotlin/runtime/client/Interceptor;Laws/smithy/kotlin/runtime/client/ProtocolRequestInterceptorContext;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public static fun modifyBeforeSerialization (Laws/smithy/kotlin/runtime/client/Interceptor;Laws/smithy/kotlin/runtime/client/RequestInterceptorContext;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public static fun modifyBeforeSigning (Laws/smithy/kotlin/runtime/client/Interceptor;Laws/smithy/kotlin/runtime/client/ProtocolRequestInterceptorContext;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public static fun modifyBeforeTransmit (Laws/smithy/kotlin/runtime/client/Interceptor;Laws/smithy/kotlin/runtime/client/ProtocolRequestInterceptorContext;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public static fun readAfterAttempt (Laws/smithy/kotlin/runtime/client/Interceptor;Laws/smithy/kotlin/runtime/client/ResponseInterceptorContext;)V
-	public static fun readAfterDeserialization (Laws/smithy/kotlin/runtime/client/Interceptor;Laws/smithy/kotlin/runtime/client/ResponseInterceptorContext;)V
-	public static fun readAfterExecution (Laws/smithy/kotlin/runtime/client/Interceptor;Laws/smithy/kotlin/runtime/client/ResponseInterceptorContext;)V
-	public static fun readAfterSerialization (Laws/smithy/kotlin/runtime/client/Interceptor;Laws/smithy/kotlin/runtime/client/ProtocolRequestInterceptorContext;)V
-	public static fun readAfterSigning (Laws/smithy/kotlin/runtime/client/Interceptor;Laws/smithy/kotlin/runtime/client/ProtocolRequestInterceptorContext;)V
-	public static fun readAfterTransmit (Laws/smithy/kotlin/runtime/client/Interceptor;Laws/smithy/kotlin/runtime/client/ProtocolResponseInterceptorContext;)V
-	public static fun readBeforeAttempt (Laws/smithy/kotlin/runtime/client/Interceptor;Laws/smithy/kotlin/runtime/client/ProtocolRequestInterceptorContext;)V
-	public static fun readBeforeDeserialization (Laws/smithy/kotlin/runtime/client/Interceptor;Laws/smithy/kotlin/runtime/client/ProtocolResponseInterceptorContext;)V
-	public static fun readBeforeExecution (Laws/smithy/kotlin/runtime/client/Interceptor;Laws/smithy/kotlin/runtime/client/RequestInterceptorContext;)V
-	public static fun readBeforeSerialization (Laws/smithy/kotlin/runtime/client/Interceptor;Laws/smithy/kotlin/runtime/client/RequestInterceptorContext;)V
-	public static fun readBeforeSigning (Laws/smithy/kotlin/runtime/client/Interceptor;Laws/smithy/kotlin/runtime/client/ProtocolRequestInterceptorContext;)V
-	public static fun readBeforeTransmit (Laws/smithy/kotlin/runtime/client/Interceptor;Laws/smithy/kotlin/runtime/client/ProtocolRequestInterceptorContext;)V
-}
-
 public abstract class aws/smithy/kotlin/runtime/client/LogMode {
 	public static final field Companion Laws/smithy/kotlin/runtime/client/LogMode$Companion;
 	public synthetic fun <init> (ILkotlin/jvm/internal/DefaultConstructorMarker;)V
