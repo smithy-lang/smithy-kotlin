@@ -354,7 +354,6 @@ class ServiceStubGenerator(
     }
 
     private fun renderPlugins() {
-
         renderErrorHandler()
         renderContentTypeGuard()
     }
@@ -363,13 +362,13 @@ class ServiceStubGenerator(
         delegator.useFileWriter("ErrorHandler.kt", "${ctx.settings.pkg.name}.plugins") { writer ->
             writer.withBlock(
                 "internal class ErrorEnvelope(val code: Int, val msg: String, cause: Throwable? = null): RuntimeException(msg, cause) {",
-                "}"
+                "}",
             ) {
                 withBlock(
                     "fun toJson(json: #T = #T) : String {",
                     "}",
                     RuntimeTypes.KtorServerJsonSerde.Json,
-                    RuntimeTypes.KtorServerJsonSerde.Json
+                    RuntimeTypes.KtorServerJsonSerde.Json,
                 ) {
                     withInlineBlock("return #T {", "}", RuntimeTypes.KtorServerJsonSerde.buildJsonObject) {
                         write("put(#S, #T(code))", "code", RuntimeTypes.KtorServerJsonSerde.JsonPrimitive)
@@ -377,12 +376,12 @@ class ServiceStubGenerator(
                             "put(#S, #T(message ?: #S))",
                             "message",
                             RuntimeTypes.KtorServerJsonSerde.JsonPrimitive,
-                            "Unknown error"
+                            "Unknown error",
                         )
                     }
                         .write(
                             ".let { json.encodeToString(#T.serializer(), it) }",
-                            RuntimeTypes.KtorServerJsonSerde.JsonElement
+                            RuntimeTypes.KtorServerJsonSerde.JsonElement,
                         )
                 }
                 write("")
@@ -390,7 +389,7 @@ class ServiceStubGenerator(
                     "fun toCbor(cbor: #T = #T {}) : ByteArray {",
                     "}",
                     RuntimeTypes.KtorServerCborSerde.Cbor,
-                    RuntimeTypes.KtorServerCborSerde.Cbor
+                    RuntimeTypes.KtorServerCborSerde.Cbor,
                 ) {
                     withInlineBlock("return #T {", "}", RuntimeTypes.KtorServerJsonSerde.buildJsonObject) {
                         write("put(#S, #T(code))", "code", RuntimeTypes.KtorServerJsonSerde.JsonPrimitive)
@@ -398,13 +397,13 @@ class ServiceStubGenerator(
                             "put(#S, #T(message ?: #S))",
                             "message",
                             RuntimeTypes.KtorServerJsonSerde.JsonPrimitive,
-                            "Unknown error"
+                            "Unknown error",
                         )
                     }
                         .write(
                             ".let { cbor.#T(#T.serializer(), it) }",
                             RuntimeTypes.KtorServerCborSerde.encodeToByteArray,
-                            RuntimeTypes.KtorServerJsonSerde.JsonElement
+                            RuntimeTypes.KtorServerJsonSerde.JsonElement,
                         )
                 }
             }
@@ -415,14 +414,14 @@ class ServiceStubGenerator(
                         "#T(#T) {",
                         "}",
                         RuntimeTypes.KtorServerCore.install,
-                        RuntimeTypes.KtorServerStatusPage.StatusPages
+                        RuntimeTypes.KtorServerStatusPage.StatusPages,
                     ) {
                         withBlock("#T<Throwable> { call, cause ->", "}", RuntimeTypes.KtorServerStatusPage.exception) {
                             withBlock("val status = when (cause) {", "}") {
                                 write(
                                     "is #T -> #T.BadRequest",
                                     RuntimeTypes.KtorServerCore.BadRequestException,
-                                    RuntimeTypes.KtorServerHttp.HttpStatusCode
+                                    RuntimeTypes.KtorServerHttp.HttpStatusCode,
                                 )
                                 write("else -> #T.InternalServerError", RuntimeTypes.KtorServerHttp.HttpStatusCode)
                             }
@@ -433,13 +432,13 @@ class ServiceStubGenerator(
                                     "if (call.request.#T().any { it.value == #S }) { #S }",
                                     RuntimeTypes.KtorServerRouting.requestacceptItems,
                                     "application/cbor",
-                                    "cbor"
+                                    "cbor",
                                 )
                                 write(
                                     "else if (call.request.#T().any { it.value == #S }) { #S }",
                                     RuntimeTypes.KtorServerRouting.requestacceptItems,
                                     "application/json",
-                                    "json"
+                                    "json",
                                 )
                                 write("else { #S }", "text")
                             }
