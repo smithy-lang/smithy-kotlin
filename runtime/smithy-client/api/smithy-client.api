@@ -168,6 +168,10 @@ public abstract interface class aws/smithy/kotlin/runtime/client/SdkClientFactor
 	public fun invoke (Lkotlin/jvm/functions/Function1;)Laws/smithy/kotlin/runtime/client/SdkClient;
 }
 
+public final class aws/smithy/kotlin/runtime/client/SdkClientFactory$DefaultImpls {
+	public static fun invoke (Laws/smithy/kotlin/runtime/client/SdkClientFactory;Lkotlin/jvm/functions/Function1;)Laws/smithy/kotlin/runtime/client/SdkClient;
+}
+
 public final class aws/smithy/kotlin/runtime/client/SdkClientOption {
 	public static final field INSTANCE Laws/smithy/kotlin/runtime/client/SdkClientOption;
 	public final fun getClientName ()Laws/smithy/kotlin/runtime/collections/AttributeKey;
@@ -200,6 +204,10 @@ public abstract interface class aws/smithy/kotlin/runtime/client/config/Compress
 public abstract interface class aws/smithy/kotlin/runtime/client/config/CompressionClientConfig$Builder {
 	public abstract fun getRequestCompression ()Laws/smithy/kotlin/runtime/client/config/RequestCompressionConfig$Builder;
 	public fun requestCompression (Lkotlin/jvm/functions/Function1;)V
+}
+
+public final class aws/smithy/kotlin/runtime/client/config/CompressionClientConfig$Builder$DefaultImpls {
+	public static fun requestCompression (Laws/smithy/kotlin/runtime/client/config/CompressionClientConfig$Builder;Lkotlin/jvm/functions/Function1;)V
 }
 
 public abstract interface annotation class aws/smithy/kotlin/runtime/client/config/CompressionClientConfigDsl : java/lang/annotation/Annotation {
