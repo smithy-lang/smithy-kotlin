@@ -374,6 +374,7 @@ object RuntimeTypes {
             val BearerTokenAuthScheme = symbol("BearerTokenAuthScheme")
             val BearerTokenProviderConfig = symbol("BearerTokenProviderConfig")
             val BearerTokenProvider = symbol("BearerTokenProvider")
+            val BearerToken= symbol("BearerToken")
 
             val reprioritizeAuthOptions = symbol("reprioritizeAuthOptions")
         }
