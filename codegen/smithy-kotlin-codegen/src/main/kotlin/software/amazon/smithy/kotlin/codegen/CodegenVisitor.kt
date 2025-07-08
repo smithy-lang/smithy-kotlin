@@ -143,14 +143,17 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Unit>() {
             logger.info("[${service.id}] Generating service client for protocol $protocol")
             generateProtocolClient(ctx)
 
-            logger.info("[${service.id}] Generating endpoint provider for protocol $protocol")
-            generateEndpointsSources(ctx)
+            if (!generateServiceProject) {
+                logger.info("[${service.id}] Generating endpoint provider for protocol $protocol")
+                generateEndpointsSources(ctx)
 
-            logger.info("[${service.id}] Generating auth scheme provider for protocol $protocol")
-            generateAuthSchemeProvider(ctx)
+                logger.info("[${service.id}] Generating auth scheme provider for protocol $protocol")
+                generateAuthSchemeProvider(ctx)
+            }
         }
+
         if (generateServiceProject) {
-            val serviceStubGenerator = ServiceStubGenerator(settings, writers)
+            val serviceStubGenerator = ServiceStubGenerator(baseGenerationContext, writers)
             serviceStubGenerator.render()
         }
 

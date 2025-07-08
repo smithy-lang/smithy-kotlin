@@ -24,12 +24,17 @@ class CborParserGenerator(
         op: OperationShape,
         members: List<MemberShape>,
     ): Symbol {
-        val outputSymbol = ctx.symbolProvider.toSymbol(ctx.model.expectShape(op.outputShape))
+        val deserializationShape = if (ctx.settings.build.generateServiceProject) {
+            op.inputShape
+        } else {
+            op.outputShape
+        }
+        val deserializationsymbol = ctx.symbolProvider.toSymbol(ctx.model.expectShape(deserializationShape))
 
         return op.bodyDeserializer(ctx.settings) { writer ->
             addNestedDocumentDeserializers(ctx, op, writer)
             val fnName = op.bodyDeserializerName()
-            writer.withBlock("private fun #L(builder: #T.Builder, payload: ByteArray) {", "}", fnName, outputSymbol) {
+            writer.withBlock("private fun #L(builder: #T.Builder, payload: ByteArray) {", "}", fnName, deserializationsymbol) {
                 call { renderDeserializeOperationBody(ctx, op, members, writer) }
             }
         }
@@ -91,9 +96,13 @@ class CborParserGenerator(
         writer: KotlinWriter,
     ) {
         writer.write("val deserializer = #T(payload)", RuntimeTypes.Serde.SerdeCbor.CborDeserializer)
-
-        val shape = ctx.model.expectShape(op.output.get())
-        renderDeserializerBody(ctx, shape, documentMembers, writer)
+        val deserializationTarget = if (ctx.settings.build.generateServiceProject) {
+            op.input
+        } else {
+            op.output
+        }
+        val deserializationShape = ctx.model.expectShape(deserializationTarget.get())
+        renderDeserializerBody(ctx, deserializationShape, documentMembers, writer)
     }
 
     private fun renderDeserializerBody(
@@ -103,7 +112,6 @@ class CborParserGenerator(
         writer: KotlinWriter,
     ) {
         descriptorGenerator(ctx, shape, members, writer).render()
-
         if (shape.isUnionShape) {
             val name = ctx.symbolProvider.toSymbol(shape).name
             DeserializeUnionGenerator(ctx, name, members, writer, TimestampFormatTrait.Format.EPOCH_SECONDS).render()
