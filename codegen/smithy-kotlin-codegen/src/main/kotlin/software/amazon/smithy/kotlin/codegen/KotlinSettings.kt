@@ -348,9 +348,6 @@ data class ApiSettings(
 /**
  * Contains configurations settings for a Kotlin service project
  * @param framework Enum representing the server framework of the service.
- * @param engine Enum representing the server engine of the service.
- * @param port Int representing the port which the service will be exposed.
- * @param logLevel Enum representing the log level of the service.
  */
 data class ServiceStubSettings(
     val framework: ServiceFramework = ServiceFramework.KTOR,
