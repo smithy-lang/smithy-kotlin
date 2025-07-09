@@ -290,7 +290,6 @@ class ServiceStubGenerator(
 
     // Writes `Routing.kt` that maps Smithy operations → Ktor routes.
     private fun renderRouting() {
-        val cborShapeIds = mutableListOf<ShapeId>()
         val isCborProtocolTrait = (serviceShape.getTrait<Rpcv2CborTrait>() != null)
         val isJsonProtocolTrait = (serviceShape.getTrait<RestJson1Trait>() != null)
 
