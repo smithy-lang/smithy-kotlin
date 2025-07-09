@@ -225,7 +225,7 @@ class ServiceStubGenerator(
                     write("else -> #T.INFO", RuntimeTypes.KtorLoggingSlf4j.Level)
                 }
                 write("")
-                write("val logbackLevel: #T = #T.valueOf(slf4jLevel?.name)", RuntimeTypes.KtorLoggingLogback.Level, RuntimeTypes.KtorLoggingLogback.Level)
+                write("val logbackLevel = slf4jLevel?.let { #T.valueOf(it.name) } ?: #T.OFF", RuntimeTypes.KtorLoggingLogback.Level, RuntimeTypes.KtorLoggingLogback.Level)
                 write("")
                 write(
                     "(#T.getILoggerFactory() as #T).getLogger(#T).level = logbackLevel",
