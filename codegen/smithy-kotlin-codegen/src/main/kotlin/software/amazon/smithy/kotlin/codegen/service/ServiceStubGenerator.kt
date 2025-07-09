@@ -184,6 +184,7 @@ class ServiceStubGenerator(
 
     private fun renderKTORServiceFramework(writer: KotlinWriter) {
         writer.addImport(RuntimeTypes.KtorServerNetty.Netty)
+        writer.addImport("${ctx.settings.pkg.name}.plugins", "configureErrorHandling")
         writer.addImport(ctx.settings.pkg.name, "configureRouting")
         writer.addImport(ctx.settings.pkg.name, "configureLogging")
         writer.addImport("${ctx.settings.pkg.name}.configurations", "ServiceFrameworkConfig")
@@ -197,6 +198,7 @@ class ServiceStubGenerator(
                     "}.apply { start(wait = true) }",
                     RuntimeTypes.KtorServerCore.embeddedServer,
                 ) {
+                    write("configureErrorHandling()")
                     write("configureRouting()")
                     write("configureLogging()")
                 }
@@ -360,53 +362,27 @@ class ServiceStubGenerator(
 
     private fun renderErrorHandler() {
         delegator.useFileWriter("ErrorHandler.kt", "${ctx.settings.pkg.name}.plugins") { writer ->
-            writer.withBlock(
-                "internal class ErrorEnvelope(val code: Int, val msg: String, cause: Throwable? = null): RuntimeException(msg, cause) {",
-                "}",
-            ) {
-                withBlock(
-                    "fun toJson(json: #T = #T) : String {",
-                    "}",
-                    RuntimeTypes.KtorServerJsonSerde.Json,
-                    RuntimeTypes.KtorServerJsonSerde.Json,
-                ) {
-                    withInlineBlock("return #T {", "}", RuntimeTypes.KtorServerJsonSerde.buildJsonObject) {
-                        write("put(#S, #T(code))", "code", RuntimeTypes.KtorServerJsonSerde.JsonPrimitive)
-                        write(
-                            "put(#S, #T(message ?: #S))",
-                            "message",
-                            RuntimeTypes.KtorServerJsonSerde.JsonPrimitive,
-                            "Unknown error",
-                        )
-                    }
-                        .write(
-                            ".let { json.encodeToString(#T.serializer(), it) }",
-                            RuntimeTypes.KtorServerJsonSerde.JsonElement,
-                        )
+
+            writer.write("@#T", RuntimeTypes.KtorServerCborSerde.Serializable)
+                .write("private data class ErrorPayload(val code: Int, val message: String)")
+                .write("")
+                .withInlineBlock("internal class ErrorEnvelope(", ")") {
+                    write("val code: Int,")
+                    write("val msg: String,")
+                    write("cause: Throwable? = null,")
                 }
-                write("")
-                withBlock(
-                    "fun toCbor(cbor: #T = #T {}) : ByteArray {",
-                    "}",
-                    RuntimeTypes.KtorServerCborSerde.Cbor,
-                    RuntimeTypes.KtorServerCborSerde.Cbor,
-                ) {
-                    withInlineBlock("return #T {", "}", RuntimeTypes.KtorServerJsonSerde.buildJsonObject) {
-                        write("put(#S, #T(code))", "code", RuntimeTypes.KtorServerJsonSerde.JsonPrimitive)
-                        write(
-                            "put(#S, #T(message ?: #S))",
-                            "message",
-                            RuntimeTypes.KtorServerJsonSerde.JsonPrimitive,
-                            "Unknown error",
-                        )
+                .withBlock(" : RuntimeException(msg, cause) {", "}") {
+                    withBlock("fun toJson(json: #T = #T { }): String {", "}", RuntimeTypes.KtorServerJsonSerde.Json, RuntimeTypes.KtorServerJsonSerde.Json) {
+                        withInlineBlock("return json.encodeToString(", ")") {
+                            write("ErrorPayload(code, message ?: #S)", "Unknown error")
+                        }
                     }
-                        .write(
-                            ".let { cbor.#T(#T.serializer(), it) }",
-                            RuntimeTypes.KtorServerCborSerde.encodeToByteArray,
-                            RuntimeTypes.KtorServerJsonSerde.JsonElement,
-                        )
+                    withBlock("fun toCbor(cbor: #T = #T { }): ByteArray {", "}", RuntimeTypes.KtorServerCborSerde.Cbor, RuntimeTypes.KtorServerCborSerde.Cbor) {
+                        withInlineBlock("return cbor.#T(", ")", RuntimeTypes.KtorServerCborSerde.encodeToByteArray) {
+                            write("ErrorPayload(code, message ?: #S)", "Unknown error")
+                        }
+                    }
                 }
-            }
                 .write("")
                 .withBlock("internal fun #T.configureErrorHandling() {", "}", RuntimeTypes.KtorServerCore.Application) {
                     write("")

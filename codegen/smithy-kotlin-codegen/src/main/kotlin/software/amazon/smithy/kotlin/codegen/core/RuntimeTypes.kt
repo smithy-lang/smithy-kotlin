@@ -555,14 +555,12 @@ object RuntimeTypes {
     }
 
     object KtorServerCborSerde : RuntimeTypePackage(KotlinDependency.KTOR_SERVER_CBOR_SERDE) {
+        val Serializable = symbol("Serializable")
         val Cbor = symbol("Cbor", "cbor")
         val encodeToByteArray = symbol("encodeToByteArray")
     }
 
     object KtorServerJsonSerde : RuntimeTypePackage(KotlinDependency.KTOR_SERVER_JSON_SERDE) {
         val Json = symbol("Json")
-        val JsonElement = symbol("JsonElement")
-        val JsonPrimitive = symbol("JsonPrimitive")
-        val buildJsonObject = symbol("buildJsonObject")
     }
 }
