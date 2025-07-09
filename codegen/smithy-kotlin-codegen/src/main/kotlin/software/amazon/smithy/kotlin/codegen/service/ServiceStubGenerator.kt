@@ -13,7 +13,6 @@ import software.amazon.smithy.kotlin.codegen.core.withInlineBlock
 import software.amazon.smithy.kotlin.codegen.model.getTrait
 import software.amazon.smithy.model.knowledge.TopDownIndex
 import software.amazon.smithy.model.shapes.OperationShape
-import software.amazon.smithy.model.shapes.ShapeId
 import software.amazon.smithy.model.traits.HttpTrait
 import software.amazon.smithy.protocol.traits.Rpcv2CborTrait
 import software.amazon.smithy.utils.AbstractCodeWriter
