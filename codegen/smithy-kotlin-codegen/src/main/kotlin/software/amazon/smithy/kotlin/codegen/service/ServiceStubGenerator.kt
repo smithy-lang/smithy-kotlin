@@ -13,7 +13,6 @@ import software.amazon.smithy.kotlin.codegen.core.withInlineBlock
 import software.amazon.smithy.kotlin.codegen.model.getTrait
 import software.amazon.smithy.model.knowledge.TopDownIndex
 import software.amazon.smithy.model.shapes.OperationShape
-import software.amazon.smithy.model.shapes.ShapeId
 import software.amazon.smithy.model.traits.HttpTrait
 import software.amazon.smithy.protocol.traits.Rpcv2CborTrait
 import software.amazon.smithy.utils.AbstractCodeWriter
@@ -292,7 +291,6 @@ class ServiceStubGenerator(
 
     // Writes `Routing.kt` that maps Smithy operations → Ktor routes.
     private fun renderRouting() {
-        val cborShapeIds = mutableListOf<ShapeId>()
         val isCborProtocolTrait = (serviceShape.getTrait<Rpcv2CborTrait>() != null)
         val isJsonProtocolTrait = (serviceShape.getTrait<RestJson1Trait>() != null)
 
