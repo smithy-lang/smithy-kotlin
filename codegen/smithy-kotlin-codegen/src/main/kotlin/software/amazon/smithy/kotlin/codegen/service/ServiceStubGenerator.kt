@@ -395,6 +395,10 @@ class ServiceStubGenerator(
                         withBlock("#T<Throwable> { call, cause ->", "}", RuntimeTypes.KtorServerStatusPage.exception) {
                             withBlock("val status = when (cause) {", "}") {
                                 write(
+                                    "is ErrorEnvelope -> #T.fromValue(cause.code)",
+                                    RuntimeTypes.KtorServerHttp.HttpStatusCode,
+                                )
+                                write(
                                     "is #T -> #T.BadRequest",
                                     RuntimeTypes.KtorServerCore.BadRequestException,
                                     RuntimeTypes.KtorServerHttp.HttpStatusCode,
@@ -419,7 +423,8 @@ class ServiceStubGenerator(
                                 write("else { #S }", "text")
                             }
 
-                            write("val envelope = ErrorEnvelope(status.value, cause.message ?: #S)", "Unexpected error")
+                            write("val envelope = if (cause is ErrorEnvelope) cause else ErrorEnvelope(status.value, cause.message ?: #S)", "Unexpected error")
+                            write("")
                             withBlock("when (contentType) {", "}") {
                                 withBlock("#S -> {", "}", "cbor") {
                                     withBlock("call.#T(", ")", RuntimeTypes.KtorServerRouting.responseRespondBytes) {
@@ -450,6 +455,7 @@ class ServiceStubGenerator(
 
     private fun renderContentTypeGuard() {
         delegator.useFileWriter("ContentTypeGuard.kt", "${ctx.settings.pkg.name}.plugins") { writer ->
+            writer.addImport("${ctx.settings.pkg.name}.plugins", "ErrorEnvelope")
             writer.withBlock("public class ContentTypeGuardConfig {", "}") {
                 write("public var allow: List<#T> = emptyList()", RuntimeTypes.KtorServerHttp.ContentType)
                 write("")
@@ -479,11 +485,10 @@ class ServiceStubGenerator(
                     withBlock("onCall { call ->", "}") {
                         write("val incoming = call.request.#T()", RuntimeTypes.KtorServerRouting.requestContentType)
                         withBlock("if (incoming == #T.Any || allowed.none { incoming.match(it) }) {", "}", RuntimeTypes.KtorServerHttp.ContentType) {
-                            withBlock("call.#T(", ")", RuntimeTypes.KtorServerRouting.responseRespond) {
-                                write("#T.UnsupportedMediaType,", RuntimeTypes.KtorServerHttp.HttpStatusCode)
+                            withBlock("throw ErrorEnvelope(", ")") {
+                                write("#T.UnsupportedMediaType.value, ", RuntimeTypes.KtorServerHttp.HttpStatusCode)
                                 write("#S", "Allowed Content-Type(s): \${allowed.joinToString()}")
                             }
-                            write("return@onCall")
                         }
                     }
                 }
