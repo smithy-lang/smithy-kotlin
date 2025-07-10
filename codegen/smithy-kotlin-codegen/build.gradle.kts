@@ -39,6 +39,8 @@ dependencies {
     testImplementation(libs.kotlin.test)
     testImplementation(libs.kotlin.test.junit5)
     testImplementation(project(":codegen:smithy-kotlin-codegen-testutils"))
+
+    testImplementation(gradleTestKit())
 }
 
 val generateSdkRuntimeVersion by tasks.registering {
