@@ -554,13 +554,17 @@ object RuntimeTypes {
         val exception = symbol("exception")
     }
 
-    object KtorServerCborSerde : RuntimeTypePackage(KotlinDependency.KTOR_SERVER_CBOR_SERDE) {
+    object KtorServerAuth : RuntimeTypePackage(KotlinDependency.KTOR_SERVER_AUTH) {
+
+    }
+
+    object KotlinxCborSerde : RuntimeTypePackage(KotlinDependency.KOTLINX_CBOR_SERDE) {
         val Serializable = symbol("Serializable")
         val Cbor = symbol("Cbor", "cbor")
         val encodeToByteArray = symbol("encodeToByteArray")
     }
 
-    object KtorServerJsonSerde : RuntimeTypePackage(KotlinDependency.KTOR_SERVER_JSON_SERDE) {
+    object KotlinxJsonSerde : RuntimeTypePackage(KotlinDependency.KOTLINX_JSON_SERDE) {
         val Json = symbol("Json")
     }
 }

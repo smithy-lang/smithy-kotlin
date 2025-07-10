@@ -371,7 +371,7 @@ class ServiceStubGenerator(
     private fun renderErrorHandler() {
         delegator.useFileWriter("ErrorHandler.kt", "${ctx.settings.pkg.name}.plugins") { writer ->
 
-            writer.write("@#T", RuntimeTypes.KtorServerCborSerde.Serializable)
+            writer.write("@#T", RuntimeTypes.KotlinxCborSerde.Serializable)
                 .write("private data class ErrorPayload(val code: Int, val message: String)")
                 .write("")
                 .withInlineBlock("internal class ErrorEnvelope(", ")") {
@@ -380,13 +380,13 @@ class ServiceStubGenerator(
                     write("cause: Throwable? = null,")
                 }
                 .withBlock(" : RuntimeException(msg, cause) {", "}") {
-                    withBlock("fun toJson(json: #T = #T): String {", "}", RuntimeTypes.KtorServerJsonSerde.Json, RuntimeTypes.KtorServerJsonSerde.Json) {
+                    withBlock("fun toJson(json: #T = #T): String {", "}", RuntimeTypes.KotlinxJsonSerde.Json, RuntimeTypes.KotlinxJsonSerde.Json) {
                         withInlineBlock("return json.encodeToString(", ")") {
                             write("ErrorPayload(code, message ?: #S)", "Unknown error")
                         }
                     }
-                    withBlock("fun toCbor(cbor: #T = #T { }): ByteArray {", "}", RuntimeTypes.KtorServerCborSerde.Cbor, RuntimeTypes.KtorServerCborSerde.Cbor) {
-                        withInlineBlock("return cbor.#T(", ")", RuntimeTypes.KtorServerCborSerde.encodeToByteArray) {
+                    withBlock("fun toCbor(cbor: #T = #T { }): ByteArray {", "}", RuntimeTypes.KotlinxCborSerde.Cbor, RuntimeTypes.KotlinxCborSerde.Cbor) {
+                        withInlineBlock("return cbor.#T(", ")", RuntimeTypes.KotlinxCborSerde.encodeToByteArray) {
                             write("ErrorPayload(code, message ?: #S)", "Unknown error")
                         }
                     }
