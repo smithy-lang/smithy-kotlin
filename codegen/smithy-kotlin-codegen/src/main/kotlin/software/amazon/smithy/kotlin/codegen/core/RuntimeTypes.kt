@@ -555,7 +555,11 @@ object RuntimeTypes {
     }
 
     object KtorServerAuth : RuntimeTypePackage(KotlinDependency.KTOR_SERVER_AUTH) {
-
+        val Authentication = symbol("Authentication")
+        val authenticate = symbol("authenticate")
+        val Principal = symbol("Principal")
+        val UserIdPrincipal = symbol("UserIdPrincipal")
+        val bearer = symbol("bearer")
     }
 
     object KotlinxCborSerde : RuntimeTypePackage(KotlinDependency.KOTLINX_CBOR_SERDE) {

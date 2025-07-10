@@ -195,6 +195,7 @@ class ServiceStubGenerator(
         writer.addImport("${ctx.settings.pkg.name}.plugins", "configureErrorHandling")
         writer.addImport(ctx.settings.pkg.name, "configureRouting")
         writer.addImport("${ctx.settings.pkg.name}.utils", "configureLogging")
+        writer.addImport("${ctx.settings.pkg.name}.auth", "configureAuthentication")
         writer.addImport("${ctx.settings.pkg.name}.config", "ServiceFrameworkConfig")
 
         writer.withBlock("internal class KTORServiceFramework () : ServiceFramework {", "}") {
@@ -207,6 +208,7 @@ class ServiceStubGenerator(
                     RuntimeTypes.KtorServerCore.embeddedServer,
                 ) {
                     write("configureErrorHandling()")
+                    write("configureAuthentication()")
                     write("configureRouting()")
                     write("configureLogging()")
                 }
@@ -283,6 +285,29 @@ class ServiceStubGenerator(
 
     // Generates `Authentication.kt` with Authenticator interface + configureSecurity().
     private fun renderAuthModule() {
+        delegator.useFileWriter("Validation.kt", "${ctx.settings.pkg.name}.auth") { writer ->
+            writer.withBlock("public fun bearerValidation(token: String): #T? {", "}", RuntimeTypes.KtorServerAuth.UserIdPrincipal) {
+                write("// TODO: implement me")
+                write("if (true) return #T(#S) else return null", RuntimeTypes.KtorServerAuth.UserIdPrincipal, "Authenticated User")
+            }
+        }
+
+        delegator.useFileWriter("Authentication.kt", "${ctx.settings.pkg.name}.auth") { writer ->
+            writer.withBlock("internal fun #T.configureAuthentication() {", "}", RuntimeTypes.KtorServerCore.Application) {
+                write("")
+                withBlock(
+                    "#T(#T) {",
+                    "}",
+                    RuntimeTypes.KtorServerCore.install,
+                    RuntimeTypes.KtorServerAuth.Authentication,
+                ) {
+                    withBlock("#T(#S) {", "}", RuntimeTypes.KtorServerAuth.bearer, "auth-bearer") {
+                        write("realm = #S", "Access to API")
+                        write("authenticate { cred -> bearerValidation(cred.token) }")
+                    }
+                }
+            } 
+        }
     }
 
     // For every operation request structure, create a `validate()` function file.
@@ -309,6 +334,11 @@ class ServiceStubGenerator(
                 withBlock("#T {", "}", RuntimeTypes.KtorServerRouting.routing) {
                     withBlock("#T(#S) {", "}", RuntimeTypes.KtorServerRouting.get, "/") {
                         write(" #T.#T(#S)", RuntimeTypes.KtorServerCore.applicationCall, RuntimeTypes.KtorServerRouting.responseText, "hello world")
+                    }
+                    withBlock("#T(#S) {", "}", RuntimeTypes.KtorServerAuth.authenticate, "auth-bearer") {
+                        withBlock("#T(#S) {", "}", RuntimeTypes.KtorServerRouting.get, "/auth") {
+                            write(" #T.#T(#S)", RuntimeTypes.KtorServerCore.applicationCall, RuntimeTypes.KtorServerRouting.responseText, "hello world")
+                        }
                     }
                     operations.filter { it.hasTrait(HttpTrait.ID) }
                         .forEach { shape ->
