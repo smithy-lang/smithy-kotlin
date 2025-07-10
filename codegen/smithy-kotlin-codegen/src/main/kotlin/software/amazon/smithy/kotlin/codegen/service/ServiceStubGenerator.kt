@@ -380,7 +380,7 @@ class ServiceStubGenerator(
                     write("cause: Throwable? = null,")
                 }
                 .withBlock(" : RuntimeException(msg, cause) {", "}") {
-                    withBlock("fun toJson(json: #T = #T { }): String {", "}", RuntimeTypes.KtorServerJsonSerde.Json, RuntimeTypes.KtorServerJsonSerde.Json) {
+                    withBlock("fun toJson(json: #T = #T): String {", "}", RuntimeTypes.KtorServerJsonSerde.Json, RuntimeTypes.KtorServerJsonSerde.Json) {
                         withInlineBlock("return json.encodeToString(", ")") {
                             write("ErrorPayload(code, message ?: #S)", "Unknown error")
                         }
