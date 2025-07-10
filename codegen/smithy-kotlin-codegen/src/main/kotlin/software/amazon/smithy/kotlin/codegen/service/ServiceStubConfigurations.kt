@@ -13,17 +13,3 @@ enum class ServiceFramework(val value: String) {
         }
     }
 }
-
-enum class ServiceEngine(val value: String) {
-    NETTY("Netty"),
-    ;
-
-    override fun toString(): String = value
-
-    companion object {
-        fun fromValue(value: String): ServiceEngine = when (value.lowercase()) {
-            "netty" -> NETTY
-            else -> throw IllegalArgumentException("$value is not a valid ServerFramework value, expected $NETTY")
-        }
-    }
-}

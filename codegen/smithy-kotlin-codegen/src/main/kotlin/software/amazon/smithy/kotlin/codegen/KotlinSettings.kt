@@ -13,7 +13,6 @@ import software.amazon.smithy.aws.traits.protocols.RestJson1Trait
 import software.amazon.smithy.aws.traits.protocols.RestXmlTrait
 import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.kotlin.codegen.lang.isValidPackageName
-import software.amazon.smithy.kotlin.codegen.service.ServiceEngine
 import software.amazon.smithy.kotlin.codegen.service.ServiceFramework
 import software.amazon.smithy.kotlin.codegen.utils.getOrNull
 import software.amazon.smithy.kotlin.codegen.utils.toCamelCase
@@ -349,30 +348,20 @@ data class ApiSettings(
 /**
  * Contains configurations settings for a Kotlin service project
  * @param framework Enum representing the server framework of the service.
- * @param engine Enum representing the server engine of the service.
- * @param port Int representing the port which the service will be exposed.
  */
 data class ServiceStubSettings(
     val framework: ServiceFramework = ServiceFramework.KTOR,
-    val engine: ServiceEngine = ServiceEngine.NETTY,
-    val port: Int = 8080,
 ) {
     companion object {
         const val SERVER_FRAMEWORK = "serverFramework"
-        const val SERVER_ENGINE = "serverEngine"
-        const val PORT = "port"
 
         fun fromNode(node: Optional<ObjectNode>): ServiceStubSettings = node.map {
             val serverFramework = node.get()
                 .getStringMember(SERVER_FRAMEWORK)
                 .map { ServiceFramework.fromValue(it.value) }
                 .getOrNull() ?: ServiceFramework.KTOR
-            val serverEngine = node.get()
-                .getStringMember(SERVER_ENGINE)
-                .map { ServiceEngine.fromValue(it.value) }
-                .getOrNull() ?: ServiceEngine.NETTY
-            val port = node.get().getNumberMemberOrDefault(PORT, 8080).toInt()
-            ServiceStubSettings(serverFramework, serverEngine, port)
+
+            ServiceStubSettings(serverFramework)
         }.orElse(Default)
 
         /**
