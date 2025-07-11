@@ -7,35 +7,35 @@ package software.amazon.smithy.kotlin.codegen.service
 
 import software.amazon.smithy.kotlin.codegen.model.buildSymbol
 
-class ServiceTypes (val pkgName: String) {
-    val LogLevel = buildSymbol {
+class ServiceTypes(val pkgName: String) {
+    val logLevel = buildSymbol {
         name = "LogLevel"
-        namespace = "${pkgName}.config"
+        namespace = "$pkgName.config"
     }
 
-    val ServiceEngine = buildSymbol {
+    val serviceEngine = buildSymbol {
         name = "ServiceEngine"
-        namespace = "${pkgName}.config"
+        namespace = "$pkgName.config"
     }
 
-    val ServiceFrameworkConfig = buildSymbol {
+    val serviceFrameworkConfig = buildSymbol {
         name = "ServiceFrameworkConfig"
-        namespace = "${pkgName}.config"
+        namespace = "$pkgName.config"
     }
 
-    val KTORServiceFramework = buildSymbol {
+    val ktorServiceFramework = buildSymbol {
         name = "KTORServiceFramework"
-        namespace = "${pkgName}.framework"
+        namespace = "$pkgName.framework"
     }
 
-    val ErrorEnvelope = buildSymbol {
+    val errorEnvelope = buildSymbol {
         name = "ErrorEnvelope"
-        namespace = "${pkgName}.plugins"
+        namespace = "$pkgName.plugins"
     }
 
     val configureErrorHandling = buildSymbol {
         name = "configureErrorHandling"
-        namespace = "${pkgName}.plugins"
+        namespace = "$pkgName.plugins"
     }
 
     val configureRouting = buildSymbol {
@@ -45,15 +45,11 @@ class ServiceTypes (val pkgName: String) {
 
     val configureLogging = buildSymbol {
         name = "configureLogging"
-        namespace = "${pkgName}.utils"
+        namespace = "$pkgName.utils"
     }
 
-    val ContentTypeGuard = buildSymbol {
+    val contentTypeGuard = buildSymbol {
         name = "ContentTypeGuard"
-        namespace = "${pkgName}.plugins"
+        namespace = "$pkgName.plugins"
     }
-
 }
-
-
-
