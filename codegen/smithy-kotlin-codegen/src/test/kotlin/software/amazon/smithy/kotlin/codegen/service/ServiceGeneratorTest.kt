@@ -61,6 +61,7 @@ class ServiceGeneratorTest {
 
     fun generateService(): MockManifest {
         val kotlinSettings = KotlinSettings.from(defaultModel, settings)
+        // FIXME: generator won't call Cbor protocol function...
         val (ctx, manifest, generator) = defaultModel.newTestContext(
             "ServiceGeneratorTest",
             "com.test",
@@ -97,11 +98,12 @@ class ServiceGeneratorTest {
         assertTrue(manifest.hasFile("src/main/kotlin/com/test/test/serde/GetTestOperationDeserializer.kt"))
     }
 
-    //    @Test
+    @Test
     @OptIn(ExperimentalPathApi::class)
     fun `generated service runs successfully`() {
         val manifest = generateService()
-
+        val a = manifest.getFileString("src/main/kotlin/com/test/test/serde/PostTestOperationSerializer.kt")
+        println(a)
         manifest.files.forEach { rel ->
             val target = projectDir.resolve(rel.toString().removePrefix("/"))
             Files.createDirectories(target.parent)

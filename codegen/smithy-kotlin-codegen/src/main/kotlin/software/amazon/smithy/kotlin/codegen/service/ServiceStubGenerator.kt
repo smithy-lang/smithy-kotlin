@@ -340,7 +340,7 @@ class ServiceStubGenerator(
                                     write("val serializer = ${shape.id.name}OperationSerializer()")
                                     write("val response = serializer.serialize(#T(), responseObj)", RuntimeTypes.Core.ExecutionContext)
                                     withBlock("#T.#T(", ")", RuntimeTypes.KtorServerCore.applicationCall, RuntimeTypes.KtorServerRouting.responseRespondBytes) {
-                                        write("bytes = response.body.#T() ?:  ByteArray(0),", RuntimeTypes.Http.readAll)
+                                        write("bytes = response,")
                                         write("contentType = #T,", RuntimeTypes.KtorServerHttp.Cbor)
                                         write("status = #T.fromValue($successCode),", RuntimeTypes.KtorServerHttp.HttpStatusCode)
                                     }
