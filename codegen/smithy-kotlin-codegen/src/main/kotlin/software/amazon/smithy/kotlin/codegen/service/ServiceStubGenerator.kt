@@ -285,10 +285,16 @@ class ServiceStubGenerator(
 
     // Generates `Authentication.kt` with Authenticator interface + configureSecurity().
     private fun renderAuthModule() {
+        delegator.useFileWriter("UserPrincipal.kt", "${ctx.settings.pkg.name}.auth") { writer ->
+            writer.withBlock("public data class UserPrincipal(", ")") {
+                write("val user: String")
+            }
+        }
+
         delegator.useFileWriter("Validation.kt", "${ctx.settings.pkg.name}.auth") { writer ->
-            writer.withBlock("public fun bearerValidation(token: String): #T? {", "}", RuntimeTypes.KtorServerAuth.UserIdPrincipal) {
+            writer.withBlock("public fun bearerValidation(token: String): UserPrincipal? {", "}") {
                 write("// TODO: implement me")
-                write("if (true) return #T(#S) else return null", RuntimeTypes.KtorServerAuth.UserIdPrincipal, "Authenticated User")
+                write("if (true) return UserPrincipal(#S) else return null", "Authenticated User")
             }
         }
 
