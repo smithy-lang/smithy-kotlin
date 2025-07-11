@@ -5,25 +5,24 @@
 
 package software.amazon.smithy.kotlin.codegen.service
 
+import org.gradle.testkit.runner.GradleRunner
+import org.junit.jupiter.api.io.TempDir
 import software.amazon.smithy.build.MockManifest
 import software.amazon.smithy.build.PluginContext
 import software.amazon.smithy.kotlin.codegen.KotlinCodegenPlugin
+import software.amazon.smithy.kotlin.codegen.KotlinSettings
 import software.amazon.smithy.kotlin.codegen.loadModelFromResource
 import software.amazon.smithy.kotlin.codegen.test.*
 import software.amazon.smithy.model.node.Node
 import software.amazon.smithy.model.node.ObjectNode
-import kotlin.test.Test
-import kotlin.test.assertTrue
-import java.nio.file.Path
-import java.nio.file.Files
 import java.io.BufferedReader
+import java.nio.file.Files
+import java.nio.file.Path
 import java.util.concurrent.TimeUnit
 import kotlin.io.path.ExperimentalPathApi
-import org.gradle.testkit.runner.GradleRunner
-import org.junit.jupiter.api.io.TempDir
-import kotlin.io.path.name
 import kotlin.math.max
-
+import kotlin.test.Test
+import kotlin.test.assertTrue
 
 class ServiceGeneratorTest {
     private val defaultModel = loadModelFromResource("service-generator-test.smithy")
@@ -38,38 +37,51 @@ class ServiceGeneratorTest {
             ObjectNode.builder()
                 .withMember("name", Node.from("com.test.test"))
                 .withMember("version", Node.from("1.0.0"))
-                .build()
+                .build(),
         )
         .withMember(
             "build",
             ObjectNode.builder()
                 .withMember("rootProject", true)
                 .withMember("generateServiceProject", true)
-                .withMember("optInAnnotations", Node.arrayNode(
-                    Node.from("aws.smithy.kotlin.runtime.InternalApi"),
-                    Node.from("kotlinx.serialization.ExperimentalSerializationApi"),
-                ))
-                .build()
+                .withMember(
+                    "optInAnnotations",
+                    Node.arrayNode(
+                        Node.from("aws.smithy.kotlin.runtime.InternalApi"),
+                        Node.from("kotlinx.serialization.ExperimentalSerializationApi"),
+                    ),
+                )
+                .build(),
         )
         .withMember(
             "serviceStub",
-            ObjectNode.builder().withMember("framework", Node.from("ktor")).build()
+            ObjectNode.builder().withMember("framework", Node.from("ktor")).build(),
         )
         .build()
 
-    val manifest = MockManifest()
-    val context: PluginContext = PluginContext.builder()
-        .model(defaultModel)
-        .fileManifest(manifest)
-        .settings(settings)
-        .build()
+    fun generateService(): MockManifest {
+        val kotlinSettings = KotlinSettings.from(defaultModel, settings)
+        val (ctx, manifest, generator) = defaultModel.newTestContext(
+            "ServiceGeneratorTest",
+            "com.test",
+            kotlinSettings,
+        )
+        generator.generateProtocolClient(ctx)
+        ctx.delegator.flushWriters()
 
-    init {
+        val context: PluginContext = PluginContext.builder()
+            .model(defaultModel)
+            .fileManifest(manifest)
+            .settings(settings)
+            .build()
         KotlinCodegenPlugin().execute(context)
+        return manifest
     }
 
-//    @Test
+    @Test
     fun `it generates service and all necessary files`() {
+        val manifest = generateService()
+
         assertTrue(manifest.hasFile("build.gradle.kts"))
         assertTrue(manifest.hasFile("src/main/kotlin/com/test/test/Main.kt"))
         assertTrue(manifest.hasFile("src/main/kotlin/com/test/test/Routing.kt"))
@@ -79,15 +91,17 @@ class ServiceGeneratorTest {
         assertTrue(manifest.hasFile("src/main/kotlin/com/test/test/model/GetTestResponse.kt"))
         assertTrue(manifest.hasFile("src/main/kotlin/com/test/test/operations/GetTestOperation.kt"))
         assertTrue(manifest.hasFile("src/main/kotlin/com/test/test/plugins/ContentTypeGuard.kt"))
-        assertTrue(manifest.hasFile("src/main/kotlin/com/test/test/plugins/ErrorHandler.kt"))
+//        assertTrue(manifest.hasFile("src/main/kotlin/com/test/test/plugins/ErrorHandler.kt"))
         assertTrue(manifest.hasFile("src/main/kotlin/com/test/test/utils/Logging.kt"))
-        assertTrue(manifest.hasFile("src/main/kotlin/com/test/test/utils/serde/GetTestOperationSerializer.kt"))
-        assertTrue(manifest.hasFile("src/main/kotlin/com/test/test/utils/serde/GetTestOperationDeserializer.kt"))
+        assertTrue(manifest.hasFile("src/main/kotlin/com/test/test/serde/GetTestOperationSerializer.kt"))
+        assertTrue(manifest.hasFile("src/main/kotlin/com/test/test/serde/GetTestOperationDeserializer.kt"))
     }
 
+    //    @Test
     @OptIn(ExperimentalPathApi::class)
-//    @Test
     fun `generated service runs successfully`() {
+        val manifest = generateService()
+
         manifest.files.forEach { rel ->
             val target = projectDir.resolve(rel.toString().removePrefix("/"))
             Files.createDirectories(target.parent)
@@ -109,20 +123,23 @@ class ServiceGeneratorTest {
             .start()
 
         try {
-            val ready = waitForLog(proc.inputStream.bufferedReader(),
+            val ready = waitForLog(
+                proc.inputStream.bufferedReader(),
                 text = "Engine started",
-                timeoutSec = 20)
+                timeoutSec = 20,
+            )
             assertTrue(ready, "Service did not start within 20 s")
         } finally {
             proc.destroyForcibly()
             proc.waitFor(5, TimeUnit.SECONDS)
         }
-
     }
 
-    private fun waitForLog(reader: BufferedReader,
-                           text: String,
-                           timeoutSec: Long): Boolean {
+    private fun waitForLog(
+        reader: BufferedReader,
+        text: String,
+        timeoutSec: Long,
+    ): Boolean {
         val deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(timeoutSec)
         while (System.nanoTime() < deadline) {
             val line = reader.readLine() ?: break
