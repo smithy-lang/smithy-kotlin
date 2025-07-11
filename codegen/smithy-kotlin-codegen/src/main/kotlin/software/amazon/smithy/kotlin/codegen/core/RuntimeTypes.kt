@@ -491,6 +491,7 @@ object RuntimeTypes {
         val ApplicationEngineFactory = symbol("ApplicationEngineFactory", "engine")
 
         val Application = symbol("Application", "application")
+        val ApplicationCallClass = symbol("ApplicationCall", "application")
         val ApplicationStopping = symbol("ApplicationStopping", "application")
         val ApplicationStopped = symbol("ApplicationStopped", "application")
         val ApplicationCreateRouteScopedPlugin = symbol("createRouteScopedPlugin", "application")
@@ -558,7 +559,6 @@ object RuntimeTypes {
         val Authentication = symbol("Authentication")
         val authenticate = symbol("authenticate")
         val Principal = symbol("Principal")
-        val UserIdPrincipal = symbol("UserIdPrincipal")
         val bearer = symbol("bearer")
     }
 
