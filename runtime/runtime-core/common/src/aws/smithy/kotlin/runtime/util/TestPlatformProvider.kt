@@ -15,7 +15,7 @@ import aws.smithy.kotlin.runtime.InternalApi
  * @param os Operating system info to emulate
  */
 @InternalApi
-public open class TestPlatformProvider(
+public class TestPlatformProvider(
     env: Map<String, String> = emptyMap(),
     private val props: Map<String, String> = emptyMap(),
     private val fs: Map<String, String> = emptyMap(),

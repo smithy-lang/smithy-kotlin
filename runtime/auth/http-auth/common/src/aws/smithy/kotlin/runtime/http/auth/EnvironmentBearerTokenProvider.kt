@@ -17,7 +17,6 @@ public class EnvironmentBearerTokenProvider(
     private val platform: PlatformProvider = PlatformProvider.System,
 ) : BearerTokenProvider {
     override suspend fun resolve(attributes: Attributes): BearerToken {
-        // Check environment variable on each resolve call
         val bearerToken = platform.getenv(key)
             ?: error("$key environment variable is not set")
 
