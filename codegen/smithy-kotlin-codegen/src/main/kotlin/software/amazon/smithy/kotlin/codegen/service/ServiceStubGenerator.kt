@@ -312,7 +312,7 @@ class ServiceStubGenerator(
                         write("authenticate { cred -> bearerValidation(cred.token) }")
                     }
                 }
-            } 
+            }
         }
     }
 
