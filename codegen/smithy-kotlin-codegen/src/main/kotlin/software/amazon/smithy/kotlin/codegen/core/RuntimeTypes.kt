@@ -491,6 +491,7 @@ object RuntimeTypes {
         val ApplicationEngineFactory = symbol("ApplicationEngineFactory", "engine")
 
         val Application = symbol("Application", "application")
+        val ApplicationCallClass = symbol("ApplicationCall", "application")
         val ApplicationStopping = symbol("ApplicationStopping", "application")
         val ApplicationStopped = symbol("ApplicationStopped", "application")
         val ApplicationCreateRouteScopedPlugin = symbol("createRouteScopedPlugin", "application")
@@ -554,13 +555,13 @@ object RuntimeTypes {
         val exception = symbol("exception")
     }
 
-    object KtorServerCborSerde : RuntimeTypePackage(KotlinDependency.KTOR_SERVER_CBOR_SERDE) {
+    object KotlinxCborSerde : RuntimeTypePackage(KotlinDependency.KOTLINX_CBOR_SERDE) {
         val Serializable = symbol("Serializable")
         val Cbor = symbol("Cbor", "cbor")
         val encodeToByteArray = symbol("encodeToByteArray")
     }
 
-    object KtorServerJsonSerde : RuntimeTypePackage(KotlinDependency.KTOR_SERVER_JSON_SERDE) {
+    object KotlinxJsonSerde : RuntimeTypePackage(KotlinDependency.KOTLINX_JSON_SERDE) {
         val Json = symbol("Json")
     }
 }
