@@ -98,12 +98,20 @@ internal class KtorStubGenerator(
                 }
                 write("val log = #T.getLogger(#S)", RuntimeTypes.KtorLoggingSlf4j.LoggerFactory, ctx.settings.pkg.name)
 
+                withBlock("monitor.subscribe(#T) {", "}", RuntimeTypes.KtorServerCore.ApplicationStarting) {
+                    write("log.info(#S)", "Server is starting...")
+                }
+
+                withBlock("monitor.subscribe(#T) {", "}", RuntimeTypes.KtorServerCore.ApplicationStarted) {
+                    write("log.info(#S)", "Server started – ready to accept requests.")
+                }
+
                 withBlock("monitor.subscribe(#T) {", "}", RuntimeTypes.KtorServerCore.ApplicationStopping) {
-                    write("log.warn(#S)", "▶ Server is stopping – waiting for in-flight requests...")
+                    write("log.warn(#S)", "Server is stopping – waiting for in-flight requests...")
                 }
 
                 withBlock("monitor.subscribe(#T) {", "}", RuntimeTypes.KtorServerCore.ApplicationStopped) {
-                    write("log.info(#S)", "⏹ Server stopped cleanly.")
+                    write("log.info(#S)", "Server stopped cleanly.")
                 }
             }
         }

@@ -39,6 +39,7 @@ dependencies {
     testImplementation(libs.kotlin.test)
     testImplementation(libs.kotlin.test.junit5)
     testImplementation(project(":codegen:smithy-kotlin-codegen-testutils"))
+    testImplementation(project(":codegen:smithy-aws-kotlin-codegen"))
 
     testImplementation(gradleTestKit())
 }
@@ -59,16 +60,16 @@ val generateSdkRuntimeVersion by tasks.registering {
 
 tasks.withType<KotlinCompile> {
     compilerOptions {
-        jvmTarget.set(JvmTarget.JVM_1_8)
-        freeCompilerArgs.add("-Xjdk-release=1.8")
+        jvmTarget.set(JvmTarget.JVM_17)
+        freeCompilerArgs.add("-Xjdk-release=17")
         freeCompilerArgs.add("-opt-in=kotlin.RequiresOptIn")
     }
     dependsOn(generateSdkRuntimeVersion)
 }
 
 tasks.withType<JavaCompile> {
-    sourceCompatibility = JavaVersion.VERSION_1_8.toString()
-    targetCompatibility = JavaVersion.VERSION_1_8.toString()
+    sourceCompatibility = JavaVersion.VERSION_17.toString()
+    targetCompatibility = JavaVersion.VERSION_17.toString()
 }
 
 // Reusable license copySpec

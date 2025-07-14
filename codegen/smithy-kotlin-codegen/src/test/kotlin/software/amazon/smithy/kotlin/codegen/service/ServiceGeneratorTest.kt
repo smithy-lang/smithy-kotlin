@@ -9,12 +9,18 @@ import org.gradle.testkit.runner.GradleRunner
 import org.junit.jupiter.api.io.TempDir
 import software.amazon.smithy.build.MockManifest
 import software.amazon.smithy.build.PluginContext
+import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.kotlin.codegen.KotlinCodegenPlugin
 import software.amazon.smithy.kotlin.codegen.KotlinSettings
 import software.amazon.smithy.kotlin.codegen.loadModelFromResource
+import software.amazon.smithy.kotlin.codegen.aws.protocols.RpcV2Cbor
+import software.amazon.smithy.kotlin.codegen.core.KotlinDelegator
+import software.amazon.smithy.kotlin.codegen.integration.KotlinIntegration
+import software.amazon.smithy.kotlin.codegen.rendering.protocol.ProtocolGenerator
 import software.amazon.smithy.kotlin.codegen.test.*
 import software.amazon.smithy.model.node.Node
 import software.amazon.smithy.model.node.ObjectNode
+import software.amazon.smithy.model.shapes.ShapeId
 import java.io.BufferedReader
 import java.nio.file.Files
 import java.nio.file.Path
@@ -59,16 +65,32 @@ class ServiceGeneratorTest {
         )
         .build()
 
+    val serviceName = "ServiceGeneratorTest"
+    val packageName = "com.test"
+
     fun generateService(): MockManifest {
         val kotlinSettings = KotlinSettings.from(defaultModel, settings)
-        // FIXME: generator won't call Cbor protocol function...
-        val (ctx, manifest, generator) = defaultModel.newTestContext(
-            "ServiceGeneratorTest",
-            "com.test",
-            kotlinSettings,
-        )
-        generator.generateProtocolClient(ctx)
-        ctx.delegator.flushWriters()
+        val integrations: List<KotlinIntegration> = listOf()
+        val manifest = MockManifest()
+        val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model = defaultModel, rootNamespace = packageName, serviceName = serviceName, settings = kotlinSettings)
+        val service = defaultModel.getShape(ShapeId.from("$packageName#$serviceName")).get().asServiceShape().get()
+        val delegator = KotlinDelegator(kotlinSettings, defaultModel, manifest, provider, integrations)
+
+        val generator = RpcV2Cbor()
+        generator.apply {
+            val ctx = ProtocolGenerator.GenerationContext(
+                kotlinSettings,
+                defaultModel,
+                service,
+                provider,
+                integrations,
+                protocol,
+                delegator,
+            )
+            generator.generateProtocolClient(ctx)
+            ctx.delegator.flushWriters()
+        }
+
 
         val context: PluginContext = PluginContext.builder()
             .model(defaultModel)
@@ -88,17 +110,19 @@ class ServiceGeneratorTest {
         assertTrue(manifest.hasFile("src/main/kotlin/com/test/test/Routing.kt"))
         assertTrue(manifest.hasFile("src/main/kotlin/com/test/test/config/ServiceFrameworkConfig.kt"))
         assertTrue(manifest.hasFile("src/main/kotlin/com/test/test/framework/ServiceFramework.kt"))
+        assertTrue(manifest.hasFile("src/main/kotlin/com/test/test/plugins/ContentTypeGuard.kt"))
+        assertTrue(manifest.hasFile("src/main/kotlin/com/test/test/plugins/ErrorHandler.kt"))
+        assertTrue(manifest.hasFile("src/main/kotlin/com/test/test/utils/Logging.kt"))
+        assertTrue(manifest.hasFile("src/main/kotlin/com/test/test/auth/Authentication.kt"))
+
         assertTrue(manifest.hasFile("src/main/kotlin/com/test/test/model/GetTestRequest.kt"))
         assertTrue(manifest.hasFile("src/main/kotlin/com/test/test/model/GetTestResponse.kt"))
-        assertTrue(manifest.hasFile("src/main/kotlin/com/test/test/operations/GetTestOperation.kt"))
-        assertTrue(manifest.hasFile("src/main/kotlin/com/test/test/plugins/ContentTypeGuard.kt"))
-//        assertTrue(manifest.hasFile("src/main/kotlin/com/test/test/plugins/ErrorHandler.kt"))
-        assertTrue(manifest.hasFile("src/main/kotlin/com/test/test/utils/Logging.kt"))
         assertTrue(manifest.hasFile("src/main/kotlin/com/test/test/serde/GetTestOperationSerializer.kt"))
         assertTrue(manifest.hasFile("src/main/kotlin/com/test/test/serde/GetTestOperationDeserializer.kt"))
+        assertTrue(manifest.hasFile("src/main/kotlin/com/test/test/operations/GetTestOperation.kt"))
     }
 
-//    @Test
+    @Test
     @OptIn(ExperimentalPathApi::class)
     fun `generated service runs successfully`() {
         val manifest = generateService()
@@ -107,7 +131,6 @@ class ServiceGeneratorTest {
             Files.createDirectories(target.parent)
             Files.write(target, manifest.expectFileBytes(rel))
         }
-
         printDirectoryTree(projectDir)
 
         if (!Files.exists(projectDir.resolve("gradlew"))) {
@@ -125,8 +148,8 @@ class ServiceGeneratorTest {
         try {
             val ready = waitForLog(
                 proc.inputStream.bufferedReader(),
-                text = "Engine started",
-                timeoutSec = 20,
+                text = "Server started",
+                timeoutSec = 5,
             )
             assertTrue(ready, "Service did not start within 20 s")
         } finally {
@@ -143,8 +166,6 @@ class ServiceGeneratorTest {
         val deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(timeoutSec)
         while (System.nanoTime() < deadline) {
             val line = reader.readLine() ?: break
-            println("---------------")
-            println(line)
             if (line.contains(text)) return true
         }
         return false

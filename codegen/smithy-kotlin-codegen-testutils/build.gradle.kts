@@ -34,15 +34,15 @@ dependencies {
 
 tasks.withType<KotlinCompile> {
     compilerOptions {
-        jvmTarget.set(JvmTarget.JVM_1_8)
-        freeCompilerArgs.add("-Xjdk-release=1.8")
+        jvmTarget.set(JvmTarget.JVM_17)
+        freeCompilerArgs.add("-Xjdk-release=17")
         freeCompilerArgs.add("-opt-in=kotlin.RequiresOptIn")
     }
 }
 
 tasks.withType<JavaCompile> {
-    sourceCompatibility = JavaVersion.VERSION_1_8.toString()
-    targetCompatibility = JavaVersion.VERSION_1_8.toString()
+    sourceCompatibility = JavaVersion.VERSION_17.toString()
+    targetCompatibility = JavaVersion.VERSION_17.toString()
 }
 
 // Reusable license copySpec

@@ -492,6 +492,8 @@ object RuntimeTypes {
 
         val Application = symbol("Application", "application")
         val ApplicationCallClass = symbol("ApplicationCall", "application")
+        val ApplicationStarting = symbol("ApplicationStarting", "application")
+        val ApplicationStarted = symbol("ApplicationStarted", "application")
         val ApplicationStopping = symbol("ApplicationStopping", "application")
         val ApplicationStopped = symbol("ApplicationStopped", "application")
         val ApplicationCreateRouteScopedPlugin = symbol("createRouteScopedPlugin", "application")
