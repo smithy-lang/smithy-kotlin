@@ -31,7 +31,7 @@ internal class KtorStubGenerator(
     override fun renderServerFrameworkImplementation(writer: KotlinWriter) {
         writer.addImport(RuntimeTypes.KtorServerNetty.Netty)
 
-        writer.withBlock("internal class KTORServiceFramework () : ServiceFramework {", "}") {
+        writer.withBlock("internal class KtorServiceFramework () : ServiceFramework {", "}") {
             write("private var engine: #T<*, *>? = null", RuntimeTypes.KtorServerCore.EmbeddedServerType)
             write("")
             withBlock("override fun start() {", "}") {

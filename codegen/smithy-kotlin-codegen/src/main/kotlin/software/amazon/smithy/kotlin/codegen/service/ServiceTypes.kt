@@ -24,7 +24,7 @@ class ServiceTypes(val pkgName: String) {
     }
 
     val ktorServiceFramework = buildSymbol {
-        name = "KTORServiceFramework"
+        name = "KtorServiceFramework"
         namespace = "$pkgName.framework"
     }
 

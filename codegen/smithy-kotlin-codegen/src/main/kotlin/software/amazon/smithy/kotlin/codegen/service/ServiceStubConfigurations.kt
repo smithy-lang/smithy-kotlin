@@ -4,7 +4,6 @@ import software.amazon.smithy.aws.traits.protocols.RestJson1Trait
 import software.amazon.smithy.build.FileManifest
 import software.amazon.smithy.kotlin.codegen.core.GenerationContext
 import software.amazon.smithy.kotlin.codegen.core.KotlinDelegator
-import software.amazon.smithy.kotlin.codegen.model.getTrait
 import software.amazon.smithy.model.shapes.ServiceShape
 import software.amazon.smithy.protocol.traits.Rpcv2CborTrait
 
@@ -16,19 +15,15 @@ enum class ContentType(val value: String) {
     override fun toString(): String = value
 
     companion object {
-        fun fromValue(value: String): ContentType = when (value.uppercase()) {
-            "CBOR" -> CBOR
-            "JSON" -> JSON
-            else -> throw IllegalArgumentException("$value is not a valid ContentType value, expected $JSON or $CBOR")
-        }
+        fun fromValue(value: String): ContentType = ContentType
+            .entries
+            .firstOrNull { it.name.equals(value.uppercase(), ignoreCase = true) }
+            ?: throw IllegalArgumentException("$value is not a validContentType value, expected one of ${ContentType.entries}")
 
-        fun fromServiceShape(shape: ServiceShape): ContentType {
-            if (shape.getTrait<Rpcv2CborTrait>() != null) {
-                return CBOR
-            } else if (shape.getTrait<RestJson1Trait>() != null) {
-                return JSON
-            }
-            throw IllegalArgumentException("service shape does not a valid protocol")
+        fun fromServiceShape(shape: ServiceShape): ContentType = when {
+            shape.hasTrait(Rpcv2CborTrait.ID) -> CBOR
+            shape.hasTrait(RestJson1Trait.ID) -> JSON
+            else -> throw IllegalArgumentException("service shape does not a valid protocol")
         }
     }
 }
