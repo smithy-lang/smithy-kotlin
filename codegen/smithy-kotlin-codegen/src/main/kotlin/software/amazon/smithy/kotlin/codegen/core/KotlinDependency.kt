@@ -39,7 +39,8 @@ const val RUNTIME_GROUP: String = "aws.smithy.kotlin"
 val RUNTIME_VERSION: String = System.getProperty("smithy.kotlin.codegen.clientRuntimeVersion", getDefaultRuntimeVersion())
 val KOTLIN_COMPILER_VERSION: String = System.getProperty("smithy.kotlin.codegen.kotlinCompilerVersion", "2.1.0")
 val KTOR_VERSION: String = System.getProperty("smithy.kotlin.codegen.ktorVersion", "3.1.3")
-val COROUTINES_VERSION: String = System.getProperty("smithy.kotlin.codegen.coroutinesVersion", "1.10.2")
+val SERIALIZATION_PLUGIN: String = System.getProperty("smithy.kotlin.codegen.SerializationPlugin", "2.0.20")
+val KOTLINX_VERSION: String = System.getProperty("smithy.kotlin.codegen.ktorKotlinxVersion", "1.9.0")
 val KTOR_LOGGING_BACKEND_VERSION: String = System.getProperty("smithy.kotlin.codegen.ktorLoggingBackendVersion", "1.4.14")
 
 enum class SourceSet {
@@ -146,8 +147,9 @@ data class KotlinDependency(
         val KTOR_SERVER_LOGGING = KotlinDependency(GradleConfiguration.Implementation, "io.ktor.server.plugins.calllogging", "io.ktor", "ktor-server-call-logging", KTOR_VERSION)
         val KTOR_LOGGING_SLF4J = KotlinDependency(GradleConfiguration.Implementation, "org.slf4j", "ch.qos.logback", "logback-classic", KTOR_LOGGING_BACKEND_VERSION)
         val KTOR_LOGGING_LOGBACK = KotlinDependency(GradleConfiguration.Implementation, "ch.qos.logback", "ch.qos.logback", "logback-classic", KTOR_LOGGING_BACKEND_VERSION)
-        val KTOR_SERVER_CONTENT_NEGOTIATION = KotlinDependency(GradleConfiguration.Implementation, "io.ktor.server.plugins.contentnegotiation", "io.ktor", "ktor-server-content-negotiation", KTOR_VERSION)
-        val KTOR_SERVER_CBOR_SERDE = KotlinDependency(GradleConfiguration.Implementation, "io.ktor.serialization.kotlinx.cbor", "io.ktor", "ktor-serialization-kotlinx-cbor", KTOR_VERSION)
+        val KTOR_SERVER_STATUS_PAGE = KotlinDependency(GradleConfiguration.Implementation, "io.ktor.server.plugins.statuspages", "io.ktor", "ktor-server-status-pages-jvm", KTOR_VERSION)
+        val KOTLINX_CBOR_SERDE = KotlinDependency(GradleConfiguration.Implementation, "kotlinx.serialization", "org.jetbrains.kotlinx", "kotlinx-serialization-cbor", KOTLINX_VERSION)
+        val KOTLINX_JSON_SERDE = KotlinDependency(GradleConfiguration.Implementation, "kotlinx.serialization.json", "org.jetbrains.kotlinx", "kotlinx-serialization-json", KOTLINX_VERSION)
     }
 
     override fun getDependencies(): List<SymbolDependency> {
