@@ -516,12 +516,14 @@ object RuntimeTypes {
         val requestReceive = symbol("receive", "request")
         val requestUri = symbol("uri", "request")
         val requestHttpMethod = symbol("httpMethod", "request")
+        val requestApplicationRequest = symbol("ApplicationRequest", "request")
+        val requestContentLength = symbol("contentLength", "request")
+        val requestContentType = symbol("contentType", "request")
+        val requestacceptItems = symbol("acceptItems", "request")
 
         val responseText = symbol("respondText", "response")
         val responseRespond = symbol("respond", "response")
         val responseRespondBytes = symbol("respondBytes", "response")
-        val requestContentType = symbol("contentType", "request")
-        val requestacceptItems = symbol("acceptItems", "request")
     }
 
     object KtorServerNetty : RuntimeTypePackage(KotlinDependency.KTOR_SERVER_NETTY) {
@@ -531,6 +533,7 @@ object RuntimeTypes {
     object KtorServerHttp : RuntimeTypePackage(KotlinDependency.KTOR_SERVER_HTTP) {
         val ContentType = symbol("ContentType")
         val HttpStatusCode = symbol("HttpStatusCode")
+        val HttpHeaders = symbol("HttpHeaders")
         val Cbor = symbol("Cbor", "ContentType.Application")
         val Json = symbol("Json", "ContentType.Application")
     }

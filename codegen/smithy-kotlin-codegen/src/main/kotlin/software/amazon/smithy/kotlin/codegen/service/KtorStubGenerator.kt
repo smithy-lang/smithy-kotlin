@@ -1,6 +1,5 @@
 package software.amazon.smithy.kotlin.codegen.service
 
-import software.amazon.smithy.aws.traits.protocols.RestJson1Trait
 import software.amazon.smithy.build.FileManifest
 import software.amazon.smithy.kotlin.codegen.core.GenerationContext
 import software.amazon.smithy.kotlin.codegen.core.InlineCodeWriterFormatter
@@ -10,10 +9,7 @@ import software.amazon.smithy.kotlin.codegen.core.RuntimeTypes
 import software.amazon.smithy.kotlin.codegen.core.withBlock
 import software.amazon.smithy.kotlin.codegen.core.withInlineBlock
 import software.amazon.smithy.kotlin.codegen.model.getTrait
-import software.amazon.smithy.model.traits.AuthTrait
-import software.amazon.smithy.model.traits.HttpBearerAuthTrait
 import software.amazon.smithy.model.traits.HttpTrait
-import software.amazon.smithy.protocol.traits.Rpcv2CborTrait
 import software.amazon.smithy.utils.AbstractCodeWriter
 
 class LoggingWriter(parent: LoggingWriter? = null) : AbstractCodeWriter<LoggingWriter>() {
@@ -31,143 +27,8 @@ internal class KtorStubGenerator(
     delegator: KotlinDelegator,
     fileManifest: FileManifest,
 ) : AbstractStubGenerator(ctx, delegator, fileManifest) {
-    val pkgName = ctx.settings.pkg.name
 
-    // Writes `Main.kt` that launches the server.
-    override fun renderMainFile() {
-        val portName = "port"
-        val engineFactoryName = "engineFactory"
-        val closeGracePeriodMillisName = "closeGracePeriodMillis"
-        val closeTimeoutMillisName = "closeTimeoutMillis"
-        val logLevelName = "logLevel"
-        delegator.useFileWriter("Main.kt", ctx.settings.pkg.name) { writer ->
-
-            writer.withBlock("public fun main(args: Array<String>): Unit {", "}") {
-                write("val argMap: Map<String, String> = args.asList().chunked(2).associate { (k, v) -> k.removePrefix(#S) to v }", "--")
-                write("")
-                write("val defaultPort = 8080")
-                write("val defaultEngine = #T.NETTY.value", ServiceTypes(pkgName).serviceEngine)
-                write("val defaultCloseGracePeriodMillis = 1_000L")
-                write("val defaultCloseTimeoutMillis = 5_000L")
-                write("val defaultLogLevel = #T.INFO.value", ServiceTypes(pkgName).logLevel)
-                write("")
-                withBlock("#T.init(", ")", ServiceTypes(pkgName).serviceFrameworkConfig) {
-                    write("port = argMap[#S]?.toInt() ?: defaultPort, ", portName)
-                    write("engine = #T.fromValue(argMap[#S] ?: defaultEngine), ", ServiceTypes(pkgName).serviceEngine, engineFactoryName)
-                    write("closeGracePeriodMillis = argMap[#S]?.toLong() ?: defaultCloseGracePeriodMillis, ", closeGracePeriodMillisName)
-                    write("closeTimeoutMillis = argMap[#S]?.toLong() ?: defaultCloseTimeoutMillis, ", closeTimeoutMillisName)
-                    write("logLevel = #T.fromValue(argMap[#S] ?: defaultLogLevel), ", ServiceTypes(pkgName).logLevel, logLevelName)
-                }
-                write("")
-                when (ctx.settings.serviceStub.framework) {
-                    ServiceFramework.KTOR -> write("val service = #T()", ServiceTypes(pkgName).ktorServiceFramework)
-                }
-                write("service.start()")
-            }
-        }
-    }
-
-    // Writes `ServiceFramework.kt` that boots the embedded Ktor service.
-    override fun renderServiceFramework() {
-        delegator.useFileWriter("ServiceFramework.kt", "${ctx.settings.pkg.name}.framework") { writer ->
-
-            writer.withBlock("internal interface ServiceFramework: #T {", "}", RuntimeTypes.Core.IO.Closeable) {
-                write("// start the service and begin accepting connections")
-                write("public fun start()")
-            }
-                .write("")
-
-            when (ctx.settings.serviceStub.framework) {
-                ServiceFramework.KTOR -> renderKTORServiceFramework(writer)
-            }
-        }
-    }
-
-    override fun renderServiceFrameworkConfig() {
-        delegator.useFileWriter("ServiceFrameworkConfig.kt", "${ctx.settings.pkg.name}.config") { writer ->
-            writer.withBlock("internal enum class LogLevel(val value: String) {", "}") {
-                write("INFO(#S),", "INFO")
-                write("WARN(#S),", "WARN")
-                write("DEBUG(#S),", "DEBUG")
-                write("ERROR(#S),", "ERROR")
-                write("TRACE(#S),", "TRACE")
-                write("OFF(#S),", "OFF")
-                write(";")
-                write("")
-                write("override fun toString(): String = value")
-                write("")
-                withBlock("companion object {", "}") {
-                    withBlock("fun fromValue(value: String): #T = when (value.uppercase()) {", "}", ServiceTypes(pkgName).logLevel) {
-                        write("INFO.value -> INFO")
-                        write("WARN.value -> WARN")
-                        write("DEBUG.value -> DEBUG")
-                        write("ERROR.value -> ERROR")
-                        write("TRACE.value -> TRACE")
-                        write("OFF.value -> OFF")
-                        write("else -> throw IllegalArgumentException(#S)", "Unknown LogLevel value: \$value")
-                    }
-                }
-            }
-            writer.write("")
-
-            writer.withBlock("internal enum class ServiceEngine(val value: String) {", "}") {
-                write("NETTY(#S),", "netty")
-                write(";")
-                write("")
-                write("override fun toString(): String = value")
-                write("")
-                withBlock("companion object {", "}") {
-                    withBlock("fun fromValue(value: String): #T = when (value.lowercase()) {", "}", ServiceTypes(pkgName).serviceEngine) {
-                        write("NETTY.value -> NETTY")
-                        write("else -> throw IllegalArgumentException(#S)", "\$value is not a valid ServerFramework value, expected \$NETTY")
-                    }
-                }
-                write("")
-                withBlock("fun toEngineFactory(): #T<*, *> {", "}", RuntimeTypes.KtorServerCore.ApplicationEngineFactory) {
-                    withBlock("return when(this) {", "}") {
-                        write("NETTY -> #T", RuntimeTypes.KtorServerNetty.Netty)
-                    }
-                }
-            }
-            writer.write("")
-
-            writer.withBlock("internal object ServiceFrameworkConfig {", "}") {
-                write("private var backing: Data? = null")
-                write("")
-                withBlock("private data class Data(", ")") {
-                    write("val port: Int,")
-                    write("val engine: #T,", ServiceTypes(pkgName).serviceEngine)
-                    write("val closeGracePeriodMillis: Long,")
-                    write("val closeTimeoutMillis: Long,")
-                    write("val logLevel: #T,", ServiceTypes(pkgName).logLevel)
-                }
-                write("")
-                write("val port: Int get() = backing?.port ?: notInitialised(#S)", "port")
-                write("val engine: #T get() = backing?.engine ?: notInitialised(#S)", ServiceTypes(pkgName).serviceEngine, "engine")
-                write("val closeGracePeriodMillis: Long get() = backing?.closeGracePeriodMillis ?: notInitialised(#S)", "closeGracePeriodMillis")
-                write("val closeTimeoutMillis: Long get() = backing?.closeTimeoutMillis ?: notInitialised(#S)", "closeTimeoutMillis")
-                write("val logLevel: #T get() = backing?.logLevel ?: notInitialised(#S)", ServiceTypes(pkgName).logLevel, "logLevel")
-                write("")
-                withInlineBlock("fun init(", ")") {
-                    write("port: Int,")
-                    write("engine: #T,", ServiceTypes(pkgName).serviceEngine)
-                    write("closeGracePeriodMillis: Long,")
-                    write("closeTimeoutMillis: Long,")
-                    write("logLevel: #T,", ServiceTypes(pkgName).logLevel)
-                }
-                withBlock("{", "}") {
-                    write("check(backing == null) { #S }", "ServiceFrameworkConfig has already been initialised")
-                    write("backing = Data(port, engine, closeGracePeriodMillis, closeTimeoutMillis, logLevel)")
-                }
-                write("")
-                withBlock("private fun notInitialised(prop: String): Nothing {", "}") {
-                    write("error(#S)", "ServiceFrameworkConfig.\$prop accessed before init()")
-                }
-            }
-        }
-    }
-
-    private fun renderKTORServiceFramework(writer: KotlinWriter) {
+    override fun renderServerFrameworkImplementation(writer: KotlinWriter) {
         writer.addImport(RuntimeTypes.KtorServerNetty.Netty)
 
         writer.withBlock("internal class KTORServiceFramework () : ServiceFramework {", "}") {
@@ -270,8 +131,7 @@ internal class KtorStubGenerator(
 
     // Writes `Routing.kt` that maps Smithy operations → Ktor routes.
     override fun renderRouting() {
-        val isCborProtocolTrait = (serviceShape.getTrait<Rpcv2CborTrait>() != null)
-        val isJsonProtocolTrait = (serviceShape.getTrait<RestJson1Trait>() != null)
+        val contentType = ContentType.fromServiceShape(serviceShape)
 
         delegator.useFileWriter("Routing.kt", ctx.settings.pkg.name) { writer ->
 
@@ -288,8 +148,6 @@ internal class KtorStubGenerator(
                     withBlock("#T(#S) {", "}", RuntimeTypes.KtorServerRouting.get, "/") {
                         write(" #T.#T(#S)", RuntimeTypes.KtorServerCore.applicationCall, RuntimeTypes.KtorServerRouting.responseText, "hello world")
                     }
-
-                    val hasServiceHttpBearerAuthTrait = serviceShape.getTrait<HttpBearerAuthTrait>() != null
                     operations.filter { it.hasTrait(HttpTrait.ID) }
                         .forEach { shape ->
                             val httpTrait = shape.getTrait<HttpTrait>()!!
@@ -307,19 +165,13 @@ internal class KtorStubGenerator(
                                 else -> error("Unsupported http trait ${httpTrait.method}")
                             }
 
-                            val authTrait = shape.getTrait<AuthTrait>()
-                            val hasOperationBearerAuthTrait = authTrait?.valueSet?.contains(HttpBearerAuthTrait.ID) ?: true
-
-                            val contentType = if (isCborProtocolTrait) {
-                                "cbor()"
-                            } else if (isJsonProtocolTrait) {
-                                "json()"
-                            } else {
-                                error("Unsupported content type")
+                            val contentTypeGuard = when (contentType) {
+                                ContentType.CBOR -> "cbor()"
+                                ContentType.JSON -> "json()"
                             }
 
                             withBlock("#T (#S) {", "}", RuntimeTypes.KtorServerRouting.route, uri) {
-                                write("#T(#T) { $contentType }", RuntimeTypes.KtorServerCore.install, ServiceTypes(pkgName).contentTypeGuard)
+                                write("#T(#T) { $contentTypeGuard }", RuntimeTypes.KtorServerCore.install, ServiceTypes(pkgName).contentTypeGuard)
 
                                 withBlock("#T {", "}", method) {
                                     withInlineBlock("try {", "}") {
@@ -353,22 +205,7 @@ internal class KtorStubGenerator(
                                                 "Malformed CBOR output",
                                             )
                                         }
-                                        withBlock(
-                                            "#T.#T(",
-                                            ")",
-                                            RuntimeTypes.KtorServerCore.applicationCall,
-                                            RuntimeTypes.KtorServerRouting.responseRespondBytes,
-                                        ) {
-                                            write(
-                                                "bytes = response.body.#T() ?:  ByteArray(0),",
-                                                RuntimeTypes.Http.readAll,
-                                            )
-                                            write("contentType = #T,", RuntimeTypes.KtorServerHttp.Cbor)
-                                            write(
-                                                "status = #T.fromValue($successCode),",
-                                                RuntimeTypes.KtorServerHttp.HttpStatusCode,
-                                            )
-                                        }
+                                            .call { renderResponseCall(writer, contentType, successCode) }
                                     }
                                     withBlock(" catch (t: Throwable) {", "}") {
                                         write("throw t")
@@ -377,6 +214,48 @@ internal class KtorStubGenerator(
                             }
                         }
                 }
+            }
+        }
+    }
+
+    private fun renderResponseCall(
+        w: KotlinWriter,
+        contentType: ContentType,
+        successCode: Int,
+    ) {
+        when (contentType) {
+            ContentType.CBOR -> w.withBlock(
+                "#T.#T(",
+                ")",
+                RuntimeTypes.KtorServerCore.applicationCall,
+                RuntimeTypes.KtorServerRouting.responseRespondBytes,
+            ) {
+                write(
+                    "bytes = response.body.#T() ?:  ByteArray(0),",
+                    RuntimeTypes.Http.readAll,
+                )
+                write("contentType = #T,", RuntimeTypes.KtorServerHttp.Cbor)
+                write(
+                    "status = #T.fromValue($successCode),",
+                    RuntimeTypes.KtorServerHttp.HttpStatusCode,
+                )
+            }
+            ContentType.JSON -> w.withBlock(
+                "#T.#T(",
+                ")",
+                RuntimeTypes.KtorServerCore.applicationCall,
+                RuntimeTypes.KtorServerRouting.responseRespond,
+            ) {
+                write(
+                    "bytes = response.body.#T()?.decodeToString() ?:  #S,",
+                    RuntimeTypes.Http.readAll,
+                    "{}",
+                )
+                write("contentType = #T,", RuntimeTypes.KtorServerHttp.Json)
+                write(
+                    "status = #T.fromValue($successCode),",
+                    RuntimeTypes.KtorServerHttp.HttpStatusCode,
+                )
             }
         }
     }
@@ -482,6 +361,13 @@ internal class KtorStubGenerator(
     private fun renderContentTypeGuard() {
         delegator.useFileWriter("ContentTypeGuard.kt", "${ctx.settings.pkg.name}.plugins") { writer ->
 
+            writer.withBlock("private fun #T.hasBody(): Boolean {", "}", RuntimeTypes.KtorServerRouting.requestApplicationRequest) {
+                write(
+                    "return (#T()?.let { it > 0 } == true) || headers.contains(#T.TransferEncoding)",
+                    RuntimeTypes.KtorServerRouting.requestContentLength,
+                    RuntimeTypes.KtorServerHttp.HttpHeaders,
+                )
+            }
             writer.withBlock("public class ContentTypeGuardConfig {", "}") {
                 write("public var allow: List<#T> = emptyList()", RuntimeTypes.KtorServerHttp.ContentType)
                 write("")
@@ -509,6 +395,7 @@ internal class KtorStubGenerator(
                     write("require(allowed.isNotEmpty()) { #S }", "ContentTypeGuard installed with empty allow-list.")
                     write("")
                     withBlock("onCall { call ->", "}") {
+                        write("if (!call.request.hasBody()) return@onCall")
                         write("val incoming = call.request.#T()", RuntimeTypes.KtorServerRouting.requestContentType)
                         withBlock("if (incoming == #T.Any || allowed.none { incoming.match(it) }) {", "}", RuntimeTypes.KtorServerHttp.ContentType) {
                             withBlock("throw #T(", ")", ServiceTypes(pkgName).errorEnvelope) {
