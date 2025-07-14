@@ -1,5 +1,6 @@
 package software.amazon.smithy.kotlin.codegen.service
 
+import software.amazon.smithy.aws.traits.auth.SigV4Trait
 import software.amazon.smithy.build.FileManifest
 import software.amazon.smithy.kotlin.codegen.core.GenerationContext
 import software.amazon.smithy.kotlin.codegen.core.InlineCodeWriterFormatter
@@ -9,6 +10,7 @@ import software.amazon.smithy.kotlin.codegen.core.RuntimeTypes
 import software.amazon.smithy.kotlin.codegen.core.withBlock
 import software.amazon.smithy.kotlin.codegen.core.withInlineBlock
 import software.amazon.smithy.kotlin.codegen.model.getTrait
+import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.traits.AuthTrait
 import software.amazon.smithy.model.traits.HttpBearerAuthTrait
 import software.amazon.smithy.model.traits.HttpTrait
@@ -189,12 +191,7 @@ internal class KtorStubGenerator(
                     withBlock("#T(#S) {", "}", RuntimeTypes.KtorServerRouting.get, "/") {
                         write(" #T.#T(#S)", RuntimeTypes.KtorServerCore.applicationCall, RuntimeTypes.KtorServerRouting.responseText, "hello world")
                     }
-                    withBlock("#T(#S) {", "}", RuntimeTypes.KtorServerAuth.authenticate, "auth-bearer") {
-                        withBlock("#T(#S) {", "}", RuntimeTypes.KtorServerRouting.get, "/auth") {
-                            write(" #T.#T(#S)", RuntimeTypes.KtorServerCore.applicationCall, RuntimeTypes.KtorServerRouting.responseText, "hello world")
-                        }
-                    }
-                    val hasServiceHttpBearerAuthTrait = serviceShape.getTrait<HttpBearerAuthTrait>() != null
+
                     operations.filter { it.hasTrait(HttpTrait.ID) }
                         .forEach { shape ->
                             val httpTrait = shape.getTrait<HttpTrait>()!!
@@ -212,9 +209,6 @@ internal class KtorStubGenerator(
                                 else -> error("Unsupported http trait ${httpTrait.method}")
                             }
 
-                            val authTrait = shape.getTrait<AuthTrait>()
-                            val hasOperationBearerAuthTrait = authTrait?.valueSet?.contains(HttpBearerAuthTrait.ID) ?: true
-
                             val contentTypeGuard = when (contentType) {
                                 ContentType.CBOR -> "cbor()"
                                 ContentType.JSON -> "json()"
@@ -225,17 +219,7 @@ internal class KtorStubGenerator(
                                 withBlock(
                                     "#W",
                                     "}",
-                                    { w: AbstractCodeWriter<*> ->
-                                        if (hasServiceHttpBearerAuthTrait && hasOperationBearerAuthTrait) {
-                                            w.write(
-                                                "#T(#S) {",
-                                                RuntimeTypes.KtorServerAuth.authenticate,
-                                                "auth-bearer",
-                                            )
-                                        } else {
-                                            w.write("#T(#S) {", RuntimeTypes.KtorServerAuth.authenticate, "no-auth")
-                                        }
-                                    },
+                                    { w: KotlinWriter -> renderRoutingAuth(w, shape) },
                                 ) {
                                     withBlock("#T {", "}", method) {
                                         withInlineBlock("try {", "}") {
@@ -280,6 +264,23 @@ internal class KtorStubGenerator(
                         }
                 }
             }
+        }
+    }
+
+    private fun renderRoutingAuth(w: KotlinWriter, shape: OperationShape) {
+        val hasServiceHttpBearerAuthTrait = serviceShape.hasTrait(HttpBearerAuthTrait.ID)
+        val authTrait = shape.getTrait<AuthTrait>()
+        val hasOperationBearerAuthTrait = authTrait?.valueSet?.contains(HttpBearerAuthTrait.ID) ?: true
+        val hasOperationSigV4AuthTrait = authTrait?.valueSet?.contains(SigV4Trait.ID) ?: true
+
+        if (hasServiceHttpBearerAuthTrait && hasOperationBearerAuthTrait) {
+            w.write(
+                "#T(#S) {",
+                RuntimeTypes.KtorServerAuth.authenticate,
+                "auth-bearer",
+            )
+        } else {
+            w.write("#T(#S) {", RuntimeTypes.KtorServerAuth.authenticate, "no-auth")
         }
     }
 
