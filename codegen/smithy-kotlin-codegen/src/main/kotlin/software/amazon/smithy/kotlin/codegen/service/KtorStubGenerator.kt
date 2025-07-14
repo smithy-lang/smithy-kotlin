@@ -181,12 +181,8 @@ internal class KtorStubGenerator(
                     withBlock("#T(#S) {", "}", RuntimeTypes.KtorServerRouting.get, "/") {
                         write(" #T.#T(#S)", RuntimeTypes.KtorServerCore.applicationCall, RuntimeTypes.KtorServerRouting.responseText, "hello world")
                     }
-                    withBlock("#T(#S) {", "}", RuntimeTypes.KtorServerAuth.authenticate, "auth-bearer") {
-                        withBlock("#T(#S) {", "}", RuntimeTypes.KtorServerRouting.get, "/auth") {
-                            write(" #T.#T(#S)", RuntimeTypes.KtorServerCore.applicationCall, RuntimeTypes.KtorServerRouting.responseText, "hello world")
-                        }
-                    }
-                    val hasServiceHttpBearerAuthTrait = serviceShape.getTrait<HttpBearerAuthTrait>() != null
+
+                    val hasServiceHttpBearerAuthTrait = serviceShape.hasTrait(HttpBearerAuthTrait.ID)
                     operations.filter { it.hasTrait(HttpTrait.ID) }
                         .forEach { shape ->
                             val httpTrait = shape.getTrait<HttpTrait>()!!
