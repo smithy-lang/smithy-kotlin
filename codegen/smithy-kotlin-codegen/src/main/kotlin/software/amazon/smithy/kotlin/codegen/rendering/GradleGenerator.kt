@@ -56,6 +56,7 @@ fun writeGradleBuild(
             { w: AbstractCodeWriter<*> ->
                 if (generateServiceProject) {
                     w.write("application")
+                    w.write("kotlin(#S) version #S", "plugin.serialization", SERIALIZATION_PLUGIN)
                 }
             },
         )
