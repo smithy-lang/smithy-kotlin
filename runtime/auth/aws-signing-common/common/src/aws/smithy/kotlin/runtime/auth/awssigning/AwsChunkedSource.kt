@@ -40,14 +40,27 @@ public class AwsChunkedSource(
         trailingHeaders,
     )
 
+    /**
+     * Tracks the content bytes transferred, excluding chunk metadata.
+     * This public property can be accessed to monitor file transfer progress.
+     */
+    public var contentBytesTransferred: Long = 0L
+
     override fun read(sink: SdkBuffer, limit: Long): Long {
         require(limit >= 0L) { "Invalid limit ($limit) must be >= 0L" }
         // COROUTINE SAFETY: runBlocking is allowed here because SdkSource is a synchronous blocking interface
+
+        // reset metadata bytes counter
+        chunkReader.chunkMetadataBytes = 0
         val isChunkValid = runBlocking {
             chunkReader.ensureValidChunk()
         }
         if (!isChunkValid) return -1L
-        return chunkReader.chunk.read(sink, limit)
+
+        val totalBytesTransferred = chunkReader.chunk.read(sink, limit)
+        contentBytesTransferred = totalBytesTransferred - chunkReader.chunkMetadataBytes
+
+        return totalBytesTransferred
     }
 
     override fun close() {
