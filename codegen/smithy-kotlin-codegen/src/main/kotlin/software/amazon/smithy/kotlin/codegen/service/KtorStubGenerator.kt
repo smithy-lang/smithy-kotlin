@@ -61,7 +61,11 @@ internal class KtorStubGenerator(
         }
     }
 
-    override fun renderLogging() {
+    override fun renderUtils() {
+        renderLogging()
+    }
+
+    private fun renderLogging() {
         delegator.useFileWriter("Logging.kt", "${ctx.settings.pkg.name}.utils") { writer ->
 
             writer.withBlock("internal fun #T.configureLogging() {", "}", RuntimeTypes.KtorServerCore.Application) {
@@ -216,6 +220,7 @@ internal class KtorStubGenerator(
 
                             withBlock("#T (#S) {", "}", RuntimeTypes.KtorServerRouting.route, uri) {
                                 write("#T(#T) { $contentTypeGuard }", RuntimeTypes.KtorServerCore.install, ServiceTypes(pkgName).contentTypeGuard)
+                                write("#T(#T) { $contentTypeGuard }", RuntimeTypes.KtorServerCore.install, ServiceTypes(pkgName).acceptTypeGuard)
                                 withBlock(
                                     "#W",
                                     "}",
@@ -326,6 +331,7 @@ internal class KtorStubGenerator(
     override fun renderPlugins() {
         renderErrorHandler()
         renderContentTypeGuard()
+        renderAcceptTypeGuard()
     }
 
     private fun renderErrorHandler() {
@@ -464,6 +470,66 @@ internal class KtorStubGenerator(
                             withBlock("throw #T(", ")", ServiceTypes(pkgName).errorEnvelope) {
                                 write("#T.UnsupportedMediaType.value, ", RuntimeTypes.KtorServerHttp.HttpStatusCode)
                                 write("#S", "Allowed Content-Type(s): \${allowed.joinToString()}")
+                            }
+                        }
+                    }
+                }
+        }
+    }
+
+    private fun renderAcceptTypeGuard() {
+        delegator.useFileWriter("AcceptTypeGuard.kt", "${ctx.settings.pkg.name}.plugins") { writer ->
+
+            writer.withBlock(
+                "private fun #T.acceptedContentTypes(): List<#T> {",
+                "}",
+                RuntimeTypes.KtorServerRouting.requestApplicationRequest,
+                RuntimeTypes.KtorServerHttp.ContentType,
+            ) {
+                write("val raw = headers[#T.Accept] ?: return emptyList()", RuntimeTypes.KtorServerHttp.HttpHeaders)
+                write(
+                    "return #T(raw).mapNotNull { it.value?.let(#T::parse) }",
+                    RuntimeTypes.KtorServerHttp.parseAndSortHeader,
+                    RuntimeTypes.KtorServerHttp.ContentType,
+                )
+            }
+
+            writer.withBlock("public class AcceptTypeGuardConfig {", "}") {
+                write("public var allow: List<#T> = emptyList()", RuntimeTypes.KtorServerHttp.ContentType)
+                write("")
+                withBlock("public fun json(): Unit {", "}") {
+                    write("allow = listOf(#T)", RuntimeTypes.KtorServerHttp.Json)
+                }
+                write("")
+                withBlock("public fun cbor(): Unit {", "}") {
+                    write("allow = listOf(#T)", RuntimeTypes.KtorServerHttp.Cbor)
+                }
+            }
+                .write("")
+
+            writer.withInlineBlock(
+                "public val AcceptTypeGuard: #T<AcceptTypeGuardConfig> = #T(",
+                ")",
+                RuntimeTypes.KtorServerCore.ApplicationRouteScopedPlugin,
+                RuntimeTypes.KtorServerCore.ApplicationCreateRouteScopedPlugin,
+            ) {
+                write("name = #S,", "AcceptTypeGuard")
+                write("createConfiguration = ::AcceptTypeGuardConfig,")
+            }
+                .withBlock("{", "}") {
+                    write("val allowed: List<#T> = pluginConfig.allow", RuntimeTypes.KtorServerHttp.ContentType)
+                    write("require(allowed.isNotEmpty()) { #S }", "AcceptTypeGuard installed with empty allow-list.")
+                    write("")
+                    withBlock("onCall { call ->", "}") {
+                        write("val accepted = call.request.acceptedContentTypes()")
+                        write("if (accepted.isEmpty()) return@onCall")
+                        write("")
+                        write("val isOk = accepted.any { candidate -> allowed.any { candidate.match(it) } }")
+
+                        withBlock("if (!isOk) {", "}") {
+                            withBlock("throw #T(", ")", ServiceTypes(pkgName).errorEnvelope) {
+                                write("#T.NotAcceptable.value, ", RuntimeTypes.KtorServerHttp.HttpStatusCode)
+                                write("#S", "Supported Accept(s): \${allowed.joinToString()}")
                             }
                         }
                     }

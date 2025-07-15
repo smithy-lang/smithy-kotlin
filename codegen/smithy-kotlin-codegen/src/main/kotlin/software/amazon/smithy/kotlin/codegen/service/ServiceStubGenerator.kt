@@ -31,7 +31,7 @@ internal abstract class AbstractStubGenerator(
         renderServiceFrameworkConfig()
         renderServiceFramework()
         renderPlugins()
-        renderLogging()
+        renderUtils()
         renderAuthModule()
         renderConstraintValidators()
         renderPerOperationHandlers()
@@ -143,8 +143,8 @@ internal abstract class AbstractStubGenerator(
     /** Emits content-type guards, error handler plugins, … */
     protected abstract fun renderPlugins()
 
-    /** Emits Logback XML + KLogger wiring. */
-    protected abstract fun renderLogging()
+    /** Emits utils. */
+    protected abstract fun renderUtils()
 
     /** Auth interfaces & installers (bearer, IAM, …). */
     protected abstract fun renderAuthModule()

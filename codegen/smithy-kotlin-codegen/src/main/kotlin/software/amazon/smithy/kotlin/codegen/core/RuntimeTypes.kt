@@ -535,6 +535,7 @@ object RuntimeTypes {
     object KtorServerHttp : RuntimeTypePackage(KotlinDependency.KTOR_SERVER_HTTP) {
         val ContentType = symbol("ContentType")
         val HttpStatusCode = symbol("HttpStatusCode")
+        val parseAndSortHeader = symbol("parseAndSortHeader")
         val HttpHeaders = symbol("HttpHeaders")
         val Cbor = symbol("Cbor", "ContentType.Application")
         val Json = symbol("Json", "ContentType.Application")

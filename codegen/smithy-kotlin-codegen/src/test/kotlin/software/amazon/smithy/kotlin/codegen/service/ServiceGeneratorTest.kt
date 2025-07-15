@@ -28,6 +28,7 @@ import software.amazon.smithy.model.node.Node
 import software.amazon.smithy.model.node.ObjectNode
 import software.amazon.smithy.model.shapes.ShapeId
 import java.io.BufferedReader
+import java.net.ServerSocket
 import java.net.URI
 import java.net.http.HttpClient
 import java.net.http.HttpRequest
@@ -38,7 +39,14 @@ import java.util.concurrent.TimeUnit
 import kotlin.io.path.ExperimentalPathApi
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertIs
 import kotlin.test.assertTrue
+
+@Serializable
+data class MalformedPostTestRequest(
+    val input1: Int,
+    val input2: String,
+)
 
 @Serializable
 data class PostTestRequest(
@@ -67,6 +75,10 @@ class ServiceGeneratorTest {
     val defaultModel = loadModelFromResource("service-generator-test.smithy")
     val serviceName = "ServiceGeneratorTest"
     val packageName = "com.test"
+    val port: Int = ServerSocket(0).use { it.localPort }
+
+    val packagePath = packageName.replace('.', '/')
+    val baseUrl = "http://localhost:$port"
 
     lateinit var projectDir: Path
 
@@ -78,10 +90,10 @@ class ServiceGeneratorTest {
         projectDir = tempDir
         manifest = generateService()
         val postTestOperation = """
-            package $packageName.test.operations
+            package $packageName.operations
 
-            import $packageName.test.model.PostTestRequest
-            import $packageName.test.model.PostTestResponse
+            import $packageName.model.PostTestRequest
+            import $packageName.model.PostTestResponse
 
             public fun handlePostTestRequest(req: PostTestRequest): PostTestResponse {
                 val response = PostTestResponse.Builder()
@@ -92,7 +104,16 @@ class ServiceGeneratorTest {
                 return response.build()
             }
         """.trimIndent()
-        manifest.writeFile("src/main/kotlin/com/test/test/operations/PostTestOperation.kt", postTestOperation)
+        manifest.writeFile("src/main/kotlin/$packagePath/operations/PostTestOperation.kt", postTestOperation)
+
+        val bearerValidation = """
+            package $packageName.auth
+            
+            public fun bearerValidation(token: String): UserPrincipal? {
+                if (token == "correctToken") return UserPrincipal("Authenticated User") else return null
+            }
+        """.trimIndent()
+        manifest.writeFile("src/main/kotlin/$packagePath/auth/Validation.kt", bearerValidation)
         proc = startService(manifest)
 
         val ready = waitForLog(
@@ -109,20 +130,21 @@ class ServiceGeneratorTest {
     @Test
     fun `it generates service and all necessary files`() {
         assertTrue(manifest.hasFile("build.gradle.kts"))
-        assertTrue(manifest.hasFile("src/main/kotlin/com/test/test/Main.kt"))
-        assertTrue(manifest.hasFile("src/main/kotlin/com/test/test/Routing.kt"))
-        assertTrue(manifest.hasFile("src/main/kotlin/com/test/test/config/ServiceFrameworkConfig.kt"))
-        assertTrue(manifest.hasFile("src/main/kotlin/com/test/test/framework/ServiceFramework.kt"))
-        assertTrue(manifest.hasFile("src/main/kotlin/com/test/test/plugins/ContentTypeGuard.kt"))
-        assertTrue(manifest.hasFile("src/main/kotlin/com/test/test/plugins/ErrorHandler.kt"))
-        assertTrue(manifest.hasFile("src/main/kotlin/com/test/test/utils/Logging.kt"))
-        assertTrue(manifest.hasFile("src/main/kotlin/com/test/test/auth/Authentication.kt"))
+        assertTrue(manifest.hasFile("src/main/kotlin/$packagePath/Main.kt"))
+        assertTrue(manifest.hasFile("src/main/kotlin/$packagePath/Routing.kt"))
+        assertTrue(manifest.hasFile("src/main/kotlin/$packagePath/config/ServiceFrameworkConfig.kt"))
+        assertTrue(manifest.hasFile("src/main/kotlin/$packagePath/framework/ServiceFramework.kt"))
+        assertTrue(manifest.hasFile("src/main/kotlin/$packagePath/plugins/ContentTypeGuard.kt"))
+        assertTrue(manifest.hasFile("src/main/kotlin/$packagePath/plugins/ErrorHandler.kt"))
+        assertTrue(manifest.hasFile("src/main/kotlin/$packagePath/utils/Logging.kt"))
+        assertTrue(manifest.hasFile("src/main/kotlin/$packagePath/auth/Authentication.kt"))
+        assertTrue(manifest.hasFile("src/main/kotlin/$packagePath/auth/Validation.kt"))
 
-        assertTrue(manifest.hasFile("src/main/kotlin/com/test/test/model/PostTestRequest.kt"))
-        assertTrue(manifest.hasFile("src/main/kotlin/com/test/test/model/PostTestResponse.kt"))
-        assertTrue(manifest.hasFile("src/main/kotlin/com/test/test/serde/PostTestOperationSerializer.kt"))
-        assertTrue(manifest.hasFile("src/main/kotlin/com/test/test/serde/PostTestOperationDeserializer.kt"))
-        assertTrue(manifest.hasFile("src/main/kotlin/com/test/test/operations/PostTestOperation.kt"))
+        assertTrue(manifest.hasFile("src/main/kotlin/$packagePath/model/PostTestRequest.kt"))
+        assertTrue(manifest.hasFile("src/main/kotlin/$packagePath/model/PostTestResponse.kt"))
+        assertTrue(manifest.hasFile("src/main/kotlin/$packagePath/serde/PostTestOperationSerializer.kt"))
+        assertTrue(manifest.hasFile("src/main/kotlin/$packagePath/serde/PostTestOperationDeserializer.kt"))
+        assertTrue(manifest.hasFile("src/main/kotlin/$packagePath/operations/PostTestOperation.kt"))
     }
 
     @Test
@@ -137,12 +159,13 @@ class ServiceGeneratorTest {
         )
 
         val response = sendRequest(
-            "http://localhost:8080/post",
+            "$baseUrl/post",
             "POST",
             requestBytes,
             "application/cbor",
             "application/cbor",
-        ) as HttpResponse<ByteArray>
+        )
+        assertIs<HttpResponse<ByteArray>>(response)
         assertEquals(201, response.statusCode(), "Expected 201 OK")
 
         val body = cbor.decodeFromByteArray(
@@ -166,19 +189,19 @@ class ServiceGeneratorTest {
         )
 
         val response = sendRequest(
-            "http://localhost:8080/post",
+            "$baseUrl/post",
             "POST",
             requestBytes,
             "application/json",
             "application/cbor",
-        ) as HttpResponse<ByteArray>
+        )
+        assertIs<HttpResponse<ByteArray>>(response)
         assertEquals(415, response.statusCode(), "Expected 415 OK")
     }
 
-//    @Test
+    @Test
     @OptIn(ExperimentalPathApi::class, ExperimentalSerializationApi::class)
     fun `check wrong accept type`() {
-        // FIXME
         val cbor = Cbor { }
         val input1 = "Hello"
         val input2 = 617
@@ -188,19 +211,19 @@ class ServiceGeneratorTest {
         )
 
         val response = sendRequest(
-            "http://localhost:8080/post",
+            "$baseUrl/post",
             "POST",
             requestBytes,
             "application/cbor",
             "application/json",
-        ) as HttpResponse<ByteArray>
-        assertEquals(415, response.statusCode(), "Expected 415 OK")
+        )
+        assertIs<HttpResponse<ByteArray>>(response)
+        assertEquals(406, response.statusCode(), "Expected 406 OK")
     }
 
     @Test
     @OptIn(ExperimentalPathApi::class, ExperimentalSerializationApi::class)
-    fun `check authentication with bearer token`() {
-        // FIXME
+    fun `check authentication with correct bearer token`() {
         val cbor = Cbor { }
         val input1 = "Hello"
         val requestBytes = cbor.encodeToByteArray(
@@ -209,14 +232,37 @@ class ServiceGeneratorTest {
         )
 
         val response = sendRequest(
-            "http://localhost:8080/auth",
+            "$baseUrl/auth",
             "POST",
             requestBytes,
             "application/cbor",
             "application/cbor",
-            "bearertoken",
-        ) as HttpResponse<ByteArray>
+            "correctToken",
+        )
+        assertIs<HttpResponse<ByteArray>>(response)
         assertEquals(201, response.statusCode(), "Expected 201 OK")
+    }
+
+    @Test
+    @OptIn(ExperimentalPathApi::class, ExperimentalSerializationApi::class)
+    fun `check authentication with wrong bearer token`() {
+        val cbor = Cbor { }
+        val input1 = "Hello"
+        val requestBytes = cbor.encodeToByteArray(
+            AuthTestRequest.serializer(),
+            AuthTestRequest(input1),
+        )
+
+        val response = sendRequest(
+            "$baseUrl/auth",
+            "POST",
+            requestBytes,
+            "application/cbor",
+            "application/cbor",
+            "wrongToken",
+        )
+        assertIs<HttpResponse<ByteArray>>(response)
+        assertEquals(401, response.statusCode(), "Expected 401 OK")
     }
 
     @Test
@@ -231,13 +277,36 @@ class ServiceGeneratorTest {
         )
 
         val response = sendRequest(
-            "http://localhost:8080/auth",
+            "$baseUrl/auth",
             "POST",
             requestBytes,
             "application/cbor",
             "application/cbor",
-        ) as HttpResponse<ByteArray>
+        )
+        assertIs<HttpResponse<ByteArray>>(response)
         assertEquals(401, response.statusCode(), "Expected 401 OK")
+    }
+
+    @Test
+    @OptIn(ExperimentalPathApi::class, ExperimentalSerializationApi::class)
+    fun `check malformed input`() {
+        val cbor = Cbor { }
+        val input1 = 123
+        val input2 = "Hello"
+        val requestBytes = cbor.encodeToByteArray(
+            MalformedPostTestRequest.serializer(),
+            MalformedPostTestRequest(input1, input2),
+        )
+
+        val response = sendRequest(
+            "$baseUrl/post",
+            "POST",
+            requestBytes,
+            "application/cbor",
+            "application/cbor",
+        )
+        assertIs<HttpResponse<ByteArray>>(response)
+        assertEquals(400, response.statusCode(), "Expected 400 OK")
     }
 }
 
@@ -247,7 +316,7 @@ internal fun ServiceGeneratorTest.generateService(): MockManifest {
         .withMember(
             "package",
             ObjectNode.builder()
-                .withMember("name", Node.from("$packageName.test"))
+                .withMember("name", Node.from(packageName))
                 .withMember("version", Node.from("1.0.0"))
                 .build(),
         )
@@ -317,7 +386,7 @@ internal fun ServiceGeneratorTest.startService(manifest: MockManifest): Process 
             .build()
     }
 
-    return ProcessBuilder("./gradlew", "--quiet", "run")
+    return ProcessBuilder("./gradlew", "--quiet", "run", "--args=--port $port")
         .directory(projectDir.toFile())
         .redirectErrorStream(true)
         .start()
@@ -336,6 +405,7 @@ internal fun waitForLog(
     val deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(timeoutSec)
     while (System.nanoTime() < deadline) {
         val line = reader.readLine() ?: break
+        println(line)
         if (line.contains(text)) return true
     }
     return false
