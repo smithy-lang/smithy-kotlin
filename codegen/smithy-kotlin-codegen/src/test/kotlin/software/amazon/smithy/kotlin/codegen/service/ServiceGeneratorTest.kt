@@ -52,6 +52,16 @@ data class PostTestResponse(
     val output2: Int? = null,
 )
 
+@Serializable
+data class AuthTestRequest(
+    val input1: String,
+)
+
+@Serializable
+data class AuthTestResponse(
+    val output1: String? = null,
+)
+
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class ServiceGeneratorTest {
     val defaultModel = loadModelFromResource("service-generator-test.smithy")
@@ -84,6 +94,13 @@ class ServiceGeneratorTest {
         """.trimIndent()
         manifest.writeFile("src/main/kotlin/com/test/test/operations/PostTestOperation.kt", postTestOperation)
         proc = startService(manifest)
+
+        val ready = waitForLog(
+            proc.inputStream.bufferedReader(),
+            text = "Server started",
+            timeoutSec = 10,
+        )
+        assertTrue(ready, "Service did not start within 10 s")
     }
 
     @AfterAll
@@ -109,17 +126,6 @@ class ServiceGeneratorTest {
     }
 
     @Test
-    @OptIn(ExperimentalPathApi::class)
-    fun `generated service runs successfully`() {
-        val ready = waitForLog(
-            proc.inputStream.bufferedReader(),
-            text = "Server started",
-            timeoutSec = 10,
-        )
-        assertTrue(ready, "Service did not start within 10 s")
-    }
-
-    @Test
     @OptIn(ExperimentalPathApi::class, ExperimentalSerializationApi::class)
     fun `service responds to POST request`() {
         val cbor = Cbor { }
@@ -130,15 +136,13 @@ class ServiceGeneratorTest {
             PostTestRequest(input1, input2),
         )
 
-        val client = HttpClient.newHttpClient()
-        val request = HttpRequest.newBuilder()
-            .uri(URI.create("http://localhost:8080/post"))
-            .header("Content-Type", "application/cbor")
-            .header("Accept", "application/cbor")
-            .POST(HttpRequest.BodyPublishers.ofByteArray(requestBytes))
-            .build()
-
-        val response = client.send(request, HttpResponse.BodyHandlers.ofByteArray())
+        val response = sendRequest(
+            "http://localhost:8080/post",
+            "POST",
+            requestBytes,
+            "application/cbor",
+            "application/cbor",
+        ) as HttpResponse<ByteArray>
         assertEquals(201, response.statusCode(), "Expected 201 OK")
 
         val body = cbor.decodeFromByteArray(
@@ -148,6 +152,92 @@ class ServiceGeneratorTest {
 
         assertEquals("Hello world!", body.output1)
         assertEquals(input2 + 1, body.output2)
+    }
+
+    @Test
+    @OptIn(ExperimentalPathApi::class, ExperimentalSerializationApi::class)
+    fun `check wrong content type`() {
+        val cbor = Cbor { }
+        val input1 = "Hello"
+        val input2 = 617
+        val requestBytes = cbor.encodeToByteArray(
+            PostTestRequest.serializer(),
+            PostTestRequest(input1, input2),
+        )
+
+        val response = sendRequest(
+            "http://localhost:8080/post",
+            "POST",
+            requestBytes,
+            "application/json",
+            "application/cbor",
+        ) as HttpResponse<ByteArray>
+        assertEquals(415, response.statusCode(), "Expected 415 OK")
+    }
+
+//    @Test
+    @OptIn(ExperimentalPathApi::class, ExperimentalSerializationApi::class)
+    fun `check wrong accept type`() {
+        // FIXME
+        val cbor = Cbor { }
+        val input1 = "Hello"
+        val input2 = 617
+        val requestBytes = cbor.encodeToByteArray(
+            PostTestRequest.serializer(),
+            PostTestRequest(input1, input2),
+        )
+
+        val response = sendRequest(
+            "http://localhost:8080/post",
+            "POST",
+            requestBytes,
+            "application/cbor",
+            "application/json",
+        ) as HttpResponse<ByteArray>
+        assertEquals(415, response.statusCode(), "Expected 415 OK")
+    }
+
+    @Test
+    @OptIn(ExperimentalPathApi::class, ExperimentalSerializationApi::class)
+    fun `check authentication with bearer token`() {
+        // FIXME
+        val cbor = Cbor { }
+        val input1 = "Hello"
+        val requestBytes = cbor.encodeToByteArray(
+            AuthTestRequest.serializer(),
+            AuthTestRequest(input1),
+        )
+
+        val response = sendRequest(
+            "http://localhost:8080/auth",
+            "POST",
+            requestBytes,
+            "application/cbor",
+            "application/cbor",
+            "bearertoken",
+        ) as HttpResponse<ByteArray>
+        assertEquals(201, response.statusCode(), "Expected 201 OK")
+    }
+
+    @Test
+    @OptIn(ExperimentalPathApi::class, ExperimentalSerializationApi::class)
+    fun `check authentication without bearer token`() {
+        // FIXME
+        val cbor = Cbor { }
+        val input1 = "Hello"
+        val requestBytes = cbor.encodeToByteArray(
+            AuthTestRequest.serializer(),
+            AuthTestRequest(input1),
+        )
+
+        val response = sendRequest(
+            "http://localhost:8080/auth",
+            "POST",
+            requestBytes,
+            "application/cbor",
+            "application/cbor",
+        ) as HttpResponse<ByteArray>
+        assertEquals(401, response.statusCode(), "Expected 401 OK")
     }
 }
 
@@ -249,4 +339,46 @@ internal fun waitForLog(
         if (line.contains(text)) return true
     }
     return false
+}
+
+internal fun sendRequest(
+    url: String,
+    method: String,
+    data: Any? = null, // ← Any body or none
+    contentType: String? = null, // ← optional
+    acceptType: String? = null, // ← optional
+    bearerToken: String? = null, // ← optional
+): HttpResponse<*> {
+    val client = HttpClient.newHttpClient()
+
+    val bodyPublisher = when (data) {
+        null -> HttpRequest.BodyPublishers.noBody()
+        is ByteArray -> HttpRequest.BodyPublishers.ofByteArray(data)
+        is String -> HttpRequest.BodyPublishers.ofString(data)
+        else -> throw IllegalArgumentException(
+            "Unsupported body type: ${data::class.qualifiedName}",
+        )
+    }
+
+    val request = HttpRequest.newBuilder()
+        .uri(URI.create(url))
+        .apply {
+            contentType?.let { header("Content-Type", it) }
+            acceptType?.let { header("Accept", it) }
+            bearerToken?.let { header("Authorization", "Bearer $it") }
+        }
+        .method(method, bodyPublisher)
+        .build()
+
+    /* ------------------------------------------------------------
+     * Choose a matching BodyHandler for the response
+     * ------------------------------------------------------------ */
+    val bodyHandler = when {
+        acceptType?.contains("json", ignoreCase = true) == true ||
+            acceptType?.startsWith("text", ignoreCase = true) == true
+        -> HttpResponse.BodyHandlers.ofString()
+        else -> HttpResponse.BodyHandlers.ofByteArray()
+    }
+
+    return client.send(request, bodyHandler)
 }
