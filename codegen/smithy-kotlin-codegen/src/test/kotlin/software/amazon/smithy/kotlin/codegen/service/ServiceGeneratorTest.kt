@@ -344,10 +344,10 @@ internal fun waitForLog(
 internal fun sendRequest(
     url: String,
     method: String,
-    data: Any? = null, // ← Any body or none
-    contentType: String? = null, // ← optional
-    acceptType: String? = null, // ← optional
-    bearerToken: String? = null, // ← optional
+    data: Any? = null,
+    contentType: String? = null,
+    acceptType: String? = null,
+    bearerToken: String? = null,
 ): HttpResponse<*> {
     val client = HttpClient.newHttpClient()
 
@@ -370,9 +370,6 @@ internal fun sendRequest(
         .method(method, bodyPublisher)
         .build()
 
-    /* ------------------------------------------------------------
-     * Choose a matching BodyHandler for the response
-     * ------------------------------------------------------------ */
     val bodyHandler = when {
         acceptType?.contains("json", ignoreCase = true) == true ||
             acceptType?.startsWith("text", ignoreCase = true) == true
