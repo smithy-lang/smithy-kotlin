@@ -31,10 +31,7 @@ operation GetTest {
 }
 
 @input
-structure GetTestInput {
-    @httpQuery("input1")
-    input1: String
-}
+structure GetTestInput {}
 
 @output
 structure GetTestOutput {
