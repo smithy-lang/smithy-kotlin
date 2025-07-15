@@ -71,6 +71,11 @@ data class AuthTestResponse(
     val output1: String? = null,
 )
 
+@Serializable
+data class PutTestRequest(
+    val input1: String,
+)
+
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class ServiceGeneratorTest {
     val defaultModel = loadModelFromResource("service-generator-test.smithy")
@@ -108,6 +113,20 @@ class ServiceGeneratorTest {
             }
         """.trimIndent()
         manifest.writeFile("src/main/kotlin/$packagePath/operations/PostTestOperation.kt", postTestOperation)
+
+        val putTestOperation = """
+            package $packageName.operations
+
+            import $packageName.model.PutTestRequest
+            import $packageName.model.PutTestResponse
+
+            public fun handlePutTestRequest(req: PutTestRequest): PutTestResponse {
+                val variable: String? = null
+                println(variable!!.length)
+                return PutTestResponse.Builder().build()
+            }
+        """.trimIndent()
+        manifest.writeFile("src/main/kotlin/$packagePath/operations/PutTestOperation.kt", putTestOperation)
 
         val bearerValidation = """
             package $packageName.auth
@@ -182,6 +201,28 @@ class ServiceGeneratorTest {
 
     @Test
     @OptIn(ExperimentalPathApi::class, ExperimentalSerializationApi::class)
+    fun `check unhandled runtime exception in handler`() {
+        val cbor = Cbor { }
+        val input1 = "Hello"
+        val requestBytes = cbor.encodeToByteArray(
+            PutTestRequest.serializer(),
+            PutTestRequest(input1),
+        )
+
+        val response = sendRequest(
+            "$baseUrl/put",
+            "PUT",
+            requestBytes,
+            "application/cbor",
+            "application/cbor",
+            "correctToken",
+        )
+        assertIs<HttpResponse<ByteArray>>(response)
+        assertEquals(500, response.statusCode(), "Expected 500 OK")
+    }
+
+    @Test
+    @OptIn(ExperimentalPathApi::class, ExperimentalSerializationApi::class)
     fun `check wrong content type`() {
         val cbor = Cbor { }
         val input1 = "Hello"
@@ -197,6 +238,27 @@ class ServiceGeneratorTest {
             requestBytes,
             "application/json",
             "application/cbor",
+        )
+        assertIs<HttpResponse<ByteArray>>(response)
+        assertEquals(415, response.statusCode(), "Expected 415 OK")
+    }
+
+    @Test
+    @OptIn(ExperimentalPathApi::class, ExperimentalSerializationApi::class)
+    fun `check missing content type`() {
+        val cbor = Cbor { }
+        val input1 = "Hello"
+        val input2 = 617
+        val requestBytes = cbor.encodeToByteArray(
+            PostTestRequest.serializer(),
+            PostTestRequest(input1, input2),
+        )
+
+        val response = sendRequest(
+            "$baseUrl/post",
+            "POST",
+            requestBytes,
+            acceptType = "application/cbor",
         )
         assertIs<HttpResponse<ByteArray>>(response)
         assertEquals(415, response.statusCode(), "Expected 415 OK")
@@ -222,6 +284,27 @@ class ServiceGeneratorTest {
         )
         assertIs<HttpResponse<ByteArray>>(response)
         assertEquals(406, response.statusCode(), "Expected 406 OK")
+    }
+
+    @Test
+    @OptIn(ExperimentalPathApi::class, ExperimentalSerializationApi::class)
+    fun `check missing accept type`() {
+        val cbor = Cbor { }
+        val input1 = "Hello"
+        val input2 = 617
+        val requestBytes = cbor.encodeToByteArray(
+            PostTestRequest.serializer(),
+            PostTestRequest(input1, input2),
+        )
+
+        val response = sendRequest(
+            "$baseUrl/post",
+            "POST",
+            requestBytes,
+            "application/cbor",
+        )
+        assertIs<HttpResponse<ByteArray>>(response)
+        assertEquals(201, response.statusCode(), "Expected 201 OK")
     }
 
     @Test
@@ -310,6 +393,44 @@ class ServiceGeneratorTest {
         )
         assertIs<HttpResponse<ByteArray>>(response)
         assertEquals(400, response.statusCode(), "Expected 400 OK")
+    }
+
+    @Test
+    @OptIn(ExperimentalPathApi::class, ExperimentalSerializationApi::class)
+    fun `route not found`() {
+
+        val requestBytes = ByteArray(0)
+        val response = sendRequest(
+            "$baseUrl/does-not-exist",
+            "POST",
+            requestBytes,
+            "application/cbor",
+            "application/cbor",
+        )
+        assertIs<HttpResponse<ByteArray>>(response)
+        assertEquals(404, response.statusCode(), "Expected 404 OK")
+    }
+
+    @Test
+    @OptIn(ExperimentalPathApi::class, ExperimentalSerializationApi::class)
+    fun `method not allowed`() {
+        val cbor = Cbor { }
+        val input1 = 123
+        val input2 = "Hello"
+        val requestBytes = cbor.encodeToByteArray(
+            MalformedPostTestRequest.serializer(),
+            MalformedPostTestRequest(input1, input2),
+        )
+
+        val response = sendRequest(
+            "$baseUrl/post",
+            "PUT",
+            requestBytes,
+            "application/cbor",
+            "application/cbor",
+        )
+        assertIs<HttpResponse<ByteArray>>(response)
+        assertEquals(405, response.statusCode(), "Expected 405 OK")
     }
 }
 

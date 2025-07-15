@@ -12,6 +12,7 @@ service ServiceGeneratorTest {
         GetTest,
         PostTest,
         AuthTest,
+        PutTest
     ]
 }
 
@@ -62,6 +63,23 @@ structure AuthTestInput {
 
 @output
 structure AuthTestOutput {
+    output1: String
+}
+
+@idempotent
+@http(method: "PUT", uri: "/put", code: 200)
+operation PutTest {
+    input: PutTestInput
+    output: PutTestOutput
+}
+
+@input
+structure PutTestInput {
+    input1: String
+}
+
+@output
+structure PutTestOutput {
     output1: String
 }
 
