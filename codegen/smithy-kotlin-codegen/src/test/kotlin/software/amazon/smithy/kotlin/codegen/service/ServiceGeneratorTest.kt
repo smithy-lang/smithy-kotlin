@@ -41,6 +41,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
 import kotlin.test.assertTrue
+import kotlin.test.fail
 
 @Serializable
 data class MalformedPostTestRequest(
@@ -75,6 +76,8 @@ class ServiceGeneratorTest {
     val defaultModel = loadModelFromResource("service-generator-test.smithy")
     val serviceName = "ServiceGeneratorTest"
     val packageName = "com.test"
+    val closeGracePeriodMillis: Long = 5_000L
+    val closeTimeoutMillis: Long = 1_000L
     val port: Int = ServerSocket(0).use { it.localPort }
 
     val packagePath = packageName.replace('.', '/')
@@ -386,7 +389,12 @@ internal fun ServiceGeneratorTest.startService(manifest: MockManifest): Process 
             .build()
     }
 
-    return ProcessBuilder("./gradlew", "--quiet", "run", "--args=--port $port")
+    return ProcessBuilder(
+        "./gradlew",
+        "--quiet",
+        "run",
+        "--args=--port $port --closeGracePeriodMillis ${closeGracePeriodMillis.toInt()} --closeTimeoutMillis ${closeTimeoutMillis.toInt()}",
+    )
         .directory(projectDir.toFile())
         .redirectErrorStream(true)
         .start()
@@ -394,7 +402,19 @@ internal fun ServiceGeneratorTest.startService(manifest: MockManifest): Process 
 
 @OptIn(ExperimentalPathApi::class)
 internal fun ServiceGeneratorTest.cleanupService(proc: Process) {
-    proc.destroyForcibly()
+    proc.destroy()
+    val gracefulWindow = closeGracePeriodMillis + closeTimeoutMillis
+    val exited = proc.waitFor(gracefulWindow, TimeUnit.MILLISECONDS)
+
+    if (!exited) {
+        proc.destroyForcibly()
+        fail("Service did not shut down within $gracefulWindow ms")
+    }
+    val okExitCodes = setOf(0, 143)
+    assertTrue(
+        proc.exitValue() in okExitCodes,
+        "Service exited with ${proc.exitValue()} – shutdown not graceful?",
+    )
 }
 
 internal fun waitForLog(
