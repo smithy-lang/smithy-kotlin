@@ -489,6 +489,7 @@ object RuntimeTypes {
         val embeddedServer = symbol("embeddedServer", "engine")
         val EmbeddedServerType = symbol("EmbeddedServer", "engine")
         val ApplicationEngineFactory = symbol("ApplicationEngineFactory", "engine")
+        val connector = symbol("connector", "engine")
 
         val Application = symbol("Application", "application")
         val ApplicationCallClass = symbol("ApplicationCall", "application")
@@ -530,6 +531,17 @@ object RuntimeTypes {
 
     object KtorServerNetty : RuntimeTypePackage(KotlinDependency.KTOR_SERVER_NETTY) {
         val Netty = symbol("Netty")
+        val Configuration = symbol("Configuration", "NettyApplicationEngine")
+    }
+
+    object KtorServerCio : RuntimeTypePackage(KotlinDependency.KTOR_SERVER_CIO) {
+        val CIO = symbol("CIO")
+        val Configuration = symbol("Configuration", "CIOApplicationEngine")
+    }
+
+    object KtorServerJettyJakarta : RuntimeTypePackage(KotlinDependency.KTOR_SERVER_JETTY_JAKARTA) {
+        val Jetty = symbol("Jetty")
+        val Configuration = symbol("Configuration", "JettyApplicationEngineBase")
     }
 
     object KtorServerHttp : RuntimeTypePackage(KotlinDependency.KTOR_SERVER_HTTP) {
@@ -576,5 +588,9 @@ object RuntimeTypes {
 
     object KotlinxJsonSerde : RuntimeTypePackage(KotlinDependency.KOTLINX_JSON_SERDE) {
         val Json = symbol("Json")
+    }
+
+    object Duration {
+        val seconds = "kotlin.time.Duration.Companion.seconds".toSymbol()
     }
 }

@@ -97,6 +97,7 @@ class ServiceGeneratorTest {
     fun boot(@TempDir tempDir: Path) {
         projectDir = tempDir
         manifest = generateService()
+
         val postTestOperation = """
             package $packageName.operations
 
@@ -122,7 +123,7 @@ class ServiceGeneratorTest {
 
             public fun handlePutTestRequest(req: PutTestRequest): PutTestResponse {
                 val variable: String? = null
-                println(variable!!.length)
+                val error = variable!!.length
                 return PutTestResponse.Builder().build()
             }
         """.trimIndent()
@@ -130,7 +131,7 @@ class ServiceGeneratorTest {
 
         val bearerValidation = """
             package $packageName.auth
-            
+
             public fun bearerValidation(token: String): UserPrincipal? {
                 if (token == "correctToken") return UserPrincipal("Authenticated User") else return null
             }
@@ -398,7 +399,6 @@ class ServiceGeneratorTest {
     @Test
     @OptIn(ExperimentalPathApi::class, ExperimentalSerializationApi::class)
     fun `route not found`() {
-
         val requestBytes = ByteArray(0)
         val response = sendRequest(
             "$baseUrl/does-not-exist",

@@ -38,7 +38,7 @@ private fun getDefaultRuntimeVersion(): String {
 const val RUNTIME_GROUP: String = "aws.smithy.kotlin"
 val RUNTIME_VERSION: String = System.getProperty("smithy.kotlin.codegen.clientRuntimeVersion", getDefaultRuntimeVersion())
 val KOTLIN_COMPILER_VERSION: String = System.getProperty("smithy.kotlin.codegen.kotlinCompilerVersion", "2.1.0")
-val KTOR_VERSION: String = System.getProperty("smithy.kotlin.codegen.ktorVersion", "3.1.3")
+val KTOR_VERSION: String = System.getProperty("smithy.kotlin.codegen.ktorVersion", "3.2.2")
 val SERIALIZATION_PLUGIN: String = System.getProperty("smithy.kotlin.codegen.SerializationPlugin", "2.0.20")
 val KOTLINX_VERSION: String = System.getProperty("smithy.kotlin.codegen.ktorKotlinxVersion", "1.9.0")
 val KTOR_LOGGING_BACKEND_VERSION: String = System.getProperty("smithy.kotlin.codegen.ktorLoggingBackendVersion", "1.4.14")
@@ -143,6 +143,8 @@ data class KotlinDependency(
         // FIXME: version numbers should not be hardcoded, they should be setting dynamically based on the Gradle library versions
         val KTOR_SERVER_CORE = KotlinDependency(GradleConfiguration.Implementation, "io.ktor.server", "io.ktor", "ktor-server-core", KTOR_VERSION)
         val KTOR_SERVER_NETTY = KotlinDependency(GradleConfiguration.Implementation, "io.ktor.server.netty", "io.ktor", "ktor-server-netty", KTOR_VERSION)
+        val KTOR_SERVER_CIO = KotlinDependency(GradleConfiguration.Implementation, "io.ktor.server.cio", "io.ktor", "ktor-server-cio", KTOR_VERSION)
+        val KTOR_SERVER_JETTY_JAKARTA = KotlinDependency(GradleConfiguration.Implementation, "io.ktor.server.jetty.jakarta", "io.ktor", "ktor-server-jetty-jakarta", KTOR_VERSION)
         val KTOR_SERVER_HTTP = KotlinDependency(GradleConfiguration.Implementation, "io.ktor.http", "io.ktor", "ktor-http-jvm", KTOR_VERSION)
         val KTOR_SERVER_LOGGING = KotlinDependency(GradleConfiguration.Implementation, "io.ktor.server.plugins.calllogging", "io.ktor", "ktor-server-call-logging", KTOR_VERSION)
         val KTOR_LOGGING_SLF4J = KotlinDependency(GradleConfiguration.Implementation, "org.slf4j", "ch.qos.logback", "logback-classic", KTOR_LOGGING_BACKEND_VERSION)

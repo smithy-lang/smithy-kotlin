@@ -69,20 +69,27 @@ internal abstract class AbstractStubGenerator(
 
             writer.withBlock("internal enum class ServiceEngine(val value: String) {", "}") {
                 write("NETTY(#S),", "netty")
+                write("CIO(#S),", "cio")
+                write("JETTY_JAKARTA(#S),", "jetty-jakarta")
                 write(";")
                 write("")
                 write("override fun toString(): String = value")
                 write("")
                 withBlock("companion object {", "}") {
-                    withBlock("fun fromValue(value: String): #T = when (value.lowercase()) {", "}", ServiceTypes(pkgName).serviceEngine) {
-                        write("NETTY.value -> NETTY")
-                        write("else -> throw IllegalArgumentException(#S)", "\$value is not a valid ServerFramework value, expected \$NETTY")
+                    withBlock("fun fromValue(value: String): #T {", "}", ServiceTypes(pkgName).serviceEngine) {
+                        write(
+                            "return #T.entries.firstOrNull { it.name.equals(value.lowercase(), ignoreCase = true) } ?: throw IllegalArgumentException(#S)",
+                            ServiceTypes(pkgName).serviceEngine,
+                            "\$value is not a validContentType value, expected one of \${ServiceEngine.entries}",
+                        )
                     }
                 }
                 write("")
                 withBlock("fun toEngineFactory(): #T<*, *> {", "}", RuntimeTypes.KtorServerCore.ApplicationEngineFactory) {
                     withBlock("return when(this) {", "}") {
-                        write("NETTY -> #T", RuntimeTypes.KtorServerNetty.Netty)
+                        write("NETTY -> #T as #T<*, *>", RuntimeTypes.KtorServerNetty.Netty, RuntimeTypes.KtorServerCore.ApplicationEngineFactory)
+                        write("CIO -> #T as #T<*, *>", RuntimeTypes.KtorServerCio.CIO, RuntimeTypes.KtorServerCore.ApplicationEngineFactory)
+                        write("JETTY_JAKARTA -> #T as #T<*, *>", RuntimeTypes.KtorServerJettyJakarta.Jetty, RuntimeTypes.KtorServerCore.ApplicationEngineFactory)
                     }
                 }
             }
@@ -94,6 +101,9 @@ internal abstract class AbstractStubGenerator(
                 withBlock("private data class Data(", ")") {
                     write("val port: Int,")
                     write("val engine: #T,", ServiceTypes(pkgName).serviceEngine)
+                    write("val requestBodyLimit: Long,")
+                    write("val requestReadTimeoutSeconds: Int,")
+                    write("val responseWriteTimeoutSeconds: Int,")
                     write("val closeGracePeriodMillis: Long,")
                     write("val closeTimeoutMillis: Long,")
                     write("val logLevel: #T,", ServiceTypes(pkgName).logLevel)
@@ -101,6 +111,9 @@ internal abstract class AbstractStubGenerator(
                 write("")
                 write("val port: Int get() = backing?.port ?: notInitialised(#S)", "port")
                 write("val engine: #T get() = backing?.engine ?: notInitialised(#S)", ServiceTypes(pkgName).serviceEngine, "engine")
+                write("val requestBodyLimit: Long get() = backing?.requestBodyLimit ?: notInitialised(#S)", "requestBodyLimit")
+                write("val requestReadTimeoutSeconds: Int get() = backing?.requestReadTimeoutSeconds ?: notInitialised(#S)", "requestReadTimeoutSeconds")
+                write("val responseWriteTimeoutSeconds: Int get() = backing?.responseWriteTimeoutSeconds ?: notInitialised(#S)", "responseWriteTimeoutSeconds")
                 write("val closeGracePeriodMillis: Long get() = backing?.closeGracePeriodMillis ?: notInitialised(#S)", "closeGracePeriodMillis")
                 write("val closeTimeoutMillis: Long get() = backing?.closeTimeoutMillis ?: notInitialised(#S)", "closeTimeoutMillis")
                 write("val logLevel: #T get() = backing?.logLevel ?: notInitialised(#S)", ServiceTypes(pkgName).logLevel, "logLevel")
@@ -108,13 +121,16 @@ internal abstract class AbstractStubGenerator(
                 withInlineBlock("fun init(", ")") {
                     write("port: Int,")
                     write("engine: #T,", ServiceTypes(pkgName).serviceEngine)
+                    write("requestBodyLimit: Long,")
+                    write("requestReadTimeoutSeconds: Int,")
+                    write("responseWriteTimeoutSeconds: Int,")
                     write("closeGracePeriodMillis: Long,")
                     write("closeTimeoutMillis: Long,")
                     write("logLevel: #T,", ServiceTypes(pkgName).logLevel)
                 }
                 withBlock("{", "}") {
                     write("check(backing == null) { #S }", "ServiceFrameworkConfig has already been initialised")
-                    write("backing = Data(port, engine, closeGracePeriodMillis, closeTimeoutMillis, logLevel)")
+                    write("backing = Data(port, engine, requestBodyLimit, requestReadTimeoutSeconds, responseWriteTimeoutSeconds, closeGracePeriodMillis, closeTimeoutMillis, logLevel)")
                 }
                 write("")
                 withBlock("private fun notInitialised(prop: String): Nothing {", "}") {
@@ -162,6 +178,9 @@ internal abstract class AbstractStubGenerator(
     protected fun renderMainFile() {
         val portName = "port"
         val engineFactoryName = "engineFactory"
+        val requestBodyLimitName = "requestBodyLimit"
+        val requestReadTimeoutSecondsName = "requestReadTimeoutSeconds"
+        val responseWriteTimeoutSecondsName = "responseWriteTimeoutSeconds"
         val closeGracePeriodMillisName = "closeGracePeriodMillis"
         val closeTimeoutMillisName = "closeTimeoutMillis"
         val logLevelName = "logLevel"
@@ -172,6 +191,9 @@ internal abstract class AbstractStubGenerator(
                 write("")
                 write("val defaultPort = 8080")
                 write("val defaultEngine = #T.NETTY.value", ServiceTypes(pkgName).serviceEngine)
+                write("val defaultRequestBodyLimit = 10L * 1024 * 1024")
+                write("val defaultRequestReadTimeoutSeconds = 30")
+                write("val defaultResponseWriteTimeoutSeconds = 30")
                 write("val defaultCloseGracePeriodMillis = 1_000L")
                 write("val defaultCloseTimeoutMillis = 5_000L")
                 write("val defaultLogLevel = #T.INFO.value", ServiceTypes(pkgName).logLevel)
@@ -179,6 +201,9 @@ internal abstract class AbstractStubGenerator(
                 withBlock("#T.init(", ")", ServiceTypes(pkgName).serviceFrameworkConfig) {
                     write("port = argMap[#S]?.toInt() ?: defaultPort, ", portName)
                     write("engine = #T.fromValue(argMap[#S] ?: defaultEngine), ", ServiceTypes(pkgName).serviceEngine, engineFactoryName)
+                    write("requestBodyLimit = argMap[#S]?.toLong() ?: defaultRequestBodyLimit, ", requestBodyLimitName)
+                    write("requestReadTimeoutSeconds = argMap[#S]?.toInt() ?: defaultRequestReadTimeoutSeconds, ", requestReadTimeoutSecondsName)
+                    write("responseWriteTimeoutSeconds = argMap[#S]?.toInt() ?: defaultResponseWriteTimeoutSeconds, ", responseWriteTimeoutSecondsName)
                     write("closeGracePeriodMillis = argMap[#S]?.toLong() ?: defaultCloseGracePeriodMillis, ", closeGracePeriodMillisName)
                     write("closeTimeoutMillis = argMap[#S]?.toLong() ?: defaultCloseTimeoutMillis, ", closeTimeoutMillisName)
                     write("logLevel = #T.fromValue(argMap[#S] ?: defaultLogLevel), ", ServiceTypes(pkgName).logLevel, logLevelName)
