@@ -52,4 +52,9 @@ class ServiceTypes(val pkgName: String) {
         name = "ContentTypeGuard"
         namespace = "$pkgName.plugins"
     }
+
+    val configureAuthentication = buildSymbol {
+        name = "configureAuthentication"
+        namespace = "$pkgName.auth"
+    }
 }

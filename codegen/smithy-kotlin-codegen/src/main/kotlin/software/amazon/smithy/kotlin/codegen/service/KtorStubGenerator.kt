@@ -9,6 +9,9 @@ import software.amazon.smithy.kotlin.codegen.core.RuntimeTypes
 import software.amazon.smithy.kotlin.codegen.core.withBlock
 import software.amazon.smithy.kotlin.codegen.core.withInlineBlock
 import software.amazon.smithy.kotlin.codegen.model.getTrait
+import software.amazon.smithy.model.shapes.OperationShape
+import software.amazon.smithy.model.traits.AuthTrait
+import software.amazon.smithy.model.traits.HttpBearerAuthTrait
 import software.amazon.smithy.model.traits.HttpTrait
 import software.amazon.smithy.utils.AbstractCodeWriter
 
@@ -44,6 +47,7 @@ internal class KtorStubGenerator(
                 ) {
                     write("#T()", ServiceTypes(pkgName).configureErrorHandling)
 
+                    write("#T()", ServiceTypes(pkgName).configureAuthentication)
                     write("#T()", ServiceTypes(pkgName).configureRouting)
                     write("#T()", ServiceTypes(pkgName).configureLogging)
                 }
@@ -123,6 +127,36 @@ internal class KtorStubGenerator(
 
     // Generates `Authentication.kt` with Authenticator interface + configureSecurity().
     override fun renderAuthModule() {
+        delegator.useFileWriter("UserPrincipal.kt", "${ctx.settings.pkg.name}.auth") { writer ->
+            writer.withBlock("public data class UserPrincipal(", ")") {
+                write("val user: String")
+            }
+        }
+
+        delegator.useFileWriter("Validation.kt", "${ctx.settings.pkg.name}.auth") { writer ->
+            writer.withBlock("public fun bearerValidation(token: String): UserPrincipal? {", "}") {
+                write("// TODO: implement me")
+                write("if (true) return UserPrincipal(#S) else return null", "Authenticated User")
+            }
+        }
+
+        delegator.useFileWriter("Authentication.kt", "${ctx.settings.pkg.name}.auth") { writer ->
+            writer.withBlock("internal fun #T.configureAuthentication() {", "}", RuntimeTypes.KtorServerCore.Application) {
+                write("")
+                withBlock(
+                    "#T(#T) {",
+                    "}",
+                    RuntimeTypes.KtorServerCore.install,
+                    RuntimeTypes.KtorServerAuth.Authentication,
+                ) {
+                    withBlock("#T(#S) {", "}", RuntimeTypes.KtorServerAuth.bearer, "auth-bearer") {
+                        write("realm = #S", "Access to API")
+                        write("authenticate { cred -> bearerValidation(cred.token) }")
+                    }
+                    write("provider(#S) { authenticate { ctx -> ctx.principal(Unit) } }", "no-auth")
+                }
+            }
+        }
     }
 
     // For every operation request structure, create a `validate()` function file.
@@ -148,6 +182,7 @@ internal class KtorStubGenerator(
                     withBlock("#T(#S) {", "}", RuntimeTypes.KtorServerRouting.get, "/") {
                         write(" #T.#T(#S)", RuntimeTypes.KtorServerCore.applicationCall, RuntimeTypes.KtorServerRouting.responseText, "hello world")
                     }
+
                     operations.filter { it.hasTrait(HttpTrait.ID) }
                         .forEach { shape ->
                             val httpTrait = shape.getTrait<HttpTrait>()!!
@@ -172,49 +207,70 @@ internal class KtorStubGenerator(
 
                             withBlock("#T (#S) {", "}", RuntimeTypes.KtorServerRouting.route, uri) {
                                 write("#T(#T) { $contentTypeGuard }", RuntimeTypes.KtorServerCore.install, ServiceTypes(pkgName).contentTypeGuard)
-
-                                withBlock("#T {", "}", method) {
-                                    withInlineBlock("try {", "}") {
-                                        write(
-                                            "val request = #T.#T<ByteArray>()",
-                                            RuntimeTypes.KtorServerCore.applicationCall,
-                                            RuntimeTypes.KtorServerRouting.requestReceive,
-                                        )
-                                        write("val deserializer = ${shape.id.name}OperationDeserializer()")
-                                        withBlock(
-                                            "val requestObj = try { deserializer.deserialize(#T(), request) } catch (ex: Exception) {",
-                                            "}",
-                                            RuntimeTypes.Core.ExecutionContext,
-                                        ) {
+                                withBlock(
+                                    "#W",
+                                    "}",
+                                    { w: KotlinWriter -> renderRoutingAuth(w, shape) },
+                                ) {
+                                    withBlock("#T {", "}", method) {
+                                        withInlineBlock("try {", "}") {
                                             write(
-                                                "throw #T(#S, ex)",
-                                                RuntimeTypes.KtorServerCore.BadRequestException,
-                                                "Malformed CBOR input",
+                                                "val request = #T.#T<ByteArray>()",
+                                                RuntimeTypes.KtorServerCore.applicationCall,
+                                                RuntimeTypes.KtorServerRouting.requestReceive,
                                             )
+                                            write("val deserializer = ${shape.id.name}OperationDeserializer()")
+                                            withBlock(
+                                                "val requestObj = try { deserializer.deserialize(#T(), request) } catch (ex: Exception) {",
+                                                "}",
+                                                RuntimeTypes.Core.ExecutionContext,
+                                            ) {
+                                                write(
+                                                    "throw #T(#S, ex)",
+                                                    RuntimeTypes.KtorServerCore.BadRequestException,
+                                                    "Malformed CBOR input",
+                                                )
+                                            }
+                                            write("val responseObj = handle${shape.id.name}Request(requestObj)")
+                                            write("val serializer = ${shape.id.name}OperationSerializer()")
+                                            withBlock(
+                                                "val response = try { serializer.serialize(#T(), responseObj) } catch (ex: Exception) {",
+                                                "}",
+                                                RuntimeTypes.Core.ExecutionContext,
+                                            ) {
+                                                write(
+                                                    "throw #T(#S, ex)",
+                                                    RuntimeTypes.KtorServerCore.BadRequestException,
+                                                    "Malformed CBOR output",
+                                                )
+                                            }
+                                                .call { renderResponseCall(writer, contentType, successCode) }
                                         }
-                                        write("val responseObj = handle${shape.id.name}Request(requestObj)")
-                                        write("val serializer = ${shape.id.name}OperationSerializer()")
-                                        withBlock(
-                                            "val response = try { serializer.serialize(#T(), responseObj) } catch (ex: Exception) {",
-                                            "}",
-                                            RuntimeTypes.Core.ExecutionContext,
-                                        ) {
-                                            write(
-                                                "throw #T(#S, ex)",
-                                                RuntimeTypes.KtorServerCore.BadRequestException,
-                                                "Malformed CBOR output",
-                                            )
+                                        withBlock(" catch (t: Throwable) {", "}") {
+                                            write("throw t")
                                         }
-                                            .call { renderResponseCall(writer, contentType, successCode) }
-                                    }
-                                    withBlock(" catch (t: Throwable) {", "}") {
-                                        write("throw t")
                                     }
                                 }
                             }
                         }
                 }
             }
+        }
+    }
+
+    private fun renderRoutingAuth(w: KotlinWriter, shape: OperationShape) {
+        val hasServiceHttpBearerAuthTrait = serviceShape.hasTrait(HttpBearerAuthTrait.ID)
+        val authTrait = shape.getTrait<AuthTrait>()
+        val hasOperationBearerAuthTrait = authTrait?.valueSet?.contains(HttpBearerAuthTrait.ID) ?: true
+
+        if (hasServiceHttpBearerAuthTrait && hasOperationBearerAuthTrait) {
+            w.write(
+                "#T(#S) {",
+                RuntimeTypes.KtorServerAuth.authenticate,
+                "auth-bearer",
+            )
+        } else {
+            w.write("#T(#S) {", RuntimeTypes.KtorServerAuth.authenticate, "no-auth")
         }
     }
 

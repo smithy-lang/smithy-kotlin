@@ -150,6 +150,7 @@ data class KotlinDependency(
         val KTOR_SERVER_STATUS_PAGE = KotlinDependency(GradleConfiguration.Implementation, "io.ktor.server.plugins.statuspages", "io.ktor", "ktor-server-status-pages-jvm", KTOR_VERSION)
         val KOTLINX_CBOR_SERDE = KotlinDependency(GradleConfiguration.Implementation, "kotlinx.serialization", "org.jetbrains.kotlinx", "kotlinx-serialization-cbor", KOTLINX_VERSION)
         val KOTLINX_JSON_SERDE = KotlinDependency(GradleConfiguration.Implementation, "kotlinx.serialization.json", "org.jetbrains.kotlinx", "kotlinx-serialization-json", KOTLINX_VERSION)
+        val KTOR_SERVER_AUTH = KotlinDependency(GradleConfiguration.Implementation, "io.ktor.server.auth", "io.ktor", "ktor-server-auth", KTOR_VERSION)
     }
 
     override fun getDependencies(): List<SymbolDependency> {

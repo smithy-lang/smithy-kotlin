@@ -560,6 +560,13 @@ object RuntimeTypes {
         val exception = symbol("exception")
     }
 
+    object KtorServerAuth : RuntimeTypePackage(KotlinDependency.KTOR_SERVER_AUTH) {
+        val Authentication = symbol("Authentication")
+        val authenticate = symbol("authenticate")
+        val Principal = symbol("Principal")
+        val bearer = symbol("bearer")
+    }
+
     object KotlinxCborSerde : RuntimeTypePackage(KotlinDependency.KOTLINX_CBOR_SERDE) {
         val Serializable = symbol("Serializable")
         val Cbor = symbol("Cbor", "cbor")
