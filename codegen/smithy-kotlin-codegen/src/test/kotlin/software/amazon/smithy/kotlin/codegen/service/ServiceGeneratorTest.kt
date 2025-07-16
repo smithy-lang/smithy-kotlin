@@ -616,6 +616,7 @@ internal fun waitForLog(
     val deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(timeoutSec)
     while (System.nanoTime() < deadline) {
         val line = reader.readLine() ?: break
+        println(line)
         if (line.contains(text)) return true
     }
     return false
