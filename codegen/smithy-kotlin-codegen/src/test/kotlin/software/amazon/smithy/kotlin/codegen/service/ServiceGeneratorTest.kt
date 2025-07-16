@@ -565,7 +565,12 @@ internal fun ServiceGeneratorTest.writeService(manifest: MockManifest) {
     if (!Files.exists(projectDir.resolve("gradlew"))) {
         GradleRunner.create()
             .withProjectDir(projectDir.toFile())
-            .withArguments("wrapper", "--quiet")
+            .withArguments(
+                "wrapper",
+                "--quiet",
+                "--stacktrace",
+            )
+            .forwardOutput()
             .build()
     }
 }
@@ -579,6 +584,7 @@ internal fun ServiceGeneratorTest.startService(
     requestBodyLimit: Long = 10L * 1024 * 1024,
 ): Process = ProcessBuilder(
     "./gradlew",
+    "--no-daemon",
     "--quiet",
     "run",
     "--args=--engineFactory $engineFactory --port $port --closeGracePeriodMillis ${closeGracePeriodMillis.toInt()} --closeTimeoutMillis ${closeTimeoutMillis.toInt()} --requestBodyLimit $requestBodyLimit",
