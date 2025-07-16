@@ -620,6 +620,7 @@ internal fun waitForLog(
     timeoutSec: Long,
 ): Boolean {
     val deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(timeoutSec)
+    println("------------------------------------------------------------")
     while (System.nanoTime() < deadline) {
         val line = reader.readLine() ?: break
         println(line)
