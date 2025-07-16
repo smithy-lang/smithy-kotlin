@@ -13,3 +13,4 @@ jobs:
         with:
           ci-user-pat: ${{ secrets.CI_USER_PAT }}
           exempt-branches: # Add any if required
+          exempt-branches: # Add any if required
