@@ -20,15 +20,6 @@ val sdkVersion: String by project
 // Apply KMP configuration from build plugin
 configureKmpTargets()
 
-// Disable cross compilation if flag is set
-val disableCrossCompile = typedProp<Boolean>("aws.kotlin.native.disableCrossCompile") == true
-if (disableCrossCompile) {
-    logger.warn("aws.kotlin.native.disableCrossCompile=true: Cross compilation is disabled.")
-    allprojects {
-        disableCrossCompileTargets()
-    }
-}
-
 // capture locally - scope issue with custom KMP plugin
 val libraries = libs
 
