@@ -34,6 +34,9 @@ internal class KtorStubGenerator(
 
     override fun renderServerFrameworkImplementation(writer: KotlinWriter) {
         writer.withBlock("internal fun #T.module(): Unit {", "}", RuntimeTypes.KtorServerCore.Application) {
+            withBlock("#T(#T) {", "}", RuntimeTypes.KtorServerCore.install, RuntimeTypes.KtorServerBodyLimit.RequestBodyLimit) {
+                write("bodyLimit { #T.requestBodyLimit }", ServiceTypes(pkgName).serviceFrameworkConfig)
+            }
             write("#T()", ServiceTypes(pkgName).configureErrorHandling)
             write("#T()", ServiceTypes(pkgName).configureAuthentication)
             write("#T()", ServiceTypes(pkgName).configureRouting)
@@ -389,7 +392,9 @@ internal class KtorStubGenerator(
                 .withBlock("{", "}") {
                     write("val acceptsCbor = request.#T().any { it.value == #S }", RuntimeTypes.KtorServerRouting.requestacceptItems, "application/cbor")
                     write("val acceptsJson = request.#T().any { it.value == #S }", RuntimeTypes.KtorServerRouting.requestacceptItems, "application/json")
-
+                    write("")
+                    write("val log = #T.getLogger(#S)", RuntimeTypes.KtorLoggingSlf4j.LoggerFactory, ctx.settings.pkg.name)
+                    write("log.info(#S)", "Route Error Message: \${envelope.msg}")
                     write("")
                     withBlock("when {", "}") {
                         withBlock("acceptsCbor -> {", "}") {
@@ -426,7 +431,7 @@ internal class KtorStubGenerator(
                         withBlock("status(#T.Unauthorized) { call, status ->", "}", RuntimeTypes.KtorServerHttp.HttpStatusCode) {
                             write("val missing = call.request.headers[#S].isNullOrBlank()", "Authorization")
                             write("val message = if (missing) #S else #S", "Missing bearer token", "Invalid or expired bearer token")
-                            write("call.respondEnvelope( ErrorEnvelope(#T.Unauthorized.value, message), #T.Unauthorized )", RuntimeTypes.KtorServerHttp.HttpStatusCode, RuntimeTypes.KtorServerHttp.HttpStatusCode)
+                            write("call.respondEnvelope( ErrorEnvelope(status.value, message), status )")
                         }
                         write("")
                         withBlock("#T<Throwable> { call, cause ->", "}", RuntimeTypes.KtorServerStatusPage.exception) {
@@ -438,6 +443,11 @@ internal class KtorStubGenerator(
                                 write(
                                     "is #T -> #T.BadRequest",
                                     RuntimeTypes.KtorServerCore.BadRequestException,
+                                    RuntimeTypes.KtorServerHttp.HttpStatusCode,
+                                )
+                                write(
+                                    "is #T -> #T.PayloadTooLarge",
+                                    RuntimeTypes.KtorServerBodyLimit.PayloadTooLargeException,
                                     RuntimeTypes.KtorServerHttp.HttpStatusCode,
                                 )
                                 write("else -> #T.InternalServerError", RuntimeTypes.KtorServerHttp.HttpStatusCode)

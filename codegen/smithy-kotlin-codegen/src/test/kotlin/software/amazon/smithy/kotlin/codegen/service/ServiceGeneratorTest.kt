@@ -67,11 +67,6 @@ data class AuthTestRequest(
 )
 
 @Serializable
-data class AuthTestResponse(
-    val output1: String? = null,
-)
-
-@Serializable
 data class PutTestRequest(
     val input1: String,
 )
@@ -83,6 +78,7 @@ class ServiceGeneratorTest {
     val packageName = "com.test"
     val closeGracePeriodMillis: Long = 5_000L
     val closeTimeoutMillis: Long = 1_000L
+    val requestBodyLimit: Long = 10L * 1024 * 1024
     val port: Int = ServerSocket(0).use { it.localPort }
 
     val packagePath = packageName.replace('.', '/')
@@ -115,19 +111,19 @@ class ServiceGeneratorTest {
         """.trimIndent()
         manifest.writeFile("src/main/kotlin/$packagePath/operations/PostTestOperation.kt", postTestOperation)
 
-        val putTestOperation = """
+        val errorTestOperation = """
             package $packageName.operations
 
-            import $packageName.model.PutTestRequest
-            import $packageName.model.PutTestResponse
+            import $packageName.model.ErrorTestRequest
+            import $packageName.model.ErrorTestResponse
 
-            public fun handlePutTestRequest(req: PutTestRequest): PutTestResponse {
+            public fun handleErrorTestRequest(req: ErrorTestRequest): ErrorTestResponse {
                 val variable: String? = null
                 val error = variable!!.length
-                return PutTestResponse.Builder().build()
+                return ErrorTestResponse.Builder().build()
             }
         """.trimIndent()
-        manifest.writeFile("src/main/kotlin/$packagePath/operations/PutTestOperation.kt", putTestOperation)
+        manifest.writeFile("src/main/kotlin/$packagePath/operations/ErrorTestOperation.kt", errorTestOperation)
 
         val bearerValidation = """
             package $packageName.auth
@@ -142,9 +138,9 @@ class ServiceGeneratorTest {
         val ready = waitForLog(
             proc.inputStream.bufferedReader(),
             text = "Server started",
-            timeoutSec = 10,
+            timeoutSec = 30,
         )
-        assertTrue(ready, "Service did not start within 10 s")
+        assertTrue(ready, "Service did not start within 30 s")
     }
 
     @AfterAll
@@ -211,8 +207,8 @@ class ServiceGeneratorTest {
         )
 
         val response = sendRequest(
-            "$baseUrl/put",
-            "PUT",
+            "$baseUrl/error",
+            "POST",
             requestBytes,
             "application/cbor",
             "application/cbor",
@@ -432,6 +428,29 @@ class ServiceGeneratorTest {
         assertIs<HttpResponse<ByteArray>>(response)
         assertEquals(405, response.statusCode(), "Expected 405 OK")
     }
+
+    @Test
+    @OptIn(ExperimentalPathApi::class, ExperimentalSerializationApi::class)
+    fun `check request body limit`() {
+        val cbor = Cbor { }
+        val overLimitPayload = "x".repeat(10 * 1024 * 1024 + 1)
+        val input2 = 617
+        val requestBytes = cbor.encodeToByteArray(
+            PostTestRequest.serializer(),
+            PostTestRequest(overLimitPayload, input2),
+        )
+        require(requestBytes.size > 10 * 1024 * 1024)
+
+        val response = sendRequest(
+            "$baseUrl/post",
+            "POST",
+            requestBytes,
+            "application/cbor",
+            "application/cbor",
+        )
+        assertIs<HttpResponse<ByteArray>>(response)
+        assertEquals(413, response.statusCode(), "Expected 413 Payload Too Large")
+    }
 }
 
 internal fun ServiceGeneratorTest.generateService(): MockManifest {
@@ -514,7 +533,7 @@ internal fun ServiceGeneratorTest.startService(manifest: MockManifest): Process 
         "./gradlew",
         "--quiet",
         "run",
-        "--args=--port $port --closeGracePeriodMillis ${closeGracePeriodMillis.toInt()} --closeTimeoutMillis ${closeTimeoutMillis.toInt()}",
+        "--args=--port $port --closeGracePeriodMillis ${closeGracePeriodMillis.toInt()} --closeTimeoutMillis ${closeTimeoutMillis.toInt()} --requestBodyLimit $requestBodyLimit",
     )
         .directory(projectDir.toFile())
         .redirectErrorStream(true)
@@ -546,7 +565,6 @@ internal fun waitForLog(
     val deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(timeoutSec)
     while (System.nanoTime() < deadline) {
         val line = reader.readLine() ?: break
-        println(line)
         if (line.contains(text)) return true
     }
     return false

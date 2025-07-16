@@ -9,26 +9,11 @@ use smithy.protocols#rpcv2Cbor
 service ServiceGeneratorTest {
     version: "1.0.0"
     operations: [
-        GetTest,
         PostTest,
         AuthTest,
-        PutTest
+        ErrorTest,
     ]
 }
-
-@readonly
-@auth([])
-@http(method: "GET", uri: "/get", code: 200)
-operation GetTest {
-    input: GetTestInput
-    output: GetTestOutput
-}
-
-@input
-structure GetTestInput {}
-
-@output
-structure GetTestOutput {}
 
 
 @http(method: "POST", uri: "/post", code: 201)
@@ -66,20 +51,19 @@ structure AuthTestOutput {
     output1: String
 }
 
-@idempotent
-@http(method: "PUT", uri: "/put", code: 200)
-operation PutTest {
-    input: PutTestInput
-    output: PutTestOutput
+@http(method: "POST", uri: "/error", code: 200)
+operation ErrorTest {
+    input: ErrorTestInput
+    output: ErrorTestOutput
 }
 
 @input
-structure PutTestInput {
+structure ErrorTestInput {
     input1: String
 }
 
 @output
-structure PutTestOutput {
+structure ErrorTestOutput {
     output1: String
 }
 

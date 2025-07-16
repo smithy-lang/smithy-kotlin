@@ -557,6 +557,11 @@ object RuntimeTypes {
         val CallLogging = symbol("CallLogging")
     }
 
+    object KtorServerBodyLimit : RuntimeTypePackage(KotlinDependency.KTOR_SERVER_BODY_LIMIT) {
+        val RequestBodyLimit = symbol("RequestBodyLimit", "bodylimit")
+        val PayloadTooLargeException = symbol("PayloadTooLargeException")
+    }
+
     object KtorLoggingSlf4j : RuntimeTypePackage(KotlinDependency.KTOR_LOGGING_SLF4J) {
         val Level = symbol("Level", "event")
         val LoggerFactory = symbol("LoggerFactory")
