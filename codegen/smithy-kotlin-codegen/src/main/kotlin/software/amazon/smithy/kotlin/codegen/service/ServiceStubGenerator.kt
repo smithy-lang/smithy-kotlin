@@ -68,9 +68,9 @@ internal abstract class AbstractStubGenerator(
             writer.write("")
 
             writer.withBlock("internal enum class ServiceEngine(val value: String) {", "}") {
-                write("NETTY(#S),", "netty")
-                write("CIO(#S),", "cio")
-                write("JETTY_JAKARTA(#S),", "jetty-jakarta")
+                write("NETTY_ENGINE(#S),", "netty")
+                write("CIO_ENGINE(#S),", "cio")
+                write("JETTY_JAKARTA_ENGINE(#S),", "jetty-jakarta")
                 write(";")
                 write("")
                 write("override fun toString(): String = value")
@@ -78,7 +78,7 @@ internal abstract class AbstractStubGenerator(
                 withBlock("companion object {", "}") {
                     withBlock("fun fromValue(value: String): #T {", "}", ServiceTypes(pkgName).serviceEngine) {
                         write(
-                            "return #T.entries.firstOrNull { it.name.equals(value.lowercase(), ignoreCase = true) } ?: throw IllegalArgumentException(#S)",
+                            "return #T.entries.firstOrNull { it.value.equals(value.lowercase(), ignoreCase = true) } ?: throw IllegalArgumentException(#S)",
                             ServiceTypes(pkgName).serviceEngine,
                             "\$value is not a validContentType value, expected one of \${ServiceEngine.entries}",
                         )
@@ -87,9 +87,9 @@ internal abstract class AbstractStubGenerator(
                 write("")
                 withBlock("fun toEngineFactory(): #T<*, *> {", "}", RuntimeTypes.KtorServerCore.ApplicationEngineFactory) {
                     withBlock("return when(this) {", "}") {
-                        write("NETTY -> #T as #T<*, *>", RuntimeTypes.KtorServerNetty.Netty, RuntimeTypes.KtorServerCore.ApplicationEngineFactory)
-                        write("CIO -> #T as #T<*, *>", RuntimeTypes.KtorServerCio.CIO, RuntimeTypes.KtorServerCore.ApplicationEngineFactory)
-                        write("JETTY_JAKARTA -> #T as #T<*, *>", RuntimeTypes.KtorServerJettyJakarta.Jetty, RuntimeTypes.KtorServerCore.ApplicationEngineFactory)
+                        write("NETTY_ENGINE -> #T as #T<*, *>", RuntimeTypes.KtorServerNetty.Netty, RuntimeTypes.KtorServerCore.ApplicationEngineFactory)
+                        write("CIO_ENGINE -> #T as #T<*, *>", RuntimeTypes.KtorServerCio.CIO, RuntimeTypes.KtorServerCore.ApplicationEngineFactory)
+                        write("JETTY_JAKARTA_ENGINE -> #T as #T<*, *>", RuntimeTypes.KtorServerJettyJakarta.Jetty, RuntimeTypes.KtorServerCore.ApplicationEngineFactory)
                     }
                 }
             }
@@ -190,7 +190,7 @@ internal abstract class AbstractStubGenerator(
                 write("val argMap: Map<String, String> = args.asList().chunked(2).associate { (k, v) -> k.removePrefix(#S) to v }", "--")
                 write("")
                 write("val defaultPort = 8080")
-                write("val defaultEngine = #T.NETTY.value", ServiceTypes(pkgName).serviceEngine)
+                write("val defaultEngine = #T.NETTY_ENGINE.value", ServiceTypes(pkgName).serviceEngine)
                 write("val defaultRequestBodyLimit = 10L * 1024 * 1024")
                 write("val defaultRequestReadTimeoutSeconds = 30")
                 write("val defaultResponseWriteTimeoutSeconds = 30")

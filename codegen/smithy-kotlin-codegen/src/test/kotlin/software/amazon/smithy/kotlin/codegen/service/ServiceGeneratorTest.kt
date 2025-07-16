@@ -133,7 +133,8 @@ class ServiceGeneratorTest {
             }
         """.trimIndent()
         manifest.writeFile("src/main/kotlin/$packagePath/auth/Validation.kt", bearerValidation)
-        proc = startService(manifest)
+        writeService(manifest)
+        proc = startService("netty", port, closeGracePeriodMillis, closeTimeoutMillis, requestBodyLimit)
 
         val ready = waitForLog(
             proc.inputStream.bufferedReader(),
@@ -164,6 +165,45 @@ class ServiceGeneratorTest {
         assertTrue(manifest.hasFile("src/main/kotlin/$packagePath/serde/PostTestOperationSerializer.kt"))
         assertTrue(manifest.hasFile("src/main/kotlin/$packagePath/serde/PostTestOperationDeserializer.kt"))
         assertTrue(manifest.hasFile("src/main/kotlin/$packagePath/operations/PostTestOperation.kt"))
+    }
+
+    @Test
+    @OptIn(ExperimentalPathApi::class, ExperimentalSerializationApi::class)
+    fun `check service works with netty engine`() {
+        val nettyPort: Int = ServerSocket(0).use { it.localPort }
+        val nettyProc = startService("netty", nettyPort, closeGracePeriodMillis, closeTimeoutMillis, requestBodyLimit)
+        val ready = waitForLog(
+            nettyProc.inputStream.bufferedReader(),
+            text = "Server started",
+            timeoutSec = 30,
+        )
+        assertTrue(ready, "Service did not start within 30 s")
+    }
+
+    @Test
+    @OptIn(ExperimentalPathApi::class, ExperimentalSerializationApi::class)
+    fun `check service works with cio engine`() {
+        val cioPort: Int = ServerSocket(0).use { it.localPort }
+        val cioProc = startService("cio", cioPort, closeGracePeriodMillis, closeTimeoutMillis, requestBodyLimit)
+        val ready = waitForLog(
+            cioProc.inputStream.bufferedReader(),
+            text = "Server started",
+            timeoutSec = 30,
+        )
+        assertTrue(ready, "Service did not start within 30 s")
+    }
+
+    @Test
+    @OptIn(ExperimentalPathApi::class, ExperimentalSerializationApi::class)
+    fun `check service works with jetty engine`() {
+        val jettyPort: Int = ServerSocket(0).use { it.localPort }
+        val jettyProc = startService("jetty-jakarta", jettyPort, closeGracePeriodMillis, closeTimeoutMillis, requestBodyLimit)
+        val ready = waitForLog(
+            jettyProc.inputStream.bufferedReader(),
+            text = "Server started",
+            timeoutSec = 30,
+        )
+        assertTrue(ready, "Service did not start within 30 s")
     }
 
     @Test
@@ -515,7 +555,7 @@ internal fun ServiceGeneratorTest.generateService(): MockManifest {
 }
 
 @OptIn(ExperimentalPathApi::class)
-internal fun ServiceGeneratorTest.startService(manifest: MockManifest): Process {
+internal fun ServiceGeneratorTest.writeService(manifest: MockManifest) {
     manifest.files.forEach { rel ->
         val target = projectDir.resolve(rel.toString().removePrefix("/"))
         Files.createDirectories(target.parent)
@@ -528,33 +568,44 @@ internal fun ServiceGeneratorTest.startService(manifest: MockManifest): Process 
             .withArguments("wrapper", "--quiet")
             .build()
     }
-
-    return ProcessBuilder(
-        "./gradlew",
-        "--quiet",
-        "run",
-        "--args=--port $port --closeGracePeriodMillis ${closeGracePeriodMillis.toInt()} --closeTimeoutMillis ${closeTimeoutMillis.toInt()} --requestBodyLimit $requestBodyLimit",
-    )
-        .directory(projectDir.toFile())
-        .redirectErrorStream(true)
-        .start()
 }
 
 @OptIn(ExperimentalPathApi::class)
-internal fun ServiceGeneratorTest.cleanupService(proc: Process) {
-    proc.destroy()
-    val gracefulWindow = closeGracePeriodMillis + closeTimeoutMillis
-    val exited = proc.waitFor(gracefulWindow, TimeUnit.MILLISECONDS)
+internal fun ServiceGeneratorTest.startService(
+    engineFactory: String = "netty",
+    port: Int = 8080,
+    closeGracePeriodMillis: Long = 1000,
+    closeTimeoutMillis: Long = 1000,
+    requestBodyLimit: Long = 10L * 1024 * 1024,
+): Process = ProcessBuilder(
+    "./gradlew",
+    "--quiet",
+    "run",
+    "--args=--engineFactory $engineFactory --port $port --closeGracePeriodMillis ${closeGracePeriodMillis.toInt()} --closeTimeoutMillis ${closeTimeoutMillis.toInt()} --requestBodyLimit $requestBodyLimit",
+)
+    .directory(projectDir.toFile())
+    .redirectErrorStream(true)
+    .start()
 
-    if (!exited) {
-        proc.destroyForcibly()
-        fail("Service did not shut down within $gracefulWindow ms")
-    }
+@OptIn(ExperimentalPathApi::class)
+internal fun ServiceGeneratorTest.cleanupService(proc: Process) {
+    val gracefulWindow = closeGracePeriodMillis + closeTimeoutMillis
     val okExitCodes = setOf(0, 143)
-    assertTrue(
-        proc.exitValue() in okExitCodes,
-        "Service exited with ${proc.exitValue()} – shutdown not graceful?",
-    )
+    try {
+        proc.destroy()
+        val exited = proc.waitFor(gracefulWindow, TimeUnit.MILLISECONDS)
+
+        if (!exited) {
+            proc.destroyForcibly()
+            fail("Service did not shut down within $gracefulWindow ms")
+        }
+        assertTrue(
+            proc.exitValue() in okExitCodes,
+            "Service exited with ${proc.exitValue()} – shutdown not graceful?",
+        )
+    } finally {
+        proc.destroyForcibly()
+    }
 }
 
 internal fun waitForLog(
