@@ -1,6 +1,5 @@
 package software.amazon.smithy.kotlin.codegen.service
 
-import software.amazon.smithy.aws.traits.auth.SigV4Trait
 import software.amazon.smithy.build.FileManifest
 import software.amazon.smithy.kotlin.codegen.core.GenerationContext
 import software.amazon.smithy.kotlin.codegen.core.InlineCodeWriterFormatter
@@ -304,7 +303,6 @@ internal class KtorStubGenerator(
         val hasServiceHttpBearerAuthTrait = serviceShape.hasTrait(HttpBearerAuthTrait.ID)
         val authTrait = shape.getTrait<AuthTrait>()
         val hasOperationBearerAuthTrait = authTrait?.valueSet?.contains(HttpBearerAuthTrait.ID) ?: true
-        val hasOperationSigV4AuthTrait = authTrait?.valueSet?.contains(SigV4Trait.ID) ?: true
 
         if (hasServiceHttpBearerAuthTrait && hasOperationBearerAuthTrait) {
             w.write(
@@ -329,9 +327,7 @@ internal class KtorStubGenerator(
                 RuntimeTypes.KtorServerCore.applicationCall,
                 RuntimeTypes.KtorServerRouting.responseRespondBytes,
             ) {
-                write(
-                    "bytes = response,",
-                )
+                write("bytes = response,")
                 write("contentType = #T,", RuntimeTypes.KtorServerHttp.Cbor)
                 write(
                     "status = #T.fromValue($successCode),",
@@ -344,9 +340,7 @@ internal class KtorStubGenerator(
                 RuntimeTypes.KtorServerCore.applicationCall,
                 RuntimeTypes.KtorServerRouting.responseRespond,
             ) {
-                write(
-                    "bytes = response.decodeToString(),",
-                )
+                write("bytes = response.decodeToString(),")
                 write("contentType = #T,", RuntimeTypes.KtorServerHttp.Json)
                 write(
                     "status = #T.fromValue($successCode),",

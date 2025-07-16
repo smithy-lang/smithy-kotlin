@@ -148,7 +148,7 @@ class ServiceGeneratorTest {
     fun shutdown() = cleanupService(proc)
 
     @Test
-    fun `it generates service and all necessary files`() {
+    fun `generates service and all necessary files`() {
         assertTrue(manifest.hasFile("build.gradle.kts"))
         assertTrue(manifest.hasFile("src/main/kotlin/$packagePath/Main.kt"))
         assertTrue(manifest.hasFile("src/main/kotlin/$packagePath/Routing.kt"))
@@ -169,7 +169,7 @@ class ServiceGeneratorTest {
 
     @Test
     @OptIn(ExperimentalPathApi::class, ExperimentalSerializationApi::class)
-    fun `check service works with netty engine`() {
+    fun `checks service with netty engine`() {
         val nettyPort: Int = ServerSocket(0).use { it.localPort }
         val nettyProc = startService("netty", nettyPort, closeGracePeriodMillis, closeTimeoutMillis, requestBodyLimit)
         val ready = waitForLog(
@@ -182,7 +182,7 @@ class ServiceGeneratorTest {
 
     @Test
     @OptIn(ExperimentalPathApi::class, ExperimentalSerializationApi::class)
-    fun `check service works with cio engine`() {
+    fun `checks service with cio engine`() {
         val cioPort: Int = ServerSocket(0).use { it.localPort }
         val cioProc = startService("cio", cioPort, closeGracePeriodMillis, closeTimeoutMillis, requestBodyLimit)
         val ready = waitForLog(
@@ -195,7 +195,7 @@ class ServiceGeneratorTest {
 
     @Test
     @OptIn(ExperimentalPathApi::class, ExperimentalSerializationApi::class)
-    fun `check service works with jetty engine`() {
+    fun `checks service with jetty jakarta engine`() {
         val jettyPort: Int = ServerSocket(0).use { it.localPort }
         val jettyProc = startService("jetty-jakarta", jettyPort, closeGracePeriodMillis, closeTimeoutMillis, requestBodyLimit)
         val ready = waitForLog(
@@ -208,7 +208,7 @@ class ServiceGeneratorTest {
 
     @Test
     @OptIn(ExperimentalPathApi::class, ExperimentalSerializationApi::class)
-    fun `service responds to POST request`() {
+    fun `checks correct POST request`() {
         val cbor = Cbor { }
         val input1 = "Hello"
         val input2 = 617
@@ -238,7 +238,7 @@ class ServiceGeneratorTest {
 
     @Test
     @OptIn(ExperimentalPathApi::class, ExperimentalSerializationApi::class)
-    fun `check unhandled runtime exception in handler`() {
+    fun `checks unhandled runtime exception in handler`() {
         val cbor = Cbor { }
         val input1 = "Hello"
         val requestBytes = cbor.encodeToByteArray(
@@ -260,7 +260,7 @@ class ServiceGeneratorTest {
 
     @Test
     @OptIn(ExperimentalPathApi::class, ExperimentalSerializationApi::class)
-    fun `check wrong content type`() {
+    fun `checks wrong content type`() {
         val cbor = Cbor { }
         val input1 = "Hello"
         val input2 = 617
@@ -282,7 +282,7 @@ class ServiceGeneratorTest {
 
     @Test
     @OptIn(ExperimentalPathApi::class, ExperimentalSerializationApi::class)
-    fun `check missing content type`() {
+    fun `checks missing content type`() {
         val cbor = Cbor { }
         val input1 = "Hello"
         val input2 = 617
@@ -303,7 +303,7 @@ class ServiceGeneratorTest {
 
     @Test
     @OptIn(ExperimentalPathApi::class, ExperimentalSerializationApi::class)
-    fun `check wrong accept type`() {
+    fun `checks wrong accept type`() {
         val cbor = Cbor { }
         val input1 = "Hello"
         val input2 = 617
@@ -325,7 +325,7 @@ class ServiceGeneratorTest {
 
     @Test
     @OptIn(ExperimentalPathApi::class, ExperimentalSerializationApi::class)
-    fun `check missing accept type`() {
+    fun `checks missing accept type`() {
         val cbor = Cbor { }
         val input1 = "Hello"
         val input2 = 617
@@ -346,7 +346,7 @@ class ServiceGeneratorTest {
 
     @Test
     @OptIn(ExperimentalPathApi::class, ExperimentalSerializationApi::class)
-    fun `check authentication with correct bearer token`() {
+    fun `checks authentication with correct bearer token`() {
         val cbor = Cbor { }
         val input1 = "Hello"
         val requestBytes = cbor.encodeToByteArray(
@@ -368,7 +368,7 @@ class ServiceGeneratorTest {
 
     @Test
     @OptIn(ExperimentalPathApi::class, ExperimentalSerializationApi::class)
-    fun `check authentication with wrong bearer token`() {
+    fun `checks authentication with wrong bearer token`() {
         val cbor = Cbor { }
         val input1 = "Hello"
         val requestBytes = cbor.encodeToByteArray(
@@ -390,8 +390,7 @@ class ServiceGeneratorTest {
 
     @Test
     @OptIn(ExperimentalPathApi::class, ExperimentalSerializationApi::class)
-    fun `check authentication without bearer token`() {
-        // FIXME
+    fun `checks authentication without bearer token`() {
         val cbor = Cbor { }
         val input1 = "Hello"
         val requestBytes = cbor.encodeToByteArray(
@@ -412,7 +411,7 @@ class ServiceGeneratorTest {
 
     @Test
     @OptIn(ExperimentalPathApi::class, ExperimentalSerializationApi::class)
-    fun `check malformed input`() {
+    fun `checks malformed input`() {
         val cbor = Cbor { }
         val input1 = 123
         val input2 = "Hello"
@@ -434,7 +433,7 @@ class ServiceGeneratorTest {
 
     @Test
     @OptIn(ExperimentalPathApi::class, ExperimentalSerializationApi::class)
-    fun `route not found`() {
+    fun `checks route not found`() {
         val requestBytes = ByteArray(0)
         val response = sendRequest(
             "$baseUrl/does-not-exist",
@@ -449,7 +448,7 @@ class ServiceGeneratorTest {
 
     @Test
     @OptIn(ExperimentalPathApi::class, ExperimentalSerializationApi::class)
-    fun `method not allowed`() {
+    fun `checks method not allowed`() {
         val cbor = Cbor { }
         val input1 = 123
         val input2 = "Hello"
@@ -471,7 +470,7 @@ class ServiceGeneratorTest {
 
     @Test
     @OptIn(ExperimentalPathApi::class, ExperimentalSerializationApi::class)
-    fun `check request body limit`() {
+    fun `checks request body limit`() {
         val cbor = Cbor { }
         val overLimitPayload = "x".repeat(10 * 1024 * 1024 + 1)
         val input2 = 617
