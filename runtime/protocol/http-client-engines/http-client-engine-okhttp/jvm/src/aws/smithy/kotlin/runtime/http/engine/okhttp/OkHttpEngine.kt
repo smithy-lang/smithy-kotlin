@@ -8,7 +8,10 @@ package aws.smithy.kotlin.runtime.http.engine.okhttp
 import aws.smithy.kotlin.runtime.InternalApi
 import aws.smithy.kotlin.runtime.http.HttpCall
 import aws.smithy.kotlin.runtime.http.config.EngineFactory
-import aws.smithy.kotlin.runtime.http.engine.*
+import aws.smithy.kotlin.runtime.http.engine.AlpnId
+import aws.smithy.kotlin.runtime.http.engine.HttpClientEngineBase
+import aws.smithy.kotlin.runtime.http.engine.TlsContext
+import aws.smithy.kotlin.runtime.http.engine.callContext
 import aws.smithy.kotlin.runtime.http.engine.internal.HttpClientMetrics
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.io.closeIfCloseable
@@ -19,7 +22,6 @@ import aws.smithy.kotlin.runtime.time.fromEpochMilliseconds
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.job
 import okhttp3.*
-import okhttp3.ConnectionPool
 import okhttp3.coroutines.executeAsync
 import java.util.concurrent.TimeUnit
 import kotlin.time.toJavaDuration
