@@ -561,6 +561,11 @@ internal fun ServiceGeneratorTest.writeService(manifest: MockManifest) {
         Files.write(target, manifest.expectFileBytes(rel))
     }
 
+    val settingsFile = projectDir.resolve("settings.gradle.kts")
+    if (!Files.exists(settingsFile)) {
+        Files.writeString(settingsFile, "rootProject.name = \"$serviceName\"")
+    }
+
     if (!Files.exists(projectDir.resolve("gradlew"))) {
         GradleRunner.create()
             .withProjectDir(projectDir.toFile())
