@@ -11,7 +11,7 @@ import okhttp3.Connection
 import okhttp3.ConnectionListener
 import okhttp3.ExperimentalOkHttpApi
 import okhttp3.internal.closeQuietly
-import okio.EOFException
+import okio.IOException
 import okio.buffer
 import okio.source
 import java.net.SocketException
@@ -96,7 +96,7 @@ internal class ConnectionIdleMonitor(val pollInterval: Duration) : ConnectionLis
                     source.readByte() // Blocking read; will take up to `pollInterval` time to complete
                 } catch (_: SocketTimeoutException) {
                     logger.trace { "Socket still alive for $conn" }
-                } catch (_: EOFException) {
+                } catch (_: IOException) {
                     logger.trace { "Socket closed remotely for $conn" }
                     socket.closeQuietly()
                     resetTimeout = false

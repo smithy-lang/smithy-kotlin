@@ -39,6 +39,13 @@ jobs:
       - name: Setup build
         uses: ./smithy-kotlin/.github/actions/setup-build
 
+      - name: Configure JDK
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'corretto'
+          java-version: 17
+          cache: 'gradle'
+
       - name: Build and Test on JVM
         working-directory: ./smithy-kotlin
         shell: bash
@@ -157,6 +164,13 @@ jobs:
       - name: Setup build
         uses: ./smithy-kotlin/.github/actions/setup-build
 
+      - name: Configure JDK
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'corretto'
+          java-version: 17
+          cache: 'gradle'
+
       - name: Configure Gradle
         uses: awslabs/aws-kotlin-repo-tools/.github/actions/configure-gradle@main
         with:
@@ -188,6 +202,13 @@ jobs:
 
       - name: Setup build
         uses: ./smithy-kotlin/.github/actions/setup-build
+
+      - name: Configure JDK
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'corretto'
+          java-version: 17
+          cache: 'gradle'
 
       - name: Configure Gradle
         uses: awslabs/aws-kotlin-repo-tools/.github/actions/configure-gradle@main
@@ -228,7 +249,12 @@ jobs:
       uses: awslabs/aws-kotlin-repo-tools/.github/actions/configure-gradle@main
       with:
         working-directory: ./aws-sdk-kotlin
-
+    - name: Configure JDK
+      uses: actions/setup-java@v3
+      with:
+        distribution: 'corretto'
+        java-version: 17
+        cache: 'gradle'
     - name: Build and Test aws-sdk-kotlin downstream
       working-directory: ./smithy-kotlin
       run: |

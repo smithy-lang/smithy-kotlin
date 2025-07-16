@@ -1,5 +1,41 @@
 # Changelog
 
+## [1.4.23] - 07/15/2025
+
+## [1.4.22] - 07/02/2025
+
+## [1.4.21] - 06/27/2025
+
+## [1.4.20] - 06/20/2025
+
+### Fixes
+* Explicitly qualify shape member names in smoke tests and protocol tests
+* [#1295](https://github.com/smithy-lang/smithy-kotlin/issues/1295) Enable building this project on JDK21 by setting -Xjdk-release flag
+
+## [1.4.19] - 06/19/2025
+
+## [1.4.18] - 06/13/2025
+
+### Miscellaneous
+* Upgrade to Dokka 2.0.0
+
+## [1.4.17] - 06/11/2025
+
+### Fixes
+* Adds import to the symbols references when needed. This issue surfaced when building the protocol tests with the latest Smithy release
+
+## [1.4.16] - 04/28/2025
+
+### Features
+* Add `authSchemePreference` configuration
+
+## [1.4.15] - 04/21/2025
+
+### Fixes
+* [#1214](https://github.com/awslabs/aws-sdk-kotlin/issues/1214) Improve handling of excepted socket exceptions when using connection polling
+
+## [1.4.14] - 04/18/2025
+
 ## [1.4.13] - 04/10/2025
 
 ## [1.4.12] - 04/04/2025

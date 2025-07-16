@@ -52,6 +52,15 @@ internal expect object SystemDefaultProvider : PlatformProvider {
 
 public data class OperatingSystem(val family: OsFamily, val version: String?)
 
+/**
+ * The string which represents a line separator on this file system. For example, on Windows, this is CRLF.
+ */
+public val OperatingSystem.lineSeparator: String
+    get() = when {
+        family == OsFamily.Windows -> "\r\n"
+        else -> "\n"
+    }
+
 public enum class OsFamily {
     Linux,
     MacOs,
