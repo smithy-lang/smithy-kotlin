@@ -45,6 +45,8 @@ jobs:
     steps:
       - name: Checkout Sources
         uses: actions/checkout@v4
+      - name: Setup build
+        uses: .github/actions/setup-build
       - name: Configure JDK
         uses: actions/setup-java@v3
         with:
@@ -59,7 +61,7 @@ jobs:
       - name: Configure Gradle
         uses: awslabs/aws-kotlin-repo-tools/.github/actions/configure-gradle@main
       - name: Generate Artifact Size Metrics
-        run: ./gradlew artifactSizeMetrics
+        run: ./gradlew -Paws.kotlin.native=false artifactSizeMetrics
       - name: Analyze Artifact Size Metrics
         run: ./gradlew analyzeArtifactSizeMetrics
 
