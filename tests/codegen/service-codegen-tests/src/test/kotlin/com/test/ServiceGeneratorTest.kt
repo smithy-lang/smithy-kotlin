@@ -452,13 +452,21 @@ internal fun ServiceGeneratorTest.startService(
             )
             .build()
     }
+    val isWindows = System.getProperty("os.name").startsWith("Windows", ignoreCase = true)
+    val gradleCmd = if (isWindows) "gradlew.bat" else "./gradlew"
+    val baseCmd = if (isWindows) listOf("cmd", "/c", gradleCmd) else listOf(gradleCmd)
 
     return ProcessBuilder(
-        "./gradlew",
-        "--no-daemon",
-        "--quiet",
-        "run",
-        "--args=--engineFactory $engineFactory --port $port --closeGracePeriodMillis ${closeGracePeriodMillis.toInt()} --closeTimeoutMillis ${closeTimeoutMillis.toInt()} --requestBodyLimit $requestBodyLimit",
+        baseCmd + listOf(
+            "--no-daemon",
+            "--quiet",
+            "run",
+            "--args=--engineFactory $engineFactory " +
+                "--port $port " +
+                "--closeGracePeriodMillis ${closeGracePeriodMillis.toInt()} " +
+                "--closeTimeoutMillis ${closeTimeoutMillis.toInt()} " +
+                "--requestBodyLimit $requestBodyLimit",
+        ),
     )
         .directory(projectDir.toFile())
         .redirectErrorStream(true)
