@@ -13,8 +13,8 @@ import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.TestInstance
 import java.io.IOException
-import java.net.Socket
 import java.net.ServerSocket
+import java.net.Socket
 import java.net.URI
 import java.net.http.HttpClient
 import java.net.http.HttpRequest
@@ -479,9 +479,6 @@ internal fun ServiceGeneratorTest.cleanupService(proc: Process) {
     }
 }
 
-
-
-
 internal fun waitForPort(port: Int, timeoutSec: Long = 180): Boolean {
     val deadline = System.currentTimeMillis() + TimeUnit.SECONDS.toNanos(timeoutSec)
     while (System.currentTimeMillis() < deadline) {
@@ -495,7 +492,6 @@ internal fun waitForPort(port: Int, timeoutSec: Long = 180): Boolean {
     }
     return false
 }
-
 
 internal fun sendRequest(
     url: String,
