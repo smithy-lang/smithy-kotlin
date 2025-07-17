@@ -1,8 +1,0 @@
-{
-    "id": "d4f09e32-8bcc-406e-96e0-2743280c13d9",
-    "type": "bugfix",
-    "description": "Switch to always serialize defaults in requests. Previously fields were not serialized in requests if they weren't `@required` and hadn't been changed from the default value.",
-    "issues": [
-        "https://github.com/awslabs/aws-sdk-kotlin/issues/1608"
-    ]
-}
