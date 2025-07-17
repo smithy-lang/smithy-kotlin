@@ -12,7 +12,8 @@ import org.gradle.testkit.runner.GradleRunner
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.TestInstance
-import java.io.BufferedReader
+import java.io.IOException
+import java.net.Socket
 import java.net.ServerSocket
 import java.net.URI
 import java.net.http.HttpClient
@@ -78,11 +79,7 @@ class ServiceGeneratorTest {
     fun boot() {
         proc = startService("netty", port, closeGracePeriodMillis, closeTimeoutMillis, requestBodyLimit)
 
-        val ready = waitForLog(
-            proc.inputStream.bufferedReader(),
-            text = "Server started",
-            timeoutSec = 180,
-        )
+        val ready = waitForPort(port, 180)
         assertTrue(ready, "Service did not start within 180 s")
     }
 
@@ -114,12 +111,8 @@ class ServiceGeneratorTest {
     @OptIn(ExperimentalPathApi::class, ExperimentalSerializationApi::class)
     fun `checks service with netty engine`() {
         val nettyPort: Int = ServerSocket(0).use { it.localPort }
-        val nettyProc = startService("netty", nettyPort, closeGracePeriodMillis, closeTimeoutMillis, requestBodyLimit)
-        val ready = waitForLog(
-            nettyProc.inputStream.bufferedReader(),
-            text = "Server started",
-            timeoutSec = 180,
-        )
+        startService("netty", nettyPort, closeGracePeriodMillis, closeTimeoutMillis, requestBodyLimit)
+        val ready = waitForPort(nettyPort, 180)
         assertTrue(ready, "Service did not start within 180 s")
     }
 
@@ -127,12 +120,8 @@ class ServiceGeneratorTest {
     @OptIn(ExperimentalPathApi::class, ExperimentalSerializationApi::class)
     fun `checks service with cio engine`() {
         val cioPort: Int = ServerSocket(0).use { it.localPort }
-        val cioProc = startService("cio", cioPort, closeGracePeriodMillis, closeTimeoutMillis, requestBodyLimit)
-        val ready = waitForLog(
-            cioProc.inputStream.bufferedReader(),
-            text = "Server started",
-            timeoutSec = 180,
-        )
+        startService("cio", cioPort, closeGracePeriodMillis, closeTimeoutMillis, requestBodyLimit)
+        val ready = waitForPort(cioPort, 180)
         assertTrue(ready, "Service did not start within 180 s")
     }
 
@@ -140,12 +129,8 @@ class ServiceGeneratorTest {
     @OptIn(ExperimentalPathApi::class, ExperimentalSerializationApi::class)
     fun `checks service with jetty jakarta engine`() {
         val jettyPort: Int = ServerSocket(0).use { it.localPort }
-        val jettyProc = startService("jetty-jakarta", jettyPort, closeGracePeriodMillis, closeTimeoutMillis, requestBodyLimit)
-        val ready = waitForLog(
-            jettyProc.inputStream.bufferedReader(),
-            text = "Server started",
-            timeoutSec = 180,
-        )
+        startService("jetty-jakarta", jettyPort, closeGracePeriodMillis, closeTimeoutMillis, requestBodyLimit)
+        val ready = waitForPort(jettyPort, 180)
         assertTrue(ready, "Service did not start within 180 s")
     }
 
@@ -494,20 +479,23 @@ internal fun ServiceGeneratorTest.cleanupService(proc: Process) {
     }
 }
 
-internal fun waitForLog(
-    reader: BufferedReader,
-    text: String,
-    timeoutSec: Long,
-): Boolean {
-    val deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(timeoutSec)
-    println("------------------------------------------------------------")
-    while (System.nanoTime() < deadline) {
-        val line = reader.readLine() ?: break
-        println(line)
-        if (line.contains(text)) return true
+
+
+
+internal fun waitForPort(port: Int, timeoutSec: Long = 180): Boolean {
+    val deadline = System.currentTimeMillis() + TimeUnit.SECONDS.toNanos(timeoutSec)
+    while (System.currentTimeMillis() < deadline) {
+        try {
+            Socket("localhost", port).use {
+                return true // Port is available
+            }
+        } catch (e: IOException) {
+            Thread.sleep(100)
+        }
     }
     return false
 }
+
 
 internal fun sendRequest(
     url: String,
