@@ -6,7 +6,10 @@ package software.amazon.smithy.kotlin.codegen.rendering
 
 import software.amazon.smithy.build.FileManifest
 import software.amazon.smithy.kotlin.codegen.KotlinSettings
-import software.amazon.smithy.kotlin.codegen.core.*
+import software.amazon.smithy.kotlin.codegen.core.InlineCodeWriter
+import software.amazon.smithy.kotlin.codegen.core.InlineCodeWriterFormatter
+import software.amazon.smithy.kotlin.codegen.core.KOTLIN_COMPILER_VERSION
+import software.amazon.smithy.kotlin.codegen.core.KotlinDependency
 import software.amazon.smithy.utils.AbstractCodeWriter
 
 // Determines the jvmTarget version emitted to the build file
@@ -134,7 +137,7 @@ fun renderRootJvmPluginConfig(writer: GradleWriter) {
         """
             jvm {
                 compilations.all {
-                    kotlinOptions.jvmTarget = #S
+                    compilerOptions.jvmTarget = #S
                 }
                 testRuns["test"].executionTask.configure {
                     useJUnitPlatform()

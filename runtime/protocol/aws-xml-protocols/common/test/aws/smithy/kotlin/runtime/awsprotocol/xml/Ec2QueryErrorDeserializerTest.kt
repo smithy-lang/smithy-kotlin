@@ -26,7 +26,7 @@ class Ec2QueryErrorDeserializerTest {
                 <RequestId>foo-request</RequestId>
             </Response>
         """.trimIndent().encodeToByteArray()
-        val actual = parseEc2QueryErrorResponseNoSuspend(payload)
+        val actual = parseEc2QueryErrorResponse(payload)
         assertEquals("InvalidGreeting", actual.code)
         assertEquals("Hi", actual.message)
         assertEquals("foo-request", actual.requestId)
@@ -61,7 +61,7 @@ class Ec2QueryErrorDeserializerTest {
 
         for (payload in tests) {
             assertFailsWith<DeserializationException> {
-                parseEc2QueryErrorResponseNoSuspend(payload)
+                parseEc2QueryErrorResponse(payload)
             }
         }
     }
@@ -90,7 +90,7 @@ class Ec2QueryErrorDeserializerTest {
         ).map { it.trimIndent().encodeToByteArray() }
 
         for (payload in tests) {
-            val actual = parseEc2QueryErrorResponseNoSuspend(payload)
+            val actual = parseEc2QueryErrorResponse(payload)
             assertNull(actual.code)
             assertNull(actual.message)
             assertEquals("foo-request", actual.requestId)
