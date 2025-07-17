@@ -5,7 +5,6 @@
 package software.amazon.smithy.kotlin.codegen.rendering.protocol
 
 import software.amazon.smithy.codegen.core.SymbolProvider
-import software.amazon.smithy.kotlin.codegen.core.KotlinDependency
 import software.amazon.smithy.kotlin.codegen.core.KotlinWriter
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.OperationShape
@@ -40,9 +39,7 @@ protected constructor(
     /**
      * Render a test class and unit tests for the specified [testCases]
      */
-    fun renderTestClass(testClassName: String) {
-        writer.addImport(KotlinDependency.KOTLIN_TEST.namespace, "Test")
-
+    open fun renderTestClass(testClassName: String) {
         writer.write("")
             .openBlock("class $testClassName {")
             .call {
@@ -58,7 +55,7 @@ protected constructor(
     /**
      * Write a single unit test function using the given [writer]
      */
-    private fun renderTestFunction(test: T) {
+    protected open fun renderTestFunction(test: T) {
         test.documentation.ifPresent {
             writer.dokka(it)
         }
