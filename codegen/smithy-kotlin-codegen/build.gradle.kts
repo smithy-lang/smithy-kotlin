@@ -8,7 +8,6 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     id(libs.plugins.kotlin.jvm.get().pluginId)
-    alias(libs.plugins.kotlinx.serialization)
     jacoco
     `maven-publish`
 }
@@ -40,12 +39,6 @@ dependencies {
     testImplementation(libs.kotlin.test)
     testImplementation(libs.kotlin.test.junit5)
     testImplementation(project(":codegen:smithy-kotlin-codegen-testutils"))
-    testImplementation(project(":codegen:smithy-aws-kotlin-codegen"))
-
-    testImplementation(gradleTestKit())
-
-    testImplementation(libs.kotlinx.serialization.json)
-    testImplementation(libs.kotlinx.serialization.cbor)
 }
 
 val generateSdkRuntimeVersion by tasks.registering {

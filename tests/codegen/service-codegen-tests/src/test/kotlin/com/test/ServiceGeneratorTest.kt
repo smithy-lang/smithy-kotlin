@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package software.amazon.smithy.kotlin.codegen.service
+package com.test
 
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
@@ -12,21 +12,6 @@ import org.gradle.testkit.runner.GradleRunner
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.TestInstance
-import org.junit.jupiter.api.io.TempDir
-import software.amazon.smithy.build.MockManifest
-import software.amazon.smithy.build.PluginContext
-import software.amazon.smithy.codegen.core.SymbolProvider
-import software.amazon.smithy.kotlin.codegen.KotlinCodegenPlugin
-import software.amazon.smithy.kotlin.codegen.KotlinSettings
-import software.amazon.smithy.kotlin.codegen.aws.protocols.RpcV2Cbor
-import software.amazon.smithy.kotlin.codegen.core.KotlinDelegator
-import software.amazon.smithy.kotlin.codegen.integration.KotlinIntegration
-import software.amazon.smithy.kotlin.codegen.loadModelFromResource
-import software.amazon.smithy.kotlin.codegen.rendering.protocol.ProtocolGenerator
-import software.amazon.smithy.kotlin.codegen.test.*
-import software.amazon.smithy.model.node.Node
-import software.amazon.smithy.model.node.ObjectNode
-import software.amazon.smithy.model.shapes.ShapeId
 import java.io.BufferedReader
 import java.net.ServerSocket
 import java.net.URI
@@ -35,8 +20,10 @@ import java.net.http.HttpRequest
 import java.net.http.HttpResponse
 import java.nio.file.Files
 import java.nio.file.Path
+import java.nio.file.Paths
 import java.util.concurrent.TimeUnit
 import kotlin.io.path.ExperimentalPathApi
+import kotlin.io.path.exists
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
@@ -73,7 +60,6 @@ data class PutTestRequest(
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class ServiceGeneratorTest {
-    val defaultModel = loadModelFromResource("service-generator-test.smithy")
     val serviceName = "ServiceGeneratorTest"
     val packageName = "com.test"
     val closeGracePeriodMillis: Long = 5_000L
@@ -84,56 +70,12 @@ class ServiceGeneratorTest {
     val packagePath = packageName.replace('.', '/')
     val baseUrl = "http://localhost:$port"
 
-    lateinit var projectDir: Path
+    val projectDir: Path = Paths.get("build/generated-service")
 
     private lateinit var proc: Process
-    private lateinit var manifest: MockManifest
 
     @BeforeAll
-    fun boot(@TempDir tempDir: Path) {
-        projectDir = tempDir
-        manifest = generateService()
-
-        val postTestOperation = """
-            package $packageName.operations
-
-            import $packageName.model.PostTestRequest
-            import $packageName.model.PostTestResponse
-
-            public fun handlePostTestRequest(req: PostTestRequest): PostTestResponse {
-                val response = PostTestResponse.Builder()
-                val input1 = req.input1 ?: ""
-                val input2 = req.input2 ?: 0
-                response.output1 = input1 + " world!"
-                response.output2 = input2 + 1
-                return response.build()
-            }
-        """.trimIndent()
-        manifest.writeFile("src/main/kotlin/$packagePath/operations/PostTestOperation.kt", postTestOperation)
-
-        val errorTestOperation = """
-            package $packageName.operations
-
-            import $packageName.model.ErrorTestRequest
-            import $packageName.model.ErrorTestResponse
-
-            public fun handleErrorTestRequest(req: ErrorTestRequest): ErrorTestResponse {
-                val variable: String? = null
-                val error = variable!!.length
-                return ErrorTestResponse.Builder().build()
-            }
-        """.trimIndent()
-        manifest.writeFile("src/main/kotlin/$packagePath/operations/ErrorTestOperation.kt", errorTestOperation)
-
-        val bearerValidation = """
-            package $packageName.auth
-
-            public fun bearerValidation(token: String): UserPrincipal? {
-                if (token == "correctToken") return UserPrincipal("Authenticated User") else return null
-            }
-        """.trimIndent()
-        manifest.writeFile("src/main/kotlin/$packagePath/auth/Validation.kt", bearerValidation)
-        writeService(manifest)
+    fun boot() {
         proc = startService("netty", port, closeGracePeriodMillis, closeTimeoutMillis, requestBodyLimit)
 
         val ready = waitForLog(
@@ -149,22 +91,23 @@ class ServiceGeneratorTest {
 
     @Test
     fun `generates service and all necessary files`() {
-        assertTrue(manifest.hasFile("build.gradle.kts"))
-        assertTrue(manifest.hasFile("src/main/kotlin/$packagePath/Main.kt"))
-        assertTrue(manifest.hasFile("src/main/kotlin/$packagePath/Routing.kt"))
-        assertTrue(manifest.hasFile("src/main/kotlin/$packagePath/config/ServiceFrameworkConfig.kt"))
-        assertTrue(manifest.hasFile("src/main/kotlin/$packagePath/framework/ServiceFramework.kt"))
-        assertTrue(manifest.hasFile("src/main/kotlin/$packagePath/plugins/ContentTypeGuard.kt"))
-        assertTrue(manifest.hasFile("src/main/kotlin/$packagePath/plugins/ErrorHandler.kt"))
-        assertTrue(manifest.hasFile("src/main/kotlin/$packagePath/utils/Logging.kt"))
-        assertTrue(manifest.hasFile("src/main/kotlin/$packagePath/auth/Authentication.kt"))
-        assertTrue(manifest.hasFile("src/main/kotlin/$packagePath/auth/Validation.kt"))
+        assertTrue(projectDir.resolve("build.gradle.kts").exists())
+        assertTrue(projectDir.resolve("settings.gradle.kts").exists())
+        assertTrue(projectDir.resolve("src/main/kotlin/$packagePath/Main.kt").exists())
+        assertTrue(projectDir.resolve("src/main/kotlin/$packagePath/Routing.kt").exists())
+        assertTrue(projectDir.resolve("src/main/kotlin/$packagePath/config/ServiceFrameworkConfig.kt").exists())
+        assertTrue(projectDir.resolve("src/main/kotlin/$packagePath/framework/ServiceFramework.kt").exists())
+        assertTrue(projectDir.resolve("src/main/kotlin/$packagePath/plugins/ContentTypeGuard.kt").exists())
+        assertTrue(projectDir.resolve("src/main/kotlin/$packagePath/plugins/ErrorHandler.kt").exists())
+        assertTrue(projectDir.resolve("src/main/kotlin/$packagePath/utils/Logging.kt").exists())
+        assertTrue(projectDir.resolve("src/main/kotlin/$packagePath/auth/Authentication.kt").exists())
+        assertTrue(projectDir.resolve("src/main/kotlin/$packagePath/auth/Validation.kt").exists())
 
-        assertTrue(manifest.hasFile("src/main/kotlin/$packagePath/model/PostTestRequest.kt"))
-        assertTrue(manifest.hasFile("src/main/kotlin/$packagePath/model/PostTestResponse.kt"))
-        assertTrue(manifest.hasFile("src/main/kotlin/$packagePath/serde/PostTestOperationSerializer.kt"))
-        assertTrue(manifest.hasFile("src/main/kotlin/$packagePath/serde/PostTestOperationDeserializer.kt"))
-        assertTrue(manifest.hasFile("src/main/kotlin/$packagePath/operations/PostTestOperation.kt"))
+        assertTrue(projectDir.resolve("src/main/kotlin/$packagePath/model/PostTestRequest.kt").exists())
+        assertTrue(projectDir.resolve("src/main/kotlin/$packagePath/model/PostTestResponse.kt").exists())
+        assertTrue(projectDir.resolve("src/main/kotlin/$packagePath/serde/PostTestOperationSerializer.kt").exists())
+        assertTrue(projectDir.resolve("src/main/kotlin/$packagePath/serde/PostTestOperationDeserializer.kt").exists())
+        assertTrue(projectDir.resolve("src/main/kotlin/$packagePath/operations/PostTestOperation.kt").exists())
     }
 
     @Test
@@ -492,89 +435,6 @@ class ServiceGeneratorTest {
     }
 }
 
-internal fun ServiceGeneratorTest.generateService(): MockManifest {
-    val settings: ObjectNode = ObjectNode.builder()
-        .withMember("service", Node.from("$packageName#$serviceName"))
-        .withMember(
-            "package",
-            ObjectNode.builder()
-                .withMember("name", Node.from(packageName))
-                .withMember("version", Node.from("1.0.0"))
-                .build(),
-        )
-        .withMember(
-            "build",
-            ObjectNode.builder()
-                .withMember("rootProject", true)
-                .withMember("generateServiceProject", true)
-                .withMember(
-                    "optInAnnotations",
-                    Node.arrayNode(
-                        Node.from("aws.smithy.kotlin.runtime.InternalApi"),
-                        Node.from("kotlinx.serialization.ExperimentalSerializationApi"),
-                    ),
-                )
-                .build(),
-        )
-        .withMember(
-            "serviceStub",
-            ObjectNode.builder().withMember("framework", Node.from("ktor")).build(),
-        )
-        .build()
-
-    val kotlinSettings = KotlinSettings.from(defaultModel, settings)
-    val integrations: List<KotlinIntegration> = listOf()
-    val manifest = MockManifest()
-    val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model = defaultModel, rootNamespace = packageName, serviceName = serviceName, settings = kotlinSettings)
-    val service = defaultModel.getShape(ShapeId.from("$packageName#$serviceName")).get().asServiceShape().get()
-    val delegator = KotlinDelegator(kotlinSettings, defaultModel, manifest, provider, integrations)
-
-    val generator = RpcV2Cbor()
-    generator.apply {
-        val ctx = ProtocolGenerator.GenerationContext(
-            kotlinSettings,
-            defaultModel,
-            service,
-            provider,
-            integrations,
-            protocol,
-            delegator,
-        )
-        generator.generateProtocolClient(ctx)
-        ctx.delegator.flushWriters()
-    }
-
-    val context: PluginContext = PluginContext.builder()
-        .model(defaultModel)
-        .fileManifest(manifest)
-        .settings(settings)
-        .build()
-    KotlinCodegenPlugin().execute(context)
-    return manifest
-}
-
-@OptIn(ExperimentalPathApi::class)
-internal fun ServiceGeneratorTest.writeService(manifest: MockManifest) {
-    manifest.writeFile("settings.gradle.kts", "rootProject.name = \"$serviceName\"")
-    manifest.files.forEach { rel ->
-        val target = projectDir.resolve(rel.toString().removePrefix("/"))
-        Files.createDirectories(target.parent)
-        Files.write(target, manifest.expectFileBytes(rel))
-    }
-
-    if (!Files.exists(projectDir.resolve("gradlew"))) {
-        GradleRunner.create()
-            .withProjectDir(projectDir.toFile())
-            .withArguments(
-                "wrapper",
-                "--quiet",
-                "--stacktrace",
-            )
-            .forwardOutput()
-            .build()
-    }
-}
-
 @OptIn(ExperimentalPathApi::class)
 internal fun ServiceGeneratorTest.startService(
     engineFactory: String = "netty",
@@ -582,16 +442,28 @@ internal fun ServiceGeneratorTest.startService(
     closeGracePeriodMillis: Long = 1000,
     closeTimeoutMillis: Long = 1000,
     requestBodyLimit: Long = 10L * 1024 * 1024,
-): Process = ProcessBuilder(
-    "./gradlew",
-    "--no-daemon",
-    "--quiet",
-    "run",
-    "--args=--engineFactory $engineFactory --port $port --closeGracePeriodMillis ${closeGracePeriodMillis.toInt()} --closeTimeoutMillis ${closeTimeoutMillis.toInt()} --requestBodyLimit $requestBodyLimit",
-)
-    .directory(projectDir.toFile())
-    .redirectErrorStream(true)
-    .start()
+): Process {
+    if (!Files.exists(projectDir.resolve("gradlew"))) {
+        GradleRunner.create()
+            .withProjectDir(projectDir.toFile())
+            .withArguments(
+                "wrapper",
+                "--quiet",
+            )
+            .build()
+    }
+
+    return ProcessBuilder(
+        "./gradlew",
+        "--no-daemon",
+        "--quiet",
+        "run",
+        "--args=--engineFactory $engineFactory --port $port --closeGracePeriodMillis ${closeGracePeriodMillis.toInt()} --closeTimeoutMillis ${closeTimeoutMillis.toInt()} --requestBodyLimit $requestBodyLimit",
+    )
+        .directory(projectDir.toFile())
+        .redirectErrorStream(true)
+        .start()
+}
 
 @OptIn(ExperimentalPathApi::class)
 internal fun ServiceGeneratorTest.cleanupService(proc: Process) {
