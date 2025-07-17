@@ -111,27 +111,30 @@ class ServiceGeneratorTest {
     @OptIn(ExperimentalPathApi::class, ExperimentalSerializationApi::class)
     fun `checks service with netty engine`() {
         val nettyPort: Int = ServerSocket(0).use { it.localPort }
-        startService("netty", nettyPort, closeGracePeriodMillis, closeTimeoutMillis, requestBodyLimit)
+        val nettyProc = startService("netty", nettyPort, closeGracePeriodMillis, closeTimeoutMillis, requestBodyLimit)
         val ready = waitForPort(nettyPort, 180)
         assertTrue(ready, "Service did not start within 180 s")
+        cleanupService(nettyProc)
     }
 
     @Test
     @OptIn(ExperimentalPathApi::class, ExperimentalSerializationApi::class)
     fun `checks service with cio engine`() {
         val cioPort: Int = ServerSocket(0).use { it.localPort }
-        startService("cio", cioPort, closeGracePeriodMillis, closeTimeoutMillis, requestBodyLimit)
+        val cioProc = startService("cio", cioPort, closeGracePeriodMillis, closeTimeoutMillis, requestBodyLimit)
         val ready = waitForPort(cioPort, 180)
         assertTrue(ready, "Service did not start within 180 s")
+        cleanupService(cioProc)
     }
 
     @Test
     @OptIn(ExperimentalPathApi::class, ExperimentalSerializationApi::class)
     fun `checks service with jetty jakarta engine`() {
         val jettyPort: Int = ServerSocket(0).use { it.localPort }
-        startService("jetty-jakarta", jettyPort, closeGracePeriodMillis, closeTimeoutMillis, requestBodyLimit)
+        val jettyProc = startService("jetty-jakarta", jettyPort, closeGracePeriodMillis, closeTimeoutMillis, requestBodyLimit)
         val ready = waitForPort(jettyPort, 180)
         assertTrue(ready, "Service did not start within 180 s")
+        cleanupService(jettyProc)
     }
 
     @Test
@@ -461,21 +464,38 @@ internal fun ServiceGeneratorTest.startService(
 @OptIn(ExperimentalPathApi::class)
 internal fun ServiceGeneratorTest.cleanupService(proc: Process) {
     val gracefulWindow = closeGracePeriodMillis + closeTimeoutMillis
-    val okExitCodes = setOf(0, 143)
+    val okExitCodes = if (isWindows()) {
+        setOf(0, 1, 143, -1, -1073741510)
+    } else {
+        setOf(0, 143)
+    }
+
     try {
-        proc.destroy()
+        killProcess(proc)
         val exited = proc.waitFor(gracefulWindow, TimeUnit.MILLISECONDS)
 
         if (!exited) {
             proc.destroyForcibly()
             fail("Service did not shut down within $gracefulWindow ms")
         }
+
         assertTrue(
             proc.exitValue() in okExitCodes,
             "Service exited with ${proc.exitValue()} – shutdown not graceful?",
         )
-    } finally {
+    } catch (e: Exception) {
         proc.destroyForcibly()
+        throw e
+    }
+}
+
+private fun isWindows() = System.getProperty("os.name").lowercase().contains("windows")
+
+private fun killProcess(proc: Process) {
+    if (isWindows()) {
+        Runtime.getRuntime().exec("taskkill /F /T /PID ${proc.pid()}")
+    } else {
+        proc.destroy()
     }
 }
 
