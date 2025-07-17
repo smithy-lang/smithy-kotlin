@@ -2409,6 +2409,10 @@ public final class aws/smithy/kotlin/runtime/util/OsFamily : java/lang/Enum {
 public abstract interface class aws/smithy/kotlin/runtime/util/PlatformEnvironProvider : aws/smithy/kotlin/runtime/util/EnvironmentProvider, aws/smithy/kotlin/runtime/util/PropertyProvider {
 }
 
+public final class aws/smithy/kotlin/runtime/util/PlatformKt {
+	public static final fun getLineSeparator (Laws/smithy/kotlin/runtime/util/OperatingSystem;)Ljava/lang/String;
+}
+
 public abstract interface class aws/smithy/kotlin/runtime/util/PlatformProvider : aws/smithy/kotlin/runtime/util/Filesystem, aws/smithy/kotlin/runtime/util/PlatformEnvironProvider {
 	public static final field Companion Laws/smithy/kotlin/runtime/util/PlatformProvider$Companion;
 	public abstract fun isAndroid ()Z

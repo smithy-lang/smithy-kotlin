@@ -7,7 +7,7 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-    alias(libs.plugins.kotlin.jvm)
+    id(libs.plugins.kotlin.jvm.get().pluginId)
     jacoco
     `maven-publish`
 }

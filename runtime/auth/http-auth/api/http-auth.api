@@ -59,3 +59,13 @@ public final class aws/smithy/kotlin/runtime/http/auth/BearerTokenSigner : aws/s
 public abstract interface class aws/smithy/kotlin/runtime/http/auth/CloseableBearerTokenProvider : aws/smithy/kotlin/runtime/http/auth/BearerTokenProvider, java/io/Closeable {
 }
 
+public final class aws/smithy/kotlin/runtime/http/auth/EnvironmentBearerTokenProvider : aws/smithy/kotlin/runtime/http/auth/BearerTokenProvider {
+	public fun <init> (Ljava/lang/String;Laws/smithy/kotlin/runtime/util/PlatformProvider;)V
+	public synthetic fun <init> (Ljava/lang/String;Laws/smithy/kotlin/runtime/util/PlatformProvider;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun resolve (Laws/smithy/kotlin/runtime/collections/Attributes;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
+public final class aws/smithy/kotlin/runtime/http/auth/ReprioritizeAuthOptionsKt {
+	public static final fun reprioritizeAuthOptions (Ljava/util/List;Ljava/util/List;)Ljava/util/List;
+}
+
