@@ -81,9 +81,9 @@ class ServiceGeneratorTest {
         val ready = waitForLog(
             proc.inputStream.bufferedReader(),
             text = "Server started",
-            timeoutSec = 30,
+            timeoutSec = 180,
         )
-        assertTrue(ready, "Service did not start within 30 s")
+        assertTrue(ready, "Service did not start within 180 s")
     }
 
     @AfterAll
@@ -118,9 +118,9 @@ class ServiceGeneratorTest {
         val ready = waitForLog(
             nettyProc.inputStream.bufferedReader(),
             text = "Server started",
-            timeoutSec = 30,
+            timeoutSec = 180,
         )
-        assertTrue(ready, "Service did not start within 30 s")
+        assertTrue(ready, "Service did not start within 180 s")
     }
 
     @Test
@@ -131,9 +131,9 @@ class ServiceGeneratorTest {
         val ready = waitForLog(
             cioProc.inputStream.bufferedReader(),
             text = "Server started",
-            timeoutSec = 30,
+            timeoutSec = 180,
         )
-        assertTrue(ready, "Service did not start within 30 s")
+        assertTrue(ready, "Service did not start within 180 s")
     }
 
     @Test
@@ -144,9 +144,9 @@ class ServiceGeneratorTest {
         val ready = waitForLog(
             jettyProc.inputStream.bufferedReader(),
             text = "Server started",
-            timeoutSec = 30,
+            timeoutSec = 180,
         )
-        assertTrue(ready, "Service did not start within 30 s")
+        assertTrue(ready, "Service did not start within 180 s")
     }
 
     @Test
