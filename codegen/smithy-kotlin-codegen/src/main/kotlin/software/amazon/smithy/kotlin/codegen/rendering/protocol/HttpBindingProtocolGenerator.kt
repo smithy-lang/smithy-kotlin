@@ -192,7 +192,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                             RuntimeTypes.Core.ExecutionContext,
                             serializationSymbol,
                         )
-                            .write("var response: ByteArray = ByteArray(0)")
+                            .write("var response: Any")
                             .call {
                                 renderSerializeHttpBody(ctx, op, writer)
                             }
