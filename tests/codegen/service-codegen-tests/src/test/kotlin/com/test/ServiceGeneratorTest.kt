@@ -61,7 +61,6 @@ data class PutTestRequest(
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class ServiceGeneratorTest {
-    val serviceName = "ServiceGeneratorTest"
     val packageName = "com.test"
     val closeGracePeriodMillis: Long = 5_000L
     val closeTimeoutMillis: Long = 1_000L
@@ -78,7 +77,6 @@ class ServiceGeneratorTest {
     @BeforeAll
     fun boot() {
         proc = startService("netty", port, closeGracePeriodMillis, closeTimeoutMillis, requestBodyLimit)
-
         val ready = waitForPort(port, 180)
         assertTrue(ready, "Service did not start within 180 s")
     }
@@ -156,7 +154,7 @@ class ServiceGeneratorTest {
             "application/cbor",
         )
         assertIs<HttpResponse<ByteArray>>(response)
-        assertEquals(201, response.statusCode(), "Expected 201 OK")
+        assertEquals(201, response.statusCode(), "Expected 201")
 
         val body = cbor.decodeFromByteArray(
             PostTestResponse.serializer(),
@@ -186,7 +184,7 @@ class ServiceGeneratorTest {
             "correctToken",
         )
         assertIs<HttpResponse<ByteArray>>(response)
-        assertEquals(500, response.statusCode(), "Expected 500 OK")
+        assertEquals(500, response.statusCode(), "Expected 500")
     }
 
     @Test
@@ -208,7 +206,7 @@ class ServiceGeneratorTest {
             "application/cbor",
         )
         assertIs<HttpResponse<ByteArray>>(response)
-        assertEquals(415, response.statusCode(), "Expected 415 OK")
+        assertEquals(415, response.statusCode(), "Expected 415")
     }
 
     @Test
@@ -229,7 +227,7 @@ class ServiceGeneratorTest {
             acceptType = "application/cbor",
         )
         assertIs<HttpResponse<ByteArray>>(response)
-        assertEquals(415, response.statusCode(), "Expected 415 OK")
+        assertEquals(415, response.statusCode(), "Expected 415")
     }
 
     @Test
@@ -251,7 +249,7 @@ class ServiceGeneratorTest {
             "application/json",
         )
         assertIs<HttpResponse<ByteArray>>(response)
-        assertEquals(406, response.statusCode(), "Expected 406 OK")
+        assertEquals(406, response.statusCode(), "Expected 406")
     }
 
     @Test
@@ -272,7 +270,7 @@ class ServiceGeneratorTest {
             "application/cbor",
         )
         assertIs<HttpResponse<ByteArray>>(response)
-        assertEquals(201, response.statusCode(), "Expected 201 OK")
+        assertEquals(201, response.statusCode(), "Expected 201")
     }
 
     @Test
@@ -294,7 +292,7 @@ class ServiceGeneratorTest {
             "correctToken",
         )
         assertIs<HttpResponse<ByteArray>>(response)
-        assertEquals(201, response.statusCode(), "Expected 201 OK")
+        assertEquals(201, response.statusCode(), "Expected 201")
     }
 
     @Test
@@ -316,7 +314,7 @@ class ServiceGeneratorTest {
             "wrongToken",
         )
         assertIs<HttpResponse<ByteArray>>(response)
-        assertEquals(401, response.statusCode(), "Expected 401 OK")
+        assertEquals(401, response.statusCode(), "Expected 401")
     }
 
     @Test
@@ -337,7 +335,7 @@ class ServiceGeneratorTest {
             "application/cbor",
         )
         assertIs<HttpResponse<ByteArray>>(response)
-        assertEquals(401, response.statusCode(), "Expected 401 OK")
+        assertEquals(401, response.statusCode(), "Expected 401")
     }
 
     @Test
@@ -359,7 +357,7 @@ class ServiceGeneratorTest {
             "application/cbor",
         )
         assertIs<HttpResponse<ByteArray>>(response)
-        assertEquals(400, response.statusCode(), "Expected 400 OK")
+        assertEquals(400, response.statusCode(), "Expected 400")
     }
 
     @Test
@@ -374,7 +372,7 @@ class ServiceGeneratorTest {
             "application/cbor",
         )
         assertIs<HttpResponse<ByteArray>>(response)
-        assertEquals(404, response.statusCode(), "Expected 404 OK")
+        assertEquals(404, response.statusCode(), "Expected 404")
     }
 
     @Test
@@ -396,7 +394,7 @@ class ServiceGeneratorTest {
             "application/cbor",
         )
         assertIs<HttpResponse<ByteArray>>(response)
-        assertEquals(405, response.statusCode(), "Expected 405 OK")
+        assertEquals(405, response.statusCode(), "Expected 405")
     }
 
     @Test
@@ -419,7 +417,7 @@ class ServiceGeneratorTest {
             "application/cbor",
         )
         assertIs<HttpResponse<ByteArray>>(response)
-        assertEquals(413, response.statusCode(), "Expected 413 Payload Too Large")
+        assertEquals(413, response.statusCode(), "Expected 413")
     }
 }
 

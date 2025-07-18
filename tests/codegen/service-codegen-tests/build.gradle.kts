@@ -38,12 +38,6 @@ dependencies {
 
     compileOnly(project(":codegen:smithy-kotlin-codegen"))
 
-    implementation(libs.smithy.aws.traits)
-    implementation(libs.smithy.protocol.traits)
-    implementation(libs.smithy.protocol.test.traits)
-    implementation(libs.smithy.smoke.test.traits)
-    implementation(libs.kotlinx.serialization.json)
-    implementation(libs.kotlinx.serialization.cbor)
     implementation(project(":codegen:smithy-kotlin-codegen"))
     implementation(project(":codegen:smithy-aws-kotlin-codegen"))
     implementation(project(":codegen:smithy-kotlin-codegen-testutils"))
