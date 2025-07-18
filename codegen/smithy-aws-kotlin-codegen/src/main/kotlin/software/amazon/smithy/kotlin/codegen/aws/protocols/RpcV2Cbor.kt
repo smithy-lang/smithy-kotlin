@@ -109,6 +109,7 @@ class RpcV2Cbor : AwsHttpBindingProtocolGenerator() {
             resolver.requestBindings(op)
         }
         val httpPayload = bindings.firstOrNull { it.location == HttpBinding.Location.PAYLOAD }
+
         if (httpPayload != null) {
             renderExplicitHttpPayloadSerializer(ctx, httpPayload, writer)
         } else {
@@ -117,9 +118,15 @@ class RpcV2Cbor : AwsHttpBindingProtocolGenerator() {
             // delegate to the generate operation body serializer function
             val sdg = structuredDataSerializer(ctx)
             val opBodySerializerFn = sdg.operationSerializer(ctx, op, documentMembers)
-            writer.write("builder.body = #T(context, input)", opBodySerializerFn)
+            if (ctx.settings.build.generateServiceProject) {
+                writer.write("response = #T(context, input)", opBodySerializerFn)
+            } else {
+                writer.write("builder.body = #T(context, input)", opBodySerializerFn)
+            }
         }
-        renderContentTypeHeader(ctx, op, writer, resolver)
+        if (!ctx.settings.build.generateServiceProject) {
+            renderContentTypeHeader(ctx, op, writer, resolver)
+        }
     }
 
     /**
