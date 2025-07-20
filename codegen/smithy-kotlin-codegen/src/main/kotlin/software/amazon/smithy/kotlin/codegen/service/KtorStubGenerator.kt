@@ -9,6 +9,8 @@ import software.amazon.smithy.kotlin.codegen.core.RuntimeTypes
 import software.amazon.smithy.kotlin.codegen.core.withBlock
 import software.amazon.smithy.kotlin.codegen.core.withInlineBlock
 import software.amazon.smithy.kotlin.codegen.model.getTrait
+import software.amazon.smithy.kotlin.codegen.service.contraints.ConstraintGenerator
+import software.amazon.smithy.kotlin.codegen.service.contraints.ConstraintUtilsGenerator
 import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.traits.AuthTrait
 import software.amazon.smithy.model.traits.HttpBearerAuthTrait
@@ -93,7 +95,7 @@ internal class KtorStubGenerator(
     }
 
     private fun renderLogging() {
-        delegator.useFileWriter("Logging.kt", "${ctx.settings.pkg.name}.utils") { writer ->
+        delegator.useFileWriter("Logging.kt", "$pkgName.utils") { writer ->
 
             writer.withBlock("internal fun #T.configureLogging() {", "}", RuntimeTypes.KtorServerCore.Application) {
                 withBlock(
@@ -129,7 +131,7 @@ internal class KtorStubGenerator(
                         }
                     }
                 }
-                write("val log = #T.getLogger(#S)", RuntimeTypes.KtorLoggingSlf4j.LoggerFactory, ctx.settings.pkg.name)
+                write("val log = #T.getLogger(#S)", RuntimeTypes.KtorLoggingSlf4j.LoggerFactory, pkgName)
 
                 withBlock("monitor.subscribe(#T) {", "}", RuntimeTypes.KtorServerCore.ApplicationStarting) {
                     write("log.info(#S)", "Server is starting...")
@@ -167,20 +169,20 @@ internal class KtorStubGenerator(
 
     // Generates `Authentication.kt` with Authenticator interface + configureSecurity().
     override fun renderAuthModule() {
-        delegator.useFileWriter("UserPrincipal.kt", "${ctx.settings.pkg.name}.auth") { writer ->
+        delegator.useFileWriter("UserPrincipal.kt", "$pkgName.auth") { writer ->
             writer.withBlock("public data class UserPrincipal(", ")") {
                 write("val user: String")
             }
         }
 
-        delegator.useFileWriter("Validation.kt", "${ctx.settings.pkg.name}.auth") { writer ->
+        delegator.useFileWriter("Validation.kt", "$pkgName.auth") { writer ->
             writer.withBlock("public fun bearerValidation(token: String): UserPrincipal? {", "}") {
                 write("// TODO: implement me")
                 write("if (true) return UserPrincipal(#S) else return null", "Authenticated User")
             }
         }
 
-        delegator.useFileWriter("Authentication.kt", "${ctx.settings.pkg.name}.auth") { writer ->
+        delegator.useFileWriter("Authentication.kt", "$pkgName.auth") { writer ->
             writer.withBlock("internal fun #T.configureAuthentication() {", "}", RuntimeTypes.KtorServerCore.Application) {
                 write("")
                 withBlock(
@@ -201,20 +203,22 @@ internal class KtorStubGenerator(
 
     // For every operation request structure, create a `validate()` function file.
     override fun renderConstraintValidators() {
+        ConstraintUtilsGenerator(ctx, delegator).render()
+        operations.forEach { operation -> ConstraintGenerator(ctx, operation, delegator).render() }
     }
 
     // Writes `Routing.kt` that maps Smithy operations → Ktor routes.
     override fun renderRouting() {
         val contentType = ContentType.fromServiceShape(serviceShape)
 
-        delegator.useFileWriter("Routing.kt", ctx.settings.pkg.name) { writer ->
+        delegator.useFileWriter("Routing.kt", pkgName) { writer ->
 
             operations.forEach { shape ->
-                writer.addImport("${ctx.settings.pkg.name}.serde", "${shape.id.name}OperationDeserializer")
-                writer.addImport("${ctx.settings.pkg.name}.serde", "${shape.id.name}OperationSerializer")
-                writer.addImport("${ctx.settings.pkg.name}.model", "${shape.id.name}Request")
-                writer.addImport("${ctx.settings.pkg.name}.model", "${shape.id.name}Response")
-                writer.addImport("${ctx.settings.pkg.name}.operations", "handle${shape.id.name}Request")
+                writer.addImport("$pkgName.serde", "${shape.id.name}OperationDeserializer")
+                writer.addImport("$pkgName.serde", "${shape.id.name}OperationSerializer")
+                writer.addImport("$pkgName.model", "${shape.id.name}Request")
+                writer.addImport("$pkgName.model", "${shape.id.name}Response")
+                writer.addImport("$pkgName.operations", "handle${shape.id.name}Request")
             }
 
             writer.withBlock("internal fun #T.configureRouting(): Unit {", "}", RuntimeTypes.KtorServerCore.Application) {
@@ -357,7 +361,7 @@ internal class KtorStubGenerator(
     }
 
     private fun renderErrorHandler() {
-        delegator.useFileWriter("ErrorHandler.kt", "${ctx.settings.pkg.name}.plugins") { writer ->
+        delegator.useFileWriter("ErrorHandler.kt", "$pkgName.plugins") { writer ->
             writer.write("@#T", RuntimeTypes.KotlinxCborSerde.Serializable)
                 .write("private data class ErrorPayload(val code: Int, val message: String)")
                 .write("")
@@ -387,7 +391,7 @@ internal class KtorStubGenerator(
                     write("val acceptsCbor = request.#T().any { it.value == #S }", RuntimeTypes.KtorServerRouting.requestacceptItems, "application/cbor")
                     write("val acceptsJson = request.#T().any { it.value == #S }", RuntimeTypes.KtorServerRouting.requestacceptItems, "application/json")
                     write("")
-                    write("val log = #T.getLogger(#S)", RuntimeTypes.KtorLoggingSlf4j.LoggerFactory, ctx.settings.pkg.name)
+                    write("val log = #T.getLogger(#S)", RuntimeTypes.KtorLoggingSlf4j.LoggerFactory, pkgName)
                     write("log.info(#S)", "Route Error Message: \${envelope.msg}")
                     write("")
                     withBlock("when {", "}") {
@@ -457,7 +461,7 @@ internal class KtorStubGenerator(
     }
 
     private fun renderContentTypeGuard() {
-        delegator.useFileWriter("ContentTypeGuard.kt", "${ctx.settings.pkg.name}.plugins") { writer ->
+        delegator.useFileWriter("ContentTypeGuard.kt", "$pkgName.plugins") { writer ->
 
             writer.withBlock("private fun #T.hasBody(): Boolean {", "}", RuntimeTypes.KtorServerRouting.requestApplicationRequest) {
                 write(
@@ -507,7 +511,7 @@ internal class KtorStubGenerator(
     }
 
     private fun renderAcceptTypeGuard() {
-        delegator.useFileWriter("AcceptTypeGuard.kt", "${ctx.settings.pkg.name}.plugins") { writer ->
+        delegator.useFileWriter("AcceptTypeGuard.kt", "$pkgName.plugins") { writer ->
 
             writer.withBlock(
                 "private fun #T.acceptedContentTypes(): List<#T> {",
@@ -570,9 +574,9 @@ internal class KtorStubGenerator(
     override fun renderPerOperationHandlers() {
         operations.forEach { shape ->
             val name = shape.id.name
-            delegator.useFileWriter("${name}Operation.kt", "${ctx.settings.pkg.name}.operations") { writer ->
-                writer.addImport("${ctx.settings.pkg.name}.model", "${shape.id.name}Request")
-                writer.addImport("${ctx.settings.pkg.name}.model", "${shape.id.name}Response")
+            delegator.useFileWriter("${name}Operation.kt", "$pkgName.operations") { writer ->
+                writer.addImport("$pkgName.model", "${shape.id.name}Request")
+                writer.addImport("$pkgName.model", "${shape.id.name}Response")
 
                 writer.withBlock("public fun handle${name}Request(req: ${name}Request): ${name}Response {", "}") {
                     write("// TODO: implement me")
