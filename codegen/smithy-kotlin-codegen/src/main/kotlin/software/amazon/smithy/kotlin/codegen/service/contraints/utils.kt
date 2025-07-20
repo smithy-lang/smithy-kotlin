@@ -4,6 +4,7 @@ import software.amazon.smithy.kotlin.codegen.core.KotlinWriter
 import software.amazon.smithy.model.traits.LengthTrait
 import software.amazon.smithy.model.traits.PatternTrait
 import software.amazon.smithy.model.traits.RangeTrait
+import software.amazon.smithy.model.traits.RequiredTrait
 import software.amazon.smithy.model.traits.Trait
 import software.amazon.smithy.model.traits.UniqueItemsTrait
 
@@ -17,5 +18,6 @@ internal fun getTraitGeneratorFromTrait(
     is PatternTrait -> PatternConstraint(memberName, trait, pkgName, writer)
     is RangeTrait -> RangeConstraint(memberName, trait, pkgName, writer)
     is UniqueItemsTrait -> UniqueItemsConstraint(memberName, trait, pkgName, writer)
+    is RequiredTrait -> RequiredConstraint(memberName, trait, pkgName, writer)
     else -> null
 }
