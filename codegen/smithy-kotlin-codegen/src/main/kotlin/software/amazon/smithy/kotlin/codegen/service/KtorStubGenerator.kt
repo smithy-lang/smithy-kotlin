@@ -216,6 +216,8 @@ internal class KtorStubGenerator(
             operations.forEach { shape ->
                 writer.addImport("$pkgName.serde", "${shape.id.name}OperationDeserializer")
                 writer.addImport("$pkgName.serde", "${shape.id.name}OperationSerializer")
+                writer.addImport("$pkgName.constraints", "check${shape.id.name}RequestConstraint")
+                writer.addImport("$pkgName.constraints", "check${shape.id.name}ResponseConstraint")
                 writer.addImport("$pkgName.model", "${shape.id.name}Request")
                 writer.addImport("$pkgName.model", "${shape.id.name}Response")
                 writer.addImport("$pkgName.operations", "handle${shape.id.name}Request")
@@ -276,7 +278,17 @@ internal class KtorStubGenerator(
                                                     "Malformed CBOR input",
                                                 )
                                             }
+                                            write(
+                                                "try { check${shape.id.name}RequestConstraint(requestObj) } catch (ex: Exception) { throw #T(ex?.message ?: #S, ex) }",
+                                                RuntimeTypes.KtorServerCore.BadRequestException,
+                                                "Error while validating constraints",
+                                            )
                                             write("val responseObj = handle${shape.id.name}Request(requestObj)")
+                                            write(
+                                                "try { check${shape.id.name}ResponseConstraint(responseObj) } catch (ex: Exception) { throw #T(ex?.message ?: #S, ex) }",
+                                                RuntimeTypes.KtorServerCore.BadRequestException,
+                                                "Error while validating constraints",
+                                            )
                                             write("val serializer = ${shape.id.name}OperationSerializer()")
                                             withBlock(
                                                 "val response = try { serializer.serialize(#T(), responseObj) } catch (ex: Exception) {",
@@ -429,6 +441,16 @@ internal class KtorStubGenerator(
                         withBlock("status(#T.Unauthorized) { call, status ->", "}", RuntimeTypes.KtorServerHttp.HttpStatusCode) {
                             write("val missing = call.request.headers[#S].isNullOrBlank()", "Authorization")
                             write("val message = if (missing) #S else #S", "Missing bearer token", "Invalid or expired bearer token")
+                            write("call.respondEnvelope( ErrorEnvelope(status.value, message), status )")
+                        }
+                        write("")
+                        withBlock("status(#T.NotFound) { call, status ->", "}", RuntimeTypes.KtorServerHttp.HttpStatusCode) {
+                            write("val message = #S", "Resource not found")
+                            write("call.respondEnvelope( ErrorEnvelope(status.value, message), status )")
+                        }
+                        write("")
+                        withBlock("status(#T.MethodNotAllowed) { call, status ->", "}", RuntimeTypes.KtorServerHttp.HttpStatusCode) {
+                            write("val message = #S", "Method not allowed for this resource")
                             write("call.respondEnvelope( ErrorEnvelope(status.value, message), status )")
                         }
                         write("")

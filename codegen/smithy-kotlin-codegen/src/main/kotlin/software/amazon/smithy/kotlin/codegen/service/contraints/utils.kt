@@ -9,15 +9,16 @@ import software.amazon.smithy.model.traits.Trait
 import software.amazon.smithy.model.traits.UniqueItemsTrait
 
 internal fun getTraitGeneratorFromTrait(
+    memberPrefix: String,
     memberName: String,
     trait: Trait,
     pkgName: String,
     writer: KotlinWriter,
 ): AbstractConstraintTrait? = when (trait) {
-    is LengthTrait -> LengthConstraint(memberName, trait, pkgName, writer)
-    is PatternTrait -> PatternConstraint(memberName, trait, pkgName, writer)
-    is RangeTrait -> RangeConstraint(memberName, trait, pkgName, writer)
-    is UniqueItemsTrait -> UniqueItemsConstraint(memberName, trait, pkgName, writer)
-    is RequiredTrait -> RequiredConstraint(memberName, trait, pkgName, writer)
+    is LengthTrait -> LengthConstraint(memberPrefix, memberName, trait, pkgName, writer)
+    is PatternTrait -> PatternConstraint(memberPrefix, memberName, trait, pkgName, writer)
+    is RangeTrait -> RangeConstraint(memberPrefix, memberName, trait, pkgName, writer)
+    is UniqueItemsTrait -> UniqueItemsConstraint(memberPrefix, memberName, trait, pkgName, writer)
+    is RequiredTrait -> RequiredConstraint(memberPrefix, memberName, trait, pkgName, writer)
     else -> null
 }
