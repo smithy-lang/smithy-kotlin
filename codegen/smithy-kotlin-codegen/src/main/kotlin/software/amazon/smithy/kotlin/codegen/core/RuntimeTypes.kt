@@ -492,4 +492,94 @@ object RuntimeTypes {
 
         val sign = symbol("sign")
     }
+
+    object KtorServerCore : RuntimeTypePackage(KotlinDependency.KTOR_SERVER_CORE) {
+        val embeddedServer = symbol("embeddedServer", "engine")
+        val EmbeddedServerType = symbol("EmbeddedServer", "engine")
+        val ApplicationEngineFactory = symbol("ApplicationEngineFactory", "engine")
+
+        val Application = symbol("Application", "application")
+        val ApplicationCallClass = symbol("ApplicationCall", "application")
+        val ApplicationStopping = symbol("ApplicationStopping", "application")
+        val ApplicationStopped = symbol("ApplicationStopped", "application")
+        val ApplicationCreateRouteScopedPlugin = symbol("createRouteScopedPlugin", "application")
+        val ApplicationRouteScopedPlugin = symbol("RouteScopedPlugin", "application")
+        val applicationCall = symbol("call", "application")
+        val install = symbol("install", "application")
+
+        val BadRequestException = symbol("BadRequestException", "plugins")
+    }
+
+    object KtorServerRouting : RuntimeTypePackage(KotlinDependency.KTOR_SERVER_CORE) {
+        val routing = symbol("routing", "routing")
+        val route = symbol("route", "routing")
+        val get = symbol("get", "routing")
+        val post = symbol("post", "routing")
+        val put = symbol("put", "routing")
+        val delete = symbol("delete", "routing")
+        val patch = symbol("patch", "routing")
+        val head = symbol("head", "routing")
+        val options = symbol("options", "routing")
+
+        val requestReceive = symbol("receive", "request")
+        val requestUri = symbol("uri", "request")
+        val requestHttpMethod = symbol("httpMethod", "request")
+        val requestApplicationRequest = symbol("ApplicationRequest", "request")
+        val requestContentLength = symbol("contentLength", "request")
+        val requestContentType = symbol("contentType", "request")
+        val requestacceptItems = symbol("acceptItems", "request")
+
+        val responseText = symbol("respondText", "response")
+        val responseRespond = symbol("respond", "response")
+        val responseRespondBytes = symbol("respondBytes", "response")
+    }
+
+    object KtorServerNetty : RuntimeTypePackage(KotlinDependency.KTOR_SERVER_NETTY) {
+        val Netty = symbol("Netty")
+    }
+
+    object KtorServerHttp : RuntimeTypePackage(KotlinDependency.KTOR_SERVER_HTTP) {
+        val ContentType = symbol("ContentType")
+        val HttpStatusCode = symbol("HttpStatusCode")
+        val HttpHeaders = symbol("HttpHeaders")
+        val Cbor = symbol("Cbor", "ContentType.Application")
+        val Json = symbol("Json", "ContentType.Application")
+    }
+
+    object KtorServerLogging : RuntimeTypePackage(KotlinDependency.KTOR_SERVER_LOGGING) {
+        val CallLogging = symbol("CallLogging")
+    }
+
+    object KtorLoggingSlf4j : RuntimeTypePackage(KotlinDependency.KTOR_LOGGING_SLF4J) {
+        val Level = symbol("Level", "event")
+        val LoggerFactory = symbol("LoggerFactory")
+        val ROOT_LOGGER_NAME = symbol("ROOT_LOGGER_NAME", "Logger")
+    }
+
+    object KtorLoggingLogback : RuntimeTypePackage(KotlinDependency.KTOR_LOGGING_LOGBACK) {
+        val Level = symbol("Level", "classic")
+        val LoggerContext = symbol("LoggerContext", "classic")
+    }
+
+    object KtorServerStatusPage : RuntimeTypePackage(KotlinDependency.KTOR_SERVER_STATUS_PAGE) {
+        val StatusPages = symbol("StatusPages")
+        val exception = symbol("exception")
+    }
+
+    object KtorServerAuth : RuntimeTypePackage(KotlinDependency.KTOR_SERVER_AUTH) {
+        val Authentication = symbol("Authentication")
+        val authenticate = symbol("authenticate")
+        val Principal = symbol("Principal")
+        val bearer = symbol("bearer")
+    }
+
+    object KotlinxCborSerde : RuntimeTypePackage(KotlinDependency.KOTLINX_CBOR_SERDE) {
+        val Serializable = symbol("Serializable")
+        val Cbor = symbol("Cbor", "cbor")
+        val encodeToByteArray = symbol("encodeToByteArray")
+    }
+
+    object KotlinxJsonSerde : RuntimeTypePackage(KotlinDependency.KOTLINX_JSON_SERDE) {
+        val Json = symbol("Json")
+    }
 }

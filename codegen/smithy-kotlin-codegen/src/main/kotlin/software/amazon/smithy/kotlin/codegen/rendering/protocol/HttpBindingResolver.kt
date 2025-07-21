@@ -53,10 +53,10 @@ interface HttpBindingResolver {
 
     /**
      * Return request bindings for an operation.
-     * @param operationShape [OperationShape] for which to retrieve bindings
+     * @param shape [Shape] for which to retrieve bindings
      * @return all found http request bindings
      */
-    fun requestBindings(operationShape: OperationShape): List<HttpBindingDescriptor>
+    fun requestBindings(shape: Shape): List<HttpBindingDescriptor>
 
     /**
      * Return response bindings for an operation.
@@ -141,10 +141,12 @@ class HttpTraitResolver(
 
     override fun httpTrait(operationShape: OperationShape): HttpTrait = operationShape.expectTrait()
 
-    override fun requestBindings(operationShape: OperationShape): List<HttpBindingDescriptor> = bindingIndex
-        .getRequestBindings(operationShape)
-        .values
-        .map { HttpBindingDescriptor(it) }
+    override fun requestBindings(shape: Shape): List<HttpBindingDescriptor> = when (shape) {
+        is OperationShape,
+        is StructureShape,
+        -> bindingIndex.getRequestBindings(shape.toShapeId()).values.map { HttpBindingDescriptor(it) }
+        else -> error { "Unimplemented resolving bindings for ${shape.javaClass.canonicalName}" }
+    }
 
     override fun responseBindings(shape: Shape): List<HttpBindingDescriptor> = when (shape) {
         is OperationShape,

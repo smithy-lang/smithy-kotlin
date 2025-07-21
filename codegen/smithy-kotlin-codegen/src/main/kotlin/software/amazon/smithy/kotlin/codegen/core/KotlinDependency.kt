@@ -38,6 +38,10 @@ private fun getDefaultRuntimeVersion(): String {
 const val RUNTIME_GROUP: String = "aws.smithy.kotlin"
 val RUNTIME_VERSION: String = System.getProperty("smithy.kotlin.codegen.clientRuntimeVersion", getDefaultRuntimeVersion())
 val KOTLIN_COMPILER_VERSION: String = System.getProperty("smithy.kotlin.codegen.kotlinCompilerVersion", "2.2.0")
+val KTOR_VERSION: String = System.getProperty("smithy.kotlin.codegen.ktorVersion", "3.1.3")
+val SERIALIZATION_PLUGIN: String = System.getProperty("smithy.kotlin.codegen.SerializationPlugin", "2.0.20")
+val KOTLINX_VERSION: String = System.getProperty("smithy.kotlin.codegen.ktorKotlinxVersion", "1.9.0")
+val KTOR_LOGGING_BACKEND_VERSION: String = System.getProperty("smithy.kotlin.codegen.ktorLoggingBackendVersion", "1.4.14")
 
 enum class SourceSet {
     CommonMain,
@@ -135,6 +139,19 @@ data class KotlinDependency(
         val KOTLIN_STDLIB = KotlinDependency(GradleConfiguration.Implementation, "kotlin", "org.jetbrains.kotlin", "kotlin-stdlib", KOTLIN_COMPILER_VERSION)
         val KOTLIN_TEST = KotlinDependency(GradleConfiguration.TestImplementation, "kotlin.test", "org.jetbrains.kotlin", "kotlin-test", KOTLIN_COMPILER_VERSION)
         val KOTLIN_TEST_IMPL = KOTLIN_TEST.copy(config = GradleConfiguration.Implementation)
+
+        // Ktor server dependencies
+        // FIXME: version numbers should not be hardcoded, they should be setting dynamically based on the Gradle library versions
+        val KTOR_SERVER_CORE = KotlinDependency(GradleConfiguration.Implementation, "io.ktor.server", "io.ktor", "ktor-server-core", KTOR_VERSION)
+        val KTOR_SERVER_NETTY = KotlinDependency(GradleConfiguration.Implementation, "io.ktor.server.netty", "io.ktor", "ktor-server-netty", KTOR_VERSION)
+        val KTOR_SERVER_HTTP = KotlinDependency(GradleConfiguration.Implementation, "io.ktor.http", "io.ktor", "ktor-http-jvm", KTOR_VERSION)
+        val KTOR_SERVER_LOGGING = KotlinDependency(GradleConfiguration.Implementation, "io.ktor.server.plugins.calllogging", "io.ktor", "ktor-server-call-logging", KTOR_VERSION)
+        val KTOR_LOGGING_SLF4J = KotlinDependency(GradleConfiguration.Implementation, "org.slf4j", "ch.qos.logback", "logback-classic", KTOR_LOGGING_BACKEND_VERSION)
+        val KTOR_LOGGING_LOGBACK = KotlinDependency(GradleConfiguration.Implementation, "ch.qos.logback", "ch.qos.logback", "logback-classic", KTOR_LOGGING_BACKEND_VERSION)
+        val KTOR_SERVER_STATUS_PAGE = KotlinDependency(GradleConfiguration.Implementation, "io.ktor.server.plugins.statuspages", "io.ktor", "ktor-server-status-pages-jvm", KTOR_VERSION)
+        val KOTLINX_CBOR_SERDE = KotlinDependency(GradleConfiguration.Implementation, "kotlinx.serialization", "org.jetbrains.kotlinx", "kotlinx-serialization-cbor", KOTLINX_VERSION)
+        val KOTLINX_JSON_SERDE = KotlinDependency(GradleConfiguration.Implementation, "kotlinx.serialization.json", "org.jetbrains.kotlinx", "kotlinx-serialization-json", KOTLINX_VERSION)
+        val KTOR_SERVER_AUTH = KotlinDependency(GradleConfiguration.Implementation, "io.ktor.server.auth", "io.ktor", "ktor-server-auth", KTOR_VERSION)
     }
 
     override fun getDependencies(): List<SymbolDependency> {

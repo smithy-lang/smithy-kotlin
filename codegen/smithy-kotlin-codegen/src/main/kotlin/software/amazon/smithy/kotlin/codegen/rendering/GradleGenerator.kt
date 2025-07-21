@@ -10,6 +10,7 @@ import software.amazon.smithy.kotlin.codegen.core.InlineCodeWriter
 import software.amazon.smithy.kotlin.codegen.core.InlineCodeWriterFormatter
 import software.amazon.smithy.kotlin.codegen.core.KOTLIN_COMPILER_VERSION
 import software.amazon.smithy.kotlin.codegen.core.KotlinDependency
+import software.amazon.smithy.kotlin.codegen.core.SERIALIZATION_PLUGIN
 import software.amazon.smithy.utils.AbstractCodeWriter
 
 // Determines the jvmTarget version emitted to the build file
@@ -30,6 +31,7 @@ fun writeGradleBuild(
 
     val isKmp = settings.build.generateMultiplatformProject
     val isRootModule = settings.build.generateFullProject
+    val generateServiceProject = settings.build.generateServiceProject
 
     val annotationRenderer: InlineCodeWriter = {
         val annotations = settings.build.optInAnnotations ?: emptyList()
@@ -49,10 +51,16 @@ fun writeGradleBuild(
         val pluginName = if (isKmp) "multiplatform" else "jvm"
 
         write(
-            "kotlin(\"$pluginName\") #W",
+            "kotlin(\"$pluginName\") #W \n #W",
             { w: AbstractCodeWriter<*> ->
                 if (isRootModule) {
                     w.write("version #S", KOTLIN_COMPILER_VERSION)
+                }
+            },
+            { w: AbstractCodeWriter<*> ->
+                if (generateServiceProject) {
+                    w.write("application")
+                    w.write("kotlin(#S) version #S", "plugin.serialization", SERIALIZATION_PLUGIN)
                 }
             },
         )
@@ -70,10 +78,12 @@ fun writeGradleBuild(
         else -> renderJvmGradleBuild(
             writer,
             isRootModule,
+            generateServiceProject,
             dependencies,
             pluginsBodyRenderer,
             repositoryRenderer,
             annotationRenderer,
+            applicationRenderer("${settings.pkg.name}.MainKt"),
         )
     }
 
@@ -158,10 +168,12 @@ fun renderRootJvmPluginConfig(writer: GradleWriter) {
 fun renderJvmGradleBuild(
     writer: GradleWriter,
     isRootModule: Boolean,
+    generateServiceProject: Boolean,
     dependencies: List<KotlinDependency>,
     pluginsRenderer: InlineCodeWriter,
     repositoryRenderer: InlineCodeWriter,
     annotationRenderer: InlineCodeWriter,
+    applicationRenderer: InlineCodeWriter,
 ) {
     writer.write(
         """
@@ -169,6 +181,8 @@ fun renderJvmGradleBuild(
             #W
         }
 
+        #W
+        
         #W
 
         dependencies {
@@ -199,6 +213,7 @@ fun renderJvmGradleBuild(
         """.trimIndent(),
         pluginsRenderer,
         { w: GradleWriter -> if (isRootModule) repositoryRenderer(w) },
+        { w: GradleWriter -> if (generateServiceProject) applicationRenderer(w) },
         { w: GradleWriter -> renderDependencies(w, scope = Scope.SOURCE, isKmp = false, dependencies = dependencies) },
         annotationRenderer,
         { w: GradleWriter -> if (isRootModule) w.write("explicitApi()") },
@@ -243,6 +258,16 @@ private val repositoryRenderer: InlineCodeWriter = {
             repositories {
                 mavenLocal()
                 mavenCentral()
+            }
+        """.trimIndent(),
+    )
+}
+
+private fun applicationRenderer(mainClass: String): InlineCodeWriter = {
+    write(
+        """
+            application {
+                mainClass.set("$mainClass")
             }
         """.trimIndent(),
     )

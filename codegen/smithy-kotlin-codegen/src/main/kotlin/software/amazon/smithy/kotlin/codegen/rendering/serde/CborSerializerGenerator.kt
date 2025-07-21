@@ -20,12 +20,17 @@ class CborSerializerGenerator(
     private val protocolGenerator: ProtocolGenerator,
 ) : StructuredDataSerializerGenerator {
     override fun operationSerializer(ctx: ProtocolGenerator.GenerationContext, op: OperationShape, members: List<MemberShape>): Symbol {
-        val input = op.input.get().let { ctx.model.expectShape(it) }
-        val symbol = ctx.symbolProvider.toSymbol(input)
+        val serializationTarget = if (ctx.settings.build.generateServiceProject) {
+            op.output
+        } else {
+            op.input
+        }
+        val serializationShape = serializationTarget.get().let { ctx.model.expectShape(it) }
+        val serializationSymbol = ctx.symbolProvider.toSymbol(serializationShape)
 
         return op.bodySerializer(ctx.settings) { writer ->
             addNestedDocumentSerializers(ctx, op, writer)
-            writer.withBlock("private fun #L(context: #T, input: #T): #T {", "}", op.bodySerializerName(), RuntimeTypes.Core.ExecutionContext, symbol, RuntimeTypes.Http.HttpBody) {
+            writer.withBlock("private fun #L(context: #T, input: #T): #T {", "}", op.bodySerializerName(), RuntimeTypes.Core.ExecutionContext, serializationSymbol, RuntimeTypes.Http.HttpBody) {
                 call {
                     renderSerializeOperationBody(ctx, op, members, writer)
                 }
@@ -39,9 +44,14 @@ class CborSerializerGenerator(
         documentMembers: List<MemberShape>,
         writer: KotlinWriter,
     ) {
-        val shape = ctx.model.expectShape(op.input.get())
+        val serializationTarget = if (ctx.settings.build.generateServiceProject) {
+            op.output
+        } else {
+            op.input
+        }
+        val serializationshape = ctx.model.expectShape(serializationTarget.get())
         writer.write("val serializer = #T()", RuntimeTypes.Serde.SerdeCbor.CborSerializer)
-        renderSerializerBody(ctx, shape, documentMembers, writer)
+        renderSerializerBody(ctx, serializationshape, documentMembers, writer)
         writer.write("return serializer.toHttpBody()")
     }
 
