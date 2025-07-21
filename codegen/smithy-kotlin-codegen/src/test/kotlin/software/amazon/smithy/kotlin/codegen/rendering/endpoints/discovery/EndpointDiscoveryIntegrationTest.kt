@@ -36,7 +36,7 @@ class EndpointDiscoveryIntegrationTest {
         val contents = writer.toString()
 
         if (discoveryRequired) {
-            val configStr = "public val endpointDiscoverer: TestEndpointDiscoverer = builder.endpointDiscoverer ?: TestEndpointDiscoverer()"
+            val configStr = "public val endpointDiscoverer: TestEndpointDiscoverer = builder.endpointDiscoverer ?: DefaultTestEndpointDiscoverer()"
             contents.shouldContainOnlyOnceWithDiff(configStr)
 
             val builderStr = """
@@ -52,14 +52,30 @@ class EndpointDiscoveryIntegrationTest {
 
             val builderStr = """
                 /**
-                 * The endpoint discoverer for this client, if applicable. By default, no endpoint
-                 * discovery is provided. To use endpoint discovery, set this to a valid
-                 * [TestEndpointDiscoverer] instance.
+                 * The endpoint discoverer for this client, if applicable. By default, no endpoint discovery is
+                 * provided. To use endpoint discovery, set this to a valid [TestEndpointDiscoverer] instance.
                  */
                 public var endpointDiscoverer: TestEndpointDiscoverer? = null
             """.formatForTest("        ")
             contents.shouldContainOnlyOnceWithDiff(builderStr)
         }
+    }
+
+    @Test
+    fun testDiscoveredEndpointErrorMiddleware() {
+        val model = model()
+        val ctx = model.newTestContext(integrations = listOf(EndpointDiscoveryIntegration()))
+        val generator = MockHttpProtocolGenerator(model)
+        generator.generateProtocolClient(ctx.generationCtx)
+
+        ctx.generationCtx.delegator.finalize()
+        ctx.generationCtx.delegator.flushWriters()
+
+        val actual = ctx.manifest.expectFileString("/src/main/kotlin/com/test/DefaultTestClient.kt")
+
+        val getFooMethod = actual.lines("    override suspend fun getFoo(input: GetFooRequest): GetFooResponse {", "    }")
+        val expectedInterceptor = "config.endpointDiscoverer?.let { op.interceptors.add(DiscoveredEndpointErrorInterceptor(BadEndpointError::class, it::invalidate)) }"
+        getFooMethod.shouldContainOnlyOnceWithDiff(expectedInterceptor)
     }
 
     private fun model(discoveryRequired: Boolean = true) =

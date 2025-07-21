@@ -10,7 +10,6 @@ import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.kotlin.codegen.KotlinSettings
 import software.amazon.smithy.kotlin.codegen.core.*
 import software.amazon.smithy.kotlin.codegen.integration.SectionId
-import software.amazon.smithy.kotlin.codegen.integration.SectionKey
 import software.amazon.smithy.kotlin.codegen.model.buildSymbol
 import software.amazon.smithy.kotlin.codegen.model.namespace
 import software.amazon.smithy.model.knowledge.TopDownIndex
@@ -31,12 +30,10 @@ object ExceptionBaseClassGenerator {
     /**
      * Defines a section in which code can be added to the body of the base exception type.
      */
-    object ExceptionBaseClassSection : SectionId {
-        val CodegenContext: SectionKey<CodegenContext> = SectionKey("CodegenContext")
-    }
+    object ExceptionBaseClassSection : SectionId
 
     fun render(ctx: CodegenContext, writer: KotlinWriter) {
-        writer.declareSection(ExceptionBaseClassSection, mapOf(ExceptionBaseClassSection.CodegenContext to ctx)) {
+        writer.declareSection(ExceptionBaseClassSection) {
             ServiceExceptionBaseClassGenerator().render(ctx, writer)
         }
     }
