@@ -55,7 +55,7 @@ data class AuthTestRequest(
 )
 
 @Serializable
-data class PutTestRequest(
+data class ErrorTestRequest(
     val input1: String,
 )
 
@@ -171,8 +171,8 @@ class ServiceGeneratorTest {
         val cbor = Cbor { }
         val input1 = "Hello"
         val requestBytes = cbor.encodeToByteArray(
-            PutTestRequest.serializer(),
-            PutTestRequest(input1),
+            ErrorTestRequest.serializer(),
+            ErrorTestRequest(input1),
         )
 
         val response = sendRequest(
