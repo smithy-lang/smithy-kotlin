@@ -10,6 +10,7 @@ import software.amazon.smithy.kotlin.codegen.core.InlineCodeWriter
 import software.amazon.smithy.kotlin.codegen.core.InlineCodeWriterFormatter
 import software.amazon.smithy.kotlin.codegen.core.KOTLIN_COMPILER_VERSION
 import software.amazon.smithy.kotlin.codegen.core.KotlinDependency
+import software.amazon.smithy.kotlin.codegen.core.SERIALIZATION_PLUGIN
 import software.amazon.smithy.utils.AbstractCodeWriter
 
 // Determines the jvmTarget version emitted to the build file
