@@ -11,6 +11,7 @@ import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.ArgumentsProvider
 import org.junit.jupiter.params.provider.ArgumentsSource
 import org.junit.jupiter.params.provider.CsvSource
+import org.junit.jupiter.params.support.ParameterDeclarations
 import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.kotlin.codegen.test.TestModelDefault
 import software.amazon.smithy.kotlin.codegen.test.toSmithyModel
@@ -392,7 +393,10 @@ class TestProtocolSelectionArgumentProvider : ArgumentsProvider {
         private const val NO_CBOR = "awsJson1_0, awsJson1_1, restJson1, restXml, awsQuery, ec2Query"
     }
 
-    override fun provideArguments(context: ExtensionContext?): Stream<out Arguments> = Stream.of(
+    override fun provideArguments(
+        parameters: ParameterDeclarations?,
+        context: ExtensionContext?,
+    ): Stream<out Arguments> = Stream.of(
         Arguments.of(
             ALL_PROTOCOLS,
             "rpcv2Cbor, awsJson1_0",

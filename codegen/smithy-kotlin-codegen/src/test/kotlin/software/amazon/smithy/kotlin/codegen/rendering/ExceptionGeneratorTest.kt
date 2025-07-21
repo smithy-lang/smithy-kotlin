@@ -241,7 +241,7 @@ class ExceptionGeneratorTest {
                     get() = listOf(SectionWriterBinding(ExceptionBaseClassGenerator.ExceptionBaseClassSection, exceptionSectionWriter))
 
                 private val exceptionSectionWriter = SectionWriter { writer, _ ->
-                    val ctx = writer.getContextValue(ExceptionBaseClassGenerator.ExceptionBaseClassSection.CodegenContext)
+                    val ctx = writer.getContextValue(CodegenContext.Key)
                     ServiceExceptionBaseClassGenerator(exceptionBaseClassSymbol).render(ctx, writer)
                 }
             }
