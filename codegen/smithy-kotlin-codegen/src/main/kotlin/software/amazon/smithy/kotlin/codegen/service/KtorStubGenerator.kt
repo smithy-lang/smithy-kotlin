@@ -222,7 +222,6 @@ internal class KtorStubGenerator(
                     withBlock("#T(#S) {", "}", RuntimeTypes.KtorServerRouting.get, "/") {
                         write(" #T.#T(#S)", RuntimeTypes.KtorServerCore.applicationCall, RuntimeTypes.KtorServerRouting.responseText, "hello world")
                     }
-
                     operations.filter { it.hasTrait(HttpTrait.ID) }
                         .forEach { shape ->
                             val httpTrait = shape.getTrait<HttpTrait>()!!
