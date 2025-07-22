@@ -5,11 +5,11 @@
 package aws.smithy.kotlin.runtime.http.engine.crt
 
 import aws.sdk.kotlin.crt.http.*
+import aws.sdk.kotlin.crt.io.ClientBootstrap
 import aws.sdk.kotlin.crt.io.SocketOptions
 import aws.sdk.kotlin.crt.io.TlsContext
 import aws.sdk.kotlin.crt.io.TlsContextOptionsBuilder
 import aws.sdk.kotlin.crt.io.Uri
-import aws.smithy.kotlin.runtime.crt.SdkDefaultIO
 import aws.smithy.kotlin.runtime.http.HttpErrorCode
 import aws.smithy.kotlin.runtime.http.HttpException
 import aws.smithy.kotlin.runtime.http.engine.ProxyConfig
@@ -39,8 +39,11 @@ internal class ConnectionManager(
         .build()
         .let(::CrtTlsContext)
 
+    private val manageClientBootstrap = config.clientBootstrap == null
+    private val clientBootstrap = config.clientBootstrap ?: ClientBootstrap()
+
     private val options = HttpClientConnectionManagerOptionsBuilder().apply {
-        clientBootstrap = config.clientBootstrap ?: SdkDefaultIO.ClientBootstrap
+        clientBootstrap = this@ConnectionManager.clientBootstrap
         tlsContext = crtTlsContext
         manualWindowManagement = true
         socketOptions = SocketOptions(
@@ -55,7 +58,7 @@ internal class ConnectionManager(
     private val connManagers = mutableMapOf<String, HttpClientConnectionManager>()
     private val mutex = Mutex()
 
-    public suspend fun acquire(request: HttpRequest): HttpClientConnection {
+    suspend fun acquire(request: HttpRequest): HttpClientConnection {
         val proxyConfig = config.proxySelector.select(request.url)
 
         val manager = getManagerForUri(request.uri, proxyConfig)
@@ -88,6 +91,7 @@ internal class ConnectionManager(
             throw httpEx
         }
     }
+
     private suspend fun getManagerForUri(uri: Uri, proxyConfig: ProxyConfig): HttpClientConnectionManager = mutex.withLock {
         connManagers.getOrPut(uri.authority) {
             val connOpts = options.apply {
@@ -109,9 +113,12 @@ internal class ConnectionManager(
             HttpClientConnectionManager(connOpts)
         }
     }
+
     override fun close() {
         connManagers.forEach { entry -> entry.value.close() }
         crtTlsContext.close()
+
+        if (manageClientBootstrap) clientBootstrap.close()
     }
 
     private inner class LeasedConnection(private val delegate: HttpClientConnection) : HttpClientConnection by delegate {
@@ -127,7 +134,7 @@ internal class ConnectionManager(
 }
 
 private fun toCrtTlsVersion(sdkTlsVersion: SdkTlsVersion?): CrtTlsVersion = when (sdkTlsVersion) {
-    null -> aws.sdk.kotlin.crt.io.TlsVersion.SYS_DEFAULT
+    null -> CrtTlsVersion.SYS_DEFAULT
     TlsVersion.TLS_1_0 -> CrtTlsVersion.TLSv1
     TlsVersion.TLS_1_1 -> CrtTlsVersion.TLS_V1_1
     TlsVersion.TLS_1_2 -> CrtTlsVersion.TLS_V1_2
