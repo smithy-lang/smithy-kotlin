@@ -5,12 +5,7 @@
 
 package software.amazon.smithy.kotlin.codegen
 
-import software.amazon.smithy.aws.traits.protocols.AwsJson1_0Trait
-import software.amazon.smithy.aws.traits.protocols.AwsJson1_1Trait
-import software.amazon.smithy.aws.traits.protocols.AwsQueryTrait
-import software.amazon.smithy.aws.traits.protocols.Ec2QueryTrait
-import software.amazon.smithy.aws.traits.protocols.RestJson1Trait
-import software.amazon.smithy.aws.traits.protocols.RestXmlTrait
+import software.amazon.smithy.aws.traits.protocols.*
 import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.kotlin.codegen.lang.isValidPackageName
 import software.amazon.smithy.kotlin.codegen.service.ServiceFramework
@@ -25,10 +20,10 @@ import software.amazon.smithy.model.shapes.ServiceShape
 import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.shapes.ShapeId
 import software.amazon.smithy.protocol.traits.Rpcv2CborTrait
-import java.util.Optional
+import java.util.*
 import java.util.logging.Logger
+import java.util.stream.Collectors
 import kotlin.IllegalArgumentException
-import kotlin.streams.toList
 
 // shapeId of service from which to generate an SDK
 private const val SERVICE = "service"
@@ -169,7 +164,7 @@ fun Model.inferService(): ShapeId {
     val services = shapes(ServiceShape::class.java)
         .map(Shape::getId)
         .sorted()
-        .toList()
+        .collect(Collectors.toList())
 
     return when {
         services.isEmpty() -> {
@@ -282,10 +277,15 @@ enum class DefaultValueSerializationMode(val value: String) {
 
     override fun toString(): String = value
     companion object {
+        /**
+         * The default value serialization mode, which is [ALWAYS]
+         */
+        val DEFAULT = ALWAYS
+
         fun fromValue(value: String): DefaultValueSerializationMode =
-            values().find {
-                it.value == value
-            } ?: throw IllegalArgumentException("$value is not a valid DefaultValueSerializationMode, expected one of ${values().map { it.value }}")
+            requireNotNull(entries.find { it.value.equals(value, ignoreCase = true) }) {
+                "$value is not a valid DefaultValueSerializationMode, expected one of ${values().map { it.value }}"
+            }
     }
 }
 
@@ -300,7 +300,7 @@ enum class DefaultValueSerializationMode(val value: String) {
 data class ApiSettings(
     val visibility: Visibility = Visibility.PUBLIC,
     val nullabilityCheckMode: CheckMode = CheckMode.CLIENT_CAREFUL,
-    val defaultValueSerializationMode: DefaultValueSerializationMode = DefaultValueSerializationMode.WHEN_DIFFERENT,
+    val defaultValueSerializationMode: DefaultValueSerializationMode = DefaultValueSerializationMode.DEFAULT,
     val enableEndpointAuthProvider: Boolean = false,
     val protocolResolutionPriority: Set<ShapeId> = DEFAULT_PROTOCOL_RESOLUTION_PRIORITY,
 ) {
@@ -324,7 +324,7 @@ data class ApiSettings(
                 node.get()
                     .getStringMemberOrDefault(
                         DEFAULT_VALUE_SERIALIZATION_MODE,
-                        DefaultValueSerializationMode.WHEN_DIFFERENT.value,
+                        DefaultValueSerializationMode.DEFAULT.value,
                     ),
             )
             val enableEndpointAuthProvider = node.get().getBooleanMemberOrDefault(ENABLE_ENDPOINT_AUTH_PROVIDER, false)

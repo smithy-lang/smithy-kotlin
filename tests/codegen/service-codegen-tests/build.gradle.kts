@@ -34,6 +34,15 @@ tasks.test {
     }
 }
 
+kotlin {
+    compilerOptions {
+        freeCompilerArgs.addAll(
+            "-opt-in=kotlin.io.path.ExperimentalPathApi",
+            "-opt-in=kotlinx.serialization.ExperimentalSerializationApi",
+        )
+    }
+}
+
 dependencies {
 
     compileOnly(project(":codegen:smithy-kotlin-codegen"))
@@ -41,6 +50,9 @@ dependencies {
     implementation(project(":codegen:smithy-kotlin-codegen"))
     implementation(project(":codegen:smithy-aws-kotlin-codegen"))
     implementation(project(":codegen:smithy-kotlin-codegen-testutils"))
+
+    implementation(libs.kotlinx.serialization.json)
+    implementation(libs.kotlinx.serialization.cbor)
 
     testImplementation(libs.junit.jupiter)
     testImplementation(libs.kotest.assertions.core.jvm)

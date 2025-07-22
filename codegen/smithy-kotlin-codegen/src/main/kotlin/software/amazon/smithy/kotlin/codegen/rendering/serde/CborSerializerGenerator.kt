@@ -9,6 +9,7 @@ import software.amazon.smithy.codegen.core.SymbolReference
 import software.amazon.smithy.kotlin.codegen.core.KotlinWriter
 import software.amazon.smithy.kotlin.codegen.core.RuntimeTypes
 import software.amazon.smithy.kotlin.codegen.core.withBlock
+import software.amazon.smithy.kotlin.codegen.lang.KotlinTypes
 import software.amazon.smithy.kotlin.codegen.model.knowledge.SerdeIndex
 import software.amazon.smithy.kotlin.codegen.model.targetOrSelf
 import software.amazon.smithy.kotlin.codegen.rendering.protocol.ProtocolGenerator
@@ -27,22 +28,23 @@ class CborSerializerGenerator(
         }
         val serializationShape = serializationTarget.get().let { ctx.model.expectShape(it) }
         val serializationSymbol = ctx.symbolProvider.toSymbol(serializationShape)
-        if (ctx.settings.build.generateServiceProject) {
-            return op.bodySerializer(ctx.settings) { writer ->
-                addNestedDocumentSerializers(ctx, op, writer)
-                writer.withBlock("private fun #L(context: #T, input: #T): ByteArray {", "}", op.bodySerializerName(), RuntimeTypes.Core.ExecutionContext, serializationSymbol) {
-                    call {
-                        renderSerializeOperationBody(ctx, op, members, writer)
-                    }
-                }
-            }
-        } else {
-            return op.bodySerializer(ctx.settings) { writer ->
-                addNestedDocumentSerializers(ctx, op, writer)
-                writer.withBlock("private fun #L(context: #T, input: #T): #T {", "}", op.bodySerializerName(), RuntimeTypes.Core.ExecutionContext, serializationSymbol, RuntimeTypes.Http.HttpBody) {
-                    call {
-                        renderSerializeOperationBody(ctx, op, members, writer)
-                    }
+
+        val serializerResultSymbol = when {
+            ctx.settings.build.generateServiceProject -> KotlinTypes.ByteArray
+            else -> RuntimeTypes.Http.HttpBody
+        }
+        return op.bodySerializer(ctx.settings) { writer ->
+            addNestedDocumentSerializers(ctx, op, writer)
+            writer.withBlock(
+                "private fun #L(context: #T, input: #T): #T {",
+                "}",
+                op.bodySerializerName(),
+                RuntimeTypes.Core.ExecutionContext,
+                serializationSymbol,
+                serializerResultSymbol,
+            ) {
+                call {
+                    renderSerializeOperationBody(ctx, op, members, writer)
                 }
             }
         }

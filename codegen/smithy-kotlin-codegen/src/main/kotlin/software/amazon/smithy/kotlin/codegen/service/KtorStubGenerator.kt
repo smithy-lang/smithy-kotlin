@@ -8,6 +8,7 @@ import software.amazon.smithy.kotlin.codegen.core.KotlinWriter
 import software.amazon.smithy.kotlin.codegen.core.RuntimeTypes
 import software.amazon.smithy.kotlin.codegen.core.withBlock
 import software.amazon.smithy.kotlin.codegen.core.withInlineBlock
+import software.amazon.smithy.kotlin.codegen.lang.KotlinTypes
 import software.amazon.smithy.kotlin.codegen.model.getTrait
 import software.amazon.smithy.kotlin.codegen.service.contraints.ConstraintGenerator
 import software.amazon.smithy.kotlin.codegen.service.contraints.ConstraintUtilsGenerator
@@ -47,7 +48,6 @@ internal class KtorStubGenerator(
         writer.withBlock("internal class KtorServiceFramework() : ServiceFramework {", "}") {
             write("private var engine: #T<*, *>? = null", RuntimeTypes.KtorServerCore.EmbeddedServerType)
             write("")
-            write("@Suppress(#S)", "UNCHECKED_CAST")
             write("private val engineFactory = #T.engine.toEngineFactory()", ServiceTypes(pkgName).serviceFrameworkConfig)
 
             write("")
@@ -73,7 +73,7 @@ internal class KtorStubGenerator(
                                 write(
                                     "idleTimeout = #T.requestReadTimeoutSeconds.#T",
                                     ServiceTypes(pkgName).serviceFrameworkConfig,
-                                    RuntimeTypes.Duration.seconds,
+                                    KotlinTypes.Time.seconds,
                                 )
                             }
                         }
@@ -95,7 +95,7 @@ internal class KtorStubGenerator(
     }
 
     private fun renderLogging() {
-        delegator.useFileWriter("Logging.kt", "$pkgName.utils") { writer ->
+        delegator.useFileWriter("Logging.kt", "${pkgName}.utils") { writer ->
 
             writer.withBlock("internal fun #T.configureLogging() {", "}", RuntimeTypes.KtorServerCore.Application) {
                 withBlock(
@@ -131,7 +131,7 @@ internal class KtorStubGenerator(
                         }
                     }
                 }
-                write("val log = #T.getLogger(#S)", RuntimeTypes.KtorLoggingSlf4j.LoggerFactory, pkgName)
+                write("val log = #T.getLogger(#S)", RuntimeTypes.KtorLoggingSlf4j.LoggerFactory, ctx.settings.pkg.name)
 
                 withBlock("monitor.subscribe(#T) {", "}", RuntimeTypes.KtorServerCore.ApplicationStarting) {
                     write("log.info(#S)", "Server is starting...")
@@ -226,9 +226,8 @@ internal class KtorStubGenerator(
             writer.withBlock("internal fun #T.configureRouting(): Unit {", "}", RuntimeTypes.KtorServerCore.Application) {
                 withBlock("#T {", "}", RuntimeTypes.KtorServerRouting.routing) {
                     withBlock("#T(#S) {", "}", RuntimeTypes.KtorServerRouting.get, "/") {
-                        write(" #T.#T(#S)", RuntimeTypes.KtorServerCore.applicationCall, RuntimeTypes.KtorServerRouting.responseText, "hello world")
+                        write(" #T.#T(#S)", RuntimeTypes.KtorServerCore.applicationCall, RuntimeTypes.KtorServerRouting.responseResponseText, "hello world")
                     }
-
                     operations.filter { it.hasTrait(HttpTrait.ID) }
                         .forEach { shape ->
                             val httpTrait = shape.getTrait<HttpTrait>()!!
@@ -354,9 +353,9 @@ internal class KtorStubGenerator(
                 "#T.#T(",
                 ")",
                 RuntimeTypes.KtorServerCore.applicationCall,
-                RuntimeTypes.KtorServerRouting.responseRespond,
+                RuntimeTypes.KtorServerRouting.responseResponseText,
             ) {
-                write("bytes = response.decodeToString(),")
+                write("text = response,")
                 write("contentType = #T,", RuntimeTypes.KtorServerHttp.Json)
                 write(
                     "status = #T.fromValue($successCode),",
@@ -400,8 +399,8 @@ internal class KtorStubGenerator(
                     write("status: #T,", RuntimeTypes.KtorServerHttp.HttpStatusCode)
                 }
                 .withBlock("{", "}") {
-                    write("val acceptsCbor = request.#T().any { it.value == #S }", RuntimeTypes.KtorServerRouting.requestacceptItems, "application/cbor")
-                    write("val acceptsJson = request.#T().any { it.value == #S }", RuntimeTypes.KtorServerRouting.requestacceptItems, "application/json")
+                    write("val acceptsCbor = request.#T().any { it.value == #S }", RuntimeTypes.KtorServerRouting.requestAcceptItems, "application/cbor")
+                    write("val acceptsJson = request.#T().any { it.value == #S }", RuntimeTypes.KtorServerRouting.requestAcceptItems, "application/json")
                     write("")
                     write("val log = #T.getLogger(#S)", RuntimeTypes.KtorLoggingSlf4j.LoggerFactory, pkgName)
                     write("log.info(#S)", "Route Error Message: \${envelope.msg}")
@@ -415,14 +414,14 @@ internal class KtorStubGenerator(
                             }
                         }
                         withBlock("acceptsJson -> {", "}") {
-                            withBlock("#T(", ")", RuntimeTypes.KtorServerRouting.responseText) {
+                            withBlock("#T(", ")", RuntimeTypes.KtorServerRouting.responseResponseText) {
                                 write("envelope.toJson(),")
                                 write("status = status,")
                                 write("contentType = #T", RuntimeTypes.KtorServerHttp.Json)
                             }
                         }
                         withBlock("else -> {", "}") {
-                            withBlock("#T(", ")", RuntimeTypes.KtorServerRouting.responseText) {
+                            withBlock("#T(", ")", RuntimeTypes.KtorServerRouting.responseResponseText) {
                                 write("envelope.msg,")
                                 write("status = status")
                             }
@@ -524,7 +523,7 @@ internal class KtorStubGenerator(
                         withBlock("if (incoming == #T.Any || allowed.none { incoming.match(it) }) {", "}", RuntimeTypes.KtorServerHttp.ContentType) {
                             withBlock("throw #T(", ")", ServiceTypes(pkgName).errorEnvelope) {
                                 write("#T.UnsupportedMediaType.value, ", RuntimeTypes.KtorServerHttp.HttpStatusCode)
-                                write("#S", "Allowed Content-Type(s): \${allowed.joinToString()}")
+                                write("#S", "Not acceptable Content‑Type found: '\${incoming}'. Accepted content types: \${allowed.joinToString()}")
                             }
                         }
                     }
@@ -533,7 +532,7 @@ internal class KtorStubGenerator(
     }
 
     private fun renderAcceptTypeGuard() {
-        delegator.useFileWriter("AcceptTypeGuard.kt", "$pkgName.plugins") { writer ->
+        delegator.useFileWriter("AcceptTypeGuard.kt", "${ctx.settings.pkg.name}.plugins") { writer ->
 
             writer.withBlock(
                 "private fun #T.acceptedContentTypes(): List<#T> {",
@@ -584,7 +583,7 @@ internal class KtorStubGenerator(
                         withBlock("if (!isOk) {", "}") {
                             withBlock("throw #T(", ")", ServiceTypes(pkgName).errorEnvelope) {
                                 write("#T.NotAcceptable.value, ", RuntimeTypes.KtorServerHttp.HttpStatusCode)
-                                write("#S", "Supported Accept(s): \${allowed.joinToString()}")
+                                write("#S", "Not acceptable Accept type found: '\${accepted}'. Accepted types: \${allowed.joinToString()}")
                             }
                         }
                     }

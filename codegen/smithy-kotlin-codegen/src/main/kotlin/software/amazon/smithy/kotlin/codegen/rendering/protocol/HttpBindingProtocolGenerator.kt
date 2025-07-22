@@ -136,6 +136,9 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
     }
 
     override fun generateProtocolClient(ctx: ProtocolGenerator.GenerationContext) {
+        if (ctx.settings.build.generateServiceProject) {
+            require(protocolName == "smithyRpcv2cbor") { "service project accepts only Cbor protocol" }
+        }
         if (!ctx.settings.build.generateServiceProject) {
             val symbol = ctx.symbolProvider.toSymbol(ctx.service)
             ctx.delegator.useFileWriter("Default${symbol.name}.kt", ctx.settings.pkg.name) { writer ->

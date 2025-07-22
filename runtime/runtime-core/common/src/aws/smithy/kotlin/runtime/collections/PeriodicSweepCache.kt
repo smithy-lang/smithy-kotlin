@@ -12,8 +12,9 @@ import kotlinx.coroutines.sync.withLock
 import kotlin.time.Duration
 
 /**
- * An object which caches values and allows retrieving them by key. The values expire after a time. If a value is
- * expired or absent from the cache, it will be read from a `valueLookup` parameter passed to [get] and then cached.
+ * A cache which allows retrieving values by a key. Looking up a value for a key which does not exist in the cache (or
+ * where the value has expired) are resolved by calling [valueLookup]. The expiry for a value is included in the result
+ * returned from [valueLookup].
  *
  * A sweep operation will run prior to a [get] or [invalidate] that happens after [minimumSweepPeriod] has elapsed from
  * the last sweep (or from the initialization of the cache). This sweep will search for and remove expired entries from
@@ -29,10 +30,10 @@ import kotlin.time.Duration
  * @param clock The [Clock] to use for measuring time. Defaults to [Clock.System].
  */
 @InternalApi
-public class ReadThroughCache<K, V>(
+public class PeriodicSweepCache<K, V>(
     private val minimumSweepPeriod: Duration,
     private val clock: Clock = Clock.System,
-) {
+) : ExpiringKeyedCache<K, V> {
     private val map = mutableMapOf<K, ExpiringValue<V>>()
     private val mutex = Mutex()
     private var nextSweep = clock.now() + minimumSweepPeriod
@@ -44,7 +45,7 @@ public class ReadThroughCache<K, V>(
      * @param valueLookup A possibly-suspending function which returns the read-through value associated with a given
      * key. This function is invoked when the cache, for a given key, does not contain a value or the value is expired.
      */
-    public suspend fun get(key: K, valueLookup: suspend (K) -> ExpiringValue<V>): V = mutex.withLock {
+    override suspend fun get(key: K, valueLookup: suspend (K) -> ExpiringValue<V>): V = mutex.withLock {
         if (clock.now() > nextSweep) sweep()
 
         val current = map[key]
@@ -59,20 +60,29 @@ public class ReadThroughCache<K, V>(
      * Invalidates the value (if any) for the given key, removing it from the cache regardless of its expiry.
      * @param key The key for which to invalidate a value.
      */
-    public suspend fun invalidate(key: K): Unit = mutex.withLock {
+    override suspend fun invalidate(key: K): Unit = mutex.withLock {
         map.remove(key)
         if (clock.now() > nextSweep) sweep()
     }
 
+    /**
+     * Indicates whether this value is expired according to its [ExpiringValue.expiresAt] property and the cache's
+     * [clock]
+     */
     private val ExpiringValue<*>.isExpired: Boolean
         get() = clock.now() >= expiresAt
 
     /**
-     * Gets the number of values currently stored in the cache.
+     * Gets the number of values currently stored in the cache. Note that this property is non-volatile and may reflect
+     * stale information in highly-concurrent scenarios.
      */
-    public val size: Int
+    override val size: Int
         get() = map.size
 
+    /**
+     * Sweeps the cache to remove expired entries and schedule the next sweep. This method _must_ be invoked under mutex
+     * lock.
+     */
     private fun sweep() {
         val iterator = map.iterator()
         while (iterator.hasNext()) {

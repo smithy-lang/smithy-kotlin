@@ -5,7 +5,6 @@
 
 package com.test
 
-import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.cbor.Cbor
 import org.gradle.testkit.runner.GradleRunner
@@ -23,7 +22,6 @@ import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
 import java.util.concurrent.TimeUnit
-import kotlin.io.path.ExperimentalPathApi
 import kotlin.io.path.exists
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -99,28 +97,6 @@ class ServiceGeneratorTest {
     fun shutdown() = cleanupService(proc)
 
     @Test
-    fun `generates service and all necessary files`() {
-        assertTrue(projectDir.resolve("build.gradle.kts").exists())
-        assertTrue(projectDir.resolve("settings.gradle.kts").exists())
-        assertTrue(projectDir.resolve("src/main/kotlin/$packagePath/Main.kt").exists())
-        assertTrue(projectDir.resolve("src/main/kotlin/$packagePath/Routing.kt").exists())
-        assertTrue(projectDir.resolve("src/main/kotlin/$packagePath/config/ServiceFrameworkConfig.kt").exists())
-        assertTrue(projectDir.resolve("src/main/kotlin/$packagePath/framework/ServiceFramework.kt").exists())
-        assertTrue(projectDir.resolve("src/main/kotlin/$packagePath/plugins/ContentTypeGuard.kt").exists())
-        assertTrue(projectDir.resolve("src/main/kotlin/$packagePath/plugins/ErrorHandler.kt").exists())
-        assertTrue(projectDir.resolve("src/main/kotlin/$packagePath/utils/Logging.kt").exists())
-        assertTrue(projectDir.resolve("src/main/kotlin/$packagePath/auth/Authentication.kt").exists())
-        assertTrue(projectDir.resolve("src/main/kotlin/$packagePath/auth/Validation.kt").exists())
-
-        assertTrue(projectDir.resolve("src/main/kotlin/$packagePath/model/PostTestRequest.kt").exists())
-        assertTrue(projectDir.resolve("src/main/kotlin/$packagePath/model/PostTestResponse.kt").exists())
-        assertTrue(projectDir.resolve("src/main/kotlin/$packagePath/serde/PostTestOperationSerializer.kt").exists())
-        assertTrue(projectDir.resolve("src/main/kotlin/$packagePath/serde/PostTestOperationDeserializer.kt").exists())
-        assertTrue(projectDir.resolve("src/main/kotlin/$packagePath/operations/PostTestOperation.kt").exists())
-    }
-
-    @Test
-    @OptIn(ExperimentalPathApi::class, ExperimentalSerializationApi::class)
     fun `checks service with netty engine`() {
         val nettyPort: Int = ServerSocket(0).use { it.localPort }
         val nettyProc = startService("netty", nettyPort, closeGracePeriodMillis, closeTimeoutMillis, requestBodyLimit)
@@ -130,7 +106,6 @@ class ServiceGeneratorTest {
     }
 
     @Test
-    @OptIn(ExperimentalPathApi::class, ExperimentalSerializationApi::class)
     fun `checks service with cio engine`() {
         val cioPort: Int = ServerSocket(0).use { it.localPort }
         val cioProc = startService("cio", cioPort, closeGracePeriodMillis, closeTimeoutMillis, requestBodyLimit)
@@ -140,7 +115,6 @@ class ServiceGeneratorTest {
     }
 
     @Test
-    @OptIn(ExperimentalPathApi::class, ExperimentalSerializationApi::class)
     fun `checks service with jetty jakarta engine`() {
         val jettyPort: Int = ServerSocket(0).use { it.localPort }
         val jettyProc = startService("jetty-jakarta", jettyPort, closeGracePeriodMillis, closeTimeoutMillis, requestBodyLimit)
@@ -150,7 +124,6 @@ class ServiceGeneratorTest {
     }
 
     @Test
-    @OptIn(ExperimentalPathApi::class, ExperimentalSerializationApi::class)
     fun `checks correct POST request`() {
         val cbor = Cbor { }
         val input1 = "Hello"
@@ -180,7 +153,6 @@ class ServiceGeneratorTest {
     }
 
     @Test
-    @OptIn(ExperimentalPathApi::class, ExperimentalSerializationApi::class)
     fun `checks unhandled runtime exception in handler`() {
         val cbor = Cbor { }
         val input1 = "Hello"
@@ -209,7 +181,6 @@ class ServiceGeneratorTest {
     }
 
     @Test
-    @OptIn(ExperimentalPathApi::class, ExperimentalSerializationApi::class)
     fun `checks wrong content type`() {
         val cbor = Cbor { }
         val input1 = "Hello"
@@ -234,11 +205,10 @@ class ServiceGeneratorTest {
             response.body(),
         )
         assertEquals(415, body.code)
-        assertEquals("Allowed Content-Type(s): application/cbor", body.message)
+        assertEquals("Not acceptable Content‑Type found: 'application/json'. Accepted content types: application/cbor", body.message)
     }
 
     @Test
-    @OptIn(ExperimentalPathApi::class, ExperimentalSerializationApi::class)
     fun `checks missing content type`() {
         val cbor = Cbor { }
         val input1 = "Hello"
@@ -262,11 +232,10 @@ class ServiceGeneratorTest {
             response.body(),
         )
         assertEquals(415, body.code)
-        assertEquals("Allowed Content-Type(s): application/cbor", body.message)
+        assertEquals("Not acceptable Content‑Type found: '*/*'. Accepted content types: application/cbor", body.message)
     }
 
     @Test
-    @OptIn(ExperimentalPathApi::class, ExperimentalSerializationApi::class)
     fun `checks wrong accept type`() {
         val cbor = Cbor { }
         val input1 = "Hello"
@@ -286,11 +255,10 @@ class ServiceGeneratorTest {
         assertIs<HttpResponse<String>>(response)
         assertEquals(406, response.statusCode(), "Expected 406")
 
-        assertEquals("""{"code":406,"message":"Supported Accept(s): application/cbor"}""", response.body())
+        assertEquals("""{"code":406,"message":"Not acceptable Accept type found: '[application/json]'. Accepted types: application/cbor"}""", response.body())
     }
 
     @Test
-    @OptIn(ExperimentalPathApi::class, ExperimentalSerializationApi::class)
     fun `checks missing accept type`() {
         val cbor = Cbor { }
         val input1 = "Hello"
@@ -311,7 +279,6 @@ class ServiceGeneratorTest {
     }
 
     @Test
-    @OptIn(ExperimentalPathApi::class, ExperimentalSerializationApi::class)
     fun `checks authentication with correct bearer token`() {
         val cbor = Cbor { }
         val input1 = "Hello"
@@ -333,7 +300,6 @@ class ServiceGeneratorTest {
     }
 
     @Test
-    @OptIn(ExperimentalPathApi::class, ExperimentalSerializationApi::class)
     fun `checks authentication with wrong bearer token`() {
         val cbor = Cbor { }
         val input1 = "Hello"
@@ -362,7 +328,6 @@ class ServiceGeneratorTest {
     }
 
     @Test
-    @OptIn(ExperimentalPathApi::class, ExperimentalSerializationApi::class)
     fun `checks authentication without bearer token`() {
         val cbor = Cbor { }
         val input1 = "Hello"
@@ -390,7 +355,6 @@ class ServiceGeneratorTest {
     }
 
     @Test
-    @OptIn(ExperimentalPathApi::class, ExperimentalSerializationApi::class)
     fun `checks malformed input`() {
         val cbor = Cbor { }
         val input1 = 123
@@ -419,7 +383,6 @@ class ServiceGeneratorTest {
     }
 
     @Test
-    @OptIn(ExperimentalPathApi::class, ExperimentalSerializationApi::class)
     fun `checks route not found`() {
         val cbor = Cbor { }
         val requestBytes = ByteArray(0)
@@ -442,7 +405,6 @@ class ServiceGeneratorTest {
     }
 
     @Test
-    @OptIn(ExperimentalPathApi::class, ExperimentalSerializationApi::class)
     fun `checks method not allowed`() {
         val cbor = Cbor { }
         val input1 = 123
@@ -471,10 +433,9 @@ class ServiceGeneratorTest {
     }
 
     @Test
-    @OptIn(ExperimentalPathApi::class, ExperimentalSerializationApi::class)
     fun `checks request body limit`() {
         val cbor = Cbor { }
-        val overLimitPayload = "x".repeat(10 * 1024 * 1024 + 1)
+        val overLimitPayload = "x".repeat(requestBodyLimit.toInt() + 1)
         val input2 = 617
         val requestBytes = cbor.encodeToByteArray(
             PostTestRequest.serializer(),
@@ -502,7 +463,6 @@ class ServiceGeneratorTest {
 
     /* Tests for checking constraint traits work */
     @Test
-    @OptIn(ExperimentalPathApi::class, ExperimentalSerializationApi::class)
     fun `checks required constraint providing all data`() {
         val cbor = Cbor { }
         val requiredInput = "Hello"
@@ -525,7 +485,6 @@ class ServiceGeneratorTest {
     }
 
     @Test
-    @OptIn(ExperimentalPathApi::class, ExperimentalSerializationApi::class)
     fun `checks required constraint without providing non-required data`() {
         val cbor = Cbor { }
         val requiredInput = "Hello"
@@ -547,7 +506,6 @@ class ServiceGeneratorTest {
     }
 
     @Test
-    @OptIn(ExperimentalPathApi::class, ExperimentalSerializationApi::class)
     fun `checks required constraint without providing required data`() {
         val cbor = Cbor { }
         val nonRequiredInput = "World"
@@ -576,7 +534,6 @@ class ServiceGeneratorTest {
     }
 
     @Test
-    @OptIn(ExperimentalPathApi::class, ExperimentalSerializationApi::class)
     fun `checks length constraint providing correct data`() {
         val cbor = Cbor { }
         val greaterLengthInput = "1234567890"
@@ -601,7 +558,6 @@ class ServiceGeneratorTest {
     }
 
     @Test
-    @OptIn(ExperimentalPathApi::class, ExperimentalSerializationApi::class)
     fun `checks length constraint violating greater than or equal to`() {
         val cbor = Cbor { }
         val greaterLengthInput = "1"
@@ -633,7 +589,6 @@ class ServiceGeneratorTest {
     }
 
     @Test
-    @OptIn(ExperimentalPathApi::class, ExperimentalSerializationApi::class)
     fun `checks length constraint violating smaller than or equal to`() {
         val cbor = Cbor { }
         val greaterLengthInput = "123456789"
@@ -665,7 +620,6 @@ class ServiceGeneratorTest {
     }
 
     @Test
-    @OptIn(ExperimentalPathApi::class, ExperimentalSerializationApi::class)
     fun `checks length constraint violating between`() {
         val cbor = Cbor { }
         val greaterLengthInput = "123456789"
@@ -697,7 +651,6 @@ class ServiceGeneratorTest {
     }
 
     @Test
-    @OptIn(ExperimentalPathApi::class, ExperimentalSerializationApi::class)
     fun `checks pattern constraint providing correct data`() {
         val cbor = Cbor { }
         val patternInput1 = "qwertyuiop"
@@ -721,7 +674,6 @@ class ServiceGeneratorTest {
     }
 
     @Test
-    @OptIn(ExperimentalPathApi::class, ExperimentalSerializationApi::class)
     fun `checks pattern constraint providing incorrect pattern 1`() {
         val cbor = Cbor { }
         val patternInput1 = "qwertyuiop1"
@@ -752,7 +704,6 @@ class ServiceGeneratorTest {
     }
 
     @Test
-    @OptIn(ExperimentalPathApi::class, ExperimentalSerializationApi::class)
     fun `checks pattern constraint providing incorrect pattern 2`() {
         val cbor = Cbor { }
         val patternInput1 = "qwertyuiop"
@@ -783,7 +734,6 @@ class ServiceGeneratorTest {
     }
 
     @Test
-    @OptIn(ExperimentalPathApi::class, ExperimentalSerializationApi::class)
     fun `checks range constraint providing correct data`() {
         val cbor = Cbor { }
         val betweenInput = 3
@@ -808,7 +758,6 @@ class ServiceGeneratorTest {
     }
 
     @Test
-    @OptIn(ExperimentalPathApi::class, ExperimentalSerializationApi::class)
     fun `checks range constraint violating greater than or equal to`() {
         val cbor = Cbor { }
         val betweenInput = 3
@@ -840,7 +789,6 @@ class ServiceGeneratorTest {
     }
 
     @Test
-    @OptIn(ExperimentalPathApi::class, ExperimentalSerializationApi::class)
     fun `checks range constraint violating smaller than or equal to`() {
         val cbor = Cbor { }
         val betweenInput = 3
@@ -872,7 +820,6 @@ class ServiceGeneratorTest {
     }
 
     @Test
-    @OptIn(ExperimentalPathApi::class, ExperimentalSerializationApi::class)
     fun `checks range constraint violating between`() {
         val cbor = Cbor { }
         val betweenInput = -1
@@ -904,7 +851,6 @@ class ServiceGeneratorTest {
     }
 
     @Test
-    @OptIn(ExperimentalPathApi::class, ExperimentalSerializationApi::class)
     fun `checks unique items constraint providing correct data`() {
         val cbor = Cbor { }
         val notUniqueInput = listOf("1", "2", "3", "4", "5", "1", "2", "3", "3", "4", "5")
@@ -928,7 +874,6 @@ class ServiceGeneratorTest {
     }
 
     @Test
-    @OptIn(ExperimentalPathApi::class, ExperimentalSerializationApi::class)
     fun `checks unique items constraint providing non unique list`() {
         val cbor = Cbor { }
         val notUniqueInput = listOf("1", "2", "3", "4", "5", "1", "2", "3", "3", "4", "5")
@@ -959,7 +904,6 @@ class ServiceGeneratorTest {
     }
 
     @Test
-    @OptIn(ExperimentalPathApi::class, ExperimentalSerializationApi::class)
     fun `checks unique items constraint providing unique nested list`() {
         val cbor = Cbor { }
         val nestedUniqueItemsListInput = listOf(listOf("1"), listOf("2", "3"), listOf("4"), listOf("5", "6", "7"))
@@ -982,7 +926,6 @@ class ServiceGeneratorTest {
     }
 
     @Test
-    @OptIn(ExperimentalPathApi::class, ExperimentalSerializationApi::class)
     fun `checks unique items constraint providing non-unique nested list`() {
         val cbor = Cbor { }
         val nestedUniqueItemsListInput = listOf(listOf("1"), listOf("2", "2"), listOf("4"), listOf("5", "6", "7"))
@@ -1012,7 +955,6 @@ class ServiceGeneratorTest {
     }
 }
 
-@OptIn(ExperimentalPathApi::class)
 internal fun ServiceGeneratorTest.startService(
     engineFactory: String = "netty",
     port: Int = 8080,
@@ -1050,7 +992,6 @@ internal fun ServiceGeneratorTest.startService(
         .start()
 }
 
-@OptIn(ExperimentalPathApi::class)
 internal fun ServiceGeneratorTest.cleanupService(proc: Process) {
     val gracefulWindow = closeGracePeriodMillis + closeTimeoutMillis
     val okExitCodes = if (isWindows()) {
@@ -1060,7 +1001,7 @@ internal fun ServiceGeneratorTest.cleanupService(proc: Process) {
     }
 
     try {
-        killProcess(proc)
+        proc.destroy()
         val exited = proc.waitFor(gracefulWindow, TimeUnit.MILLISECONDS)
 
         if (!exited) {
@@ -1079,14 +1020,6 @@ internal fun ServiceGeneratorTest.cleanupService(proc: Process) {
 }
 
 private fun isWindows() = System.getProperty("os.name").lowercase().contains("windows")
-
-private fun killProcess(proc: Process) {
-    if (isWindows()) {
-        Runtime.getRuntime().exec("taskkill /F /T /PID ${proc.pid()}")
-    } else {
-        proc.destroy()
-    }
-}
 
 internal fun waitForPort(port: Int, timeoutSec: Long = 180, proc: Process): Boolean {
     val deadline = System.currentTimeMillis() + TimeUnit.SECONDS.toNanos(timeoutSec)

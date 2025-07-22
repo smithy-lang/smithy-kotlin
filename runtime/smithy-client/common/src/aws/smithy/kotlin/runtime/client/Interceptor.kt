@@ -5,6 +5,7 @@
 
 package aws.smithy.kotlin.runtime.client
 
+import aws.smithy.kotlin.runtime.client.util.MpJvmDefaultWithoutCompatibility
 import aws.smithy.kotlin.runtime.operation.ExecutionContext
 
 /**
@@ -20,6 +21,7 @@ import aws.smithy.kotlin.runtime.operation.ExecutionContext
  * **MUST** not modify state even if it is possible to do so (it is not always possible or performant to provide an
  * immutable view of every type).
  */
+@MpJvmDefaultWithoutCompatibility
 public interface Interceptor<
     Input,
     Output,

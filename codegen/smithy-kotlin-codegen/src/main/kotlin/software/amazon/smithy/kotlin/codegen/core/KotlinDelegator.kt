@@ -6,11 +6,9 @@ package software.amazon.smithy.kotlin.codegen.core
 
 import software.amazon.smithy.build.FileManifest
 import software.amazon.smithy.codegen.core.*
-import software.amazon.smithy.kotlin.codegen.KotlinSettings
 import software.amazon.smithy.kotlin.codegen.integration.KotlinIntegration
 import software.amazon.smithy.kotlin.codegen.model.SymbolProperty
 import software.amazon.smithy.kotlin.codegen.utils.namespaceToPath
-import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.Shape
 import java.nio.file.Paths
 
@@ -21,13 +19,10 @@ const val DEFAULT_TEST_SOURCE_SET_ROOT = "./src/test/kotlin/"
  * Manages writers for Kotlin files.
  */
 class KotlinDelegator(
-    private val settings: KotlinSettings,
-    private val model: Model,
+    private val ctx: CodegenContext,
     val fileManifest: FileManifest,
-    private val symbolProvider: SymbolProvider,
     private val integrations: List<KotlinIntegration> = listOf(),
 ) {
-
     private val writers: MutableMap<String, KotlinWriter> = mutableMapOf()
 
     // Tracks dependencies for source not provided by codegen that may reside in the service source tree.
@@ -91,7 +86,7 @@ class KotlinDelegator(
         shape: Shape,
         block: (KotlinWriter) -> Unit,
     ) {
-        val symbol = symbolProvider.toSymbol(shape)
+        val symbol = ctx.symbolProvider.toSymbol(shape)
         useSymbolWriter(symbol, block)
     }
 
@@ -151,7 +146,9 @@ class KotlinDelegator(
         val needsNewline = writers.containsKey(formattedFilename)
         val writer = writers.getOrPut(formattedFilename) {
             val kotlinWriter = KotlinWriter(namespace)
-            if (settings.debug) kotlinWriter.enableStackTraceComments(true)
+            kotlinWriter.putContextValue(CodegenContext.Key, ctx)
+
+            if (ctx.settings.debug) kotlinWriter.enableStackTraceComments(true)
 
             // Register all integrations [SectionWriterBindings] on the writer.
             integrations.forEach { integration ->

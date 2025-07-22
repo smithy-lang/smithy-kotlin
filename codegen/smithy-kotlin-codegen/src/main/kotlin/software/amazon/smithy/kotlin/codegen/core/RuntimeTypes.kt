@@ -45,11 +45,11 @@ object RuntimeTypes {
     object HttpClient : RuntimeTypePackage(KotlinDependency.HTTP_CLIENT) {
         val SdkHttpClient = symbol("SdkHttpClient")
 
-        object Middleware : RuntimeTypePackage(KotlinDependency.HTTP, "middleware") {
+        object Middleware : RuntimeTypePackage(KotlinDependency.HTTP_CLIENT, "middleware") {
             val MutateHeadersMiddleware = symbol("MutateHeaders")
         }
 
-        object Operation : RuntimeTypePackage(KotlinDependency.HTTP, "operation") {
+        object Operation : RuntimeTypePackage(KotlinDependency.HTTP_CLIENT, "operation") {
             val AuthSchemeResolver = symbol("AuthSchemeResolver")
             val context = symbol("context")
             val EndpointResolver = symbol("EndpointResolver")
@@ -68,18 +68,19 @@ object RuntimeTypes {
             val setResolvedEndpoint = symbol("setResolvedEndpoint")
         }
 
-        object Config : RuntimeTypePackage(KotlinDependency.HTTP, "config") {
+        object Config : RuntimeTypePackage(KotlinDependency.HTTP_CLIENT, "config") {
             val HttpClientConfig = symbol("HttpClientConfig")
             val HttpEngineConfig = symbol("HttpEngineConfig")
         }
 
-        object Engine : RuntimeTypePackage(KotlinDependency.HTTP, "engine") {
+        object Engine : RuntimeTypePackage(KotlinDependency.HTTP_CLIENT, "engine") {
             val HttpClientEngine = symbol("HttpClientEngine")
             val manage = symbol("manage", "engine.internal", isExtension = true)
         }
 
-        object Interceptors : RuntimeTypePackage(KotlinDependency.HTTP, "interceptors") {
+        object Interceptors : RuntimeTypePackage(KotlinDependency.HTTP_CLIENT, "interceptors") {
             val ContinueInterceptor = symbol("ContinueInterceptor")
+            val DiscoveredEndpointErrorInterceptor = symbol("DiscoveredEndpointErrorInterceptor")
             val HttpInterceptor = symbol("HttpInterceptor")
             val HttpChecksumRequiredInterceptor = symbol("HttpChecksumRequiredInterceptor")
             val FlexibleChecksumsRequestInterceptor = symbol("FlexibleChecksumsRequestInterceptor")
@@ -97,7 +98,6 @@ object RuntimeTypes {
     }
 
     object Core : RuntimeTypePackage(KotlinDependency.CORE) {
-        val Clock = symbol("Clock", "time")
         val ExecutionContext = symbol("ExecutionContext", "operation")
         val ErrorMetadata = symbol("ErrorMetadata")
         val ServiceErrorMetadata = symbol("ServiceErrorMetadata")
@@ -126,11 +126,12 @@ object RuntimeTypes {
             val attributesOf = symbol("attributesOf")
             val AttributeKey = symbol("AttributeKey")
             val createOrAppend = symbol("createOrAppend")
+            val ExpiringKeyedCache = symbol("ExpiringKeyedCache")
             val get = symbol("get")
             val mutableMultiMapOf = symbol("mutableMultiMapOf")
+            val PeriodicSweepCache = symbol("PeriodicSweepCache")
             val putIfAbsent = symbol("putIfAbsent")
             val putIfAbsentNotNull = symbol("putIfAbsentNotNull")
-            val ReadThroughCache = symbol("ReadThroughCache")
             val toMutableAttributes = symbol("toMutableAttributes")
             val emptyAttributes = symbol("emptyAttributes")
         }
@@ -250,6 +251,10 @@ object RuntimeTypes {
                 val parseUrl = symbol("parseUrl")
                 val Url = symbol("Url")
             }
+        }
+
+        object Region : RuntimeTypePackage(KotlinDependency.SMITHY_CLIENT, "region") {
+            val RegionProvider = symbol("RegionProvider")
         }
     }
 
@@ -374,6 +379,7 @@ object RuntimeTypes {
             val BearerTokenAuthScheme = symbol("BearerTokenAuthScheme")
             val BearerTokenProviderConfig = symbol("BearerTokenProviderConfig")
             val BearerTokenProvider = symbol("BearerTokenProvider")
+
             val BearerToken = symbol("BearerToken")
             val EnvironmentBearerTokenProvider = symbol("EnvironmentBearerTokenProvider")
 
@@ -453,8 +459,8 @@ object RuntimeTypes {
         val RestJsonErrorDeserializer = symbol("RestJsonErrorDeserializer")
     }
     object AwsXmlProtocols : RuntimeTypePackage(KotlinDependency.AWS_XML_PROTOCOLS) {
-        val parseRestXmlErrorResponseNoSuspend = symbol("parseRestXmlErrorResponseNoSuspend")
-        val parseEc2QueryErrorResponseNoSuspend = symbol("parseEc2QueryErrorResponseNoSuspend")
+        val parseRestXmlErrorResponse = symbol("parseRestXmlErrorResponse")
+        val parseEc2QueryErrorResponse = symbol("parseEc2QueryErrorResponse")
     }
 
     object SmithyRpcV2Protocols : RuntimeTypePackage(KotlinDependency.SMITHY_RPCV2_PROTOCOLS) {
@@ -524,10 +530,9 @@ object RuntimeTypes {
         val requestApplicationRequest = symbol("ApplicationRequest", "request")
         val requestContentLength = symbol("contentLength", "request")
         val requestContentType = symbol("contentType", "request")
-        val requestacceptItems = symbol("acceptItems", "request")
+        val requestAcceptItems = symbol("acceptItems", "request")
 
-        val responseText = symbol("respondText", "response")
-        val responseRespond = symbol("respond", "response")
+        val responseResponseText = symbol("respondText", "response")
         val responseRespondBytes = symbol("respondBytes", "response")
     }
 

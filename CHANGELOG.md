@@ -1,5 +1,21 @@
 # Changelog
 
+## [1.5.1] - 07/17/2025
+
+## [1.5.0] - 07/17/2025
+
+### Features
+* Upgrade to Kotlin 2.2.0
+* [#1413](https://github.com/awslabs/aws-sdk-kotlin/issues/1413) ⚠️ **IMPORTANT**: Refactor endpoint discoverer classes into interfaces so custom implementations may be provided
+
+### Fixes
+* [#1311](https://github.com/smithy-lang/smithy-kotlin/issues/1311) Reimplement idle connection monitoring using `okhttp3.EventListener` instead of now-internal `okhttp3.ConnectionListener`
+* [#1608](https://github.com/awslabs/aws-sdk-kotlin/issues/1608) Switch to always serialize defaults in requests. Previously fields were not serialized in requests if they weren't `@required` and hadn't been changed from the default value.
+* [#1413](https://github.com/awslabs/aws-sdk-kotlin/issues/1413) Favor `endpointUrl` instead of endpoint discovery if both are provided
+
+### Miscellaneous
+* Add telemetry provider configuration to `DefaultAwsSigner`
+
 ## [1.4.23] - 07/15/2025
 
 ## [1.4.22] - 07/02/2025
