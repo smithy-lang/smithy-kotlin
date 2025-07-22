@@ -51,6 +51,9 @@ dependencies {
     implementation(project(":codegen:smithy-aws-kotlin-codegen"))
     implementation(project(":codegen:smithy-kotlin-codegen-testutils"))
 
+    implementation(libs.kotlinx.serialization.json)
+    implementation(libs.kotlinx.serialization.cbor)
+
     testImplementation(libs.junit.jupiter)
     testImplementation(libs.kotest.assertions.core.jvm)
     testImplementation(libs.kotlin.test)
