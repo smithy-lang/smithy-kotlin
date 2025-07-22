@@ -27,7 +27,7 @@ kotlin-compile-testing-version = "0.7.0"
 kotlinx-benchmark-version = "0.4.12"
 kotlinx-serialization-version = "1.7.3"
 docker-java-version = "3.4.0"
-ktor-version = "3.1.1"
+ktor-version = "3.2.2"
 kaml-version = "0.55.0"
 jsoup-version = "1.19.1"
 
@@ -88,6 +88,7 @@ kotest-assertions-core = { module = "io.kotest:kotest-assertions-core", version.
 kotest-assertions-core-jvm = { module = "io.kotest:kotest-assertions-core-jvm", version.ref = "kotest-version" }
 kotlinx-benchmark-runtime = { module = "org.jetbrains.kotlinx:kotlinx-benchmark-runtime", version.ref = "kotlinx-benchmark-version" }
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinx-serialization-version" }
+kotlinx-serialization-cbor = { module = "org.jetbrains.kotlinx:kotlinx-serialization-cbor", version.ref = "kotlinx-serialization-version" }
 docker-core = { module = "com.github.docker-java:docker-java-core", version.ref = "docker-java-version" }
 docker-transport-zerodep = { module = "com.github.docker-java:docker-java-transport-zerodep", version.ref = "docker-java-version" }
 

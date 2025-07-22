@@ -497,9 +497,12 @@ object RuntimeTypes {
         val embeddedServer = symbol("embeddedServer", "engine")
         val EmbeddedServerType = symbol("EmbeddedServer", "engine")
         val ApplicationEngineFactory = symbol("ApplicationEngineFactory", "engine")
+        val connector = symbol("connector", "engine")
 
         val Application = symbol("Application", "application")
         val ApplicationCallClass = symbol("ApplicationCall", "application")
+        val ApplicationStarting = symbol("ApplicationStarting", "application")
+        val ApplicationStarted = symbol("ApplicationStarted", "application")
         val ApplicationStopping = symbol("ApplicationStopping", "application")
         val ApplicationStopped = symbol("ApplicationStopped", "application")
         val ApplicationCreateRouteScopedPlugin = symbol("createRouteScopedPlugin", "application")
@@ -527,20 +530,31 @@ object RuntimeTypes {
         val requestApplicationRequest = symbol("ApplicationRequest", "request")
         val requestContentLength = symbol("contentLength", "request")
         val requestContentType = symbol("contentType", "request")
-        val requestacceptItems = symbol("acceptItems", "request")
+        val requestAcceptItems = symbol("acceptItems", "request")
 
-        val responseText = symbol("respondText", "response")
-        val responseRespond = symbol("respond", "response")
+        val responseResponseText = symbol("respondText", "response")
         val responseRespondBytes = symbol("respondBytes", "response")
     }
 
     object KtorServerNetty : RuntimeTypePackage(KotlinDependency.KTOR_SERVER_NETTY) {
         val Netty = symbol("Netty")
+        val Configuration = symbol("Configuration", "NettyApplicationEngine")
+    }
+
+    object KtorServerCio : RuntimeTypePackage(KotlinDependency.KTOR_SERVER_CIO) {
+        val CIO = symbol("CIO")
+        val Configuration = symbol("Configuration", "CIOApplicationEngine")
+    }
+
+    object KtorServerJettyJakarta : RuntimeTypePackage(KotlinDependency.KTOR_SERVER_JETTY_JAKARTA) {
+        val Jetty = symbol("Jetty")
+        val Configuration = symbol("Configuration", "JettyApplicationEngineBase")
     }
 
     object KtorServerHttp : RuntimeTypePackage(KotlinDependency.KTOR_SERVER_HTTP) {
         val ContentType = symbol("ContentType")
         val HttpStatusCode = symbol("HttpStatusCode")
+        val parseAndSortHeader = symbol("parseAndSortHeader")
         val HttpHeaders = symbol("HttpHeaders")
         val Cbor = symbol("Cbor", "ContentType.Application")
         val Json = symbol("Json", "ContentType.Application")
@@ -548,6 +562,11 @@ object RuntimeTypes {
 
     object KtorServerLogging : RuntimeTypePackage(KotlinDependency.KTOR_SERVER_LOGGING) {
         val CallLogging = symbol("CallLogging")
+    }
+
+    object KtorServerBodyLimit : RuntimeTypePackage(KotlinDependency.KTOR_SERVER_BODY_LIMIT) {
+        val RequestBodyLimit = symbol("RequestBodyLimit", "bodylimit")
+        val PayloadTooLargeException = symbol("PayloadTooLargeException")
     }
 
     object KtorLoggingSlf4j : RuntimeTypePackage(KotlinDependency.KTOR_LOGGING_SLF4J) {

@@ -136,6 +136,9 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
     }
 
     override fun generateProtocolClient(ctx: ProtocolGenerator.GenerationContext) {
+        if (ctx.settings.build.generateServiceProject) {
+            require(protocolName == "smithyRpcv2cbor") { "service project accepts only Cbor protocol" }
+        }
         if (!ctx.settings.build.generateServiceProject) {
             val symbol = ctx.symbolProvider.toSymbol(ctx.service)
             ctx.delegator.useFileWriter("Default${symbol.name}.kt", ctx.settings.pkg.name) { writer ->
@@ -182,27 +185,47 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         val serdeMeta = HttpSerdeMeta(op.isInputEventStream(ctx.model))
 
         ctx.delegator.useSymbolWriter(serializerSymbol) { writer ->
-            writer
-                .addImport(operationSerializerSymbols)
-                .write("")
-                .openBlock("internal class #T: #T.#L<#T> {", serializerSymbol, RuntimeTypes.HttpClient.Operation.HttpSerializer, serdeMeta.variantName, serializationSymbol)
-                .call {
-                    val modifier = if (serdeMeta.isStreaming) "suspend " else ""
-                    writer.openBlock(
-                        "override #Lfun serialize(context: #T, input: #T): #T {",
-                        modifier,
-                        RuntimeTypes.Core.ExecutionContext,
-                        serializationSymbol,
-                        RuntimeTypes.Http.Request.HttpRequestBuilder,
-                    )
-                        .write("val builder = #T()", RuntimeTypes.Http.Request.HttpRequestBuilder)
-                        .call {
-                            renderHttpSerialize(ctx, op, writer)
-                        }
-                        .write("return builder")
-                        .closeBlock("}")
-                }
-                .closeBlock("}")
+            // FIXME: this works only for Cbor protocol now
+            if (ctx.settings.build.generateServiceProject) {
+                writer
+                    .openBlock("internal class #T {", serializerSymbol)
+                    .call {
+                        writer.openBlock(
+                            "public fun serialize(context: #T, input: #T): ByteArray {",
+                            RuntimeTypes.Core.ExecutionContext,
+                            serializationSymbol,
+                        )
+                            .write("var response: Any")
+                            .call {
+                                renderSerializeHttpBody(ctx, op, writer)
+                            }
+                            .write("return response")
+                            .closeBlock("}")
+                    }
+                    .closeBlock("}")
+            } else {
+                writer
+                    .addImport(operationSerializerSymbols)
+                    .write("")
+                    .openBlock("internal class #T: #T.#L<#T> {", serializerSymbol, RuntimeTypes.HttpClient.Operation.HttpSerializer, serdeMeta.variantName, serializationSymbol)
+                    .call {
+                        val modifier = if (serdeMeta.isStreaming) "suspend " else ""
+                        writer.openBlock(
+                            "override #Lfun serialize(context: #T, input: #T): #T {",
+                            modifier,
+                            RuntimeTypes.Core.ExecutionContext,
+                            serializationSymbol,
+                            RuntimeTypes.Http.Request.HttpRequestBuilder,
+                        )
+                            .write("val builder = #T()", RuntimeTypes.Http.Request.HttpRequestBuilder)
+                            .call {
+                                renderHttpSerialize(ctx, op, writer)
+                            }
+                            .write("return builder")
+                            .closeBlock("}")
+                    }
+                    .closeBlock("}")
+            }
         }
     }
 

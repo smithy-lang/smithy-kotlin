@@ -9,6 +9,7 @@ import software.amazon.smithy.codegen.core.SymbolReference
 import software.amazon.smithy.kotlin.codegen.core.KotlinWriter
 import software.amazon.smithy.kotlin.codegen.core.RuntimeTypes
 import software.amazon.smithy.kotlin.codegen.core.withBlock
+import software.amazon.smithy.kotlin.codegen.lang.KotlinTypes
 import software.amazon.smithy.kotlin.codegen.model.knowledge.SerdeIndex
 import software.amazon.smithy.kotlin.codegen.model.targetOrSelf
 import software.amazon.smithy.kotlin.codegen.rendering.protocol.ProtocolGenerator
@@ -28,9 +29,20 @@ class CborSerializerGenerator(
         val serializationShape = serializationTarget.get().let { ctx.model.expectShape(it) }
         val serializationSymbol = ctx.symbolProvider.toSymbol(serializationShape)
 
+        val serializerResultSymbol = when {
+            ctx.settings.build.generateServiceProject -> KotlinTypes.ByteArray
+            else -> RuntimeTypes.Http.HttpBody
+        }
         return op.bodySerializer(ctx.settings) { writer ->
             addNestedDocumentSerializers(ctx, op, writer)
-            writer.withBlock("private fun #L(context: #T, input: #T): #T {", "}", op.bodySerializerName(), RuntimeTypes.Core.ExecutionContext, serializationSymbol, RuntimeTypes.Http.HttpBody) {
+            writer.withBlock(
+                "private fun #L(context: #T, input: #T): #T {",
+                "}",
+                op.bodySerializerName(),
+                RuntimeTypes.Core.ExecutionContext,
+                serializationSymbol,
+                serializerResultSymbol,
+            ) {
                 call {
                     renderSerializeOperationBody(ctx, op, members, writer)
                 }
@@ -52,7 +64,11 @@ class CborSerializerGenerator(
         val serializationshape = ctx.model.expectShape(serializationTarget.get())
         writer.write("val serializer = #T()", RuntimeTypes.Serde.SerdeCbor.CborSerializer)
         renderSerializerBody(ctx, serializationshape, documentMembers, writer)
-        writer.write("return serializer.toHttpBody()")
+        if (ctx.settings.build.generateServiceProject) {
+            writer.write("return serializer.toByteArray()")
+        } else {
+            writer.write("return serializer.toHttpBody()")
+        }
     }
 
     private fun renderSerializerBody(

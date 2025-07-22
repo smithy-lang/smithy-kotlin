@@ -28,9 +28,9 @@ class ServiceTypes(val pkgName: String) {
         namespace = "$pkgName.framework"
     }
 
-    val errorEnvelope = buildSymbol {
-        name = "ErrorEnvelope"
-        namespace = "$pkgName.plugins"
+    val module = buildSymbol {
+        name = "module"
+        namespace = "$pkgName.framework"
     }
 
     val configureErrorHandling = buildSymbol {
@@ -48,13 +48,23 @@ class ServiceTypes(val pkgName: String) {
         namespace = "$pkgName.utils"
     }
 
+    val configureAuthentication = buildSymbol {
+        name = "configureAuthentication"
+        namespace = "$pkgName.auth"
+    }
+
+    val errorEnvelope = buildSymbol {
+        name = "ErrorEnvelope"
+        namespace = "$pkgName.plugins"
+    }
+
     val contentTypeGuard = buildSymbol {
         name = "ContentTypeGuard"
         namespace = "$pkgName.plugins"
     }
 
-    val configureAuthentication = buildSymbol {
-        name = "configureAuthentication"
-        namespace = "$pkgName.auth"
+    val acceptTypeGuard = buildSymbol {
+        name = "AcceptTypeGuard"
+        namespace = "$pkgName.plugins"
     }
 }
