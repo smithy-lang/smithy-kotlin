@@ -35,7 +35,6 @@ tasks.test {
 }
 
 val optInAnnotations = listOf(
-    "aws.smithy.kotlin.runtime.InternalApi",
     "kotlinx.serialization.ExperimentalSerializationApi",
     "kotlin.io.path.ExperimentalPathApi",
 )
