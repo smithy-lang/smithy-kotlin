@@ -95,7 +95,7 @@ internal class KtorStubGenerator(
     }
 
     private fun renderLogging() {
-        delegator.useFileWriter("Logging.kt", "${pkgName}.utils") { writer ->
+        delegator.useFileWriter("Logging.kt", "$pkgName.utils") { writer ->
 
             writer.withBlock("internal fun #T.configureLogging() {", "}", RuntimeTypes.KtorServerCore.Application) {
                 withBlock(

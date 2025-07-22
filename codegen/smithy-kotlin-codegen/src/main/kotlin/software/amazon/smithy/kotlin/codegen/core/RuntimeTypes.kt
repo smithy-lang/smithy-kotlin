@@ -601,8 +601,4 @@ object RuntimeTypes {
     object KotlinxJsonSerde : RuntimeTypePackage(KotlinDependency.KOTLINX_JSON_SERDE) {
         val Json = symbol("Json")
     }
-
-    object Duration {
-        val seconds = "kotlin.time.Duration.Companion.seconds".toSymbol()
-    }
 }
