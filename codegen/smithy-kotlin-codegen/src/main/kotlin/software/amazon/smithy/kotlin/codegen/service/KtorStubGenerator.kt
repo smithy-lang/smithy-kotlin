@@ -497,7 +497,7 @@ internal class KtorStubGenerator(
                         withBlock("if (incoming == #T.Any || allowed.none { incoming.match(it) }) {", "}", RuntimeTypes.KtorServerHttp.ContentType) {
                             withBlock("throw #T(", ")", ServiceTypes(pkgName).errorEnvelope) {
                                 write("#T.UnsupportedMediaType.value, ", RuntimeTypes.KtorServerHttp.HttpStatusCode)
-                                write("#S", "Allowed Content-Type(s): \${allowed.joinToString()}")
+                                write("#S", "Not acceptable Content‑Type found: '\${incoming}'. Accepted content types: \${allowed.joinToString()}")
                             }
                         }
                     }
@@ -557,7 +557,7 @@ internal class KtorStubGenerator(
                         withBlock("if (!isOk) {", "}") {
                             withBlock("throw #T(", ")", ServiceTypes(pkgName).errorEnvelope) {
                                 write("#T.NotAcceptable.value, ", RuntimeTypes.KtorServerHttp.HttpStatusCode)
-                                write("#S", "Supported Accept(s): \${allowed.joinToString()}")
+                                write("#S", "Not acceptable Accept type found: '\${accepted}'. Accepted types: \${allowed.joinToString()}")
                             }
                         }
                     }

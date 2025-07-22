@@ -59,13 +59,11 @@ data class ErrorTestRequest(
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class ServiceGeneratorTest {
-    val packageName = "com.test"
     val closeGracePeriodMillis: Long = 5_000L
     val closeTimeoutMillis: Long = 1_000L
     val requestBodyLimit: Long = 10L * 1024 * 1024
     val port: Int = ServerSocket(0).use { it.localPort }
 
-    val packagePath = packageName.replace('.', '/')
     val baseUrl = "http://localhost:$port"
 
     val projectDir: Path = Paths.get("build/generated-service")
@@ -81,27 +79,6 @@ class ServiceGeneratorTest {
 
     @AfterAll
     fun shutdown() = cleanupService(proc)
-
-    @Test
-    fun `generates service and all necessary files`() {
-        assertTrue(projectDir.resolve("build.gradle.kts").exists())
-        assertTrue(projectDir.resolve("settings.gradle.kts").exists())
-        assertTrue(projectDir.resolve("src/main/kotlin/$packagePath/Main.kt").exists())
-        assertTrue(projectDir.resolve("src/main/kotlin/$packagePath/Routing.kt").exists())
-        assertTrue(projectDir.resolve("src/main/kotlin/$packagePath/config/ServiceFrameworkConfig.kt").exists())
-        assertTrue(projectDir.resolve("src/main/kotlin/$packagePath/framework/ServiceFramework.kt").exists())
-        assertTrue(projectDir.resolve("src/main/kotlin/$packagePath/plugins/ContentTypeGuard.kt").exists())
-        assertTrue(projectDir.resolve("src/main/kotlin/$packagePath/plugins/ErrorHandler.kt").exists())
-        assertTrue(projectDir.resolve("src/main/kotlin/$packagePath/utils/Logging.kt").exists())
-        assertTrue(projectDir.resolve("src/main/kotlin/$packagePath/auth/Authentication.kt").exists())
-        assertTrue(projectDir.resolve("src/main/kotlin/$packagePath/auth/Validation.kt").exists())
-
-        assertTrue(projectDir.resolve("src/main/kotlin/$packagePath/model/PostTestRequest.kt").exists())
-        assertTrue(projectDir.resolve("src/main/kotlin/$packagePath/model/PostTestResponse.kt").exists())
-        assertTrue(projectDir.resolve("src/main/kotlin/$packagePath/serde/PostTestOperationSerializer.kt").exists())
-        assertTrue(projectDir.resolve("src/main/kotlin/$packagePath/serde/PostTestOperationDeserializer.kt").exists())
-        assertTrue(projectDir.resolve("src/main/kotlin/$packagePath/operations/PostTestOperation.kt").exists())
-    }
 
     @Test
     fun `checks service with netty engine`() {

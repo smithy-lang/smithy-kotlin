@@ -184,6 +184,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         ctx.delegator.useSymbolWriter(serializerSymbol) { writer ->
             // FIXME: this works only for Cbor protocol now
             if (ctx.settings.build.generateServiceProject) {
+                require(protocolName == "smithyRpcv2cbor") { "service project accepts only Cbor protocol" }
                 writer
                     .openBlock("internal class #T {", serializerSymbol)
                     .call {
