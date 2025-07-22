@@ -117,6 +117,7 @@ object KotlinTypes {
         val Duration = stdlibSymbol("Duration")
         val milliseconds = stdlibSymbol("milliseconds", "time.Duration.Companion")
         val minutes = stdlibSymbol("minutes", "time.Duration.Companion")
+        val seconds = stdlibSymbol("seconds", "time.Duration.Companion")
     }
 
     object Coroutines {

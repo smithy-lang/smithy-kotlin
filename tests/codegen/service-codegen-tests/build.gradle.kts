@@ -34,6 +34,19 @@ tasks.test {
     }
 }
 
+val optInAnnotations = listOf(
+    "aws.smithy.kotlin.runtime.InternalApi",
+    "kotlinx.serialization.ExperimentalSerializationApi",
+    "kotlin.io.path.ExperimentalPathApi",
+)
+
+kotlin {
+    explicitApi()
+    sourceSets.all {
+        optInAnnotations.forEach { languageSettings.optIn(it) }
+    }
+}
+
 dependencies {
 
     compileOnly(project(":codegen:smithy-kotlin-codegen"))

@@ -530,10 +530,9 @@ object RuntimeTypes {
         val requestApplicationRequest = symbol("ApplicationRequest", "request")
         val requestContentLength = symbol("contentLength", "request")
         val requestContentType = symbol("contentType", "request")
-        val requestacceptItems = symbol("acceptItems", "request")
+        val requestAcceptItems = symbol("acceptItems", "request")
 
-        val responseText = symbol("respondText", "response")
-        val responseRespond = symbol("respond", "response")
+        val responseResponseText = symbol("respondText", "response")
         val responseRespondBytes = symbol("respondBytes", "response")
     }
 
@@ -601,9 +600,5 @@ object RuntimeTypes {
 
     object KotlinxJsonSerde : RuntimeTypePackage(KotlinDependency.KOTLINX_JSON_SERDE) {
         val Json = symbol("Json")
-    }
-
-    object Duration {
-        val seconds = "kotlin.time.Duration.Companion.seconds".toSymbol()
     }
 }

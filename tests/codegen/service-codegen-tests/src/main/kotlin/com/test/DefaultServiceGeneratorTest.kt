@@ -10,7 +10,7 @@ import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
 
-fun main() {
+internal fun main() {
     val modelPath: Path = Paths.get("model", "service-generator-test.smithy")
     val defaultModel = ModelAssembler()
         .discoverModels()
