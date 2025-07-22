@@ -34,15 +34,12 @@ tasks.test {
     }
 }
 
-val optInAnnotations = listOf(
-    "kotlinx.serialization.ExperimentalSerializationApi",
-    "kotlin.io.path.ExperimentalPathApi",
-)
-
 kotlin {
-    explicitApi()
-    sourceSets.all {
-        optInAnnotations.forEach { languageSettings.optIn(it) }
+    compilerOptions {
+        freeCompilerArgs.addAll(
+            "-opt-in=kotlin.io.path.ExperimentalPathApi",
+            "-opt-in=kotlinx.serialization.ExperimentalSerializationApi"
+        )
     }
 }
 
