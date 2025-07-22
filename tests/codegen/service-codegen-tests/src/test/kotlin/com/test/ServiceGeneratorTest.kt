@@ -449,7 +449,7 @@ internal fun ServiceGeneratorTest.cleanupService(proc: Process) {
     }
 
     try {
-        killProcess(proc)
+        proc.destroy()
         val exited = proc.waitFor(gracefulWindow, TimeUnit.MILLISECONDS)
 
         if (!exited) {
@@ -468,14 +468,6 @@ internal fun ServiceGeneratorTest.cleanupService(proc: Process) {
 }
 
 private fun isWindows() = System.getProperty("os.name").lowercase().contains("windows")
-
-private fun killProcess(proc: Process) {
-    if (isWindows()) {
-        Runtime.getRuntime().exec("taskkill /F /T /PID ${proc.pid()}")
-    } else {
-        proc.destroy()
-    }
-}
 
 internal fun waitForPort(port: Int, timeoutSec: Long = 180): Boolean {
     val deadline = System.currentTimeMillis() + TimeUnit.SECONDS.toNanos(timeoutSec)

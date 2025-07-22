@@ -38,7 +38,7 @@ kotlin {
     compilerOptions {
         freeCompilerArgs.addAll(
             "-opt-in=kotlin.io.path.ExperimentalPathApi",
-            "-opt-in=kotlinx.serialization.ExperimentalSerializationApi"
+            "-opt-in=kotlinx.serialization.ExperimentalSerializationApi",
         )
     }
 }
