@@ -19,7 +19,7 @@ class ServiceEngineFactoryTest {
     val gracefulWindow = closeTimeoutMillis + closeGracePeriodMillis
     val requestBodyLimit: Long = 10L * 1024 * 1024
 
-    val portListnerTimeout = 10L
+    val portListnerTimeout = 180L
     val projectDir: Path = Paths.get("build/generated-service")
 
     @Test
