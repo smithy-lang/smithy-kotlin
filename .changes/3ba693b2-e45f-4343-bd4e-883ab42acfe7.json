@@ -1,0 +1,8 @@
+{
+    "id": "3ba693b2-e45f-4343-bd4e-883ab42acfe7",
+    "type": "misc",
+    "description": "Add documentation for OkHttp4Engine when using Android with R8 / ProGuard",
+    "issues": [
+        "https://github.com/smithy-lang/smithy-kotlin/issues/1339"
+    ]
+}
