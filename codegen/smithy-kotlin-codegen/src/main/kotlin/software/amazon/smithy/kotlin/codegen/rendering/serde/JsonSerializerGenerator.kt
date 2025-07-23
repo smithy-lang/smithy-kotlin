@@ -26,8 +26,13 @@ open class JsonSerializerGenerator(
     open val defaultTimestampFormat: TimestampFormatTrait.Format = TimestampFormatTrait.Format.EPOCH_SECONDS
 
     override fun operationSerializer(ctx: ProtocolGenerator.GenerationContext, op: OperationShape, members: List<MemberShape>): Symbol {
-        val input = ctx.model.expectShape(op.input.get())
-        val symbol = ctx.symbolProvider.toSymbol(input)
+        val serializationTarget = if (ctx.settings.build.generateServiceProject) {
+            op.output
+        } else {
+            op.input
+        }
+        val shape = ctx.model.expectShape(serializationTarget.get())
+        val symbol = ctx.symbolProvider.toSymbol(shape)
 
         return op.bodySerializer(ctx.settings) { writer ->
             addNestedDocumentSerializers(ctx, op, writer)
@@ -61,7 +66,12 @@ open class JsonSerializerGenerator(
         documentMembers: List<MemberShape>,
         writer: KotlinWriter,
     ) {
-        val shape = ctx.model.expectShape(op.input.get())
+        val serializationTarget = if (ctx.settings.build.generateServiceProject) {
+            op.output
+        } else {
+            op.input
+        }
+        val shape = ctx.model.expectShape(serializationTarget.get())
         writer.write("val serializer = #T()", RuntimeTypes.Serde.SerdeJson.JsonSerializer)
         renderSerializerBody(ctx, shape, documentMembers, writer)
         writer.write("return serializer.toByteArray()")

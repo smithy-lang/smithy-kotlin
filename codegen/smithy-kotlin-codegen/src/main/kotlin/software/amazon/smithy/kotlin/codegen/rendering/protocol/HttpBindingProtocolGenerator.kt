@@ -137,7 +137,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
 
     override fun generateProtocolClient(ctx: ProtocolGenerator.GenerationContext) {
         if (ctx.settings.build.generateServiceProject) {
-            require(protocolName == "smithyRpcv2cbor") { "service project accepts only Cbor protocol" }
+            require(protocolName in listOf("smithyRpcv2cbor", "awsRestjson1")) { "service project accepts only Cbor or JSON protocol" }
         }
         if (!ctx.settings.build.generateServiceProject) {
             val symbol = ctx.symbolProvider.toSymbol(ctx.service)
@@ -185,15 +185,20 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         val serdeMeta = HttpSerdeMeta(op.isInputEventStream(ctx.model))
 
         ctx.delegator.useSymbolWriter(serializerSymbol) { writer ->
-            // FIXME: this works only for Cbor protocol now
             if (ctx.settings.build.generateServiceProject) {
+                val serializerResultSymbol = when (protocolName) {
+                    "smithyRpcv2cbor" -> KotlinTypes.ByteArray
+                    "awsRestjson1" -> KotlinTypes.String
+                    else -> KotlinTypes.ByteArray
+                }
                 writer
                     .openBlock("internal class #T {", serializerSymbol)
                     .call {
                         writer.openBlock(
-                            "public fun serialize(context: #T, input: #T): ByteArray {",
+                            "public fun serialize(context: #T, input: #T): #T {",
                             RuntimeTypes.Core.ExecutionContext,
                             serializationSymbol,
+                            serializerResultSymbol,
                         )
                             .write("var response: Any")
                             .call {
@@ -236,11 +241,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
     ) {
         val resolver = getProtocolHttpBindingResolver(ctx.model, ctx.service)
         val httpTrait = resolver.httpTrait(op)
-        val bindings = if (ctx.settings.build.generateServiceProject) {
-            resolver.responseBindings(op)
-        } else {
-            resolver.requestBindings(op)
-        }
+        val bindings = resolver.requestBindings(op)
 
         writer
             .addImport(RuntimeTypes.Core.ExecutionContext)
@@ -315,9 +316,15 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             val sdg = structuredDataSerializer(ctx)
             val opBodySerializerFn = sdg.operationSerializer(ctx, op, documentMembers)
             writer.write("val payload = #T(context, input)", opBodySerializerFn)
-            writer.write("builder.body = #T.fromBytes(payload)", RuntimeTypes.Http.HttpBody)
+            if (ctx.settings.build.generateServiceProject) {
+                writer.write("response = payload.decodeToString()")
+            } else {
+                writer.write("builder.body = #T.fromBytes(payload)", RuntimeTypes.Http.HttpBody)
+            }
         }
-        renderContentTypeHeader(ctx, op, writer, resolver)
+        if (!ctx.settings.build.generateServiceProject) {
+            renderContentTypeHeader(ctx, op, writer, resolver)
+        }
     }
 
     protected open fun renderContentTypeHeader(
@@ -535,7 +542,11 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                 if (isBinaryStream) {
                     writer.write("builder.body = input.#L.#T()", memberName, RuntimeTypes.Http.toHttpBody)
                 } else {
-                    writer.write("builder.body = #T.fromBytes(input.#L)", RuntimeTypes.Http.HttpBody, memberName)
+                    if (ctx.settings.build.generateServiceProject) {
+                        writer.write("response = input.#L.decodeToString()", memberName)
+                    } else {
+                        writer.write("builder.body = #T.fromBytes(input.#L)", RuntimeTypes.Http.HttpBody, memberName)
+                    }
                 }
             }
 
@@ -545,29 +556,46 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                 } else {
                     memberName
                 }
-                writer.write("builder.body = #T.fromBytes(input.#L.#T())", RuntimeTypes.Http.HttpBody, contents, KotlinTypes.Text.encodeToByteArray)
+                if (ctx.settings.build.generateServiceProject) {
+                    writer.write("response = input.#L", contents)
+                } else {
+                    writer.write("builder.body = #T.fromBytes(input.#L.#T())", RuntimeTypes.Http.HttpBody, contents, KotlinTypes.Text.encodeToByteArray)
+                }
             }
 
             ShapeType.ENUM ->
-                writer.write(
-                    "builder.body = #T.fromBytes(input.#L.value.#T())",
-                    RuntimeTypes.Http.HttpBody,
-                    memberName,
-                    KotlinTypes.Text.encodeToByteArray,
-                )
+                if (ctx.settings.build.generateServiceProject) {
+                    writer.write("response = input.#L.value.toString()", memberName)
+                } else {
+                    writer.write(
+                        "builder.body = #T.fromBytes(input.#L.value.#T())",
+                        RuntimeTypes.Http.HttpBody,
+                        memberName,
+                        KotlinTypes.Text.encodeToByteArray,
+                    )
+                }
+
             ShapeType.INT_ENUM ->
-                writer.write(
-                    "builder.body = #T.fromBytes(input.#L.value.toString().#T())",
-                    RuntimeTypes.Http.HttpBody,
-                    memberName,
-                    KotlinTypes.Text.encodeToByteArray,
-                )
+                if (ctx.settings.build.generateServiceProject) {
+                    writer.write("response = input.#L.value.toString()", memberName)
+                } else {
+                    writer.write(
+                        "builder.body = #T.fromBytes(input.#L.value.toString().#T())",
+                        RuntimeTypes.Http.HttpBody,
+                        memberName,
+                        KotlinTypes.Text.encodeToByteArray,
+                    )
+                }
 
             ShapeType.STRUCTURE, ShapeType.UNION, ShapeType.DOCUMENT -> {
                 val sdg = structuredDataSerializer(ctx)
                 val payloadSerializerFn = sdg.payloadSerializer(ctx, binding.member)
                 writer.write("val payload = #T(input.#L)", payloadSerializerFn, memberName)
-                writer.write("builder.body = #T.fromBytes(payload)", RuntimeTypes.Http.HttpBody)
+                if (ctx.settings.build.generateServiceProject) {
+                    writer.write("response = payload.decodeToString()")
+                } else {
+                    writer.write("builder.body = #T.fromBytes(payload)", RuntimeTypes.Http.HttpBody)
+                }
             }
 
             else ->
