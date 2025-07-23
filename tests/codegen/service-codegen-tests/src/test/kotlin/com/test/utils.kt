@@ -30,9 +30,9 @@ internal fun startService(
             )
             .build()
     }
-    val isWindows = System.getProperty("os.name").startsWith("Windows", ignoreCase = true)
-    val gradleCmd = if (isWindows) "gradlew.bat" else "./gradlew"
-    val baseCmd = if (isWindows) listOf("cmd", "/c", gradleCmd) else listOf(gradleCmd)
+
+    val gradleCmd = if (isWindows()) "gradlew.bat" else "./gradlew"
+    val baseCmd = if (isWindows()) listOf("cmd", "/c", gradleCmd) else listOf(gradleCmd)
 
     return ProcessBuilder(
         baseCmd + listOf(

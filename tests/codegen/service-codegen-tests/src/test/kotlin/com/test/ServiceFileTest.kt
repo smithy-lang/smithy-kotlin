@@ -5,6 +5,7 @@
 
 package com.test
 
+import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
 import kotlin.io.path.exists
@@ -19,6 +20,11 @@ class ServiceFileTest {
 
     @Test
     fun `generates service and all necessary files`() {
+        Files.walk(projectDir).use { stream ->
+            stream
+                .filter { Files.isRegularFile(it) } // skip sub‑directories
+                .forEach { println(it) } // print full path of each file
+        }
         assertTrue(projectDir.resolve("build.gradle.kts").exists())
         assertTrue(projectDir.resolve("settings.gradle.kts").exists())
         assertTrue(projectDir.resolve("src/main/kotlin/$packagePath/Main.kt").exists())
