@@ -13,6 +13,8 @@ import software.amazon.smithy.kotlin.codegen.model.getTrait
 import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.traits.AuthTrait
 import software.amazon.smithy.model.traits.HttpBearerAuthTrait
+import software.amazon.smithy.model.traits.HttpLabelTrait
+import software.amazon.smithy.model.traits.HttpQueryTrait
 import software.amazon.smithy.model.traits.HttpTrait
 import software.amazon.smithy.utils.AbstractCodeWriter
 
@@ -261,7 +263,7 @@ internal class KtorStubGenerator(
                                             )
                                             write("val deserializer = ${shape.id.name}OperationDeserializer()")
                                             withBlock(
-                                                "val requestObj = try { deserializer.deserialize(#T(), request) } catch (ex: Exception) {",
+                                                "var requestObj = try { deserializer.deserialize(#T(), request) } catch (ex: Exception) {",
                                                 "}",
                                                 RuntimeTypes.Core.ExecutionContext,
                                             ) {
@@ -270,6 +272,10 @@ internal class KtorStubGenerator(
                                                     RuntimeTypes.KtorServerCore.BadRequestException,
                                                     "Malformed CBOR input",
                                                 )
+                                            }
+                                            withBlock("requestObj = requestObj.copy {", "}") {
+                                                call { readHttpLabel(shape, writer) }
+                                                call { readHttpQuery(shape, writer) }
                                             }
                                             write("val responseObj = handle${shape.id.name}Request(requestObj)")
                                             write("val serializer = ${shape.id.name}OperationSerializer()")
@@ -295,6 +301,25 @@ internal class KtorStubGenerator(
                         }
                 }
             }
+        }
+    }
+
+    private fun readHttpLabel(shape: OperationShape, writer: KotlinWriter) {
+        val inputShape = ctx.model.expectShape(shape.input.get())
+        inputShape.allMembers.forEach { member ->
+            val memberName = member.key
+            if (!member.value.hasTrait(HttpLabelTrait.ID)) return@forEach
+            writer.write("$memberName = call.parameters[#S]", memberName)
+        }
+    }
+
+    private fun readHttpQuery(shape: OperationShape, writer: KotlinWriter) {
+        val inputShape = ctx.model.expectShape(shape.input.get())
+        inputShape.allMembers.forEach { member ->
+            val memberName = member.key
+            if (!member.value.hasTrait(HttpQueryTrait.ID)) return@forEach
+            val httpQueryTrait = member.value.getTrait<HttpQueryTrait>()!!
+            writer.write("$memberName = call.request.queryParameters[#S]", httpQueryTrait.value)
         }
     }
 

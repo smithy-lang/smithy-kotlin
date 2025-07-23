@@ -191,6 +191,12 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                     "awsRestjson1" -> KotlinTypes.String
                     else -> KotlinTypes.ByteArray
                 }
+
+                val defaultResponse = when (protocolName) {
+                    "smithyRpcv2cbor" -> "ByteArray(0)"
+                    "awsRestjson1" -> "\"\""
+                    else -> "ByteArray(0)"
+                }
                 writer
                     .openBlock("internal class #T {", serializerSymbol)
                     .call {
@@ -200,7 +206,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                             serializationSymbol,
                             serializerResultSymbol,
                         )
-                            .write("var response: Any")
+                            .write("var response: #T = $defaultResponse", serializerResultSymbol)
                             .call {
                                 renderSerializeHttpBody(ctx, op, writer)
                             }
