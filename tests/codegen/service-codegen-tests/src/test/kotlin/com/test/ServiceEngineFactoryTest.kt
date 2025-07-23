@@ -26,7 +26,7 @@ class ServiceEngineFactoryTest {
     fun `checks service with netty engine`() {
         val nettyPort: Int = ServerSocket(0).use { it.localPort }
         val nettyProc = startService("netty", nettyPort, closeGracePeriodMillis, closeTimeoutMillis, requestBodyLimit, projectDir)
-        val ready = waitForPort(nettyPort, portListnerTimeout, nettyProc)
+        val ready = waitForPort(nettyPort, portListnerTimeout)
         assertTrue(ready, "Service did not start within $portListnerTimeout s")
         cleanupService(nettyProc, gracefulWindow)
     }
@@ -35,7 +35,7 @@ class ServiceEngineFactoryTest {
     fun `checks service with cio engine`() {
         val cioPort: Int = ServerSocket(0).use { it.localPort }
         val cioProc = startService("cio", cioPort, closeGracePeriodMillis, closeTimeoutMillis, requestBodyLimit, projectDir)
-        val ready = waitForPort(cioPort, portListnerTimeout, cioProc)
+        val ready = waitForPort(cioPort, portListnerTimeout)
         assertTrue(ready, "Service did not start within $portListnerTimeout s")
         cleanupService(cioProc, gracefulWindow)
     }
@@ -44,7 +44,7 @@ class ServiceEngineFactoryTest {
     fun `checks service with jetty jakarta engine`() {
         val jettyPort: Int = ServerSocket(0).use { it.localPort }
         val jettyProc = startService("jetty-jakarta", jettyPort, closeGracePeriodMillis, closeTimeoutMillis, requestBodyLimit, projectDir)
-        val ready = waitForPort(jettyPort, portListnerTimeout, jettyProc)
+        val ready = waitForPort(jettyPort, portListnerTimeout)
         assertTrue(ready, "Service did not start within $portListnerTimeout s")
         cleanupService(jettyProc, gracefulWindow)
     }

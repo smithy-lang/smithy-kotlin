@@ -10,8 +10,6 @@ internal class PatternConstraint(val memberPrefix: String, val memberName: Strin
         writer.withBlock("require(${memberPrefix}$memberName is String) {", "}") {
             write("\"The `pattern` trait can be applied only to String, but variable `$memberName` is of type `\${${memberPrefix}$memberName?.javaClass?.simpleName ?: #S}`.\"", "null")
         }
-        writer.write("val ${memberName}Pattern = #S", trait.pattern)
-            .write("val ${memberName}Regex = Regex(${memberName}Pattern)")
-            .write("require(${memberName}Regex.containsMatchIn(${memberPrefix}$memberName)) { #S }", "Value `\${${memberPrefix}$memberName}` does not match required pattern: `\$${memberName}Pattern`")
+        writer.write("require(Regex(#S).containsMatchIn(${memberPrefix}$memberName)) { #S }", trait.pattern.toString(), "Value `\${${memberPrefix}$memberName}` does not match required pattern: `${trait.pattern}`")
     }
 }

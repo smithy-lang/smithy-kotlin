@@ -36,7 +36,7 @@ class ServiceGeneratorTest {
     @BeforeAll
     fun boot() {
         proc = startService("netty", port, closeGracePeriodMillis, closeTimeoutMillis, requestBodyLimit, projectDir)
-        val ready = waitForPort(port, portListnerTimeout, proc)
+        val ready = waitForPort(port, portListnerTimeout)
         assertTrue(ready, "Service did not start within $portListnerTimeout s")
     }
 
