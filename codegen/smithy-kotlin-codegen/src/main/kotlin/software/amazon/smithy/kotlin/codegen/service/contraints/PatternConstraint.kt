@@ -8,7 +8,7 @@ internal class PatternConstraint(val memberPrefix: String, val memberName: Strin
     override fun render() {
         writer.write("if (${memberPrefix}$memberName == null) { return }")
         writer.withBlock("require(${memberPrefix}$memberName is String) {", "}") {
-            write("\"Pattern trait supports only String, but type \${${memberPrefix}$memberName?.javaClass?.simpleName ?: #S} was given\"", "null")
+            write("\"The `pattern` trait can be applied only to String, but variable `$memberName` is of type `\${${memberPrefix}$memberName?.javaClass?.simpleName ?: #S}`.\"", "null")
         }
         writer.write("val ${memberName}Pattern = #S", trait.pattern)
             .write("val ${memberName}Regex = Regex(${memberName}Pattern)")

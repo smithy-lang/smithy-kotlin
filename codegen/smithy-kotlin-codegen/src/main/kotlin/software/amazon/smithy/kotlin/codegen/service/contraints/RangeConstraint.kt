@@ -10,7 +10,7 @@ internal class RangeConstraint(val memberPrefix: String, val memberName: String,
         val max = trait.max.orElse(null)
         writer.write("if (${memberPrefix}$memberName == null) { return }")
         writer.withBlock("require(${memberPrefix}$memberName is Number) {", "}") {
-            write("\"Range trait supports only Number, but type \${${memberPrefix}$memberName?.javaClass?.simpleName ?: #S} was given\"", "null")
+            write("\"The `range` trait can be applied only to Number, but variable `$memberName` is of type `\${${memberPrefix}$memberName?.javaClass?.simpleName ?: #S}`.\"", "null")
         }
 
         if (max != null && min != null) {

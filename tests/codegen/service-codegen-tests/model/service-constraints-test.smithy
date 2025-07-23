@@ -15,6 +15,7 @@ service ServiceConstraintsTest {
         RangeConstraintTest,
         UniqueItemsConstraintTest,
         NestedUniqueItemsConstraintTest,
+        DoubleNestedUniqueItemsConstraintTest,
     ]
 }
 
@@ -131,6 +132,20 @@ structure NestedUniqueItemsConstraintTestInput {
 @output
 structure NestedUniqueItemsConstraintTestOutput {}
 
+@http(method: "POST", uri: "/double-nested-unique-items-constraint", code: 201)
+operation DoubleNestedUniqueItemsConstraintTest {
+    input: DoubleNestedUniqueItemsConstraintTestInput
+    output: DoubleNestedUniqueItemsConstraintTestOutput
+}
+
+@input
+structure DoubleNestedUniqueItemsConstraintTestInput {
+    doubleNestedUniqueItemsListInput: UniqueItemsListWrapContainer
+}
+
+@output
+structure DoubleNestedUniqueItemsConstraintTestOutput {}
+
 
 
 list NotUniqueItemsList {
@@ -145,6 +160,11 @@ list UniqueItemsList {
 @uniqueItems
 list UniqueItemsListWrap {
     member: UniqueItemsList
+}
+
+@uniqueItems
+list UniqueItemsListWrapContainer {
+    member: UniqueItemsListWrap
 }
 
 map MyMap {

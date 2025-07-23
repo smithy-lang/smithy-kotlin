@@ -9,7 +9,7 @@ internal class UniqueItemsConstraint(val memberPrefix: String, val memberName: S
     override fun render() {
         writer.write("if (${memberPrefix}$memberName == null) { return }")
         writer.withBlock("require(${memberPrefix}$memberName is List<*>) {", "}") {
-            write("\"Unique items trait supports only List, but type \${${memberPrefix}$memberName?.javaClass?.simpleName ?: #S} was given\"", "null")
+            write("\"The `uniqueItems` trait can be applied only to List, but variable `$memberName` is of type `\${${memberPrefix}$memberName?.javaClass?.simpleName ?: #S}`.\"", "null")
         }
         writer.write("require(#T(${memberPrefix}$memberName)) { #S }", ServiceTypes(pkgName).hasAllUniqueElements, "$memberName must have unique items")
     }

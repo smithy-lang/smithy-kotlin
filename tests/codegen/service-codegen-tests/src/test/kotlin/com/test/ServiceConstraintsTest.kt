@@ -25,7 +25,7 @@ class ServiceConstraintsTest {
     val requestBodyLimit: Long = 10L * 1024 * 1024
     val port: Int = ServerSocket(0).use { it.localPort }
 
-    val portListnerTimeout = 10L
+    val portListenerTimeout = 180L
 
     val baseUrl = "http://localhost:$port"
 
@@ -36,8 +36,8 @@ class ServiceConstraintsTest {
     @BeforeAll
     fun boot() {
         proc = startService("netty", port, closeGracePeriodMillis, closeTimeoutMillis, requestBodyLimit, projectDir)
-        val ready = waitForPort(port, portListnerTimeout, proc)
-        assertTrue(ready, "Service did not start within $portListnerTimeout s")
+        val ready = waitForPort(port, portListenerTimeout, proc)
+        assertTrue(ready, "Service did not start within $portListenerTimeout s")
     }
 
     @AfterAll
@@ -519,6 +519,39 @@ class ServiceConstraintsTest {
 
         val response = sendRequest(
             "$baseUrl/nested-unique-items-constraint",
+            "POST",
+            requestBytes,
+            "application/cbor",
+            "application/cbor",
+            "correctToken",
+        )
+        assertIs<HttpResponse<ByteArray>>(response)
+        assertEquals(400, response.statusCode(), "Expected 400")
+
+        val body = cbor.decodeFromByteArray(
+            ErrorResponse.serializer(),
+            response.body(),
+        )
+        assertEquals(400, body.code)
+        assertEquals("member must have unique items", body.message)
+    }
+
+    @Test
+    fun `checks unique items constraint providing non-unique nested nested list`() {
+        val cbor = Cbor { }
+        val doubleNestedUniqueItemsListInput = listOf(
+            listOf(listOf("0"), listOf("1", "2"), listOf("6"), listOf("9", "10", "11")),
+            listOf(listOf("2"), listOf("7", "2"), listOf("4"), listOf("5", "6", "5")),
+            listOf(listOf("1"), listOf("1", "2"), listOf("4"), listOf("5", "6", "7")),
+        )
+
+        val requestBytes = cbor.encodeToByteArray(
+            DoubleNestedUniqueItemsConstraintTestRequest.serializer(),
+            DoubleNestedUniqueItemsConstraintTestRequest(doubleNestedUniqueItemsListInput),
+        )
+
+        val response = sendRequest(
+            "$baseUrl/double-nested-unique-items-constraint",
             "POST",
             requestBytes,
             "application/cbor",

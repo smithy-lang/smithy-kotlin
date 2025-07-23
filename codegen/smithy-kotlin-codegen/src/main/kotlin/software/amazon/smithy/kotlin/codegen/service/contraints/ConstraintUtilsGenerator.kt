@@ -47,6 +47,7 @@ internal class ConstraintUtilsGenerator(
                         write("is Boolean,")
                         write("is java.time.Instant,")
                         write("is Number -> v == other.v")
+                        write("is ByteArray -> v.contentEquals(other.v as ByteArray)")
                         withBlock("is List<*> -> {", "}") {
                             write("val o = other.v as List<*>")
                             write("v.size == o.size &&  v.indices.all { i -> Wrapped(v[i]) == Wrapped(o[i]) }")
@@ -60,6 +61,7 @@ internal class ConstraintUtilsGenerator(
                 }
                 withBlock("override fun hashCode(): Int = when (v) {", "}") {
                     write("null -> 0")
+                    write("is ByteArray -> v.contentHashCode()")
                     write("is List<*> -> v.fold(1) { acc, e -> 31 * acc + Wrapped(e).hashCode() }")
                     write("is Map<*, *> -> v.entries.fold(1) { acc, (k, e) -> 31 * acc + Wrapped(k).hashCode() xor Wrapped(e).hashCode() }")
                     write("else -> v.hashCode()")

@@ -11,7 +11,7 @@ internal class LengthConstraint(val memberPrefix: String, val memberName: String
         val max = trait.max.orElse(null)
         writer.write("if (${memberPrefix}$memberName == null) { return }")
         writer.withBlock("require(${memberPrefix}$memberName is List<*> || ${memberPrefix}$memberName is Map<*, *> || ${memberPrefix}$memberName is String || ${memberPrefix}$memberName is java.sql.Blob) {", "}") {
-            write("\"Length trait supports only List, Map, String, or Blob, but type \${${memberPrefix}$memberName?.javaClass?.simpleName ?: #S} was given\"", "null")
+            write("\"The `length` trait can be applied only to List, Map, String, or Blob, but variable `$memberName` is of type `\${${memberPrefix}$memberName?.javaClass?.simpleName ?: #S}`.\"", "null")
         }
 
         if (max != null && min != null) {

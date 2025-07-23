@@ -41,3 +41,6 @@ data class UniqueItemsConstraintTestRequest(val notUniqueItemsListInput: List<St
 
 @Serializable
 data class NestedUniqueItemsConstraintTestRequest(val nestedUniqueItemsListInput: List<List<String>>)
+
+@Serializable
+data class DoubleNestedUniqueItemsConstraintTestRequest(val doubleNestedUniqueItemsListInput: List<List<List<String>>>)
