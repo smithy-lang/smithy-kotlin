@@ -2,7 +2,7 @@
 
 The AWS SDK for Kotlin depends on a stable version of OkHttp **5.x**.
 
-This `OkHttp4Engine` is intended to be used for applications which still depend on okhttp3 **4.x** and can't upgrade to the next major version.
+This `OkHttp4Engine` is intended to be used by applications which still depend on okhttp3 **4.x** and can't upgrade to the next major version.
 
 ## Configuration
 
