@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.5.2] - 07/24/2025
+
+### Miscellaneous
+* [#1339](https://github.com/smithy-lang/smithy-kotlin/issues/1339) Add documentation for OkHttp4Engine when using Android with R8 / ProGuard
+
 ## [1.5.1] - 07/17/2025
 
 ## [1.5.0] - 07/17/2025
