@@ -8,7 +8,10 @@ package software.amazon.smithy.kotlin.codegen.rendering
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
 import software.amazon.smithy.codegen.core.SymbolReference
-import software.amazon.smithy.kotlin.codegen.core.*
+import software.amazon.smithy.kotlin.codegen.core.CodegenContext
+import software.amazon.smithy.kotlin.codegen.core.KotlinDependency
+import software.amazon.smithy.kotlin.codegen.core.KotlinWriter
+import software.amazon.smithy.kotlin.codegen.core.RuntimeTypes
 import software.amazon.smithy.kotlin.codegen.integration.KotlinIntegration
 import software.amazon.smithy.kotlin.codegen.lang.KotlinTypes
 import software.amazon.smithy.kotlin.codegen.loadModelFromResource
@@ -42,14 +45,16 @@ class ServiceClientConfigGeneratorTest {
         contents.assertBalancedBracesAndParens()
 
         val expectedCtor = """
-public class Config private constructor(builder: Builder) : HttpAuthConfig, HttpClientConfig, HttpEngineConfig by builder.buildHttpEngineConfig(), IdempotencyTokenConfig, RetryClientConfig, RetryStrategyClientConfig by builder.buildRetryStrategyClientConfig(), SdkClientConfig, TelemetryConfig {
+public class Config private constructor(builder: Builder) : HttpAuthConfig, HttpClientConfig, HttpEngineConfig by builder.buildHttpEngineConfig(), IdempotencyTokenConfig, RetryClientConfig, RetryStrategyClientConfig by builder.buildRetryStrategyClientConfig(), SdkClientConfig, TelemetryConfig, TimeoutClientConfig {
 """
         contents.shouldContainWithDiff(expectedCtor)
 
         val expectedProps = """
     override val clientName: String = builder.clientName
+    override val attemptTimeout: Duration? = builder.attemptTimeout
     override val authSchemePreference: kotlin.collections.List<aws.smithy.kotlin.runtime.auth.AuthSchemeId>? = builder.authSchemePreference
     override val authSchemes: kotlin.collections.List<aws.smithy.kotlin.runtime.http.auth.AuthScheme> = builder.authSchemes
+    override val callTimeout: Duration? = builder.callTimeout
     public val endpointProvider: TestEndpointProvider = requireNotNull(builder.endpointProvider) { "endpointProvider is a required configuration property" }
     override val idempotencyTokenProvider: IdempotencyTokenProvider = builder.idempotencyTokenProvider ?: IdempotencyTokenProvider.Default
     override val interceptors: kotlin.collections.List<aws.smithy.kotlin.runtime.http.interceptors.HttpInterceptor> = builder.interceptors
@@ -60,11 +65,17 @@ public class Config private constructor(builder: Builder) : HttpAuthConfig, Http
         contents.shouldContainWithDiff(expectedProps)
 
         val expectedBuilder = """
-    public class Builder : HttpAuthConfig.Builder, HttpClientConfig.Builder, HttpEngineConfig.Builder by HttpEngineConfigImpl.BuilderImpl(), IdempotencyTokenConfig.Builder, RetryClientConfig.Builder, RetryStrategyClientConfig.Builder by RetryStrategyClientConfigImpl.BuilderImpl(), SdkClientConfig.Builder<Config>, TelemetryConfig.Builder {
+    public class Builder : HttpAuthConfig.Builder, HttpClientConfig.Builder, HttpEngineConfig.Builder by HttpEngineConfigImpl.BuilderImpl(), IdempotencyTokenConfig.Builder, RetryClientConfig.Builder, RetryStrategyClientConfig.Builder by RetryStrategyClientConfigImpl.BuilderImpl(), SdkClientConfig.Builder<Config>, TelemetryConfig.Builder, TimeoutClientConfig.Builder {
         /**
          * A reader-friendly name for the client.
          */
         override var clientName: String = "Test"
+
+        /**
+         * The maximum amount of time to wait for any single attempt of a request within the retry loop. By default,
+         * the value is `null` indicating no timeout is enforced.
+         */
+        override var attemptTimeout: Duration? = null
 
         /**
          * The ordered preference of [AuthScheme] that this client will use.
@@ -78,6 +89,12 @@ public class Config private constructor(builder: Builder) : HttpAuthConfig, Http
          * authentication schemes.
          */
         override var authSchemes: kotlin.collections.List<aws.smithy.kotlin.runtime.http.auth.AuthScheme> = emptyList()
+
+        /**
+         * The maximum amount of time to wait for completion of a call, including any retries after the first attempt.
+         * By default, the value is `null` indicating no timeout is enforced.
+         */
+        override var callTimeout: Duration? = null
 
         /**
          * The endpoint provider used to determine where to make service requests. **This is an advanced config
@@ -245,8 +262,10 @@ public class Config private constructor(builder: Builder) {
         // Expect logMode config value to override default to LogMode.Request
         val expectedConfigValues = """
     override val clientName: String = builder.clientName
+    override val attemptTimeout: Duration? = builder.attemptTimeout
     override val authSchemePreference: kotlin.collections.List<aws.smithy.kotlin.runtime.auth.AuthSchemeId>? = builder.authSchemePreference
     override val authSchemes: kotlin.collections.List<aws.smithy.kotlin.runtime.http.auth.AuthScheme> = builder.authSchemes
+    override val callTimeout: Duration? = builder.callTimeout
     public val customProp: Int? = builder.customProp
     public val endpointProvider: TestEndpointProvider = requireNotNull(builder.endpointProvider) { "endpointProvider is a required configuration property" }
     override val idempotencyTokenProvider: IdempotencyTokenProvider = builder.idempotencyTokenProvider ?: IdempotencyTokenProvider.Default

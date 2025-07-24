@@ -42,6 +42,18 @@ public final class aws/smithy/kotlin/runtime/http/config/HttpEngineConfig$Builde
 public abstract interface annotation class aws/smithy/kotlin/runtime/http/config/HttpEngineConfigDsl : java/lang/annotation/Annotation {
 }
 
+public abstract interface class aws/smithy/kotlin/runtime/http/config/TimeoutClientConfig {
+	public abstract fun getAttemptTimeout-FghU774 ()Lkotlin/time/Duration;
+	public abstract fun getCallTimeout-FghU774 ()Lkotlin/time/Duration;
+}
+
+public abstract interface class aws/smithy/kotlin/runtime/http/config/TimeoutClientConfig$Builder {
+	public abstract fun getAttemptTimeout-FghU774 ()Lkotlin/time/Duration;
+	public abstract fun getCallTimeout-FghU774 ()Lkotlin/time/Duration;
+	public abstract fun setAttemptTimeout-BwNAW2A (Lkotlin/time/Duration;)V
+	public abstract fun setCallTimeout-BwNAW2A (Lkotlin/time/Duration;)V
+}
+
 public final class aws/smithy/kotlin/runtime/http/engine/AlpnId : java/lang/Enum {
 	public static final field H2_PRIOR_KNOWLEDGE Laws/smithy/kotlin/runtime/http/engine/AlpnId;
 	public static final field HTTP1_1 Laws/smithy/kotlin/runtime/http/engine/AlpnId;
@@ -493,6 +505,10 @@ public abstract interface class aws/smithy/kotlin/runtime/http/operation/AuthSch
 	public abstract fun resolve (Laws/smithy/kotlin/runtime/http/operation/OperationRequest;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
+public final class aws/smithy/kotlin/runtime/http/operation/ClientTimeoutException : aws/smithy/kotlin/runtime/ClientException {
+	public fun <init> (Ljava/lang/String;Ljava/lang/Throwable;)V
+}
+
 public abstract interface class aws/smithy/kotlin/runtime/http/operation/EndpointResolver {
 	public abstract fun resolve (Laws/smithy/kotlin/runtime/http/operation/ResolveEndpointRequest;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
@@ -516,6 +532,8 @@ public abstract interface class aws/smithy/kotlin/runtime/http/operation/HttpDes
 
 public final class aws/smithy/kotlin/runtime/http/operation/HttpOperationContext {
 	public static final field INSTANCE Laws/smithy/kotlin/runtime/http/operation/HttpOperationContext;
+	public final fun getAttemptTimeout ()Laws/smithy/kotlin/runtime/collections/AttributeKey;
+	public final fun getCallTimeout ()Laws/smithy/kotlin/runtime/collections/AttributeKey;
 	public final fun getClockSkew ()Laws/smithy/kotlin/runtime/collections/AttributeKey;
 	public final fun getClockSkewApproximateSigningTime ()Laws/smithy/kotlin/runtime/collections/AttributeKey;
 	public final fun getDefaultChecksumAlgorithm ()Laws/smithy/kotlin/runtime/collections/AttributeKey;

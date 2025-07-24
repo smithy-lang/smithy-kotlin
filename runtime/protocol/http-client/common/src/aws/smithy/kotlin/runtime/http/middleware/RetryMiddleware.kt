@@ -9,7 +9,6 @@ import aws.smithy.kotlin.runtime.businessmetrics.SmithyBusinessMetric
 import aws.smithy.kotlin.runtime.businessmetrics.emitBusinessMetric
 import aws.smithy.kotlin.runtime.http.interceptors.InterceptorExecutor
 import aws.smithy.kotlin.runtime.http.operation.*
-import aws.smithy.kotlin.runtime.http.operation.deepCopy
 import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
 import aws.smithy.kotlin.runtime.http.request.immutableView
 import aws.smithy.kotlin.runtime.http.request.toBuilder
@@ -84,7 +83,10 @@ internal class RetryMiddleware<I, O>(
     ): Result<O> {
         val result = interceptors.readBeforeAttempt(request.subject.immutableView())
             .mapCatching {
-                next.call(request)
+                val attemptTimeout = request.context.getOrNull(HttpOperationContext.AttemptTimeout)
+                scopedTimeout(TimeoutScope.Attempt(attempt), attemptTimeout) {
+                    next.call(request)
+                }
             }
 
         // get the http call for this attempt (if we made it that far)
