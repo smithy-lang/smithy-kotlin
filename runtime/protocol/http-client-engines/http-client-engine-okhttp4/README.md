@@ -80,8 +80,8 @@ Caused by: java.lang.ClassNotFoundException: okhttp3.coroutines.ExecuteAsyncKt
 	... 9 more
 ```
 
-It likely means you failed to configure the SDK client to use the `OkHttpEngine4`. 
-Please double-check all of your SDK client configurations to ensure `httpClient = OkHttpEngine4()` is configured,
+It likely means you failed to configure the SDK client to use the `OkHttp4Engine`. 
+Please double-check all of your SDK client configurations to ensure `httpClient = OkHttp4Engine()` is configured,
 and if the problem persists, [open an issue](https://github.com/smithy-lang/smithy-kotlin/issues/new/choose).
 
 ### Android R8 / ProGuard Configuration
