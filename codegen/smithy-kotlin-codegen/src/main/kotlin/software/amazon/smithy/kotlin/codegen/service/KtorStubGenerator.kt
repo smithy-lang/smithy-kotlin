@@ -208,8 +208,6 @@ internal class KtorStubGenerator(
 
     // Writes `Routing.kt` that maps Smithy operations → Ktor routes.
     override fun renderRouting() {
-        val contentType = ContentType.fromServiceShape(serviceShape)
-
         delegator.useFileWriter("Routing.kt", ctx.settings.pkg.name) { writer ->
 
             operations.forEach { shape ->
@@ -241,15 +239,27 @@ internal class KtorStubGenerator(
                                 "OPTIONS" -> RuntimeTypes.KtorServerRouting.options
                                 else -> error("Unsupported http trait ${httpTrait.method}")
                             }
-
+                            val contentType = ContentType.fromServiceShape(ctx, serviceShape, shape)
                             val contentTypeGuard = when (contentType) {
                                 ContentType.CBOR -> "cbor()"
                                 ContentType.JSON -> "json()"
+                                ContentType.PLAIN_TEXT -> "text()"
+                                ContentType.BINARY -> "binary()"
+                                ContentType.MEDIA_TYPE -> "any()"
+                            }
+
+                            val acceptTypeGuard = when (contentType) {
+                                ContentType.CBOR -> "cbor()"
+                                ContentType.JSON,
+                                ContentType.PLAIN_TEXT,
+                                ContentType.BINARY,
+                                ContentType.MEDIA_TYPE,
+                                -> "json()"
                             }
 
                             withBlock("#T (#S) {", "}", RuntimeTypes.KtorServerRouting.route, uri) {
                                 write("#T(#T) { $contentTypeGuard }", RuntimeTypes.KtorServerCore.install, ServiceTypes(pkgName).contentTypeGuard)
-                                write("#T(#T) { $contentTypeGuard }", RuntimeTypes.KtorServerCore.install, ServiceTypes(pkgName).acceptTypeGuard)
+                                write("#T(#T) { $acceptTypeGuard }", RuntimeTypes.KtorServerCore.install, ServiceTypes(pkgName).acceptTypeGuard)
                                 withBlock(
                                     "#W",
                                     "}",
@@ -400,7 +410,11 @@ internal class KtorStubGenerator(
                     RuntimeTypes.KtorServerHttp.HttpStatusCode,
                 )
             }
-            ContentType.JSON -> w.withBlock(
+            ContentType.JSON,
+            ContentType.PLAIN_TEXT,
+            ContentType.BINARY,
+            ContentType.MEDIA_TYPE,
+            -> w.withBlock(
                 "#T.#T(",
                 ")",
                 RuntimeTypes.KtorServerCore.applicationCall,
@@ -535,12 +549,24 @@ internal class KtorStubGenerator(
             writer.withBlock("public class ContentTypeGuardConfig {", "}") {
                 write("public var allow: List<#T> = emptyList()", RuntimeTypes.KtorServerHttp.ContentType)
                 write("")
+                withBlock("public fun any(): Unit {", "}") {
+                    write("allow = listOf(#T)", RuntimeTypes.KtorServerHttp.Any)
+                }
+                write("")
                 withBlock("public fun json(): Unit {", "}") {
                     write("allow = listOf(#T)", RuntimeTypes.KtorServerHttp.Json)
                 }
                 write("")
                 withBlock("public fun cbor(): Unit {", "}") {
                     write("allow = listOf(#T)", RuntimeTypes.KtorServerHttp.Cbor)
+                }
+                write("")
+                withBlock("public fun text(): Unit {", "}") {
+                    write("allow = listOf(#T)", RuntimeTypes.KtorServerHttp.PlainText)
+                }
+                write("")
+                withBlock("public fun binary(): Unit {", "}") {
+                    write("allow = listOf(#T)", RuntimeTypes.KtorServerHttp.OctetStream)
                 }
             }
                 .write("")

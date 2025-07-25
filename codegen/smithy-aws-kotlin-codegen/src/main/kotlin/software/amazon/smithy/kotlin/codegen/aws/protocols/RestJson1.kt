@@ -40,6 +40,7 @@ class RestJson1 : JsonHttpBindingProtocolGenerator() {
         writer: KotlinWriter,
     ) {
         super.renderSerializeHttpBody(ctx, op, writer)
+        if (ctx.settings.build.generateServiceProject) return
 
         val resolver = getProtocolHttpBindingResolver(ctx.model, ctx.service)
         if (!resolver.hasHttpBody(op)) return

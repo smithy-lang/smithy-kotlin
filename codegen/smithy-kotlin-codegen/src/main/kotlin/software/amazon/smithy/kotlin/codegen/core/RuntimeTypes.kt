@@ -558,6 +558,9 @@ object RuntimeTypes {
         val HttpHeaders = symbol("HttpHeaders")
         val Cbor = symbol("Cbor", "ContentType.Application")
         val Json = symbol("Json", "ContentType.Application")
+        val Any = symbol("Any", "ContentType.Application")
+        val OctetStream = symbol("OctetStream", "ContentType.Application")
+        val PlainText = symbol("Plain", "ContentType.Text")
     }
 
     object KtorServerLogging : RuntimeTypePackage(KotlinDependency.KTOR_SERVER_LOGGING) {
