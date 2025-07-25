@@ -14,11 +14,11 @@ internal fun getTraitGeneratorFromTrait(
     trait: Trait,
     pkgName: String,
     writer: KotlinWriter,
-): AbstractConstraintTrait? = when (trait) {
-    is LengthTrait -> LengthConstraint(memberPrefix, memberName, trait, pkgName, writer)
-    is PatternTrait -> PatternConstraint(memberPrefix, memberName, trait, pkgName, writer)
-    is RangeTrait -> RangeConstraint(memberPrefix, memberName, trait, pkgName, writer)
-    is UniqueItemsTrait -> UniqueItemsConstraint(memberPrefix, memberName, trait, pkgName, writer)
-    is RequiredTrait -> RequiredConstraint(memberPrefix, memberName, trait, pkgName, writer)
+): AbstractConstraintTraitGenerator? = when (trait) {
+    is LengthTrait -> LengthConstraintGenerator(memberPrefix, memberName, trait, pkgName, writer)
+    is PatternTrait -> PatternConstraintGenerator(memberPrefix, memberName, trait, pkgName, writer)
+    is RangeTrait -> RangeConstraintGenerator(memberPrefix, memberName, trait, pkgName, writer)
+    is UniqueItemsTrait -> UniqueItemsConstraintGenerator(memberPrefix, memberName, trait, pkgName, writer)
+    is RequiredTrait -> RequiredConstraintGenerator(memberPrefix, memberName, trait, pkgName, writer)
     else -> null
 }

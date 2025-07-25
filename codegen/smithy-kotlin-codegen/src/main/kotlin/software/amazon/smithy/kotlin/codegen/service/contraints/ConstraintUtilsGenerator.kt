@@ -13,21 +13,20 @@ internal class ConstraintUtilsGenerator(
 
     fun render() {
         delegator.useFileWriter("utils.kt", "$pkgName.constraints") { writer ->
-            writer.call { renderLengthTraitUtils(writer) }
-                .write("")
-                .call { renderUniqueItemsTraitUtils(writer) }
+            renderLengthTraitUtils(writer)
+
+            writer.write("")
+            renderUniqueItemsTraitUtils(writer)
         }
     }
 
     private fun renderLengthTraitUtils(writer: KotlinWriter) {
         writer.withBlock("internal fun sizeOf(value: Any?): Long = when (value) {", "}") {
             write("is Collection<*> -> value.size.toLong()")
-            write("is List<*> -> value.size.toLong()")
             write("is Array<*> -> value.size.toLong()")
             write("is Map<*, *> -> value.size.toLong()")
             write("is String -> value.codePointCount(0, value.length).toLong()")
             write("is ByteArray -> value.size.toLong()")
-            write("is java.sql.Blob -> value.length()")
             withBlock("else -> {", "}") {
                 write("val typeName = value?.javaClass?.simpleName ?: #S", "null")
                 write("throw IllegalArgumentException( #S )", "sizeOf does not support \${typeName} type")

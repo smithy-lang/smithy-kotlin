@@ -217,7 +217,6 @@ internal class KtorStubGenerator(
                 writer.addImport("$pkgName.serde", "${shape.id.name}OperationDeserializer")
                 writer.addImport("$pkgName.serde", "${shape.id.name}OperationSerializer")
                 writer.addImport("$pkgName.constraints", "check${shape.id.name}RequestConstraint")
-                writer.addImport("$pkgName.constraints", "check${shape.id.name}ResponseConstraint")
                 writer.addImport("$pkgName.model", "${shape.id.name}Request")
                 writer.addImport("$pkgName.model", "${shape.id.name}Response")
                 writer.addImport("$pkgName.operations", "handle${shape.id.name}Request")
@@ -283,11 +282,6 @@ internal class KtorStubGenerator(
                                                 "Error while validating constraints",
                                             )
                                             write("val responseObj = handle${shape.id.name}Request(requestObj)")
-                                            write(
-                                                "try { check${shape.id.name}ResponseConstraint(responseObj) } catch (ex: Exception) { throw #T(ex?.message ?: #S, ex) }",
-                                                RuntimeTypes.KtorServerCore.BadRequestException,
-                                                "Error while validating constraints",
-                                            )
                                             write("val serializer = ${shape.id.name}OperationSerializer()")
                                             withBlock(
                                                 "val response = try { serializer.serialize(#T(), responseObj) } catch (ex: Exception) {",
