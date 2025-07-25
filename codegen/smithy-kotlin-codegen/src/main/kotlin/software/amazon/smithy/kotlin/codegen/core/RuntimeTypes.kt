@@ -71,7 +71,7 @@ object RuntimeTypes {
         object Config : RuntimeTypePackage(KotlinDependency.HTTP_CLIENT, "config") {
             val HttpClientConfig = symbol("HttpClientConfig")
             val HttpEngineConfig = symbol("HttpEngineConfig")
-            val TimeoutClientConfig = symbol("TimeoutClientConfig")
+            val TimeoutConfig = symbol("TimeoutConfig")
         }
 
         object Engine : RuntimeTypePackage(KotlinDependency.HTTP_CLIENT, "engine") {

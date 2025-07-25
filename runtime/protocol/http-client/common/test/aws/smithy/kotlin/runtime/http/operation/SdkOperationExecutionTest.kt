@@ -19,20 +19,17 @@ import aws.smithy.kotlin.runtime.http.response.HttpResponse
 import aws.smithy.kotlin.runtime.identity.asIdentityProviderConfig
 import aws.smithy.kotlin.runtime.operation.ExecutionContext
 import aws.smithy.kotlin.runtime.time.Instant
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
-import org.junit.jupiter.api.assertThrows
-import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertFalse
-import kotlin.test.assertTrue
+import kotlin.coroutines.CoroutineContext
+import kotlin.test.*
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
 
 class SdkOperationExecutionTest {
     @Test
-    fun testAttemptTimeoutWithLongCall(): Unit = runBlocking {
+    fun testAttemptTimeoutWithLongCall(): Unit = runTest {
         val serialized = HttpRequestBuilder()
         val op = newTestOperation<Unit, Unit>(serialized, Unit).apply {
             context[HttpOperationContext.AttemptTimeout] = 200.milliseconds
@@ -47,7 +44,7 @@ class SdkOperationExecutionTest {
     }
 
     @Test
-    fun testAttemptTimeoutWithShortCall(): Unit = runBlocking {
+    fun testAttemptTimeoutWithShortCall(): Unit = runTest {
         val serialized = HttpRequestBuilder()
         val op = newTestOperation<Unit, Unit>(serialized, Unit).apply {
             context[HttpOperationContext.AttemptTimeout] = 300.milliseconds
@@ -62,7 +59,7 @@ class SdkOperationExecutionTest {
     }
 
     @Test
-    fun testCallTimeoutWithLongCall(): Unit = runBlocking {
+    fun testCallTimeoutWithLongCall(): Unit = runTest {
         val serialized = HttpRequestBuilder()
         val op = newTestOperation<Unit, Unit>(serialized, Unit).apply {
             context[HttpOperationContext.CallTimeout] = 200.milliseconds
@@ -71,12 +68,12 @@ class SdkOperationExecutionTest {
         val engine = DelayingHttpEngine(300.milliseconds)
         val client = SdkHttpClient(engine)
 
-        assertThrows<ClientTimeoutException> { op.roundTrip(client, Unit) }
+        assertFailsWith<CallTimeoutException> { op.roundTrip(client, Unit) }
         assertEquals(1, engine.callCount)
     }
 
     @Test
-    fun testCallTimeoutWithShortCall(): Unit = runBlocking {
+    fun testCallTimeoutWithShortCall(): Unit = runTest {
         val serialized = HttpRequestBuilder()
         val op = newTestOperation<Unit, Unit>(serialized, Unit).apply {
             context[HttpOperationContext.CallTimeout] = 300.milliseconds
@@ -169,9 +166,16 @@ class SdkOperationExecutionTest {
     }
 }
 
-private class DelayingHttpEngine(durations: List<Duration>) : HttpClientEngineBase("test engine") {
-    constructor(duration: Duration) : this(listOf(duration))
+private fun CoroutineScope.DelayingHttpEngine(duration: Duration) =
+    DelayingHttpEngine(coroutineContext, listOf(duration))
 
+private fun CoroutineScope.DelayingHttpEngine(durations: List<Duration>) =
+    DelayingHttpEngine(coroutineContext, durations)
+
+private class DelayingHttpEngine(
+    testContext: CoroutineContext,
+    durations: List<Duration>,
+) : HttpClientEngineBase("test engine", testContext) {
     private val durations = run {
         val terminator = durations.last()
         val initial = durations.dropLast(1)

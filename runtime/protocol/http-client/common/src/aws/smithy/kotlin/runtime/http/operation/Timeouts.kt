@@ -25,11 +25,25 @@ internal sealed interface TimeoutScope {
 /**
  * Indicates that a client-side configured timeout was exceeded (e.g., call timeout, attempt timeout, etc.)
  */
-public class ClientTimeoutException(message: String?, cause: Throwable?) : ClientException(message, cause) {
+public abstract class ClientTimeoutException(
+    message: String,
+    cause: Throwable,
+    retryable: Boolean,
+) : ClientException(message, cause) {
     init {
-        sdkErrorMetadata.attributes[ErrorMetadata.Retryable] = true
+        sdkErrorMetadata.attributes[ErrorMetadata.Retryable] = retryable
     }
 }
+
+/**
+ * Indicates that a single attempt took longer than allowed to complete
+ */
+public class AttemptTimeoutException(message: String, cause: Throwable) : ClientTimeoutException(message, cause, true)
+
+/**
+ * Indicates that a call (including any retry attempts) took longer than allowed to complete
+ */
+public class CallTimeoutException(message: String, cause: Throwable) : ClientTimeoutException(message, cause, false)
 
 internal suspend inline fun <T> scopedTimeout(
     scope: TimeoutScope,
@@ -46,6 +60,12 @@ internal suspend inline fun <T> scopedTimeout(
                 append(" exceeded configured timeout of ")
                 append(duration)
             }
-            throw ClientTimeoutException(message, e)
+
+            val exceptionType: (String, Throwable) -> Throwable = when (scope) {
+                is TimeoutScope.Attempt -> ::AttemptTimeoutException
+                TimeoutScope.Call -> ::CallTimeoutException
+            }
+
+            throw exceptionType(message, e)
         }
 }

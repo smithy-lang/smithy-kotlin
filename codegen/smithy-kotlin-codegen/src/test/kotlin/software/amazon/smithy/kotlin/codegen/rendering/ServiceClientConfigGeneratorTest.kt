@@ -45,7 +45,7 @@ class ServiceClientConfigGeneratorTest {
         contents.assertBalancedBracesAndParens()
 
         val expectedCtor = """
-public class Config private constructor(builder: Builder) : HttpAuthConfig, HttpClientConfig, HttpEngineConfig by builder.buildHttpEngineConfig(), IdempotencyTokenConfig, RetryClientConfig, RetryStrategyClientConfig by builder.buildRetryStrategyClientConfig(), SdkClientConfig, TelemetryConfig, TimeoutClientConfig {
+public class Config private constructor(builder: Builder) : HttpAuthConfig, HttpClientConfig, HttpEngineConfig by builder.buildHttpEngineConfig(), IdempotencyTokenConfig, RetryClientConfig, RetryStrategyClientConfig by builder.buildRetryStrategyClientConfig(), SdkClientConfig, TelemetryConfig, TimeoutConfig {
 """
         contents.shouldContainWithDiff(expectedCtor)
 
@@ -65,7 +65,7 @@ public class Config private constructor(builder: Builder) : HttpAuthConfig, Http
         contents.shouldContainWithDiff(expectedProps)
 
         val expectedBuilder = """
-    public class Builder : HttpAuthConfig.Builder, HttpClientConfig.Builder, HttpEngineConfig.Builder by HttpEngineConfigImpl.BuilderImpl(), IdempotencyTokenConfig.Builder, RetryClientConfig.Builder, RetryStrategyClientConfig.Builder by RetryStrategyClientConfigImpl.BuilderImpl(), SdkClientConfig.Builder<Config>, TelemetryConfig.Builder, TimeoutClientConfig.Builder {
+    public class Builder : HttpAuthConfig.Builder, HttpClientConfig.Builder, HttpEngineConfig.Builder by HttpEngineConfigImpl.BuilderImpl(), IdempotencyTokenConfig.Builder, RetryClientConfig.Builder, RetryStrategyClientConfig.Builder by RetryStrategyClientConfigImpl.BuilderImpl(), SdkClientConfig.Builder<Config>, TelemetryConfig.Builder, TimeoutConfig.Builder {
         /**
          * A reader-friendly name for the client.
          */
@@ -73,7 +73,8 @@ public class Config private constructor(builder: Builder) : HttpAuthConfig, Http
 
         /**
          * The maximum amount of time to wait for any single attempt of a request within the retry loop. By default,
-         * the value is `null` indicating no timeout is enforced.
+         * the value is `null` indicating no timeout is enforced. Attempt timeouts may be retried if allowed by the
+         * current retry policy and retry capacity.
          */
         override var attemptTimeout: Duration? = null
 
@@ -92,7 +93,7 @@ public class Config private constructor(builder: Builder) : HttpAuthConfig, Http
 
         /**
          * The maximum amount of time to wait for completion of a call, including any retries after the first attempt.
-         * By default, the value is `null` indicating no timeout is enforced.
+         * By default, the value is `null` indicating no timeout is enforced. Call timeouts are not retried.
          */
         override var callTimeout: Duration? = null
 
