@@ -67,4 +67,14 @@ class ServiceTypes(val pkgName: String) {
         name = "AcceptTypeGuard"
         namespace = "$pkgName.plugins"
     }
+
+    val sizeOf = buildSymbol {
+        name = "sizeOf"
+        namespace = "$pkgName.constraints"
+    }
+
+    val hasAllUniqueElements = buildSymbol {
+        name = "hasAllUniqueElements"
+        namespace = "$pkgName.constraints"
+    }
 }

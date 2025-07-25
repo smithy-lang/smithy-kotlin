@@ -66,5 +66,3 @@ structure ErrorTestInput {
 structure ErrorTestOutput {
     output1: String
 }
-
-
