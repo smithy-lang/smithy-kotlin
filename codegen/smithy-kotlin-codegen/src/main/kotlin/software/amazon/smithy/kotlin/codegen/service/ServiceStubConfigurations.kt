@@ -31,14 +31,10 @@ enum class ContentType(val value: String) {
             return when {
                 shape.hasTrait(Rpcv2CborTrait.ID) -> CBOR
                 shape.hasTrait(RestJson1Trait.ID) -> {
-                    println(shape.allMembers)
                     val inputShape = ctx.model.expectShape(operation.input.get())
                     for (memberShape in inputShape.allMembers.values) {
-                        println("------------------------------")
-                        println(memberShape)
                         if (!memberShape.hasTrait(HttpPayloadTrait.ID)) continue
                         val memberType = ctx.model.expectShape(memberShape.target).type
-                        println(memberType)
                         when (memberType) {
                             ShapeType.STRING -> return PLAIN_TEXT
                             ShapeType.DOCUMENT,

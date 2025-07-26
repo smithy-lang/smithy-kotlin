@@ -10,13 +10,13 @@ import software.amazon.smithy.kotlin.codegen.core.withBlock
 import software.amazon.smithy.kotlin.codegen.core.withInlineBlock
 import software.amazon.smithy.kotlin.codegen.lang.KotlinTypes
 import software.amazon.smithy.kotlin.codegen.model.getTrait
-import software.amazon.smithy.kotlin.codegen.model.isNumberShape
 import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.traits.AuthTrait
 import software.amazon.smithy.model.traits.HttpBearerAuthTrait
 import software.amazon.smithy.model.traits.HttpLabelTrait
 import software.amazon.smithy.model.traits.HttpQueryTrait
 import software.amazon.smithy.model.traits.HttpTrait
+import software.amazon.smithy.model.traits.TimestampFormatTrait
 import software.amazon.smithy.utils.AbstractCodeWriter
 
 class LoggingWriter(parent: LoggingWriter? = null) : AbstractCodeWriter<LoggingWriter>() {
@@ -317,62 +317,66 @@ internal class KtorStubGenerator(
 
     private fun readHttpLabel(shape: OperationShape, writer: KotlinWriter) {
         val inputShape = ctx.model.expectShape(shape.input.get())
-        inputShape.allMembers.forEach { member ->
-            if (!member.value.hasTrait(HttpLabelTrait.ID)) return@forEach
-            val memberName = member.key
+        inputShape.allMembers
+            .filter { member -> member.value.hasTrait(HttpLabelTrait.ID) }
+            .forEach { member ->
+                val memberName = member.key
+                val memberShape = member.value
 
-            val targetStringValue = "call.parameters[\"$memberName\"]"
-            val targetShape = ctx.model.expectShape(member.value.target)
-            writer.writeInline("$memberName = ")
-                .call {
-                    renderCastingPrimitiveFromShapeType(
-                        targetStringValue,
-                        targetShape.type,
-                        writer,
-                        "Unsupported type ${member.value.type} for httpLabel",
-                    )
-                }
-        }
+                val httpLabelVariableName = "call.parameters[\"$memberName\"]"
+                val targetShape = ctx.model.expectShape(memberShape.target)
+                writer.writeInline("$memberName = ")
+                    .call {
+                        renderCastingPrimitiveFromShapeType(
+                            httpLabelVariableName,
+                            targetShape.type,
+                            writer,
+                            memberShape.getTrait<TimestampFormatTrait>() ?: inputShape.getTrait<TimestampFormatTrait>(),
+                            "Unsupported type ${memberShape.type} for httpLabel",
+                        )
+                    }
+            }
     }
 
     private fun readHttpQuery(shape: OperationShape, writer: KotlinWriter) {
         val inputShape = ctx.model.expectShape(shape.input.get())
-        inputShape.allMembers.forEach { member ->
-            if (!member.value.hasTrait(HttpQueryTrait.ID)) return@forEach
-            val memberName = member.key
-            val httpQueryTrait = member.value.getTrait<HttpQueryTrait>()!!
-            val targetStringValue = "call.request.queryParameters[\"${httpQueryTrait.value}\"]"
-            val targetShape = ctx.model.expectShape(member.value.target)
-            writer.writeInline("$memberName = ")
-                .call {
-                    when {
-                        targetShape.isStringShape ||
-                            targetShape.isNumberShape ||
-                            targetShape.isBooleanShape ||
-                            targetShape.isTimestampShape ->
-                            renderCastingPrimitiveFromShapeType(
-                                targetStringValue,
+        inputShape.allMembers
+            .filter { member -> member.value.hasTrait(HttpQueryTrait.ID) }
+            .forEach { member ->
+                val memberName = member.key
+                val memberShape = member.value
+                val httpQueryTrait = memberShape.getTrait<HttpQueryTrait>()!!
+                val httpQueryVariableName = "call.request.queryParameters[\"${httpQueryTrait.value}\"]"
+                val targetShape = ctx.model.expectShape(memberShape.target)
+                writer.writeInline("$memberName = ")
+                    .call {
+                        when {
+                            targetShape.isListShape -> {
+                                val listMemberShape = targetShape.allMembers.values.first()
+                                val listMemberTargetShapeId = ctx.model.expectShape(listMemberShape.target)
+                                val httpQueryListVariableName = "(call.request.queryParameters.getAll(\"${httpQueryTrait.value}\") " +
+                                    "?: call.request.queryParameters.getAll(\"${httpQueryTrait.value}[]\") " +
+                                    "?: emptyList())"
+                                writer.withBlock("$httpQueryListVariableName.mapNotNull{", "}") {
+                                    renderCastingPrimitiveFromShapeType(
+                                        "it",
+                                        listMemberTargetShapeId.type,
+                                        writer,
+                                        listMemberShape.getTrait<TimestampFormatTrait>() ?: targetShape.getTrait<TimestampFormatTrait>(),
+                                        "Unsupported type ${memberShape.type} for list in httpLabel",
+                                    )
+                                }
+                            }
+                            else -> renderCastingPrimitiveFromShapeType(
+                                httpQueryVariableName,
                                 targetShape.type,
                                 writer,
-                                "Unsupported type ${member.value.type} for httpQuery",
+                                memberShape.getTrait<TimestampFormatTrait>() ?: inputShape.getTrait<TimestampFormatTrait>(),
+                                "Unsupported type ${memberShape.type} for httpQuery",
                             )
-                        targetShape.isListShape -> {
-                            val listMemberShape = ctx.model.expectShape(targetShape.allMembers.values.first().target)
-                            val targetListValue = "(call.request.queryParameters.getAll(\"${httpQueryTrait.value}\") " +
-                                "?: call.request.queryParameters.getAll(\"${httpQueryTrait.value}[]\") " +
-                                "?: emptyList())"
-                            writer.withBlock("$targetListValue.mapNotNull{", "}") {
-                                renderCastingPrimitiveFromShapeType(
-                                    "it",
-                                    listMemberShape.type,
-                                    writer,
-                                    "Unsupported type ${member.value.type} for list in httpLabel",
-                                )
-                            }
                         }
                     }
-                }
-        }
+            }
     }
 
     private fun renderRoutingAuth(w: KotlinWriter, shape: OperationShape) {
