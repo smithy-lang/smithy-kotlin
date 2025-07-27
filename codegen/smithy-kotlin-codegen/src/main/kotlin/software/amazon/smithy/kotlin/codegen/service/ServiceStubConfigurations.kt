@@ -4,52 +4,53 @@ import software.amazon.smithy.aws.traits.protocols.RestJson1Trait
 import software.amazon.smithy.build.FileManifest
 import software.amazon.smithy.kotlin.codegen.core.GenerationContext
 import software.amazon.smithy.kotlin.codegen.core.KotlinDelegator
-import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.shapes.ServiceShape
+import software.amazon.smithy.model.shapes.ShapeId
 import software.amazon.smithy.model.shapes.ShapeType
 import software.amazon.smithy.model.traits.HttpPayloadTrait
 import software.amazon.smithy.model.traits.MediaTypeTrait
 import software.amazon.smithy.protocol.traits.Rpcv2CborTrait
 
-enum class ContentType(val value: String) {
+enum class MediaType(val value: String) {
     CBOR("CBOR"),
     JSON("JSON"),
     PLAIN_TEXT("PLAIN_TEXT"),
-    BINARY("BINARY"),
-    MEDIA_TYPE("MEDIA_TYPE"),
+    OCTET_STREAM("OctetStream"),
+    ANY("ANY"),
     ;
 
     override fun toString(): String = value
 
     companion object {
-        fun fromValue(value: String): ContentType = ContentType
+        fun fromValue(value: String): MediaType = MediaType
             .entries
             .firstOrNull { it.name.equals(value.uppercase(), ignoreCase = true) }
-            ?: throw IllegalArgumentException("$value is not a validContentType value, expected one of ${ContentType.entries}")
+            ?: throw IllegalArgumentException("$value is not a validContentType value, expected one of ${MediaType.entries}")
 
-        fun fromServiceShape(ctx: GenerationContext, shape: ServiceShape, operation: OperationShape): ContentType {
+        fun fromServiceShape(ctx: GenerationContext, shape: ServiceShape, targetShapeId: ShapeId): MediaType {
             return when {
                 shape.hasTrait(Rpcv2CborTrait.ID) -> CBOR
                 shape.hasTrait(RestJson1Trait.ID) -> {
-                    val inputShape = ctx.model.expectShape(operation.input.get())
-                    for (memberShape in inputShape.allMembers.values) {
+                    val targetShape = ctx.model.expectShape(targetShapeId)
+                    for (memberShape in targetShape.allMembers.values) {
                         if (!memberShape.hasTrait(HttpPayloadTrait.ID)) continue
                         val memberType = ctx.model.expectShape(memberShape.target).type
                         when (memberType) {
                             ShapeType.STRING -> return PLAIN_TEXT
+                            ShapeType.BLOB -> return OCTET_STREAM
                             ShapeType.DOCUMENT,
                             ShapeType.STRUCTURE,
                             ShapeType.UNION,
                             -> return JSON
                             else -> {
-                                if (memberShape.hasTrait(MediaTypeTrait.ID)) return MEDIA_TYPE
+                                if (memberShape.hasTrait(MediaTypeTrait.ID)) return ANY
                             }
                         }
                     }
                     return JSON
                 }
 
-                else -> throw IllegalArgumentException("service shape does not a valid protocol")
+                else -> throw IllegalArgumentException("Cannot find supported MediaType for the service")
             }
         }
     }

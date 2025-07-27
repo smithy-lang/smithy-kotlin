@@ -10,12 +10,18 @@ import software.amazon.smithy.kotlin.codegen.core.withBlock
 import software.amazon.smithy.kotlin.codegen.core.withInlineBlock
 import software.amazon.smithy.kotlin.codegen.lang.KotlinTypes
 import software.amazon.smithy.kotlin.codegen.model.getTrait
+import software.amazon.smithy.kotlin.codegen.service.MediaType.ANY
+import software.amazon.smithy.kotlin.codegen.service.MediaType.JSON
+import software.amazon.smithy.kotlin.codegen.service.MediaType.OCTET_STREAM
+import software.amazon.smithy.kotlin.codegen.service.MediaType.PLAIN_TEXT
 import software.amazon.smithy.model.shapes.OperationShape
+import software.amazon.smithy.model.shapes.ShapeId
 import software.amazon.smithy.model.traits.AuthTrait
 import software.amazon.smithy.model.traits.HttpBearerAuthTrait
 import software.amazon.smithy.model.traits.HttpLabelTrait
 import software.amazon.smithy.model.traits.HttpQueryTrait
 import software.amazon.smithy.model.traits.HttpTrait
+import software.amazon.smithy.model.traits.MediaTypeTrait
 import software.amazon.smithy.model.traits.TimestampFormatTrait
 import software.amazon.smithy.utils.AbstractCodeWriter
 
@@ -239,22 +245,22 @@ internal class KtorStubGenerator(
                                 "OPTIONS" -> RuntimeTypes.KtorServerRouting.options
                                 else -> error("Unsupported http trait ${httpTrait.method}")
                             }
-                            val contentType = ContentType.fromServiceShape(ctx, serviceShape, shape)
+                            val contentType = MediaType.fromServiceShape(ctx, serviceShape, shape.input.get())
                             val contentTypeGuard = when (contentType) {
-                                ContentType.CBOR -> "cbor()"
-                                ContentType.JSON -> "json()"
-                                ContentType.PLAIN_TEXT -> "text()"
-                                ContentType.BINARY -> "binary()"
-                                ContentType.MEDIA_TYPE -> "any()"
+                                MediaType.CBOR -> "cbor()"
+                                MediaType.JSON -> "json()"
+                                MediaType.PLAIN_TEXT -> "text()"
+                                MediaType.OCTET_STREAM -> "binary()"
+                                MediaType.ANY -> "any()"
                             }
 
-                            val acceptTypeGuard = when (contentType) {
-                                ContentType.CBOR -> "cbor()"
-                                ContentType.JSON,
-                                ContentType.PLAIN_TEXT,
-                                ContentType.BINARY,
-                                ContentType.MEDIA_TYPE,
-                                -> "json()"
+                            val acceptType = MediaType.fromServiceShape(ctx, serviceShape, shape.output.get())
+                            val acceptTypeGuard = when (acceptType) {
+                                MediaType.CBOR -> "cbor()"
+                                MediaType.JSON -> "json()"
+                                MediaType.PLAIN_TEXT -> "text()"
+                                MediaType.OCTET_STREAM -> "binary()"
+                                MediaType.ANY -> "any()"
                             }
 
                             withBlock("#T (#S) {", "}", RuntimeTypes.KtorServerRouting.route, uri) {
@@ -301,7 +307,7 @@ internal class KtorStubGenerator(
                                                     "Malformed CBOR output",
                                                 )
                                             }
-                                                .call { renderResponseCall(writer, contentType, successCode) }
+                                                .call { renderResponseCall(writer, acceptType, successCode, shape.output.get()) }
                                         }
                                         withBlock(" catch (t: Throwable) {", "}") {
                                             write("throw t")
@@ -397,11 +403,12 @@ internal class KtorStubGenerator(
 
     private fun renderResponseCall(
         w: KotlinWriter,
-        contentType: ContentType,
+        acceptType: MediaType,
         successCode: Int,
+        outputShapeId: ShapeId,
     ) {
-        when (contentType) {
-            ContentType.CBOR -> w.withBlock(
+        when (acceptType) {
+            MediaType.CBOR -> w.withBlock(
                 "#T.#T(",
                 ")",
                 RuntimeTypes.KtorServerCore.applicationCall,
@@ -414,11 +421,20 @@ internal class KtorStubGenerator(
                     RuntimeTypes.KtorServerHttp.HttpStatusCode,
                 )
             }
-            ContentType.JSON,
-            ContentType.PLAIN_TEXT,
-            ContentType.BINARY,
-            ContentType.MEDIA_TYPE,
-            -> w.withBlock(
+            OCTET_STREAM -> w.withBlock(
+                "#T.#T(",
+                ")",
+                RuntimeTypes.KtorServerCore.applicationCall,
+                RuntimeTypes.KtorServerRouting.responseRespondBytes,
+            ) {
+                write("bytes = response,")
+                write("contentType = #T,", RuntimeTypes.KtorServerHttp.OctetStream)
+                write(
+                    "status = #T.fromValue($successCode),",
+                    RuntimeTypes.KtorServerHttp.HttpStatusCode,
+                )
+            }
+            JSON -> w.withBlock(
                 "#T.#T(",
                 ")",
                 RuntimeTypes.KtorServerCore.applicationCall,
@@ -430,6 +446,36 @@ internal class KtorStubGenerator(
                     "status = #T.fromValue($successCode),",
                     RuntimeTypes.KtorServerHttp.HttpStatusCode,
                 )
+            }
+            PLAIN_TEXT -> w.withBlock(
+                "#T.#T(",
+                ")",
+                RuntimeTypes.KtorServerCore.applicationCall,
+                RuntimeTypes.KtorServerRouting.responseResponseText,
+            ) {
+                write("text = response,")
+                write("contentType = #T,", RuntimeTypes.KtorServerHttp.PlainText)
+                write(
+                    "status = #T.fromValue($successCode),",
+                    RuntimeTypes.KtorServerHttp.HttpStatusCode,
+                )
+            }
+            ANY -> {
+                val outputShape = ctx.model.expectShape(outputShapeId)
+                val mediaTraits = outputShape.allMembers.values.firstNotNullOf { it.getTrait<MediaTypeTrait>() }
+                w.withBlock(
+                    "#T.#T(",
+                    ")",
+                    RuntimeTypes.KtorServerCore.applicationCall,
+                    RuntimeTypes.KtorServerRouting.responseRespondBytes,
+                ) {
+                    write("bytes = response,")
+                    write("contentType = #S,", mediaTraits.value)
+                    write(
+                        "status = #T.fromValue($successCode),",
+                        RuntimeTypes.KtorServerHttp.HttpStatusCode,
+                    )
+                }
             }
         }
     }
