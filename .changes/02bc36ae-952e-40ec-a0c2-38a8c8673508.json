@@ -1,0 +1,8 @@
+{
+    "id": "02bc36ae-952e-40ec-a0c2-38a8c8673508",
+    "type": "feature",
+    "description": "Enable configuration of timeouts for calls and attempt",
+    "issues": [
+        "https://github.com/smithy-lang/smithy-kotlin/issues/1320"
+    ]
+}

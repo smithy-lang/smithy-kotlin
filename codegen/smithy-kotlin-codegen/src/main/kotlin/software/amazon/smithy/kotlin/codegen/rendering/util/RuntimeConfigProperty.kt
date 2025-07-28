@@ -10,6 +10,7 @@ import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.codegen.core.SymbolReference
 import software.amazon.smithy.kotlin.codegen.core.RuntimeTypes
 import software.amazon.smithy.kotlin.codegen.lang.KotlinTypes
+import software.amazon.smithy.kotlin.codegen.model.asNullable
 import software.amazon.smithy.kotlin.codegen.model.buildSymbol
 
 /**
@@ -183,6 +184,31 @@ object RuntimeConfigProperty {
 
         documentation = """
             The ordered preference of [AuthScheme] that this client will use. 
+        """.trimIndent()
+    }
+
+    val AttemptTimeout = ConfigProperty {
+        name = "attemptTimeout"
+        symbol = KotlinTypes.Time.Duration.asNullable()
+        baseClass = RuntimeTypes.HttpClient.Config.TimeoutConfig
+        useNestedBuilderBaseClass()
+
+        documentation = """
+            The maximum amount of time to wait for any single attempt of a request within the retry loop. By default,
+            the value is `null` indicating no timeout is enforced. Attempt timeouts may be retried if allowed by the
+            current retry policy and retry capacity.
+        """.trimIndent()
+    }
+
+    val CallTimeout = ConfigProperty {
+        name = "callTimeout"
+        symbol = KotlinTypes.Time.Duration.asNullable()
+        baseClass = RuntimeTypes.HttpClient.Config.TimeoutConfig
+        useNestedBuilderBaseClass()
+
+        documentation = """
+            The maximum amount of time to wait for completion of a call, including any retries after the first attempt.
+            By default, the value is `null` indicating no timeout is enforced. Call timeouts are not retried.
         """.trimIndent()
     }
 }
