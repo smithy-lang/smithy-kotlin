@@ -15,7 +15,7 @@ class ServiceFileTest {
     val packageName = "com.test"
     val packagePath = packageName.replace('.', '/')
 
-    val projectDir: Path = Paths.get("build/generated-service")
+    val projectDir: Path = Paths.get("build/service-generator-test")
 
     @Test
     fun `generates service and all necessary files`() {
