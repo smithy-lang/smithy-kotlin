@@ -14,11 +14,13 @@ import software.amazon.smithy.kotlin.codegen.service.MediaType.ANY
 import software.amazon.smithy.kotlin.codegen.service.MediaType.JSON
 import software.amazon.smithy.kotlin.codegen.service.MediaType.OCTET_STREAM
 import software.amazon.smithy.kotlin.codegen.service.MediaType.PLAIN_TEXT
+import software.amazon.smithy.model.shapes.MapShape
 import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.shapes.ShapeId
 import software.amazon.smithy.model.traits.AuthTrait
 import software.amazon.smithy.model.traits.HttpBearerAuthTrait
 import software.amazon.smithy.model.traits.HttpLabelTrait
+import software.amazon.smithy.model.traits.HttpQueryParamsTrait
 import software.amazon.smithy.model.traits.HttpQueryTrait
 import software.amazon.smithy.model.traits.HttpTrait
 import software.amazon.smithy.model.traits.MediaTypeTrait
@@ -248,19 +250,19 @@ internal class KtorStubGenerator(
                             val contentType = MediaType.fromServiceShape(ctx, serviceShape, shape.input.get())
                             val contentTypeGuard = when (contentType) {
                                 MediaType.CBOR -> "cbor()"
-                                MediaType.JSON -> "json()"
-                                MediaType.PLAIN_TEXT -> "text()"
-                                MediaType.OCTET_STREAM -> "binary()"
-                                MediaType.ANY -> "any()"
+                                JSON -> "json()"
+                                PLAIN_TEXT -> "text()"
+                                OCTET_STREAM -> "binary()"
+                                ANY -> "any()"
                             }
 
                             val acceptType = MediaType.fromServiceShape(ctx, serviceShape, shape.output.get())
                             val acceptTypeGuard = when (acceptType) {
                                 MediaType.CBOR -> "cbor()"
-                                MediaType.JSON -> "json()"
-                                MediaType.PLAIN_TEXT -> "text()"
-                                MediaType.OCTET_STREAM -> "binary()"
-                                MediaType.ANY -> "any()"
+                                JSON -> "json()"
+                                PLAIN_TEXT -> "text()"
+                                OCTET_STREAM -> "binary()"
+                                ANY -> "any()"
                             }
 
                             withBlock("#T (#S) {", "}", RuntimeTypes.KtorServerRouting.route, uri) {
@@ -329,7 +331,7 @@ internal class KtorStubGenerator(
                 val memberName = member.key
                 val memberShape = member.value
 
-                val httpLabelVariableName = "call.parameters[\"$memberName\"]"
+                val httpLabelVariableName = "call.parameters[\"$memberName\"]?"
                 val targetShape = ctx.model.expectShape(memberShape.target)
                 writer.writeInline("$memberName = ")
                     .call {
@@ -346,14 +348,16 @@ internal class KtorStubGenerator(
 
     private fun readHttpQuery(shape: OperationShape, writer: KotlinWriter) {
         val inputShape = ctx.model.expectShape(shape.input.get())
+        val httpQueryKeys = mutableSetOf<String>()
         inputShape.allMembers
             .filter { member -> member.value.hasTrait(HttpQueryTrait.ID) }
             .forEach { member ->
                 val memberName = member.key
                 val memberShape = member.value
                 val httpQueryTrait = memberShape.getTrait<HttpQueryTrait>()!!
-                val httpQueryVariableName = "call.request.queryParameters[\"${httpQueryTrait.value}\"]"
+                val httpQueryVariableName = "call.request.queryParameters[\"${httpQueryTrait.value}\"]?"
                 val targetShape = ctx.model.expectShape(memberShape.target)
+                httpQueryKeys.add(httpQueryTrait.value)
                 writer.writeInline("$memberName = ")
                     .call {
                         when {
@@ -365,7 +369,7 @@ internal class KtorStubGenerator(
                                     "?: emptyList())"
                                 writer.withBlock("$httpQueryListVariableName.mapNotNull{", "}") {
                                     renderCastingPrimitiveFromShapeType(
-                                        "it",
+                                        "it?",
                                         listMemberTargetShapeId.type,
                                         writer,
                                         listMemberShape.getTrait<TimestampFormatTrait>() ?: targetShape.getTrait<TimestampFormatTrait>(),
@@ -383,6 +387,33 @@ internal class KtorStubGenerator(
                         }
                     }
             }
+        val httpQueryParamsMember = inputShape.allMembers.values.firstOrNull { it.hasTrait(HttpQueryParamsTrait.ID) }
+        httpQueryParamsMember?.apply {
+            val httpQueryParamsMemberName = httpQueryParamsMember.memberName
+            val httpQueryParamsMapShape = ctx.model.expectShape(httpQueryParamsMember.target) as MapShape
+            val httpQueryParamsMapValueTypeShape = ctx.model.expectShape(httpQueryParamsMapShape.value.target)
+            println(httpQueryParamsMapShape)
+            val httpQueryKeysLiteral = httpQueryKeys.joinToString(", ") { "\"$it\"" }
+            writer.withInlineBlock("$httpQueryParamsMemberName = call.request.queryParameters.entries().filter { (key, _) ->", "}") {
+                write("key !in setOf($httpQueryKeysLiteral)")
+            }
+                .withBlock(".associate { (key, values) ->", "}") {
+                    if (httpQueryParamsMapValueTypeShape.isListShape) {
+                        write("key to values!!")
+                    } else {
+                        write("key to values.first()")
+                    }
+                }
+                .withBlock(".mapValues { (_, value) ->", "}") {
+                    renderCastingPrimitiveFromShapeType(
+                        "value",
+                        httpQueryParamsMapValueTypeShape.type,
+                        writer,
+                        httpQueryParamsMapValueTypeShape.getTrait<TimestampFormatTrait>() ?: httpQueryParamsMapShape.getTrait<TimestampFormatTrait>(),
+                        "Unsupported type ${httpQueryParamsMapValueTypeShape.type} for httpQuery",
+                    )
+                }
+        }
     }
 
     private fun renderRoutingAuth(w: KotlinWriter, shape: OperationShape) {
@@ -668,12 +699,24 @@ internal class KtorStubGenerator(
             writer.withBlock("public class AcceptTypeGuardConfig {", "}") {
                 write("public var allow: List<#T> = emptyList()", RuntimeTypes.KtorServerHttp.ContentType)
                 write("")
+                withBlock("public fun any(): Unit {", "}") {
+                    write("allow = listOf(#T)", RuntimeTypes.KtorServerHttp.Any)
+                }
+                write("")
                 withBlock("public fun json(): Unit {", "}") {
                     write("allow = listOf(#T)", RuntimeTypes.KtorServerHttp.Json)
                 }
                 write("")
                 withBlock("public fun cbor(): Unit {", "}") {
                     write("allow = listOf(#T)", RuntimeTypes.KtorServerHttp.Cbor)
+                }
+                write("")
+                withBlock("public fun text(): Unit {", "}") {
+                    write("allow = listOf(#T)", RuntimeTypes.KtorServerHttp.PlainText)
+                }
+                write("")
+                withBlock("public fun binary(): Unit {", "}") {
+                    write("allow = listOf(#T)", RuntimeTypes.KtorServerHttp.OctetStream)
                 }
             }
                 .write("")
