@@ -120,6 +120,11 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         httpOperations.forEach { operation ->
             generateOperationSerializer(ctx, operation)
         }
+
+        if (ctx.settings.build.generateServiceProject){
+            val modeledErrors = httpOperations.flatMap { it.errors }.map { ctx.model.expectShape(it) as StructureShape }.toSet()
+            modeledErrors.forEach { generateExceptionSerializer(ctx, it) }
+        }
     }
 
     private fun generateDeserializers(ctx: ProtocolGenerator.GenerationContext) {
@@ -127,12 +132,15 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         // render HttpDeserialize for all operation outputs
         val httpOperations = resolver.bindingOperations()
         httpOperations.forEach { operation ->
+
             generateOperationDeserializer(ctx, operation)
         }
 
         // generate HttpDeserialize for exception types
-        val modeledErrors = httpOperations.flatMap { it.errors }.map { ctx.model.expectShape(it) as StructureShape }.toSet()
-        modeledErrors.forEach { generateExceptionDeserializer(ctx, it) }
+        if (!ctx.settings.build.generateServiceProject){
+            val modeledErrors = httpOperations.flatMap { it.errors }.map { ctx.model.expectShape(it) as StructureShape }.toSet()
+            modeledErrors.forEach { generateExceptionDeserializer(ctx, it) }
+        }
     }
 
     override fun generateProtocolClient(ctx: ProtocolGenerator.GenerationContext) {
@@ -295,6 +303,44 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                     renderSerializeHttpBody(ctx, op, writer)
                 }
             }
+    }
+
+    /**
+     * Generate HttpSerialize for a modeled error (exception)
+     */
+    private fun generateExceptionSerializer(ctx: ProtocolGenerator.GenerationContext, shape: StructureShape) {
+        val serializationSymbol = ctx.symbolProvider.toSymbol(shape)
+        val exceptionSerializerSymbols = setOf(
+            RuntimeTypes.Core.ExecutionContext,
+            RuntimeTypes.Serde.SdkObjectDescriptor,
+            RuntimeTypes.Serde.SdkFieldDescriptor,
+            RuntimeTypes.Serde.SerialKind,
+            RuntimeTypes.Serde.serializeStruct,
+            RuntimeTypes.Http.Response.HttpResponse,
+        )
+
+        val serializerSymbol = buildSymbol {
+            val deserializerName = "${serializationSymbol.name}Serializer"
+            definitionFile = "$deserializerName.kt"
+            name = deserializerName
+            namespace = ctx.settings.pkg.serde
+            reference(serializationSymbol, SymbolReference.ContextOption.DECLARE)
+        }
+
+        // exception serializers are never streaming
+        val serdeMeta = HttpSerdeMeta(false)
+
+//        ctx.delegator.useSymbolWriter(serializerSymbol) { writer ->
+//            val resolver = getProtocolHttpBindingResolver(ctx.model, ctx.service)
+//            val bindings = resolver.responseBindings(shape)
+//            writer
+//                .addImport(exceptionSerializerSymbols)
+//                .write("")
+//                .openBlock("internal class #T {", serializerSymbol)
+//                .write("")
+//                .call { renderServiceHttpSerialize(ctx, serializationSymbol, bindings, serdeMeta, null, writer) }
+//                .closeBlock("}")
+//        }
     }
 
     /**
@@ -723,25 +769,13 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             } else {
                 resolver.responseBindings(shape)
             }
-
-            when (ctx.settings.build.generateServiceProject) {
-                true ->
-                    writer
-                        .addImport(exceptionDeserializerSymbols)
-                        .write("")
-                        .openBlock("internal class #T {", deserializerSymbol)
-                        .write("")
-                        .call { renderServiceHttpDeserialize(ctx, deserializationSymbol, bindings, serdeMeta, null, writer) }
-                        .closeBlock("}")
-                false ->
-                    writer
-                        .addImport(exceptionDeserializerSymbols)
-                        .write("")
-                        .openBlock("internal class #T: #T.NonStreaming<#T> {", deserializerSymbol, RuntimeTypes.HttpClient.Operation.HttpDeserializer, deserializationSymbol)
-                        .write("")
-                        .call { renderHttpDeserialize(ctx, deserializationSymbol, bindings, serdeMeta, null, writer) }
-                        .closeBlock("}")
-            }
+            writer
+                .addImport(exceptionDeserializerSymbols)
+                .write("")
+                .openBlock("internal class #T: #T.NonStreaming<#T> {", deserializerSymbol, RuntimeTypes.HttpClient.Operation.HttpDeserializer, deserializationSymbol)
+                .write("")
+                .call { renderHttpDeserialize(ctx, deserializationSymbol, bindings, serdeMeta, null, writer) }
+                .closeBlock("}")
         }
     }
 
@@ -830,13 +864,15 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
     ) {
         writer
             .openBlock(
-                "public fun deserialize(context: #T, payload: #T?): #T {",
+                "public fun deserialize(context: #T, call: #T, payload: #T?): #T {",
                 RuntimeTypes.Core.ExecutionContext,
+                RuntimeTypes.KtorServerCore.ApplicationCallClass,
                 KotlinTypes.ByteArray,
                 deserializationSymbol,
             )
 
-        writer.write("val builder = #T.Builder()", deserializationSymbol)
+        writer.write("val request = call.request")
+            .write("val builder = #T.Builder()", deserializationSymbol)
             .write("")
             .call {
                 // headers
@@ -959,13 +995,11 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             } else {
                 ""
             }
-//            FIXME: Service supports only CBOR now. Modify this part to support service for other data format.
-//            val message = if (ctx.settings.build.generateServiceProject) {
-//                "request"
-//            } else {
-//                "response"
-//            }
-            val message = "response"
+            val message = if (ctx.settings.build.generateServiceProject) {
+                "request"
+            } else {
+                "response"
+            }
             when (memberTarget) {
                 is NumberShape -> {
                     if (memberTarget is IntEnumShape) {

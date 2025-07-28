@@ -33,17 +33,29 @@ internal class ConstraintGenerator(
         for (memberTrait in memberAndTargetTraits.values) {
             val traitGenerator = getTraitGeneratorFromTrait(prefix, memberName, memberTrait, pkgName, writer)
             if (memberTrait !is RequiredTrait) {
-                writer.write("if ($prefix$memberName == null) { return }")
+                writer.withBlock("if ($prefix$memberName != null) {", "}") {
+                    traitGenerator?.render()
+                }
+            } else {
+                traitGenerator?.render()
             }
-            traitGenerator?.render()
         }
 
-        for (member in targetShape.allMembers) {
-            val newMemberPrefix = "${targetShape.id.name}".replaceFirstChar { it.lowercase() }
-            writer.withBlock("if ($prefix$memberName != null) {", "}") {
-                withBlock("for ($newMemberPrefix${member.key} in $prefix$memberName) {", "}") {
-                    call { generateConstraintValidations(newMemberPrefix, member.value, writer) }
+        if (targetShape.isListShape){
+            for (member in targetShape.allMembers) {
+                val newMemberPrefix = "${targetShape.id.name}".replaceFirstChar { it.lowercase() }
+                writer.withBlock("if ($prefix$memberName != null) {", "}") {
+                    withBlock("for ($newMemberPrefix${member.key} in $prefix$memberName ?: listOf()) {", "}") {
+                        call { generateConstraintValidations(newMemberPrefix, member.value, writer) }
+                    }
                 }
+            }
+        }
+
+        if (targetShape.isStructureShape){
+            for (member in targetShape.allMembers) {
+                val newMemberPrefix = "$prefix$memberName?."
+                generateConstraintValidations(newMemberPrefix, member.value, writer)
             }
         }
     }

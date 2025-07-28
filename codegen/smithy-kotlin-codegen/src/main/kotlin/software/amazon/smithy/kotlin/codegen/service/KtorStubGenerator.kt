@@ -287,7 +287,7 @@ internal class KtorStubGenerator(
                                             )
                                             write("val deserializer = ${shape.id.name}OperationDeserializer()")
                                             withBlock(
-                                                "var requestObj = try { deserializer.deserialize(#T(), request) } catch (ex: Exception) {",
+                                                "var requestObj = try { deserializer.deserialize(#T(), call, request) } catch (ex: Exception) {",
                                                 "}",
                                                 RuntimeTypes.Core.ExecutionContext,
                                             ) {
