@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.5.3] - 07/28/2025
+
+### Features
+* [#1320](https://github.com/smithy-lang/smithy-kotlin/issues/1320) Enable configuration of timeouts for calls and attempt
+
 ## [1.5.2] - 07/24/2025
 
 ### Miscellaneous
