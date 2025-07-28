@@ -15,10 +15,13 @@ import aws.smithy.kotlin.runtime.client.logMode
 import aws.smithy.kotlin.runtime.collections.attributesOf
 import aws.smithy.kotlin.runtime.collections.emptyAttributes
 import aws.smithy.kotlin.runtime.collections.merge
-import aws.smithy.kotlin.runtime.http.*
+import aws.smithy.kotlin.runtime.http.HttpCall
+import aws.smithy.kotlin.runtime.http.HttpHandler
 import aws.smithy.kotlin.runtime.http.auth.SignHttpRequest
+import aws.smithy.kotlin.runtime.http.complete
 import aws.smithy.kotlin.runtime.http.interceptors.InterceptorExecutor
 import aws.smithy.kotlin.runtime.http.middleware.RetryMiddleware
+import aws.smithy.kotlin.runtime.http.readAll
 import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
 import aws.smithy.kotlin.runtime.http.request.dumpRequest
 import aws.smithy.kotlin.runtime.http.request.immutableView
@@ -193,8 +196,6 @@ private fun <I, O> HttpDeserializer<O>.decorate(
     interceptors: InterceptorExecutor<I, O>,
 ): Handler<SdkHttpRequest, O> = DeserializeHandler(inner, this, interceptors)
 
-// internal glue used to marry one phase to another
-
 /**
  * Outermost handler that wraps the entire middleware pipeline and handles interceptor hooks related
  * to the start/end of an operation
@@ -207,7 +208,10 @@ private class OperationHandler<Input, Output>(
         coroutineContext.trace<OperationHandler<*, *>> { "operation started" }
         val result = interceptors.readBeforeExecution(request.subject)
             .mapCatching {
-                inner.call(request)
+                val callTimeout = request.context.getOrNull(HttpOperationContext.CallTimeout)
+                scopedTimeout(TimeoutScope.Call, callTimeout) {
+                    inner.call(request)
+                }
             }
             .let {
                 interceptors.modifyBeforeCompletion(it)

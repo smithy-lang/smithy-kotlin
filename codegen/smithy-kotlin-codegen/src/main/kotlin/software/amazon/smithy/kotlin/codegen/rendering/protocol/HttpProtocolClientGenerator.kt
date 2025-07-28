@@ -9,8 +9,11 @@ import software.amazon.smithy.kotlin.codegen.core.*
 import software.amazon.smithy.kotlin.codegen.integration.SectionId
 import software.amazon.smithy.kotlin.codegen.integration.SectionKey
 import software.amazon.smithy.kotlin.codegen.lang.KotlinTypes
-import software.amazon.smithy.kotlin.codegen.model.*
+import software.amazon.smithy.kotlin.codegen.model.getTrait
+import software.amazon.smithy.kotlin.codegen.model.hasIdempotentTokenMember
+import software.amazon.smithy.kotlin.codegen.model.hasStreamingMember
 import software.amazon.smithy.kotlin.codegen.model.knowledge.AuthIndex
+import software.amazon.smithy.kotlin.codegen.model.operationSignature
 import software.amazon.smithy.kotlin.codegen.rendering.auth.AuthSchemeProviderAdapterGenerator
 import software.amazon.smithy.kotlin.codegen.rendering.auth.IdentityProviderConfigGenerator
 import software.amazon.smithy.kotlin.codegen.rendering.endpoints.EndpointResolverAdapterGenerator
@@ -342,6 +345,8 @@ open class HttpProtocolClientGenerator(
             "}",
             RuntimeTypes.Core.ExecutionContext,
         ) {
+            putIfAbsent(RuntimeTypes.HttpClient.Operation.HttpOperationContext, "AttemptTimeout", nullable = true)
+            putIfAbsent(RuntimeTypes.HttpClient.Operation.HttpOperationContext, "CallTimeout", nullable = true)
             putIfAbsent(RuntimeTypes.SmithyClient.SdkClientOption, "ClientName")
             putIfAbsent(RuntimeTypes.SmithyClient.SdkClientOption, "LogMode")
             if (ctx.service.hasIdempotentTokenMember(ctx.model)) {
