@@ -15,7 +15,6 @@ service ServiceGeneratorTest {
     ]
 }
 
-
 @http(method: "POST", uri: "/post", code: 201)
 @auth([])
 operation PostTest {

@@ -11,11 +11,11 @@ internal class LengthConstraintGenerator(val memberPrefix: String, val memberNam
         val member = "$memberPrefix$memberName"
 
         if (max != null && min != null) {
-            writer.write("require(#T($member) in $min..$max) { #S }", ServiceTypes(pkgName).sizeOf, "$memberName\'s size must be between $min and $max")
+            writer.write("require(#T($member) in $min..$max) { #S }", ServiceTypes(pkgName).sizeOf, "The size of `$memberName` must be between $min and $max (inclusive)")
         } else if (max != null) {
-            writer.write("require(#T($member) <= $max) { #S }", ServiceTypes(pkgName).sizeOf, "$memberName\'s size must be less than or equal to $max")
+            writer.write("require(#T($member) <= $max) { #S }", ServiceTypes(pkgName).sizeOf, "The size of `$memberName` must be less than or equal to $max")
         } else {
-            writer.write("require(#T($member) >= $min) { #S }", ServiceTypes(pkgName).sizeOf, "$memberName\'s size must be greater than or equal to $min")
+            writer.write("require(#T($member) >= $min) { #S }", ServiceTypes(pkgName).sizeOf, "The size of `$memberName` must be greater than or equal to $min")
         }
     }
 }

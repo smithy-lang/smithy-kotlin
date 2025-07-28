@@ -19,7 +19,6 @@ service ServiceConstraintsTest {
     ]
 }
 
-
 @http(method: "POST", uri: "/required-constraint", code: 201)
 operation RequiredConstraintTest {
     input: RequiredConstraintTestInput
@@ -56,9 +55,6 @@ structure LengthConstraintTestInput {
 
 @output
 structure LengthConstraintTestOutput {}
-
-
-
 
 @http(method: "POST", uri: "/pattern-constraint", code: 201)
 operation PatternConstraintTest {
@@ -101,7 +97,6 @@ structure RangeConstraintTestInput {
 
 @output
 structure RangeConstraintTestOutput {}
-
 
 @http(method: "POST", uri: "/unique-items-constraint", code: 201)
 operation UniqueItemsConstraintTest {
@@ -146,8 +141,6 @@ structure DoubleNestedUniqueItemsConstraintTestInput {
 @output
 structure DoubleNestedUniqueItemsConstraintTestOutput {}
 
-
-
 list NotUniqueItemsList {
     member: String
 }
@@ -171,4 +164,3 @@ map MyMap {
     key: String
     value: String
 }
-

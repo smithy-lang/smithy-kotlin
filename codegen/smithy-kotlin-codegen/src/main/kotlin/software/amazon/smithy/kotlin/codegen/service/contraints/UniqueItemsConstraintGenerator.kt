@@ -7,6 +7,6 @@ import software.amazon.smithy.model.traits.UniqueItemsTrait
 internal class UniqueItemsConstraintGenerator(val memberPrefix: String, val memberName: String, val trait: UniqueItemsTrait, val pkgName: String, val writer: KotlinWriter) : AbstractConstraintTraitGenerator() {
     override fun render() {
         val member = "$memberPrefix$memberName"
-        writer.write("require(#T($member)) { #S }", ServiceTypes(pkgName).hasAllUniqueElements, "$memberName must have unique items")
+        writer.write("require(#T($member)) { #S }", ServiceTypes(pkgName).hasAllUniqueElements, "`$memberName` must contain only unique items, duplicate values are not allowed")
     }
 }

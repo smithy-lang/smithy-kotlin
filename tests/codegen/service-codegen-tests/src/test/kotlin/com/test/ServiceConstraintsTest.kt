@@ -18,6 +18,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertIs
 import kotlin.test.assertTrue
 
+/* Tests for checking constraint traits work */
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class ServiceConstraintsTest {
     val closeGracePeriodMillis: Long = 5_000L
@@ -43,7 +44,6 @@ class ServiceConstraintsTest {
     @AfterAll
     fun shutdown() = cleanupService(proc)
 
-    /* Tests for checking constraint traits work */
     @Test
     fun `checks required constraint providing all data`() {
         val cbor = Cbor { }
@@ -112,7 +112,7 @@ class ServiceConstraintsTest {
             response.body(),
         )
         assertEquals(400, body.code)
-        assertEquals("requiredInput must be provided", body.message)
+        assertEquals("`requiredInput` must be provided", body.message)
     }
 
     @Test
@@ -167,7 +167,7 @@ class ServiceConstraintsTest {
             response.body(),
         )
         assertEquals(400, body.code)
-        assertEquals("greaterLengthInput's size must be greater than or equal to 3", body.message)
+        assertEquals("The size of `greaterLengthInput` must be greater than or equal to 3", body.message)
     }
 
     @Test
@@ -198,7 +198,7 @@ class ServiceConstraintsTest {
             response.body(),
         )
         assertEquals(400, body.code)
-        assertEquals("smallerLengthInput's size must be less than or equal to 3", body.message)
+        assertEquals("The size of `smallerLengthInput` must be less than or equal to 3", body.message)
     }
 
     @Test
@@ -229,7 +229,7 @@ class ServiceConstraintsTest {
             response.body(),
         )
         assertEquals(400, body.code)
-        assertEquals("betweenLengthInput's size must be between 1 and 2", body.message)
+        assertEquals("The size of `betweenLengthInput` must be between 1 and 2 (inclusive)", body.message)
     }
 
     @Test
@@ -367,7 +367,7 @@ class ServiceConstraintsTest {
             response.body(),
         )
         assertEquals(400, body.code)
-        assertEquals("greaterInput must be greater than or equal to -10", body.message)
+        assertEquals("`greaterInput` must be greater than or equal to -10", body.message)
     }
 
     @Test
@@ -398,7 +398,7 @@ class ServiceConstraintsTest {
             response.body(),
         )
         assertEquals(400, body.code)
-        assertEquals("smallerInput must be less than or equal to 9", body.message)
+        assertEquals("`smallerInput` must be less than or equal to 9", body.message)
     }
 
     @Test
@@ -429,7 +429,7 @@ class ServiceConstraintsTest {
             response.body(),
         )
         assertEquals(400, body.code)
-        assertEquals("betweenInput must be between 0 and 5", body.message)
+        assertEquals("`betweenInput` must be between 0 and 5 (inclusive)", body.message)
     }
 
     @Test
@@ -482,7 +482,7 @@ class ServiceConstraintsTest {
             response.body(),
         )
         assertEquals(400, body.code)
-        assertEquals("uniqueItemsListInput must have unique items", body.message)
+        assertEquals("`uniqueItemsListInput` must contain only unique items, duplicate values are not allowed", body.message)
     }
 
     @Test
@@ -533,7 +533,7 @@ class ServiceConstraintsTest {
             response.body(),
         )
         assertEquals(400, body.code)
-        assertEquals("member must have unique items", body.message)
+        assertEquals("`member` must contain only unique items, duplicate values are not allowed", body.message)
     }
 
     @Test
@@ -566,6 +566,6 @@ class ServiceConstraintsTest {
             response.body(),
         )
         assertEquals(400, body.code)
-        assertEquals("member must have unique items", body.message)
+        assertEquals("`member` must contain only unique items, duplicate values are not allowed", body.message)
     }
 }
