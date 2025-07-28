@@ -220,7 +220,7 @@ internal class KtorStubGenerator(
 
     // Writes `Routing.kt` that maps Smithy operations → Ktor routes.
     override fun renderRouting() {
-        delegator.useFileWriter("Routing.kt", ctx.settings.pkg.name) { writer ->
+        delegator.useFileWriter("Routing.kt", pkgName) { writer ->
 
             operations.forEach { shape ->
                 writer.addImport("$pkgName.serde", "${shape.id.name}OperationDeserializer")
