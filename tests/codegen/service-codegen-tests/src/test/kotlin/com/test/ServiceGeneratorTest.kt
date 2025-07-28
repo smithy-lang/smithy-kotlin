@@ -5,57 +5,18 @@
 
 package com.test
 
-import kotlinx.serialization.Serializable
 import kotlinx.serialization.cbor.Cbor
-import org.gradle.testkit.runner.GradleRunner
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.TestInstance
-import java.io.IOException
 import java.net.ServerSocket
-import java.net.Socket
-import java.net.URI
-import java.net.http.HttpClient
-import java.net.http.HttpRequest
 import java.net.http.HttpResponse
-import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
-import java.util.concurrent.TimeUnit
-import kotlin.io.path.exists
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
 import kotlin.test.assertTrue
-import kotlin.test.fail
-
-@Serializable
-data class MalformedPostTestRequest(
-    val input1: Int,
-    val input2: String,
-)
-
-@Serializable
-data class PostTestRequest(
-    val input1: String,
-    val input2: Int,
-)
-
-@Serializable
-data class PostTestResponse(
-    val output1: String? = null,
-    val output2: Int? = null,
-)
-
-@Serializable
-data class AuthTestRequest(
-    val input1: String,
-)
-
-@Serializable
-data class ErrorTestRequest(
-    val input1: String,
-)
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class ServiceGeneratorTest {
@@ -64,48 +25,23 @@ class ServiceGeneratorTest {
     val requestBodyLimit: Long = 10L * 1024 * 1024
     val port: Int = ServerSocket(0).use { it.localPort }
 
+    val portListnerTimeout = 10L
+
     val baseUrl = "http://localhost:$port"
 
-    val projectDir: Path = Paths.get("build/generated-service")
+    val projectDir: Path = Paths.get("build/service-generator-test")
 
     private lateinit var proc: Process
 
     @BeforeAll
     fun boot() {
-        proc = startService("netty", port, closeGracePeriodMillis, closeTimeoutMillis, requestBodyLimit)
-        val ready = waitForPort(port, 180)
-        assertTrue(ready, "Service did not start within 180 s")
+        proc = startService("netty", port, closeGracePeriodMillis, closeTimeoutMillis, requestBodyLimit, projectDir)
+        val ready = waitForPort(port, portListnerTimeout)
+        assertTrue(ready, "Service did not start within $portListnerTimeout s")
     }
 
     @AfterAll
     fun shutdown() = cleanupService(proc)
-
-    @Test
-    fun `checks service with netty engine`() {
-        val nettyPort: Int = ServerSocket(0).use { it.localPort }
-        val nettyProc = startService("netty", nettyPort, closeGracePeriodMillis, closeTimeoutMillis, requestBodyLimit)
-        val ready = waitForPort(nettyPort, 180)
-        assertTrue(ready, "Service did not start within 180 s")
-        cleanupService(nettyProc)
-    }
-
-    @Test
-    fun `checks service with cio engine`() {
-        val cioPort: Int = ServerSocket(0).use { it.localPort }
-        val cioProc = startService("cio", cioPort, closeGracePeriodMillis, closeTimeoutMillis, requestBodyLimit)
-        val ready = waitForPort(cioPort, 180)
-        assertTrue(ready, "Service did not start within 180 s")
-        cleanupService(cioProc)
-    }
-
-    @Test
-    fun `checks service with jetty jakarta engine`() {
-        val jettyPort: Int = ServerSocket(0).use { it.localPort }
-        val jettyProc = startService("jetty-jakarta", jettyPort, closeGracePeriodMillis, closeTimeoutMillis, requestBodyLimit)
-        val ready = waitForPort(jettyPort, 180)
-        assertTrue(ready, "Service did not start within 180 s")
-        cleanupService(jettyProc)
-    }
 
     @Test
     fun `checks correct POST request`() {
@@ -155,6 +91,13 @@ class ServiceGeneratorTest {
         )
         assertIs<HttpResponse<ByteArray>>(response)
         assertEquals(500, response.statusCode(), "Expected 500")
+
+        val body = cbor.decodeFromByteArray(
+            ErrorResponse.serializer(),
+            response.body(),
+        )
+        assertEquals(500, body.code)
+        assertEquals("Unexpected error", body.message)
     }
 
     @Test
@@ -176,6 +119,13 @@ class ServiceGeneratorTest {
         )
         assertIs<HttpResponse<ByteArray>>(response)
         assertEquals(415, response.statusCode(), "Expected 415")
+
+        val body = cbor.decodeFromByteArray(
+            ErrorResponse.serializer(),
+            response.body(),
+        )
+        assertEquals(415, body.code)
+        assertEquals("Not acceptable Content‑Type found: 'application/json'. Accepted content types: application/cbor", body.message)
     }
 
     @Test
@@ -196,6 +146,13 @@ class ServiceGeneratorTest {
         )
         assertIs<HttpResponse<ByteArray>>(response)
         assertEquals(415, response.statusCode(), "Expected 415")
+
+        val body = cbor.decodeFromByteArray(
+            ErrorResponse.serializer(),
+            response.body(),
+        )
+        assertEquals(415, body.code)
+        assertEquals("Not acceptable Content‑Type found: '*/*'. Accepted content types: application/cbor", body.message)
     }
 
     @Test
@@ -215,8 +172,10 @@ class ServiceGeneratorTest {
             "application/cbor",
             "application/json",
         )
-        assertIs<HttpResponse<ByteArray>>(response)
+        assertIs<HttpResponse<String>>(response)
         assertEquals(406, response.statusCode(), "Expected 406")
+
+        assertEquals("""{"code":406,"message":"Not acceptable Accept type found: '[application/json]'. Accepted types: application/cbor"}""", response.body())
     }
 
     @Test
@@ -279,6 +238,13 @@ class ServiceGeneratorTest {
         )
         assertIs<HttpResponse<ByteArray>>(response)
         assertEquals(401, response.statusCode(), "Expected 401")
+
+        val body = cbor.decodeFromByteArray(
+            ErrorResponse.serializer(),
+            response.body(),
+        )
+        assertEquals(401, body.code)
+        assertEquals("Invalid or expired bearer token", body.message)
     }
 
     @Test
@@ -299,6 +265,13 @@ class ServiceGeneratorTest {
         )
         assertIs<HttpResponse<ByteArray>>(response)
         assertEquals(401, response.statusCode(), "Expected 401")
+
+        val body = cbor.decodeFromByteArray(
+            ErrorResponse.serializer(),
+            response.body(),
+        )
+        assertEquals(401, body.code)
+        assertEquals("Missing bearer token", body.message)
     }
 
     @Test
@@ -320,10 +293,18 @@ class ServiceGeneratorTest {
         )
         assertIs<HttpResponse<ByteArray>>(response)
         assertEquals(400, response.statusCode(), "Expected 400")
+
+        val body = cbor.decodeFromByteArray(
+            ErrorResponse.serializer(),
+            response.body(),
+        )
+        assertEquals(400, body.code)
+        assertEquals("Malformed CBOR input", body.message)
     }
 
     @Test
     fun `checks route not found`() {
+        val cbor = Cbor { }
         val requestBytes = ByteArray(0)
         val response = sendRequest(
             "$baseUrl/does-not-exist",
@@ -334,6 +315,13 @@ class ServiceGeneratorTest {
         )
         assertIs<HttpResponse<ByteArray>>(response)
         assertEquals(404, response.statusCode(), "Expected 404")
+
+        val body = cbor.decodeFromByteArray(
+            ErrorResponse.serializer(),
+            response.body(),
+        )
+        assertEquals(404, body.code)
+        assertEquals("Resource not found", body.message)
     }
 
     @Test
@@ -355,6 +343,13 @@ class ServiceGeneratorTest {
         )
         assertIs<HttpResponse<ByteArray>>(response)
         assertEquals(405, response.statusCode(), "Expected 405")
+
+        val body = cbor.decodeFromByteArray(
+            ErrorResponse.serializer(),
+            response.body(),
+        )
+        assertEquals(405, body.code)
+        assertEquals("Method not allowed for this resource", body.message)
     }
 
     @Test
@@ -377,124 +372,12 @@ class ServiceGeneratorTest {
         )
         assertIs<HttpResponse<ByteArray>>(response)
         assertEquals(413, response.statusCode(), "Expected 413")
-    }
-}
 
-internal fun ServiceGeneratorTest.startService(
-    engineFactory: String = "netty",
-    port: Int = 8080,
-    closeGracePeriodMillis: Long = 1000,
-    closeTimeoutMillis: Long = 1000,
-    requestBodyLimit: Long = 10L * 1024 * 1024,
-): Process {
-    if (!Files.exists(projectDir.resolve("gradlew"))) {
-        GradleRunner.create()
-            .withProjectDir(projectDir.toFile())
-            .withArguments(
-                "wrapper",
-                "--quiet",
-            )
-            .build()
-    }
-    val isWindows = System.getProperty("os.name").startsWith("Windows", ignoreCase = true)
-    val gradleCmd = if (isWindows) "gradlew.bat" else "./gradlew"
-    val baseCmd = if (isWindows) listOf("cmd", "/c", gradleCmd) else listOf(gradleCmd)
-
-    return ProcessBuilder(
-        baseCmd + listOf(
-            "--no-daemon",
-            "--quiet",
-            "run",
-            "--args=--engineFactory $engineFactory " +
-                "--port $port " +
-                "--closeGracePeriodMillis ${closeGracePeriodMillis.toInt()} " +
-                "--closeTimeoutMillis ${closeTimeoutMillis.toInt()} " +
-                "--requestBodyLimit $requestBodyLimit",
-        ),
-    )
-        .directory(projectDir.toFile())
-        .redirectErrorStream(true)
-        .start()
-}
-
-internal fun ServiceGeneratorTest.cleanupService(proc: Process) {
-    val gracefulWindow = closeGracePeriodMillis + closeTimeoutMillis
-    val okExitCodes = if (isWindows()) {
-        setOf(0, 1, 143, -1, -1073741510)
-    } else {
-        setOf(0, 143)
-    }
-
-    try {
-        proc.destroy()
-        val exited = proc.waitFor(gracefulWindow, TimeUnit.MILLISECONDS)
-
-        if (!exited) {
-            proc.destroyForcibly()
-            fail("Service did not shut down within $gracefulWindow ms")
-        }
-
-        assertTrue(
-            proc.exitValue() in okExitCodes,
-            "Service exited with ${proc.exitValue()} – shutdown not graceful?",
+        val body = cbor.decodeFromByteArray(
+            ErrorResponse.serializer(),
+            response.body(),
         )
-    } catch (e: Exception) {
-        proc.destroyForcibly()
-        throw e
+        assertEquals(413, body.code)
+        assertEquals("Request is larger than the limit of 10485760 bytes", body.message)
     }
-}
-
-private fun isWindows() = System.getProperty("os.name").lowercase().contains("windows")
-
-internal fun waitForPort(port: Int, timeoutSec: Long = 180): Boolean {
-    val deadline = System.currentTimeMillis() + TimeUnit.SECONDS.toNanos(timeoutSec)
-    while (System.currentTimeMillis() < deadline) {
-        try {
-            Socket("localhost", port).use {
-                return true // Port is available
-            }
-        } catch (e: IOException) {
-            Thread.sleep(100)
-        }
-    }
-    return false
-}
-
-internal fun sendRequest(
-    url: String,
-    method: String,
-    data: Any? = null,
-    contentType: String? = null,
-    acceptType: String? = null,
-    bearerToken: String? = null,
-): HttpResponse<*> {
-    val client = HttpClient.newHttpClient()
-
-    val bodyPublisher = when (data) {
-        null -> HttpRequest.BodyPublishers.noBody()
-        is ByteArray -> HttpRequest.BodyPublishers.ofByteArray(data)
-        is String -> HttpRequest.BodyPublishers.ofString(data)
-        else -> throw IllegalArgumentException(
-            "Unsupported body type: ${data::class.qualifiedName}",
-        )
-    }
-
-    val request = HttpRequest.newBuilder()
-        .uri(URI.create(url))
-        .apply {
-            contentType?.let { header("Content-Type", it) }
-            acceptType?.let { header("Accept", it) }
-            bearerToken?.let { header("Authorization", "Bearer $it") }
-        }
-        .method(method, bodyPublisher)
-        .build()
-
-    val bodyHandler = when {
-        acceptType?.contains("json", ignoreCase = true) == true ||
-            acceptType?.startsWith("text", ignoreCase = true) == true
-        -> HttpResponse.BodyHandlers.ofString()
-        else -> HttpResponse.BodyHandlers.ofByteArray()
-    }
-
-    return client.send(request, bodyHandler)
 }
