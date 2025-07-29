@@ -123,6 +123,14 @@ class AwsHttpBindingProtocolGeneratorTest {
                 ): Symbol {
                     error("Unneeded for test")
                 }
+
+                override fun errorSerializer(
+                    ctx: ProtocolGenerator.GenerationContext,
+                    errorShape: StructureShape,
+                    members: List<MemberShape>,
+                ): Symbol {
+                    error("Unneeded for test")
+                }
             }
 
         override val protocol: ShapeId

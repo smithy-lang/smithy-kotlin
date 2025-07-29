@@ -121,7 +121,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             generateOperationSerializer(ctx, operation)
         }
 
-        if (ctx.settings.build.generateServiceProject){
+        if (ctx.settings.build.generateServiceProject) {
             val modeledErrors = httpOperations.flatMap { it.errors }.map { ctx.model.expectShape(it) as StructureShape }.toSet()
             modeledErrors.forEach { generateExceptionSerializer(ctx, it) }
         }
@@ -137,7 +137,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         }
 
         // generate HttpDeserialize for exception types
-        if (!ctx.settings.build.generateServiceProject){
+        if (!ctx.settings.build.generateServiceProject) {
             val modeledErrors = httpOperations.flatMap { it.errors }.map { ctx.model.expectShape(it) as StructureShape }.toSet()
             modeledErrors.forEach { generateExceptionDeserializer(ctx, it) }
         }
@@ -310,14 +310,6 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
      */
     private fun generateExceptionSerializer(ctx: ProtocolGenerator.GenerationContext, shape: StructureShape) {
         val serializationSymbol = ctx.symbolProvider.toSymbol(shape)
-        val exceptionSerializerSymbols = setOf(
-            RuntimeTypes.Core.ExecutionContext,
-            RuntimeTypes.Serde.SdkObjectDescriptor,
-            RuntimeTypes.Serde.SdkFieldDescriptor,
-            RuntimeTypes.Serde.SerialKind,
-            RuntimeTypes.Serde.serializeStruct,
-            RuntimeTypes.Http.Response.HttpResponse,
-        )
 
         val serializerSymbol = buildSymbol {
             val deserializerName = "${serializationSymbol.name}Serializer"
@@ -327,20 +319,35 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             reference(serializationSymbol, SymbolReference.ContextOption.DECLARE)
         }
 
-        // exception serializers are never streaming
-        val serdeMeta = HttpSerdeMeta(false)
+        ctx.delegator.useSymbolWriter(serializerSymbol) { writer ->
+            val resolver = getProtocolHttpBindingResolver(ctx.model, ctx.service)
+            val bindings = resolver.responseBindings(shape)
+            val serializerResultSymbol = when (protocolName) {
+                "smithyRpcv2cbor" -> KotlinTypes.ByteArray
+                "awsRestjson1" -> KotlinTypes.String
+                else -> KotlinTypes.ByteArray
+            }
 
-//        ctx.delegator.useSymbolWriter(serializerSymbol) { writer ->
-//            val resolver = getProtocolHttpBindingResolver(ctx.model, ctx.service)
-//            val bindings = resolver.responseBindings(shape)
-//            writer
-//                .addImport(exceptionSerializerSymbols)
-//                .write("")
-//                .openBlock("internal class #T {", serializerSymbol)
-//                .write("")
-//                .call { renderServiceHttpSerialize(ctx, serializationSymbol, bindings, serdeMeta, null, writer) }
-//                .closeBlock("}")
-//        }
+            val defaultResponse = when (protocolName) {
+                "smithyRpcv2cbor" -> "ByteArray(0)"
+                "awsRestjson1" -> "\"\""
+                else -> "ByteArray(0)"
+            }
+            writer.withBlock("internal class #T {", "}", serializerSymbol) {
+                writer.openBlock(
+                    "public fun serialize(context: #T, input: #T): #T {",
+                    RuntimeTypes.Core.ExecutionContext,
+                    serializationSymbol,
+                    serializerResultSymbol,
+                )
+                    .write("var response: #T = $defaultResponse", serializerResultSymbol)
+                    .call {
+                        renderExceptionSerializeBody(ctx, serializationSymbol, bindings, writer)
+                    }
+                    .write("return response")
+                    .closeBlock("}")
+            }
+        }
     }
 
     /**
@@ -377,6 +384,26 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         if (!ctx.settings.build.generateServiceProject) {
             renderContentTypeHeader(ctx, op, writer, resolver)
         }
+    }
+
+    /**
+     * Calls the operation body serializer function and binds the results to `builder.body`.
+     * By default if no members are bound to the body this function renders nothing.
+     * If there is a payload to render it should be bound to `builder.body` when this function returns
+     */
+    protected open fun renderExceptionSerializeBody(
+        ctx: ProtocolGenerator.GenerationContext,
+        deserializationSymbol: Symbol,
+        bindings: List<HttpBindingDescriptor>,
+        writer: KotlinWriter,
+    ) {
+        val documentMembers = bindings.filterDocumentBoundMembers()
+        // Unbound document members that should be serialized into the document format for the protocol.
+        // delegate to the generate operation body serializer function
+        val sdg = structuredDataSerializer(ctx)
+        val exceptionBodySerializerFn = sdg.errorSerializer(ctx, deserializationSymbol.shape as StructureShape, documentMembers)
+        writer.write("val payload = #T(context, input)", exceptionBodySerializerFn)
+        writer.write("response = payload")
     }
 
     protected open fun renderContentTypeHeader(

@@ -10,17 +10,18 @@ import software.amazon.smithy.kotlin.codegen.core.withBlock
 import software.amazon.smithy.kotlin.codegen.core.withInlineBlock
 import software.amazon.smithy.kotlin.codegen.lang.KotlinTypes
 import software.amazon.smithy.kotlin.codegen.model.getTrait
-import software.amazon.smithy.kotlin.codegen.service.contraints.ConstraintGenerator
-import software.amazon.smithy.kotlin.codegen.service.contraints.ConstraintUtilsGenerator
 import software.amazon.smithy.kotlin.codegen.service.MediaType.ANY
 import software.amazon.smithy.kotlin.codegen.service.MediaType.JSON
 import software.amazon.smithy.kotlin.codegen.service.MediaType.OCTET_STREAM
 import software.amazon.smithy.kotlin.codegen.service.MediaType.PLAIN_TEXT
+import software.amazon.smithy.kotlin.codegen.service.contraints.ConstraintGenerator
+import software.amazon.smithy.kotlin.codegen.service.contraints.ConstraintUtilsGenerator
 import software.amazon.smithy.model.shapes.MapShape
 import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.shapes.ShapeId
 import software.amazon.smithy.model.traits.AuthTrait
 import software.amazon.smithy.model.traits.HttpBearerAuthTrait
+import software.amazon.smithy.model.traits.HttpErrorTrait
 import software.amazon.smithy.model.traits.HttpLabelTrait
 import software.amazon.smithy.model.traits.HttpQueryParamsTrait
 import software.amazon.smithy.model.traits.HttpQueryTrait
@@ -229,6 +230,9 @@ internal class KtorStubGenerator(
                 writer.addImport("$pkgName.model", "${shape.id.name}Request")
                 writer.addImport("$pkgName.model", "${shape.id.name}Response")
                 writer.addImport("$pkgName.operations", "handle${shape.id.name}Request")
+                shape.errors.forEach { error ->
+                    writer.addImport("$pkgName.serde", "${error.name}Serializer")
+                }
             }
 
             writer.withBlock("internal fun #T.configureRouting(): Unit {", "}", RuntimeTypes.KtorServerCore.Application) {
@@ -292,7 +296,7 @@ internal class KtorStubGenerator(
                                                 RuntimeTypes.Core.ExecutionContext,
                                             ) {
                                                 write(
-                                                    "throw #T(#S, ex)",
+                                                    "throw #T(ex?.message ?: #S, ex)",
                                                     RuntimeTypes.KtorServerCore.BadRequestException,
                                                     "Malformed CBOR input",
                                                 )
@@ -314,15 +318,27 @@ internal class KtorStubGenerator(
                                                 RuntimeTypes.Core.ExecutionContext,
                                             ) {
                                                 write(
-                                                    "throw #T(#S, ex)",
+                                                    "throw #T(ex?.message ?: #S, ex)",
                                                     RuntimeTypes.KtorServerCore.BadRequestException,
                                                     "Malformed CBOR output",
                                                 )
                                             }
-                                                .call { renderResponseCall(writer, acceptType, successCode, shape.output.get()) }
+                                                .call { renderResponseCall("response", writer, acceptType, successCode.toString(), shape.output.get()) }
                                         }
                                         withBlock(" catch (t: Throwable) {", "}") {
-                                            write("throw t")
+                                            writeInline("val errorResponse: Pair<Any, Int>? = ")
+                                            withBlock("when (t) {", "}") {
+                                                shape.errors.forEach { errorShapeId ->
+                                                    val errorShape = ctx.model.expectShape(errorShapeId)
+                                                    val errorSymbol = ctx.symbolProvider.toSymbol(errorShape)
+                                                    write("is #T -> Pair(${errorShapeId.name}Serializer().serialize(#T(), t as #T), ${errorShape.getTrait<HttpErrorTrait>()?.code})", errorSymbol, RuntimeTypes.Core.ExecutionContext, errorSymbol)
+                                                }
+                                                write("else -> null")
+                                            }
+
+                                            write("if (errorResponse == null) throw t")
+                                            write("call.attributes.put(#T, true)", ServiceTypes(pkgName).responseHandledKey)
+                                            call { renderResponseCall("errorResponse.first", writer, acceptType, "\"\${errorResponse.second}\"", shape.output.get()) }
                                         }
                                     }
                                 }
@@ -443,9 +459,10 @@ internal class KtorStubGenerator(
     }
 
     private fun renderResponseCall(
+        responseName: String,
         w: KotlinWriter,
         acceptType: MediaType,
-        successCode: Int,
+        successCode: String,
         outputShapeId: ShapeId,
     ) {
         when (acceptType) {
@@ -455,10 +472,10 @@ internal class KtorStubGenerator(
                 RuntimeTypes.KtorServerCore.applicationCall,
                 RuntimeTypes.KtorServerRouting.responseRespondBytes,
             ) {
-                write("bytes = response,")
+                write("bytes = $responseName as ByteArray,")
                 write("contentType = #T,", RuntimeTypes.KtorServerHttp.Cbor)
                 write(
-                    "status = #T.fromValue($successCode),",
+                    "status = #T.fromValue($successCode.toInt()),",
                     RuntimeTypes.KtorServerHttp.HttpStatusCode,
                 )
             }
@@ -468,10 +485,10 @@ internal class KtorStubGenerator(
                 RuntimeTypes.KtorServerCore.applicationCall,
                 RuntimeTypes.KtorServerRouting.responseRespondBytes,
             ) {
-                write("bytes = response,")
+                write("bytes = $responseName as ByteArray,")
                 write("contentType = #T,", RuntimeTypes.KtorServerHttp.OctetStream)
                 write(
-                    "status = #T.fromValue($successCode),",
+                    "status = #T.fromValue($successCode.toInt()),",
                     RuntimeTypes.KtorServerHttp.HttpStatusCode,
                 )
             }
@@ -481,10 +498,10 @@ internal class KtorStubGenerator(
                 RuntimeTypes.KtorServerCore.applicationCall,
                 RuntimeTypes.KtorServerRouting.responseResponseText,
             ) {
-                write("text = response,")
+                write("text = $responseName as String,")
                 write("contentType = #T,", RuntimeTypes.KtorServerHttp.Json)
                 write(
-                    "status = #T.fromValue($successCode),",
+                    "status = #T.fromValue($successCode.toInt()),",
                     RuntimeTypes.KtorServerHttp.HttpStatusCode,
                 )
             }
@@ -494,10 +511,10 @@ internal class KtorStubGenerator(
                 RuntimeTypes.KtorServerCore.applicationCall,
                 RuntimeTypes.KtorServerRouting.responseResponseText,
             ) {
-                write("text = response,")
+                write("text = $responseName as String,")
                 write("contentType = #T,", RuntimeTypes.KtorServerHttp.PlainText)
                 write(
-                    "status = #T.fromValue($successCode),",
+                    "status = #T.fromValue($successCode.toInt()),",
                     RuntimeTypes.KtorServerHttp.HttpStatusCode,
                 )
             }
@@ -510,10 +527,10 @@ internal class KtorStubGenerator(
                     RuntimeTypes.KtorServerCore.applicationCall,
                     RuntimeTypes.KtorServerRouting.responseRespondBytes,
                 ) {
-                    write("bytes = response,")
+                    write("bytes = $responseName as ByteArray,")
                     write("contentType = #S,", mediaTraits.value)
                     write(
-                        "status = #T.fromValue($successCode),",
+                        "status = #T.fromValue($successCode.toInt()),",
                         RuntimeTypes.KtorServerHttp.HttpStatusCode,
                     )
                 }
@@ -529,6 +546,8 @@ internal class KtorStubGenerator(
 
     private fun renderErrorHandler() {
         delegator.useFileWriter("ErrorHandler.kt", "$pkgName.plugins") { writer ->
+            writer.write("internal val ResponseHandledKey = #T<Boolean>(#S)", RuntimeTypes.KtorServerUtils.AttributeKey, "ResponseHandled")
+                .write("")
             writer.write("@#T", RuntimeTypes.KotlinxCborSerde.Serializable)
                 .write("private data class ErrorPayload(val code: Int, val message: String)")
                 .write("")
@@ -594,17 +613,23 @@ internal class KtorStubGenerator(
                         RuntimeTypes.KtorServerStatusPage.StatusPages,
                     ) {
                         withBlock("status(#T.Unauthorized) { call, status ->", "}", RuntimeTypes.KtorServerHttp.HttpStatusCode) {
+                            write("if (call.attributes.getOrNull(#T) == true) { return@status }", ServiceTypes(pkgName).responseHandledKey)
+                            write("call.attributes.put(#T, true)", ServiceTypes(pkgName).responseHandledKey)
                             write("val missing = call.request.headers[#S].isNullOrBlank()", "Authorization")
                             write("val message = if (missing) #S else #S", "Missing bearer token", "Invalid or expired bearer token")
                             write("call.respondEnvelope( ErrorEnvelope(status.value, message), status )")
                         }
                         write("")
                         withBlock("status(#T.NotFound) { call, status ->", "}", RuntimeTypes.KtorServerHttp.HttpStatusCode) {
+                            write("if (call.attributes.getOrNull(#T) == true) { return@status }", ServiceTypes(pkgName).responseHandledKey)
+                            write("call.attributes.put(#T, true)", ServiceTypes(pkgName).responseHandledKey)
                             write("val message = #S", "Resource not found")
                             write("call.respondEnvelope( ErrorEnvelope(status.value, message), status )")
                         }
                         write("")
                         withBlock("status(#T.MethodNotAllowed) { call, status ->", "}", RuntimeTypes.KtorServerHttp.HttpStatusCode) {
+                            write("if (call.attributes.getOrNull(#T) == true) { return@status }", ServiceTypes(pkgName).responseHandledKey)
+                            write("call.attributes.put(#T, true)", ServiceTypes(pkgName).responseHandledKey)
                             write("val message = #S", "Method not allowed for this resource")
                             write("call.respondEnvelope( ErrorEnvelope(status.value, message), status )")
                         }
@@ -630,6 +655,7 @@ internal class KtorStubGenerator(
                             write("")
 
                             write("val envelope = if (cause is ErrorEnvelope) cause else ErrorEnvelope(status.value, cause.message ?: #S)", "Unexpected error")
+                            write("call.attributes.put(#T, true)", ServiceTypes(pkgName).responseHandledKey)
                             write("call.respondEnvelope( envelope, status )")
                         }
                     }

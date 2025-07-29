@@ -138,4 +138,24 @@ class CborSerializerGenerator(
             }
         }
     }
+
+    override fun errorSerializer(
+        ctx: ProtocolGenerator.GenerationContext,
+        errorShape: StructureShape,
+        members: List<MemberShape>,
+    ): Symbol {
+        val symbol = ctx.symbolProvider.toSymbol(errorShape)
+
+        return symbol.errorSerializer(ctx.settings) { writer ->
+            addNestedDocumentSerializers(ctx, errorShape, writer)
+            val fnName = symbol.errorSerializerName()
+            writer.openBlock("private fun #L(context: #T, input: #T): ByteArray {", fnName, RuntimeTypes.Core.ExecutionContext, symbol)
+                .write("val serializer = #T()", RuntimeTypes.Serde.SerdeCbor.CborSerializer)
+                .call {
+                    renderSerializerBody(ctx, errorShape, members, writer)
+                }
+                .write("return serializer.toByteArray()")
+                .closeBlock("}")
+        }
+    }
 }

@@ -41,7 +41,7 @@ internal class ConstraintGenerator(
             }
         }
 
-        if (targetShape.isListShape){
+        if (targetShape.isListShape) {
             for (member in targetShape.allMembers) {
                 val newMemberPrefix = "${targetShape.id.name}".replaceFirstChar { it.lowercase() }
                 writer.withBlock("if ($prefix$memberName != null) {", "}") {
@@ -52,7 +52,7 @@ internal class ConstraintGenerator(
             }
         }
 
-        if (targetShape.isStructureShape){
+        if (targetShape.isStructureShape) {
             for (member in targetShape.allMembers) {
                 val newMemberPrefix = "$prefix$memberName?."
                 generateConstraintValidations(newMemberPrefix, member.value, writer)

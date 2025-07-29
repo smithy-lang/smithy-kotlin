@@ -150,6 +150,26 @@ fun Symbol.errorDeserializer(settings: KotlinSettings, block: SymbolRenderer): S
 }
 
 /**
+ * Get the serializer name for an error shape
+ */
+fun Symbol.errorSerializerName(): String = "serialize" + StringUtils.capitalize(this.name) + "Error"
+
+/**
+ * Get the function responsible for serializing members bound to the payload of an error shape as [Symbol] and
+ * register [block] * which will be invoked to actually render the function (signature and implementation)
+ */
+fun Symbol.errorSerializer(settings: KotlinSettings, block: SymbolRenderer): Symbol = buildSymbol {
+    name = errorSerializerName()
+    namespace = settings.pkg.serde
+    val symbol = this@errorSerializer
+    // place it in the same file as the exception deserializer, e.g. for HTTP protocols this will be in
+    // same file as HttpDeserialize
+    definitionFile = "${symbol.name}Serializer.kt"
+    reference(symbol, SymbolReference.ContextOption.DECLARE)
+    renderBy = block
+}
+
+/**
  * Get the function responsible for deserializing the specific shape as a standalone payload
  */
 fun Shape.payloadDeserializer(

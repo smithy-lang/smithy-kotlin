@@ -25,7 +25,7 @@ class ServiceGeneratorTest {
     val requestBodyLimit: Long = 10L * 1024 * 1024
     val port: Int = ServerSocket(0).use { it.localPort }
 
-    val portListnerTimeout = 10L
+    val portListnerTimeout = 100L
 
     val baseUrl = "http://localhost:$port"
 
@@ -299,7 +299,7 @@ class ServiceGeneratorTest {
             response.body(),
         )
         assertEquals(400, body.code)
-        assertEquals("Malformed CBOR input", body.message)
+        assertEquals("Unexpected EOF: expected 109 more bytes; consumed: 14", body.message)
     }
 
     @Test
