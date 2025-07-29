@@ -122,7 +122,6 @@ internal class KtorStubGenerator(
                     write("#T.WARN -> #T.WARN", ServiceTypes(pkgName).logLevel, RuntimeTypes.KtorLoggingSlf4j.Level)
                     write("#T.ERROR -> #T.ERROR", ServiceTypes(pkgName).logLevel, RuntimeTypes.KtorLoggingSlf4j.Level)
                     write("#T.OFF -> null", ServiceTypes(pkgName).logLevel)
-                    write("else -> #T.INFO", RuntimeTypes.KtorLoggingSlf4j.Level)
                 }
                 write("")
                 write("val logbackLevel = slf4jLevel?.let { #T.valueOf(it.name) } ?: #T.OFF", RuntimeTypes.KtorLoggingLogback.Level, RuntimeTypes.KtorLoggingLogback.Level)

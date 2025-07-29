@@ -29,34 +29,34 @@ internal class ConstraintGenerator(
 
         val memberName = memberShape.memberName
         val memberAndTargetTraits = memberShape.allTraits + targetShape.allTraits
-
-        for (memberTrait in memberAndTargetTraits.values) {
-            val traitGenerator = getTraitGeneratorFromTrait(prefix, memberName, memberTrait, pkgName, writer)
-            if (memberTrait !is RequiredTrait) {
-                writer.withBlock("if ($prefix$memberName != null) {", "}") {
-                    traitGenerator?.render()
-                }
-            } else {
-                traitGenerator?.render()
-            }
-        }
-
-        if (targetShape.isListShape) {
-            for (member in targetShape.allMembers) {
-                val newMemberPrefix = "${targetShape.id.name}".replaceFirstChar { it.lowercase() }
-                writer.withBlock("if ($prefix$memberName != null) {", "}") {
-                    withBlock("for ($newMemberPrefix${member.key} in $prefix$memberName ?: listOf()) {", "}") {
-                        call { generateConstraintValidations(newMemberPrefix, member.value, writer) }
+        when {
+            targetShape.isListShape ->
+                for (member in targetShape.allMembers) {
+                    val newMemberPrefix = "${targetShape.id.name}".replaceFirstChar { it.lowercase() }
+                    writer.withBlock("if ($prefix$memberName != null) {", "}") {
+                        withBlock("for ($newMemberPrefix${member.key} in $prefix$memberName ?: listOf()) {", "}") {
+                            call { generateConstraintValidations(newMemberPrefix, member.value, writer) }
+                        }
                     }
                 }
-            }
-        }
-
-        if (targetShape.isStructureShape) {
-            for (member in targetShape.allMembers) {
-                val newMemberPrefix = "$prefix$memberName?."
-                generateConstraintValidations(newMemberPrefix, member.value, writer)
-            }
+            targetShape.isStructureShape ->
+                for (member in targetShape.allMembers) {
+                    val newMemberPrefix = "$prefix$memberName?."
+                    generateConstraintValidations(newMemberPrefix, member.value, writer)
+                }
+            else ->
+                for (memberTrait in memberAndTargetTraits.values) {
+                    val traitGenerator = getTraitGeneratorFromTrait(prefix, memberName, memberTrait, pkgName, writer)
+                    traitGenerator?.apply {
+                        if (memberTrait !is RequiredTrait) {
+                            writer.withBlock("if ($prefix$memberName != null) {", "}") {
+                                render()
+                            }
+                        } else {
+                            render()
+                        }
+                    }
+                }
         }
     }
 
