@@ -1172,13 +1172,12 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         } else {
             ""
         }
-//        FIXME: Service supports only CBOR now. Modify this part to support service for other data format.
-//        val message = if (ctx.settings.build.generateServiceProject) {
-//            "request"
-//        } else {
-//            "response"
-//        }
-        val message = "response"
+
+        val message = if (ctx.settings.build.generateServiceProject) {
+            "request"
+        } else {
+            "response"
+        }
         writer.write("val $keyCollName = $message.headers.names()$filter")
         writer.openBlock("if ($keyCollName.isNotEmpty()) {")
             .write("val map = mutableMapOf<String, #T>()", targetValueSymbol)

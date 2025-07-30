@@ -24,6 +24,7 @@ import software.amazon.smithy.model.traits.HttpBearerAuthTrait
 import software.amazon.smithy.model.traits.HttpErrorTrait
 import software.amazon.smithy.model.traits.HttpHeaderTrait
 import software.amazon.smithy.model.traits.HttpLabelTrait
+import software.amazon.smithy.model.traits.HttpPrefixHeadersTrait
 import software.amazon.smithy.model.traits.HttpQueryParamsTrait
 import software.amazon.smithy.model.traits.HttpQueryTrait
 import software.amazon.smithy.model.traits.HttpTrait
@@ -323,7 +324,8 @@ internal class KtorStubGenerator(
                                                     "Malformed CBOR output",
                                                 )
                                             }
-                                            call { readHttpResponseHeader("responseObj", shape.output.get(), writer) }
+                                            call { readResponseHttpHeader("responseObj", shape.output.get(), writer) }
+                                            call { readResponseHttpPrefixHeader("responseObj", shape.output.get(), writer) }
                                             call { renderResponseCall("response", writer, acceptType, successCode.toString(), shape.output.get()) }
                                         }
                                         withBlock(" catch (t: Throwable) {", "}") {
@@ -355,7 +357,8 @@ internal class KtorStubGenerator(
                                                     val errorShape = ctx.model.expectShape(errorShapeId)
                                                     val errorSymbol = ctx.symbolProvider.toSymbol(errorShape)
                                                     withBlock("is #T -> {", "}", errorSymbol) {
-                                                        readHttpResponseHeader("errorObj", errorShapeId, writer)
+                                                        readResponseHttpHeader("errorObj", errorShapeId, writer)
+                                                        readResponseHttpPrefixHeader("errorObj", errorShapeId, writer)
                                                     }
                                                 }
                                                 write("else -> null")
@@ -480,14 +483,27 @@ internal class KtorStubGenerator(
         }
     }
 
-    private fun readHttpResponseHeader(dataName: String, shapeId: ShapeId, writer: KotlinWriter) {
-        val outputShape = ctx.model.expectShape(shapeId)
-        outputShape.allMembers
+    private fun readResponseHttpHeader(dataName: String, shapeId: ShapeId, writer: KotlinWriter) {
+        val shape = ctx.model.expectShape(shapeId)
+        shape.allMembers
             .filter { member -> member.value.hasTrait(HttpHeaderTrait.ID) }
             .forEach { member ->
                 val headerName = member.value.getTrait<HttpHeaderTrait>()!!.value
                 val memberName = member.key
                 writer.write("call.response.headers.append(#S, $dataName.$memberName.toString())", headerName)
+            }
+    }
+
+    private fun readResponseHttpPrefixHeader(dataName: String, shapeId: ShapeId, writer: KotlinWriter) {
+        val shape = ctx.model.expectShape(shapeId)
+        shape.allMembers
+            .filter { member -> member.value.hasTrait(HttpPrefixHeadersTrait.ID) }
+            .forEach { member ->
+                val prefixHeaderName = member.value.getTrait<HttpPrefixHeadersTrait>()!!.value
+                val memberName = member.key
+                writer.withBlock("for ((suffixHeader, headerValue) in $dataName?.$memberName ?: mapOf()) {", "}") {
+                    writer.write("call.response.headers.append(#S, headerValue.toString())", "$prefixHeaderName\${suffixHeader}")
+                }
             }
     }
 
