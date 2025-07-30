@@ -4,26 +4,23 @@
  */
 package aws.smithy.kotlin.runtime.http.auth
 
+import aws.smithy.kotlin.runtime.businessmetrics.SmithyBusinessMetric
+import aws.smithy.kotlin.runtime.businessmetrics.emitBusinessMetric
 import aws.smithy.kotlin.runtime.collections.Attributes
-import aws.smithy.kotlin.runtime.collections.emptyAttributes
+import aws.smithy.kotlin.runtime.collections.toMutableAttributes
 import aws.smithy.kotlin.runtime.time.Instant
-import aws.smithy.kotlin.runtime.util.PlatformProvider
 
 /**
  * A [BearerTokenProvider] that extracts the bearer token from the target environment variable.
  */
 public class EnvironmentBearerTokenProvider(
-    private val key: String,
-    private val platform: PlatformProvider = PlatformProvider.System,
+    private val bearerToken: String,
 ) : BearerTokenProvider {
-    override suspend fun resolve(attributes: Attributes): BearerToken {
-        val bearerToken = platform.getenv(key)
-            ?: error("$key environment variable is not set")
-
-        return object : BearerToken {
-            override val token: String = bearerToken
-            override val attributes: Attributes = emptyAttributes()
-            override val expiration: Instant? = null
+    override suspend fun resolve(attributes: Attributes): BearerToken = object : BearerToken {
+        override val token: String = bearerToken
+        override val attributes: Attributes = attributes.toMutableAttributes().apply {
+            emitBusinessMetric(SmithyBusinessMetric.BEARER_SERVICE_ENV_VARS)
         }
+        override val expiration: Instant? = null
     }
 }
