@@ -14,11 +14,6 @@ permissions:
   pull-requests: write
 
 jobs:
-  debug-artifact-size-metrics:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Echo event name
-        run: echo "${{ github.event_name }}"
   release-metrics:
     if: github.event_name == 'release'
     runs-on: ubuntu-latest
@@ -51,7 +46,7 @@ jobs:
       - name: Checkout Sources
         uses: actions/checkout@v4
       - name: Setup build
-        uses: ./.github/actions/setup-build
+        uses: ./smithy-kotlin/.github/actions/setup-build
       - name: Configure JDK
         uses: actions/setup-java@v3
         with:
