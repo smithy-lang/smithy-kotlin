@@ -62,6 +62,8 @@ jobs:
           aws-region: us-west-2
       - name: Configure Gradle
         uses: awslabs/aws-kotlin-repo-tools/.github/actions/configure-gradle@main
+        with:
+          working-directory: smithy-kotlin
       - name: Generate Artifact Size Metrics
         run: ./gradlew -Paws.kotlin.native=false artifactSizeMetrics
       - name: Analyze Artifact Size Metrics
