@@ -107,6 +107,7 @@ public final class aws/smithy/kotlin/runtime/businessmetrics/SmithyBusinessMetri
 	public static final field ACCOUNT_ID_MODE_DISABLED Laws/smithy/kotlin/runtime/businessmetrics/SmithyBusinessMetric;
 	public static final field ACCOUNT_ID_MODE_PREFERRED Laws/smithy/kotlin/runtime/businessmetrics/SmithyBusinessMetric;
 	public static final field ACCOUNT_ID_MODE_REQUIRED Laws/smithy/kotlin/runtime/businessmetrics/SmithyBusinessMetric;
+	public static final field BEARER_SERVICE_ENV_VARS Laws/smithy/kotlin/runtime/businessmetrics/SmithyBusinessMetric;
 	public static final field FLEXIBLE_CHECKSUMS_REQ_CRC32 Laws/smithy/kotlin/runtime/businessmetrics/SmithyBusinessMetric;
 	public static final field FLEXIBLE_CHECKSUMS_REQ_CRC32C Laws/smithy/kotlin/runtime/businessmetrics/SmithyBusinessMetric;
 	public static final field FLEXIBLE_CHECKSUMS_REQ_SHA1 Laws/smithy/kotlin/runtime/businessmetrics/SmithyBusinessMetric;

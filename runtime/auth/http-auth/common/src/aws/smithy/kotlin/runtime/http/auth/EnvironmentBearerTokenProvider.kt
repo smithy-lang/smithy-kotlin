@@ -9,18 +9,24 @@ import aws.smithy.kotlin.runtime.businessmetrics.emitBusinessMetric
 import aws.smithy.kotlin.runtime.collections.Attributes
 import aws.smithy.kotlin.runtime.collections.toMutableAttributes
 import aws.smithy.kotlin.runtime.time.Instant
+import aws.smithy.kotlin.runtime.util.PlatformProvider
 
 /**
- * A [BearerTokenProvider] that extracts the bearer token from the target environment variable.
+ * A [BearerTokenProvider] that extracts the bearer token from JVM system properties or environment variables.
  */
 public class EnvironmentBearerTokenProvider(
-    private val bearerToken: String,
+    private val key: String,
+    private val platform: PlatformProvider = PlatformProvider.System,
 ) : BearerTokenProvider {
-    override suspend fun resolve(attributes: Attributes): BearerToken = object : BearerToken {
-        override val token: String = bearerToken
-        override val attributes: Attributes = attributes.toMutableAttributes().apply {
-            emitBusinessMetric(SmithyBusinessMetric.BEARER_SERVICE_ENV_VARS)
+    override suspend fun resolve(attributes: Attributes): BearerToken {
+        val bearerToken = platform.getProperty(key) ?: platform.getenv(key)
+            ?: error("$key environment variable is not set")
+        return object : BearerToken {
+            override val token: String = bearerToken
+            override val attributes: Attributes = attributes.toMutableAttributes().apply {
+                emitBusinessMetric(SmithyBusinessMetric.BEARER_SERVICE_ENV_VARS)
+            }
+            override val expiration: Instant? = null
         }
-        override val expiration: Instant? = null
     }
 }
