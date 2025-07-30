@@ -45,6 +45,8 @@ jobs:
     steps:
       - name: Checkout Sources
         uses: actions/checkout@v4
+        with:
+          path: smithy-kotlin
       - name: Setup build
         uses: ./.github/actions/setup-build
       - name: Configure JDK
