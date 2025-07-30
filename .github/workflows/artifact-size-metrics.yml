@@ -14,6 +14,11 @@ permissions:
   pull-requests: write
 
 jobs:
+  debug-artifact-size-metrics:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Echo event name
+        run: echo "${{ github.event_name }}"
   release-metrics:
     if: github.event_name == 'release'
     runs-on: ubuntu-latest
