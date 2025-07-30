@@ -22,6 +22,7 @@ import software.amazon.smithy.model.shapes.ShapeId
 import software.amazon.smithy.model.traits.AuthTrait
 import software.amazon.smithy.model.traits.HttpBearerAuthTrait
 import software.amazon.smithy.model.traits.HttpErrorTrait
+import software.amazon.smithy.model.traits.HttpHeaderTrait
 import software.amazon.smithy.model.traits.HttpLabelTrait
 import software.amazon.smithy.model.traits.HttpQueryParamsTrait
 import software.amazon.smithy.model.traits.HttpQueryTrait
@@ -322,21 +323,43 @@ internal class KtorStubGenerator(
                                                     "Malformed CBOR output",
                                                 )
                                             }
-                                                .call { renderResponseCall("response", writer, acceptType, successCode.toString(), shape.output.get()) }
+                                            call { readHttpResponseHeader("responseObj", shape.output.get(), writer) }
+                                            call { renderResponseCall("response", writer, acceptType, successCode.toString(), shape.output.get()) }
                                         }
                                         withBlock(" catch (t: Throwable) {", "}") {
-                                            writeInline("val errorResponse: Pair<Any, Int>? = ")
+                                            writeInline("val errorObj: Any? = ")
                                             withBlock("when (t) {", "}") {
                                                 shape.errors.forEach { errorShapeId ->
                                                     val errorShape = ctx.model.expectShape(errorShapeId)
                                                     val errorSymbol = ctx.symbolProvider.toSymbol(errorShape)
-                                                    write("is #T -> Pair(${errorShapeId.name}Serializer().serialize(#T(), t as #T), ${errorShape.getTrait<HttpErrorTrait>()?.code})", errorSymbol, RuntimeTypes.Core.ExecutionContext, errorSymbol)
+                                                    write("is #T -> t as #T", errorSymbol, errorSymbol)
                                                 }
                                                 write("else -> null")
                                             }
-
+                                            write("")
+                                            write("")
+                                            writeInline("val errorResponse: Pair<Any, Int>? = ")
+                                            withBlock("when (errorObj) {", "}") {
+                                                shape.errors.forEach { errorShapeId ->
+                                                    val errorShape = ctx.model.expectShape(errorShapeId)
+                                                    val errorSymbol = ctx.symbolProvider.toSymbol(errorShape)
+                                                    write("is #T -> Pair(${errorShapeId.name}Serializer().serialize(#T(), errorObj), ${errorShape.getTrait<HttpErrorTrait>()?.code})", errorSymbol, RuntimeTypes.Core.ExecutionContext)
+                                                }
+                                                write("else -> null")
+                                            }
                                             write("if (errorResponse == null) throw t")
+
                                             write("call.attributes.put(#T, true)", ServiceTypes(pkgName).responseHandledKey)
+                                            withBlock("when (errorObj) {", "}") {
+                                                shape.errors.forEach { errorShapeId ->
+                                                    val errorShape = ctx.model.expectShape(errorShapeId)
+                                                    val errorSymbol = ctx.symbolProvider.toSymbol(errorShape)
+                                                    withBlock("is #T -> {", "}", errorSymbol) {
+                                                        readHttpResponseHeader("errorObj", errorShapeId, writer)
+                                                    }
+                                                }
+                                                write("else -> null")
+                                            }
                                             call { renderResponseCall("errorResponse.first", writer, acceptType, "\"\${errorResponse.second}\"", shape.output.get()) }
                                         }
                                     }
@@ -455,6 +478,17 @@ internal class KtorStubGenerator(
         } else {
             w.write("#T(#S) {", RuntimeTypes.KtorServerAuth.authenticate, "no-auth")
         }
+    }
+
+    private fun readHttpResponseHeader(dataName: String, shapeId: ShapeId, writer: KotlinWriter) {
+        val outputShape = ctx.model.expectShape(shapeId)
+        outputShape.allMembers
+            .filter { member -> member.value.hasTrait(HttpHeaderTrait.ID) }
+            .forEach { member ->
+                val headerName = member.value.getTrait<HttpHeaderTrait>()!!.value
+                val memberName = member.key
+                writer.write("call.response.headers.append(#S, $dataName.$memberName.toString())", headerName)
+            }
     }
 
     private fun renderResponseCall(
