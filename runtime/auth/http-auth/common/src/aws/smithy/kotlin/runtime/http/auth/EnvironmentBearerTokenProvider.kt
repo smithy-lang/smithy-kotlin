@@ -15,12 +15,20 @@ import aws.smithy.kotlin.runtime.util.PlatformProvider
  * A [BearerTokenProvider] that extracts the bearer token from JVM system properties or environment variables.
  */
 public class EnvironmentBearerTokenProvider(
-    private val key: String,
+    private val sysPropKey: String?,
+    private val envKey: String?,
     private val platform: PlatformProvider = PlatformProvider.System,
 ) : BearerTokenProvider {
+    @Deprecated("Use constructor with separate system property and environment variable keys")
+    public constructor(
+        key: String,
+        platform: PlatformProvider = PlatformProvider.System,
+    ) : this(null, key, platform)
+
     override suspend fun resolve(attributes: Attributes): BearerToken {
-        val bearerToken = platform.getProperty(key) ?: platform.getenv(key)
-            ?: error("$key environment variable is not set")
+        val bearerToken = sysPropKey?.let { platform.getProperty(it) }
+            ?: envKey?.let { platform.getenv(it) }
+            ?: error("environment variable is not set")
         return object : BearerToken {
             override val token: String = bearerToken
             override val attributes: Attributes = mutableAttributes().apply {

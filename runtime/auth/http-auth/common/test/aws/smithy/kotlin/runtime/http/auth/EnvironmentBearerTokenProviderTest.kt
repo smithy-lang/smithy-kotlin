@@ -10,9 +10,10 @@ class EnvironmentBearerTokenProviderTest {
     @Test
     fun testResolveFromEnvVar() = runTest {
         val provider = EnvironmentBearerTokenProvider(
-            "TEST_TOKEN",
+            "TEST_SYS_PROPS_TOKEN",
+            "TEST_ENV_TOKEN",
             TestPlatformProvider(
-                env = mutableMapOf("TEST_TOKEN" to "test-env-bearer-token"),
+                env = mutableMapOf("TEST_ENV_TOKEN" to "test-env-bearer-token"),
             ),
         )
 
@@ -24,9 +25,10 @@ class EnvironmentBearerTokenProviderTest {
     @Test
     fun testResolveFromSysProps() = runTest {
         val provider = EnvironmentBearerTokenProvider(
-            "TEST_TOKEN",
+            "TEST_SYS_PROPS_TOKEN",
+            "TEST_ENV_TOKEN",
             TestPlatformProvider(
-                props = mutableMapOf("TEST_TOKEN" to "test-sys-props-bearer-token"),
+                props = mutableMapOf("TEST_SYS_PROPS_TOKEN" to "test-sys-props-bearer-token"),
             ),
         )
 
@@ -39,6 +41,7 @@ class EnvironmentBearerTokenProviderTest {
     fun testResolveWithMissingToken() = runTest {
         val provider = EnvironmentBearerTokenProvider(
             "MISSING_TEST_TOKEN",
+            "MISSING_TEST_TOKEN",
             TestPlatformProvider(
                 env = mutableMapOf("TEST_TOKEN" to "test-env-bearer-token"),
                 props = mutableMapOf("TEST_TOKEN" to "test-sys-props-bearer-token"),
@@ -48,6 +51,6 @@ class EnvironmentBearerTokenProviderTest {
         val exception = assertFailsWith<IllegalStateException> {
             provider.resolve()
         }
-        assertEquals("MISSING_TEST_TOKEN environment variable is not set", exception.message)
+        assertEquals("environment variable is not set", exception.message)
     }
 }
