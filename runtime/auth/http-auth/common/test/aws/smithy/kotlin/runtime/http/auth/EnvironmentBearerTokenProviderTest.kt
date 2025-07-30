@@ -1,6 +1,5 @@
 package aws.smithy.kotlin.runtime.http.auth
 
-import aws.smithy.kotlin.runtime.collections.emptyAttributes
 import aws.smithy.kotlin.runtime.util.TestPlatformProvider
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
