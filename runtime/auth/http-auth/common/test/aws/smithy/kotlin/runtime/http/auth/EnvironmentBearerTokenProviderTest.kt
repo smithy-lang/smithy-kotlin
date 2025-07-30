@@ -8,11 +8,24 @@ import kotlin.test.assertFailsWith
 
 class EnvironmentBearerTokenProviderTest {
     @Test
-    fun testResolveWithValidToken() = runTest {
+    fun testResolveFromEnvVar() = runTest {
         val provider = EnvironmentBearerTokenProvider(
             "TEST_TOKEN",
             TestPlatformProvider(
                 env = mutableMapOf("TEST_TOKEN" to "test-env-bearer-token"),
+            ),
+        )
+
+        val token = provider.resolve()
+
+        assertEquals("test-env-bearer-token", token.token)
+    }
+
+    @Test
+    fun testResolveFromSysProps() = runTest {
+        val provider = EnvironmentBearerTokenProvider(
+            "TEST_TOKEN",
+            TestPlatformProvider(
                 props = mutableMapOf("TEST_TOKEN" to "test-sys-props-bearer-token"),
             ),
         )

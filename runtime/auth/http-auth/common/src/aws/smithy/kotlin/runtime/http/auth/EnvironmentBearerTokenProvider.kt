@@ -7,7 +7,7 @@ package aws.smithy.kotlin.runtime.http.auth
 import aws.smithy.kotlin.runtime.businessmetrics.SmithyBusinessMetric
 import aws.smithy.kotlin.runtime.businessmetrics.emitBusinessMetric
 import aws.smithy.kotlin.runtime.collections.Attributes
-import aws.smithy.kotlin.runtime.collections.toMutableAttributes
+import aws.smithy.kotlin.runtime.collections.mutableAttributes
 import aws.smithy.kotlin.runtime.time.Instant
 import aws.smithy.kotlin.runtime.util.PlatformProvider
 
@@ -23,7 +23,7 @@ public class EnvironmentBearerTokenProvider(
             ?: error("$key environment variable is not set")
         return object : BearerToken {
             override val token: String = bearerToken
-            override val attributes: Attributes = attributes.toMutableAttributes().apply {
+            override val attributes: Attributes = mutableAttributes().apply {
                 emitBusinessMetric(SmithyBusinessMetric.BEARER_SERVICE_ENV_VARS)
             }
             override val expiration: Instant? = null
