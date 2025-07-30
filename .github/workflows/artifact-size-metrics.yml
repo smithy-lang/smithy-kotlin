@@ -46,7 +46,7 @@ jobs:
       - name: Checkout Sources
         uses: actions/checkout@v4
       - name: Setup build
-        uses: ./smithy-kotlin/.github/actions/setup-build
+        uses: ./.github/actions/setup-build
       - name: Configure JDK
         uses: actions/setup-java@v3
         with:
