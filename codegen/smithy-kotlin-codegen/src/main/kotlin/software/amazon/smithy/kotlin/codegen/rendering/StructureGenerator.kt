@@ -6,7 +6,10 @@ package software.amazon.smithy.kotlin.codegen.rendering
 
 import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.codegen.core.Symbol
-import software.amazon.smithy.kotlin.codegen.core.*
+import software.amazon.smithy.kotlin.codegen.core.RenderingContext
+import software.amazon.smithy.kotlin.codegen.core.RuntimeTypes
+import software.amazon.smithy.kotlin.codegen.core.defaultName
+import software.amazon.smithy.kotlin.codegen.core.withBlock
 import software.amazon.smithy.kotlin.codegen.lang.KotlinTypes
 import software.amazon.smithy.kotlin.codegen.model.*
 import software.amazon.smithy.kotlin.codegen.rendering.serde.ClientErrorCorrection
@@ -192,20 +195,31 @@ class StructureGenerator(
 
             for (memberShape in sortedMembers) {
                 val target = model.expectShape(memberShape.target)
-                val memberName = memberNameSymbolIndex[memberShape]!!.first
+                val (memberName, memberSymbol) = memberNameSymbolIndex.getValue(memberShape)
                 if (target is BlobShape && !target.hasTrait<StreamingTrait>()) {
-                    openBlock("if (#1L != null) {", memberName)
-                        .write("if (other.#1L == null) return false", memberName)
-                        .write("if (!#1L.contentEquals(other.#1L)) return false", memberName)
-                        .closeBlock("} else if (other.#1L != null) return false", memberName)
+                    if (memberSymbol.isNullable) {
+                        openBlock("if (#1L != null) {", memberName)
+                            .write("if (other.#1L == null) return false", memberName)
+                            .write("if (!#1L.contentEquals(other.#1L)) return false", memberName)
+                            .closeBlock("} else if (other.#1L != null) return false", memberName)
+                    } else {
+                        write("if (!#1L.contentEquals(other.#1L)) return false", memberName)
+                    }
                 } else if (target is ListShape && target.member.targetOrSelf(model).isBlobShape) {
-                    openBlock("if (#L != null) {", memberName)
-                        .write("if (other.#L == null) return false", memberName)
-                        .write("if (#1L.size != other.#1L.size) return false", memberName)
-                        .openBlock("for (i in #L.indices) {", memberName)
-                        .write("if (!#1L[i].contentEquals(other.#1L[i])) return false", memberName)
-                        .closeBlock("}")
-                        .closeBlock("} else if (other.#1L != null) return false", memberName)
+                    if (memberSymbol.isNullable) {
+                        openBlock("if (#L != null) {", memberName)
+                            .write("if (other.#L == null) return false", memberName)
+                            .write("if (#1L.size != other.#1L.size) return false", memberName)
+                            .openBlock("for (i in #L.indices) {", memberName)
+                            .write("if (!#1L[i].contentEquals(other.#1L[i])) return false", memberName)
+                            .closeBlock("}")
+                            .closeBlock("} else if (other.#1L != null) return false", memberName)
+                    } else {
+                        write("if (#1L.size != other.#1L.size) return false", memberName)
+                            .openBlock("for (i in #L.indices) {", memberName)
+                            .write("if (!#1L[i].contentEquals(other.#1L[i])) return false", memberName)
+                            .closeBlock("}")
+                    }
                 } else if (target is DoubleShape || target is FloatShape) {
                     // NaNs must be compared using .equals()
                     write("if (!(#1L?.equals(other.#1L) ?: (other.#1L == null))) return false", memberName)
