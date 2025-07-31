@@ -15,9 +15,10 @@ import aws.smithy.kotlin.runtime.io.internal.SdkDispatchers
 import aws.smithy.kotlin.runtime.operation.ExecutionContext
 import aws.smithy.kotlin.runtime.telemetry.logging.logger
 import aws.smithy.kotlin.runtime.time.Instant
-import kotlinx.coroutines.*
+import kotlinx.coroutines.job
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
+import kotlinx.coroutines.withContext
 
 internal const val DEFAULT_WINDOW_SIZE_BYTES: Int = 16 * 1024
 internal const val CHUNK_BUFFER_SIZE: Long = 64 * 1024
