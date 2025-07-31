@@ -4,7 +4,7 @@ permissions:
   id-token: write
 
 on:
-  pull_request:
+  pull_request_target:
     types: [ opened, synchronize, reopened, labeled, unlabeled ]
     branches:
       - main
