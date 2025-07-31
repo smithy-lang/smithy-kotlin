@@ -28,7 +28,7 @@ public class EnvironmentBearerTokenProvider(
     override suspend fun resolve(attributes: Attributes): BearerToken {
         val bearerToken = sysPropKey?.let { platform.getProperty(it) }
             ?: envKey?.let { platform.getenv(it) }
-            ?: error("environment variable is not set")
+            ?: error("neither system property $sysPropKey nor environment variable $envKey is set")
         return object : BearerToken {
             override val token: String = bearerToken
             override val attributes: Attributes = mutableAttributes().apply {
