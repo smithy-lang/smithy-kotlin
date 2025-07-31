@@ -1,0 +1,6 @@
+version: 2
+updates:
+  - package-ecosystem: gradle
+    directory: /
+    schedule:
+      interval: daily # means every _weekday_ (Monday through Friday)
