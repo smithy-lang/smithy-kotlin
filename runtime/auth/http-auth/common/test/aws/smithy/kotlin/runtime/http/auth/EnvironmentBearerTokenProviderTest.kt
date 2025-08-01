@@ -67,6 +67,6 @@ class EnvironmentBearerTokenProviderTest {
         val exception = assertFailsWith<IllegalStateException> {
             provider.resolve()
         }
-        assertEquals("neither system property MISSING_TEST_TOKEN nor environment variable MISSING_TEST_TOKEN is set", exception.message)
+        assertEquals("Missing values for system property \"MISSING_TEST_TOKEN\" and environment variable \"MISSING_TEST_TOKEN\"", exception.message)
     }
 }
