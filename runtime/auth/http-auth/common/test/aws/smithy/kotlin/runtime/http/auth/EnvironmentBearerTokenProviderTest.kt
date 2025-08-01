@@ -13,7 +13,7 @@ class EnvironmentBearerTokenProviderTest {
             "TEST_SYS_PROPS_TOKEN",
             "TEST_ENV_TOKEN",
             TestPlatformProvider(
-                env = mutableMapOf("TEST_ENV_TOKEN" to "test-env-bearer-token"),
+                env = mapOf("TEST_ENV_TOKEN" to "test-env-bearer-token"),
             ),
         )
 
@@ -28,7 +28,7 @@ class EnvironmentBearerTokenProviderTest {
             "TEST_SYS_PROPS_TOKEN",
             "TEST_ENV_TOKEN",
             TestPlatformProvider(
-                props = mutableMapOf("TEST_SYS_PROPS_TOKEN" to "test-sys-props-bearer-token"),
+                props = mapOf("TEST_SYS_PROPS_TOKEN" to "test-sys-props-bearer-token"),
             ),
         )
 
@@ -43,8 +43,8 @@ class EnvironmentBearerTokenProviderTest {
             "TEST_SYS_PROPS_TOKEN",
             "TEST_ENV_TOKEN",
             TestPlatformProvider(
-                props = mutableMapOf("TEST_SYS_PROPS_TOKEN" to "test-sys-props-bearer-token"),
-                env = mutableMapOf("TEST_ENV_TOKEN" to "test-env-bearer-token"),
+                props = mapOf("TEST_SYS_PROPS_TOKEN" to "test-sys-props-bearer-token"),
+                env = mapOf("TEST_ENV_TOKEN" to "test-env-bearer-token"),
             ),
         )
 
@@ -59,8 +59,8 @@ class EnvironmentBearerTokenProviderTest {
             "MISSING_TEST_TOKEN",
             "MISSING_TEST_TOKEN",
             TestPlatformProvider(
-                env = mutableMapOf("TEST_TOKEN" to "test-env-bearer-token"),
-                props = mutableMapOf("TEST_TOKEN" to "test-sys-props-bearer-token"),
+                env = mapOf("TEST_TOKEN" to "test-env-bearer-token"),
+                props = mapOf("TEST_TOKEN" to "test-sys-props-bearer-token"),
             ),
         )
 
