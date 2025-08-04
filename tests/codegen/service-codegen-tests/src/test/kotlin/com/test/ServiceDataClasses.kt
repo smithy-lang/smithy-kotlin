@@ -54,3 +54,9 @@ data class HttpLabelTestOutputResponse(val output: String)
 @Serializable
 data class HttpQueryTestOutputResponse(val output: String)
 
+@Serializable
+data class HttpStructurePayloadTestStructure(
+    val content1: String,
+    val content2: Int,
+    val content3: Float,
+)
