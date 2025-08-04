@@ -14,8 +14,8 @@ import aws.smithy.kotlin.runtime.util.PlatformProvider
 /**
  * A [BearerTokenProvider] that extracts the bearer token from JVM system properties or environment variables.
  */
-public class EnvironmentBearerTokenProvider private constructor(
-    private val sysPropKey: String?,
+public class EnvironmentBearerTokenProvider(
+    private val sysPropKey: String,
     private val envKey: String,
     private val platform: PlatformProvider = PlatformProvider.System,
 ) : BearerTokenProvider {
@@ -23,18 +23,13 @@ public class EnvironmentBearerTokenProvider private constructor(
     public constructor(
         envKey: String,
         platform: PlatformProvider = PlatformProvider.System,
-    ) : this(null, envKey, platform)
-
-    public constructor(
-        sysPropKey: String,
-        envKey: String,
-        platform: PlatformProvider = PlatformProvider.System,
-        @Suppress("UNUSED_PARAMETER") dummy: Boolean = true,
-    ) : this(sysPropKey as String?, envKey, platform)
+    ) : this("", envKey, platform)
 
     override suspend fun resolve(attributes: Attributes): BearerToken {
-        val bearerToken = sysPropKey?.let(platform::getProperty) ?: platform.getenv(envKey)
-        if (bearerToken.isNullOrBlank()) throw IllegalStateException("""Missing values for system property "$sysPropKey" and environment variable "$envKey"""")
+        val bearerToken = sysPropKey.takeUnless(String::isBlank)?.let(platform::getProperty)
+            ?: platform.getenv(envKey)
+        if (bearerToken.isNullOrBlank())
+            throw IllegalStateException("""Missing values for system property "$sysPropKey" and environment variable "$envKey"""")
 
         return object : BearerToken {
             override val token: String = bearerToken
