@@ -44,19 +44,18 @@ internal class ConstraintGenerator(
                     val newMemberPrefix = "$prefix$memberName?."
                     generateConstraintValidations(newMemberPrefix, member.value, writer)
                 }
-            else ->
-                for (memberTrait in memberAndTargetTraits.values) {
-                    val traitGenerator = getTraitGeneratorFromTrait(prefix, memberName, memberTrait, pkgName, writer)
-                    traitGenerator?.apply {
-                        if (memberTrait !is RequiredTrait) {
-                            writer.withBlock("if ($prefix$memberName != null) {", "}") {
-                                render()
-                            }
-                        } else {
-                            render()
-                        }
+        }
+        for (memberTrait in memberAndTargetTraits.values) {
+            val traitGenerator = getTraitGeneratorFromTrait(prefix, memberName, memberTrait, pkgName, writer)
+            traitGenerator?.apply {
+                if (memberTrait !is RequiredTrait) {
+                    writer.withBlock("if ($prefix$memberName != null) {", "}") {
+                        render()
                     }
+                } else {
+                    render()
                 }
+            }
         }
     }
 

@@ -21,6 +21,9 @@ data class AuthTestRequest(val input1: String)
 data class ErrorTestRequest(val input1: String)
 
 @Serializable
+data class HttpError(val msg: String, val num: Int)
+
+@Serializable
 data class RequiredConstraintTestRequest(val requiredInput: String? = null, val notRequiredInput: String? = null)
 
 @Serializable
@@ -44,3 +47,10 @@ data class NestedUniqueItemsConstraintTestRequest(val nestedUniqueItemsListInput
 
 @Serializable
 data class DoubleNestedUniqueItemsConstraintTestRequest(val doubleNestedUniqueItemsListInput: List<List<List<String>>>)
+
+@Serializable
+data class HttpLabelTestOutputResponse(val output: String)
+
+@Serializable
+data class HttpQueryTestOutputResponse(val output: String)
+

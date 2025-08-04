@@ -132,7 +132,6 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         // render HttpDeserialize for all operation outputs
         val httpOperations = resolver.bindingOperations()
         httpOperations.forEach { operation ->
-
             generateOperationDeserializer(ctx, operation)
         }
 
@@ -357,7 +356,11 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
      */
     protected open fun renderSerializeHttpBody(ctx: ProtocolGenerator.GenerationContext, op: OperationShape, writer: KotlinWriter) {
         val resolver = getProtocolHttpBindingResolver(ctx.model, ctx.service)
-        if (!resolver.hasHttpBody(op)) return
+        if (ctx.settings.build.generateServiceProject) {
+            if (!resolver.hasHttpResponseBody(op)) return
+        } else {
+            if (!resolver.hasHttpRequestBody(op)) return
+        }
 
         // payload member(s)
         val bindings = if (ctx.settings.build.generateServiceProject) {

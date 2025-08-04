@@ -20,7 +20,7 @@ class ServiceEngineFactoryTest {
     val requestBodyLimit: Long = 10L * 1024 * 1024
 
     val portListnerTimeout = 100L
-    val projectDir: Path = Paths.get("build/service-generator-test")
+    val projectDir: Path = Paths.get("build/service-cbor-test")
 
     @Test
     fun `checks service with netty engine`() {

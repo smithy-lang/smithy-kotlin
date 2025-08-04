@@ -302,10 +302,13 @@ internal class KtorStubGenerator(
                                                     "Malformed CBOR input",
                                                 )
                                             }
-                                            withBlock("requestObj = requestObj.copy {", "}") {
-                                                call { readHttpLabel(shape, writer) }
-                                                call { readHttpQuery(shape, writer) }
+                                            if (ctx.model.expectShape(shape.input.get()).allMembers.isNotEmpty()) {
+                                                withBlock("requestObj = requestObj.copy {", "}") {
+                                                    call { readHttpLabel(shape, writer) }
+                                                    call { readHttpQuery(shape, writer) }
+                                                }
                                             }
+
                                             write(
                                                 "try { check${shape.id.name}RequestConstraint(requestObj) } catch (ex: Exception) { throw #T(ex?.message ?: #S, ex) }",
                                                 RuntimeTypes.KtorServerCore.BadRequestException,
