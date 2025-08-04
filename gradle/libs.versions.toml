@@ -14,7 +14,7 @@ otel-version = "1.45.0"
 slf4j-version = "2.0.16"
 slf4j-v1x-version = "1.7.36"
 crt-kotlin-version = "0.10.0"
-micrometer-version = "1.14.2"
+micrometer-version = "1.15.2"
 binary-compatibility-validator-version = "0.18.1"
 
 # codegen
@@ -23,7 +23,7 @@ smithy-version = "1.60.2"
 # testing
 junit-version = "5.13.2"
 kotest-version = "5.9.1"
-kotlin-compile-testing-version = "0.7.0"
+kotlin-compile-testing-version = "0.8.0"
 kotlinx-benchmark-version = "0.4.12"
 kotlinx-serialization-version = "1.7.3"
 docker-java-version = "3.4.0"
