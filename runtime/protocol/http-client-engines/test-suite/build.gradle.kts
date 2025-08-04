@@ -49,7 +49,7 @@ kotlin {
                 // So we must override their dependencies with the latest patched versions. https://github.com/docker-java/docker-java/issues/1974
                 implementation("com.fasterxml.jackson.core:jackson-databind:2.12.7.1") // https://github.com/docker-java/docker-java/issues/2177
                 implementation("org.apache.commons:commons-compress:1.26.0") // https://github.com/docker-java/docker-java/pull/2256
-                implementation("org.bouncycastle:bcpkix-jdk18on:1.78") // https://github.com/docker-java/docker-java/pull/2326
+                implementation("org.bouncycastle:bcpkix-jdk18on:1.81") // https://github.com/docker-java/docker-java/pull/2326
 
                 implementation(libs.docker.transport.zerodep)
 
