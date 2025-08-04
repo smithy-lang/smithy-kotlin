@@ -28,8 +28,7 @@ public class EnvironmentBearerTokenProvider(
     override suspend fun resolve(attributes: Attributes): BearerToken {
         val bearerToken = sysPropKey.takeUnless(String::isBlank)?.let(platform::getProperty)
             ?: platform.getenv(envKey)
-        if (bearerToken.isNullOrBlank())
-            throw IllegalStateException("""Missing values for system property "$sysPropKey" and environment variable "$envKey"""")
+        if (bearerToken.isNullOrBlank()) throw IllegalStateException("""Missing values for system property "$sysPropKey" and environment variable "$envKey"""")
 
         return object : BearerToken {
             override val token: String = bearerToken

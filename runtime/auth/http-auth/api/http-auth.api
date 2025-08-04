@@ -62,8 +62,8 @@ public abstract interface class aws/smithy/kotlin/runtime/http/auth/CloseableBea
 public final class aws/smithy/kotlin/runtime/http/auth/EnvironmentBearerTokenProvider : aws/smithy/kotlin/runtime/http/auth/BearerTokenProvider {
 	public fun <init> (Ljava/lang/String;Laws/smithy/kotlin/runtime/util/PlatformProvider;)V
 	public synthetic fun <init> (Ljava/lang/String;Laws/smithy/kotlin/runtime/util/PlatformProvider;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public fun <init> (Ljava/lang/String;Ljava/lang/String;Laws/smithy/kotlin/runtime/util/PlatformProvider;Z)V
-	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;Laws/smithy/kotlin/runtime/util/PlatformProvider;ZILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;Laws/smithy/kotlin/runtime/util/PlatformProvider;)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;Laws/smithy/kotlin/runtime/util/PlatformProvider;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public fun resolve (Laws/smithy/kotlin/runtime/collections/Attributes;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
