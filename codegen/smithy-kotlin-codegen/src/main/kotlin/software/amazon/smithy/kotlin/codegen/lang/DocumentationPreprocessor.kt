@@ -56,7 +56,7 @@ class DocumentationPreprocessor : KotlinIntegration {
             .applyWithin("<code>", "</code>", String::escapeHtml)
             .applyWithin("<pre>", "</pre>", String::escapeHtml)
         val parsed = Jsoup.parse(sanitized)
-        
+
         fun Node.emptyOrBlank(): Boolean = when {
             this is TextNode -> isBlank
             else -> childNodes().all { it.emptyOrBlank() }
