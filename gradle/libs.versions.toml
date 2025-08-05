@@ -18,10 +18,10 @@ micrometer-version = "1.15.2"
 binary-compatibility-validator-version = "0.18.1"
 
 # codegen
-smithy-version = "1.60.2"
+smithy-version = "1.61.0"
 
 # testing
-junit-version = "5.13.2"
+junit-version = "5.13.4"
 kotest-version = "5.9.1"
 kotlin-compile-testing-version = "0.8.0"
 kotlinx-benchmark-version = "0.4.14"
