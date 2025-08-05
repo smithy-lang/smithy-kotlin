@@ -60,3 +60,17 @@ data class HttpStructurePayloadTestStructure(
     val content2: Int,
     val content3: Float,
 )
+
+@Serializable
+data class TimestampTestRequestResponse(
+    val default: Double,
+    val dateTime: String,
+    val httpDate: String,
+    val epochSeconds: Double,
+)
+
+@Serializable
+data class JsonNameTestRequest(val requestName: String)
+
+@Serializable
+data class JsonNameTestResponse(val responseName: String)

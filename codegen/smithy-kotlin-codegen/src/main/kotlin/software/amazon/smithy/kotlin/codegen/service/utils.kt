@@ -32,7 +32,7 @@ fun renderCastingPrimitiveFromShapeType(
                     writer.write("$variable.let{ #T.fromIso8601(it) }", RuntimeTypes.Core.Instant)
                 TimestampFormatTrait.Format.HTTP_DATE ->
                     writer.write("$variable.let{ #T.fromRfc5322(it) }", RuntimeTypes.Core.Instant)
-                else -> writer.write("$variable.let{ #T.fromIso8601(it) }", RuntimeTypes.Core.Instant)
+                else -> writer.write("$variable.let{ #T.fromEpochSeconds(it) }", RuntimeTypes.Core.Instant)
             }
         else -> throw IllegalStateException(errorMessage ?: "Unable to render casting primitive for $type")
     }

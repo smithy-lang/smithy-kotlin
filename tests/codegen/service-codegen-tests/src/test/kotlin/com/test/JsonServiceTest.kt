@@ -143,7 +143,6 @@ class JsonServiceTest {
             "correctToken",
         )
         assertIs<HttpResponse<String>>(response)
-        println(response.body())
         assertEquals(201, response.statusCode(), "Expected 201")
         val body = json.decodeFromString(
             HttpStructurePayloadTestStructure.serializer(),
@@ -154,5 +153,63 @@ class JsonServiceTest {
         assertEquals(456.toFloat(), body.content3)
     }
 
+    @Test
+    fun `checks timestamp`() {
+        val json = Json { }
 
+        val requestJson = json.encodeToJsonElement(
+            TimestampTestRequestResponse.serializer(),
+            TimestampTestRequestResponse(
+                1515531081.123,
+                "1985-04-12T23:20:50.520Z",
+                "Tue, 29 Apr 2014 18:30:38 GMT",
+                1234567890.123,
+            ),
+        )
+
+        val response = sendRequest(
+            "$baseUrl/timestamp",
+            "POST",
+            requestJson,
+            "application/json",
+            "application/json",
+            "correctToken",
+        )
+        assertIs<HttpResponse<String>>(response)
+        assertEquals(201, response.statusCode(), "Expected 201")
+        val body = json.decodeFromString(
+            TimestampTestRequestResponse.serializer(),
+            response.body(),
+        )
+        assertEquals(1515531081.123, body.default)
+        assertEquals("1985-04-12T23:20:50.520Z", body.dateTime)
+        assertEquals("Tue, 29 Apr 2014 18:30:38 GMT", body.httpDate)
+        assertEquals(1234567890.123, body.epochSeconds)
+    }
+
+    @Test
+    fun `checks json name`() {
+        val json = Json { }
+
+        val requestJson = json.encodeToJsonElement(
+            JsonNameTestRequest.serializer(),
+            JsonNameTestRequest("Hello Kotlin Team"),
+        )
+
+        val response = sendRequest(
+            "$baseUrl/json-name",
+            "POST",
+            requestJson,
+            "application/json",
+            "application/json",
+            "correctToken",
+        )
+        assertIs<HttpResponse<String>>(response)
+        assertEquals(201, response.statusCode(), "Expected 201")
+        val body = json.decodeFromString(
+            JsonNameTestResponse.serializer(),
+            response.body(),
+        )
+        assertEquals("Hello Kotlin Team", body.responseName)
+    }
 }
