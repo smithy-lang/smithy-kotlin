@@ -18,7 +18,7 @@ micrometer-version = "1.15.2"
 binary-compatibility-validator-version = "0.18.1"
 
 # codegen
-smithy-version = "1.60.2"
+smithy-version = "1.61.0"
 
 # testing
 junit-version = "5.13.2"
