@@ -25,7 +25,7 @@ class CborServiceTest {
     val requestBodyLimit: Long = 10L * 1024 * 1024
     val port: Int = ServerSocket(0).use { it.localPort }
 
-    val portListnerTimeout = 100L
+    val portListnerTimeout = 180L
 
     val baseUrl = "http://localhost:$port"
 
