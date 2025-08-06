@@ -36,7 +36,7 @@ class CborServiceTest {
     @BeforeAll
     fun boot() {
         proc = startService("netty", port, closeGracePeriodMillis, closeTimeoutMillis, requestBodyLimit, projectDir)
-        val ready = waitForPort(port, portListnerTimeout)
+        val ready = waitForPort(port, portListnerTimeout, proc)
         assertTrue(ready, "Service did not start within $portListnerTimeout s")
     }
 
