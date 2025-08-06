@@ -44,11 +44,7 @@ class RestJson1 : JsonHttpBindingProtocolGenerator() {
 
         val resolver = getProtocolHttpBindingResolver(ctx.model, ctx.service)
 
-        if (ctx.settings.build.generateServiceProject) {
-            if (!resolver.hasHttpResponseBody(op)) return
-        } else {
-            if (!resolver.hasHttpRequestBody(op)) return
-        }
+        if (!resolver.hasHttpRequestBody(op)) return
 
         // restjson1 has some different semantics and expectations around empty structures bound via @httpPayload trait
         //   * empty structures get serialized to `{}`
