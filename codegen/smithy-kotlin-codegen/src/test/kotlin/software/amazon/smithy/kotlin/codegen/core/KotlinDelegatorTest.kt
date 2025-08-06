@@ -97,7 +97,9 @@ class KotlinDelegatorTest {
             Node.parse(configContents).expectObjectNode(),
         )
         val manifest = MockManifest()
-        val delegator = KotlinDelegator(settings, model, manifest, KotlinSymbolProvider(model, settings))
+        val symbolProvider = KotlinSymbolProvider(model, settings)
+        val ctx = GenerationContext(model, symbolProvider, settings, protocolGenerator = null)
+        val delegator = KotlinDelegator(ctx, manifest)
 
         val generatedSymbol = buildSymbol {
             name = "Foo"

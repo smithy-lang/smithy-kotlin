@@ -12,13 +12,13 @@ import kotlin.test.assertEquals
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 
-class ReadThroughCacheTest {
+class PeriodicSweepCacheTest {
     @Test
-    fun testReadThrough() = runTest {
+    fun testGet() = runTest {
         val clock = ManualClock()
         var counter = 0
         fun uncachedValue() = ExpiringValue(counter++, clock.now() + 2.seconds)
-        val cache = ReadThroughCache<String, Int>(1.minutes, clock)
+        val cache = PeriodicSweepCache<String, Int>(1.minutes, clock)
 
         // Basic read through
         assertEquals(0, cache.get("a") { uncachedValue() })
@@ -41,7 +41,7 @@ class ReadThroughCacheTest {
         val clock = ManualClock()
         var counter = 0
         fun uncachedValue() = ExpiringValue(counter++, clock.now() + 2.seconds)
-        val cache = ReadThroughCache<String, Int>(4.seconds, clock)
+        val cache = PeriodicSweepCache<String, Int>(4.seconds, clock)
 
         // Pre-populate values
         assertEquals(0, cache.get("a") { uncachedValue() })

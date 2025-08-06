@@ -6,12 +6,11 @@
 package aws.smithy.kotlin.runtime.http.operation
 
 import aws.smithy.kotlin.runtime.auth.AuthSchemeId
-import aws.smithy.kotlin.runtime.http.Headers
-import aws.smithy.kotlin.runtime.http.HttpBody
-import aws.smithy.kotlin.runtime.http.HttpCall
-import aws.smithy.kotlin.runtime.http.HttpStatusCode
-import aws.smithy.kotlin.runtime.http.SdkHttpClient
-import aws.smithy.kotlin.runtime.http.auth.*
+import aws.smithy.kotlin.runtime.http.*
+import aws.smithy.kotlin.runtime.http.auth.AnonymousIdentityProvider
+import aws.smithy.kotlin.runtime.http.auth.AuthScheme
+import aws.smithy.kotlin.runtime.http.auth.HttpSigner
+import aws.smithy.kotlin.runtime.http.auth.SignHttpRequest
 import aws.smithy.kotlin.runtime.http.engine.HttpClientEngineBase
 import aws.smithy.kotlin.runtime.http.engine.HttpClientEngineConfig
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
@@ -20,13 +19,74 @@ import aws.smithy.kotlin.runtime.http.response.HttpResponse
 import aws.smithy.kotlin.runtime.identity.asIdentityProviderConfig
 import aws.smithy.kotlin.runtime.operation.ExecutionContext
 import aws.smithy.kotlin.runtime.time.Instant
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.test.runTest
-import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertFalse
-import kotlin.test.assertTrue
+import kotlin.coroutines.CoroutineContext
+import kotlin.test.*
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.milliseconds
 
 class SdkOperationExecutionTest {
+    @Test
+    fun testAttemptTimeoutWithLongCall(): Unit = runTest {
+        val serialized = HttpRequestBuilder()
+        val op = newTestOperation<Unit, Unit>(serialized, Unit).apply {
+            context[HttpOperationContext.AttemptTimeout] = 200.milliseconds
+        }
+
+        val engine = DelayingHttpEngine(listOf(300.milliseconds, 300.milliseconds, 100.milliseconds))
+        val client = SdkHttpClient(engine)
+
+        val result = op.roundTrip(client, Unit)
+        assertEquals(Unit, result)
+        assertEquals(3, engine.callCount)
+    }
+
+    @Test
+    fun testAttemptTimeoutWithShortCall(): Unit = runTest {
+        val serialized = HttpRequestBuilder()
+        val op = newTestOperation<Unit, Unit>(serialized, Unit).apply {
+            context[HttpOperationContext.AttemptTimeout] = 300.milliseconds
+        }
+
+        val engine = DelayingHttpEngine(200.milliseconds)
+        val client = SdkHttpClient(engine)
+
+        val result = op.roundTrip(client, Unit)
+        assertEquals(Unit, result)
+        assertEquals(1, engine.callCount)
+    }
+
+    @Test
+    fun testCallTimeoutWithLongCall(): Unit = runTest {
+        val serialized = HttpRequestBuilder()
+        val op = newTestOperation<Unit, Unit>(serialized, Unit).apply {
+            context[HttpOperationContext.CallTimeout] = 200.milliseconds
+        }
+
+        val engine = DelayingHttpEngine(300.milliseconds)
+        val client = SdkHttpClient(engine)
+
+        assertFailsWith<CallTimeoutException> { op.roundTrip(client, Unit) }
+        assertEquals(1, engine.callCount)
+    }
+
+    @Test
+    fun testCallTimeoutWithShortCall(): Unit = runTest {
+        val serialized = HttpRequestBuilder()
+        val op = newTestOperation<Unit, Unit>(serialized, Unit).apply {
+            context[HttpOperationContext.CallTimeout] = 300.milliseconds
+        }
+
+        val engine = DelayingHttpEngine(200.milliseconds)
+        val client = SdkHttpClient(engine)
+
+        val result = op.roundTrip(client, Unit)
+        assertEquals(Unit, result)
+        assertEquals(1, engine.callCount)
+    }
+
     @Test
     fun testOperationMiddlewareOrder() = runTest {
         // sanity test middleware flows the way we expect
@@ -103,5 +163,34 @@ class SdkOperationExecutionTest {
         op.roundTrip(client, Unit)
         val expectedOrder = listOf("initialize", "mutate", "attempt", "receive", "attempt", "receive")
         assertEquals(expectedOrder, actualOrder)
+    }
+}
+
+private fun CoroutineScope.DelayingHttpEngine(duration: Duration) =
+    DelayingHttpEngine(coroutineContext, listOf(duration))
+
+private fun CoroutineScope.DelayingHttpEngine(durations: List<Duration>) =
+    DelayingHttpEngine(coroutineContext, durations)
+
+private class DelayingHttpEngine(
+    testContext: CoroutineContext,
+    durations: List<Duration>,
+) : HttpClientEngineBase("test engine", testContext) {
+    private val durations = run {
+        val terminator = durations.last()
+        val initial = durations.dropLast(1)
+        initial.asSequence() + generateSequence { terminator }
+    }.iterator()
+
+    var callCount = 0
+        private set
+
+    override val config: HttpClientEngineConfig = HttpClientEngineConfig.Default
+
+    override suspend fun roundTrip(context: ExecutionContext, request: HttpRequest): HttpCall {
+        callCount++
+        delay(durations.next())
+        val resp = HttpResponse(HttpStatusCode.OK, Headers.Empty, HttpBody.Empty)
+        return HttpCall(request, resp, Instant.now(), Instant.now())
     }
 }

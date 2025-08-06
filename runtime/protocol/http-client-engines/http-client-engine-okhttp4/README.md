@@ -1,19 +1,13 @@
 # OkHttp4 Engine
 
-The AWS SDK for Kotlin depends on OkHttp **5.0.0-alpha.x**, which despite being in alpha, is claimed to be production stable and safe for consumption:
+The AWS SDK for Kotlin depends on a stable version of OkHttp **5.x**.
 
-> Although this release is labeled alpha, the only unstable thing in it is our new APIs. 
-> This release has many critical bug fixes and is safe to run in production. 
-> We’re eager to stabilize our new APIs so we can get out of alpha.
-> 
-> https://square.github.io/okhttp/changelogs/changelog/#version-500-alpha12
-
-This `OkHttp4Engine` is intended to be used for applications which still depend on okhttp3 **4.x** and can't upgrade to the newest alpha version.
+This `OkHttp4Engine` is intended to be used by applications which still depend on okhttp3 **4.x** and can't upgrade to the next major version.
 
 ## Configuration
 
 ### Gradle
-Because the SDK's default HTTP engine depends on okhttp3 **5.0.0-alpha.X**, consumers will need to force Gradle to resolve to **4.x** to prevent the alpha dependency from being introduced transitively. Here is a sample configuration:
+Because the SDK's default HTTP engine depends on okhttp3 **5.x**, consumers will need to force Gradle to resolve to **4.x** to prevent the newer dependency from being introduced transitively. Here is a sample configuration:
 ```kts
 dependencies {
     implementation("aws.sdk.kotlin:s3:$SDK_VERSION") // and any other AWS SDK clients... 
@@ -25,7 +19,7 @@ configurations.all {
         // Force resolve to OkHttp 4.x
         force("com.squareup.okhttp3:okhttp:4.12.0") // or whichever version you are using... 
     }
-    exclude(group = "com.squareup.okhttp3", module = "okhttp-coroutines") // Exclude dependency on okhttp-coroutines, which is introduced in 5.0.0-alpha.X 
+    exclude(group = "com.squareup.okhttp3", module = "okhttp-coroutines") // Exclude dependency on okhttp-coroutines, which was introduced in 5.0.0-alpha.X 
 }
 ```
 
@@ -86,6 +80,17 @@ Caused by: java.lang.ClassNotFoundException: okhttp3.coroutines.ExecuteAsyncKt
 	... 9 more
 ```
 
-It likely means you failed to configure the SDK client to use the `OkHttpEngine4`. 
-Please double-check all of your SDK client configurations to ensure `httpClient = OkHttpEngine4()` is configured,
+It likely means you failed to configure the SDK client to use the `OkHttp4Engine`. 
+Please double-check all of your SDK client configurations to ensure `httpClient = OkHttp4Engine()` is configured,
 and if the problem persists, [open an issue](https://github.com/smithy-lang/smithy-kotlin/issues/new/choose).
+
+### Android R8 / ProGuard Configuration
+If you're using the OkHttp4Engine in an Android application with R8 or Proguard for code minification, and you see an error similar to the following:
+```
+ERROR: R8: Missing class okhttp3.coroutines.ExecuteAsyncKt (referenced from: java.lang.Object aws.smithy.kotlin.runtime.http.engine.okhttp.OkHttpEngine.roundTrip(aws.smithy.kotlin.runtime.operation.ExecutionContext, aws.smithy.kotlin.runtime.http.request.HttpRequest, kotlin.coroutines.Continuation))
+```
+
+You'll need to add the following rule to either `proguard-rules.pro` or `consumer-rules.pro`, depending on your project structure:
+```
+-dontwarn okhttp3.coroutines.ExecuteAsyncKt
+```

@@ -6,8 +6,10 @@
 package aws.smithy.kotlin.runtime.awsprotocol.json
 
 import aws.smithy.kotlin.runtime.collections.get
-import aws.smithy.kotlin.runtime.http.*
+import aws.smithy.kotlin.runtime.http.HttpBody
+import aws.smithy.kotlin.runtime.http.SdkHttpClient
 import aws.smithy.kotlin.runtime.http.operation.*
+import aws.smithy.kotlin.runtime.http.readAll
 import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
 import aws.smithy.kotlin.runtime.http.response.HttpResponse
 import aws.smithy.kotlin.runtime.httptest.TestEngine
@@ -19,10 +21,9 @@ import kotlin.test.assertEquals
 class AwsJsonProtocolTest {
     @Test
     fun testSetJsonProtocolHeaders() = runTest {
-        @Suppress("DEPRECATION")
         val op = SdkHttpOperation.build<Unit, HttpResponse> {
-            serializer = UnitSerializer
-            deserializer = IdentityDeserializer
+            serializeWith = HttpSerializer.Unit
+            deserializeWith = HttpDeserializer.Identity
             operationName = "Bar"
             serviceName = "Foo"
         }
@@ -41,10 +42,9 @@ class AwsJsonProtocolTest {
 
     @Test
     fun testEmptyBody() = runTest {
-        @Suppress("DEPRECATION")
         val op = SdkHttpOperation.build<Unit, HttpResponse> {
-            serializer = UnitSerializer
-            deserializer = IdentityDeserializer
+            serializeWith = HttpSerializer.Unit
+            deserializeWith = HttpDeserializer.Identity
             operationName = "Bar"
             serviceName = "Foo"
         }
@@ -62,14 +62,14 @@ class AwsJsonProtocolTest {
     fun testDoesNotOverride() = runTest {
         @Suppress("DEPRECATION")
         val op = SdkHttpOperation.build<Unit, HttpResponse> {
-            serializer = object : HttpSerialize<Unit> {
-                override suspend fun serialize(context: ExecutionContext, input: Unit): HttpRequestBuilder =
+            serializeWith = object : HttpSerializer.NonStreaming<Unit> {
+                override fun serialize(context: ExecutionContext, input: Unit): HttpRequestBuilder =
                     HttpRequestBuilder().apply {
                         headers["Content-Type"] = "application/xml"
                         body = HttpBody.fromBytes("foo".encodeToByteArray())
                     }
             }
-            deserializer = IdentityDeserializer
+            deserializeWith = HttpDeserializer.Identity
             operationName = "Bar"
             serviceName = "Foo"
         }
