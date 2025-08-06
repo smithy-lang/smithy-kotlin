@@ -57,13 +57,18 @@ class DocumentationPreprocessor : KotlinIntegration {
             .applyWithin("<pre>", "</pre>", String::escapeHtml)
         val parsed = Jsoup.parse(sanitized)
 
+        fun Node.emptyOrBlank(): Boolean = when {
+            this is TextNode -> isBlank
+            else -> childNodes().all { it.emptyOrBlank() }
+        }
+
         parsed.body().filterDescendants(
             // Jsoup will preserve newlines between elements as blank text nodes. These have zero bearing on the content
             // of the document to begin with and only serve to complicate traversal.
             { it is TextNode && it.isBlank },
             // Some docs contain empty definition terms, which we render as section headers. An empty section header
             // (literal "## \n" is invalid markdown according to dokka.
-            { it.nodeName() == "dt" && it.childNodes().isEmpty() },
+            { it.nodeName() == "dt" && it.emptyOrBlank() },
         )
 
         return parsed
