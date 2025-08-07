@@ -34,8 +34,6 @@ class JsonServiceTest {
 
     private lateinit var proc: Process
 
-
-
     @BeforeAll
     fun boot() {
         proc = startService("netty", port, closeGracePeriodMillis, closeTimeoutMillis, requestBodyLimit, projectDir)
