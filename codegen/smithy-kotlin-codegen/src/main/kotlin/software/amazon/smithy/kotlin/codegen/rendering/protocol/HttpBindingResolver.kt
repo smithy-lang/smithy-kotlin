@@ -90,8 +90,16 @@ interface HttpBindingResolver {
 /**
  * @return true if the operation contains request data bound to the PAYLOAD or DOCUMENT locations
  */
-fun HttpBindingResolver.hasHttpBody(operationShape: OperationShape): Boolean =
+fun HttpBindingResolver.hasHttpRequestBody(operationShape: OperationShape): Boolean =
     requestBindings(operationShape).any {
+        it.location == HttpBinding.Location.PAYLOAD || it.location == HttpBinding.Location.DOCUMENT
+    }
+
+/**
+ * @return true if the operation contains request data bound to the PAYLOAD or DOCUMENT locations
+ */
+fun HttpBindingResolver.hasHttpResponseBody(operationShape: OperationShape): Boolean =
+    responseBindings(operationShape).any {
         it.location == HttpBinding.Location.PAYLOAD || it.location == HttpBinding.Location.DOCUMENT
     }
 

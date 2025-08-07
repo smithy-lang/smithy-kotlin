@@ -214,6 +214,14 @@ class MockHttpProtocolGenerator(model: Model) : HttpBindingProtocolGenerator() {
                 val symbol = ctx.symbolProvider.toSymbol(shape)
                 name = "serialize" + StringUtils.capitalize(symbol.name) + "Payload"
             }
+
+            override fun errorSerializer(
+                ctx: ProtocolGenerator.GenerationContext,
+                errorShape: StructureShape,
+                members: List<MemberShape>,
+            ): Symbol {
+                error("Unneeded for test")
+            }
         }
 
     override fun operationErrorHandler(ctx: ProtocolGenerator.GenerationContext, op: OperationShape): Symbol = buildSymbol {

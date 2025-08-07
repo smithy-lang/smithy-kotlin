@@ -12,10 +12,10 @@ import kotlin.test.Test
 import kotlin.test.assertTrue
 
 class ServiceFileTest {
-    val packageName = "com.test"
+    val packageName = "com.cbor"
     val packagePath = packageName.replace('.', '/')
 
-    val projectDir: Path = Paths.get("build/service-generator-test")
+    val projectDir: Path = Paths.get("build/service-cbor-test")
 
     @Test
     fun `generates service and all necessary files`() {

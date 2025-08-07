@@ -18,6 +18,7 @@ import software.amazon.smithy.kotlin.codegen.rendering.protocol.toRenderingConte
 import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.shapes.Shape
+import software.amazon.smithy.model.shapes.StructureShape
 import software.amazon.smithy.model.shapes.UnionShape
 import software.amazon.smithy.model.traits.TimestampFormatTrait
 import software.amazon.smithy.model.traits.XmlAttributeTrait
@@ -140,5 +141,13 @@ open class XmlSerializerGenerator(
                 write("return serializer.toByteArray()")
             }
         }
+    }
+
+    override fun errorSerializer(
+        ctx: ProtocolGenerator.GenerationContext,
+        errorShape: StructureShape,
+        members: List<MemberShape>,
+    ): Symbol {
+        TODO("Used for service-codegen. Not yet implemented")
     }
 }

@@ -37,7 +37,7 @@ class ServiceConstraintsTest {
     @BeforeAll
     fun boot() {
         proc = startService("netty", port, closeGracePeriodMillis, closeTimeoutMillis, requestBodyLimit, projectDir)
-        val ready = waitForPort(port, portListenerTimeout)
+        val ready = waitForPort(port, portListenerTimeout, proc)
         assertTrue(ready, "Service did not start within $portListenerTimeout s")
     }
 

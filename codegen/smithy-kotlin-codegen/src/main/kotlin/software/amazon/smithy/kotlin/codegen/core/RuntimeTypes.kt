@@ -513,6 +513,10 @@ object RuntimeTypes {
         val BadRequestException = symbol("BadRequestException", "plugins")
     }
 
+    object KtorServerUtils : RuntimeTypePackage(KotlinDependency.KTOR_SERVER_UTILS) {
+        val AttributeKey = symbol("AttributeKey", "util")
+    }
+
     object KtorServerRouting : RuntimeTypePackage(KotlinDependency.KTOR_SERVER_CORE) {
         val routing = symbol("routing", "routing")
         val route = symbol("route", "routing")
@@ -558,6 +562,9 @@ object RuntimeTypes {
         val HttpHeaders = symbol("HttpHeaders")
         val Cbor = symbol("Cbor", "ContentType.Application")
         val Json = symbol("Json", "ContentType.Application")
+        val Any = symbol("Any", "ContentType.Application")
+        val OctetStream = symbol("OctetStream", "ContentType.Application")
+        val PlainText = symbol("Plain", "ContentType.Text")
     }
 
     object KtorServerLogging : RuntimeTypePackage(KotlinDependency.KTOR_SERVER_LOGGING) {

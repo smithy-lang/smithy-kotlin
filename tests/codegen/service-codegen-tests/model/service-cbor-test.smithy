@@ -1,17 +1,18 @@
 $version: "2.0"
 
-namespace com.test
+namespace com.cbor
 
 use smithy.protocols#rpcv2Cbor
 
 @rpcv2Cbor
 @httpBearerAuth
-service ServiceGeneratorTest {
+service CborServiceTest {
     version: "1.0.0"
     operations: [
-        PostTest,
-        AuthTest,
-        ErrorTest,
+        PostTest
+        AuthTest
+        ErrorTest
+        HttpErrorTest
     ]
 }
 
@@ -64,4 +65,25 @@ structure ErrorTestInput {
 @output
 structure ErrorTestOutput {
     output1: String
+}
+
+
+@http(method: "POST", uri: "/http-error", code: 200)
+operation HttpErrorTest {
+    input: HttpErrorTestInput
+    output: HttpErrorTestOutput
+    errors: [HttpError]
+}
+
+@input
+structure HttpErrorTestInput {}
+
+@output
+structure HttpErrorTestOutput {}
+
+@error("client")
+@httpError(456)
+structure HttpError {
+    msg: String
+    num: Integer
 }

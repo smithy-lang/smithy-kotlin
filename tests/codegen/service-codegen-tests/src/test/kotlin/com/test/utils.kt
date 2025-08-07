@@ -1,5 +1,6 @@
 package com.test
 
+import kotlinx.serialization.json.JsonElement
 import org.gradle.testkit.runner.GradleRunner
 import java.io.IOException
 import java.net.Socket
@@ -79,9 +80,10 @@ internal fun cleanupService(proc: Process, gracefulWindow: Long = 5_000L) {
 
 private fun isWindows() = System.getProperty("os.name").lowercase().contains("windows")
 
-internal fun waitForPort(port: Int, timeoutSec: Long = 180): Boolean {
+internal fun waitForPort(port: Int, timeoutSec: Long = 180, proc: Process? = null): Boolean {
     val deadline = System.currentTimeMillis() + TimeUnit.SECONDS.toNanos(timeoutSec)
     while (System.currentTimeMillis() < deadline) {
+//        proc?.inputStream?.bufferedReader()?.forEachLine { println(it) }
         try {
             Socket("localhost", port).use {
                 return true // Port is available
@@ -100,6 +102,7 @@ internal fun sendRequest(
     contentType: String? = null,
     acceptType: String? = null,
     bearerToken: String? = null,
+    headers: Map<String, String> = emptyMap(),
 ): HttpResponse<*> {
     val client = HttpClient.newHttpClient()
 
@@ -107,18 +110,21 @@ internal fun sendRequest(
         null -> HttpRequest.BodyPublishers.noBody()
         is ByteArray -> HttpRequest.BodyPublishers.ofByteArray(data)
         is String -> HttpRequest.BodyPublishers.ofString(data)
+        is JsonElement -> HttpRequest.BodyPublishers.ofString(data.toString())
         else -> throw IllegalArgumentException(
             "Unsupported body type: ${data::class.qualifiedName}",
         )
     }
 
-    val request = HttpRequest.newBuilder()
+    val builder = HttpRequest.newBuilder()
         .uri(URI.create(url))
-        .apply {
-            contentType?.let { header("Content-Type", it) }
-            acceptType?.let { header("Accept", it) }
-            bearerToken?.let { header("Authorization", "Bearer $it") }
-        }
+
+    contentType?.let { builder.header("Content-Type", it) }
+    acceptType ?.let { builder.header("Accept", it) }
+    bearerToken?.let { builder.header("Authorization", "Bearer $it") }
+    headers.forEach { (name, value) -> builder.header(name, value) }
+
+    val request = builder
         .method(method, bodyPublisher)
         .build()
 

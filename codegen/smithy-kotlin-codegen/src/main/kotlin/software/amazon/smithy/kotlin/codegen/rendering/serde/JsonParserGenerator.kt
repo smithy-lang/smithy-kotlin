@@ -36,7 +36,12 @@ open class JsonParserGenerator(
     )
 
     override fun operationDeserializer(ctx: ProtocolGenerator.GenerationContext, op: OperationShape, members: List<MemberShape>): Symbol {
-        val outputSymbol = op.output.get().let { ctx.symbolProvider.toSymbol(ctx.model.expectShape(it)) }
+        val deserializationTarget = if (ctx.settings.build.generateServiceProject) {
+            op.input
+        } else {
+            op.output
+        }
+        val outputSymbol = deserializationTarget.get().let { ctx.symbolProvider.toSymbol(ctx.model.expectShape(it)) }
         return op.bodyDeserializer(ctx.settings) { writer ->
             addNestedDocumentDeserializers(ctx, op, writer)
             val fnName = op.bodyDeserializerName()
@@ -74,8 +79,13 @@ open class JsonParserGenerator(
         documentMembers: List<MemberShape>,
         writer: KotlinWriter,
     ) {
+        val deserializationTarget = if (ctx.settings.build.generateServiceProject) {
+            op.input
+        } else {
+            op.output
+        }
         writer.write("val deserializer = #T(payload)", RuntimeTypes.Serde.SerdeJson.JsonDeserializer)
-        val shape = ctx.model.expectShape(op.output.get())
+        val shape = ctx.model.expectShape(deserializationTarget.get())
         renderDeserializerBody(ctx, shape, documentMembers, writer)
     }
 

@@ -1,6 +1,6 @@
 $version: "2.0"
 
-namespace com.test
+namespace com.constraints
 
 use smithy.protocols#rpcv2Cbor
 

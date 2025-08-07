@@ -77,4 +77,9 @@ class ServiceTypes(val pkgName: String) {
         name = "hasAllUniqueElements"
         namespace = "$pkgName.constraints"
     }
+
+    val responseHandledKey = buildSymbol {
+        name = "ResponseHandledKey"
+        namespace = "$pkgName.plugins"
+    }
 }
