@@ -83,7 +83,7 @@ private fun isWindows() = System.getProperty("os.name").lowercase().contains("wi
 internal fun waitForPort(port: Int, timeoutSec: Long = 180, proc: Process? = null): Boolean {
     val deadline = System.currentTimeMillis() + TimeUnit.SECONDS.toNanos(timeoutSec)
     while (System.currentTimeMillis() < deadline) {
-        proc?.inputStream?.bufferedReader()?.forEachLine {println(it)}
+//        proc?.inputStream?.bufferedReader()?.forEachLine { println(it) }
         try {
             Socket("localhost", port).use {
                 return true // Port is available

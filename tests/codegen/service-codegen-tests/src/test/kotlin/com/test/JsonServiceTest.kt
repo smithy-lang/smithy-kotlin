@@ -34,6 +34,8 @@ class JsonServiceTest {
 
     private lateinit var proc: Process
 
+
+
     @BeforeAll
     fun boot() {
         proc = startService("netty", port, closeGracePeriodMillis, closeTimeoutMillis, requestBodyLimit, projectDir)
@@ -65,7 +67,6 @@ class JsonServiceTest {
 
     @Test
     fun `checks http-label`() {
-        val json = Json { }
         val response = sendRequest(
             "$baseUrl/http-label/labelValue",
             "GET",
@@ -77,7 +78,7 @@ class JsonServiceTest {
         assertIs<HttpResponse<String>>(response)
 
         assertEquals(200, response.statusCode(), "Expected 200")
-        val body = json.decodeFromString(
+        val body = Json.decodeFromString(
             HttpLabelTestOutputResponse.serializer(),
             response.body(),
         )
@@ -86,7 +87,6 @@ class JsonServiceTest {
 
     @Test
     fun `checks http-query`() {
-        val json = Json { }
         val response = sendRequest(
             "$baseUrl/http-query?query=123&qqq=kotlin",
             "DELETE",
@@ -98,7 +98,7 @@ class JsonServiceTest {
         assertIs<HttpResponse<String>>(response)
 
         assertEquals(200, response.statusCode(), "Expected 200")
-        val body = json.decodeFromString(
+        val body = Json.decodeFromString(
             HttpQueryTestOutputResponse.serializer(),
             response.body(),
         )
@@ -123,9 +123,7 @@ class JsonServiceTest {
 
     @Test
     fun `checks http-payload structure`() {
-        val json = Json { }
-
-        val requestJson = json.encodeToJsonElement(
+        val requestJson = Json.encodeToJsonElement(
             HttpStructurePayloadTestStructure.serializer(),
             HttpStructurePayloadTestStructure(
                 "content",
@@ -144,7 +142,7 @@ class JsonServiceTest {
         )
         assertIs<HttpResponse<String>>(response)
         assertEquals(201, response.statusCode(), "Expected 201")
-        val body = json.decodeFromString(
+        val body = Json.decodeFromString(
             HttpStructurePayloadTestStructure.serializer(),
             response.body(),
         )
@@ -155,9 +153,7 @@ class JsonServiceTest {
 
     @Test
     fun `checks timestamp`() {
-        val json = Json { }
-
-        val requestJson = json.encodeToJsonElement(
+        val requestJson = Json.encodeToJsonElement(
             TimestampTestRequestResponse.serializer(),
             TimestampTestRequestResponse(
                 1515531081.123,
@@ -177,7 +173,7 @@ class JsonServiceTest {
         )
         assertIs<HttpResponse<String>>(response)
         assertEquals(201, response.statusCode(), "Expected 201")
-        val body = json.decodeFromString(
+        val body = Json.decodeFromString(
             TimestampTestRequestResponse.serializer(),
             response.body(),
         )
@@ -189,9 +185,7 @@ class JsonServiceTest {
 
     @Test
     fun `checks json name`() {
-        val json = Json { }
-
-        val requestJson = json.encodeToJsonElement(
+        val requestJson = Json.encodeToJsonElement(
             JsonNameTestRequest.serializer(),
             JsonNameTestRequest("Hello Kotlin Team"),
         )
@@ -206,7 +200,7 @@ class JsonServiceTest {
         )
         assertIs<HttpResponse<String>>(response)
         assertEquals(201, response.statusCode(), "Expected 201")
-        val body = json.decodeFromString(
+        val body = Json.decodeFromString(
             JsonNameTestResponse.serializer(),
             response.body(),
         )
