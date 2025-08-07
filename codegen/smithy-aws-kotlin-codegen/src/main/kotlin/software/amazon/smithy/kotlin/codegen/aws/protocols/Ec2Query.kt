@@ -10,7 +10,10 @@ import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.kotlin.codegen.aws.protocols.core.AbstractQueryFormUrlSerializerGenerator
 import software.amazon.smithy.kotlin.codegen.aws.protocols.core.QueryHttpBindingProtocolGenerator
 import software.amazon.smithy.kotlin.codegen.aws.protocols.formurl.QuerySerdeFormUrlDescriptorGenerator
-import software.amazon.smithy.kotlin.codegen.core.*
+import software.amazon.smithy.kotlin.codegen.core.KotlinWriter
+import software.amazon.smithy.kotlin.codegen.core.RenderingContext
+import software.amazon.smithy.kotlin.codegen.core.RuntimeTypes
+import software.amazon.smithy.kotlin.codegen.core.withBlock
 import software.amazon.smithy.kotlin.codegen.model.buildSymbol
 import software.amazon.smithy.kotlin.codegen.model.getTrait
 import software.amazon.smithy.kotlin.codegen.model.isNullable
@@ -39,7 +42,7 @@ class Ec2Query : QueryHttpBindingProtocolGenerator() {
         writer: KotlinWriter,
     ) {
         writer.write("""checkNotNull(payload){ "unable to parse error from empty response" }""")
-        writer.write("#T(payload)", RuntimeTypes.AwsXmlProtocols.parseEc2QueryErrorResponseNoSuspend)
+        writer.write("#T(payload)", RuntimeTypes.AwsXmlProtocols.parseEc2QueryErrorResponse)
     }
 }
 

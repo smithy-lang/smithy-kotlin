@@ -38,13 +38,11 @@ class DefaultAwsHttpSignerTest : AwsHttpSignerTestBase(DefaultAwsSigner)
  * Basic sanity tests. Signing (including `AwsHttpSigner`) is covered by the more exhaustive
  * test suite in the `aws-signing-tests` module.
  */
-@Suppress("HttpUrlsUsage")
 public abstract class AwsHttpSignerTestBase(
     private val signer: AwsSigner,
 ) {
     private val testCredentials = Credentials("AKID", "SECRET", "SESSION")
 
-    @Suppress("DEPRECATION")
     private fun buildOperation(
         requestBody: String = "{\"TableName\": \"foo\"}",
         streaming: Boolean = false,
@@ -52,29 +50,11 @@ public abstract class AwsHttpSignerTestBase(
         unsigned: Boolean = false,
     ): SdkHttpOperation<Unit, HttpResponse> {
         val operation: SdkHttpOperation<Unit, HttpResponse> = SdkHttpOperation.build {
-            serializer = object : HttpSerialize<Unit> {
-                override suspend fun serialize(context: ExecutionContext, input: Unit): HttpRequestBuilder =
-                    HttpRequestBuilder().apply {
-                        method = HttpMethod.POST
-                        url.scheme = Scheme.HTTP
-                        url.host = Host.Domain("demo.us-east-1.amazonaws.com")
-                        url.path.encoded = "/"
-                        headers.append("Host", "demo.us-east-1.amazonaws.com")
-                        headers.appendAll("x-amz-archive-description", listOf("test", "test"))
-                        body = when (streaming) {
-                            true -> {
-                                object : HttpBody.ChannelContent() {
-                                    override val contentLength: Long = requestBody.length.toLong()
-                                    override fun readFrom(): SdkByteReadChannel = SdkByteReadChannel(requestBody.encodeToByteArray())
-                                    override val isOneShot: Boolean = !replayable
-                                }
-                            }
-                            false -> HttpBody.fromBytes(requestBody.encodeToByteArray())
-                        }
-                        headers.append("Content-Length", body.contentLength?.toString() ?: "0")
-                    }
+            serializeWith = when (streaming) {
+                true -> StreamingSerializer(requestBody, replayable)
+                false -> NonStreamingSerializer(requestBody)
             }
-            deserializer = IdentityDeserializer
+            deserializeWith = HttpDeserializer.Identity
             operationName = "testSigningOperation"
             serviceName = "testService"
             context {
@@ -188,5 +168,38 @@ public abstract class AwsHttpSignerTestBase(
         val signed = getSignedRequest(op)
         assertEquals(expectedDate, signed.headers["X-Amz-Date"])
         assertEquals(expectedSig, signed.headers["Authorization"])
+    }
+}
+
+private class NonStreamingSerializer(private val requestBody: String) : HttpSerializer.NonStreaming<Unit> {
+    override fun serialize(context: ExecutionContext, input: Unit) = HttpRequestBuilder().apply {
+        method = HttpMethod.POST
+        url.scheme = Scheme.HTTP
+        url.host = Host.Domain("demo.us-east-1.amazonaws.com")
+        url.path.encoded = "/"
+        body = HttpBody.fromBytes(requestBody.encodeToByteArray())
+        headers.append("Host", "demo.us-east-1.amazonaws.com")
+        headers.appendAll("x-amz-archive-description", listOf("test", "test"))
+        headers.append("Content-Length", body.contentLength?.toString() ?: "0")
+    }
+}
+
+private class StreamingSerializer(
+    private val requestBody: String,
+    private val replayable: Boolean,
+) : HttpSerializer.Streaming<Unit> {
+    override suspend fun serialize(context: ExecutionContext, input: Unit) = HttpRequestBuilder().apply {
+        method = HttpMethod.POST
+        url.scheme = Scheme.HTTP
+        url.host = Host.Domain("demo.us-east-1.amazonaws.com")
+        url.path.encoded = "/"
+        body = object : HttpBody.ChannelContent() {
+            override val contentLength: Long = requestBody.length.toLong()
+            override fun readFrom(): SdkByteReadChannel = SdkByteReadChannel(requestBody.encodeToByteArray())
+            override val isOneShot: Boolean = !replayable
+        }
+        headers.append("Host", "demo.us-east-1.amazonaws.com")
+        headers.appendAll("x-amz-archive-description", listOf("test", "test"))
+        headers.append("Content-Length", body.contentLength?.toString() ?: "0")
     }
 }

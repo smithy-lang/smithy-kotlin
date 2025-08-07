@@ -2,8 +2,8 @@
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
  * SPDX-License-Identifier: Apache-2.0
  */
+import aws.sdk.kotlin.gradle.dsl.configureJReleaser
 import aws.sdk.kotlin.gradle.dsl.configureLinting
-import aws.sdk.kotlin.gradle.dsl.configureNexus
 import aws.sdk.kotlin.gradle.util.typedProp
 
 buildscript {
@@ -14,6 +14,12 @@ buildscript {
         classpath(libs.kotlinx.atomicfu.plugin)
         // Add our custom gradle build logic to buildscript classpath
         classpath(libs.aws.kotlin.repo.tools.build.support)
+        /*
+        Enforce jackson to a version supported both by dokka and jreleaser:
+        https://github.com/Kotlin/dokka/issues/3472#issuecomment-1929712374
+        https://github.com/Kotlin/dokka/issues/3194#issuecomment-1929382630
+         */
+        classpath(enforcedPlatform("com.fasterxml.jackson:jackson-bom:2.19.2"))
     }
 }
 
@@ -79,7 +85,7 @@ dependencies {
 }
 
 // Publishing
-configureNexus()
+configureJReleaser()
 
 // Code Style
 val lintPaths = listOf(

@@ -11,7 +11,9 @@ import aws.smithy.kotlin.runtime.auth.awssigning.*
 import aws.smithy.kotlin.runtime.collections.Attributes
 import aws.smithy.kotlin.runtime.collections.ValuesMap
 import aws.smithy.kotlin.runtime.collections.get
-import aws.smithy.kotlin.runtime.http.*
+import aws.smithy.kotlin.runtime.http.HttpBody
+import aws.smithy.kotlin.runtime.http.HttpMethod
+import aws.smithy.kotlin.runtime.http.SdkHttpClient
 import aws.smithy.kotlin.runtime.http.auth.AwsHttpSigner
 import aws.smithy.kotlin.runtime.http.auth.SigV4AuthScheme
 import aws.smithy.kotlin.runtime.http.operation.*
@@ -24,9 +26,7 @@ import aws.smithy.kotlin.runtime.net.url.Url
 import aws.smithy.kotlin.runtime.operation.ExecutionContext
 import aws.smithy.kotlin.runtime.time.Instant
 import io.ktor.http.cio.*
-import io.ktor.util.*
 import io.ktor.utils.io.*
-import io.ktor.utils.io.core.*
 import kotlinx.coroutines.runBlocking
 import kotlinx.io.readByteArray
 import kotlinx.serialization.json.*
@@ -420,8 +420,7 @@ private fun buildOperation(
         serializeWith = object : HttpSerializer.NonStreaming<Unit> {
             override fun serialize(context: ExecutionContext, input: Unit): HttpRequestBuilder = serialized
         }
-        @Suppress("DEPRECATION")
-        deserializer = IdentityDeserializer
+        deserializeWith = HttpDeserializer.Identity
 
         context {
             operationName = "testSigningOperation"

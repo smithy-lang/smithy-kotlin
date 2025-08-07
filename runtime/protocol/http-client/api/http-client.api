@@ -29,6 +29,8 @@ public abstract interface class aws/smithy/kotlin/runtime/http/config/HttpEngine
 	public abstract fun getHttpClient ()Laws/smithy/kotlin/runtime/http/engine/HttpClientEngine;
 	public abstract fun httpClient (Laws/smithy/kotlin/runtime/http/config/EngineFactory;Lkotlin/jvm/functions/Function1;)V
 	public abstract fun httpClient (Lkotlin/jvm/functions/Function1;)V
+	public static synthetic fun httpClient$default (Laws/smithy/kotlin/runtime/http/config/HttpEngineConfig$Builder;Laws/smithy/kotlin/runtime/http/config/EngineFactory;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)V
+	public static synthetic fun httpClient$default (Laws/smithy/kotlin/runtime/http/config/HttpEngineConfig$Builder;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)V
 	public abstract fun setHttpClient (Laws/smithy/kotlin/runtime/http/engine/HttpClientEngine;)V
 }
 
@@ -38,6 +40,18 @@ public final class aws/smithy/kotlin/runtime/http/config/HttpEngineConfig$Builde
 }
 
 public abstract interface annotation class aws/smithy/kotlin/runtime/http/config/HttpEngineConfigDsl : java/lang/annotation/Annotation {
+}
+
+public abstract interface class aws/smithy/kotlin/runtime/http/config/TimeoutConfig {
+	public abstract fun getAttemptTimeout-FghU774 ()Lkotlin/time/Duration;
+	public abstract fun getCallTimeout-FghU774 ()Lkotlin/time/Duration;
+}
+
+public abstract interface class aws/smithy/kotlin/runtime/http/config/TimeoutConfig$Builder {
+	public abstract fun getAttemptTimeout-FghU774 ()Lkotlin/time/Duration;
+	public abstract fun getCallTimeout-FghU774 ()Lkotlin/time/Duration;
+	public abstract fun setAttemptTimeout-BwNAW2A (Lkotlin/time/Duration;)V
+	public abstract fun setCallTimeout-BwNAW2A (Lkotlin/time/Duration;)V
 }
 
 public final class aws/smithy/kotlin/runtime/http/engine/AlpnId : java/lang/Enum {
@@ -309,7 +323,7 @@ public final class aws/smithy/kotlin/runtime/http/interceptors/ContinueIntercept
 }
 
 public final class aws/smithy/kotlin/runtime/http/interceptors/DiscoveredEndpointErrorInterceptor : aws/smithy/kotlin/runtime/client/Interceptor {
-	public fun <init> (Lkotlin/reflect/KClass;Lkotlin/jvm/functions/Function1;)V
+	public fun <init> (Lkotlin/reflect/KClass;Lkotlin/jvm/functions/Function2;)V
 	public fun modifyBeforeAttemptCompletion-gIAlu-s (Laws/smithy/kotlin/runtime/client/ResponseInterceptorContext;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun modifyBeforeCompletion-gIAlu-s (Laws/smithy/kotlin/runtime/client/ResponseInterceptorContext;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun modifyBeforeDeserialization (Laws/smithy/kotlin/runtime/client/ProtocolResponseInterceptorContext;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
@@ -487,19 +501,33 @@ public final class aws/smithy/kotlin/runtime/http/middleware/MutateHeaders : aws
 	public final fun setIfMissing (Ljava/lang/String;Ljava/lang/String;)V
 }
 
+public final class aws/smithy/kotlin/runtime/http/operation/AttemptTimeoutException : aws/smithy/kotlin/runtime/http/operation/ClientTimeoutException {
+	public fun <init> (Ljava/lang/String;Ljava/lang/Throwable;)V
+}
+
 public abstract interface class aws/smithy/kotlin/runtime/http/operation/AuthSchemeResolver {
 	public abstract fun resolve (Laws/smithy/kotlin/runtime/http/operation/OperationRequest;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
+public final class aws/smithy/kotlin/runtime/http/operation/CallTimeoutException : aws/smithy/kotlin/runtime/http/operation/ClientTimeoutException {
+	public fun <init> (Ljava/lang/String;Ljava/lang/Throwable;)V
+}
+
+public abstract class aws/smithy/kotlin/runtime/http/operation/ClientTimeoutException : aws/smithy/kotlin/runtime/ClientException {
+	public fun <init> (Ljava/lang/String;Ljava/lang/Throwable;Z)V
 }
 
 public abstract interface class aws/smithy/kotlin/runtime/http/operation/EndpointResolver {
 	public abstract fun resolve (Laws/smithy/kotlin/runtime/http/operation/ResolveEndpointRequest;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
-public abstract interface class aws/smithy/kotlin/runtime/http/operation/HttpDeserialize {
-	public abstract fun deserialize (Laws/smithy/kotlin/runtime/operation/ExecutionContext;Laws/smithy/kotlin/runtime/http/HttpCall;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+public abstract interface class aws/smithy/kotlin/runtime/http/operation/HttpDeserializer {
+	public static final field Companion Laws/smithy/kotlin/runtime/http/operation/HttpDeserializer$Companion;
 }
 
-public abstract interface class aws/smithy/kotlin/runtime/http/operation/HttpDeserializer {
+public final class aws/smithy/kotlin/runtime/http/operation/HttpDeserializer$Companion {
+	public final fun getIdentity ()Laws/smithy/kotlin/runtime/http/operation/HttpDeserializer;
+	public final fun getUnit ()Laws/smithy/kotlin/runtime/http/operation/HttpDeserializer;
 }
 
 public abstract interface class aws/smithy/kotlin/runtime/http/operation/HttpDeserializer$NonStreaming : aws/smithy/kotlin/runtime/http/operation/HttpDeserializer {
@@ -512,6 +540,8 @@ public abstract interface class aws/smithy/kotlin/runtime/http/operation/HttpDes
 
 public final class aws/smithy/kotlin/runtime/http/operation/HttpOperationContext {
 	public static final field INSTANCE Laws/smithy/kotlin/runtime/http/operation/HttpOperationContext;
+	public final fun getAttemptTimeout ()Laws/smithy/kotlin/runtime/collections/AttributeKey;
+	public final fun getCallTimeout ()Laws/smithy/kotlin/runtime/collections/AttributeKey;
 	public final fun getClockSkew ()Laws/smithy/kotlin/runtime/collections/AttributeKey;
 	public final fun getClockSkewApproximateSigningTime ()Laws/smithy/kotlin/runtime/collections/AttributeKey;
 	public final fun getDefaultChecksumAlgorithm ()Laws/smithy/kotlin/runtime/collections/AttributeKey;
@@ -523,11 +553,12 @@ public final class aws/smithy/kotlin/runtime/http/operation/HttpOperationContext
 	public final fun getSdkInvocationId ()Laws/smithy/kotlin/runtime/collections/AttributeKey;
 }
 
-public abstract interface class aws/smithy/kotlin/runtime/http/operation/HttpSerialize {
-	public abstract fun serialize (Laws/smithy/kotlin/runtime/operation/ExecutionContext;Ljava/lang/Object;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+public abstract interface class aws/smithy/kotlin/runtime/http/operation/HttpSerializer {
+	public static final field Companion Laws/smithy/kotlin/runtime/http/operation/HttpSerializer$Companion;
 }
 
-public abstract interface class aws/smithy/kotlin/runtime/http/operation/HttpSerializer {
+public final class aws/smithy/kotlin/runtime/http/operation/HttpSerializer$Companion {
+	public final fun getUnit ()Laws/smithy/kotlin/runtime/http/operation/HttpSerializer;
 }
 
 public abstract interface class aws/smithy/kotlin/runtime/http/operation/HttpSerializer$NonStreaming : aws/smithy/kotlin/runtime/http/operation/HttpSerializer {
@@ -538,13 +569,8 @@ public abstract interface class aws/smithy/kotlin/runtime/http/operation/HttpSer
 	public abstract fun serialize (Laws/smithy/kotlin/runtime/operation/ExecutionContext;Ljava/lang/Object;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
-public final class aws/smithy/kotlin/runtime/http/operation/IdentityDeserializer : aws/smithy/kotlin/runtime/http/operation/HttpDeserialize {
-	public static final field INSTANCE Laws/smithy/kotlin/runtime/http/operation/IdentityDeserializer;
-	public fun deserialize (Laws/smithy/kotlin/runtime/operation/ExecutionContext;Laws/smithy/kotlin/runtime/http/HttpCall;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-}
-
 public abstract interface class aws/smithy/kotlin/runtime/http/operation/InitializeMiddleware : aws/smithy/kotlin/runtime/io/middleware/Middleware {
-	public abstract fun install (Laws/smithy/kotlin/runtime/http/operation/SdkHttpOperation;)V
+	public fun install (Laws/smithy/kotlin/runtime/http/operation/SdkHttpOperation;)V
 }
 
 public final class aws/smithy/kotlin/runtime/http/operation/InitializeMiddleware$DefaultImpls {
@@ -556,7 +582,7 @@ public abstract interface class aws/smithy/kotlin/runtime/http/operation/InlineM
 }
 
 public abstract interface class aws/smithy/kotlin/runtime/http/operation/ModifyRequestMiddleware : aws/smithy/kotlin/runtime/io/middleware/ModifyRequest {
-	public abstract fun install (Laws/smithy/kotlin/runtime/http/operation/SdkHttpOperation;)V
+	public fun install (Laws/smithy/kotlin/runtime/http/operation/SdkHttpOperation;)V
 }
 
 public final class aws/smithy/kotlin/runtime/http/operation/ModifyRequestMiddleware$DefaultImpls {
@@ -564,7 +590,7 @@ public final class aws/smithy/kotlin/runtime/http/operation/ModifyRequestMiddlew
 }
 
 public abstract interface class aws/smithy/kotlin/runtime/http/operation/MutateMiddleware : aws/smithy/kotlin/runtime/io/middleware/Middleware {
-	public abstract fun install (Laws/smithy/kotlin/runtime/http/operation/SdkHttpOperation;)V
+	public fun install (Laws/smithy/kotlin/runtime/http/operation/SdkHttpOperation;)V
 }
 
 public final class aws/smithy/kotlin/runtime/http/operation/MutateMiddleware$DefaultImpls {
@@ -633,7 +659,7 @@ public final class aws/smithy/kotlin/runtime/http/operation/OperationTelemetryKt
 }
 
 public abstract interface class aws/smithy/kotlin/runtime/http/operation/ReceiveMiddleware : aws/smithy/kotlin/runtime/io/middleware/Middleware {
-	public abstract fun install (Laws/smithy/kotlin/runtime/http/operation/SdkHttpOperation;)V
+	public fun install (Laws/smithy/kotlin/runtime/http/operation/SdkHttpOperation;)V
 }
 
 public final class aws/smithy/kotlin/runtime/http/operation/ReceiveMiddleware$DefaultImpls {
@@ -675,20 +701,16 @@ public final class aws/smithy/kotlin/runtime/http/operation/SdkHttpOperationBuil
 	public final fun build ()Laws/smithy/kotlin/runtime/http/operation/SdkHttpOperation;
 	public final fun getContext ()Laws/smithy/kotlin/runtime/operation/ExecutionContext;
 	public final fun getDeserializeWith ()Laws/smithy/kotlin/runtime/http/operation/HttpDeserializer;
-	public final fun getDeserializer ()Laws/smithy/kotlin/runtime/http/operation/HttpDeserialize;
 	public final fun getExecution ()Laws/smithy/kotlin/runtime/http/operation/SdkOperationExecution;
 	public final fun getHostPrefix ()Ljava/lang/String;
 	public final fun getOperationName ()Ljava/lang/String;
 	public final fun getSerializeWith ()Laws/smithy/kotlin/runtime/http/operation/HttpSerializer;
-	public final fun getSerializer ()Laws/smithy/kotlin/runtime/http/operation/HttpSerialize;
 	public final fun getServiceName ()Ljava/lang/String;
 	public final fun getTelemetry ()Laws/smithy/kotlin/runtime/http/operation/SdkOperationTelemetry;
 	public final fun setDeserializeWith (Laws/smithy/kotlin/runtime/http/operation/HttpDeserializer;)V
-	public final fun setDeserializer (Laws/smithy/kotlin/runtime/http/operation/HttpDeserialize;)V
 	public final fun setHostPrefix (Ljava/lang/String;)V
 	public final fun setOperationName (Ljava/lang/String;)V
 	public final fun setSerializeWith (Laws/smithy/kotlin/runtime/http/operation/HttpSerializer;)V
-	public final fun setSerializer (Laws/smithy/kotlin/runtime/http/operation/HttpSerialize;)V
 	public final fun setServiceName (Ljava/lang/String;)V
 }
 
@@ -729,16 +751,5 @@ public final class aws/smithy/kotlin/runtime/http/operation/SdkOperationTelemetr
 	public final fun setScope (Ljava/lang/String;)V
 	public final fun setSpanKind (Laws/smithy/kotlin/runtime/telemetry/trace/SpanKind;)V
 	public final fun setSpanName (Ljava/lang/String;)V
-}
-
-public final class aws/smithy/kotlin/runtime/http/operation/UnitDeserializer : aws/smithy/kotlin/runtime/http/operation/HttpDeserialize {
-	public static final field INSTANCE Laws/smithy/kotlin/runtime/http/operation/UnitDeserializer;
-	public fun deserialize (Laws/smithy/kotlin/runtime/operation/ExecutionContext;Laws/smithy/kotlin/runtime/http/HttpCall;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-}
-
-public final class aws/smithy/kotlin/runtime/http/operation/UnitSerializer : aws/smithy/kotlin/runtime/http/operation/HttpSerialize {
-	public static final field INSTANCE Laws/smithy/kotlin/runtime/http/operation/UnitSerializer;
-	public synthetic fun serialize (Laws/smithy/kotlin/runtime/operation/ExecutionContext;Ljava/lang/Object;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public fun serialize (Laws/smithy/kotlin/runtime/operation/ExecutionContext;Lkotlin/Unit;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
