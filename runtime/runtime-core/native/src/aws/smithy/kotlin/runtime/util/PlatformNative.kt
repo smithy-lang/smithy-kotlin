@@ -43,9 +43,10 @@ internal actual object SystemDefaultProvider : PlatformProvider {
                 fseek(file, 0L, SEEK_SET)
 
                 // Read file content
-                val buffer = ByteArray(size.toInt()).pin()
-                val rc = fread(buffer.addressOf(0), 1uL, size.toULong(), file)
-                if (rc == size.toULong()) buffer.get() else null
+                ByteArray(size.toInt()).usePinned { buffer ->
+                    val rc = fread(buffer.addressOf(0), 1uL, size.toULong(), file)
+                    if (rc == size.toULong()) buffer.get() else null
+                }
             } finally {
                 fclose(file)
             }
