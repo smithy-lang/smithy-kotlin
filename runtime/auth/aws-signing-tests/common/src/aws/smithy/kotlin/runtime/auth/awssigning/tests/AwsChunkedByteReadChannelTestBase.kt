@@ -42,8 +42,6 @@ abstract class AwsChunkedByteReadChannelTestBase : AwsChunkedTestBase(AwsChunked
 
         writeJob.invokeOnCompletion { cause -> chan.close(cause) }
 
-        val totalBytesExpected = encodedChunkLength(CHUNK_SIZE_BYTES) * (numChunks - 1) +
-            encodedChunkLength(CHUNK_SIZE_BYTES / 2) + encodedChunkLength(0) + "\r\n".length
         val sink = SdkBuffer()
 
         val bytesRead = awsChunked.readAll(sink)
@@ -51,7 +49,7 @@ abstract class AwsChunkedByteReadChannelTestBase : AwsChunkedTestBase(AwsChunked
 
         val bytesAsString = sink.readUtf8()
 
-        assertEquals(totalBytesExpected.toLong(), bytesRead)
+        assertEquals(dataLengthBytes.toLong() , bytesRead)
         assertTrue(awsChunked.isClosedForRead)
 
         val chunkSignatures = getChunkSignatures(bytesAsString)

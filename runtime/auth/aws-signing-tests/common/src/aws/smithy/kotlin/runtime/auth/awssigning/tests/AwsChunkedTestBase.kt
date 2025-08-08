@@ -31,7 +31,12 @@ fun interface AwsChunkedReaderFactory {
             val chunked = AwsChunkedByteReadChannel(ch, signer, signingConfig, previousSignature, trailingHeaders)
             object : AwsChunkedTestReader {
                 override fun isClosedForRead(): Boolean = chunked.isClosedForRead
-                override suspend fun read(sink: SdkBuffer, limit: Long): Long = chunked.read(sink, limit)
+
+                // Override read function to track totalBytesTransferred for testing
+                override suspend fun read(sink: SdkBuffer, limit: Long): Long {
+                    chunked.read(sink, limit)
+                    return chunked.getTotalBytesTransferred()
+                }
             }
         }
     }
