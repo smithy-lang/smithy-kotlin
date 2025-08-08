@@ -18,7 +18,12 @@ val AwsChunkedReaderFactory.Companion.Source: AwsChunkedReaderFactory
                 val rc = chunked.read(sink, Long.MAX_VALUE)
                 return rc == -1L
             }
-            override suspend fun read(sink: SdkBuffer, limit: Long): Long = chunked.read(sink, limit)
+
+            // Override read function to track totalBytesTransferred for testing
+            override suspend fun read(sink: SdkBuffer, limit: Long): Long {
+                chunked.read(sink, limit)
+                return chunked.getTotalBytesTransferred()
+            }
         }
     }
 

@@ -40,14 +40,36 @@ public class AwsChunkedSource(
         trailingHeaders,
     )
 
+    /**
+     * Tracks the total bytes transferred, including chunk metadata.
+     */
+    private var totalBytesTransferred: Long = 0L
+
+    /**
+     * Gets the total bytes transferred for testing purposes only.
+     */
+    @InternalApi
+    public fun getTotalBytesTransferred(): Long = totalBytesTransferred
+
     override fun read(sink: SdkBuffer, limit: Long): Long {
         require(limit >= 0L) { "Invalid limit ($limit) must be >= 0L" }
+
+        // Reset metadata bytes counter
+        chunkReader.chunkMetadataBytes = 0
+
         // COROUTINE SAFETY: runBlocking is allowed here because SdkSource is a synchronous blocking interface
         val isChunkValid = runBlocking {
             chunkReader.ensureValidChunk()
         }
-        if (!isChunkValid) return -1L
-        return chunkReader.chunk.read(sink, limit)
+        if (!isChunkValid) {
+            totalBytesTransferred = -1L
+            return -1L
+        }
+
+        totalBytesTransferred = chunkReader.chunk.read(sink, limit)
+
+        // Return the actual bytes excluding metadata
+        return totalBytesTransferred - chunkReader.chunkMetadataBytes
     }
 
     override fun close() {

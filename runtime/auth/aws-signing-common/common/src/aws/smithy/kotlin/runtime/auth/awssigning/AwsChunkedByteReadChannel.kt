@@ -45,10 +45,32 @@ public class AwsChunkedByteReadChannel(
     override val availableForRead: Int
         get() = chunkReader.chunk.size.toInt() + delegate.availableForRead
 
+    /**
+     * Tracks the total bytes transferred, including chunk metadata.
+     */
+    private var totalBytesTransferred: Long = 0L
+
+    /**
+     * Gets the total bytes transferred for testing purposes only.
+     */
+    @InternalApi
+    public fun getTotalBytesTransferred(): Long = totalBytesTransferred
+
     override suspend fun read(sink: SdkBuffer, limit: Long): Long {
         require(limit >= 0L) { "Invalid limit ($limit) must be >= 0L" }
-        if (!chunkReader.ensureValidChunk()) return -1L
-        return chunkReader.chunk.read(sink, limit)
+
+        // Reset metadata bytes counter
+        chunkReader.chunkMetadataBytes = 0
+
+        if (!chunkReader.ensureValidChunk()) {
+            totalBytesTransferred = -1L
+            return -1L
+        }
+
+        totalBytesTransferred = chunkReader.chunk.read(sink, limit)
+
+        // Return the actual bytes excluding metadata
+        return totalBytesTransferred - chunkReader.chunkMetadataBytes
     }
 }
 
