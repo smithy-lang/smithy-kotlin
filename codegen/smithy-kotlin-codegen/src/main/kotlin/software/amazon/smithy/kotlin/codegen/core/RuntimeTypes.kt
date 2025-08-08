@@ -393,6 +393,7 @@ object RuntimeTypes {
             val mergeAuthOptions = symbol("mergeAuthOptions")
             val sigV4 = symbol("sigV4")
             val sigV4A = symbol("sigV4A")
+            val SignHttpRequest = symbol("SignHttpRequest")
         }
 
         object AwsSigningCrt : RuntimeTypePackage(KotlinDependency.AWS_SIGNING_CRT) {
@@ -526,12 +527,14 @@ object RuntimeTypes {
 
         val requestReceive = symbol("receive", "request")
         val requestUri = symbol("uri", "request")
+        val requestHeader = symbol("header", "request")
         val requestHttpMethod = symbol("httpMethod", "request")
         val requestApplicationRequest = symbol("ApplicationRequest", "request")
         val requestContentLength = symbol("contentLength", "request")
         val requestContentType = symbol("contentType", "request")
         val requestAcceptItems = symbol("acceptItems", "request")
 
+        val responseResponse = symbol("respond", "response")
         val responseResponseText = symbol("respondText", "response")
         val responseRespondBytes = symbol("respondBytes", "response")
     }
@@ -590,6 +593,14 @@ object RuntimeTypes {
         val authenticate = symbol("authenticate")
         val Principal = symbol("Principal")
         val bearer = symbol("bearer")
+        val AuthenticationConfig = symbol("AuthenticationConfig")
+        val AuthenticationProvider = symbol("AuthenticationProvider")
+        val AuthenticationFailedCause = symbol("AuthenticationFailedCause")
+        val AuthenticationContext = symbol("AuthenticationContext")
+    }
+
+    object KtorServerDoubleReceive : RuntimeTypePackage(KotlinDependency.KTOR_SERVER_DOUBLE_RECEIVE) {
+        val DoubleReceive = symbol("DoubleReceive")
     }
 
     object KotlinxCborSerde : RuntimeTypePackage(KotlinDependency.KOTLINX_CBOR_SERDE) {
