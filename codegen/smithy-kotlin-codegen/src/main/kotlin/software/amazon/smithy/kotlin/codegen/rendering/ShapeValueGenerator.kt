@@ -19,10 +19,14 @@ import kotlin.math.round
 
 /**
  * Generates a shape type declaration based on the parameters provided.
+ * @param model the model which contains the shape being generated
+ * @param symbolProvider the symbol provider for the model
+ * @param explicitReceiver Whether shape members should be fully qualified, prefixed with `this.`
  */
 class ShapeValueGenerator(
     internal val model: Model,
     internal val symbolProvider: SymbolProvider,
+    internal val explicitReceiver: Boolean = false,
 ) {
 
     /**
@@ -61,7 +65,7 @@ class ShapeValueGenerator(
     }
 
     private fun writeShapeValuesInline(writer: KotlinWriter, shape: Shape, params: Node) {
-        val nodeVisitor = ShapeValueNodeVisitor(writer, this, shape)
+        val nodeVisitor = ShapeValueNodeVisitor(writer, this, shape, explicitReceiver)
         when (shape.type) {
             ShapeType.STRUCTURE -> params.accept(nodeVisitor)
             ShapeType.MAP -> mapDeclaration(writer, shape.asMapShape().get()) {
@@ -158,6 +162,7 @@ class ShapeValueGenerator(
         val writer: KotlinWriter,
         val generator: ShapeValueGenerator,
         val currShape: Shape,
+        val explicitReceiver: Boolean = false,
     ) : NodeVisitor<Unit> {
 
         override fun objectNode(node: ObjectNode) {
@@ -178,7 +183,10 @@ class ShapeValueGenerator(
                         }
                         memberShape = generator.model.expectShape(member.target)
                         val memberName = generator.symbolProvider.toMemberName(member)
-                        writer.writeInline("#L = ", memberName)
+                        val memberPrefix = if (explicitReceiver) "this." else ""
+
+                        writer.writeInline("#L#L = ", memberPrefix, memberName)
+
                         generator.instantiateShapeInline(writer, memberShape, valueNode)
                         if (i < node.members.size - 1) {
                             writer.ensureNewline()

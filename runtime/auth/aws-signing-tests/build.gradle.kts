@@ -17,7 +17,6 @@ kotlin {
                 api(project(":runtime:auth:http-auth-aws"))
                 implementation(libs.kotlin.test)
                 implementation(libs.kotlinx.coroutines.test)
-                implementation(libs.junit.jupiter.params)
             }
         }
 
@@ -28,6 +27,7 @@ kotlin {
                 implementation(libs.ktor.http.cio)
                 implementation(libs.ktor.utils)
                 implementation(libs.kotlin.test.junit5)
+                implementation(libs.junit.jupiter.params)
                 implementation(libs.kotlinx.serialization.json)
             }
         }

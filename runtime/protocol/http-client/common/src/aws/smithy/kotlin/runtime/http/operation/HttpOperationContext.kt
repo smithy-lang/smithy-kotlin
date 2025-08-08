@@ -19,6 +19,15 @@ import kotlin.time.Duration
  */
 @InternalApi
 public object HttpOperationContext {
+    /**
+     * The amount of time to wait for a single attempt to complete
+     */
+    public val AttemptTimeout: AttributeKey<Duration> = AttributeKey("aws.smithy.kotlin#AttemptDuration")
+
+    /**
+     * The amount of time to wait for a call to complete, including any retries
+     */
+    public val CallTimeout: AttributeKey<Duration> = AttributeKey("aws.smithy.kotlin#CallDuration")
 
     /**
      * A prefix to prepend the resolved hostname with.

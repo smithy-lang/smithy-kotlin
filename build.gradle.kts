@@ -2,8 +2,8 @@
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
  * SPDX-License-Identifier: Apache-2.0
  */
+import aws.sdk.kotlin.gradle.dsl.configureJReleaser
 import aws.sdk.kotlin.gradle.dsl.configureLinting
-import aws.sdk.kotlin.gradle.dsl.configureNexus
 import aws.sdk.kotlin.gradle.util.typedProp
 
 buildscript {
@@ -14,17 +14,23 @@ buildscript {
         classpath(libs.kotlinx.atomicfu.plugin)
         // Add our custom gradle build logic to buildscript classpath
         classpath(libs.aws.kotlin.repo.tools.build.support)
+        /*
+        Enforce jackson to a version supported both by dokka and jreleaser:
+        https://github.com/Kotlin/dokka/issues/3472#issuecomment-1929712374
+        https://github.com/Kotlin/dokka/issues/3194#issuecomment-1929382630
+         */
+        classpath(enforcedPlatform("com.fasterxml.jackson:jackson-bom:2.15.3"))
     }
 }
 
 plugins {
-    alias(libs.plugins.dokka)
+    `dokka-convention`
     alias(libs.plugins.kotlinx.binary.compatibility.validator)
+    alias(libs.plugins.aws.kotlin.repo.tools.artifactsizemetrics)
     // ensure the correct version of KGP ends up on our buildscript classpath
     // since build-plugins also has <some> version in its dependency closure
-    alias(libs.plugins.kotlin.multiplatform) apply false
-    alias(libs.plugins.kotlin.jvm) apply false
-    alias(libs.plugins.aws.kotlin.repo.tools.artifactsizemetrics)
+    id(libs.plugins.kotlin.multiplatform.get().pluginId) apply false
+    id(libs.plugins.kotlin.jvm.get().pluginId) apply false
 }
 
 artifactSizeMetrics {
@@ -40,35 +46,9 @@ val testJavaVersion = typedProp<String>("test.java.version")?.let {
 }
 
 allprojects {
-    tasks.withType<org.jetbrains.dokka.gradle.AbstractDokkaTask>().configureEach {
-        val sdkVersion: String by project
-        moduleVersion.set(sdkVersion)
-
-        val year = java.time.LocalDate.now().year
-        val pluginConfigMap = mapOf(
-            "org.jetbrains.dokka.base.DokkaBase" to """
-                {
-                    "customStyleSheets": [
-                        "${rootProject.file("docs/dokka-presets/css/logo-styles.css")}",
-                        "${rootProject.file("docs/dokka-presets/css/aws-styles.css")}"
-                    ],
-                    "customAssets": [
-                        "${rootProject.file("docs/dokka-presets/assets/logo-icon.svg")}",
-                        "${rootProject.file("docs/dokka-presets/assets/aws_logo_white_59x35.png")}",
-                        "${rootProject.file("docs/dokka-presets/scripts/accessibility.js")}"
-                    ],
-                    "footerMessage": "© $year, Amazon Web Services, Inc. or its affiliates. All rights reserved.",
-                    "separateInheritedMembers" : true,
-                    "templatesDir": "${rootProject.file("docs/dokka-presets/templates")}"
-                }
-            """,
-        )
-        pluginsMapConfiguration.set(pluginConfigMap)
-    }
-
     if (rootProject.typedProp<Boolean>("kotlinWarningsAsErrors") == true) {
         tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
-            kotlinOptions.allWarningsAsErrors = true
+            compilerOptions.allWarningsAsErrors = true
         }
     }
 
@@ -90,37 +70,29 @@ allprojects {
 }
 
 // configure the root multimodule docs
-tasks.dokkaHtmlMultiModule.configure {
+dokka {
     moduleName.set("Smithy Kotlin")
 
-    // Output subprojects' docs to <docs-base>/project-name/* instead of <docs-base>/path/to/project-name/*
-    // This is especially important for inter-repo linking (e.g., via externalDocumentationLink) because the
-    // package-list doesn't contain enough project path information to indicate where modules' documentation are
-    // located.
-    fileLayout.set { parent, child ->
-        parent.outputDirectory.dir(child.moduleName)
+    dokkaPublications.html {
+        includes.from(
+            rootProject.file("docs/dokka-presets/README.md"),
+        )
     }
+}
 
-    includes.from(
-        // NOTE: these get concatenated
-        rootProject.file("docs/dokka-presets/README.md"),
-    )
-
-    val excludeFromDocumentation = listOf(
-        project(":runtime:testing"),
-        project(":runtime:smithy-test"),
-    )
-    removeChildTasks(excludeFromDocumentation)
+dependencies {
+    dokka(project(":runtime"))
 }
 
 // Publishing
-configureNexus()
+configureJReleaser()
 
 // Code Style
 val lintPaths = listOf(
     "**/*.{kt,kts}",
     "!**/generated-src/**",
     "!**/smithyprojections/**",
+    "!**/build/**",
 )
 
 configureLinting(lintPaths)

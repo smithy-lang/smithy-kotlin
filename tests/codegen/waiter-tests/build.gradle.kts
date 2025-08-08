@@ -6,7 +6,7 @@ import aws.sdk.kotlin.gradle.codegen.smithyKotlinProjectionSrcDir
 import aws.sdk.kotlin.gradle.dsl.skipPublishing
 
 plugins {
-    alias(libs.plugins.kotlin.jvm)
+    id(libs.plugins.kotlin.jvm.get().pluginId)
     alias(libs.plugins.aws.kotlin.repo.tools.smithybuild)
 }
 
@@ -38,7 +38,7 @@ kotlin.sourceSets.getByName("main") {
 
 tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
     dependsOn(tasks.generateSmithyProjections)
-    kotlinOptions {
+    compilerOptions {
         // generated code has warnings unfortunately
         allWarningsAsErrors = false
     }

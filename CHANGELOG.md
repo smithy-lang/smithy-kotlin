@@ -1,5 +1,57 @@
 # Changelog
 
+## [1.5.4] - 08/07/2025
+
+## [1.5.3] - 07/28/2025
+
+### Features
+* [#1320](https://github.com/smithy-lang/smithy-kotlin/issues/1320) Enable configuration of timeouts for calls and attempt
+
+## [1.5.2] - 07/24/2025
+
+### Miscellaneous
+* [#1339](https://github.com/smithy-lang/smithy-kotlin/issues/1339) Add documentation for OkHttp4Engine when using Android with R8 / ProGuard
+
+## [1.5.1] - 07/17/2025
+
+## [1.5.0] - 07/17/2025
+
+### Features
+* Upgrade to Kotlin 2.2.0
+* [#1413](https://github.com/awslabs/aws-sdk-kotlin/issues/1413) ⚠️ **IMPORTANT**: Refactor endpoint discoverer classes into interfaces so custom implementations may be provided
+
+### Fixes
+* [#1311](https://github.com/smithy-lang/smithy-kotlin/issues/1311) Reimplement idle connection monitoring using `okhttp3.EventListener` instead of now-internal `okhttp3.ConnectionListener`
+* [#1608](https://github.com/awslabs/aws-sdk-kotlin/issues/1608) Switch to always serialize defaults in requests. Previously fields were not serialized in requests if they weren't `@required` and hadn't been changed from the default value.
+* [#1413](https://github.com/awslabs/aws-sdk-kotlin/issues/1413) Favor `endpointUrl` instead of endpoint discovery if both are provided
+
+### Miscellaneous
+* Add telemetry provider configuration to `DefaultAwsSigner`
+
+## [1.4.23] - 07/15/2025
+
+## [1.4.22] - 07/02/2025
+
+## [1.4.21] - 06/27/2025
+
+## [1.4.20] - 06/20/2025
+
+### Fixes
+* Explicitly qualify shape member names in smoke tests and protocol tests
+* [#1295](https://github.com/smithy-lang/smithy-kotlin/issues/1295) Enable building this project on JDK21 by setting -Xjdk-release flag
+
+## [1.4.19] - 06/19/2025
+
+## [1.4.18] - 06/13/2025
+
+### Miscellaneous
+* Upgrade to Dokka 2.0.0
+
+## [1.4.17] - 06/11/2025
+
+### Fixes
+* Adds import to the symbols references when needed. This issue surfaced when building the protocol tests with the latest Smithy release
+
 ## [1.4.16] - 04/28/2025
 
 ### Features

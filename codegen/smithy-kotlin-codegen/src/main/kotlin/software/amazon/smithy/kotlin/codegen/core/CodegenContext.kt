@@ -8,6 +8,7 @@ package software.amazon.smithy.kotlin.codegen.core
 import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.kotlin.codegen.KotlinSettings
 import software.amazon.smithy.kotlin.codegen.integration.KotlinIntegration
+import software.amazon.smithy.kotlin.codegen.integration.SectionKey
 import software.amazon.smithy.kotlin.codegen.rendering.protocol.ProtocolGenerator
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.Shape
@@ -16,6 +17,10 @@ import software.amazon.smithy.model.shapes.Shape
  * Common codegen properties required across different codegen contexts
  */
 interface CodegenContext {
+    companion object {
+        val Key = SectionKey<CodegenContext>("CodegenContext")
+    }
+
     val model: Model
     val symbolProvider: SymbolProvider
     val settings: KotlinSettings

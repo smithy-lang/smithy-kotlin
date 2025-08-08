@@ -6,7 +6,10 @@ package aws.smithy.kotlin.runtime.awsprotocol.xml
 
 import aws.smithy.kotlin.runtime.serde.DeserializationException
 import kotlinx.coroutines.test.runTest
-import kotlin.test.*
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
+import kotlin.test.assertNull
 
 class RestXmlErrorDeserializerTest {
 
@@ -36,7 +39,7 @@ class RestXmlErrorDeserializerTest {
         )
 
         for (payload in tests) {
-            val actual = parseRestXmlErrorResponseNoSuspend(payload)
+            val actual = parseRestXmlErrorResponse(payload)
             assertEquals("InvalidGreeting", actual.code)
             assertEquals("Hi", actual.message)
             assertEquals("foo-id", actual.requestId)
@@ -70,7 +73,7 @@ class RestXmlErrorDeserializerTest {
 
         for (payload in tests) {
             assertFailsWith<DeserializationException> {
-                parseRestXmlErrorResponseNoSuspend(payload)
+                parseRestXmlErrorResponse(payload)
             }
         }
     }
@@ -92,7 +95,7 @@ class RestXmlErrorDeserializerTest {
         )
 
         for (payload in tests) {
-            val error = parseRestXmlErrorResponseNoSuspend(payload)
+            val error = parseRestXmlErrorResponse(payload)
             assertEquals("foo-id", error.requestId)
             assertNull(error.code)
             assertNull(error.message)
