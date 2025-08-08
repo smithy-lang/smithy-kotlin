@@ -72,9 +72,7 @@ internal class AwsChunkedReader(
      */
     internal suspend fun ensureValidChunk(): Boolean {
         // check if the current chunk is still valid
-        if (chunk.size > 0L) {
-            return true
-        }
+        if (chunk.size > 0L) return true
 
         // if not, try to fetch a new chunk
         val nextChunk = when {
@@ -89,8 +87,10 @@ internal class AwsChunkedReader(
                 next
             }
         }
+
         val preTerminatorChunkSize = nextChunk?.size ?: 0L
         nextChunk?.writeUtf8("\r\n") // terminating CRLF to signal end of chunk
+
         val chunkSizeWithTerminator = nextChunk?.size ?: 0L
         chunkMetadataBytes += chunkSizeWithTerminator - preTerminatorChunkSize
         // transfer all segments to the working chunk
@@ -106,6 +106,7 @@ internal class AwsChunkedReader(
     private suspend fun getFinalChunk(): SdkBuffer {
         // empty chunk
         val lastChunk = checkNotNull(if (signingConfig.isUnsigned) getUnsignedChunk(SdkBuffer()) else getSignedChunk(SdkBuffer()))
+
         val preTrailerChunkSize = lastChunk.size
         // + any trailers
         if (!trailingHeaders.isEmpty()) {
@@ -167,6 +168,7 @@ internal class AwsChunkedReader(
             write(chunkSignature)
             writeUtf8("\r\n")
         }
+
         chunkMetadataBytes += signedChunk.size
         // append the body
         signedChunk.write(chunkBody)
@@ -195,6 +197,7 @@ internal class AwsChunkedReader(
             writeUtf8("\r\n")
             writeAll(bodyBuffer) // append the body
         }
+
         chunkMetadataBytes += unsignedChunk.size - bodyBytes
         return unsignedChunk
     }
