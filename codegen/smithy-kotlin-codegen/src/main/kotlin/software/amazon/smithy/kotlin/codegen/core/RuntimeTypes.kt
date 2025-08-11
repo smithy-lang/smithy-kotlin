@@ -205,6 +205,7 @@ object RuntimeTypes {
 
         object Net : RuntimeTypePackage(KotlinDependency.CORE, "net") {
             val Host = symbol("Host")
+            val Scheme = symbol("Scheme")
 
             object Url : RuntimeTypePackage(KotlinDependency.CORE, "net.url") {
                 val QueryParameters = symbol("QueryParameters")
@@ -533,6 +534,7 @@ object RuntimeTypes {
         val requestContentLength = symbol("contentLength", "request")
         val requestContentType = symbol("contentType", "request")
         val requestAcceptItems = symbol("acceptItems", "request")
+        val requestPath = symbol("path", "request")
 
         val responseResponse = symbol("respond", "response")
         val responseResponseText = symbol("respondText", "response")

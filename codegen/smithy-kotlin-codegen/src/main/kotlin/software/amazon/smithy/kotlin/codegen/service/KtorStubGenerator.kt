@@ -243,11 +243,18 @@ internal class KtorStubGenerator(
                 .withBlock(": #T? {", "}", RuntimeTypes.Auth.Credentials.AwsCredentials.Credentials) {
                     write("val authHeader = call.request.#T(#T.Authorization) ?: return null", RuntimeTypes.KtorServerRouting.requestHeader, RuntimeTypes.KtorServerHttp.HttpHeaders)
                     write("if (!authHeader.startsWith(#S, ignoreCase = true)) return null", "AWS4-HMAC-SHA256")
-                    write("val accessKeyId = authHeader.substringAfter(#S).substringBefore(#S).takeIf { it.matches(Regex(#S)) } ?: return null", "Credential=", "/", "^[A-Z0-9]{16,128}$")
+                    write("")
+                    write("fun part(name: String) = authHeader.substringAfter(#S).substringBefore(#S).trim()", "\$name=", ",")
+                    write("")
+                    write("val credential = part(#S) // accessKeyId/scope", "Credential")
+                    write("val signedHeadersStr = part(#S)", "SignedHeaders")
+                    write("val signatureHex = part(#S)", "Signature")
+                    write("")
+                    write("val signedHeaders: Set<String> = signedHeadersStr.split(';').map { it.trim().lowercase() }.toSet()")
+                    write("val accessKeyId = credential.substringBefore(#S).takeIf { it.matches(Regex(#S)) } ?: return null", "/", "^[A-Z0-9]{16,128}$")
+                    write("")
                     write("val creds = SigV4CredentialStore.get(accessKeyId) ?: return null")
                     write("")
-                    write("val signedHeaders: Set<String> = authHeader.substringAfter(#S).substringBefore(#S).split(';').map { it.trim().lowercase() }.toSet()", "SignedHeaders=", ",")
-
                     write("")
                     write(
                         "val dateHeader  = call.request.#T(#S) ?: call.request.#T(#T.Date) ?: return null",
@@ -265,23 +272,43 @@ internal class KtorStubGenerator(
                     write("if (signingInstant < now - maxClockSkew || signingInstant > now + maxClockSkew) return null")
                     write("")
                     write("val origin = call.request.local")
-                    withBlock("val urlString = buildString {", "}") {
-                        write("append(origin.scheme).append(#S).append(origin.localHost)", "://")
-                        write("if (!(origin.scheme == #S && origin.localPort == 80) && !(origin.scheme == #S && origin.localPort == 443)) append(#S).append(origin.localPort)", "http", "https", ":")
-                        write("append(call.request.#T)", RuntimeTypes.KtorServerRouting.requestUri)
-                    }
-                    write("")
                     write("val payload: ByteArray = call.#T<ByteArray>()", RuntimeTypes.KtorServerRouting.requestReceive)
                     write("")
                     withBlock("val requestBuilder: #T = #T().apply {", "}", RuntimeTypes.Http.Request.HttpRequestBuilder, RuntimeTypes.Http.Request.HttpRequestBuilder) {
                         write("method = #T.parse(call.request.#T.value)", RuntimeTypes.Http.HttpMethod, RuntimeTypes.KtorServerRouting.requestHttpMethod)
-                        write("#T(#T.parse(urlString))", RuntimeTypes.Http.Request.url, RuntimeTypes.Core.Net.Url.Url)
+                        write("")
+                        write("val protoHeader = call.request.headers[#S] ?: origin.scheme", "X-Forwarded-Proto")
+                        write("val isHttps = (protoHeader.equals(#S, ignoreCase = true))", "https")
+                        write("val hostHeader = call.request.headers[#S] ?: call.request.headers[#S] ?: return null", "X-Forwarded-Host", "Host")
+                        write("val hostOnly: String")
+                        write("val portValue: Int?")
+                        withBlock("hostHeader.split(':', limit = 2).let {", "}") {
+                            write("hostOnly = it[0]")
+                            write("portValue = it.getOrNull(1)?.toIntOrNull()")
+                        }
+                        withBlock("#T {", "}", RuntimeTypes.Http.Request.url) {
+                            write("scheme = if (isHttps) #T.HTTPS else #T.HTTP", RuntimeTypes.Core.Net.Scheme, RuntimeTypes.Core.Net.Scheme)
+                            write("host = #T.parse(hostOnly)", RuntimeTypes.Core.Net.Host)
+                            write("if (portValue != null) port = portValue")
+                            withBlock("path {", "}") {
+                                write("decoded = call.request.#T()", RuntimeTypes.KtorServerRouting.requestPath)
+                            }
+                            withBlock("parameters {", "}") {
+                                withBlock("decodedParameters {", "}") {
+                                    write("call.request.queryParameters.forEach { key, values -> values.forEach { v -> add(key, v) } }")
+                                }
+                            }
+                        }
+
+                        write("")
+
                         withBlock("for (name in call.request.headers.names()) {", "}") {
                             write("val lowerName = name.lowercase()")
                             withBlock("if (lowerName != #T.Authorization.lowercase() && lowerName in signedHeaders) {", "}", RuntimeTypes.KtorServerHttp.HttpHeaders) {
                                 write("call.request.headers.getAll(name)?.forEach { value -> headers.append(name, value) }")
                             }
                         }
+
                         write("body = #T.fromBytes(payload)", RuntimeTypes.Http.HttpBody)
                     }
 
@@ -306,8 +333,9 @@ internal class KtorStubGenerator(
                         "val expectedAuth = requestBuilder.headers.getAll(#T.Authorization)?.firstOrNull() ?: return null",
                         RuntimeTypes.KtorServerHttp.HttpHeaders,
                     )
+                    write("val expectedSig = expectedAuth.substringAfter(#S).trim()", "Signature=")
                     write("")
-                    write("return if (authHeader == expectedAuth) creds else null")
+                    write("return if (expectedSig == signatureHex) creds else null")
                 }
         }
 
