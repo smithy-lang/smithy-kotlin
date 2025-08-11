@@ -172,24 +172,68 @@ internal class KtorStubGenerator(
     // Generates `Authentication.kt` with Authenticator interface + configureSecurity().
     override fun renderAuthModule() {
         delegator.useFileWriter("UserPrincipal.kt", "$pkgName.auth") { writer ->
-            writer.withBlock("internal object CredentialStore {", "}") {
-                withBlock("private val table: Map<String, #T> = mapOf(", ")", RuntimeTypes.Auth.Credentials.AwsCredentials.Credentials) {
-                    write("#S to #T(accessKeyId = #S, secretAccessKey = #S)", "AKIAIOSFODNN7EXAMPLE", RuntimeTypes.Auth.Credentials.AwsCredentials.Credentials, "AKIAIOSFODNN7EXAMPLE", "wJalrXUtnFEMI/K7MDENG+bPxRfiCYEXAMPLEKEY")
-                }
-                write("internal fun get(accessKeyId: String): #T? = table[accessKeyId]", RuntimeTypes.Auth.Credentials.AwsCredentials.Credentials)
-            }
-
             writer.withBlock("public data class UserPrincipal(", ")") {
                 write("val user: String")
             }
         }
 
         delegator.useFileWriter("Validation.kt", "$pkgName.auth") { writer ->
-            writer.withBlock("public fun bearerValidation(token: String): UserPrincipal? {", "}") {
-                write("// TODO: implement me")
-                write("if (true) return UserPrincipal(#S) else return null", "Authenticated User")
+
+            writer.withBlock("internal object BearerValidation {", "}") {
+                withBlock("public fun bearerValidation(token: String): UserPrincipal? {", "}") {
+                    write("// TODO: implement me")
+                    write("if (true) return UserPrincipal(#S) else return null", "Authenticated User")
+                }
             }
             writer.write("")
+            writer.withBlock("internal object SigV4CredentialStore {", "}") {
+                withBlock("private val table: Map<String, #T> = mapOf(", ")", RuntimeTypes.Auth.Credentials.AwsCredentials.Credentials) {
+                    write("#S to #T(accessKeyId = #S, secretAccessKey = #S)", "AKIAIOSFODNN7EXAMPLE", RuntimeTypes.Auth.Credentials.AwsCredentials.Credentials, "AKIAIOSFODNN7EXAMPLE", "wJalrXUtnFEMI/K7MDENG+bPxRfiCYEXAMPLEKEY")
+                }
+                withBlock("internal fun get(accessKeyId: String): #T? {", "}", RuntimeTypes.Auth.Credentials.AwsCredentials.Credentials) {
+                    write("// TODO: implement me: return Credentials(accessKeyId = ..., secretAccessKey = ...)")
+                    write("return table[accessKeyId]")
+                }
+            }
+        }
+
+        delegator.useFileWriter("SigV4.kt", "$pkgName.auth") { writer ->
+            writer.withInlineBlock("internal fun #T.sigV4(", ")", RuntimeTypes.KtorServerAuth.AuthenticationConfig) {
+                write("name: String = #S,", "aws-sigv4")
+                write("configure: SigV4AuthProvider.Configuration.() -> Unit = {}")
+            }
+                .withBlock("{", "}") {
+                    write("val provider = SigV4AuthProvider(SigV4AuthProvider.Configuration(name).apply(configure))")
+                    write("register(provider)")
+                }
+                .write("")
+
+            writer.withBlock("internal class SigV4AuthProvider(config: Configuration) : #T(config) {", "}", RuntimeTypes.KtorServerAuth.AuthenticationProvider) {
+                withBlock("internal class Configuration(name: String?) : #T.Config(name) {", "}", RuntimeTypes.KtorServerAuth.AuthenticationProvider) {
+                    write("var region: String = #S", "us-east-1")
+                    write("var service: String = #S", "execute-api")
+                    write("var clockSkew: #T = 5.#T", KotlinTypes.Time.Duration, KotlinTypes.Time.minutes)
+                }
+                write("")
+                write("private val region = (config as Configuration).region")
+                write("private val service = config.service")
+                write("private val skew = config.clockSkew")
+                write("")
+                withBlock("override suspend fun onAuthenticate(context: #T) {", "}", RuntimeTypes.KtorServerAuth.AuthenticationContext) {
+                    write("val creds = verifySigV4(context.call, region, service, skew)")
+                    withInlineBlock("if (creds == null) {", "}") {
+                        withBlock("context.challenge(#S, #T.InvalidCredentials) { challenge, call ->", "}", "AWS4-HMAC-SHA256", RuntimeTypes.KtorServerAuth.AuthenticationFailedCause) {
+                            write("call.#T(#T.Unauthorized, #S)", RuntimeTypes.KtorServerRouting.responseResponse, RuntimeTypes.KtorServerHttp.HttpStatusCode, "Unauthorized")
+                            write("challenge.complete()")
+                        }
+                    }
+                    withBlock(" else {", "}") {
+                        write("context.principal(UserPrincipal(creds.accessKeyId))")
+                    }
+                }
+            }
+                .write("")
+
             writer.withInlineBlock("public suspend fun verifySigV4(", ")") {
                 write("call: #T,", RuntimeTypes.KtorServerCore.ApplicationCallClass)
                 write("region: String,")
@@ -200,7 +244,7 @@ internal class KtorStubGenerator(
                     write("val authHeader = call.request.#T(#T.Authorization) ?: return null", RuntimeTypes.KtorServerRouting.requestHeader, RuntimeTypes.KtorServerHttp.HttpHeaders)
                     write("if (!authHeader.startsWith(#S, ignoreCase = true)) return null", "AWS4-HMAC-SHA256")
                     write("val accessKeyId = authHeader.substringAfter(#S).substringBefore(#S).takeIf { it.matches(Regex(#S)) } ?: return null", "Credential=", "/", "^[A-Z0-9]{16,128}$")
-                    write("val creds = CredentialStore.get(accessKeyId) ?: return null")
+                    write("val creds = SigV4CredentialStore.get(accessKeyId) ?: return null")
                     write("")
                     write("val signedHeaders: Set<String> = authHeader.substringAfter(#S).substringBefore(#S).split(';').map { it.trim().lowercase() }.toSet()", "SignedHeaders=", ",")
 
@@ -267,43 +311,6 @@ internal class KtorStubGenerator(
                 }
         }
 
-        delegator.useFileWriter("SigV4.kt", "$pkgName.auth") { writer ->
-            writer.withInlineBlock("internal fun #T.sigV4(", ")", RuntimeTypes.KtorServerAuth.AuthenticationConfig) {
-                write("name: String = #S,", "aws-sigv4")
-                write("configure: SigV4AuthProvider.Configuration.() -> Unit = {}")
-            }
-                .withBlock("{", "}") {
-                    write("val provider = SigV4AuthProvider(SigV4AuthProvider.Configuration(name).apply(configure))")
-                    write("register(provider)")
-                }
-                .write("")
-
-            writer.withBlock("internal class SigV4AuthProvider(config: Configuration) : #T(config) {", "}", RuntimeTypes.KtorServerAuth.AuthenticationProvider) {
-                withBlock("internal class Configuration(name: String?) : #T.Config(name) {", "}", RuntimeTypes.KtorServerAuth.AuthenticationProvider) {
-                    write("var region: String = #S", "us-east-1")
-                    write("var service: String = #S", "execute-api")
-                    write("var clockSkew: #T = 5.#T", KotlinTypes.Time.Duration, KotlinTypes.Time.minutes)
-                }
-                write("")
-                write("private val region = (config as Configuration).region")
-                write("private val service = config.service")
-                write("private val skew = config.clockSkew")
-                write("")
-                withBlock("override suspend fun onAuthenticate(context: #T) {", "}", RuntimeTypes.KtorServerAuth.AuthenticationContext) {
-                    write("val creds = verifySigV4(context.call, region, service, skew)")
-                    withInlineBlock("if (creds == null) {", "}") {
-                        withBlock("context.challenge(#S, #T.InvalidCredentials) { challenge, call ->", "}", "AWS4-HMAC-SHA256", RuntimeTypes.KtorServerAuth.AuthenticationFailedCause) {
-                            write("call.#T(#T.Unauthorized, #S)", RuntimeTypes.KtorServerRouting.responseResponse, RuntimeTypes.KtorServerHttp.HttpStatusCode, "Unauthorized")
-                            write("challenge.complete()")
-                        }
-                    }
-                    withBlock(" else {", "}") {
-                        write("context.principal(UserPrincipal(creds.accessKeyId))")
-                    }
-                }
-            }
-        }
-
         delegator.useFileWriter("Authentication.kt", "$pkgName.auth") { writer ->
             writer.withBlock("internal fun #T.configureAuthentication() {", "}", RuntimeTypes.KtorServerCore.Application) {
                 write("")
@@ -315,11 +322,14 @@ internal class KtorStubGenerator(
                 ) {
                     withBlock("#T(#S) {", "}", RuntimeTypes.KtorServerAuth.bearer, "auth-bearer") {
                         write("realm = #S", "Access to API")
-                        write("authenticate { cred -> bearerValidation(cred.token) }")
+                        write("authenticate { cred -> BearerValidation.bearerValidation(cred.token) }")
                     }
                     withBlock("sigV4(name = #S) {", "}", "aws-sigv4") {
-                        write("region = #S", "us-east-1")
-                        write("service = #S", "execute-api")
+                        write("region = #T.region", ServiceTypes(pkgName).serviceFrameworkConfig)
+                        val serviceSigV4AuthTrait = serviceShape.getTrait<SigV4Trait>()
+                        if (serviceSigV4AuthTrait != null) {
+                            write("service = #S", serviceSigV4AuthTrait.name)
+                        }
                     }
                     write("provider(#S) { authenticate { ctx -> ctx.principal(Unit) } }", "no-auth")
                 }
