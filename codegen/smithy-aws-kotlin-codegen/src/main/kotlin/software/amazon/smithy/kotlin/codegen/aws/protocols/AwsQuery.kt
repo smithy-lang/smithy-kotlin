@@ -7,6 +7,7 @@ package software.amazon.smithy.kotlin.codegen.aws.protocols
 
 import software.amazon.smithy.aws.traits.protocols.AwsQueryErrorTrait
 import software.amazon.smithy.aws.traits.protocols.AwsQueryTrait
+import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.kotlin.codegen.aws.protocols.core.AbstractQueryFormUrlSerializerGenerator
 import software.amazon.smithy.kotlin.codegen.aws.protocols.core.AwsHttpBindingProtocolGenerator
 import software.amazon.smithy.kotlin.codegen.aws.protocols.core.QueryHttpBindingProtocolGenerator
@@ -86,6 +87,14 @@ private class AwsQuerySerializerGenerator(
         members: List<MemberShape>,
         writer: KotlinWriter,
     ): FormUrlSerdeDescriptorGenerator = AwsQuerySerdeFormUrlDescriptorGenerator(ctx.toRenderingContext(protocolGenerator, shape, writer), members)
+
+    override fun errorSerializer(
+        ctx: ProtocolGenerator.GenerationContext,
+        errorShape: StructureShape,
+        members: List<MemberShape>,
+    ): Symbol {
+        TODO("Used for service-codegen. Not yet implemented")
+    }
 }
 
 private class AwsQueryXmlParserGenerator(

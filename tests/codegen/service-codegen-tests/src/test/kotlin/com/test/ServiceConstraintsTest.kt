@@ -26,7 +26,7 @@ class ServiceConstraintsTest {
     val requestBodyLimit: Long = 10L * 1024 * 1024
     val port: Int = ServerSocket(0).use { it.localPort }
 
-    val portListenerTimeout = 180L
+    val portListenerTimeout = 60L
 
     val baseUrl = "http://localhost:$port"
 

@@ -143,6 +143,7 @@ data class KotlinDependency(
         // Ktor server dependencies
         // FIXME: version numbers should not be hardcoded, they should be setting dynamically based on the Gradle library versions
         val KTOR_SERVER_CORE = KotlinDependency(GradleConfiguration.Implementation, "io.ktor.server", "io.ktor", "ktor-server-core", KTOR_VERSION)
+        val KTOR_SERVER_UTILS = KotlinDependency(GradleConfiguration.Implementation, "io.ktor", "io.ktor", "ktor-server-core", KTOR_VERSION)
         val KTOR_SERVER_NETTY = KotlinDependency(GradleConfiguration.Implementation, "io.ktor.server.netty", "io.ktor", "ktor-server-netty", KTOR_VERSION)
         val KTOR_SERVER_CIO = KotlinDependency(GradleConfiguration.Implementation, "io.ktor.server.cio", "io.ktor", "ktor-server-cio", KTOR_VERSION)
         val KTOR_SERVER_JETTY_JAKARTA = KotlinDependency(GradleConfiguration.Implementation, "io.ktor.server.jetty.jakarta", "io.ktor", "ktor-server-jetty-jakarta", KTOR_VERSION)
