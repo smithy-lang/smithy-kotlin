@@ -168,6 +168,25 @@ internal fun generateJsonServiceTest() {
     """.trimIndent()
     manifest.writeFile("src/main/kotlin/$packagePath/operations/JsonNameTestOperation.kt", jsonNameTestOperation)
 
+    val httpErrorTestOperation = """
+        package $packageName.operations
+
+        import $packageName.model.HttpErrorTestRequest
+        import $packageName.model.HttpErrorTestResponse
+        import $packageName.model.HttpError
+
+        public fun handleHttpErrorTestRequest(req: HttpErrorTestRequest): HttpErrorTestResponse {
+            
+            val error = HttpError.Builder()
+            error.msg = "this is an error message"
+            error.num = 444
+            throw error.build()
+            
+            return HttpErrorTestResponse.Builder().build()
+        }
+    """.trimIndent()
+    manifest.writeFile("src/main/kotlin/$packagePath/operations/HttpErrorTestOperation.kt", httpErrorTestOperation)
+
     val bearerValidation = """
         package $packageName.auth
 

@@ -26,7 +26,7 @@ class JsonServiceTest {
     val requestBodyLimit: Long = 10L * 1024 * 1024
     val port: Int = ServerSocket(0).use { it.localPort }
 
-    val portListnerTimeout = 180L
+    val portListnerTimeout = 60L
 
     val baseUrl = "http://localhost:$port"
 
@@ -37,7 +37,7 @@ class JsonServiceTest {
     @BeforeAll
     fun boot() {
         proc = startService("netty", port, closeGracePeriodMillis, closeTimeoutMillis, requestBodyLimit, projectDir)
-        val ready = waitForPort(port, portListnerTimeout, proc)
+        val ready = waitForPort(port, portListnerTimeout)
         assertTrue(ready, "Service did not start within $portListnerTimeout s")
     }
 
@@ -203,5 +203,27 @@ class JsonServiceTest {
             response.body(),
         )
         assertEquals("Hello Kotlin Team", body.responseName)
+    }
+
+    @Test
+    fun `checks http error`() {
+        val response = sendRequest(
+            "$baseUrl/http-error",
+            "POST",
+            null,
+            "application/json",
+            "application/json",
+            "correctToken",
+        )
+        assertIs<HttpResponse<String>>(response)
+
+        assertEquals(456, response.statusCode(), "Expected 456")
+        val body = Json.decodeFromString(
+            HttpError.serializer(),
+            response.body(),
+        )
+
+        assertEquals(444, body.num)
+        assertEquals("this is an error message", body.msg)
     }
 }

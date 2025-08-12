@@ -16,7 +16,7 @@ service JsonServiceTest {
         HttpStructurePayloadTest
         TimestampTest
         JsonNameTest
-
+        HttpErrorTest
     ]
 }
 
@@ -167,12 +167,31 @@ structure JsonNameTestOutput {
     content: String
 }
 
+@http(method: "POST", uri: "/http-error", code: 200)
+operation HttpErrorTest {
+    input: HttpErrorTestInput
+    output: HttpErrorTestOutput
+    errors: [HttpError]
+}
+
+@input
+structure HttpErrorTestInput {}
+
+@output
+structure HttpErrorTestOutput {}
+
+@error("client")
+@httpError(456)
+structure HttpError {
+    msg: String
+    num: Integer
+}
+
 structure HttpStructurePayloadTestStructure {
     content1: String
     content2: Integer
     content3: Float
 }
-
 
 map MapOfStrings {
     key: String

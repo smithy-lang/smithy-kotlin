@@ -193,17 +193,9 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
 
         ctx.delegator.useSymbolWriter(serializerSymbol) { writer ->
             if (ctx.settings.build.generateServiceProject) {
-                val serializerResultSymbol = when (protocolName) {
-                    "smithyRpcv2cbor" -> KotlinTypes.ByteArray
-                    "awsRestjson1" -> KotlinTypes.String
-                    else -> KotlinTypes.ByteArray
-                }
+                val serializerResultSymbol = getHttpSerializerResultSymbol(protocolName)
+                val defaultResponse = getHttpSerializerDefaultResponse(protocolName)
 
-                val defaultResponse = when (protocolName) {
-                    "smithyRpcv2cbor" -> "ByteArray(0)"
-                    "awsRestjson1" -> "\"\""
-                    else -> "ByteArray(0)"
-                }
                 writer
                     .openBlock("internal class #T {", serializerSymbol)
                     .call {
@@ -321,17 +313,8 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         ctx.delegator.useSymbolWriter(serializerSymbol) { writer ->
             val resolver = getProtocolHttpBindingResolver(ctx.model, ctx.service)
             val bindings = resolver.responseBindings(shape)
-            val serializerResultSymbol = when (protocolName) {
-                "smithyRpcv2cbor" -> KotlinTypes.ByteArray
-                "awsRestjson1" -> KotlinTypes.String
-                else -> KotlinTypes.ByteArray
-            }
-
-            val defaultResponse = when (protocolName) {
-                "smithyRpcv2cbor" -> "ByteArray(0)"
-                "awsRestjson1" -> "\"\""
-                else -> "ByteArray(0)"
-            }
+            val serializerResultSymbol = getHttpSerializerResultSymbol(protocolName)
+            val defaultResponse = getHttpSerializerDefaultResponse(protocolName)
             writer.withBlock("internal class #T {", "}", serializerSymbol) {
                 writer.openBlock(
                     "public fun serialize(context: #T, input: #T): #T {",
@@ -1360,4 +1343,16 @@ private fun httpDeserializerInfo(ctx: ProtocolGenerator.GenerationContext, op: O
         op.isOutputEventStream(ctx.model)
 
     return HttpSerdeMeta(isStreaming)
+}
+
+private fun getHttpSerializerResultSymbol(protocolName: String) = when (protocolName) {
+    "smithyRpcv2cbor" -> KotlinTypes.ByteArray
+    "awsRestjson1" -> KotlinTypes.String
+    else -> error("service project accepts only Cbor or JSON protocol")
+}
+
+private fun getHttpSerializerDefaultResponse(protocolName: String) = when (protocolName) {
+    "smithyRpcv2cbor" -> "ByteArray(0)"
+    "awsRestjson1" -> "\"\""
+    else -> error("service project accepts only Cbor or JSON protocol")
 }

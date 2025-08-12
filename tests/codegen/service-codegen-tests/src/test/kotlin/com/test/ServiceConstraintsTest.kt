@@ -26,7 +26,7 @@ class ServiceConstraintsTest {
     val requestBodyLimit: Long = 10L * 1024 * 1024
     val port: Int = ServerSocket(0).use { it.localPort }
 
-    val portListenerTimeout = 180L
+    val portListenerTimeout = 60L
 
     val baseUrl = "http://localhost:$port"
 
@@ -37,7 +37,7 @@ class ServiceConstraintsTest {
     @BeforeAll
     fun boot() {
         proc = startService("netty", port, closeGracePeriodMillis, closeTimeoutMillis, requestBodyLimit, projectDir)
-        val ready = waitForPort(port, portListenerTimeout, proc)
+        val ready = waitForPort(port, portListenerTimeout)
         assertTrue(ready, "Service did not start within $portListenerTimeout s")
     }
 
