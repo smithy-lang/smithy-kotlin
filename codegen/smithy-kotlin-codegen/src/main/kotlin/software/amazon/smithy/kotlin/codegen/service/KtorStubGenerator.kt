@@ -1,5 +1,6 @@
 package software.amazon.smithy.kotlin.codegen.service
 
+import software.amazon.smithy.aws.traits.auth.SigV4ATrait
 import software.amazon.smithy.aws.traits.auth.SigV4Trait
 import software.amazon.smithy.build.FileManifest
 import software.amazon.smithy.kotlin.codegen.core.GenerationContext
@@ -7,6 +8,7 @@ import software.amazon.smithy.kotlin.codegen.core.InlineCodeWriterFormatter
 import software.amazon.smithy.kotlin.codegen.core.KotlinDelegator
 import software.amazon.smithy.kotlin.codegen.core.KotlinWriter
 import software.amazon.smithy.kotlin.codegen.core.RuntimeTypes
+import software.amazon.smithy.kotlin.codegen.core.closeAndOpenBlock
 import software.amazon.smithy.kotlin.codegen.core.withBlock
 import software.amazon.smithy.kotlin.codegen.core.withInlineBlock
 import software.amazon.smithy.kotlin.codegen.lang.KotlinTypes
@@ -14,6 +16,7 @@ import software.amazon.smithy.kotlin.codegen.model.getTrait
 import software.amazon.smithy.kotlin.codegen.service.contraints.ConstraintGenerator
 import software.amazon.smithy.kotlin.codegen.service.contraints.ConstraintUtilsGenerator
 import software.amazon.smithy.model.shapes.OperationShape
+import software.amazon.smithy.model.shapes.ShapeId
 import software.amazon.smithy.model.traits.AuthTrait
 import software.amazon.smithy.model.traits.HttpBearerAuthTrait
 import software.amazon.smithy.model.traits.HttpTrait
@@ -188,10 +191,42 @@ internal class KtorStubGenerator(
             writer.write("")
             writer.withBlock("internal object SigV4CredentialStore {", "}") {
                 withBlock("private val table: Map<String, #T> = mapOf(", ")", RuntimeTypes.Auth.Credentials.AwsCredentials.Credentials) {
-                    write("#S to #T(accessKeyId = #S, secretAccessKey = #S)", "AKIAIOSFODNN7EXAMPLE", RuntimeTypes.Auth.Credentials.AwsCredentials.Credentials, "AKIAIOSFODNN7EXAMPLE", "wJalrXUtnFEMI/K7MDENG+bPxRfiCYEXAMPLEKEY")
+                    write("#S to #T(accessKeyId = #S, secretAccessKey = #S),", "AKIAIOSFODNN7EXAMPLE", RuntimeTypes.Auth.Credentials.AwsCredentials.Credentials, "AKIAIOSFODNN7EXAMPLE", "wJalrXUtnFEMI/K7MDENG+bPxRfiCYEXAMPLEKEY")
+                    write("#S to #T(accessKeyId = #S, secretAccessKey = #S),", "EXAMPLEACCESSKEY1234", RuntimeTypes.Auth.Credentials.AwsCredentials.Credentials, "EXAMPLEACCESSKEY1234", "wJalrXUtnFEMI/K7MDENG+bPxRfiCYEXAMPLEKEY")
                 }
                 withBlock("internal fun get(accessKeyId: String): #T? {", "}", RuntimeTypes.Auth.Credentials.AwsCredentials.Credentials) {
                     write("// TODO: implement me: return Credentials(accessKeyId = ..., secretAccessKey = ...)")
+                    write("return table[accessKeyId]")
+                }
+            }
+            writer.write("")
+            writer.withBlock("internal object SigV4aPublicKeyStore {", "}") {
+                write("private val table: MutableMap<String, java.security.PublicKey> = mutableMapOf()")
+                write("")
+                withBlock("init {", "}") {
+                    withBlock("val pem = \"\"\"", "\"\"\".trimIndent()") {
+                        write("-----BEGIN PUBLIC KEY-----")
+                        write("MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE4BB0k4K89eCESVtC39Kzm0HA+lYx")
+                        write("8YF3OZDop7htXAyhGAXn4U70ViNmtG+eWu2bQOXGEIMtoBAEoRk11WXOAw==")
+                        write("-----END PUBLIC KEY-----")
+                    }
+                    write(
+                        "val clean = pem.replace(#S, #S).replace(#S, #S).replace(#S.toRegex(), #S)",
+                        "-----BEGIN PUBLIC KEY-----",
+                        "",
+                        "-----END PUBLIC KEY-----",
+                        "",
+                        "\\s",
+                        "",
+                    )
+
+                    write("val keyBytes = java.util.Base64.getDecoder().decode(clean)")
+                    write("val spec = java.security.spec.X509EncodedKeySpec(keyBytes)")
+                    write("val kf = java.security.KeyFactory.getInstance(#S)", "EC")
+                    write("table[#S] = kf.generatePublic(spec)", "EXAMPLEACCESSKEY1234")
+                }
+                write("")
+                withBlock("internal fun get(accessKeyId: String): java.security.PublicKey? {", "}") {
                     write("return table[accessKeyId]")
                 }
             }
@@ -251,25 +286,41 @@ internal class KtorStubGenerator(
                     write("val signatureHex = part(#S)", "Signature")
                     write("")
                     write("val signedHeaders: Set<String> = signedHeadersStr.split(';').map { it.trim().lowercase() }.toSet()")
+                    write("if (#S !in signedHeaders) return null", "host")
+                    write("if (!signedHeaders.any { it == #S || it == #S }) return null", "x-amz-date", "date")
                     write("val accessKeyId = credential.substringBefore(#S).takeIf { it.matches(Regex(#S)) } ?: return null", "/", "^[A-Z0-9]{16,128}$")
+                    write("")
+                    write("val scope = credential.substringAfter(#S, missingDelimiterValue = #S)", "/", "")
+                    write("val parts = scope.split(#S)", "/")
+                    write("if (parts.size != 4) return null")
+                    write("val (yyyyMMdd, scopeRegion, scopeService, term) = parts")
+                    write("if (scopeRegion != region || scopeService != service || term != #S) return null", "aws4_request")
+                    write("if (!Regex(#S).matches(yyyyMMdd)) return null", "^\\d{8}$")
+                    write("")
+                    write("val rawXAmzDate = call.request.#T(#S)", RuntimeTypes.KtorServerRouting.requestHeader, "X-Amz-Date")
+                    write("val rawHttpDate = call.request.#T(#T.Date)", RuntimeTypes.KtorServerRouting.requestHeader, RuntimeTypes.KtorServerHttp.HttpHeaders)
+                    withBlock("val signingInstant: #T = when {", "}", RuntimeTypes.Core.Instant) {
+                        write("rawXAmzDate != null -> { try { #T.fromIso8601(rawXAmzDate) } catch (_: Exception) { return null } }", RuntimeTypes.Core.Instant)
+                        write("rawHttpDate != null -> { try { #T.fromRfc5322(rawHttpDate) } catch (_: Exception) { return null } }", RuntimeTypes.Core.Instant)
+                        write("else -> return null")
+                    }
+                    write("val scopeDate = signingInstant.format(#T.ISO_8601_CONDENSED_DATE)", RuntimeTypes.Core.TimestampFormat)
+                    write("if (scopeDate != yyyyMMdd) return null")
+                    write("")
+                    write("val now = #T.now()", RuntimeTypes.Core.Instant)
+                    write("if (signingInstant < now - maxClockSkew || signingInstant > now + maxClockSkew) return null")
                     write("")
                     write("val creds = SigV4CredentialStore.get(accessKeyId) ?: return null")
                     write("")
+                    write("val secTokenHeaderName = #S", "x-amz-security-token")
+                    write("val secToken = call.request.headers[secTokenHeaderName]")
+                    withBlock("if (creds.sessionToken != null) {", "}") {
+                        write("if (secToken == null || secToken != creds.sessionToken) return null")
+                        write("if (secTokenHeaderName !in signedHeaders) return null")
+                    }
                     write("")
-                    write(
-                        "val dateHeader  = call.request.#T(#S) ?: call.request.#T(#T.Date) ?: return null",
-                        RuntimeTypes.KtorServerRouting.requestHeader,
-                        "X-Amz-Date",
-                        RuntimeTypes.KtorServerRouting.requestHeader,
-                        RuntimeTypes.KtorServerHttp.HttpHeaders,
-                    )
-                    write(
-                        "val signingInstant: #T = try { #T.fromIso8601(dateHeader) } catch (_: Exception) { return null }",
-                        RuntimeTypes.Core.Instant,
-                        RuntimeTypes.Core.Instant,
-                    )
-                    write("val now = #T.now()", RuntimeTypes.Core.Instant)
-                    write("if (signingInstant < now - maxClockSkew || signingInstant > now + maxClockSkew) return null")
+                    write("val contentSha256 = call.request.headers[#S]", "x-amz-content-sha256")
+                    write("val isUnsigned = contentSha256 == #S", "UNSIGNED-PAYLOAD")
                     write("")
                     write("val origin = call.request.local")
                     write("val payload: ByteArray = call.#T<ByteArray>()", RuntimeTypes.KtorServerRouting.requestReceive)
@@ -317,12 +368,25 @@ internal class KtorStubGenerator(
                         withBlock("#T.Config().apply {", "}", RuntimeTypes.Auth.HttpAuthAws.AwsHttpSigner) {
                             write("this.signer = #T", RuntimeTypes.Auth.Signing.AwsSigningStandard.DefaultAwsSigner)
                             write("this.service = service")
+                            write("this.isUnsignedPayload = isUnsigned")
                         }
                     }
                     withBlock("val attrs = #T {", "}", RuntimeTypes.Core.Collections.attributesOf) {
                         write("#T to creds", RuntimeTypes.Auth.Credentials.AwsCredentials.Credentials)
                         write("#T.SigningRegion to region", RuntimeTypes.Auth.Signing.AwsSigningCommon.AwsSigningAttributes)
                         write("#T.SigningDate to signingInstant", RuntimeTypes.Auth.Signing.AwsSigningCommon.AwsSigningAttributes)
+                        withBlock("if (isUnsigned) {", "}") {
+                            write(
+                                "#T.HashSpecification to #T.UnsignedPayload",
+                                RuntimeTypes.Auth.Signing.AwsSigningCommon.AwsSigningAttributes,
+                                RuntimeTypes.Auth.Signing.AwsSigningCommon.HashSpecification,
+                            )
+                            write(
+                                "#T.SignedBodyHeader to #T.NONE",
+                                RuntimeTypes.Auth.Signing.AwsSigningCommon.AwsSigningAttributes,
+                                RuntimeTypes.Auth.Signing.AwsSigningCommon.AwsSignedBodyHeader,
+                            )
+                        }
                     }
 
                     write(
@@ -337,6 +401,249 @@ internal class KtorStubGenerator(
                     write("")
                     write("return if (expectedSig == signatureHex) creds else null")
                 }
+        }
+
+        delegator.useFileWriter("SigV4A.kt", "$pkgName.auth") { writer ->
+            writer.withInlineBlock("internal fun #T.sigV4A(", ")", RuntimeTypes.KtorServerAuth.AuthenticationConfig) {
+                write("name: String = #S,", "aws-sigv4a")
+                write("configure: SigV4AAuthProvider.Configuration.() -> Unit = {}")
+            }
+                .withBlock("{", "}") {
+                    write("val provider = SigV4AAuthProvider(SigV4AAuthProvider.Configuration(name).apply(configure))")
+                    write("register(provider)")
+                }
+                .write("")
+
+            writer.withBlock("internal class SigV4AAuthProvider(config: Configuration) : #T(config) {", "}", RuntimeTypes.KtorServerAuth.AuthenticationProvider) {
+                withBlock("internal class Configuration(name: String?) : #T.Config(name) {", "}", RuntimeTypes.KtorServerAuth.AuthenticationProvider) {
+                    write("var region: String = #S", "us-east-1")
+                    write("var service: String = #S", "execute-api")
+                    write("var clockSkew: #T = 5.#T", KotlinTypes.Time.Duration, KotlinTypes.Time.minutes)
+                }
+                write("")
+                write("private val region = (config as Configuration).region")
+                write("private val service = config.service")
+                write("private val skew = config.clockSkew")
+                write("")
+                withBlock("override suspend fun onAuthenticate(context: #T) {", "}", RuntimeTypes.KtorServerAuth.AuthenticationContext) {
+                    write("val creds = verifySigV4A(context.call, region, service, skew)")
+                    withInlineBlock("if (creds == null) {", "}") {
+                        withBlock("context.challenge(#S, #T.InvalidCredentials) { challenge, call ->", "}", "AWS4-HMAC-SHA256", RuntimeTypes.KtorServerAuth.AuthenticationFailedCause) {
+                            write("call.#T(#T.Unauthorized, #S)", RuntimeTypes.KtorServerRouting.responseResponse, RuntimeTypes.KtorServerHttp.HttpStatusCode, "Unauthorized")
+                            write("challenge.complete()")
+                        }
+                    }
+                    withBlock(" else {", "}") {
+                        write("context.principal(UserPrincipal(creds.accessKeyId))")
+                    }
+                }
+            }
+                .write("")
+
+            writer.withInlineBlock("public suspend fun verifySigV4A(", ")") {
+                write("call: #T,", RuntimeTypes.KtorServerCore.ApplicationCallClass)
+                write("region: String,")
+                write("service: String,")
+                write("maxClockSkew: #T", KotlinTypes.Time.Duration)
+            }
+                .withBlock(": #T? {", "}", RuntimeTypes.Auth.Credentials.AwsCredentials.Credentials) {
+                    write("val authHeader = call.request.#T(#T.Authorization) ?: return null", RuntimeTypes.KtorServerRouting.requestHeader, RuntimeTypes.KtorServerHttp.HttpHeaders)
+                    write("if (!authHeader.startsWith(#S, ignoreCase = true)) return null", "AWS4-ECDSA-P256-SHA256")
+                    write("")
+                    write("fun part(name: String) = authHeader.substringAfter(#S).substringBefore(#S).trim()", "\$name=", ",")
+                    write("")
+                    write("val credential = part(#S) // accessKeyId/scope", "Credential")
+                    write("val signedHeadersStr = part(#S)", "SignedHeaders")
+                    write("val signatureHex = part(#S)", "Signature")
+                    write("")
+                    write("val signedHeaders: Set<String> = signedHeadersStr.split(';').map { it.trim().lowercase() }.toSet()")
+                    write("if (#S !in signedHeaders) return null", "host")
+                    write("if (!signedHeaders.any { it == #S || it == #S }) return null", "x-amz-date", "date")
+                    write("val accessKeyId = credential.substringBefore(#S).takeIf { it.matches(Regex(#S)) } ?: return null", "/", "^[A-Z0-9]{16,128}$")
+                    write("")
+                    write("val scope = credential.substringAfter(#S, missingDelimiterValue = #S)", "/", "")
+                    write("val parts = scope.split(#S)", "/")
+                    write("if (parts.size != 3) return null")
+                    write("val (yyyyMMdd, scopeService, term) = parts")
+                    write("if (scopeService != service || term != #S) return null", "aws4_request")
+                    write("if (!Regex(#S).matches(yyyyMMdd)) return null", "^\\d{8}$")
+                    write("")
+                    write("val regionSetHeaderName = #S", "x-amz-region-set")
+                    write("val rawRegionSet = call.request.headers[regionSetHeaderName] ?: return null")
+                    write("if (regionSetHeaderName !in signedHeaders) return null")
+                    write("")
+                    write("val regionSet: List<String> = rawRegionSet.split(',').map { it.trim().lowercase() }.filter { it.isNotEmpty() }.ifEmpty { return null }")
+                    write("")
+                    withBlock("fun matchesRegion(pattern: String, value: String): Boolean {", "}") {
+                        write("if (pattern == #S) return true", "*")
+                        write("val rx = Regex(#S + Regex.escape(pattern).replace(#S, #S) + #S, RegexOption.IGNORE_CASE)\n", "^", "\\*", ".*", "$")
+                        write("return rx.matches(value)")
+                    }
+                    write("if (regionSet.none { matchesRegion(it, region.lowercase()) }) return null")
+                    write("")
+                    write("val rawXAmzDate = call.request.#T(#S)", RuntimeTypes.KtorServerRouting.requestHeader, "X-Amz-Date")
+                    write("val rawHttpDate = call.request.#T(#T.Date)", RuntimeTypes.KtorServerRouting.requestHeader, RuntimeTypes.KtorServerHttp.HttpHeaders)
+                    withBlock("val signingInstant: #T = when {", "}", RuntimeTypes.Core.Instant) {
+                        write("rawXAmzDate != null -> { try { #T.fromIso8601(rawXAmzDate) } catch (_: Exception) { return null } }", RuntimeTypes.Core.Instant)
+                        write("rawHttpDate != null -> { try { #T.fromRfc5322(rawHttpDate) } catch (_: Exception) { return null } }", RuntimeTypes.Core.Instant)
+                        write("else -> return null")
+                    }
+                    write("val scopeDate = signingInstant.format(#T.ISO_8601_CONDENSED_DATE)", RuntimeTypes.Core.TimestampFormat)
+                    write("if (scopeDate != yyyyMMdd) return null")
+                    write("")
+                    write("val now = #T.now()", RuntimeTypes.Core.Instant)
+                    write("if (signingInstant < now - maxClockSkew || signingInstant > now + maxClockSkew) return null")
+                    write("")
+                    write("val creds = SigV4CredentialStore.get(accessKeyId) ?: return null")
+                    write("")
+                    write("val secTokenHeaderName = #S", "x-amz-security-token")
+                    write("val secToken = call.request.headers[secTokenHeaderName]")
+                    withBlock("if (creds.sessionToken != null) {", "}") {
+                        write("if (secToken == null || secToken != creds.sessionToken) return null")
+                        write("if (secTokenHeaderName !in signedHeaders) return null")
+                    }
+                    write("")
+                    write("val contentSha256 = call.request.headers[#S]", "x-amz-content-sha256")
+                    write("val isUnsigned = contentSha256 == #S", "UNSIGNED-PAYLOAD")
+                    write("")
+                    write("val origin = call.request.local")
+                    write("val payload: ByteArray = call.#T<ByteArray>()", RuntimeTypes.KtorServerRouting.requestReceive)
+                    write("")
+                    write("val protoHeader = call.request.headers[#S] ?: origin.scheme", "X-Forwarded-Proto")
+                    write("val isHttps = (protoHeader.equals(#S, ignoreCase = true))", "https")
+                    write("val hostHeader = call.request.headers[#S] ?: call.request.headers[#S] ?: return null", "X-Forwarded-Host", "Host")
+                    write("val hostOnly: String")
+                    write("val portValue: Int?")
+                    withBlock("hostHeader.split(':', limit = 2).let {", "}") {
+                        write("hostOnly = it[0]")
+                        write("portValue = it.getOrNull(1)?.toIntOrNull()")
+                    }
+                    write("")
+                    write("val canonicalUri = encodeCanonicalPath(call.request.#T())", RuntimeTypes.KtorServerRouting.requestPath)
+                    write("val canonicalQuery = buildCanonicalQuery(#T.build { call.request.queryParameters.forEach { k, vs -> vs.forEach { v -> append(k, v) } } })", RuntimeTypes.KtorServerHttp.Parameters)
+                    write("")
+                    withBlock("val filteredHeaders = #T().apply {", "}.build()", RuntimeTypes.KtorServerHttp.HeadersBuilder) {
+                        withBlock("for (name in call.request.headers.names()) {", "}") {
+                            write("val ln = name.lowercase()")
+                            withBlock("if (ln != HttpHeaders.Authorization.lowercase() && ln in signedHeaders) {", "}") {
+                                write("call.request.headers.getAll(name)?.forEach { v -> append(name, v) }")
+                            }
+                        }
+                        withBlock("if (!names().any { it.equals(#S, ignoreCase = true) }) {", "}", "X-Amz-Region-Set") {
+                            write("append(#S, rawRegionSet)", "X-Amz-Region-Set")
+                        }
+                        withBlock("if (!names().any { it.equals(#S, ignoreCase = true) }) {", "}", "Host") {
+                            write("val defaultPort = (isHttps && portValue == 443) || (!isHttps && portValue == 80)")
+                            write("append(#S, if (portValue != null && !defaultPort) #S else hostOnly) ", "Host", "\$hostOnly:\$portValue")
+                        }
+                    }
+
+                    withBlock("val (canonicalHeaders, signedHeaderList) = run {", "}") {
+                        write("val map = mutableMapOf<String, MutableList<String>>()")
+                        withBlock("filteredHeaders.names().forEach { name ->", "}") {
+                            write("val ln = name.lowercase()")
+                            withBlock("if (ln in signedHeaders) {", "}") {
+                                write("val values = filteredHeaders.getAll(name).orEmpty()")
+                                write("    .map { it.trim().replace(Regex(#S), #S) }", "\\s+", " ")
+                                write("map.getOrPut(ln) { mutableListOf() }.addAll(values)")
+                            }
+                        }
+                        withBlock("if (#S !in map) {", "}", "x-amz-region-set") {
+                            write("map[#S] = mutableListOf(rawRegionSet)", "x-amz-region-set")
+                        }
+                        withBlock("val canon = map.toSortedMap().entries.joinToString(#S, postfix = #S) { entry ->", "}", "\n", "\n") {
+                            write("val key = entry.key")
+                            write("val vs = entry.value")
+                            write("\"\$key:\${vs.joinToString(#S)}\"", ",")
+                        }
+
+                        write("val signedList = map.keys.sorted().joinToString(#S)", ";")
+                        write("canon to signedList")
+                    }
+
+                    write("val payloadHash = if (isUnsigned) #S else { sha256Hex(payload) }", "UNSIGNED-PAYLOAD")
+
+                    withBlock("val canonicalRequest = buildString {", "}") {
+                        write("append(call.request.#T.value.uppercase()).append('\\n')", RuntimeTypes.KtorServerRouting.requestHttpMethod)
+                        write("append(canonicalUri).append('\\n')")
+                        write("append(canonicalQuery).append('\\n')")
+                        write("append(canonicalHeaders)")
+                        write("append('\\n')") // empty line before SignedHeaders list
+                        write("append(signedHeaderList).append('\\n')")
+                        write("append(payloadHash)")
+                    }
+
+                    write("val crHashHex = sha256Hex(canonicalRequest.toByteArray())")
+
+                    withBlock("val stringToSign = buildString {", "}") {
+                        write("append(#S).append('\\n')", "AWS4-ECDSA-P256-SHA256")
+                        write("append(signingInstant.format(#T.ISO_8601_CONDENSED)).append('\\n')", RuntimeTypes.Core.TimestampFormat)
+                        write("append(#S).append('\\n')", "\$yyyyMMdd/\$service/aws4_request")
+                        write("append(crHashHex)")
+                    }
+
+                    write("val publicKey: java.security.PublicKey = SigV4aPublicKeyStore.get(accessKeyId) ?: return null")
+                    write("val sigDer = signatureHex.chunked(2).map { it.toInt(16).toByte() }.toByteArray()")
+                    write("val verifier = java.security.Signature.getInstance(#S)", "SHA256withECDSA")
+                    write("verifier.initVerify(publicKey)")
+                    write("verifier.update(stringToSign.toByteArray())")
+                    write("val ok = verifier.verify(sigDer)")
+                    write("return if (ok) creds else null")
+                }
+                .write("")
+
+            writer.withBlock("private fun sha256Hex(bytes: ByteArray): String {", "}") {
+                write("return java.security.MessageDigest.getInstance(#S).digest(bytes).joinToString(#S) { #S.format(it) }", "SHA-256", "", "%02x")
+            }
+                .write("")
+
+            writer.withBlock("private val UNRESERVED: BooleanArray = BooleanArray(128).apply {", "}") {
+                write("for (c in 'A'..'Z') this[c.code] = true")
+                write("for (c in 'a'..'z') this[c.code] = true")
+                write("for (c in '0'..'9') this[c.code] = true")
+                write("this['-'.code] = true; this['_'.code] = true; this['.'.code] = true; this['~'.code] = true\n")
+            }
+                .write("")
+
+            writer.withBlock("private fun rfc3986Encode(bytes: ByteArray): String {", "}") {
+                write("val out = StringBuilder(bytes.size * 3)")
+                withBlock("for (b in bytes) {", "}") {
+                    write("val i = b.toInt() and 0xFF")
+                    withInlineBlock("if (i < 128 && UNRESERVED[i]) {", "}") {
+                        write("out.append(i.toChar())")
+                    }
+                    withBlock(" else {", "}") {
+                        write("out.append('%')")
+                        write("val hi = #S[(i ushr 4) and 0xF]", "0123456789ABCDEF")
+                        write("val lo = #S[i and 0xF]", "0123456789ABCDEF")
+                        write("out.append(hi).append(lo)")
+                    }
+                }
+                write("return out.toString()")
+            }
+                .write("")
+            writer.write("private fun encodeString(s: String): String = rfc3986Encode(s.toByteArray(Charsets.UTF_8))")
+                .write("")
+
+            writer.withBlock("private fun encodeCanonicalPath(rawPath: String): String {", "}") {
+                write("val p = if (rawPath.isEmpty()) #S else rawPath", "/")
+                write("return p.split('/').joinToString(#S) { seg -> if (seg.isEmpty()) #S else encodeString(seg) }", "/", "")
+            }
+                .write("")
+
+            writer.withBlock("private fun buildCanonicalQuery(params: #T): String {", "}", RuntimeTypes.KtorServerHttp.Parameters) {
+                withBlock("val pairs = buildList {", "}") {
+                    withBlock("params.names().sorted().forEach { name ->", "}") {
+                        write("val values = params.getAll(name)")
+                        openBlock("if (values == null || values.isEmpty()) {")
+                        write("add(#S)", "\${encodeString(name)}=")
+                        closeAndOpenBlock("} else {")
+                        write("values.sorted().forEach { v -> add(#S) }", "\${encodeString(name)}=\${encodeString(v)}")
+                        closeBlock("}")
+                    }
+                }
+                write("return pairs.joinToString(#S)", "&")
+            }
         }
 
         delegator.useFileWriter("Authentication.kt", "$pkgName.auth") { writer ->
@@ -357,6 +664,13 @@ internal class KtorStubGenerator(
                         val serviceSigV4AuthTrait = serviceShape.getTrait<SigV4Trait>()
                         if (serviceSigV4AuthTrait != null) {
                             write("service = #S", serviceSigV4AuthTrait.name)
+                        }
+                    }
+                    withBlock("sigV4A(name = #S) {", "}", "aws-sigv4a") {
+                        write("region = #T.region", ServiceTypes(pkgName).serviceFrameworkConfig)
+                        val serviceSigV4AAuthTrait = serviceShape.getTrait<SigV4ATrait>()
+                        if (serviceSigV4AAuthTrait != null) {
+                            write("service = #S", serviceSigV4AAuthTrait.name)
                         }
                     }
                     write("provider(#S) { authenticate { ctx -> ctx.principal(Unit) } }", "no-auth")
@@ -473,27 +787,33 @@ internal class KtorStubGenerator(
     }
 
     private fun renderRoutingAuth(w: KotlinWriter, shape: OperationShape) {
+        val serviceAuthTrait = serviceShape.getTrait<AuthTrait>()
         val hasServiceHttpBearerAuthTrait = serviceShape.hasTrait(HttpBearerAuthTrait.ID)
         val hasServiceSigV4AuthTrait = serviceShape.hasTrait(SigV4Trait.ID)
+        val hasServiceSigV4AAuthTrait = serviceShape.hasTrait(SigV4ATrait.ID)
         val authTrait = shape.getTrait<AuthTrait>()
         val hasOperationBearerAuthTrait = authTrait?.valueSet?.contains(HttpBearerAuthTrait.ID) ?: true
         val hasOperationSigV4AuthTrait = authTrait?.valueSet?.contains(SigV4Trait.ID) ?: true
+        val hasOperationSigV4AAuthTrait = authTrait?.valueSet?.contains(SigV4ATrait.ID) ?: true
 
-        if (hasServiceHttpBearerAuthTrait && hasOperationBearerAuthTrait) {
-            w.write(
-                "#T(#S) {",
-                RuntimeTypes.KtorServerAuth.authenticate,
-                "auth-bearer",
-            )
-        } else if (hasServiceSigV4AuthTrait && hasOperationSigV4AuthTrait) {
-            w.write(
-                "#T(#S) {",
-                RuntimeTypes.KtorServerAuth.authenticate,
-                "aws-sigv4",
-            )
-        } else {
-            w.write("#T(#S) {", RuntimeTypes.KtorServerAuth.authenticate, "no-auth")
+        val availableAuthTraitOrderedSet = authTrait?.valueSet ?: serviceAuthTrait?.valueSet ?: setOf<ShapeId>(HttpBearerAuthTrait.ID, SigV4Trait.ID, SigV4ATrait.ID)
+
+        val authList = mutableListOf<String>()
+        availableAuthTraitOrderedSet.forEach { authTraitId ->
+            when (authTraitId) {
+                HttpBearerAuthTrait.ID -> if (hasServiceHttpBearerAuthTrait && hasOperationBearerAuthTrait) authList.add("auth-bearer")
+                SigV4Trait.ID -> if (hasServiceSigV4AuthTrait && hasOperationSigV4AuthTrait) authList.add("aws-sigv4")
+                SigV4ATrait.ID -> if (hasServiceSigV4AAuthTrait && hasOperationSigV4AAuthTrait) authList.add("aws-sigv4a")
+            }
         }
+        authList.ifEmpty { authList.add("no-auth") }
+
+        w.write(
+            "#T(#L, strategy = #T.FirstSuccessful) {",
+            RuntimeTypes.KtorServerAuth.authenticate,
+            authList.joinToString(", ") { "\"$it\"" },
+            RuntimeTypes.KtorServerAuth.AuthenticationStrategy,
+        )
     }
 
     private fun renderResponseCall(

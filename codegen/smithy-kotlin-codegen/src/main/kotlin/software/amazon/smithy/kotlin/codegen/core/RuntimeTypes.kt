@@ -561,6 +561,8 @@ object RuntimeTypes {
         val HttpStatusCode = symbol("HttpStatusCode")
         val parseAndSortHeader = symbol("parseAndSortHeader")
         val HttpHeaders = symbol("HttpHeaders")
+        val HeadersBuilder = symbol("HeadersBuilder")
+        val Parameters = symbol("Parameters")
         val Cbor = symbol("Cbor", "ContentType.Application")
         val Json = symbol("Json", "ContentType.Application")
     }
@@ -599,6 +601,7 @@ object RuntimeTypes {
         val AuthenticationProvider = symbol("AuthenticationProvider")
         val AuthenticationFailedCause = symbol("AuthenticationFailedCause")
         val AuthenticationContext = symbol("AuthenticationContext")
+        val AuthenticationStrategy = symbol("AuthenticationStrategy")
     }
 
     object KtorServerDoubleReceive : RuntimeTypePackage(KotlinDependency.KTOR_SERVER_DOUBLE_RECEIVE) {
