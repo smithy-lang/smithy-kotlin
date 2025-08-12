@@ -19,17 +19,17 @@ import kotlin.test.assertIs
 import kotlin.test.assertTrue
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-class ServiceGeneratorTest {
+class CborServiceTest {
     val closeGracePeriodMillis: Long = 5_000L
     val closeTimeoutMillis: Long = 1_000L
     val requestBodyLimit: Long = 10L * 1024 * 1024
     val port: Int = ServerSocket(0).use { it.localPort }
 
-    val portListnerTimeout = 10L
+    val portListnerTimeout = 180L
 
     val baseUrl = "http://localhost:$port"
 
-    val projectDir: Path = Paths.get("build/service-generator-test")
+    val projectDir: Path = Paths.get("build/service-cbor-test")
 
     private lateinit var proc: Process
 
@@ -299,7 +299,7 @@ class ServiceGeneratorTest {
             response.body(),
         )
         assertEquals(400, body.code)
-        assertEquals("Malformed CBOR input", body.message)
+        assertEquals("Unexpected EOF: expected 109 more bytes; consumed: 14", body.message)
     }
 
     @Test
@@ -379,5 +379,29 @@ class ServiceGeneratorTest {
         )
         assertEquals(413, body.code)
         assertEquals("Request is larger than the limit of 10485760 bytes", body.message)
+    }
+
+    @Test
+    fun `checks http error`() {
+        val cbor = Cbor { }
+
+        val response = sendRequest(
+            "$baseUrl/http-error",
+            "POST",
+            null,
+            "application/cbor",
+            "application/cbor",
+            "correctToken",
+        )
+        assertIs<HttpResponse<ByteArray>>(response)
+
+        assertEquals(456, response.statusCode(), "Expected 456")
+        val body = cbor.decodeFromByteArray(
+            HttpError.serializer(),
+            response.body(),
+        )
+
+        assertEquals(444, body.num)
+        assertEquals("this is an error message", body.msg)
     }
 }

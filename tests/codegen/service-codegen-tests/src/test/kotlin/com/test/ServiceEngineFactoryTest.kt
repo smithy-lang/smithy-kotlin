@@ -19,8 +19,8 @@ class ServiceEngineFactoryTest {
     val gracefulWindow = closeTimeoutMillis + closeGracePeriodMillis
     val requestBodyLimit: Long = 10L * 1024 * 1024
 
-    val portListnerTimeout = 180L
-    val projectDir: Path = Paths.get("build/service-generator-test")
+    val portListnerTimeout = 60L
+    val projectDir: Path = Paths.get("build/service-cbor-test")
 
     @Test
     fun `checks service with netty engine`() {

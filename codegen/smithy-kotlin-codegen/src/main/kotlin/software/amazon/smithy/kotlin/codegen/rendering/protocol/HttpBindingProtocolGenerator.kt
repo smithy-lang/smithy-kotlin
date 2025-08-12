@@ -120,6 +120,11 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         httpOperations.forEach { operation ->
             generateOperationSerializer(ctx, operation)
         }
+
+        if (ctx.settings.build.generateServiceProject) {
+            val modeledErrors = httpOperations.flatMap { it.errors }.map { ctx.model.expectShape(it) as StructureShape }.toSet()
+            modeledErrors.forEach { generateExceptionSerializer(ctx, it) }
+        }
     }
 
     private fun generateDeserializers(ctx: ProtocolGenerator.GenerationContext) {
@@ -131,13 +136,15 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         }
 
         // generate HttpDeserialize for exception types
-        val modeledErrors = httpOperations.flatMap { it.errors }.map { ctx.model.expectShape(it) as StructureShape }.toSet()
-        modeledErrors.forEach { generateExceptionDeserializer(ctx, it) }
+        if (!ctx.settings.build.generateServiceProject) {
+            val modeledErrors = httpOperations.flatMap { it.errors }.map { ctx.model.expectShape(it) as StructureShape }.toSet()
+            modeledErrors.forEach { generateExceptionDeserializer(ctx, it) }
+        }
     }
 
     override fun generateProtocolClient(ctx: ProtocolGenerator.GenerationContext) {
         if (ctx.settings.build.generateServiceProject) {
-            require(protocolName == "smithyRpcv2cbor") { "service project accepts only Cbor protocol" }
+            require(protocolName in listOf("smithyRpcv2cbor", "awsRestjson1")) { "service project accepts only Cbor or JSON protocol" }
         }
         if (!ctx.settings.build.generateServiceProject) {
             val symbol = ctx.symbolProvider.toSymbol(ctx.service)
@@ -185,17 +192,20 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         val serdeMeta = HttpSerdeMeta(op.isInputEventStream(ctx.model))
 
         ctx.delegator.useSymbolWriter(serializerSymbol) { writer ->
-            // FIXME: this works only for Cbor protocol now
             if (ctx.settings.build.generateServiceProject) {
+                val serializerResultSymbol = getHttpSerializerResultSymbol(protocolName)
+                val defaultResponse = getHttpSerializerDefaultResponse(protocolName)
+
                 writer
                     .openBlock("internal class #T {", serializerSymbol)
                     .call {
                         writer.openBlock(
-                            "public fun serialize(context: #T, input: #T): ByteArray {",
+                            "public fun serialize(context: #T, input: #T): #T {",
                             RuntimeTypes.Core.ExecutionContext,
                             serializationSymbol,
+                            serializerResultSymbol,
                         )
-                            .write("var response: Any")
+                            .write("var response: #T = $defaultResponse", serializerResultSymbol)
                             .call {
                                 renderSerializeHttpBody(ctx, op, writer)
                             }
@@ -236,11 +246,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
     ) {
         val resolver = getProtocolHttpBindingResolver(ctx.model, ctx.service)
         val httpTrait = resolver.httpTrait(op)
-        val bindings = if (ctx.settings.build.generateServiceProject) {
-            resolver.responseBindings(op)
-        } else {
-            resolver.requestBindings(op)
-        }
+        val bindings = resolver.requestBindings(op)
 
         writer
             .addImport(RuntimeTypes.Core.ExecutionContext)
@@ -291,13 +297,53 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
     }
 
     /**
+     * Generate HttpSerialize for a modeled error (exception)
+     */
+    private fun generateExceptionSerializer(ctx: ProtocolGenerator.GenerationContext, shape: StructureShape) {
+        val serializationSymbol = ctx.symbolProvider.toSymbol(shape)
+
+        val serializerSymbol = buildSymbol {
+            val deserializerName = "${serializationSymbol.name}Serializer"
+            definitionFile = "$deserializerName.kt"
+            name = deserializerName
+            namespace = ctx.settings.pkg.serde
+            reference(serializationSymbol, SymbolReference.ContextOption.DECLARE)
+        }
+
+        ctx.delegator.useSymbolWriter(serializerSymbol) { writer ->
+            val resolver = getProtocolHttpBindingResolver(ctx.model, ctx.service)
+            val bindings = resolver.responseBindings(shape)
+            val serializerResultSymbol = getHttpSerializerResultSymbol(protocolName)
+            val defaultResponse = getHttpSerializerDefaultResponse(protocolName)
+            writer.withBlock("internal class #T {", "}", serializerSymbol) {
+                writer.openBlock(
+                    "public fun serialize(context: #T, input: #T): #T {",
+                    RuntimeTypes.Core.ExecutionContext,
+                    serializationSymbol,
+                    serializerResultSymbol,
+                )
+                    .write("var response: #T = $defaultResponse", serializerResultSymbol)
+                    .call {
+                        renderExceptionSerializeBody(ctx, serializationSymbol, bindings, writer)
+                    }
+                    .write("return response")
+                    .closeBlock("}")
+            }
+        }
+    }
+
+    /**
      * Calls the operation body serializer function and binds the results to `builder.body`.
      * By default if no members are bound to the body this function renders nothing.
      * If there is a payload to render it should be bound to `builder.body` when this function returns
      */
     protected open fun renderSerializeHttpBody(ctx: ProtocolGenerator.GenerationContext, op: OperationShape, writer: KotlinWriter) {
         val resolver = getProtocolHttpBindingResolver(ctx.model, ctx.service)
-        if (!resolver.hasHttpBody(op)) return
+        if (ctx.settings.build.generateServiceProject) {
+            if (!resolver.hasHttpResponseBody(op)) return
+        } else {
+            if (!resolver.hasHttpRequestBody(op)) return
+        }
 
         // payload member(s)
         val bindings = if (ctx.settings.build.generateServiceProject) {
@@ -315,9 +361,35 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             val sdg = structuredDataSerializer(ctx)
             val opBodySerializerFn = sdg.operationSerializer(ctx, op, documentMembers)
             writer.write("val payload = #T(context, input)", opBodySerializerFn)
-            writer.write("builder.body = #T.fromBytes(payload)", RuntimeTypes.Http.HttpBody)
+            if (ctx.settings.build.generateServiceProject) {
+                writer.write("response = payload.decodeToString()")
+            } else {
+                writer.write("builder.body = #T.fromBytes(payload)", RuntimeTypes.Http.HttpBody)
+            }
         }
-        renderContentTypeHeader(ctx, op, writer, resolver)
+        if (!ctx.settings.build.generateServiceProject) {
+            renderContentTypeHeader(ctx, op, writer, resolver)
+        }
+    }
+
+    /**
+     * Calls the operation body serializer function and binds the results to `builder.body`.
+     * By default if no members are bound to the body this function renders nothing.
+     * If there is a payload to render it should be bound to `builder.body` when this function returns
+     */
+    protected open fun renderExceptionSerializeBody(
+        ctx: ProtocolGenerator.GenerationContext,
+        deserializationSymbol: Symbol,
+        bindings: List<HttpBindingDescriptor>,
+        writer: KotlinWriter,
+    ) {
+        val documentMembers = bindings.filterDocumentBoundMembers()
+        // Unbound document members that should be serialized into the document format for the protocol.
+        // delegate to the generate operation body serializer function
+        val sdg = structuredDataSerializer(ctx)
+        val exceptionBodySerializerFn = sdg.errorSerializer(ctx, deserializationSymbol.shape as StructureShape, documentMembers)
+        writer.write("val payload = #T(context, input)", exceptionBodySerializerFn)
+        writer.write("response = payload")
     }
 
     protected open fun renderContentTypeHeader(
@@ -535,7 +607,11 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                 if (isBinaryStream) {
                     writer.write("builder.body = input.#L.#T()", memberName, RuntimeTypes.Http.toHttpBody)
                 } else {
-                    writer.write("builder.body = #T.fromBytes(input.#L)", RuntimeTypes.Http.HttpBody, memberName)
+                    if (ctx.settings.build.generateServiceProject) {
+                        writer.write("response = input.#L.decodeToString()", memberName)
+                    } else {
+                        writer.write("builder.body = #T.fromBytes(input.#L)", RuntimeTypes.Http.HttpBody, memberName)
+                    }
                 }
             }
 
@@ -545,29 +621,46 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                 } else {
                     memberName
                 }
-                writer.write("builder.body = #T.fromBytes(input.#L.#T())", RuntimeTypes.Http.HttpBody, contents, KotlinTypes.Text.encodeToByteArray)
+                if (ctx.settings.build.generateServiceProject) {
+                    writer.write("response = input.#L", contents)
+                } else {
+                    writer.write("builder.body = #T.fromBytes(input.#L.#T())", RuntimeTypes.Http.HttpBody, contents, KotlinTypes.Text.encodeToByteArray)
+                }
             }
 
             ShapeType.ENUM ->
-                writer.write(
-                    "builder.body = #T.fromBytes(input.#L.value.#T())",
-                    RuntimeTypes.Http.HttpBody,
-                    memberName,
-                    KotlinTypes.Text.encodeToByteArray,
-                )
+                if (ctx.settings.build.generateServiceProject) {
+                    writer.write("response = input.#L.value.toString()", memberName)
+                } else {
+                    writer.write(
+                        "builder.body = #T.fromBytes(input.#L.value.#T())",
+                        RuntimeTypes.Http.HttpBody,
+                        memberName,
+                        KotlinTypes.Text.encodeToByteArray,
+                    )
+                }
+
             ShapeType.INT_ENUM ->
-                writer.write(
-                    "builder.body = #T.fromBytes(input.#L.value.toString().#T())",
-                    RuntimeTypes.Http.HttpBody,
-                    memberName,
-                    KotlinTypes.Text.encodeToByteArray,
-                )
+                if (ctx.settings.build.generateServiceProject) {
+                    writer.write("response = input.#L.value.toString()", memberName)
+                } else {
+                    writer.write(
+                        "builder.body = #T.fromBytes(input.#L.value.toString().#T())",
+                        RuntimeTypes.Http.HttpBody,
+                        memberName,
+                        KotlinTypes.Text.encodeToByteArray,
+                    )
+                }
 
             ShapeType.STRUCTURE, ShapeType.UNION, ShapeType.DOCUMENT -> {
                 val sdg = structuredDataSerializer(ctx)
                 val payloadSerializerFn = sdg.payloadSerializer(ctx, binding.member)
                 writer.write("val payload = #T(input.#L)", payloadSerializerFn, memberName)
-                writer.write("builder.body = #T.fromBytes(payload)", RuntimeTypes.Http.HttpBody)
+                if (ctx.settings.build.generateServiceProject) {
+                    writer.write("response = payload.decodeToString()")
+                } else {
+                    writer.write("builder.body = #T.fromBytes(payload)", RuntimeTypes.Http.HttpBody)
+                }
             }
 
             else ->
@@ -689,25 +782,13 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             } else {
                 resolver.responseBindings(shape)
             }
-
-            when (ctx.settings.build.generateServiceProject) {
-                true ->
-                    writer
-                        .addImport(exceptionDeserializerSymbols)
-                        .write("")
-                        .openBlock("internal class #T {", deserializerSymbol)
-                        .write("")
-                        .call { renderServiceHttpDeserialize(ctx, deserializationSymbol, bindings, serdeMeta, null, writer) }
-                        .closeBlock("}")
-                false ->
-                    writer
-                        .addImport(exceptionDeserializerSymbols)
-                        .write("")
-                        .openBlock("internal class #T: #T.NonStreaming<#T> {", deserializerSymbol, RuntimeTypes.HttpClient.Operation.HttpDeserializer, deserializationSymbol)
-                        .write("")
-                        .call { renderHttpDeserialize(ctx, deserializationSymbol, bindings, serdeMeta, null, writer) }
-                        .closeBlock("}")
-            }
+            writer
+                .addImport(exceptionDeserializerSymbols)
+                .write("")
+                .openBlock("internal class #T: #T.NonStreaming<#T> {", deserializerSymbol, RuntimeTypes.HttpClient.Operation.HttpDeserializer, deserializationSymbol)
+                .write("")
+                .call { renderHttpDeserialize(ctx, deserializationSymbol, bindings, serdeMeta, null, writer) }
+                .closeBlock("}")
         }
     }
 
@@ -796,13 +877,15 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
     ) {
         writer
             .openBlock(
-                "public fun deserialize(context: #T, payload: #T?): #T {",
+                "public fun deserialize(context: #T, call: #T, payload: #T?): #T {",
                 RuntimeTypes.Core.ExecutionContext,
+                RuntimeTypes.KtorServerCore.ApplicationCallClass,
                 KotlinTypes.ByteArray,
                 deserializationSymbol,
             )
 
-        writer.write("val builder = #T.Builder()", deserializationSymbol)
+        writer.write("val request = call.request")
+            .write("val builder = #T.Builder()", deserializationSymbol)
             .write("")
             .call {
                 // headers
@@ -925,13 +1008,11 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             } else {
                 ""
             }
-//            FIXME: Service supports only CBOR now. Modify this part to support service for other data format.
-//            val message = if (ctx.settings.build.generateServiceProject) {
-//                "request"
-//            } else {
-//                "response"
-//            }
-            val message = "response"
+            val message = if (ctx.settings.build.generateServiceProject) {
+                "request"
+            } else {
+                "response"
+            }
             when (memberTarget) {
                 is NumberShape -> {
                     if (memberTarget is IntEnumShape) {
@@ -1077,13 +1158,12 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         } else {
             ""
         }
-//        FIXME: Service supports only CBOR now. Modify this part to support service for other data format.
-//        val message = if (ctx.settings.build.generateServiceProject) {
-//            "request"
-//        } else {
-//            "response"
-//        }
-        val message = "response"
+
+        val message = if (ctx.settings.build.generateServiceProject) {
+            "request"
+        } else {
+            "response"
+        }
         writer.write("val $keyCollName = $message.headers.names()$filter")
         writer.openBlock("if ($keyCollName.isNotEmpty()) {")
             .write("val map = mutableMapOf<String, #T>()", targetValueSymbol)
@@ -1263,4 +1343,16 @@ private fun httpDeserializerInfo(ctx: ProtocolGenerator.GenerationContext, op: O
         op.isOutputEventStream(ctx.model)
 
     return HttpSerdeMeta(isStreaming)
+}
+
+private fun getHttpSerializerResultSymbol(protocolName: String) = when (protocolName) {
+    "smithyRpcv2cbor" -> KotlinTypes.ByteArray
+    "awsRestjson1" -> KotlinTypes.String
+    else -> error("service project accepts only Cbor or JSON protocol")
+}
+
+private fun getHttpSerializerDefaultResponse(protocolName: String) = when (protocolName) {
+    "smithyRpcv2cbor" -> "ByteArray(0)"
+    "awsRestjson1" -> "\"\""
+    else -> error("service project accepts only Cbor or JSON protocol")
 }

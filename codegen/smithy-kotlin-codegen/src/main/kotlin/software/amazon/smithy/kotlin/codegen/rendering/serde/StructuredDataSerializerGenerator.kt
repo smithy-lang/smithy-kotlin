@@ -10,6 +10,7 @@ import software.amazon.smithy.kotlin.codegen.rendering.protocol.ProtocolGenerato
 import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.shapes.Shape
+import software.amazon.smithy.model.shapes.StructureShape
 
 /**
  * Responsible for rendering serialization of structured data (e.g. json, yaml, xml).
@@ -56,4 +57,27 @@ interface StructuredDataSerializerGenerator {
         shape: Shape,
         members: Collection<MemberShape>? = null,
     ): Symbol
+
+    /**
+     * Render function responsible for serializing members bound to the payload for the given error shape.
+     *
+     * Because only a subset of fields of an operation error may be bound to the payload a builder is given
+     * as an argument.
+     *
+     * ```
+     * fun serializeFooError(builder: FooError.Builder, payload: ByteArray) {
+     *     ...
+     * }
+     * ```
+     *
+     * Implementations are expected to instantiate an appropriate serializer for the protocol and serialize
+     * the error shape from the payload using the builder passed in.
+     *
+     * @param ctx the protocol generator context
+     * @param errorShape the error shape to render deserialize for
+     * @param members the members of the error shape that are bound to the payload. Not all members are
+     * bound to the document, some may be bound to e.g. headers, status code, etc
+     * @return the generated symbol which should be a function matching the signature expected for the protocol
+     */
+    fun errorSerializer(ctx: ProtocolGenerator.GenerationContext, errorShape: StructureShape, members: List<MemberShape>): Symbol
 }

@@ -98,6 +98,14 @@ private class Ec2QuerySerializerGenerator(
         members: List<MemberShape>,
         writer: KotlinWriter,
     ): FormUrlSerdeDescriptorGenerator = Ec2QuerySerdeFormUrlDescriptorGenerator(ctx.toRenderingContext(protocolGenerator, shape, writer), members)
+
+    override fun errorSerializer(
+        ctx: ProtocolGenerator.GenerationContext,
+        errorShape: StructureShape,
+        members: List<MemberShape>,
+    ): Symbol {
+        TODO("Used for service-codegen. Not yet implemented")
+    }
 }
 
 private class Ec2QueryParserGenerator(
