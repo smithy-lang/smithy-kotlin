@@ -25,7 +25,7 @@
     "software.amazon.smithy:smithy-waiters:1.*": "Maven-software-amazon-smithy_smithy-waiters-1.x",
     "software.amazon.smithy:smithy-rules-engine:1.*": "Maven-software-amazon-smithy_smithy-rules-engine-1.x",
     "software.amazon.smithy:smithy-smoke-test-traits:1.*": "Maven-software-amazon-smithy_smithy-smoke-test-traits-1.x",
-    "org.jsoup:jsoup:1.19.*": "Maven-jsoup-1.19.x"
+    "org.jsoup:jsoup:1.*": "Maven-jsoup-1.x"
   },
   "packageHandlingRules": {
     "versioning": {
