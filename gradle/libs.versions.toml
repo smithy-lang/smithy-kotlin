@@ -28,7 +28,7 @@ kotlinx-benchmark-version = "0.4.14"
 kotlinx-serialization-version = "1.9.0"
 docker-java-version = "3.5.3"
 ktor-version = "3.2.3"
-kaml-version = "0.55.0"
+kaml-version = "0.85.0"
 jsoup-version = "1.21.1"
 
 [libraries]
