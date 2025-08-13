@@ -180,6 +180,10 @@ jobs:
         with:
           working-directory: 'smithy-kotlin'
 
+      - name: Configure CRT Docker Images
+        run: |
+          ./aws-crt-kotlin/docker-images/build-all.sh
+
       - name: Test
         working-directory: ./smithy-kotlin
         shell: bash
