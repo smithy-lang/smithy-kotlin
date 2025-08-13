@@ -40,7 +40,6 @@ jobs:
       - name: Put Artifact Size Metrics in CloudWatch
         run: ./gradlew putArtifactSizeMetricsInCloudWatch -Prelease=${{ github.event.release.tag_name }}
   size-check:
-    if: github.event_name == 'pull_request_target'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Sources

@@ -184,11 +184,9 @@ jobs:
         working-directory: ./smithy-kotlin
         shell: bash
         run: |
-          # FIXME K2. Re-enable warnings as errors after this warning is removed: https://youtrack.jetbrains.com/issue/KT-68532
-          # echo "kotlinWarningsAsErrors=true" >> $GITHUB_WORKSPACE/local.properties
-          ./gradlew -Paws.kotlin.native=false apiCheck
-          ./gradlew -Paws.kotlin.native=false test jvmTest
-
+          echo "kotlinWarningsAsErrors=true" >> $GITHUB_WORKSPACE/local.properties
+          ./gradlew apiCheck
+          ./gradlew test jvmTest
       - name: Save Test Reports
         if: failure()
         uses: actions/upload-artifact@v4
@@ -243,7 +241,6 @@ jobs:
         # smithy-kotlin is checked out as a sibling dir which will automatically make it an included build
         path: 'aws-sdk-kotlin'
         repository: 'awslabs/aws-sdk-kotlin'
-
     - name: Configure Gradle - smithy-kotlin
       uses: awslabs/aws-kotlin-repo-tools/.github/actions/configure-gradle@main
       with:
