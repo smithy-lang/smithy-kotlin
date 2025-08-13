@@ -33,9 +33,6 @@ public final class aws/smithy/kotlin/runtime/ErrorMetadata$Companion {
 public abstract interface annotation class aws/smithy/kotlin/runtime/ExperimentalApi : java/lang/annotation/Annotation {
 }
 
-public abstract interface annotation class aws/smithy/kotlin/runtime/IgnoreNative : java/lang/annotation/Annotation {
-}
-
 public abstract interface annotation class aws/smithy/kotlin/runtime/InternalApi : java/lang/annotation/Annotation {
 }
 
