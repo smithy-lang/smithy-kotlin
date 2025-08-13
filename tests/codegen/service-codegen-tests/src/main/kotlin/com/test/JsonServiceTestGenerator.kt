@@ -190,14 +190,19 @@ internal fun generateJsonServiceTest() {
     val bearerValidation = """
         package $packageName.auth
         
-        import aws.smithy.kotlin.runtime.auth.awscredentials.Credentials
-        
         internal object BearerValidation {
             public fun bearerValidation(token: String): UserPrincipal? {
                 // TODO: implement me
                 if (token == "correctToken") return UserPrincipal("Authenticated User") else return null
             }
         }
+    """.trimIndent()
+    manifest.writeFile("src/main/kotlin/$packagePath/auth/Validation.kt", bearerValidation)
+
+    val AWSValidation = """
+        package $packageName.auth
+        
+        import aws.smithy.kotlin.runtime.auth.awscredentials.Credentials
         
         internal object SigV4CredentialStore {
             private val table: Map<String, Credentials> = mapOf(
@@ -232,7 +237,7 @@ internal fun generateJsonServiceTest() {
             }
         }
     """.trimIndent()
-    manifest.writeFile("src/main/kotlin/$packagePath/auth/Validation.kt", bearerValidation)
+    manifest.writeFile("src/main/kotlin/$packagePath/auth/AWSValidation.kt", AWSValidation)
 
     val settingGradleKts = """
         rootProject.name = "service-json-test"

@@ -15,17 +15,17 @@ internal interface ServiceStubGenerator {
 }
 
 internal abstract class AbstractStubGenerator(
-    protected val ctx: GenerationContext,
-    protected val delegator: KotlinDelegator,
-    protected val fileManifest: FileManifest,
+    val ctx: GenerationContext,
+    val delegator: KotlinDelegator,
+    val fileManifest: FileManifest,
 ) : ServiceStubGenerator {
 
-    protected val serviceShape = ctx.settings.getService(ctx.model)
-    protected val operations = TopDownIndex.of(ctx.model)
+    val serviceShape = ctx.settings.getService(ctx.model)
+    val operations = TopDownIndex.of(ctx.model)
         .getContainedOperations(serviceShape)
         .sortedBy { it.defaultName() }
 
-    protected val pkgName = ctx.settings.pkg.name
+    val pkgName = ctx.settings.pkg.name
 
     final override fun render() {
         renderServiceFrameworkConfig()
