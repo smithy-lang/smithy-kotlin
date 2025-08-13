@@ -3,9 +3,9 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 import aws.sdk.kotlin.gradle.dsl.configurePublishing
-import aws.sdk.kotlin.gradle.kmp.*
-import org.gradle.kotlin.dsl.apply
-import org.gradle.kotlin.dsl.withType
+import aws.sdk.kotlin.gradle.kmp.configureKmpTargets
+import aws.sdk.kotlin.gradle.kmp.kotlin
+import aws.sdk.kotlin.gradle.kmp.needsKmpConfigured
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.targets.native.tasks.KotlinNativeSimulatorTest
 
@@ -117,6 +117,18 @@ subprojects {
      */
     tasks.withType<KotlinNativeSimulatorTest> {
         enabled = false
+    }
+
+    tasks.withType<AbstractTestTask> {
+        if (this is Test) useJUnitPlatform()
+
+        testLogging {
+            events("passed", "skipped", "failed")
+            showStandardStreams = true
+            showStackTraces = true
+            showExceptions = true
+            exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
+        }
     }
 }
 
