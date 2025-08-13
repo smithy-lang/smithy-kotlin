@@ -22,7 +22,7 @@ val AwsChunkedReaderFactory.Companion.Source: AwsChunkedReaderFactory
             // Override read function to track totalBytesTransferred for testing
             override suspend fun read(sink: SdkBuffer, limit: Long): Long {
                 chunked.read(sink, limit)
-                return chunked.getTotalBytesTransferred()
+                return chunked.totalBytesTransferred
             }
         }
     }

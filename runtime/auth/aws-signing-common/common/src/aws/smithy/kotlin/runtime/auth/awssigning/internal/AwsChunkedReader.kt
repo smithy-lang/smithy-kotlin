@@ -71,6 +71,9 @@ internal class AwsChunkedReader(
      * @return true if the [chunk] is valid for reading, false if it's invalid (chunk data is exhausted)
      */
     internal suspend fun ensureValidChunk(): Boolean {
+        // Reset metadata bytes counter
+        chunkMetadataBytes = 0
+
         // check if the current chunk is still valid
         if (chunk.size > 0L) return true
 

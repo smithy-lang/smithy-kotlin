@@ -18,6 +18,7 @@ public final class aws/smithy/kotlin/runtime/auth/awssigning/AwsChunkedByteReadC
 	public fun isClosedForRead ()Z
 	public fun isClosedForWrite ()Z
 	public fun read (Laws/smithy/kotlin/runtime/io/SdkBuffer;JLkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public final fun setTotalBytesTransferred (J)V
 }
 
 public final class aws/smithy/kotlin/runtime/auth/awssigning/AwsChunkedSource : aws/smithy/kotlin/runtime/io/SdkSource {
@@ -26,6 +27,7 @@ public final class aws/smithy/kotlin/runtime/auth/awssigning/AwsChunkedSource : 
 	public fun close ()V
 	public final fun getTotalBytesTransferred ()J
 	public fun read (Laws/smithy/kotlin/runtime/io/SdkBuffer;J)J
+	public final fun setTotalBytesTransferred (J)V
 }
 
 public final class aws/smithy/kotlin/runtime/auth/awssigning/AwsSignatureType : java/lang/Enum {
