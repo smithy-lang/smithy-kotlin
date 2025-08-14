@@ -2,11 +2,15 @@ package software.amazon.smithy.kotlin.codegen.service.ktor
 
 import software.amazon.smithy.aws.traits.auth.SigV4ATrait
 import software.amazon.smithy.aws.traits.auth.SigV4Trait
+import software.amazon.smithy.codegen.core.SymbolReference
 import software.amazon.smithy.kotlin.codegen.core.KotlinWriter
 import software.amazon.smithy.kotlin.codegen.core.RuntimeTypes
 import software.amazon.smithy.kotlin.codegen.core.withBlock
 import software.amazon.smithy.kotlin.codegen.core.withInlineBlock
+import software.amazon.smithy.kotlin.codegen.model.buildSymbol
 import software.amazon.smithy.kotlin.codegen.model.getTrait
+import software.amazon.smithy.kotlin.codegen.rendering.serde.deserializerName
+import software.amazon.smithy.kotlin.codegen.rendering.serde.serializerName
 import software.amazon.smithy.kotlin.codegen.service.KtorStubGenerator
 import software.amazon.smithy.kotlin.codegen.service.MediaType
 import software.amazon.smithy.kotlin.codegen.service.MediaType.ANY
@@ -32,17 +36,9 @@ import software.amazon.smithy.model.traits.TimestampFormatTrait
 
 internal fun KtorStubGenerator.writeRouting() {
     delegator.useFileWriter("Routing.kt", pkgName) { writer ->
-
         operations.forEach { shape ->
-            writer.addImport("$pkgName.serde", "${shape.id.name}OperationDeserializer")
-            writer.addImport("$pkgName.serde", "${shape.id.name}OperationSerializer")
             writer.addImport("$pkgName.constraints", "check${shape.id.name}RequestConstraint")
-            writer.addImport("$pkgName.model", "${shape.id.name}Request")
-            writer.addImport("$pkgName.model", "${shape.id.name}Response")
             writer.addImport("$pkgName.operations", "handle${shape.id.name}Request")
-            shape.errors.forEach { error ->
-                writer.addImport("$pkgName.serde", "${error.name}Serializer")
-            }
         }
 
         writer.withBlock("internal fun #T.configureRouting(): Unit {", "}", RuntimeTypes.KtorServerCore.Application) {
@@ -52,6 +48,25 @@ internal fun KtorStubGenerator.writeRouting() {
                 }
                 operations.filter { it.hasTrait(HttpTrait.ID) }
                     .forEach { shape ->
+                        val inputShape = ctx.model.expectShape(shape.input.get())
+                        val inputSymbol = ctx.symbolProvider.toSymbol(inputShape)
+
+                        val outputShape = ctx.model.expectShape(shape.output.get())
+                        val outputSymbol = ctx.symbolProvider.toSymbol(outputShape)
+
+                        val serializerSymbol = buildSymbol {
+                            definitionFile = "${shape.serializerName()}.kt"
+                            name = shape.serializerName()
+                            namespace = ctx.settings.pkg.serde
+                            reference(inputSymbol, SymbolReference.ContextOption.DECLARE)
+                        }
+                        val deserializerSymbol = buildSymbol {
+                            definitionFile = "${shape.deserializerName()}.kt"
+                            name = shape.deserializerName()
+                            namespace = ctx.settings.pkg.serde
+                            reference(outputSymbol, SymbolReference.ContextOption.DECLARE)
+                        }
+
                         val httpTrait = shape.getTrait<HttpTrait>()!!
 
                         val uri = httpTrait.uri
@@ -99,7 +114,7 @@ internal fun KtorStubGenerator.writeRouting() {
                                             RuntimeTypes.KtorServerCore.applicationCall,
                                             RuntimeTypes.KtorServerRouting.requestReceive,
                                         )
-                                        write("val deserializer = ${shape.id.name}OperationDeserializer()")
+                                        write("val deserializer = #T()", deserializerSymbol)
                                         withBlock(
                                             "var requestObj = try { deserializer.deserialize(#T(), call, request) } catch (ex: Exception) {",
                                             "}",
@@ -124,7 +139,7 @@ internal fun KtorStubGenerator.writeRouting() {
                                             "Error while validating constraints",
                                         )
                                         write("val responseObj = handle${shape.id.name}Request(requestObj)")
-                                        write("val serializer = ${shape.id.name}OperationSerializer()")
+                                        write("val serializer = #T()", serializerSymbol)
                                         withBlock(
                                             "val response = try { serializer.serialize(#T(), responseObj) } catch (ex: Exception) {",
                                             "}",
@@ -151,13 +166,19 @@ internal fun KtorStubGenerator.writeRouting() {
                                             write("else -> null")
                                         }
                                         write("")
-                                        write("")
                                         writeInline("val errorResponse: Pair<Any, Int>? = ")
                                         withBlock("when (errorObj) {", "}") {
                                             shape.errors.forEach { errorShapeId ->
                                                 val errorShape = ctx.model.expectShape(errorShapeId)
                                                 val errorSymbol = ctx.symbolProvider.toSymbol(errorShape)
-                                                write("is #T -> Pair(${errorShapeId.name}Serializer().serialize(#T(), errorObj), ${errorShape.getTrait<HttpErrorTrait>()?.code})", errorSymbol, RuntimeTypes.Core.ExecutionContext)
+                                                val exceptionSymbol = buildSymbol {
+                                                    val exceptionName = "${errorSymbol.name}Serializer"
+                                                    definitionFile = "$errorSymbol.kt"
+                                                    name = exceptionName
+                                                    namespace = ctx.settings.pkg.serde
+                                                    reference(errorSymbol, SymbolReference.ContextOption.DECLARE)
+                                                }
+                                                write("is #T -> Pair(#T().serialize(#T(), errorObj), ${errorShape.getTrait<HttpErrorTrait>()?.code})", errorSymbol, exceptionSymbol, RuntimeTypes.Core.ExecutionContext)
                                             }
                                             write("else -> null")
                                         }
@@ -255,7 +276,6 @@ private fun KtorStubGenerator.readHttpQuery(shape: OperationShape, writer: Kotli
         val httpQueryParamsMemberName = httpQueryParamsMember.memberName
         val httpQueryParamsMapShape = ctx.model.expectShape(httpQueryParamsMember.target) as MapShape
         val httpQueryParamsMapValueTypeShape = ctx.model.expectShape(httpQueryParamsMapShape.value.target)
-        println(httpQueryParamsMapShape)
         val httpQueryKeysLiteral = httpQueryKeys.joinToString(", ") { "\"$it\"" }
         writer.withInlineBlock("$httpQueryParamsMemberName = call.request.queryParameters.entries().filter { (key, _) ->", "}") {
             write("key !in setOf($httpQueryKeysLiteral)")

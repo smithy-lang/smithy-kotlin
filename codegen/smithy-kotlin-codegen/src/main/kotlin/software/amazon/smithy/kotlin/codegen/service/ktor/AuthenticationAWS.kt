@@ -270,8 +270,15 @@ internal fun KtorStubGenerator.writeAWSAuthentication() {
                 write("")
                 withBlock("fun matchesRegion(pattern: String, value: String): Boolean {", "}") {
                     write("if (pattern == #S) return true", "*")
-                    write("val rx = Regex(#S + Regex.escape(pattern).replace(#S, #S) + #S, RegexOption.IGNORE_CASE)\n", "^", "\\*", ".*", "$")
-                    write("return rx.matches(value)")
+                    write("val normalized = pattern.trim().replace(Regex(#S), #S)", "\\*+", "*")
+                    write("val sb = StringBuilder(#S)", "^")
+                    write("val parts = normalized.split(#S)", "*")
+                    withBlock("parts.forEachIndexed { i, part ->", "}") {
+                        write("sb.append(Regex.escape(part))")
+                        write("if (i < parts.lastIndex) sb.append(#S)", "[^-]+")
+                    }
+                    write("sb.append(#S)", "$")
+                    write("return Regex(sb.toString(), RegexOption.IGNORE_CASE).matches(value.trim())")
                 }
                 write("if (regionSet.none { matchesRegion(it, region.lowercase()) }) return null")
                 write("")

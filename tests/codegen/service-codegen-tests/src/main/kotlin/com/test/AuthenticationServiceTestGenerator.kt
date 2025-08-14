@@ -10,16 +10,16 @@ import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
 
-internal fun generateServiceConstraintsTest() {
-    val modelPath: Path = Paths.get("model", "service-constraints-test.smithy")
+internal fun generateAuthenticationConstraintsTest() {
+    val modelPath: Path = Paths.get("model", "service-authentication-test.smithy")
     val defaultModel = ModelAssembler()
         .discoverModels()
         .addImport(modelPath)
         .assemble()
         .unwrap()
-    val serviceName = "ServiceConstraintsTest"
-    val packageName = "com.constraints"
-    val outputDirName = "service-constraints-test"
+    val serviceName = "AuthenticationServiceTest"
+    val packageName = "com.authentication"
+    val outputDirName = "service-authentication-test"
 
     val packagePath = packageName.replace('.', '/')
 
@@ -114,7 +114,7 @@ internal fun generateServiceConstraintsTest() {
     manifest.writeFile("src/main/kotlin/$packagePath/auth/AWSValidation.kt", awsValidation)
 
     val settingGradleKts = """
-        rootProject.name = "service-constraints-test"
+        rootProject.name = "service-authentication-test"
         includeBuild("../../../../../")
     """.trimIndent()
     manifest.writeFile("settings.gradle.kts", settingGradleKts)

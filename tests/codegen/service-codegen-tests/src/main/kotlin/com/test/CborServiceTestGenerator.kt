@@ -123,7 +123,7 @@ internal fun generateCborServiceTest() {
     """.trimIndent()
     manifest.writeFile("src/main/kotlin/$packagePath/auth/Validation.kt", bearerValidation)
 
-    val AWSValidation = """
+    val awsValidation = """
         package $packageName.auth
         
         import aws.smithy.kotlin.runtime.auth.awscredentials.Credentials
@@ -161,7 +161,7 @@ internal fun generateCborServiceTest() {
             }
         }
     """.trimIndent()
-    manifest.writeFile("src/main/kotlin/$packagePath/auth/AWSValidation.kt", AWSValidation)
+    manifest.writeFile("src/main/kotlin/$packagePath/auth/AWSValidation.kt", awsValidation)
 
     val settingGradleKts = """
         rootProject.name = "service-cbor-test"

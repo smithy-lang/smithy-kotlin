@@ -84,7 +84,7 @@ private fun KtorStubGenerator.renderErrorHandler() {
                         write("if (call.attributes.getOrNull(#T) == true) { return@status }", ServiceTypes(pkgName).responseHandledKey)
                         write("call.attributes.put(#T, true)", ServiceTypes(pkgName).responseHandledKey)
                         write("val missing = call.request.headers[#S].isNullOrBlank()", "Authorization")
-                        write("val message = if (missing) #S else #S", "Missing bearer token", "Invalid or expired bearer token")
+                        write("val message = if (missing) #S else #S", "Missing bearer token", "Invalid or expired authentication")
                         write("call.respondEnvelope( ErrorEnvelope(status.value, message), status )")
                     }
                     write("")

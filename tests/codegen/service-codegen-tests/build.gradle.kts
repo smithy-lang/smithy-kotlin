@@ -37,6 +37,7 @@ tasks.test {
 kotlin {
     compilerOptions {
         freeCompilerArgs.addAll(
+            "-opt-in=aws.smithy.kotlin.runtime.InternalApi",
             "-opt-in=kotlin.io.path.ExperimentalPathApi",
             "-opt-in=kotlinx.serialization.ExperimentalSerializationApi",
         )
@@ -61,6 +62,9 @@ dependencies {
     testImplementation(project(":codegen:smithy-kotlin-codegen-testutils"))
     testImplementation(project(":codegen:smithy-kotlin-codegen"))
     testImplementation(project(":codegen:smithy-aws-kotlin-codegen"))
+    testApi(project(":runtime:auth:aws-signing-common"))
+    testApi(project(":runtime:auth:http-auth-aws"))
+    testApi(project(":runtime:auth:aws-signing-default"))
 
     testImplementation(gradleTestKit())
 
