@@ -1,5 +1,6 @@
 package com.test
 
+import aws.smithy.kotlin.runtime.InternalApi
 import aws.smithy.kotlin.runtime.auth.awscredentials.Credentials
 import aws.smithy.kotlin.runtime.auth.awssigning.AwsSignatureType
 import aws.smithy.kotlin.runtime.auth.awssigning.AwsSignedBodyHeader
@@ -99,10 +100,9 @@ internal fun cleanupService(proc: Process, gracefulWindow: Long = 5_000L) {
 
 private fun isWindows() = System.getProperty("os.name").lowercase().contains("windows")
 
-internal fun waitForPort(port: Int, timeoutSec: Long = 180, proc: Process? = null): Boolean {
+internal fun waitForPort(port: Int, timeoutSec: Long = 180): Boolean {
     val deadline = System.currentTimeMillis() + TimeUnit.SECONDS.toNanos(timeoutSec)
     while (System.currentTimeMillis() < deadline) {
-        proc?.inputStream?.bufferedReader()?.forEachLine { println(it) }
         try {
             Socket("localhost", port).use {
                 return true // Port is available
@@ -125,6 +125,7 @@ data class AwsSigningOptions(
     val normalizeUriPath: Boolean = true,
 )
 
+@OptIn(InternalApi::class)
 internal fun sendRequest(
     url: String,
     method: String,

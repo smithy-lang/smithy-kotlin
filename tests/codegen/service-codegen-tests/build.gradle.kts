@@ -37,7 +37,6 @@ tasks.test {
 kotlin {
     compilerOptions {
         freeCompilerArgs.addAll(
-            "-opt-in=aws.smithy.kotlin.runtime.InternalApi",
             "-opt-in=kotlin.io.path.ExperimentalPathApi",
             "-opt-in=kotlinx.serialization.ExperimentalSerializationApi",
         )
