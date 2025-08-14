@@ -181,8 +181,23 @@ jobs:
           working-directory: 'smithy-kotlin'
 
       - name: Configure CRT Docker Images
+        if: ${{ matrix.os != 'macos-latest' }}
         run: |
           ./aws-crt-kotlin/docker-images/build-all.sh
+
+      - name: Sanity checks
+        shell: bash
+        run: |
+          echo "Dumping current directory:"
+          ls .
+
+          echo ""
+          echo "Dumping parent directory:"
+          ls ..
+
+          echo ""
+          echo "Dumping grandparent directory:"
+          ls ../..
 
       - name: Test
         working-directory: ./smithy-kotlin
