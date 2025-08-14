@@ -1075,6 +1075,7 @@ public final class aws/smithy/kotlin/runtime/io/SdkSourceJVMKt {
 }
 
 public final class aws/smithy/kotlin/runtime/io/SdkSourceKt {
+	public static final fun readAll (Laws/smithy/kotlin/runtime/io/SdkSource;Laws/smithy/kotlin/runtime/io/SdkSink;)J
 	public static final fun readFully (Laws/smithy/kotlin/runtime/io/SdkSource;Laws/smithy/kotlin/runtime/io/SdkBuffer;J)V
 }
 

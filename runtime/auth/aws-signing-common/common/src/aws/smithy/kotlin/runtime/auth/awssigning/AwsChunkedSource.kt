@@ -47,7 +47,8 @@ public class AwsChunkedSource(
             chunkReader.ensureValidChunk()
         }
         if (!isChunkValid) return -1L
-        return chunkReader.chunk.read(sink, limit)
+        chunkReader.chunk.read(sink, limit)
+        return chunkReader.readCountAndReset()
     }
 
     override fun close() {
