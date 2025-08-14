@@ -95,51 +95,23 @@ tasks.generateSmithyProjections {
     }
 }
 
-abstract class ProtocolTestTask @Inject constructor(private val project: Project) : DefaultTask() {
-    /**
-     * The projection
-     */
-    @get:Input
-    abstract val projectionName: Property<String>
-
-    /**
-     * The projection root directory
-     */
-    @get:Input
-    abstract val projectionRootDirectory: Property<String>
-
-    @TaskAction
-    fun runTests() {
-        val projectionRootDir = project.file(projectionRootDirectory.get())
-        println("[$projectionName] buildDir: $projectionRootDir")
-        if (!projectionRootDir.exists()) {
-            throw GradleException("$projectionRootDir does not exist")
-        }
-        val wrapper = if (System.getProperty("os.name").lowercase().contains("windows")) "gradlew.bat" else "gradlew"
-        val gradlew = project.rootProject.file(wrapper).absolutePath
-
-        // NOTE - this still requires us to publish to maven local.
-        providers.exec {
-            workingDir = projectionRootDir
-            executable = gradlew
-            args = listOf("test")
-        }
-    }
-}
-
-smithyBuild.projections.forEach {
-    val protocolName = it.name
-
-    tasks.register<ProtocolTestTask>("testProtocol-$protocolName") {
+val generateProtocolTestProjectionTasks = smithyBuild.projections.map { projection ->
+    tasks.register<Exec>("testProtocol-${projection.name}") {
         dependsOn(tasks.generateSmithyProjections)
         group = "Verification"
-        projectionName.set(it.name)
-        projectionRootDirectory.set(smithyBuild.smithyKotlinProjectionPath(it.name).map { it.toString() })
+
+        val wrapper = if (System.getProperty("os.name").lowercase().contains("windows")) "gradlew.bat" else "gradlew"
+        val gradlew = rootProject.file(wrapper)
+
+        val projDir = smithyBuild.smithyKotlinProjectionPath(projection.name).map { it.toString() }
+        workingDir = file(projDir.get())
+
+        // NOTE - this still requires us to publish to maven local.
+        commandLine(gradlew, "test")
     }
 }
 
 tasks.register("testAllProtocols") {
     group = "Verification"
-    val allTests = tasks.withType<ProtocolTestTask>()
-    dependsOn(allTests)
+    dependsOn(generateProtocolTestProjectionTasks)
 }
