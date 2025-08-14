@@ -110,9 +110,9 @@ val startTestServers = task<LocalTestServers>("startTestServers") {
 val testTasks = listOf("allTests", "jvmTest")
     .forEach {
         tasks.named(it) {
-            dependsOn("startTestServers")
+            dependsOn(startTestServers)
             doLast {
-                (project.tasks.getByName("startTestServers") as LocalTestServers).stop()
+                startTestServers.stop()
             }
         }
     }
@@ -120,9 +120,7 @@ val testTasks = listOf("allTests", "jvmTest")
 tasks.jvmTest {
     // set test environment for proxy tests
     systemProperty("MITM_PROXY_SCRIPTS_ROOT", projectDir.resolve("proxy-scripts").absolutePath)
-    systemProperty("SSL_CONFIG_PATH", providers.provider { 
-        (tasks.getByName("startTestServers") as LocalTestServers).sslConfigPath 
-    })
+    systemProperty("SSL_CONFIG_PATH", startTestServers.sslConfigPath)
 
     val enableProxyTestsProp = "aws.test.http.enableProxyTests"
     val runningInCodeBuild = System.getenv().containsKey("CODEBUILD_BUILD_ID")
