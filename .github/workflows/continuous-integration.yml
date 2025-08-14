@@ -188,16 +188,13 @@ jobs:
       - name: Sanity checks
         shell: bash
         run: |
-          echo "Dumping current directory:"
-          ls .
-
-          echo ""
-          echo "Dumping parent directory:"
-          ls ..
-
-          echo ""
-          echo "Dumping grandparent directory:"
-          ls ../..
+          for dir in *; do
+            pushd "$dir"
+            echo "Git status for $dir:"
+            git status
+            echo ""
+            popd
+          done
 
       - name: Test
         working-directory: ./smithy-kotlin
