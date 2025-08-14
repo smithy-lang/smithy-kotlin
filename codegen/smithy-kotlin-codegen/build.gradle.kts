@@ -41,27 +41,12 @@ dependencies {
     testImplementation(project(":codegen:smithy-kotlin-codegen-testutils"))
 }
 
-val generateSdkRuntimeVersion by tasks.registering {
-    // generate the version of the runtime to use as a resource.
-    // this keeps us from having to manually change version numbers in multiple places
-    val resourcesDir = layout.buildDirectory.dir("resources/main/software/amazon/smithy/kotlin/codegen/core").get()
-    val versionFile = file("$resourcesDir/sdk-version.txt")
-    val gradlePropertiesFile = rootProject.file("gradle.properties")
-    inputs.file(gradlePropertiesFile)
-    outputs.file(versionFile)
-    sourceSets.main.get().output.dir(resourcesDir)
-    doLast {
-        versionFile.writeText(runtimeVersion)
-    }
-}
-
 tasks.withType<KotlinCompile> {
     compilerOptions {
         jvmTarget.set(JvmTarget.JVM_1_8)
         freeCompilerArgs.add("-Xjdk-release=1.8")
         freeCompilerArgs.add("-opt-in=kotlin.RequiresOptIn")
     }
-    dependsOn(generateSdkRuntimeVersion)
 }
 
 tasks.withType<JavaCompile> {

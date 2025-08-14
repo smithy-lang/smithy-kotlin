@@ -86,15 +86,6 @@ dependencies {
     codegen(libs.smithy.protocol.tests)
 }
 
-tasks.generateSmithyProjections {
-    // ensure the generated clients use the same version of the runtime as the aws aws-runtime
-    val sdkVersion: String by project
-    val smithyKotlinRuntimeVersion = sdkVersion
-    doFirst {
-        System.setProperty("smithy.kotlin.codegen.clientRuntimeVersion", smithyKotlinRuntimeVersion)
-    }
-}
-
 val generateProtocolTestProjectionTasks = smithyBuild.projections.map { projection ->
     tasks.register<Exec>("testProtocol-${projection.name}") {
         dependsOn(tasks.generateSmithyProjections)

@@ -11,6 +11,8 @@ import software.amazon.smithy.codegen.core.SymbolDependencyContainer
 import software.amazon.smithy.kotlin.codegen.model.buildSymbol
 import software.amazon.smithy.kotlin.codegen.model.namespace
 import software.amazon.smithy.utils.StringUtils
+import java.io.File
+import java.util.Properties
 
 // root namespace for the runtime
 const val RUNTIME_ROOT_NS = "aws.smithy.kotlin.runtime"
@@ -23,21 +25,57 @@ fun isValidVersion(version: String): Boolean {
     return re.matches(version)
 }
 
-private fun getDefaultRuntimeVersion(): String {
-    // generated as part of the build, see smithy-kotlin-codegen/build.gradle.kts
-    try {
-        val version = object {}.javaClass.getResource("sdk-version.txt")?.readText() ?: throw CodegenException("sdk-version.txt does not exist")
-        check(isValidVersion(version)) { "Version parsed from sdk-version.txt '$version' is not a valid version string" }
-        return version
-    } catch (ex: Exception) {
-        throw CodegenException("failed to load sdk-version.txt which sets the default client-runtime version", ex)
+/**
+ * Get the smithy-kotlin runtime version defined in gradle.properties
+ */
+private fun getRuntimeVersion(): String {
+    val props = Properties().apply {
+        File(findProjectRoot(), "gradle.properties").inputStream().use(::load)
+    }
+
+    val version = props.getProperty("sdkVersion")?.trim()
+        ?: throw CodegenException("sdkVersion property not found in gradle.properties")
+
+    return version.also {
+        require(isValidVersion(it)) {
+            "Version parsed from gradle.properties '$it' is not a valid version string"
+        }
     }
 }
 
+/**
+ * Get the Kotlin version defined in gradle/libs.version.toml (version catalog)
+ */
+private fun getKotlinVersion(): String {
+    val root = checkNotNull(findProjectRoot()) { "Failed to find project root" }
+
+    val versionCatalog = File(root, "gradle/libs.versions.toml").also {
+        if (!it.exists()) {
+            throw CodegenException("gradle/libs.versions.toml file not found at project root: ${root.absolutePath}")
+        }
+    }.readText()
+
+    val version = Regex("""(?m)^\s*kotlin-version\s*=\s*"([^"]+)"""")
+        .find(versionCatalog)
+        ?.groupValues?.get(1)
+        ?: throw CodegenException("kotlin-version not found in gradle/libs.versions.toml")
+
+    return version.also {
+        require(isValidVersion(version)) {
+            "Kotlin version parsed from gradle/libs.versions.toml '$version' is not a valid version string"
+        }
+    }
+}
+
+private fun findProjectRoot(): File = checkNotNull(
+    generateSequence(File(System.getProperty("user.dir"))) { it.parentFile }
+        .firstOrNull { File(it, "gradle.properties").isFile }
+) { "Failed to find project root (directory containing gradle.properties)" }
+
 // publishing info
 const val RUNTIME_GROUP: String = "aws.smithy.kotlin"
-val RUNTIME_VERSION: String = System.getProperty("smithy.kotlin.codegen.clientRuntimeVersion", getDefaultRuntimeVersion())
-val KOTLIN_COMPILER_VERSION: String = System.getProperty("smithy.kotlin.codegen.kotlinCompilerVersion", "2.2.0")
+val RUNTIME_VERSION: String = getRuntimeVersion()
+val KOTLIN_COMPILER_VERSION: String = getKotlinVersion()
 
 enum class SourceSet {
     CommonMain,
