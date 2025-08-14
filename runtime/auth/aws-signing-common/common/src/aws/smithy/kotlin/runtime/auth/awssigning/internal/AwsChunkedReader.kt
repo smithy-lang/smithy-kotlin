@@ -57,6 +57,15 @@ internal class AwsChunkedReader(
      */
     internal var hasLastChunkBeenSent: Boolean = false
 
+    private var read = 0L
+
+    /**
+     * Gets the most recent read count and then resets the counter. This is meant to be checked after every caller
+     * invocation of AwsChunkedReader.chunk.read(...). Note that because of buffering, this value may return _more_ than
+     * the total number of bytes written to the sink.
+     */
+    fun readCountAndReset(): Long = read.also { read = 0L }
+
     /**
      * Ensures that the internal [chunk] is valid for reading. If it's not valid, try to load the next chunk. Note that
      * this function will suspend until the whole chunk has been loaded.
@@ -117,6 +126,7 @@ internal class AwsChunkedReader(
         while (remaining > 0L) {
             val rc = read(sink, remaining)
             if (rc == -1L) break
+            read += rc
             remaining -= rc
         }
 

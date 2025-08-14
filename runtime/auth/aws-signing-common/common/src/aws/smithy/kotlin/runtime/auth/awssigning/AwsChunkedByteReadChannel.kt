@@ -48,7 +48,8 @@ public class AwsChunkedByteReadChannel(
     override suspend fun read(sink: SdkBuffer, limit: Long): Long {
         require(limit >= 0L) { "Invalid limit ($limit) must be >= 0L" }
         if (!chunkReader.ensureValidChunk()) return -1L
-        return chunkReader.chunk.read(sink, limit)
+        chunkReader.chunk.read(sink, limit)
+        return chunkReader.readCountAndReset()
     }
 }
 
