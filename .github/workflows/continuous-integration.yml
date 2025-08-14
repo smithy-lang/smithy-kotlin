@@ -190,9 +190,16 @@ jobs:
         run: |
           for dir in *; do
             pushd "$dir"
+            echo "===================================="
+            echo "Status checks for $dir"
+            echo "===================================="
             echo "Git status for $dir:"
             git status
-            echo ""
+            echo "Git hash:"
+            git rev-prase HEAD
+            echo "Dry run task list:"
+            ./gradlew build --dry-run
+            echo " "
             popd
           done
 
