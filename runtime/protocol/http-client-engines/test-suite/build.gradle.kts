@@ -111,6 +111,9 @@ val testTasks = listOf("allTests", "jvmTest")
     .forEach {
         tasks.named(it) {
             dependsOn(startTestServers)
+            doLast {
+                startTestServers.stop()
+            }
         }
     }
 
@@ -125,8 +128,4 @@ tasks.jvmTest {
     val shouldRunProxyTests = !runningInCodeBuild && runningInLinux
 
     systemProperty(enableProxyTestsProp, System.getProperties().getOrDefault(enableProxyTestsProp, shouldRunProxyTests))
-}
-
-gradle.buildFinished {
-    startTestServers.stop()
 }
