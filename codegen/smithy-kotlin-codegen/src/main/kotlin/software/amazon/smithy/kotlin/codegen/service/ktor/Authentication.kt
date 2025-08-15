@@ -5,7 +5,6 @@ import software.amazon.smithy.aws.traits.auth.SigV4Trait
 import software.amazon.smithy.kotlin.codegen.core.RuntimeTypes
 import software.amazon.smithy.kotlin.codegen.core.withBlock
 import software.amazon.smithy.kotlin.codegen.model.getTrait
-import software.amazon.smithy.kotlin.codegen.service.KtorStubGenerator
 import software.amazon.smithy.kotlin.codegen.service.ServiceTypes
 
 internal fun KtorStubGenerator.writeAuthentication() {

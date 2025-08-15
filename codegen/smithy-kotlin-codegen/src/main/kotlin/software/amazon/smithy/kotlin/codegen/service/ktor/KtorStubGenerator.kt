@@ -1,19 +1,13 @@
-package software.amazon.smithy.kotlin.codegen.service
+package software.amazon.smithy.kotlin.codegen.service.ktor
 
 import software.amazon.smithy.build.FileManifest
 import software.amazon.smithy.kotlin.codegen.core.GenerationContext
 import software.amazon.smithy.kotlin.codegen.core.InlineCodeWriterFormatter
 import software.amazon.smithy.kotlin.codegen.core.KotlinDelegator
 import software.amazon.smithy.kotlin.codegen.core.KotlinWriter
+import software.amazon.smithy.kotlin.codegen.service.AbstractStubGenerator
 import software.amazon.smithy.kotlin.codegen.service.contraints.ConstraintGenerator
 import software.amazon.smithy.kotlin.codegen.service.contraints.ConstraintUtilsGenerator
-import software.amazon.smithy.kotlin.codegen.service.ktor.writeAWSAuthentication
-import software.amazon.smithy.kotlin.codegen.service.ktor.writeAuthentication
-import software.amazon.smithy.kotlin.codegen.service.ktor.writePerOperationHandlers
-import software.amazon.smithy.kotlin.codegen.service.ktor.writePlugins
-import software.amazon.smithy.kotlin.codegen.service.ktor.writeRouting
-import software.amazon.smithy.kotlin.codegen.service.ktor.writeServerFrameworkImplementation
-import software.amazon.smithy.kotlin.codegen.service.ktor.writeUtils
 import software.amazon.smithy.utils.AbstractCodeWriter
 
 class LoggingWriter(parent: LoggingWriter? = null) : AbstractCodeWriter<LoggingWriter>() {

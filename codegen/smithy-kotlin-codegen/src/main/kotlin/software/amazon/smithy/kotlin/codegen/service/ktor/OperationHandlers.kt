@@ -1,7 +1,6 @@
 package software.amazon.smithy.kotlin.codegen.service.ktor
 
 import software.amazon.smithy.kotlin.codegen.core.withBlock
-import software.amazon.smithy.kotlin.codegen.service.KtorStubGenerator
 
 internal fun KtorStubGenerator.writePerOperationHandlers() {
     operations.forEach { shape ->

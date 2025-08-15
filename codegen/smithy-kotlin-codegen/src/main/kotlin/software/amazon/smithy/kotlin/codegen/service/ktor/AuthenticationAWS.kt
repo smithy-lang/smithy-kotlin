@@ -5,7 +5,6 @@ import software.amazon.smithy.kotlin.codegen.core.closeAndOpenBlock
 import software.amazon.smithy.kotlin.codegen.core.withBlock
 import software.amazon.smithy.kotlin.codegen.core.withInlineBlock
 import software.amazon.smithy.kotlin.codegen.lang.KotlinTypes
-import software.amazon.smithy.kotlin.codegen.service.KtorStubGenerator
 
 internal fun KtorStubGenerator.writeAWSAuthentication() {
     delegator.useFileWriter("AWSValidation.kt", "$pkgName.auth") { writer ->

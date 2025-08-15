@@ -3,7 +3,6 @@ package software.amazon.smithy.kotlin.codegen.service.ktor
 import software.amazon.smithy.kotlin.codegen.core.RuntimeTypes
 import software.amazon.smithy.kotlin.codegen.core.withBlock
 import software.amazon.smithy.kotlin.codegen.core.withInlineBlock
-import software.amazon.smithy.kotlin.codegen.service.KtorStubGenerator
 import software.amazon.smithy.kotlin.codegen.service.ServiceTypes
 
 internal fun KtorStubGenerator.writePlugins() {

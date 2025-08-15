@@ -11,7 +11,6 @@ import software.amazon.smithy.kotlin.codegen.model.buildSymbol
 import software.amazon.smithy.kotlin.codegen.model.getTrait
 import software.amazon.smithy.kotlin.codegen.rendering.serde.deserializerName
 import software.amazon.smithy.kotlin.codegen.rendering.serde.serializerName
-import software.amazon.smithy.kotlin.codegen.service.KtorStubGenerator
 import software.amazon.smithy.kotlin.codegen.service.MediaType
 import software.amazon.smithy.kotlin.codegen.service.MediaType.ANY
 import software.amazon.smithy.kotlin.codegen.service.MediaType.JSON
