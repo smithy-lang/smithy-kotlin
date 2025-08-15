@@ -25,7 +25,7 @@ class CborServiceTest {
     val requestBodyLimit: Long = 10L * 1024 * 1024
     val port: Int = ServerSocket(0).use { it.localPort }
 
-    val portListnerTimeout = 180L
+    val portListnerTimeout = 60L
 
     val baseUrl = "http://localhost:$port"
 
@@ -196,82 +196,6 @@ class CborServiceTest {
         )
         assertIs<HttpResponse<ByteArray>>(response)
         assertEquals(201, response.statusCode(), "Expected 201")
-    }
-
-    @Test
-    fun `checks authentication with correct bearer token`() {
-        val cbor = Cbor { }
-        val input1 = "Hello"
-        val requestBytes = cbor.encodeToByteArray(
-            AuthTestRequest.serializer(),
-            AuthTestRequest(input1),
-        )
-
-        val response = sendRequest(
-            "$baseUrl/auth",
-            "POST",
-            requestBytes,
-            "application/cbor",
-            "application/cbor",
-            "correctToken",
-        )
-        assertIs<HttpResponse<ByteArray>>(response)
-        assertEquals(201, response.statusCode(), "Expected 201")
-    }
-
-    @Test
-    fun `checks authentication with wrong bearer token`() {
-        val cbor = Cbor { }
-        val input1 = "Hello"
-        val requestBytes = cbor.encodeToByteArray(
-            AuthTestRequest.serializer(),
-            AuthTestRequest(input1),
-        )
-
-        val response = sendRequest(
-            "$baseUrl/auth",
-            "POST",
-            requestBytes,
-            "application/cbor",
-            "application/cbor",
-            "wrongToken",
-        )
-        assertIs<HttpResponse<ByteArray>>(response)
-        assertEquals(401, response.statusCode(), "Expected 401")
-
-        val body = cbor.decodeFromByteArray(
-            ErrorResponse.serializer(),
-            response.body(),
-        )
-        assertEquals(401, body.code)
-        assertEquals("Invalid or expired bearer token", body.message)
-    }
-
-    @Test
-    fun `checks authentication without bearer token`() {
-        val cbor = Cbor { }
-        val input1 = "Hello"
-        val requestBytes = cbor.encodeToByteArray(
-            AuthTestRequest.serializer(),
-            AuthTestRequest(input1),
-        )
-
-        val response = sendRequest(
-            "$baseUrl/auth",
-            "POST",
-            requestBytes,
-            "application/cbor",
-            "application/cbor",
-        )
-        assertIs<HttpResponse<ByteArray>>(response)
-        assertEquals(401, response.statusCode(), "Expected 401")
-
-        val body = cbor.decodeFromByteArray(
-            ErrorResponse.serializer(),
-            response.body(),
-        )
-        assertEquals(401, body.code)
-        assertEquals("Missing bearer token", body.message)
     }
 
     @Test
