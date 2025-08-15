@@ -3,7 +3,7 @@
 ## Overview
 
 This project extends **Smithy Kotlin** to generate **service-side code** from Smithy models, targeting the **Ktor** framework for server implementation.  
-It produces **complete service stubs**—including routing, serialization/deserialization, authentication, and validation—so developers can focus entirely on implementing business logic.
+It produces **complete service stubs**, including routing, serialization/deserialization, authentication, and validation, so developers can focus entirely on implementing business logic.
 
 While Ktor is the default backend, the architecture is framework-agnostic, allowing future support for other server frameworks.
 
@@ -67,14 +67,11 @@ First, in **this repository**, build and publish the code generator locally:
 ./gradlew publishToMavenLocal
 ```
 
----
-
 ### Step 2: Create a New Kotlin Project
 Now, create a **new Kotlin project** where you will use the Smithy Kotlin service code generator.
 
 From this point forward, **all steps apply to the new Kotlin project** you just created.
 
----
 
 ### Step 3: Configure `build.gradle.kts` in the New Project
 
@@ -100,7 +97,6 @@ dependencies {
 }
 ```
 
----
 
 ### Step 4: Create `smithy-build.json` in the New Project
 This is an example of smithy-build.json.
@@ -132,8 +128,6 @@ This is an example of smithy-build.json.
     }
 }
 ```
-
----
 
 ### Step 5: Define Your Smithy Model in the New Project
 
@@ -188,8 +182,6 @@ structure CustomError {
 }
 ```
 
----
-
 ### Step 6: Generate the Service in the New Project
 
 Run:
@@ -202,8 +194,6 @@ If you want to clean previously generated code:
 gradle clean
 ```
 
----
-
 ### Step 7: Run the Generated Service
 
 The generated service will be in the directory specified in `smithy-build.json` (`outputDirectory`).  
@@ -212,8 +202,6 @@ You can start it by running:
 gradle run
 ```
 By default, it listens on port **8080**.
-
----
 
 ### Step 8: Adjust Service Configuration
 
