@@ -23,7 +23,7 @@ tasks.generateSmithyProjections {
 }
 
 tasks.kotlinSourcesJar {
-    dependsOn(tasks.generateSmithyProjections)
+    dependsOn(tasks.generateSmithyProjections) // FIXME This is breaking Gradle configuration cache
 }
 
 val optinAnnotations = listOf("kotlin.RequiresOptIn", "aws.smithy.kotlin.runtime.InternalApi")
@@ -36,7 +36,7 @@ kotlin.sourceSets.getByName("main") {
 }
 
 tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
-    dependsOn(tasks.generateSmithyProjections)
+    dependsOn(tasks.generateSmithyProjections) // FIXME This is breaking Gradle configuration cache
     compilerOptions {
         // generated code has warnings unfortunately
         allWarningsAsErrors = false

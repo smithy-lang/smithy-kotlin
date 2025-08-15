@@ -88,7 +88,7 @@ dependencies {
 
 val generateProtocolTestProjectionTasks = smithyBuild.projections.map { projection ->
     tasks.register<Exec>("testProtocol-${projection.name}") {
-        dependsOn(tasks.generateSmithyProjections)
+        dependsOn(tasks.generateSmithyProjections) // FIXME This is breaking Gradle configuration cache
         group = "Verification"
 
         val wrapper = if (System.getProperty("os.name").lowercase().contains("windows")) "gradlew.bat" else "gradlew"

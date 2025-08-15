@@ -100,7 +100,7 @@ val benchmarkModels = listOf(
 
 val stageGeneratedSources = tasks.register("stageGeneratedSources") {
     group = "codegen"
-    dependsOn(tasks.generateSmithyProjections)
+    dependsOn(tasks.generateSmithyProjections) // FIXME This is breaking Gradle configuration cache
     doLast {
         benchmarkModels.forEach {
             copy {

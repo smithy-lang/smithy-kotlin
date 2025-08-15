@@ -60,7 +60,7 @@ val generatedSrcDir = project.layout.projectDirectory.dir("generated-src/main/ko
 
 val stageGeneratedSources = tasks.register("stageGeneratedSources") {
     group = "codegen"
-    dependsOn(tasks.generateSmithyProjections)
+    dependsOn(tasks.generateSmithyProjections) // FIXME This is breaking Gradle configuration cache
     outputs.dir(generatedSrcDir)
     // FIXME - this task up-to-date checks are wrong, likely something is not setup right with inputs/outputs somewhere
     // for now just always run it

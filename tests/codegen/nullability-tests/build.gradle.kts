@@ -24,7 +24,7 @@ tasks.generateSmithyProjections {
 }
 
 tasks.kotlinSourcesJar {
-    dependsOn(tasks.generateSmithyProjections)
+    dependsOn(tasks.generateSmithyProjections) // FIXME This is breaking Gradle configuration cache
 }
 
 val optinAnnotations = listOf("kotlin.RequiresOptIn", "aws.smithy.kotlin.runtime.InternalApi")
@@ -44,7 +44,7 @@ kotlin.sourceSets.getByName("main") {
 }
 
 tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
-    dependsOn(tasks.generateSmithyProjections)
+    dependsOn(tasks.generateSmithyProjections) // FIXME This is breaking Gradle configuration cache
     // FIXME - generated code has warnings unfortunately, see https://github.com/awslabs/aws-sdk-kotlin/issues/1169
     compilerOptions.allWarningsAsErrors = false
 }
