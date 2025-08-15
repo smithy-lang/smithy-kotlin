@@ -103,10 +103,9 @@ This is an example of smithy-build.json.
 ```json
 {
     "version": "1.0",
-    "outputDirectory": "build/generated-src", // define the output path
+    "outputDirectory": "build/generated-src",
     "plugins": {
         "kotlin-codegen": {
-          // change based on smithy model <namespace>#<service shape name>
             "service": "com.demo#DemoService",
             "package": {
                 "name": "com.demo.server",
@@ -121,13 +120,18 @@ This is an example of smithy-build.json.
                 ]
             },
             "serviceStub": {
-              // choose server framework, only ktor is supported now
               "framework": "ktor"
             }
         }
     }
 }
 ```
+
+**Notes:**
+- The most important fields are:
+    - **`outputDirectory`** — defines where the generated service code will be placed in your new project.
+    - **`service`** — must match your Smithy model’s `<namespace>#<service shape name>`.
+    - **`serviceStub.framework`** — defines the server framework for generated code. Currently only `"ktor"` is supported.
 
 ### Step 5: Define Your Smithy Model in the New Project
 
