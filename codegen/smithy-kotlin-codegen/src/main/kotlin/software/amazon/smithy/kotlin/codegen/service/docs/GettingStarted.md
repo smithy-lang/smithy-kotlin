@@ -153,6 +153,7 @@ You can override runtime settings (such as port or HTTP engine) using command-li
 ```bash
   gradle run --args="port 8000 engineFactory cio"
 ```
+You can find all available settings [here](https://github.com/smithy-lang/smithy-kotlin/blob/16bd523e2ccd6177dcc662466107189b013a818d/codegen/smithy-kotlin-codegen/src/main/kotlin/software/amazon/smithy/kotlin/codegen/service/ServiceStubGenerator.kt#L179C1-L186C38)
 
 ---
 
