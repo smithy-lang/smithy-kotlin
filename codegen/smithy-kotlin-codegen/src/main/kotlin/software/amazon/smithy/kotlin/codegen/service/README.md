@@ -2,16 +2,12 @@
 
 ## Overview
 
----
-
 This project generate **service-side code** from Smithy models, producing **complete service stubs**, including routing, serialization/deserialization, authentication, and validation, so developers can focus entirely on implementing business logic.
 
 While Ktor is the default backend, the architecture is framework-agnostic, allowing future support for other server frameworks.
 
 
 ## Getting Started
-
----
 
 - Get an [introduction to Smithy](https://smithy.io/2.0/index.html)
 - Follow [Smithy's quickstart guide](https://smithy.io/2.0/quickstart.html)
@@ -20,8 +16,6 @@ While Ktor is the default backend, the architecture is framework-agnostic, allow
 
 
 ## Development
-
----
 
 ### Module Structure
 
@@ -42,3 +36,8 @@ The **service code generation tests** are located in `tests/codegen/service-code
 ```bash
   ./gradlew :tests:codegen:service-codegen-tests:test
 ```
+
+## Feedback
+
+You can provide feedback or report a bug by submitting an [issue](https://github.com/smithy-lang/smithy-kotlin/issues/new/choose).
+This is the preferred mechanism to give feedback so that other users can engage in the conversation, +1 issues, etc.
