@@ -12,7 +12,6 @@ plugins {
 
 skipPublishing()
 
-val codegen by configurations.getting
 dependencies {
     codegen(project(":codegen:smithy-kotlin-codegen"))
     codegen(libs.smithy.cli)
