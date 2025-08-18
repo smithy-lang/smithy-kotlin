@@ -8,7 +8,7 @@ First, in **this repository**, build and publish the code generator locally:
 ```
 
 ### Step 2: Create a New Kotlin Project
-Now, create a **new Kotlin project** where you will use the Smithy Kotlin service code generator.
+Now, create a **new Kotlin project** where you will use the Smithy Kotlin service code generator. You can find a full example demo project [here](../../../../../../../../../../../../examples/service-codegen)
 
 From this point forward, **all steps apply to the new Kotlin project** you just created.
 
@@ -27,12 +27,15 @@ repositories {
     mavenCentral()
 }
 
+val codegenVersion = "0.35.2-SNAPSHOT"
+val smithyVersion = "1.60.2"
+
 dependencies {
-    smithyBuild("software.amazon.smithy.kotlin:smithy-kotlin-codegen:<codegenVersion>")
-    implementation("software.amazon.smithy.kotlin:smithy-aws-kotlin-codegen:<codegenVersion>")
-    implementation("software.amazon.smithy:smithy-model:<smithyVersion>")
-    implementation("software.amazon.smithy:smithy-build:<smithyVersion>")
-    implementation("software.amazon.smithy:smithy-aws-traits:<smithyVersion>")
+    smithyBuild("software.amazon.smithy.kotlin:smithy-kotlin-codegen:$codegenVersion")
+    implementation("software.amazon.smithy.kotlin:smithy-aws-kotlin-codegen:$codegenVersion")
+    implementation("software.amazon.smithy:smithy-model:$smithyVersion")
+    implementation("software.amazon.smithy:smithy-build:$smithyVersion")
+    implementation("software.amazon.smithy:smithy-aws-traits:$smithyVersion")
     ...
 }
 ```
@@ -130,7 +133,7 @@ structure CustomError {
 
 Run:
 ```bash
-  gradle build run
+  gradle build
 ```
 
 If you want to clean previously generated code:

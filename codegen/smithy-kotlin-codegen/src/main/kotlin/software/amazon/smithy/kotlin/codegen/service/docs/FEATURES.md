@@ -45,3 +45,15 @@
 | range           | Yes                          | Yes                          |
 | uniqueItems     | Yes                          | Yes                          |
 | idRef           | Not implemented yet          | Not implemented yet          |
+
+
+### Future Features
+
+| Feature                           | Description                                                                                     |
+|-----------------------------------|-------------------------------------------------------------------------------------------------|
+| Additional Protocols              | XML, Ec2Query, AWSQuery protocols                                                               |
+| Middleware / Interceptors         | Cross-cutting logic support (e.g., metrics, headers, rate limiting) via middleware architecture |
+| API Versioning                    | Built-in support for versioned APIs to maintain backward compatibility                          |
+| gRPC / WebSocket Protocol Support | High-performance binary RPC and real-time bidirectional communication                           |
+| Metrics & Tracing                 | Observability support with metrics, logs, and distributed tracing for debugging and monitoring  |
+| Caching Middleware                | Per-route or global cache support to improve response times and reduce backend load             |

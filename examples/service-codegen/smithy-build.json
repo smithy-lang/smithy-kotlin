@@ -1,0 +1,30 @@
+{
+  "version": "1.0",
+  "outputDirectory": "build/generated-src-test",
+  "plugins": {
+    "kotlin-codegen": {
+      "service": "com.demo#DemoService",
+
+      "package": {
+        "name": "com.demo.server",
+        "version": "1.0.0"
+      },
+
+      "build": {
+        "rootProject": true,
+        "generateServiceProject": true,
+        "optInAnnotations": [
+          "aws.smithy.kotlin.runtime.InternalApi",
+          "kotlinx.serialization.ExperimentalSerializationApi"
+        ]
+      },
+
+      "serviceStub": {
+        "framework": "ktor"
+      }
+    }
+  }
+}
+
+
+

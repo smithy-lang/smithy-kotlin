@@ -12,7 +12,7 @@ While Ktor is the default backend, the architecture is framework-agnostic, allow
 - Get an [introduction to Smithy](https://smithy.io/2.0/index.html)
 - Follow [Smithy's quickstart guide](https://smithy.io/2.0/quickstart.html)
 - See the [Guide](docs/GettingStarted.md) to learn how to use SKSC to generate service.
-- See a [Summary of Service Support](docs/Summary.md) to learn which features are supported
+- See a [Summary of Service Support](docs/FEATURES.md) to learn which features are supported
 
 
 ## Development
