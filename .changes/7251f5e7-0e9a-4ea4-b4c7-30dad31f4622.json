@@ -4,6 +4,5 @@
     "description": "⚠️ **IMPORTANT**: Correctly return number of bytes read from chunked streams",
     "issues": [
         "awslabs/smithy-kotlin#1285"
-    ],
-    "requiresMinorVersionBump": true
+    ]
 }
