@@ -14,20 +14,20 @@ import kotlin.test.assertTrue
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class ServiceEngineFactoryTest {
-    val closeGracePeriodMillis: Long = 5_000L
-    val closeTimeoutMillis: Long = 1_000L
-    val gracefulWindow = closeTimeoutMillis + closeGracePeriodMillis
-    val requestBodyLimit: Long = 10L * 1024 * 1024
+    val closeGracePeriodMillis = TestParams.CLOSE_GRACE_PERIOD_MILLIS
+    val closeTimeoutMillis = TestParams.CLOSE_TIMEOUT_MILLIS
+    val gracefulWindow = TestParams.GRACEFUL_WINDOW
+    val requestBodyLimit = TestParams.REQUEST_BODY_LIMIT
+    val portListenerTimeout = TestParams.PORT_LISTENER_TIMEOUT
 
-    val portListnerTimeout = 60L
     val projectDir: Path = Paths.get("build/service-cbor-test")
 
     @Test
     fun `checks service with netty engine`() {
         val nettyPort: Int = ServerSocket(0).use { it.localPort }
         val nettyProc = startService("netty", nettyPort, closeGracePeriodMillis, closeTimeoutMillis, requestBodyLimit, projectDir)
-        val ready = waitForPort(nettyPort, portListnerTimeout)
-        assertTrue(ready, "Service did not start within $portListnerTimeout s")
+        val ready = waitForPort(nettyPort, portListenerTimeout)
+        assertTrue(ready, "Service did not start within $portListenerTimeout s")
         cleanupService(nettyProc, gracefulWindow)
     }
 
@@ -35,8 +35,8 @@ class ServiceEngineFactoryTest {
     fun `checks service with cio engine`() {
         val cioPort: Int = ServerSocket(0).use { it.localPort }
         val cioProc = startService("cio", cioPort, closeGracePeriodMillis, closeTimeoutMillis, requestBodyLimit, projectDir)
-        val ready = waitForPort(cioPort, portListnerTimeout)
-        assertTrue(ready, "Service did not start within $portListnerTimeout s")
+        val ready = waitForPort(cioPort, portListenerTimeout)
+        assertTrue(ready, "Service did not start within $portListenerTimeout s")
         cleanupService(cioProc, gracefulWindow)
     }
 
@@ -44,8 +44,8 @@ class ServiceEngineFactoryTest {
     fun `checks service with jetty jakarta engine`() {
         val jettyPort: Int = ServerSocket(0).use { it.localPort }
         val jettyProc = startService("jetty-jakarta", jettyPort, closeGracePeriodMillis, closeTimeoutMillis, requestBodyLimit, projectDir)
-        val ready = waitForPort(jettyPort, portListnerTimeout)
-        assertTrue(ready, "Service did not start within $portListnerTimeout s")
+        val ready = waitForPort(jettyPort, portListenerTimeout)
+        assertTrue(ready, "Service did not start within $portListenerTimeout s")
         cleanupService(jettyProc, gracefulWindow)
     }
 }

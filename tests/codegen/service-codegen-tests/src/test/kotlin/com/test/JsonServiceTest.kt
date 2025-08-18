@@ -21,13 +21,13 @@ import kotlin.test.assertTrue
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class JsonServiceTest {
-    val closeGracePeriodMillis: Long = 5_000L
-    val closeTimeoutMillis: Long = 1_000L
-    val requestBodyLimit: Long = 10L * 1024 * 1024
+    val closeGracePeriodMillis = TestParams.CLOSE_GRACE_PERIOD_MILLIS
+    val closeTimeoutMillis = TestParams.CLOSE_TIMEOUT_MILLIS
+    val gracefulWindow = TestParams.GRACEFUL_WINDOW
+    val requestBodyLimit = TestParams.REQUEST_BODY_LIMIT
+    val portListenerTimeout = TestParams.PORT_LISTENER_TIMEOUT
+
     val port: Int = ServerSocket(0).use { it.localPort }
-
-    val portListnerTimeout = 60L
-
     val baseUrl = "http://localhost:$port"
 
     val projectDir: Path = Paths.get("build/service-json-test")
@@ -37,12 +37,12 @@ class JsonServiceTest {
     @BeforeAll
     fun boot() {
         proc = startService("netty", port, closeGracePeriodMillis, closeTimeoutMillis, requestBodyLimit, projectDir)
-        val ready = waitForPort(port, portListnerTimeout)
-        assertTrue(ready, "Service did not start within $portListnerTimeout s")
+        val ready = waitForPort(port, portListenerTimeout)
+        assertTrue(ready, "Service did not start within $portListenerTimeout s")
     }
 
     @AfterAll
-    fun shutdown() = cleanupService(proc)
+    fun shutdown() = cleanupService(proc, gracefulWindow)
 
     @Test
     fun `checks http-header`() {
@@ -52,8 +52,7 @@ class JsonServiceTest {
             null,
             "application/json",
             "application/json",
-            "correctToken",
-            mapOf("X-Request-Header" to "header", "X-Request-Headers-hhh" to "headers"),
+            headers = mapOf("X-Request-Header" to "header", "X-Request-Headers-hhh" to "headers"),
         )
         assertIs<HttpResponse<String>>(response)
 
@@ -71,7 +70,6 @@ class JsonServiceTest {
             null,
             "application/json",
             "application/json",
-            "correctToken",
         )
         assertIs<HttpResponse<String>>(response)
 
@@ -91,7 +89,6 @@ class JsonServiceTest {
             null,
             "application/json",
             "application/json",
-            "correctToken",
         )
         assertIs<HttpResponse<String>>(response)
 
@@ -111,7 +108,6 @@ class JsonServiceTest {
             "This is the entire content",
             "text/plain",
             "text/plain",
-            "correctToken",
         )
         assertIs<HttpResponse<String>>(response)
 
@@ -136,7 +132,6 @@ class JsonServiceTest {
             requestJson,
             "application/json",
             "application/json",
-            "correctToken",
         )
         assertIs<HttpResponse<String>>(response)
         assertEquals(201, response.statusCode(), "Expected 201")
@@ -167,7 +162,6 @@ class JsonServiceTest {
             requestJson,
             "application/json",
             "application/json",
-            "correctToken",
         )
         assertIs<HttpResponse<String>>(response)
         assertEquals(201, response.statusCode(), "Expected 201")
@@ -194,7 +188,6 @@ class JsonServiceTest {
             requestJson,
             "application/json",
             "application/json",
-            "correctToken",
         )
         assertIs<HttpResponse<String>>(response)
         assertEquals(201, response.statusCode(), "Expected 201")
@@ -213,7 +206,6 @@ class JsonServiceTest {
             null,
             "application/json",
             "application/json",
-            "correctToken",
         )
         assertIs<HttpResponse<String>>(response)
 

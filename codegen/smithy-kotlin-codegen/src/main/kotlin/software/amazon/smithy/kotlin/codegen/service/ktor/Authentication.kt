@@ -18,7 +18,10 @@ internal fun KtorStubGenerator.writeAuthentication() {
 
         writer.withBlock("internal object BearerValidation {", "}") {
             withBlock("public fun bearerValidation(token: String): UserPrincipal? {", "}") {
-                write("// TODO: implement me")
+                write("// TODO: implement me:")
+                write("//  Validate the provided bearer token and return a UserPrincipal if valid.")
+                write("//  Return a UserPrincipal with user information (e.g., user id, roles) if valid,")
+                write("//  or return null if the token is invalid or expired.")
                 write("if (true) return UserPrincipal(#S) else return null", "Authenticated User")
             }
         }
@@ -39,16 +42,14 @@ internal fun KtorStubGenerator.writeAuthentication() {
                 }
                 withBlock("sigV4(name = #S) {", "}", "aws-sigv4") {
                     write("region = #T.region", ServiceTypes(pkgName).serviceFrameworkConfig)
-                    val serviceSigV4AuthTrait = serviceShape.getTrait<SigV4Trait>()
-                    if (serviceSigV4AuthTrait != null) {
-                        write("service = #S", serviceSigV4AuthTrait.name)
+                    serviceShape.getTrait<SigV4Trait>()?.let {
+                        write("service = #S", it.name)
                     }
                 }
                 withBlock("sigV4A(name = #S) {", "}", "aws-sigv4a") {
                     write("region = #T.region", ServiceTypes(pkgName).serviceFrameworkConfig)
-                    val serviceSigV4AAuthTrait = serviceShape.getTrait<SigV4ATrait>()
-                    if (serviceSigV4AAuthTrait != null) {
-                        write("service = #S", serviceSigV4AAuthTrait.name)
+                    serviceShape.getTrait<SigV4ATrait>()?.let {
+                        write("service = #S", it.name)
                     }
                 }
                 write("provider(#S) { authenticate { ctx -> ctx.principal(Unit) } }", "no-auth")

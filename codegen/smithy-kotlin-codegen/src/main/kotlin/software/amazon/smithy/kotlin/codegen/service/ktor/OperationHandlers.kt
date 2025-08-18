@@ -20,6 +20,18 @@ internal fun KtorStubGenerator.writePerOperationHandlers() {
                 write("//   1. Use`#T.Builder()`", outputSymbol)
                 write("//   2. Set fields like `#T.variable = ...`", outputSymbol)
                 write("//   3. Return the built object using `return #T.build()`", outputSymbol)
+                write("//")
+                val errorSymbolNames: List<String> = shape.errors.map { errorShapeId ->
+                    val errorShape = ctx.model.expectShape(errorShapeId)
+                    ctx.symbolProvider.toSymbol(errorShape).name
+                }
+                write("// You may also throw custom errors if needed.")
+                write("// Custom errors can be created using the same builder pattern.")
+                if (errorSymbolNames.isNotEmpty()) {
+                    write("// Available errors : ${errorSymbolNames.joinToString(", ")}")
+                } else {
+                    write("// There are no available errors for this operation.")
+                }
                 write("return #T.Builder().build()", outputSymbol)
             }
         }

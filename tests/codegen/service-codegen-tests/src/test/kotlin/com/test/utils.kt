@@ -34,6 +34,14 @@ import java.util.concurrent.TimeUnit
 import kotlin.test.assertTrue
 import kotlin.test.fail
 
+internal object TestParams {
+    const val CLOSE_GRACE_PERIOD_MILLIS: Long = 5_000L
+    const val CLOSE_TIMEOUT_MILLIS: Long = 1_000L
+    const val GRACEFUL_WINDOW: Long = CLOSE_GRACE_PERIOD_MILLIS + CLOSE_TIMEOUT_MILLIS
+    const val REQUEST_BODY_LIMIT: Long = 10L * 1024 * 1024
+    const val PORT_LISTENER_TIMEOUT: Long = 60L
+}
+
 internal fun startService(
     engineFactory: String = "netty",
     port: Int = 8080,

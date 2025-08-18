@@ -20,13 +20,13 @@ import kotlin.test.assertTrue
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class CborServiceTest {
-    val closeGracePeriodMillis: Long = 5_000L
-    val closeTimeoutMillis: Long = 1_000L
-    val requestBodyLimit: Long = 10L * 1024 * 1024
+    val closeGracePeriodMillis = TestParams.CLOSE_GRACE_PERIOD_MILLIS
+    val closeTimeoutMillis = TestParams.CLOSE_TIMEOUT_MILLIS
+    val gracefulWindow = TestParams.GRACEFUL_WINDOW
+    val requestBodyLimit = TestParams.REQUEST_BODY_LIMIT
+    val portListenerTimeout = TestParams.PORT_LISTENER_TIMEOUT
+
     val port: Int = ServerSocket(0).use { it.localPort }
-
-    val portListnerTimeout = 60L
-
     val baseUrl = "http://localhost:$port"
 
     val projectDir: Path = Paths.get("build/service-cbor-test")
@@ -36,12 +36,12 @@ class CborServiceTest {
     @BeforeAll
     fun boot() {
         proc = startService("netty", port, closeGracePeriodMillis, closeTimeoutMillis, requestBodyLimit, projectDir)
-        val ready = waitForPort(port, portListnerTimeout)
-        assertTrue(ready, "Service did not start within $portListnerTimeout s")
+        val ready = waitForPort(port, portListenerTimeout)
+        assertTrue(ready, "Service did not start within $portListenerTimeout s")
     }
 
     @AfterAll
-    fun shutdown() = cleanupService(proc)
+    fun shutdown() = cleanupService(proc, gracefulWindow)
 
     @Test
     fun `checks correct POST request`() {
@@ -87,7 +87,6 @@ class CborServiceTest {
             requestBytes,
             "application/cbor",
             "application/cbor",
-            "correctToken",
         )
         assertIs<HttpResponse<ByteArray>>(response)
         assertEquals(500, response.statusCode(), "Expected 500")
@@ -315,7 +314,6 @@ class CborServiceTest {
             null,
             "application/cbor",
             "application/cbor",
-            "correctToken",
         )
         assertIs<HttpResponse<ByteArray>>(response)
 
