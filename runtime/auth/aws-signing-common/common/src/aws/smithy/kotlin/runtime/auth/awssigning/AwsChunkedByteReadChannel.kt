@@ -6,7 +6,7 @@
 package aws.smithy.kotlin.runtime.auth.awssigning
 
 import aws.smithy.kotlin.runtime.InternalApi
-import aws.smithy.kotlin.runtime.auth.awssigning.internal.AwsChunkedReader
+import aws.smithy.kotlin.runtime.auth.awssigning.internal.StreamChunker
 import aws.smithy.kotlin.runtime.http.DeferredHeaders
 import aws.smithy.kotlin.runtime.io.SdkBuffer
 import aws.smithy.kotlin.runtime.io.SdkByteReadChannel
@@ -30,35 +30,17 @@ public class AwsChunkedByteReadChannel(
     private var previousSignature: ByteArray,
     private val trailingHeaders: DeferredHeaders = DeferredHeaders.Empty,
 ) : SdkByteReadChannel by delegate {
-
-    private val chunkReader = AwsChunkedReader(
-        delegate.asStream(),
-        signer,
-        signingConfig,
-        previousSignature,
-        trailingHeaders,
-    )
-
-    override val isClosedForRead: Boolean
-        get() = chunkReader.chunk.size == 0L && chunkReader.hasLastChunkBeenSent && delegate.isClosedForRead
-
-    override val availableForRead: Int
-        get() = chunkReader.chunk.size.toInt() + delegate.availableForRead
+    private val chunker = StreamChunker(delegate.adapt(), signer, signingConfig, previousSignature, trailingHeaders)
 
     override suspend fun read(sink: SdkBuffer, limit: Long): Long {
         require(limit >= 0L) { "Invalid limit ($limit) must be >= 0L" }
-        if (!chunkReader.ensureValidChunk()) return -1L
-        chunkReader.chunk.read(sink, limit)
-        return chunkReader.readCountAndReset()
+        return chunker.readAndMaybeWrite(sink, limit)
     }
 }
 
-private fun SdkByteReadChannel.asStream(): AwsChunkedReader.Stream = object : AwsChunkedReader.Stream {
-    private val delegate = this@asStream
+private fun SdkByteReadChannel.adapt(): StreamChunker.Adapter = object : StreamChunker.Adapter {
+    val delegate = this@adapt
 
-    override fun isClosedForRead(): Boolean =
-        delegate.isClosedForRead
-
-    override suspend fun read(sink: SdkBuffer, limit: Long): Long =
-        delegate.read(sink, limit)
+    override val eof: Boolean get() = delegate.isClosedForRead
+    override suspend fun read(buffer: SdkBuffer, limit: Long): Long = delegate.read(buffer, limit)
 }
