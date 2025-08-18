@@ -47,7 +47,7 @@ abstract class AwsChunkedByteReadChannelTestBase : AwsChunkedTestBase(AwsChunked
         val sink = SdkBuffer()
 
         val bytesRead = awsChunked.readAll(sink)
-        // writeJob.join()
+        writeJob.join()
         assertEquals(dataLengthBytes.toLong(), bytesRead)
         assertEquals(totalBytesExpected.toLong(), sink.size)
 
