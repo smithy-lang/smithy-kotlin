@@ -80,7 +80,7 @@ internal fun cleanupService(proc: Process, gracefulWindow: Long = 5_000L) {
 
 private fun isWindows() = System.getProperty("os.name").lowercase().contains("windows")
 
-internal fun waitForPort(port: Int, timeoutSec: Long = 180, proc: Process? = null): Boolean {
+internal fun waitForPort(port: Int, timeoutSec: Long = 180): Boolean {
     val deadline = System.currentTimeMillis() + TimeUnit.SECONDS.toNanos(timeoutSec)
     while (System.currentTimeMillis() < deadline) {
         try {
