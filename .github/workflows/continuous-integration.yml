@@ -198,7 +198,7 @@ jobs:
             echo "Git hash:"
             git rev-parse HEAD
             echo "Dry run task list:"
-            ./gradlew build --dry-run
+            ./gradlew build --dry-run || true
             echo " "
             popd
           done
