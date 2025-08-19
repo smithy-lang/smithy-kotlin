@@ -31,7 +31,7 @@ internal class StreamChunker(
             if (hasLastChunkBeenSent) {
                 return -1 // this stream is exhausted
             } else {
-                // Write any remaining data as final chunk(s)
+                // Write any remaining data as final chunk
                 if (inputBuffer.size > 0) {
                     consumeAndWriteChunk(destination)
                 }
