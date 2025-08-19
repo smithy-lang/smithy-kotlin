@@ -3,9 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 import aws.sdk.kotlin.gradle.dsl.configurePublishing
-import aws.sdk.kotlin.gradle.kmp.configureKmpTargets
-import aws.sdk.kotlin.gradle.kmp.kotlin
-import aws.sdk.kotlin.gradle.kmp.needsKmpConfigured
+import aws.sdk.kotlin.gradle.kmp.*
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.targets.native.tasks.KotlinNativeSimulatorTest
 
@@ -32,6 +30,8 @@ subprojects {
         plugin("org.jetbrains.kotlin.multiplatform")
         plugin(libraries.plugins.aws.kotlin.repo.tools.kmp.get().pluginId)
     }
+
+    println("Project $name: hasNative=$hasNative, NATIVE_ENABLED=$NATIVE_ENABLED")
 
     configurePublishing("smithy-kotlin", "smithy-lang")
     kotlin {
