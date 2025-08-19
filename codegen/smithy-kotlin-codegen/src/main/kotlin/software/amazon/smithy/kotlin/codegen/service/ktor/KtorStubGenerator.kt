@@ -6,8 +6,8 @@ import software.amazon.smithy.kotlin.codegen.core.InlineCodeWriterFormatter
 import software.amazon.smithy.kotlin.codegen.core.KotlinDelegator
 import software.amazon.smithy.kotlin.codegen.core.KotlinWriter
 import software.amazon.smithy.kotlin.codegen.service.AbstractStubGenerator
-import software.amazon.smithy.kotlin.codegen.service.contraints.ConstraintGenerator
-import software.amazon.smithy.kotlin.codegen.service.contraints.ConstraintUtilsGenerator
+import software.amazon.smithy.kotlin.codegen.service.constraints.ConstraintGenerator
+import software.amazon.smithy.kotlin.codegen.service.constraints.ConstraintUtilsGenerator
 import software.amazon.smithy.utils.AbstractCodeWriter
 
 class LoggingWriter(parent: LoggingWriter? = null) : AbstractCodeWriter<LoggingWriter>() {
