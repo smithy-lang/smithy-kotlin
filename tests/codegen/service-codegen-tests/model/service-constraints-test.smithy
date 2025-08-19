@@ -5,7 +5,6 @@ namespace com.constraints
 use smithy.protocols#rpcv2Cbor
 
 @rpcv2Cbor
-@httpBearerAuth
 service ServiceConstraintsTest {
     version: "1.0.0"
     operations: [

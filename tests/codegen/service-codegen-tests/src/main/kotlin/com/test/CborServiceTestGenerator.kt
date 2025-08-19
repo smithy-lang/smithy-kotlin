@@ -111,15 +111,6 @@ internal fun generateCborServiceTest() {
     """.trimIndent()
     manifest.writeFile("src/main/kotlin/$packagePath/operations/HttpErrorTestOperation.kt", httpErrorTestOperation)
 
-    val bearerValidation = """
-        package $packageName.auth
-
-        public fun bearerValidation(token: String): UserPrincipal? {
-            if (token == "correctToken") return UserPrincipal("Authenticated User") else return null
-        }
-    """.trimIndent()
-    manifest.writeFile("src/main/kotlin/$packagePath/auth/Validation.kt", bearerValidation)
-
     val settingGradleKts = """
         rootProject.name = "service-cbor-test"
         includeBuild("../../../../../")

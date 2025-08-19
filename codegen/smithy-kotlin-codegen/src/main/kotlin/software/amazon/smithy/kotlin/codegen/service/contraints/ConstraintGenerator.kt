@@ -61,9 +61,10 @@ internal class ConstraintGenerator(
 
     private fun renderRequestConstraintsValidation() {
         delegator.useFileWriter("${opName}RequestConstraints.kt", "$pkgName.constraints") { writer ->
-            writer.addImport("$pkgName.model", "${operation.id.name}Request")
+            val inputShape = ctx.model.expectShape(operation.input.get())
+            val inputSymbol = ctx.symbolProvider.toSymbol(inputShape)
 
-            writer.withBlock("public fun check${opName}RequestConstraint(data: ${opName}Request) {", "}") {
+            writer.withBlock("public fun check${opName}RequestConstraint(data: #T) {", "}", inputSymbol) {
                 for (memberShape in inputMembers.values) {
                     generateConstraintValidations("data.", memberShape, writer)
                 }

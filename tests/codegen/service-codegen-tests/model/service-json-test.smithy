@@ -5,7 +5,6 @@ namespace com.json
 use aws.protocols#restJson1
 
 @restJson1
-@httpBearerAuth
 service JsonServiceTest {
     version: "1.0.0"
     operations: [

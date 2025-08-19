@@ -61,15 +61,6 @@ internal fun generateServiceConstraintsTest() {
         .build()
     KotlinCodegenPlugin().execute(context)
 
-    val bearerValidation = """
-        package $packageName.auth
-
-        public fun bearerValidation(token: String): UserPrincipal? {
-            if (token == "correctToken") return UserPrincipal("Authenticated User") else return null
-        }
-    """.trimIndent()
-    manifest.writeFile("src/main/kotlin/$packagePath/auth/Validation.kt", bearerValidation)
-
     val settingGradleKts = """
         rootProject.name = "service-constraints-test"
         includeBuild("../../../../../")

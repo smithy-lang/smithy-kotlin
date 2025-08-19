@@ -205,6 +205,7 @@ object RuntimeTypes {
 
         object Net : RuntimeTypePackage(KotlinDependency.CORE, "net") {
             val Host = symbol("Host")
+            val Scheme = symbol("Scheme")
 
             object Url : RuntimeTypePackage(KotlinDependency.CORE, "net.url") {
                 val QueryParameters = symbol("QueryParameters")
@@ -393,6 +394,7 @@ object RuntimeTypes {
             val mergeAuthOptions = symbol("mergeAuthOptions")
             val sigV4 = symbol("sigV4")
             val sigV4A = symbol("sigV4A")
+            val SignHttpRequest = symbol("SignHttpRequest")
         }
 
         object AwsSigningCrt : RuntimeTypePackage(KotlinDependency.AWS_SIGNING_CRT) {
@@ -530,12 +532,15 @@ object RuntimeTypes {
 
         val requestReceive = symbol("receive", "request")
         val requestUri = symbol("uri", "request")
+        val requestHeader = symbol("header", "request")
         val requestHttpMethod = symbol("httpMethod", "request")
         val requestApplicationRequest = symbol("ApplicationRequest", "request")
         val requestContentLength = symbol("contentLength", "request")
         val requestContentType = symbol("contentType", "request")
         val requestAcceptItems = symbol("acceptItems", "request")
+        val requestPath = symbol("path", "request")
 
+        val responseResponse = symbol("respond", "response")
         val responseResponseText = symbol("respondText", "response")
         val responseRespondBytes = symbol("respondBytes", "response")
     }
@@ -560,6 +565,8 @@ object RuntimeTypes {
         val HttpStatusCode = symbol("HttpStatusCode")
         val parseAndSortHeader = symbol("parseAndSortHeader")
         val HttpHeaders = symbol("HttpHeaders")
+        val HeadersBuilder = symbol("HeadersBuilder")
+        val Parameters = symbol("Parameters")
         val Cbor = symbol("Cbor", "ContentType.Application")
         val Json = symbol("Json", "ContentType.Application")
         val Any = symbol("Any", "ContentType.Application")
@@ -597,6 +604,15 @@ object RuntimeTypes {
         val authenticate = symbol("authenticate")
         val Principal = symbol("Principal")
         val bearer = symbol("bearer")
+        val AuthenticationConfig = symbol("AuthenticationConfig")
+        val AuthenticationProvider = symbol("AuthenticationProvider")
+        val AuthenticationFailedCause = symbol("AuthenticationFailedCause")
+        val AuthenticationContext = symbol("AuthenticationContext")
+        val AuthenticationStrategy = symbol("AuthenticationStrategy")
+    }
+
+    object KtorServerDoubleReceive : RuntimeTypePackage(KotlinDependency.KTOR_SERVER_DOUBLE_RECEIVE) {
+        val DoubleReceive = symbol("DoubleReceive")
     }
 
     object KotlinxCborSerde : RuntimeTypePackage(KotlinDependency.KOTLINX_CBOR_SERDE) {

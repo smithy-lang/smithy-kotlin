@@ -5,7 +5,6 @@ namespace com.cbor
 use smithy.protocols#rpcv2Cbor
 
 @rpcv2Cbor
-@httpBearerAuth
 service CborServiceTest {
     version: "1.0.0"
     operations: [
@@ -17,7 +16,6 @@ service CborServiceTest {
 }
 
 @http(method: "POST", uri: "/post", code: 201)
-@auth([])
 operation PostTest {
     input: PostTestInput
     output: PostTestOutput

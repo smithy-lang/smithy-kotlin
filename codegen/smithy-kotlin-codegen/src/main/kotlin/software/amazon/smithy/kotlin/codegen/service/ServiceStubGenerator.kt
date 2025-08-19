@@ -15,17 +15,17 @@ internal interface ServiceStubGenerator {
 }
 
 internal abstract class AbstractStubGenerator(
-    protected val ctx: GenerationContext,
-    protected val delegator: KotlinDelegator,
-    protected val fileManifest: FileManifest,
+    val ctx: GenerationContext,
+    val delegator: KotlinDelegator,
+    val fileManifest: FileManifest,
 ) : ServiceStubGenerator {
 
-    protected val serviceShape = ctx.settings.getService(ctx.model)
-    protected val operations = TopDownIndex.of(ctx.model)
+    val serviceShape = ctx.settings.getService(ctx.model)
+    val operations = TopDownIndex.of(ctx.model)
         .getContainedOperations(serviceShape)
         .sortedBy { it.defaultName() }
 
-    protected val pkgName = ctx.settings.pkg.name
+    val pkgName = ctx.settings.pkg.name
 
     final override fun render() {
         renderServiceFrameworkConfig()
@@ -101,6 +101,7 @@ internal abstract class AbstractStubGenerator(
                 withBlock("private data class Data(", ")") {
                     write("val port: Int,")
                     write("val engine: #T,", ServiceTypes(pkgName).serviceEngine)
+                    write("val region: String,")
                     write("val requestBodyLimit: Long,")
                     write("val requestReadTimeoutSeconds: Int,")
                     write("val responseWriteTimeoutSeconds: Int,")
@@ -111,6 +112,7 @@ internal abstract class AbstractStubGenerator(
                 write("")
                 write("val port: Int get() = backing?.port ?: notInitialised(#S)", "port")
                 write("val engine: #T get() = backing?.engine ?: notInitialised(#S)", ServiceTypes(pkgName).serviceEngine, "engine")
+                write("val region: String get() = backing?.region ?: notInitialised(#S)", "region")
                 write("val requestBodyLimit: Long get() = backing?.requestBodyLimit ?: notInitialised(#S)", "requestBodyLimit")
                 write("val requestReadTimeoutSeconds: Int get() = backing?.requestReadTimeoutSeconds ?: notInitialised(#S)", "requestReadTimeoutSeconds")
                 write("val responseWriteTimeoutSeconds: Int get() = backing?.responseWriteTimeoutSeconds ?: notInitialised(#S)", "responseWriteTimeoutSeconds")
@@ -121,6 +123,7 @@ internal abstract class AbstractStubGenerator(
                 withInlineBlock("fun init(", ")") {
                     write("port: Int,")
                     write("engine: #T,", ServiceTypes(pkgName).serviceEngine)
+                    write("region: String,")
                     write("requestBodyLimit: Long,")
                     write("requestReadTimeoutSeconds: Int,")
                     write("responseWriteTimeoutSeconds: Int,")
@@ -130,7 +133,7 @@ internal abstract class AbstractStubGenerator(
                 }
                 withBlock("{", "}") {
                     write("check(backing == null) { #S }", "ServiceFrameworkConfig has already been initialised")
-                    write("backing = Data(port, engine, requestBodyLimit, requestReadTimeoutSeconds, responseWriteTimeoutSeconds, closeGracePeriodMillis, closeTimeoutMillis, logLevel)")
+                    write("backing = Data(port, engine, region, requestBodyLimit, requestReadTimeoutSeconds, responseWriteTimeoutSeconds, closeGracePeriodMillis, closeTimeoutMillis, logLevel)")
                 }
                 write("")
                 withBlock("private fun notInitialised(prop: String): Nothing {", "}") {
@@ -178,6 +181,7 @@ internal abstract class AbstractStubGenerator(
     protected fun renderMainFile() {
         val portName = "port"
         val engineFactoryName = "engineFactory"
+        val regionName = "region"
         val requestBodyLimitName = "requestBodyLimit"
         val requestReadTimeoutSecondsName = "requestReadTimeoutSeconds"
         val responseWriteTimeoutSecondsName = "responseWriteTimeoutSeconds"
@@ -191,6 +195,7 @@ internal abstract class AbstractStubGenerator(
                 write("")
                 write("val defaultPort = 8080")
                 write("val defaultEngine = #T.NETTY_ENGINE.value", ServiceTypes(pkgName).serviceEngine)
+                write("val defaultRegion = #S", "us-east-1")
                 write("val defaultRequestBodyLimit = 10L * 1024 * 1024")
                 write("val defaultRequestReadTimeoutSeconds = 30")
                 write("val defaultResponseWriteTimeoutSeconds = 30")
@@ -201,6 +206,7 @@ internal abstract class AbstractStubGenerator(
                 withBlock("#T.init(", ")", ServiceTypes(pkgName).serviceFrameworkConfig) {
                     write("port = argMap[#S]?.toInt() ?: defaultPort, ", portName)
                     write("engine = #T.fromValue(argMap[#S] ?: defaultEngine), ", ServiceTypes(pkgName).serviceEngine, engineFactoryName)
+                    write("region = argMap[#S]?.toString() ?: defaultRegion, ", regionName)
                     write("requestBodyLimit = argMap[#S]?.toLong() ?: defaultRequestBodyLimit, ", requestBodyLimitName)
                     write("requestReadTimeoutSeconds = argMap[#S]?.toInt() ?: defaultRequestReadTimeoutSeconds, ", requestReadTimeoutSecondsName)
                     write("responseWriteTimeoutSeconds = argMap[#S]?.toInt() ?: defaultResponseWriteTimeoutSeconds, ", responseWriteTimeoutSecondsName)

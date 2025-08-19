@@ -21,13 +21,13 @@ import kotlin.test.assertTrue
 /* Tests for checking constraint traits work */
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class ServiceConstraintsTest {
-    val closeGracePeriodMillis: Long = 5_000L
-    val closeTimeoutMillis: Long = 1_000L
-    val requestBodyLimit: Long = 10L * 1024 * 1024
+    val closeGracePeriodMillis = TestParams.CLOSE_GRACE_PERIOD_MILLIS
+    val closeTimeoutMillis = TestParams.CLOSE_TIMEOUT_MILLIS
+    val gracefulWindow = TestParams.GRACEFUL_WINDOW
+    val requestBodyLimit = TestParams.REQUEST_BODY_LIMIT
+    val portListenerTimeout = TestParams.PORT_LISTENER_TIMEOUT
+
     val port: Int = ServerSocket(0).use { it.localPort }
-
-    val portListenerTimeout = 60L
-
     val baseUrl = "http://localhost:$port"
 
     val projectDir: Path = Paths.get("build/service-constraints-test")
@@ -42,7 +42,7 @@ class ServiceConstraintsTest {
     }
 
     @AfterAll
-    fun shutdown() = cleanupService(proc)
+    fun shutdown() = cleanupService(proc, gracefulWindow)
 
     @Test
     fun `checks required constraint providing all data`() {
@@ -60,7 +60,6 @@ class ServiceConstraintsTest {
             requestBytes,
             "application/cbor",
             "application/cbor",
-            "correctToken",
         )
         assertIs<HttpResponse<ByteArray>>(response)
         assertEquals(201, response.statusCode(), "Expected 201")
@@ -81,7 +80,6 @@ class ServiceConstraintsTest {
             requestBytes,
             "application/cbor",
             "application/cbor",
-            "correctToken",
         )
         assertIs<HttpResponse<ByteArray>>(response)
         assertEquals(201, response.statusCode(), "Expected 201")
@@ -102,7 +100,6 @@ class ServiceConstraintsTest {
             requestBytes,
             "application/cbor",
             "application/cbor",
-            "correctToken",
         )
         assertIs<HttpResponse<ByteArray>>(response)
         assertEquals(400, response.statusCode(), "Expected 400")
@@ -133,7 +130,6 @@ class ServiceConstraintsTest {
             requestBytes,
             "application/cbor",
             "application/cbor",
-            "correctToken",
         )
         assertIs<HttpResponse<ByteArray>>(response)
         assertEquals(201, response.statusCode(), "Expected 201")
@@ -157,7 +153,6 @@ class ServiceConstraintsTest {
             requestBytes,
             "application/cbor",
             "application/cbor",
-            "correctToken",
         )
         assertIs<HttpResponse<ByteArray>>(response)
         assertEquals(400, response.statusCode(), "Expected 400")
@@ -188,7 +183,6 @@ class ServiceConstraintsTest {
             requestBytes,
             "application/cbor",
             "application/cbor",
-            "correctToken",
         )
         assertIs<HttpResponse<ByteArray>>(response)
         assertEquals(400, response.statusCode(), "Expected 400")
@@ -219,7 +213,6 @@ class ServiceConstraintsTest {
             requestBytes,
             "application/cbor",
             "application/cbor",
-            "correctToken",
         )
         assertIs<HttpResponse<ByteArray>>(response)
         assertEquals(400, response.statusCode(), "Expected 400")
@@ -249,7 +242,6 @@ class ServiceConstraintsTest {
             requestBytes,
             "application/cbor",
             "application/cbor",
-            "correctToken",
         )
         assertIs<HttpResponse<ByteArray>>(response)
         assertEquals(201, response.statusCode(), "Expected 201")
@@ -272,7 +264,6 @@ class ServiceConstraintsTest {
             requestBytes,
             "application/cbor",
             "application/cbor",
-            "correctToken",
         )
         assertIs<HttpResponse<ByteArray>>(response)
         assertEquals(400, response.statusCode(), "Expected 400")
@@ -302,7 +293,6 @@ class ServiceConstraintsTest {
             requestBytes,
             "application/cbor",
             "application/cbor",
-            "correctToken",
         )
         assertIs<HttpResponse<ByteArray>>(response)
         assertEquals(400, response.statusCode(), "Expected 400")
@@ -333,7 +323,6 @@ class ServiceConstraintsTest {
             requestBytes,
             "application/cbor",
             "application/cbor",
-            "correctToken",
         )
         assertIs<HttpResponse<ByteArray>>(response)
         assertEquals(201, response.statusCode(), "Expected 201")
@@ -357,7 +346,6 @@ class ServiceConstraintsTest {
             requestBytes,
             "application/cbor",
             "application/cbor",
-            "correctToken",
         )
         assertIs<HttpResponse<ByteArray>>(response)
         assertEquals(400, response.statusCode(), "Expected 400")
@@ -388,7 +376,6 @@ class ServiceConstraintsTest {
             requestBytes,
             "application/cbor",
             "application/cbor",
-            "correctToken",
         )
         assertIs<HttpResponse<ByteArray>>(response)
         assertEquals(400, response.statusCode(), "Expected 400")
@@ -419,7 +406,6 @@ class ServiceConstraintsTest {
             requestBytes,
             "application/cbor",
             "application/cbor",
-            "correctToken",
         )
         assertIs<HttpResponse<ByteArray>>(response)
         assertEquals(400, response.statusCode(), "Expected 400")
@@ -449,7 +435,6 @@ class ServiceConstraintsTest {
             requestBytes,
             "application/cbor",
             "application/cbor",
-            "correctToken",
         )
         assertIs<HttpResponse<ByteArray>>(response)
         assertEquals(201, response.statusCode(), "Expected 201")
@@ -472,7 +457,6 @@ class ServiceConstraintsTest {
             requestBytes,
             "application/cbor",
             "application/cbor",
-            "correctToken",
         )
         assertIs<HttpResponse<ByteArray>>(response)
         assertEquals(400, response.statusCode(), "Expected 400")
@@ -501,7 +485,6 @@ class ServiceConstraintsTest {
             requestBytes,
             "application/cbor",
             "application/cbor",
-            "correctToken",
         )
         assertIs<HttpResponse<ByteArray>>(response)
         assertEquals(201, response.statusCode(), "Expected 201")
@@ -523,7 +506,6 @@ class ServiceConstraintsTest {
             requestBytes,
             "application/cbor",
             "application/cbor",
-            "correctToken",
         )
         assertIs<HttpResponse<ByteArray>>(response)
         assertEquals(400, response.statusCode(), "Expected 400")
@@ -556,7 +538,6 @@ class ServiceConstraintsTest {
             requestBytes,
             "application/cbor",
             "application/cbor",
-            "correctToken",
         )
         assertIs<HttpResponse<ByteArray>>(response)
         assertEquals(400, response.statusCode(), "Expected 400")
