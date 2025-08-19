@@ -197,6 +197,8 @@ jobs:
             git status
             echo "Git hash:"
             git rev-parse HEAD
+            echo "File listing:"
+            ls -alsh
             echo "Dry run task list:"
             ./gradlew build --dry-run || true
             echo " "
