@@ -180,11 +180,17 @@ jobs:
         with:
           working-directory: 'smithy-kotlin'
 
-      - name: Configure CRT Docker Images
+      - name: Configure Linux CRT Docker Images
         shell: bash
-        if: ${{ matrix.os != 'macos-latest' }}
+        if: ${{ matrix.os == 'ubuntu-latest' }}
         run: |
-          ./aws-crt-kotlin/docker-images/build-all.sh
+          ./aws-crt-kotlin/docker-images/build-images.sh linux-x64 linux-arm64
+
+      - name: Configure Windows CRT Docker Images
+        shell: bash
+        if: ${{ matrix.os == 'windows-latest' }}
+        run: |
+          ./aws-crt-kotlin/docker-images/build-images.sh mingw-x64
 
       - name: Sanity checks
         shell: bash
