@@ -130,7 +130,7 @@ internal fun KtorStubGenerator.writeRouting() {
                                             write(
                                                 "throw #T(ex?.message ?: #S, ex)",
                                                 RuntimeTypes.KtorServerCore.BadRequestException,
-                                                "Malformed CBOR input",
+                                                "Malformed input data",
                                             )
                                         }
                                         if (ctx.model.expectShape(shape.input.get()).allMembers.isNotEmpty()) {
@@ -155,7 +155,7 @@ internal fun KtorStubGenerator.writeRouting() {
                                             write(
                                                 "throw #T(ex?.message ?: #S, ex)",
                                                 RuntimeTypes.KtorServerCore.BadRequestException,
-                                                "Malformed CBOR output",
+                                                "Malformed output data",
                                             )
                                         }
                                         call { readResponseHttpHeader("responseObj", shape.output.get(), writer) }
