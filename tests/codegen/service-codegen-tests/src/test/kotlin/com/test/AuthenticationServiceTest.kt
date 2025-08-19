@@ -105,8 +105,8 @@ class AuthenticationServiceTest {
         val region = "us-east-1"
         val service = "service-1"
 
-        val accessKey = "AKIAIOSFODNN7EXAMPLE"
-        val secretKey = "wJalrXUtnFEMI/K7MDENG+bPxRfiCYEXAMPLEKEY"
+        val accessKey = "AKIACORRECTEXAMPLEACCESSKEY"
+        val secretKey = "CORRECTEXAMPLESECRETKEY"
 
         val creds = Credentials(accessKey, secretKey)
 
@@ -136,8 +136,8 @@ class AuthenticationServiceTest {
         val region = "us-east-2"
         val service = "service-1"
 
-        val accessKey = "AKIAIOSFODNN7EXAMPLE"
-        val secretKey = "wJalrXUtnFEMI/K7MDENG+bPxRfiCYEXAMPLEKEY"
+        val accessKey = "AKIACORRECTEXAMPLEACCESSKEY"
+        val secretKey = "CORRECTEXAMPLESECRETKEY"
 
         val creds = Credentials(accessKey, secretKey)
 
@@ -174,8 +174,8 @@ class AuthenticationServiceTest {
         val region = "us-east-1"
         val service = "service-2"
 
-        val accessKey = "AKIAIOSFODNN7EXAMPLE"
-        val secretKey = "wJalrXUtnFEMI/K7MDENG+bPxRfiCYEXAMPLEKEY"
+        val accessKey = "AKIACORRECTEXAMPLEACCESSKEY"
+        val secretKey = "CORRECTEXAMPLESECRETKEY"
 
         val creds = Credentials(accessKey, secretKey)
 
@@ -212,8 +212,8 @@ class AuthenticationServiceTest {
         val region = "us-east-1"
         val service = "service-1"
 
-        val accessKey = "AKIAIWRONGNN7EXAMPLE"
-        val secretKey = "wJalrXUtnFEMI/K7MDENG+bPxRfiCYEXAMPLEKEY"
+        val accessKey = "AKIAWRONGEXAMPLEACCESSKEY"
+        val secretKey = "CORRECTEXAMPLESECRETKEY"
 
         val creds = Credentials(accessKey, secretKey)
 
@@ -250,8 +250,8 @@ class AuthenticationServiceTest {
         val region = "us-east-1"
         val service = "service-1"
 
-        val accessKey = "AKIAIOSFODNN7EXAMPLE"
-        val secretKey = "wJalrXUtnFEMI/K7MDENG+bPxRfiCYWRONGKEY"
+        val accessKey = "AKIACORRECTEXAMPLEACCESSKEY"
+        val secretKey = "WRONGEXAMPLESECRETKEY"
 
         val creds = Credentials(accessKey, secretKey)
 
@@ -288,8 +288,8 @@ class AuthenticationServiceTest {
         val region = "*"
         val service = "service-1"
 
-        val accessKey = "EXAMPLEACCESSKEY1234"
-        val secretKey = "wJalrXUtnFEMI/K7MDENG+bPxRfiCYEXAMPLEKEY"
+        val accessKey = "AKIACORRECTEXAMPLEACCESSKEY"
+        val secretKey = "CORRECTEXAMPLESECRETKEY"
 
         val creds = Credentials(accessKey, secretKey)
 
@@ -319,8 +319,8 @@ class AuthenticationServiceTest {
         val region = "us-east-1"
         val service = "service-1"
 
-        val accessKey = "EXAMPLEACCESSKEY1234"
-        val secretKey = "wJalrXUtnFEMI/K7MDENG+bPxRfiCYEXAMPLEKEY"
+        val accessKey = "AKIACORRECTEXAMPLEACCESSKEY"
+        val secretKey = "CORRECTEXAMPLESECRETKEY"
 
         val creds = Credentials(accessKey, secretKey)
 
@@ -350,8 +350,8 @@ class AuthenticationServiceTest {
         val region = "us-east-*"
         val service = "service-1"
 
-        val accessKey = "EXAMPLEACCESSKEY1234"
-        val secretKey = "wJalrXUtnFEMI/K7MDENG+bPxRfiCYEXAMPLEKEY"
+        val accessKey = "AKIACORRECTEXAMPLEACCESSKEY"
+        val secretKey = "CORRECTEXAMPLESECRETKEY"
 
         val creds = Credentials(accessKey, secretKey)
 
@@ -381,8 +381,8 @@ class AuthenticationServiceTest {
         val region = "us-east-2"
         val service = "service-1"
 
-        val accessKey = "EXAMPLEACCESSKEY1234"
-        val secretKey = "wJalrXUtnFEMI/K7MDENG+bPxRfiCYEXAMPLEKEY"
+        val accessKey = "AKIACORRECTEXAMPLEACCESSKEY"
+        val secretKey = "CORRECTEXAMPLESECRETKEY"
 
         val creds = Credentials(accessKey, secretKey)
 
@@ -419,8 +419,8 @@ class AuthenticationServiceTest {
         val region = "*"
         val service = "service-1"
 
-        val accessKey = "WRONGNNACCESSKEY1234"
-        val secretKey = "wJalrXUtnFEMI/K7MDENG+bPxRfiCYEXAMPLEKEY"
+        val accessKey = "AKIAWRONGEXAMPLEACCESSKEY"
+        val secretKey = "CORRECTEXAMPLESECRETKEY"
 
         val creds = Credentials(accessKey, secretKey)
 
@@ -457,8 +457,8 @@ class AuthenticationServiceTest {
         val region = "us-east-1"
         val service = "service-1"
 
-        val accessKey = "EXAMPLEACCESSKEY1234"
-        val secretKey = "wJalrXUtnFEMI/K7MDENG+bPxRfiCYWRONGGGKEY"
+        val accessKey = "AKIACORRECTEXAMPLEACCESSKEY"
+        val secretKey = "WRONGEXAMPLESECRETKEY"
 
         val creds = Credentials(accessKey, secretKey)
 
@@ -509,8 +509,8 @@ class AuthenticationServiceTest {
         val region = "us-east-1"
         val service = "service-1"
 
-        val accessKey = "AKIAIOSFODNN7EXAMPLE"
-        val secretKey = "wJalrXUtnFEMI/K7MDENG+bPxRfiCYEXAMPLEKEY"
+        val accessKey = "AKIACORRECTEXAMPLEACCESSKEY"
+        val secretKey = "CORRECTEXAMPLESECRETKEY"
 
         val creds = Credentials(accessKey, secretKey)
 
@@ -540,8 +540,8 @@ class AuthenticationServiceTest {
         val region = "*"
         val service = "service-1"
 
-        val accessKey = "EXAMPLEACCESSKEY1234"
-        val secretKey = "wJalrXUtnFEMI/K7MDENG+bPxRfiCYEXAMPLEKEY"
+        val accessKey = "AKIACORRECTEXAMPLEACCESSKEY"
+        val secretKey = "CORRECTEXAMPLESECRETKEY"
 
         val creds = Credentials(accessKey, secretKey)
 
@@ -587,8 +587,8 @@ class AuthenticationServiceTest {
         val region = "us-east-1"
         val service = "service-1"
 
-        val accessKey = "AKIAIOSFODNN7EXAMPLE"
-        val secretKey = "wJalrXUtnFEMI/K7MDENG+bPxRfiCYEXAMPLEKEY"
+        val accessKey = "AKIACORRECTEXAMPLEACCESSKEY"
+        val secretKey = "CORRECTEXAMPLESECRETKEY"
 
         val creds = Credentials(accessKey, secretKey)
 
@@ -623,8 +623,8 @@ class AuthenticationServiceTest {
         val region = "*"
         val service = "service-1"
 
-        val accessKey = "EXAMPLEACCESSKEY1234"
-        val secretKey = "wJalrXUtnFEMI/K7MDENG+bPxRfiCYEXAMPLEKEY"
+        val accessKey = "AKIACORRECTEXAMPLEACCESSKEY"
+        val secretKey = "CORRECTEXAMPLESECRETKEY"
 
         val creds = Credentials(accessKey, secretKey)
 
