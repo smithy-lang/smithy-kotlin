@@ -15,9 +15,6 @@ plugins {
 
 val sdkVersion: String by project
 
-// Apply KMP configuration from build plugin
-configureKmpTargets()
-
 // capture locally - scope issue with custom KMP plugin
 val libraries = libs
 
@@ -32,6 +29,9 @@ subprojects {
     }
 
     println("Project $name: hasNative=$hasNative, NATIVE_ENABLED=$NATIVE_ENABLED")
+
+    // Apply KMP configuration from build plugin
+    configureKmpTargets()
 
     configurePublishing("smithy-kotlin", "smithy-lang")
     kotlin {
@@ -64,7 +64,11 @@ subprojects {
     kotlin.sourceSets.all {
         // Allow subprojects to use internal APIs
         // See https://kotlinlang.org/docs/reference/opt-in-requirements.html#opting-in-to-using-api
-        listOf("kotlin.RequiresOptIn", "kotlinx.cinterop.ExperimentalForeignApi").forEach { languageSettings.optIn(it) }
+        languageSettings.optIn("kotlin.RequiresOptIn")
+
+        if (!name.contains("metadata", ignoreCase = true)) {
+            languageSettings.optIn("kotlinx.cinterop.ExperimentalForeignApi")
+        }
     }
 
     tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
@@ -117,6 +121,15 @@ subprojects {
      */
     tasks.withType<KotlinNativeSimulatorTest> {
         enabled = false
+    }
+
+    tasks.withType<ProcessResources> {
+        // FIXME this shouldn't be necessary but without it the following message is observed:
+        //  Execution failed for task ':runtime:auth:aws-signing-tests:metadataCommonMainProcessResources'.
+        //  > Entry aws-signing-test-suite/README.md is a duplicate but no duplicate handling strategy has been set.
+        //  Please refer to https://docs.gradle.org/8.14.2/dsl/org.gradle.api.tasks.Copy.html#org.gradle.api.tasks.Copy:duplicatesStrategy
+        //  for details.
+        duplicatesStrategy = DuplicatesStrategy.WARN
     }
 }
 
