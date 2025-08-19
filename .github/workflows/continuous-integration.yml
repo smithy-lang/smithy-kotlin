@@ -180,14 +180,58 @@ jobs:
         with:
           working-directory: 'smithy-kotlin'
 
+      - name: Configure Linux CRT Docker Images
+        shell: bash
+        if: ${{ matrix.os == 'ubuntu-latest' }}
+        run: |
+          ./aws-crt-kotlin/docker-images/build-images.sh linux-x64 linux-arm64
+
+      - name: Set up MSYS2
+        if: ${{ matrix.os == 'windows-latest' }}
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: MINGW64
+          install: >-
+            mingw-w64-x86_64-cmake
+            mingw-w64-x86_64-gcc
+
+      - name: Sanity checks
+        shell: bash
+        run: |
+          for dir in *; do
+            pushd "$dir"
+            echo "===================================="
+            echo "Status checks for $dir"
+            echo "===================================="
+            echo "Git status for $dir:"
+            git status
+            echo "Git hash:"
+            git rev-parse HEAD
+            echo "File listing:"
+            ls -alsh
+            echo "Dry run task list:"
+            ./gradlew build --dry-run || true
+            echo " "
+            popd
+          done
+
       - name: Test
+        if: ${{ matrix.os != 'windows-latest' }}
         working-directory: ./smithy-kotlin
         shell: bash
         run: |
           # FIXME K2. Re-enable warnings as errors after this warning is removed: https://youtrack.jetbrains.com/issue/KT-68532
           # echo "kotlinWarningsAsErrors=true" >> $GITHUB_WORKSPACE/local.properties
-          ./gradlew -Paws.kotlin.native=false apiCheck
-          ./gradlew -Paws.kotlin.native=false test jvmTest
+          ./gradlew build
+
+      - name: Test on Windows
+        if: ${{ matrix.os == 'windows-latest' }}
+        working-directory: ./smithy-kotlin
+        shell: msys2 {0}
+        run: |
+          # FIXME K2. Re-enable warnings as errors after this warning is removed: https://youtrack.jetbrains.com/issue/KT-68532
+          # echo "kotlinWarningsAsErrors=true" >> $GITHUB_WORKSPACE/local.properties
+          ./gradlew build -Paws.crt.disableContainerTargets=mingw_x64
 
       - name: Save Test Reports
         if: failure()
@@ -243,7 +287,6 @@ jobs:
         # smithy-kotlin is checked out as a sibling dir which will automatically make it an included build
         path: 'aws-sdk-kotlin'
         repository: 'awslabs/aws-sdk-kotlin'
-
     - name: Configure Gradle - smithy-kotlin
       uses: awslabs/aws-kotlin-repo-tools/.github/actions/configure-gradle@main
       with:
