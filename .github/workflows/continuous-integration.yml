@@ -181,6 +181,7 @@ jobs:
           working-directory: 'smithy-kotlin'
 
       - name: Configure CRT Docker Images
+        shell: bash
         if: ${{ matrix.os != 'macos-latest' }}
         run: |
           ./aws-crt-kotlin/docker-images/build-all.sh
