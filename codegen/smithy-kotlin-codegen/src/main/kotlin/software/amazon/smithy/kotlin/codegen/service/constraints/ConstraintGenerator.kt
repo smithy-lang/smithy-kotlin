@@ -10,6 +10,16 @@ import software.amazon.smithy.model.shapes.StructureShape
 import software.amazon.smithy.model.traits.RequiredTrait
 import kotlin.collections.iterator
 
+/**
+ * Generates validation code for request constraints on Smithy operation inputs.
+ *
+ * For a given [operation], this generator traverses the input structure and:
+ * - Recursively inspects members of structures and lists.
+ * - Applies trait-based validations (e.g., required, length, range).
+ * - Emits Kotlin validation functions that check constraints at runtime.
+ *
+ * Output is written into a `<Operation>RequestConstraints.kt` file in the generated `constraints` package.
+ */
 internal class ConstraintGenerator(
     val ctx: GenerationContext,
     val operation: OperationShape,
@@ -21,9 +31,23 @@ internal class ConstraintGenerator(
     val opName = operation.id.name
     val pkgName = ctx.settings.pkg.name
 
+    /**
+     * Entry point for emitting validation code for the operation’s request type.
+     * Delegates to [renderRequestConstraintsValidation].
+     */
     fun render() {
         renderRequestConstraintsValidation()
     }
+
+    /**
+     * Recursively generates validation code for a given [memberShape].
+     *
+     * - If the target is a list, iterates over elements and validates them.
+     * - If the target is a structure, recursively validates its members.
+     * - For each trait (on the member or its target), invokes the matching trait generator.
+     *   - `@required` traits are always enforced.
+     *   - Other traits are wrapped in a null check before validation.
+     */
     private fun generateConstraintValidations(prefix: String, memberShape: MemberShape, writer: KotlinWriter) {
         val targetShape = ctx.model.expectShape(memberShape.target)
 
@@ -59,6 +83,12 @@ internal class ConstraintGenerator(
         }
     }
 
+    /**
+     * Writes the top-level validation function for the operation’s input type.
+     *
+     * Inside, it calls [generateConstraintValidations] for each input member,
+     * ensuring all modeled constraints are enforced.
+     */
     private fun renderRequestConstraintsValidation() {
         delegator.useFileWriter("${opName}RequestConstraints.kt", "$pkgName.constraints") { writer ->
             val inputShape = ctx.model.expectShape(operation.input.get())

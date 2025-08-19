@@ -7,6 +7,14 @@ import software.amazon.smithy.kotlin.codegen.core.withInlineBlock
 import software.amazon.smithy.kotlin.codegen.lang.KotlinTypes
 import software.amazon.smithy.kotlin.codegen.service.ServiceTypes
 
+/**
+ * Writes the server framework implementation for the generated Ktor service.
+ *
+ * - Defines the `Application.module()` entry point for configuring the Ktor pipeline
+ *   (logging, body size limits, double receive, error handling, authentication, routing).
+ * - Emits a concrete `KtorServiceFramework` implementation of `ServiceFramework`
+ *   that manages lifecycle of the Ktor embedded server engine.
+ */
 internal fun KtorStubGenerator.writeServerFrameworkImplementation(writer: KotlinWriter) {
     writer.withBlock("internal fun #T.module(): Unit {", "}", RuntimeTypes.KtorServerCore.Application) {
         write("#T()", ServiceTypes(pkgName).configureLogging)

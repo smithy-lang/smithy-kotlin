@@ -2,6 +2,18 @@ package software.amazon.smithy.kotlin.codegen.service.ktor
 
 import software.amazon.smithy.kotlin.codegen.core.withBlock
 
+/**
+ * Generates stub handler files for each Smithy operation.
+ *
+ * For every operation, this creates an `OperationNameOperation.kt` file
+ * under the `operations` package containing:
+ * - A `handle<OperationName>Request()` function
+ * - TODO implementation guidance for constructing response objects
+ * - Documentation of available custom errors
+ *
+ * Each generated handler accepts the operation's input type and returns
+ * the operation's output type.
+ */
 internal fun KtorStubGenerator.writePerOperationHandlers() {
     operations.forEach { shape ->
         val inputShape = ctx.model.expectShape(shape.input.get())

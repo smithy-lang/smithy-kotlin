@@ -7,6 +7,15 @@ import software.amazon.smithy.kotlin.codegen.core.withBlock
 import software.amazon.smithy.kotlin.codegen.model.getTrait
 import software.amazon.smithy.kotlin.codegen.service.ServiceTypes
 
+/**
+ * Writes Ktor-based authentication support classes and configuration
+ * for a generated service.
+ *
+ * This generates three files:
+ * 1. UserPrincipal.kt → Represents the authenticated user.
+ * 2. Validation.kt → Provides bearer token validation logic.
+ * 3. Authentication.kt → Configures authentication providers in Ktor.
+ */
 internal fun KtorStubGenerator.writeAuthentication() {
     delegator.useFileWriter("UserPrincipal.kt", "$pkgName.auth") { writer ->
         writer.withBlock("public data class UserPrincipal(", ")") {

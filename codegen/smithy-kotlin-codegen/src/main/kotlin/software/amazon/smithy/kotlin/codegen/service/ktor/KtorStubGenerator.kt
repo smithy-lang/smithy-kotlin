@@ -20,33 +20,48 @@ class LoggingWriter(parent: LoggingWriter? = null) : AbstractCodeWriter<LoggingW
     }
 }
 
+/**
+ * Stub generator for Ktor-based services.
+ *
+ * Implements [AbstractStubGenerator] for the Ktor runtime, generating:
+ * - Framework implementation
+ * - Utilities
+ * - Authentication modules
+ * - Constraint validators
+ * - Routing tables
+ * - Plugins
+ * - Operation handlers
+ */
 internal class KtorStubGenerator(
     ctx: GenerationContext,
     delegator: KotlinDelegator,
     fileManifest: FileManifest,
 ) : AbstractStubGenerator(ctx, delegator, fileManifest) {
 
+    /** Generate the Ktor server framework implementation. */
     override fun renderServerFrameworkImplementation(writer: KotlinWriter) = writeServerFrameworkImplementation(writer)
 
+    /** Generate utility classes and helpers. */
     override fun renderUtils() = writeUtils()
 
-    // Generates `Authentication.kt` with Authenticator interface + configureSecurity().
+    /** Generate authentication modules (AWS auth + bearer/no-auth). */
     override fun renderAuthModule() {
         writeAWSAuthentication()
         writeAuthentication()
     }
 
-    // For every operation request structure, create a `validate()` function file.
+    /** Generate request constraint validators for all operations. */
     override fun renderConstraintValidators() {
         ConstraintUtilsGenerator(ctx, delegator).render()
         operations.forEach { operation -> ConstraintGenerator(ctx, operation, delegator).render() }
     }
 
-    // Writes `Routing.kt` that maps Smithy operations → Ktor routes.
+    /** Generate routing file mapping Smithy operations to Ktor routes. */
     override fun renderRouting() = writeRouting()
 
+    /** Generate plugin configurations (e.g., error handlers, guards). */
     override fun renderPlugins() = writePlugins()
 
-    // Emits one stub handler per Smithy operation (`OperationNameHandler.kt`).
+    /** Generate stub handler files for each Smithy operation. */
     override fun renderPerOperationHandlers() = writePerOperationHandlers()
 }

@@ -4,10 +4,26 @@ import software.amazon.smithy.kotlin.codegen.core.RuntimeTypes
 import software.amazon.smithy.kotlin.codegen.core.withBlock
 import software.amazon.smithy.kotlin.codegen.service.ServiceTypes
 
+/**
+ * Entry point for generating utility files required by the Ktor server stub.
+ *
+ * Currently delegates to [renderLogging] to generate logging configuration.
+ */
 internal fun KtorStubGenerator.writeUtils() {
     renderLogging()
 }
 
+/**
+ * Generates logging configuration for the generated Ktor service.
+ *
+ * - Creates a `Logging.kt` file with `configureLogging()` extension function for
+ *   the Ktor `Application`, setting up SLF4J/Logback integration.
+ * - Maps service log levels to SLF4J/Logback levels.
+ * - Configures Ktor's `CallLogging` plugin to log HTTP method, URI, and status.
+ * - Registers lifecycle log messages (`starting`, `started`, `stopping`, `stopped`).
+ * - Writes a default `logback.xml` file into `src/main/resources` to ensure
+ *   console logging is available out of the box.
+ */
 private fun KtorStubGenerator.renderLogging() {
     delegator.useFileWriter("Logging.kt", "$pkgName.utils") { writer ->
 
