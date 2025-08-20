@@ -21,6 +21,7 @@ import software.amazon.smithy.kotlin.codegen.rendering.*
 import software.amazon.smithy.kotlin.codegen.rendering.protocol.ApplicationProtocol
 import software.amazon.smithy.kotlin.codegen.rendering.protocol.ProtocolGenerator
 import software.amazon.smithy.kotlin.codegen.service.AbstractStubGenerator
+import software.amazon.smithy.kotlin.codegen.service.buildScript
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.knowledge.ServiceIndex
 import software.amazon.smithy.model.neighbor.Walker
@@ -156,6 +157,8 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Unit>() {
         if (generateServiceProject) {
             val serviceStubGenerator: AbstractStubGenerator = settings.serviceStub.framework.getServiceFrameworkGenerator(baseGenerationContext, writers, fileManifest)
             serviceStubGenerator.render()
+
+            buildScript(fileManifest)
         }
 
         writers.finalize()
