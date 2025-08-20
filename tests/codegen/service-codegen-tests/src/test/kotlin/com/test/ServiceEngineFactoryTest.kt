@@ -26,6 +26,7 @@ class ServiceEngineFactoryTest {
     fun `checks service with netty engine`() {
         val nettyPort: Int = ServerSocket(0).use { it.localPort }
         val nettyProc = startService("netty", nettyPort, closeGracePeriodMillis, closeTimeoutMillis, requestBodyLimit, projectDir)
+
         val ready = waitForPort(nettyPort, portListenerTimeout)
         assertTrue(ready, "Service did not start within $portListenerTimeout s")
         cleanupService(nettyProc, gracefulWindow)

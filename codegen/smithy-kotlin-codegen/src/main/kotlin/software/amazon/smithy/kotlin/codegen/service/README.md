@@ -29,7 +29,6 @@ While Ktor is the default backend, the architecture is framework-agnostic, allow
 - `ServiceStubGenerator.kt` – abstract service stub generator file.
 - `ServiceTypes.kt` – file that includes service component symbols.
 - `utils.kt` – utilities file.
-- `BuildScriptGenerator.kt` – build scripts generator file.
 
 ### Testing
 

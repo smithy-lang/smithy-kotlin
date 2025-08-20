@@ -140,13 +140,13 @@ Run:
 
 If you want to prevent accidentally losing previous build, use the provided scripts instead:
 
-Linux / macOS:
+You can find script for Linux / macOS [here](../../../../../../../../../../../../examples/service-codegen/build.sh):
 ```bash
   chmod +x build.sh
   ./build.sh
 ```
 
-Windows:
+You can find script for Windows [here](../../../../../../../../../../../../examples/service-codegen/build.bat):
 ```bash
   icacls build.bat /grant %USERNAME%:RX
   .\build.bat
