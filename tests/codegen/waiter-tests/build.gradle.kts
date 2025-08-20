@@ -38,7 +38,7 @@ kotlin.sourceSets.getByName("main") {
 
 tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
     dependsOn(tasks.generateSmithyProjections)
-    // FIXME Re-enable warnings as errors
+    // FIXME Re-enable warnings as errors SDK-KT-785
     compilerOptions {
         allWarningsAsErrors = false
     }
