@@ -164,7 +164,7 @@ class KotlinJmespathExpressionVisitor(
 
         val codegen = buildString {
             val nullables = buildList {
-                // FIXME In some cases we are unnecessarily handling nulls here, leading to compiler warnings.
+                // FIXME In some cases we are unnecessarily handling nulls here, leading to compiler warnings. SDK-KT-786
                 if (left.shape?.isNullable == true || left.nullable) add("${left.identifier} == null")
                 if (right.shape?.isNullable == true || right.nullable) add("${right.identifier} == null")
             }
