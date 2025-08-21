@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.5.6] - 08/21/2025
+
+### Fixes
+* [#1285](https://github.com/awslabs/smithy-kotlin/issues/1285) ⚠️ **IMPORTANT**: Correctly return number of bytes read from chunked streams
+
 ## [1.5.5] - 08/13/2025
 
 ## [1.5.4] - 08/07/2025

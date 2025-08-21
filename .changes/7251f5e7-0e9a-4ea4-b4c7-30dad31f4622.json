@@ -1,8 +1,0 @@
-{
-    "id": "7251f5e7-0e9a-4ea4-b4c7-30dad31f4622",
-    "type": "bugfix",
-    "description": "⚠️ **IMPORTANT**: Correctly return number of bytes read from chunked streams",
-    "issues": [
-        "awslabs/smithy-kotlin#1285"
-    ]
-}
