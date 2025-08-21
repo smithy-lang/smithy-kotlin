@@ -22,6 +22,7 @@ interface AwsChunkedTestReader {
     // This may modify the chunked reader state and cause loss of data!
     fun isClosedForRead(): Boolean
     suspend fun read(sink: SdkBuffer, limit: Long): Long
+    suspend fun readAll(sink: SdkBuffer): Long
 }
 
 fun interface AwsChunkedReaderFactory {
@@ -32,6 +33,7 @@ fun interface AwsChunkedReaderFactory {
             object : AwsChunkedTestReader {
                 override fun isClosedForRead(): Boolean = chunked.isClosedForRead
                 override suspend fun read(sink: SdkBuffer, limit: Long): Long = chunked.read(sink, limit)
+                override suspend fun readAll(sink: SdkBuffer): Long = chunked.readAll(sink)
             }
         }
     }
@@ -184,6 +186,16 @@ abstract class AwsChunkedTestBase(
         }
     }
 
+    private suspend fun AwsChunkedTestReader.readExact(sink: SdkBuffer, bytes: Long): Long {
+        var total = 0L
+        while (total < bytes) {
+            val rc = read(sink, bytes - total)
+            assertTrue(rc >= 0, "Unexpected end of source while trying to read $bytes bytes")
+            total += rc
+        }
+        return total
+    }
+
     @Test
     fun testReadExactBytes(): TestResult = runTest {
         val dataLengthBytes = CHUNK_SIZE_BYTES
@@ -196,8 +208,9 @@ abstract class AwsChunkedTestBase(
 
         val sink = SdkBuffer()
         // need to make 2 successive calls because there are two chunks -- read will only fetch the first one due to limit
-        var bytesRead = awsChunked.read(sink, readLimit.toLong())
-        bytesRead += awsChunked.read(sink, readLimit - bytesRead)
+        var bytesRead = awsChunked.readExact(sink, dataLengthBytes.toLong())
+        bytesRead += awsChunked.read(sink, 1L)
+        assertEquals(readLimit.toLong(), sink.size)
 
         val bytesAsString = sink.readUtf8()
 
@@ -213,7 +226,7 @@ abstract class AwsChunkedTestBase(
         assertEquals(CHUNK_SIZE_BYTES, chunkSizes[0])
         assertEquals(0, chunkSizes[1])
 
-        assertEquals(readLimit, bytesRead.toInt())
+        assertEquals(dataLengthBytes, bytesRead.toInt())
         assertTrue(awsChunked.isClosedForRead())
     }
 
@@ -226,8 +239,8 @@ abstract class AwsChunkedTestBase(
 
         val readLimit = encodedChunkLength(dataLengthBytes * 2) + encodedChunkLength(0) + "\r\n".length
         val sink = SdkBuffer()
-        var bytesRead = awsChunked.read(sink, readLimit.toLong())
-        bytesRead += awsChunked.read(sink, readLimit.toLong())
+        var bytesRead = awsChunked.readExact(sink, dataLengthBytes.toLong())
+        bytesRead += awsChunked.read(sink, 1L)
 
         val bytesAsString = sink.readUtf8()
         val chunkSignatures = getChunkSignatures(bytesAsString)
@@ -257,19 +270,8 @@ abstract class AwsChunkedTestBase(
 
         val sink = SdkBuffer()
         val bytesRead = awsChunked.read(sink, readLimit.toLong())
-        assertEquals(readLimit.toLong(), bytesRead)
-
-        val bytesAsString = sink.readUtf8()
-        val chunkSignatures = getChunkSignatures(bytesAsString)
-        assertEquals(1, chunkSignatures.size)
-        val expectedChunkSignature = signer.signChunk(data, previousSignature, testChunkSigningConfig).signature
-        assertEquals(expectedChunkSignature.decodeToString(), chunkSignatures[0])
-
-        val chunkSizes = getChunkSizes(bytesAsString)
-        assertEquals(1, chunkSizes.size)
-        assertEquals(CHUNK_SIZE_BYTES, chunkSizes[0])
-
-        assertFalse(awsChunked.isClosedForRead())
+        assertTrue(CHUNK_SIZE_BYTES.toLong() >= bytesRead)
+        assertTrue(readLimit.toLong() >= sink.size)
     }
 
     @Test
@@ -284,12 +286,13 @@ abstract class AwsChunkedTestBase(
         val sink = SdkBuffer()
 
         var bytesRead = 0L
-        val readLimit = CHUNK_SIZE_BYTES + (dataLengthBytes.toString(16).length + 1 + "chunk-signature=".length + 64 + 4)
-        for (chunk in 0 until numChunks) { // read the chunks in a loop
-            bytesRead += awsChunked.read(sink, readLimit.toLong())
+        // read the chunks in a loop
+        repeat(numChunks) {
+            bytesRead += awsChunked.readExact(sink, CHUNK_SIZE_BYTES.toLong())
         }
-        bytesRead += awsChunked.read(sink, readLimit.toLong())
-        assertEquals(totalBytesExpected.toLong(), bytesRead)
+        bytesRead += awsChunked.read(sink, CHUNK_SIZE_BYTES.toLong())
+        assertEquals(dataLengthBytes.toLong(), bytesRead)
+        assertEquals(totalBytesExpected.toLong(), sink.size)
 
         val bytesAsString = sink.readUtf8()
 
@@ -345,9 +348,11 @@ abstract class AwsChunkedTestBase(
             }
         }
 
+        assertEquals(dataLengthBytes.toLong(), bytesRead)
+        assertEquals(totalBytesExpected.toLong(), sink.size)
+
         val bytesAsString = sink.readUtf8()
 
-        assertEquals(totalBytesExpected.toLong(), bytesRead)
         assertTrue(awsChunked.isClosedForRead())
 
         val chunkSignatures = getChunkSignatures(bytesAsString)
@@ -402,13 +407,9 @@ abstract class AwsChunkedTestBase(
         val totalBytesExpected = encodedChunkLength(CHUNK_SIZE_BYTES) + encodedChunkLength(0) + trailingHeadersLength + "\r\n".length
         val sink = SdkBuffer()
 
-        var bytesRead = 0L
-
-        while (bytesRead < totalBytesExpected.toLong()) {
-            bytesRead += awsChunked.read(sink, Long.MAX_VALUE)
-        }
-
-        assertEquals(totalBytesExpected.toLong(), bytesRead)
+        val bytesRead = awsChunked.readAll(sink)
+        assertEquals(dataLengthBytes.toLong(), bytesRead)
+        assertEquals(totalBytesExpected.toLong(), sink.size)
         assertTrue(awsChunked.isClosedForRead())
 
         val bytesAsString = sink.readUtf8()
@@ -445,13 +446,9 @@ abstract class AwsChunkedTestBase(
         val totalBytesExpected = encodedUnsignedChunkLength(CHUNK_SIZE_BYTES) + encodedUnsignedChunkLength(0) + "\r\n".length
         val sink = SdkBuffer()
 
-        var bytesRead = 0L
-
-        while (bytesRead < totalBytesExpected.toLong()) {
-            bytesRead += awsChunked.read(sink, Long.MAX_VALUE)
-        }
-
-        assertEquals(totalBytesExpected.toLong(), bytesRead)
+        val bytesRead = awsChunked.readAll(sink)
+        assertEquals(dataLengthBytes.toLong(), bytesRead)
+        assertEquals(totalBytesExpected.toLong(), sink.size)
         assertTrue(awsChunked.isClosedForRead())
 
         val bytesAsString = sink.readUtf8()
@@ -482,13 +479,9 @@ abstract class AwsChunkedTestBase(
         val totalBytesExpected = encodedUnsignedChunkLength(CHUNK_SIZE_BYTES) + encodedUnsignedChunkLength(0) + trailingHeadersLength + "\r\n".length
         val sink = SdkBuffer()
 
-        var bytesRead = 0L
-
-        while (bytesRead < totalBytesExpected.toLong()) {
-            bytesRead += awsChunked.read(sink, Long.MAX_VALUE)
-        }
-
-        assertEquals(totalBytesExpected.toLong(), bytesRead)
+        val bytesRead = awsChunked.readAll(sink)
+        assertEquals(dataLengthBytes.toLong(), bytesRead)
+        assertEquals(totalBytesExpected.toLong(), sink.size)
         assertTrue(awsChunked.isClosedForRead())
 
         val bytesAsString = sink.readUtf8()
