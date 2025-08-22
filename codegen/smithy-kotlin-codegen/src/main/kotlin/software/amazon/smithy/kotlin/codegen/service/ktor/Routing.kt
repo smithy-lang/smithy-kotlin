@@ -33,6 +33,14 @@ import software.amazon.smithy.model.traits.HttpTrait
 import software.amazon.smithy.model.traits.MediaTypeTrait
 import software.amazon.smithy.model.traits.TimestampFormatTrait
 
+/**
+ * Generates Ktor server routing for all operations in the service model.
+ *
+ * - Creates `Routing.kt` file.
+ * - Installs appropriate content-type and accept-type guards.
+ * - Handles request deserialization, validation, business logic invocation,
+ *   response serialization, and error handling.
+ */
 internal fun KtorStubGenerator.writeRouting() {
     delegator.useFileWriter("Routing.kt", pkgName) { writer ->
         operations.forEach { shape ->
@@ -122,7 +130,7 @@ internal fun KtorStubGenerator.writeRouting() {
                                             write(
                                                 "throw #T(ex?.message ?: #S, ex)",
                                                 RuntimeTypes.KtorServerCore.BadRequestException,
-                                                "Malformed CBOR input",
+                                                "Malformed input data",
                                             )
                                         }
                                         if (ctx.model.expectShape(shape.input.get()).allMembers.isNotEmpty()) {
@@ -147,7 +155,7 @@ internal fun KtorStubGenerator.writeRouting() {
                                             write(
                                                 "throw #T(ex?.message ?: #S, ex)",
                                                 RuntimeTypes.KtorServerCore.BadRequestException,
-                                                "Malformed CBOR output",
+                                                "Malformed output data",
                                             )
                                         }
                                         call { readResponseHttpHeader("responseObj", shape.output.get(), writer) }
@@ -206,6 +214,10 @@ internal fun KtorStubGenerator.writeRouting() {
     }
 }
 
+/**
+ * Reads `HttpLabelTrait` annotated members from request URI parameters
+ * and casts them to appropriate Kotlin types before populating request object.
+ */
 private fun KtorStubGenerator.readHttpLabel(shape: OperationShape, writer: KotlinWriter) {
     val inputShape = ctx.model.expectShape(shape.input.get())
     inputShape.allMembers
@@ -229,6 +241,11 @@ private fun KtorStubGenerator.readHttpLabel(shape: OperationShape, writer: Kotli
         }
 }
 
+/**
+ * Reads `HttpQueryTrait` and `HttpQueryParamsTrait` annotated members
+ * from query parameters. Handles both simple and list-valued query params,
+ * casting them to correct Kotlin types before populating request object.
+ */
 private fun KtorStubGenerator.readHttpQuery(shape: OperationShape, writer: KotlinWriter) {
     val inputShape = ctx.model.expectShape(shape.input.get())
     val httpQueryKeys = mutableSetOf<String>()
@@ -298,6 +315,11 @@ private fun KtorStubGenerator.readHttpQuery(shape: OperationShape, writer: Kotli
     }
 }
 
+/**
+ * Configures authentication for a given operation shape.
+ * Determines available authentication strategies (Bearer, SigV4, SigV4A)
+ * at service and operation level and installs them in Ktor's `authenticate` block.
+ */
 private fun KtorStubGenerator.renderRoutingAuth(w: KotlinWriter, shape: OperationShape) {
     val serviceAuthTrait = serviceShape.getTrait<AuthTrait>()
     val hasServiceHttpBearerAuthTrait = serviceShape.hasTrait(HttpBearerAuthTrait.ID)
@@ -328,6 +350,10 @@ private fun KtorStubGenerator.renderRoutingAuth(w: KotlinWriter, shape: Operatio
     )
 }
 
+/**
+ * Reads and appends HTTP headers from response object fields annotated
+ * with `HttpHeaderTrait` to the Ktor response.
+ */
 private fun KtorStubGenerator.readResponseHttpHeader(dataName: String, shapeId: ShapeId, writer: KotlinWriter) {
     val shape = ctx.model.expectShape(shapeId)
     shape.allMembers
@@ -339,6 +365,10 @@ private fun KtorStubGenerator.readResponseHttpHeader(dataName: String, shapeId: 
         }
 }
 
+/**
+ * Reads and appends HTTP prefix headers from response object fields annotated
+ * with `HttpPrefixHeadersTrait`. Dynamically appends prefixed headers with suffix values.
+ */
 private fun KtorStubGenerator.readResponseHttpPrefixHeader(dataName: String, shapeId: ShapeId, writer: KotlinWriter) {
     val shape = ctx.model.expectShape(shapeId)
     shape.allMembers
@@ -352,6 +382,13 @@ private fun KtorStubGenerator.readResponseHttpPrefixHeader(dataName: String, sha
         }
 }
 
+/**
+ * Writes the Ktor call to send the response back to the client.
+ *
+ * - Selects correct responder (`respondBytes` or `responseText`) based on content type.
+ * - Sets appropriate content type and HTTP status code.
+ * - Supports CBOR, JSON, text, binary, and dynamic media types.
+ */
 private fun KtorStubGenerator.renderResponseCall(
     responseName: String,
     w: KotlinWriter,

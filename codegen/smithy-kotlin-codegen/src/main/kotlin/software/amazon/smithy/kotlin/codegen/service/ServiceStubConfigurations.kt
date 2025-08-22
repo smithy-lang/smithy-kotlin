@@ -12,6 +12,16 @@ import software.amazon.smithy.model.traits.HttpPayloadTrait
 import software.amazon.smithy.model.traits.MediaTypeTrait
 import software.amazon.smithy.protocol.traits.Rpcv2CborTrait
 
+/**
+ * Enumeration of supported media types used by the generated service.
+ *
+ * These values define how payloads are encoded/decoded:
+ * - `CBOR`         → Concise Binary Object Representation
+ * - `JSON`         → JSON encoding
+ * - `PLAIN_TEXT`   → Text/plain
+ * - `OCTET_STREAM` → Binary data
+ * - `ANY`          → Fallback for arbitrary content types
+ */
 enum class MediaType(val value: String) {
     CBOR("CBOR"),
     JSON("JSON"),
@@ -57,6 +67,12 @@ enum class MediaType(val value: String) {
     }
 }
 
+/**
+ * Enumeration of supported service frameworks for generated stubs.
+ *
+ * Currently only supports:
+ * - `KTOR`: Generates Ktor-based service stubs
+ */
 enum class ServiceFramework(val value: String) {
     KTOR("ktor"),
     ;

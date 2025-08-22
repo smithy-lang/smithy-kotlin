@@ -1,4 +1,4 @@
-package software.amazon.smithy.kotlin.codegen.service.contraints
+package software.amazon.smithy.kotlin.codegen.service.constraints
 
 import software.amazon.smithy.kotlin.codegen.core.KotlinWriter
 import software.amazon.smithy.kotlin.codegen.service.ServiceTypes

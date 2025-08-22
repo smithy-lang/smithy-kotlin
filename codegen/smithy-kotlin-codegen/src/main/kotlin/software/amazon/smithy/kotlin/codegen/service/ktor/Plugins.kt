@@ -5,12 +5,28 @@ import software.amazon.smithy.kotlin.codegen.core.withBlock
 import software.amazon.smithy.kotlin.codegen.core.withInlineBlock
 import software.amazon.smithy.kotlin.codegen.service.ServiceTypes
 
+/**
+ * Entry point for writing plugin modules (error handling, content-type guard, accept-type guard).
+ *
+ * Generates three files under the `plugins` package:
+ * - `ErrorHandler.kt`: common error envelope and exception-to-response mapping
+ * - `ContentTypeGuard.kt`: validates request `Content-Type` header
+ * - `AcceptTypeGuard.kt`: validates request `Accept` header
+ */
 internal fun KtorStubGenerator.writePlugins() {
     renderErrorHandler()
     renderContentTypeGuard()
     renderAcceptTypeGuard()
 }
 
+/**
+ * Generates `ErrorHandler.kt`, which contains:
+ * - `ErrorEnvelope` exception wrapper for standard error responses
+ * - JSON and CBOR serialization for error payloads
+ * - Extension to respond with an `ErrorEnvelope`
+ * - `configureErrorHandling()` that installs a `StatusPages` plugin
+ *   mapping HTTP status codes and exceptions → structured error responses
+ */
 private fun KtorStubGenerator.renderErrorHandler() {
     delegator.useFileWriter("ErrorHandler.kt", "$pkgName.plugins") { writer ->
         writer.write("internal val ResponseHandledKey = #T<Boolean>(#S)", RuntimeTypes.KtorServerUtils.AttributeKey, "ResponseHandled")
@@ -130,6 +146,12 @@ private fun KtorStubGenerator.renderErrorHandler() {
     }
 }
 
+/**
+ * Generates `ContentTypeGuard.kt`, which installs a route-scoped plugin that:
+ * - Defines a configurable allow-list of acceptable request `Content-Type`s
+ * - Rejects unsupported media types with an `ErrorEnvelope`
+ * - Provides convenience configuration (e.g., `json()`, `cbor()`, `binary()`)
+ */
 private fun KtorStubGenerator.renderContentTypeGuard() {
     delegator.useFileWriter("ContentTypeGuard.kt", "$pkgName.plugins") { writer ->
 
@@ -192,6 +214,12 @@ private fun KtorStubGenerator.renderContentTypeGuard() {
     }
 }
 
+/**
+ * Generates `AcceptTypeGuard.kt`, which installs a route-scoped plugin that:
+ * - Defines a configurable allow-list of acceptable `Accept` header values
+ * - Rejects unsupported response types with an `ErrorEnvelope`
+ * - Provides convenience configuration (e.g., `json()`, `cbor()`, `text()`)
+ */
 private fun KtorStubGenerator.renderAcceptTypeGuard() {
     delegator.useFileWriter("AcceptTypeGuard.kt", "${ctx.settings.pkg.name}.plugins") { writer ->
 

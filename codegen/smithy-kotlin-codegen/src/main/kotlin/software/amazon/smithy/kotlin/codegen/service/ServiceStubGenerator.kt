@@ -10,10 +10,29 @@ import software.amazon.smithy.kotlin.codegen.core.withBlock
 import software.amazon.smithy.kotlin.codegen.core.withInlineBlock
 import software.amazon.smithy.model.knowledge.TopDownIndex
 
+/**
+ * Interface representing a generator that produces service stubs (boilerplate code) for a Smithy service.
+ */
 internal interface ServiceStubGenerator {
+    /**
+     * Render the stub code into the target files.
+     */
     fun render()
 }
 
+/**
+ * Abstract base class for generating service stubs.
+ *
+ * Provides a framework for generating common service artifacts such as:
+ * - Configuration (`ServiceFrameworkConfig.kt`)
+ * - Framework bootstrap (`ServiceFramework.kt`)
+ * - Plugins, utils, authentication, validators
+ * - Operation handlers and routing
+ * - Main launcher (`Main.kt`)
+ *
+ * Concrete subclasses must implement abstract methods for framework-specific
+ * code (e.g., Ktor).
+ */
 internal abstract class AbstractStubGenerator(
     val ctx: GenerationContext,
     val delegator: KotlinDelegator,
@@ -27,6 +46,10 @@ internal abstract class AbstractStubGenerator(
 
     val pkgName = ctx.settings.pkg.name
 
+    /**
+     * Render all service stub files by invoking the component renderers.
+     * This acts as the main entrypoint for code generation.
+     */
     final override fun render() {
         renderServiceFrameworkConfig()
         renderServiceFramework()
@@ -39,7 +62,16 @@ internal abstract class AbstractStubGenerator(
         renderMainFile()
     }
 
-    /** Emits the `ServiceFrameworkConfig.kt` file. */
+    /**
+     * Generate the service configuration file (`ServiceFrameworkConfig.kt`).
+     *
+     * Defines enums for:
+     * - `LogLevel`: Logging verbosity levels
+     * - `ServiceEngine`: Available server engines (Netty, CIO, Jetty)
+     *
+     * Provides a singleton `ServiceFrameworkConfig` object that stores runtime
+     * settings such as port, engine, region, timeouts, and log level.
+     */
     protected fun renderServiceFrameworkConfig() {
         delegator.useFileWriter("ServiceFrameworkConfig.kt", "${ctx.settings.pkg.name}.config") { writer ->
             writer.withBlock("internal enum class LogLevel(val value: String) {", "}") {
@@ -143,7 +175,12 @@ internal abstract class AbstractStubGenerator(
         }
     }
 
-    /** Emits ServiceFramework.kt and other engine bootstrap code. */
+    /**
+     * Generate the service framework interface and bootstrap (`ServiceFramework.kt`).
+     *
+     * Declares a common `ServiceFramework` interface with lifecycle methods and
+     * delegates framework-specific implementation details to subclasses.
+     */
     protected fun renderServiceFramework() {
         delegator.useFileWriter("ServiceFramework.kt", "${ctx.settings.pkg.name}.framework") { writer ->
 
@@ -157,27 +194,36 @@ internal abstract class AbstractStubGenerator(
         }
     }
 
+    /** Render the specific server framework implementation (e.g., Ktor). */
     protected abstract fun renderServerFrameworkImplementation(writer: KotlinWriter)
 
-    /** Emits content-type guards, error handler plugins, … */
+    /** Generate service plugins such as content-type guards, error handlers, etc. */
     protected abstract fun renderPlugins()
 
-    /** Emits utils. */
+    /** Generate supporting utility classes and functions. */
     protected abstract fun renderUtils()
 
-    /** Auth interfaces & installers (bearer, IAM, …). */
+    /** Generate authentication module interfaces and installers (e.g., bearer auth, SigV4, SigV4A). */
     protected abstract fun renderAuthModule()
 
-    /** Request-level Smithy constraint validators. */
+    /** Generate request-level constraint validators for Smithy model constraints. */
     protected abstract fun renderConstraintValidators()
 
-    /** One handler file per Smithy operation. */
+    /** Generate a request handler for each Smithy operation. */
     protected abstract fun renderPerOperationHandlers()
 
-    /** Route table that maps operations → runtime endpoints. */
+    /** Generate the route table that maps Smithy operations to runtime endpoints. */
     protected abstract fun renderRouting()
 
-    /** Writes the top-level `Main.kt` launcher. */
+    /**
+     * Generate the top-level `Main.kt` launcher file.
+     *
+     * This file provides the `main()` entrypoint:
+     * - Parses command-line arguments
+     * - Applies defaults for configuration values
+     * - Initializes the `ServiceFrameworkConfig`
+     * - Starts the appropriate service framework
+     */
     protected fun renderMainFile() {
         val portName = "port"
         val engineFactoryName = "engineFactory"

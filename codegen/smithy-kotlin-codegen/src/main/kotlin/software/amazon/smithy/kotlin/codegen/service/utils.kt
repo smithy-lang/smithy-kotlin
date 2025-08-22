@@ -5,6 +5,10 @@ import software.amazon.smithy.kotlin.codegen.core.RuntimeTypes
 import software.amazon.smithy.model.shapes.ShapeType
 import software.amazon.smithy.model.traits.TimestampFormatTrait
 
+/**
+ * Renders Kotlin code that casts a variable to the correct primitive type
+ * based on its Smithy [ShapeType].
+ */
 fun renderCastingPrimitiveFromShapeType(
     variable: String,
     type: ShapeType,

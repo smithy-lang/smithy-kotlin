@@ -136,6 +136,22 @@ Run:
   gradle build
 ```
 
+⚠️ Running gradle build will delete the previous build output before creating a new one.
+
+If you want to prevent accidentally losing previous build, use the provided scripts instead:
+
+You can find script for Linux / macOS [here](../../../../../../../../../../../../examples/service-codegen/build.sh):
+```bash
+  chmod +x build.sh
+  ./build.sh
+```
+
+You can find script for Windows [here](../../../../../../../../../../../../examples/service-codegen/build.bat):
+```bash
+  icacls build.bat /grant %USERNAME%:RX
+  .\build.bat
+```
+
 If you want to clean previously generated code:
 ```bash
   gradle clean

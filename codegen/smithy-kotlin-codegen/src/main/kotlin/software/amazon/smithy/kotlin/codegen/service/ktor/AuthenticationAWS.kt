@@ -7,6 +7,14 @@ import software.amazon.smithy.kotlin.codegen.core.withBlock
 import software.amazon.smithy.kotlin.codegen.core.withInlineBlock
 import software.amazon.smithy.kotlin.codegen.lang.KotlinTypes
 
+/**
+ * Writes AWS-specific authentication support for Ktor service stubs.
+ *
+ * This generates the following files:
+ * - AWSValidation.kt → Stub stores for SigV4 credentials and SigV4A public keys.
+ * - AWSSigV4.kt → Ktor authentication provider and verifier for AWS Signature V4 (HMAC).
+ * - AWSSigV4A.kt → Ktor authentication provider and verifier for AWS Signature V4A (ECDSA).
+ */
 internal fun KtorStubGenerator.writeAWSAuthentication() {
     delegator.useFileWriter("AWSValidation.kt", "$pkgName.auth") { writer ->
         writer.withBlock("internal object SigV4CredentialStore {", "}") {
@@ -213,6 +221,10 @@ internal fun KtorStubGenerator.writeAWSAuthentication() {
     }
 }
 
+/**
+ * Extracts and parses AWS authentication header information
+ * (Credential, SignedHeaders, Signature) from a request.
+ */
 private fun retrieveAuthInformation(writer: KotlinWriter, algorithm: String) {
     writer.write("val authHeader = call.request.#T(#T.Authorization) ?: return null", RuntimeTypes.KtorServerRouting.requestHeader, RuntimeTypes.KtorServerHttp.HttpHeaders)
         .write("if (!authHeader.startsWith(#S, ignoreCase = true)) return null", algorithm)
@@ -229,6 +241,9 @@ private fun retrieveAuthInformation(writer: KotlinWriter, algorithm: String) {
         .write("val accessKeyId = credential.substringBefore(#S).takeIf { it.matches(Regex(#S)) } ?: return null", "/", "^[A-Z0-9]{16,128}$")
 }
 
+/**
+ * Validates signing date against request scope date and clock skew.
+ */
 private fun authDateValidation(writer: KotlinWriter) {
     writer.write("val rawXAmzDate = call.request.#T(#S)", RuntimeTypes.KtorServerRouting.requestHeader, "X-Amz-Date")
         .write("val rawHttpDate = call.request.#T(#T.Date)", RuntimeTypes.KtorServerRouting.requestHeader, RuntimeTypes.KtorServerHttp.HttpHeaders)
@@ -244,6 +259,10 @@ private fun authDateValidation(writer: KotlinWriter) {
         .write("if (signingInstant < now - maxClockSkew || signingInstant > now + maxClockSkew) return null")
 }
 
+/**
+ * Builds a full HttpRequestBuilder object from the Ktor request,
+ * used for SigV4 canonical request signing.
+ */
 private fun createHttpRequestBuilder(writer: KotlinWriter) {
     writer.write("val origin = call.request.local")
         .write("val payload: ByteArray = call.#T<ByteArray>()", RuntimeTypes.KtorServerRouting.requestReceive)
@@ -287,6 +306,9 @@ private fun createHttpRequestBuilder(writer: KotlinWriter) {
         }
 }
 
+/**
+ * Builds a canonical request string for SigV4A verification.
+ */
 private fun createCanonicalRequest(writer: KotlinWriter) {
     writer.write("val origin = call.request.local")
         .write("val payload: ByteArray = call.#T<ByteArray>()", RuntimeTypes.KtorServerRouting.requestReceive)
@@ -353,6 +375,9 @@ private fun createCanonicalRequest(writer: KotlinWriter) {
         }
 }
 
+/**
+ * Performs AWS SigV4 signature validation against expected HMAC.
+ */
 private fun validateSigV4(writer: KotlinWriter) {
     writer.withBlock("val signer = #T(", ")", RuntimeTypes.Auth.HttpAuthAws.AwsHttpSigner) {
         withBlock("#T.Config().apply {", "}", RuntimeTypes.Auth.HttpAuthAws.AwsHttpSigner) {
@@ -389,6 +414,9 @@ private fun validateSigV4(writer: KotlinWriter) {
         .write("val expectedSig = expectedAuth.substringAfter(#S).trim()", "Signature=")
 }
 
+/**
+ * Performs AWS SigV4A signature validation against ECDSA public key.
+ */
 private fun validateSigV4A(writer: KotlinWriter) {
     writer.write("val crHashHex = sha256Hex(canonicalRequest.toByteArray())")
         .withBlock("val stringToSign = buildString {", "}") {
@@ -405,6 +433,10 @@ private fun validateSigV4A(writer: KotlinWriter) {
         .write("val ok = verifier.verify(sigDer)")
 }
 
+/**
+ * Writes common helper functions used by SigV4 and SigV4A verification,
+ * such as hashing, encoding, and canonical path/query building.
+ */
 private fun renderHelperFunctions(writer: KotlinWriter) {
     writer.withBlock("private fun sha256Hex(bytes: ByteArray): String {", "}") {
         write("return java.security.MessageDigest.getInstance(#S).digest(bytes).joinToString(#S) { #S.format(it) }", "SHA-256", "", "%02x")
