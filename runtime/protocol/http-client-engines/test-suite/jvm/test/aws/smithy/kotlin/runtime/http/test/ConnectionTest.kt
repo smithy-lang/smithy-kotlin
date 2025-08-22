@@ -85,6 +85,7 @@ class ConnectionTest : AbstractEngineTest() {
         }
         assertEquals(HttpErrorCode.TLS_NEGOTIATION_ERROR, e.errorCode)
     }
+
     @Test
     fun testMinTls1_2() = testTlsConfigs("testMinTls1_2", ServerType.TLS_1_2, TlsContext { minVersion = TlsVersion.TLS_1_2 })
 
