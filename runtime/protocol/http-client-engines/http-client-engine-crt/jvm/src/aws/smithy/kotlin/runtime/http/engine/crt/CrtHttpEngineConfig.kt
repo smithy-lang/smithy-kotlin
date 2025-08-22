@@ -47,16 +47,19 @@ public class CrtHttpEngineConfig private constructor(builder: Builder) : HttpCli
 
     /**
      * Certificate Authority content in PEM format
+     * Mutually exclusive with caFile and caDir.
      */
     public var caRoot: String? = builder.caRoot
 
     /**
      * Path to the root certificate. Must be in PEM format.
+     * Mutually exclusive with caRoot.
      */
     public var caFile: String? = builder.caFile
 
     /**
      * Path to the local trust store. Can be null.
+     * Mutually exclusive with caRoot.
      */
     public var caDir: String? = builder.caDir
 
@@ -107,17 +110,20 @@ public class CrtHttpEngineConfig private constructor(builder: Builder) : HttpCli
         public var clientBootstrap: ClientBootstrap? = null
 
         /**
-         * Certificate Authority content in PEM format
+         * Certificate Authority content in PEM format.
+         * Mutually exclusive with caFile and caDir.
          */
         public var caRoot: String? = null
 
         /**
          * Path to the root certificate. Must be in PEM format.
+         * Mutually exclusive with caRoot.
          */
         public var caFile: String? = null
 
         /**
          * Path to the local trust store. Can be null.
+         * Mutually exclusive with caRoot.
          */
         public var caDir: String? = null
 
