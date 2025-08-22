@@ -16,7 +16,7 @@ import kotlin.collections.iterator
  * For a given [operation], this generator traverses the input structure and:
  * - Recursively inspects members of structures and lists.
  * - Applies trait-based validations (e.g., required, length, range).
- * - Emits Kotlin validation functions that check constraints at runtime.
+ * - Generates Kotlin validation functions that check constraints at runtime.
  *
  * Output is written into a `<Operation>RequestConstraints.kt` file in the generated `constraints` package.
  */

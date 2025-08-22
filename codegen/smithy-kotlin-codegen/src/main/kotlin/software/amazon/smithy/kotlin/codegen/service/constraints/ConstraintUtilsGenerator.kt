@@ -30,7 +30,7 @@ internal class ConstraintUtilsGenerator(
     }
 
     /**
-     * Emits the `sizeOf()` function.
+     * Generates the `sizeOf()` function.
      *
      * This utility computes a generalized "size" for multiple types:
      * - Collections, arrays, maps → `size`
@@ -54,7 +54,7 @@ internal class ConstraintUtilsGenerator(
     }
 
     /**
-     * Emits the `hasAllUniqueElements()` function.
+     * Generates the `hasAllUniqueElements()` function.
      *
      * This utility checks if a list contains only unique elements, where uniqueness
      * is defined by deep structural equality:
