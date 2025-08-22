@@ -6,6 +6,7 @@ package aws.smithy.kotlin.runtime.http.test
 
 import aws.smithy.kotlin.runtime.content.decodeToString
 import aws.smithy.kotlin.runtime.http.*
+import aws.smithy.kotlin.runtime.http.engine.TlsContext
 import aws.smithy.kotlin.runtime.http.engine.crt.CrtHttpEngineConfig
 import aws.smithy.kotlin.runtime.http.engine.okhttp.OkHttpEngineConfig
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
@@ -26,8 +27,8 @@ import kotlin.time.Duration.Companion.seconds
 class ConnectionTest : AbstractEngineTest() {
     private fun testTlsConfigs(
         testName: String,
-        tlsVersion: TlsVersion,
         serverType: ServerType,
+        tlsContext: TlsContext = TlsContext {},
         okHttpConfigBlock: OkHttpEngineConfig.Builder.() -> Unit = {},
         crtConfigBlock: CrtHttpEngineConfig.Builder.() -> Unit = {},
     ) {
@@ -36,9 +37,7 @@ class ConnectionTest : AbstractEngineTest() {
         testSslConfig.useAsSystemProperties {
             testEngines(skipEngines = setOf("CrtHttpEngine")) {
                 engineConfig {
-                    tlsContext {
-                        minVersion = tlsVersion
-                    }
+                    this.tlsContext = tlsContext
 
                     if (this is OkHttpEngineConfig.Builder) {
                         okHttpConfigBlock()
@@ -81,28 +80,31 @@ class ConnectionTest : AbstractEngineTest() {
 
     @Test
     fun testMinTls1_2_vs_Tls_1_1() {
-        val e = assertFailsWith<HttpException> { testTlsConfigs("testMinTls1_2", TlsVersion.TLS_1_2, ServerType.TLS_1_1) }
+        val e = assertFailsWith<HttpException> {
+            testTlsConfigs("testMinTls1_2", ServerType.TLS_1_1, TlsContext { minVersion = TlsVersion.TLS_1_2 })
+        }
         assertEquals(HttpErrorCode.TLS_NEGOTIATION_ERROR, e.errorCode)
     }
-
     @Test
-    fun testMinTls1_2() = testTlsConfigs("testMinTls1_2", TlsVersion.TLS_1_2, ServerType.TLS_1_2)
+    fun testMinTls1_2() = testTlsConfigs("testMinTls1_2", ServerType.TLS_1_2, TlsContext { minVersion = TlsVersion.TLS_1_2 })
 
     @Test
     fun testMinTls1_3_vs_Tls_1_2() {
-        val e = assertFailsWith<HttpException> { testTlsConfigs("testMinTls1_3_vs_Tls_1_2", TlsVersion.TLS_1_3, ServerType.TLS_1_2) }
+        val e = assertFailsWith<HttpException> {
+            testTlsConfigs("testMinTls1_3_vs_Tls_1_2", ServerType.TLS_1_2, TlsContext { minVersion = TlsVersion.TLS_1_3 })
+        }
         assertEquals(HttpErrorCode.TLS_NEGOTIATION_ERROR, e.errorCode)
     }
 
     @Test
-    fun testMinTls1_3() = testTlsConfigs("testMinTls1_3", TlsVersion.TLS_1_3, ServerType.TLS_1_3)
+    fun testMinTls1_3() = testTlsConfigs("testMinTls1_3", ServerType.TLS_1_3, TlsContext { minVersion = TlsVersion.TLS_1_3 })
 
     @Test
     fun testTrustManagerWithTls1_2() {
         testTlsConfigs(
             "testTrustManagerWithTls1_2",
-            TlsVersion.TLS_1_2,
             ServerType.TLS_1_2,
+            TlsContext { minVersion = TlsVersion.TLS_1_2 },
             okHttpConfigBlock = {
                 trustManagerProvider = createTestTrustManagerProvider(testCert)
             },
@@ -113,8 +115,8 @@ class ConnectionTest : AbstractEngineTest() {
     fun testTrustManagerWithTls1_3() {
         testTlsConfigs(
             "testTrustManagerWithTls1_3",
-            TlsVersion.TLS_1_3,
             ServerType.TLS_1_3,
+            TlsContext { minVersion = TlsVersion.TLS_1_3 },
             okHttpConfigBlock = {
                 trustManagerProvider = createTestTrustManagerProvider(testCert)
             },
@@ -128,8 +130,8 @@ class ConnectionTest : AbstractEngineTest() {
     fun testCipherSuitesWithTls1_2() {
         testTlsConfigs(
             "testCipherSuitesWithTls1_2",
-            TlsVersion.TLS_1_2,
             ServerType.TLS_1_2,
+            TlsContext { minVersion = TlsVersion.TLS_1_2 },
             okHttpConfigBlock = {
                 cipherSuites = listOf("TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384")
             },
@@ -142,8 +144,8 @@ class ConnectionTest : AbstractEngineTest() {
         val e = assertFailsWith<HttpException> {
             testTlsConfigs(
                 "testCipherSuitesWithTls1_3",
-                TlsVersion.TLS_1_3,
                 ServerType.TLS_1_3,
+                TlsContext { minVersion = TlsVersion.TLS_1_3 },
                 okHttpConfigBlock = {
                     cipherSuites = listOf("TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384")
                 },
@@ -154,8 +156,8 @@ class ConnectionTest : AbstractEngineTest() {
         // test cipher suites compatible with Tls1_3
         testTlsConfigs(
             "testCipherSuitesWithTls1_3",
-            TlsVersion.TLS_1_3,
             ServerType.TLS_1_3,
+            TlsContext { minVersion = TlsVersion.TLS_1_3 },
             okHttpConfigBlock = {
                 cipherSuites = listOf("TLS_AES_256_GCM_SHA384", "TLS_AES_128_GCM_SHA256")
             },
@@ -166,7 +168,6 @@ class ConnectionTest : AbstractEngineTest() {
     fun testHostnameVerifier() {
         testTlsConfigs(
             "testHostnameVerifier",
-            TlsVersion.TLS_1_2,
             ServerType.TLS_1_2,
             okHttpConfigBlock = {
                 hostnameVerifier = HostnameVerifier { hostname, _ ->
@@ -180,7 +181,6 @@ class ConnectionTest : AbstractEngineTest() {
     fun testCertificatePinner() {
         testTlsConfigs(
             "testCertificatePinner",
-            TlsVersion.TLS_1_2,
             ServerType.TLS_1_2,
             okHttpConfigBlock = {
                 certificatePinner = createTestCertificatePinner(testCert, ServerType.TLS_1_2)
@@ -192,7 +192,6 @@ class ConnectionTest : AbstractEngineTest() {
     fun testCaRoot() {
         testTlsConfigs(
             "testCaRoot",
-            TlsVersion.TLS_1_2,
             ServerType.TLS_1_2,
             crtConfigBlock = {
                 caRoot = createTestPemCert(testCert)
@@ -207,7 +206,6 @@ class ConnectionTest : AbstractEngineTest() {
             tempFile.writeText(createTestPemCert(testCert))
             testTlsConfigs(
                 "testCaFile",
-                TlsVersion.TLS_1_2,
                 ServerType.TLS_1_2,
                 crtConfigBlock = {
                     caFile = tempFile.absolutePath
@@ -227,7 +225,6 @@ class ConnectionTest : AbstractEngineTest() {
 
             testTlsConfigs(
                 "testCaDir",
-                TlsVersion.TLS_1_2,
                 ServerType.TLS_1_2,
                 crtConfigBlock = {
                     caDir = tempDir.absolutePath
@@ -242,7 +239,6 @@ class ConnectionTest : AbstractEngineTest() {
     fun testVerifyPeerFalse() {
         testTlsConfigs(
             "testVerifyPeers",
-            TlsVersion.TLS_1_2,
             ServerType.TLS_1_2,
             crtConfigBlock = {
                 caRoot = createInvalidTestPemCert()
