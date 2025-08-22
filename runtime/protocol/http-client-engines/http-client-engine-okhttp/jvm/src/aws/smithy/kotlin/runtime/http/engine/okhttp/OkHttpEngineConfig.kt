@@ -9,6 +9,8 @@ import aws.smithy.kotlin.runtime.http.engine.HttpClientEngineConfig
 import aws.smithy.kotlin.runtime.http.engine.HttpClientEngineConfigImpl
 import aws.smithy.kotlin.runtime.telemetry.Global
 import aws.smithy.kotlin.runtime.telemetry.TelemetryProvider
+import okhttp3.CertificatePinner
+import javax.net.ssl.HostnameVerifier
 import kotlin.time.Duration
 
 /**
@@ -50,12 +52,50 @@ public class OkHttpEngineConfig private constructor(builder: Builder) : HttpClie
      */
     public val maxConcurrencyPerHost: UInt = builder.maxConcurrencyPerHost ?: builder.maxConcurrency
 
+    /**
+     * Provider for TLS trust managers used to validate server certificates during TLS handshake.
+     * Trust managers determine whether to trust the certificate chain presented by a remote server.
+     * When provided, these trust managers will be used instead of the default system trust store.
+     */
+    public var trustManagerProvider: TlsTrustManagersProvider? = builder.trustManagerProvider
+
+    /**
+     * Provider for KeyManagers that supply client certificates for mutual TLS (mTLS) authentication.
+     * When provided, the client will present certificates from these KeyManagers when the server
+     * requests client authentication. Used for scenarios requiring client certificate authentication.
+     */
+    public var keyManagerProvider: TlsKeyManagersProvider? = builder.keyManagerProvider
+
+    /**
+     * List of cipher suites to enable for TLS connections. If null, uses OkHttp defaults.
+     * When specified, only the listed cipher suites will be enabled.
+     */
+    public val cipherSuites: List<String>? = builder.cipherSuites
+
+    /**
+     * Certificate pinner that validates server certificates against known public key pins.
+     * Used to prevent man-in-the-middle attacks by ensuring the server presents expected certificates.
+     */
+    public val certificatePinner: CertificatePinner? = builder.certificatePinner
+
+    /**
+     * Custom hostname verifier for validating server hostnames during TLS handshake.
+     * By default, OkHttp verifies that the certificate's hostname matches the request hostname.
+     * Use this to implement custom hostname verification logic.
+     */
+    public val hostnameVerifier: HostnameVerifier? = builder.hostnameVerifier
+
     override fun toBuilderApplicator(): HttpClientEngineConfig.Builder.() -> Unit = {
         super.toBuilderApplicator()()
 
         if (this is Builder) {
             connectionIdlePollingInterval = this@OkHttpEngineConfig.connectionIdlePollingInterval
             maxConcurrencyPerHost = this@OkHttpEngineConfig.maxConcurrencyPerHost
+            trustManagerProvider = this@OkHttpEngineConfig.trustManagerProvider
+            keyManagerProvider = this@OkHttpEngineConfig.keyManagerProvider
+            cipherSuites = this@OkHttpEngineConfig.cipherSuites
+            certificatePinner = this@OkHttpEngineConfig.certificatePinner
+            hostnameVerifier = this@OkHttpEngineConfig.hostnameVerifier
         }
     }
 
@@ -83,6 +123,39 @@ public class OkHttpEngineConfig private constructor(builder: Builder) : HttpClie
          * The maximum number of requests to execute concurrently for a single host. Defaults to [maxConcurrency].
          */
         public var maxConcurrencyPerHost: UInt? = null
+
+        /**
+         * Provider for TLS trust managers used to validate server certificates during TLS handshake.
+         * Trust managers determine whether to trust the certificate chain presented by a remote server.
+         * When provided, these trust managers will be used instead of the default system trust store.
+         */
+        public var trustManagerProvider: TlsTrustManagersProvider? = null
+
+        /**
+         * Provider for KeyManagers that supply client certificates for mutual TLS (mTLS) authentication.
+         * When provided, the client will present certificates from these KeyManagers when the server
+         * requests client authentication. Used for scenarios requiring client certificate authentication.
+         */
+        public var keyManagerProvider: TlsKeyManagersProvider? = null
+
+        /**
+         * List of cipher suites to enable for TLS connections. If null, uses OkHttp defaults.
+         * When specified, only the listed cipher suites will be enabled.
+         */
+        public var cipherSuites: List<String>? = null
+
+        /**
+         * Certificate pinner that validates server certificates against known public key pins.
+         * Used to prevent man-in-the-middle attacks by ensuring the server presents expected certificates.
+         */
+        public var certificatePinner: CertificatePinner? = null
+
+        /**
+         * Custom hostname verifier for validating server hostnames during TLS handshake.
+         * By default, OkHttp verifies that the certificate's hostname matches the request hostname.
+         * Use this to implement custom hostname verification logic.
+         */
+        public var hostnameVerifier: HostnameVerifier? = null
 
         override var telemetryProvider: TelemetryProvider = TelemetryProvider.Global
     }
