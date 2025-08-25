@@ -76,19 +76,3 @@ public fun SdkSource.readFully(sink: SdkBuffer, byteCount: Long) {
         totalBytesRead += rc
     }
 }
-
-/**
- * Read all bytes from this source into [sink]. Returns the total number of bytes written.
- */
-public fun SdkSource.readAll(sink: SdkSink): Long {
-    val bufferedSink = sink.buffer()
-    var totalWritten = 0L
-    while (true) {
-        val rc = read(bufferedSink.buffer, DEFAULT_BYTE_CHANNEL_MAX_BUFFER_SIZE.toLong())
-        if (rc == -1L) break
-        totalWritten += rc
-        bufferedSink.emit()
-    }
-    bufferedSink.emit()
-    return totalWritten
-}
