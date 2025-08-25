@@ -6,7 +6,6 @@
 package aws.smithy.kotlin.runtime.auth.awssigning.tests
 import aws.smithy.kotlin.runtime.auth.awssigning.AwsChunkedSource
 import aws.smithy.kotlin.runtime.io.SdkBuffer
-import aws.smithy.kotlin.runtime.io.readAll
 import aws.smithy.kotlin.runtime.io.source
 
 val AwsChunkedReaderFactory.Companion.Source: AwsChunkedReaderFactory
@@ -20,7 +19,6 @@ val AwsChunkedReaderFactory.Companion.Source: AwsChunkedReaderFactory
                 return rc == -1L
             }
             override suspend fun read(sink: SdkBuffer, limit: Long): Long = chunked.read(sink, limit)
-            override suspend fun readAll(sink: SdkBuffer): Long = chunked.readAll(sink)
         }
     }
 

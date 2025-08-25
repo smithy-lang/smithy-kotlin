@@ -48,11 +48,10 @@ abstract class AwsChunkedByteReadChannelTestBase : AwsChunkedTestBase(AwsChunked
 
         val bytesRead = awsChunked.readAll(sink)
         writeJob.join()
-        assertEquals(dataLengthBytes.toLong(), bytesRead)
-        assertEquals(totalBytesExpected.toLong(), sink.size)
 
         val bytesAsString = sink.readUtf8()
 
+        assertEquals(totalBytesExpected.toLong(), bytesRead)
         assertTrue(awsChunked.isClosedForRead)
 
         val chunkSignatures = getChunkSignatures(bytesAsString)

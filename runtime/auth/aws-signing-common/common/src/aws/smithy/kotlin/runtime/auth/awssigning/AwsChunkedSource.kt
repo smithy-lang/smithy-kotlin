@@ -5,7 +5,7 @@
 package aws.smithy.kotlin.runtime.auth.awssigning
 
 import aws.smithy.kotlin.runtime.InternalApi
-import aws.smithy.kotlin.runtime.auth.awssigning.internal.StreamChunker
+import aws.smithy.kotlin.runtime.auth.awssigning.internal.AwsChunkedReader
 import aws.smithy.kotlin.runtime.http.DeferredHeaders
 import aws.smithy.kotlin.runtime.io.SdkBuffer
 import aws.smithy.kotlin.runtime.io.SdkSource
@@ -32,12 +32,22 @@ public class AwsChunkedSource(
     previousSignature: ByteArray,
     trailingHeaders: DeferredHeaders = DeferredHeaders.Empty,
 ) : SdkSource {
-    private val chunker = StreamChunker(delegate.adapt(), signer, signingConfig, previousSignature, trailingHeaders)
+    private val chunkReader = AwsChunkedReader(
+        delegate.asStream(),
+        signer,
+        signingConfig,
+        previousSignature,
+        trailingHeaders,
+    )
 
     override fun read(sink: SdkBuffer, limit: Long): Long {
         require(limit >= 0L) { "Invalid limit ($limit) must be >= 0L" }
         // COROUTINE SAFETY: runBlocking is allowed here because SdkSource is a synchronous blocking interface
-        return runBlocking { chunker.readAndMaybeWrite(sink, limit) }
+        val isChunkValid = runBlocking {
+            chunkReader.ensureValidChunk()
+        }
+        if (!isChunkValid) return -1L
+        return chunkReader.chunk.read(sink, limit)
     }
 
     override fun close() {
@@ -45,9 +55,12 @@ public class AwsChunkedSource(
     }
 }
 
-private fun SdkSource.adapt(): StreamChunker.Adapter = object : StreamChunker.Adapter {
-    private val delegate = this@adapt.buffer()
+private fun SdkSource.asStream(): AwsChunkedReader.Stream = object : AwsChunkedReader.Stream {
+    private val delegate = this@asStream.buffer()
 
-    override val eof: Boolean get() = delegate.exhausted()
-    override suspend fun read(buffer: SdkBuffer, limit: Long): Long = delegate.read(buffer, limit)
+    override fun isClosedForRead(): Boolean =
+        delegate.exhausted()
+
+    override suspend fun read(sink: SdkBuffer, limit: Long): Long =
+        delegate.read(sink, limit)
 }
