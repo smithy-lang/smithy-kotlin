@@ -6,6 +6,7 @@
 package aws.smithy.kotlin.runtime.http.engine.crt
 
 import aws.sdk.kotlin.crt.io.ClientBootstrap
+import aws.sdk.kotlin.crt.io.TlsCipherPreference
 import aws.smithy.kotlin.runtime.http.engine.HttpClientEngineConfig
 import aws.smithy.kotlin.runtime.http.engine.HttpClientEngineConfigImpl
 
@@ -44,6 +45,36 @@ public class CrtHttpEngineConfig private constructor(builder: Builder) : HttpCli
      */
     public var clientBootstrap: ClientBootstrap? = builder.clientBootstrap
 
+    /**
+     * Certificate authority content in PEM format
+     * Mutually exclusive with [caFile] and [caDir].
+     */
+    public var caRoot: String? = builder.caRoot
+
+    /**
+     * Path to the root certificate. Must be in PEM format.
+     * Mutually exclusive with [caRoot]. Can be used independently or together with [caDir].
+     */
+    public var caFile: String? = builder.caFile
+
+    /**
+     * Path to the local trust store. Must be in PEM format.
+     * Mutually exclusive with [caRoot]. Can be used independently or together with [caFile].
+     */
+    public var caDir: String? = builder.caDir
+
+    /**
+     * TLS cipher suite preference for connections.
+     * Controls which cipher suites are available during TLS negotiation.
+     */
+    public var tlsCipherPreference: TlsCipherPreference = builder.tlsCipherPreference
+
+    /**
+     * Whether to verify the peer's certificate during TLS handshake.
+     * When false, accepts any certificate.
+     */
+    public var verifyPeer: Boolean = builder.verifyPeer
+
     override fun toBuilderApplicator(): HttpClientEngineConfig.Builder.() -> Unit = {
         super.toBuilderApplicator()()
 
@@ -51,6 +82,11 @@ public class CrtHttpEngineConfig private constructor(builder: Builder) : HttpCli
             maxConnections = this@CrtHttpEngineConfig.maxConnections
             initialWindowSizeBytes = this@CrtHttpEngineConfig.initialWindowSizeBytes
             clientBootstrap = this@CrtHttpEngineConfig.clientBootstrap
+            caRoot = this@CrtHttpEngineConfig.caRoot
+            caFile = this@CrtHttpEngineConfig.caFile
+            caDir = this@CrtHttpEngineConfig.caDir
+            tlsCipherPreference = this@CrtHttpEngineConfig.tlsCipherPreference
+            verifyPeer = this@CrtHttpEngineConfig.verifyPeer
         }
     }
 
@@ -73,5 +109,35 @@ public class CrtHttpEngineConfig private constructor(builder: Builder) : HttpCli
          * Set the [ClientBootstrap] to use for the engine. By default it is a shared instance.
          */
         public var clientBootstrap: ClientBootstrap? = null
+
+        /**
+         * Certificate Authority content in PEM format.
+         * Mutually exclusive with caFile and caDir.
+         */
+        public var caRoot: String? = null
+
+        /**
+         * Path to the root certificate. Must be in PEM format.
+         * Mutually exclusive with caRoot.
+         */
+        public var caFile: String? = null
+
+        /**
+         * Path to the local trust store. Can be null.
+         * Mutually exclusive with caRoot.
+         */
+        public var caDir: String? = null
+
+        /**
+         * TLS cipher suite preference for connections.
+         * Controls which cipher suites are available during TLS negotiation.
+         */
+        public var tlsCipherPreference: TlsCipherPreference = TlsCipherPreference.SYSTEM_DEFAULT
+
+        /**
+         * Whether to verify the peer's certificate during TLS handshake.
+         * When false, accepts any certificate (insecure, for testing only).
+         */
+        public var verifyPeer: Boolean = true
     }
 }
