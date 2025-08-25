@@ -84,6 +84,7 @@ public class CrtHttpEngineConfig private constructor(builder: Builder) : HttpCli
             clientBootstrap = this@CrtHttpEngineConfig.clientBootstrap
             caRoot = this@CrtHttpEngineConfig.caRoot
             caFile = this@CrtHttpEngineConfig.caFile
+            caDir = this@CrtHttpEngineConfig.caDir
             cipherPreference = this@CrtHttpEngineConfig.cipherPreference
             verifyPeer = this@CrtHttpEngineConfig.verifyPeer
         }
