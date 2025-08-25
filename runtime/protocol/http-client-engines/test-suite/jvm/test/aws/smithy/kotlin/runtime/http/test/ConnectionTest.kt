@@ -34,6 +34,7 @@ class ConnectionTest : AbstractEngineTest() {
     ) {
         val url = testServers.getValue(serverType)
 
+        // Set SSL certs via system properties which HTTP clients should pick up
         testSslConfig.useAsSystemProperties {
             testEngines(skipEngines = setOf("CrtHttpEngine")) {
                 engineConfig {
