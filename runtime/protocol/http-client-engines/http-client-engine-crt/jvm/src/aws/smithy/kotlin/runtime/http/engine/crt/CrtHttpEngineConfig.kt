@@ -46,20 +46,20 @@ public class CrtHttpEngineConfig private constructor(builder: Builder) : HttpCli
     public var clientBootstrap: ClientBootstrap? = builder.clientBootstrap
 
     /**
-     * Certificate Authority content in PEM format
-     * Mutually exclusive with caFile and caDir.
+     * Certificate authority content in PEM format
+     * Mutually exclusive with [caFile] and [caDir].
      */
     public var caRoot: String? = builder.caRoot
 
     /**
      * Path to the root certificate. Must be in PEM format.
-     * Mutually exclusive with caRoot.
+     * Mutually exclusive with [caRoot]. Can be used independently or together with [caDir].
      */
     public var caFile: String? = builder.caFile
 
     /**
-     * Path to the local trust store. Can be null.
-     * Mutually exclusive with caRoot.
+     * Path to the local trust store. Must be in PEM format.
+     * Mutually exclusive with [caRoot]. Can be used independently or together with [caFile].
      */
     public var caDir: String? = builder.caDir
 
@@ -67,11 +67,11 @@ public class CrtHttpEngineConfig private constructor(builder: Builder) : HttpCli
      * TLS cipher suite preference for connections.
      * Controls which cipher suites are available during TLS negotiation.
      */
-    public var cipherPreference: TlsCipherPreference = builder.cipherPreference
+    public var tlsCipherPreference: TlsCipherPreference = builder.tlsCipherPreference
 
     /**
      * Whether to verify the peer's certificate during TLS handshake.
-     * When false, accepts any certificate (insecure, for testing only).
+     * When false, accepts any certificate.
      */
     public var verifyPeer: Boolean = builder.verifyPeer
 
@@ -85,7 +85,7 @@ public class CrtHttpEngineConfig private constructor(builder: Builder) : HttpCli
             caRoot = this@CrtHttpEngineConfig.caRoot
             caFile = this@CrtHttpEngineConfig.caFile
             caDir = this@CrtHttpEngineConfig.caDir
-            cipherPreference = this@CrtHttpEngineConfig.cipherPreference
+            tlsCipherPreference = this@CrtHttpEngineConfig.tlsCipherPreference
             verifyPeer = this@CrtHttpEngineConfig.verifyPeer
         }
     }
@@ -132,7 +132,7 @@ public class CrtHttpEngineConfig private constructor(builder: Builder) : HttpCli
          * TLS cipher suite preference for connections.
          * Controls which cipher suites are available during TLS negotiation.
          */
-        public var cipherPreference: TlsCipherPreference = TlsCipherPreference.SYSTEM_DEFAULT
+        public var tlsCipherPreference: TlsCipherPreference = TlsCipherPreference.SYSTEM_DEFAULT
 
         /**
          * Whether to verify the peer's certificate during TLS handshake.

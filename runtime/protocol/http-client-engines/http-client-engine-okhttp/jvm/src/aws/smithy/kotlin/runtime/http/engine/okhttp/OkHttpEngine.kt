@@ -203,12 +203,13 @@ private fun toOkHttpTlsVersion(sdkTlsVersion: SdkTlsVersion): OkHttpTlsVersion =
 /**
  * Creates an SSL context with custom trust and key managers
  */
-private fun createSslContext(trustManagerProvider: TlsTrustManagersProvider?, keyManagerProvider: TlsKeyManagersProvider?): Pair<SSLContext, X509TrustManager> {
-    val trustManagers = trustManagerProvider?.trustManagers()
-    val keyManagers = keyManagerProvider?.keyManagers()
+private fun createSslContext(trustManagersProvider: TlsTrustManagersProvider?, keyManagersProvider: TlsKeyManagersProvider?): Pair<SSLContext, X509TrustManager> {
+    val trustManagers = trustManagersProvider?.trustManagers()
+    val keyManagers = keyManagersProvider?.keyManagers()
 
-    if (trustManagerProvider != null && (trustManagers.isNullOrEmpty() || trustManagers[0] !is X509TrustManager)) {
-        throw IllegalStateException("Unexpected trust managers")
+    if (trustManagersProvider != null) {
+        check(!trustManagers.isNullOrEmpty()) { "Trust managers provider returned null or empty trust managers." }
+        check(trustManagers[0] is X509TrustManager) { "Trust managers provider must return X509TrustManager." }
     }
 
     val sslContext = SSLContext.getInstance("TLS")

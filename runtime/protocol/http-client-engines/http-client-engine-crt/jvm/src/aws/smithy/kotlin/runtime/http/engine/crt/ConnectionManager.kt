@@ -37,7 +37,7 @@ internal class ConnectionManager(
             caRoot = config.caRoot
             caFile = config.caFile
             caDir = config.caDir
-            tlsCipherPreference = config.cipherPreference
+            tlsCipherPreference = config.tlsCipherPreference
             verifyPeer = config.verifyPeer
         }
         .build()
