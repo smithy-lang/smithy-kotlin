@@ -109,8 +109,11 @@ smithyBuild.projections.forEach {
             val dir = dirProvider.get()
             require(dir.exists()) { "$dir does not exist" }
 
-            val wrapper = if (System.getProperty("os.name").lowercase().contains("windows"))
-                "gradlew.bat" else "gradlew"
+            val wrapper = if (System.getProperty("os.name").lowercase().contains("windows")) {
+                "gradlew.bat"
+            } else {
+                "gradlew"
+            }
             val gradlew = rootProject.layout.projectDirectory.file(wrapper).asFile.absolutePath
 
             workingDir = dir
