@@ -70,11 +70,11 @@ public final class aws/smithy/kotlin/runtime/http/engine/okhttp/OkHttpEngineConf
 	public final fun getCipherSuites ()Ljava/util/List;
 	public final fun getConnectionIdlePollingInterval-FghU774 ()Lkotlin/time/Duration;
 	public final fun getHostnameVerifier ()Ljavax/net/ssl/HostnameVerifier;
-	public final fun getKeyManagerProvider ()Laws/smithy/kotlin/runtime/http/engine/okhttp/TlsKeyManagersProvider;
+	public final fun getKeyManager ()Ljavax/net/ssl/KeyManager;
 	public final fun getMaxConcurrencyPerHost-pVg5ArA ()I
-	public final fun getTrustManagerProvider ()Laws/smithy/kotlin/runtime/http/engine/okhttp/TlsTrustManagersProvider;
-	public final fun setKeyManagerProvider (Laws/smithy/kotlin/runtime/http/engine/okhttp/TlsKeyManagersProvider;)V
-	public final fun setTrustManagerProvider (Laws/smithy/kotlin/runtime/http/engine/okhttp/TlsTrustManagersProvider;)V
+	public final fun getTrustManager ()Ljavax/net/ssl/X509TrustManager;
+	public final fun setKeyManager (Ljavax/net/ssl/KeyManager;)V
+	public final fun setTrustManager (Ljavax/net/ssl/X509TrustManager;)V
 	public fun toBuilderApplicator ()Lkotlin/jvm/functions/Function1;
 }
 
@@ -84,18 +84,18 @@ public final class aws/smithy/kotlin/runtime/http/engine/okhttp/OkHttpEngineConf
 	public final fun getCipherSuites ()Ljava/util/List;
 	public final fun getConnectionIdlePollingInterval-FghU774 ()Lkotlin/time/Duration;
 	public final fun getHostnameVerifier ()Ljavax/net/ssl/HostnameVerifier;
-	public final fun getKeyManagerProvider ()Laws/smithy/kotlin/runtime/http/engine/okhttp/TlsKeyManagersProvider;
+	public final fun getKeyManager ()Ljavax/net/ssl/KeyManager;
 	public final fun getMaxConcurrencyPerHost-0hXNFcg ()Lkotlin/UInt;
 	public fun getTelemetryProvider ()Laws/smithy/kotlin/runtime/telemetry/TelemetryProvider;
-	public final fun getTrustManagerProvider ()Laws/smithy/kotlin/runtime/http/engine/okhttp/TlsTrustManagersProvider;
+	public final fun getTrustManager ()Ljavax/net/ssl/X509TrustManager;
 	public final fun setCertificatePinner (Lokhttp3/CertificatePinner;)V
 	public final fun setCipherSuites (Ljava/util/List;)V
 	public final fun setConnectionIdlePollingInterval-BwNAW2A (Lkotlin/time/Duration;)V
 	public final fun setHostnameVerifier (Ljavax/net/ssl/HostnameVerifier;)V
-	public final fun setKeyManagerProvider (Laws/smithy/kotlin/runtime/http/engine/okhttp/TlsKeyManagersProvider;)V
+	public final fun setKeyManager (Ljavax/net/ssl/KeyManager;)V
 	public final fun setMaxConcurrencyPerHost-ExVfyTY (Lkotlin/UInt;)V
 	public fun setTelemetryProvider (Laws/smithy/kotlin/runtime/telemetry/TelemetryProvider;)V
-	public final fun setTrustManagerProvider (Laws/smithy/kotlin/runtime/http/engine/okhttp/TlsTrustManagersProvider;)V
+	public final fun setTrustManager (Ljavax/net/ssl/X509TrustManager;)V
 }
 
 public final class aws/smithy/kotlin/runtime/http/engine/okhttp/OkHttpEngineConfig$Companion {
@@ -149,13 +149,5 @@ public final class aws/smithy/kotlin/runtime/http/engine/okhttp/StreamingRequest
 	public fun isDuplex ()Z
 	public fun isOneShot ()Z
 	public fun writeTo (Lokio/BufferedSink;)V
-}
-
-public abstract interface class aws/smithy/kotlin/runtime/http/engine/okhttp/TlsKeyManagersProvider {
-	public abstract fun keyManagers ()[Ljavax/net/ssl/KeyManager;
-}
-
-public abstract interface class aws/smithy/kotlin/runtime/http/engine/okhttp/TlsTrustManagersProvider {
-	public abstract fun trustManagers ()[Ljavax/net/ssl/TrustManager;
 }
 

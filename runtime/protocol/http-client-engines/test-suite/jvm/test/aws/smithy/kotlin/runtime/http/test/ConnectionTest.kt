@@ -108,7 +108,7 @@ class ConnectionTest : AbstractEngineTest() {
             ServerType.TLS_1_2,
             TlsContext { minVersion = TlsVersion.TLS_1_2 },
             okHttpConfigBlock = {
-                trustManagerProvider = createTestTrustManagerProvider(testCert)
+                trustManager = createTestTrustManager(testCert)
             },
         )
     }
@@ -120,7 +120,7 @@ class ConnectionTest : AbstractEngineTest() {
             ServerType.TLS_1_3,
             TlsContext { minVersion = TlsVersion.TLS_1_3 },
             okHttpConfigBlock = {
-                trustManagerProvider = createTestTrustManagerProvider(testCert)
+                trustManager = createTestTrustManager(testCert)
             },
         )
     }

@@ -5,7 +5,6 @@
  */
 package aws.smithy.kotlin.runtime.http.test.util
 
-import aws.smithy.kotlin.runtime.http.engine.okhttp.TlsTrustManagersProvider
 import aws.smithy.kotlin.runtime.net.toUrlString
 import okhttp3.CertificatePinner
 import org.bouncycastle.asn1.x500.X500Name
@@ -16,8 +15,8 @@ import java.nio.file.Paths
 import java.security.KeyPairGenerator
 import java.security.cert.X509Certificate
 import java.util.*
-import javax.net.ssl.TrustManager
 import javax.net.ssl.TrustManagerFactory
+import javax.net.ssl.X509TrustManager
 
 internal val testSslConfig by lazy {
     val sslConfigPath = System.getProperty("SSL_CONFIG_PATH")
@@ -28,18 +27,15 @@ internal val testCert by lazy {
     testSslConfig.keyStore.getCertificate(testSslConfig.certificateAlias) as X509Certificate
 }
 
-fun createTestTrustManagerProvider(testCert: X509Certificate): TlsTrustManagersProvider =
-    object : TlsTrustManagersProvider {
-        override fun trustManagers(): Array<TrustManager> {
-            val keyStore = java.security.KeyStore.getInstance(java.security.KeyStore.getDefaultType())
-            keyStore.load(null, null)
-            keyStore.setCertificateEntry("test-cert", testCert)
+fun createTestTrustManager(testCert: X509Certificate): X509TrustManager {
+    val keyStore = java.security.KeyStore.getInstance(java.security.KeyStore.getDefaultType())
+    keyStore.load(null, null)
+    keyStore.setCertificateEntry("test-cert", testCert)
 
-            val trustManagerFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm())
-            trustManagerFactory.init(keyStore)
-            return trustManagerFactory.trustManagers
-        }
-    }
+    val trustManagerFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm())
+    trustManagerFactory.init(keyStore)
+    return trustManagerFactory.trustManagers[0] as X509TrustManager
+}
 
 fun createTestCertificatePinner(testCert: X509Certificate, serverType: ServerType): CertificatePinner {
     val sha256Hash = java.security.MessageDigest.getInstance("SHA-256").digest(testCert.publicKey.encoded)

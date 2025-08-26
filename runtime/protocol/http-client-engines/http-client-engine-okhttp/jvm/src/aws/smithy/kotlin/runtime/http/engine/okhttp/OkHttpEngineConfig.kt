@@ -11,6 +11,8 @@ import aws.smithy.kotlin.runtime.telemetry.Global
 import aws.smithy.kotlin.runtime.telemetry.TelemetryProvider
 import okhttp3.CertificatePinner
 import javax.net.ssl.HostnameVerifier
+import javax.net.ssl.KeyManager
+import javax.net.ssl.X509TrustManager
 import kotlin.time.Duration
 
 /**
@@ -53,18 +55,18 @@ public class OkHttpEngineConfig private constructor(builder: Builder) : HttpClie
     public val maxConcurrencyPerHost: UInt = builder.maxConcurrencyPerHost ?: builder.maxConcurrency
 
     /**
-     * Provider for TLS trust managers used to validate server certificates during TLS handshake.
-     * Trust managers determine whether to trust the certificate chain presented by a remote server.
-     * When provided, these trust managers will be used instead of the default system trust store.
+     * Trust manager used to validate server certificates during TLS handshake.
+     * Determines whether to trust the certificate chain presented by a remote server.
+     * When provided, this trust manager will be used instead of the default system trust store.
      */
-    public var trustManagerProvider: TlsTrustManagersProvider? = builder.trustManagerProvider
+    public var trustManager: X509TrustManager? = builder.trustManager
 
     /**
-     * Provider for KeyManagers that supply client certificates for mutual TLS (mTLS) authentication.
-     * When provided, the client will present certificates from these KeyManagers when the server
+     * Key manager that supplies client certificates for mutual TLS (mTLS) authentication.
+     * When provided, the client will present certificates from this key manager when the server
      * requests client authentication. Used for scenarios requiring client certificate authentication.
      */
-    public var keyManagerProvider: TlsKeyManagersProvider? = builder.keyManagerProvider
+    public var keyManager: KeyManager? = builder.keyManager
 
     /**
      * List of cipher suites to enable for TLS connections. If null, uses OkHttp defaults.
@@ -91,8 +93,8 @@ public class OkHttpEngineConfig private constructor(builder: Builder) : HttpClie
         if (this is Builder) {
             connectionIdlePollingInterval = this@OkHttpEngineConfig.connectionIdlePollingInterval
             maxConcurrencyPerHost = this@OkHttpEngineConfig.maxConcurrencyPerHost
-            trustManagerProvider = this@OkHttpEngineConfig.trustManagerProvider
-            keyManagerProvider = this@OkHttpEngineConfig.keyManagerProvider
+            trustManager = this@OkHttpEngineConfig.trustManager
+            keyManager = this@OkHttpEngineConfig.keyManager
             cipherSuites = this@OkHttpEngineConfig.cipherSuites
             certificatePinner = this@OkHttpEngineConfig.certificatePinner
             hostnameVerifier = this@OkHttpEngineConfig.hostnameVerifier
@@ -125,18 +127,18 @@ public class OkHttpEngineConfig private constructor(builder: Builder) : HttpClie
         public var maxConcurrencyPerHost: UInt? = null
 
         /**
-         * Provider for TLS trust managers used to validate server certificates during TLS handshake.
-         * Trust managers determine whether to trust the certificate chain presented by a remote server.
-         * When provided, these trust managers will be used instead of the default system trust store.
+         * Trust manager used to validate server certificates during TLS handshake.
+         * Determines whether to trust the certificate chain presented by a remote server.
+         * When provided, this trust manager will be used instead of the default system trust store.
          */
-        public var trustManagerProvider: TlsTrustManagersProvider? = null
+        public var trustManager: X509TrustManager? = null
 
         /**
-         * Provider for KeyManagers that supply client certificates for mutual TLS (mTLS) authentication.
-         * When provided, the client will present certificates from these KeyManagers when the server
+         * Key manager that supplies client certificates for mutual TLS (mTLS) authentication.
+         * When provided, the client will present certificates from this key manager when the server
          * requests client authentication. Used for scenarios requiring client certificate authentication.
          */
-        public var keyManagerProvider: TlsKeyManagersProvider? = null
+        public var keyManager: KeyManager? = null
 
         /**
          * List of cipher suites to enable for TLS connections. If null, uses OkHttp defaults.
