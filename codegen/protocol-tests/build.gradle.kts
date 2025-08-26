@@ -116,7 +116,6 @@ smithyBuild.projections.forEach {
     }
 }
 
-
 tasks.register("testAllProtocols") {
     group = "Verification"
     dependsOn(tasks.matching { it.name.startsWith("testProtocol-") })
