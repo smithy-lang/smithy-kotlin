@@ -105,14 +105,18 @@ smithyBuild.projections.forEach {
         group = "Verification"
         dependsOn(tasks.generateSmithyProjections)
 
-        val dir = dirProvider.get()
-        require(dir.exists()) { "$dir does not exist" }
-        val wrapper = if (System.getProperty("os.name").lowercase().contains("windows")) "gradlew.bat" else "gradlew"
-        val gradlew = rootProject.layout.projectDirectory.file(wrapper).asFile.absolutePath
+        doFirst {
+            val dir = dirProvider.get()
+            require(dir.exists()) { "$dir does not exist" }
 
-        workingDir = dir
-        executable = gradlew
-        args = listOf("test")
+            val wrapper = if (System.getProperty("os.name").lowercase().contains("windows"))
+                "gradlew.bat" else "gradlew"
+            val gradlew = rootProject.layout.projectDirectory.file(wrapper).asFile.absolutePath
+
+            workingDir = dir
+            executable = gradlew
+            args = listOf("test")
+        }
     }
 }
 
