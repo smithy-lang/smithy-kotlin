@@ -32,9 +32,13 @@ internal class ConnectionManager(
 
     private val crtTlsContext: TlsContext = TlsContextOptionsBuilder()
         .apply {
-            verifyPeer = true
             alpn = config.tlsContext.alpn.joinToString(separator = ";") { it.protocolId }
             minTlsVersion = toCrtTlsVersion(config.tlsContext.minVersion)
+            caRoot = config.certificatePem
+            caFile = config.certificateFile
+            caDir = config.certificatesDirectory
+            tlsCipherPreference = config.tlsCipherPreference
+            verifyPeer = config.verifyPeer
         }
         .build()
         .let(::CrtTlsContext)

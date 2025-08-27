@@ -24,6 +24,9 @@ import kotlinx.coroutines.job
 import okhttp3.*
 import okhttp3.coroutines.executeAsync
 import java.util.concurrent.TimeUnit
+import javax.net.ssl.KeyManager
+import javax.net.ssl.SSLContext
+import javax.net.ssl.X509TrustManager
 import kotlin.time.toJavaDuration
 import aws.smithy.kotlin.runtime.net.TlsVersion as SdkTlsVersion
 import okhttp3.TlsVersion as OkHttpTlsVersion
@@ -103,7 +106,15 @@ public fun OkHttpEngineConfig.buildClient(
         followRedirects(false)
         followSslRedirects(false)
 
-        connectionSpecs(listOf(minTlsConnectionSpec(config.tlsContext), ConnectionSpec.CLEARTEXT))
+        connectionSpecs(listOf(tlsConnectionSpec(config.tlsContext, config.cipherSuites), ConnectionSpec.CLEARTEXT))
+
+        config.trustManager?.let {
+            val sslContext = createSslContext(it, config.keyManager)
+            sslSocketFactory(sslContext.socketFactory, trustManager!!)
+        }
+
+        config.certificatePinner?.let(::certificatePinner)
+        config.hostnameVerifier?.let(::hostnameVerifier)
 
         // Transient connection errors are handled by retry strategy (exceptions are wrapped and marked retryable
         // appropriately internally). We don't want inner retry logic that inflates the number of retries.
@@ -159,7 +170,7 @@ public fun OkHttpEngineConfig.buildClient(
     }.build()
 }
 
-private fun minTlsConnectionSpec(tlsContext: TlsContext): ConnectionSpec {
+private fun tlsConnectionSpec(tlsContext: TlsContext, cipherSuites: List<String>?): ConnectionSpec {
     val minVersion = tlsContext.minVersion ?: TlsVersion.TLS_1_2
     val okHttpTlsVersions = SdkTlsVersion
         .values()
@@ -170,6 +181,9 @@ private fun minTlsConnectionSpec(tlsContext: TlsContext): ConnectionSpec {
     return ConnectionSpec
         .Builder(ConnectionSpec.MODERN_TLS)
         .tlsVersions(*okHttpTlsVersions)
+        .apply {
+            cipherSuites?.toTypedArray()?.let(::cipherSuites)
+        }
         .build()
 }
 
@@ -178,4 +192,17 @@ private fun toOkHttpTlsVersion(sdkTlsVersion: SdkTlsVersion): OkHttpTlsVersion =
     SdkTlsVersion.TLS_1_1 -> OkHttpTlsVersion.TLS_1_1
     SdkTlsVersion.TLS_1_2 -> OkHttpTlsVersion.TLS_1_2
     SdkTlsVersion.TLS_1_3 -> OkHttpTlsVersion.TLS_1_3
+}
+
+/**
+ * Creates an SSL context with custom trust and key managers
+ */
+private fun createSslContext(trustManager: X509TrustManager, keyManager: KeyManager?): SSLContext {
+    val keyManagers = keyManager?.let { arrayOf(it) }
+    val trustManagers = arrayOf(trustManager)
+
+    val sslContext = SSLContext.getInstance("TLS")
+    sslContext.init(keyManagers, trustManagers, null)
+
+    return sslContext
 }
