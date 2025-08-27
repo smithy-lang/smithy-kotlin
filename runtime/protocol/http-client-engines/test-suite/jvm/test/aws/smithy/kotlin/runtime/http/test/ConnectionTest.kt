@@ -191,26 +191,26 @@ class ConnectionTest : AbstractEngineTest() {
     }
 
     @Test
-    fun testCaRoot() {
+    fun testCertificatePem() {
         testTlsConfigs(
-            "testCaRoot",
+            "testCertificatePem",
             ServerType.TLS_1_2,
             crtConfigBlock = {
-                caRoot = createTestPemCert(testCert)
+                certificatePem = createTestPemCert(testCert)
             },
         )
     }
 
     @Test
-    fun testCaFile() {
+    fun testCertificateFile() {
         val tempFile = createTempFile("ca-cert", ".pem").toFile()
         try {
             tempFile.writeText(createTestPemCert(testCert))
             testTlsConfigs(
-                "testCaFile",
+                "testCertificateFile",
                 ServerType.TLS_1_2,
                 crtConfigBlock = {
-                    caFile = tempFile.absolutePath
+                    certificateFile = tempFile.absolutePath
                 },
             )
         } finally {
@@ -219,17 +219,17 @@ class ConnectionTest : AbstractEngineTest() {
     }
 
     @Test
-    fun testCaDir() {
+    fun testCertificateDirectory() {
         val tempDir = createTempDirectory("ca-certs").toFile()
         try {
             val certFile = tempDir.resolve("ca-cert.pem")
             certFile.writeText(createTestPemCert(testCert))
 
             testTlsConfigs(
-                "testCaDir",
+                "testCertificateDirectory",
                 ServerType.TLS_1_2,
                 crtConfigBlock = {
-                    caDir = tempDir.absolutePath
+                    certificatesDirectory = tempDir.absolutePath
                 },
             )
         } finally {
@@ -243,7 +243,7 @@ class ConnectionTest : AbstractEngineTest() {
             "testVerifyPeers",
             ServerType.TLS_1_2,
             crtConfigBlock = {
-                caRoot = createInvalidTestPemCert()
+                certificatePem = createInvalidTestPemCert()
                 verifyPeer = false
             },
         )

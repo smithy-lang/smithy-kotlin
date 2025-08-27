@@ -34,9 +34,9 @@ internal class ConnectionManager(
         .apply {
             alpn = config.tlsContext.alpn.joinToString(separator = ";") { it.protocolId }
             minTlsVersion = toCrtTlsVersion(config.tlsContext.minVersion)
-            caRoot = config.caRoot
-            caFile = config.caFile
-            caDir = config.caDir
+            caRoot = config.certificatePem
+            caFile = config.certificateFile
+            caDir = config.certificatesDirectory
             tlsCipherPreference = config.tlsCipherPreference
             verifyPeer = config.verifyPeer
         }

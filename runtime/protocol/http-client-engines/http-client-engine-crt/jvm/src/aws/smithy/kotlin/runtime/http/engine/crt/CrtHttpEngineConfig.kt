@@ -47,21 +47,21 @@ public class CrtHttpEngineConfig private constructor(builder: Builder) : HttpCli
 
     /**
      * Certificate authority content in PEM format
-     * Mutually exclusive with [caFile] and [caDir].
+     * Mutually exclusive with [certificateFile] and [certificatesDirectory].
      */
-    public var caRoot: String? = builder.caRoot
+    public var certificatePem: String? = builder.certificatePem
 
     /**
-     * Path to the root certificate. Must be in PEM format.
-     * Mutually exclusive with [caRoot]. Can be used independently or together with [caDir].
+     * Path to the certificate file in PEM format.
+     * Mutually exclusive with [certificatePem]. Can be used independently or together with [certificatesDirectory].
      */
-    public var caFile: String? = builder.caFile
+    public var certificateFile: String? = builder.certificateFile
 
     /**
-     * Path to the local trust store. Must be in PEM format.
-     * Mutually exclusive with [caRoot]. Can be used independently or together with [caFile].
+     * Path to the certificates directory containing PEM files.
+     * Mutually exclusive with [certificatePem]. Can be used independently or together with [certificateFile].
      */
-    public var caDir: String? = builder.caDir
+    public var certificatesDirectory: String? = builder.certificatesDirectory
 
     /**
      * TLS cipher suite preference for connections.
@@ -82,9 +82,9 @@ public class CrtHttpEngineConfig private constructor(builder: Builder) : HttpCli
             maxConnections = this@CrtHttpEngineConfig.maxConnections
             initialWindowSizeBytes = this@CrtHttpEngineConfig.initialWindowSizeBytes
             clientBootstrap = this@CrtHttpEngineConfig.clientBootstrap
-            caRoot = this@CrtHttpEngineConfig.caRoot
-            caFile = this@CrtHttpEngineConfig.caFile
-            caDir = this@CrtHttpEngineConfig.caDir
+            certificatePem = this@CrtHttpEngineConfig.certificatePem
+            certificateFile = this@CrtHttpEngineConfig.certificateFile
+            certificatesDirectory = this@CrtHttpEngineConfig.certificatesDirectory
             tlsCipherPreference = this@CrtHttpEngineConfig.tlsCipherPreference
             verifyPeer = this@CrtHttpEngineConfig.verifyPeer
         }
@@ -114,19 +114,19 @@ public class CrtHttpEngineConfig private constructor(builder: Builder) : HttpCli
          * Certificate Authority content in PEM format.
          * Mutually exclusive with caFile and caDir.
          */
-        public var caRoot: String? = null
+        public var certificatePem: String? = null
 
         /**
-         * Path to the root certificate. Must be in PEM format.
-         * Mutually exclusive with caRoot.
+         * Path to the certificate file in PEM format.
+         * Mutually exclusive with [certificatePem]. Can be used independently or together with [certificatesDirectory].
          */
-        public var caFile: String? = null
+        public var certificateFile: String? = null
 
         /**
-         * Path to the local trust store. Can be null.
-         * Mutually exclusive with caRoot.
+         * Path to the certificates directory containing PEM files.
+         * Mutually exclusive with [certificatePem]. Can be used independently or together with [certificateFile].
          */
-        public var caDir: String? = null
+        public var certificatesDirectory: String? = null
 
         /**
          * TLS cipher suite preference for connections.
