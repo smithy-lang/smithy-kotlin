@@ -1,0 +1,8 @@
+{
+    "id": "39ca59b7-65d6-44da-85a6-84c26ad481e7",
+    "type": "feature",
+    "description": "Add additional TLS configuration options to HTTP engines.",
+    "issues": [
+        "awslabs/smithy-kotlin#820"
+    ]
+}
