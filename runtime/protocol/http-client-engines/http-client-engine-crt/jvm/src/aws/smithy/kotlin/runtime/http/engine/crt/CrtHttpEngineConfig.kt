@@ -6,6 +6,7 @@
 package aws.smithy.kotlin.runtime.http.engine.crt
 
 import aws.sdk.kotlin.crt.io.ClientBootstrap
+import aws.sdk.kotlin.crt.io.TlsCipherPreference
 import aws.smithy.kotlin.runtime.http.engine.HttpClientEngineConfig
 import aws.smithy.kotlin.runtime.http.engine.HttpClientEngineConfigImpl
 
@@ -44,6 +45,36 @@ public class CrtHttpEngineConfig private constructor(builder: Builder) : HttpCli
      */
     public var clientBootstrap: ClientBootstrap? = builder.clientBootstrap
 
+    /**
+     * Certificate authority content in PEM format
+     * Mutually exclusive with [certificateFile] and [certificatesDirectory].
+     */
+    public var certificatePem: String? = builder.certificatePem
+
+    /**
+     * Path to the certificate file in PEM format.
+     * Mutually exclusive with [certificatePem]. Can be used independently or together with [certificatesDirectory].
+     */
+    public var certificateFile: String? = builder.certificateFile
+
+    /**
+     * Path to the certificates directory containing PEM files.
+     * Mutually exclusive with [certificatePem]. Can be used independently or together with [certificateFile].
+     */
+    public var certificatesDirectory: String? = builder.certificatesDirectory
+
+    /**
+     * TLS cipher suite preference for connections.
+     * Controls which cipher suites are available during TLS negotiation.
+     */
+    public var tlsCipherPreference: TlsCipherPreference = builder.tlsCipherPreference
+
+    /**
+     * Whether to verify the peer's certificate during TLS handshake.
+     * When false, accepts any certificate.
+     */
+    public var verifyPeer: Boolean = builder.verifyPeer
+
     override fun toBuilderApplicator(): HttpClientEngineConfig.Builder.() -> Unit = {
         super.toBuilderApplicator()()
 
@@ -51,6 +82,11 @@ public class CrtHttpEngineConfig private constructor(builder: Builder) : HttpCli
             maxConnections = this@CrtHttpEngineConfig.maxConnections
             initialWindowSizeBytes = this@CrtHttpEngineConfig.initialWindowSizeBytes
             clientBootstrap = this@CrtHttpEngineConfig.clientBootstrap
+            certificatePem = this@CrtHttpEngineConfig.certificatePem
+            certificateFile = this@CrtHttpEngineConfig.certificateFile
+            certificatesDirectory = this@CrtHttpEngineConfig.certificatesDirectory
+            tlsCipherPreference = this@CrtHttpEngineConfig.tlsCipherPreference
+            verifyPeer = this@CrtHttpEngineConfig.verifyPeer
         }
     }
 
@@ -73,5 +109,35 @@ public class CrtHttpEngineConfig private constructor(builder: Builder) : HttpCli
          * Set the [ClientBootstrap] to use for the engine. By default it is a shared instance.
          */
         public var clientBootstrap: ClientBootstrap? = null
+
+        /**
+         * Certificate Authority content in PEM format.
+         * Mutually exclusive with caFile and caDir.
+         */
+        public var certificatePem: String? = null
+
+        /**
+         * Path to the certificate file in PEM format.
+         * Mutually exclusive with [certificatePem]. Can be used independently or together with [certificatesDirectory].
+         */
+        public var certificateFile: String? = null
+
+        /**
+         * Path to the certificates directory containing PEM files.
+         * Mutually exclusive with [certificatePem]. Can be used independently or together with [certificateFile].
+         */
+        public var certificatesDirectory: String? = null
+
+        /**
+         * TLS cipher suite preference for connections.
+         * Controls which cipher suites are available during TLS negotiation.
+         */
+        public var tlsCipherPreference: TlsCipherPreference = TlsCipherPreference.SYSTEM_DEFAULT
+
+        /**
+         * Whether to verify the peer's certificate during TLS handshake.
+         * When false, accepts any certificate (insecure, for testing only).
+         */
+        public var verifyPeer: Boolean = true
     }
 }
