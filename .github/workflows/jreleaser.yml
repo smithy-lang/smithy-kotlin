@@ -1,0 +1,12 @@
+# TODO: Delete this action when we migrate off JReleaser
+
+name: JReleaser check
+on:
+  pull_request:
+
+jobs:
+  jreleaser-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: JReleaser check
+        uses: awslabs/aws-kotlin-repo-tools/.github/actions/jreleaser@jreleaser-check # TODO: Change branch to main after testing/merge
