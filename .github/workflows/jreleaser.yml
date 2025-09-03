@@ -6,8 +6,8 @@ on:
 
 jobs:
   jreleaser-check:
-    permissions: # No permissions
+    permissions: {}
     runs-on: ubuntu-latest
     steps:
       - name: JReleaser check
-        uses: awslabs/aws-kotlin-repo-tools/.github/actions/jreleaser@jreleaser-check # TODO: Change branch to main after testing/merge
+        uses: awslabs/aws-kotlin-repo-tools/.github/actions/jreleaser@jreleaser-check # TODO: Change branch to main before merge
