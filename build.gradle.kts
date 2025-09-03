@@ -5,6 +5,7 @@
 import aws.sdk.kotlin.gradle.dsl.configureJReleaser
 import aws.sdk.kotlin.gradle.dsl.configureLinting
 import aws.sdk.kotlin.gradle.util.typedProp
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 buildscript {
     // NOTE: buildscript classpath for the root project is the parent classloader for the subprojects, we
@@ -19,7 +20,7 @@ buildscript {
         https://github.com/Kotlin/dokka/issues/3472#issuecomment-1929712374
         https://github.com/Kotlin/dokka/issues/3194#issuecomment-1929382630
          */
-        classpath(enforcedPlatform("com.fasterxml.jackson:jackson-bom:2.19.2"))
+        classpath(enforcedPlatform("com.fasterxml.jackson:jackson-bom:2.15.3"))
     }
 }
 
@@ -46,9 +47,9 @@ val testJavaVersion = typedProp<String>("test.java.version")?.let {
 }
 
 allprojects {
-    if (rootProject.typedProp<Boolean>("kotlinWarningsAsErrors") == true) {
-        tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
-            compilerOptions.allWarningsAsErrors = true
+    tasks.withType<KotlinCompile> {
+        compilerOptions {
+            allWarningsAsErrors = true
         }
     }
 
