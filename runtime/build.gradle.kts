@@ -64,7 +64,10 @@ subprojects {
     kotlin.sourceSets.all {
         // Allow subprojects to use internal APIs
         // See https://kotlinlang.org/docs/reference/opt-in-requirements.html#opting-in-to-using-api
-        listOf("kotlin.RequiresOptIn", "kotlinx.cinterop.ExperimentalForeignApi").forEach { languageSettings.optIn(it) }
+        languageSettings.optIn("kotlin.RequiresOptIn")
+        if (!name.contains("jvm", ignoreCase = true)) {
+            languageSettings.optIn("kotlinx.cinterop.ExperimentalForeignApi")
+        }
     }
 
     tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
