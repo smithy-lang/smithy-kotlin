@@ -11,7 +11,6 @@ import io.ktor.network.sockets.InetSocketAddress
 import io.ktor.network.sockets.aSocket
 import io.ktor.server.application.ApplicationStarted
 import io.ktor.server.engine.EmbeddedServer
-import io.ktor.utils.io.core.use
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
