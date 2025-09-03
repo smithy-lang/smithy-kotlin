@@ -65,7 +65,7 @@ subprojects {
         // Allow subprojects to use internal APIs
         // See https://kotlinlang.org/docs/reference/opt-in-requirements.html#opting-in-to-using-api
         languageSettings.optIn("kotlin.RequiresOptIn")
-        if (!name.contains("jvm", ignoreCase = true)) {
+        if (!name.contains("jvm", ignoreCase = true) && !name.contains("common", ignoreCase = true)) {
             languageSettings.optIn("kotlinx.cinterop.ExperimentalForeignApi")
         }
     }
