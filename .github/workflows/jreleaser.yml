@@ -1,12 +1,12 @@
 # TODO: Delete this action when we migrate off JReleaser
 
 name: JReleaser check
-permissions: # No permissions
 on:
   pull_request:
 
 jobs:
   jreleaser-check:
+    permissions: # No permissions
     runs-on: ubuntu-latest
     steps:
       - name: JReleaser check
