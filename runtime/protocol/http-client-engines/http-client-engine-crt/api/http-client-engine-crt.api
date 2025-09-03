@@ -15,21 +15,41 @@ public final class aws/smithy/kotlin/runtime/http/engine/crt/CrtHttpEngine$Compa
 public final class aws/smithy/kotlin/runtime/http/engine/crt/CrtHttpEngineConfig : aws/smithy/kotlin/runtime/http/engine/HttpClientEngineConfigImpl {
 	public static final field Companion Laws/smithy/kotlin/runtime/http/engine/crt/CrtHttpEngineConfig$Companion;
 	public synthetic fun <init> (Laws/smithy/kotlin/runtime/http/engine/crt/CrtHttpEngineConfig$Builder;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun getCertificateFile ()Ljava/lang/String;
+	public final fun getCertificatePem ()Ljava/lang/String;
+	public final fun getCertificatesDirectory ()Ljava/lang/String;
 	public final fun getClientBootstrap ()Laws/sdk/kotlin/crt/io/ClientBootstrap;
 	public final fun getInitialWindowSizeBytes ()I
 	public final fun getMaxConnections-pVg5ArA ()I
+	public final fun getTlsCipherPreference ()Laws/sdk/kotlin/crt/io/TlsCipherPreference;
+	public final fun getVerifyPeer ()Z
+	public final fun setCertificateFile (Ljava/lang/String;)V
+	public final fun setCertificatePem (Ljava/lang/String;)V
+	public final fun setCertificatesDirectory (Ljava/lang/String;)V
 	public final fun setClientBootstrap (Laws/sdk/kotlin/crt/io/ClientBootstrap;)V
+	public final fun setTlsCipherPreference (Laws/sdk/kotlin/crt/io/TlsCipherPreference;)V
+	public final fun setVerifyPeer (Z)V
 	public fun toBuilderApplicator ()Lkotlin/jvm/functions/Function1;
 }
 
 public final class aws/smithy/kotlin/runtime/http/engine/crt/CrtHttpEngineConfig$Builder : aws/smithy/kotlin/runtime/http/engine/HttpClientEngineConfigImpl$BuilderImpl {
 	public fun <init> ()V
+	public final fun getCertificateFile ()Ljava/lang/String;
+	public final fun getCertificatePem ()Ljava/lang/String;
+	public final fun getCertificatesDirectory ()Ljava/lang/String;
 	public final fun getClientBootstrap ()Laws/sdk/kotlin/crt/io/ClientBootstrap;
 	public final fun getInitialWindowSizeBytes ()I
 	public final fun getMaxConnections-pVg5ArA ()I
+	public final fun getTlsCipherPreference ()Laws/sdk/kotlin/crt/io/TlsCipherPreference;
+	public final fun getVerifyPeer ()Z
+	public final fun setCertificateFile (Ljava/lang/String;)V
+	public final fun setCertificatePem (Ljava/lang/String;)V
+	public final fun setCertificatesDirectory (Ljava/lang/String;)V
 	public final fun setClientBootstrap (Laws/sdk/kotlin/crt/io/ClientBootstrap;)V
 	public final fun setInitialWindowSizeBytes (I)V
 	public final fun setMaxConnections-WZ4Q5Ns (I)V
+	public final fun setTlsCipherPreference (Laws/sdk/kotlin/crt/io/TlsCipherPreference;)V
+	public final fun setVerifyPeer (Z)V
 }
 
 public final class aws/smithy/kotlin/runtime/http/engine/crt/CrtHttpEngineConfig$Companion {
