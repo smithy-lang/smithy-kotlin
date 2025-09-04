@@ -1,0 +1,13 @@
+# TODO: Delete this workflow when we migrate off JReleaser
+
+name: JReleaser check
+on:
+  pull_request:
+
+jobs:
+  jreleaser-check:
+    permissions: {}
+    runs-on: ubuntu-latest
+    steps:
+      - name: JReleaser check
+        uses: awslabs/aws-kotlin-repo-tools/.github/actions/jreleaser@main
