@@ -21,6 +21,13 @@ buildscript {
         https://github.com/Kotlin/dokka/issues/3194#issuecomment-1929382630
          */
         classpath(enforcedPlatform("com.fasterxml.jackson:jackson-bom:2.15.3"))
+        classpath("com.squareup.okhttp3:okhttp-coroutines:5.0.0-alpha.14")
+    }
+
+    configurations.classpath {
+        resolutionStrategy {
+            force("com.squareup.okhttp3:okhttp-coroutines:5.0.0-alpha.14")
+        }
     }
 }
 
