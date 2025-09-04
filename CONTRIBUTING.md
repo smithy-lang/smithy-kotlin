@@ -168,7 +168,7 @@ operating system, run `./gradlew build`.
 
 #### CI downstream
 
-This repo is a core dependency of [**aws-sdk-kotlin**](https://github.com/awslabs/aws-sdk-kotlin) and many changes made
+This repo is a core dependency of [**aws-sdk-kotlin**](https://github.com/aws/aws-sdk-kotlin) and many changes made
 here could impact that repo as well. To ensure that **aws-sdk-kotlin** continues to function correctly, we run a
 downstream CI check that builds both code bases in a shared workspace. To run this check locally, check out both
 repositories into subdirectories of the same parent, build/publish **smithy-kotlin** followed by
@@ -178,7 +178,7 @@ repositories into subdirectories of the same parent, build/publish **smithy-kotl
 mkdir path/to/workspace # create a new directory to hold both repositories
 cd path/to/workspace
 git clone -b branch-name https://github.com/smithy-lang/smithy-kotlin.git  # replace branch-name as appropriate
-git clone -b branch-name https://github.com/awslabs/aws-sdk-kotlin.git # replace branch-name as appropriate
+git clone -b branch-name https://github.com/aws/aws-sdk-kotlin.git # replace branch-name as appropriate
 cd smithy-kotlin
 ./gradlew build publishToMavenLocal
 cd ../aws-sdk-kotlin
