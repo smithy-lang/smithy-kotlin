@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.5.7] - 09/04/2025
+
+### Features
+* [#820](https://github.com/awslabs/smithy-kotlin/issues/820) Add additional TLS configuration options to HTTP engines.
+
+### Miscellaneous
+* Upgrade to Gradle 9.0.0
+
 ## [1.5.6] - 08/21/2025
 
 ### Fixes
