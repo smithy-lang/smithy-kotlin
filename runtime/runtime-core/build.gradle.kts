@@ -28,6 +28,7 @@ kotlin {
 
         nativeMain {
             dependencies {
+                implementation(libs.kotlin.multiplatform.bignum)
                 api(libs.crt.kotlin)
             }
         }
@@ -43,12 +44,6 @@ kotlin {
         jvmTest {
             dependencies {
                 implementation(libs.kaml)
-            }
-        }
-
-        nativeMain {
-            dependencies {
-                implementation(libs.kotlin.multiplatform.bignum)
             }
         }
 
