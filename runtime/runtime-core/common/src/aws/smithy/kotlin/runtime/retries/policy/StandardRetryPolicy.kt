@@ -8,12 +8,21 @@ package aws.smithy.kotlin.runtime.retries.policy
 import aws.smithy.kotlin.runtime.ClientException
 import aws.smithy.kotlin.runtime.SdkBaseException
 import aws.smithy.kotlin.runtime.ServiceException
-import aws.smithy.kotlin.runtime.ServiceException.*
+import aws.smithy.kotlin.runtime.ServiceException.ErrorType
 import kotlin.reflect.KClass
 import kotlin.reflect.safeCast
 
 /**
- * A standard retry policy which attempts to derive information from the Smithy exception hierarchy.
+ * A basic retry policy for Smithy clients that defines which error conditions are retryable and how. This policy will
+ * evaluate the following exceptions as retryable:
+ *
+ * * Any [ServiceException] with an `sdkErrorMetadata.errorType` of:
+ *   * [ErrorType.Server] (such as internal service errors)
+ *   * [ErrorType.Client] (such as an invalid request, a resource not found, access denied, etc.)
+ * * Any [SdkBaseException] where `sdkErrorMetadata.isRetryable` is `true` (such as a client-side timeout,
+ *   networking/socket error, etc.)
+ * * Any [SdkBaseException] where `sdkErrorMetadata.isThrottling` is `true` (such as making too many requests in a short
+ *   amount of time)
  */
 public open class StandardRetryPolicy : RetryPolicy<Any?> {
     public companion object {
