@@ -28,8 +28,6 @@ subprojects {
         plugin(libraries.plugins.aws.kotlin.repo.tools.kmp.get().pluginId)
     }
 
-    println("Project $name: hasNative=$hasNative, NATIVE_ENABLED=$NATIVE_ENABLED")
-
     // Apply KMP configuration from build plugin
     configureKmpTargets()
 
@@ -130,6 +128,20 @@ subprojects {
         //  Please refer to https://docs.gradle.org/8.14.2/dsl/org.gradle.api.tasks.Copy.html#org.gradle.api.tasks.Copy:duplicatesStrategy
         //  for details.
         duplicatesStrategy = DuplicatesStrategy.WARN
+    }
+
+    tasks.withType<AbstractTestTask> {
+        if (this is Test) {
+            useJUnitPlatform()
+        }
+
+        testLogging {
+            events("passed", "skipped", "failed")
+            showStandardStreams = true
+            showStackTraces = true
+            showExceptions = true
+            exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
+        }
     }
 }
 

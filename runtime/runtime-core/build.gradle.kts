@@ -3,8 +3,6 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
-
 plugins {
     alias(libs.plugins.kotlinx.serialization)
 }
@@ -57,14 +55,21 @@ kotlin {
         }
     }
 
-    targets.withType<KotlinNativeTarget> {
+
+    mingwX64 {
         compilations["main"].cinterops {
-            val interopDir = "$projectDir/native/src/nativeInterop/cinterop"
-            create("environ") {
-                includeDirs(interopDir)
-                packageName("aws.smithy.platform.posix")
-                headers(listOf("$interopDir/environ.h"))
+            create("winver") {
+                definitionFile.set(file("native/interop/winver.def"))
+                includeDirs("C:\\msys64\\mingw64\\include")
             }
         }
+
+        // TODO clean up
+        val compilerArgs = listOf(
+            "-Xverbose-phases=Linker", // Enable verbose linking phase from the compiler
+            "-linker-option",
+            "-v",
+        )
+        compilerOptions.freeCompilerArgs.addAll(compilerArgs)
     }
 }
