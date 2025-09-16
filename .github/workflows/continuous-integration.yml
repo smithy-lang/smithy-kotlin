@@ -46,7 +46,7 @@ jobs:
           java-version: 17
           cache: 'gradle'
       - name: Configure Gradle
-        uses: awslabs/aws-kotlin-repo-tools/.github/actions/configure-gradle@main
+        uses: aws/aws-kotlin-repo-tools/.github/actions/configure-gradle@main
         with:
           working-directory: 'smithy-kotlin'
 
@@ -176,7 +176,7 @@ jobs:
           cache: 'gradle'
 
       - name: Configure Gradle
-        uses: awslabs/aws-kotlin-repo-tools/.github/actions/configure-gradle@main
+        uses: aws/aws-kotlin-repo-tools/.github/actions/configure-gradle@main
         with:
           working-directory: 'smithy-kotlin'
 
@@ -215,7 +215,7 @@ jobs:
           cache: 'gradle'
 
       - name: Configure Gradle
-        uses: awslabs/aws-kotlin-repo-tools/.github/actions/configure-gradle@main
+        uses: aws/aws-kotlin-repo-tools/.github/actions/configure-gradle@main
         with:
           working-directory: 'smithy-kotlin'
 
@@ -237,6 +237,15 @@ jobs:
     - name: Setup build
       uses: ./smithy-kotlin/.github/actions/setup-build
 
+    - name: Checkout tools
+      uses: actions/checkout@v4
+      with:
+        path: 'aws-kotlin-repo-tools'
+        repository: 'aws/aws-kotlin-repo-tools'
+        ref: '0.2.3'
+        sparse-checkout: |
+          .github
+
     - name: Checkout aws-sdk-kotlin
       uses: ./aws-kotlin-repo-tools/.github/actions/checkout-head
       with:
@@ -253,12 +262,7 @@ jobs:
       uses: awslabs/aws-kotlin-repo-tools/.github/actions/configure-gradle@main
       with:
         working-directory: ./aws-sdk-kotlin
-    - name: Configure JDK
-      uses: actions/setup-java@v3
-      with:
-        distribution: 'corretto'
-        java-version: 17
-        cache: 'gradle'
+
     - name: Build and Test aws-sdk-kotlin downstream
       working-directory: ./smithy-kotlin
       run: |

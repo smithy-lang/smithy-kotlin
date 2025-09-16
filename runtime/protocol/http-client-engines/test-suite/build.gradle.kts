@@ -26,6 +26,7 @@ kotlin {
             dependencies {
                 implementation(libs.ktor.server.jetty.jakarta)
                 implementation(libs.ktor.network.tls.certificates)
+                implementation(libs.okhttp)
 
                 implementation(project(":runtime:protocol:http-client-engines:http-client-engine-default"))
                 implementation(project(":runtime:protocol:http-client-engines:http-client-engine-crt"))

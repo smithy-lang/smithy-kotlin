@@ -96,8 +96,6 @@ kotlin.sourceSets.getByName("main") {
 
 tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
     dependsOn(stageGeneratedSources)
-    // generated code has warnings unfortunately, see https://github.com/awslabs/aws-sdk-kotlin/issues/1169
-    compilerOptions.allWarningsAsErrors = false
 }
 
 tasks.clean.configure {
