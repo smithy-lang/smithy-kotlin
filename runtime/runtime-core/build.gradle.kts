@@ -3,6 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+import aws.sdk.kotlin.gradle.kmp.NATIVE_ENABLED
 import aws.sdk.kotlin.gradle.util.typedProp
 import org.jetbrains.kotlin.konan.target.HostManager
 import java.nio.file.Files
@@ -63,7 +64,7 @@ kotlin {
         }
     }
 
-    if (HostManager.hostIsMingw) {
+    if (NATIVE_ENABLED && HostManager.hostIsMingw) {
         mingwX64 {
             val mingwHome = findMingwHome()
             val defPath = layout.buildDirectory.file("cinterop/winver.def")
