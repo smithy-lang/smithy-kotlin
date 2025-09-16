@@ -60,8 +60,7 @@ kotlin {
         }
 
         // FIXME this config should live in aws-kotlin-repo-tools
-        val posixMain by getting
-        posixMain.dependsOn(nativeMain.get())
+        named("posixMain").orNull?.dependsOn(nativeMain.get())
     }
 
     if (HostManager.hostIsMingw) {
