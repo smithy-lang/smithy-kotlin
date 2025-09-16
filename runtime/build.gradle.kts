@@ -125,6 +125,20 @@ subprojects {
     tasks.withType<KotlinNativeSimulatorTest> {
         enabled = false
     }
+
+    tasks.withType<AbstractTestTask> {
+        if (this is Test) {
+            useJUnitPlatform()
+        }
+
+        testLogging {
+            events("passed", "skipped", "failed")
+            showStandardStreams = true
+            showStackTraces = true
+            showExceptions = true
+            exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
+        }
+    }
 }
 
 // configureIosSimulatorTasks()
