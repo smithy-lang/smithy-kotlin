@@ -1,3 +1,8 @@
+/*
+ * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 package aws.smithy.kotlin.runtime.collections
 
 import kotlin.test.*
@@ -11,7 +16,12 @@ private val intersecting = subset + disjoint
 class CaseInsensitiveMutableStringSetTest {
     private fun assertSize(size: Int, set: CaseInsensitiveMutableStringSet) {
         assertEquals(size, set.size)
-        val emptyAsserter: (Boolean) -> Unit = if (size == 0) ::assertTrue else ::assertFalse
+        val emptyAsserter: (Boolean) -> Unit =
+            if (size == 0) {
+                ::assertTrue
+            } else {
+                ::assertFalse
+            }
         emptyAsserter(set.isEmpty())
     }
 
