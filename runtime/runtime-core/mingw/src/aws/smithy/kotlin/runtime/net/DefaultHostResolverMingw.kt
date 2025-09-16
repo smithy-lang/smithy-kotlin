@@ -1,3 +1,8 @@
+/*
+ * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 package aws.smithy.kotlin.runtime.net
 
 import kotlinx.cinterop.UnsafeNumber
@@ -40,7 +45,6 @@ internal actual object DefaultHostResolver : HostResolver {
         check(wsaResult == 0) { "Failed to initialize Windows Sockets (error code $wsaResult)" }
 
         try {
-
             val hints = alloc<addrinfo>().apply {
                 ai_family = AF_UNSPEC // Allow both IPv4 and IPv6
                 ai_socktype = SOCK_STREAM // TCP stream sockets

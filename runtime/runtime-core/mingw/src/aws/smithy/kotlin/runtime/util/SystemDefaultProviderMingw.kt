@@ -1,9 +1,14 @@
+/*
+ * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 package aws.smithy.kotlin.runtime.util
 
+import aws.smithy.kotlin.native.winver.*
 import kotlinx.cinterop.*
 import platform.posix.environ
 import platform.posix.memcpy
-import aws.smithy.kotlin.native.winver.*
 
 internal actual val rawEnvironmentVariables: CPointer<CPointerVarOf<CPointer<ByteVarOf<Byte>>>>? = environ
 

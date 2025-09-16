@@ -79,19 +79,19 @@ kotlin {
                     Files.writeString(
                         defPath.get().asFile.toPath(),
                         """
-                        package = aws.smithy.kotlin.native.winver
-                        headers = windows.h
-                        compilerOpts = \
-                            -DUNICODE \
-                            -DWINVER=0x0601 \
-                            -D_WIN32_WINNT=0x0601 \
-                            -DWINAPI_FAMILY=3 \
-                            -DOEMRESOURCE \
-                            -Wno-incompatible-pointer-types \
-                            -Wno-deprecated-declarations
-                        libraryPaths = $mingwLibs
-                        staticLibraries = libversion.a
-                    """.trimIndent(),
+                            package = aws.smithy.kotlin.native.winver
+                            headers = windows.h
+                            compilerOpts = \
+                                -DUNICODE \
+                                -DWINVER=0x0601 \
+                                -D_WIN32_WINNT=0x0601 \
+                                -DWINAPI_FAMILY=3 \
+                                -DOEMRESOURCE \
+                                -Wno-incompatible-pointer-types \
+                                -Wno-deprecated-declarations
+                            libraryPaths = $mingwLibs
+                            staticLibraries = libversion.a
+                        """.trimIndent(),
                     )
                 }
             }
@@ -113,13 +113,14 @@ kotlin {
                 "-v",
             )
             compilerOptions.freeCompilerArgs.addAll(compilerArgs)
-
         }
     }
 }
 
 private fun findMingwHome(): String =
-    System.getenv("MINGW_PREFIX")?.takeUnless { it.isBlank() } ?:
-    typedProp("mingw.prefix") ?:
-    throw IllegalStateException("Cannot determine MinGW prefix location. Please verify MinGW is installed correctly " +
-            "and that either the `MINGW_PREFIX` environment variable or the `mingw.prefix` Gradle property is set.")
+    System.getenv("MINGW_PREFIX")?.takeUnless { it.isBlank() }
+        ?: typedProp("mingw.prefix")
+        ?: throw IllegalStateException(
+            "Cannot determine MinGW prefix location. Please verify MinGW is installed correctly " +
+                "and that either the `MINGW_PREFIX` environment variable or the `mingw.prefix` Gradle property is set.",
+        )
