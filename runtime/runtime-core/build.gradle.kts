@@ -58,9 +58,6 @@ kotlin {
 
         all {
             languageSettings.optIn("aws.smithy.kotlin.runtime.InternalApi")
-
-            // FIXME this config should live in aws-kotlin-repo-tools
-            if (name == "posixMain") dependsOn(nativeMain.get())
         }
     }
 
