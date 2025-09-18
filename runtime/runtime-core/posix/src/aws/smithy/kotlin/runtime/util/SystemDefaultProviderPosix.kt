@@ -4,8 +4,8 @@
  */
 package aws.smithy.kotlin.runtime.util
 
-import kotlinx.cinterop.*
 import aws.smithy.platform.posix.get_environ_ptr
+import kotlinx.cinterop.*
 import platform.posix.uname
 import platform.posix.utsname
 
