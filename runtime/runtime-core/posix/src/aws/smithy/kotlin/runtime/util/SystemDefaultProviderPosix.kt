@@ -9,6 +9,7 @@ import kotlinx.cinterop.*
 import platform.posix.uname
 import platform.posix.utsname
 
+@OptIn(ExperimentalForeignApi::class)
 public actual object SystemDefaultProvider : SystemDefaultProviderBase() {
     actual override val filePathSeparator: String = "/"
 

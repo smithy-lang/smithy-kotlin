@@ -10,6 +10,7 @@ import kotlinx.cinterop.*
 import kotlinx.coroutines.withContext
 import platform.posix.*
 
+@OptIn(ExperimentalForeignApi::class)
 public abstract class SystemDefaultProviderBase : PlatformProvider {
     override fun getenv(key: String): String? = platform.posix.getenv(key)?.toKString()
 

@@ -6,6 +6,7 @@
 import aws.sdk.kotlin.gradle.kmp.NATIVE_ENABLED
 import aws.sdk.kotlin.gradle.util.typedProp
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
+import org.jetbrains.kotlin.gradle.tasks.KotlinNativeCompile
 import org.jetbrains.kotlin.konan.target.HostManager
 import java.nio.file.Files
 import java.nio.file.Paths
@@ -36,8 +37,6 @@ kotlin {
                 api(libs.crt.kotlin)
                 implementation(libs.kotlin.multiplatform.bignum)
             }
-            languageSettings.optIn("kotlinx.cinterop.ExperimentalForeignApi")
-            languageSettings.optIn("kotlin.RequiresOptIn")
         }
 
         commonTest {

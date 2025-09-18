@@ -5,6 +5,7 @@
 package aws.smithy.kotlin.runtime.compression
 
 import aws.smithy.kotlin.runtime.InternalApi
+import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.addressOf
 import kotlinx.cinterop.alloc
 import kotlinx.cinterop.memScoped
@@ -18,6 +19,7 @@ import platform.zlib.*
 /**
  * Decompresses a byte array compressed using the gzip format
  */
+@OptIn(ExperimentalForeignApi::class)
 @InternalApi
 public actual fun decompressGzipBytes(bytes: ByteArray): ByteArray {
     if (bytes.isEmpty()) {

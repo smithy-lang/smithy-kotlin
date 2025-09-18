@@ -7,6 +7,7 @@ package aws.smithy.kotlin.runtime.net
 import kotlinx.cinterop.*
 import platform.posix.*
 
+@OptIn(UnsafeNumber::class, ExperimentalForeignApi::class)
 internal actual object DefaultHostResolver : HostResolver {
     actual override suspend fun resolve(hostname: String): List<HostAddress> = memScoped {
         val hints = alloc<addrinfo>().apply {
@@ -31,7 +32,6 @@ internal actual object DefaultHostResolver : HostResolver {
         }
     }
 
-    @OptIn(UnsafeNumber::class)
     private fun sockaddr.toIpAddr(): IpAddr {
         val (size, addrPtr, constructor) = when (sa_family.toInt()) {
             AF_INET -> Triple(
