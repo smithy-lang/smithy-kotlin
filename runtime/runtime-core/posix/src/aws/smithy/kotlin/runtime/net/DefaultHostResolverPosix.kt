@@ -7,7 +7,7 @@ package aws.smithy.kotlin.runtime.net
 import kotlinx.cinterop.*
 import platform.posix.*
 
-@OptIn(UnsafeNumber::class, ExperimentalForeignApi::class)
+@OptIn(ExperimentalForeignApi::class)
 internal actual object DefaultHostResolver : HostResolver {
     actual override suspend fun resolve(hostname: String): List<HostAddress> = memScoped {
         val hints = alloc<addrinfo>().apply {
