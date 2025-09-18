@@ -58,3 +58,8 @@ public annotation class ExperimentalApi
  */
 @DslMarker
 public annotation class SdkDsl
+
+public annotation class DeprecatedUntilVersion(
+    val major: Int,
+    val minor: Int,
+)

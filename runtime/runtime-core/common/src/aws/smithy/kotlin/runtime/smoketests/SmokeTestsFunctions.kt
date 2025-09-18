@@ -5,8 +5,11 @@
 
 package aws.smithy.kotlin.runtime.smoketests
 
+import aws.smithy.kotlin.runtime.DeprecatedUntilVersion
+
 public expect fun exitProcess(status: Int): Nothing
 
+@DeprecatedUntilVersion(1, 6)
 public class SmokeTestsException(message: String) : Exception(message)
 
 /**
