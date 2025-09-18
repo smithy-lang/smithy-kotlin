@@ -31,11 +31,37 @@ kotlin {
             }
         }
 
+        appleMain {
+            languageSettings.optIn("kotlinx.cinterop.ExperimentalForeignApi")
+            languageSettings.optIn("kotlin.RequiresOptIn")
+        }
+
+        macosMain {
+            languageSettings.optIn("kotlinx.cinterop.ExperimentalForeignApi")
+            languageSettings.optIn("kotlin.RequiresOptIn")
+        }
+
+        desktopMain {
+            languageSettings.optIn("kotlinx.cinterop.ExperimentalForeignApi")
+            languageSettings.optIn("kotlin.RequiresOptIn")
+        }
+
+        posixMain {
+            languageSettings.optIn("kotlinx.cinterop.ExperimentalForeignApi")
+            languageSettings.optIn("kotlin.RequiresOptIn")
+        }
+        iosMain {
+            languageSettings.optIn("kotlinx.cinterop.ExperimentalForeignApi")
+            languageSettings.optIn("kotlin.RequiresOptIn")
+        }
+
         nativeMain {
             dependencies {
                 api(libs.crt.kotlin)
                 implementation(libs.kotlin.multiplatform.bignum)
             }
+            languageSettings.optIn("kotlinx.cinterop.ExperimentalForeignApi")
+            languageSettings.optIn("kotlin.RequiresOptIn")
         }
 
         commonTest {
