@@ -10,20 +10,7 @@ import kotlinx.cinterop.*
 import kotlinx.coroutines.withContext
 import platform.posix.*
 
-internal expect val rawEnvironmentVariables: CPointer<CPointerVarOf<CPointer<ByteVarOf<Byte>>>>?
-
 public abstract class SystemDefaultProviderBase : PlatformProvider {
-    override fun getAllEnvVars(): Map<String, String> = memScoped {
-        generateSequence(0) { it + 1 }
-            .map { idx -> rawEnvironmentVariables?.get(idx)?.toKString() }
-            .takeWhile { it != null }
-            .associate { env ->
-                val parts = env?.split("=", limit = 2)
-                check(parts?.size == 2) { "Environment entry \"$env\" is malformed" }
-                parts[0] to parts[1]
-            }
-    }
-
     override fun getenv(key: String): String? = platform.posix.getenv(key)?.toKString()
 
     override suspend fun readFileOrNull(path: String): ByteArray? = withContext(SdkDispatchers.IO) {

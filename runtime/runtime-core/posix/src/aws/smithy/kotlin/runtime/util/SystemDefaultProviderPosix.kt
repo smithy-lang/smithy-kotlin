@@ -5,11 +5,9 @@
 package aws.smithy.kotlin.runtime.util
 
 import kotlinx.cinterop.*
-import platform.posix.__environ
+import aws.smithy.platform.posix.get_environ_ptr
 import platform.posix.uname
 import platform.posix.utsname
-
-internal actual val rawEnvironmentVariables: CPointer<CPointerVarOf<CPointer<ByteVarOf<Byte>>>>? = __environ
 
 public actual object SystemDefaultProvider : SystemDefaultProviderBase() {
     actual override val filePathSeparator: String = "/"
@@ -38,5 +36,17 @@ public actual object SystemDefaultProvider : SystemDefaultProviderBase() {
         }
 
         return OperatingSystem(family, version)
+    }
+
+    actual override fun getAllEnvVars(): Map<String, String> = memScoped {
+        val environ = get_environ_ptr()
+        generateSequence(0) { it + 1 }
+            .map { idx -> environ?.get(idx)?.toKString() }
+            .takeWhile { it != null }
+            .associate { env ->
+                val parts = env?.split("=", limit = 2)
+                check(parts?.size == 2) { "Environment entry \"$env\" is malformed" }
+                parts[0] to parts[1]
+            }
     }
 }

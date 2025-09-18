@@ -10,11 +10,20 @@ import kotlinx.cinterop.*
 import platform.posix.environ
 import platform.posix.memcpy
 
-internal actual val rawEnvironmentVariables: CPointer<CPointerVarOf<CPointer<ByteVarOf<Byte>>>>? = environ
-
 public actual object SystemDefaultProvider : SystemDefaultProviderBase() {
     actual override val filePathSeparator: String = "\\"
     actual override fun osInfo(): OperatingSystem = OperatingSystem(OsFamily.Windows, osVersionFromKernel())
+
+    actual override fun getAllEnvVars(): Map<String, String> = memScoped {
+        generateSequence(0) { it + 1 }
+            .map { idx -> environ.get(idx)?.toKString() }
+            .takeWhile { it != null }
+            .associate { env ->
+                val parts = env?.split("=", limit = 2)
+                check(parts?.size == 2) { "Environment entry \"$env\" is malformed" }
+                parts[0] to parts[1]
+            }
+    }
 }
 
 // The functions below are adapted from C++ SDK:
