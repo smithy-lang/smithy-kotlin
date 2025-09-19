@@ -8,6 +8,10 @@ on:
   pull_request:
   workflow_dispatch:
 
+permissions:
+  id-token: write
+  contents: read
+
 # Allow one instance of this workflow per pull request, and cancel older runs when new changes are pushed
 concurrency:
   group: ci-pr-${{ github.ref }}
@@ -31,6 +35,8 @@ jobs:
           - 17
           - 21
     steps:
+      - name: Set start time
+        run: echo "WORKFLOW_START_TIME=$(date +%s)" >> $GITHUB_ENV
       - name: Checkout sources
         uses: actions/checkout@v4
       - name: Configure JDK
@@ -45,6 +51,9 @@ jobs:
         shell: bash
         run: |
           ./gradlew -Ptest.java.version=${{ matrix.java-version }} jvmTest --stacktrace
+      - name: Upload metrics
+        if: always()
+        uses: ./.github/actions/workflow-metrics
 
   all-platforms:
     runs-on: ${{ matrix.os }}
@@ -53,6 +62,9 @@ jobs:
       matrix:
         os: [ ubuntu-latest, macos-latest, windows-latest ]
     steps:
+      - name: Set start time
+        shell: bash
+        run: echo "WORKFLOW_START_TIME=$(date +%s)" >> $GITHUB_ENV
       - name: Checkout sources
         uses: actions/checkout@v4
       - name: Configure JDK
@@ -69,16 +81,23 @@ jobs:
           echo "kotlinWarningsAsErrors=true" >> $GITHUB_WORKSPACE/local.properties
           ./gradlew apiCheck
           ./gradlew test jvmTest
+      - name: Upload metrics
+        uses: ./.github/actions/workflow-metrics
       - name: Save Test Reports
         if: failure()
         uses: actions/upload-artifact@v4
         with:
           name: test-reports-${{ matrix.os }}
           path: '**/build/reports'
-
+      - name: Upload metrics
+        if: always()
+        uses: ./.github/actions/workflow-metrics
   protocol-tests:
     runs-on: ubuntu-latest
     steps:
+      - name: Set start time
+        shell: bash
+        run: echo "WORKFLOW_START_TIME=$(date +%s)" >> $GITHUB_ENV
       - name: Checkout sources
         uses: actions/checkout@v4
       - name: Configure JDK
@@ -94,10 +113,15 @@ jobs:
         run: |
           ./gradlew publishToMavenLocal
           ./gradlew testAllProtocols
-
+      - name: Upload metrics
+        if: always()
+        uses: ./.github/actions/workflow-metrics
   downstream:
     runs-on: ubuntu-latest
     steps:
+    - name: Set start time
+      shell: bash
+      run: echo "WORKFLOW_START_TIME=$(date +%s)" >> $GITHUB_ENV
     - name: Checkout sources
       uses: actions/checkout@v4
       with:
@@ -148,3 +172,6 @@ jobs:
         ./gradlew --parallel publishToMavenLocal
         ./gradlew test jvmTest
         ./gradlew testAllProtocols
+    - name: Upload metrics
+      if: always()
+      uses: ./smithy-kotlin/.github/actions/workflow-metrics
