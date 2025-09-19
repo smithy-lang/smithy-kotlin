@@ -24,18 +24,25 @@ runs:
         # Build job name with matrix values
         job_name="${{ github.job }}"
         if [ ! -z "${{ matrix.java-version || '' }}" ]; then
-        job_name="${job_name}(${{ matrix.java-version }})"
+          job_name="${job_name}(${{ matrix.java-version }})"
         fi
         if [ ! -z "${{ matrix.os || '' }}" ]; then
-        job_name="${job_name}(${{ matrix.os }})"
+          job_name="${job_name}(${{ matrix.os }})"
+        fi
+        
+        # Determine success/failure (1 for success, 0 for failure)
+        if [ "${{ job.status }}" == "success" ]; then
+          success_value=1
+        else
+          success_value=0
         fi
         
         aws cloudwatch put-metric-data \
           --namespace "GitHub/Workflows" \
           --metric-data '[{
-            "MetricName": "Duration",
-            "Value": '$duration',
-            "Unit": "Seconds",
+            "MetricName": "Success",
+            "Value": '$success_value',
+            "Unit": "Count",
             "Dimensions": [
               {
                 "Name": "WorkflowName",
@@ -46,8 +53,33 @@ runs:
                 "Value": "'$job_name'"
               },
               {
-                "Name": "Repository", 
+                "Name": "Repository",
                 "Value": "${{ github.repository }}"
               }
             ]
           }]'
+        
+        # Send Duration metric only if workflow successful
+        if [ "$success_value" -eq 1 ]; then
+          aws cloudwatch put-metric-data \
+            --namespace "GitHub/Workflows" \
+            --metric-data '[{
+              "MetricName": "Duration",
+              "Value": '$duration',
+              "Unit": "Seconds",
+              "Dimensions": [
+                {
+                  "Name": "WorkflowName",
+                  "Value": "${{ github.workflow }}"
+                },
+                {
+                  "Name": "JobName",
+                  "Value": "'$job_name'"
+                },
+                {
+                  "Name": "Repository",
+                  "Value": "${{ github.repository }}"
+                }
+              ]
+          }]'
+        fi

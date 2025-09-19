@@ -52,6 +52,7 @@ jobs:
         run: |
           ./gradlew -Ptest.java.version=${{ matrix.java-version }} jvmTest --stacktrace
       - name: Upload metrics
+        if: always()
         uses: ./.github/actions/workflow-metrics
 
   all-platforms:
@@ -88,7 +89,9 @@ jobs:
         with:
           name: test-reports-${{ matrix.os }}
           path: '**/build/reports'
-
+      - name: Upload metrics
+        if: always()
+        uses: ./.github/actions/workflow-metrics
   protocol-tests:
     runs-on: ubuntu-latest
     steps:
@@ -111,6 +114,7 @@ jobs:
           ./gradlew publishToMavenLocal
           ./gradlew testAllProtocols
       - name: Upload metrics
+        if: always()
         uses: ./.github/actions/workflow-metrics
   downstream:
     runs-on: ubuntu-latest
@@ -169,4 +173,5 @@ jobs:
         ./gradlew test jvmTest
         ./gradlew testAllProtocols
     - name: Upload metrics
+      if: always()
       uses: ./smithy-kotlin/.github/actions/workflow-metrics
