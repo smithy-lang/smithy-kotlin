@@ -5,6 +5,7 @@
 import aws.sdk.kotlin.gradle.dsl.configureJReleaser
 import aws.sdk.kotlin.gradle.dsl.configureLinting
 import aws.sdk.kotlin.gradle.util.typedProp
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 buildscript {
     // NOTE: buildscript classpath for the root project is the parent classloader for the subprojects, we
@@ -19,7 +20,19 @@ buildscript {
         https://github.com/Kotlin/dokka/issues/3472#issuecomment-1929712374
         https://github.com/Kotlin/dokka/issues/3194#issuecomment-1929382630
          */
-        classpath(enforcedPlatform("com.fasterxml.jackson:jackson-bom:2.19.2"))
+        classpath(enforcedPlatform("com.fasterxml.jackson:jackson-bom:2.15.3"))
+    }
+
+    configurations.classpath {
+        resolutionStrategy {
+            /*
+            Version bumping the SDK to 1.5.x in repo tools broke our buildscript classpath:
+            java.lang.NoSuchMethodError: 'void kotlinx.coroutines.CancellableContinuation.resume(java.lang.Object, kotlin.jvm.functions.Function3)
+
+            FIXME: Figure out what broke our buildscipt classpath, this is a temporary fix
+             */
+            force("com.squareup.okhttp3:okhttp-coroutines:5.0.0-alpha.14")
+        }
     }
 }
 
@@ -46,9 +59,9 @@ val testJavaVersion = typedProp<String>("test.java.version")?.let {
 }
 
 allprojects {
-    if (rootProject.typedProp<Boolean>("kotlinWarningsAsErrors") == true) {
-        tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
-            compilerOptions.allWarningsAsErrors = true
+    tasks.withType<KotlinCompile> {
+        compilerOptions {
+            allWarningsAsErrors = true
         }
     }
 

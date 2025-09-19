@@ -16,7 +16,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Configure Gradle
-        uses: awslabs/aws-kotlin-repo-tools/.github/actions/configure-gradle@main
+        uses: aws/aws-kotlin-repo-tools/.github/actions/configure-gradle@main
 
       - name: Build smithy-kotlin
         run: ./gradlew test jvmTest

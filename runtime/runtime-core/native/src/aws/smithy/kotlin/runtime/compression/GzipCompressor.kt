@@ -16,6 +16,7 @@ private const val MEM_LEVEL = 8 // Default memory level
 /**
  * Streaming-style gzip compressor, implemented using zlib bindings
  */
+@OptIn(ExperimentalForeignApi::class)
 internal class GzipCompressor : Closeable {
     companion object {
         internal const val BUFFER_SIZE = 16384

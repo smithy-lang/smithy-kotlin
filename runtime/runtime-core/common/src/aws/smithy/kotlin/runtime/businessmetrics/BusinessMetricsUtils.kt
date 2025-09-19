@@ -102,6 +102,7 @@ public enum class SmithyBusinessMetric(public override val identifier: String) :
     FLEXIBLE_CHECKSUMS_REQ_WHEN_REQUIRED("a"),
     FLEXIBLE_CHECKSUMS_RES_WHEN_SUPPORTED("b"),
     FLEXIBLE_CHECKSUMS_RES_WHEN_REQUIRED("c"),
+    BEARER_SERVICE_ENV_VARS("3"),
     ;
 
     override fun toString(): String = identifier

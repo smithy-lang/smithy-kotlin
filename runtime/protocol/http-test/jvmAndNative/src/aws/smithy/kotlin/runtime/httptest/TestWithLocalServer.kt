@@ -5,13 +5,10 @@
 
 package aws.smithy.kotlin.runtime.httptest
 
-import io.ktor.client.request.get
-import io.ktor.network.selector.SelectorManager
-import io.ktor.network.sockets.InetSocketAddress
-import io.ktor.network.sockets.aSocket
-import io.ktor.server.application.ApplicationStarted
-import io.ktor.server.engine.EmbeddedServer
-import io.ktor.utils.io.core.use
+import io.ktor.network.selector.*
+import io.ktor.network.sockets.*
+import io.ktor.server.application.*
+import io.ktor.server.engine.*
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
