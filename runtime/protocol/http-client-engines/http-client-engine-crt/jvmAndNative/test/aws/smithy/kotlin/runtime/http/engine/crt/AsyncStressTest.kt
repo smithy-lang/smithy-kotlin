@@ -5,13 +5,13 @@
 
 package aws.smithy.kotlin.runtime.http.engine.crt
 
-import aws.smithy.kotlin.runtime.IgnoreNative
 import aws.smithy.kotlin.runtime.http.HttpMethod
 import aws.smithy.kotlin.runtime.http.SdkHttpClient
 import aws.smithy.kotlin.runtime.http.complete
 import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
 import aws.smithy.kotlin.runtime.http.request.url
 import aws.smithy.kotlin.runtime.httptest.TestWithLocalServer
+import aws.smithy.kotlin.runtime.io.use
 import aws.smithy.kotlin.runtime.net.Host
 import aws.smithy.kotlin.runtime.net.Scheme
 import io.ktor.server.cio.*
@@ -37,37 +37,38 @@ class AsyncStressTest : TestWithLocalServer() {
         }
     }.start()
 
-    @IgnoreNative // FIXME TlsContext needs to initialize CRT. Segmentation fault.
     @Test
     fun testStreamNotConsumed() = runBlocking {
         // test that filling the stream window and not consuming the body stream still cleans up resources
         // appropriately and allows requests to proceed (a stream that isn't consumed will be in a stuck state
         // if the window is full and never incremented again, this can lead to all connections being consumed
         // and the engine to no longer make further requests)
-        val client = SdkHttpClient(CrtHttpEngine())
-        val request = HttpRequestBuilder().apply {
-            url {
-                scheme = Scheme.HTTP
-                method = HttpMethod.GET
-                host = Host.Domain(testHost)
-                port = serverPort
-                path.decoded = "/largeResponse"
-            }
-        }
-
-        withTimeout(10.seconds) {
-            repeat(1_000) {
-                async {
-                    try {
-                        val call = client.call(request)
-                        yield()
-                        call.complete()
-                    } catch (ex: Exception) {
-                        println("exception on $it: $ex")
-                        throw ex
-                    }
+        CrtHttpEngine().use { engine ->
+            val client = SdkHttpClient(engine)
+            val request = HttpRequestBuilder().apply {
+                url {
+                    scheme = Scheme.HTTP
+                    method = HttpMethod.GET
+                    host = Host.Domain(testHost)
+                    port = serverPort
+                    path.decoded = "/largeResponse"
                 }
-                yield()
+            }
+
+            withTimeout(10.seconds) {
+                repeat(1_000) {
+                    async {
+                        try {
+                            val call = client.call(request)
+                            yield()
+                            call.complete()
+                        } catch (ex: Exception) {
+                            println("exception on $it: $ex")
+                            throw ex
+                        }
+                    }
+                    yield()
+                }
             }
         }
     }
