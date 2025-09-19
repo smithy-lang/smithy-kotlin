@@ -1,5 +1,24 @@
 # Changelog
 
+## [1.5.8] - 09/04/2025
+
+## [1.5.7] - 09/04/2025
+
+### Features
+* [#820](https://github.com/awslabs/smithy-kotlin/issues/820) Add additional TLS configuration options to HTTP engines.
+
+### Miscellaneous
+* Upgrade to Gradle 9.0.0
+
+## [1.5.6] - 08/21/2025
+
+### Fixes
+* [#1285](https://github.com/awslabs/smithy-kotlin/issues/1285) ⚠️ **IMPORTANT**: Correctly return number of bytes read from chunked streams
+
+## [1.5.5] - 08/13/2025
+
+## [1.5.4] - 08/07/2025
+
 ## [1.5.3] - 07/28/2025
 
 ### Features

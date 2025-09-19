@@ -1,6 +1,10 @@
+/*
+ * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 package aws.smithy.kotlin.runtime.http.auth
 
-import aws.smithy.kotlin.runtime.collections.emptyAttributes
 import aws.smithy.kotlin.runtime.util.TestPlatformProvider
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
@@ -9,27 +13,65 @@ import kotlin.test.assertFailsWith
 
 class EnvironmentBearerTokenProviderTest {
     @Test
-    fun testResolveWithValidToken() = runTest {
+    fun testResolveFromEnvVar() = runTest {
         val provider = EnvironmentBearerTokenProvider(
-            "TEST_TOKEN",
-            TestPlatformProvider(mutableMapOf("TEST_TOKEN" to "test-bearer-token")),
+            "TEST_SYS_PROPS_TOKEN",
+            "TEST_ENV_TOKEN",
+            TestPlatformProvider(
+                env = mapOf("TEST_ENV_TOKEN" to "test-env-bearer-token"),
+            ),
         )
 
         val token = provider.resolve()
 
-        assertEquals("test-bearer-token", token.token)
+        assertEquals("test-env-bearer-token", token.token)
+    }
+
+    @Test
+    fun testResolveFromSysProps() = runTest {
+        val provider = EnvironmentBearerTokenProvider(
+            "TEST_SYS_PROPS_TOKEN",
+            "TEST_ENV_TOKEN",
+            TestPlatformProvider(
+                props = mapOf("TEST_SYS_PROPS_TOKEN" to "test-sys-props-bearer-token"),
+            ),
+        )
+
+        val token = provider.resolve()
+
+        assertEquals("test-sys-props-bearer-token", token.token)
+    }
+
+    @Test
+    fun testResolutionOrder() = runTest {
+        val provider = EnvironmentBearerTokenProvider(
+            "TEST_SYS_PROPS_TOKEN",
+            "TEST_ENV_TOKEN",
+            TestPlatformProvider(
+                props = mapOf("TEST_SYS_PROPS_TOKEN" to "test-sys-props-bearer-token"),
+                env = mapOf("TEST_ENV_TOKEN" to "test-env-bearer-token"),
+            ),
+        )
+
+        val token = provider.resolve()
+
+        assertEquals("test-sys-props-bearer-token", token.token)
     }
 
     @Test
     fun testResolveWithMissingToken() = runTest {
         val provider = EnvironmentBearerTokenProvider(
             "MISSING_TEST_TOKEN",
-            TestPlatformProvider(mutableMapOf()),
+            "MISSING_TEST_TOKEN",
+            TestPlatformProvider(
+                env = mapOf("TEST_TOKEN" to "test-env-bearer-token"),
+                props = mapOf("TEST_TOKEN" to "test-sys-props-bearer-token"),
+            ),
         )
 
         val exception = assertFailsWith<IllegalStateException> {
-            provider.resolve(emptyAttributes())
+            provider.resolve()
         }
-        assertEquals("MISSING_TEST_TOKEN environment variable is not set", exception.message)
+        assertEquals("Missing values for system property \"MISSING_TEST_TOKEN\" and environment variable \"MISSING_TEST_TOKEN\"", exception.message)
     }
 }

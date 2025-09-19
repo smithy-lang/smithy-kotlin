@@ -3,10 +3,11 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 import aws.sdk.kotlin.gradle.dsl.configurePublishing
-import aws.sdk.kotlin.gradle.kmp.*
-import org.gradle.kotlin.dsl.apply
-import org.gradle.kotlin.dsl.withType
+import aws.sdk.kotlin.gradle.kmp.configureKmpTargets
+import aws.sdk.kotlin.gradle.kmp.kotlin
+import aws.sdk.kotlin.gradle.kmp.needsKmpConfigured
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
 import org.jetbrains.kotlin.gradle.targets.native.tasks.KotlinNativeSimulatorTest
 
 plugins {
@@ -58,13 +59,19 @@ subprojects {
                     implementation(libraries.kotest.assertions.core.jvm)
                 }
             }
-        }
-    }
 
-    kotlin.sourceSets.all {
-        // Allow subprojects to use internal APIs
-        // See https://kotlinlang.org/docs/reference/opt-in-requirements.html#opting-in-to-using-api
-        listOf("kotlin.RequiresOptIn", "kotlinx.cinterop.ExperimentalForeignApi").forEach { languageSettings.optIn(it) }
+            all {
+                languageSettings.optIn("kotlin.RequiresOptIn")
+            }
+        }
+
+        targets.withType<KotlinNativeTarget>().all {
+            listOf("${name}Main", "${name}Test").forEach {
+                this@kotlin.sourceSets.findByName(it)?.apply {
+                    languageSettings.optIn("kotlinx.cinterop.ExperimentalForeignApi")
+                }
+            }
+        }
     }
 
     tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
@@ -117,6 +124,20 @@ subprojects {
      */
     tasks.withType<KotlinNativeSimulatorTest> {
         enabled = false
+    }
+
+    tasks.withType<AbstractTestTask> {
+        if (this is Test) {
+            useJUnitPlatform()
+        }
+
+        testLogging {
+            events("passed", "skipped", "failed")
+            showStandardStreams = true
+            showStackTraces = true
+            showExceptions = true
+            exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
+        }
     }
 }
 

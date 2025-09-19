@@ -1,3 +1,8 @@
+/*
+ * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 package software.amazon.smithy.kotlin.codegen.rendering.smoketests
 
 import software.amazon.smithy.codegen.core.Symbol
@@ -262,7 +267,11 @@ class SmokeTestsRunnerGenerator(
         statusOverride: String? = null,
         directive: String? = "",
     ) {
-        val expectation = if (errorExpected) "error expected from service" else "no error expected from service"
+        val expectation = if (errorExpected) {
+            "error expected from service"
+        } else {
+            "no error expected from service"
+        }
         val status = statusOverride ?: "\$status"
         val testResult = "$status $service $testCase - $expectation $directive"
         writer.write("printer.appendLine(#S)", testResult)

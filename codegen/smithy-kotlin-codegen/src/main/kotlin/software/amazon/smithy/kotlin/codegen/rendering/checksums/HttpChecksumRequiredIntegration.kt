@@ -1,3 +1,8 @@
+/*
+ * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 package software.amazon.smithy.kotlin.codegen.rendering.checksums
 
 import software.amazon.smithy.aws.traits.HttpChecksumTrait
