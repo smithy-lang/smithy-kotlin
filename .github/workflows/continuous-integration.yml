@@ -52,7 +52,7 @@ jobs:
         run: |
           ./gradlew -Ptest.java.version=${{ matrix.java-version }} jvmTest --stacktrace
       - name: Upload metrics
-        uses: ./smithy-kotlin/.github/actions/workflow-metrics
+        uses: ./.github/actions/workflow-metrics
 
   all-platforms:
     runs-on: ${{ matrix.os }}
@@ -81,7 +81,7 @@ jobs:
           ./gradlew apiCheck
           ./gradlew test jvmTest
       - name: Upload metrics
-        uses: ./smithy-kotlin/.github/actions/workflow-metrics
+        uses: ./.github/actions/workflow-metrics
       - name: Save Test Reports
         if: failure()
         uses: actions/upload-artifact@v4
@@ -111,7 +111,7 @@ jobs:
           ./gradlew publishToMavenLocal
           ./gradlew testAllProtocols
       - name: Upload metrics
-        uses: ./smithy-kotlin/.github/actions/workflow-metrics
+        uses: ./.github/actions/workflow-metrics
   downstream:
     runs-on: ubuntu-latest
     steps:
@@ -169,4 +169,4 @@ jobs:
         ./gradlew test jvmTest
         ./gradlew testAllProtocols
     - name: Upload metrics
-      uses: ./smithy-kotlin/.github/actions/workflow-metrics
+      uses: ./.github/actions/workflow-metrics
