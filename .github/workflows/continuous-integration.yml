@@ -169,4 +169,4 @@ jobs:
         ./gradlew test jvmTest
         ./gradlew testAllProtocols
     - name: Upload metrics
-      uses: ./.github/actions/workflow-metrics
+      uses: ./smithy-kotlin/.github/actions/workflow-metrics
