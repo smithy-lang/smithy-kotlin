@@ -19,14 +19,14 @@ public abstract class SystemDefaultProviderBase : PlatformProvider {
             val size = memScoped {
                 val statResult = alloc<stat>()
                 if (stat(path, statResult.ptr) != 0) return@withContext null
-                statResult.st_size.convert<Int>()
+                statResult.st_size
             }
 
             val file = fopen(path, "rb") ?: return@withContext null
 
             try {
                 // Read file content
-                val buffer = ByteArray(size).pin()
+                val buffer = ByteArray(size.toInt()).pin()
                 val rc = fread(buffer.addressOf(0), 1uL, size.toULong(), file)
                 if (rc == size.toULong()) buffer.get() else null
             } finally {
