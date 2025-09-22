@@ -64,7 +64,7 @@ public annotation class SdkDsl
  * Any code using this API should migrate to the suggested replacement as soon as possible.
  */
 @RequiresOptIn(
-    message = "This API is deprecated and will be scheduled for removal in an upcoming version.",
+    message = "This API is deprecated and scheduled for removal in an upcoming version.",
     level = RequiresOptIn.Level.WARNING,
 )
 public annotation class PlannedRemoval(
