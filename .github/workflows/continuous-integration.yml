@@ -84,7 +84,7 @@ jobs:
           # ./gradlew apiCheck
           # ./gradlew build
 
-          ./gradlew :runtime:protocol:http-client-engines:http-client-engine-crt:macosArm64Test
+          ./gradlew :runtime:protocol:http-client-engines:http-client-engine-crt:macosArm64Test --info --stacktrace
 
       - name: Save Test Reports
         if: failure()
