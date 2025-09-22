@@ -14,13 +14,11 @@ import platform.posix.*
 public abstract class SystemDefaultProviderBase : PlatformProvider {
     override fun getenv(key: String): String? = platform.posix.getenv(key)?.toKString()
 
-    override suspend fun readFileOrNull(path: String): ByteArray? = withContext(SdkDispatchers.IO) {
+    override suspend fun readFileOrNull(path: String): ByteArray? = withContext(SdkDispatchers.IO) { memScoped {
         try {
-            val size: Long = memScoped {
-                val statResult = alloc<stat>()
-                if (stat(path, statResult.ptr) != 0) return@withContext null
-                statResult.st_size
-            }
+            val statResult = alloc<stat>()
+            if (stat(path, statResult.ptr) != 0) return@withContext null
+            val size: Long = statResult.st_size.toLong()
 
             val file = fopen(path, "rb") ?: return@withContext null
 
@@ -35,7 +33,7 @@ public abstract class SystemDefaultProviderBase : PlatformProvider {
         } catch (_: Exception) {
             null
         }
-    }
+    } }
 
     override suspend fun writeFile(path: String, data: ByteArray): Unit = withContext(SdkDispatchers.IO) {
         val file = fopen(path, "wb") ?: throw IOException("Cannot open file for writing: $path")
