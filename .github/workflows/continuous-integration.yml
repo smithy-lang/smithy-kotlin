@@ -79,8 +79,12 @@ jobs:
         run: |
           # FIXME K2. Re-enable warnings as errors after this warning is removed: https://youtrack.jetbrains.com/issue/KT-68532
           # echo "kotlinWarningsAsErrors=true" >> $GITHUB_WORKSPACE/local.properties              
-          ./gradlew apiCheck
-          ./gradlew build
+
+          # FIXME temporarily disabled main checks to get to failure point faster! Re-enable once broken test(s) are fixed
+          # ./gradlew apiCheck
+          # ./gradlew build
+
+          ./gradlew :runtime:protocol:http-client-engines:http-client-engine-crt:macosArm64Test
 
       - name: Save Test Reports
         if: failure()
