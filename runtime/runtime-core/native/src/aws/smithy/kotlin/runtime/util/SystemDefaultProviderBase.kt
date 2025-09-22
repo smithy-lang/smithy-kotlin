@@ -16,7 +16,7 @@ public abstract class SystemDefaultProviderBase : PlatformProvider {
 
     override suspend fun readFileOrNull(path: String): ByteArray? = withContext(SdkDispatchers.IO) {
         try {
-            val size = memScoped {
+            val size: Long = memScoped {
                 val statResult = alloc<stat>()
                 if (stat(path, statResult.ptr) != 0) return@withContext null
                 statResult.st_size
