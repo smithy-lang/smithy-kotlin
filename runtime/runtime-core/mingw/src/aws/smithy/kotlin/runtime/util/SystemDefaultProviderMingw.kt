@@ -14,7 +14,7 @@ public actual object SystemDefaultProvider : SystemDefaultProviderBase() {
     actual override val filePathSeparator: String = "\\"
 
     // FIXME We currently get the OS info by parsing from Kernel32.dll. Is there a less hacky way we can do this?
-    actual override fun osInfo(): OperatingSystem = OperatingSystem(OsFamily.Windows, osVersionFromKernel())
+    actual override fun osInfo(): OperatingSystem = osVersionFromKernel()?.let { OperatingSystem(OsFamily.Windows, it) } ?: throw RuntimeException("Failed to introspect OS version")
 
     actual override fun getAllEnvVars(): Map<String, String> = memScoped {
         generateSequence(0) { it + 1 }
