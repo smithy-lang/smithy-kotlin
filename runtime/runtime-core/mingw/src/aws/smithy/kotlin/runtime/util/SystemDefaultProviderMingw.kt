@@ -18,7 +18,7 @@ public actual object SystemDefaultProvider : SystemDefaultProviderBase() {
 
     actual override fun getAllEnvVars(): Map<String, String> = memScoped {
         generateSequence(0) { it + 1 }
-            .map { idx -> environ.get(idx)?.toKString() }
+            .map { idx -> environ?.get(idx)?.toKString() }
             .takeWhile { it != null }
             .associate { env ->
                 val parts = env?.split("=", limit = 2)
