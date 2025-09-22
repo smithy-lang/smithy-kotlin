@@ -13,7 +13,6 @@ class SystemPlatformProviderMingwTest {
     @Test
     fun testOsInfo() = runTest {
         val osInfo = PlatformProvider.System.osInfo()
-        println(osInfo)
         assertEquals(OsFamily.Windows, osInfo.family)
         assertNotNull(osInfo.version)
     }
