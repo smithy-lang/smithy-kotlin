@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.5.10] - 09/22/2025
+
+### Documentation
+* Improve documentation for [`StandardRetryPolicy`](https://docs.aws.amazon.com/smithy-kotlin/api/latest/runtime-core/aws.smithy.kotlin.runtime.retries.policy/-standard-retry-policy/)
+
 ## [1.5.8] - 09/04/2025
 
 ## [1.5.7] - 09/04/2025
