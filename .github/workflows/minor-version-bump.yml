@@ -1,7 +1,7 @@
 name: Minor version bump check
 on:
   pull_request:
-
+permissions: { }
 jobs:
   minor-version-bump-check:
     permissions: {}
