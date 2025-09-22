@@ -9,6 +9,14 @@ import aws.sdk.kotlin.crt.util.osVersionFromKernel
 import kotlinx.cinterop.*
 import platform.posix.environ
 import platform.posix.memcpy
+import platform.posix.stat
+
+@OptIn(ExperimentalForeignApi::class)
+internal actual fun statSizeOrNull(path: String): Long? = memScoped {
+    val st = alloc<stat>()
+    if (stat(path, st.ptr) != 0) return null
+    st.st_size.toLong()
+}
 
 public actual object SystemDefaultProvider : SystemDefaultProviderBase() {
     actual override val filePathSeparator: String = "\\"
