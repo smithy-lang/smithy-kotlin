@@ -10,23 +10,25 @@ import kotlinx.cinterop.*
 import kotlinx.coroutines.withContext
 import platform.posix.*
 
-// Required because stat->st_size has varying widths across platforms
-// Without this, get an error:
-// "The declaration is using numbers with different bit widths in least two actual platforms. Such types shall not be used in user-defined 'expect fun' signature"
-internal expect fun statSizeOrNull(path: String): Long?
-
 @OptIn(ExperimentalForeignApi::class)
 public abstract class SystemDefaultProviderBase : PlatformProvider {
     override fun getenv(key: String): String? = platform.posix.getenv(key)?.toKString()
 
+
     override suspend fun readFileOrNull(path: String): ByteArray? = withContext(SdkDispatchers.IO) {
         try {
-            val size = statSizeOrNull(path) ?: return@withContext null
+            val size = memScoped {
+                val statResult = alloc<stat>()
+                if (stat(path, statResult.ptr) != 0) return@withContext null
+                @OptIn(UnsafeNumber::class)
+                statResult.st_size.convert<Int>()
+            }
+
             val file = fopen(path, "rb") ?: return@withContext null
 
             try {
                 // Read file content
-                val buffer = ByteArray(size.toInt()).pin()
+                val buffer = ByteArray(size).pin()
                 val rc = fread(buffer.addressOf(0), 1uL, size.toULong(), file)
                 if (rc == size.toULong()) buffer.get() else null
             } finally {

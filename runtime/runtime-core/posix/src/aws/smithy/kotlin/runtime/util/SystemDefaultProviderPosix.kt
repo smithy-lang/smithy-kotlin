@@ -6,16 +6,8 @@ package aws.smithy.kotlin.runtime.util
 
 import aws.smithy.platform.posix.get_environ_ptr
 import kotlinx.cinterop.*
-import platform.posix.stat
 import platform.posix.uname
 import platform.posix.utsname
-
-@OptIn(ExperimentalForeignApi::class)
-internal actual fun statSizeOrNull(path: String): Long? = memScoped {
-    val st = alloc<stat>()
-    if (stat(path, st.ptr) != 0) return null
-    st.st_size.toLong()
-}
 
 @OptIn(ExperimentalForeignApi::class)
 public actual object SystemDefaultProvider : SystemDefaultProviderBase() {
