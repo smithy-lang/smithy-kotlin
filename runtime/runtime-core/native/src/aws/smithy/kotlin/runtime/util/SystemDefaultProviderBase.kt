@@ -14,7 +14,6 @@ import platform.posix.*
 public abstract class SystemDefaultProviderBase : PlatformProvider {
     override fun getenv(key: String): String? = platform.posix.getenv(key)?.toKString()
 
-
     override suspend fun readFileOrNull(path: String): ByteArray? = withContext(SdkDispatchers.IO) {
         try {
             val size = memScoped {
