@@ -8,7 +8,6 @@ package aws.smithy.kotlin.runtime.util
 import aws.sdk.kotlin.crt.util.osVersionFromKernel
 import kotlinx.cinterop.*
 import platform.posix.environ
-import platform.posix.memcpy
 import platform.posix.stat
 
 @OptIn(ExperimentalForeignApi::class)
