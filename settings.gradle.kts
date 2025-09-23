@@ -23,6 +23,13 @@ dependencyResolutionManagement {
         mavenLocal()
         mavenCentral()
         google()
+        maven {
+            name = "kotlinRepoTools"
+            url = java.net.URI("https://d2gys1nrxnjnyg.cloudfront.net/releases")
+            content {
+                includeGroupByRegex("""aws\.sdk\.kotlin.*""")
+            }
+        }
     }
 }
 
