@@ -4,9 +4,17 @@
  */
 package aws.smithy.kotlin.runtime.http.engine.crt
 
+import aws.smithy.kotlin.runtime.content.ByteStream
+import aws.smithy.kotlin.runtime.http.Headers
+import aws.smithy.kotlin.runtime.http.request.HttpRequest
+import aws.smithy.kotlin.runtime.http.HttpMethod
+import aws.smithy.kotlin.runtime.http.toHttpBody
+import aws.smithy.kotlin.runtime.net.url.Url
+import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
+import kotlin.test.assertEquals
 
 class RequestUtilTest {
     @Test
@@ -41,5 +49,20 @@ class RequestUtilTest {
         ).forEach { (code, name) ->
             assertFalse(isRetryable(code, name), "Expected $name to not be retryable!")
         }
+    }
+
+    @Test
+    fun testContentLengthHeader() = runTest {
+        val data = "a".repeat(100)
+
+        val request = HttpRequest(
+            HttpMethod.POST,
+            url = Url.parse("https://notarealurl.com"),
+            headers = Headers { set("Content-Length", data.length.toString()) },
+            body = ByteStream.fromString(data).toHttpBody()
+        )
+
+        val crtRequest = request.toCrtRequest(coroutineContext)
+        assertEquals(listOf(data.length.toString()), crtRequest.headers.getAll("Content-Length"))
     }
 }
