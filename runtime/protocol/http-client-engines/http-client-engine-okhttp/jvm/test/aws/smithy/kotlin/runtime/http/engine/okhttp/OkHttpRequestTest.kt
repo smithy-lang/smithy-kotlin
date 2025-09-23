@@ -5,6 +5,7 @@
 
 package aws.smithy.kotlin.runtime.http.engine.okhttp
 
+import aws.smithy.kotlin.runtime.content.ByteStream
 import aws.smithy.kotlin.runtime.http.*
 import aws.smithy.kotlin.runtime.http.engine.internal.HttpClientMetrics
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
@@ -69,6 +70,22 @@ class OkHttpRequestTest {
 
         assertTrue(actual.headers.size >= 3)
         assertEquals(listOf("bar", "baz"), actual.headers("FoO"))
+    }
+
+    @Test
+    fun itConvertsContentLengthHeader() {
+        val data = "a".repeat(100)
+        val url = Url.parse("https://aws.amazon.com")
+        val headers = Headers {
+            append("Content-Length", data.length.toString())
+        }
+        val request = HttpRequest(HttpMethod.POST, url, headers, ByteStream.fromString(data).toHttpBody())
+
+        val execContext = ExecutionContext()
+        val actual = request.toOkHttpRequest(execContext, EmptyCoroutineContext, testMetrics)
+
+        assertTrue(actual.headers.size >= 1)
+        assertEquals(listOf(data.length.toString()), actual.headers("Content-Length"))
     }
 
     @Test
