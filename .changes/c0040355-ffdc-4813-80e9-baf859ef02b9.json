@@ -1,5 +1,0 @@
-{
-    "id": "c0040355-ffdc-4813-80e9-baf859ef02b9",
-    "type": "bugfix",
-    "description": "fix: correct hash code calculation for case-insensitive map entries"
-}
