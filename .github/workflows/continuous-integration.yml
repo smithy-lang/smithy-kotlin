@@ -71,7 +71,7 @@ jobs:
         with:
           namespace: CI Metrics
           dimensions: |
-            Product=aws-sdk-kotlin
+            Product=smithy-kotlin
             JobName=${{ github.job }}(${{ matrix.java-version }})
             Branch=${{ github.base_ref || github.ref_name }}
           metrics: |
@@ -125,7 +125,7 @@ jobs:
         with:
           namespace: CI Metrics
           dimensions: |
-            Product=aws-sdk-kotlin
+            Product=smithy-kotlin
             JobName=${{ github.job }}(${{ matrix.os }})
             Branch=${{ github.base_ref || github.ref_name }}
           metrics: |
@@ -178,7 +178,7 @@ jobs:
         with:
           namespace: CI Metrics
           dimensions: |
-            Product=aws-sdk-kotlin
+            Product=smithy-kotlin
             JobName=${{ github.job }}
             Branch=${{ github.base_ref || github.ref_name }}
           metrics: |
@@ -260,7 +260,7 @@ jobs:
           with:
             namespace: CI Metrics
             dimensions: |
-              Product=aws-sdk-kotlin
+              Product=smithy-kotlin
               JobName=${{ github.job }}
               Branch=${{ github.base_ref || github.ref_name }}
             metrics: |
