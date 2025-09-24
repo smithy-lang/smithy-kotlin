@@ -7,6 +7,8 @@ on:
   pull_request:
     branches: [ main ]
 
+permissions: { }
+
 jobs:
   release-readiness:
     if: ${{ !contains(github.event.pull_request.labels.*.name, 'ready-for-release') }}

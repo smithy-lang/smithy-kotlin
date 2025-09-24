@@ -60,6 +60,19 @@ public annotation class ExperimentalApi
 public annotation class SdkDsl
 
 /**
+ * Indicates that the annotated API is deprecated and scheduled for removal in an upcoming version.
+ * Any code using this API should migrate to the suggested replacement as soon as possible.
+ */
+@RequiresOptIn(
+    message = "This API is deprecated and scheduled for removal in an upcoming version.",
+    level = RequiresOptIn.Level.WARNING,
+)
+public annotation class PlannedRemoval(
+    val major: Int,
+    val minor: Int,
+)
+
+/**
  * Marks a test that should be ignored on Native platforms
  */
 @Target(AnnotationTarget.CLASS, AnnotationTarget.FUNCTION)

@@ -4,6 +4,7 @@
  */
 import aws.sdk.kotlin.gradle.dsl.configureJReleaser
 import aws.sdk.kotlin.gradle.dsl.configureLinting
+import aws.sdk.kotlin.gradle.dsl.configureMinorVersionStrategyRules
 import aws.sdk.kotlin.gradle.util.typedProp
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
@@ -109,6 +110,7 @@ val lintPaths = listOf(
 )
 
 configureLinting(lintPaths)
+configureMinorVersionStrategyRules(lintPaths)
 
 // Binary compatibility
 apiValidation {

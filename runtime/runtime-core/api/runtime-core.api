@@ -39,6 +39,11 @@ public abstract interface annotation class aws/smithy/kotlin/runtime/IgnoreNativ
 public abstract interface annotation class aws/smithy/kotlin/runtime/InternalApi : java/lang/annotation/Annotation {
 }
 
+public abstract interface annotation class aws/smithy/kotlin/runtime/PlannedRemoval : java/lang/annotation/Annotation {
+	public abstract fun major ()I
+	public abstract fun minor ()I
+}
+
 public abstract interface class aws/smithy/kotlin/runtime/ProtocolResponse {
 	public abstract fun getSummary ()Ljava/lang/String;
 }
