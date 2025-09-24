@@ -2,7 +2,7 @@
 kotlin-version = "2.2.0"
 dokka-version = "2.0.0"
 
-aws-kotlin-repo-tools-version = "0.4.51"
+aws-kotlin-repo-tools-version = "0.4.56"
 
 # libs
 coroutines-version = "1.10.2"
@@ -13,7 +13,7 @@ okio-version = "3.16.0"
 otel-version = "1.52.0"
 slf4j-version = "2.0.17"
 slf4j-v1x-version = "1.7.36"
-crt-kotlin-version = "0.10.3"
+crt-kotlin-version = "0.11.5"
 micrometer-version = "1.15.2"
 binary-compatibility-validator-version = "0.18.1"
 kotlin-multiplatform-bignum-version = "0.3.10"

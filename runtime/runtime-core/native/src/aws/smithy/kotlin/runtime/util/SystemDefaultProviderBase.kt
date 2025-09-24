@@ -19,6 +19,7 @@ public abstract class SystemDefaultProviderBase : PlatformProvider {
             val size = memScoped {
                 val statResult = alloc<stat>()
                 if (stat(path, statResult.ptr) != 0) return@withContext null
+                @OptIn(UnsafeNumber::class)
                 statResult.st_size.convert<Int>()
             }
 
