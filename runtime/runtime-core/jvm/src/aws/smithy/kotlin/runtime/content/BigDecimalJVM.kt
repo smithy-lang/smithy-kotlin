@@ -45,6 +45,8 @@ public actual class BigDecimal private constructor(private val delegate: JvmBigD
     public actual val exponent: Int
         get() = delegate.scale()
 
+    public val value: String = delegate.toString()
+
     public actual operator fun plus(other: BigDecimal): BigDecimal =
         coalesceOrCreate(delegate + other.delegate, this, other)
 

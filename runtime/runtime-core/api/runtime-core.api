@@ -396,6 +396,7 @@ public final class aws/smithy/kotlin/runtime/content/BigDecimal : java/lang/Numb
 	public final fun floatValue ()F
 	public final fun getExponent ()I
 	public final fun getMantissa ()Laws/smithy/kotlin/runtime/content/BigInteger;
+	public final fun getValue ()Ljava/lang/String;
 	public fun hashCode ()I
 	public final fun intValue ()I
 	public final fun longValue ()J
@@ -421,6 +422,7 @@ public final class aws/smithy/kotlin/runtime/content/BigInteger : java/lang/Numb
 	public final fun doubleValue ()D
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun floatValue ()F
+	public final fun getValue ()Ljava/lang/String;
 	public fun hashCode ()I
 	public final fun intValue ()I
 	public final fun longValue ()J
