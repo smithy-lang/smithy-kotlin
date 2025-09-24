@@ -248,21 +248,21 @@ jobs:
         ./gradlew --parallel publishToMavenLocal
         ./gradlew test jvmTest
         ./gradlew testAllProtocols
-        - name: Calculate duration
-          id: end
-          run: |
-            printf -v now '%(%s)T'
-            duration=$(( now - ${{ steps.start.outputs.timestamp }} ))
-            echo "duration=$duration" >> "$GITHUB_OUTPUT"
-        - name: Emit metrics
-          if: always() # run this step even if previous steps failed or the job is canceled
-          uses: aws/aws-kotlin-repo-tools/.github/actions/emit-metrics@main
-          with:
-            namespace: CI Metrics
-            dimensions: |
-              Product=smithy-kotlin
-              JobName=${{ github.job }}
-              Branch=${{ github.base_ref || github.ref_name }}
-            metrics: |
-              WorkflowSucceeded:${{ job.status == 'success' && '1' || '0' }}:Count
-              WorkflowDuration:${{ steps.end.outputs.duration }}:Seconds
+    - name: Calculate duration
+      id: end
+      run: |
+        printf -v now '%(%s)T'
+        duration=$(( now - ${{ steps.start.outputs.timestamp }} ))
+        echo "duration=$duration" >> "$GITHUB_OUTPUT"
+    - name: Emit metrics
+      if: always() # run this step even if previous steps failed or the job is canceled
+      uses: aws/aws-kotlin-repo-tools/.github/actions/emit-metrics@main
+      with:
+        namespace: CI Metrics
+        dimensions: |
+          Product=smithy-kotlin
+          JobName=${{ github.job }}
+          Branch=${{ github.base_ref || github.ref_name }}
+        metrics: |
+          WorkflowSucceeded:${{ job.status == 'success' && '1' || '0' }}:Count
+          WorkflowDuration:${{ steps.end.outputs.duration }}:Seconds
