@@ -6,6 +6,7 @@ package aws.smithy.kotlin.runtime.io
 
 import aws.smithy.kotlin.runtime.io.internal.*
 
+// FIXME Commonize with JVM after removing WritableByteStream / ReadableByteStream in 1.6.x
 public actual class SdkBuffer :
     SdkBufferedSource,
     SdkBufferedSink {
