@@ -104,7 +104,7 @@ abstract class StageGeneratedSourcesTask : DefaultTask() {
 
         models.forEach { modelName ->
             fs.copy {
-                from("$smithyProjectionsDir/$projectName/$modelName/kotlin-codegen/src/main/kotlin")
+                from(smithyProjectionsDir.dir("${projectName.get()}/$modelName/kotlin-codegen/src/main/kotlin"))
                 into(generatedSourcesDir.get().asFile)
                 include("**/model/*.kt")
                 include("**/serde/*.kt")
