@@ -58,8 +58,6 @@ kotlin {
     }
 }
 
-val osName = System.getProperty("os.name")
-
 abstract class TestServerService :
     BuildService<TestServerService.Params>,
     AutoCloseable {
@@ -111,6 +109,8 @@ abstract class StartTestServersTask : DefaultTask() {
         serverService.get().startServers()
     }
 }
+
+val osName = System.getProperty("os.name")
 
 val startTestServers = tasks.register<StartTestServersTask>("startTestServers") {
     dependsOn(tasks["jvmJar"])

@@ -44,7 +44,6 @@ val generateSdkRuntimeVersion by tasks.registering {
     val resourcesDir = layout.buildDirectory.dir("resources/main/software/amazon/smithy/kotlin/codegen/core")
     val versionFile = resourcesDir.map { it.file("sdk-version.txt") }
 
-    // declare inputs/outputs via providers
     inputs.property("runtimeVersion", runtimeVersion)
     outputs.file(versionFile)
 
