@@ -96,8 +96,10 @@ abstract class TestServerService :
 val testServerService = gradle.sharedServices.registerIfAbsent("testServers", TestServerService::class) {
     parameters.sslConfigPath.set(File.createTempFile("ssl-", ".cfg").absolutePath)
     parameters.mainClass.set("aws.smithy.kotlin.runtime.http.test.util.TestServersKt")
-    val kotlinCompilation = kotlin.targets.getByName("jvm").compilations["test"]
-    parameters.classpath.from(kotlinCompilation.runtimeDependencyFiles!!)
+}
+
+afterEvaluate {
+    testServerService.get().parameters.classpath.from(kotlin.targets.getByName("jvm").compilations["test"].runtimeDependencyFiles!!)
 }
 
 abstract class StartTestServersTask : DefaultTask() {
