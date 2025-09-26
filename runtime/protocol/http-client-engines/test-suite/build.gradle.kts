@@ -58,30 +58,30 @@ kotlin {
     }
 }
 
-open class LocalTestServers : DefaultTask() {
-    @Internal
-    var server: Closeable? = null
-        private set
+val osName = System.getProperty("os.name")
 
-    @Internal
-    lateinit var main: String
+abstract class TestServerService :
+    BuildService<TestServerService.Params>,
+    AutoCloseable {
+    interface Params : BuildServiceParameters {
+        val sslConfigPath: Property<String>
+        val mainClass: Property<String>
+        val classpath: ConfigurableFileCollection
+    }
 
-    @Internal
-    lateinit var classpath: FileCollection
+    private var server: Closeable? = null
 
-    @Input
-    lateinit var sslConfigPath: String
+    fun startServers() {
+        if (server != null) return
 
-    @TaskAction
-    fun exec() {
         try {
             println("[TestServers] start")
-            val urlClassLoaderSource = classpath.map { file -> file.toURI().toURL() }.toTypedArray()
+            val urlClassLoaderSource = parameters.classpath.map { it.toURI().toURL() }.toTypedArray()
             val loader = URLClassLoader(urlClassLoaderSource, ClassLoader.getSystemClassLoader())
 
-            val mainClass = loader.loadClass(main)
-            val main = mainClass.getMethod("startServers", String::class.java)
-            server = main.invoke(null, sslConfigPath) as Closeable
+            val mainClass = loader.loadClass(parameters.mainClass.get())
+            val method = mainClass.getMethod("startServers", String::class.java)
+            server = method.invoke(null, parameters.sslConfigPath.get()) as Closeable
             println("[TestServers] started")
         } catch (cause: Throwable) {
             println("[TestServers] failed: ${cause.message}")
@@ -89,36 +89,47 @@ open class LocalTestServers : DefaultTask() {
         }
     }
 
-    fun stop() {
-        if (server != null) {
-            server?.close()
-            println("[TestServers] stop")
-        }
+    override fun close() {
+        server?.close()
+        println("[TestServers] stopped")
     }
 }
 
-val osName = System.getProperty("os.name")
-
-val startTestServers = task<LocalTestServers>("startTestServers") {
-    dependsOn(tasks["jvmJar"])
-
-    main = "aws.smithy.kotlin.runtime.http.test.util.TestServersKt"
+val testServerService = gradle.sharedServices.registerIfAbsent("testServers", TestServerService::class) {
+    parameters.sslConfigPath.set(File.createTempFile("ssl-", ".cfg").absolutePath)
+    parameters.mainClass.set("aws.smithy.kotlin.runtime.http.test.util.TestServersKt")
     val kotlinCompilation = kotlin.targets.getByName("jvm").compilations["test"]
-    classpath = kotlinCompilation.runtimeDependencyFiles!!
-    sslConfigPath = File.createTempFile("ssl-", ".cfg").absolutePath
+    parameters.classpath.from(kotlinCompilation.runtimeDependencyFiles!!)
+}
+
+abstract class StartTestServersTask : DefaultTask() {
+    @get:Internal
+    abstract val serverService: Property<TestServerService>
+
+    @TaskAction
+    fun start() {
+        serverService.get().startServers()
+    }
+}
+
+val startTestServers = tasks.register<StartTestServersTask>("startTestServers") {
+    dependsOn(tasks["jvmJar"])
+    usesService(testServerService)
+    serverService.set(testServerService)
 }
 
 val testTasks = listOf("allTests", "jvmTest")
     .forEach {
         tasks.named(it) {
             dependsOn(startTestServers)
+            usesService(testServerService)
         }
     }
 
 tasks.jvmTest {
     // set test environment for proxy tests
     systemProperty("MITM_PROXY_SCRIPTS_ROOT", projectDir.resolve("proxy-scripts").absolutePath)
-    systemProperty("SSL_CONFIG_PATH", startTestServers.sslConfigPath)
+    systemProperty("SSL_CONFIG_PATH", testServerService.get().parameters.sslConfigPath)
 
     val enableProxyTestsProp = "aws.test.http.enableProxyTests"
     val runningInCodeBuild = System.getenv().containsKey("CODEBUILD_BUILD_ID")
@@ -126,8 +137,4 @@ tasks.jvmTest {
     val shouldRunProxyTests = !runningInCodeBuild && runningInLinux
 
     systemProperty(enableProxyTestsProp, System.getProperties().getOrDefault(enableProxyTestsProp, shouldRunProxyTests))
-}
-
-gradle.buildFinished {
-    startTestServers.stop()
 }
