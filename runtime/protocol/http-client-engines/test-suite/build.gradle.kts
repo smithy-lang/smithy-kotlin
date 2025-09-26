@@ -78,8 +78,8 @@ abstract class TestServerService :
             val loader = URLClassLoader(urlClassLoaderSource, ClassLoader.getSystemClassLoader())
 
             val mainClass = loader.loadClass(parameters.mainClass.get())
-            val method = mainClass.getMethod("startServers", String::class.java)
-            server = method.invoke(null, parameters.sslConfigPath.get()) as Closeable
+            val main = mainClass.getMethod("startServers", String::class.java)
+            server = main.invoke(null, parameters.sslConfigPath.get()) as Closeable
             println("[TestServers] started")
         } catch (cause: Throwable) {
             println("[TestServers] failed: ${cause.message}")
