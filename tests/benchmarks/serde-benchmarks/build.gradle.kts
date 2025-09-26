@@ -123,6 +123,12 @@ val stageGeneratedSources = tasks.register<StageGeneratedSourcesTask>("stageGene
     generatedSourcesDir.set(layout.buildDirectory.dir("generated-src/src"))
 }
 
+afterEvaluate {
+    tasks.named("jvmSourcesJar") {
+        dependsOn(stageGeneratedSources)
+    }
+}
+
 tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
     dependsOn(stageGeneratedSources)
 }
