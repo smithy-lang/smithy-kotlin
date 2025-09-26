@@ -9,7 +9,7 @@ extra["moduleName"] = "aws.smithy.kotlin.runtime.http.engine.okhttp4"
 
 kotlin {
     sourceSets {
-        commonMain {
+        jvmMain {
             dependencies {
                 api(project(":runtime:protocol:http-client"))
                 implementation(project(":runtime:protocol:http-client-engines:http-client-engine-okhttp"))

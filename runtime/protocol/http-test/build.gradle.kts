@@ -28,6 +28,14 @@ kotlin {
             }
         }
 
+        jvmAndNativeMain {
+            dependencies {
+                api(libs.ktor.server.cio)
+                implementation(libs.ktor.client.core)
+                implementation(libs.ktor.server.core)
+            }
+        }
+
         all {
             languageSettings.optIn("aws.smithy.kotlin.runtime.InternalApi")
         }

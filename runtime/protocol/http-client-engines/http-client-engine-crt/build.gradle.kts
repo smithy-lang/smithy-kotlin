@@ -11,18 +11,18 @@ apply(plugin = "org.jetbrains.kotlinx.atomicfu")
 
 kotlin {
     sourceSets {
-        jvmMain {
+        jvmAndNativeMain {
             dependencies {
                 api(project(":runtime:runtime-core"))
                 api(project(":runtime:protocol:http-client"))
                 implementation(project(":runtime:crt-util"))
                 implementation(project(":runtime:observability:telemetry-api"))
-
                 implementation(libs.kotlinx.coroutines.core)
+                api(libs.crt.kotlin)
             }
         }
 
-        jvmTest {
+        jvmAndNativeTest {
             dependencies {
                 implementation(project(":runtime:testing"))
                 implementation(project(":runtime:protocol:http-test"))

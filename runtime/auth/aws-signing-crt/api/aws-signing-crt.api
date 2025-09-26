@@ -1,4 +1,4 @@
-public final class aws/smithy/kotlin/runtime/auth/awssigning/crt/CrtAwsSigner : aws/smithy/kotlin/runtime/auth/awssigning/AwsSigner {
+public final class aws/smithy/kotlin/runtime/auth/awssigning/crt/CrtAwsSigner : aws/sdk/kotlin/crt/WithCrt, aws/smithy/kotlin/runtime/auth/awssigning/AwsSigner {
 	public static final field INSTANCE Laws/smithy/kotlin/runtime/auth/awssigning/crt/CrtAwsSigner;
 	public fun sign (Laws/smithy/kotlin/runtime/http/request/HttpRequest;Laws/smithy/kotlin/runtime/auth/awssigning/AwsSigningConfig;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun signChunk ([B[BLaws/smithy/kotlin/runtime/auth/awssigning/AwsSigningConfig;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
