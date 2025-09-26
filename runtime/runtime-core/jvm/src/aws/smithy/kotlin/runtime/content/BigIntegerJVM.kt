@@ -35,6 +35,7 @@ public actual class BigInteger internal constructor(internal val delegate: JvmBi
     public actual override fun toDouble(): Double = delegate.toDouble()
     public actual override fun toString(): String = toString(10)
     public actual fun toString(radix: Int): String = delegate.toString(radix)
+    public val value: String = delegate.toString()
 
     public actual override fun hashCode(): Int = 17 + delegate.hashCode()
     public actual override fun equals(other: Any?): Boolean = other is BigInteger && delegate == other.delegate

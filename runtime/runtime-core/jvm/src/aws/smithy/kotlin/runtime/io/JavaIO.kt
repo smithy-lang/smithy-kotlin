@@ -9,7 +9,6 @@ import aws.smithy.kotlin.runtime.io.internal.toSdk
 import java.io.File
 import java.io.InputStream
 import java.io.OutputStream
-import java.nio.ByteBuffer
 import java.nio.file.Path
 import okio.sink as okioSink
 import okio.source as okioSource
@@ -60,20 +59,3 @@ public fun InputStream.source(): SdkSource = okioSource().toSdk()
  * Create a new [SdkSource] that reads from this [InputStream]
  */
 public fun OutputStream.sink(): SdkSink = okioSink().toSdk()
-
-// BufferedSinkAdapter
-internal fun BufferedSinkAdapter.outputStream(): OutputStream = delegate.outputStream()
-internal fun BufferedSinkAdapter.write(src: ByteBuffer): Int = delegate.write(src)
-internal fun BufferedSinkAdapter.isOpen(): Boolean = delegate.isOpen
-
-// BufferedSourceAdapter
-internal fun BufferedSourceAdapter.read(dst: ByteBuffer): Int = delegate.read(dst)
-internal fun BufferedSourceAdapter.isOpen(): Boolean = delegate.isOpen
-internal fun BufferedSourceAdapter.inputStream(): InputStream = delegate.inputStream()
-
-// SdkBuffer
-public fun SdkBuffer.read(dst: ByteBuffer): Int = wrapOkio { inner.read(dst) }
-public fun SdkBuffer.write(src: ByteBuffer): Int = wrapOkio { inner.write(src) }
-public fun SdkBuffer.isOpen(): Boolean = inner.isOpen
-public fun SdkBuffer.inputStream(): InputStream = inner.inputStream()
-public fun SdkBuffer.outputStream(): OutputStream = inner.outputStream()

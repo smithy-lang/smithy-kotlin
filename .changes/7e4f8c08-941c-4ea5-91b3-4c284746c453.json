@@ -1,5 +1,0 @@
-{
-    "id": "7e4f8c08-941c-4ea5-91b3-4c284746c453",
-    "type": "documentation",
-    "description": "Improve documentation for [`StandardRetryPolicy`](https://docs.aws.amazon.com/smithy-kotlin/api/latest/runtime-core/aws.smithy.kotlin.runtime.retries.policy/-standard-retry-policy/)"
-}

@@ -7,6 +7,5 @@ package aws.smithy.kotlin.runtime.crt
 
 import aws.sdk.kotlin.crt.io.MutableBuffer
 import aws.smithy.kotlin.runtime.io.SdkBuffer
-import aws.smithy.kotlin.runtime.io.read
 
 internal actual fun transferRequestBody(outgoing: SdkBuffer, dest: MutableBuffer) = outgoing.read(dest.buffer)

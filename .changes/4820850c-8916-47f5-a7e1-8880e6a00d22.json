@@ -1,5 +1,0 @@
-{
-    "id": "4820850c-8916-47f5-a7e1-8880e6a00d22",
-    "type": "bugfix",
-    "description": "Fix errors in equality checks for `CaseInsensitiveMap` which affect `Headers` and `ValuesMap` implementations"
-}
