@@ -93,7 +93,6 @@ jobs:
 
   # build and test for targets: jvm, linuxX64
   # cross compile for: linuxX64, linuxArm64
-  # TODO - add mingw as cross compile target
   linux:
     runs-on: ubuntu-latest
     steps:
