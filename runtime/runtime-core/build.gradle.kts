@@ -3,6 +3,10 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+import aws.sdk.kotlin.gradle.kmp.NATIVE_ENABLED
+import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
+import org.jetbrains.kotlin.konan.target.HostManager
+
 plugins {
     alias(libs.plugins.kotlinx.serialization)
 }
@@ -20,6 +24,14 @@ kotlin {
                 implementation(libs.okio)
                 // Coroutines' locking features are used in retry token bucket implementations
                 api(libs.kotlinx.coroutines.core)
+                implementation(libs.kotlinx.datetime)
+            }
+        }
+
+        nativeMain {
+            dependencies {
+                api(libs.crt.kotlin)
+                implementation(libs.kotlin.multiplatform.bignum)
             }
         }
 
@@ -39,6 +51,19 @@ kotlin {
 
         all {
             languageSettings.optIn("aws.smithy.kotlin.runtime.InternalApi")
+        }
+    }
+
+    if (NATIVE_ENABLED && !HostManager.hostIsMingw) {
+        targets.withType<KotlinNativeTarget> {
+            compilations["main"].cinterops {
+                val interopDir = "$projectDir/posix/src/posixInterop/cinterop"
+                create("environ") {
+                    includeDirs(interopDir)
+                    packageName("aws.smithy.platform.posix")
+                    headers(listOf("$interopDir/environ.h"))
+                }
+            }
         }
     }
 }

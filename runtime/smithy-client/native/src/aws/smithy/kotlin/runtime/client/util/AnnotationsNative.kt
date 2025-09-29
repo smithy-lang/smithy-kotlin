@@ -5,6 +5,8 @@
 
 package aws.smithy.kotlin.runtime.client.util
 
+@Target(AnnotationTarget.CLASS)
+@Retention(AnnotationRetention.SOURCE)
 public actual annotation class MpJvmDefaultWithoutCompatibility {
     // No-op on non-JVM platforms
 }

@@ -8,6 +8,7 @@ package aws.smithy.kotlin.runtime.http.interceptors
 import aws.smithy.kotlin.runtime.collections.get
 import aws.smithy.kotlin.runtime.compression.CompressionAlgorithm
 import aws.smithy.kotlin.runtime.compression.Gzip
+import aws.smithy.kotlin.runtime.compression.decompressGzipBytes
 import aws.smithy.kotlin.runtime.http.*
 import aws.smithy.kotlin.runtime.http.operation.HttpOperationContext
 import aws.smithy.kotlin.runtime.http.operation.newTestOperation
@@ -21,8 +22,6 @@ import kotlin.test.Test
 import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
-
-internal expect fun decompressGzipBytes(bytes: ByteArray): ByteArray
 
 class RequestCompressionInterceptorTest {
 

@@ -25,5 +25,11 @@ kotlin {
         all {
             languageSettings.optIn("aws.smithy.kotlin.runtime.InternalApi")
         }
+
+        nativeMain {
+            dependencies {
+                implementation(project(":runtime:auth:aws-signing-crt"))
+            }
+        }
     }
 }
