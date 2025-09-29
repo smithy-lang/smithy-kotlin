@@ -71,7 +71,8 @@ jobs:
 
       - name: Show Results
         uses: aws/aws-kotlin-repo-tools/.github/actions/artifact-size-metrics/show-results@main
-        working-directory: smithy-kotlin
+        with:
+          working-directory: smithy-kotlin
 
       - name: Evaluate
         if: ${{ !contains(github.event.pull_request.labels.*.name, 'acknowledge-artifact-size-increase') }}
