@@ -5,6 +5,14 @@
 package aws.smithy.kotlin.runtime.compression
 
 import aws.smithy.kotlin.runtime.content.ByteStream
+import aws.smithy.kotlin.runtime.content.asByteStream
+import aws.smithy.kotlin.runtime.io.GzipByteReadChannel
+import aws.smithy.kotlin.runtime.io.GzipSdkSource
+import aws.smithy.kotlin.runtime.io.SdkByteReadChannel
+import aws.smithy.kotlin.runtime.io.SdkSource
+import aws.smithy.kotlin.runtime.io.buffer
+import aws.smithy.kotlin.runtime.io.source
+import aws.smithy.kotlin.runtime.io.use
 
 /**
  * The gzip compression algorithm.
@@ -13,12 +21,31 @@ import aws.smithy.kotlin.runtime.content.ByteStream
  * See: https://en.wikipedia.org/wiki/Gzip
  */
 public actual class Gzip : CompressionAlgorithm {
-    actual override val id: String
-        get() = TODO("Not yet implemented")
-    actual override val contentEncoding: String
-        get() = TODO("Not yet implemented")
+    actual override val id: String = "gzip"
+    actual override val contentEncoding: String = "gzip"
 
-    actual override fun compress(stream: ByteStream): ByteStream {
-        TODO("Not yet implemented")
+    actual override fun compress(stream: ByteStream): ByteStream = when (stream) {
+        is ByteStream.ChannelStream -> object : ByteStream.ChannelStream() {
+            override fun readFrom(): SdkByteReadChannel = GzipByteReadChannel(stream.readFrom())
+            override val contentLength: Long? = null
+            override val isOneShot: Boolean = stream.isOneShot
+        }
+
+        is ByteStream.SourceStream -> object : ByteStream.SourceStream() {
+            override fun readFrom(): SdkSource = GzipSdkSource(stream.readFrom())
+            override val contentLength: Long? = null
+            override val isOneShot: Boolean = stream.isOneShot
+        }
+
+        is ByteStream.Buffer -> {
+            val bytes = stream.bytes()
+            if (bytes.isEmpty()) {
+                stream
+            } else {
+                GzipSdkSource(bytes.source()).use {
+                    it.buffer().readByteArray().asByteStream()
+                }
+            }
+        }
     }
 }

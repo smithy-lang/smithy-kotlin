@@ -16,19 +16,28 @@ kotlin {
                 implementation(project(":runtime:runtime-core"))
             }
         }
+
         jvmMain {
             dependencies {
                 // okhttp works on both JVM and Android
                 implementation(project(":runtime:protocol:http-client-engines:http-client-engine-okhttp"))
             }
         }
+
         jvmTest {
             dependencies {
                 implementation(project(":runtime:protocol:http-client-engines:http-client-engine-crt"))
             }
         }
+
         all {
             languageSettings.optIn("aws.smithy.kotlin.runtime.InternalApi")
+        }
+
+        nativeMain {
+            dependencies {
+                implementation(project(":runtime:protocol:http-client-engines:http-client-engine-crt"))
+            }
         }
     }
 }

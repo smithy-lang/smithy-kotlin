@@ -10,8 +10,9 @@ public expect open class IOException(message: String?, cause: Throwable?) : Exce
     public constructor(message: String?)
 }
 
-public expect open class EOFException(message: String?) : IOException {
+public expect open class EOFException(message: String?, cause: Throwable?) : IOException {
     public constructor()
+    public constructor(message: String?)
 }
 
 /**
