@@ -95,7 +95,10 @@ abstract class TestServerProvider :
 
 val testServerProvider = gradle.sharedServices.registerIfAbsent("testServers", TestServerProvider::class) {
     parameters.sslConfigPath.set(File.createTempFile("ssl-", ".cfg").absolutePath)
-    parameters.classpath.from(kotlin.targets.getByName("jvm").compilations["test"].runtimeDependencyFiles!!)
+}
+
+afterEvaluate {
+    testServerProvider.get().parameters.classpath.from(kotlin.targets.getByName("jvm").compilations["test"].runtimeDependencyFiles!!)
 }
 
 abstract class StartTestServersTask : DefaultTask() {
