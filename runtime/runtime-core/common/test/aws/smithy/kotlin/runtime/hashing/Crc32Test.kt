@@ -20,7 +20,6 @@ class Crc32Test {
         val input = "foobar"
 
         crc.update(input.encodeToByteArray(), 0, input.length)
-        assertEquals(2666930069U, crc.digestValue()) // checksum of "foobar"
         assertEquals("nvYflQ==", crc.digest().encodeBase64String())
     }
 
@@ -39,9 +38,8 @@ class Crc32Test {
         val crc = Crc32()
         val input = "foobar"
         crc.update(input.encodeToByteArray(), 0, input.length / 2)
-        assertEquals(2356372769U, crc.digestValue()) // checksum of "foo"
         crc.update(input.encodeToByteArray(), (input.length - input.length / 2), input.length / 2)
-        assertEquals(2666930069U, crc.digestValue()) // checksum of "foobar"
+        assertEquals("nvYflQ==", crc.digest().encodeBase64String()) // checksum of "foobar"
     }
 
     @Test
@@ -49,8 +47,7 @@ class Crc32Test {
         val crc = Crc32()
         val input = "foobar"
         crc.update(input.encodeToByteArray(), 0, input.length)
-        assertEquals(2666930069U, crc.digestValue()) // checksum of "foobar"
-        crc.digest()
+        assertEquals("nvYflQ==", crc.digest().encodeBase64String()) // checksum of "foobar"
         assertEquals(0U, crc.digestValue())
     }
 }

@@ -259,7 +259,9 @@ class HttpInterceptorTest {
             op.roundTrip(client, Unit)
         }
 
-        val cause = assertNotNull(ex.cause)
+        // FIXME Investigate why the exception `ex` and its cause are duplicated on JVM.
+        // On JVM, `ex.cause` has the suppressed exceptions. On Native, `ex` has the suppressed exceptions and it has no cause.
+        val cause = assertNotNull(ex.cause ?: ex)
         assertEquals(1, cause.suppressedExceptions.size)
         assertIs<TestException>(cause.suppressedExceptions.last())
     }

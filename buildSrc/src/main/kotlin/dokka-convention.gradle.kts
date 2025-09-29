@@ -3,8 +3,6 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import kotlin.text.set
-
 plugins {
     id("org.jetbrains.dokka")
 }
