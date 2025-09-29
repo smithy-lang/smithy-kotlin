@@ -58,12 +58,11 @@ kotlin {
     }
 }
 
-abstract class TestServerService :
-    BuildService<TestServerService.Params>,
+abstract class TestServerProvider :
+    BuildService<TestServerProvider.Params>,
     AutoCloseable {
     interface Params : BuildServiceParameters {
         val sslConfigPath: Property<String>
-        val mainClass: Property<String>
         val classpath: ConfigurableFileCollection
     }
 
@@ -77,7 +76,7 @@ abstract class TestServerService :
             val urlClassLoaderSource = parameters.classpath.map { it.toURI().toURL() }.toTypedArray()
             val loader = URLClassLoader(urlClassLoaderSource, ClassLoader.getSystemClassLoader())
 
-            val mainClass = loader.loadClass(parameters.mainClass.get())
+            val mainClass = loader.loadClass("aws.smithy.kotlin.runtime.http.test.util.TestServersKt")
             val main = mainClass.getMethod("startServers", String::class.java)
             server = main.invoke(null, parameters.sslConfigPath.get()) as Closeable
             println("[TestServers] started")
@@ -89,26 +88,23 @@ abstract class TestServerService :
 
     override fun close() {
         server?.close()
+        server = null
         println("[TestServers] stopped")
     }
 }
 
-val testServerService = gradle.sharedServices.registerIfAbsent("testServers", TestServerService::class) {
+val testServerProvider = gradle.sharedServices.registerIfAbsent("testServers", TestServerProvider::class) {
     parameters.sslConfigPath.set(File.createTempFile("ssl-", ".cfg").absolutePath)
-    parameters.mainClass.set("aws.smithy.kotlin.runtime.http.test.util.TestServersKt")
-}
-
-afterEvaluate {
-    testServerService.get().parameters.classpath.from(kotlin.targets.getByName("jvm").compilations["test"].runtimeDependencyFiles!!)
+    parameters.classpath.from(kotlin.targets.getByName("jvm").compilations["test"].runtimeDependencyFiles!!)
 }
 
 abstract class StartTestServersTask : DefaultTask() {
     @get:Internal
-    abstract val serverService: Property<TestServerService>
+    abstract val serverProvider: Property<TestServerProvider>
 
     @TaskAction
     fun start() {
-        serverService.get().startServers()
+        serverProvider.get().startServers()
     }
 }
 
@@ -116,22 +112,22 @@ val osName = System.getProperty("os.name")
 
 val startTestServers = tasks.register<StartTestServersTask>("startTestServers") {
     dependsOn(tasks["jvmJar"])
-    usesService(testServerService)
-    serverService.set(testServerService)
+    usesService(testServerProvider)
+    serverProvider.set(testServerProvider)
 }
 
 val testTasks = listOf("allTests", "jvmTest")
     .forEach {
         tasks.named(it) {
             dependsOn(startTestServers)
-            usesService(testServerService)
+            usesService(testServerProvider)
         }
     }
 
 tasks.jvmTest {
     // set test environment for proxy tests
     systemProperty("MITM_PROXY_SCRIPTS_ROOT", projectDir.resolve("proxy-scripts").absolutePath)
-    systemProperty("SSL_CONFIG_PATH", testServerService.get().parameters.sslConfigPath.get())
+    systemProperty("SSL_CONFIG_PATH", testServerProvider.get().parameters.sslConfigPath.get())
 
     val enableProxyTestsProp = "aws.test.http.enableProxyTests"
     val runningInCodeBuild = System.getenv().containsKey("CODEBUILD_BUILD_ID")
