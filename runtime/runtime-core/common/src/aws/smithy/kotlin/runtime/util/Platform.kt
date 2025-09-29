@@ -67,6 +67,9 @@ public enum class OsFamily {
     Windows,
     Android,
     Ios,
+    IpadOs,
+    TvOs,
+    WatchOs,
     Unknown,
     ;
 
@@ -76,6 +79,9 @@ public enum class OsFamily {
         Windows -> "windows"
         Android -> "android"
         Ios -> "ios"
+        IpadOs -> "ipados"
+        TvOs -> "tvos"
+        WatchOs -> "watchos"
         Unknown -> "unknown"
     }
 }

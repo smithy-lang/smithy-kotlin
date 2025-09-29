@@ -96,7 +96,14 @@ public suspend fun ByteStream.writeToFile(path: Path): Long = writeToFile(path.t
 public fun ByteStream.toInputStream(): InputStream = when (this) {
     is ByteStream.Buffer -> ByteArrayInputStream(bytes())
     is ByteStream.ChannelStream -> readFrom().toInputStream()
-    is ByteStream.SourceStream -> readFrom().buffer().inputStream()
+    is ByteStream.SourceStream -> {
+        val buffer = (readFrom().buffer())
+        when (buffer) {
+            is SdkBuffer -> buffer.inputStream()
+            is BufferedSourceAdapter -> buffer.inputStream()
+            else -> throw IllegalStateException("Buffer class ${buffer::class.simpleName} could not be converted to an InputStream")
+        }
+    }
 }
 
 /**

@@ -71,3 +71,9 @@ public annotation class PlannedRemoval(
     val major: Int,
     val minor: Int,
 )
+
+/**
+ * Marks a test that should be ignored on Native platforms
+ */
+@Target(AnnotationTarget.CLASS, AnnotationTarget.FUNCTION)
+public expect annotation class IgnoreNative()
