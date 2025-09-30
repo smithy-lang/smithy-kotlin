@@ -4,7 +4,6 @@
  */
 package aws.smithy.kotlin.runtime.io
 
-import aws.smithy.kotlin.runtime.compression.decompressGzipBytes
 import aws.smithy.kotlin.runtime.hashing.crc32
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test

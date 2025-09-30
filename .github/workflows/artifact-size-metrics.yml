@@ -44,39 +44,29 @@ jobs:
     steps:
       - name: Checkout Sources
         uses: actions/checkout@v4
+      - name: Configure JDK
+        uses: actions/setup-java@v3
         with:
-          path: smithy-kotlin
-
-      - name: Setup build
-        uses: ./smithy-kotlin/.github/actions/setup-build
-
+          distribution: 'corretto'
+          java-version: 17
+          cache: 'gradle'
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ secrets.CI_AWS_ROLE_ARN }}
           aws-region: us-west-2
-
       - name: Configure Gradle
         uses: aws/aws-kotlin-repo-tools/.github/actions/configure-gradle@main
-        with:
-          working-directory: smithy-kotlin
-
       - name: Generate Artifact Size Metrics
-        run: ./gradlew -Paws.kotlin.native=false artifactSizeMetrics
-        working-directory: smithy-kotlin
-
+        run: ./gradlew artifactSizeMetrics
       - name: Analyze Artifact Size Metrics
         run: ./gradlew analyzeArtifactSizeMetrics
-        working-directory: smithy-kotlin
 
       - name: Show Results
         uses: aws/aws-kotlin-repo-tools/.github/actions/artifact-size-metrics/show-results@main
-        with:
-          working-directory: smithy-kotlin
 
       - name: Evaluate
         if: ${{ !contains(github.event.pull_request.labels.*.name, 'acknowledge-artifact-size-increase') }}
-        working-directory: smithy-kotlin
         run: |
           cd build/reports/metrics
           cat has-significant-change.txt | grep false || {

@@ -234,25 +234,3 @@ If you discover a potential security issue in this project we ask that you notif
 See the [LICENSE](LICENSE) file for our project's licensing. We will ask you to confirm the licensing of your contribution.
 
 We may ask you to sign a [Contributor License Agreement (CLA)](http://en.wikipedia.org/wiki/Contributor_License_Agreement) for larger changes.
-
-## Kotlin/Native
-Support for Kotlin/Native is in active development. The following sections cover how to effectively test your work.
-
-### Linux/Unix
-
-#### Testing Different Linux Distros and Architectures
-
-1. Build the test executable(s) for the architecture(s) you want to test.
-
-```sh
-# build specific arch
-./gradlew linuxX64TestBinaries
-```
-
-2. Use the `run-container-test.py` helper script to execute tests locally. Change the directory as needed.
-
-```sh
-OCI_EXE=docker python3 .github/scripts/run-container-test.py --distro al2 --arch x64 --test-bin-dir ./runtime/runtime-core/build/bin
-```
-
-See the usage/help for different distributions provided: `python3 .github/scripts/run-container.py -h`

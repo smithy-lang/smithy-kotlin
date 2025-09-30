@@ -24,12 +24,6 @@ kotlin {
             }
         }
 
-        nativeMain {
-            dependencies {
-                implementation(project(":runtime:observability:logging-crt"))
-            }
-        }
-
         all {
             languageSettings.optIn("aws.smithy.kotlin.runtime.InternalApi")
         }

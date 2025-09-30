@@ -39,7 +39,6 @@ kotlin {
 
         jvmAndNativeMain {
             dependencies {
-                implementation(libs.ktor.server.core)
                 implementation(libs.kotlinx.coroutines.test)
             }
         }

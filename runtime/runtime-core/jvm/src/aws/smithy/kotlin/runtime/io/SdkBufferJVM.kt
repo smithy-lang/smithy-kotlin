@@ -10,7 +10,6 @@ import java.io.InputStream
 import java.io.OutputStream
 import java.nio.ByteBuffer
 
-// FIXME Commonize with Native after removing WritableByteStream / ReadableByteStream in 1.6.x
 public actual class SdkBuffer :
     SdkBufferedSource,
     SdkBufferedSink {

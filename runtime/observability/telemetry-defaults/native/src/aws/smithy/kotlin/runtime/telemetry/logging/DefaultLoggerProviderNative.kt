@@ -5,6 +5,4 @@
 
 package aws.smithy.kotlin.runtime.telemetry.logging
 
-import aws.smithy.kotlin.runtime.telemetry.logging.crt.CrtLoggerProvider
-
-internal actual val DefaultLoggerProvider: LoggerProvider = CrtLoggerProvider()
+internal actual val DefaultLoggerProvider: LoggerProvider = TODO("Not yet implemented")

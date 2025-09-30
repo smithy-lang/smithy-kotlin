@@ -29,9 +29,6 @@ jobs:
         with:
           path: 'smithy-kotlin'
 
-      - name: Setup build
-        uses: ./smithy-kotlin/.github/actions/setup-build
-
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
@@ -46,6 +43,13 @@ jobs:
       - name: Setup kat
         uses: aws/aws-kotlin-repo-tools/.github/actions/setup-kat@main
 
+      - name: Configure JDK
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'corretto'
+          java-version: 17
+          cache: 'gradle'
+
       - name: Build
         working-directory: ./smithy-kotlin
         shell: bash
@@ -54,8 +58,8 @@ jobs:
           ls -lsa
           kat bump-version  # Bump from `vNext-SNAPSHOT` to `vNext`. kat transform only works on non-SNAPSHOT versions
           kat bump-version --property codegenVersion
-          ./gradlew -Paws.kotlin.native=false build
-          ./gradlew -Paws.kotlin.native=false publishAllPublicationsToTestLocalRepository
+          ./gradlew build
+          ./gradlew publishAllPublicationsToTestLocalRepository
 
       - name: Transform
         working-directory: ./smithy-kotlin

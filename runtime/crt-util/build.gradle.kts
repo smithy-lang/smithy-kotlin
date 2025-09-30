@@ -11,22 +11,14 @@ extra["moduleName"] = "aws.smithy.kotlin.runtime.crt"
 
 kotlin {
     sourceSets {
-        commonMain {
-            dependencies {
-                api(project(":runtime:runtime-core"))
-                api(libs.crt.kotlin)
-            }
-        }
-
-        jvmAndNativeMain {
+        jvmMain {
             dependencies {
                 api(project(":runtime:runtime-core"))
                 api(libs.crt.kotlin)
                 api(project(":runtime:protocol:http"))
             }
         }
-
-        jvmAndNativeTest {
+        jvmTest {
             dependencies {
                 implementation(libs.kotlinx.coroutines.test)
             }

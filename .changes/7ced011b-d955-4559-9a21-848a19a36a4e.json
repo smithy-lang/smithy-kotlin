@@ -1,8 +1,0 @@
-{
-    "id": "7ced011b-d955-4559-9a21-848a19a36a4e",
-    "type": "feature",
-    "description": "Add support for Kotlin/Native",
-    "issues": [
-        "https://github.com/aws/aws-sdk-kotlin/issues/229"
-    ]
-}
