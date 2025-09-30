@@ -5,6 +5,8 @@
 package aws.smithy.kotlin.runtime.net
 
 import kotlinx.coroutines.test.runTest
+import org.junit.jupiter.api.parallel.Execution
+import org.junit.jupiter.api.parallel.ExecutionMode
 import kotlin.test.*
 
 class HostResolverTest {
@@ -24,6 +26,7 @@ class HostResolverTest {
         }
     }
 
+    @Execution(ExecutionMode.SAME_THREAD)
     @Test
     fun testResolveIpv4Address() = runTest {
         val addresses = HostResolver.Default.resolve("127.0.0.1")
