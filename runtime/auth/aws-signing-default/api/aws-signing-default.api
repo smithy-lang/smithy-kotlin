@@ -5,7 +5,7 @@ public final class aws/smithy/kotlin/runtime/auth/awssigning/DefaultAwsSignerBui
 	public final fun setTelemetryProvider (Laws/smithy/kotlin/runtime/telemetry/TelemetryProvider;)V
 }
 
-public final class aws/smithy/kotlin/runtime/auth/awssigning/DefaultAwsSignerJVMKt {
+public final class aws/smithy/kotlin/runtime/auth/awssigning/DefaultAwsSignerKt {
 	public static final fun DefaultAwsSigner (Lkotlin/jvm/functions/Function1;)Laws/smithy/kotlin/runtime/auth/awssigning/AwsSigner;
 	public static final fun getDefaultAwsSigner ()Laws/smithy/kotlin/runtime/auth/awssigning/AwsSigner;
 }

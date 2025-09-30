@@ -30,7 +30,7 @@ internal expect class BufferedSinkAdapter(sink: okio.BufferedSink) : SdkBuffered
 // base class that fills in most of the common implementation, platforms just need to implement the platform specific
 // part of the interface
 internal abstract class AbstractBufferedSinkAdapter(
-    internal val delegate: okio.BufferedSink,
+    protected val delegate: okio.BufferedSink,
 ) : SdkBufferedSink {
     override fun toString(): String = delegate.toString()
 

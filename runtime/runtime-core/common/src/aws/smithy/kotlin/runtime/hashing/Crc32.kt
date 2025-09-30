@@ -11,13 +11,11 @@ public abstract class Crc32Base : HashFunction {
     override val blockSizeBytes: Int = 4
     override val digestSizeBytes: Int = 4
 
-    /**
-     * Digest the current checksum, returning it as a [UInt]
-     */
     public abstract fun digestValue(): UInt
 
     override fun digest(): ByteArray {
         val x = digestValue()
+        reset()
         return byteArrayOf(
             ((x shr 24) and 0xffu).toByte(),
             ((x shr 16) and 0xffu).toByte(),

@@ -8,14 +8,14 @@ extra["moduleName"] = "aws.smithy.kotlin.runtime.auth.awssigning.crt"
 
 kotlin {
     sourceSets {
-        jvmAndNativeMain {
+        jvmMain {
             dependencies {
                 api(project(":runtime:auth:aws-signing-common"))
                 implementation(project(":runtime:crt-util"))
             }
         }
 
-        jvmAndNativeTest {
+        jvmTest {
             dependencies {
                 implementation(project(":runtime:auth:aws-signing-tests"))
             }

@@ -14,7 +14,6 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFails
 
 class HeaderValueTest {
-
     @Test
     fun testExpectAs() {
         assertEquals(true, HeaderValue.Bool(true).expectBool())
