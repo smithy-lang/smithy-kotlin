@@ -7,7 +7,6 @@ package aws.smithy.kotlin.runtime.io
 import aws.smithy.kotlin.runtime.InternalApi
 import aws.smithy.kotlin.runtime.hashing.HashFunction
 import aws.smithy.kotlin.runtime.io.internal.SdkDispatchers
-import kotlinx.coroutines.IO
 import kotlinx.coroutines.withContext
 
 /**

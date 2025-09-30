@@ -26,7 +26,7 @@ kotlin {
             }
         }
 
-        jvmAndNativeTest {
+        jvmTest {
             dependencies {
                 implementation(project(":runtime:auth:aws-signing-crt"))
             }

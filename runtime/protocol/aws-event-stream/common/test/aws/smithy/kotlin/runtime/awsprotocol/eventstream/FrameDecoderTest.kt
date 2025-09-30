@@ -14,6 +14,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 
 class FrameDecoderTest {
+
     @Test
     fun testFrameStreamSingleMessage() = runTest {
         val encoded = validMessageWithAllHeaders()

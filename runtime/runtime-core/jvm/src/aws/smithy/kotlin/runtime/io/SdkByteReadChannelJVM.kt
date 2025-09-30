@@ -6,6 +6,7 @@ package aws.smithy.kotlin.runtime.io
 
 import kotlinx.coroutines.runBlocking
 import java.io.InputStream
+import java.util.*
 
 /**
  * Create a blocking [InputStream] that blocks everytime the channel suspends at [SdkByteReadChannel.read]
