@@ -134,14 +134,14 @@ class StructureGeneratorTest {
         val expected = """
         override fun hashCode(): kotlin.Int {
             var result = bar
-            result = 31 * result + (baz ?: 0)
-            result = 31 * result + (byteValue?.toInt() ?: 0)
-            result = 31 * result + (defaultString.hashCode())
-            result = 31 * result + (foo?.hashCode() ?: 0)
-            result = 31 * result + (`object`?.hashCode() ?: 0)
-            result = 31 * result + (quux?.hashCode() ?: 0)
-            result = 31 * result + (requiredInt)
-            result = 31 * result + (requiredIntButNullable ?: 0)
+            result = 31 * result + (this.baz ?: 0)
+            result = 31 * result + (this.byteValue?.toInt() ?: 0)
+            result = 31 * result + (this.defaultString.hashCode())
+            result = 31 * result + (this.foo?.hashCode() ?: 0)
+            result = 31 * result + (this.`object`?.hashCode() ?: 0)
+            result = 31 * result + (this.quux?.hashCode() ?: 0)
+            result = 31 * result + (this.requiredInt)
+            result = 31 * result + (this.requiredIntButNullable ?: 0)
             return result
         }
         """.formatForTest()
@@ -474,7 +474,7 @@ class StructureGeneratorTest {
         val expectedHashCodeContent = """
             override fun hashCode(): kotlin.Int {
                 var result = bar?.hashCode() ?: 0
-                result = 31 * result + (foo?.contentHashCode() ?: 0)
+                result = 31 * result + (this.foo?.contentHashCode() ?: 0)
                 return result
             }
         """.formatForTest()
@@ -784,7 +784,7 @@ class StructureGeneratorTest {
         val expected = """
             override fun hashCode(): kotlin.Int {
                 var result = aInt ?: 0
-                result = 31 * result + (bInt)
+                result = 31 * result + (this.bInt)
                 return result
             }
         """.formatForTest()

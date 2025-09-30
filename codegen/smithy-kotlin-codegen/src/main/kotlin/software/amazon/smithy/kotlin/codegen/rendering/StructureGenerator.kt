@@ -138,7 +138,7 @@ class StructureGenerator(
                     write("var result = #1L#2L", memberNameSymbolIndex[sortedMembers[0]]!!.first, selectHashFunctionForShape(sortedMembers[0]))
                     if (sortedMembers.size > 1) {
                         sortedMembers.drop(1).forEach { memberShape ->
-                            write("result = 31 * result + (#1L#2L)", memberNameSymbolIndex[memberShape]!!.first, selectHashFunctionForShape(memberShape))
+                            write("result = 31 * result + (this.#1L#2L)", memberNameSymbolIndex[memberShape]!!.first, selectHashFunctionForShape(memberShape))
                         }
                     }
                     write("return result")
