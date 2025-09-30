@@ -13,7 +13,7 @@ public actual class Crc32 : Crc32Base() {
 
     actual override fun update(input: ByteArray, offset: Int, length: Int): Unit = md.update(input, offset, length)
 
-    actual override fun digestValue(): UInt = md.value.toUInt().also { reset() }
+    actual override fun digestValue(): UInt = md.value.toUInt()
 
     actual override fun reset(): Unit = md.reset()
 }

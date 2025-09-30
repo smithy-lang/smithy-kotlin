@@ -27,7 +27,6 @@ kotlin {
         commonTest {
             dependencies {
                 implementation(libs.kotlinx.coroutines.test)
-                implementation(project(":runtime:runtime-core"))
                 implementation(project(":runtime:protocol:http-test"))
             }
         }

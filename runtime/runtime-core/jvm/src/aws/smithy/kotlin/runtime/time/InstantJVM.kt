@@ -25,9 +25,7 @@ import kotlin.time.Duration
 import kotlin.time.toKotlinDuration
 import java.time.Duration as jtDuration
 import java.time.Instant as jtInstant
-import kotlinx.datetime.Instant as KtInstant
 
-// FIXME Consider making this multiplatform (`common`) using kotlinx.datetime
 public actual class Instant(internal val value: jtInstant) : Comparable<Instant> {
     public actual val epochSeconds: Long
         get() = value.epochSecond
@@ -137,12 +135,12 @@ public actual class Instant(internal val value: jtInstant) : Comparable<Instant>
         /**
          * Create an [Instant] with the minimum possible value
          */
-        public actual val MIN_VALUE: Instant = fromEpochMilliseconds(KtInstant.DISTANT_PAST.toEpochMilliseconds())
+        public actual val MIN_VALUE: Instant = Instant(jtInstant.MIN)
 
         /**
          * Create an [Instant] with the maximum possible value
          */
-        public actual val MAX_VALUE: Instant = fromEpochMilliseconds(KtInstant.DISTANT_FUTURE.toEpochMilliseconds())
+        public actual val MAX_VALUE: Instant = Instant(jtInstant.MAX)
     }
 }
 
