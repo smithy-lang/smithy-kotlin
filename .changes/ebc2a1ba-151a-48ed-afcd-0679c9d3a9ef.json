@@ -1,0 +1,5 @@
+{
+    "id": "ebc2a1ba-151a-48ed-afcd-0679c9d3a9ef",
+    "type": "bugfix",
+    "description": "Address issues caused by shape members named result"
+}
