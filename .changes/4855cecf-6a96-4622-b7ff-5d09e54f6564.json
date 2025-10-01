@@ -1,5 +1,0 @@
-{
-    "id": "4855cecf-6a96-4622-b7ff-5d09e54f6564",
-    "type": "bugfix",
-    "description": "Overwrite `Content-Length` header rather than appending in `CrtHttpEngine`"
-}

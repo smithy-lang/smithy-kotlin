@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.5.11] - 10/01/2025
+
+### Fixes
+* Overwrite `Content-Length` header rather than appending in `CrtHttpEngine`
+* Address issues caused by shape members named result
+
 ## [1.5.10] - 09/22/2025
 
 ### Documentation
