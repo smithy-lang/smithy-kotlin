@@ -10,7 +10,6 @@ import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class HeadersTest {
-
     @Test
     fun itBuilds() {
         val actual = Headers {

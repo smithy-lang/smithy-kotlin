@@ -11,6 +11,7 @@ import aws.smithy.kotlin.runtime.http.engine.okhttp4.OkHttp4Engine
 import aws.smithy.kotlin.runtime.net.url.Url
 
 internal actual fun engineFactories(): List<TestEngineFactory> =
+    // FIXME Move DefaultHttpEngine and CrtHttpEngine to `jvmAndNative`
     listOf(
         TestEngineFactory("DefaultHttpEngine", ::DefaultHttpEngine),
         TestEngineFactory("CrtHttpEngine") { CrtHttpEngine(it) },

@@ -2,7 +2,7 @@
 kotlin-version = "2.2.0"
 dokka-version = "2.0.0"
 
-aws-kotlin-repo-tools-version = "0.4.58"
+aws-kotlin-repo-tools-version = "0.4.59"
 
 # libs
 coroutines-version = "1.10.2"
@@ -13,9 +13,11 @@ okio-version = "3.16.0"
 otel-version = "1.52.0"
 slf4j-version = "2.0.17"
 slf4j-v1x-version = "1.7.36"
-crt-kotlin-version = "0.10.3"
+crt-kotlin-version = "0.11.5"
 micrometer-version = "1.15.2"
 binary-compatibility-validator-version = "0.18.1"
+kotlin-multiplatform-bignum-version = "0.3.10"
+kotlinx-datetime-version = "0.6.1"
 
 # codegen
 smithy-version = "1.61.0"
@@ -64,6 +66,7 @@ slf4j-api-v1x = { module = "org.slf4j:slf4j-api", version.ref = "slf4j-v1x-versi
 slf4j-simple = { module = "org.slf4j:slf4j-simple", version.ref = "slf4j-version" }
 crt-kotlin = { module = "aws.sdk.kotlin.crt:aws-crt-kotlin", version.ref = "crt-kotlin-version" }
 micrometer-core = { module = "io.micrometer:micrometer-core", version.ref = "micrometer-version" }
+kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "kotlinx-datetime-version" }
 
 smithy-codegen-core = { module = "software.amazon.smithy:smithy-codegen-core", version.ref = "smithy-version" }
 smithy-cli = { module = "software.amazon.smithy:smithy-cli", version.ref = "smithy-version" }
@@ -94,13 +97,17 @@ docker-transport-zerodep = { module = "com.github.docker-java:docker-java-transp
 ktor-http-cio = { module = "io.ktor:ktor-http-cio", version.ref = "ktor-version" }
 ktor-utils = { module = "io.ktor:ktor-utils", version.ref = "ktor-version" }
 ktor-io = { module = "io.ktor:ktor-io", version.ref = "ktor-version" }
+ktor-server-core = { module = "io.ktor:ktor-server-core", version.ref = "ktor-version" }
 ktor-server-netty = { module = "io.ktor:ktor-server-netty", version.ref = "ktor-version" }
 ktor-server-jetty-jakarta = { module = "io.ktor:ktor-server-jetty-jakarta", version.ref = "ktor-version" }
 ktor-server-cio = { module = "io.ktor:ktor-server-cio", version.ref = "ktor-version" }
 ktor-network-tls-certificates = { module = "io.ktor:ktor-network-tls-certificates", version.ref = "ktor-version" }
+ktor-client-core = { module = "io.ktor:ktor-client-core", version.ref = "ktor-version" }
 
 kaml = { module = "com.charleskorn.kaml:kaml", version.ref = "kaml-version" }
 jsoup = { module = "org.jsoup:jsoup", version.ref = "jsoup-version" }
+
+kotlin-multiplatform-bignum = { module = "com.ionspin.kotlin:bignum", version.ref = "kotlin-multiplatform-bignum-version" }
 
 [plugins]
 dokka = { id = "org.jetbrains.dokka", version.ref = "dokka-version"}

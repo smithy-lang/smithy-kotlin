@@ -5,10 +5,12 @@
 package aws.smithy.kotlin.runtime.hashing
 
 import aws.smithy.kotlin.runtime.InternalApi
+import aws.sdk.kotlin.crt.util.hashing.Sha256 as CrtSha256
 
 @InternalApi
 public actual class Sha256 : Sha256Base() {
-    actual override fun update(input: ByteArray, offset: Int, length: Int): Unit = TODO("native not supported")
-    actual override fun digest(): ByteArray = TODO("native not supported")
-    actual override fun reset(): Unit = TODO("native not supported")
+    private val delegate = CrtSha256()
+    actual override fun update(input: ByteArray, offset: Int, length: Int): Unit = delegate.update(input, offset, length)
+    actual override fun digest(): ByteArray = delegate.digest()
+    actual override fun reset(): Unit = delegate.reset()
 }
