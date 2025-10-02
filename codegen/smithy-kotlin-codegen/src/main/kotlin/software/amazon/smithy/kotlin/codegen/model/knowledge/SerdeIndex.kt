@@ -85,6 +85,7 @@ class SerdeIndex(private val model: Model) : KnowledgeIndex {
             .toMutableSet()
 
         // add shapes reachable from operational errors
+        @Suppress("DEPRECATION")
         val modeledErrors = operations
             .flatMap { it.errors }
             .flatMap { model.expectShape(it).members() }

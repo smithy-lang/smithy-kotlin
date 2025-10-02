@@ -96,6 +96,7 @@ abstract class AwsHttpBindingProtocolGenerator : HttpBindingProtocolGenerator() 
             }
         }
 
+    @Suppress("DEPRECATION")
     private fun renderThrowOperationError(
         ctx: ProtocolGenerator.GenerationContext,
         op: OperationShape,
