@@ -82,6 +82,7 @@ open class ServiceExceptionBaseClassGenerator(
     protected open fun renderExtra(ctx: CodegenContext, writer: KotlinWriter) { }
 
     // Compare generated base exception name with all error type names.  Throw exception if not unique.
+    @Suppress("DEPRECATION")
     private fun checkForCollision(ctx: CodegenContext, exceptionSymbol: Symbol) {
         val topDownIndex = TopDownIndex.of(ctx.model)
         val operations = topDownIndex.getContainedOperations(ctx.settings.service)
