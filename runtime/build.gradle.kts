@@ -8,10 +8,8 @@ import aws.sdk.kotlin.gradle.kmp.configureKmpTargets
 import aws.sdk.kotlin.gradle.kmp.kotlin
 import aws.sdk.kotlin.gradle.kmp.needsKmpConfigured
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
-import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
 import org.jetbrains.kotlin.gradle.targets.native.tasks.KotlinNativeSimulatorTest
-import org.jetbrains.kotlin.konan.target.HostManager
 
 plugins {
     `dokka-convention`
@@ -28,7 +26,9 @@ configureKmpTargets()
 val libraries = libs
 
 subprojects {
-    if (!needsKmpConfigured) return@subprojects
+    if (!needsKmpConfigured) {
+        return@subprojects
+    }
     group = "aws.smithy.kotlin"
     version = sdkVersion
 
