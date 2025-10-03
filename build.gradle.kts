@@ -101,9 +101,7 @@ dependencies {
 
 // Publishing
 val sdkVersion: String by project
-tasks.register<SonatypeCentralPortalPublishTask>("publishToCentralPortal") {
-    bundle.set(rootProject.layout.buildDirectory.file("aws-smithy-kotlin-$sdkVersion.tar.gz"))
-}
+tasks.register<SonatypeCentralPortalPublishTask>("publishToCentralPortal") { }
 tasks.register<SonatypeCentralPortalWaitForPublicationTask>("waitForCentralPortalPublication") { }
 
 // Code Style
