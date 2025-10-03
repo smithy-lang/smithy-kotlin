@@ -20,8 +20,7 @@ val codegenVersion: String by project
 group = "software.amazon.smithy.kotlin"
 version = codegenVersion
 
-val sdkVersion: String by project
-val runtimeVersion = sdkVersion
+val runtimeVersion: Provider<String> = providers.gradleProperty("sdkVersion")
 
 dependencies {
     api(libs.smithy.codegen.core)
@@ -42,16 +41,16 @@ dependencies {
 }
 
 val generateSdkRuntimeVersion by tasks.registering {
-    // generate the version of the runtime to use as a resource.
-    // this keeps us from having to manually change version numbers in multiple places
-    val resourcesDir = layout.buildDirectory.dir("resources/main/software/amazon/smithy/kotlin/codegen/core").get()
-    val versionFile = file("$resourcesDir/sdk-version.txt")
-    val gradlePropertiesFile = rootProject.file("gradle.properties")
-    inputs.file(gradlePropertiesFile)
+    val resourcesDir = layout.buildDirectory.dir("resources/main/software/amazon/smithy/kotlin/codegen/core")
+    val versionFile = resourcesDir.map { it.file("sdk-version.txt") }
+
+    inputs.property("runtimeVersion", runtimeVersion)
     outputs.file(versionFile)
-    sourceSets.main.get().output.dir(resourcesDir)
+
     doLast {
-        versionFile.writeText(runtimeVersion)
+        val version = inputs.properties["runtimeVersion"] as String
+        val file = versionFile.get().asFile
+        file.writeText(version)
     }
 }
 
