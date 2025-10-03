@@ -19,7 +19,6 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class AwsJsonProtocolTest {
-
     @Test
     fun testSetJsonProtocolHeaders() = runTest {
         val op = SdkHttpOperation.build<Unit, HttpResponse> {
