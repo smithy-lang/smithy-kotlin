@@ -79,7 +79,7 @@ val libraries = libs
 
 subprojects {
     if (!needsKmpConfigured) return@subprojects
-    group = "com.sonatype.central.testing.amazon"
+    group = "aws.smithy.kotlin"
     version = sdkVersion
 
     apply {

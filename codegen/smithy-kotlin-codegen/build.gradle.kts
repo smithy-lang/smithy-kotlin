@@ -17,7 +17,7 @@ extra["displayName"] = "Smithy :: Kotlin :: Codegen"
 extra["moduleName"] = "software.amazon.smithy.kotlin.codegen"
 
 val codegenVersion: String by project
-group = "com.sonatype.central.testing.amazon"
+group = "software.amazon.smithy.kotlin"
 version = codegenVersion
 
 val sdkVersion: String by project
