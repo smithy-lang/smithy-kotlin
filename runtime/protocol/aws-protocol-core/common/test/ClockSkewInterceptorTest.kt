@@ -33,8 +33,8 @@ private val NOT_SKEWED_RESPONSE_CODE_DESCRIPTION = "RequestThrottled"
 class ClockSkewInterceptorTest {
     @Test
     fun testNotSkewed() {
-        val clientTime = Instant.fromRfc5322("Wed, 6 Oct 2023 16:20:50 -0400")
-        val serverTime = Instant.fromRfc5322("Wed, 6 Oct 2023 16:20:50 -0400")
+        val clientTime = Instant.fromRfc5322("Fri, 6 Oct 2023 16:20:50 -0400")
+        val serverTime = Instant.fromRfc5322("Fri, 6 Oct 2023 16:20:50 -0400")
         assertEquals(clientTime, serverTime)
         assertFalse(clientTime.isSkewed(serverTime, NOT_SKEWED_RESPONSE_CODE_DESCRIPTION))
     }
@@ -42,24 +42,24 @@ class ClockSkewInterceptorTest {
     @Test
     fun testSkewedByResponseCode() {
         // clocks are exactly the same, but service returned skew error
-        val clientTime = Instant.fromRfc5322("Wed, 6 Oct 2023 16:20:50 -0400")
-        val serverTime = Instant.fromRfc5322("Wed, 6 Oct 2023 16:20:50 -0400")
+        val clientTime = Instant.fromRfc5322("Fri, 6 Oct 2023 16:20:50 -0400")
+        val serverTime = Instant.fromRfc5322("Fri, 6 Oct 2023 16:20:50 -0400")
         assertTrue(clientTime.isSkewed(serverTime, SKEWED_RESPONSE_CODE_DESCRIPTION))
         assertEquals(0.days, clientTime.until(serverTime))
     }
 
     @Test
     fun testSkewedByTime() {
-        val clientTime = Instant.fromRfc5322("Wed, 6 Oct 2023 16:20:50 -0400")
-        val serverTime = Instant.fromRfc5322("Wed, 7 Oct 2023 16:20:50 -0400")
+        val clientTime = Instant.fromRfc5322("Fri, 6 Oct 2023 16:20:50 -0400")
+        val serverTime = Instant.fromRfc5322("Sat, 7 Oct 2023 16:20:50 -0400")
         assertTrue(clientTime.isSkewed(serverTime, POSSIBLE_SKEWED_RESPONSE_CODE_DESCRIPTION))
         assertEquals(1.days, clientTime.until(serverTime))
     }
 
     @Test
     fun testNegativeSkewedByTime() {
-        val clientTime = Instant.fromRfc5322("Wed, 7 Oct 2023 16:20:50 -0400")
-        val serverTime = Instant.fromRfc5322("Wed, 6 Oct 2023 16:20:50 -0400")
+        val clientTime = Instant.fromRfc5322("Sat, 7 Oct 2023 16:20:50 -0400")
+        val serverTime = Instant.fromRfc5322("Fri, 6 Oct 2023 16:20:50 -0400")
         assertTrue(clientTime.isSkewed(serverTime, POSSIBLE_SKEWED_RESPONSE_CODE_DESCRIPTION))
         assertEquals(-1.days, clientTime.until(serverTime))
     }
@@ -68,8 +68,8 @@ class ClockSkewInterceptorTest {
     fun testSkewThreshold() {
         val minute = 20
         var clientTime =
-            Instant.fromRfc5322("Wed, 6 Oct 2023 16:${minute - CLOCK_SKEW_THRESHOLD.inWholeMinutes}:50 -0400")
-        val serverTime = Instant.fromRfc5322("Wed, 6 Oct 2023 16:$minute:50 -0400")
+            Instant.fromRfc5322("Fri, 6 Oct 2023 16:${minute - CLOCK_SKEW_THRESHOLD.inWholeMinutes}:50 -0400")
+        val serverTime = Instant.fromRfc5322("Fri, 6 Oct 2023 16:$minute:50 -0400")
         assertTrue(clientTime.isSkewed(serverTime, POSSIBLE_SKEWED_RESPONSE_CODE_DESCRIPTION))
         assertEquals(CLOCK_SKEW_THRESHOLD, clientTime.until(serverTime))
 
@@ -128,7 +128,7 @@ class ClockSkewInterceptorTest {
     @Test
     fun testClockSkewApplied() = runTest {
         testRoundTrip(
-            serverTimeString = "Wed, 14 Sep 2023 16:20:50 -0400", // Big skew
+            serverTimeString = "Thu, 14 Sep 2023 16:20:50 -0400", // Big skew
             clientTimeString = "20231006T131604Z",
             httpStatusCode = HttpStatusCode.Forbidden,
             expectException = false,

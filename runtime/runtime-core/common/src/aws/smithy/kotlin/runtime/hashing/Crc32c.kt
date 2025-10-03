@@ -21,7 +21,7 @@ public class Crc32c : Crc32Base() {
 
     override fun update(input: ByteArray, offset: Int, length: Int): Unit = md.update(input, offset, length)
 
-    override fun digestValue(): UInt = md.getValue().toUInt()
+    override fun digestValue(): UInt = md.getValue().toUInt().also { reset() }
 
     override fun reset(): Unit = md.reset()
 }

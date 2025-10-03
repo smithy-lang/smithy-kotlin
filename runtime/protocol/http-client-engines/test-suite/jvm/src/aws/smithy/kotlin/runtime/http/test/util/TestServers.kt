@@ -12,7 +12,6 @@ import aws.smithy.kotlin.runtime.http.test.suite.tlsTests
 import aws.smithy.kotlin.runtime.http.test.suite.uploadTests
 import io.ktor.server.application.*
 import io.ktor.server.engine.*
-import io.ktor.server.jetty.*
 import io.ktor.server.jetty.jakarta.Jetty
 import io.ktor.server.jetty.jakarta.JettyApplicationEngineBase
 import redirectTests

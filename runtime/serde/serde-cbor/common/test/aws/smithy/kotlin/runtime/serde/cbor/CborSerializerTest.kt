@@ -290,12 +290,10 @@ class CborSerializerTest {
         val buffer = SdkBuffer().apply { write(serializer.toByteArray()) }
         val deserializer = CborPrimitiveDeserializer(buffer)
 
-        tests.dropLast(1).forEach {
+        tests.forEach {
             assertEquals(it.epochMilliseconds, deserializer.deserializeInstant(TimestampFormat.EPOCH_SECONDS).epochMilliseconds)
         }
 
-        // FIXME Serializing -> deserializing Instant.MAX_VALUE results in a one millisecond offset...
-        assertEquals(Instant.MAX_VALUE.epochMilliseconds, deserializer.deserializeInstant(TimestampFormat.EPOCH_SECONDS).epochMilliseconds - 1)
         assertEquals(0, buffer.size)
     }
 
