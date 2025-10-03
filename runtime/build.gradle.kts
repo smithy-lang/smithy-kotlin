@@ -24,56 +24,6 @@ val sdkVersion: String by project
 // Apply KMP configuration from build plugin
 configureKmpTargets()
 
-
-val Project.hasCommon: Boolean get() = files.any {
-    // FIXME - this is somewhat specific to aws-sdk-kotlin to consider "generated-src" a common sourceSet root
-    it.name == "common" || it.name == "generated-src"
-}
-
-//// always configured with common
-//val Project.hasJvm: Boolean get() = hasCommon || hasJvmAndNative || files.any { it.name == "jvm" }
-//val Project.hasNative: Boolean get() = hasCommon || hasJvmAndNative || files.any { it.name == "native" }
-//val Project.hasJs: Boolean get() = hasCommon || files.any { it.name == "js" }
-//val Project.hasJvmAndNative: Boolean get() = hasCommon || files.any { it.name == "jvmAndNative" }
-//
-//// less frequent, more explicit targets
-//val Project.hasDesktop: Boolean get() = hasNative || files.any { it.name == "desktop" }
-//val Project.hasLinux: Boolean get() = hasNative || hasJvmAndNative || files.any { it.name == "linux" }
-//val Project.hasApple: Boolean get() = hasNative || hasJvmAndNative || files.any { it.name == "apple" }
-//val Project.hasWindows: Boolean get() = hasNative || files.any { it.name == "windows" }
-//val Project.hasPosix: Boolean get() = hasNative || hasJvmAndNative || files.any { it.name == "posix" }
-
-internal fun <T> Project.tryGetClass(className: String): Class<T>? {
-    val classLoader = buildscript.classLoader
-    return try {
-        @Suppress("UNCHECKED_CAST")
-        Class.forName(className, false, classLoader) as Class<T>
-    } catch (e: ClassNotFoundException) {
-        null
-    }
-}
-
-val kmpExtensionClass = tryGetClass<KotlinMultiplatformExtension>("org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension")
-
-pluginManager.withPlugin("kotlin-multiplatform") {
-    if (kmpExtensionClass == null) {
-        logger.info("$name: skipping KMP configuration for multiplatform; plugin has not been applied")
-        return@withPlugin
-    }
-
-    val kmpExt = extensions.findByType(kmpExtensionClass)
-    if (kmpExt == null) {
-        logger.info("$name: skipping KMP configuration because multiplatform plugin has not been configured properly")
-        return@withPlugin
-    }
-
-    if (NATIVE_ENABLED) {
-        if ((hasLinux || hasDesktop) && (HostManager.hostIsLinux || NATIVE_ENABLE_ALL_TARGETS)) {
-            kmpExt.apply { configureLinux() }
-        }
-    }
-}
-
 // capture locally - scope issue with custom KMP plugin
 val libraries = libs
 
