@@ -40,6 +40,12 @@ jobs:
         run: printf 'timestamp=%(%s)T\n' >> "$GITHUB_OUTPUT"
       - name: Checkout sources
         uses: actions/checkout@v4
+        with:
+          path: 'smithy-kotlin'
+
+      - name: Setup build
+        uses: ./smithy-kotlin/.github/actions/setup-build
+
       - name: Configure JDK
         uses: actions/setup-java@v3
         with:
@@ -55,10 +61,15 @@ jobs:
         uses: aws/aws-kotlin-repo-tools/.github/actions/setup-kat@main
       - name: Configure Gradle
         uses: aws/aws-kotlin-repo-tools/.github/actions/configure-gradle@main
-      - name: Test
+        with:
+          working-directory: 'smithy-kotlin'
+
+      - name: Build and Test on JVM
+        working-directory: ./smithy-kotlin
         shell: bash
         run: |
-          ./gradlew -Ptest.java.version=${{ matrix.java-version }} jvmTest --stacktrace
+          ./gradlew -Paws.kotlin.native=false -Ptest.java.version=${{ matrix.java-version }} jvmTest --stacktrace
+
       - name: Calculate duration
         id: end
         if: always()
@@ -79,6 +90,102 @@ jobs:
             WorkflowSucceeded:${{ job.status == 'success' && '1' || '0' }}:Count
             WorkflowDuration:${{ steps.end.outputs.duration }}:Seconds
 
+  # macos-14 build and test for targets: jvm, macoArm64, iosSimulatorArm64, watchosSimulatorArm65, tvosSimulatorArm64
+  # macos-13 build and test for targets: jvm, macoX64, iosX64, tvosX64, watchosX64
+  macos:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-14, macos-13]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v4
+        with:
+          path: 'smithy-kotlin'
+
+      - name: Setup build
+        uses: ./smithy-kotlin/.github/actions/setup-build
+
+      - name: Build and Test on Apple platforms
+        working-directory: ./smithy-kotlin
+        shell: bash
+        run: |
+          # FIXME K2. Re-enable warnings as errors after this warning is removed: https://youtrack.jetbrains.com/issue/KT-68532
+          # echo "kotlinWarningsAsErrors=true" >> $GITHUB_WORKSPACE/local.properties              
+          ./gradlew apiCheck
+          ./gradlew build
+
+      - name: Save Test Reports
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-reports-${{ matrix.os }}
+          path: '**/build/reports'
+
+  # build and test for targets: jvm, linuxX64
+  # cross compile for: linuxX64, linuxArm64
+  linux:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v4
+        with:
+          path: 'smithy-kotlin'
+
+      - name: Configure Gradle
+        uses: aws/aws-kotlin-repo-tools/.github/actions/configure-gradle@main
+        with:
+          working-directory: 'smithy-kotlin'
+
+      - name: Setup build
+        uses: ./smithy-kotlin/.github/actions/setup-build
+
+      - name: Configure CRT Docker Images
+        run: |
+          ./aws-crt-kotlin/docker-images/build-all.sh
+
+      - name: Build and Test on Linux with Cross-Compile
+        working-directory: ./smithy-kotlin
+        shell: bash
+        run: |
+          # FIXME K2. Re-enable warnings as errors after this warning is removed: https://youtrack.jetbrains.com/issue/KT-68532
+          # echo "kotlinWarningsAsErrors=true" >> $GITHUB_WORKSPACE/local.properties
+          ./gradlew apiCheck
+          ./gradlew build
+
+      - name: Save Test Reports
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-reports-${{ matrix.os }}
+          path: '**/build/reports'
+
+  # windows JVM
+  windows:
+    runs-on: windows-2022
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v4
+        with:
+          path: 'smithy-kotlin'
+
+      - name: Setup build
+        uses: ./smithy-kotlin/.github/actions/setup-build
+
+      - name: Build and Test on Windows JVM
+        working-directory: ./smithy-kotlin
+        run: |
+          ./gradlew apiCheck
+          ./gradlew -P"aws.kotlin.native=false" build
+
+      - name: Save Test Reports
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-reports-windows
+          path: '**/build/reports'
+
   all-platforms:
     runs-on: ${{ matrix.os }}
     strategy:
@@ -92,6 +199,12 @@ jobs:
         run: echo "timestamp=$(date +%s)" >> "$GITHUB_OUTPUT"
       - name: Checkout sources
         uses: actions/checkout@v4
+        with:
+          path: 'smithy-kotlin'
+
+      - name: Setup build
+        uses: ./smithy-kotlin/.github/actions/setup-build
+
       - name: Configure JDK
         uses: actions/setup-java@v3
         with:
@@ -107,12 +220,18 @@ jobs:
         uses: aws/aws-kotlin-repo-tools/.github/actions/setup-kat@main
       - name: Configure Gradle
         uses: aws/aws-kotlin-repo-tools/.github/actions/configure-gradle@main
+        with:
+          working-directory: 'smithy-kotlin'
+
       - name: Test
+        working-directory: ./smithy-kotlin
         shell: bash
         run: |
-          echo "kotlinWarningsAsErrors=true" >> $GITHUB_WORKSPACE/local.properties
-          ./gradlew apiCheck
-          ./gradlew test jvmTest
+          # FIXME K2. Re-enable warnings as errors after this warning is removed: https://youtrack.jetbrains.com/issue/KT-68532
+          # echo "kotlinWarningsAsErrors=true" >> $GITHUB_WORKSPACE/local.properties
+          ./gradlew -Paws.kotlin.native=false apiCheck
+          ./gradlew -Paws.kotlin.native=false test jvmTest
+
       - name: Calculate duration
         id: end
         if: always()
@@ -133,6 +252,7 @@ jobs:
           metrics: |
             WorkflowSucceeded:${{ job.status == 'success' && '1' || '0' }}:Count
             WorkflowDuration:${{ steps.end.outputs.duration }}:Seconds
+
       - name: Save Test Reports
         if: failure()
         uses: actions/upload-artifact@v4
@@ -148,6 +268,12 @@ jobs:
         run: printf 'timestamp=%(%s)T\n' >> "$GITHUB_OUTPUT"
       - name: Checkout sources
         uses: actions/checkout@v4
+        with:
+          path: 'smithy-kotlin'
+
+      - name: Setup build
+        uses: ./smithy-kotlin/.github/actions/setup-build
+
       - name: Configure JDK
         uses: actions/setup-java@v3
         with:
@@ -163,11 +289,15 @@ jobs:
         uses: aws/aws-kotlin-repo-tools/.github/actions/setup-kat@main
       - name: Configure Gradle
         uses: aws/aws-kotlin-repo-tools/.github/actions/configure-gradle@main
+        with:
+          working-directory: 'smithy-kotlin'
+
       - name: Test
+        working-directory: ./smithy-kotlin
         shell: bash
         run: |
-          ./gradlew publishToMavenLocal
-          ./gradlew testAllProtocols
+          ./gradlew -Paws.kotlin.native=false publishToMavenLocal
+          ./gradlew -Paws.kotlin.native=false testAllProtocols
       - name: Calculate duration
         id: end
         if: always()
@@ -198,6 +328,10 @@ jobs:
       uses: actions/checkout@v4
       with:
         path: 'smithy-kotlin'
+
+    - name: Setup build
+      uses: ./smithy-kotlin/.github/actions/setup-build
+
     - name: Checkout tools
       uses: actions/checkout@v4
       with:
@@ -206,6 +340,7 @@ jobs:
         ref: '0.2.3'
         sparse-checkout: |
           .github
+
     - name: Checkout aws-sdk-kotlin
       uses: ./aws-kotlin-repo-tools/.github/actions/checkout-head
       with:
@@ -223,21 +358,18 @@ jobs:
       uses: aws/aws-kotlin-repo-tools/.github/actions/configure-gradle@main
       with:
         working-directory: ./smithy-kotlin
+
     - name: Configure Gradle - aws-sdk-kotlin
       uses: aws/aws-kotlin-repo-tools/.github/actions/configure-gradle@main
       with:
         working-directory: ./aws-sdk-kotlin
-    - name: Configure JDK
-      uses: actions/setup-java@v3
-      with:
-        distribution: 'corretto'
-        java-version: 17
-        cache: 'gradle'
+
     - name: Build and Test aws-sdk-kotlin downstream
+      working-directory: ./smithy-kotlin
       run: |
         # TODO - JVM only
         cd $GITHUB_WORKSPACE/smithy-kotlin
-        ./gradlew --parallel publishToMavenLocal
+        ./gradlew --parallel -Paws.kotlin.native=false publishToMavenLocal
         SMITHY_KOTLIN_RUNTIME_VERSION=$(grep sdkVersion= gradle.properties | cut -d = -f 2)
         SMITHY_KOTLIN_CODEGEN_VERSION=$(grep codegenVersion= gradle.properties | cut -d = -f 2)
         cd $GITHUB_WORKSPACE/aws-sdk-kotlin
@@ -248,9 +380,9 @@ jobs:
         # smithy-kotlin should be
         sed -i "s/smithy-kotlin-runtime-version = .*$/smithy-kotlin-runtime-version = \"$SMITHY_KOTLIN_RUNTIME_VERSION\"/" gradle/libs.versions.toml
         sed -i "s/smithy-kotlin-codegen-version = .*$/smithy-kotlin-codegen-version = \"$SMITHY_KOTLIN_CODEGEN_VERSION\"/" gradle/libs.versions.toml
-        ./gradlew --parallel publishToMavenLocal
-        ./gradlew test jvmTest
-        ./gradlew testAllProtocols
+        ./gradlew --parallel -Paws.kotlin.native=false publishToMavenLocal
+        ./gradlew -Paws.kotlin.native=false test jvmTest
+        ./gradlew -Paws.kotlin.native=false testAllProtocols
     - name: Calculate duration
       id: end
       if: always()

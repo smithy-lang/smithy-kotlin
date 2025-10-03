@@ -196,3 +196,13 @@ private fun SdkSource.toFlow(bufferSize: Long): Flow<ByteArray> = flow {
         emit(sink.readByteArray())
     }
 }
+
+/**
+ * Convert this [String] to a [ByteStream]
+ */
+public fun String.asByteStream(): ByteStream = ByteStream.fromString(this)
+
+/**
+ * Convert this [ByteArray] to a [ByteStream]
+ */
+public fun ByteArray.asByteStream(): ByteStream = ByteStream.fromBytes(this)
