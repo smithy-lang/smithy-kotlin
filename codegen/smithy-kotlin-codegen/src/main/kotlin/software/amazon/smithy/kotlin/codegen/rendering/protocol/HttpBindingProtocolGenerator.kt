@@ -122,6 +122,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         }
     }
 
+    @Suppress("DEPRECATION")
     private fun generateDeserializers(ctx: ProtocolGenerator.GenerationContext) {
         val resolver = getProtocolHttpBindingResolver(ctx.model, ctx.service)
         // render HttpDeserialize for all operation outputs
