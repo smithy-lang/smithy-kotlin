@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.5.14] - 10/03/2025
+
+### Features
+* [#229](https://github.com/aws/aws-sdk-kotlin/issues/229) Add support for Kotlin/Native
+
 ## [1.5.12] - 10/02/2025
 
 ## [1.5.11] - 10/01/2025
