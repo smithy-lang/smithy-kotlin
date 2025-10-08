@@ -2,9 +2,10 @@
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
  * SPDX-License-Identifier: Apache-2.0
  */
-import aws.sdk.kotlin.gradle.dsl.configureJReleaser
 import aws.sdk.kotlin.gradle.dsl.configureLinting
 import aws.sdk.kotlin.gradle.dsl.configureMinorVersionStrategyRules
+import aws.sdk.kotlin.gradle.publishing.SonatypeCentralPortalPublishTask
+import aws.sdk.kotlin.gradle.publishing.SonatypeCentralPortalWaitForPublicationTask
 import aws.sdk.kotlin.gradle.util.typedProp
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
@@ -30,7 +31,7 @@ buildscript {
             Version bumping the SDK to 1.5.x in repo tools broke our buildscript classpath:
             java.lang.NoSuchMethodError: 'void kotlinx.coroutines.CancellableContinuation.resume(java.lang.Object, kotlin.jvm.functions.Function3)
 
-            FIXME: Figure out what broke our buildscipt classpath, this is a temporary fix
+            FIXME: Figure out what broke our buildscript classpath, this is a temporary fix
              */
             force("com.squareup.okhttp3:okhttp-coroutines:5.0.0-alpha.14")
         }
@@ -99,7 +100,9 @@ dependencies {
 }
 
 // Publishing
-configureJReleaser()
+val sdkVersion: String by project
+tasks.register<SonatypeCentralPortalPublishTask>("publishToCentralPortal") { }
+tasks.register<SonatypeCentralPortalWaitForPublicationTask>("waitForCentralPortalPublication") { }
 
 // Code Style
 val lintPaths = listOf(

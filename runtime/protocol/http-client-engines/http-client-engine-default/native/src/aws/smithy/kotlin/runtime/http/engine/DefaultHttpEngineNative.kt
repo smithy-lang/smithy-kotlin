@@ -5,5 +5,11 @@
 
 package aws.smithy.kotlin.runtime.http.engine
 
-internal actual fun newDefaultHttpEngine(block: (HttpClientEngineConfig.Builder.() -> Unit)?): CloseableHttpClientEngine =
-    TODO("Not yet implemented")
+import aws.smithy.kotlin.runtime.http.engine.crt.CrtHttpEngine
+
+internal actual fun newDefaultHttpEngine(
+    block: (HttpClientEngineConfig.Builder.() -> Unit)?,
+): CloseableHttpClientEngine = when (block) {
+    null -> CrtHttpEngine()
+    else -> CrtHttpEngine(block)
+}
