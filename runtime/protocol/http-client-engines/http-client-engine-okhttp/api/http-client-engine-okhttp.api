@@ -69,6 +69,7 @@ public final class aws/smithy/kotlin/runtime/http/engine/okhttp/OkHttpEngineConf
 	public final fun getCertificatePinner ()Lokhttp3/CertificatePinner;
 	public final fun getCipherSuites ()Ljava/util/List;
 	public final fun getConnectionIdlePollingInterval-FghU774 ()Lkotlin/time/Duration;
+	public final fun getExecutorService ()Ljava/util/concurrent/ExecutorService;
 	public final fun getHostnameVerifier ()Ljavax/net/ssl/HostnameVerifier;
 	public final fun getKeyManager ()Ljavax/net/ssl/KeyManager;
 	public final fun getMaxConcurrencyPerHost-pVg5ArA ()I
@@ -83,6 +84,7 @@ public final class aws/smithy/kotlin/runtime/http/engine/okhttp/OkHttpEngineConf
 	public final fun getCertificatePinner ()Lokhttp3/CertificatePinner;
 	public final fun getCipherSuites ()Ljava/util/List;
 	public final fun getConnectionIdlePollingInterval-FghU774 ()Lkotlin/time/Duration;
+	public final fun getExecutorService ()Ljava/util/concurrent/ExecutorService;
 	public final fun getHostnameVerifier ()Ljavax/net/ssl/HostnameVerifier;
 	public final fun getKeyManager ()Ljavax/net/ssl/KeyManager;
 	public final fun getMaxConcurrencyPerHost-0hXNFcg ()Lkotlin/UInt;
@@ -91,6 +93,7 @@ public final class aws/smithy/kotlin/runtime/http/engine/okhttp/OkHttpEngineConf
 	public final fun setCertificatePinner (Lokhttp3/CertificatePinner;)V
 	public final fun setCipherSuites (Ljava/util/List;)V
 	public final fun setConnectionIdlePollingInterval-BwNAW2A (Lkotlin/time/Duration;)V
+	public final fun setExecutorService (Ljava/util/concurrent/ExecutorService;)V
 	public final fun setHostnameVerifier (Ljavax/net/ssl/HostnameVerifier;)V
 	public final fun setKeyManager (Ljavax/net/ssl/KeyManager;)V
 	public final fun setMaxConcurrencyPerHost-ExVfyTY (Lkotlin/UInt;)V
