@@ -10,6 +10,8 @@ import aws.smithy.kotlin.runtime.http.engine.HttpClientEngineConfigImpl
 import aws.smithy.kotlin.runtime.telemetry.Global
 import aws.smithy.kotlin.runtime.telemetry.TelemetryProvider
 import okhttp3.CertificatePinner
+import okhttp3.Dispatcher
+import java.util.concurrent.ExecutorService
 import javax.net.ssl.HostnameVerifier
 import javax.net.ssl.KeyManager
 import javax.net.ssl.X509TrustManager
@@ -87,6 +89,13 @@ public class OkHttpEngineConfig private constructor(builder: Builder) : HttpClie
      */
     public val hostnameVerifier: HostnameVerifier? = builder.hostnameVerifier
 
+    /**
+     * Which [ExecutorService] to use for the engine's [Dispatcher].
+     * Use this to customize the engine's concurrency behavior, such as enabling use of virtual threads.
+     * If you supply your own executor, it must be able to run [maxConcurrency] calls in parallel.
+     */
+    public val executorService: ExecutorService? = builder.executorService
+
     override fun toBuilderApplicator(): HttpClientEngineConfig.Builder.() -> Unit = {
         super.toBuilderApplicator()()
 
@@ -158,6 +167,13 @@ public class OkHttpEngineConfig private constructor(builder: Builder) : HttpClie
          * Use this to implement custom hostname verification logic.
          */
         public var hostnameVerifier: HostnameVerifier? = null
+
+        /**
+         * Which [ExecutorService] to use for the engine's [Dispatcher].
+         * Use this to customize the engine's concurrency behavior, such as enabling use of virtual threads.
+         * If you supply your own executor, it must be able to run [maxConcurrency] calls in parallel.
+         */
+        public var executorService: ExecutorService? = null
 
         override var telemetryProvider: TelemetryProvider = TelemetryProvider.Global
     }
