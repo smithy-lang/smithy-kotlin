@@ -40,9 +40,9 @@ class OkHttpEngineConfigTest {
         }
     }
 
-    private object DummyExecutorService: ExecutorService by Executors.newSingleThreadExecutor() {
+    private object DummyExecutorService : ExecutorService by Executors.newSingleThreadExecutor() {
         override fun execute(command: Runnable?) = throw DummyExecutorException()
     }
 
-    private class DummyExecutorException(): Exception()
+    private class DummyExecutorException : Exception()
 }
