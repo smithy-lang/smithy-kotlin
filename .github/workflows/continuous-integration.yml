@@ -369,7 +369,7 @@ jobs:
       run: |
         # TODO - JVM only
         cd $GITHUB_WORKSPACE/smithy-kotlin
-        ./gradlew --parallel -Paws.kotlin.native=false publishToMavenLocal
+        ./gradlew -Paws.kotlin.native=false publishToMavenLocal
         SMITHY_KOTLIN_RUNTIME_VERSION=$(grep sdkVersion= gradle.properties | cut -d = -f 2)
         SMITHY_KOTLIN_CODEGEN_VERSION=$(grep codegenVersion= gradle.properties | cut -d = -f 2)
         cd $GITHUB_WORKSPACE/aws-sdk-kotlin
@@ -380,7 +380,7 @@ jobs:
         # smithy-kotlin should be
         sed -i "s/smithy-kotlin-runtime-version = .*$/smithy-kotlin-runtime-version = \"$SMITHY_KOTLIN_RUNTIME_VERSION\"/" gradle/libs.versions.toml
         sed -i "s/smithy-kotlin-codegen-version = .*$/smithy-kotlin-codegen-version = \"$SMITHY_KOTLIN_CODEGEN_VERSION\"/" gradle/libs.versions.toml
-        ./gradlew --parallel -Paws.kotlin.native=false publishToMavenLocal
+        ./gradlew -Paws.kotlin.native=false publishToMavenLocal
         ./gradlew -Paws.kotlin.native=false test jvmTest
         ./gradlew -Paws.kotlin.native=false testAllProtocols
     - name: Calculate duration
