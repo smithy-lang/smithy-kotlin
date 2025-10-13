@@ -115,6 +115,9 @@ jobs:
         working-directory: ./smithy-kotlin
         shell: bash
         run: |
+          # EXPERIMENT: Bump memory profile for Kotlin daemon
+          echo -e "\n\nkotlin.daemon.jvmargs=-Xmx4G -XX:MaxMetaspaceSize=2G" >> gradle.properties
+
           # FIXME K2. Re-enable warnings as errors after this warning is removed: https://youtrack.jetbrains.com/issue/KT-68532
           # echo "kotlinWarningsAsErrors=true" >> $GITHUB_WORKSPACE/local.properties              
           ./gradlew apiCheck
