@@ -116,7 +116,8 @@ jobs:
         shell: bash
         run: |
           # EXPERIMENT: Bump memory profile for Kotlin daemon
-          echo -e "\n\nkotlin.daemon.jvmargs=-Xmx8G -XX:MaxMetaspaceSize=2G" >> gradle.properties
+          sed -ir 's/-Xmx[0-9]+G/-Xmx6G/g' gradle.properties
+          sed -ir 's/-XX:MaxMetaspaceSize=[0-9]+G/-XX:MaxMetaspaceSize=2G/g' gradle.properties
           cat gradle.properties
           echo ''
 
