@@ -125,6 +125,7 @@ jobs:
               | sed -r 's/-Xmx[0-9]+G/-Xmx6G/g' \
               | sed -r 's/-XX:MaxMetaspaceSize=[0-9]+G/-XX:MaxMetaspaceSize=2G/g' \
               > gradle.properties2
+          mv gradle.properties2 gradle.properties
           echo ""
 
           echo "Directory listing:"
