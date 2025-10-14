@@ -121,8 +121,8 @@ jobs:
           echo ""
 
           echo "Making sed changes to gradle.properties"
-          sed -r 's/-Xmx[0-9]+G/-Xmx6G/g' -i gradle.properties
-          sed -r 's/-XX:MaxMetaspaceSize=[0-9]+G/-XX:MaxMetaspaceSize=2G/g' -i gradle.properties
+          sed -r -i 's/-Xmx[0-9]+G/-Xmx6G/g' gradle.properties
+          sed -r -i's/-XX:MaxMetaspaceSize=[0-9]+G/-XX:MaxMetaspaceSize=2G/g' gradle.properties
           echo ""
 
           echo "Modified gradle.properties:"
