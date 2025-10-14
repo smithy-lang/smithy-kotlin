@@ -116,8 +116,8 @@ jobs:
         shell: bash
         run: |
           # EXPERIMENT: Bump memory profile for Kotlin daemon
-          sed -ir 's/-Xmx[0-9]+G/-Xmx6G/g' gradle.properties
-          sed -ir 's/-XX:MaxMetaspaceSize=[0-9]+G/-XX:MaxMetaspaceSize=2G/g' gradle.properties
+          sed -r 's/-Xmx[0-9]+G/-Xmx6G/g' -i gradle.properties
+          sed -r 's/-XX:MaxMetaspaceSize=[0-9]+G/-XX:MaxMetaspaceSize=2G/g' -i gradle.properties
           cat gradle.properties
           echo ''
 
