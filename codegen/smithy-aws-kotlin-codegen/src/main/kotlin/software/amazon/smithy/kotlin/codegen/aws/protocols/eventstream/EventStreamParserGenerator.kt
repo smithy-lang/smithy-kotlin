@@ -147,7 +147,7 @@ class EventStreamParserGenerator(
                 val target = ctx.model.expectShape(hdrBinding.target)
                 val targetSymbol = ctx.symbolProvider.toSymbol(target)
 
-                // :test(boolean, byte, short, integer, long, blob, string, timestamp))
+                // :test(boolean, byte, short, integer, long, blob, string, timestamp, enum, int enum))
                 val conversionFn = when (target.type) {
                     ShapeType.BOOLEAN -> RuntimeTypes.AwsEventStream.expectBool
                     ShapeType.BYTE -> RuntimeTypes.AwsEventStream.expectByte
@@ -157,6 +157,8 @@ class EventStreamParserGenerator(
                     ShapeType.BLOB -> RuntimeTypes.AwsEventStream.expectByteArray
                     ShapeType.STRING -> RuntimeTypes.AwsEventStream.expectString
                     ShapeType.TIMESTAMP -> RuntimeTypes.AwsEventStream.expectTimestamp
+                    ShapeType.ENUM -> RuntimeTypes.AwsEventStream.expectString
+                    ShapeType.INT_ENUM -> RuntimeTypes.AwsEventStream.expectInt32
                     else -> throw CodegenException("unsupported eventHeader shape: member=$hdrBinding; targetShape=$target")
                 }
 
@@ -165,7 +167,16 @@ class EventStreamParserGenerator(
                 } else {
                     ""
                 }
-                writer.write("eb.#L = message.headers.find { it.name == #S }?.value?.#T()$defaultValuePostfix", hdrBinding.defaultName(), hdrBinding.memberName, conversionFn)
+                writer.writeInline("eb.#L = message.headers.find { it.name == #S }?.value?.#T()$defaultValuePostfix", hdrBinding.defaultName(), hdrBinding.memberName, conversionFn)
+                when (target.type) {
+                    ShapeType.ENUM, ShapeType.INT_ENUM -> {
+                        writer.write(
+                            "?.let { #T.fromValue(it) }",
+                            targetSymbol,
+                        )
+                    }
+                    else -> writer.write("")
+                }
             }
 
             if (eventPayloadBinding != null) {
