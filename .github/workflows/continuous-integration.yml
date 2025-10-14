@@ -127,6 +127,10 @@ jobs:
               > gradle.properties
           echo ""
 
+          echo "Directory listing:"
+          ls -alsh
+          echo ""
+
           echo "Modified gradle.properties:"
           cat gradle.properties
           echo ""
