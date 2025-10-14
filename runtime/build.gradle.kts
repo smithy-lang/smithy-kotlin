@@ -3,7 +3,6 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 import aws.sdk.kotlin.gradle.dsl.configurePublishing
-import aws.sdk.kotlin.gradle.kmp.*
 import aws.sdk.kotlin.gradle.kmp.configureKmpTargets
 import aws.sdk.kotlin.gradle.kmp.kotlin
 import aws.sdk.kotlin.gradle.kmp.needsKmpConfigured
@@ -135,7 +134,7 @@ subprojects {
         }
 
         testLogging {
-            events("passed", "skipped", "failed")
+            events("passed", "skipped", "failed", "standardOut", "standardError")
             showStandardStreams = true
             showStackTraces = true
             showExceptions = true
