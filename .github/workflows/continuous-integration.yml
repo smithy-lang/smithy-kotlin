@@ -116,10 +116,18 @@ jobs:
         shell: bash
         run: |
           # EXPERIMENT: Bump memory profile for Kotlin daemon
+          echo "Directory listing:"
+          ls -alsh
+          echo ""
+
+          echo "Making sed changes to gradle.properties"
           sed -r 's/-Xmx[0-9]+G/-Xmx6G/g' -i gradle.properties
           sed -r 's/-XX:MaxMetaspaceSize=[0-9]+G/-XX:MaxMetaspaceSize=2G/g' -i gradle.properties
+          echo ""
+
+          echo "Modified gradle.properties:"
           cat gradle.properties
-          echo ''
+          echo ""
 
           # FIXME K2. Re-enable warnings as errors after this warning is removed: https://youtrack.jetbrains.com/issue/KT-68532
           # echo "kotlinWarningsAsErrors=true" >> $GITHUB_WORKSPACE/local.properties              
