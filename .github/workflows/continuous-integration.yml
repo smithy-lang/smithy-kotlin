@@ -99,8 +99,7 @@ jobs:
         os:
           - macos-15-large  # x64
           - macos-15-xlarge # ARM
-          - macos-14-large  # x64
-          - macos-14-xlarge # ARM
+        instance: [1, 2, 3, 4, 5, 6, 7, 8]
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout sources
@@ -115,22 +114,12 @@ jobs:
         working-directory: ./smithy-kotlin
         shell: bash
         run: |
-          # EXPERIMENT: Bump memory profile for Kotlin daemon
-          echo "Directory listing:"
-          ls -alsh
-          echo ""
-
-          echo "Making sed changes to gradle.properties"
+          # Bump memory profile for Kotlin daemon
           cat gradle.properties \
               | sed -r 's/-Xmx[0-9]+G/-Xmx6G/g' \
               | sed -r 's/-XX:MaxMetaspaceSize=[0-9]+G/-XX:MaxMetaspaceSize=2G/g' \
               > gradle.properties2
           mv gradle.properties2 gradle.properties
-          echo ""
-
-          echo "Directory listing:"
-          ls -alsh
-          echo ""
 
           echo "Modified gradle.properties:"
           cat gradle.properties
