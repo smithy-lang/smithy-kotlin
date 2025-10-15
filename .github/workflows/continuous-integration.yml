@@ -99,7 +99,6 @@ jobs:
         os:
           - macos-15-large  # x64
           - macos-15-xlarge # ARM
-        instance: [1, 2, 3, 4, 5, 6, 7, 8]
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout sources
