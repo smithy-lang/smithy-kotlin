@@ -490,6 +490,8 @@ object RuntimeTypes {
         val expectInt64 = symbol("expectInt64")
         val expectTimestamp = symbol("expectTimestamp")
         val expectString = symbol("expectString")
+        val expectEnumValue = symbol("expectEnumValue")
+        val expectIntEnumValue = symbol("expectIntEnumValue")
 
         val sign = symbol("sign")
     }

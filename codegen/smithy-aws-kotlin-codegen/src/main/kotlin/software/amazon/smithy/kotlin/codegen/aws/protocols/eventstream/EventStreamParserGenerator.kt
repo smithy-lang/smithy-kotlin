@@ -157,8 +157,8 @@ class EventStreamParserGenerator(
                     ShapeType.BLOB -> RuntimeTypes.AwsEventStream.expectByteArray
                     ShapeType.STRING -> RuntimeTypes.AwsEventStream.expectString
                     ShapeType.TIMESTAMP -> RuntimeTypes.AwsEventStream.expectTimestamp
-                    ShapeType.ENUM -> RuntimeTypes.AwsEventStream.expectString
-                    ShapeType.INT_ENUM -> RuntimeTypes.AwsEventStream.expectInt32
+                    ShapeType.ENUM -> RuntimeTypes.AwsEventStream.expectEnumValue
+                    ShapeType.INT_ENUM -> RuntimeTypes.AwsEventStream.expectIntEnumValue
                     else -> throw CodegenException("unsupported eventHeader shape: member=$hdrBinding; targetShape=$target")
                 }
 
@@ -167,15 +167,23 @@ class EventStreamParserGenerator(
                 } else {
                     ""
                 }
-                writer.writeInline("eb.#L = message.headers.find { it.name == #S }?.value?.#T()$defaultValuePostfix", hdrBinding.defaultName(), hdrBinding.memberName, conversionFn)
+
                 when (target.type) {
-                    ShapeType.ENUM, ShapeType.INT_ENUM -> {
+                    ShapeType.ENUM, ShapeType.INT_ENUM ->
                         writer.write(
-                            "?.let { #T.fromValue(it) }",
+                            "eb.#L = message.headers.find { it.name == #S }?.value?.#T(#T::fromValue)$defaultValuePostfix",
+                            hdrBinding.defaultName(),
+                            hdrBinding.memberName,
+                            conversionFn,
                             targetSymbol,
                         )
-                    }
-                    else -> writer.write("")
+                    else ->
+                        writer.write(
+                            "eb.#L = message.headers.find { it.name == #S }?.value?.#T()$defaultValuePostfix",
+                            hdrBinding.defaultName(),
+                            hdrBinding.memberName,
+                            conversionFn,
+                        )
                 }
             }
 
