@@ -1,0 +1,37 @@
+name: Release metrics
+
+on:
+  release:
+    types: [ published ]
+
+jobs:
+  artifact-size-metrics:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Configure Gradle
+        uses: awslabs/aws-kotlin-repo-tools/.github/actions/configure-gradle@main
+
+      - name: Build
+        shell: bash
+        run: |
+          ./gradlew build --parallel
+          ./gradlew publishAllPublicationsToTestLocalRepository --parallel
+
+      - name: Configure credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.CI_AWS_ROLE_ARN }}
+          aws-region: us-west-2
+
+      - name: Calculate and upload metrics
+        uses: awslabs/aws-kotlin-repo-tools/.github/actions/artifact-size-metrics/calculate-and-upload@main
+        with:
+          upload: 'true'
+          release_metrics: 'true'
+
+permissions:
+  id-token: write
+  contents: read
