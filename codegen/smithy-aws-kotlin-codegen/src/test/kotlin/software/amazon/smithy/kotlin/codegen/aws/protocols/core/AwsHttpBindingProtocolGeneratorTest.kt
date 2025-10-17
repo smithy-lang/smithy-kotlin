@@ -139,14 +139,14 @@ class AwsHttpBindingProtocolGeneratorTest {
         testCtx.generationCtx.delegator.finalize()
         testCtx.generationCtx.delegator.flushWriters()
 
-        val expectedEnumSerializer = "input.value.enum?.let { addHeader(\"enum\", HeaderValue.String(it.value)) }"
-        val expectedIntEnumSerializer = "input.value.intEnum?.let { addHeader(\"intEnum\", HeaderValue.Int32(it.value)) }"
+        val expectedEnumSerializer = """input.value.enum?.let { addHeader("enum", HeaderValue.String(it.value)) }"""
+        val expectedIntEnumSerializer = """input.value.intEnum?.let { addHeader("intEnum", HeaderValue.Int32(it.value)) }"""
         val actualSerializer = testCtx.manifest.expectFileString("src/main/kotlin/com/test/serde/TestStreamOpOperationSerializer.kt")
         actualSerializer.shouldContainOnlyOnceWithDiff(expectedEnumSerializer)
         actualSerializer.shouldContainOnlyOnceWithDiff(expectedIntEnumSerializer)
 
-        val expectedEnumDeserializer = "eb.enum = message.headers.find { it.name == \"enum\" }?.value?.expectEnumValue(Enum::fromValue)"
-        val expectedIntEnumDeserializer = "eb.intEnum = message.headers.find { it.name == \"intEnum\" }?.value?.expectIntEnumValue(IntEnum::fromValue)"
+        val expectedEnumDeserializer = """eb.enum = message.headers.find { it.name == "enum" }?.value?.expectEnumValue(Enum::fromValue)"""
+        val expectedIntEnumDeserializer = """eb.intEnum = message.headers.find { it.name == "intEnum" }?.value?.expectIntEnumValue(IntEnum::fromValue)"""
         val actualDeserializer = testCtx.manifest.expectFileString("src/main/kotlin/com/test/serde/TestStreamOpOperationDeserializer.kt")
         actualDeserializer.shouldContainOnlyOnceWithDiff(expectedEnumDeserializer)
         actualDeserializer.shouldContainOnlyOnceWithDiff(expectedIntEnumDeserializer)
