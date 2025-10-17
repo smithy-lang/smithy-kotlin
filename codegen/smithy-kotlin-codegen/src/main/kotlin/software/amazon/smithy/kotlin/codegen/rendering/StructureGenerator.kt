@@ -13,6 +13,7 @@ import software.amazon.smithy.kotlin.codegen.core.withBlock
 import software.amazon.smithy.kotlin.codegen.lang.KotlinTypes
 import software.amazon.smithy.kotlin.codegen.model.*
 import software.amazon.smithy.kotlin.codegen.rendering.serde.ClientErrorCorrection
+import software.amazon.smithy.kotlin.codegen.utils.toCamelCase
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.*
 import software.amazon.smithy.model.traits.*
@@ -32,6 +33,7 @@ class StructureGenerator(
     private val symbol = ctx.symbolProvider.toSymbol(ctx.shape)
 
     fun render() {
+        renderDslBuilderRefs()
         writer.renderDocumentation(shape)
         writer.renderAnnotations(shape)
         if (!shape.isError) {
@@ -42,10 +44,13 @@ class StructureGenerator(
     }
 
     private val sortedMembers: List<MemberShape> = shape.allMembers.values.sortedBy { it.defaultName() }
+
     private val memberNameSymbolIndex: Map<MemberShape, Pair<String, Symbol>> =
         sortedMembers.associateWith { member ->
             Pair(symbolProvider.toMemberName(member), symbolProvider.toSymbol(member))
         }
+
+    private val structMembers = sortedMembers.filter { model.expectShape(it.target).isStructureShape }
 
     /**
      * Renders a normal (non-error) Smithy structure to a Kotlin class
@@ -283,18 +288,13 @@ class StructureGenerator(
                 write("@PublishedApi")
                 write("internal fun build(): #1Q = #1T(this)", symbol)
 
-                val structMembers = sortedMembers.filter { member ->
-                    val targetShape = model.getShape(member.target).get()
-                    targetShape.isStructureShape
-                }
-
                 for (member in structMembers) {
                     writer.write("")
                     val (memberName, memberSymbol) = memberNameSymbolIndex[member]!!
                     writer.dokka("construct an [${memberSymbol.fullName}] inside the given [block]")
                     writer.renderAnnotations(member)
                     openBlock("public fun #L(block: #Q.Builder.() -> #Q) {", memberName, memberSymbol, KotlinTypes.Unit)
-                        .write("this.#L = #Q.invoke(block)", memberName, memberSymbol)
+                        .write("this.#L = #L(block)", memberName, dslBuilderRef(memberSymbol))
                         .closeBlock("}")
                 }
 
@@ -322,6 +322,21 @@ class StructureGenerator(
                     write("return this")
                 }
             }
+    }
+
+    /**
+     * Derives a hopefully collision-safe name for a symbol by camel-casing the full name and "DSL Builder Ref". For
+     * instance, the symbol `aws.sdk.kotlin.services.simplefooservice.model.FooBar` turns into
+     * `awsSdkKotlinServicesSimplefooserviceModelFooBarDslBuilderRef`.
+     */
+    private fun dslBuilderRef(symbol: Symbol): String = "${symbol.fullName} DSL Builder Ref".toCamelCase()
+
+    private fun renderDslBuilderRefs() {
+        val dslBuilderSymbols = structMembers.map { memberNameSymbolIndex[it]!!.second }.toSet()
+        dslBuilderSymbols.forEach { symbol ->
+            writer.write("private val #L = #Q", dslBuilderRef(symbol), symbol)
+        }
+        writer.write("")
     }
 
     /**

@@ -221,7 +221,7 @@ class StructureGeneratorTest {
                  * construct an [com.test.model.Qux] inside the given [block]
                  */
                 public fun quux(block: com.test.model.Qux.Builder.() -> kotlin.Unit) {
-                    this.quux = com.test.model.Qux.invoke(block)
+                    this.quux = comTestModelQuxDslBuilderRef(block)
                 }
                 
                 internal fun correctErrors(): Builder {
@@ -231,6 +231,11 @@ class StructureGeneratorTest {
             }
         """.formatForTest()
         commonTestContents.shouldContainOnlyOnceWithDiff(expected)
+    }
+
+    @Test
+    fun `it renders DSL builder references`() {
+        commonTestContents.shouldContainOnlyOnceWithDiff("private val comTestModelQuxDslBuilderRef = com.test.model.Qux")
     }
 
     @Test

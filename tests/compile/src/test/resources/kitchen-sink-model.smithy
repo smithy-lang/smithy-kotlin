@@ -26,7 +26,8 @@ service Example {
         UnionAggregateInput,
         UnionOutput,
         UnionAggregateOutput,
-        WaiterTest
+        WaiterTest,
+        PackageNameConflictTest,
     ]
 }
 
@@ -536,3 +537,18 @@ structure WaiterTestFoo {
 
 @error("client")
 structure WaiterTestNotFound {}
+
+// Verifies that members with the same name as a top-level package don't cause compilation issues.
+@http(method: "POST", uri: "/input/packageNameConflict")
+operation PackageNameConflictTest {
+    input: PackageNameConflictTestRequest,
+    output: PackageNameConflictTestResponse,
+}
+
+structure PackageNameConflictTestRequest {
+    com: String,
+}
+
+structure PackageNameConflictTestResponse {
+    com: String,
+}
