@@ -20,10 +20,18 @@ jobs:
           ./gradlew build --parallel
           ./gradlew publishAllPublicationsToTestLocalRepository --parallel
 
+      - name: Configure credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.CI_AWS_ROLE_ARN }}
+          aws-region: us-west-2
+
       - name: Calculate and upload metrics
-        uses: awslabs/aws-kotlin-repo-tools/.github/actions/artifact-size-metrics/calculate-and-upload@asm-v2 # TODO: Change to main before merging
+        uses: awslabs/aws-kotlin-repo-tools/.github/actions/artifact-size-metrics/calculate-and-upload@main
         with:
           upload: 'true'
           release_metrics: 'true'
 
-permissions: {}
+permissions:
+  id-token: write
+  contents: read
