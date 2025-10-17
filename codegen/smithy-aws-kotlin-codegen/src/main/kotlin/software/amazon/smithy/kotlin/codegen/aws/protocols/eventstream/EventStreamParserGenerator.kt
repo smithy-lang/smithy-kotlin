@@ -147,7 +147,7 @@ class EventStreamParserGenerator(
                 val target = ctx.model.expectShape(hdrBinding.target)
                 val targetSymbol = ctx.symbolProvider.toSymbol(target)
 
-                // :test(boolean, byte, short, integer, long, blob, string, timestamp))
+                // :test(boolean, byte, short, integer, long, blob, string, timestamp, enum, int enum))
                 val conversionFn = when (target.type) {
                     ShapeType.BOOLEAN -> RuntimeTypes.AwsEventStream.expectBool
                     ShapeType.BYTE -> RuntimeTypes.AwsEventStream.expectByte
@@ -157,6 +157,8 @@ class EventStreamParserGenerator(
                     ShapeType.BLOB -> RuntimeTypes.AwsEventStream.expectByteArray
                     ShapeType.STRING -> RuntimeTypes.AwsEventStream.expectString
                     ShapeType.TIMESTAMP -> RuntimeTypes.AwsEventStream.expectTimestamp
+                    ShapeType.ENUM -> RuntimeTypes.AwsEventStream.expectEnumValue
+                    ShapeType.INT_ENUM -> RuntimeTypes.AwsEventStream.expectIntEnumValue
                     else -> throw CodegenException("unsupported eventHeader shape: member=$hdrBinding; targetShape=$target")
                 }
 
@@ -165,7 +167,24 @@ class EventStreamParserGenerator(
                 } else {
                     ""
                 }
-                writer.write("eb.#L = message.headers.find { it.name == #S }?.value?.#T()$defaultValuePostfix", hdrBinding.defaultName(), hdrBinding.memberName, conversionFn)
+
+                when (target.type) {
+                    ShapeType.ENUM, ShapeType.INT_ENUM ->
+                        writer.write(
+                            "eb.#L = message.headers.find { it.name == #S }?.value?.#T(#T::fromValue)$defaultValuePostfix",
+                            hdrBinding.defaultName(),
+                            hdrBinding.memberName,
+                            conversionFn,
+                            targetSymbol,
+                        )
+                    else ->
+                        writer.write(
+                            "eb.#L = message.headers.find { it.name == #S }?.value?.#T()$defaultValuePostfix",
+                            hdrBinding.defaultName(),
+                            hdrBinding.memberName,
+                            conversionFn,
+                        )
+                }
             }
 
             if (eventPayloadBinding != null) {

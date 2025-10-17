@@ -147,9 +147,11 @@ public final class aws/smithy/kotlin/runtime/awsprotocol/eventstream/HeaderValue
 	public static final fun expectBool (Laws/smithy/kotlin/runtime/awsprotocol/eventstream/HeaderValue;)Z
 	public static final fun expectByte (Laws/smithy/kotlin/runtime/awsprotocol/eventstream/HeaderValue;)B
 	public static final fun expectByteArray (Laws/smithy/kotlin/runtime/awsprotocol/eventstream/HeaderValue;)[B
+	public static final fun expectEnumValue (Laws/smithy/kotlin/runtime/awsprotocol/eventstream/HeaderValue;Lkotlin/jvm/functions/Function1;)Ljava/lang/Object;
 	public static final fun expectInt16 (Laws/smithy/kotlin/runtime/awsprotocol/eventstream/HeaderValue;)S
 	public static final fun expectInt32 (Laws/smithy/kotlin/runtime/awsprotocol/eventstream/HeaderValue;)I
 	public static final fun expectInt64 (Laws/smithy/kotlin/runtime/awsprotocol/eventstream/HeaderValue;)J
+	public static final fun expectIntEnumValue (Laws/smithy/kotlin/runtime/awsprotocol/eventstream/HeaderValue;Lkotlin/jvm/functions/Function1;)Ljava/lang/Object;
 	public static final fun expectString (Laws/smithy/kotlin/runtime/awsprotocol/eventstream/HeaderValue;)Ljava/lang/String;
 	public static final fun expectTimestamp (Laws/smithy/kotlin/runtime/awsprotocol/eventstream/HeaderValue;)Laws/smithy/kotlin/runtime/time/Instant;
 	public static final fun expectUuid (Laws/smithy/kotlin/runtime/awsprotocol/eventstream/HeaderValue;)Laws/smithy/kotlin/runtime/util/Uuid;
