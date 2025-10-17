@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.5.15] - 10/17/2025
+
+### Fixes
+* fix: code-generate structure members more safely to avoid conflicts with package names
+
 ## [1.5.14] - 10/03/2025
 
 ### Features

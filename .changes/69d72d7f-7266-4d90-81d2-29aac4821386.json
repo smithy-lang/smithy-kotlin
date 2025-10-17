@@ -1,5 +1,0 @@
-{
-    "id": "69d72d7f-7266-4d90-81d2-29aac4821386",
-    "type": "bugfix",
-    "description": "fix: code-generate structure members more safely to avoid conflicts with package names"
-}
