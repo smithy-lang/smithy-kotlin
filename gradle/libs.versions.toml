@@ -17,7 +17,7 @@ crt-kotlin-version = "0.11.5"
 micrometer-version = "1.15.2"
 binary-compatibility-validator-version = "0.18.1"
 kotlin-multiplatform-bignum-version = "0.3.10"
-kotlinx-datetime-version = "0.6.1"
+kotlinx-datetime-version = "0.7.1"
 
 # codegen
 smithy-version = "1.62.0"
