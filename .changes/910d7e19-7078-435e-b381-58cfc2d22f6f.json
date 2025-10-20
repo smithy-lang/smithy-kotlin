@@ -1,0 +1,8 @@
+{
+    "id": "910d7e19-7078-435e-b381-58cfc2d22f6f",
+    "type": "misc",
+    "description": "Replace all usages of kotlinx.datetime.{Clock, Instant} with kotlin.time.{Clock, Instant}",
+    "issues": [
+        "https://github.com/smithy-lang/smithy-kotlin/issues/1445"
+    ]
+}
