@@ -5,13 +5,13 @@
 
 package aws.smithy.kotlin.runtime.time
 
-import kotlinx.datetime.Clock
+import kotlin.time.Clock
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.atStartOfDayIn
 import kotlinx.datetime.format
 import kotlin.time.Duration
-import kotlinx.datetime.Instant as KtInstant
+import kotlin.time.Instant as KtInstant
 
 private fun TimestampFormat.asDateTimeFormat() = when (this) {
     TimestampFormat.RFC_5322 -> DateTimeFormats.RFC_5322
