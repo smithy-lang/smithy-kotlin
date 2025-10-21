@@ -132,7 +132,7 @@ public fun OkHttpEngineConfig.buildClient(
         )
         connectionPool(pool)
 
-        val dispatcher = (executorService?.let { Dispatcher(it) } ?: Dispatcher()).apply {
+        val dispatcher = Dispatcher().apply {
             maxRequests = config.maxConcurrency.toInt()
             maxRequestsPerHost = config.maxConcurrencyPerHost.toInt()
         }
