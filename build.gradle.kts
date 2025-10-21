@@ -41,17 +41,10 @@ buildscript {
 plugins {
     `dokka-convention`
     alias(libs.plugins.kotlinx.binary.compatibility.validator)
-    alias(libs.plugins.aws.kotlin.repo.tools.artifactsizemetrics)
     // ensure the correct version of KGP ends up on our buildscript classpath
     // since build-plugins also has <some> version in its dependency closure
     id(libs.plugins.kotlin.multiplatform.get().pluginId) apply false
     id(libs.plugins.kotlin.jvm.get().pluginId) apply false
-}
-
-artifactSizeMetrics {
-    artifactPrefixes = setOf(":runtime")
-    significantChangeThresholdPercentage = 5.0
-    projectRepositoryName = "smithy-kotlin"
 }
 
 val testJavaVersion = typedProp<String>("test.java.version")?.let {

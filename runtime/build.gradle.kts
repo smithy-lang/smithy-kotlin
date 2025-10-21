@@ -132,7 +132,7 @@ subprojects {
         }
 
         testLogging {
-            events("passed", "skipped", "failed")
+            events("passed", "skipped", "failed", "standardOut", "standardError")
             showStandardStreams = true
             showStackTraces = true
             showExceptions = true

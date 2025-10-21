@@ -11,6 +11,7 @@ jobs:
   cleanup:
     name: Stale issue job
     runs-on: ubuntu-latest
+    if: github.repository == 'smithy-lang/smithy-kotlin'
     steps:
     - uses: aws-actions/stale-issue-cleanup@v4
       with:

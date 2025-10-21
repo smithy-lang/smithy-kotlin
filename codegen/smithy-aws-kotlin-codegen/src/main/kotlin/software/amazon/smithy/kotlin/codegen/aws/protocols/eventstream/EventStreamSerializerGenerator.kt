@@ -183,9 +183,15 @@ class EventStreamSerializerGenerator(
             ShapeType.BLOB -> "ByteArray"
             ShapeType.STRING -> "String"
             ShapeType.TIMESTAMP -> "Timestamp"
+            ShapeType.ENUM -> "String"
+            ShapeType.INT_ENUM -> "Int32"
             else -> throw CodegenException("unsupported shape type `${target.type}` for eventHeader member `$member`; target: $target")
         }
-        val conversion = if (target.type == ShapeType.BYTE) ".toUByte()" else ""
+        val conversion = when (target.type) {
+            ShapeType.BYTE -> ".toUByte()"
+            ShapeType.ENUM, ShapeType.INT_ENUM -> ".value"
+            else -> ""
+        }
 
         writer.write(
             "input.value.#L?.let { addHeader(#S, #T.#L(it$conversion)) }",

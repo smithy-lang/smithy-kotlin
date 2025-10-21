@@ -5,6 +5,7 @@
 package software.amazon.smithy.kotlin.codegen.aws.protocols.core
 
 import software.amazon.smithy.codegen.core.Symbol
+import software.amazon.smithy.kotlin.codegen.aws.protocols.json.AwsJsonHttpBindingResolver
 import software.amazon.smithy.kotlin.codegen.core.KotlinWriter
 import software.amazon.smithy.kotlin.codegen.model.expectShape
 import software.amazon.smithy.kotlin.codegen.rendering.protocol.HttpBindingResolver
@@ -70,7 +71,92 @@ class AwsHttpBindingProtocolGeneratorTest {
         actual.shouldContainOnlyOnceWithDiff(expected)
     }
 
-    // A concrete implementation of AwsHttpBindingProtocolGenerator to exercise renderThrowOperationError()
+    @Test
+    fun enumEventStreamHeader() {
+        val model = """ 
+            ${"$"}version: "2"
+            
+            namespace com.test
+            
+            use aws.protocols#restJson1
+
+            @restJson1
+            service Test {
+                version: "1.0.0",
+                operations: [TestStreamOp]
+            }
+
+            @http(method: "POST", uri: "/test-eventstream", code: 200)
+            operation TestStreamOp {
+                input: TestStreamInputOutput,
+                output: TestStreamInputOutput,
+            }
+            
+            structure TestStreamInputOutput {
+                @httpPayload
+                @required
+                value: TestStream
+            }
+            
+            @streaming
+            union TestStream {
+                MessageWithHeaders: MessageWithHeaders,
+            }
+            
+            structure MessageWithHeaders {
+                @eventHeader enum: Enum,
+                @eventHeader intEnum: IntEnum,
+            }
+                        
+            enum Enum {
+                DIAMOND
+                CLUB
+                HEART
+                SPADE
+            }
+            
+            intEnum IntEnum {
+                JACK = 1
+                QUEEN = 2
+                KING = 3
+                ACE = 4
+                JOKER = 5
+            }
+        """.toSmithyModel()
+        val testCtx = model.newTestContext()
+        val protocolGenerator = TestableAwsHttpBindingProtocolGenerator()
+        val op = model.expectShape<OperationShape>("com.test#TestStreamOp")
+
+        val serializer = protocolGenerator.eventStreamRequestHandler(testCtx.generationCtx, op)
+        testCtx.generationCtx.delegator.useFileWriter("TestStreamOpOperationSerializer.kt", "com.test.serde") {
+            it.write("#T(context, request)", serializer)
+        }
+        val deserializer = protocolGenerator.eventStreamResponseHandler(testCtx.generationCtx, op)
+        testCtx.generationCtx.delegator.useFileWriter("TestStreamOpOperationDeserializer.kt", "com.test.serde") {
+            it.write("#T(context, response)", deserializer)
+        }
+
+        testCtx.generationCtx.delegator.finalize()
+        testCtx.generationCtx.delegator.flushWriters()
+
+        val expectedEnumSerializer = """input.value.enum?.let { addHeader("enum", HeaderValue.String(it.value)) }"""
+        val expectedIntEnumSerializer = """input.value.intEnum?.let { addHeader("intEnum", HeaderValue.Int32(it.value)) }"""
+        val actualSerializer = testCtx.manifest.expectFileString("src/main/kotlin/com/test/serde/TestStreamOpOperationSerializer.kt")
+        actualSerializer.shouldContainOnlyOnceWithDiff(expectedEnumSerializer)
+        actualSerializer.shouldContainOnlyOnceWithDiff(expectedIntEnumSerializer)
+
+        val expectedEnumDeserializer = """eb.enum = message.headers.find { it.name == "enum" }?.value?.expectEnumValue(Enum::fromValue)"""
+        val expectedIntEnumDeserializer = """eb.intEnum = message.headers.find { it.name == "intEnum" }?.value?.expectIntEnumValue(IntEnum::fromValue)"""
+        val actualDeserializer = testCtx.manifest.expectFileString("src/main/kotlin/com/test/serde/TestStreamOpOperationDeserializer.kt")
+        actualDeserializer.shouldContainOnlyOnceWithDiff(expectedEnumDeserializer)
+        actualDeserializer.shouldContainOnlyOnceWithDiff(expectedIntEnumDeserializer)
+    }
+
+    /**
+     * A concrete implementation of AwsHttpBindingProtocolGenerator to exercise:
+     *  renderThrowOperationError()
+     *  getProtocolHttpBindingResolver()
+     */
     class TestableAwsHttpBindingProtocolGenerator : AwsHttpBindingProtocolGenerator() {
         override fun renderDeserializeErrorDetails(
             ctx: ProtocolGenerator.GenerationContext,
@@ -83,9 +169,8 @@ class AwsHttpBindingProtocolGeneratorTest {
         override val defaultTimestampFormat: TimestampFormatTrait.Format
             get() = error("Unneeded for test")
 
-        override fun getProtocolHttpBindingResolver(model: Model, serviceShape: ServiceShape): HttpBindingResolver {
-            error("Unneeded for test")
-        }
+        override fun getProtocolHttpBindingResolver(model: Model, serviceShape: ServiceShape): HttpBindingResolver =
+            AwsJsonHttpBindingResolver(model, serviceShape, "application/x-amz-json-1.0")
 
         override fun structuredDataParser(ctx: ProtocolGenerator.GenerationContext): StructuredDataParserGenerator =
             object : StructuredDataParserGenerator {
