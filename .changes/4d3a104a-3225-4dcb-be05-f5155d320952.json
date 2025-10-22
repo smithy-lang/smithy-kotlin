@@ -1,7 +1,7 @@
 {
     "id": "4d3a104a-3225-4dcb-be05-f5155d320952",
     "type": "feature",
-    "description": "Add executorService configuration to OkHttpEngine",
+    "description": "Allow configuring a custom OkHttpClient in OkHttpEngine",
     "issues": [
         "https://github.com/aws/aws-sdk-kotlin/issues/1707"
     ]
