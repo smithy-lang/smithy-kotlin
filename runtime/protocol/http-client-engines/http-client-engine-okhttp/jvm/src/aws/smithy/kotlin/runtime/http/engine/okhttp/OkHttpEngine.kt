@@ -52,8 +52,8 @@ public class OkHttpEngine(
             eventListenerFactory { call ->
                 EventListenerChain(
                     listOf(
-                        HttpEngineEventListener(client.connectionPool, config.hostResolver, client.dispatcher, metrics, call)
-                    )
+                        HttpEngineEventListener(client.connectionPool, config.hostResolver, client.dispatcher, metrics, call),
+                    ),
                 )
             }
             addInterceptor(MetricsInterceptor)
