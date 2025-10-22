@@ -1,5 +1,0 @@
-{
-    "id": "08deb04f-bc93-4d3c-aa2f-d46b2dcce775",
-    "type": "feature",
-    "description": "Support enums and int enums as event headers"
-}

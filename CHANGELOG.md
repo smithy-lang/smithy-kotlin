@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.5.16] - 10/22/2025
+
+### Features
+* Support enums and int enums as event headers
+
 ## [1.5.15] - 10/17/2025
 
 ### Fixes
