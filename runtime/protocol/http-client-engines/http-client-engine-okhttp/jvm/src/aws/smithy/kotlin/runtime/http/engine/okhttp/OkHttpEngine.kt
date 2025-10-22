@@ -38,6 +38,27 @@ public class OkHttpEngine(
     override val config: OkHttpEngineConfig,
 ) : HttpClientEngineBase("OkHttp") {
     public constructor() : this(OkHttpEngineConfig.Default)
+    public constructor(client: OkHttpClient) : this(OkHttpEngineConfig.Default) {
+        this.manageClient = false
+
+        // destroy our client
+        this.client.apply {
+            connectionPool.evictAll()
+            dispatcher.executorService.shutdown()
+        }
+
+        // use the user-provided client, configured with metrics collection
+        this.client = client.newBuilder().apply {
+            eventListenerFactory { call ->
+                EventListenerChain(
+                    listOf(
+                        HttpEngineEventListener(client.connectionPool, config.hostResolver, client.dispatcher, metrics, call)
+                    )
+                )
+            }
+            addInterceptor(MetricsInterceptor)
+        }.build()
+    }
 
     public companion object : EngineFactory<OkHttpEngineConfig.Builder, OkHttpEngine> {
         /**
@@ -57,7 +78,8 @@ public class OkHttpEngine(
         }
 
     private val metrics = HttpClientMetrics(TELEMETRY_SCOPE, config.telemetryProvider)
-    private val client = config.buildClient(metrics, connectionMonitoringListener)
+    private var client = config.buildClient(metrics, connectionMonitoringListener)
+    private var manageClient = true // whether the SDK should manage the underlying OkHttpClient client
 
     @OptIn(ExperimentalCoroutinesApi::class)
     override suspend fun roundTrip(context: ExecutionContext, request: HttpRequest): HttpCall {
@@ -85,9 +107,11 @@ public class OkHttpEngine(
 
     override fun shutdown() {
         connectionMonitoringListener?.closeIfCloseable()
-        client.connectionPool.evictAll()
-        client.dispatcher.executorService.shutdown()
         metrics.close()
+        if (manageClient) {
+            client.connectionPool.evictAll()
+            client.dispatcher.executorService.shutdown()
+        }
     }
 }
 

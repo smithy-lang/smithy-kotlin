@@ -53,6 +53,7 @@ public final class aws/smithy/kotlin/runtime/http/engine/okhttp/OkHttpEngine : a
 	public static final field Companion Laws/smithy/kotlin/runtime/http/engine/okhttp/OkHttpEngine$Companion;
 	public fun <init> ()V
 	public fun <init> (Laws/smithy/kotlin/runtime/http/engine/okhttp/OkHttpEngineConfig;)V
+	public fun <init> (Lokhttp3/OkHttpClient;)V
 	public synthetic fun getConfig ()Laws/smithy/kotlin/runtime/http/engine/HttpClientEngineConfig;
 	public fun getConfig ()Laws/smithy/kotlin/runtime/http/engine/okhttp/OkHttpEngineConfig;
 	public fun roundTrip (Laws/smithy/kotlin/runtime/operation/ExecutionContext;Laws/smithy/kotlin/runtime/http/request/HttpRequest;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
