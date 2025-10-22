@@ -11,7 +11,6 @@ import aws.smithy.kotlin.runtime.http.config.EngineFactory
 import aws.smithy.kotlin.runtime.http.engine.AlpnId
 import aws.smithy.kotlin.runtime.http.engine.HttpClientEngine
 import aws.smithy.kotlin.runtime.http.engine.HttpClientEngineBase
-import aws.smithy.kotlin.runtime.http.engine.ProxyConfig
 import aws.smithy.kotlin.runtime.http.engine.TlsContext
 import aws.smithy.kotlin.runtime.http.engine.callContext
 import aws.smithy.kotlin.runtime.http.engine.internal.HttpClientMetrics
@@ -65,8 +64,8 @@ public class OkHttpEngine(
 
     private val metrics = HttpClientMetrics(TELEMETRY_SCOPE, config.telemetryProvider)
     private val client: OkHttpClient by lazy {
-        userProvidedClient?.withMetrics(metrics, config) ?:
-        config.buildClient(metrics, connectionMonitoringListener)
+        userProvidedClient?.withMetrics(metrics, config)
+            ?: config.buildClient(metrics, connectionMonitoringListener)
     }
 
     @OptIn(ExperimentalCoroutinesApi::class)
@@ -185,9 +184,11 @@ public fun OkHttpEngineConfig.buildClient(
 // Configure a user-provided client to collect SDK metrics
 private fun OkHttpClient.withMetrics(metrics: HttpClientMetrics, config: OkHttpEngineConfig) = newBuilder().apply {
     eventListenerFactory { call ->
-        EventListenerChain(listOf(
-            HttpEngineEventListener(connectionPool, config.hostResolver, dispatcher, metrics, call),
-        ))
+        EventListenerChain(
+            listOf(
+                HttpEngineEventListener(connectionPool, config.hostResolver, dispatcher, metrics, call),
+            ),
+        )
     }
     addInterceptor(MetricsInterceptor)
 }.build()
