@@ -9,6 +9,7 @@ import aws.smithy.kotlin.runtime.InternalApi
 import aws.smithy.kotlin.runtime.http.HttpCall
 import aws.smithy.kotlin.runtime.http.config.EngineFactory
 import aws.smithy.kotlin.runtime.http.engine.AlpnId
+import aws.smithy.kotlin.runtime.http.engine.HttpClientEngine
 import aws.smithy.kotlin.runtime.http.engine.HttpClientEngineBase
 import aws.smithy.kotlin.runtime.http.engine.TlsContext
 import aws.smithy.kotlin.runtime.http.engine.callContext
@@ -34,10 +35,15 @@ import okhttp3.TlsVersion as OkHttpTlsVersion
 /**
  * [aws.smithy.kotlin.runtime.http.engine.HttpClientEngine] based on OkHttp.
  */
-public class OkHttpEngine(
+public class OkHttpEngine private constructor(
     override val config: OkHttpEngineConfig,
+    private val userProvidedClient: OkHttpClient?,
 ) : HttpClientEngineBase("OkHttp") {
-    public constructor() : this(OkHttpEngineConfig.Default)
+    public constructor() : this(OkHttpEngineConfig.Default, null)
+
+    public constructor(config: OkHttpEngineConfig) : this(config, null)
+
+    public constructor(client: OkHttpClient) : this(OkHttpEngineConfig.Default, client)
 
     public companion object : EngineFactory<OkHttpEngineConfig.Builder, OkHttpEngine> {
         /**
@@ -45,7 +51,7 @@ public class OkHttpEngine(
          * @param block A receiver lambda which sets the properties of the config to be built
          */
         public operator fun invoke(block: OkHttpEngineConfig.Builder.() -> Unit): OkHttpEngine =
-            OkHttpEngine(OkHttpEngineConfig(block))
+            OkHttpEngine(OkHttpEngineConfig(block), null)
 
         override val engineConstructor: (OkHttpEngineConfig.Builder.() -> Unit) -> OkHttpEngine = ::invoke
     }
@@ -57,7 +63,10 @@ public class OkHttpEngine(
         }
 
     private val metrics = HttpClientMetrics(TELEMETRY_SCOPE, config.telemetryProvider)
-    private val client = config.buildClient(metrics, connectionMonitoringListener)
+    private val client: OkHttpClient by lazy {
+        userProvidedClient?.withMetrics(metrics, config)
+            ?: config.buildClient(metrics, connectionMonitoringListener)
+    }
 
     @OptIn(ExperimentalCoroutinesApi::class)
     override suspend fun roundTrip(context: ExecutionContext, request: HttpRequest): HttpCall {
@@ -85,9 +94,11 @@ public class OkHttpEngine(
 
     override fun shutdown() {
         connectionMonitoringListener?.closeIfCloseable()
-        client.connectionPool.evictAll()
-        client.dispatcher.executorService.shutdown()
         metrics.close()
+        if (userProvidedClient == null) {
+            client.connectionPool.evictAll()
+            client.dispatcher.executorService.shutdown()
+        }
     }
 }
 
@@ -169,6 +180,18 @@ public fun OkHttpEngineConfig.buildClient(
         addInterceptor(MetricsInterceptor)
     }.build()
 }
+
+// Configure a user-provided client to collect SDK metrics
+private fun OkHttpClient.withMetrics(metrics: HttpClientMetrics, config: OkHttpEngineConfig) = newBuilder().apply {
+    eventListenerFactory { call ->
+        EventListenerChain(
+            listOf(
+                HttpEngineEventListener(connectionPool, config.hostResolver, dispatcher, metrics, call),
+            ),
+        )
+    }
+    addInterceptor(MetricsInterceptor)
+}.build()
 
 private fun tlsConnectionSpec(tlsContext: TlsContext, cipherSuites: List<String>?): ConnectionSpec {
     val minVersion = tlsContext.minVersion ?: TlsVersion.TLS_1_2
