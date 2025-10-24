@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.5.17] - 10/24/2025
+
+### Features
+* [#1707](https://github.com/aws/aws-sdk-kotlin/issues/1707) Allow configuring a custom OkHttpClient in OkHttpEngine
+
 ## [1.5.16] - 10/22/2025
 
 ### Features
