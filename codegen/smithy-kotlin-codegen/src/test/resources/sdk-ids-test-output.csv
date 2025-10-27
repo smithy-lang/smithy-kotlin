@@ -163,7 +163,6 @@ IoT Wireless,IotWireless
 IoT,Iot
 IoTAnalytics,IotAnalytics
 IotDeviceAdvisor,IotDeviceAdvisor
-IoTFleetHub,IotFleetHub
 IoTFleetWise,IotFleetWise
 IoTSecureTunneling,IotSecureTunneling
 IoTSiteWise,IotSiteWise
@@ -198,8 +197,6 @@ License Manager,LicenseManager
 Lightsail,Lightsail
 Location,Location
 LookoutEquipment,LookoutEquipment
-LookoutMetrics,LookoutMetrics
-LookoutVision,LookoutVision
 m2,M2
 Machine Learning,MachineLearning
 Macie,Macie
@@ -260,8 +257,6 @@ Pipes,Pipes
 Polly,Polly
 Pricing,Pricing
 Proton,Proton
-QLDB Session,QldbSession
-QLDB,Qldb
 QuickSight,QuickSight
 RAM,Ram
 rbin,Rbin
@@ -275,7 +270,6 @@ resiliencehub,Resiliencehub
 Resource Explorer 2,ResourceExplorer2
 Resource Groups Tagging API,ResourceGroupsTagging
 Resource Groups,ResourceGroups
-RoboMaker,RoboMaker
 RolesAnywhere,RolesAnywhere
 Route 53 Domains,Route53Domains
 Route 53,Route53
