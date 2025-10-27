@@ -163,7 +163,6 @@ IoT Wireless
 IoT
 IoTAnalytics
 IotDeviceAdvisor
-IoTFleetHub
 IoTFleetWise
 IoTSecureTunneling
 IoTSiteWise
@@ -198,8 +197,6 @@ License Manager
 Lightsail
 Location
 LookoutEquipment
-LookoutMetrics
-LookoutVision
 m2
 Machine Learning
 Macie
@@ -260,8 +257,6 @@ Pipes
 Polly
 Pricing
 Proton
-QLDB Session
-QLDB
 QuickSight
 RAM
 rbin
@@ -275,7 +270,6 @@ resiliencehub
 Resource Explorer 2
 Resource Groups Tagging API
 Resource Groups
-RoboMaker
 RolesAnywhere
 Route 53 Domains
 Route 53

@@ -27,7 +27,6 @@ class NamingTest {
         assertEquals("ElastiCache", clientName("ElastiCache"))
         assertEquals("ApiGatewayManagement", clientName("ApiGatewayManagementApi"))
         assertEquals("MigrationHubConfig", clientName("MigrationHub Config"))
-        assertEquals("IotFleetHub", clientName("IoTFleetHub"))
         assertEquals("Iot1ClickProjects", clientName("IoT 1Click Projects"))
         assertEquals("DynamoDb", clientName("DynamoDB"))
 
