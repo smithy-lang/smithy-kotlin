@@ -2163,6 +2163,7 @@ public final class aws/smithy/kotlin/runtime/text/encoding/Base64Kt {
 	public static final fun encodeBase64 (Ljava/lang/String;)Ljava/lang/String;
 	public static final fun encodeBase64 ([B)[B
 	public static final fun encodeBase64String ([B)Ljava/lang/String;
+	public static final fun encodeBase64Url ([B)Ljava/lang/String;
 }
 
 public final class aws/smithy/kotlin/runtime/text/encoding/Encodable {

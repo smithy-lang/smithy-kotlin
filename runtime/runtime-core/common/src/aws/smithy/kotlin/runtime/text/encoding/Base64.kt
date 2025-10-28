@@ -54,6 +54,15 @@ public fun String.encodeBase64(): String = encodeToByteArray().encodeBase64().de
 public fun ByteArray.encodeBase64String(): String = encodeBase64().decodeToString()
 
 /**
+ * Encode [ByteArray] in base64url format (RFC 4648) as a [String]
+ */
+public fun ByteArray.encodeBase64Url(): String =
+    encodeBase64String()
+        .replace('+', '-')
+        .replace('/', '_')
+        .trimEnd('=')
+
+/**
  * Encode [ByteArray] in base64 format and UTF-8 character encoding.
  */
 public fun ByteArray.encodeBase64(): ByteArray {
