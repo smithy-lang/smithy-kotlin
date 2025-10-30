@@ -1097,6 +1097,7 @@ public abstract interface class aws/smithy/kotlin/runtime/io/SdkSource : java/io
 
 public final class aws/smithy/kotlin/runtime/io/SdkSourceKt {
 	public static final fun readFully (Laws/smithy/kotlin/runtime/io/SdkSource;Laws/smithy/kotlin/runtime/io/SdkBuffer;J)V
+	public static final fun readRemaining (Laws/smithy/kotlin/runtime/io/SdkSource;Laws/smithy/kotlin/runtime/io/SdkBuffer;)V
 	public static final fun readToByteArray (Laws/smithy/kotlin/runtime/io/SdkSource;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public static final fun toSdkByteReadChannel (Laws/smithy/kotlin/runtime/io/SdkSource;Lkotlinx/coroutines/CoroutineScope;)Laws/smithy/kotlin/runtime/io/SdkByteReadChannel;
 	public static synthetic fun toSdkByteReadChannel$default (Laws/smithy/kotlin/runtime/io/SdkSource;Lkotlinx/coroutines/CoroutineScope;ILjava/lang/Object;)Laws/smithy/kotlin/runtime/io/SdkByteReadChannel;

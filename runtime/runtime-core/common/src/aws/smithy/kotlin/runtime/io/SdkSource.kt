@@ -110,3 +110,18 @@ public fun SdkSource.readFully(sink: SdkBuffer, byteCount: Long) {
         totalBytesRead += rc
     }
 }
+
+/**
+ * **Caution** Reads the entire contents of the source into [sink].
+ * This function will read until the source is exhausted and no bytes remain
+ *
+ * @param sink the buffer that data read from the source will be appended to
+ */
+@InternalApi
+public fun SdkSource.readRemaining(sink: SdkBuffer) {
+    var readBytes: Long
+    do {
+        // ensure any errors are propagated by attempting to read at least once
+        readBytes = read(sink, Long.MAX_VALUE)
+    } while (readBytes != -1L)
+}
