@@ -118,10 +118,15 @@ public fun SdkSource.readFully(sink: SdkBuffer, byteCount: Long) {
  * @param sink the buffer that data read from the source will be appended to
  */
 @InternalApi
-public fun SdkSource.readRemaining(sink: SdkBuffer) {
+public fun SdkSource.readRemaining(sink: SdkBuffer): Long {
+    var totalReadBytes: Long = 0
     var readBytes: Long
+
     do {
         // ensure any errors are propagated by attempting to read at least once
         readBytes = read(sink, Long.MAX_VALUE)
+        totalReadBytes += readBytes
     } while (readBytes != -1L)
+
+    return totalReadBytes + 1L // Account for last -1 read
 }
