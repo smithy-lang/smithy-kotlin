@@ -4,7 +4,6 @@
  */
 package aws.smithy.kotlin.runtime.hashing
 
-
 /**
  * ECDSA on the SECP256R1 curve returning ASN.1 DER format.
  */

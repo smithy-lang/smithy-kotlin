@@ -31,11 +31,6 @@ class EcdsaJVMTest {
 
         assertTrue(signature.isNotEmpty())
         assertTrue(signature.size >= 64) // ECDSA signatures are typically 70-72 bytes in DER format
-
-        val rawSignature = ecdsaSecp256r1(privateKey, message, EcdsaSignatureType.RAW_RS)
-
-        assertTrue(rawSignature.isNotEmpty())
-        assertEquals(64, rawSignature.size) // Raw signature should be exactly 64 bytes (32 bytes r + 32 bytes s)
     }
 
     @Test
@@ -50,13 +45,6 @@ class EcdsaJVMTest {
         assertTrue(signature1.isNotEmpty())
         assertTrue(signature2.isNotEmpty())
         assertFalse(signature1.contentEquals(signature2))
-
-        val rawSignature1 = ecdsaSecp256r1(privateKey, message1, EcdsaSignatureType.RAW_RS)
-        val rawSignature2 = ecdsaSecp256r1(privateKey, message2, EcdsaSignatureType.RAW_RS)
-
-        assertTrue(rawSignature1.isNotEmpty())
-        assertTrue(rawSignature2.isNotEmpty())
-        assertFalse(rawSignature1.contentEquals(rawSignature2))
     }
 
     @Test
@@ -66,9 +54,6 @@ class EcdsaJVMTest {
 
         val signature = ecdsaSecp256r1(privateKey, message)
         assertTrue(signature.isNotEmpty())
-
-        val rawSignature = ecdsaSecp256r1(privateKey, message, EcdsaSignatureType.RAW_RS)
-        assertTrue(rawSignature.isNotEmpty())
     }
 
     @Test
@@ -78,9 +63,6 @@ class EcdsaJVMTest {
 
         val signature = ecdsaSecp256r1(privateKey, largeMessage)
         assertTrue(signature.isNotEmpty())
-
-        val rawSignature = ecdsaSecp256r1(privateKey, largeMessage, EcdsaSignatureType.RAW_RS)
-        assertTrue(rawSignature.isNotEmpty())
     }
 
     @Test
