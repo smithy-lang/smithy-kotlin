@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.5.19] - 11/04/2025
+
+### Features
+* Upgrade **aws-crt-kotlin** to [**v0.11.7**](https://github.com/aws/aws-crt-kotlin/releases/tag/v0.11.7) containing a new cipher suite
+
 ## [1.5.18] - 10/27/2025
 
 ## [1.5.17] - 10/24/2025
