@@ -726,7 +726,16 @@ public final class aws/smithy/kotlin/runtime/hashing/Crc32cKt {
 }
 
 public final class aws/smithy/kotlin/runtime/hashing/EcdsaJVMKt {
-	public static final fun ecdsaSecp256r1 ([B[B)[B
+	public static final fun ecdsaSecp256r1 ([B[BLaws/smithy/kotlin/runtime/hashing/EcdsaSignatureType;)[B
+	public static synthetic fun ecdsaSecp256r1$default ([B[BLaws/smithy/kotlin/runtime/hashing/EcdsaSignatureType;ILjava/lang/Object;)[B
+}
+
+public final class aws/smithy/kotlin/runtime/hashing/EcdsaSignatureType : java/lang/Enum {
+	public static final field ASN1_DER Laws/smithy/kotlin/runtime/hashing/EcdsaSignatureType;
+	public static final field RAW_RS Laws/smithy/kotlin/runtime/hashing/EcdsaSignatureType;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Laws/smithy/kotlin/runtime/hashing/EcdsaSignatureType;
+	public static fun values ()[Laws/smithy/kotlin/runtime/hashing/EcdsaSignatureType;
 }
 
 public abstract interface class aws/smithy/kotlin/runtime/hashing/HashFunction {
