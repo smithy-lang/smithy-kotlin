@@ -1,5 +1,0 @@
-{
-    "id": "ca8fc486-43f4-47ac-b342-c53acb664b4d",
-    "type": "feature",
-    "description": "Upgrade **aws-crt-kotlin** to [**v0.11.7**](https://github.com/aws/aws-crt-kotlin/releases/tag/v0.11.7) containing a new cipher suite"
-}
