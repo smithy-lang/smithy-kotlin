@@ -6,7 +6,7 @@ package aws.smithy.kotlin.runtime.hashing
 
 public enum class EcdsaSignatureType {
     ASN1_DER,
-    RAW_RS
+    RAW_RS,
 }
 
 /**
