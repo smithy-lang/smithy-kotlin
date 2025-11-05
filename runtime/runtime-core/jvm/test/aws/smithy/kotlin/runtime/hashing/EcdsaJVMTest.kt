@@ -102,6 +102,7 @@ class EcdsaJVMTest {
     }
 
     @Test
+    // SHA256withECDSAinP1363Format algorithm was introduced in Java 11, skip on Java 8
     @EnabledForJreRange(min = JRE.JAVA_11)
     fun testVerifyRawSignature() {
         val keyGen = KeyPairGenerator.getInstance("EC")
