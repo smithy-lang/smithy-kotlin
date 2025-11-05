@@ -97,6 +97,8 @@ class EcdsaJVMTest {
         val verifier = Signature.getInstance("SHA256withECDSA")
         verifier.initVerify(publicKey)
         verifier.update(message)
+
+        assertTrue(verifier.verify(signature))
     }
 
     @Test
