@@ -164,6 +164,11 @@ jobs:
         run: |
           # FIXME K2. Re-enable warnings as errors after this warning is removed: https://youtrack.jetbrains.com/issue/KT-68532
           # echo "kotlinWarningsAsErrors=true" >> $GITHUB_WORKSPACE/local.properties
+          
+          df -h /tmp
+          export TMPDIR=/home/runner/tmp
+          mkdir -p $TMPDIR
+          
           ./gradlew apiCheck
           ./gradlew build
 
