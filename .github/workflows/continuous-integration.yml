@@ -166,8 +166,7 @@ jobs:
           # echo "kotlinWarningsAsErrors=true" >> $GITHUB_WORKSPACE/local.properties
           
           df -h /tmp
-          export TMPDIR=/home/runner/tmp
-          mkdir -p $TMPDIR
+          rm -rf /tmp/*
           
           ./gradlew apiCheck
           ./gradlew build
