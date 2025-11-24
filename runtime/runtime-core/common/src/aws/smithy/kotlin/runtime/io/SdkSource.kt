@@ -119,14 +119,13 @@ public fun SdkSource.readFully(sink: SdkBuffer, byteCount: Long) {
  */
 @InternalApi
 public fun SdkSource.readRemaining(sink: SdkBuffer): Long {
-    var totalReadBytes: Long = 0
-    var readBytes: Long
+    var totalBytesRead: Long = 0
+    var bytesRead = read(sink, Long.MAX_VALUE)
 
-    do {
-        // ensure any errors are propagated by attempting to read at least once
-        readBytes = read(sink, Long.MAX_VALUE)
-        totalReadBytes += readBytes
-    } while (readBytes != -1L)
+    while (bytesRead != -1L) {
+        totalBytesRead += bytesRead
+        bytesRead = read(sink, Long.MAX_VALUE)
+    }
 
-    return totalReadBytes + 1L // Account for last -1 read
+    return totalBytesRead
 }
