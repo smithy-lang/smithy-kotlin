@@ -22,14 +22,6 @@ env:
   GRADLE_OPTS: "-Dorg.gradle.daemon=false -Dkotlin.incremental=false"
 
 jobs:
-  check-disk-space:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check tmp
-        run: df -h /tmp
-      - name: Check /
-        run: df -h /
-
   jvm:
     runs-on: ubuntu-latest
     strategy:
@@ -166,8 +158,10 @@ jobs:
         run: |
           ./aws-crt-kotlin/docker-images/build-all.sh
 
-      - name: Aggressive cleanup
+      - name: Remove unnecessary tools
         run: |
+          echo "Making space on disk for linux build (TODO: Diagnose why linux build runs out of disk space)"
+          
           # Remove .NET SDKs
           sudo rm -rf /usr/share/dotnet
           
@@ -183,7 +177,7 @@ jobs:
           # Remove Android SDKs
           sudo rm -rf /usr/local/lib/android
           
-          # Remove Chromium (optional if not using for browser tests)
+          # Remove Chromium
           sudo rm -rf /usr/local/share/chromium
           
           # Remove Microsoft/Edge and Google Chrome builds
@@ -195,9 +189,7 @@ jobs:
           # Remove PowerShell
           sudo rm -rf /usr/local/share/powershell
           
-          # Remove CodeQL and other toolcaches
-          # sudo rm -rf /opt/hostedtoolcache
-
+          echo "Disk space:"
           df -h
 
       - name: Build and Test on Linux with Cross-Compile
@@ -206,7 +198,6 @@ jobs:
         run: |
           # FIXME K2. Re-enable warnings as errors after this warning is removed: https://youtrack.jetbrains.com/issue/KT-68532
           # echo "kotlinWarningsAsErrors=true" >> $GITHUB_WORKSPACE/local.properties
-          
           ./gradlew apiCheck
           ./gradlew build
 
