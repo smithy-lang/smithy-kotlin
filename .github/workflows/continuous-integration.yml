@@ -156,11 +156,11 @@ jobs:
 
       - name: Configure CRT Docker Images
         run: |
-          ./aws-crt-kotlin/docker-images/build-all.sh
-
-      - name: Remove unnecessary tools
-        run: |
-          echo "Making space on disk for linux build (TODO: Diagnose why linux build runs out of disk space)"
+          echo "Disk space:"
+          df -h
+          
+          # TODO: Fix our CI/images setup to optimize for size
+          echo "Making space on disk for linux build"
           
           # Remove .NET SDKs
           sudo rm -rf /usr/share/dotnet
@@ -188,6 +188,11 @@ jobs:
           
           # Remove PowerShell
           sudo rm -rf /usr/local/share/powershell
+          
+          echo "Disk space:"
+          df -h
+          
+          ./aws-crt-kotlin/docker-images/build-all.sh
           
           echo "Disk space:"
           df -h
