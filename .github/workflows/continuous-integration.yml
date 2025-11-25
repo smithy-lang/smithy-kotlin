@@ -196,7 +196,7 @@ jobs:
           sudo rm -rf /usr/local/share/powershell
           
           # Remove CodeQL and other toolcaches
-          sudo rm -rf /opt/hostedtoolcache
+          sudo find /opt/hostedtoolcache -mindepth 1 ! -path "/opt/hostedtoolcache/Java_Corretto_jdk/17.0.17-10.1/x64*" -exec rm -rf {} +
 
           df -h
 
