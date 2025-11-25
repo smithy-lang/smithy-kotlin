@@ -81,7 +81,7 @@ public fun HttpRequestBuilder.setAwsChunkedHeaders() {
  */
 @Deprecated(
     "This overload causes `runBlocking` to be called without a CoroutineContext which leads to forgetting logging " +
-            "context. This overload will be removed in minor version 1.7.",
+        "context. This overload will be removed in minor version 1.7.",
     ReplaceWith(
         "AwsChunkedSource(delegate, signer, signingConfig, previousSignature, trailingHeaders, coroutineContext)",
         "kotlin.coroutines.coroutineContext",

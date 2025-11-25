@@ -29,7 +29,6 @@ private val chunkedChannelFactory = object : AwsChunkedReaderFactory {
         previousSignature: ByteArray,
         trailingHeaders: DeferredHeaders,
     ): AwsChunkedTestReader {
-
         val ch = SdkByteReadChannel(data)
         val chunked = AwsChunkedByteReadChannel(ch, signer, signingConfig, previousSignature, trailingHeaders)
         return object : AwsChunkedTestReader {

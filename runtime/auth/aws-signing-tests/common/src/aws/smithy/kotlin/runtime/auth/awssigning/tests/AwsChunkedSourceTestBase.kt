@@ -19,7 +19,7 @@ private val chunkedSourceFactory = object : AwsChunkedReaderFactory {
         signer: AwsSigner,
         signingConfig: AwsSigningConfig,
         previousSignature: ByteArray,
-        trailingHeaders: DeferredHeaders
+        trailingHeaders: DeferredHeaders,
     ): AwsChunkedTestReader {
         val source = data.source()
         val chunked = AwsChunkedSource(
