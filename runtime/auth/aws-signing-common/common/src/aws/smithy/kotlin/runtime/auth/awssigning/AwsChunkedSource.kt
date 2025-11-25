@@ -5,12 +5,15 @@
 package aws.smithy.kotlin.runtime.auth.awssigning
 
 import aws.smithy.kotlin.runtime.InternalApi
+import aws.smithy.kotlin.runtime.PlannedRemoval
 import aws.smithy.kotlin.runtime.auth.awssigning.internal.AwsChunkedReader
 import aws.smithy.kotlin.runtime.http.DeferredHeaders
 import aws.smithy.kotlin.runtime.io.SdkBuffer
 import aws.smithy.kotlin.runtime.io.SdkSource
 import aws.smithy.kotlin.runtime.io.buffer
 import kotlinx.coroutines.runBlocking
+import kotlin.coroutines.CoroutineContext
+import kotlin.coroutines.EmptyCoroutineContext
 
 /**
  * aws-chunked content encoding.
@@ -31,7 +34,25 @@ public class AwsChunkedSource(
     signingConfig: AwsSigningConfig,
     previousSignature: ByteArray,
     trailingHeaders: DeferredHeaders = DeferredHeaders.Empty,
+    private val coroutineContext: CoroutineContext,
 ) : SdkSource {
+    @Deprecated(
+        "This overload causes `runBlocking` to be called without a CoroutineContext which leads to forgetting " +
+                "logging context. This overload will be removed in minor version 1.7.",
+        ReplaceWith(
+            "AwsChunkedSource(delegate, signer, signingConfig, previousSignature, trailingHeaders, coroutineContext)",
+            "kotlin.coroutines.coroutineContext",
+        ),
+    )
+    @PlannedRemoval(major = 1, minor = 7)
+    public constructor(
+        delegate: SdkSource,
+        signer: AwsSigner,
+        signingConfig: AwsSigningConfig,
+        previousSignature: ByteArray,
+        trailingHeaders: DeferredHeaders = DeferredHeaders.Empty,
+    ) : this(delegate, signer, signingConfig, previousSignature, trailingHeaders, EmptyCoroutineContext)
+
     private val chunkReader = AwsChunkedReader(
         delegate.asStream(),
         signer,
@@ -43,7 +64,7 @@ public class AwsChunkedSource(
     override fun read(sink: SdkBuffer, limit: Long): Long {
         require(limit >= 0L) { "Invalid limit ($limit) must be >= 0L" }
         // COROUTINE SAFETY: runBlocking is allowed here because SdkSource is a synchronous blocking interface
-        val isChunkValid = runBlocking {
+        val isChunkValid = runBlocking(coroutineContext) {
             chunkReader.ensureValidChunk()
         }
         if (!isChunkValid) return -1L

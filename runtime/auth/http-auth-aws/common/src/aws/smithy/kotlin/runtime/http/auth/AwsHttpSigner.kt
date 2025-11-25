@@ -19,6 +19,7 @@ import aws.smithy.kotlin.runtime.http.operation.HttpOperationContext
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
 import aws.smithy.kotlin.runtime.time.Instant
+import kotlin.coroutines.coroutineContext
 import kotlin.time.Duration
 
 /**
@@ -195,6 +196,7 @@ public class AwsHttpSigner(private val config: Config) : HttpSigner {
                 signingConfig,
                 signingResult.signature,
                 request.trailingHeaders.build(),
+                coroutineContext,
             )
         }
     }

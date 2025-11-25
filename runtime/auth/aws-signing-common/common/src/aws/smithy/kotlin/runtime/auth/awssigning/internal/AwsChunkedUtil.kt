@@ -7,10 +7,13 @@ package aws.smithy.kotlin.runtime.auth.awssigning.internal
 
 import aws.smithy.kotlin.runtime.ClientException
 import aws.smithy.kotlin.runtime.InternalApi
+import aws.smithy.kotlin.runtime.PlannedRemoval
 import aws.smithy.kotlin.runtime.auth.awssigning.*
 import aws.smithy.kotlin.runtime.http.*
 import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
 import aws.smithy.kotlin.runtime.io.SdkBuffer
+import kotlin.coroutines.CoroutineContext
+import kotlin.coroutines.EmptyCoroutineContext
 
 /**
  * Chunk size used by Transfer-Encoding `aws-chunked`
@@ -76,8 +79,34 @@ public fun HttpRequestBuilder.setAwsChunkedHeaders() {
 /**
  * Update the HTTP body to use aws-chunked content encoding
  */
+@Deprecated(
+    "This overload causes `runBlocking` to be called without a CoroutineContext which leads to forgetting logging " +
+            "context. This overload will be removed in minor version 1.7.",
+    ReplaceWith(
+        "AwsChunkedSource(delegate, signer, signingConfig, previousSignature, trailingHeaders, coroutineContext)",
+        "kotlin.coroutines.coroutineContext",
+    ),
+)
+@PlannedRemoval(major = 1, minor = 7)
 @InternalApi
-public fun HttpRequestBuilder.setAwsChunkedBody(signer: AwsSigner, signingConfig: AwsSigningConfig, signature: ByteArray, trailingHeaders: DeferredHeaders) {
+public fun HttpRequestBuilder.setAwsChunkedBody(
+    signer: AwsSigner,
+    signingConfig: AwsSigningConfig,
+    signature: ByteArray,
+    trailingHeaders: DeferredHeaders,
+): Unit = setAwsChunkedBody(signer, signingConfig, signature, trailingHeaders, EmptyCoroutineContext)
+
+/**
+ * Update the HTTP body to use aws-chunked content encoding
+ */
+@InternalApi
+public fun HttpRequestBuilder.setAwsChunkedBody(
+    signer: AwsSigner,
+    signingConfig: AwsSigningConfig,
+    signature: ByteArray,
+    trailingHeaders: DeferredHeaders,
+    coroutineContext: CoroutineContext,
+) {
     body = when (body) {
         is HttpBody.ChannelContent -> AwsChunkedByteReadChannel(
             checkNotNull(body.toSdkByteReadChannel()),
@@ -93,6 +122,7 @@ public fun HttpRequestBuilder.setAwsChunkedBody(signer: AwsSigner, signingConfig
             signingConfig,
             signature,
             trailingHeaders,
+            coroutineContext,
         ).toHttpBody(-1)
 
         else -> throw ClientException("HttpBody type is not supported")

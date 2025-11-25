@@ -50,7 +50,7 @@ class FrameEncoderTest {
             "baz",
         ).map { SdkBuffer().apply { writeUtf8(it) } }
 
-        val body = messages.asEventStreamHttpBody(this)
+        val body = messages.asEventStreamHttpBody()
         val actual = body.readAll()
         val expected = "foobarbaz"
         assertEquals(expected, actual?.decodeToString())
