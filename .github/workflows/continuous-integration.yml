@@ -22,6 +22,14 @@ env:
   GRADLE_OPTS: "-Dorg.gradle.daemon=false -Dkotlin.incremental=false"
 
 jobs:
+  check-disk-space:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check tmp
+        run: df -h /tmp
+      - name: Check /
+        run: df -h /
+
   jvm:
     runs-on: ubuntu-latest
     strategy:
