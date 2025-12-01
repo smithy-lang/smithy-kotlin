@@ -10,8 +10,8 @@ import aws.smithy.kotlin.runtime.auth.awssigning.AwsSigner
 import aws.smithy.kotlin.runtime.auth.awssigning.AwsSigningConfig
 import aws.smithy.kotlin.runtime.http.DeferredHeaders
 import aws.smithy.kotlin.runtime.io.SdkBuffer
+import aws.smithy.kotlin.runtime.io.internal.SdkDispatchers
 import aws.smithy.kotlin.runtime.io.source
-import kotlinx.coroutines.Dispatchers
 
 private val chunkedSourceFactory = object : AwsChunkedReaderFactory {
     override fun create(
@@ -28,7 +28,7 @@ private val chunkedSourceFactory = object : AwsChunkedReaderFactory {
             signingConfig,
             previousSignature,
             trailingHeaders,
-            Dispatchers.IO, // Cannot use default TestDispatcher because it doesn't support parallelism and causes hangs
+            SdkDispatchers.IO, // Cannot use default TestDispatcher because it doesn't support parallelism and causes hangs
         )
         return object : AwsChunkedTestReader {
             override fun isClosedForRead(): Boolean {
