@@ -143,8 +143,6 @@ subprojects {
     }
 }
 
-// configureIosSimulatorTasks()
-
 val excludeFromDocumentation = listOf(
     ":runtime:testing",
     ":runtime:smithy-test",
