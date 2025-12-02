@@ -184,7 +184,7 @@ jobs:
         uses: ./smithy-kotlin/.github/actions/setup-build
 
       - name: Configure CRT Docker Images
-        run: |          
+        run: |
           ./aws-crt-kotlin/docker-images/build-all.sh
 
       - name: Build and Test on Linux with Cross-Compile
