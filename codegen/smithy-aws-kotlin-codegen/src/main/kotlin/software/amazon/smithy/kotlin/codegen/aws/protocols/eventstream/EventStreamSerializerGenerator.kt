@@ -11,7 +11,10 @@ import software.amazon.smithy.kotlin.codegen.core.*
 import software.amazon.smithy.kotlin.codegen.lang.KotlinTypes
 import software.amazon.smithy.kotlin.codegen.model.*
 import software.amazon.smithy.kotlin.codegen.rendering.protocol.ProtocolGenerator
-import software.amazon.smithy.kotlin.codegen.rendering.serde.*
+import software.amazon.smithy.kotlin.codegen.rendering.serde.StructuredDataSerializerGenerator
+import software.amazon.smithy.kotlin.codegen.rendering.serde.bodySerializer
+import software.amazon.smithy.kotlin.codegen.rendering.serde.bodySerializerName
+import software.amazon.smithy.kotlin.codegen.rendering.serde.serializerName
 import software.amazon.smithy.kotlin.codegen.utils.getOrNull
 import software.amazon.smithy.model.shapes.*
 import software.amazon.smithy.model.traits.EventHeaderTrait
@@ -110,7 +113,7 @@ class EventStreamSerializerGenerator(
         }
 
         writer.write("")
-        writer.write("return messages.#T(context)", RuntimeTypes.AwsEventStream.asEventStreamHttpBody)
+        writer.write("return messages.#T()", RuntimeTypes.AwsEventStream.asEventStreamHttpBody)
     }
 
     private fun encodeEventStreamMessage(

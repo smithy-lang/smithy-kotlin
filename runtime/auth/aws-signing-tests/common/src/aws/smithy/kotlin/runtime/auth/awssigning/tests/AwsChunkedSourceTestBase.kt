@@ -4,22 +4,44 @@
  */
 
 package aws.smithy.kotlin.runtime.auth.awssigning.tests
+
 import aws.smithy.kotlin.runtime.auth.awssigning.AwsChunkedSource
+import aws.smithy.kotlin.runtime.auth.awssigning.AwsSigner
+import aws.smithy.kotlin.runtime.auth.awssigning.AwsSigningConfig
+import aws.smithy.kotlin.runtime.http.DeferredHeaders
 import aws.smithy.kotlin.runtime.io.SdkBuffer
+import aws.smithy.kotlin.runtime.io.internal.SdkDispatchers
 import aws.smithy.kotlin.runtime.io.source
 
-val AwsChunkedReaderFactory.Companion.Source: AwsChunkedReaderFactory
-    get() = AwsChunkedReaderFactory { data, signer, signingConfig, previousSignature, trailingHeaders ->
+private val chunkedSourceFactory = object : AwsChunkedReaderFactory {
+    override fun create(
+        data: ByteArray,
+        signer: AwsSigner,
+        signingConfig: AwsSigningConfig,
+        previousSignature: ByteArray,
+        trailingHeaders: DeferredHeaders,
+    ): AwsChunkedTestReader {
         val source = data.source()
-        val chunked = AwsChunkedSource(source, signer, signingConfig, previousSignature, trailingHeaders)
-        object : AwsChunkedTestReader {
+        val chunked = AwsChunkedSource(
+            source,
+            signer,
+            signingConfig,
+            previousSignature,
+            trailingHeaders,
+            SdkDispatchers.IO, // Cannot use default TestDispatcher because it doesn't support parallelism and causes hangs
+        )
+        return object : AwsChunkedTestReader {
             override fun isClosedForRead(): Boolean {
                 val sink = SdkBuffer()
                 val rc = chunked.read(sink, Long.MAX_VALUE)
                 return rc == -1L
             }
             override suspend fun read(sink: SdkBuffer, limit: Long): Long = chunked.read(sink, limit)
+            override fun close() {
+                source.close()
+            }
         }
     }
+}
 
-public abstract class AwsChunkedSourceTestBase : AwsChunkedTestBase(AwsChunkedReaderFactory.Source)
+abstract class AwsChunkedSourceTestBase : AwsChunkedTestBase(chunkedSourceFactory)

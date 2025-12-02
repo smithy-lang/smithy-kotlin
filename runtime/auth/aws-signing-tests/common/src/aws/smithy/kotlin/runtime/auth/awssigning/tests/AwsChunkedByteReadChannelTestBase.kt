@@ -5,18 +5,41 @@
 
 package aws.smithy.kotlin.runtime.auth.awssigning.tests
 
-import aws.smithy.kotlin.runtime.auth.awssigning.*
+import aws.smithy.kotlin.runtime.auth.awssigning.AwsChunkedByteReadChannel
+import aws.smithy.kotlin.runtime.auth.awssigning.AwsSigner
+import aws.smithy.kotlin.runtime.auth.awssigning.AwsSigningConfig
 import aws.smithy.kotlin.runtime.auth.awssigning.internal.CHUNK_SIZE_BYTES
+import aws.smithy.kotlin.runtime.http.DeferredHeaders
 import aws.smithy.kotlin.runtime.io.*
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.TestResult
 import kotlinx.coroutines.test.runTest
 import kotlin.random.Random
-import kotlin.test.*
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 import kotlin.time.Duration.Companion.milliseconds
 
-abstract class AwsChunkedByteReadChannelTestBase : AwsChunkedTestBase(AwsChunkedReaderFactory.Channel) {
+private val chunkedChannelFactory = object : AwsChunkedReaderFactory {
+    override fun create(
+        data: ByteArray,
+        signer: AwsSigner,
+        signingConfig: AwsSigningConfig,
+        previousSignature: ByteArray,
+        trailingHeaders: DeferredHeaders,
+    ): AwsChunkedTestReader {
+        val ch = SdkByteReadChannel(data)
+        val chunked = AwsChunkedByteReadChannel(ch, signer, signingConfig, previousSignature, trailingHeaders)
+        return object : AwsChunkedTestReader {
+            override fun isClosedForRead(): Boolean = chunked.isClosedForRead
+            override suspend fun read(sink: SdkBuffer, limit: Long): Long = chunked.read(sink, limit)
+            override fun close() = Unit
+        }
+    }
+}
+
+abstract class AwsChunkedByteReadChannelTestBase : AwsChunkedTestBase(chunkedChannelFactory) {
     @Test
     fun testSlowProducerMultipleChunksPartialLast(): TestResult = runTest {
         val numChunks = 6

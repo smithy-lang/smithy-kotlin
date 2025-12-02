@@ -6,6 +6,7 @@
 package aws.smithy.kotlin.runtime.awsprotocol.eventstream
 
 import aws.smithy.kotlin.runtime.InternalApi
+import aws.smithy.kotlin.runtime.PlannedRemoval
 import aws.smithy.kotlin.runtime.http.HttpBody
 import aws.smithy.kotlin.runtime.io.SdkBuffer
 import aws.smithy.kotlin.runtime.io.SdkByteChannel
@@ -15,6 +16,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
+import kotlin.coroutines.coroutineContext
 
 /**
  * Transform the stream of messages into a stream of raw bytes. Each
@@ -31,10 +33,22 @@ public fun Flow<Message>.encode(): Flow<SdkBuffer> = map {
  * Transform a stream of encoded messages into an [HttpBody].
  * @param scope parent scope to launch a coroutine in that consumes the flow and populates a [SdkByteReadChannel]
  */
+@Deprecated(
+    "This overload takes a `CoroutineScope` argument which is now ignored. This overload will be removed in minor version 1.7.",
+    ReplaceWith("asEventStreamHttpBody()"),
+)
+@PlannedRemoval(major = 1, minor = 7)
 @InternalApi
-public suspend fun Flow<SdkBuffer>.asEventStreamHttpBody(scope: CoroutineScope): HttpBody {
+public suspend fun Flow<SdkBuffer>.asEventStreamHttpBody(scope: CoroutineScope): HttpBody = asEventStreamHttpBody()
+
+/**
+ * Transform a stream of encoded messages into an [HttpBody].
+ */
+@InternalApi
+public suspend fun Flow<SdkBuffer>.asEventStreamHttpBody(): HttpBody {
     val encodedMessages = this
     val ch = SdkByteChannel(true)
+    val ctx = coroutineContext
 
     return object : HttpBody.ChannelContent() {
         override val contentLength: Long? = null
@@ -47,7 +61,7 @@ public suspend fun Flow<SdkBuffer>.asEventStreamHttpBody(scope: CoroutineScope):
             // Although rare, nothing stops downstream consumers from invoking readFrom() more than once.
             // Only launch background collection task on first call
             if (job == null) {
-                job = scope.launch {
+                job = CoroutineScope(ctx).launch {
                     encodedMessages.collect {
                         ch.write(it)
                     }
