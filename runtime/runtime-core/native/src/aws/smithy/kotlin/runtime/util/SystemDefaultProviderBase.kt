@@ -27,9 +27,10 @@ public abstract class SystemDefaultProviderBase : PlatformProvider {
 
             try {
                 // Read file content
-                val buffer = ByteArray(size).pin()
-                val rc = fread(buffer.addressOf(0), 1uL, size.toULong(), file)
-                if (rc == size.toULong()) buffer.get() else null
+                ByteArray(size).usePinned { buffer ->
+                    val rc = fread(buffer.addressOf(0), 1uL, size.toULong(), file)
+                    if (rc == size.toULong()) buffer.get() else null
+                }
             } finally {
                 fclose(file)
             }
