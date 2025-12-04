@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.5.21] - 12/03/2025
+
+### Fixes
+* Preserve logging context for streaming payload signing
+
 ## [1.5.20] - 11/10/2025
 
 ## [1.5.19] - 11/04/2025
