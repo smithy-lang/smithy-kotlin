@@ -1,5 +1,0 @@
-{
-    "id": "15fd2749-fec2-4e7a-9639-3683fa5e94ed",
-    "type": "bugfix",
-    "description": "Preserve logging context for streaming payload signing"
-}
