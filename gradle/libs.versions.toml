@@ -20,7 +20,7 @@ kotlin-multiplatform-bignum-version = "0.3.10"
 kotlinx-datetime-version = "0.6.1"
 
 # codegen
-smithy-version = "1.62.0"
+smithy-version = "1.64.0"
 
 # testing
 junit-version = "5.13.4"
