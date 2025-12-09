@@ -18,6 +18,8 @@ micrometer-version = "1.15.2"
 binary-compatibility-validator-version = "0.18.1"
 kotlin-multiplatform-bignum-version = "0.3.10"
 kotlinx-datetime-version = "0.6.1"
+publish-plugin-version = "2.0.0"
+smithy-gradle-plugin-version = "1.3.0"
 
 # codegen
 smithy-version = "1.64.0"
@@ -109,6 +111,8 @@ jsoup = { module = "org.jsoup:jsoup", version.ref = "jsoup-version" }
 
 kotlin-multiplatform-bignum = { module = "com.ionspin.kotlin:bignum", version.ref = "kotlin-multiplatform-bignum-version" }
 
+smithy-gradle-base-plugin = { module = "software.amazon.smithy.gradle:smithy-base", version.ref = "smithy-gradle-plugin-version" }
+
 [plugins]
 dokka = { id = "org.jetbrains.dokka", version.ref = "dokka-version"}
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin-version" }
@@ -118,3 +122,4 @@ kotlinx-binary-compatibility-validator = { id = "org.jetbrains.kotlinx.binary-co
 kotlinx-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin-version"}
 aws-kotlin-repo-tools-kmp = { id = "aws.sdk.kotlin.gradle.kmp", version.ref = "aws-kotlin-repo-tools-version" }
 aws-kotlin-repo-tools-smithybuild = { id = "aws.sdk.kotlin.gradle.smithybuild", version.ref = "aws-kotlin-repo-tools-version" }
+plugin-publish = { id = "com.gradle.plugin-publish", version.ref = "publish-plugin-version"}
