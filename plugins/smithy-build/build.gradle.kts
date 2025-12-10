@@ -24,7 +24,7 @@ gradlePlugin {
     plugins {
         val smithyKotlinBuildPlugin by creating {
             id = "smithy-build"
-            implementationClass = "software.amazon.smithy.kotlin.gradle.codegen.SmithyBuildPlugin"
+            implementationClass = "software.amazon.smithy.kotlin.SmithyBuildPlugin"
             description = "Wrap for smithy gradle base plugin that provides a DSL for generating smithy-build.json dynamically"
         }
     }
