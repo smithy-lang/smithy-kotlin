@@ -29,7 +29,7 @@ const val SMITHY_BUILD_EXTENSION_NAME = "smithyBuild"
  *
  * ```
  * plugins {
- *     id("aws.sdk.kotlin.gradle.smithybuild")
+ *     id("software.amazon.smithy.kotlin.smithy-build")
  * }
  *
  * // Configure `smithy-build.json`
@@ -43,8 +43,8 @@ const val SMITHY_BUILD_EXTENSION_NAME = "smithyBuild"
  * val codegen by configurations.getting
  * dependencies {
  *     codegen(project(":codegen:smithy-kotlin-codegen"))
- *     codegen(libs.smithy.cli)
- *     codegen(libs.smithy.model)
+ *     codegen("software.amazon.smithy:smithy-cli:1.64.0")
+ *     codegen("software.amazon.smithy:smithy-model:1.64.0")
  * }
  *
  * // use the generated code in the compilation of this project
@@ -89,13 +89,6 @@ class SmithyBuildPlugin : Plugin<Project> {
         }
 
         val codegenConfig = configurations.register("codegen")
-
-        // FIXME - bug in smithy gradle base plugin that requires these configurations to exist
-        // https://github.com/smithy-lang/smithy-gradle-plugin/pull/112
-        listOf(
-            "smithyCli",
-            "smithyBuild",
-        ).map(configurations::maybeCreate)
 
         tasks.register<SmithyBuildTask>(TASK_GENERATE_SMITHY_PROJECTIONS) {
             group = "codegen"

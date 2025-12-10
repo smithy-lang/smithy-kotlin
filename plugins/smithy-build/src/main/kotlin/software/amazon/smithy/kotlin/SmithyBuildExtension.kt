@@ -38,7 +38,7 @@ open class SmithyBuildExtension(private val project: Project) {
 
 /**
  * Get the projection path for the given projection name for the `smithy-kotlin` plugin.
- * This is equivalent to `smithyBuild.getProjectionPath(projectionName, "kotlin-codegen")
+ * This is equivalent to `smithyBuild.getProjectionPath(projectionName, "kotlin-codegen")`
  *
  * @param projectionName the name of the projection to use
  */
@@ -46,7 +46,7 @@ public fun SmithyBuildExtension.smithyKotlinProjectionPath(projectionName: Strin
 
 /**
  * Get the default generated kotlin source directory for the `smithy-kotlin` plugin.
- * This is equivalent to `smithyBuild.getProjectionPath(projectionName, "kotlin-codegen")
+ * This is equivalent to `smithyBuild.getProjectionPath(projectionName, "kotlin-codegen")`
  *
  * @param projectionName the name of the projection to use
  */

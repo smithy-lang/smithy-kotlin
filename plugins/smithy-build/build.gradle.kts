@@ -21,11 +21,16 @@ dependencies {
 }
 
 gradlePlugin {
+    website = "https://github.com/smithy-lang/smithy-kotlin"
+    vcsUrl = "https://github.com/smithy-lang/smithy-kotlin.git"
+
     plugins {
         val smithyKotlinBuildPlugin by creating {
-            id = "smithy-build"
+            id = "software.amazon.smithy.kotlin.smithy-build"
+            displayName = "Smithy Kotlin Build Plugin"
             implementationClass = "software.amazon.smithy.kotlin.SmithyBuildPlugin"
-            description = "Wrap for smithy gradle base plugin that provides a DSL for generating smithy-build.json dynamically"
+            description = "Wrapper for Smithy Gradle base plugin that provides a DSL for generating smithy-build.json dynamically"
+            tags = listOf("smithy", "kotlin", "build")
         }
     }
 }
