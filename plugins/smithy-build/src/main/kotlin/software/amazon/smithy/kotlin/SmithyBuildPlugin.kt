@@ -43,8 +43,8 @@ const val SMITHY_BUILD_EXTENSION_NAME = "smithyBuild"
  * val codegen by configurations.getting
  * dependencies {
  *     codegen(project(":codegen:smithy-kotlin-codegen"))
- *     codegen("software.amazon.smithy:smithy-cli:1.64.0")
- *     codegen("software.amazon.smithy:smithy-model:1.64.0")
+ *     codegen("software.amazon.smithy:smithy-cli:<VERSION>)
+ *     codegen("software.amazon.smithy:smithy-model:<VERSION>")
  * }
  *
  * // use the generated code in the compilation of this project

@@ -26,10 +26,6 @@ open class SmithyBuildExtension(private val project: Project) {
      * @param pluginName the name of the plugin to get the output path for
      */
     public fun getProjectionPath(projectionName: String, pluginName: String): Provider<Path> = SmithyUtils.getProjectionOutputDirProperty(project).map {
-        // FIXME - smithy gradle plugin expects the input file to pass "isDirectory"
-        // but that flag is only true IFF the path exists AND is a directory
-        // see https://github.com/smithy-lang/smithy-gradle-plugin/issues/113
-        it.asFile.mkdirs()
         SmithyUtils.getProjectionPluginPath(it.asFile, projectionName, pluginName)
     }
 }
