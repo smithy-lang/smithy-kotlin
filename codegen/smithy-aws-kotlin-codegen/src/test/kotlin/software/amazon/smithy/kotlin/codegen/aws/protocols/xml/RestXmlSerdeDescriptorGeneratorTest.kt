@@ -5,6 +5,7 @@
 
 package software.amazon.smithy.kotlin.codegen.aws.protocols.xml
 
+import software.amazon.smithy.kotlin.codegen.protocols.xml.RestXmlSerdeDescriptorGenerator
 import software.amazon.smithy.kotlin.codegen.test.*
 import software.amazon.smithy.model.shapes.ShapeId
 import kotlin.test.Test

@@ -3,16 +3,16 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package software.amazon.smithy.kotlin.codegen.aws.protocols
+package software.amazon.smithy.kotlin.codegen.protocols
 
 import software.amazon.smithy.aws.traits.protocols.RestXmlTrait
 import software.amazon.smithy.codegen.core.Symbol
-import software.amazon.smithy.kotlin.codegen.aws.protocols.core.AwsHttpBindingProtocolGenerator
-import software.amazon.smithy.kotlin.codegen.aws.protocols.xml.RestXmlSerdeDescriptorGenerator
 import software.amazon.smithy.kotlin.codegen.core.KotlinWriter
 import software.amazon.smithy.kotlin.codegen.core.RuntimeTypes
 import software.amazon.smithy.kotlin.codegen.core.withBlock
 import software.amazon.smithy.kotlin.codegen.model.*
+import software.amazon.smithy.kotlin.codegen.protocols.core.AwsHttpBindingProtocolGenerator
+import software.amazon.smithy.kotlin.codegen.protocols.xml.RestXmlSerdeDescriptorGenerator
 import software.amazon.smithy.kotlin.codegen.rendering.protocol.*
 import software.amazon.smithy.kotlin.codegen.rendering.serde.*
 import software.amazon.smithy.model.Model
@@ -223,7 +223,8 @@ class RestXmlSerializerGenerator(
         shape: Shape,
         members: List<MemberShape>,
         writer: KotlinWriter,
-    ): XmlSerdeDescriptorGenerator = RestXmlSerdeDescriptorGenerator(ctx.toRenderingContext(protocolGenerator, shape, writer), members)
+    ): XmlSerdeDescriptorGenerator =
+        RestXmlSerdeDescriptorGenerator(ctx.toRenderingContext(protocolGenerator, shape, writer), members)
 
     override fun payloadSerializer(
         ctx: ProtocolGenerator.GenerationContext,

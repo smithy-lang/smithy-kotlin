@@ -5,9 +5,10 @@
 package software.amazon.smithy.kotlin.codegen.aws.protocols.core
 
 import software.amazon.smithy.codegen.core.Symbol
-import software.amazon.smithy.kotlin.codegen.aws.protocols.json.AwsJsonHttpBindingResolver
 import software.amazon.smithy.kotlin.codegen.core.KotlinWriter
 import software.amazon.smithy.kotlin.codegen.model.expectShape
+import software.amazon.smithy.kotlin.codegen.protocols.core.AwsHttpBindingProtocolGenerator
+import software.amazon.smithy.kotlin.codegen.protocols.json.AwsJsonHttpBindingResolver
 import software.amazon.smithy.kotlin.codegen.rendering.protocol.HttpBindingResolver
 import software.amazon.smithy.kotlin.codegen.rendering.protocol.ProtocolGenerator
 import software.amazon.smithy.kotlin.codegen.rendering.serde.*

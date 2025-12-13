@@ -2,14 +2,14 @@
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
  * SPDX-License-Identifier: Apache-2.0
  */
-package software.amazon.smithy.kotlin.codegen.aws.protocols
+package software.amazon.smithy.kotlin.codegen.protocols
 
 import software.amazon.smithy.aws.traits.protocols.AwsJson1_0Trait
-import software.amazon.smithy.kotlin.codegen.aws.protocols.core.AwsHttpBindingProtocolGenerator
-import software.amazon.smithy.kotlin.codegen.aws.protocols.json.AwsJsonHttpBindingResolver
-import software.amazon.smithy.kotlin.codegen.aws.protocols.json.AwsJsonProtocolMiddleware
-import software.amazon.smithy.kotlin.codegen.aws.protocols.json.AwsJsonProtocolParserGenerator
-import software.amazon.smithy.kotlin.codegen.aws.protocols.json.JsonHttpBindingProtocolGenerator
+import software.amazon.smithy.kotlin.codegen.protocols.core.AwsHttpBindingProtocolGenerator
+import software.amazon.smithy.kotlin.codegen.protocols.json.AwsJsonHttpBindingResolver
+import software.amazon.smithy.kotlin.codegen.protocols.json.AwsJsonProtocolMiddleware
+import software.amazon.smithy.kotlin.codegen.protocols.json.AwsJsonProtocolParserGenerator
+import software.amazon.smithy.kotlin.codegen.protocols.json.JsonHttpBindingProtocolGenerator
 import software.amazon.smithy.kotlin.codegen.rendering.protocol.HttpBindingResolver
 import software.amazon.smithy.kotlin.codegen.rendering.protocol.ProtocolGenerator
 import software.amazon.smithy.kotlin.codegen.rendering.protocol.ProtocolMiddleware
@@ -17,6 +17,7 @@ import software.amazon.smithy.kotlin.codegen.rendering.serde.StructuredDataParse
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.ServiceShape
 import software.amazon.smithy.model.shapes.ShapeId
+import kotlin.collections.plus
 
 /**
  * Handles generating the aws.protocols#awsJson1_0 protocol for services.

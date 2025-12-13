@@ -3,14 +3,10 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package software.amazon.smithy.kotlin.codegen.aws.protocols
+package software.amazon.smithy.kotlin.codegen.protocols
 
 import software.amazon.smithy.aws.traits.protocols.AwsQueryErrorTrait
 import software.amazon.smithy.aws.traits.protocols.AwsQueryTrait
-import software.amazon.smithy.kotlin.codegen.aws.protocols.core.AbstractQueryFormUrlSerializerGenerator
-import software.amazon.smithy.kotlin.codegen.aws.protocols.core.AwsHttpBindingProtocolGenerator
-import software.amazon.smithy.kotlin.codegen.aws.protocols.core.QueryHttpBindingProtocolGenerator
-import software.amazon.smithy.kotlin.codegen.aws.protocols.formurl.QuerySerdeFormUrlDescriptorGenerator
 import software.amazon.smithy.kotlin.codegen.core.KotlinWriter
 import software.amazon.smithy.kotlin.codegen.core.RenderingContext
 import software.amazon.smithy.kotlin.codegen.core.RuntimeTypes
@@ -19,6 +15,10 @@ import software.amazon.smithy.kotlin.codegen.lang.KotlinTypes
 import software.amazon.smithy.kotlin.codegen.model.buildSymbol
 import software.amazon.smithy.kotlin.codegen.model.getTrait
 import software.amazon.smithy.kotlin.codegen.model.hasTrait
+import software.amazon.smithy.kotlin.codegen.protocols.core.AbstractQueryFormUrlSerializerGenerator
+import software.amazon.smithy.kotlin.codegen.protocols.core.AwsHttpBindingProtocolGenerator
+import software.amazon.smithy.kotlin.codegen.protocols.core.QueryHttpBindingProtocolGenerator
+import software.amazon.smithy.kotlin.codegen.protocols.formurl.QuerySerdeFormUrlDescriptorGenerator
 import software.amazon.smithy.kotlin.codegen.rendering.protocol.ProtocolGenerator
 import software.amazon.smithy.kotlin.codegen.rendering.protocol.toRenderingContext
 import software.amazon.smithy.kotlin.codegen.rendering.serde.FormUrlSerdeDescriptorGenerator

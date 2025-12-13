@@ -2,14 +2,11 @@
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
  * SPDX-License-Identifier: Apache-2.0
  */
-package software.amazon.smithy.kotlin.codegen.aws.protocols
+package software.amazon.smithy.kotlin.codegen.protocols
 
 import software.amazon.smithy.aws.traits.protocols.Ec2QueryNameTrait
 import software.amazon.smithy.aws.traits.protocols.Ec2QueryTrait
 import software.amazon.smithy.codegen.core.Symbol
-import software.amazon.smithy.kotlin.codegen.aws.protocols.core.AbstractQueryFormUrlSerializerGenerator
-import software.amazon.smithy.kotlin.codegen.aws.protocols.core.QueryHttpBindingProtocolGenerator
-import software.amazon.smithy.kotlin.codegen.aws.protocols.formurl.QuerySerdeFormUrlDescriptorGenerator
 import software.amazon.smithy.kotlin.codegen.core.KotlinWriter
 import software.amazon.smithy.kotlin.codegen.core.RenderingContext
 import software.amazon.smithy.kotlin.codegen.core.RuntimeTypes
@@ -17,6 +14,9 @@ import software.amazon.smithy.kotlin.codegen.core.withBlock
 import software.amazon.smithy.kotlin.codegen.model.buildSymbol
 import software.amazon.smithy.kotlin.codegen.model.getTrait
 import software.amazon.smithy.kotlin.codegen.model.isNullable
+import software.amazon.smithy.kotlin.codegen.protocols.core.AbstractQueryFormUrlSerializerGenerator
+import software.amazon.smithy.kotlin.codegen.protocols.core.QueryHttpBindingProtocolGenerator
+import software.amazon.smithy.kotlin.codegen.protocols.formurl.QuerySerdeFormUrlDescriptorGenerator
 import software.amazon.smithy.kotlin.codegen.rendering.protocol.ProtocolGenerator
 import software.amazon.smithy.kotlin.codegen.rendering.protocol.toRenderingContext
 import software.amazon.smithy.kotlin.codegen.rendering.serde.*

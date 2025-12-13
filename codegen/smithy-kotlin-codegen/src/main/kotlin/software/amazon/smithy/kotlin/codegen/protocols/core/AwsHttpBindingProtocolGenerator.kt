@@ -2,18 +2,18 @@
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
  * SPDX-License-Identifier: Apache-2.0
  */
-package software.amazon.smithy.kotlin.codegen.aws.protocols.core
+package software.amazon.smithy.kotlin.codegen.protocols.core
 
 import software.amazon.smithy.aws.traits.protocols.AwsQueryCompatibleTrait
 import software.amazon.smithy.codegen.core.Symbol
-import software.amazon.smithy.kotlin.codegen.aws.protocols.eventstream.EventStreamParserGenerator
-import software.amazon.smithy.kotlin.codegen.aws.protocols.eventstream.EventStreamSerializerGenerator
 import software.amazon.smithy.kotlin.codegen.core.*
 import software.amazon.smithy.kotlin.codegen.integration.SectionId
 import software.amazon.smithy.kotlin.codegen.integration.SectionKey
 import software.amazon.smithy.kotlin.codegen.lang.KotlinTypes
 import software.amazon.smithy.kotlin.codegen.model.buildSymbol
 import software.amazon.smithy.kotlin.codegen.model.hasTrait
+import software.amazon.smithy.kotlin.codegen.protocols.eventstream.EventStreamParserGenerator
+import software.amazon.smithy.kotlin.codegen.protocols.eventstream.EventStreamSerializerGenerator
 import software.amazon.smithy.kotlin.codegen.rendering.ExceptionBaseClassGenerator
 import software.amazon.smithy.kotlin.codegen.rendering.protocol.*
 import software.amazon.smithy.model.shapes.OperationShape

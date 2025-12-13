@@ -2,16 +2,16 @@
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
  * SPDX-License-Identifier: Apache-2.0
  */
-package software.amazon.smithy.kotlin.codegen.aws.protocols
+package software.amazon.smithy.kotlin.codegen.protocols
 
 import software.amazon.smithy.aws.traits.protocols.RestJson1Trait
-import software.amazon.smithy.kotlin.codegen.aws.protocols.core.AwsHttpBindingProtocolGenerator
-import software.amazon.smithy.kotlin.codegen.aws.protocols.json.AwsJsonProtocolParserGenerator
-import software.amazon.smithy.kotlin.codegen.aws.protocols.json.JsonHttpBindingProtocolGenerator
 import software.amazon.smithy.kotlin.codegen.core.KotlinWriter
 import software.amazon.smithy.kotlin.codegen.core.RuntimeTypes
 import software.amazon.smithy.kotlin.codegen.core.defaultName
 import software.amazon.smithy.kotlin.codegen.core.withBlock
+import software.amazon.smithy.kotlin.codegen.protocols.core.AwsHttpBindingProtocolGenerator
+import software.amazon.smithy.kotlin.codegen.protocols.json.AwsJsonProtocolParserGenerator
+import software.amazon.smithy.kotlin.codegen.protocols.json.JsonHttpBindingProtocolGenerator
 import software.amazon.smithy.kotlin.codegen.rendering.protocol.*
 import software.amazon.smithy.kotlin.codegen.rendering.serde.StructuredDataParserGenerator
 import software.amazon.smithy.model.Model
