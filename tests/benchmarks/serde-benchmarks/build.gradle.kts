@@ -85,33 +85,47 @@ tasks.generateSmithyProjections {
     buildClasspath.set(codegen)
 }
 
-data class BenchmarkModel(val name: String) {
-    val projectionRootDir: File
-        get() = layout.buildDirectory.dir("smithyprojections/${project.name}/$name/kotlin-codegen/src/main/kotlin").get().asFile.absoluteFile
+abstract class StageGeneratedSourcesTask : DefaultTask() {
+    @get:Input
+    abstract val projectName: Property<String>
 
-    val sourceSetRootDir: File
-        get() = layout.buildDirectory.dir("generated-src/src").get().asFile.absoluteFile
-}
+    @get:InputDirectory
+    abstract val smithyProjectionsDir: DirectoryProperty
 
-val benchmarkModels = listOf(
-    "twitter",
-    "countries-states",
-).map { BenchmarkModel(it) }
+    @get:OutputDirectory
+    abstract val generatedSourcesDir: DirectoryProperty
 
-val stageGeneratedSources = tasks.register("stageGeneratedSources") {
-    group = "codegen"
-    dependsOn(tasks.generateSmithyProjections)
-    doLast {
-        benchmarkModels.forEach {
-            copy {
-                from("${it.projectionRootDir}")
-                into("${it.sourceSetRootDir}")
+    @get:Inject
+    abstract val fs: FileSystemOperations
+
+    @TaskAction
+    fun stage() {
+        val models = listOf("twitter", "countries-states")
+
+        models.forEach { modelName ->
+            fs.copy {
+                from(smithyProjectionsDir.dir("${projectName.get()}/$modelName/kotlin-codegen/src/main/kotlin"))
+                into(generatedSourcesDir.get().asFile)
                 include("**/model/*.kt")
                 include("**/serde/*.kt")
                 exclude("**/serde/*OperationSerializer.kt")
                 exclude("**/serde/*OperationDeserializer.kt")
             }
         }
+    }
+}
+
+val stageGeneratedSources = tasks.register<StageGeneratedSourcesTask>("stageGeneratedSources") {
+    group = "codegen"
+    dependsOn(tasks.generateSmithyProjections)
+    projectName.set(project.name)
+    smithyProjectionsDir.set(layout.buildDirectory.dir("smithyprojections"))
+    generatedSourcesDir.set(layout.buildDirectory.dir("generated-src/src"))
+}
+
+afterEvaluate {
+    tasks.named("jvmSourcesJar") {
+        dependsOn(stageGeneratedSources)
     }
 }
 

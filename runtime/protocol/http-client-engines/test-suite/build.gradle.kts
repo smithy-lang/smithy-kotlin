@@ -59,30 +59,27 @@ kotlin {
     }
 }
 
-open class LocalTestServers : DefaultTask() {
-    @Internal
-    var server: Closeable? = null
-        private set
+abstract class TestServerProvider :
+    BuildService<TestServerProvider.Params>,
+    AutoCloseable {
+    interface Params : BuildServiceParameters {
+        val sslConfigPath: Property<String>
+        val classpath: ConfigurableFileCollection
+    }
 
-    @Internal
-    lateinit var main: String
+    private var server: Closeable? = null
 
-    @Internal
-    lateinit var classpath: FileCollection
+    fun startServers() {
+        if (server != null) return
 
-    @Input
-    lateinit var sslConfigPath: String
-
-    @TaskAction
-    fun exec() {
         try {
             println("[TestServers] start")
-            val urlClassLoaderSource = classpath.map { file -> file.toURI().toURL() }.toTypedArray()
+            val urlClassLoaderSource = parameters.classpath.map { it.toURI().toURL() }.toTypedArray()
             val loader = URLClassLoader(urlClassLoaderSource, ClassLoader.getSystemClassLoader())
 
-            val mainClass = loader.loadClass(main)
+            val mainClass = loader.loadClass("aws.smithy.kotlin.runtime.http.test.util.TestServersKt")
             val main = mainClass.getMethod("startServers", String::class.java)
-            server = main.invoke(null, sslConfigPath) as Closeable
+            server = main.invoke(null, parameters.sslConfigPath.get()) as Closeable
             println("[TestServers] started")
         } catch (cause: Throwable) {
             println("[TestServers] failed: ${cause.message}")
@@ -90,36 +87,51 @@ open class LocalTestServers : DefaultTask() {
         }
     }
 
-    fun stop() {
-        if (server != null) {
-            server?.close()
-            println("[TestServers] stop")
-        }
+    override fun close() {
+        server?.close()
+        server = null
+        println("[TestServers] stopped")
+    }
+}
+
+val testServerProvider = gradle.sharedServices.registerIfAbsent("testServers", TestServerProvider::class) {
+    parameters.sslConfigPath.set(File.createTempFile("ssl-", ".cfg").absolutePath)
+}
+
+afterEvaluate {
+    testServerProvider.get().parameters.classpath.from(kotlin.targets.getByName("jvm").compilations["test"].runtimeDependencyFiles!!)
+}
+
+abstract class StartTestServersTask : DefaultTask() {
+    @get:Internal
+    abstract val serverProvider: Property<TestServerProvider>
+
+    @TaskAction
+    fun start() {
+        serverProvider.get().startServers()
     }
 }
 
 val osName = System.getProperty("os.name")
 
-val startTestServers = task<LocalTestServers>("startTestServers") {
+val startTestServers = tasks.register<StartTestServersTask>("startTestServers") {
     dependsOn(tasks["jvmJar"])
-
-    main = "aws.smithy.kotlin.runtime.http.test.util.TestServersKt"
-    val kotlinCompilation = kotlin.targets.getByName("jvm").compilations["test"]
-    classpath = kotlinCompilation.runtimeDependencyFiles!!
-    sslConfigPath = File.createTempFile("ssl-", ".cfg").absolutePath
+    usesService(testServerProvider)
+    serverProvider.set(testServerProvider)
 }
 
 val testTasks = listOf("allTests", "jvmTest")
     .forEach {
         tasks.named(it) {
             dependsOn(startTestServers)
+            usesService(testServerProvider)
         }
     }
 
 tasks.jvmTest {
     // set test environment for proxy tests
     systemProperty("MITM_PROXY_SCRIPTS_ROOT", projectDir.resolve("proxy-scripts").absolutePath)
-    systemProperty("SSL_CONFIG_PATH", startTestServers.sslConfigPath)
+    systemProperty("SSL_CONFIG_PATH", testServerProvider.get().parameters.sslConfigPath.get())
 
     val enableProxyTestsProp = "aws.test.http.enableProxyTests"
     val runningInCodeBuild = System.getenv().containsKey("CODEBUILD_BUILD_ID")
@@ -127,8 +139,4 @@ tasks.jvmTest {
     val shouldRunProxyTests = !runningInCodeBuild && runningInLinux
 
     systemProperty(enableProxyTestsProp, System.getProperties().getOrDefault(enableProxyTestsProp, shouldRunProxyTests))
-}
-
-gradle.buildFinished {
-    startTestServers.stop()
 }
