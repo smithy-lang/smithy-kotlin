@@ -131,3 +131,5 @@ include(":tests:codegen:waiter-tests")
 include(":tests:integration:slf4j-1x-consumer")
 include(":tests:integration:slf4j-2x-consumer")
 include(":tests:integration:slf4j-hybrid-consumer")
+
+include(":plugins:smithy-build")
