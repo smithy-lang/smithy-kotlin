@@ -5,7 +5,6 @@
 
 package software.amazon.smithy.kotlin.codegen.protocols.json
 
-import software.amazon.smithy.kotlin.codegen.protocols.json.AwsJsonProtocolSerdeDescriptorGenerator
 import software.amazon.smithy.kotlin.codegen.test.*
 import software.amazon.smithy.model.shapes.ShapeId
 import kotlin.test.Test

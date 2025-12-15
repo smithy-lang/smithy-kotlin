@@ -5,7 +5,6 @@
 
 package software.amazon.smithy.kotlin.codegen.protocols
 
-import software.amazon.smithy.kotlin.codegen.protocols.RestXml
 import software.amazon.smithy.kotlin.codegen.test.*
 import kotlin.test.Test
 

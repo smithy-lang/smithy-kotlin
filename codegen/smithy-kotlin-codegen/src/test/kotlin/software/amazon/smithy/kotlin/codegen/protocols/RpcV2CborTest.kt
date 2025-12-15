@@ -5,7 +5,6 @@
 package software.amazon.smithy.kotlin.codegen.protocols
 
 import io.kotest.matchers.string.shouldNotContain
-import software.amazon.smithy.kotlin.codegen.protocols.RpcV2Cbor
 import software.amazon.smithy.kotlin.codegen.test.*
 import kotlin.test.Test
 
