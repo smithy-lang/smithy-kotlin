@@ -3,18 +3,18 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package software.amazon.smithy.kotlin.codegen.aws.protocols
+package software.amazon.smithy.kotlin.codegen.protocols
 
-import software.amazon.smithy.kotlin.codegen.protocols.RestXml
+import software.amazon.smithy.kotlin.codegen.protocols.RestJson1
 import software.amazon.smithy.kotlin.codegen.test.*
 import kotlin.test.Test
 
-class RestXmlTest {
+class RestJson1Test {
     @Test
     fun testNonNestedIdempotencyToken() {
         val ctx = model.newTestContext("Example")
 
-        val generator = RestXml()
+        val generator = RestJson1()
         generator.generateProtocolClient(ctx.generationCtx)
 
         ctx.generationCtx.delegator.finalize()
@@ -39,7 +39,7 @@ class RestXmlTest {
     fun testNestedIdempotencyToken() {
         val ctx = model.newTestContext("Example")
 
-        val generator = RestXml()
+        val generator = RestJson1()
         generator.generateProtocolClient(ctx.generationCtx)
 
         ctx.generationCtx.delegator.finalize()
@@ -73,10 +73,10 @@ class RestXmlTest {
     
         namespace com.test
         
-        use aws.protocols#restXml
+        use aws.protocols#restJson1
         use aws.api#service
     
-        @restXml
+        @restJson1
         @service(sdkId: "Example")
         service Example {
             version: "1.0.0",

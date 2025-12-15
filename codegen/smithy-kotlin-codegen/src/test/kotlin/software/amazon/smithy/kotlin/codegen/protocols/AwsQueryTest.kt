@@ -3,18 +3,18 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package software.amazon.smithy.kotlin.codegen.aws.protocols
+package software.amazon.smithy.kotlin.codegen.protocols
 
-import software.amazon.smithy.kotlin.codegen.protocols.RestJson1
+import software.amazon.smithy.kotlin.codegen.protocols.AwsQuery
 import software.amazon.smithy.kotlin.codegen.test.*
 import kotlin.test.Test
 
-class RestJson1Test {
+class AwsQueryTest {
     @Test
     fun testNonNestedIdempotencyToken() {
         val ctx = model.newTestContext("Example")
 
-        val generator = RestJson1()
+        val generator = AwsQuery()
         generator.generateProtocolClient(ctx.generationCtx)
 
         ctx.generationCtx.delegator.finalize()
@@ -39,7 +39,7 @@ class RestJson1Test {
     fun testNestedIdempotencyToken() {
         val ctx = model.newTestContext("Example")
 
-        val generator = RestJson1()
+        val generator = AwsQuery()
         generator.generateProtocolClient(ctx.generationCtx)
 
         ctx.generationCtx.delegator.finalize()
@@ -73,11 +73,12 @@ class RestJson1Test {
     
         namespace com.test
         
-        use aws.protocols#restJson1
+        use aws.protocols#awsQuery
         use aws.api#service
     
-        @restJson1
+        @awsQuery
         @service(sdkId: "Example")
+        @xmlNamespace(uri: "http://foo.com")
         service Example {
             version: "1.0.0",
             operations: [GetBarUnNested, GetBarNested]
