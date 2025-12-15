@@ -1,0 +1,5 @@
+{
+    "id": "c1e2e145-7abb-42ff-9443-4396a3adfaf1",
+    "type": "feature",
+    "description": "Add support for environmental settings which can be resolved case-insensitively"
+}
