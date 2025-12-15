@@ -17,7 +17,6 @@ import software.amazon.smithy.kotlin.codegen.rendering.serde.StructuredDataParse
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.ServiceShape
 import software.amazon.smithy.model.shapes.ShapeId
-import kotlin.collections.plus
 
 /**
  * Handles generating the aws.protocols#awsJson1_0 protocol for services.
