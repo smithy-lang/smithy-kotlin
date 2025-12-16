@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.5.24] - 12/16/2025
+
+### Features
+* Add support for environmental settings which can be resolved case-insensitively
+
 ## [1.5.23] - 12/15/2025
 
 ## [1.5.22] - 12/05/2025
