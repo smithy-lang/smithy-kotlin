@@ -80,6 +80,38 @@ class EnvironmentSettingTest {
         val actual = setting.resolve(testPlatform)
         assertEquals(Suit.Spades, actual)
     }
+
+    @Test
+    fun itResolvesCaseInsensitiveSysProps() {
+        val setting = boolEnvSetting("foo.", "FOO_").withCaseInsensitiveSuffixes("bar", "BAR")
+
+        mapOf(
+            mapOf("foo.bar" to "true") to true,
+            mapOf("foo.BAR" to "true") to true,
+            mapOf("foo.barb" to "true") to null,
+            mapOf("foo." to "true") to null,
+        ).forEach { (values, expected) ->
+            val testPlatform = mockPlatform(sysProps = values)
+            val actual = setting.resolve(testPlatform)
+            assertEquals(expected, actual, "For values $values, expected to resolve $expected")
+        }
+    }
+
+    @Test
+    fun itResolvesCaseInsensitiveEnvVars() {
+        val setting = boolEnvSetting("foo.", "FOO_").withCaseInsensitiveSuffixes("bar", "BAR")
+
+        mapOf(
+            mapOf("FOO_BAR" to "true") to true,
+            mapOf("FOO_bAr" to "true") to true,
+            mapOf("FOO_BARB" to "true") to null,
+            mapOf("FOO_" to "true") to null,
+        ).forEach { (values, expected) ->
+            val testPlatform = mockPlatform(envVars = values)
+            val actual = setting.resolve(testPlatform)
+            assertEquals(expected, actual, "For values $values, expected to resolve $expected")
+        }
+    }
 }
 
 private fun mockPlatform(sysProps: Map<String, String> = mapOf(), envVars: Map<String, String> = mapOf()) =

@@ -68,3 +68,51 @@ public inline fun <reified T : Enum<T>> enumEnvSetting(sysProp: String, envVar: 
     }
     return EnvironmentSetting(parse, sysProp, envVar)
 }
+
+@InternalApi
+public fun <T> EnvironmentSetting<T>.withCaseInsensitiveSuffixes(
+    sysPropSuffix: String,
+    envVarSuffix: String,
+): CaseInsensitiveEnvironmentSetting<T> =
+    CaseInsensitiveEnvironmentSetting(parse, sysProp, sysPropSuffix, envVar, envVarSuffix, defaultValue)
+
+@InternalApi
+public data class CaseInsensitiveEnvironmentSetting<T>(
+    public val parse: (String) -> T,
+    public val sysPropBase: String,
+    public val sysPropSuffix: String,
+    public val envVarBase: String,
+    public val envVarSuffix: String,
+    public val defaultValue: T? = null,
+) {
+    internal val sysPropRegex = caseInsensitiveRegex(sysPropBase, sysPropSuffix)
+    internal val envVarRegex = caseInsensitiveRegex(envVarBase, envVarSuffix)
+}
+
+private fun caseInsensitiveRegex(base: String, caseInsensitiveSuffix: String) =
+    buildString {
+        append('^') // beginning of string
+        append(Regex.escape(base)) // base component, escaped
+        append("(?i)") // turn on case-insensitivity
+        append(Regex.escape(caseInsensitiveSuffix)) // case-insensitive suffix, escaped
+        append('$') // end of string
+    }.toRegex()
+
+/**
+ * Resolves an environment setting from the environment. This method attempts to resolve the setting via the system
+ * property first, falling back to the environment variable if necessary. If neither is set, it returns the setting's
+ * default value.
+ * @param platform The [PlatformEnvironProvider] to use for reading system properties and environment variables.
+ * Defaults to [PlatformProvider.System].
+ */
+@InternalApi
+public fun <T> CaseInsensitiveEnvironmentSetting<T>.resolve(
+    platform: PlatformEnvironProvider = PlatformProvider.System,
+): T? {
+    val stringValue = resolveStringValue(platform.getAllProperties(), sysPropRegex)
+        ?: resolveStringValue(platform.getAllEnvVars(), envVarRegex)
+    return stringValue?.let(parse) ?: defaultValue
+}
+
+private fun resolveStringValue(sourceValues: Map<String, String>, keyRegex: Regex): String? =
+    sourceValues.entries.firstNotNullOfOrNull { (key, value) -> value.takeIf { keyRegex.matches(key) } }
