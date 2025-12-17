@@ -16,6 +16,8 @@ import software.amazon.smithy.kotlin.codegen.lang.KotlinTypes
 import software.amazon.smithy.kotlin.codegen.lang.toEscapedLiteral
 import software.amazon.smithy.kotlin.codegen.model.*
 import software.amazon.smithy.kotlin.codegen.model.hasTrait
+import software.amazon.smithy.kotlin.codegen.protocols.eventstream.EventStreamParserGenerator
+import software.amazon.smithy.kotlin.codegen.protocols.eventstream.EventStreamSerializerGenerator
 import software.amazon.smithy.kotlin.codegen.rendering.ExceptionBaseClassGenerator
 import software.amazon.smithy.kotlin.codegen.rendering.serde.deserializerName
 import software.amazon.smithy.kotlin.codegen.rendering.serde.formatInstant
@@ -209,7 +211,12 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
      * @param ctx the protocol generator context
      * @param op the operation shape to return event stream serializer for
      */
-    open fun eventStreamRequestHandler(ctx: ProtocolGenerator.GenerationContext, op: OperationShape): Symbol = error("event streams are not supported by $this")
+    open fun eventStreamRequestHandler(ctx: ProtocolGenerator.GenerationContext, op: OperationShape): Symbol {
+        val resolver = getProtocolHttpBindingResolver(ctx.model, ctx.service)
+        val contentType = resolver.determineRequestContentType(op) ?: error("event streams must set a content-type")
+        val eventStreamSerializerGenerator = EventStreamSerializerGenerator(structuredDataSerializer(ctx), contentType)
+        return eventStreamSerializerGenerator.requestHandler(ctx, op)
+    }
 
     /**
      *
@@ -220,7 +227,10 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
      * @param ctx the protocol generator context
      * @param op the operation shape to return event stream deserializer for
      */
-    open fun eventStreamResponseHandler(ctx: ProtocolGenerator.GenerationContext, op: OperationShape): Symbol = error("event streams are not supported by $this")
+    open fun eventStreamResponseHandler(ctx: ProtocolGenerator.GenerationContext, op: OperationShape): Symbol {
+        val eventStreamParserGenerator = EventStreamParserGenerator(ctx, structuredDataParser(ctx))
+        return eventStreamParserGenerator.responseHandler(ctx, op)
+    }
 
     private fun generateSerializers(ctx: ProtocolGenerator.GenerationContext) {
         val resolver = getProtocolHttpBindingResolver(ctx.model, ctx.service)
