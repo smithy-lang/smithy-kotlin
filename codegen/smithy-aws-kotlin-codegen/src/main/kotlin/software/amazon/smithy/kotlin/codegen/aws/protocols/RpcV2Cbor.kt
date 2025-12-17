@@ -5,11 +5,11 @@
 package software.amazon.smithy.kotlin.codegen.aws.protocols
 
 import software.amazon.smithy.kotlin.codegen.aws.protocols.core.AwsHttpBindingProtocolGenerator
-import software.amazon.smithy.kotlin.codegen.aws.protocols.core.StaticHttpBindingResolver
 import software.amazon.smithy.kotlin.codegen.core.KotlinWriter
 import software.amazon.smithy.kotlin.codegen.core.RuntimeTypes
 import software.amazon.smithy.kotlin.codegen.model.*
 import software.amazon.smithy.kotlin.codegen.model.traits.SyntheticClone
+import software.amazon.smithy.kotlin.codegen.protocols.core.StaticHttpBindingResolver
 import software.amazon.smithy.kotlin.codegen.rendering.protocol.*
 import software.amazon.smithy.kotlin.codegen.rendering.serde.CborParserGenerator
 import software.amazon.smithy.kotlin.codegen.rendering.serde.CborSerializerGenerator

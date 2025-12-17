@@ -11,6 +11,7 @@ import software.amazon.smithy.kotlin.codegen.core.withBlock
 import software.amazon.smithy.kotlin.codegen.model.expectShape
 import software.amazon.smithy.kotlin.codegen.model.knowledge.SerdeIndex
 import software.amazon.smithy.kotlin.codegen.model.targetOrSelf
+import software.amazon.smithy.kotlin.codegen.protocols.core.StaticHttpBindingResolver
 import software.amazon.smithy.kotlin.codegen.rendering.protocol.HttpBindingResolver
 import software.amazon.smithy.kotlin.codegen.rendering.protocol.MutateHeadersMiddleware
 import software.amazon.smithy.kotlin.codegen.rendering.protocol.ProtocolGenerator
