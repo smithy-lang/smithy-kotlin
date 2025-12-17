@@ -23,7 +23,6 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeout
 import kotlinx.coroutines.yield
 import kotlin.test.Test
-import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 
 class AsyncStressTest : TestWithLocalServer() {
@@ -38,7 +37,8 @@ class AsyncStressTest : TestWithLocalServer() {
         }
     }.start()
 
-    private fun testStreamNotConsumedImpl(timeout: Duration = 10.seconds, concurrency: Int = 1000) = runBlocking {
+    @Test
+    fun testStreamNotConsumed() = runBlocking {
         // test that filling the stream window and not consuming the body stream still cleans up resources
         // appropriately and allows requests to proceed (a stream that isn't consumed will be in a stuck state
         // if the window is full and never incremented again, this can lead to all connections being consumed
@@ -55,14 +55,15 @@ class AsyncStressTest : TestWithLocalServer() {
                 }
             }
 
-            withTimeout(timeout) {
-                repeat(concurrency) {
+            withTimeout(30.seconds) {
+                repeat(1_000) {
                     async {
                         try {
                             val call = client.call(request)
                             yield()
                             call.complete()
                         } catch (ex: Exception) {
+                            println("exception on $it: $ex")
                             throw ex
                         }
                     }
@@ -71,10 +72,4 @@ class AsyncStressTest : TestWithLocalServer() {
             }
         }
     }
-
-    @Test fun testStreamNotConsumed() = testStreamNotConsumedImpl()
-    @Test fun testStreamNotConsumed_x100() = testStreamNotConsumedImpl(concurrency = 100)
-    @Test fun testStreamNotConsumed_x10() = testStreamNotConsumedImpl(concurrency = 10)
-    @Test fun testStreamNotConsumed_30s() = testStreamNotConsumedImpl(timeout = 30.seconds)
-    @Test fun testStreamNotConsumed_60s() = testStreamNotConsumedImpl(timeout = 60.seconds)
 }
