@@ -120,9 +120,6 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         }
 
     @Suppress("DEPRECATION")
-    /**
-     * TODO
-     */
     open fun renderThrowOperationError(ctx: ProtocolGenerator.GenerationContext, op: OperationShape, writer: KotlinWriter) {
         writer.declareSection(
             Sections.RenderThrowOperationError,
