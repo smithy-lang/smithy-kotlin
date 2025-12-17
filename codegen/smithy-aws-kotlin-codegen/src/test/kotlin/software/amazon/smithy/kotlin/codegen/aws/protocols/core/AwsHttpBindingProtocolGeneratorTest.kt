@@ -8,6 +8,7 @@ import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.kotlin.codegen.aws.protocols.json.AwsJsonHttpBindingResolver
 import software.amazon.smithy.kotlin.codegen.core.KotlinWriter
 import software.amazon.smithy.kotlin.codegen.model.expectShape
+import software.amazon.smithy.kotlin.codegen.rendering.protocol.HttpBindingProtocolGenerator
 import software.amazon.smithy.kotlin.codegen.rendering.protocol.HttpBindingResolver
 import software.amazon.smithy.kotlin.codegen.rendering.protocol.ProtocolGenerator
 import software.amazon.smithy.kotlin.codegen.rendering.serde.*
@@ -157,7 +158,7 @@ class AwsHttpBindingProtocolGeneratorTest {
      *  renderThrowOperationError()
      *  getProtocolHttpBindingResolver()
      */
-    class TestableAwsHttpBindingProtocolGenerator : AwsHttpBindingProtocolGenerator() {
+    class TestableAwsHttpBindingProtocolGenerator : HttpBindingProtocolGenerator() {
         override fun renderDeserializeErrorDetails(
             ctx: ProtocolGenerator.GenerationContext,
             op: OperationShape,

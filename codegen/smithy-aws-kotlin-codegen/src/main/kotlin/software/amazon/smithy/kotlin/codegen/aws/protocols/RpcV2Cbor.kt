@@ -4,12 +4,11 @@
  */
 package software.amazon.smithy.kotlin.codegen.aws.protocols
 
-import software.amazon.smithy.kotlin.codegen.aws.protocols.core.AwsHttpBindingProtocolGenerator
-import software.amazon.smithy.kotlin.codegen.aws.protocols.core.StaticHttpBindingResolver
 import software.amazon.smithy.kotlin.codegen.core.KotlinWriter
 import software.amazon.smithy.kotlin.codegen.core.RuntimeTypes
 import software.amazon.smithy.kotlin.codegen.model.*
 import software.amazon.smithy.kotlin.codegen.model.traits.SyntheticClone
+import software.amazon.smithy.kotlin.codegen.protocols.core.StaticHttpBindingResolver
 import software.amazon.smithy.kotlin.codegen.rendering.protocol.*
 import software.amazon.smithy.kotlin.codegen.rendering.serde.CborParserGenerator
 import software.amazon.smithy.kotlin.codegen.rendering.serde.CborSerializerGenerator
@@ -29,7 +28,7 @@ import software.amazon.smithy.protocol.traits.Rpcv2CborTrait
 private const val ACCEPT_HEADER = "application/cbor"
 private const val ACCEPT_HEADER_EVENT_STREAM = "application/vnd.amazon.eventstream"
 
-class RpcV2Cbor : AwsHttpBindingProtocolGenerator() {
+class RpcV2Cbor : HttpBindingProtocolGenerator() {
     override val protocol: ShapeId = Rpcv2CborTrait.ID
 
     // TODO Timestamp format is not used in RpcV2Cbor since it's a binary protocol. We seem to be missing an abstraction
