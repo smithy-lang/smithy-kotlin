@@ -69,12 +69,12 @@ internal fun startServers(sslConfigPath: String): Closeable {
     try {
         val testServers = ServerType.entries.associateWith(::testServer)
         testServers.values.forEach { testServer ->
-                val runningInstance = tlsServer(testServer, sslConfig)
-                servers.add {
-                    println("Stopping server on port ${testServer.port}...")
-                    runningInstance.stop(0L, 0L, TimeUnit.MILLISECONDS)
-                }
+            val runningInstance = tlsServer(testServer, sslConfig)
+            servers.add {
+                println("Stopping server on port ${testServer.port}...")
+                runningInstance.stop(0L, 0L, TimeUnit.MILLISECONDS)
             }
+        }
 
         val portsConfigPath = Paths.get(sslConfigPath).parent.resolve("test-server-ports.properties")
         println("Persisting test servers port configuration to $portsConfigPath...")
@@ -97,10 +97,14 @@ private fun persistPortConfig(testServers: Map<ServerType, TestServer>, path: ja
     val properties = java.util.Properties()
 
     testServers.forEach { (serverType, testServer) ->
-        val protocol = if (testServer.type == ConnectorType.HTTPS) "https" else "http"
+        val protocol = if (testServer.type == ConnectorType.HTTPS) {
+            "https"
+        } else {
+            "http"
+        }
         properties.setProperty(serverType.name, "$protocol://127.0.0.1:${testServer.port}")
     }
-    
+
     path.toFile().outputStream().use { output ->
         properties.store(output, "Test server port configuration")
     }
