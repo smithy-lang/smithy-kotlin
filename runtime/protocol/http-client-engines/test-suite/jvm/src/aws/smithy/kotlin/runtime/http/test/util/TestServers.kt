@@ -17,8 +17,10 @@ import io.ktor.server.jetty.jakarta.JettyApplicationEngineBase
 import redirectTests
 import java.io.Closeable
 import java.net.ServerSocket
+import java.nio.file.Path
 import java.nio.file.Paths
 import java.util.concurrent.TimeUnit
+import kotlin.io.path.exists
 import kotlin.time.Duration.Companion.seconds
 
 private data class TestServer(
@@ -41,13 +43,28 @@ private fun testServer(serverType: ServerType): TestServer = when (serverType) {
 
 private class Resources : Closeable {
     private val resources = mutableListOf<Closeable>()
+    private val filesToDelete = mutableListOf<Path>()
 
     fun add(resource: Closeable) {
         resources.add(resource)
     }
 
+    fun addFileToDelete(file: Path) {
+        filesToDelete.add(file)
+    }
+
     override fun close() {
         resources.forEach(Closeable::close)
+        filesToDelete.forEach { file ->
+            try {
+                if (file.exists()) {
+                    file.toFile().delete()
+                    println("Deleted file $file")
+                }
+            } catch (e: Exception) {
+                println("Failed to delete file $file: ${e.message}")
+            }
+        }
     }
 
     val size: Int get() = resources.size
@@ -58,11 +75,13 @@ private class Resources : Closeable {
  * @param sslConfigPath The path at which to write the generated SSL config
  */
 internal fun startServers(sslConfigPath: String): Closeable {
+    val servers = Resources()
+
     val sslConfig = SslConfig.generate()
     println("Persisting custom SSL config to $sslConfigPath...")
     sslConfig.persist(Paths.get(sslConfigPath))
-
-    val servers = Resources()
+    servers.addFileToDelete(Paths.get(sslConfigPath))
+    
     println("Starting local servers for HTTP client engine test suite...")
     println("Setting JKS path ${sslConfig.keyStoreFile.absolutePath}")
 
@@ -79,6 +98,7 @@ internal fun startServers(sslConfigPath: String): Closeable {
         val portsConfigPath = Paths.get(sslConfigPath).parent.resolve("test-server-ports.properties")
         println("Persisting test servers port configuration to $portsConfigPath...")
         persistPortConfig(testServers, portsConfigPath)
+        servers.addFileToDelete(portsConfigPath)
 
         // ensure servers are up and listening before tests run
         Thread.sleep(1000)
