@@ -81,7 +81,7 @@ internal fun startServers(sslConfigPath: String): Closeable {
     println("Persisting custom SSL config to $sslConfigPath...")
     sslConfig.persist(Paths.get(sslConfigPath))
     servers.addFileToDelete(Paths.get(sslConfigPath))
-    
+
     println("Starting local servers for HTTP client engine test suite...")
     println("Setting JKS path ${sslConfig.keyStoreFile.absolutePath}")
 
