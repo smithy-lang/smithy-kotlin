@@ -16,26 +16,27 @@ import io.ktor.server.jetty.jakarta.Jetty
 import io.ktor.server.jetty.jakarta.JettyApplicationEngineBase
 import redirectTests
 import java.io.Closeable
+import java.net.ServerSocket
 import java.nio.file.Paths
 import java.util.concurrent.TimeUnit
 import kotlin.time.Duration.Companion.seconds
 
 private data class TestServer(
-    val port: Int,
     val type: ConnectorType,
     val protocolName: String?,
     val initializer: Application.() -> Unit,
+    val port: Int = ServerSocket(0).use { it.localPort },
 )
 
 private fun testServer(serverType: ServerType): TestServer = when (serverType) {
-    ServerType.DEFAULT -> TestServer(8082, ConnectorType.HTTP, null, Application::testRoutes)
+    ServerType.DEFAULT -> TestServer(ConnectorType.HTTP, null, Application::testRoutes)
 
     // FIXME Enable once we figure out how to get TLS1 and TLS1.1 working
-    // ServerType.TLS_1_0 -> TestServer(8090, ConnectorType.HTTPS, "TLSv1", Application::tlsRoutes)
+    // ServerType.TLS_1_0 -> TestServer(ConnectorType.HTTPS, "TLSv1", Application::tlsRoutes)
 
-    ServerType.TLS_1_1 -> TestServer(8091, ConnectorType.HTTPS, "TLSv1.1", Application::tlsRoutes)
-    ServerType.TLS_1_2 -> TestServer(8092, ConnectorType.HTTPS, "TLSv1.2", Application::tlsRoutes)
-    ServerType.TLS_1_3 -> TestServer(8093, ConnectorType.HTTPS, "TLSv1.3", Application::tlsRoutes)
+    ServerType.TLS_1_1 -> TestServer(ConnectorType.HTTPS, "TLSv1.1", Application::tlsRoutes)
+    ServerType.TLS_1_2 -> TestServer(ConnectorType.HTTPS, "TLSv1.2", Application::tlsRoutes)
+    ServerType.TLS_1_3 -> TestServer(ConnectorType.HTTPS, "TLSv1.3", Application::tlsRoutes)
 }
 
 private class Resources : Closeable {
@@ -66,16 +67,18 @@ internal fun startServers(sslConfigPath: String): Closeable {
     println("Setting JKS path ${sslConfig.keyStoreFile.absolutePath}")
 
     try {
-        ServerType
-            .entries
-            .map(::testServer)
-            .forEach { testServer ->
+        val testServers = ServerType.entries.associateWith(::testServer)
+        testServers.values.forEach { testServer ->
                 val runningInstance = tlsServer(testServer, sslConfig)
                 servers.add {
                     println("Stopping server on port ${testServer.port}...")
                     runningInstance.stop(0L, 0L, TimeUnit.MILLISECONDS)
                 }
             }
+
+        val portsConfigPath = Paths.get(sslConfigPath).parent.resolve("test-server-ports.properties")
+        println("Persisting test servers port configuration to $portsConfigPath...")
+        persistPortConfig(testServers, portsConfigPath)
 
         // ensure servers are up and listening before tests run
         Thread.sleep(1000)
@@ -88,6 +91,19 @@ internal fun startServers(sslConfigPath: String): Closeable {
     println("...all ${servers.size} servers started!")
 
     return servers
+}
+
+private fun persistPortConfig(testServers: Map<ServerType, TestServer>, path: java.nio.file.Path) {
+    val properties = java.util.Properties()
+
+    testServers.forEach { (serverType, testServer) ->
+        val protocol = if (testServer.type == ConnectorType.HTTPS) "https" else "http"
+        properties.setProperty(serverType.name, "$protocol://127.0.0.1:${testServer.port}")
+    }
+    
+    path.toFile().outputStream().use { output ->
+        properties.store(output, "Test server port configuration")
+    }
 }
 
 private fun tlsServer(instance: TestServer, sslConfig: SslConfig): EmbeddedServer<*, *> {
