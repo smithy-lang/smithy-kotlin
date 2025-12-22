@@ -2,7 +2,8 @@
 kotlin-version = "2.3.0"
 dokka-version = "2.0.0"
 
-aws-kotlin-repo-tools-version = "0.4.64"  # TODO Upgrade to 0.5.0 before merging
+# TODO Upgrade to 0.5.0 before merging
+aws-kotlin-repo-tools-version = "0.4.64"
 
 # libs
 coroutines-version = "1.10.2"
@@ -13,7 +14,8 @@ okio-version = "3.16.4"
 otel-version = "1.57.0"
 slf4j-version = "2.0.17"
 slf4j-v1x-version = "1.7.36"
-crt-kotlin-version = "0.11.7"  # TODO Upgrade to 0.12.0 before merging
+# TODO Upgrade to 0.12.0 before merging
+crt-kotlin-version = "0.11.7"
 micrometer-version = "1.16.1"
 binary-compatibility-validator-version = "0.18.1"
 kotlin-multiplatform-bignum-version = "0.3.10"
