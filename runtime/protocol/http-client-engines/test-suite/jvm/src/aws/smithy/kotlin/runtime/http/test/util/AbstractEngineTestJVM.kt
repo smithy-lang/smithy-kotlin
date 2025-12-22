@@ -9,6 +9,9 @@ import aws.smithy.kotlin.runtime.http.engine.DefaultHttpEngine
 import aws.smithy.kotlin.runtime.http.engine.crt.CrtHttpEngine
 import aws.smithy.kotlin.runtime.http.engine.okhttp4.OkHttp4Engine
 import aws.smithy.kotlin.runtime.net.url.Url
+import java.nio.file.Paths
+import java.util.Properties
+import kotlin.io.path.exists
 
 internal actual fun engineFactories(): List<TestEngineFactory> =
     // FIXME Move DefaultHttpEngine and CrtHttpEngine to `jvmAndNative`
@@ -18,13 +21,20 @@ internal actual fun engineFactories(): List<TestEngineFactory> =
         TestEngineFactory("OkHttp4Engine") { OkHttp4Engine(it) },
     )
 
-internal actual val testServers = mapOf(
-    ServerType.DEFAULT to Url.parse("http://127.0.0.1:8082"),
+private fun loadTestServerPorts(): Map<ServerType, Url> {
+    val sslConfigPath = System.getProperty("SSL_CONFIG_PATH")
+    val portsConfigPath = Paths.get(sslConfigPath).parent.resolve("test-server-ports.properties")
+    check(portsConfigPath.exists()) { "Failed to find ports configuration at $portsConfigPath" }
+    val properties = Properties()
+    portsConfigPath.toFile().inputStream().use { input ->
+        properties.load(input)
+    }
 
-    // FIXME Enable once we figure out how to get TLS1 and TLS1.1 working
-    // ServerType.TLS_1_0 to Url.parse("https://127.0.0.1:8090"),
+    return ServerType.entries.mapNotNull { serverType ->
+        properties.getProperty(serverType.name)?.let { url ->
+            serverType to Url.parse(url)
+        }
+    }.toMap()
+}
 
-    ServerType.TLS_1_1 to Url.parse("https://127.0.0.1:8091"),
-    ServerType.TLS_1_2 to Url.parse("https://127.0.0.1:8092"),
-    ServerType.TLS_1_3 to Url.parse("https://127.0.0.1:8093"),
-)
+internal actual val testServers = loadTestServerPorts()
