@@ -17,7 +17,7 @@ import kotlinx.datetime.format.char
 import kotlinx.datetime.format.optional
 
 /**
- * [DateTimeFormat<DateTimeComponents>] for use with [kotlinx.datetime.Instant]
+ * [DateTimeFormat<DateTimeComponents>] for use with [kotlin.time.Instant]
  */
 internal object DateTimeFormats {
 
