@@ -73,7 +73,7 @@ public class XmlTagReader(
             cand = nextToken()
         }
 
-        val nextTok = cand as? XmlToken.BeginElement
+        val nextTok = cand
 
         return nextTok?.tagReader(reader).also { newScope ->
             lastEmitted = newScope

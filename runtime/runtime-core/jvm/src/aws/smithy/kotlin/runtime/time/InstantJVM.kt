@@ -25,7 +25,7 @@ import kotlin.time.Duration
 import kotlin.time.toKotlinDuration
 import java.time.Duration as jtDuration
 import java.time.Instant as jtInstant
-import kotlinx.datetime.Instant as KtInstant
+import kotlin.time.Instant as KtInstant
 
 // FIXME Consider making this multiplatform (`common`) using kotlinx.datetime
 public actual class Instant(internal val value: jtInstant) : Comparable<Instant> {

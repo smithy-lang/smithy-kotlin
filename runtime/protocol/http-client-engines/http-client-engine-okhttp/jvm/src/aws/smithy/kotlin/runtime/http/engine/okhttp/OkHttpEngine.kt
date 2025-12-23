@@ -87,7 +87,7 @@ public class OkHttpEngine private constructor(
                 // else). In both cases we need to ensure that the engine-side resources are cleaned up completely
                 // since they wouldn't otherwise be. https://github.com/smithy-lang/smithy-kotlin/issues/1061
                 if (cause != null) call.cancelInFlight()
-                engineResponse.body?.close()
+                engineResponse.body.close()
             }
         }
     }

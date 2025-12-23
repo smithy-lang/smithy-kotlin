@@ -1,60 +1,57 @@
 [versions]
-kotlin-version = "2.2.0"
+kotlin-version = "2.3.0"
 dokka-version = "2.0.0"
 
+# TODO Upgrade to 0.5.0 before merging
 aws-kotlin-repo-tools-version = "0.4.64"
 
 # libs
 coroutines-version = "1.10.2"
 atomicfu-version = "0.29.0"
-okhttp-version = "5.1.0"
+okhttp-version = "5.3.2"
 okhttp4-version = "4.12.0"
-okio-version = "3.16.0"
-otel-version = "1.52.0"
+okio-version = "3.16.4"
+otel-version = "1.57.0"
 slf4j-version = "2.0.17"
 slf4j-v1x-version = "1.7.36"
+# TODO Upgrade to 0.12.0 before merging
 crt-kotlin-version = "0.11.7"
-micrometer-version = "1.15.2"
+micrometer-version = "1.16.1"
 binary-compatibility-validator-version = "0.18.1"
 kotlin-multiplatform-bignum-version = "0.3.10"
-kotlinx-datetime-version = "0.6.1"
+kotlinx-datetime-version = "0.7.1"
 publish-plugin-version = "2.0.0"
 smithy-gradle-plugin-version = "1.3.0"
 
 # codegen
-smithy-version = "1.64.0"
+smithy-version = "1.65.0"
 
 # testing
-junit-version = "5.13.4"
+junit-version = "5.14.1"
 kotest-version = "5.9.1"
-kotlin-compile-testing-version = "0.8.0"
-kotlinx-benchmark-version = "0.4.14"
+kotlin-compile-testing-version = "0.12.0"
+kotlinx-benchmark-version = "0.4.15"
 kotlinx-serialization-version = "1.9.0"
-docker-java-version = "3.5.3"
-ktor-version = "3.2.3"
+docker-java-version = "3.7.0"
+ktor-version = "3.3.3"
 kaml-version = "0.55.0"
-jsoup-version = "1.21.1"
+jsoup-version = "1.21.2"
 
 [libraries]
 aws-kotlin-repo-tools-build-support = { module="aws.sdk.kotlin.gradle:build-support", version.ref = "aws-kotlin-repo-tools-version" }
 
 kotlin-gradle-plugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin-version" }
-kotlin-stdlib = { module = "org.jetbrains.kotlin:kotlin-stdlib", version.ref = "kotlin-version"}
-kotlin-stdlib-jdk8 = { module = "org.jetbrains.kotlin:kotlin-stdlib-jdk8", version.ref = "kotlin-version"}
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin-version" }
 kotlin-test-junit5 = { module = "org.jetbrains.kotlin:kotlin-test-junit5", version.ref = "kotlin-version" }
 dokka-core = { module = "org.jetbrains.dokka:dokka-core", version.ref = "dokka-version" }
 dokka-base = { module = "org.jetbrains.dokka:dokka-base", version.ref = "dokka-version" }
 dokka-gradle-plugin = { module = "org.jetbrains.dokka:dokka-gradle-plugin", version.ref = "dokka-version" }
 
-kotlinx-atomicfu = { module = "org.jetbrains.kotlinx:atomicfu", version.ref = "atomicfu-version" }
 kotlinx-atomicfu-plugin = { module = "org.jetbrains.kotlinx:atomicfu-gradle-plugin", version.ref = "atomicfu-version" }
 
 kotlinx-coroutines-debug = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-debug", version.ref = "coroutines-version" }
 kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "coroutines-version" }
 kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "coroutines-version" }
-kotlinx-coroutines-jdk8 = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-jdk8", version.ref = "coroutines-version" }
-kotlinx-coroutines-slf4j = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-slf4j", version.ref = "coroutines-version" }
 
 okio = { module = "com.squareup.okio:okio", version.ref = "okio-version" }
 okhttp = { module = "com.squareup.okhttp3:okhttp", version.ref = "okhttp-version" }
@@ -64,7 +61,6 @@ opentelemetry-api = { module = "io.opentelemetry:opentelemetry-api", version.ref
 opentelemetry-sdk-testing = {module = "io.opentelemetry:opentelemetry-sdk-testing", version.ref = "otel-version" }
 opentelemetry-kotlin-extension = { module = "io.opentelemetry:opentelemetry-extension-kotlin", version.ref = "otel-version" }
 slf4j-api = { module = "org.slf4j:slf4j-api", version.ref = "slf4j-version" }
-slf4j-api-v1x = { module = "org.slf4j:slf4j-api", version.ref = "slf4j-v1x-version" }
 slf4j-simple = { module = "org.slf4j:slf4j-simple", version.ref = "slf4j-version" }
 crt-kotlin = { module = "aws.sdk.kotlin.crt:aws-crt-kotlin", version.ref = "crt-kotlin-version" }
 micrometer-core = { module = "io.micrometer:micrometer-core", version.ref = "micrometer-version" }
@@ -114,7 +110,6 @@ kotlin-multiplatform-bignum = { module = "com.ionspin.kotlin:bignum", version.re
 smithy-gradle-base-plugin = { module = "software.amazon.smithy.gradle:smithy-base", version.ref = "smithy-gradle-plugin-version" }
 
 [plugins]
-dokka = { id = "org.jetbrains.dokka", version.ref = "dokka-version"}
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin-version" }
 kotlin-multiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin-version" }
 kotlinx-benchmark = { id = "org.jetbrains.kotlinx.benchmark", version.ref = "kotlinx-benchmark-version" }

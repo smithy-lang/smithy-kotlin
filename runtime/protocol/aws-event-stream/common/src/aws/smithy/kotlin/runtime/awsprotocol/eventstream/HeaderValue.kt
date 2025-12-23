@@ -145,7 +145,6 @@ public sealed class HeaderValue {
                     when (type) {
                         HeaderType.STRING -> HeaderValue.String(bytes.decodeToString())
                         HeaderType.BYTE_ARRAY -> HeaderValue.ByteArray(bytes)
-                        else -> throw IllegalStateException("Invalid HeaderValue")
                     }
                 }
                 HeaderType.TIMESTAMP -> {
