@@ -231,18 +231,19 @@ class SmithySdkTest {
         val model = """
             namespace aws.sdk.kotlin.test
 
-            use aws.protocols#awsJson1_0
+            use aws.protocols#restJson1
             use smithy.rules#operationContextParams
             use smithy.rules#endpointRuleSet
             use aws.api#service
             
-            @awsJson1_0
+            @restJson1
             @service(sdkId: "UnionOperationTest")
             service TestService {
                 operations: [UnionOperation],
                 version: "1"
             }
             
+            @http(method: "POST", uri: "/union-operation")
             operation UnionOperation {
                 input: UnionOperationRequest
             }
@@ -270,18 +271,19 @@ class SmithySdkTest {
         val model = """
             namespace aws.sdk.kotlin.test
 
-            use aws.protocols#awsJson1_0
+            use aws.protocols#restJson1
             use smithy.rules#operationContextParams
             use smithy.rules#endpointRuleSet
             use aws.api#service
             
-            @awsJson1_0
+            @restJson1
             @service(sdkId: "UnionOperationTest")
             service TestService {
                 operations: [DeleteObjects],
                 version: "1"
             }
             
+            @http(method: "POST", uri: "/delete-objects")
             operation DeleteObjects {
                 input: DeleteObjectsRequest
             }

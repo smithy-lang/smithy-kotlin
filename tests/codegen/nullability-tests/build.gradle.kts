@@ -64,6 +64,11 @@ dependencies {
     implementation(project(":runtime:protocol:http-client"))
     implementation(project(":runtime:observability:telemetry-api"))
     implementation(project(":runtime:observability:telemetry-defaults"))
+    implementation(project(":runtime:protocol:aws-json-protocols"))
+    implementation(project(":runtime:protocol:aws-protocol-core"))
+    implementation(project(":runtime:serde"))
+    implementation(project(":runtime:serde:serde-json"))
+    implementation(project(":runtime:protocol:http-client-engines:http-client-engine-default"))
 
     testImplementation(libs.kotlin.test.junit5)
 }

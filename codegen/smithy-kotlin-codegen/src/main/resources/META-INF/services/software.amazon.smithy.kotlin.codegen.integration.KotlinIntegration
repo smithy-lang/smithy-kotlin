@@ -14,3 +14,4 @@ software.amazon.smithy.kotlin.codegen.rendering.compression.RequestCompressionIn
 software.amazon.smithy.kotlin.codegen.rendering.auth.SigV4AsymmetricAuthSchemeIntegration
 software.amazon.smithy.kotlin.codegen.rendering.smoketests.SmokeTestsIntegration
 software.amazon.smithy.kotlin.codegen.rendering.checksums.HttpChecksumRequiredIntegration
+software.amazon.smithy.kotlin.codegen.ProtocolGeneratorSupplier
