@@ -136,7 +136,6 @@ public fun <T> EnvironmentSetting<T>.withAdditionalKeys(
     return MultipleKeyEnvironmentSetting(parse, listOf(sysProp) + sysProps.orEmpty(), listOf(envVar) + envVars.orEmpty(), defaultValue)
 }
 
-
 /**
  * Resolves an environment setting from the environment. This method attempts to resolve the setting via the
  * system properties first, traversing the list of keys until a value is found. If no matching system properties
