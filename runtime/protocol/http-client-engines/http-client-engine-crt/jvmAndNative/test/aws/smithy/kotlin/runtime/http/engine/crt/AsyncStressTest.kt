@@ -26,7 +26,16 @@ import kotlin.test.Test
 import kotlin.time.Duration.Companion.seconds
 
 class AsyncStressTest : TestWithLocalServer() {
-    override val server = embeddedServer(CIO, serverPort) {
+    override val server = embeddedServer(
+        CIO,
+        configure = {
+            connector {
+                port = serverPort
+            }
+
+            connectionIdleTimeoutSeconds = 60
+        },
+    ) {
         routing {
             get("/largeResponse") {
                 // something that fills the stream window...
@@ -35,7 +44,7 @@ class AsyncStressTest : TestWithLocalServer() {
                 call.respondText(text.repeat(respSize / text.length))
             }
         }
-    }.start()
+    }.start(wait = true)
 
     @Test
     fun testStreamNotConsumed() = runBlocking {
