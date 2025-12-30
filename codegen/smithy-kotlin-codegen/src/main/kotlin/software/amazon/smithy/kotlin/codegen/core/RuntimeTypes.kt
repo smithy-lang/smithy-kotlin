@@ -107,6 +107,7 @@ object RuntimeTypes {
         val TimestampFormat = symbol("TimestampFormat", "time")
         val ClientException = symbol("ClientException")
         val SdkDsl = symbol("SdkDsl")
+        val GeneratedApi = symbol("GeneratedApi")
 
         object BusinessMetrics : RuntimeTypePackage(KotlinDependency.CORE, "businessmetrics") {
             val AccountIdBasedEndpointAccountId = symbol("AccountIdBasedEndpointAccountId")
