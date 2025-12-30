@@ -110,8 +110,9 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
     open fun operationErrorHandler(ctx: ProtocolGenerator.GenerationContext, op: OperationShape): Symbol =
         op.errorHandler(ctx.settings) { writer ->
             writer.withBlock(
-                "private fun ${op.errorHandlerName()}(context: #T, call: #T, payload: #T?): #Q {",
+                "private fun #L(context: #T, call: #T, payload: #T?): #Q {",
                 "}",
+                op.errorHandlerName(),
                 RuntimeTypes.Core.ExecutionContext,
                 RuntimeTypes.Http.HttpCall,
                 KotlinTypes.ByteArray,
