@@ -26,7 +26,7 @@ import kotlin.contracts.contract
  * Handles generating the aws.protocols#restJson1 protocol for services.
  *
  * @inheritDoc
- * @see HttpBindingProtocolGenerator
+ * @see AwsHttpBindingProtocolGenerator
  */
 open class RestXml : AwsHttpBindingProtocolGenerator() {
 
