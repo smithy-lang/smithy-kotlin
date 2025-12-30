@@ -71,3 +71,9 @@ public annotation class PlannedRemoval(
     val major: Int,
     val minor: Int,
 )
+
+/**
+ * Indicates that the annotated API is created by a code generator such as **smithy-kotlin** codegen. Generated APIs may
+ * be excluded from certain kinds of automated checks, such as API compatibility verification.
+ */
+public annotation class GeneratedApi
