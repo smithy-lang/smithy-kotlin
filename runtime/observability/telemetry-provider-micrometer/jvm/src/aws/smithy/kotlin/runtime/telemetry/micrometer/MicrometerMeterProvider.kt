@@ -221,9 +221,7 @@ private fun MeterMetadata.counter() = MicrometerCounter.builder(meterName)
     .tags(extraTags)
 
 @Suppress("UNCHECKED_CAST")
-private fun Attributes.toTags() = Tags.of(
-    keys.mapNotNull {
-        val attributeKey = it as? AttributeKey<Any> ?: return@mapNotNull null
-        Tag.of(attributeKey.name, getOrNull(attributeKey).toString())
-    },
-)
+private fun Attributes.toTags() = keys.mapNotNull {
+    val attributeKey = it as? AttributeKey<Any> ?: return@mapNotNull null
+    Tag.of(attributeKey.name, getOrNull(attributeKey).toString())
+}.let(Tags::of)
