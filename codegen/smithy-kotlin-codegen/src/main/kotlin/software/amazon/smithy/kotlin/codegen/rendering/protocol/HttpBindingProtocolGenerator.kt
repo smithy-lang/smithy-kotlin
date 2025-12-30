@@ -18,6 +18,7 @@ import software.amazon.smithy.kotlin.codegen.model.hasTrait
 import software.amazon.smithy.kotlin.codegen.protocols.eventstream.EventStreamParserGenerator
 import software.amazon.smithy.kotlin.codegen.protocols.eventstream.EventStreamSerializerGenerator
 import software.amazon.smithy.kotlin.codegen.rendering.ExceptionBaseClassGenerator
+import software.amazon.smithy.kotlin.codegen.rendering.protocol.HttpBindingProtocolGenerator.Sections.RenderThrowOperationError.PostErrorDetails.ExceptionBaseSymbol
 import software.amazon.smithy.kotlin.codegen.rendering.serde.deserializerName
 import software.amazon.smithy.kotlin.codegen.rendering.serde.formatInstant
 import software.amazon.smithy.kotlin.codegen.rendering.serde.parseInstantExpr
@@ -42,6 +43,11 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         object RenderThrowOperationError : SectionId {
             val Context = SectionKey<ProtocolGenerator.GenerationContext>("Context")
             val Operation = SectionKey<OperationShape>("Operation")
+
+            object PostErrorDetails : SectionId {
+                val ExceptionBaseSymbol = SectionKey<Symbol>("ExceptionBaseSymbol")
+            }
+            object PreExceptionThrow : SectionId
         }
     }
 
@@ -152,7 +158,13 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                     }
                 }
                 .write("")
-            operationErrorPostErrorDetailsMiddleware(ctx, writer, exceptionBaseSymbol)
+
+            writer.declareSection(
+                Sections.RenderThrowOperationError.PostErrorDetails,
+                mapOf(
+                    ExceptionBaseSymbol to exceptionBaseSymbol,
+                ),
+            )
 
             writer.withBlock("val ex = when(errorDetails.code) {", "}") {
                 op.errors.forEach { err ->
@@ -169,27 +181,10 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             writer.write("")
             writer.write("#T(ex, wrappedResponse, errorDetails)", RuntimeTypes.AwsProtocolCore.setAseErrorMetadata)
 
-            operationErrorPreExceptionThrowMiddleware(ctx, writer)
+            writer.declareSection(Sections.RenderThrowOperationError.PreExceptionThrow)
             writer.write("throw ex")
         }
     }
-
-    /**
-     * Middleware for the post error details rendering in the [renderThrowOperationError] function
-     */
-    open fun operationErrorPostErrorDetailsMiddleware(
-        ctx: ProtocolGenerator.GenerationContext,
-        writer: KotlinWriter,
-        exceptionBaseSymbol: Symbol,
-    ) {}
-
-    /**
-     * Middleware for before rendering the exception throw in the [renderThrowOperationError] function
-     */
-    open fun operationErrorPreExceptionThrowMiddleware(
-        ctx: ProtocolGenerator.GenerationContext,
-        writer: KotlinWriter,
-    ) {}
 
     /**
      * Render the code to parse the `ErrorDetails` from the HTTP response.

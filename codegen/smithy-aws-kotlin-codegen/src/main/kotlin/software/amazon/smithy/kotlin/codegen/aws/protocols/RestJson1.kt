@@ -24,7 +24,7 @@ import software.amazon.smithy.model.shapes.StructureShape
  * Handles generating the aws.protocols#restJson1 protocol for services.
  *
  * @inheritDoc
- * @see AwsHttpBindingProtocolGenerator
+ * @see HttpBindingProtocolGenerator
  */
 class RestJson1 : JsonHttpBindingProtocolGenerator() {
 

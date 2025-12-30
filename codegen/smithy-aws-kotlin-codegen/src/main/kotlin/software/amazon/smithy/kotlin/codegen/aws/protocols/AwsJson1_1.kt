@@ -22,7 +22,7 @@ import software.amazon.smithy.model.shapes.ShapeId
  * Handles generating the aws.protocols#awsJson1_1 protocol for services.
  *
  * @inheritDoc
- * @see AwsHttpBindingProtocolGenerator
+ * @see HttpBindingProtocolGenerator
  */
 @Suppress("ktlint:standard:class-naming")
 class AwsJson1_1 : JsonHttpBindingProtocolGenerator() {

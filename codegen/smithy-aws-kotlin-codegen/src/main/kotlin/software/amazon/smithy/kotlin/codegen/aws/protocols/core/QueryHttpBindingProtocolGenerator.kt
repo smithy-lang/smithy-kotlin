@@ -12,6 +12,7 @@ import software.amazon.smithy.kotlin.codegen.model.expectShape
 import software.amazon.smithy.kotlin.codegen.model.knowledge.SerdeIndex
 import software.amazon.smithy.kotlin.codegen.model.targetOrSelf
 import software.amazon.smithy.kotlin.codegen.protocols.core.StaticHttpBindingResolver
+import software.amazon.smithy.kotlin.codegen.rendering.protocol.HttpBindingProtocolGenerator
 import software.amazon.smithy.kotlin.codegen.rendering.protocol.HttpBindingResolver
 import software.amazon.smithy.kotlin.codegen.rendering.protocol.MutateHeadersMiddleware
 import software.amazon.smithy.kotlin.codegen.rendering.protocol.ProtocolGenerator
@@ -25,7 +26,7 @@ import software.amazon.smithy.model.traits.TimestampFormatTrait
 
 private const val QUERY_CONTENT_TYPE: String = "application/x-www-form-urlencoded"
 
-abstract class QueryHttpBindingProtocolGenerator : AwsHttpBindingProtocolGenerator() {
+abstract class QueryHttpBindingProtocolGenerator : HttpBindingProtocolGenerator() {
     override val defaultTimestampFormat: TimestampFormatTrait.Format = TimestampFormatTrait.Format.DATE_TIME
 
     override fun getDefaultHttpMiddleware(ctx: ProtocolGenerator.GenerationContext): List<ProtocolMiddleware> {

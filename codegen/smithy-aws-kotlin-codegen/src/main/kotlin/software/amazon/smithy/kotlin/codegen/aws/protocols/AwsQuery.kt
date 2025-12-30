@@ -32,7 +32,7 @@ import software.amazon.smithy.model.traits.XmlNameTrait
  * Handles generating the aws.protocols#awsQuery protocol for services.
  *
  * @inheritDoc
- * @see AwsHttpBindingProtocolGenerator
+ * @see HttpBindingProtocolGenerator
  */
 class AwsQuery : QueryHttpBindingProtocolGenerator() {
     override val protocol: ShapeId = AwsQueryTrait.ID
