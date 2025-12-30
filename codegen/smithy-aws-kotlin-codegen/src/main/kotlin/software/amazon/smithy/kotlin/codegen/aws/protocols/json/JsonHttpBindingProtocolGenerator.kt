@@ -5,9 +5,9 @@
 
 package software.amazon.smithy.kotlin.codegen.aws.protocols.json
 
+import software.amazon.smithy.kotlin.codegen.aws.protocols.core.AwsHttpBindingProtocolGenerator
 import software.amazon.smithy.kotlin.codegen.core.KotlinWriter
 import software.amazon.smithy.kotlin.codegen.core.RuntimeTypes
-import software.amazon.smithy.kotlin.codegen.rendering.protocol.HttpBindingProtocolGenerator
 import software.amazon.smithy.kotlin.codegen.rendering.protocol.ProtocolGenerator
 import software.amazon.smithy.kotlin.codegen.rendering.serde.*
 import software.amazon.smithy.model.shapes.OperationShape
@@ -16,7 +16,7 @@ import software.amazon.smithy.model.traits.TimestampFormatTrait
 /**
  * Abstract base class that all protocols using JSON as a document format can inherit from
  */
-abstract class JsonHttpBindingProtocolGenerator : HttpBindingProtocolGenerator() {
+abstract class JsonHttpBindingProtocolGenerator : AwsHttpBindingProtocolGenerator() {
 
     override val defaultTimestampFormat: TimestampFormatTrait.Format = TimestampFormatTrait.Format.EPOCH_SECONDS
 
