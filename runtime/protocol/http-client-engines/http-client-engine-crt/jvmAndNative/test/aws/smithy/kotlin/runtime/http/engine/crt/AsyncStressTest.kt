@@ -19,9 +19,7 @@ import io.ktor.server.cio.*
 import io.ktor.server.engine.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
-import kotlinx.atomicfu.atomic
 import kotlinx.coroutines.*
-import kotlin.test.Ignore
 import kotlin.test.Test
 import kotlin.time.Duration.Companion.seconds
 
@@ -47,19 +45,13 @@ class AsyncStressTest : TestWithLocalServer() {
     }.start()
 
     @Test
-    @Ignore // FIXME re-enable this test after debugging why it's so flaky, particularly on LinuxX64
     fun testStreamNotConsumed() = runBlocking {
         // test that filling the stream window and not consuming the body stream still cleans up resources
         // appropriately and allows requests to proceed (a stream that isn't consumed will be in a stuck state
         // if the window is full and never incremented again, this can lead to all connections being consumed
         // and the engine to no longer make further requests)
 
-        val tasksStarted = atomic(0)
-        val callsStarted = atomic(0)
-        val yieldsCompleted = atomic(0)
-        val callsCompleted = atomic(0)
-        val cancelExceptions = atomic(0)
-        val nonCancelExceptions = atomic(0)
+        val taskStatuses = List(1_000) { TaskStatus() }
 
         try {
             CrtHttpEngine().use { engine ->
@@ -78,25 +70,26 @@ class AsyncStressTest : TestWithLocalServer() {
                 val sanityCall = client.call(request)
                 val resp = sanityCall.response.body.readAll()
                 sanityCall.complete()
-                println("Successfully completed sanity check call (response length = ${resp?.size}")
+                println("Successfully completed sanity check call (response length = ${resp?.size})")
 
                 withTimeout(30.seconds) {
-                    repeat(1_000) {
+                    taskStatuses.forEachIndexed { idx, status ->
                         async {
-                            tasksStarted.incrementAndGet()
+                            status.taskStarted = true
                             try {
                                 val call = client.call(request)
-                                callsStarted.incrementAndGet()
+                                status.callStarted = true
                                 yield()
-                                yieldsCompleted.incrementAndGet()
+                                status.yieldCompleted = true
                                 call.complete()
-                                callsCompleted.incrementAndGet()
-                            } catch (_: CancellationException) {
-                                // expected
-                                cancelExceptions.incrementAndGet()
-                            } catch (ex: Exception) {
-                                nonCancelExceptions.incrementAndGet()
-                                println("exception on $it: $ex")
+                                status.callCompleted = true
+                            } catch (ex: Throwable) {
+                                status.exception = ex
+
+                                if (ex !is CancellationException) {
+                                    println("exception on $idx: $ex")
+                                }
+
                                 throw ex
                             }
                         }
@@ -105,12 +98,46 @@ class AsyncStressTest : TestWithLocalServer() {
                 }
             }
         } finally {
-            println("Tasks started: $tasksStarted")
-            println("Calls started: $callsStarted")
-            println("Yields completed: $yieldsCompleted")
-            println("Calls completed: $callsCompleted")
-            println("CancellationExceptions: $cancelExceptions")
-            println("Other exceptions: $nonCancelExceptions")
+            var tasksStarted = 0
+            var callsStarted = 0
+            var yieldsCompleted = 0
+            var callsCompleted = 0
+            var cancelExceptions = 0
+            var otherExceptions = 0
+            val exceptionMessages = mutableSetOf<String>()
+
+            taskStatuses.forEach { status ->
+                if (status.taskStarted) tasksStarted++
+                if (status.callStarted) callsStarted++
+                if (status.yieldCompleted) yieldsCompleted++
+                if (status.callCompleted) callsCompleted++
+
+                val ex = status.exception
+                if (ex != null) {
+                    if (ex is CancellationException) {
+                        cancelExceptions++
+                    } else {
+                        otherExceptions++
+                        exceptionMessages.add(ex.message ?: "(no message)")
+                    }
+                }
+            }
+
+            println("Tasks started           : $tasksStarted")
+            println("Calls started           : $callsStarted")
+            println("Yields completed        : $yieldsCompleted")
+            println("Calls completed         : $callsCompleted")
+            println("Cancellation exceptions : $cancelExceptions")
+            println("Other exceptions        : $otherExceptions")
+            exceptionMessages.forEach { println("• \"$it\"") }
         }
     }
 }
+
+private data class TaskStatus(
+    var taskStarted: Boolean = false,
+    var callStarted: Boolean = false,
+    var yieldCompleted: Boolean = false,
+    var callCompleted: Boolean = false,
+    var exception: Throwable? = null,
+)
