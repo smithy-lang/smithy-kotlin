@@ -5,6 +5,7 @@
 package software.amazon.smithy.kotlin.codegen.aws.protocols
 
 import software.amazon.smithy.aws.traits.protocols.RestJson1Trait
+import software.amazon.smithy.kotlin.codegen.aws.protocols.core.AwsHttpBindingProtocolGenerator
 import software.amazon.smithy.kotlin.codegen.aws.protocols.json.AwsJsonProtocolParserGenerator
 import software.amazon.smithy.kotlin.codegen.aws.protocols.json.JsonHttpBindingProtocolGenerator
 import software.amazon.smithy.kotlin.codegen.core.KotlinWriter
@@ -24,7 +25,7 @@ import software.amazon.smithy.model.shapes.StructureShape
  * Handles generating the aws.protocols#restJson1 protocol for services.
  *
  * @inheritDoc
- * @see HttpBindingProtocolGenerator
+ * @see AwsHttpBindingProtocolGenerator
  */
 class RestJson1 : JsonHttpBindingProtocolGenerator() {
 

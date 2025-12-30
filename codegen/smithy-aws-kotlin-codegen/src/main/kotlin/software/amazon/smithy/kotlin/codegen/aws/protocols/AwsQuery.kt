@@ -8,6 +8,7 @@ package software.amazon.smithy.kotlin.codegen.aws.protocols
 import software.amazon.smithy.aws.traits.protocols.AwsQueryErrorTrait
 import software.amazon.smithy.aws.traits.protocols.AwsQueryTrait
 import software.amazon.smithy.kotlin.codegen.aws.protocols.core.AbstractQueryFormUrlSerializerGenerator
+import software.amazon.smithy.kotlin.codegen.aws.protocols.core.AwsHttpBindingProtocolGenerator
 import software.amazon.smithy.kotlin.codegen.aws.protocols.core.QueryHttpBindingProtocolGenerator
 import software.amazon.smithy.kotlin.codegen.aws.protocols.formurl.QuerySerdeFormUrlDescriptorGenerator
 import software.amazon.smithy.kotlin.codegen.core.KotlinWriter
@@ -32,7 +33,7 @@ import software.amazon.smithy.model.traits.XmlNameTrait
  * Handles generating the aws.protocols#awsQuery protocol for services.
  *
  * @inheritDoc
- * @see HttpBindingProtocolGenerator
+ * @see AwsHttpBindingProtocolGenerator
  */
 class AwsQuery : QueryHttpBindingProtocolGenerator() {
     override val protocol: ShapeId = AwsQueryTrait.ID
