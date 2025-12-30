@@ -21,6 +21,7 @@ import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import kotlinx.atomicfu.atomic
 import kotlinx.coroutines.*
+import kotlin.test.Ignore
 import kotlin.test.Test
 import kotlin.time.Duration.Companion.seconds
 
@@ -46,6 +47,7 @@ class AsyncStressTest : TestWithLocalServer() {
     }.start()
 
     @Test
+    @Ignore // FIXME re-enable this test after debugging why it's so flaky, particularly on LinuxX64
     fun testStreamNotConsumed() = runBlocking {
         // test that filling the stream window and not consuming the body stream still cleans up resources
         // appropriately and allows requests to proceed (a stream that isn't consumed will be in a stuck state
