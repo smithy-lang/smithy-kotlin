@@ -54,7 +54,10 @@ class AsyncStressTest : TestWithLocalServer() {
         val taskStatuses = List(1_000) { TaskStatus() }
 
         try {
-            CrtHttpEngine().use { engine ->
+            CrtHttpEngine {
+                maxConnections = 1_001u
+                maxConcurrency = 1_001u
+            }.use { engine ->
                 val client = SdkHttpClient(engine)
                 val request = HttpRequestBuilder().apply {
                     url {
