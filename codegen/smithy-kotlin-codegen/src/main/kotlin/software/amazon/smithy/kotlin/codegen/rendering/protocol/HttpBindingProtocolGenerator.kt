@@ -4,7 +4,6 @@
  */
 package software.amazon.smithy.kotlin.codegen.rendering.protocol
 
-import software.amazon.smithy.aws.traits.protocols.AwsQueryCompatibleTrait
 import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.codegen.core.SymbolReference
@@ -153,20 +152,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                     }
                 }
                 .write("")
-
-            if (ctx.service.hasTrait<AwsQueryCompatibleTrait>()) {
-                writer.write("var queryErrorDetails: #T? = null", RuntimeTypes.AwsProtocolCore.AwsQueryCompatibleErrorDetails)
-                writer.withBlock("call.response.headers[#T]?.let {", "}", RuntimeTypes.AwsProtocolCore.XAmznQueryErrorHeader) {
-                    openBlock("queryErrorDetails = try {")
-                    write("#T.parse(it)", RuntimeTypes.AwsProtocolCore.AwsQueryCompatibleErrorDetails)
-                    closeAndOpenBlock("} catch (ex: Exception) {")
-                    withBlock("""throw #T("Failed to parse awsQuery-compatible error", ex).also {""", "}", exceptionBaseSymbol) {
-                        write("#T(it, wrappedResponse, errorDetails)", RuntimeTypes.AwsProtocolCore.setAseErrorMetadata)
-                    }
-                    closeBlock("}")
-                }
-                writer.write("")
-            }
+            operationErrorPostErrorDetailsMiddleware(ctx, writer, exceptionBaseSymbol)
 
             writer.withBlock("val ex = when(errorDetails.code) {", "}") {
                 op.errors.forEach { err ->
@@ -182,13 +168,28 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
 
             writer.write("")
             writer.write("#T(ex, wrappedResponse, errorDetails)", RuntimeTypes.AwsProtocolCore.setAseErrorMetadata)
-            if (ctx.service.hasTrait<AwsQueryCompatibleTrait>()) {
-                writer.write("queryErrorDetails?.let { #T(ex, it) }", RuntimeTypes.AwsProtocolCore.setAwsQueryCompatibleErrorMetadata)
-            }
 
+            operationErrorPreExceptionThrowMiddleware(ctx, writer)
             writer.write("throw ex")
         }
     }
+
+    /**
+     * Middleware for the post error details rendering in the [renderThrowOperationError] function
+     */
+    open fun operationErrorPostErrorDetailsMiddleware(
+        ctx: ProtocolGenerator.GenerationContext,
+        writer: KotlinWriter,
+        exceptionBaseSymbol: Symbol,
+    ) {}
+
+    /**
+     * Middleware for before rendering the exception throw in the [renderThrowOperationError] function
+     */
+    open fun operationErrorPreExceptionThrowMiddleware(
+        ctx: ProtocolGenerator.GenerationContext,
+        writer: KotlinWriter,
+    ) {}
 
     /**
      * Render the code to parse the `ErrorDetails` from the HTTP response.
