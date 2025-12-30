@@ -6,7 +6,6 @@ package software.amazon.smithy.kotlin.codegen.aws
 
 import software.amazon.smithy.kotlin.codegen.aws.protocols.*
 import software.amazon.smithy.kotlin.codegen.integration.KotlinIntegration
-import software.amazon.smithy.kotlin.codegen.protocols.RpcV2Cbor
 import software.amazon.smithy.kotlin.codegen.rendering.protocol.ProtocolGenerator
 
 /**
@@ -29,6 +28,5 @@ class SdkProtocolGeneratorSupplier : KotlinIntegration {
             RestXml(),
             AwsQuery(),
             Ec2Query(),
-            RpcV2Cbor(),
         )
 }
