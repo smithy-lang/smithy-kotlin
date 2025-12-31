@@ -151,6 +151,7 @@ internal class SdkStreamResponseHandler(
 
     override fun onResponseHeadersDone(stream: HttpStream, blockType: Int) {
         if (!blockType.isMainHeadersBlock || lock.withLock { streamCompleted }) return
+        if (statusCode == null) statusCode = HttpStatusCode.fromValue(stream.responseStatusCode)
         signalResponse()
     }
 
@@ -169,6 +170,8 @@ internal class SdkStreamResponseHandler(
             return bodyBytesIn.len
         }
 
+        if (statusCode == null) statusCode = HttpStatusCode.fromValue(stream.responseStatusCode)
+
         val buffer = SdkBuffer().apply {
             val bytes = bodyBytesIn.readAll()
             write(bytes)
@@ -181,6 +184,8 @@ internal class SdkStreamResponseHandler(
     }
 
     override fun onResponseComplete(stream: HttpStream, errorCode: Int) {
+        if (statusCode == null) statusCode = HttpStatusCode.fromValue(stream.responseStatusCode)
+
         // stream is only valid until the end of this callback, ensure any further data being read downstream
         // doesn't call incrementWindow on a resource that has been free'd
         lock.withLock {
