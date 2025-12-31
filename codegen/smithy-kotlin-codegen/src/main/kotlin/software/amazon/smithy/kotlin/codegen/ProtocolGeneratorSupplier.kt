@@ -12,8 +12,6 @@ import software.amazon.smithy.kotlin.codegen.rendering.protocol.ProtocolGenerato
  * Integration that registers protocol generators this package provides
  */
 class ProtocolGeneratorSupplier : KotlinIntegration {
-    override val order: Byte = -10
-
     override val protocolGenerators: List<ProtocolGenerator> =
         listOf(
             RpcV2Cbor(),
