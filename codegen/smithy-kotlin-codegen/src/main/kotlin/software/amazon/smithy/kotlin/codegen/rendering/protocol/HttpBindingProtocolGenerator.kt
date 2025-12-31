@@ -9,9 +9,16 @@ import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.codegen.core.SymbolReference
 import software.amazon.smithy.kotlin.codegen.KotlinSettings
 import software.amazon.smithy.kotlin.codegen.core.*
+import software.amazon.smithy.kotlin.codegen.integration.SectionId
+import software.amazon.smithy.kotlin.codegen.integration.SectionKey
 import software.amazon.smithy.kotlin.codegen.lang.KotlinTypes
 import software.amazon.smithy.kotlin.codegen.lang.toEscapedLiteral
 import software.amazon.smithy.kotlin.codegen.model.*
+import software.amazon.smithy.kotlin.codegen.model.hasTrait
+import software.amazon.smithy.kotlin.codegen.protocols.eventstream.EventStreamParserGenerator
+import software.amazon.smithy.kotlin.codegen.protocols.eventstream.EventStreamSerializerGenerator
+import software.amazon.smithy.kotlin.codegen.rendering.ExceptionBaseClassGenerator
+import software.amazon.smithy.kotlin.codegen.rendering.protocol.HttpBindingProtocolGenerator.Sections.RenderThrowOperationError.PostErrorDetails.ExceptionBaseSymbol
 import software.amazon.smithy.kotlin.codegen.rendering.serde.deserializerName
 import software.amazon.smithy.kotlin.codegen.rendering.serde.formatInstant
 import software.amazon.smithy.kotlin.codegen.rendering.serde.parseInstantExpr
@@ -27,6 +34,23 @@ import java.util.logging.Logger
  * Abstract implementation useful for all HTTP protocols
  */
 abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
+
+    object Sections {
+        object ProtocolErrorDeserialization : SectionId {
+            val Operation = SectionKey<OperationShape>("Operation")
+        }
+
+        object RenderThrowOperationError : SectionId {
+            val Context = SectionKey<ProtocolGenerator.GenerationContext>("Context")
+            val Operation = SectionKey<OperationShape>("Operation")
+
+            object PostErrorDetails : SectionId {
+                val ExceptionBaseSymbol = SectionKey<Symbol>("ExceptionBaseSymbol")
+            }
+            object PreExceptionThrow : SectionId
+        }
+    }
+
     private val logger = Logger.getLogger(javaClass.name)
 
     override val applicationProtocol: ApplicationProtocol = ApplicationProtocol.createDefaultHttpApplicationProtocol()
@@ -88,7 +112,91 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
      * @param ctx the protocol generator context
      * @param op the operation shape to render error matching
      */
-    abstract fun operationErrorHandler(ctx: ProtocolGenerator.GenerationContext, op: OperationShape): Symbol
+    open fun operationErrorHandler(ctx: ProtocolGenerator.GenerationContext, op: OperationShape): Symbol =
+        op.errorHandler(ctx.settings) { writer ->
+            writer.withBlock(
+                "private fun #L(context: #T, call: #T, payload: #T?): #Q {",
+                "}",
+                op.errorHandlerName(),
+                RuntimeTypes.Core.ExecutionContext,
+                RuntimeTypes.Http.HttpCall,
+                KotlinTypes.ByteArray,
+                KotlinTypes.Nothing,
+            ) {
+                renderThrowOperationError(ctx, op, writer)
+            }
+        }
+
+    @Suppress("DEPRECATION")
+    open fun renderThrowOperationError(ctx: ProtocolGenerator.GenerationContext, op: OperationShape, writer: KotlinWriter) {
+        writer.declareSection(
+            Sections.RenderThrowOperationError,
+            mapOf(
+                Sections.RenderThrowOperationError.Context to ctx,
+                Sections.RenderThrowOperationError.Operation to op,
+            ),
+        ) {
+            val exceptionBaseSymbol = ExceptionBaseClassGenerator.baseExceptionSymbol(ctx.settings)
+            writer.write("val wrappedResponse = call.response.#T(payload)", RuntimeTypes.AwsProtocolCore.withPayload)
+                .write("val wrappedCall = call.copy(response = wrappedResponse)")
+                .write("")
+                .declareSection(
+                    Sections.ProtocolErrorDeserialization,
+                    mapOf(
+                        Sections.ProtocolErrorDeserialization.Operation to op,
+                    ),
+                )
+                .write("val errorDetails = try {")
+                .indent()
+                .call {
+                    renderDeserializeErrorDetails(ctx, op, writer)
+                }
+                .dedent()
+                .withBlock("} catch (ex: Exception) {", "}") {
+                    withBlock("""throw #T("Failed to parse response as '${ctx.protocol.name}' error", ex).also {""", "}", exceptionBaseSymbol) {
+                        write("#T(it, wrappedCall.response, null)", RuntimeTypes.AwsProtocolCore.setAseErrorMetadata)
+                    }
+                }
+                .write("")
+
+            writer.declareSection(
+                Sections.RenderThrowOperationError.PostErrorDetails,
+                mapOf(
+                    ExceptionBaseSymbol to exceptionBaseSymbol,
+                ),
+            )
+
+            writer.withBlock("val ex = when(errorDetails.code) {", "}") {
+                op.errors.forEach { err ->
+                    val errSymbol = ctx.symbolProvider.toSymbol(ctx.model.expectShape(err))
+                    val errDeserializerSymbol = buildSymbol {
+                        name = "${errSymbol.name}Deserializer"
+                        namespace = ctx.settings.pkg.serde
+                    }
+                    writer.write("#S -> #T().deserialize(context, wrappedCall, payload)", getErrorCode(ctx, err), errDeserializerSymbol)
+                }
+                write("else -> #T(errorDetails.message)", exceptionBaseSymbol)
+            }
+
+            writer.write("")
+            writer.write("#T(ex, wrappedResponse, errorDetails)", RuntimeTypes.AwsProtocolCore.setAseErrorMetadata)
+
+            writer.declareSection(Sections.RenderThrowOperationError.PreExceptionThrow)
+            writer.write("throw ex")
+        }
+    }
+
+    /**
+     * Render the code to parse the `ErrorDetails` from the HTTP response.
+     */
+    open fun renderDeserializeErrorDetails(ctx: ProtocolGenerator.GenerationContext, op: OperationShape, writer: KotlinWriter) {
+        writer.write("#T.deserialize(payload)", RuntimeTypes.SmithyRpcV2Protocols.Cbor.RpcV2CborErrorDeserializer)
+    }
+
+    /**
+     * Get the error "code" that uniquely identifies the AWS error.
+     */
+    open fun getErrorCode(ctx: ProtocolGenerator.GenerationContext, errShapeId: ShapeId): String = errShapeId.name
 
     // FIXME - probably make abstract and let individual protocols throw if they don't support event stream bindings
 
@@ -100,7 +208,12 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
      * @param ctx the protocol generator context
      * @param op the operation shape to return event stream serializer for
      */
-    open fun eventStreamRequestHandler(ctx: ProtocolGenerator.GenerationContext, op: OperationShape): Symbol = error("event streams are not supported by $this")
+    open fun eventStreamRequestHandler(ctx: ProtocolGenerator.GenerationContext, op: OperationShape): Symbol {
+        val resolver = getProtocolHttpBindingResolver(ctx.model, ctx.service)
+        val contentType = resolver.determineRequestContentType(op) ?: error("event streams must set a content-type")
+        val eventStreamSerializerGenerator = EventStreamSerializerGenerator(structuredDataSerializer(ctx), contentType)
+        return eventStreamSerializerGenerator.requestHandler(ctx, op)
+    }
 
     /**
      *
@@ -111,7 +224,10 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
      * @param ctx the protocol generator context
      * @param op the operation shape to return event stream deserializer for
      */
-    open fun eventStreamResponseHandler(ctx: ProtocolGenerator.GenerationContext, op: OperationShape): Symbol = error("event streams are not supported by $this")
+    open fun eventStreamResponseHandler(ctx: ProtocolGenerator.GenerationContext, op: OperationShape): Symbol {
+        val eventStreamParserGenerator = EventStreamParserGenerator(ctx, structuredDataParser(ctx))
+        return eventStreamParserGenerator.responseHandler(ctx, op)
+    }
 
     private fun generateSerializers(ctx: ProtocolGenerator.GenerationContext) {
         val resolver = getProtocolHttpBindingResolver(ctx.model, ctx.service)
@@ -144,6 +260,31 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         }
         generateSerializers(ctx)
         generateDeserializers(ctx)
+    }
+
+    override fun generateProtocolUnitTests(ctx: ProtocolGenerator.GenerationContext) {
+        // The following can be used to generate only a specific test by name.
+        // val targetedTest = TestMemberDelta(setOf("RestJsonComplexErrorWithNoMessage"), TestContainmentMode.RUN_TESTS)
+
+        val ignoredTests = TestMemberDelta(
+            setOf(
+                // likely bug in Smithy's HTTP header traits spec
+                "RestJsonHttpEmptyPrefixHeadersRequestClient",
+                "HttpEmptyPrefixHeadersRequestClient",
+            ),
+        )
+
+        val requestTestBuilder = HttpProtocolUnitTestRequestGenerator.Builder()
+        val responseTestBuilder = HttpProtocolUnitTestResponseGenerator.Builder()
+        val errorTestBuilder = HttpProtocolUnitTestErrorGenerator.Builder()
+
+        HttpProtocolTestGenerator(
+            ctx,
+            requestTestBuilder,
+            responseTestBuilder,
+            errorTestBuilder,
+            ignoredTests,
+        ).generateProtocolTests()
     }
 
     /**
