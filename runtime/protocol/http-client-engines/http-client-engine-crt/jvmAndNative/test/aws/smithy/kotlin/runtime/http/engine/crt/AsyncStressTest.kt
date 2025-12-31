@@ -23,6 +23,10 @@ import kotlinx.coroutines.withTimeout
 import kotlin.test.Test
 import kotlin.time.Duration.Companion.seconds
 
+private const val PARALLELISM = 1_000
+private val TEST_TIMEOUT = 30.seconds
+private val ENGINE_TIMEOUTS = TEST_TIMEOUT * 2
+
 class AsyncStressTest : TestWithLocalServer() {
     override val server = embeddedServer(
         CIO,
@@ -78,12 +82,20 @@ class AsyncStressTest : TestWithLocalServer() {
         // if the window is full and never incremented again, this can lead to all connections being consumed
         // and the engine to no longer make further requests)
 
-        val tasks = List(1_000) { StreamTask() }
+        server.reload()
+
+        val tasks = List(PARALLELISM) { StreamTask() }
 
         try {
             CrtHttpEngine {
-                maxConnections = 1_001u
-                maxConcurrency = 1_001u
+                maxConnections = PARALLELISM.toUInt()
+                maxConcurrency = PARALLELISM.toUInt()
+
+                connectionAcquireTimeout = ENGINE_TIMEOUTS
+                connectTimeout = ENGINE_TIMEOUTS
+                socketReadTimeout = ENGINE_TIMEOUTS
+                socketWriteTimeout = ENGINE_TIMEOUTS
+                connectionIdleTimeout = ENGINE_TIMEOUTS
             }.use { engine ->
                 val client = SdkHttpClient(engine)
                 val request = HttpRequestBuilder().apply {
@@ -102,7 +114,9 @@ class AsyncStressTest : TestWithLocalServer() {
                 sanityCall.complete()
                 println("Successfully completed sanity check call (response length = ${resp?.size})")
 
-                withTimeout(30.seconds) {
+                server.reload()
+
+                withTimeout(TEST_TIMEOUT) {
                     tasks.forEachIndexed { idx, task ->
                         async {
                             task.taskStarted = true

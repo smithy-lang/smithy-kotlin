@@ -51,6 +51,7 @@ internal class ConnectionManager(
         tlsContext = crtTlsContext
         manualWindowManagement = true
         socketOptions = SocketOptions(
+
             connectTimeoutMs = config.connectTimeout.inWholeMilliseconds.toInt(),
         )
         initialWindowSize = config.initialWindowSizeBytes
