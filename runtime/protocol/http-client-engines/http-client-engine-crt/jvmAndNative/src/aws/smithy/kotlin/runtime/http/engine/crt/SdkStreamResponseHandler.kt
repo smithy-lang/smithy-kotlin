@@ -7,6 +7,7 @@ package aws.smithy.kotlin.runtime.http.engine.crt
 
 import aws.sdk.kotlin.crt.http.*
 import aws.sdk.kotlin.crt.io.Buffer
+import aws.smithy.kotlin.runtime.ServiceException
 import aws.smithy.kotlin.runtime.http.HeadersBuilder
 import aws.smithy.kotlin.runtime.http.HttpBody
 import aws.smithy.kotlin.runtime.http.HttpStatusCode
@@ -58,6 +59,12 @@ internal class SdkStreamResponseHandler(
             else -> false
         }
 
+    /**
+     * The HTTP status code (e.g., HTTP 200) from the response stream. This starts as `null` and will be populated as
+     * soon as headers are received.
+     */
+    private var statusCode: HttpStatusCode? = null
+
     private var streamCompleted = false
 
     /**
@@ -77,6 +84,8 @@ internal class SdkStreamResponseHandler(
         nextHeaders: List<HttpHeader>?,
     ) {
         if (!blockType.isMainHeadersBlock || lock.withLock { streamCompleted }) return
+
+        if (statusCode == null) statusCode = HttpStatusCode.fromValue(responseStatusCode)
 
         nextHeaders?.forEach {
             headers.append(it.name, it.value)
@@ -111,14 +120,14 @@ internal class SdkStreamResponseHandler(
     }
 
     // signal response ready and engine can proceed (all that is required is headers, body is consumed asynchronously)
-    private fun signalResponse(stream: HttpStream) {
+    private fun signalResponse() {
         // already signalled
         if (responseReady.isClosedForSend) return
 
         val transferEncoding = headers["Transfer-Encoding"]?.lowercase()
         val chunked = transferEncoding == "chunked"
         val contentLength = headers["Content-Length"]?.toLong()
-        val status = HttpStatusCode.fromValue(stream.responseStatusCode)
+        val status = statusCode ?: throw ServiceException("Could not determine status code for HTTP response")
 
         val hasBody = ((contentLength != null && contentLength > 0) || chunked) &&
             (status !in listOf(HttpStatusCode.NotModified, HttpStatusCode.NoContent)) &&
@@ -142,7 +151,7 @@ internal class SdkStreamResponseHandler(
 
     override fun onResponseHeadersDone(stream: HttpStream, blockType: Int) {
         if (!blockType.isMainHeadersBlock || lock.withLock { streamCompleted }) return
-        signalResponse(stream)
+        signalResponse()
     }
 
     override fun onResponseBody(stream: HttpStream, bodyBytesIn: Buffer): Int {
@@ -190,7 +199,7 @@ internal class SdkStreamResponseHandler(
             // closing the channel to indicate no more data will be sent
             bodyChan.close()
             // ensure a response was signalled (will close the channel on it's own if it wasn't already sent)
-            signalResponse(stream)
+            signalResponse()
         }
     }
 

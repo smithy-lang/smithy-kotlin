@@ -44,6 +44,16 @@ class AsyncStressTest : TestWithLocalServer() {
         }
     }.start()
 
+    @Test fun testStreamNotConsumed_2() = testStreamNotConsumed()
+    @Test fun testStreamNotConsumed_3() = testStreamNotConsumed()
+    @Test fun testStreamNotConsumed_4() = testStreamNotConsumed()
+    @Test fun testStreamNotConsumed_5() = testStreamNotConsumed()
+    @Test fun testStreamNotConsumed_6() = testStreamNotConsumed()
+    @Test fun testStreamNotConsumed_7() = testStreamNotConsumed()
+    @Test fun testStreamNotConsumed_8() = testStreamNotConsumed()
+    @Test fun testStreamNotConsumed_9() = testStreamNotConsumed()
+    @Test fun testStreamNotConsumed_10() = testStreamNotConsumed()
+
     @Test
     fun testStreamNotConsumed() = runBlocking {
         // test that filling the stream window and not consuming the body stream still cleans up resources
