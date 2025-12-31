@@ -5,7 +5,6 @@
 package software.amazon.smithy.kotlin.codegen.aws.protocols
 
 import software.amazon.smithy.aws.traits.protocols.AwsJson1_0Trait
-import software.amazon.smithy.kotlin.codegen.aws.protocols.core.AwsHttpBindingProtocolGenerator
 import software.amazon.smithy.kotlin.codegen.aws.protocols.json.AwsJsonHttpBindingResolver
 import software.amazon.smithy.kotlin.codegen.aws.protocols.json.AwsJsonProtocolMiddleware
 import software.amazon.smithy.kotlin.codegen.aws.protocols.json.AwsJsonProtocolParserGenerator
@@ -22,7 +21,7 @@ import software.amazon.smithy.model.shapes.ShapeId
  * Handles generating the aws.protocols#awsJson1_0 protocol for services.
  *
  * @inheritDoc
- * @see AwsHttpBindingProtocolGenerator
+ * @see HttpBindingProtocolGenerator
  */
 @Suppress("ktlint:standard:class-naming")
 class AwsJson1_0 : JsonHttpBindingProtocolGenerator() {

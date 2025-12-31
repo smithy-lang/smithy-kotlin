@@ -2,10 +2,15 @@
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
  * SPDX-License-Identifier: Apache-2.0
  */
+
 package software.amazon.smithy.kotlin.codegen.aws.protocols
 
 import io.kotest.matchers.string.shouldNotContain
-import software.amazon.smithy.kotlin.codegen.test.*
+import software.amazon.smithy.kotlin.codegen.test.lines
+import software.amazon.smithy.kotlin.codegen.test.newTestContext
+import software.amazon.smithy.kotlin.codegen.test.shouldContainOnlyOnceWithDiff
+import software.amazon.smithy.kotlin.codegen.test.shouldNotContainOnlyOnceWithDiff
+import software.amazon.smithy.kotlin.codegen.test.toSmithyModel
 import kotlin.test.Test
 
 class RpcV2CborTest {

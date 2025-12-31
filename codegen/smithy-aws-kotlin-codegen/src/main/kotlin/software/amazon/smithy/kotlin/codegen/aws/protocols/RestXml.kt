@@ -7,7 +7,6 @@ package software.amazon.smithy.kotlin.codegen.aws.protocols
 
 import software.amazon.smithy.aws.traits.protocols.RestXmlTrait
 import software.amazon.smithy.codegen.core.Symbol
-import software.amazon.smithy.kotlin.codegen.aws.protocols.core.AwsHttpBindingProtocolGenerator
 import software.amazon.smithy.kotlin.codegen.aws.protocols.xml.RestXmlSerdeDescriptorGenerator
 import software.amazon.smithy.kotlin.codegen.core.KotlinWriter
 import software.amazon.smithy.kotlin.codegen.core.RuntimeTypes
@@ -26,9 +25,9 @@ import kotlin.contracts.contract
  * Handles generating the aws.protocols#restJson1 protocol for services.
  *
  * @inheritDoc
- * @see AwsHttpBindingProtocolGenerator
+ * @see HttpBindingProtocolGenerator
  */
-open class RestXml : AwsHttpBindingProtocolGenerator() {
+open class RestXml : HttpBindingProtocolGenerator() {
 
     override val protocol: ShapeId = RestXmlTrait.ID
     override val defaultTimestampFormat: TimestampFormatTrait.Format = TimestampFormatTrait.Format.DATE_TIME
