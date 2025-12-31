@@ -21,7 +21,7 @@ import software.amazon.smithy.model.shapes.*
 import software.amazon.smithy.model.traits.TimestampFormatTrait
 import kotlin.test.Test
 
-class AwsHttpBindingProtocolGeneratorTest {
+class HttpBindingProtocolGeneratorTest {
 
     @Test
     fun itThrowsBaseServiceExceptionOnErrorParseFailure() {
@@ -154,7 +154,7 @@ class AwsHttpBindingProtocolGeneratorTest {
     }
 
     /**
-     * A concrete implementation of AwsHttpBindingProtocolGenerator to exercise:
+     * A concrete implementation of HttpBindingProtocolGenerator to exercise:
      *  renderThrowOperationError()
      *  getProtocolHttpBindingResolver()
      */

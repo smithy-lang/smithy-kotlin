@@ -4,7 +4,6 @@
  */
 package software.amazon.smithy.kotlin.codegen.rendering.protocol
 
-import software.amazon.smithy.aws.traits.protocols.AwsQueryCompatibleTrait
 import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.codegen.core.SymbolReference
@@ -19,6 +18,7 @@ import software.amazon.smithy.kotlin.codegen.model.hasTrait
 import software.amazon.smithy.kotlin.codegen.protocols.eventstream.EventStreamParserGenerator
 import software.amazon.smithy.kotlin.codegen.protocols.eventstream.EventStreamSerializerGenerator
 import software.amazon.smithy.kotlin.codegen.rendering.ExceptionBaseClassGenerator
+import software.amazon.smithy.kotlin.codegen.rendering.protocol.HttpBindingProtocolGenerator.Sections.RenderThrowOperationError.PostErrorDetails.ExceptionBaseSymbol
 import software.amazon.smithy.kotlin.codegen.rendering.serde.deserializerName
 import software.amazon.smithy.kotlin.codegen.rendering.serde.formatInstant
 import software.amazon.smithy.kotlin.codegen.rendering.serde.parseInstantExpr
@@ -43,6 +43,11 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         object RenderThrowOperationError : SectionId {
             val Context = SectionKey<ProtocolGenerator.GenerationContext>("Context")
             val Operation = SectionKey<OperationShape>("Operation")
+
+            object PostErrorDetails : SectionId {
+                val ExceptionBaseSymbol = SectionKey<Symbol>("ExceptionBaseSymbol")
+            }
+            object PreExceptionThrow : SectionId
         }
     }
 
@@ -154,19 +159,12 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                 }
                 .write("")
 
-            if (ctx.service.hasTrait<AwsQueryCompatibleTrait>()) {
-                writer.write("var queryErrorDetails: #T? = null", RuntimeTypes.AwsProtocolCore.AwsQueryCompatibleErrorDetails)
-                writer.withBlock("call.response.headers[#T]?.let {", "}", RuntimeTypes.AwsProtocolCore.XAmznQueryErrorHeader) {
-                    openBlock("queryErrorDetails = try {")
-                    write("#T.parse(it)", RuntimeTypes.AwsProtocolCore.AwsQueryCompatibleErrorDetails)
-                    closeAndOpenBlock("} catch (ex: Exception) {")
-                    withBlock("""throw #T("Failed to parse awsQuery-compatible error", ex).also {""", "}", exceptionBaseSymbol) {
-                        write("#T(it, wrappedResponse, errorDetails)", RuntimeTypes.AwsProtocolCore.setAseErrorMetadata)
-                    }
-                    closeBlock("}")
-                }
-                writer.write("")
-            }
+            writer.declareSection(
+                Sections.RenderThrowOperationError.PostErrorDetails,
+                mapOf(
+                    ExceptionBaseSymbol to exceptionBaseSymbol,
+                ),
+            )
 
             writer.withBlock("val ex = when(errorDetails.code) {", "}") {
                 op.errors.forEach { err ->
@@ -182,10 +180,8 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
 
             writer.write("")
             writer.write("#T(ex, wrappedResponse, errorDetails)", RuntimeTypes.AwsProtocolCore.setAseErrorMetadata)
-            if (ctx.service.hasTrait<AwsQueryCompatibleTrait>()) {
-                writer.write("queryErrorDetails?.let { #T(ex, it) }", RuntimeTypes.AwsProtocolCore.setAwsQueryCompatibleErrorMetadata)
-            }
 
+            writer.declareSection(Sections.RenderThrowOperationError.PreExceptionThrow)
             writer.write("throw ex")
         }
     }
