@@ -1,0 +1,6 @@
+{
+    "id": "96da9566-8992-4049-9813-7f5d492b8146",
+    "type": "feature",
+    "description": "⚠️ **IMPORTANT**: Enable retryOnConnectionFailure by default in OkHttpEngine",
+    "requiresMinorVersionBump": true
+}
