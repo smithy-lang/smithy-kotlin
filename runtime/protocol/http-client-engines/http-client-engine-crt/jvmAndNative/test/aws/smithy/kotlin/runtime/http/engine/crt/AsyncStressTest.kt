@@ -5,10 +5,7 @@
 
 package aws.smithy.kotlin.runtime.http.engine.crt
 
-import aws.smithy.kotlin.runtime.http.HttpMethod
-import aws.smithy.kotlin.runtime.http.SdkHttpClient
-import aws.smithy.kotlin.runtime.http.complete
-import aws.smithy.kotlin.runtime.http.readAll
+import aws.smithy.kotlin.runtime.http.*
 import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
 import aws.smithy.kotlin.runtime.http.request.url
 import aws.smithy.kotlin.runtime.httptest.TestWithLocalServer
@@ -19,7 +16,10 @@ import io.ktor.server.cio.*
 import io.ktor.server.engine.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.async
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withTimeout
 import kotlin.test.Test
 import kotlin.time.Duration.Companion.seconds
 
@@ -51,7 +51,7 @@ class AsyncStressTest : TestWithLocalServer() {
         // if the window is full and never incremented again, this can lead to all connections being consumed
         // and the engine to no longer make further requests)
 
-        val taskStatuses = List(1_000) { TaskStatus() }
+        val tasks = List(1_000) { StreamTask() }
 
         try {
             CrtHttpEngine {
@@ -76,18 +76,17 @@ class AsyncStressTest : TestWithLocalServer() {
                 println("Successfully completed sanity check call (response length = ${resp?.size})")
 
                 withTimeout(30.seconds) {
-                    taskStatuses.forEachIndexed { idx, status ->
+                    tasks.forEachIndexed { idx, task ->
                         async {
-                            status.taskStarted = true
+                            task.taskStarted = true
                             try {
                                 val call = client.call(request)
-                                status.callStarted = true
-                                yield()
-                                status.yieldCompleted = true
+                                task.call = call
+
                                 call.complete()
-                                status.callCompleted = true
+                                task.callCompleted = true
                             } catch (ex: Throwable) {
-                                status.exception = ex
+                                task.exception = ex
 
                                 if (ex !is CancellationException) {
                                     println("exception on $idx: $ex")
@@ -96,26 +95,23 @@ class AsyncStressTest : TestWithLocalServer() {
                                 throw ex
                             }
                         }
-                        yield()
                     }
                 }
             }
         } finally {
             var tasksStarted = 0
             var callsStarted = 0
-            var yieldsCompleted = 0
             var callsCompleted = 0
             var cancelExceptions = 0
             var otherExceptions = 0
             val exceptionMessages = mutableSetOf<String>()
 
-            taskStatuses.forEach { status ->
-                if (status.taskStarted) tasksStarted++
-                if (status.callStarted) callsStarted++
-                if (status.yieldCompleted) yieldsCompleted++
-                if (status.callCompleted) callsCompleted++
+            tasks.forEach { task ->
+                if (task.taskStarted) tasksStarted++
+                if (task.call != null) callsStarted++
+                if (task.callCompleted) callsCompleted++
 
-                val ex = status.exception
+                val ex = task.exception
                 if (ex != null) {
                     if (ex is CancellationException) {
                         cancelExceptions++
@@ -128,7 +124,6 @@ class AsyncStressTest : TestWithLocalServer() {
 
             println("Tasks started           : $tasksStarted")
             println("Calls started           : $callsStarted")
-            println("Yields completed        : $yieldsCompleted")
             println("Calls completed         : $callsCompleted")
             println("Cancellation exceptions : $cancelExceptions")
             println("Other exceptions        : $otherExceptions")
@@ -137,10 +132,9 @@ class AsyncStressTest : TestWithLocalServer() {
     }
 }
 
-private data class TaskStatus(
+private data class StreamTask(
     var taskStarted: Boolean = false,
-    var callStarted: Boolean = false,
-    var yieldCompleted: Boolean = false,
+    var call: HttpCall? = null,
     var callCompleted: Boolean = false,
     var exception: Throwable? = null,
 )
