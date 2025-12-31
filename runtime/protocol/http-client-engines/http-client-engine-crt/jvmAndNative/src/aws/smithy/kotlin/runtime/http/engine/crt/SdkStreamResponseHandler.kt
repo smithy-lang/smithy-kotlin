@@ -76,7 +76,7 @@ internal class SdkStreamResponseHandler(
         blockType: Int,
         nextHeaders: List<HttpHeader>?,
     ) {
-        if (!blockType.isMainHeadersBlock) return
+        if (!blockType.isMainHeadersBlock || lock.withLock { streamCompleted }) return
 
         nextHeaders?.forEach {
             headers.append(it.name, it.value)
@@ -141,15 +141,17 @@ internal class SdkStreamResponseHandler(
     }
 
     override fun onResponseHeadersDone(stream: HttpStream, blockType: Int) {
-        if (!blockType.isMainHeadersBlock) return
+        if (!blockType.isMainHeadersBlock || lock.withLock { streamCompleted }) return
         signalResponse(stream)
     }
 
     override fun onResponseBody(stream: HttpStream, bodyBytesIn: Buffer): Int {
-        val isCancelled = lock.withLock {
+        val (isCancelled, streamCompleted) = lock.withLock {
             crtStream = stream
-            cancelled
+            cancelled to streamCompleted
         }
+
+        if (streamCompleted) return 0
 
         // short circuit, stop buffering data and discard remaining incoming bytes
         if (isCancelled) {
