@@ -8,7 +8,6 @@ import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.kotlin.codegen.aws.protocols.json.AwsJsonHttpBindingResolver
 import software.amazon.smithy.kotlin.codegen.core.KotlinWriter
 import software.amazon.smithy.kotlin.codegen.model.expectShape
-import software.amazon.smithy.kotlin.codegen.rendering.protocol.HttpBindingProtocolGenerator
 import software.amazon.smithy.kotlin.codegen.rendering.protocol.HttpBindingResolver
 import software.amazon.smithy.kotlin.codegen.rendering.protocol.ProtocolGenerator
 import software.amazon.smithy.kotlin.codegen.rendering.serde.*
@@ -21,7 +20,7 @@ import software.amazon.smithy.model.shapes.*
 import software.amazon.smithy.model.traits.TimestampFormatTrait
 import kotlin.test.Test
 
-class HttpBindingProtocolGeneratorTest {
+class AwsHttpBindingProtocolGeneratorTest {
 
     @Test
     fun itThrowsBaseServiceExceptionOnErrorParseFailure() {
@@ -154,11 +153,11 @@ class HttpBindingProtocolGeneratorTest {
     }
 
     /**
-     * A concrete implementation of HttpBindingProtocolGenerator to exercise:
+     * A concrete implementation of AwsHttpBindingProtocolGenerator to exercise:
      *  renderThrowOperationError()
      *  getProtocolHttpBindingResolver()
      */
-    class TestableAwsHttpBindingProtocolGenerator : HttpBindingProtocolGenerator() {
+    class TestableAwsHttpBindingProtocolGenerator : AwsHttpBindingProtocolGenerator() {
         override fun renderDeserializeErrorDetails(
             ctx: ProtocolGenerator.GenerationContext,
             op: OperationShape,
