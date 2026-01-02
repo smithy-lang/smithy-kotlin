@@ -9,7 +9,6 @@ import aws.smithy.kotlin.runtime.InternalApi
 import aws.smithy.kotlin.runtime.http.HttpCall
 import aws.smithy.kotlin.runtime.http.config.EngineFactory
 import aws.smithy.kotlin.runtime.http.engine.AlpnId
-import aws.smithy.kotlin.runtime.http.engine.HttpClientEngine
 import aws.smithy.kotlin.runtime.http.engine.HttpClientEngineBase
 import aws.smithy.kotlin.runtime.http.engine.TlsContext
 import aws.smithy.kotlin.runtime.http.engine.callContext
@@ -126,10 +125,6 @@ public fun OkHttpEngineConfig.buildClient(
 
         config.certificatePinner?.let(::certificatePinner)
         config.hostnameVerifier?.let(::hostnameVerifier)
-
-        // Transient connection errors are handled by retry strategy (exceptions are wrapped and marked retryable
-        // appropriately internally). We don't want inner retry logic that inflates the number of retries.
-        retryOnConnectionFailure(false)
 
         connectTimeout(config.connectTimeout.toJavaDuration())
         readTimeout(config.socketReadTimeout.toJavaDuration())
