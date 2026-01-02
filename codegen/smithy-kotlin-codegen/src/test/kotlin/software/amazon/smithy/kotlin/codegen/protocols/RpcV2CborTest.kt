@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package software.amazon.smithy.kotlin.codegen.aws.protocols
+package software.amazon.smithy.kotlin.codegen.protocols
 
 import io.kotest.matchers.string.shouldNotContain
 import software.amazon.smithy.kotlin.codegen.test.lines
