@@ -14,10 +14,10 @@ plugins {
 
 description = "Provides common test utilities for Smithy-Kotlin code generation"
 extra["displayName"] = "Smithy :: Kotlin :: Codegen Utils"
-extra["moduleName"] = "software.amazon.smithy.kotlin.codegen.test"
+extra["moduleName"] = "aws.smithy.kotlin.codegen.test"
 
 val codegenVersion: String by project
-group = "software.amazon.smithy.kotlin"
+group = "aws.smithy.kotlin"
 version = codegenVersion
 
 dependencies {

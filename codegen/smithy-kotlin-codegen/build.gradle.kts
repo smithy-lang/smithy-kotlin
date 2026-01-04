@@ -14,10 +14,10 @@ plugins {
 
 description = "Generates Kotlin code from Smithy models"
 extra["displayName"] = "Smithy :: Kotlin :: Codegen"
-extra["moduleName"] = "software.amazon.smithy.kotlin.codegen"
+extra["moduleName"] = "aws.smithy.kotlin.codegen"
 
 val codegenVersion: String by project
-group = "software.amazon.smithy.kotlin"
+group = "aws.smithy.kotlin"
 version = codegenVersion
 
 val sdkVersion: String by project

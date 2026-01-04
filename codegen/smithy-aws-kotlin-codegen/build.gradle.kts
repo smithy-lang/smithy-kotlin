@@ -14,7 +14,7 @@ plugins {
 
 val codegenVersion: String by project
 description = "Smithy codegen support for AWS protocols"
-group = "software.amazon.smithy.kotlin"
+group = "aws.smithy.kotlin"
 version = codegenVersion
 
 dependencies {
