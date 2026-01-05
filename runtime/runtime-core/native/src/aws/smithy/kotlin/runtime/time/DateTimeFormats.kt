@@ -17,7 +17,7 @@ import kotlinx.datetime.format.char
 import kotlinx.datetime.format.optional
 
 /**
- * [DateTimeFormat<DateTimeComponents>] for use with [kotlinx.datetime.Instant]
+ * [DateTimeFormat<DateTimeComponents>] for use with [kotlin.time.Instant]
  */
 internal object DateTimeFormats {
 
@@ -32,7 +32,7 @@ internal object DateTimeFormats {
                 LocalDate.Format {
                     year()
                     monthNumber()
-                    dayOfMonth()
+                    day()
                 },
             )
         }) {
@@ -42,7 +42,7 @@ internal object DateTimeFormats {
                     char('-')
                     monthNumber()
                     char('-')
-                    dayOfMonth()
+                    day()
                 },
             )
         }
@@ -82,7 +82,7 @@ internal object DateTimeFormats {
     val ISO_8601_CONDENSED = DateTimeComponents.Format {
         year()
         monthNumber()
-        dayOfMonth()
+        day()
 
         char('T')
         hour()
@@ -97,7 +97,7 @@ internal object DateTimeFormats {
     val ISO_8601_CONDENSED_DATE = DateTimeComponents.Format {
         year()
         monthNumber()
-        dayOfMonth()
+        day()
     }
 
     /**
@@ -109,9 +109,9 @@ internal object DateTimeFormats {
         chars(", ")
 
         alternativeParsing({
-            dayOfMonth(padding = Padding.NONE)
+            day(padding = Padding.NONE)
         }) {
-            dayOfMonth()
+            day()
         }
 
         char(' ')
@@ -141,5 +141,5 @@ internal object DateTimeFormats {
 internal val ISO_8601_CONDENSED_DATE_LOCALDATE = LocalDate.Format {
     year()
     monthNumber()
-    dayOfMonth()
+    day()
 }

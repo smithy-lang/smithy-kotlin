@@ -169,7 +169,7 @@ public class HttpEngineEventListener(
     }
 
     override fun responseHeadersEnd(call: Call, response: Response) {
-        val contentLength = response.body?.contentLength()
+        val contentLength = response.body.contentLength()
         trace { "response headers end: contentLengthHeader=$contentLength" }
     }
 

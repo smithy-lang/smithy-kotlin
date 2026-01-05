@@ -21,7 +21,7 @@ class Utf8Test {
     fun testIsSupplementaryCodePoint() {
         assertFalse(Char.isSupplementaryCodePoint(-1))
         for (c in 0..0xFFFF) {
-            assertFalse(Char.isSupplementaryCodePoint(c.toInt()))
+            assertFalse(Char.isSupplementaryCodePoint(c))
         }
         for (c in 0xFFFF + 1..0x10FFFF) {
             assertTrue(Char.isSupplementaryCodePoint(c))

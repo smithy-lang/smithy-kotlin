@@ -87,7 +87,7 @@ public class OkHttpEngine private constructor(
                 // else). In both cases we need to ensure that the engine-side resources are cleaned up completely
                 // since they wouldn't otherwise be. https://github.com/smithy-lang/smithy-kotlin/issues/1061
                 if (cause != null) call.cancelInFlight()
-                engineResponse.body?.close()
+                engineResponse.body.close()
             }
         }
     }
@@ -127,9 +127,7 @@ public fun OkHttpEngineConfig.buildClient(
         config.certificatePinner?.let(::certificatePinner)
         config.hostnameVerifier?.let(::hostnameVerifier)
 
-        // Transient connection errors are handled by retry strategy (exceptions are wrapped and marked retryable
-        // appropriately internally). We don't want inner retry logic that inflates the number of retries.
-        retryOnConnectionFailure(false)
+        retryOnConnectionFailure(config.retryOnConnectionFailure)
 
         connectTimeout(config.connectTimeout.toJavaDuration())
         readTimeout(config.socketReadTimeout.toJavaDuration())

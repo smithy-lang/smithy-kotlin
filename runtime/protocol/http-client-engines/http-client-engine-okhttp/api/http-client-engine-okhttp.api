@@ -74,6 +74,7 @@ public final class aws/smithy/kotlin/runtime/http/engine/okhttp/OkHttpEngineConf
 	public final fun getHostnameVerifier ()Ljavax/net/ssl/HostnameVerifier;
 	public final fun getKeyManager ()Ljavax/net/ssl/KeyManager;
 	public final fun getMaxConcurrencyPerHost-pVg5ArA ()I
+	public final fun getRetryOnConnectionFailure ()Z
 	public final fun getTrustManager ()Ljavax/net/ssl/X509TrustManager;
 	public final fun setKeyManager (Ljavax/net/ssl/KeyManager;)V
 	public final fun setTrustManager (Ljavax/net/ssl/X509TrustManager;)V
@@ -88,6 +89,7 @@ public final class aws/smithy/kotlin/runtime/http/engine/okhttp/OkHttpEngineConf
 	public final fun getHostnameVerifier ()Ljavax/net/ssl/HostnameVerifier;
 	public final fun getKeyManager ()Ljavax/net/ssl/KeyManager;
 	public final fun getMaxConcurrencyPerHost-0hXNFcg ()Lkotlin/UInt;
+	public final fun getRetryOnConnectionFailure ()Z
 	public fun getTelemetryProvider ()Laws/smithy/kotlin/runtime/telemetry/TelemetryProvider;
 	public final fun getTrustManager ()Ljavax/net/ssl/X509TrustManager;
 	public final fun setCertificatePinner (Lokhttp3/CertificatePinner;)V
