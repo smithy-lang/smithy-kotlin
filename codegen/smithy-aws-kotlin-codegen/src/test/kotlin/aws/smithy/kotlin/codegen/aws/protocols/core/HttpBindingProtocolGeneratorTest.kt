@@ -4,18 +4,19 @@
  */
 package aws.smithy.kotlin.codegen.aws.protocols.core
 
-import software.amazon.smithy.codegen.core.Symbol
 import aws.smithy.kotlin.codegen.aws.protocols.json.AwsJsonHttpBindingResolver
-import software.amazon.smithy.kotlin.codegen.core.KotlinWriter
-import software.amazon.smithy.kotlin.codegen.model.expectShape
-import software.amazon.smithy.kotlin.codegen.rendering.protocol.HttpBindingProtocolGenerator
-import software.amazon.smithy.kotlin.codegen.rendering.protocol.HttpBindingResolver
-import software.amazon.smithy.kotlin.codegen.rendering.protocol.ProtocolGenerator
-import software.amazon.smithy.kotlin.codegen.rendering.serde.*
+import aws.smithy.kotlin.codegen.core.KotlinWriter
+import aws.smithy.kotlin.codegen.model.expectShape
+import aws.smithy.kotlin.codegen.rendering.protocol.HttpBindingProtocolGenerator
+import aws.smithy.kotlin.codegen.rendering.protocol.HttpBindingResolver
+import aws.smithy.kotlin.codegen.rendering.protocol.ProtocolGenerator
+import aws.smithy.kotlin.codegen.rendering.serde.StructuredDataParserGenerator
+import aws.smithy.kotlin.codegen.rendering.serde.StructuredDataSerializerGenerator
 import aws.smithy.kotlin.codegen.test.defaultSettings
 import aws.smithy.kotlin.codegen.test.newTestContext
 import aws.smithy.kotlin.codegen.test.shouldContainOnlyOnceWithDiff
 import aws.smithy.kotlin.codegen.test.toSmithyModel
+import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.*
 import software.amazon.smithy.model.traits.TimestampFormatTrait

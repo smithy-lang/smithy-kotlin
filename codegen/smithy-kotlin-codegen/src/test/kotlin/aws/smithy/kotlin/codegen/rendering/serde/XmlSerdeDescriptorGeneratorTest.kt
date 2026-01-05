@@ -12,7 +12,6 @@ import aws.smithy.kotlin.codegen.test.prependNamespaceAndService
 import aws.smithy.kotlin.codegen.test.shouldContainOnlyOnceWithDiff
 import aws.smithy.kotlin.codegen.test.toRenderingContext
 import aws.smithy.kotlin.codegen.test.toSmithyModel
-import software.amazon.smithy.kotlin.codegen.rendering.serde.XmlSerdeDescriptorGenerator
 import software.amazon.smithy.model.shapes.ShapeId
 import kotlin.test.Test
 

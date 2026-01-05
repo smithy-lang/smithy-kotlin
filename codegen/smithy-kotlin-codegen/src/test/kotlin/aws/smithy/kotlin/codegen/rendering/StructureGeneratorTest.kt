@@ -4,6 +4,11 @@
  */
 package aws.smithy.kotlin.codegen.rendering
 
+import aws.smithy.kotlin.codegen.KotlinCodegenPlugin
+import aws.smithy.kotlin.codegen.core.KotlinWriter
+import aws.smithy.kotlin.codegen.core.RenderingContext
+import aws.smithy.kotlin.codegen.model.expectShape
+import aws.smithy.kotlin.codegen.model.traits.SYNTHETIC_NAMESPACE
 import aws.smithy.kotlin.codegen.test.AwsProtocolModelDeclaration
 import aws.smithy.kotlin.codegen.test.TestModelDefault
 import aws.smithy.kotlin.codegen.test.assertBalancedBracesAndParens
@@ -17,12 +22,6 @@ import aws.smithy.kotlin.codegen.test.toSmithyModel
 import aws.smithy.kotlin.codegen.trimEveryLine
 import org.junit.jupiter.api.TestInstance
 import software.amazon.smithy.codegen.core.SymbolProvider
-import software.amazon.smithy.kotlin.codegen.KotlinCodegenPlugin
-import software.amazon.smithy.kotlin.codegen.core.KotlinWriter
-import software.amazon.smithy.kotlin.codegen.core.RenderingContext
-import software.amazon.smithy.kotlin.codegen.model.expectShape
-import software.amazon.smithy.kotlin.codegen.model.traits.SYNTHETIC_NAMESPACE
-import software.amazon.smithy.kotlin.codegen.rendering.StructureGenerator
 import software.amazon.smithy.model.shapes.StructureShape
 import kotlin.test.Test
 import kotlin.test.assertTrue

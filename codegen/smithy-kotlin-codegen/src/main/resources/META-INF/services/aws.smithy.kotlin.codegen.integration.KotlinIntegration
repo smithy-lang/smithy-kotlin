@@ -1,0 +1,16 @@
+aws.smithy.kotlin.codegen.lang.BuiltinPreprocessor
+aws.smithy.kotlin.codegen.lang.DocumentationPreprocessor
+aws.smithy.kotlin.codegen.rendering.samples.KDocSamplesGenerator
+aws.smithy.kotlin.codegen.model.SetRefactorPreprocessor
+aws.smithy.kotlin.codegen.rendering.PaginatorGenerator
+aws.smithy.kotlin.codegen.rendering.waiters.ServiceWaitersGenerator
+aws.smithy.kotlin.codegen.rendering.auth.SigV4AuthSchemeIntegration
+aws.smithy.kotlin.codegen.rendering.auth.AuthSchemeProviderConfigIntegration
+aws.smithy.kotlin.codegen.rendering.auth.AnonymousAuthSchemeIntegration
+aws.smithy.kotlin.codegen.rendering.auth.BearerTokenAuthSchemeIntegration
+aws.smithy.kotlin.codegen.rendering.endpoints.discovery.EndpointDiscoveryIntegration
+aws.smithy.kotlin.codegen.rendering.endpoints.SdkEndpointBuiltinIntegration
+aws.smithy.kotlin.codegen.rendering.compression.RequestCompressionIntegration
+aws.smithy.kotlin.codegen.rendering.auth.SigV4AsymmetricAuthSchemeIntegration
+aws.smithy.kotlin.codegen.rendering.smoketests.SmokeTestsIntegration
+aws.smithy.kotlin.codegen.rendering.checksums.HttpChecksumRequiredIntegration

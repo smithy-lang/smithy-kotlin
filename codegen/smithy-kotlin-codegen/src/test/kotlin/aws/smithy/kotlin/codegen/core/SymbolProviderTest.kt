@@ -4,6 +4,15 @@
  */
 package aws.smithy.kotlin.codegen.core
 
+import aws.smithy.kotlin.codegen.ApiSettings
+import aws.smithy.kotlin.codegen.KotlinCodegenPlugin
+import aws.smithy.kotlin.codegen.core.KotlinDependency.Companion.CORE
+import aws.smithy.kotlin.codegen.model.defaultValue
+import aws.smithy.kotlin.codegen.model.expectShape
+import aws.smithy.kotlin.codegen.model.fullNameHint
+import aws.smithy.kotlin.codegen.model.hasTrait
+import aws.smithy.kotlin.codegen.model.isNullable
+import aws.smithy.kotlin.codegen.model.traits.SYNTHETIC_NAMESPACE
 import aws.smithy.kotlin.codegen.test.TestModelDefault
 import aws.smithy.kotlin.codegen.test.createSymbolProvider
 import aws.smithy.kotlin.codegen.test.defaultSettings
@@ -14,14 +23,6 @@ import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
 import org.junit.jupiter.params.provider.ValueSource
 import software.amazon.smithy.codegen.core.SymbolProvider
-import software.amazon.smithy.kotlin.codegen.ApiSettings
-import software.amazon.smithy.kotlin.codegen.KotlinCodegenPlugin
-import software.amazon.smithy.kotlin.codegen.core.KotlinDependency
-import software.amazon.smithy.kotlin.codegen.core.KotlinDependency.Companion.CORE
-import software.amazon.smithy.kotlin.codegen.core.RUNTIME_ROOT_NS
-import software.amazon.smithy.kotlin.codegen.core.RuntimeTypes
-import software.amazon.smithy.kotlin.codegen.model.*
-import software.amazon.smithy.kotlin.codegen.model.traits.SYNTHETIC_NAMESPACE
 import software.amazon.smithy.model.knowledge.NullableIndex.CheckMode
 import software.amazon.smithy.model.shapes.*
 import software.amazon.smithy.model.traits.ClientOptionalTrait

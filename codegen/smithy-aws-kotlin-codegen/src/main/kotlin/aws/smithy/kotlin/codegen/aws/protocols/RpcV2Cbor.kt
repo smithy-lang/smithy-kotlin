@@ -4,16 +4,24 @@
  */
 package aws.smithy.kotlin.codegen.aws.protocols
 
-import software.amazon.smithy.kotlin.codegen.core.KotlinWriter
-import software.amazon.smithy.kotlin.codegen.core.RuntimeTypes
-import software.amazon.smithy.kotlin.codegen.model.*
-import software.amazon.smithy.kotlin.codegen.model.traits.SyntheticClone
-import software.amazon.smithy.kotlin.codegen.protocols.core.StaticHttpBindingResolver
-import software.amazon.smithy.kotlin.codegen.rendering.protocol.*
-import software.amazon.smithy.kotlin.codegen.rendering.serde.CborParserGenerator
-import software.amazon.smithy.kotlin.codegen.rendering.serde.CborSerializerGenerator
-import software.amazon.smithy.kotlin.codegen.rendering.serde.StructuredDataParserGenerator
-import software.amazon.smithy.kotlin.codegen.rendering.serde.StructuredDataSerializerGenerator
+import aws.smithy.kotlin.codegen.core.KotlinWriter
+import aws.smithy.kotlin.codegen.core.RuntimeTypes
+import aws.smithy.kotlin.codegen.model.getTrait
+import aws.smithy.kotlin.codegen.model.isInputEventStream
+import aws.smithy.kotlin.codegen.model.isOutputEventStream
+import aws.smithy.kotlin.codegen.model.targetOrSelf
+import aws.smithy.kotlin.codegen.model.traits.SyntheticClone
+import aws.smithy.kotlin.codegen.protocols.core.StaticHttpBindingResolver
+import aws.smithy.kotlin.codegen.rendering.protocol.HttpBindingProtocolGenerator
+import aws.smithy.kotlin.codegen.rendering.protocol.HttpBindingResolver
+import aws.smithy.kotlin.codegen.rendering.protocol.MutateHeadersMiddleware
+import aws.smithy.kotlin.codegen.rendering.protocol.ProtocolGenerator
+import aws.smithy.kotlin.codegen.rendering.protocol.ProtocolMiddleware
+import aws.smithy.kotlin.codegen.rendering.protocol.filterDocumentBoundMembers
+import aws.smithy.kotlin.codegen.rendering.serde.CborParserGenerator
+import aws.smithy.kotlin.codegen.rendering.serde.CborSerializerGenerator
+import aws.smithy.kotlin.codegen.rendering.serde.StructuredDataParserGenerator
+import aws.smithy.kotlin.codegen.rendering.serde.StructuredDataSerializerGenerator
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.knowledge.HttpBinding
 import software.amazon.smithy.model.pattern.UriPattern
@@ -50,7 +58,8 @@ class RpcV2Cbor : HttpBindingProtocolGenerator() {
 
     override fun getDefaultHttpMiddleware(ctx: ProtocolGenerator.GenerationContext): List<ProtocolMiddleware> {
         // Every request MUST contain a `smithy-protocol` header with the value of `rpc-v2-cbor`
-        val smithyProtocolHeaderMiddleware = MutateHeadersMiddleware(overrideHeaders = mapOf("smithy-protocol" to "rpc-v2-cbor"))
+        val smithyProtocolHeaderMiddleware =
+            MutateHeadersMiddleware(overrideHeaders = mapOf("smithy-protocol" to "rpc-v2-cbor"))
 
         // Every response MUST contain the same `smithy-protocol` header, otherwise it's considered invalid
         val validateSmithyProtocolHeaderMiddleware = object : ProtocolMiddleware {

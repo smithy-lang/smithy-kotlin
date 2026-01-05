@@ -5,17 +5,17 @@
 
 package aws.smithy.kotlin.codegen.aws.customization
 
+import aws.smithy.kotlin.codegen.KotlinSettings
+import aws.smithy.kotlin.codegen.core.RuntimeTypes
+import aws.smithy.kotlin.codegen.core.closeAndOpenBlock
+import aws.smithy.kotlin.codegen.core.getContextValue
+import aws.smithy.kotlin.codegen.core.withBlock
+import aws.smithy.kotlin.codegen.integration.AppendingSectionWriter
+import aws.smithy.kotlin.codegen.integration.KotlinIntegration
+import aws.smithy.kotlin.codegen.integration.SectionWriterBinding
+import aws.smithy.kotlin.codegen.model.hasTrait
+import aws.smithy.kotlin.codegen.rendering.protocol.HttpBindingProtocolGenerator.Sections
 import software.amazon.smithy.aws.traits.protocols.AwsQueryCompatibleTrait
-import software.amazon.smithy.kotlin.codegen.KotlinSettings
-import software.amazon.smithy.kotlin.codegen.core.RuntimeTypes
-import software.amazon.smithy.kotlin.codegen.core.closeAndOpenBlock
-import software.amazon.smithy.kotlin.codegen.core.getContextValue
-import software.amazon.smithy.kotlin.codegen.core.withBlock
-import software.amazon.smithy.kotlin.codegen.integration.AppendingSectionWriter
-import software.amazon.smithy.kotlin.codegen.integration.KotlinIntegration
-import software.amazon.smithy.kotlin.codegen.integration.SectionWriterBinding
-import software.amazon.smithy.kotlin.codegen.model.hasTrait
-import software.amazon.smithy.kotlin.codegen.rendering.protocol.HttpBindingProtocolGenerator.Sections
 import software.amazon.smithy.model.Model
 
 /**

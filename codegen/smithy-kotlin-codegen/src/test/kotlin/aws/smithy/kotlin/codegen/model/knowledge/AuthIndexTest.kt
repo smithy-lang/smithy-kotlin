@@ -5,16 +5,15 @@
 
 package aws.smithy.kotlin.codegen.model.knowledge
 
+import aws.smithy.kotlin.codegen.core.KotlinWriter
+import aws.smithy.kotlin.codegen.integration.AuthSchemeHandler
+import aws.smithy.kotlin.codegen.integration.KotlinIntegration
 import aws.smithy.kotlin.codegen.loadModelFromResource
-import software.amazon.smithy.kotlin.codegen.core.KotlinWriter
-import software.amazon.smithy.kotlin.codegen.integration.AuthSchemeHandler
-import software.amazon.smithy.kotlin.codegen.integration.KotlinIntegration
-import software.amazon.smithy.kotlin.codegen.model.expectShape
-import software.amazon.smithy.kotlin.codegen.rendering.auth.AnonymousAuthSchemeId
-import software.amazon.smithy.kotlin.codegen.rendering.auth.AnonymousAuthSchemeIntegration
-import software.amazon.smithy.kotlin.codegen.rendering.protocol.ProtocolGenerator
+import aws.smithy.kotlin.codegen.model.expectShape
+import aws.smithy.kotlin.codegen.rendering.auth.AnonymousAuthSchemeId
+import aws.smithy.kotlin.codegen.rendering.auth.AnonymousAuthSchemeIntegration
+import aws.smithy.kotlin.codegen.rendering.protocol.ProtocolGenerator
 import aws.smithy.kotlin.codegen.test.newTestContext
-import software.amazon.smithy.kotlin.codegen.model.knowledge.AuthIndex
 import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.shapes.ShapeId
 import software.amazon.smithy.model.traits.HttpApiKeyAuthTrait

@@ -5,7 +5,7 @@
 
 package aws.smithy.kotlin.codegen.aws.protocols.json
 
-import software.amazon.smithy.kotlin.codegen.model.expectShape
+import aws.smithy.kotlin.codegen.model.expectShape
 import aws.smithy.kotlin.codegen.test.newTestContext
 import aws.smithy.kotlin.codegen.test.toSmithyModel
 import software.amazon.smithy.model.knowledge.HttpBinding

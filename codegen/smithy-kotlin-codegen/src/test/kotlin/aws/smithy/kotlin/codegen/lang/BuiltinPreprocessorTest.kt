@@ -5,12 +5,11 @@
 
 package aws.smithy.kotlin.codegen.lang
 
+import aws.smithy.kotlin.codegen.KotlinSettings
+import aws.smithy.kotlin.codegen.model.expectShape
+import aws.smithy.kotlin.codegen.test.toSmithyModel
 import io.kotest.matchers.collections.shouldContainAll
 import io.kotest.matchers.collections.shouldNotContainAll
-import software.amazon.smithy.kotlin.codegen.KotlinSettings
-import software.amazon.smithy.kotlin.codegen.model.expectShape
-import aws.smithy.kotlin.codegen.test.toSmithyModel
-import software.amazon.smithy.kotlin.codegen.lang.BuiltinPreprocessor
 import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.shapes.ShapeId
 import kotlin.test.Test

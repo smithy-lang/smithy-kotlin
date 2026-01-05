@@ -6,14 +6,28 @@
 package aws.smithy.kotlin.codegen.aws.protocols
 
 import aws.smithy.kotlin.codegen.aws.protocols.xml.RestXmlSerdeDescriptorGenerator
+import aws.smithy.kotlin.codegen.core.KotlinWriter
+import aws.smithy.kotlin.codegen.core.RuntimeTypes
+import aws.smithy.kotlin.codegen.core.withBlock
+import aws.smithy.kotlin.codegen.model.buildSymbol
+import aws.smithy.kotlin.codegen.model.expectShape
+import aws.smithy.kotlin.codegen.model.expectTrait
+import aws.smithy.kotlin.codegen.model.getTrait
+import aws.smithy.kotlin.codegen.model.hasTrait
+import aws.smithy.kotlin.codegen.model.payloadIsUnionShape
+import aws.smithy.kotlin.codegen.rendering.protocol.HttpBindingProtocolGenerator
+import aws.smithy.kotlin.codegen.rendering.protocol.HttpBindingResolver
+import aws.smithy.kotlin.codegen.rendering.protocol.HttpTraitResolver
+import aws.smithy.kotlin.codegen.rendering.protocol.ProtocolContentTypes
+import aws.smithy.kotlin.codegen.rendering.protocol.ProtocolGenerator
+import aws.smithy.kotlin.codegen.rendering.protocol.toRenderingContext
+import aws.smithy.kotlin.codegen.rendering.serde.StructuredDataParserGenerator
+import aws.smithy.kotlin.codegen.rendering.serde.StructuredDataSerializerGenerator
+import aws.smithy.kotlin.codegen.rendering.serde.XmlParserGenerator
+import aws.smithy.kotlin.codegen.rendering.serde.XmlSerdeDescriptorGenerator
+import aws.smithy.kotlin.codegen.rendering.serde.XmlSerializerGenerator
 import software.amazon.smithy.aws.traits.protocols.RestXmlTrait
 import software.amazon.smithy.codegen.core.Symbol
-import software.amazon.smithy.kotlin.codegen.core.KotlinWriter
-import software.amazon.smithy.kotlin.codegen.core.RuntimeTypes
-import software.amazon.smithy.kotlin.codegen.core.withBlock
-import software.amazon.smithy.kotlin.codegen.model.*
-import software.amazon.smithy.kotlin.codegen.rendering.protocol.*
-import software.amazon.smithy.kotlin.codegen.rendering.serde.*
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.*
 import software.amazon.smithy.model.traits.TimestampFormatTrait
@@ -25,7 +39,7 @@ import kotlin.contracts.contract
  * Handles generating the aws.protocols#restJson1 protocol for services.
  *
  * @inheritDoc
- * @see HttpBindingProtocolGenerator
+ * @see aws.smithy.kotlin.codegen.rendering.protocol.HttpBindingProtocolGenerator
  */
 open class RestXml : HttpBindingProtocolGenerator() {
 
@@ -159,7 +173,11 @@ object RestXmlErrors {
                     "}",
                     "ErrorResponse",
                 ) {
-                    write("throw #T(#S)", RuntimeTypes.Serde.DeserializationException, "invalid root, expected <ErrorResponse>; found `\${root.tag}`")
+                    write(
+                        "throw #T(#S)",
+                        RuntimeTypes.Serde.DeserializationException,
+                        "invalid root, expected <ErrorResponse>; found `\${root.tag}`",
+                    )
                 }
 
                 write("val errTag = root.nextTag()")
@@ -168,7 +186,11 @@ object RestXmlErrors {
                     "}",
                     "Error",
                 ) {
-                    write("throw #T(#S)", RuntimeTypes.Serde.DeserializationException, "invalid error, expected <Error>; found `\${errTag?.tag}`")
+                    write(
+                        "throw #T(#S)",
+                        RuntimeTypes.Serde.DeserializationException,
+                        "invalid error, expected <Error>; found `\${errTag?.tag}`",
+                    )
                 }
 
                 write("return errTag")
@@ -203,7 +225,11 @@ object RestXmlErrors {
                     "}",
                     "Error",
                 ) {
-                    write("throw #T(#S)", RuntimeTypes.Serde.DeserializationException, "invalid error, expected <Error>; found `\${root.tag}`")
+                    write(
+                        "throw #T(#S)",
+                        RuntimeTypes.Serde.DeserializationException,
+                        "invalid error, expected <Error>; found `\${root.tag}`",
+                    )
                 }
 
                 write("return root")

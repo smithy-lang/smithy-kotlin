@@ -5,7 +5,11 @@
 
 package aws.smithy.kotlin.codegen.rendering.protocol
 
+import aws.smithy.kotlin.codegen.DefaultValueSerializationMode
+import aws.smithy.kotlin.codegen.KotlinSettings
+import aws.smithy.kotlin.codegen.core.KotlinWriter
 import aws.smithy.kotlin.codegen.loadModelFromResource
+import aws.smithy.kotlin.codegen.model.expectShape
 import aws.smithy.kotlin.codegen.test.TestModelDefault
 import aws.smithy.kotlin.codegen.test.assertBalancedBracesAndParens
 import aws.smithy.kotlin.codegen.test.defaultSettings
@@ -13,12 +17,6 @@ import aws.smithy.kotlin.codegen.test.newTestContext
 import aws.smithy.kotlin.codegen.test.prependNamespaceAndService
 import aws.smithy.kotlin.codegen.test.shouldContainOnlyOnceWithDiff
 import aws.smithy.kotlin.codegen.test.toSmithyModel
-import software.amazon.smithy.kotlin.codegen.DefaultValueSerializationMode
-import software.amazon.smithy.kotlin.codegen.KotlinSettings
-import software.amazon.smithy.kotlin.codegen.core.KotlinWriter
-import software.amazon.smithy.kotlin.codegen.model.expectShape
-import software.amazon.smithy.kotlin.codegen.rendering.protocol.HttpBindingProtocolGenerator
-import software.amazon.smithy.kotlin.codegen.rendering.protocol.HttpStringValuesMapSerializer
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.knowledge.HttpBinding
 import software.amazon.smithy.model.shapes.OperationShape
@@ -43,7 +41,7 @@ class HttpStringValuesMapSerializerTest {
             testCtx.generationCtx,
             bindings,
             resolver,
-            TimestampFormatTrait.Format.EPOCH_SECONDS
+            TimestampFormatTrait.Format.EPOCH_SECONDS,
         ).render(writer)
         return writer.toString()
     }

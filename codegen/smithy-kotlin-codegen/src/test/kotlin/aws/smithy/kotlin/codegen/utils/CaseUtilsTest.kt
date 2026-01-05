@@ -5,8 +5,6 @@
 
 package aws.smithy.kotlin.codegen.utils
 
-import software.amazon.smithy.kotlin.codegen.utils.toggleCase
-import software.amazon.smithy.kotlin.codegen.utils.toggleFirstCharacterCase
 import kotlin.test.Test
 import kotlin.test.assertEquals
 

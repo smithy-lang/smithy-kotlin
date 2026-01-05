@@ -5,7 +5,6 @@
 
 package aws.smithy.kotlin.codegen.core
 
-import software.amazon.smithy.kotlin.codegen.core.isValidVersion
 import kotlin.test.Test
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue

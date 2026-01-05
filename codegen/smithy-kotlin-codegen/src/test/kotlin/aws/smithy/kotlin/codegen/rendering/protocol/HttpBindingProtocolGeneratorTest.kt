@@ -4,6 +4,7 @@
  */
 package aws.smithy.kotlin.codegen.rendering.protocol
 
+import aws.smithy.kotlin.codegen.core.RUNTIME_ROOT_NS
 import aws.smithy.kotlin.codegen.loadModelFromResource
 import aws.smithy.kotlin.codegen.test.assertBalancedBracesAndParens
 import aws.smithy.kotlin.codegen.test.newTestContext
@@ -13,7 +14,6 @@ import aws.smithy.kotlin.codegen.test.toSmithyModel
 import io.kotest.matchers.string.shouldContainOnlyOnce
 import io.kotest.matchers.string.shouldNotContain
 import software.amazon.smithy.build.MockManifest
-import software.amazon.smithy.kotlin.codegen.core.RUNTIME_ROOT_NS
 import software.amazon.smithy.model.Model
 import kotlin.test.Test
 import kotlin.test.assertTrue

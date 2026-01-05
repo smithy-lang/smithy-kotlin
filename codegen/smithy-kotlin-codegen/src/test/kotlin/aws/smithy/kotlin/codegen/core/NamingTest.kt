@@ -5,15 +5,10 @@
 
 package aws.smithy.kotlin.codegen.core
 
-import software.amazon.smithy.kotlin.codegen.model.expectShape
+import aws.smithy.kotlin.codegen.model.expectShape
 import aws.smithy.kotlin.codegen.test.prependNamespaceAndService
 import aws.smithy.kotlin.codegen.test.toSmithyModel
-import software.amazon.smithy.kotlin.codegen.core.clientName
-import software.amazon.smithy.kotlin.codegen.core.defaultName
-import software.amazon.smithy.kotlin.codegen.core.enumVariantName
-import software.amazon.smithy.kotlin.codegen.core.mangledSuffix
-import software.amazon.smithy.kotlin.codegen.core.unionVariantName
-import software.amazon.smithy.kotlin.codegen.utils.toCamelCase
+import aws.smithy.kotlin.codegen.utils.toCamelCase
 import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.shapes.ShapeId
 import java.io.File

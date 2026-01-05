@@ -5,6 +5,10 @@
 
 package aws.smithy.kotlin.codegen.rendering.waiters
 
+import aws.smithy.kotlin.codegen.KotlinCodegenPlugin
+import aws.smithy.kotlin.codegen.KotlinSettings
+import aws.smithy.kotlin.codegen.core.GenerationContext
+import aws.smithy.kotlin.codegen.core.KotlinDelegator
 import aws.smithy.kotlin.codegen.loadModelFromResource
 import aws.smithy.kotlin.codegen.test.TestModelDefault
 import aws.smithy.kotlin.codegen.test.createSymbolProvider
@@ -15,11 +19,6 @@ import io.kotest.matchers.string.shouldContain
 import io.kotest.matchers.string.shouldContainOnlyOnce
 import software.amazon.smithy.build.MockManifest
 import software.amazon.smithy.codegen.core.SymbolProvider
-import software.amazon.smithy.kotlin.codegen.KotlinCodegenPlugin
-import software.amazon.smithy.kotlin.codegen.KotlinSettings
-import software.amazon.smithy.kotlin.codegen.core.GenerationContext
-import software.amazon.smithy.kotlin.codegen.core.KotlinDelegator
-import software.amazon.smithy.kotlin.codegen.rendering.waiters.ServiceWaitersGenerator
 import software.amazon.smithy.model.shapes.ShapeId
 import kotlin.test.Test
 import kotlin.test.assertEquals

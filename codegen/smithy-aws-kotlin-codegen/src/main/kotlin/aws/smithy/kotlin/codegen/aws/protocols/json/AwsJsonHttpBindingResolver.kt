@@ -5,7 +5,7 @@
 
 package aws.smithy.kotlin.codegen.aws.protocols.json
 
-import software.amazon.smithy.kotlin.codegen.protocols.core.StaticHttpBindingResolver
+import aws.smithy.kotlin.codegen.protocols.core.StaticHttpBindingResolver
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.pattern.UriPattern
 import software.amazon.smithy.model.shapes.ServiceShape

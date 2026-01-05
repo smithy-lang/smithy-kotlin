@@ -1,2 +1,2 @@
-software.amazon.smithy.kotlin.codegen.transforms.IncludeOperations
-software.amazon.smithy.kotlin.codegen.transforms.RemoveDeprecatedShapes
+aws.smithy.kotlin.codegen.transforms.IncludeOperations
+aws.smithy.kotlin.codegen.transforms.RemoveDeprecatedShapes

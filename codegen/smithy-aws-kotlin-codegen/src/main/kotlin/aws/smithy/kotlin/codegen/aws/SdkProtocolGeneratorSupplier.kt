@@ -11,8 +11,8 @@ import aws.smithy.kotlin.codegen.aws.protocols.Ec2Query
 import aws.smithy.kotlin.codegen.aws.protocols.RestJson1
 import aws.smithy.kotlin.codegen.aws.protocols.RestXml
 import aws.smithy.kotlin.codegen.aws.protocols.RpcV2Cbor
-import software.amazon.smithy.kotlin.codegen.integration.KotlinIntegration
-import software.amazon.smithy.kotlin.codegen.rendering.protocol.ProtocolGenerator
+import aws.smithy.kotlin.codegen.integration.KotlinIntegration
+import aws.smithy.kotlin.codegen.rendering.protocol.ProtocolGenerator
 
 /**
  * Integration that registers protocol generators this package provides

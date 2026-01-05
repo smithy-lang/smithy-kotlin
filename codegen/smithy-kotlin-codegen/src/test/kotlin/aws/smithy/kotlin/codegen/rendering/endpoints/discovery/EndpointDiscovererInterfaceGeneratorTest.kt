@@ -4,13 +4,12 @@
  */
 package aws.smithy.kotlin.codegen.rendering.endpoints.discovery
 
-import org.junit.jupiter.api.Test
-import software.amazon.smithy.build.MockManifest
 import aws.smithy.kotlin.codegen.test.formatForTest
 import aws.smithy.kotlin.codegen.test.newTestContext
 import aws.smithy.kotlin.codegen.test.shouldContainOnlyOnceWithDiff
 import aws.smithy.kotlin.codegen.test.toCodegenContext
-import software.amazon.smithy.kotlin.codegen.rendering.endpoints.discovery.EndpointDiscovererInterfaceGenerator
+import org.junit.jupiter.api.Test
+import software.amazon.smithy.build.MockManifest
 
 class EndpointDiscovererInterfaceGeneratorTest {
     @Test

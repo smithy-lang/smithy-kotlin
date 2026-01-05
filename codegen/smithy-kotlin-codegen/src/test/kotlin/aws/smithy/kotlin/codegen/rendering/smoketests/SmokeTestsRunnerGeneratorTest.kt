@@ -11,7 +11,6 @@ import aws.smithy.kotlin.codegen.test.newWriter
 import aws.smithy.kotlin.codegen.test.shouldContainOnlyOnceWithDiff
 import aws.smithy.kotlin.codegen.test.toCodegenContext
 import aws.smithy.kotlin.codegen.test.toSmithyModel
-import software.amazon.smithy.kotlin.codegen.rendering.smoketests.SmokeTestsRunnerGenerator
 import software.amazon.smithy.model.Model
 import kotlin.test.Test
 

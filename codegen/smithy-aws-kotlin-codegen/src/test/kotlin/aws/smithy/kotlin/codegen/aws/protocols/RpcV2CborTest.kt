@@ -5,12 +5,12 @@
 
 package aws.smithy.kotlin.codegen.aws.protocols
 
-import io.kotest.matchers.string.shouldNotContain
 import aws.smithy.kotlin.codegen.test.lines
 import aws.smithy.kotlin.codegen.test.newTestContext
 import aws.smithy.kotlin.codegen.test.shouldContainOnlyOnceWithDiff
 import aws.smithy.kotlin.codegen.test.shouldNotContainOnlyOnceWithDiff
 import aws.smithy.kotlin.codegen.test.toSmithyModel
+import io.kotest.matchers.string.shouldNotContain
 import kotlin.test.Test
 
 class RpcV2CborTest {

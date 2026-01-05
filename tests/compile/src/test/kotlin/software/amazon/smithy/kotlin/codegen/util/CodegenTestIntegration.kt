@@ -4,15 +4,28 @@
  */
 package software.amazon.smithy.kotlin.codegen.util
 
+import aws.smithy.kotlin.codegen.core.RuntimeTypes
+import aws.smithy.kotlin.codegen.core.withBlock
+import aws.smithy.kotlin.codegen.integration.KotlinIntegration
+import aws.smithy.kotlin.codegen.lang.KotlinTypes
+import aws.smithy.kotlin.codegen.rendering.protocol.HttpBindingProtocolGenerator
+import aws.smithy.kotlin.codegen.rendering.protocol.HttpBindingResolver
+import aws.smithy.kotlin.codegen.rendering.protocol.HttpProtocolClientGenerator
+import aws.smithy.kotlin.codegen.rendering.protocol.HttpTraitResolver
+import aws.smithy.kotlin.codegen.rendering.protocol.ProtocolContentTypes
+import aws.smithy.kotlin.codegen.rendering.protocol.ProtocolGenerator
+import aws.smithy.kotlin.codegen.rendering.protocol.ProtocolMiddleware
+import aws.smithy.kotlin.codegen.rendering.protocol.errorHandler
+import aws.smithy.kotlin.codegen.rendering.protocol.errorHandlerName
+import aws.smithy.kotlin.codegen.rendering.serde.JsonParserGenerator
+import aws.smithy.kotlin.codegen.rendering.serde.JsonSerializerGenerator
+import aws.smithy.kotlin.codegen.rendering.serde.StructuredDataParserGenerator
+import aws.smithy.kotlin.codegen.rendering.serde.StructuredDataSerializerGenerator
+import aws.smithy.kotlin.codegen.rendering.serde.XmlParserGenerator
+import aws.smithy.kotlin.codegen.rendering.serde.XmlSerializerGenerator
 import software.amazon.smithy.aws.traits.protocols.RestJson1Trait
 import software.amazon.smithy.aws.traits.protocols.RestXmlTrait
 import software.amazon.smithy.codegen.core.Symbol
-import software.amazon.smithy.kotlin.codegen.core.RuntimeTypes
-import software.amazon.smithy.kotlin.codegen.core.withBlock
-import software.amazon.smithy.kotlin.codegen.integration.KotlinIntegration
-import software.amazon.smithy.kotlin.codegen.lang.KotlinTypes
-import software.amazon.smithy.kotlin.codegen.rendering.protocol.*
-import software.amazon.smithy.kotlin.codegen.rendering.serde.*
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.*
 import software.amazon.smithy.model.traits.TimestampFormatTrait

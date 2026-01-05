@@ -5,7 +5,21 @@
 
 package aws.smithy.kotlin.codegen.rendering
 
+import aws.smithy.kotlin.codegen.core.CodegenContext
+import aws.smithy.kotlin.codegen.core.KotlinDependency
+import aws.smithy.kotlin.codegen.core.KotlinWriter
+import aws.smithy.kotlin.codegen.core.RuntimeTypes
+import aws.smithy.kotlin.codegen.integration.KotlinIntegration
+import aws.smithy.kotlin.codegen.lang.KotlinTypes
 import aws.smithy.kotlin.codegen.loadModelFromResource
+import aws.smithy.kotlin.codegen.model.PropertyTypeMutability
+import aws.smithy.kotlin.codegen.model.SymbolProperty
+import aws.smithy.kotlin.codegen.model.buildSymbol
+import aws.smithy.kotlin.codegen.model.expectShape
+import aws.smithy.kotlin.codegen.model.hasIdempotentTokenMember
+import aws.smithy.kotlin.codegen.rendering.util.ConfigProperty
+import aws.smithy.kotlin.codegen.rendering.util.ConfigPropertyType
+import aws.smithy.kotlin.codegen.rendering.util.RuntimeConfigProperty
 import aws.smithy.kotlin.codegen.test.TestModelDefault
 import aws.smithy.kotlin.codegen.test.assertBalancedBracesAndParens
 import aws.smithy.kotlin.codegen.test.formatForTest
@@ -16,17 +30,6 @@ import aws.smithy.kotlin.codegen.test.toSmithyModel
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
 import software.amazon.smithy.codegen.core.SymbolReference
-import software.amazon.smithy.kotlin.codegen.core.CodegenContext
-import software.amazon.smithy.kotlin.codegen.core.KotlinDependency
-import software.amazon.smithy.kotlin.codegen.core.KotlinWriter
-import software.amazon.smithy.kotlin.codegen.core.RuntimeTypes
-import software.amazon.smithy.kotlin.codegen.integration.KotlinIntegration
-import software.amazon.smithy.kotlin.codegen.lang.KotlinTypes
-import software.amazon.smithy.kotlin.codegen.model.*
-import software.amazon.smithy.kotlin.codegen.rendering.ServiceClientConfigGenerator
-import software.amazon.smithy.kotlin.codegen.rendering.util.ConfigProperty
-import software.amazon.smithy.kotlin.codegen.rendering.util.ConfigPropertyType
-import software.amazon.smithy.kotlin.codegen.rendering.util.RuntimeConfigProperty
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.ServiceShape
 import kotlin.test.Test

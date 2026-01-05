@@ -4,8 +4,6 @@
  */
 package aws.smithy.kotlin.codegen.core
 
-import software.amazon.smithy.kotlin.codegen.core.InlineCodeWriter
-import software.amazon.smithy.kotlin.codegen.core.InlineCodeWriterFormatter
 import software.amazon.smithy.utils.AbstractCodeWriter
 import software.amazon.smithy.utils.SimpleCodeWriter
 import kotlin.test.Test

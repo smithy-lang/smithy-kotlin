@@ -4,11 +4,8 @@
  */
 package aws.smithy.kotlin.codegen.model
 
-import software.amazon.smithy.kotlin.codegen.core.GeneratedDependency
-import software.amazon.smithy.kotlin.codegen.core.KotlinDependency
-import software.amazon.smithy.kotlin.codegen.model.SymbolProperty
-import software.amazon.smithy.kotlin.codegen.model.buildSymbol
-import software.amazon.smithy.kotlin.codegen.model.toSymbol
+import aws.smithy.kotlin.codegen.core.GeneratedDependency
+import aws.smithy.kotlin.codegen.core.KotlinDependency
 import kotlin.test.*
 import kotlin.test.Test
 

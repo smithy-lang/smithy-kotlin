@@ -5,6 +5,9 @@
 
 package aws.smithy.kotlin.codegen
 
+import aws.smithy.kotlin.codegen.test.TestModelDefault
+import aws.smithy.kotlin.codegen.test.toSmithyModel
+import aws.smithy.kotlin.codegen.utils.dq
 import org.junit.jupiter.api.extension.ExtensionContext
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
@@ -13,13 +16,6 @@ import org.junit.jupiter.params.provider.ArgumentsSource
 import org.junit.jupiter.params.provider.CsvSource
 import org.junit.jupiter.params.support.ParameterDeclarations
 import software.amazon.smithy.codegen.core.CodegenException
-import aws.smithy.kotlin.codegen.test.TestModelDefault
-import aws.smithy.kotlin.codegen.test.toSmithyModel
-import software.amazon.smithy.kotlin.codegen.ApiSettings
-import software.amazon.smithy.kotlin.codegen.DefaultValueSerializationMode
-import software.amazon.smithy.kotlin.codegen.KotlinSettings
-import software.amazon.smithy.kotlin.codegen.Visibility
-import software.amazon.smithy.kotlin.codegen.utils.dq
 import software.amazon.smithy.model.knowledge.NullableIndex.CheckMode
 import software.amazon.smithy.model.knowledge.ServiceIndex
 import software.amazon.smithy.model.node.Node

@@ -4,14 +4,14 @@
  */
 package aws.smithy.kotlin.codegen.rendering
 
+import aws.smithy.kotlin.codegen.BuildSettings
+import aws.smithy.kotlin.codegen.KotlinSettings
+import aws.smithy.kotlin.codegen.core.KotlinDependency.Companion.CORE
+import aws.smithy.kotlin.codegen.core.RUNTIME_GROUP
+import aws.smithy.kotlin.codegen.core.RUNTIME_VERSION
 import aws.smithy.kotlin.codegen.loadModelFromResource
 import io.kotest.matchers.string.shouldContain
 import software.amazon.smithy.build.MockManifest
-import software.amazon.smithy.kotlin.codegen.BuildSettings
-import software.amazon.smithy.kotlin.codegen.KotlinSettings
-import software.amazon.smithy.kotlin.codegen.core.*
-import software.amazon.smithy.kotlin.codegen.core.KotlinDependency.Companion.CORE
-import software.amazon.smithy.kotlin.codegen.rendering.writeGradleBuild
 import software.amazon.smithy.model.node.Node
 import kotlin.test.Test
 
@@ -38,7 +38,7 @@ class GradleGeneratorTest {
         writeGradleBuild(settings, manifest, dependencies)
         val contents = manifest.getFileString("build.gradle.kts").get()
         val expected = """
-            api("$RUNTIME_GROUP:${CORE.artifact}:$RUNTIME_VERSION")
+            api("${RUNTIME_GROUP}:${CORE.artifact}:${RUNTIME_VERSION}")
         """.trimIndent()
 
         contents.shouldContain(expected)

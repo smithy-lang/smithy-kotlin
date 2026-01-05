@@ -4,7 +4,13 @@
  */
 package aws.smithy.kotlin.codegen.rendering
 
+import aws.smithy.kotlin.codegen.KotlinCodegenPlugin
+import aws.smithy.kotlin.codegen.KotlinSettings
+import aws.smithy.kotlin.codegen.core.KotlinWriter
+import aws.smithy.kotlin.codegen.core.RenderingContext
+import aws.smithy.kotlin.codegen.core.registerSectionWriter
 import aws.smithy.kotlin.codegen.loadModelFromResource
+import aws.smithy.kotlin.codegen.model.expectShape
 import aws.smithy.kotlin.codegen.test.MockHttpProtocolGenerator
 import aws.smithy.kotlin.codegen.test.TestModelDefault
 import aws.smithy.kotlin.codegen.test.assertBalancedBracesAndParens
@@ -16,11 +22,6 @@ import aws.smithy.kotlin.codegen.trimEveryLine
 import io.kotest.matchers.string.shouldContainOnlyOnce
 import io.kotest.matchers.string.shouldNotContain
 import software.amazon.smithy.codegen.core.SymbolProvider
-import software.amazon.smithy.kotlin.codegen.KotlinCodegenPlugin
-import software.amazon.smithy.kotlin.codegen.KotlinSettings
-import software.amazon.smithy.kotlin.codegen.core.*
-import software.amazon.smithy.kotlin.codegen.model.expectShape
-import software.amazon.smithy.kotlin.codegen.rendering.ServiceClientGenerator
 import software.amazon.smithy.model.shapes.ServiceShape
 import software.amazon.smithy.model.shapes.ShapeId
 import kotlin.test.Test

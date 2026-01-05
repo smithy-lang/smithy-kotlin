@@ -5,7 +5,6 @@
 package aws.smithy.kotlin.codegen.core
 
 import aws.smithy.kotlin.codegen.test.TestModelDefault
-import software.amazon.smithy.kotlin.codegen.core.ImportDeclarations
 import kotlin.test.Test
 import kotlin.test.assertEquals
 

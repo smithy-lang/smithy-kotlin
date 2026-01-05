@@ -4,17 +4,22 @@
  */
 package aws.smithy.kotlin.codegen.test
 
+import aws.smithy.kotlin.codegen.ApiSettings
+import aws.smithy.kotlin.codegen.DefaultValueSerializationMode
+import aws.smithy.kotlin.codegen.KotlinCodegenPlugin
+import aws.smithy.kotlin.codegen.KotlinSettings
+import aws.smithy.kotlin.codegen.core.CodegenContext
+import aws.smithy.kotlin.codegen.core.GenerationContext
+import aws.smithy.kotlin.codegen.core.KotlinDelegator
+import aws.smithy.kotlin.codegen.inferService
+import aws.smithy.kotlin.codegen.integration.KotlinIntegration
+import aws.smithy.kotlin.codegen.kotlinPluginSetting
+import aws.smithy.kotlin.codegen.model.OperationNormalizer
+import aws.smithy.kotlin.codegen.model.shapes
+import aws.smithy.kotlin.codegen.rendering.protocol.ProtocolGenerator
+import aws.smithy.kotlin.codegen.utils.getOrNull
 import software.amazon.smithy.build.MockManifest
 import software.amazon.smithy.codegen.core.SymbolProvider
-import software.amazon.smithy.kotlin.codegen.*
-import software.amazon.smithy.kotlin.codegen.core.CodegenContext
-import software.amazon.smithy.kotlin.codegen.core.GenerationContext
-import software.amazon.smithy.kotlin.codegen.core.KotlinDelegator
-import software.amazon.smithy.kotlin.codegen.integration.KotlinIntegration
-import software.amazon.smithy.kotlin.codegen.model.OperationNormalizer
-import software.amazon.smithy.kotlin.codegen.model.shapes
-import software.amazon.smithy.kotlin.codegen.rendering.protocol.ProtocolGenerator
-import software.amazon.smithy.kotlin.codegen.utils.getOrNull
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.knowledge.NullableIndex.CheckMode
 import software.amazon.smithy.model.node.Node
@@ -110,7 +115,7 @@ fun Model.toSmithyIDL(): String {
  *
  * @param serviceName name of service without namespace
  * @param packageName root namespace of model
- * @param settings [KotlinSettings] associated w/ test context
+ * @param settings [aws.smithy.kotlin.codegen.KotlinSettings] associated w/ test context
  * @param generator [ProtocolGenerator] associated w/ test context
  */
 fun Model.newTestContext(

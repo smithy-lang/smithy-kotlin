@@ -44,7 +44,7 @@ dependencies {
 val generateSdkRuntimeVersion by tasks.registering {
     // generate the version of the runtime to use as a resource.
     // this keeps us from having to manually change version numbers in multiple places
-    val resourcesDir = layout.buildDirectory.dir("resources/main/software/amazon/smithy/kotlin/codegen/core").get()
+    val resourcesDir = layout.buildDirectory.dir("resources/main/aws/smithy/kotlin/codegen/core").get()
     val versionFile = file("$resourcesDir/sdk-version.txt")
     val gradlePropertiesFile = rootProject.file("gradle.properties")
     inputs.file(gradlePropertiesFile)

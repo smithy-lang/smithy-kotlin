@@ -5,20 +5,14 @@
 
 package aws.smithy.kotlin.codegen.core
 
-import io.kotest.matchers.string.shouldNotContain
-import software.amazon.smithy.kotlin.codegen.integration.SectionId
-import software.amazon.smithy.kotlin.codegen.integration.SectionKey
-import software.amazon.smithy.kotlin.codegen.model.SymbolProperty
-import software.amazon.smithy.kotlin.codegen.model.buildSymbol
+import aws.smithy.kotlin.codegen.integration.SectionId
+import aws.smithy.kotlin.codegen.integration.SectionKey
+import aws.smithy.kotlin.codegen.model.SymbolProperty
+import aws.smithy.kotlin.codegen.model.buildSymbol
 import aws.smithy.kotlin.codegen.test.TestModelDefault
 import aws.smithy.kotlin.codegen.test.shouldContainOnlyOnceWithDiff
 import aws.smithy.kotlin.codegen.test.shouldContainWithDiff
-import software.amazon.smithy.kotlin.codegen.core.InlineKotlinWriter
-import software.amazon.smithy.kotlin.codegen.core.KotlinDependency
-import software.amazon.smithy.kotlin.codegen.core.KotlinWriter
-import software.amazon.smithy.kotlin.codegen.core.RuntimeTypes
-import software.amazon.smithy.kotlin.codegen.core.declareSection
-import software.amazon.smithy.kotlin.codegen.core.registerSectionWriter
+import io.kotest.matchers.string.shouldNotContain
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue

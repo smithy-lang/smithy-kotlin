@@ -7,19 +7,25 @@ package aws.smithy.kotlin.codegen.aws.protocols
 import aws.smithy.kotlin.codegen.aws.protocols.core.AbstractQueryFormUrlSerializerGenerator
 import aws.smithy.kotlin.codegen.aws.protocols.core.QueryHttpBindingProtocolGenerator
 import aws.smithy.kotlin.codegen.aws.protocols.formurl.QuerySerdeFormUrlDescriptorGenerator
+import aws.smithy.kotlin.codegen.core.KotlinWriter
+import aws.smithy.kotlin.codegen.core.RenderingContext
+import aws.smithy.kotlin.codegen.core.RuntimeTypes
+import aws.smithy.kotlin.codegen.core.withBlock
+import aws.smithy.kotlin.codegen.model.buildSymbol
+import aws.smithy.kotlin.codegen.model.getTrait
+import aws.smithy.kotlin.codegen.model.isNullable
+import aws.smithy.kotlin.codegen.rendering.protocol.ProtocolGenerator
+import aws.smithy.kotlin.codegen.rendering.protocol.toRenderingContext
+import aws.smithy.kotlin.codegen.rendering.serde.FormUrlSerdeDescriptorGenerator
+import aws.smithy.kotlin.codegen.rendering.serde.SerializeStructGenerator
+import aws.smithy.kotlin.codegen.rendering.serde.SerializeUnionGenerator
+import aws.smithy.kotlin.codegen.rendering.serde.StructuredDataParserGenerator
+import aws.smithy.kotlin.codegen.rendering.serde.StructuredDataSerializerGenerator
+import aws.smithy.kotlin.codegen.rendering.serde.XmlParserGenerator
+import aws.smithy.kotlin.codegen.rendering.serde.descriptorName
 import software.amazon.smithy.aws.traits.protocols.Ec2QueryNameTrait
 import software.amazon.smithy.aws.traits.protocols.Ec2QueryTrait
 import software.amazon.smithy.codegen.core.Symbol
-import software.amazon.smithy.kotlin.codegen.core.KotlinWriter
-import software.amazon.smithy.kotlin.codegen.core.RenderingContext
-import software.amazon.smithy.kotlin.codegen.core.RuntimeTypes
-import software.amazon.smithy.kotlin.codegen.core.withBlock
-import software.amazon.smithy.kotlin.codegen.model.buildSymbol
-import software.amazon.smithy.kotlin.codegen.model.getTrait
-import software.amazon.smithy.kotlin.codegen.model.isNullable
-import software.amazon.smithy.kotlin.codegen.rendering.protocol.ProtocolGenerator
-import software.amazon.smithy.kotlin.codegen.rendering.protocol.toRenderingContext
-import software.amazon.smithy.kotlin.codegen.rendering.serde.*
 import software.amazon.smithy.model.shapes.*
 import software.amazon.smithy.model.traits.TimestampFormatTrait
 import software.amazon.smithy.model.traits.XmlNameTrait
@@ -87,7 +93,13 @@ private class Ec2QuerySerializerGenerator(
         // render the serde descriptors
         descriptorGenerator(ctx, shape, members, writer).render()
         when (shape) {
-            is UnionShape -> SerializeUnionGenerator(ctx, shape, members, writer, protocolGenerator.defaultTimestampFormat).render()
+            is UnionShape -> SerializeUnionGenerator(
+                ctx,
+                shape,
+                members,
+                writer,
+                protocolGenerator.defaultTimestampFormat,
+            ).render()
             else -> Ec2QuerySerializeStructGenerator(ctx, members, writer, protocolGenerator.defaultTimestampFormat).render()
         }
     }
@@ -173,7 +185,7 @@ private class Ec2QueryParserGenerator(
 }
 
 /**
- * An EC2 Query implementation of [SerializeStructGenerator] which ensures that empty lists are not serialized.
+ * An EC2 Query implementation of [aws.smithy.kotlin.codegen.rendering.serde.SerializeStructGenerator] which ensures that empty lists are not serialized.
  */
 private class Ec2QuerySerializeStructGenerator(
     ctx: ProtocolGenerator.GenerationContext,

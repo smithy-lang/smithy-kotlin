@@ -5,6 +5,17 @@
 
 package aws.smithy.kotlin.codegen.rendering
 
+import aws.smithy.kotlin.codegen.KotlinCodegenPlugin
+import aws.smithy.kotlin.codegen.core.CodegenContext
+import aws.smithy.kotlin.codegen.core.GenerationContext
+import aws.smithy.kotlin.codegen.core.KotlinWriter
+import aws.smithy.kotlin.codegen.core.RenderingContext
+import aws.smithy.kotlin.codegen.core.getContextValue
+import aws.smithy.kotlin.codegen.integration.KotlinIntegration
+import aws.smithy.kotlin.codegen.integration.SectionWriter
+import aws.smithy.kotlin.codegen.integration.SectionWriterBinding
+import aws.smithy.kotlin.codegen.model.buildSymbol
+import aws.smithy.kotlin.codegen.model.expectShape
 import aws.smithy.kotlin.codegen.test.TestModelDefault
 import aws.smithy.kotlin.codegen.test.assertBalancedBracesAndParens
 import aws.smithy.kotlin.codegen.test.createSymbolProvider
@@ -19,16 +30,6 @@ import io.kotest.matchers.string.shouldNotContain
 import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.codegen.core.SymbolProvider
-import software.amazon.smithy.kotlin.codegen.KotlinCodegenPlugin
-import software.amazon.smithy.kotlin.codegen.core.*
-import software.amazon.smithy.kotlin.codegen.integration.KotlinIntegration
-import software.amazon.smithy.kotlin.codegen.integration.SectionWriter
-import software.amazon.smithy.kotlin.codegen.integration.SectionWriterBinding
-import software.amazon.smithy.kotlin.codegen.model.buildSymbol
-import software.amazon.smithy.kotlin.codegen.model.expectShape
-import software.amazon.smithy.kotlin.codegen.rendering.ExceptionBaseClassGenerator
-import software.amazon.smithy.kotlin.codegen.rendering.ServiceExceptionBaseClassGenerator
-import software.amazon.smithy.kotlin.codegen.rendering.StructureGenerator
 import software.amazon.smithy.model.shapes.*
 import kotlin.test.Test
 import kotlin.test.assertFailsWith
@@ -84,7 +85,8 @@ class ExceptionGeneratorTest {
 
         val serverErrorWriter = KotlinWriter("com.error.test")
         val serverErrorShape = model.expectShape<StructureShape>("com.error.test#InternalServerException")
-        val serverErrorRenderingCtx = RenderingContext(serverErrorWriter, serverErrorShape, model, symbolProvider, settings)
+        val serverErrorRenderingCtx =
+            RenderingContext(serverErrorWriter, serverErrorShape, model, symbolProvider, settings)
         StructureGenerator(serverErrorRenderingCtx).render()
         serverErrorTestContents = serverErrorWriter.toString()
     }

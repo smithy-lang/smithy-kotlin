@@ -5,11 +5,10 @@
 
 package aws.smithy.kotlin.codegen.lang
 
-import software.amazon.smithy.codegen.core.CodegenException
-import software.amazon.smithy.kotlin.codegen.KotlinSettings
-import software.amazon.smithy.kotlin.codegen.model.expectTrait
+import aws.smithy.kotlin.codegen.KotlinSettings
+import aws.smithy.kotlin.codegen.model.expectTrait
 import aws.smithy.kotlin.codegen.test.toSmithyModel
-import software.amazon.smithy.kotlin.codegen.lang.DocumentationPreprocessor
+import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.model.shapes.ShapeId
 import software.amazon.smithy.model.traits.DocumentationTrait
 import kotlin.test.Test

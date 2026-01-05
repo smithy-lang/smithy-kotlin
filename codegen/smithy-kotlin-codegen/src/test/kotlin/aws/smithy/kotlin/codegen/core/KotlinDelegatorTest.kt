@@ -4,21 +4,18 @@
  */
 package aws.smithy.kotlin.codegen.core
 
+import aws.smithy.kotlin.codegen.KotlinCodegenPlugin
+import aws.smithy.kotlin.codegen.KotlinSettings
 import aws.smithy.kotlin.codegen.loadModelFromResource
+import aws.smithy.kotlin.codegen.model.buildSymbol
+import aws.smithy.kotlin.codegen.model.expectShape
+import aws.smithy.kotlin.codegen.test.TestModelDefault
+import aws.smithy.kotlin.codegen.test.shouldContainOnlyOnceWithDiff
+import aws.smithy.kotlin.codegen.test.shouldContainWithDiff
 import io.kotest.matchers.string.shouldContain
 import io.kotest.matchers.string.shouldNotContain
 import software.amazon.smithy.build.MockManifest
 import software.amazon.smithy.build.PluginContext
-import software.amazon.smithy.kotlin.codegen.KotlinCodegenPlugin
-import software.amazon.smithy.kotlin.codegen.KotlinSettings
-import software.amazon.smithy.kotlin.codegen.model.buildSymbol
-import software.amazon.smithy.kotlin.codegen.model.expectShape
-import aws.smithy.kotlin.codegen.test.TestModelDefault
-import aws.smithy.kotlin.codegen.test.shouldContainOnlyOnceWithDiff
-import aws.smithy.kotlin.codegen.test.shouldContainWithDiff
-import software.amazon.smithy.kotlin.codegen.core.GenerationContext
-import software.amazon.smithy.kotlin.codegen.core.KotlinDelegator
-import software.amazon.smithy.kotlin.codegen.core.KotlinSymbolProvider
 import software.amazon.smithy.model.node.Node
 import software.amazon.smithy.model.shapes.StructureShape
 import kotlin.test.Test

@@ -4,6 +4,7 @@
  */
 package aws.smithy.kotlin.codegen.rendering.serde
 
+import aws.smithy.kotlin.codegen.DefaultValueSerializationMode
 import aws.smithy.kotlin.codegen.test.AwsProtocolModelDeclaration
 import aws.smithy.kotlin.codegen.test.codegenSerializerForShape
 import aws.smithy.kotlin.codegen.test.defaultSettings
@@ -14,7 +15,6 @@ import aws.smithy.kotlin.codegen.test.toSmithyModel
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
 import org.junit.jupiter.params.provider.ValueSource
-import software.amazon.smithy.kotlin.codegen.DefaultValueSerializationMode
 import software.amazon.smithy.model.knowledge.NullableIndex
 import kotlin.test.Test
 

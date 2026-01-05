@@ -5,12 +5,12 @@
 
 package aws.smithy.kotlin.codegen.aws.protocols.json
 
-import software.amazon.smithy.kotlin.codegen.core.RenderingContext
-import software.amazon.smithy.kotlin.codegen.core.RuntimeTypes
-import software.amazon.smithy.kotlin.codegen.rendering.serde.JsonSerdeDescriptorGenerator
-import software.amazon.smithy.kotlin.codegen.rendering.serde.SdkFieldDescriptorTrait
-import software.amazon.smithy.kotlin.codegen.rendering.serde.add
-import software.amazon.smithy.kotlin.codegen.utils.dq
+import aws.smithy.kotlin.codegen.core.RenderingContext
+import aws.smithy.kotlin.codegen.core.RuntimeTypes
+import aws.smithy.kotlin.codegen.rendering.serde.JsonSerdeDescriptorGenerator
+import aws.smithy.kotlin.codegen.rendering.serde.SdkFieldDescriptorTrait
+import aws.smithy.kotlin.codegen.rendering.serde.add
+import aws.smithy.kotlin.codegen.utils.dq
 import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.shapes.Shape
 

@@ -4,6 +4,8 @@
  */
 package aws.smithy.kotlin.codegen.rendering.protocol
 
+import aws.smithy.kotlin.codegen.core.KotlinDependency
+import aws.smithy.kotlin.codegen.core.KotlinWriter
 import aws.smithy.kotlin.codegen.loadModelFromResource
 import aws.smithy.kotlin.codegen.test.AwsProtocolModelDeclaration
 import aws.smithy.kotlin.codegen.test.TestModelDefault
@@ -13,11 +15,6 @@ import aws.smithy.kotlin.codegen.test.prependNamespaceAndService
 import aws.smithy.kotlin.codegen.test.shouldContainOnlyOnceWithDiff
 import aws.smithy.kotlin.codegen.test.toSmithyModel
 import aws.smithy.kotlin.codegen.trimEveryLine
-import software.amazon.smithy.kotlin.codegen.core.KotlinDependency
-import software.amazon.smithy.kotlin.codegen.core.KotlinWriter
-import software.amazon.smithy.kotlin.codegen.rendering.protocol.HttpTraitResolver
-import software.amazon.smithy.kotlin.codegen.rendering.protocol.ProtocolGenerator
-import software.amazon.smithy.kotlin.codegen.rendering.protocol.ProtocolMiddleware
 import software.amazon.smithy.model.shapes.OperationShape
 import kotlin.test.Test
 import kotlin.test.assertEquals

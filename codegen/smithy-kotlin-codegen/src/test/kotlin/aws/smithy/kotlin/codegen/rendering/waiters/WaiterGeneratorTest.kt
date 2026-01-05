@@ -5,21 +5,19 @@
 
 package aws.smithy.kotlin.codegen.rendering.waiters
 
+import aws.smithy.kotlin.codegen.KotlinCodegenPlugin
+import aws.smithy.kotlin.codegen.KotlinSettings
+import aws.smithy.kotlin.codegen.core.CodegenContext
+import aws.smithy.kotlin.codegen.core.KotlinWriter
+import aws.smithy.kotlin.codegen.integration.KotlinIntegration
 import aws.smithy.kotlin.codegen.loadModelFromResource
-import io.kotest.matchers.string.shouldContain
-import io.kotest.matchers.string.shouldContainOnlyOnce
-import software.amazon.smithy.codegen.core.SymbolProvider
-import software.amazon.smithy.kotlin.codegen.KotlinCodegenPlugin
-import software.amazon.smithy.kotlin.codegen.KotlinSettings
-import software.amazon.smithy.kotlin.codegen.core.CodegenContext
-import software.amazon.smithy.kotlin.codegen.core.KotlinWriter
-import software.amazon.smithy.kotlin.codegen.integration.KotlinIntegration
-import software.amazon.smithy.kotlin.codegen.rendering.protocol.ProtocolGenerator
+import aws.smithy.kotlin.codegen.rendering.protocol.ProtocolGenerator
 import aws.smithy.kotlin.codegen.test.TestModelDefault
 import aws.smithy.kotlin.codegen.test.createSymbolProvider
 import aws.smithy.kotlin.codegen.test.formatForTest
-import software.amazon.smithy.kotlin.codegen.rendering.waiters.allWaiters
-import software.amazon.smithy.kotlin.codegen.rendering.waiters.renderWaiter
+import io.kotest.matchers.string.shouldContain
+import io.kotest.matchers.string.shouldContainOnlyOnce
+import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.ShapeId
 import kotlin.test.Test

@@ -6,13 +6,17 @@ package aws.smithy.kotlin.codegen.aws.protocols
 
 import aws.smithy.kotlin.codegen.aws.protocols.json.AwsJsonProtocolParserGenerator
 import aws.smithy.kotlin.codegen.aws.protocols.json.JsonHttpBindingProtocolGenerator
+import aws.smithy.kotlin.codegen.core.KotlinWriter
+import aws.smithy.kotlin.codegen.core.RuntimeTypes
+import aws.smithy.kotlin.codegen.core.defaultName
+import aws.smithy.kotlin.codegen.core.withBlock
+import aws.smithy.kotlin.codegen.rendering.protocol.HttpBindingResolver
+import aws.smithy.kotlin.codegen.rendering.protocol.HttpTraitResolver
+import aws.smithy.kotlin.codegen.rendering.protocol.ProtocolContentTypes
+import aws.smithy.kotlin.codegen.rendering.protocol.ProtocolGenerator
+import aws.smithy.kotlin.codegen.rendering.protocol.hasHttpBody
+import aws.smithy.kotlin.codegen.rendering.serde.StructuredDataParserGenerator
 import software.amazon.smithy.aws.traits.protocols.RestJson1Trait
-import software.amazon.smithy.kotlin.codegen.core.KotlinWriter
-import software.amazon.smithy.kotlin.codegen.core.RuntimeTypes
-import software.amazon.smithy.kotlin.codegen.core.defaultName
-import software.amazon.smithy.kotlin.codegen.core.withBlock
-import software.amazon.smithy.kotlin.codegen.rendering.protocol.*
-import software.amazon.smithy.kotlin.codegen.rendering.serde.StructuredDataParserGenerator
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.knowledge.HttpBinding
 import software.amazon.smithy.model.shapes.OperationShape
@@ -24,7 +28,7 @@ import software.amazon.smithy.model.shapes.StructureShape
  * Handles generating the aws.protocols#restJson1 protocol for services.
  *
  * @inheritDoc
- * @see HttpBindingProtocolGenerator
+ * @see aws.smithy.kotlin.codegen.rendering.protocol.HttpBindingProtocolGenerator
  */
 class RestJson1 : JsonHttpBindingProtocolGenerator() {
 

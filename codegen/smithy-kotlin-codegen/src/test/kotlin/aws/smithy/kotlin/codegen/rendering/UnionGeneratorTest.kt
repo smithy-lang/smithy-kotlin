@@ -4,11 +4,9 @@
  */
 package aws.smithy.kotlin.codegen.rendering
 
-import io.kotest.matchers.string.shouldContainOnlyOnce
-import software.amazon.smithy.codegen.core.SymbolProvider
-import software.amazon.smithy.kotlin.codegen.KotlinCodegenPlugin
-import software.amazon.smithy.kotlin.codegen.core.KotlinWriter
-import software.amazon.smithy.kotlin.codegen.model.expectShape
+import aws.smithy.kotlin.codegen.KotlinCodegenPlugin
+import aws.smithy.kotlin.codegen.core.KotlinWriter
+import aws.smithy.kotlin.codegen.model.expectShape
 import aws.smithy.kotlin.codegen.test.TestModelDefault
 import aws.smithy.kotlin.codegen.test.createSymbolProvider
 import aws.smithy.kotlin.codegen.test.prependNamespaceAndService
@@ -16,7 +14,8 @@ import aws.smithy.kotlin.codegen.test.shouldContainOnlyOnceWithDiff
 import aws.smithy.kotlin.codegen.test.shouldContainWithDiff
 import aws.smithy.kotlin.codegen.test.toSmithyModel
 import aws.smithy.kotlin.codegen.trimEveryLine
-import software.amazon.smithy.kotlin.codegen.rendering.UnionGenerator
+import io.kotest.matchers.string.shouldContainOnlyOnce
+import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.model.shapes.UnionShape
 import kotlin.test.Test
 import kotlin.test.assertFailsWith

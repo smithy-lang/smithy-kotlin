@@ -4,8 +4,6 @@
  */
 package aws.smithy.kotlin.codegen.transforms
 
-import software.amazon.smithy.kotlin.codegen.transforms.shouldRemoveDeprecatedShape
-import software.amazon.smithy.kotlin.codegen.transforms.toLocalDate
 import software.amazon.smithy.model.shapes.FloatShape
 import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.shapes.ShapeId

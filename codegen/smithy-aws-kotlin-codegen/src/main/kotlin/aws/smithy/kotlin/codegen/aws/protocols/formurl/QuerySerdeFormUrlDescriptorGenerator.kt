@@ -4,15 +4,15 @@
  */
 package aws.smithy.kotlin.codegen.aws.protocols.formurl
 
-import software.amazon.smithy.kotlin.codegen.core.RenderingContext
-import software.amazon.smithy.kotlin.codegen.core.RuntimeTypes
-import software.amazon.smithy.kotlin.codegen.model.changeNameSuffix
-import software.amazon.smithy.kotlin.codegen.model.hasTrait
-import software.amazon.smithy.kotlin.codegen.model.traits.OperationInput
-import software.amazon.smithy.kotlin.codegen.rendering.serde.FormUrlSerdeDescriptorGenerator
-import software.amazon.smithy.kotlin.codegen.rendering.serde.SdkFieldDescriptorTrait
-import software.amazon.smithy.kotlin.codegen.rendering.serde.add
-import software.amazon.smithy.kotlin.codegen.utils.dq
+import aws.smithy.kotlin.codegen.core.RenderingContext
+import aws.smithy.kotlin.codegen.core.RuntimeTypes
+import aws.smithy.kotlin.codegen.model.changeNameSuffix
+import aws.smithy.kotlin.codegen.model.hasTrait
+import aws.smithy.kotlin.codegen.model.traits.OperationInput
+import aws.smithy.kotlin.codegen.rendering.serde.FormUrlSerdeDescriptorGenerator
+import aws.smithy.kotlin.codegen.rendering.serde.SdkFieldDescriptorTrait
+import aws.smithy.kotlin.codegen.rendering.serde.add
+import aws.smithy.kotlin.codegen.utils.dq
 import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.shapes.Shape
 

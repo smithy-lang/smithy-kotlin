@@ -4,9 +4,7 @@
  */
 package aws.smithy.kotlin.codegen.lang
 
-import software.amazon.smithy.kotlin.codegen.lang.isBuiltIn
-import software.amazon.smithy.kotlin.codegen.lang.isValidPackageName
-import software.amazon.smithy.kotlin.codegen.model.buildSymbol
+import aws.smithy.kotlin.codegen.model.buildSymbol
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
