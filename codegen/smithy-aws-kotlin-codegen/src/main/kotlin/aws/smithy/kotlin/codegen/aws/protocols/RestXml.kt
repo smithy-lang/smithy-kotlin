@@ -39,7 +39,7 @@ import kotlin.contracts.contract
  * Handles generating the aws.protocols#restJson1 protocol for services.
  *
  * @inheritDoc
- * @see aws.smithy.kotlin.codegen.rendering.protocol.HttpBindingProtocolGenerator
+ * @see HttpBindingProtocolGenerator
  */
 open class RestXml : HttpBindingProtocolGenerator() {
 
@@ -173,11 +173,7 @@ object RestXmlErrors {
                     "}",
                     "ErrorResponse",
                 ) {
-                    write(
-                        "throw #T(#S)",
-                        RuntimeTypes.Serde.DeserializationException,
-                        "invalid root, expected <ErrorResponse>; found `\${root.tag}`",
-                    )
+                    write("throw #T(#S)", RuntimeTypes.Serde.DeserializationException, "invalid root, expected <ErrorResponse>; found `\${root.tag}`")
                 }
 
                 write("val errTag = root.nextTag()")
@@ -186,11 +182,7 @@ object RestXmlErrors {
                     "}",
                     "Error",
                 ) {
-                    write(
-                        "throw #T(#S)",
-                        RuntimeTypes.Serde.DeserializationException,
-                        "invalid error, expected <Error>; found `\${errTag?.tag}`",
-                    )
+                    write("throw #T(#S)", RuntimeTypes.Serde.DeserializationException, "invalid error, expected <Error>; found `\${errTag?.tag}`")
                 }
 
                 write("return errTag")
@@ -225,11 +217,7 @@ object RestXmlErrors {
                     "}",
                     "Error",
                 ) {
-                    write(
-                        "throw #T(#S)",
-                        RuntimeTypes.Serde.DeserializationException,
-                        "invalid error, expected <Error>; found `\${root.tag}`",
-                    )
+                    write("throw #T(#S)", RuntimeTypes.Serde.DeserializationException, "invalid error, expected <Error>; found `\${root.tag}`")
                 }
 
                 write("return root")
@@ -248,8 +236,7 @@ class RestXmlSerializerGenerator(
         shape: Shape,
         members: List<MemberShape>,
         writer: KotlinWriter,
-    ): XmlSerdeDescriptorGenerator =
-        RestXmlSerdeDescriptorGenerator(ctx.toRenderingContext(protocolGenerator, shape, writer), members)
+    ): XmlSerdeDescriptorGenerator = RestXmlSerdeDescriptorGenerator(ctx.toRenderingContext(protocolGenerator, shape, writer), members)
 
     override fun payloadSerializer(
         ctx: ProtocolGenerator.GenerationContext,

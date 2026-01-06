@@ -205,15 +205,15 @@ class KotlinWriterTest {
 
         // Do all these things twice
         val symbol = buildSymbol {
-            dependency(KotlinDependency.Companion.KOTLIN_TEST)
-            dependency(KotlinDependency.Companion.KOTLIN_TEST)
+            dependency(KotlinDependency.KOTLIN_TEST)
+            dependency(KotlinDependency.KOTLIN_TEST)
         }
         unit.addImport(symbol, "Foo")
         unit.addImport(symbol, "Foo")
-        unit.dependencies.addAll(KotlinDependency.Companion.KOTLIN_TEST.dependencies)
-        unit.dependencies.addAll(KotlinDependency.Companion.KOTLIN_TEST.dependencies)
+        unit.dependencies.addAll(KotlinDependency.KOTLIN_TEST.dependencies)
+        unit.dependencies.addAll(KotlinDependency.KOTLIN_TEST.dependencies)
 
-        val expected = setOf(KotlinDependency.Companion.KOTLIN_TEST.dependencies.first())
+        val expected = setOf(KotlinDependency.KOTLIN_TEST.dependencies.first())
         assertEquals(expected, unit.dependencies)
     }
 

@@ -78,12 +78,12 @@ interface ProtocolGenerator {
     /**
      * Get the generator responsible for rendering an EndpointProvider implementation
      */
-    fun endpointDelegator(ctx: GenerationContext): EndpointDelegator = EndpointDelegator.Companion.Default
+    fun endpointDelegator(ctx: GenerationContext): EndpointDelegator = EndpointDelegator.Default
 
     /**
      * Get the generator responsible for rendering an AuthSchemeProvider implementation
      */
-    fun authSchemeDelegator(ctx: GenerationContext): AuthDelegator = AuthDelegator.Companion.Default
+    fun authSchemeDelegator(ctx: GenerationContext): AuthDelegator = AuthDelegator.Default
 
     /**
      * Get the generator responsible for rendering deserialization of the protocol specific data format

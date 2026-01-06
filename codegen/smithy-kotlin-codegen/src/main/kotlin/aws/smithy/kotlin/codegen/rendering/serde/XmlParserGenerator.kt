@@ -71,7 +71,7 @@ open class XmlParserGenerator(
      * implementation
      */
     protected fun addNestedDocumentDeserializers(ctx: ProtocolGenerator.GenerationContext, shape: Shape, writer: KotlinWriter) {
-        val serdeIndex = SerdeIndex.Companion.of(ctx.model)
+        val serdeIndex = SerdeIndex.of(ctx.model)
         val shapesRequiringDocumentDeserializer = serdeIndex.requiresDocumentDeserializer(shape)
         // register a dependency on each of the members that require a deserializer impl
         // ensuring they get generated
@@ -566,17 +566,9 @@ open class XmlParserGenerator(
                             deserializeMember(ctx, innerCtx, map.value, this)
                         }
                     }
-                    write(
-                        "if (key == null) throw #T(#S)",
-                        RuntimeTypes.Serde.DeserializationException,
-                        "missing key map entry",
-                    )
+                    write("if (key == null) throw #T(#S)", RuntimeTypes.Serde.DeserializationException, "missing key map entry")
                     if (!isSparse) {
-                        write(
-                            "if (value == null) throw #T(#S)",
-                            RuntimeTypes.Serde.DeserializationException,
-                            "missing value map entry",
-                        )
+                        write("if (value == null) throw #T(#S)", RuntimeTypes.Serde.DeserializationException, "missing value map entry")
                     }
                     write("dest[key] = value")
                 }

@@ -93,13 +93,7 @@ private class Ec2QuerySerializerGenerator(
         // render the serde descriptors
         descriptorGenerator(ctx, shape, members, writer).render()
         when (shape) {
-            is UnionShape -> SerializeUnionGenerator(
-                ctx,
-                shape,
-                members,
-                writer,
-                protocolGenerator.defaultTimestampFormat,
-            ).render()
+            is UnionShape -> SerializeUnionGenerator(ctx, shape, members, writer, protocolGenerator.defaultTimestampFormat).render()
             else -> Ec2QuerySerializeStructGenerator(ctx, members, writer, protocolGenerator.defaultTimestampFormat).render()
         }
     }
@@ -185,7 +179,7 @@ private class Ec2QueryParserGenerator(
 }
 
 /**
- * An EC2 Query implementation of [aws.smithy.kotlin.codegen.rendering.serde.SerializeStructGenerator] which ensures that empty lists are not serialized.
+ * An EC2 Query implementation of [SerializeStructGenerator] which ensures that empty lists are not serialized.
  */
 private class Ec2QuerySerializeStructGenerator(
     ctx: ProtocolGenerator.GenerationContext,

@@ -58,8 +58,7 @@ class RpcV2Cbor : HttpBindingProtocolGenerator() {
 
     override fun getDefaultHttpMiddleware(ctx: ProtocolGenerator.GenerationContext): List<ProtocolMiddleware> {
         // Every request MUST contain a `smithy-protocol` header with the value of `rpc-v2-cbor`
-        val smithyProtocolHeaderMiddleware =
-            MutateHeadersMiddleware(overrideHeaders = mapOf("smithy-protocol" to "rpc-v2-cbor"))
+        val smithyProtocolHeaderMiddleware = MutateHeadersMiddleware(overrideHeaders = mapOf("smithy-protocol" to "rpc-v2-cbor"))
 
         // Every response MUST contain the same `smithy-protocol` header, otherwise it's considered invalid
         val validateSmithyProtocolHeaderMiddleware = object : ProtocolMiddleware {

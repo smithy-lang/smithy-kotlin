@@ -41,7 +41,7 @@ class BearerTokenAuthSchemeIntegration : KotlinIntegration {
     override fun authSchemes(ctx: ProtocolGenerator.GenerationContext): List<AuthSchemeHandler> = listOf(BearerTokenAuthSchemeHandler())
 
     override fun additionalServiceConfigProps(ctx: CodegenContext): List<ConfigProperty> {
-        val bearerTokenProviderProp = ConfigProperty.Companion {
+        val bearerTokenProviderProp = ConfigProperty {
             name = "bearerTokenProvider"
             symbol = RuntimeTypes.Auth.HttpAuth.BearerTokenProvider
             baseClass = RuntimeTypes.Auth.HttpAuth.BearerTokenProviderConfig

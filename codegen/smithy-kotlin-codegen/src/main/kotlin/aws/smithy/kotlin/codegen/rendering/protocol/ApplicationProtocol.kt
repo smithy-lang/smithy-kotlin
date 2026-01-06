@@ -80,8 +80,8 @@ class ApplicationProtocol(
         private fun createHttpSymbol(symbolName: String, subnamespace: String): Symbol = Symbol
             .builder()
             .name(symbolName)
-            .namespace("${KotlinDependency.Companion.HTTP.namespace}.$subnamespace", ".")
-            .addDependency(KotlinDependency.Companion.HTTP)
+            .namespace("${KotlinDependency.HTTP.namespace}.$subnamespace", ".")
+            .addDependency(KotlinDependency.HTTP)
             .build()
     }
 }

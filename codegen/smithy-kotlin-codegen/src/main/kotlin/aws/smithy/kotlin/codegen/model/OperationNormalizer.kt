@@ -77,7 +77,7 @@ object OperationNormalizer {
         val shapes = Walker(model).iterateShapes(model.expectShape(service))
         val shapesResultingInType = shapes.asSequence().filter {
             // remove trait definitions (which are also structures)
-            !it.hasTrait<Trait>() && KotlinSymbolProvider.Companion.isTypeGeneratedForShape(it)
+            !it.hasTrait<Trait>() && KotlinSymbolProvider.isTypeGeneratedForShape(it)
         }.toList()
 
         val possibleConflicts = shapesResultingInType.filter { it.id.name in newNames }
@@ -107,14 +107,14 @@ object OperationNormalizer {
         // take the last part of the namespace and clone shapes into the synthetic namespace using the trailing
         // part of the original namespace as a suffix. e.g. "com.foo#Bar" -> "smithy.kotlin.synthetic.foo#Bar"
         val lastNs = opShapeId.namespace.split(".").last()
-        return ShapeId.fromParts("${SYNTHETIC_NAMESPACE}.$lastNs", opShapeId.name + suffix)
+        return ShapeId.fromParts("$SYNTHETIC_NAMESPACE.$lastNs", opShapeId.name + suffix)
     }
 
     private fun emptyOperationIOStruct(opShapeId: ShapeId, suffix: String): StructureShape =
         StructureShape
             .builder()
             .id(syntheticShapeId(opShapeId, suffix))
-            .addTrait(SyntheticClone.Companion.build { archetype = UnitTypeTrait.UNIT })
+            .addTrait(SyntheticClone.build { archetype = UnitTypeTrait.UNIT })
             .addTrait(if (suffix == REQUEST_SUFFIX) OperationInput() else OperationOutput())
             .build()
 
@@ -122,7 +122,7 @@ object OperationNormalizer {
         structure
             .toBuilder()
             .id(syntheticShapeId(opShapeId, suffix))
-            .addTrait(SyntheticClone.Companion.build { archetype = structure.id })
+            .addTrait(SyntheticClone.build { archetype = structure.id })
             .addTrait(if (suffix == REQUEST_SUFFIX) OperationInput() else OperationOutput())
             .build()
 }

@@ -78,7 +78,7 @@ class DefaultEndpointDiscovererGenerator(private val ctx: CodegenContext, privat
             clientSymbol,
             RuntimeTypes.HttpClient.Operation.EndpointResolver,
         ) {
-            withBlock("if (client.config.#L == null) {", "}", SdkEndpointBuiltinIntegration.Companion.EndpointUrlProp.propertyName) {
+            withBlock("if (client.config.#L == null) {", "}", SdkEndpointBuiltinIntegration.EndpointUrlProp.propertyName) {
                 write("val identity = request.identity")
                 write(
                     """require(identity is #T) { "Endpoint discovery requires AWS credentials" }""",

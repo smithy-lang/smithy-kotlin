@@ -21,6 +21,10 @@ import aws.smithy.kotlin.codegen.model.hasTrait
 import aws.smithy.kotlin.codegen.rendering.ShapeValueGenerator
 import aws.smithy.kotlin.codegen.rendering.endpoints.EndpointParametersGenerator
 import aws.smithy.kotlin.codegen.rendering.endpoints.EndpointProviderGenerator
+import aws.smithy.kotlin.codegen.rendering.smoketests.SmokeTestSectionIds.ClientConfig.EndpointParams
+import aws.smithy.kotlin.codegen.rendering.smoketests.SmokeTestSectionIds.ClientConfig.EndpointProvider
+import aws.smithy.kotlin.codegen.rendering.smoketests.SmokeTestSectionIds.ClientConfig.Name
+import aws.smithy.kotlin.codegen.rendering.smoketests.SmokeTestSectionIds.ClientConfig.Value
 import aws.smithy.kotlin.codegen.rendering.util.format
 import aws.smithy.kotlin.codegen.utils.dq
 import aws.smithy.kotlin.codegen.utils.toCamelCase
@@ -198,10 +202,10 @@ class SmokeTestsRunnerGenerator(
             writer.declareSection(
                 SmokeTestSectionIds.ClientConfig,
                 mapOf(
-                    SmokeTestSectionIds.ClientConfig.Name to name,
-                    SmokeTestSectionIds.ClientConfig.Value to value,
-                    SmokeTestSectionIds.ClientConfig.EndpointProvider to EndpointProviderGenerator.Companion.getSymbol(settings),
-                    SmokeTestSectionIds.ClientConfig.EndpointParams to EndpointParametersGenerator.Companion.getSymbol(settings),
+                    Name to name,
+                    Value to value,
+                    EndpointProvider to EndpointProviderGenerator.getSymbol(settings),
+                    EndpointParams to EndpointParametersGenerator.getSymbol(settings),
                 ),
             ) {
                 writer.write("#L = #L", name, value)

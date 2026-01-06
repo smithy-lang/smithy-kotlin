@@ -163,7 +163,7 @@ class PaginatorGenerator : KotlinIntegration {
                         write("cursor = result.$nextMarkerLiteral")
 
                         val endBehavior = operationShape.getTrait<PaginationEndBehaviorTrait>()?.value
-                            ?: PaginationEndBehavior.Companion.Default
+                            ?: PaginationEndBehavior.Default
 
                         val hasNextPageFlag = when (endBehavior) {
                             PaginationEndBehavior.OutputTokenEmpty -> "cursor?.isNotEmpty() == true"

@@ -312,7 +312,7 @@ class ShapeValueGenerator(
         override fun numberNode(node: NumberNode) {
             when (currShape.type) {
                 ShapeType.TIMESTAMP -> {
-                    writer.addImport("${KotlinDependency.Companion.CORE.namespace}.time", "Instant")
+                    writer.addImport("${KotlinDependency.CORE.namespace}.time", "Instant")
 
                     // the value is in seconds and CAN be fractional
                     if (node.isFloatingPointNumber) {

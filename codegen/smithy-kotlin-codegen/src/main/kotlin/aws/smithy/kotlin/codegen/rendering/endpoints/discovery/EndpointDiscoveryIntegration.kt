@@ -48,7 +48,7 @@ class EndpointDiscoveryIntegration : KotlinIntegration {
         val endpointDiscoveryOptional = isOptionalFor(ctx)
         val interfaceSymbol = EndpointDiscovererInterfaceGenerator.symbolFor(ctx.settings)
         return super.additionalServiceConfigProps(ctx) + listOf(
-            ConfigProperty.Companion {
+            ConfigProperty {
                 name = CLIENT_CONFIG_NAME
 
                 if (endpointDiscoveryOptional) {
@@ -93,14 +93,14 @@ class EndpointDiscoveryIntegration : KotlinIntegration {
                 "execution.endpointResolver = config.#L.asEndpointResolver(this@#L, #T(config))",
                 CLIENT_CONFIG_NAME,
                 defaultClientName,
-                EndpointResolverAdapterGenerator.Companion.getSymbol(ctx.settings),
+                EndpointResolverAdapterGenerator.getSymbol(ctx.settings),
             )
 
             false -> writer.write(
                 "execution.endpointResolver = config.#1L?.asEndpointResolver(this@#2L, #3T(config)) ?: #3T(config)",
                 CLIENT_CONFIG_NAME,
                 defaultClientName,
-                EndpointResolverAdapterGenerator.Companion.getSymbol(ctx.settings),
+                EndpointResolverAdapterGenerator.getSymbol(ctx.settings),
             )
         }
     }

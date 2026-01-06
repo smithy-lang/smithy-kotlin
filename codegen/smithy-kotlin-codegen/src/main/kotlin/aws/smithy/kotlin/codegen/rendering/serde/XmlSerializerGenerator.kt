@@ -57,7 +57,7 @@ open class XmlSerializerGenerator(
      * implementation
      */
     protected fun addNestedDocumentSerializers(ctx: ProtocolGenerator.GenerationContext, shape: Shape, writer: KotlinWriter) {
-        val serdeIndex = SerdeIndex.Companion.of(ctx.model)
+        val serdeIndex = SerdeIndex.of(ctx.model)
         val shapesRequiringDocumentSerializer = serdeIndex.requiresDocumentSerializer(shape)
         // register a dependency on each of the members that require a serializer impl
         // ensuring they get generated

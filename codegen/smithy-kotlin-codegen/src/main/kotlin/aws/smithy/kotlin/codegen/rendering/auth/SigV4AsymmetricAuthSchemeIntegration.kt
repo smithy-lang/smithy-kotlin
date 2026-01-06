@@ -46,7 +46,7 @@ class SigV4AsymmetricAuthSchemeIntegration : KotlinIntegration {
 
     override fun additionalServiceConfigProps(ctx: CodegenContext): List<ConfigProperty> =
         listOf(
-            ConfigProperty.Companion {
+            ConfigProperty {
                 name = "sigV4aSigningRegionSet"
                 symbol = KotlinTypes.Collections.set(KotlinTypes.String).asNullable()
                 baseClass = RuntimeTypes.Auth.Credentials.AwsCredentials.SigV4aClientConfig

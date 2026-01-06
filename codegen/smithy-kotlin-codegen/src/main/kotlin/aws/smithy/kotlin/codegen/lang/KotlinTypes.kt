@@ -37,7 +37,7 @@ object KotlinTypes {
     val Double: Symbol = builtInSymbol("Double")
     val Boolean: Symbol = builtInSymbol("Boolean")
 
-    object Collections : RuntimeTypePackage(KotlinDependency.Companion.KOTLIN_STDLIB, "collections") {
+    object Collections : RuntimeTypePackage(KotlinDependency.KOTLIN_STDLIB, "collections") {
         val List: Symbol = stdlibSymbol("List")
         val listOf: Symbol = stdlibSymbol("listOf")
         val MutableList: Symbol = stdlibSymbol("MutableList")
@@ -58,7 +58,7 @@ object KotlinTypes {
             defaultValue = default
             reference(listType)
             reference(target)
-            dependency(KotlinDependency.Companion.KOTLIN_STDLIB)
+            dependency(KotlinDependency.KOTLIN_STDLIB)
         }
 
         private fun setType(
@@ -72,7 +72,7 @@ object KotlinTypes {
             defaultValue = default
             reference(setType)
             reference(target)
-            dependency(KotlinDependency.Companion.KOTLIN_STDLIB)
+            dependency(KotlinDependency.KOTLIN_STDLIB)
         }
 
         /**
@@ -103,17 +103,17 @@ object KotlinTypes {
         ): Symbol = setType(Set, target, isNullable, default)
     }
 
-    object Jvm : RuntimeTypePackage(KotlinDependency.Companion.KOTLIN_STDLIB, "jvm") {
+    object Jvm : RuntimeTypePackage(KotlinDependency.KOTLIN_STDLIB, "jvm") {
         val JvmName = stdlibSymbol("JvmName")
         val JvmStatic = stdlibSymbol("JvmStatic")
     }
 
-    object Text : RuntimeTypePackage(KotlinDependency.Companion.KOTLIN_STDLIB, "text") {
+    object Text : RuntimeTypePackage(KotlinDependency.KOTLIN_STDLIB, "text") {
         val Appendable = stdlibSymbol("Appendable")
         val encodeToByteArray = stdlibSymbol("encodeToByteArray")
     }
 
-    object Time : RuntimeTypePackage(KotlinDependency.Companion.KOTLIN_STDLIB, "time") {
+    object Time : RuntimeTypePackage(KotlinDependency.KOTLIN_STDLIB, "time") {
         val Duration = stdlibSymbol("Duration")
         val milliseconds = stdlibSymbol("milliseconds", "time.Duration.Companion")
         val minutes = stdlibSymbol("minutes", "time.Duration.Companion")

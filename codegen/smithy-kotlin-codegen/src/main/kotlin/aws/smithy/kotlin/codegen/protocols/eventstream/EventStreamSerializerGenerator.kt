@@ -162,19 +162,13 @@ class EventStreamSerializerGenerator(
                                 val variant = ctx.model.expectShape(member.target)
 
                                 val eventHeaderBindings = variant.members().filter { it.hasTrait<EventHeaderTrait>() }
-                                val eventPayloadBinding =
-                                    variant.members().firstOrNull { it.hasTrait<EventPayloadTrait>() }
-                                val unbound = variant.members()
-                                    .filterNot { it.hasTrait<EventHeaderTrait>() || it.hasTrait<EventPayloadTrait>() }
+                                val eventPayloadBinding = variant.members().firstOrNull { it.hasTrait<EventPayloadTrait>() }
+                                val unbound = variant.members().filterNot { it.hasTrait<EventHeaderTrait>() || it.hasTrait<EventPayloadTrait>() }
 
                                 eventHeaderBindings.forEach { renderSerializeEventHeader(ctx, it, writer) }
 
                                 when {
-                                    eventPayloadBinding != null -> renderSerializeEventPayload(
-                                        ctx,
-                                        eventPayloadBinding,
-                                        writer,
-                                    )
+                                    eventPayloadBinding != null -> renderSerializeEventPayload(ctx, eventPayloadBinding, writer)
 
                                     unbound.isNotEmpty() -> {
                                         writer.addStringHeader(":content-type", payloadContentType)

@@ -45,7 +45,7 @@ class RequestCompressionIntegration : KotlinIntegration {
 
     override fun additionalServiceConfigProps(ctx: CodegenContext): List<ConfigProperty> =
         listOf(
-            ConfigProperty.Companion {
+            ConfigProperty {
                 name = "requestCompression"
                 symbol = RuntimeTypes.SmithyClient.Config.RequestCompressionConfig
                 builderSymbol = RuntimeTypes.SmithyClient.Config.RequestCompressionConfig.nestedBuilder.toBuilder()

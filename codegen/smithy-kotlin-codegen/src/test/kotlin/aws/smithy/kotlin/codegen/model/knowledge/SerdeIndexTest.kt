@@ -99,7 +99,7 @@ class SerdeIndexTest {
             
         """.toSmithyModel(applyDefaultTransforms = false)
 
-        val index = SerdeIndex.Companion.of(model)
+        val index = SerdeIndex.of(model)
 
         val fooOperation = model.expectShape(ShapeId.from("com.test#GetFoo"))
         val fooRequest = model.expectShape(ShapeId.from("com.test#GetFooRequest"))

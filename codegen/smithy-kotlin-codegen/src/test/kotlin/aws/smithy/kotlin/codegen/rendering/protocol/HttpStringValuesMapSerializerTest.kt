@@ -37,12 +37,7 @@ class HttpStringValuesMapSerializerTest {
         }
 
         val writer = KotlinWriter("test")
-        HttpStringValuesMapSerializer(
-            testCtx.generationCtx,
-            bindings,
-            resolver,
-            TimestampFormatTrait.Format.EPOCH_SECONDS,
-        ).render(writer)
+        HttpStringValuesMapSerializer(testCtx.generationCtx, bindings, resolver, TimestampFormatTrait.Format.EPOCH_SECONDS).render(writer)
         return writer.toString()
     }
 

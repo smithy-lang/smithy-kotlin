@@ -30,7 +30,7 @@ class SdkEndpointBuiltinIntegration : KotlinIntegration {
     companion object {
         const val BUILTIN_NAME = "SDK::Endpoint"
 
-        val EndpointUrlProp = ConfigProperty.Companion {
+        val EndpointUrlProp = ConfigProperty {
             name = "endpointUrl"
             symbol = RuntimeTypes.Core.Net.Url.Url.asNullable()
             documentation = """

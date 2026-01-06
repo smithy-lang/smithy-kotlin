@@ -105,7 +105,7 @@ open class HttpProtocolClientGenerator(
         writer.write("private val client = #T(config.httpClient)", RuntimeTypes.HttpClient.SdkHttpClient)
 
         // render auth resolver related properties
-        writer.write("private val identityProviderConfig = #T(config)", IdentityProviderConfigGenerator.Companion.getSymbol(ctx.settings))
+        writer.write("private val identityProviderConfig = #T(config)", IdentityProviderConfigGenerator.getSymbol(ctx.settings))
 
         // FIXME - we probably need a way for auth handlers to signal that they are configured (e.g. config properties are not null). Right now this assumes
         // they are all configured but a service may support multiple auth schemes and a client may not need to configure all of them
@@ -135,7 +135,7 @@ open class HttpProtocolClientGenerator(
 
             write("toMap()")
         }
-        writer.write("private val authSchemeAdapter = #T(config)", AuthSchemeProviderAdapterGenerator.Companion.getSymbol(ctx.settings))
+        writer.write("private val authSchemeAdapter = #T(config)", AuthSchemeProviderAdapterGenerator.getSymbol(ctx.settings))
 
         writer.write("private val telemetryScope = #S", ctx.settings.pkg.name)
         writer.write("private val opMetrics = #T(telemetryScope, config.telemetryProvider)", RuntimeTypes.HttpClient.Operation.OperationMetrics)
@@ -152,7 +152,7 @@ open class HttpProtocolClientGenerator(
             RuntimeTypes.HttpClient.Operation.context,
         )
         writer.addImport(defaultClientSymbols)
-        writer.dependencies.addAll(KotlinDependency.Companion.HTTP.dependencies)
+        writer.dependencies.addAll(KotlinDependency.HTTP.dependencies)
     }
 
     /**
@@ -266,7 +266,7 @@ open class HttpProtocolClientGenerator(
                     EndpointResolverAdapterBinding.OperationShape to op,
                 ),
             ) {
-                write("execution.endpointResolver = #T(config)", EndpointResolverAdapterGenerator.Companion.getSymbol(ctx.settings))
+                write("execution.endpointResolver = #T(config)", EndpointResolverAdapterGenerator.getSymbol(ctx.settings))
             }
 
             writer.write("execution.retryStrategy = config.retryStrategy")

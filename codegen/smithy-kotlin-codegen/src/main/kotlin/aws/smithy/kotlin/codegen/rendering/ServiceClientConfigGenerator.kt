@@ -67,18 +67,16 @@ class ServiceClientConfigGenerator(
         // FIXME - we only generate an endpoint provider type if we have a protocol generator defined
         if (context.protocolGenerator != null) {
             add(
-                ConfigProperty.Companion {
+                ConfigProperty {
                     val hasRules = shape.hasTrait<EndpointRuleSetTrait>()
-                    val defaultEndpointProviderSymbol =
-                        DefaultEndpointProviderGenerator.Companion.getSymbol(context.settings)
-                    symbol = EndpointProviderGenerator.Companion.getSymbol(context.settings)
+                    val defaultEndpointProviderSymbol = DefaultEndpointProviderGenerator.getSymbol(context.settings)
+                    symbol = EndpointProviderGenerator.getSymbol(context.settings)
                     name = "endpointProvider"
-                    propertyType =
-                        if (hasRules) { // if there's a ruleset, we have a usable default, otherwise caller has to provide their own
-                            ConfigPropertyType.RequiredWithDefault("${defaultEndpointProviderSymbol.name}()")
-                        } else {
-                            ConfigPropertyType.Required()
-                        }
+                    propertyType = if (hasRules) { // if there's a ruleset, we have a usable default, otherwise caller has to provide their own
+                        ConfigPropertyType.RequiredWithDefault("${defaultEndpointProviderSymbol.name}()")
+                    } else {
+                        ConfigPropertyType.Required()
+                    }
                     documentation = """
                         The endpoint provider used to determine where to make service requests. **This is an advanced config
                         option.**
@@ -88,7 +86,7 @@ class ServiceClientConfigGenerator(
                         The inputs to endpoint resolution are defined on a per-service basis (see [EndpointParameters]).
                     """.trimIndent()
                     additionalImports = buildList {
-                        add(EndpointParametersGenerator.Companion.getSymbol(context.settings))
+                        add(EndpointParametersGenerator.getSymbol(context.settings))
                         if (hasRules) {
                             add(defaultEndpointProviderSymbol)
                         }
@@ -106,12 +104,12 @@ class ServiceClientConfigGenerator(
             .parameters
             .map { (k, v) ->
                 when (v.type) {
-                    ShapeType.BOOLEAN -> ConfigProperty.Companion.Boolean(
+                    ShapeType.BOOLEAN -> ConfigProperty.Boolean(
                         name = k.toCamelCase(),
                         defaultValue = false,
                         documentation = v.documentation.getOrNull(),
                     )
-                    ShapeType.STRING -> ConfigProperty.Companion.String(
+                    ShapeType.STRING -> ConfigProperty.String(
                         name = k.toCamelCase(),
                         defaultValue = null,
                         documentation = v.documentation.getOrNull(),

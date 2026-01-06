@@ -38,7 +38,7 @@ class GradleGeneratorTest {
         writeGradleBuild(settings, manifest, dependencies)
         val contents = manifest.getFileString("build.gradle.kts").get()
         val expected = """
-            api("${RUNTIME_GROUP}:${CORE.artifact}:${RUNTIME_VERSION}")
+            api("$RUNTIME_GROUP:${CORE.artifact}:$RUNTIME_VERSION")
         """.trimIndent()
 
         contents.shouldContain(expected)

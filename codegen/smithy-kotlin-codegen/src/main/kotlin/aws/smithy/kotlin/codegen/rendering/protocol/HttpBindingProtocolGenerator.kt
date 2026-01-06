@@ -35,6 +35,7 @@ import aws.smithy.kotlin.codegen.model.shape
 import aws.smithy.kotlin.codegen.protocols.eventstream.EventStreamParserGenerator
 import aws.smithy.kotlin.codegen.protocols.eventstream.EventStreamSerializerGenerator
 import aws.smithy.kotlin.codegen.rendering.ExceptionBaseClassGenerator
+import aws.smithy.kotlin.codegen.rendering.protocol.HttpBindingProtocolGenerator.Sections.RenderThrowOperationError.PostErrorDetails.ExceptionBaseSymbol
 import aws.smithy.kotlin.codegen.rendering.serde.deserializerName
 import aws.smithy.kotlin.codegen.rendering.serde.formatInstant
 import aws.smithy.kotlin.codegen.rendering.serde.parseInstantExpr
@@ -181,7 +182,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             writer.declareSection(
                 Sections.RenderThrowOperationError.PostErrorDetails,
                 mapOf(
-                    Sections.RenderThrowOperationError.PostErrorDetails.ExceptionBaseSymbol to exceptionBaseSymbol,
+                    ExceptionBaseSymbol to exceptionBaseSymbol,
                 ),
             )
 
@@ -1072,7 +1073,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                     }
 
                     writer
-                        .addImport(splitFn, KotlinDependency.Companion.HTTP, subpackage = "util")
+                        .addImport(splitFn, KotlinDependency.HTTP, subpackage = "util")
                         .write("builder.#L = response.headers.getAll(#S)?.flatMap(::$splitFn)$mapFn", memberName, headerName)
                 }
                 else -> throw CodegenException("unknown deserialization: header binding: $hdrBinding; member: `$memberName`")

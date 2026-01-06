@@ -53,11 +53,11 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
     override fun openTestFunctionBlock(): String = "= httpRequestTest {"
 
     override fun renderTestBody(test: HttpRequestTestCase) {
-        writer.addImport(KotlinDependency.Companion.SMITHY_TEST.namespace, "*")
-        writer.addImport(KotlinDependency.Companion.HTTP.namespace, "HttpMethod")
-        writer.addImport(KotlinDependency.Companion.KOTLIN_TEST.namespace, "*")
-        writer.dependencies.addAll(KotlinDependency.Companion.SMITHY_TEST.dependencies)
-        writer.dependencies.addAll(KotlinDependency.Companion.KOTLIN_TEST.dependencies)
+        writer.addImport(KotlinDependency.SMITHY_TEST.namespace, "*")
+        writer.addImport(KotlinDependency.HTTP.namespace, "HttpMethod")
+        writer.addImport(KotlinDependency.KOTLIN_TEST.namespace, "*")
+        writer.dependencies.addAll(KotlinDependency.SMITHY_TEST.dependencies)
+        writer.dependencies.addAll(KotlinDependency.KOTLIN_TEST.dependencies)
         if (test.body.isPresent) {
             renderBodyAssertFn(test)
         }
@@ -109,7 +109,7 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
             "application/cbor" -> {
                 val inputShape = inputShape ?: return
 
-                val serdeIndex = SerdeIndex.Companion.of(ctx.model)
+                val serdeIndex = SerdeIndex.of(ctx.model)
                 serdeIndex.requiresDocumentDeserializer(inputShape).forEach {
                     renderStructDeserializer(writer, it)
                 }
@@ -243,7 +243,7 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
             if (!serviceShape.hasTrait<EndpointRuleSetTrait>()) {
                 writer.write(
                     "endpointProvider = #T { #T(#S) }",
-                    EndpointProviderGenerator.Companion.getSymbol(ctx.settings),
+                    EndpointProviderGenerator.getSymbol(ctx.settings),
                     RuntimeTypes.SmithyClient.Endpoints.Endpoint,
                     "https://$hostname",
                 )

@@ -85,8 +85,7 @@ class ExceptionGeneratorTest {
 
         val serverErrorWriter = KotlinWriter("com.error.test")
         val serverErrorShape = model.expectShape<StructureShape>("com.error.test#InternalServerException")
-        val serverErrorRenderingCtx =
-            RenderingContext(serverErrorWriter, serverErrorShape, model, symbolProvider, settings)
+        val serverErrorRenderingCtx = RenderingContext(serverErrorWriter, serverErrorShape, model, symbolProvider, settings)
         StructureGenerator(serverErrorRenderingCtx).render()
         serverErrorTestContents = serverErrorWriter.toString()
     }

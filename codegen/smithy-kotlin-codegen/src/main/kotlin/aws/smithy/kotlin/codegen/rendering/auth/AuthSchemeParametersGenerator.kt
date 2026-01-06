@@ -49,7 +49,7 @@ class AuthSchemeParametersGenerator : AbstractConfigGenerator() {
                 override val integrations: List<KotlinIntegration> = ctx.integrations
             }
 
-            val operationName = ConfigProperty.Companion.String(
+            val operationName = ConfigProperty.String(
                 "operationName",
                 documentation = "The name of the operation currently being invoked.",
             ).toBuilder()
@@ -57,9 +57,9 @@ class AuthSchemeParametersGenerator : AbstractConfigGenerator() {
                     propertyType = ConfigPropertyType.Required("operationName is a required auth scheme parameter")
                 }.build()
 
-            val endpointParamsProperty = ConfigProperty.Companion {
+            val endpointParamsProperty = ConfigProperty {
                 name = "endpointParameters"
-                this.symbol = EndpointParametersGenerator.Companion.getSymbol(ctx.settings).asNullable()
+                this.symbol = EndpointParametersGenerator.getSymbol(ctx.settings).asNullable()
                 documentation = """
                     The parameters used for endpoint resolution. The default implementation of this interface 
                     relies on endpoint metadata to resolve auth scheme candidates.

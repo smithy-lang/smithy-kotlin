@@ -57,7 +57,7 @@ open class JsonParserGenerator(
      * @param members the subset of shapes to generated nested document deserializers for
      */
     private fun addNestedDocumentDeserializers(ctx: ProtocolGenerator.GenerationContext, shape: Shape, writer: KotlinWriter, members: Collection<MemberShape> = shape.members()) {
-        val serdeIndex = SerdeIndex.Companion.of(ctx.model)
+        val serdeIndex = SerdeIndex.of(ctx.model)
         val shapesRequiringDocumentDeserializer = serdeIndex.requiresDocumentDeserializer(shape, members)
 
         // register a dependency on each of the members that require a deserializer impl

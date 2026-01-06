@@ -37,7 +37,7 @@ class KotlinSettingsTest {
             }
         """.trimIndent()
 
-        val settings = KotlinSettings.Companion.from(
+        val settings = KotlinSettings.from(
             model,
             Node.parse(contents).expectObjectNode(),
         )
@@ -63,7 +63,7 @@ class KotlinSettingsTest {
             }
         """.trimIndent()
 
-        val settings = KotlinSettings.Companion.from(
+        val settings = KotlinSettings.from(
             model,
             Node.parse(contents).expectObjectNode(),
         )
@@ -88,7 +88,7 @@ class KotlinSettingsTest {
             }
         """.trimIndent()
 
-        val settings = KotlinSettings.Companion.from(
+        val settings = KotlinSettings.from(
             model,
             Node.parse(contents).expectObjectNode(),
         )
@@ -113,7 +113,7 @@ class KotlinSettingsTest {
             }
         """.trimIndent()
 
-        val settings = KotlinSettings.Companion.from(
+        val settings = KotlinSettings.from(
             model,
             Node.parse(contents).expectObjectNode(),
         )
@@ -139,7 +139,7 @@ class KotlinSettingsTest {
         """.trimIndent()
 
         assertFailsWith<CodegenException> {
-            KotlinSettings.Companion.from(
+            KotlinSettings.from(
                 model,
                 Node.parse(contents).expectObjectNode(),
             )
@@ -163,7 +163,7 @@ class KotlinSettingsTest {
         """.trimIndent()
 
         assertFailsWith<CodegenException> {
-            KotlinSettings.Companion.from(
+            KotlinSettings.from(
                 model,
                 Node.parse(contents).expectObjectNode(),
             )
@@ -186,7 +186,7 @@ class KotlinSettingsTest {
             }
         """.trimIndent()
 
-        KotlinSettings.Companion.from(
+        KotlinSettings.from(
             model,
             Node.parse(contents).expectObjectNode(),
         )
@@ -211,7 +211,7 @@ class KotlinSettingsTest {
             }
         """.trimIndent()
 
-        val settings = KotlinSettings.Companion.from(
+        val settings = KotlinSettings.from(
             model,
             Node.parse(contents).expectObjectNode(),
         )
@@ -235,7 +235,7 @@ class KotlinSettingsTest {
             }
         """.trimIndent()
 
-        val settings = KotlinSettings.Companion.from(
+        val settings = KotlinSettings.from(
             model,
             Node.parse(contents).expectObjectNode(),
         )
@@ -262,7 +262,7 @@ class KotlinSettingsTest {
             }
         """.trimIndent()
 
-        val settings = KotlinSettings.Companion.from(
+        val settings = KotlinSettings.from(
             model,
             Node.parse(contents).expectObjectNode(),
         )
@@ -290,7 +290,7 @@ class KotlinSettingsTest {
         """.trimIndent()
 
         assertFailsWith<IllegalArgumentException> {
-            KotlinSettings.Companion.from(
+            KotlinSettings.from(
                 model,
                 Node.parse(contents).expectObjectNode(),
             )
@@ -312,7 +312,7 @@ class KotlinSettingsTest {
                 "nullabilityCheckMode": "$pluginSetting"
             }
         """.trimIndent()
-        val apiSettings = ApiSettings.Companion.fromNode(Node.parse(contents).asObjectNode())
+        val apiSettings = ApiSettings.fromNode(Node.parse(contents).asObjectNode())
 
         assertEquals(expected, apiSettings.nullabilityCheckMode)
     }
@@ -329,7 +329,7 @@ class KotlinSettingsTest {
                 "defaultValueSerializationMode": "$pluginSetting"
             }
         """.trimIndent()
-        val apiSettings = ApiSettings.Companion.fromNode(Node.parse(contents).asObjectNode())
+        val apiSettings = ApiSettings.fromNode(Node.parse(contents).asObjectNode())
 
         assertEquals(expected, apiSettings.defaultValueSerializationMode)
     }
@@ -372,7 +372,7 @@ class KotlinSettingsTest {
                 }
             }
         """.trimIndent()
-        val settings = KotlinSettings.Companion.from(model, Node.parse(contents).expectObjectNode())
+        val settings = KotlinSettings.from(model, Node.parse(contents).expectObjectNode())
 
         val expectedProtocol = expectedProtocolName?.nameToProtocol()
         val actualProtocol = runCatching {

@@ -18,18 +18,15 @@ class AuthSchemeProviderConfigIntegration : KotlinIntegration {
         val defaultProvider = AuthSchemeProviderGenerator.getDefaultSymbol(ctx.settings)
 
         return listOf(
-            ConfigProperty.Companion {
+            ConfigProperty {
                 name = "authSchemeProvider"
                 symbol = AuthSchemeProviderGenerator.getSymbol(ctx.settings)
-                documentation =
-                    "Configure the provider used to resolve the authentication scheme to use for a particular operation."
+                documentation = "Configure the provider used to resolve the authentication scheme to use for a particular operation."
                 additionalImports = listOf(defaultProvider)
                 if (ctx.settings.api.enableEndpointAuthProvider) {
-                    propertyType =
-                        ConfigPropertyType.RequiredWithDefault("${defaultProvider.name}(endpointProvider, authSchemePreference)")
+                    propertyType = ConfigPropertyType.RequiredWithDefault("${defaultProvider.name}(endpointProvider, authSchemePreference)")
                 } else {
-                    propertyType =
-                        ConfigPropertyType.RequiredWithDefault("${defaultProvider.name}(authSchemePreference = authSchemePreference)")
+                    propertyType = ConfigPropertyType.RequiredWithDefault("${defaultProvider.name}(authSchemePreference = authSchemePreference)")
                 }
                 // needs to come after endpointProvider
                 order = 100

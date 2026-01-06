@@ -68,14 +68,8 @@ class SigV4AuthSchemeIntegration : KotlinIntegration {
 
     override val sectionWriters: List<SectionWriterBinding>
         get() = listOf(
-            SectionWriterBinding(
-                HttpProtocolUnitTestRequestGenerator.ConfigureServiceClient,
-                renderHttpProtocolRequestTestConfigureServiceClient,
-            ),
-            SectionWriterBinding(
-                HttpProtocolUnitTestResponseGenerator.ConfigureServiceClient,
-                renderHttpProtocolResponseTestConfigureServiceClient,
-            ),
+            SectionWriterBinding(HttpProtocolUnitTestRequestGenerator.ConfigureServiceClient, renderHttpProtocolRequestTestConfigureServiceClient),
+            SectionWriterBinding(HttpProtocolUnitTestResponseGenerator.ConfigureServiceClient, renderHttpProtocolResponseTestConfigureServiceClient),
             SectionWriterBinding(HttpProtocolClientGenerator.ClientInitializer, renderClientInitializer),
             SectionWriterBinding(HttpProtocolClientGenerator.MergeServiceDefaults, renderMergeServiceDefaults),
         )
@@ -267,7 +261,7 @@ private fun KotlinWriter.renderOrElse(
     write(",")
 }
 
-internal val credentialsProviderProp = ConfigProperty.Companion {
+internal val credentialsProviderProp = ConfigProperty {
     symbol = RuntimeTypes.Auth.Credentials.AwsCredentials.CredentialsProvider
     baseClass = RuntimeTypes.Auth.Credentials.AwsCredentials.CredentialsProviderConfig
     useNestedBuilderBaseClass()

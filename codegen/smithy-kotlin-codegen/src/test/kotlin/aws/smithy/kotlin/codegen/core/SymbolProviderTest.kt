@@ -450,7 +450,7 @@ class SymbolProviderTest {
         val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model, rootNamespace = "foo.bar")
         val memberSymbol = provider.toSymbol(member)
 
-        assertEquals("${RUNTIME_ROOT_NS}.content", memberSymbol.namespace)
+        assertEquals("$RUNTIME_ROOT_NS.content", memberSymbol.namespace)
         assertEquals("null", memberSymbol.defaultValue())
         assertEquals(true, memberSymbol.isNullable)
         assertEquals("ByteStream", memberSymbol.name)
@@ -732,7 +732,7 @@ class SymbolProviderTest {
         val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model, rootNamespace = "foo.bar")
         val tsShape = model.expectShape<TimestampShape>("foo.bar#MyTimestamp")
         val timestampSymbol = provider.toSymbol(tsShape)
-        assertEquals("${RUNTIME_ROOT_NS}.time", timestampSymbol.namespace)
+        assertEquals("$RUNTIME_ROOT_NS.time", timestampSymbol.namespace)
         assertEquals("Instant", timestampSymbol.name)
         assertEquals(1, timestampSymbol.dependencies.size)
     }

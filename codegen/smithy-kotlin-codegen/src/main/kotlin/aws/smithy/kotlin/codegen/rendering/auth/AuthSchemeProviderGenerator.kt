@@ -75,7 +75,7 @@ open class AuthSchemeProviderGenerator {
             "}",
             ctx.settings.api.visibility,
             getDefaultSymbol(ctx.settings),
-            EndpointProviderGenerator.Companion.getSymbol(ctx.settings),
+            EndpointProviderGenerator.getSymbol(ctx.settings),
             RuntimeConfigProperty.AuthSchemePreference.symbol,
             getSymbol(ctx.settings),
         ) {

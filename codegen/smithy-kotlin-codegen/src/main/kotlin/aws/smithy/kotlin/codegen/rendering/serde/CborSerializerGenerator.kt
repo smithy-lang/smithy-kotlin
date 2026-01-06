@@ -93,7 +93,7 @@ class CborSerializerGenerator(
      * implementation
      */
     private fun addNestedDocumentSerializers(ctx: ProtocolGenerator.GenerationContext, shape: Shape, writer: KotlinWriter) {
-        SerdeIndex.Companion.of(ctx.model)
+        SerdeIndex.of(ctx.model)
             .requiresDocumentSerializer(shape)
             .forEach {
                 writer.addImport(documentSerializer(ctx, it))

@@ -115,7 +115,7 @@ fun Model.toSmithyIDL(): String {
  *
  * @param serviceName name of service without namespace
  * @param packageName root namespace of model
- * @param settings [aws.smithy.kotlin.codegen.KotlinSettings] associated w/ test context
+ * @param settings [KotlinSettings] associated w/ test context
  * @param generator [ProtocolGenerator] associated w/ test context
  */
 fun Model.newTestContext(

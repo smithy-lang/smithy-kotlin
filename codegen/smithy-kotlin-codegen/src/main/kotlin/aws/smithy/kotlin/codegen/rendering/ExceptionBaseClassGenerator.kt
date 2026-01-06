@@ -29,7 +29,7 @@ object ExceptionBaseClassGenerator {
 
     val DefaultServiceExceptionSymbol: Symbol = buildSymbol {
         name = "ServiceException"
-        namespace(KotlinDependency.Companion.CORE)
+        namespace(KotlinDependency.CORE)
     }
 
     /**

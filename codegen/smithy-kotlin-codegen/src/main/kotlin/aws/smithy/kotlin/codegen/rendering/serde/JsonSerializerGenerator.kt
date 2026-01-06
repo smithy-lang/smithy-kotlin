@@ -45,7 +45,7 @@ open class JsonSerializerGenerator(
      * implementation
      */
     private fun addNestedDocumentSerializers(ctx: ProtocolGenerator.GenerationContext, shape: Shape, writer: KotlinWriter, members: Collection<MemberShape> = shape.members()) {
-        val serdeIndex = SerdeIndex.Companion.of(ctx.model)
+        val serdeIndex = SerdeIndex.of(ctx.model)
         val shapesRequiringDocumentSerializer = serdeIndex.requiresDocumentSerializer(shape, members)
         // register a dependency on each of the members that require a serializer impl
         // ensuring they get generated

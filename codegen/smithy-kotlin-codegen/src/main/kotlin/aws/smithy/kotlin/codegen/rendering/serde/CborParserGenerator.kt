@@ -44,7 +44,7 @@ class CborParserGenerator(
      * @param members the subset of shapes to generated nested document deserializers for
      */
     private fun addNestedDocumentDeserializers(ctx: ProtocolGenerator.GenerationContext, shape: Shape, writer: KotlinWriter, members: Collection<MemberShape> = shape.members()) {
-        SerdeIndex.Companion.of(ctx.model)
+        SerdeIndex.of(ctx.model)
             .requiresDocumentDeserializer(shape, members)
             .forEach {
                 writer.addImport(documentDeserializer(ctx, it))

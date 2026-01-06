@@ -53,11 +53,11 @@ open class HttpProtocolUnitTestResponseGenerator protected constructor(builder: 
     }
 
     override fun renderTestBody(test: HttpResponseTestCase) {
-        writer.addImport(KotlinDependency.Companion.SMITHY_TEST.namespace, "*")
-        writer.addImport(KotlinDependency.Companion.HTTP.namespace, "HttpStatusCode")
-        writer.addImport(KotlinDependency.Companion.KOTLIN_TEST.namespace, "*")
-        writer.dependencies.addAll(KotlinDependency.Companion.SMITHY_TEST.dependencies)
-        writer.dependencies.addAll(KotlinDependency.Companion.KOTLIN_TEST.dependencies)
+        writer.addImport(KotlinDependency.SMITHY_TEST.namespace, "*")
+        writer.addImport(KotlinDependency.HTTP.namespace, "HttpStatusCode")
+        writer.addImport(KotlinDependency.KOTLIN_TEST.namespace, "*")
+        writer.dependencies.addAll(KotlinDependency.SMITHY_TEST.dependencies)
+        writer.dependencies.addAll(KotlinDependency.KOTLIN_TEST.dependencies)
         renderExpectedBlock(test)
         writer.write("")
         renderTestBlock(test)
@@ -146,7 +146,7 @@ open class HttpProtocolUnitTestResponseGenerator protected constructor(builder: 
             if (!serviceShape.hasTrait<EndpointRuleSetTrait>()) {
                 writer.write(
                     "endpointProvider = #T { #T(#S) }",
-                    EndpointProviderGenerator.Companion.getSymbol(ctx.settings),
+                    EndpointProviderGenerator.getSymbol(ctx.settings),
                     RuntimeTypes.SmithyClient.Endpoints.Endpoint,
                     "https://hostname",
                 )
@@ -188,7 +188,7 @@ open class HttpProtocolUnitTestResponseGenerator protected constructor(builder: 
 
     protected fun renderAssertions() {
         val outputShape = outputShape ?: return
-        writer.addImport(KotlinDependency.Companion.KOTLIN_TEST.namespace, "assertEquals")
+        writer.addImport(KotlinDependency.KOTLIN_TEST.namespace, "assertEquals")
 
         val members = outputShape.members()
         for (member in members) {

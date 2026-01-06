@@ -93,7 +93,7 @@ class EndpointResolverAdapterGenerator(
     private fun renderOperationContextBindingMap() {
         val topDownIndex = TopDownIndex.of(ctx.model)
         val operations = topDownIndex.getContainedOperations(ctx.service)
-        val epParameterIndex = EndpointParameterIndex.Companion.of(ctx.model)
+        val epParameterIndex = EndpointParameterIndex.of(ctx.model)
         val operationsWithContextBindings = operations.filter { epParameterIndex.hasContextParams(it) }
 
         writer.write(

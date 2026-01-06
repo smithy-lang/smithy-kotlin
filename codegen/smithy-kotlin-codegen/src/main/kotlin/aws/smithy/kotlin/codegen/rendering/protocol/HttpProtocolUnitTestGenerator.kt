@@ -41,7 +41,7 @@ protected constructor(
      * Render a test class and unit tests for the specified [testCases]
      */
     fun renderTestClass(testClassName: String) {
-        writer.addImport(KotlinDependency.Companion.KOTLIN_TEST.namespace, "Test")
+        writer.addImport(KotlinDependency.KOTLIN_TEST.namespace, "Test")
 
         writer.write("")
             .openBlock("class $testClassName {")
