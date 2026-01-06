@@ -8,7 +8,6 @@ import io.kotest.matchers.string.shouldContain
 import io.kotest.matchers.string.shouldContainOnlyOnce
 import io.kotest.matchers.string.shouldNotContain
 import io.kotest.matchers.string.shouldNotContainOnlyOnce
-import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 
 // This file houses miscellaneous test functions that do not fall under other test categories specified in this package.
@@ -18,7 +17,7 @@ fun String?.shouldContainOnlyOnceWithDiff(expected: String) {
     try {
         this.shouldContainOnlyOnce(expected)
     } catch (originalException: AssertionError) {
-        assertEquals(expected, this) // no need to rethrow as this will throw
+        kotlin.test.assertEquals(expected, this) // no need to rethrow as this will throw
     }
 }
 
@@ -27,7 +26,7 @@ fun String?.shouldContainWithDiff(expected: String) {
     try {
         this.shouldContain(expected)
     } catch (originalException: AssertionError) {
-        assertEquals(expected, this) // no need to rethrow as this will throw
+        kotlin.test.assertEquals(expected, this) // no need to rethrow as this will throw
     }
 }
 
@@ -35,7 +34,7 @@ fun String?.shouldNotContainWithDiff(expected: String) {
     try {
         this.shouldNotContain(expected)
     } catch (originalException: AssertionError) {
-        assertEquals(expected, this) // no need to rethrow as this will throw
+        kotlin.test.assertEquals(expected, this) // no need to rethrow as this will throw
     }
 }
 
@@ -43,7 +42,7 @@ fun String?.shouldNotContainOnlyOnceWithDiff(expected: String) {
     try {
         this.shouldNotContainOnlyOnce(expected)
     } catch (originalException: AssertionError) {
-        assertEquals(expected, this) // no need to rethrow as this will throw
+        kotlin.test.assertEquals(expected, this) // no need to rethrow as this will throw
     }
 }
 

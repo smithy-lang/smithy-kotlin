@@ -169,7 +169,6 @@ class EventStreamSerializerGenerator(
 
                                 when {
                                     eventPayloadBinding != null -> renderSerializeEventPayload(ctx, eventPayloadBinding, writer)
-
                                     unbound.isNotEmpty() -> {
                                         writer.addStringHeader(":content-type", payloadContentType)
                                         // get a payload serializer for the given members of the variant

@@ -6,6 +6,7 @@ package aws.smithy.kotlin.codegen.rendering
 
 import aws.smithy.kotlin.codegen.BuildSettings
 import aws.smithy.kotlin.codegen.KotlinSettings
+import aws.smithy.kotlin.codegen.core.KotlinDependency
 import aws.smithy.kotlin.codegen.core.KotlinDependency.Companion.CORE
 import aws.smithy.kotlin.codegen.core.RUNTIME_GROUP
 import aws.smithy.kotlin.codegen.core.RUNTIME_VERSION
@@ -34,7 +35,7 @@ class GradleGeneratorTest {
         )
 
         val manifest = MockManifest()
-        val dependencies = listOf(CORE)
+        val dependencies = listOf(KotlinDependency.CORE)
         writeGradleBuild(settings, manifest, dependencies)
         val contents = manifest.getFileString("build.gradle.kts").get()
         val expected = """
@@ -68,7 +69,7 @@ class GradleGeneratorTest {
         )
 
         val manifest = MockManifest()
-        val dependencies = listOf(CORE)
+        val dependencies = listOf(KotlinDependency.CORE)
         writeGradleBuild(settings, manifest, dependencies)
         val contents = manifest.getFileString("build.gradle.kts").get()
         val expectedRepositories = """
@@ -112,7 +113,7 @@ class GradleGeneratorTest {
         )
 
         val manifest = MockManifest()
-        val dependencies = listOf(CORE)
+        val dependencies = listOf(KotlinDependency.CORE)
         writeGradleBuild(settings, manifest, dependencies)
         val contents = manifest.getFileString("build.gradle.kts").get()
         val expectedVersion = """

@@ -171,7 +171,7 @@ val Shape.isStringEnumShape: Boolean
         isStringShape &&
         hasTrait<
             @Suppress("DEPRECATION")
-            EnumTrait,
+            software.amazon.smithy.model.traits.EnumTrait,
             >()
 
 /**
