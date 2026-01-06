@@ -12,47 +12,24 @@ plugins {
     `maven-publish`
 }
 
-description = "Generates Kotlin code from Smithy models"
-extra["displayName"] = "Smithy :: Kotlin :: Codegen"
-extra["moduleName"] = "aws.smithy.kotlin.codegen"
+description = "Provides common test utilities for Smithy-Kotlin code generation"
+extra["displayName"] = "Smithy :: Kotlin :: Codegen Utils"
+extra["moduleName"] = "aws.smithy.kotlin.codegen.test"
 
 val codegenVersion: String by project
 group = "aws.smithy.kotlin"
 version = codegenVersion
 
-val sdkVersion: String by project
-val runtimeVersion = sdkVersion
-
 dependencies {
-    api(libs.smithy.codegen.core)
-    api(libs.smithy.waiters)
-    implementation(libs.smithy.rules.engine)
     implementation(libs.smithy.aws.traits)
     implementation(libs.smithy.protocol.traits)
-    implementation(libs.smithy.protocol.test.traits)
-    implementation(libs.smithy.smoke.test.traits)
-    implementation(libs.jsoup)
+    api(project(":codegen:codegen"))
 
     // Test dependencies
-    testImplementation(libs.junit.jupiter)
-    testImplementation(libs.kotest.assertions.core.jvm)
-    testImplementation(libs.kotlin.test)
-    testImplementation(libs.kotlin.test.junit5)
-    testImplementation(project(":codegen:smithy-kotlin-codegen-testutils"))
-}
-
-val generateSdkRuntimeVersion by tasks.registering {
-    // generate the version of the runtime to use as a resource.
-    // this keeps us from having to manually change version numbers in multiple places
-    val resourcesDir = layout.buildDirectory.dir("resources/main/aws/smithy/kotlin/codegen/core").get()
-    val versionFile = file("$resourcesDir/sdk-version.txt")
-    val gradlePropertiesFile = rootProject.file("gradle.properties")
-    inputs.file(gradlePropertiesFile)
-    outputs.file(versionFile)
-    sourceSets.main.get().output.dir(resourcesDir)
-    doLast {
-        versionFile.writeText(runtimeVersion)
-    }
+    implementation(libs.junit.jupiter)
+    implementation(libs.kotest.assertions.core.jvm)
+    implementation(libs.kotlin.test)
+    implementation(libs.kotlin.test.junit5)
 }
 
 tasks.withType<KotlinCompile> {
@@ -61,7 +38,6 @@ tasks.withType<KotlinCompile> {
         freeCompilerArgs.add("-Xjdk-release=1.8")
         freeCompilerArgs.add("-opt-in=kotlin.RequiresOptIn")
     }
-    dependsOn(generateSdkRuntimeVersion)
 }
 
 tasks.withType<JavaCompile> {
@@ -102,21 +78,9 @@ tasks.test {
     }
 }
 
-// Configure jacoco (code coverage) to generate an HTML report
-tasks.jacocoTestReport {
-    reports {
-        xml.required.set(false)
-        csv.required.set(false)
-        html.outputLocation.set(layout.buildDirectory.dir("reports/jacoco"))
-    }
-}
-
-// Always run the jacoco test report after testing.
-tasks["test"].finalizedBy(tasks["jacocoTestReport"])
-
 publishing {
     publications {
-        create<MavenPublication>("codegen") {
+        create<MavenPublication>("codegen-testutils") {
             from(components["java"])
             artifact(sourcesJar)
         }

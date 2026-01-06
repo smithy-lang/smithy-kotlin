@@ -12,41 +12,61 @@ plugins {
     `maven-publish`
 }
 
+description = "Generates Kotlin code from Smithy models"
+extra["displayName"] = "Smithy :: Kotlin :: Codegen"
+extra["moduleName"] = "aws.smithy.kotlin.codegen"
+
 val codegenVersion: String by project
-description = "Smithy codegen support for AWS protocols"
 group = "aws.smithy.kotlin"
 version = codegenVersion
 
+val sdkVersion: String by project
+val runtimeVersion = sdkVersion
+
 dependencies {
-    api(project(":codegen:smithy-kotlin-codegen"))
+    api(libs.smithy.codegen.core)
+    api(libs.smithy.waiters)
+    implementation(libs.smithy.rules.engine)
+    implementation(libs.smithy.aws.traits)
+    implementation(libs.smithy.protocol.traits)
+    implementation(libs.smithy.protocol.test.traits)
+    implementation(libs.smithy.smoke.test.traits)
+    implementation(libs.jsoup)
 
-    api(libs.smithy.aws.traits)
-    api(libs.smithy.aws.iam.traits)
-    api(libs.smithy.aws.cloudformation.traits)
-    api(libs.smithy.protocol.test.traits)
-    api(libs.smithy.protocol.traits)
-    implementation(libs.smithy.aws.endpoints)
-
+    // Test dependencies
     testImplementation(libs.junit.jupiter)
-    testImplementation(libs.junit.jupiter.params)
     testImplementation(libs.kotest.assertions.core.jvm)
+    testImplementation(libs.kotlin.test)
     testImplementation(libs.kotlin.test.junit5)
-    testImplementation(project(":codegen:smithy-kotlin-codegen-testutils"))
+    testImplementation(project(":codegen:codegen-testutils"))
+}
 
-    testImplementation(libs.slf4j.api)
-    testImplementation(libs.slf4j.simple)
-    testImplementation(libs.kotlinx.serialization.json)
+val generateSdkRuntimeVersion by tasks.registering {
+    // generate the version of the runtime to use as a resource.
+    // this keeps us from having to manually change version numbers in multiple places
+    val resourcesDir = layout.buildDirectory.dir("resources/main/aws/smithy/kotlin/codegen/core").get()
+    val versionFile = file("$resourcesDir/sdk-version.txt")
+    val gradlePropertiesFile = rootProject.file("gradle.properties")
+    inputs.file(gradlePropertiesFile)
+    outputs.file(versionFile)
+    sourceSets.main.get().output.dir(resourcesDir)
+    doLast {
+        versionFile.writeText(runtimeVersion)
+    }
 }
 
 tasks.withType<KotlinCompile> {
     compilerOptions {
-        jvmTarget.set(JvmTarget.JVM_17)
+        jvmTarget.set(JvmTarget.JVM_1_8)
+        freeCompilerArgs.add("-Xjdk-release=1.8")
+        freeCompilerArgs.add("-opt-in=kotlin.RequiresOptIn")
     }
+    dependsOn(generateSdkRuntimeVersion)
 }
 
 tasks.withType<JavaCompile> {
-    sourceCompatibility = JavaVersion.VERSION_17.toString()
-    targetCompatibility = JavaVersion.VERSION_17.toString()
+    sourceCompatibility = JavaVersion.VERSION_1_8.toString()
+    targetCompatibility = JavaVersion.VERSION_1_8.toString()
 }
 
 // Reusable license copySpec
@@ -62,6 +82,13 @@ tasks.jar {
     manifest {
         attributes["Automatic-Module-Name"] = project.name
     }
+}
+
+val sourcesJar by tasks.creating(Jar::class) {
+    group = "publishing"
+    description = "Assembles Kotlin sources jar"
+    archiveClassifier.set("sources")
+    from(sourceSets.getByName("main").allSource)
 }
 
 tasks.test {
@@ -86,13 +113,6 @@ tasks.jacocoTestReport {
 
 // Always run the jacoco test report after testing.
 tasks["test"].finalizedBy(tasks["jacocoTestReport"])
-
-val sourcesJar by tasks.creating(Jar::class) {
-    group = "publishing"
-    description = "Assembles Kotlin sources jar"
-    archiveClassifier.set("sources")
-    from(sourceSets.getByName("main").allSource)
-}
 
 publishing {
     publications {
