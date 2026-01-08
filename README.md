@@ -13,7 +13,7 @@
 
 * `codegen` - module(s) for generating Kotlin code from Smithy models
     * `protocol-tests` - module for generating Smithy protocol tests 
-    * `aws-codegen` - module containing AWS-specific codegen, will eventually be refactored to `aws-sdk-kotlin`
+    * `aws-codegen` - module containing AWS-specific codegen
     * `codegen` - primary codegen module
     * `codegen-testutils` - utilities for testing generated code (shared with `aws-sdk-kotlin`)
 
