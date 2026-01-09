@@ -151,7 +151,7 @@ class KotlinSymbolProvider(private val model: Model, private val settings: Kotli
         val reference = toSymbol(shape.member)
         val valueSuffix = if (reference.isNullable) "?" else ""
         val valueType = "${reference.name}$valueSuffix"
-        val fullyQualifiedValueType = "${reference.fullName}$valueSuffix"
+        val fullyQualifiedValueType = "${reference.fullNameHintOrDefault}$valueSuffix"
         return createSymbolBuilder(shape, "List<$valueType>")
             .addReferences(reference)
             .putProperty(SymbolProperty.FULLY_QUALIFIED_NAME_HINT, "kotlin.collections.List<$fullyQualifiedValueType>")
@@ -163,12 +163,12 @@ class KotlinSymbolProvider(private val model: Model, private val settings: Kotli
     override fun mapShape(shape: MapShape): Symbol {
         val keyReference = toSymbol(shape.key)
         val keyType = keyReference.name
-        val fullyQualifiedKeyType = keyReference.fullName
+        val fullyQualifiedKeyType = keyReference.fullNameHintOrDefault
 
         val valueReference = toSymbol(shape.value)
         val valueSuffix = if (valueReference.isNullable || shape.isSparse) "?" else ""
         val valueType = "${valueReference.name}$valueSuffix"
-        val fullyQualifiedValueType = "${valueReference.fullName}$valueSuffix"
+        val fullyQualifiedValueType = "${valueReference.fullNameHintOrDefault}$valueSuffix"
 
         return createSymbolBuilder(shape, "Map<$keyType, $valueType>")
             .addReferences(keyReference)
