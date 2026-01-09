@@ -1,0 +1,106 @@
+public class software/amazon/smithy/kotlin/SmithyBuildExtension {
+	public fun <init> (Lorg/gradle/api/Project;)V
+	public final fun getProjectionPath (Ljava/lang/String;Ljava/lang/String;)Lorg/gradle/api/provider/Provider;
+	public final fun getProjections ()Lorg/gradle/api/NamedDomainObjectContainer;
+}
+
+public final class software/amazon/smithy/kotlin/SmithyBuildExtensionKt {
+	public static final fun smithyKotlinProjectionPath (Lsoftware/amazon/smithy/kotlin/SmithyBuildExtension;Ljava/lang/String;)Lorg/gradle/api/provider/Provider;
+	public static final fun smithyKotlinProjectionSrcDir (Lsoftware/amazon/smithy/kotlin/SmithyBuildExtension;Ljava/lang/String;)Lorg/gradle/api/provider/Provider;
+}
+
+public final class software/amazon/smithy/kotlin/SmithyBuildPlugin : org/gradle/api/Plugin {
+	public fun <init> ()V
+	public synthetic fun apply (Ljava/lang/Object;)V
+	public fun apply (Lorg/gradle/api/Project;)V
+}
+
+public final class software/amazon/smithy/kotlin/SmithyBuildPluginKt {
+	public static final field SMITHY_BUILD_EXTENSION_NAME Ljava/lang/String;
+}
+
+public final class software/amazon/smithy/kotlin/dsl/ProjectExtensionsKt {
+	public static final fun getGenerateSmithyBuild (Lorg/gradle/api/tasks/TaskContainer;)Lorg/gradle/api/tasks/TaskProvider;
+	public static final fun getGenerateSmithyProjections (Lorg/gradle/api/tasks/TaskContainer;)Lorg/gradle/api/tasks/TaskProvider;
+}
+
+public abstract interface class software/amazon/smithy/kotlin/dsl/SmithyBuildPluginSettings : software/amazon/smithy/model/node/ToNode {
+	public abstract fun getPluginName ()Ljava/lang/String;
+}
+
+public class software/amazon/smithy/kotlin/dsl/SmithyKotlinApiSettings : software/amazon/smithy/model/node/ToNode {
+	public fun <init> ()V
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getDefaultValueSerializationMode ()Ljava/lang/String;
+	public final fun getEnableEndpointAuthProvider ()Ljava/lang/Boolean;
+	public final fun getNullabilityCheckMode ()Ljava/lang/String;
+	public final fun getVisibility ()Ljava/lang/String;
+	public fun hashCode ()I
+	public final fun setDefaultValueSerializationMode (Ljava/lang/String;)V
+	public final fun setEnableEndpointAuthProvider (Ljava/lang/Boolean;)V
+	public final fun setNullabilityCheckMode (Ljava/lang/String;)V
+	public final fun setVisibility (Ljava/lang/String;)V
+	public fun toNode ()Lsoftware/amazon/smithy/model/node/Node;
+	public fun toString ()Ljava/lang/String;
+}
+
+public class software/amazon/smithy/kotlin/dsl/SmithyKotlinBuildSettings : software/amazon/smithy/model/node/ToNode {
+	public fun <init> ()V
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getGenerateDefaultBuildFiles ()Ljava/lang/Boolean;
+	public final fun getGenerateFullProject ()Ljava/lang/Boolean;
+	public final fun getOptInAnnotations ()Ljava/util/List;
+	public fun hashCode ()I
+	public final fun setGenerateDefaultBuildFiles (Ljava/lang/Boolean;)V
+	public final fun setGenerateFullProject (Ljava/lang/Boolean;)V
+	public final fun setOptInAnnotations (Ljava/util/List;)V
+	public fun toNode ()Lsoftware/amazon/smithy/model/node/Node;
+	public fun toString ()Ljava/lang/String;
+}
+
+public class software/amazon/smithy/kotlin/dsl/SmithyKotlinPluginSettings : software/amazon/smithy/kotlin/dsl/SmithyBuildPluginSettings {
+	public fun <init> ()V
+	public final fun apiSettings (Lkotlin/jvm/functions/Function1;)V
+	public final fun buildSettings (Lkotlin/jvm/functions/Function1;)V
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getPackageDescription ()Ljava/lang/String;
+	public final fun getPackageName ()Ljava/lang/String;
+	public final fun getPackageVersion ()Ljava/lang/String;
+	public fun getPluginName ()Ljava/lang/String;
+	public final fun getSdkId ()Ljava/lang/String;
+	public final fun getServiceShapeId ()Ljava/lang/String;
+	public fun hashCode ()I
+	public final fun setPackageDescription (Ljava/lang/String;)V
+	public final fun setPackageName (Ljava/lang/String;)V
+	public final fun setPackageVersion (Ljava/lang/String;)V
+	public final fun setSdkId (Ljava/lang/String;)V
+	public final fun setServiceShapeId (Ljava/lang/String;)V
+	public fun toNode ()Lsoftware/amazon/smithy/model/node/Node;
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class software/amazon/smithy/kotlin/dsl/SmithyKotlinPluginSettingsKt {
+	public static final fun smithyKotlinPlugin (Lsoftware/amazon/smithy/kotlin/dsl/SmithyProjection;Lkotlin/jvm/functions/Function1;)V
+}
+
+public final class software/amazon/smithy/kotlin/dsl/SmithyProjection {
+	public fun <init> (Ljava/lang/String;)V
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getImports ()Ljava/util/List;
+	public final fun getName ()Ljava/lang/String;
+	public final fun getPlugins ()Ljava/util/Map;
+	public final fun getSources ()Ljava/util/List;
+	public final fun getTransforms ()Ljava/util/List;
+	public fun hashCode ()I
+	public final fun setImports (Ljava/util/List;)V
+	public final fun setSources (Ljava/util/List;)V
+	public final fun setTransforms (Ljava/util/List;)V
+}
+
+public abstract class software/amazon/smithy/kotlin/tasks/GenerateSmithyBuild : org/gradle/api/DefaultTask {
+	public fun <init> ()V
+	public final fun generateSmithyBuild ()V
+	public abstract fun getGeneratedOutput ()Lorg/gradle/api/file/RegularFileProperty;
+	public abstract fun getSmithyBuildConfig ()Lorg/gradle/api/provider/Property;
+}
+

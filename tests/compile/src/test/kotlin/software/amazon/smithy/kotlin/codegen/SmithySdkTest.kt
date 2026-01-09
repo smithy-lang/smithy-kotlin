@@ -4,9 +4,9 @@
  */
 package software.amazon.smithy.kotlin.codegen
 
+import aws.smithy.kotlin.codegen.lang.hardReservedWords
 import com.tschuchort.compiletesting.KotlinCompilation
 import org.jetbrains.kotlin.compiler.plugin.ExperimentalCompilerApi
-import software.amazon.smithy.kotlin.codegen.lang.hardReservedWords
 import software.amazon.smithy.kotlin.codegen.util.asSmithy
 import software.amazon.smithy.kotlin.codegen.util.compileSdkAndTest
 import software.amazon.smithy.model.Model

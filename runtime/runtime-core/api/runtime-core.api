@@ -33,7 +33,7 @@ public final class aws/smithy/kotlin/runtime/ErrorMetadata$Companion {
 public abstract interface annotation class aws/smithy/kotlin/runtime/ExperimentalApi : java/lang/annotation/Annotation {
 }
 
-public abstract interface annotation class aws/smithy/kotlin/runtime/IgnoreNative : java/lang/annotation/Annotation {
+public abstract interface annotation class aws/smithy/kotlin/runtime/GeneratedApi : java/lang/annotation/Annotation {
 }
 
 public abstract interface annotation class aws/smithy/kotlin/runtime/InternalApi : java/lang/annotation/Annotation {
@@ -351,6 +351,28 @@ public final class aws/smithy/kotlin/runtime/compression/GzipTestUtilsJvmKt {
 	public static final fun decompressGzipBytes ([B)[B
 }
 
+public final class aws/smithy/kotlin/runtime/config/CaseInsensitiveEnvironmentSetting {
+	public fun <init> (Lkotlin/jvm/functions/Function1;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/Object;)V
+	public synthetic fun <init> (Lkotlin/jvm/functions/Function1;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/Object;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Lkotlin/jvm/functions/Function1;
+	public final fun component2 ()Ljava/lang/String;
+	public final fun component3 ()Ljava/lang/String;
+	public final fun component4 ()Ljava/lang/String;
+	public final fun component5 ()Ljava/lang/String;
+	public final fun component6 ()Ljava/lang/Object;
+	public final fun copy (Lkotlin/jvm/functions/Function1;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/Object;)Laws/smithy/kotlin/runtime/config/CaseInsensitiveEnvironmentSetting;
+	public static synthetic fun copy$default (Laws/smithy/kotlin/runtime/config/CaseInsensitiveEnvironmentSetting;Lkotlin/jvm/functions/Function1;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/Object;ILjava/lang/Object;)Laws/smithy/kotlin/runtime/config/CaseInsensitiveEnvironmentSetting;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getDefaultValue ()Ljava/lang/Object;
+	public final fun getEnvVarBase ()Ljava/lang/String;
+	public final fun getEnvVarSuffix ()Ljava/lang/String;
+	public final fun getParse ()Lkotlin/jvm/functions/Function1;
+	public final fun getSysPropBase ()Ljava/lang/String;
+	public final fun getSysPropSuffix ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
 public final class aws/smithy/kotlin/runtime/config/EnvironmentSetting {
 	public static final field Companion Laws/smithy/kotlin/runtime/config/EnvironmentSetting$Companion;
 	public fun <init> (Lkotlin/jvm/functions/Function1;Ljava/lang/String;Ljava/lang/String;Ljava/lang/Object;)V
@@ -380,8 +402,11 @@ public final class aws/smithy/kotlin/runtime/config/EnvironmentSettingKt {
 	public static final fun getIntEnvSetting ()Lkotlin/jvm/functions/Function2;
 	public static final fun getLongEnvSetting ()Lkotlin/jvm/functions/Function2;
 	public static final fun getStrEnvSetting ()Lkotlin/jvm/functions/Function2;
+	public static final fun resolve (Laws/smithy/kotlin/runtime/config/CaseInsensitiveEnvironmentSetting;Laws/smithy/kotlin/runtime/util/PlatformEnvironProvider;)Ljava/lang/Object;
 	public static final fun resolve (Laws/smithy/kotlin/runtime/config/EnvironmentSetting;Laws/smithy/kotlin/runtime/util/PlatformEnvironProvider;)Ljava/lang/Object;
+	public static synthetic fun resolve$default (Laws/smithy/kotlin/runtime/config/CaseInsensitiveEnvironmentSetting;Laws/smithy/kotlin/runtime/util/PlatformEnvironProvider;ILjava/lang/Object;)Ljava/lang/Object;
 	public static synthetic fun resolve$default (Laws/smithy/kotlin/runtime/config/EnvironmentSetting;Laws/smithy/kotlin/runtime/util/PlatformEnvironProvider;ILjava/lang/Object;)Ljava/lang/Object;
+	public static final fun withCaseInsensitiveSuffixes (Laws/smithy/kotlin/runtime/config/EnvironmentSetting;Ljava/lang/String;Ljava/lang/String;)Laws/smithy/kotlin/runtime/config/CaseInsensitiveEnvironmentSetting;
 }
 
 public final class aws/smithy/kotlin/runtime/content/BigDecimal : java/lang/Number, java/lang/Comparable {
@@ -1101,6 +1126,7 @@ public abstract interface class aws/smithy/kotlin/runtime/io/SdkSource : java/io
 
 public final class aws/smithy/kotlin/runtime/io/SdkSourceKt {
 	public static final fun readFully (Laws/smithy/kotlin/runtime/io/SdkSource;Laws/smithy/kotlin/runtime/io/SdkBuffer;J)V
+	public static final fun readRemaining (Laws/smithy/kotlin/runtime/io/SdkSource;Laws/smithy/kotlin/runtime/io/SdkBuffer;)J
 	public static final fun readToByteArray (Laws/smithy/kotlin/runtime/io/SdkSource;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public static final fun toSdkByteReadChannel (Laws/smithy/kotlin/runtime/io/SdkSource;Lkotlinx/coroutines/CoroutineScope;)Laws/smithy/kotlin/runtime/io/SdkByteReadChannel;
 	public static synthetic fun toSdkByteReadChannel$default (Laws/smithy/kotlin/runtime/io/SdkSource;Lkotlinx/coroutines/CoroutineScope;ILjava/lang/Object;)Laws/smithy/kotlin/runtime/io/SdkByteReadChannel;

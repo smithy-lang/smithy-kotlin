@@ -12,6 +12,7 @@ public final class aws/smithy/kotlin/runtime/awsprotocol/eventstream/FrameDecode
 }
 
 public final class aws/smithy/kotlin/runtime/awsprotocol/eventstream/FrameEncoderKt {
+	public static final fun asEventStreamHttpBody (Lkotlinx/coroutines/flow/Flow;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public static final fun asEventStreamHttpBody (Lkotlinx/coroutines/flow/Flow;Lkotlinx/coroutines/CoroutineScope;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public static final fun encode (Lkotlinx/coroutines/flow/Flow;)Lkotlinx/coroutines/flow/Flow;
 }

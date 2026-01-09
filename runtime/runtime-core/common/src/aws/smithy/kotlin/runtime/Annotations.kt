@@ -73,7 +73,7 @@ public annotation class PlannedRemoval(
 )
 
 /**
- * Marks a test that should be ignored on Native platforms
+ * Indicates that the annotated API is created by a code generator such as **smithy-kotlin** codegen. Generated APIs may
+ * be excluded from certain kinds of automated checks, such as API compatibility verification.
  */
-@Target(AnnotationTarget.CLASS, AnnotationTarget.FUNCTION)
-public expect annotation class IgnoreNative()
+public annotation class GeneratedApi

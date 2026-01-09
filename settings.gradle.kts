@@ -112,9 +112,9 @@ include(":runtime:smithy-client")
 include(":runtime:smithy-test")
 include(":runtime:testing")
 
-include(":codegen:smithy-kotlin-codegen")
-include(":codegen:smithy-kotlin-codegen-testutils")
-include(":codegen:smithy-aws-kotlin-codegen")
+include(":codegen:codegen")
+include(":codegen:codegen-testutils")
+include(":codegen:aws-codegen")
 include(":codegen:protocol-tests")
 
 include(":tests")
@@ -131,3 +131,5 @@ include(":tests:codegen:waiter-tests")
 include(":tests:integration:slf4j-1x-consumer")
 include(":tests:integration:slf4j-2x-consumer")
 include(":tests:integration:slf4j-hybrid-consumer")
+
+include(":plugins:smithy-build")

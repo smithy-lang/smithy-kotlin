@@ -1,0 +1,117 @@
+/*
+ * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * SPDX-License-Identifier: Apache-2.0
+ */
+package aws.smithy.kotlin.codegen.rendering.protocol
+
+import aws.smithy.kotlin.codegen.KotlinSettings
+import aws.smithy.kotlin.codegen.core.KotlinDelegator
+import aws.smithy.kotlin.codegen.core.KotlinWriter
+import aws.smithy.kotlin.codegen.core.RenderingContext
+import aws.smithy.kotlin.codegen.integration.KotlinIntegration
+import aws.smithy.kotlin.codegen.rendering.auth.AuthDelegator
+import aws.smithy.kotlin.codegen.rendering.endpoints.EndpointDelegator
+import aws.smithy.kotlin.codegen.rendering.serde.StructuredDataParserGenerator
+import aws.smithy.kotlin.codegen.rendering.serde.StructuredDataSerializerGenerator
+import software.amazon.smithy.codegen.core.SymbolProvider
+import software.amazon.smithy.model.Model
+import software.amazon.smithy.model.shapes.ServiceShape
+import software.amazon.smithy.model.shapes.Shape
+import software.amazon.smithy.model.shapes.ShapeId
+import software.amazon.smithy.utils.CaseUtils
+
+/**
+ * Smithy protocol code generator(s)
+ */
+interface ProtocolGenerator {
+    companion object {
+        /**
+         * Sanitizes the name of the protocol so it can be used as a symbol in Kotlin.
+         *
+         * For example, the default implementation converts '.' to '_' and converts '-'
+         * to become camelCase separated words. `aws.rest-json-1.1` becomes `Aws_RestJson1_1`
+         *
+         * @param name Name of the protocol to sanitize
+         * @return sanitized protocol name
+         */
+        fun getSanitizedName(name: String): String {
+            val s1 = name.replace("(\\s|\\.|-)".toRegex(), "_")
+            return CaseUtils.toCamelCase(s1, true, '_')
+        }
+    }
+
+    /**
+     * Get the supported protocol [ShapeId]
+     * e.g. `software.amazon.smithy.aws.traits.protocols.RestJson1Trait.ID`
+     */
+    val protocol: ShapeId
+
+    /**
+     * Get the name of the protocol
+     */
+    val protocolName: String
+        get() {
+            var prefix = protocol.namespace
+            val idx = prefix.indexOf('.')
+            if (idx != -1) {
+                prefix = prefix.substring(0, idx)
+            }
+            return CaseUtils.toCamelCase(prefix) + getSanitizedName(protocol.name)
+        }
+
+    /**
+     * Get the application protocol for the generator
+     */
+    val applicationProtocol: ApplicationProtocol
+
+    /**
+     * Generate unit tests for the protocol
+     */
+    fun generateProtocolUnitTests(ctx: GenerationContext)
+
+    /**
+     * Generate an actual client implementation of the service interface and all the code required
+     * to make it work (e.g. serializers and deserializers).
+     */
+    fun generateProtocolClient(ctx: GenerationContext)
+
+    /**
+     * Get the generator responsible for rendering an EndpointProvider implementation
+     */
+    fun endpointDelegator(ctx: GenerationContext): EndpointDelegator = EndpointDelegator.Default
+
+    /**
+     * Get the generator responsible for rendering an AuthSchemeProvider implementation
+     */
+    fun authSchemeDelegator(ctx: GenerationContext): AuthDelegator = AuthDelegator.Default
+
+    /**
+     * Get the generator responsible for rendering deserialization of the protocol specific data format
+     */
+    fun structuredDataParser(ctx: GenerationContext): StructuredDataParserGenerator
+
+    /**
+     * Get the generator responsible for rendering serialization of the protocol specific data format
+     */
+    fun structuredDataSerializer(ctx: GenerationContext): StructuredDataSerializerGenerator
+
+    /**
+     * Context object used for service serialization and deserialization
+     */
+    data class GenerationContext(
+        val settings: KotlinSettings,
+        val model: Model,
+        val service: ServiceShape,
+        val symbolProvider: SymbolProvider,
+        val integrations: List<KotlinIntegration>,
+        val protocol: ShapeId,
+        val delegator: KotlinDelegator,
+    )
+}
+
+fun <T : Shape> ProtocolGenerator.GenerationContext.toRenderingContext(
+    protocolGenerator: ProtocolGenerator,
+    forShape: T? = null,
+    writer: KotlinWriter,
+): RenderingContext<T> =
+    RenderingContext(writer, forShape, model, symbolProvider, settings, protocolGenerator, integrations)

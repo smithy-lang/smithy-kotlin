@@ -13,7 +13,7 @@ extra["moduleName"] = "software.amazon.smithy.kotlin.codegen"
 skipPublishing()
 
 dependencies {
-    testImplementation(project(":codegen:smithy-kotlin-codegen"))
+    testImplementation(project(":codegen:codegen"))
     testImplementation(project(":runtime:runtime-core"))
     testImplementation(project(":runtime:protocol:http"))
     testImplementation(project(":runtime:protocol:http-client-engines:http-client-engine-default"))

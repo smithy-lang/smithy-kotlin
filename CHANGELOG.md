@@ -1,5 +1,23 @@
 # Changelog
 
+## [1.5.26] - 01/02/2026
+
+## [1.5.25] - 12/30/2025
+
+## [1.5.24] - 12/16/2025
+
+### Features
+* Add support for environmental settings which can be resolved case-insensitively
+
+## [1.5.23] - 12/15/2025
+
+## [1.5.22] - 12/05/2025
+
+## [1.5.21] - 12/03/2025
+
+### Fixes
+* Preserve logging context for streaming payload signing
+
 ## [1.5.20] - 11/10/2025
 
 ## [1.5.19] - 11/04/2025

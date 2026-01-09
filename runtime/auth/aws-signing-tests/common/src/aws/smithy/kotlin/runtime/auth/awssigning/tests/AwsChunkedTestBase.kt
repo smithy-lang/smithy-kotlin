@@ -5,11 +5,15 @@
 
 package aws.smithy.kotlin.runtime.auth.awssigning.tests
 
-import aws.smithy.kotlin.runtime.auth.awssigning.*
+import aws.smithy.kotlin.runtime.auth.awssigning.AwsSignatureType
+import aws.smithy.kotlin.runtime.auth.awssigning.AwsSigner
+import aws.smithy.kotlin.runtime.auth.awssigning.AwsSigningConfig
+import aws.smithy.kotlin.runtime.auth.awssigning.HashSpecification
 import aws.smithy.kotlin.runtime.auth.awssigning.internal.CHUNK_SIZE_BYTES
 import aws.smithy.kotlin.runtime.http.DeferredHeaders
 import aws.smithy.kotlin.runtime.http.toHeaders
-import aws.smithy.kotlin.runtime.io.*
+import aws.smithy.kotlin.runtime.io.Closeable
+import aws.smithy.kotlin.runtime.io.SdkBuffer
 import aws.smithy.kotlin.runtime.time.Instant
 import kotlinx.coroutines.test.TestResult
 import kotlinx.coroutines.test.runTest
@@ -18,39 +22,21 @@ import kotlin.random.Random
 import kotlin.test.*
 import kotlin.time.Duration.Companion.seconds
 
-interface AwsChunkedTestReader {
+interface AwsChunkedTestReader : Closeable {
     // This may modify the chunked reader state and cause loss of data!
     fun isClosedForRead(): Boolean
     suspend fun read(sink: SdkBuffer, limit: Long): Long
 }
 
-fun interface AwsChunkedReaderFactory {
-    companion object {
-        val Channel = AwsChunkedReaderFactory { data, signer, signingConfig, previousSignature, trailingHeaders ->
-            val ch = SdkByteReadChannel(data)
-            val chunked = AwsChunkedByteReadChannel(ch, signer, signingConfig, previousSignature, trailingHeaders)
-            object : AwsChunkedTestReader {
-                override fun isClosedForRead(): Boolean = chunked.isClosedForRead
-                override suspend fun read(sink: SdkBuffer, limit: Long): Long = chunked.read(sink, limit)
-            }
-        }
-    }
-
+interface AwsChunkedReaderFactory {
     fun create(
         data: ByteArray,
         signer: AwsSigner,
         signingConfig: AwsSigningConfig,
         previousSignature: ByteArray,
-        trailingHeaders: DeferredHeaders,
+        trailingHeaders: DeferredHeaders = DeferredHeaders.Empty,
     ): AwsChunkedTestReader
 }
-
-fun AwsChunkedReaderFactory.create(
-    data: ByteArray,
-    signer: AwsSigner,
-    signingConfig: AwsSigningConfig,
-    previousSignature: ByteArray,
-): AwsChunkedTestReader = create(data, signer, signingConfig, previousSignature, DeferredHeaders.Empty)
 
 private val CHUNK_SIGNATURE_REGEX = Regex("chunk-signature=[a-zA-Z0-9]{64}") // alphanumeric, length of 64
 private val CHUNK_SIZE_REGEX = Regex("[0-9a-f]+;chunk-signature=") // hexadecimal, any length, immediately followed by the chunk signature
