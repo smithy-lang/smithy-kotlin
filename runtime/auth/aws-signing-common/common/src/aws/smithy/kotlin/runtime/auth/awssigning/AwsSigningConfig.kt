@@ -101,7 +101,7 @@ public class AwsSigningConfig(builder: Builder) {
      * rather supplements it. In particular, a header will get signed if and only if it returns true to both the
      * internal check and this function (if defined).
      *
-     * The default predicate is to not reject signing any headers (i.e., `_ -> true`).
+     * The default predicate signs all headers (i.e., `_ -> true`).
      */
     public val shouldSignHeader: ShouldSignHeaderPredicate = builder.shouldSignHeader
 

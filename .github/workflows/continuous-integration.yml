@@ -420,8 +420,10 @@ jobs:
         # version that doesn't exist locally or in maven central. Otherwise the generated
         # protocol test projects will use whatever the SDK thinks the version of
         # smithy-kotlin should be
+        
+        # NOTE: THIS IS A TEMP FIX FOR CI TO PASS. TODO: GET RID OF IT BEFORE MERGING!
         sed -i "s/smithy-kotlin-runtime-version = .*$/smithy-kotlin-runtime-version = \"$SMITHY_KOTLIN_RUNTIME_VERSION\"/" gradle/libs.versions.toml
-        sed -i "s/smithy-kotlin-codegen-version = .*$/smithy-kotlin-codegen-version = \"$SMITHY_KOTLIN_CODEGEN_VERSION\"/" gradle/libs.versions.toml
+        sed -i "s/smithy-kotlin-codegen-version = .*$/smithy-kotlin-codegen-version = \"$SMITHY_KOTLIN_RUNTIME_VERSION\"/" gradle/libs.versions.toml
         ./gradlew -Paws.kotlin.native=false publishToMavenLocal
         ./gradlew -Paws.kotlin.native=false test jvmTest
         ./gradlew -Paws.kotlin.native=false testAllProtocols

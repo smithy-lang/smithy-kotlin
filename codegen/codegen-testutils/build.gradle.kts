@@ -16,9 +16,9 @@ description = "Provides common test utilities for Smithy-Kotlin code generation"
 extra["displayName"] = "Smithy :: Kotlin :: Codegen Utils"
 extra["moduleName"] = "aws.smithy.kotlin.codegen.test"
 
-val codegenVersion: String by project
+val sdkVersion: String by project
 group = "aws.smithy.kotlin"
-version = codegenVersion
+version = sdkVersion
 
 dependencies {
     implementation(libs.smithy.aws.traits)
